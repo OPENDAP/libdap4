@@ -139,7 +139,7 @@ BaseType::toString()
     ostringstream oss;
     oss << "BaseType (" << this << "):" << endl
 	<< "          _name: " << _name << endl
-	<< "          _type: " << _type << endl
+	<< "          _type: " << type_name() << endl
 	<< "          _read_p: " << _read_p << endl
 	<< "          _send_p: " << _send_p << endl
 	<< "          _synthesized_p: " << _synthesized_p << endl 
@@ -932,6 +932,9 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.58  2004/10/22 21:43:45  jimg
+// toString() now uses type_name() in place of type().
+//
 // Revision 1.57  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //
