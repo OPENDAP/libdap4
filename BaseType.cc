@@ -10,6 +10,9 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.32  1998/03/19 23:20:05  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.31  1998/03/17 17:18:32  jimg
 // Added mfuncs element_count(), is_simple_type(), is_vector_type() and
 // is_comstructor_type().
@@ -184,34 +187,6 @@ BaseType::_duplicate(const BaseType &bt)
     _send_p = bt._send_p;	// added, reza
     _xdr_coder = bt._xdr_coder;	// just copy this function pointer
 }
-
-// friend functions
-
-// Delete the current XDR * assigned to _xdrin, free the storage, create a
-// new XDR * and assign it to _xdrin.
-
-#if 0
-void 
-set_xdrin(FILE *in)
-{
-    delete_xdrstdio(BaseType::_xdrin);
-    if (BaseType::_in != stdin)
-	fclose(BaseType::_in);
-    BaseType::_xdrin = new_xdrstdio(in, XDR_DECODE);
-    BaseType::_in = in;
-}
-
-// Same as above except do it for _xdrout instead of _xdrin and store the
-// OUT in private member _out. _out is used by mfunc expunge().
-
-void 
-set_xdrout(FILE *out)
-{
-    delete_xdrstdio(BaseType::_xdrout);
-    BaseType::_xdrout = new_xdrstdio(out, XDR_ENCODE);
-    BaseType::_out = out;
-}
-#endif
 
 // Public mfuncs
 
@@ -456,22 +431,6 @@ BaseType::xdr_coder()
     return _xdr_coder;
 }
 
-// Use these mfuncs to access the xdrin/out pointers.
-
-#if 0
-XDR *
-BaseType::xdrin() const
-{
-    return _xdrin;
-}
-
-XDR *
-BaseType::xdrout() const
-{
-    return _xdrout;
-}
-#endif
-
 // send a printed representation of the variable's declaration to cout. If
 // print_semi is true, append a semicolon and newline.
 
@@ -518,17 +477,6 @@ BaseType::check_semantics(String &msg, bool)
 
     return sem;
 }
-
-// Flush the output buffer.
-// Returns: false if an error was detected by fflush(), true otherwise.
-
-#if 0
-bool
-BaseType::expunge()
-{
-    return fflush(_out) == 0;
-}
-#endif
 
 // Member functions for the relational operators used in evaluating a
 // relational clause in a constraint expression. Each class that wants these
