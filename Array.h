@@ -7,9 +7,12 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.24  1996/02/02 00:30:58  jimg
-/* Merge changes for DODS-1.1.0 into DODS-2.x
+/* Revision 1.25  1996/03/05 18:46:39  jimg
+/* Replaced <limits.h> with "dods-limits.h".
 /*
+ * Revision 1.24  1996/02/02 00:30:58  jimg
+ * Merge changes for DODS-1.1.0 into DODS-2.x
+ *
  * Revision 1.23  1995/12/09  01:06:31  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -56,19 +59,19 @@
  *
  * Revision 1.14  1995/03/04  14:34:53  jimg
  * Major modifications to the transmission and representation of values:
- * 	Added card() virtual function which is true for classes that
- * 	contain cardinal types (byte, int float, string).
- * 	Changed the representation of Str from the C rep to a C++
- * 	class represenation.
- * 	Chnaged read_val and store_val so that they take and return
- * 	types that are stored by the object (e.g., inthe case of Str
- * 	an URL, read_val returns a C++ String object).
- * 	Modified Array representations so that arrays of card()
- * 	objects are just that - no more storing strings, ... as
- * 	C would store them.
- * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
- * 	an array of a structure is represented as an array of Structure
- * 	objects).
+ * Added card() virtual function which is true for classes that
+ * contain cardinal types (byte, int float, string).
+ * Changed the representation of Str from the C rep to a C++
+ * class represenation.
+ * Chnaged read_val and store_val so that they take and return
+ * types that are stored by the object (e.g., inthe case of Str
+ * an URL, read_val returns a C++ String object).
+ * Modified Array representations so that arrays of card()
+ * objects are just that - no more storing strings, ... as
+ * C would store them.
+ * Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * an array of a structure is represented as an array of Structure
+ * objects).
  *
  * Revision 1.13  1995/02/10  02:22:53  jimg
  * Added DBMALLOC includes and switch to code which uses malloc/free.
@@ -145,12 +148,15 @@
 #pragma interface
 #endif
 
+#ifdef NEVER
 #include <limits.h>
+#endif
 #include <SLList.h>
 
+#include "dods-limits.h"
 #include "Vector.h"
 
-const int DODS_MAX_ARRAY = UINT_MAX;
+const int DODS_MAX_ARRAY = DODS_UINT_MAX;
 
 class Array: public Vector {
 private:
@@ -166,6 +172,7 @@ private:
 
     unsigned int print_array(ostream &os, unsigned int index,
 			     unsigned int dims, unsigned int shape[]);
+
 protected:
     void _duplicate(const Array &a);
 
