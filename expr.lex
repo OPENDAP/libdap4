@@ -27,9 +27,12 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.11  1996/08/26 21:13:17  jimg
-/* Changes for version 2.07
+/* Revision 1.12  1996/10/08 17:10:52  jimg
+/* Added % to the set of characters allowable in identifier names
 /*
+ * Revision 1.11  1996/08/26 21:13:17  jimg
+ * Changes for version 2.07
+ *
  * Revision 1.10  1996/08/13 18:56:24  jimg
  * Added __unused__ to definition of char rcsid[].
  *
@@ -75,7 +78,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.11 1996/08/26 21:13:17 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.12 1996/10/08 17:10:52 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -109,7 +112,7 @@ EXPONENT	(E|e)[-+]?[0-9]+
 
 FLOAT		[-+]?{MANTISA}{EXPONENT}?
 
-STR		[-+a-zA-Z0-9_/]+
+STR		[-+a-zA-Z0-9_/.%]+
 
 EQUAL		=
 NOT_EQUAL	!=
@@ -119,7 +122,7 @@ LESS		<
 LESS_EQL	<=
 REGEXP		=~
 
-NEVER		[^][*)(,:.&a-zA-Z0-9_]
+NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 
 %%
 

@@ -41,6 +41,9 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.19  1996/10/08 17:10:49  jimg
+# Added % to the set of characters allowable in identifier names
+#
 # Revision 1.18  1996/08/26 21:13:10  jimg
 # Changes for version 2.07
 #
@@ -133,7 +136,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: das.lex,v 1.18 1996/08/26 21:13:10 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: das.lex,v 1.19 1996/10/08 17:10:49 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -160,7 +163,7 @@ EXPONENT (E|e)[-+]?[0-9]+
 
 FLOAT	[-+]?{MANTISA}{EXPONENT}?
 
-STR 	[-+a-zA-Z0-9_./:]+
+STR 	[-+a-zA-Z0-9_./:%]+
 
 ATTR 	attributes|Attributes|ATTRIBUTES
 
@@ -170,7 +173,7 @@ FLOAT64 FLOAT64|Float64|float64
 STRING  STRING|String|string
 URL	URL|Url|url
 
-NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
+NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 
 %%
 

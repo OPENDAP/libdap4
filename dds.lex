@@ -30,9 +30,12 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.12  1996/08/26 21:13:13  jimg
-/* Changes for version 2.07
+/* Revision 1.13  1996/10/08 17:10:50  jimg
+/* Added % to the set of characters allowable in identifier names
 /*
+ * Revision 1.12  1996/08/26 21:13:13  jimg
+ * Changes for version 2.07
+ *
  * Revision 1.11  1996/08/13 18:51:52  jimg
  * Added __unused__ to definition of char rcsid[].
  *
@@ -74,7 +77,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.12 1996/08/26 21:13:13 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.13 1996/10/08 17:10:50 jimg Exp $"};
 
 #include <string.h>
 
@@ -107,7 +110,7 @@ URL 		URL|Url|url
 
 ID  		[a-zA-Z_][a-zA-Z0-9_/%]*
 INTEGER		[0-9]+
-NEVER		[^][{}:;=a-zA-Z0-9_]
+NEVER		[^][{}:;=a-zA-Z0-9_%]
 
 %%
 
