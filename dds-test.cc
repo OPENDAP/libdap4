@@ -14,6 +14,7 @@
 #include "BaseType.h"
 #include "Int32.h"
 #include "DDS.h"
+#include "util.h"
 
 void test_scanner();
 void test_parser();
@@ -202,7 +203,7 @@ test_class(void)
     cout << "Dataset name: " << table.get_dataset_name() << endl;
 
     String name = "goofy";
-    table.add_var(new Int32(name)); // table dtor should delete this object
+    table.add_var(NewInt32(name)); // table dtor should delete this object
 
     table.print();
 
@@ -214,7 +215,7 @@ test_class(void)
 
     table.print();
 
-    table.add_var(new Int32("goofy"));
+    table.add_var(NewInt32("goofy"));
 
     table.print();
 
