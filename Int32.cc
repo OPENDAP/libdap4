@@ -10,6 +10,11 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.29  1996/08/13 18:31:16  jimg
+// Moved int32_ops to util.cc
+// Added __unused__ to char rcsid[] definition.
+// Removed system includes.
+//
 // Revision 1.28  1996/06/04 21:33:34  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -163,15 +168,20 @@
 
 #include "config_dap.h"
 
+static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.29 1996/08/13 18:31:16 jimg Exp $"};
+
 #include <stdlib.h>
 #include <assert.h>
 
 #include "Int32.h"
 #include "DDS.h"
+#include "util.h"
 #include "dods-limits.h"
+#if 0
 #include "parser.h"
 #include "expr.h"
 #include "expr.tab.h"
+#endif
 #include "debug.h"
 
 #ifdef TRACE_NEW
@@ -248,31 +258,6 @@ Int32::print_val(ostream &os, String space, bool print_decl_p)
     }
     else 
 	os << _buf;
-}
-
-static bool
-int_ops(int i1, int i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP:
-	cerr << "Regexp not valid for byte values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
 }
 
 bool
