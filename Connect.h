@@ -32,6 +32,12 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.33  1998/06/04 06:31:33  jimg
+ * Added two new member functions to get/set the www_errors_to_stderr property.
+ * Also added a new member _www_errors_to_stderr to hold that property. When
+ * true, www errors are printed to stderr in addition to being recorded in the
+ * object's Error object. The property is false by default.
+ *
  * Revision 1.32  1998/03/19 23:49:28  jimg
  * Removed code associated with the (bogus) caching scheme.
  * Removed _connects.
@@ -338,6 +344,8 @@ private:
     FILE *_output;		// Destination; a temporary file
     XDR *_source;		// Data source stream
 
+    bool _www_errors_to_stderr; // FALSE for messages to stderr
+
   /* Initialize the W3C WWW Library. This should only be called when a
       Connect object is created and there are no other Connect objects in
       existence.
@@ -425,6 +433,21 @@ public:
     virtual ~Connect();
 
     Connect &operator=(const Connect &rhs);
+
+    /** Gets the state of the www_errors_to_stderr property. If TRUE this
+	means that http errors will be printed to stderr in addition to being
+	reported in the Error object. If FALSE only the Error object will be
+	used. 
+
+	@return TRUE if WWW errors should got to stderr, FALSE if only the
+	Error object should be used. */
+    bool get_www_errors_to_stderr();
+
+    /** Sets the www_errors_To_stderr property.
+
+	@see is_www_errors_to_stderr
+	@param state The state of the property. */
+    void set_www_errors_to_stderr(bool state);
 
   /** Fetch the contents of the indicated URL and put its contents
       into an output file.  A pointer to this file can be retrieved
