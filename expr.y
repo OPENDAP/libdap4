@@ -18,6 +18,10 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.36  2000/09/11 16:17:47  jimg
+ * Added Sequence selection using row numbers. This `selection' operation
+ * uses the brackets a la arrays and grids.
+ *
  * Revision 1.35  2000/07/09 21:43:30  rmorris
  * Mods to increase portability, minimize ifdef's for win32
  *
@@ -188,7 +192,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.35 2000/07/09 21:43:30 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.36 2000/09/11 16:17:47 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -196,6 +200,7 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.35 2000/07/09 21:43:30 rmorris 
 #include <assert.h>
 
 #include <string>
+#include <strstream>
 #include <SLList.h>
 
 #include "debug.h"
@@ -259,12 +264,18 @@ int_list *make_array_index(value &i1, value &i2);
 int_list *make_array_index(value &i1);
 int_list_list *make_array_indices(int_list *index);
 int_list_list *append_array_index(int_list_list *indices, int_list *index);
+
 void delete_array_indices(int_list_list *indices);
+bool bracket_projection(DDS &table, const char *name, 
+			int_list_list *indices);
+
 bool process_array_indices(BaseType *variable, int_list_list *indices); 
 bool process_grid_indices(BaseType *variable, int_list_list *indices); 
+bool process_sequence_indices(BaseType *variable, int_list_list *indices);
 
 bool is_array_t(BaseType *variable);
 bool is_grid_t(BaseType *variable);
+bool is_sequence_t(BaseType *variable);
 
 rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
@@ -539,68 +550,17 @@ constant:       SCAN_INT
 
 array_proj:	SCAN_ID array_indices 
                 {
-		    BaseType *var = (*DDS_OBJ(arg)).var($1);
-		    if (var && is_array_t(var)) {
-			/* calls to set_send_p should be replaced with
-			   calls to DDS::mark so that arrays of Structures,
-			   etc. will be processed correctly when individual
-			   elements are projected using short names (Whew!)
-			   9/1/98 jhrg */
-			/* var->set_send_p(true); */
-			(*DDS_OBJ(arg)).mark($1, true);
-			$$ = process_array_indices(var, $2);
-			if (!$$) {
-			    string msg = "The indices given for `";
-			    msg += (string)$1 + (string)"' are out of range.";
-			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			    STATUS(arg) = false;
-			}
-			delete_array_indices($2);
-		    }
-		    else if (var && is_grid_t(var)) {
-			(*DDS_OBJ(arg)).mark($1, true);
-			/* var->set_send_p(true); */
-			$$ = process_grid_indices(var, $2);
-			if (!$$) {
-			    string msg = "The indices given for `";
-			    msg += (string)$1 + (string)"' are out of range.";
-			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			    STATUS(arg) = false;
-			}
-			delete_array_indices($2);
-		    }
-		    else {
-			$$ = no_such_ident(arg, $1, "array or grid");
-		    }
+		  if (!bracket_projection((*DDS_OBJ(arg)), $1, $2))
+		    $$ = no_such_ident(arg, $1, "array, grid or sequence");
+		  else
+		    $$ = true;
 		}
 	        | SCAN_FIELD array_indices 
                 {
-		    BaseType *var = (*DDS_OBJ(arg)).var($1);
-		    if (var && is_array_t(var)) {
-			$$ = (*DDS_OBJ(arg)).mark($1, true) 
-			    && process_array_indices(var, $2);
-			if (!$$) {
-			    string msg = "The indices given for `";
-			    msg += (string)$1 + (string)"' are out of range.";
-			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			    STATUS(arg) = false;
-			}
-			delete_array_indices($2);
-		    }
-		    else if (var && is_grid_t(var)) {
-			$$ = (*DDS_OBJ(arg)).mark($1, true)
-			    && process_grid_indices(var, $2);
-			if (!$$) {
-			    string msg = "The indices given for `";
-			    msg += (string)$1 + (string)"' are out of range.";
-			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			    STATUS(arg) = false;
-			}
-			delete_array_indices($2);
-		    }
-		    else {
-			$$ = no_such_ident(arg, $1, "array or grid");
-		    }
+		  if (!bracket_projection((*DDS_OBJ(arg)), $1, $2))
+		    $$ = no_such_ident(arg, $1, "array, grid or sequence");
+		  else
+		    $$ = true;
 		}
 ;
 
@@ -699,6 +659,56 @@ no_such_func(void *arg, char *name)
     STATUS(arg) = false;
 
     return false;
+}
+
+bool
+bracket_projection(DDS &table, const char *name, int_list_list *indices)
+{
+  bool status = true;
+  BaseType *var = table.var(name);
+
+  if (var && is_array_t(var)) {
+    /* calls to set_send_p should be replaced with
+       calls to DDS::mark so that arrays of Structures,
+       etc. will be processed correctly when individual
+       elements are projected using short names (Whew!)
+       9/1/98 jhrg */
+    /* var->set_send_p(true); */
+    table.mark(name, true);
+    status = process_array_indices(var, indices);
+    if (!status) {
+      string msg = "The indices given for `";
+      msg += (string)name + (string)"' are out of range.";
+      throw Error(malformed_expr, msg);
+    }
+    delete_array_indices(indices);
+  }
+  else if (var && is_grid_t(var)) {
+    table.mark(name, true);
+    /* var->set_send_p(true); */
+    status = process_grid_indices(var, indices);
+    if (!status) {
+      string msg = "The indices given for `";
+      msg += (string)name + (string)"' are out of range.";
+      throw Error(malformed_expr, msg);
+    }
+    delete_array_indices(indices);
+  }
+  else if (var && is_sequence_t(var)) {
+    table.mark(name, true);
+    status = process_sequence_indices(var, indices);
+    if (!status) {
+      string msg = "The indices given for `";
+      msg += (string)name + (string)"' are out of range.";
+      throw Error(malformed_expr, msg);
+    }
+    delete_array_indices(indices);
+  }
+  else {
+    status = false;
+  }
+  
+  return status;
 }
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
@@ -832,6 +842,17 @@ is_grid_t(BaseType *variable)
     assert(variable);
 
     if (variable->type() != dods_grid_c)
+	return false;
+    else
+	return true;
+}
+
+bool
+is_sequence_t(BaseType *variable)
+{
+    assert(variable);
+
+    if (variable->type() != dods_sequence_c)
 	return false;
     else
 	return true;
@@ -986,6 +1007,53 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	cerr << "Too many indices in constraint for " 
 	     << g->map_var(r)->name() << "." << endl;
 	status= false;
+    }
+
+exit:
+    return status;
+}
+
+bool
+process_sequence_indices(BaseType *variable, int_list_list *indices)
+{
+    bool status = true;
+
+    assert(variable);
+    assert(variable->type() == dods_sequence_c);
+    Sequence *s = dynamic_cast<Sequence *>(variable);
+    if (!s)
+	throw Error(malformed_expr, "Expected a Sequence variable");
+
+    // Add specified maps to the current projection.
+    assert(indices);
+    for (Pix p = indices->first(); p; indices->next(p)) {
+	assert((*indices)(p));
+	int_list *index = (*indices)(p);
+
+	Pix q = index->first(); 
+	assert(q);
+	int start = (*index)(q);
+
+	index->next(q);
+	int stride = (*index)(q);
+	
+	index->next(q);
+	int stop = (*index)(q);
+
+	index->next(q);
+	if (q) {
+	  ostrstream oss;
+	  oss << "Too many values in index list for " << s->name() << "." 
+	      << ends;
+	  string msg = oss.str();
+	  oss.freeze(0);
+	  throw Error(malformed_expr, msg);
+	}
+
+	s->set_row_number_constraint(start, stop, stride);
+
+	DBG(cerr << "Set Constraint: " \
+	    << a->dimension_size(a->first_dim(), true) << endl);
     }
 
 exit:
