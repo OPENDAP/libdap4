@@ -11,11 +11,12 @@
 //
 // 1/15/99 jhrg
 
-/* $Log: ce_functions.h,v $
-/* Revision 1.1  1999/01/15 22:07:08  jimg
-/* MOved code from util.h.
-/* */
-
+// $Log: ce_functions.h,v $
+// Revision 1.2  1999/01/21 02:52:01  jimg
+// Fixed the stupid comments...
+//
+// Revision 1.1  1999/01/15 22:07:08  jimg
+// Moved code from util.h.
 
 bool func_member(int argc, BaseType *argv[], DDS &dds);
 bool func_null(int argc, BaseType *argv[], DDS &dds);
