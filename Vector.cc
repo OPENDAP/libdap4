@@ -39,11 +39,15 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
-// Revision 1.1  1995/11/22 22:30:18  jimg
+// Revision 1.2  1995/12/06 19:52:26  jimg
+// Modified print_decl() so that the declaration is printed only if the variable
+// is selected.
+//
+// Revision 1.1  1995/11/22  22:30:18  jimg
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.1 1995/11/22 22:30:18 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.2 1995/12/06 19:52:26 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -190,14 +194,14 @@ Vector::length()
 // Returns: void
 
 void
-Vector::set_length(unsigned int l)
+Vector::set_length(int l)
 {
     _length = l;
 }
 
 // Serialize a Vector. This uses the BaseType member XDR_CODER to encode each
-// element of the array. See Sun's XDR manual. For Arrays of Str and Url
-// types, send the element count over as a prefix to the data so that
+// element of a cardinal array. See Sun's XDR manual. For Arrays of Str and
+// Url types, send the element count over as a prefix to the data so that
 // deserialize will know how many elements to read.
 //
 // The boolean parameter FLUSH determines whether the data stream is flushed
@@ -205,7 +209,7 @@ Vector::set_length(unsigned int l)
 // its local buffer fills. if it is true, then it is flushed at the end of
 // this call.
 //
-// NB: The array must already be in BUF (in the local machine's
+// NB: Arrays of cardinal types must already be in BUF (in the local machine's
 // representation) *before* this call is made.
 //
 // Returns: true if the data was successfully writen, false otherwise.
@@ -507,10 +511,13 @@ Vector::add_var(BaseType *v, Part p)
 
 void
 Vector::print_decl(ostream &os, String space, bool print_semi,
-		  bool constraint_info)
+		  bool constraint_info, bool constrained)
 {
+    if (constrained && !send_p())
+	return;
+
     os << space << type_name();
-    var()->print_decl(os, " ", print_semi, constraint_info);
+    var()->print_decl(os, " ", print_semi, constraint_info, constrained);
 }
 
 void 
