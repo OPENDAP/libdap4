@@ -1,5 +1,5 @@
 
-$Id: INSTALL,v 1.5 1998/03/31 22:40:26 jimg Exp $
+$Id: INSTALL,v 1.6 1998/11/10 01:00:48 jimg Exp $
 
 Building the DAP library:
 
@@ -17,14 +17,24 @@ the makefile's check target.
 
 Notes:
 
-1) To build with program instrumentation use `--enable-debug=<level>' where
+1) Older versions of Linux have an xdr.h include file that won't compile
+   properly with g++. The error shows up when building software that calls
+   xdr_destroy and the compiler complains that its being called with too many
+   arguments. If this happens to you, take the xdr.h.linux file and put it in
+   DODS_ROOT/include and rename it to xdr.h. In that include directory, only
+   DODS software will be able to see the changed file (so you can be sure
+   that other software that uses the original xdr.h will still build). Note
+   that the changes are very minor and there should be no problem instlling
+   xdr.h in /usr/include/rpc.
+
+2) To build with program instrumentation use `--enable-debug=<level>' where
    <level> is 1 or 2. 
 
-2) To build with memory leak checks use --enable-dbnew. You must have the
+3) To build with memory leak checks use --enable-dbnew. You must have the
    freely available libraries libdbnew.a and libefence.a to make use of this
    option.
 
-3) GCC 2.8.1 contains a bug which causes it to crash when compiling the DODS
+4) GCC 2.8.1 contains a bug which causes it to crash when compiling the DODS
    class String.XPlex with optimization. Compile the file Plex/String.XPlex
    with optimization off (-O0). Note that the Makefile should take care of
    this for you. 
