@@ -4,7 +4,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.6  1995/02/10 03:27:07  jimg
+// Revision 1.7  1995/03/04 14:36:48  jimg
+// Fixed xdr_str so that it works with the new String objects.
+// Added xdr_str_array for use with arrays of String objects.
+//
+// Revision 1.6  1995/02/10  03:27:07  jimg
 // Removed xdr_url() since it was just a copy of xdr_str().
 //
 // Revision 1.5  1995/01/11  16:10:47  jimg
@@ -29,11 +33,12 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.6 1995/02/10 03:27:07 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.7 1995/03/04 14:36:48 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <rpc/xdr.h>
 #ifdef DBMALLOC
 #include <stdlib.h>
@@ -136,6 +141,7 @@ delete_xdrstdio(XDR *xdr)
     delete(xdr);
 }
 
+// FIXME Comments out of date
 // This function is used to en/decode Str and Url type variables. It is
 // defined as extern C since it is passed via function pointers to routines
 // in the xdr library where they are executed. This function is defined so
@@ -143,8 +149,72 @@ delete_xdrstdio(XDR *xdr)
 // exactly two argumnets: an XDR * and a buffer pointer.
 
 extern "C" bool_t
-xdr_str(XDR *xdrs, char **buf)
+xdr_str(XDR *xdrs, String **buf)
 {
+#ifdef NEVER
     return xdr_string(xdrs, buf, max_str_len);
+#endif
+    switch (xdrs->x_op) {
+      case XDR_ENCODE:		// BUF is a pointer to a (String *)
+	assert(buf && *buf);
+	
+	char *out_tmp = (const char *)**buf; // OK
+
+	return xdr_string(xdrs, &out_tmp, max_str_len);
+
+      case XDR_DECODE:		// BUF is a pointer to a String * or to NULL
+	assert(buf);
+
+	char str_tmp[max_str_len];
+	char *in_tmp = str_tmp;
+	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
+	if (!stat)
+	    return stat;
+
+	if (*buf) {
+	    **buf = in_tmp;
+	}
+	else {
+	    *buf = new String(in_tmp);
+	}
+	
+	return stat;
+	
+      default:
+	assert(false);
+	return 0;
+    }
+}
+    
+extern "C" bool_t
+xdr_str_array(XDR *xdrs, String *buf)
+{
+    switch (xdrs->x_op) {
+      case XDR_ENCODE:		// BUF is a pointer to a (String *)
+	assert(buf);
+	
+	char *out_tmp = (const char *)*buf; // OK
+
+	return xdr_string(xdrs, &out_tmp, max_str_len);
+
+      case XDR_DECODE:		// BUF is a pointer to a String * or to NULL
+	assert(buf);
+
+	char str_tmp[max_str_len];
+	char *in_tmp = str_tmp;
+	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
+	if (!stat)
+	    return stat;
+
+	if (buf) {
+	    *buf = in_tmp;
+	}
+	
+	return stat;
+	
+      default:
+	assert(false);
+	return 0;
+    }
 }
     
