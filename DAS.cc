@@ -5,7 +5,12 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.11  1995/01/19 21:58:49  jimg
+// Revision 1.12  1995/02/10 02:29:37  jimg
+// Added second parameter to dasparse. It is a switch that indicates that
+// the parse went OK. Now the parser will return true even if erros were
+// detected so long as they were recoverable errors.
+//
+// Revision 1.11  1995/01/19  21:58:49  jimg
 // Added read_val from dummy_read.cc to the sample set of sub-class
 // implementations.
 // Changed the declaration of readVal in BaseType so that it names the
@@ -67,7 +72,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.11 1995/01/19 21:58:49 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.12 1995/02/10 02:29:37 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -92,7 +97,7 @@ static char rcsid[]="$Id: DAS.cc,v 1.11 1995/01/19 21:58:49 jimg Exp $";
 #include "DAS.h"		// follows pragma since DAS.h is interface
 
 void dasrestart(FILE *yyin);
-int dasparse(DAS &table);	// defined in das.tab.c
+int dasparse(DAS &table, int &parse_ok); // defined in das.tab.c
 
 DAS::DAS(AttrTablePtr dflt, unsigned int sz) : map(dflt, sz)
 {
@@ -217,9 +222,10 @@ DAS::parse(int fd)
 bool
 DAS::parse(FILE *in)
 {
+    int parse_ok;
     dasrestart(in);
 
-    return dasparse(*this) == 0;
+    return dasparse(*this, parse_ok) == 0 && parse_ok;
 }
 
 // Write attributes from tables to `out' (which defaults to stdout). Return
