@@ -10,6 +10,14 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.34  1998/10/21 16:18:19  jimg
+// Added the two member functions: synthesized_p() and set_synthesized_p().
+// These are used to test and record (resp) whether a variable has been
+// synthesized by the server or is part of the data set. This feature was added
+// to help support the creation of variables by the new projection functions.
+// Variables that are created by projection function calls are called `synthesized
+// variables'.
+//
 // Revision 1.33  1998/09/17 17:23:20  jimg
 // Changes for the new variable lookup scheme. Fields of ctor types no longer
 // need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
@@ -206,7 +214,8 @@ BaseType::_duplicate(const BaseType &bt)
 // greater).
 
 BaseType::BaseType(const String &n, const Type &t, xdrproc_t xdr)
-    : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false)
+    : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
+      _synthesized_p(false)
 {
 } 
 
@@ -382,6 +391,18 @@ BaseType::element_count(bool)
     return 1;
 }
 
+bool
+BaseType::synthesized_p()
+{
+    return _synthesized_p;
+}
+
+void
+BaseType::set_synthesized_p(bool state)
+{
+    _synthesized_p = state;
+}
+
 // Return the state of _read_p (true if the value of the variable has been
 // read (and is in memory) false otherwise).
 
@@ -394,7 +415,10 @@ BaseType::read_p()
 void
 BaseType::set_read_p(bool state)
 {
-    _read_p = state;
+    if (! _synthesized_p) {
+	DBG(cerr << "Changing read_p state of " << name() << endl);
+	_read_p = state;
+    }
 }
 
 
