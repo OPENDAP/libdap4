@@ -32,7 +32,7 @@
     of Connect is set to one of these values so that other mfuncs can tell
     the type of object without parsing the stream themselves.
 
-     \begin{verbatim}
+    <pre>
      enum ObjectType {
        unknown_type,
        dods_das,
@@ -41,7 +41,7 @@
        dods_error,
        web_error
      };
-     \end{verbatim}
+     </pre>
 
     @memo The type of object in the stream coming from the data
     server.  */
@@ -56,6 +56,9 @@ enum ObjectType {
 };
 
 // $Log: ObjectType.h,v $
+// Revision 1.4  2003/02/20 23:10:52  jimg
+// Fixed doxygen comment.
+//
 // Revision 1.3  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.
