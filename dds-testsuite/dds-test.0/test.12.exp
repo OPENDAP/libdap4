@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.12.exp,v $
-# Revision 1.1  1994/12/21 17:01:28  jimg
+# Revision 1.2  1995/03/16 17:44:44  jimg
+# Fixed spaces in variable name printout.
+#
+# Revision 1.1  1994/12/21  17:01:28  jimg
 # Added these to the testsuite.
 #
 
@@ -23,7 +26,7 @@ DDS past semantic check
 DDS past full semantic check
 Dataset {
     Int32 i;
-    Float64 f\[latitude=20\]\[longitude=10\];
+    Float64 f\[latitude = 20\]\[longitude = 10\];
 } data5;"
 
 dds-test_start p $srcdir$test_name
