@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.9.exp,v $
+# Revision 1.5  1999/07/22 17:08:17  jimg
+# *** empty log message ***
+#
 # Revision 1.4  1996/05/14 15:41:50  jimg
 # These changes have already been checked in once before. However, I
 # corrupted the source repository and restored it from a 5/9/96 backup
@@ -47,16 +50,6 @@ Dataset {
         } data;
         List String folks;
     } exp;
-    Function {
-     INDEPENDENT:
-        Float64 time;
-     DEPENDENT:
-        Float64 temp\[200\];
-        Structure {
-            Float64 sal;
-            Float64 o2;
-        } bio;
-    } measure;
     Grid {
      ARRAY:
         Float64 g\[10\]\[10\]\[10\];

@@ -13,16 +13,6 @@ dataset {
 	} data;
 	List String folks;
     } exp;
-    Function {
-      Independent:
-	Float64 time;
-      Dependent:
-	Float64 temp[200];
-	structure {
-	    float64 sal;
-	    float64 o2;
-	} bio;
-    } measure;
     Grid {
       Array:
 	float64 g[10][10][10];
