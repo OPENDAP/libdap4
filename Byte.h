@@ -5,11 +5,18 @@
 // jhrg 9/7/94
 
 /* $Log: Byte.h,v $
-/* Revision 1.3  1994/11/22 14:05:32  jimg
-/* Added code for data transmission to parts of the type hierarchy. Not
-/* complete yet.
-/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+/* Revision 1.4  1994/11/29 20:06:33  jimg
+/* Added mfuncs for data transmission.
+/* Made the xdr_coder function pointer xdr_bytes() while (de)serialize() uses
+/* xdr_char().
+/* Removed `type' from ctor parameter list.
+/* Added FILE *in and *out to parameter list (they default to stdin/out).
 /*
+ * Revision 1.3  1994/11/22  14:05:32  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
  * Revision 1.2  1994/09/23  14:36:07  jimg
  * Fixed errors in comments.
  *
@@ -32,10 +39,22 @@
 
 class Byte: public BaseType {
 private:
+    byte buf;
 
 public:
-    Byte(const String &n = (char *)0, const String &t = "Byte");
+    Byte(const String &n = (char *)0, FILE *in = stdin, FILE *out = stdout);
     virtual ~Byte() {}
+
+    virtual BaseType *ptr_duplicate();
+
+    virtual unsigned int size();
+
+    virtual bool read(String dataset, String var_name, String constraint);
+
+    virtual bool serialize(bool flush = false, unsigned int num = 0);
+    virtual unsigned int deserialize();
+
+    virtual void print_val(ostream &os, String space = "");
 };
 
 typedef Byte * BytePtr;
