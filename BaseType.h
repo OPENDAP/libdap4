@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.48  1998/11/23 15:05:55  tom
+ * late modifications to documentation
+ *
  * Revision 1.47  1998/11/10 01:10:25  jimg
  * Changed text of regexp error message.
  *
@@ -488,7 +491,7 @@ public:
 	This is used to count the number of variables held by a constructor
 	variable - for simple type and vector variables it always returns 1.
 	Thus looping through a structure's members and tallying the
-	element_count() values returned will yield the total number of
+	#element_count()# values returned will yield the total number of
 	members in the structure.
 
 	@memo Count the members of constructor types. Returns 1 for simple
