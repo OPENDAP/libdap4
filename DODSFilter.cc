@@ -10,6 +10,9 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.4  1998/08/06 16:12:30  jimg
+// Added cache dir methods and stuff to ctor (from jeh)
+//
 // Revision 1.3  1998/03/19 23:34:21  jimg
 // Fixed calls to set_mime_*().
 // Removed the compression code (it is now in DDS::send().
@@ -31,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.3 1998/03/19 23:34:21 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.4 1998/08/06 16:12:30 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -46,12 +49,12 @@ static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.3 1998/03/19 23:34:21 
 
 DODSFilter::DODSFilter(int argc,char *argv[]) : comp(false), ver(false), 
     bad_options(false), dataset(""), ce(""), cgi_ver(""),
-    anc_dir(""), anc_file("")
+    anc_dir(""), anc_file(""), cache_dir("")
 {
     program_name = argv[0];
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce:v:d:f:");
+    GetOpt getopt (argc, argv, "ce:v:d:f:r:");
 
     while ((option_char = getopt()) != EOF)
 	switch (option_char) {
@@ -60,6 +63,7 @@ DODSFilter::DODSFilter(int argc,char *argv[]) : comp(false), ver(false),
 	  case 'v': ver = true; cgi_ver = getopt.optarg; break;
 	  case 'd': anc_dir = getopt.optarg; break;
 	  case 'f': anc_file = getopt.optarg; break;
+	  case 'r': cache_dir = getopt.optarg; break;
 	  default: bad_options = true; break;
 	}
 
@@ -103,6 +107,12 @@ String
 DODSFilter::get_dataset_version()
 {
     return "";
+}
+
+String
+DODSFilter::get_cache_dir()
+{
+  return cache_dir;
 }
 
 bool
