@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.30 2003/01/23 00:22:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.31 2003/02/09 10:07:32 rmorris Exp $"};
 
 #include <iostream>
 #include <strstream>
@@ -61,6 +61,12 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.30 2003/01/23 00:22:24 j
 #include "InternalErr.h"
 
 using std::ostrstream;
+
+//  Using std::max under win32 causes a conflict.  MS suggests using _MAX
+//  instead.  We do that, then for non-WIN32 define _MAX to max.
+#ifndef WIN32
+#define _MAX max
+#endif
 
 /** Create an instance of DODSFilter using the command line
     arguments passed by the CGI (or other) program.  The default
@@ -348,7 +354,7 @@ time_t
 DODSFilter::get_das_last_modified_time(const string &anc_location)
 {
     string name = find_ancillary_file(dataset, "das", anc_location, anc_file);
-    return std::max((name != "") ? last_modified_time(name) : 0,
+    return std::_MAX((name != "") ? last_modified_time(name) : 0,
 		    get_dataset_last_modified_time()); 
 }
 
@@ -363,7 +369,7 @@ time_t
 DODSFilter::get_dds_last_modified_time(const string &anc_location)
 {
     string name = find_ancillary_file(dataset, "dds", anc_location, anc_file);
-    return std::max((name != "") ? last_modified_time(name) : 0,
+    return std::_MAX((name != "") ? last_modified_time(name) : 0,
 		    get_dataset_last_modified_time()); 
 }
 
@@ -387,12 +393,12 @@ DODSFilter::get_data_last_modified_time(const string &anc_location)
 					  anc_file);
     string das_name = find_ancillary_file(dataset, "dds", anc_location,
 					  anc_file);
-    time_t m = std::max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
+    time_t m = std::_MAX((das_name != "") ? last_modified_time(das_name) : (time_t)0,
 			(dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
     // Note that this is a call to get_dataset_... not get_data_...
     time_t n = get_dataset_last_modified_time();
-    // g++ did not compile `max(max(x,y),z)' 4/23/2001 jhrg
-    return std::max(m, n); 
+
+    return std::_MAX(m, n); 
 }
 
 /** Get the value of a conditional request's If-Modified-Since header.
@@ -690,6 +696,9 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.31  2003/02/09 10:07:32  rmorris
+// Fixed a conflict using std::max under win32.
+//
 // Revision 1.30  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.
