@@ -38,7 +38,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.26  1995/12/06 21:40:58  jimg
+// Revision 1.27  1995/12/09 01:06:29  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.26  1995/12/06  21:40:58  jimg
 // Added reset_constraint(), clear_constraint() and add_constraint() to manage
 // the new constraint-related members (in struct dimension).
 // Fixed variour member functions to return information about sizes,
@@ -474,7 +479,7 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
     // Add the `;'
     
     if (print_decl_p) {
-	print_decl(os, space, false, false, true);
+	print_decl(os, space, false, false, false);
 	os << " = ";
     }
 

@@ -6,9 +6,14 @@
 // jhrg 1/12/95
 
 /* $Log: TestStructure.h,v $
-/* Revision 1.6  1995/12/06 19:55:46  jimg
-/* Changes read() member function from three arguments to two.
+/* Revision 1.7  1995/12/09 01:07:29  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+ * Revision 1.6  1995/12/06  19:55:46  jimg
+ * Changes read() member function from three arguments to two.
+ *
  * Revision 1.5  1995/08/26  00:32:02  jimg
  * Removed code enclosed in #ifdef NEVER #endif.
  *
@@ -53,7 +58,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(String dataset, String var_name);
+    virtual bool read(const String &dataset);
 };
 
 #endif

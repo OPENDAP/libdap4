@@ -38,7 +38,12 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.16  1995/12/06 21:56:24  jimg
+// Revision 1.17  1995/12/09 01:06:46  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.16  1995/12/06  21:56:24  jimg
 // Added `constrained' flag to print_decl.
 // Removed third parameter of read.
 // Modified print_decl() to print only those parts of a dataset that are
@@ -134,6 +139,7 @@
 #include <assert.h>
 
 #include "Grid.h"
+#include "DDS.h"
 #include "Array.h"		// for downcasts
 #include "util.h"
 #include "errmsg.h"
@@ -218,16 +224,26 @@ Grid::width()
 }
 
 bool
-Grid::serialize(bool flush)
+Grid::serialize(const String &dataset, DDS &dds, bool flush)
 {
     bool status = true;
 
-    if (_array_var->send_p() && !(status = _array_var->serialize(false))) 
+    if (!read_p())		// only read if not read already
+	status = read(dataset);
+
+    if (status && !dds.eval_constraint()) 
+	return status;
+
+    if (!status)
+	return false;
+
+    if (_array_var->send_p() 
+	&& !(status = _array_var->serialize(dataset, dds, false))) 
 	return false;
 
     for (Pix p = _map_vars.first(); p; _map_vars.next(p))
 	if  (_map_vars(p)->send_p() 
-	     && !(status = _map_vars(p)->serialize(false)) ) 
+	     && !(status = _map_vars(p)->serialize(dataset, dds, false)) ) 
 	    break;
 	
     if (status && flush)

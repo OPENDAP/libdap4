@@ -5,12 +5,17 @@
 // Vector. Vector is the parent class for List and Array.
 
 /* $Log: Vector.h,v $
-/* Revision 1.2  1995/12/06 19:49:35  jimg
-/* Changed the var() and print_decl() mfuncs. var() now takes an index and
-/* returns a pointer to the BaseType object with the correct value. print_decl()
-/* takes a new flag - constrained - which causes only those dimensions selected
-/* by the current constraint expression to be printed
+/* Revision 1.3  1995/12/09 01:07:34  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+ * Revision 1.2  1995/12/06  19:49:35  jimg
+ * Changed the var() and print_decl() mfuncs. var() now takes an index and
+ * returns a pointer to the BaseType object with the correct value. print_decl()
+ * takes a new flag - constrained - which causes only those dimensions selected
+ * by the current constraint expression to be printed
+ *
  * Revision 1.1  1995/11/22  22:30:20  jimg
  * Created.
  */
@@ -55,10 +60,11 @@ public:
     virtual unsigned int length();
     virtual void set_length(int l);
 
-    virtual bool serialize(bool flush = false);
+    virtual bool serialize(const String &dataset, DDS &dds, 
+			   bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(String dataset, String var_name) = 0;
+    virtual bool read(const String &dataset) = 0;
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);

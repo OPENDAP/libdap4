@@ -38,7 +38,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.17  1995/12/06 21:56:29  jimg
+// Revision 1.18  1995/12/09 01:06:54  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.17  1995/12/06  21:56:29  jimg
 // Added `constrained' flag to print_decl.
 // Removed third parameter of read.
 // Modified print_decl() to print only those parts of a dataset that are
@@ -144,6 +149,7 @@
 
 #include "debug.h"
 #include "Sequence.h"
+#include "DDS.h"
 #include "util.h"
 
 #ifdef TRACE_NEW
@@ -258,16 +264,28 @@ Sequence::width()
 }
 
 bool
-Sequence::serialize(bool flush)
+Sequence::serialize(const String &dataset, DDS &dds, bool flush)
 {
-    bool status;
+    bool status = true;
 
-    for (Pix p = first_var(); p; next_var(p)) {
-	if ( var(p)->send_p() && !(status = var(p)->serialize(false)) ) break;
+    while (status) {
+	if (!read_p())		// only read if not read already
+	    status = read(dataset);
+
+	if (status && !dds.eval_constraint()) 
+	    return status;
+
+	if (!status)
+	    break;
+
+	for (Pix p = first_var(); p; next_var(p))
+	    if (var(p)->send_p() 
+		&& !(status = var(p)->serialize(dataset, dds, false))) 
+		break;
+
+	if (status && flush)
+	    status = expunge();
     }
-
-    if (status && flush)
-	status = expunge();
 
     return status;
 }

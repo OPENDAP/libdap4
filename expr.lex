@@ -50,12 +50,17 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.3  1995/12/06 18:57:37  jimg
-/* Because the %union{} changed, the return types of some of the rules also
-/* changed.
-/* Returns integer codes for relops.
-/* Returns a tagged union for most other values.
+/* Revision 1.4  1995/12/09 01:07:39  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+# Revision 1.3  1995/12/06  18:57:37  jimg
+# Because the %union{} changed, the return types of some of the rules also
+# changed.
+# Returns integer codes for relops.
+# Returns a tagged union for most other values.
+#
 # Revision 1.2  1995/10/23  23:11:31  jimg
 # Fixed scanner to use the new definition of YYSTYPE.
 #
@@ -65,7 +70,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: expr.lex,v 1.3 1995/12/06 18:57:37 jimg Exp $"};
+static char rcsid[]={"$Id: expr.lex,v 1.4 1995/12/09 01:07:39 jimg Exp $"};
 
 #include <string.h>
 
@@ -173,30 +178,31 @@ yywrap(void)
 void
 store_int32()
 {
-    exprlval.val.type = Int32;
-    exprlval.val.v.int32 = atoi(yytext);
+    exprlval.val.type = int32_t;
+    exprlval.val.v.i = atoi(yytext);
 }
 
 void
 store_float64()
 {
-    exprlval.val.type = Float64;
-    exprlval.val.v.float64 = atof(yytext);
+    exprlval.val.type = float64_t;
+    exprlval.val.v.f = atof(yytext);
 }
 
 void
 store_id()
 {
-    exprlval.val.type = Id;
-    strncpy(exprlval.val.v.id, yytext, ID_MAX-1);
-    exprlval.val.v.id[ID_MAX] = '\0';
+    strncpy(exprlval.id, yytext, ID_MAX-1);
+    exprlval.id[ID_MAX] = '\0';
 }
 
 void
 store_str()
 {
-    exprlval.val.type = Str;
-    exprlval.val.v.str = yytext;
+    String *s = new String(yytext);
+
+    exprlval.val.type = str_t;
+    exprlval.val.v.s = s;
 }
 
 void

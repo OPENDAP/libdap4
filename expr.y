@@ -1,3 +1,6 @@
+
+/* -*- C++ -*- */
+
 /*
   Copyright 1995 The University of Rhode Island and The Massachusetts
   Institute of Technology
@@ -42,12 +45,17 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.3  1995/12/06 18:42:44  jimg
-/* Added array constraints to the parser.
-/* Added functions for the actions of those new rules.
-/* Changed/added rule's return types.
-/* Changed the types in the %union {}.
+/* Revision 1.4  1995/12/09 01:07:41  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+ * Revision 1.3  1995/12/06  18:42:44  jimg
+ * Added array constraints to the parser.
+ * Added functions for the actions of those new rules.
+ * Changed/added rule's return types.
+ * Changed the types in the %union {}.
+ *
  * Revision 1.2  1995/10/23  23:10:38  jimg
  * Added includes for various classes.
  * Aded rules, actions and functions for evaluation of projections.
@@ -60,7 +68,7 @@
 
 %{
 
-static char rcsid[]={"$Id: expr.y,v 1.3 1995/12/06 18:42:44 jimg Exp $"};
+static char rcsid[]={"$Id: expr.y,v 1.4 1995/12/09 01:07:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,6 +88,7 @@ static char rcsid[]={"$Id: expr.y,v 1.3 1995/12/06 18:42:44 jimg Exp $"};
 #include "Grid.h"
 
 #include "config_dap.h"
+#include "util.h"
 #define DEBUG 1
 #include "debug.h"
 #include "parser.h"
@@ -92,16 +101,18 @@ static char rcsid[]={"$Id: expr.y,v 1.3 1995/12/06 18:42:44 jimg Exp $"};
 int exprlex(void);		/* the scanner; see expr.lex */
 int exprerror(char *s);
 
-bool mark_id(DDS &table, value &val);
+bool mark_id(DDS &table, char id[]);
 IntList *make_array_index(value &i1, value &i2, value &i3);
 IntListList *make_array_indeces(IntList *index);
 IntListList *append_array_index(IntListList *indeces, IntList *index);
-bool process_array_indeces(DDS &dds, value &id, IntListList *indeces);
-value dereference_url(DDS &table, value &val);
+bool process_array_indeces(DDS &dds, char id[], IntListList *indeces);
+BaseType *dereference_url(DDS &table, value &val);
 bool relational_op(value &val1, value &val2, int op);
 bool int32_op(int i1, int i2, int op);
 bool float64_op(double d1, double d2, int op);
-bool str_op(String s1, String s2, int op);
+bool str_op(String &s1, String &s2, int op);
+BaseType *get_variable(DDS &table, char id[]);
+BaseType *make_variable(const value &val);
 
 /* 
   The parser recieives a DDS &table as a formal argument. TABLE is the DDS
@@ -114,12 +125,24 @@ bool str_op(String s1, String s2, int op);
 
 %expect 6
 
+%union {
+    bool boolean;
+    int op;
+    char id[ID_MAX];
+
+    BaseType *variable;
+    value val;
+
+    IntList *int_l_ptr;
+    IntListList *int_ll_ptr;
+}
+
 %token <val> INT
 %token <val> FLOAT
-
-%token <val> ID
-%token <val> FIELD
 %token <val> STR
+
+%token <id> ID
+%token <id> FIELD
 
 %token <op> EQUAL
 %token <op> NOT_EQUAL
@@ -129,24 +152,10 @@ bool str_op(String s1, String s2, int op);
 %token <op> LESS_EQL
 %token <op> REGEXP
 
-%union {
-    bool boolean;
-    int op;
-
-    value val;
-
-    IntList *int_l_ptr;
-    IntListList *int_ll_ptr;
-}
-
 %type <boolean> constraint_expr projection selection clause array_sel
-
-%type <val> operand
-
+%type <variable> operand
 %type <op> rel_op
-
 %type <int_l_ptr> array_index
-
 %type <int_ll_ptr> array_indeces
 
 %%
@@ -196,16 +205,32 @@ selection:	clause
 clause:		/* operand rel_op '{' operand_list '}'
 		| */ operand rel_op operand 
                   {
-		      $$ = relational_op($1, $3, $2);
+		      table.append_clause($2, $1, $3);
+		      $$ = true;
 		  }
                 | array_sel
 ;
 
-operand:	ID
+operand:	ID 
+                  { 
+		      $$ = get_variable(table, $1); 
+		  }
 		| INT
+                  {
+		      $$ = make_variable($1);
+		  }
 		| FLOAT
-		| FIELD
-		| '*' STR { $$ = dereference_url(table, $2); }
+                  {
+		      $$ = make_variable($1);
+		  }
+		| FIELD 
+                  { 
+		      $$ = get_variable(table, $1); 
+		  }
+		| '*' STR 
+                  { 
+		      $$ = dereference_url(table, $2); 
+		  }
 ;
 
 array_sel:	ID array_indeces 
@@ -231,8 +256,8 @@ array_indeces:  array_index
 array_index: 	'[' INT ':' INT ']'
                   {
 		      value val;
-		      val.type = Int32;
-		      val.v.int32 = 1;
+		      val.type = int32_t;
+		      val.v.i = 1;
 		      $$ = make_array_index($2, val, $4);
 		  }
 		| '[' INT ':' INT ':' INT ']'
@@ -278,12 +303,9 @@ exprerror(char *s)
 }
 
 bool
-mark_id(DDS &table, struct value &val)
+mark_id(DDS &table, char id[])
 {
-    if (!val.type == Id)
-	return false;
-    
-    return table.mark(&val.v.id[0], true);
+    return table.mark(&id[0], true);
 }
 
 IntList *
@@ -291,14 +313,14 @@ make_array_index(value &i1, value &i2, value &i3)
 {
     IntList *index = new IntList;
 
-    if (i1.type != Int32
-	|| i2.type != Int32
-	|| i3.type != Int32)
+    if (i1.type != int32_t
+	|| i2.type != int32_t
+	|| i3.type != int32_t)
 	return (void *)0;
 
-    index->append(i1.v.int32);
-    index->append(i2.v.int32);
-    index->append(i3.v.int32);
+    index->append((int)i1.v.i);
+    index->append((int)i2.v.i);
+    index->append((int)i3.v.i);
 
     DBG(Pix dp;\
 	cout << "index: ";\
@@ -334,20 +356,17 @@ append_array_index(IntListList *indeces, IntList *index)
 }
 
 bool
-process_array_indeces(DDS &dds, value &id, IntListList *indeces)
+process_array_indeces(DDS &dds, char id[], IntListList *indeces)
 {
-    if (!id.type == Id)
-	return false;
-
-    BaseType *variable = dds.var(id.v.id);
+    BaseType *variable = dds.var(&id[0]);
 
     if (!variable) {
-	cerr << "Variable " << id.v.id << " does not exist." << endl;
+	cerr << "Variable " << id << " does not exist." << endl;
 	return false;
     }
 
     if (variable->type() != array_t) {
-	cerr << "Variable " << id.v.id << " is not an array." << endl;
+	cerr << "Variable " << id << " is not an array." << endl;
 	return false;
     }
     
@@ -373,7 +392,7 @@ process_array_indeces(DDS &dds, value &id, IntListList *indeces)
 
 	index->next(q);
 	if (q) {
-	    cerr << "Too many values in index list for " << id.v.id << "." 
+	    cerr << "Too many values in index list for " << id << "." 
 		 << endl;
 	    return false;
 	}
@@ -389,7 +408,7 @@ process_array_indeces(DDS &dds, value &id, IntListList *indeces)
 	cout << endl);
     
     if (p && !r) {
-	cerr << "Too many indeces in constraint for " << id.v.id << "." 
+	cerr << "Too many indeces in constraint for " << id << "." 
 	     << endl;
 	return false;
     }
@@ -400,14 +419,11 @@ process_array_indeces(DDS &dds, value &id, IntListList *indeces)
 // Given a string which is a URL, dereference it and return the data it
 // points to.
 
-value
+BaseType *
 dereference_url(DDS &table, value &val)
 {
-    value result_val;
     cerr << "Urls are not currently supported" << endl;
-    result_val.type = Int32;
-    result_val.v.int32 = 1023;
-    return result_val;
+    return (BaseType *)0;
 }
 
 // Given two values and an operator, perform the operation on the values.
@@ -422,12 +438,12 @@ relational_op(value &val1, value &val2, int op)
     }
 
     switch (val1.type) {
-      case Int32:
-	return int32_op(val1.v.int32, val2.v.int32, op);
-      case Float64:
-	return float64_op(val1.v.float64, val2.v.float64, op);
-      case Str:
-	return str_op(val1.v.str, val2.v.str, op);
+      case int32_t:
+	return int32_op(val1.v.i, val2.v.i, op);
+      case float64_t:
+	return float64_op(val1.v.f, val2.v.f, op);
+      case str_t:
+	return str_op(*val1.v.s, *val2.v.s, op);
       default:
 	cerr << "No such datatype" << endl;
 	return false;
@@ -485,7 +501,7 @@ float64_op(double d1, double d2, int op)
 }
 
 bool
-str_op(String s1, String s2, int op)
+str_op(String &s1, String &s2, int op)
 {
     switch (op) {
       case EQUAL:
@@ -511,231 +527,40 @@ str_op(String s1, String s2, int op)
     }
 }
 
-#ifdef NEVER
-static void
-shorthand_error_message(String &id)
+// Get a value for ID (which may be either an identifier or a field).
+
+BaseType *
+get_variable(DDS &table, char id[])
 {
-    cerr << "Shorthand field names must be unique;" << endl
-	 << "`" << id << "' appears more than once" << endl;
+    return table.var(id);
 }
 
-// Mark a field.
+// Given a value, wrap it up in a BaseType and return a pointer to the same.
 
-static bool
-mark_field(DDS &table, char *fields)
+BaseType *
+make_variable(const value &val)
 {
-    DBG(cout << "FIELD: " << fields << endl);
-    String f = fields;
+    switch (val.type) {
+      case int32_t: {
+	Int32 *var = NewInt32("dummy");
+	var->val2buf((void *)&val.v.i);
+	return var;
+      }
 
-    if (!f.contains(".")) {
-	return false;
-    }
+      case float64_t: {
+	Float64 *var = NewFloat64("dummy");
+	var->val2buf((void *)&val.v.f);
+	return var;
+      }
 
+      case str_t: {
+	Str *var = NewStr("dummy");
+	var->val2buf((void *)&val.v.s);
+	return var;
+      }
 
-	String aggregate = f.before(".");
-	String field = f.from(".");
-	field = field.after(".");
-
-	BaseType *agg_ptr = dds.var(aggregate);
-	if (agg_ptr)
-	    return agg_ptr->var(field);	// recurse
-	else
-	    return 0;		// qualified names must be *fully* qualified
-    }
-    BaseType *bt;
-    if ((bt = table.var(fields))) {
-	DBG(cout << "Found " << fields << endl);
-	bt->set_send_p(true);
-	return true;
-    }
-    else {
-	DBG(cout << "No " << fields << " in the DDS" << endl);
-	return false;
+      default:
+	cerr << "Unknow type constant value" << endl;
+	return (BaseType *)0;
     }
 }
-
-// When no projection is given, the entire dataset is marked.
-
-static void
-mark_all(DDS &table)
-{
-    for (Pix p = table.first_var(); p; table.next_var(p))
-	table.var(p)->set_send_p(true);
-}
-
-// Mark an identifier. When marked a variable is read and serialized by the
-// server. 
-
-static bool
-mark_id(DDS &table, char *id)
-{
-    DBG(cout << "ID: " <<  id << endl);
-
-    BaseType *bt;
-    if ((bt = table.var(id))) {
-	DBG(cout << "Found " << id << endl);
-	bt->set_send_p(true);
-	return true;
-    }
-    else
-	return false;
-}
-
-#endif
-#ifdef NEVER
-    else {
-	for (Pix p = table.first_var(); p; table.next_var(p)) {
-	    /* This call must check that the id is a *unique* field name,
-	       thus the second call to mark_leaf with the remaining
-	       DDS members which ensure that no other field (at this level in
-	       the DDS) is named `id'. See mark_leaf() for more of this
-	       kludge. */
-	    if (mark_leaf(table.var(p), (String)id)) {
-		table.next_var(p);
-		while (p) {
-		    if (mark_leaf(table.var(p), (String)id)) {
-			shorthand_error_message((String)id);
-			return false;
-		    }
-		    table.next_var(p);
-		}
-		return true;
-	    }
-	}
-
-	cerr << "No `" << id << "' in the dataset" << endl;
-	return false;
-    }
-}
-#endif
-
-/*
-  Handle the special case where field names which are unique to a dataset do
-  not need to be fully qualified.
-*/
-
-#ifdef NEVER
-static bool
-mark_leaf(BaseType *bt, String &name)
-{
-    if (bt->name() == name) {
-	DBG(cout << "Found " << name << endl);
-	bt->set_send_p(true);
-	return true;
-    }
-    else
-	switch(bt->type()) {
-	    Pix p;
-	  case array_t:
-	    Array *a = (Array *)bt; /* nasty */
-	    if (mark_leaf(a->var(a->name()), name)) /* kludge */
-		return true;
-	    break;
-
-	  case list_t:
-	    List *l = (List *)bt;
-	    if (mark_leaf(l->var(l->name()), name))
-		return true;
-	    break;
-
-	  case structure_t:
-	    Structure *s = (Structure *)bt;
-	    for (p = s->first_var(); p; s->next_var(p))
-		if (mark_leaf(s->var(p), name)) {
-		    s->next_var(p);
-		    while (p) {
-			if (mark_leaf(s->var(p), name)) {
-			    shorthand_error_message(name);
-			    return false;
-			}
-			s->next_var(p);
-		    }
-		    return true;
-		}
-	    break;
-	    
-	  case sequence_t:
-	    Sequence *seq = (Sequence *)bt;
-	    for (p = seq->first_var(); p; seq->next_var(p))
-		if (mark_leaf(seq->var(p), name)) {
-		    seq->next_var(p);
-		    while (p) {
-			if (mark_leaf(seq->var(p), name)) {
-			    shorthand_error_message(name);
-			    return false;
-			}
-			seq->next_var(p);
-		    }
-		    return true;
-		}
-	    break;
-
-	  case function_t:
-	    Function *f = (Function *)bt;
-	    for (p = f->first_indep_var(); p; f->next_indep_var(p))
-		if (mark_leaf(f->indep_var(p), name)) {
-		    f->next_indep_var(p);
-		    while (p) {
-			if (mark_leaf(f->indep_var(p), name)) {
-			    shorthand_error_message(name);
-			    return false;
-			}
-			f->next_indep_var(p);
-		    }
-		    /* if an independent variable matches, the function must
-		       check not only the remaining indep vars but also the
-		       dependdetn variables. */
-		    for (p = f->first_dep_var(); p; f->next_dep_var(p)) {
-			if (mark_leaf(f->dep_var(p), name)) {
-			    shorthand_error_message(name);
-			    return false;
-			}
-		    }
-		    return true;
-		}
-
-	    for (p = f->first_dep_var(); p; f->next_dep_var(p))
-		if (mark_leaf(f->dep_var(p), name)) {
-		    f->next_dep_var(p);
-		    while (p) {
-			if (mark_leaf(f->dep_var(p), name)) {
-			    shorthand_error_message(name);
-			    return false;
-			}
-			f->next_dep_var(p);
-		    }
-		    return true;
-		}
-	    break;
-	    
-	  case grid_t:
-	    Grid *g = (Grid *)bt;
-	    if (mark_leaf(g->array_var(), name)) {
-		for (p = g->first_map_var(); p; g->next_map_var(p))
-		    if (mark_leaf(g->map_var(p), name)) {
-			shorthand_error_message(name);
-			return false;
-		    }
-		return true;
-	    }
-	    for (p = g->first_map_var(); p; g->next_map_var(p))
-		if (mark_leaf(g->map_var(p), name)) {
-		    g->next_map_var(p);
-		    while (p) {
-			if (mark_leaf(g->map_var(p), name)) {
-			    shorthand_error_message(name);
-			    return false;
-			}
-			g->next_map_var(p);
-		    }
-		    return true;
-		}
-	    break;
-
-	  default:
-	    break;
-	}
-
-    return false;
-}
-#endif

@@ -38,7 +38,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.14  1995/12/06 21:11:24  jimg
+// Revision 1.15  1995/12/09 01:06:38  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.14  1995/12/06  21:11:24  jimg
 // Added print_constrained(): Prints a constrained DDS.
 // Added eval_constraint(): Evaluates a constraint expression in the environment
 // of the current DDS.
@@ -107,7 +112,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.14 1995/12/06 21:11:24 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.15 1995/12/09 01:06:38 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -121,6 +126,7 @@ static char rcsid[]="$Id: DDS.cc,v 1.14 1995/12/06 21:11:24 jimg Exp $";
 
 #include "DDS.h"
 #include "errmsg.h"
+#define DEBUG
 #include "debug.h"
 #include "util.h"
 
@@ -133,7 +139,11 @@ void ddsrestart(FILE *yyin);
 int ddsparse(DDS &table);	// defined in dds.tab.c
 
 void exprrestart(FILE *yyin);
-int exprparse(DDS & table);
+int exprparse(DDS &table);
+
+bool int32_op(int i1, int i2, int op); // defined in expr.y
+bool float64_op(double d1, double d2, int op);
+bool str_op(String &s1, String &s2, int op);
 
 // Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
 // the `result' of the mfunc.
@@ -307,6 +317,101 @@ DDS::var(Pix p)
 	return vars(p); 
 }
 
+Pix
+DDS::first_clause()
+{
+    return expr.first();
+}
+
+void
+DDS::next_clause(Pix &p)
+{
+    expr.next(p);
+}
+
+int
+DDS::clause_op(Pix p)
+{
+    return expr(p).op;
+}
+
+BaseType *
+DDS::clause_arg1(Pix p)
+{
+    return expr(p).arg1;
+}
+
+BaseType *
+DDS::clause_arg2(Pix p)
+{
+    return expr(p).arg2;
+}
+
+void
+DDS::append_clause(int op, BaseType *arg1, BaseType *arg2)
+{
+    rel_clause clause;
+
+    clause.op = op;
+    clause.arg1 = arg1;
+    clause.arg2 = arg2;
+
+    expr.append(clause);
+}
+
+bool
+DDS::eval_constraint()
+{
+    bool status = true;
+
+    if (expr.empty()) {
+	DBG(cerr << "No constraint recorded" << endl);
+	return status;
+    }
+
+    for (Pix p = first_clause(); p && status; next_clause(p)) {
+	int op = clause_op(p);
+	BaseType *arg1 = clause_arg1(p);
+	BaseType *arg2 = clause_arg2(p);
+
+	switch (arg1->type()) {
+	  case byte_t: 
+	  case int32_t: {
+	    int32 i1, i2;
+	    int32 *i1p = &i1, *i2p = &i2;
+	    arg1->buf2val((void **)&i1p);
+	    arg2->buf2val((void **)&i2p);
+	    status = status && int32_op(i1, i2, op);
+	    break;
+	  }
+
+	  case float64_t: {
+	    double d1, d2;
+	    double *d1p = &d1, *d2p = &d2;
+	    arg1->buf2val((void **)&d1p);
+	    arg2->buf2val((void **)&d2p);
+	    status = status && float64_op(d1, d2, op);
+	    break;
+	  }
+
+	  case str_t: {
+	    String s1, s2;
+	    String *s1p = &s1, *s2p = &s2;
+    	    arg1->buf2val((void **)&s1p);
+	    arg2->buf2val((void **)&s2p);
+	    status = status && str_op(s1, s2, op);
+	    break;
+	  }
+
+	  default:
+	    cerr << "Unknown type in constraint realtional clause" << endl;
+	    break;
+	}
+    }
+
+    return status;
+}
+
 bool
 DDS::parse(String fname)
 {
@@ -453,7 +558,7 @@ DDS::check_semantics(bool all)
 // false otherwise.
 
 bool
-DDS::eval_constraint(String constraint)
+DDS::parse_constraint(const String &constraint)
 {
     FILE *in = text_to_temp(constraint);
 
@@ -471,35 +576,33 @@ DDS::eval_constraint(String constraint)
 // Returns: true if successful, false otherwise.
 
 bool 
-DDS::send(String dataset, String var_name, String constraint, bool flush,
-	  FILE *out)
+DDS::send(const String &dataset, const String &constraint, FILE *out, 
+	  bool flush)
 {
     bool status = true;
 
-    // Evaluate the constraint expression. This changes the DDS so that
-    // BaseType's read() and serialize() mfuncs will do the rgiht thing.
+    set_xdrout(out);		// set xdr stream for binary data
+    ostdiostream os(out);	// set up output stream
 
-    if ((status = eval_constraint(constraint))) {
-	BaseType *variable = var(var_name);
+    if ((status = parse_constraint(constraint))) {
 
-	if (variable && variable->send_p()) { // only send if necessary
-	    if (!variable->read_p()) // only read if necessary
-		status = variable->read(dataset, var_name);
+	print_constrained(os);	// send constrained DDS
 
-	    if (status) {
-		// set up output stream
-		ostdiostream os(out);
+	DBG(cerr << "The constrained DDS (about to be sent):\n");
+	DBG(print_constrained(cerr));
 
-		// send constrained DDS for this variable
-		print_constrained(os);
+	DBG(cerr << "Stored constraint expressions:" << endl;\
+	    for (Pix p = first_clause(); p; next_clause(p)) {\
+	       cerr << clause_arg1(p) << " " << clause_op(p) << " "\
+		     << clause_arg2(p) << endl;\
+	    })
 
-		// send `Data:' marker
-		os << "Data:" << endl;
+	os << "Data:" << endl;	// send `Data:' marker
 
-		// send binary data
-		set_xdrout(out);
-		status = variable->serialize(flush);
-	    }
+	for (Pix q = first_var(); q; next_var(q)) {
+	    if (!var(q)->send_p()) // only process selected variables
+		continue;
+	    status = var(q)->serialize(dataset, *this, flush);
 	}
     }
 

@@ -38,7 +38,12 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
-// Revision 1.9  1995/12/06 19:55:15  jimg
+// Revision 1.10  1995/12/09 01:07:04  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.9  1995/12/06  19:55:15  jimg
 // Changes read() member function from three arguments to two.
 //
 // Revision 1.8  1995/08/23  00:50:01  jimg
@@ -119,13 +124,16 @@ TestArray::~TestArray()
 // would never get values this way. For testing this is OK.
 
 bool
-TestArray::read(String dataset, String var_name)
+TestArray::read(const String &dataset)
 {
+    if (read_p())
+	return true;
+
     int i;
 
     // run read() on the contained variable to get, via the read() mfuncs
     // defined in the other Test classes, a value in the *contained* object.
-    var()->read(dataset, var_name);
+    var()->read(dataset);
 
     unsigned int array_len = length(); // elements in the array
 
@@ -187,6 +195,8 @@ TestArray::read(String dataset, String var_name)
 	break;
 
     }
+
+    set_read_p(true);
 
     return true;
 }

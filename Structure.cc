@@ -38,7 +38,12 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.17  1995/12/06 21:56:32  jimg
+// Revision 1.18  1995/12/09 01:07:00  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.17  1995/12/06  21:56:32  jimg
 // Added `constrained' flag to print_decl.
 // Removed third parameter of read.
 // Modified print_decl() to print only those parts of a dataset that are
@@ -146,6 +151,7 @@
 #include <assert.h>
 
 #include "Structure.h"
+#include "DDS.h"
 #include "util.h"
 
 #ifdef TRACE_NEW
@@ -223,15 +229,25 @@ Structure::width()
 }
 
 bool
-Structure::serialize(bool flush)
+Structure::serialize(const String &dataset, DDS &dds, bool flush)
 {
-    bool status;
+    bool status = true;
+
+    if (!read_p())		// only read if not read already
+	status = read(dataset);
+
+    if (status && !dds.eval_constraint()) // if the constraint is false, return
+	return status;
+
+    if (!status)
+	return false;
 
     for (Pix p = first_var(); p; next_var(p)) 
-	if ( var(p)->send_p() && !(status = var(p)->serialize(false)) ) 
+	if (var(p)->send_p() 
+	    && !(status = var(p)->serialize(dataset, dds, false))) 
 	    break;
 
-    if ( status && flush )
+    if (status && flush)
 	status = expunge();
 
     return status;

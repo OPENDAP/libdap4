@@ -38,7 +38,12 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
-// Revision 1.9  1995/12/06 19:55:28  jimg
+// Revision 1.10  1995/12/09 01:07:25  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.9  1995/12/06  19:55:28  jimg
 // Changes read() member function from three arguments to two.
 //
 // Revision 1.8  1995/08/26  00:31:59  jimg
@@ -104,11 +109,16 @@ TestStr::ptr_duplicate()
 }
 
 bool
-TestStr::read(String dataset, String var_name)
+TestStr::read(const String &dataset)
 {
+    if (read_p())
+	return true;
+
     String str_test="Silly test string: one, two, ...";
     
     (void) val2buf(&str_test);
+
+    set_read_p(true);
 
     return true;
 }

@@ -8,11 +8,16 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.19  1995/12/06 21:45:01  jimg
-/* Changed read() from three parameters to two.
-/* Added constrained flag to print_decl().
-/* Removed store_val() and read_val() (use buf2val() and val2buf() instead).
+/* Revision 1.20  1995/12/09 01:06:33  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+ * Revision 1.19  1995/12/06  21:45:01  jimg
+ * Changed read() from three parameters to two.
+ * Added constrained flag to print_decl().
+ * Removed store_val() and read_val() (use buf2val() and val2buf() instead).
+ *
  * Revision 1.18  1995/10/23  23:20:49  jimg
  * Added _send_p and _read_p fields (and their accessors) along with the
  * virtual mfuncs set_send_p() and set_read_p().
@@ -142,6 +147,7 @@
 
 #include "config_dap.h"
 
+
 // PART names the parts of multi-section ctor types; e.g., Function has two
 // sets of variables, the INDEPENDENT variables and the DEPENDENT variables.
 
@@ -167,6 +173,8 @@ enum Type {
     function_t,
     grid_t
 };
+
+class DDS;			// forward declaration
 
 class BaseType {
 private:
@@ -256,7 +264,7 @@ public:
 
     // Put the data into a local buffer so that it may be serialized. 
     // For an example, see the Test classes.
-    virtual bool read(String dataset, String var_name) = 0;
+    virtual bool read(const String &dataset) = 0;
     
     // buf2val() reads the value of the variable from an internal buffer and
     // stores it in the memory referenced by *VAL. Either the caller must
@@ -275,7 +283,8 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
 
     // Move data to and from the net.
-    virtual bool serialize(bool flush = false) = 0; 
+    virtual bool serialize(const String &dataset, DDS &dds, 
+			   bool flush = false) = 0; 
     virtual bool deserialize(bool reuse = false) = 0;
     
     // Write the buffers maintained by XDR to the associated FILE *s.

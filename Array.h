@@ -7,11 +7,16 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.22  1995/12/06 21:37:55  jimg
-/* Added members to record information about array index constraints.
-/* Added mfuns to access/set those members.
-/* Changed read from three to two arguments.
+/* Revision 1.23  1995/12/09 01:06:31  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+ * Revision 1.22  1995/12/06  21:37:55  jimg
+ * Added members to record information about array index constraints.
+ * Added mfuns to access/set those members.
+ * Changed read from three to two arguments.
+ *
  * Revision 1.21  1995/11/22  22:31:04  jimg
  * Modified so that the Vector class is now the parent class.
  *
@@ -165,7 +170,7 @@ public:
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
-    virtual bool read(String dataset, String var_name) = 0;
+    virtual bool read(const String &dataset) = 0;
 
     void update_length(int size);
 

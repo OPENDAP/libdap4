@@ -39,7 +39,12 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
-// Revision 1.3  1995/12/06 19:43:09  jimg
+// Revision 1.4  1995/12/09 01:07:37  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.3  1995/12/06  19:43:09  jimg
 // Added options for testing the constraint evaluator software.
 // Added functions which test the constraint evaluator.
 // Added function that simulates te complete client-server conversation which
@@ -56,7 +61,7 @@
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.3 1995/12/06 19:43:09 jimg Exp $"};
+static char rcsid[]= {"$Id: expr-test.cc,v 1.4 1995/12/09 01:07:37 jimg Exp $"};
 
 #include <stdio.h>
 #include <iostream.h>
@@ -71,6 +76,7 @@ static char rcsid[]= {"$Id: expr-test.cc,v 1.3 1995/12/06 19:43:09 jimg Exp $"};
 #include "BaseType.h"
 
 #include "expr.h"
+#include "parser.h"
 #include "expr.tab.h"
 
 #define DODS_DDS_PRX "dods_dds"
@@ -170,40 +176,40 @@ test_scanner()
     while ((tok = exprlex())) {
 	switch (tok) {
 	  case ID:
-	    cout << "ID: " << exprlval.char_ptr << endl;
+	    cout << "ID: " << exprlval.id << endl;
 	    break;
 	  case STR:
-	    cout << "STR: " << exprlval.char_ptr << endl;
+	    cout << "STR: " << *exprlval.val.v.s << endl;
 	    break;
 	  case FIELD:
-	    cout << "FIELD: " << exprlval.char_ptr << endl;
+	    cout << "FIELD: " << exprlval.id << endl;
 	    break;
 	  case INT:
-	    cout << "INT: " << exprlval.char_ptr << endl;
+	    cout << "INT: " << exprlval.val.v.i << endl;
 	    break;
 	  case FLOAT:
-	    cout << "FLOAT: " << exprlval.char_ptr << endl;
+	    cout << "FLOAT: " << exprlval.val.v.f << endl;
 	    break;
 	  case EQUAL:
-	    cout << "EQUAL: " << exprlval.char_ptr << endl;
+	    cout << "EQUAL: " << exprlval.op << endl;
 	    break;
 	  case NOT_EQUAL:
-	    cout << "NOT_EQUAL: " << exprlval.char_ptr << endl;
+	    cout << "NOT_EQUAL: " << exprlval.op << endl;
 	    break;
 	  case GREATER:
-	    cout << "GREATER: " << exprlval.char_ptr << endl;
+	    cout << "GREATER: " << exprlval.op << endl;
 	    break;
 	  case GREATER_EQL:
-	    cout << "GREATER_EQL: " << exprlval.char_ptr << endl;
+	    cout << "GREATER_EQL: " << exprlval.op << endl;
 	    break;
 	  case LESS:
-	    cout << "LESS: " << exprlval.char_ptr << endl;
+	    cout << "LESS: " << exprlval.op << endl;
 	    break;
 	  case LESS_EQL:
-	    cout << "LESS_EQL: " << exprlval.char_ptr << endl;
+	    cout << "LESS_EQL: " << exprlval.op << endl;
 	    break;
 	  case REGEXP:
-	    cout << "REGEXP: " << exprlval.char_ptr << endl;
+	    cout << "REGEXP: " << exprlval.op << endl;
 	    break;
 	  case '*':
 	    cout << "Dereference" << endl;
@@ -338,7 +344,7 @@ transmit(DDS &write, bool verb)
 	// This code only works for scalar variables at the top level of the
 	// DDS. It also ignores the read_p() mfunc.
 	if (write.var(wp)->send_p()) { // only works for scalars
-	    status = write.var(wp)->read("dummy", "dummy");
+	    status = write.var(wp)->read("dummy");
 
 	    if (verb) {
 		cout << "Variable to be written:" << endl;
@@ -347,7 +353,7 @@ transmit(DDS &write, bool verb)
 		cout.flush();
 	    }
 
-	    status = write.var(wp)->serialize(true);
+	    status = write.var(wp)->serialize("dummy", write, true);
 	    if (!status) {
 		cerr << "Could not write";
 		write.var(wp)->print_decl(cerr);
@@ -487,18 +493,13 @@ constrained_trans(String dds_name)
     // The client gets this information from the API calls the user program
     // makes; it then sends it over to the server using various parameters.
 
-    // read in variable name and CE
-    cout << "Variable:";
-    String variable;
-    cin >> variable;
-
     cout << "Constraint:";
     String ce;
     cin >> ce;
 
     // send the variable given the constraint (dataset is ignored by the Test
     // classes; true flushes the I/O channel.
-    if (!server.send("dummy", variable, ce, true, pout)) {
+    if (!server.send("dummy", ce, pout, true)) {
 	cerr << "Could not send the variable" << endl;
 	return false;
     }
@@ -512,6 +513,7 @@ constrained_trans(String dds_name)
     // found, this fixes that problem).
     DDS dds;
     FILE *dds_fp = move_dds(pin);
+    cerr << "Moved the DDS to a temp file\n";
     if (!dds.parse(dds_fp)) {
 	cerr << "Could not parse return data description" << endl;
 	return false;
@@ -531,11 +533,13 @@ constrained_trans(String dds_name)
     // Back on the client side; deserialize the data *using the newly
     // generated DDS* (the one sent with the data).
 
-    if (!dds.var(variable)->deserialize())
-	return false;
-    
     cerr << "The data:" << endl;
-    dds.var(variable)->print_val(cout);
+    for (Pix q = dds.first_var(); q; dds.next_var(q)) {
+	if (!dds.var(q)->deserialize())
+	    return false;
+
+	dds.var(q)->print_val(cout);
+    }
     
     return true;
 }

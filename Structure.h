@@ -9,12 +9,17 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.15  1995/12/06 21:56:33  jimg
-/* Added `constrained' flag to print_decl.
-/* Removed third parameter of read.
-/* Modified print_decl() to print only those parts of a dataset that are
-/* selected when `constrained' is true.
+/* Revision 1.16  1995/12/09 01:07:01  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+ * Revision 1.15  1995/12/06  21:56:33  jimg
+ * Added `constrained' flag to print_decl.
+ * Removed third parameter of read.
+ * Modified print_decl() to print only those parts of a dataset that are
+ * selected when `constrained' is true.
+ *
  * Revision 1.14  1995/10/23  23:21:05  jimg
  * Added _send_p and _read_p fields (and their accessors) along with the
  * virtual mfuncs set_send_p() and set_read_p().
@@ -136,10 +141,11 @@ public:
 
     virtual unsigned int width();
 
-    virtual bool serialize(bool flush = false);
+    virtual bool serialize(const String &dataset, DDS &dds, 
+			   bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(String dataset, String var_name) = 0;
+    virtual bool read(const String &dataset) = 0;
 
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.

@@ -5,10 +5,15 @@
 // jhrg 9/7/94
 
 /* $Log: Byte.h,v $
-/* Revision 1.12  1995/12/06 21:35:15  jimg
-/* Changed read() from three to two parameters.
-/* Removed store_val() and read_val() (use buf2val() and val2buf()).
+/* Revision 1.13  1995/12/09 01:06:36  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+ * Revision 1.12  1995/12/06  21:35:15  jimg
+ * Changed read() from three to two parameters.
+ * Removed store_val() and read_val() (use buf2val() and val2buf()).
+ *
  * Revision 1.11  1995/08/26  00:31:28  jimg
  * Removed code enclosed in #ifdef NEVER #endif.
  *
@@ -109,10 +114,11 @@ public:
 
     virtual unsigned int width();
 
-    virtual bool serialize(bool flush = false);
+    virtual bool serialize(const String &dataset, DDS &dds, 
+			   bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(String dataset, String var_name) = 0;
+    virtual bool read(const String &dataset) = 0;
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);

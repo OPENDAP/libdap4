@@ -38,7 +38,12 @@
 // jhrg 1/13/95
 
 // $Log: TestGrid.cc,v $
-// Revision 1.8  1995/12/06 19:55:22  jimg
+// Revision 1.9  1995/12/09 01:07:15  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.8  1995/12/06  19:55:22  jimg
 // Changes read() member function from three arguments to two.
 //
 // Revision 1.7  1995/08/26  00:31:55  jimg
@@ -99,12 +104,19 @@ TestGrid::~TestGrid()
 }
 
 bool
-TestGrid::read(String dataset, String var_name)
+TestGrid::read(const String &dataset)
 {
-    array_var()->read(dataset, array_var()->name());
+    if (read_p())
+	return true;
+
+    array_var()->read(dataset);
 
     for (Pix p = first_map_var(); p; next_map_var(p)) {
-	if (!map_var(p)->read(dataset, map_var(p)->name()))
+	if (!map_var(p)->read(dataset))
 	    return false;
     }
+
+    set_read_p(true);
+
+    return true;
 }

@@ -38,7 +38,12 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
-// Revision 1.9  1995/12/06 19:55:31  jimg
+// Revision 1.10  1995/12/09 01:07:30  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.9  1995/12/06  19:55:31  jimg
 // Changes read() member function from three arguments to two.
 //
 // Revision 1.8  1995/08/26  00:32:03  jimg
@@ -102,11 +107,16 @@ TestUrl::ptr_duplicate()
 }
 
 bool
-TestUrl::read(String dataset, String var_name)
+TestUrl::read(const String &dataset)
 {
+    if (read_p())
+	return true;
+
     String url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
 
     val2buf(&url_test);
+
+    set_read_p(true);
 
     return true;
 }

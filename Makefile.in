@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.26 1995/12/06 20:01:01 jimg Exp $
+# $Id: Makefile.in,v 1.27 1995/12/09 01:06:53 jimg Exp $
 
 @SET_MAKE@
 
@@ -145,7 +145,7 @@ lex.das.o: lex.das.c
 # Build the DAS parser
 # Note that awk is used to add a param to dasparse().
 
-das.tab.c das.tab.h: das.y DAS.h
+das.tab.c das.tab.h: das.y DAS.h munge-das.awk
 	$(YACC) $(YFLAGS) -p das das.y
 	$(AWK) -f munge-das.awk das.tab.c > tmp
 	mv tmp das.tab.c
@@ -163,7 +163,7 @@ lex.dds.o: lex.dds.c
 
 # Build the DDS parser
 
-dds.tab.c dds.tab.h: dds.y
+dds.tab.c dds.tab.h: dds.y munge-dds.awk
 	$(YACC) $(YFLAGS) -p dds dds.y
 	$(AWK) -f munge-dds.awk dds.tab.c > tmp
 	mv tmp dds.tab.c
@@ -181,7 +181,7 @@ lex.expr.o: lex.expr.c
 
 # Build the CE parser
 
-expr.tab.c expr.tab.h: expr.y
+expr.tab.c expr.tab.h: expr.y munge-expr.awk
 	$(YACC) $(YFLAGS) -p expr expr.y
 	$(AWK) -f munge-expr.awk expr.tab.c > tmp
 	mv tmp expr.tab.c

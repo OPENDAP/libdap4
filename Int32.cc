@@ -38,7 +38,12 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.17  1995/12/06 21:35:16  jimg
+// Revision 1.18  1995/12/09 01:06:49  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.17  1995/12/06  21:35:16  jimg
 // Changed read() from three to two parameters.
 // Removed store_val() and read_val() (use buf2val() and val2buf()).
 //
@@ -143,6 +148,7 @@
 #include <assert.h>
 
 #include "Int32.h"
+#include "DDS.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -159,9 +165,19 @@ Int32::width()
 }
 
 bool
-Int32::serialize(bool flush)
+Int32::serialize(const String &dataset, DDS &dds, bool flush)
 {
-    bool stat = (bool)xdr_long(xdrout(), &_buf);
+    bool stat = true;
+
+    if (!read_p())		// only read if not read already
+	stat = read(dataset);
+
+    if (stat && !dds.eval_constraint())	// if the constraint is false, return
+	return stat;
+
+    if (stat)
+	stat = (bool)xdr_long(xdrout(), &_buf);
+
     if (stat && flush)
 	stat = expunge();
 

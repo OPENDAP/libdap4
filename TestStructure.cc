@@ -38,7 +38,12 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
-// Revision 1.9  1995/12/06 19:55:29  jimg
+// Revision 1.10  1995/12/09 01:07:28  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.9  1995/12/06  19:55:29  jimg
 // Changes read() member function from three arguments to two.
 //
 // Revision 1.8  1995/08/26  00:32:00  jimg
@@ -116,12 +121,17 @@ TestStructure::~TestStructure()
 // only the relavent parts.
 
 bool
-TestStructure::read(String dataset, String var_name)
+TestStructure::read(const String &dataset)
 {
+    if (read_p())
+	return true;
+
     for (Pix p = first_var(); p; next_var(p)) {
-	if (!var(p)->read(dataset, var(p)->name()))
+	if (!var(p)->read(dataset))
 	    return false;
     }
+
+    set_read_p(true);
 
     return true;
 }

@@ -38,7 +38,12 @@
 // jhrg 1/12/95
 
 // $Log: TestInt32.cc,v $
-// Revision 1.8  1995/12/06 19:55:23  jimg
+// Revision 1.9  1995/12/09 01:07:18  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.8  1995/12/06  19:55:23  jimg
 // Changes read() member function from three arguments to two.
 //
 // Revision 1.7  1995/08/26  00:31:56  jimg
@@ -97,9 +102,14 @@ TestInt32::ptr_duplicate()
 }
 
 bool
-TestInt32::read(String dataset, String var_name)
+TestInt32::read(const String &dataset)
 {
+    if (read_p())
+	return true;
+
     _buf = 123456789;
+
+    set_read_p(true);
     
     return true;
 }

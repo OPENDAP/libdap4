@@ -39,7 +39,12 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
-// Revision 1.2  1995/12/06 19:52:26  jimg
+// Revision 1.3  1995/12/09 01:07:33  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.2  1995/12/06  19:52:26  jimg
 // Modified print_decl() so that the declaration is printed only if the variable
 // is selected.
 //
@@ -47,7 +52,7 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.2 1995/12/06 19:52:26 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.3 1995/12/09 01:07:33 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -56,6 +61,7 @@ static char rcsid[]= {"$Id: Vector.cc,v 1.2 1995/12/06 19:52:26 jimg Exp $"};
 #include <assert.h>
 
 #include "Vector.h"
+#include "DDS.h"
 #include "util.h"
 #include "errmsg.h"
 #include "debug.h"
@@ -215,9 +221,19 @@ Vector::set_length(int l)
 // Returns: true if the data was successfully writen, false otherwise.
 
 bool
-Vector::serialize(bool flush)
+Vector::serialize(const String &dataset, DDS &dds, bool flush)
 {
-    bool status;
+    bool status = true;
+
+    if (!read_p())		// only read if not read already
+	status = read(dataset);
+
+    if (status && !dds.eval_constraint()) // if the constraint is false, return
+	return status;
+
+    if (!status)
+	return false;
+
     unsigned int num = length();
 
     switch (_var->type()) {
@@ -254,7 +270,7 @@ Vector::serialize(bool flush)
 	    return status;
 
 	for (int i = 0; status && i < num; ++i)	// test status in loop
-	    status = _vec[i]->serialize();
+	    status = _vec[i]->serialize(dataset, dds, false);
 	
 	break;
 
@@ -349,7 +365,7 @@ Vector::deserialize(bool reuse)
 	break;
 
       default:
-	cerr << "List::deserialize: Unknow type\n";
+	cerr << "Vector::deserialize: Unknow type\n";
 	status = false;
 	break;
     }

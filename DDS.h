@@ -7,15 +7,20 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.7  1995/12/06 21:05:08  jimg
-/* Added print_constrained(): prints only those parts of the DDS that satisfy
-/* the constraint expression (projection + array selection).
-/* Added eval_constraint(): given the text of a constraint expression, evaluate
-/* it in the environment of the current DDS.
-/* Added mark*(): add the named variables to the current projection.
-/* Added send(): combines many functions like reading and serializing variables
-/* with constraint evaluation.
+/* Revision 1.8  1995/12/09 01:06:39  jimg
+/* Added changes so that relational operators will work properly for all the
+/* datatypes (including Sequences). The relational ops are evaluated in
+/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 /*
+ * Revision 1.7  1995/12/06  21:05:08  jimg
+ * Added print_constrained(): prints only those parts of the DDS that satisfy
+ * the constraint expression (projection + array selection).
+ * Added eval_constraint(): given the text of a constraint expression, evaluate
+ * it in the environment of the current DDS.
+ * Added mark*(): add the named variables to the current projection.
+ * Added send(): combines many functions like reading and serializing variables
+ * with constraint evaluation.
+ *
  * Revision 1.6  1995/02/10  02:30:49  jimg
  * Misc comment edits.
  *
@@ -64,9 +69,17 @@
 
 class DDS {
 private:
+    struct rel_clause {
+	int op;			// operator code from parser
+	BaseType *arg1;		// argument 1 for OP
+	BaseType *arg2;		// argument 2; must be same type as ARG1
+    };
+	
     String name;		// the dataset name
     SLList<BaseTypePtr> vars;	// variables at the top level 
     
+    SLList<rel_clause> expr;
+
     void duplicate(const DDS &dds);
 
 public:
@@ -88,6 +101,21 @@ public:
     void next_var(Pix &p);
     BaseType *var(Pix p);
 
+    // Interface to the parsed expression
+    Pix first_clause();
+    void next_clause(Pix &p);
+    int clause_op(Pix p);
+    BaseType *clause_arg1(Pix p);
+    BaseType *clause_arg2(Pix p);
+    void append_clause(int op, BaseType *arg1, BaseType *arg2);
+
+    // evaluate the current constraint
+    bool eval_constraint();
+
+    // evaluate the projectons
+    bool mark_all(bool state);
+    bool mark(const String &name, bool state);
+
     // Interface to the parser
     bool parse(String fname);
     bool parse(int fd);
@@ -107,17 +135,14 @@ public:
     bool check_semantics(bool all = false);
 
     // Evaluate the constraint expression CONSTRAINT given the current DDS.
-    bool eval_constraint(String constraint);
+    bool parse_constraint(const String &constraint);
 
     // Send VAR_NAME from DATASET given CONSTRAINT. if FLUSH is true, flush
     // the output buffer upon completion. Use OUT as the output buffer if not
     // null, otherwise use STDOUT. This mfunc uses eval_constraint(),
     // BaseType::read() and BaseType::serailize() as well as other mfuncs.
-    bool send(String dataset, String var_name, String constraint, 
-	      bool flush = false, FILE *out = 0);
-
-    bool mark_all(bool state);
-    bool mark(const String &name, bool state);
+    bool send(const String &dataset, const String &constraint, FILE *out, 
+	      bool flush = false);
 };
 
 #endif

@@ -38,7 +38,12 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.17  1995/12/06 21:35:23  jimg
+// Revision 1.18  1995/12/09 01:06:57  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.17  1995/12/06  21:35:23  jimg
 // Changed read() from three to two parameters.
 // Removed store_val() and read_val() (use buf2val() and val2buf()).
 //
@@ -147,6 +152,7 @@
 #include <string.h>
 
 #include "Str.h"
+#include "DDS.h"
 #include "util.h"
 
 #ifdef TRACE_NEW
@@ -177,9 +183,19 @@ Str::width()
 // allocation and that library will always use malloc/free.
 
 bool
-Str::serialize(bool flush)
+Str::serialize(const String &dataset, DDS &dds, bool flush)
 {
-    bool stat = (bool)xdr_str(xdrout(), _buf);
+    bool stat = true;
+
+    if (!read_p())		// only read if not read already
+	stat = read(dataset);
+
+    if (stat && !dds.eval_constraint())	// if the constraint is false, return
+	return stat;
+
+    if (stat)
+	stat = (bool)xdr_str(xdrout(), _buf);
+
     if (stat && flush)
 	stat = expunge();
 
