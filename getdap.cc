@@ -10,6 +10,11 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.43  2000/07/18 03:43:42  rmorris
+// Change to set stdout to binary mode under win32 so that the output of geturl
+// yields the exact same thing as it does Unix - i.e., no cr-nl translation
+// of nl's within the output.
+//
 // Revision 1.42  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -187,7 +192,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.42 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.43 2000/07/18 03:43:42 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -202,7 +207,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.42 $";
+const char *version = "$Revision: 1.43 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -334,6 +339,10 @@ main(int argc, char * argv[])
     char *tcode = NULL;
     char *expr = "";  // can't use NULL or C++ string conversion will crash
     int topts = 0;
+
+#ifdef WIN32
+	_setmode(_fileno(stdout), _O_BINARY);
+#endif
 
     while ((option_char = getopt()) != EOF)
 	switch (option_char)
