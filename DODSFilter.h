@@ -8,6 +8,10 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.11  1999/05/25 21:57:12  dan
+// Added an optional second argument to read_ancillary_dds to support JGOFS
+// usage.
+//
 // Revision 1.10  1999/05/25 21:54:50  dan
 // Added an optional second argument to read_ancillary_das to support
 // JGOFS usage.
@@ -239,7 +243,7 @@ public:
 	ancillary data properties.
 	@return TRUE if an ancillary DDS was found, FALSE otherwise. 
 	@see DDS */
-    bool read_ancillary_dds(DDS &dds);
+    bool read_ancillary_dds(DDS &dds, string anc_location = "");
 
     /** This message is printed when the filter program is incorrectly
 	invoked by the dispatch CGI.  This is an error in the server
