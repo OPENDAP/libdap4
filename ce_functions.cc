@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.18 2004/02/19 19:42:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.19 2005/03/30 21:32:25 jimg Exp $"};
 
 #include <iostream>
 #include <vector>
@@ -84,6 +84,7 @@ extract_string_argument(BaseType *arg)
     return s;
 }
 
+// In reality no server imlements this; it _should_ be removed. 03/28/05 jhrg
 BaseType *
 func_length(int argc, BaseType *argv[], DDS &dds)
 {
@@ -99,7 +100,10 @@ func_length(int argc, BaseType *argv[], DDS &dds)
 	      throw Error("Expected a Sequence variable in length()");
 	  dods_int32 result = var->length();
     
+#if 0
 	  BaseType *ret = (BaseType *)NewInt32("constant");
+#endif
+	  BaseType *ret = dds.get_factory()->NewInt32("constant");
 	  ret->val2buf(&result);
 	  ret->set_read_p(true);
 	  ret->set_send_p(true);
@@ -225,6 +229,10 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.19  2005/03/30 21:32:25  jimg
+// Modified the length function (func_length()) so that it uses the DDS object's
+// BaseTypeFactory to make the Int32 variable that holds the result.
+//
 // Revision 1.18  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
