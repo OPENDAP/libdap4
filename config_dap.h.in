@@ -3,9 +3,13 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.16  1996/08/26 21:13:03  jimg
-/* Changes for version 2.07
+/* Revision 1.17  1996/10/01 16:27:38  jimg
+/* Changed XDR_SHORT to XDR_INT16 and XDR_USHORT to XDR_UINT16 (to match the
+/* Int16 and UInt16 classes).
 /*
+ * Revision 1.16  1996/08/26 21:13:03  jimg
+ * Changes for version 2.07
+ *
  * Revision 1.15  1996/08/13 18:42:48  jimg
  * Added __unused__ macro.
  *
@@ -207,8 +211,8 @@ typedef unsigned int dods_uint32;
 /* Assume short is 16 bits... */
 typedef short dods_int16;
 typedef unsigned short dods_uint16;
-#define XDR_SHORT xdr_short
-#define XDR_USHORT xdr_u_short
+#define XDR_INT16 xdr_short
+#define XDR_UINT16 xdr_u_short
 
 #if SIZEOF_CHAR == 1
 typedef unsigned char dods_byte;
