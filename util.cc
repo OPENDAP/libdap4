@@ -11,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.26  1996/08/13 20:46:39  jimg
+// Added the *_ops() functions (moved from various class files).
+//
 // Revision 1.25  1996/07/15 20:30:35  jimg
 // Added __unused__ to rcsid to suppress warnings from g++ -Wall.
 // Fixed a bug in xdr_str(): a pointer to the decoded string was assigned to the
@@ -144,7 +147,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.25 1996/07/15 20:30:35 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.26 1996/08/13 20:46:39 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -166,6 +169,9 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.25 1996/07/15 20:30:35 jimg 
 #include "Url.h"
 #include "List.h"
 #include "Sequence.h"
+#include "Error.h"
+#include "parser.h"
+#include "expr.tab.h"
 #include "util.h"
 #include "debug.h"
 
@@ -450,5 +456,106 @@ func_nth(int argc, BaseType *argv[])
       default:
 	cerr << "Wrong type argument to list operator `nth'" << endl;
 	return 0;
+    }
+}
+
+bool
+byte_ops(int i1, int i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for byte values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+int_ops(int i1, int i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for byte values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+double_ops(double i1, double i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for float values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+string_ops(String &i1, String &i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP: {
+	  Regex r = (const char *)i2;
+	  return i1.matches(r);
+      }
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
     }
 }
