@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.31  1997/09/22 22:45:14  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.30  1997/03/08 19:02:08  jimg
 // Changed default param to check_semantics() from  to String()
 // and removed the default from the argument list in the mfunc definition
@@ -261,7 +264,12 @@ Structure::add_var(BaseType *bt, Part)
 unsigned int
 Structure::width()
 {
-    return sizeof(Structure);
+    unsigned int sz = 0;
+
+    for( Pix p = first_var(); p; next_var(p))
+	sz += var(p)->width();
+
+    return sz;
 }
 
 // Returns: false if an error was detected, true otherwise. 
@@ -269,7 +277,7 @@ Structure::width()
 // false. This bug might be fixed using exceptions.
 
 bool
-Structure::serialize(const String &dataset, DDS &dds, XDR *sink,
+Structure::serialize(const String &dataset, DDS &dds, XDR *sink, 
 		     bool ce_eval = true)
 {
     bool status = true;
@@ -290,12 +298,12 @@ Structure::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-Structure::deserialize(XDR *source, bool reuse = false)
+Structure::deserialize(XDR *source, DDS *dds, bool reuse = false)
 {
     bool status = true;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	status = var(p)->deserialize(source, reuse);
+	status = var(p)->deserialize(source, dds, reuse);
 	if (!status) 
 	  break;
     }

@@ -11,6 +11,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.h,v $
+// Revision 1.4  1997/09/22 22:39:54  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.3  1996/12/02 23:10:32  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -48,7 +51,7 @@ public:
 
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, bool reuse = false);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     virtual bool read(const String &dataset, int &error) = 0;
 

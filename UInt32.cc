@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.cc,v $
+// Revision 1.7  1997/09/22 22:40:20  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.6  1996/12/02 23:10:30  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -39,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.6 1996/12/02 23:10:30 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.7 1997/09/22 22:40:20 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -66,7 +69,7 @@ UInt32::width()
 }
 
 bool
-UInt32::serialize(const String &dataset, DDS &dds, XDR *sink,
+UInt32::serialize(const String &dataset, DDS &dds, XDR *sink, 
 		  bool ce_eval = true)
 {
     int error;
@@ -84,7 +87,7 @@ UInt32::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-UInt32::deserialize(XDR *source, bool)
+UInt32::deserialize(XDR *source, DDS *, bool)
 {
     unsigned int num = XDR_UINT32(source, &_buf);
 

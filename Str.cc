@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.29  1997/09/22 22:45:43  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.28  1996/12/02 23:10:25  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -164,7 +167,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.28 1996/12/02 23:10:25 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.29 1997/09/22 22:45:43 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -209,8 +212,7 @@ Str::width()
 // allocation and that library will always use malloc/free.
 
 bool
-Str::serialize(const String &dataset, DDS &dds, XDR *sink, 
-	       bool ce_eval = true)
+Str::serialize(const String &dataset, DDS &dds, XDR *sink, bool ce_eval = true)
 {
     int error;
 
@@ -229,7 +231,7 @@ Str::serialize(const String &dataset, DDS &dds, XDR *sink,
 // deserialize the String on stdin and put the result in BUF.
 
 bool
-Str::deserialize(XDR *source, bool)
+Str::deserialize(XDR *source, DDS *, bool)
 {
     return (bool)xdr_str(source, _buf);
 }
