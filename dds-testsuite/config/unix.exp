@@ -1,10 +1,7 @@
+
 # Tcl/Expect code for the DDS test.
 
 # Make sure the global var DDSTEST is set correctly.
-
-if ![info exists prompt] then {
-    set prompt "dds-test: "
-}
 
 global DDSTEST
 if ![info exists DDSTEST] then {
@@ -16,11 +13,13 @@ if ![info exists DDSTEST] then {
 proc dds-test_start { options {ifile ""} {ofile ""}} {
     global verbose
     global DDSTEST
-    global prompt
     global comp_output
+    # spawn_id *MUST* be decalred as global for spawn to work in a proc!!
+    global spawn_id
 
     if {$verbose >= 1} {
 	verbose "Starting $DDSTEST $options $ifile $ofile ...\n"
+	exp_internal 1
     }
 
     if {$ifile != ""} {
@@ -48,9 +47,9 @@ proc dds-test_load {} {
 }
 
 proc dds-test_exit {} {
-    send ""
+    send -raw ""
 }
 
 proc dds-test_version {} {
-    send_user "dds-test version 1.0\n"
+    send_user "DDS testsuite version 1.2\n"
 }
