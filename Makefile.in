@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.18 1995/05/10 13:45:24 jimg Exp $
+# $Id: Makefile.in,v 1.19 1995/05/10 20:03:13 jimg Exp $
 
 @SET_MAKE@
 
@@ -114,7 +114,7 @@ all: $(PROG)
 
 libdap++.a: libdap++.a($(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS))
 	$(RANLIB) libdap++.a
-	
+
 # Build the test drivers
 
 das-test:  $(DASOBJS) das-test.o
@@ -177,7 +177,7 @@ install:
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
 
-check: das-check dds-check trans-check
+check: libdap++a das-check dds-check trans-check
 
 # these tests all fail when das-test is linked with -lnew_debug.
 
@@ -195,7 +195,7 @@ trans-check: trans-test
 clean:	
 	-rm -f *.o *.sum *.log *~ core
 	-rm -f $(PROG)
-	
+
 distclean: clean
 	-rm -f lex.das.c das.tab.c das.tab.h lex.dds.c dds.tab.c dds.tab.h
 	-rm -f config.status config.log config.cache Makefile
