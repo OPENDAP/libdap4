@@ -1,3 +1,24 @@
+1999-04-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* Small fix in prune_spaces(). This fixed a problem in the mexcdf
+	client (and presumably other netcdf or matlab programs to).
+
+1999-04-14  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in Connection::del_connect() where an assert tested
+	false for a valid condition. It is OK for the conns[i] element to
+	be NULL when this method is run.
+
+	* Fixed a bug in Connect where the member _tv would be deleted
+	without being first allocated when local files are accessed. This
+	member is no longer needed (it was used by libwww 5.0).
+
+1999-04-09  James Gallagher  <jimg@dcz.dods.org>
+
+	* This release is a special ferret-only release. It is a stable
+	alpha version of what will be DODS 3.0 once some more features are
+	added. 
+
 1999-03-24  James Gallagher  <jimg@dcz.dods.org>
 
 	* Added support for the new Int16, UInt16 and Float32 types.
@@ -481,4 +502,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.36 1999/03/24 23:36:20 jimg Exp $
+$Id: ChangeLog,v 1.37 1999/04/22 22:36:03 jimg Exp $
