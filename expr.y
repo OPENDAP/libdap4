@@ -17,9 +17,12 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.14  1996/10/08 17:04:43  jimg
-/* Added a fix for Bison 1.25 so that PARSE_PARAM will still work
+/* Revision 1.15  1996/10/18 16:55:15  jimg
+/* Fixed the fix for bison 1.25...
 /*
+ * Revision 1.14  1996/10/08 17:04:43  jimg
+ * Added a fix for Bison 1.25 so that PARSE_PARAM will still work
+ *
  * Revision 1.13  1996/08/13 19:00:21  jimg
  * Added __unused__ to definition of char rcsid[].
  * Switched to the parser_arg object for communication with callers. Removed
@@ -90,7 +93,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.14 1996/10/08 17:04:43 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.15 1996/10/18 16:55:15 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -131,7 +134,7 @@ static char rcsid[] __unused__ = {"$Id: expr.y,v 1.14 1996/10/08 17:04:43 jimg E
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 #define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
 #define STATUS(arg) ((parser_arg *)(arg))->_status
-#if DODS_BISON_VER >= 125
+#if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
 #else
 #define YYPARSE_PARAM void *arg
