@@ -18,9 +18,13 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.6  1995/04/17 03:20:52  jimg
-/* Removed the `api' field.
+/* Revision 1.7  1995/05/22 20:43:12  jimg
+/* Removed a paramter from the REQUEST_DATA member function: POST is not
+/* needed since we no longer use the post mechanism.
 /*
+ * Revision 1.6  1995/04/17  03:20:52  jimg
+ * Removed the `api' field.
+ *
  * Revision 1.5  1995/03/09  20:36:09  jimg
  * Modified so that URLs built by this library no longer supply the
  * base name of the CGI. Instead the base name is stripped off the front
@@ -71,7 +75,9 @@ private:
     DAS _das;			// dataset attribute structure --> !LOCAL
     DDS _dds;			// dataset descriptor structure --> ! LOCAL
 
+#ifdef NEVER
     String make_url(const String &cgi);
+#endif
     void parse_url(const char *name);
 
 protected:
@@ -95,8 +101,7 @@ public:
     // get the DAS, DDS and data from the server/cgi comb using the URL
     bool request_das(const String &cgi = "das");
     bool request_dds(const String &cgi = "dds");
-    bool request_data(const String &post = (char *)0, bool async = false,
-		      const String &cgi = "serv");
+    bool request_data(bool async = false, const String &cgi = "dods");
 };
 
 typedef Connect * ConnectPtr;
