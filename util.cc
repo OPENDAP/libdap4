@@ -10,6 +10,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.43  1997/07/15 21:57:13  jimg
+// Fixed error message text for length function.
+//
 // Revision 1.42  1997/06/06 17:52:20  jimg
 // Last minute changes for version 2.14
 //
@@ -215,7 +218,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.42 1997/06/06 17:52:20 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.43 1997/07/15 21:57:13 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -647,7 +650,7 @@ func_length(int argc, BaseType *argv[], DDS &)
       }
 
       default:
-	cerr << "Wrong type argument to list operator `member'" << endl;
+	cerr << "Wrong type argument to list operator `length'" << endl;
 	return 0;
     }
 }
