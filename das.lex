@@ -1,6 +1,6 @@
 
 /* 
-   (c) COPYRIGHT URI/MIT 1994-1999
+   (c) COPYRIGHT URI/MIT 1994-2000
    Please read the full copyright statement in the file COPYRIGHT.
 
    Authors:
@@ -42,7 +42,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.28 2000/08/31 23:44:16 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.29 2000/09/07 15:43:11 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -159,6 +159,10 @@ yywrap(void)
 
 /*
  * $Log: das.lex,v $
+ * Revision 1.29  2000/09/07 15:43:11  jimg
+ * Fixed a bungled merge. Watch out for long diffs in merged code when moving
+ * log comments from the start to the end of files.
+ *
  * Revision 1.28  2000/08/31 23:44:16  jimg
  * Merged with 3.1.10
  *
@@ -289,123 +293,5 @@ yywrap(void)
  * Test files for the DAS/DDS parsers and symbol table software.
  *
  * Revision 1.1  1994/07/21  19:21:32  jimg
- * First version of DAS scanner - works with C. */
-<<<<<<< das.lex
-
-%{
-#include "config_dap.h"
-
-static char rcsid[] not_used ={"$Id: das.lex,v 1.28 2000/08/31 23:44:16 jimg Exp $"};
-
-#include <string.h>
-#include <assert.h>
-#include "parser.h"
-
-#define YYSTYPE char *
-#define YY_DECL int daslex YY_PROTO(( void ))
-
-#include "das.tab.h"
-
-int das_line_num = 1;
-static int start_line;		/* used in quote and comment error handlers */
-
-%}
-    
-%x quote
-%x comment
-
-SCAN_ID  		[a-zA-Z_%][a-zA-Z0-9_./:%+\-()]*
-SCAN_INT		[-+]?[0-9]+
-
-SCAN_MANTISA	([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
-SCAN_EXPONENT	(E|e)[-+]?[0-9]+
-
-SCAN_FLOAT		[-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?
-
-SCAN_STR		[-+a-zA-Z0-9_./:%+\-()]+
-
-SCAN_ATTR 		attributes|Attributes|ATTRIBUTES
-
-SCAN_ALIAS		ALIAS|Alias|alias
-SCAN_BYTE		BYTE|Byte|byte
-SCAN_INT16		INT16|Int16|int16
-SCAN_UINT16		UINT16|UInt16|Uint16|uint16
-SCAN_INT32		INT32|Int32|int32
-SCAN_UINT32		UINT32|UInt32|Uint32|uint32
-SCAN_FLOAT32	FLOAT32|Float32|float32
-SCAN_FLOAT64	FLOAT64|Float64|float64
-SCAN_STRING		STRING|String|string
-SCAN_URL		URL|Url|url
-
-NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
-
-%%
-
-
-{SCAN_ATTR}			daslval = yytext; return SCAN_ATTR;
-
-{SCAN_ALIAS}		daslval = yytext; return SCAN_ALIAS;
-{SCAN_BYTE}			daslval = yytext; return SCAN_BYTE;
-{SCAN_INT16}		daslval = yytext; return SCAN_INT16;
-{SCAN_UINT16}		daslval = yytext; return SCAN_UINT16;
-{SCAN_INT32}		daslval = yytext; return SCAN_INT32;
-{SCAN_UINT32}		daslval = yytext; return SCAN_UINT32;
-{SCAN_FLOAT32}		daslval = yytext; return SCAN_FLOAT32;
-{SCAN_FLOAT64}		daslval = yytext; return SCAN_FLOAT64;
-{SCAN_STRING}		daslval = yytext; return SCAN_STRING;
-{SCAN_URL}			daslval = yytext; return SCAN_URL;
-
-{SCAN_ID}			daslval = yytext; return SCAN_ID;
-{SCAN_INT}			daslval = yytext; return SCAN_INT;
-{SCAN_FLOAT}		daslval = yytext; return SCAN_FLOAT;
-{SCAN_STR}			daslval = yytext; return SCAN_STR;
-
-"{" 	    	    	return (int)*yytext;
-"}" 	    	    	return (int)*yytext;
-";" 	    	    	return (int)*yytext;
-","                     return (int)*yytext;
-
-[ \t]+
-\n	    	    	++das_line_num;
-<INITIAL><<EOF>>    	yy_init = 1; das_line_num = 1; yyterminate();
-
-"#"	    	    	BEGIN(comment);
-<comment>[^\n]*
-<comment>\n		++das_line_num; BEGIN(INITIAL);
-<comment><<EOF>>        yy_init = 1; das_line_num = 1; yyterminate();
-
-\"			BEGIN(quote); start_line = das_line_num; yymore();
-<quote>[^"\n\\]*	yymore();
-<quote>[^"\n\\]*\n	yymore(); ++das_line_num;
-<quote>\\.		yymore();
-<quote>\"		{ 
-    			  BEGIN(INITIAL); 
-
-			  daslval = yytext;
-
-			  return SCAN_STR;
-                        }
-<quote><<EOF>>		{
-                          char msg[256];
-			  sprintf(msg,
-				  "Unterminated quote (starts on line %d)\n",
-				  start_line);
-			  YY_FATAL_ERROR(msg);
-                        }
-
-{NEVER}                 {
-                          if (yytext) {	/* suppress msgs about `' chars */
-                            fprintf(stderr, "Character `%c' is not", *yytext);
-                            fprintf(stderr, " allowed (except within");
-			    fprintf(stderr, " quotes) and has been ignored\n");
-			  }
-			}
-%%
-
-int 
-yywrap(void)
-{
-    return 1;
-}
-=======
->>>>>>> 1.26.6.1
+ * First version of DAS scanner - works with C. 
+ */
