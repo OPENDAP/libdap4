@@ -10,6 +10,12 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.40  2000/04/07 00:16:29  jimg
+// Fixed an error in print_val() where the method worked OK for the
+// server-side but not the client-side because it demoted any Grid whose
+// send_p flag was not set to a Structure. Since the client-side does not have
+// CEs, there are no projections and send_p will never be set.
+//
 // Revision 1.39  1999/12/02 00:24:32  jimg
 // Fixed print_val for Grids that decay to Structures.
 //
@@ -597,13 +603,17 @@ Grid::print_val(ostream &os, string space, bool print_decl_p)
 	os << " = ";
     }
 
+    // If we are printing a value on the client-side, projection_yields_grid
+    // should not be called since we don't *have* a projection without a
+    // contraint. I think that if we are here and send_p() is not true, then
+    // the value of this function should be ignored. 4/6/2000 jhrg
     bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
-    if (pyg)
+    if (pyg || !send_p())
 	os << "{ ARRAY: ";
     else
 	os << "{";
     _array_var->print_val(os, "", false);
-    if (pyg)
+    if (pyg || !send_p())
 	os << " MAPS: ";
     for (Pix p = _map_vars.first(); p; 
 	 _map_vars.next(p), (void)(p && os << ", "))
