@@ -48,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.45 2004/02/19 19:42:53 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.46 2005/03/30 21:45:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -292,31 +292,31 @@ declaration:  base_type var ';'
 
 structure:	SCAN_STRUCTURE
 		{ 
-		    ctor->push(NewStructure()); 
+		    ctor->push(DDS_OBJ(arg)->get_factory()->NewStructure()); 
 		}
 ;
 
 sequence:	SCAN_SEQUENCE 
 		{ 
-		    ctor->push(NewSequence()); 
+		    ctor->push(DDS_OBJ(arg)->get_factory()->NewSequence()); 
 		}
 ;
 
 grid:		SCAN_GRID 
 		{ 
-		    ctor->push(NewGrid()); 
+		    ctor->push(DDS_OBJ(arg)->get_factory()->NewGrid()); 
 		}
 ;
 
-base_type:	SCAN_BYTE { if( current ) delete current ;current = NewByte(); }
-		| SCAN_INT16 { if( current ) delete current ;current = NewInt16(); }
-		| SCAN_UINT16 { if( current ) delete current ;current = NewUInt16(); }
-		| SCAN_INT32 { if( current ) delete current ;current = NewInt32(); }
-		| SCAN_UINT32 { if( current ) delete current ;current = NewUInt32(); }
-		| SCAN_FLOAT32 { if( current ) delete current ;current = NewFloat32(); }
-		| SCAN_FLOAT64 { if( current ) delete current ;current = NewFloat64(); }
-		| SCAN_STRING { if( current ) delete current ;current = NewStr(); }
-		| SCAN_URL { if( current ) delete current ;current = NewUrl(); }
+base_type:	SCAN_BYTE { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewByte(); }
+		| SCAN_INT16 { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewInt16(); }
+		| SCAN_UINT16 { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewUInt16(); }
+		| SCAN_INT32 { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewInt32(); }
+		| SCAN_UINT32 { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewUInt32(); }
+		| SCAN_FLOAT32 { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewFloat32(); }
+		| SCAN_FLOAT64 { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewFloat64(); }
+		| SCAN_STRING { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewStr(); }
+		| SCAN_URL { if( current ) delete current ;current = DDS_OBJ(arg)->get_factory()->NewUrl(); }
 ;
 
 var:		var_name { current->set_name($1); }
@@ -342,7 +342,7 @@ array_decl:	'[' SCAN_WORD ']'
 			 ((Array *)current)->append_dim(atoi($2));
 		     }
 		     else {
-			 Array *a = NewArray(); 
+			 Array *a = DDS_OBJ(arg)->get_factory()->NewArray(); 
 			 a->add_var(current); 
 			 a->append_dim(atoi($2));
 			 if( current ) delete current ;
@@ -368,7 +368,7 @@ array_decl:	'[' SCAN_WORD ']'
 			 ((Array *)current)->append_dim(atoi($5), *id);
 		     }
 		     else {
-			 Array *a = NewArray(); 
+			 Array *a = DDS_OBJ(arg)->get_factory()->NewArray(); 
 			 a->add_var(current); 
 			 a->append_dim(atoi($5), *id);
 			 if( current ) delete current ;
@@ -488,6 +488,9 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.46  2005/03/30 21:45:00  jimg
+ * Now uses the BaseTypeFactory class.
+ *
  * Revision 1.45  2004/02/19 19:42:53  jimg
  * Merged with release-3-4-2FCS and resolved conflicts.
  *

@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.21 2004/07/07 21:08:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.22 2005/03/30 21:34:32 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -86,15 +86,36 @@ DataDDS::_version_string_to_numbers()
 
 // public
 
+/** @brief Make an instance of DataDDS
+    A DataDDS instance is a DDS with aditional information about the version
+    of the server from which the data came. 
+    @param factory Use this BaseTypeFactory to instantiate the variables.
+    Caller must free; can also be set using the set_factory() method.
+    @param n The name of the dataset. Can also be set using the
+    set_dataset_name() method.
+    @param v The version ctraing read from the server's response headers. */
 
-/** The DataDDS constructor needs a name and a version string.  This
-    is generally received from the server. */
-
-DataDDS::DataDDS(const string &n, const string &v)
-    :DDS(n), _server_version(v)
+DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v)
+    : DDS(factory, n), _server_version(v)
 {
     _version_string_to_numbers();
 }
+
+#ifdef DEFAULT_BASETYPE_FACTORY
+/** @brief Make an instance of DataDDS
+    A DataDDS instance is a DDS with aditional information about the version
+    of the server from which the data came. This version of the constructor
+    uses the default BaseTypeFactory class (which instantiates the Byte, ...,
+    Grid classes defined here).
+    @param n The name of the dataset. Can also be set using the
+    set_dataset_name() method.
+    @param v The version ctraing read from the server's response headers. */
+DataDDS::DataDDS(const string &n, const string &v)
+    : DDS(n), _server_version(v)
+{
+    _version_string_to_numbers();
+}
+#endif
 
 DataDDS::~DataDDS()
 {
@@ -133,6 +154,9 @@ DataDDS::get_version()
 }
 
 // $Log: DataDDS.cc,v $
+// Revision 1.22  2005/03/30 21:34:32  jimg
+// Now uses the BaseTypeFactory class.
+//
 // Revision 1.21  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //

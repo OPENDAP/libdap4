@@ -29,10 +29,8 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#if 1
-// #define DODS_DEBUG
-#endif
 #include "DDXParser.h"
+#include "BaseTypeFactory.h"
 #include "debug.h"
 
 using namespace CppUnit;
@@ -40,6 +38,7 @@ using namespace std;
 
 class DDXParserTest:public TestFixture {
 private:
+    BaseTypeFactory *factory;
     DDXParser *ddx_parser;
     DDS *dds;
     string blob;
@@ -49,13 +48,15 @@ public:
     ~DDXParserTest() {} 
 
     void setUp() {
-	ddx_parser = new DDXParser;
+	factory = new BaseTypeFactory;
+	ddx_parser = new DDXParser(factory);
 	dds = new DDS;
     } 
 
     void tearDown() {
-	delete ddx_parser;
-	delete dds;
+	delete ddx_parser; ddx_parser = 0;
+	delete factory; factory = 0;
+	delete dds; dds = 0;
     }
 
     CPPUNIT_TEST_SUITE( DDXParserTest );
@@ -285,6 +286,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: DDXParserTest.cc,v $
+// Revision 1.5  2005/03/30 21:41:04  jimg
+// Now uses the BaseTypeFactory class.
+//
 // Revision 1.4  2003/12/11 01:08:37  jimg
 // More fixes after resolving conflicts. This code still fails some tests.
 //

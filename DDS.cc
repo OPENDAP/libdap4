@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.76 2005/01/28 17:25:12 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.77 2005/03/30 21:35:54 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -111,7 +111,8 @@ void
 DDS::duplicate(const DDS &dds)
 {
     name = dds.name;
-
+    d_factory = dds.d_factory;
+    
     DDS &dds_tmp = const_cast<DDS &>(dds);
 
     // copy the things pointed to by the list, not just the pointers
@@ -121,12 +122,36 @@ DDS::duplicate(const DDS &dds)
     }
 }
 
-/** Creates a DDS with the given string for its name. */
-DDS::DDS(const string &n) : name(n), d_timeout(0)
+/** Make a DDS which uses the given BaseTypeFactory to create variables. 
+    @param n The name of the dataset. Can also be set using the
+    set_dataset_name() method. 
+    @param factory BaseTypeFactory which instantiates Byte, ..., Grid. The
+    caller is responsible for freeing the object \e after deleting this DDS.
+    Can also be set using set_factory().
+    @param n The name of the data set. Can also be set using
+    set_dataset_name(). */
+DDS::DDS(BaseTypeFactory *factory, const string &n)
+    : d_factory(factory), d_local_basetype_factory(false), 
+      name(n), d_timeout(0)
 {
     add_function("length", func_length);
     add_function("grid", func_grid_select);
 }
+
+#ifdef DEFAULT_BASETYPE_FACTORY
+/** Creates a DDS with the given string for its name. Uses the defaut
+    BaseType Factory (which instantiates the Byte, ..., Grid classes defined
+    here. 
+    @param n The name of the dataset. Can also be set using the
+    set_dataset_name() method. */
+DDS::DDS(const string &n) : d_factory(new BaseTypeFactory), 
+			    d_local_basetype_factory(true), 
+			    name(n), d_timeout(0)
+{
+    add_function("length", func_length);
+    add_function("grid", func_grid_select);
+}
+#endif
 
 /** The DDS copy constructor. */
 DDS::DDS(const DDS &rhs)
@@ -157,6 +182,10 @@ DDS::~DDS()
 	    delete cp ; cp = 0;
 	}
     }
+
+    if (d_local_basetype_factory) {
+	delete d_factory; d_factory = 0;
+    }
 }
 
 DDS &
@@ -169,54 +198,6 @@ DDS::operator=(const DDS &rhs)
 
     return *this;
 }
-
-#if 0
-/** Given a DAS, find all the attributes in it for the given variable and
-    copy them fromt he DAS to the variable.
-
-    NB: This is an old method to handle merging attributes. It works for the
-    top level variables, but doesn't match nested attribute containers with
-    nested variables. 
-
-    @param das Source
-    @param bt Destination */
-static void
-transfer_attr(BaseType *bt, DAS *das)
-{
-    DBG(cerr << " About to cast a " << bt.type_name() << endl);
-
-    // Use the variable's name to find the correct attribtue table in
-    // the DAS object.
-    string name = bt->name();
-    AttrTable *das_attrs = das->get_table(name);
-
-    // Copy attributes from the DAS to the AttrTable that's part of
-    // the variable in the DDS.
-    if (das_attrs)
-	bt->set_attr_table(*das_attrs);
-
-    // If this is a ctor type, call for each child.
-    switch (bt->type()) {
-      case dods_structure_c:
-      case dods_sequence_c: {
-	  Constructor &s = dynamic_cast<Constructor &>(*bt);
-	  for_each(s.var_begin(), s.var_end(), 
-		   bind2nd(ptr_fun(transfer_attr), das));
-	  break;
-      }
-      case dods_grid_c: {
-	  Grid &g = dynamic_cast<Grid &>(*bt);
-	  transfer_attr(g.array_var(), das);
-	  for_each(g.map_begin(), g.map_end(), 
-		   bind2nd(ptr_fun(transfer_attr), das));
-	  break;
-      }	  
-      default:
-	break;
-    }
-}
-#endif
-
 /** Transfer a single attribute to the table held by a BaseType. If the
     attribute turns out to be a container, call transfer_attr_table. If not
     load the discrete attributes into the BaseType. Both this function and
@@ -1168,11 +1149,11 @@ DDS::parse(int fd)
 }
 
 /** @brief Parse a DDS from a file indicated by the input file descriptor. 
-
-    Read structure from IN (which defaults to stdin). If
-    ddsrestart() fails, return false, otherwise return the status
-    of ddsparse(). 
-*/
+    Read the persistent representation of a DDS from the FILE *in, parse it
+    and create a matching binary object. 
+    @param in Read the persistent DDS from this FILE*.
+    @exception InternalErr Thrown if \c in is null
+    @exception Error Thrown if the parse fails. */
 void
 DDS::parse(FILE *in)
 {
@@ -1662,6 +1643,9 @@ DDS::mark_all(bool state)
 }
 
 // $Log: DDS.cc,v $
+// Revision 1.77  2005/03/30 21:35:54  jimg
+// Now uses the BaseTypeFactory class.
+//
 // Revision 1.76  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

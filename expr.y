@@ -42,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.52 2005/01/28 21:34:20 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.53 2005/03/30 21:44:44 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1002,11 +1002,15 @@ dereference_string(string &s)
 
     // the initial URL must be a complete reference to data; thus no
     // additional CE is needed. 
-    DDS *d = c.request_data(ce, false, false); 
+    BaseTypeFactory *factory = new BaseTypeFactory;
+    DataDDS *d = new DataDDS(factory);
+    c.request_data(*d, ce); 
 
     // By definition, the DDS `D' can have only one variable, so make sure
     // that is true.
     if (d->num_var() != 1) {
+	delete factory; factory = 0;
+	delete d; d = 0;
 	throw Error (malformed_expr,
 		     string("Too many variables in URL; use only single variable projections"));
     }
@@ -1017,7 +1021,8 @@ dereference_string(string &s)
     BaseType *btp = (*(d->var_begin()))->ptr_duplicate();
     rvalue *rv = new rvalue(btp);
 
-    delete d;
+    delete factory; factory = 0;
+    delete d; d = 0;
 
     return rv;
 }
@@ -1060,19 +1065,28 @@ make_variable(DDS &table, const value &val)
     BaseType *var;
     switch (val.type) {
       case dods_int32_c: {
+#if 0
 	var = (BaseType *)NewInt32("dummy");
+#endif
+	var = table.get_factory()->NewInt32("dummy");
 	var->val2buf((void *)&val.v.i);
 	break;
       }
 
       case dods_float64_c: {
+#if 0
 	var = (BaseType *)NewFloat64("dummy");
+#endif
+	var = table.get_factory()->NewFloat64("dummy");
 	var->val2buf((void *)&val.v.f);
 	break;
       }
 
       case dods_str_c: {
+#if 0
 	var = (BaseType *)NewStr("dummy");
+#endif
+	var = table.get_factory()->NewStr("dummy");
 	var->val2buf((void *)val.v.s);
 	break;
       }
@@ -1129,6 +1143,9 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.53  2005/03/30 21:44:44  jimg
+ * Now uses the BaseTypeFactory class.
+ *
  * Revision 1.52  2005/01/28 21:34:20  jimg
  * Resolved conflicts from rlease-3-4-9 merge. Also minor change to expr.y
  * to support Sequence CEs that use the Array projection notation.

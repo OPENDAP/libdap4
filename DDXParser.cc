@@ -29,10 +29,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#if 0
-#define DODS_DEBUG
-#define DODS_DEBUG2
-#endif
 #include "BaseType.h"
 #include "Constructor.h"
 #include "DDXParser.h"
@@ -68,61 +64,62 @@ static const not_used char *states[] = {
     "error"
 };
 
-/** factory for simple types */
-static BaseType *
-factory(Type t, const string &name)
+// Glue the BaseTypeFactory to the enum-based factory defined statically
+// here.
+BaseType *
+DDXParser::factory(Type t, const string &name)
 {
     switch (t) {
       case dods_byte_c:
-	return NewByte(name);
+	return d_factory->NewByte(name);
 	break;
 
       case dods_int16_c:
-	return NewInt16(name);
+	return d_factory->NewInt16(name);
 	break;
 
       case dods_uint16_c:
-	return NewUInt16(name);
+	return d_factory->NewUInt16(name);
 	break;
 
       case dods_int32_c:
-	return NewInt32(name);
+	return d_factory->NewInt32(name);
 	break;
 
       case dods_uint32_c:
-	return NewUInt32(name);
+	return d_factory->NewUInt32(name);
 	break;
 
       case dods_float32_c:
-	return NewFloat32(name);
+	return d_factory->NewFloat32(name);
 	break;
 
       case dods_float64_c:
-	return NewFloat64(name);
+	return d_factory->NewFloat64(name);
 	break;
 
       case dods_str_c:
-	return NewStr(name);
+	return d_factory->NewStr(name);
 	break;
 
       case dods_url_c:
-	return NewUrl(name);
+	return d_factory->NewUrl(name);
 	break;
 	    
       case dods_array_c:
-	return NewArray(name);
+	return d_factory->NewArray(name);
 	break;
 	    
       case dods_structure_c:
-	return NewStructure(name);
+	return d_factory->NewStructure(name);
 	break;
 	    
       case dods_sequence_c:
-	return NewSequence(name);
+	return d_factory->NewSequence(name);
 	break;
 	    
       case dods_grid_c:
-	return NewGrid(name);
+	return d_factory->NewGrid(name);
 	break;
 	    
       default: 
@@ -913,6 +910,9 @@ DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
 }
 
 // $Log: DDXParser.cc,v $
+// Revision 1.7  2005/03/30 21:40:10  jimg
+// Now uses the BaseTypeFactory class.
+//
 // Revision 1.6  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.29 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.30 2005/03/30 21:36:33 jimg Exp $"};
 
 #include <GetOpt.h>
 
@@ -224,7 +224,8 @@ test_scanner(void)
 void
 test_parser(void)
 {
-    DDS table;
+    BaseTypeFactory *factory = new BaseTypeFactory;
+    DDS table(factory);
     table.parse();
     
     if (table.check_semantics())
@@ -238,12 +239,15 @@ test_parser(void)
 	fprintf( stdout, "DDS failed full semantic check\n" ) ;
 
     table.print( stdout );
+
+    delete factory; factory = 0;
 }
 
 void
 test_class(void)
 {
-    DDS table;
+    BaseTypeFactory *factory = new BaseTypeFactory;
+    DDS table(factory);
     table.parse();
     
     if (table.check_semantics())
@@ -261,13 +265,14 @@ test_class(void)
     DDS table2 = table;		// test copy ctor;
     table2.print( stdout );
 
-    DDS table3;
+    BaseTypeFactory *factory2 = new BaseTypeFactory;
+    DDS table3(factory2);
     table3 = table;		// test operator=
 
     fprintf( stdout, "Dataset name: %s\n", table.get_dataset_name().c_str()) ;
 
     string name = "goofy";
-    table.add_var(NewInt32(name)); // table dtor should delete this object
+    table.add_var(table.get_factory()->NewInt32(name)); // table dtor should delete this object
 
     table.print( stdout );
 
@@ -279,7 +284,7 @@ test_class(void)
 
     table.print( stdout );
 
-    table.add_var(NewInt32("goofy"));
+    table.add_var(table.get_factory()->NewInt32("goofy"));
 
     table.print( stdout );
 
@@ -293,9 +298,15 @@ test_class(void)
 
     for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++)
 	(*p)->print_decl(stdout, "", true);	// print them all w/semicolons
+
+    delete factory; factory = 0;
+    delete factory2; factory2 = 0;
 }
 
 // $Log: dds-test.cc,v $
+// Revision 1.30  2005/03/30 21:36:33  jimg
+// Now uses the BaseTypeFactory class.
+//
 // Revision 1.29  2003/12/08 18:02:30  edavis
 // Merge release-3-4 into trunk
 //
