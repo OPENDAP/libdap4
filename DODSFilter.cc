@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.44 2004/01/23 17:12:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.45 2004/01/26 18:58:01 jimg Exp $"};
 
 #include <signal.h>
 
@@ -964,9 +964,12 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.45  2004/01/26 18:58:01  jimg
+// Build fixes.
+//
 // Revision 1.44  2004/01/23 17:12:29  jimg
 // Removed errant DBG() with d_ver field (that field is no longer part of the
-// class.
+// class).
 //
 // Revision 1.43  2003/12/10 21:11:57  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See

@@ -23,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.34 2004/01/23 17:26:41 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.35 2004/01/26 18:58:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1225,9 +1225,8 @@ Errorerror(char *s)
 
 
 // $Log: Error.tab.c,v $
-// Revision 1.34  2004/01/23 17:26:41  jimg
-// Grammar regeneration (removed List.h; must rebuild the *.tab.c files
-// and commit them to CVS).
+// Revision 1.35  2004/01/26 18:58:01  jimg
+// Build fixes.
 //
 // Revision 1.15  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
