@@ -1,5 +1,7 @@
 2003-01-10    <jimg@dcz.dods.org>
 
+	* NEWS: Added.
+
 	* Merged with changes tagged release-3-2-10 (from the release-3-2
 	branch). 
 
@@ -1233,4 +1235,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.71 2003/01/10 19:51:28 jimg Exp $
+$Id: ChangeLog,v 1.72 2003/01/22 01:06:40 jimg Exp $
