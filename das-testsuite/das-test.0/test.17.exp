@@ -1,0 +1,39 @@
+# expect/tcl code to test the das parser and scanner
+# jhrg
+#
+# $Log: test.17.exp,v $
+# Revision 1.1  1995/02/16 15:34:52  jimg
+# Added these tests. See comments in files in parent directory.
+#
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+# The variable `test_name' is the name of the das input file for this test.
+
+set test_name test.17
+
+# The variable `test_out' is a string that contains the text that should be
+# stored in comp_output by das-test_start. The two strings should match
+# exactly.
+
+set test_out "Reading from: $srcdir$test_name
+Attributes {
+    test {
+        byte d 255;
+    }
+}
+parse error, expecting `INT' line: 7
+Not a byte value line: 8
+Not a byte value line: 10
+parse error, expecting `INT' line: 11
+parse() returned: 0"
+
+das-test_start p $srcdir$test_name -
+
+if ![string compare $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    fail "$test_name"
+}
