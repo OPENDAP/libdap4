@@ -14,7 +14,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.115 2001/10/25 21:23:23 jgarcia Exp $" };
+    { "$Id: Connect.cc,v 1.116 2001/10/29 21:24:39 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -846,18 +846,7 @@ Connect::read_url(string & url, FILE * stream) throw(Error)
     status = HTLoadRelative(url.c_str(), _anchor, _request);
     HTList *listerr=HTRequest_error(_request);
     if (listerr)
-<<<<<<< Connect.cc
-	process_www_errors(listerr, _request);
-#ifdef GUI
-    }
-    catch (Error &e) {
-	e.display_message(_gui);
-	throw;
-    }
-#endif
-=======
 	process_www_errors(listerr, _request); // throws Error
->>>>>>> 1.105.2.15
 
     if (_cache_enabled)
 	HTCacheIndex_write(_cache_root);
@@ -1432,6 +1421,11 @@ Connect::set_credentials(string u, string p)
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.116  2001/10/29 21:24:39  jimg
+// Removed catch and display of Error objects thrown/returned when accessing
+// data. These Error objects must now be caught by the code that uses
+// libdap++.a.
+//
 // Revision 1.115  2001/10/25 21:23:23  jgarcia
 // Modified the www_lib_init method so now it uses the class RCReader. This simplifies a lot the implementation of this class.
 //
