@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.38 1997/06/06 17:52:15 jimg Exp $
+# $Id: configure,v 1.39 1997/07/15 21:59:39 jimg Exp $
 
 # Check for fill value usage.
 
