@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.36  1999/04/01 22:50:02  jimg
+// Switched to DODS type names and fixed float-vs-double bungle
+//
 // Revision 1.35  1999/03/24 23:37:14  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
@@ -196,7 +199,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.35 1999/03/24 23:37:14 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.36 1999/04/01 22:50:02 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -223,7 +226,7 @@ Float64::Float64(const String &n)
 unsigned int
 Float64::width()
 {
-    return sizeof(double);
+    return sizeof(dods_float64);
 }
 
 bool
@@ -257,7 +260,7 @@ Float64::val2buf(void *val, bool)
 {
     assert(val);
 
-    _buf = *(double *)val;
+    _buf = *(dods_float64 *)val;
 
     return width();
 }
@@ -268,9 +271,9 @@ Float64::buf2val(void **val)
     assert(val);
 
     if (!*val)
-	*val = new double;
+	*val = new dods_float64;
 
-    *(double *)*val =_buf;
+    *(dods_float64 *)*val =_buf;
 
     return width();
 }

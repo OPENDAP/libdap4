@@ -10,6 +10,9 @@
 // 3/22/9 jhrg9
 
 // $Log: Float32.cc,v $
+// Revision 1.8  1999/04/01 22:50:02  jimg
+// Switched to DODS type names and fixed float-vs-double bungle
+//
 // Revision 1.7  1999/03/24 23:40:05  jimg
 // Added
 //
@@ -35,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.7 1999/03/24 23:40:05 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.8 1999/04/01 22:50:02 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -60,7 +63,7 @@ Float32::Float32(const String &n)
 unsigned int
 Float32::width()
 {
-    return sizeof(double);
+    return sizeof(dods_float32);
 }
 
 bool
@@ -94,7 +97,7 @@ Float32::val2buf(void *val, bool)
 {
     assert(val);
 
-    _buf = *(double *)val;
+    _buf = *(dods_float32 *)val;
 
     return width();
 }
@@ -105,9 +108,9 @@ Float32::buf2val(void **val)
     assert(_buf && val);
 
     if (!*val)
-	*val = new double;
+	*val = new dods_float32;
 
-    *(double *)*val =_buf;
+    *(dods_float32 *)*val =_buf;
 
     return width();
 }
