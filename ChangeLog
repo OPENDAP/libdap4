@@ -1,3 +1,32 @@
+1999-11-04  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged: cvs update -j release-3-1-2 -j release-3-1, the next
+	merge command should use -j release-3-1-3 -j release-3-1.
+
+1999-11-03  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed the usage filter (nothing to do with the comment about a
+	function of the same name in cgi_utils.cc). The filter was slurping
+	entire datasets because it failed to append the .html suffix when
+	looking for user-defined documentation about a dataset.
+
+	* DDS::send now catches exceptions thrown by the expression
+	evaluator. This means more reliable handling of errors from within
+	server-side function. However, this is only a stop-gap solution to
+	the general problem of poor error processing within the library.
+	Look for a *real* solution to this problem in about 2 months.
+
+	* Fixed a range-check bug for unsigned 16-bit integers. The values
+	were being tested as if they were signed.
+
+	* Removed usage() from cgi_utils.cc since it was not used and was
+	causing conflicts with servers which defined a function with the
+	same name.
+
+	* Documentation updates.
+
+	* Substantial changes to the Makefile.in. See the top level ChangeLog.
+
 1999-08-27  James Gallagher  <jimg@dcz.dods.org>
 
 	* Fixed the value of DODS_SHRT_MIN in dods-limits.h
@@ -562,4 +591,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.43 1999/09/03 22:07:43 jimg Exp $
+$Id: ChangeLog,v 1.44 1999/11/04 23:52:42 jimg Exp $
