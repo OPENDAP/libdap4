@@ -10,6 +10,9 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
+// Revision 1.13  1997/12/16 00:45:41  jimg
+// Added code for NAME lexeme.
+//
 // Revision 1.12  1996/08/13 18:49:55  jimg
 // Added on-line help.
 // Now, always returns an exit code.
@@ -26,7 +29,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds-test.cc,v 1.12 1996/08/13 18:49:55 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds-test.cc,v 1.13 1997/12/16 00:45:41 jimg Exp $"};
 
 #include <iostream.h>
 #include <GetOpt.h>
@@ -169,6 +172,9 @@ test_scanner(void)
 	    break;
 	  case ID:
 	    cout << "ID: " << ddslval << endl;
+	    break;
+	  case NAME:
+	    cout << "NAME: " << ddslval << endl;
 	    break;
 	  case INTEGER:
 	    cout << "INTEGER: " << ddslval << endl;
