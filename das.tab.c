@@ -22,12 +22,12 @@
 #define	STRING	266
 #define	URL	267
 
-#line 132 "das.y"
+#line 135 "das.y"
 
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: das.tab.c,v 1.2 1996/06/04 21:33:56 jimg Exp $"};
+static char rcsid[]={"$Id: das.tab.c,v 1.3 1996/06/08 00:25:34 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,14 +52,6 @@ static AttrTablePtr attr_tab_ptr;
 void mem_list_report();
 int daslex(void);
 int daserror(char *s);
-#ifdef NEVER
-static void not_a_datatype(char *s);
-static void save_str(char *dst, char *src);
-static int check_byte(char *val);
-static int check_int(char *val);
-static int check_float(char *val);
-static int check_url(char *val);
-#endif
 
 
 #ifndef YYLTYPE
@@ -156,11 +148,11 @@ static const short yyrhs[] = {    18,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   222,   223,   226,   226,   229,   230,   231,   234,   246,   247,
-   250,   251,   252,   255,   256,   257,   259,   260,   261,   263,
-   264,   265,   267,   268,   269,   271,   272,   273,   275,   276,
-   278,   290,   304,   316,   330,   342,   356,   366,   377,   389,
-   403,   403,   403,   403,   406,   406
+   217,   218,   221,   221,   224,   225,   226,   229,   241,   242,
+   245,   246,   247,   250,   251,   252,   254,   255,   256,   258,
+   259,   260,   262,   263,   264,   266,   267,   268,   270,   271,
+   273,   285,   299,   311,   325,   337,   351,   361,   372,   384,
+   398,   398,   398,   398,   401,   401
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","ATTR","ID",
@@ -737,11 +729,11 @@ yyreduce:
   switch (yyn) {
 
 case 3:
-#line 226 "das.y"
+#line 221 "das.y"
 { parse_ok = TRUE; ;
     break;}
 case 8:
-#line 235 "das.y"
+#line 230 "das.y"
 { 
 		    DBG2(mem_list_report()); /* mem_list_report is in */
 					     /* libdbnew.a  */
@@ -755,55 +747,55 @@ case 8:
 		;
     break;}
 case 10:
-#line 247 "das.y"
+#line 242 "das.y"
 { parse_ok = FALSE; ;
     break;}
 case 14:
-#line 255 "das.y"
+#line 250 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 15:
-#line 256 "das.y"
+#line 251 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 17:
-#line 259 "das.y"
+#line 254 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 18:
-#line 260 "das.y"
+#line 255 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 20:
-#line 263 "das.y"
+#line 258 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 21:
-#line 264 "das.y"
+#line 259 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 23:
-#line 267 "das.y"
+#line 262 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 24:
-#line 268 "das.y"
+#line 263 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 26:
-#line 271 "das.y"
+#line 266 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 27:
-#line 272 "das.y"
+#line 267 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 29:
-#line 275 "das.y"
+#line 270 "das.y"
 { parse_ok = FALSE; ;
     break;}
 case 31:
-#line 279 "das.y"
+#line 274 "das.y"
 {
 		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -817,7 +809,7 @@ case 31:
 		;
     break;}
 case 32:
-#line 291 "das.y"
+#line 286 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -831,7 +823,7 @@ case 32:
 		;
     break;}
 case 33:
-#line 305 "das.y"
+#line 300 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -845,7 +837,7 @@ case 33:
 		;
     break;}
 case 34:
-#line 317 "das.y"
+#line 312 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -859,7 +851,7 @@ case 34:
 		;
     break;}
 case 35:
-#line 331 "das.y"
+#line 326 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -873,7 +865,7 @@ case 35:
 		;
     break;}
 case 36:
-#line 343 "das.y"
+#line 338 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -887,7 +879,7 @@ case 36:
 		;
     break;}
 case 37:
-#line 357 "das.y"
+#line 352 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -899,7 +891,7 @@ case 37:
 		;
     break;}
 case 38:
-#line 367 "das.y"
+#line 362 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -910,7 +902,7 @@ case 38:
 		;
     break;}
 case 39:
-#line 378 "das.y"
+#line 373 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -924,7 +916,7 @@ case 39:
 		;
     break;}
 case 40:
-#line 390 "das.y"
+#line 385 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -1135,7 +1127,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 409 "das.y"
+#line 404 "das.y"
 
 
 int 
@@ -1145,71 +1137,3 @@ daserror(char *s)
 
     return 1;
 }
-
-#ifdef NEVER
-static void
-save_str(char *dst, char *src)
-{
-    strncpy(dst, src, ID_MAX);
-    dst[ID_MAX-1] = '\0';		/* in case ... */
-    if (strlen(src) >= ID_MAX) 
-	cerr << "line: " << das_line_num << "`" << src << "' truncated to `"
-             << dst << "'" << endl;
-}
-
-static void
-not_a_datatype(char *s)
-{
-    fprintf(stderr, "`%s' is not a datatype; line %d\n", s, das_line_num);
-}
-
-static int
-check_byte(char *val)
-{
-    int v = atoi(val);
-
-    if (abs(v) > 255) {
-	daserror("Not a byte value");
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-static int
-check_int(char *val)
-{
-    int v = atoi(val);
-
-    if (abs(v) > 2147483647) {	/* don't use the constant from limits.h */
-	daserror("Not a 32-bit integer value");
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-static int
-check_float(char *val)
-{
-    double v = atof(val);
-
-    if (v == 0.0) {
-	daserror("Not decodable to a 64-bit float value");
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-/*
-  Maybe someday we will really check the Urls to see if they are valid...
-*/
-
-static int
-check_url(char *val)
-{
-    return TRUE;
-}
-#endif
-
