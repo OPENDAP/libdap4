@@ -10,6 +10,12 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.27  1996/08/12 21:52:41  jimg
+// Fixed a bug in check_semantics where the array name was confused with the
+// dimension names - this may be a bug in the libg++2.7.1 implementation of the
+// class String or a bug in our usage of the same. The problem did not show up
+// on the SunOS 4.1.3 platform.
+//
 // Revision 1.26  1996/06/04 21:33:31  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -394,7 +400,8 @@ Grid::print_val(ostream &os, String space, bool print_decl_p)
     os << "{ ARRAY: ";
     _array_var->print_val(os, "", false);
     os << " MAPS: ";
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p), p && os << ", ")
+    for (Pix p = _map_vars.first(); p; 
+	 _map_vars.next(p), (void)(p && os << ", "))
 	_map_vars(p)->print_val(os, "", false);
     os << " }";
 
@@ -436,7 +443,7 @@ Grid::check_semantics(bool all)
 	return false;
     }
 
-    const String &array_var_name = av->name();
+    const String array_var_name = av->name();
     Pix p, ap;
     for (p = _map_vars.first(), ap = av->first_dim();
 	 p; _map_vars.next(p), av->next_dim(ap)) {
