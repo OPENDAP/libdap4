@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.161 2005/03/17 20:50:25 pwest Exp $
+# $Id: Makefile.in,v 1.162 2005/03/30 22:06:53 jimg Exp $
 
 @SET_MAKE@
 
@@ -14,12 +14,12 @@
 # a url. In addition it can read and process DAS and DDS objects, displaying
 # the print representation on the screen.
 
-PROG = libdap++.a geturl usage deflate
+PROG = libdap++.a libtest-types++.a geturl usage deflate
 # dods_relative ends in a slash. 5/14/2001 jhrg
 DODS_ROOT = @dods_relative@
 
 INCS = -I. -IGNU @INCS@ $(CPP_UNIT_INC)
-DEFS = @DEFS@
+DEFS = @DEFS@ -DDEFAULT_BASETYPE_FACTORY
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 # Use these options for debugging. 12/24/02 jhrg
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-default-inline -fno-defer-pop
@@ -129,33 +129,37 @@ TYPEHDRS = BaseType.h Byte.h Int32.h GSEClause.h Constructor.h \
 	   PassiveByte.h PassiveInt32.h PassiveFloat64.h PassiveStr.h \
 	   PassiveUrl.h PassiveUInt32.h PassiveInt16.h PassiveUInt16.h \
 	   PassiveFloat32.h PassiveArray.h PassiveStructure.h \
-	   DODSResponseObject.h
+	   DODSResponseObject.h BaseTypeFactory.h
 
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   Vector.cc Array.cc Structure.cc Sequence.cc \
-	   Grid.cc UInt32.cc util.cc xdrutil_ppc.c ce_functions.cc GSEClause.cc \
-	   Int16.cc UInt16.cc Float32.cc Constructor.cc \
+	   Grid.cc UInt32.cc util.cc xdrutil_ppc.c ce_functions.cc \
+	   GSEClause.cc Int16.cc UInt16.cc Float32.cc Constructor.cc \
 	   PassiveByte.cc PassiveInt32.cc PassiveFloat64.cc PassiveStr.cc \
 	   PassiveUrl.cc PassiveUInt32.cc PassiveInt16.cc PassiveUInt16.cc \
 	   PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc \
-	   VirtualCtorByte.cc VirtualCtorInt16.cc VirtualCtorUInt16.cc \
-	   VirtualCtorInt32.cc VirtualCtorUInt32.cc VirtualCtorFloat32.cc \
-	   VirtualCtorFloat64.cc VirtualCtorStr.cc VirtualCtorUrl.cc \
-	   VirtualCtorArray.cc VirtualCtorStructure.cc \
-	   VirtualCtorSequence.cc VirtualCtorGrid.cc util_mit.cc
+	   util_mit.cc BaseTypeFactory.cc
+
+# 	   VirtualCtorByte.cc VirtualCtorInt16.cc VirtualCtorUInt16.cc \
+# 	   VirtualCtorInt32.cc VirtualCtorUInt32.cc VirtualCtorFloat32.cc \
+# 	   VirtualCtorFloat64.cc VirtualCtorStr.cc VirtualCtorUrl.cc \
+# 	   VirtualCtorArray.cc VirtualCtorStructure.cc \
+# 	   VirtualCtorSequence.cc VirtualCtorGrid.cc 
 
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   Vector.o Array.o Structure.o Sequence.o Grid.o \
-           UInt32.o util.o xdrutil_ppc.o ce_functions.o GSEClause.o $(GSE_GRAM_OBJS) \
+           UInt32.o util.o xdrutil_ppc.o ce_functions.o GSEClause.o \
 	   Int16.o UInt16.o Float32.o Constructor.o \
 	   PassiveByte.o PassiveInt32.o PassiveFloat64.o PassiveStr.o \
 	   PassiveUrl.o PassiveUInt32.o PassiveInt16.o PassiveUInt16.o \
 	   PassiveFloat32.o PassiveArray.o PassiveStructure.o \
-	   VirtualCtorByte.o VirtualCtorInt16.o VirtualCtorUInt16.o \
-	   VirtualCtorInt32.o VirtualCtorUInt32.o VirtualCtorFloat32.o \
-	   VirtualCtorFloat64.o VirtualCtorStr.o VirtualCtorUrl.o \
-	   VirtualCtorArray.o VirtualCtorStructure.o \
-	   VirtualCtorSequence.o VirtualCtorGrid.o util_mit.o
+	   util_mit.o BaseTypeFactory.o $(GSE_GRAM_OBJS) 
+
+# 	   VirtualCtorByte.o VirtualCtorInt16.o VirtualCtorUInt16.o \
+# 	   VirtualCtorInt32.o VirtualCtorUInt32.o VirtualCtorFloat32.o \
+# 	   VirtualCtorFloat64.o VirtualCtorStr.o VirtualCtorUrl.o \
+# 	   VirtualCtorArray.o VirtualCtorStructure.o \
+# 	   VirtualCtorSequence.o VirtualCtorGrid.o 
 
 GNUSRCS = GNU/GetOpt.cc GNU/Regex.cc GNU/error.cc @REGEX_C@ \
 	   IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc \
@@ -171,12 +175,13 @@ GNUHDRS = GNU/builtin.h GNU/Pix.h GNU/GetOpt.h GNU/Regex.h \
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc \
-	   TestGrid.cc TestUInt32.cc TestInt16.cc TestUInt16.cc TestFloat32.cc
+	   TestGrid.cc TestUInt32.cc TestInt16.cc TestUInt16.cc \
+	   TestFloat32.cc TestCommon.cc TestTypeFactory.cc
 
 TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 	   TestArray.o TestStructure.o TestSequence.o \
 	   TestGrid.o TestUInt32.o TestInt16.o TestUInt16.o TestFloat32.o \
-	   TestCommon.o
+	   TestCommon.o TestTypeFactory.o
 
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc \
 	   ThreadTest.cc server_handler.cc
@@ -194,6 +199,10 @@ all: grammars $(PROG)
 
 libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) \
 	    $(EXPROBJS) $(UTILOBJS) $(CLIENTOBJS) $(AISOBJS) $(DDXOBJS)
+	    $(AR) cru $@ $?
+	    $(RANLIB) $@
+
+libtest-types++.a: $(TESTOBJS)
 	    $(AR) cru $@ $?
 	    $(RANLIB) $@
 
@@ -226,9 +235,9 @@ gse-test: libdap++.a lex.gse.o gse-test.o \
 	$(CXX) $(LDFLAGS) -o gse-test lex.gse.o gse-test.o gse.tab.o \
 		libdap++.a $(LIBS)
 
-expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
+expr-test: libdap++.a libtest-types++.a expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test expr-test.o lex.expr.o \
-	       $(TESTOBJS) libdap++.a $(LIBS)
+	       libdap++.a libtest-types++.a $(LIBS)
 
 error-test: error-test.o Error.tab.h $(ERROROBJS) 
 	$(CXX) $(LDFLAGS) -o error-test error-test.o $(ERROROBJS) \
@@ -447,7 +456,7 @@ UNIT_TEST_PROGS = HTTPCacheTest HTTPConnectTest cgiUtilTest AttrTableTest \
 
 ArrayTest: ArrayTest.o libdap++.a
 	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
-	
+
 DDXParserTest: DDXParserTest.o libdap++.a
 	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
 
@@ -669,267 +678,294 @@ depend:
 
 # DO NOT DELETE; depend requires this line
 RCReader.o: RCReader.cc config_dap.h debug.h RCReader.h Error.h util.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h InternalErr.h \
   dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
   Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Structure.h Sequence.h Grid.h
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Structure.h Sequence.h Grid.h
 Connect.o: Connect.cc config_dap.h debug.h DataDDS.h DDS.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
-  dods-datatypes.h Constructor.h DAS.h DODSResponseObject.h Clause.h \
-  expr.h RValue.h Connect.h util.h Byte.h Int16.h UInt16.h Int32.h \
-  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
-  Structure.h Sequence.h Grid.h HTTPConnect.h ../../include/curl/curl.h \
-  ../../include/curl/types.h ../../include/curl/easy.h \
-  ../../include/curl/multi.h RCReader.h ObjectType.h HTTPCache.h \
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  dods-datatypes.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h Connect.h util.h Byte.h \
+  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
+  HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h ../../include/curl/multi.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h RCReader.h ObjectType.h HTTPCache.h \
   ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
   SignalHandlerRegisteredErr.h HTTPResponse.h Response.h escaping.h
 HTTPConnect.o: HTTPConnect.cc config_dap.h debug.h GNU/Regex.h \
   HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h Error.h \
-  util.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h \
+  ../../include/curl/easy.h ../../include/curl/multi.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h RCReader.h Error.h util.h BaseType.h \
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h InternalErr.h \
   dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
   Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Structure.h Sequence.h Grid.h ObjectType.h HTTPCache.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Structure.h Sequence.h Grid.h ObjectType.h HTTPCache.h \
   ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
   SignalHandlerRegisteredErr.h HTTPResponse.h Response.h \
   HTTPCacheResponse.h
 HTTPCache.o: HTTPCache.cc config_dap.h Error.h InternalErr.h \
   ResponseTooBigErr.h SignalHandler.h EventHandler.h cgi_util.h DDS.h \
-  GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h dods-datatypes.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  ObjectType.h EncodingType.h HTTPCacheInterruptHandler.h HTTPCache.h \
-  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h debug.h \
-  util_mit.h
+  GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h dods-datatypes.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h ObjectType.h EncodingType.h HTTPCacheInterruptHandler.h \
+  HTTPCache.h HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h \
+  debug.h util_mit.h
 AttrTable.o: AttrTable.cc config_dap.h Error.h debug.h util.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h dods-datatypes.h \
-  Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h Structure.h Sequence.h \
-  Grid.h escaping.h AttrIterAdapter.h
-DAS.o: DAS.cc config_dap.h DAS.h GNU/Pix.h IteratorAdapter.h AttrTable.h \
-  Error.h DODSResponseObject.h InternalErr.h parser.h GSEClause.h \
-  BaseType.h dods-datatypes.h Array.h dods-limits.h Vector.h DDS.h \
-  Constructor.h Clause.h expr.h RValue.h Grid.h escaping.h debug.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h InternalErr.h \
+  dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Structure.h Sequence.h Grid.h escaping.h \
+  AttrIterAdapter.h IteratorAdapter.h
+DAS.o: DAS.cc config_dap.h DAS.h GNU/Pix.h ./IteratorAdapter.h \
+  AttrTable.h Error.h DODSResponseObject.h InternalErr.h parser.h \
+  GSEClause.h BaseType.h dods-datatypes.h Array.h dods-limits.h Vector.h \
+  DDS.h Constructor.h BaseTypeFactory.h Clause.h expr.h RValue.h Grid.h \
+  escaping.h debug.h
 parser-util.o: parser-util.cc config_dap.h debug.h parser.h Error.h \
-  GSEClause.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  GSEClause.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   InternalErr.h dods-datatypes.h Array.h dods-limits.h Vector.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Grid.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
-  Float64.h Str.h Url.h Structure.h Sequence.h
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Grid.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h \
+  Float32.h Float64.h Str.h Url.h Structure.h Sequence.h
 DDS.o: DDS.cc config_dap.h GNU/Regex.h expr.h BaseType.h AttrTable.h \
-  GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
+  GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
   Clause.h RValue.h DAS.h DODSResponseObject.h DDS.h Constructor.h \
-  BTIterAdapter.h ClauseIterAdapter.h parser.h GSEClause.h Array.h \
-  dods-limits.h Vector.h Grid.h debug.h util.h Byte.h Int16.h UInt16.h \
-  Int32.h UInt32.h Float32.h Float64.h Str.h Url.h Structure.h Sequence.h \
-  escaping.h ce_functions.h cgi_util.h ObjectType.h EncodingType.h
-DataDDS.o: DataDDS.cc config_dap.h DataDDS.h DDS.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
-  dods-datatypes.h Constructor.h DAS.h DODSResponseObject.h Clause.h \
-  expr.h RValue.h debug.h
-Clause.o: Clause.cc config_dap.h expr.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h RValue.h
-RValue.o: RValue.cc config_dap.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h expr.h \
-  RValue.h DDS.h Constructor.h DAS.h DODSResponseObject.h Clause.h
-BaseType.o: BaseType.cc config_dap.h debug.h BaseType.h AttrTable.h \
-  GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
+  BaseTypeFactory.h BTIterAdapter.h IteratorAdapter.h ClauseIterAdapter.h \
+  parser.h GSEClause.h Array.h dods-limits.h Vector.h Grid.h debug.h \
   util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
-  Str.h dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h Structure.h Sequence.h \
-  Grid.h escaping.h
+  Str.h Url.h Structure.h Sequence.h escaping.h ce_functions.h cgi_util.h \
+  ObjectType.h EncodingType.h
+DataDDS.o: DataDDS.cc config_dap.h DataDDS.h DDS.h GNU/Pix.h \
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  dods-datatypes.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h debug.h
+Clause.o: Clause.cc config_dap.h expr.h BaseType.h AttrTable.h GNU/Pix.h \
+  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  RValue.h
+RValue.o: RValue.cc config_dap.h BaseType.h AttrTable.h GNU/Pix.h \
+  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h expr.h \
+  RValue.h DDS.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h
+BaseType.o: BaseType.cc config_dap.h debug.h BaseType.h AttrTable.h \
+  GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
+  util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
+  Str.h dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Structure.h Sequence.h Grid.h escaping.h
 Byte.o: Byte.cc config_dap.h Byte.h dods-datatypes.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h Int16.h \
-  DDS.h Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  util.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  parser.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h Int16.h \
+  DDS.h Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h \
+  Clause.h expr.h RValue.h util.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h parser.h GSEClause.h expr.tab.h Operators.h \
+  GNU/Regex.h
 Int32.o: Int32.cc config_dap.h Int32.h dods-datatypes.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  util.h Byte.h Int16.h UInt16.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  parser.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h debug.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h util.h Byte.h Int16.h UInt16.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h parser.h GSEClause.h expr.tab.h Operators.h \
+  GNU/Regex.h debug.h
 Float64.o: Float64.cc config_dap.h Float64.h dods-datatypes.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  parser.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h \
+  Float32.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h parser.h GSEClause.h expr.tab.h Operators.h \
+  GNU/Regex.h
 Str.o: Str.cc config_dap.h Str.h dods-limits.h BaseType.h AttrTable.h \
-  GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
-  DDS.h Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  parser.h GSEClause.h Array.h Vector.h Grid.h expr.tab.h Operators.h \
-  GNU/Regex.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
-  Float64.h Url.h Structure.h Sequence.h escaping.h debug.h
+  GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
+  DDS.h Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h \
+  Clause.h expr.h RValue.h parser.h GSEClause.h Array.h Vector.h Grid.h \
+  expr.tab.h Operators.h GNU/Regex.h util.h Byte.h Int16.h UInt16.h \
+  Int32.h UInt32.h Float32.h Float64.h Url.h Structure.h Sequence.h \
+  escaping.h debug.h
 Url.o: Url.cc Url.h dods-limits.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h Str.h
+  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h Str.h
 Vector.o: Vector.cc config_dap.h Vector.h BaseType.h AttrTable.h \
-  GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
-  DDS.h Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  escaping.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
-  Float64.h Str.h dods-limits.h Url.h Array.h Structure.h Sequence.h \
-  Grid.h debug.h
-Array.o: Array.cc config_dap.h Array.h dods-limits.h Vector.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h \
-  dods-datatypes.h DDS.h Constructor.h DAS.h DODSResponseObject.h \
-  Clause.h expr.h RValue.h util.h Byte.h Int16.h UInt16.h Int32.h \
-  UInt32.h Float32.h Float64.h Str.h Url.h Structure.h Sequence.h Grid.h \
-  debug.h escaping.h ArrayIterAdapter.h
-Structure.o: Structure.cc config_dap.h Structure.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
-  dods-datatypes.h Constructor.h DDS.h DAS.h DODSResponseObject.h \
-  Clause.h expr.h RValue.h util.h Byte.h Int16.h UInt16.h Int32.h \
-  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
-  Sequence.h Grid.h debug.h escaping.h
-Sequence.o: Sequence.cc config_dap.h debug.h Error.h InternalErr.h \
-  Sequence.h GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h \
-  dods-datatypes.h Constructor.h DDS.h DAS.h DODSResponseObject.h \
-  Clause.h expr.h RValue.h DataDDS.h util.h Byte.h Int16.h UInt16.h \
+  GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
+  DDS.h Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h \
+  Clause.h expr.h RValue.h escaping.h util.h Byte.h Int16.h UInt16.h \
   Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
-  Vector.h Structure.h Grid.h escaping.h
-Grid.o: Grid.cc config_dap.h Grid.h GNU/Pix.h IteratorAdapter.h \
+  Structure.h Sequence.h Grid.h debug.h
+Array.o: Array.cc config_dap.h Array.h dods-limits.h Vector.h BaseType.h \
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h \
+  dods-datatypes.h DDS.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h util.h Byte.h Int16.h \
+  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h Url.h Structure.h \
+  Sequence.h Grid.h debug.h escaping.h ArrayIterAdapter.h \
+  IteratorAdapter.h
+Structure.o: Structure.cc config_dap.h Structure.h GNU/Pix.h \
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  dods-datatypes.h Constructor.h DDS.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h util.h Byte.h Int16.h \
+  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
+  Array.h Vector.h Sequence.h Grid.h debug.h escaping.h
+Sequence.o: Sequence.cc config_dap.h debug.h Error.h InternalErr.h \
+  Sequence.h GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h \
+  dods-datatypes.h Constructor.h DDS.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h DataDDS.h util.h Byte.h \
+  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+  dods-limits.h Url.h Array.h Vector.h Structure.h Grid.h escaping.h
+Grid.o: Grid.cc config_dap.h Grid.h GNU/Pix.h ./IteratorAdapter.h \
   BaseType.h AttrTable.h Error.h InternalErr.h dods-datatypes.h \
-  Constructor.h DDS.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Array.h dods-limits.h Vector.h util.h Byte.h Int16.h UInt16.h Int32.h \
-  UInt32.h Float32.h Float64.h Str.h Url.h Structure.h Sequence.h \
-  escaping.h BTIterAdapter.h
+  Constructor.h DDS.h BaseTypeFactory.h DAS.h DODSResponseObject.h \
+  Clause.h expr.h RValue.h Array.h dods-limits.h Vector.h util.h Byte.h \
+  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h Url.h \
+  Structure.h Sequence.h escaping.h BTIterAdapter.h IteratorAdapter.h
 UInt32.o: UInt32.cc config_dap.h UInt32.h dods-datatypes.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  util.h Byte.h Int16.h UInt16.h Int32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  parser.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h debug.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h util.h Byte.h Int16.h UInt16.h Int32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h parser.h GSEClause.h expr.tab.h Operators.h \
+  GNU/Regex.h debug.h
 util.o: util.cc config_dap.h GNU/Regex.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h Str.h \
+  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h Str.h \
   dods-limits.h Url.h Sequence.h Constructor.h parser.h GSEClause.h \
-  Array.h Vector.h DDS.h DAS.h DODSResponseObject.h Clause.h expr.h \
-  RValue.h Grid.h expr.tab.h util.h Byte.h Int16.h UInt16.h Int32.h \
-  UInt32.h Float32.h Float64.h Structure.h debug.h
+  Array.h Vector.h DDS.h BaseTypeFactory.h DAS.h DODSResponseObject.h \
+  Clause.h expr.h RValue.h Grid.h expr.tab.h util.h Byte.h Int16.h \
+  UInt16.h Int32.h UInt32.h Float32.h Float64.h Structure.h debug.h
 xdrutil_ppc.o: xdrutil_ppc.c
 ce_functions.o: ce_functions.cc config_dap.h BaseType.h AttrTable.h \
-  GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
-  Array.h dods-limits.h Vector.h DDS.h Constructor.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h Sequence.h Grid.h \
+  GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
+  Array.h dods-limits.h Vector.h DDS.h Constructor.h BaseTypeFactory.h \
+  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h Sequence.h Grid.h \
   GSEClause.h parser.h gse.tab.h debug.h util.h Byte.h Int16.h UInt16.h \
   Int32.h UInt32.h Float32.h Float64.h Str.h Url.h Structure.h
 GSEClause.o: GSEClause.cc config_dap.h dods-datatypes.h Error.h \
   InternalErr.h debug.h GSEClause.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Array.h dods-limits.h Vector.h DDS.h Constructor.h \
-  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h Grid.h parser.h \
-  gse.tab.h
+  ./IteratorAdapter.h Array.h dods-limits.h Vector.h DDS.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Grid.h parser.h gse.tab.h
 Int16.o: Int16.cc config_dap.h Int16.h dods-datatypes.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  util.h Byte.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  parser.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h debug.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h util.h Byte.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h parser.h GSEClause.h expr.tab.h Operators.h \
+  GNU/Regex.h debug.h
 UInt16.o: UInt16.cc config_dap.h UInt16.h dods-datatypes.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  util.h Byte.h Int16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  parser.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h debug.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h util.h Byte.h Int16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h parser.h GSEClause.h expr.tab.h Operators.h \
+  GNU/Regex.h debug.h
 Float32.o: Float32.cc config_dap.h Float32.h dods-datatypes.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  parser.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h parser.h GSEClause.h expr.tab.h Operators.h \
+  GNU/Regex.h
 Constructor.o: Constructor.cc config_dap.h Constructor.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
-  dods-datatypes.h BTIterAdapter.h debug.h escaping.h
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  dods-datatypes.h BTIterAdapter.h IteratorAdapter.h debug.h escaping.h
 PassiveByte.o: PassiveByte.cc config_dap.h PassiveByte.h Byte.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h debug.h
 PassiveInt32.o: PassiveInt32.cc config_dap.h PassiveInt32.h Int32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h debug.h
 PassiveFloat64.o: PassiveFloat64.cc config_dap.h PassiveFloat64.h \
   Float64.h dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h debug.h
+  ./IteratorAdapter.h Error.h InternalErr.h debug.h
 PassiveStr.o: PassiveStr.cc config_dap.h PassiveStr.h Str.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
   InternalErr.h dods-datatypes.h debug.h
 PassiveUrl.o: PassiveUrl.cc PassiveUrl.h PassiveStr.h Str.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
   InternalErr.h dods-datatypes.h debug.h
 PassiveUInt32.o: PassiveUInt32.cc config_dap.h PassiveUInt32.h UInt32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h debug.h
 PassiveInt16.o: PassiveInt16.cc config_dap.h PassiveInt16.h Int16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h debug.h
 PassiveUInt16.o: PassiveUInt16.cc config_dap.h PassiveUInt16.h UInt16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h debug.h
 PassiveFloat32.o: PassiveFloat32.cc config_dap.h PassiveFloat32.h \
   Float32.h dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h debug.h
+  ./IteratorAdapter.h Error.h InternalErr.h debug.h
 PassiveArray.o: PassiveArray.cc config_dap.h PassiveArray.h Array.h \
   dods-limits.h Vector.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  debug.h
+  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h debug.h
 PassiveStructure.o: PassiveStructure.cc config_dap.h PassiveStructure.h \
-  Structure.h GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h Error.h \
-  InternalErr.h dods-datatypes.h Constructor.h DDS.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h debug.h
+  Structure.h GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h \
+  Error.h InternalErr.h dods-datatypes.h Constructor.h DDS.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  debug.h
 VirtualCtorByte.o: VirtualCtorByte.cc config_dap.h Byte.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h
 VirtualCtorInt16.o: VirtualCtorInt16.cc config_dap.h Int16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h
 VirtualCtorUInt16.o: VirtualCtorUInt16.cc config_dap.h UInt16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h
 VirtualCtorInt32.o: VirtualCtorInt32.cc config_dap.h Int32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h
 VirtualCtorUInt32.o: VirtualCtorUInt32.cc config_dap.h UInt32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h
 VirtualCtorFloat32.o: VirtualCtorFloat32.cc config_dap.h Float32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h
 VirtualCtorFloat64.o: VirtualCtorFloat64.cc config_dap.h Float64.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h
 VirtualCtorStr.o: VirtualCtorStr.cc config_dap.h Str.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
   InternalErr.h dods-datatypes.h
 VirtualCtorUrl.o: VirtualCtorUrl.cc config_dap.h Url.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
   InternalErr.h dods-datatypes.h Str.h
 VirtualCtorArray.o: VirtualCtorArray.cc config_dap.h Array.h \
   dods-limits.h Vector.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h
+  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h
 VirtualCtorStructure.o: VirtualCtorStructure.cc config_dap.h Structure.h \
-  GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h Error.h \
-  InternalErr.h dods-datatypes.h Constructor.h DDS.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h
+  GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h Error.h \
+  InternalErr.h dods-datatypes.h Constructor.h DDS.h BaseTypeFactory.h \
+  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h
 VirtualCtorSequence.o: VirtualCtorSequence.cc config_dap.h Sequence.h \
-  GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h Error.h \
+  GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h Error.h \
   InternalErr.h dods-datatypes.h Constructor.h
 VirtualCtorGrid.o: VirtualCtorGrid.cc config_dap.h Grid.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
   dods-datatypes.h Constructor.h
-util_mit.o: util_mit.cc config_dap.h util_mit.h debug.h
-Error.o: Error.cc config_dap.h Error.h parser.h GSEClause.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h dods-datatypes.h \
-  Array.h dods-limits.h Vector.h DDS.h Constructor.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h Grid.h
-InternalErr.o: InternalErr.cc config_dap.h InternalErr.h Error.h util.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h dods-datatypes.h \
-  Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h DAS.h \
+util_mit.o: util_mit.cc config_dap.h ./util_mit.h debug.h
+BaseTypeFactory.o: BaseTypeFactory.cc Byte.h dods-datatypes.h BaseType.h \
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h Int16.h \
+  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
+  Array.h Vector.h DDS.h Constructor.h BaseTypeFactory.h DAS.h \
   DODSResponseObject.h Clause.h expr.h RValue.h Structure.h Sequence.h \
   Grid.h
+Error.o: Error.cc config_dap.h Error.h parser.h GSEClause.h BaseType.h \
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h InternalErr.h \
+  dods-datatypes.h Array.h dods-limits.h Vector.h DDS.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Grid.h
+InternalErr.o: InternalErr.cc config_dap.h InternalErr.h Error.h util.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h dods-datatypes.h \
+  Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+  dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Structure.h Sequence.h Grid.h
 ResponseTooBigErr.o: ResponseTooBigErr.cc config_dap.h \
   ResponseTooBigErr.h Error.h
 AISResources.o: AISResources.cc config_dap.h AISResources.h GNU/Regex.h \
@@ -970,194 +1006,223 @@ AISDatabaseParser.o: AISDatabaseParser.cc config_dap.h \
   ../../include/libxml2/libxml/threads.h \
   ../../include/libxml2/libxml/HTMLparser.h InternalErr.h Error.h \
   AISExceptions.h AISResources.h GNU/Regex.h Resource.h util.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h dods-datatypes.h Byte.h Int16.h \
-  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
-  Array.h Vector.h DDS.h Constructor.h DAS.h DODSResponseObject.h \
-  Clause.h expr.h RValue.h Structure.h Sequence.h Grid.h debug.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h dods-datatypes.h Byte.h \
+  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+  dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Structure.h Sequence.h Grid.h debug.h
 AISMerge.o: AISMerge.cc config_dap.h AISMerge.h DAS.h GNU/Pix.h \
-  IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
+  ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
   HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h util.h \
-  BaseType.h InternalErr.h dods-datatypes.h Byte.h Int16.h UInt16.h \
-  Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
-  Vector.h DDS.h Constructor.h Clause.h expr.h RValue.h Structure.h \
+  ../../include/curl/easy.h ../../include/curl/multi.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h RCReader.h util.h BaseType.h InternalErr.h \
+  dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
+  Constructor.h BaseTypeFactory.h Clause.h expr.h RValue.h Structure.h \
   Sequence.h Grid.h ObjectType.h HTTPCache.h ResponseTooBigErr.h \
   HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
   Response.h debug.h AISResources.h GNU/Regex.h Resource.h \
   AISExceptions.h
 AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
-  GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
-  DDS.h BaseType.h InternalErr.h dods-datatypes.h Constructor.h Clause.h \
-  expr.h RValue.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h \
-  Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
-  Structure.h Sequence.h Grid.h DataDDS.h HTTPConnect.h \
+  GNU/Pix.h ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
+  DDS.h BaseType.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h Clause.h expr.h RValue.h util.h Byte.h Int16.h \
+  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
+  Array.h Vector.h Structure.h Sequence.h Grid.h DataDDS.h HTTPConnect.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
-  ObjectType.h HTTPCache.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
-  Response.h debug.h AISMerge.h AISResources.h GNU/Regex.h Resource.h \
-  AISExceptions.h
+  ../../include/curl/easy.h ../../include/curl/multi.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h RCReader.h ObjectType.h HTTPCache.h \
+  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
+  SignalHandlerRegisteredErr.h HTTPResponse.h Response.h debug.h \
+  AISMerge.h AISResources.h GNU/Regex.h Resource.h AISExceptions.h
 TestByte.o: TestByte.cc config_dap.h TestByte.h Byte.h dods-datatypes.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
   InternalErr.h TestCommon.h
 TestInt32.o: TestInt32.cc config_dap.h TestInt32.h Int32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h TestCommon.h
 TestFloat64.o: TestFloat64.cc config_dap.h TestFloat64.h Float64.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h TestCommon.h
 TestStr.o: TestStr.cc config_dap.h TestStr.h dods-limits.h Str.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
   InternalErr.h dods-datatypes.h TestCommon.h util.h Byte.h Int16.h \
   UInt16.h Int32.h UInt32.h Float32.h Float64.h Url.h Array.h Vector.h \
-  DDS.h Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Structure.h Sequence.h Grid.h
+  DDS.h Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h \
+  Clause.h expr.h RValue.h Structure.h Sequence.h Grid.h
 TestUrl.o: TestUrl.cc config_dap.h TestUrl.h Url.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
   InternalErr.h dods-datatypes.h Str.h TestCommon.h
 TestArray.o: TestArray.cc config_dap.h TestArray.h Array.h dods-limits.h \
-  Vector.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
-  InternalErr.h dods-datatypes.h DDS.h Constructor.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h TestCommon.h
+  Vector.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
+  InternalErr.h dods-datatypes.h DDS.h Constructor.h BaseTypeFactory.h \
+  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h TestCommon.h
 TestStructure.o: TestStructure.cc config_dap.h TestStructure.h \
-  Structure.h GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h Error.h \
-  InternalErr.h dods-datatypes.h Constructor.h DDS.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h TestCommon.h
+  Structure.h GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h \
+  Error.h InternalErr.h dods-datatypes.h Constructor.h DDS.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  TestCommon.h
 TestSequence.o: TestSequence.cc TestSequence.h Sequence.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
   dods-datatypes.h Constructor.h TestCommon.h debug.h
-TestGrid.o: TestGrid.cc TestGrid.h Grid.h GNU/Pix.h IteratorAdapter.h \
+TestGrid.o: TestGrid.cc TestGrid.h Grid.h GNU/Pix.h ./IteratorAdapter.h \
   BaseType.h AttrTable.h Error.h InternalErr.h dods-datatypes.h \
   Constructor.h TestCommon.h
 TestUInt32.o: TestUInt32.cc config_dap.h TestUInt32.h UInt32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h TestCommon.h
 TestInt16.o: TestInt16.cc config_dap.h TestInt16.h Int16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h TestCommon.h
 TestUInt16.o: TestUInt16.cc config_dap.h TestUInt16.h UInt16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h TestCommon.h
 TestFloat32.o: TestFloat32.cc config_dap.h TestFloat32.h Float32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   Error.h InternalErr.h TestCommon.h
+TestCommon.o: TestCommon.cc TestCommon.h InternalErr.h Error.h
+TestTypeFactory.o: TestTypeFactory.cc TestByte.h Byte.h dods-datatypes.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
+  InternalErr.h TestCommon.h TestInt16.h Int16.h TestUInt16.h UInt16.h \
+  TestInt32.h Int32.h TestUInt32.h UInt32.h TestFloat32.h Float32.h \
+  TestFloat64.h Float64.h TestStr.h dods-limits.h Str.h TestUrl.h Url.h \
+  TestArray.h Array.h Vector.h DDS.h Constructor.h BaseTypeFactory.h \
+  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h TestStructure.h \
+  Structure.h TestSequence.h Sequence.h TestGrid.h Grid.h \
+  TestTypeFactory.h
 das-test.o: das-test.cc config_dap.h GNU/GetOpt.h DAS.h GNU/Pix.h \
-  IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h das.tab.h
+  ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h das.tab.h
 dds-test.o: dds-test.cc config_dap.h GNU/GetOpt.h parser.h Error.h \
-  GSEClause.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  GSEClause.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   InternalErr.h dods-datatypes.h Array.h dods-limits.h Vector.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Grid.h dds.tab.h Int32.h util.h Byte.h Int16.h UInt16.h UInt32.h \
-  Float32.h Float64.h Str.h Url.h Structure.h Sequence.h
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Grid.h dds.tab.h Int32.h util.h Byte.h Int16.h UInt16.h \
+  UInt32.h Float32.h Float64.h Str.h Url.h Structure.h Sequence.h
 expr-test.o: expr-test.cc config_dap.h GNU/GetOpt.h DDS.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
-  dods-datatypes.h Constructor.h DAS.h DODSResponseObject.h Clause.h \
-  expr.h RValue.h DataDDS.h TestSequence.h Sequence.h TestCommon.h \
-  parser.h GSEClause.h Array.h dods-limits.h Vector.h Grid.h expr.tab.h \
-  util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
-  Str.h Url.h Structure.h debug.h
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  dods-datatypes.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h DataDDS.h TestSequence.h \
+  Sequence.h TestCommon.h TestTypeFactory.h parser.h GSEClause.h Array.h \
+  dods-limits.h Vector.h Grid.h expr.tab.h util.h Byte.h Int16.h UInt16.h \
+  Int32.h UInt32.h Float32.h Float64.h Str.h Url.h Structure.h debug.h
 error-test.o: error-test.cc config_dap.h GNU/GetOpt.h Error.h parser.h \
-  GSEClause.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  GSEClause.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
   InternalErr.h dods-datatypes.h Array.h dods-limits.h Vector.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Grid.h Error.tab.h
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Grid.h Error.tab.h
 geturl.o: geturl.cc config_dap.h GNU/GetOpt.h AISConnect.h Connect.h \
-  DAS.h GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h \
+  DAS.h GNU/Pix.h ./IteratorAdapter.h AttrTable.h Error.h \
   DODSResponseObject.h DDS.h BaseType.h InternalErr.h dods-datatypes.h \
-  Constructor.h Clause.h expr.h RValue.h util.h Byte.h Int16.h UInt16.h \
-  Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
-  Vector.h Structure.h Sequence.h Grid.h DataDDS.h HTTPConnect.h \
-  ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
-  ObjectType.h HTTPCache.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
-  Response.h debug.h AISMerge.h AISResources.h GNU/Regex.h Resource.h \
-  AISExceptions.h
-ThreadTest.o: ThreadTest.cc Connect.h DAS.h GNU/Pix.h IteratorAdapter.h \
-  AttrTable.h Error.h DODSResponseObject.h DDS.h BaseType.h InternalErr.h \
-  dods-datatypes.h Constructor.h Clause.h expr.h RValue.h util.h Byte.h \
+  Constructor.h BaseTypeFactory.h Clause.h expr.h RValue.h util.h Byte.h \
   Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
   dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
   DataDDS.h HTTPConnect.h ../../include/curl/curl.h \
   ../../include/curl/types.h ../../include/curl/easy.h \
-  ../../include/curl/multi.h RCReader.h ObjectType.h HTTPCache.h \
-  config_dap.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
-  SignalHandlerRegisteredErr.h HTTPResponse.h Response.h debug.h
+  ../../include/curl/multi.h ../../include/curl/curl.h \
+  ../../include/curl/types.h ../../include/curl/easy.h RCReader.h \
+  ObjectType.h HTTPCache.h ResponseTooBigErr.h \
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h debug.h AISMerge.h AISResources.h GNU/Regex.h Resource.h \
+  AISExceptions.h
+ThreadTest.o: ThreadTest.cc Connect.h DAS.h GNU/Pix.h ./IteratorAdapter.h \
+  AttrTable.h Error.h DODSResponseObject.h DDS.h BaseType.h InternalErr.h \
+  dods-datatypes.h Constructor.h BaseTypeFactory.h Clause.h expr.h \
+  RValue.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h DataDDS.h HTTPConnect.h ../../include/curl/curl.h \
+  ../../include/curl/types.h ../../include/curl/easy.h \
+  ../../include/curl/multi.h ../../include/curl/curl.h \
+  ../../include/curl/types.h ../../include/curl/easy.h RCReader.h \
+  ObjectType.h HTTPCache.h config_dap.h ResponseTooBigErr.h \
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h debug.h
 server_handler.o: server_handler.cc config_dap.h DODSFilter.h DAS.h \
-  GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
-  DDS.h BaseType.h InternalErr.h dods-datatypes.h Constructor.h Clause.h \
-  expr.h RValue.h ObjectType.h debug.h cgi_util.h EncodingType.h
+  GNU/Pix.h ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
+  DDS.h BaseType.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h Clause.h expr.h RValue.h ObjectType.h debug.h \
+  cgi_util.h EncodingType.h
 cgi_util.o: cgi_util.cc config_dap.h cgi_util.h DDS.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
-  dods-datatypes.h Constructor.h DAS.h DODSResponseObject.h Clause.h \
-  expr.h RValue.h ObjectType.h EncodingType.h util.h Byte.h Int16.h \
-  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
-  Array.h Vector.h Structure.h Sequence.h Grid.h debug.h
-escaping.o: escaping.cc GNU/Regex.h Error.h InternalErr.h
-DODSFilter.o: DODSFilter.cc config_dap.h GNU/GetOpt.h DAS.h GNU/Pix.h \
-  IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h DDS.h \
-  BaseType.h InternalErr.h dods-datatypes.h Constructor.h Clause.h expr.h \
-  RValue.h debug.h cgi_util.h ObjectType.h EncodingType.h util.h Byte.h \
-  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  escaping.h DODSFilter.h SignalHandler.h EventHandler.h AlarmHandler.h
-SignalHandler.o: SignalHandler.cc config_dap.h SignalHandler.h \
-  EventHandler.h Error.h cgi_util.h DDS.h GNU/Pix.h IteratorAdapter.h \
-  BaseType.h AttrTable.h InternalErr.h dods-datatypes.h Constructor.h \
-  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h ObjectType.h \
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  dods-datatypes.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h ObjectType.h \
   EncodingType.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h \
   Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
+  Structure.h Sequence.h Grid.h debug.h
+escaping.o: escaping.cc GNU/Regex.h Error.h InternalErr.h
+DODSFilter.o: DODSFilter.cc config_dap.h GNU/GetOpt.h DAS.h GNU/Pix.h \
+  ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h DDS.h \
+  BaseType.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h Clause.h expr.h RValue.h debug.h cgi_util.h \
+  ObjectType.h EncodingType.h util.h Byte.h Int16.h UInt16.h Int32.h \
+  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
+  Structure.h Sequence.h Grid.h escaping.h DODSFilter.h SignalHandler.h \
+  EventHandler.h AlarmHandler.h
+SignalHandler.o: SignalHandler.cc config_dap.h SignalHandler.h \
+  EventHandler.h Error.h cgi_util.h DDS.h GNU/Pix.h ./IteratorAdapter.h \
+  BaseType.h AttrTable.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  ObjectType.h EncodingType.h util.h Byte.h Int16.h UInt16.h Int32.h \
+  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
   Structure.h Sequence.h Grid.h
+OPeNDAPFile.o: OPeNDAPFile.cc OPeNDAPFile.h
+OPeNDAPDir.o: OPeNDAPDir.cc OPeNDAPDir.h OPeNDAPFile.h GNU/Regex.h
 HTTPCacheTest.o: HTTPCacheTest.cc HTTPCache.h config_dap.h Error.h \
   InternalErr.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
   SignalHandlerRegisteredErr.h HTTPConnect.h ../../include/curl/curl.h \
   ../../include/curl/types.h ../../include/curl/easy.h \
-  ../../include/curl/multi.h RCReader.h util.h BaseType.h AttrTable.h \
-  GNU/Pix.h IteratorAdapter.h dods-datatypes.h Byte.h Int16.h UInt16.h \
-  Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
-  Vector.h DDS.h Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h \
-  RValue.h Structure.h Sequence.h Grid.h ObjectType.h HTTPResponse.h \
-  Response.h debug.h SignalHandler.h EventHandler.h cgi_util.h \
-  EncodingType.h
+  ../../include/curl/multi.h ../../include/curl/curl.h \
+  ../../include/curl/types.h ../../include/curl/easy.h RCReader.h util.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h dods-datatypes.h \
+  Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+  dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Structure.h Sequence.h Grid.h ObjectType.h HTTPResponse.h Response.h \
+  debug.h SignalHandler.h EventHandler.h cgi_util.h EncodingType.h
 HTTPConnectTest.o: HTTPConnectTest.cc GNU/Regex.h HTTPConnect.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h Error.h \
-  util.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h \
+  ../../include/curl/easy.h ../../include/curl/multi.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h RCReader.h Error.h util.h BaseType.h \
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h InternalErr.h \
   dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
   Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Structure.h Sequence.h Grid.h ObjectType.h HTTPCache.h config_dap.h \
-  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Structure.h Sequence.h Grid.h ObjectType.h HTTPCache.h \
+  config_dap.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
   SignalHandlerRegisteredErr.h HTTPResponse.h Response.h debug.h
 cgiUtilTest.o: cgiUtilTest.cc GNU/Regex.h cgi_util.h DDS.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
-  dods-datatypes.h Constructor.h DAS.h DODSResponseObject.h Clause.h \
-  expr.h RValue.h ObjectType.h EncodingType.h debug.h
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  dods-datatypes.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h ObjectType.h \
+  EncodingType.h debug.h
 AttrTableTest.o: AttrTableTest.cc GNU/Regex.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h
-DDSTest.o: DDSTest.cc DDS.h GNU/Pix.h IteratorAdapter.h BaseType.h \
-  AttrTable.h Error.h InternalErr.h dods-datatypes.h Constructor.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h GNU/Regex.h util.h Byte.h \
-  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h Grid.h \
-  debug.h
+  ./IteratorAdapter.h Error.h
+DDSTest.o: DDSTest.cc DDS.h GNU/Pix.h ./IteratorAdapter.h BaseType.h \
+  AttrTable.h Error.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  GNU/Regex.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
+  Sequence.h Grid.h debug.h
 SequenceTest.o: SequenceTest.cc GNU/Regex.h Sequence.h GNU/Pix.h \
-  IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
+  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
   dods-datatypes.h Constructor.h Int32.h Str.h dods-limits.h debug.h
 ByteTest.o: ByteTest.cc Byte.h dods-datatypes.h BaseType.h AttrTable.h \
-  GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h
-DASTest.o: DASTest.cc DAS.h GNU/Pix.h IteratorAdapter.h AttrTable.h \
+  GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h
+DASTest.o: DASTest.cc DAS.h GNU/Pix.h ./IteratorAdapter.h AttrTable.h \
   Error.h DODSResponseObject.h debug.h
 generalUtilTest.o: generalUtilTest.cc debug.h util.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h \
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h \
   dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
   Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
-  Constructor.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  Structure.h Sequence.h Grid.h escaping.h
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Structure.h Sequence.h Grid.h escaping.h
 parserUtilTest.o: parserUtilTest.cc parser.h Error.h GSEClause.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h InternalErr.h \
   dods-datatypes.h Array.h dods-limits.h Vector.h DDS.h Constructor.h \
-  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h Grid.h
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Grid.h
 AISDatabaseParserTest.o: AISDatabaseParserTest.cc AISDatabaseParser.h \
   ../../include/libxml2/libxml/parserInternals.h \
   ../../include/libxml2/libxml/parser.h \
@@ -1180,31 +1245,33 @@ AISDatabaseParserTest.o: AISDatabaseParserTest.cc AISDatabaseParser.h \
 AISResourcesTest.o: AISResourcesTest.cc AISResources.h GNU/Regex.h \
   Resource.h Error.h AISExceptions.h debug.h
 AISMergeTest.o: AISMergeTest.cc Connect.h DAS.h GNU/Pix.h \
-  IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h DDS.h \
-  BaseType.h InternalErr.h dods-datatypes.h Constructor.h Clause.h expr.h \
-  RValue.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
-  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
-  Sequence.h Grid.h DataDDS.h HTTPConnect.h ../../include/curl/curl.h \
-  ../../include/curl/types.h ../../include/curl/easy.h \
-  ../../include/curl/multi.h RCReader.h ObjectType.h HTTPCache.h \
+  ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h DDS.h \
+  BaseType.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h Clause.h expr.h RValue.h util.h Byte.h Int16.h \
+  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
+  Array.h Vector.h Structure.h Sequence.h Grid.h DataDDS.h HTTPConnect.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h ../../include/curl/multi.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h RCReader.h ObjectType.h HTTPCache.h \
   config_dap.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
   SignalHandlerRegisteredErr.h HTTPResponse.h Response.h debug.h \
   AISMerge.h AISResources.h GNU/Regex.h Resource.h AISExceptions.h
 DODSFilterTest.o: DODSFilterTest.cc DODSFilter.h DAS.h GNU/Pix.h \
-  IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h DDS.h \
-  BaseType.h InternalErr.h dods-datatypes.h Constructor.h Clause.h expr.h \
-  RValue.h GNU/Regex.h debug.h
+  ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h DDS.h \
+  BaseType.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h Clause.h expr.h RValue.h GNU/Regex.h debug.h
 SignalHandlerTest.o: SignalHandlerTest.cc SignalHandler.h EventHandler.h \
-  Error.h cgi_util.h DDS.h GNU/Pix.h IteratorAdapter.h BaseType.h \
-  AttrTable.h InternalErr.h dods-datatypes.h Constructor.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h ObjectType.h \
-  EncodingType.h debug.h
+  Error.h cgi_util.h DDS.h GNU/Pix.h ./IteratorAdapter.h BaseType.h \
+  AttrTable.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  ObjectType.h EncodingType.h debug.h
 RCReaderTest.o: RCReaderTest.cc RCReader.h Error.h util.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h dods-datatypes.h \
-  Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
-  dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h Structure.h Sequence.h \
-  Grid.h debug.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h InternalErr.h \
+  dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
+  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
+  expr.h RValue.h Structure.h Sequence.h Grid.h debug.h
 DDXParserTest.o: DDXParserTest.cc DDXParser.h \
   ../../include/libxml2/libxml/parserInternals.h \
   ../../include/libxml2/libxml/parser.h \
@@ -1223,9 +1290,14 @@ DDXParserTest.o: DDXParserTest.cc DDXParser.h \
   ../../include/libxml2/libxml/xmlmemory.h \
   ../../include/libxml2/libxml/threads.h \
   ../../include/libxml2/libxml/HTMLparser.h DDXExceptions.h Error.h DDS.h \
-  GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h InternalErr.h \
-  dods-datatypes.h Constructor.h DAS.h DODSResponseObject.h Clause.h \
-  expr.h RValue.h debug.h
+  GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h InternalErr.h \
+  dods-datatypes.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h debug.h
+ArrayTest.o: ArrayTest.cc GNU/Regex.h Array.h dods-limits.h Vector.h \
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
+  InternalErr.h dods-datatypes.h DDS.h Constructor.h BaseTypeFactory.h \
+  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h Int16.h Str.h \
+  Structure.h debug.h
 AISResources.o: AISResources.cc config_dap.h AISResources.h GNU/Regex.h \
   Resource.h Error.h AISExceptions.h AISDatabaseParser.h \
   ../../include/libxml2/libxml/parserInternals.h \
@@ -1264,36 +1336,41 @@ AISDatabaseParser.o: AISDatabaseParser.cc config_dap.h \
   ../../include/libxml2/libxml/threads.h \
   ../../include/libxml2/libxml/HTMLparser.h InternalErr.h Error.h \
   AISExceptions.h AISResources.h GNU/Regex.h Resource.h util.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h dods-datatypes.h Byte.h Int16.h \
-  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
-  Array.h Vector.h DDS.h Constructor.h DAS.h DODSResponseObject.h \
-  Clause.h expr.h RValue.h Structure.h Sequence.h Grid.h debug.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h dods-datatypes.h Byte.h \
+  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+  dods-limits.h Url.h Array.h Vector.h DDS.h Constructor.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Structure.h Sequence.h Grid.h debug.h
 AISMerge.o: AISMerge.cc config_dap.h AISMerge.h DAS.h GNU/Pix.h \
-  IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
+  ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
   HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h util.h \
-  BaseType.h InternalErr.h dods-datatypes.h Byte.h Int16.h UInt16.h \
-  Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
-  Vector.h DDS.h Constructor.h Clause.h expr.h RValue.h Structure.h \
+  ../../include/curl/easy.h ../../include/curl/multi.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h RCReader.h util.h BaseType.h InternalErr.h \
+  dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
+  Constructor.h BaseTypeFactory.h Clause.h expr.h RValue.h Structure.h \
   Sequence.h Grid.h ObjectType.h HTTPCache.h ResponseTooBigErr.h \
   HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
   Response.h debug.h AISResources.h GNU/Regex.h Resource.h \
   AISExceptions.h
 AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
-  GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
-  DDS.h BaseType.h InternalErr.h dods-datatypes.h Constructor.h Clause.h \
-  expr.h RValue.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h \
-  Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
-  Structure.h Sequence.h Grid.h DataDDS.h HTTPConnect.h \
+  GNU/Pix.h ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
+  DDS.h BaseType.h InternalErr.h dods-datatypes.h Constructor.h \
+  BaseTypeFactory.h Clause.h expr.h RValue.h util.h Byte.h Int16.h \
+  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
+  Array.h Vector.h Structure.h Sequence.h Grid.h DataDDS.h HTTPConnect.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
-  ObjectType.h HTTPCache.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
-  Response.h debug.h AISMerge.h AISResources.h GNU/Regex.h Resource.h \
-  AISExceptions.h
+  ../../include/curl/easy.h ../../include/curl/multi.h \
+  ../../include/curl/curl.h ../../include/curl/types.h \
+  ../../include/curl/easy.h RCReader.h ObjectType.h HTTPCache.h \
+  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
+  SignalHandlerRegisteredErr.h HTTPResponse.h Response.h debug.h \
+  AISMerge.h AISResources.h GNU/Regex.h Resource.h AISExceptions.h
 DDXParser.o: DDXParser.cc config_dap.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h Constructor.h \
-  DDXParser.h ../../include/libxml2/libxml/parserInternals.h \
+  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
+  Constructor.h DDXParser.h \
+  ../../include/libxml2/libxml/parserInternals.h \
   ../../include/libxml2/libxml/parser.h \
   ../../include/libxml2/libxml/tree.h \
   ../../include/libxml2/libxml/xmlversion.h \
@@ -1309,10 +1386,11 @@ DDXParser.o: DDXParser.cc config_dap.h BaseType.h AttrTable.h GNU/Pix.h \
   ../../include/libxml2/libxml/SAX.h ../../include/libxml2/libxml/xlink.h \
   ../../include/libxml2/libxml/xmlmemory.h \
   ../../include/libxml2/libxml/threads.h \
-  ../../include/libxml2/libxml/HTMLparser.h DDXExceptions.h DDS.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h util.h Byte.h Int16.h \
-  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
-  Array.h Vector.h Structure.h Sequence.h Grid.h debug.h
+  ../../include/libxml2/libxml/HTMLparser.h DDXExceptions.h DDS.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
+  Str.h dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h \
+  Grid.h debug.h
 GetOpt.o: GNU/GetOpt.cc GNU/GetOpt.h
 Regex.o: GNU/Regex.cc GNU/builtin.h regex-0.12/regex.h GNU/Regex.h
 error.o: GNU/error.cc GNU/builtin.h
@@ -1320,12 +1398,14 @@ regex.o: regex-0.12/regex.c config.h regex-0.12/regex.h
 IteratorAdapter.o: IteratorAdapter.cc IteratorAdapter.h
 ArrayIterAdapter.o: ArrayIterAdapter.cc ArrayIterAdapter.h \
   IteratorAdapter.h Array.h dods-limits.h Vector.h BaseType.h AttrTable.h \
-  GNU/Pix.h Error.h InternalErr.h dods-datatypes.h DDS.h Constructor.h \
-  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h
+  GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
+  DDS.h Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h \
+  Clause.h expr.h RValue.h
 AttrIterAdapter.o: AttrIterAdapter.cc AttrIterAdapter.h IteratorAdapter.h \
-  AttrTable.h GNU/Pix.h Error.h
+  AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h
 BTIterAdapter.o: BTIterAdapter.cc BTIterAdapter.h IteratorAdapter.h \
-  BaseType.h AttrTable.h GNU/Pix.h Error.h InternalErr.h dods-datatypes.h
+  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
+  InternalErr.h dods-datatypes.h
 ClauseIterAdapter.o: ClauseIterAdapter.cc ClauseIterAdapter.h \
   IteratorAdapter.h Clause.h expr.h BaseType.h AttrTable.h GNU/Pix.h \
-  Error.h InternalErr.h dods-datatypes.h RValue.h
+  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h RValue.h
