@@ -45,11 +45,17 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.8  1996/05/14 15:39:02  jimg
-/* These changes have already been checked in once before. However, I
-/* corrupted the source repository and restored it from a 5/9/96 backup
-/* tape. The previous version's log entry should cover the changes.
+/* Revision 1.9  1996/05/29 22:08:57  jimg
+/* Made changes necessary to support CEs that return the value of a function
+/* instead of the value of a variable. This was done so that it would be
+/* possible to translate Sequences into Arrays without first reading the
+/* entire sequence over the network.
 /*
+ * Revision 1.8  1996/05/14 15:39:02  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
  * Revision 1.7  1996/04/05 00:22:21  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
@@ -82,7 +88,7 @@
 
 %{
 
-static char rcsid[]={"$Id: expr.y,v 1.8 1996/05/14 15:39:02 jimg Exp $"};
+static char rcsid[]={"$Id: expr.y,v 1.9 1996/05/29 22:08:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -108,7 +114,7 @@ static char rcsid[]={"$Id: expr.y,v 1.8 1996/05/14 15:39:02 jimg Exp $"};
 #include "util.h"
 #include "debug.h"
 #include "parser.h"
-#include "expr.h"		/* the types IntList, IntListList and value */
+#include "expr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -119,11 +125,11 @@ int exprlex(void);		/* the scanner; see expr.lex */
 int exprerror(const char *s);	/* easier to overload than use stdarg... */
 int exprerror(const char *s, const char *s2);
 
-IntList *make_array_index(value &i1, value &i2, value &i3);
-IntListList *make_array_indeces(IntList *index);
-IntListList *append_array_index(IntListList *indeces, IntList *index);
-void delete_array_indeces(IntListList *indeces);
-bool process_array_indeces(BaseType *variable, IntListList *indeces);
+int_list *make_array_index(value &i1, value &i2, value &i3);
+int_list_list *make_array_indeces(int_list *index);
+int_list_list *append_array_index(int_list_list *indeces, int_list *index);
+void delete_array_indeces(int_list_list *indeces);
+bool process_array_indeces(BaseType *variable, int_list_list *indeces);
 
 bool is_array_t(BaseType *variable);
 
@@ -135,8 +141,8 @@ BaseType *make_variable(DDS &table, const value &val);
 rvalue *dereference_variable(DDS &table, rvalue *rv);
 rvalue *dereference_url(DDS &table, value &val);
 
-bool_func_ptr get_function(const DDS &table, const char *name);
-btp_func_ptr get_btp_function(const DDS &table, const char *name);
+bool_func get_function(const DDS &table, const char *name);
+btp_func get_btp_function(const DDS &table, const char *name);
 
 /* 
   The parser receives a DDS &table as a formal argument. TABLE is the DDS
@@ -156,11 +162,11 @@ btp_func_ptr get_btp_function(const DDS &table, const char *name);
 
     value val;
 
-    bool_func_ptr bool_func;
-    btp_func_ptr btp_func;
+    bool_func b_func;
+    btp_func bt_func;
 
-    IntList *int_l_ptr;
-    IntListList *int_ll_ptr;
+    int_list *int_l_ptr;
+    int_list_list *int_ll_ptr;
     
     rvalue *rval_ptr;
     rvalue_list *r_val_l_ptr;
@@ -205,6 +211,18 @@ constraint_expr: /* empty constraint --> send all */
                  | projection '&' selection
                    {
 		       $$ = $1 && $3;
+		   }
+                 | ID '(' r_value_list ')'
+		   {
+		       btp_func func = get_btp_function(table, $1);
+		       if (!func) {
+			   exprerror("Not a BaseType pointer function", $1);
+			   $$ = false;
+		       }
+		       else {
+			   table.append_clause(func, $3);
+			   $$ = true;
+		       }
 		   }
 ;
 
@@ -287,13 +305,13 @@ clause:		r_value rel_op '{' r_value_list '}'
 		  }
 		| ID '(' r_value_list ')'
 		  {
-		      bool_func_ptr b_f_ptr = get_function(table, $1);
-		      if (!b_f_ptr) {
+		      bool_func b_func = get_function(table, $1);
+		      if (!b_func) {
   			  exprerror("Not a boolean function", $1);
 			  $$ = false;
 		      }
 		      else {
-			  table.append_clause(b_f_ptr, $3);
+			  table.append_clause(b_func, $3);
 			  $$ = true;
 		      }
 		  }
@@ -306,7 +324,7 @@ r_value:        identifier
 		      $$ = dereference_variable(table, $2);
 		      if (!$$)
 			  exprerror("Could not dereference variable", 
-				    ($2)->btp->name());
+				    ($2)->value->name());
 		  }
 		| '*' STR
 		  {
@@ -316,12 +334,12 @@ r_value:        identifier
 		  }
 		| ID '(' r_value_list ')'
 		  {
-		      btp_func_ptr btp_f_ptr = get_btp_function(table, $1);
-		      if (!btp_f_ptr) {
+		      btp_func bt_func = get_btp_function(table, $1);
+		      if (!bt_func) {
   			  exprerror("Not a BaseType * function", $1);
 			  $$ = 0;
 		      }
-		      $$ = new rvalue(new btp_func_rvalue(btp_f_ptr, $3));
+		      $$ = new rvalue(new func_rvalue(bt_func, $3));
 		  }
 ;
 
@@ -436,15 +454,15 @@ exprerror(const char *s, const char *s2)
 }
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
-// IntList which contains those values.
+// int_list which contains those values.
 //
-// Returns: A pointer to an IntList of three integers or NULL if any of the
+// Returns: A pointer to an int_list of three integers or NULL if any of the
 // values are not integers.
 
-IntList *
+int_list *
 make_array_index(value &i1, value &i2, value &i3)
 {
-    IntList *index = new IntList;
+    int_list *index = new int_list;
 
     if (i1.type != dods_int32_c
 	|| i2.type != dods_int32_c
@@ -464,10 +482,10 @@ make_array_index(value &i1, value &i2, value &i3)
     return index;
 }
 
-IntListList *
-make_array_indeces(IntList *index)
+int_list_list *
+make_array_indeces(int_list *index)
 {
-    IntListList *indeces = new IntListList;
+    int_list_list *indeces = new int_list_list;
 
     DBG(Pix dp;\
 	cout << "index: ";\
@@ -480,8 +498,8 @@ make_array_indeces(IntList *index)
     return indeces;
 }
 
-IntListList *
-append_array_index(IntListList *indeces, IntList *index)
+int_list_list *
+append_array_index(int_list_list *indeces, int_list *index)
 {
     indeces->append(index);
 
@@ -491,7 +509,7 @@ append_array_index(IntListList *indeces, IntList *index)
 // Delete an array indeces list. 
 
 void
-delete_array_indeces(IntListList *indeces)
+delete_array_indeces(int_list_list *indeces)
 {
     for (Pix p = indeces->first(); p; indeces->next(p))
 	delete (*indeces)(p);
@@ -511,7 +529,7 @@ is_array_t(BaseType *variable)
 }
 
 bool
-process_array_indeces(BaseType *variable, IntListList *indeces)
+process_array_indeces(BaseType *variable, int_list_list *indeces)
 {
     bool status = true;
 
@@ -524,7 +542,7 @@ process_array_indeces(BaseType *variable, IntListList *indeces)
 	 p && r; 
 	 indeces->next(p), a->next_dim(r)) {
 
-	IntList *index = (*indeces)(p);
+	int_list *index = (*indeces)(p);
 
 	Pix q = index->first(); 
 	int start = (*index)(q);
@@ -696,10 +714,10 @@ make_variable(DDS &table, const value &val)
 //
 // Returns: A poitner to the function or NULL if not such function exists.
 
-bool_func_ptr
+bool_func
 get_function(const DDS &table, const char *name)
 {
-    bool_func_ptr f;
+    bool_func f;
 
     if (table.find_function(name, &f))
 	return f;
@@ -707,10 +725,10 @@ get_function(const DDS &table, const char *name)
 	return 0;
 }
 
-btp_func_ptr
+btp_func
 get_btp_function(const DDS &table, const char *name)
 {
-    btp_func_ptr f;
+    btp_func f;
 
     if (table.find_function(name, &f))
 	return f;

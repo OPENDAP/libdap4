@@ -6,9 +6,15 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.10  1996/04/05 00:22:25  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.11  1996/05/29 22:09:00  jimg
+/* Made changes necessary to support CEs that return the value of a function
+/* instead of the value of a variable. This was done so that it would be
+/* possible to translate Sequences into Arrays without first reading the
+/* entire sequence over the network.
 /*
+ * Revision 1.10  1996/04/05 00:22:25  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
  * Revision 1.9  1996/04/04 17:38:35  jimg
  * Merged changes from version 1.1.1.
  *
@@ -69,8 +75,15 @@ XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
 FILE *text_to_temp(String text);
 
+bool func_member(int argc, BaseType *argv[]);
+bool func_null(int argc, BaseType *argv[]);
+BaseType *func_nth(int argc, BaseType *argv[]);
+BaseType *func_length(int argc, BaseType *argv[]);
+
 extern "C" bool_t xdr_str(XDR *xdrs, String &buf);
+#if 0
 extern "C" bool_t xdr_str_array(XDR *xdrs, String *buf);
+#endif
 
 Byte *NewByte(const String &n = (char *)0);
 Int32 *NewInt32(const String &n = (char *)0);

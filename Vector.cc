@@ -39,6 +39,12 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.9  1996/05/29 22:08:53  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
 // Revision 1.8  1996/05/16 22:49:53  jimg
 // Dan's changes for version 2.0. Added a parameter to read that returns
 // an error code so that EOF can be distinguished from an actual error when
@@ -74,7 +80,7 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.8 1996/05/16 22:49:53 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.9 1996/05/29 22:08:53 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -85,7 +91,6 @@ static char rcsid[]= {"$Id: Vector.cc,v 1.8 1996/05/16 22:49:53 jimg Exp $"};
 #include "Vector.h"
 #include "DDS.h"
 #include "util.h"
-#include "errmsg.h"
 #include "debug.h"
 
 #ifdef TRACE_NEW

@@ -13,9 +13,15 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.18  1996/05/16 22:44:53  jimg
-/* Dan's changes for 2.0.
+/* Revision 1.19  1996/05/29 22:08:47  jimg
+/* Made changes necessary to support CEs that return the value of a function
+/* instead of the value of a variable. This was done so that it would be
+/* possible to translate Sequences into Arrays without first reading the
+/* entire sequence over the network.
 /*
+ * Revision 1.18  1996/05/16 22:44:53  jimg
+ * Dan's changes for 2.0.
+ *
  * Revision 1.17  1996/03/05 17:43:49  jimg
  * Added ce_eval to serailize member function.
  *
@@ -152,6 +158,16 @@ public:
 
     virtual unsigned int width();
 
+    /// Return the number of elements in a sequence.
+    //* LENGTH returns the number of elements in a Sequence object. Note that
+    //* this is *not* the number of items in a row, but the number of rows in
+    //* the complete sequence object. To be meaningful, this must be computed
+    //* after CE evaluation. The purpose of this mfunc is to facilitate
+    //* translations between Sequence objects and Array objects, particularly
+    //* when the Sequence is too large to be transferred from the server to the
+    //* client in its entirety.
+    virtual unsigned int length();
+    
     virtual void set_level(int lvl);
     virtual unsigned int read_level();
 

@@ -37,6 +37,12 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.23  1996/05/29 22:08:59  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
 // Revision 1.22  1996/05/22 18:05:45  jimg
 // Merged files from the old netio directory into the dap directory.
 // Removed the errmsg library from the software.
@@ -154,7 +160,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.22 1996/05/22 18:05:45 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.23 1996/05/29 22:08:59 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -174,6 +180,9 @@ static char rcsid[]={"$Id: util.cc,v 1.22 1996/05/22 18:05:45 jimg Exp $"};
 #include "BaseType.h"
 #include "Str.h"
 #include "Url.h"
+#include "List.h"
+#include "Sequence.h"
+#include "util.h"
 #include "debug.h"
 
 #ifdef TRACE_NEW
@@ -285,13 +294,13 @@ delete_xdrstdio(XDR *xdr)
 // otherwise. The formal parameter BUF is modified as a side effect.
 
 extern "C" bool_t
-xdr_str(XDR *xdrs, String *buf)
+xdr_str(XDR *xdrs, String &buf)
 {
     switch (xdrs->x_op) {
       case XDR_ENCODE: {	// BUF is a pointer to a (String *)
 	assert(buf);
 	
-	const char *out_tmp = (const char *)*buf;
+	const char *out_tmp = (const char *)buf;
 
 	return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
       }
@@ -305,7 +314,7 @@ xdr_str(XDR *xdrs, String *buf)
 	if (!stat)
 	    return stat;
 
-	*buf = in_tmp;
+	buf = in_tmp;
 	
 	return stat;
       }
@@ -342,4 +351,120 @@ text_to_temp(String text)
     }
 
     return fp;
+}
+
+// These functions are used by the CE evaluator
+
+bool
+func_member(int argc, BaseType *argv[])
+{
+    if (argc != 2) {
+	cerr << "Wrong number of arguments." << endl;
+	return false;
+    }
+    
+    switch(argv[0]->type()) {
+      case dods_list_c: {
+	List *var = (List *)argv[0];
+	BaseType *btp = (BaseType *)argv[1];
+	bool result = var->member(btp);
+    
+	return result;
+      }
+      
+      default:
+	cerr << "Wrong argument type." << endl;
+	return false;
+    }
+
+}
+
+bool
+func_null(int argc, BaseType *argv[])
+{
+    if (argc != 1) {
+	cerr << "Wrong number of arguments." << endl;
+	return false;
+    }
+    
+    switch(argv[0]->type()) {
+      case  dods_list_c: {
+	List *var = (List *)argv[0];
+	bool result = var->null();
+    
+	return result;
+      }
+
+      default:
+	cerr << "Wrong argument type." << endl;
+	return false;
+    }
+
+}
+
+BaseType *
+func_length(int argc, BaseType *argv[])
+{
+    if (argc != 1) {
+	cerr << "Wrong number of arguments." << endl;
+	return 0;
+    }
+    
+    switch (argv[0]->type()) {
+      case dods_list_c: {
+	  List *var = (List *)argv[0];
+	  dods_int32 result = var->length();
+    
+	  BaseType *ret = (BaseType *)NewInt32("constant");
+	  ret->val2buf(&result);
+	  ret->set_read_p(true);
+	  ret->set_send_p(true);
+
+	  return ret;
+      }
+
+      case dods_sequence_c: {
+	  Sequence *var = (Sequence *)argv[0];
+	  dods_int32 result = var->length();
+    
+	  BaseType *ret = (BaseType *)NewInt32("constant");
+	  ret->val2buf(&result);
+	  ret->set_read_p(true);
+	  ret->set_send_p(true);
+    
+	  return ret;
+      }
+
+      default:
+	cerr << "Wrong type argument to list operator `member'" << endl;
+	return 0;
+    }
+}
+
+BaseType *
+func_nth(int argc, BaseType *argv[])
+{
+    if (argc != 2) {
+	cerr << "Wrong number of arguments." << endl;
+	return 0;
+    }
+    
+    switch (argv[0]->type()) {
+	case dods_list_c: {
+	    if (argv[1]->type() != dods_int32_c) {
+		cerr << "Second argument to NTH must be an integer." << endl;
+		return 0;
+	    }
+	    List *var = (List *)argv[0];
+	    dods_int32 n;
+	    dods_int32 *np = &n;
+	    argv[1]->buf2val((void **)&np);
+
+	    return var->var(n);
+	}
+
+      default:
+	cerr << "Wrong type argument to list operator `nth'" << endl;
+	return 0;
+    }
 }

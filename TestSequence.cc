@@ -38,6 +38,12 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
+// Revision 1.12  1996/05/29 22:08:50  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
 // Revision 1.11  1996/05/22 18:05:27  jimg
 // Merged files from the old netio directory into the dap directory.
 // Removed the errmsg library from the software.
@@ -121,4 +127,10 @@ TestSequence::read(const String &dataset, int &error)
     set_read_p(true);
     
     return true;
+}
+
+unsigned int
+TestSequence::length()
+{
+    return 0;
 }

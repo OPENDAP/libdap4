@@ -37,6 +37,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.21  1996/05/29 22:08:35  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
 // Revision 1.20  1996/05/22 18:05:08  jimg
 // Merged files from the old netio directory into the dap directory.
 // Removed the errmsg library from the software.
@@ -143,7 +149,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.20 1996/05/22 18:05:08 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.21 1996/05/29 22:08:35 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -172,11 +178,6 @@ int ddsparse(DDS &table);	// defined in dds.tab.c
 void exprrestart(FILE *yyin);
 int exprparse(DDS &table);
 
-extern bool list_member(int argc, BaseType *argv[]);
-extern bool list_null(int argc, BaseType *argv[]);
-extern BaseType *list_nth(int argc, BaseType *argv[]);
-extern BaseType *list_length(int argc, BaseType *argv[]);
-
 // Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
 // the `result' of the mfunc.
 //
@@ -199,10 +200,10 @@ DDS::duplicate(const DDS &dds)
 
 DDS::DDS(const String &n) : name(n)
 {
-    add_function("member", list_member); // these are defined in List.cc
-    add_function("null", list_null);
-    add_function("nth", list_nth);
-    add_function("length", list_length);
+    add_function("member", func_member); // See util.cc for func_* definitions
+    add_function("null", func_null);
+    add_function("nth", func_nth);
+    add_function("length", func_length);
 }
 
 DDS::DDS(const DDS &rhs)
@@ -320,7 +321,7 @@ DDS::first_var()
 void 
 DDS::next_var(Pix &p)
 { 
-    if (!vars.empty())
+    if (!vars.empty() && p)
 	vars.next(p); 
 }
 
@@ -350,9 +351,17 @@ DDS::first_clause()
 void
 DDS::next_clause(Pix &p)
 {
-    assert(!expr.empty());
+    assert(!expr.empty() && p);
 
     expr.next(p);
+}
+
+Clause &
+DDS::clause(Pix p)
+{
+    assert(!expr.empty() && p);
+
+    return expr(p);
 }
 
 bool
@@ -367,15 +376,23 @@ DDS::clause_value(Pix p, const String &dataset)
 void
 DDS::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
 {
-    clause clause(op, arg1, arg2);
+    Clause clause(op, arg1, arg2);
 
     expr.append(clause);
 }
 
 void
-DDS::append_clause(bool_func_ptr f, rvalue_list *args)
+DDS::append_clause(bool_func func, rvalue_list *args)
 {
-    clause clause(f, args);
+    Clause clause(func, args);
+
+    expr.append(clause);
+}
+
+void
+DDS::append_clause(btp_func func, rvalue_list *args)
+{
+    Clause clause(func, args);
 
     expr.append(clause);
 }
@@ -387,28 +404,28 @@ DDS::append_constant(BaseType *btp)
 }
 
 void
-DDS::add_function(const String &name, bool_func_ptr f)
+DDS::add_function(const String &name, bool_func f)
 {
     function func(name, f);
     functions.append(func);
 }
 
 void
-DDS::add_function(const String &name, btp_func_ptr f)
+DDS::add_function(const String &name, btp_func f)
 {
     function func(name, f);
     functions.append(func);
 }
 
 bool
-DDS::find_function(const String &name, bool_func_ptr *f) const
+DDS::find_function(const String &name, bool_func *f) const
 {
     if (functions.empty())
 	return 0;
 
     for (Pix p = functions.first(); p; functions.next(p))
 	if (name == functions(p).name) {
-	    *f = functions(p).f_ptr;
+	    *f = functions(p).b_func;
 	    return true;
 	}
 
@@ -416,18 +433,53 @@ DDS::find_function(const String &name, bool_func_ptr *f) const
 }
 
 bool
-DDS::find_function(const String &name, btp_func_ptr *f) const
+DDS::find_function(const String &name, btp_func *f) const
 {
     if (functions.empty())
 	return 0;
 
     for (Pix p = functions.first(); p; functions.next(p))
 	if (name == functions(p).name) {
-	    *f = functions(p).btp_f_ptr;
+	    *f = functions(p).bt_func;
 	    return true;
 	}
 
     return false;
+}
+
+bool
+DDS::functional_expression()
+{
+    if (expr.empty())
+	return false;
+
+    Pix p = first_clause();
+    return clause(p).value_clause();
+}
+
+BaseType *
+DDS::eval_function(const String &dataset)
+{
+    assert(expr.length() == 1);
+
+    Pix p = first_clause();
+    BaseType *result;
+    (void) clause(p).value(dataset, &result);
+    
+    return result;
+}
+
+bool
+DDS::boolean_expression()
+{
+    if (expr.empty())
+	return false;
+
+    bool boolean = true;
+    for (Pix p = first_clause(); p; next_clause(p))
+	boolean = boolean && clause(p).boolean_clause();
+    
+    return boolean;
 }
 
 bool
@@ -445,8 +497,11 @@ DDS::eval_selection(const String &dataset)
     // values. See DDS::clause::value(...) for inforamtion on logical ORs in
     // CEs. 
     bool result = true;
-    for (Pix p = first_clause(); p && result; next_clause(p))
-	result = result && clause_value(p, dataset);
+    for (Pix p = first_clause(); p && result; next_clause(p)) {
+	// A selection expression *must* contain only boolean clauses!
+	assert(clause(p).boolean_clause());
+	result = result && clause(p).value(dataset);
+    }
 
     return result;
 }
@@ -557,6 +612,29 @@ DDS::print_constrained(FILE *out)
     return print_constrained(os);
 }
 
+static void
+print_variable(ostream &os, BaseType *var)
+{
+    assert(os);
+    assert(var);
+
+    os << "Dataset {" << endl;
+
+    var->print_decl(os, "    ", true, false, false);
+
+    os << "} function_value;" << endl;
+}
+
+static void
+print_variable(FILE *out, BaseType *var)
+{
+    assert(out);
+    assert(var);
+
+    ostdiostream os(out);
+    print_variable(os, var);
+}
+
 // Check the semantics of the DDS describing a complete dataset. If ALL is
 // true, check not only the semantics of THIS->TABLE, but also recurrsively
 // all ctor types in the THIS->TABLE. By default, ALL is false since parsing
@@ -621,19 +699,22 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
     ostdiostream os(out);	// set up output stream
 
     if ((status = parse_constraint(constraint))) {
+	// Handle *functional* constraint expressions specially 
+	if (functional_expression()) {
+	    BaseType *var = eval_function(dataset);
+	    print_variable(os, var);
+	    os << "Data:" << endl;
+	    // In the following call to serialize, suppress CE evaluation.
+	    status = var->serialize(dataset, *this, false, flush);
+	}
+	else {
+	    print_constrained(os); // send constrained DDS
+	    os << "Data:" << endl; // send `Data:' marker
 
-	print_constrained(os);	// send constrained DDS
-
-	DBG(cerr << "The constrained DDS (about to be sent):\n");
-	DBG(print_constrained(cerr));
-
-       	os << "Data:" << endl;	// send `Data:' marker
-
-	for (Pix q = first_var(); q; next_var(q)) {
-	    if (var(q)->send_p()) { // only process projected variables
-		DBG(cerr << "Serializing: " << var(q)->name() << endl);
-		status = status && var(q)->serialize(dataset, *this, true, flush);
-	    }
+	    for (Pix q = first_var(); q; next_var(q)) 
+		if (var(q)->send_p()) // only process projected variables
+		    status = status && var(q)->serialize(dataset, *this,
+							 true, flush);
 	}
     }
 

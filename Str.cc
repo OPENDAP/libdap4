@@ -38,6 +38,12 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.23  1996/05/29 22:08:49  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
 // Revision 1.22  1996/05/16 22:49:50  jimg
 // Dan's changes for version 2.0. Added a parameter to read that returns
 // an error code so that EOF can be distinguished from an actual error when
@@ -176,6 +182,7 @@
 #include "DDS.h"
 #include "util.h"
 #include "parser.h"
+#include "expr.h"
 #include "expr.tab.h"
 
 #ifdef TRACE_NEW

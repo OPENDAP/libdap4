@@ -38,6 +38,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.26  1996/05/29 22:08:46  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
 // Revision 1.25  1996/05/22 18:05:15  jimg
 // Merged files from the old netio directory into the dap directory.
 // Removed the errmsg library from the software.
@@ -288,6 +294,15 @@ Sequence::width()
 	sz += var(p)->width();
 
     return sz;
+}
+
+// This version returns zero. Each API-specific subclass should define a more
+// reasonable version. jhrg 5/24/96
+
+unsigned int
+Sequence::length()
+{
+    return 0;
 }
 
 void

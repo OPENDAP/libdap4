@@ -6,12 +6,18 @@
 // jhrg 1/12/95
 
 /* $Log: TestSequence.h,v $
-/* Revision 1.7  1996/05/16 22:50:21  jimg
-/* Dan's changes for version 2.0. Added a parameter to read that returns
-/* an error code so that EOF can be distinguished from an actual error when
-/* reading sequences. This *may* be replaced by an error member function
-/* in the future.
+/* Revision 1.8  1996/05/29 22:08:52  jimg
+/* Made changes necessary to support CEs that return the value of a function
+/* instead of the value of a variable. This was done so that it would be
+/* possible to translate Sequences into Arrays without first reading the
+/* entire sequence over the network.
 /*
+ * Revision 1.7  1996/05/16 22:50:21  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
  * Revision 1.6  1996/04/05 00:22:00  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
@@ -62,6 +68,8 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual bool read(const String &dataset, int &error);
+
+    virtual unsigned int length();
 };
 
 #endif

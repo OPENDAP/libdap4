@@ -38,6 +38,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.33  1996/05/29 22:08:32  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
 // Revision 1.32  1996/05/14 06:41:17  jimg
 // Update for
 //
@@ -227,7 +233,6 @@
 
 #include "Array.h"
 #include "util.h"
-#include "errmsg.h"
 #include "debug.h"
 
 #ifdef TRACE_NEW

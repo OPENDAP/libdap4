@@ -1,11 +1,17 @@
-// -*- C++ -*-
 
+// -*- C++ -*-
 
 // Types for the expr parser.
 //
 // 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.7  1996/05/29 22:08:56  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
 // Revision 1.6  1996/05/22 18:05:37  jimg
 // Merged files from the old netio directory into the dap directory.
 // Removed the errmsg library from the software.
@@ -38,8 +44,8 @@
 
 #include "BaseType.h"
 
-// value is used to return constant values within the parser. Constants are
-// packaged in BaseType *s for evaluation.
+// VALUE is used to return constant values from the scanner to the parser.
+// Constants are packaged in BaseType *s for evaluation by the parser.
 
 typedef struct {
     Type type;			// Type is an enum defined in BaseType.h
@@ -50,49 +56,53 @@ typedef struct {
     } v;
 } value;
 
-// Either a BaseType * XOR a btp_func_ptr and arguments. Note that the
-// arguments can themselves be function calls.
+// Syntactic sugar for `pointer to function returning boolean'
+// (BOOL_FUNC_PTR) and `pointer to function returning BaseType *'
+// (BTP_FUNC_PTR). Both function types take two arguments, an integer (ARGC)
+// and a vector of BaseType *s (ARGV). ARGC is the length of ARGV
 
-struct rvalue;			// forward declaration
+typedef bool (*bool_func)(int argc, BaseType *argv[]);
+typedef BaseType *(*btp_func)(int argc, BaseType *argv[]);
 
-typedef bool (*bool_func_ptr)(int argc, BaseType *argv[]);
-typedef BaseType *(*btp_func_ptr)(int argc, BaseType *argv[]);
+// INT_LIST and INT_LIST_LIST are used by the parser to store the array
+// indices.
 
-struct btp_func_rvalue;
+typedef SLList<int> int_list;
+typedef SLList<int_list *> int_list_list;
+
+struct func_rvalue;		// Forward declaration
 
 struct rvalue {
-    BaseType *btp;
-    btp_func_rvalue *btp_f_rvp;
+    BaseType *value;
+    func_rvalue *func;
 
     rvalue(BaseType *bt);
-    rvalue(btp_func_rvalue *f);
+    rvalue(func_rvalue *func);
     rvalue();
 
     ~rvalue();
 
     // Return the BaseType * that contains a value for a given rvalue. If the
     // rvalue is a BaseType *, ensures that the read mfunc has been
-    // called. If the rvalue is a Func_rvalue, evaluates the func_rvalue.
+    // called. If the rvalue is a func_rvalue, evaluates the func_rvalue and
+    // returns the result.
     // NB: The functions referenced by func_rvalues must encapsulate their
-    // values in BaseType *s.
+    // return values in BaseType *s.
     BaseType *bvalue(const String &dataset);
 };
 
 typedef SLList<rvalue *> rvalue_list;
 
-struct btp_func_rvalue {
-    btp_func_ptr btp_f_ptr;	// pointer to a function returning BaseType *
+struct func_rvalue {
+    btp_func func;		// pointer to a function returning BaseType *
     rvalue_list *args;		// arguments to the function
 
-    btp_func_rvalue(btp_func_ptr f, rvalue_list *a);
-    btp_func_rvalue();
+    func_rvalue(btp_func f, rvalue_list *a);
+    func_rvalue();
 
-    ~btp_func_rvalue();
+    ~func_rvalue();
 
     BaseType *bvalue(const String &dataset);
 };
-
-typedef SLList<int> IntList;
-typedef SLList<IntList *> IntListList;
 
 #endif /* _expr_h */

@@ -7,10 +7,16 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.13  1996/05/22 18:05:09  jimg
-/* Merged files from the old netio directory into the dap directory.
-/* Removed the errmsg library from the software.
+/* Revision 1.14  1996/05/29 22:08:37  jimg
+/* Made changes necessary to support CEs that return the value of a function
+/* instead of the value of a variable. This was done so that it would be
+/* possible to translate Sequences into Arrays without first reading the
+/* entire sequence over the network.
 /*
+ * Revision 1.13  1996/05/22 18:05:09  jimg
+ * Merged files from the old netio directory into the dap directory.
+ * Removed the errmsg library from the software.
+ *
  * Revision 1.12  1996/04/05 00:21:28  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
@@ -106,25 +112,24 @@ private:
     // (including those that are `built-in'). 
     struct function {
 	String name;
-	bool_func_ptr f_ptr;
-	btp_func_ptr btp_f_ptr;
+	bool_func b_func;
+	btp_func bt_func;
 
-	function(const String &n, const bool_func_ptr f)
-	    : name(n), f_ptr(f), btp_f_ptr(0) {}
-	function(const String &n, const btp_func_ptr f)
-	    : name(n), f_ptr(0), btp_f_ptr(f) {}
-	function(): name(""), f_ptr(0), btp_f_ptr(0) {}
+	function(const String &n, const bool_func f)
+	    : name(n), b_func(f), bt_func(0) {}
+	function(const String &n, const btp_func f)
+	    : name(n), b_func(0), bt_func(f) {}
+	function(): name(""), b_func(0), bt_func(0) {}
     };
 
-    String name;		// the dataset name
-    SLList<BaseTypePtr> vars;	// variables at the top level 
+    String name;		// The dataset name
+    SLList<BaseTypePtr> vars;	// Variables at the top level 
     
-    SLList<clause> expr;
-    // list of constants created by the parser; these must be deleted by the
-    // DDS's dtor. The expr parser builds this list.
-    SLList<BaseTypePtr> constants;
+    SLList<Clause> expr;	// List of CE Clauses
 
-    SLList<function> functions; // known external functions
+    SLList<BaseTypePtr> constants;// List of temporary objects
+
+    SLList<function> functions; // Known external functions
 
     void duplicate(const DDS &dds);
 
@@ -151,10 +156,12 @@ public:
     // Interface to the parsed expression
     Pix first_clause();
     void next_clause(Pix &p);
+    Clause &clause(Pix p);
     bool clause_value(Pix p, const String &dataset);
 
     void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
-    void append_clause(bool_func_ptr f, rvalue_list *args);
+    void append_clause(bool_func func, rvalue_list *args);
+    void append_clause(btp_func func, rvalue_list *args);
 
     // DDS maintains a list of BaseType *s for all the constants that the
     // expr parser generates. These objects can be deleted when we are done
@@ -162,12 +169,21 @@ public:
     void append_constant(BaseType *btp);
 
     // manipulate the FUNCTIONS member.
-    void add_function(const String &name, bool_func_ptr f);
-    void add_function(const String &name, btp_func_ptr f);
-    bool find_function(const String &name, bool_func_ptr *f) const;
-    bool find_function(const String &name, btp_func_ptr *f) const;
+    void add_function(const String &name, bool_func f);
+    void add_function(const String &name, btp_func f);
+    bool find_function(const String &name, bool_func *f) const;
+    bool find_function(const String &name, btp_func *f) const;
 
-    // evaluate the current constraint
+    /// Does the current constraint expression return a BaseType pointer?
+    bool functional_expression();
+
+    /// Evaluate a function-valued CE.
+    BaseType *eval_function(const String &dataset);
+
+    /// Does the current constraint expression return a boolean value?
+    bool boolean_expression();
+
+    /// Evaluate a boolean-valued CE.
     bool eval_selection(const String &dataset);
 
     // evaluate the projectons
