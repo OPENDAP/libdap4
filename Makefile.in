@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.52 1996/11/15 23:22:02 jimg Exp $
+# $Id: Makefile.in,v 1.53 1996/11/16 00:44:48 jimg Exp $
 
 @SET_MAKE@
 
@@ -270,7 +270,7 @@ install-geturl:
 	$(STRIP) $(etcdir)/geturl
 
 install-gui:
-	$(INSTALL_PROGRAM) dods_gui.tcl errorr.tcl progress.tcl $(etcdir)
+	$(INSTALL_PROGRAM) dods_gui.tcl error.tcl progress.tcl $(etcdir)
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
