@@ -31,9 +31,13 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.18  1996/07/10 21:25:34  jimg
-/* *** empty log message ***
+/* Revision 1.19  1996/10/08 17:02:10  jimg
+/* Added fields for the projection and selection parts of a CE supplied with the
+/* URL passed to the Connect ctor.
 /*
+ * Revision 1.18  1996/07/10 21:25:34  jimg
+ * *** empty log message ***
+ *
  * Revision 1.17  1996/06/21 23:14:15  jimg
  * Removed GUI code to a new class - Gui.
  *
@@ -149,9 +153,6 @@
 
 #include "WWWFile.h"
 #include "WWWMIME.h"
-#if 0
-#include "WWWGuess.h"		// Content type guesser
-#endif
 #include "WWWInit.h"
 #include "WWWRules.h"
 
@@ -221,7 +222,9 @@ private:
 
     Gui *_gui;			// Used for progress, error display.
 
-    String _URL;		// URL to remote dataset (incl. CE)
+    String _URL;		// URL to remote dataset (minus CE)
+    String _proj;		// Projection part of initial CE.
+    String _sel;		// Selection of initial CE
 
     HTParentAnchor *_anchor;
     struct timeval *_tv;	// Timeout on socket
@@ -263,7 +266,7 @@ private:
     Connect();			// Never call this.
 
 public:
-    Connect(const String &name); 
+    Connect(String name); 
     Connect(const Connect &copy_from);
     virtual ~Connect();
 
@@ -344,7 +347,7 @@ public:
     bool request_das(bool gui = false,  const String &ext = "das");
     bool request_dds(bool gui = false, const String &ext = "dds");
 
-    DDS &request_data(const String expr, bool gui = true, bool async = false, 
+    DDS &request_data(String expr, bool gui = true, bool async = false, 
 		      const String &ext = "dods");
 
     // For every new data read initiated using this connect, there is a DDS
