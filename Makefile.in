@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.41 1996/06/22 00:05:27 jimg Exp $
+# $Id: Makefile.in,v 1.42 1996/07/10 21:29:06 jimg Exp $
 
 @SET_MAKE@
 
@@ -15,11 +15,10 @@
 PROG= libdap++.a
 DODS_ROOT = ../..
 
-WWW_ROOT = /usr/local/src/WWW/Library/Implementation
-INCS = -I. -IMap -IStack -IPlex -IVec -I$(WWW_ROOT)
+INCS = -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include/WWW
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
-CXXFLAGS = @CXXFLAGS@
+CXXFLAGS = @CXXFLAGS@ -Wall
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d
@@ -93,7 +92,8 @@ ERROROBJS = Error.o $(ERROR_GRAM_OBJS)
 ERRORSRCS = Error.cc
 
 TYPEHDRS = BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
-	   Vector.h List.h Array.h Structure.h Sequence.h Function.h Grid.h
+	   Vector.h List.h Array.h Structure.h Sequence.h Function.h Grid.h \
+	   util.h
 
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc Function.cc \
