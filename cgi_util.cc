@@ -4,7 +4,11 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
-// Revision 1.6  1995/05/30 18:28:59  jimg
+// Revision 1.7  1995/06/27 17:38:43  jimg
+// Modified the cgi-util-test code so that it correctly uses name_path(); the
+// pointer returned by that function must be delteted.
+//
+// Revision 1.6  1995/05/30  18:28:59  jimg
 // Added const to ErrMsgT prototype.
 //
 // Revision 1.5  1995/05/22  20:36:10  jimg
@@ -34,7 +38,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.6 1995/05/30 18:28:59 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.7 1995/06/27 17:38:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -172,7 +176,7 @@ name_path(char *path)
       *cp = '\0';               /* strip off any extension */
 
     return newp;
-  }
+}
 
 // Send string to set the transfer (mime) type and server version
 //
@@ -229,26 +233,41 @@ main(int argc, char *argv[])
     fclose(in);
 
     // test name_path
+    char *name_path_p;
     char *name = "stuff";
-    cout << name << ": " << name_path(name) << endl;
+    name_path_p = name_path(name);
+    cout << name << ": " << name_path_p << endl;
+    delete name_path_p;
 
     name = "stuff.Z";
-    cout << name << ": " << name_path(name) << endl;
+    name_path_p = name_path(name);
+    cout << name << ": " << name_path_p << endl;
+    delete name_path_p;
 
     name = "/usr/local/src/stuff.Z";
-    cout << name << ": " << name_path(name) << endl;
+    name_path_p = name_path(name);
+    cout << name << ": " << name_path_p << endl;
+    delete name_path_p;
 
     name = "/usr/local/src/stuff.tar.Z";
-    cout << name << ": " << name_path(name) << endl;
+    name_path_p = name_path(name);
+    cout << name << ": " << name_path_p << endl;
+    delete name_path_p;
 
     name = "/usr/local/src/stuff";
-    cout << name << ": " << name_path(name) << endl;
+    name_path_p = name_path(name);
+    cout << name << ": " << name_path_p << endl;
+    delete name_path_p;
 
     name = "";
-    cout << name << ": " << name_path(name) << endl;
+    name_path_p = name_path(name);
+    cout << name << ": " << name_path_p << endl;
+    delete name_path_p;
 
     name = 0;
-    cout << name << ": " << name_path(name) << endl;
+    name_path_p = name_path(name);
+    cout << name << ": " << name_path_p << endl;
+    delete name_path_p;
 }
 
 #endif
