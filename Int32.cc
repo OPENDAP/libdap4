@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.32  1997/09/22 22:59:39  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.31  1996/12/02 23:10:21  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -176,7 +179,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.31 1996/12/02 23:10:21 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.32 1997/09/22 22:59:39 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -220,7 +223,7 @@ Int32::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-Int32::deserialize(XDR *source, bool)
+Int32::deserialize(XDR *source, DDS *, bool)
 {
     unsigned int num = XDR_INT32(source, &_buf);
 

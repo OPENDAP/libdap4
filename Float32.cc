@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Float32.cc,v $
+// Revision 1.4  1997/09/22 23:03:46  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.3  1996/12/02 23:10:12  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -26,7 +29,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.3 1996/12/02 23:10:12 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.4 1997/09/22 23:03:46 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -75,7 +78,7 @@ Float32::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-Float32::deserialize(XDR *source, bool)
+Float32::deserialize(XDR *source, DDS *, bool)
 {
     unsigned int num = xdr_double(source, &_buf);
 

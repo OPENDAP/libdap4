@@ -10,6 +10,9 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.33  1997/09/22 23:02:10  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.32  1997/06/05 22:50:46  jimg
 // Added two mfuncs: components() and projection_yields_grid(). These aid in
 // sending Grids that have been projected in various ways.
@@ -268,7 +271,7 @@ Grid::width()
 }
 
 bool
-Grid::serialize(const String &dataset, DDS &dds, XDR *sink,
+Grid::serialize(const String &dataset, DDS &dds, XDR *sink, 
 		bool ce_eval = true)
 {
     bool status = true;
@@ -294,16 +297,16 @@ Grid::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-Grid::deserialize(XDR *source, bool reuse = false)
+Grid::deserialize(XDR *source, DDS *dds, bool reuse = false)
 {
     bool status;
     
-    status = _array_var->deserialize(source, reuse);
+    status = _array_var->deserialize(source, dds, reuse);
     if (!status) 
 	return false;
 
     for(Pix p = _map_vars.first(); p; _map_vars.next(p)) {
-	status = _map_vars(p)->deserialize(source, reuse);
+	status = _map_vars(p)->deserialize(source, dds, reuse);
 	if (!status) 
 	    break;
     }

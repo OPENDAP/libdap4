@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Int16.cc,v $
+// Revision 1.3  1997/09/22 23:00:18  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.2  1996/12/02 23:10:18  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -23,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Int16.cc,v 1.2 1996/12/02 23:10:18 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Int16.cc,v 1.3 1997/09/22 23:00:18 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -72,7 +75,7 @@ Int16::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-Int16::deserialize(XDR *source, bool)
+Int16::deserialize(XDR *source, DDS *, bool)
 {
     unsigned int num = XDR_INT16(source, &_buf);
 
