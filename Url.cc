@@ -38,7 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
-// Revision 1.10  1995/08/23 00:25:05  jimg
+// Revision 1.11  1996/03/05 01:10:12  jimg
+// Fixed comments.
+//
+// Revision 1.10  1995/08/23  00:25:05  jimg
 // Uses the new Type enum.
 //
 // Revision 1.9  1995/07/09  21:29:23  jimg
@@ -49,19 +52,19 @@
 //
 // Revision 1.7  1995/03/04  14:34:52  jimg
 // Major modifications to the transmission and representation of values:
-// 	Added card() virtual function which is true for classes that
-// 	contain cardinal types (byte, int float, string).
-// 	Changed the representation of Str from the C rep to a C++
-// 	class represenation.
-// 	Chnaged read_val and store_val so that they take and return
-// 	types that are stored by the object (e.g., inthe case of Str
-// 	an URL, read_val returns a C++ String object).
-// 	Modified Array representations so that arrays of card()
-// 	objects are just that - no more storing strings, ... as
-// 	C would store them.
-// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-// 	an array of a structure is represented as an array of Structure
-// 	objects).
+// Added card() virtual function which is true for classes that
+// contain cardinal types (byte, int float, string).
+// Changed the representation of Str from the C rep to a C++
+// class represenation.
+// Chnaged read_val and store_val so that they take and return
+// types that are stored by the object (e.g., inthe case of Str
+// an URL, read_val returns a C++ String object).
+// Modified Array representations so that arrays of card()
+// objects are just that - no more storing strings, ... as
+// C would store them.
+// Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// an array of a structure is represented as an array of Structure
+// objects).
 //
 // Revision 1.6  1995/02/10  02:22:52  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
