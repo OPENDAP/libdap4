@@ -11,13 +11,17 @@
 // Vector. Vector is the parent class for List and Array.
 
 /* $Log: Vector.h,v $
-/* Revision 1.9  1996/06/04 21:33:51  jimg
-/* Multiple connections are now possible. It is now possible to open several
-/* URLs at the same time and read from them in a round-robin fashion. To do
-/* this I added data source and sink parameters to the serialize and
-/* deserialize mfuncs. Connect was also modified so that it manages the data
-/* source `object' (which is just an XDR pointer).
+/* Revision 1.10  1996/08/13 18:40:46  jimg
+/* Changes return type of length() member function from unsigned to int. A
+/* return value of -1 indicates that the vector has no length.
 /*
+ * Revision 1.9  1996/06/04 21:33:51  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
  * Revision 1.8  1996/05/31 23:30:44  jimg
  * Updated copyright notice.
  *
@@ -96,7 +100,7 @@ public:
     virtual void set_read_p(bool state);
 
     virtual unsigned int width();
-    virtual unsigned int length();
+    virtual int length();	// a length of -1 is a flag value in Array
     virtual void set_length(int l);
 
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
