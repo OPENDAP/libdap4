@@ -1,4 +1,4 @@
-// test problems with named dimensions.
+# test problems with named dimensions.
 
 dataset {
     int32 i;

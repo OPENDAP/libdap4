@@ -1,6 +1,6 @@
-// -*- C++ -*-
+# -*- C++ -*-
 
-// Test identifier length
+# Test identifier length
 
 dataset {
     structure {
