@@ -159,7 +159,7 @@ AISResources::read_database(const string &database)
 {
     AISDatabaseParser parser;
 
-    parser.parse(database, this);
+    parser.intern(database, this);
 }
 
 /** Write the current in-memory mapping of primary and ancillary
@@ -184,6 +184,9 @@ AISResources::write_database(const string &filename)
 }
 
 // $Log: AISResources.cc,v $
+// Revision 1.3  2003/02/26 01:27:04  jimg
+// Fixed call to AISDatabaseParser::intern (changed the name from parse).
+//
 // Revision 1.2  2003/02/26 00:39:39  jimg
 // Changed name of is_resource to has_resource.
 //
