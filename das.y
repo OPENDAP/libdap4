@@ -22,7 +22,11 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.9  1994/12/07 21:19:45  jimg
+ * Revision 1.10  1994/12/16 22:06:23  jimg
+ * Fixed a bug in save_str() where the global NAME was used instead of the
+ * parameter DST.
+ *
+ * Revision 1.9  1994/12/07  21:19:45  jimg
  * Added a new rule (var) and modified attr_val to handle attribute vectors.
  * Each element in the vector is seaprated by a comma.
  * Replaces some old instrumentation code with newer code using the DGB
@@ -81,7 +85,7 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.9 1994/12/07 21:19:45 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.10 1994/12/16 22:06:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -207,7 +211,7 @@ void
 save_str(char *dst, char *src)
 {
     strncpy(dst, src, ID_MAX);
-    name[ID_MAX-1] = '\0';		/* in case ... */
+    dst[ID_MAX-1] = '\0';		/* in case ... */
     if (strlen(src) >= ID_MAX) 
 	cerr << "line: " << das_line_num << "`" << src << "' truncated to `"
              << dst << "'" << endl;
