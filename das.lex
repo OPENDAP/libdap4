@@ -33,7 +33,10 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.13  1995/07/08 18:32:08  jimg
+# Revision 1.14  1995/10/23 22:52:34  jimg
+# Removed code that was NEVER'd or simply not used.
+#
+# Revision 1.13  1995/07/08  18:32:08  jimg
 # Edited comments.
 # Removed unnecessary declarations.
 #
@@ -105,7 +108,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.13 1995/07/08 18:32:08 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.14 1995/10/23 22:52:34 jimg Exp $"};
 
 #include <string.h>
 
@@ -116,11 +119,6 @@ static char rcsid[]={"$Id: das.lex,v 1.13 1995/07/08 18:32:08 jimg Exp $"};
 
 int das_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */
-void trunc1(char *yytext, int yyleng); /* no longer used */
-void rmbslash(char *yytext);	/* no longer used */
-#ifdef NEVER
-int yywrap(void);
-#endif
 
 %}
     
@@ -205,59 +203,8 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
 			}
 %%
 
-/*
-   Remove the last character from yytext. This is used to remove the trailing
-   quote (") from a quotation (the fifth `quote' patern causes the trailing
-   quote to be accumulated by yytext).
-*/
-
-void
-trunc1(char *yytext, int yyleng)
-{
-    *(yytext + yyleng - 1) = '\0';
-    --yyleng;
-}
-
-/*
-   Remove (cut) the backslash (\) character in each instance of backslash
-   followed by some character. If yytext holds `t \" \+ \\ t', then rmbslash
-   will change that to `t " + \ t'.
-*/
-
-void
-rmbslash(char *yytext)
-{
-    char *slash = strchr(yytext, (int)'\\');
-
-    while (slash) {
-        strcpy(slash, slash + 1);
-	slash = strchr(slash + 1, '\\');
-    }
-}
-
 int 
 yywrap(void)
 {
     return 1;
 }
-
-#ifdef NEVER
-"/*"	    	    	BEGIN(comment); start_line = das_line_num;
-<comment>[^*\n]*
-<comment>[^*\n]*\n  	++das_line_num;
-<comment>"*"+[^*/\n]*
-<comment>"*"+[^*/\n]*\n ++das_line_num;
-<comment>"*"+"/"    	BEGIN(INITIAL);
-<comment><<EOF>>	{
-                          char msg[256];
-			  sprintf(msg,
-				  "Unterminated comment (starts on line %d)\n",
-				  start_line);
-			  YY_FATAL_ERROR(msg);
-                        }
-			
-"//"	    	    	BEGIN(comment_new);
-<comment_new>[^\n]*
-<comment_new>\n		++das_line_num; BEGIN(INITIAL);
-<comment_new><<EOF>>    yy_init = 1; das_line_num = 1; yyterminate();
-#endif
