@@ -38,7 +38,10 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.19  1995/12/06 21:49:53  jimg
+// Revision 1.20  1996/03/05 18:45:29  jimg
+// Added ops member function.
+//
+// Revision 1.19  1995/12/06  21:49:53  jimg
 // var(): now returns null for anything that does not define its own version.
 // print_decl(): uses `constrained' flag.
 //
@@ -409,3 +412,17 @@ BaseType::expunge()
 {
     return fflush(_out) == 0;
 }
+
+// Member functions for the relational operators used in evaluating a
+// relational clause in a constraint expression. Each class that wants these
+// to do something interesting must supply their own versions. These print en
+// error message and return False.
+
+bool 
+BaseType::ops(BaseType &b, int op)
+{
+    cerr << "Unimplemented operator" << endl;
+
+    return false;
+}
+
