@@ -9,14 +9,17 @@
 */
   
 /* $Log: debug.h,v $
-/* Revision 1.1  1995/09/13 21:58:05  jimg
-/* Added to src/dap in keeping with the plan to store all include files in src
-/* dirs and `build' the include directory during `make depend' from those
-/* inlcudes.
+/* Revision 1.2  1996/03/05 00:59:47  jimg
+/* Added _DEBUG_H to prevent multiple definition messages.
 /*
- * Revision 1.2  1995/05/10  18:37:49  jimg
- * *** empty log message ***
- * */
+ * Revision 1.1  1995/09/13 21:58:05  jimg
+ * Added to src/dap in keeping with the plan to store all include files in src
+ * dirs and `build' the include directory during `make depend' from those
+ * inlcudes.
+ */
+
+#ifndef _DEBUG_H
+#define _DEBUG_H
 
 #ifdef DEBUG
 #define DBG(x) x
@@ -30,3 +33,4 @@
 #define DBG2(x) /* x */
 #endif
 
+#endif /* _DEBUG_H */
