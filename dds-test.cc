@@ -10,6 +10,10 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
+// Revision 1.12  1996/08/13 18:49:55  jimg
+// Added on-line help.
+// Now, always returns an exit code.
+//
 // Revision 1.11  1996/05/31 23:30:53  jimg
 // Updated copyright notice.
 //
@@ -20,7 +24,9 @@
 // Added Log and RCSID.
 //
 
-static char rcsid[]= {"$Id: dds-test.cc,v 1.11 1996/05/31 23:30:53 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: dds-test.cc,v 1.12 1996/08/13 18:49:55 jimg Exp $"};
 
 #include <iostream.h>
 #include <GetOpt.h>
@@ -43,6 +49,20 @@ int ddsparse(DDS &);
 extern YYSTYPE ddslval;
 extern int ddsdebug;
 const char *prompt = "dds-test: ";
+
+void
+usage(String name)
+{
+    cerr << "usage: " << name
+	 << " [s] [pd] [c]" << endl
+	 << " s: Test the scanner." << endl
+	 << " p: Test the parser; reads from stdin and prints the" << endl
+	 << "    internal structure to stdout." << endl
+	 << " d: Turn on parser debugging. (only for the hard core.)" << endl
+	 << " c: Test the C++ code for manipulating DDS objects." << endl
+	 << "    Reads from stdin, parses and writes the modified DDS" << endl
+	 << "    to stdout." << endl;
+}
 
 int
 main(int argc, char *argv[])
@@ -69,8 +89,15 @@ main(int argc, char *argv[])
 	      class_test = 1;
 	      break;
 	    case '?': 
-	      fprintf (stderr, "usage: %s [d] filename ...\n", argv[0]);
+	    default:
+	      usage(argv[0]);
+	      exit(1);
 	  }
+
+    if (!scanner_test && !parser_test && !class_test) {
+	usage(argv[0]);
+	exit(1);
+    }
 
     if (scanner_test) {
 	test_scanner();
@@ -83,6 +110,8 @@ main(int argc, char *argv[])
     if (class_test) {
 	test_class();
     }
+
+    exit(0);
 }
 
 void
