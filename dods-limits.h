@@ -16,20 +16,20 @@
 #define	DODS_CHAR_BIT	8
 #define	DODS_SCHAR_MIN	-128
 #define	DODS_SCHAR_MAX	127
-#define	DODS_UCHAR_MAX	(unsigned char)255
+#define	DODS_UCHAR_MAX	(unsigned char)255U
 #define	DODS_UCHAR_MIN	0
 
 #define	DODS_SHRT_MIN	-32768
 #define	DODS_SHRT_MAX	32767
-#define	DODS_USHRT_MAX	(unsigned short)65535
+#define	DODS_USHRT_MAX	(unsigned short)65535U
 
 #define	DODS_INT_MIN	(-2147483647 - 1)
 #define	DODS_INT_MAX	2147483647
-#define	DODS_UINT_MAX	(unsigned int)4294967295
+#define	DODS_UINT_MAX	(unsigned int)4294967295U
 
 #define	DODS_LONG_MIN	(-2147483647 - 1)
 #define	DODS_LONG_MAX	2147483647
-#define	DODS_ULONG_MAX	(unsigned long)4294967295
+#define	DODS_ULONG_MAX	(unsigned long)4294967295U
 
 #define	DODS_DBL_DIG	15	/* digits of precision of a "double" */
 #define	DODS_DBL_MAX	1.7976931348623157E+308	/* max decimal value of a */
@@ -43,6 +43,11 @@
 #define	DODS_MB_LEN_MAX	4
 
 // $Log: dods-limits.h,v $
+// Revision 1.13  2002/06/03 21:45:41  jimg
+// Added `U' suffix to the numerical constants that are unsigned. This
+// prevents messages about values being so large that they can only be
+// represented as unsigned values.
+//
 // Revision 1.12  2001/01/26 19:48:09  jimg
 // Merged with release-3-2-3.
 //
