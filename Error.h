@@ -12,6 +12,11 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.2  1996/06/22 00:02:50  jimg
+// Added Gui pointer to the Error oject's correct_error() and
+// display_message() mfuncs. These mfuncs now used the GUI to display
+// messages.
+//
 // Revision 1.1  1996/05/31 22:39:56  jimg
 // Added.
 //
@@ -25,6 +30,8 @@
 
 #include <stdio.h>
 #include <String.h>
+
+#include "Gui.h"
 
 /// Error code: an enumerated type for common errors.
 //* The most common errors within DODS have special codes so that they can be
@@ -126,7 +133,7 @@ public:
     //* run-time, the environment variable DISPLAY is set use the dialog box,
     //* otherwise use standard error.
     //* Returns: void.
-    void display_message();
+    void display_message(Gui *gui);
 
     /// Get or set the program type.
     //* With no argument, return the program type of the error object. With
@@ -147,7 +154,7 @@ public:
     //* the error message. If the error correction program cannot be run,
     //* return the null string.
     //* Returns: A corrected string or "".
-    String correct_error();
+    String correct_error(Gui *gui);
 };
 
 #endif // _error_h

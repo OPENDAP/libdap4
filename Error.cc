@@ -8,6 +8,11 @@
 // Implementation for the CE Clause class.
 
 // $Log: Error.cc,v $
+// Revision 1.5  1996/06/22 00:02:46  jimg
+// Added Gui pointer to the Error oject's correct_error() and
+// display_message() mfuncs. These mfuncs now used the GUI to display
+// messages.
+//
 // Revision 1.4  1996/06/04 21:33:22  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -26,7 +31,7 @@
 #pragma implementation
 #endif
 
-static char rcsid[]={"$Id: Error.cc,v 1.4 1996/06/04 21:33:22 jimg Exp $"};
+static char rcsid[]={"$Id: Error.cc,v 1.5 1996/06/22 00:02:46 jimg Exp $"};
 
 #include <assert.h>
 
@@ -180,15 +185,14 @@ Error::error_message(String msg = "")
 // Check the DISPLAY environment variable, if defined, use X11. If not use
 // stderr. 
 void
-Error::display_message()
+Error::display_message(Gui *gui)
 {
-#if TCLTK
-    if (getenv("DISPLAY"))
-	tk_display_message(_error_message);
+    if (gui->show_gui()) {
+	String cmd = (String)"dialog " + _error_message + "\r";
+	(void)gui->command(cmd);
+    }
     else
-#else
 	cerr << _error_message << endl;
-#endif
 }
 
 ProgramType
@@ -215,10 +219,10 @@ Error::program(char *pgm = 0)
 }
 
 String
-Error::correct_error()
+Error::correct_error(Gui *gui)
 {
     if (OK())
-	display_message();
+	display_message(gui);
 
     return String("");
 }
