@@ -16,10 +16,14 @@
 // jhrg 9/15/94
 
 /* $Log: Grid.h,v $
-/* Revision 1.21  1997/02/28 01:29:05  jimg
-/* Changed check_semantics() so that it now returns error messages in a String
-/* object (passed by reference).
+/* Revision 1.22  1997/03/08 19:02:03  jimg
+/* Changed default param to check_semantics() from  to String()
+/* and removed the default from the argument list in the mfunc definition
 /*
+ * Revision 1.21  1997/02/28 01:29:05  jimg
+ * Changed check_semantics() so that it now returns error messages in a String
+ * object (passed by reference).
+ *
  * Revision 1.20  1996/06/04 21:33:33  jimg
  * Multiple connections are now possible. It is now possible to open several
  * URLs at the same time and read from them in a round-robin fashion. To do
@@ -202,7 +206,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-    virtual bool check_semantics(String &msg = "", bool all = false);
+    virtual bool check_semantics(String &msg = String(), bool all = false);
 };
 
 #endif

@@ -13,10 +13,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.31  1997/02/28 01:29:11  jimg
-/* Changed check_semantics() so that it now returns error messages in a String
-/* object (passed by reference).
+/* Revision 1.32  1997/03/08 19:01:54  jimg
+/* Changed default param to check_semantics() from  to String()
+/* and removed the default from the argument list in the mfunc definition
 /*
+ * Revision 1.31  1997/02/28 01:29:11  jimg
+ * Changed check_semantics() so that it now returns error messages in a String
+ * object (passed by reference).
+ *
  * Revision 1.30  1996/08/13 16:44:32  jimg
  * Changed return type of add_constraint from void to bool. Now the member
  * function returns false when a bogus constraint (e.g.,bad array bounds)
@@ -248,7 +252,7 @@ public:
     virtual void print_val(ostream &os, String space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool check_semantics(String &msg = "", bool all = false);
+    virtual bool check_semantics(String &msg = String(), bool all = false);
 };
 
 #endif

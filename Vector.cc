@@ -11,6 +11,10 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.17  1997/03/08 19:02:11  jimg
+// Changed default param to check_semantics() from  to String()
+// and removed the default from the argument list in the mfunc definition
+//
 // Revision 1.16  1997/02/28 01:28:03  jimg
 // Changed check_semantics() so that it now returns error messages in a String
 // object (passed by reference).
@@ -83,7 +87,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.16 1997/02/28 01:28:03 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.17 1997/03/08 19:02:11 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -632,7 +636,7 @@ Vector::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Vector::check_semantics(String &msg = "", bool) 
+Vector::check_semantics(String &msg, bool) 
 {
     return BaseType::check_semantics(msg);
 }

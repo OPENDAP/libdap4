@@ -10,6 +10,10 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.30  1997/03/08 19:01:55  jimg
+// Changed default param to check_semantics() from  to String()
+// and removed the default from the argument list in the mfunc definition
+//
 // Revision 1.29  1997/02/28 01:27:50  jimg
 // Changed check_semantics() so that it now returns error messages in a String
 // object (passed by reference).
@@ -409,7 +413,7 @@ BaseType::print_decl(ostream &os, String space, bool print_semi,
 // Returns: true if the object is semantically correct, false otherwise.
 
 bool
-BaseType::check_semantics(String &msg = "", bool)
+BaseType::check_semantics(String &msg, bool)
 {
     bool sem = (_type != dods_null_c && (const char *)_name);
 

@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.35  1997/03/08 19:02:05  jimg
+// Changed default param to check_semantics() from  to String()
+// and removed the default from the argument list in the mfunc definition
+//
 // Revision 1.34  1997/02/28 01:27:57  jimg
 // Changed check_semantics() so that it now returns error messages in a String
 // object (passed by reference).
@@ -475,12 +479,13 @@ Sequence::print_all_vals(ostream& os, XDR *src, String space = "",
 }
 
 bool
-Sequence::check_semantics(String &msg = "", bool all = false)
+Sequence::check_semantics(String &msg, bool all = false)
 {
     if (!BaseType::check_semantics(msg))
 	return false;
 
-    if (!unique(_vars, (const char *)name(), (const char *)type_name(), msg))
+    if (!unique_names(_vars, (const char *)name(), (const char *)type_name(),
+		      msg))
 	return false;
 
     if (all) 

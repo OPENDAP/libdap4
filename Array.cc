@@ -10,6 +10,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.40  1997/03/08 19:01:52  jimg
+// Changed default param to check_semantics() from  to String()
+// and removed the default from the argument list in the mfunc definition
+//
 // Revision 1.39  1997/02/28 01:28:01  jimg
 // Changed check_semantics() so that it now returns error messages in a String
 // object (passed by reference).
@@ -596,7 +600,7 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Array::check_semantics(String &msg = "", bool)
+Array::check_semantics(String &msg, bool)
 {
     bool sem = BaseType::check_semantics(msg) && !_shape.empty();
 

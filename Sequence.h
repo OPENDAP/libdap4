@@ -18,10 +18,14 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.25  1997/02/28 01:29:08  jimg
-/* Changed check_semantics() so that it now returns error messages in a String
-/* object (passed by reference).
+/* Revision 1.26  1997/03/08 19:02:07  jimg
+/* Changed default param to check_semantics() from  to String()
+/* and removed the default from the argument list in the mfunc definition
 /*
+ * Revision 1.25  1997/02/28 01:29:08  jimg
+ * Changed check_semantics() so that it now returns error messages in a String
+ * object (passed by reference).
+ *
  * Revision 1.24  1996/09/24 19:13:23  jimg
  * Fixed conflict between two version of print_all_vals prototypes.
  *
@@ -236,7 +240,7 @@ public:
     void print_all_vals(ostream& os, XDR *src, String space = "",
 			bool print_del_p = true);
 
-    virtual bool check_semantics(String &msg = "", bool all = false);
+    virtual bool check_semantics(String &msg = String(), bool all = false);
 };
 
 #endif

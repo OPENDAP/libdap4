@@ -16,10 +16,14 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.33  1997/02/28 01:27:52  jimg
-/* Changed check_semantics() so that it now returns error messages in a String
-/* object (passed by reference).
+/* Revision 1.34  1997/03/08 19:01:57  jimg
+/* Changed default param to check_semantics() from  to String()
+/* and removed the default from the argument list in the mfunc definition
 /*
+ * Revision 1.33  1997/02/28 01:27:52  jimg
+ * Changed check_semantics() so that it now returns error messages in a String
+ * object (passed by reference).
+ *
  * Revision 1.32  1996/12/02 23:10:04  jimg
  * Added dataset as a parameter to the ops member function.
  *
@@ -364,7 +368,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true) = 0;
 
-    virtual bool check_semantics(String &msg = "", bool all = false);
+    virtual bool check_semantics(String &msg = String(), bool all = false);
 
     // This function contains the relational operators used by the CE
     // evaluator in the DDS class. Each class that wants to be able to

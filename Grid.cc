@@ -10,6 +10,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.31  1997/03/08 19:02:02  jimg
+// Changed default param to check_semantics() from  to String()
+// and removed the default from the argument list in the mfunc definition
+//
 // Revision 1.30  1997/02/28 01:27:54  jimg
 // Changed check_semantics() so that it now returns error messages in a String
 // object (passed by reference).
@@ -440,13 +444,13 @@ Grid::print_val(ostream &os, String space, bool print_decl_p)
 // Grids have ugly semantics.
 
 bool
-Grid::check_semantics(String &msg = "", bool all = false)
+Grid::check_semantics(String &msg, bool all = false)
 {
     if (!BaseType::check_semantics(msg))
 	return false;
 
-    if (!unique(_map_vars, (const char *)name(), (const char *)type_name(), 
-		msg))
+    if (!unique_names(_map_vars, (const char *)name(), 
+		      (const char *)type_name(), msg))
 	return false;
 
     ostrstream oss;
