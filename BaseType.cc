@@ -10,6 +10,14 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.33  1998/09/17 17:23:20  jimg
+// Changes for the new variable lookup scheme. Fields of ctor types no longer
+// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
+// that if there are two `f1's in a dataset, the first will be silently used;
+// There's no warning about the situation. The new code in the var member
+// function passes a stack of BaseType pointers so that the projection
+// information (send_p field) can be set properly.
+//
 // Revision 1.32  1998/03/19 23:20:05  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
 //
@@ -410,7 +418,13 @@ BaseType::set_send_p(bool state)
 // Return a pointer to the contained variable in a ctor class.
 
 BaseType *
-BaseType::var(const String &)
+BaseType::var(const String &, bool)
+{
+    return (BaseType *)0;
+}
+
+BaseType *
+BaseType::var(const String &, btp_stack &)
 {
     return (BaseType *)0;
 }

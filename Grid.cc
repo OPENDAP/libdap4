@@ -10,6 +10,14 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.37  1998/09/17 17:20:00  jimg
+// Changes for the new variable lookup scheme. Fields of ctor types no longer
+// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
+// that if there are two `f1's in a dataset, the first will be silently used;
+// There's no warning about the situation. The new code in the var member
+// function passes a stack of BaseType pointers so that the projection
+// information (send_p field) can be set properly.
+//
 // Revision 1.36  1998/08/31 21:46:09  jimg
 // Changed the check_semantics member function so that the array and map
 // vectors must be composed of simple-type elements.
@@ -357,28 +365,31 @@ Grid::buf2val(void **)
 }
 
 BaseType *
-Grid::var(const String &name)
+Grid::var(const String &name, btp_stack &s)
 {
-    if (name.contains(".")) {
-	String n = (String)name; // cast away const
-	String aggregate = n.before(".");
-	String field = n.from(".");
-	field = field.after(".");
-
-	BaseType *agg_ptr = var(aggregate);
-	if (agg_ptr)
-	    return agg_ptr->var(field);	// recurse
-	else
-	    return 0;		// qualified names must be *fully* qualified
+    if (_array_var->name() == name) {
+	s.push((BaseType *)this);
+	return _array_var;
     }
-    else {
-	if (_array_var->name() == name)
-	    return _array_var;
 
-	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	    if (_map_vars(p)->name() == name)
-		return _map_vars(p);
-    }
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	if (_map_vars(p)->name() == name) {
+	    s.push((BaseType *)this);
+	    return _map_vars(p);
+	}
+
+    return 0;
+}
+
+BaseType *
+Grid::var(const String &name, bool)
+{
+    if (_array_var->name() == name)
+	return _array_var;
+
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	if (_map_vars(p)->name() == name)
+	    return _map_vars(p);
 
     return 0;
 }    

@@ -10,6 +10,14 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.47  1998/09/17 17:18:39  jimg
+// Changes for the new variable lookup scheme. Fields of ctor types no longer
+// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
+// that if there are two `f1's in a dataset, the first will be silently used;
+// There's no warning about the situation. The new code in the var member
+// function passes a stack of BaseType pointers so that the projection
+// information (send_p field) can be set properly.
+//
 // Revision 1.46  1998/04/03 17:41:42  jimg
 // Patch from Jake Hamby to print_all_vals(). deserialize needed to be called
 // before the first call to print_val.
@@ -379,7 +387,57 @@ Sequence::add_var(BaseType *bt, Part)
 }
 
 BaseType *
-Sequence::var(const String &name)
+Sequence::var(const String &name, btp_stack &s)
+{
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	assert(_vars(p));
+	
+	if (_vars(p)->name() == name) {
+	    s.push((BaseType *)this);
+	    return _vars(p);
+	}
+
+        if (_vars(p)->is_constructor_type()) {
+	    BaseType *btp = _vars(p)->var(name, s);
+	    if (btp) {
+		s.push((BaseType *)this);
+		return btp;
+	    }
+	}
+    }
+
+    return 0;
+}
+
+BaseType *
+Sequence::var(const String &name, bool exact)
+{
+    if (exact)
+	return exact_match(name);
+    else
+	return leaf_match(name);
+}
+
+BaseType *
+Sequence::leaf_match(const String &name)
+{
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	assert(_vars(p));
+	
+	if (_vars(p)->name() == name)
+	    return _vars(p);
+        if (_vars(p)->is_constructor_type()) {
+	    BaseType *btp = _vars(p)->var(name, false);
+	    if (btp)
+		return btp;
+	}
+    }
+
+    return 0;
+}
+
+BaseType *
+Sequence::exact_match(const String &name)
 {
     if (name.contains(".")) {
 	String n = (String)name; // cast away const
@@ -394,9 +452,11 @@ Sequence::var(const String &name)
 	    return 0;		// qualified names must be *fully* qualified
     }
     else {
-	for (Pix p = _vars.first(); p; _vars.next(p))
+	for (Pix p = _vars.first(); p; _vars.next(p)) {
+	    assert(_vars(p));
 	    if (_vars(p)->name() == name)
 		return _vars(p);
+	}
     }
 
     return 0;
