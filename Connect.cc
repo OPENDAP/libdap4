@@ -11,7 +11,15 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.2  1995/01/18 18:48:22  dan
+// Revision 1.3  1995/01/31 20:46:04  jimg
+// Fixed problems with the return value (status, fp) in request_das,
+// request_dds and request_data.
+// Added declarations for set_xdrin() and set_xdr_out().
+// Now that NetExecute forks and reads from a child, a temp file is no
+// longer used. I removed that code which created and sebsequently deleted
+// that temp file.
+//
+// Revision 1.2  1995/01/18  18:48:22  dan
 // Added member function 'request_data' which makes a data read request
 // to the remote api server and links the object's xdrin file-pointers
 // to the data stream.  This function requires NetConnect which has
@@ -43,7 +51,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.2 1995/01/18 18:48:22 dan Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.3 1995/01/31 20:46:04 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -58,6 +66,8 @@ static char rcsid[]={"$Id: Connect.cc,v 1.2 1995/01/18 18:48:22 dan Exp $"};
 
 extern "C" int NetExecute(char *, char *, FILE *); // defined in NetExec.c
 extern "C" FILE *NetConnect(char *, char *);       // defined in NetExec.c
+extern void set_xdrin(FILE *in); // defined in BaseType.cc (libdds.a)
+extern void set_xdrout(FILE *out); // define in BaseType.cc
 
 // Private mfunc
 
@@ -119,10 +129,13 @@ Connect::request_das()
     // get the das 
 
     String das_url = make_url(_api_name, "das");
-    bool status;
+    bool status = false;
 
+#ifdef NEVER
     // NULL means P_tmpdir in stdio or TMPDIR environment variable
-    //char *tmp = tempnam(NULL, "das");
+    char *tmp = tempnam(NULL, "das");
+#endif
+
     FILE *fp = NetConnect(das_url, _path);
 
     if( fp ) 
@@ -131,10 +144,10 @@ Connect::request_das()
 #ifdef NEVER
     cerr << "das url: " << das_url << endl;
     cerr << "tmp: " << tmp << endl;
-#endif
 
-    //unlink(tmp);
-    //free(tmp);			// malloc'd in tempnam(3)
+    unlink(tmp);
+    free(tmp);			// malloc'd in tempnam(3)
+#endif
 
     return status;
 }
@@ -145,10 +158,12 @@ Connect::request_dds()
     // get the dds 
 
     String dds_url = make_url(_api_name, "dds");
-    bool status;
+    bool status = false;
 
+#ifdef NEVER
     // NULL means P_tmpdir in stdio or TMPDIR environment variable
-    //char *tmp = tempnam(NULL, "dds");
+    char *tmp = tempnam(NULL, "dds");
+#endif
     FILE *fp = NetConnect(dds_url, _path);
 
     if( fp ) 
@@ -157,29 +172,26 @@ Connect::request_dds()
 #ifdef NEVER
     cerr << "dds url: " << dds_url << endl;
     cerr << "tmp: " << tmp << endl;
-#endif
 
-    //unlink(tmp);
-    //free(tmp);			// malloc'd in tempnam(3)
+    unlink(tmp);
+    free(tmp);			// malloc'd in tempnam(3)
+#endif
 
     return status;
 }
+
 bool
 Connect::request_data()
 {
-    // get the dds 
 
-    String data_url = make_url(_api_name, "server");
-    bool status;
+    String data_url = make_url(_api_name, "serv");
 
-    // NULL means P_tmpdir in stdio or TMPDIR environment variable
-    //char *tmp = tempnam(NULL, "server");
     FILE *fp = NetConnect(data_url, _path);
 
-    if ( fp ) 
+    if (fp) 
       set_xdrin(fp);
 
-    return status;
+    return (bool)fp;
 }
 
 bool
