@@ -9,6 +9,9 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.14  1996/08/13 20:49:30  jimg
+// Added __unused__ to definition of char rcsid[].
+//
 // Revision 1.13  1996/05/31 23:29:21  jimg
 // Updated copyright notice.
 //
@@ -60,7 +63,9 @@
 // a static class variable String empty (it is initialized to "").
 //
 
-static char rcsid[]="$Id: AttrTable.cc,v 1.13 1996/05/31 23:29:21 jimg Exp $";
+#include "config_dap.h"
+
+static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.14 1996/08/13 20:49:30 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
