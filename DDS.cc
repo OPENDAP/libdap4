@@ -9,6 +9,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.48  2000/06/16 18:50:18  jimg
+// Fixes leftover from the last merge plus needed for the merge with version
+// 3.1.7.
+//
 // Revision 1.47  2000/06/16 18:14:59  jimg
 // Merged with 3.1.7
 //
@@ -259,11 +263,7 @@
 
 #include "config_dap.h"
 
-<<<<<<< DDS.cc
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.47 2000/06/16 18:14:59 jimg Exp $"};
-=======
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.47 2000/06/16 18:14:59 jimg Exp $"};
->>>>>>> 1.44.2.2
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.48 2000/06/16 18:50:18 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation

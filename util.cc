@@ -11,6 +11,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.58  2000/06/16 18:50:19  jimg
+// Fixes leftover from the last merge plus needed for the merge with version
+// 3.1.7.
+//
 // Revision 1.57  2000/06/16 18:15:01  jimg
 // Merged with 3.1.7
 //
@@ -287,7 +291,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.57 2000/06/16 18:15:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.58 2000/06/16 18:50:19 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -384,7 +388,6 @@ unique_names(SLList<BaseType *> l, const string &var_name,
 	DBG(std::cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
 #else
 	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
-<<<<<<< util.cc
 #endif
     }
     
@@ -401,18 +404,23 @@ unique_names(SLList<BaseType *> l, const string &var_name,
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
 #endif
-=======
-    }
+#endif
     
     // sort the array of names
     sort(names.begin(), names.end());
 	
 #ifdef DODS_DEBUG2
+#ifdef WIN32
+    std::cout << "unique:" << endl;
+    for (int ii = 0; ii < nelem; ++ii)
+	std::cout << "NAMES[" << ii << "]=" << names[ii] << endl;
+#else
     cout << "unique:" << endl;
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
 #endif
-
+#endif
+    
     // look for any instance of consecutive names that are ==
     int i;
     for (i = 1; i < nelem; ++i)
@@ -447,12 +455,17 @@ unique_names(DLList<BaseType *> l, const string &var_name,
     sort(names.begin(), names.end());
 	
 #ifdef DODS_DEBUG2
+#ifdef WIN32
+    std::cout << "unique:" << endl;
+    for (int ii = 0; ii < nelem; ++ii)
+	std::cout << "NAMES[" << ii << "]=" << names[ii] << endl;
+#else
     cout << "unique:" << endl;
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
->>>>>>> 1.55.4.1
 #endif
-
+#endif
+    
     // look for any instance of consecutive names that are ==
     int i;
     for (i = 1; i < nelem; ++i)

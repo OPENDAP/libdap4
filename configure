@@ -21,8 +21,8 @@
 # 4. Macros for locating various systems (Matlab, etc.)
 # 5. Macros used to test things about the computer/OS/hardware
 #
-# $Id: configure,v 1.69 2000/03/31 21:07:03 jimg Exp $
-
+# $Id: configure,v 1.70 2000/06/16 18:50:18 jimg Exp $
+#
 # 1. Unidata's macros
 #-------------------------------------------------------------------------
 
@@ -288,8 +288,8 @@ NULL_PROGRAM="mail() {}"
 # Added by Ethan, 1999/06/21
 # Look for perl.
 # 
-# I modified the regexp below to removed any text that follows the version
-# number. This extra text was hosing the text. 7/15/99 jhrg
+# I modified the regexp below to remove any text that follows the version
+# number. This extra text was hosing the test. 7/15/99 jhrg
 
 
 
@@ -931,7 +931,7 @@ else
 fi
 
     case "$PERL" in
-	perl)
+	*perl*)
 	    perl_ver=`$PERL -v 2>&1 | awk '/This is perl/ {print}'`
 	    perl_ver=`echo $perl_ver | sed 's/This is perl, version \([0-9._]*\).*/\1/'`
             perl_ver_main=`echo $perl_ver | sed 's/\([0-9]*\).*/\1/'`
@@ -993,11 +993,11 @@ test -n "$TAR" || TAR="tar"
 	    then
 		echo "$ac_t""Found Gnu tar version ${tar_ver}." 1>&6
 	    else
-		echo "configure: warning: GNU tar is required." 1>&2
+		echo "configure: warning: GNU tar is required for some Makefile targets." 1>&2
 	    fi
 	    ;;
 	*)
-	    echo "configure: warning: GNU tar is required." 1>&2
+	    echo "configure: warning: GNU tar is required for some Makefile targets." 1>&2
 	    ;;
     esac
 
@@ -1061,7 +1061,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -1562,8 +1562,8 @@ else
 fi
 
     case "$YACC" in
-	bison)
-	    bison_ver1=`bison -V 2>&1 | sed 's/[^0-9]*\(.*\)/\1/'`
+	*bison)
+	    bison_ver1=`$YACC -V 2>&1 | sed 's/[^0-9]*\(.*\)/\1/'`
 	    bison_ver2=`echo $bison_ver1 | sed 's/\.//g'`
 	    cat >> confdefs.h <<EOF
 #define DODS_BISON_VER $bison_ver2
@@ -2683,7 +2683,7 @@ EOF
     
     
     . ${DODS_PACKAGES_DIR}/lib/tkConfig.sh
-    GUILIBS="$GUILIBS $TK_XLIBSW -lm"
+    GUILIBS="$GUILIBS $TK_LIBS"
     
     checkBoth=0
     echo $ac_n "checking for connect""... $ac_c" 1>&6
