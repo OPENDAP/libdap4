@@ -37,6 +37,9 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.11  1996/05/21 23:52:42  jimg
+// Changed include netio.h to cgi_util.h.
+//
 // Revision 1.10  1996/03/05 23:22:06  jimg
 // Addedconst to the char * function definitions.
 //
@@ -80,7 +83,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.10 1996/03/05 23:22:06 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.11 1996/05/21 23:52:42 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,6 +95,7 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.10 1996/03/05 23:22:06 jimg Exp $"};
 #include <String.h>
 
 #include "config_netio.h"
+#include "cgi_util.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -221,19 +225,27 @@ name_path(const char *path)
 }
 
 // Send string to set the transfer (mime) type and server version
-//
+// Note that the content description filed is used to indicate whether valid
+// information of an error message is contained in the document.
+
 void
-set_mime_text()
+set_mime_text(String description = "Valid")
 {
   cout << "Status: 200 " << DVR << endl;  /* send server version */
-  cout << "Content-type: text/plain\n" << endl; 
+  cout << "Content-type: text/plain" << endl; 
+  cout << "Content-Description: " << description << endl;
+
+  cout << endl;			// MIME header ends with a blank line
 }
 
 void
-set_mime_binary()
+set_mime_binary(String description = "Valid")
 {
   cout << "Status: 200 " << DVR << endl;
-  cout << "Content-type: application/octet-stream\n" << endl; 
+  cout << "Content-type: application/octet-stream" << endl; 
+  cout << "Content-Description: " << description << endl;
+
+  cout << endl;			// MIME header ends with a blank line
 }
 
 
