@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.43 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.44 2003/04/23 21:33:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1666,7 +1666,12 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.43  2003/04/22 19:40:28  jimg
+ * Revision 1.44  2003/04/23 21:33:53  jimg
+ * Changes for the unit tests. This involved merging Rob's VC++ changes
+ * and fixing a bug in escaping.cc (a call to string::insert invalidated
+ * an iterator in a loop).
+ *
+ * Revision 1.42  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *
  * Revision 1.41  2003/02/21 00:14:25  jimg

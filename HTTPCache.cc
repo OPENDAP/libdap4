@@ -34,9 +34,8 @@
 #include <pthread.h>
 #endif
 
-#define DODS_DEBUG
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <algorithm>
 #include <set>
 
@@ -49,6 +48,8 @@
 #include "debug.h"
 
 HTTPCache *HTTPCache::_instance = 0;
+
+using namespace std;
 
 #if HAVE_PTHREAD_H
 // instance_mutex is used to ensure that only one instance is created. The
@@ -164,9 +165,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
 
     INIT(&d_cache_mutex);
 
-    // Initialize the cache table. Put this here so that this will be
-    // initialized evenif we don't get the single user lock (for example,
-    // because the home directory is not writable. 03/12/03 jhrg
+    // Initialize the cache table.
     for (int i = 0; i < CACHE_TABLE_SIZE; ++i)
 	d_cache_table[i] = 0;
 
@@ -175,7 +174,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     // better to have an instance that has default values. If we cannot get
     // the lock, make sure to set the cache as *disabled*. 03/12/03 jhrg
     if (get_single_user_lock(force)) {
-	set_cache_root(cache_root);
+	set_cache_root(cache_root); // indirectly throws Error
 	cache_index_read();
     }
     else {
@@ -210,34 +209,29 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     false. Use this only if you're sure no one else is using the same cache
     root! This is included so that programs may use a cache that was
     left in an inconsistent state. 
-    @return A pointer to the HTTPCache object or NULL if there is
-    another process locking the persistent store. */
+    @return A pointer to the HTTPCache object.
+    @exception Error thrown if the cache root cannot set. */
 
 HTTPCache *
-HTTPCache::instance(const string &cache_root, bool force)
+HTTPCache::instance(const string &cache_root, bool force) throw(Error)
 {
     LOCK(&instance_mutex);
-
     DBG2(cerr << "Entering instance(); (" << hex << _instance << dec << ")"
 	 << endl);
 
-    if (!_instance) {
-	try {
+    try {
+	if (!_instance) {
 	    _instance = new HTTPCache(cache_root, force);
 	    atexit(delete_instance);
 	}
-	// If there's another process locking the persistent store (see
-	// get_single_user_lock()) then the constructor will throw Error. It
-	// does this *before* allocating any data structures.
-	catch (Error &e) {
-	    DBG2(cerr << "The constructor threw an Error!" << endl);
-	    UNLOCK(&instance_mutex);
-	    return 0;
-	}
+    }
+    catch (Error &e) {
+	DBG2(cerr << "The constructor threw an Error!" << endl);
+	UNLOCK(&instance_mutex);
+	throw e;
     }
 
     UNLOCK(&instance_mutex);
-
     DBG2(cerr << "Returning " << hex << _instance << dec << endl);
 
     return _instance;
@@ -297,24 +291,31 @@ HTTPCache::~HTTPCache()
 
     LOCK(&d_cache_mutex);	// Here because cache_index_write locks too
 
-    for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
-	CachePointers *cp = d_cache_table[i];
-	if (cp) {
-	    // delete each entry
-	    for_each(cp->begin(), cp->end(), delete_cache_entry);
-	    // now delete the vector that held the entries
-	    DBG2(cerr << "Deleting d_cache_table[" << i << "]: "
-		<< d_cache_table[i] << endl);
-	    delete d_cache_table[i];
+    try {
+	for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
+	    CachePointers *cp = d_cache_table[i];
+	    if (cp) {
+		// delete each entry
+		for_each(cp->begin(), cp->end(), delete_cache_entry);
+		// now delete the vector that held the entries
+		DBG2(cerr << "Deleting d_cache_table[" << i << "]: "
+		     << d_cache_table[i] << endl);
+		delete d_cache_table[i];
+	    }
 	}
-    }
 
-    release_single_user_lock();
-    HTTPCache::_instance = 0;	// Needed for testing (where many HTTPCache
+	release_single_user_lock();
+	HTTPCache::_instance = 0; // Needed for testing (where many HTTPCache
 				// objects are made by one process).
 
-    DBG2(cerr << "exiting" << endl);
+    }
+    catch (Error &e) {
+	DBG2(cerr << "The constructor threw an Error!" << endl);
+	UNLOCK(&d_cache_mutex);
+	throw e;
+    }
 
+    DBG2(cerr << "exiting" << endl);
     UNLOCK(&d_cache_mutex);
 
     DESTROY(&d_cache_mutex);
@@ -385,8 +386,7 @@ HTTPCache::cache_index_parse_line(const char *line)
     CacheEntry *entry = new CacheEntry;
 
     INIT(&entry->lock);
-    istrstream iss(line);
-
+    istringstream iss(line);
     iss >> entry->url;
     iss >> entry->cachename;
 
@@ -430,8 +430,7 @@ struct WriteOneCacheEntry :
 			 (long) (e->lm),
 			 (long) (e->expires),
 			 e->size,
-			 e->range ? '1' : '0', // not used. 10/02/02
-			 // jhrg 
+			 e->range ? '1' : '0', // not used. 10/02/02 jhrg 
 			 e->hash,
 			 e->hits,
 			 (long) (e->freshness_lifetime),
@@ -457,30 +456,36 @@ HTTPCache::cache_index_write() throw(Error)
 
     DBG2(cerr << "Cache Index. Writing index " << d_cache_index << endl);
 
-    // Open the file for writing.
-    FILE * fp = NULL;
-    if ((fp = fopen(d_cache_index.c_str(), "wb")) == NULL) {
+    try {
+	// Open the file for writing.
+	FILE * fp = NULL;
+	if ((fp = fopen(d_cache_index.c_str(), "wb")) == NULL) {
+	    throw Error(string("Cache Index. Can't open `") + d_cache_index 
+			+ string("' for writing"));
+	}
+
+	// Walk through the list and write it out. The format is really
+	// simple as we keep it all in ASCII.
+
+	for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
+	    CachePointers *cp = d_cache_table[cnt];
+	    if (cp)
+		for_each(cp->begin(), cp->end(), WriteOneCacheEntry(fp));
+	}
+
+	/* Done writing */
+	int res = fclose(fp);
+	if( res ) {
+	    DBG(cerr << "HTTPCache::cache_index_write - Failed to close " 
+		<< (void *)fp << endl ;) ;
+	}
+
+	d_new_entries = 0;
+    }
+    catch (Error &e) {
 	UNLOCK(&d_cache_mutex);
-	throw Error(string("Cache Index. Can't open `") + d_cache_index 
-		    + string("' for writing"));
+	throw e;
     }
-
-    // Walk through the list and write it out. The format is really simple as
-    // we keep it all in ASCII.
-
-    for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-	CachePointers *cp = d_cache_table[cnt];
-	if (cp)
-	    for_each(cp->begin(), cp->end(), WriteOneCacheEntry(fp));
-    }
-
-    /* Done writing */
-    int res = fclose(fp);
-    if( res ) {
-	DBG(cerr << "HTTPCache::cache_index_write - Failed to close " << (void *)fp << endl ;) ;
-    }
-
-    d_new_entries = 0;
 
     UNLOCK(&d_cache_mutex);
 }
@@ -883,24 +888,19 @@ HTTPCache::get_single_user_lock(bool force)
 	    if( res ) {
 		DBG(cerr << "HTTPCache::get_single_user_lock - Failed to close " << (void *)fp << endl ;) ;
 	    }
-	    if (force) {
+	    if (force)
 		REMOVE(lock.c_str());
-	    } else {
-		UNLOCK(&d_cache_mutex);
+	    else
 		return false;
-	    }
 	}
 
-	if ((fp = fopen(lock.c_str(), "w")) == NULL) {
-	    UNLOCK(&d_cache_mutex);
+	if ((fp = fopen(lock.c_str(), "w")) == NULL)
 	    return false;
-	}
+
 	d_locked_open_file = fp;
-	UNLOCK(&d_cache_mutex);
 	return true;
     }
 
-    UNLOCK(&d_cache_mutex);
     return false;
 }
 
@@ -1051,16 +1051,25 @@ void
 HTTPCache::set_max_size(int size)
 {
     LOCK(&d_cache_mutex);
+    
+    try {
+	long new_size = size < MIN_CACHE_TOTAL_SIZE ?
+	    MIN_CACHE_TOTAL_SIZE*MEGA : size * MEGA;
+	long old_size = d_total_size;
+	d_total_size = new_size;
+	d_folder_size = d_total_size/CACHE_FOLDER_PCT;
+	d_gc_buffer = d_total_size/CACHE_GC_PCT;
 
-    long new_size = size < MIN_CACHE_TOTAL_SIZE ?
-	MIN_CACHE_TOTAL_SIZE*MEGA : size * MEGA;
-    long old_size = d_total_size;
-    d_total_size = new_size;
-    d_folder_size = d_total_size/CACHE_FOLDER_PCT;
-    d_gc_buffer = d_total_size/CACHE_GC_PCT;
-
-    if (new_size < old_size) 
-	perform_garbage_collection();
+	if (new_size < old_size) {
+	    UNLOCK(&d_cache_mutex);
+	    perform_garbage_collection(); // calls cache_index_write, which locks
+	    LOCK(&d_cache_mutex);
+	}
+    }
+    catch (Error &e) {
+	UNLOCK(&d_cache_mutex);
+	throw e;
+    }
 
     DBG2(cerr << "Cache....... Total cache size: " << d_total_size
 	 << " with " << d_folder_size 
@@ -1091,12 +1100,21 @@ HTTPCache::set_max_entry_size(int size)
 {
     LOCK(&d_cache_mutex);
 
-    long new_size = size*MEGA;
-    if (new_size > 0 && new_size < d_total_size - d_folder_size) {
-	long old_size = d_max_entry_size;
-	d_max_entry_size = new_size;
-	if (new_size < old_size) 
-	    perform_garbage_collection();
+    try {
+	long new_size = size*MEGA;
+	if (new_size > 0 && new_size < d_total_size - d_folder_size) {
+	    long old_size = d_max_entry_size;
+	    d_max_entry_size = new_size;
+	    if (new_size < old_size) {
+		UNLOCK(&d_cache_mutex);
+		perform_garbage_collection(); // calls cache_index_write, which locks
+		LOCK(&d_cache_mutex);
+	    }
+	}
+    }
+    catch (Error &e) {
+	UNLOCK(&d_cache_mutex);
+	throw e;
     }
 
     DBG2(cerr << "Cache...... Max entry cache size is " 
@@ -1183,34 +1201,39 @@ HTTPCache::set_cache_control(const vector<string> &cc) throw(InternalErr)
 {
     LOCK(&d_cache_mutex);
 
-    d_cache_control = cc;
+    try {
+	d_cache_control = cc;
 
-    vector<string>::const_iterator i;
-    for (i = cc.begin(); i != cc.end(); ++i) {
-	string header = (*i).substr(0, (*i).find(':'));
-	string value = (*i).substr((*i).find(": ") + 2);
-	if (header != "Cache-Control") {
-	    UNLOCK(&d_cache_mutex);
-	    throw InternalErr(__FILE__, __LINE__, "Expected cache control header no found.");
+	vector<string>::const_iterator i;
+	for (i = cc.begin(); i != cc.end(); ++i) {
+	    string header = (*i).substr(0, (*i).find(':'));
+	    string value = (*i).substr((*i).find(": ") + 2);
+	    if (header != "Cache-Control") {
+		throw InternalErr(__FILE__, __LINE__, "Expected cache control header not found.");
+	    }
+	    else {
+		if (value == "no-cache" || value == "no-store")
+		    d_cache_enabled = false;
+		else if (value.find("max-age") != string::npos) {
+		    string max_age = value.substr(value.find("=" + 1));
+		    d_max_age = parse_time(max_age.c_str());
+		}
+		else if (value == "max-stale")
+		    d_max_stale = 0; // indicates will take anything;
+		else if (value.find("max-stale") != string::npos) {
+		    string max_stale = value.substr(value.find("=" + 1));
+		    d_max_stale = parse_time(max_stale.c_str());
+		}
+		else if (value.find("min-fresh") != string::npos) {
+		    string min_fresh = value.substr(value.find("=" + 1));
+		    d_min_fresh = parse_time(min_fresh.c_str());
+		}
+	    }
 	}
-	else {
-	    if (value == "no-cache" || value == "no-store")
-		d_cache_enabled = false;
-	    else if (value.find("max-age") != string::npos) {
-		string max_age = value.substr(value.find("=" + 1));
-		d_max_age = parse_time(max_age.c_str());
-	    }
-	    else if (value == "max-stale")
-		d_max_stale = 0; // indicates will take anything;
-	    else if (value.find("max-stale") != string::npos) {
-		string max_stale = value.substr(value.find("=" + 1));
-		d_max_stale = parse_time(max_stale.c_str());
-	    }
-	    else if (value.find("min-fresh") != string::npos) {
-		string min_fresh = value.substr(value.find("=" + 1));
-		d_min_fresh = parse_time(min_fresh.c_str());
-	    }
-	}
+    }
+    catch (Error &e) {
+	UNLOCK(&d_cache_mutex);
+	throw e;
     }
 
     UNLOCK(&d_cache_mutex);
@@ -1247,10 +1270,10 @@ string
 HTTPCache::create_hash_directory(int hash) throw(Error)
 {
     struct stat stat_info;
-    ostrstream path;
-    path << d_cache_root << hash << ends;
+    ostringstream path;
+
+    path << d_cache_root << hash;
     string p = path.str();
-    path.freeze(false);
 
     if (stat(p.c_str(), &stat_info) == -1) {
 	DBG2(cerr << "Cache....... Create dir " << p << endl);
@@ -1626,62 +1649,71 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 
     DBG(cerr << "Caching url: " << url << "." << endl);
 
-    // If this is not an http or https URL, don't cache.
-    if (url.find("http:") == string::npos &&
-	url.find("https:") == string::npos)
-	return false;
+    try {
+	// If this is not an http or https URL, don't cache.
+	if (url.find("http:") == string::npos &&
+	    url.find("https:") == string::npos) {
+	    UNLOCK(&d_cache_mutex);
+	    return false;
+	}
 
-    // This does nothing if url is not already in the cache. It's
-    // more efficient to do this than to first check and see if the entry
-    // exists. 10/10/02 jhrg
-    remove_entry_from_cache_table(url);
+	// This does nothing if url is not already in the cache. It's
+	// more efficient to do this than to first check and see if the entry
+	// exists. 10/10/02 jhrg
+	remove_entry_from_cache_table(url);
 	
-    CacheEntry *entry = new CacheEntry;
+	CacheEntry *entry = new CacheEntry;
 
-    INIT(&entry->lock);
-    entry->url = url;
-    entry->hash = get_hash(url);
-    entry->hits = 0;
+	INIT(&entry->lock);
+	entry->url = url;
+	entry->hash = get_hash(url);
+	entry->hits = 0;
 
-    try {	
-	parse_headers(entry, headers); // etag, lm, date, age, expires, max_age.
-	if (entry->no_cache) {
-	    DBG(cerr << "Not cache-able; deleting CacheEntry: " << entry 
-		<< "(" << url << ")" << endl);
+	try {	
+	    parse_headers(entry, headers); // etag, lm, date, age, expires, max_age.
+	    if (entry->no_cache) {
+		DBG(cerr << "Not cache-able; deleting CacheEntry: " << entry 
+		    << "(" << url << ")" << endl);
+		delete entry;
+		UNLOCK(&d_cache_mutex);
+		return false;
+	    }
+
+	    // corrected_initial_age, freshness_lifetime, response_time.
+	    calculate_time(entry, request_time); 
+
+	    create_location(entry);	// cachename, cache_body_fd
+	    entry->size = write_body(entry->cachename, body);
+
+	    write_metadata(entry->cachename, headers);
+	}
+	catch (ResponseTooBigErr &e) {
+	    // Oops. Bummer. Clean up and exit.
+	    DBG(cerr << e.get_error_message() << endl);
+	    REMOVE(entry->cachename.c_str());
+	    REMOVE(string(entry->cachename + CACHE_META).c_str());
+	    DBG(cerr << "Too big; deleting CacheEntry: " << entry << "(" << url 
+		<< ")" << endl);
 	    delete entry;
 	    UNLOCK(&d_cache_mutex);
 	    return false;
 	}
 
-	// corrected_initial_age, freshness_lifetime, response_time.
-	calculate_time(entry, request_time); 
+	entry->range = false;	// not used. 10/02/02 jhrg
 
-	create_location(entry);	// cachename, cache_body_fd
-	entry->size = write_body(entry->cachename, body);
+	add_entry_to_cache_table(entry);
 
-	write_metadata(entry->cachename, headers);
+	if (++d_new_entries > DUMP_FREQUENCY) {
+	    UNLOCK(&d_cache_mutex); // unlock because cache_index_write() locks
+	    cache_index_write(); // resets d_new_entries
+	    LOCK(&d_cache_mutex);
+	}
     }
-    catch (ResponseTooBigErr &e) {
-	// Oops. Bummer. Clean up and exit.
-	DBG(cerr << e.get_error_message() << endl);
-	REMOVE(entry->cachename.c_str());
-	REMOVE(string(entry->cachename + CACHE_META).c_str());
-	DBG(cerr << "Too big; deleting CacheEntry: " << entry << "(" << url 
-	    << ")" << endl);
-	delete entry;
+    catch (Error &e) {
 	UNLOCK(&d_cache_mutex);
-	return false;
+	throw e;
     }
 
-    entry->range = false;	// not used. 10/02/02 jhrg
-
-    add_entry_to_cache_table(entry);
-
-    if (++d_new_entries > DUMP_FREQUENCY) {
-	UNLOCK(&d_cache_mutex);
-	cache_index_write();	// resets d_new_entries
-    }
-    
     UNLOCK(&d_cache_mutex);
 
     return true;
@@ -1699,6 +1731,8 @@ HTTPCache::cache_response(const string &url, time_t request_time,
     Cache-Control max-age or Expires header(s). Note that a 'Cache-Control:
     max-age' header overrides an Expires header (Sec 14.9.3).
 
+    This method locks the cache interface and the cache entry.
+
     @param url Get the CacheEntry for this URL.
     @return A vector of strings, one request header per string.
     @exception Error Thrown if the \c url is not in the cache. */
@@ -1708,31 +1742,39 @@ HTTPCache::get_conditional_request_headers(const string &url)
     throw(Error)
 {
     LOCK(&d_cache_mutex);
-
-    CacheEntry *entry = get_entry_from_cache_table(url);
-    if (!entry) {
-	UNLOCK(&d_cache_mutex);
-	throw Error("There is no cache entry for the URL: " + url);
-    }
-
-    LOCK(&entry->lock);
-
+    CacheEntry *entry;
     vector<string> headers;
 
-    if (entry->etag != "")
-	headers.push_back(string("If-None-Match: ") + entry->etag);
+    try {
+	entry = get_entry_from_cache_table(url);
+	if (!entry) {
+	    throw Error("There is no cache entry for the URL: " + url);
+	}
 
-    if (entry->lm > 0)
-	headers.push_back(string("If-Modified-Since: ") 
-			  + date_time_str(&entry->lm));
-    else if (entry->max_age > 0)
-	headers.push_back(string("If-Modified-Since: ")
-			  + date_time_str(&entry->max_age));
-    else if (entry->expires > 0)
-	headers.push_back(string("If-Modified-Since: ")
-			  + date_time_str(&entry->expires));
+	DBG(cerr << "Locking entry... ");
+	LOCK(&entry->lock);
+
+	if (entry->etag != "")
+	    headers.push_back(string("If-None-Match: ") + entry->etag);
+
+	if (entry->lm > 0)
+	    headers.push_back(string("If-Modified-Since: ") 
+			      + date_time_str(&entry->lm));
+	else if (entry->max_age > 0)
+	    headers.push_back(string("If-Modified-Since: ")
+			      + date_time_str(&entry->max_age));
+	else if (entry->expires > 0)
+	    headers.push_back(string("If-Modified-Since: ")
+			      + date_time_str(&entry->expires));
+    }
+    catch (Error &e) {
+	UNLOCK(&d_cache_mutex);
+	UNLOCK(&entry->lock);
+	throw e;
+    }
 
     UNLOCK(&entry->lock);
+    DBGN(cerr << "Unlocking entry" << endl);
     UNLOCK(&d_cache_mutex);
 
     return headers;
@@ -1751,7 +1793,7 @@ struct HeaderLess: public binary_function<const string&, const string&, bool> {
     provides a way to merge response headers returned from a conditional GET
     request, for the given URL, with those already present.  
 
-    This method locks the class' interface. 
+    This method locks the class' interface and the cache entry.
 
     @param url Update the metadata for this cache entry.
     @param request_time The time (Unix time, seconds since 1 Jan 1970) that
@@ -1765,51 +1807,60 @@ HTTPCache::update_response(const string &url, time_t request_time,
 			   const vector<string> &headers) throw(Error)
 {
     LOCK(&d_cache_mutex);
+    CacheEntry *entry;
 
     DBG(cerr << "Updating the response headers for: " << url << endl);
 
-    CacheEntry *entry = get_entry_from_cache_table(url);
-    if (!entry) {
+    try {
+	entry = get_entry_from_cache_table(url);
+	if (!entry)
+	    throw Error("There is no cache entry for the URL: " + url);
+
+	DBG(cerr << "Locking entry... ");
+	LOCK(&entry->lock);
+
+	// Merge the new headers with the exiting CacheEntry object.
+	parse_headers(entry, headers);
+
+	// Update corrected_initial_age, freshness_lifetime, response_time.
+	calculate_time(entry, request_time); 
+
+	// Merge the new headers with those in the persistent store. How:
+	// Load the new headers into a set, then merge the old headers. Since
+	// set<> ignores duplicates, old headers with the same name as a new
+	// header will got into the bit bucket. Define a special compare
+	// functor to make sure that headers are compared using only their
+	// name and not their value too.
+	set<string, HeaderLess> merged_headers;
+
+	// Load in the new headers
+	copy(headers.begin(), headers.end(), 
+	     inserter(merged_headers, merged_headers.begin()));
+
+	// Get the old headers and load them in.
+	vector<string> old_headers;
+	read_metadata(entry->cachename, old_headers);
+	copy(old_headers.begin(), old_headers.end(), 
+	     inserter(merged_headers, merged_headers.begin()));
+
+	// Read the values back out. Use reverse iterators with back_inserter
+	// to preserve header order. NB: vector<> does not support push_front
+	// so we can't use front_inserter(). 01/09/03 jhrg
+	vector<string> result;
+	copy(merged_headers.rbegin(), merged_headers.rend(), 
+	     back_inserter(result));
+
+	// Store.
+	write_metadata(entry->cachename, result);
+    }
+    catch (Error &e) {
+	UNLOCK(&entry->lock);
 	UNLOCK(&d_cache_mutex);
-	throw Error("There is no cache entry for the URL: " + url);
+	throw e;
     }
 
-    LOCK(&entry->lock);
-
-    // Merge the new headers with the exiting CacheEntry object.
-    parse_headers(entry, headers);
-
-    // Update corrected_initial_age, freshness_lifetime, response_time.
-    calculate_time(entry, request_time); 
-
-    // Merge the new headers with those in the persistent store. 
-    // How: Load the new headers into a set, then merge the old headers.
-    // Since set<> ignores duplicates, old headers with the same name as a new
-    // header will got into the bit bucket. Define a special compare functor
-    // to make sure that headers are compared using only their name and not
-    // their value too.
-    set<string, HeaderLess> merged_headers;
-
-    // Load in the new headers
-    copy(headers.begin(), headers.end(), 
-	 inserter(merged_headers, merged_headers.begin()));
-
-    // Get the old headers and load them in.
-    vector<string> old_headers;
-    read_metadata(entry->cachename, old_headers);
-    copy(old_headers.begin(), old_headers.end(), 
-	 inserter(merged_headers, merged_headers.begin()));
-
-    // Read the values back out. Use reverse iterators with back_inserter to
-    // preserve header order. NB: vector<> does not support push_front so we
-    // can't use front_inserter(). 01/09/03 jhrg
-    vector<string> result;
-    copy(merged_headers.rbegin(), merged_headers.rend(), back_inserter(result));
-
-    // Store.
-    write_metadata(entry->cachename, result);
-
     UNLOCK(&entry->lock);
+    DBGN(cerr << "Unlocking entry" << endl);
     UNLOCK(&d_cache_mutex);
 }
 
@@ -1817,7 +1868,7 @@ HTTPCache::update_response(const string &url, time_t request_time,
     response. This method should be used to determine if a cached response
     requires validation.
 
-    This method locks the class' interface. 
+    This method locks the class' interface and on a locked cache entry.
 
     @param url Find the cached response associated with this URL.
     @return True indicates that the response can be used, False indicates
@@ -1828,49 +1879,63 @@ bool
 HTTPCache::is_url_valid(const string &url) throw(Error)
 {
     LOCK(&d_cache_mutex);
+    bool freshness;
+    CacheEntry *entry;
 
-    if (d_always_validate)
-	return false;		// force re-validation.
+    try {
+	if (d_always_validate)
+	    return false;		// force re-validation.
 
-    CacheEntry *entry = get_entry_from_cache_table(url);
-    if (!entry) {
-	UNLOCK(&d_cache_mutex);
-	throw Error("There is no cache entry for the URL: " + url);
+	entry = get_entry_from_cache_table(url);
+	if (!entry)
+	    throw Error("There is no cache entry for the URL: " + url);
+
+	DBG(cerr << "Locking entry... ");
+	LOCK(&entry->lock);
+
+	// If we supported range requests, we'd need code here to check if
+	// there was only a partial response in the cache. 10/02/02 jhrg
+
+	// In case this entry is of type "must-revalidate" then we consider it
+	// invalid. 
+	if (entry->must_revalidate) {
+	    UNLOCK(&entry->lock);
+	    DBGN(cerr << "Unlocking entry" << endl);
+	    return false;
+	}
+
+	time_t resident_time = time(NULL) - entry->response_time;
+	time_t current_age = entry->corrected_initial_age + resident_time;
+
+	// Check that the max-age, max-stale, and min-fresh directives
+	// given in the request cache control header is followed.
+	if (d_max_age >= 0 && current_age > d_max_age) {
+	    DBG(cerr << "Cache....... Max-age validation" << endl);
+	    UNLOCK(&entry->lock);
+	    DBGN(cerr << "Unlocking entry" << endl);
+	    UNLOCK(&d_cache_mutex);
+	    return false;
+	}
+	if (d_min_fresh >= 0 &&
+	    entry->freshness_lifetime < current_age + d_min_fresh) {
+	    DBG(cerr << "Cache....... Min-fresh validation" << endl);
+	    UNLOCK(&entry->lock);
+	    DBGN(cerr << "Unlocking entry" << endl);
+	    UNLOCK(&d_cache_mutex);
+	    return false;
+	}
+
+	freshness = (entry->freshness_lifetime 
+		     + (d_max_stale >= 0 ? d_max_stale : 0) > current_age);
     }
-
-    LOCK(&entry->lock);
-
-    // If we supported range requests, we'd need code here to check if there
-    // was only a partial response in the cache. 10/02/02 jhrg
-
-    // In case this entry is of type "must-revalidate" then we just go ahead
-    // and validate it.
-    if (entry->must_revalidate)
-	return false;
-
-    time_t resident_time = time(NULL) - entry->response_time;
-    time_t current_age = entry->corrected_initial_age + resident_time;
-
-    // Check that the max-age, max-stale, and min-fresh directives
-    // given in the request cache control header is followed.
-    if (d_max_age >= 0 && current_age > d_max_age) {
-	DBG(cerr << "Cache....... Max-age validation" << endl);
+    catch (Error &e) {
 	UNLOCK(&entry->lock);
 	UNLOCK(&d_cache_mutex);
-	return false;
+	throw e;
     }
-    if (d_min_fresh >= 0 &&
-	entry->freshness_lifetime < current_age + d_min_fresh) {
-	DBG(cerr << "Cache....... Min-fresh validation" << endl);
-	UNLOCK(&entry->lock);
-	UNLOCK(&d_cache_mutex);
-	return false;
-    }
-
-    bool freshness = (entry->freshness_lifetime 
-		      + (d_max_stale >= 0 ? d_max_stale : 0) > current_age);
 
     UNLOCK(&entry->lock);
+    DBGN(cerr << "Unlocking entry" << endl);
     UNLOCK(&d_cache_mutex);
 
     return freshness;
@@ -1879,16 +1944,21 @@ HTTPCache::is_url_valid(const string &url) throw(Error)
 /** Get information from the cache. For a given URL, get the headers and body
     stored in the cache. Note that this method increments the hit counter for
     <code>url</code>'s entry and \e locks that entry. To release the lock,
-    the method release_cached_response() \e must be called.
+    the method release_cached_response() \e must be called. Methods that
+    block on a locked entry are: get_conditional_request_headers(),
+    update_response() and is_url_valid(). In addition, purge_cache() throws
+    Error if it's called and any entries are locked. The garbage collection
+    system will not reclaim locked entries (but works fine when some entries
+    are locked).
 
-    NB: This method does \e not check to see that the response is valid, just
+    This method locks the class' interface. 
+
+    This method does \e not check to see that the response is valid, just
     that it is in the cache. To see if a cached response is valid, use
     is_url_valid(). The FILE* returned can be used for both reading and
     writing. The latter allows a client to update the body of a cached
     response without having to first dump it all to a separate file and then
     copy it into the cache (using cache_response()).
-
-    This method locks the class' interface. 
 
     @param url Get response information for this URL.
     @param headers Return the response headers in this parameter
@@ -1901,23 +1971,31 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
     throw(Error, InternalErr)
 {
     LOCK(&d_cache_mutex);
+    FILE *body;
+    CacheEntry *entry;
 
-    CacheEntry *entry = get_entry_from_cache_table(url);
-    if (!entry){
-	UNLOCK(&d_cache_mutex);
-	throw Error("There is no cache entry for the URL: " + url);
-    }
+    try {
+	entry = get_entry_from_cache_table(url);
+	if (!entry)
+	    throw Error("There is no cache entry for the URL: " + url);
 
-    read_metadata(entry->cachename, headers);
+	read_metadata(entry->cachename, headers);
     
-    FILE *body = open_body(entry->cachename);
+	body = open_body(entry->cachename);
 
-    DBG(cerr << "Returning: " << url << " from the cache." << endl);
+	DBG(cerr << "Returning: " << url << " from the cache." << endl);
 
-    entry->hits++;		// Mark hit
-    entry->locked++;		// lock entry
-    d_locked_entries[body] = entry; // record lock, see release_cached_r...
-    TRYLOCK(&entry->lock);	// Needed for blocking lock; locked counts
+	entry->hits++;		// Mark hit
+	entry->locked++;	// lock entry
+	d_locked_entries[body] = entry; // record lock, see release_cached_r...
+	DBG(cerr << "Locking entry (non-blocking lock)... ");
+	TRYLOCK(&entry->lock);	// Needed for blocking lock; locked counts
+    }
+    catch (Error &e) {
+	UNLOCK(&entry->lock);
+	UNLOCK(&d_cache_mutex);
+	throw e;
+    }
 
     UNLOCK(&d_cache_mutex);
 
@@ -1927,6 +2005,11 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
 /** Get a pointer to a cached response body. For a given URL, find the cached
     response body and return a FILE * to it. This updates the hit counter and
     it locks the entry. To release the lock, call release_cached_response().
+    Methods that block on a locked entry are:
+    get_conditional_request_headers(), update_response() and is_url_valid().
+    In addition, purge_cache() throws Error if it's called and any entries
+    are locked. The garbage collection system will not reclaim locked entries
+    (but works fine when some entries are locked).
 
     NB: This method does \e not check to see that the response is valid, just
     that it is in the cache. To see if a cached response is valid, use
@@ -1944,22 +2027,33 @@ HTTPCache::get_cached_response_body(const string &url)
     throw(Error, InternalErr)
 {
     LOCK(&d_cache_mutex);
+    FILE *body;
+    CacheEntry *entry;
 
-    CacheEntry *entry = get_entry_from_cache_table(url);
+    try {
+	entry = get_entry_from_cache_table(url);
 
-    if (!entry) {
-	UNLOCK(&d_cache_mutex);
-	throw Error("There is no cache entry for the URL: " + url);
+	if (!entry) {
+	    UNLOCK(&d_cache_mutex);
+	    throw Error("There is no cache entry for the URL: " + url);
+	}
+
+	body = open_body(entry->cachename); // throws InternalErr
+
+	DBG(cerr << "Returning body for: " << url << " from the cache." 
+	    << endl);
+
+	entry->hits++;		// Mark hit
+	entry->locked++;		// lock entry
+	d_locked_entries[body] = entry; // record lock, see release_cached_r...
+	DBG(cerr << "Locking entry (non-blocking lock)... ");
+	TRYLOCK(&entry->lock);
     }
-
-    FILE *body = open_body(entry->cachename); // throws InternalErr
-
-    DBG(cerr << "Returning body for: " << url << " from the cache." << endl);
-
-    entry->hits++;		// Mark hit
-    entry->locked++;		// lock entry
-    d_locked_entries[body] = entry; // record lock, see release_cached_r...
-    TRYLOCK(&entry->lock);
+    catch (Error &e) {
+	UNLOCK(&entry->lock);
+	UNLOCK(&d_cache_mutex);
+	throw e;
+    }
 
     UNLOCK(&d_cache_mutex);
 
@@ -1982,22 +2076,26 @@ void
 HTTPCache::release_cached_response(FILE *body) throw(Error)
 {
     LOCK(&d_cache_mutex);
+    CacheEntry *entry;
 
-    CacheEntry *entry = d_locked_entries[body];
-    if (!entry) {
-	UNLOCK(&d_cache_mutex);
-	throw Error("There is no cache entry for the response given.");
+    try {
+	entry = d_locked_entries[body];
+	if (!entry)
+	    throw Error("There is no cache entry for the response given.");
+
+	entry->locked--;
+	if (entry->locked == 0) {
+	    d_locked_entries.erase(body);
+	    UNLOCK(&entry->lock);
+	    DBGN(cerr << "Unlocking entry" << endl);
+	}
+
+	if (entry->locked < 0)
+	    throw Error("An unlocked entry was released");
     }
-
-    entry->locked--;
-    if (entry->locked == 0) {
-	d_locked_entries.erase(body);
-	UNLOCK(&entry->lock);
-    }
-
-    if (entry->locked < 0) {
+    catch (Error &e) {
 	UNLOCK(&d_cache_mutex);
-	throw Error("An unlocked entry was released");
+	throw e;
     }
 
     UNLOCK(&d_cache_mutex);
@@ -2036,32 +2134,42 @@ HTTPCache::purge_cache() throw(Error)
 {
     LOCK(&d_cache_mutex);
     DBG(cerr << "Purging the cache." << endl);
-
-    if (!d_locked_entries.empty()) {
-	UNLOCK(&d_cache_mutex);
-	throw Error("Attempt to purge the cache with entries in use.");
-    }
-
-    // Walk through the cache table and, for every entry in the cache, delete
-    // it on disk and in the cache table.
-    for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-	CachePointers *slot = d_cache_table[cnt];
-	if (slot) { 
-	    for_each(slot->begin(), slot->end(),
-		     DeleteUnlockedCacheEntry(this));
-	    slot->erase(remove(slot->begin(), slot->end(),
-			       static_cast<CacheEntry *>(0)),
-			slot->end());
+    
+    try {
+	if (!d_locked_entries.empty()) {
+	    throw Error("Attempt to purge the cache with entries in use.");
 	}
-    }
 
-    // Now delete the index itself.
-    cache_index_delete();
+	// Walk through the cache table and, for every entry in the cache, delete
+	// it on disk and in the cache table.
+	for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
+	    CachePointers *slot = d_cache_table[cnt];
+	    if (slot) { 
+		for_each(slot->begin(), slot->end(),
+			 DeleteUnlockedCacheEntry(this));
+		slot->erase(remove(slot->begin(), slot->end(),
+				   static_cast<CacheEntry *>(0)),
+			    slot->end());
+	    }
+	}
+
+	// Now delete the index itself.
+	cache_index_delete();
+    }
+    catch (Error &e) {
+	UNLOCK(&d_cache_mutex);
+	throw e;
+    }
 
     UNLOCK(&d_cache_mutex);
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.9  2003/04/23 21:33:53  jimg
+// Changes for the unit tests. This involved merging Rob's VC++ changes
+// and fixing a bug in escaping.cc (a call to string::insert invalidated
+// an iterator in a loop).
+//
 // Revision 1.8  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

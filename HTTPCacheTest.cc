@@ -39,6 +39,10 @@
 #include "HTTPConnect.h"	// Used to generate a response to cache.
 #include "debug.h"
 
+#if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
+#include <iterator>
+#endif
+
 using namespace CppUnit;
 
 #ifdef WIN32
@@ -116,6 +120,7 @@ public:
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
 
     CPPUNIT_TEST(constructor_test);
+
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
     CPPUNIT_TEST(get_entry_from_cache_table_test);
@@ -124,12 +129,16 @@ public:
     CPPUNIT_TEST(set_cache_root_test);
     CPPUNIT_TEST(get_single_user_lock_test);
     CPPUNIT_TEST(release_single_user_lock_test);
+
     CPPUNIT_TEST(create_hash_directory_test);
+
     CPPUNIT_TEST(create_location_test);
     CPPUNIT_TEST(parse_headers_test);
     CPPUNIT_TEST(calculate_time_test);
     CPPUNIT_TEST(write_metadata_test);
+
     CPPUNIT_TEST(cache_response_test);
+
     CPPUNIT_TEST(is_url_valid_test);
     CPPUNIT_TEST(get_cached_response_test);
     CPPUNIT_TEST(perform_garbage_collection_test);
@@ -372,6 +381,7 @@ public:
 
 	    HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(dodsdev_url);
 	    CPPUNIT_ASSERT(file_size(e->cachename) == 703);
+	    delete rs;
 	}
 	catch (Error &e) {
 	    cerr << "Error: " << e.get_error_message() << endl;
@@ -416,6 +426,9 @@ public:
 		CPPUNIT_ASSERT(cb == b);
 	}
 	CPPUNIT_ASSERT(feof(rs->get_stream()) && feof(cached_body));
+
+	hc->release_cached_response(cached_body);
+	delete rs;
     }
 
     void perform_garbage_collection_test() {
@@ -437,13 +450,13 @@ public:
 #ifdef WIN32
 	    Sleep(1000);
 #else
-	    sleep(1);
+	    sleep(2);
 #endif
 
 	    gc->perform_garbage_collection();
 
 	    CPPUNIT_ASSERT(!gc->is_url_in_cache(expired) 
-			   && "This may fail is sleep is not long enough before gc above");
+			   && "This may fail if sleep is not long enough before gc above");
 	}
 	catch(Error &e) {
 	    cerr << "Exception: " << e.get_error_message() << endl;
@@ -601,11 +614,12 @@ public:
 	    CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
 	    vector<string> orig_h;
-	    (void) c->get_cached_response(dodsdev_url, orig_h);
-	    // copy(orig_h.begin(), orig_h.end(), ostream_iterator<string>(cerr, "\n"));
+	    FILE *cr = c->get_cached_response(dodsdev_url, orig_h);
+	    DBG(copy(orig_h.begin(), orig_h.end(), 
+		     ostream_iterator<string>(cerr, "\n")));
 
-	    // Before we merge, et c., check that the headers we're going to poke
-	    // in aren't already there.
+	    // Before we merge, et c., check that the headers we're going to
+	    // poke in aren't already there.
 	    CPPUNIT_ASSERT(find(orig_h.begin(), orig_h.end(), 
 				"XHTTPCache: 123456789") == orig_h.end());
 	    CPPUNIT_ASSERT(find(orig_h.begin(), orig_h.end(), 
@@ -616,11 +630,14 @@ public:
 	    new_h.push_back("XHTTPCache: 123456789");
 	    new_h.push_back("Date: <invalid date>");
 	
+	    c->release_cached_response(cr);
+
 	    c->update_response(dodsdev_url, time(0), new_h);
 	
 	    vector<string> updated_h;
 	    (void) c->get_cached_response(dodsdev_url, updated_h);
-	    // copy(updated_h.begin(), updated_h.end(), ostream_iterator<string>(cerr, "\n"));
+	    DBG(copy(updated_h.begin(), updated_h.end(),
+		     ostream_iterator<string>(cerr, "\n")));
 	
 	    // The XHTTPCacheTest header should be new, Date should replace the
 	    // existing Date header.
@@ -656,6 +673,11 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPCacheTest.cc,v $
+// Revision 1.8  2003/04/23 21:33:53  jimg
+// Changes for the unit tests. This involved merging Rob's VC++ changes
+// and fixing a bug in escaping.cc (a call to string::insert invalidated
+// an iterator in a loop).
+//
 // Revision 1.7  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

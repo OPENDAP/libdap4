@@ -165,177 +165,177 @@ string AISMergeTest::fnoc2_ais = "http://localhost/ais/fnoc2.nc.das";
 string AISMergeTest::digit_ais = "ais_testsuite/starts_with_number.das";
 
 string AISMergeTest::fnoc1_ais_string = 
-"Attributes {
-    u {
-	String DODS_Name \"UWind\";
-    }
-    v {
-	String DODS_Name \"VWind\";
-    }
+"Attributes {\n\
+    u {\n\
+	String DODS_Name \"UWind\";\n\
+    }\n\
+    v {\n\
+	String DODS_Name \"VWind\";\n\
+    }\n\
 }";
 
 string AISMergeTest::bears_1_ais_string =
-"Attributes {
-    bears {
-	String longname \"Test data\";
-    }
+"Attributes {\n\
+    bears {\n\
+	String longname \"Test data\";\n\
+    }\n\
 }";
 
 string AISMergeTest::coads_ais_string =
-"Attributes {
-    COADSX {
-        String long_name \"Longitude\";
-    }
+"Attributes {\n\
+    COADSX {\n\
+        String long_name \"Longitude\";\n\
+    }\n\
 }";
 
 string AISMergeTest::starts_with_number_ais_string =
-"Attributes {
-    NC_GLOBAL {
-        String AIS_Test_info \"This dataset's name starts with a digit.\";
-    }
+"Attributes {\n\
+    NC_GLOBAL {\n\
+        String AIS_Test_info \"This dataset's name starts with a digit.\";\n\
+    }\n\
 }";
 
 string AISMergeTest::fnoc3_das =
-"Attributes {
-    u {
-        String units \"meter per second\";
-        String long_name \"Vector wind eastward component\";
-        String missing_value \"-32767\";
-        String scale_factor \"0.005\";
-    }
-    v {
-        String units \"meter per second\";
-        String long_name \"Vector wind northward component\";
-        String missing_value \"-32767\";
-        String scale_factor \"0.005\";
-    }
-    lat {
-        String units \"degree North\";
-    }
-    lon {
-        String units \"degree East\";
-    }
-    time {
-        String units \"hours from base_time\";
-    }
-    NC_GLOBAL {
-        String base_time \"88-245-00:00:00\";
-        String title \" FNOC UV wind components from 1988-245 to 1988-247.\";
-    }
-    DODS_EXTRA {
-        String Unlimited_Dimension \"time_a\";
-    }
+"Attributes {\n\
+    u {\n\
+        String units \"meter per second\";\n\
+        String long_name \"Vector wind eastward component\";\n\
+        String missing_value \"-32767\";\n\
+        String scale_factor \"0.005\";\n\
+    }\n\
+    v {\n\
+        String units \"meter per second\";\n\
+        String long_name \"Vector wind northward component\";\n\
+        String missing_value \"-32767\";\n\
+        String scale_factor \"0.005\";\n\
+    }\n\
+    lat {\n\
+        String units \"degree North\";\n\
+    }\n\
+    lon {\n\
+        String units \"degree East\";\n\
+    }\n\
+    time {\n\
+        String units \"hours from base_time\";\n\
+    }\n\
+    NC_GLOBAL {\n\
+        String base_time \"88-245-00:00:00\";\n\
+        String title \" FNOC UV wind components from 1988-245 to 1988-247.\";\n\
+    }\n\
+    DODS_EXTRA {\n\
+        String Unlimited_Dimension \"time_a\";\n\
+    }\n\
 }";
 
 string AISMergeTest::fnoc1_merge_ais = 
-"Attributes {
-    u {
-        String units \"meter per second\";
-        String long_name \"Vector wind eastward component\";
-        String missing_value \"-32767\";
-        String scale_factor \"0.005\";
-        String DODS_Name \"UWind\";
-    }
-    v {
-        String units \"meter per second\";
-        String long_name \"Vector wind northward component\";
-        String missing_value \"-32767\";
-        String scale_factor \"0.005\";
-        String DODS_Name \"VWind\";
-    }
-    lat {
-        String units \"degree North\";
-    }
-    lon {
-        String units \"degree East\";
-    }
-    time {
-        String units \"hours from base_time\";
-    }
-    NC_GLOBAL {
-        String base_time \"88- 10-00:00:00\";
-        String title \" FNOC UV wind components from 1988- 10 to 1988- 13.\";
-    }
-    DODS_EXTRA {
-        String Unlimited_Dimension \"time_a\";
-    }
+"Attributes {\n\
+    u {\n\
+        String units \"meter per second\";\n\
+        String long_name \"Vector wind eastward component\";\n\
+        String missing_value \"-32767\";\n\
+        String scale_factor \"0.005\";\n\
+        String DODS_Name \"UWind\";\n\
+    }\n\
+    v {\n\
+        String units \"meter per second\";\n\
+        String long_name \"Vector wind northward component\";\n\
+        String missing_value \"-32767\";\n\
+        String scale_factor \"0.005\";\n\
+        String DODS_Name \"VWind\";\n\
+    }\n\
+    lat {\n\
+        String units \"degree North\";\n\
+    }\n\
+    lon {\n\
+        String units \"degree East\";\n\
+    }\n\
+    time {\n\
+        String units \"hours from base_time\";\n\
+    }\n\
+    NC_GLOBAL {\n\
+        String base_time \"88- 10-00:00:00\";\n\
+        String title \" FNOC UV wind components from 1988- 10 to 1988- 13.\";\n\
+    }\n\
+    DODS_EXTRA {\n\
+        String Unlimited_Dimension \"time_a\";\n\
+    }\n\
 }";
 
 string AISMergeTest::fnoc2_merge_ais =
-"Attributes {
-    u {
-        String units \"meter per second\";
-        String long_name \"UWind\";
-    }
-    v {
-        String units \"meter per second\";
-        String long_name \"VWind\";
-    }
-    lat {
-        String units \"degree North\";
-        String long_name \"Latitude\";
-    }
-    lon {
-        String units \"degree East\";
-        String long_name \"Longitude\";
-    }
-    time {
-    }
-    NC_GLOBAL {
-    }
-    DODS_EXTRA {
-    }
+"Attributes {\n\
+    u {\n\
+        String units \"meter per second\";\n\
+        String long_name \"UWind\";\n\
+    }\n\
+    v {\n\
+        String units \"meter per second\";\n\
+        String long_name \"VWind\";\n\
+    }\n\
+    lat {\n\
+        String units \"degree North\";\n\
+        String long_name \"Latitude\";\n\
+    }\n\
+    lon {\n\
+        String units \"degree East\";\n\
+        String long_name \"Longitude\";\n\
+    }\n\
+    time {\n\
+    }\n\
+    NC_GLOBAL {\n\
+    }\n\
+    DODS_EXTRA {\n\
+    }\n\
 }";
 
 string AISMergeTest::fnoc3_merge_ais =
-"Attributes {
-    u {
-        String long_name \"UWind\";
-    }
-    v {
-        String long_name \"VWind\";
-    }
-    lat {
-        String long_name \"Latitude\";
-    }
-    lon {
-        String long_name \"Longitude\";
-    }
+"Attributes {\n\
+    u {\n\
+        String long_name \"UWind\";\n\
+    }\n\
+    v {\n\
+        String long_name \"VWind\";\n\
+    }\n\
+    lat {\n\
+        String long_name \"Latitude\";\n\
+    }\n\
+    lon {\n\
+        String long_name \"Longitude\";\n\
+    }\n\
 }";
 
 string AISMergeTest::three_fnoc_merge_ais =
-"Attributes {
-    u {
-        String long_name \"UWind\", \"Vector wind eastward component\";
-        String units \"meter per second\";
-        String missing_value \"-32767\";
-        String scale_factor \"0.005\";
-    }
-    v {
-        String long_name \"VWind\", \"Vector wind northward component\";
-        String units \"meter per second\";
-        String missing_value \"-32767\";
-        String scale_factor \"0.005\";
-    }
-    lat {
-        String long_name \"Latitude\";
-        String units \"degree North\";
-    }
-    lon {
-        String long_name \"Longitude\";
-        String units \"degree East\";
-    }
-    time {
-        String units \"hours from base_time\";
-    }
-    NC_GLOBAL {
-        String base_time \"88-245-00:00:00\";
-        String title \" FNOC UV wind components from 1988-245 to 1988-247.\";
-        String AIS_Test_info \"This dataset's name starts with a digit.\";
-    }
-    DODS_EXTRA {
-        String Unlimited_Dimension \"time_a\";
-    }
+"Attributes {\n\
+    u {\n\
+        String long_name \"UWind\", \"Vector wind eastward component\";\n\
+        String units \"meter per second\";\n\
+        String missing_value \"-32767\";\n\
+        String scale_factor \"0.005\";\n\
+    }\n\
+    v {\n\
+        String long_name \"VWind\", \"Vector wind northward component\";\n\
+        String units \"meter per second\";\n\
+        String missing_value \"-32767\";\n\
+        String scale_factor \"0.005\";\n\
+    }\n\
+    lat {\n\
+        String long_name \"Latitude\";\n\
+        String units \"degree North\";\n\
+    }\n\
+    lon {\n\
+        String long_name \"Longitude\";\n\
+        String units \"degree East\";\n\
+    }\n\
+    time {\n\
+        String units \"hours from base_time\";\n\
+    }\n\
+    NC_GLOBAL {\n\
+        String base_time \"88-245-00:00:00\";\n\
+        String title \" FNOC UV wind components from 1988-245 to 1988-247.\";\n\
+        String AIS_Test_info \"This dataset's name starts with a digit.\";\n\
+    }\n\
+    DODS_EXTRA {\n\
+        String Unlimited_Dimension \"time_a\";\n\
+    }\n\
 }";
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AISMergeTest);
@@ -352,6 +352,11 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISMergeTest.cc,v $
+// Revision 1.4  2003/04/23 21:33:53  jimg
+// Changes for the unit tests. This involved merging Rob's VC++ changes
+// and fixing a bug in escaping.cc (a call to string::insert invalidated
+// an iterator in a loop).
+//
 // Revision 1.3  2003/03/12 01:07:34  jimg
 // Added regular expressions to the AIS subsystem. In an AIS database (XML)
 // it is now possible to list a regular expression in place of an explicit

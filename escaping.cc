@@ -81,7 +81,9 @@ const int MAXSTR = 256;
 // to make testing them (see generalUtilTest.cc) easier to write. 5/7/2001
 // jhrg
 
-string hexstring(unsigned char val) {
+string 
+hexstring(unsigned char val) 
+{
     char buf[MAXSTR];
 
     ostrstream(buf, MAXSTR) << hex << setw(2) << setfill('0') 
@@ -90,7 +92,8 @@ string hexstring(unsigned char val) {
     return string(buf);
 }
 
-string unhexstring(string s) 
+string 
+unhexstring(string s) 
 {
 #if 0
     // Originally this code returned val, the string declared below. This
@@ -107,7 +110,9 @@ string unhexstring(string s)
     return string(tmp_str);
 }
 
-string octstring(unsigned char val) {
+string 
+octstring(unsigned char val) 
+{
     char buf[MAXSTR];
 
     ostrstream(buf, MAXSTR) << oct << setw(3) << setfill('0') 
@@ -116,7 +121,9 @@ string octstring(unsigned char val) {
     return (string)buf;
 }
 
-string unoctstring(string s) {
+string
+unoctstring(string s) 
+{
     int val;
 
     istrstream(s.c_str(), MAXSTR) >> oct >> val;
@@ -251,7 +258,8 @@ char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]")
 /** Escape non-printable characters and quotes from an HDF attribute.
     @param s The attribute to modify.
     @return The modified attribute. */
-string escattr(string s) {
+string 
+escattr(string s) {
     Regex nonprintable("[^ !-~]", 1);
     const string ESC = "\\";
     const string DOUBLE_ESC = ESC + ESC;
@@ -287,7 +295,8 @@ string escattr(string s) {
     character! 
 
     @param s The escaped attribute. @return The unescaped attribute. */
-string unescattr(string s) {
+string 
+unescattr(string s) {
     Regex escregx("\\\\[01][0-7][0-7]", 1);  // matches 4 characters
     Regex escquoteregex("[^\\\\]\\\\\"", 1);  // matches 3 characters
     Regex escescregex("\\\\\\\\",1);      // matches 2 characters
@@ -332,12 +341,17 @@ munge_error_message(string msg)
     string::iterator miter;
     for (miter = msg.begin()+1; miter != msg.end()-1; miter++)
 	if (*miter == '"' && *(miter-1) != '\\')
-	    msg.insert(miter, '\\');
+	    miter = msg.insert(miter, '\\');
 
     return msg;
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.26  2003/04/23 21:33:53  jimg
+// Changes for the unit tests. This involved merging Rob's VC++ changes
+// and fixing a bug in escaping.cc (a call to string::insert invalidated
+// an iterator in a loop).
+//
 // Revision 1.25  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

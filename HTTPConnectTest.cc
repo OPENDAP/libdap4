@@ -23,8 +23,6 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#define DODS_DEBUG
- 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -169,6 +167,7 @@ public:
 
 	    DBG(copy(h.begin(), h.end(), 
 		     ostream_iterator<string>(cerr, "\n")));
+	    delete r;
 
 	    // Should get five headers back.
 	    Regex header("XDODS-Server: DAP/.*");
@@ -177,6 +176,7 @@ public:
 	    CPPUNIT_ASSERT(h.size() == 5);
 	}
 	catch (InternalErr &e) {
+	    delete r;
 	    CPPUNIT_ASSERT(!"Caught an exception from get_response_headers");
 	}
     }
@@ -186,8 +186,10 @@ public:
 	Regex version("dap/[0-9]+\\.[0-9]+\\.[0-9]+");
 	try {
 	    CPPUNIT_ASSERT(re_match(version, r->get_version().c_str()));
+	    delete r;
 	}
 	catch (InternalErr &e) {
+	    delete r;
 	    CPPUNIT_ASSERT(!"Caught an exception from server_version");
 	}
 	
@@ -197,8 +199,10 @@ public:
 	Response *r = http->fetch_url(dsp_das_url);
 	try {
 	    CPPUNIT_ASSERT(r->get_type() == dods_das);
+	    delete r;
 	}
 	catch (InternalErr &e) {
+	    delete r;
 	    CPPUNIT_ASSERT(!"Caught an exception from type()");
 	}
 
@@ -248,6 +252,11 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPConnectTest.cc,v $
+// Revision 1.8  2003/04/23 21:33:53  jimg
+// Changes for the unit tests. This involved merging Rob's VC++ changes
+// and fixing a bug in escaping.cc (a call to string::insert invalidated
+// an iterator in a loop).
+//
 // Revision 1.7  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

@@ -209,7 +209,7 @@ public:
 	t->append_attr("longer name", "String", "\"second test\"");
 	ostringstream oss;
 	t->print(oss, "");
-	string attrs = "String long%20name first;
+	string attrs = "String long%20name first;\n\
 String longer%20name \"second test\";";
 	CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
 	delete t; t = 0;
@@ -241,8 +241,11 @@ String longer%20name \"second test\";";
 	int n = at1->get_size();
 	CPPUNIT_ASSERT(n == 3);
 
-	for (AttrTable::Attr_iter j = at1->attr_begin(); j != at1->attr_end(); ++j) 
+#if 0
+	for (AttrTable::Attr_iter j = at1->attr_begin(); 
+	     j != at1->attr_end(); ++j) 
 	    cerr << "Name: " << at1->get_name(j) << endl;
+#endif
 
 	AttrTable::Attr_iter i = at1->get_attr_iter(0);
 	CPPUNIT_ASSERT(at1->get_name(i) == "a");

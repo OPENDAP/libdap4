@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.tab.c,v 1.6 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.tab.c,v 1.7 2003/04/23 21:33:53 jimg Exp $"};
 
 #include <iostream>
 
@@ -1268,7 +1268,12 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 }
 
 // $Log: gse.tab.c,v $
-// Revision 1.6  2003/04/22 19:40:28  jimg
+// Revision 1.7  2003/04/23 21:33:53  jimg
+// Changes for the unit tests. This involved merging Rob's VC++ changes
+// and fixing a bug in escaping.cc (a call to string::insert invalidated
+// an iterator in a loop).
+//
+// Revision 1.10  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //
 // Revision 1.8.2.2  2003/04/21 23:28:20  jimg

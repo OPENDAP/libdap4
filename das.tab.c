@@ -30,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.36 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.37 2003/04/23 21:33:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1650,7 +1650,12 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.36  2003/04/22 19:40:28  jimg
+ * Revision 1.37  2003/04/23 21:33:53  jimg
+ * Changes for the unit tests. This involved merging Rob's VC++ changes
+ * and fixing a bug in escaping.cc (a call to string::insert invalidated
+ * an iterator in a loop).
+ *
+ * Revision 1.47  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *
  * Revision 1.46  2003/02/21 00:14:25  jimg

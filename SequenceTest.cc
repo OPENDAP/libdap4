@@ -38,17 +38,18 @@
 #include "debug.h"
 
 using namespace CppUnit;
+using namespace std;
 
 //  Note: MS VC++ won't tolerate the embedded newlines in strings, hence the \n
 //  is explicit.
 static const char *s_as_string = \
-"BaseType (0x.*)\n\
+"BaseType (0x.*):\n\
           _name: s\n\
           _type: 13\n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
-          d_parent: (nil)\n\
+          d_parent: 0\n\
 BaseType (0x.*):\n\
           _name: i1\n\
           _type: 4\n\
@@ -113,11 +114,23 @@ public:
     }
 
     bool re_match(Regex &r, const char *s) {
-	return r.match(s, strlen(s)) == (int)strlen(s);
+	int match_position = r.match(s, strlen(s));
+	DBG(cerr << "match position: " << match_position 
+	    << " string length: " << (int)strlen(s) << endl);
+	return match_position == (int)strlen(s);
     }
+
+    CPPUNIT_TEST_SUITE( SequenceTest );
+
+    CPPUNIT_TEST(ctor_test);
+    CPPUNIT_TEST(assignment);
+    CPPUNIT_TEST(copy_ctor);
+
+    CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
     void ctor_test() {
+	DBG(cerr << "s: " << s->toString() << endl);
 	CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
     }
 
@@ -133,15 +146,6 @@ public:
 	Sequence s2 = *s;
 	CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
     }
-
-    CPPUNIT_TEST_SUITE( SequenceTest );
-
-    CPPUNIT_TEST(ctor_test);
-    CPPUNIT_TEST(assignment);
-    CPPUNIT_TEST(copy_ctor);
-
-    CPPUNIT_TEST_SUITE_END();
-
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);

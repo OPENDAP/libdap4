@@ -32,7 +32,6 @@
 #include "DODSFilter.h"
 #include "DAS.h"
 #include "Regex.h"
-#define DODS_DEBUG
 #include "debug.h"
 
 using namespace CppUnit;
@@ -159,24 +158,24 @@ public:
 
     void send_das_test() {
 	cerr << endl
-	     << "Note: the send_das() tests depend, in part, on having data
- sources written on a certain date. These work with my copies of the files,
+	     << "Note: the send_das() tests depend, in part, on having data\n\
+ sources written on a certain date. These work with my copies of the files,\n\
  but these tests probably will not work with files checked out of CVS."
 	     << endl;
 
-	Regex r1("HTTP/1.0 200 OK
-XDODS-Server:.*
-Date: .*
-Last-Modified: Thu, 29 Apr 1999 02:29:40 GMT
-Content-type: text/plain
-Content-Description: dods_das
-
-Attributes {
-    a {
-        Int32 size 7;
-        String type cars;
-    }
-}.*
+	Regex r1("HTTP/1.0 200 OK\n\
+XDODS-Server:.*\n\
+Date: .*\n\
+Last-Modified: Thu, 29 Apr 1999 02:29:40 GMT\n\
+Content-type: text/plain\n\
+Content-Description: dods_das\n\
+\n\
+Attributes {\n\
+    a {\n\
+        Int32 size 7;\n\
+        String type cars;\n\
+    }\n\
+}.*\n\
 ");
 	df->send_das(oss, *das); oss << ends;
 
@@ -185,9 +184,9 @@ Attributes {
 	CPPUNIT_ASSERT(re_match(r1, oss.str()));
 	reset_oss();
 
-	Regex r2("HTTP/1.0 304 NOT MODIFIED
-Date: .*
-
+	Regex r2("HTTP/1.0 304 NOT MODIFIED\n\
+Date: .*\n\
+\n\
 ");
 	df3->send_das(oss, *das); oss << ends;
 	CPPUNIT_ASSERT(re_match(r2, oss.str()));

@@ -25,7 +25,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.37 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.38 2003/04/23 21:33:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2189,7 +2189,12 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.37  2003/04/22 19:40:28  jimg
+ * Revision 1.38  2003/04/23 21:33:53  jimg
+ * Changes for the unit tests. This involved merging Rob's VC++ changes
+ * and fixing a bug in escaping.cc (a call to string::insert invalidated
+ * an iterator in a loop).
+ *
+ * Revision 1.47  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *
  * Revision 1.46  2003/02/27 23:42:32  jimg

@@ -309,7 +309,8 @@ private:
     void hits_gc();
 
 public:
-    static HTTPCache *instance(const string &cache_root, bool force = false);
+    static HTTPCache *instance(const string &cache_root, bool force = false)
+	throw(Error);
     virtual ~HTTPCache();
 
     string get_cache_root() const;
@@ -363,6 +364,11 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.8  2003/04/23 21:33:53  jimg
+// Changes for the unit tests. This involved merging Rob's VC++ changes
+// and fixing a bug in escaping.cc (a call to string::insert invalidated
+// an iterator in a loop).
+//
 // Revision 1.7  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //
