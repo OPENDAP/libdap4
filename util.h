@@ -13,6 +13,10 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.25  1998/02/11 22:35:18  jimg
+ * Added prototype for deflate_exists().
+ * Removed prototype for decompressor().
+ *
  * Revision 1.24  1997/08/11 18:18:42  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -126,7 +130,7 @@ void delete_xdrstdio(XDR *xdr);
 FILE *text_to_temp(String text);
 char *systime();
 FILE *compressor(FILE *output, int &childpid);
-FILE *decompressor(FILE *input, int &childpid);
+bool deflate_exists();
 const char *dods_root();
 const char *dods_progress();
 
