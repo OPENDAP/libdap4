@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.46 1996/09/19 16:50:38 jimg Exp $
+# $Id: Makefile.in,v 1.47 1996/10/08 17:06:26 jimg Exp $
 
 @SET_MAKE@
 
@@ -45,7 +45,7 @@ INSTALLMAN = man
 
 SHELL = /bin/sh
 srcdir = @srcdir@
-VPATH = @srcdir@:Map:Stack:Plex:Vec
+# VPATH = @srcdir@:Map:Stack:Plex:Vec
 dir = @dir@
 
 # testsuite specifics
@@ -94,10 +94,11 @@ ERRORHDRS = Error.h
 ERROROBJS = Error.o $(ERROR_GRAM_OBJS)
 ERRORSRCS = Error.cc
 
-TYPEHDRS = BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
-	   Vector.h List.h Array.h Structure.h Sequence.h Function.h Grid.h \
-	   util.h
-
+TYPEHDRS = BaseType.h Byte.h Int32.h \
+	   Float64.h Str.h Url.h Vector.h List.h Array.h Structure.h \
+	   Sequence.h Function.h Grid.h util.h
+# Add these for the next release. jhrg 10/1/96
+#          UInt32.h Int16.h Uint16.h Float32.h 
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc Function.cc \
 	   Grid.cc util.cc
@@ -109,8 +110,9 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 # These object files are built using source code generated from the GNU
 # libg++ source with `genclass'. They are part of the the DAP library.
 
-GNUOBJS = BaseTypeVec.o String.Plex.o String.XPlex.o BTPlex.o BTStack.o \
-	  BTXPStack.o BTXPlex.o AttrMap.o AttrVHMap.o DASMap.o DASVHMap.o
+GNUOBJS = Vec/BaseTypeVec.o Plex/String.Plex.o Plex/String.XPlex.o \
+	  Stack/BTPlex.o Stack/BTStack.o Stack/BTXPStack.o Stack/BTXPlex.o \
+	  Map/AttrMap.o Map/AttrVHMap.o Map/DASMap.o Map/DASVHMap.o
 
 GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h \
 	  Map/AttrVHMap.h      Plex/String.XPlex.h  Stack/BTdefs.h \
@@ -133,7 +135,7 @@ all: $(PROG)
 
 libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
 	    $(EXPROBJS) $(NETIOOBJS)
-	    $(AR) -cru $@ $?
+	    $(AR) cru $@ $?
 	    $(RANLIB) $@
 
 # geturl is really a test driver, but it is so useful in other contexts that
