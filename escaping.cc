@@ -273,6 +273,9 @@ munge_error_message(string msg)
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.20  2001/10/29 21:17:46  jimg
+// Fixed some errors in the comments.
+//
 // Revision 1.19  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //
@@ -291,19 +294,6 @@ munge_error_message(string msg)
 //
 // Revision 1.16.2.4  2001/07/28 00:49:26  jimg
 // Changed the names and function of id2dods/dods2id. The new functions are
-<<<<<<< escaping.cc
-// called id2www and www2id. They use C++ strings, not Regexs. They scan their
-// inputs and escape/unescape characters for the WWW. The character set that's
-// allowed in a URL is defined by RFC 2396, ``Universal Resource Identifiers
-// (URI): Generic Syntax.'' We're using that to determine which characters must
-// be escaped and which are OK as is. For example, a dash (-) is allowed in a
-// URL. Note that dashes are now processed by our parsers, too. Spaces, hashes
-// (#), et c. are not allowed in a URL and will be escaped by id2www and
-// unescaped by www2id.
-//
-// Revision 1.17  2001/06/15 23:49:04  jimg
-// Merged with release-3-2-4.
-=======
 // called id2www and www2id. They use C++ strings, not Regexs. They scan
 // their inputs and escape/unescape characters for the WWW. The character set
 // that's allowed in a URL is defined by RFC 2396, ``Universal Resource
@@ -312,7 +302,9 @@ munge_error_message(string msg)
 // is allowed in a URL. Note that dashes are now processed by our parsers,
 // too. Spaces, hashes (#), et c. are not allowed in a URL and will be
 // escaped by id2www and unescaped by www2id.
->>>>>>> 1.16.2.6
+//
+// Revision 1.17  2001/06/15 23:49:04  jimg
+// Merged with release-3-2-4.
 //
 // Revision 1.16.2.3  2001/05/16 21:09:19  jimg
 // Modified www2id so that one escape code can be considered exceptional
