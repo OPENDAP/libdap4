@@ -146,7 +146,7 @@ class AttrTable {
     // entry needs to be made public to make up for issues with this class'
     // design. It should probably be moved to it's own class. 05/22/03 jhrg
 public:
-    /** Each AttrTable has zero or more entries. Instead of access this
+    /** Each AttrTable has zero or more entries. Instead of accessing this
 	struct's members directly, use AttrTable methods.
 
 	This struct is public because its type is used in public typedefs. */
@@ -307,6 +307,7 @@ public:
     string get_name(Attr_iter iter);
     bool is_container(Attr_iter iter);
     AttrTable *get_attr_table(Attr_iter iter);
+    void AttrTable::del_attr_table(Attr_iter iter);
     string get_type(Attr_iter iter);
     AttrType get_attr_type(Attr_iter iter);
     unsigned int get_attr_num(Attr_iter iter);
@@ -329,6 +330,9 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.50  2004/08/03 23:02:17  jimg
+ * Fixed comment/doc errors. Added del_attr_table().
+ *
  * Revision 1.49  2004/07/07 21:08:47  jimg
  * Merged with release-3-4-8FCS
  *
