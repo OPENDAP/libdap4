@@ -1,7 +1,7 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1999
+// (c) COPYRIGHT URI/MIT 1994-1999,2001
 // Please first read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
@@ -39,18 +39,6 @@
 
 #include <stdio.h>
 
-#if 0
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
 #include <string>
 #include <SLList.h>
 
@@ -78,9 +66,7 @@
 #include "util.h"
 #endif
 
-#ifdef WIN32
 using std::vector<string>;
-#endif
 
 /**
 
@@ -151,18 +137,14 @@ enum EncodingType {
     information about these features. See the DODSFilter class for
     information on servers that compress data.
 
-
-    The Connect class must be specialized for each different.
-    client-library. Connect is only used on the client-side of a DODS
-    client-server connection.
-
-    The Connect class contains a linked list of #constraint# objects.
-    These are simple C structures containing a constraint expression
-    and a DDS object.  The DDS object contains data received from the
-    server, and the accompanying constraint expression was a part of
-    the data request.  To support multiple connections to a single
-    DODS server, you can use either one Connect object with many
-    entries in the #constraint# list, or multiple Connect objects.
+    N.B.: This file may be built two different ways. If the compile-time
+    symbol #GUI# is defined, a version of Connect is built which will use a
+    simple graphical window to display transmission status information. The
+    graphical display is useful for interactive clients, but won't work for
+    non-interactive programs. For those clients, build the DAP library with
+    #GUI# {\emph undefined}. Without #GUI# defined, errors will result in
+    Connect throwing an Error object. Clients can catch these objects and try
+    to correct the error.
 
     @memo Holds information about the link from a DODS client to a
     dataset.
@@ -214,8 +196,8 @@ private:
     string _accept_types;	// Comma separated list of types understood
     string _cache_control;	// should the request be cached? 
     string _username;           // extracted from URL, or GUI
-    string _passwd;             // extracted from URL, or GUI
-    int _passwd_attempt;	// number of tries with the current user/password
+    string _password;		// extracted from URL, or GUI
+    int _password_attempt;	// number of tries with the user/password
     
     HTParentAnchor *_anchor;
     HTMethod _method;		// What method are we envoking 
@@ -225,62 +207,40 @@ private:
     bool _www_errors_to_stderr; // FALSE for messages to stderr
     bool _accept_deflate;
 
-    // Jose Garcia
-    // User authetication
-    string _user_name;
-    string _password;
-
-
-  /* Initialize the W3C WWW Library. This should only be called when a
+    /* Initialize the W3C WWW Library. This should only be called when a
       Connect object is created and there are no other Connect objects in
-      existence.
-
-      @memo Initialize the W3C WWW Library.
-      */
+      existence. */
     void www_lib_init(bool www_verbose_errors, bool accept_deflate);
 
-  /* Assume that the object's \_OUTPUT stream has been set
-      properly.
-      Returns true if the read operation succeeds, false otherwise.
-
-      @memo Read a URL.
-      */
+    /* Assume that the object's \_OUTPUT stream has been set
+       properly.
+       Returns true if the read operation succeeds, false otherwise. */
     bool read_url(string &url, FILE *stream);
 
-  /* Separate the text DDS from the binary data in the data object (which
+    /* Separate the text DDS from the binary data in the data object (which
       is a bastardized multipart MIME document). The returned FILE * points
       to a temporary file which contains the DDS object only. The formal
       parameter IN is advanced so that it points to the first byte of the
-      binary data.
-
-      @memo Separate the DDS from the binary data.
-      */
+      binary data. */
     FILE *move_dds(FILE *in);
 
-  /* Create a new Connect object.
-
-      @memo Copy from one Connect to another. 
-      */
+    /* Create a new Connect object. */
     void clone(const Connect &src);
 
-  /* Close the output stream of the Connect object.
-
-      @memo Close the object's \_output stream if it is not NULL or
-      STDOUT.  
-      */
-    void close_output();
-
-  /* Something to do with the DDS. 
-
-    @memo process data?
-    */
+    /* Something to do with the DDS. */
     DDS *process_data(bool async = false);
     
-  /* Use when you cannot use libwww. 
-
-    @memo Simple MIME parser. 
-    */
+    /* Use when you cannot use libwww. */
     void parse_mime(FILE *data_source);
+
+    /** If a URL contains a username/password pair (in the convention
+	established by Netscape, et al.) then extract that information from
+	the URL and load it into the this object. Remove the information from
+	the URL.
+	@memo Extract a username and password from a URL.
+	@param url The url on which to operate. Note that this is a parameter
+	only to support the method #fetch_url#. */
+    void extract_auth_info(string &url);
 
     friend BOOL dods_username_password(HTRequest * request, HTAlertOpcode,
 				       int, const char *, void *, 
@@ -303,8 +263,8 @@ private:
     friend int header_handler(HTRequest *request, HTResponse *response,
 			      const char *token, const char *val);
 
-    friend BOOL dods_error_print (HTRequest * request, HTAlertOpcode, int, 
-				  const char *, void * input, HTAlertPar *);
+    friend void process_www_errors(HTList *listerr, HTRequest *request) 
+	throw(Error);
 
     Connect();			// Never call this.
 
@@ -318,11 +278,22 @@ public:
       ctor) \em{can} process return documents that are compressed with 
       gzip.
 
+      @param name The URL for the virtual connection.
+      @param www_verbose_errors False: show only WWW Fatal errors, True: show
+      WWW informational messages, too. This effects message display but not
+      exceptions. If Connect is compiled to throw execptions for certain WWW
+      errors, it will do so regardless of the value of this parameter.
+      @param accept_defalte Provides compile-time control for on-the-fly
+      compression. If True clients will ask servers to compress responses.
+      @param uname If given along woth password, supply this as the Username
+      in all HTTP requests.
+      @param password Use this as the password with #uname# above.
       @memo Create an instance of Connect. */
     Connect(string name, bool www_verbose_errors = false,
-	    bool accept_deflate = true, string uname="", string password=""); 
+	    bool accept_deflate = true, string uname = "",
+	    string password = ""); 
 
-  /** The Connect copy construtor. */
+    /** The Connect copy construtor. */
     Connect(const Connect &copy_from);
     virtual ~Connect();
 
@@ -367,7 +338,8 @@ public:
 
 	NB: By default, the value `All' is used.
 
-	@param types The string listing datatypes understood by this client. */
+	@param types The string listing datatypes understood by this client.
+    */ 
     void set_accept_types(const string &types);
 
     /** Get the string which describes the default cache control value. This
@@ -386,7 +358,11 @@ public:
       into an output file.  A pointer to this file can be retrieved
       with the #output()# function.  If {\it async} is true, then the
       operation is asynchronous, and the function returns before the
-      data transfer is complete.
+      data transfer is complete. This method is here so that Connect can be
+      used to read from any URL, not just URLs which return DAS, DDS or
+      DataDDS objects. Because of this, fetch_url neither automatically
+      appends a suffix nor does it route the response through any of the
+      parsers which decode responses from a DODS server.
 
       Note that the asynchronous transfer feature of DODS is not
       currently enabled.  All invocations of this function will be
@@ -420,6 +396,15 @@ public:
       @return A #(FILE *)# indicating a file containing the data
       received from a dereferenced URL.  */
     FILE *output();
+
+    /** Close the output stream of the Connect object. This closes the FILE
+	pointer returned by #output()#. In addition, it also deletes the
+	internal XDR stream object, although users should not have to know
+	about that\ldots
+
+	@memo Close the object's output stream if it is not NULL or
+	STDOUT. */
+    void close_output();
 
   /** The data retrieved from a remote DODS server will be in XDR
       format.  Use this function to initialize an XDR decoder for that
@@ -644,24 +629,32 @@ public:
       future versions of the DODS software.  It currently defaults to
       the only possible working value, ``dods''.
       @see DataDDS
-      @see Gui 
-      */
+      @see Gui */
     DDS *read_data(FILE *data_source, bool gui = false, bool async = false);
-    // Jose Garcia
-    // User authetication
-    /**
-       Set the credentials for responding challenges while dereferencing URLs.
-    */
-    void set_credentials(string u, string p)
-    {
-      _user_name=u;
-      _password=p;
-    }
 
+    /** Set the credentials for responding to challenges while dereferencing
+	URLs. 
+	@param u The username.
+	@param p The password. 
+	@see extract_auth_info() */
+    void set_credentials(string u, string p);
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.52  2001/02/09 22:25:14  jimg
+ * Added extract_auth_info() method to parse username/password information from a
+ * URL and record it in this object.
+ * Moved set_credentials() method from the header, where it was inline, to the
+ * .cc file. Save inlines for performance optimizations.
+ * Removed set_username_password() function since dods_username_password() was
+ * modified to do its job.
+ * Added process_www_errors() to streamline error reporting for both the popup
+ * and non-popup version of this class. This friend function is called directly
+ * from Connect's methods, not via a libwww callback. This was necessary because
+ * it throws Error objects and throws don't (seem to, anyway) work from within
+ * callbacks.
+ *
  * Revision 1.51  2001/02/05 18:59:31  jgarcia
  * Added support so a Connect object can be created with credentials to be
  * able to resolve challenges issued by web servers (Basic Authentication).
