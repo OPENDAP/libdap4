@@ -6569,7 +6569,7 @@ echo "$as_me: error: Bad debug value" >&2;}
 
 
 
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files Makefile tests/Makefile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -7042,6 +7042,7 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+  "tests/Makefile" ) CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
   "config_dap.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config_dap.h" ;;
   "dods-datatypes.h" ) CONFIG_HEADERS="$CONFIG_HEADERS dods-datatypes.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
