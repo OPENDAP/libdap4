@@ -10,13 +10,19 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.4  1994/09/15 21:08:54  jimg
-/* Added many classes to the BaseType hierarchy - the complete set of types
-/* described in the DODS API design documet is not represented.
-/* The parser can parse DDS files.
-/* Fixed many small problems with BaseType.
-/* Added CtorType.
+/* Revision 1.5  1994/09/27 22:42:45  jimg
+/* Changed definition of the class AttrTable; it no longer inherits from
+/* AttrVHMap, instead it uses that class (contains a member that is an instance
+/* of AttrVHMap).
+/* Added mfuncs to AttrTable so that the new member could be set/accessed.
 /*
+ * Revision 1.4  1994/09/15  21:08:54  jimg
+ * Added many classes to the BaseType hierarchy - the complete set of types
+ * described in the DODS API design documet is not represented.
+ * The parser can parse DDS files.
+ * Fixed many small problems with BaseType.
+ * Added CtorType.
+ *
  * Revision 1.3  1994/09/09  15:26:41  jimg
  * Removed operator<< and added print() since I have no good way to define
  * operator>>. It seems best to define all operators from a set (like <<, >>)
@@ -25,13 +31,19 @@
  *
  * Revision 1.2  1994/08/02  19:17:39  jimg
  * Fixed `$Log: AttrTable.h,v $
- * Fixed `Revision 1.4  1994/09/15 21:08:54  jimg
- * Fixed `Added many classes to the BaseType hierarchy - the complete set of types
- * Fixed `described in the DODS API design documet is not represented.
- * Fixed `The parser can parse DDS files.
- * Fixed `Fixed many small problems with BaseType.
- * Fixed `Added CtorType.
+ * Fixed `Revision 1.5  1994/09/27 22:42:45  jimg
+ * Fixed `Changed definition of the class AttrTable; it no longer inherits from
+ * Fixed `AttrVHMap, instead it uses that class (contains a member that is an instance
+ * Fixed `of AttrVHMap).
+ * Fixed `Added mfuncs to AttrTable so that the new member could be set/accessed.
  * Fixed `
+ * Revision 1.4  1994/09/15  21:08:54  jimg
+ * Added many classes to the BaseType hierarchy - the complete set of types
+ * described in the DODS API design documet is not represented.
+ * The parser can parse DDS files.
+ * Fixed many small problems with BaseType.
+ * Added CtorType.
+ *
  * Revision 1.3  1994/09/09  15:26:41  jimg
  * Removed operator<< and added print() since I have no good way to define
  * operator>>. It seems best to define all operators from a set (like <<, >>)
@@ -51,39 +63,39 @@
  */
 
 #ifndef _AttrTable_h
+#define _AttrTable_h 1
+
 #ifdef __GNUG__
 #pragma interface
 #endif
-#define _AttrTable_h 1
+
+#include <Pix.h>
+#include <String.h>
 
 #include "AttrVHMap.h"
 
-class AttrTable : public AttrVHMap {
+class AttrTable {
 private:
-    static String empty;	// defined in AttrTable.cc
+    AttrVHMap map;		// mapping of names to values
 
 protected:
     
 public:
-    AttrTable(String& dflt=empty, unsigned int sz=DEFAULT_INITIAL_CAPACITY);
-    AttrTable(AttrTable& a);
-    ~AttrTable();
+    AttrTable(String& dflt=(char *)0, 
+	      unsigned int sz=DEFAULT_INITIAL_CAPACITY);
 
-    void print(ostream &os);
+    Pix first_attr();
+    void next_attr(Pix &p);
+    String &get_name(Pix p);
+    String &get_attr(Pix p);
+
+    String &get_attr(const String &name);
+    String &get_attr(const char *);
+    void set_attr(const String &name, String value);
+
+    void print(ostream &os, String pad = "    ");
 };
 
 typedef AttrTable * AttrTablePtr;
-
-AttrTable::AttrTable(String& dflt, unsigned int sz) : AttrVHMap(dflt, sz)
-{
-}
-
-inline AttrTable::AttrTable(AttrTable& a) : AttrVHMap(a)
-{
-}
-
-inline AttrTable::~AttrTable()
-{
-}
 
 #endif
