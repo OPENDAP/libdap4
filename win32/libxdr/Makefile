@@ -25,7 +25,7 @@ TESTTARG	= $(OBJDIR)\xdrtest.exe
 .SUFFIXES :	.obj .c
 
 {.}.c{$(OBJDIR)}.obj:
-	$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ $<
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ $<
 
 LIBOBJS = $(OBJDIR)\xdr.obj \
 		$(OBJDIR)\xdr_array.obj \
@@ -41,10 +41,10 @@ TESTOBJS = $(OBJDIR)\xdrtest.obj
 all: setup $(TARGET) $(TESTTARG)
 
 $(OBJDIR)\libxdr.lib: $(LIBOBJS)
-	$(LINK) $(LFLAGS) /out:$@ $(LIBOBJS)
+	@$(LINK) $(LFLAGS) /out:$@ $(LIBOBJS)
 
 $(OBJDIR)\xdrtest.exe: $(TESTOBJS)
-	$(LINK) /subsystem:console /out:$@ $(TESTOBJS) $(TARGET) $(LIBS)
+	@$(LINK) /nologo /subsystem:console /out:$@ $(TESTOBJS) $(TARGET) $(LIBS)
 
 install:
 	copy $(TARGET) $(INSTALLDIR)
@@ -60,15 +60,13 @@ $(OBJDIR)\xdr_reference.obj : .\xdr_reference.c
 $(OBJDIR)\xdr_stdio.obj : .\xdr_stdio.c
 $(OBJDIR)\xdrtest.obj: .\xdrtest.c
 
-.IGNORE:
-
 setup:
-	mkdir $(OBJDIR)
-	mkdir $(INSTALLDIR)
-	mkdir $(INCLUDEDIR)
+	@-mkdir $(OBJDIR)
+	@-mkdir $(INSTALLDIR)
+	@-mkdir $(INCLUDEDIR)
 
 clean:
-	rmdir /S /Q $(OBJDIR)
+	@-rmdir /S /Q $(OBJDIR)
 
 !INCLUDE "dependancies"
 
