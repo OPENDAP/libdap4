@@ -32,6 +32,9 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.27  1997/06/06 00:45:15  jimg
+ * Added read_data(), parse_mime() and process_data() mfuncs.
+ *
  * Revision 1.26  1997/03/23 19:40:20  jimg
  * Added field _comp_childpid. See the note in Connect.cc Re: this field.
  *
@@ -288,6 +291,11 @@ private:
     //* Close the objects _output stream if it is not NULL or STDOUT.
     void close_output();
 
+    DDS *process_data(bool async = false);
+    
+    /// Simple MIME parser. Use when you cannot use libwww.
+    void parse_mime(FILE *data_source);
+
     friend int description_handler(HTRequest *request, HTResponse *response,
 				   const char *token, const char *val);
 
@@ -391,6 +399,7 @@ public:
 
     DDS *request_data(String expr, bool gui = true, bool async = false, 
 		      const String &ext = "dods");
+    DDS *read_data(FILE *data_source, bool gui_p = true, bool async = false);
 
     // For every new data read initiated using this connect, there is a DDS
     // and constraint expression. The data itself is stored in the dds in the
