@@ -50,6 +50,10 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.12  1996/04/05 00:06:45  jimg
+ * Merged changes from version 1.1.1.
+ * Eliminated the static global CTOR.
+ *
  * Revision 1.11  1995/12/06 19:45:08  jimg
  * Changed grammar so that List List ... <type> is no longer possible. This
  * fixed some hard problems in the serailize/deserailize mfuncs.
@@ -62,6 +66,11 @@
  * Uses new member functions.
  * Added copyright notice.
  * Switched from String to enum type representation.
+ *
+ * Revision 1.8.2.1  1996/04/04 23:24:44  jimg
+ * Removed static global CTOR from the dds parser. The stack for constructor
+ * variable is now managed via a pointer. The stack is allocated when first
+ * used by add_entry().
  *
  * Revision 1.8  1995/01/19  20:13:04  jimg
  * The parser now uses the new utility functions to create new instances
@@ -104,13 +113,7 @@
 
 #define YYSTYPE char *
 
-#ifdef NEVER
-#define YYDEBUG 1
-#define YYERROR_VERBOSE 1
-#define ID_MAX 256
-#endif
-
-static char rcsid[]={"$Id: dds.y,v 1.11 1995/12/06 19:45:08 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.12 1996/04/05 00:06:45 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -127,7 +130,7 @@ static char rcsid[]={"$Id: dds.y,v 1.11 1995/12/06 19:45:08 jimg Exp $"};
 
 extern int dds_line_num;	/* defined in dds.lex */
 
-static BaseTypePtrXPStack ctor;	/* stack for ctor types */
+static BaseTypePtrXPStack *ctor; /* stack for ctor types */
 static BaseType *current;
 static Part part = nil;		/* Part is defined in BaseType */
 static char id[ID_MAX];
@@ -135,7 +138,7 @@ static char id[ID_MAX];
 int ddslex();
 int ddserror(char *s);
 
-void add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, 
+void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, 
 	       Part p);
 
 %}
@@ -182,7 +185,7 @@ declarations:	/* empty */
 
 declaration: 	list non_list_decl
                     { if (current->check_semantics())
-			add_entry(table, ctor, &current, part); }
+			add_entry(table, &ctor, &current, part); }
 
                 | non_list_decl
 ;
@@ -193,30 +196,30 @@ declaration: 	list non_list_decl
 
 non_list_decl:  base_type var ';' 
                     { if (current->check_semantics())
-			add_entry(table, ctor, &current, part); }
+			add_entry(table, &ctor, &current, part); }
 
 		| structure  '{' declarations '}' 
-		    { current = ctor.pop(); } 
+		    { current = ctor->pop(); } 
                   var ';' 
                     { if (current->check_semantics())
-			add_entry(table, ctor, &current, part); }
+			add_entry(table, &ctor, &current, part); }
 
 		| sequence '{' declarations '}' 
-                    { current = ctor.pop(); } 
+                    { current = ctor->pop(); } 
                   var ';' 
                     { if (current->check_semantics())
-			add_entry(table, ctor, &current, part); }
+			add_entry(table, &ctor, &current, part); }
 
 		| function '{' INDEPENDENT ':'
 		    { part = independent; }
                   declarations DEPENDENT ':' 
 		    { part = dependent;} 
                   declarations '}' 
-                    { current = ctor.pop(); }
+                    { current = ctor->pop(); }
                   var ';'
                     { if (current->check_semantics()) {
 			part = nil; 
-			add_entry(table, ctor, &current, part); 
+			add_entry(table, &ctor, &current, part); 
 		      }
                     }
 
@@ -225,28 +228,28 @@ non_list_decl:  base_type var ';'
                   declaration MAPS ':' 
 		    { part = maps; }
                   declarations '}' 
-		    { current = ctor.pop(); }
+		    { current = ctor->pop(); }
                   var ';' 
                     { if (current->check_semantics()) {
 			part = nil; 
-			add_entry(table, ctor, &current, part); 
+			add_entry(table, &ctor, &current, part); 
 		      }
                     }
 ;
 
-list:		LIST { ctor.push(NewList()); }
+list:		LIST { ctor->push(NewList()); }
 ;
 
-structure:	STRUCTURE { ctor.push(NewStructure()); }
+structure:	STRUCTURE { ctor->push(NewStructure()); }
 ;
 
-sequence:	SEQUENCE { ctor.push(NewSequence()); }
+sequence:	SEQUENCE { ctor->push(NewSequence()); }
 ;
 
-function:	FUNCTION { ctor.push(NewFunction()); }
+function:	FUNCTION { ctor->push(NewFunction()); }
 ;
 
-grid:		GRID { ctor.push(NewGrid()); }
+grid:		GRID { ctor->push(NewGrid()); }
 ;
 
 base_type:	BYTE { current = NewByte(); }
@@ -317,15 +320,18 @@ ddserror(char *s)
 */
 
 void	
-add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, Part part)
+add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, Part part)
 { 
-    if (!ctor.empty()) { /* must be parsing a ctor type */
-	ctor.top()->add_var(*current, part);
+    if (!*ctor)
+	*ctor = new BaseTypePtrXPStack;
 
- 	const Type &ctor_type = ctor.top()->type();
+    if (!(*ctor)->empty()) { /* must be parsing a ctor type */
+	(*ctor)->top()->add_var(*current, part);
 
-	if (ctor_type == list_t || ctor_type == array_t)
-	    *current = ctor.pop();
+ 	const Type &ctor_type = (*ctor)->top()->type();
+
+	if (ctor_type == d_list_t || ctor_type == d_array_t)
+	    *current = (*ctor)->pop();
 	else
 	    return;
     }
