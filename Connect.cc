@@ -12,7 +12,12 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.8  1995/04/17 03:19:22  jimg
+// Revision 1.9  1995/05/22 20:41:37  jimg
+// Changed the usage of URLs: we now use straight URLs; no POSTs and no
+// internal parsing of the URL. To select different documents from a DODS
+// server an extension is appended to the URL.
+//
+// Revision 1.8  1995/04/17  03:19:22  jimg
 // Added code which takes the cgi basename from the URL supplied by the
 // user. Still, the cgi must be in `cgi-bin'.
 //
@@ -75,7 +80,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.8 1995/04/17 03:19:22 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.9 1995/05/22 20:41:37 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -83,37 +88,43 @@ static char rcsid[]={"$Id: Connect.cc,v 1.8 1995/04/17 03:19:22 jimg Exp $"};
 
 #include <stdio.h>
 
+#include "config_netio.h"
 #include "errmsg.h"
 #include "url_comp.h"		// C code to parse a URL
 
 #include "Connect.h"
 
-extern "C" FILE *NetExecute(char *, char *); // defined in netexec.c
-extern "C" FILE *NetConnect(char *, char *); // defined in netexec.c
-extern void set_xdrin(FILE *in); // defined in BaseType.cc (libdds.a)
+extern "C" FILE *NetExecute(char *); // defined in netexec.c
+extern "C" FILE *NetConnect(char *); // defined in netexec.c
+extern void set_xdrin(FILE *in); // defined in BaseType.cc
 extern void set_xdrout(FILE *out); // define in BaseType.cc
 
 // Private mfunc
 
 // Given that the Connect object has been construcuted, return a URL that
-// refers to the named CGI program by combining the CGI base name with
-// `cgi'. The latter is a suffix that is used to identify which of the three
-// specific CGIs is to be used (the DAS, DDS or SERV CGI).
+// will get the correct document from the DODS server (which is a CGI script
+// or program and one or more programs which read data sets). The type of
+// document returned is selected using the `MIME type' part of a URL (i.e.,
+// the URl's extension).
 //
-// NB: This does not construct the part of the URL which refers to the data,
-// ony the access protocol, host and CGI are named by this URL. The Data file
-// and any other arguments are sent to the URL via the HTTP POST method.
+// NB: This mfunc has been changed significantly since the last revision.
 //
 // Returns: The URL of a CGI in a String object. 
 
+#ifdef NEVER
 String
 Connect::make_url(const String &cgi)
 {
+#ifdef NEVER
     String url = _access + "://" + _host + "/cgi-bin/" + _cgi_basename 
 	         + "_" + cgi;
-    
+#endif
+
+    String url = _URL + "."  + cgi;
+
     return url;
 }
+#endif
 
 void
 Connect::parse_url(const char *name)
@@ -123,28 +134,39 @@ Connect::parse_url(const char *name)
     if (uc == NULL) {		// local file
 	_local = true;
 	_URL = "";		// null string
+#ifdef NEVER
 	_access = "";
 	_host = "";
 	_cgi_basename = "";
 	_path = "";
 	_anchor = "";
+#endif
 	// das & dds are initialized by children of Connect
     }
     else {
 	_local = false;
 	_URL = name;
+#ifdef NEVER
 	_access = uc->access;
 	_host = uc->host;
 
+	// remove code which parsed the path component of a URL. We don't do
+	// this any longer - URLs must be completely specified by the user
+	// (possibly via the locator)
+
+#ifdef NEVER
 	String path = uc->path;
 
 	_cgi_basename = path.before(path.index("/", 1));
 	_path = path.from(path.index("/", 1));
+#endif
 
+	_path = uc->path
 	_anchor = uc->anchor;
+#endif
     }
 
-    free(uc);
+    free_url_comp(uc);
 }
 
 // public mfuncs
@@ -165,10 +187,10 @@ Connect::request_das(const String &cgi)
 {
     // get the das 
 
-    String das_url = make_url(cgi);
+    String das_url = _URL + "."  + cgi;
     bool status = false;
 
-    FILE *fp = NetExecute(das_url, _path);
+    FILE *fp = NetExecute(das_url);
 
     if( fp ) 
       status = _das.parse(fp);    // read and parse the das from a file 
@@ -185,10 +207,10 @@ Connect::request_dds(const String &cgi)
 {
     // get the dds 
 
-    String dds_url = make_url(cgi);
+    String dds_url = _URL + "."  + cgi;
     bool status = false;
 
-    FILE *fp = NetExecute(dds_url, _path);
+    FILE *fp = NetExecute(dds_url);
 
     if( fp ) 
       status = _dds.parse(fp);    // read and parse the das from a file 
@@ -198,7 +220,7 @@ Connect::request_dds(const String &cgi)
     return status;
 }
 
-// Read data from the server at _PATH. If ASYNC is true, read asynchronously
+// Read data from the server at _URL. If ASYNC is true, read asynchronously
 // using NetConnect (which forks so that it can return *before* the read
 // completes). Synchronous reads (using NetExecute) are the default. 
 //
@@ -210,19 +232,18 @@ Connect::request_dds(const String &cgi)
 // true). Returns false if an error was detected by the NetExecute or
 // NetConnect functions.
 //
-// Added optional argument CGI which defaults to "serv". jhrg 3/7/95
+// Added optional argument CGI which defaults to "dods". jhrg 3/7/95
 
 bool
-Connect::request_data(const String &post, bool async, const String &cgi)
+Connect::request_data(bool async, const String &cgi)
 {
-    String data_url = make_url(cgi);
-    String Args = _path + " " + post;
+    String data_url = _URL + "."  + cgi;
     FILE *fp;
 
     if (async)
-	fp = NetConnect(data_url, Args);
+	fp = NetConnect(data_url);
     else
-	fp = NetExecute(data_url, Args);
+	fp = NetExecute(data_url);
 	
     if (fp) 
       set_xdrin(fp);
@@ -240,7 +261,7 @@ const String &
 Connect::URL()
 {
     if (_local)
-	err_quit("Connect::URL is only valid for a remote connection");
+	err_quit("Connect::A URL is only valid for a remote connection");
 
     return _URL;		// if _local returns ""
 }
@@ -257,7 +278,7 @@ DAS &
 Connect::das()
 {
     if (_local)
-	err_quit("Connect::das is only vaild for a remote connection");
+	err_quit("Connect::A das is only vaild for a remote connection");
 
     return _das;
 }
@@ -266,7 +287,7 @@ DDS &
 Connect::dds()
 {
     if (_local)
-	err_quit("Connect::dds is only vaild for a remote connection");
+	err_quit("Connect::A dds is only vaild for a remote connection");
 
     return _dds;
 }
