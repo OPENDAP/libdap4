@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.54 2001/02/09 22:07:18 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.55 2001/05/04 00:10:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -24,7 +24,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.54 2001/02/09 22:07:18 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.54 $";
+const char *version = "$Revision: 1.55 $";
 extern int keep_temps;		// defined in Connect.cc
 
 
@@ -368,7 +368,8 @@ main(int argc, char * argv[])
 		  FILE *fp = url.output();
 		  if (!read_data(fp))
 		    continue;
-		  fclose(fp);
+		  url.close_output();
+		  //		  fclose(fp);
 		}
 	      catch (Error &e)
 		{
@@ -386,6 +387,11 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.55  2001/05/04 00:10:46  jimg
+// Fixed a bug where one of Connect's FILE *s was closed without using
+// Connect::close_ouput(). This can crash a client when Connect's dtor tries
+// to close that FILE * later on.
+//
 // Revision 1.54  2001/02/09 22:07:18  jimg
 // Removed some of the #ifdef WIN32 guards since the code works with g++ too.
 // Fixed an error in the usage string.
