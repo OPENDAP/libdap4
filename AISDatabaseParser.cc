@@ -29,6 +29,7 @@
 #include <stdlib.h>
 
 #include "AISDatabaseParser.h"
+#include "util.h"
 #include "debug.h"
 
 static const not_used char *states[] = {
@@ -70,8 +71,7 @@ AISDatabaseParser::aisEndDocument(AISParserState *state)
     DBG2(cerr << "Ending state == " << states[state->state] << endl);
 
     if (state->unknown_depth != 0) {
-	state->state = PARSER_ERROR;
-	state->error_msg = "The document contained unbalanced tags.";
+	AISDatabaseParser::aisFatalError(state, "The document contained unbalanced tags.");
 
         DBG(cerr << "unknown_depth != 0 (" << state->unknown_depth << ")"
 	    << endl);
@@ -118,8 +118,7 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
 	    if (attrs && strcmp(attrs[0], "url") == 0)
 		state->primary = attrs[1];
 	    else {
-		state->state = PARSER_ERROR;
-		state->error_msg = "Required attribute 'url' missing from element 'primary'.";
+		AISDatabaseParser::aisFatalError(state, "Required attribute 'url' missing from element 'primary'.");
 		break;
 	    }
 	}
@@ -139,14 +138,13 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
 	    // If this parser validated the XML, these tests would be
 	    // unnecessary. 
 	    if (url == "") {
-		state->state = PARSER_ERROR;
-		state->error_msg = "Required attribute 'url' missing from element 'ancillary'.";
+		AISDatabaseParser::aisFatalError(state, "Required attribute 'url' missing from element 'ancillary'.");
 		break;
 	    }
 
 	    if (rule != "overwrite" && rule != "replace" && rule != "fallback") {
-		state->state = PARSER_ERROR;
-		state->error_msg = string("Optional attribute 'rule' in element 'ancillary' has a bad value: ") + rule + "\nIt should be one of 'overwrite', 'replace' or 'fallback'.";
+		string msg = string("Optional attribute 'rule' in element 'ancillary' has a bad value: ") + rule + "\nIt should be one of 'overwrite', 'replace' or 'fallback'.";
+		AISDatabaseParser::aisFatalError(state, msg.c_str());
 		break;
 	    }
 
@@ -250,6 +248,8 @@ AISDatabaseParser::aisWarning(AISParserState *state, const char *msg, ...)
     vsnprintf(str, 1024, msg, args);
     va_end(args);
 
+    int line = getLineNumber(state->ctxt);
+    state->error_msg += "At line: " + long_to_string(line) + ": ";
     state->error_msg += string(str) + string("\n");
 }
 
@@ -269,6 +269,8 @@ AISDatabaseParser::aisError(AISParserState *state, const char *msg, ...)
     vsnprintf(str, 1024, msg, args);
     va_end(args);
 
+    int line = getLineNumber(state->ctxt);
+    state->error_msg += "At line: " + long_to_string(line) + ": ";
     state->error_msg += string(str) + string("\n");
 }
 
@@ -287,6 +289,8 @@ AISDatabaseParser::aisFatalError(AISParserState *state, const char *msg, ...)
     vsnprintf(str, 1024, msg, args);
     va_end(args);
 
+    int line = getLineNumber(state->ctxt);
+    state->error_msg += "At line: " + long_to_string(line) + ": ";
     state->error_msg += string(str) + string("\n");
 }
 
@@ -328,11 +332,12 @@ AISDatabaseParser::parse(const string &database, AISResources *ais)
     xmlParserCtxtPtr ctxt;
     AISParserState state;
 	
-    state.ais = ais;		// dump values here
-
     ctxt = xmlCreateFileParserCtxt(database.c_str());
     if (!ctxt) 
 	return;
+
+    state.ais = ais;		// dump values here
+    state.ctxt = ctxt;		// need ctxt for error messages
 
     ctxt->sax = &aisSAXParser;
     ctxt->userData = &state;
@@ -341,20 +346,32 @@ AISDatabaseParser::parse(const string &database, AISResources *ais)
     xmlParseDocument(ctxt);
 	
     // use getLineNumber and getColumnNumber to make the error messages better.
-    if (!ctxt->wellFormed)
-	throw AISDatabaseReadFailed("The database is not a well formed XML document.\n" + state.error_msg);
+    if (!ctxt->wellFormed) {
+	ctxt->sax = NULL;
+	xmlFreeParserCtxt(ctxt);
+	throw AISDatabaseReadFailed(string("\nThe database is not a well formed XML document.\n") + state.error_msg);
+    }
 
-    if (!ctxt->valid)
-	throw AISDatabaseReadFailed("The database is not a valid document.\n" + state.error_msg);
+    if (!ctxt->valid) {
+	ctxt->sax = NULL;
+	xmlFreeParserCtxt(ctxt);
+	throw AISDatabaseReadFailed(string("\nThe database is not a valid document.\n") + state.error_msg);
+    }
 
-    if (state.state == PARSER_ERROR)
-	throw AISDatabaseReadFailed("Error parsing AIS resources.\n" + state.error_msg);
+    if (state.state == PARSER_ERROR) {
+	ctxt->sax = NULL;
+	xmlFreeParserCtxt(ctxt);
+	throw AISDatabaseReadFailed(string("\nError parsing AIS resources.\n") + state.error_msg);
+    }
 
     ctxt->sax = NULL;
     xmlFreeParserCtxt(ctxt);
 }
 
 // $Log: AISDatabaseParser.cc,v $
+// Revision 1.3  2003/02/25 04:18:53  jimg
+// Added line numbers to error messages. Improved message formatting a little.
+//
 // Revision 1.2  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
