@@ -1,6 +1,6 @@
 
 /* 
-   (c) COPYRIGHT URI/MIT 1994-1996
+   (c) COPYRIGHT URI/MIT 1994-1997
    Please read the full copyright statement in the file COPYRIGH.  
 
    Authors:
@@ -41,6 +41,11 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.21  1997/05/06 18:24:01  jimg
+# Added Alias and Global to the set of known tokens.
+# Added many new characters to set of things that can appear in an
+# identifier.
+#
 # Revision 1.20  1996/10/28 23:06:15  jimg
 # Added unsigned int to set of possible attribute value types.
 #
@@ -139,7 +144,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: das.lex,v 1.20 1996/10/28 23:06:15 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: das.lex,v 1.21 1997/05/06 18:24:01 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -158,7 +163,7 @@ static int start_line;		/* used in quote and comment error handlers */
 %x quote
 %x comment
 
-ID  	[a-zA-Z_][a-zA-Z0-9_/%]*
+ID  	[a-zA-Z_][a-zA-Z0-9_./:%+\-()]*
 INT	[-+]?[0-9]+
 
 MANTISA ([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
@@ -166,10 +171,13 @@ EXPONENT (E|e)[-+]?[0-9]+
 
 FLOAT	[-+]?{MANTISA}{EXPONENT}?
 
-STR 	[-+a-zA-Z0-9_./:%]+
+STR 	[-+a-zA-Z0-9_./:%+\-()]+
 
 ATTR 	attributes|Attributes|ATTRIBUTES
 
+GLOBAL  GLOBAL|Global|global
+
+ALIAS   ALIAS|Alias|alias
 BYTE	BYTE|Byte|byte
 INT32	INT32|Int32|int32
 UINT32	UINT32|UInt32|uint32
@@ -184,6 +192,9 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 
 {ATTR}	    	    	daslval = yytext; return ATTR;
 
+{GLOBAL}                daslval = yytext; return GLOBAL;
+
+{ALIAS}                 daslval = yytext; return ALIAS;
 {BYTE}                  daslval = yytext; return BYTE;
 {INT32}                 daslval = yytext; return INT32;
 {UINT32}                daslval = yytext; return UINT32;
