@@ -10,6 +10,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.36  1998/08/31 21:46:09  jimg
+// Changed the check_semantics member function so that the array and map
+// vectors must be composed of simple-type elements.
+//
 // Revision 1.35  1998/08/06 16:19:54  jimg
 // Fixed misuse of read member function in serialize. Test for a read(...)
 // error by checking the value of the `error' parameter, not the return value
@@ -613,6 +617,17 @@ Grid::check_semantics(String &msg, bool all = false)
 	    
     Array *av = (Array *)_array_var; // past test above, must be an array
 
+    // Array must be of a simple_type.
+    if (!av->var()->is_simple_type()) {
+	oss << "The field variable `"
+	    << this->name() 
+	    << "' must be an array of simple type elements (e.g., int32, String)"
+	    << endl << ends;
+	msg = oss.str();
+	oss.freeze(0);
+	return false;
+    }
+
     // enough maps?
     if ((unsigned)_map_vars.length() != av->dimensions()) {
 	oss << "The number of map variables for grid `"
@@ -650,6 +665,17 @@ Grid::check_semantics(String &msg, bool all = false)
 	}
 
 	Array *mv_a = (Array *)mv; // downcast to (Array *)
+
+	// Array must be of a simple_type.
+	if (!mv_a->var()->is_simple_type()) {
+	    oss << "The field variable `"
+		<< this->name() 
+		<< "' must be an array of simple type elements (e.g., int32, String)"
+		<< endl << ends;
+	    msg = oss.str();
+	    oss.freeze(0);
+	    return false;
+	}
 
 	// check shape
 	if (mv_a->dimensions() != 1) {// maps must have one dimension
