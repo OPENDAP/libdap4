@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.105 1999/11/04 23:52:42 jimg Exp $
+# $Id: Makefile.in,v 1.106 1999/12/31 00:55:11 jimg Exp $
 
 @SET_MAKE@
 
@@ -19,14 +19,15 @@ DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
 INCS = -I. -IGNU @INCS@
-DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
+DEFS = @DEFS@ -DUSE_LIBGXX_INLINES -DGUI
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d -v
-LIBS = -ldap++ @LIBS@
+TK_LIBS = @TK_LIBS@
+LIBS = -ldap++ @LIBS@ $(TK_LIBS)
 TAGS_FLAGS =
 
 # Set the instalation directories; prefix can be set on the command line
@@ -122,6 +123,9 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
            UInt32.o util.o ce_functions.o GSEClause.o $(GSE_GRAM_OBJS) \
 	   Int16.o UInt16.o Float32.o 
 
+GUISRCS = Gui.cc dods_gui.c
+
+GUIOBJS = Gui.o dods_gui.o
 
 # These object files are built using source code generated from the GNU
 # libg++ source with `genclass'. They are part of the the DAP library.
@@ -143,12 +147,12 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
 ALLSRCS = $(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
-	  $(TESTSRCS) $(TESTPROGSRCS) $(GRAM_SRCS)
+	  $(TESTSRCS) $(TESTPROGSRCS) $(GRAM_SRCS) $(GUISRCS)
 
 all: grammars $(PROG)
 
 libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) \
-	    $(EXPROBJS) $(NETIOOBJS)
+	    $(EXPROBJS) $(NETIOOBJS) $(GUIOBJS)
 	    $(AR) cru $@ $?
 	    $(RANLIB) $@
 
@@ -213,6 +217,11 @@ cgi-util-test: libdap++.a cgi_util.o $(TESTOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST_CGI_UTIL -c cgi_util.cc
 	$(CXX) $(LDFLAGS) -o cgi-util-test cgi_util.o $(TESTOBJS) $(LIBS)
 	-rm -f cgi_util.o
+
+gui-test: util.o dods_gui.c Gui.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST -c -g3 -O0 Gui.cc
+	$(CC) $(CPPFLAGS) $(CFLAGS) -DTEST -c -g3 -O0 dods_gui.c
+	$(CXX) $(LDFLAGS) -o gui-test Gui.o util.o dods_gui.o $(LIBS)
 
 # This program is no longer part of the software. 10/27/98 jhrg
 #
@@ -313,6 +322,19 @@ Error.tab.c Error.tab.h: Error.y munge-bison.awk
 Error.tab.o: Error.tab.c	# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c Error.tab.c -o Error.tab.o
 
+# Build the C file from the tcl file. This uses mktclapp which you can get
+# from http://www.hwaci.com/drh/ (or contact drh@acm.org). Note that the .mta
+# file was built using xmktclapp by including the dods_gui.tcl and Gui.cc
+# files, and setting the mode standalone. Once done the mta file should not
+# need to be rebuilt unless the tcl/tk version changes (this file was built
+# for tcl/tk 8.1). 12/30/99 jhrg
+
+dods_gui.c: dods_gui.tcl dods_gui.mta
+	mktclapp -f dods_gui.mta > dods_gui.c
+	mktclapp -f dods_gui.mta -header > dods_gui.h
+	awk -f munge_dods_gui.awk dods_gui.c > tmp
+	mv tmp dods_gui.c
+
 # Standard targets with some customization for das-test and dds-test
 
 install: all install-headers install-geturl install-usage install-deflate
@@ -330,7 +352,7 @@ install-headers:
 install-geturl: geturl
 	$(INSTALL_PROGRAM) -s geturl $(bindir)
 
-# usage and defalte are part of the DODS server. 02/10/98 jhrg
+# usage and deflate are part of the DODS server. 02/10/98 jhrg
 
 install-usage: usage
 	$(INSTALL_PROGRAM) -s usage $(etcdir)

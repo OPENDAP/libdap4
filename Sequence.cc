@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.51  1999/12/31 00:55:11  jimg
+// Fixed up the progress indicator
+//
 // Revision 1.50  1999/09/03 22:07:44  jimg
 // Merged changes from release-3-1-1
 //
@@ -534,13 +537,17 @@ Sequence::level()
 }
 
 bool
-Sequence::serialize(const string &dataset, DDS &dds, XDR *sink,
-		    bool ce_eval)
+Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
     bool status = true;
     int error = 0;
 
     while (status) {
+	// Assume that read() is implemented so that, when reading data for a
+	// nested sequence, only the outer most level is *actually* read.
+	// This is a consequence of our current (12/7/99) implementation of
+	// the JGOFS server (which is the only server to actually use nested
+	// sequences). 12/7/99 jhrg
 	if (!read_p()) {
 	    if (level() != 0)	// Read only the outermost level.
 		return true;

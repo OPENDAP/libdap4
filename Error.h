@@ -12,6 +12,9 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.12  1999/12/31 00:55:10  jimg
+// Fixed up the progress indicator
+//
 // Revision 1.11  1999/08/23 18:57:44  jimg
 // Merged changes from release 3.1.0
 //
@@ -241,7 +244,7 @@ public:
 	provided, the message will be displayed on the client's stderr.
 
 	@see Gui */
-#if 0
+#ifdef GUI
     void display_message(Gui *gui = 0);
 #else
     void display_message(void *gui = 0);

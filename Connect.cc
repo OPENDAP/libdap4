@@ -9,6 +9,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.86  1999/12/31 00:55:10  jimg
+// Fixed up the progress indicator
+//
 // Revision 1.85  1999/12/15 01:14:10  jimg
 // More fixes for caching. Caching now works correctly for programs that use
 // multiple Connect objects. The Cache index is now updated more frequently.
@@ -494,7 +497,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.85 1999/12/15 01:14:10 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.86 1999/12/31 00:55:10 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -752,29 +755,12 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
 
     // Put the username in reply using HTAlert_setReplyMessage; use
     // _setReplySecret for the password.
-    string cmd = "password";
     string user = "\0";
     string passwd = "\0";
 
 #ifdef GUI
-    if (!me->gui()->command(cmd, &user, &passwd))
+    if (!me->gui()->password(user, passwd))
 	return NO;
-#endif
-
-#if 0
-    // Extract two words from RESPONSE; #1 is the username and #2 is the
-    // password. Either may be missing, in which case return NO.
-
-    string words[2];
-    size_t white1 = response.find_first_of(" \t\r\n");
-    size_t white2 = response.find_first_not_of(" \t\r\n", white1+1);
-    words[0] = response.substr(0, white1);
-    words[1] = response.substr(white2);
-    if (response.find_first_of(" \t\r\n", white2) != response.npos) {
-	DBG2(cerr << "Wrong number of words in response: " << response \
-	     << endl);
-	return NO;
-    }
 #endif
 
     if ((user.length() == 0) || (passwd.length() == 0))
@@ -816,12 +802,16 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
         if (HTError_doShow(pres)) {
             if (!msg) {
                 HTSeverity severity = HTError_severity(pres);
-                msg = HTChunk_new(128);
 		switch (severity) {
+		  case ERR_INFO:
+		    // Ignore Informational messages.
+		    break;
 		  case ERR_WARN:
+		    msg = HTChunk_new(128);
                     HTChunk_puts(msg, "Warning: ");
 		    break;
 		  case ERR_NON_FATAL:
+		    msg = HTChunk_new(128);
                     HTChunk_puts(msg, "Non Fatal Error: ");
 		    break;
 		  case ERR_FATAL:
@@ -829,10 +819,8 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 			Connect *me = (Connect *)HTRequest_context(request);
 			me->_type = web_error;
 		    }
+		    msg = HTChunk_new(128);
                     HTChunk_puts(msg, "Fatal Error: ");
-		    break;
-		  case ERR_INFO:
-                    HTChunk_puts(msg, "Information: ");
 		    break;
 		  default:
                     if (WWWTRACE)
@@ -848,8 +836,6 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
                     sprintf(buf, "%d ", code);
                     HTChunk_puts(msg, buf);
                 }
-
-                HTChunk_putc(msg, '\n');
 	    }
             else
                 HTChunk_puts(msg, "\nReason: ");
@@ -868,7 +854,7 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
             */
             HTError_setIgnore(pres);
             
-            /* If we only are show the most recent entry then break here */
+            /* If we only are showing the most recent entry then break here */
             if (showmask & HT_ERR_SHOW_FIRST)
                 break;
         }
