@@ -30,11 +30,15 @@
 //
 // jhrg 9/29/94
 
-/* $Log: Connect.h,v $
-/* Revision 1.22  1997/02/10 02:31:27  jimg
-/* Changed the return type of request_data() and related functions from DDS & to
-/* DDS *.
-/*
+/* 
+ * $Log: Connect.h,v $
+ * Revision 1.23  1997/02/12 21:39:10  jimg
+ * Added optional parameter to the ctor for this class; it enables
+ * informational error messages from the WWW library layer.
+ * * Revision 1.22 1997/02/10 02:31:27 jimg 
+ * Changed the return type of request_data() and related functions from DDS &
+ * to * DDS *.
+ *
  * Revision 1.21  1996/11/25 03:39:25  jimg
  * Added web-error to set of object types.
  * Added two MIME parsers to set of friend functions.
@@ -139,7 +143,7 @@
  *
  * Revision 1.1  1994/10/05  18:02:08  jimg
  * First version of the connection management classes.
- * This commit also includes early versions of the test code.  
+ * This commit also includes early versions of the test code. 
  */
 
 #ifndef _connect_h
@@ -211,7 +215,8 @@ private:
 	String _expression;
 	DDS _dds;
 
-	constraint(String expr, DDS dds): _expression(expr), _dds(dds) {}
+	constraint(const String &expr, const DDS &dds)
+	    : _expression(expr), _dds(dds) {}
 	constraint(): _expression(""), _dds() {}
     };
 
@@ -247,7 +252,7 @@ private:
     //* Initialize the W3C WWW Library. This should only be called when a
     //* Connect object is created and there are no other Connect objects in
     //* existance.
-    void www_lib_init();
+    void www_lib_init(bool www_verbose_errors);
 
     //* Read a url. Assume that the object's _OUTPUT stream has been set
     //* properly.
@@ -282,7 +287,7 @@ private:
     Connect();			// Never call this.
 
 public:
-    Connect(String name); 
+    Connect(String name, bool www_verbose_errors = false); 
     Connect(const Connect &copy_from);
     virtual ~Connect();
 
