@@ -62,10 +62,15 @@ AISConnect::request_das(DAS &das) throw(Error, InternalErr)
 {
     Connect::request_das(das);
 
-    d_ais_merge->merge(URL(false), das); // URL(false) --> URL w/o CE
+    if (d_ais_merge)
+	d_ais_merge->merge(URL(false), das); // URL(false) --> URL w/o CE
 }
 
 // $Log: AISConnect.cc,v $
+// Revision 1.2  2003/03/11 10:16:19  jimg
+// if there's no AIS database, the field d_ais_merge is null. Make sure not to
+// dereference that pointer in that case!
+//
 // Revision 1.1  2003/02/27 23:17:00  jimg
 // Added.
 //
