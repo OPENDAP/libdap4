@@ -1,5 +1,26 @@
 #!/bin/sh
 #
+# This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+# Access Protocol.
+
+# Copyright (c) 2002,2003 OPeNDAP, Inc.
+# Author: James Gallagher <jgallagher@opendap.org>
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+# 
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 # depend is a script replacement for makedepend. It requires gcc.
 # -s causes system includes to be added to the dependencies.
 # -b <extension> causes <extension> to be used instead of `bak' when naming
@@ -15,7 +36,7 @@
 # jhrg 3/5/96
 #
 
-# $Id: depend.sh,v 1.10 1999/11/04 23:59:58 jimg Exp $
+# $Id: depend.sh,v 1.11 2003/01/23 00:44:34 jimg Exp $
 
 usage="depend [-s][-t][-b <ext>][-m <makefile name>] -- <compiler options> -- <files>"
 CFLAGS="-E -MM -MG"
