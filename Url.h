@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Url.h,v $
+ * Revision 1.16  1999/03/24 23:35:11  jimg
+ * Added support for the new Int16, UInt16 and Float32 types.
+ *
  * Revision 1.15  1998/01/12 14:28:00  tom
  * Second pass at class documentation.
  *
@@ -123,10 +126,13 @@ const unsigned int max_url_len = 255;
 /** Holds an internet address (URL).
 
     @see BaseType
-    @see Str
-    */
+    @see Str */
 class Url: public Str {
-private:
+
+    /** This enable instances of Str to access _buf in this class. */
+    friend class Str;
+
+protected:
     String _buf;
 
 public:
@@ -144,8 +150,6 @@ public:
 
     virtual BaseType *ptr_duplicate() = 0;
 };
-
-typedef Url * UrlPtr;
 
 #endif
 

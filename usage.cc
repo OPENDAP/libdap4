@@ -13,6 +13,9 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.8  1999/03/24 23:27:49  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+//
 // Revision 1.7  1998/12/16 19:10:53  jimg
 // Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
 //
@@ -45,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.7 1998/12/16 19:10:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.8 1999/03/24 23:27:49 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -193,8 +196,11 @@ name_in_variable(BaseType *btp, const String &name)
 {
     switch (btp->type()) {
       case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
       case dods_int32_c:
       case dods_uint32_c:
+      case dods_float32_c:
       case dods_float64_c:
       case dods_str_c:
       case dods_url_c:
@@ -414,10 +420,16 @@ fancy_typename(BaseType *v)
     switch (v->type()) {
       case dods_byte_c:
 	return "Byte";
+      case dods_int16_c:
+	return "16 bit Integer";
+      case dods_uint16_c:
+	return "1 bit Unsigned integer";
       case dods_int32_c:
 	return "32 bit Integer";
       case dods_uint32_c:
 	return "32 bit Unsigned integer";
+      case dods_float32_c:
+	return "32 bit Real";
       case dods_float64_c:
 	return "64 bit Real";
       case dods_str_c:
@@ -479,8 +491,11 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 
     switch (btp->type()) {
       case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
       case dods_int32_c:
       case dods_uint32_c:
+      case dods_float32_c:
       case dods_float64_c:
       case dods_str_c:
       case dods_url_c:

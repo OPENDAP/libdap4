@@ -10,6 +10,9 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
+// Revision 1.14  1999/03/24 23:33:11  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+//
 // Revision 1.13  1997/12/16 00:45:41  jimg
 // Added code for NAME lexeme.
 //
@@ -29,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds-test.cc,v 1.13 1997/12/16 00:45:41 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds-test.cc,v 1.14 1999/03/24 23:33:11 jimg Exp $"};
 
 #include <iostream.h>
 #include <GetOpt.h>
@@ -158,8 +161,20 @@ test_scanner(void)
 	  case BYTE:
 	    cout << "BYTE" << endl;
 	    break;
+	  case INT16:
+	    cout << "INT16" << endl;
+	    break;
+	  case UINT16:
+	    cout << "UINT16" << endl;
+	    break;
 	  case INT32:
 	    cout << "INT32" << endl;
+	    break;
+	  case UINT32:
+	    cout << "UINT32" << endl;
+	    break;
+	  case FLOAT32:
+	    cout << "FLOAT32" << endl;
 	    break;
 	  case FLOAT64:
 	    cout << "FLOAT64" << endl;

@@ -31,6 +31,9 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.22  1999/03/24 23:32:49  jimg
+ * Added support for the new Int16, UInt16 and Float32 types.
+ *
  * Revision 1.21  1999/02/23 01:30:57  jimg
  * Added a YYINPUT define that looks for `Data:\n'. When seen it returns
  * YY_NULL which tells the scanner that EOF has been found. This hack keeps
@@ -112,7 +115,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.21 1999/02/23 01:30:57 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.22 1999/03/24 23:32:49 jimg Exp $"};
 
 #include <string.h>
 
@@ -144,8 +147,11 @@ STRUCTURE 	STRUCTURE|Structure|structure
 FUNCTION 	FUNCTION|Function|function
 GRID 		GRID|Grid|grid
 BYTE 		BYTE|Byte|byte
+INT16 		INT16|Int16|int16
+UINT16 		UINT16|UInt16|uint16
 INT32 		INT32|Int32|int32
 UINT32 		UINT32|UInt32|uint32
+FLOAT32 	FLOAT32|Float32|float32
 FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
@@ -168,8 +174,11 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 {FUNCTION}		ddslval = yytext; return FUNCTION;
 {GRID}			ddslval = yytext; return GRID;
 {BYTE}			ddslval = yytext; return BYTE;
+{INT16}			ddslval = yytext; return INT16;
+{UINT16}		ddslval = yytext; return UINT16;
 {INT32}			ddslval = yytext; return INT32;
 {UINT32}		ddslval = yytext; return UINT32;
+{FLOAT32}		ddslval = yytext; return FLOAT32;
 {FLOAT64}		ddslval = yytext; return FLOAT64;
 {STRING}		ddslval = yytext; return STRING;
 {URL}			ddslval = yytext; return URL;

@@ -11,6 +11,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.h,v $
+// Revision 1.6  1999/03/24 23:35:33  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+//
 // Revision 1.5  1997/12/18 15:06:14  tom
 // First draft of class documentation, entered in doc++ format,
 // in the comments
@@ -43,10 +46,21 @@
 
 /** Holds a 32-bit unsigned integer. 
 
-    @see BaseType
-    */
+    @see BaseType */
 
 class UInt32: public BaseType {
+    /** This class allows Byte, ..., Float64 acesss to _buf to simplify and
+	speed up the relational operators.
+
+	NB: According to Stroustrup it does not matter where (public, private
+	or protected) friend classes are declared. */
+    friend class Byte;
+    friend class Int16;
+    friend class UInt16;
+    friend class Int32;
+    friend class Float32;
+    friend class Float64;
+
 protected:
     dods_uint32 _buf;
 
@@ -70,7 +84,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType &b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const String &dataset);
 };
 
 #endif

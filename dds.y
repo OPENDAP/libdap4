@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.24  1999/03/24 23:32:33  jimg
+ * Added support for the new Int16, UInt16 and Float32 types.
+ *
  * Revision 1.23  1998/08/13 22:12:44  jimg
  * Fixed error messages.
  *
@@ -127,7 +130,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.y,v 1.23 1998/08/13 22:12:44 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.y,v 1.24 1999/03/24 23:32:33 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -194,8 +197,11 @@ void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current,
 %token FUNCTION
 %token GRID
 %token BYTE
+%token INT16
+%token UINT16
 %token INT32
 %token UINT32
+%token FLOAT32
 %token FLOAT64
 %token STRING
 %token URL 
@@ -414,8 +420,11 @@ grid:		GRID
 ;
 
 base_type:	BYTE { current = NewByte(); }
+		| INT16 { current = NewInt16(); }
+		| UINT16 { current = NewUInt16(); }
 		| INT32 { current = NewInt32(); }
 		| UINT32 { current = NewUInt32(); }
+		| FLOAT32 { current = NewFloat32(); }
 		| FLOAT64 { current = NewFloat64(); }
 		| STRING { current = NewStr(); }
 		| URL { current = NewUrl(); }

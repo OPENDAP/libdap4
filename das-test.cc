@@ -13,6 +13,9 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
+// Revision 1.20  1999/03/24 23:34:15  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+//
 // Revision 1.19  1997/05/13 23:37:44  jimg
 // Changed options and command `format' so that das-test is similar to
 // dds-test.
@@ -92,7 +95,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das-test.cc,v 1.19 1997/05/13 23:37:44 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das-test.cc,v 1.20 1999/03/24 23:34:15 jimg Exp $"};
 
 #include <iostream.h>
 #include <String.h>
@@ -216,8 +219,20 @@ test_scanner()
 	  case BYTE:
 	    cout << "BYTE" << endl;
 	    break;
+	  case INT16:
+	    cout << "INT16" << endl;
+	    break;
+	  case UINT16:
+	    cout << "UINT16" << endl;
+	    break;
 	  case INT32:
 	    cout << "INT32" << endl;
+	    break;
+	  case UINT32:
+	    cout << "UINT32" << endl;
+	    break;
+	  case FLOAT32:
+	    cout << "FLOAT32" << endl;
 	    break;
 	  case FLOAT64:
 	    cout << "FLOAT64" << endl;

@@ -17,6 +17,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.33  1999/03/24 23:33:44  jimg
+ * Added support for the new Int16, UInt16 and Float32 types.
+ *
  * Revision 1.32  1997/07/01 00:13:23  jimg
  * Fixed a bug when vectors of UInt32 were used. I changed the way the type
  * name was passed to AttrTable::append_attr() so that the names were always
@@ -163,7 +166,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.32 1997/07/01 00:13:23 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.33 1999/03/24 23:33:44 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -216,8 +219,8 @@ static SLList<AttrTablePtr> *attr_tab_stack;
 #define TYPE_NAME_VALUE(x) type << " " << name << " " << (x)
 
 static char *ATTR_TUPLE_MSG = 
-"Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)\n\
-followed by a name and value.";
+"Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,\n\
+Float64, String or Url) followed by a name and value.";
 static char *NO_DAS_MSG =
 "The attribute object returned from the dataset was null\n\
 Check that the URL is correct.";
@@ -229,7 +232,7 @@ String attr_name(String name);
 
 %}
 
-%expect 18
+%expect 24
 
 %token ATTR
 
@@ -240,8 +243,11 @@ String attr_name(String name);
 %token ALIAS
 
 %token BYTE
+%token INT16
+%token UINT16
 %token INT32
 %token UINT32
+%token FLOAT32
 %token FLOAT64
 %token STRING
 %token URL
@@ -314,17 +320,29 @@ attr_tuple:	alias
                 ID { save_str(name, $3, das_line_num); } 
 		bytes ';'
 
+		| INT16 { save_str(type, "Int16", das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
+		int16 ';'
+
+		| UINT16 { save_str(type, "UInt16", das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
+		uint16 ';'
+
 		| INT32 { save_str(type, "Int32", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
-		ints ';'
+		int32 ';'
 
-		| UINT32 { save_str(type, "Uint32", das_line_num); } 
+		| UINT32 { save_str(type, "UInt32", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
-		ints ';'
+		uint32 ';'
+
+		| FLOAT32 { save_str(type, "Float32", das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
+		float32 ';'
 
 		| FLOAT64 { save_str(type, "Float64", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
-		floats ';'
+		float64 ';'
 
 		| STRING { save_str(type, "String", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
@@ -408,7 +426,98 @@ bytes:		INT
 		}
 ;
 
-ints:		INT
+int16:		INT
+		{
+		    /* NB: On the Sun (SunOS 4) strtol does not check for */
+		    /* overflow. Thus it will never figure out that 4 */
+		    /* billion is way to large to fit in a 32 bit signed */
+		    /* integer. What's worse, long is 64  bits on Alpha and */
+		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
+			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
+		    if (!check_int16($1, das_line_num)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an Int16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+		| int16 ',' INT
+		{
+		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+		    if (!check_int16($3, das_line_num)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an Int16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+uint16:		INT
+		{
+		    /* NB: On the Sun (SunOS 4) strtol does not check for */
+		    /* overflow. Thus it will never figure out that 4 */
+		    /* billion is way to large to fit in a 32 bit signed */
+		    /* integer. What's worse, long is 64  bits on Alpha and */
+		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
+			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
+		    if (!check_uint16($1, das_line_num)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an UInt16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+		| uint16 ',' INT
+		{
+		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+		    if (!(check_int16($3, das_line_num)
+			  || check_uint16($1, das_line_num))) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an UInt16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+int32:		INT
 		{
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -417,8 +526,7 @@ ints:		INT
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
 		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-		    if (!(check_int($1, das_line_num) 
-			  || check_uint($1, das_line_num))) {
+		    if (!check_int32($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -433,11 +541,10 @@ ints:		INT
 			YYABORT;
 		    }
 		}
-		| ints ',' INT
+		| int32 ',' INT
 		{
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
-		    if (!(check_int($3, das_line_num)
-			  || check_uint($1, das_line_num))) {
+		    if (!check_int32($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -454,10 +561,97 @@ ints:		INT
 		}
 ;
 
-floats:		float_or_int
+uint32:		INT
 		{
-		    DBG(cerr << "Adding FLOAT: " << TYPE_NAME_VALUE($1) << endl);
-		    if (!check_float($1, das_line_num)) {
+		    /* NB: On the Sun (SunOS 4) strtol does not check for */
+		    /* overflow. Thus it will never figure out that 4 */
+		    /* billion is way to large to fit in a 32 bit signed */
+		    /* integer. What's worse, long is 64  bits on Alpha and */
+		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
+		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
+		    if (!check_uint32($1, das_line_num)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an UInt32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+		| uint32 ',' INT
+		{
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
+		    if (!check_uint32($1, das_line_num)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an UInt32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+float32:	float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($1)\
+			<< endl);
+		    if (!check_float32($1, das_line_num)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Float32 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+		| float32 ',' float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+		    if (!check_float32($3, das_line_num)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Float32 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+float64:	float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($1)\
+			<< endl);
+		    if (!check_float64($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
@@ -473,10 +667,11 @@ floats:		float_or_int
 			YYABORT;
 		    }
 		}
-		| floats ',' float_or_int
+		| float64 ',' float_or_int
 		{
-		    DBG(cerr << "Adding FLOAT: " << TYPE_NAME_VALUE($3) << endl);
-		    if (!check_float($3, das_line_num)) {
+		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+		    if (!check_float64($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;

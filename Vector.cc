@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.25  1999/03/24 23:34:49  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+//
 // Revision 1.24  1998/09/17 17:05:46  jimg
 // Changes for the new variable lookup scheme. Fields of ctor types no longer
 // need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
@@ -115,7 +118,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.24 1998/09/17 17:05:46 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.25 1999/03/24 23:34:49 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -264,8 +267,11 @@ Vector::var(unsigned int i)
     
     switch (_var->type()) {
       case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
       case dods_int32_c:
       case dods_uint32_c:
+      case dods_float32_c:
       case dods_float64_c: {
 	  // Transfer the ith value to the BaseType *_var; There are more
 	  // efficient ways to get a whole array using buf2val() but this is
@@ -393,8 +399,11 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
 
     switch (_var->type()) {
       case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
       case dods_int32_c:
       case dods_uint32_c:
+      case dods_float32_c:
       case dods_float64_c:
 	assert(_buf);
 
@@ -440,7 +449,7 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
 
 // Read an object from the network and internalize it. For a Vector this is
 // handled differently for a `cardinal' type. Vectors of Cardinals are
-// stored using the `C' representations because these object often are used
+// stored using the `C' representations because these objects often are used
 // to build huge arrays (e.g., an array of 1024 by 1024 bytes). However,
 // arrays of non-cardinal types are stored as Vectors of the C++ objects or
 // DODS objects (Str and Url are vectors of the String class, Structure, ...,
@@ -463,8 +472,11 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse = false)
 
     switch (_var->type()) {
       case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
       case dods_int32_c:
       case dods_uint32_c:
+      case dods_float32_c:
       case dods_float64_c:
 	if (_buf && !reuse) {
 	    delete[] _buf;
@@ -491,7 +503,7 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse = false)
 	    status = (bool)xdr_array(source, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY, _var->width(), 
 				     _var->xdr_coder());
-	DBG(cerr << "List::deserialize: read " << num <<  " elements\n");
+	DBG(cerr << "Vector::deserialize: read " << num <<  " elements\n");
 
 	break;
 
@@ -542,8 +554,11 @@ Vector::val2buf(void *val, bool reuse)
 
     switch (_var->type()) {
       case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
       case dods_int32_c:
       case dods_uint32_c:
+      case dods_float32_c:
       case dods_float64_c: {
 	unsigned int array_wid = width();
 
@@ -579,8 +594,9 @@ Vector::val2buf(void *val, bool reuse)
       }
 
       default:
-	cerr << "Array::val2buf: Can be called for arrays of Byte, Int32, \n"
-	  << "Float64, String and Url only.\n";
+	cerr << \
+"Array::val2buf: Can be called for arrays of Byte, Int16, Uint16, Int32, 
+Uint32, Float32, Float64, String and Url only.\n";
 	return 0;
     }
 
@@ -606,8 +622,11 @@ Vector::buf2val(void **val)
 
     switch (_var->type()) {
       case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
       case dods_int32_c:
       case dods_uint32_c:
+      case dods_float32_c:
       case dods_float64_c:
 	if (!*val)
 	    *val = new char[wid];
@@ -633,8 +652,9 @@ Vector::buf2val(void **val)
       }
 
       default:
-	cerr << "Array::buf2val: Can be called for arrays of Byte, Int32, \n"
-	  << "Float64, String and Url only.\n";
+	cerr << \
+"Array::buf2val: Can be called for arrays of Byte, Int16, Uint16, Int32, 
+Uint32, Float32, Float64, String and Url only.\n";
 	return 0;
     }
 

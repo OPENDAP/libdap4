@@ -41,6 +41,9 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.25  1999/03/24 23:34:02  jimg
+# Added support for the new Int16, UInt16 and Float32 types.
+#
 # Revision 1.24  1998/03/26 00:26:24  jimg
 # Added % to the set of characters that can start and ID
 #
@@ -153,7 +156,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: das.lex,v 1.24 1998/03/26 00:26:24 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: das.lex,v 1.25 1999/03/24 23:34:02 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -186,8 +189,11 @@ ATTR 	attributes|Attributes|ATTRIBUTES
 
 ALIAS   ALIAS|Alias|alias
 BYTE	BYTE|Byte|byte
+INT16	INT16|Int16|int16
+UINT16	UINT16|UInt16|Uint16|uint16
 INT32	INT32|Int32|int32
 UINT32	UINT32|UInt32|Uint32|uint32
+FLOAT32 FLOAT32|Float32|float32
 FLOAT64 FLOAT64|Float64|float64
 STRING  STRING|String|string
 URL	URL|Url|url
@@ -201,8 +207,11 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 
 {ALIAS}                 daslval = yytext; return ALIAS;
 {BYTE}                  daslval = yytext; return BYTE;
+{INT16}                 daslval = yytext; return INT16;
+{UINT16}                daslval = yytext; return UINT16;
 {INT32}                 daslval = yytext; return INT32;
 {UINT32}                daslval = yytext; return UINT32;
+{FLOAT32}               daslval = yytext; return FLOAT32;
 {FLOAT64}               daslval = yytext; return FLOAT64;
 {STRING}                daslval = yytext; return STRING;
 {URL}                   daslval = yytext; return URL;
