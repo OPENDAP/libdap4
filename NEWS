@@ -1,3 +1,7 @@
+01/22/03
+
+The DAP is now covered by the GNU Lesser GPL.
+
 01/10/03
 
 This implementation of the DAP 2.0 now uses libcurl for http/s
