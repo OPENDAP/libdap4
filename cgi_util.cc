@@ -11,6 +11,9 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.27  1997/09/22 22:36:02  jimg
+// Added new function to read ancillary DAS and DDS files.
+//
 // Revision 1.26  1997/06/05 17:24:39  jimg
 // Added four function that help with writing the *_dods filter programs:
 // usage(), do_version(), do_data_transfer() and read_ancillary_dds().
@@ -130,7 +133,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.26 1997/06/05 17:24:39 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.27 1997/09/22 22:36:02 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -225,30 +228,120 @@ do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
     return true;
 }
 
+// Look for an ancillary das/dds file. Use the following rules to search:
+//
+// directory           filename          extension
+//   same                same            `.'given
+//   given               same            `.'given
+//   same                given           `.'given
+//   given               given           `.'given
+//
+// Where `same' means the ancillary file name matches that part of the data
+// file name. For example, given a data file name of /data/avhrr/k97.pvu,
+// this function will return the first name found by looking for:
+// /data/avhrr/k97.das, <given dir>/k97.das, <given dir>/<given file>.das.
+// This function assumes that directories are separated by `/'s and the
+// filename and extension are separated by `.'s. If the filename contains
+// several `.' characters, the last one is taken as the name.extenstion
+// separator and the `.'s to the left are assumed to be part of the filename.
+//
+// Returns: A string naming the ancillary file of a null string if no
+// matching file was found.
+
+String
+find_ancillary_file(String pathname, String ext, String dir, String file)
+{
+    int slash = pathname.index("/", -1) + 1;
+    String directory = pathname.at(0, slash);
+    String basename = pathname.at(slash, pathname.index(".", -1)-slash);
+    
+    ext = "." + ext;
+
+    String name = directory + basename + ext;
+    int fd;
+    if ((fd = open((const char *)name, O_RDONLY)) >= 0) {
+	close(fd);
+	return name;
+    }
+
+    name = dir + basename + ext;
+    if ((fd = open((const char *)name, O_RDONLY)) >= 0) {
+	close(fd);
+	return name;
+    }
+
+    name = directory + file + ext;
+    if ((fd = open((const char *)name, O_RDONLY)) >= 0) {
+	close(fd);
+	return name;
+    }
+
+    name = dir + file + ext;
+    if ((fd = open((const char *)name, O_RDONLY)) >= 0) {
+	close(fd);
+	return name;
+    }
+
+    return "";
+}
+
 // If external descriptor file exists, read it... This file must be in the
 // same directory that the netCDF file is located. Its name must be the
 // netCDF file name with the addition of .dds
 
 bool
-read_ancillary_dds(DDS &dds, const String &dataset)
+read_ancillary_dds(DDS &dds, String dataset, String dir = "", 
+		   String file = "")
 {
-    FILE *in = fopen(dataset + ".dds", "r");
+    String name = find_ancillary_file(dataset, "dds", dir, file);
+    FILE *in = fopen((const char *)name, "r");
  
     if (in) {
 	int status = dds.parse(in);
 	fclose(in);
     
 	if(!status) {
-	    const String msg = "Parse error in external file " 
-		+ dataset + ".dds";
+	    String msg = "Parse error in external file " + dataset + ".dds";
 
 	    // server error message
 	    ErrMsgT(msg);
 
 	    // client error message
-	    Error *ErrorObj = new Error(malformed_expr, "\"" + msg + "\"");
 	    set_mime_text(dods_error);
+
+	    Error *ErrorObj = new Error(malformed_expr, msg);
 	    ErrorObj->print();
+
+	    return false;
+	}
+    }
+
+    return true;
+}
+    
+bool
+read_ancillary_das(DAS &das, String dataset, String dir = "", 
+		   String file = "")
+{
+    String name = find_ancillary_file(dataset, "das", dir, file);
+    FILE *in = fopen((const char *)name, "r");
+ 
+    if (in) {
+	int status = das.parse(in);
+	fclose(in);
+    
+	if(!status) {
+	    String msg = "Parse error in external file " + dataset + ".das";
+
+	    // server error message
+	    ErrMsgT(msg);
+
+	    // client error message
+	    set_mime_text(dods_error);
+
+	    Error *ErrorObj = new Error(malformed_expr, msg);
+	    ErrorObj->print();
+
 	    return false;
 	}
     }
@@ -282,7 +375,7 @@ ErrMsgT(const char *Msgt)
 	"DODS server"; 
 
     cerr << "[" << TimStr << "] CGI: " << script << " failed for " 
-	 << host_or_addr << " reason: "<< Msgt << endl;
+	 << host_or_addr << ": "<< Msgt << endl;
 }
 
 // Given an open FILE *IN, a separator character (in STOP) and the number of
@@ -295,6 +388,7 @@ ErrMsgT(const char *Msgt)
 //
 // Returns: a newly allocated string.
 
+#if 0
 char *
 fmakeword(FILE *f, const char stop, int *cl) 
 {
@@ -331,6 +425,7 @@ fmakeword(FILE *f, const char stop, int *cl)
         ++ll;
     }
 }
+#endif
 
 // Given a pathname, return just the filename component with any extension
 // removed. The new string resides in newly allocated memory; the caller must
