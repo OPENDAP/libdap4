@@ -432,7 +432,7 @@ dir=`basename ${dir}`
 
 
 
-depend=../../etc/depend.in
+depend=../../etc/depend.sh
 
 
 
