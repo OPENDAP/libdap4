@@ -18,13 +18,16 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.5  1995/03/09 20:36:09  jimg
-/* Modified so that URLs built by this library no longer supply the
-/* base name of the CGI. Instead the base name is stripped off the front
-/* of the pathname component of the URL supplied by the user. This class
-/* append the suffix _das, _dds or _serv when a Connect object is used to
-/* get the DAS, DDS or Data (resp).
+/* Revision 1.6  1995/04/17 03:20:52  jimg
+/* Removed the `api' field.
 /*
+ * Revision 1.5  1995/03/09  20:36:09  jimg
+ * Modified so that URLs built by this library no longer supply the
+ * base name of the CGI. Instead the base name is stripped off the front
+ * of the pathname component of the URL supplied by the user. This class
+ * append the suffix _das, _dds or _serv when a Connect object is used to
+ * get the DAS, DDS or Data (resp).
+ *
  * Revision 1.4  1995/02/10  21:54:52  jimg
  * Modified definition of request_data() so that it takes an additional
  * parameter specifying sync or async behavior.
@@ -64,9 +67,6 @@
 class Connect {
 private:
     bool _local;		// is this a local connection
-#ifdef NEVER
-    String _api_name;		// ctor MUST set this.
-#endif
     String _URL;		// URL to remote dataset; --> LOCAL is false
     DAS _das;			// dataset attribute structure --> !LOCAL
     DDS _dds;			// dataset descriptor structure --> ! LOCAL
@@ -84,9 +84,6 @@ protected:
 public:
     // child classes can use these ctors
     Connect(const String &name, const String &api = ""); 
-#ifdef NEVER
-    Connect(const char *name, const String &api = "");
-#endif
     virtual ~Connect();		// base classes should have virtual dtors
 
     bool is_local();
