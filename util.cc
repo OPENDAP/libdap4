@@ -10,6 +10,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.48  1998/11/10 00:47:01  jimg
+// Fixed a number of memory leaks (found using purify).
+//
 // Revision 1.47  1998/09/02 23:59:11  jimg
 // Removed func_date to avoid conflicts with a copy in ff-dods-2.15.
 //
@@ -236,7 +239,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.47 1998/09/02 23:59:11 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.48 1998/11/10 00:47:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -323,7 +326,6 @@ unique_names(SLList<BaseTypePtr> l, const char *var_name,
     char **names = new char *[l.length()];
 
     int nelem = 0;
-    String s;
     for (Pix p = l.first(); p; l.next(p)) {
 	assert(l(p));
 	names[nelem++] = strdup((const char *)l(p)->name());
@@ -346,7 +348,7 @@ unique_names(SLList<BaseTypePtr> l, const char *var_name,
 	    ostrstream oss;
 	    oss << "The variable `" << names[i] 
 		 << "' is used more than once in " << type_name << " `"
-		 << var_name << "'" << endl;
+		 << var_name << "'" << ends;
 	    msg = oss.str();
 	    oss.freeze(0);
 	    for (i = 0; i < nelem; i++)
@@ -393,7 +395,8 @@ void
 delete_xdrstdio(XDR *xdr)
 {
     xdr_destroy(xdr);
-    delete(xdr);
+
+    delete xdr;
 }
 
 // This function is used to en/decode Str and Url type variables. It is
@@ -462,7 +465,7 @@ text_to_temp(String text)
 	    << strerror(errno) << endl;
 	return NULL;
     }
-
+    free(c);			// tempnam uses malloc! 10/27/98 jhrg
     fputs((const char *)text, fp); // dump information
 
     if (fseek(fp, 0L, 0 == -1)) { // rewind in preparation for reading
@@ -647,7 +650,7 @@ func_null(int argc, BaseType *argv[], DDS &)
 }
 
 BaseType *
-func_length(int argc, BaseType *argv[], DDS &)
+func_length(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 1) {
 	cerr << "Wrong number of arguments." << endl;
@@ -663,6 +666,7 @@ func_length(int argc, BaseType *argv[], DDS &)
 	  ret->val2buf(&result);
 	  ret->set_read_p(true);
 	  ret->set_send_p(true);
+	  dds.append_constant(ret); // DDS deletes in its dtor
 
 	  return ret;
       }
@@ -675,6 +679,7 @@ func_length(int argc, BaseType *argv[], DDS &)
 	  ret->val2buf(&result);
 	  ret->set_read_p(true);
 	  ret->set_send_p(true);
+	  dds.append_constant(ret); 
     
 	  return ret;
       }
@@ -730,7 +735,7 @@ byte_ops(int i1, int i2, int op)
       case LESS_EQL:
 	return i1 <= i2;
       case REGEXP:
-	cerr << "Regexp not valid for byte values" << endl;
+	cerr << "Regular expression not valid for byte values" << endl;
 	return false;
       default:
 	cerr << "Unknown operator" << endl;
@@ -759,7 +764,7 @@ int_ops(dods_int32 i1, dods_int32 i2, int op)
       case LESS_EQL:
 	return i1 <= i2;
       case REGEXP:
-	cerr << "Regexp not valid for integer values" << endl;
+	cerr << "Regular expression not valid for integer values" << endl;
 	return false;
       default:
 	cerr << "Unknown operator" << endl;
@@ -767,11 +772,15 @@ int_ops(dods_int32 i1, dods_int32 i2, int op)
     }
 }
 
+// Some machines define MAX, some don't. 11/1/98 jhrg
+
+#ifndef MAX
 static unsigned
 MAX(int i1, int i2)
 {
     return (unsigned)((i1 < i2) ? i1 : i2);
 }
+#endif
 
 bool
 int_ops(dods_uint32 i1, dods_int32 i2, int op)
@@ -790,7 +799,7 @@ int_ops(dods_uint32 i1, dods_int32 i2, int op)
       case LESS_EQL:
 	return i1 <= MAX(0, i2);
       case REGEXP:
-	cerr << "Regexp not valid for integer values" << endl;
+	cerr << "Regular expression not valid for integer values" << endl;
 	return false;
       default:
 	cerr << "Unknown operator" << endl;
@@ -815,7 +824,7 @@ int_ops(dods_int32 i1, dods_uint32 i2, int op)
       case LESS_EQL:
 	return MAX(0, i1) <= i2;
       case REGEXP:
-	cerr << "Regexp not valid for integer values" << endl;
+	cerr << "Regular expression not valid for integer values" << endl;
 	return false;
       default:
 	cerr << "Unknown operator" << endl;
@@ -840,7 +849,7 @@ int_ops(dods_uint32 i1, dods_uint32 i2, int op)
       case LESS_EQL:
 	return i1 <= i2;
       case REGEXP:
-	cerr << "Regexp not valid for integer values" << endl;
+	cerr << "Regular expression not valid for integer values" << endl;
 	return false;
       default:
 	cerr << "Unknown operator" << endl;
@@ -865,7 +874,7 @@ double_ops(double i1, double i2, int op)
       case LESS_EQL:
 	return i1 <= i2;
       case REGEXP:
-	cerr << "Regexp not valid for float values" << endl;
+	cerr << "Regular expression not valid for float values" << endl;
 	return false;
       default:
 	cerr << "Unknown operator" << endl;
@@ -890,7 +899,6 @@ string_ops(String &i1, String &i2, int op)
       case LESS_EQL:
 	return i1 <= i2;
       case REGEXP: {
-	  //	  Regex r = (const char *)i2;
 	  Regex r((const char *)i2);
 	  return i1.matches(r);
       }
