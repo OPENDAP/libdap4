@@ -32,7 +32,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: SignalHandler.cc,v 1.3 2004/02/19 19:42:52 jimg Exp $" };
+    { "$Id: SignalHandler.cc,v 1.4 2004/06/28 16:57:53 pwest Exp $" };
 
 #include <signal.h>
 
@@ -72,7 +72,7 @@ SignalHandler::delete_instance()
 {
     if (SignalHandler::d_instance) {
 #if HAVE_PTHREAD_H
-	instance_control = PTHREAD_ONCE_INIT;
+	instance_control = (pthread_once_t)PTHREAD_ONCE_INIT;
 #endif
 	for (int i = 0; i < NSIG; ++i) {
 	    d_signal_handlers[i] = 0;
@@ -224,6 +224,9 @@ SignalHandler::remove_handler(int signum)
 }
 
 // $Log: SignalHandler.cc,v $
+// Revision 1.4  2004/06/28 16:57:53  pwest
+// unix compiler issues
+//
 // Revision 1.3  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

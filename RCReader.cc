@@ -424,7 +424,7 @@ RCReader::delete_instance()
 	//  Under Linux PTHREAD_ONCE_INIT is 0 in pthread.h.  Under win32, it's a 2
 	//  element structure { FALSE, -1 }.  ROM - 02/15/04.
 #ifndef WIN32
-	instance_control = PTHREAD_ONCE_INIT;
+	instance_control = (pthread_once_t)PTHREAD_ONCE_INIT;
 #else
 	//  Therefore, I must try something else under win32.
 	instance_control.done = FALSE;
@@ -463,6 +463,9 @@ RCReader::instance()
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.12  2004/06/28 16:57:53  pwest
+// unix compiler issues
+//
 // Revision 1.11  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
