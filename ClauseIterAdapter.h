@@ -36,27 +36,77 @@
 #include "IteratorAdapter.h"
 #include "Clause.h"
 
+/**
+    The ClauseIterAdpater class is a specific IteratorAdapter for the Clause
+    class that represents any stl iterator used for a vector of Clauses.
+    This class adapts the GNU Pix to stl iterators.
+
+    @brief stl adapter class specific to the Clause class
+    @see IteratorAdapter
+    @see ArrayIterAdapter
+    @see AttrIterAdapter
+    @see BTIterAdapter
+ */
 class ClauseIterAdapter : public IteratorAdapter
 {
     public:
+	/** @name iterator typedefs*/
+	//@{
+
 	typedef std::vector<Clause *>::iterator iter ;
 	typedef std::vector<Clause *>::const_iterator citer ;
+	//@}
 
-	/* constructor */
+	/** @name Instance management functions */
+	//@{
+
+	/** Constructor which takes the vector of Clause objects and
+	    maintains an iterator over that vector
+
+	    @param vec vector of Clause objects to iterate over
+	*/
 	ClauseIterAdapter( std::vector<Clause *> &vec ) ;
 
-	/* destructor */
 	virtual ~ClauseIterAdapter( ) ;
+	//@}
 
-	/* derived public methods */
+	/** @name Iteration methods */
+	//@{
+
+	/** Point the iterator to the first element in the list
+	*/
 	virtual void first( ) ;
-	virtual void next( ) ;
-	virtual operator bool( ) ;
-	virtual bool operator==( const IteratorAdapter &i ) ;
 
-	/* new public methods */
+	/** Move the iterate to the next element in the list
+	*/
+	virtual void next( ) ;
+
+	/** Returns true if the iterator is pointing to an element in the list,
+	    else it returns false saying that there is nothing in the list or
+	    the iterator has reached the end of the list
+	*/
+	virtual operator bool( ) ;
+
+	/** Returns true if this stl iterator is equal to the stl iterator
+	    held by the passed inner iterator, else returns false if they
+	    are not equal.
+
+	    @param i compare the passed adapter to "this" adapter
+	*/
+	virtual bool operator==( const IteratorAdapter &i ) ;
+	//@}
+
+	/** @name Internal adapter methods */
+	//@{
+
+	/** Return the current element pointed to by the stl iterator
+	*/
 	Clause *entry( ) ;
+
+	/** Return the stl iterator held by this internal adapter
+	*/
 	iter &getIterator( ) ;
+	//@}
 
     protected:
 
@@ -65,5 +115,11 @@ class ClauseIterAdapter : public IteratorAdapter
 	std::vector<Clause *> &_vec ;
 	iter _i ;
 } ;
+
+// $Log: ClauseIterAdapter.h,v $
+// Revision 1.4  2003/04/02 19:14:19  pwest
+// Added doxygen comments to iterator adapter classes
+//
+//
 
 #endif // clause_iter_adapter_h

@@ -75,3 +75,9 @@ AttrIterAdapter::getIterator( )
     return _i ;
 }
 
+// $Log: AttrIterAdapter.cc,v $
+// Revision 1.5  2003/04/02 19:14:19  pwest
+// Added doxygen comments to iterator adapter classes
+//
+//
+

@@ -33,13 +33,13 @@
 
 IteratorAdapter::IteratorAdapter( ) :
     _i( 0 ),
-    _ref(0)
+    _ref( 0 )
 {
 }
 
 IteratorAdapter::IteratorAdapter( IteratorAdapter *iter ) :
     _i( iter ),
-    _ref(0)
+    _ref( 0 )
 { 
     if( _i ) {
 	_i->incref(); 
@@ -47,9 +47,16 @@ IteratorAdapter::IteratorAdapter( IteratorAdapter *iter ) :
 }
 
 IteratorAdapter::IteratorAdapter( const IteratorAdapter &iter ) :
-    _i( iter._i ),
-    _ref(0)
+    _i( 0 ),
+    _ref( 0 )
 { 
+    if( _i ) {
+	_i->decref() ;
+	_i = 0 ;
+    }
+
+    _i = iter._i ;
+
     if( _i ) {
 	_i->incref(); 
     }
@@ -107,28 +114,6 @@ IteratorAdapter::operator bool( )
     return false ;
 }
 
-/*
-bool
-IteratorAdapter::operator==( void *op2 )
-{ 
-    if( op2 == NULL ) {
-	return !(*this) ; 
-    }
-    
-    return false ;
-}
-
-bool
-IteratorAdapter::operator!=( void *op2 )
-{ 
-    if( op2 == NULL ) {
-	return *this ;
-    }
-    
-    return false ;
-}
-*/
-
 bool
 IteratorAdapter::operator==( const IteratorAdapter &i )
 { 
@@ -183,3 +168,8 @@ IteratorAdapter::free( )
     }
 }
 
+// $Log: IteratorAdapter.cc,v $
+// Revision 1.6  2003/04/02 19:14:19  pwest
+// Added doxygen comments to iterator adapter classes
+//
+//
