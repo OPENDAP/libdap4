@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.23  1998/08/13 22:12:44  jimg
+ * Fixed error messages.
+ *
  * Revision 1.22  1997/11/20 20:14:10  jimg
  * Added to the name rule so that it recognizes both the ID and NAME lexeme
  * as valid when parsing the dataset name. NAME (see dds.lex) is just like ID
@@ -124,7 +127,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.y,v 1.22 1997/11/20 20:14:10 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.y,v 1.23 1998/08/13 22:12:44 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -351,7 +354,24 @@ non_list_decl:  base_type var ';'
 			YYABORT;
 		    }
 		}
+
+                | error
+                {
+		    ostrstream msg;
+		    msg << "In the dataset descriptor object:" << endl
+			<< "Expected a varaible declaration" << endl 
+			<< "(e.g., Int32 i;). Make sure that the" << endl
+			<< "variable name is not a reserved word" << endl
+			<< "(Byte, Int32, Float64, String, Url" <<endl
+			<< "Structure, Sequence or Grid - all" << endl
+			<< "forms, byte, Byte and BYTE, are the same)" << endl
+			<< ends;
+		    parse_error((parser_arg *)arg, msg.str());
+		    msg.freeze(0);
+		    YYABORT;
+		}
 ;
+ 
 
 list:		LIST 
 		{ 
@@ -440,7 +460,7 @@ array_decl:	'[' INTEGER ']'
                  {
 		     ostrstream msg;
 		     msg << "In the dataset descriptor object:" << endl
-			 << "Expected and array subscript." << endl << ends;
+			 << "Expected an array subscript." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
 		     msg.freeze(0);
 		     YYABORT;
