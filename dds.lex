@@ -22,13 +22,16 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.1  1994/09/08 21:10:46  jimg
-/* DDS Class test driver and parser and scanner.
+/* Revision 1.2  1994/11/10 19:46:49  jimg
+/* Added `/' to the set of characters that make up an identifier.
 /*
+# Revision 1.1  1994/09/08  21:10:46  jimg
+# DDS Class test driver and parser and scanner.
+#
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.1 1994/09/08 21:10:46 jimg Exp $"};
+static char rcsid[]={"$Id: dds.lex,v 1.2 1994/11/10 19:46:49 jimg Exp $"};
 
 #include <string.h>
 
@@ -62,9 +65,9 @@ FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
 
-ID  		[a-zA-Z_][a-zA-Z0-9_]*
+ID  		[a-zA-Z_][a-zA-Z0-9_/]*
 INTEGER		[0-9]+
-NEVER		[^a-zA-Z0-9_{};]
+NEVER		[^a-zA-Z0-9_{};/]
 
 %%
 

@@ -31,7 +31,10 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.5  1994/10/05 16:41:58  jimg
+# Revision 1.6  1994/11/10 19:46:10  jimg
+# Added `/' to the set of characters that make up an identifier.
+#
+# Revision 1.5  1994/10/05  16:41:58  jimg
 # Added `TYPE' to the grammar for the DAS.
 # See Also: DAS.{cc,h} which were modified to handle TYPE.
 #
@@ -71,7 +74,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.5 1994/10/05 16:41:58 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.6 1994/11/10 19:46:10 jimg Exp $"};
 
 #include <string.h>
 
@@ -82,8 +85,8 @@ static char rcsid[]={"$Id: das.lex,v 1.5 1994/10/05 16:41:58 jimg Exp $"};
 
 int das_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */
-void trunc1(char *yytext, int yyleng);
-void rmbslash(char *yytext);
+void trunc1(char *yytext, int yyleng); /* no longer used */
+void rmbslash(char *yytext);	/* no longer used */
 int yywrap(void);
 
 %}
@@ -92,11 +95,11 @@ int yywrap(void);
 %x comment
 %x comment_new
 
-ID  	[a-zA-Z_][a-zA-Z0-9_]*
+ID  	[a-zA-Z_][a-zA-Z0-9_/]*
 VAL 	[a-zA-Z0-9_.+-]+
 ATTR 	attributes|Attributes|ATTRIBUTES
 TYPE    BYTE|Byte|byte|INT32|Int32|int32|FLOAT64|Float64|float64|STRING|String|string|URL|Url|url
-NEVER   [^a-zA-Z0-9_.+-{};]
+NEVER   [^a-zA-Z0-9_.+-{};/]
 
 %%
 
