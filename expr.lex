@@ -50,17 +50,23 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.1  1995/10/13 03:03:17  jimg
-/* Scanner. Incorporates Glenn's suggestions.
+/* Revision 1.2  1995/10/23 23:11:31  jimg
+/* Fixed scanner to use the new definition of YYSTYPE.
 /*
+# Revision 1.1  1995/10/13  03:03:17  jimg
+# Scanner. Incorporates Glenn's suggestions.
+#
  */
 
 %{
-static char rcsid[]={"$Id: expr.lex,v 1.1 1995/10/13 03:03:17 jimg Exp $"};
+static char rcsid[]={"$Id: expr.lex,v 1.2 1995/10/23 23:11:31 jimg Exp $"};
 
 #include <string.h>
 
-#define YYSTYPE char *
+#include <String.h>
+#include <SLList.h>
+
+/* #define YYSTYPE char * */
 #define YY_DECL int exprlex YY_PROTO(( void ))
 
 #include "expr.tab.h"
@@ -70,6 +76,7 @@ static char rcsid[]={"$Id: expr.lex,v 1.1 1995/10/13 03:03:17 jimg Exp $"};
 %x quote
     
 ID		[a-zA-Z_][a-zA-Z0-9_]*
+FIELD           {ID}\.{ID}(\.{ID})*
 INT		[-+]?[0-9]+
 
 MANTISA		([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
@@ -91,20 +98,21 @@ NEVER		[^][":*.)(,&a-zA-Z0-9_]
 
 %%
 
-{ID}		exprlval = yytext; return ID;
-{INT}		exprlval = yytext; return INT;
+{ID}		exprlval.char_ptr = yytext; return ID;
+{FIELD}		exprlval.char_ptr = yytext; return FIELD;
+{INT}		exprlval.char_ptr = yytext; return INT;
 
-{FLOAT}		exprlval = yytext; return FLOAT;
+{FLOAT}		exprlval.char_ptr = yytext; return FLOAT;
 
-{STR}		exprlval = yytext; return STR;
+{STR}		exprlval.char_ptr = yytext; return STR;
 
-{EQUAL}		exprlval = yytext; return EQUAL;
-{NOT_EQUAL}	exprlval = yytext; return NOT_EQUAL;
-{GREATER}	exprlval = yytext; return GREATER;
-{GREATER_EQL}	exprlval = yytext; return GREATER_EQL;
-{LESS}		exprlval = yytext; return LESS;
-{LESS_EQL}	exprlval = yytext; return LESS_EQL;
-{REGEXP}	exprlval = yytext; return REGEXP;
+{EQUAL}		exprlval.char_ptr = yytext; return EQUAL;
+{NOT_EQUAL}	exprlval.char_ptr = yytext; return NOT_EQUAL;
+{GREATER}	exprlval.char_ptr = yytext; return GREATER;
+{GREATER_EQL}	exprlval.char_ptr = yytext; return GREATER_EQL;
+{LESS}		exprlval.char_ptr = yytext; return LESS;
+{LESS_EQL}	exprlval.char_ptr = yytext; return LESS_EQL;
+{REGEXP}	exprlval.char_ptr = yytext; return REGEXP;
 
 "["    	    	return (int)*yytext;
 "]"    	    	return (int)*yytext;
@@ -126,7 +134,7 @@ NEVER		[^][":*.)(,&a-zA-Z0-9_]
 <quote>\\.		yymore();
 <quote>\"		{ 
     			  BEGIN(INITIAL); 
-			  exprlval = yytext;
+			  exprlval.char_ptr = yytext;
 			  return STR;
                         }
 <quote><<EOF>>		{
