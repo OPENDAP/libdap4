@@ -15,10 +15,14 @@
 //
 // jhrg 9/6/94
 
-/* $Log: BaseType.h,v $
-/* Revision 1.35  1997/08/11 18:19:12  jimg
-/* Fixed comment leaders for new CVS version
-/*
+/* 
+ * $Log: BaseType.h,v $
+ * Revision 1.36  1997/08/11 20:18:29  jimg
+ * Really fixed the comment leaders this time...
+ *
+ * Revision 1.35  1997/08/11 18:19:12  jimg
+ * Fixed comment leaders for new CVS version
+ *
  * Revision 1.34  1997/03/08 19:01:57  jimg
  * Changed default param to check_semantics() from  to String()
  * and removed the default from the argument list in the mfunc definition
