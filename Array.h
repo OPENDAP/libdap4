@@ -7,11 +7,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.6  1994/12/12 19:40:30  dan
-/* Modified Array class definition removing inheritance from class CtorType
-/* and to inherit directly from class BaseType.  Removed member function
-/* dimensions().
+/* Revision 1.7  1994/12/12 20:33:34  jimg
+/* Fixed struct dimensions.
 /*
+ * Revision 1.6  1994/12/12  19:40:30  dan
+ * Modified Array class definition removing inheritance from class CtorType
+ * and to inherit directly from class BaseType.  Removed member function
+ * dimensions().
+ *
  * Revision 1.5  1994/12/09  21:36:34  jimg
  * Added support for named array dimensions.
  *
@@ -53,10 +56,10 @@ const int DODS_MAX_ARRAY = UINT_MAX;
 
 class Array: public BaseType {
 private:
-    struct {			// each dimension has a size and a name
+    struct dimension {			// each dimension has a size and a name
 	int size;
 	String name;
-    } dimension;
+    };
 
     BaseType *var_ptr;		// var that is an array
     SLList<dimension> shape;	// list of dimensions (i.e., the shape)
@@ -65,7 +68,8 @@ private:
     void *buf;
 
 public:
-    Array(const String &n = (char *)0, FILE *in = stdin, FILE *out = stdout, BaseType *v = 0);
+    Array(const String &n = (char *)0, FILE *in = stdin, FILE *out = stdout, 
+	  BaseType *v = 0);
     Array(const Array &rhs);
     virtual ~Array();
 
