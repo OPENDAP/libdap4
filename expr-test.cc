@@ -10,6 +10,10 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.12  1996/08/13 18:55:20  jimg
+// Added __unused__ to definition of char rcsid[].
+// Uses the parser_arg object to communicate with the parser.
+//
 // Revision 1.11  1996/06/11 17:30:36  jimg
 // Fixed -k (constraint expression) option when used with -p (parser) option.
 //
@@ -62,10 +66,13 @@
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.11 1996/06/11 17:30:36 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.12 1996/08/13 18:55:20 jimg Exp $"};
 
 #include <stdio.h>
 #include <errno.h>
+#include <assert.h>
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
@@ -81,8 +88,8 @@ static char rcsid[]= {"$Id: expr-test.cc,v 1.11 1996/06/11 17:30:36 jimg Exp $"}
 #include "DDS.h"
 #include "BaseType.h"
 
-#include "expr.h"
 #include "parser.h"
+#include "expr.h"
 #include "expr.tab.h"
 #include "util.h"
 #include "debug.h"
@@ -98,14 +105,14 @@ bool loopback_pipe(FILE **pout, FILE **pin);
 bool constrained_trans(const String &dds_name, const String &ce);
 
 int exprlex();			// exprlex() uses the global exprlval
-int exprparse(DDS &table);
-
+int exprparse(void *arg);
 int exprrestart(FILE *in);
 
 extern YYSTYPE exprlval;
 extern int exprdebug;
+const String version = "version 1.12";
 const String prompt = "expr-test: ";
-const String options = "sp:detcw:k:";
+const String options = "sp:detcw:k:v";
 const String usage = "expr-test [-d -s -p -e -c -t -w -k] [file] [expr]\n\
 Test the expression evaluation software.\n\
 Options:\n\
@@ -124,7 +131,8 @@ Options:\n\
 	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\n\
 	    This prompts for the constraint expression\n\
 	-k: A constraint expression to use with the data. Works with -p,\n\
-	    -e, -t and -w\n";
+	    -e, -t and -w\n\
+        -v: Print the version of expr-test\n";
 
 int
 main(int argc, char *argv[])
@@ -170,11 +178,21 @@ main(int argc, char *argv[])
 	      constraint_expr = true;
 	      constraint = getopt.optarg;
 	      break;
+	    case 'v':
+	      cerr << argv[0] << ": " << version << endl;
+	      exit(0);
 	    case '?': 
 	    default:
 	      cerr << usage << endl; 
+	      exit(1);
 	      break;
 	  }
+
+    if (!scanner_test && !parser_test && !evaluate_test && !trans_test 
+	&& !whole_enchalada) {
+	cerr << usage << endl;
+	exit(1);
+    }
 
     // run selected tests
 
@@ -303,7 +321,22 @@ test_parser(DDS &table, const String &dds_name, const String &constraint)
 
 	cout << prompt;
 
-	status = (exprparse(table) == 0);
+	parser_arg arg(&table);
+
+	status = exprparse((void *)&arg) == 0;
+
+	//  STATUS is the result of the parser function; if a recoverable error
+	//  was found it will be true but arg.status() will be false.
+	if (!status || !arg.status()) {// Check parse result
+	    if (arg.error())
+		arg.error()->display_message();
+#if 0
+	    cerr << "Error parsing constraint expression!" << endl;
+#endif
+	    status = false;
+	}
+	else
+	    status = true;
     }
 
     if (status)
@@ -366,10 +399,6 @@ transmit(DDS &write, bool verb)
 	return false;
     }
 
-#if 0
-    set_xdrin(pin);
-    set_xdrout(pout);
-#endif
     XDR *sink = new_xdrstdio(pout, XDR_ENCODE);
     XDR *source = new_xdrstdio(pin, XDR_DECODE);
 
@@ -411,7 +440,7 @@ transmit(DDS &write, bool verb)
 
 	    status = read.var(rp)->deserialize(source);
 	    if (!status) {
-		cerr < "Could not read";
+		cerr << "Could not read";
 		read.var(wp)->print_decl(cerr);
 		exit(1);
 	    }
@@ -430,6 +459,8 @@ transmit(DDS &write, bool verb)
 
     delete_xdrstdio(sink);
     delete_xdrstdio(source);
+
+    return true;
 }
 
 // create a pipe for the caller's process which can be used by the DODS
@@ -527,7 +558,7 @@ constrained_trans(const String &dds_name, const String &constraint)
     FILE *pin, *pout;
     DDS server;
 
-    cerr << "The complete DDS:" << endl;
+    cout << "The complete DDS:" << endl;
     read_table(server, dds_name, true);
 
     status = loopback_pipe(&pout, &pin);
@@ -578,20 +609,12 @@ constrained_trans(const String &dds_name, const String &constraint)
     }
     fclose(dds_fp);
 
-    // now arrange to read the data via the appropriate variable.  NB:
-    // Since all BaseTypes share I/O, this works. However, it will have
-    // to be changed when BaseType is modified to handle several
-    // simultaneous reads.
-#if 0
-    set_xdrin(pin);
-#endif
-
     XDR *source = new_xdrstdio(pin, XDR_DECODE);
 
     // Back on the client side; deserialize the data *using the newly
     // generated DDS* (the one sent with the data).
 
-    cerr << "The data:" << endl;
+    cout << "The data:" << endl;
     for (Pix q = dds.first_var(); q; dds.next_var(q)) {
 	if (!dds.var(q)->deserialize(source))
 	    return false;
