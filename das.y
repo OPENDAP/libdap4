@@ -31,6 +31,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.26  1996/10/28 23:04:46  jimg
+ * Added unsigned int to set of possible attribute value types.
+ *
  * Revision 1.25  1996/10/11 00:11:03  jimg
  * Fixed DODS_BISON_VER preprocessor statement. >= apparently is not recognized
  * by g++'s preprocessor.
@@ -150,7 +153,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.25 1996/10/11 00:11:03 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.26 1996/10/28 23:04:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -189,10 +192,11 @@ static char name[ID_MAX];	/* holds name in attr_pair rule */
 static char type[ID_MAX];	/* holds type in attr_pair rule */
 static AttrTablePtr attr_tab;
 
-static char *VAR_ATTR_MSG="Expected an identifier followed by a list of \
-attributes.";
-static char *ATTR_TUPLE_MSG="Expected an attribute type (Byte, Int32, \n\
-Float64, String or Url) followed by a name and value.";
+static char *VAR_ATTR_MSG = 
+"Expected an identifier followed by a list of attributes.";
+static char *ATTR_TUPLE_MSG = 
+"Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)\n\
+followed by a name and value.";
 
 void mem_list_report();
 int daslex(void);
@@ -211,6 +215,7 @@ void daserror(char *s);
 
 %token BYTE
 %token INT32
+%token UINT32
 %token FLOAT64
 %token STRING
 %token URL
@@ -232,11 +237,11 @@ void daserror(char *s);
 
   Tokens:
 
-  BYTE, INT32, FLOAT64, STRING and URL are tokens for the type keywords.
-  The tokens INT, FLOAT, STR and ID are returned by the scanner to indicate
-  the type of the value represented by the string contained in the global
-  DASLVAL. These two types of tokens are used to implement type checking for
-  the atributes. See the rules `bytes', ...
+  BYTE, INT32, UInt32, FLOAT64, STRING and URL are tokens for the type
+  keywords. The tokens INT, FLOAT, STR and ID are returned by the scanner to
+  indicate the type of the value represented by the string contained in the
+  global DASLVAL. These two types of tokens are used to implement type
+  checking for the atributes. See the rules `bytes', ... 
 */
 
 attributes:    	attribute
@@ -281,6 +286,10 @@ attr_tuple:	BYTE { save_str(type, $1, das_line_num); }
 		bytes ';'
 
 		| INT32 { save_str(type, $1, das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
+		ints ';'
+
+		| UINT32 { save_str(type, $1, das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
 		ints ';'
 
@@ -350,9 +359,15 @@ bytes:		INT
 
 ints:		INT
 		{
+		    /* NB: On the Sun (SunOS 4) strtol does not check for */
+		    /* overflow. Thus it will never figure out that 4 */
+		    /* billion is way to large to fit in a 32 bit signed */
+		    /* integer. What's worse, long is 64  bits on Alpha and */
+		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $1 << endl);
-		    if (!check_int($1, das_line_num)) {
+		    if (!check_int($1, das_line_num) 
+			|| !check_uint($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str(), 
@@ -373,7 +388,8 @@ ints:		INT
 		{
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $3 << endl);
-		    if (!check_int($3, das_line_num)) {
+		    if (!check_int($3, das_line_num)
+			|| !check_uint($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str(), 
@@ -520,9 +536,6 @@ float_or_int:   FLOAT | INT
 %%
 
 void
-daserror(char */* s */)
+daserror(char *)
 {
-#if 0
-    cerr << " line: " << das_line_num << ": " << s << endl;
-#endif
 }

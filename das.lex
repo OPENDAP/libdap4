@@ -41,6 +41,9 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.20  1996/10/28 23:06:15  jimg
+# Added unsigned int to set of possible attribute value types.
+#
 # Revision 1.19  1996/10/08 17:10:49  jimg
 # Added % to the set of characters allowable in identifier names
 #
@@ -136,7 +139,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: das.lex,v 1.19 1996/10/08 17:10:49 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: das.lex,v 1.20 1996/10/28 23:06:15 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -169,6 +172,7 @@ ATTR 	attributes|Attributes|ATTRIBUTES
 
 BYTE	BYTE|Byte|byte
 INT32	INT32|Int32|int32
+UINT32	UINT32|UInt32|uint32
 FLOAT64 FLOAT64|Float64|float64
 STRING  STRING|String|string
 URL	URL|Url|url
@@ -182,6 +186,7 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 
 {BYTE}                  daslval = yytext; return BYTE;
 {INT32}                 daslval = yytext; return INT32;
+{UINT32}                daslval = yytext; return UINT32;
 {FLOAT64}               daslval = yytext; return FLOAT64;
 {STRING}                daslval = yytext; return STRING;
 {URL}                   daslval = yytext; return URL;
