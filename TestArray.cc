@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.18  1996/12/02 18:21:17  jimg
+// Added case for unit32 to ops() member functon.
+//
 // Revision 1.17  1996/08/13 20:50:39  jimg
 // Changed definition of the read member function.
 //
@@ -136,6 +139,7 @@ TestArray::read(const String &dataset, int &error)
     switch (var()->type()) {
       case dods_byte_c:
       case dods_int32_c:
+      case dods_uint32_c:
       case dods_float64_c:
       case dods_str_c:
       case dods_url_c: {

@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.27  1996/12/02 18:21:16  jimg
+// Added case for unit32 to ops() member functon.
+//
 // Revision 1.26  1996/08/13 18:36:53  jimg
 // Added __unused__ to definition of char rcsid[].
 // Moved str_ops() to util.cc
@@ -158,7 +161,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.26 1996/08/13 18:36:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.27 1996/12/02 18:21:16 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -306,11 +309,18 @@ Str::ops(BaseType &b, int op)
 	  b.buf2val((void **)&ip);
 	  strstream int_str;
 	  int_str << i;
-#ifdef NEVER
-	  char *int_str;
-	  sprintf(int_str, "%d", i);
-#endif
 	  a2 = int_str.str();
+	  int_str.freeze(0);
+	  break;
+      }
+      case dods_uint32_c: {
+	  dods_uint32 ui;
+	  dods_uint32 *uip = &ui;
+	  b.buf2val((void **)&uip);
+	  strstream uint_str;
+	  uint_str << ui;
+	  a2 = uint_str.str();
+	  uint_str.freeze(0);
 	  break;
       }
       case dods_float64_c: {
@@ -319,11 +329,8 @@ Str::ops(BaseType &b, int op)
 	  b.buf2val((void **)&dp);
 	  strstream flt_str;
 	  flt_str << d;
-#ifdef NEVER
-	  char *flt_str;
-	  sprintf(flt_str, "%lf", d);
-#endif
 	  a2 = flt_str.str();
+	  flt_str.freeze(0);
 	  break;
       }
       case dods_str_c: {

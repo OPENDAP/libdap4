@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Float32.cc,v $
+// Revision 1.2  1996/12/02 18:21:13  jimg
+// Added case for unit32 to ops() member functon.
+//
 // Revision 1.1  1996/08/26 20:17:53  jimg
 // Added.
 //
@@ -20,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.1 1996/08/26 20:17:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.2 1996/12/02 18:21:13 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -131,33 +134,40 @@ Float32::ops(BaseType &b, int op)
     else switch (b.type()) {
       case dods_byte_c:
       case dods_int32_c: {
-	dods_int32 i;
-	dods_int32 *ip = &i;
-	b.buf2val((void **)&ip);
-	a2 = i;
-	break;
+	  dods_int32 i;
+	  dods_int32 *ip = &i;
+	  b.buf2val((void **)&ip);
+	  a2 = i;
+	  break;
+      }
+      case dods_uint32_c: {
+	  dods_uint32 ui;
+	  dods_uint32 *uip = &ui;
+	  b.buf2val((void **)&uip);
+	  a2 = ui;
+	  break;
       }
       case dods_float32_c:
       case dods_float64_c: {
-	double *a2p = &a2;
-	b.buf2val((void **)&a2p);
-	break;
+	  double *a2p = &a2;
+	  b.buf2val((void **)&a2p);
+	  break;
       }
       case dods_str_c: {
-	String s;
-	String *sp = &s;
-	b.buf2val((void **)&sp);
+	  String s;
+	  String *sp = &s;
+	  b.buf2val((void **)&sp);
 
-	char *ptr;
-	const char *cp = (const char *)s;
-	a2 = strtod(cp, &ptr);
+	  char *ptr;
+	  const char *cp = (const char *)s;
+	  a2 = strtod(cp, &ptr);
 
-	if (a2 == 0.0 && cp == ptr) {
-	    cerr << "`" << s << "' is not an float value" << endl;
-	    return false;
-	}
+	  if (a2 == 0.0 && cp == ptr) {
+	      cerr << "`" << s << "' is not an float value" << endl;
+	      return false;
+	  }
 
-	break;
+	  break;
       }
       default:
 	return false;
