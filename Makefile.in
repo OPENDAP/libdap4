@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.24 1995/10/17 16:13:08 jimg Exp $
+# $Id: Makefile.in,v 1.25 1995/10/23 23:18:30 jimg Exp $
 
 @SET_MAKE@
 
@@ -22,7 +22,7 @@ DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = $(DEFS) $(INCS) @CPPFLAGS@
 CXXFLAGS = @CXXFLAGS@
 LDFLAGS = @LDFLAGS@ -L. -LMAP -LStack -LPlex -LVec -L$(DODS_ROOT)/lib
-LFLAGS = -8 -d
+LFLAGS = -8
 YFLAGS = -d
 LIBS = -ldap++ -lerrmsg @LIBS@
 
@@ -69,6 +69,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
+EXPR_GRAM_OBJS = lex.expr.o expr.tab.o
 
 DASHDRS = AttrTable.h DAS.h
 DASSRCS = AttrTable.cc DAS.cc
@@ -78,6 +79,9 @@ DDSHDRS = DDS.h
 DDSSRCS = DDS.cc
 DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) 
 
+EXPRSRCS = 
+EXPROBJS = DDS.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
+
 TYPEHDRS = BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
 	   List.h Array.h Structure.h Sequence.h Function.h Grid.h
 
@@ -85,9 +89,9 @@ TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
 	   util.cc
 
-EXPR_GRAM_OBJS = lex.expr.o expr.tab.o
-
-EXPROBJS = $(EXPR_GRAM_OBJS)
+TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
+	   List.o Array.o Structure.o Sequence.o Function.o Grid.o \
+	   util.o
 
 # These object files are built using source code generated from the GNU
 # libg++ source with `genclass'. They are part of the the DAP library.
@@ -101,10 +105,6 @@ GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h	\
 	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h	\
 	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h       \
 	  Stack/BTXPStack.h
-
-TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
-	   List.o Array.o Structure.o Sequence.o Function.o Grid.o \
-	   util.o
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc\
 	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc\
@@ -130,8 +130,9 @@ dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
 trans-test: libdap++.a $(TESTOBJS) trans-test.o
 	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
 
-expr-test: $(EXPROBJS) expr-test.o expr.tab.h
-	$(CXX) $(LDFLAGS) -o expr-test expr-test.o $(EXPROBJS)
+expr-test: libdap++.a $(EXPROBJS) $(TESTOBJS) expr-test.o expr.tab.h
+	$(CXX) $(LDFLAGS) -o expr-test $(EXPROBJS) $(TESTOBJS) expr-test.o \
+		$(LIBS)
 
 # Build the DAS scanner (a C object module compiled with C++)
 
