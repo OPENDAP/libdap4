@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.28  1996/12/02 23:10:25  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.27  1996/12/02 18:21:16  jimg
 // Added case for unit32 to ops() member functon.
 //
@@ -161,7 +164,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.27 1996/12/02 18:21:16 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.28 1996/12/02 23:10:25 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -284,12 +287,14 @@ Str::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Str::ops(BaseType &b, int op)
+Str::ops(BaseType &b, int op, const String &dataset)
 {
     String a1, a2;
+    int error; 
 
-    if (!read_p()) {
-	cerr << "This value not yet read!" << endl;
+    if (!read_p() && !read(dataset, error)) {
+	assert("This value not read!" && false);
+	cerr << "This value not read!" << endl;
 	return false;
     }
     else {
@@ -297,51 +302,53 @@ Str::ops(BaseType &b, int op)
 	buf2val((void **)&a1p);
     }
 
-    if (!b.read_p()) {
-	cerr << "Arg value not yet read!" << endl;
+    if (!b.read_p() && !read(dataset, error)) {
+	assert("Arg value not read!" && false);
+	cerr << "Arg value not read!" << endl;
 	return false;
     }
-    else switch (b.type()) {
-      case dods_byte_c:
-      case dods_int32_c: {
-	  dods_int32 i;
-	  dods_int32 *ip = &i;
-	  b.buf2val((void **)&ip);
-	  strstream int_str;
-	  int_str << i;
-	  a2 = int_str.str();
-	  int_str.freeze(0);
-	  break;
-      }
-      case dods_uint32_c: {
-	  dods_uint32 ui;
-	  dods_uint32 *uip = &ui;
-	  b.buf2val((void **)&uip);
-	  strstream uint_str;
-	  uint_str << ui;
-	  a2 = uint_str.str();
-	  uint_str.freeze(0);
-	  break;
-      }
-      case dods_float64_c: {
-	  double d;
-	  double *dp = &d;
-	  b.buf2val((void **)&dp);
-	  strstream flt_str;
-	  flt_str << d;
-	  a2 = flt_str.str();
-	  flt_str.freeze(0);
-	  break;
-      }
-      case dods_str_c: {
-	  String *sp = &a2;
-	  b.buf2val((void **)&sp);
-	  break;
-      }
-      default:
-	return false;
-	break;
-    }
+    else 
+	switch (b.type()) {
+	  case dods_byte_c:
+	  case dods_int32_c: {
+	      dods_int32 i;
+	      dods_int32 *ip = &i;
+	      b.buf2val((void **)&ip);
+	      strstream int_str;
+	      int_str << i;
+	      a2 = int_str.str();
+	      int_str.freeze(0);
+	      break;
+	  }
+	  case dods_uint32_c: {
+	      dods_uint32 ui;
+	      dods_uint32 *uip = &ui;
+	      b.buf2val((void **)&uip);
+	      strstream uint_str;
+	      uint_str << ui;
+	      a2 = uint_str.str();
+	      uint_str.freeze(0);
+	      break;
+	  }
+	  case dods_float64_c: {
+	      double d;
+	      double *dp = &d;
+	      b.buf2val((void **)&dp);
+	      strstream flt_str;
+	      flt_str << d;
+	      a2 = flt_str.str();
+	      flt_str.freeze(0);
+	      break;
+	  }
+	  case dods_str_c: {
+	      String *sp = &a2;
+	      b.buf2val((void **)&sp);
+	      break;
+	  }
+	  default:
+	    return false;
+	    break;
+	}
 
     return string_ops(a1, a2, op);
 }

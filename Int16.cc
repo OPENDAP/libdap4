@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Int16.cc,v $
+// Revision 1.2  1996/12/02 23:10:18  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.1  1996/08/26 20:17:47  jimg
 // Added.
 //
@@ -20,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Int16.cc,v 1.1 1996/08/26 20:17:47 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Int16.cc,v 1.2 1996/12/02 23:10:18 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -113,12 +116,14 @@ Int16::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Int16::ops(BaseType &b, int op)
+Int16::ops(BaseType &b, int op, const String &dataset)
 {
     dods_int16 a1, a2;
+    int error; 
 
-    if (!read_p()) {
-	cerr << "This value not yet read!" << endl;
+    if (!read_p() && !read(dataset, &error)) {
+	assert("This value not read!" && false);
+	cerr << "This value not read!" << endl;
 	return false;
     }
     else {
@@ -126,52 +131,54 @@ Int16::ops(BaseType &b, int op)
 	buf2val((void **)&a1p);
     }
 
-    if (!b.read_p()) {
+    if (!b.read_p() && !read(dataset, &error)) {
+	assert("Arg value not read!" && false);
 	cerr << "Arg value not yet read!" << endl;
 	return false;
     }
-    else switch (b.type()) {
-      case dods_byte_c:
-      case dods_int16_c:
-      case dods_uint16_c: {	// Might loose data here! jhrg 8/25/96
-      case dods_int32_c:
-      case dods_uint32_c: 
-	dods_int16 *a2p = &a2;
-	b.buf2val((void **)&a2p);
-	break;
-      }
-      case dods_float64_c: {
-	double d;
-	double *dp = &d;
-	b.buf2val((void **)&dp);
-	a2 = (dods_int16)d;
-	break;
-      }
-      case dods_str_c: {
-	String s;
-	String *sp = &s;
-	b.buf2val((void **)&sp);
+    else 
+	switch (b.type()) {
+	  case dods_byte_c:
+	  case dods_int16_c:
+	  case dods_uint16_c: {	// Might loose data here! jhrg 8/25/96
+	    case dods_int32_c:
+	    case dods_uint32_c: 
+	      dods_int16 *a2p = &a2;
+	      b.buf2val((void **)&a2p);
+	      break;
+	  }
+	  case dods_float64_c: {
+	      double d;
+	      double *dp = &d;
+	      b.buf2val((void **)&dp);
+	      a2 = (dods_int16)d;
+	      break;
+	  }
+	  case dods_str_c: {
+	      String s;
+	      String *sp = &s;
+	      b.buf2val((void **)&sp);
 
-	char *ptr;
-	const char *cp = (const char *)s;
-	long v = strtol(cp, &ptr, 0);
+	      char *ptr;
+	      const char *cp = (const char *)s;
+	      long v = strtol(cp, &ptr, 0);
 
-	if (v == 0 && cp == ptr) {
-	    cerr << "`" << s << "' is not an integer value" << endl;
+	      if (v == 0 && cp == ptr) {
+		  cerr << "`" << s << "' is not an integer value" << endl;
+		  return false;
+	      }
+	      if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+		  cerr << "`" << v << "' is not a integer value" << endl;
+		  return false;
+	      }
+
+	      a2 = v;
+	      break;
+	  }
+	  default:
 	    return false;
+	    break;
 	}
-	if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
-	    cerr << "`" << v << "' is not a integer value" << endl;
-	    return false;
-	}
-
-	a2 = v;
-	break;
-      }
-      default:
-	return false;
-	break;
-    }
 
     return int_ops(a1, a2, op);
 }

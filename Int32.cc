@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.31  1996/12/02 23:10:21  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.30  1996/11/13 19:01:51  jimg
 // Fixed the int32_ops() function so that comparisons with unsigned integers
 // has a better shot at working. Since there are no UInt32 data sets this has
@@ -173,7 +176,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.30 1996/11/13 19:01:51 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.31 1996/12/02 23:10:21 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -264,12 +267,14 @@ Int32::print_val(ostream &os, String space, bool print_decl_p)
 // cast to unsinged.
 
 bool
-Int32::ops(BaseType &b, int op)
+Int32::ops(BaseType &b, int op, const String &dataset)
 {
     dods_int32 a1, a2;
     dods_uint32 ua2;
+    int error; 
 
-    if (!read_p()) {
+    if (!read_p() && !read(dataset, error)) {
+	assert("This value not read!" && false);
 	cerr << "This value not yet read!" << endl;
 	return false;
     }
@@ -278,54 +283,56 @@ Int32::ops(BaseType &b, int op)
 	buf2val((void **)&a1p);
     }
 
-    if (!b.read_p()) {
+    if (!b.read_p() && !read(dataset, error)) {
+	assert("Arg value not read!" && false);
 	cerr << "Arg value not yet read!" << endl;
 	return false;
     }
-    else switch (b.type()) {
-      case dods_byte_c:
-      case dods_int32_c: {
-	dods_int32 *a2p = &a2;
-	b.buf2val((void **)&a2p);
-	break;
-      }
-      case dods_uint32_c: {
-	dods_uint32 *a2p = &ua2;
-	b.buf2val((void **)&a2p);
-	break;
-      }
-      case dods_float64_c: {
-	double d;
-	double *dp = &d;
-	b.buf2val((void **)&dp);
-	a2 = (dods_int32)d;
-	break;
-      }
-      case dods_str_c: {
-	String s;
-	String *sp = &s;
-	b.buf2val((void **)&sp);
+    else 
+	switch (b.type()) {
+	  case dods_byte_c:
+	  case dods_int32_c: {
+	      dods_int32 *a2p = &a2;
+	      b.buf2val((void **)&a2p);
+	      break;
+	  }
+	  case dods_uint32_c: {
+	      dods_uint32 *a2p = &ua2;
+	      b.buf2val((void **)&a2p);
+	      break;
+	  }
+	  case dods_float64_c: {
+	      double d;
+	      double *dp = &d;
+	      b.buf2val((void **)&dp);
+	      a2 = (dods_int32)d;
+	      break;
+	  }
+	  case dods_str_c: {
+	      String s;
+	      String *sp = &s;
+	      b.buf2val((void **)&sp);
 
-	char *ptr;
-	const char *cp = (const char *)s;
-	long v = strtol(cp, &ptr, 0);
+	      char *ptr;
+	      const char *cp = (const char *)s;
+	      long v = strtol(cp, &ptr, 0);
 
-	if (v == 0 && cp == ptr) {
-	    cerr << "`" << s << "' is not an integer value" << endl;
+	      if (v == 0 && cp == ptr) {
+		  cerr << "`" << s << "' is not an integer value" << endl;
+		  return false;
+	      }
+	      if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+		  cerr << "`" << v << "' is not a integer value" << endl;
+		  return false;
+	      }
+
+	      a2 = v;
+	      break;
+	  }
+	  default:
 	    return false;
+	    break;
 	}
-	if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
-	    cerr << "`" << v << "' is not a integer value" << endl;
-	    return false;
-	}
-
-	a2 = v;
-	break;
-      }
-      default:
-	return false;
-	break;
-    }
 
     if (b.type() == dods_uint32_c)
 	return int_ops(a1, ua2, op);

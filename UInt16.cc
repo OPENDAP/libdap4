@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt16.cc,v $
+// Revision 1.4  1996/12/02 23:10:29  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.3  1996/10/18 16:49:55  jimg
 // Changed variable types used for comparison operations from 16 to 32 bit
 // integers.
@@ -27,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt16.cc,v 1.3 1996/10/18 16:49:55 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt16.cc,v 1.4 1996/12/02 23:10:29 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -121,13 +124,15 @@ UInt16::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-UInt16::ops(BaseType &b, int op)
+UInt16::ops(BaseType &b, int op, const String &dataset)
 {
     dods_uint32 a1, ua2;	// Use 32 bit numbers internally!
     dods_int32 a2;
+    int error; 
 
-    if (!read_p()) {
-	cerr << "This value not yet read!" << endl;
+    if (!read_p() && !read(dataset, &error)) {
+	assert("This value not read!" && false);
+	cerr << "This value not read!" << endl;
 	return false;
     }
     else {
@@ -135,8 +140,9 @@ UInt16::ops(BaseType &b, int op)
 	buf2val((void **)&a1p);
     }
 
-    if (!b.read_p()) {
-	cerr << "Arg value not yet read!" << endl;
+    if (!b.read_p() && !read(dataset, &error)) {
+	assert("Arg value not read!" && false);
+	cerr << "Arg value not read!" << endl;
 	return false;
     }
     else switch (b.type()) {

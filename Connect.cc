@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.42  1996/12/02 23:10:10  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.41  1996/11/25 03:37:34  jimg
 // Added USE_SEM control macro - since asynchronous connects are massively
 // broken the semaphores are not used.
@@ -248,7 +251,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.41 1996/11/25 03:37:34 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.42 1996/12/02 23:10:10 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -663,7 +666,7 @@ get_encoding(String value)
 // This function is registered to handle unknown MIME headers
 
 int 
-description_handler(HTRequest *request, HTResponse *response, 
+description_handler(HTRequest *request, HTResponse */*response*/, 
 		    const char *token, const char *val)
 {
     String field = token, value = val;
@@ -684,8 +687,8 @@ description_handler(HTRequest *request, HTResponse *response,
 }
 
 int 
-encoding_handler(HTRequest *request, HTResponse *response, const char *token,
-		 const char *val)
+encoding_handler(HTRequest *request, HTResponse */*response*/, 
+		 const char *token, const char *val)
 {
     String field = token, value = val;
     field.downcase();

@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.30  1996/12/02 23:10:15  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.29  1996/12/02 18:21:14  jimg
 // Added case for unit32 to ops() member functon.
 //
@@ -176,7 +179,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.29 1996/12/02 18:21:14 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.30 1996/12/02 23:10:15 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -267,12 +270,14 @@ Float64::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Float64::ops(BaseType &b, int op)
+Float64::ops(BaseType &b, int op, const String &dataset)
 {
     double a1, a2;
+    int error; 
 
-    if (!read_p()) {
-	cerr << "This value not yet read!" << endl;
+    if (!read_p() && !read(dataset, error)) {
+	assert("This value not read!" && false);
+	cerr << "This value not read!" << endl;
 	return false;
     }
     else {
@@ -280,51 +285,53 @@ Float64::ops(BaseType &b, int op)
 	buf2val((void **)&a1p);
     }
 
-    if (!b.read_p()) {
-	cerr << "Arg value not yet read!" << endl;
+    if (!b.read_p() && !read(dataset, error)) {
+	assert("Arg value not read!" && false);
+	cerr << "Arg value not read!" << endl;
 	return false;
     }
-    else switch (b.type()) {
-      case dods_byte_c:
-      case dods_int32_c: {
-	  dods_int32 i;
-	  dods_int32 *ip = &i;
-	  b.buf2val((void **)&ip);
-	  a2 = i;
-	  break;
-      }
-      case dods_uint32_c: {
-	  dods_uint32 ui;
-	  dods_uint32 *uip = &ui;
-	  b.buf2val((void **)&uip);
-	  a2 = ui;
-	  break;
-      }
-      case dods_float64_c: {
-	  double *a2p = &a2;
-	  b.buf2val((void **)&a2p);
-	  break;
-      }
-      case dods_str_c: {
-	  String s;
-	  String *sp = &s;
-	  b.buf2val((void **)&sp);
-
-	  char *ptr;
-	  const char *cp = (const char *)s;
-	  a2 = strtod(cp, &ptr);
-
-	  if (a2 == 0.0 && cp == ptr) {
-	      cerr << "`" << s << "' is not an float value" << endl;
-	      return false;
+    else 
+	switch (b.type()) {
+	  case dods_byte_c:
+	  case dods_int32_c: {
+	      dods_int32 i;
+	      dods_int32 *ip = &i;
+	      b.buf2val((void **)&ip);
+	      a2 = i;
+	      break;
 	  }
+	  case dods_uint32_c: {
+	      dods_uint32 ui;
+	      dods_uint32 *uip = &ui;
+	      b.buf2val((void **)&uip);
+	      a2 = ui;
+	      break;
+	  }
+	  case dods_float64_c: {
+	      double *a2p = &a2;
+	      b.buf2val((void **)&a2p);
+	      break;
+	  }
+	  case dods_str_c: {
+	      String s;
+	      String *sp = &s;
+	      b.buf2val((void **)&sp);
 
-	  break;
-      }
-      default:
-	return false;
-	break;
-    }
+	      char *ptr;
+	      const char *cp = (const char *)s;
+	      a2 = strtod(cp, &ptr);
+
+	      if (a2 == 0.0 && cp == ptr) {
+		  cerr << "`" << s << "' is not an float value" << endl;
+		  return false;
+	      }
+
+	      break;
+	  }
+	  default:
+	    return false;
+	    break;
+	}
 
     return double_ops(a1, a2, op);
 }

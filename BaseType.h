@@ -16,9 +16,12 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.31  1996/11/20 00:58:05  jimg
-/* Ripped out old code.
+/* Revision 1.32  1996/12/02 23:10:04  jimg
+/* Added dataset as a parameter to the ops member function.
 /*
+ * Revision 1.31  1996/11/20 00:58:05  jimg
+ * Ripped out old code.
+ *
  * Revision 1.30  1996/09/19 16:14:26  jimg
  * Fixed syntax errors in the enum `Type'.
  *
@@ -363,7 +366,7 @@ public:
     // evaluator in the DDS class. Each class that wants to be able to
     // evaluate relational expressions must overload this function. The
     // implementation in BaseType returns false and prints an error message.
-    virtual bool ops(BaseType &b, int op);
+    virtual bool ops(BaseType &b, int op, const String &dataset);
 };
 
 typedef BaseType * BaseTypePtr;

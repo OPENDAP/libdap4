@@ -11,6 +11,9 @@
 // jhrg 9/7/94
 
 // $Log: Int16.h,v $
+// Revision 1.2  1996/12/02 23:10:20  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.1  1996/08/26 20:17:52  jimg
 // Added.
 //
@@ -52,7 +55,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType &b, int op);
+    virtual bool ops(BaseType &b, int op, const String &dataset);
 };
 
 #endif

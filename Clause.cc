@@ -8,6 +8,9 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.4  1996/12/02 23:10:08  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.3  1996/11/27 22:40:16  jimg
 // Added DDS as third parameter to function in the CE evaluator
 //
@@ -95,7 +98,8 @@ Clause::value(const String &dataset, DDS &dds)
 	// FALSE and return TRUE for the first TRUE subclause.
 	bool result = false;
 	for (Pix p = args->first(); p && !result; args->next(p))
-	    result = result || btp->ops(*(*args)(p)->bvalue(dataset, dds), op);
+	    result = result || btp->ops(*(*args)(p)->bvalue(dataset, dds),
+					op, dataset);
 
 	return result;
     }

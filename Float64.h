@@ -11,13 +11,16 @@
 // jhrg 9/7/94
 
 /* $Log: Float64.h,v $
-/* Revision 1.17  1996/06/04 21:33:26  jimg
-/* Multiple connections are now possible. It is now possible to open several
-/* URLs at the same time and read from them in a round-robin fashion. To do
-/* this I added data source and sink parameters to the serialize and
-/* deserialize mfuncs. Connect was also modified so that it manages the data
-/* source `object' (which is just an XDR pointer).
+/* Revision 1.18  1996/12/02 23:10:17  jimg
+/* Added dataset as a parameter to the ops member function.
 /*
+ * Revision 1.17  1996/06/04 21:33:26  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
  * Revision 1.16  1996/05/31 23:29:41  jimg
  * Updated copyright notice.
  *
@@ -157,7 +160,7 @@ public:
     virtual void print_val(ostream &os, String space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType &b, int op);
+    virtual bool ops(BaseType &b, int op, const String &dataset);
 };
 
 typedef Float64 * Float64Ptr;

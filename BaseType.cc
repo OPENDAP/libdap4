@@ -10,6 +10,9 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.28  1996/12/02 23:10:02  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.27  1996/10/28 23:43:55  jimg
 // Added UInt32 to type names returned by type_name() member function.
 //
@@ -153,19 +156,10 @@
 #include "config_dap.h"
 
 #include <stdio.h>		// for stdin and stdout
+#include <assert.h>
 
 #include "BaseType.h"
 #include "util.h"
-
-// Initial definition of the protected static members _xdrin and
-// _xdrout. By default they use the stdin and stdout streams (resp).
-
-#if 0
-XDR * BaseType::_xdrin = new_xdrstdio(stdin, XDR_DECODE);
-XDR * BaseType::_xdrout = new_xdrstdio(stdout, XDR_ENCODE);
-FILE * BaseType::_out = stdout;
-FILE * BaseType::_in = stdin;
-#endif
 
 // Private copy mfunc
 
@@ -438,8 +432,10 @@ BaseType::expunge()
 // error message and return False.
 
 bool 
-BaseType::ops(BaseType &, int)
+BaseType::ops(BaseType &, int, const String &)
 {
+    assert("Unimplemented operator" && false);
+
     cerr << "Unimplemented operator" << endl;
 
     return false;

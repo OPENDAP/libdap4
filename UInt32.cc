@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.cc,v $
+// Revision 1.6  1996/12/02 23:10:30  jimg
+// Added dataset as a parameter to the ops member function.
+//
 // Revision 1.5  1996/11/13 19:06:01  jimg
 // Fixed the ops() function so that comparisons between UInt32 and Int32, etc.
 // will work correctly. Untested.
@@ -36,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.5 1996/11/13 19:06:01 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.6 1996/12/02 23:10:30 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -127,12 +130,14 @@ UInt32::print_val(ostream &os, String space, bool print_decl_p)
 // Evaluate OP with both operands cast to unsigned.
 
 bool
-UInt32::ops(BaseType &b, int op)
+UInt32::ops(BaseType &b, int op, const String &dataset)
 {
     dods_uint32 a1, ua2;
+    int error; 
 
-    if (!read_p()) {
-	cerr << "This value not yet read!" << endl;
+    if (!read_p() && !read(dataset, error)) {
+	assert("This value not read!" && false);
+	cerr << "This value not read!" << endl;
 	return false;
     }
     else {
@@ -140,8 +145,9 @@ UInt32::ops(BaseType &b, int op)
 	buf2val((void **)&a1p);
     }
 
-    if (!b.read_p()) {
-	cerr << "Arg value not yet read!" << endl;
+    if (!b.read_p() && !read(dataset, error)) {
+	assert("Arg value not read!" && false);
+	cerr << "Arg value not read!" << endl;
 	return false;
     }
     else switch (b.type()) {
