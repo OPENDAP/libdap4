@@ -8,6 +8,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.53  1997/03/23 19:39:21  jimg
+// Added temporary fix for decompression bug. When decompressing `zombie'
+// processes were created which would fill the system's process table. The fix
+// explicitly catches the exit of child processes. This code can be removed
+// when/if we switch to version 5.1 of the WWW library.
+//
 // Revision 1.52  1997/03/05 08:24:33  jimg
 // Fixed the logfile bug; when linking with ld or cc static objects are not
 // initialized. The _logfile member was a static global object and caused core
@@ -294,7 +300,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.52 1997/03/05 08:24:33 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.53 1997/03/23 19:39:21 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -578,7 +584,7 @@ static HTErrorMessage HTErrors[HTERR_ELEMENTS] = {HTERR_ENGLISH_INITIALIZER};
 
 BOOL 
 dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
-		  int /* msgnum */, CONST char * /* dfault */, void * input,
+		  int /* msgnum */, const char * /* dfault */, void * input,
 		  HTAlertPar * /* reply */)
 {
     HTList *cur = (HTList *) input;
@@ -996,6 +1002,7 @@ Connect::Connect()
 
 Connect::Connect(String name, bool www_verbose_errors = false)
 {
+    _comp_childpid = 0;
     _gui = new Gui;
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
@@ -1110,160 +1117,54 @@ Connect::operator=(const Connect &rhs)
 // async operation was actually synchronous.
 
 bool
-Connect::fetch_url(String &url, bool async = false)
+Connect::fetch_url(String &url, bool)
 {
     close_output();
     _encoding = unknown_enc;
     _type = unknown_type;
-
-    // HACK, Fix the asynchronous + compression bug and re-enable
-    // asynchronous connects.
-    async = false;
-    
-    // NB: I've completely removed the async stuff for now. 2/18/97 jhrg
-#if 0
-    if (!async) {
-#endif
-	PERF(cerr << "Entering fetch_url() [synchronous]" << endl);
-
-	char *c = tempnam(NULL, DODS_PREFIX);
-	FILE *stream = fopen(c, "w+"); // Open truncated for update.
-	if (!keep_temps)
-	    unlink(c);		// When _OUTPUT is closed file is deleted.
-	else
-	    cerr << "Temporary file for Data document: " << c << endl;
-
-	if (!read_url(url, stream))
+   
+    /* NB: I've completely removed the async stuff for now. 2/18/97 jhrg */
+  
+    char *c = tempnam(NULL, DODS_PREFIX);
+    FILE *stream = fopen(c, "w+"); // Open truncated for update.
+    if (!keep_temps)
+	unlink(c);		// When _OUTPUT is closed file is deleted.
+    else
+	cerr << "Temporary file for Data document: " << c << endl;
+  
+    if (!read_url(url, stream))
+	return false;
+   
+    // Now rewind the stream so that we can read from the temp file
+    if (fseek(stream, 0L, 0) < 0) {
+	cerr << "Could not rewind stream" << endl;
+	return false;
+    }
+   
+    if (encoding() == x_gzip) {
+	DBG(cerr << "encoding is gzip!" << endl);
+	if (_comp_childpid != 0) { 
+	    int pid;
+	    while ((pid = waitpid(_comp_childpid, 0, 0)) > 0)
+		DBG(cerr << "fetch_url:pid: " << pid << endl);
+	    _comp_childpid = 0;
+	}
+	_output = decompressor(stream, _comp_childpid);
+	if (!_output) {
+	    DBG(cerr << "decompressor failure!" << endl);
+	    _error.error_code(unknown_error);
+	    _error.error_message(bad_decomp_msg);
 	    return false;
-
-	// Now rewind the stream so that we can read from the temp file
-	if (fseek(stream, 0L, 0) < 0) {
-	    cerr << "Could not rewind stream" << endl;
-	    return false;
 	}
-
-	if (encoding() == x_gzip) {
-	    DBG(cerr << "encoding is gzip!" << endl);
-	    int childpid;
-	    _output = decompressor(stream, childpid);
-	    if (!_output) {
-		DBG(cerr << "decompressor failure!" << endl);
-		_error.error_code(unknown_error);
-		_error.error_message(bad_decomp_msg);
-		return false;
-	    }
-	}
-	else {
-	    DBG(cerr << "encoding is plain!" << endl);
-	    _output = stream;
-	}
-
-	PERF(cerr << "Leaving fetch_url() [synchronous]" << endl);
-
-	return true;
-#if 0
     }
     else {
-	PERF(cerr << "Entering fetch_url() [async]" << endl);
-
-	int pid, data[2];
-#if USE_SEM
-	int semaphore = semget(SEM_KEY, 1, IPC_CREAT | SEM_PERMS);
-	if (semaphore < 0) {
-	    cerr << "Could not create semaphore." << endl;
-	    return false;
-	}
-	union semun semun;
-	semun.val = 1;		// Set to 1, wait for child to set to 0.
-	if (semctl(semaphore, 0, SETVAL, semun) < 0) {
-	    cerr << "Could not initialize semaphore." << endl;
-	    return false;
-	}
-#endif
-
-	if (pipe(data) < 0) {
-	    cerr << "Could not create IPC channel for receiver process" 
-		 << endl;
-	    return false;
-	}
-    
-	if ((pid = fork()) < 0) {
-	    cerr << "Could not fork to create receiver process" << endl;
-	    return false;
-	}
-
-	// The parent process closes the write end of the Pipe, and creates a
-	// FILE * using fdopen(). The FILE * is used by the calling program to
-	// access the read end of the Pipe.
-
-	if (pid > 0) {
-	    close(data[1]);
-	    FILE *stream = fdopen(data[0], "r");
-	    if (!stream) {
-		cerr << "Parent process could not open IPC channel for reading"
-		     << endl;
-		return false;
-	    }
-
-#if USE_SEM
-	    // Semaphore wait for completion of read_url(...) in child.
-	    struct sembuf sembuf[1] = {{0, 0, SEM_UNDO}};
-	    if (semop(semaphore, sembuf, 1) < 0) {
-		cerr << "Could not wait for child to read URL." << endl;
-		return false;
-	    }
-#endif
-
-	    if (encoding() == x_gzip) {
-		_output = decompressor(stream);
-		if (!_output)
-		    return false;
-	    }
-	    else {
-		// Since we are reading asynchronously, do not rewind stream.
-		_output = stream;
-	    }
-
-#if USE_SEM
-	    // Remove the semaphore.
-	    // SEMUN is q dummy parameter in this call.
-	    if (semctl(semaphore, 0, IPC_RMID, semun) < 0) {
-		cerr << "Could not initialize semaphore." << endl;
-		return false;
-	    }
-#endif
-	    PERF(cerr << "Leaving fetch_url() [async, parent]" << endl);
-	    
-	    return true;
-	}
-	else {
-	    close(data[0]);
-	    FILE *stream = fdopen(data[1], "w");
-	    if (!stream)  {
-		cerr << "Child process could not open IPC channel" << endl;
-		_exit(127);
-	    }
-
-	    bool status = read_url(url, stream);
-	    if (!status) {
-		cerr << "Child process could not read data from the URL"
-		     << endl;
-		_exit(127);
-	    }
-
-#if USE_SEM
-	    // Set the semaphore so that the parent will stop blocking
-	    struct sembuf sembuf[1] = {{0, -1, SEM_UNDO}};
-	    if (semop(semaphore, sembuf, 1) < 0) {
-		cerr << "Could not decrement semaphore in child." << endl;
-		return false;
-	    }
-#endif
-
-	    exit(0);		// successful completion
-	}
+	DBG(cerr << "encoding is plain!" << endl);
+	_output = stream;
     }
-#endif
+   
+    PERF(cerr << "Leaving fetch_url() [synchronous]" << endl);
+   
+    return true;
 }
 
 // Remove the duplication of _connect and subsequent close(). This would hav
