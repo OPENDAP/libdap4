@@ -10,6 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.13  1997/06/05 22:51:25  jimg
+// Changed so that compression is not used.
+//
 // Revision 1.12  1996/08/13 18:55:20  jimg
 // Added __unused__ to definition of char rcsid[].
 // Uses the parser_arg object to communicate with the parser.
@@ -68,7 +71,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.12 1996/08/13 18:55:20 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.13 1997/06/05 22:51:25 jimg Exp $"};
 
 #include <stdio.h>
 #include <errno.h>
@@ -567,9 +570,6 @@ constrained_trans(const String &dds_name, const String &constraint)
 	return false;
     }
 
-    // Simulate Connect::request_dds() at the begining of a virtual connection
-    DDS client = server;
-
     // If the CE was not passed in, read it from the command line.
     String ce;
     if (constraint == "") {
@@ -587,7 +587,7 @@ constrained_trans(const String &dds_name, const String &constraint)
 
     // send the variable given the constraint (dataset is ignored by the Test
     // classes); TRUE flushes the I/O channel.
-    if (!server.send("dummy", ce, pout)) {
+    if (!server.send("dummy", ce, pout, false)) {
 	cerr << "Could not send the variable" << endl;
 	return false;
     }
