@@ -5,12 +5,16 @@
   Modified: Added the -s (silent) option to suppress diagnostic messages.
 */
 
-/* $Log: deflate.c,v $
-/* Revision 1.1  1998/02/11 02:37:23  jimg
-/* Added to DAP.
-/* */
+/* 
+   $Log: deflate.c,v $
+   Revision 1.2  1998/02/11 02:39:44  jimg
+   Added TRUE and FALSE definitions.
 
-const char *rcsid={"$Id: deflate.c,v 1.1 1998/02/11 02:37:23 jimg Exp $"};
+   Revision 1.1  1998/02/11 02:37:23  jimg
+   Added to DAP.
+*/
+
+const char *rcsid={"$Id: deflate.c,v 1.2 1998/02/11 02:39:44 jimg Exp $"};
 
 #include "stdlib.h"
 #include "stdio.h"
@@ -23,6 +27,10 @@ z_stream z;
 
 #define MAX(a,b) ((a) >= (b) ? (a) : (b))
 #define MIN(a,b) ((a) <= (b) ? (a) : (b))
+#ifndef TRUE
+#define TRUE (1)
+#define FALSE (0)
+#endif
 
 char *input_buffer 	= NULL;
 char *output_buffer 	= NULL;
