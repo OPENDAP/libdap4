@@ -33,11 +33,16 @@
   OF THIS SOFTWARE.
 */
 
-/*
-  Test the DDS scanner, parser and DDS class.
+// Test the DDS scanner, parser and DDS class.
+//
+// jhrg 8/29/94
 
-  jhrg 8/29/94
-*/
+// $Log: dds-test.cc,v $
+// Revision 1.9  1995/10/23 22:56:32  jimg
+// Added Log and RCSID.
+//
+
+static char rcsid[]= {"$Id: dds-test.cc,v 1.9 1995/10/23 22:56:32 jimg Exp $"};
 
 #include <iostream.h>
 #include <GetOpt.h>
