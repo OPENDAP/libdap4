@@ -38,6 +38,10 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.24  1996/05/30 17:17:14  jimg
+// Added read_p and send_p to the set of members copied by _duplicate(). From
+// Reza.
+//
 // Revision 1.23  1996/05/14 15:38:14  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -183,6 +187,8 @@ BaseType::_duplicate(const BaseType &bt)
 {
     _name = bt._name;
     _type = bt._type;
+    _read_p = bt._read_p;	// added, reza
+    _send_p = bt._send_p;	// added, reza
     _xdr_coder = bt._xdr_coder;	// just copy this function pointer
 }
 
