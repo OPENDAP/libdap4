@@ -1,3 +1,39 @@
+2001-01-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-3. The next merge should use -j
+	release-3-2-3 -j release-3-2.
+
+	* Tagged release-3-2-3
+
+2000-12-06  James Gallagher  <jimg@dcz.dods.org>
+
+	* There was an old problem with libwww which I patched in June or
+	July which fixed its caching of compressed responses. This patch
+	has not made it into the regular distribution, so when I upgraded
+	the patch was lost. I've re-applied the patch to the code in
+	src/packages/libwww. This, together with the .dodsrc bug fixed
+	below, fixes reported problems with the caching system (on unix at
+	least, I don't have any information about the problems on win32).
+
+	* Fixed .dodsrc file reading. Comments at the top of the file
+	caused the reader to stop processing the file and thus none of the
+	parameter values were being read.
+
+2000-12-04  James Gallagher  <jimg@dcz.dods.org>
+
+	* Note that the attribute table tests added are both unit tests
+	(look at the unit_tests target in the Makefile) and dejaGNU-type
+	tests. Take a look at AttrTableTest.cc to see how unit tests are
+	written for a class.
+
+2000-11-29  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed problems with attribute aliases. Added unit tests for
+	AttrTable. DAS is now a child of AttrTable, so the AttrTable
+	methods can be used at any level of the DAS object. The DAS
+	methods still work, but they are now implemented using AttrTable
+	methods. 
+
 2000-09-21  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged Jose Garcia's exception handling code. 
@@ -824,9 +860,9 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.60 2000/09/22 03:05:53 jimg Exp $
+$Id: ChangeLog,v 1.61 2001/01/26 19:19:14 jimg Exp $
 
 <<<<<<< ChangeLog
 =======
-$Id: ChangeLog,v 1.60 2000/09/22 03:05:53 jimg Exp $
+$Id: ChangeLog,v 1.61 2001/01/26 19:19:14 jimg Exp $
 >>>>>>> 1.42.2.16
