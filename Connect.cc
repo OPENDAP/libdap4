@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.44  1997/01/28 17:15:19  jimg
+// Wrapped the generic header_handler() in DBG() so that it is only used
+// while debugging.
+//
 // Revision 1.43  1996/12/18 19:17:20  jimg
 // Removed the DODS_PERF define.
 //
@@ -254,7 +258,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.43 1996/12/18 19:17:20 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.44 1997/01/28 17:15:19 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -709,6 +713,10 @@ encoding_handler(HTRequest *request, HTResponse */*response*/,
     return HT_OK;
 }
 
+// Use this for debugging only since various servers seem to add headers
+// (even though the `NPH' mechanism precludes that ...??). This is especially
+// true for error returns.
+
 int 
 header_handler(HTRequest *, HTResponse *, const char *token, const char *val)
 {
@@ -763,7 +771,8 @@ Connect::www_lib_init()
     // complicated). jhrg 11/20/96
     HTHeader_addParser("content-description", NO, description_handler);
     HTHeader_addParser("content-encoding", NO, encoding_handler);
-    HTHeader_addRegexParser("*", NO, header_handler);
+
+    DBG(HTHeader_addRegexParser("*", NO, header_handler));
 }
 
 // Before calling this mfunc memory for the timeval struct must be allocated.
