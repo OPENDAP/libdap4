@@ -11,6 +11,10 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.13  1996/08/13 18:39:25  jimg
+// Added __unused__ to definition of char rcsid[].
+// Fixed int -vs- unsigned int discrepancies.
+//
 // Revision 1.12  1996/06/04 21:33:50  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -67,7 +71,9 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.12 1996/06/04 21:33:50 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.13 1996/08/13 18:39:25 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -221,7 +227,7 @@ Vector::width()
 
 // Returns: the number of elements in the vector. 
 
-unsigned int
+int
 Vector::length()
 {
     return _length;
@@ -450,12 +456,12 @@ Vector::val2buf(void *val, bool reuse)
 
       case dods_str_c:
       case dods_url_c: {
-	unsigned int elem_wid = _var->width();
-	unsigned int len = length();
+	unsigned elem_wid = _var->width();
+	unsigned len = length();
 
 	vec_resize(len);
 
- 	for (int i = 0; i < len; ++i) {
+ 	for (unsigned i = 0; i < len; ++i) {
 	    _vec[i] = _var->ptr_duplicate(); //changed, reza
 	    _vec[i]->val2buf(val + i * elem_wid, reuse);
  	}
