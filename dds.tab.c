@@ -41,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.26 2000/09/22 02:17:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.27 2000/09/22 02:52:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1381,7 +1381,12 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.26  2000/09/22 02:17:22  jimg
+ * Revision 1.27  2000/09/22 02:52:58  jimg
+ * Fixes to the tests to recognize some of the new error messages. Also,
+ * the test drivers were modified to catch the exceptions now thrown by
+ * some of the parsers.
+ *
+ * Revision 1.33  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and
  * wrapped headers included in other headers in those guard symbols (to cut

@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.20 2000/09/22 02:17:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.21 2000/09/22 02:52:58 jimg Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
@@ -23,6 +23,7 @@ static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.20 2000/09/22 02:17:22 jim
 #include "Int32.h"
 #include "DDS.h"
 #include "util.h"
+#include "Error.h"
 
 #ifdef WIN32
 using std::cerr;
@@ -94,21 +95,26 @@ main(int argc, char *argv[])
 	exit(1);
     }
 
-    if (scanner_test) {
+    try {
+      if (scanner_test) {
 	test_scanner();
-    }
+      }
 
-    if (parser_test) {
+      if (parser_test) {
 	test_parser();
-    }
+      }
 
-    if (class_test) {
+      if (class_test) {
 	test_class();
+      }
+    }
+    catch (Error &e) {
+      e.display_message();
     }
 
 #ifdef WIN32
-	exit(0); //  DejaGnu/Cygwin based test suite requires this.
-	return;  //  Visual C++ requests this.
+    exit(0); //  DejaGnu/Cygwin based test suite requires this.
+    return;  //  Visual C++ requests this.
 #endif
 }
 
@@ -289,6 +295,11 @@ test_class(void)
 }
 
 // $Log: dds-test.cc,v $
+// Revision 1.21  2000/09/22 02:52:58  jimg
+// Fixes to the tests to recognize some of the new error messages. Also,
+// the test drivers were modified to catch the exceptions now thrown by
+// some of the parsers.
+//
 // Revision 1.20  2000/09/22 02:17:22  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -5,6 +5,11 @@
 # jhrg
 #
 # $Log: test.l.exp,v $
+# Revision 1.5  2000/09/22 02:53:00  jimg
+# Fixes to the tests to recognize some of the new error messages. Also,
+# the test drivers were modified to catch the exceptions now thrown by
+# some of the parsers.
+#
 # Revision 1.4  2000/06/16 18:15:02  jimg
 # Merged with 3.1.7
 #
@@ -40,6 +45,7 @@ set test_equation {g.val\[0:1\]\[0:1\]\[0:1\]}
 # exactly.
 
 set test_out "The complete DDS:
+Status from parser: 1
 Dataset {
     Int32 i\\\[20\\\];
     Int32 j;
@@ -53,6 +59,7 @@ Dataset {
         Float64 height\\\[20\\\];
     } g;
 } test1;
+Status from parser: 1
 The data:
 Float64 val\\\[length = 2\\\]\\\[width = 2\\\]\\\[height = 2\\\] = {{{99.999, 99.999},{99.999, 99.999}},{{99.999, 99.999},{99.999, 99.999}}};"
 

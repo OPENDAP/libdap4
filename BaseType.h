@@ -401,20 +401,23 @@ public:
 	client and server communicate their data with #serialize()# and
 	#deserialize()#.
 
-	This function is not implemented for the BaseType class, nor
+	This method is not implemented for the BaseType class, nor
 	for its children.  However, it should be implemented for the
 	specialized children of those classes.  For example, it is not
 	implemented for the Float64 class, but does exist for the
 	NCFloat64 class, specialized to read data from local netCDF
 	files. 
  
+	This method should be implemented to throw Error when it encounters a
+	problem. 
+
 	For an example of use, see the netCDF library classes. The
 	netCDF library is part of the DODS source distribution, and can
 	be found under #$(DODS_ROOT)/src/nc-dods#.
 
-	Note that for some sub-classes, such as Array, the #read()#
-	function must explicitly take into account constraint
-	information stored with the class data.
+	Some sub-classes, such as Array, the #read()# function must
+	explicitly take into account constraint information stored with the
+	class data.
 
 	@memo Reads the data into a local buffer. 
 
@@ -426,12 +429,6 @@ public:
 
 	@param dataset A string naming the dataset from which the data is to
 	be read. The meaning of this string will vary among data APIs.
-
-	@param error An integer indicating a returned error condition. The
-	exact meaning of this integer will vary among data APIs. However, for
-	all APIs, a return of 0 means no error was found (although there may
-	have been an EOF). An {\it error} returned greater than zero means an
-	error occurred.
 
 	@see BaseType */
     virtual bool read(const string &dataset) = 0;
@@ -697,6 +694,11 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.60  2000/09/22 02:52:58  jimg
+ * Fixes to the tests to recognize some of the new error messages. Also,
+ * the test drivers were modified to catch the exceptions now thrown by
+ * some of the parsers.
+ *
  * Revision 1.59  2000/09/22 02:17:18  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

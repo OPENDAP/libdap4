@@ -2,6 +2,11 @@
 # jhrg
 #
 # $Log: test.13.exp,v $
+# Revision 1.7  2000/09/22 02:52:59  jimg
+# Fixes to the tests to recognize some of the new error messages. Also,
+# the test drivers were modified to catch the exceptions now thrown by
+# some of the parsers.
+#
 # Revision 1.6  2000/06/16 18:15:01  jimg
 # Merged with 3.1.7
 #
@@ -39,16 +44,11 @@ set test_name test.13
 # exactly.
 
 set test_out "Status from parser: 0
-DDS failed semantic check
-DDS failed full semantic check
-Dataset {
-    Int32 i;
-} ;
+Error parsing the text on line 5 at or near: 10
 In the dataset descriptor object:
 Expected an array subscript.
 
-A dataset must have a name
-A dataset must have a name"
+"
 
 dds-test_start p $srcdir/$test_name
 
