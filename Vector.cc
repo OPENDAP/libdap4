@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.49 2004/07/07 21:08:48 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.50 2004/09/16 15:19:42 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -670,14 +670,18 @@ Vector::val2buf(void *val, bool reuse)
  
 /** Copies data from the Vector buffer.  This function assumes that
     <i>val</i> points to an array large enough to hold N instances of
-    the `C' representation of the element type.  In the case of a
-    Vector containing compound elements, this function assumes that
-    <i>val</i> points to an array large enough to hold N instances of
-    the DODS class used to represent that type.
+    the `C' representation of the \e numeric element type. 
 
-    Use this function only with Vectors containing simple DODS
-    types.  See <tt>set_vec()</tt> to access members of Vectors containing
+    In the case of a Vector of Str objects, this method will return an array
+    of pointers to C++ std::string objects.
+
+    @note Use this function only with Vectors containing simple DODS
+    types. See <tt>set_vec()</tt> to access members of Vectors containing
     compound types.
+
+    @note If using this to read a vector/array of Str objects, make sure to
+    pass in a vector of pointers, each of which is initialized to null.
+    Failure to do this will result in unpredictable behavior!
 
     @return The number of bytes used to store the array.
     @param val A pointer to a pointer to the memory into which the
@@ -716,8 +720,15 @@ Vector::buf2val(void **val)
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 
+ 	if (!*val) {
+	    *val = new (string *)[len];
+	    memcpy(*val, 0, len*elem_wid);
+	}
+
+#if 0
  	if (!*val)
 	    *val = new string [len]; 
+#endif
 
 	for (unsigned i = 0; i < len; ++i) {
 	    void *val_elem = (char *)*val + i * elem_wid;
@@ -753,7 +764,9 @@ Vector::buf2val(void **val)
 
     @brief Sets element <i>i</i> to value <i>val</i>.
     @return void
-    was a type mismatch.
+    @exception InternalErr Thrown if \e i is out of range, \e val is null or
+    there was a type mismatch between the BaseType referenced by \e val and
+    the \e ith element of this Vector.
     @param i The index of the element to be changed.
     @param val A pointer to the value to be inserted into the
     array.  
@@ -892,6 +905,9 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.50  2004/09/16 15:19:42  jimg
+// Corrected the commets for set_vec() and buf2val().
+//
 // Revision 1.49  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //
