@@ -38,6 +38,9 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.21  1996/04/04 19:18:32  jimg
+// Merged changes from version 1.1.1.
+//
 // Revision 1.20  1996/03/05 18:45:29  jimg
 // Added ops member function.
 //
@@ -57,6 +60,13 @@
 // Added type_name() member function so that it is simple to get the string
 // representation of a variable's type.
 // Changed the name of read_val/store_val to buf2val/val2buf.
+//
+// Revision 1.15.2.2  1996/03/01 00:06:07  jimg
+// Removed bad attempt at multiple connect implementation.
+//
+// Revision 1.15.2.1  1996/02/23 21:37:21  jimg
+// Updated for new configure.in.
+// Fixed problems on Solaris 2.4.
 //
 // Revision 1.15  1995/07/09  21:28:52  jimg
 // Added copyright notice.
@@ -256,29 +266,29 @@ String
 BaseType::type_name() const
 {
     switch(_type) {
-      case null_t:
+      case d_null_t:
 	return String("Null");
-      case byte_t:
+      case d_byte_t:
 	return String("Byte");
-      case int32_t:
+      case d_int32_t:
 	return String("Int32");
-      case float64_t:
+      case d_float64_t:
 	return String("Float64");
-      case str_t:
+      case d_str_t:
 	return String("String");
-      case url_t:
+      case d_url_t:
 	return String("Url");
-      case array_t:
+      case d_array_t:
 	return String("Array");
-      case list_t:
+      case d_list_t:
 	return String("List");
-      case structure_t:
+      case d_structure_t:
 	return String("Structure");
-      case sequence_t:
+      case d_sequence_t:
 	return String("Sequence");
-      case function_t:
+      case d_function_t:
 	return String("Function");
-      case grid_t:
+      case d_grid_t:
 	return String("Grid");
       default:
 	cerr << "BaseType::type_name: Undefined type" << endl;
