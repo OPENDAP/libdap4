@@ -5,12 +5,16 @@
 // jhrg 9/7/94
 
 /* $Log: Str.h,v $
-/* Revision 1.5  1994/11/29 20:16:33  jimg
-/* Added mfunc for data transmission.
-/* Uses special xdr function for serialization and xdr_coder.
-/* Removed `type' parameter from ctor.
-/* Added FILE *in and *out to ctor parameter list.
+/* Revision 1.6  1994/12/14 19:18:02  jimg
+/* Added mfunc len(). Replaced size() with a mfunc that returns the size of
+/* a pointer to a string (this simplifies Structure, ...).
 /*
+ * Revision 1.5  1994/11/29  20:16:33  jimg
+ * Added mfunc for data transmission.
+ * Uses special xdr function for serialization and xdr_coder.
+ * Removed `type' parameter from ctor.
+ * Added FILE *in and *out to ctor parameter list.
+ *
  * Revision 1.4  1994/11/22  14:06:08  jimg
  * Added code for data transmission to parts of the type hierarchy. Not
  * complete yet.
@@ -54,6 +58,8 @@ public:
     virtual BaseType *ptr_duplicate();
     
     virtual unsigned int size();
+
+    unsigned int len();
 
     //defined in <API>_read.cc
     virtual bool read(String dataset, String var_name, String constraint);

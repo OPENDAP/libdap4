@@ -4,7 +4,11 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.4  1994/12/14 18:04:33  jimg
+// Revision 1.5  1994/12/14 19:18:00  jimg
+// Added mfunc len(). Replaced size() with a mfunc that returns the size of
+// a pointer to a string (this simplifies Structure, ...).
+//
+// Revision 1.4  1994/12/14  18:04:33  jimg
 // Changed definition of size() so that it returns the number of bytes in
 // the string.
 //
@@ -48,13 +52,22 @@ Str::ptr_duplicate()
     return new Str(*this);
 }
 
-// Return: The number of characters in the string or 0 if the buffer is not
-// allocated. 
+// Return: the number of bytes needed to store the string's value or 0 if no
+// storage for the string has been allocated.
+
+unsigned int
+Str::len()
+{
+    return buf ? strlen(buf): 0;
+}
+
+// Return: The number of bytes needed to store a string (which is represented
+// as a pointer to a char).
 
 unsigned int
 Str::size()
 {
-    return buf ? strlen(buf): 0;
+    return sizeof(char *);
 }
 
 bool
