@@ -7,9 +7,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.25  1996/03/05 18:46:39  jimg
-/* Replaced <limits.h> with "dods-limits.h".
+/* Revision 1.26  1996/05/06 21:14:06  jimg
+/* Added dimension_start, _stop and _stride member functions to this class.
+/* Changed the first argument of add_constraint from Pix &p to Pix p (the member
+/* function does not change the Pix).
 /*
+ * Revision 1.25  1996/03/05 18:46:39  jimg
+ * Replaced <limits.h> with "dods-limits.h".
+ *
  * Revision 1.24  1996/02/02 00:30:58  jimg
  * Merge changes for DODS-1.1.0 into DODS-2.x
  *
@@ -193,14 +198,19 @@ public:
 
     // once a dimension has be created, set its constraint. This sets the
     // selected flag and c_size .
-    void add_constraint(Pix &p, int start, int stride, int stop);
+    void add_constraint(Pix p, int start, int stride, int stop);
     void reset_constraint();
     void clear_constraint();
     
     Pix first_dim();
     void next_dim(Pix &p);
+
     int dimension_size(Pix p, bool constrained = false);
+    int dimension_start(Pix p, bool constrained = false);
+    int dimension_stop(Pix p, bool constrained = false);
+    int dimension_stride(Pix p, bool constrained = false);
     String dimension_name(Pix p);
+
     unsigned int dimensions(bool constrained = false);
 
     virtual void print_decl(ostream &os, String space = "    ",
