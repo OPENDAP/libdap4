@@ -3,11 +3,14 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.9  1996/05/14 15:38:49  jimg
-/* These changes have already been checked in once before. However, I
-/* corrupted the source repository and restored it from a 5/9/96 backup
-/* tape. The previous version's log entry should cover the changes.
+/* Revision 1.10  1996/06/05 20:42:12  jimg
+/* Moved symbols from config_netio.h.in to this file.
 /*
+ * Revision 1.9  1996/05/14 15:38:49  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
  * Revision 1.8  1996/04/05 21:59:32  jimg
  * Misc Changes for release 2.0.1 of the core software - for developers.
  *
@@ -68,6 +71,18 @@
 
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
+
+/* Define if your <sys/time.h> declares struct tm.  */
+#undef TM_IN_SYS_TIME
+
+/* Client application name */
+#undef CNAME
+
+/* Client Application version */
+#undef CVER
+
+/* DODS Version */
+#undef DVR
 
 /* If defined, enable memory leak detection through libdbnew.a. Make sure to */
 /* link with that library. */
