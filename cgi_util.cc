@@ -11,6 +11,9 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.22  1996/12/18 18:48:53  jimg
+// Fixed spelling in ErrMsgT()'s message.
+//
 // Revision 1.21  1996/12/03 17:51:58  jimg
 // Fixed a bug in the char * array DESCRIPT where "dods_error" was catenated
 // with "web_error" (due to a missing comma).
@@ -107,7 +110,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.21 1996/12/03 17:51:58 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.22 1996/12/18 18:48:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,7 +161,7 @@ ErrMsgT(const char *Msgt)
     char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") : 
 	"DODS server"; 
 
-    cerr << "[" << TimStr << "] CGI: " << script << " faild for " 
+    cerr << "[" << TimStr << "] CGI: " << script << " failed for " 
 	 << host_or_addr << " reason: "<< Msgt << endl;
 }
 
