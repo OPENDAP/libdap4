@@ -1,3 +1,22 @@
+1998-02-11  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added the DODS_Cache.pm class (which was in the hdf-dods server
+	code only). This Perl module is not installed as part of the
+	default stuff in DODS_ROOT/etc.
+
+	* Added support for compression. Servers recognize the
+	Accept-Encoding header in a request document. when the value of
+	that header is `deflate' the zlib LZW algorithm is used to
+	compress data. Clients automatically respond to document that
+	contain the header Content-Encoding: deflate by un compressing the
+	data (a new feature of libwww 5.1). The new servers are compatible
+	with old clients and the new clients are compatible with old
+	servers (although neither combination can use compression).
+
+	* Added a help option to the servers (via an addition in
+	DODS_Dispatch.pm). Use this with the `file name' /help or the
+	extension .help.
+
 Tue Dec 16 00:32:31 1997  James Gallagher  <jimg@localhost>
 
 	* Added DODS_Dispatch.pm perl class. This class centralizes a lot
@@ -302,4 +321,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.14 1997/12/16 08:33:45 jimg Exp $
+$Id: ChangeLog,v 1.15 1998/02/11 22:41:19 jimg Exp $
