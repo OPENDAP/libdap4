@@ -4,8 +4,16 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
-// Revision 1.2  1994/08/02 19:17:37  jimg
-// Fixed `$Log$' comments and rcsid[] variables (syntax errors due to //
+// Revision 1.3  1994/08/02 20:11:27  jimg
+// Changes operator<< so that it writes a parsable version of the
+// attribute table.
+//
+// Revision 1.2  1994/08/02  19:17:37  jimg
+// Fixed `$Log: AttrTable.cc,v $
+// Fixed `Revision 1.3  1994/08/02 20:11:27  jimg
+// Fixed `Changes operator<< so that it writes a parsable version of the
+// Fixed `attribute table.
+// Fixed `' comments and rcsid[] variables (syntax errors due to //
 // comments caused compilation failures.
 // das.tab.c and .h are commited now as well.
 //
@@ -14,7 +22,7 @@
 // a static class variable String empty (it is initialized to "").
 //
 
-static char rcsid[]="$Id: AttrTable.cc,v 1.2 1994/08/02 19:17:37 jimg Exp $";
+static char rcsid[]="$Id: AttrTable.cc,v 1.3 1994/08/02 20:11:27 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -29,7 +37,7 @@ String AttrTable::empty = "";	// this must only be defined once.
 ostream& operator<< (ostream &os, AttrTable &t)
 {
     for(Pix p = t.first(); p; t.next(p))
-	os << t.key(p) << " : " << t.contents(p) << endl;
-    
+	os << t.key(p) << " " << t.contents(p) << ";" << endl;
+
     return os;
 }

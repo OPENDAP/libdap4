@@ -5,8 +5,16 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.2  1994/08/02 19:17:40  jimg
-// Fixed `$Log$' comments and rcsid[] variables (syntax errors due to //
+// Revision 1.3  1994/08/02 20:11:25  jimg
+// Changes operator<< so that it writes a parsable version of the
+// attribute table.
+//
+// Revision 1.2  1994/08/02  19:17:40  jimg
+// Fixed `$Log: DAS.cc,v $
+// Fixed `Revision 1.3  1994/08/02 20:11:25  jimg
+// Fixed `Changes operator<< so that it writes a parsable version of the
+// Fixed `attribute table.
+// Fixed `' comments and rcsid[] variables (syntax errors due to //
 // comments caused compilation failures.
 // das.tab.c and .h are commited now as well.
 //
@@ -15,7 +23,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.2 1994/08/02 19:17:40 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.3 1994/08/02 20:11:25 jimg Exp $";
 
 #include <iostream.h>
 #include <String.h>
@@ -64,8 +72,12 @@ DAS::parse(void)
 
 ostream& operator<< (ostream &os, DAS &das)
 {
+    os << "Attributes {" << endl;
+
     for(Pix p = das.first(); p; das.next(p))
-	os << das.key(p) << endl << *(das.contents(p)) << endl;
+	os << das.key(p) << "{" << endl << *(das.contents(p)) << "}" << endl;
     
+    os << "}" << endl;
+
     return os;
 }
