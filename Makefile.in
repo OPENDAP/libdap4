@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.47 1996/10/08 17:06:26 jimg Exp $
+# $Id: Makefile.in,v 1.48 1996/10/28 23:45:47 jimg Exp $
 
 @SET_MAKE@
 
@@ -96,16 +96,18 @@ ERRORSRCS = Error.cc
 
 TYPEHDRS = BaseType.h Byte.h Int32.h \
 	   Float64.h Str.h Url.h Vector.h List.h Array.h Structure.h \
-	   Sequence.h Function.h Grid.h util.h
-# Add these for the next release. jhrg 10/1/96
-#          UInt32.h Int16.h Uint16.h Float32.h 
+	   Sequence.h Function.h Grid.h UInt32.h util.h
+# Int16.h Uint16.h Float32.h
+
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc Function.cc \
-	   Grid.cc util.cc
+	   Grid.cc UInt32.cc util.cc
+# Int16.cc Uint16.cc Float32.cc 
 
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   Vector.o List.o Array.o Structure.o Sequence.o Function.o Grid.o \
-	   util.o
+           UInt32.o  util.o
+# Int16.o Uint16.o Float32.o
 
 # These object files are built using source code generated from the GNU
 # libg++ source with `genclass'. They are part of the the DAP library.
@@ -123,11 +125,11 @@ GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h \
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc \
-	   TestFunction.cc TestGrid.cc
+	   TestFunction.cc TestGrid.cc TestUInt32.cc
 
 TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 	   TestArray.o TestStructure.o TestList.o TestSequence.o \
-	   TestFunction.o TestGrid.o
+	   TestFunction.o TestGrid.o TestUInt32.o
 
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
