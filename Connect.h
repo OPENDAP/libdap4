@@ -40,6 +40,7 @@
 #include <stdio.h>
 
 #include <string>
+#include <vector>
 #include <SLList.h>
 
 #include <WWWLib.h>		/* Global Library Include file */
@@ -66,16 +67,14 @@
 #include "util.h"
 #endif
 
-using std::vector<string>;
+using std::vector;
+using std::string;
 
-/**
-
-     When a version 2.x or greater DODS data server sends an
-     object, it uses the Content-Description header of the response to
-     indicate the type of object contained in the response. During the
-     parse of the header a member of Connect is set to one of these
-     values so that other mfuncs can tell the type of object without
-     parsing the stream themselves.  
+/** When a version 2.x or greater DODS data server sends an object, it uses
+    the Content-Description header of the response to indicate the type of
+    object contained in the response. During the parse of the header a member
+    of Connect is set to one of these values so that other mfuncs can tell
+    the type of object without parsing the stream themselves.
 
      \begin{verbatim}
      enum ObjectType {
@@ -88,8 +87,8 @@ using std::vector<string>;
      };
      \end{verbatim}
 
-     @memo The type of object in the stream coming from the data
-     server.  */
+    @memo The type of object in the stream coming from the data
+    server.  */
 
 enum ObjectType {
     unknown_type,
@@ -100,9 +99,9 @@ enum ObjectType {
     web_error
 };
 
-/**  DODS understands two types of encoding: x-plain and deflate,
-     which correspond to plain uncompressed data and data compressed
-     with zlib's LZW algorithm respectively.  
+/** DODS understands two types of encoding: x-plain and deflate, which
+    correspond to plain uncompressed data and data compressed with zlib's LZW
+    algorithm respectively.
 
      \begin{verbatim}
      enum EncodingType {
@@ -112,7 +111,7 @@ enum ObjectType {
      };
      \end{verbatim}
 
-     @memo The type of encoding used on the current stream. */
+    @memo The type of encoding used on the current stream. */
 
 enum EncodingType {
     unknown_enc,
@@ -153,8 +152,7 @@ enum EncodingType {
     @see DODSFilter
     @see Error
     @see Gui
-    @author jhrg 
-    */
+    @author jhrg */
 
 class Connect {
 private:
@@ -208,20 +206,20 @@ private:
     bool _accept_deflate;
 
     /* Initialize the W3C WWW Library. This should only be called when a
-      Connect object is created and there are no other Connect objects in
-      existence. */
+       Connect object is created and there are no other Connect objects in
+       existence. */
     void www_lib_init(bool www_verbose_errors, bool accept_deflate);
 
     /* Assume that the object's \_OUTPUT stream has been set
-       properly.
-       Returns true if the read operation succeeds, false otherwise. */
+       properly. Returns true if the read operation succeeds, false
+       otherwise. */ 
     bool read_url(string &url, FILE *stream);
 
     /* Separate the text DDS from the binary data in the data object (which
-      is a bastardized multipart MIME document). The returned FILE * points
-      to a temporary file which contains the DDS object only. The formal
-      parameter IN is advanced so that it points to the first byte of the
-      binary data. */
+       is a bastardized multipart MIME document). The returned FILE * points
+       to a temporary file which contains the DDS object only. The formal
+       parameter IN is advanced so that it points to the first byte of the
+       binary data. */
     FILE *move_dds(FILE *in);
 
     /* Create a new Connect object. */
@@ -356,7 +354,9 @@ public:
 
   /** Fetch the contents of the indicated URL and put its contents
       into an output file.  A pointer to this file can be retrieved
-      with the #output()# function.  If {\it async} is true, then the
+      with the #output()# function. \emph{A program that uses that FILE
+      pointer must be sure not to close it with fclose().} Instead, use
+      Connect::close_output(). If {\it async} is true, then the
       operation is asynchronous, and the function returns before the
       data transfer is complete. This method is here so that Connect can be
       used to read from any URL, not just URLs which return DAS, DDS or
@@ -379,9 +379,6 @@ public:
       @param url A string containing the URL to be dereferenced.  The
       data referred to by this URL will wind up available through a
       file pointer retrieved from the #output()# function.
-      @param async If true, the read operation will proceed
-      asynchronously.  In other words, the function may return before
-      the read is complete.
       @see Connect::output */
     bool fetch_url(string &url, bool async = false);
 
@@ -642,6 +639,10 @@ public:
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.53  2001/02/12 23:16:32  jimg
+ * Fixed an error with the using statements. `using std::vector<string>;' makes
+ * g++ barf, but it like using std::string; and using std::vector;.
+ *
  * Revision 1.52  2001/02/09 22:25:14  jimg
  * Added extract_auth_info() method to parse username/password information from a
  * URL and record it in this object.
