@@ -92,7 +92,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.48 2005/01/27 23:05:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.49 2005/01/28 21:34:20 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1736,20 +1736,26 @@ no_such_func(void *arg, char *name)
 /* If we're calling this, assume var is not a Sequence. But assume that the
    name contains a dot and it's a separator. Look for the rightmost dot and
    then look to see if the name to the left is a sequence. Return a pointer
-   to the sequence if it is otherwise return null */
+   to the sequence if it is otherwise return null. Uses tail-recurrsion to
+   'walk' back from right to left looking at each dot. This way the sequence
+   will be found even if there are structures between the field and the
+   Sequence. */
 Sequence *
 parent_is_sequence(DDS &table, const char *name)
 {
     string n = name;
     string::size_type dotpos = n.find_last_of('.');
-    if (dotpos != string::npos) {
-	string s = n.substr(0, dotpos);
-	// If the thing returned by table.var is not a Sequence, this cast
-	// will yield null.
-	return dynamic_cast<Sequence*>(table.var(s));
-    }
-    else
+    if (dotpos == string::npos)
 	return 0;
+
+    string s = n.substr(0, dotpos);
+    // If the thing returned by table.var is not a Sequence, this cast
+    // will yield null.
+    Sequence *seq = dynamic_cast<Sequence*>(table.var(s));
+    if (seq)
+	return seq;
+    else
+	return parent_is_sequence(table, s.c_str());
 }
 
 
@@ -2342,7 +2348,11 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.48  2005/01/27 23:05:23  jimg
+ * Revision 1.49  2005/01/28 21:34:20  jimg
+ * Resolved conflicts from rlease-3-4-9 merge. Also minor change to expr.y
+ * to support Sequence CEs that use the Array projection notation.
+ *
+ * Revision 1.51  2005/01/27 23:05:23  jimg
  * Modified the expression processing code in expr.y so that array-style
  * projections on the fields of Sequences work. They should project that
  * field of the Sequence. To test I will merge in new changes on the 3.4
