@@ -9,6 +9,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.102  2000/08/29 21:22:54  jimg
+// Merged with 3.1.9
+//
+// Revision 1.80.2.4  2000/08/02 23:18:38  jimg
+// Fixed a bug that shows up on Linux (2.2, maybe others) where URLs with 61
+// 65 characters hang. See fetch_url() for the gory details.
+//
 // Revision 1.101  2000/07/26 12:24:01  rmorris
 // Modified intermediate (dod*) file removal under win32 to take into account
 // a 1-to-n correspondence between connect objects and intermediate files.
@@ -582,7 +589,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.101 2000/07/26 12:24:01 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.102 2000/08/29 21:22:54 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1795,33 +1802,26 @@ Connect::fetch_url(string &url, bool)
     /* NB: I've completely removed the async stuff for now. 2/18/97 jhrg */
 
     char *c = tempnam(NULL, DODS_PREFIX);
-    FILE *stream = fopen(c, "w+b"); // Open truncated for update.
-
-	//  unlink() under win32 behaves differently so here we must store
-	//  the file name and count on the Connect obj's destructor to delete
-	//  it.  Unlink under win32 does not cause the file to be deleted
-	//  as the last process using that file closes it - so the unix-style
-	//  code below isn't appropriate in the win32 case.
-#ifdef WIN32
-	if(!keep_temps)
-		_tfname.insert(_tfname.end(), string(c));
-#else
-    if (!keep_temps)
-		unlink(c);		// When _OUTPUT is closed file is deleted
-#endif
-    else
-		cerr << "Temporary file for Data document: " << c << endl;
-
-	free(c);			//  tempnam uses malloc !
-
+    FILE *stream = fopen(c, "wb"); // Open truncated for update.
     if (!read_url(url, stream))
 	return false;
- 
-    // Now rewind the stream so that we can read from the temp file
-    if (fseek(stream, 0L, SEEK_SET) != 0) {
-	cerr << "Could not rewind stream" << endl;
-	return false;
-    }
+   
+    // Workaround for Linux 2.2 (only?). Using fseek() did not work for URLs
+    // with between 61 and 64 characters in them. I have no idea why, but it
+    // appeared in ddd as if the eof was not being reported correctly. Since
+    // dumping all the data to an intermediate file is sort of a hack, I
+    // decided to close and then reopen the file to see if that would cure
+    // the problem. It seems to. The real solution is to pass the socket back
+    // via _output. However, this means figuring that out and getting
+    // multi-part MIME docs working in DODS. 8/2/2000 jhrg
+    fclose(stream);
+    stream = fopen(c, "rb");
+    if (!keep_temps)
+      unlink(c);		// When _OUTPUT is closed file is deleted
+    else
+      cerr << "Temporary file for Data document: " << c << endl;
+
+    free(c);			//  tempnam uses malloc !
 
     close_output();
 

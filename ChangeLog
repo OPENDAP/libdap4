@@ -1,7 +1,21 @@
+2000-08-29  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with 3.1.9. The next merge should use update -d -j
+	release-3-1-9 -j release-3-1.
+
+2000-08-25  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in esc2underscore(). The function used a static
+	instance of Regex; whatever regular expression was passed in on
+	the first call would be used for all subsequent calls. The same
+	problem existed for other functions in the file.
+
 2000-08-02  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with 3.1.8. The next merge should use cvs update -j
 	release-3-1-8 -j release-3-1.
+
+2000-08-02  James Gallagher  <jimg@dcz.dods.org>
 
 	* Fixed a config_dap.h goof. That header was included by some of
 	the DAP headers which might, in turn, be included by other
@@ -765,4 +779,5 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.56 2000/08/02 22:21:14 jimg Exp $
+$Id: ChangeLog,v 1.57 2000/08/29 21:22:54 jimg Exp $
+

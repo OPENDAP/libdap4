@@ -11,78 +11,6 @@
 //
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
-// $Log: escaping.cc,v $
-// Revision 1.14  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.13  2000/06/07 18:07:00  jimg
-// Merged the pc port branch
-//
-// Revision 1.12.4.1  2000/06/02 18:36:38  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.12  2000/03/31 21:02:49  jimg
-// Merged with version 3.1.5.
-//
-// Revision 1.9.6.3  2000/03/31 18:03:11  jimg
-// Fixed bugs with the string class
-//
-// Revision 1.11  2000/01/27 06:30:01  jimg
-// Resolved conflicts from merge with release-3-1-4
-//
-// Revision 1.9.6.2  2000/01/27 00:03:05  jimg
-// Fixed the return type of string::find.
-//
-// Revision 1.10  1999/08/23 18:57:46  jimg
-// Merged changes from release 3.1.0
-//
-// Revision 1.9.6.1  1999/08/16 23:32:01  jimg
-// Added esc2underscore
-//
-// Revision 1.9  1999/04/29 02:29:36  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.8  1998/09/10 23:37:11  jehamby
-// Forgot to update hexstring() to generate correct high-ASCII escapes.
-//
-// Revision 1.7  1998/09/10 19:38:03  jehamby
-// Update escaping routines to not mangle high-ASCII characters with toascii()
-// and to generate a correct escape sequence in octstring() for such characters
-// through judicious casting (cast to a unsigned char, then an unsigned int).
-//
-// Revision 1.6.6.1  1999/02/02 21:57:07  jimg
-// String to string version
-//
-// Revision 1.6  1998/03/19 23:29:47  jimg
-// Removed old code (that was surrounded by #if 0 ... #endif).
-//
-// Revision 1.5  1998/02/05 20:14:02  jimg
-// DODS now compiles with gcc 2.8.x
-//
-// Revision 1.4  1997/02/14 04:18:10  jimg
-// Added allowable and escape parameters to id2dods and dods2id so that the
-// builtin regexs can be overridden if needed.
-// Switched to the `fast compile' mode for the Regex objects.
-//
-// Revision 1.3  1997/02/14 02:24:44  jimg
-// Removed reliance on the dods-hdf code.
-// Introduced a const int MAXSTR with value 256. This matches the length of
-// ID_MAX in the parser.h header (which I did not include since it defines
-// a lot of software that is irrelevant to this module).
-//
-// Revision 1.2  1997/02/14 02:18:16  jimg
-// Added to DODS core
-//
-// Revision 1.2  1996/10/07 21:15:17  todd
-// Changes escape character to % from _.
-//
-// Revision 1.1  1996/09/24 22:38:16  todd
-// Initial revision
-//
-//
-/////////////////////////////////////////////////////////////////////////////
-
 // These two routines are for escaping/unescaping strings that are identifiers
 // in DODS
 // id2dods() -- escape (using WWW hex codes) non-allowable characters in a
@@ -170,7 +98,7 @@ static string unoctstring(string s) {
     @return The modified identifier. */
 string 
 id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
-    static Regex badregx(allowable.c_str(), 1);
+    Regex badregx(allowable.c_str(), 1);
     static const string ESC = "%";
 
     // I use two index variables here because the string methods use size_type
@@ -200,7 +128,7 @@ id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
     @return The modified identifier. */
 string 
 dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]") {
-    static Regex escregx(escape.c_str(), 1);
+    Regex escregx(escape.c_str(), 1);
 
     int index=0, matchlen;
     while ((index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
@@ -218,7 +146,7 @@ dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]") {
     @return The modified string. */
 string 
 esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]") {
-    static Regex escregx(escape.c_str(), 1);
+  Regex escregx(escape.c_str(), 1);
 
     int index=0, matchlen;
     while ((index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
@@ -231,7 +159,7 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]") {
     @param s The attribute to modify.
     @return The modified attribute. */
 string escattr(string s) {
-    static Regex nonprintable("[^ !-~]");
+    static Regex nonprintable("[^ !-~]", 1);
     const string ESC = "\\";
     const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
@@ -259,9 +187,9 @@ string escattr(string s) {
     @param s The escaped attribute.
     @return The unescaped attribute. */
 string unescattr(string s) {
-    static Regex escregx("\\\\[01][0-7][0-7]");  // matches 4 characters
-    static Regex escquoteregex("[^\\\\]\\\\\"");  // matches 3 characters
-    static Regex escescregex("\\\\\\\\");      // matches 2 characters
+    static Regex escregx("\\\\[01][0-7][0-7]", 1);  // matches 4 characters
+    static Regex escquoteregex("[^\\\\]\\\\\"", 1);  // matches 3 characters
+    static Regex escescregex("\\\\\\\\",1);      // matches 2 characters
     const string ESC = "\\";
     const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
@@ -289,3 +217,67 @@ string unescattr(string s) {
 
     return s;
 }
+
+// $Log: escaping.cc,v $
+// Revision 1.15  2000/08/29 21:22:55  jimg
+// Merged with 3.1.9
+//
+// Revision 1.9.6.4  2000/08/25 23:44:55  jimg
+// Fixed an error in esc2underscore. A static instance of Regex was used but
+// the value of that Regex was set using one of the method's parameters. This
+// meant that while the first call to the method worked, all subsequent calls
+// used whatever regular expression was given for the first call. I actually
+// fixed this in several methods.
+//
+// Revision 1.9.6.3  2000/03/31 18:03:11  jimg
+// Fixed bugs with the string class
+//
+// Revision 1.9.6.2  2000/01/27 00:03:05  jimg
+// Fixed the return type of string::find.
+//
+// Revision 1.9.6.1  1999/08/16 23:32:01  jimg
+// Added esc2underscore
+//
+// Revision 1.9  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.8  1998/09/10 23:37:11  jehamby
+// Forgot to update hexstring() to generate correct high-ASCII escapes.
+//
+// Revision 1.7  1998/09/10 19:38:03  jehamby
+// Update escaping routines to not mangle high-ASCII characters with toascii()
+// and to generate a correct escape sequence in octstring() for such characters
+// through judicious casting (cast to a unsigned char, then an unsigned int).
+//
+// Revision 1.6.6.1  1999/02/02 21:57:07  jimg
+// String to string version
+//
+// Revision 1.6  1998/03/19 23:29:47  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
+// Revision 1.5  1998/02/05 20:14:02  jimg
+// DODS now compiles with gcc 2.8.x
+//
+// Revision 1.4  1997/02/14 04:18:10  jimg
+// Added allowable and escape parameters to id2dods and dods2id so that the
+// builtin regexs can be overridden if needed.
+// Switched to the `fast compile' mode for the Regex objects.
+//
+// Revision 1.3  1997/02/14 02:24:44  jimg
+// Removed reliance on the dods-hdf code.
+// Introduced a const int MAXSTR with value 256. This matches the length of
+// ID_MAX in the parser.h header (which I did not include since it defines
+// a lot of software that is irrelevant to this module).
+//
+// Revision 1.2  1997/02/14 02:18:16  jimg
+// Added to DODS core
+//
+// Revision 1.2  1996/10/07 21:15:17  todd
+// Changes escape character to % from _.
+//
+// Revision 1.1  1996/09/24 22:38:16  todd
+// Initial revision
+//
+//
+/////////////////////////////////////////////////////////////////////////////
+

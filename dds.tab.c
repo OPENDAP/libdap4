@@ -41,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.22 2000/08/16 18:29:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.23 2000/08/29 21:22:55 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1382,7 +1382,10 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.22  2000/08/16 18:29:02  jimg
+ * Revision 1.23  2000/08/29 21:22:55  jimg
+ * Merged with 3.1.9
+ *
+ * Revision 1.31  2000/08/16 18:29:02  jimg
  * Added dot (.) to the set of characters allowed in a variable name
  *
  * Revision 1.30  2000/07/09 21:43:29  rmorris

@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt16.cc,v $
+// Revision 1.12  2000/08/29 21:22:54  jimg
+// Merged with 3.1.9
+//
 // Revision 1.11  2000/08/22 19:42:28  jimg
 // Fixed the assert() in buf2val(). It tested _buf and when that contained 0
 // it would fail. This was probably copied from other methods where _buf is
@@ -64,7 +67,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: UInt16.cc,v 1.11 2000/08/22 19:42:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: UInt16.cc,v 1.12 2000/08/29 21:22:54 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
