@@ -1,3 +1,68 @@
+2001-09-28  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release 3.2.7. The next merge should use
+	release-3-2-7 -j release-3-2.
+
+2001-09-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in the progress indicator's cancel button that
+	caused a crash.
+
+	* Fixed the grid() server-side function. This function can be used
+	in constraint expressions to *select* parts of Grid variables
+	based on the values of their map vectors. Here's an example using
+	the COADS dataset: The dataset can be found at:
+	http://dcz.dods.org/dods-3.2/nph-dods/data/nc/coads_climatology.nc.
+	Look at the DDS and at the Grid SST:
+	    Dataset {
+		Float64 COADSX[COADSX = 180];
+		Float64 COADSY[COADSY = 90];
+		Float64 TIME[TIME = 12];
+		Grid {
+		 ARRAY:
+		    Float32 SST[TIME = 12][COADSY = 90][COADSX = 180];
+		 MAPS:
+		    Float64 TIME[TIME = 12];
+		    Float64 COADSY[COADSY = 90];
+		    Float64 COADSX[COADSX = 180];
+		} SST;
+		...
+	    } coads_climatology;
+	From the attribute object you can find out about the map vector's
+	ranges: 
+            Attributes {
+		COADSX {
+		    String units "degrees_east";
+		    String modulo " ";
+		    String point_spacing "even";
+		}
+		COADSY {
+		    String units "degrees_north";
+		    String point_spacing "even";
+		}
+	    ...
+	Using the grid function you can ask for the part of SST that falls
+	between 30 and 50 degrees east and greater than 20 degrees north
+	using: grid(SST,"30<COADSX<50","20<=COADSY") as the constraint
+	expression. Note that two different styles of mini-expressions are
+	supported by the function. Requests outside the range of the map
+	vectors returns a message indicating their extent.
+
+2001-09-06  James Gallagher  <jimg@dcz.dods.org>
+
+	* Sequence::deserialize(...) now reads all the sequence values at
+	once. Its call semantics are the same as the other classes'
+	versions. Values are stored in the Sequence object using a
+	vector<BaseType *> for each row (those are themselves held in a
+	vector). Three new accessor methods have been added to Sequence
+	(row_value() and two versions of var_value()).
+	BaseType::deserialize(...) now always returns true. This matches
+	with the expectations of most client code (the seqeunce version
+	returned false when it was done reading, but all the calls for
+	sequences must be changed anyway). If an XDR error is found,
+	deserialize throws InternalErr. This fixes bug 258.
+
+
 2001-08-21  James Gallagher  <jimg@dcz.dods.org>
 
 	* After running tests for asciival, I decided to allow some more
@@ -1017,41 +1082,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-<<<<<<< ChangeLog
-<<<<<<< ChangeLog
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
-=======
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
->>>>>>> 1.60.4.16
-=======
-<<<<<<< ChangeLog
-<<<<<<< ChangeLog
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
-=======
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
-=======
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
->>>>>>> 1.60.4.16
->>>>>>> 1.62
->>>>>>> 1.60.4.11
-
-<<<<<<< ChangeLog
-=======
-<<<<<<< ChangeLog
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
-=======
-<<<<<<< ChangeLog
-<<<<<<< ChangeLog
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
-=======
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
->>>>>>> 1.60.4.16
-=======
-<<<<<<< ChangeLog
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
-=======
-$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
->>>>>>> 1.60.4.16
->>>>>>> 1.62
->>>>>>> 1.60.4.11
->>>>>>> 1.42.2.16
+$Id: ChangeLog,v 1.65 2001/09/28 17:35:40 jimg Exp $
