@@ -4,7 +4,16 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.5  1994/11/22 14:05:26  jimg
+// Revision 1.6  1994/11/29 19:59:01  jimg
+// Added FILE * input and output buffers. All data set and all data received
+// passes through these buffers. This simplifies testing and makes using
+// the toolkit with files a little easier.
+// Added xdrin and xdrout members (both are XDR *). These are the source and
+// sink for xdr data.
+// Modified ctor and duplicate() to correctly handle xdrin/out.
+// Added expunge() which flushes the output buffer.
+//
+// Revision 1.5  1994/11/22  14:05:26  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
 // complete yet.
 // Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
@@ -46,9 +55,13 @@ BaseType::duplicate(const BaseType &bt)
     name = bt.name;
     type = bt.type;
     _xdr_coder = bt._xdr_coder;	// just copy this function pointer
+    _in = bt._in;
+    _out = bt._out;
 
-    xdrstdio_create(xdrin, stdin, XDR_DECODE);
-    xdrstdio_create(xdrout, stdout, XDR_ENCODE);
+    xdrin = new(XDR);
+    xdrout = new(XDR);
+    xdrstdio_create(xdrin, bt._in, XDR_DECODE);
+    xdrstdio_create(xdrout, bt._out, XDR_ENCODE);
 }
 
 // Public mfuncs
@@ -60,11 +73,14 @@ BaseType::duplicate(const BaseType &bt)
 // write to std{out,in} (it is for g++ with libg++ at version 2.6 or
 // greater).
 
-BaseType::BaseType(const String &n, const String &t, xdrproc_t xdr) 
-    : name(n), type(t), _xdr_coder(xdr)
+BaseType::BaseType(const String &n, const String &t, xdrproc_t xdr, FILE *in,
+		   FILE *out) 
+    : name(n), type(t), _xdr_coder(xdr), _in(in), _out(out)
 {
-    xdrstdio_create(xdrin, stdin, XDR_DECODE);
-    xdrstdio_create(xdrout, stdout, XDR_ENCODE);
+    xdrin = new(XDR);
+    xdrout = new(XDR);
+    xdrstdio_create(xdrin, _in, XDR_DECODE);
+    xdrstdio_create(xdrout, _out, XDR_ENCODE);
 } 
 
 BaseType::BaseType(const BaseType &copy_from)
@@ -74,8 +90,10 @@ BaseType::BaseType(const BaseType &copy_from)
     
 BaseType::~BaseType()
 {
-    xdr_destroy(xdrin);
+    xdr_destroy(xdrin);		// ... does not close the FILE pointer
     xdr_destroy(xdrout);
+    delete(xdrin);
+    delete(xdrout);
 }
 
 BaseType &
@@ -155,4 +173,11 @@ BaseType::check_semantics(bool all)
     return sem;
 }
 
+// Flush the output buffer.
+// Returns: false if an error was detected by fflush(), true otherwise.
 
+bool
+BaseType::expunge()
+{
+    return fflush(_out) == 0;
+}
