@@ -17,12 +17,15 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.16  1997/06/06 03:11:34  jimg
-/* Added mfuncs which have char * parameters for those mfuncs which accept both
-/* Pix and String parameters. This avoids a conflict between promotion of char *
-/* actuals to Pix instead of String (while the latter makes more sense, the
-/* former actually happens).
+/* Revision 1.17  1997/08/09 21:20:06  jimg
+/* Changed the names of AttrTable_to_String and String_to_AttrTable.
 /*
+ * Revision 1.16  1997/06/06 03:11:34  jimg
+ * Added mfuncs which have char * parameters for those mfuncs which accept both
+ * Pix and String parameters. This avoids a conflict between promotion of
+ * char actuals to Pix instead of String (while the latter makes more sense,
+ * the former actually happens).
+ *
  * Revision 1.15  1997/05/13 23:32:13  jimg
  * Added changes to handle the new Alias and lexical scoping rules.
  *
@@ -159,8 +162,8 @@ private:
     
     Pix find(const String &target, bool cont_only = false);
     Pix simple_find(const String &target);
-    String AttrTypeToString(const AttrType at);
-    AttrType StringToAttrType(const String &s);
+    String AttrType_to_String(const AttrType at);
+    AttrType String_to_AttrType(const String &s);
 
 public:
     AttrTable();
