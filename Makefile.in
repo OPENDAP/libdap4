@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.160 2005/03/02 21:22:43 jimg Exp $
+# $Id: Makefile.in,v 1.161 2005/03/17 20:50:25 pwest Exp $
 
 @SET_MAKE@
 
@@ -82,9 +82,9 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
 VALGRIND = @VALGRIND@
 
-UTILSRCS = cgi_util.cc escaping.cc DODSFilter.cc SignalHandler.cc
-UTILOBJS = cgi_util.o escaping.o DODSFilter.o SignalHandler.o
-UTILHDRS = cgi_util.h escaping.h DODSFilter.h SignalHandler.h
+UTILSRCS = cgi_util.cc escaping.cc DODSFilter.cc SignalHandler.cc OPeNDAPFile.cc OPeNDAPDir.cc
+UTILOBJS = cgi_util.o escaping.o DODSFilter.o SignalHandler.o OPeNDAPFile.o OPeNDAPDir.o
+UTILHDRS = cgi_util.h escaping.h DODSFilter.h SignalHandler.h OPeNDAPFile.h OPeNDAPDir.h
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
