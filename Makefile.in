@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.91 1999/03/24 23:37:15 jimg Exp $
+# $Id: Makefile.in,v 1.92 1999/03/25 00:04:21 jimg Exp $
 
 @SET_MAKE@
 
@@ -443,7 +443,7 @@ docs:
 tar:
 	-rm -r config.cache config.log config.status
 	cd $(DODS_ROOT)/.. && \
-	tar --exclude '*/nc-dods*' --exclude '*/jg-dods*' --exclude '*patches*'
+	tar --exclude '*/nc-dods*' --exclude '*/jg-dods*' --exclude '*patches*' \
 	    --exclude '*/math-dods*' --exclude '*/dsp-dods*' \
 	    --exclude '*/hdf-dods*' --exclude '*/writeval*' \
 	    --exclude '*/ff-dods*' --exclude '*/matlab-GUI*' \
