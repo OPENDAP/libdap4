@@ -11,6 +11,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.32  1996/12/02 19:45:58  jimg
+// Added versions of int_ops for various combinations of signed and unsigned
+// operands. Ignore the warnings about comparisons between signed and
+// unsigned...
+//
 // Revision 1.31  1996/11/27 22:40:29  jimg
 // Added DDS as third parameter to function in the CE evaluator
 //
@@ -168,7 +173,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.31 1996/11/27 22:40:29 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.32 1996/12/02 19:45:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -506,7 +511,7 @@ systime()
 // These functions are used by the CE evaluator
 
 bool
-func_member(int argc, BaseType *argv[], DDS &dds)
+func_member(int argc, BaseType *argv[], DDS &)
 {
     if (argc != 2) {
 	cerr << "Wrong number of arguments." << endl;
@@ -530,7 +535,7 @@ func_member(int argc, BaseType *argv[], DDS &dds)
 }
 
 bool
-func_null(int argc, BaseType *argv[], DDS &dds)
+func_null(int argc, BaseType *argv[], DDS &)
 {
     if (argc != 1) {
 	cerr << "Wrong number of arguments." << endl;
@@ -553,7 +558,7 @@ func_null(int argc, BaseType *argv[], DDS &dds)
 }
 
 BaseType *
-func_length(int argc, BaseType *argv[], DDS &dds)
+func_length(int argc, BaseType *argv[], DDS &)
 {
     if (argc != 1) {
 	cerr << "Wrong number of arguments." << endl;
@@ -592,7 +597,7 @@ func_length(int argc, BaseType *argv[], DDS &dds)
 }
 
 BaseType *
-func_nth(int argc, BaseType *argv[], DDS &dds)
+func_nth(int argc, BaseType *argv[], DDS &)
 {
     if (argc != 2) {
 	cerr << "Wrong number of arguments." << endl;
@@ -644,8 +649,12 @@ byte_ops(int i1, int i2, int op)
     }
 }
 
+// There are four versions of int_ops to take into account the four
+// combinations of signed and unsigned types. Note that the 16 bit variables
+// are promoted to 32 bits for the purposes of comparison. 
+
 bool
-int_ops(int i1, int i2, int op)
+int_ops(dods_int32 i1, dods_int32 i2, int op)
 {
     switch (op) {
       case EQUAL:
@@ -661,7 +670,82 @@ int_ops(int i1, int i2, int op)
       case LESS_EQL:
 	return i1 <= i2;
       case REGEXP:
-	cerr << "Regexp not valid for byte values" << endl;
+	cerr << "Regexp not valid for integer values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+int_ops(dods_uint32 i1, dods_int32 i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for integer values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+int_ops(dods_int32 i1, dods_uint32 i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for integer values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+int_ops(dods_uint32 i1, dods_uint32 i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for integer values" << endl;
 	return false;
       default:
 	cerr << "Unknown operator" << endl;
