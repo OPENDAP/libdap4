@@ -10,6 +10,11 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.38  1996/09/12 21:02:35  jimg
+// Fixed a nasty bug in print_array (private member function) where recursive
+// calls were made in the wrong order causing 3+ dimension arrays to print many
+// more values than actually exist in the array.
+//
 // Revision 1.37  1996/08/26 21:12:48  jimg
 // Changes for version 2.07
 //
@@ -512,12 +517,14 @@ Array::print_decl(ostream &os, String space, bool print_semi,
 	os << ";" << endl;
 }
 
-// Print an array. This is a private memebr function.
+// Print an array. This is a private member function.
 //
 // OS is the stream used for writing
 // INDEX is the index of VEC to start printing
 // DIMS is the number of dimensions in the array
-// SHAPE is the sixe of the dimensions of the array.
+// SHAPE holds the size of the dimensions of the array. This is really a
+// hold-over from an old version of this which was a plain function; I could
+// use Array mfuncs to find out the size of the dimensions...
 //
 // Returns: the number of elements written.
 
@@ -542,7 +549,9 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
 	// length is shape[dims-1]-1 *and* since we want one less dimension
 	// than that, the correct limit on this loop is shape[dims-2]-1. From
 	// Todd Karakasian.
-	for (unsigned i = 0; i < shape[dims-2]-1; ++i) {
+	// The saga continues; the loop test should be `i < shape[0]-1'. jhrg
+	// 9/12/96.
+	for (unsigned i = 0; i < shape[0]-1; ++i) {
 	    index = print_array(os, index, dims - 1, shape + 1);
 	    os << ",";		// Removed the extra `}'. Also from Todd
 	}
