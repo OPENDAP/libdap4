@@ -1,5 +1,9 @@
 2000-06-07  James Gallagher  <jimg@dcz.dods.org>
 
+	* Merged with version 3.1.6. Used cvs update -d -j release-3-1-5
+	-j release-3-1. The next merge should use -j release-3-1-6 -j
+	release-3-1. 
+
 	* DODSFilter now has a set_ce() method. This means that a server
 	can easily rewrite the CE it gets without loosing the other
 	features of DODSFilter.
@@ -719,13 +723,13 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 <<<<<<< ChangeLog
 <<<<<<< ChangeLog
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.53 2000/06/07 19:33:21 jimg Exp $
+$Id: ChangeLog,v 1.54 2000/06/07 19:34:30 jimg Exp $
 =======
-$Id: ChangeLog,v 1.53 2000/06/07 19:33:21 jimg Exp $
+$Id: ChangeLog,v 1.54 2000/06/07 19:34:30 jimg Exp $
 >>>>>>> 1.42.2.4
 =======
-$Id: ChangeLog,v 1.53 2000/06/07 19:33:21 jimg Exp $
+$Id: ChangeLog,v 1.54 2000/06/07 19:34:30 jimg Exp $
 >>>>>>> 1.42.2.7
 =======
-$Id: ChangeLog,v 1.53 2000/06/07 19:33:21 jimg Exp $
+$Id: ChangeLog,v 1.54 2000/06/07 19:34:30 jimg Exp $
 >>>>>>> 1.42.2.8
