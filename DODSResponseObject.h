@@ -5,6 +5,9 @@
 
 using std::string ;
 
+/** @brief Abstract base class representing a specific set of information
+ * for a DODS dataset, such as DAS, DDS, DODS, DDX.
+ */
 class DODSResponseObject
 {
 public:
