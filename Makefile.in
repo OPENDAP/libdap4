@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.2 1994/09/09 15:40:02 jimg Exp $
+# $Id: Makefile.in,v 1.3 1994/09/23 14:47:54 jimg Exp $
 
 @SET_MAKE@
 
@@ -6,20 +6,20 @@
 # DEFS gets the `-D' defines that describe what a particular system has
 # or doesn't have.
 
-PROG= das-test das-test2 dds-test
-CFLAGS = -O -g -I$(DODS_ROOT)/include
-CXXFLAGS = -O -g -DUSE_LIBGXX_INLINES -I$(DODS_ROOT)/include
-LDFLAGS = -L$(DODS_ROOT)/lib
+PROG= das-test dds-test
+CFLAGS = -g -I$(DODS_ROOT)/include
+CXXFLAGS = -g -DUSE_LIBGXX_INLINES -I$(DODS_ROOT)/include -IMap -IStack -I.
+LDFLAGS = -g -L$(DODS_ROOT)/lib
 LFLAGS=-8
 YFLAGS=-d
-DODS_ROOT=../../
+DODS_ROOT=../..
 DEFS = @DEFS@
-LIBS = @LIBS@
+LIBS = -lg++map -lg++stack @LIBS@
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
 
-prefix = ../../
+prefix = ../..
 exec_prefix = $(prefix)
 bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
@@ -45,7 +45,7 @@ CC = @CC@
 CXX = @CXX@
 YACC = bison# @YACC@
 LEX = flex# @LEX@
-AR = ar
+TYPEAR = ar
 RANLIB = @RANLIB@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -54,12 +54,16 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 DAS_GRAM_OBJS=lex.das.o das.tab.o
 DDS_GRAM_OBJS=lex.dds.o dds.tab.o
 
-DASSRCS=AttrMap.cc AttrVHMap.cc AttrTable.cc DASMap.cc DASVHMap.cc DAS.cc
-DASOBJS=AttrMap.o AttrVHMap.o AttrTable.o DASMap.o DASVHMap.o DAS.o \
-	$(DAS_GRAM_OBJS)
+DASSRCS=AttrTable.cc DAS.cc
+DASOBJS=AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
-DDSSRCS=DDSMap.cc DDSVHMap.cc DDS.cc
-DDSOBJS=DDSMap.o DDSVHMap.o DDS.o $(DDS_GRAM_OBJS) 
+DDSSRCS=DDS.cc
+DDSOBJS=DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) 
+
+TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
+         List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc util.cc
+TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
+	 List.o Array.o Structure.o Sequence.o Function.o Grid.o util.o
 
 SPACE=$(DODS_ROOT)/lib/Space.o
 
@@ -68,13 +72,13 @@ all: das-test dds-test
 # Build the test drivers
 
 das-test:  $(DASOBJS) das-test.o
-	$(CXX) $(CXXFLAGS) -o das-test $(DASOBJS) $(SPACE) das-test.o $(LIBS)
-
-das-test2:  $(DASOBJS) das-test2.o
-	$(CXX) $(CXXFLAGS) -o das-test2 $(DASOBJS) $(SPACE) das-test2.o $(LIBS)
+	$(CXX) $(LDFLAGS) -o das-test $(DASOBJS) $(SPACE) das-test.o $(LIBS)
 
 dds-test:   $(DDSOBJS) dds-test.o
-	$(CXX) $(CXXFLAGS) -o dds-test $(DDSOBJS) $(SPACE) dds-test.o $(LIBS)
+	$(CXX) $(LDFLAGS) -o dds-test $(DDSOBJS) $(SPACE) dds-test.o $(LIBS)
+
+#type-test: $(DDSOBJS) type-test.o
+#	$(CXX) $(LDFLAGS) -o type-test $(DDSOBJS) $(SPACE) type-test.o $(LIBS)
 
 # Build the DAS scanner (a C object module compiled with C++)
 
@@ -146,8 +150,8 @@ site.exp: ./config.status Makefile
 	-@rm -f ./tmp?
 
 clean:	
-	-rm -f $(DASOBJS) $(DDSOBJS) *~ core
-	-rm -f lex.das.c das.tab.c das.tab.h
+	-rm -f *.o *.sum *.log *~ core
+	-rm -f lex.das.c das.tab.c das.tab.h space.raw
 	-rm -f $(PROG)
 	-rm -f symtab
 
@@ -157,6 +161,6 @@ distclean: clean
 
 depend: 
 	makedepend -- $(CXXFLAGS) -I/usr/local/lib/g++-include -- \
-	$(DASSRCS) $(DDSSRCS)
+	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) das-test.cc dds-test.cc 
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
