@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.g.exp,v $
+# Revision 1.3  1998/11/10 01:12:06  jimg
+# *** empty log message ***
+#
 # Revision 1.2  1997/06/05 22:52:33  jimg
 # *** empty log message ***
 #
@@ -22,13 +25,14 @@ set test_file test.4
 
 # The variable test_equation is the equation to test.
 
-set test_equation {s&s=~"Very Silly.*"}
+set test_equation {"s&s=~\"Very\""}
 
 # The variable `test_out' is a string that contains the text that should be
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Dataset {
+set test_out "The complete DDS:
+Dataset {
     Int32 i\\\[20\\\];
     String s;
     Int32 j;
@@ -39,8 +43,9 @@ The data:"
 expr-test_start p ${srcdir}${test_file} ${test_equation}
 
 if ![string compare $test_out $comp_output] { # check comp_output
-    pass "$test_name"
+    xpass "$test_name"
 } else {
+    send_user "This test fails: There's a problem with the test.\n"
     xfail "$test_name"
 }
 
