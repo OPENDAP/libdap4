@@ -43,7 +43,10 @@
 // jhrg 1/12/95
 
 // $Log: TestByte.cc,v $
-// Revision 1.10  1995/12/09 01:07:07  jimg
+// Revision 1.11  1996/04/04 18:05:07  jimg
+// Merged changes from version 1.1.1.
+//
+// Revision 1.10  1995/12/09  01:07:07  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -53,6 +56,10 @@
 //
 // Revision 1.8  1995/08/26  00:31:51  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.7.2.1  1996/02/23 21:37:27  jimg
+// Updated for new configure.in.
+// Fixed problems on Solaris 2.4.
 //
 // Revision 1.7  1995/07/09  21:29:09  jimg
 // Added copyright notice.
