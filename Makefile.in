@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.9 1994/10/26 18:19:43 jimg Exp $
+# $Id: Makefile.in,v 1.10 1994/12/07 21:11:28 jimg Exp $
 
 @SET_MAKE@
 
@@ -7,14 +7,14 @@
 # or doesn't have.
 
 PROG= das-test dds-test libdas++.a libdds++.a
-CFLAGS = -g -I$(DODS_ROOT)/include
-CXXFLAGS = -g $(DEFS) -IMap -IStack -I. -I$(DODS_ROOT)/include 
-LDFLAGS = -g -L$(DODS_ROOT)/lib
+CFLAGS = @CFLAGS@ -g -I$(DODS_ROOT)/include
+CXXFLAGS = -g $(DEFS) -IMap -IStack -IPlex -I. -I$(DODS_ROOT)/include 
+LDFLAGS = @LDFLAGS@ -g -L$(DODS_ROOT)/lib
 LFLAGS=-8
 YFLAGS=-d
 DODS_ROOT=../..
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
-LIBS = -lg++map -lg++stack -lerrmsg @LIBS@
+LIBS = -lg++map -lg++stack -lg++xplex -lerrmsg @LIBS@
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
@@ -52,7 +52,7 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
-SUBDIRS=Stack Map
+SUBDIRS=Stack Map Plex
 
 DAS_GRAM_OBJS=lex.das.o das.tab.o
 DDS_GRAM_OBJS=lex.dds.o dds.tab.o
@@ -69,10 +69,10 @@ TYPEHDRS=BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
          CtorType.h List.h Array.h Structure.h Sequence.h Function.h Grid.h
 TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
          List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
-	 util.cc # CtorType.cc
+	 util.cc CtorType.cc
 TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	 List.o Array.o Structure.o Sequence.o Function.o Grid.o \
-	 util.o # CtorType.o 
+	 util.o CtorType.o 
 
 # Added decent into SUBDIRS since it makes little sense to build these
 # libraries without the Map and Stack code.
@@ -174,7 +174,7 @@ clean:
 	for d in $(SUBDIRS); do cd $$d; make clean; cd ..; done
 
 distclean: clean
-	-rm -f config.status Makefile
+	-rm -f config.status config.log config.cache Makefile
 	for d in $(SUBDIRS); do cd $$d; make distclean; cd ..; done
 
 tar:
