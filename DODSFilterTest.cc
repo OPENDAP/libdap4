@@ -23,16 +23,21 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
-#include "TestCase.h"
-#include "TestCaller.h"
-#include "TestSuite.h"
+#include <cppunit/TextTestRunner.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
+
+#include <strstream>
 
 #include "DODSFilter.h"
 #include "DAS.h"
 #include "Regex.h"
-#include <strstream>
+#define DODS_DEBUG
+#include "debug.h"
 
-class DODSFilterTest : public TestCase {
+using namespace CppUnit;
+
+class DODSFilterTest : public TestFixture {
 private:
     DODSFilter *df, *df1, *df2, *df3, *df4, *df5, *df6;
 
@@ -42,7 +47,8 @@ private:
     streampos start_oss;
 
 public: 
-    DODSFilterTest (string name) : TestCase (name) {}
+    DODSFilterTest() {}
+    ~DODSFilterTest() {}
 
     void setUp() {
 	start_oss = oss.tellp();
@@ -111,46 +117,43 @@ public:
     }	
 
     bool re_match(Regex &r, const char *s) {
-#if 0
-	cerr << "strlen(s): " << (int)strlen(s) << endl;
-	cerr << "r.match(s): " << r.match(s, strlen(s)) << endl;
-#endif
+	DBG(cerr << "strlen(s): " << (int)strlen(s) << endl);
+	DBG(cerr << "r.match(s): " << r.match(s, strlen(s)) << endl);
+
 	return r.match(s, strlen(s)) == (int)strlen(s);
     }
 
     // Tests for methods
     void read_ancillary_das_test() {
-	// Tests using assert.
     }
 
     void read_ancillary_dds_test() {
-	// Tests using assert.
     }
 
     void get_dataset_last_modified_time_test() {
 	time_t t = time(0);
-	assert(df1->get_dataset_last_modified_time() == t);
+	CPPUNIT_ASSERT(df1->get_dataset_last_modified_time() == t);
 
 	struct stat st;
 	stat("server-testsuite/bears.data", &st);
-	assert(df->get_dataset_last_modified_time() == st.st_mtime);
+	CPPUNIT_ASSERT(df->get_dataset_last_modified_time() == st.st_mtime);
 
 	stat("Makefile.in", &st);
-	assert(df2->get_dataset_last_modified_time() == st.st_mtime);
+	CPPUNIT_ASSERT(df2->get_dataset_last_modified_time() == st.st_mtime);
 
 	stat("server-testsuite/coads.data", &st);
-	assert(df3->get_dataset_last_modified_time() == st.st_mtime);
+	CPPUNIT_ASSERT(df3->get_dataset_last_modified_time() == st.st_mtime);
     }
 
     void get_das_last_modified_time_test() {
 	// the dataset pointed to by df has no anc. DAS
 	struct stat st;
 	stat("server-testsuite/bears.data", &st);
-	assert(df->get_das_last_modified_time() == st.st_mtime);
+	CPPUNIT_ASSERT(df->get_das_last_modified_time() == st.st_mtime);
 
 	// the dataset pointed by df3 has an anc. DAS
 	stat("server-testsuite/coads.data.das", &st);
-	assert(df3->get_das_last_modified_time() == st.st_mtime);
+	CPPUNIT_ASSERT(df3->get_das_last_modified_time() == st.st_mtime);
     }
 
     void send_das_test() {
@@ -162,7 +165,7 @@ public:
 
 	Regex r1("HTTP/1.0 200 OK
 XDODS-Server:.*
-Date: \\(.*\\)
+Date: .*
 Last-Modified: Thu, 29 Apr 1999 02:29:40 GMT
 Content-type: text/plain
 Content-Description: dods_das
@@ -175,10 +178,10 @@ Attributes {
 }.*
 ");
 	df->send_das(oss, *das); oss << ends;
-#if 0
-	cerr << "DAS: " << oss.str() << endl;
-#endif
-	assert(re_match(r1, oss.str()));
+
+	DBG(cerr << "DAS: " << oss.str() << endl);
+
+	CPPUNIT_ASSERT(re_match(r1, oss.str()));
 	reset_oss();
 
 	Regex r2("HTTP/1.0 304 NOT MODIFIED
@@ -186,82 +189,70 @@ Date: .*
 
 ");
 	df3->send_das(oss, *das); oss << ends;
-	assert(re_match(r2, oss.str()));
+	CPPUNIT_ASSERT(re_match(r2, oss.str()));
     }	
 
     void is_conditional_test() {
-	assert(df->is_conditional() == false);
-	assert(df3->is_conditional() == true);
+	CPPUNIT_ASSERT(df->is_conditional() == false);
+	CPPUNIT_ASSERT(df3->is_conditional() == true);
     }
 
     void get_request_if_modified_since_test() {
-	assert(df->get_request_if_modified_since() == -1);
-	assert(df3->get_request_if_modified_since() == 988679294);
+	CPPUNIT_ASSERT(df->get_request_if_modified_since() == -1);
+	CPPUNIT_ASSERT(df3->get_request_if_modified_since() == 988679294);
     }
 
     void escape_code_test() {
 	// These should NOT be escaped.
-#if 0
-	cerr << df3->get_dataset_name() << endl;
-	cerr << df3->get_ce() << endl;
-#endif
-	assert(df3->get_dataset_name() == "server-testsuite/coads.data");
-	assert(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
+
+	DBG(cerr << df3->get_dataset_name() << endl);
+	DBG(cerr << df3->get_ce() << endl);
+
+	CPPUNIT_ASSERT(df3->get_dataset_name() == "server-testsuite/coads.data");
+	CPPUNIT_ASSERT(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
 
 	// The DODSFIlter instance is feed escaped values; they should be
 	// unescaped by the ctor and the mutators. 5/4/2001 jhrg
 
-#if 0
-	cerr << df5->get_dataset_name() << endl;
-	cerr << df5->get_ce() << endl;
-#endif
-	assert(df5->get_dataset_name() == "nowhere[mydisk]myfile");
-	assert(df5->get_ce() == "u[0]");
+	DBG(cerr << df5->get_dataset_name() << endl);
+	DBG(cerr << df5->get_ce() << endl);
+
+	CPPUNIT_ASSERT(df5->get_dataset_name() == "nowhere[mydisk]myfile");
+	CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
 
 	df5->set_ce("u%5B0%5D");
-	assert(df5->get_ce() == "u[0]");
+	CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
 
-	assert(df6->get_dataset_name() == "nowhere:[mydisk]myfile");
-	assert(df6->get_ce() == "Grid%20field:u[0],Grid%20field:v");
+	CPPUNIT_ASSERT(df6->get_dataset_name() == "nowhere:[mydisk]myfile");
+	CPPUNIT_ASSERT(df6->get_ce() == "Grid%20field:u[0],Grid%20field:v");
 	df5->set_ce("Grid%20u%5B0%5D");
-	assert(df5->get_ce() == "Grid%20u[0]");
+	CPPUNIT_ASSERT(df5->get_ce() == "Grid%20u[0]");
     }
 
-    static Test *suite ()  {
-	TestSuite *s = new TestSuite("DODSFilterTest");
-	s->addTest(new TestCaller<DODSFilterTest>
-		   ("escape_code_test", &DODSFilterTest::escape_code_test));
+    CPPUNIT_TEST_SUITE( DODSFilterTest );
 
-	s->addTest(new TestCaller<DODSFilterTest>
-		   ("read_ancillary_das_test",
-		    &DODSFilterTest::read_ancillary_das_test));
+    CPPUNIT_TEST(get_dataset_last_modified_time_test);
+    CPPUNIT_TEST(get_das_last_modified_time_test);
+    CPPUNIT_TEST(send_das_test);
+    CPPUNIT_TEST(is_conditional_test);
+    CPPUNIT_TEST(get_request_if_modified_since_test);
+    CPPUNIT_TEST(escape_code_test);
 
-	s->addTest(new TestCaller<DODSFilterTest>
-		   ("read_ancillary_dds_test",
-		    &DODSFilterTest::read_ancillary_dds_test));
-
-	s->addTest(new TestCaller<DODSFilterTest>
-		   ("get_dataset_last_modified_time_test", 
-		    &DODSFilterTest::get_dataset_last_modified_time_test));
-
-	s->addTest(new TestCaller<DODSFilterTest>
-		   ("get_das_last_modified_time_test", 
-		    &DODSFilterTest::get_das_last_modified_time_test));
-
-	s->addTest(new TestCaller<DODSFilterTest>
-		   ("send_das_test", &DODSFilterTest::send_das_test));
-
-	s->addTest(new TestCaller<DODSFilterTest>
-		   ("is_conditional_test", 
-		    &DODSFilterTest::is_conditional_test));
-
-	s->addTest(new TestCaller<DODSFilterTest>
-		   ("get_request_if_modified_since_test", 
-		    &DODSFilterTest::get_request_if_modified_since_test));
-	return s;
-    }
+    CPPUNIT_TEST_SUITE_END();
 };
 
+CPPUNIT_TEST_SUITE_REGISTRATION(DODSFilterTest);
+
+int 
+main( int argc, char* argv[] )
+{
+    CppUnit::TextTestRunner runner;
+    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+
+    runner.run();
+
+    return 0;
+}
 
 
 
