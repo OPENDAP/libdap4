@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.34  1999/03/19 17:40:52  jimg
+// Added a call to ios::precision in read(). This sets the precision to 15. The
+// default value, 6, was rounding some values.
+//
 // Revision 1.33  1998/03/19 23:31:22  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
 //
@@ -189,10 +193,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.33 1998/03/19 23:31:22 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.34 1999/03/19 17:40:52 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
+
+#include <iomanip.h>
 
 #include "Float64.h"
 #include "DDS.h"
@@ -266,6 +272,8 @@ Float64::buf2val(void **val)
 void 
 Float64::print_val(ostream &os, String space, bool print_decl_p)
 {
+    os.precision(15);
+
     if (print_decl_p) {
 	print_decl(os, space, false);
 	os << " = " << _buf << ";" << endl;
