@@ -11,6 +11,9 @@
 #define rvalue_h
 
 // $Log: RValue.h,v $
+// Revision 1.2  1999/01/21 20:42:01  tom
+// Fixed comment formatting problems for doc++
+//
 // Revision 1.1  1998/10/21 16:14:17  jimg
 // Added. Based on code that used to be in expr.h/cc
 //
@@ -49,9 +52,10 @@ public:
 // the Clause and DDS classes.
 typedef SLList<rvalue *> rvalue_list;
 
-/** Build an argument list suitable for calling a btp_func, bool_func, etc.
-    Since this takes an rvalue_list and not an rvalue, I've made it a
-    function rather than a class member. */
+/** Build an argument list suitable for calling a #btp_func#,
+    #bool_func#, and so on. Since this takes an #rvalue_list# and
+    not an rvalue, it is a function rather than a class
+    member. */
 BaseType **build_btp_args(rvalue_list *args, DDS &dds);
 
 #endif // rvalue_h

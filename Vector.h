@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.24  1999/01/21 20:42:01  tom
+ * Fixed comment formatting problems for doc++
+ *
  * Revision 1.23  1998/11/10 00:56:44  jimg
  * Fixed up the doc++ comments.
  *
@@ -304,7 +307,7 @@ public:
       any. If no such access has been made, or if the Vector contains
       compound data types, the value of the template instance is undefined.
 
-      Note that the parameter {\it exact_match} is not used by this mfunc.
+      Note that the parameter {\it exact\_match} is not used by this mfunc.
 
       @param name The name of the variabe to find.
       @param exact_match Unused.
@@ -315,7 +318,7 @@ public:
 
     /** This version of var(...) searches for {\it name} and returns a
 	pointer to the BaseType object if found. It uses the same search
-	algorithm as above when {\it exact_match} is false. In addition to
+	algorithm as above when {\it exact\_match} is false. In addition to
 	returning a pointer to the variable, it pushes onto {\it s} a
 	BaseType pointer to each constructor type that ultimately contains
 	{\it name}.

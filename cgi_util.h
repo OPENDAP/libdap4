@@ -19,7 +19,8 @@
     in and using these, look at the class DODSFilter. Always choose to use
     that class over these functions if you can.
 
-    @memo CGI Utilities
+    @name CGI Utilities
+    @memo A collection of useful functions for writing DODS servers.
     @see DODSFilter
     */
 
@@ -181,6 +182,14 @@ void ErrMsgT(const char *Msgt);
     of the given pathname.
     */
 char *name_path(const char *path);
+
+/** These functions are used to create the MIME header for a message
+    from a server to a client.  They can, of course, be used for any
+    other suitable purpose.
+
+    @memo Use these functions to create a MIME header.
+    @name MIME utility functions
+    */
 
 //@{
 /** The reply to a DODS client is in the form of a multi-part MIME

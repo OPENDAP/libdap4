@@ -32,6 +32,9 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.34  1999/01/21 20:42:01  tom
+ * Fixed comment formatting problems for doc++
+ *
  * Revision 1.33  1998/06/04 06:31:33  jimg
  * Added two new member functions to get/set the www_errors_to_stderr property.
  * Also added a new member _www_errors_to_stderr to hold that property. When
@@ -434,7 +437,7 @@ public:
 
     Connect &operator=(const Connect &rhs);
 
-    /** Gets the state of the www_errors_to_stderr property. If TRUE this
+    /** Gets the state of the #www_errors_to_stderr# property. If TRUE this
 	means that http errors will be printed to stderr in addition to being
 	reported in the Error object. If FALSE only the Error object will be
 	used. 
@@ -443,7 +446,7 @@ public:
 	Error object should be used. */
     bool get_www_errors_to_stderr();
 
-    /** Sets the www_errors_To_stderr property.
+    /** Sets the #www_errors_To_stderr# property.
 
 	@see is_www_errors_to_stderr
 	@param state The state of the property. */

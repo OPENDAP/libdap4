@@ -12,6 +12,9 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.9  1999/01/21 20:42:01  tom
+// Fixed comment formatting problems for doc++
+//
 // Revision 1.8  1999/01/21 02:14:37  jimg
 // Added a new struct for the GSE (Grid Selection Expression) parser. This
 // parser uses exceptions to signal all errors except parse errors.
@@ -59,14 +62,15 @@
 #include "Error.h"
 #include "GSEClause.h"
 
-/// Pass parameters by reference to a parser.
 /** #parser_arg# is used to pass parameters to the bison parsers and get
     error codes and objects in return. If #status()# is true, then the
     #object()# returns a pointer to the object built during the parse
     process. If #status()# is false, then the #error()# returns a pointer to
     an Error object.
 
-    Note that the #object()# mfunc returns a void pointer. */
+    Note that the #object()# mfunc returns a void pointer. 
+    @memo Pass parameters by reference to a parser.
+    */
 
 struct parser_arg {
     void *_object;		// nominally a pointer to an object
@@ -104,7 +108,7 @@ struct gse_arg {
     int get_status() { return _status; }
 };
 
-/// Generate error messages for the various parsers.
+
 /** #parser_error()# generates error messages for the various parsers used by
     the DODS core. There are two versions of the function, one which takes a
     #const char *message# and a #const int line_num# and writes the message
@@ -112,17 +116,18 @@ struct gse_arg {
     #parser_arg *arg# parameter and writes the error message into an Error
     object which is returned to the caller via the #arg# parameter.
 
-    NB: The second version of this function also accepts a third parameter
+    \note{The second version of this function also accepts a third parameter
     (#const char *context#) which can be used to provide an additional line
-    of information beyond what is in the string #message#.
+    of information beyond what is in the string #message#.}
 
-    Returns: void */
+    @return void 
+    @memo Generate error messages for the various parsers.
+    */
 
 void parse_error(const char *s, const int line_num);
 void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
 		 const char *context = 0);
 
-/// Save a string to a temporary variable during the parse.
 /** Given a string (#const char *src#), save it to the temporary variable
     pointed to by #dst#. If the string is longer than #ID_MAX#, generate and
     error indicating that #src# was truncated to #ID_MAX# characters during
@@ -131,27 +136,32 @@ void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
     accepts the #parser_arg *arg# argument calls the version of
     #parser_error()# which generates and Error object.
 
-    Returns: void */
+    @return void 
+    @memo Save a string to a temporary variable during the parse.
+    */
 
 void save_str(char *dst, const char *src, const int line_num);
 void save_str(char *dst, const char *src, parser_arg *arg, 
 	      const int line_num, const char *context);
 
-/// Is the value a valid byte?
 /** Check to see if #val# is a valid byte value. If not, generate an error
     message using #parser_error()#. There are two versions of #check_byte()#,
     one which calls #parser_error()# and prints an error message to stderr an
     one which calls #parser_error()# and generates and Error object.
 
-    Returns: True if #val# is a byte value, False otherwise. */
+    @return Returns: True if #val# is a byte value, False otherwise. 
+    @memo Is the value a valid byte?
+    */
 
 int check_byte(const char *val, const int line);
 int check_byte(parser_arg *arg, const char *val, const int line, 
 	       const char *context);
 
-/// Is the value a valid integer?
 /** Like #check_byte()# but for 32-bit integers (#check_uint()# is for
-    unsigned integers). */
+    unsigned integers). 
+
+    @memo Is the value a valid integer?
+    */
 
 int check_int(const char *val, const int num);
 int check_int(parser_arg *arg, const char *val, const int num,
@@ -160,15 +170,18 @@ int check_uint(const char *val, const int num);
 int check_uint(parser_arg *arg, const char *val, const int num,
 	      const char *context);
 
-/// Is the value a valid float?
-//* Like #check_byte()# but for 64-bit float values.
+
+/** Like #check_byte()# but for 64-bit float values.
+
+    @memo Is the value a valid float? */
 
 int check_float(const char *val, const int num);
 int check_float(parser_arg *arg, const char *val, const int num,
 		const char *context);
 
-/// Is tha value a valid URL?
-//* Currently this function always returns true.
+/** Currently this function always returns true.
+
+    @memo Is the value a valid URL? */
 
 int check_url(const char *val, const int num);
 int check_url(parser_arg *arg, const char *val, const int num,

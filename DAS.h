@@ -14,6 +14,9 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.20  1999/01/21 20:42:01  tom
+ * Fixed comment formatting problems for doc++
+ *
  * Revision 1.19  1998/11/24 06:49:08  jimg
  * Replaced the DASVHMap object with an SLList of toplevel_entry structs. The
  * DASVHMap software is not being maintained by the FSF and had bugs. There are
@@ -114,6 +117,7 @@
     DODS simple data types (Byte, Int32, UInt32, Float64, String and
     URL), and may be scalar or vector.  (Note that all values are
     actually stored as String data.)
+    \label{api:das}
 
     A value may also consist of a set of other name-value pairs.  This
     makes it possible to nest collections of attributes, giving rise
@@ -191,10 +195,10 @@ private:
 public:
   /** Create a DAS from a single attribute table.  
 
-      NB: In an older version of this class, #dflt# and #sz# initialized a
-      hash table. That is no longer used ant these params should no longer
-      matter. Note that this ctor is effectively the empty ctor. 11/23/98
-      jhrg
+      \note{In an older version of this class, #dflt# and #sz#
+      initialized a hash table. That is no longer used ant these
+      params should no longer matter. Note that this constructor is
+      effectively the empty constructor. 11/23/98 jhrg}
 
       @param dflt A pointer to a valid attribute table.
       @param sz The number of entries in the table. */
@@ -202,14 +206,14 @@ public:
 	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
 
 #if 0
-    /** Create an empty DAS object. Use append_attr() to add attribute tables
+    /** Create an empty DAS object. Use #append_attr()# to add attribute tables
 	to it. 
 
 	@see append_attr(). */
     DAS();
 #endif
 
-    /** Create a DAS object with one attribute table. Use append_attr()
+    /** Create a DAS object with one attribute table. Use #append_attr()#
 	to add additional attributes.
 
 	@see append_attr()
@@ -229,7 +233,7 @@ public:
     AttrTable *get_table(Pix p);
 
   /** Returns the attribute table with the given name. 
-      @name *get\_table()
+      @name get\_table()
       */
 
   //@{
@@ -240,7 +244,7 @@ public:
   //@}
 
   /** Adds an attribute table to the DAS.
-      @name *add\_table()
+      @name add\_table()
       */
   //@{
   /** Adds an attribute table to the DAS. */

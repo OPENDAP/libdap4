@@ -8,6 +8,9 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.5  1999/01/21 20:42:01  tom
+// Fixed comment formatting problems for doc++
+//
 // Revision 1.4  1998/08/06 16:11:47  jimg
 // Added cache_dir member (from jeh).
 //
@@ -157,7 +160,7 @@ public:
       information.  */ 
     virtual String get_dataset_version();
 
-  /** The cache_dir is used to hold the cached .dds and .das files.
+  /** The #cache_dir# is used to hold the cached .dds and .das files.
       By default, this returns an empty string (store cache files in
       current directory.
 

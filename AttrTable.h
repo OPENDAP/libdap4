@@ -18,6 +18,9 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.24  1999/01/21 20:42:00  tom
+ * Fixed comment formatting problems for doc++
+ *
  * Revision 1.23  1998/12/28 21:39:39  jimg
  * Fixed comments for get_attr().
  *
@@ -263,7 +266,7 @@ public:
       not a container, the function returns null. 
 
       @memo Returns an attribute sub-table. 
-      @name *get\_attr\_table()
+      @name get\_attr\_table()
       */  
   //@{
   ///
@@ -350,7 +353,7 @@ public:
       format by the calling program.
 
       @memo Returns a vector attribute.
-      @name *get\_attr\_vector()
+      @name get\_attr\_vector()
       @return If the indicated attribute is a container, this function
       returns the null pointer.  Otherwise returns a pointer to the
       the attribute vector value.

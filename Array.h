@@ -14,6 +14,9 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.42  1999/01/21 20:42:00  tom
+ * Fixed comment formatting problems for doc++
+ *
  * Revision 1.41  1998/12/15 20:49:40  jimg
  * Added to the documentation on add_constraint().
  *
@@ -261,7 +264,7 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     A[0:3:9] = [1 4 7 10]
     \end{verbatim}
 
-    NB: DODS uses zero-based indexing.
+    \note{DODS uses zero-based indexing.}
 
     @memo Holds multi-dimensional arrays.
     @see Grid
@@ -353,9 +356,9 @@ public:
 	projection for a dimension, and marks that dimension as part of the
 	current projection.
 
-	NB: A stride value <= 0 or > the array size is an error and causes
+	\note{A stride value <= 0 or > the array size is an error and causes
 	#add_constraint# to return FALSE. Similarly, start or stop values >
-	size also cause a FALSE return value.
+	size also cause a FALSE return value.}
 
 	@memo Adds a constraint to an Array dimension.  
 
@@ -371,7 +374,7 @@ public:
     void reset_constraint();
 
     /** Clears the projection; add each projected dimension explicitly using
-	add_constraint. */
+	add\_constraint. */
     void clear_constraint();
 
     /** Returns a pointer to the first dimension of the array. */    
