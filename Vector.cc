@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.14  1996/11/13 19:23:10  jimg
+// Fixed debugging.
+//
 // Revision 1.13  1996/08/13 18:39:25  jimg
 // Added __unused__ to definition of char rcsid[].
 // Fixed int -vs- unsigned int discrepancies.
@@ -73,7 +76,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.13 1996/08/13 18:39:25 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.14 1996/11/13 19:23:10 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -185,6 +188,9 @@ Vector::var(unsigned int i)
       case dods_byte_c:
       case dods_int32_c:
       case dods_float64_c: {
+	  // Transfer the ith value to the BaseType *_var; There are more
+	  // efficient ways to get a whole array using buf2val() but this is
+	  // an OK way to get a single value or several non-contiguous values.
 	unsigned int sz = _var->width();
 	_var->val2buf(_buf + (i * sz));
 	return _var;

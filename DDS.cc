@@ -9,6 +9,9 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.25  1996/11/13 19:23:07  jimg
+// Fixed debugging.
+//
 // Revision 1.24  1996/08/13 18:07:48  jimg
 // The parser (dds.y) is now called using the parser_arg object.
 // the member function eval_function() now returns a NULL BaseType * when the
@@ -138,7 +141,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.24 1996/08/13 18:07:48 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.25 1996/11/13 19:23:07 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -283,11 +286,12 @@ DDS::var(const String &n)
     }
     else {
 	for (Pix p = vars.first(); p; vars.next(p)) {
-
+	    BaseType *btp = vars(p);
+	    DBG(cerr << "Looking at " << n << " in: " << btp << endl);
 	    // Look for the name in the dataset's top-level
-	    if (vars(p)->name() == n) {
-		DBG(cerr << "Found " << n << endl);
-		return vars(p);
+	    if (btp->name() == n) {
+		DBG(cerr << "Found " << n << " in: " << btp << endl);
+		return btp;
 	    }
 	}
     }

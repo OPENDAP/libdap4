@@ -27,9 +27,12 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.12  1996/10/08 17:10:52  jimg
-/* Added % to the set of characters allowable in identifier names
+/* Revision 1.13  1996/11/13 19:23:15  jimg
+/* Fixed debugging.
 /*
+ * Revision 1.12  1996/10/08 17:10:52  jimg
+ * Added % to the set of characters allowable in identifier names
+ *
  * Revision 1.11  1996/08/26 21:13:17  jimg
  * Changes for version 2.07
  *
@@ -78,7 +81,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.12 1996/10/08 17:10:52 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.13 1996/11/13 19:23:15 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -146,7 +149,7 @@ NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 "]"    	    	return (int)*yytext;
 ":"    	    	return (int)*yytext;
 "*"		return (int)*yytext;
-"."		return (int)*yytext;
+"."		return (int)*yytext; // Warning: rule cannot be matched???
 ","		return (int)*yytext;
 "&"		return (int)*yytext;
 "("		return (int)*yytext;
@@ -184,6 +187,12 @@ yywrap(void)
 {
     return 1;
 }
+
+// Note that since atoi() (or strtol()) does not care about signedness, this
+// will dump an unsigned value into a signed variable. However, if the value
+// is used in an unsigned context (i.e., with an operand that  is of unsigned
+// type) then the signed value can be cast back to unsigned without losing
+// information.
 
 void
 store_int32()

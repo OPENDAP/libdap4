@@ -11,22 +11,24 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.27  1996/09/12 00:21:30  jimg
-// Fixed two errors in xdr_str: 1) Use of max_str_len as an array dimension
-// (max_str_len is approx 4e9; a large array by most standards...) and 2) use of
-// storage on the stack for the return string. Now xdr_strings internal
-// allocation mechanism (which uses malloc) is used to create the space needed
-// by the incoming string. After that string is copied to the String object
-// parameter it is freed using free() (Not xdr_free() as the SunOS 4 man page
-// erroneously suggests).
+// Revision 1.28  1996/11/13 19:23:17  jimg
+// Fixed debugging.
+//
+// Revision 1.27 1996/09/12 00:21:30 jimg Fixed two errors in xdr_str: 1) Use
+// of max_str_len as an array dimension (max_str_len is approx 4e9; a large
+// array by most standards...) and 2) use of storage on the stack for the
+// return string. Now xdr_strings internal allocation mechanism (which uses
+// malloc) is used to create the space needed by the incoming string. After
+// that string is copied to the String object parameter it is freed using
+// free() (Not xdr_free() as the SunOS 4 man page erroneously suggests).
 //
 // Revision 1.26  1996/08/13 20:46:39  jimg
 // Added the *_ops() functions (moved from various class files).
 //
 // Revision 1.25  1996/07/15 20:30:35  jimg
-// Added __unused__ to rcsid to suppress warnings from g++ -Wall.
-// Fixed a bug in xdr_str(): a pointer to the decoded string was assigned to the
-// formal parameter BUF instead of the string value itself.
+// Added __unused__ to rcsid to suppress warnings from g++ -Wall. Fixed a bug
+// in xdr_str(): a pointer to the decoded string was assigned to the formal
+// parameter BUF instead of the string value itself.
 //
 // Revision 1.24  1996/05/31 23:31:09  jimg
 // Updated copyright notice.
@@ -83,9 +85,8 @@
 // the definition of the variable.
 //
 // Revision 1.12.2.5  1995/09/29  19:28:04  jimg
-// Fixed problems with xdr.h on an SGI.
-// Fixed conflict of d_int32_t (which was in an enum type defined by BaseType) on
-// the SGI.
+// Fixed problems with xdr.h on an SGI. Fixed conflict of d_int32_t (which
+// was in an enum type defined by BaseType) on the SGI.
 //
 // Revision 1.12.2.4  1995/09/27  23:17:20  jimg
 // Fixed casts again...
@@ -156,7 +157,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.27 1996/09/12 00:21:30 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.28 1996/11/13 19:23:17 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -218,7 +219,7 @@ unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
     // sort the array of names
     qsort(names, nelem, sizeof(char *), char_cmp);
 	
-#ifdef DEBUG2
+#ifdef DODS_DEBUG2
     cout << "unique:" << endl;
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
@@ -296,6 +297,8 @@ delete_xdrstdio(XDR *xdr)
 extern "C" bool_t
 xdr_str(XDR *xdrs, String &buf)
 {
+    DBG(cerr << "In xdr_str, xdrs: " << xdrs << endl);
+
     switch (xdrs->x_op) {
       case XDR_ENCODE: {	// BUF is a pointer to a (String *)
 	assert(buf);
