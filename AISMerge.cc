@@ -68,14 +68,14 @@ AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
 	for (ResourceVectorIter i = rv.begin(); i != rv.end(); ++i) {
 	    FILE *ais_resource = get_ais_resource(i->get_url());
 	    switch (i->get_rule()) {
-	      case overwrite:
+	      case Resource::overwrite:
 		das.parse(ais_resource);
 		break;
-	      case replace:
+	      case Resource::replace:
 		das.erase();
 		das.parse(ais_resource);
 		break;
-	      case fallback:
+	      case Resource::fallback:
 		if (das.get_size() == 0)
 		    das.parse(ais_resource);
 		break;
@@ -88,6 +88,10 @@ AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
 }
 
 // $Log: AISMerge.cc,v $
+// Revision 1.3  2003/02/27 22:21:01  pwest
+// Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
+// rule
+//
 // Revision 1.2  2003/02/26 06:37:35  jimg
 // Changed is_resource() call to has_resource().
 //

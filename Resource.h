@@ -32,10 +32,6 @@
 #include "Error.h"
 #endif
 
-#ifndef resource_rule_h
-#include "ResourceRule.h"
-#endif
-
 using std::string;
 
 /** Bind an ancillary resource with the rule that should be used when
@@ -45,23 +41,43 @@ using std::string;
 
     Note that operator<< is defined for Resource as a function.
 
-    @memo Associate a ResourceRule with an ancillary resource.
+    @memo Associate a rule with an ancillary resource.
     @author James Gallagher <jgallagher@opendap.org> */
 class Resource {
 public:
+
+    /** The AIS uses this enumeration to describe how a given ancillary should
+	be merged into a primary data source.
+
+	<ul>
+	<li>overwrite: Attributes in the ancillary source overwrite those in
+	the primary source. New values are added.</li>
+	<li>replace: The ancillary source replaces the primary. All of the
+	Attributes in the primary are removed.</li>
+	<li>fallback: The ancillary resource provides a set of fallback values
+	if the primary data source lacks any attributes. Note that this does
+	not apply to individual attributes, but to an entire set. The fallback
+	attributes are used only if the original data source lacks attributes
+	altogether. 
+	</ul>
+
+	@brief How are ancillary resources used.
+	@author James Gallagher <jgallagher@opendap.org> */
+    enum rule { overwrite, replace, fallback };
+
     /** Build a Resource with a null URL and set the combination rule to the
 	default. */
-    Resource() :d_url(""), d_rule(overwrite) {}
+    Resource() :d_url(""), d_rule(Resource::overwrite) {}
 
     /** Build a resource. Set the combination rule to the default value,
 	which is overwrite. 
 	@param u The ancillary resource URL. */
-    Resource(const string &u) :d_url(u), d_rule(overwrite) {}
+    Resource(const string &u) :d_url(u), d_rule(Resource::overwrite) {}
 
     /** Build a Resource.
 	@param u The ancillary resource URL.
 	@param r The combination rule. */
-    Resource(const string &u, const ResourceRule &r) :d_url(u), d_rule(r) {}
+    Resource(const string &u, const Resource::rule &r) :d_url(u), d_rule(r) {}
 
     /** Build a Resource. 
 
@@ -75,11 +91,11 @@ public:
 	@param r The name of the combination rule. */
     Resource(const string &u, const string &r) throw(Error) : d_url(u) {
 	if (r == "replace")
-	    d_rule = replace;
+	    d_rule = Resource::replace;
 	else if (r == "fallback")
-	    d_rule = fallback;
+	    d_rule = Resource::fallback;
 	else if (r == "overwrite" || r == "default")
-	    d_rule = overwrite;
+	    d_rule = Resource::overwrite;
 	else
 	    throw Error(string("An AIS Resource object was created with an unknown rule type '") + r);
     }
@@ -97,13 +113,13 @@ public:
     }
 
     /** Return combination rule for this resource. */
-    virtual ResourceRule get_rule() const {
+    virtual Resource::rule get_rule() const {
 	return d_rule;
     }
 
     /** Set the resource's combination rule.
 	@param r The combination rule. */
-    virtual void set_rule(const ResourceRule &r) {
+    virtual void set_rule(const Resource::rule &r) {
 	d_rule = r;
     }
 
@@ -117,10 +133,14 @@ public:
 private:
 
     string d_url;
-    ResourceRule d_rule;
+    Resource::rule d_rule;
 };
 
 // $Log: Resource.h,v $
+// Revision 1.4  2003/02/27 22:21:01  pwest
+// Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
+// rule
+//
 // Revision 1.3  2003/02/26 06:38:28  jimg
 // Made methods virtual.
 //

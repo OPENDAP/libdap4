@@ -31,6 +31,10 @@
 #include "AISResources.h"
 #include "AISDatabaseParser.h"
 
+using std::ostream ;
+using std::ofstream ;
+using std::endl ;
+
 /** Output the XML fragment for a Resource. This function is a friend of the
     Resource class. 
     @see Resource. */
@@ -38,9 +42,9 @@ ostream &
 operator<<(ostream &os, const Resource &r)
 {
     os << "<ancillary";
-    if (r.d_rule != overwrite) {
+    if (r.d_rule != Resource::overwrite) {
 	os << " rule=\"";
-	(r.d_rule == fallback) ? os << "fallback\"": os << "replace\"";
+	(r.d_rule == Resource::fallback) ? os << "fallback\"": os << "replace\"";
     }
     os << " url=\"" << r.d_url << "\"/>";
 
@@ -187,6 +191,10 @@ AISResources::write_database(const string &filename)
 }
 
 // $Log: AISResources.cc,v $
+// Revision 1.6  2003/02/27 22:21:01  pwest
+// Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
+// rule
+//
 // Revision 1.5  2003/02/26 06:56:11  jimg
 // Made has_resource const.
 //

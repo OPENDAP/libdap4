@@ -30,10 +30,6 @@
 #include <vector>
 #include <map>
 
-#ifndef resource_rule_h
-#include "ResourceRule.h"
-#endif 
-
 #ifndef resource_h
 #include "Resource.h"
 #endif
@@ -93,6 +89,10 @@ public:
 };
 
 // $Log: AISResources.h,v $
+// Revision 1.5  2003/02/27 22:21:01  pwest
+// Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
+// rule
+//
 // Revision 1.4  2003/02/26 06:56:11  jimg
 // Made has_resource const.
 //
