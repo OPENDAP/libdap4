@@ -1,0 +1,89 @@
+# $Id: Makefile.in,v 1.1 1994/08/05 20:50:05 jimg Exp $
+
+@SET_MAKE@
+
+# Set makefile variables, some with values supplid by configure 
+# DEFS gets the `-D' defines that describe what a particular system has
+# or doesn't have.
+
+CFLAGS = -O -g -I$(DODS_ROOT)/include
+CXXFLAGS = -O -g -DUSE_LIBGXX_INLINES -I$(DODS_ROOT)/include \
+	   -fno-implicit-templates -fvtable-thunks
+LDFLAGS = -L$(DODS_ROOT)/lib
+LFLAGS=-8
+YFLAGS=-d
+DODS_ROOT=../../
+DEFS = @DEFS@
+LIBS = @LIBS@
+
+# Set the instalation directories; prefix can be set on the command line
+# during Makefile construction with `./configure --prefix /my/choice'
+
+prefix = ../../
+exec_prefix = $(prefix)
+bindir = $(exec_prefix)/bin
+libdir = $(exec_prefix)/lib
+includedir = $(prefix)/include
+manext = 1
+mandir = $(prefix)/man/man$(manext)
+
+INSTALLMAN = man
+
+SHELL = /bin/sh
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+# names of key programs
+
+LN_S = @LN_S@
+AWK = @AWK@
+CC = @CC@
+CXX = @CXX@
+YACC = bison# @YACC@
+LEX = flex# @LEX@
+AR = ar
+RANLIB = @RANLIB@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+
+SRCS=AttrMap.cc AttrVHMap.cc VarMap.cc VarVHMap.cc DAS.cc AttrTable.cc
+OBJS=AttrMap.o AttrVHMap.o AttrTable.o VarMap.o VarVHMap.o
+GRAM_OBJS=lex.das.o das.tab.o
+POBJS=$(OBJS) DAS.o $(GRAM_OBJS) $(DODS_ROOT)/lib/Space.o
+
+# Build the test driver for DAS objects.
+
+das-test:  $(POBJS) das-test.o
+	$(CXX) $(CXXFLAGS) -o das-test $(POBJS) das-test.o $(LIBS)
+
+# Build the DAS scanner (a C++ object)
+
+lex.das.c: das.lex das.tab.c das.tab.h
+	$(LEX) $(LFLAGS) -Pdas das.lex
+
+lex.das.o: lex.das.c
+	$(CXX) $(CXXFLAGS) -c lex.das.c -o lex.das.o
+
+# Build the DAS parser
+# Note that awk is used to add a param to dasparse().
+
+das.tab.c das.tab.h: das.y
+	$(YACC) $(YFLAGS) -p das das.y
+	$(AWK) -f munge-das.awk das.tab.c > tmp
+	mv tmp das.tab.c
+
+das.tab.o: das.tab.c		# build using C++ compiler
+	$(CXX) $(CXXFLAGS) -c das.tab.c -o das.tab.o
+
+clean:	
+	-rm -f *.o *~ core
+	-rm -f lex.das.c das.tab.c das.tab.h
+	-rm -f das-test
+	-rm -f space.* symtab
+
+
+depend: 
+	makedepend -- $(CXXFLAGS) -I/usr/local/lib/g++-include -- $(SRCS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
