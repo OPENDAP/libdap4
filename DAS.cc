@@ -5,7 +5,13 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.6  1994/10/05 16:34:12  jimg
+// Revision 1.7  1994/10/13 15:46:57  jimg
+// Added compile-time switched instrumentation.
+// Removed the three definitions of DAS::print().
+// Added DAS::print(ostream &os = cout) -- this is the only function for
+// printing the in-memory DAS.
+//
+// Revision 1.6  1994/10/05  16:34:12  jimg
 // Fixed bug in the parse function(s): the bison generated parser returns
 // 1 on error, 0 on success, but parse() was not checking for this.
 // Instead it returned the value of bison's parser function.
@@ -37,7 +43,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.6 1994/10/05 16:34:12 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.7 1994/10/13 15:46:57 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -55,6 +61,8 @@ static char rcsid[]="$Id: DAS.cc,v 1.6 1994/10/05 16:34:12 jimg Exp $";
 #include <Pix.h>
 #include <String.h>
 
+#include "debug.h"
+
 #include "DAS.h"		// follows pragma since DAS.h is interface
 
 int dasrestart(FILE *yyin);
@@ -69,12 +77,14 @@ DAS::DAS(AttrTablePtr dflt, unsigned int sz) : map(dflt, sz)
 // simple member-wise copy. Similarly, we don't need to define our own op=.
 
 // This deletes the pointers to AttrTables allocated during the parse (and at 
-// other times?). jhrg 7/29/94
+// other times). jhrg 7/29/94
 
 DAS::~DAS()
 {
-    for(Pix p = map.first(); p; map.next(p))
+    for(Pix p = map.first(); p; map.next(p)) {
+	DBG(cerr << "map.contents() = " << map.contents(p) << endl);
 	delete map.contents(p);
+    }
 }
 
 Pix
@@ -107,7 +117,7 @@ DAS::get_table(const String &name)
     return map[name];
 }
 
-// This function is necessary because (char *) arguments will e converted to
+// This function is necessary because (char *) arguments will be converted to
 // Pixs (and not Strings). Thus, get_table(name) needs a cast; it seems tough
 // to believe folks will always remember that.
 
@@ -126,6 +136,7 @@ DAS::add_table(const String &name, AttrTable *at)
 AttrTable *
 DAS::add_table(const char *name, AttrTable *at)
 {
+//    DBG2(cerr << "In DAS::add_table(const char *, AttrTable *" << endl);
     return add_table((String)name, at);
 }
 
@@ -194,6 +205,7 @@ DAS::parse(FILE *in)
     return dasparse(*this) == 0;
 }
 
+#ifdef NEVER
 /*
   Write attributes from internal tables to a file. If the file cannot be
   opened for writing, return false, otherwise return the status of mfunc
@@ -241,7 +253,7 @@ DAS::print(int fd)
     
     return status;
 }
-
+#endif
 
 /*
   Write attributes from tables to `out' (which defaults to stdout). Return
@@ -249,9 +261,9 @@ DAS::print(int fd)
 */
 
 bool
-DAS::print(FILE *out)
+DAS::print(ostream &os)
 {
-    ostdiostream os(out);
+//    ostdiostream os(out);
 
     os << "Attributes {" << endl;
 

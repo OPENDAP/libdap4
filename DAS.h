@@ -6,10 +6,16 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.7  1994/10/05 16:44:27  jimg
-/* Changed from Map to DLList for representation of the attribute table.
-/* Added TYPE to the attribute table.
+/* Revision 1.8  1994/10/13 15:46:58  jimg
+/* Added compile-time switched instrumentation.
+/* Removed the three definitions of DAS::print().
+/* Added DAS::print(ostream &os = cout) -- this is the only function for
+/* printing the in-memory DAS.
 /*
+ * Revision 1.7  1994/10/05  16:44:27  jimg
+ * Changed from Map to DLList for representation of the attribute table.
+ * Added TYPE to the attribute table.
+ *
  * Revision 1.6  1994/09/27  22:46:31  jimg
  * Changed the implementation of the class DAS from one which inherited
  * from DASVHMap to one which contains an instance of DASVHMap.
@@ -51,6 +57,7 @@
 
 #include <stdio.h>
 
+#include <iostream.h>
 #include <String.h>
 #include <Pix.h>
 
@@ -81,9 +88,12 @@ public:
     bool parse(int fd);
     bool parse(FILE *in=stdin);
 
+    bool print(ostream &os = cout);
+#ifdef NEVER
     bool print(String fname);
     bool print(int fd);
     bool print(FILE *out=stdout);
+#endif
 };
 
 #endif
