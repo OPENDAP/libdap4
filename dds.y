@@ -1,7 +1,7 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
+// (c) COPYRIGHT URI/MIT 1994-1997
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.21  1997/02/28 01:31:22  jimg
+ * Added error messages.
+ *
  * Revision 1.20  1996/10/28 23:44:16  jimg
  * Added unsigned int to set of possible datatypes.
  *
@@ -115,7 +118,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.y,v 1.20 1996/10/28 23:44:16 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.y,v 1.21 1997/02/28 01:31:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,6 +126,7 @@ static char rcsid[] __unused__ = {"$Id: dds.y,v 1.20 1996/10/28 23:44:16 jimg Ex
 #include <assert.h>
 
 #include <iostream.h>
+#include <strstream.h>
 
 #include "DDS.h"
 #include "Array.h"
@@ -153,6 +157,10 @@ static BaseType *current;
 static Part part = nil;		/* Part is defined in BaseType */
 static char id[ID_MAX];
 
+static char *NO_DDS_MSG =
+"The descriptor object returned from the dataset was null.\n\
+Check that the URL is correct.";
+
 int ddslex();
 void ddserror(char *s);
 
@@ -161,7 +169,7 @@ void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current,
 
 %}
 
-%expect 60
+%expect 66
 
 %token ID
 %token INTEGER
@@ -189,6 +197,11 @@ datasets:	dataset
 ;
 
 dataset:	DATASET '{' declarations '}' name ';'
+                | error
+                {
+		    parse_error((parser_arg *)arg, NO_DDS_MSG);
+		    YYABORT;
+		}
 ;
 
 declarations:	/* empty */
@@ -198,8 +211,19 @@ declarations:	/* empty */
 
 declaration: 	list non_list_decl
                 { 
-		    if (current->check_semantics())
+		    String smsg;
+		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    else {
+			ostrstream msg;
+			msg << "In the dataset descriptor object:" << endl
+			    << "`" << $1 << " " << $2 
+			    << "' is not a valid declaration" << endl 
+			    << smsg << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
 		}
                 | non_list_decl
 ;
@@ -210,8 +234,19 @@ declaration: 	list non_list_decl
 
 non_list_decl:  base_type var ';' 
                 { 
-		    if (current->check_semantics())
+		    String smsg;
+		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    else {
+			ostrstream msg;
+			msg << "In the dataset descriptor object:" << endl
+			    << "`" << $1 << " " << $2 
+			    << "' is not a valid declaration" << endl 
+			    << smsg << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
 		}
 
 		| structure  '{' declarations '}' 
@@ -220,8 +255,19 @@ non_list_decl:  base_type var ';'
 		} 
                 var ';' 
                 { 
-		    if (current->check_semantics())
+		    String smsg;
+		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    else {
+			ostrstream msg;
+			msg << "In the dataset descriptor object:" << endl
+			    << "`" << $1 << "'" << endl
+			    << "is not a valid declaration." << endl
+			    << smsg << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
 		}
 
 		| sequence '{' declarations '}' 
@@ -230,8 +276,19 @@ non_list_decl:  base_type var ';'
 		} 
                 var ';' 
                 { 
-		    if (current->check_semantics())
+		    String smsg;
+		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    else {
+			ostrstream msg;
+			msg << "In the dataset descriptor object:" << endl
+			    << "`" << $1 << "'" << endl
+			    << "is not a valid declaration." << endl 
+			    << smsg << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
 		}
 
 		| function '{' INDEPENDENT ':'
@@ -244,9 +301,20 @@ non_list_decl:  base_type var ';'
 		}
                 var ';'
                 { 
-		    if (current->check_semantics()) {
+		    String smsg;
+		    if (current->check_semantics(smsg)) {
 			part = nil; 
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    }
+		    else {
+			ostrstream msg;
+			msg << "In the dataset descriptor object:" << endl
+			    << "`" << $1 << "'" << endl
+			    << "is not a valid declaration." << endl 
+			    << smsg << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 
@@ -260,9 +328,20 @@ non_list_decl:  base_type var ';'
 		}
                 var ';' 
                 {
-		    if (current->check_semantics()) {
+		    String smsg;
+		    if (current->check_semantics(smsg)) {
 			part = nil; 
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    }
+		    else {
+			ostrstream msg;
+			msg << "In the dataset descriptor object:" << endl
+			    << "`" << $1 << "'" << endl
+			    << "is not a valid declaration." << endl 
+			    << smsg << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 ;
@@ -331,6 +410,7 @@ array_decl:	'[' INTEGER ']'
 			 current = a;
 		     }
 		 }
+
 		 | '[' ID 
 		 {
 		     save_str(id, $2, dds_line_num);
@@ -348,17 +428,38 @@ array_decl:	'[' INTEGER ']'
 		     }
 		 }
 		 ']'
+
+		 | error
+                 {
+		     ostrstream msg;
+		     msg << "In the dataset descriptor object:" << endl
+			 << "Expected and array subscript." << endl << ends;
+		     parse_error((parser_arg *)arg, msg.str());
+		     msg.freeze(0);
+		     YYABORT;
+		 }
 ;
 
 name:		ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
+                | error 
+                {
+		     ostrstream msg;
+		     msg << "In the dataset descriptor object:" << endl
+			 << "this data set lacks a name." << endl << ends;
+		     parse_error((parser_arg *)arg, msg.str());
+		     msg.freeze(0);
+		     YYABORT;
+		}
 ;
 
 %%
 
 void 
-ddserror(char *s)
+ddserror(char * /* s */)
 {
+#if 0
     fprintf(stderr, "%s line: %d\n", s, dds_line_num);
+#endif
 }
 
 /*
