@@ -32,6 +32,11 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.41  1999/12/01 21:37:44  jimg
+ * Added members to support caching.
+ * Added accessors for cache control. libwww 5.2.9 does not supoort these,
+ * however.
+ *
  * Revision 1.40  1999/09/03 22:07:44  jimg
  * Merged changes from release-3-1-1
  *
@@ -374,16 +379,15 @@ private:
     string _proj;		// Projection part of initial CE.
     string _sel;		// Selection of initial CE
     string _accept_types;	// Comma separated list of types understood
-
+    string _cache_control;	// should the request be cached? 
+    
     HTParentAnchor *_anchor;
-#ifdef LIBWWW_5_0
-    struct timeval *_tv;	// Timeout on socket
-#endif
     HTMethod _method;		// What method are we envoking 
     FILE *_output;		// Destination; a temporary file
     XDR *_source;		// Data source stream
 
     bool _www_errors_to_stderr; // FALSE for messages to stderr
+    bool _accept_deflate;
 
   /* Initialize the W3C WWW Library. This should only be called when a
       Connect object is created and there are no other Connect objects in
@@ -514,6 +518,18 @@ public:
 
 	@param types The string listing datatypes understood by this client. */
     void set_accept_types(const string &types);
+
+    /** Get the string which describes the default cache control value. This
+	is sent with all outgoing messages.<p>
+	NB: The libwww 5.2.9 cache does not honor this.
+	@return The cache control header value. */
+    string get_cache_control();
+
+    /** Set the cache control header value.
+	@see get_cache_control
+	@see HTTP/1.1 Specification, sec. 14.9.
+	@param caching Should be no-cache to disable caching. */
+    void set_cache_control(const string &caching);
 
   /** Fetch the contents of the indicated URL and put its contents
       into an output file.  A pointer to this file can be retrieved
