@@ -18,9 +18,12 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.1  1995/01/10 16:23:04  jimg
-/* Created new `common code' library for the net I/O stuff.
+/* Revision 1.2  1995/01/31 20:46:56  jimg
+/* Added declaration of request_data() mfunc in Connect.
 /*
+ * Revision 1.1  1995/01/10  16:23:04  jimg
+ * Created new `common code' library for the net I/O stuff.
+ *
  * Revision 1.2  1994/10/05  20:23:28  jimg
  * Fixed errors in *.h files comments - CVS bites again.
  * Changed request_{das,dds} so that they use the field `_api_name'
@@ -74,6 +77,7 @@ public:
     
     bool request_das();		// get the das from the server in the URL
     bool request_dds();
+    bool request_data();
 };
 
 typedef Connect * ConnectPtr;
