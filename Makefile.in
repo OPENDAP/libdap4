@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.56 1996/12/12 23:42:51 jimg Exp $
+# $Id: Makefile.in,v 1.57 1996/12/18 19:14:59 jimg Exp $
 
 @SET_MAKE@
 
@@ -274,14 +274,15 @@ install-headers:
 		 $(GNUHDRS) $(NETIOHDRS); \
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
-install-geturl:
+install-geturl: geturl
 	$(INSTALL_PROGRAM) geturl $(etcdir)
 	$(STRIP) $(etcdir)/geturl
 
 install-gui:
-	$(INSTALL_PROGRAM) dods_gui.tcl error.tcl progress.tcl $(etcdir)
+	for tcl-prog in dods_gui.tcl error.tcl progress.tcl; \
+	    do $(INSTALL_PROGRAM) $$tcl-prog $(etcdir); done
 
-install-usage:
+install-usage: usage
 	$(INSTALL_PROGRAM) usage $(etcdir)
 	$(STRIP) $(etcdir)/usage
 
