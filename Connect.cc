@@ -45,6 +45,9 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
+// Revision 1.16  1996/03/05 23:21:27  jimg
+// Added const to char * parameters and function prototypes.
+//
 // Revision 1.15  1996/02/01 21:43:51  jimg
 // Added mfuncs to maintain a list of DDSs and the constraint expressions
 // that produced them.
@@ -140,7 +143,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.15 1996/02/01 21:43:51 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.16 1996/03/05 23:21:27 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -154,8 +157,8 @@ static char rcsid[]={"$Id: Connect.cc,v 1.15 1996/02/01 21:43:51 jimg Exp $"};
 
 #include "Connect.h"
 
-extern "C" FILE *NetExecute(char *); // defined in netexec.c
-extern "C" FILE *NetConnect(char *); // defined in netexec.c
+extern "C" FILE *NetExecute(const char *); // defined in netexec.c
+extern "C" FILE *NetConnect(const char *); // defined in netexec.c
 extern "C" FILE *move_dds(FILE *in); // defined in netexec.c
 extern void set_xdrin(FILE *in); // defined in BaseType.cc
 extern void set_xdrout(FILE *out); // define in BaseType.cc
@@ -211,7 +214,7 @@ Connect::request_das(const String &ext)
     String das_url = _URL + "."  + ext;
     bool status = false;
 
-    FILE *fp = NetExecute(das_url);
+    FILE *fp = NetExecute((const char *)das_url);
 
     if( fp ) 
       status = _das.parse(fp);    // read and parse the das from a file 
@@ -231,7 +234,7 @@ Connect::request_dds(const String &ext)
     String dds_url = _URL + "." + ext;
     bool status = false;
 
-    FILE *fp = NetExecute(dds_url);
+    FILE *fp = NetExecute((const char *)dds_url);
 
     if( fp ) 
       status = _dds.parse(fp);    // read and parse the dds from a file 
@@ -261,9 +264,9 @@ Connect::request_data(const String expr, bool async, const String &ext)
     FILE *fp;
 
     if (async)
-	fp = NetConnect(data_url);
+	fp = NetConnect((const char *)data_url);
     else
-	fp = NetExecute(data_url);
+	fp = NetExecute((const char *)data_url);
 	
     if (!fp) {
 	cerr << "Could not complete data request operation" << endl;
