@@ -8,10 +8,14 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.22  1996/03/05 18:44:52  jimg
-/* Added ce_eval to serailize member function.
-/* Added ops member function.
+/* Revision 1.23  1996/04/04 17:29:42  jimg
+/* Merged recent changes from version 1.1.1 (including changes for the Type
+/* enum which caused a problem on the SGI).
 /*
+ * Revision 1.22  1996/03/05 18:44:52  jimg
+ * Added ce_eval to serailize member function.
+ * Added ops member function.
+ *
  * Revision 1.21  1996/02/02 00:31:00  jimg
  * Merge changes for DODS-1.1.0 into DODS-2.x
  *
@@ -38,7 +42,14 @@
  * representation of a variable's type.
  * Changed the name of read_val/store_val to buf2val/val2buf.
  *
- * Revision 1.15.2.3  1995/09/29 19:27:59  jimg
+ * Revision 1.15.2.5  1996/02/27 23:48:28  jimg
+ * Fixed errors introduced in the last checkin.
+ *
+ * Revision 1.15.2.4  1996/02/23 21:37:23  jimg
+ * Updated for new configure.in.
+ * Fixed problems on Solaris 2.4.
+ *
+ * Revision 1.15.2.3  1995/09/29  19:27:59  jimg
  * Fixed problems with xdr.h on an SGI.
  * Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
  * the SGI.
@@ -182,20 +193,18 @@ enum Part {
 };
 
 enum Type {
-    null_t,			// use null_t when you don't know
-    byte_t,
-    int32_t,
-    float64_t,
-    str_t,
-    url_t,
-    array_t,
-    list_t,
-    structure_t,
-    sequence_t,
-    function_t,
-    grid_t,
-    base_type_t,		// these are used in constraint expressions
-    func_ptr_t
+    d_null_t,
+    d_byte_t,
+    d_int32_t,			// Added `d_' to fix clash with IRIX 5.3.
+    d_float64_t,
+    d_str_t,
+    d_url_t,
+    d_array_t,
+    d_list_t,
+    d_structure_t,
+    d_sequence_t,
+    d_function_t,
+    d_grid_t
 };
 
 class DDS;			// forward declaration; see DDS.h
@@ -205,13 +214,12 @@ private:
     String _name;		// name of the instance
     Type _type;			// instance's type
 
-    // _out is used to retain access to the FILE * used by _xdrout. It is
-    // used by the mfunc expunge to flush the buffer.
     static FILE *_out;		// output stream for data from server
     static FILE *_in;		// like _out but for input
 
     // xdr_coder is used as an argument to xdr procedures that encode groups
     // of things (e.g., xdr_array()). Each leaf class's ctor must set this.
+
     xdrproc_t _xdr_coder;
 
     // These static pointers are (by definition) common to all instances of
