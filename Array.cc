@@ -46,6 +46,11 @@
 #include "escaping.h"
 #include "ArrayIterAdapter.h"
 
+#ifdef WIN32
+#include <algorithm>
+#include <functional>
+#endif
+
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
@@ -998,6 +1003,9 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.64  2004/06/27 11:28:01  rmorris
+// Get it to compile under win32 by including <functional> and <algorithm>
+//
 // Revision 1.63  2004/03/10 16:29:18  jimg
 // Repairs to the methods which provide access using iterators. These
 // were using '*_iter &' type params and that made newer versions of g++
