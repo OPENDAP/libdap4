@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.17.exp,v $
+# Revision 1.5  1997/03/27 18:19:58  jimg
+# Update for version 2.13
+#
 # Revision 1.4  1996/11/13 19:23:44  jimg
 # *** empty log message ***
 #
@@ -32,7 +35,6 @@ Attributes {
     test {
     }
 }
-Error parsing the text on line 7:
 Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)
 followed by a name and value.
 parse() returned: 0"

@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.16.exp,v $
+# Revision 1.4  1997/03/27 18:19:57  jimg
+# Update for version 2.13
+#
 # Revision 1.3  1996/08/12 22:22:17  jimg
 # Changed for the new error message text from the parser.
 #
@@ -32,7 +35,6 @@ Attributes {
         Int32 i 1;
     }
 }
-Error parsing the text on line 7:
 `i' previously defined.
 parse() returned: 0"
 

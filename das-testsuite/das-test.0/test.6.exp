@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.6.exp,v $
+# Revision 1.8  1997/03/27 18:20:00  jimg
+# Update for version 2.13
+#
 # Revision 1.7  1996/11/13 19:23:46  jimg
 # *** empty log message ***
 #
@@ -46,7 +49,6 @@ Attributes {
         string slotb val2;
     }
 }
-Error parsing the text on line 7:
 Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)
 followed by a name and value.
 parse() returned: 0"
