@@ -47,10 +47,10 @@ TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe \
 		  $(OBJDIR)\ThreadTest.exe
 
 # Define the testsuite objects
-#TESTTARGETS	= $(OBJDIR)\das-test.exe \
-#		  $(OBJDIR)\dds-test.exe \
-#		  $(OBJDIR)\error-test.exe \
-#		  $(OBJDIR)\expr-test.exe
+TESTTARGETS	= $(OBJDIR)\das-test.exe \
+		  $(OBJDIR)\dds-test.exe \
+		  $(OBJDIR)\error-test.exe \
+		  $(OBJDIR)\expr-test.exe
 
 # Clear built-in rules and set new ones
 .SUFFIXES :
@@ -172,7 +172,8 @@ TESTOBJS = $(OBJDIR)\TestByte.obj \
 LIBOBJS = $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) $(EXPROBJS) \
 		$(UTILOBJS) $(CLIENTOBJS)
 
-all: build_libxdr setup grammars $(TARGETS) check
+all: build_libxdr setup grammars $(TARGETS)
+#all: build_libxdr setup grammars $(TARGETS) check
 
 grammars: ..\lex.das.c ..\das.tab.h ..\lex.dds.c ..\dds.tab.h ..\lex.expr.c \
 		..\expr.tab.h ..\lex.Error.c ..\Error.tab.h ..\lex.gse_.c \
@@ -210,6 +211,7 @@ install:
 	copy config_dap.h $(INCLUDEDIR)
 	copy dods-datatypes.h $(INCLUDEDIR)
 	copy ..\debug.h $(INCLUDEDIR)
+	copy ..\dods-limits.h $(INCLUDEDIR)
 	copy ..\cgi_util.h $(INCLUDEDIR)
 	copy ..\escaping.h $(INCLUDEDIR)
 	copy ..\DODSFilter.h $(INCLUDEDIR)
