@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.119 2001/01/26 19:48:09 jimg Exp $
+# $Id: Makefile.in,v 1.120 2001/02/09 22:12:17 jimg Exp $
 
 @SET_MAKE@
 
@@ -188,9 +188,10 @@ geturl: libdap++-gui.a $(TESTOBJS) geturl.o
 	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) libdap++-gui.a \
 		$(LIBS) $(GUILIBS) $(XTRALIBS)
 
-pure-geturl: libdap++-gui.a $(TESTOBJS) geturl.o
-	$(PURIFY) $(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) \
-		libdap++-gui.a $(LIBS) $(GUILIBS) $(XTRALIBS)
+# Text only copy of geturl. For testing non-gui behavior.
+tgeturl: libdap++.a $(TESTOBJS) geturl.o
+	$(CXX) $(LDFLAGS) -o tgeturl geturl.o $(TESTOBJS) \
+		libdap++.a $(LIBS) $(GUILIBS) $(XTRALIBS)
 
 # The program named usage is the filter that is run by the CGI dispatch
 # script as the `usage server'. This filter is the same for all different
@@ -443,13 +444,14 @@ server-check: geturl
 # You must modify TestRunner.cc for each new test class.
 UNIT_TEST_SRC = TestRunner.cc TextTestResult.cc 
 # AttrTableTest.cc DODSFilterTest.cc cgiUtilTest.cc parserUtilTest.cc
-UNIT_TEST_CLASSES = AttrTableTest.o DODSFilterTest.o cgiUtilTest.o \
+UNIT_TEST_CLASSES = AttrTableTest.o DODSFilterTest.o cgiUnitTest.o \
 	parserUtilTest.o
 UNIT_TEST_SCAFFOLD = TestRunner.o TextTestResult.o
 
-unit_tests: libdap++.a $(UNIT_TEST_SCAFFOLD)
+# This target is broken. 2/9/2001 jhrg
+unit_tests: libdap++.a $(UNIT_TEST_SCAFFOLD) $(UNIT_TEST_CLASSES)
 	$(CXX) -o unit_tests $(LDFLAGS) \
-		$(UNIT_TEST_SCAFFOLD) $(TESTOBJS) \
+		$(UNIT_TEST_SCAFFOLD) $(UNIT_TEST_CLASSES) $(TESTOBJS) \
 		$(UNIT_LDFLAGS) -lcppunit -ldap++ $(LIBS)
 
 # Clean up.
@@ -782,15 +784,12 @@ TestRunner.o: TestRunner.cc TextTestResult.h \
  /home/jimg/src/CppUnit/test/framework/Guards.h \
  /home/jimg/src/CppUnit/test/framework/TestFailure.h \
  /home/jimg/src/CppUnit/test/framework/CppUnitException.h \
- AttrTableTest.cc /home/jimg/src/CppUnit/test/framework/TestCase.h \
+ DODSFilterTest.cc /home/jimg/src/CppUnit/test/framework/TestCase.h \
  /home/jimg/src/CppUnit/test/framework/Test.h \
  /home/jimg/src/CppUnit/test/framework/TestCaller.h \
- /home/jimg/src/CppUnit/test/framework/TestSuite.h AttrTable.h Error.h \
- DODSFilterTest.cc DODSFilter.h DAS.h DDS.h BaseType.h Clause.h expr.h \
- RValue.h debug.h cgiUtilTest.cc cgi_util.h Connect.h util.h Byte.h \
- dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
- Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
- Structure.h Sequence.h Grid.h parserUtilTest.cc parser.h GSEClause.h
+ /home/jimg/src/CppUnit/test/framework/TestSuite.h DODSFilter.h DAS.h \
+ AttrTable.h Error.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h \
+ cgiUnitTest.cc
 TextTestResult.o: TextTestResult.cc TextTestResult.h \
  /home/jimg/src/CppUnit/test/framework/TestResult.h \
  /home/jimg/src/CppUnit/test/framework/Guards.h \
