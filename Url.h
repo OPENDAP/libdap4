@@ -5,11 +5,17 @@
 // jhrg 9/7/94
 
 /* $Log: Url.h,v $
-/* Revision 1.3  1994/11/22 14:06:18  jimg
-/* Added code for data transmission to parts of the type hierarchy. Not
-/* complete yet.
-/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+/* Revision 1.4  1994/11/29 20:16:36  jimg
+/* Added mfunc for data transmission.
+/* Uses special xdr function for serialization and xdr_coder.
+/* Removed `type' parameter from ctor.
+/* Added FILE *in and *out to ctor parameter list.
 /*
+ * Revision 1.3  1994/11/22  14:06:18  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
  * Revision 1.2  1994/09/23  14:36:16  jimg
  * Fixed errors in comments.
  *
@@ -28,14 +34,31 @@
 #pragma interface
 #endif
 
+#include <limits.h>
+
 #include "BaseType.h"
+
+const unsigned int max_url_len = UCHAR_MAX-1;
 
 class Url: public BaseType {
 private:
+    char *_buf;
 
 public:
-    Url(const String &n = (char *)0, const String &t = "Url");
+    Url(const String &n = (char *)0, FILE *pin = stdin, FILE *pout = stdout);
     virtual ~Url() {}
+
+    virtual BaseType *ptr_duplicate();
+    
+    virtual unsigned int size();
+
+    //defined in <API>_read.cc
+    virtual bool read(String dataset, String var_name, String constraint);
+
+    virtual bool serialize(bool flush = false, unsigned int num = 0);
+    virtual unsigned int deserialize();
+
+    virtual void print_val(ostream &os, String space = "");
 };
 
 typedef Url * UrlPtr;
