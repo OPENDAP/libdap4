@@ -38,6 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.18  1996/03/05 18:42:55  jimg
+// Fixed serialize so that expunge() is always called when the member function
+// finishes and FLUSH is true.
+// Added ops member function and byte_ops interface function.
+//
 // Revision 1.17  1996/02/02 00:31:01  jimg
 // Merge changes for DODS-1.1.0 into DODS-2.x
 //
@@ -152,10 +157,13 @@
 
 #include "config_dap.h"
 
+#include <stdlib.h>		// for atoi()
 #include <assert.h>
 
 #include "Byte.h"
 #include "DDS.h"
+#include "parser.h"
+#include "expr.tab.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -175,30 +183,33 @@ Byte::width()
     return sizeof(byte);
 }
 
-// Serialize the contents of member _BUF and write the result to stdout If
-// FLUSH is true, write the contents of the output buffer to the
-// kernel. FLUSH is false by default.
+// Serialize the contents of member _BUF (the object's internal buffer, used
+// to hold data) and write the result to stdout. If FLUSH is true, write the
+// contents of the output buffer to the kernel. FLUSH is false by default. If
+// CE_EVAL is true, evaluate the current constraint expression; only send
+// data if the CE evaluates to true.
 //
 // NB: See the comment in BaseType re: why we don't use XDR_CODER here
+//
+// Returns: false if a failure to read, send or flush is detected, true
+// otherwise. 
 
 bool
-Byte::serialize(const String &dataset, DDS &dds, bool flush)
+Byte::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
-    bool stat = true;
+    if (!read_p() && !read(dataset))
+	return false;
 
-    if (!read_p())		// only read if not read already
-	stat = read(dataset);
+    if (ce_eval && !dds.eval_selection(dataset))
+	return true;
 
-    if (stat && !dds.eval_constraint())	// if the constraint is false, return
-	return stat;
+    if (!xdr_char(xdrout(), &_buf))
+	return false;
 
-    if (stat)
-	stat = (bool)xdr_char(xdrout(), &_buf);
+    if (flush)
+	return expunge();
 
-    if (stat && flush)
-	stat = expunge();
-
-    return stat;
+    return true;
 }
 
 // deserialize the char on stdin and put the result in _BUF.
@@ -251,4 +262,75 @@ Byte::print_val(ostream &os, String space, bool print_decl_p)
     }
     else 
 	os << (unsigned int)_buf;
+}
+
+static bool
+byte_ops(int i1, int i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for byte values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+Byte::ops(BaseType &b, int op)
+{
+    int32 a1, a2;
+    if (!read_p()) {
+	cerr << "This value not yet read!" << endl;
+	return false;
+    }
+    else {
+	int32 *a1p = &a1;
+	buf2val((void **)&a1p);
+    }
+
+    if (!b.read_p()) {
+	cerr << "Arg value not yet read!" << endl;
+	return false;
+    }
+    else switch (b.type()) {
+      case byte_t:
+      case int32_t: {
+	int32 *a2p = &a2;
+	b.buf2val((void **)&a2p);
+	break;
+      }
+      case float64_t: {
+	double d;
+	double *dp = &d;
+	b.buf2val((void **)&dp);
+	a2 = (int32)d;
+	break;
+      }
+      case str_t: {
+	String s;
+	String *sp = &s;
+	b.buf2val((void **)&sp);
+	a2 = atoi((const char *)s);
+	break;
+      }
+      default:
+	return false;
+	break;
+    }
+
+    return byte_ops(a1, a2, op);
 }
