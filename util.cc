@@ -11,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.55  1999/05/21 17:21:21  jimg
+// Removed a bogus error message about failure to run deflate.
+//
 // Revision 1.54  1999/05/04 19:47:24  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -272,7 +275,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.54 1999/05/04 19:47:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.55 1999/05/21 17:21:21 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -555,7 +558,6 @@ compressor(FILE *output, int &childpid)
 	// at build time. If that fails, try the CWD.
 	string deflate = (string)dods_root() + "/etc/deflate";
 	(void) execl(deflate.c_str(), "deflate", "-c",  "5", "-s", NULL);
-	cerr << "Could not run " << deflate << endl;
 	(void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
 	cerr << "Warning: Could not start compressor!" << endl;
 	cerr << "defalte should be in DODS_ROOT/etc or in the CWD!" 
