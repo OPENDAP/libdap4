@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.39 1996/06/08 00:24:02 jimg Exp $
+# $Id: Makefile.in,v 1.40 1996/06/18 23:44:36 jimg Exp $
 
 @SET_MAKE@
 
@@ -23,7 +23,7 @@ CXXFLAGS = @CXXFLAGS@
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d
-LIBS = -ldap++ -lwww @LIBS@
+LIBS = -ldap++ -lwww -lexpect -ltcl7.4 @LIBS@
 TAGS_FLAGS = -b
 
 # Set the instalation directories; prefix can be set on the command line
