@@ -12,6 +12,9 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.5  1996/10/28 18:54:05  jimg
+// Added prototypes for check_uint(...); functions that test unsigned integers.
+//
 // Revision 1.4  1996/08/13 20:45:44  jimg
 // Extended definition of parser_arg so that it can serve as the interface for
 // all the parsers.
@@ -115,10 +118,14 @@ int check_byte(parser_arg *arg, const char *val, const int line,
 	       const char *context);
 
 /// Is the value a valid integer?
-//* Like #check_byte()# but for 32-bit integers.
+/** Like #check_byte()# but for 32-bit integers (#check_uint()# is for
+  unsigned integers). */
 
 int check_int(const char *val, const int num);
 int check_int(parser_arg *arg, const char *val, const int num,
+	      const char *context);
+int check_uint(const char *val, const int num);
+int check_uint(parser_arg *arg, const char *val, const int num,
 	      const char *context);
 
 /// Is the value a valid float?
