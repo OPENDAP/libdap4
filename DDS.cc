@@ -38,6 +38,14 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.17  1996/03/05 18:38:45  jimg
+// Moved many of the DDS member functions into the subclasses clause and
+// function. Also, because the rvalue and func_rvalue classes (defined in
+// expr.h ane expr.cc) were expanded, most of the evaluation software has been
+// removed.
+// Unnecessary accessor member functions have been removed since clause and
+// function now have their own ctors.
+//
 // Revision 1.16  1996/02/01 17:43:08  jimg
 // Added support for lists as operands in constraint expressions.
 //
@@ -48,10 +56,10 @@
 //
 // Revision 1.14  1995/12/06  21:11:24  jimg
 // Added print_constrained(): Prints a constrained DDS.
-// Added eval_constraint(): Evaluates a constraint expression in the environment
-// of the current DDS.
+// Added eval_constraint(): Evaluates a constraint expression in the
+// environment of the current DDS.
 // Added send(): combines reading, serailizing and constraint evaluation.
-// Added mark*(): used to mark variables as part of the current projection.
+// Added mark(): used to mark variables as part of the current projection.
 // Fixed some of the parse() and print() mfuncs to take uniform parameter types
 // (ostream and FILE *).
 // Fixed the constructors to work with const objects.
@@ -84,11 +92,12 @@
 // Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
 //
 // Revision 1.6  1994/11/03  04:58:02  reza
-// Added two overloading for function parse to make it consistent with DAS class.
+// Added two overloading for function parse to make it consistent with DAS
+// class. 
 //
 // Revision 1.5  1994/10/18  00:20:46  jimg
 // Added copy ctor, dtor, duplicate, operator=.
-// Added var() for const cahr * (to avoid confusion between char * and
+// Added var() for const char * (to avoid confusion between char * and
 // Pix (which is void *)).
 // Switched to errmsg library.
 // Added formatting to print().
@@ -115,7 +124,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.16 1996/02/01 17:43:08 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.17 1996/03/05 18:38:45 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -130,7 +139,6 @@ static char rcsid[]="$Id: DDS.cc,v 1.16 1996/02/01 17:43:08 jimg Exp $";
 
 #include "DDS.h"
 #include "errmsg.h"
-#define DEBUG
 #include "debug.h"
 #include "util.h"
 
@@ -145,12 +153,10 @@ int ddsparse(DDS &table);	// defined in dds.tab.c
 void exprrestart(FILE *yyin);
 int exprparse(DDS &table);
 
-bool int32_op(int i1, int i2, int op); // defined in expr.y
-bool float64_op(double d1, double d2, int op);
-bool str_op(String &s1, String &s2, int op);
-
-static bool eval_clause(int op, BaseType *arg1, BaseType *arg2);
-static bool eval_list_clause(int op, BaseType *arg1, RValList *arg2);
+extern bool list_member(int argc, BaseType *argv[]);
+extern bool list_null(int argc, BaseType *argv[]);
+extern BaseType *list_nth(int argc, BaseType *argv[]);
+extern BaseType *list_length(int argc, BaseType *argv[]);
 
 // Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
 // the `result' of the mfunc.
@@ -174,6 +180,10 @@ DDS::duplicate(const DDS &dds)
 
 DDS::DDS(const String &n) : name(n)
 {
+    add_function("member", list_member); // these are defined in List.cc
+    add_function("null", list_null);
+    add_function("nth", list_nth);
+    add_function("length", list_length);
 }
 
 DDS::DDS(const DDS &rhs)
@@ -183,8 +193,21 @@ DDS::DDS(const DDS &rhs)
 
 DDS::~DDS()
 {
-    for (Pix p = first_var(); p; next_var(p))
+    Pix p;
+
+    // delete all the variables in this DDS
+    for (p = first_var(); p; next_var(p))
 	delete var(p);
+
+    // delete all the constants created by the parser for CE evaluation
+    for (p = constants.first(); p; constants.next(p))
+	delete constants(p);
+
+    // delete all the rvalue list objects created by the parser
+#ifdef NEVER
+    for (p = expr.first(); p; expr.next(p))
+	delete expr(p);
+#endif
 }
 
 DDS &
@@ -230,17 +253,11 @@ DDS::del_var(const String &n)
 	    pp = p;
 }
 
-// Return a porinter to the named variable. This mfunc does some unusual
-// things: if a name contains one or more `.'s then it assumes that N is the
-// name of some aggregate member - it searches for the Structure, ..., Grid
-// member named and returns a pointer to that member (regardless of nesting
-// level). In addition, if simple name is given, but that name does not
-// appear in the list of top-level variables, var() will search aggregates
-// for a field by that name and return a pointer to it iff that field name is
-// unique.
-// 
-// Returns: A baseType * to a variable whose name in N. If no such variable
-// can be found, returns null.
+// Find the variable named N. Accepts both simple names and *fully* qualified
+// aggregate names.
+//
+// Returns: A BaseType * to a variable whose name in N. If no such variable
+// can be found, returns NULL.
 
 BaseType *
 DDS::var(const String &n)
@@ -262,32 +279,9 @@ DDS::var(const String &n)
 
 	    // Look for the name in the dataset's top-level
 	    if (vars(p)->name() == n) {
-		DBG(cerr << "Found " << n);
+		DBG(cerr << "Found " << n << endl);
 		return vars(p);
 	    }
-
-#ifdef NEVER
-	    // otherwise, see if it is part of an aggregate
-	    switch(vars(p)->type()) {
-		BaseType *variable;
-	      case array_t:
-	      case list_t:
-	      case structure_t:
-	      case sequence_t:
-	      case function_t:
-	      case grid_t:
-
-		if ((variable = vars(p)->var(n)))
-		    return variable;
-		else
-		    return 0;	// not found
-		break;
-
-	      default:
-		return 0;
-		break;
-	    }
-#endif
 	}
     }
 
@@ -322,155 +316,127 @@ DDS::var(Pix p)
 { 
     if (!vars.empty() && p)
 	return vars(p); 
+    else
+	return 0;
+}
+
+int
+DDS::num_var()
+{
+    return vars.length();
 }
 
 Pix
 DDS::first_clause()
 {
+    assert(!expr.empty());
+
     return expr.first();
 }
 
 void
 DDS::next_clause(Pix &p)
 {
+    assert(!expr.empty());
+
     expr.next(p);
 }
 
-int
-DDS::clause_op(Pix p)
-{
-    return expr(p).op;
-}
-
 bool
-DDS::clause_arg2_is_vector(Pix p)
+DDS::clause_value(Pix p, const String &dataset)
 {
-    return expr(p).arg2_is_vector;
+    assert(!expr.empty());
+
+    return expr(p).value(dataset);
 }
 
-BaseType *
-DDS::clause_arg1(Pix p)
-{
-    return expr(p).arg1;
-}
-
-BaseType *
-DDS::clause_s_arg2(Pix p)
-{
-    assert(!clause_arg2_is_vector(p));
-
-    return expr(p).s_arg2;
-}
-
-RValList *
-DDS::clause_v_arg2(Pix p)
-{
-    assert(clause_arg2_is_vector(p));
-
-    return expr(p).v_arg2;
-}
 
 void
-DDS::append_clause(int op, BaseType *arg1, BaseType *arg2)
+DDS::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
 {
-    rel_clause clause;
-
-    clause.op = op;
-    clause.arg1 = arg1;
-    clause.arg2_is_vector = false;
-    clause.s_arg2 = arg2;
-    clause.v_arg2 = (void *)0;
+    clause clause(op, arg1, arg2);
 
     expr.append(clause);
 }
 
 void
-DDS::append_clause(int op, BaseType *arg1, RValList *arg2)
+DDS::append_clause(bool_func_ptr f, rvalue_list *args)
 {
-    rel_clause clause;
-
-    clause.op = op;
-    clause.arg1 = arg1;
-    clause.arg2_is_vector = true;
-    clause.s_arg2 = (void *)0;
-    clause.v_arg2 = arg2;
+    clause clause(f, args);
 
     expr.append(clause);
 }
 
-bool
-DDS::eval_constraint()
+void
+DDS::append_constant(BaseType *btp)
 {
-    if (expr.empty()) {
-	DBG(cerr << "No constraint recorded" << endl);
-	return true;
-    }
-
-    bool result = true;
-    for (Pix p = first_clause(); p && result; next_clause(p)) {
-	if (clause_arg2_is_vector(p))
-	    result = result
-		&& eval_clause(clause_op(p), clause_arg1(p), clause_s_arg2(p));
-	else
-	    result = result
-		&& eval_list_clause(clause_op(p), clause_arg1(p), 
-				    clause_v_arg2(p));
-    }
-
-    return result;
+    constants.append(btp);
 }
 
-static bool
-eval_clause(int op, BaseType *arg1, BaseType *arg2)
+void
+DDS::add_function(const String &name, bool_func_ptr f)
 {
-    switch (arg1->type()) {
-      case byte_t: 
-      case int32_t: {
-	  int32 i1, i2;
-	  int32 *i1p = &i1, *i2p = &i2;
-	  arg1->buf2val((void **)&i1p);
-	  arg2->buf2val((void **)&i2p);
-	  return int32_op(i1, i2, op);
-	  break;
-      }
+    function func(name, f);
+    functions.append(func);
+}
 
-      case float64_t: {
-	  double d1, d2;
-	  double *d1p = &d1, *d2p = &d2;
-	  arg1->buf2val((void **)&d1p);
-	  arg2->buf2val((void **)&d2p);
-	  return float64_op(d1, d2, op);
-	  break;
-      }
+void
+DDS::add_function(const String &name, btp_func_ptr f)
+{
+    function func(name, f);
+    functions.append(func);
+}
 
-      case str_t: {
-	  String s1, s2;
-	  String *s1p = &s1, *s2p = &s2;
-	  arg1->buf2val((void **)&s1p);
-	  arg2->buf2val((void **)&s2p);
-	  return str_op(s1, s2, op);
-	  break;
-      }
+bool
+DDS::find_function(const String &name, bool_func_ptr *f) const
+{
+    if (functions.empty())
+	return 0;
 
-      default:
-	cerr << "Unknown type in constraint realtional clause" << endl;
-	break;
-    }
+    for (Pix p = functions.first(); p; functions.next(p))
+	if (name == functions(p).name) {
+	    *f = functions(p).f_ptr;
+	    return true;
+	}
 
     return false;
 }
 
-
-static bool
-eval_list_clause(int op, BaseType *arg1, RValList *arg2)
+bool
+DDS::find_function(const String &name, btp_func_ptr *f) const
 {
+    if (functions.empty())
+	return 0;
+
+    for (Pix p = functions.first(); p; functions.next(p))
+	if (name == functions(p).name) {
+	    *f = functions(p).btp_f_ptr;
+	    return true;
+	}
+
+    return false;
+}
+
+bool
+DDS::eval_selection(const String &dataset)
+{
+    if (expr.empty()) {
+	DBG(cerr << "No selection recorded" << endl);
+	return true;
+    }
+
+    DBG(cerr << "Eval selection" << endl);
+
+    // A CE is made up of zero or more clauses, each of which has a boolean
+    // value. The value of the CE is the logical AND of the clause
+    // values. See DDS::clause::value(...) for inforamtion on logical ORs in
+    // CEs. 
     bool result = true;
-    for (Pix p = arg2->first(); p; arg2->next(p))
-	result = result && eval_clause(op, arg1, (*arg2)(p));
+    for (Pix p = first_clause(); p && result; next_clause(p))
+	result = result && clause_value(p, dataset);
 
     return result;
 }
-
 
 bool
 DDS::parse(String fname)
@@ -651,28 +617,29 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	DBG(cerr << "The constrained DDS (about to be sent):\n");
 	DBG(print_constrained(cerr));
 
-#ifdef NEVER
-	DBG(cerr << "Stored constraint expressions:" << endl;\
-	    for (Pix p = first_clause(); p; next_clause(p)) {\
-	       cerr << clause_arg1(p) << " " << clause_op(p) << " "\
-		     << clause_arg2(p) << endl;\
-	    })
-#endif
-
 	os << "Data:" << endl;	// send `Data:' marker
 
 	for (Pix q = first_var(); q; next_var(q)) {
-	    if (!var(q)->send_p()) // only process selected variables
-		continue;
-	    status = var(q)->serialize(dataset, *this, flush);
+	    if (var(q)->send_p()) { // only process projected variables
+		DBG(cerr << "Serializing: " << var(q)->name() << endl);
+		status = status && var(q)->serialize(dataset, *this, flush);
+	    }
 	}
     }
 
     return status;
 }
 
-// Mark the named variable by setting its send_p flag to state (true
+// Mark the named variable by setting its SEND_P flag to STATE (true
 // indicates that it is to be sent). Names must be fully qualified.
+//
+// NB: For aggregate types this sets each part to STATE when STATE is
+// True. Thus, if State is True and N is `exp1.test', then both `exp1' and
+// `test' have their SEND_P flag set to True. If STATE is Flase, then the
+// SEND_P flag of the `test' is set to False, but `exp1' is left
+// unchanged. This means that a single variable can be removed from the
+// current projection without removing all the other children of its
+// parent. See the mfunc set_send_p().
 //
 // Returns: True if the named variable was found, false otherwise.
 
@@ -684,8 +651,10 @@ DDS::mark(const String &n, bool state)
 
 	String aggregate = field.before(".");
 	BaseType *variable = var(aggregate); // get first variable from DDS
-	if (!variable)
+	if (!variable) {
+	    DBG(cerr << "Could not find variable " << n << endl);
 	    return false;	// no such variable
+	}
 	else if (state)
 	    variable->BaseType::set_send_p(state); // set iff state == true
 	field = field.after(".");
@@ -693,8 +662,10 @@ DDS::mark(const String &n, bool state)
 	while (field.contains(".")) {
 	    aggregate = field.before(".");
 	    variable = variable->var(aggregate); // get child var using parent
-	    if (!variable)
+	    if (!variable) {
+		DBG(cerr << "Could not find variable " << n << endl);
 		return false;	// no such variable
+	    }
 	    else if (state)
 		variable->BaseType::set_send_p(state); // set iff state == true
 	    field = field.after(".");
@@ -718,7 +689,11 @@ DDS::mark(const String &n, bool state)
     return false;		// not found
 }
 
-bool
+// Set the SEND_P member of every variable in the DDS to STATE.
+//
+// Returns: void
+
+void
 DDS::mark_all(bool state)
 {
     for (Pix p = first_var(); p; next_var(p))
