@@ -6,9 +6,15 @@
 // jhrg 1/13/95
 
 /* $Log: TestGrid.h,v $
-/* Revision 1.6  1996/04/05 00:21:52  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.7  1996/05/16 22:50:17  jimg
+/* Dan's changes for version 2.0. Added a parameter to read that returns
+/* an error code so that EOF can be distinguished from an actual error when
+/* reading sequences. This *may* be replaced by an error member function
+/* in the future.
 /*
+ * Revision 1.6  1996/04/05 00:21:52  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
  * Revision 1.5  1995/12/09  01:07:17  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -55,7 +61,7 @@ public:
     
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const String &dataset);
+    virtual bool read(const String &dataset, int &error);
 };
 
 #endif

@@ -5,10 +5,16 @@
 // jhrg 9/7/94
 
 /* $Log: Float64.h,v $
-/* Revision 1.14  1996/03/05 18:21:43  jimg
-/* Added ce_eval to serailize member function.
-/* Added ops member function and float_op function.
+/* Revision 1.15  1996/05/16 22:49:59  jimg
+/* Dan's changes for version 2.0. Added a parameter to read that returns
+/* an error code so that EOF can be distinguished from an actual error when
+/* reading sequences. This *may* be replaced by an error member function
+/* in the future.
 /*
+ * Revision 1.14  1996/03/05 18:21:43  jimg
+ * Added ce_eval to serailize member function.
+ * Added ops member function and float_op function.
+ *
  * Revision 1.13  1995/12/09  01:06:42  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -123,7 +129,7 @@ public:
 			   bool ce_eval = true, bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(const String &dataset) = 0;
+    virtual bool read(const String &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);

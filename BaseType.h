@@ -8,11 +8,17 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.25  1996/05/14 15:38:16  jimg
-/* These changes have already been checked in once before. However, I
-/* corrupted the source repository and restored it from a 5/9/96 backup
-/* tape. The previous version's log entry should cover the changes.
+/* Revision 1.26  1996/05/16 22:49:56  jimg
+/* Dan's changes for version 2.0. Added a parameter to read that returns
+/* an error code so that EOF can be distinguished from an actual error when
+/* reading sequences. This *may* be replaced by an error member function
+/* in the future.
 /*
+ * Revision 1.25  1996/05/14 15:38:16  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
  * Revision 1.24  1996/04/05 00:21:23  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
@@ -304,7 +310,7 @@ public:
 
     // Put the data into a local buffer so that it may be serialized. 
     // For an example, see the Test classes.
-    virtual bool read(const String &dataset) = 0;
+    virtual bool read(const String &dataset, int &error) = 0;
     
     // buf2val() reads the value of the variable from an internal buffer and
     // stores it in the memory referenced by *VAL. Either the caller must

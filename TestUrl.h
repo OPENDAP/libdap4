@@ -5,9 +5,15 @@
 // jhrg 1/12/95
 
 /* $Log: TestUrl.h,v $
-/* Revision 1.6  1996/04/05 00:22:06  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.7  1996/05/16 22:50:25  jimg
+/* Dan's changes for version 2.0. Added a parameter to read that returns
+/* an error code so that EOF can be distinguished from an actual error when
+/* reading sequences. This *may* be replaced by an error member function
+/* in the future.
 /*
+ * Revision 1.6  1996/04/05 00:22:06  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
  * Revision 1.5  1995/12/09  01:07:32  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -54,7 +60,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const String &dataset);
+    virtual bool read(const String &dataset, int &error);
 };
 
 typedef TestUrl * TestUrlPtr;

@@ -5,11 +5,17 @@
 // jhrg 9/7/94
 
 /* $Log: Int32.h,v $
-/* Revision 1.16  1996/05/14 15:38:30  jimg
-/* These changes have already been checked in once before. However, I
-/* corrupted the source repository and restored it from a 5/9/96 backup
-/* tape. The previous version's log entry should cover the changes.
+/* Revision 1.17  1996/05/16 22:50:04  jimg
+/* Dan's changes for version 2.0. Added a parameter to read that returns
+/* an error code so that EOF can be distinguished from an actual error when
+/* reading sequences. This *may* be replaced by an error member function
+/* in the future.
 /*
+ * Revision 1.16  1996/05/14 15:38:30  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
  * Revision 1.15  1996/03/05 18:07:21  jimg
  * Added ce_eval to serailize member function.
  * Added the ops member function.
@@ -128,7 +134,7 @@ public:
 			   bool ce_eval = true, bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(const String &dataset) = 0;
+    virtual bool read(const String &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);

@@ -39,6 +39,12 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.8  1996/05/16 22:49:53  jimg
+// Dan's changes for version 2.0. Added a parameter to read that returns
+// an error code so that EOF can be distinguished from an actual error when
+// reading sequences. This *may* be replaced by an error member function
+// in the future.
+//
 // Revision 1.7  1996/05/14 15:38:46  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -68,7 +74,7 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.7 1996/05/14 15:38:46 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.8 1996/05/16 22:49:53 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -271,8 +277,9 @@ bool
 Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
     bool status = true;
+    int error = 0;
 
-    if (!read_p() && !read(dataset))
+    if (!read_p() && !read(dataset, error))
 	return false;
 
     if (ce_eval && !dds.eval_selection(dataset))

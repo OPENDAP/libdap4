@@ -7,11 +7,17 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.26  1996/05/06 21:14:06  jimg
-/* Added dimension_start, _stop and _stride member functions to this class.
-/* Changed the first argument of add_constraint from Pix &p to Pix p (the member
-/* function does not change the Pix).
+/* Revision 1.27  1996/05/16 22:49:55  jimg
+/* Dan's changes for version 2.0. Added a parameter to read that returns
+/* an error code so that EOF can be distinguished from an actual error when
+/* reading sequences. This *may* be replaced by an error member function
+/* in the future.
 /*
+ * Revision 1.26  1996/05/06 21:14:06  jimg
+ * Added dimension_start, _stop and _stride member functions to this class.
+ * Changed the first argument of add_constraint from Pix &p to Pix p (the member
+ * function does not change the Pix).
+ *
  * Revision 1.25  1996/03/05 18:46:39  jimg
  * Replaced <limits.h> with "dods-limits.h".
  *
@@ -189,7 +195,7 @@ public:
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
-    virtual bool read(const String &dataset) = 0;
+    virtual bool read(const String &dataset, int &error) = 0;
 
     void update_length(int size);
 

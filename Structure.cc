@@ -38,6 +38,12 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.23  1996/05/16 22:49:52  jimg
+// Dan's changes for version 2.0. Added a parameter to read that returns
+// an error code so that EOF can be distinguished from an actual error when
+// reading sequences. This *may* be replaced by an error member function
+// in the future.
+//
 // Revision 1.22  1996/05/14 15:38:38  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -258,8 +264,9 @@ bool
 Structure::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
     bool status = true;
+    int error = 0;
 
-    if (!read_p() && !read(dataset))
+    if (!read_p() && !read(dataset, error))
 	return false;
 
     if (ce_eval && !dds.eval_selection(dataset))

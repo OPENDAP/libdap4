@@ -9,9 +9,15 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.17  1996/03/05 17:32:37  jimg
-/* Added ce_eval to serailize member function.
+/* Revision 1.18  1996/05/16 22:50:08  jimg
+/* Dan's changes for version 2.0. Added a parameter to read that returns
+/* an error code so that EOF can be distinguished from an actual error when
+/* reading sequences. This *may* be replaced by an error member function
+/* in the future.
 /*
+ * Revision 1.17  1996/03/05 17:32:37  jimg
+ * Added ce_eval to serailize member function.
+ *
  * Revision 1.16  1995/12/09  01:07:01  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -148,7 +154,7 @@ public:
 			   bool ce_eval = true, bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(const String &dataset) = 0;
+    virtual bool read(const String &dataset, int &error) = 0;
 
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.

@@ -5,11 +5,17 @@
 // Vector. Vector is the parent class for List and Array.
 
 /* $Log: Vector.h,v $
-/* Revision 1.6  1996/05/14 15:38:48  jimg
-/* These changes have already been checked in once before. However, I
-/* corrupted the source repository and restored it from a 5/9/96 backup
-/* tape. The previous version's log entry should cover the changes.
+/* Revision 1.7  1996/05/16 22:50:27  jimg
+/* Dan's changes for version 2.0. Added a parameter to read that returns
+/* an error code so that EOF can be distinguished from an actual error when
+/* reading sequences. This *may* be replaced by an error member function
+/* in the future.
 /*
+ * Revision 1.6  1996/05/14 15:38:48  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
  * Revision 1.5  1996/04/05 00:22:10  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
@@ -76,7 +82,7 @@ public:
 			   bool ce_eval = true, bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(const String &dataset) = 0;
+    virtual bool read(const String &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
