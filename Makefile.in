@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.42 1996/07/10 21:29:06 jimg Exp $
+# $Id: Makefile.in,v 1.43 1996/07/11 23:38:19 jimg Exp $
 
 @SET_MAKE@
 
@@ -7,12 +7,14 @@
 # DEFS gets the `-D' defines that describe what a particular system has
 # or doesn't have.
 
-# the programs das-, dds- and trans-test are used to test parts of the
-# library. The library libdap++.a contains the code for the generation of the
-# DAS and DDS structures plus the code for data transmission and the GNU
-# libg++.a classes Map, Stack, Plex and Vec.
+# The library libdap++.a contains the code for the generation of the DAS and
+# DDS structures plus the code for data transmission and the GNU libg++.a
+# classes Map, Stack, Plex and Vec.
+# geturl is a simple program that uses the dap++ library plus others to fetch
+# a url. In addition it can read and process DAS and DDS objects, displaying
+# the print representation on the screen.
 
-PROG= libdap++.a
+PROG= libdap++.a geturl
 DODS_ROOT = ../..
 
 INCS = -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include/WWW
@@ -22,7 +24,7 @@ CXXFLAGS = @CXXFLAGS@ -Wall
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d
-LIBS = -ldap++ -lwww -lexpect -ltcl7.4 @LIBS@
+LIBS = -ldap++ -lwww @LIBS@
 TAGS_FLAGS = -b
 
 # Set the instalation directories; prefix can be set on the command line
@@ -134,6 +136,12 @@ libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
 	$(AR) -cru $@ $?
 	$(RANLIB) $@
 
+# geturl is really a test driver, but it is so useful in other contexts that
+# I have decided to build it as part of the `all' target. jhrg 7/11/96
+
+geturl: libdap++.a $(TESTOBJS) geturl.o
+	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) $(LIBS)
+
 # Build the test drivers
 
 das-test: libdap++.a das-test.o das.tab.h
@@ -151,9 +159,6 @@ expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
 
 error-test: error-test.o Error.tab.h
 	$(CXX) $(LDFLAGS) -o error-test error-test.o 
-
-geturl: libdap++.a $(TESTOBJS) geturl.o
-	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) $(LIBS)
 
 cgi-util-test: libdap++.a cgi_util.o $(TESTOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST_CGI_UTIL -c cgi_util.cc
@@ -280,7 +285,7 @@ clean:
 distclean: clean
 	-rm -f config.status config.log config.cache
 
-# I added this so tat distclean will not wipe these files out. Thus people
+# I added this so that distclean will not wipe these files out. Thus people
 # without GNU bison/flex (e.g., Dec Alphas which have a scanner generator
 # called `flex' which is definately not a recent GNU flex) can still build
 # the DAP software. Few people should want to hack these grammar files.
@@ -298,12 +303,6 @@ tar:
 tags:
 	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
 
-# To get the headers installed in the $(DODS_ROOT)/include directory, you
-# must run `make install-headers'
-
-# I added the install of config_dap.h to the depend target so that the files
-# in DODS_ROOT/include would be correct even without users running `make
-# install'.
 depend: 
 	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
 	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(EXPRSRCS) $(TESTSRCS) \
