@@ -1,3 +1,8 @@
+2000-03-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-1-5. The next merge should use -j
+	release-3-1-5 -j release.
+
 2000-03-28  James Gallagher  <jimg@dcz.dods.org>
 
 	* Look in the Makefile for this software to see the new support
@@ -17,6 +22,21 @@
 	* Fixed bugs in the caching software. Compressed responses now are
 	cached correctly and responses with several variables are also
 	correctly handled. 
+
+2000-03-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* escaping.cc: Fixed a bug where an int was used to index into a
+	string object.
+
+	* parser-util.cc (check_float32): Float32, Float64 attributes no
+	longer check ranges.
+
+2000-03-20  James Gallagher  <jimg@dcz.dods.org>
+
+	* parser-util.cc (check_byte): Byte attributes can now be either
+	signed or not (i.e., their range is -128 to 255). This is to
+	support clients that assume bytes to be signed as well as those
+	that assume bytes to be unsigned.
 
 2000-01-26  James Gallagher  <jimg@dcz.dods.org>
 
@@ -657,7 +677,11 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	progress indicator and error reporting is not available.
 
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.48 2000/03/28 17:19:16 jimg Exp $
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.49 2000/03/31 21:06:11 jimg Exp $
 =======
-$Id: ChangeLog,v 1.48 2000/03/28 17:19:16 jimg Exp $
+$Id: ChangeLog,v 1.49 2000/03/31 21:06:11 jimg Exp $
 >>>>>>> 1.42.2.4
+=======
+$Id: ChangeLog,v 1.49 2000/03/31 21:06:11 jimg Exp $
+>>>>>>> 1.42.2.7

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.111 2000/03/28 17:12:36 jimg Exp $
+# $Id: Makefile.in,v 1.112 2000/03/31 21:04:54 jimg Exp $
 
 @SET_MAKE@
 
@@ -19,7 +19,7 @@ DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
 INCS = -I. -IGNU @INCS@
-DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
+DEFS = @DEFS@
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
@@ -579,17 +579,6 @@ Connections.o: Connections.cc debug.h Connections.h config_dap.h \
  Error.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
  Structure.h Sequence.h Grid.h
-cgi_util.o: cgi_util.cc config_dap.h cgi_util.h Connect.h DAS.h \
- AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h Error.h \
- util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
- Str.h dods-limits.h Url.h Array.h Vector.h List.h Structure.h \
- Sequence.h Grid.h
-escaping.o: escaping.cc
-DODSFilter.o: DODSFilter.cc config_dap.h DAS.h GNU/SLList.h \
- AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h \
- cgi_util.h Connect.h Error.h util.h Byte.h Int16.h UInt16.h Int32.h \
- UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
- Vector.h List.h Structure.h Sequence.h Grid.h DODSFilter.h
 AttrTable.o: AttrTable.cc config_dap.h AttrTable.h debug.h util.h \
  BaseType.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h Clause.h \
@@ -740,3 +729,14 @@ geturl.o: geturl.cc config_dap.h Connect.h DAS.h AttrTable.h DDS.h \
  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
  dods-limits.h Url.h Array.h Vector.h List.h Structure.h Sequence.h \
  Grid.h
+cgi_util.o: cgi_util.cc config_dap.h cgi_util.h Connect.h DAS.h \
+ AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h Error.h \
+ util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
+ Str.h dods-limits.h Url.h Array.h Vector.h List.h Structure.h \
+ Sequence.h Grid.h
+escaping.o: escaping.cc
+DODSFilter.o: DODSFilter.cc config_dap.h DAS.h GNU/SLList.h \
+ AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h \
+ cgi_util.h Connect.h Error.h util.h Byte.h Int16.h UInt16.h Int32.h \
+ UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+ Vector.h List.h Structure.h Sequence.h Grid.h DODSFilter.h
