@@ -1,3 +1,38 @@
+2002-06-03    <jimg@dcz.dods.org>
+
+	* dods-limits.h (DODS_ULONG_MAX): Added U suffix to unsigned
+	numerical constants.
+
+2002-04-30    <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-9
+
+2002-04-03    <jimg@dcz.dods.org>
+
+	* Makefile.in (binary-tar): Fixed binary-tar target.
+
+	* BaseType.cc: Added using std::endl and ::ends
+
+2002-04-02    <jimg@dcz.dods.org>
+
+	* DDS.cc: Fixed broken use of using std::strstream.
+
+	* Connect.cc (server_handler): Fixed bug 416.
+
+2002-03-27    <jimg@dcz.dods.org>
+
+	* usage.cc (write_global_attributes): Fixed usage's output of
+	nested attributes.
+
+2002-03-12    <jimg@dcz.dods.org>
+
+	* Bug 400 fixed.
+
+	* Servers now should recognize that a file called `das' in a
+	directory with data files is an ancillary DAS for any of those
+	files. If an ancillary DAS exists that has a more speciific name,
+	that file will be used instead of the directory-wide DAS.
+
 2001-10-13  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with release-3-2-8.
@@ -1098,71 +1133,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-
-<<<<<<< ChangeLog
-=======
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-=======
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-=======
-2001-10-13  James Gallagher  <jimg@dcz.dods.org>
-
-	* Various bug fixes.
-
-	* Connect now uses exceptions to signal errors for all network I/O.
-
-2001-10-01  James Gallagher  <jimg@dcz.dods.org>
-
-	* Changed serialize and deserialize so that they use exceptions to
-	signal errors. The return values can be ignored. For backward
-	compatibility serialize always returns true and deserialize always
-	returns false (even though that's counter intuitive, that's the
-	old behavior for `no more data to read').
-
->>>>>>> 1.62
-<<<<<<< ChangeLog
-=======
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-=======
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-=======
-2001-10-13  James Gallagher  <jimg@dcz.dods.org>
-
-	* Various bug fixes.
-
-	* Connect now uses exceptions to signal errors for all network I/O.
-
-2001-10-01  James Gallagher  <jimg@dcz.dods.org>
-
-	* Changed serialize and deserialize so that they use exceptions to
-	signal errors. The return values can be ignored. For backward
-	compatibility serialize always returns true and deserialize always
-	returns false (even though that's counter intuitive, that's the
-	old behavior for `no more data to read').
-
->>>>>>> 1.42.2.16
-<<<<<<< ChangeLog
-=======
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-=======
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-$Id: ChangeLog,v 1.66 2001/10/14 01:28:38 jimg Exp $
-=======
-2001-10-13  James Gallagher  <jimg@dcz.dods.org>
-
-	* Various bug fixes.
-
-	* Connect now uses exceptions to signal errors for all network I/O.
-
-2001-10-01  James Gallagher  <jimg@dcz.dods.org>
-
-	* Changed serialize and deserialize so that they use exceptions to
-	signal errors. The return values can be ignored. For backward
-	compatibility serialize always returns true and deserialize always
-	returns false (even though that's counter intuitive, that's the
-	old behavior for `no more data to read').
-
->>>>>>> 1.60.4.20
+$Id: ChangeLog,v 1.67 2002/06/03 21:46:16 jimg Exp $
