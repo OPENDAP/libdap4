@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.26 2003/01/10 19:46:41 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.27 2003/01/15 19:29:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -149,7 +149,7 @@ check_byte(const char *val)
     // ASCII representation for the value might need to be tweaked. This is
     // especially the case for Java clients where Byte datatypes are
     // signed. 3/20/2000 jhrg
-    if (v > DODS_UCHAR_MAX || v < DODS_SCHAR_MIN) {
+    if (static_cast<unsigned long>(v) > DODS_UCHAR_MAX || v < DODS_SCHAR_MIN) {
 	return FALSE;
     }
 
@@ -282,6 +282,9 @@ check_url(const char *)
 }
 
 // $Log: parser-util.cc,v $
+// Revision 1.27  2003/01/15 19:29:22  jimg
+// Added a cast to unsigned in check_byte().
+//
 // Revision 1.26  2003/01/10 19:46:41  jimg
 // Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
 // cases files were added on that branch (so they appear on the trunk for
