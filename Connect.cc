@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.55  1997/05/13 23:36:38  jimg
+// Added calls to close_output() in the dtor. This ensures that all files
+// will be closed when an Connect is destroyed.
+//
 // Revision 1.54  1997/05/07 22:10:37  jimg
 // Fixed a bug where the last decompresser process exit was not handled
 // properly. The fix was to make sure that calls for data interleaved
@@ -308,7 +312,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.54 1997/05/07 22:10:37 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.55 1997/05/13 23:36:38 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1134,7 +1138,6 @@ Connect::operator=(const Connect &rhs)
 bool
 Connect::fetch_url(String &url, bool)
 {
-    close_output();
     _encoding = unknown_enc;
     _type = unknown_type;
    
@@ -1163,6 +1166,8 @@ Connect::fetch_url(String &url, bool)
 	}
 	_comp_childpid = 0;
     }
+
+    close_output();
 
     if (encoding() == x_gzip) {
 	DBG(cerr << "encoding is gzip!" << endl);
