@@ -9,6 +9,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.42  1999/05/05 01:29:42  jimg
+// The member function parse_constraint() now throws an Error object so that
+// enclosing code will handle serializing the Error object.
+// The member function send() takes the CGI version as an extra argument. All
+// calls to the set_mime_*() functions include this version number.
+//
 // Revision 1.41  1999/04/29 02:29:28  jimg
 // Merge of no-gnu branch
 //
@@ -221,7 +227,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.41 1999/04/29 02:29:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.42 1999/05/05 01:29:42 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -868,8 +874,12 @@ DDS::parse_constraint(const string &constraint, ostream &os, bool server)
     if (!status || !arg.status()) {// Check parse result
 	if (arg.error()) {
 	    if (server) {
+		throw Error(*arg.error());
+#if 0
+		// THROW 5/4/99 jhrg
 		set_mime_text(os, dods_error);
 		arg.error()->print(os);
+#endif
 	    }
 	    else
 		arg.error()->display_message();
@@ -897,7 +907,7 @@ DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 
 bool 
 DDS::send(const string &dataset, const string &constraint, FILE *out, 
-	  bool compressed)
+	  bool compressed, const string &cgi_ver)
 {
     bool status = true;
 
@@ -906,7 +916,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 	if (functional_expression()) {
 	    BaseType *var = eval_function(dataset);
 	    if (var) {
-		set_mime_binary(out, dods_data, 
+		set_mime_binary(out, dods_data, cgi_ver,
 				(compressed) ? deflate : x_plain);
 
 		// If compressing, start up the sub process.
@@ -940,12 +950,14 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 	    }
 	    else {
 		Error e(unknown_error, "Error calling the function.");
-		set_mime_text(out, dods_error);
+		// THROW
+		set_mime_text(out, dods_error, cgi_ver);
 		e.print();
 	    }
 	}
 	else {
-	    set_mime_binary(out, dods_data, (compressed) ? deflate : x_plain);
+	    set_mime_binary(out, dods_data, cgi_ver,
+			    (compressed) ? deflate : x_plain);
 
 	    int childpid;	// Used to wait for compressor sub proc
 	    FILE *comp_sink = 0;
