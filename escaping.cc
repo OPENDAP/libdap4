@@ -12,6 +12,9 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.6  1998/03/19 23:29:47  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.5  1998/02/05 20:14:02  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -64,15 +67,6 @@
 #include <strstream.h>
 #include <iomanip.h>
 #include <String.h>
-
-#if 0
-#include <mfhdf.h>
-#include <hdfclass.h>
-#include "HDFStructure.h"
-#include "HDFArray.h"
-#include "hdfutil.h"
-#include "dhdferr.h"
-#endif
 
 const int MAXSTR = 256;
 

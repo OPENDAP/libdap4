@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Float32.cc,v $
+// Revision 1.5  1998/03/19 23:32:59  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.4  1997/09/22 23:03:46  jimg
 // Added DDS * to deserialize parameters.
 //
@@ -29,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.4 1997/09/22 23:03:46 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.5 1998/03/19 23:32:59 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -38,11 +41,6 @@ static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.4 1997/09/22 23:03:46 jim
 #include "DDS.h"
 #include "util.h"
 #include "dods-limits.h"
-#if 0
-#include "parser.h"
-#include "expr.h"
-#include "expr.tab.h"
-#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"

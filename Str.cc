@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.31  1998/03/19 23:30:49  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.30  1998/02/05 20:13:56  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -170,7 +173,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.30 1998/02/05 20:13:56 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.31 1998/03/19 23:30:49 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -181,11 +184,6 @@ static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.30 1998/02/05 20:13:56 jimg E
 #include "Str.h"
 #include "DDS.h"
 #include "util.h"
-#if 0
-#include "parser.h"
-#include "expr.h"
-#include "expr.tab.h"
-#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"

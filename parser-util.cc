@@ -10,6 +10,9 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.12  1998/03/19 23:28:42  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.11  1998/02/05 20:14:05  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -52,7 +55,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.11 1998/02/05 20:14:05 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.12 1998/03/19 23:28:42 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -246,20 +249,6 @@ check_uint(const char *val, const int line)
 	return FALSE;
     }
 
-    // The following code makes no sense...
-#if 0
-    // Don't use the constant from limits.h, use the on in dods-limits.h
-    if (v > DODS_UINT_MAX) { 
-	ostrstream oss;
-	oss << "`" << val << "' is not a integer value value." << endl
-	    << "It must be between zero (0) and "
-	    << DODS_UINT_MAX << "." << ends;
-	parse_error(oss.str(), line);
-	oss.freeze(0);
-	return FALSE;
-    }
-#endif
-
     return TRUE;
 }
 
@@ -278,19 +267,6 @@ check_uint(parser_arg *arg, const char *val, const int line,
 	oss.freeze(0);
 	return FALSE;
     }
-
-#if 0
-    // Don't use the constant from limits.h, use the on in dods-limits.h
-    if (v > DODS_UINT_MAX) { 
-	ostrstream oss;
-	oss << "`" << val << "' is not a integer value value." << endl
-	    << "It must be between zero (0) and "
-	    << DODS_UINT_MAX << "." << ends;
-	parse_error(arg, oss.str(), line, context);
-	oss.freeze(0);
-	return FALSE;
-    }
-#endif
 
     return TRUE;
 }

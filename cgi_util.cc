@@ -11,6 +11,9 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.31  1998/03/19 23:30:08  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.30  1998/02/19 19:42:34  jimg
 // Added do_data_transfer() back in since the jgofs servers use it.
 //
@@ -143,7 +146,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.30 1998/02/19 19:42:34 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.31 1998/03/19 23:30:08 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -154,6 +157,7 @@ static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.30 1998/02/19 19:42:34 j
 #include <sys/stat.h>
 
 #include <iostream.h>
+#include <stdiostream.h>
 #include <String.h>
 
 #include "cgi_util.h"
@@ -185,8 +189,8 @@ usage(const char *name)
     // Build an error object to return to the user.
     Error *ErrorObj = new Error(no_such_file, 
 			(String)"\"DODS internal error; missing parameter.\"");
-    set_mime_text(dods_error);
-    ErrorObj->print();
+    set_mime_text(cout, dods_error);
+    ErrorObj->print(cout);
 }
 
 // Note that the filter program must define `find_dataset_version()' for this
@@ -319,10 +323,10 @@ read_ancillary_dds(DDS &dds, String dataset, String dir = "",
 	    ErrMsgT(msg);
 
 	    // client error message
-	    set_mime_text(dods_error);
+	    set_mime_text(cout, dods_error);
 
 	    Error *ErrorObj = new Error(malformed_expr, msg);
-	    ErrorObj->print();
+	    ErrorObj->print(cout);
 
 	    return false;
 	}
@@ -349,10 +353,10 @@ read_ancillary_das(DAS &das, String dataset, String dir = "",
 	    ErrMsgT(msg);
 
 	    // client error message
-	    set_mime_text(dods_error);
+	    set_mime_text(cout, dods_error);
 
 	    Error *ErrorObj = new Error(malformed_expr, msg);
-	    ErrorObj->print();
+	    ErrorObj->print(cout);
 
 	    return false;
 	}
@@ -436,46 +440,60 @@ static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
 static char *encoding[]={"unknown", "deflate", "x-plain"};
 
 void
-set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
+set_mime_text(FILE *out, ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-    // Remove this until our servers can support HTTP/1.1 and other versions.
-    // jhrg 3/10/97 
-#if 0
-    char *protocol = getenv("SERVER_PROTOCOL");
-    if (!protocol)
-	protocol = "HTTP/1.0";
-#endif
-
-    cout << "HTTP/1.0 200 OK" << endl;
-    cout << "Server: " << DVR << endl;
-    cout << "Content-type: text/plain" << endl; 
-    cout << "Content-Description: " << descrip[type] << endl;
-    // Don't write a Content-Encoding header for x-plain since that breaks
-    // Netscape on NT. jhrg 3/23/97
-    if (enc != x_plain)
-	cout << "Content-Encoding: " << encoding[enc] << endl;
-    cout << endl;
+    ostdiostream os(out);
+    set_mime_text(os, type, enc);
 }
 
 void
-set_mime_binary(ObjectType type = unknown_type, EncodingType enc = x_plain)
+set_mime_text(ostream &os, ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-    cout << "HTTP/1.0 200 OK" << endl;
-    cout << "Server: " << DVR << endl;
-    cout << "Content-type: application/octet-stream" << endl; 
-    cout << "Content-Description: " << descrip[type] << endl;
+    os << "HTTP/1.0 200 OK" << endl;
+    os << "Server: " << DVR << endl;
+    os << "Content-type: text/plain" << endl; 
+    os << "Content-Description: " << descrip[type] << endl;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
     if (enc != x_plain)
-	cout << "Content-Encoding: " << encoding[enc] << endl;
-    cout << endl;
+	os << "Content-Encoding: " << encoding[enc] << endl;
+    os << endl;
+}
+
+void
+set_mime_binary(FILE *out, ObjectType type = unknown_type, EncodingType enc = x_plain)
+{
+    ostdiostream os(out);
+    set_mime_binary(os, type, enc);
+}
+
+void
+set_mime_binary(ostream &os, ObjectType type = unknown_type, EncodingType enc = x_plain)
+{
+    os << "HTTP/1.0 200 OK" << endl;
+    os << "Server: " << DVR << endl;
+    os << "Content-type: application/octet-stream" << endl; 
+    os << "Content-Description: " << descrip[type] << endl;
+    if (enc != x_plain)
+	os << "Content-Encoding: " << encoding[enc] << endl;
+    os << endl;
 }
 
 void 
-set_mime_error(int code = HTERR_NOT_FOUND, 
+set_mime_error(FILE *out, int code = HTERR_NOT_FOUND, 
 	       const char *reason = "Dataset not found")
 {
-    cout << "HTTP/1.0 " << code << " " << reason << endl;
-    cout << "Server: " << DVR << endl;
-    cout << endl;
+    ostdiostream os(out);
+    set_mime_error(os, code, reason);
+}
+
+void 
+set_mime_error(ostream &os, int code = HTERR_NOT_FOUND, 
+	       const char *reason = "Dataset not found")
+{
+    os << "HTTP/1.0 " << code << " " << reason << endl;
+    os << "Server: " << DVR << endl;
+    os << endl;
 }
 
 #ifdef TEST_CGI_UTIL

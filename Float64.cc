@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.33  1998/03/19 23:31:22  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.32  1998/03/11 00:31:00  jimg
 // Fixed a bug in buf2val(...) where the assert failed when the value held by
 // the variable was 0 (which is a perfectly valid value).
@@ -186,7 +189,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.32 1998/03/11 00:31:00 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.33 1998/03/19 23:31:22 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -195,11 +198,6 @@ static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.32 1998/03/11 00:31:00 ji
 #include "DDS.h"
 #include "util.h"
 #include "dods-limits.h"
-#if 0
-#include "parser.h"
-#include "expr.h"
-#include "expr.tab.h"
-#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"

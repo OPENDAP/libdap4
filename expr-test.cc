@@ -10,6 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.15  1998/03/19 23:29:20  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.14  1997/09/22 22:33:14  jimg
 // Added data file option. Now -f can be used to specify the name of a file
 // from which to read data. This currently only works with Sequences, but
@@ -78,7 +81,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.14 1997/09/22 22:33:14 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.15 1998/03/19 23:29:20 jimg Exp $"};
 
 #include <stdio.h>
 #include <errno.h>
@@ -348,9 +351,6 @@ test_parser(DDS &table, const String &dds_name, const String &constraint)
 	if (!status || !arg.status()) {// Check parse result
 	    if (arg.error())
 		arg.error()->display_message();
-#if 0
-	    cerr << "Error parsing constraint expression!" << endl;
-#endif
 	    status = false;
 	}
 	else
