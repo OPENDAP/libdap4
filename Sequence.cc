@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.39  1997/12/16 01:36:18  jimg
+// Merged changes from release-2.14d.
+//
 // Revision 1.38  1997/12/16 00:41:22  jimg
 // Added debugging code to help finder problems reading sequences from older
 // servers.
@@ -416,7 +419,6 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
     int error = 0;
 
     while (status) {
-
 	// Check to see if the variable needs to be read.
 	// To read only at the outer most level, mark all nested sequences as
 	// read within the read() mfunc. jhrg 9/17/97
