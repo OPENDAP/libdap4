@@ -9,6 +9,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.29  1997/02/28 01:30:17  jimg
+// Corrected call to unique() in check_semantics() (added new String &msg
+// parameter).
+//
 // Revision 1.28  1996/12/03 00:20:18  jimg
 // Added ostream and bool parameters to parse_constraint(). If the bool param is
 // true the the code assumes it is being run in the server. In that case error
@@ -153,7 +157,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.28 1996/12/03 00:20:18 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.29 1997/02/28 01:30:17 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -691,12 +695,13 @@ DDS::check_semantics(bool all)
 	return false;
     }
 
-    if (!unique(vars, (const char *)name, (const char *)"Dataset"))
+    String msg;
+    if (!unique(vars, (const char *)name, (const char *)"Dataset", msg))
 	return false;
 
     if (all) 
 	for (Pix p = vars.first(); p; vars.next(p))
-	    if (!vars(p)->check_semantics(true))
+	    if (!vars(p)->check_semantics(msg, true))
 		return false;
 
     return true;
