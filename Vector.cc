@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.53 2005/01/28 17:25:12 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.54 2005/02/08 20:43:12 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -732,7 +732,7 @@ Vector::buf2val(void **val)
 	unsigned int len = length();
 
  	if (!*val) {
-	    *val = new (string *)[len];
+	    *val = new string *[len];
 	    memcpy(*val, 0, len*elem_wid);
 	}
 
@@ -931,6 +931,9 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.54  2005/02/08 20:43:12  jimg
+// Removed parens around 'string *' at line 735; gcc-3.4 complained.
+//
 // Revision 1.53  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //
