@@ -16,10 +16,13 @@
 // jhrg 9/15/94
 
 /* $Log: Grid.h,v $
-/* Revision 1.22  1997/03/08 19:02:03  jimg
-/* Changed default param to check_semantics() from  to String()
-/* and removed the default from the argument list in the mfunc definition
+/* Revision 1.23  1997/06/05 23:16:13  jimg
+/* Added components() and projection_yields_grid() mfuncs.
 /*
+ * Revision 1.22  1997/03/08 19:02:03  jimg
+ * Changed default param to check_semantics() from  to String()
+ * and removed the default from the argument list in the mfunc definition
+ *
  * Revision 1.21  1997/02/28 01:29:05  jimg
  * Changed check_semantics() so that it now returns error messages in a String
  * object (passed by reference).
@@ -160,6 +163,11 @@
 #include "trace_new.h"
 #endif
 
+/** The Grid data-type. A Grid groups a set of N Map vectors with a single
+    N-dimensional array. This type supports data that are stored in
+    rectilinear arrays in a computer but which represent some parameter
+    mapped over a grid that is not, in actuality, rectilinear. */
+
 class Grid: public BaseType {
 private:
     BaseType *_array_var;
@@ -188,6 +196,17 @@ public:
     BaseType *map_var(Pix p);
 
     virtual unsigned int width();
+
+    /** Return the number of components in this Grid object. If the optional
+        parameter #constrained# is true then return only those components
+	that are part of the current constraint (i.e., that are projected). */
+    virtual int components(bool constrained = false);
+
+    /** Return true if the current projection will yield a Grid that will
+        pass the check_semantics() mfunc. A `Grid' that, when projected, will
+	not pass the check_semantics mfunc must be sent as either a Structure
+	of Arrays or a single Array depending on the projection. */
+    virtual bool projection_yields_grid();
 
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
