@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.72 2004/07/07 21:08:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.73 2004/08/03 23:09:45 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -58,8 +58,6 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.72 2004/07/07 21:08:47 jimg Exp
 #include <functional>
 
 #include "Regex.h"
-
-// #define DODS_DEBUG
 
 #include "expr.h"
 #include "Clause.h"
@@ -220,38 +218,38 @@ transfer_attr(BaseType *bt, DAS *das)
 }
 #endif
 
-static void transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp);
-static void transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp);
-static void transfer_attr_table(DAS *das, AttrTable *at, Constructor *c);
-
 /** Transfer a single attribute to the table held by a BaseType. If the
     attribute turns out to be a container, call transfer_attr_table. If not
     load the discrete attributes into the BaseType. Both this function and
     transfer_attr_table \i assume that you know that the attributes are
     destined for the particular BaseType.
     @param ep The attribute
-    @param btp The destination */
-static void
-transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp)
+    @param btp The destination 
+    @param suffix When adding attributes, append \e suffix to their names. 
+    Defaults to the empty string. */
+void
+DDS::transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp,
+                   const string &suffix)
 {
     if (ep->is_alias) {
 	AttrTable *source_table = das->get_attr_table(ep->aliased_to);
 	AttrTable &dest = btp->get_attr_table();
 	if (source_table)
-	    dest.add_container_alias(ep->name, source_table);
+	    dest.add_container_alias(ep->name + suffix, source_table);
 	else
-	    dest.add_value_alias(das, ep->name, ep->aliased_to);
+	    dest.add_value_alias(das, ep->name + suffix, ep->aliased_to);
     }
     else if (ep->type == Attr_container) {
+        ep->attributes->set_name(ep->name);
 	Constructor *c = dynamic_cast<Constructor*>(btp);
 	if (c)
-	    transfer_attr_table(das, ep->attributes, c);
+	    transfer_attr_table(das, ep->attributes, c, suffix);
 	else
-	    transfer_attr_table(das, ep->attributes, btp);
+	    transfer_attr_table(das, ep->attributes, btp, suffix);
     }
     else {
 	AttrTable &at = btp->get_attr_table();
-	string n = ep->name;
+	string n = ep->name + suffix;
 	string t = AttrType_to_String(ep->type);
 	vector<string> *attrs = ep->attr;
 	for (vector<string>::iterator i = attrs->begin(); i!=attrs->end(); ++i)
@@ -265,13 +263,14 @@ transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp)
     container itself inside the BaseType's.
     @param at The attribute container
     @param btp The destination */
-static void
-transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp)
+void
+DDS::transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp, 
+                         const string &suffix)
 {
     if (at->get_name() == btp->name()) {
 	// for each entry in the table, call transfer_attr()
 	for (AttrTable::Attr_iter i = at->attr_begin(); i!=at->attr_end(); ++i)
-	    transfer_attr(das, *i, btp);
+	    transfer_attr(das, *i, btp, suffix);
     }
     else {
 	// Clone at because append_container does not and at may be deleted
@@ -282,8 +281,9 @@ transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp)
 }
 
 /** Transfer an attribute container to a Constructor variable. */
-static void
-transfer_attr_table(DAS *das, AttrTable *at, Constructor *c)
+void
+DDS::transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
+                         const string &suffix)
 {
     for (AttrTable::Attr_iter i = at->attr_begin(); i != at->attr_end(); ++i) {
 	AttrTable::entry *ep = *i;
@@ -297,7 +297,7 @@ transfer_attr_table(DAS *das, AttrTable *at, Constructor *c)
 		   ++j) {
 		  if (n == (*j)->name()) { // found match
 		      found = true;
-		      transfer_attr(das, ep, *j);
+		      transfer_attr(das, ep, *j, suffix);
 		  }
 	      }
 	      break;
@@ -307,13 +307,13 @@ transfer_attr_table(DAS *das, AttrTable *at, Constructor *c)
 	      Grid *g = dynamic_cast<Grid*>(c);
 	      if (n == g->array_var()->name()) { // found match
 		  found = true;
-		  transfer_attr(das, ep, g->array_var());
+		  transfer_attr(das, ep, g->array_var(), suffix);
 	      }
 	      
 	      for (Grid::Map_iter j = g->map_begin(); j!=g->map_end(); ++j) {
 		  if (n == (*j)->name()) { // found match
 		      found = true;
-		      transfer_attr(das, ep, *j);
+		      transfer_attr(das, ep, *j, suffix);
 		  }
 	      }
 	      break;
@@ -329,7 +329,7 @@ transfer_attr_table(DAS *das, AttrTable *at, Constructor *c)
 }
 
 /** An attribute is global if it's name does not match any of the top-level
-    variables. Assume that this functio is called only for top-level
+    variables. Assume that this function is called only for top-level
     attributes. 
 
     A private method.
@@ -360,18 +360,18 @@ is_in_kill_file(const string &name)
 }
 
 /** If a given AttrTable looks like it's a global attribute container, add it
-    to this object's attributes. Heuristic on the best of days..
+    to this object's attributes. Heuristic on the best of days...
     
     A private method.
-.
+
     @param at The candiate AttrTable */
 void
 DDS::add_global_attribute(AttrTable::entry *entry)
 {
     string name = entry->name;
 
-    if (is_global_attr(name) && !is_in_kill_file(name))
-	if (entry->type == Attr_container) 
+    if (is_global_attr(name) && !is_in_kill_file(name)) {
+	if (entry->type == Attr_container) {
 	    try {
 		// Force the clone of table entry->attributes.
 		// append_container just copies the pointer and
@@ -381,11 +381,15 @@ DDS::add_global_attribute(AttrTable::entry *entry)
 		d_attr.append_container(new_at, name);
 	    }
 	    catch (Error &e) {
+                DBG(cerr << "Error in DDS::global_attribute: " 
+                         << e.get_error_message() << endl);
 		// *** Ignore this error for now. We should probably merge
 		// the attributes and this really is something we should for
 		// before hand instead of letting an exception signal the
 		// condition... 05/22/03 jhrg
 	    }
+        }
+    }
 }
 
 /** Given a DAS object, scavenge attributes from it and load them into this
@@ -413,19 +417,33 @@ DDS::transfer_attributes(DAS *das)
 	string n = ep->name;
 	bool found = false;
 
-	for (Vars_iter j = var_begin(); j != var_end(); ++j) {
-	    if (n == (*j)->name()) { // found match
-		found = true;
-		transfer_attr(das, ep, *j);
-	    }
-	}
-
+        // Look for attribute tables with <name>_dim_0, dim_1, et cetera. 
+        // If found, seach for just the <name> since these tables are
+        // created by the HDF4 server to hold information HDF4 binds to 
+        // named dimensions. We should include this info in <name>'s 
+        // attribute table.        
+        string::size_type dim_pos = n.find("_dim_");
+        string suffix = "";
+        if (dim_pos != string::npos) {
+            suffix = n.substr(dim_pos);
+            ep->name = n = n.substr(0, dim_pos);        //explain...
+         }
+        
+        // Look for a variable with the same as the attribute container. 
+        // Assume broken servers may provide attribute container names that
+        // match variables within Structures, et c., without correctly 
+        // nesting the attributes. So, use DDS::var() which will recurrsively
+        // search nested constructor types using only a leaf name.
+        BaseType *btp = var(n);
+        if (btp) {
+            found = true;
+            transfer_attr(das, ep, btp, suffix);
+        }
+        
 	if (!found)
 	    add_global_attribute(*i);
 
     }
-
-    // *** Should include code to 'resolve aliases.'
 }
 
 
@@ -593,6 +611,10 @@ DDS::var(const char *n, btp_stack *s)
     that are the same (say point.x and pair.x) you should use fully qualified
     names to get each of those variables.
 
+    @param n The name of the variable to find.
+    @param s If given, this value-result parameter holds the path to the 
+    returned BaseType. Thus, this method can return the FQN for the variable
+    \e n.
     @return A BaseType pointer to the variable or null if not found. */
 BaseType *
 DDS::var(const string &n, btp_stack *s)
@@ -1589,6 +1611,17 @@ DDS::mark_all(bool state)
 }
 
 // $Log: DDS.cc,v $
+// Revision 1.73  2004/08/03 23:09:45  jimg
+// I fixed a number of problems with the transfer_attributes() method and its
+// support functions. First, instead of searching the top level variables, the
+// code now searches using the var() method, which can find variables when only
+// the leaf node name is given. The code that processes global attributes is now
+// much smarter about what a global attribute container really looks like (it
+// ignores empty containers if another candidate is present and actually has
+// some attributes). Finally, the _dim_0, _dim_1, et c., attributes generated by
+// the HDF4 server are now grouped with the variable to which they refer. Before
+// they were lost.
+//
 // Revision 1.72  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //
