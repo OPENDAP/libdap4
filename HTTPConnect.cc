@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.3 2003/01/23 00:22:24 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.4 2003/02/20 23:13:52 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -358,9 +358,9 @@ HTTPConnect::~HTTPConnect()
 }
 
 /** Dereference a URL. This method dereferences a URL and stores the result
-    (i.e., if formulates an HTTP request and processes the HTTP server's
+    (i.e., it formulates an HTTP request and processes the HTTP server's
     response). After this method is successfully called, the value of
-    is_response_present() will be true and the methods output(),
+    is_response_present() will be true and the methods
     get_response_headers(), type() and server_version() may be called.
 
     @param url The URL to dereference.
@@ -740,6 +740,9 @@ HTTPConnect::set_credentials(string u, string p) throw(InternalErr)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.4  2003/02/20 23:13:52  jimg
+// Fixed the comment for getch_url.
+//
 // Revision 1.3  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.
