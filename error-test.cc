@@ -10,6 +10,9 @@
 // jhrg 4/25/96
 
 // $Log: error-test.cc,v $
+// Revision 1.3  1997/02/19 04:53:40  jimg
+// Changed (void) to ().
+//
 // Revision 1.2  1996/08/13 18:52:52  jimg
 // Added __unused__ to definition of char rcsid[].
 // Now tests the Gui.
@@ -20,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: error-test.cc,v 1.2 1996/08/13 18:52:52 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: error-test.cc,v 1.3 1997/02/19 04:53:40 jimg Exp $"};
 
 #include <assert.h>
 
@@ -87,7 +90,7 @@ main(int argc, char *argv[])
 }
 
 void
-usage(void)
+usage()
 {
     cerr << "usage: " << "error-test: [d][spo] <  filename ..."  << endl;
     cerr << "       " << "d: extra parser debugging information" << endl;
@@ -97,7 +100,7 @@ usage(void)
 }
 
 void
-test_scanner(void)
+test_scanner()
 {
     int tok;
 
