@@ -8,6 +8,9 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.11  1997/03/05 08:15:51  jimg
+// Added Cannot read file message to list of builtin messages.
+//
 // Revision 1.10  1997/03/05 06:53:46  jimg
 // Changed display_message member function so that it uses Gui::response()
 // instead of Gui::command(). The later only works for things like the progress
@@ -60,7 +63,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.10 1997/03/05 06:53:46 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.11 1997/03/05 08:15:51 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -73,7 +76,7 @@ int Errorparse(void *arg);
 
 static char *messages[]={"\"Unknown error\"", "\"No such file\"", 
 			 "\"No such variable\"", "\"Malformed expression\"",
-			 "\"No authorization\""};
+			 "\"No authorization\"", "\"Cannot read file\""};
 
 Error::Error()
     : _error_code(undefined_error), _error_message(""), 

@@ -12,6 +12,9 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.6  1997/03/05 08:16:25  jimg
+// Added Cannot read file message to list of builtin messages.
+//
 // Revision 1.5  1997/02/18 21:26:52  jimg
 // Moved the default ctor back into the public section...
 //
@@ -40,11 +43,6 @@
 #pragma interface
 #endif
 
-#if 0
-#include <stdio.h>
-#include <String.h>
-#endif
-
 #include "Gui.h"
 
 /// Error code: an enumerated type for common errors.
@@ -58,7 +56,8 @@ enum ErrorCode {
     no_such_file,
     no_such_variable,
     malformed_expr,
-    no_authorization
+    no_authorization,
+    can_not_read_file
 };
 
 /// ProgramType: an enumerated type for `correction programs'.
