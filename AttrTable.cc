@@ -4,32 +4,14 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
-// Revision 1.6  1994/10/05 16:38:17  jimg
+// Revision 1.7  1994/10/13 15:43:29  jimg
+// Added a new version of append_attr that takes (const char *)s and modified
+// the version that takes strings to take (const String &).
+//
+// Revision 1.6  1994/10/05  16:38:17  jimg
 // Changed internal representation of the attribute table from a Map
 // to a DLList<>.
 //
-// Revision 1.5  1994/09/27  22:42:44  jimg
-// Changed definition of the class AttrTable; it no longer inherits from
-// AttrVHMap, instead it uses that class (contains a member that is an instance
-// of AttrVHMap).
-// Added mfuncs to AttrTable so that the new member could be set/accessed.
-//
-// Revision 1.4  1994/09/09  15:26:39  jimg
-// Removed operator<< and added print() since I have no good way to define
-// operator>>. It seems best to define all operators from a set (like <<, >>)
-// or none at all. Since parse() is the input mfunc, it seems that output
-// should be a mfunc too.
-//
-// Revision 1.3  1994/08/02  20:11:27  jimg
-// Changes operator<< so that it writes a parsable version of the
-// attribute table.
-//
-// Revision 1.2  1994/08/02  19:17:37  jimg
-// Fixed `$Log: AttrTable.cc,v $
-// Fixed `Revision 1.6  1994/10/05 16:38:17  jimg
-// Fixed `Changed internal representation of the attribute table from a Map
-// Fixed `to a DLList<>.
-// Fixed `
 // Revision 1.5  1994/09/27  22:42:44  jimg
 // Changed definition of the class AttrTable; it no longer inherits from
 // AttrVHMap, instead it uses that class (contains a member that is an instance
@@ -54,7 +36,7 @@
 // a static class variable String empty (it is initialized to "").
 //
 
-static char rcsid[]="$Id: AttrTable.cc,v 1.6 1994/10/05 16:38:17 jimg Exp $";
+static char rcsid[]="$Id: AttrTable.cc,v 1.7 1994/10/13 15:43:29 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -148,8 +130,23 @@ AttrTable::get_type(const char *name)
 	return (char *)0;
 }
 
+// Added this version of append_attr to reduce creation on String temps
+
 void
-AttrTable::append_attr(const String &name, String type, String attr)
+AttrTable::append_attr(const char *name, const char *type, const char *attr)
+{
+    entry e;
+
+    e.name = name;
+    e.type = type;
+    e.attr = attr;
+
+    map.append(e);
+}
+
+void
+AttrTable::append_attr(const String &name, const String &type, 
+		       const String &attr)
 {
     entry e;
 
