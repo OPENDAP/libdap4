@@ -279,7 +279,8 @@ HTTPCache::~HTTPCache()
     DBG(cerr << "Entering the destructor for " << this << "... ");
 
     try {
-	perform_garbage_collection();
+	if (startGC())
+	    perform_garbage_collection();
 	cache_index_write();
     }
     catch (Error &e) {
@@ -1098,7 +1099,8 @@ HTTPCache::set_max_size(int size)
 	    UNLOCK(&d_cache_mutex);
 	    DBGN(cerr << "Unlocking interface." << endl);
 
-	    perform_garbage_collection();
+	    if (startGC())
+		perform_garbage_collection();
 	    cache_index_write();
 
 	    DBG(cerr << "Locking interface... ");
@@ -1151,7 +1153,8 @@ HTTPCache::set_max_entry_size(int size)
 		UNLOCK(&d_cache_mutex);
 		DBGN(cerr << "Unlocking interface." << endl);
 
-		perform_garbage_collection();
+		if (startGC())
+		    perform_garbage_collection();
 		cache_index_write();
 
 		DBG(cerr << "Locking interface... ");
@@ -1767,7 +1770,8 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 	    UNLOCK(&d_cache_mutex); // unlock because cache_index_write() locks
 	    DBGN(cerr << "Unlocking interface." << endl);
 
-	    perform_garbage_collection();
+	    if (startGC())
+		perform_garbage_collection();
 	    cache_index_write(); // resets d_new_entries
 
 	    DBG(cerr << "Locking interface... ");
@@ -2276,6 +2280,11 @@ HTTPCache::purge_cache() throw(Error)
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.11  2003/05/02 00:02:38  jimg
+// Modified the code so that perform_garbage_collection() is called only when
+// startGC() is true. This should minimize the time spent scanning the entry
+// entry table.
+//
 // Revision 1.10  2003/05/01 23:06:29  jimg
 // Fixed another class interface lock bug. It would be better to lock class
 // resources (fields) and name them so that it was obvious which were locked and
