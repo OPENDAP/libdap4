@@ -38,6 +38,9 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.21  1996/04/04 18:25:08  jimg
+// Merged changes from version 1.1.1.
+//
 // Revision 1.20  1996/03/05 18:08:32  jimg
 // Added ce_eval to serailize member function.
 // Added the ops member function and int_ops function.
@@ -187,7 +190,7 @@ Int32::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (!xdr_long(xdrout(), &_buf))
+    if (!XDR_INT32(xdrout(), &_buf))
 	return false;
 
     if (flush)
@@ -199,7 +202,7 @@ Int32::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 bool
 Int32::deserialize(bool reuse)
 {
-    unsigned int num = xdr_long(xdrin(), &_buf);
+    unsigned int num = XDR_INT32(xdrin(), &_buf);
 
     return (num > 0);		/* make the return value a boolean */
 }

@@ -38,6 +38,9 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.20  1996/04/04 18:26:50  jimg
+// Merged changes from version 1.1.1.
+//
 // Revision 1.19  1996/03/05 18:10:14  jimg
 // Fixed serialize bug where Maps might not be sent.
 // Added ce_eval to serailize member function.
@@ -67,7 +70,10 @@
 // Changed old, deprecated member functions to new ones.
 // Switched from String representation of type to enum.
 //
-// Revision 1.12.2.1  1995/09/14 20:58:16  jimg
+// Revision 1.12.2.2  1996/03/01 00:06:12  jimg
+// Removed bad attempt at multiple connect implementation.
+//
+// Revision 1.12.2.1  1995/09/14  20:58:16  jimg
 // Moved some loop index variables out of the loop statement.
 //
 // Revision 1.12  1995/07/09  21:28:59  jimg
@@ -161,11 +167,6 @@
 void
 Grid::_duplicate(const Grid &s)
 {
-#ifdef NEVER
-    set_name(s.name());
-    set_type(s.type());
-#endif
-
     BaseType::_duplicate(s);
 
     _array_var = s._array_var->ptr_duplicate();
