@@ -3,9 +3,12 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.10  1996/06/05 20:42:12  jimg
-/* Moved symbols from config_netio.h.in to this file.
+/* Revision 1.11  1996/06/07 05:07:29  jimg
+/* Added GZIP define.
 /*
+ * Revision 1.10  1996/06/05 20:42:12  jimg
+ * Moved symbols from config_netio.h.in to this file.
+ *
  * Revision 1.9  1996/05/14 15:38:49  jimg
  * These changes have already been checked in once before. However, I
  * corrupted the source repository and restored it from a 5/9/96 backup
@@ -129,6 +132,9 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
+
+/* Where is gzip? */
+#undef GZIP
 
 /*
   Determine at compile-time the sizes of various datatypes. This uses symbols
