@@ -44,8 +44,10 @@
 
 #ifdef DODS_DEBUG
 #define DBG(x) FILE_N_LINE; x
+#define DBGN(x) x
 #else
 #define DBG(x) /* x */
+#define DBGN(x) /* x */
 #endif
 
 #ifdef DODS_DEBUG2
@@ -60,6 +62,9 @@
 
 /* 
  * $Log: debug.h,v $
+ * Revision 1.11  2003/03/04 17:16:46  jimg
+ * Added DBGN macro which does not print the file and line number information.
+ *
  * Revision 1.10  2003/02/21 00:14:25  jimg
  * Repaired copyright.
  *
