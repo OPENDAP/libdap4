@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.11 2003/04/22 19:40:27 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.12 2003/05/01 23:25:14 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -42,12 +42,9 @@ static char rcsid[] not_used =
 
 #include <string>
 #include <vector>
-#include <strstream>
 #include <functional>
 #include <algorithm>
-#ifdef WIN32
 #include <sstream>
-#endif
 
 #include "debug.h"
 #include "Regex.h"
@@ -60,7 +57,6 @@ static char rcsid[] not_used =
 using std::cerr;
 using std::endl;
 using std::string;
-using std::istrstream;
 using std::vector;
 
 // This global variable is not MT-Safe, but I'm leaving it as is because it
@@ -82,11 +78,8 @@ struct ParseHeader : public unary_function<const string &, void> {
     ParseHeader() :type(unknown_type), server("dods/0.0") { }
 
     void operator()(const string &header) {
-#ifdef WIN32
 	std::istringstream line(header);
-#else
-	istrstream line(header.c_str());
-#endif
+
 	string name;
 	line >> name;
 	downcase(name);
@@ -168,7 +161,7 @@ HTTPConnect::www_lib_init() throw(Error, InternalErr)
 	curl_easy_setopt(d_curl, CURLOPT_PROXY, proxy.c_str());
 	// If the port number is not part of the proxy server host, then use
 	// the protocol to divine a default port number. Support http, https
-	// and ftp for now. If protocol is not one of those, throw and error.
+	// and ftp for now. If protocol is not one of those, throw Error.
 	Regex find_port("^.*:[0-9]+$");
 	int index=0, matchlen;
 	if (find_port.search(proxy.c_str(), proxy.length(), matchlen, index)
@@ -210,6 +203,8 @@ struct BuildHeaders : public unary_function<const string &, void> {
     BuildHeaders() : d_cl(0) {}
 
     void operator()(const string &header) {
+	DBG(cerr << "Adding '" << header.c_str() << "' to the header list." 
+	    << endl);
 	d_cl = curl_slist_append(d_cl, header.c_str());
     }
 };
@@ -254,8 +249,14 @@ HTTPConnect::read_url(const string &url, FILE *stream,
 
     CURLcode res = curl_easy_perform(d_curl);
 
-    if (header_list)
+    if (header_list) {
 	curl_slist_free_all(header_list);
+	// If we set the header list to some unique value, make sure to reset
+	// it to null after we free said value! 
+#if 1
+	curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, 0);
+#endif
+    }
 
     // Reset the proxy?
     if (temporary_proxy && d_rcr->get_proxy_server_host_url() != "")
@@ -604,6 +605,14 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.12  2003/05/01 23:25:14  jimg
+// Fixed a bug in the code that handles conditional requests. Once a conditional
+// request was made, the curl_slist was freed but the HTTPHEADER option (set
+// with curl_easy_setopt()) was not cleared. Subsequent calls to
+// curl_easy_perform() would try to use the freed slist with predictably bad
+// results. Also removed strstream code in place of Rob's stringstream
+// replacement for Win32.
+//
 // Revision 1.11  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //
