@@ -178,6 +178,8 @@ xsi:schemaLocation=\"http://www..*.org/ns/DODS  .*\">\n\
     <dodsBLOB URL=\"http://localhost/dods/test.xyz\"/>\n\
 </Dataset>\n");
 	CPPUNIT_ASSERT(re_match(r, file_to_string(tmp)));
+        
+        fclose(tmp);
 	remove(DDSTemp);
     }
 
