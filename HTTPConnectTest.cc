@@ -34,7 +34,6 @@
 
 #include "HTTPConnect.h"
 #include "RCReader.h"
-// #define DODS_DEBUG 1
 #include "debug.h"
 
 using namespace CppUnit;
@@ -79,9 +78,6 @@ public:
     CPPUNIT_TEST(get_response_headers_test);
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
-#if 0
-    CPPUNIT_TEST(is_reponse_present_test); // deprecated method
-#endif
     CPPUNIT_TEST(cache_test);
 
     CPPUNIT_TEST_SUITE_END();
@@ -120,25 +116,36 @@ public:
     void fetch_url_test() {
 	char c;
 	try {
-	    FILE *stuff = http->fetch_url("http://dcz.dods.org/");
-	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
-			   && !feof(stuff));
-	    fclose(stuff);
+	    Response *stuff = http->fetch_url("http://dcz.dods.org/");
+	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 
+			   && !ferror(stuff->get_stream()) 
+			   && !feof(stuff->get_stream()));
+	    delete stuff;
 
 	    stuff = http->fetch_url(dsp_das_url);
-	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
-			   && !feof(stuff));
-	    fclose(stuff);
+	    DBG2(char ln[1024];
+		 while (!feof(stuff->get_stream())) {
+		     fgets(ln, 1024, stuff->get_stream());
+		     cerr << ln;
+		 }
+		 rewind(stuff->get_stream()));
+		
+	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
+			   && !ferror(stuff->get_stream()) 
+			   && !feof(stuff->get_stream()));
+	    delete stuff;
 
 	    stuff = http->fetch_url("file:///etc/passwd");
-	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
-			   && !feof(stuff));
-	    fclose(stuff);
+	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 
+			   && !ferror(stuff->get_stream()) 
+			   && !feof(stuff->get_stream()));
+	    delete stuff;
 
 	    stuff = http->fetch_url("file://HTTPConnect.cc");
-	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
-			   && !feof(stuff));
-	    fclose(stuff);
+	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 
+			   && !ferror(stuff->get_stream()) 
+			   && !feof(stuff->get_stream()));
+	    delete stuff;
 	}
 	catch (Error &e) {
 	    cerr << "Error: " << e.get_error_message() << endl;
@@ -148,18 +155,13 @@ public:
 	    cerr << "InternalErr: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
 	}
-#if 0
-	catch (...) {
-	    CPPUNIT_ASSERT(!"Caught an unknown exception from fetch_url");
-	}
-#endif
     }
 
     void get_response_headers_test() {
-	http->fetch_url(dsp_das_url);
+	Response *r = http->fetch_url(dsp_das_url);
 
 	try {
-	    vector<string> h = http->get_response_headers();
+	    vector<string> h = r->get_headers();
 
 	    DBG(copy(h.begin(), h.end(), 
 		     ostream_iterator<string>(cerr, "\n")));
@@ -176,10 +178,10 @@ public:
     }
 
     void server_version_test() {
-	http->fetch_url(dsp_das_url);
+	Response *r = http->fetch_url(dsp_das_url);
 	Regex version("dap/[0-9]+\\.[0-9]+\\.[0-9]+");
 	try {
-	    CPPUNIT_ASSERT(re_match(version, http->server_version().c_str()));
+	    CPPUNIT_ASSERT(re_match(version, r->get_version().c_str()));
 	}
 	catch (InternalErr &e) {
 	    CPPUNIT_ASSERT(!"Caught an exception from server_version");
@@ -188,9 +190,9 @@ public:
     }
 
     void type_test() {
-	http->fetch_url(dsp_das_url);
+	Response *r = http->fetch_url(dsp_das_url);
 	try {
-	    CPPUNIT_ASSERT(http->type() == dods_das);
+	    CPPUNIT_ASSERT(r->get_type() == dods_das);
 	}
 	catch (InternalErr &e) {
 	    CPPUNIT_ASSERT(!"Caught an exception from type()");
@@ -203,36 +205,23 @@ public:
 
 	try {
 	    char c;
-	    FILE *stuff = http->fetch_url("http://dcz.dods.org/secret");
-	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
-			   && !feof(stuff));
+	    Response *stuff = http->fetch_url("http://dcz.dods.org/secret");
+	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
+			   && !ferror(stuff->get_stream()) 
+			   && !feof(stuff->get_stream()));
+	    delete stuff;
 	}
 	catch (InternalErr &e) {
 	    CPPUNIT_ASSERT(!"Caught exception from output");
 	}
     }
 
-#if 0
-    // This method is deprecated.
-    void is_reponse_present_test() {
-	FILE *resp = http->fetch_url("http://dcz.dods.org/");
-	CPPUNIT_ASSERT(http->is_response_present());
-	fclose(resp);
-	CPPUNIT_ASSERT(!http->is_response_present());
-	try {
-	    http->get_response_headers();
-	    CPPUNIT_ASSERT(!"Didn't throw exception as expected");
-	}
-	catch (InternalErr &e) {
-	    CPPUNIT_ASSERT("Caught exception as expected");
-	}
-    }
-#endif
-
     void cache_test() {
 	// The cache-testsuite/dodsrc file turns this off; all the other
 	// params are set up. 
 	http->d_http_cache->set_cache_enabled(true);
+
+	DBG(cerr << endl << "Entering Caching tests." << endl);
 
 	fetch_url_test();
 	get_response_headers_test();
@@ -255,6 +244,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPConnectTest.cc,v $
+// Revision 1.6  2003/03/04 17:21:47  jimg
+// Now uses Response objects.
+//
 // Revision 1.5  2003/02/21 22:49:52  jimg
 // Added fetch_url() tests for "file:" URLs.
 //
