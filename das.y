@@ -22,7 +22,13 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.5  1994/09/27 23:00:39  jimg
+ * Revision 1.6  1994/10/05 16:46:51  jimg
+ * Modified the DAS grammar so that TYPE tokens (from the scanner) were
+ * parsed correcly and added to the new AttrTable class.
+ * Changed the code used to add entries based on changes to AttrTable.
+ * Consoladated error reporting code.
+ *
+ * Revision 1.5  1994/09/27  23:00:39  jimg
  * Modified to use the new DAS class and new AttrTable class.
  *
  * Revision 1.4  1994/09/15  21:10:56  jimg
@@ -58,7 +64,7 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.5 1994/09/27 23:00:39 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.6 1994/10/05 16:46:51 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,10 +75,13 @@ static char rcsid[]={"$Id: das.y,v 1.5 1994/09/27 23:00:39 jimg Exp $"};
 extern int das_line_num;
 
 static char name[ID_MAX];	/* holds name in attr_pair rule */
+static char type[ID_MAX];	/* holds type in attr_pair rule */
 static AttrTablePtr attr_tab_ptr;
 
 int daslex(void);
 int daserror(char *s);
+void save_str(char *dst, char *src);
+
 %}
 
 %expect 3
@@ -80,6 +89,7 @@ int daserror(char *s);
 %token ID
 %token ATTR
 %token VAL
+%token TYPE
 
 %%
 
@@ -115,10 +125,9 @@ var_attr_list: 	/* empty */
 
 var_attr:   	ID 
 		{ 
-		    if (!table.get_table((String)$1)) /* new var or existing one */
-			attr_tab_ptr = table.set_table((String)$1, new AttrTable);
-		    else
-			attr_tab_ptr = table.get_table((String)$1);
+		    attr_tab_ptr = table.get_table((String)$1);
+		    if (!attr_tab_ptr) /* is this a new var? */
+			attr_tab_ptr = table.add_table($1, new AttrTable);
 		} 
 		'{' attr_list '}'
 ;
@@ -128,17 +137,21 @@ attr_list:  	/* empty */
     	    	| attr_list attr_pair
 ;
 
-attr_pair:	attr_name 
+attr_pair:	attr_type
 		{ 
-		    strncpy(name, $1, ID_MAX);
-		    name[ID_MAX-1] = '\0';		/* in case ... */
-		    if (strlen($1) >= ID_MAX) 
-			fprintf(stderr, "line: %d `%s' truncated to `%s'\n", 
-				das_line_num, $1, name);
+		    save_str(type, $1);
+		} 
+                attr_name 
+		{ 
+		    save_str(name, $3);
 		} 
 		attr_val 
                 { 
-		    attr_tab_ptr->get_attr((String)name) = $3;
+		    attr_tab_ptr->append_attr(name, type, $5);
+#ifdef DEBUG
+		    cerr << "Added :" << type << " " << name << " " << $5 <<
+			endl; 
+#endif
 		} 
                 ';' 
 ;
@@ -150,9 +163,23 @@ attr_val:   	VAL
                 | ID
 ;
 
+attr_type:      TYPE
+;
+
 %%
 
-int daserror(char *s)
+void
+save_str(char *dst, char *src)
+{
+    strncpy(dst, src, ID_MAX);
+    name[ID_MAX-1] = '\0';		/* in case ... */
+    if (strlen(src) >= ID_MAX) 
+	cerr << "line: " << das_line_num << "`" << src << "' truncated to `"
+             << dst << "'" << endl;
+}
+
+int 
+daserror(char *s)
 {
     fprintf(stderr, "%s line: %d\n", s, das_line_num);
 }
