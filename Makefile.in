@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.152 2004/07/07 21:08:47 jimg Exp $
+# $Id: Makefile.in,v 1.153 2004/07/09 17:06:40 jimg Exp $
 
 @SET_MAKE@
 
@@ -850,6 +850,41 @@ Float32.o: Float32.cc config_dap.h Float32.h dods-datatypes.h BaseType.h \
 Constructor.o: Constructor.cc config_dap.h Constructor.h GNU/Pix.h \
   IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
   dods-datatypes.h BTIterAdapter.h debug.h escaping.h
+PassiveByte.o: PassiveByte.cc config_dap.h PassiveByte.h Byte.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  Error.h InternalErr.h debug.h
+PassiveInt32.o: PassiveInt32.cc config_dap.h PassiveInt32.h Int32.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  Error.h InternalErr.h debug.h
+PassiveFloat64.o: PassiveFloat64.cc config_dap.h PassiveFloat64.h \
+  Float64.h dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h \
+  IteratorAdapter.h Error.h InternalErr.h debug.h
+PassiveStr.o: PassiveStr.cc config_dap.h PassiveStr.h Str.h dods-limits.h \
+  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  InternalErr.h dods-datatypes.h debug.h
+PassiveUrl.o: PassiveUrl.cc PassiveUrl.h PassiveStr.h Str.h dods-limits.h \
+  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
+  InternalErr.h dods-datatypes.h debug.h
+PassiveUInt32.o: PassiveUInt32.cc config_dap.h PassiveUInt32.h UInt32.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  Error.h InternalErr.h debug.h
+PassiveInt16.o: PassiveInt16.cc config_dap.h PassiveInt16.h Int16.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  Error.h InternalErr.h debug.h
+PassiveUInt16.o: PassiveUInt16.cc config_dap.h PassiveUInt16.h UInt16.h \
+  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
+  Error.h InternalErr.h debug.h
+PassiveFloat32.o: PassiveFloat32.cc config_dap.h PassiveFloat32.h \
+  Float32.h dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h \
+  IteratorAdapter.h Error.h InternalErr.h debug.h
+PassiveArray.o: PassiveArray.cc config_dap.h PassiveArray.h Array.h \
+  dods-limits.h Vector.h BaseType.h AttrTable.h GNU/Pix.h \
+  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h debug.h
+PassiveStructure.o: PassiveStructure.cc config_dap.h PassiveStructure.h \
+  Structure.h GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h Error.h \
+  InternalErr.h dods-datatypes.h Constructor.h DDS.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h debug.h
 VirtualCtorByte.o: VirtualCtorByte.cc config_dap.h Byte.h \
   dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
   Error.h InternalErr.h
