@@ -39,7 +39,10 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
-// Revision 1.3  1995/12/09 01:07:33  jimg
+// Revision 1.4  1996/02/01 17:43:14  jimg
+// Added support for lists as operands in constraint expressions.
+//
+// Revision 1.3  1995/12/09  01:07:33  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -52,7 +55,7 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.3 1995/12/09 01:07:33 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.4 1996/02/01 17:43:14 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -149,11 +152,12 @@ Vector::var(unsigned int i)
     switch (_var->type()) {
       case byte_t:
       case int32_t:
-      case float64_t:
+      case float64_t: {
 	unsigned int sz = _var->width();
 	_var->val2buf(_buf + (i * sz));
 	return _var;
 	break;
+      }
 
       case str_t:
       case url_t:
@@ -390,7 +394,7 @@ Vector::val2buf(void *val, bool reuse)
     switch (_var->type()) {
       case byte_t:
       case int32_t:
-      case float64_t:
+      case float64_t: {
 	unsigned int array_wid = width();
 
 	if (_buf && !reuse) {
@@ -407,9 +411,10 @@ Vector::val2buf(void *val, bool reuse)
 	}
 
 	break;
+      }
 
       case str_t:
-      case url_t:
+      case url_t: {
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 
@@ -421,6 +426,7 @@ Vector::val2buf(void *val, bool reuse)
 	}
 
 	break;
+      }
 
       default:
 	cerr << "Array::val2buf: Can be called for arrays of Byte, Int32, \n"

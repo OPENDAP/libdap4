@@ -7,11 +7,14 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.8  1995/12/09 01:06:39  jimg
-/* Added changes so that relational operators will work properly for all the
-/* datatypes (including Sequences). The relational ops are evaluated in
-/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+/* Revision 1.9  1996/02/01 17:43:10  jimg
+/* Added support for lists as operands in constraint expressions.
 /*
+ * Revision 1.8  1995/12/09  01:06:39  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
  * Revision 1.7  1995/12/06  21:05:08  jimg
  * Added print_constrained(): prints only those parts of the DDS that satisfy
  * the constraint expression (projection + array selection).
@@ -66,13 +69,16 @@
 #include <SLList.h>
 
 #include "BaseType.h"
+#include "expr.h"
 
 class DDS {
 private:
     struct rel_clause {
 	int op;			// operator code from parser
 	BaseType *arg1;		// argument 1 for OP
-	BaseType *arg2;		// argument 2; must be same type as ARG1
+	bool arg2_is_vector;	// use V_ARG2 if true, else use S_ARG2.
+	BaseType *s_arg2;	// scalar arg; must be same type as ARG1
+	RValList *v_arg2;	// vector arg; elems must match type of ARG1
     };
 	
     String name;		// the dataset name
@@ -105,9 +111,12 @@ public:
     Pix first_clause();
     void next_clause(Pix &p);
     int clause_op(Pix p);
+    bool clause_arg2_is_vector(Pix p);
     BaseType *clause_arg1(Pix p);
-    BaseType *clause_arg2(Pix p);
+    BaseType *clause_s_arg2(Pix p);
+    RValList *clause_v_arg2(Pix p);
     void append_clause(int op, BaseType *arg1, BaseType *arg2);
+    void append_clause(int op, BaseType *arg1, RValList *arg2);
 
     // evaluate the current constraint
     bool eval_constraint();
@@ -126,7 +135,7 @@ public:
     bool print(FILE *out);
 
     // Print only those parts of the DDS marked for transmission after
-    // evaluating a constraint expression.
+    // evaluating a constraint expression. I.E., print the current projection.
     bool print_constrained(ostream &os = cout);
     bool print_constrained(FILE *out);
 
@@ -137,10 +146,11 @@ public:
     // Evaluate the constraint expression CONSTRAINT given the current DDS.
     bool parse_constraint(const String &constraint);
 
-    // Send VAR_NAME from DATASET given CONSTRAINT. if FLUSH is true, flush
-    // the output buffer upon completion. Use OUT as the output buffer if not
-    // null, otherwise use STDOUT. This mfunc uses eval_constraint(),
-    // BaseType::read() and BaseType::serailize() as well as other mfuncs.
+    // Send variable(s) described by the constraint expression CONSTRIANT
+    // from DATASET. if FLUSH is true, flush the output buffer upon
+    // completion. Use OUT as the output buffer if not null, otherwise use
+    // STDOUT. This mfunc uses eval_constraint(), BaseType::read() and
+    // BaseType::serailize() as well as other mfuncs.
     bool send(const String &dataset, const String &constraint, FILE *out, 
 	      bool flush = false);
 };

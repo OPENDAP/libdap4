@@ -6,6 +6,9 @@
 
 /*
   $Log: expr.h,v $
+  Revision 1.2  1996/02/01 17:43:15  jimg
+  Added support for lists as operands in constraint expressions.
+
   Revision 1.1  1996/01/31 18:55:15  jimg
   Added to repository.
 
@@ -30,3 +33,4 @@ typedef struct {
     } v;
 } value;
 
+typedef SLList<BaseType *> RValList;

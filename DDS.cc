@@ -38,7 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.15  1995/12/09 01:06:38  jimg
+// Revision 1.16  1996/02/01 17:43:08  jimg
+// Added support for lists as operands in constraint expressions.
+//
+// Revision 1.15  1995/12/09  01:06:38  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -112,7 +115,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.15 1995/12/09 01:06:38 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.16 1996/02/01 17:43:08 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -120,6 +123,7 @@ static char rcsid[]="$Id: DDS.cc,v 1.15 1995/12/09 01:06:38 jimg Exp $";
 
 #include <unistd.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include <iostream.h>
 #include <stdiostream.h>
@@ -144,6 +148,9 @@ int exprparse(DDS &table);
 bool int32_op(int i1, int i2, int op); // defined in expr.y
 bool float64_op(double d1, double d2, int op);
 bool str_op(String &s1, String &s2, int op);
+
+static bool eval_clause(int op, BaseType *arg1, BaseType *arg2);
+static bool eval_list_clause(int op, BaseType *arg1, RValList *arg2);
 
 // Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
 // the `result' of the mfunc.
@@ -335,6 +342,12 @@ DDS::clause_op(Pix p)
     return expr(p).op;
 }
 
+bool
+DDS::clause_arg2_is_vector(Pix p)
+{
+    return expr(p).arg2_is_vector;
+}
+
 BaseType *
 DDS::clause_arg1(Pix p)
 {
@@ -342,9 +355,19 @@ DDS::clause_arg1(Pix p)
 }
 
 BaseType *
-DDS::clause_arg2(Pix p)
+DDS::clause_s_arg2(Pix p)
 {
-    return expr(p).arg2;
+    assert(!clause_arg2_is_vector(p));
+
+    return expr(p).s_arg2;
+}
+
+RValList *
+DDS::clause_v_arg2(Pix p)
+{
+    assert(clause_arg2_is_vector(p));
+
+    return expr(p).v_arg2;
 }
 
 void
@@ -354,7 +377,23 @@ DDS::append_clause(int op, BaseType *arg1, BaseType *arg2)
 
     clause.op = op;
     clause.arg1 = arg1;
-    clause.arg2 = arg2;
+    clause.arg2_is_vector = false;
+    clause.s_arg2 = arg2;
+    clause.v_arg2 = (void *)0;
+
+    expr.append(clause);
+}
+
+void
+DDS::append_clause(int op, BaseType *arg1, RValList *arg2)
+{
+    rel_clause clause;
+
+    clause.op = op;
+    clause.arg1 = arg1;
+    clause.arg2_is_vector = true;
+    clause.s_arg2 = (void *)0;
+    clause.v_arg2 = arg2;
 
     expr.append(clause);
 }
@@ -362,55 +401,76 @@ DDS::append_clause(int op, BaseType *arg1, BaseType *arg2)
 bool
 DDS::eval_constraint()
 {
-    bool status = true;
-
     if (expr.empty()) {
 	DBG(cerr << "No constraint recorded" << endl);
-	return status;
+	return true;
     }
 
-    for (Pix p = first_clause(); p && status; next_clause(p)) {
-	int op = clause_op(p);
-	BaseType *arg1 = clause_arg1(p);
-	BaseType *arg2 = clause_arg2(p);
-
-	switch (arg1->type()) {
-	  case byte_t: 
-	  case int32_t: {
-	    int32 i1, i2;
-	    int32 *i1p = &i1, *i2p = &i2;
-	    arg1->buf2val((void **)&i1p);
-	    arg2->buf2val((void **)&i2p);
-	    status = status && int32_op(i1, i2, op);
-	    break;
-	  }
-
-	  case float64_t: {
-	    double d1, d2;
-	    double *d1p = &d1, *d2p = &d2;
-	    arg1->buf2val((void **)&d1p);
-	    arg2->buf2val((void **)&d2p);
-	    status = status && float64_op(d1, d2, op);
-	    break;
-	  }
-
-	  case str_t: {
-	    String s1, s2;
-	    String *s1p = &s1, *s2p = &s2;
-    	    arg1->buf2val((void **)&s1p);
-	    arg2->buf2val((void **)&s2p);
-	    status = status && str_op(s1, s2, op);
-	    break;
-	  }
-
-	  default:
-	    cerr << "Unknown type in constraint realtional clause" << endl;
-	    break;
-	}
+    bool result = true;
+    for (Pix p = first_clause(); p && result; next_clause(p)) {
+	if (clause_arg2_is_vector(p))
+	    result = result
+		&& eval_clause(clause_op(p), clause_arg1(p), clause_s_arg2(p));
+	else
+	    result = result
+		&& eval_list_clause(clause_op(p), clause_arg1(p), 
+				    clause_v_arg2(p));
     }
 
-    return status;
+    return result;
 }
+
+static bool
+eval_clause(int op, BaseType *arg1, BaseType *arg2)
+{
+    switch (arg1->type()) {
+      case byte_t: 
+      case int32_t: {
+	  int32 i1, i2;
+	  int32 *i1p = &i1, *i2p = &i2;
+	  arg1->buf2val((void **)&i1p);
+	  arg2->buf2val((void **)&i2p);
+	  return int32_op(i1, i2, op);
+	  break;
+      }
+
+      case float64_t: {
+	  double d1, d2;
+	  double *d1p = &d1, *d2p = &d2;
+	  arg1->buf2val((void **)&d1p);
+	  arg2->buf2val((void **)&d2p);
+	  return float64_op(d1, d2, op);
+	  break;
+      }
+
+      case str_t: {
+	  String s1, s2;
+	  String *s1p = &s1, *s2p = &s2;
+	  arg1->buf2val((void **)&s1p);
+	  arg2->buf2val((void **)&s2p);
+	  return str_op(s1, s2, op);
+	  break;
+      }
+
+      default:
+	cerr << "Unknown type in constraint realtional clause" << endl;
+	break;
+    }
+
+    return false;
+}
+
+
+static bool
+eval_list_clause(int op, BaseType *arg1, RValList *arg2)
+{
+    bool result = true;
+    for (Pix p = arg2->first(); p; arg2->next(p))
+	result = result && eval_clause(op, arg1, (*arg2)(p));
+
+    return result;
+}
+
 
 bool
 DDS::parse(String fname)
@@ -591,11 +651,13 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	DBG(cerr << "The constrained DDS (about to be sent):\n");
 	DBG(print_constrained(cerr));
 
+#ifdef NEVER
 	DBG(cerr << "Stored constraint expressions:" << endl;\
 	    for (Pix p = first_clause(); p; next_clause(p)) {\
 	       cerr << clause_arg1(p) << " " << clause_op(p) << " "\
 		     << clause_arg2(p) << endl;\
 	    })
+#endif
 
 	os << "Data:" << endl;	// send `Data:' marker
 

@@ -45,11 +45,14 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.4  1995/12/09 01:07:41  jimg
-/* Added changes so that relational operators will work properly for all the
-/* datatypes (including Sequences). The relational ops are evaluated in
-/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+/* Revision 1.5  1996/02/01 17:43:18  jimg
+/* Added support for lists as operands in constraint expressions.
 /*
+ * Revision 1.4  1995/12/09  01:07:41  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
  * Revision 1.3  1995/12/06  18:42:44  jimg
  * Added array constraints to the parser.
  * Added functions for the actions of those new rules.
@@ -68,7 +71,7 @@
 
 %{
 
-static char rcsid[]={"$Id: expr.y,v 1.4 1995/12/09 01:07:41 jimg Exp $"};
+static char rcsid[]={"$Id: expr.y,v 1.5 1996/02/01 17:43:18 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,7 +95,7 @@ static char rcsid[]={"$Id: expr.y,v 1.4 1995/12/09 01:07:41 jimg Exp $"};
 #define DEBUG 1
 #include "debug.h"
 #include "parser.h"
-#include "expr.h"
+#include "expr.h"		/* the types IntList, IntListList and value */
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -105,6 +108,8 @@ bool mark_id(DDS &table, char id[]);
 IntList *make_array_index(value &i1, value &i2, value &i3);
 IntListList *make_array_indeces(IntList *index);
 IntListList *append_array_index(IntListList *indeces, IntList *index);
+RValList *make_r_value_list(value *val);
+RValList *append_r_value_list(RValList *rvals, value *val);
 bool process_array_indeces(DDS &dds, char id[], IntListList *indeces);
 BaseType *dereference_url(DDS &table, value &val);
 bool relational_op(value &val1, value &val2, int op);
@@ -135,6 +140,8 @@ BaseType *make_variable(const value &val);
 
     IntList *int_l_ptr;
     IntListList *int_ll_ptr;
+
+    RValList *r_val_l_ptr;
 }
 
 %token <val> INT
@@ -153,10 +160,11 @@ BaseType *make_variable(const value &val);
 %token <op> REGEXP
 
 %type <boolean> constraint_expr projection selection clause array_sel
-%type <variable> operand
+%type <variable> identifier constant r_value
 %type <op> rel_op
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indeces
+%type <r_val_l_ptr> r_value_list list_str list_int list_float
 
 %%
 
@@ -165,8 +173,10 @@ constraint_expr: /* empty */
 		     table.mark_all(true); /* empty constraint --> send all */
 		     $$ = true;
 		 }
+                 /* projection only */
                  | projection
-                 | '&' { table.mark_all(true); } selection 
+		 /* selection only --> project everything */
+                 | '&' { table.mark_all(true); } selection
                    { 
 		       $$ = $3;
 		   }
@@ -202,8 +212,12 @@ selection:	clause
 		  }
 ;
 
-clause:		/* operand rel_op '{' operand_list '}'
-		| */ operand rel_op operand 
+clause:		identifier rel_op '{' r_value_list '}'
+                  {
+		      table.append_clause($2, $1, $4);
+		      $$ = true;
+		  }
+		| r_value rel_op r_value
                   {
 		      table.append_clause($2, $1, $3);
 		      $$ = true;
@@ -211,17 +225,13 @@ clause:		/* operand rel_op '{' operand_list '}'
                 | array_sel
 ;
 
-operand:	ID 
+r_value:        identifier
+                | constant
+;
+
+identifier:	ID 
                   { 
 		      $$ = get_variable(table, $1); 
-		  }
-		| INT
-                  {
-		      $$ = make_variable($1);
-		  }
-		| FLOAT
-                  {
-		      $$ = make_variable($1);
 		  }
 		| FIELD 
                   { 
@@ -230,6 +240,16 @@ operand:	ID
 		| '*' STR 
                   { 
 		      $$ = dereference_url(table, $2); 
+		  }
+;
+
+constant:       INT
+                  {
+		      $$ = make_variable($1);
+		  }
+		| FLOAT
+                  {
+		      $$ = make_variable($1);
 		  }
 ;
 
@@ -265,26 +285,42 @@ array_index: 	'[' INT ':' INT ']'
 		      $$ = make_array_index($2, $4, $6);
 		  }
 ;
-/*
-operand_list:	list_str
+
+r_value_list:	list_str
 		| list_int
 		| list_float
 ;
 
-list_str:	STR
-		| ID 
-		| list_str ',' STR
-		| list_str ',' ID
+list_str:	STR 
+                { 
+		    $$ = make_r_value_list($1); 
+		}
+                | list_str ',' STR
+                {
+		    $$ = append_r_value_list($1, $3);
+		}
 ;
 
 list_int:	INT
+                { 
+		    $$ = make_r_value_list($1); 
+		}
 		| list_int ',' INT
+                {
+		    $$ = append_r_value_list($1, $3);
+		}
 ;
 
 list_float:	FLOAT
+                { 
+		    $$ = make_r_value_list($1); 
+		}
 		| list_float ',' FLOAT
+                {
+		    $$ = append_r_value_list($1, $3);
+		}
 ;
-*/
+
 rel_op:		EQUAL
 		| NOT_EQUAL
 		| GREATER
@@ -370,9 +406,9 @@ process_array_indeces(DDS &dds, char id[], IntListList *indeces)
 	return false;
     }
     
-    Array *a = (Array *)variable;
+    Array *a = (Array *)variable; // replace with dynamic cast
 
-    a->clear_constraint();
+    a->clear_constraint();	// each projection erases the previous one
     
     Pix p, r;
     for (p = indeces->first(), r = a->first_dim(); 
@@ -414,6 +450,33 @@ process_array_indeces(DDS &dds, char id[], IntListList *indeces)
     }
 
     return true;
+}
+
+// Create a list of r values and add VAL to the list.
+//
+// Returns: A pointer to the updated RValList.
+
+RValList *
+make_r_value_list(value *val)
+{
+    RValList *rvals = new RValList;
+
+    return append_r_value_list(rvals, val);
+}
+
+// Given a RValList pointer RVALS and a value pointer VAL, make a variable to
+// hold VAL and append that variable to the list RVALS.
+//
+// Returns: A pointer to the updated RValList.
+
+RValList *
+append_r_value_list(RValList *rvals, value *val)
+{
+    BaseType *rval = make_variable(val);
+
+    rvals->append(rval);
+
+    return rvals;
 }
 
 // Given a string which is a URL, dereference it and return the data it

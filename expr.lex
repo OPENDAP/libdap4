@@ -50,11 +50,14 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.4  1995/12/09 01:07:39  jimg
-/* Added changes so that relational operators will work properly for all the
-/* datatypes (including Sequences). The relational ops are evaluated in
-/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+/* Revision 1.5  1996/02/01 17:43:16  jimg
+/* Added support for lists as operands in constraint expressions.
 /*
+# Revision 1.4  1995/12/09  01:07:39  jimg
+# Added changes so that relational operators will work properly for all the
+# datatypes (including Sequences). The relational ops are evaluated in
+# DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+#
 # Revision 1.3  1995/12/06  18:57:37  jimg
 # Because the %union{} changed, the return types of some of the rules also
 # changed.
@@ -70,7 +73,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: expr.lex,v 1.4 1995/12/09 01:07:39 jimg Exp $"};
+static char rcsid[]={"$Id: expr.lex,v 1.5 1996/02/01 17:43:16 jimg Exp $"};
 
 #include <string.h>
 
@@ -112,7 +115,7 @@ LESS		<
 LESS_EQL	<=
 REGEXP		=~
 
-NEVER		[^][":*.)(,&a-zA-Z0-9_]
+NEVER		[^][:*.)(,&a-zA-Z0-9_]
 
 %%
 

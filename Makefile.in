@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.27 1995/12/09 01:06:53 jimg Exp $
+# $Id: Makefile.in,v 1.28 1996/02/01 17:43:11 jimg Exp $
 
 @SET_MAKE@
 
@@ -25,6 +25,7 @@ LDFLAGS = @LDFLAGS@ -L. -LMAP -LStack -LPlex -LVec -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d
 LIBS = -ldap++ -lerrmsg @LIBS@
+TAGS_FLAGS = -b
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
@@ -232,7 +233,7 @@ tar:
 	       gzip $(dir).tar
 
 tags:
-	$(TAGS) *.cc *.h *.lex *.y
+	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
 
 depend: 
 	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
