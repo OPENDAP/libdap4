@@ -14,9 +14,11 @@ proc das-test_start { sw {ifile ""} {ofile ""}} {
     global verbose
     global DASTEST
     global comp_output
+    global spawn_id
 
     if {$verbose >= 1} {
 	send_user "Testing $ifile $ofile ...\n"
+	exp_internal 1
     }
 
     switch $sw {
