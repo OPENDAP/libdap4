@@ -1,0 +1,40 @@
+$Id: README,v 1.1 1994/10/25 15:21:32 jimg Exp $
+
+This directory contains th URI/GSO implementation of the DODS application
+programmer interface. The DODS API is split into two libraries: libdas++.a
+and libdds++.a. libdas++.a is a C++ library that contains classes which
+provide access to the dataset attribute structure as described in the DODS
+API design paper. libdds++.a provides access to the dataset description
+structure and the data in a DODS-accessible dataset.
+
+Test programs for the API are also in this directory
+
+In addition, the C++ classes defined here use some features of the container
+classes defined in the directories Map and Stack. 
+
+It is possible to build the API so that various levels of debugging support
+are built in. These options must be chosen at compile time and affect the
+Makefile. To set them, you use the `--enable' option with `configure'.
+
+To build with program instrumentation use `--enable-debug=<level>' where
+<level> is 1 or 2. To build with memory leak checks use --enable-dbnew.
+The defaults for both debug and dbnew are to *not* include those
+features. Thus, if you want to built a straight version of the libraries (and
+test code), use `./configure'. If you want the extra features, use
+`./configure --enable-dbnew --enable-debug=2'
+
+Debugging aids in the DODS API:
+
+debug: simple program instrumentation -- see the file debug.h in
+$(DODS_ROOT)/include for more information
+
+debug2: more elaborate program instrumentation -- by convention this is used
+for output that is half a page or more, while DEBUG is used for single line
+output.
+
+dbnew: include -ldbnew and -lg++dbnew when linking. libdbnew.a contains
+overloaded versions of new, new[] delete and delete[]. It also contains code
+to `walk the malloc chain' and simple checks for out-of-bounds
+errors. libg++-dbnew.a is a small set of classes from libg++.a that have been
+hacked to include libdbnew.a's trace_new.h header and thus can be used to
+trace memory leaks within some classes of libg++.a
