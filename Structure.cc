@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.36  1998/11/10 00:58:49  jimg
+// Fixed up memory leaks in the calls to unique_names().
+//
 // Revision 1.35  1998/09/17 17:08:52  jimg
 // Changes for the new variable lookup scheme. Fields of ctor types no longer
 // need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
@@ -568,18 +571,31 @@ Structure::check_semantics(String &msg, bool all = false)
 {
     if (!BaseType::check_semantics(msg))
 	return false;
+    
+    bool status = true;
 
-    if (!unique_names(_vars, (const char *)name(), (const char *)type_name(), 
-		msg))
-	return false;
+    char *n = new char[name().length()+1];
+    strcpy(n , (const char *)name());
+    char *tn = new char[type_name().length()+1];
+    strcpy(tn, (const char *)type_name());
+
+    if (!unique_names(_vars, n, tn, msg)) {
+	status = false;
+	goto exit;
+    }
 
     if (all) 
 	for (Pix p = _vars.first(); p; _vars.next(p)) {
 	    assert(_vars(p));
-	    if (!_vars(p)->check_semantics(msg, true))
-		return false;
+	    if (!_vars(p)->check_semantics(msg, true)) {
+		status = false;
+		goto exit;
+	    }
 	}
 
-    return true;
+ exit:
+    delete[] n;
+    delete[] tn;
+    return status;
 }
 
