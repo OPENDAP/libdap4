@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.33  1998/11/10 00:47:53  jimg
+// Delete the dds object (created with new) after calling process_data().
+//
 // Revision 1.32  1998/09/08 22:23:51  jimg
 // Removed PERF macro calls.
 //
@@ -131,7 +134,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.32 1998/09/08 22:23:51 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.33 1998/11/10 00:47:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -141,7 +144,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.32 1998/09/08 22:23:51 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.32 $";
+const char *VERSION = "$Revision: 1.33 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -389,6 +392,7 @@ main(int argc, char * argv[])
 		    continue;
 		}
 		process_data(url, dds, verbose, async);
+		delete dds;
 	    }
 	}
 
