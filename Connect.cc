@@ -45,7 +45,14 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.14  1995/07/09 21:20:44  jimg
+// Revision 1.15  1996/02/01 21:43:51  jimg
+// Added mfuncs to maintain a list of DDSs and the constraint expressions
+// that produced them.
+// Added code in request_data to strip the incoming DDS from a data
+// document.
+// Fixed up bogus comments.
+//
+// Revision 1.14  1995/07/09  21:20:44  jimg
 // Fixed date in copyright (it now reads `Copyright 1995 ...').
 //
 // Revision 1.13  1995/07/09  21:14:45  jimg
@@ -133,7 +140,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.14 1995/07/09 21:20:44 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.15 1996/02/01 21:43:51 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -149,6 +156,7 @@ static char rcsid[]={"$Id: Connect.cc,v 1.14 1995/07/09 21:20:44 jimg Exp $"};
 
 extern "C" FILE *NetExecute(char *); // defined in netexec.c
 extern "C" FILE *NetConnect(char *); // defined in netexec.c
+extern "C" FILE *move_dds(FILE *in); // defined in netexec.c
 extern void set_xdrin(FILE *in); // defined in BaseType.cc
 extern void set_xdrout(FILE *out); // define in BaseType.cc
 
@@ -184,7 +192,7 @@ Connect::parse_url(const char *name)
 
 // public mfuncs
 
-Connect::Connect(const String &name, const String &api)
+Connect::Connect(const String &name)
 {
     parse_url((const char *)name);
 }
@@ -220,13 +228,13 @@ Connect::request_dds(const String &ext)
 {
     // get the dds 
 
-    String dds_url = _URL + "."  + ext;
+    String dds_url = _URL + "." + ext;
     bool status = false;
 
     FILE *fp = NetExecute(dds_url);
 
     if( fp ) 
-      status = _dds.parse(fp);    // read and parse the das from a file 
+      status = _dds.parse(fp);    // read and parse the dds from a file 
       
     fclose(fp);
    
@@ -240,17 +248,16 @@ Connect::request_dds(const String &ext)
 // NB: This function does not actually read the data (in either case), it
 // just sets up the BaseType static class member so that data *can* be read. 
 //
-// Returns: true if the read from the server to the local buffer was
-// completed (async == false) or was correctly initiated (async ==
-// true). Returns false if an error was detected by the NetExecute or
-// NetConnect functions.
-//
-// Added optional argument EXT which defaults to "dods". jhrg 3/7/95
+// Returns: A reference to the DDS object which contains the variable
+// (BaseType *) generated from the DDS sent with the data. This variable is
+// guaranteed to be large enough to hold the data, even if the constraint
+// expression changed the type of the variable from that which appeared in the
+// origianl DDS received from the dataset when this connection was made.
 
-bool
+DDS &
 Connect::request_data(const String expr, bool async, const String &ext)
 {
-    String data_url = _URL + "."  + ext + "?" + expr;
+    String data_url = _URL + "." + ext + "?" + expr;
     FILE *fp;
 
     if (async)
@@ -258,10 +265,35 @@ Connect::request_data(const String expr, bool async, const String &ext)
     else
 	fp = NetExecute(data_url);
 	
-    if (fp) 
-      set_xdrin(fp);
+    if (!fp) {
+	cerr << "Could not complete data request operation" << endl;
+	exit(1);
+    }
 
-    return (bool)fp;
+    // First read the DDS into a new object (using a file to store the DDS
+    // temporarily - the parser/scanner won't stop reading until an EOF is
+    // found, this fixes that problem).
+    DDS dds;
+    FILE *dds_fp = move_dds(fp);
+    if (!dds.parse(dds_fp)) {
+	cerr << "Could not parse return data description" << endl;
+	exit (1);
+    }
+    fclose(dds_fp);
+
+    // Save the newly created DDS (which now has a variable (BaseType *)
+    // that can hold the data) along with the constraint expression in a
+    // list.
+    DDS &d = append_constraint(expr, dds);
+
+    // now arrange to read the data via the appropriate variable.  NB:
+    // Since all BaseTypes share I/O, this works. However, it will have
+    // to be changed when BaseType is modified to handle several
+    // simultaneous reads.
+
+    set_xdrin(fp);
+   
+    return d;
 }
 
 bool
@@ -277,14 +309,6 @@ Connect::URL()
 	err_quit("Connect::A URL is only valid for a remote connection");
 
     return _URL;		// if _local returns ""
-}
-
-// deprecated
-
-const String &
-Connect::api_name()
-{
-    return _path;
 }
 
 DAS &
@@ -303,4 +327,44 @@ Connect::dds()
 	err_quit("Connect::A dds is only vaild for a remote connection");
 
     return _dds;
+}
+
+Pix 
+Connect::first_constraint()
+{
+    return _data.first();
+}
+
+void
+Connect::next_constraint(Pix &p)
+{
+    if (!_data.empty() && p)
+	_data.next(p);
+}
+
+String
+Connect::constraint_expression(Pix p)
+{
+    if (!_data.empty() && p)
+	return _data(p)._expression;
+}
+
+DDS &
+Connect::constraint_dds(Pix p)
+{
+    if (!_data.empty() && p)
+	return _data(p)._dds;
+}
+
+DDS &
+Connect::append_constraint(String expr, DDS &dds)
+{
+    constraint c;
+
+    c._expression = expr;
+    c._dds = dds;
+
+    _data.append(c);
+
+    return _data.rear()._dds;
 }
