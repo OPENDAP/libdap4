@@ -1,3 +1,21 @@
+2000-09-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged Jose Garcia's exception handling code. 
+
+	* Merging the exception software means that all definitions of the
+	read() method must change. See BaseType.h for details.
+
+	* Improved error messages returned by the parsers. The DAS and DDS
+	parsers now include a line number and, in many cases, context, for
+	each message. 
+
+	* Normalized all the #ifndef #endif guards in the header files so
+	they use the same naming scheme. Added guards around #include
+	lines for headers to speed compile times (see Lakos).
+
+	* Reorganized the source files so that the CVS logs appear at the
+	end rather than the start of each file. 
+
 2000-09-11  James Gallagher  <jimg@dcz.dods.org>
 
 	* Added methods to Sequence to provide access to row number
@@ -806,9 +824,9 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.59 2000/09/11 17:00:06 jimg Exp $
+$Id: ChangeLog,v 1.60 2000/09/22 03:05:53 jimg Exp $
 
 <<<<<<< ChangeLog
 =======
-$Id: ChangeLog,v 1.59 2000/09/11 17:00:06 jimg Exp $
+$Id: ChangeLog,v 1.60 2000/09/22 03:05:53 jimg Exp $
 >>>>>>> 1.42.2.16
