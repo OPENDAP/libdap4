@@ -4,7 +4,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.8  1995/03/04 15:30:11  jimg
+// Revision 1.9  1995/03/16 17:39:19  jimg
+// Added TRACE_NEW/dbnew checks. This includes a special kluge for the
+// placement new operator.
+//
+// Revision 1.8  1995/03/04  15:30:11  jimg
 // Fixed List so that it will compile - it still has major bugs.
 // Modified Makefile.in so that test cases include List even though List
 // won't work (but at least the test cases will link and run, so long
@@ -39,18 +43,22 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.8 1995/03/04 15:30:11 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.9 1995/03/16 17:39:19 jimg Exp $"};
+
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <rpc/xdr.h>
+
 #ifdef DBMALLOC
 #include <stdlib.h>
 #include <dbmalloc.h>
 #endif
 
+#include <new>			// needed for placement new in xdr_str_array
 #include <SLList.h>
 
 #include "BaseType.h"
@@ -130,7 +138,7 @@ unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
 XDR *
 new_xdrstdio(FILE *stream, enum xdr_op xop)
 {
-    XDR *xdr = new(XDR);
+    XDR *xdr = new XDR;
     
     xdrstdio_create(xdr, stream, xop);
     
@@ -147,19 +155,22 @@ delete_xdrstdio(XDR *xdr)
     delete(xdr);
 }
 
-// FIXME Comments out of date
 // This function is used to en/decode Str and Url type variables. It is
 // defined as extern C since it is passed via function pointers to routines
 // in the xdr library where they are executed. This function is defined so
-// that *every* direct descendent of BaseType has an en/decoder which takes
-// exactly two argumnets: an XDR * and a buffer pointer.
+// that Str and Url have an en/decoder which takes exactly two argumnets: an
+// XDR * and a buffer pointer.
+//
+// NB: this function is *not* used for arrays (i.e., it is not the function
+// referenced by BaseType's _xdr_coder field when the object is a Str or Url.
+//
+// Returns: XDR's bool_t; TRUE if no errors are detected, FALSE
+// otherwise. The formal parameter BUF is modified as a side effect,
+// including possibly having new memory allocated to hold its value.
 
 extern "C" bool_t
 xdr_str(XDR *xdrs, String **buf)
 {
-#ifdef NEVER
-    return xdr_string(xdrs, buf, max_str_len);
-#endif
     switch (xdrs->x_op) {
       case XDR_ENCODE:		// BUF is a pointer to a (String *)
 	assert(buf && *buf);
@@ -192,6 +203,17 @@ xdr_str(XDR *xdrs, String **buf)
     }
 }
     
+// This xdr coder is used for arrays. A pointer to this function is stored in
+// Str and Url object's _xdr_coder member. 
+//
+// NB: the Array class *must* allocate memory for the array of objects (both
+// Str and Url are cardinal types within DODS). 
+//
+// Returns: XDR's bool_t; TRUE if no errors are detected, FALSE
+// otherwise. The formal parameter BUF is modified as a side effect. However,
+// memory for BUF is never allocated by this function (the use of new in case
+// DECODE is the *placement new*, which does not allocate memory).
+
 extern "C" bool_t
 xdr_str_array(XDR *xdrs, String *buf)
 {
@@ -206,15 +228,24 @@ xdr_str_array(XDR *xdrs, String *buf)
       case XDR_DECODE:		// BUF is a pointer to a String * or to NULL
 	assert(buf);
 
-	char str_tmp[max_str_len];
-	char *in_tmp = str_tmp;
+	char str_tmp[max_str_len]; 
+	char *in_tmp = str_tmp;	// this kluge is necessary for g++ 2.6.3
 	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
 	if (!stat)
 	    return stat;
+	
+	// Assume that Array made sure that memory for each object in the
+	// array *was* allocated. Then use the placement new oper to
+	// initialize that memory so that it contains an object (in this case
+	// a String object).
 
-	if (buf) {
-	    *buf = in_tmp;
-	}
+#ifdef TRACE_NEW
+#undef new
+#endif
+	buf = new((void *)buf)  String(in_tmp); // placement new
+#ifdef TRACE_NEW
+#define new NEW_PASTE_(n,ew)( __FILE__, __LINE__ )
+#endif
 	
 	return stat;
 	
