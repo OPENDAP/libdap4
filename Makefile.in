@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.81 1998/09/02 20:31:34 jimg Exp $
+# $Id: Makefile.in,v 1.82 1998/09/03 17:20:38 jimg Exp $
 
 @SET_MAKE@
 
@@ -359,7 +359,7 @@ server-check: geturl
 clean:	
 	-rm -f *.o *.sum *.log *~ core
 	-rm -f *.bb *.bbg *.da *.gcov
-	-for d in Plex Vec Stack Map; do cd $$d && rm *.o *~; cd ..; done
+	-for d in Plex Vec Stack Map GNU; do cd $$d && rm *.o *~; cd ..; done
 	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
 	       cgi-util-test
 
@@ -390,8 +390,8 @@ tar:
 	    --exclude '*/math-dods*' --exclude '*/dsp-dods*' \
 	    --exclude '*/hdf-dods*' --exclude '*/writeval*' \
 	    --exclude '*/ff-dods*' --exclude '*/matlab-GUI*' \
-	    --exclude '*/jdods*' --exclude '*/doc' --exclude '*/packages*' \
-	    --exclude '*/.#*' --exclude '*/CVS' \
+	    --exclude '*/jdap*' --exclude '*/doc' --exclude '*/packages*' \
+	    --exclude '*/url-builder*' --exclude '*/.#*' --exclude '*/CVS' \
 	    --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
 
 .PHONY: update-version
