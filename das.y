@@ -1,11 +1,11 @@
 
-/* 
-   (c) COPYRIGHT URI/MIT 1994-1996
-   Please read the full copyright statement in the file COPYRIGH.  
+// -*- C++ -*-
 
-   Authors:
-        jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
-*/
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 /*
    Grammar for the DAS. This grammar can be used with the bison parser
@@ -31,6 +31,11 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.23  1996/08/13 18:46:38  jimg
+ * Added parser_arg object macros.
+ * `Fixed' error messages.
+ * Changed return typw of daserror() from int to void.
+ *
  * Revision 1.22  1996/06/07 15:05:16  jimg
  * Removed old type checking code - use the type checkers in parser-util.cc.
  *
@@ -136,31 +141,51 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: das.y,v 1.22 1996/06/07 15:05:16 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.23 1996/08/13 18:46:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
-#include "config_dap.h"
+#include <strstream.h>
+
+#include "DAS.h"
+#include "Error.h"
 #include "debug.h"
 #include "parser.h"
 #include "das.tab.h"
-#include "DAS.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
+// These macros are used to access the `arguments' passed to the parser. A
+// pointer to an error object and a pointer to an integer status variable are
+// passed in to the parser within a strucutre (which itself is passed as a
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+
+#define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
+#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
+#define STATUS(arg) ((parser_arg *)(arg))->_status
+#define YYPARSE_PARAM void *arg
+
 extern int das_line_num;	/* defined in das.lex */
 
 static char name[ID_MAX];	/* holds name in attr_pair rule */
 static char type[ID_MAX];	/* holds type in attr_pair rule */
-static AttrTablePtr attr_tab_ptr;
+static AttrTablePtr attr_tab;
+
+static char *VAR_ATTR_MSG="Expected an identifier followed by a list of \
+attributes.";
+static char *ATTR_TUPLE_MSG="Expected an attribute type (Byte, Int32, \n\
+Float64, String or Url) followed by a name and value.";
 
 void mem_list_report();
 int daslex(void);
-int daserror(char *s);
+void daserror(char *s);
 
 %}
 
@@ -182,17 +207,6 @@ int daserror(char *s);
 %%
 
 /*
-  The parser takes two arguments, a reference to an object of class
-  DAS (formal name: table) and a reference to a boolean (parse_ok). If the
-  parse succeeds, then PARSE_OK will be TRUE, otherwise it will be
-  FALSE. Note that this parser will only return FALSE when it encounters a
-  fatal error - it returns TRUE for either a perfect parse or one with one or
-  more recoverable errors. Thus to find out if the parse had no errors, you
-  *must* check PARSE_OK in addition to the return value of dasparse(). If
-  dasparse() returns TRUE, then TABLE contains a valid DAS. However, because
-  some lines may have caused errors, parts might be missing. If PARSE_OK is
-  TRUE, then the DAS is complete.
-
   Parser algorithm: 
 
   When a variable is found (rule: var_attr) check the table to see if some
@@ -200,7 +214,7 @@ int daserror(char *s);
   a table entry alread allocated; get that entry and use it. Otherwise,
   allocate a new table entry.  
 
-  Store the table entry for the current variable in attr_tab_ptr.
+  Store the table entry for the current variable in attr_tab.
 
   For every attribute name-value pair (rule: attr_pair) enter the name and
   value in the table entry for the current variable.
@@ -218,7 +232,7 @@ attributes:    	attribute
     	    	| attributes attribute
 ;
     	    	
-attribute:    	ATTR { parse_ok = TRUE; } '{' var_attr_list '}'
+attribute:    	ATTR '{' var_attr_list '}'
 ;
 
 var_attr_list: 	/* empty */
@@ -230,16 +244,20 @@ var_attr:   	ID
 		{ 
 		    DBG2(mem_list_report()); /* mem_list_report is in */
 					     /* libdbnew.a  */
-		    attr_tab_ptr = table.get_table($1);
+		    attr_tab = DAS_OBJ(arg)->get_table($1);
 		    DBG2(mem_list_report());
-		    if (!attr_tab_ptr) { /* is this a new var? */
-			attr_tab_ptr = table.add_table($1, new AttrTable);
-			DBG(cerr << "attr_tab_ptr: " << attr_tab_ptr << endl);
+		    if (!attr_tab) { /* is this a new var? */
+			attr_tab = DAS_OBJ(arg)->add_table($1, new AttrTable);
+			DBG(cerr << "attr_tab: " << attr_tab << endl);
 		    }
 		    DBG2(mem_list_report());
 		} 
 		'{' attr_list '}'
-		| error { parse_ok = FALSE; }
+		| error 
+                { 
+		    parse_error((parser_arg *)arg, VAR_ATTR_MSG, das_line_num);
+		    YYABORT;
+		}
 ;
 
 attr_list:  	/* empty */
@@ -267,7 +285,12 @@ attr_tuple:	BYTE { save_str(type, $1, das_line_num); }
                 ID { save_str(name, $3, das_line_num); } 
 		urls ';'
 
-		| error { parse_ok = FALSE; } ';'
+		| error 
+                { 
+		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG, 
+				das_line_num);
+		    YYABORT;
+		} ';'
 ;
 
 bytes:		INT
@@ -275,11 +298,20 @@ bytes:		INT
 		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
 			<< $1 << endl);
 		    if (!check_byte($1, das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Byte value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, $1)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 		| bytes ',' INT
@@ -287,11 +319,20 @@ bytes:		INT
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $3 << endl);
 		    if (!check_byte($3, das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Byte value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, $3)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 ;
@@ -301,11 +342,20 @@ ints:		INT
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $1 << endl);
 		    if (!check_int($1, das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an Int32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, $1)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 		| ints ',' INT
@@ -313,11 +363,20 @@ ints:		INT
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $3 << endl);
 		    if (!check_int($3, das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an Int32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, $3)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 ;
@@ -327,11 +386,21 @@ floats:		float_or_int
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< $1 << endl);
 		    if (!check_float($1, das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Float64 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, $1)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 		| floats ',' float_or_int
@@ -339,11 +408,21 @@ floats:		float_or_int
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< $3 << endl);
 		    if (!check_float($3, das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Float64 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, $3)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 ;
@@ -352,19 +431,27 @@ strs:		str_or_id
 		{
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $1 << endl);
-		    /* assume that a string that parsers is a vaild string */
-		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    /* Assume a string that parses is vaild. */
+		    if (attr_tab->append_attr(name, type, $1) == 0) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0); 
+			YYABORT;
 		    }
 		}
 		| strs ',' str_or_id
 		{
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $3 << endl);
-		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    if (attr_tab->append_attr(name, type, $3) == 0) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 ;
@@ -374,11 +461,20 @@ urls:		STR
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $1 << endl);
 		    if (!check_url($1, das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, $1)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 		| strs ',' STR
@@ -386,11 +482,20 @@ urls:		STR
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $3 << endl);
 		    if (!check_url($3, das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, $3)) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		}
 ;
@@ -403,10 +508,10 @@ float_or_int:   FLOAT | INT
 
 %%
 
-int 
-daserror(char *s)
+void
+daserror(char */* s */)
 {
-    fprintf(stderr, "%s line: %d\n", s, das_line_num);
-
-    return 1;
+#if 0
+    cerr << " line: " << das_line_num << ": " << s << endl;
+#endif
 }
