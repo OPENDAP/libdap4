@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.46 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.47 2003/05/30 16:32:32 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -792,9 +792,12 @@ Vector::set_vec(unsigned int i, BaseType *val)
 
     Propagate the name of the BaseType instance to this instance. This
     ensures that variables at any given level of the DDS table have
-    unique names (i.e., that Arrays do not have their default name "").
+    unique names (i.e., that Arrays do not have their default name ""). If
+    <tt>v</tt>'s name is null, then assume that the array \i is named and
+    don't overwrite it with <tt>v</tt>'s null name.
 
-    NB: Part p defaults to nil for this class
+    @param v The template variable for the array
+    @param p The Part parameter defaults to nil and is ignored by this method.
 */
 void
 Vector::add_var(BaseType *v, Part)
@@ -804,7 +807,8 @@ Vector::add_var(BaseType *v, Part)
     // we let the owner of 'v' to deallocate it as necessary.
 
     _var = v->ptr_duplicate();
-    set_name(v->name());	// Vector name becomes base object's name
+    if (!v->name().empty())
+	set_name(v->name());	// Vector name becomes base object's name
     _var->set_parent(this);	// Vector --> child
   
     DBG(cerr << "Vector::add_var: Added variable " << v << " (" \
@@ -894,6 +898,10 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.47  2003/05/30 16:32:32  jimg
+// Modified add_var() so that the array only adopts the name of the template
+// variable when that name is not null!
+//
 // Revision 1.46  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can
