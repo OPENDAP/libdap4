@@ -13,10 +13,14 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.19  1997/03/03 08:17:17  reza
-/* Changed default error object's output stream to cout. This will send it
-/* to the client side (versus the local server's log file, cerr).
+/* Revision 1.20  1997/03/05 08:35:03  jimg
+/* Added bool parameter `compressed' (defaults to true) to the send member
+/* function. See DDS.cc.
 /*
+ * Revision 1.19  1997/03/03 08:17:17  reza
+ * Changed default error object's output stream to cout. This will send it
+ * to the client side (versus the local server's log file, cerr).
+ *
  * Revision 1.18  1996/12/03 00:14:58  jimg
  * Added ostream and bool params to parse_constraint(). The bool parameter is
  * used to tell the member function that it is running in the server of the
@@ -24,12 +28,13 @@
  * (client side).
  *
  * Revision 1.17  1996/12/02 23:14:54  jimg
- * Added `filename' field and access functions. This field is for recording the
- * filename associated with the dataset from which the DDS is generated. It does
- * not actually have to be a filename; rather it is intended to be used by
- * BaseType's read() member function when that code must access some OS
- * controlled resource to get data for a particular variable. For most systems
- * it will be a file, while for some systems it may be a RDB or blank.
+ * Added `filename' field and access functions. This field is for recording
+ * the filename associated with the dataset from which the DDS is generated.
+ * It does not actually have to be a filename; rather it is intended to be
+ * used by BaseType's read() member function when that code must access some
+ * OS controlled resource to get data for a particular variable. For most
+ * systems it will be a file, while for some systems it may be a RDB or
+ * blank.
  *
  * Revision 1.16  1996/06/04 21:33:20  jimg
  * Multiple connections are now possible. It is now possible to open several
@@ -116,7 +121,7 @@
  * Added CtorType.
  *
  * Revision 1.1  1994/09/08  21:09:42  jimg
- * First version of the Dataset descriptor class.
+ * First version of the Dataset descriptor class. 
  */
 
 #ifndef _DDS_h
@@ -268,7 +273,8 @@ public:
     // completion. Use OUT as the output buffer if not null, otherwise use
     // STDOUT. This mfunc uses eval_constraint(), BaseType::read() and
     // BaseType::serailize() as well as other mfuncs.
-    bool send(const String &dataset, const String &constraint, FILE *out);
+    bool send(const String &dataset, const String &constraint, FILE *out, 
+	      bool compressed = true);
 };
 
 #endif
