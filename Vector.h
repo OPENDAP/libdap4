@@ -11,10 +11,14 @@
 // Vector. Vector is the parent class for List and Array.
 
 /* $Log: Vector.h,v $
-/* Revision 1.10  1996/08/13 18:40:46  jimg
-/* Changes return type of length() member function from unsigned to int. A
-/* return value of -1 indicates that the vector has no length.
+/* Revision 1.11  1997/02/28 01:29:13  jimg
+/* Changed check_semantics() so that it now returns error messages in a String
+/* object (passed by reference).
 /*
+ * Revision 1.10  1996/08/13 18:40:46  jimg
+ * Changes return type of length() member function from unsigned to int. A
+ * return value of -1 indicates that the vector has no length.
+ *
  * Revision 1.9  1996/06/04 21:33:51  jimg
  * Multiple connections are now possible. It is now possible to open several
  * URLs at the same time and read from them in a round-robin fashion. To do
@@ -132,7 +136,7 @@ public:
     virtual void print_val(ostream &os, String space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool check_semantics(bool all = false);
+    virtual bool check_semantics(String &msg = "", bool all = false);
 };
 
 #endif /* _Vector_h */

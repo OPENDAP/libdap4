@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.34  1997/02/28 01:27:57  jimg
+// Changed check_semantics() so that it now returns error messages in a String
+// object (passed by reference).
+//
 // Revision 1.33  1997/02/10 02:32:42  jimg
 // Added assert statements for pointers
 //
@@ -471,17 +475,17 @@ Sequence::print_all_vals(ostream& os, XDR *src, String space = "",
 }
 
 bool
-Sequence::check_semantics(bool all)
+Sequence::check_semantics(String &msg = "", bool all = false)
 {
-    if (!BaseType::check_semantics())
+    if (!BaseType::check_semantics(msg))
 	return false;
 
-    if (!unique(_vars, (const char *)name(), (const char *)type_name()))
+    if (!unique(_vars, (const char *)name(), (const char *)type_name(), msg))
 	return false;
 
     if (all) 
 	for (Pix p = _vars.first(); p; _vars.next(p))
-	    if (!_vars(p)->check_semantics(true))
+	    if (!_vars(p)->check_semantics(msg, true))
 		return false;
 
     return true;

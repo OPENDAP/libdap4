@@ -10,6 +10,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.39  1997/02/28 01:28:01  jimg
+// Changed check_semantics() so that it now returns error messages in a String
+// object (passed by reference).
+//
 // Revision 1.38  1996/09/12 21:02:35  jimg
 // Fixed a nasty bug in print_array (private member function) where recursive
 // calls were made in the wrong order causing 3+ dimension arrays to print many
@@ -592,9 +596,9 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Array::check_semantics(bool)
+Array::check_semantics(String &msg = "", bool)
 {
-    bool sem = BaseType::check_semantics() && !_shape.empty();
+    bool sem = BaseType::check_semantics(msg) && !_shape.empty();
 
     if (!sem)
 	cerr << "An array variable must have dimensions" << endl;

@@ -10,6 +10,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.30  1997/02/28 01:27:54  jimg
+// Changed check_semantics() so that it now returns error messages in a String
+// object (passed by reference).
+//
 // Revision 1.29  1997/02/10 02:32:40  jimg
 // Added assert statements for pointers
 //
@@ -166,6 +170,7 @@
 #include "config_dap.h"
 
 #include <assert.h>
+#include <strstream.h>
 
 #include "Grid.h"
 #include "DDS.h"
@@ -435,23 +440,30 @@ Grid::print_val(ostream &os, String space, bool print_decl_p)
 // Grids have ugly semantics.
 
 bool
-Grid::check_semantics(bool all)
+Grid::check_semantics(String &msg = "", bool all = false)
 {
-    if (!BaseType::check_semantics())
+    if (!BaseType::check_semantics(msg))
 	return false;
 
-    if (!unique(_map_vars, (const char *)name(), (const char *)type_name()))
+    if (!unique(_map_vars, (const char *)name(), (const char *)type_name(), 
+		msg))
 	return false;
+
+    ostrstream oss;
 
     if (!_array_var) {
-	cerr << "Null grid base array in `" << name() << "'" << endl;
+	oss << "Null grid base array in `" << name() << "'" << endl << ends;
+	msg = oss.str();
+	oss.freeze(0);
 	return false;
     }
 	
     // Is it an array?
     if (_array_var->type() != dods_array_c) {
-	cerr << "Grid `" << name() << "'s' member `"
-	    << _array_var->name() << "' must be an array" << endl;
+	oss << "Grid `" << name() << "'s' member `"
+	    << _array_var->name() << "' must be an array" << endl << ends;
+	msg = oss.str();
+	oss.freeze(0);
 	return false;
     }
 	    
@@ -459,10 +471,12 @@ Grid::check_semantics(bool all)
 
     // enough maps?
     if ((unsigned)_map_vars.length() != av->dimensions()) {
-	cerr << "The number of map variables for grid `"
-	     << this->name() 
-	     << "' does not match the number of dimensions of `"
-	    << av->name() << "'" << endl;
+	oss << "The number of map variables for grid `"
+	    << this->name() 
+		<< "' does not match the number of dimensions of `"
+		<< av->name() << "'" << endl << ends;
+	msg = oss.str();
+	oss.freeze(0);
 	return false;
     }
 
@@ -475,15 +489,19 @@ Grid::check_semantics(bool all)
 
 	// check names
 	if (array_var_name == mv->name()) {
-	    cerr << "Grid map variable `" << mv->name()
+	    oss << "Grid map variable `" << mv->name()
 		<< "' conflicts with the grid array name in grid `"
-		<< name() << "'" << endl;
+		<< name() << "'" << endl << ends;
+	    msg = oss.str();
+	    oss.freeze(0);
 	    return false;
 	}
 	// check types
 	if (mv->type() != dods_array_c) {
-	    cerr << "Grid map variable  `" << mv->name()
-		<< "' is not an array" << endl;
+	    oss << "Grid map variable  `" << mv->name()
+		<< "' is not an array" << endl << ends;
+	    msg = oss.str();
+	    oss.freeze(0);
 	    return false;
 	}
 
@@ -491,26 +509,30 @@ Grid::check_semantics(bool all)
 
 	// check shape
 	if (mv_a->dimensions() != 1) {// maps must have one dimension
-	    cerr << "Grid map variable  `" << mv_a->name()
-		<< "' must be only one dimension" << endl;
+	    oss << "Grid map variable  `" << mv_a->name()
+		<< "' must be only one dimension" << endl << ends;
+	    msg = oss.str();
+	    oss.freeze(0);
 	    return false;
 	}
 	// size of map must match corresponding array dimension
 	if (mv_a->dimension_size(mv_a->first_dim()) 
 	    != av->dimension_size(ap)) {
-	    cerr << "Grid map variable  `" << mv_a->name()
+	    oss << "Grid map variable  `" << mv_a->name()
 		<< "'s' size does not match the size of array variable '"
 		<< _array_var->name() << "'s' cooresponding dimension"
-		<< endl;
+		<< endl << ends;
+	    msg = oss.str();
+	    oss.freeze(0);
 	    return false;
 	}
     }
 
     if (all) {
-	if (!_array_var->check_semantics(true))
+	if (!_array_var->check_semantics(msg, true))
 	    return false;
 	for (p = _map_vars.first(); p; _map_vars.next(p))
-	    if (!_map_vars(p)->check_semantics(true))
+	    if (!_map_vars(p)->check_semantics(msg, true))
 		return false;
     }
 

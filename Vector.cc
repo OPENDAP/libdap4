@@ -11,6 +11,10 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.16  1997/02/28 01:28:03  jimg
+// Changed check_semantics() so that it now returns error messages in a String
+// object (passed by reference).
+//
 // Revision 1.15  1996/12/02 18:22:08  jimg
 // Added cases for uint32 to various parts of Vector.
 //
@@ -79,7 +83,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.15 1996/12/02 18:22:08 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.16 1997/02/28 01:28:03 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -628,7 +632,7 @@ Vector::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Vector::check_semantics(bool) 
+Vector::check_semantics(String &msg = "", bool) 
 {
-    return BaseType::check_semantics();
+    return BaseType::check_semantics(msg);
 }

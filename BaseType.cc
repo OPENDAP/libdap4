@@ -10,6 +10,10 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.29  1997/02/28 01:27:50  jimg
+// Changed check_semantics() so that it now returns error messages in a String
+// object (passed by reference).
+//
 // Revision 1.28  1996/12/02 23:10:02  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -405,12 +409,12 @@ BaseType::print_decl(ostream &os, String space, bool print_semi,
 // Returns: true if the object is semantically correct, false otherwise.
 
 bool
-BaseType::check_semantics(bool)
+BaseType::check_semantics(String &msg = "", bool)
 {
     bool sem = (_type != dods_null_c && (const char *)_name);
 
     if (!sem) 
-	cerr << "Every variable must have both a name and a type" << endl;
+	msg = "Every variable must have both a name and a type\n";
 
     return sem;
 }

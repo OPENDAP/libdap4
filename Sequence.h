@@ -18,9 +18,13 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.24  1996/09/24 19:13:23  jimg
-/* Fixed conflict between two version of print_all_vals prototypes.
+/* Revision 1.25  1997/02/28 01:29:08  jimg
+/* Changed check_semantics() so that it now returns error messages in a String
+/* object (passed by reference).
 /*
+ * Revision 1.24  1996/09/24 19:13:23  jimg
+ * Fixed conflict between two version of print_all_vals prototypes.
+ *
  * Revision 1.23  1996/09/23 20:16:13  jimg
  * Fixed lame declaration of print_all_vals().
  *
@@ -232,7 +236,7 @@ public:
     void print_all_vals(ostream& os, XDR *src, String space = "",
 			bool print_del_p = true);
 
-    virtual bool check_semantics(bool all = false);
+    virtual bool check_semantics(String &msg = "", bool all = false);
 };
 
 #endif

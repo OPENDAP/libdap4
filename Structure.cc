@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.29  1997/02/28 01:27:59  jimg
+// Changed check_semantics() so that it now returns error messages in a String
+// object (passed by reference).
+//
 // Revision 1.28  1997/02/10 02:32:43  jimg
 // Added assert statements for pointers
 //
@@ -411,18 +415,18 @@ Structure::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Structure::check_semantics(bool all)
+Structure::check_semantics(String &msg = "", bool all = false)
 {
-    if (!BaseType::check_semantics())
+    if (!BaseType::check_semantics(msg))
 	return false;
 
-    if (!unique(_vars, (const char *)name(), (const char *)type_name()))
+    if (!unique(_vars, (const char *)name(), (const char *)type_name(), msg))
 	return false;
 
     if (all) 
 	for (Pix p = _vars.first(); p; _vars.next(p)) {
 	    assert(_vars(p));
-	    if (!_vars(p)->check_semantics(true))
+	    if (!_vars(p)->check_semantics(msg, true))
 		return false;
 	}
 

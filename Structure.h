@@ -15,13 +15,17 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.20  1996/06/04 21:33:47  jimg
-/* Multiple connections are now possible. It is now possible to open several
-/* URLs at the same time and read from them in a round-robin fashion. To do
-/* this I added data source and sink parameters to the serialize and
-/* deserialize mfuncs. Connect was also modified so that it manages the data
-/* source `object' (which is just an XDR pointer).
+/* Revision 1.21  1997/02/28 01:29:10  jimg
+/* Changed check_semantics() so that it now returns error messages in a String
+/* object (passed by reference).
 /*
+ * Revision 1.20  1996/06/04 21:33:47  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
  * Revision 1.19  1996/05/31 23:30:06  jimg
  * Updated copyright notice.
  *
@@ -197,7 +201,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-    virtual bool check_semantics(bool all = false);
+    virtual bool check_semantics(String &msg = "", bool all = false);
 };
 
 #endif
