@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.8  1996/08/13 20:13:36  jimg
+// Added __unused__ to definition of char rcsid[].
+// Added code so that local `URLs' are skipped.
+//
 // Revision 1.7  1996/06/22 00:11:20  jimg
 // Modified to accomodate the new Gui class.
 //
@@ -34,9 +38,12 @@
 // First version. Built to test the new WWW code in the class Connect.
 //
 
-static char rcsid[]={"$Id: getdap.cc,v 1.7 1996/06/22 00:11:20 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.8 1996/08/13 20:13:36 jimg Exp $"};
 
 #include <stdio.h>
+#include <assert.h>
 
 #include <GetOpt.h>
 #include <String.h>
@@ -82,7 +89,6 @@ read_data(FILE *fp)
 int
 main(int argc, char * argv[])
 {
-    FILE * fp;
     GetOpt getopt (argc, argv, "Adagv:m:");
     int option_char;
     bool async = false;
@@ -144,6 +150,12 @@ main(int argc, char * argv[])
 	
 	String name = argv[i];
 	Connect url(name);
+	if (url.is_local()) {
+	    cerr << "Skipping the URL `" << argv[i] 
+		 << "' because it lacks the `http' access protocol." 
+		 << endl; 
+	    continue;
+	}
 
 	if (get_das) {
 	    for (int j = 0; j < times; ++j) {
