@@ -38,6 +38,11 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.31  1996/05/06 21:15:58  jimg
+// Added the member functions dimension_start, _stop and _stride to this class.
+// Changed the first argument of add_constraint from Pix &p to Pix p (the member
+// function does not change its argument).
+//
 // Revision 1.30  1996/04/05 00:21:17  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -243,7 +248,7 @@ Array::update_length(int size)
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
-Array::Array(const String &n, BaseType *v) : Vector(n, v, d_array_t)
+Array::Array(const String &n, BaseType *v) : Vector(n, v, dods_array_c)
 {
 }
 
@@ -341,7 +346,7 @@ Array::clear_constraint()
 // the start and stop indeces are inclusive.
 
 void 
-Array::add_constraint(Pix &p, int start, int stride, int stop)
+Array::add_constraint(Pix p, int start, int stride, int stop)
 {
     dimension &d = _shape(p);
 
@@ -410,6 +415,60 @@ Array::dimension_size(Pix p, bool constrained)
 	    size = _shape(p).size; 
 
     return size;
+}
+
+int 
+Array::dimension_start(Pix p, bool constrained = false) 
+{ 
+    int start = 0;
+
+    if (!_shape.empty() && p)
+	if (constrained) {
+	    if (_shape(p).selected)
+		start = _shape(p).start;
+	    else
+		start= 0;
+	}
+	else
+	    start = _shape(p).start; 
+
+    return start;
+}
+
+int 
+Array::dimension_stop(Pix p, bool constrained = false) 
+{ 
+    int stop = 0;
+
+    if (!_shape.empty() && p)
+	if (constrained) {
+	    if (_shape(p).selected)
+		stop = _shape(p).stop;
+	    else
+		stop= 0;
+	}
+	else
+	    stop = _shape(p).stop; 
+
+    return stop;
+}
+
+int 
+Array::dimension_stride(Pix p, bool constrained = false) 
+{ 
+    int stride = 0;
+
+    if (!_shape.empty() && p)
+	if (constrained) {
+	    if (_shape(p).selected)
+		stride = _shape(p).stride;
+	    else
+		stride= 0;
+	}
+	else
+	    stride = _shape(p).stride; 
+
+    return stride;
 }
 
 // Return the name of the array dimension referred to by P.
