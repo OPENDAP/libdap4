@@ -13,6 +13,9 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.22  1998/01/12 14:27:56  tom
+// Second pass at class documentation.
+//
 // Revision 1.21  1997/08/11 18:19:14  jimg
 // Fixed comment leaders for new CVS version
 //
@@ -147,6 +150,84 @@
 #include "expr.h"
 #include "debug.h"
 
+/** The DODS Data Descriptor Object (DDS) is a data structure used by
+    the DODS software to describe datasets and subsets of those
+    datasets.  The DDS may be thought of as the declarations for the
+    data structures that will hold data requested by some DODS client.
+    Part of the job of a DODS server is to build a suitable DDS for a
+    specific dataset and to send it to the client.  Depending on the
+    data access API in use, this may involve reading part of the
+    dataset and inferring the DDS.  Other APIs may require the server
+    simply to read some ancillary data file with the DDS in it.
+
+    On the server side, in addition to the data declarations, the DDS
+    holds the clauses of any constraint expression that may have
+    accompanied the data request from the DODS client.  The DDS object
+    includes methods for modifying the DDS according to the given
+    constraint expression.  It also has methods for directly modifying
+    a DDS, and for transmitting it from a server to a client.
+
+    For the client, the DDS object includes methods for parsing ASCII
+    data received from a server into a data object.
+
+    For a complete description of the DDS layout and protocol, please
+    refer to {\it The DODS User Guide}. 
+    
+    The DDS has an ASCII representation, which is what is transmitted
+    from a DODS server to a client.  Here is the DDS representation of
+    an entire dataset containing a time series of worldwide grids of
+    sea surface temperatures:
+
+    \begin{verbatim}
+    Dataset {
+        Float64 lat[lat = 180];
+        Float64 lon[lon = 360];
+        Float64 time[time = 404];
+        Grid {
+         ARRAY:
+            Int32 sst[time = 404][lat = 180][lon = 360];
+         MAPS:
+            Float64 time[time = 404];
+            Float64 lat[lat = 180];
+            Float64 lon[lon = 360];
+        } sst;
+    } weekly;
+    \end{verbatim}
+
+    If the data request to this dataset includes a constraint
+    expression, the corresponding DDS might be different.  For
+    example, if the request was only for northern hemisphere data
+    at a specific time, the above DDS might be modified to appear like
+    this:
+
+    \begin{verbatim}
+    Dataset {
+        Grid {
+         ARRAY:
+            Int32 sst[time = 1][lat = 90][lon = 360];
+         MAPS:
+            Float64 time[time = 1];
+            Float64 lat[lat = 90];
+            Float64 lon[lon = 360];
+        } sst;
+    } weekly;
+    \end{verbatim}
+
+    Since the constraint has narrowed the area of interest, the range
+    of latitude values has been halved, and there is only one time
+    value in the returned array.  Note that the simple arrays ({\tt
+    lat}, {\tt lon}, and {\tt time}) described in the dataset are also
+    part of the {\tt sst} Grid object.  They can be requested by
+    themselves or as part of that larger object.
+
+    See the {\it The DODS User Guide}, or the documentation of the
+    BaseType class for descriptions of the DODS data types.
+
+
+    @memo Holds a DODS Data Descriptor Structure.
+    @see BaseType
+    @see DAS */
+
 class DDS {
 private:
     // This struct is used to hold all the known `user defined' functions
@@ -179,104 +260,299 @@ private:
     void duplicate(const DDS &dds);
 
 public:
+  /** Creates a DDS with the given string for its name. */
     DDS(const String &n = (char *)0);
+  /** The DDS copy constructor. */
     DDS(const DDS &dds);
     ~DDS();
 
-    DDS & operator=(const DDS &rhs);
+    DDS & operator=(const DDS &rhs); 
 
+  /** Get and set the dataset's name.  This is the name of the dataset
+      itself, and is not to be confused with the name of the file or
+      disk on which it is stored.
+
+      @name Dataset Name Accessors
+      */
+
+  //@{
+      
+  /** Returns the dataset's name. */
     String get_dataset_name();
+  /** Sets the dataset name. */
     void set_dataset_name(const String &n);
 
-    /// Get the dataset's filename.
+  //@}
+
+  /** Get and set the dataset's filename. This is the physical
+      location on a disk where the dataset exists.  The dataset name
+      is simply a title.
+
+      @name File Name Accessor
+      @see Dataset Name Accessors
+      */
+
+  //@{ Get and set filename.
+
+  /** Gets the dataset file name. */
     String filename();
 
-    /// Set the dataset's filename.
+  /** Set the dataset's filename. */
     void filename(const String &fn);
 
+  //@}
+
+  /** Methods for manipulating the DDS contents. 
+
+      @memo Methods for manipulating the variables in a DDS.
+      @name Variable Methods
+      */
+
+  //@{
+  /** Adds a variable to the DDS. */
     void add_var(BaseType *bt);
+  /** Removes a variable from the DDS. */
     void del_var(const String &n);
+
+  /** Returns a pointer to a variable from the DDS. 
+
+      @name *var()
+      */
+  //@{
+  /** Returns a pointer to the named variable. */
     BaseType *var(const String &n);
+  /** Returns a pointer to the named variable. */
     BaseType *var(const char *n); // to avoid cast of char * to Pix.
-
-    Pix first_var();
-    void next_var(Pix &p);
+  /** Returns a pointer to the indicated variable. */
     BaseType *var(Pix p);
-    int num_var();
+  //@}
 
-    // Interface to the parsed expression
+  /** Returns the first variable in the DDS. */
+    Pix first_var();
+  /** Increments the DDS variable counter to point at the next
+      variable. */
+    void next_var(Pix &p);
+  /** Returns the number of variables in the DDS. */
+    int num_var();
+  //@}
+
+  /** Each DDS carries with it a list of external functions it can use
+      to evaluate a constraint expression.  If a constraint contains
+      any of these functions, the entries in the list allow the parser
+      to evaluate it.  The functions are of two types:  those that
+      return boolean values, and those that return real (also called
+      BaseType) values.
+
+      These methods are used to manipulate this list of known
+      external functions.
+
+      @name External Function Accessors
+      @memo Manipulate the list of external functions.  */
+
+  //@{
+  /** Add a boolean function to the list. */
+    void add_function(const String &name, bool_func f);
+  /** Add a BaseType function to the list. */
+    void add_function(const String &name, btp_func f);
+  /** Find a boolean function with a given name in the function list. */
+    bool find_function(const String &name, bool_func *f) const;
+  /** Find a BaseType function with a given name in the function list. */
+    bool find_function(const String &name, btp_func *f) const;
+  //@}
+
+  /** These member functions are used to access and manipulate the
+      constraint expression that may be part of a DDS.  Most of them
+      are only used by the constraint expression parser.
+
+      Refer to {\it The DODS User Manual} for a complete description
+      of constraint expressions.
+
+      @name Constraint Expression
+      @memo Constraint expression manipulators and accessors.
+      @see Clause
+      */
+
+  //@{
+
+  /** Returns a pointer to the first clause in a parsed constraint
+      expression. */
     Pix first_clause();
+  /** Increments a pointer to indicate the next clause in a parsed
+      constraint expression. */
     void next_clause(Pix &p);
+  /** Returns a clause of a parsed constraint expression. */
     Clause &clause(Pix p);
+  /** Returns the value of the indicated clause of a constraint
+      expression. */
     bool clause_value(Pix p, const String &dataset);
 
+  /** Adds a clause to a constraint expression.
+
+      @name append\_clause()
+      */
+
+  //@{
+  /** This function adds an operator clause to the constraint
+      expression. 
+
+      @memo Adds an operator clause to the constraint expression.
+      @param op An integer indicating the operator in use.  These
+      values are generated by {\tt bison}.
+      @param arg1 A pointer to the argument on the left side of the
+      operator. 
+      @param arg2 A pointer to a list of the arguments on the right
+      side of the operator.
+      */
     void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
+  /** This function adds a boolean function clause to the constraint
+      expression. 
+
+      @memo Adds a boolean function clause to the constraint
+      expression. 
+      @param func A pointer to a boolean function from the list of
+      supported functions.
+      @param args A list of arguments to that function.
+      @see External Function Accessors 
+      */
     void append_clause(bool_func func, rvalue_list *args);
+  /** This function adds a real-valued (BaseType) function clause to
+      the constraint expression.
+
+      @memo Adds a real-valued function clause to the constraint
+      expression. 
+      @param func A pointer to a boolean function from the list of
+      supported functions.
+      @param args A list of arguments to that function.
+      @see External Function Accessors 
+      */
     void append_clause(btp_func func, rvalue_list *args);
 
-    // DDS maintains a list of BaseType *s for all the constants that the
-    // expr parser generates. These objects can be deleted when we are done
-    // with the DDS.
-    void append_constant(BaseType *btp);
+  //@}
 
-    // manipulate the FUNCTIONS member.
-    void add_function(const String &name, bool_func f);
-    void add_function(const String &name, btp_func f);
-    bool find_function(const String &name, bool_func *f) const;
-    bool find_function(const String &name, btp_func *f) const;
-
-    /// Does the current constraint expression return a BaseType pointer?
+  /** Does the current constraint expression return a BaseType
+      pointer? */
     bool functional_expression();
 
-    /// Evaluate a function-valued CE.
-    BaseType *eval_function(const String &dataset);
-
-    /// Does the current constraint expression return a boolean value?
+  /** Does the current constraint expression return a boolean value?
+      */ 
     bool boolean_expression();
 
-    /// Evaluate a boolean-valued CE.
+  /** Evaluate a function-valued constraint expression. */
+    BaseType *eval_function(const String &dataset);
+
+  /** Evaluate a boolean-valued constraint expression. */
     bool eval_selection(const String &dataset);
+    
+  /** Parse the constraint expression given the current DDS. 
 
-    // evaluate the projectons
-    void mark_all(bool state);
-    bool mark(const String &name, bool state);
-
-    // Interface to the parser
-    bool parse(String fname);
-    bool parse(int fd);
-    bool parse(FILE *in=stdin);
-
-    // Print the entire DDS.
-    bool print(ostream &os = cout);
-    bool print(FILE *out);
-
-    // Print only those parts of the DDS marked for transmission after
-    // evaluating a constraint expression. I.E., print the current projection.
-    bool print_constrained(ostream &os = cout);
-    bool print_constrained(FILE *out);
-
-    // Check the semantics of the variables in the DDS. if ALL is true,
-    // recursively descend aggregate variables.
-    bool check_semantics(bool all = false);
-
-    /// Parse a constraint expression .
-    /** Parse the constraint expression #constraint# given the current
-        #dds#. If #server# is true, then don't display error objects, rather
-        send then back to the client for display. Error objects/messages are
-        written to #os#.
-
-        Returns true is the constraint expression parses without error, 
-	otherwise false. */
+      @memo Parse a constraint expression .  
+      @return Returns true if the constraint expression parses
+      without error, otherwise false.
+      @param constraint A string containing the constraint
+      expression. 
+      @param os The output stream on which to write error objects and
+      messages. 
+      @param server If true, send errors back to client instead of
+      displaying errors on the default output stream.
+      */ 
     bool parse_constraint(const String &constraint, ostream &os = cout,
 			  bool server = true);
 
-    // Send variable(s) described by the constraint expression CONSTRIANT
-    // from DATASET. if FLUSH is true, flush the output buffer upon
-    // completion. Use OUT as the output buffer if not null, otherwise use
-    // STDOUT. This mfunc uses eval_constraint(), BaseType::read() and
-    // BaseType::serailize() as well as other mfuncs.
+  /** The DDS maintains a list of BaseType pointers for all the
+      constants that the constraint expression parser generates. These
+      objects are deleted by the DDS destructor.  Note that there are
+      no list accessors; these constants are never accessed from the
+      list.  The list is simply a convenient way to make sure the
+      constants are disposed of properly.
+
+      @memo Append a constant to the list of constants generated by
+      the constraint expression parser.  
+      */
+    void append_constant(BaseType *btp);
+
+  //@}
+
+  /** Read a DDS from a file.  This method calls a generated parser,
+      #ddsparse()#, to interpret an ASCII representation of a DDS, and
+      regenerate that DDS in memory.
+
+      @memo Read a DDS from an external source.
+      @name Read Methods
+      @see Print Methods
+      */
+
+  //@{
+
+  /** Parse a DDS from a file with the given name. */
+    bool parse(String fname);
+  /** Parse a DDS from a file indicated by the input file descriptor. */
+    bool parse(int fd);
+  /** Parse a DDS from a file indicated by the input file descriptor. */
+    bool parse(FILE *in=stdin);
+  //@}
+
+  /** These methods create an ASCII representation of the DDS.  This
+      is the form in which the DDS is transmitted to the client
+      process.  A DDS can be output entire, or subject to the
+      constraint of a constraint expression.  In most cases, a
+      constrained DDS will be smaller than the original, since the
+      purpose of the expression is to discard some of the data in the
+      dataset. 
+
+      @name Print Methods
+      @memo Creates an ASCII representation of the DDS.
+      @see Read Methods
+      */
+
+  //@{
+
+  /** Print the entire DDS on the specified output stream. */
+    bool print(ostream &os = cout);
+  /** Print the entire DDS to the specified file. */
+    bool print(FILE *out);
+
+  /** Print the constrained DDS to the specified file. */
+    bool print_constrained(ostream &os = cout);
+  /** Print a constrained DDS to the specified file. */
+    bool print_constrained(FILE *out);
+
+  //@}
+
+  /** This function sends the variables described in the constrained
+      DDS to the output described by the FILE pointer.  This function
+      calls #parse_constraint()#, #BaseType::read()#, and
+      #BaseType::serialize()#. 
+
+      @memo Sends the data described by the DDS to a client.
+      @return True if successful.
+      @param dataset The name of the dataset to send.
+      @param constraint A string containing the entire constraint
+      expression received in the original data request.
+      @param out A pointer to the output buffer for the data.
+      @param compressed If true, send compressed data.
+      @see parse_constraint
+      @see BaseType::read
+      @see BaseType::serialize
+      */
+
     bool send(const String &dataset, const String &constraint, FILE *out, 
 	      bool compressed = true);
+
+  /** Mark the member variable #send_p# flags to {\it state}. */
+    void mark_all(bool state);
+  /** Mark the #send_p# flag of the named variable to {\it state}. */
+    bool mark(const String &name, bool state);
+
+  /** Check the semantics of each of the variables represented in the
+      DDS. 
+
+      @memo Check member variable semantics.
+      @return True if all the members are correct.
+      @param all If true, recursively check the individual members of
+      compound variables.
+      @see BaseType::check_semantics
+      */
+    bool check_semantics(bool all = false);
 };
 
 #endif

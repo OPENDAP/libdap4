@@ -13,6 +13,9 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.h,v $
+// Revision 1.2  1998/01/12 14:27:57  tom
+// Second pass at class documentation.
+//
 // Revision 1.1  1997/09/22 22:19:27  jimg
 // Created this subclass of DDS to hold version information in the data DDS
 //
@@ -37,6 +40,14 @@
 #include "debug.h"
 #include "DDS.h"
 
+/** This class adds some useful state information to the DDS
+    structure.  It is for use on the client side of the DODS
+    connection. 
+    
+    @memo Holds a DODS DDS.
+    @see Connect
+    */
+
 class DataDDS : public DDS {
 private:
     String _server_version;
@@ -46,12 +57,43 @@ private:
     void _version_string_to_numbers();
 
 public:
+  /** The DataDDS constructor needs a name and a version string.  This
+      is generally received from the server.
+      */
     DataDDS(const String &n = (char *)0, const String &v = (char *)0);
     virtual ~DataDDS();
 
+  /** Sets the version string.  This typically looks something like:
+      #DODS/2.15#, where ``2'' is the major version number, and ``15''
+      the minor number.
+      */
     void set_version(const String &v);
+  /** Returns the major version number. */
     int get_version_major();
+  /** Returns the minor version number. */
     int get_version_minor();
+
+  /** Return the last level of a sequence object that was read. Note
+      that #Sequence::deserialize()# is the main user of this
+      information and it really only matters in cases where the
+      Sequence object contains other Sequence objects. In that case,
+      this information provides state for #Sequence::deserialize()# so
+      that it can return to the level at which it last read.
+
+      @name sequence\_level()
+      @memo Returns the level of the last sequence read.  */
+  //int sequence_level();
+    
+  /** Set the value for #sequence_level()#. Use this function to store
+      state information about the current sequence. This is used
+      mostly when reading nested sequences so that
+      #Sequence::deserialize()# can return to the correct level when
+      resuming a deserialization from a subsequent call.
+
+      @name set\_sequence\_level(int level)
+      @memo Sets the level of the sequence being read.  */
+  //void set_sequence_level(int level);
+
 };
 
 #endif // _DataDDS_h

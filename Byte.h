@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.23  1998/01/12 14:27:55  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.22  1997/12/18 15:06:09  tom
  * First draft of class documentation, entered in doc++ format,
  * in the comments
@@ -162,6 +165,15 @@ protected:
     dods_byte _buf;
 
 public:
+  /** The Byte constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A String containing the name of the variable to be
+      created. 
+
+      @memo The Byte constructor.
+      */
     Byte(const String &n = (char *)0);
     virtual ~Byte() {}
 
@@ -185,7 +197,7 @@ public:
 };
 
 
-/* A pointer to a Byte instance. */
+/** A pointer to a Byte instance. */
 typedef Byte * BytePtr;
 
 #endif

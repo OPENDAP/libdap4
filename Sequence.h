@@ -19,6 +19,9 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.31  1998/01/12 14:27:59  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.30  1997/12/18 15:06:13  tom
  * First draft of class documentation, entered in doc++ format,
  * in the comments
@@ -303,7 +306,17 @@ protected:
     bool is_end_of_sequence(unsigned char marker);
 	
 public:
+  /** The Sequence constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A String containing the name of the variable to be
+      created. 
+
+      @memo The Sequence constructor.
+      */
     Sequence(const String &n = (char *)0);
+  /** The Sequence copy constructor. */
     Sequence(const Sequence &rhs);
     virtual ~Sequence();
 

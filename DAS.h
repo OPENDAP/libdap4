@@ -14,6 +14,9 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.16  1998/01/12 14:27:56  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.15  1997/08/11 18:19:14  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -87,38 +90,132 @@
 
 #include "DASVHMap.h"
 
-/** The DAS object. A dataset may define sets of name-value pairs. These
-    name-value pairs are called attributes. The values may be of any of the
-    DODS cardinal data types (Byte, Int32, UInt32, Float64, String and URL).
-    The actual values may be either scalar or vector. Each set of attributes
-    has a name that (generally) matches the name of a variable in the
-    dataset. It is possible, however, to give a collection a name that does
-    not correspond to the name of a variable. It is also possible to nest
-    collections (thus creating a hierarchy of name-value pairs. */
+/** The Data Attribute Structure is a set of name-value pairs used to
+    describe the data in a particular dataset.  The name-value pairs
+    are called the ``attributes''.  The values may be of any of the
+    DODS simple data types (Byte, Int32, UInt32, Float64, String and
+    URL), and may be scalar or vector.  (Note that all values are
+    actually stored as String data.)
+
+    A value may also consist of a set of other name-value pairs.  This
+    makes it possible to next collections of attributes, giving rise
+    to a hierarchy of attributes.  DODS uses this structure to provide
+    information about variables in a dataset.  For example, consider
+    the dataset used in the DDS example earlier.
+
+    In the following example of a DAS, several of the attribute
+    collections have names corresponding to the names of variables in
+    the DDS example.  The attributes in that collection are said to
+    belong to that variable.  For example, the #lat# variable has an
+    attribute ``units'' of ``degrees\_north''.
+
+    \begin{verbatim}
+    Attributes {
+        GLOBAL {
+            String title "Reynolds Optimum Interpolation (OI) SST";
+        }
+        lat {
+            String units "degrees_north";
+            String long_name "Latitude";
+            Float64 actual_range 89.5, -89.5;
+        }
+        lon {
+            String units "degrees_east";
+            String long_name "Longitude";
+            Float64 actual_range 0.5, 359.5;
+        }
+        time {
+            String units "days since 1-1-1 00:00:00";
+            String long_name "Time";
+            Float64 actual_range 726468., 729289.;
+            String delta_t "0000-00-07 00:00:00";
+        }
+        sst {
+            String long_name "Weekly Means of Sea Surface Temperature";
+            Float64 actual_range -1.8, 35.09;
+            String units "degC";
+            Float64 add_offset 0.;
+            Float64 scale_factor 0.0099999998;
+            Int32 missing_value 32767;
+        }
+    }
+    \end{verbatim}
+
+    Attributes may have arbitrary names, although in most datasets it
+    is important to choose these names so a reader will know what they
+    describe.  In the above example, the ``GLOBAL'' attribute provides
+    information about the entire dataset.
+
+    Data attribute information is an important part of the the data
+    provided to a DODS client by a server, and the DAS is how this
+    data is packaged for sending (and how it is received). 
+
+    The DAS class is simply a sequence of attribute tables and names.
+    It may be thought of as the top level of the attribute hierarchy.
+
+    @memo Holds a DODS Data Attribute Structure.
+    @see DDS 
+    @see AttrTable */
 class DAS {
 private:
     DASVHMap map;
 
 public:
+  /** Create a DAS from a single attribute table.  
+
+      @param dflt A pointer to a valid attribute table.
+      @param sz The number of entries in the table.
+      */
     DAS(AttrTablePtr dflt=(void *)NULL, 
 	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
     ~DAS();
 
+  /** Returns a pointer to the first attribute table. */
     Pix first_var();
+  /** Increments an attribute table pointer to indicate the next table
+      in the series. */
     void next_var(Pix &p);
+  /** Returns the name of the indicated attribute table. */
     String get_name(Pix p);
+  /** Returns the indicated attribute table. */
     AttrTable *get_table(Pix p);
 
+  /** Returns the attribute table with the given name. 
+      @name *get\_table()
+      */
+
+  //@{
+  /** Returns the attribute table with the given name String. */
     AttrTable *get_table(const String &name);
+  /** Returns the attribute table with the given name. */
     AttrTable *get_table(const char *name); // avoid converting char * to Pix
-   
+  //@}
+
+  /** Adds an attribute table to the DAS.
+      @name *add\_table()
+      */
+  //@{
+  /** Adds an attribute table to the DAS. */
     AttrTable *add_table(const String &name, AttrTable *at);
+  /** Adds an attribute table to the DAS. */
     AttrTable *add_table(const char *name, AttrTable *at);
+  //@}
 
+  /** Reads a DAS in from an external source. 
+
+      @name parse()
+      */
+  //@{
+  /** Reads a DAS from the named file. */
     bool parse(String fname);
+  /** Reads a DAS from the given file descriptor. */
     bool parse(int fd);
+  /** Reads a DAS from an open file descriptor. */
     bool parse(FILE *in=stdin);
+  //@}
 
+  /** Creates an ASCII representation of a DAS on the given output
+      stream. */
     bool print(ostream &os = cout);
 };
 

@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Str.h,v $
+ * Revision 1.25  1998/01/12 14:27:59  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.24  1997/12/18 15:06:13  tom
  * First draft of class documentation, entered in doc++ format,
  * in the comments
@@ -181,6 +184,15 @@ protected:
     String _buf;
 
 public:
+  /** The Str constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A String containing the name of the variable to be
+      created. 
+
+      @memo The Str constructor.
+      */
     Str(const String &n = (char *)0);
     virtual ~Str() {}
 

@@ -11,6 +11,9 @@
 // Interface for the CE Clause class.
 
 // $Log: Clause.h,v $
+// Revision 1.4  1998/01/12 14:27:56  tom
+// Second pass at class documentation.
+//
 // Revision 1.3  1997/12/18 15:06:10  tom
 // First draft of class documentation, entered in doc++ format,
 // in the comments
@@ -43,7 +46,7 @@
 
     \item A relational clause, where an operator tests the relation
     between two operands.  This kind of clause evaluates to a boolean
-    value. For example: ``a>b''.
+    value. For example: #a > b#.
 
     \item A boolean function, where some function operates on
     arguments in the clause to return a boolean value.  For example,

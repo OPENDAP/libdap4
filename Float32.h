@@ -11,6 +11,9 @@
 // jhrg 9/7/94
 
 // $Log: Float32.h,v $
+// Revision 1.5  1998/01/12 14:27:57  tom
+// Second pass at class documentation.
+//
 // Revision 1.4  1997/12/18 15:06:10  tom
 // First draft of class documentation, entered in doc++ format,
 // in the comments
@@ -48,6 +51,15 @@ protected:
     float _buf;
 
 public:
+  /** The Float32 constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A String containing the name of the variable to be
+      created. 
+
+      @memo The Float32 constructor.
+      */
     Float32(const String &n = (char *)0);
     virtual ~Float32() {}
 
@@ -70,6 +82,7 @@ public:
     virtual bool ops(BaseType &b, int op, const String &dataset);
 };
 
+/** A pointer to a Float32 instance. */
 typedef Float32 * Float32Ptr;
 
 #endif

@@ -14,6 +14,9 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.35  1998/01/12 14:27:54  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.34  1997/12/18 15:06:09  tom
  * First draft of class documentation, entered in doc++ format,
  * in the comments
@@ -271,7 +274,22 @@ protected:
     void _duplicate(const Array &a);
     
 public:
+  /** The Array constructor requires the name of the variable to be
+      created, and the type of data the Array is to hold.  The name
+      may be omitted, which will create a nameless variable.  The
+      template pointer may also be omitted.  Note that if the template
+      pointer is omitted when the Array is created, it {\it must} be
+      added (with #add_var()#) before #read()# or #deserialize()# is
+      called. 
+      
+      @param n A String containing the name of the variable to be
+      created. 
+      @param v A pointer to a variable of the type to be included 
+      in the Array. 
+
+      @memo The Array constructor.  */
     Array(const String &n = (char *)0, BaseType *v = 0);
+  /** The Array copy constructor. */
     Array(const Array &rhs);
     virtual ~Array();
 

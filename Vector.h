@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.18  1998/01/12 14:28:00  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.17  1997/12/18 15:06:14  tom
  * First draft of class documentation, entered in doc++ format,
  * in the comments
@@ -134,8 +137,25 @@ protected:
     void _duplicate(const Vector &v);
 
 public:
+  /** The Vector constructor requires the name of the variable to be
+      created, and a pointer to an object of the type the Vector is to
+      hold.  The name may be omitted, which will create a nameless
+      variable.  The template object may not be omitted.
+      
+      @param n A String containing the name of the variable to be
+      created. 
+      @param v A pointer to a variable of the type to be included 
+      in the Vector. 
+      @param t The type of the resulting Vector object, from the Type
+      enum list.  There is no DODS Vector object, so all uses of this
+      method will be from the List or Array classes.  This defaults to
+      {\tt dods_null_c}.
+
+      @see Type
+      @memo The List constructor.  */
     Vector(const String &n = (char *)0, BaseType *v = 0, 
 	   const Type &t = dods_null_c);
+  /** The Vector copy constructor. */
     Vector(const Vector &rhs);
 
     virtual ~Vector();

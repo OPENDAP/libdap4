@@ -18,6 +18,9 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.20  1998/01/12 14:27:55  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.19  1997/10/09 22:19:09  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -133,7 +136,25 @@
 
 #include "String.XPlex.h"
 
-/// Types which may appear in a Attribute object.
+/** {\bf AttrType} identifies the data types which may appear in an
+    attribute table object. 
+
+    \begin{verbatim}
+    enum AttrType {
+        Attr_unknown,
+        Attr_container,
+        Attr_byte,
+        Attr_int32,
+        Attr_uint32,
+        Attr_float64,
+        Attr_string,
+        Attr_url
+    };
+    \end{verbatim}
+
+    @memo Identifies attribute table data types.
+    @see AttrTable
+    */
 enum AttrType {
     Attr_unknown,
     Attr_container,
@@ -145,10 +166,46 @@ enum AttrType {
     Attr_url
 };
 
-/** An AttrTable stores a set of names and, for each name, a group of
-    attribute type-name-value tuples and/or other AttrTables. Because
-    each AttrTable can contain other AttrTable objects, complex hierarchies
-    of attributes maybe built. */
+/** An AttrTable (``Attribute Table'') stores a set of names and, for
+    each name, either a type and a value, or another attribute table.
+    The attribute value can be a vector containing many values of the
+    same type.  The attributes can have any of the types listed in the
+    #AttrType# list.  However, all attribute types are stored as
+    String data, except for the container type, which is stored as a
+    pointer to another attribute table.
+
+    Each element in the attribute table can itself be an attribute
+    table.  The table can also contain ``alias'' attributes whose
+    value is given by the value of another attribute to which it is
+    linked.
+
+    The attribute tables have a standard printed representation.
+    There is a member function #print()# for writing this form.  Use
+    the #DAS::parse()# function to read the printed form.
+
+    An attribute table might look something like this:
+
+    \begin{verbatim}
+    String long_name "Weekly Means of Sea Surface Temperature";
+    actual_range {
+        Float64 min -1.8;
+        Float64 max 35.09;
+    }
+    String units "degC";
+    conversion_data {
+        Float64 add_offset 0.;
+        Float64 scale_factor 0.0099999998;
+    }
+    Int32 missing_value 32767;
+    \end{verbatim}
+
+    Here, #long_name#, #units#, and #missing_value# are simple
+    attributes, and #actual_range# and #conversion_data# are container
+    attributes containing other attribute tables.
+
+    @memo Holds a table of Attributes.  
+    @see DAS
+    @see AttrType */
 class AttrTable {
 private:
     struct entry {
@@ -176,84 +233,207 @@ public:
     AttrTable();
     ~AttrTable();
 
-    /// Return the Pix to the first element of this attribute table.
+  /** Returns a pointer to the first element of this attribute table. */
     Pix first_attr();
 
-    /// Advance Pix #p# to the next element of this attribute table.
+  /** Advance the pointer to the next element of this attribute
+    table. */
     void next_attr(Pix &p);
 
-    /// Return the name of the attribute.
+  /** Returns the name of the attribute. */
     String get_name(Pix p);
 
-    /// Is the attribute a container?
+  /** Returns true if the attribute is a container. */
     bool is_container(Pix p);
 
-    /** Return a pointer to the attribute table for the attribute referenced
-        by Pix #p# or named #name# *if the attribute is a container
-	attribute*. If there is no such attribute table, or it the table is
-	not a container, return null. */  
+  /** Returns a pointer to the attribute table for the attribute referenced
+      by {\it p} or named {\it name} only if the attribute is a container
+      attribute.  If there is no such attribute table, or if the table is
+      not a container, the function returns null. 
+
+      @memo Returns an attribute sub-table. 
+      @name *get\_attr\_table()
+      */  
+  //@{
+  ///
     AttrTable *get_attr_table(Pix p);
+  ///
     AttrTable *get_attr_table(const String &name);
+  ///
     AttrTable *get_attr_table(const char *name);
+  //@}
 
-    /// Return the type of the attribute in a String.
+  /** Returns the type of an attribute in a String.
+
+      @name get\_type()
+      */
+  //@{
+  ///
     String get_type(Pix p);
+  ///
     String get_type(const String &name);
+  ///
     String get_type(const char *name);
+  //@}
 
-    /// Return the type of an attribute using AttrType.
+  /** Returns the type of an attribute using AttrType.
+
+      @name get\_attr\_type()
+      @see AttrType
+      */
+  //@{
+  ///
     AttrType get_attr_type(Pix p);
+  ///
     AttrType get_attr_type(const String &name);
+  ///
     AttrType get_attr_type(const char *name);
+  //@}
 
-    /// Returns the number of values for the attribute.
+  /** If the indicated attribute is a container attribute, this
+      function returns the number of attributes in {\it its} attribute
+      table.  If the indicated attribute is not a container, the
+      function returns zero.
+
+      @name get\_attr\_num()
+      @memo Returns the number of entries in a container attribute.
+      */
+  //@{
+  ///
     unsigned int get_attr_num(Pix p);
+  ///
     unsigned int get_attr_num(const String &name);
+  ///
     unsigned int get_attr_num(const char *name);
+  //@}
 
-    /** By default, return the first value in the vector of values. If the
-        attribute has only one value you're done. If the value is a vector
-	then use #i# to request the 0 to N-1 values of the N-element
-	value-vector. It is an error to request an element beyond N-1. */
+  /** Returns the value of an attribute.  If the attribute has a vector
+      value, you can indicate which is the desired value with the
+      index argument, {\it i}.  If the argument is omitted, the first
+      value is returned.  If the attribute has only a single value,
+      the index argument is ignored.  If {\it i} is greater than the
+      number of elements in the attribute, an error is produced.
+
+      Note that all values in an attribute table are stored as String
+      data.  They may be converted to a more appropriate internal
+      format by the calling program.
+
+      @name get\_attr()
+      @return If the indicated attribute is a container, this function
+      returns the string ``None''.  Otherwise returns a pointer to the
+      the attribute value.  */
+  //@{
+  ///
     String get_attr(Pix p, unsigned int i = 0);
+  ///
     String get_attr(const String &name, unsigned int i = 0);
+  ///
     String get_attr(const char *name, unsigned int i = 0);
+  //@}
     
-    /** Return a pointer to the vector of values associated with the
-        attribute referenced by Pix #p# or named #name#. */
-    StringXPlex *get_attr_vector(Pix p);
-    StringXPlex *get_attr_vector(const String &name);
-    StringXPlex *get_attr_vector(const char *name);
+  /** Returns a pointer to the vector of values associated with the
+      attribute referenced by Pix {\it p} or named {\it name}. 
 
-    /** If #name# is not an attribute in the current attribute table, create
-        a new entry in the current table for #name# and bind the type #type#
-	and value #value# to that attribute. If the value of the attribute is
-	a vector, call this mfunc repeatedly, once for each of the vector
-	elements. They will be added in the order of calls made to this
-	function. */
+      Note that all values in an attribute table are stored as String
+      data.  They may be converted to a more appropriate internal
+      format by the calling program.
+
+      @memo Returns a vector attribute.
+      @name *get\_attr\_vector()
+      @return If the indicated attribute is a container, this function
+      returns the null pointer.  Otherwise returns a pointer to the
+      the attribute vector value.
+      */
+  //@{
+  ///
+    StringXPlex *get_attr_vector(Pix p);
+  ///
+    StringXPlex *get_attr_vector(const String &name);
+  ///
+    StringXPlex *get_attr_vector(const char *name);
+  //@}
+
+  /** Adds an attribute to the table.  If the given name already
+      refers to an attribute, and the attribute has a vector value,
+      the given value is appended to the attribute vector.  Calling
+      this function repeatedly is the way to create an attribute
+      vector.
+
+      The function returns an error condition if the attribute is a
+      container, or if the type of the input value does not match the
+      existing attribute's type.  Use #append_container()# to add
+      container attributes.
+
+      @name append\_attr() 
+      @return Returns the length of the added attribute value, or zero
+      for failure.
+      @param name The name of the attribute to add or modify.
+      @param type The type of the attribute to add or modify.
+      @param value The value to add to the attribute table.
+*/
+  //@{
+  ///
     unsigned int append_attr(const String &name, const String &type, 
 			     const String &value);
+  ///
     unsigned int append_attr(const char *name, const char *type, 
 			     const char *value);
+  //@}
 
-    /** Create and append the attribute container #name# to the AttrTable
-        object. Return a pointer to the new AttrTable object. */
+  /** Create and append an attribute container to the AttrTable
+      object.  A container is an attribute that contains other
+      attributes.  That is, it is another attribute table.
+
+      @return A pointer to the new AttrTable object. 
+      @memo Create a new container attribute.
+      */
     AttrTable *append_container(const String &name);
 
-    /** Add an alias to the set of attributes. Reading the attributes for
-        #alais#  returns those stored for #name#. NB: Two forms for this call
-	exist; one searches for #name# in the AttrTable referenced by #at#
-	while the other uses #this#. You can use DAS::get_attr_table() to get
-	the attribute table for an arbitrary name. */
-    bool attr_alias(const String &alias, AttrTable *at, const String &name);
-    bool attr_alias(const String &alias, const String &name);
+  /** Adds an alias to the set of attributes.  Once an alias is
+      inserted into an attribute table, reading the attributes for
+      {\it alias} will return those stored for {\it name}. 
 
-    /** Delete the attribute named #name#. If #i# is given, delete the ith
-        element of the attribute value vector. This mfunc works for container
-	attributes also. */
+      Two forms for this function exist: one searches for {\it name}
+      in the AttrTable referenced by {\it at} while the other uses
+      #this#. You can use #DAS::get_attr_table()# to get the attribute
+      table for an arbitrary name.
+
+      @name attr\_alias()
+      @param alias The alias to insert into the attribute table.
+      @param name The name of the already-existing attribute to which
+      the alias will refer.
+      @param at An attribute table in which to insert the alias.
+      @see DAS::get_attr_table */
+  //@{
+  ///
+    bool attr_alias(const String &alias, AttrTable *at, const String &name);
+  ///
+    bool attr_alias(const String &alias, const String &name);
+  //@}
+
+  /** Delete the attribute named {\it name}. If {\it i} is given, and
+      the attribute has a vector value, delete the i-th element of the
+      vector.
+
+      You can use this function to delete container attributes,
+      although the {\it i} parameter has no meaning for that
+      operation.
+
+      @memo Deletes an attribute. 
+      @param name The name of the attribute to delete.  This can be an
+      attribute of any type, including containers.
+      @param i If the named attribute is a vector, and {\it i} is
+      non-negative, the i-th entry in the vector is deleted, and the
+      array is repacked.  If {\it i} equals -1 (the default), the
+      entire attribute is deleted.
+      */
     void del_attr(const String &name, int i = -1);
 
-    /// Print the DAS object on stdout.
+  /** Prints an ASCII representation of the attribute table to the
+      indicated output stream.  The {\it pad} argument is prefixed to
+      each line of the output to provide control of indentation.
+
+      @memo Prints the attribute table.  */
     void print(ostream &os, String pad = "    ");
 };
 

@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.39  1998/01/12 14:27:55  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.38  1997/12/18 15:06:09  tom
  * First draft of class documentation, entered in doc++ format,
  * in the comments
@@ -375,8 +378,23 @@ protected:
     void _duplicate(const BaseType &bt);
 
 public:
+  /** The BaseType constructor needs a name, a type, and the name of
+      an XDR filter.  The BaseType class exists to provide data to
+      type classes that inherit from it.  The constructors of those
+      classes call the BaseType constructor; it is never called
+      directly. 
+
+      @memo The BaseType contructor.
+      @param n A String containing the name of the new variable.
+      @param t The type of the variable.
+      @param xdr A pointer to an XDR filter to use to transmit the
+      data in this variable to a client DODS process.
+      @see Type
+      */
     BaseType(const String &n = (char *)0, const Type &t = dods_null_c,
 	     xdrproc_t xdr = NULL);
+
+  /** The BaseType copy constructor. */
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 

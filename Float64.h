@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Float64.h,v $
+ * Revision 1.22  1998/01/12 14:27:57  tom
+ * Second pass at class documentation.
+ *
  * Revision 1.21  1997/12/18 15:06:11  tom
  * First draft of class documentation, entered in doc++ format,
  * in the comments
@@ -158,6 +161,15 @@ protected:
     double _buf;
 
 public:
+  /** The Float64 constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A String containing the name of the variable to be
+      created. 
+
+      @memo The Float64 constructor.
+      */
     Float64(const String &n = (char *)0);
     virtual ~Float64() {}
 
@@ -180,6 +192,7 @@ public:
     virtual bool ops(BaseType &b, int op, const String &dataset);
 };
 
+/** A pointer to a Float64 instance. */
 typedef Float64 * Float64Ptr;
 
 #endif
