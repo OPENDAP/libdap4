@@ -30,6 +30,7 @@
 
 //@{
 
+#if 0
 /** This function prints a usage message for the filter program in the
     server log file.  This is meant to report errors in a filter
     program's configuration.  These are errors made by the server
@@ -42,6 +43,7 @@
     */
 void usage(const char *name);
 void usage(const string &name);
+#endif
 
 /** This sends a formatted block of text to the client, containing
     version information about various aspects of the server.  The

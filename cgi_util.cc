@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.45  2000/08/14 23:54:11  jimg
+// Removed the usage() functions. These should be supplied by cgis that
+// need them. See DODSFilter.
+//
 // Revision 1.44  2000/08/07 21:08:43  rmorris
 // Removed default argument definition.  Under MS VC++ one can't define a
 // default argument in both a method declaration and its's definition -
@@ -227,7 +231,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.44 2000/08/07 21:08:43 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.45 2000/08/14 23:54:11 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -268,6 +272,7 @@ using std::strstream;
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
 
+#if 0
 // The next two functions are helpers used to simplify creating the *_dods
 // filter programs.
 
@@ -304,6 +309,7 @@ usage(const char *name)
     set_mime_text(cout, dods_error);
     ErrorObj->print(cout);
 }
+#endif
 
 // Note that the filter program must define `find_dataset_version()' for this
 // function to work.
