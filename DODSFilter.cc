@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.33 2003/02/09 11:13:47 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.34 2003/02/09 12:18:31 rmorris Exp $"};
 
 #include <iostream>
 #include <strstream>
@@ -61,13 +61,6 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.33 2003/02/09 11:13:47 r
 #include "InternalErr.h"
 
 using std::ostrstream;
-
-//  VC++ has a conflict with macro max() when max from the template
-//  library is used.  We undefine it to eliminate the conflict.
-#ifdef WIN32
-#undef min
-#undef max
-#endif
 
 /** Create an instance of DODSFilter using the command line
     arguments passed by the CGI (or other) program.  The default
@@ -697,8 +690,8 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
-// Revision 1.33  2003/02/09 11:13:47  rmorris
-// Pick up max() (not the macro) appropriately under both win32 and unix.
+// Revision 1.34  2003/02/09 12:18:31  rmorris
+// Fix to compile under win32.  Problem with min/max diffs under win32 and unix.
 //
 // Revision 1.30  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
