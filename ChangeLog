@@ -1233,17 +1233,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.70 2003/01/10 19:49:31 jimg Exp $
-
-<<<<<<< ChangeLog
-=======
-$Id: ChangeLog,v 1.70 2003/01/10 19:49:31 jimg Exp $
-=======
-$Id: ChangeLog,v 1.70 2003/01/10 19:49:31 jimg Exp $
->>>>>>> 1.62
-<<<<<<< ChangeLog
-=======
->>>>>>> 1.42.2.16
-<<<<<<< ChangeLog
-=======
->>>>>>> 1.60.4.37
+$Id: ChangeLog,v 1.71 2003/01/10 19:51:28 jimg Exp $
