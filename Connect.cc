@@ -8,6 +8,15 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.56  1997/06/06 03:09:15  jimg
+// Added parse_mime(); a tiny parser for the fields DODS uses. Not a real MIME
+// parser.
+// Added process_data to facilitate processing data from stdin.
+// Modified request_data() member function so that it works when reading from
+// stdin.
+// Fixed a bug in the destructor where _output and _source were not set to
+// null.
+//
 // Revision 1.55  1997/05/13 23:36:38  jimg
 // Added calls to close_output() in the dtor. This ensures that all files
 // will be closed when an Connect is destroyed.
@@ -312,7 +321,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.55 1997/05/13 23:36:38 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.56 1997/06/06 03:09:15 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -335,6 +344,7 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.55 1997/05/13 23:36:38 jim
 
 #include <strstream.h>
 #include <fstream.h>
+#include <stdiostream.h>
 
 #include "debug.h"
 #include "Connect.h"
@@ -375,7 +385,7 @@ const int SEM_PERMS = 0666;
 
 static const char DODS_PREFIX[]={"dods"};
 static const int DEFAULT_TIMEOUT = 100; // Timeout in seconds.
-static int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
+int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
 
 static const char bad_decomp_msg[]={\
 "The data returned by the server was compressed and the\n\
@@ -808,6 +818,41 @@ header_handler(HTRequest *, HTResponse *, const char *token, const char *val)
     return HT_OK;
 }
  
+// Barely a `parser'... jhrg 5/20/97
+
+void
+Connect::parse_mime(FILE *data_source)
+{    
+    istdiostream is(data_source);
+    
+    char line[256];
+
+    is.getline(line, 256);
+    
+    while ((String)line != "") {
+	char h[256], v[256];
+	sscanf(line, "%s %s\n", h, v);
+	String header = h;
+	String value = v;
+	header.downcase();
+	value.downcase();
+
+	if (header == "content-description:") {
+	    DBG(cout << header << ": " << value << endl);
+	    _type = get_type(value);
+	}
+	else if (header == "content-encoding:") {
+	    DBG(cout << header << ": " << value << endl);
+	    _encoding = get_encoding(value);
+	}
+	else if (header == "server:") {
+	    DBG(cout << header << ": " << value << endl);
+	    _server = value;
+	}
+	
+	is.getline(line, 256);
+    }
+}
 
 void
 Connect::www_lib_init(bool www_verbose_errors)
@@ -927,14 +972,13 @@ Connect::move_dds(FILE *in)
 	return NULL;
     }
 
-    int data = FALSE;
-    char s[256], *sp;
+    bool data = false;
+    char s[256];
     
-    sp = &s[0];
     while (!feof(in) && !data) {
-	sp = fgets(s, 255, in);
+	(void)fgets(s, 255, in);
 	if (strcmp(s, "Data:\n") == 0)
-	    data = TRUE;
+	    data = true;
 	else
 	    fputs(s, fp);
     }
@@ -1062,6 +1106,10 @@ Connect::Connect(String name, bool www_verbose_errors = false)
     else {
 	_URL = "";
 	_local = true;
+	_output = 0;
+	_source = 0;
+	_type = unknown_type;
+	_encoding = unknown_enc;
     }
 
     HT_FREE(access_ref);
@@ -1189,7 +1237,7 @@ Connect::fetch_url(String &url, bool)
     return true;
 }
 
-// Remove the duplication of _connect and subsequent close(). This would hav
+// Remove the duplication of _connect and subsequent close(). This would have
 // the side-effect of spuriously closing the data channel. jhrg 7/16/96
 
 FILE *
@@ -1316,6 +1364,57 @@ exit:
     return status;
 }
 
+// Assume that _output points to FILE * from which we can read the data
+// object. 
+// This is a private mfunc.
+
+DDS *
+Connect::process_data(bool async = false)
+{
+    switch (type()) {
+      case dods_error: {
+	  String correction;
+	  if (!_error.parse(_output)) {
+	      cerr << "Could not parse error object" << endl;
+	      break;
+	  }
+	  correction = _error.correct_error(gui());
+	  return 0;
+      }
+
+      case web_error:
+	// Web errors (those reported in the return document's MIME header)
+	// are processed by the WWW library.
+	return 0;
+
+      case dods_data:
+      default: {
+	  // First read the DDS into a new object.
+
+	  DDS *dds = new DDS("received_data");
+	  FILE *dds_fp = move_dds(_output);
+	  if (!dds_fp || !dds->parse(dds_fp)) {
+	      cerr << "Could not parse data DDS." << endl;
+	      return 0;
+	  }
+	  fclose(dds_fp);
+	  
+	  // DDS. If asynchronous, just return the DDS and leave the
+	  // reading to to the caller.
+	  if (!async) {
+	      XDR *s = source();
+	      for (Pix q = dds->first_var(); q; dds->next_var(q))
+		  if (!dds->var(q)->deserialize(s))
+		      return 0;
+	  }
+
+	  return dds;
+      }
+    }
+
+    return 0;
+}
+      
 // Read data from the server at _URL. If ASYNC is true, read asynchronously
 // using NetConnect (which forks so that it can return *before* the read
 // completes). Synchronous reads (using NetExecute) are the default. 
@@ -1355,70 +1454,49 @@ Connect::request_data(String expr, bool gui_p = true,
 	
     if (!status) {
 	cerr << "Could not complete data request operation" << endl;
-	goto error;
+	return 0;
     }
 
-    switch (type()) {
-      case dods_error: {
-	  String correction;
-	  if (!_error.parse(_output)) {
-	      cerr << "Could not parse error object" << endl;
-	      status = false;
-	      break;
-	  }
-	  correction = _error.correct_error(gui());
-	  status = false;
-	  goto error;
-	  break;
-      }
+    return process_data(async);
+}
 
-      case web_error:
-	// Web errors (those reported in the return document's MIME header)
-	// are processed by the WWW library.
-	status = false;
-	break;
+DDS *
+Connect::read_data(FILE *data_source, bool gui_p = true, bool async = false)
+{
+    (void)gui()->show_gui(gui_p);
+    
+    // Read from data_source and parse the MIME headers specific to DODS.
+    parse_mime(data_source);
 
-      case dods_data:
-      default: {
-	  // First read the DDS into a new object.
+    // Connect the _output member of Connect so the class can process the
+    // DODS data object.
 
-	  DDS *dds = new DDS("received_data");
-	  FILE *dds_fp = move_dds(_output);
-	  if (!dds_fp || !dds->parse(dds_fp)) {
-	      cerr << "Could not parse data DDS." << endl;
-	      status = false;
-	      goto error;
-	  }
-	  fclose(dds_fp);
-	  
-	  // NOTE: the call to append_constraint() has been removed until the
-	  // bugs in the cache can be worked out. 2/16/97 jhrg
-
-	  // Save the newly created DDS (which now has a variable (BaseType
-	  // *) that can hold the data) along with the constraint expression
-	  // in a list. Note that append_constraint returns a reference to a
-	  // *copy* of `dds'. That copy exists in a SLList within the
-	  // instance of Connect so we can return a pointer to that DDS. The
-	  // pointer will remain valid for the duration of the Connect
-	  // object. 
-
-	  // If the transmission is synchronous, read all the data into the
-	  // DDS. If asynchronous, just return the DDS and leave the
-	  // reading to to the caller.
-	  if (!async) {
-	      XDR *s = source();
-	      for (Pix q = dds->first_var(); q; dds->next_var(q))
-		  if (!dds->var(q)->deserialize(s))
-		      goto error;
-	  }
-
-	  return dds;
-	  break;
-      }
+    if (_comp_childpid != 0) { 
+	int pid;
+	while ((pid = waitpid(_comp_childpid, 0, 0)) > 0) {
+	    DBG(cerr << "fetch_url:pid: " << pid << endl);
+	}
+	_comp_childpid = 0;
     }
-      
-error:
-    return 0;
+
+    close_output();
+
+    if (encoding() == x_gzip) {
+	DBG(cerr << "encoding is gzip!" << endl);
+	_output = decompressor(data_source, _comp_childpid);
+	if (!_output) {
+	    DBG(cerr << "decompressor failure!" << endl);
+	    _error.error_code(unknown_error);
+	    _error.error_message(bad_decomp_msg);
+	    return 0;
+	}
+    }
+    else {
+	DBG(cerr << "encoding is plain!" << endl);
+	_output = data_source;
+    }
+
+    return process_data(async);
 }
 
 Gui *
