@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.34 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.35 2001/08/27 16:39:42 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -24,7 +24,6 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.34 2001/08/24 17:46:22 jimg Exp 
 #else
 #include <unistd.h>
 #endif
-#include <assert.h>
 
 #include <iostream>
 #include <string>
@@ -39,11 +38,6 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.34 2001/08/24 17:46:22 jimg Exp 
 
 using std::cerr;
 using std::endl;
-
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.34 2001/08/24 17:46:22 jimg Exp $"};
-
-#include "DAS.h"		// follows pragma since DAS.h is interface
-#include "InternalErr.h"
 
 extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
@@ -218,6 +212,9 @@ DAS::print(ostream &os, bool dereference)
 }
 
 // $Log: DAS.cc,v $
+// Revision 1.35  2001/08/27 16:39:42  jimg
+// Fixed up cruft from merge.
+//
 // Revision 1.34  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //
