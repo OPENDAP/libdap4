@@ -212,7 +212,6 @@ TYPEOBJS = $(OBJDIR)\BaseType.obj \
 		$(OBJDIR)\Str.obj \
 		$(OBJDIR)\Url.obj \
 		$(OBJDIR)\Vector.obj \
-		$(OBJDIR)\List.obj \
 		$(OBJDIR)\Array.obj \
 		$(OBJDIR)\Structure.obj \
 		$(OBJDIR)\Sequence.obj \
@@ -342,7 +341,6 @@ $(OBJDIR)\Float64.obj : $(SRCDIR)\Float64.cc
 $(OBJDIR)\Str.obj : $(SRCDIR)\Str.cc
 $(OBJDIR)\Url.obj : $(SRCDIR)\Url.cc
 $(OBJDIR)\Vector.obj : $(SRCDIR)\Vector.cc
-$(OBJDIR)\List.obj : $(SRCDIR)\List.cc
 $(OBJDIR)\Array.obj : $(SRCDIR)\Array.cc
 $(OBJDIR)\Structure.obj : $(SRCDIR)\Structure.cc
 $(OBJDIR)\Sequence.obj : $(SRCDIR)\Sequence.cc
@@ -640,7 +638,6 @@ install: installST installMT installMD installSTD installMTD installMDD
 	copy $(SRCDIR)\Int32.h $(INCLUDEDIR)
 	copy $(SRCDIR)\InternalErr.h $(INCLUDEDIR)
 	copy $(SRCDIR)\IteratorAdapter.h $(INCLUDEDIR)
-	copy $(SRCDIR)\List.h $(INCLUDEDIR)
 	copy $(SRCDIR)\ObjectType.h $(INCLUDEDIR)
 	copy $(SRCDIR)\parser.h $(INCLUDEDIR)
 	copy $(SRCDIR)\RCReader.h $(INCLUDEDIR)
