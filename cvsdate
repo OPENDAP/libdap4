@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+#
+# Read cvs log entries later than a given date and show which files have
+# changed. Should work with other -d type operations (earlier, etc.).
+# 10/22/99 jhrg
+# This program will actually print the log entries later, earlier or on a
+# given date. For example, to see the log entries after 2001/01/01 you would
+# use cvsdate '>2001/01/01' (note that quotes are needed since the
+# greaterthan and slash are special to the shell). Use a lessthan sign (<)
+# for logs from day prior to the date. 9/26/2001 jhrg
+
+if ($#ARGV == 1) {
+    open CVS, "cvs log -N -l -d \"$ARGV[0]\" -r$ARGV[1] |";
+} elsif ($#ARGV == 0) {
+    open CVS, "cvs log -N -l -d \"$ARGV[0]\" |";
+} else {
+    die("Usage: cvsdate <date> [-r<tag>]");
+}
+
+while (<CVS>) {
+    if (m/^$/) {
+	my ($file, $selected) = &check_revisions();
+	if ($selected > 0) {
+	    print "$file: Selected revisions: $selected\n";
+	    while (<CVS>) {
+		print;
+		if (m/^==*$/) {
+		    last;
+		}
+	    }
+	}
+    }
+}
+
+# Read the CVS log output stream starting after the row of equal signs.
+# Return the file name and number of selected revisions. If at EOF, return
+# "EOF" for the file name and 0 for the number of selected revisions.
+sub check_revisions() {
+    my ($d, $file, $selected);
+    while (<CVS>) {
+	if (m/Working file/) {
+	    ($d, $d, $file) = split;
+	}
+	elsif (m/total revisions/) {
+	    ($d, $d, $d, $d, $d, $selected) = split;
+	}
+	elsif (m/description/) {
+	    return ($file, $selected);
+	}
+    }
+    
+    return ("EOF", 0);
+}
