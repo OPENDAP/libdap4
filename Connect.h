@@ -31,9 +31,14 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.20  1996/11/13 18:57:15  jimg
-/* Now uses version 5.0a of the WWW library.
+/* Revision 1.21  1996/11/25 03:39:25  jimg
+/* Added web-error to set of object types.
+/* Added two MIME parsers to set of friend functions.
+/* Removed unused friend functions.
 /*
+ * Revision 1.20  1996/11/13 18:57:15  jimg
+ * Now uses version 5.0a of the WWW library.
+ *
  * Revision 1.19  1996/10/08 17:02:10  jimg
  * Added fields for the projection and selection parts of a CE supplied with
  * the URL passed to the Connect ctor.
@@ -149,18 +154,18 @@
 #include <String.h>
 #include <SLList.h>
 
-#include "WWWLib.h"			      /* Global Library Include file */
-#include "WWWApp.h"
-#include "WWWMIME.h"				    /* MIME parser/generator */
-#include "WWWHTML.h"				    /* HTML parser/generator */
-#include "WWWNews.h"				       /* News access module */
-#include "WWWHTTP.h"				       /* HTTP access module */
-#include "WWWFTP.h"
-#include "WWWFile.h"
-#include "WWWGophe.h"
-#include "WWWStream.h"
-#include "WWWTrans.h"
-#include "WWWInit.h"
+#include <WWWLib.h>			      /* Global Library Include file */
+#include <WWWApp.h>
+#include <WWWMIME.h>				    /* MIME parser/generator */
+#include <WWWHTML.h>				    /* HTML parser/generator */
+#include <WWWNews.h>				       /* News access module */
+#include <WWWHTTP.h>				       /* HTTP access module */
+#include <WWWFTP.h>
+#include <WWWFile.h>
+#include <WWWGophe.h>
+#include <WWWStream.h>
+#include <WWWTrans.h>
+#include <WWWInit.h>
 
 #include "DAS.h"
 #include "DDS.h"
@@ -181,7 +186,8 @@ enum ObjectType {
     dods_das,
     dods_dds,
     dods_data,
-    dods_error
+    dods_error,
+    web_error
 };
 
 /// What type of encoding has been used on the current stream?
@@ -257,14 +263,17 @@ private:
     //* Close the objects _output stream if it is not NULL or STDOUT.
     void close_output();
 
-    // These functions are used as callbacks by the WWW library.
-#if 0
-    friend int authentication_handler(HTRequest *request, int status);
-    friend int redirection_handler(HTRequest *request, int status);
-    friend int terminate_handler(HTRequest *request, int status);
-#endif
+    friend int description_handler(HTRequest *request, HTResponse *response,
+				   const char *token, const char *val);
+
+    friend int encoding_handler(HTRequest *request, HTResponse *response,
+			      const char *token, const char *val);
+
     friend int header_handler(HTRequest *request, HTResponse *response,
 			      const char *token, const char *val);
+
+    friend char dods_error_print (HTRequest * request, HTAlertOpcode, int, 
+				  const char *, void * input, HTAlertPar *);
 
     Connect();			// Never call this.
 
