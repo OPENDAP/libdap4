@@ -4,7 +4,13 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.9  1994/12/14 17:50:34  dan
+// Revision 1.10  1994/12/14 20:35:36  dan
+// Added dimensions() member function to return number of dimensions
+// contained in the array.
+// Removed alloc_buf() and free_buf() member functions and placed them
+// in util.cc.
+//
+// Revision 1.9  1994/12/14  17:50:34  dan
 // Modified serialize() and deserialize() member functions to special
 // case BaseTypes 'Str' and 'Url'.  These special cases do not call
 // xdr_array, but iterate through the arrays using calls to XDR_STR.
@@ -146,29 +152,6 @@ Array::size()
   return (sz * var_ptr->size());
 }
 
-void *
-Array::alloc_buf(unsigned int n)
-{
-    if (n == 0)
-      n = size();
-	
-    char *buffer = (char *)malloc(n);
-	
-    if (!buffer)
-	err_quit("Array::alloc_buf:Could not allocate data buffer");
-
-    return (buf = (void *)buffer);
-}
-
-// Use this function to free memory allocated with alloc_buf() or
-// deserialize().
-
-void
-Array::free_buf()
-{
-    free(buf);
-}
-
 // Serialize an array. This uses the BaseType member XDR_CODER to encode each
 // element of the array. See Sun's XDR manual. 
 //
@@ -265,6 +248,17 @@ Array::next_dim(Pix &p)
 { 
     if (!shape.empty() && p)
 	shape.next(p); 
+}
+
+// Return the number of dimensions contained in the array.
+
+unsigned int
+Array::dimensions()
+{
+  unsigned int dim = 0;
+  for( Pix p = first_dim(); p; next_dim(p)) dim ++;
+
+  return dim;
 }
 
 // Return the size of the array dimension referred to by P.
