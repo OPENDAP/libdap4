@@ -1,3 +1,17 @@
+1998-03-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added the ASCII filter to the set of things that comprise a DODS
+	server. Use .ascii or .asc as a URL suffix to get comma-separated
+	ASCII data back from a DODS server.
+
+	* Added boolean member functions is_simple_type(),
+	is_vector_type() and is_constructor_type(). This reduce the size
+	of various parts of the code (but I have not gone through and
+	replaced all the old code yet).
+
+	* Added some new mfuncs to the core. element_count() returns the
+	number of elements in a constructor type (one for a simple type).
+
 1998-03-09  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Removed the -fno-rtti flag from the DAP library build. The
@@ -327,4 +341,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.16 1998/03/10 06:00:42 jimg Exp $
+$Id: ChangeLog,v 1.17 1998/03/17 17:24:42 jimg Exp $
