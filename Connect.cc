@@ -8,6 +8,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.38  1996/11/20 00:55:29  jimg
+// Fixed a bug with HTLibTerminate() where multiple URLs caused a core dump.
+// Fixed the progress indicator.
+// Ripped out the semaphore stuff used with the asynchronous connects - those
+// connects now work, at least on the Sun.
+//
 // Revision 1.37  1996/11/13 18:53:00  jimg
 // Updated so that this now works with version 5.0a of the WWW library from
 // the W3c.
@@ -206,6 +212,7 @@
 // Changed request_{das,dds} so that they use the field `_api_name'
 // instead of requiring callers to pass the api name.
 //
+
 // Revision 1.1  1994/10/05  18:02:06  jimg
 // First version of the connection management classes.
 // This commit also includes early versions of the test code.
@@ -213,7 +220,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.37 1996/11/13 18:53:00 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.38 1996/11/20 00:55:29 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -223,6 +230,7 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.37 1996/11/13 18:53:00 jim
 #include <unistd.h>
 #include <signal.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <sys/types.h>		// Used by the semaphore code in fetch_url()
 #include <sys/ipc.h>
@@ -245,6 +253,9 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.37 1996/11/13 18:53:00 jim
 #define CATCH_SIG
 #endif
 
+#define USE_SEM 0
+
+#if USE_SEM
 // On a sun (4.1.3) these are not prototyped... Maybe other systems too?
 #if (HAVE_SEM_PROTO == 0)
 extern "C" {
@@ -263,6 +274,10 @@ union semun {
 };
 #endif
 
+const int SEM_KEY = 123456L;
+const int SEM_PERMS = 0666;
+#endif
+
 // In cases where the DODS libraries are not linked with g++ this code won't
 // work properly; dods_root may be NULL or (worse) undefined. jhrg 9/19/96.
 
@@ -275,7 +290,11 @@ static const char DODS_PREFIX[]={"dods"};
 static const int DEFAULT_TIMEOUT = 100; // Timeout in seconds.
 static int keep_temps = 0;	// Set to non-zero value to keep temp files.
 
-int Connect::_connects = false;
+// Initially, _connects is -1 to indicate that no connection has been made
+// (and thus that the WWW library has not yet been inititalize). Once
+// _connects is > -1 there is no need to initialize the WWW library.
+
+int Connect::_connects = -1;
 String Connect::_logfile = "";
 HTList *Connect::_conv = 0;
 
@@ -354,20 +373,22 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 	       const char * /* dfault */, void * input,
 	       HTAlertPar * /* reply */)
 {
+    if (!request) {
+        if (WWWTRACE) cerr << "dods_rogress: NULL Request" << endl;
+        return YES;
+    }
+
     Connect *me = (Connect *)HTRequest_context(request);
     String cmd;
-
-    if (!request) {
-        if (WWWTRACE) cerr << "dods_rogress: Bad argument" << endl;
-        return NO;
-    }
 
     switch (op) {
       case HT_PROG_DNS:
 	if (!me->gui()->progress_visible())
-	    cmd = (String)"progress popup \"Looking up " + (char *)input + "\"\r";
+	    cmd = (String)"progress popup \"Looking up " + (char *)input 
+	          + "\"\r";
 	else
-	    cmd = (String)"progress text \"Looking up " + (char *)input + "\"\r";
+	    cmd = (String)"progress text \"Looking up " + (char *)input 
+	          + "\"\r";
 	
 	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
@@ -787,7 +808,10 @@ Connect::read_url(String &url, FILE *stream)
     HTEncoding enc = HTAnchor_encoding(HTRequest_anchor(_request));
     _encoding = get_encoding((char *)HTAtom_name(HTList_firstObject(enc)));
 #endif
+#if 0
     HTList *enc = HTAnchor_encoding(HTRequest_anchor(_request));
+#endif
+    HTList *enc = HTAnchor_encoding(_anchor);
     _encoding = get_encoding((char *)HTList_firstObject(enc));
 
     HTRequest_delete(_request);
@@ -825,10 +849,13 @@ Connect::Connect(String name)
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
-       	if (_connects == 0)
+       	if (_connects == -1) {
 	    www_lib_init();
-
-	_connects++;		// Record the connect.
+	    _connects = 1;
+	}
+	else {
+	    _connects++;		// Record the connect.
+	}
 
 	if (name.contains("?")) {
 	    _URL = name.before("?");
@@ -892,28 +919,13 @@ Connect::~Connect()
     // Release resources for this object.
     delete _tv;
 
+    _connects--;
+    
+    // If this is the last connect, close the log file.
     if (_connects == 0 &&_logfile != "") 
 	HTLog_close();
 
     close_output();
-
-    _connects--;
-    
-    // If this is the last Connect, close WWW Library.
-    // I added the else clause, moving the delete of the Anchor object here,
-    // after finding a bug first in the re-linked mexcdf executable which
-    // caused Matlab to seg-fault when ncclose() was called. It turns out
-    // that HTLibTerminate() appears to also delete the Anchor object. Thus
-    // we only delete it explicitly when there is at least one active
-    // connection and let HTLibTerminate() delete it when there are none.
-    // jhrg 9/18/96
-    if (_connects == 0) {
-	HTList_delete(_conv);
-	HTLibTerminate();	// Deletes the _anchor object, among others.
-    }
-    else {
-	HTAnchor_delete(_anchor);
-    }
 
     DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
@@ -1018,17 +1030,20 @@ Connect::fetch_url(String &url, bool async = false)
     }
     else {
 	int pid, data[2];
-	int semaphore = semget(IPC_PRIVATE, 1, 0);
+#if USE_SEM
+	int semaphore = semget(SEM_KEY, 1, IPC_CREAT | SEM_PERMS);
 	if (semaphore < 0) {
 	    cerr << "Could not create semaphore." << endl;
 	    return false;
 	}
 	union semun semun;
-	semun.val = -1;		// Wait for 0 value... 
+	semun.val = 1;		// Set to 1, wait for child to set to 0.
 	if (semctl(semaphore, 0, SETVAL, semun) < 0) {
 	    cerr << "Could not initialize semaphore." << endl;
 	    return false;
 	}
+#endif
+
 	if (pipe(data) < 0) {
 	    cerr << "Could not create IPC channel for receiver process" 
 		 << endl;
@@ -1053,12 +1068,14 @@ Connect::fetch_url(String &url, bool async = false)
 		return false;
 	    }
 
+#if USE_SEM
 	    // Semaphore wait for completion of read_url(...) in child.
 	    struct sembuf sembuf[1] = {{0, 0, SEM_UNDO}};
 	    if (semop(semaphore, sembuf, 1) < 0) {
 		cerr << "Could not wait for child to read URL." << endl;
 		return false;
 	    }
+#endif
 
 	    if (encoding() == x_gzip) {
 		_output = decompress(stream);
@@ -1070,6 +1087,15 @@ Connect::fetch_url(String &url, bool async = false)
 		_output = stream;
 	    }
 
+#if USE_SEM
+	    // Remove the semaphore.
+	    // SEMUN is q dummy parameter in this call.
+	    if (semctl(semaphore, 0, IPC_RMID, semun) < 0) {
+		cerr << "Could not initialize semaphore." << endl;
+		return false;
+	    }
+#endif
+	    
 	    return true;
 	}
 	else {
@@ -1079,20 +1105,23 @@ Connect::fetch_url(String &url, bool async = false)
 		cerr << "Child process could not open IPC channel" << endl;
 		_exit(127);
 	    }
-	    bool status = read_url(url, _output);
 
+#if USE_SEM
 	    // Set the semaphore so that the parent will stop blocking
-	    struct sembuf sembuf[1] = {{0, 1, SEM_UNDO}};
+	    struct sembuf sembuf[1] = {{0, -1, SEM_UNDO}};
 	    if (semop(semaphore, sembuf, 1) < 0) {
-		cerr << "Could not wait for child to read URL." << endl;
+		cerr << "Could not decrement semaphore in child." << endl;
 		return false;
 	    }
+#endif
 
+	    bool status = read_url(url, _output);
 	    if (!status) {
 		cerr << "Child process could not read data from the URL"
 		     << endl;
 		_exit(127);
 	    }
+
 	    exit(0);		// successful completion
 	}
     }
@@ -1104,24 +1133,8 @@ Connect::fetch_url(String &url, bool async = false)
 FILE *
 Connect::output()
 {
-#if 0
-    if (_output && _output != stdout) {
-	FILE *ret_val = fdopen(dup(fileno(_output)), "r");
-	if (!ret_val) {
-	    cerr << "Could not duplicate the object's output sink." << endl;
-	    return NULL;
-	}
-	
-	// Close the object's stream pointer so that when the user closes the
-	// copy returned here the stream goes away. 
-	close_output();
-
-	return ret_val;
-    }
-    else
-#endif
-	// NB: Users should make sure they don't close stdout.
-	return _output;		
+    // NB: Users should make sure they don't close stdout.
+    return _output;		
 }
 
 XDR *
