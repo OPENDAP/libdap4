@@ -32,6 +32,9 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.26  1997/03/23 19:40:20  jimg
+ * Added field _comp_childpid. See the note in Connect.cc Re: this field.
+ *
  * Revision 1.25  1997/03/05 08:25:28  jimg
  * Removed the static global _logfile. See Connect.cc.
  *
@@ -227,6 +230,8 @@ private:
 	    : _expression(expr), _dds(dds) {}
 	constraint(): _expression(""), _dds() {}
     };
+
+    int _comp_childpid;
 
     bool _local;		// Is this a local connection
 
