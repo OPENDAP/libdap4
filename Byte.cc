@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.27  1996/12/02 18:19:02  jimg
+// Added case for uint32 to ops() member function.
+//
 // Revision 1.26  1996/08/13 17:15:41  jimg
 // Added _unused_ to the static global rcsid to remove warning when building
 // with gcc -Wall.
@@ -167,7 +170,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.26 1996/08/13 17:15:41 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.27 1996/12/02 18:19:02 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -297,37 +300,43 @@ Byte::ops(BaseType &b, int op)
     else switch (b.type()) {
       case dods_byte_c:
       case dods_int32_c: {
-	dods_int32 *a2p = &a2;
-	b.buf2val((void **)&a2p);
-	break;
+	  dods_int32 *a2p = &a2;
+	  b.buf2val((void **)&a2p);
+	  break;
+      }
+      case dods_uint32_c: {
+	  dods_int32 *a2p = &a2;
+	  b.buf2val((void **)&a2p);
+	  a2 = abs(a2);
+	  break;
       }
       case dods_float64_c: {
-	double d;
-	double *dp = &d;
-	b.buf2val((void **)&dp);
-	a2 = (dods_int32)d;
-	break;
+	  double d;
+	  double *dp = &d;
+	  b.buf2val((void **)&dp);
+	  a2 = (dods_int32)d;
+	  break;
       }
       case dods_str_c: {
-	String s;
-	String *sp = &s;
-	b.buf2val((void **)&sp);
+	  String s;
+	  String *sp = &s;
+	  b.buf2val((void **)&sp);
 
-	char *ptr;
-	const char *cp = (char *)(const char *)s;
-	long v = strtol(cp, &ptr, 0);
+	  char *ptr;
+	  const char *cp = (char *)(const char *)s;
+	  long v = strtol(cp, &ptr, 0);
 
-	if (v == 0 && cp == ptr) {
-	    cerr << "`" << s << "' is not an integer value" << endl;
-	    return false;
-	}
-	if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
-	    cerr << "`" << v << "' is not a integer value" << endl;
-	    return false;
-	}
+	  if (v == 0 && cp == ptr) {
+	      cerr << "`" << s << "' is not an integer value" << endl;
+	      return false;
+	  }
+	  if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+	      cerr << "`" << v << "' is not a integer value" << endl;
+	      return false;
+	  }
 
-	a2 = v;
-	break;
+	  a2 = v;
+	  break;
       }
       default:
 	return false;
