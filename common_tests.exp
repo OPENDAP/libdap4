@@ -1,7 +1,7 @@
 
 # Common code for dejaGNU-based automated tests.
 
-# $Id: common_tests.exp,v 1.4 1999/11/04 23:59:58 jimg Exp $
+# $Id: common_tests.exp,v 1.5 2001/06/15 23:38:36 jimg Exp $
 
 # Compare $expected to the global $comp_output. Run `pass' if they match,
 # `fail' otherwise unless `xfailp' is true in which case run `xfail' if they
@@ -55,8 +55,7 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
     if {$str_test == "compare"} {
 	if {$result == 1} {
 	    set result 0
-	}
-	if {$result == 0} {
+	} elseif {$result == 0} {
 	    set result 1
 	}
     }
@@ -71,7 +70,9 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
 	fail "$msg"
     }
 
-    if {$verbose >= 2 || ($verbose == 1 && $result != 1)} {
+    # Added test for xfailp so that verobse == 1 will show only tests that
+    # are not expected to fail. 5/18/2001 jhrg
+    if {$verbose >= 2 || ($verbose == 1 && $result != 1 && $xfailp != 1)} {
 	send_user "Comp output:$comp_output\n"
 	send_user "Expected output:$expected\n"
     }
