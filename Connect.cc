@@ -8,6 +8,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.75  1999/05/21 00:46:42  jimg
+// Using ifstream in parse_mime(...) confuses the downstream parser since the
+// FILE * is not advanced. I switched back to the fgets(...) code and the some
+// problems with the asciival client went away.
+//
 // Revision 1.74  1999/04/29 03:04:51  jimg
 // Merged ferret changes
 //
@@ -423,7 +428,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.74 1999/04/29 03:04:51 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.75 1999/05/21 00:46:42 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -911,14 +916,21 @@ xdods_accept_types_header_gen(HTRequest *pReq, HTStream *target)
 void
 Connect::parse_mime(FILE *data_source)
 {    
+#if 0
     ifstream is(fileno(data_source));
+#endif
     
     char line[256];
 
+#if 0
     is.getline(line, 256);
-    
+#endif
+    fgets(line, 255, data_source);
+    line[strlen(line)-1] = '\0'; // remove the newline
+
     while ((string)line != "") {
 	char h[256], v[256];
+	cerr << "line: " << line << endl;
 	sscanf(line, "%s %s\n", h, v);
 	string header = h;
 	string value = v;
@@ -938,7 +950,11 @@ Connect::parse_mime(FILE *data_source)
 	    _server = value;
 	}
 	
+#if 0
 	is.getline(line, 256);
+#endif
+	fgets(line, 255, data_source);
+	line[strlen(line)-1] = '\0';
     }
 }
 
