@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.139 2003/03/12 01:07:34 jimg Exp $
+# $Id: Makefile.in,v 1.140 2003/03/13 23:50:36 jimg Exp $
 
 @SET_MAKE@
 
@@ -385,13 +385,17 @@ grid-func-check: geturl
 UNIT_TEST_SRCS = HTTPCacheTest.cc HTTPConnectTest.cc cgiUtilTest.cc \
 	AttrTableTest.cc DDSTest.cc SequenceTest.cc ByteTest.cc DASTest.cc \
 	generalUtilTest.cc parserUtilTest.cc AISDatabaseParserTest.cc \
-	AISResourcesTest.cc AISMergeTest.cc
+	AISResourcesTest.cc AISMergeTest.cc DODSFilterTest.cc
 
 UNIT_TEST_PROGS = HTTPCacheTest HTTPConnectTest cgiUtilTest AttrTableTest \
 	DDSTest SequenceTest ByteTest DASTest generalUtilTest \
-	parserUtilTest AISDatabaseParserTest AISResourcesTest AISMergeTest
+	parserUtilTest AISDatabaseParserTest AISResourcesTest AISMergeTest \
+	DODSFilterTest
 
 # Build the unit tests. Requires CppUnit be installed.
+
+DODSFilterTest: DODSFilterTest.o libdap++.a
+	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
 
 AISMergeTest: AISMergeTest.o libdap++.a
 	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
