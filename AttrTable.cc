@@ -9,6 +9,9 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.17  1997/06/06 03:12:44  jimg
+// Added mfuncs with char * parameters for some of the calls. See AttrTable.h
+//
 // Revision 1.16  1997/05/13 23:32:11  jimg
 // Added changes to handle the new Alias and lexical scoping rules.
 //
@@ -72,7 +75,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.16 1997/05/13 23:32:11 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.17 1997/06/06 03:12:44 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -314,6 +317,12 @@ AttrTable::get_attr_vector(const String &name)
     return (p) ?  get_attr_vector(p) : 0;
 }
 
+StringXPlex *
+AttrTable::get_attr_vector(const char *name)
+{
+    return get_attr_vector((String)name);
+}
+
 unsigned int
 AttrTable::append_attr(const String &name, const String &type, 
 		       const String &attr)
@@ -339,6 +348,12 @@ AttrTable::append_attr(const String &name, const String &type,
     
 	return len;		// return the length of the attr XPlex
     }
+}
+
+unsigned int
+AttrTable::append_attr(const char *name, const char *type, const char *attr)
+{
+    return append_attr((String)name, (String)type, (String)attr);
 }
 
 AttrTable *
