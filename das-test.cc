@@ -7,7 +7,11 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.7  1995/02/10 03:28:55  jimg
+// Revision 1.8  1995/03/16 17:36:15  jimg
+// Added include config.h to top of includes.
+// Added TRACE_NEW switch dbnew debugging.
+//
+// Revision 1.7  1995/02/10  03:28:55  jimg
 // Removed dummy_read.cc
 // Updates das-test.cc so that type checking gets tested.
 //
@@ -38,6 +42,8 @@
 // Test driver for DAS (and AttrTable) classes.
 //
 
+#include "config.h"
+
 #include <iostream.h>
 #include <String.h>
 #include <Pix.h>
@@ -47,6 +53,10 @@
 
 #include "DAS.h"
 #include "das.tab.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 void parser_driver(int argc, char *argv[], int i, bool use_fd, DAS das);
 void plain_driver(DAS das);
