@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.4.exp,v $
+# Revision 1.12  1999/03/24 23:42:22  jimg
+# Added or updated for the new simple types (Int16, UInt16 and Float32)
+#
 # Revision 1.11  1997/05/13 23:29:26  jimg
 # *** empty log message ***
 #
@@ -58,8 +61,8 @@ set test_out "Attributes {
         String b c;
     }
 }
-Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)
-followed by a name and value.
+Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,
+Float64, String or Url) followed by a name and value.
 parse() returned: 0"
 
 das-test_start p $srcdir$test_name
