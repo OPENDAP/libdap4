@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.6  1996/06/18 23:55:33  jimg
+// Added support for the GUI progress indicator.
+//
 // Revision 1.5  1996/06/08 00:18:38  jimg
 // Initialized vcode to null.
 //
@@ -28,7 +31,7 @@
 // First version. Built to test the new WWW code in the class Connect.
 //
 
-static char rcsid[]={"$Id: getdap.cc,v 1.5 1996/06/08 00:18:38 jimg Exp $"};
+static char rcsid[]={"$Id: getdap.cc,v 1.6 1996/06/18 23:55:33 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -45,6 +48,7 @@ usage(String name)
     cerr << "       " << "A: Use Connect's asynchronous mode." << endl;
     cerr << "       " << "d: For each URL, get the DODS DDS." << endl;
     cerr << "       " << "a: For each URL, get the DODS DAS." << endl;
+    cerr << "       " << "g: Show the progress GUI." << endl;
     cerr << "       " << "v: Verbose output." << endl;
     cerr << "       " << "m: Request the same URL <num> times." << endl;
     cerr << "       " << "Without A, use the synchronous mode." << endl;
@@ -76,11 +80,12 @@ int
 main(int argc, char * argv[])
 {
     FILE * fp;
-    GetOpt getopt (argc, argv, "Adav:m:");
+    GetOpt getopt (argc, argv, "Adagv:m:");
     int option_char;
     bool async = false;
     bool get_das = false;
     bool get_dds = false;
+    bool gui = false;
     bool verbose = false;
     bool multi = false;
     int times = 1;
@@ -93,6 +98,7 @@ main(int argc, char * argv[])
               case 'A': async = true; break;
               case 'd': get_dds = true; break;
 	      case 'a': get_das = true; break;
+	      case 'g': gui = true; break;
 	      case 'v': 
 		verbose = true;
 		vopts = strlen(getopt.optarg);
@@ -138,7 +144,7 @@ main(int argc, char * argv[])
 
 	if (get_das) {
 	    for (int j = 0; j < times; ++j) {
-		if (!url.request_das())
+		if (!url.request_das(gui))
 		    exit(1);
 		if (verbose)
 		    cerr << "DAS:" << endl;
@@ -148,7 +154,7 @@ main(int argc, char * argv[])
 
 	if (get_dds) {
 	    for (int j = 0; j < times; ++j) {
-		if (!url.request_dds())
+		if (!url.request_dds(gui))
 		    exit(1);
 		if (verbose)
 		    cerr << "DDS:" << endl;
@@ -157,6 +163,8 @@ main(int argc, char * argv[])
 	}
 
 	if (!get_das && !get_dds) {
+	    if (gui)
+		url.show_gui(gui);
 	    String url_string = argv[i];
 	    for (int j = 0; j < times; ++j) {
 		if (!url.fetch_url(url_string, async))
