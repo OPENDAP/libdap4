@@ -14,16 +14,20 @@
 
 #include "Connect.h"		// For ObjectType and EncodingType defs 
 
-bool read_ancillary_dds(DDS &dds, const String &dataset);
+void usage(const char *name);
+bool do_version(const String &script_ver, const String &dataset_ver);
 bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
 		      const String &datsset, const String &constraint);
-bool do_version(const String &script_ver = "", const String &dataset_ver = "");
-void usage(const char *name);
-
-char *name_path(const char *path);
-char *fmakeword(FILE *f, const char stop, int *cl) ;
-
+String find_ancillary_file(String pathname, String ext, String dir, 
+			   String file);
+bool read_ancillary_dds(DDS &dds, String dataset, String dir, String file);
+bool read_ancillary_das(DAS &das, String dataset, String dir, String file);
 void ErrMsgT(const char *Msgt);
+
+#if 0
+char *fmakeword(FILE *f, const char stop, int *cl) ;
+#endif
+char *name_path(const char *path);
 
 void set_mime_text(ObjectType type = unknown_type, 
 		   EncodingType enc = x_plain);
