@@ -22,7 +22,10 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.3  1994/09/09 16:16:38  jimg
+ * Revision 1.4  1994/09/15 21:10:56  jimg
+ * Added commentary to das.y -- how does it work.
+ *
+ * Revision 1.3  1994/09/09  16:16:38  jimg
  * Changed the include name to correspond with the class name changes (Var*
  * to DAS*).
  *
@@ -52,7 +55,7 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.3 1994/09/09 16:16:38 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.4 1994/09/15 21:10:56 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,7 +80,24 @@ int daserror(char *s);
 
 %%
 
-attributes:	/* empty */
+/*
+  The parser takes a single argument, a reference to an object of class
+  DAS. The reference is called `table'.
+
+  Parser algorithm: 
+
+  When a variable is found (rule: var_attr) chech the table to see if some
+  attributes fro that var have already been parsed - if so the var must have
+  a table entry alread allocated; get that entry and use it. Otherwise,
+  allocate a new table entry.  
+
+  Store the table entry for the current variable in attr_tab_ptr.
+
+  For every attribute name-value pair (rule: attr_pair) entry the name and
+  value inthe table entry for the current variable.
+*/
+
+attributes: /* empty */
     	    	| attribute
     	    	| attributes attribute
 ;
