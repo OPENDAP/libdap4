@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.20.exp,v $
+# Revision 1.5  2000/04/07 00:20:36  jimg
+# Fixed expresion tests.
+#
 # Revision 1.4  1999/04/29 00:05:39  jimg
 # *** empty log message ***
 #
@@ -42,9 +45,9 @@ set test_out "Attributes {
     }
 }
 Parse error (line: 8):
-`70000' is not a 16-bit integer value value.
-It must be between -32767 and 32767.
-`70000' is not an Int16 value.
+`80000' is not a 16-bit integer value value.
+It must be between -32768 and 32767.
+`80000' is not an Int16 value.
 parse() returned: 0"
 
 das-test_start p $srcdir$test_name
