@@ -23,15 +23,21 @@
    escapes to work and because we want line counts to work too. In order to
    properly scan a quoted string two C functions are used: one to remove the
    escape characters from escape sequences and one to remove the trailing
-   quote on the end of the string. NB: We don't remove the \'s or ending
-   quotes any more -- that way the printed das can be reparsed. 9/28/94.
-   
+   quote on the end of the string. 
+
    jhrg 7/12/94 
+
+   NB: We don't remove the \'s or ending quotes any more -- that way the
+   printed das can be reparsed. 9/28/94. 
 */
 
 /*
 # $Log: das.lex,v $
-# Revision 1.6  1994/11/10 19:46:10  jimg
+# Revision 1.7  1994/12/07 21:17:07  jimg
+# Added `,' (comma) to set of single character tokens recognized by the
+# scanner. Comma is the separator for elements in attribute vectors.
+#
+# Revision 1.6  1994/11/10  19:46:10  jimg
 # Added `/' to the set of characters that make up an identifier.
 #
 # Revision 1.5  1994/10/05  16:41:58  jimg
@@ -74,7 +80,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.6 1994/11/10 19:46:10 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.7 1994/12/07 21:17:07 jimg Exp $"};
 
 #include <string.h>
 
@@ -99,7 +105,7 @@ ID  	[a-zA-Z_][a-zA-Z0-9_/]*
 VAL 	[a-zA-Z0-9_.+-]+
 ATTR 	attributes|Attributes|ATTRIBUTES
 TYPE    BYTE|Byte|byte|INT32|Int32|int32|FLOAT64|Float64|float64|STRING|String|string|URL|Url|url
-NEVER   [^a-zA-Z0-9_.+-{};/]
+NEVER   [^a-zA-Z0-9_.+-{};,/]
 
 %%
 
@@ -110,6 +116,7 @@ NEVER   [^a-zA-Z0-9_.+-{};/]
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;
 ";" 	    	    	return (int)*yytext;
+","                     return (int)*yytext;
 
 [ \t]+
 \n	    	    	++das_line_num;
