@@ -6,9 +6,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.6  1995/08/26 00:32:12  jimg
-/* Removed code enclosed in #ifdef NEVER #endif.
+/* Revision 1.7  1995/12/06 18:33:34  jimg
+/* Added forward decalration of text_to_temp();
 /*
+ * Revision 1.6  1995/08/26  00:32:12  jimg
+ * Removed code enclosed in #ifdef NEVER #endif.
+ *
  * Revision 1.5  1995/08/23  00:41:57  jimg
  * xdr_str() now takes a String & instead of a String ** for arg 2.
  *
@@ -48,6 +51,7 @@
 bool unique(SLList<BaseTypePtr> l, const char *var, const char *type);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
+FILE *text_to_temp(String text);
 
 extern "C" bool_t xdr_str(XDR *xdrs, String &buf);
 extern "C" bool_t xdr_str_array(XDR *xdrs, String *buf);
