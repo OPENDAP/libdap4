@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.29 2000/09/22 02:17:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.30 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,12 +50,10 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.29 2000/09/22 02:17:22 ji
 #include "util.h"
 #include "debug.h"
 
-#ifdef WIN32
 using std::cin;
 using std::cerr;
 using std::endl;
 using std::flush;
-#endif
 
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
@@ -243,9 +241,6 @@ test_scanner(bool show_prompt)
 	    break;
 	  case SCAN_STR:
 	    cout << "STR: " << *exprlval.val.v.s << endl;
-	    break;
-	  case SCAN_FIELD:
-	    cout << "FIELD: " << exprlval.id << endl;
 	    break;
 	  case SCAN_INT:
 	    cout << "INT: " << exprlval.val.v.i << endl;
@@ -617,6 +612,20 @@ constrained_trans(const string &dds_name, string dataset,
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.30  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.29.4.2  2001/08/18 00:02:57  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.29.4.1  2001/06/23 00:52:08  jimg
+// Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+// that they are (more or less) the same in all the scanners. There are
+// one or two characters that differ (for example das.lex allows ( and )
+// in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+// are essentially the same across the board.
+// Added `#' to the set of characeters allowed in an ID (bug 179).
+//
 // Revision 1.29  2000/09/22 02:17:22  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.6 2000/09/22 02:17:20 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.7 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -23,11 +23,9 @@ static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.6 2000/09/22 02:17:20 j
 #include "InternalErr.h"
 #include "util.h"
 
-#ifdef WIN32
 using std::endl;
 using std::ends;
 using std::ostrstream;
-#endif
 
 InternalErr::InternalErr() : Error()
 {
@@ -86,6 +84,12 @@ InternalErr::OK()
 }
 
 // $Log: InternalErr.cc,v $
+// Revision 1.7  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.6.4.1  2001/08/18 00:16:36  jimg
+// Removed WIN32 compile guards from using statements.
+//
 // Revision 1.6  2000/09/22 02:17:20  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

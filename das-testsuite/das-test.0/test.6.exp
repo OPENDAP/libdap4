@@ -2,6 +2,12 @@
 # jhrg
 #
 # $Log: test.6.exp,v $
+# Revision 1.13  2001/08/24 17:46:23  jimg
+# Resolved conflicts from the merge of release 3.2.6
+#
+# Revision 1.12.4.1  2001/06/23 00:52:32  jimg
+# Added tests for `#' in IDs.
+#
 # Revision 1.12  2000/09/22 02:52:59  jimg
 # Fixes to the tests to recognize some of the new error messages. Also,
 # the test drivers were modified to catch the exceptions now thrown by
@@ -59,7 +65,8 @@ set test_name test.6
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Error parsing the text on line 7 at or near: /
+set test_out "Character `*' is not allowed (except within quotes) and has been ignored
+Error parsing the text on line 7 at or near: a
 Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,
 Float64, String or Url) followed by a name and value.
 "

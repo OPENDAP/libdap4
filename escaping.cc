@@ -13,9 +13,9 @@
 //
 // These two routines are for escaping/unescaping strings that are identifiers
 // in DODS
-// id2dods() -- escape (using WWW hex codes) non-allowable characters in a
+// id2www() -- escape (using WWW hex codes) non-allowable characters in a
 // DODS identifier
-// dods2id() -- given an WWW hexcode escaped identifier, restore it
+// www2id() -- given an WWW hexcode escaped identifier, restore it
 // 
 // These two routines are for escaping/unescaping strings storing attribute
 // values.  They use traditional octal escapes (\nnn) because they are
@@ -34,16 +34,11 @@
 // -Todd
 
 #include <ctype.h>
-#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
-#else
-#include <sstream>
-#endif
 #include <iomanip>
 #include <string>
 #include <Regex.h>
 
-#ifdef WIN32
 using std::string;
 using std::ostrstream;
 using std::istrstream;
@@ -52,7 +47,6 @@ using std::hex;
 using std::setw;
 using std::oct;
 using std::ends;
-#endif
 
 const int MAXSTR = 256;
 
@@ -106,62 +100,77 @@ string unoctstring(string s) {
     return string(tmp_str);
 }
 
-
 /** Replace characters that are not allowed in DODS identifiers.
-    @param s The string in which to replace characters.
-    @param allowable a regular expression describing the set of characters
-    that are allowable in a DODS identifier.
-    @return The modified identifier. */
-string 
-id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
-    Regex badregx(allowable.c_str(), 1);
-    static const string ESC = "%";
 
-    // I use two index variables here because the string methods use size_type
-    // indices while the GNU Regex class uses int. On 64bit machines these
-    // are different types and, in particular, passing the signed int in for
-    // a size_type can cause segmentation faults. 3/20/2000 jhrg
-    string::size_type index;
-    int matchlen, re_index = 0;
-    while ((re_index 
-	    = badregx.search(s.c_str(), s.size(), matchlen, re_index))
-	   != -1) {
-	index = re_index;
-	s.replace(index, 1, ESC + hexstring(s[index]));
+    @param s The string in which to replace characters.
+    @param allowable The set of characters that are allowed in a URI.
+    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+    0123456789_.!~*'()-";
+    @return The modified identifier. */
+string
+id2www(string in, const string &allowable)
+{
+    static const string ESC = "%";
+    string::size_type i = 0;
+
+    while ((i = in.find_first_not_of(allowable, i)) != string::npos) {
+	in.replace(i, 1, ESC + hexstring(in[i]));
+	i++;
     }
 
-    if (isdigit(s[0]))
-        s = string("_") + s;
+    // We cannot undo this with certainty. 7/20/2001 jhrg
+    // I think this was added before the parsers could handle names that
+    // began with digits. Note the IDs still cannot. 7/26/2001 jhrg
+#if 0
+    if (isdigit(in[0]))
+	in.insert(0, "_");
+#endif
 
-    return s;
+    return in;
+}
+
+/** Replace characters that are not allowed in WWW URLs. This function bends
+    the rules so that characters that we've been sending in CEs will be sent
+    unencoded. This is needed to keep the newer clients from breaking the old
+    servers. The only difference between this function and id2www is that
+    #[]:{}&# have been added to the allowable set of characters.
+
+    @param s The string in which to replace characters.
+    @param allowable The set of characters that are allowed in a URI.
+    default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+    0123456789_.!~*'()-[]:{}&";
+    @return The modified identifier. */
+string
+id2www_ce(string in, const string &allowable)
+{
+    return id2www(in, allowable);
 }
 
 /** Given a string that contains WWW escape sequences, translate those escape
     sequences back into ASCII characters. Return the modified string. 
 
     @param s The string to modify.
-    @param escape A regular expression that matches the WWW hex code. By
-    default "%[0-7][0-9a-fA-F]".
+    @param escape The character used to signal the begining of an escape
+    sequence. default: "%"
     @param except If there is some escape code that should not be removed by
     this call (e.g., you might not want to remove spaces, %20) use this
     parameter to specify that code. The function will then transform all
-    escapes \em{except} that one.
+    escapes \em{except} that one. default: ""
     @return The modified string. */
 string 
-dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]",
-	const string except = "") {
-    Regex escregx(escape.c_str(), 1);
+www2id(string in, const string &escape, const string &except)
+{
+    string::size_type i = 0;
 
-    int i=0, matchlen;
-    while ((i = escregx.search(s.c_str(), s.size(), matchlen, i)) != -1) {
-	if (s.substr(i, 3) == except) {
+    while ((i = in.find_first_of(escape, i)) != string::npos) {
+	if (in.substr(i, 3) == except) {
 	    i += 3;
 	    continue;
 	}
-	s.replace(i, 3, unhexstring(s.substr(i + 1,2)));
+	in.replace(i, 3, unhexstring(in.substr(i + 1, 2)));
     }
 
-    return s;
+    return in;
 }
 
 /** Return a string that has all the `%<hex digit><hex digit>' sequences
@@ -246,11 +255,31 @@ string unescattr(string s) {
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.18  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.16.2.5  2001/08/22 06:21:19  jimg
+// Added id2www_ce(). This function calls id2www but uses an allowable
+// character set that larger than id2www(). It allows []{}: and & in the CE
+// part of a DODS URL. This was added to keep the new clients from breaking old
+// servers.
+//
+// Revision 1.16.2.4  2001/07/28 00:49:26  jimg
+// Changed the names and function of id2dods/dods2id. The new functions are
+// called id2www and www2id. They use C++ strings, not Regexs. They scan their
+// inputs and escape/unescape characters for the WWW. The character set that's
+// allowed in a URL is defined by RFC 2396, ``Universal Resource Identifiers
+// (URI): Generic Syntax.'' We're using that to determine which characters must
+// be escaped and which are OK as is. For example, a dash (-) is allowed in a
+// URL. Note that dashes are now processed by our parsers, too. Spaces, hashes
+// (#), et c. are not allowed in a URL and will be escaped by id2www and
+// unescaped by www2id.
+//
 // Revision 1.17  2001/06/15 23:49:04  jimg
 // Merged with release-3-2-4.
 //
 // Revision 1.16.2.3  2001/05/16 21:09:19  jimg
-// Modified dods2id so that one escape code can be considered exceptional
+// Modified www2id so that one escape code can be considered exceptional
 // and not transformed back into its ASCII equivalent. This is used by
 // DODSFilter to suppress turning %20 into a space before the CE is feed
 // into its parser. This means that somewhere further down the line the
@@ -266,7 +295,7 @@ string unescattr(string s) {
 // Revision 1.16  2000/10/03 05:00:21  rmorris
 // string.insert(), for names that begin with 0-9 was causing an exception
 // in that case.  Observed in the hdf server on modis data.  replaced
-// string.insert with string = string("_") + string to fix - in id2dods().
+// string.insert with string = string("_") + string to fix - in id2www().
 //
 // Revision 1.15  2000/08/29 21:22:55  jimg
 // Merged with 3.1.9
@@ -308,7 +337,7 @@ string unescattr(string s) {
 // DODS now compiles with gcc 2.8.x
 //
 // Revision 1.4  1997/02/14 04:18:10  jimg
-// Added allowable and escape parameters to id2dods and dods2id so that the
+// Added allowable and escape parameters to id2www and www2id so that the
 // builtin regexs can be overridden if needed.
 // Switched to the `fast compile' mode for the Regex objects.
 //

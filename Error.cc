@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.25 2001/06/15 23:49:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.26 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -26,10 +26,8 @@ static char rcsid[] not_used = {"$Id: Error.cc,v 1.25 2001/06/15 23:49:02 jimg E
 #include "Gui.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
 void Errorrestart(FILE *yyin);	// defined in Error.tab.c
 int Errorparse(void *arg);	
@@ -77,7 +75,7 @@ Error::Error(const Error &copy_from)
 
 Error::~Error()
 {
-    delete _program;
+    delete _program; _program = 0;
 }
 
 Error &
@@ -92,7 +90,7 @@ Error::operator=(const Error &rhs)
 	_error_message = rhs._error_message;
 	_program_type = rhs._program_type;
 
-	delete[] _program;
+	delete[] _program; _program = 0;
 	_program = new char[strlen(rhs._program) + 1];
 	strcpy(_program, rhs._program);
 
@@ -352,6 +350,25 @@ Error::correct_error(void *pgui) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.26  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.24.2.4  2001/08/18 00:18:07  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.24.2.3  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.25  2001/06/15 23:49:02  jimg
 // Merged with release-3-2-4.
 //

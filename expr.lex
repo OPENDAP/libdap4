@@ -30,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.lex,v 1.23 2000/08/31 23:44:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.lex,v 1.24 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -45,6 +45,7 @@ static char rcsid[] not_used = {"$Id: expr.lex,v 1.23 2000/08/31 23:44:16 jimg E
 #include "expr.h"
 #include "RValue.h"
 #include "expr.tab.h"
+#include "escaping.h"
 
 static void store_int32();
 static void store_float64();
@@ -54,46 +55,48 @@ static void store_op(int op);
 
 %}
 
+%option noyywrap
 %x quote
     
-SCAN_ID			[a-zA-Z_%][a-zA-Z0-9_/%]*
-SCAN_FIELD		{SCAN_ID}\.{SCAN_ID}(\.{SCAN_ID})*
-SCAN_INT		[-+]?[0-9]+
+NAN     [Nn][Aa][Nn]
+INF     [Ii][Nn][Ff]
+
+SCAN_ID		[a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\]*
+SCAN_INT	[-+]?[0-9]+
 
 SCAN_MANTISA	([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
 SCAN_EXPONENT	(E|e)[-+]?[0-9]+
 
-SCAN_FLOAT		[-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?
+SCAN_FLOAT	([-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?)|({NAN})|({INF})
 
-SCAN_STR		[-+a-zA-Z0-9_/.%]+
+SCAN_STR	[-+a-zA-Z0-9_./%+\\]+
 
-SCAN_EQUAL			=
-SCAN_NOT_EQUAL		!=
-SCAN_GREATER		>
-SCAN_GREATER_EQL	>=
-SCAN_LESS			<
-SCAN_LESS_EQL		<=
-SCAN_REGEXP			=~
+SCAN_EQUAL	=
+SCAN_NOT_EQUAL	!=
+SCAN_GREATER	>
+SCAN_GREATER_EQL >=
+SCAN_LESS	<
+SCAN_LESS_EQL	<=
+SCAN_REGEXP	=~
 
-NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
+NEVER		[^a-zA-Z0-9_/%.#:+\\()\-{};,[\]*&]
 
 %%
 
-{SCAN_ID}				store_id(); return SCAN_ID;
-{SCAN_FIELD}			store_id(); return SCAN_FIELD;
-{SCAN_INT}				store_int32(); return SCAN_INT;
+{SCAN_ID}	store_id(); return SCAN_ID;
+{SCAN_INT}	store_int32(); return SCAN_INT;
 
-{SCAN_FLOAT}			store_float64(); return SCAN_FLOAT;
+{SCAN_FLOAT}	store_float64(); return SCAN_FLOAT;
 
-{SCAN_STR}				store_str(); return SCAN_STR;
+{SCAN_STR}	store_str(); return SCAN_STR;
 
-{SCAN_EQUAL}			store_op(SCAN_EQUAL); return SCAN_EQUAL;
-{SCAN_NOT_EQUAL}		store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
-{SCAN_GREATER}			store_op(SCAN_GREATER); return SCAN_GREATER;
-{SCAN_GREATER_EQL}		store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
-{SCAN_LESS}				store_op(SCAN_LESS); return SCAN_LESS;
-{SCAN_LESS_EQL}			store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
-{SCAN_REGEXP}			store_op(SCAN_REGEXP); return SCAN_REGEXP;
+{SCAN_EQUAL}	store_op(SCAN_EQUAL); return SCAN_EQUAL;
+{SCAN_NOT_EQUAL} store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
+{SCAN_GREATER}	store_op(SCAN_GREATER); return SCAN_GREATER;
+{SCAN_GREATER_EQL} store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
+{SCAN_LESS}	store_op(SCAN_LESS); return SCAN_LESS;
+{SCAN_LESS_EQL}	store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
+{SCAN_REGEXP}	store_op(SCAN_REGEXP); return SCAN_REGEXP;
 
 "["    	    	return (int)*yytext;
 "]"    	    	return (int)*yytext;
@@ -109,33 +112,27 @@ NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 [ \t\r\n]+
 <INITIAL><<EOF>> yy_init = 1; yyterminate();
 
-\"			BEGIN(quote); yymore();
-<quote>[^"\\]*       	yymore(); /*"*/
-<quote>\\.		yymore();
-<quote>\"		{ 
-    			  BEGIN(INITIAL); 
-                          store_str();
-			  return SCAN_STR;
-                        }
-<quote><<EOF>>		{
-                          char msg[256];
-			  sprintf(msg, "Unterminated quote\n");
-			  YY_FATAL_ERROR(msg);
-                        }
+\"		BEGIN(quote); yymore();
+<quote>[^"\\]*  yymore(); /*"*/
+<quote>\\.	yymore();
+<quote>\"	{ 
+    		  BEGIN(INITIAL); 
+                  store_str();
+		  return SCAN_STR;
+                }
+<quote><<EOF>>	{
+                  char msg[256];
+		  sprintf(msg, "Unterminated quote\n");
+		  YY_FATAL_ERROR(msg);
+                }
 
-{NEVER}                 {
-                          if (yytext) {	/* suppress msgs about `' chars */
-                            fprintf(stderr, "Character `%c' is not", *yytext);
-                            fprintf(stderr, " allowed and has been ignored\n");
-			  }
-			}
+{NEVER}         {
+                  if (yytext) {	/* suppress msgs about `' chars */
+                    fprintf(stderr, "Character `%c' is not", *yytext);
+                    fprintf(stderr, " allowed and has been ignored\n");
+		  }
+		}
 %%
-
-static int
-yywrap(void)
-{
-    return 1;
-}
 
 // Three glue routines for string scanning. These are not declared in the
 // header expr.tab.h nor is YY_BUFFER_STATE. Including these here allows them
@@ -186,17 +183,20 @@ store_float64()
 static void
 store_id()
 {
-    strncpy(exprlval.id, yytext, ID_MAX-1);
+    strncpy(exprlval.id, dods2id(string(yytext)).c_str(), ID_MAX-1);
     exprlval.id[ID_MAX-1] = '\0';
 }
 
 static void
 store_str()
 {
-    string *s = new string(yytext);  // XXX memory leak?
-    unsigned int l = s->length();
+    // transform %20 to a space. 7/11/2001 jhrg
+    string *s = new string(dods2id(string(yytext)));  // XXX memory leak?
 
-    *s = s->substr(1, l-2);  /* strip the \"'s from front and back */
+    if (*s->begin() == '\"' && *(s->end()-1) == '\"') {
+	s->erase(s->begin());
+	s->erase(s->end()-1);
+    }
 
     exprlval.val.type = dods_str_c;
     exprlval.val.v.s = s;
@@ -210,6 +210,33 @@ store_op(int op)
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.24  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.23.4.3  2001/08/16 17:26:20  edavis
+ * Use "%option noyywrap" instead of defining yywrap() to return 1.
+ *
+ * Revision 1.23.4.2  2001/07/28 01:10:42  jimg
+ * Some of the numeric type classes did not have copy ctors or operator=.
+ * I added those where they were needed.
+ * In every place where delete (or delete []) was called, I set the pointer
+ * just deleted to zero. Thus if for some reason delete is called again
+ * before new memory is allocated there won't be a mysterious crash. This is
+ * just good form when using delete.
+ * I added calls to www2id and id2www where appropriate. The DAP now handles
+ * making sure that names are escaped and unescaped as needed. Connect is
+ * set to handle CEs that contain names as they are in the dataset (see the
+ * comments/Log there). Servers should not handle escaping or unescaping
+ * characters on their own.
+ *
+ * Revision 1.23.4.1  2001/06/23 00:52:08  jimg
+ * Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+ * that they are (more or less) the same in all the scanners. There are
+ * one or two characters that differ (for example das.lex allows ( and )
+ * in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+ * are essentially the same across the board.
+ * Added `#' to the set of characeters allowed in an ID (bug 179).
+ *
  * Revision 1.23  2000/08/31 23:44:16  jimg
  * Merged with 3.1.10
  *

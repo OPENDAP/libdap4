@@ -21,7 +21,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.lex,v 1.7 2000/09/22 02:17:20 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.lex,v 1.8 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -39,6 +39,7 @@ void store_string();
 
 %}
     
+%option noyywrap
 %x quote
 %x comment
 
@@ -104,12 +105,6 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
 			}
 %%
 
-int 
-yywrap(void)
-{
-    return 1;
-}
-
 void
 store_integer()
 {
@@ -124,6 +119,12 @@ store_string()
 
 /* 
  * $Log: Error.lex,v $
+ * Revision 1.8  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.7.4.1  2001/08/16 17:26:19  edavis
+ * Use "%option noyywrap" instead of defining yywrap() to return 1.
+ *
  * Revision 1.7  2000/09/22 02:17:20  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

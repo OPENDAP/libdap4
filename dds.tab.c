@@ -15,22 +15,20 @@
 #define	SCAN_NAME	258
 #define	SCAN_INTEGER	259
 #define	SCAN_DATASET	260
-#define	SCAN_ARRAY	261
-#define	SCAN_MAPS	262
-#define	SCAN_LIST	263
-#define	SCAN_SEQUENCE	264
-#define	SCAN_STRUCTURE	265
-#define	SCAN_FUNCTION	266
-#define	SCAN_GRID	267
-#define	SCAN_BYTE	268
-#define	SCAN_INT16	269
-#define	SCAN_UINT16	270
-#define	SCAN_INT32	271
-#define	SCAN_UINT32	272
-#define	SCAN_FLOAT32	273
-#define	SCAN_FLOAT64	274
-#define	SCAN_STRING	275
-#define	SCAN_URL	276
+#define	SCAN_LIST	261
+#define	SCAN_SEQUENCE	262
+#define	SCAN_STRUCTURE	263
+#define	SCAN_FUNCTION	264
+#define	SCAN_GRID	265
+#define	SCAN_BYTE	266
+#define	SCAN_INT16	267
+#define	SCAN_UINT16	268
+#define	SCAN_INT32	269
+#define	SCAN_UINT32	270
+#define	SCAN_FLOAT32	271
+#define	SCAN_FLOAT64	272
+#define	SCAN_STRING	273
+#define	SCAN_URL	274
 
 #line 25 "dds.y"
 
@@ -39,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.31 2001/06/15 23:49:03 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.32 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -114,11 +112,11 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 
 
 
-#define	YYFINAL		95
+#define	YYFINAL		91
 #define	YYFLAG		-32768
-#define	YYNTBASE	30
+#define	YYNTBASE	27
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 276 ? yytranslate[x] : 51)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 274 ? yytranslate[x] : 48)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -126,14 +124,14 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,    26,    25,     2,
-    29,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     2,     2,     2,     2,     2,     2,     2,     2,    23,     2,
+    26,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-    27,     2,    28,     2,     2,     2,     2,     2,     2,     2,
+    24,     2,    25,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,    23,     2,    24,     2,     2,     2,     2,     2,
+     2,     2,    21,     2,    22,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -148,48 +146,47 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
      7,     8,     9,    10,    11,    12,    13,    14,    15,    16,
-    17,    18,    19,    20,    21,    22
+    17,    18,    19,    20
 };
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
      0,     2,     5,    12,    14,    15,    17,    20,    23,    25,
-    29,    30,    38,    39,    47,    48,    49,    50,    65,    67,
-    69,    71,    73,    75,    77,    79,    81,    83,    85,    87,
-    89,    91,    93,    95,    98,   100,   102,   104,   106,   108,
-   110,   112,   114,   116,   118,   120,   122,   124,   126,   130,
-   131,   132,   140,   142,   144,   146,   148,   150,   152,   154
+    29,    30,    38,    39,    47,    48,    49,    50,    63,    65,
+    67,    69,    71,    73,    75,    77,    79,    81,    83,    85,
+    87,    89,    91,    93,    96,    98,   100,   102,   104,   106,
+   108,   110,   112,   114,   116,   118,   120,   122,   124,   128,
+   129,   130,   138,   140,   142,   144,   146,   148
 };
 
-static const short yyrhs[] = {    31,
-     0,    30,    31,     0,     6,    23,    32,    24,    50,    25,
-     0,     1,     0,     0,    33,     0,    32,    33,     0,    40,
-    34,     0,    34,     0,    44,    45,    25,     0,     0,    41,
-    23,    32,    24,    35,    45,    25,     0,     0,    42,    23,
-    32,    24,    36,    45,    25,     0,     0,     0,     0,    43,
-    23,     7,    26,    37,    33,     8,    26,    38,    32,    24,
-    39,    45,    25,     0,     1,     0,     9,     0,    11,     0,
-    10,     0,    13,     0,    14,     0,    15,     0,    16,     0,
-    17,     0,    18,     0,    19,     0,    20,     0,    21,     0,
-    22,     0,    46,     0,    45,    47,     0,     3,     0,    14,
-     0,    15,     0,    17,     0,    16,     0,    18,     0,    19,
-     0,    20,     0,    21,     0,    22,     0,    11,     0,    10,
-     0,    13,     0,     9,     0,    27,     5,    28,     0,     0,
-     0,    27,     3,    48,    29,     5,    49,    28,     0,     1,
-     0,     4,     0,     5,     0,     6,     0,     7,     0,     8,
-     0,    46,     0,     1,     0
+static const short yyrhs[] = {    28,
+     0,    27,    28,     0,     6,    21,    29,    22,    47,    23,
+     0,     1,     0,     0,    30,     0,    29,    30,     0,    37,
+    31,     0,    31,     0,    41,    42,    23,     0,     0,    38,
+    21,    29,    22,    32,    42,    23,     0,     0,    39,    21,
+    29,    22,    33,    42,    23,     0,     0,     0,     0,    40,
+    21,     3,    34,    30,     3,    35,    29,    22,    36,    42,
+    23,     0,     1,     0,     7,     0,     9,     0,     8,     0,
+    11,     0,    12,     0,    13,     0,    14,     0,    15,     0,
+    16,     0,    17,     0,    18,     0,    19,     0,    20,     0,
+    43,     0,    42,    44,     0,     3,     0,    12,     0,    13,
+     0,    15,     0,    14,     0,    16,     0,    17,     0,    18,
+     0,    19,     0,    20,     0,     9,     0,     8,     0,    11,
+     0,     7,     0,    24,     5,    25,     0,     0,     0,    24,
+     3,    45,    26,     5,    46,    25,     0,     1,     0,     4,
+     0,     5,     0,     6,     0,    43,     0,     1,     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   120,   121,   124,   125,   133,   134,   135,   138,   148,   155,
-   166,   171,   182,   187,   198,   200,   202,   207,   220,   232,
-   240,   248,   256,   264,   265,   266,   267,   268,   269,   270,
-   271,   272,   275,   276,   279,   279,   279,   279,   279,   280,
-   280,   280,   280,   281,   281,   281,   281,   282,   285,   298,
-   302,   318,   318,   330,   331,   332,   333,   334,   335,   336
+   118,   119,   122,   123,   131,   132,   133,   136,   146,   153,
+   164,   169,   180,   185,   196,   209,   222,   227,   240,   252,
+   260,   268,   276,   284,   285,   286,   287,   288,   289,   290,
+   291,   292,   295,   296,   299,   299,   299,   299,   299,   300,
+   300,   300,   300,   301,   301,   301,   301,   302,   305,   318,
+   322,   338,   338,   350,   351,   352,   353,   354
 };
 #endif
 
@@ -197,31 +194,31 @@ static const short yyrline[] = { 0,
 #if YYDEBUG != 0 || defined (YYERROR_VERBOSE)
 
 static const char * const yytname[] = {   "$","error","$undefined.","SCAN_ID",
-"SCAN_NAME","SCAN_INTEGER","SCAN_DATASET","SCAN_ARRAY","SCAN_MAPS","SCAN_LIST",
-"SCAN_SEQUENCE","SCAN_STRUCTURE","SCAN_FUNCTION","SCAN_GRID","SCAN_BYTE","SCAN_INT16",
-"SCAN_UINT16","SCAN_INT32","SCAN_UINT32","SCAN_FLOAT32","SCAN_FLOAT64","SCAN_STRING",
-"SCAN_URL","'{'","'}'","';'","':'","'['","']'","'='","datasets","dataset","declarations",
-"declaration","non_list_decl","@1","@2","@3","@4","@5","list","structure","sequence",
-"grid","base_type","var","var_name","array_decl","@6","@7","name", NULL
+"SCAN_NAME","SCAN_INTEGER","SCAN_DATASET","SCAN_LIST","SCAN_SEQUENCE","SCAN_STRUCTURE",
+"SCAN_FUNCTION","SCAN_GRID","SCAN_BYTE","SCAN_INT16","SCAN_UINT16","SCAN_INT32",
+"SCAN_UINT32","SCAN_FLOAT32","SCAN_FLOAT64","SCAN_STRING","SCAN_URL","'{'","'}'",
+"';'","'['","']'","'='","datasets","dataset","declarations","declaration","non_list_decl",
+"@1","@2","@3","@4","@5","list","structure","sequence","grid","base_type","var",
+"var_name","array_decl","@6","@7","name", NULL
 };
 #endif
 
 static const short yyr1[] = {     0,
-    30,    30,    31,    31,    32,    32,    32,    33,    33,    34,
-    35,    34,    36,    34,    37,    38,    39,    34,    34,    40,
-    41,    42,    43,    44,    44,    44,    44,    44,    44,    44,
-    44,    44,    45,    45,    46,    46,    46,    46,    46,    46,
-    46,    46,    46,    46,    46,    46,    46,    46,    47,    48,
-    49,    47,    47,    50,    50,    50,    50,    50,    50,    50
+    27,    27,    28,    28,    29,    29,    29,    30,    30,    31,
+    32,    31,    33,    31,    34,    35,    36,    31,    31,    37,
+    38,    39,    40,    41,    41,    41,    41,    41,    41,    41,
+    41,    41,    42,    42,    43,    43,    43,    43,    43,    43,
+    43,    43,    43,    43,    43,    43,    43,    43,    44,    45,
+    46,    44,    44,    47,    47,    47,    47,    47
 };
 
 static const short yyr2[] = {     0,
      1,     2,     6,     1,     0,     1,     2,     2,     1,     3,
-     0,     7,     0,     7,     0,     0,     0,    14,     1,     1,
+     0,     7,     0,     7,     0,     0,     0,    12,     1,     1,
      1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
      1,     1,     1,     2,     1,     1,     1,     1,     1,     1,
      1,     1,     1,     1,     1,     1,     1,     1,     3,     0,
-     0,     7,     1,     1,     1,     1,     1,     1,     1,     1
+     0,     7,     1,     1,     1,     1,     1,     1
 };
 
 static const short yydefact[] = {     0,
@@ -230,90 +227,86 @@ static const short yydefact[] = {     0,
      0,     6,     9,     0,     0,     0,     0,     0,     0,     7,
      8,     0,     0,     0,    35,    48,    46,    45,    47,    36,
     37,    39,    38,    40,    41,    42,    43,    44,     0,    33,
-    60,    54,    55,    56,    57,    58,    59,     0,     0,     0,
-     0,    53,    10,     0,    34,     3,    11,    13,    15,    50,
-     0,     0,     0,     0,     0,    49,     0,     0,     0,     0,
-    12,    14,     0,    51,    16,     0,     0,    52,     0,    17,
-     0,     0,    18,     0,     0
+    58,    54,    55,    56,    57,     0,     0,     0,    15,    53,
+    10,     0,    34,     3,    11,    13,     0,    50,     0,     0,
+     0,     0,     0,    49,     0,     0,    16,     0,    12,    14,
+     0,    51,     0,     0,    17,    52,     0,     0,    18,     0,
+     0
 };
 
 static const short yydefgoto[] = {     3,
-     4,    21,    22,    23,    72,    73,    74,    87,    91,    24,
-    25,    26,    27,    28,    49,    50,    65,    75,    86,    58
+     4,    21,    22,    23,    70,    71,    67,    81,    87,    24,
+    25,    26,    27,    28,    49,    50,    63,    73,    84,    56
 };
 
-static const short yypact[] = {    36,
--32768,   -17,    10,-32768,    56,-32768,-32768,-32768,-32768,-32768,
+static const short yypact[] = {     7,
+-32768,   -15,    38,-32768,    52,-32768,-32768,-32768,-32768,-32768,
 -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
-    78,-32768,-32768,   188,   -14,   -11,    17,   208,   166,-32768,
--32768,    56,    56,    37,-32768,-32768,-32768,-32768,-32768,-32768,
+    72,-32768,-32768,   172,    12,    20,    22,   190,   152,-32768,
+-32768,    52,    52,    21,-32768,-32768,-32768,-32768,-32768,-32768,
 -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,     2,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,    20,   100,   122,
-    21,-32768,-32768,    38,-32768,-32768,-32768,-32768,-32768,-32768,
-    18,   208,   208,     4,    19,-32768,     3,     6,    41,    45,
--32768,-32768,    25,-32768,-32768,    24,    56,-32768,   144,-32768,
-   208,     7,-32768,    55,-32768
+-32768,-32768,-32768,-32768,-32768,    24,    92,   112,-32768,-32768,
+-32768,    37,-32768,-32768,-32768,-32768,     3,-32768,    23,   190,
+   190,    42,    26,-32768,     4,     6,-32768,    44,-32768,-32768,
+    52,-32768,   132,    29,-32768,-32768,   190,     8,-32768,    55,
+-32768
 };
 
 static const short yypgoto[] = {-32768,
-    57,   -31,   -21,    34,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,   -37,    30,-32768,-32768,-32768,-32768
+    53,   -31,   -21,    33,-32768,-32768,-32768,-32768,-32768,-32768,
+-32768,-32768,-32768,-32768,   -36,    46,-32768,-32768,-32768,-32768
 };
 
 
-#define	YYLAST		230
+#define	YYLAST		210
 
 
 static const short yytable[] = {    30,
-    59,    60,    62,    62,     7,     5,    62,    62,    32,    94,
-     1,    33,     8,     9,    10,     2,    11,    12,    13,    14,
-    15,    16,    17,    18,    19,    20,    63,    81,    64,    64,
-    82,    93,    64,    64,    77,    78,     1,    30,    30,    34,
-    70,     2,    71,    61,    66,    76,    69,    80,    83,    84,
-    85,    88,    79,    92,    95,    89,     7,    31,    57,     6,
-     0,     0,     0,     0,     8,     9,    10,    30,    11,    12,
-    13,    14,    15,    16,    17,    18,    19,    20,     7,    -5,
-     0,     0,     0,     0,     0,     0,     8,     9,    10,     0,
-    11,    12,    13,    14,    15,    16,    17,    18,    19,    20,
-     7,    29,     0,     0,     0,     0,     0,     0,     8,     9,
+    57,    58,    60,     7,    60,     5,    60,     1,    60,     8,
+     9,    10,     2,    11,    12,    13,    14,    15,    16,    17,
+    18,    19,    20,    59,    61,    62,    79,    62,    80,    62,
+    89,    62,    32,    75,    76,    30,    30,    90,     1,    68,
+    33,    69,    34,     2,    77,    72,    64,    74,    82,    83,
+    88,    78,     7,    86,    91,     6,    31,     0,     8,     9,
+    10,    30,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     7,    -5,    55,     0,     0,     0,     8,     9,
     10,     0,    11,    12,    13,    14,    15,    16,    17,    18,
-    19,    20,     7,    67,     0,     0,     0,     0,     0,     0,
-     8,     9,    10,     0,    11,    12,    13,    14,    15,    16,
-    17,    18,    19,    20,     7,    68,     0,     0,     0,     0,
-     0,     0,     8,     9,    10,     0,    11,    12,    13,    14,
-    15,    16,    17,    18,    19,    20,    51,    90,    35,    52,
-    53,    54,    55,    56,    36,    37,    38,     0,    39,    40,
-    41,    42,    43,    44,    45,    46,    47,    48,     7,     0,
-     0,     0,     0,     0,     0,     0,     0,     9,    10,     0,
-    11,    12,    13,    14,    15,    16,    17,    18,    19,    20,
-    35,     0,     0,     0,     0,     0,    36,    37,    38,     0,
+    19,    20,     7,    29,     0,     0,     0,     0,     8,     9,
+    10,     0,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     7,    65,     0,     0,     0,     0,     8,     9,
+    10,     0,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     7,    66,     0,     0,     0,     0,     8,     9,
+    10,     0,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,    51,    85,    35,    52,    53,    54,    36,    37,
+    38,     0,    39,    40,    41,    42,    43,    44,    45,    46,
+    47,    48,     7,     0,     0,     0,     0,     0,     0,     9,
+    10,     0,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,    35,     0,     0,     0,    36,    37,    38,     0,
     39,    40,    41,    42,    43,    44,    45,    46,    47,    48
 };
 
 static const short yycheck[] = {    21,
-    32,    33,     1,     1,     1,    23,     1,     1,    23,     0,
-     1,    23,     9,    10,    11,     6,    13,    14,    15,    16,
-    17,    18,    19,    20,    21,    22,    25,    25,    27,    27,
-    25,    25,    27,    27,    72,    73,     1,    59,    60,    23,
-     3,     6,     5,     7,    25,    28,    26,    29,     8,     5,
-    26,    28,    74,    91,     0,    87,     1,    24,    29,     3,
-    -1,    -1,    -1,    -1,     9,    10,    11,    89,    13,    14,
-    15,    16,    17,    18,    19,    20,    21,    22,     1,    24,
-    -1,    -1,    -1,    -1,    -1,    -1,     9,    10,    11,    -1,
-    13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
-     1,    24,    -1,    -1,    -1,    -1,    -1,    -1,     9,    10,
-    11,    -1,    13,    14,    15,    16,    17,    18,    19,    20,
-    21,    22,     1,    24,    -1,    -1,    -1,    -1,    -1,    -1,
-     9,    10,    11,    -1,    13,    14,    15,    16,    17,    18,
-    19,    20,    21,    22,     1,    24,    -1,    -1,    -1,    -1,
-    -1,    -1,     9,    10,    11,    -1,    13,    14,    15,    16,
-    17,    18,    19,    20,    21,    22,     1,    24,     3,     4,
-     5,     6,     7,     8,     9,    10,    11,    -1,    13,    14,
-    15,    16,    17,    18,    19,    20,    21,    22,     1,    -1,
-    -1,    -1,    -1,    -1,    -1,    -1,    -1,    10,    11,    -1,
-    13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
-     3,    -1,    -1,    -1,    -1,    -1,     9,    10,    11,    -1,
-    13,    14,    15,    16,    17,    18,    19,    20,    21,    22
+    32,    33,     1,     1,     1,    21,     1,     1,     1,     7,
+     8,     9,     6,    11,    12,    13,    14,    15,    16,    17,
+    18,    19,    20,     3,    23,    24,    23,    24,    23,    24,
+    23,    24,    21,    70,    71,    57,    58,     0,     1,     3,
+    21,     5,    21,     6,     3,    67,    23,    25,     5,    81,
+    87,    26,     1,    25,     0,     3,    24,    -1,     7,     8,
+     9,    83,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     1,    22,    29,    -1,    -1,    -1,     7,     8,
+     9,    -1,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     1,    22,    -1,    -1,    -1,    -1,     7,     8,
+     9,    -1,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     1,    22,    -1,    -1,    -1,    -1,     7,     8,
+     9,    -1,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     1,    22,    -1,    -1,    -1,    -1,     7,     8,
+     9,    -1,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     1,    22,     3,     4,     5,     6,     7,     8,
+     9,    -1,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     1,    -1,    -1,    -1,    -1,    -1,    -1,     8,
+     9,    -1,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    20,     3,    -1,    -1,    -1,     7,     8,     9,    -1,
+    11,    12,    13,    14,    15,    16,    17,    18,    19,    20
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/lib/bison.simple"
@@ -859,7 +852,7 @@ yyreduce:
   switch (yyn) {
 
 case 4:
-#line 126 "dds.y"
+#line 124 "dds.y"
 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG,
 				dds_line_num, yyvsp[0]);
@@ -867,7 +860,7 @@ case 4:
 		;
     break;}
 case 8:
-#line 139 "dds.y"
+#line 137 "dds.y"
 { 
 		  string smsg;
 		  if (current->check_semantics(smsg))
@@ -879,7 +872,7 @@ case 8:
 		;
     break;}
 case 10:
-#line 156 "dds.y"
+#line 154 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -891,14 +884,14 @@ case 10:
 		;
     break;}
 case 11:
-#line 167 "dds.y"
+#line 165 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 12:
-#line 172 "dds.y"
+#line 170 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -910,14 +903,14 @@ case 12:
 		;
     break;}
 case 13:
-#line 183 "dds.y"
+#line 181 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 14:
-#line 188 "dds.y"
+#line 186 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -929,22 +922,44 @@ case 14:
 		;
     break;}
 case 15:
-#line 199 "dds.y"
-{ part = array; ;
+#line 197 "dds.y"
+{ 
+		    if (is_keyword(string(yyvsp[-2]), "array:"))
+			part = array; 
+		    else {
+			ostrstream msg;
+			msg << BAD_DECLARATION << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    dds_line_num, yyvsp[-2]);
+			msg.freeze(0);
+			YYABORT;
+		    }
+                ;
     break;}
 case 16:
-#line 201 "dds.y"
-{ part = maps; ;
+#line 210 "dds.y"
+{ 
+		    if (is_keyword(string(yyvsp[-4]), "maps:"))
+			part = maps; 
+		    else {
+			ostrstream msg;
+			msg << BAD_DECLARATION << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    dds_line_num, yyvsp[-4]);
+			msg.freeze(0);
+			YYABORT;
+		    }
+                ;
     break;}
 case 17:
-#line 203 "dds.y"
+#line 223 "dds.y"
 {
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 18:
-#line 208 "dds.y"
+#line 228 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -952,13 +967,13 @@ case 18:
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		    else {
-		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-13], yyvsp[-12]);
+		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-11], yyvsp[-10]);
 		      YYABORT;
 		    }
 		;
     break;}
 case 19:
-#line 221 "dds.y"
+#line 241 "dds.y"
 {
 		    ostrstream msg;
 		    msg << BAD_DECLARATION << ends;
@@ -969,7 +984,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 233 "dds.y"
+#line 253 "dds.y"
 { 
 		    if (!ctor) 
 			ctor = new stack<BaseType *>;
@@ -977,7 +992,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 241 "dds.y"
+#line 261 "dds.y"
 { 
 		    if (!ctor)
 	                ctor = new stack<BaseType *>;
@@ -985,7 +1000,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 249 "dds.y"
+#line 269 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -993,7 +1008,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 257 "dds.y"
+#line 277 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1001,47 +1016,47 @@ case 23:
 		;
     break;}
 case 24:
-#line 264 "dds.y"
+#line 284 "dds.y"
 { current = NewByte(); ;
     break;}
 case 25:
-#line 265 "dds.y"
+#line 285 "dds.y"
 { current = NewInt16(); ;
     break;}
 case 26:
-#line 266 "dds.y"
+#line 286 "dds.y"
 { current = NewUInt16(); ;
     break;}
 case 27:
-#line 267 "dds.y"
+#line 287 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 268 "dds.y"
+#line 288 "dds.y"
 { current = NewUInt32(); ;
     break;}
 case 29:
-#line 269 "dds.y"
+#line 289 "dds.y"
 { current = NewFloat32(); ;
     break;}
 case 30:
-#line 270 "dds.y"
+#line 290 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 31:
-#line 271 "dds.y"
+#line 291 "dds.y"
 { current = NewStr(); ;
     break;}
 case 32:
-#line 272 "dds.y"
+#line 292 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 33:
-#line 275 "dds.y"
+#line 295 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 49:
-#line 286 "dds.y"
+#line 306 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -1055,13 +1070,13 @@ case 49:
 		 ;
     break;}
 case 50:
-#line 299 "dds.y"
+#line 319 "dds.y"
 {
 		     id = new string(yyvsp[0]);
 		 ;
     break;}
 case 51:
-#line 303 "dds.y"
+#line 323 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), *id);
@@ -1077,7 +1092,7 @@ case 51:
 		 ;
     break;}
 case 53:
-#line 319 "dds.y"
+#line 339 "dds.y"
 {
 		     ostrstream msg;
 		     msg << "In the dataset descriptor object:" << endl
@@ -1089,31 +1104,23 @@ case 53:
 		 ;
     break;}
 case 54:
-#line 330 "dds.y"
+#line 350 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 55:
-#line 331 "dds.y"
+#line 351 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 56:
-#line 332 "dds.y"
+#line 352 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 57:
-#line 333 "dds.y"
+#line 353 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 58:
-#line 334 "dds.y"
-{ (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
-    break;}
-case 59:
-#line 335 "dds.y"
-{ (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
-    break;}
-case 60:
-#line 337 "dds.y"
+#line 355 "dds.y"
 {
 		  ostrstream msg;
 		  msg << "Error parsing the dataset name." << endl
@@ -1346,7 +1353,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 348 "dds.y"
+#line 366 "dds.y"
 
 
 /* 
@@ -1413,6 +1420,20 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
+ * Revision 1.32  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.28.4.7  2001/07/11 05:35:05  jimg
+ * Updated scanners and parsers
+ *
+ * Revision 1.33.4.3  2001/06/23 00:52:08  jimg
+ * Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+ * that they are (more or less) the same in all the scanners. There are
+ * one or two characters that differ (for example das.lex allows ( and )
+ * in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+ * are essentially the same across the board.
+ * Added `#' to the set of characeters allowed in an ID (bug 179).
+ *
  * Revision 1.31  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.
  *

@@ -14,7 +14,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das-test.cc,v 1.27 2001/01/26 19:48:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das-test.cc,v 1.28 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <iostream>
 #include <string>
@@ -31,11 +31,9 @@ static char rcsid[] not_used = {"$Id: das-test.cc,v 1.27 2001/01/26 19:48:09 jim
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::flush;
-#endif
 
 void plain_driver(DAS &das, bool deref_alias);
 void load_attr_table(AttrTable at);
@@ -343,6 +341,12 @@ load_attr_table_ptr(AttrTable *at)
 }
 
 // $Log: das-test.cc,v $
+// Revision 1.28  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.26.4.2  2001/08/18 00:05:13  jimg
+// Removed WIN32 compile guards from using statements.
+//
 // Revision 1.27  2001/01/26 19:48:09  jimg
 // Merged with release-3-2-3.
 //

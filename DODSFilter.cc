@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.24 2001/06/15 23:49:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.25 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <iostream>
 #if defined(__GNUG__) || defined(WIN32)
@@ -34,11 +34,9 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.24 2001/06/15 23:49:02 j
 #include "DODSFilter.h"
 #include "InternalErr.h"
 
-#ifdef WIN32
 using std::endl;
 using std::ends;
 using std::ostrstream;
-#endif
 
 DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false), 
     bad_options(false), d_conditional_request(false), dataset(""), ce(""),
@@ -78,8 +76,8 @@ DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false),
     // Both dataset and ce could be set at this point (dataset must be, ce
     // might be). If they contain any WWW-style esacpes (%<hex digit>,hex
     // digit>) then undo that escaping.
-    dataset = dods2id(dataset, "%[0-7][0-9a-fA-F]", "%20");
-    ce = dods2id(ce, "%[0-7][0-9a-fA-F]", "%20");
+    dataset = www2id(dataset, "%", "%20");
+    ce = www2id(ce, "%", "%20");
 
     DBG(cerr << "comp: " << comp << endl);
     DBG(cerr << "ce: " << ce << endl);
@@ -137,13 +135,19 @@ DODSFilter::get_ce()
 void
 DODSFilter::set_ce(string _ce)
 {
-  ce = dods2id(_ce, "%[0-7][0-9a-fA-F]", "%20");
+    ce = www2id(_ce, "%", "%20");
 }
 
 string
 DODSFilter::get_dataset_name()
 {
     return dataset;
+}
+
+void
+DODSFilter::set_dataset_name(const string _dataset)
+{
+  dataset = _dataset;
 }
 
 string
@@ -181,10 +185,12 @@ DODSFilter::get_data_last_modified_time(const string &anc_location)
 					  anc_file);
     string das_name = find_ancillary_file(dataset, "dds", anc_location,
 					  anc_file);
-    long int m = max((das_name != "") ? last_modified_time(das_name) : 0,
-		     (dds_name != "") ? last_modified_time(dds_name) : 0);
+    time_t m = max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
+		   (dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
+    // Note that this is a call to get_dataset_... not get_data_...
+    time_t n = get_dataset_last_modified_time();
     // g++ did not compile `max(max(x,y),z)' 4/23/2001 jhrg
-    return max(m, get_dataset_last_modified_time()); 
+    return max(m, n); 
 }
 
 time_t
@@ -226,35 +232,12 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
     // No matter the kind of exception we rethrow it so the initial 
     // caller of DAS::read_ancillary_das should get it and decide how to
     // terminate. 
+    //
+    // I removed the catch(). Callers are responsible for doing something
+    // sensible with the Error objects (such as writing to system logs and
+    // sending the error message back to the caller). 7/11/2001 jhrg
     if (in)
 	das.parse(in);
-
-#if 0
-    if (in) {
-	try{
-	    das.parse(in);
-	}
-	catch(InternalErr &ie) {
-	    // log server error message
-	    // ErrMsgT(msg); 2/16/2000 jhrg
-	    ErrMsgT(ie.error_message());
-	
-	    // client error message so he knows we failed
-	    set_mime_text(cout, dods_error, cgi_ver);
-	    cout << ie.error_message() << endl;
-	    fclose(in);
-	    throw; // re throw exception...
-	}
-	catch(Error &err){
-	    // client error message
-	    set_mime_text(cout, dods_error, cgi_ver);
-	    Error e(malformed_expr, msg);
-	    e.print(cout);
-	    fclose(in);
-	    throw; // re throw exception...
-	}
-    }
-#endif
 }
 
 void
@@ -270,32 +253,6 @@ DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
     // Same comments for DAS::read_ancillary_das apply here.
     if (in)
 	dds.parse(in);
-    
-#if 0
-    if (in) {
-	try{
-	    dds.parse(in);
-	}
-	catch(InternalErr &ie) {
-	    // log server error message
-	    ErrMsgT(ie.error_message());
-	
-	    // client error message so he knows we failed
-	    set_mime_text(cout, dods_error, cgi_ver);
-	    cout << ie.error_message() << endl;
-	    fclose(in);
-	    throw; // re throw exception...
-	}
-	catch(Error &err){
-	    // client error message
-	    set_mime_text(cout, dods_error, cgi_ver);
-	    Error e(malformed_expr, msg);
-	    e.print(cout);
-	    fclose(in);
-	    throw; // re throw exception...
-	}
-    }
-#endif
 }
 
 static const char *emessage = \
@@ -362,29 +319,6 @@ DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
 	dds.parse_constraint(ce, os, true);
-#if 0
-	try{
-	    dds.parse_constraint(ce, os, true);
-	}
-	catch(InternalErr &ie) {
-	    // write the problem in the server log
-	    ErrMsgT(ie.error_message());
-	    // let the client know that we failed
-	    set_mime_text(os, dods_error, cgi_ver);
-	    os << ie.error_message() << endl;
-	    // re throw the exception so the outer layer finish however it
-	    // wants.
-	    throw;
-	}
-	catch(Error &err) {
-	    string m = program_name + ": parse error in constraint: " +  ce;
-	    set_mime_text(os, dods_error, cgi_ver);
-	    Error e(malformed_expr, m);
-	    e.print(os);
-	    throw;
-	}
-    }
-#endif
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional() 
@@ -421,15 +355,6 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 	return;
     }
 
-    // This catch is a quick & dirty hack for exceptions thrown by the new
-    // (11/6/98) projection functions in CEs. I might add exceptions to other
-    // parts of the CE parser and evaluator. Eventually, the C++ classes
-    // should switch to exceptions. 11/6/98 jhrg
-    //
-    // I'm not sure we should catch errors from dds.send and its callees
-    // here. I think they should be caught in the outer layer (e.g.,
-    // ff_dods). 5/26/99 jhrg
-
     // Jose Garcia
     // DDS::send may return false or throw an exception
     if (!dds.send(dataset, ce, data_stream, compress, cgi_ver,
@@ -438,38 +363,26 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 		"Could not send data");
 	throw InternalErr("could not send data");
     }
-#if 0
-    try {
-	// Jose Garcia
-	// DDS::send may return false or throw an exception
-	if (!dds.send(dataset, ce, data_stream, compress, cgi_ver,
-		      data_lmt)) {
-	    ErrMsgT((compress) ? "Could not send compressed data" : 
-		    "Could not send data");
-	    throw InternalErr("could not send data");
-	}
-    }
-    catch (Error &e) {
-	ErrMsgT((compress) ? "Could not send compressed data" : 
-		"Could not send data");
-	// Jose Garcia
-	set_mime_text(cout, dods_error, cgi_ver);
-	e.print(cout);
-      
-	throw ;
-    }
-    catch(InternalErr &ie){
-	ErrMsgT((compress) ? "Could not send compressed data" : 
-		"Could not send data");
-	set_mime_text(cout, dods_error, cgi_ver);
-	cout<<"Internal DODS server error."<<endl;;
-      
-	throw ;
-    }
-#endif
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.25  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.23.2.11  2001/08/21 14:54:29  dan
+// Added a set_dataset_name method to provide a mechanism to change the
+// dataset name in the DODSFilter class, which currently can only be set
+// by running the constructor.   This method was required for a modification
+// to the jg-dods server which now support relative pathnames as part of
+// the object name.
+//
+// Revision 1.23.2.10  2001/08/18 00:18:41  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.23.2.9  2001/07/28 01:04:46  jimg
+// Rewrote calls to www2id since it now uses strings and not Regexs.
+// Removed old code.
+//
 // Revision 1.24  2001/06/15 23:49:02  jimg
 // Merged with release-3-2-4.
 //
@@ -487,12 +400,12 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 // Corrected the usage message. Added to text in the Error thrown as well.
 //
 // Revision 1.23.2.5  2001/05/16 21:12:26  jimg
-// Modified the ctor and set_ce() so that dods2id() does not replace %20s
+// Modified the ctor and set_ce() so that www2id() does not replace %20s
 // in either the dataset name or the CE. This keeps the parsers from gaging
 // on spaces (which they think are word separators).
 //
 // Revision 1.23.2.4  2001/05/07 17:19:08  jimg
-// The dataset name and CE are now passed through dods2id() which removes WWW
+// The dataset name and CE are now passed through www2id() which removes WWW
 // escape sequences (those %<hex digit><hex digit> things) and replaces them
 // with the correct ASCII characters.
 // Fixed a bug where DAS::parse(FILE *) and DDS::parse(FILE *) were often called

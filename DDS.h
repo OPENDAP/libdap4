@@ -47,9 +47,7 @@
 #include "debug.h"
 #endif
 
-#ifdef WIN32
 using std::cout;
-#endif
 
 /** The DODS Data Descriptor Object (DDS) is a data structure used by
     the DODS software to describe datasets and subsets of those
@@ -511,6 +509,22 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.43  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.41.4.2  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.42  2001/06/15 23:49:01  jimg
 // Merged with release-3-2-4.
 //

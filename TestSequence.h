@@ -21,9 +21,7 @@
 #include "Sequence.h"
 #include <fstream>
 
-#ifdef WIN32
 using std::ifstream;
-#endif
 
 class TestSequence: public Sequence {
 private:
@@ -51,6 +49,12 @@ public:
 
 /* 
  * $Log: TestSequence.h,v $
+ * Revision 1.19  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.17.4.2  2001/08/18 00:14:37  jimg
+ * Removed WIN32 compile guards from using statements.
+ *
  * Revision 1.18  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.
  *

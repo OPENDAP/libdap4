@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.31 2001/06/15 23:49:03 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.32 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <string.h>
 
@@ -52,11 +52,10 @@ int dds_line_num = 1;
 
 %}
     
+%option noyywrap
 %x comment
 
 DATASET 	DATASET|Dataset|dataset 
-ARRAY		ARRAY|Array|array
-MAPS 		MAPS|Maps|maps
 LIST 		LIST|List|list
 SEQUENCE 	SEQUENCE|Sequence|sequence
 STRUCTURE 	STRUCTURE|Structure|structure
@@ -71,16 +70,15 @@ FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
 
-ID  		[a-zA-Z_%.][-a-zA-Z0-9_/%.]*
-NAME            [a-zA-Z0-9_/%.][-a-zA-Z0-9_/%.#]*
-INTEGER		[0-9]+
-NEVER		[^][{}:;=a-zA-Z0-9_%]
+ID		[a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\]*
+NAME            [a-zA-Z_/%.0-9][-a-zA-Z0-9_/%.#:+\\]*
+INTEGER		[-+]?[0-9]+
+
+NEVER		[^a-zA-Z0-9_/%.#:+\\()\-{};,[\]=]
 
 %%
 
 {DATASET}		ddslval = yytext; return SCAN_DATASET;
-{ARRAY}			ddslval = yytext; return SCAN_ARRAY;
-{MAPS}			ddslval = yytext; return SCAN_MAPS;
 {LIST}			ddslval = yytext; return SCAN_LIST;
 {SEQUENCE}		ddslval = yytext; return SCAN_SEQUENCE;
 {STRUCTURE}		ddslval = yytext; return SCAN_STRUCTURE;
@@ -127,14 +125,22 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 			}
 %%
 
-int 
-yywrap(void)
-{
-    return 1;
-}
-
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.32  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.30.2.3  2001/08/16 17:26:20  edavis
+ * Use "%option noyywrap" instead of defining yywrap() to return 1.
+ *
+ * Revision 1.30.2.2  2001/06/23 00:52:08  jimg
+ * Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+ * that they are (more or less) the same in all the scanners. There are
+ * one or two characters that differ (for example das.lex allows ( and )
+ * in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+ * are essentially the same across the board.
+ * Added `#' to the set of characeters allowed in an ID (bug 179).
+ *
  * Revision 1.31  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.
  *

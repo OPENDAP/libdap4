@@ -42,7 +42,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.31 2001/01/26 19:48:09 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.32 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -58,13 +58,14 @@ static int start_line;		/* used in quote and comment error handlers */
 
 %}
     
+%option noyywrap
 %x quote
 %x comment
 
 NAN     [Nn][Aa][Nn]
 INF     [Ii][Nn][Ff]
 
-ID  	[a-zA-Z_%][a-zA-Z0-9_./:%+\-()]*
+ID  	[a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\()]*
 INT	[-+]?[0-9]+
 
 MANTISA ([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
@@ -87,7 +88,7 @@ FLOAT64 FLOAT64|Float64|float64
 STRING  STRING|String|string
 URL	URL|Url|url
 
-NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
+NEVER   [^a-zA-Z0-9_/%.#:+\\()\-{};,[\]]
 
 %%
 
@@ -154,14 +155,22 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 			}
 %%
 
-int 
-yywrap(void)
-{
-    return 1;
-}
-
 /*
  * $Log: das.lex,v $
+ * Revision 1.32  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.30.4.3  2001/08/16 17:26:19  edavis
+ * Use "%option noyywrap" instead of defining yywrap() to return 1.
+ *
+ * Revision 1.30.4.2  2001/06/23 00:52:08  jimg
+ * Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+ * that they are (more or less) the same in all the scanners. There are
+ * one or two characters that differ (for example das.lex allows ( and )
+ * in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+ * are essentially the same across the board.
+ * Added `#' to the set of characeters allowed in an ID (bug 179).
+ *
  * Revision 1.31  2001/01/26 19:48:09  jimg
  * Merged with release-3-2-3.
  *

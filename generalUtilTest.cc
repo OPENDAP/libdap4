@@ -39,9 +39,6 @@ public:
     }
 
     void unhexstring_test() {
-#if 0
-	cerr << "unhexstring(\"5b\"): " << unhexstring("5b") << endl;
-#endif
 	assert(unhexstring("5b") == "[");
 	assert(unhexstring("5d") == "]");
 	assert(unhexstring("20") == " ");
@@ -50,26 +47,52 @@ public:
 	assert(unhexstring("5D") == "]");
     }
 
-    void dods2id_test() {
-	assert(dods2id("This_is_a_test") == "This_is_a_test");
-	assert(dods2id("This is a test") == "This is a test");
-#if 0
-	cerr << "dods2id(\"%5B\") :" << dods2id("%5B") << endl;
-#endif
-	assert(dods2id("%5b") == "[");
-	assert(dods2id("%5d") == "]");
-	assert(dods2id("u%5b0%5d") == "u[0]");
-	assert(dods2id("WVC%20Lat") == "WVC Lat");
-	assert(dods2id("Grid.Data%20Fields[20][20]") 
+    void id2www_test() {
+	assert(id2www("this") == "this");
+	assert(id2www("This is a test") == "This%20is%20a%20test");
+	assert(id2www("This.is") == "This.is");
+	assert(id2www("This-is") == "This-is");
+	assert(id2www("This_is") == "This_is");
+	assert(id2www("This/is") == "This%2fis");
+	assert(id2www("This%is") == "This%25is");
+    }
+
+    void www2id_test() {
+	assert(www2id("This_is_a_test") == "This_is_a_test");
+	assert(www2id("This is a test") == "This is a test");
+	assert(www2id("%5b") == "[");
+	assert(www2id("%5d") == "]");
+	assert(www2id("u%5b0%5d") == "u[0]");
+	assert(www2id("WVC%20Lat") == "WVC Lat");
+	assert(www2id("Grid.Data%20Fields[20][20]") 
 	       == "Grid.Data Fields[20][20]");
-	cerr << "dods2id(\"%3a\") :" << dods2id("%3a") << endl;
-	assert(dods2id("Grid.Data%3aFields[20][20]") 
+
+	assert(www2id("Grid.Data%3aFields[20][20]") 
 	       == "Grid.Data:Fields[20][20]");
-	cerr << "dods2id(\"%3a%20%3a\") :" 
-	     << dods2id("%3a%20%3a", "%[0-7][0-9a-fA-F]", "%20") << endl;
-	assert(dods2id("Grid%3aData%20Fields%5b20%5d[20]",
-		       "%[0-7][0-9a-fA-F]", "%20") 
+
+	assert(www2id("Grid%3aData%20Fields%5b20%5d[20]", "%", "%20") 
 	       == "Grid:Data%20Fields[20][20]");
+    }
+
+    // This is the code in expr.lex that removes emclosing double quotes and
+    // %20 sequences from a string. I copied this here because that actual
+    // function uses globals and would be hard to test. 7/11/2001 jhrg
+    string *store_str(char *text) {
+	string *s = new string(www2id(string(text)));
+
+	if (*s->begin() == '\"' && *(s->end()-1) == '\"') {
+	    s->erase(s->begin());
+	    s->erase(s->end()-1);
+	}
+
+	return s;
+    }
+
+    void ce_string_parse_test() {
+	assert(*store_str("testing") == "testing");
+	assert(*store_str("\"testing\"") == "testing");
+	assert(*store_str("\"test%20ing\"") == "test ing");
+	assert(*store_str("test%20ing") == "test ing");
     }
 
     static Test *suite ()  {
@@ -86,7 +109,14 @@ public:
 		   ("unhexstring_test", &generalUtilTest::unhexstring_test));
 
 	s->addTest(new TestCaller<generalUtilTest>
-		   ("dods2id_test", &generalUtilTest::dods2id_test));
+		   ("www2id_test", &generalUtilTest::www2id_test));
+
+	s->addTest(new TestCaller<generalUtilTest>
+		   ("id2www_test", &generalUtilTest::id2www_test));
+
+	s->addTest(new TestCaller<generalUtilTest>
+		   ("ce_string_parse_test", 
+		    &generalUtilTest::ce_string_parse_test));
 
 	return s;
     }

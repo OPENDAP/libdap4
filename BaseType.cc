@@ -24,11 +24,10 @@
 #include "BaseType.h"
 #include "util.h"
 #include "InternalErr.h"
+#include "escaping.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
 // Private copy mfunc
 
@@ -112,7 +111,8 @@ BaseType::name() const
 void 
 BaseType::set_name(const string &n)
 { 
-    _name = n; 
+    string name = n;
+    _name = www2id(name);	// www2id writes into its param.
 }
 
 Type
@@ -367,7 +367,7 @@ BaseType::print_decl(ostream &os, string space, bool print_semi,
     if (constrained && !send_p())
 	return;
 
-    os << space << type_name() << " " << _name;
+    os << space << type_name() << " " << id2www(_name);
 
     if (constraint_info) {
 	if (send_p())
@@ -419,6 +419,25 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.44  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.42.4.5  2001/08/18 01:48:30  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.42.4.4  2001/07/28 01:10:41  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.43  2001/06/15 23:49:01  jimg
 // Merged with release-3-2-4.
 //

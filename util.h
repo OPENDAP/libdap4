@@ -76,9 +76,7 @@
 #include "Grid.h"
 #endif
 
-#ifdef WIN32
 using std::iostream;
-#endif
 
 string prune_spaces(string);
 bool unique_names(SLList<BaseType *> l, const string &var, const string &type,
@@ -191,6 +189,12 @@ string path_to_filename(string path);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.40  2001/08/24 17:46:23  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.38.2.2  2001/08/17 23:57:30  jimg
+ * Removed WIN32 compile guards from using statements.
+ *
  * Revision 1.39  2001/01/26 19:48:10  jimg
  * Merged with release-3-2-3.
  *

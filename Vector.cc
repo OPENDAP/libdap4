@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.36 2001/06/15 23:49:03 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.37 2001/08/24 17:46:22 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -30,10 +30,8 @@ static char rcsid[] not_used = {"$Id: Vector.cc,v 1.36 2001/06/15 23:49:03 jimg 
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
 void
 Vector::_duplicate(const Vector &v)
@@ -78,13 +76,16 @@ Vector::~Vector()
 {
     DBG(cerr << "Entering ~Vector (" << this << ")" << endl);
 
-    delete _var;
+    delete _var; _var = 0;
 
-    if (_buf)
-	delete[] _buf;
-    else	
-	for (unsigned int i = 0; i < _vec.size(); ++i)
-	    delete _vec[i];
+    if (_buf) {
+	delete[] _buf; _buf = 0;
+    }
+    else {
+	for (unsigned int i = 0; i < _vec.size(); ++i) {
+	    delete _vec[i]; _vec[i] = 0;
+	}
+    }
 
     DBG(cerr << "Exiting ~Vector" << endl);
 }
@@ -394,8 +395,7 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
       case dods_float32_c:
       case dods_float64_c:
 	if (_buf && !reuse) {
-	    delete[] _buf;
-	    _buf = 0;
+	    delete[] _buf; _buf = 0;
 	}
 
 	status = (bool)xdr_int(source, (int *)&num);
@@ -489,8 +489,7 @@ Vector::val2buf(void *val, bool reuse)
 	  unsigned int array_wid = width();
 
 	  if (_buf && !reuse) {
-	      delete[] _buf;
-	      _buf = 0;
+	      delete[] _buf; _buf = 0;
 	  }
 
 	  if (!_buf) {		// First time or no reuse (free'd above)
@@ -628,7 +627,7 @@ Vector::add_var(BaseType *v, Part)
   // we let the owner of 'v' to deallocate it as necessary.
 
   _var = v->ptr_duplicate();
-  set_name(v->name());		// Vector name becoms base object's name
+  set_name(v->name());		// Vector name becomes base object's name
   _var->set_parent(this);	// Vector --> child
   
   DBG(cerr << "Vector::add_var: Added variable " << v << " (" \
@@ -679,6 +678,25 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.37  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.35.4.4  2001/08/18 00:13:21  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.35.4.3  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.36  2001/06/15 23:49:03  jimg
 // Merged with release-3-2-4.
 //

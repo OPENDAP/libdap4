@@ -1,3 +1,61 @@
+2001-08-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* After running tests for asciival, I decided to allow some more
+	characters in the CE part of a URL. I created id2www_ce which
+	allows all the characters in id2www plus [], {}, :, &, <>, = and
+	, (comma).
+
+2001-07-27  James Gallagher  <jimg@dcz.dods.org>
+
+	* New escaping semantics. The DAP library now supports escaping
+	names. Servers (and clients) no longer need to escaping characters
+	themselves. The functions used to escape characters have been
+	changed, too. The old functions escaped chars that could not be
+	included in a DAP URL. The new function only escape chars that
+	cannot be present in a URI as defined by RFC 2396 (``Uniform
+	Resource Identifiers (URI): Generic Syntax''). The DAP's scanners
+	and parsers have been expanded so that many more characters are
+	now allowed. The regular expressions used to define IDs and NAMEs
+	are: 
+	    ID	 [a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\]*
+	    NAME [a-zA-Z_/%.0-9][-a-zA-Z0-9_/%.#:+\\]*
+	These changes mean that datasets which contain IDs with spaces
+	will work. Note that a space is not allowed in a URI so it will be
+	escaped. If you're typing in a URL to a browser, you must supply
+	the %20 escape. However, Connect is smart enough to escape the
+	space if it's present in a CE. On the server-side, DODSFilter and
+	the type classes remove the escape.
+
+2001-07-10  James Gallagher  <jimg@dcz.dods.org>
+
+	* If the `read from a file or stdin' feature of geturl is used and
+	the input source cannot be opened, an error message is printed.
+	This fixes a bug where a null input data source pointer caused a
+	segmentation violation. I also added a throw to
+	Connect::read_data() so that other clients that don't test the
+	data source pointer (which is a FILE *) will get an exception (as
+	opposed to a core file).
+
+2001-06-22  James Gallagher  <jimg@dcz.dods.org>
+
+	* I added `#' to the set of characters allowed in IDs. See bug 179.
+
+	* I normalized the definitions of ID, FLOAT and NEVER in the four
+	main scanners in the DAP library. They now all share the same set
+	of characters except for a few odd outliers.
+
+2001-06-18  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug that crept into the processing of the server's
+	version number information in the (client) class DataDDS. This
+	made it impossible for clients to process Sequences sent from
+	new servers because they we using the old (default)
+	deserialization scheme.
+
+2001-06-15  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-4. The next merge should use -j
+	release-3-2-4 -j release-3-2.
 
 2001-06-05  James Gallagher  <jimg@dcz.dods.org>
 
@@ -960,24 +1018,40 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	progress indicator and error reporting is not available.
 
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
+=======
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
+>>>>>>> 1.60.4.16
 =======
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
 =======
-$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
+=======
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
+>>>>>>> 1.60.4.16
 >>>>>>> 1.62
 >>>>>>> 1.60.4.11
 
 <<<<<<< ChangeLog
 =======
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
 =======
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
 =======
-$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
+>>>>>>> 1.60.4.16
+=======
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
+=======
+$Id: ChangeLog,v 1.64 2001/08/24 17:46:22 jimg Exp $
+>>>>>>> 1.60.4.16
 >>>>>>> 1.62
 >>>>>>> 1.60.4.11
 >>>>>>> 1.42.2.16

@@ -11,7 +11,6 @@
 
 #include "config_dap.h"
 
-#include <assert.h>
 #if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
@@ -23,17 +22,16 @@
 #include "Array.h"		// for downcasts
 #include "util.h"
 #include "InternalErr.h"
+#include "escaping.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::ends;
 using std::ostrstream;
-#endif
 
 void
 Grid::_duplicate(const Grid &s)
@@ -61,10 +59,11 @@ Grid::Grid(const Grid &rhs) : Constructor(rhs)
 
 Grid::~Grid()
 {
-    delete _array_var;
+    delete _array_var; _array_var = 0;
 
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	delete _map_vars(p);
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p)) {
+	delete _map_vars(p); _map_vars(p) = 0;
+    }
 }
 
 Grid &
@@ -72,6 +71,12 @@ Grid::operator=(const Grid &rhs)
 {
     if (this == &rhs)
 	return *this;
+
+    delete _array_var; _array_var = 0;
+
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p)) {
+	delete _map_vars(p); _map_vars(p) = 0;
+    }
 
     dynamic_cast<Constructor &>(*this) = rhs;
 
@@ -134,16 +139,12 @@ Grid::serialize(const string &dataset, DDS &dds, XDR *sink,
 {
     bool status = true;
 
-#if 0
-    if (!read_p() && !read(dataset))
-	throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
-#endif
     try {
-      if (!read_p())
-	read(dataset);
+	if (!read_p())
+	    read(dataset);
     }
     catch (Error &e) {
-      return false;
+	return false;
     }
 
     if (ce_eval && !dds.eval_selection(dataset))
@@ -245,9 +246,8 @@ Grid::add_var(BaseType *bt, Part part)
 	return;
       }
       default:
-	cerr <<"Grid::add_var:Unknown grid part (must be array or maps)"<< endl;
 	throw InternalErr(__FILE__, __LINE__, 
-			  "Unknown grid part (must be array or maps).");
+			  "Unknown grid part (must be Array or Maps).");
 	return;
     }
 }    
@@ -303,7 +303,7 @@ Grid::components(bool constrained)
 }
 
 // When projected (using whatever the current constraint provides in the way
-// of a projection) is the object still a Grid?
+// of a projection), is the object still a Grid?
 
 bool
 Grid::projection_yields_grid()
@@ -371,7 +371,7 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
     }
     // If there are M (< N) componets (Array and Maps combined) in a N
     // component Grid, send the M components as elements of a Struture.
-    // This will repserve the grouping without violating the rules for a
+    // This will preserve the grouping without violating the rules for a
     // Grid. 
     else if (constrained && !projection_yields_grid()) {
 	os << space << "Structure {" << endl;
@@ -383,7 +383,7 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
 	    _map_vars(p)->print_decl(os, space + "    ", true, 
 				     constraint_info, constrained);
 
-	os << space << "} " << name();
+	os << space << "} " << id2www(name());
     }
     else {
 	// The number of elements in the (projected) Grid must be such that
@@ -399,7 +399,7 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
 	    _map_vars(p)->print_decl(os, space + "    ", true, constraint_info,
 				     constrained);
 
-	os << space << "} " << name();
+	os << space << "} " << id2www(name());
     }
 
     if (constraint_info) {
@@ -536,6 +536,14 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.48  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.46.4.2  2001/07/28 00:29:22  jimg
+// Added to operator= code which deletes dynamically allocated memory held by
+// the instance. This prevents a memory leak when the assignment operator is
+// used.
+//
 // Revision 1.47  2001/06/15 23:49:02  jimg
 // Merged with release-3-2-4.
 //

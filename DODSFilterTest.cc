@@ -72,15 +72,15 @@ public:
     }
 
     void tearDown() {
-	delete df;
-	delete df1;
-	delete df2;
-	delete df3;
-	delete df4;
-	delete df5;
-	delete df6;
+	delete df; df = 0;
+	delete df1; df1 = 0;
+	delete df2; df2 = 0;
+	delete df3; df3 = 0;
+	delete df4; df4 = 0;
+	delete df5; df5 = 0;
+	delete df6; df6 = 0;
 
-	delete das;
+	delete das; das = 0;
     }
 
     void reset_oss() {
@@ -139,7 +139,7 @@ public:
 	     << endl;
 
 	Regex r1("HTTP/1.0 200 OK
-XDODS-Server: dods/.*
+XDODS-Server:.*
 Date: \\(.*\\)
 Last-Modified: Thu, 29 Apr 1999 02:29:40 GMT
 Content-type: text/plain
@@ -153,6 +153,9 @@ Attributes {
 }.*
 ");
 	df->send_das(oss, *das); oss << ends;
+#if 0
+	cerr << "DAS: " << oss.str() << endl;
+#endif
 	assert(re_match(r1, oss.str()));
 	reset_oss();
 

@@ -26,14 +26,13 @@
 #include "DataDDS.h"
 #include "util.h"
 #include "InternalErr.h"
+#include "escaping.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::endl;
-#endif
 
 // Jose Garcia 1/28/2000
 // Note: all asserts of nature
@@ -128,8 +127,9 @@ Sequence::Sequence(const Sequence &rhs) : Constructor(rhs)
 
 Sequence::~Sequence()
 {
-    for (Pix p = _vars.first(); p; _vars.next(p))
-	delete _vars(p);
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	delete _vars(p); _vars(p) = 0;
+    }
 }
 
 Sequence &
@@ -649,7 +649,7 @@ Sequence::print_decl(ostream &os, string space, bool print_semi,
     for (Pix p = _vars.first(); p; _vars.next(p))
 	_vars(p)->print_decl(os, space + "    ", true, constraint_info,
 			     constrained);
-    os << space << "} " << name();
+    os << space << "} " << id2www(name());
 
     if (constraint_info) {
 	if (send_p())
@@ -730,6 +730,25 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.61  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.59.4.6  2001/08/18 00:16:22  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.59.4.5  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.60  2001/06/15 23:49:02  jimg
 // Merged with release-3-2-4.
 //

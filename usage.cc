@@ -14,7 +14,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.16 2000/10/18 17:24:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.17 2001/08/24 17:46:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -33,13 +33,11 @@ static char rcsid[] not_used = {"$Id: usage.cc,v 1.16 2000/10/18 17:24:59 jimg E
 #include "cgi_util.h"
 #include "debug.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::ends;
 using std::ifstream;
 using std::ostrstream;
-#endif
 
 static void
 usage(char *argv[])
@@ -514,6 +512,12 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.17  2001/08/24 17:46:23  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.16.2.1  2001/08/17 23:59:42  jimg
+// Removed WIN32 compile guards from using statements.
+//
 // Revision 1.16  2000/10/18 17:24:59  jimg
 // Fixed an error in get_user_supplied_docs() which caused the data file to be
 // read instead of a <data file>.html file.

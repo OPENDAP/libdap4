@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.121 2001/06/15 23:49:02 jimg Exp $
+# $Id: Makefile.in,v 1.122 2001/08/24 17:46:22 jimg Exp $
 
 @SET_MAKE@
 
@@ -433,8 +433,7 @@ server-check: geturl
 # the *.o versions of these files don't appear in the unit_tests target.
 # 5/14/2001 jhrg
 # UNIT_TESTS = cgiUtilTest.cc AttrTableTest.cc DODSFilterTest.cc \
-#	parserUtilTest.cc generalUtilTest.cc SequenceTest.cc \
-#	DASTest.cc
+#	parserUtilTest.cc generalUtilTest.cc SequenceTest.cc ByteTest.cc
 UNIT_TEST_SRC = TestRunner.cc TextTestResult.cc $(UNIT_TESTS)
 UNIT_TEST_SCAFFOLD = TestRunner.o TextTestResult.o
 
@@ -451,7 +450,7 @@ unit_tests: libdap++.a $(UNIT_TEST_SCAFFOLD) $(TESTOBJS)
 
 unit-check: unit_tests
 	./unit_tests AttrTableTest DODSFilterTest cgiUtilTest parserUtilTest \
-		generalUtilTest
+	generalUtilTest SequenceTest ByteTest
 # Clean up.
 
 clean:	

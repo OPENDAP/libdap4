@@ -14,6 +14,12 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.25  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.23.4.2  2001/08/18 00:15:01  jimg
+// Removed WIN32 compile guards from using statements.
+//
 // Revision 1.24  2001/06/15 23:49:03  jimg
 // Merged with release-3-2-4.
 //
@@ -152,11 +158,9 @@
 
 #include "debug.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::istrstream;
-#endif
 
 void
 TestSequence::_duplicate(const TestSequence &ts)

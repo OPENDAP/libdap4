@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.lex,v 1.4 2000/09/22 02:17:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.lex,v 1.5 2001/08/24 17:46:22 jimg Exp $"};
 
 #define YY_DECL int gse_lex YY_PROTO(( void ))
 #define ID_MAX 256
@@ -44,44 +44,41 @@ static void store_op(int op);
 
 %}
 
-SCAN_ID				[a-zA-Z_%][a-zA-Z0-9_/%]*
-SCAN_INT			[-+]?[0-9]+
+%option noyywrap
 
-SCAN_MANTISA		([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
-SCAN_EXPONENT		(E|e)[-+]?[0-9]+
+NAN     [Nn][Aa][Nn]
+INF     [Ii][Nn][Ff]
 
-SCAN_FLOAT			[-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?
+SCAN_ID		[a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\]*
+SCAN_INT	[-+]?[0-9]+
 
-SCAN_EQUAL			=
-SCAN_GREATER		>
-SCAN_GREATER_EQL	>=
-SCAN_LESS			<
-SCAN_LESS_EQL		<=
+SCAN_MANTISA	([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
+SCAN_EXPONENT	(E|e)[-+]?[0-9]+
 
-NEVER				[^a-zA-Z0-9_%.]
+SCAN_FLOAT	([-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?)|({NAN})|({INF})
 
-%%
+SCAN_EQUAL	=
+SCAN_GREATER	>
+SCAN_GREATER_EQL >=
+SCAN_LESS	<
+SCAN_LESS_EQL	<=
 
-{SCAN_ID}			store_id(); return SCAN_ID;
-
-{SCAN_INT}			store_int32(); return SCAN_INT;
-{SCAN_FLOAT}		store_float64(); return SCAN_FLOAT;
-
-{SCAN_EQUAL}		store_op(SCAN_EQUAL); return SCAN_EQUAL;
-{SCAN_GREATER}		store_op(SCAN_GREATER); return SCAN_GREATER;
-{SCAN_GREATER_EQL}	store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
-{SCAN_LESS}			store_op(SCAN_LESS); return SCAN_LESS;
-{SCAN_LESS_EQL}		store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
+NEVER		[^a-zA-Z0-9_/%.#:+\-,]
 
 %%
 
-// This function must be supplied.
+{SCAN_ID}	store_id(); return SCAN_ID;
 
-static int
-yywrap(void)
-{
-    return 1;
-}
+{SCAN_INT}	store_int32(); return SCAN_INT;
+{SCAN_FLOAT}	store_float64(); return SCAN_FLOAT;
+
+{SCAN_EQUAL}	store_op(SCAN_EQUAL); return SCAN_EQUAL;
+{SCAN_GREATER}	store_op(SCAN_GREATER); return SCAN_GREATER;
+{SCAN_GREATER_EQL} store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
+{SCAN_LESS}	store_op(SCAN_LESS); return SCAN_LESS;
+{SCAN_LESS_EQL}	store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
+
+%%
 
 // Three glue routines for string scanning. These are not declared in the
 // header gse.tab.h nor is YY_BUFFER_STATE. Including these here allows them
@@ -140,6 +137,20 @@ store_op(int op)
 
 /*
  * $Log: gse.lex,v $
+ * Revision 1.5  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.4.4.2  2001/08/16 17:26:20  edavis
+ * Use "%option noyywrap" instead of defining yywrap() to return 1.
+ *
+ * Revision 1.4.4.1  2001/06/23 00:52:08  jimg
+ * Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+ * that they are (more or less) the same in all the scanners. There are
+ * one or two characters that differ (for example das.lex allows ( and )
+ * in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+ * are essentially the same across the board.
+ * Added `#' to the set of characeters allowed in an ID (bug 179).
+ *
  * Revision 1.4  2000/09/22 02:17:23  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

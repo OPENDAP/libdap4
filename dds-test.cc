@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.22 2001/06/15 23:49:03 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.23 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
@@ -25,11 +25,9 @@ static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.22 2001/06/15 23:49:03 jim
 #include "util.h"
 #include "Error.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::flush;
-#endif
 
 void test_scanner();
 void test_parser();
@@ -128,12 +126,6 @@ test_scanner(void)
 	switch (tok) {
 	  case SCAN_DATASET:
 	    cout << "DATASET" << endl;
-	    break;
-	  case SCAN_ARRAY:
-	    cout << "ARRAY" << endl;
-	    break;
-	  case SCAN_MAPS:
-	    cout << "MAPS" << endl;
 	    break;
 	  case SCAN_LIST:
 	    cout << "LIST" << endl;
@@ -289,6 +281,20 @@ test_class(void)
 }
 
 // $Log: dds-test.cc,v $
+// Revision 1.23  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.21.4.3  2001/08/18 00:04:23  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.21.4.2  2001/06/23 00:52:08  jimg
+// Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+// that they are (more or less) the same in all the scanners. There are
+// one or two characters that differ (for example das.lex allows ( and )
+// in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+// are essentially the same across the board.
+// Added `#' to the set of characeters allowed in an ID (bug 179).
+//
 // Revision 1.22  2001/06/15 23:49:03  jimg
 // Merged with release-3-2-4.
 //

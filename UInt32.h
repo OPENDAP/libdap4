@@ -62,6 +62,10 @@ public:
     UInt32(const string &n = "");
     virtual ~UInt32() {}
 
+    UInt32(const UInt32 &copy_from);
+
+    UInt32 &operator=(const UInt32 &rhs);
+
     virtual BaseType *ptr_duplicate() = 0;
     
     virtual unsigned int width();
@@ -82,6 +86,22 @@ public:
 };
 
 // $Log: UInt32.h,v $
+// Revision 1.13  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.12.4.1  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.12  2000/09/22 02:17:21  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: error-test.cc,v 1.8 2000/09/22 02:17:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: error-test.cc,v 1.9 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <assert.h>
 
@@ -22,11 +22,9 @@ static char rcsid[] not_used = {"$Id: error-test.cc,v 1.8 2000/09/22 02:17:22 ji
 #include "parser.h"
 #include "Error.tab.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::flush;
-#endif
 
 void test_scanner();
 void test_parser(Error &err);
@@ -197,6 +195,12 @@ test_object(Error &err)
 #endif
 
 // $Log: error-test.cc,v $
+// Revision 1.9  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.8.4.1  2001/08/18 00:04:03  jimg
+// Removed WIN32 compile guards from using statements.
+//
 // Revision 1.8  2000/09/22 02:17:22  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -27,11 +27,9 @@
 #include "Gui.h"
 #endif
 
-#ifdef WIN32
 using std::cout;
 using std::string;
 using std::ostream;
-#endif
 
 /** The most common errors within DODS have special codes so that they
     can be spotted easily by the DODS client software. Any error
@@ -294,6 +292,12 @@ public:
 };
 
 // $Log: Error.h,v $
+// Revision 1.21  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.20.2.1  2001/08/18 00:17:52  jimg
+// Removed WIN32 compile guards from using statements.
+//
 // Revision 1.20  2000/10/30 17:21:27  jimg
 // Added support for proxy servers (from cjm).
 //

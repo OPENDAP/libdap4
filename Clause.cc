@@ -19,10 +19,8 @@
 #include "DDS.h"
 #include "Clause.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
     : _op(oper), _b_func(0), _bt_func(0), _arg1(a1), _args(rv) 
@@ -58,11 +56,15 @@ Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _arg1(0), _args(0)
 
 Clause::~Clause() 
 {
-    if (_arg1)
+    if (_arg1) {
 	delete _arg1;
-
-    if (_args)
+	_arg1 = 0;
+    }
+    
+    if (_args) {
 	delete _args;
+	_args = 0;
+    }
 }
 
 bool
@@ -125,6 +127,7 @@ Clause::value(const string &dataset, DDS &dds)
 
 	bool result = (*_b_func)(_argc, argv, dds);
 	delete[] argv;		// Cache me!
+	argv = 0;
 
 	return result;
     }
@@ -148,6 +151,7 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 
 	*value = (*_bt_func)(_argc, argv, dds);
 	delete[] argv;		// Cache me!
+	argv = 0;
 
 	if (*value) {
 	    (*value)->set_read_p(true);
@@ -168,6 +172,25 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 }
 
 // $Log: Clause.cc,v $
+// Revision 1.13  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.12.4.2  2001/08/18 00:18:57  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.12.4.1  2001/07/28 01:10:41  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.12  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

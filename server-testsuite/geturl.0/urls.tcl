@@ -1,5 +1,5 @@
 
-# $Id: urls.tcl,v 1.5 2001/06/15 23:49:06 jimg Exp $
+# $Id: urls.tcl,v 1.6 2001/08/24 17:46:24 jimg Exp $
 
 # Datasets and their expected output (the information that writeval sends to
 # stdout - not the stuff that should be going into the file).
@@ -248,6 +248,34 @@ set jg_test_dds "Dataset {
     } Level_0;
 } test;"
 
+# FF server tests. These also test asking for stuff when the variable names
+# contain spaces. 7/26/2001 jhrg
 
+set ff_test1 "http://$host/$test_dir/nph-dods/data/ff/jplpath.dat"
+set ff_test1_ce1 "year"
+set ff_test1_ce2 "JPL_Pathfinder.year"
+set ff_test1_dds "Dataset {
+    Sequence {
+        Int32 year;
+        Int32 day;
+        Int32 hours;
+        Int32 minutes;
+        Int32 seconds;
+        String DODS_URL;
+    } JPL_Pathfinder;
+} jplpath;"
 
-
+set ff_test2 "http://$host/$test_dir/nph-dods/data/ff/jplpath_space.dat"
+set ff_test2_ce1 "year"
+set ff_test2_ce2 "JPL%20Pathfinder.year"
+set ff_test2_ce3 "JPL Pathfinder.year"
+set ff_test2_dds "Dataset {
+    Sequence {
+        Int32 year;
+        Int32 day;
+        Int32 hours;
+        Int32 minutes;
+        Int32 seconds;
+        String DODS_URL;
+    } JPL%20Pathfinder;
+} jplpath_space;"

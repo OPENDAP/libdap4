@@ -54,8 +54,6 @@ public:
     //@{
     /// 
     InternalErr(const string &msg);
-  // I think Jose added this, but I'm not sure.
-  // InternalErr(string msg, string file, int line);
     ///
     InternalErr(const string &file, const int &line, const string &msg);
     ///
@@ -75,6 +73,9 @@ public:
 };
 
 // $Log: InternalErr.h,v $
+// Revision 1.6  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
 // Revision 1.5  2000/09/22 02:17:20  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -21,20 +21,17 @@
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
+#include "escaping.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::endl;
-#endif
 
 void
 Array::_duplicate(const Array &a)
 {
-    //    Vector::_duplicate(a);
-
     _shape = a._shape;
 }
 
@@ -92,7 +89,7 @@ Array::append_dim(int size, string name)
 
     // This is invariant
     d.size = size;
-    d.name = name;
+    d.name = www2id(name);
 
     // this information changes with each constraint expression
     d.start = 0; 
@@ -327,7 +324,7 @@ Array::print_decl(ostream &os, string space, bool print_semi,
 	    continue;
 	os << "[";
 	if (_shape(p).name != "")
-	    os << _shape(p).name << " = ";
+	    os << id2www(_shape(p).name) << " = ";
 	if (constrained)
 	    os << _shape(p).c_size << "]";
 	else
@@ -407,6 +404,7 @@ Array::print_val(ostream &os, string space, bool print_decl_p)
 
     print_array(os, 0, dims, shape);
     delete [] shape;
+    shape = 0;
 
     if (print_decl_p) {
 	os << ";" << endl;
@@ -425,6 +423,22 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.50  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.48.4.2  2001/07/28 01:10:41  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.49  2001/06/15 23:49:01  jimg
 // Merged with release-3-2-4.
 //

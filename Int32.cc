@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int32.cc,v 1.41 2001/06/15 23:49:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int32.cc,v 1.42 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -34,10 +34,8 @@ static char rcsid[] not_used = {"$Id: Int32.cc,v 1.41 2001/06/15 23:49:02 jimg E
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
 Int32::Int32(const string &n) 
     : BaseType(n, dods_int32_c, (xdrproc_t)XDR_INT32)
@@ -208,6 +206,12 @@ Int32::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Int32.cc,v $
+// Revision 1.42  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.40.4.2  2001/08/18 00:16:47  jimg
+// Removed WIN32 compile guards from using statements.
+//
 // Revision 1.41  2001/06/15 23:49:02  jimg
 // Merged with release-3-2-4.
 //

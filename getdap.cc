@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.56 2001/06/15 23:49:04 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.57 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -30,7 +30,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.56 2001/06/15 23:49:04 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.56 $";
+const char *version = "$Revision: 1.57 $";
 
 extern int keep_temps;		// defined in Connect.cc
 
@@ -261,7 +261,7 @@ main(int argc, char * argv[])
 		break;
 	    }
     
-    delete tcode;
+    delete tcode; tcode = 0;
 
     // If after processing all the command line options there is nothing left
     // (no URL or file) assume that we should read from stdin.
@@ -284,6 +284,12 @@ main(int argc, char * argv[])
 		source = stdin;
 	    else
 		source = fopen(argv[i], "r");
+	    
+	    if (!source) {
+		cerr << "The input source: " << argv[i] 
+		     << " could not be opened." << endl;
+		break;
+	    }
 
 	    // NB: local access should never use the popup gui.
 	    try {
@@ -292,6 +298,7 @@ main(int argc, char * argv[])
 	    }
 	    catch (Error &e) {
 		e.display_message();
+		break;
 	    }
 	    if (source != stdin)
 		fclose(source);
@@ -350,7 +357,7 @@ main(int argc, char * argv[])
 			continue;
 		    }
 		    process_data(url, dds, verbose, print_rows);
-		    delete dds;
+		    delete dds; dds = 0;
 		}
 		catch (Error &e) {
 		    e.display_message();
@@ -390,6 +397,26 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.57  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.52.2.7  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
+// Revision 1.52.2.6  2001/07/11 05:31:03  jimg
+// If geturl's ``read from file or stdin'' feature is used and the filename or
+// redirect is null, an error message is printed. Before geturl dumped core.
+//
 // Revision 1.56  2001/06/15 23:49:04  jimg
 // Merged with release-3-2-4.
 //

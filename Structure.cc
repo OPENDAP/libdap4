@@ -22,14 +22,13 @@
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
+#include "escaping.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::endl;
-#endif
 
 // Jose Garcia 1/26/2000
 // Note: all asserts of nature
@@ -69,19 +68,21 @@ Structure::Structure(const Structure &rhs) :Constructor(rhs)
 
 Structure::~Structure()
 {
+    // Jose Garcia
+    // It is not a good idea to throw exceptions from destructors.
+    // I am not sure why to check for _vars(p) being NULL at this 
+    // point in the game, in fact I believe that _vars should never
+    // be allowed to hold a NULL pointer in the first place, this 
+    // can be achieved by initializing correctly the list and then 
+    // the modifier methods such as add_var should get sure NEVER
+    // a NULL pointer becomes part of the list. For all the exposed
+    // above I rather leave the assert to get a core dump and see
+    // how a NULL pointer got the list in the first place!
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-      // Jose Garcia
-      // It is not a good idea to throw exceptions from destructors.
-      // I am not sure why to check for _vars(p) being NULL at this 
-      // point in the game, in fact I believe that _vars should never
-      // be allowed to hold a NULL pointer in the first place, this 
-      // can be achieved by initializing correctly the list and then 
-      // the modifier methods such as add_var should get sure NEVER
-      // a NULL pointer becomes part of the list. For all the exposed
-      // above I rather leave the assert to get a core dump and see
-      // how a NULL pointer got the list in the first place!
-      // assert(_vars(p));
-	delete _vars(p);
+#if 0
+	assert(_vars(p));
+#endif
+	delete _vars(p); _vars(p) = 0;
     }
 }
 
@@ -242,8 +243,6 @@ BaseType *
 Structure::var(const string &name, btp_stack &s)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-      //assert(_vars(p));
-	
 	if (_vars(p)->name() == name) {
 	    s.push((BaseType *)this);
 	    return _vars(p);
@@ -274,8 +273,6 @@ BaseType *
 Structure::leaf_match(const string &name)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-      //assert(_vars(p));
-	
 	if (_vars(p)->name() == name)
 	    return _vars(p);
         if (_vars(p)->is_constructor_type()) {
@@ -304,7 +301,6 @@ Structure::exact_match(const string &name)
     }
     else {
 	for (Pix p = _vars.first(); p; _vars.next(p)) {
-	  //assert(_vars(p));
 	    if (_vars(p)->name() == name)
 		return _vars(p);
 	}
@@ -333,12 +329,10 @@ Structure::next_var(Pix &p)
 BaseType *
 Structure::var(Pix p)
 {
-    if (!_vars.empty() && p) {
-      //assert(_vars(p));
+    if (!_vars.empty() && p)
 	return _vars(p);
-    }
     else 
-      return NULL;
+	return NULL;
 }
 
 void
@@ -350,11 +344,10 @@ Structure::print_decl(ostream &os, string space, bool print_semi,
 
     os << space << type_name() << " {" << endl;
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-      //assert(_vars(p));
 	_vars(p)->print_decl(os, space + "    ", true, constraint_info,
 			     constrained);
     }
-    os << space << "} " << name();
+    os << space << "} " << id2www(name());
 
     if (constraint_info) {
 	if (send_p())
@@ -379,7 +372,6 @@ Structure::print_val(ostream &os, string space, bool print_decl_p)
 
     os << "{ ";
     for (Pix p = _vars.first(); p; _vars.next(p), (void)(p && os << ", ")) {
-      //assert(_vars(p));
 	_vars(p)->print_val(os, "", false);
     }
 
@@ -459,6 +451,25 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.45  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.43.4.4  2001/08/18 00:15:41  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.43.4.3  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.44  2001/06/15 23:49:02  jimg
 // Merged with release-3-2-4.
 //

@@ -28,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.35 2001/06/15 23:49:03 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.36 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,8 +98,6 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 %token SCAN_NAME
 %token SCAN_INTEGER
 %token SCAN_DATASET
-%token SCAN_ARRAY
-%token SCAN_MAPS
 %token SCAN_LIST
 %token SCAN_SEQUENCE
 %token SCAN_STRUCTURE
@@ -195,10 +193,32 @@ non_list_decl:  base_type var ';'
 		    }
 		}
 
-		| grid '{' SCAN_ARRAY ':' 
-		{ part = array; }
-                declaration SCAN_MAPS ':' 
-		{ part = maps; }
+		| grid '{' SCAN_ID
+		{ 
+		    if (is_keyword(string($1), "array:"))
+			part = array; 
+		    else {
+			ostrstream msg;
+			msg << BAD_DECLARATION << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    dds_line_num, $1);
+			msg.freeze(0);
+			YYABORT;
+		    }
+                }
+                declaration SCAN_ID
+		{ 
+		    if (is_keyword(string($2), "maps:"))
+			part = maps; 
+		    else {
+			ostrstream msg;
+			msg << BAD_DECLARATION << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    dds_line_num, $2);
+			msg.freeze(0);
+			YYABORT;
+		    }
+                }
                 declarations '}' 
 		{
 		    current = ctor->top(); 
@@ -330,8 +350,6 @@ array_decl:	'[' SCAN_INTEGER ']'
 name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		| SCAN_INTEGER { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		| SCAN_DATASET { (*DDS_OBJ(arg)).set_dataset_name($1); }
-		| SCAN_ARRAY { (*DDS_OBJ(arg)).set_dataset_name($1); }
-		| SCAN_MAPS { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		| var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
                 | error 
                 {
@@ -411,6 +429,17 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.36  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.33.4.3  2001/06/23 00:52:08  jimg
+ * Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+ * that they are (more or less) the same in all the scanners. There are
+ * one or two characters that differ (for example das.lex allows ( and )
+ * in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+ * are essentially the same across the board.
+ * Added `#' to the set of characeters allowed in an ID (bug 179).
+ *
  * Revision 1.35  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.
  *

@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.33 2001/01/26 19:48:09 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.34 2001/08/24 17:46:22 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -27,18 +27,20 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.33 2001/01/26 19:48:09 jimg Exp 
 #include <assert.h>
 
 #include <iostream>
-#include <Pix.h>
 #include <string>
+#include <Pix.h>
 
-#include "debug.h"
+#include "DAS.h"		// follows pragma since DAS.h is interface
 #include "Error.h"
+#include "InternalErr.h"
 #include "parser.h"
+#include "escaping.h"
 #include "debug.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
+
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.34 2001/08/24 17:46:22 jimg Exp $"};
 
 #include "DAS.h"		// follows pragma since DAS.h is interface
 #include "InternalErr.h"
@@ -62,7 +64,7 @@ DAS::DAS(AttrTable *, unsigned int)
 
 DAS::DAS(AttrTable *attr, string name)
 {
-    append_container(attr, name);
+    append_container(attr, www2id(name));
 }
 
 // The class DASVHMap knows that it contains pointers to things and correctly
@@ -199,6 +201,10 @@ DAS::parse(FILE *in)
 
 // Write attributes from tables to `out' (which defaults to stdout). Return
 // true. 
+//
+// When an identifier contains a character that contains characters that
+// cannot be present in a URL (e.g., a space) AttrTable::print(...) replaces
+// those characters with WWW escape codes. 7/13/2001 jhrg
 
 void
 DAS::print(ostream &os, bool dereference)
@@ -212,6 +218,22 @@ DAS::print(ostream &os, bool dereference)
 }
 
 // $Log: DAS.cc,v $
+// Revision 1.34  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.32.4.4  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.33  2001/01/26 19:48:09  jimg
 // Merged with release-3-2-3.
 //

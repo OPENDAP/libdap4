@@ -20,7 +20,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.39 2000/09/22 02:17:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.40 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +32,7 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.39 2000/09/22 02:17:23 jimg Exp
 #include <SLList.h>
 
 #include "debug.h"
+#include "escaping.h"
 
 #include "DDS.h"
 
@@ -54,12 +55,10 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.39 2000/09/22 02:17:23 jimg Exp
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::ends;
 using std::ostrstream;
-#endif
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -137,7 +136,6 @@ proj_func get_proj_function(const DDS &table, const char *name);
 %token <val> SCAN_STR
 
 %token <id> SCAN_ID
-%token <id> SCAN_FIELD
 
 %token <op> SCAN_EQUAL
 %token <op> SCAN_NOT_EQUAL
@@ -190,15 +188,6 @@ proj_clause:	SCAN_ID
 		    }
 		    else {
 			no_such_ident(arg, $1, "identifier");
-		    }
-		}
-                | SCAN_FIELD
-                { 
-		    BaseType *var = (*DDS_OBJ(arg)).var($1);
-		    if (var)
-			$$ = (*DDS_OBJ(arg)).mark($1, true);
-		    else {
-		        no_such_ident(arg, $1, "field");
 		    }
 		}
                 | proj_function
@@ -333,18 +322,9 @@ arg_list:     r_value_list
 
 identifier:	SCAN_ID 
                 { 
-		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
+		    BaseType *btp = (*DDS_OBJ(arg)).var(www2id(string($1)));
 		    if (!btp) {
-			no_such_ident(arg, $1, "identifier");
-		    }
-		    else
-			$$ = new rvalue(btp);
-		}
-		| SCAN_FIELD 
-                { 
-		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
-		    if (!btp) {
-			no_such_ident(arg, $1, "field");
+			no_such_ident(arg, www2id(string($1)), "identifier");
 		    }
 		    else
 			$$ = new rvalue(btp);
@@ -372,13 +352,6 @@ array_proj:	SCAN_ID array_indices
                 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), $1, $2))
 		    // no_such_ident throws an exception.
-		    no_such_ident(arg, $1, "array, grid or sequence");
-		  else
-		    $$ = true;
-		}
-	        | SCAN_FIELD array_indices 
-                {
-		  if (!bracket_projection((*DDS_OBJ(arg)), $1, $2))
 		    no_such_ident(arg, $1, "array, grid or sequence");
 		  else
 		    $$ = true;
@@ -480,51 +453,51 @@ no_such_func(void *arg, char *name)
 bool
 bracket_projection(DDS &table, const char *name, int_list_list *indices)
 {
-  bool status = true;
-  BaseType *var = table.var(name);
+    bool status = true;
+    BaseType *var = table.var(name);
 
-  if (var && is_array_t(var)) {
-    /* calls to set_send_p should be replaced with
-       calls to DDS::mark so that arrays of Structures,
-       etc. will be processed correctly when individual
-       elements are projected using short names (Whew!)
-       9/1/98 jhrg */
-    /* var->set_send_p(true); */
-    table.mark(name, true);
-    status = process_array_indices(var, indices);
-    if (!status) {
-      string msg = "The indices given for `";
-      msg += (string)name + (string)"' are out of range.";
-      throw Error(malformed_expr, msg);
+    if (var && is_array_t(var)) {
+	/* calls to set_send_p should be replaced with
+	   calls to DDS::mark so that arrays of Structures,
+	   etc. will be processed correctly when individual
+	   elements are projected using short names (Whew!)
+	   9/1/98 jhrg */
+	/* var->set_send_p(true); */
+	table.mark(name, true);
+	status = process_array_indices(var, indices);
+	if (!status) {
+	    string msg = "The indices given for `";
+	    msg += (string)name + (string)"' are out of range.";
+	    throw Error(malformed_expr, msg);
+	}
+	delete_array_indices(indices);
     }
-    delete_array_indices(indices);
-  }
-  else if (var && is_grid_t(var)) {
-    table.mark(name, true);
-    /* var->set_send_p(true); */
-    status = process_grid_indices(var, indices);
-    if (!status) {
-      string msg = "The indices given for `";
-      msg += (string)name + (string)"' are out of range.";
-      throw Error(malformed_expr, msg);
+    else if (var && is_grid_t(var)) {
+	table.mark(name, true);
+	/* var->set_send_p(true); */
+	status = process_grid_indices(var, indices);
+	if (!status) {
+	    string msg = "The indices given for `";
+	    msg += (string)name + (string)"' are out of range.";
+	    throw Error(malformed_expr, msg);
+	}
+	delete_array_indices(indices);
     }
-    delete_array_indices(indices);
-  }
-  else if (var && is_sequence_t(var)) {
-    table.mark(name, true);
-    status = process_sequence_indices(var, indices);
-    if (!status) {
-      string msg = "The indices given for `";
-      msg += (string)name + (string)"' are out of range.";
-      throw Error(malformed_expr, msg);
+    else if (var && is_sequence_t(var)) {
+	table.mark(name, true);
+	status = process_sequence_indices(var, indices);
+	if (!status) {
+	    string msg = "The indices given for `";
+	    msg += (string)name + (string)"' are out of range.";
+	    throw Error(malformed_expr, msg);
+	}
+	delete_array_indices(indices);
     }
-    delete_array_indices(indices);
-  }
-  else {
-    status = false;
-  }
+    else {
+	status = false;
+    }
   
-  return status;
+    return status;
 }
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
@@ -680,9 +653,13 @@ process_array_indices(BaseType *variable, int_list_list *indices)
     bool status = true;
 
     assert(variable);
-    assert(variable->type() == dods_array_c);
-    Array *a = (Array *)variable; // replace with dynamic cast
 
+    Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
+    if (!a)
+	throw Error(malformed_expr, 
+	   string("The constraint expression evaluator expected an array; ")
+		    + variable->name() + " is not an array.");
+		   
     DBG(cerr << "Before clear_costraint:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
@@ -711,10 +688,9 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 
 	index->next(q);
 	if (q) {
-	    cerr << "Too many values in index list for " << a->name() << "." 
-		 << endl;
-	    status = false;
-	    goto exit;
+	    throw Error(malformed_expr,
+			string("Too many values in index list for ")
+			+ a->name() + ".");
 	}
 	
 	a->add_constraint(r, start, stride, stop);
@@ -732,12 +708,11 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	cout << endl);
     
     if (p && !r) {
-	cerr << "Too many indices in constraint for " << a->name() << "." 
-	     << endl;
-	status= false;
+	throw Error(malformed_expr,
+		    string("Too many indices in constraint for ")
+		    + a->name() + ".");
     }
 
-exit:
     return status;
 }
 
@@ -753,9 +728,7 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	throw Error(unknown_error, "Expected a Grid variable");
 
     // First do the constraints on the ARRAY in the grid.
-    status = process_array_indices(g->array_var(), indices);
-    if (!status)
-	goto exit;
+    process_array_indices(g->array_var(), indices);
 
     // Now process the maps.
     Pix p, r;
@@ -790,10 +763,9 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 
 	index->next(q);
 	if (q) {
-	    cerr << "Too many values in index list for " << a->name() << "." 
-		 << endl;
-	    status = false;
-	    goto exit;
+	    throw Error(malformed_expr,
+			string("Too many values in index list for ")
+			+ a->name() + ".");
 	}
 
 	a->add_constraint(a->first_dim(), start, stride, stop);
@@ -810,12 +782,11 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	cout << endl);
     
     if (p && !r) {
-	cerr << "Too many indices in constraint for " 
-	     << g->map_var(r)->name() << "." << endl;
-	status= false;
+	throw Error(malformed_expr,
+		    string("Too many indices in constraint for ")
+		    + g->map_var(r)->name() + ".");
     }
 
-exit:
     return status;
 }
 
@@ -848,12 +819,9 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
 
 	index->next(q);
 	if (q) {
-	  ostrstream oss;
-	  oss << "Too many values in index list for " << s->name() << "." 
-	      << ends;
-	  string msg = oss.str();
-	  oss.freeze(0);
-	  throw Error(malformed_expr, msg);
+	  throw Error(malformed_expr, 
+		      string("Too many values in index list for ")
+		      + s->name() + ".");
 	}
 
 	s->set_row_number_constraint(start, stop, stride);
@@ -916,10 +884,8 @@ dereference_string(string &s)
     // By definition, the DDS `D' can have only one variable, so make sure
     // that is true.
     if (d->num_var() != 1) {
-	cerr << 
-	    "Too many variables in URL; use only single variable projections"
-	     << endl;
-	return 0;
+	throw Error (malformed_expr,
+		     string("Too many variables in URL; use only single variable projections"));
     }
 
     // OK, we're here. The first_var() must be the only var, return it bound
@@ -952,10 +918,8 @@ dereference_variable(rvalue *rv, DDS &dds)
     // the value will be read over the net
     BaseType *btp = rv->bvalue("dummy", dds); 
     if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
-	cerr << "Variable: " << btp->name() 
-	    << " must be either a string or a url" 
-	    << endl;
-	return 0;
+	throw Error(malformed_expr, string("The variable `") + btp->name() 
+		    + "' must be either a string or a url");
     }
 
     string s;
@@ -1043,6 +1007,30 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.40  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.39.4.2  2001/07/28 01:10:42  jimg
+ * Some of the numeric type classes did not have copy ctors or operator=.
+ * I added those where they were needed.
+ * In every place where delete (or delete []) was called, I set the pointer
+ * just deleted to zero. Thus if for some reason delete is called again
+ * before new memory is allocated there won't be a mysterious crash. This is
+ * just good form when using delete.
+ * I added calls to www2id and id2www where appropriate. The DAP now handles
+ * making sure that names are escaped and unescaped as needed. Connect is
+ * set to handle CEs that contain names as they are in the dataset (see the
+ * comments/Log there). Servers should not handle escaping or unescaping
+ * characters on their own.
+ *
+ * Revision 1.39.4.1  2001/06/23 00:52:08  jimg
+ * Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
+ * that they are (more or less) the same in all the scanners. There are
+ * one or two characters that differ (for example das.lex allows ( and )
+ * in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
+ * are essentially the same across the board.
+ * Added `#' to the set of characeters allowed in an ID (bug 179).
+ *
  * Revision 1.39  2000/09/22 02:17:23  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

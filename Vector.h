@@ -211,9 +211,10 @@ public:
 
     /** Returns a copy of the template array element. If the Vector contains
 	simple data types, the template will contain the value of the last
-	vector element accessed with the {\tt Vector::var(int i)} function, if
-	any. If no such access has been made, or if the Vector contains
-	compound data types, the value of the template instance is undefined.
+	vector element accessed with the {\tt Vector::var(int i)} function,
+	if any. If no such access has been made, or if the Vector contains
+	compound data types, the value held by the template instance is
+	undefined.
 
 	Note that the parameter {\it exact\_match} is not used by this mfunc.
 
@@ -263,6 +264,12 @@ public:
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.33  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.31.4.2  2001/07/11 05:29:53  jimg
+ * Clarified the documentation for var().
+ *
  * Revision 1.32  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.
  *

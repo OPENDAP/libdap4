@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.48 2001/06/15 23:49:03 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.49 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,17 +44,12 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.48 2001/06/15 23:49:03 jim
 #define FILE_DELIMITER '/'
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::strstream;
-#endif
 
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
-
-// Note that the filter program must define `find_dataset_version()' for this
-// function to work.
 
 bool
 do_version(const string &script_ver, const string &dataset_ver)
@@ -508,7 +503,7 @@ main(int argc, char *argv[])
     while (content_len) {
 	char *word = fmakeword(in, stop, &content_len);
 	cout << "Word: " << word << endl;
-	delete word;
+	delete word; word = 0;
     }
     fclose(in);
 
@@ -520,7 +515,7 @@ main(int argc, char *argv[])
     while (content_len) {
 	char *word = fmakeword(in, stop, &content_len);
 	cout << "Word: " << word << endl;
-	delete word;
+	delete word; word = 0;
     }
     fclose(in);
 #endif
@@ -572,6 +567,25 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.49  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.47.4.7  2001/08/18 00:06:00  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.47.4.6  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.48  2001/06/15 23:49:03  jimg
 // Merged with release-3-2-4.
 //

@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.23 2001/06/15 23:49:04 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.24 2001/08/24 17:46:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,9 +31,7 @@ static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.23 2001/06/15 23:49:04 
 #include "dods-limits.h"
 #include "util.h"		// Jose Garcia: for append_long_to_string.
 
-#ifdef WIN32
 using std::endl;
-#endif
 
 // Deprecated
 void
@@ -124,6 +122,15 @@ void
 save_str(string &dst, const char *src, const int)
 {
     dst = src;
+}
+
+bool
+is_keyword(string id, const string &keyword)
+{
+    downcase(id);
+    id = prune_spaces(id);
+    DBG(cerr << "is_keyword: id = " << id << endl);
+    return id == keyword;
 }
 
 int
@@ -270,6 +277,17 @@ check_url(const char *)
 }
 
 // $Log: parser-util.cc,v $
+// Revision 1.24  2001/08/24 17:46:23  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.21.4.4  2001/08/18 00:00:32  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.21.4.3  2001/06/23 00:47:51  jimg
+// Added is_keyword(). This is used to test an ID to see if it's a keyword.
+// This was added because the dds.y grammar had to be changed when `:' was
+// added to the set of characters allowed in ID names. See dds.y.
+//
 // Revision 1.23  2001/06/15 23:49:04  jimg
 // Merged with release-3-2-4.
 //

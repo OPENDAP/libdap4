@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Byte.cc,v 1.41 2000/10/06 01:26:04 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Byte.cc,v 1.42 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -34,10 +34,8 @@ static char rcsid[] not_used = {"$Id: Byte.cc,v 1.41 2000/10/06 01:26:04 jimg Ex
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
 // NB: Even though Byte is a cardinal type, xdr_char is *not* used to
 // transport Byte arrays over the network. Instead, Byte is a special case
@@ -45,6 +43,24 @@ using std::endl;
 
 Byte::Byte(const string &n) : BaseType(n, dods_byte_c)
 {
+}
+
+Byte::Byte(const Byte &copy_from) : BaseType(copy_from)
+{
+    _buf = copy_from._buf;
+}
+    
+Byte &
+Byte::operator=(const Byte &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<BaseType &>(*this) = rhs;
+
+    _buf = rhs._buf;
+
+    return *this;
 }
 
 unsigned int
@@ -211,6 +227,25 @@ Byte::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Byte.cc,v $
+// Revision 1.42  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.41.4.2  2001/08/18 00:19:18  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.41.4.1  2001/07/28 01:10:41  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.41  2000/10/06 01:26:04  jimg
 // Changed the way serialize() calls read(). The status from read() is
 // returned by the Structure and Sequence serialize() methods; ignored by

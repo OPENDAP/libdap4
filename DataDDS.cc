@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.10 2000/09/22 02:17:19 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.11 2001/08/24 17:46:22 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -29,22 +29,20 @@ static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.10 2000/09/22 02:17:19 jimg
 #include "DataDDS.h"
 #include "debug.h"
 
-#ifdef WIN32
 using std::istrstream;
-#endif
 
 // private
-
-// The version string looks like `DODS/2.14'
 
 void
 DataDDS::_version_string_to_numbers()
 {
-    static Regex version_regex("[a-z]+/[0-9]\\.[0-9]+[.0-9a-zA-Z]*", 1);
+    static Regex version_regex("[-A-Za-z]+/[0-9]\\.[0-9]+[.0-9a-zA-Z() ]*",1);
 
-	DBG(cerr << "in version string to numbers" << endl);
+    DBG(cerr << "in version string to numbers" << endl);
 
-    if (version_regex.match(_server_version.c_str(), _server_version.length()) != (int)_server_version.length()) {
+    if (version_regex.match(_server_version.c_str(),
+			    _server_version.length()) 
+	!= (int)_server_version.length()) {
 	_server_version_major = 0;
 	_server_version_minor = 0;
     }
@@ -108,6 +106,19 @@ DataDDS::set_sequence_level(int level)
 }
 
 // $Log: DataDDS.cc,v $
+// Revision 1.11  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.10.4.2  2001/08/18 00:18:26  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.10.4.1  2001/06/18 23:11:44  jimg
+// Fixed the regex used to recognize version strings sent by servers. The new
+// version string regex will enable parsing of both 3.2's version string with
+// the server name and the older version strings (which just said `dods'). The
+// new code also allows for a version/release name to be included in
+// parentheses.
+//
 // Revision 1.10  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and
@@ -126,8 +137,8 @@ DataDDS::set_sequence_level(int level)
 //
 // Revision 1.7  1999/05/05 00:40:11  jimg
 // Modified the DataDDS class so that a version string may begin with any
-// character sequence, not just `dods'. This means that each server can identify
-// itself in the version string.
+// character sequence, not just `dods'. This means that each server can
+// identify itself in the version string.
 //
 // Revision 1.6  1999/04/29 02:29:29  jimg
 // Merge of no-gnu branch

@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.67 2001/06/15 23:49:04 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.68 2001/08/24 17:46:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,13 +60,11 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.67 2001/06/15 23:49:04 jimg Ex
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::ends;
 using std::sort;
 using std::ostrstream;
-#endif
 
 const char DODS_CE_PRX[]={"dods"};
 
@@ -212,7 +210,7 @@ delete_xdrstdio(XDR *xdr)
 {
     xdr_destroy(xdr);
 
-    delete xdr;
+    delete xdr; xdr = 0;
 }
 
 // This function is used to en/decode Str and Url type variables. It is
@@ -476,16 +474,16 @@ void downcase(string &s) {
 //  don't follow the spec in this regard.
 void flush_stream(iostream ios, FILE *out)
 {
-	int nbytes;
-	char buffer[512];
+    int nbytes;
+    char buffer[512];
 
+    ios.get(buffer,512,NULL);
+    while((nbytes = ios.gcount()) > 0) {
+	fwrite(buffer, 1, nbytes, out);
 	ios.get(buffer,512,NULL);
-	while((nbytes = ios.gcount()) > 0)
-		{
-		fwrite(buffer, 1, nbytes, out);
-		ios.get(buffer,512,NULL);
-		}
-	return;	
+    }
+
+    return;	
 }
 #endif
 
@@ -573,6 +571,26 @@ path_to_filename(string path)
 }
 
 // $Log: util.cc,v $
+// Revision 1.68  2001/08/24 17:46:23  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.65.2.6  2001/08/17 23:59:14  jimg
+// Removed WIN32 compile guards from using statements.
+// Changed some formatting to comply with K&R style.
+//
+// Revision 1.65.2.5  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.67  2001/06/15 23:49:04  jimg
 // Merged with release-3-2-4.
 //

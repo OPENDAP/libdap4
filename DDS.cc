@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.54 2001/06/15 23:49:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.55 2001/08/24 17:46:22 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -37,6 +37,7 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.54 2001/06/15 23:49:01 jimg Exp
 #include "parser.h"
 #include "debug.h"
 #include "util.h"
+#include "escaping.h"
 #include "ce_functions.h"
 #include "cgi_util.h"
 #include "InternalErr.h"
@@ -45,11 +46,9 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.54 2001/06/15 23:49:01 jimg Exp
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::strstream;
-#endif
 
 void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
 int ddsparse(void *arg);
@@ -74,12 +73,11 @@ DDS::duplicate(const DDS &dds)
 {
     name = dds.name;
 
-    DDS &dds_tmp = (DDS &)dds;	// cast away const
+    DDS &dds_tmp = const_cast<DDS &>(dds);
 
     // copy the things pointed to by the list, not just the pointers
     for (Pix src = dds_tmp.first_var(); src; dds_tmp.next_var(src)) {
-	BaseType *btp = dds_tmp.var(src)->ptr_duplicate();
-	add_var(btp);
+	add_var(dds_tmp.var(src)); // add_var() dups the BaseType.
     }
 }
 
@@ -102,16 +100,20 @@ DDS::~DDS()
     Pix p;
 
     // delete all the variables in this DDS
-    for (p = first_var(); p; next_var(p))
+    for (p = first_var(); p; next_var(p)) {
 	delete var(p);
-
+    }
+    
     // delete all the constants created by the parser for CE evaluation
-    for (p = constants.first(); p; constants.next(p))
-	delete constants(p);
+    for (p = constants.first(); p; constants.next(p)) {
+	delete constants(p); constants(p) = 0; 
+    }
 
-    if (!expr.empty())
-	for (p = first_clause(); p; next_clause(p))
-	    delete expr(p);
+    if (!expr.empty()) {
+	for (p = first_clause(); p; next_clause(p)) {
+	    delete expr(p); expr(p) = 0;
+	}
+    }
 }
 
 DDS &
@@ -157,8 +159,9 @@ DDS::add_var(BaseType *bt)
 		  "Trying to add a BaseType object with a NULL pointer.");
 
     DBG(cerr << "In DDS::add_var(), bt's addres is: " << bt << endl);
-    
-    vars.append(bt->ptr_duplicate());
+
+    BaseType *btp = bt->ptr_duplicate();
+    vars.append(btp);
 }
 
 void 
@@ -166,7 +169,7 @@ DDS::del_var(const string &n)
 { 
     for (Pix p = vars.first(); p; vars.next(p))
 	if (vars(p)->name() == n) {
-	    delete vars(p);
+	    delete vars(p); vars(p) = 0;
 	    vars.del(p, -1);
 	    return;
 	}
@@ -191,7 +194,6 @@ DDS::var(const string &n, btp_stack &s)
 	    }
 	}
     }
-
 
     return 0;			// It is not here.
 }    
@@ -586,18 +588,17 @@ DDS::print(ostream &os)
     for (Pix p = vars.first(); p; vars.next(p))
 	vars(p)->print_decl(os);
 
-    os << "} " << name << ";" << endl;
-					   
+    os << "} " << id2www(name) << ";" << endl;
 }
 
 void
 DDS::print(FILE *out)
 {
 #ifdef WIN32
- 	strstream os;
+    strstream os;
     bool retval = print(os);
-	flush_stream(os, out);
-	return retval;
+    flush_stream(os, out);
+    return retval;
 #else
     ofstream os(fileno(out));
     print(os);
@@ -622,18 +623,17 @@ DDS::print_constrained(ostream &os)
 	// variables in the current projection.
 	vars(p)->print_decl(os, "    ", true, false, true);
 
-    os << "} " << name << ";" << endl;
-					   
+    os << "} " << id2www(name) << ";" << endl;
 }
 
 void
 DDS::print_constrained(FILE *out)
 {
 #ifdef WIN32
-	strstream os;
+    strstream os;
     bool retval = print_constrained(os);
-	flush_stream(os, out);
-	return retval;
+    flush_stream(os, out);
+    return retval;
 #else
     ofstream os(fileno(out));
 
@@ -669,14 +669,14 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
      "Passing NULL variable to method DDS::print_variable in *this* object.");
 
 #ifdef WIN32
-	strstream os;
-	print_variable(os, var, constrained);
-	flush_stream(os, out);
+    strstream os;
+    print_variable(os, var, constrained);
+    flush_stream(os, out);
 #else
-	ofstream os(fileno(out));
+    ofstream os(fileno(out));
     print_variable(os, var, constrained);
 #endif
-	return;
+    return;
 }
 
 // Check the semantics of the DDS describing a complete dataset. If ALL is
@@ -752,10 +752,10 @@ void
 DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
 #ifdef WIN32
-	strstream os;
-	bool retval = parse_constraint(constraint, os, server);	
-	flush_stream(os, out);
-	return retval;
+    strstream os;
+    bool retval = parse_constraint(constraint, os, server);	
+    flush_stream(os, out);
+    return retval;
 #else
     ofstream os(fileno(out));
     parse_constraint(constraint, os, server);
@@ -938,6 +938,22 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.55  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.53.4.4  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.54  2001/06/15 23:49:01  jimg
 // Merged with release-3-2-4.
 //

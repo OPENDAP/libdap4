@@ -9,7 +9,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.29 2001/01/26 19:48:09 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.30 2001/08/24 17:46:22 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -23,12 +23,14 @@ static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.29 2001/01/26 19:48:09 jimg
 #include "debug.h"
 #include "util.h"
 #include "AttrTable.h"
+#include "escaping.h"
 
-#ifdef WIN32
 using std::string;
+#if 0
 using std::vector<string>;
-using std::endl;
 #endif
+using std::vector;
+using std::endl;
 
 // Find the attribute #target#. To reference an arbitrary attribute, a user
 // needs an AttrTable and a Pix pointing to an attribute tuple within that
@@ -204,7 +206,7 @@ AttrTable::get_name()
 void
 AttrTable::set_name(const string &n)
 {
-    d_name = n;
+    d_name = www2id(n);
 }
 
 Pix 
@@ -358,7 +360,9 @@ unsigned int
 AttrTable::append_attr(const string &name, const string &type, 
 		       const string &attr) throw (Error)
 {
-    Pix p = simple_find(name);
+    string lname = www2id(name);
+
+    Pix p = simple_find(lname);
 
     // If the types don't match OR this attribute is a container, calling
     // this mfunc is an error!
@@ -375,7 +379,7 @@ AttrTable::append_attr(const string &name, const string &type,
     } else {			// Must be a completely new attribute; add it
 	entry *e = new entry;
 
-	e->name = name;
+	e->name = lname;
 	e->is_alias = false;
 	e->type = String_to_AttrType(type); // Record type using standard names.
 	e->attr = new vector<string>;
@@ -403,14 +407,16 @@ AttrTable::append_container(const string &name) throw (Error)
 AttrTable *
 AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
 {
+    string lname = www2id(name);
+
     if (simple_find(name))
 	throw Error(string("There already exists a container called `")
 		    + name + string("in this attribute table."));
 
-    at->set_name(name);
+    at->set_name(lname);
 
     entry *e = new entry;
-    e->name = name;
+    e->name = lname;
     e->is_alias = false;
     e->type = Attr_container;
     e->attributes = at;
@@ -425,12 +431,14 @@ void
 AttrTable::add_container_alias(const string &name, AttrTable *src) 
     throw (Error)
 {
-    if (simple_find(name))
+    string lname = www2id(name);
+
+    if (simple_find(lname))
 	throw Error(string("There already exists a container called `")
 		    + name + string("in this attribute table."));
 
     entry *e = new entry;
-    e->name = name;
+    e->name = lname;
     e->is_alias = true;
     e->aliased_to = src->get_name();
     e->type = Attr_container;
@@ -446,18 +454,21 @@ void
 AttrTable::add_value_alias(AttrTable *das, const string &name, 
 			   const string &source) throw (Error)
 {
+    string lname = www2id(name);
+    string lsource = www2id(source);
+
     // find the container that holds #source# and then find #source#'s Pix
     // within that container. Search at the uppermost level of the attribtue
     // object to find values defined `above' the current container.
     AttrTable *at;
-    Pix p = das->find(source, &at);
+    Pix p = das->find(lsource, &at);
 
     // If #source# is not found by looking at the topmost level, look in the
     // current table (i.e., alias z x where x is in the current container
     // won't be found by looking for `x' at the top level). See test case 26
     // in das-testsuite.
     if (!(at && p)) {
-	p = find(source, &at);
+	p = find(lsource, &at);
 	if (!(at && p))
 	    throw Error(string("Could not find the attribute `")
 			+ source + string("' in the attribute object."));
@@ -469,14 +480,14 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
 	throw Error(string("A value cannot be aliased to the top level of the\
  DAS;\nOnly containers may be present at that level of the DAS."));
 
-    if (simple_find(name))
+    if (simple_find(lname))
 	throw Error(string("There already exists a container called `")
 		    + name + string("in this attribute table."));
 
     entry *e = new entry;
-    e->name = name;
+    e->name = lname;
     e->is_alias = true;
-    e->aliased_to = source;
+    e->aliased_to = lsource;
     e->type = at->attr_map(p)->type;
     if (e->type == Attr_container)
 	e->attributes = at->get_attr_table(p);
@@ -509,7 +520,9 @@ AttrTable::attr_alias(const string &alias, const string &name)
 void
 AttrTable::del_attr(const string &name, int i)
 {
-    Pix p = simple_find(name);
+    string lname = www2id(name);
+
+    Pix p = simple_find(lname);
     if (p) {
 	if (i == -1) {		// Delete the whole attribute
 	    attr_map.prev(p);	// p now points to the previous element
@@ -535,7 +548,7 @@ AttrTable::simple_print(ostream &os, string pad, Pix p, bool dereference)
 {
     switch (attr_map(p)->type) {
       case Attr_container:
-	os << pad << get_name(p) << " {" << endl;
+	os << pad << id2www(get_name(p)) << " {" << endl;
 
 	attr_map(p)->attributes->print(os, pad + "    ", dereference);
 
@@ -543,12 +556,12 @@ AttrTable::simple_print(ostream &os, string pad, Pix p, bool dereference)
 	break;
 
       default: {
-	    os << pad << get_type(p) << " " << get_name(p) << " " ;
+	    os << pad << get_type(p) << " " << id2www(get_name(p)) << " " ;
 
 	    vector<string> *sxp = attr_map(p)->attr;
-
-	    for (vector<string>::const_iterator i = sxp->begin(); 
-		 i < (sxp->end()-1); ++i)
+	    
+	    vector<string>::iterator last = sxp->end()-1;
+	    for (vector<string>::iterator i = sxp->begin(); i != last; ++i)
 		os << *i << ", ";
   
 	    os << *(sxp->end()-1) << ";" << endl;
@@ -566,8 +579,8 @@ AttrTable::print(ostream &os, string pad, bool dereference)
 		simple_print(os, pad, p, dereference);
 	    }
 	    else {
-		os << pad << "Alias " << get_name(p) << " " 
-		   << attr_map(p)->aliased_to << ";" << endl;
+		os << pad << "Alias " << id2www(get_name(p)) << " " 
+		   << id2www(attr_map(p)->aliased_to) << ";" << endl;
 	    }
 	} 
 	else {
@@ -577,6 +590,25 @@ AttrTable::print(ostream &os, string pad, bool dereference)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.30  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.28.4.4  2001/08/18 01:48:53  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.28.4.3  2001/07/28 01:10:41  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.29  2001/01/26 19:48:09  jimg
 // Merged with release-3-2-3.
 //

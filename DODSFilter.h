@@ -212,6 +212,8 @@ public:
 	@return A string object that contains the name of the dataset. */
     string get_dataset_name();
 
+    virtual void set_dataset_name(const string _dataset);
+
     /** To read version information that is specific to a certain
 	dataset, override this method with an implementation that does
 	what you want. By default, this returns an empty string.
@@ -388,6 +390,16 @@ public:
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.20  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.18.2.4  2001/08/21 14:54:43  dan
+// Added a set_dataset_name method to provide a mechanism to change the
+// dataset name in the DODSFilter class, which currently can only be set
+// by running the constructor.   This method was required for a modification
+// to the jg-dods server which now support relative pathnames as part of
+// the object name.
+//
 // Revision 1.19  2001/06/15 23:49:02  jimg
 // Merged with release-3-2-4.
 //

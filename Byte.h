@@ -72,6 +72,10 @@ public:
 
     virtual ~Byte() {}
 
+    Byte(const Byte &copy_from);
+
+    Byte &operator=(const Byte &rhs);
+
     virtual BaseType *ptr_duplicate() = 0;
 
     virtual unsigned int width();
@@ -93,6 +97,22 @@ public:
 
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.31  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
+ *
+ * Revision 1.30.4.1  2001/07/28 01:10:41  jimg
+ * Some of the numeric type classes did not have copy ctors or operator=.
+ * I added those where they were needed.
+ * In every place where delete (or delete []) was called, I set the pointer
+ * just deleted to zero. Thus if for some reason delete is called again
+ * before new memory is allocated there won't be a mysterious crash. This is
+ * just good form when using delete.
+ * I added calls to www2id and id2www where appropriate. The DAP now handles
+ * making sure that names are escaped and unescaped as needed. Connect is
+ * set to handle CEs that contain names as they are in the dataset (see the
+ * comments/Log there). Servers should not handle escaping or unescaping
+ * characters on their own.
+ *
  * Revision 1.30  2000/09/22 02:17:19  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -15,7 +15,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.111 2001/06/15 23:49:01 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.112 2001/08/24 17:46:22 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -899,6 +899,8 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	    }
 
 	    delete tempstr;
+	    tempstr = 0;
+
 	    fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
 	}
     }
@@ -975,7 +977,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 #else
 	string croot = string("file:") + cache_root;
 #endif
-	croot = id2dods(string(croot), string(" "));
+	croot = id2www(string(croot));
 
 	_cache_root = new char[strlen(cache_root.c_str()) + 1];
 	strcpy(_cache_root, cache_root.c_str());
@@ -1079,6 +1081,10 @@ bool
 Connect::read_url(string & url, FILE * stream)
 {
     assert(stream);
+
+#if 0
+    url = id2www(url);
+#endif
 
     int status = YES;
 
@@ -1235,6 +1241,7 @@ Connect::~Connect()
     if (!_local) {
 #ifdef GUI
 	delete _gui;
+	_gui = 0;
 #endif
 	_num_remote_conns--;
     }
@@ -1258,6 +1265,7 @@ Connect::~Connect()
 	    HTLibTerminate();
 	_conv = 0;
 	delete[] _cache_root;
+	_cache_root = 0;
     } else if (_cache_enabled)
 	HTCacheIndex_write(_cache_root);
 
@@ -1420,7 +1428,7 @@ Connect::request_das(bool gui_p, const string & ext)
 #endif
     string das_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
-	das_url = das_url + "?" + _proj + _sel;
+	das_url = das_url + "?" + id2www_ce(_proj + _sel);
     bool status = false;
     string value;
 
@@ -1473,7 +1481,7 @@ Connect::request_dds(bool gui_p, const string & ext)
 #endif
     string dds_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
-	dds_url = dds_url + "?" + _proj + _sel;
+	dds_url = dds_url + "?" + id2www_ce(_proj + _sel);
     bool status = false;
 
     status = fetch_url(dds_url);
@@ -1582,7 +1590,7 @@ Connect::process_data(bool async)
 
 DDS *
 Connect::request_data(string expr, bool gui_p,
-			   bool async, const string & ext)
+		      bool async, const string & ext)
 {
 #ifdef GUI
     (void) _gui->show_gui(gui_p);
@@ -1597,9 +1605,10 @@ Connect::request_data(string expr, bool gui_p,
 	sel = "";
     }
 
-    string data_url = _URL + "." + ext + "?" + _proj + proj + _sel + sel;
-    bool status = fetch_url(data_url, async);
+    string data_url = _URL + "." + ext + "?" 
+	+ id2www_ce(_proj + proj + _sel + sel);
 
+    bool status = fetch_url(data_url, async);
     if (!status) {
 	cerr << "Could not complete data request operation" << endl;
 	return 0;
@@ -1611,6 +1620,9 @@ Connect::request_data(string expr, bool gui_p,
 DDS *
 Connect::read_data(FILE * data_source, bool gui_p, bool async)
 {
+    if (!data_source) 
+	throw InternalErr(__FILE__, __LINE__, "data_source is null.");
+
 #ifdef GUI
     _gui->show_gui(gui_p);
 #endif
@@ -1695,6 +1707,31 @@ Connect::set_credentials(string u, string p)
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.112  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.105.2.10  2001/08/22 06:13:56  jimg
+// CEs are not sent to id2www_ce() which is more relaxed about the characters
+// it allows. This was done so that new clients would not break old servers.
+//
+// Revision 1.105.2.9  2001/07/28 01:10:41  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
+// Revision 1.105.2.8  2001/07/11 05:29:11  jimg
+// Connect::read_data() throws an InternalErr if it is passed a null data_source
+// pointer (FILE *). This is a fix for clients that used the `read from a file
+// or stdin' feature of Connect and don't check this themselves.
+//
 // Revision 1.111  2001/06/15 23:49:01  jimg
 // Merged with release-3-2-4.
 //

@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: UInt32.cc,v 1.15 2000/10/06 01:26:05 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: UInt32.cc,v 1.16 2001/08/24 17:46:22 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -34,14 +34,30 @@ static char rcsid[] not_used = {"$Id: UInt32.cc,v 1.15 2000/10/06 01:26:05 jimg 
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
 UInt32::UInt32(const string &n) 
     : BaseType(n, dods_uint32_c, (xdrproc_t)XDR_UINT32)
 {
+}
+
+UInt32::UInt32(const UInt32 &copy_from) : BaseType(copy_from)
+{
+    _buf = copy_from._buf;
+}
+    
+UInt32 &
+UInt32::operator=(const UInt32 &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<BaseType &>(*this) = rhs;
+
+    _buf = rhs._buf;
+
+    return *this;
 }
 
 unsigned int
@@ -185,6 +201,25 @@ UInt32::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: UInt32.cc,v $
+// Revision 1.16  2001/08/24 17:46:22  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.15.4.2  2001/08/18 00:13:40  jimg
+// Removed WIN32 compile guards from using statements.
+//
+// Revision 1.15.4.1  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
 // Revision 1.15  2000/10/06 01:26:05  jimg
 // Changed the way serialize() calls read(). The status from read() is
 // returned by the Structure and Sequence serialize() methods; ignored by

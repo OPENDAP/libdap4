@@ -50,7 +50,11 @@ struct parser_arg {
 
     parser_arg() : _object(0), _error(0), _status(1) {}
     parser_arg(void *obj) : _object(obj), _error(0), _status(1) {}
-    virtual ~parser_arg() {if (_error) delete _error;}
+    virtual ~parser_arg() {
+	if (_error) {
+	    delete _error; _error = 0;
+	}
+    }
 
     void *object() { return _object; }
     void set_object(void *obj) { _object = obj; }
@@ -118,6 +122,8 @@ void parse_error(const string &msg, const int line_num,
 void save_str(char *dst, const char *src, const int line_num) throw (Error);
 void save_str(string &dst, const char *src, const int);
 
+bool is_keyword(string id, const string &keyword);
+
 /** Check to see if #val# is a valid byte value. If not, generate an error
     message using #parser_error()#. There are two versions of #check_byte()#,
     one which calls #parser_error()# and prints an error message to stderr an
@@ -154,6 +160,27 @@ int check_float64(const char *val);
 int check_url(const char *val);
 
 // $Log: parser.h,v $
+// Revision 1.16  2001/08/24 17:46:23  jimg
+// Resolved conflicts from the merge of release 3.2.6
+//
+// Revision 1.14.4.3  2001/07/28 01:10:42  jimg
+// Some of the numeric type classes did not have copy ctors or operator=.
+// I added those where they were needed.
+// In every place where delete (or delete []) was called, I set the pointer
+// just deleted to zero. Thus if for some reason delete is called again
+// before new memory is allocated there won't be a mysterious crash. This is
+// just good form when using delete.
+// I added calls to www2id and id2www where appropriate. The DAP now handles
+// making sure that names are escaped and unescaped as needed. Connect is
+// set to handle CEs that contain names as they are in the dataset (see the
+// comments/Log there). Servers should not handle escaping or unescaping
+// characters on their own.
+//
+// Revision 1.14.4.2  2001/06/23 00:47:51  jimg
+// Added is_keyword(). This is used to test an ID to see if it's a keyword.
+// This was added because the dds.y grammar had to be changed when `:' was
+// added to the set of characters allowed in ID names. See dds.y.
+//
 // Revision 1.15  2001/01/26 19:48:10  jimg
 // Merged with release-3-2-3.
 //
