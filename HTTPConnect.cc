@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.5 2003/02/21 00:14:24 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.6 2003/02/27 08:32:51 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -317,8 +317,7 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
 
 HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
     : d_username(""), d_password(""), d_is_response_present(false),
-      d_type(unknown_type), d_server("dods/0.0"), // d_output(0), 
-      d_cached_response(false)
+      d_type(unknown_type), d_server("dods/0.0"), d_cached_response(false)
 {
     d_accept_deflate = rcr->get_deflate();
     d_rcr = rcr;
@@ -349,10 +348,6 @@ HTTPConnect::~HTTPConnect()
 #endif
 
     curl_easy_cleanup(d_curl);
-
-#if 0
-    close_output();
-#endif
 
     DBG2(cerr << "Leaving the HTTPConnect dtor" << endl);
 }
@@ -478,9 +473,6 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 	DBG(cerr << "yes... ");
 	if (d_http_cache->is_url_valid(url)) { // url in cache and valid
 	    DBG(cerr << "and it's valid; using cached response." << endl);
-#if 0
-	    close_output() ;
-#endif
 	    stream = d_http_cache->get_cached_response(url, d_headers);
 	    d_cached_response = true;
 	}
@@ -510,9 +502,6 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 	      case 200: {		// New headers and new body
 		    DBG(cerr << "read a brand new response; caching." << endl);
 		    d_http_cache->cache_response(url, now, d_headers, body);
-#if 0
-		    close_output() ;
-#endif
 		    stream = body;
 		    d_cached_response = false;
 		}
@@ -527,9 +516,6 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 		    body = 0 ;
 		    delete_temp_file(dods_temp);
 		    d_http_cache->update_response(url, now, d_headers);
-#if 0
-		    close_output() ;
-#endif
 		    stream = d_http_cache->get_cached_response_body(url);
 		    d_cached_response = true;
 		}
@@ -596,12 +582,9 @@ HTTPConnect::plain_fetch_url(const string &url) throw(Error, InternalErr)
 				// bug might have been a problem in libwww
     delete_temp_file(dods_temp);
 
-#if 0
-    close_output() ;
-    d_output = stream;
-#endif
-    return stream;
     d_cached_response = false;
+
+    return stream;
 }
 
 /** True if fetch_url() has been called and a response has been received. 
@@ -625,60 +608,6 @@ HTTPConnect::get_response_headers() throw(InternalErr)
 
     return d_headers;
 }
-
-#if 0
-/** Returns a file pointer which can be used to read the data
-    fetched from a URL.
-
-    Note that occasionally this may be directed to #stdout#.  If this
-    is the case, users should avoid closing it.
-
-    @memo Access the information contained in this Connect instance.
-    @see Connect::fetch_url
-    @return A <code>(FILE *)</code> indicating a file containing the data
-    received from a dereferenced URL.  
-    @exeception IntenalErr The is_response_present() property is false. */
-
-FILE *
-HTTPConnect::output() throw(InternalErr)
-{
-    if (!d_is_response_present)
-	throw InternalErr(__FILE__, __LINE__, "Caller tried to access response invalid response information");
-
-    return d_output;
-}
-#endif
-
-#if 0
-/** Close the output stream of the Connect object. This closes the FILE
-    pointer returned by #output()#. In addition, it also deletes the internal
-    XDR stream object, although users should not have to know about
-    that\ldots Note that calling this method resets (clears) the <code>response
-    valid</code> property.
-
-    @memo Close the object's output stream if it is not NULL or STDOUT. */
-
-void 
-HTTPConnect::close_output() throw(InternalErr)
-{
-    d_is_response_present = false;
-
-    if (d_output) {
-	if (ferror(d_output))
-	    throw InternalErr(__FILE__, __LINE__,
-			      "Error detected in the data stream.");
-	int res = fclose(d_output);
-	if( res ) {
-	    DBG(cerr << "HTTPConnect::close_output - Failed to close " << (void *)d_output << endl ;) ;
-	}
-	if (d_cached_response)
-	    d_http_cache->release_cached_response(d_output);
-
-	d_output = 0;
-	d_cached_response = false;
-    }
-}
-#endif
 
 /** During the parse of the message headers returned from the dereferenced
     URL, the object type is set. Use this function to read that type
@@ -740,6 +669,9 @@ HTTPConnect::set_credentials(string u, string p) throw(InternalErr)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.6  2003/02/27 08:32:51  jimg
+// Removed old code.
+//
 // Revision 1.5  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
