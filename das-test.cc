@@ -7,7 +7,11 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.1  1994/08/02 18:08:38  jimg
+// Revision 1.2  1994/09/09 16:13:16  jimg
+// Added code to test the stdin, FILE * and file descriptor functions of
+// class DAS.
+//
+// Revision 1.1  1994/08/02  18:08:38  jimg
 // Test driver for DAS (and AttrTable) classes.
 //
 
@@ -24,6 +28,7 @@ main(int argc, char *argv[])
 {
     GetOpt getopt (argc, argv, "d");
     int option_char;
+    bool use_fd = false;	// true to exercise the fd functions
 
     // process options first so that debugging in on for object instantitaion.
     while ((option_char = getopt ()) != EOF)
@@ -33,22 +38,44 @@ main(int argc, char *argv[])
 	      space_debug = 1;
 	      executable_name = "das-test";
 	      break;
+	    case 'f':
+	      use_fd = true;
+	      break;
 	    case '?': 
-	      fprintf (stderr, "usage: %s [d] filename ...\n", argv[0]);
+	      cerr << "usage: " << argv[0] << " [df] in-file1 out-file1 ..."
+		   << endl;
 	  }
 
     DAS das;
 
-    for (int i = getopt.optind; i < argc; ++i) {
+    // If a file is named "-", assume that the user means stdin or stdout.
+    for (int i = getopt.optind; i < argc; i+=2) {
 	if (strcmp(argv[i], "-") == 0) {
 	    cout << "Enter attributes:\n";
 	    das.parse();
-	    cout << das;
 	}
 	else {
 	    cout << "Reading from: " << argv[i] << endl;
-	    das.parse(argv[i]);
-	    cout << das;
+	    if (use_fd) {
+		int fd = open(argv[i], O_RDONLY);
+		das.parse(fd);
+		close(fd);
+	    }
+	    else
+		das.parse(argv[i]);
+	}
+
+	if (strcmp(argv[i+1], "-") == 0)
+	    das.print();
+	else {
+	    cout << "Writing to: " << argv[i+1] << endl;
+	    if (use_fd) {
+		int fd = open(argv[i], O_WRONLY);
+		das.print(fd);
+		close(fd);
+	    }
+	    else
+		das.print(argv[i+1]);
 	}
     }
 }
