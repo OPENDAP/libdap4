@@ -9,6 +9,14 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.90  2000/04/07 00:19:04  jimg
+// Merged Brent's changes for the progress gui - he added a cancel button.
+// Also repaired the last of the #ifdef Gui bugs so that we can build Gui
+// and non-gui versions of the library that use one set of header files.
+//
+// Revision 1.89.2.1  2000/04/04 05:00:24  brent
+// put a Cancel button the Tcl/Tk GUI
+//
 // Revision 1.89  2000/03/28 16:18:17  jimg
 // Added a DEFAULT_EXPIRES parameter to the .dodsrc file. The default
 // expiration time is now set by connect, using the value read from .dodsrc,
@@ -517,7 +525,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.89 2000/03/28 16:18:17 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.90 2000/04/07 00:19:04 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -570,7 +578,9 @@ char *Connect::_cache_root = 0;
 // refreshed or uncompressed data that will be cached. When set this flag
 // overrides the value passed into the Connect object's constructor. This
 // gives users control over the value. Previously, this could only be set by
-// the program that called Connect(...).
+// the program that called Connect(...). 
+// Note that I've now (4/6/2000 jhrg) fixed libwww so this parameter is no
+// longer needed.
 static const int DODS_USE_CACHE = 1;   // 0- Disabled 1- Enabled
 static const int DODS_CACHE_MAX = 20;  // Max cache size in Mbytes
 static const int DODS_CACHED_OBJ = 5;  // Max cache entry size in Mbytes
@@ -626,18 +636,18 @@ timeout_handler(HTRequest *request)
     Connect *me = (Connect *)HTRequest_context(request);
     string cmd;
 
-    if (!me->gui()->progress_visible())
+    if (!me->_gui->progress_visible())
 	cmd = (string)"popup \"Request timeout...\"";
     else
 	cmd = (string)"text \"Request timeout...\"";
 	
-    me->gui()->progress_visible(me->gui()->command(cmd));
+    me->_gui->progress_visible(me->_gui->command(cmd));
 
-    if (me->gui()->progress_visible()) {
+    if (me->_gui->progress_visible()) {
 	sleep(3);
 	cmd = (string)"popdown";
-	me->gui()->command(cmd);
-	me->gui()->progress_visible(false);
+	me->_gui->command(cmd);
+	me->_gui->progress_visible(false);
     }
 #endif
 
@@ -661,57 +671,58 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 #ifdef GUI
     Connect *me = (Connect *)HTRequest_context(request);
     string cmd;
+    int usr_cancel = 0;
 
     switch (op) {
       case HT_PROG_DNS:
-	if (!me->gui()->progress_visible())
+	if (!me->_gui->progress_visible())
 	    cmd = (string)"popup \"Looking up " + (char *)input + "\"";
 	else
 	    cmd = (string)"text \"Looking up " + (char *)input + "\"";
 	
-	me->gui()->progress_visible(me->gui()->command(cmd));
+	me->_gui->progress_visible(me->_gui->command(cmd));
         break;
 
       case HT_PROG_CONNECT:
-	if (!me->gui()->progress_visible())
+	if (!me->_gui->progress_visible())
 	    cmd = (string)"popup \"Contacting host...\"";
 	else
 	    cmd = (string)"text \"Contacting host...\"";
 	
-	me->gui()->progress_visible(me->gui()->command(cmd));
+	me->_gui->progress_visible(me->_gui->command(cmd));
         break;
 
       case HT_PROG_ACCEPT:
-	if (!me->gui()->progress_visible())
+	if (!me->_gui->progress_visible())
 	    cmd = (string)"popup \"Waiting for connection...\"";
 	else
 	    cmd = (string)"text \"Waiting for connection...\"";
 	
-	me->gui()->progress_visible(me->gui()->command(cmd));
+	me->_gui->progress_visible(me->_gui->command(cmd));
         break;
 
       case HT_PROG_READ: {
-	  if (!me->gui()->progress_visible())
+	  if (!me->_gui->progress_visible())
 	      cmd = (string)"popup \"Reading...\"";
 	  else
 	      cmd = (string)"text \"Reading...\"";
-	  me->gui()->progress_visible(me->gui()->command(cmd));
+	  me->_gui->progress_visible(me->_gui->command(cmd));
 	  
-	  if (!me->gui()->progress_visible()) // Bail if window won't popup
+	  if (!me->_gui->progress_visible()) // Bail if window won't popup
 	      break;
 
 	  long cl = HTAnchor_length(HTRequest_anchor(request));
 	  if (cl >= 0) {
 	      long b_read = HTRequest_bodyRead(request);
 	      double pro = (double) b_read/cl*100;
-	      ostrstream cmd_s;
-	      cmd_s << "bar " << pro << "\r" << ends;
-	      (void)me->gui()->command(cmd_s.str());
-	      cmd_s.rdbuf()->freeze(0);
+              (void)me->_gui->percent_bar(pro, &usr_cancel);
+              if (usr_cancel == 1)       // the usr wants to bail
+                  HTRequest_kill(request);
 	  }
 	  else {
-	      cmd = (string)"bar -1";
-	      (void)me->gui()->command(cmd);
+              (void)me->_gui->percent_bar(-1.0, &usr_cancel);
+              if (usr_cancel == 1)       // the usr wants to bail
+                  HTRequest_kill(request);
 	  }
 	  
 	  break;
@@ -723,32 +734,32 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 
       case HT_PROG_DONE:
 	cmd = (string)"popdown";
-	me->gui()->command(cmd);
-	me->gui()->progress_visible(false);
+	me->_gui->command(cmd);
+	me->_gui->progress_visible(false);
         break;
 
       case HT_PROG_INTERRUPT:
-	if (!me->gui()->progress_visible())
+	if (!me->_gui->progress_visible())
 	    cmd = (string)"popup \"Request interrupted.\"";
 	else
 	    cmd = (string)"text \"Request interrupted.\"";
-	me->gui()->progress_visible(me->gui()->command(cmd));
+	me->_gui->progress_visible(me->_gui->command(cmd));
         break;
 
       case HT_PROG_OTHER:
-	if (!me->gui()->progress_visible())
+	if (!me->_gui->progress_visible())
 	    cmd = (string)"popup \"Message: " + (char *)input + ".\"";
 	else
 	    cmd = (string)"text \"Message: " + (char *)input + ".\"";
-	me->gui()->progress_visible(me->gui()->command(cmd));
+	me->_gui->progress_visible(me->_gui->command(cmd));
         break;
 
       case HT_PROG_TIMEOUT:
-	if (!me->gui()->progress_visible())
+	if (!me->_gui->progress_visible())
 	    cmd = (string)"popup \"Request timeout.\"";
 	else
 	    cmd = (string)"text \"Request timeout.\"";
-	me->gui()->progress_visible(me->gui()->command(cmd));
+	me->_gui->progress_visible(me->_gui->command(cmd));
         break;
 
       default:
@@ -780,7 +791,7 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
     string passwd = "\0";
 
 #ifdef GUI
-    if (!me->gui()->password(user, passwd))
+    if (!me->_gui->password(user, passwd))
 	return NO;
 #endif
 
@@ -885,8 +896,8 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 	Connect *me = (Connect *)HTRequest_context(request);
 
 #ifdef GUI
-	if (me->gui()->show_gui()) {
-	    if (!me->gui()->simple_error((char *)(HTChunk_data(msg))));
+	if (me->_gui->show_gui()) {
+	    if (!me->_gui->simple_error((char *)(HTChunk_data(msg))));
 		cerr << "GUI Failure in dods_error_print()" << endl;
 	}
 	else {
@@ -1244,11 +1255,8 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 #ifdef HT_ZLIB
 	HTList *content_encodings = HTList_new();
 	HTContentEncoderInit(content_encodings);
-#if 0
 	// HTContentEncoderInit adds `deflate' if libwww was built with
 	// HT_ZLIB defined. 3/28/2000 jhrg
-	HTCoding_add(content_encodings, "deflate", NULL, HTZLib_inflate, 1.0);
-#endif
 	HTFormat_setContentCoding(content_encodings);
 #endif /* HT_ZLIB */
     }
@@ -1381,30 +1389,7 @@ Connect::read_url(string &url, FILE *stream)
     // CJM used HT_CACHE_VALIDATE; HT_CACHE_OK supresses the validation.
     if(_cache_enabled) HTRequest_setReloadMode(_request, HT_CACHE_OK);
 
-    // If the user is asking for data and it might be compressed, turn off
-    // the cache *for this particular request*. Once the servers are all
-    // version 3.2 or greater this won't be necessary since they should all
-    // issue cache-control headers in their responses. (Or we will fix the
-    // libwww bug that makes compressed documents break the cache...).
-    // 12/1/99 jhrg
-    // I fixed the libwww bug. 3/16/2000 jhrg
-#if 0
-    bool suppress_cache = false;
-    if (_accept_deflate && url.find(".dods") != url.npos) {
-	suppress_cache = true;
-	HTCacheMode_setEnabled(false);
-	set_cache_control("no-cache");
-    }
-#endif
-
     status = HTLoadRelative(url.c_str(), _anchor, _request);
-
-#if 0
-    if (suppress_cache) {	// if suppresed above, undo for the next req.
-	HTCacheMode_setEnabled(true);
-	set_cache_control("");
-    }
-#endif
 
     if (_cache_enabled) 
 	HTCacheIndex_write(_cache_root);
@@ -1669,7 +1654,7 @@ bool
 Connect::request_das(bool gui_p, const string &ext)
 {
 #ifdef GUI
-    (void)gui()->show_gui(gui_p);
+    (void)_gui->show_gui(gui_p);
 #endif
     string das_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
@@ -1689,7 +1674,11 @@ Connect::request_das(bool gui_p, const string &ext)
 	      status = false;
 	      break;
 	  }
-	  correction = _error.correct_error(gui());
+#ifdef GUI
+	  correction = _error.correct_error(_gui);
+#else
+	  correction = _error.correct_error(0);
+#endif
 	  status = false;
 	  break;
       }
@@ -1715,7 +1704,7 @@ bool
 Connect::request_dds(bool gui_p, const string &ext)
 {
 #ifdef GUI
-    (void)gui()->show_gui(gui_p);
+    (void)_gui->show_gui(gui_p);
 #endif
     string dds_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
@@ -1734,7 +1723,11 @@ Connect::request_dds(bool gui_p, const string &ext)
 	      status = false;
 	      break;
 	  }
-	  correction = _error.correct_error(gui());
+#ifdef GUI
+	  correction = _error.correct_error(_gui);
+#else
+	  correction = _error.correct_error(0);
+#endif
 	  status = false;
 	  break;
       }
@@ -1830,7 +1823,7 @@ Connect::request_data(string expr, bool gui_p,
 		      bool async, const string &ext)
 {
 #ifdef GUI
-    (void)gui()->show_gui(gui_p);
+    (void)_gui->show_gui(gui_p);
 #endif
     string proj, sel;
     string::size_type dotpos = expr.find('&');
@@ -1858,7 +1851,7 @@ DDS *
 Connect::read_data(FILE *data_source, bool gui_p, bool async)
 {
 #ifdef GUI
-    (void)gui()->show_gui(gui_p);
+    _gui->show_gui(gui_p);
 #endif
     // Read from data_source and parse the MIME headers specific to DODS.
     parse_mime(data_source);
@@ -1868,11 +1861,8 @@ Connect::read_data(FILE *data_source, bool gui_p, bool async)
     return process_data(async);
 }
 
-#ifdef GUI
-Gui *
-#else
+// Never use this.
 void *
-#endif
 Connect::gui()
 {
 #ifdef GUI

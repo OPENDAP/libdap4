@@ -32,6 +32,11 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.43  2000/04/07 00:19:04  jimg
+ * Merged Brent's changes for the progress gui - he added a cancel button.
+ * Also repaired the last of the #ifdef Gui bugs so that we can build Gui
+ * and non-gui versions of the library that use one set of header files.
+ *
  * Revision 1.42  1999/12/15 01:14:37  jimg
  * Added static members to help control the cache.
  *
@@ -243,9 +248,6 @@
 #endif
 
 #include <stdio.h>
-#ifdef LIBWWW_5_0
-#include <sys/time.h>
-#endif
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
@@ -446,6 +448,15 @@ private:
     @memo Simple MIME parser. 
     */
     void parse_mime(FILE *data_source);
+
+    friend char dods_username_password(HTRequest * request, HTAlertOpcode,
+				       int, const char *, void *, 
+				       HTAlertPar * reply);
+
+    friend char dods_progress(HTRequest * request, HTAlertOpcode op, int, 
+			      const char *, void * input, HTAlertPar *);
+
+    friend int timeout_handler(HTRequest *request);
 
     friend int description_handler(HTRequest *request, HTResponse *response,
 				   const char *token, const char *val);
@@ -703,16 +714,19 @@ public:
       created.  This function returns a pointer to the Gui object, so
       you can modify the GUI as desired.
 
+      This member will be removed since its presence makes it hard to build
+      Gui and non-gui versions of the DAP. The Gui object is accessed is in
+      Connect and Error, but in the later case an instance of Gui is always
+      passed to the instance of Error. Thus, even though it is a dubious
+      design, we can use the private member _gui and pass the pointer to
+      outside classes. Eventually, Connect must be redesigned.
+
       @memo Returns a pointer to a Gui object.
       @return a pointer to the Gui object associated with this
       connection. 
-      @see Gui 
-      */
-#ifdef GUI
-    Gui *gui();
-#else
+      @deprecated 
+      @see Gui */
     void *gui();
-#endif
 
   /** Reads the DAS corresponding to the dataset in the Connect
       object's URL. 
