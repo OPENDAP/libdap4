@@ -11,6 +11,12 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.38  1999/12/01 21:33:01  jimg
+// Added rfc822_date(...).
+// Added Date headers to all the mime header output functions.
+// Added Cache-Control: no-cache to the binary header with deflate is true.
+// Removed old code.
+//
 // Revision 1.37  1999/09/03 22:07:45  jimg
 // Merged changes from release-3-1-1
 //
@@ -182,7 +188,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.37 1999/09/03 22:07:45 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.38 1999/12/01 21:33:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -468,28 +474,62 @@ name_path(const string &path)
     return new_path;
 }
 
-#if 0
+// Return a MIME rfc-822 date. The grammar for this is:
+//       date-time   =  [ day "," ] date time        ; dd mm yy
+//                                                   ;  hh:mm:ss zzz
+//
+//       day         =  "Mon"  / "Tue" /  "Wed"  / "Thu"
+//                   /  "Fri"  / "Sat" /  "Sun"
+//
+//       date        =  1*2DIGIT month 2DIGIT        ; day month year
+//                                                   ;  e.g. 20 Jun 82
+//                   NB: year is 4 digit; see RFC 1123. 11/30/99 jhrg
+//
+//       month       =  "Jan"  /  "Feb" /  "Mar"  /  "Apr"
+//                   /  "May"  /  "Jun" /  "Jul"  /  "Aug"
+//                   /  "Sep"  /  "Oct" /  "Nov"  /  "Dec"
+//
+//       time        =  hour zone                    ; ANSI and Military
+//
+//       hour        =  2DIGIT ":" 2DIGIT [":" 2DIGIT]
+//                                                   ; 00:00:00 - 23:59:59
+//
+//       zone        =  "UT"  / "GMT"                ; Universal Time
+//                                                   ; North American : UT
+//                   /  "EST" / "EDT"                ;  Eastern:  - 5/ - 4
+//                   /  "CST" / "CDT"                ;  Central:  - 6/ - 5
+//                   /  "MST" / "MDT"                ;  Mountain: - 7/ - 6
+//                   /  "PST" / "PDT"                ;  Pacific:  - 8/ - 7
+//                   /  1ALPHA                       ; Military: Z = UT;
+//                                                   ;  A:-1; (J not used)
+//                                                   ;  M:-12; N:+1; Y:+12
+//                   / ( ("+" / "-") 4DIGIT )        ; Local differential
+//                                                   ;  hours+min. (HHMM)
+
+static char *days[]={"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+static char *months[]={"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", 
+			"Aug", "Sep", "Oct", "Nov", "Dec"};
+
+/** Given a constant pointer to a time_t, return a RFC 822 style date. This
+    function returns the RFC 822 date with the exception that the RFC 1123
+    modification for four-digit years is implemented. The date is returned in
+    a statically allocated char array so it must be copied before being
+    used. 
+
+    @return The RFC 822 style date in a statically allocated char [].
+    @param t A const time_t pointer. */
 char *
-name_path(const char *path)
+rfc822_date(const time_t *t)
 {
-    if (!path)
-	return NULL;
+    struct tm *stm = gmtime(t);
+    static char d[64];
 
-    char *cp = strrchr(path, FILE_DELIMITER);
-    if (cp == 0)                // no delimiter
-	cp = (char *)path;
-    else                        // skip delimeter
-	cp++;
-
-    char *newp = new char[strlen(cp)+1]; 
-
-    (void) strcpy(newp, cp);	// copy last component of path
-    if ((cp = strrchr(newp, '.')) != NULL)
-      *cp = '\0';               /* strip off any extension */
-
-    return newp;
+    sprintf(d, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday], 
+	    stm->tm_mday, months[stm->tm_mon], 
+	    stm->tm_year < 100 ? 1900 + stm->tm_year : stm->tm_year, 
+	    stm->tm_hour, stm->tm_min, stm->tm_sec);
+    return d;
 }
-#endif
 
 // Send string to set the transfer (mime) type and server version
 // Note that the content description filed is used to indicate whether valid
@@ -518,6 +558,8 @@ set_mime_text(ostream &os, ObjectType type, const string &ver,
 {
     os << "HTTP/1.0 200 OK" << endl;
     os << "XDODS-Server: " << ver << endl;
+    const time_t t = time(0);
+    os << "Date: " << rfc822_date(&t) << endl;
     os << "Content-type: text/plain" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     // Don't write a Content-Encoding header for x-plain since that breaks
@@ -541,10 +583,16 @@ set_mime_binary(ostream &os, ObjectType type, const string &ver,
 {
     os << "HTTP/1.0 200 OK" << endl;
     os << "XDODS-Server: " << ver << endl;
+    const time_t t = time(0);
+    os << "Date: " << rfc822_date(&t) << endl;
     os << "Content-type: application/octet-stream" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
-    if (enc != x_plain)
+    if (enc != x_plain) {
+	// Until we fix the bug in the cache WRT compressed data, supress
+	// caching for those requests. 11/30/99 jhrg
+       	os << "Cache-Control: no-cache" << endl;
 	os << "Content-Encoding: " << encoding[enc] << endl;
+    }
     os << endl;
 }
 
@@ -562,6 +610,8 @@ set_mime_error(ostream &os, int code, const string &reason,
 {
     os << "HTTP/1.0 " << code << " " << reason << endl;
     os << "XDODS-Server: " << version << endl;
+    const time_t t = time(0);
+    os << "Date: " << rfc822_date(&t) << endl;
     os << endl;
 }
 
