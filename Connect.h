@@ -32,6 +32,14 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.48  2000/08/02 22:46:48  jimg
+ * Merged 3.1.8
+ *
+ * Revision 1.38.4.4  2000/08/02 21:10:07  jimg
+ * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * cardinal datatypes, then it gets those definitions from the header
+ * dods-datatypes.h.
+ *
  * Revision 1.47  2000/07/26 12:24:01  rmorris
  * Modified intermediate (dod*) file removal under win32 to take into account
  * a 1-to-n correspondence between connect objects and intermediate files.
@@ -272,11 +280,17 @@
 
 #include <stdio.h>
 
+#ifdef LIBWWW_5_0
+#include <sys/time.h>
+#endif
+#if 0
+
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock.h>
 #include <xdr.h>
-#else
+#endif
+
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
@@ -296,7 +310,9 @@
 #include "Gui.h"
 #endif
 #include "util.h"
+#if 0
 #include "config_dap.h"
+#endif
 
 #ifdef WIN32
 using std::vector<string>;

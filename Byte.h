@@ -12,6 +12,14 @@
 
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.28  2000/08/02 22:46:48  jimg
+ * Merged 3.1.8
+ *
+ * Revision 1.25.6.2  2000/08/02 21:10:07  jimg
+ * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * cardinal datatypes, then it gets those definitions from the header
+ * dods-datatypes.h.
+ *
  * Revision 1.27  2000/07/09 21:57:09  rmorris
  * Mods's to increase portability, minimuze ifdef's in win32 and account
  * for differences between the Standard C++ Library - most notably, the
@@ -22,6 +30,9 @@
  *
  * Revision 1.25.20.1  2000/06/02 18:14:42  rmorris
  * Mod for port to win32.
+ *
+ * Revision 1.25.6.1  1999/09/11 04:51:38  tom
+ * corrected and added (minute) documentation
  *
  * Revision 1.25  1999/04/29 02:29:27  jimg
  * Merge of no-gnu branch
@@ -168,16 +179,20 @@
 #pragma interface
 #endif
 
+#if 0
+
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock.h>
 #include <xdr.h>
-#else
+#endif
+
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
 #endif
 
+#include "dods-datatypes.h"
 #include "BaseType.h"
 
 /** This class is used to hold eight bits of information.  No sign

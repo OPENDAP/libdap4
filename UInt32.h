@@ -11,6 +11,14 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.h,v $
+// Revision 1.10  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.7.6.2  2000/08/02 21:10:08  jimg
+// Removed the header config_dap.h. If this file uses the dods typedefs for
+// cardinal datatypes, then it gets those definitions from the header
+// dods-datatypes.h.
+//
 // Revision 1.9  2000/07/09 21:57:10  rmorris
 // Mods's to increase portability, minimuze ifdef's in win32 and account
 // for differences between the Standard C++ Library - most notably, the
@@ -18,6 +26,9 @@
 //
 // Revision 1.8  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
+//
+// Revision 1.7.6.1  1999/09/11 04:51:38  tom
+// corrected and added (minute) documentation
 //
 // Revision 1.7.20.1  2000/06/02 18:29:32  rmorris
 // Mod's for port to Win32.
@@ -55,16 +66,20 @@
 #pragma interface
 #endif
 
+#if 0
+
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock.h>
 #include <xdr.h>
-#else
+#endif
+
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
 #endif
 
+#include "dods-datatypes.h"
 #include "BaseType.h"
 
 /** Holds a 32-bit unsigned integer. 

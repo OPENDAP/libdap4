@@ -11,6 +11,15 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.43  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.36.6.4  2000/08/02 20:54:08  jimg
+// Changed the definitions of some of the set_mime_*() functions so that they
+// match the changes in declaration in cgi_util.h. These changes removed the
+// symbol DVR from the header so that config_dap.h is no longer needed by
+// cgi_util.h.
+//
 // Revision 1.42  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -212,7 +221,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.42 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.43 2000/08/02 22:46:49 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -661,7 +670,7 @@ set_mime_binary(ostream &os, ObjectType type, const string &ver,
 
 void 
 set_mime_error(FILE *out, int code, const string &reason,
-	       const string &version)
+	       const string &version = "")
 {
 #ifdef WIN32
 	strstream os;
@@ -676,10 +685,13 @@ set_mime_error(FILE *out, int code, const string &reason,
 
 void
 set_mime_error(ostream &os, int code, const string &reason,
-	       const string &version)
+	       const string &version = "")
 {
     os << "HTTP/1.0 " << code << " " << reason << endl;
-    os << "XDODS-Server: " << version << endl;
+    if (version == "")
+      os << "XDODS-Server: " << DVR << endl;
+    else
+      os << "XDODS-Server: " << version << endl;
     const time_t t = time(0);
     os << "Date: " << rfc822_date(&t) << endl;
     os << endl;

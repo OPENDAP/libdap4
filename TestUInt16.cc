@@ -10,6 +10,13 @@
 // 3/22/99 jhrg
 
 // $Log: TestUInt16.cc,v $
+// Revision 1.4  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.3.6.1  2000/08/02 20:58:26  jimg
+// Included the header config_dap.h in this file. config_dap.h has been
+// removed from all of the DODS header files.
+//
 // Revision 1.3  1999/05/04 19:47:23  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -24,6 +31,7 @@
 #pragma implementation
 #endif
 
+#include "config_dap.h"
 #include "TestUInt16.h"
 
 UInt16 *

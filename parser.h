@@ -12,6 +12,12 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.13  2000/08/02 22:46:50  jimg
+// Merged 3.1.8
+//
+// Revision 1.12.4.1  2000/08/01 21:09:36  jimg
+// Destructor is now virtual
+//
 // Revision 1.12  1999/05/24 20:35:31  jimg
 // Moved GSEClause.h and removed second Error.h (what was that doing?) includes
 // to fix warning about redefinition of TRUE and FALSE (from within rpc/type.h).
@@ -99,7 +105,7 @@ struct parser_arg {
 
     parser_arg() : _object(0), _error(0), _status(1) {}
     parser_arg(void *obj) : _object(obj), _error(0), _status(1) {}
-    ~parser_arg() {if (_error) delete _error;}
+    virtual ~parser_arg() {if (_error) delete _error;}
 
     void *object() { return _object; }
     void set_object(void *obj) { _object = obj; }
@@ -118,7 +124,7 @@ struct gse_arg {
 
     gse_arg(): _gsec(0), _grid(0), _status(1) {}
     gse_arg(Grid *g): _gsec(0), _grid(g), _status(1) {}
-    ~gse_arg() {}
+    virtual ~gse_arg() {}
 
     void set_gsec(GSEClause *gsec) { _gsec = gsec; }
     GSEClause *get_gsec() { return _gsec; }

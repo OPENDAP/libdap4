@@ -11,6 +11,12 @@
 #define rvalue_h
 
 // $Log: RValue.h,v $
+// Revision 1.5  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.4.6.1  2000/08/01 21:09:36  jimg
+// Destructor is now virtual
+//
 // Revision 1.4  1999/05/04 19:47:22  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -41,7 +47,7 @@ public:
     rvalue(btp_func f, SLList<rvalue *> *a);
     rvalue();
 
-    ~rvalue();
+    virtual ~rvalue();
 
     string value_name();
 

@@ -14,6 +14,12 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.27  2000/08/02 22:46:48  jimg
+ * Merged 3.1.8
+ *
+ * Revision 1.23.6.2  2000/08/01 21:09:35  jimg
+ * Destructor is now virtual
+ *
  * Revision 1.26  2000/07/09 21:57:09  rmorris
  * Mods's to increase portability, minimuze ifdef's in win32 and account
  * for differences between the Standard C++ Library - most notably, the
@@ -251,7 +257,7 @@ public:
 	@param attr_table The initial AttrTable. */
     DAS(AttrTable *attr_table, string name);
 
-    ~DAS();
+    virtual ~DAS();
 
     /** Returns a pointer to the first attribute table. */
     Pix first_var();

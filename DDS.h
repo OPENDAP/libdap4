@@ -13,6 +13,20 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.39  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.34.2.4  2000/08/02 20:56:36  jimg
+// Removed the symbol DVR from the send method's declaration. That removes the
+// only dependence in this file on config_dap.h. Clients of this class can now
+// included this header without also including config_dap.h.
+//
+// Revision 1.34.2.3  2000/07/19 19:01:56  jimg
+// I made the dotr virtual! This was causing problems when request_data
+// returned a DataDDS * but the object was assigned to a DDS * and later
+// deleted. Since DDS:~DDS() was not virtual, the DataDDS dtor was not being
+// run. 
+//
 // Revision 1.38  2000/07/09 21:57:09  rmorris
 // Mods's to increase portability, minimuze ifdef's in win32 and account
 // for differences between the Standard C++ Library - most notably, the
@@ -209,7 +223,9 @@
 
 #include <stdio.h>
 
+#if 0
 #include "config_dap.h"
+#endif
 
 #include <iostream>
 #include <string>
@@ -357,7 +373,7 @@ public:
     /** The DDS copy constructor. */
     DDS(const DDS &dds);
 
-    ~DDS();
+    virtual ~DDS();
 
     DDS & operator=(const DDS &rhs); 
 
@@ -666,7 +682,7 @@ public:
 	@see BaseType::read
 	@see BaseType::serialize */
     bool send(const string &dataset, const string &constraint, FILE *out, 
-	      bool compressed = true, const string &cgi_ver = DVR);
+	      bool compressed = true, const string &cgi_ver = "");
 
     /** Mark the member variable #send_p# flags to {\it state}. */
     void mark_all(bool state);

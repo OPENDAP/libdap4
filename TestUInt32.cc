@@ -10,6 +10,13 @@
 // jhrg 10/27/96
 
 // $Log: TestUInt32.cc,v $
+// Revision 1.3  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.2.6.1  2000/08/02 20:58:26  jimg
+// Included the header config_dap.h in this file. config_dap.h has been
+// removed from all of the DODS header files.
+//
 // Revision 1.2  1999/04/29 02:29:33  jimg
 // Merge of no-gnu branch
 //
@@ -24,6 +31,7 @@
 #pragma implementation
 #endif
 
+#include "config_dap.h"
 #include "TestUInt32.h"
 
 UInt32 *

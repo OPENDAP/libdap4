@@ -21,7 +21,9 @@
 #include <Pix.h>
 #include <DLList.h>
 
+#if 0
 #include "config_dap.h"
+#endif
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
@@ -131,7 +133,7 @@ private:
 	    clone(rhs);
 	}
 
-	~entry() {
+	virtual ~entry() {
 	    if (is_alias)
 		return;
 	    if (type == Attr_container)
@@ -396,6 +398,17 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.31  2000/08/02 22:46:48  jimg
+ * Merged 3.1.8
+ *
+ * Revision 1.27.6.4  2000/08/02 21:10:07  jimg
+ * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * cardinal datatypes, then it gets those definitions from the header
+ * dods-datatypes.h.
+ *
+ * Revision 1.27.6.3  2000/08/01 21:09:35  jimg
+ * Destructor is now virtual
+ *
  * Revision 1.30  2000/07/09 21:57:09  rmorris
  * Mods's to increase portability, minimuze ifdef's in win32 and account
  * for differences between the Standard C++ Library - most notably, the

@@ -12,6 +12,14 @@
 // 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.12  2000/08/02 22:46:50  jimg
+// Merged 3.1.8
+//
+// Revision 1.11.6.1  2000/08/02 21:10:08  jimg
+// Removed the header config_dap.h. If this file uses the dods typedefs for
+// cardinal datatypes, then it gets those definitions from the header
+// dods-datatypes.h.
+//
 // Revision 1.11  1999/04/29 02:29:36  jimg
 // Merge of no-gnu branch
 //
@@ -63,7 +71,9 @@
 #include <string>
 #include <SLList.h>
 
+#if 0
 #include "config_dap.h"
+#endif
 
 #include "BaseType.h"
 
@@ -73,8 +83,8 @@
 typedef struct {
     Type type;			// Type is an enum defined in BaseType.h
     union {
-	dods_int32 i;
-	dods_float64 f;
+	int i;
+	double f;
 	string *s;
     } v;
 } value;

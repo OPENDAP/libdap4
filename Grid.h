@@ -17,6 +17,14 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.36  2000/08/02 22:46:49  jimg
+ * Merged 3.1.8
+ *
+ * Revision 1.33.6.1  2000/08/02 21:10:07  jimg
+ * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * cardinal datatypes, then it gets those definitions from the header
+ * dods-datatypes.h.
+ *
  * Revision 1.35  2000/07/09 21:57:09  rmorris
  * Mods's to increase portability, minimuze ifdef's in win32 and account
  * for differences between the Standard C++ Library - most notably, the
@@ -198,11 +206,14 @@
 #pragma interface
 #endif
 
+#if 0
+
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock.h>
 #include <xdr.h>
-#else
+#endif
+
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
@@ -212,7 +223,9 @@
 #include <Pix.h>
 
 #include "BaseType.h"
+#if 0
 #include "config_dap.h"
+#endif
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif

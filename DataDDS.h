@@ -13,6 +13,14 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.h,v $
+// Revision 1.7  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.4.6.1  2000/08/02 21:10:07  jimg
+// Removed the header config_dap.h. If this file uses the dods typedefs for
+// cardinal datatypes, then it gets those definitions from the header
+// dods-datatypes.h.
+//
 // Revision 1.6  2000/07/09 21:57:09  rmorris
 // Mods's to increase portability, minimuze ifdef's in win32 and account
 // for differences between the Standard C++ Library - most notably, the
@@ -47,7 +55,9 @@
 #pragma interface
 #endif
 
+#if 0
 #include "config_dap.h"
+#endif
 
 #include <iostream>
 #include <string>

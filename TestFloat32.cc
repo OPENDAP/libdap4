@@ -10,6 +10,13 @@
 // 3/22/99 jhrg
 
 // $Log: TestFloat32.cc,v $
+// Revision 1.4  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.2.6.1  2000/08/02 20:58:26  jimg
+// Included the header config_dap.h in this file. config_dap.h has been
+// removed from all of the DODS header files.
+//
 // Revision 1.3  2000/07/18 03:04:09  rmorris
 // Inserted simple trivial cast that makes VC++ happier.
 //
@@ -24,6 +31,7 @@
 #pragma implementation
 #endif
 
+#include "config_dap.h"
 #include "TestFloat32.h"
 
 Float32 *

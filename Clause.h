@@ -9,6 +9,12 @@
 // Interface for the CE Clause class.
 
 // $Log: Clause.h,v $
+// Revision 1.7  2000/08/02 22:46:48  jimg
+// Merged 3.1.8
+//
+// Revision 1.6.6.1  2000/08/01 21:09:35  jimg
+// Destructor is now virtual
+//
 // Revision 1.6  1999/04/29 02:29:27  jimg
 // Merge of no-gnu branch
 //
@@ -106,7 +112,7 @@ public:
     Clause(btp_func func, rvalue_list *rv);
     Clause();
 
-    ~Clause();
+    virtual ~Clause();
 
     /// Checks the "representation invariant" of a clause.
     bool OK();

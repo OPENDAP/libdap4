@@ -1,29 +1,40 @@
 
-$Id: README,v 1.10 1999/04/29 23:55:38 jimg Exp $
+$Id: README,v 1.11 2000/08/02 22:46:49 jimg Exp $
 
-This directory contains the URI/GSO implementation of the DODS Data Access
-Protocol. Documentation for this software can be found on the DODS home page
-at http://unidata.ucar.edu/packages/dods/
+WHAT'S IN THIS DIRECTORY?
 
-The Data Access Protocol (DAP) is used to provide a uniform way of accessing
-a variety of different types of Earth-science data within DODS.
+  This directory contains the URI/GSO implementation of the DODS Data Access
+  Protocol.  Documentation for this software can be found on the DODS home
+  page at http://unidata.ucar.edu/packages/dods/
 
-The DAP is implemented as a set of C++ classes that can be used to build DODS
-data servers and client libraries. The DAP is used to build these programs
-and/or libraries by specializing the set of classes it provides so that the
-specific requirements of a given API or format can be adequately addressed.
+  The Data Access Protocol (DAP) is used to provide a uniform way of
+  accessing a variety of different types of Earth-science data across the
+  internet. 
 
-The DODS DAP is contained in a single library: libdap++.a. This library uses
-some parts of the the GNU C++ class library libg++.a; it includes those parts
-in its subdirectory `GNU'. You do not need to get a copy of libg++.
+  The DAP is implemented as a set of C++ classes that can be used to build
+  DODS data servers and client libraries.  The classes may be specialized to
+  mimic the behavior of other data access APIs, such as netCDF or HDF.  In
+  this way, programs originally meant to work with local data in those
+  formats can be re-linked and equipped to work with data stored remotely in
+  many different formats.
 
-Test programs for the DAP are also in this directory as is a sample
-specialization of the set of classes.
+  The DODS DAP is contained in a single library: libdap++.a. This library
+  uses some parts of the the GNU C++ class library libg++.a; it includes
+  those parts in its subdirectory `GNU'. You do not need to get a copy of
+  libg++.
 
-We also have a Java version of this class library which interoperates at the
-network level with software which uses this library. In other words, client
-programs built with the Java DAP implementation can communicate with servers
-built with this (C++) implementation of the DAP.
+WHAT ELSE IS THERE?
 
-See the file INSTALL in this directory for information on building the
-library. 
+  This directory also contains test programs for the DAP, a sample
+  specialization of the set of classes, and geturl, a useful command-line
+  web client created with the DAP.
+
+  We also have a Java version of this class library which interoperates at
+  the network level with software which uses this library. In other words,
+  client programs built with the Java DAP implementation can communicate
+  with servers built with this (C++) implementation of the DAP.
+
+INSTALLATION INSTRUCTIONS
+
+  See the file INSTALL in this directory for information on building the
+  library and the geturl client.

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.114 2000/06/16 18:15:00 jimg Exp $
+# $Id: Makefile.in,v 1.115 2000/08/02 22:46:49 jimg Exp $
 
 @SET_MAKE@
 
@@ -123,7 +123,8 @@ CLIENTHDRS = Connect.h Connections.h Connections.cc
 
 TYPEHDRS = BaseType.h Byte.h Int32.h GSEClause.h \
 	   Float64.h Str.h Url.h Vector.h List.h Array.h Structure.h \
-	   Sequence.h Grid.h UInt32.h util.h Int16.h UInt16.h Float32.h
+	   Sequence.h Grid.h UInt32.h util.h Int16.h UInt16.h Float32.h \
+	   dods-datatypes.h
 
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc \
@@ -570,18 +571,30 @@ depend:
 # DO NOT DELETE; depend requires this line
 Connect.o: Connect.cc config_dap.h debug.h DataDDS.h BaseType.h \
  Clause.h expr.h RValue.h DDS.h Connect.h DAS.h AttrTable.h Error.h \
- util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
- Str.h dods-limits.h Url.h Array.h Vector.h List.h Structure.h \
- Sequence.h Grid.h escaping.h
-Connections.o: Connections.cc debug.h Connections.h config_dap.h \
- Connect.h DAS.h AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h \
- Error.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
- Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
+ util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
+ Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
  Structure.h Sequence.h Grid.h
+Connections.o: Connections.cc config_dap.h debug.h Connections.h \
+ Connect.h DAS.h AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h \
+ Error.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
+ UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+ Vector.h List.h Structure.h Sequence.h Grid.h
+cgi_util.o: cgi_util.cc config_dap.h cgi_util.h Connect.h DAS.h \
+ AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h Error.h \
+ util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
+ Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
+ Structure.h Sequence.h Grid.h
+escaping.o: escaping.cc
+DODSFilter.o: DODSFilter.cc config_dap.h DAS.h GNU/SLList.h \
+ AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h \
+ cgi_util.h Connect.h Error.h util.h Byte.h dods-datatypes.h Int16.h \
+ UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
+ Url.h Array.h Vector.h List.h Structure.h Sequence.h Grid.h \
+ DODSFilter.h
 AttrTable.o: AttrTable.cc config_dap.h AttrTable.h debug.h util.h \
- BaseType.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
- Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h Clause.h \
- expr.h RValue.h List.h Structure.h Sequence.h Grid.h
+ BaseType.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
+ Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
+ Clause.h expr.h RValue.h List.h Structure.h Sequence.h Grid.h
 DAS.o: DAS.cc config_dap.h debug.h Error.h parser.h GSEClause.h \
  BaseType.h Array.h dods-limits.h Vector.h DDS.h Clause.h expr.h \
  RValue.h Grid.h DAS.h AttrTable.h
@@ -590,152 +603,146 @@ parser-util.o: parser-util.cc config_dap.h parser.h Error.h \
  expr.h RValue.h debug.h Grid.h
 DDS.o: DDS.cc config_dap.h expr.h BaseType.h Clause.h RValue.h \
  Connect.h DAS.h AttrTable.h DDS.h debug.h Error.h util.h Byte.h \
- Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
- dods-limits.h Url.h Array.h Vector.h List.h Structure.h Sequence.h \
- Grid.h parser.h GSEClause.h ce_functions.h cgi_util.h
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
+ Structure.h Sequence.h Grid.h parser.h GSEClause.h ce_functions.h \
+ cgi_util.h
 DataDDS.o: DataDDS.cc config_dap.h DataDDS.h BaseType.h Clause.h \
  expr.h RValue.h debug.h DDS.h
-Clause.o: Clause.cc expr.h config_dap.h BaseType.h DDS.h Clause.h \
+Clause.o: Clause.cc config_dap.h expr.h BaseType.h DDS.h Clause.h \
  RValue.h debug.h
 RValue.o: RValue.cc config_dap.h BaseType.h expr.h RValue.h DDS.h \
  Clause.h debug.h
-BaseType.o: BaseType.cc config_dap.h BaseType.h util.h Byte.h Int16.h \
- UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
- Url.h Array.h Vector.h DDS.h Clause.h expr.h RValue.h debug.h List.h \
- Structure.h Sequence.h Grid.h
-Byte.o: Byte.cc config_dap.h Byte.h BaseType.h Int16.h DDS.h Clause.h \
- expr.h RValue.h debug.h util.h UInt16.h Int32.h UInt32.h Float32.h \
- Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
- Structure.h Sequence.h Grid.h parser.h Error.h GSEClause.h expr.tab.h \
- Operators.h GNU/Regex.h
-Int32.o: Int32.cc config_dap.h Int32.h BaseType.h DDS.h Clause.h \
- expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h UInt32.h \
- Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
- Structure.h Sequence.h Grid.h parser.h Error.h GSEClause.h expr.tab.h \
- Operators.h GNU/Regex.h
-Float64.o: Float64.cc config_dap.h Float64.h BaseType.h DDS.h Clause.h \
- expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h Int32.h \
- UInt32.h Float32.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
- Structure.h Sequence.h Grid.h parser.h Error.h GSEClause.h expr.tab.h \
- Operators.h GNU/Regex.h
+BaseType.o: BaseType.cc config_dap.h BaseType.h util.h Byte.h \
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h Clause.h \
+ expr.h RValue.h debug.h List.h Structure.h Sequence.h Grid.h
+Byte.o: Byte.cc config_dap.h Byte.h dods-datatypes.h BaseType.h \
+ Int16.h DDS.h Clause.h expr.h RValue.h debug.h util.h UInt16.h \
+ Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
+ Array.h Vector.h List.h Structure.h Sequence.h Grid.h parser.h \
+ Error.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h
+Int32.o: Int32.cc config_dap.h Int32.h dods-datatypes.h BaseType.h \
+ DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h \
+ UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+ Vector.h List.h Structure.h Sequence.h Grid.h parser.h Error.h \
+ GSEClause.h expr.tab.h Operators.h GNU/Regex.h
+Float64.o: Float64.cc config_dap.h Float64.h dods-datatypes.h \
+ BaseType.h DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h \
+ Int16.h UInt16.h Int32.h UInt32.h Float32.h Str.h dods-limits.h Url.h \
+ Array.h Vector.h List.h Structure.h Sequence.h Grid.h parser.h \
+ Error.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h
 Str.o: Str.cc config_dap.h Str.h dods-limits.h BaseType.h DDS.h \
  Clause.h expr.h RValue.h debug.h parser.h Error.h GSEClause.h Array.h \
  Vector.h Grid.h expr.tab.h Operators.h GNU/Regex.h util.h Byte.h \
- Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Url.h List.h \
- Structure.h Sequence.h
-Url.o: Url.cc Url.h dods-limits.h BaseType.h config_dap.h Str.h
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Url.h List.h Structure.h Sequence.h
+Url.o: Url.cc Url.h dods-limits.h BaseType.h Str.h
 Vector.o: Vector.cc config_dap.h Vector.h BaseType.h DDS.h Clause.h \
- expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h Int32.h \
- UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h List.h \
- Structure.h Sequence.h Grid.h
+ expr.h RValue.h debug.h util.h Byte.h dods-datatypes.h Int16.h \
+ UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
+ Url.h Array.h List.h Structure.h Sequence.h Grid.h
 List.o: List.cc config_dap.h List.h dods-limits.h Vector.h BaseType.h \
- DDS.h Clause.h expr.h RValue.h debug.h Error.h util.h Byte.h Int16.h \
- UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h Url.h Array.h \
- Structure.h Sequence.h Grid.h parser.h GSEClause.h expr.tab.h
+ DDS.h Clause.h expr.h RValue.h debug.h Error.h util.h Byte.h \
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h Url.h Array.h Structure.h Sequence.h Grid.h parser.h \
+ GSEClause.h expr.tab.h
 Array.o: Array.cc config_dap.h Array.h dods-limits.h Vector.h \
  BaseType.h DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h \
- Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h Url.h \
- List.h Structure.h Sequence.h Grid.h
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h Url.h List.h Structure.h Sequence.h Grid.h
 Structure.o: Structure.cc config_dap.h Structure.h BaseType.h DDS.h \
- Clause.h expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h \
- Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
- Array.h Vector.h List.h Sequence.h Grid.h
+ Clause.h expr.h RValue.h debug.h util.h Byte.h dods-datatypes.h \
+ Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+ dods-limits.h Url.h Array.h Vector.h List.h Sequence.h Grid.h
 Sequence.o: Sequence.cc config_dap.h debug.h Sequence.h BaseType.h \
- DDS.h Clause.h expr.h RValue.h DataDDS.h util.h Byte.h Int16.h \
- UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
- Url.h Array.h Vector.h List.h Structure.h Grid.h
+ DDS.h Clause.h expr.h RValue.h DataDDS.h util.h Byte.h \
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
+ Structure.h Grid.h
 Grid.o: Grid.cc config_dap.h Grid.h BaseType.h DDS.h Clause.h expr.h \
- RValue.h debug.h Array.h dods-limits.h Vector.h util.h Byte.h Int16.h \
- UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h Url.h List.h \
- Structure.h Sequence.h
-UInt32.o: UInt32.cc config_dap.h UInt32.h BaseType.h DDS.h Clause.h \
- expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h Int32.h \
- Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
- Structure.h Sequence.h Grid.h parser.h Error.h GSEClause.h expr.tab.h \
- Operators.h GNU/Regex.h
+ RValue.h debug.h Array.h dods-limits.h Vector.h util.h Byte.h \
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h Url.h List.h Structure.h Sequence.h
+UInt32.o: UInt32.cc config_dap.h UInt32.h dods-datatypes.h BaseType.h \
+ DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h \
+ Int32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+ Vector.h List.h Structure.h Sequence.h Grid.h parser.h Error.h \
+ GSEClause.h expr.tab.h Operators.h GNU/Regex.h
 util.o: util.cc config_dap.h BaseType.h Str.h dods-limits.h Url.h \
  List.h Vector.h DDS.h Clause.h expr.h RValue.h debug.h Sequence.h \
  Error.h parser.h GSEClause.h Array.h Grid.h expr.tab.h util.h Byte.h \
- Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Structure.h
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Structure.h
 ce_functions.o: ce_functions.cc config_dap.h BaseType.h List.h \
  dods-limits.h Vector.h DDS.h Clause.h expr.h RValue.h debug.h Array.h \
  Sequence.h Grid.h Error.h GSEClause.h parser.h gse.tab.h util.h \
- Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
- Url.h Structure.h
+ Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h Url.h Structure.h
 GSEClause.o: GSEClause.cc config_dap.h Error.h GSEClause.h BaseType.h \
  Array.h dods-limits.h Vector.h DDS.h Clause.h expr.h RValue.h debug.h \
  Grid.h
-Int16.o: Int16.cc config_dap.h Int16.h BaseType.h DDS.h Clause.h \
- expr.h RValue.h debug.h util.h Byte.h UInt16.h Int32.h UInt32.h \
- Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
- Structure.h Sequence.h Grid.h parser.h Error.h GSEClause.h expr.tab.h \
- Operators.h GNU/Regex.h
-UInt16.o: UInt16.cc config_dap.h UInt16.h BaseType.h DDS.h Clause.h \
- expr.h RValue.h debug.h util.h Byte.h Int16.h Int32.h UInt32.h \
- Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
- Structure.h Sequence.h Grid.h parser.h Error.h GSEClause.h expr.tab.h \
- Operators.h GNU/Regex.h
-Float32.o: Float32.cc config_dap.h Float32.h BaseType.h DDS.h Clause.h \
- expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h Int32.h \
- UInt32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
- Structure.h Sequence.h Grid.h parser.h Error.h GSEClause.h expr.tab.h \
- Operators.h GNU/Regex.h
+Int16.o: Int16.cc config_dap.h Int16.h dods-datatypes.h BaseType.h \
+ DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h UInt16.h Int32.h \
+ UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+ Vector.h List.h Structure.h Sequence.h Grid.h parser.h Error.h \
+ GSEClause.h expr.tab.h Operators.h GNU/Regex.h
+UInt16.o: UInt16.cc config_dap.h UInt16.h dods-datatypes.h BaseType.h \
+ DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h Int16.h Int32.h \
+ UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+ Vector.h List.h Structure.h Sequence.h Grid.h parser.h Error.h \
+ GSEClause.h expr.tab.h Operators.h GNU/Regex.h
+Float32.o: Float32.cc config_dap.h Float32.h dods-datatypes.h \
+ BaseType.h DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h \
+ Int16.h UInt16.h Int32.h UInt32.h Float64.h Str.h dods-limits.h Url.h \
+ Array.h Vector.h List.h Structure.h Sequence.h Grid.h parser.h \
+ Error.h GSEClause.h expr.tab.h Operators.h GNU/Regex.h
 Error.o: Error.cc config_dap.h Error.h parser.h GSEClause.h BaseType.h \
  Array.h dods-limits.h Vector.h DDS.h Clause.h expr.h RValue.h debug.h \
  Grid.h
 InternalErr.o: InternalErr.cc config_dap.h InternalErr.h Error.h
-TestByte.o: TestByte.cc TestByte.h Byte.h BaseType.h config_dap.h
-TestInt32.o: TestInt32.cc TestInt32.h Int32.h BaseType.h config_dap.h
-TestFloat64.o: TestFloat64.cc TestFloat64.h Float64.h BaseType.h \
- config_dap.h
-TestStr.o: TestStr.cc TestStr.h dods-limits.h Str.h BaseType.h \
- config_dap.h
-TestUrl.o: TestUrl.cc TestUrl.h Url.h dods-limits.h BaseType.h \
- config_dap.h Str.h
+TestByte.o: TestByte.cc config_dap.h TestByte.h Byte.h \
+ dods-datatypes.h BaseType.h
+TestInt32.o: TestInt32.cc config_dap.h TestInt32.h Int32.h \
+ dods-datatypes.h BaseType.h
+TestFloat64.o: TestFloat64.cc config_dap.h TestFloat64.h Float64.h \
+ dods-datatypes.h BaseType.h
+TestStr.o: TestStr.cc TestStr.h dods-limits.h Str.h BaseType.h
+TestUrl.o: TestUrl.cc TestUrl.h Url.h dods-limits.h BaseType.h Str.h
 TestArray.o: TestArray.cc config_dap.h TestArray.h Array.h \
  dods-limits.h Vector.h BaseType.h DDS.h Clause.h expr.h RValue.h \
  debug.h
-TestStructure.o: TestStructure.cc TestStructure.h Structure.h \
- BaseType.h config_dap.h DDS.h Clause.h expr.h RValue.h debug.h
+TestStructure.o: TestStructure.cc config_dap.h TestStructure.h \
+ Structure.h BaseType.h DDS.h Clause.h expr.h RValue.h debug.h
 TestList.o: TestList.cc config_dap.h TestList.h List.h dods-limits.h \
  Vector.h BaseType.h DDS.h Clause.h expr.h RValue.h debug.h
 TestSequence.o: TestSequence.cc TestSequence.h Sequence.h BaseType.h \
- config_dap.h debug.h
-TestGrid.o: TestGrid.cc TestGrid.h Grid.h BaseType.h config_dap.h
-TestUInt32.o: TestUInt32.cc TestUInt32.h UInt32.h BaseType.h \
- config_dap.h
-TestInt16.o: TestInt16.cc TestInt16.h Int16.h BaseType.h config_dap.h
-TestUInt16.o: TestUInt16.cc TestUInt16.h UInt16.h BaseType.h \
- config_dap.h
-TestFloat32.o: TestFloat32.cc TestFloat32.h Float32.h BaseType.h \
- config_dap.h
+ debug.h
+TestGrid.o: TestGrid.cc TestGrid.h Grid.h BaseType.h
+TestUInt32.o: TestUInt32.cc config_dap.h TestUInt32.h UInt32.h \
+ dods-datatypes.h BaseType.h
+TestInt16.o: TestInt16.cc config_dap.h TestInt16.h Int16.h \
+ dods-datatypes.h BaseType.h
+TestUInt16.o: TestUInt16.cc config_dap.h TestUInt16.h UInt16.h \
+ dods-datatypes.h BaseType.h
+TestFloat32.o: TestFloat32.cc config_dap.h TestFloat32.h Float32.h \
+ dods-datatypes.h BaseType.h
 das-test.o: das-test.cc config_dap.h DAS.h GNU/SLList.h AttrTable.h \
  das.tab.h
 dds-test.o: dds-test.cc config_dap.h dds.tab.h BaseType.h Int32.h \
- DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h Int16.h UInt16.h \
- UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
- Vector.h List.h Structure.h Sequence.h Grid.h
+ dods-datatypes.h DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h \
+ Int16.h UInt16.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
+ Url.h Array.h Vector.h List.h Structure.h Sequence.h Grid.h
 expr-test.o: expr-test.cc config_dap.h DDS.h BaseType.h Clause.h \
  expr.h RValue.h debug.h DataDDS.h parser.h Error.h GSEClause.h \
  Array.h dods-limits.h Vector.h Grid.h expr.tab.h util.h Byte.h \
- Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h Url.h \
- List.h Structure.h Sequence.h
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h Url.h List.h Structure.h Sequence.h
 error-test.o: error-test.cc config_dap.h Error.h parser.h GSEClause.h \
  BaseType.h Array.h dods-limits.h Vector.h DDS.h Clause.h expr.h \
  RValue.h debug.h Grid.h Error.tab.h
 geturl.o: geturl.cc config_dap.h Connect.h DAS.h AttrTable.h DDS.h \
  BaseType.h Clause.h expr.h RValue.h debug.h Error.h util.h Byte.h \
- Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
- dods-limits.h Url.h Array.h Vector.h List.h Structure.h Sequence.h \
- Grid.h
-cgi_util.o: cgi_util.cc config_dap.h cgi_util.h Connect.h DAS.h \
- AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h Error.h \
- util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
- Str.h dods-limits.h Url.h Array.h Vector.h List.h Structure.h \
- Sequence.h Grid.h
-escaping.o: escaping.cc
-DODSFilter.o: DODSFilter.cc config_dap.h DAS.h GNU/SLList.h \
- AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h \
- cgi_util.h Connect.h Error.h util.h Byte.h Int16.h UInt16.h Int32.h \
- UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
- Vector.h List.h Structure.h Sequence.h Grid.h DODSFilter.h
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
+ Structure.h Sequence.h Grid.h

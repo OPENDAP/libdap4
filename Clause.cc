@@ -8,6 +8,13 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.11  2000/08/02 22:46:48  jimg
+// Merged 3.1.8
+//
+// Revision 1.8.6.1  2000/08/02 20:58:26  jimg
+// Included the header config_dap.h in this file. config_dap.h has been
+// removed from all of the DODS header files.
+//
 // Revision 1.10  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -53,6 +60,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#include "config_dap.h"
 
 #include <assert.h>
 

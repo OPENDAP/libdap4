@@ -10,6 +10,13 @@
 // jhrg 1/12/95
 
 // $Log: TestFloat64.cc,v $
+// Revision 1.15  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.14.6.1  2000/08/02 20:58:26  jimg
+// Included the header config_dap.h in this file. config_dap.h has been
+// removed from all of the DODS header files.
+//
 // Revision 1.14  1999/04/29 02:29:32  jimg
 // Merge of no-gnu branch
 //
@@ -74,6 +81,7 @@
 #pragma implementation
 #endif
 
+#include "config_dap.h"
 #include "TestFloat64.h"
 
 Float64 *
