@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.98 1999/05/05 22:38:32 edavis Exp $
+# $Id: Makefile.in,v 1.99 1999/05/06 16:36:35 jimg Exp $
 
 @SET_MAKE@
 
@@ -106,7 +106,7 @@ ERRORHDRS = Error.h InternalErr.h
 ERROROBJS = Error.o InternalErr.o $(ERROR_GRAM_OBJS)
 ERRORSRCS = Error.cc InternalErr.cc
 
-TYPEHDRS = BaseType.h Byte.h Int32.h \
+TYPEHDRS = BaseType.h Byte.h Int32.h GSEClause.h
 	   Float64.h Str.h Url.h Vector.h List.h Array.h Structure.h \
 	   Sequence.h Grid.h UInt32.h util.h Int16.h UInt16.h Float32.h
 
