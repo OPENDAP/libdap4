@@ -1,3 +1,13 @@
+1999-05-04  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added InternalErr class. This class should be thrown by any code
+	that finds an internal error (i.e., the sort of thing that might
+	otherwise be trapped by an assert).
+
+	* Committed changes that form the base of version 3. This combines
+	the new simple types with a reduced dependence on the old libg++
+	code and misc. fixes. 
+
 1999-04-21  James Gallagher  <jimg@dcz.dods.org>
 
 	* Small fix in prune_spaces(). This fixed a problem in the mexcdf
@@ -502,4 +512,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.37 1999/04/22 22:36:03 jimg Exp $
+$Id: ChangeLog,v 1.38 1999/05/04 19:51:57 jimg Exp $
