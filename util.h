@@ -12,10 +12,13 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.22  1997/03/08 18:58:57  jimg
-/* Changed name of function unique() to unique_names() to avoid a conflict
-/* with the STL.
+/* Revision 1.23  1997/03/27 18:18:56  jimg
+/* Added dods_progress() prototype. See util.cc.
 /*
+ * Revision 1.22  1997/03/08 18:58:57  jimg
+ * Changed name of function unique() to unique_names() to avoid a conflict
+ * with the STL.
+ *
  * Revision 1.21  1997/02/28 01:24:54  jimg
  * Added String &msg parameter to unique(). Instead of writing messages to
  * cerr, messages are now written to this string object.
@@ -121,6 +124,7 @@ char *systime();
 FILE *compressor(FILE *output, int &childpid);
 FILE *decompressor(FILE *input, int &childpid);
 const char *dods_root();
+const char *dods_progress();
 
 bool func_member(int argc, BaseType *argv[], DDS &dds);
 bool func_null(int argc, BaseType *argv[], DDS &dds);
