@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.46  1998/04/03 17:41:42  jimg
+// Patch from Jake Hamby to print_all_vals(). deserialize needed to be called
+// before the first call to print_val.
+//
 // Revision 1.45  1998/03/26 00:20:04  jimg
 // Removed DODS_DEBUG define.
 //
@@ -624,6 +628,7 @@ Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, String space = "",
 	os << " = ";
     }
     os << "{ ";
+    deserialize(src, dds);
     print_val(os, space, false);
     while (deserialize(src, dds)) {
 	os << ", ";
