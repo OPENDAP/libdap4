@@ -9,6 +9,9 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.27  1996/12/02 23:15:43  jimg
+// Added `filename' field and access functions.
+//
 // Revision 1.26  1996/11/27 22:40:19  jimg
 // Added DDS as third parameter to function in the CE evaluator
 //
@@ -144,7 +147,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.26 1996/11/27 22:40:19 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.27 1996/12/02 23:15:43 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -242,6 +245,18 @@ void
 DDS::set_dataset_name(const String &n) 
 { 
     name = n; 
+}
+
+String
+DDS::filename()
+{
+    return _filename;
+}
+
+void
+DDS::filename(const String &fn)
+{
+    _filename = fn;
 }
 
 void
