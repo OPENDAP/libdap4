@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.50  1997/02/17 20:21:44  jimg
+// Fixed a bug in the ctors introduced by making Error's ctor private.
+//
 // Revision 1.49  1997/02/13 17:33:11  jimg
 // Added MIME header `handler' for the server header.
 // Added mfuncs to access the server information (which in DODS is the version
@@ -283,7 +286,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.49 1997/02/13 17:33:11 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.50 1997/02/17 20:21:44 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -969,7 +972,7 @@ Connect::close_output()
 // This ctor is decalred private so that it won't ever be called by users,
 // thus forcing them to create Connects which point somewhere.
 
-Connect::Connect()
+Connect::Connect(): _error(undefined_error, "")
 {
     assert(false);
 }
@@ -977,6 +980,7 @@ Connect::Connect()
 // public mfuncs
 
 Connect::Connect(String name, bool www_verbose_errors = false)
+     : _error(undefined_error, "")
 {
     _gui = new Gui;
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
@@ -1030,7 +1034,7 @@ Connect::Connect(String name, bool www_verbose_errors = false)
     HT_FREE(access_ref);
 }
 
-Connect::Connect(const Connect &copy_from)
+Connect::Connect(const Connect &copy_from) : _error(undefined_error, "")
 {
     _tv = new timeval;
 
@@ -1429,14 +1433,17 @@ Connect::request_data(String expr, bool gui_p = true,
       default: {
 	  // First read the DDS into a new object.
 
-	  DDS dds;
+	  DDS *dds = new DDS("received_data");
 	  FILE *dds_fp = move_dds(_output);
-	  if (!dds_fp || !dds.parse(dds_fp)) {
+	  if (!dds_fp || !dds->parse(dds_fp)) {
 	      cerr << "Could not parse data DDS." << endl;
 	      status = false;
 	      goto error;
 	  }
 	  fclose(dds_fp);
+	  
+	  // NOTE: the call to append_constraint() has been removed until the
+	  // bugs in the cache can be worked out. 2/16/97 jhrg
 
 	  // Save the newly created DDS (which now has a variable (BaseType
 	  // *) that can hold the data) along with the constraint expression
@@ -1446,19 +1453,17 @@ Connect::request_data(String expr, bool gui_p = true,
 	  // pointer will remain valid for the duration of the Connect
 	  // object. 
 
-	  DDS *d = append_constraint(expr, dds);
-
 	  // If the transmission is synchronous, read all the data into the
 	  // DDS D. If asynchronous, just return the DDS and leave the
 	  // reading to to the caller.
 	  if (!async) {
 	      XDR *s = source();
-	      for (Pix q = d->first_var(); q; d->next_var(q))
-		  if (!d->var(q)->deserialize(s))
+	      for (Pix q = dds->first_var(); q; dds->next_var(q))
+		  if (!dds->var(q)->deserialize(s))
 		      goto error;
 	  }
 
-	  return d;
+	  return dds;
 	  break;
       }
     }
