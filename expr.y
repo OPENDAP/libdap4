@@ -42,75 +42,126 @@
  */
 
 /* $Log: expr.y,v $
-/* Revision 1.1  1995/10/13 03:04:08  jimg
-/* First version. Incorporates Glenn's suggestions.
+/* Revision 1.2  1995/10/23 23:10:38  jimg
+/* Added includes for various classes.
+/* Aded rules, actions and functions for evaluation of projections.
+/* Changed the value of YYSTYPE so that bison's %union feature is used -
+/* rules now return several different types.
 /*
+ * Revision 1.1  1995/10/13  03:04:08  jimg
+ * First version. Incorporates Glenn's suggestions.
  */
 
 %{
 
-#define YYSTYPE char *
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
-#define ID_MAX 256
 
-#ifndef TRUE
-#define TRUE 1
-#define FALSE 0
-#endif
-
-static char rcsid[]={"$Id: expr.y,v 1.1 1995/10/13 03:04:08 jimg Exp $"};
+static char rcsid[]={"$Id: expr.y,v 1.2 1995/10/23 23:10:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <String.h>
+#include <SLList.h>
+
+#include "DDS.h"
+
+#include "BaseType.h"
+#include "Array.h"
+#include "List.h"
+#include "Structure.h"
+#include "Sequence.h"
+#include "Function.h"
+#include "Grid.h"
+
 #include "config_dap.h"
+#define DEBUG 1
 #include "debug.h"
-#include "expr.tab.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-static char operand1[ID_MAX];	/* holds operand 1's text */
-static char operand2[ID_MAX];
-
 void mem_list_report();
 int exprlex(void);		/* the scanner; see expr.lex */
 int exprerror(char *s);
+
+static bool mark_id(DDS &table, char *id);
+static bool mark_field(DDS &table, char *fields);
+static void mark_all(DDS &table);
+static bool mark_leaf(BaseType *bt, String &name);
+
+/*
+  The parser recieives DDS &table as a formal argument. TABLE is the DDS of
+  the entire dataset; each variable in the constraint expression must be in
+  this DDS and their datatypes must match the use in the constraint
+  expression. 
+*/
 
 %}
 
 %expect 6
 
-%token ID
-%token INT
-%token FLOAT
-%token STR
+%token <char_ptr> ID
+%token <char_ptr> FIELD
+%token <char_ptr> INT
+%token <char_ptr> FLOAT
+%token <char_ptr> STR
 
-%token EQUAL
-%token NOT_EQUAL
-%token GREATER
-%token GREATER_EQL
-%token LESS
-%token LESS_EQL
-%token REGEXP
+%token <char_ptr> EQUAL
+%token <char_ptr> NOT_EQUAL
+%token <char_ptr> GREATER
+%token <char_ptr> GREATER_EQL
+%token <char_ptr> LESS
+%token <char_ptr> LESS_EQL
+%token <char_ptr> REGEXP
+
+%union {
+    bool boolean;
+    char *char_ptr;
+    SLList<String> *str_list_ptr;
+}
+
+%type <boolean> constraint_expr projection
 
 %%
 
-constraint_expr: /* empty */
-		| selection
-		| projection
-		| projection '&' selection
+constraint_expr: /* empty */ 
+                 {
+		     mark_all(table);
+		     $$ = true;
+		 }
+                 | projection
 ;
 
-projection:	ID
-		| field_sel
-		| projection ',' ID
-		| projection ',' field_sel
-;
+/* | selection */
+/* | projection '&' selection */
 
+
+projection:	ID 
+                  { 
+		      DBG(cout << "PROJ:ID\n"); 
+		      $$ = mark_id(table, $1); 
+		  }
+                | FIELD
+                  { 
+		      DBG(cout << "PROJ:FIELD\n"); 
+		      $$ = mark_field(table, $1); 
+		  }
+                | projection ',' ID
+                  { 
+		      DBG(cout << "PROJ:PROJ,ID\n"); 
+		      $$ = $1 && mark_id(table, $3); 
+		  }
+                | projection ',' FIELD
+                  { 
+		      DBG(cout << "PROJ:PROJ,FIELD\n"); 
+		      $$ = $1 && mark_field(table, $3); 
+		  }
+;
+/*
 selection:	clause
 		| selection '&' clause
 ;
@@ -126,10 +177,6 @@ operand:	ID
 		| field_sel
 		| array_sel
 		| '*' STR
-;
-
-field_sel:	ID '.' ID
-		| field_sel '.' ID
 ;
 
 array_sel:	ID array_index
@@ -167,7 +214,7 @@ rel_op:		EQUAL
 		| LESS_EQL
 		| REGEXP
 ;
-
+*/
 %%
 
 int 
@@ -176,3 +223,202 @@ exprerror(char *s)
     fprintf(stderr, "%s\n");
 }
 
+static void
+shorthand_error_message(String &id)
+{
+    cerr << "Shorthand field names must be unique;" << endl
+	 << "`" << id << "' appears more than once" << endl;
+}
+
+static bool
+mark_leaf(BaseType *bt, String &name)
+{
+    if (bt->name() == name) {
+	DBG(cout << "Found " << name << endl);
+	bt->set_send_p(true);
+	return true;
+    }
+    else
+	switch(bt->type()) {
+	    Pix p;
+	  case array_t:
+	    Array *a = (Array *)bt; /* nasty */
+	    if (mark_leaf(a->var(a->name()), name)) /* kludge */
+		return true;
+	    break;
+
+	  case list_t:
+	    List *l = (List *)bt;
+	    if (mark_leaf(l->var(l->name()), name))
+		return true;
+	    break;
+
+	  case structure_t:
+	    Structure *s = (Structure *)bt;
+	    for (p = s->first_var(); p; s->next_var(p))
+		if (mark_leaf(s->var(p), name)) {
+		    s->next_var(p);
+		    while (p) {
+			if (mark_leaf(s->var(p), name)) {
+			    shorthand_error_message(name);
+			    return false;
+			}
+			s->next_var(p);
+		    }
+		    return true;
+		}
+	    break;
+	    
+	  case sequence_t:
+	    Sequence *seq = (Sequence *)bt;
+	    for (p = seq->first_var(); p; seq->next_var(p))
+		if (mark_leaf(seq->var(p), name)) {
+		    seq->next_var(p);
+		    while (p) {
+			if (mark_leaf(seq->var(p), name)) {
+			    shorthand_error_message(name);
+			    return false;
+			}
+			seq->next_var(p);
+		    }
+		    return true;
+		}
+	    break;
+
+	  case function_t:
+	    Function *f = (Function *)bt;
+	    for (p = f->first_indep_var(); p; f->next_indep_var(p))
+		if (mark_leaf(f->indep_var(p), name)) {
+		    f->next_indep_var(p);
+		    while (p) {
+			if (mark_leaf(f->indep_var(p), name)) {
+			    shorthand_error_message(name);
+			    return false;
+			}
+			f->next_indep_var(p);
+		    }
+		    /* if an independent variable matches, the function must
+		       check not only the remaining indep vars but also the
+		       dependdetn variables. */
+		    for (p = f->first_dep_var(); p; f->next_dep_var(p)) {
+			if (mark_leaf(f->dep_var(p), name)) {
+			    shorthand_error_message(name);
+			    return false;
+			}
+		    }
+		    return true;
+		}
+
+	    for (p = f->first_dep_var(); p; f->next_dep_var(p))
+		if (mark_leaf(f->dep_var(p), name)) {
+		    f->next_dep_var(p);
+		    while (p) {
+			if (mark_leaf(f->dep_var(p), name)) {
+			    shorthand_error_message(name);
+			    return false;
+			}
+			f->next_dep_var(p);
+		    }
+		    return true;
+		}
+	    break;
+	    
+	  case grid_t:
+	    Grid *g = (Grid *)bt;
+	    if (mark_leaf(g->array_var(), name)) {
+		for (p = g->first_map_var(); p; g->next_map_var(p))
+		    if (mark_leaf(g->map_var(p), name)) {
+			shorthand_error_message(name);
+			return false;
+		    }
+		return true;
+	    }
+	    for (p = g->first_map_var(); p; g->next_map_var(p))
+		if (mark_leaf(g->map_var(p), name)) {
+		    g->next_map_var(p);
+		    while (p) {
+			if (mark_leaf(g->map_var(p), name)) {
+			    shorthand_error_message(name);
+			    return false;
+			}
+			g->next_map_var(p);
+		    }
+		    return true;
+		}
+	    break;
+
+	  default:
+	    break;
+	}
+
+    return false;
+}
+
+// Mark an identifier. When marked a variable is read and serialized by the
+// server. 
+
+static bool
+mark_id(DDS &table, char *id)
+{
+    DBG(cout << "ID: " <<  id << endl);
+
+    BaseType *bt;
+    if ((bt = table.var(id))) {
+	DBG(cout << "Found " << id << endl);
+	bt->set_send_p(true);
+	return true;
+    }
+    else {
+	for (Pix p = table.first_var(); p; table.next_var(p)) {
+	    /* This call must check that the id is a *unique* field name,
+	       thus the second call to mark_leaf with the remaining
+	       DDS members which ensure that no other field (at this level in
+	       the DDS) is named `id'. See mark_leaf() for more of this
+	       kludge. */
+	    if (mark_leaf(table.var(p), (String)id)) {
+		table.next_var(p);
+		while (p) {
+		    if (mark_leaf(table.var(p), (String)id)) {
+			shorthand_error_message((String)id);
+			return false;
+		    }
+		    table.next_var(p);
+		}
+		return true;
+	    }
+	}
+
+	cerr << "No `" << id << "' in the dataset" << endl;
+	return false;
+    }
+}
+
+// Mark a field.
+
+static bool
+mark_field(DDS &table, char *fields)
+{
+    DBG(cout << "FIELD: " << fields << endl);
+
+    BaseType *bt;
+    if ((bt = table.var(fields))) {
+	DBG(cout << "Found " << fields << endl);
+	bt->set_send_p(true);
+	return true;
+    }
+    else {
+	DBG(cout << "No " << fields << " in the DDS" << endl);
+	return false;
+    }
+}
+
+// When no projection is given, the entire dataset is marked.
+
+static void
+mark_all(DDS &table)
+{
+    for (Pix p = table.first_var(); p; table.next_var(p))
+	table.var(p)->set_send_p(true);
+}
+
+	    
