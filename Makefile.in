@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.16 1995/03/04 15:30:10 jimg Exp $
+# $Id: Makefile.in,v 1.17 1995/03/16 17:42:10 jimg Exp $
 
 @SET_MAKE@
 
@@ -6,14 +6,21 @@
 # DEFS gets the `-D' defines that describe what a particular system has
 # or doesn't have.
 
-PROG= das-test dds-test libdas++.a libdds++.a
-CXXFLAGS = -g $(DEFS) -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include 
+# the programs das-, dds- and trans-test are used to test parts of the
+# library. The libraries libdas++.a and libdds++.a contain the code for the
+# generation of those structures (plus the dds library contains code for data
+# transmission. The libdap++.a contains all the code in libdas++.a,
+# libdds++.a plus the libraries in Map, Stack, Plex and Vec. It is *the* dods
+# library in many senses.
+
+PROG= das-test dds-test trans-test libdap++.a
+CXXFLAGS = -g $(DEFS) -Wno-cast-qual -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include 
 LDFLAGS = @LDFLAGS@ -g -L. -LMAP -LStack -LPlex -LVec -L$(DODS_ROOT)/lib
-LFLAGS=-8
-YFLAGS=-d
-DODS_ROOT=../..
+LFLAGS = -8
+YFLAGS = -d
+DODS_ROOT = ../..
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
-LIBS = -lg++map -lg++stack -lg++xplex -lg++vec -lerrmsg @LIBS@
+LIBS = -ldap++ -lerrmsg @LIBS@
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
@@ -34,12 +41,13 @@ VPATH = @srcdir@
 dir = @dir@
 
 # testsuite specifics
-RUNTEST= runtest
-RUNTESTFLAGS= #--all --verbose
+RUNTEST = runtest
+RUNTESTFLAGS = #--all --verbose
 
 # names of key programs
 
 LN_S = @LN_S@
+CP = cp
 AWK = @AWK@
 CC = @CC@
 CXX = @CXX@
@@ -54,61 +62,61 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
 SUBDIRS=Stack Map Plex Vec
 
-DAS_GRAM_OBJS=lex.das.o das.tab.o
-DDS_GRAM_OBJS=lex.dds.o dds.tab.o
+# DAP_LIBS=libdas++.a libdds++.a Map/libg++map.a Stack/libg++stack.a \
+#	   Plex/libg++plex.a Vec/libg++vec.a
 
-DASHDRS=AttrTable.h DAS.h
-DASSRCS=AttrTable.cc DAS.cc
-DASOBJS=AttrTable.o DAS.o $(DAS_GRAM_OBJS)
+DAS_GRAM_OBJS = lex.das.o das.tab.o
+DDS_GRAM_OBJS = lex.dds.o dds.tab.o
 
-DDSHDRS=DDS.h
-DDSSRCS=DDS.cc
-DDSOBJS=DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) 
+DASHDRS = AttrTable.h DAS.h
+DASSRCS = AttrTable.cc DAS.cc
+DASOBJS = AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
-TYPEHDRS=BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
-         List.h Array.h Structure.h Sequence.h Function.h Grid.h
+DDSHDRS = DDS.h
+DDSSRCS = DDS.cc
+DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) 
 
-TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
-         List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
-	 util.cc
+TYPEHDRS = BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
+	   List.h Array.h Structure.h Sequence.h Function.h Grid.h
 
-TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
-	 List.o Array.o Structure.o Sequence.o Function.o Grid.o \
-	 util.o
+TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
+	   List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
+	   util.cc
 
-TESTSRCS=TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc\
-         TestArray.cc TestStructure.cc TestList.cc TestSequence.cc\
-         TestFunction.cc TestGrid.cc
+TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
+	   List.o Array.o Structure.o Sequence.o Function.o Grid.o \
+	   util.o
 
-TESTOBJS=TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
-         TestArray.o TestStructure.o TestList.o TestSequence.o\
-         TestFunction.o TestGrid.o
+TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc\
+	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc\
+	   TestFunction.cc TestGrid.cc
+
+TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
+	   TestArray.o TestStructure.o TestList.o TestSequence.o\
+	   TestFunction.o TestGrid.o
 
 # Added decent into SUBDIRS since it makes little sense to build these
 # libraries without the Map, Stack and Plex code.
 
-all: libdas++.a libdds++.a
+all: $(PROG)
+
+# FIXME: This target won't catch objects in the subdirs that need to updated
+# in the library... jhrg 3/12/95
+
+libdap++.a: libdap++.a($(DASOBJS) $(DDSOBJS) $(TYPEOBJS))
 	for d in $(SUBDIRS); do cd $$d; make; cd ..; done
-
-# build the libraries
-
-libdas++.a:  libdas++.a($(DASOBJS))
-	     $(RANLIB) libdas++.a
-
-libdds++.a:  libdds++.a($(DDSOBJS))
-	     $(RANLIB) libdds++.a
-
+	for d in $(SUBDIRS); do $(AR) $(ARFLAGS) libdap++.a $${d}/*.o; done
+	
 # Build the test drivers
 
 das-test:  $(DASOBJS) das-test.o
-	$(CXX) $(LDFLAGS) -o das-test $(DASOBJS) das-test.o $(LIBS)
+	$(CXX) $(LDFLAGS) -o das-test das-test.o $(LIBS)
 
 dds-test:   $(DDSOBJS) $(TESTOBJS) dds-test.o
-	$(CXX) $(LDFLAGS) -o dds-test $(DDSOBJS) $(TESTOBJS) dds-test.o $(LIBS)
+	$(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o $(LIBS)
 
-trans-test: libdds++.a $(TESTOBJS) trans-test.o
-	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) \
-	       trans-test.o -ldds++ $(LIBS)
+trans-test: libdap++.a $(TESTOBJS) trans-test.o
+	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
 
 # Build the DAS scanner (a C object module compiled with C++)
 
@@ -151,44 +159,51 @@ dds.tab.o: dds.tab.c		# build using C++ compiler
 # Standard targets with some customization for das-test and dds-test
 #
 # NB: it does not make much sense to install lib{das,dds}.a without the stack
-# and map libraries also installed
+# map and xplex libraries also installed
 
-install: install-libdas++.a install-libdds++.a
+install: install-libdas++.a install-libdds++.a install-libdap++.a
 	for d in $(SUBDIRS); do cd $$d; make install; cd ..; done
 	$(INSTALL_DATA) config.h $(includedir)
 
 install-libdas++.a:
-	$(INSTALL_DATA) libdas++.a $(libdir)
-	$(RANLIB) $(libdir)/libdas++.a
+#	$(INSTALL_DATA) libdas++.a $(libdir)
+#	$(RANLIB) $(libdir)/libdas++.a
 	for h in $(DASHDRS); do $(INSTALL_DATA) $$h $(includedir); done
 	
 install-libdds++.a:
-	$(INSTALL_DATA) libdds++.a $(libdir)
-	$(RANLIB) $(libdir)/libdds++.a
+#	$(INSTALL_DATA) libdds++.a $(libdir)
+#	$(RANLIB) $(libdir)/libdds++.a
 	for h in $(TYPEHDRS) $(DDSHDRS); \
 	    do $(INSTALL_DATA) $$h $(includedir); done
+
+install-libdap++.a:
+	$(INSTALL_DATA) libdap++.a $(libdir)
+	$(RANLIB) $(libdir)/libdap++.a
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
 
-check: das-check dds-check 
+check: das-check dds-check trans-check
 
 # these tests all fail when das-test is linked with -lnew_debug.
 das-check: das-test
-	rootme=`pwd`; export rootme; \
+	-rootme=`pwd`; export rootme; \
 	${RUNTEST} ${RUNTESTFLAGS} --tool das-test --srcdir das-testsuite
 
 dds-check: dds-test
-	rootme=`pwd`; export rootme; \
+	-rootme=`pwd`; export rootme; \
 	${RUNTEST} ${RUNTESTFLAGS} --tool dds-test --srcdir dds-testsuite
+
+trans-check: trans-test
+	trans-test
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
-	-rm -f lex.das.c das.tab.c das.tab.h lex.dds.c dds.tab.c dds.tab.h
 	-rm -f $(PROG)
 	for d in $(SUBDIRS); do cd $$d; make clean; cd ..; done
-
+	
 distclean: clean
+	-rm -f lex.das.c das.tab.c das.tab.h lex.dds.c dds.tab.c dds.tab.h
 	-rm -f config.status config.log config.cache Makefile
 	for d in $(SUBDIRS); do cd $$d; make distclean; cd ..; done
 
