@@ -37,6 +37,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.18  1996/03/02 01:13:47  jimg
+// Fixed problems with case labels and local variables.
+//
 // Revision 1.17  1996/02/02 00:31:24  jimg
 // Merge changes for DODS-1.1.0 into DODS-2.x
 //
@@ -133,7 +136,7 @@
 //
 
 
-static char rcsid[]={"$Id: util.cc,v 1.17 1996/02/02 00:31:24 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.18 1996/03/02 01:13:47 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -254,29 +257,25 @@ delete_xdrstdio(XDR *xdr)
 // defined as extern C since it is passed via function pointers to routines
 // in the xdr library where they are executed. This function is defined so
 // that Str and Url have an en/decoder which takes exactly two argumnets: an
-// XDR * and a buffer pointer.
+// XDR * and a String reference.
 //
 // NB: this function is *not* used for arrays (i.e., it is not the function
 // referenced by BaseType's _xdr_coder field when the object is a Str or Url.
 //
 // Returns: XDR's bool_t; TRUE if no errors are detected, FALSE
-// otherwise. The formal parameter BUF is modified as a side effect,
-// including possibly having new memory allocated to hold its value.
-
-// *** is BUF a String ** or String *?
-// *** is BUF ever NULL?
+// otherwise. The formal parameter BUF is modified as a side effect.
 
 extern "C" bool_t
 xdr_str(XDR *xdrs, String &buf)
 {
     switch (xdrs->x_op) {
-      case XDR_ENCODE:		// BUF is a pointer to a (String *)
+      case XDR_ENCODE: {
 	const char *out_tmp = (const char *)buf;
 
 	return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
       }
 
-      case XDR_DECODE: {	// BUF is a pointer to a String * or to NULL
+      case XDR_DECODE: {
 	char *in_tmp = NULL;
 	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
 	if (!stat) {
@@ -284,7 +283,7 @@ xdr_str(XDR *xdrs, String &buf)
 	    return stat;
 	}
 
-	buf = in_tmp;		// if BUF is a String *, is this correct?
+	buf = in_tmp;
 	free(in_tmp);
 
 	return stat;
