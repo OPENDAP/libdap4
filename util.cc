@@ -11,6 +11,12 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.34  1997/02/10 02:38:42  jimg
+// Added assert() calls for pointers.
+// Added code to fix warnings about comparisons between int and unsigned
+// numbers.
+// Changed return type of dods_root() from String to char *.
+//
 // Revision 1.33  1996/12/02 23:20:29  jimg
 // func_member now does the right thing with the dds by sending dds.filename()
 // to ops().
@@ -177,7 +183,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.33 1996/12/02 23:20:29 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.34 1997/02/10 02:38:42 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -234,6 +240,7 @@ unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
     int nelem = 0;
     String s;
     for (Pix p = l.first(); p; l.next(p)) {
+	assert(l(p));
 	names[nelem++] = strdup((const char *)l(p)->name());
 	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
     }
@@ -379,13 +386,13 @@ text_to_temp(String text)
     return fp;
 }
 
-String
+const char *
 dods_root()
 {
     static const char *dods_root = (getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
 				    : DODS_ROOT);
 
-    return String(dods_root);
+    return dods_root;
 }
 
 FILE *
@@ -682,22 +689,28 @@ int_ops(dods_int32 i1, dods_int32 i2, int op)
     }
 }
 
+static unsigned
+MAX(int i1, int i2)
+{
+    return (unsigned)((i1 < i2) ? i1 : i2);
+}
+
 bool
 int_ops(dods_uint32 i1, dods_int32 i2, int op)
 {
     switch (op) {
       case EQUAL:
-	return i1 == i2;
+	return i1 == MAX(0, i2);
       case NOT_EQUAL:
-	return i1 != i2;
+	return i1 != MAX(0, i2);
       case GREATER:
-	return i1 > i2;
+	return i1 > MAX(0, i2);
       case GREATER_EQL:
-	return i1 >= i2;
+	return i1 >= MAX(0, i2);
       case LESS:
-	return i1 < i2;
+	return i1 < MAX(0, i2);
       case LESS_EQL:
-	return i1 <= i2;
+	return i1 <= MAX(0, i2);
       case REGEXP:
 	cerr << "Regexp not valid for integer values" << endl;
 	return false;
@@ -712,17 +725,17 @@ int_ops(dods_int32 i1, dods_uint32 i2, int op)
 {
     switch (op) {
       case EQUAL:
-	return i1 == i2;
+	return MAX(0, i1) == i2;
       case NOT_EQUAL:
-	return i1 != i2;
+	return MAX(0, i1) != i2;
       case GREATER:
-	return i1 > i2;
+	return MAX(0, i1) > i2;
       case GREATER_EQL:
-	return i1 >= i2;
+	return MAX(0, i1) >= i2;
       case LESS:
-	return i1 < i2;
+	return MAX(0, i1) < i2;
       case LESS_EQL:
-	return i1 <= i2;
+	return MAX(0, i1) <= i2;
       case REGEXP:
 	cerr << "Regexp not valid for integer values" << endl;
 	return false;
