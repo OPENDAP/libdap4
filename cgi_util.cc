@@ -11,6 +11,12 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.24  1997/03/12 01:07:23  jimg
+// Removed code that set the HTTP protocol version header based on the value
+// of the SERVER_PROTOCOL environment variable. In servers that support
+// HTTP/1.1, the value of this env var was "HTTP/1.1" which broke our clients
+// since the servers (which are `nph') do *not* support HTTP/1.1.
+//
 // Revision 1.23  1997/03/05 08:28:15  jimg
 // Now correctly gets the server protocol (HTTP 0.9, 1.0 or 1.1) from the
 // environment variables and sets the return doc header accordingly.
@@ -114,7 +120,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.23 1997/03/05 08:28:15 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.24 1997/03/12 01:07:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -264,44 +270,50 @@ static char *encoding[]={"unknown", "x-plain", "x-gzip"};
 void
 set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
+    // Remove this until our servers can support HTTP/1.1 and other versions.
+    // jhrg 3/10/97 
+#if 0
     char *protocol = getenv("SERVER_PROTOCOL");
     if (!protocol)
 	protocol = "HTTP/1.0";
+#endif
 
-    cout << protocol << " 200 OK" << endl;
+    cout << "HTTP/1.0 200 OK" << endl;
     cout << "Server: " << DVR << endl;
-    //    cout << "Status: 200 " << DVR << endl; // Send server version
     cout << "Content-type: text/plain" << endl; 
     cout << "Content-Description: " << descrip[type] << endl;
     cout << "Content-Encoding: " << encoding[enc] << endl;
-    cout << endl;			// MIME header ends with a blank line
+    cout << endl;
 }
 
 void
 set_mime_binary(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
+#if 0
     char *protocol = getenv("SERVER_PROTOCOL");
     if (!protocol)
 	protocol = "HTTP/1.0";
+#endif
 
-    cout << protocol << " 200 OK" << endl;
+    cout << "HTTP/1.0 200 OK" << endl;
     cout << "Server: " << DVR << endl;
-    //    cout << "Status: 200 " << DVR << endl;
     cout << "Content-type: application/octet-stream" << endl; 
     cout << "Content-Description: " << descrip[type] << endl;
     cout << "Content-Encoding: " << encoding[enc] << endl;
-    cout << endl;		// MIME header ends with a blank line
+    cout << endl;
 }
 
 void 
 set_mime_error(int code = HTERR_NOT_FOUND, 
 	       const char *reason = "Dataset not found")
 {
+#if 0
     char *protocol = getenv("SERVER_PROTOCOL");
     if (!protocol)
 	protocol = "HTTP/1.0";
+#endif
 
-    cout << protocol << " " << code << " " << reason << endl;
+    cout << "HTTP/1.0 " << code << " " << reason << endl;
     cout << "Server: " << DVR << endl;
     cout << endl;
 }
