@@ -9,6 +9,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.99  2000/07/21 14:26:24  rmorris
+// Remove client-side caching entired under win32 in lieu of a permanent
+// fix (soon).  Fixed what I broke for client-side caching under unix.
+//
 // Revision 1.98  2000/07/18 12:49:04  rmorris
 // Fixed failure to initialize a structure element appropriately when
 // retrieving the Win32 OS version information for the WIN95_CACHE_HACK.
@@ -565,7 +569,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.98 2000/07/18 12:49:04 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.99 2000/07/21 14:26:24 rmorris Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1252,23 +1256,15 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 			}
 		}
 
-#define WIN95_CACHE_HACK
-#if defined(WIN32) && defined(WIN95_CACHE_HACK)
+#define WIN32_CACHE_HACK
+#if defined(WIN32) && defined(WIN32_CACHE_HACK)
 	//  Temporary hack in lieu of a fix.  Caching doesn't work under windows
-	//  95/98 and why has yet to be determined.  This lets us bypass the problem
-	//  in the short-term by turning of client-side caching for win95-based
-	//  systems such as win95, win98 and future products based upon them.
+	//  and why has yet to be determined.  This lets us bypass the problem
+	//  in the short-term by turning of client-side caching for windows
+	//  systems.
 	//  rom - 07/17/2000.
-	OSVERSIONINFO vinfo;
-
-	//  Indicates win95-based systems (95/98/etc).
-	vinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&vinfo);
-	if(vinfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-		{
-		use_cache_file	= false;
-		USE_CACHE		= false;
-		}
+	use_cache_file	= false;
+	USE_CACHE	= false;
 #endif
 
     if(use_cache_file)
@@ -1436,6 +1432,8 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 #endif
 		croot = id2dods(string(croot),string(" "));
 
+		_cache_root = new char[strlen(cache_root.c_str())+1];
+		strcpy(_cache_root, cache_root.c_str());
 		if(HTCacheInit(croot.c_str(), MAX_CACHE_SIZE) == YES)
 			{
 			HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
