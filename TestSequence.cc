@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
+// Revision 1.15  1997/07/15 21:54:57  jimg
+// Changed return type of length member function.
+//
 // Revision 1.14  1996/08/13 20:50:47  jimg
 // Changed definition of the read member function.
 //
@@ -107,7 +110,7 @@ TestSequence::read(const String &, int &)
     return true;
 }
 
-unsigned int
+int
 TestSequence::length()
 {
     return 0;
