@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.26  1997/06/05 17:24:39  jimg
+// Added four function that help with writing the *_dods filter programs:
+// usage(), do_version(), do_data_transfer() and read_ancillary_dds().
+//
 // Revision 1.25  1997/03/27 18:13:27  jimg
 // Fixed a problem in set_mime_*() where Content-Encoding was sent with the
 // value x-plain. This caused Netscape on Windows to barf. I'm not sure that it
@@ -126,7 +130,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.25 1997/03/27 18:13:27 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.26 1997/06/05 17:24:39 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,6 +156,106 @@ static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.25 1997/03/27 18:13:27 j
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
 
+// The next two functions are helpers used to simplify creating the *_dods
+// filter programs.
+
+void
+usage(const char *name)
+{
+    // Write a message to the WWW server error log file.
+    const char *msg = "[-c] <dataset> [constraint]";
+    const char *msg2 = "-v [<script_version> <dataset>]";
+    char usage[256];
+    sprintf(usage, "Usage: %s %s\n%s %s", name, msg, name, msg2);
+    ErrMsgT(usage);
+
+    // Build an error object to return to the user.
+    Error *ErrorObj = new Error(no_such_file, 
+			(String)"\"DODS internal error; missing parameter.\"");
+    set_mime_text(dods_error);
+    ErrorObj->print();
+}
+
+// Note that the filter program must define `find_dataset_version()' for this
+// function to work.
+
+bool
+do_version(const String &script_ver, const String &dataset_ver)
+{
+    cout << "HTTP/1.0 200 OK" << endl
+	 << "Server: " << DVR << endl
+	 << "Content-Type: text/plain" << endl
+	 << endl;
+    
+    cout << "Core software version: " << DVR << endl;
+
+    if (script_ver != "")
+	cout << "Server Script Revision: " << script_ver << endl;
+
+    if (dataset_ver != "")
+	cout << "Dataset version: " << dataset_ver << endl;
+
+    return true;
+}
+
+bool
+do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
+		 const String &dataset, const String &constraint)
+{
+    if (compression) {
+	int childpid;
+	FILE *data_sink = compressor(data_stream, childpid);
+	if (!dds.send(dataset, constraint, data_sink, true)) {
+	    ErrMsgT("Could not send compressed data");
+	    return false;
+	}
+	fclose(data_sink);
+	int pid;
+	while ((pid = waitpid(childpid, 0, 0)) > 0) {
+	    DBG(cerr << "pid: " << pid << endl);
+	}
+    }
+    else {
+	if (!dds.send(dataset, constraint, data_stream, false)) {
+	    ErrMsgT("Could not send uncompressed data");
+	    return false;
+	}
+    }
+
+    return true;
+}
+
+// If external descriptor file exists, read it... This file must be in the
+// same directory that the netCDF file is located. Its name must be the
+// netCDF file name with the addition of .dds
+
+bool
+read_ancillary_dds(DDS &dds, const String &dataset)
+{
+    FILE *in = fopen(dataset + ".dds", "r");
+ 
+    if (in) {
+	int status = dds.parse(in);
+	fclose(in);
+    
+	if(!status) {
+	    const String msg = "Parse error in external file " 
+		+ dataset + ".dds";
+
+	    // server error message
+	    ErrMsgT(msg);
+
+	    // client error message
+	    Error *ErrorObj = new Error(malformed_expr, "\"" + msg + "\"");
+	    set_mime_text(dods_error);
+	    ErrorObj->print();
+	    return false;
+	}
+    }
+
+    return true;
+}
+    
 // An error handling routine to append the error messege from CGI programs, 
 // a time stamp, and the client host name (or address) to HTTPD error-log.
 // Use this instead of the functions in liberrmsg.a in the programs run by
