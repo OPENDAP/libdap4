@@ -104,6 +104,7 @@ public:
     CPPUNIT_TEST(names_with_spaces_test);
     CPPUNIT_TEST(containers_with_spaces_test);
     CPPUNIT_TEST(get_attr_iter_test);
+    CPPUNIT_TEST(del_attr_table_test);
 
 #if 0
     CPPUNIT_TEST(print_xml_test);
@@ -129,23 +130,23 @@ public:
     void find_test() { 
 	AttrTable *tmp;
 	AttrTable::Attr_iter iter ;
-	at1->find("a", &tmp, iter);
+	at1->find("a", &tmp, &iter);
 	CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && tmp->is_container(iter)
 	       && tmp->get_name(iter) == "a");
-	at1->find("a.size", &tmp, iter);
+	at1->find("a.size", &tmp, &iter);
 	CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter)
 	       && tmp->get_name(iter) == "size" && tmp->get_attr(iter) == "7");
-	at1->find("b.type", &tmp, iter);
+	at1->find("b.type", &tmp, &iter);
 	CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter)
 	       && tmp->get_name(iter) == "type"
 	       && tmp->get_attr(iter) == "houses");
-	at1->find("c.ca.caa.color", &tmp, iter);
+	at1->find("c.ca.caa.color", &tmp, &iter);
 	CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter)
 	       && tmp->get_name(iter) == "color"
 	       && tmp->get_attr(iter) == "red");
-	at1->find("d.size", &tmp, iter);
+	at1->find("d.size", &tmp, &iter);
 	CPPUNIT_ASSERT(!tmp);
-	at1->find("c.size", &tmp, iter);
+	at1->find("c.size", &tmp, &iter);
 	CPPUNIT_ASSERT(tmp == cont_c && iter == tmp->attr_end());
     } 
 
@@ -263,6 +264,19 @@ String longer%20name \"second test\";";
 	CPPUNIT_ASSERT(t1->get_attr(k, 0) == "houses");	
     }
 
+    void del_attr_table_test() {
+        AttrTable *b = at1->find_container("b");
+        AttrTable::Attr_iter i = b->attr_begin();
+        CPPUNIT_ASSERT(b->get_name(i) == "number");
+        i += 2;
+        CPPUNIT_ASSERT(b->get_name(i) == "ba");
+        b->del_attr_table(i);
+        i = b->attr_begin();
+        CPPUNIT_ASSERT(b->get_name(i) == "number");
+        i += 2;
+        CPPUNIT_ASSERT(i == b->attr_end());
+    }
+    
     void print_xml_test() {
 	at1->print_xml(stdout);
     }
