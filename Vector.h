@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.23  1998/11/10 00:56:44  jimg
+ * Fixed up the doc++ comments.
+ *
  * Revision 1.22  1998/09/17 17:01:12  jimg
  * Fixed errant documentation.
  *
@@ -274,7 +277,8 @@ public:
       types.  See #buf2val()# to access members of Vectors containing
       simple types.
 
-
+      NOTE: The memory allocated by this function should be freed using
+      delete, \emph{not} delete[]!
  
       @memo Sets element #i# to value #val#.
       @return TRUE if the values were successfully set. FALSE if there
