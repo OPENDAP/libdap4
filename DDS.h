@@ -56,6 +56,10 @@
 #include "BaseType.h"
 #endif
 
+#ifndef _constructor_h
+#include "Constructor.h"
+#endif
+
 #ifndef _das_h
 #include "DAS.h"
 #endif
@@ -185,7 +189,7 @@ private:
 
     string _filename;		// File name (or other OS identifier) for
 				// dataset or part of dataset.
-    AttrTable d_attr;
+    AttrTable d_attr;           // Global attributes.
 
     vector<BaseType *> vars;	// Variables at the top level 
     
@@ -207,6 +211,13 @@ protected:
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
     BaseType *exact_match(const string &name, btp_stack *s = 0);
 
+    void transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp,
+                       const string &suffix = "");
+    void transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp,
+                             const string &suffix = "");
+    void transfer_attr_table(DAS *das, AttrTable *at, Constructor *c,
+                             const string &suffix = "");
+    
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
@@ -334,6 +345,11 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.58  2004/08/03 23:11:38  jimg
+// I changed the three static functions that are helpers for
+// transfer_attributes() to methods. This makes them easier to test, although I
+// never wrote any unit tests for them...
+//
 // Revision 1.57  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //
