@@ -5,6 +5,9 @@
 # jhrg
 #
 # $Log: test.l.exp,v $
+# Revision 1.2  1997/07/15 21:07:33  jimg
+# *** empty log message ***
+#
 # Revision 1.1  1997/06/05 22:53:36  jimg
 # *** empty log message ***
 #
@@ -42,7 +45,7 @@ Dataset {
     } g;
 } test1;
 HTTP/1.0 200 OK
-Server: DODS/2.13
+Server: DODS/*
 Content-type: application/octet-stream
 Content-Description: dods_data
 
