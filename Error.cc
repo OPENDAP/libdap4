@@ -8,6 +8,9 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.8  1997/02/18 21:22:18  jimg
+// Allow empty Error objects.
+//
 // Revision 1.7  1997/02/15 07:10:57  jimg
 // Changed OK() so that empty errors return false.
 // Added assert calls.
@@ -47,7 +50,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.7 1997/02/15 07:10:57 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.8 1997/02/18 21:22:18 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -122,16 +125,11 @@ Error::operator=(const Error &rhs)
 bool
 Error::OK()
 {
-    // Do not return true for empty objects, even though they can exist
-    // within this class. This method should never return true for an object
-    // that users clearly cannot use.
-#if 0
     // The object is empty - users cannot make these, but this class can!
     bool empty = ((_error_code == undefined_error) 
 		  && (_error_message == "")
 		  && (_program_type == undefined_prog_type) 
 		  && (_program == 0));
-#endif
 
     // Just a message - the program part is null.
     bool message = ((_error_code != undefined_error) 
@@ -145,7 +143,7 @@ Error::OK()
 		    && (_program_type != undefined_prog_type) 
 		    && (_program != 0));
 
-    return message || program;
+    return empty || message || program;
 }
 
 bool
