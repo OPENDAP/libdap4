@@ -27,7 +27,6 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <strstream>
 #include <string>
 
 #include "Regex.h"
@@ -45,7 +44,7 @@ using namespace std;
 static const char *s_as_string = \
 "BaseType (0x.*):\n\
           _name: s\n\
-          _type: 13\n\
+          _type: 12\n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
