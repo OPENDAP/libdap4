@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.32  1998/03/17 17:50:37  jimg
+// Added an implementation of element_count().
+//
 // Revision 1.31  1997/09/22 22:45:14  jimg
 // Added DDS * to deserialize parameters.
 //
@@ -227,6 +230,19 @@ Structure::operator=(const Structure &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+int
+Structure::element_count(bool leaves)
+{
+    if (!leaves)
+	return _vars.length();
+    else {
+	int i = 0;
+	for (Pix p = first_var(); p; next_var(p))
+	    i += var(p)->element_count(leaves);
+	return i;
+    }
 }
 
 void

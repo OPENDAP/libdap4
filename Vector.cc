@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.22  1998/03/17 17:51:06  jimg
+// Added an implementation of element_count().
+//
 // Revision 1.21  1998/02/05 20:13:58  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -101,7 +104,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.21 1998/02/05 20:13:58 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.22 1998/03/17 17:51:06 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -177,6 +180,16 @@ Vector::operator=(const Vector &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+int
+Vector::element_count(bool leaves)
+{
+    if (!leaves)
+	return 1;
+    else
+	// var() only works for simple types! 
+	return var(0)->element_count(leaves);
 }
 
 // These mfuncs set the _send_p and _read_p fields of BaseType. They differ

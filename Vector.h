@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.21  1998/03/17 17:51:28  jimg
+ * Added an implementation of element_count().
+ *
  * Revision 1.20  1998/02/05 20:13:59  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -173,6 +176,8 @@ public:
 
     const Vector &operator=(const Vector &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
+
+    virtual int element_count(bool leaves);
 
   /** This function sets the #send_p# flag for both the Vector itself
       and its element template.  This does not matter much when the

@@ -16,6 +16,9 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.28  1998/03/17 17:50:52  jimg
+ * Added an implementation of element_count().
+ *
  * Revision 1.27  1998/02/05 20:13:57  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -230,6 +233,8 @@ public:
 
     const Structure &operator=(const Structure &rhs);
     virtual BaseType *ptr_duplicate() = 0;
+
+    virtual int element_count(bool leaves = false);
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
