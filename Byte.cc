@@ -4,7 +4,11 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.7  1995/03/04 14:34:41  jimg
+// Revision 1.8  1995/03/16 17:26:37  jimg
+// Moved include of config.h to top of includes.
+// Added TRACE_NEW switched dbnew debugging includes.
+//
+// Revision 1.7  1995/03/04  14:34:41  jimg
 // Major modifications to the transmission and representation of values:
 // 	Added card() virtual function which is true for classes that
 // 	contain cardinal types (byte, int float, string).
@@ -70,9 +74,15 @@
 #pragma implementation
 #endif
 
+#include "config.h"
+
 #include <assert.h>
 
 #include "Byte.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 // NB: This ctor sets _xdr_coder to xdr_bytes(). That is the function that
 // should be used to en/decode arrays or lists of bytes. However, for a

@@ -4,7 +4,11 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.9  1995/03/04 14:34:42  jimg
+// Revision 1.10  1995/03/16 17:26:38  jimg
+// Moved include of config.h to top of includes.
+// Added TRACE_NEW switched dbnew debugging includes.
+//
+// Revision 1.9  1995/03/04  14:34:42  jimg
 // Major modifications to the transmission and representation of values:
 // 	Added card() virtual function which is true for classes that
 // 	contain cardinal types (byte, int float, string).
@@ -79,10 +83,16 @@
 #pragma implementation
 #endif
 
+#include "config.h"
+
 #include <assert.h>
 #include <rpc/xdr.h>
 
 #include "Float64.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 Float64::Float64(const String &n) : BaseType(n, "Float64", XDR_FLOAT64)
 {

@@ -4,7 +4,11 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.11  1995/02/16 22:46:00  jimg
+// Revision 1.12  1995/03/16 17:26:36  jimg
+// Moved include of config.h to top of includes.
+// Added TRACE_NEW switched dbnew debugging includes.
+//
+// Revision 1.11  1995/02/16  22:46:00  jimg
 // Added _in private member. It is used to keep a copy of the input FILE *
 // so that when the next chunk of data is read in the previous one can be
 // closed. Since the netio library unlinks the tmp file before returning
@@ -73,15 +77,12 @@
 #pragma implementation
 #endif
 
+#include "config.h"
+
 #include <stdio.h>		// for stdin and stdout
 
 #include "BaseType.h"
 #include "util.h"
-
-#ifdef NEVER
-extern XDR *new_xdrstdio(FILE*, enum xdr_op);
-extern void delete_xdrstdio(XDR*);
-#endif
 
 // Initial definition of the protected static members _xdrin and
 // _xdrout. By default they use the stdin and stdout streams (resp).

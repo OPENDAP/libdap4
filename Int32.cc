@@ -4,7 +4,11 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.10  1995/03/04 14:34:46  jimg
+// Revision 1.11  1995/03/16 17:26:40  jimg
+// Moved include of config.h to top of includes.
+// Added TRACE_NEW switched dbnew debugging includes.
+//
+// Revision 1.10  1995/03/04  14:34:46  jimg
 // Major modifications to the transmission and representation of values:
 // 	Added card() virtual function which is true for classes that
 // 	contain cardinal types (byte, int float, string).
@@ -77,10 +81,15 @@
 #pragma implementation
 #endif
 
+#include "config.h"
+
 #include <assert.h>
 
 #include "Int32.h"
-#include "config.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 Int32::Int32(const String &n) : BaseType(n, "Int32", XDR_INT32)
 {
