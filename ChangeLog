@@ -1,3 +1,20 @@
+2005-01-28  James Gallagher  <jimg@comet.dods.org>
+
+	* Merged with release-3-4-9.
+
+2005-01-27  James Gallagher  <jimg@comet.dods.org>
+
+	* Added code to Test* classes so that Sequences are easier to
+	test. These classes now return values similar to Nathan's DTS code
+	on the Java module (although not exactly the same).
+
+	* Fixed the way Sequence CEs are handled when Sequences are
+	nested. Tested to three levels deep. The serialization code in
+	Sequence is nw quite complex.
+
+	* Incremented version to 3.4.9; I've made some changes since the
+	last version and I need these in the trunk to test.
+
 2004-07-07  James Gallagher  <jimg@comet.dods.org>
 
 	* Merged with release-3-4-8FCS.
@@ -1456,4 +1473,5 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.80 2004/07/07 21:08:47 jimg Exp $
+$Id: ChangeLog,v 1.81 2005/01/28 17:24:06 jimg Exp $
+
