@@ -171,6 +171,7 @@ install:
 	copy $(OBJDIR)\usage.exe $(INSTALLEXEDIR)
 	copy $(OBJDIR)\deflate.exe $(INSTALLEXEDIR)
 	copy config_dap.h $(INCLUDEDIR)
+	copy dods-datatypes.h $(INCLUDEDIR)
 	copy ..\debug.h $(INCLUDEDIR)
 	copy ..\dods-limits.h $(INCLUDEDIR)
 	copy ..\Error.h $(INCLUDEDIR)
