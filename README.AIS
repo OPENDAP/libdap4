@@ -1,0 +1,43 @@
+Notes for the prototype AIS implementation:
+
+AISConnect does not implement clones for Connect's deprecated methods.
+
+Here are some notes I made while I wrote this code:
+
+* What happens when the same primary (data) source is listed more than once
+  in the database?
+
+* What about primary sources that are regular expressions? Right now lookup
+  is ln(N) where N is the number of entries. Regexs make this linear in N.
+  Bummer. I can use two databases, et c. but it gets messy very fast. So are
+  wild cards important (it doesn't have to be regexs, those are just really
+  easy to implement...)?
+
+* I've changed the meaning of 'fallback' so that it works for a whole group
+  od attributes rather than each individual attribute. My guess is that this
+  will be really unpopular. But it was easy to code and I'm not convinced
+  that fallback resources really make that much sense in practice.
+
+* I think that for client-side AIS stuff, the code should be able to read
+  from a remote XML file to get the database. Not hard to code. But I wonder
+  how useful it would be? It might be cool because a client could get teh
+  benefit of a remote server but do all the work locally. That would
+  'distribute the AIS processing load' such as it will be.
+
+* How will we handle multiple AIS databases? I think this could be really
+  important. I like the AIS-in-the-configuration-file less and less, until I
+  think about try to get Steve to buy into enveloped URLs...
+
+* Is the database file simple enough for people to write by hand? (and one
+  look and you can see why we're going to need wildcards... imagine 20K
+  urls).
+
+* I still need to write a bunch more tests.
+
+* I need to hack some code to do the AIS-in-the-URL thing. I figured out how
+  to handle that without doing the entire expr parse on the client, at least
+  for the DAS version ... haven't thought about the DDS & DataDDS much.
+
+* I need to code some serious integration tests. Most of the AIS-specific
+  code has unit tests (except for AISConnect, which is barely different from
+  the AISMergeTest unit tests).
