@@ -359,7 +359,7 @@ DDXParser::process_blob(const char **attrs)
     transfer_attrs(attrs);
    if (check_required_attribute(string("url"))) {
        set_state(inside_blob_url);
-       blob_url = attributes["url"];
+       *blob_url = attributes["url"];
    }
 }
 
@@ -853,21 +853,34 @@ static xmlSAXHandler ddx_sax_parser = {
     (fatalErrorSAXFunc)DDXParser::ddx_fatal_error // fatalError 
 };
 
-/** Parse an AIS database encoded in XML. The information in the XML document
-    is loaded into an instance of AISResources. 
-    @param database Read from this XML file.
-    @param ais Load information into this instance of AISResources.
-    @exception AISDatabaseReadFailed Thrown if the XML document could not be
+/** Parse a DDX document stored in a file. The XML in the doucument is parsed
+    and a binary DDX is built. This implementation stores the result in a DDS
+    object where each instance of BaseType can hold an AttrTable object.
+
+    @param document Read the DDX from this file.
+    @param dds Value/result parameter; dump the inforamtion to this DDS
+    instance.  
+    @param blob Value/result parameter; put the URL which references the \t
+    dodsBLOBL document here. 
+    @exception DDXParseFailed Thrown if the XML document could not be
     read or parsed. */
 void
-DDXParser::intern(const string &document, DDS *destination_dds)
+DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
     throw(DDXParseFailed)
 {
+    // Create the context pointer explicitly so that we can store a pointer
+    // to it in the DDXParser instance. This provides a way to generate our
+    // own error messages *with* line numbers. The messages are pretty
+    // meaningless otherwise. This means that we use an interface from the
+    // 'parser internals' header, and not the 'parser' header. However, this
+    // interface is also used in one of the documented examples, so it's
+    // probably pretty stable. 06/02/03 jhrg
     xmlParserCtxtPtr context = xmlCreateFileParserCtxt(document.c_str());
     if (!context)
 	throw DDXParseFailed(string("Could not initialize the parser with the file: '") + document + string("'."));
 
-    dds = destination_dds;	// dump values here
+    dds = dest_dds;		// dump values here
+    blob_url = blob;		// blob goes here
     ctxt = context;		// need ctxt for error messages
 
     context->sax = &ddx_sax_parser;
@@ -900,6 +913,11 @@ DDXParser::intern(const string &document, DDS *destination_dds)
 }
 
 // $Log: DDXParser.cc,v $
+// Revision 1.5  2003/06/03 01:43:01  jimg
+// Added support for retrieval of the dodsBLOB url. The intern() method
+// takes a point to a string; on return from the call the referenced string
+// holds the blob url.
+//
 // Revision 1.4  2003/05/30 23:55:41  jimg
 // Refactor, first pass, complete.
 //

@@ -29,7 +29,9 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#if 1
 #define DODS_DEBUG
+#endif
 #include "DDXParser.h"
 #include "debug.h"
 
@@ -40,6 +42,7 @@ class DDXParserTest:public TestFixture {
 private:
     DDXParser *ddx_parser;
     DDS *dds;
+    string blob;
 
 public:
     DDXParserTest() {} 
@@ -57,29 +60,210 @@ public:
 
     CPPUNIT_TEST_SUITE( DDXParserTest );
 
-    CPPUNIT_TEST(intern_test);
+    CPPUNIT_TEST(top_level_attribute_test);
+    CPPUNIT_TEST(top_level_attribute_container_test);
 #if 0
-    CPPUNIT_TEST(errant_database_test);
+    CPPUNIT_TEST(top_level_attribute_alias_test);
 #endif
+    CPPUNIT_TEST(top_level_simple_types_test);
+    CPPUNIT_TEST(top_level_simple_types_with_attributes_test);
+    CPPUNIT_TEST(simple_arrays_test);
+    CPPUNIT_TEST(simple_arrays_multi_dim_test);
+    CPPUNIT_TEST(simple_arrays_attributes_test);
+    CPPUNIT_TEST(structure_test);
+    CPPUNIT_TEST(sequence_test);
+    CPPUNIT_TEST(grid_test);
+
+    // Error tests
+
+    CPPUNIT_TEST(unknown_tag_test);
+    CPPUNIT_TEST(bad_nesting_test);
+    CPPUNIT_TEST(unknown_end_tag_test);
+    CPPUNIT_TEST(variable_in_attribtue_container_test);
+    CPPUNIT_TEST(array_missing_dimension_test);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void intern_test() {
+    void top_level_attribute_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.01.ddx", dds);
+	    ddx_parser->intern("ddx-testsuite/test.01.ddx", dds, &blob);
 	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-	    dds->print_xml(stdout, false, "    ");
+
+	    DBG(dds->print_xml(stdout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
-	    cerr << endl << "Error: " << e.get_error_message() << endl;
-	    CPPUNIT_ASSERT(!"Parse failed.");
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.01.ddx failed.");
 	}
     }
 
-    void errant_database_test() {
+    void top_level_attribute_container_test() {
 	try {
-	    ddx_parser->intern("ddx-testsuite/test.01.error.ddx", dds);
-	    CPPUNIT_ASSERT(!"test.01.error.ddx should fail!");
+	    ddx_parser->intern("ddx-testsuite/test.02.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.02.ddx failed.");
+	}
+    }
+
+    // ALiases are broken *** 05/29/03 jhrg
+    void top_level_attribute_alias_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.03.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.03.ddx failed.");
+	}
+    }
+
+    void top_level_simple_types_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.04.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.04.ddx failed.");
+	}
+    }
+
+    void top_level_simple_types_with_attributes_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.05.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.05.ddx failed.");
+	}
+    }
+
+    void simple_arrays_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.06.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "OneDimensionalSimpleArrays");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.06.ddx failed.");
+	}
+    }
+
+    void simple_arrays_multi_dim_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.07.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "MultiDimensionalSimpleArrays");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.07.ddx failed.");
+	}
+    }
+
+    void simple_arrays_attributes_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.08.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.08.ddx failed.");
+	}
+    }
+
+    void structure_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.09.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.09.ddx failed.");
+	}
+    }
+
+    void sequence_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.0a.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.0a.ddx failed.");
+	}
+    }
+
+    void grid_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/test.0b.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+	    DBG(dds->print_xml(stdout, false, "    "));
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(!"test.0b.ddx failed.");
+	}
+    }
+
+    // Error tests start here. 
+
+    void unknown_tag_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/error.01.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(!"error.01.ddx should fail!");
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
+	}
+    }
+
+    void bad_nesting_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/error.02.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(!"error.02.ddx should fail!");
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
+	}
+    }
+
+    void unknown_end_tag_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/error.03.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(!"error.03.ddx should fail!");
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
+	}
+    }
+
+    void variable_in_attribtue_container_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/error.04.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(!"error.04.ddx should fail!");
+	}
+	catch (DDXParseFailed &e) {
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
+	}
+    }
+
+    void array_missing_dimension_test() {
+	try {
+	    ddx_parser->intern("ddx-testsuite/error.05.ddx", dds, &blob);
+	    CPPUNIT_ASSERT(!"error.05.ddx should fail!");
 	}
 	catch (DDXParseFailed &e) {
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
@@ -101,6 +285,11 @@ main( int argc, char* argv[] )
 }
 
 // $Log: DDXParserTest.cc,v $
+// Revision 1.2  2003/06/03 01:43:01  jimg
+// Added support for retrieval of the dodsBLOB url. The intern() method
+// takes a point to a string; on return from the call the referenced string
+// holds the blob url.
+//
 // Revision 1.1  2003/05/29 19:07:15  jimg
 // Added.
 //
