@@ -9,6 +9,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.95  2000/07/13 07:09:05  rmorris
+// Changed the approach to delete the intermediate file in the case
+// of win32 (unlink() not the same under win32, needed another approach).
+//
 // Revision 1.94  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -552,7 +556,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.94 2000/07/09 22:05:35 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.95 2000/07/13 07:09:05 rmorris Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1639,6 +1643,14 @@ Connect::~Connect()
 
 #ifdef WIN32
 	HTEventTerminate();
+
+	//  Get rid of any intermediate file
+	if(_tfname.size() > 0)
+		{
+		remove(_tfname.c_str());
+		_tfname = "";
+		}
+
 #endif
 
     DBG2(cerr << "Leaving the Connect dtor" << endl);
@@ -1706,24 +1718,36 @@ Connect::fetch_url(string &url, bool)
     _type = unknown_type;
    
     /* NB: I've completely removed the async stuff for now. 2/18/97 jhrg */
-  
+
     char *c = tempnam(NULL, DODS_PREFIX);
     FILE *stream = fopen(c, "w+b"); // Open truncated for update.
+
+	//  unlink() under win32 behaves differently so here we must store
+	//  the file name and count on the Connect obj's destructor to delete
+	//  it.  Unlink under win32 does not cause the file to be deleted
+	//  as the last process using that file closes it - so the unix-style
+	//  code below isn't appropriate in the win32 case.
+#ifdef WIN32
+	if(!keep_temps)
+		_tfname = c;
+#else
     if (!keep_temps)
-	unlink(c);		// When _OUTPUT is closed file is deleted.
+		unlink(c);		// When _OUTPUT is closed file is deleted
+#endif
     else
-	cerr << "Temporary file for Data document: " << c << endl;
-    free(c);			// tempnam uses malloc!
+		cerr << "Temporary file for Data document: " << c << endl;
+
+	free(c);			//  tempnam uses malloc !
 
     if (!read_url(url, stream))
 	return false;
-   
+ 
     // Now rewind the stream so that we can read from the temp file
-    if (fseek(stream, 0L, 0) < 0) {
+    if (fseek(stream, 0L, SEEK_SET) != 0) {
 	cerr << "Could not rewind stream" << endl;
 	return false;
     }
-   
+
     close_output();
 
     _output = stream;
