@@ -80,10 +80,14 @@ public:
     virtual Response *get_ais_resource(const string &res) 
 	throw(Error, InternalErr);
 
-    virtual void merge(const string &primary, DAS &das) throw(InternalErr);
+    virtual void merge(const string &primary, DAS &das) 
+	throw(Error, InternalErr);
 };
 
 // $Log: AISMerge.h,v $
+// Revision 1.3  2003/03/14 00:01:25  jimg
+// merge() now throws Error, too.
+//
 // Revision 1.2  2003/03/04 17:57:10  jimg
 // Now uses Response objects.
 //
