@@ -1,0 +1,20 @@
+#
+# -*- C++ -*-
+#
+
+# Test projections: Grid projections
+
+dataset {
+    Int32 i[20];
+    Int32 j;
+    String s;
+    Grid {
+    Array:
+	Float64 val[length = 10][width = 10][height = 20];
+    Maps:
+	Float64 length[10];
+	Float64 width[10];
+	Float64 height[20];
+    } g;
+} test1;
+
