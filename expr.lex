@@ -27,9 +27,12 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.13  1996/11/13 19:23:15  jimg
-/* Fixed debugging.
+/* Revision 1.14  1997/02/24 18:18:23  jimg
+/* Removed `rule' for "." since it cannot be matched.
 /*
+ * Revision 1.13  1996/11/13 19:23:15  jimg
+ * Fixed debugging.
+ *
  * Revision 1.12  1996/10/08 17:10:52  jimg
  * Added % to the set of characters allowable in identifier names
  *
@@ -81,7 +84,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.13 1996/11/13 19:23:15 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.14 1997/02/24 18:18:23 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -149,7 +152,6 @@ NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 "]"    	    	return (int)*yytext;
 ":"    	    	return (int)*yytext;
 "*"		return (int)*yytext;
-"."		return (int)*yytext; // Warning: rule cannot be matched???
 ","		return (int)*yytext;
 "&"		return (int)*yytext;
 "("		return (int)*yytext;
