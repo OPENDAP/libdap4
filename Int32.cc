@@ -38,6 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.20  1996/03/05 18:08:32  jimg
+// Added ce_eval to serailize member function.
+// Added the ops member function and int_ops function.
+//
 // Revision 1.19  1996/02/02 00:31:08  jimg
 // Merge changes for DODS-1.1.0 into DODS-2.x
 //
@@ -151,10 +155,14 @@
 
 #include "config_dap.h"
 
+#include <stdlib.h>		// for atoi()
 #include <assert.h>
 
 #include "Int32.h"
 #include "DDS.h"
+#include "parser.h"
+#include "expr.tab.h"
+#include "debug.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -171,23 +179,21 @@ Int32::width()
 }
 
 bool
-Int32::serialize(const String &dataset, DDS &dds, bool flush)
+Int32::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
-    bool stat = true;
+    if (!read_p() && !read(dataset))
+	return false;
 
-    if (!read_p())		// only read if not read already
-	stat = read(dataset);
+    if (ce_eval && !dds.eval_selection(dataset))
+	return true;
 
-    if (stat && !dds.eval_constraint())	// if the constraint is false, return
-	return stat;
+    if (!xdr_long(xdrout(), &_buf))
+	return false;
 
-    if (stat)
-	stat = (bool)xdr_long(xdrout(), &_buf);
+    if (flush)
+	return expunge();
 
-    if (stat && flush)
-	stat = expunge();
-
-    return stat;
+    return true;
 }
 
 bool
@@ -232,4 +238,76 @@ Int32::print_val(ostream &os, String space, bool print_decl_p)
     }
     else 
 	os << _buf;
+}
+
+static bool
+int_ops(int i1, int i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for byte values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+Int32::ops(BaseType &b, int op)
+{
+    int32 a1, a2;
+
+    if (!read_p()) {
+	cerr << "This value not yet read!" << endl;
+	return false;
+    }
+    else {
+	int32 *a1p = &a1;
+	buf2val((void **)&a1p);
+    }
+
+    if (!b.read_p()) {
+	cerr << "Arg value not yet read!" << endl;
+	return false;
+    }
+    else switch (b.type()) {
+      case byte_t:
+      case int32_t: {
+	int32 *a2p = &a2;
+	b.buf2val((void **)&a2p);
+	break;
+      }
+      case float64_t: {
+	double d;
+	double *dp = &d;
+	b.buf2val((void **)&dp);
+	a2 = (int32)d;
+	break;
+      }
+      case str_t: {
+	String s;
+	String *sp = &s;
+	b.buf2val((void **)&sp);
+	a2 = atoi((const char *)s);
+	break;
+      }
+      default:
+	return false;
+	break;
+    }
+
+    return int_ops(a1, a2, op);
 }
