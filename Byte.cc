@@ -10,6 +10,11 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.26  1996/08/13 17:15:41  jimg
+// Added _unused_ to the static global rcsid to remove warning when building
+// with gcc -Wall.
+// Moved the byte_ops function to util.cc.
+//
 // Revision 1.25  1996/06/04 21:33:12  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -162,15 +167,15 @@
 
 #include "config_dap.h"
 
+static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.26 1996/08/13 17:15:41 jimg Exp $"};
+
 #include <stdlib.h>
 #include <assert.h>
 
 #include "Byte.h"
 #include "DDS.h"
+#include "util.h"
 #include "dods-limits.h"
-#include "parser.h"
-#include "expr.h"
-#include "expr.tab.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -269,31 +274,6 @@ Byte::print_val(ostream &os, String space, bool print_decl_p)
     }
     else 
 	os << (unsigned int)_buf;
-}
-
-static bool
-byte_ops(int i1, int i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP:
-	cerr << "Regexp not valid for byte values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
 }
 
 bool
