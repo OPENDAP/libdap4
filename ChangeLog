@@ -2,20 +2,6 @@
 
         * Merge release-3-4 into trunk.
 
-2003-05-15  James Gallagher  <jimg@dcz.dods.org>
-
-	* Removed the List class/datatype. We've talked about this for
-	months (years). Done.
-
-2003-05-13  James Gallagher  <jimg@dcz.dods.org>
-
-	* Modified DODSFilter so that it takes a new switch, -o, which can
-	be used to tell a handler which object is to be returned. Handlers
-	can now be built which return all of the responses; the
-	DODS_Dispatch CGI module tells the hander which response to
-	generate. 
-
-=======
 2003-11-10  James Gallagher  <jimg@dcz.dods.org>
 
 	* Added the methods Float32::value() and Float64::value(). I think
@@ -106,7 +92,19 @@
 	explains that there was a time out, et cetera. Check out the
 	ChangeLog in DODS/etc for information about the expanded dods.rc file.
 
->>>>>>> 1.74.2.8
+2003-05-15  James Gallagher  <jimg@dcz.dods.org>
+
+	* Removed the List class/datatype. We've talked about this for
+	months (years). Done.
+
+2003-05-13  James Gallagher  <jimg@dcz.dods.org>
+
+	* Modified DODSFilter so that it takes a new switch, -o, which can
+	be used to tell a handler which object is to be returned. Handlers
+	can now be built which return all of the responses; the
+	DODS_Dispatch CGI module tells the hander which response to
+	generate. 
+
 2003-04-21  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged release-3-3-1.
@@ -1389,4 +1387,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.77 2003/12/08 18:02:29 edavis Exp $
+$Id: ChangeLog,v 1.78 2004/01/23 17:10:23 jimg Exp $
