@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.101 1999/05/20 20:32:17 jimg Exp $
+# $Id: Makefile.in,v 1.102 1999/05/27 16:53:13 jimg Exp $
 
 @SET_MAKE@
 
@@ -453,9 +453,9 @@ update-version: check-version
 	  $(AWK) ' \
 	    BEGIN { found = 0 } \
 	    { if ( $$0 ~ /^$(COMPONENT_NAME):/) \
-	        { print "$(COMPONENT_NAME):", $(version); found = 1 } \
+	        { print "$(COMPONENT_NAME): $(version)"; found = 1 } \
 	      else { print $$0 } } \
-	    END { if ( ! found) { print "$(COMPONENT_NAME):", $(version) } \
+	    END { if ( ! found) { print "$(COMPONENT_NAME): $(version)" } \
 	        }' > $(DODS_ROOT)/VERSION
 
 # Compare the version encoded in this Makefile (set by configure) with the
