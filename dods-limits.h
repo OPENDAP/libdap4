@@ -11,6 +11,9 @@
 // the same values on all machines.
 
 // $Log: dods-limits.h,v $
+// Revision 1.6  1998/09/10 18:49:48  jehamby
+// Correct DODS_INT_MIN and DODS_LONG_MIN values
+//
 // Revision 1.5  1998/08/13 21:18:04  jimg
 // Changed DODS_CHAR_MAX to 255. Bytes are supposed to be unsigned in DODS.
 //
@@ -39,10 +42,10 @@
 #define	DODS_SHRT_MIN		 -32767
 #define	DODS_SHRT_MAX		 32767
 #define	DODS_USHRT_MAX		 (unsigned short)65535
-#define	DODS_INT_MIN		 -2147483647
+#define	DODS_INT_MIN		 (-2147483647 - 1)
 #define	DODS_INT_MAX		 2147483647
 #define	DODS_UINT_MAX		 (unsigned int)4294967295
-#define	DODS_LONG_MIN		 -2147483647
+#define	DODS_LONG_MIN		 (-2147483647 - 1)
 #define	DODS_LONG_MAX		 2147483647
 #define	DODS_ULONG_MAX		 (unsigned long)4294967295
 
