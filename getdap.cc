@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.51 2000/09/22 02:17:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.52 2000/10/30 17:21:28 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -26,7 +26,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.51 $";
+const char *version = "$Revision: 1.52 $";
 extern int keep_temps;		// defined in Connect.cc
 
 
@@ -279,8 +279,16 @@ main(int argc, char * argv[])
 	{
 	  for (int j = 0; j < times; ++j)
 	    {
-	      if (!url.request_das(gui))
-		continue;
+	      try 
+		{
+		  if (!url.request_das(gui))
+		    continue;
+		}
+	      catch (Error &e) 
+		{
+		  e.display_message();
+		  continue;
+		}
 	      if (verbose)
 		{
 		  cerr << "Server version: " << url.server_version() 
@@ -295,8 +303,16 @@ main(int argc, char * argv[])
 	{
 	  for (int j = 0; j < times; ++j)
 	    {
-	      if (!url.request_dds(gui))
-		continue;
+	      try 
+		{
+		  if (!url.request_dds(gui))
+		    continue;
+		}
+	      catch (Error &e)
+		{
+		  e.display_message();
+		  continue;
+		}
 	      if (verbose)
 		{
 		  cerr << "Server version: " << url.server_version() 
@@ -317,15 +333,22 @@ main(int argc, char * argv[])
 	    }
 	  for (int j = 0; j < times; ++j)
 	    {
-	      DDS *dds = url.request_data(expr, gui, async);
-
-	      if (!dds)
+	      DDS *dds;
+	      try 
 		{
-		  cerr << "Error: " << url.error().error_message() << endl;
-		  continue;
+		  dds = url.request_data(expr, gui, async);
+		  if (!dds)
+		    {
+		      cerr << "Error: " << url.error().error_message() << endl;
+		      continue;
+		    }
+		  process_data(url, dds, verbose, print_rows);
+		  delete dds;
 		}
-	      process_data(url, dds, verbose, print_rows);
-	      delete dds;
+	      catch (Error &e)
+		{
+		  e.display_message();
+		}
 	    }
 	}
 
@@ -337,15 +360,23 @@ main(int argc, char * argv[])
 	  string url_string = argv[i];
 	  for (int j = 0; j < times; ++j)
 	    {
-	      if (!url.fetch_url(url_string, async))
-		continue;
-	      if (verbose)
-		cerr << "Server version: " << url.server_version() 
-		     << endl;
-	      FILE *fp = url.output();
-	      if (!read_data(fp))
-		continue;
-	      fclose(fp);
+	      try
+		{
+		  if (!url.fetch_url(url_string, async))
+		    continue;	
+		  if (verbose)
+		    cerr << "Server version: " << url.server_version() 
+			 << endl;
+		  FILE *fp = url.output();
+		  if (!read_data(fp))
+		    continue;
+		  fclose(fp);
+		}
+	      catch (Error &e)
+		{
+		  e.display_message();
+		  continue;
+		}
 	    }
 	}	    
     }
@@ -357,6 +388,9 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.52  2000/10/30 17:21:28  jimg
+// Added support for proxy servers (from cjm).
+//
 // Revision 1.51  2000/09/22 02:17:23  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -173,8 +173,21 @@ void append_double_to_string(const double &num, string &str);
 /** Get the version of the DAP library. */
 string dap_version();
 
+/** Get the filename part from a path. This function can be used to return a
+    string that has the directory compnents stripped from a path. This is
+    useful when building error message strings. 
+
+    If WIN32 is defined, use '\' as the path separator, otherwise use '/' as
+    the path separator.
+
+    @return A string containing only the filename given a path. */
+string path_to_filename(string path);
+
 /* 
  * $Log: util.h,v $
+ * Revision 1.38  2000/10/30 17:21:28  jimg
+ * Added support for proxy servers (from cjm).
+ *
  * Revision 1.37  2000/10/03 21:03:22  jimg
  * Added dap_version() function
  *

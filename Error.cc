@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.23 2000/10/02 18:49:26 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.24 2000/10/30 17:21:27 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -46,6 +46,12 @@ Error::Error()
 
 Error::Error(ErrorCode ec, string msg)
     : _error_code(ec), _error_message(msg), 
+      _program_type(undefined_prog_type), _program(0)
+{
+}
+
+Error::Error(string msg)
+    : _error_code(unknown_error), _error_message(msg), 
       _program_type(undefined_prog_type), _program(0)
 {
 }
@@ -343,6 +349,9 @@ Error::correct_error(void *pgui) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.24  2000/10/30 17:21:27  jimg
+// Added support for proxy servers (from cjm).
+//
 // Revision 1.23  2000/10/02 18:49:26  jimg
 // The Error class now has const accessors
 //

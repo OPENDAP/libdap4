@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.22 2000/09/22 02:17:19 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.23 2000/10/30 17:21:27 jimg Exp $"};
 
 #include <iostream>
 #if defined(__GNUG__) || defined(WIN32)
@@ -40,7 +40,7 @@ using std::ostrstream;
 #endif
 
 DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false), 
-    bad_options(false), dataset(""), ce(""), cgi_ver("dods/3.0"),
+    bad_options(false), dataset(""), ce(""), cgi_ver("dods/3.2"),
     anc_dir(""), anc_file(""), cache_dir(""), accept_types("All")
 {
     program_name = argv[0];
@@ -340,6 +340,9 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.23  2000/10/30 17:21:27  jimg
+// Added support for proxy servers (from cjm).
+//
 // Revision 1.22  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

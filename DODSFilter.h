@@ -99,6 +99,10 @@ public:
 	\item[#-f# {\it ancfile}]
 	Specifies that ancillary data may be found in a file called {\it
 	ancfile}.
+	\item[#-r# {\it cache directory}]
+	Specify a directory to use if/when files are to be cached. Not all
+	handlers support caching and each uses its own rules tailored to a
+	specific file or data type.
 	\item[#-t# {\it list of types}]
 	Specifies a list of types accepted by the client. This information is
 	passed to a server by a client using the XDODS-Accept-Types header. The
@@ -268,6 +272,9 @@ public:
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.18  2000/10/30 17:21:27  jimg
+// Added support for proxy servers (from cjm).
+//
 // Revision 1.17  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

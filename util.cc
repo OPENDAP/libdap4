@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.64 2000/10/03 21:03:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.65 2000/10/30 17:21:28 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -527,7 +527,45 @@ dap_version()
   return (string)DVR;
 }
 
+// Given a pathname, return the file at the end of the path. This is used
+// when reporting errors (maybe other times, too) to keep the server from
+// revealing too much about its organization when sending error responses
+// back to clients. 10/11/2000 jhrg
+
+#ifdef WIN32
+const static char path_sep[]={"\\"};
+#else
+const static char path_sep[]={"/"};
+#endif
+
+string
+path_to_filename(string path)
+{
+  string::size_type pos = path.rfind(path_sep);
+  
+  return (pos == string::npos) ? path : path.substr(++pos);
+}
+
+#ifdef TEST
+
+#include <assert.h>
+
+int
+main(int argc, char *argv[])
+{
+  assert(path_to_filename("/this/is/the/end/my.friend") == "my.friend");
+  assert(path_to_filename("this.dat") == "this.dat");
+  assert(path_to_filename("/this.dat") == "this.dat");
+  assert(path_to_filename("/this.dat/") == "");
+  cerr << "All path_to_filename() tests PASSED" << endl;
+}
+
+#endif
+
 // $Log: util.cc,v $
+// Revision 1.65  2000/10/30 17:21:28  jimg
+// Added support for proxy servers (from cjm).
+//
 // Revision 1.64  2000/10/03 21:03:22  jimg
 // Added dap_version() function
 //

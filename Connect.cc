@@ -5,8 +5,8 @@
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
-//	dan		Dan Holloway (dan@hollywood.gso.uri.edu)
-//	reza		Reza Nekovei (reza@intcomm.net)
+//      dan             Dan Holloway (dan@hollywood.gso.uri.edu)
+//      reza            Reza Nekovei (reza@intcomm.net)
 
 #ifdef __GNUG__
 #pragma implementation
@@ -14,7 +14,8 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.104 2000/09/22 02:17:19 jimg Exp $"};
+static char rcsid[] not_used =
+    { "$Id: Connect.cc,v 1.105 2000/10/30 17:21:27 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -65,14 +66,15 @@ using std::iterator;
 
 // Constants used for temporary files.
 
-static const char DODS_PREFIX[]={"dods"};
-static const int DEFAULT_TIMEOUT = 100; // Timeout in seconds.
+static const char DODS_PREFIX[] = { "dods" };
+static const int DEFAULT_TIMEOUT = 100;		// Timeout in seconds.
 int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
 
-static const char bad_decomp_msg[]={\
-"The data returned by the server was compressed and the\n\
+static const char bad_decomp_msg[] =
+    { "The data returned by the server was compressed and the\n\
 decompression program failed to start. Please report this\n\
-error to the data server maintainer or to support@unidata.ucar.edu"}; 
+error to the data server maintainer or to support@unidata.ucar.edu"
+};
 
 HTList *Connect::_conv = 0;
 int Connect::_num_remote_conns = 0;
@@ -89,12 +91,18 @@ char *Connect::_cache_root = 0;
 // the program that called Connect(...). 
 // Note that I've now (4/6/2000 jhrg) fixed libwww so this parameter is no
 // longer needed.
-static const int DODS_USE_CACHE = 1;   // 0- Disabled 1- Enabled
-static const int DODS_CACHE_MAX = 20;  // Max cache size in Mbytes
-static const int DODS_CACHED_OBJ = 5;  // Max cache entry size in Mbytes
-static const int DODS_IGN_EXPIRES = 0; // 0- Honor expires 1- Ignore them
-static const int DODS_NEVER_DEFLATE = 0; // 0- allow deflate, 1- disallow
-static const int DODS_DEFAULT_EXPIRES = 86400; // 24 hours in seconds
+static const int
+ DODS_USE_CACHE = 1;		// 0- Disabled 1- Enabled
+static const int
+ DODS_CACHE_MAX = 20;		// Max cache size in Mbytes
+static const int
+ DODS_CACHED_OBJ = 5;		// Max cache entry size in Mbytes
+static const int
+ DODS_IGN_EXPIRES = 0;		// 0- Honor expires 1- Ignore them
+static const int
+ DODS_NEVER_DEFLATE = 0;	// 0- allow deflate, 1- disallow
+static const int
+ DODS_DEFAULT_EXPIRES = 86400;	// 24 hours in seconds
 
 #undef CATCH_SIG
 #ifdef CATCH_SIG
@@ -104,57 +112,58 @@ static const int DODS_DEFAULT_EXPIRES = 86400; // 24 hours in seconds
 // This function sets up signal handlers. This might not be necessary to
 // call if the application has its own handlers (lossage on SVR4)
 
-static void 
-SetSignal(void)
+static void SetSignal(void)
 {
     // On some systems (SYSV) it is necessary to catch the SIGPIPE signal
     // when attemting to connect to a remote host where you normally should
     // get `connection refused' back
 
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
-	if (PROT_TRACE) cerr << "HTSignal.... Can't catch SIGPIPE" << endl;
+	if (PROT_TRACE)
+	    cerr << "HTSignal.... Can't catch SIGPIPE" << endl;
     } else {
-	if (PROT_TRACE) cerr << "HTSignal.... Ignoring SIGPIPE" << endl;
+	if (PROT_TRACE)
+	    cerr << "HTSignal.... Ignoring SIGPIPE" << endl;
     }
 }
-#endif /* CATCH_SIG */
+#endif				/* CATCH_SIG */
 
 // The next five functions (*not* mfuncs) are friends of Connect.
 
 // This function is registered to handle the result of the request
 
-int 
-http_terminate_handler(HTRequest * request, HTResponse * /*response*/,
-			void * /*param*/, int status) 
+int
+http_terminate_handler(HTRequest * request, HTResponse * /*response */ ,
+		       void * /*param */ , int status)
 {
     if (status != HT_LOADED) {
 	HTAlertCallback *cbf = HTAlert_find(HT_A_MESSAGE);
-	if (cbf) (*cbf)(request, HT_A_MESSAGE, HT_MSG_NULL, NULL,
-			HTRequest_error(request), NULL);
+	if (cbf)
+	    (*cbf) (request, HT_A_MESSAGE, HT_MSG_NULL, NULL,
+		    HTRequest_error(request), NULL);
     }
-    
+
     return HT_OK;
 }
 
 // This function is registered to handle timeout in select eventloop
 
-int 
-timeout_handler(HTRequest *request)
+int timeout_handler(HTRequest * request)
 {
 #ifdef GUI
-    Connect *me = (Connect *)HTRequest_context(request);
+    Connect *me = (Connect *) HTRequest_context(request);
     string cmd;
 
     if (!me->_gui->progress_visible())
-	cmd = (string)"popup \"Request timeout...\"";
+	cmd = (string) "popup \"Request timeout...\"";
     else
-	cmd = (string)"text \"Request timeout...\"";
-	
+	cmd = (string) "text \"Request timeout...\"";
+
     me->_gui->progress_visible(me->_gui->command(cmd));
 
     if (me->_gui->progress_visible()) {
 	sleep(3);
-	cmd = (string)"popdown";
+	cmd = (string) "popdown";
 	me->_gui->command(cmd);
 	me->_gui->progress_visible(false);
     }
@@ -167,131 +176,130 @@ timeout_handler(HTRequest *request)
 
 // Use the GUI to report progress to the user.
 
-BOOL
-dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */, 
-	       const char * /* dfault */, void * input,
-	       HTAlertPar * /* reply */)
+BOOL dods_progress(HTRequest * request, HTAlertOpcode op,
+		   int /* msgnum */ ,
+		   const char * /* dfault */ , void *input,
+		   HTAlertPar * /* reply */ )
 {
     if (!request) {
-        if (WWWTRACE) cerr << "dods_progress: NULL Request" << endl;
-        return YES;
+	if (WWWTRACE)
+	    cerr << "dods_progress: NULL Request" << endl;
+	return YES;
     }
-
 #ifdef GUI
-    Connect *me = (Connect *)HTRequest_context(request);
+    Connect *me = (Connect *) HTRequest_context(request);
     string cmd;
     int usr_cancel = 0;
 
     switch (op) {
-      case HT_PROG_DNS:
+    case HT_PROG_DNS:
 	if (!me->_gui->progress_visible())
-	    cmd = (string)"popup \"Looking up " + (char *)input + "\"";
+	    cmd = (string) "popup \"Looking up " + (char *) input + "\"";
 	else
-	    cmd = (string)"text \"Looking up " + (char *)input + "\"";
-	
-	me->_gui->progress_visible(me->_gui->command(cmd));
-        break;
+	    cmd = (string) "text \"Looking up " + (char *) input + "\"";
 
-      case HT_PROG_CONNECT:
+	me->_gui->progress_visible(me->_gui->command(cmd));
+	break;
+
+    case HT_PROG_CONNECT:
 	if (!me->_gui->progress_visible())
-	    cmd = (string)"popup \"Contacting host...\"";
+	    cmd = (string) "popup \"Contacting host...\"";
 	else
-	    cmd = (string)"text \"Contacting host...\"";
-	
-	me->_gui->progress_visible(me->_gui->command(cmd));
-        break;
+	    cmd = (string) "text \"Contacting host...\"";
 
-      case HT_PROG_ACCEPT:
+	me->_gui->progress_visible(me->_gui->command(cmd));
+	break;
+
+    case HT_PROG_ACCEPT:
 	if (!me->_gui->progress_visible())
-	    cmd = (string)"popup \"Waiting for connection...\"";
+	    cmd = (string) "popup \"Waiting for connection...\"";
 	else
-	    cmd = (string)"text \"Waiting for connection...\"";
-	
+	    cmd = (string) "text \"Waiting for connection...\"";
+
 	me->_gui->progress_visible(me->_gui->command(cmd));
-        break;
+	break;
 
-      case HT_PROG_READ: {
-	  if (!me->_gui->progress_visible())
-	      cmd = (string)"popup \"Reading...\"";
-	  else
-	      cmd = (string)"text \"Reading...\"";
-	  me->_gui->progress_visible(me->_gui->command(cmd));
-	  
-	  if (!me->_gui->progress_visible()) // Bail if window won't popup
-	      break;
+    case HT_PROG_READ:
+	{
+	    if (!me->_gui->progress_visible())
+		cmd = (string) "popup \"Reading...\"";
+	    else
+		cmd = (string) "text \"Reading...\"";
+	    me->_gui->progress_visible(me->_gui->command(cmd));
 
-	  long cl = HTAnchor_length(HTRequest_anchor(request));
-	  if (cl >= 0) {
-	      long b_read = HTRequest_bodyRead(request);
-	      double pro = (double) b_read/cl*100;
-              (void)me->_gui->percent_bar(pro, &usr_cancel);
-              if (usr_cancel == 1)       // the usr wants to bail
-                  HTRequest_kill(request);
-	  }
-	  else {
-              (void)me->_gui->percent_bar(-1.0, &usr_cancel);
-              if (usr_cancel == 1)       // the usr wants to bail
-                  HTRequest_kill(request);
-	  }
-	  
-	  break;
-      }
+	    if (!me->_gui->progress_visible())	// Bail if window won't popup
+		break;
 
-      case HT_PROG_WRITE:
+	    long cl = HTAnchor_length(HTRequest_anchor(request));
+	    if (cl >= 0) {
+		long b_read = HTRequest_bodyRead(request);
+		double pro = (double) b_read / cl * 100;
+		(void) me->_gui->percent_bar(pro, &usr_cancel);
+		if (usr_cancel == 1)	// the usr wants to bail
+		    HTRequest_kill(request);
+	    } else {
+		(void) me->_gui->percent_bar(-1.0, &usr_cancel);
+		if (usr_cancel == 1)	// the usr wants to bail
+		    HTRequest_kill(request);
+	    }
+
+	    break;
+	}
+
+    case HT_PROG_WRITE:
 	// DODS *NEVER* writes. Ever. Well, it does write the request header...
 	break;
 
-      case HT_PROG_DONE:
-	cmd = (string)"popdown";
+    case HT_PROG_DONE:
+	cmd = (string) "popdown";
 	me->_gui->command(cmd);
 	me->_gui->progress_visible(false);
-        break;
+	break;
 
-      case HT_PROG_INTERRUPT:
+    case HT_PROG_INTERRUPT:
 	if (!me->_gui->progress_visible())
-	    cmd = (string)"popup \"Request interrupted.\"";
+	    cmd = (string) "popup \"Request interrupted.\"";
 	else
-	    cmd = (string)"text \"Request interrupted.\"";
+	    cmd = (string) "text \"Request interrupted.\"";
 	me->_gui->progress_visible(me->_gui->command(cmd));
-        break;
+	break;
 
-      case HT_PROG_OTHER:
+    case HT_PROG_OTHER:
 	if (!me->_gui->progress_visible())
-	    cmd = (string)"popup \"Message: " + (char *)input + ".\"";
+	    cmd = (string) "popup \"Message: " + (char *) input + ".\"";
 	else
-	    cmd = (string)"text \"Message: " + (char *)input + ".\"";
+	    cmd = (string) "text \"Message: " + (char *) input + ".\"";
 	me->_gui->progress_visible(me->_gui->command(cmd));
-        break;
+	break;
 
-      case HT_PROG_TIMEOUT:
+    case HT_PROG_TIMEOUT:
 	if (!me->_gui->progress_visible())
-	    cmd = (string)"popup \"Request timeout.\"";
+	    cmd = (string) "popup \"Request timeout.\"";
 	else
-	    cmd = (string)"text \"Request timeout.\"";
+	    cmd = (string) "text \"Request timeout.\"";
 	me->_gui->progress_visible(me->_gui->command(cmd));
-        break;
+	break;
 
-      default:
-        cerr << "UNKNOWN PROGRESS STATE" << endl;
-        break;
+    default:
+	cerr << "UNKNOWN PROGRESS STATE" << endl;
+	break;
     }
 #endif
 
     return YES;
 }
 
-BOOL
-dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
-			int /* msgnum */, const char * /* dfault */,
-			void * /* input */, HTAlertPar * reply)
+BOOL dods_username_password(HTRequest * request, HTAlertOpcode /* op */ ,
+			    int /* msgnum */ , const char * /* dfault */ ,
+			    void * /* input */ , HTAlertPar * reply)
 {
     if (!request) {
-        if (WWWTRACE) cerr << "dods_username_password: Bad argument" << endl;
-        return NO;
+	if (WWWTRACE)
+	    cerr << "dods_username_password: Bad argument" << endl;
+	return NO;
     }
-
 #ifdef GUI
-    Connect *me = (Connect *)HTRequest_context(request);
+    Connect *me = (Connect *) HTRequest_context(request);
 #endif
 
     // Put the username in reply using HTAlert_setReplyMessage; use
@@ -313,127 +321,132 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
     return YES;
 }
 
-static HTErrorMessage HTErrors[HTERR_ELEMENTS] = {HTERR_ENGLISH_INITIALIZER};
+static HTErrorMessage
+    HTErrors[HTERR_ELEMENTS] = { HTERR_ENGLISH_INITIALIZER };
 
-BOOL 
-dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
-		  int /* msgnum */, const char * /* dfault */, void * input,
-		  HTAlertPar * /* reply */)
+BOOL dods_error_print(HTRequest * request, HTAlertOpcode /* op */ ,
+		      int /* msgnum */ , const char * /* dfault */ ,
+		      void *input, HTAlertPar * /* reply */ )
 {
     HTList *cur = (HTList *) input;
     HTError *pres;
     HTErrorShow showmask = HTError_show();
     HTChunk *msg = NULL;
-    int code;
+    int
+     code;
 
-    if (WWWTRACE) cerr << "dods_error_print: Generating message" << endl;
+    if (WWWTRACE)
+	cerr << "dods_error_print: Generating message" << endl;
 
     if (!request)
-	if (WWWTRACE) cerr << "dods_error_print: Null request." << endl;
+	if (WWWTRACE)
+	    cerr << "dods_error_print: Null request." << endl;
 
     if (!cur)
-	if (WWWTRACE) cerr << "dods_error_print: Null error list." << endl;
+	if (WWWTRACE)
+	    cerr << "dods_error_print: Null error list." << endl;
 
-    if (!request || !cur) 
+    if (!request || !cur)
 	return NO;
 
     while ((pres = (HTError *) HTList_nextObject(cur))) {
-        int index = HTError_index(pres);
+	int
+	 index = HTError_index(pres);
 	// An index of 
-        if (HTError_doShow(pres)) {
-            if (!msg) {
-                HTSeverity severity = HTError_severity(pres);
+	if (HTError_doShow(pres)) {
+	    if (!msg) {
+		HTSeverity severity = HTError_severity(pres);
 		switch (severity) {
-		  case ERR_INFO:
+		case ERR_INFO:
 		    // Ignore Informational messages.
 		    break;
-		  case ERR_WARN:
+		case ERR_WARN:
 		    msg = HTChunk_new(128);
-                    HTChunk_puts(msg, "Warning: ");
+		    HTChunk_puts(msg, "Warning: ");
 		    break;
-		  case ERR_NON_FATAL:
+		case ERR_NON_FATAL:
 		    msg = HTChunk_new(128);
-                    HTChunk_puts(msg, "Non Fatal Error: ");
+		    HTChunk_puts(msg, "Non Fatal Error: ");
 		    break;
-		  case ERR_FATAL:
+		case ERR_FATAL:
 		    if (request) {
-			Connect *me = (Connect *)HTRequest_context(request);
+			Connect *me =
+			    (Connect *) HTRequest_context(request);
 			me->_type = web_error;
 		    }
 		    msg = HTChunk_new(128);
-                    HTChunk_puts(msg, "Fatal Error: ");
+		    HTChunk_puts(msg, "Fatal Error: ");
 		    break;
-		  default:
-                    if (WWWTRACE)
-                        cerr << "Unknown Classification of Error (" 
-			     << severity << ")" << endl;
-                    HTChunk_delete(msg);
-                    return NO;
-                }
+		default:
+		    if (WWWTRACE)
+			cerr << "Unknown Classification of Error ("
+			    << severity << ")" << endl;
+		    HTChunk_delete(msg);
+		    return NO;
+		}
 
-                /* Error number */
-                if ((code = HTErrors[index].code) > 0) {
-                    char buf[10];
-                    sprintf(buf, "%d ", code);
-                    HTChunk_puts(msg, buf);
-                }
+		/* Error number */
+		if ((code = HTErrors[index].code) > 0) {
+		    char
+		     buf[10];
+		    sprintf(buf, "%d ", code);
+		    HTChunk_puts(msg, buf);
+		}
+	    } else
+		HTChunk_puts(msg, "\nReason: ");
+
+	    HTChunk_puts(msg, HTErrors[index].msg);	// Error message
+
+	    if (showmask & HT_ERR_SHOW_LOCATION) {	// Error Location
+		HTChunk_puts(msg, "This occured in ");
+		HTChunk_puts(msg, HTError_location(pres));
+		HTChunk_putc(msg, '\n');
 	    }
-            else
-                HTChunk_puts(msg, "\nReason: ");
-	    
-            HTChunk_puts(msg, HTErrors[index].msg); // Error message
 
-            if (showmask & HT_ERR_SHOW_LOCATION) { // Error Location
-                HTChunk_puts(msg, "This occured in ");
-                HTChunk_puts(msg, HTError_location(pres));
-                HTChunk_putc(msg, '\n');
-            }
+	    /*
+	       ** Make sure that we don't get this error more than once even
+	       ** if we are keeping the error stack from one request to another
+	     */
+	    HTError_setIgnore(pres);
 
-            /*
-            ** Make sure that we don't get this error more than once even
-            ** if we are keeping the error stack from one request to another
-            */
-            HTError_setIgnore(pres);
-            
-            /* If we only are showing the most recent entry then break here */
-            if (showmask & HT_ERR_SHOW_FIRST)
-                break;
-        }
+	    /* If we only are showing the most recent entry then break here */
+	    if (showmask & HT_ERR_SHOW_FIRST)
+		break;
+	}
     }
 
     if (msg) {
-	Connect *me = (Connect *)HTRequest_context(request);
+	Connect *me = (Connect *) HTRequest_context(request);
 
 #ifdef GUI
 	if (me->_gui->show_gui()) {
-	    if (!me->_gui->simple_error((char *)(HTChunk_data(msg))));
-		cerr << "GUI Failure in dods_error_print()" << endl;
-	}
-	else {
+	    if (!me->_gui->simple_error((char *) (HTChunk_data(msg))));
+	    cerr << "GUI Failure in dods_error_print()" << endl;
+	} else {
 #endif
 	    // Connect used to route all www errors to stderr. That was a
 	    // mistake; they should go to the Error object. To keep the old
 	    // behavior I've added two mfuncs that set and get a property
 	    // used to control if errors are sent to stderr. 6/3/98 jhrg
 	    if (me->get_www_errors_to_stderr())
-		cerr << (char *)HTChunk_data(msg) << endl;
+		cerr << (char *) HTChunk_data(msg) << endl;
 	    // Load into the error object here. 
-	    Error &e = me->error();
+	    Error & e = me->error();
 	    e.error_code(unknown_error);
-	    string s = (char *)HTChunk_data(msg);
+	    string s = (char *) HTChunk_data(msg);
 	    e.error_message(s);
 #ifdef GUI
 	}
 #endif
 
-        HTChunk_delete(msg);
+	HTChunk_delete(msg);
     }
 
     return YES;
 }
 
-static ObjectType
-get_type(string value)
+static
+ObjectType get_type(string value)
 {
     if (value == "dods_das")
 	return dods_das;
@@ -448,23 +461,22 @@ get_type(string value)
     else
 	return unknown_type;
 }
-    
+
 // This function is registered to handle unknown MIME headers
 
-int 
-description_handler(HTRequest *request, HTResponse *, 
+int
+description_handler(HTRequest * request, HTResponse *,
 		    const char *token, const char *val)
 {
     string field = token, value = val;
     downcase(field);
     downcase(field);
-    
+
     if (field == "content-description") {
 	DBG(cerr << "Found content-description header" << endl);
-	Connect *me = (Connect *)HTRequest_context(request);
+	Connect *me = (Connect *) HTRequest_context(request);
 	me->_type = get_type(value);
-    }
-    else {
+    } else {
 	if (SHOW_MSG)
 	    cerr << "Unknown header: " << token << endl;
     }
@@ -472,25 +484,23 @@ description_handler(HTRequest *request, HTResponse *,
     return HT_OK;
 }
 
-int 
-server_handler(HTRequest *request, HTResponse *, 
+int
+server_handler(HTRequest * request, HTResponse *,
 	       const char *token, const char *val)
 {
     string field = token, value = val;
     downcase(field);
     downcase(value);
-    
+
     if (field == "xdods-server") {
 	DBG(cerr << "Found dods server header: " << value << endl);
-	Connect *me = (Connect *)HTRequest_context(request);
+	Connect *me = (Connect *) HTRequest_context(request);
 	me->_server = value;
-    }
-    else if (field == "server") {
+    } else if (field == "server") {
 	DBG(cerr << "Found server header: " << value << endl);
-	Connect *me = (Connect *)HTRequest_context(request);
+	Connect *me = (Connect *) HTRequest_context(request);
 	me->_server = value;
-    }
-    else {
+    } else {
 	if (SHOW_MSG)
 	    cerr << "Unknown header: " << token << endl;
     }
@@ -502,42 +512,42 @@ server_handler(HTRequest *request, HTResponse *,
 // (even though the `NPH' mechanism precludes that ...??). This is especially
 // true for error returns.
 
-int 
-header_handler(HTRequest *, HTResponse *, const char *token, const char *val)
+int
+header_handler(HTRequest *, HTResponse *, const char *token,
+	       const char *val)
 {
     string field = token, value = val;
     downcase(field);
     downcase(value);
-    
-    cerr << "Unknown header: " << token << ": " << value <<endl;
+
+    cerr << "Unknown header: " << token << ": " << value << endl;
 
     return HT_OK;
 }
 
 #define PUTBLOCK(b, l)	(*target->isa->put_block)(target, b, l)
 struct _HTStream {
-    const HTStreamClass *	isa;
+    const HTStreamClass *isa;
     /* ... */
 };
- 
-int
-xdods_accept_types_header_gen(HTRequest *pReq, HTStream *target)
-{
-    Connect *me = (Connect *)HTRequest_context(pReq);
 
-    string types = "XDODS-Accept-Types: " + me->get_accept_types() + "\r\n";
-    if (WWWTRACE) 
+int xdods_accept_types_header_gen(HTRequest * pReq, HTStream * target)
+{
+    Connect *me = (Connect *) HTRequest_context(pReq);
+
+    string
+	types = "XDODS-Accept-Types: " + me->get_accept_types() + "\r\n";
+    if (WWWTRACE)
 	HTTrace("DODS........ %s", types.c_str());
-    
+
     PUTBLOCK(types.c_str(), types.length());
 
     return HT_OK;
 }
 
-int
-cache_control_header_gen(HTRequest *pReq, HTStream *target)
+int cache_control_header_gen(HTRequest * pReq, HTStream * target)
 {
-    Connect *me = (Connect *)HTRequest_context(pReq);
+    Connect *me = (Connect *) HTRequest_context(pReq);
 
     // If the requestor does not want a cache control header, don't write
     // one. 12/1/99 jhrg
@@ -545,9 +555,9 @@ cache_control_header_gen(HTRequest *pReq, HTStream *target)
 	return HT_OK;
 
     string control = "Cache-Control: " + me->get_cache_control() + "\r\n";
-    if (WWWTRACE) 
+    if (WWWTRACE)
 	HTTrace("DODS........ %s", control.c_str());
-    
+
     PUTBLOCK(control.c_str(), control.length());
 
     return HT_OK;
@@ -565,15 +575,14 @@ cache_control_header_gen(HTRequest *pReq, HTStream *target)
 // old GNU libg++, the C++ calls were synchronized with the C calls, but that
 // may no longer be the case. 5/31/99 jhrg
 
-void
-Connect::parse_mime(FILE *data_source)
-{    
+void Connect::parse_mime(FILE * data_source)
+{
     char line[256];
 
     fgets(line, 255, data_source);
-    line[strlen(line)-1] = '\0'; // remove the newline
+    line[strlen(line) - 1] = '\0';	// remove the newline
 
-    while ((string)line != "") {
+    while ((string) line != "") {
 	char h[256], v[256];
 	sscanf(line, "%s %s\n", h, v);
 	string header = h;
@@ -584,39 +593,40 @@ Connect::parse_mime(FILE *data_source)
 	if (header == "content-description:") {
 	    DBG(cout << header << ": " << value << endl);
 	    _type = get_type(value);
-	}
-	else if (header == "xdods-server:") {
+	} else if (header == "xdods-server:") {
+	    DBG(cout << header << ": " << value << endl);
+	    _server = value;
+	} else if (header == "server:") {
 	    DBG(cout << header << ": " << value << endl);
 	    _server = value;
 	}
-	else if (header == "server:") {
-	    DBG(cout << header << ": " << value << endl);
-	    _server = value;
-	}
-	
+
 	fgets(line, 255, data_source);
-	line[strlen(line)-1] = '\0';
+	line[strlen(line) - 1] = '\0';
     }
 }
 
-void
-Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
+void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 {
     // Initialize various parts of the library. This is in lieu of using one
     // of the profiles in HTProfil.c. 02/09/98 jhrg
-    	char * value;
-	char * tempstr;
-	string lockstr		= "";		//  Lock file path
-	string cifp			= "";
-	string cache_root	= "";		//  Location of actual cache.
-	string homedir		= "";		//  Cache init file path
-	string tmpdir		= "";		//  Fallback position for cache files.
+    char *value;
+    char *tempstr;
+    char *tempstr2;
+    char *tempstr3;
+    char *tempstr4;
 
-	string cache_name	= ".dods_cache";
-	string src_name		= ".dodsrc";
+    string lockstr = "";	//  Lock file path
+    string cifp = "";
+    string cache_root = "";	//  Location of actual cache.
+    string homedir = "";	//  Cache init file path
+    string tmpdir = "";		//  Fallback position for cache files.
+
+    string cache_name = ".dods_cache";
+    string src_name = ".dodsrc";
 
 #ifdef WIN32
-	HTEventInit();
+    HTEventInit();
 #endif
 
     // Defaults to use if cache file doesnt exist. 
@@ -626,7 +636,9 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     int IGNORE_EXPIRES = DODS_IGN_EXPIRES;
     int DEFAULT_EXPIRES = DODS_DEFAULT_EXPIRES;
     int use_cache_file = 1;
-    
+    // 8.25.2000 cjm 
+    int proxy_regex_flags, noproxy_host_port;
+
     // The following code sets up the cache according to the data stored
     // in the following places, in this order.  First the environment 
     // variable DODS_CACHE_INIT is checked for a path to the data file. 
@@ -634,180 +646,250 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // compiled-in defaults are used.    However, if the path for the 
     // file exists and the file does not, then the compiled-in defaults
     // will be written to a file at the location given. 8-1-99 cjm
-    
-    // Store the users home directory or for win-NT based systems, the user &
-	// & application-specific directory.  Punt for win9x-based systems.
-#ifdef WIN32
-	//  Should be ok for WinNT and versions of Windows that are based upon it -
-	//  such as Windows 2000.  APPDATA not appropriate for Win9x-based systems,
-	//  we'll have to default to using the temporary directory in that case
-	//  because there is no user specific directory denoted by an env var.
-	if(getenv("APPDATA"))
-		homedir = getenv("APPDATA");
-	else if(getenv("TEMP"))
-		homedir = getenv("TEMP");
-	else if(getenv("TMP"))
-		homedir = getenv("TMP");
-	//  One of the above _must_ have held true under win32 in the very unlikely
-	//  situation where that wasn't the case - punt hard.
-	else
-		homedir = "C:" + string(DIR_SEP_STRING);
 
-	//  Shouldn't happen, but double check
-	if(homedir[homedir.length() - 1] == DIR_SEP_CHAR)
-		homedir.erase(homedir.length() - 1);
-	homedir += string(DIR_SEP_STRING) + string("Dods");
+    // Store the users home directory or for win-NT based systems, the user &
+    // & application-specific directory.  Punt for win9x-based systems.
+#ifdef WIN32
+    //  Should be ok for WinNT and versions of Windows that are based upon it -
+    //  such as Windows 2000.  APPDATA not appropriate for Win9x-based systems,
+    //  we'll have to default to using the temporary directory in that case
+    //  because there is no user specific directory denoted by an env var.
+    if (getenv("APPDATA"))
+	homedir = getenv("APPDATA");
+    else if (getenv("TEMP"))
+	homedir = getenv("TEMP");
+    else if (getenv("TMP"))
+	homedir = getenv("TMP");
+    //  One of the above _must_ have held true under win32 in the very unlikely
+    //  situation where that wasn't the case - punt hard.
+    else
+	homedir = "C:" + string(DIR_SEP_STRING);
+
+    //  Shouldn't happen, but double check
+    if (homedir[homedir.length() - 1] == DIR_SEP_CHAR)
+	homedir.erase(homedir.length() - 1);
+    homedir += string(DIR_SEP_STRING) + string("Dods");
 #else
-	//  Should be ok for Unix
-	if(getenv("HOME"))
-		homedir = getenv("HOME");
+    //  Should be ok for Unix
+    if (getenv("HOME"))
+	homedir = getenv("HOME");
 #endif
 
     // If there is a leading '/' at the end of $HOME, remove it. 
-    if(homedir.length() != 0)
-		{
-		if(homedir[homedir.length() - 1] == DIR_SEP_CHAR)
-			homedir.erase(homedir.length() - 1);	
+    if (homedir.length() != 0) {
+	if (homedir[homedir.length() - 1] == DIR_SEP_CHAR)
+	    homedir.erase(homedir.length() - 1);
 
-		// set default cache root to $HOME/.dods_cache/
-		cache_root = homedir + string(DIR_SEP_STRING) + cache_name + string(DIR_SEP_STRING);
-		}
+	// set default cache root to $HOME/.dods_cache/
+	cache_root =
+	    homedir + string(DIR_SEP_STRING) + cache_name +
+	    string(DIR_SEP_STRING);
+    }
 #ifndef WIN32
-	//  Otherwise set the default cache root to a temporary directory
-    else
-		{ 
-		tmpdir = string(DIR_SEP_STRING) + string("tmp");
+    //  Otherwise set the default cache root to a temporary directory
+    else {
+	tmpdir = string(DIR_SEP_STRING) + string("tmp");
 
-		// Otherwise set the default cache root the <tmpdir>/.dods_cache/
-		cache_root = tmpdir + string(DIR_SEP_STRING) + cache_name + string(DIR_SEP_STRING);
-		}
+	// Otherwise set the default cache root the <tmpdir>/.dods_cache/
+	cache_root =
+	    tmpdir + string(DIR_SEP_STRING) + cache_name +
+	    string(DIR_SEP_STRING);
+    }
 #endif
-    
-	if(getenv("DODS_CACHE_INIT"))
-		cifp = getenv("DODS_CACHE_INIT");
 
-    if(cifp.length() == 0)
-		{
-		if(homedir.length() == 0)
-			{
-			// Environment variable wasn't set, and the users home directory
-			// is indeterminable, so we will neither read nor write a data 
-			// file and instead just use the compiled in defaults.
-			use_cache_file = 0;
-			}
-		else
-			{
-			// Environment variable wasnt set, get data from $HOME/.dodsrc
-			cifp = homedir + string(DIR_SEP_STRING) + src_name;
-			}
-		}
+    if (getenv("DODS_CACHE_INIT"))
+	cifp = getenv("DODS_CACHE_INIT");
 
+    if (cifp.length() == 0) {
+	if (homedir.length() == 0) {
+	    // Environment variable wasn't set, and the users home directory
+	    // is indeterminable, so we will neither read nor write a data 
+	    // file and instead just use the compiled in defaults.
+	    use_cache_file = 0;
+	} else {
+	    // Environment variable wasnt set, get data from $HOME/.dodsrc
+	    cifp = homedir + string(DIR_SEP_STRING) + src_name;
+	}
+    }
 #define WIN32_CACHE_HACK
 #if defined(WIN32) && defined(WIN32_CACHE_HACK)
-	//  Temporary hack in lieu of a fix.  Caching doesn't work under
-	//  Windows.  This lets us bypass the problem in the short-term
-	//  by turning of client-side caching for windows systems.
-	//  The problem lies with libwww and we expect or hope that
-	//  when we update the Dods distribution with the newest libwww,
-	//  the problem will go away.  The problem lies with the code
-	//  that parses the .index file - it performs improperly on
-	//  filenames containing spaces.  Using windows "short names"
-	//  functionality for _cache_root doesn't solve the problem.
-	//  Using a _cache_root beginning with file:/ with spaces
-	//  escaped is also no help.
-	//  rom - 07/17/2000.
-	use_cache_file	= false;
-	USE_CACHE	= false;
+    //  Temporary hack in lieu of a fix.  Caching doesn't work under
+    //  Windows.  This lets us bypass the problem in the short-term
+    //  by turning of client-side caching for windows systems.
+    //  The problem lies with libwww and we expect or hope that
+    //  when we update the Dods distribution with the newest libwww,
+    //  the problem will go away.  The problem lies with the code
+    //  that parses the .index file - it performs improperly on
+    //  filenames containing spaces.  Using windows "short names"
+    //  functionality for _cache_root doesn't solve the problem.
+    //  Using a _cache_root beginning with file:/ with spaces
+    //  escaped is also no help.
+    //  rom - 07/17/2000.
+    use_cache_file = false;
+    USE_CACHE = false;
 #endif
 
-    if(use_cache_file)
-	{
+    if (use_cache_file) {
 	// Open the file.  If it exists, read the settings from it.  
 	// If it doesnt exist, save the default settings to it.
 	ifstream fpi(cifp.c_str());
-	if(!fpi)
-		{
+	if (!fpi) {
 	    ofstream fpo(cifp.c_str());
-	    if(!fpo)
-			{
-			// File couldnt be created.  Nothing needs to be done here,
-			// the program will simply use the defaults.
-			}
-	    else
-			{
-			// This means we just created the file.  We will now save
-			// the defaults in it for future use.	    
-			fpo << "USE_CACHE=" << USE_CACHE << "\n";
-			fpo << "MAX_CACHE_SIZE=" << MAX_CACHE_SIZE << "\n";
-			fpo << "MAX_CACHED_OBJ=" <<  MAX_CACHED_OBJ << "\n";
-			fpo << "IGNORE_EXPIRES=" << IGNORE_EXPIRES << "\n";
+	    if (!fpo) {
+		// File couldnt be created.  Nothing needs to be done here,
+		// the program will simply use the defaults.
+	    } else {
+		// This means we just created the file.  We will now save
+		// the defaults in it for future use.       
+	      fpo << "# DODS client configuation file. See the DODS" << endl;
+	      fpo << "# users guide for information." << endl;
+		fpo << "USE_CACHE=" << USE_CACHE << endl;
+		fpo << "MAX_CACHE_SIZE=" << MAX_CACHE_SIZE << endl;
+		fpo << "MAX_CACHED_OBJ=" << MAX_CACHED_OBJ << endl;
+		fpo << "IGNORE_EXPIRES=" << IGNORE_EXPIRES << endl;
 #if 0
-			fpo << "NEVER_DEFLATE=" << NEVER_DEFLATE << "\n";
+		fpo << "NEVER_DEFLATE=" << NEVER_DEFLATE << endl;
 #endif
-			fpo << "CACHE_ROOT=" << cache_root << "\n";
-			fpo << "DEFAULT_EXPIRES=" << DEFAULT_EXPIRES << "\n";
-			fpo.close();
-			}
-		}
-	else
-		{
+		fpo << "CACHE_ROOT=" << cache_root << endl;
+		fpo << "DEFAULT_EXPIRES=" << DEFAULT_EXPIRES << endl;
+		fpo << "# PROXY_SERVER=<protocol>,<host url>" << endl;
+		fpo << "# PROXY_FOR=<regex>,<proxy host url>,<flags>" << endl;
+		fpo << "# NO_PROXY_FOR=<protocol>,<host>" << endl;
+		fpo.close();
+	    }
+	} else {
 	    // The file exists and we may now begin to parse it.  
 	    // Defaults are already stored in the variables, if the correct
 	    // tokens are found in the file then those defaults will be 
 	    // overwritten. 
-    	    tempstr = new char[256];
+	    tempstr = new char[256];
 	    int tokenlength;
-	    while(1)
-			{
-#ifdef WIN32
-			fpi.getline(tempstr, 128);
-			if (!fpi.good())  //  Ok for unix also ???
-#else
-			if (fpi.getline(tempstr, 128) < 0)
-#endif
-				break; // Gets a line from the file.
-			value = strchr(tempstr, '=');
-			if(!value) break;
-			tokenlength = (int)value - (int)tempstr;
-			value++;
-			if((strncmp(tempstr, "USE_CACHE", 9) == 0) && tokenlength == 9)
-				{
-				USE_CACHE = atoi(value);
-				}
-			else if((strncmp(tempstr, "MAX_CACHE_SIZE", 14)==0) && tokenlength == 14)
-				{
-				MAX_CACHE_SIZE= atoi(value);
-				}
-			else if((strncmp(tempstr, "MAX_CACHED_OBJ", 14)==0) && tokenlength == 14)
-				{
-				MAX_CACHED_OBJ= atoi(value); 
-				}
-			else if((strncmp(tempstr, "IGNORE_EXPIRES", 14)==0) && tokenlength == 14)
-				{
-				IGNORE_EXPIRES= atoi(value);
-				}
-			else if((strncmp(tempstr, "NEVER_DEFLATE", 13)==0) && tokenlength == 13)
-				{
-				// (re)Set the member value iff the dodsrc file changes
-				// te default. 12/1/99 jhrg
-				_accept_deflate=accept_deflate = atoi(value) ? false: true;
-				}
-			else if((strncmp(tempstr, "CACHE_ROOT", 10)==0) && tokenlength == 10)
-				{
-				cache_root = value;
-				if(cache_root[cache_root.length() - 1] != DIR_SEP_CHAR)
-					cache_root += string(DIR_SEP_STRING);
-				}
-			else if((strncmp(tempstr, "DEFAULT_EXPIRES", 15)==0) && tokenlength == 15)
-				{
-				DEFAULT_EXPIRES = atoi(value);
-				}
-			}
-		delete tempstr;
-		fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
+	    while (1) {
+		fpi.getline(tempstr, 128);
+		if (!fpi.good())	//  Ok for unix also ??? Yes.
+		    break;	// Gets a line from the file.
+		value = strchr(tempstr, '=');
+		if (!value)
+		    break;
+		tokenlength = (int) value - (int) tempstr;
+		value++;
+		if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
+		    && tokenlength == 9) {
+		    USE_CACHE = atoi(value);
+		} else if ((strncmp(tempstr, "MAX_CACHE_SIZE", 14) == 0)
+			   && tokenlength == 14) {
+		    MAX_CACHE_SIZE = atoi(value);
+		} else if ((strncmp(tempstr, "MAX_CACHED_OBJ", 14) == 0)
+			   && tokenlength == 14) {
+		    MAX_CACHED_OBJ = atoi(value);
+		} else if ((strncmp(tempstr, "IGNORE_EXPIRES", 14) == 0)
+			   && tokenlength == 14) {
+		    IGNORE_EXPIRES = atoi(value);
+		} else if ((strncmp(tempstr, "NEVER_DEFLATE", 13) == 0)
+			   && tokenlength == 13) {
+		    // (re)Set the member value iff the dodsrc file changes
+		    // te default. 12/1/99 jhrg
+		    _accept_deflate = accept_deflate =
+			atoi(value) ? false : true;
+		} else if ((strncmp(tempstr, "CACHE_ROOT", 10) == 0)
+			   && tokenlength == 10) {
+		    cache_root = value;
+		    if (cache_root[cache_root.length() - 1] !=
+			DIR_SEP_CHAR) cache_root += string(DIR_SEP_STRING);
+		} else if ((strncmp(tempstr, "DEFAULT_EXPIRES", 15) == 0)
+			   && tokenlength == 15) {
+		    DEFAULT_EXPIRES = atoi(value);
 		}
+		// Check for tags relating to the proxy server
+		// 8.20.2000 cjm
+		else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
+			 && tokenlength == 12) {
+		    // Setup a proxy server for all requests.
+		    tempstr2 = value;
+		    if (tempstr2 != NULL) {
+			tempstr3 = strchr(tempstr2, ',');
+			if (tempstr3 != NULL) {
+			    tempstr3[0] = (char) 0;	//terminate access
+			    // method string.
+			    tempstr3++;	//advance pointer.
+			    // Setup the proxy server.  tempstr2 is
+			    // the access method (ftp, http, etc)
+			    // and tempstr3 is a fully qualified 
+			    // name which includes the access method.
+			    HTProxy_add(tempstr2, tempstr3);
+			}
+
+		    }
+		} 
+		else if ((strncmp(tempstr, "PROXY_FOR", 9) == 0)
+			   && tokenlength == 9) {
+		    // Setup a proxy server for any requests
+		    // matching the given regular expression.
+		    tempstr2 = value;
+		    if (tempstr2 != NULL) {
+			tempstr3 = strchr(tempstr2, ',');
+			if (tempstr3 != NULL) {
+			    tempstr3[0] = (char) 0;	//terminate
+			    //tempstr2
+			    tempstr3++;	// point to proxy server;
+			    tempstr4 = strchr(tempstr3, ',');
+			    // tempstr4 will be !NULL only if the regex flags
+			    // are given. But we're not going to support
+			    // those unless requested. So handle the case
+			    // where they are not given, too. 10/25/2000 jhrg
+			    if (tempstr4 != NULL) {
+				tempstr4[0] = (char) 0;	//terminate
+				//tempstr3
+				tempstr4++;
+				proxy_regex_flags = atoi(tempstr4);
+				HTProxy_addRegex(tempstr2, tempstr3,
+						 proxy_regex_flags);
+			    }
+			    else {
+			      HTProxy_addRegex(tempstr2, tempstr3, 0);
+			    }
+			}
+		    }
+		} else if ((strncmp(tempstr, "NO_PROXY_FOR", 12) == 0)
+			   && tokenlength == 12) {
+		    // Dont use a proxy server for the host
+		    // specified.  Multiple NO_PROXY_FOR entries
+		    // can be in the .dodsrc.  cjm
+		    tempstr2 = value;
+		    if (tempstr2 != NULL) {
+			tempstr3 = strchr(tempstr2, ',');
+			if (tempstr3 != NULL) {
+			    tempstr3[0] = (char) 0;	//terminate
+			    //tempstr2
+			    tempstr3++;	// point to access method.
+			    tempstr4 = strchr(tempstr3, ',');
+			    if (tempstr4 != NULL) {
+				tempstr4[0] = (char) 0;	//terminate
+				//tempstr3
+				tempstr4++;
+				noproxy_host_port = atoi(tempstr4);
+			    }
+			    // default to port 0 if not specified. This means
+			    // all ports. Using 80 will fail when the URL
+			    // does not contain the port number. That's
+			    // probably a bug in libwww. 10/23/2000 jhrg
+			    else
+				noproxy_host_port = 0;
+			    // add proxy server for host 
+			    // 'tempstr2' w/ access method 
+			    // 'tempstr3' and port 'noproxy_host_port'.
+			    // NB: Params reversed from above. 10/23/2000 jhrg
+			    HTNoProxy_add(tempstr3, tempstr2,
+					  noproxy_host_port);
+			}
+		    }
+		}
+	    }
+
+	    delete tempstr;
+	    fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
+	}
     }
-        
     // End of cache file parsing.
 
     // Initialize tcp and buffered_tcp transports
@@ -815,7 +897,8 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 
     // Set up http and cache protocols. Do this instead of
     // HTProtocolPreemtiveInit(). 
-    HTProtocol_add("http", "buffered_tcp", HTTP_PORT, YES, HTLoadHTTP, NULL);
+    HTProtocol_add("http", "buffered_tcp", HTTP_PORT, YES, HTLoadHTTP,
+		   NULL);
     HTProtocol_add("file", "local", 0, YES, HTLoadFile, NULL);
     HTProtocol_add("cache", "local", 0, YES, HTLoadCache, NULL);
 
@@ -827,7 +910,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 
     // Add proxy handling here. In HTProfile_newPreem...()
     // HTProxy_getEnvVars() is called. 02/09/98 jhrg
-    
+
     // Register the default set of converters.
     _conv = HTList_new();
     HTConverterInit(_conv);
@@ -839,17 +922,15 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTFormat_setTransferCoding(transfer_encodings);
 
     // Register the default set of content encoders and decoders
-    if (accept_deflate)
-		{
+    if (accept_deflate) {
 #ifdef HT_ZLIB
-		HTList *content_encodings = HTList_new();
-		HTContentEncoderInit(content_encodings);
-		// HTContentEncoderInit adds `deflate' if libwww was built with
-		// HT_ZLIB defined. 3/28/2000 jhrg
-		HTFormat_setContentCoding(content_encodings);
-#endif /* HT_ZLIB */
-		}
-
+	HTList *content_encodings = HTList_new();
+	HTContentEncoderInit(content_encodings);
+	// HTContentEncoderInit adds `deflate' if libwww was built with
+	// HT_ZLIB defined. 3/28/2000 jhrg
+	HTFormat_setContentCoding(content_encodings);
+#endif				/* HT_ZLIB */
+    }
     // Register MIME headers for HTTP 1.1
     HTMIMEInit();
     HTBeforeInit();
@@ -862,61 +943,59 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTAlert_add(dods_username_password, HT_A_USER_PW);
     HTAlert_setInteractive(YES);
 #endif
-    if(!USE_CACHE)
-		{
-		// Disable the cache. 
-		HTCacheTerminate();
-		_cache_enabled = false;
-		}
-    else
-		{
-		// Instead, set up the cache.
-		// Remove any stale lock file.  This may not be safe if multiple
-		// people are using the same cache directory at once.
-		lockstr = cache_root + string(".lock");
-		remove(lockstr.c_str());
+    if (!USE_CACHE) {
+	// Disable the cache. 
+	HTCacheTerminate();
+	_cache_enabled = false;
+    } else {
+	// Instead, set up the cache.
+	// Remove any stale lock file.  This may not be safe if multiple
+	// people are using the same cache directory at once.
+	lockstr = cache_root + string(".lock");
+	remove(lockstr.c_str());
 
-		//  We have to escape spaces.  Utilizing the escape functionality
-		//  forces us, in turn, to use the "file:" convention for URL's.
+	//  We have to escape spaces.  Utilizing the escape functionality
+	//  forces us, in turn, to use the "file:" convention for URL's.
 #ifdef WIN32
-		string croot = string("file:/") + cache_root;
+	string croot = string("file:/") + cache_root;
 #else
-		string croot = string("file:") + cache_root;
+	string croot = string("file:") + cache_root;
 #endif
-		croot = id2dods(string(croot),string(" "));
+	croot = id2dods(string(croot), string(" "));
 
-		_cache_root = new char[strlen(cache_root.c_str())+1];
-		strcpy(_cache_root, cache_root.c_str());
-		if(HTCacheInit(croot.c_str(), MAX_CACHE_SIZE) == YES)
-			{
-			HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
-			if(IGNORE_EXPIRES) HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
-			else HTCacheMode_setExpires(HT_EXPIRES_AUTO);
-			HTCacheMode_setDefaultExpiration(DEFAULT_EXPIRES);
-			_cache_enabled = true;
-			}
-		else
-			{
-			// Disable the cache. 
-			HTCacheTerminate();
-			_cache_enabled = false;
-			}
-		}
-    
+	_cache_root = new char[strlen(cache_root.c_str()) + 1];
+	strcpy(_cache_root, cache_root.c_str());
+	if (HTCacheInit(croot.c_str(), MAX_CACHE_SIZE) == YES) {
+	    HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
+	    if (IGNORE_EXPIRES)
+		HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
+	    else
+		HTCacheMode_setExpires(HT_EXPIRES_AUTO);
+	    HTCacheMode_setDefaultExpiration(DEFAULT_EXPIRES);
+	    _cache_enabled = true;
+	} else {
+	    // Disable the cache. 
+	    HTCacheTerminate();
+	    _cache_enabled = false;
+	}
+    }
+
     if (www_verbose_errors)
 	HTError_setShow(HT_ERR_SHOW_INFO);
     else
 	HTError_setShow(HT_ERR_SHOW_FATAL);
-	
+
     // Add our own filter to update the history list.
-    HTNet_addAfter(http_terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
+    HTNet_addAfter(http_terminate_handler, NULL, NULL, HT_ALL,
+		   HT_FILTER_LAST);
 
     // We add our own parsers for content-description and server so that
     // we can test for these fields and operate on the resulting document
     // without using the stream stack mechanism (which seems to be very
     // complicated). jhrg 11/20/96
 #ifdef WIN32
-	HTHeader_addParser("content-description", NO, (HTParserCallback *)description_handler);
+    HTHeader_addParser("content-description", NO,
+		       (HTParserCallback *) description_handler);
 #else
     HTHeader_addParser("content-description", NO, description_handler);
 #endif
@@ -924,8 +1003,9 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // first for `XDODS-Server:' and use that if found. Then look for
     // `Server:' and finally default to 0.0. 12/16/98 jhrg
 #ifdef WIN32
-    HTHeader_addParser("xdods-server", NO, (HTParserCallback *)server_handler);
-    HTHeader_addParser("server", NO, (HTParserCallback *)server_handler);
+    HTHeader_addParser("xdods-server", NO,
+		       (HTParserCallback *) server_handler);
+    HTHeader_addParser("server", NO, (HTParserCallback *) server_handler);
 #else
     HTHeader_addParser("xdods-server", NO, server_handler);
     HTHeader_addParser("server", NO, server_handler);
@@ -938,11 +1018,10 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTHeader_addGenerator(cache_control_header_gen);
 }
 
-void
-Connect::clone(const Connect &src)
+void Connect::clone(const Connect & src)
 {
     _local = src._local;
-    
+
     if (!_local) {
 	_type = src._type;
 	_encoding = src._encoding;
@@ -958,7 +1037,7 @@ Connect::clone(const Connect &src)
 
 #ifdef GUI
 	_gui = new Gui();
-#endif 
+#endif
 	_URL = src._URL;
 	_proj = src._proj;
 	_sel = src._sel;
@@ -966,7 +1045,7 @@ Connect::clone(const Connect &src)
 	_cache_control = src._cache_control;
 
 	// Initialize the anchor object.
-	char *ref = HTParse(_URL.c_str(), (char *)0, PARSE_ALL);
+	char *ref = HTParse(_URL.c_str(), (char *) 0, PARSE_ALL);
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
 	HT_FREE(ref);
 	// Copy the access method.
@@ -985,8 +1064,7 @@ Connect::clone(const Connect &src)
 // Use the URL designated when the Connect object was created as the
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
-bool
-Connect::read_url(string &url, FILE *stream)
+bool Connect::read_url(string & url, FILE * stream)
 {
     assert(stream);
 
@@ -994,25 +1072,28 @@ Connect::read_url(string &url, FILE *stream)
 
     HTRequest *_request = HTRequest_new();
 
-    HTRequest_setContext (_request, this); // Bind THIS to request 
+    HTRequest_setContext(_request, this);	// Bind THIS to request 
 
     HTRequest_setOutputFormat(_request, WWW_SOURCE);
 
-    HTRequest_setAnchor(_request, (HTAnchor *)_anchor);
+    HTRequest_setAnchor(_request, (HTAnchor *) _anchor);
 
-    HTRequest_setOutputStream(_request, HTFWriter_new(_request, stream, YES));
+    HTRequest_setOutputStream(_request,
+			      HTFWriter_new(_request, stream, YES));
 
     // Set this request to use the cache if possible. 
     // CJM used HT_CACHE_VALIDATE; HT_CACHE_OK supresses the validation.
-    if(_cache_enabled) HTRequest_setReloadMode(_request, HT_CACHE_OK);
+    if (_cache_enabled)
+	HTRequest_setReloadMode(_request, HT_CACHE_OK);
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
 
-    if (_cache_enabled) 
+    if (_cache_enabled)
 	HTCacheIndex_write(_cache_root);
 
     if (status != YES) {
-	if (SHOW_MSG) cerr << "Can't access resource" << endl;
+	if (SHOW_MSG)
+	    cerr << "Can't access resource" << endl;
 	return false;
     }
 
@@ -1021,8 +1102,7 @@ Connect::read_url(string &url, FILE *stream)
     return (status != 0);
 }
 
-void
-Connect::close_output()
+void Connect::close_output()
 {
     if (_output && _output != stdout) {
 	fclose(_output);
@@ -1045,16 +1125,16 @@ Connect::Connect()
 
 // public mfuncs
 
-Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate) 
-    : _accept_types("All"), _cache_control(""), _www_errors_to_stderr(false),
-      _accept_deflate(accept_deflate)
+Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate):
+_accept_types("All"), _cache_control(""), _www_errors_to_stderr(false),
+_accept_deflate(accept_deflate)
 {
     name = prune_spaces(name);
     char *access_ref = HTParse(name.c_str(), NULL, PARSE_ACCESS);
 
-    if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
+    if (strcmp(access_ref, "http") == 0) {	// access == http --> remote access
 	// If there are no current connects, initialize the library
-       	if (_num_remote_conns == 0) {
+	if (_num_remote_conns == 0) {
 	    www_lib_init(www_verbose_errors, accept_deflate);
 	}
 	_num_remote_conns++;
@@ -1067,21 +1147,19 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 
 	// Find and store any CE given with the URL.
 	string::size_type dotpos = name.find('?');
-	if (dotpos!=name.npos) {
+	if (dotpos != name.npos) {
 	    _URL = name.substr(0, dotpos);
-	    string expr = name.substr(dotpos+1);
+	    string expr = name.substr(dotpos + 1);
 
 	    dotpos = expr.find('&');
-	    if (dotpos!=expr.npos) {
+	    if (dotpos != expr.npos) {
 		_proj = expr.substr(0, dotpos);
-		_sel = expr.substr(dotpos); // XXX includes '&'
-	    }
-	    else {
+		_sel = expr.substr(dotpos);	// XXX includes '&'
+	    } else {
 		_proj = expr;
 		_sel = "";
 	    }
-	}
-	else {
+	} else {
 	    _URL = name;
 	    _proj = "";
 	    _sel = "";
@@ -1095,11 +1173,10 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 	// Assume servers that don't announce themselves are old servers.
 	_server = "dods/0.0";
 
-	char *ref = HTParse(_URL.c_str(), (char *)0, PARSE_ALL);
+	char *ref = HTParse(_URL.c_str(), (char *) 0, PARSE_ALL);
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
 	HT_FREE(ref);
-    }
-    else {
+    } else {
 	_URL = "";
 	_local = true;
 	_output = 0;
@@ -1108,11 +1185,11 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 	_encoding = unknown_enc;
     }
 
-	if(access_ref)
-		HT_FREE(access_ref);
+    if (access_ref)
+	HT_FREE(access_ref);
 }
 
-Connect::Connect(const Connect &copy_from) : _error(undefined_error, "")
+Connect::Connect(const Connect & copy_from):_error(undefined_error, "")
 {
     clone(copy_from);
     if (!_local)
@@ -1134,38 +1211,34 @@ Connect::~Connect()
     if (!_local) {
 #ifdef GUI
 	delete _gui;
-#endif 
+#endif
 	_num_remote_conns--;
     }
-
     // Calling this ensures that the WWW library Cache gets updated and the
     // .index file is written. 11/22/99 jhrg
     if (_num_remote_conns == 0) {
-	if (_cache_enabled) HTCacheTerminate();
+	if (_cache_enabled)
+	    HTCacheTerminate();
 	HTList_delete(_conv);
 	_conv = 0;
-	delete[] _cache_root;
-    }
-    else
-	if (_cache_enabled) HTCacheIndex_write(_cache_root);
+	delete[]_cache_root;
+    } else if (_cache_enabled)
+	HTCacheIndex_write(_cache_root);
 
     close_output();
 
 #ifdef WIN32
-	HTEventTerminate();
+    HTEventTerminate();
 
-	//  Get rid of any intermediate files
-	vector<string>::const_iterator i;
-	for(i = _tfname.begin(); i != _tfname.end(); i++)
-		remove((*i).c_str())
+    //  Get rid of any intermediate files
+    vector < string >::const_iterator i;
+    for (i = _tfname.begin(); i != _tfname.end(); i++)
+	remove((*i).c_str())
 #endif
-
-    DBG2(cerr << "Leaving the Connect dtor" << endl);
+	    DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
 
-Connect &
-Connect::operator=(const Connect &rhs)
-{
+Connect & Connect::operator = (const Connect & rhs) {
     if (&rhs == this)
 	return *this;
     else {
@@ -1175,37 +1248,32 @@ Connect::operator=(const Connect &rhs)
 }
 
 void
-Connect::set_www_errors_to_stderr(bool state)
+ Connect::set_www_errors_to_stderr(bool state)
 {
     _www_errors_to_stderr = state;
 }
 
-bool
-Connect::get_www_errors_to_stderr()
+bool Connect::get_www_errors_to_stderr()
 {
     return _www_errors_to_stderr;
 }
 
-void
-Connect::set_accept_types(const string &types)
+void Connect::set_accept_types(const string & types)
 {
     _accept_types = types;
 }
 
-string 
-Connect::get_accept_types()
+string Connect::get_accept_types()
 {
     return _accept_types;
 }
 
-void
-Connect::set_cache_control(const string &caching)
+void Connect::set_cache_control(const string & caching)
 {
     _cache_control = caching;
 }
 
-string
-Connect::get_cache_control()
+string Connect::get_cache_control()
 {
     return _cache_control;
 }
@@ -1218,19 +1286,18 @@ Connect::get_cache_control()
 // the design of Connect, the caller of fetch_url will never know that their
 // async operation was actually synchronous.
 
-bool
-Connect::fetch_url(string &url, bool)
+bool Connect::fetch_url(string & url, bool)
 {
     _encoding = unknown_enc;
     _type = unknown_type;
-   
+
     /* NB: I've completely removed the async stuff for now. 2/18/97 jhrg */
 
     char *c = tempnam(NULL, DODS_PREFIX);
-    FILE *stream = fopen(c, "wb"); // Open truncated for update.
+    FILE *stream = fopen(c, "wb");	// Open truncated for update.
     if (!read_url(url, stream))
 	return false;
-   
+
     // Workaround for Linux 2.2 (only?). Using fseek() did not work for URLs
     // with between 61 and 64 characters in them. I have no idea why, but it
     // appeared in ddd as if the eof was not being reported correctly. Since
@@ -1242,61 +1309,55 @@ Connect::fetch_url(string &url, bool)
     fclose(stream);
     stream = fopen(c, "rb");
     if (!keep_temps)
-      unlink(c);		// When _OUTPUT is closed file is deleted
+	unlink(c);		// When _OUTPUT is closed file is deleted
     else
-      cerr << "Temporary file for Data document: " << c << endl;
+	cerr << "Temporary file for Data document: " << c << endl;
 
     free(c);			//  tempnam uses malloc !
 
     close_output();
 
     _output = stream;
-   
+
     return true;
 }
 
-FILE *
-Connect::output()
+FILE *Connect::output()
 {
     // NB: Users should make sure they don't close stdout.
-    return _output;		
+    return _output;
 }
 
-XDR *
-Connect::source()
+XDR *Connect::source()
 {
     if (!_source)
 	_source = new_xdrstdio(_output, XDR_DECODE);
-    	
+
     return _source;
 }
 
 
-ObjectType
-Connect::type()
+ObjectType Connect::type()
 {
     return _type;
 }
 
-EncodingType
-Connect::encoding()
+EncodingType Connect::encoding()
 {
     return _encoding;
 }
 
-string
-Connect::server_version()
+string Connect::server_version()
 {
     return _server;
 }
 
 // Added EXT which defaults to "das". jhrg 3/7/95
 
-bool
-Connect::request_das(bool gui_p, const string &ext)
+bool Connect::request_das(bool gui_p, const string & ext)
 {
 #ifdef GUI
-    (void)_gui->show_gui(gui_p);
+    (void) _gui->show_gui(gui_p);
 #endif
     string das_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
@@ -1309,46 +1370,46 @@ Connect::request_das(bool gui_p, const string &ext)
 	goto exit;
 
     switch (type()) {
-      case dods_error: {
-	  string correction;
-	  if (!_error.parse(_output)) {
-	      cerr << "Could not parse error object" << endl;
-	      status = false;
-	      break;
-	  }
+    case dods_error:
+	{
+	    string correction;
+	    if (!_error.parse(_output)) {
+		cerr << "Could not parse error object" << endl;
+		status = false;
+		break;
+	    }
 #ifdef GUI
-	  correction = _error.correct_error(_gui);
+	    correction = _error.correct_error(_gui);
 #else
-	  correction = _error.correct_error(0);
+	    correction = _error.correct_error(0);
 #endif
-	  status = false;
-	  break;
-      }
+	    status = false;
+	    break;
+	}
 
-      case web_error:
+    case web_error:
 	status = false;
 	break;
 
-      case dods_das:
-      default:
+    case dods_das:
+    default:
 	// DAS::parse throws an exception on error.
-	_das.parse(_output); // read and parse the das from a file 
+	_das.parse(_output);	// read and parse the das from a file 
 	status = true;
 	break;
     }
 
-exit:
+  exit:
     close_output();
     return status;
 }
 
 // Added EXT which deafults to "dds". jhrg 3/7/95
 
-bool
-Connect::request_dds(bool gui_p, const string &ext)
+bool Connect::request_dds(bool gui_p, const string & ext)
 {
 #ifdef GUI
-    (void)_gui->show_gui(gui_p);
+    (void) _gui->show_gui(gui_p);
 #endif
     string dds_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
@@ -1358,37 +1419,38 @@ Connect::request_dds(bool gui_p, const string &ext)
     status = fetch_url(dds_url);
     if (!status)
 	goto exit;
-    
+
     switch (type()) {
-      case dods_error: {
-	  string correction;
-	  if (!_error.parse(_output)) {
-	      cerr << "Could not parse error object" << endl;
-	      status = false;
-	      break;
-	  }
+    case dods_error:
+	{
+	    string correction;
+	    if (!_error.parse(_output)) {
+		cerr << "Could not parse error object" << endl;
+		status = false;
+		break;
+	    }
 #ifdef GUI
-	  correction = _error.correct_error(_gui);
+	    correction = _error.correct_error(_gui);
 #else
-	  correction = _error.correct_error(0);
+	    correction = _error.correct_error(0);
 #endif
-	  status = false;
-	  break;
-      }
-	
-      case web_error:
+	    status = false;
+	    break;
+	}
+
+    case web_error:
 	status = false;
 	break;
 
-      case dods_dds:
-      default:
+    case dods_dds:
+    default:
 	// DDS::prase throws an exception on error.
-	_dds.parse(_output); // read and parse the dds from a file 
+	_dds.parse(_output);	// read and parse the dds from a file 
 	status = true;
 	break;
     }
 
-exit:
+  exit:
     close_output();
     return status;
 }
@@ -1397,52 +1459,53 @@ exit:
 // object. 
 // This is a private mfunc.
 
-DDS *
-Connect::process_data(bool async)
+DDS *Connect::process_data(bool async)
 {
     switch (type()) {
-      case dods_error: {
-	  if (!_error.parse(_output)) {
-	      cerr << "Could not parse error object" << endl;
-	      break;
-	  }
-	  return 0;
-      }
+    case dods_error:
+	{
+	    if (!_error.parse(_output)) {
+		cerr << "Could not parse error object" << endl;
+		break;
+	    }
+	    return 0;
+	}
 
-      case web_error:
+    case web_error:
 	// Web errors (those reported in the return document's MIME header)
 	// are processed by the WWW library.
 	return 0;
 
-      case dods_data:
-      default: {
-	  DataDDS *dds = new DataDDS("received_data", _server);
+    case dods_data:
+    default:
+	{
+	    DataDDS *dds = new DataDDS("received_data", _server);
 
-	  // Parse the DDS; throw an exception on error.
-	  dds->parse(_output);
+	    // Parse the DDS; throw an exception on error.
+	    dds->parse(_output);
 
-	  // If !asynchronous, read data for all the variables from the
-	  // document. 
-	  if (!async) {
-	      XDR *s = source();
-	      for (Pix q = dds->first_var(); q; dds->next_var(q)) {
-		  BaseType *v = dds->var(q);
-		  // Because sequences have multiple rows, bail out and let
-		  // the caller deserialize as they read the data.
-		  if (v->type() == dods_sequence_c)
-		      break;
-		  if (!v->deserialize(s, dds))
-		      return 0;
-	      }
-	  }
+	    // If !asynchronous, read data for all the variables from the
+	    // document. 
+	    if (!async) {
+		XDR *s = source();
+		for (Pix q = dds->first_var(); q; dds->next_var(q)) {
+		    BaseType *v = dds->var(q);
+		    // Because sequences have multiple rows, bail out and let
+		    // the caller deserialize as they read the data.
+		    if (v->type() == dods_sequence_c)
+			break;
+		    if (!v->deserialize(s, dds))
+			return 0;
+		}
+	    }
 
-	  return dds;
-      }
+	    return dds;
+	}
     }
 
     return 0;
 }
-      
+
 // Read data from the server at _URL. If ASYNC is true, read asynchronously
 // using NetConnect (which forks so that it can return *before* the read
 // completes). Synchronous reads (using NetExecute) are the default. 
@@ -1461,27 +1524,25 @@ Connect::process_data(bool async)
 // corrupted. If you request N variables and M of them are Sequences, all the
 // M sequences must follow the N-M other variables.
 
-DDS *
-Connect::request_data(string expr, bool gui_p, 
-		      bool async, const string &ext)
+DDS *Connect::request_data(string expr, bool gui_p,
+			   bool async, const string & ext)
 {
 #ifdef GUI
-    (void)_gui->show_gui(gui_p);
+    (void) _gui->show_gui(gui_p);
 #endif
     string proj, sel;
     string::size_type dotpos = expr.find('&');
     if (dotpos != expr.npos) {
 	proj = expr.substr(0, dotpos);
 	sel = expr.substr(dotpos);
-    }
-    else {
+    } else {
 	proj = expr;
 	sel = "";
     }
 
     string data_url = _URL + "." + ext + "?" + _proj + proj + _sel + sel;
     bool status = fetch_url(data_url, async);
-	
+
     if (!status) {
 	cerr << "Could not complete data request operation" << endl;
 	return 0;
@@ -1490,8 +1551,7 @@ Connect::request_data(string expr, bool gui_p,
     return process_data(async);
 }
 
-DDS *
-Connect::read_data(FILE *data_source, bool gui_p, bool async)
+DDS *Connect::read_data(FILE * data_source, bool gui_p, bool async)
 {
 #ifdef GUI
     _gui->show_gui(gui_p);
@@ -1505,8 +1565,7 @@ Connect::read_data(FILE *data_source, bool gui_p, bool async)
 }
 
 // Never use this.
-void *
-Connect::gui()
+void *Connect::gui()
 {
 #ifdef GUI
     return _gui;
@@ -1515,62 +1574,59 @@ Connect::gui()
 #endif
 }
 
-bool
-Connect::is_local()
+bool Connect::is_local()
 {
     return _local;
 }
 
-string
-Connect::URL(bool ce)
+string Connect::URL(bool ce)
 {
     if (_local) {
 	cerr << "URL(): This call is only valid for a remote connection."
-	     << endl;
+	    << endl;
 	return "";
     }
 
     if (ce)
 	return _URL + "?" + _proj + _sel;
-    else 
+    else
 	return _URL;
 }
 
-string 
-Connect::CE()
+string Connect::CE()
 {
     if (_local) {
 	cerr << "CE(): This call is only valid for a remote connection."
 	    << endl;
 	return "";
     }
-    
+
     return _proj + _sel;
 }
 
-DAS &
-Connect::das()
+DAS & Connect::das()
 {
     assert(!_local);
 
     return _das;
 }
 
-DDS &
-Connect::dds()
+DDS & Connect::dds()
 {
     assert(!_local);
 
     return _dds;
 }
 
-Error &
-Connect::error()
+Error & Connect::error()
 {
     return _error;
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.105  2000/10/30 17:21:27  jimg
+// Added support for proxy servers (from cjm).
+//
 // Revision 1.104  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and
@@ -2163,4 +2219,3 @@ Connect::error()
 // First version of the connection management classes.
 // This commit also includes early versions of the test code.
 //
-

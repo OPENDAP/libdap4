@@ -59,7 +59,8 @@ enum ErrorCode {
     no_such_variable,
     malformed_expr,
     no_authorization,
-    can_not_read_file
+    can_not_read_file,
+    cannot_read_file
 };
 
 /** Some Error objects may contain programs which can be used to
@@ -117,6 +118,12 @@ public:
 	correction program and program type will be null. In addition, if a
 	program type is given a program {\it must} also be given. 
 
+	I've modified Error so that only a message string needs to be given.
+	In this case the constructor will use the message code
+	`unknown_error'. It is a bit missleading, but those codes are turning
+	out to be more of a problem than anything else since they don't seem
+	very useful but are a pain to supply. 10/11/2000 jhrg
+
 	Other class constructors should be the only callers of this object's
 	default constructor.
  
@@ -125,6 +132,8 @@ public:
     //@{
     ///
     Error(ErrorCode ec, string msg);
+    ///
+    Error(string msg);
     ///
     Error(ErrorCode ec, string msg, ProgramType pt, char *pgm);
     ///
@@ -285,6 +294,9 @@ public:
 };
 
 // $Log: Error.h,v $
+// Revision 1.20  2000/10/30 17:21:27  jimg
+// Added support for proxy servers (from cjm).
+//
 // Revision 1.19  2000/10/03 21:04:08  jimg
 // Updated copyright
 //

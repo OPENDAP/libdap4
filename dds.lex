@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.29 2000/09/07 23:08:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.30 2000/10/30 17:21:28 jimg Exp $"};
 
 #include <string.h>
 
@@ -74,7 +74,7 @@ STRING 		STRING|String|string
 URL 		URL|Url|url
 
 ID  		[a-zA-Z_%.][-a-zA-Z0-9_/%.]*
-NAME            [a-zA-Z0-9_/%.][-a-zA-Z0-9_/%.]*
+NAME            [a-zA-Z0-9_/%.][-a-zA-Z0-9_/%.#]*
 INTEGER		[0-9]+
 NEVER		[^][{}:;=a-zA-Z0-9_%]
 
@@ -139,6 +139,9 @@ yywrap(void)
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.30  2000/10/30 17:21:28  jimg
+ * Added support for proxy servers (from cjm).
+ *
  * Revision 1.29  2000/09/07 23:08:52  jimg
  * Fixed another goof from the last merge; I dropped the new feature that
  * identifiers can have dots i their names. This feature could really screw
