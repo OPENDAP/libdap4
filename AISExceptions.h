@@ -40,7 +40,7 @@ public:
 /** Thrown when the AIS database/document cannot be read. */
 class AISDatabaseReadFailed :public Error {
 public:
-    AISDatabaseReadFailed() : Error("The AIS database read fialed.") {}
+    AISDatabaseReadFailed() : Error("The AIS database read failed.") {}
     AISDatabaseReadFailed(const string &msg) : 
 	Error(string("The AIS database read failed: ") + msg) {}
 };
@@ -54,6 +54,9 @@ public:
 };
 
 // $Log: AISExceptions.h,v $
+// Revision 1.2  2003/05/28 07:05:32  jimg
+// Fixed spelling in one of the error messages (!)
+//
 // Revision 1.1  2003/02/20 22:09:22  jimg
 // Added.
 //
