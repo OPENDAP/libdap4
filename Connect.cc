@@ -11,7 +11,12 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.4  1995/02/10 04:43:15  reza
+// Revision 1.5  1995/02/10 21:53:53  jimg
+// Modified request_data() so that it takes an additional (optional)
+// parameter which specifies synchronous (default) of Asynchronous
+// behavior.
+//
+// Revision 1.4  1995/02/10  04:43:15  reza
 // Fixed the request_data to pass arguments. The arguments string is added to the
 // file name before being posted by NetConnect. Default arg. is null.
 //
@@ -55,7 +60,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.4 1995/02/10 04:43:15 reza Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.5 1995/02/10 21:53:53 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -68,8 +73,8 @@ static char rcsid[]={"$Id: Connect.cc,v 1.4 1995/02/10 04:43:15 reza Exp $"};
 
 #include "Connect.h"
 
-extern "C" int NetExecute(char *, char *, FILE *); // defined in NetExec.c
-extern "C" FILE *NetConnect(char *, char *);       // defined in NetExec.c
+extern "C" FILE *NetExecute(char *, char *); // defined in netexec.c
+extern "C" FILE *NetConnect(char *, char *); // defined in netexec.c
 extern void set_xdrin(FILE *in); // defined in BaseType.cc (libdds.a)
 extern void set_xdrout(FILE *out); // define in BaseType.cc
 
@@ -136,22 +141,12 @@ Connect::request_das()
     bool status = false;
 
 #ifdef NEVER
-    // NULL means P_tmpdir in stdio or TMPDIR environment variable
-    char *tmp = tempnam(NULL, "das");
-#endif
-
     FILE *fp = NetConnect(das_url, _path);
+#endif
+    FILE *fp = NetExecute(das_url, _path);
 
     if( fp ) 
       status = _das.parse(fp);    // read and parse the das from a file 
-
-#ifdef NEVER
-    cerr << "das url: " << das_url << endl;
-    cerr << "tmp: " << tmp << endl;
-
-    unlink(tmp);
-    free(tmp);			// malloc'd in tempnam(3)
-#endif
 
     return status;
 }
@@ -165,35 +160,41 @@ Connect::request_dds()
     bool status = false;
 
 #ifdef NEVER
-    // NULL means P_tmpdir in stdio or TMPDIR environment variable
-    char *tmp = tempnam(NULL, "dds");
-#endif
     FILE *fp = NetConnect(dds_url, _path);
+#endif
+    FILE *fp = NetExecute(dds_url, _path);
 
     if( fp ) 
       status = _dds.parse(fp);    // read and parse the das from a file 
    
-#ifdef NEVER
-    cerr << "dds url: " << dds_url << endl;
-    cerr << "tmp: " << tmp << endl;
-
-    unlink(tmp);
-    free(tmp);			// malloc'd in tempnam(3)
-#endif
-
     return status;
 }
 
+// Read data from the server at _PATH. If ASYNC is true, make the rad using
+// NetConnect (which forks so that it can return *before* the read
+// completes). Otherwise use the synchronous read. Synchronous reads are the
+// default. 
+//
+// NB: This function does not actually read the data (in either case), it
+// just sets up the BaseType static class member so that data *can* be read. 
+//
+// Returns: true if the read from the server to the local buffer was
+// completed (async == false) or was correctly initiated (async ==
+// true). Returns false if an error was detected by the NetExecute or
+// NetConnect function.
+
 bool
-Connect::request_data(const String &post)
+Connect::request_data(const String &post, bool async)
 {
-
     String data_url = make_url(_api_name, "serv");
-
     String Args = _path + " " + post;
+    FILE *fp;
 
-    FILE *fp = NetConnect(data_url, Args);
-
+    if (async)
+	fp = NetConnect(data_url, Args);
+    else
+	fp = NetExecute(data_url, Args);
+	
     if (fp) 
       set_xdrin(fp);
 
