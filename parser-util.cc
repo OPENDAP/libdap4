@@ -10,6 +10,9 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.10  1997/02/28 01:20:51  jimg
+// Removed `parse error' message from parse_error() function.
+//
 // Revision 1.9  1996/10/28 23:05:54  jimg
 // Fixed tests in check_uint().
 // NB: strtol() does not check for overflow on SunOS.
@@ -46,7 +49,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.9 1996/10/28 23:05:54 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.10 1997/02/28 01:20:51 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,11 +67,12 @@ parse_error(const char *s, const int line_num)
 {
     assert(s);
 
-    cerr << s << " line: " << line_num << endl;;
+    cerr << "Parse error (line: " << line_num << "):" << endl
+	 << s << endl;
 }
 
 void
-parse_error(parser_arg *arg, const char *msg, const int line_num,
+parse_error(parser_arg *arg, const char *msg, const int line_num = 0,
 	    const char *context = 0)
 { 
     assert(arg);
@@ -77,11 +81,15 @@ parse_error(parser_arg *arg, const char *msg, const int line_num,
     arg->set_status(FALSE);
 
     ostrstream oss;
-    oss << "Error parsing the text on line " << line_num << ":" << endl;
+
+    if (line_num != 0)
+	oss << "Error parsing the text on line " << line_num << ":" << endl;
+
     if (context)
 	oss << msg << endl << context << ends;
     else
 	oss << msg << ends;
+
     arg->set_error(new Error(unknown_error, oss.str()));
     oss.freeze(0);
 }
