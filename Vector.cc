@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.57 2005/02/14 22:11:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.58 2005/02/16 17:28:48 pwest Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -304,6 +304,10 @@ Vector::var(unsigned int i)
 
       case dods_str_c:
       case dods_url_c:
+	_var->val2buf( &d_str[i] );
+	return _var;
+	break ;
+
       case dods_array_c:
       case dods_structure_c:
       case dods_sequence_c:
@@ -452,6 +456,24 @@ problem with the network connection.");
 
       case dods_str_c:
       case dods_url_c:
+	if(d_str.capacity() == 0)
+	    throw InternalErr(__FILE__, __LINE__, 
+			      "The capacity of the string vector is 0");
+
+	if ((0 == xdr_int(sink, (int *)&num)))
+	    throw Error(
+"Network I/O Error. This may be due to a bug in DODS or a\n\
+problem with the network connection.");
+
+	for (i = 0; i < num; ++i)
+	    if (!xdr_str(sink, d_str[i]))
+		throw Error(
+"Network I/O Error. Could not send string data.\n\
+This may be due to a bug in DODS, on the server or a\n\
+problem with the network connection.");
+
+	break ;
+
       case dods_array_c:
       case dods_structure_c:
       case dods_sequence_c:
@@ -558,6 +580,34 @@ the network connection.");
 
       case dods_str_c:
       case dods_url_c:
+	throw Error( "Don't know how to do this one!" ) ;
+	if ((0 == xdr_int(source, (int *)&num)))
+	    throw Error(
+"Network I/O error. Could not read the array length.\n\
+This may be due to a bug in DODS or a problem with\n\
+the network connection.");
+
+	if (length() == -1)
+	    set_length(num);
+	
+	if (num != (unsigned int)length())
+	    throw InternalErr(__FILE__, __LINE__,
+	      "The client sent declarations and data with mismatched sizes.");
+
+	d_str.resize((num > 0) ? num : 0); // Fill with NULLs
+
+	for (i = 0; i < num; ++i) {
+	    string str ;
+	    if (xdr_str(source, str) != 1)
+		throw Error(
+"Network I/O Error. Could not read string data. This may be due to a\n\
+bug in DODS or a problem with the network connection.");
+	    d_str[i] = str ;
+
+	}
+
+	break ;
+
       case dods_array_c:
       case dods_structure_c:
       case dods_sequence_c:
@@ -858,6 +908,9 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.58  2005/02/16 17:28:48  pwest
+// d_str changes to ::var, ::serialize and ::deserialize
+//
 // Revision 1.57  2005/02/14 22:11:27  jimg
 // Added code to use the new d_str field; a special field to hold strings.
 //
