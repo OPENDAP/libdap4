@@ -9,6 +9,14 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.103  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.102  2000/08/29 21:22:54  jimg
 // Merged with 3.1.9
 //
@@ -93,6 +101,11 @@
 // cached. I also have removed the code that wrote NEVER_DEFLATE to the rc
 // file. The NEVER_DEFLATE option still works; I'm just not including it in
 // the rc file by default.
+//
+// Revision 1.86.2.1  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.87  2000/01/27 06:29:55  jimg
 // Resolved conflicts from merge with release-3-1-4
@@ -589,7 +602,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.102 2000/08/29 21:22:54 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.103 2000/09/21 16:22:07 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1906,7 +1919,9 @@ Connect::request_das(bool gui_p, const string &ext)
 
       case dods_das:
       default:
-	status = _das.parse(_output); // read and parse the das from a file 
+	// DAS::parse throws an exception on error.
+	_das.parse(_output); // read and parse the das from a file 
+	status = true;
 	break;
     }
 
@@ -1955,7 +1970,9 @@ Connect::request_dds(bool gui_p, const string &ext)
 
       case dods_dds:
       default:
-	status = _dds.parse(_output); // read and parse the dds from a file 
+	// DDS::prase throws an exception on error.
+	_dds.parse(_output); // read and parse the dds from a file 
+	status = true;
 	break;
     }
 
@@ -1989,11 +2006,8 @@ Connect::process_data(bool async)
       default: {
 	  DataDDS *dds = new DataDDS("received_data", _server);
 
-	  // Parse the DDS
-	  if (!dds->parse(_output)) {
-	      cerr << "Could not parse data DDS." << endl;
-	      return 0;
-	  }
+	  // Parse the DDS; throw an exception on error.
+	  dds->parse(_output);
 
 	  // If !asynchronous, read data for all the variables from the
 	  // document. 

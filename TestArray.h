@@ -13,6 +13,19 @@
 
 /* 
  * $Log: TestArray.h,v $
+ * Revision 1.11  2000/09/21 16:22:08  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
+ * Revision 1.10.14.1  2000/02/17 05:03:14  jimg
+ * Added file and line number information to calls to InternalErr.
+ * Resolved compile-time problems with read due to a change in its
+ * parameter list given that errors are now reported using exceptions.
+ *
  * Revision 1.10  1999/04/29 02:29:31  jimg
  * Merge of no-gnu branch
  *
@@ -80,7 +93,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset, int &error);
+    virtual bool read(const string &dataset);
 };
 
 #endif

@@ -10,6 +10,14 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.41  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.40  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -25,6 +33,14 @@
 //
 // Revision 1.37.20.1  2000/06/02 18:11:19  rmorris
 // Mod's for Port to Win32.
+//
+// Revision 1.37.14.2  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.37.14.1  2000/01/28 22:14:04  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.37  1999/05/04 19:47:20  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
@@ -218,6 +234,7 @@
 
 #include "BaseType.h"
 #include "util.h"
+#include "InternalErr.h"
 
 #ifdef WIN32
 using std::cerr;
@@ -566,10 +583,11 @@ BaseType::check_semantics(string &msg, bool)
 bool 
 BaseType::ops(BaseType *, int, const string &)
 {
-    assert("Unimplemented operator" && false);
-
-    cerr << "Unimplemented operator" << endl;
-
-    return false;
+    // Jose Garcia
+    // Even though ops is a public method, it can never being called
+    // by the users because they will never have a BaseType object since
+    // this class is abstract, however any of the child classes could
+    // by mistake call BaseType::ops so this is an internal error.
+    throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
 

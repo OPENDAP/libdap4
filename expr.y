@@ -18,6 +18,14 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.38  2000/09/21 16:22:10  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
  * Revision 1.37  2000/09/14 10:30:20  rmorris
  * Added usage of ends and ostrstream elements in the std namespace for win32.
  *
@@ -33,6 +41,11 @@
  *
  * Revision 1.33.14.1  2000/06/02 18:36:39  rmorris
  * Mod's for port to Win32.
+ *
+ * Revision 1.33.8.1  2000/02/17 05:03:17  jimg
+ * Added file and line number information to calls to InternalErr.
+ * Resolved compile-time problems with read due to a change in its
+ * parameter list given that errors are now reported using exceptions.
  *
  * Revision 1.33  1999/07/22 17:11:52  jimg
  * Merged changes from the release-3-0-2 branch
@@ -195,7 +208,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.37 2000/09/14 10:30:20 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.38 2000/09/21 16:22:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -243,8 +256,6 @@ using std::ostrstream;
 // ERROR *.
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
-#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
-#define STATUS(arg) ((parser_arg *)(arg))->_status
 
 #if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
@@ -256,13 +267,13 @@ int exprlex(void);		/* the scanner; see expr.lex */
 
 void exprerror(const char *s);	/* easier to overload than to use stdarg... */
 void exprerror(const char *s, const char *s2);
-int no_such_func(void *arg, char *name);
-int no_such_ident(void *arg, char *name, char *word);
+void no_such_func(void *arg, char *name);
+void no_such_ident(void *arg, char *name, char *word);
 
 void exprerror(const string &s); 
 void exprerror(const string &s, const string &s2);
-int no_such_func(void *arg, const string &name);
-int no_such_ident(void *arg, const string &name, const string &word);
+void no_such_func(void *arg, const string &name);
+void no_such_ident(void *arg, const string &name, const string &word);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
@@ -370,7 +381,7 @@ proj_clause:	SCAN_ID
 			$$ = (*DDS_OBJ(arg)).mark($1, true);
 		    }
 		    else {
-			$$ = no_such_ident(arg, $1, "identifier");
+			no_such_ident(arg, $1, "identifier");
 		    }
 		}
                 | SCAN_FIELD
@@ -379,7 +390,7 @@ proj_clause:	SCAN_ID
 		    if (var)
 			$$ = (*DDS_OBJ(arg)).mark($1, true);
 		    else {
-			$$ = no_such_ident(arg, $1, "field");
+		        no_such_ident(arg, $1, "field");
 		    }
 		}
                 | proj_function
@@ -407,7 +418,7 @@ proj_function:  SCAN_ID '(' arg_list ')'
 			$$ = true;
 		    }
 		    else {
-			$$ = no_such_func(arg, $1);
+			no_such_func(arg, $1);
 		    }
 		}
 ;
@@ -449,7 +460,7 @@ bool_function: SCAN_ID '(' arg_list ')'
 	       {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
 		   if (!b_func) {
-		       $$ = no_such_func(arg, $1);
+		       no_such_func(arg, $1);
 		   }
 		   else {
 		       (*DDS_OBJ(arg)).append_clause(b_func, $3);
@@ -464,12 +475,8 @@ r_value:        identifier
 		{
 		    $$ = dereference_variable($2, *DDS_OBJ(arg));
 		    if (!$$) {
-			exprerror("Could not dereference variable", 
+			exprerror("Could not dereference the URL", 
 				  ($2)->value_name());
-			string msg = "Could not dereference the URL: ";
-			msg += ($2)->value_name();
-			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			STATUS(arg) = false;
 		    }
 		}
 		| '*' SCAN_STR
@@ -485,7 +492,7 @@ r_value:        identifier
 			$$ = new rvalue(func, $3);
 		    } 
 		    else {  		
-			$$ = (rvalue *)no_such_func(arg, $1);
+			no_such_func(arg, $1);
 		    }
 		}
 ;
@@ -520,7 +527,7 @@ identifier:	SCAN_ID
                 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
 		    if (!btp) {
-			$$ = (rvalue *)no_such_ident(arg, $1, "identifier");
+			no_such_ident(arg, $1, "identifier");
 		    }
 		    else
 			$$ = new rvalue(btp);
@@ -529,7 +536,7 @@ identifier:	SCAN_ID
                 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
 		    if (!btp) {
-			$$ = (rvalue *)no_such_ident(arg, $1, "field");
+			no_such_ident(arg, $1, "field");
 		    }
 		    else
 			$$ = new rvalue(btp);
@@ -556,14 +563,15 @@ constant:       SCAN_INT
 array_proj:	SCAN_ID array_indices 
                 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), $1, $2))
-		    $$ = no_such_ident(arg, $1, "array, grid or sequence");
+		    // no_such_ident throws an exception.
+		    no_such_ident(arg, $1, "array, grid or sequence");
 		  else
 		    $$ = true;
 		}
 	        | SCAN_FIELD array_indices 
                 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), $1, $2))
-		    $$ = no_such_ident(arg, $1, "array, grid or sequence");
+		    no_such_ident(arg, $1, "array, grid or sequence");
 		  else
 		    $$ = true;
 		}
@@ -604,6 +612,10 @@ rel_op:		SCAN_EQUAL
 
 %%
 
+// All these error reporting function now throw instnaces of Error. The expr
+// parser no longer returns an error code to indicate and error. 2/16/2000
+// jhrg.
+
 void
 exprerror(const string &s)
 { 
@@ -613,7 +625,9 @@ exprerror(const string &s)
 void
 exprerror(const char *s)
 {
-    cerr << "Expression parse error: " << s << endl;
+    // cerr << "Expression parse error: " << s << endl;
+    string msg = "Constraint expression parse error: " + (string)s;
+    throw Error(malformed_expr, msg);
 }
 
 void
@@ -625,45 +639,34 @@ exprerror(const string &s, const string &s2)
 void
 exprerror(const char *s, const char *s2)
 {
-	cerr << "Expression parse error: " << s << ": " << s2 << endl;
+    string msg = "Constraint expression parse error: " + (string)s + ": " 
+	+ (string)s2;
+    throw Error(malformed_expr, msg);
 }
 
-int
+void
 no_such_ident(void *arg, const string &name, const string &word)
 {
-    return no_such_ident(arg, name.c_str(), word.c_str());
+    no_such_ident(arg, name.c_str(), word.c_str());
 }
 
-int
+void
 no_such_ident(void *arg, char *name, char *word)
 {
-    string msg = "No such " + (string)word + " in dataset.";
+    string msg = "No such " + (string)word + " in dataset:";
     exprerror(msg.c_str(), name);
-
-    msg = "The identifier `" + (string)name + "' is not in the dataset.";
-    ERROR_OBJ(arg) = new Error(malformed_expr, msg.c_str());
-    STATUS(arg) = false;
-
-    return false;
 }
 
-int
+void
 no_such_func(void *arg, const string &name)
 {
-    return no_such_func(arg, name.c_str());
+    no_such_func(arg, name.c_str());
 }
 
-int
+void
 no_such_func(void *arg, char *name)
 {
     exprerror("Not a registered function", name);
-    string msg = "The function `" + (string)name 
-	+ "' is not defined on this server.";
-
-    ERROR_OBJ(arg) = new Error(malformed_expr, msg.c_str());
-    STATUS(arg) = false;
-
-    return false;
 }
 
 bool
@@ -906,12 +909,7 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	    goto exit;
 	}
 	
-	if (!a->add_constraint(r, start, stride, stop)) {
-	    cerr << "Impossible index values in constraint for "
-		 << a->name() << "." << endl;
-	    status = false;
-	    goto exit;
-	}
+	a->add_constraint(r, start, stride, stop);
 
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
     }
@@ -990,12 +988,7 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	    goto exit;
 	}
 
-	if (!a->add_constraint(a->first_dim(), start, stride, stop)) {
-	    cerr << "Impossible index values in constraint for "
-		 << a->name() << "." << endl;
-	    status = false;
-	    goto exit;
-	}
+	a->add_constraint(a->first_dim(), start, stride, stop);
 
 	DBG(cerr << "Set Constraint: " \
 	    << a->dimension_size(a->first_dim(), true) << endl);
@@ -1061,7 +1054,6 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
 	    << a->dimension_size(a->first_dim(), true) << endl);
     }
 
-exit:
     return status;
 }
 

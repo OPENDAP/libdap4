@@ -41,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.24 2000/09/11 16:40:17 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.25 2000/09/21 16:22:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,8 +74,7 @@ using std::ostrstream;
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
-#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
-#define STATUS(arg) ((parser_arg *)(arg))->_status
+
 #if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
 #else
@@ -186,11 +185,11 @@ static const short yyrhs[] = {    33,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   127,   128,   131,   132,   139,   140,   141,   144,   154,   161,
-   172,   177,   188,   193,   204,   206,   208,   213,   226,   237,
-   245,   253,   261,   269,   270,   271,   272,   273,   274,   275,
-   276,   277,   280,   281,   284,   297,   301,   317,   317,   328,
-   329,   330
+   126,   127,   130,   131,   138,   139,   140,   143,   153,   160,
+   171,   176,   187,   192,   203,   205,   207,   212,   225,   236,
+   244,   252,   260,   268,   269,   270,   271,   272,   273,   274,
+   275,   276,   279,   280,   283,   296,   300,   316,   316,   327,
+   328,   329
 };
 #endif
 
@@ -848,14 +847,14 @@ yyreduce:
   switch (yyn) {
 
 case 4:
-#line 133 "dds.y"
+#line 132 "dds.y"
 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG);
 		    YYABORT;
 		;
     break;}
 case 8:
-#line 145 "dds.y"
+#line 144 "dds.y"
 { 
 		  string smsg;
 		  if (current->check_semantics(smsg))
@@ -867,7 +866,7 @@ case 8:
 		;
     break;}
 case 10:
-#line 162 "dds.y"
+#line 161 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -879,14 +878,14 @@ case 10:
 		;
     break;}
 case 11:
-#line 173 "dds.y"
+#line 172 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 12:
-#line 178 "dds.y"
+#line 177 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -898,14 +897,14 @@ case 12:
 		;
     break;}
 case 13:
-#line 189 "dds.y"
+#line 188 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 14:
-#line 194 "dds.y"
+#line 193 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -917,22 +916,22 @@ case 14:
 		;
     break;}
 case 15:
-#line 205 "dds.y"
+#line 204 "dds.y"
 { part = array; ;
     break;}
 case 16:
-#line 207 "dds.y"
+#line 206 "dds.y"
 { part = maps; ;
     break;}
 case 17:
-#line 209 "dds.y"
+#line 208 "dds.y"
 {
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 18:
-#line 214 "dds.y"
+#line 213 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -946,7 +945,7 @@ case 18:
 		;
     break;}
 case 19:
-#line 227 "dds.y"
+#line 226 "dds.y"
 {
 		    ostrstream msg;
 		    msg << BAD_DECLARATION << ends;
@@ -956,7 +955,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 238 "dds.y"
+#line 237 "dds.y"
 { 
 		    if (!ctor) 
 			ctor = new stack<BaseType *>;
@@ -964,7 +963,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 246 "dds.y"
+#line 245 "dds.y"
 { 
 		    if (!ctor)
 	                ctor = new stack<BaseType *>;
@@ -972,7 +971,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 254 "dds.y"
+#line 253 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -980,7 +979,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 262 "dds.y"
+#line 261 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -988,47 +987,47 @@ case 23:
 		;
     break;}
 case 24:
-#line 269 "dds.y"
+#line 268 "dds.y"
 { current = NewByte(); ;
     break;}
 case 25:
-#line 270 "dds.y"
+#line 269 "dds.y"
 { current = NewInt16(); ;
     break;}
 case 26:
-#line 271 "dds.y"
+#line 270 "dds.y"
 { current = NewUInt16(); ;
     break;}
 case 27:
-#line 272 "dds.y"
+#line 271 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 273 "dds.y"
+#line 272 "dds.y"
 { current = NewUInt32(); ;
     break;}
 case 29:
-#line 274 "dds.y"
+#line 273 "dds.y"
 { current = NewFloat32(); ;
     break;}
 case 30:
-#line 275 "dds.y"
+#line 274 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 31:
-#line 276 "dds.y"
+#line 275 "dds.y"
 { current = NewStr(); ;
     break;}
 case 32:
-#line 277 "dds.y"
+#line 276 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 33:
-#line 280 "dds.y"
+#line 279 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 35:
-#line 285 "dds.y"
+#line 284 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -1042,13 +1041,13 @@ case 35:
 		 ;
     break;}
 case 36:
-#line 298 "dds.y"
+#line 297 "dds.y"
 {
 		     id = new string(yyvsp[0]);
 		 ;
     break;}
 case 37:
-#line 302 "dds.y"
+#line 301 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), *id);
@@ -1064,7 +1063,7 @@ case 37:
 		 ;
     break;}
 case 39:
-#line 318 "dds.y"
+#line 317 "dds.y"
 {
 		     ostrstream msg;
 		     msg << "In the dataset descriptor object:" << endl
@@ -1075,15 +1074,15 @@ case 39:
 		 ;
     break;}
 case 40:
-#line 328 "dds.y"
+#line 327 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 41:
-#line 329 "dds.y"
+#line 328 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 42:
-#line 331 "dds.y"
+#line 330 "dds.y"
 {
 		  ostrstream msg;
 		  msg << "Error parsing the dataset name." << endl
@@ -1315,7 +1314,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 341 "dds.y"
+#line 340 "dds.y"
 
 
 /* 
@@ -1382,8 +1381,13 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.24  2000/09/11 16:40:17  jimg
- * Rebuilt grammars
+ * Revision 1.25  2000/09/21 16:22:09  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
  *
  * Revision 1.31  2000/08/16 18:29:02  jimg
  * Added dot (.) to the set of characters allowed in a variable name
@@ -1396,6 +1400,11 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
  *
  * Revision 1.28.6.1  2000/06/02 18:36:38  rmorris
  * Mod's for port to Win32.
+ *
+ * Revision 1.27.8.1  2000/02/17 05:03:17  jimg
+ * Added file and line number information to calls to InternalErr.
+ * Resolved compile-time problems with read due to a change in its
+ * parameter list given that errors are now reported using exceptions.
  *
  * Revision 1.28  2000/01/27 06:30:00  jimg
  * Resolved conflicts from merge with release-3-1-4

@@ -11,6 +11,14 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.46  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.45  2000/08/14 23:54:11  jimg
 // Removed the usage() functions. These should be supplied by cgis that
 // need them. See DODSFilter.
@@ -43,6 +51,11 @@
 // Revision 1.40  2000/03/28 16:36:08  jimg
 // Removed code that sent bad dates in the response header. Also removed code
 // that sent a Cache-Control: no-cache header.
+//
+// Revision 1.38.2.1  2000/02/17 05:03:16  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.39  2000/01/27 06:29:58  jimg
 // Resolved conflicts from merge with release-3-1-4
@@ -231,7 +244,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.45 2000/08/14 23:54:11 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.46 2000/09/21 16:22:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -429,23 +442,8 @@ read_ancillary_dds(DDS &dds, string dataset, string dir, string file)
     FILE *in = fopen(name.c_str(), "r");
  
     if (in) {
-	int status = dds.parse(in);
+	dds.parse(in);		// DDS::parse throws on error
 	fclose(in);
-    
-	if(!status) {
-	    string msg = "Parse error in external file " + dataset + ".dds";
-
-	    // server error message
-	    ErrMsgT(msg);
-
-	    // client error message
-	    set_mime_text(cout, dods_error);
-
-	    Error *ErrorObj = new Error(malformed_expr, msg);
-	    ErrorObj->print(cout);
-
-	    return false;
-	}
     }
 
     return true;
@@ -458,23 +456,8 @@ read_ancillary_das(DAS &das, string dataset, string dir, string file)
     FILE *in = fopen(name.c_str(), "r");
  
     if (in) {
-	int status = das.parse(in);
+	das.parse(in);		// DAS::parse throws on error.
 	fclose(in);
-    
-	if(!status) {
-	    string msg = "Parse error in external file " + dataset + ".das";
-
-	    // server error message
-	    ErrMsgT(msg);
-
-	    // client error message
-	    set_mime_text(cout, dods_error);
-
-	    Error *ErrorObj = new Error(malformed_expr, msg);
-	    ErrorObj->print(cout);
-
-	    return false;
-	}
     }
 
     return true;

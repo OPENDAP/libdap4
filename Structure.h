@@ -16,6 +16,14 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.36  2000/09/21 16:22:08  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
  * Revision 1.35  2000/08/02 22:46:49  jimg
  * Merged 3.1.8
  *
@@ -34,6 +42,9 @@
  *
  * Revision 1.32.20.1  2000/06/02 18:29:31  rmorris
  * Mod's for port to Win32.
+ *
+ * Revision 1.32.14.1  2000/01/28 22:14:06  jgarcia
+ * Added exception handling and modify add_var to get a copy of the object
  *
  * Revision 1.32  1999/05/04 19:47:22  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
@@ -294,7 +305,7 @@ public:
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const string &dataset, int &error) = 0;
+    virtual bool read(const string &dataset) = 0;
 
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.

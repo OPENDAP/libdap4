@@ -10,6 +10,14 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.41  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.40  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -25,6 +33,14 @@
 //
 // Revision 1.37.6.1  2000/01/26 23:57:37  jimg
 // Fixed the return type of string::find.
+//
+// Revision 1.37.14.2  2000/02/17 05:03:14  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.37.14.1  2000/01/28 22:14:06  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.37  1999/04/29 02:29:31  jimg
 // Merge of no-gnu branch
@@ -225,6 +241,7 @@
 #include "Structure.h"
 #include "util.h"
 #include "debug.h"
+#include "InternalErr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -233,6 +250,13 @@
 #ifdef WIN32
 using std::endl;
 #endif
+
+// Jose Garcia 1/26/2000
+// Note: all asserts of nature
+// for (Pix p = _vars.first(); p; _vars.next(p)) {
+// 	assert(_vars(p));
+// had been commented out, later when we get sure
+// we do not need then we can remove them all.
 
 void
 Structure::_duplicate(const Structure &s)
@@ -245,7 +269,11 @@ Structure::_duplicate(const Structure &s)
 
     for (Pix p = cs._vars.first(); p; cs._vars.next(p)) {
 	DBG(cerr << "Copying field: " << cs.name() << endl);
-	assert(cs._vars(p));
+	// Jose Garcia
+	// I think this assert here is part of a debugging 
+	// process since it is going along with a DBG call
+	// I leave it here since it can be remove by defining NDEBUG.
+	// assert(cs._vars(p));
 	_vars.append(cs._vars(p)->ptr_duplicate());
     }
 }
@@ -262,7 +290,17 @@ Structure::Structure(const Structure &rhs)
 Structure::~Structure()
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	assert(_vars(p));
+      // Jose Garcia
+      // It is not a good idea to throw exceptions from destructors.
+      // I am not sure why to check for _vars(p) being NULL at this 
+      // point in the game, in fact I believe that _vars should never
+      // be allowed to hold a NULL pointer in the first place, this 
+      // can be achieved by initializing correctly the list and then 
+      // the modifier methods such as add_var should get sure NEVER
+      // a NULL pointer becomes part of the list. For all the exposed
+      // above I rather leave the assert to get a core dump and see
+      // how a NULL pointer got the list in the first place!
+      // assert(_vars(p));
 	delete _vars(p);
     }
 }
@@ -295,7 +333,7 @@ void
 Structure::set_send_p(bool state)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	_vars(p)->set_send_p(state);
     }
 
@@ -306,7 +344,7 @@ void
 Structure::set_read_p(bool state)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	_vars(p)->set_read_p(state);
     }
 
@@ -318,9 +356,17 @@ Structure::set_read_p(bool state)
 void 
 Structure::add_var(BaseType *bt, Part)
 {
-    assert(bt);
-
-    _vars.append(bt);
+  // Jose Garcia
+  // Passing and invalid pointer to an object is a developer's error.
+  if (!bt)
+      throw InternalErr(__FILE__, __LINE__, 
+			"Passing null pointer, add_var expects a valid object to be added to the structure");
+  // Jose Garcia
+  // Now we add a copy of bt so the external user is 
+  // able to destroy bt as he/she whishes. The policy is:
+  // "If it is allocated outside, it is deallocated outside,
+  // if it is allocated inside, it is deallocated inside"
+  _vars.append(bt->ptr_duplicate());
 }
 
 unsigned int
@@ -343,13 +389,13 @@ Structure::serialize(const string &dataset, DDS &dds, XDR *sink,
 		     bool ce_eval)
 {
     bool status = true;
-    int error = 0;
-
-    if (!read_p()) {
-	read(dataset, error);
-	if (error)
-	    return false;
-    }
+    // Jose Garcia
+    // Since the read method is virtual and implemented outside
+    // libdap++ if we can not read the data that is the problem 
+    // of the user or of whoever wrote the surrogate library
+    // implemeting read therefore it is an internal error.
+    if (!read_p() && !read(dataset))
+	throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
@@ -400,7 +446,7 @@ BaseType *
 Structure::var(const string &name, btp_stack &s)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	
 	if (_vars(p)->name() == name) {
 	    s.push((BaseType *)this);
@@ -432,7 +478,7 @@ BaseType *
 Structure::leaf_match(const string &name)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	
 	if (_vars(p)->name() == name)
 	    return _vars(p);
@@ -462,7 +508,7 @@ Structure::exact_match(const string &name)
     }
     else {
 	for (Pix p = _vars.first(); p; _vars.next(p)) {
-	    assert(_vars(p));
+	  //assert(_vars(p));
 	    if (_vars(p)->name() == name)
 		return _vars(p);
 	}
@@ -492,7 +538,7 @@ BaseType *
 Structure::var(Pix p)
 {
     if (!_vars.empty() && p) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	return _vars(p);
     }
     else 
@@ -508,7 +554,7 @@ Structure::print_decl(ostream &os, string space, bool print_semi,
 
     os << space << type_name() << " {" << endl;
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	_vars(p)->print_decl(os, space + "    ", true, constraint_info,
 			     constrained);
     }
@@ -537,7 +583,7 @@ Structure::print_val(ostream &os, string space, bool print_decl_p)
 
     os << "{ ";
     for (Pix p = _vars.first(); p; _vars.next(p), (void)(p && os << ", ")) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	_vars(p)->print_val(os, "", false);
     }
 
@@ -563,7 +609,7 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool pr
     os << "{ ";
     bool sequence_found = false;
     for (Pix p = first_var(); p; next_var(p), (void)(p && os << ", ")) {
-	assert(var(p));
+      //assert(var(p));
 	switch (var(p)->type()) {
 	  case dods_sequence_c:
 	    (dynamic_cast<Sequence*>(var(p)))->print_all_vals(os, src, dds, 
@@ -605,7 +651,7 @@ Structure::check_semantics(string &msg, bool all)
 
     if (all) 
 	for (Pix p = _vars.first(); p; _vars.next(p)) {
-	    assert(_vars(p));
+	  //assert(_vars(p));
 	    if (!_vars(p)->check_semantics(msg, true)) {
 		status = false;
 		goto exit;

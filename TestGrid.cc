@@ -10,6 +10,19 @@
 // jhrg 1/13/95
 
 // $Log: TestGrid.cc,v $
+// Revision 1.14  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.13.14.1  2000/02/17 05:03:14  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
 // Revision 1.13  1999/04/29 02:29:32  jimg
 // Merge of no-gnu branch
 //
@@ -92,15 +105,15 @@ TestGrid::~TestGrid()
 }
 
 bool
-TestGrid::read(const string &dataset, int &error)
+TestGrid::read(const string &dataset)
 {
     if (read_p())
 	return true;
 
-    array_var()->read(dataset, error);
+    array_var()->read(dataset);
 
     for (Pix p = first_map_var(); p; next_map_var(p)) {
-	if (!map_var(p)->read(dataset, error))
+	if (!map_var(p)->read(dataset))
 	    return false;
     }
 

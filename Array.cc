@@ -10,6 +10,14 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.47  2000/09/21 16:22:06  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.46  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -25,6 +33,14 @@
 //
 // Revision 1.43.20.1  2000/06/02 18:11:19  rmorris
 // Mod's for Port to Win32.
+//
+// Revision 1.43.14.2  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.43.14.1  2000/01/28 22:14:03  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.43  1999/04/29 02:29:26  jimg
 // Merge of no-gnu branch
@@ -263,6 +279,7 @@
 #include "Array.h"
 #include "util.h"
 #include "debug.h"
+#include "InternalErr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -391,16 +408,24 @@ Array::clear_constraint()
 
 // the start and stop indeces are inclusive.
 
-bool
+static char *array_sss = \
+"Invalid constraint parameters: At least one of the start, stride or stop 
+specified do not match the array variable.";
+
+void
 Array::add_constraint(Pix p, int start, int stride, int stop)
 {
     dimension &d = _shape(p);
 
     // Check for bad constraints.
+    // Jose Garcia
+    // Usually invalid data for a constraint is the user's mistake
+    // because they build a wrong URL in the client side.
     if (start >= d.size || stop >= d.size || stride > d.size || stride <= 0)
-	return false;
+	throw Error(malformed_expr, array_sss);
+
     if (((stop - start) / stride + 1) > d.size)
-	return false;
+	throw Error(malformed_expr, array_sss);
 
     d.start = start;
     d.stop = stop;
@@ -414,7 +439,6 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
 
     update_length(d.c_size);
 
-    return true;
 }
 
 Pix 
@@ -530,9 +554,19 @@ Array::dimension_stride(Pix p, bool constrained)
 string
 Array::dimension_name(Pix p) 
 { 
-    assert(!_shape.empty() && p);
+  // Jose Garcia
+  // Since this method is public, it is possible for a user
+  // to call it before the Array object has been properly set
+  // this will cause an exception which is the user's fault.
+  // User in thins context is the developer of the surrogate library.
+  if (_shape.empty())
+      throw  InternalErr(__FILE__, __LINE__, 
+			 "*This* array has no dimensions.");
+  if (!p)
+      throw  InternalErr(__FILE__, __LINE__, 
+			 "The pointer indicating the dimesion is null.");
 
-    return _shape(p).name; 
+  return _shape(p).name; 
 }
 
 void

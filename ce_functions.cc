@@ -11,6 +11,14 @@
 // 1/15/99 jhrg
 
 // $Log: ce_functions.cc,v $
+// Revision 1.7  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.6  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -20,6 +28,11 @@
 //
 // Revision 1.4.20.1  2000/06/02 18:36:38  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.4.14.1  2000/02/17 05:03:16  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.4  1999/04/29 02:29:34  jimg
 // Merge of no-gnu branch
@@ -37,7 +50,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.6 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.7 2000/09/21 16:22:09 jimg Exp $"};
 
 #include <iostream>
 #include <vector>
@@ -60,8 +73,8 @@ using std::cerr;
 using std::endl;
 #endif
 
-int		gse_parse(void *arg);
-void	gse_restart(FILE *in);
+int gse_parse(void *arg);
+void gse_restart(FILE *in);
 
 // Glue routines declared in expr.lex
 void gse_switch_to_buffer(void *new_buffer);
@@ -229,11 +242,8 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
     // itself when the information is really needed. 1/20/99 jhrg
     for (p = grid->first_map_var(); p; grid->next_map_var(p)) {
 	Array *map = dynamic_cast<Array *>(grid->map_var(p));
-	int error = 0;
 	if (!map->read_p()) {
-	    map->read(dds.filename(), error);
-	    if (error)
-		throw Error(malformed_expr, "Could not read map vector data.");
+	    map->read(dds.filename());
 	}
     }
 

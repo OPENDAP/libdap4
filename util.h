@@ -13,6 +13,14 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.35  2000/09/21 16:22:10  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
  * Revision 1.34  2000/07/09 21:57:10  rmorris
  * Mods's to increase portability, minimuze ifdef's in win32 and account
  * for differences between the Standard C++ Library - most notably, the
@@ -43,6 +51,9 @@
  * Added includes and New*() definitions for the Int16, UInt16 and Float32
  * types.
  * Removed declarations for the old *_ops functions.
+ *
+ * Revision 1.31.14.1  2000/03/08 00:09:05  jgarcia
+ * replace ostrstream with string;added functions to convert from double and long to string
  *
  * Revision 1.27  1999/01/21 02:12:35  jimg
  * Moved prototypes to ce_functions.h
@@ -216,5 +227,40 @@ Sequence *NewSequence(const string &n = "");
 Grid *NewGrid(const string &n = "");
 
 void downcase(string &s);
+// Jose Garcia
+/** Fast, safe conversions from long to a character representation which gets appended to a string.
+   This method will take a long value 'val' and it will recursively
+   divide it by 'base' in order to "extract" one by one the digits
+   which compose it; these digits will be {\bfappended} to the string 'str_val'
+   which will become the textual representation of 'val'. Please notice
+   that the digits "extracted" from 'val' will vary depending on the base chosen
+   for the conversion; for example val=15 converted to base 10 will yield the digits
+   {1,5}, converted to base 16 will yield {F} and converted to base 2 will yield {1,1,1,1}.
+   @param val The long value we which to convert to string.
+   @param base A value in the range [2,36] which is the base to use while transforming 
+   the long value 'val' to its textual representation. Typical bases are 2 (binary),
+   10 (decimal) and 16 (hexadecimal).
+   @param str_val This is the string that will hold the textual representation of 'val'. 
+   The string str_val should be pre-set to an empty string ("") otherwise the output of this function will
+   just append the textual representation of val to whatever data is there; these feature
+   may be useful if you wish to append a long value to a string s1 (just like operator+ does)
+   without having to create a new string object s2 and then use string::operator+ between 
+   s1 and s2.
+   @return void. This method returns nothing however be aware that it will throw and 
+   exception of type {\bfstd::invalid_argument} if the parameter base is not in the valid 
+   range.
+*/
+void append_long_to_string(long val, int base, string &str_val);
+// Jose Garcia
+/**
+    Conversions from double to a character representation which gets appended to a string.
+    This function depends on the standard routine sprintf to convert a double to a textual
+    representation which gets appended to the string 'str'.
+    @param num The double you wish to append to str.
+    @param str The string where the textual representation of num will be appended.
+    @return void.
+ */
+void append_double_to_string(const double &num, string &str);
+
 
 #endif

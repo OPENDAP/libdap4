@@ -24,12 +24,12 @@
 #define	SCAN_LESS_EQL	267
 #define	SCAN_REGEXP	268
 
-#line 191 "expr.y"
+#line 199 "expr.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.15 2000/09/21 02:52:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.16 2000/09/21 16:22:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,6 +66,8 @@ static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.15 2000/09/21 02:52:00 jimg
 #ifdef WIN32
 using std::cerr;
 using std::endl;
+using std::ends;
+using std::ostrstream;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -75,8 +77,6 @@ using std::endl;
 // ERROR *.
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
-#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
-#define STATUS(arg) ((parser_arg *)(arg))->_status
 
 #if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
@@ -88,13 +88,13 @@ int exprlex(void);		/* the scanner; see expr.lex */
 
 void exprerror(const char *s);	/* easier to overload than to use stdarg... */
 void exprerror(const char *s, const char *s2);
-int no_such_func(void *arg, char *name);
-int no_such_ident(void *arg, char *name, char *word);
+void no_such_func(void *arg, char *name);
+void no_such_ident(void *arg, char *name, char *word);
 
 void exprerror(const string &s); 
 void exprerror(const string &s, const string &s2);
-int no_such_func(void *arg, const string &name);
-int no_such_ident(void *arg, const string &name, const string &word);
+void no_such_func(void *arg, const string &name);
+void no_such_ident(void *arg, const string &name, const string &word);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
@@ -127,7 +127,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 proj_func get_proj_function(const DDS &table, const char *name);
 
 
-#line 294 "expr.y"
+#line 302 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -219,11 +219,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   336,   342,   344,   345,   348,   354,   355,   361,   371,   380,
-   384,   390,   410,   411,   417,   426,   437,   443,   456,   457,
-   458,   470,   476,   488,   495,   504,   508,   514,   523,   534,
-   539,   544,   551,   558,   567,   571,   577,   581,   585,   591,
-   592,   593,   594,   595,   596,   597
+   344,   350,   352,   353,   356,   362,   363,   369,   379,   388,
+   392,   398,   418,   419,   425,   434,   445,   451,   464,   465,
+   466,   474,   480,   492,   499,   508,   512,   518,   527,   538,
+   543,   548,   555,   563,   572,   576,   582,   586,   590,   596,
+   597,   598,   599,   600,   601,   602
 };
 #endif
 
@@ -856,71 +856,71 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 337 "expr.y"
+#line 345 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 344 "expr.y"
+#line 352 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 345 "expr.y"
+#line 353 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 349 "expr.y"
+#line 357 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 356 "expr.y"
+#line 364 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 362 "expr.y"
+#line 370 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
 			yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[0].id, true);
 		    }
 		    else {
-			yyval.boolean = no_such_ident(arg, yyvsp[0].id, "identifier");
+			no_such_ident(arg, yyvsp[0].id, "identifier");
 		    }
 		;
     break;}
 case 9:
-#line 372 "expr.y"
+#line 380 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var)
 			yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[0].id, true);
 		    else {
-			yyval.boolean = no_such_ident(arg, yyvsp[0].id, "field");
+		        no_such_ident(arg, yyvsp[0].id, "field");
 		    }
 		;
     break;}
 case 10:
-#line 381 "expr.y"
+#line 389 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 11:
-#line 385 "expr.y"
+#line 393 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 12:
-#line 391 "expr.y"
+#line 399 "expr.y"
 {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -935,18 +935,18 @@ case 12:
 			yyval.boolean = true;
 		    }
 		    else {
-			yyval.boolean = no_such_func(arg, yyvsp[-3].id);
+			no_such_func(arg, yyvsp[-3].id);
 		    }
 		;
     break;}
 case 14:
-#line 412 "expr.y"
+#line 420 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 15:
-#line 418 "expr.y"
+#line 426 "expr.y"
 {
 		    if (yyvsp[-4].rval_ptr) {
 			(*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -957,7 +957,7 @@ case 15:
 		;
     break;}
 case 16:
-#line 427 "expr.y"
+#line 435 "expr.y"
 {
 		    if (yyvsp[-2].rval_ptr) {
 			rvalue_list *rv = new rvalue_list;
@@ -970,17 +970,17 @@ case 16:
 		;
     break;}
 case 17:
-#line 438 "expr.y"
+#line 446 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 18:
-#line 444 "expr.y"
+#line 452 "expr.y"
 {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		   if (!b_func) {
-		       yyval.boolean = no_such_func(arg, yyvsp[-3].id);
+		       no_such_func(arg, yyvsp[-3].id);
 		   }
 		   else {
 		       (*DDS_OBJ(arg)).append_clause(b_func, yyvsp[-1].r_val_l_ptr);
@@ -989,21 +989,17 @@ case 18:
 	       ;
     break;}
 case 21:
-#line 459 "expr.y"
+#line 467 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
-			exprerror("Could not dereference variable", 
+			exprerror("Could not dereference the URL", 
 				  (yyvsp[0].rval_ptr)->value_name());
-			string msg = "Could not dereference the URL: ";
-			msg += (yyvsp[0].rval_ptr)->value_name();
-			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			STATUS(arg) = false;
 		    }
 		;
     break;}
 case 22:
-#line 471 "expr.y"
+#line 475 "expr.y"
 {
 		    yyval.rval_ptr = dereference_url(yyvsp[0].val);
 		    if (!yyval.rval_ptr)
@@ -1011,19 +1007,19 @@ case 22:
 		;
     break;}
 case 23:
-#line 477 "expr.y"
+#line 481 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
 			yyval.rval_ptr = new rvalue(func, yyvsp[-1].r_val_l_ptr);
 		    } 
 		    else {  		
-			yyval.rval_ptr = (rvalue *)no_such_func(arg, yyvsp[-3].id);
+			no_such_func(arg, yyvsp[-3].id);
 		    }
 		;
     break;}
 case 24:
-#line 489 "expr.y"
+#line 493 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -1032,7 +1028,7 @@ case 24:
 		;
     break;}
 case 25:
-#line 496 "expr.y"
+#line 500 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -1041,104 +1037,105 @@ case 25:
 		;
     break;}
 case 26:
-#line 505 "expr.y"
+#line 509 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
 case 27:
-#line 509 "expr.y"
+#line 513 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
 case 28:
-#line 515 "expr.y"
+#line 519 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
-			yyval.rval_ptr = (rvalue *)no_such_ident(arg, yyvsp[0].id, "identifier");
+			no_such_ident(arg, yyvsp[0].id, "identifier");
 		    }
 		    else
 			yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 29:
-#line 524 "expr.y"
+#line 528 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
-			yyval.rval_ptr = (rvalue *)no_such_ident(arg, yyvsp[0].id, "field");
+			no_such_ident(arg, yyvsp[0].id, "field");
 		    }
 		    else
 			yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 30:
-#line 535 "expr.y"
+#line 539 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 31:
-#line 540 "expr.y"
+#line 544 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 32:
-#line 545 "expr.y"
+#line 549 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 33:
-#line 552 "expr.y"
+#line 556 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
-		    yyval.boolean = no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
+		    // no_such_ident throws an exception.
+		    no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
 		  else
 		    yyval.boolean = true;
 		;
     break;}
 case 34:
-#line 559 "expr.y"
+#line 564 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
-		    yyval.boolean = no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
+		    no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
 		  else
 		    yyval.boolean = true;
 		;
     break;}
 case 35:
-#line 568 "expr.y"
+#line 573 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 36:
-#line 572 "expr.y"
+#line 577 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 37:
-#line 578 "expr.y"
+#line 583 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-1].val);
 		;
     break;}
 case 38:
-#line 582 "expr.y"
+#line 587 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-3].val, yyvsp[-1].val);
 		;
     break;}
 case 39:
-#line 586 "expr.y"
+#line 591 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		;
@@ -1365,8 +1362,12 @@ yyerrhandle:
     }
   return 1;
 }
-#line 600 "expr.y"
+#line 605 "expr.y"
 
+
+// All these error reporting function now throw instnaces of Error. The expr
+// parser no longer returns an error code to indicate and error. 2/16/2000
+// jhrg.
 
 void
 exprerror(const string &s)
@@ -1377,7 +1378,9 @@ exprerror(const string &s)
 void
 exprerror(const char *s)
 {
-    cerr << "Expression parse error: " << s << endl;
+    // cerr << "Expression parse error: " << s << endl;
+    string msg = "Constraint expression parse error: " + (string)s;
+    throw Error(malformed_expr, msg);
 }
 
 void
@@ -1389,45 +1392,34 @@ exprerror(const string &s, const string &s2)
 void
 exprerror(const char *s, const char *s2)
 {
-	cerr << "Expression parse error: " << s << ": " << s2 << endl;
+    string msg = "Constraint expression parse error: " + (string)s + ": " 
+	+ (string)s2;
+    throw Error(malformed_expr, msg);
 }
 
-int
+void
 no_such_ident(void *arg, const string &name, const string &word)
 {
-    return no_such_ident(arg, name.c_str(), word.c_str());
+    no_such_ident(arg, name.c_str(), word.c_str());
 }
 
-int
+void
 no_such_ident(void *arg, char *name, char *word)
 {
-    string msg = "No such " + (string)word + " in dataset.";
+    string msg = "No such " + (string)word + " in dataset:";
     exprerror(msg.c_str(), name);
-
-    msg = "The identifier `" + (string)name + "' is not in the dataset.";
-    ERROR_OBJ(arg) = new Error(malformed_expr, msg.c_str());
-    STATUS(arg) = false;
-
-    return false;
 }
 
-int
+void
 no_such_func(void *arg, const string &name)
 {
-    return no_such_func(arg, name.c_str());
+    no_such_func(arg, name.c_str());
 }
 
-int
+void
 no_such_func(void *arg, char *name)
 {
     exprerror("Not a registered function", name);
-    string msg = "The function `" + (string)name 
-	+ "' is not defined on this server.";
-
-    ERROR_OBJ(arg) = new Error(malformed_expr, msg.c_str());
-    STATUS(arg) = false;
-
-    return false;
 }
 
 bool
@@ -1670,12 +1662,7 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	    goto exit;
 	}
 	
-	if (!a->add_constraint(r, start, stride, stop)) {
-	    cerr << "Impossible index values in constraint for "
-		 << a->name() << "." << endl;
-	    status = false;
-	    goto exit;
-	}
+	a->add_constraint(r, start, stride, stop);
 
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
     }
@@ -1754,12 +1741,7 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	    goto exit;
 	}
 
-	if (!a->add_constraint(a->first_dim(), start, stride, stop)) {
-	    cerr << "Impossible index values in constraint for "
-		 << a->name() << "." << endl;
-	    status = false;
-	    goto exit;
-	}
+	a->add_constraint(a->first_dim(), start, stride, stop);
 
 	DBG(cerr << "Set Constraint: " \
 	    << a->dimension_size(a->first_dim(), true) << endl);
@@ -1825,7 +1807,6 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
 	    << a->dimension_size(a->first_dim(), true) << endl);
     }
 
-exit:
     return status;
 }
 

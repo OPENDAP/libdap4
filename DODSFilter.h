@@ -8,6 +8,14 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.16  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.15  2000/07/09 21:57:09  rmorris
 // Mods's to increase portability, minimuze ifdef's in win32 and account
 // for differences between the Standard C++ Library - most notably, the
@@ -21,8 +29,12 @@
 //
 // Revision 1.12.10.1  2000/06/02 18:16:48  rmorris
 // Mod's for port to Win32.
+//
 // Revision 1.11.2.3  2000/05/18 20:45:27  jimg
 // added set_ce(). Maybe add more set methods?
+//
+// Revision 1.12.4.1  2000/02/07 21:11:36  jgarcia
+// modified prototypes and implementations to use exceeption handling
 //
 // Revision 1.11.2.2  1999/09/08 22:36:03  jimg
 // Fixed the -V comment.
@@ -259,9 +271,9 @@ public:
 	@memo Test if ancillary data must be read.
 	@param das A DAS object that will be augmented with the
 	ancillary data attributes.
-	@return TRUE if an ancillary DAS was found, FALSE otherwise. 
+	@return void
 	@see DAS */
-    bool read_ancillary_das(DAS &das, string anc_location = "");
+    void read_ancillary_das(DAS &das, string anc_location = "");
 
     /** Read the ancillary DDS information and merge it into the input
 	DDS object. 
@@ -269,9 +281,9 @@ public:
 	@memo Test if ancillary data must be read.
 	@param dds A DDS object that will be augmented with the
 	ancillary data properties.
-	@return TRUE if an ancillary DDS was found, FALSE otherwise. 
+	@return void
 	@see DDS */
-    bool read_ancillary_dds(DDS &dds, string anc_location = "");
+    void read_ancillary_dds(DDS &dds, string anc_location = "");
 
     /** This message is printed when the filter program is incorrectly
 	invoked by the dispatch CGI.  This is an error in the server
@@ -297,10 +309,9 @@ public:
 
 	@memo Transmit a DAS.
 	@param das The DAS object to be sent.
-	@return TRUE if the operation succeeded, FALSE otherwise. If the
-	send fails, an error object may still be sent. 
+	@return void
 	@see DAS */
-    bool send_das(DAS &das);
+    void send_das(DAS &das);
 
     /** This function formats and prints an ASCII representation of a
 	DDS on stdout.  When called by a CGI program, this has the
@@ -312,10 +323,9 @@ public:
 	@param constrained If this argument is true, evaluate the
 	current constraint expression and send the `constrained DDS'
 	back to the client. 
-	@return TRUE if the operation succeeded, FALSE otherwise. If the
-	send fails, an error object may still be sent. 
+	@return void
 	@see DDS */
-    bool send_dds(DDS &dds, bool constrained = false);
+    void send_dds(DDS &dds, bool constrained = false);
 
     /** Send the data in the DDS object back to the client
 	program.  The data is encoded in XDR format, and enclosed in a
@@ -326,10 +336,9 @@ public:
 	@param dds A DDS object containing the data to be sent.
 	@param data_stream A pointer to the XDR sink into which the data
 	is to be put for encoding and transmission.
-	@return TRUE if the operation succeeded, FALSE otherwise. If the
-	send fails, an error object may still be sent. 
+	@return void
 	@see DDS */
-    bool send_data(DDS &dds, FILE *data_stream);
+    void send_data(DDS &dds, FILE *data_stream);
 };
 
 #endif // _DODSFilter_h

@@ -11,11 +11,24 @@
 // jhrg 3/4/96
 
 // $Log: RValue.cc,v $
+// Revision 1.6  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.5  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
 // Revision 1.4.20.1  2000/06/02 18:29:31  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.4.14.1  2000/02/17 05:03:13  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.4  1999/05/04 19:47:21  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
@@ -67,7 +80,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: RValue.cc,v 1.5 2000/06/07 18:06:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.6 2000/09/21 16:22:08 jimg Exp $"};
 
 #include <assert.h>
 
@@ -112,11 +125,9 @@ rvalue::value_name()
 BaseType *
 rvalue::bvalue(const string &dataset, DDS &dds) 
 {
-    int error = 0;
-
     if (value) {
 	if (!value->read_p())
-	    value->read(dataset, error);
+	    value->read(dataset);
 	return value;
     }
     else if (func) {

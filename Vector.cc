@@ -11,6 +11,14 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.32  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.31  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -32,6 +40,14 @@
 //
 // Revision 1.28.8.1  2000/06/02 18:29:32  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.28.2.2  2000/02/17 05:03:16  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.28.2.1  2000/01/28 22:14:07  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.28  2000/01/05 22:37:18  jimg
 // Added a comment about the odd `protocol' for sending array/list lengths twice
@@ -158,7 +174,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.31 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.32 2000/09/21 16:22:09 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -170,6 +186,7 @@ static char rcsid[] not_used = {"$Id: Vector.cc,v 1.31 2000/07/09 22:05:36 rmorr
 #include "Vector.h"
 #include "util.h"
 #include "debug.h"
+#include "InternalErr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -353,7 +370,10 @@ Vector::var(unsigned int i)
 unsigned int
 Vector::width()
 {
-    assert(_var);
+    // Jose Garcia
+    if (!_var)
+      throw InternalErr(__FILE__, __LINE__, 
+	      "Cannot get width since *this* object is not holding data.");
 
     return length() * _var->width();
 }
@@ -405,14 +425,9 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 		  bool ce_eval)
 {
     bool status = true;
-    int error = 0;
-    unsigned int i = 0;
 
-    if (!read_p()) {
-	read(dataset, error);
-	if (error)
-	    return false;
-    }
+    if (!read_p()) 
+	read(dataset);
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
@@ -428,7 +443,15 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
       case dods_uint32_c:
       case dods_float32_c:
       case dods_float64_c:
-	assert(_buf);
+	// Jose Garcia
+	// If we are trying to serialize the data is because the user "hit"
+	// DDS::send however the internal buffer is unset so that is because
+	// the read method failed to do its job. This is outside the libdap++
+	// and is rather a problem of how read is implemented in the
+	// surrogate library.
+	if(!_buf)
+	    throw InternalErr(__FILE__, __LINE__, 
+			      "Buffer pointer is not set.");
 
 	if (!(bool)xdr_int(sink, (int *)&num)) // send vector length
 	    return false;
@@ -456,13 +479,18 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
-	assert(_vec.capacity());
+	//Jose Garcia
+	// I think not setting the capacity of _vec
+	// must be an internal error, however I am not sure...
+	if(_vec.capacity() == 0)
+	    throw InternalErr(__FILE__, __LINE__, 
+			      "The capacity of *this* vector is 0.");
 
 	status = (bool)xdr_int(sink, (int *)&num); // send length
 	if (!status)
 	    return status;
 
-	for (i = 0; status && i < num; ++i)	// test status in loop
+	for (int i = 0; status && i < num; ++i)	// test status in loop
 	    status = _vec[i]->serialize(dataset, dds, sink, false);
 
 	break;
@@ -584,7 +612,18 @@ unsigned int i = 0;
 unsigned int
 Vector::val2buf(void *val, bool reuse)
 {
-    assert(val);
+    // Jose Garcia
+
+    // I *think* this method has been mainly designed to be use by read which
+    // is implemented in the surrogate library. Passing NULL as a pointer to
+    // this method will be an error of the creator of the surrogate library.
+    // Even though I recognize the fact that some methods inside libdap++ can
+    // call val2buf, I think by now no coding bugs such as missusing val2buf
+    // will be in libdap++, so it will be an internal error from the
+    // surrogate library.
+    if(!val)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "The incoming pointer does not contain any data.");
 
     switch (_var->type()) {
       case dods_byte_c:
@@ -650,8 +689,11 @@ Vector::val2buf(void *val, bool reuse)
 unsigned int
 Vector::buf2val(void **val)
 {
-    assert(val);
-
+    // Jose Garcia
+    // The same comment in Vector::val2buf applies here!
+    if (!val)
+	throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
+    
     int wid = width();
 
     switch (_var->type()) {
@@ -700,20 +742,27 @@ Vector::buf2val(void **val)
 //
 // Returns: False if a type mis-match is detected, True otherwise.
 
-bool
+void
 Vector::set_vec(unsigned int i, BaseType *val)
 {
-    assert(i >= 0);
-    assert(val);
+    // Jose Garcia
+    // This is a public method which allows users to set the elements
+    // of *this* vector. Passing an invalid index, a NULL pointer or 
+    // missmatching the vector type are internal errors.
+    if(i<0)
+	throw InternalErr(__FILE__, __LINE__, "Invalid data: wrong index.");
+    if(!val)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "Invalid data: null pointer to BaseType object.");
 
     if (val->type() != _var->type())
-	return false;
+	throw InternalErr(__FILE__, __LINE__, 
+  "invalid data: type of incoming object does not match *this* vector type.");
 
     if (i >= _vec.capacity())
 	vec_resize(i + 10);
     _vec[i] = val;
 
-    return true;
 }
  
 // Add the BaseType pointer to this ctor type instance. Propagate the name of
@@ -725,11 +774,14 @@ Vector::set_vec(unsigned int i, BaseType *val)
 void
 Vector::add_var(BaseType *v, Part)
 {
-    _var = v;
-    set_name(v->name());	// Vector name == Base object's name
-
-    DBG(cerr << "Vector::add_var: Added variable " << v << " (" \
-	<< v->name() << " " << v->type_name() << ")" << endl);
+  // Jose Garcia
+  // By getting a copy of this object to be assigned to _var
+  // we let the owner of 'v' to deallocate it as necessary.
+  _var = v->ptr_duplicate();
+  set_name(v->name());	// Vector name == Base object's name
+  
+  DBG(cerr << "Vector::add_var: Added variable " << v << " (" \
+      << v->name() << " " << v->type_name() << ")" << endl);
 }
 
 void

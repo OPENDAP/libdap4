@@ -10,6 +10,14 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.41  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.40  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -19,6 +27,14 @@
 //
 // Revision 1.38.20.1  2000/06/02 18:29:31  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.38.14.2  2000/02/17 05:03:14  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.38.14.1  2000/01/28 22:14:06  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.38  1999/05/04 19:47:22  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
@@ -215,7 +231,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.40 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.41 2000/09/21 16:22:08 jimg Exp $"};
 
 #include <assert.h>
 #include <stdlib.h>
@@ -226,6 +242,7 @@ static char rcsid[] not_used = {"$Id: Str.cc,v 1.40 2000/07/09 22:05:36 rmorris 
 #include "expr.tab.h"
 #include "Operators.h"
 #include "util.h"
+#include "InternalErr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -257,12 +274,16 @@ Str::width()
 bool
 Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
-    int error;
 
     DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
 
-    if (!read_p() && !read(dataset, error))
-	return false;
+    // Jose Garcia
+    // Since the read method is virtual and implemented outside
+    // libdap++ if we can not read the data that is the problem 
+    // of the user or of whoever wrote the surrogate library
+    // implemeting read therefore it is an internal error.
+    if (!read_p() && !read(dataset))
+	throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
@@ -298,10 +319,14 @@ Str::deserialize(XDR *source, DDS *, bool)
 unsigned int
 Str::buf2val(void **val)
 {
-    assert(val);
+    // Jose Garcia
+    // The same comment justifying throwing an Error in val2buf applies here.
+    if(!val)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "The incoming pointer does not contain any data.");
 
     if (*val)
-	delete *val;
+	delete static_cast<string *>(*val);
 
     *val = new string(_buf);
 
@@ -315,7 +340,12 @@ Str::buf2val(void **val)
 unsigned int
 Str::val2buf(void *val, bool)
 {
-    assert(val);
+    // Jose Garcia
+    // This method is public therefore and I believe it has being designed
+    // to be use by read which must be implemented on the surrogated library,
+    // thus if the pointer val is NULL, is an Internal Error. 
+    if (!val)
+	throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
     _buf = *(string *)val;
 
@@ -336,18 +366,24 @@ Str::print_val(ostream &os, string space, bool print_decl_p)
 bool
 Str::ops(BaseType *b, int op, const string &dataset)
 {
-    int error; 
-
-    if (!read_p() && !read(dataset, error)) {
-	assert("This value not read!" && false);
-	cerr << "This value not read!" << endl;
-	return false;
+    // Extract the Byte arg's value.
+    if (!read_p() && !read(dataset)) {
+      // Jose Garcia
+      // Since the read method is virtual and implemented outside
+      // libdap++ if we can not read the data that is the problem 
+      // of the user or of whoever wrote the surrogate library
+      // implemeting read therefore it is an internal error.
+      throw InternalErr(__FILE__, __LINE__, "This value was not read!");
     }
 
-    if (!b->read_p() && !read(dataset, error)) {
-	assert("Arg value not read!" && false);
-	cerr << "Arg value not read!" << endl;
-	return false;
+    // Extract the second arg's value.
+    if (!b->read_p() && !b->read(dataset)) {
+      // Jose Garcia
+      // Since the read method is virtual and implemented outside
+      // libdap++ if we can not read the data that is the problem 
+      // of the user or of whoever wrote the surrogate library
+      // implemeting read therefore it is an internal error.
+      throw InternalErr(__FILE__, __LINE__, "Argument value was not read!");
     }
 
     switch (b->type()) {

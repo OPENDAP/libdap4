@@ -10,6 +10,14 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.28  2000/09/21 16:22:10  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.27  2000/07/19 22:51:40  rmorris
 // Call and return from main in a manner Visual C++ likes and
 // exit the program with exit(0) so that DejaGnu/Cygwin based
@@ -27,6 +35,11 @@
 //
 // Revision 1.23  2000/04/07 00:19:29  jimg
 // Added exception handling
+//
+// Revision 1.22.14.1  2000/02/17 05:03:17  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.22  1999/05/04 19:47:24  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
@@ -132,7 +145,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.27 2000/07/19 22:51:40 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.28 2000/09/21 16:22:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -442,12 +455,19 @@ test_scanner(bool show_prompt)
 void
 test_parser(DDS &table, const string &dds_name, const string &constraint)
 {
+    int status = true;
+
     read_table(table, dds_name, true);
 
-    bool status;
-
-    if (constraint != "") 
-	status = table.parse_constraint(constraint);
+    if (constraint != "") {
+      try {
+	table.parse_constraint(constraint);
+      }
+      catch (Error &e) {
+	status = false;
+	e.display_message();
+      }
+    }
     else {
 	exprrestart(stdin);
 
@@ -455,11 +475,9 @@ test_parser(DDS &table, const string &dds_name, const string &constraint)
 
 	parser_arg arg(&table);
 
-	status = exprparse((void *)&arg) == 0;
+	exprparse((void *)&arg);
 
-	//  STATUS is the result of the parser function; if a recoverable error
-	//  was found it will be true but arg.status() will be false.
-	if (!status || !arg.status()) {// Check parse result
+	if (!arg.status()) {// Check parse result
 	    if (arg.error())
 		arg.error()->display_message();
 	    status = false;
@@ -484,12 +502,7 @@ test_parser(DDS &table, const string &dds_name, const string &constraint)
 bool
 read_table(DDS &table, const string &name, bool print)
 {
-    int parse = table.parse(name);
-    
-    if (!parse) {
-	cout << "Input did not parse" << endl;
-	return false;
-    }
+    table.parse(name);
     
     if (print)
 	table.print();
@@ -704,10 +717,7 @@ constrained_trans(const string &dds_name, string dataset,
     FILE *dds_fp = move_dds(pin);
     DBG(cerr << "Moved the DDS to a temp file" << endl);
     parse_mime(dds_fp);
-    if (!dds.parse(dds_fp)) {
-	cerr << "Could not parse return data description" << endl;
-	return false;
-    }
+    dds.parse(dds_fp);
     fclose(dds_fp);
 
     XDR *source = new_xdrstdio(pin, XDR_DECODE);

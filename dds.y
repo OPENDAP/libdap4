@@ -28,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.31 2000/08/16 18:29:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.32 2000/09/21 16:22:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,8 +61,7 @@ using std::ostrstream;
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
-#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
-#define STATUS(arg) ((parser_arg *)(arg))->_status
+
 #if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
 #else
@@ -404,6 +403,14 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.32  2000/09/21 16:22:10  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
  * Revision 1.31  2000/08/16 18:29:02  jimg
  * Added dot (.) to the set of characters allowed in a variable name
  *
@@ -415,6 +422,11 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
  *
  * Revision 1.28.6.1  2000/06/02 18:36:38  rmorris
  * Mod's for port to Win32.
+ *
+ * Revision 1.27.8.1  2000/02/17 05:03:17  jimg
+ * Added file and line number information to calls to InternalErr.
+ * Resolved compile-time problems with read due to a change in its
+ * parameter list given that errors are now reported using exceptions.
  *
  * Revision 1.28  2000/01/27 06:30:00  jimg
  * Resolved conflicts from merge with release-3-1-4

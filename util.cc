@@ -11,6 +11,14 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.62  2000/09/21 16:22:10  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.61  2000/07/10 00:19:32  rmorris
 // Removed (trivial) explicit mention of namespace for iostream in
 // flush_stream().
@@ -60,6 +68,10 @@
 // Revision 1.50  1999/03/09 00:23:16  jimg
 // Fixed the error messages in compressor().
 //
+// Revision 1.55.12.1  2000/03/08 00:09:04  jgarcia
+// replace ostrstream with string;added functions to convert from double and
+// long to string
+//
 // Revision 1.49  1999/01/21 02:10:57  jimg
 // Moved various CE functions to the file ce_functions.cc/.h.
 //
@@ -78,10 +90,10 @@
 //
 // Revision 1.46  1998/04/07 22:12:49  jimg
 // Added prune_spaces(String) function. This can be used to remove leading
-// spaces from URLs and their embedded CEs (i.e., spaces between the ? and the
-// start of the CE). Doing this before passing the URL/CE into the web library
-// prevents various nasty crashes. This function is called by Connect's default
-// ctor. Users of Connect don't have to call it.
+// spaces from URLs and their embedded CEs (i.e., spaces between the ? and
+// the start of the CE). Doing this before passing the URL/CE into the web
+// library prevents various nasty crashes. This function is called by
+// Connect's default ctor. Users of Connect don't have to call it.
 //
 // Revision 1.45  1998/02/11 20:28:17  jimg
 // Added/fixed support for on-the-fly compression of data. The current code
@@ -111,10 +123,10 @@
 // a BaseType *.
 //
 // Revision 1.38  1997/03/27 18:18:28  jimg
-// Added dods_progress() function that looks for an environment variable to see
-// if the user wants the progress indicator visible. Thus, they can use one
-// environment variable to control the GUI as a whole or this one to control
-// just the progress indicator.
+// Added dods_progress() function that looks for an environment variable to
+// see if the user wants the progress indicator visible. Thus, they can use
+// one environment variable to control the GUI as a whole or this one to
+// control just the progress indicator.
 //
 // Revision 1.37  1997/03/08 18:58:22  jimg
 // Changed name of function unique() to unique_names() to avoid a conflict
@@ -299,7 +311,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.61 2000/07/10 00:19:32 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.62 2000/09/21 16:22:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -331,6 +343,7 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.61 2000/07/10 00:19:32 rmorris
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 
 #include <SLList.h>
 #include <DLList.h>
@@ -461,12 +474,9 @@ unique_names(DLList<BaseType *> l, const string &var_name,
     int i;
     for (i = 1; i < nelem; ++i)
 	if (names[i-1] == names[i]) {
-	    ostrstream oss;
-	    oss << "The variable `" << names[i] 
-		 << "' is used more than once in " << type_name << " `"
-		 << var_name << "'" << ends;
-	    msg = oss.str();
-	    oss.rdbuf()->freeze(0);
+	    msg="";
+	    msg+="The variable `"+names[i]+"' is used more than once in "+type_name+" `";
+	    msg+=var_name+"'\n";
 	    return false;
 	}
 
@@ -773,3 +783,40 @@ void flush_stream(iostream ios, FILE *out)
 }
 #endif
 
+// Jose Garcia
+void append_long_to_string(long val, int base, string &str_val)                         
+{
+  // The array digits contains 36 elements which are the 
+  // posible valid digits for out bases in the range
+  // [2,36]
+  char digits[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  // result of val / base  
+  ldiv_t r;                                
+  
+  if (base > 36 || base < 2)
+    {
+      // no conversion if wrong base 
+      std::invalid_argument ex("The parameter base has an invalid value.");
+      throw ex;
+    }
+  if (val < 0)
+    str_val+= '-';
+  r = ldiv (labs(val), base);
+
+  // output digits of val/base first 
+  if (r.quot > 0)
+    append_long_to_string (r.quot, base, str_val);
+  
+  // output last digit 
+  
+  str_val+= digits[(int)r.rem];
+}
+
+// Jose Garcia
+void append_double_to_string(const double &num, string &str)
+{
+  // s having 100 characters should be enough for sprintf to do its job.
+  char s[80];
+  sprintf(s, "%.9f", num);
+  str+=s;
+}

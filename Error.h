@@ -12,6 +12,14 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.16  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.15  2000/07/09 21:57:09  rmorris
 // Mods's to increase portability, minimuze ifdef's in win32 and account
 // for differences between the Standard C++ Library - most notably, the
@@ -25,12 +33,18 @@
 //
 // Revision 1.13  2000/03/28 16:32:02  jimg
 // Modified these files so that they can be built either with and without GUI
-// defined. The type signatures are now the same either way. Thus we can build
-// libdap++-gui and libdap++ (without GUI support). When using the later
-// there's no need to link with tcl, tk or X11. This makes the executables
-// smaller. It also keeps the servers from potentially needing sharable
-// libraries (since X11 is often sharable) which can be hard to find unless
-// they are in the standard places. I made the same changes in Connect and Gui.
+// defined. The type signatures are now the same either way. Thus we can
+// build libdap++-gui and libdap++ (without GUI support). When using the
+// later there's no need to link with tcl, tk or X11. This makes the
+// executables smaller. It also keeps the servers from potentially needing
+// sharable libraries (since X11 is often sharable) which can be hard to find
+// unless they are in the standard places. I made the same changes in Connect
+// and Gui.
+//
+// Revision 1.12.2.1  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.12  1999/12/31 00:55:10  jimg
 // Fixed up the progress indicator
@@ -109,6 +123,7 @@ using std::ostream;
     enum ErrorCode {
        undefined_error = -1,
        unknown_error,
+       internal_error,
        no_such_file,
        no_such_variable,
        malformed_expr,
@@ -121,6 +136,7 @@ using std::ostream;
 enum ErrorCode {
     undefined_error = -1,
     unknown_error,		// any error not one of the followinng
+    internal_error,		// something inside is broken
     no_such_file,
     no_such_variable,
     malformed_expr,
@@ -254,7 +270,6 @@ public:
 	function simply returns a copy of the current message string.
 	@return A copy of the Error object's message string. */
     string error_message(string msg = "");
-    
     
     /** Either display the error message in a dialog box and offer the
 	user a single `OK' button or print the message to standard

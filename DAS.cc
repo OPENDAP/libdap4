@@ -11,6 +11,14 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.31  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.30  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -26,6 +34,14 @@
 //
 // Revision 1.26.6.2  2000/05/12 18:46:17  jimg
 // Minor changes in the dtor.
+//
+// Revision 1.26.14.2  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.26.14.1  2000/02/07 21:11:35  jgarcia
+// modified prototypes and implementations to use exceeption handling
 //
 // Revision 1.27  2000/01/27 06:29:56  jimg
 // Resolved conflicts from merge with release-3-1-4
@@ -163,7 +179,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.30 2000/07/09 22:05:35 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.31 2000/09/21 16:22:07 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -192,6 +208,7 @@ using std::endl;
 #endif
 
 #include "DAS.h"		// follows pragma since DAS.h is interface
+#include "InternalErr.h"
 
 extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
@@ -320,21 +337,18 @@ DAS::add_table(const char *name, AttrTable *at)
 // Read attributes from a file. Returns false if unable to open the file,
 // otherwise returns the result of the mfunc parse.
 
-bool
+void
 DAS::parse(string fname)
 {
     FILE *in = fopen(fname.c_str(), "r");
 
     if (!in) {
-	cerr << "Could not open: " << fname << endl;
-	return false;
+	throw Error(can_not_read_file, "Could not open: " + fname);
     }
 
-    bool status = parse(in);
+    parse(in);
 
     fclose(in);
-
-    return status;
 }
 
 // Read attributes from a file descriptor. If the file descriptor cannot be
@@ -344,7 +358,7 @@ DAS::parse(string fname)
 // decriptor fd will not also be closed (instead the duplicate descriptor will
 // be closed). Thus further information can be read from the descriptor fd.
 
-bool
+void
 DAS::parse(int fd)
 {
 #ifdef WIN32
@@ -354,27 +368,24 @@ DAS::parse(int fd)
 #endif
 
     if (!in) {
-	cerr << "Could not access file" << endl;
-	return false;
+	throw InternalErr(__FILE__, __LINE__, "Could not access file.");
     }
 
-    bool status = parse(in);
+    parse(in);
 
     fclose(in);
 
-    return status;
 }
 
     
 // Read attributes from in (which defaults to stdin). If dasrestart() fails,
 // return false, otherwise return the status of dasparse().
 
-bool
+void
 DAS::parse(FILE *in)
 {
     if (!in) {
-	cerr << "DAS::parse: Null input stream" << endl;
-	return false;
+	throw InternalErr(__FILE__, __LINE__, "Null input stream.");
     }
 
     dasrestart(in);
@@ -387,17 +398,14 @@ DAS::parse(FILE *in)
     //  was found it will be true but arg.status() will be false.
     if (!status || !arg.status()) {// Check parse result
 	if (arg.error())
-	    arg.error()->display_message();
-	return false;
+	  throw *arg.error();
     }
-    else
-	return true;
 }
 
 // Write attributes from tables to `out' (which defaults to stdout). Return
 // true. 
 
-bool
+void
 DAS::print(ostream &os)
 {
     os << "Attributes {" << endl;
@@ -410,5 +418,4 @@ DAS::print(ostream &os)
 
     os << "}" << endl;
 
-    return true;
 }

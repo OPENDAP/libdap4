@@ -10,9 +10,22 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.23  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.22  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
+//
+// Revision 1.21.14.1  2000/02/17 05:03:14  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.21  1999/05/04 19:47:22  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
@@ -144,7 +157,7 @@ TestArray::~TestArray()
 // would never get values this way. For testing this is OK.
 
 bool
-TestArray::read(const string &dataset, int &error)
+TestArray::read(const string &dataset)
 {
     if (read_p())
 	return true;
@@ -153,7 +166,7 @@ TestArray::read(const string &dataset, int &error)
 
     // run read() on the contained variable to get, via the read() mfuncs
     // defined in the other Test classes, a value in the *contained* object.
-    var()->read(dataset, error);
+    var()->read(dataset);
 
     unsigned int array_len = length(); // elements in the array
 
@@ -210,7 +223,7 @@ TestArray::read(const string &dataset, int &error)
 
 	    // read values into the new instance.
 	    
-	    elem->read(dataset, error);
+	    elem->read(dataset);
 
 	    // now load the new instance in the array.
 

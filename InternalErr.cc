@@ -8,6 +8,14 @@
 // Implementation for the InternalErr class.
 
 // $Log: InternalErr.cc,v $
+// Revision 1.5  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.4  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -18,6 +26,15 @@
 // Revision 1.2.2.1  2000/06/02 20:23:45  jimg
 // Added a constructor that takes the file name and line number. This helps in
 // tracking down errors.
+//
+// Revision 1.2.10.2  2000/03/08 00:09:04  jgarcia
+// replace ostrstream with string;added functions to convert from double and
+// long to string
+//
+// Revision 1.2.10.1  2000/02/17 05:03:13  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.2  1999/05/26 17:33:55  jimg
 // Fixed a bad call to Error's ctor. For some reason calling the four arg ctor
@@ -34,7 +51,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.4 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.5 2000/09/21 16:22:08 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -42,6 +59,7 @@ static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.4 2000/07/09 22:05:36 r
 #include <strstream>
 
 #include "InternalErr.h"
+#include "util.h"
 
 #ifdef WIN32
 using std::endl;
@@ -51,28 +69,32 @@ using std::ostrstream;
 
 InternalErr::InternalErr() : Error()
 {
+    _error_code=internal_error;
 }
 
-InternalErr::InternalErr(string msg)
-    : Error(unknown_error, msg)
+InternalErr::InternalErr(const string &msg) : Error()
 {
-    ostrstream oss;
-    oss << "An internal error was encounterd:" << endl
-	<< msg << endl
-	<< "Please report this to support@unidata.ucar.edu" << ends;
-    _error_message  = oss.str();
-    oss.freeze(0);
+    _error_code=internal_error;
+    _error_message="";
+    _error_message+="An internal error was encounterd:\n";
+    _error_message+=msg+"\n";
+    _error_message+="Please report this to support@unidata.ucar.edu\n";
 }
 
-InternalErr::InternalErr(string msg, string file, int line)
-    : Error(unknown_error, msg)
+
+//InternalErr::InternalErr(string msg, string file, int line)
+//    : Error(unknown_error, msg)
+InternalErr::InternalErr(const string &file, const int &line, const string &msg) : Error()
 {
-    ostrstream oss;
-    oss << "An internal error was encounterd:" << endl
-	<< msg << " at " << file << ":" << line << endl
-	<< "Please report this to support@unidata.ucar.edu" << ends;
-    _error_message  = oss.str();
-    oss.freeze(0);
+    _error_code=internal_error;
+    _error_message="";
+    _error_message+="An internal error was encountered in "+file+" at line ";
+    // Jose Garcia. Next we append line to the string _error_code.
+    // This function is defined in util.h
+    append_long_to_string(line,10,_error_message);
+    _error_message+=":\n";
+    _error_message+=msg+"\n";
+    _error_message+="Please report this to support@unidata.ucar.edu\n";
 }
 
 InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
@@ -100,3 +122,4 @@ InternalErr::OK()
 {
     return Error::OK();
 }
+

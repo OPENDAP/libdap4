@@ -12,12 +12,29 @@
 // 5/3/99 jhrg
 
 // $Log: InternalErr.h,v $
+// Revision 1.4  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.3  2000/06/07 19:33:21  jimg
 // Merged with verson 3.1.6
 //
 // Revision 1.1.6.2  2000/06/02 20:23:57  jimg
 // Added a constructor that takes the file name and line number. This helps in
 // tracking down errors.
+//
+// Revision 1.2.4.2  2000/03/08 00:09:04  jgarcia
+// replace ostrstream with string;added functions to convert from double and
+// long to string
+//
+// Revision 1.2.4.1  2000/02/17 05:03:13  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.2  1999/08/23 18:57:45  jimg
 // Merged changes from release 3.1.0
@@ -60,14 +77,19 @@ class InternalErr: public Error {
 
 public:
     /** These constructors always set the error code to #internal_error#.
+	
+	Note that there is no way to specify an error correction program for
+	an internal error.
 
 	@memo Constructors for the Error object
 	@name Constructors */
     //@{
     /// 
-    InternalErr(string msg);
+    InternalErr(const string &msg);
+  // I think Jose added this, but I'm not sure.
+  // InternalErr(string msg, string file, int line);
     ///
-    InternalErr(string msg, string file, int line);
+    InternalErr(const string &file, const int &line, const string &msg);
     ///
     InternalErr(string msg, ProgramType pt, char *pgm);
     ///

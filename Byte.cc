@@ -10,6 +10,14 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.39  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.38  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -19,6 +27,9 @@
 //
 // Revision 1.36.20.1  2000/06/02 18:14:42  rmorris
 // Mod for port to win32.
+//
+// Revision 1.36.14.1  2000/01/28 22:14:04  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.36  1999/04/29 02:29:27  jimg
 // Merge of no-gnu branch
@@ -223,7 +234,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Byte.cc,v 1.38 2000/07/09 22:05:35 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: Byte.cc,v 1.39 2000/09/21 16:22:07 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -236,6 +247,7 @@ static char rcsid[] not_used = {"$Id: Byte.cc,v 1.38 2000/07/09 22:05:35 rmorris
 #include "expr.tab.h"
 #include "Operators.h"
 #include "dods-limits.h"
+#include "InternalErr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -274,10 +286,13 @@ Byte::width()
 bool
 Byte::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
-    int error;
-
-    if (!read_p() && !read(dataset, error))
-	return false;
+  // Jose Garcia
+  // Since the read method is virtual and implemented outside
+  // libdap++ if we can not read the data that is the problem 
+  // of the user or of whoever wrote the surrogate library
+  // implemeting read therefore it is an internal error.
+    if (!read_p() && !read(dataset))
+	throw InternalErr("can not read data");
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
@@ -307,7 +322,12 @@ Byte::deserialize(XDR *source, DDS *, bool)
 unsigned int
 Byte::val2buf(void *val, bool)
 {
-    assert(val);
+  // Jose Garcia
+  // This method is public therefore and I believe it has being designed
+  // to be use by read which must be implemented on the surrogated library,
+  // thus if the pointer val is NULL, is an Internal Error. 
+  if(!val)
+    throw InternalErr("the incoming pointer does not contain any data.");
 
     _buf = *(dods_byte *)val;
 
@@ -317,8 +337,11 @@ Byte::val2buf(void *val, bool)
 unsigned int
 Byte::buf2val(void **val)
 {
-    assert(val);
-
+  // Jose Garcia
+  // The same comment justifying throwing an Error in val2buf applies here.
+  if (!val)
+    throw InternalErr("NULL pointer");
+  
     if (!*val)
 	*val = new dods_byte;
 
@@ -343,20 +366,27 @@ Byte::print_val(ostream &os, string space, bool print_decl_p)
 bool
 Byte::ops(BaseType *b, int op, const string &dataset)
 {
-    int error = 0;
-
+    
     // Extract the Byte arg's value.
-    if (!read_p() && (!read(dataset, error) || error)) {
-	assert("This value not read!" && false);
-	cerr << "This value not read!" << endl;
-	return false;
+    if (!read_p() && !read(dataset)) {
+      cerr << "This value not read!" << endl;
+      // Jose Garcia
+      // Since the read method is virtual and implemented outside
+      // libdap++ if we can not read the data that is the problem 
+      // of the user or of whoever wrote the surrogate library
+      // implemeting read therefore it is an internal error.
+      throw InternalErr("This value not read!");
     }
 
     // Extract the second arg's value.
-    if (!b->read_p() && (!b->read(dataset, error) || error)) {
-	assert("This value not read!" && false);
-	cerr << "This value not read!" << endl;
-	return false;
+    if (!b->read_p() && !b->read(dataset)) {
+      cerr << "This value not read!" << endl;
+      // Jose Garcia
+      // Since the read method is virtual and implemented outside
+      // libdap++ if we can not read the data that is the problem 
+      // of the user or of whoever wrote the surrogate library
+      // implemeting read therefore it is an internal error.
+      throw InternalErr("This value not read!");
     }
 
     switch (b->type()) {
@@ -385,3 +415,4 @@ Byte::ops(BaseType *b, int op, const string &dataset)
 	return false;
     }
 }
+

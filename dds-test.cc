@@ -10,6 +10,14 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
+// Revision 1.19  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.18  2000/07/19 22:51:40  rmorris
 // Call and return from main in a manner Visual C++ likes and
 // exit the program with exit(0) so that DejaGnu/Cygwin based
@@ -24,6 +32,11 @@
 //
 // Revision 1.15.20.1  2000/06/02 18:36:38  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.15.14.1  2000/02/17 05:03:17  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.15  1999/04/29 02:29:35  jimg
 // Merge of no-gnu branch
@@ -57,7 +70,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.18 2000/07/19 22:51:40 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.19 2000/09/21 16:22:09 jimg Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
@@ -264,8 +277,7 @@ void
 test_parser(void)
 {
     DDS table;
-    int status = table.parse();
-    cout << "Status from parser: " << status << endl;
+    table.parse();
     
     if (table.check_semantics())
 	cout << "DDS past semantic check" << endl;
@@ -284,8 +296,7 @@ void
 test_class(void)
 {
     DDS table;
-    int status = table.parse();
-    cout << "Status from parser: " << status << endl;
+    table.parse();
     
     if (table.check_semantics())
 	cout << "DDS past semantic check" << endl;

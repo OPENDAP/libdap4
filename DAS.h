@@ -14,6 +14,14 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.28  2000/09/21 16:22:07  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
  * Revision 1.27  2000/08/02 22:46:48  jimg
  * Merged 3.1.8
  *
@@ -36,6 +44,9 @@
  *
  * Revision 1.23.6.1  2000/05/12 18:45:24  jimg
  * Made das_find protected to simplfy future subclassing.
+ *
+ * Revision 1.23.14.1  2000/02/07 21:11:35  jgarcia
+ * modified prototypes and implementations to use exceeption handling
  *
  * Revision 1.23  1999/05/04 19:47:20  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
@@ -296,17 +307,16 @@ public:
     */
     //@{
     /** Reads a DAS from the named file. */
-    bool parse(string fname);
+    void parse(string fname);
     /** Reads a DAS from the given file descriptor. */
-    bool parse(int fd);
+    void parse(int fd);
     /** Reads a DAS from an open file descriptor. */
-    bool parse(FILE *in=stdin);
+    void parse(FILE *in=stdin);
     //@}
 
     /** Creates an ASCII representation of a DAS on the given output
 	stream. */
-    bool print(ostream &os = cout);
-
+    void print(ostream &os = cout);
 };
 
 #endif

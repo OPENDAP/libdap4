@@ -9,6 +9,14 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.51  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.50  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -29,6 +37,14 @@
 //
 // Revision 1.45.6.1  2000/06/02 18:16:48  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.44.8.2  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.44.8.1  2000/02/07 21:11:35  jgarcia
+// modified prototypes and implementations to use exceeption handling
 //
 // Revision 1.45  2000/01/27 06:29:56  jimg
 // Resolved conflicts from merge with release-3-1-4
@@ -267,7 +283,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.50 2000/07/09 22:05:35 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.51 2000/09/21 16:22:07 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -296,6 +312,7 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.50 2000/07/09 22:05:35 rmorris 
 #include "util.h"
 #include "ce_functions.h"
 #include "cgi_util.h"
+#include "InternalErr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -408,7 +425,9 @@ DDS::filename(const string &fn)
 void
 DDS::add_var(BaseType *bt)
 { 
-    assert(bt);
+    if(!bt)
+	throw InternalErr(__FILE__, __LINE__, 
+		  "Trying to add a BaseType object with a NULL pointer.");
 
     vars.append(bt); 
 }
@@ -558,7 +577,9 @@ DDS::num_var()
 Pix
 DDS::first_clause()
 {
-    assert(!expr.empty());
+    if(expr.empty())
+	throw InternalErr(__FILE__, __LINE__, 
+			  "There are no CE clauses for *this* DDS object.");
 
     return expr.first();
 }
@@ -566,7 +587,12 @@ DDS::first_clause()
 void
 DDS::next_clause(Pix &p)
 {
-    assert(!expr.empty() && p);
+    if(expr.empty())
+	throw InternalErr(__FILE__, __LINE__, 
+			  "There are no CE clauses for *this* DDS object.");
+    if(!p)
+	throw InternalErr(__FILE__, __LINE__, 
+		    "Passing NULL pix as an index for the CE clauses list.");
 
     expr.next(p);
 }
@@ -574,15 +600,22 @@ DDS::next_clause(Pix &p)
 Clause &
 DDS::clause(Pix p)
 {
-    assert(!expr.empty() && p);
-
+    if(expr.empty())
+	throw InternalErr(__FILE__, __LINE__, 
+			  "There are no CE clauses for *this* DDS object.");
+    if(!p)
+      throw InternalErr(__FILE__, __LINE__, 
+		  "Passing NULL pix as an index for the CE clauses list.");
+    
     return *expr(p);
 }
 
 bool
 DDS::clause_value(Pix p, const string &dataset)
 {
-    assert(!expr.empty());
+    if(expr.empty())
+	throw InternalErr(__FILE__, __LINE__, 
+			  "There are no CE clauses for *this* DDS object.");
 
     return expr(p)->value(dataset, *this);
 }
@@ -706,7 +739,9 @@ DDS::functional_expression()
 BaseType *
 DDS::eval_function(const string &dataset)
 {
-    assert(expr.length() == 1);
+    if (expr.length() != 1)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "The length of the list of CE clauses is not 1.");
 
     Pix p = first_clause();
     BaseType *result;
@@ -746,57 +781,54 @@ DDS::eval_selection(const string &dataset)
     bool result = true;
     for (Pix p = first_clause(); p && result; next_clause(p)) {
 	// A selection expression *must* contain only boolean clauses!
-	assert(clause(p).boolean_clause());
+	if(!(clause(p).boolean_clause()))
+	    throw InternalErr(__FILE__, __LINE__, 
+                "A selection expression must contain only boolean clauses.");
 	result = result && clause(p).value(dataset, *this);
     }
 
     return result;
 }
 
-bool
+void
 DDS::parse(string fname)
 {
     FILE *in = fopen(fname.c_str(), "r");
 
     if (!in) {
-        cerr << "Could not open: " << fname << endl;
-        return false;
+	throw InternalErr(__FILE__, __LINE__, "Could not open: " + fname);
     }
 
-    bool status = parse(in);
+    parse(in);
 
     fclose(in);
 
-    return status;
 }
 
 
-bool
+void
 DDS::parse(int fd)
 {
     FILE *in = fdopen(dup(fd), "r");
 
     if (!in) {
-        cerr << "Could not access file" << endl;
-        return false;
+	throw InternalErr(__FILE__, __LINE__, "Could not access file.");
     }
 
-    bool status = parse(in);
+    parse(in);
 
     fclose(in);
 
-    return status;
 }
 
 // Read structure from IN (which defaults to stdin). If ddsrestart() fails,
 // return false, otherwise return the status of ddsparse().
 
-bool
+void
 DDS::parse(FILE *in)
 {
     if (!in) {
-	cerr << "DDS::parse: Null input stream" << endl;
-	return false;
+	throw InternalErr(__FILE__, __LINE__, "Null input stream.");
     }
 
     ddsrestart(in);
@@ -810,17 +842,15 @@ DDS::parse(FILE *in)
     if (!status || !arg.status()) {// Check parse result
 	if (arg.error())
 	    arg.error()->display_message();
-	return false;
+	throw InternalErr(__FILE__, __LINE__, "Parse error.");
     }
-    else
-	return true;
 }
 
 // Write strucutre from tables to OUT (which defaults to stdout). 
 //
 // Returns true. 
 
-bool
+void
 DDS::print(ostream &os)
 {
     os << "Dataset {" << endl;
@@ -830,10 +860,9 @@ DDS::print(ostream &os)
 
     os << "} " << name << ";" << endl;
 					   
-    return true;
 }
 
-bool 
+void
 DDS::print(FILE *out)
 {
 #ifdef WIN32
@@ -843,7 +872,7 @@ DDS::print(FILE *out)
 	return retval;
 #else
     ofstream os(fileno(out));
-	return print(os);
+    print(os);
 #endif
 }
 
@@ -854,7 +883,7 @@ DDS::print(FILE *out)
 //
 // Returns true.
 
-bool
+void
 DDS::print_constrained(ostream &os)
 {
     os << "Dataset {" << endl;
@@ -867,10 +896,9 @@ DDS::print_constrained(ostream &os)
 
     os << "} " << name << ";" << endl;
 					   
-    return true;
 }
 
-bool
+void
 DDS::print_constrained(FILE *out)
 {
 #ifdef WIN32
@@ -880,16 +908,20 @@ DDS::print_constrained(FILE *out)
 	return retval;
 #else
     ofstream os(fileno(out));
-    return print_constrained(os);
-#endif
 
+    print_constrained(os);
+#endif
 }
 
 static void
 print_variable(ostream &os, BaseType *var, bool constrained = false)
 {
-    assert(os);
-    assert(var);
+    if(!os)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "The stream is not ready to accept data.");
+    if(!var)
+	throw InternalErr(__FILE__, __LINE__, 
+     "Passing NULL variable to method DDS::print_variable in *this* object.");
 
     os << "Dataset {" << endl;
 
@@ -901,8 +933,12 @@ print_variable(ostream &os, BaseType *var, bool constrained = false)
 static void
 print_variable(FILE *out, BaseType *var, bool constrained = false)
 {
-    assert(out);
-    assert(var);
+    if(!out)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "Invalid file descriptor, NULL pointer!");
+    if(!var)
+	throw InternalErr(__FILE__, __LINE__, 
+     "Passing NULL variable to method DDS::print_variable in *this* object.");
 
 #ifdef WIN32
 	strstream os;
@@ -949,10 +985,9 @@ DDS::check_semantics(bool all)
 // a side effect, mark the DDS so that BaseType's mfuncs can be used to
 // correctly read the variable's value and send it to the client.
 //
-// Returns: true if the constraint expression is valid (parses correctly) for
-// the current DDS, false otherwise.
+// Returns: void
 
-bool
+void
 DDS::parse_constraint(const string &constraint, ostream &os, bool server)
 {
     void *buffer = expr_string(constraint.c_str());
@@ -969,23 +1004,16 @@ DDS::parse_constraint(const string &constraint, ostream &os, bool server)
     if (!status || !arg.status()) {// Check parse result
 	if (arg.error()) {
 	    if (server) {
-		throw Error(*arg.error());
-#if 0
-		// THROW 5/4/99 jhrg
-		set_mime_text(os, dods_error);
-		arg.error()->print(os);
-#endif
+		throw *arg.error();
 	    }
 	    else
 		arg.error()->display_message();
 	}
-	return false;
+	throw Error(malformed_expr ,"parse error.");
     }
-    else
-	return true;
 }
 
-bool
+void
 DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
 #ifdef WIN32
@@ -995,9 +1023,8 @@ DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 	return retval;
 #else
     ofstream os(fileno(out));
-    return parse_constraint(constraint, os, server);
+    parse_constraint(constraint, os, server);
 #endif
-
 }
 
 // Send the named variable. This mfunc combines BaseTypes read() and
@@ -1012,96 +1039,99 @@ bool
 DDS::send(const string &dataset, const string &constraint, FILE *out, 
 	  bool compressed, const string &cgi_ver)
 {
-    //  This function has not been shown to work under win32 as
-	//  of 7/2000.
-    bool status = true;
+  // Jose Garcia
+  // If there is a parse error the method parse_constraint will throw 
+  // an exception that will terminate the method send.
+  // If parse_constraint executes with no exception
+  // we will proceed with the algorithm to send the data.
 
-    if ((status = parse_constraint(constraint, out, true))) {
-	// Handle *functional* constraint expressions specially 
-	if (functional_expression()) {
-	    BaseType *var = eval_function(dataset);
-	    if (var) {
-		set_mime_binary(out, dods_data, cgi_ver,
-				(compressed) ? deflate : x_plain);
-
-		// If compressing, start up the sub process.
-		int childpid;	// Used to wait for compressor sub proc
-		FILE *comp_sink = 0;
-		XDR *xdr_sink;
-		if (compressed) {
-		    comp_sink = compressor(out, childpid);
-		    xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
-		}
-		else {
-		    xdr_sink = new_xdrstdio(out, XDR_ENCODE);
-		}
-
-		print_variable((compressed) ? comp_sink : out, var, true);
-		fprintf((compressed) ? comp_sink : out, "Data:\n");
-
-		// In the following call to serialize, suppress CE evaluation.
-		status = var->serialize(dataset, *this, xdr_sink, false);
-
-		delete_xdrstdio(xdr_sink);
-
-		// Wait for the compressor sub process to stop
-		if (compressed) {
-		    fclose(comp_sink);
-		    int pid;
+  parse_constraint(constraint, out, true);
+  
+  bool status = true;
+  
+  // Handle *functional* constraint expressions specially 
+  if (functional_expression()) {
+    BaseType *var = eval_function(dataset);
+    if (var) {
+      set_mime_binary(out, dods_data, cgi_ver,
+		      (compressed) ? deflate : x_plain);
+      
+      // If compressing, start up the sub process.
+      int childpid;	// Used to wait for compressor sub proc
+      FILE *comp_sink = 0;
+      XDR *xdr_sink;
+      if (compressed) {
+	comp_sink = compressor(out, childpid);
+	xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
+      }
+      else {
+	xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+      }
+      
+      print_variable((compressed) ? comp_sink : out, var, true);
+      fprintf((compressed) ? comp_sink : out, "Data:\n");
+      
+      // In the following call to serialize, suppress CE evaluation.
+      status = var->serialize(dataset, *this, xdr_sink, false);
+      
+      delete_xdrstdio(xdr_sink);
+      
+      // Wait for the compressor sub process to stop
+      if (compressed) {
+	fclose(comp_sink);
+	int pid;
 #ifdef WIN32
-			while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
+	while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
 #else
-		    while ((pid = waitpid(childpid, 0, 0)) > 0) {
+	while ((pid = waitpid(childpid, 0, 0)) > 0) {
 #endif
-			DBG(cerr << "pid: " << pid << endl);
-		    }
-		}
-	    }
-	    else {
-		throw Error(unknown_error, "Error calling the function.");
-	    }
+	  DBG(cerr << "pid: " << pid << endl);
 	}
-	else {
-	    set_mime_binary(out, dods_data, cgi_ver,
-			    (compressed) ? deflate : x_plain);
-
-	    int childpid;	// Used to wait for compressor sub proc
-	    FILE *comp_sink = 0;
-	    XDR *xdr_sink;
-	    if (compressed) {
-		comp_sink = compressor(out, childpid);
-		xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
-	    }
-	    else {
-		xdr_sink = new_xdrstdio(out, XDR_ENCODE);
-	    }
-
-	    // send constrained DDS	    
-	    print_constrained((compressed) ? comp_sink : out); 
-	    fprintf((compressed) ? comp_sink : out, "Data:\n");
-
-	    for (Pix q = first_var(); q; next_var(q)) 
-		if (var(q)->send_p()) // only process projected variables
-		    status = status && var(q)->serialize(dataset, *this,
-							 xdr_sink, true);
-
-	    delete_xdrstdio(xdr_sink);
-	    
-	    if (compressed) {
-		fclose(comp_sink);
-		int pid;
-#ifdef WIN32
-		while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
-#else
-		while ((pid = waitpid(childpid, 0, 0)) > 0) {
-#endif
-		    DBG(cerr << "pid: " << pid << endl);
-		}
-	    }
-	}
+      }
     }
-
-    return status;
+    else {
+      throw Error(unknown_error, "Error calling the CE function.");
+    }
+  }
+  else {
+    set_mime_binary(out, dods_data, cgi_ver,
+		    (compressed) ? deflate : x_plain);
+    
+    int childpid;	// Used to wait for compressor sub proc
+    FILE *comp_sink = 0;
+    XDR *xdr_sink;
+    if (compressed) {
+      comp_sink = compressor(out, childpid);
+      xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
+    }
+    else {
+      xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+    }
+    
+    // send constrained DDS	    
+    print_constrained((compressed) ? comp_sink : out); 
+    fprintf((compressed) ? comp_sink : out, "Data:\n");
+    
+    for (Pix q = first_var(); q; next_var(q)) 
+      if (var(q)->send_p()) // only process projected variables
+	status = status && var(q)->serialize(dataset, *this,
+					     xdr_sink, true);
+    
+    delete_xdrstdio(xdr_sink);
+    
+    if (compressed) {
+      fclose(comp_sink);
+      int pid;
+#ifdef WIN32
+      while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
+#else
+      while ((pid = waitpid(childpid, 0, 0)) > 0) {
+#endif
+	DBG(cerr << "pid: " << pid << endl);
+      }
+    }
+  }
+  return status;
 }
 
 // Mark the named variable by setting its SEND_P flag to STATE (true

@@ -10,6 +10,14 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.44  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.43  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -31,6 +39,17 @@
 // server-side but not the client-side because it demoted any Grid whose
 // send_p flag was not set to a Structure. Since the client-side does not have
 // CEs, there are no projections and send_p will never be set.
+//
+// Revision 1.39.2.3  2000/03/08 00:09:04  jgarcia
+// replace ostrstream with string;added functions to convert from double and long to string
+//
+// Revision 1.39.2.2  2000/02/17 05:03:13  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.39.2.1  2000/01/28 22:14:05  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.39  1999/12/02 00:24:32  jimg
 // Fixed print_val for Grids that decay to Structures.
@@ -246,6 +265,7 @@
 #include "DDS.h"
 #include "Array.h"		// for downcasts
 #include "util.h"
+#include "InternalErr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -352,13 +372,9 @@ Grid::serialize(const string &dataset, DDS &dds, XDR *sink,
 		bool ce_eval)
 {
     bool status = true;
-    int error = 0;
 
-    if (!read_p()) {
-	read(dataset, error);
-	if (error)
-	    return false;
-    }
+    if (!read_p() && !read(dataset))
+	throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
@@ -439,19 +455,25 @@ Grid::var(const string &name, bool)
 void 
 Grid::add_var(BaseType *bt, Part part)
 {
-    assert(bt);
-
+    if(!bt)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "Passing NULL pointer as variable to be added.");
+    
+    // Jose Garcia
+    // Now we get a copy of the maps or of the array
+    // so the owner of bt which is external to libdap++
+    // is free to deallocate its object.
     switch (part) {
       case array:
-	_array_var = bt;
+	_array_var = bt->ptr_duplicate();
 	return;
       case maps:
-	_map_vars.append(bt);
+	_map_vars.append(bt->ptr_duplicate());
 	return;
       default:
-	assert(false);
-	cerr << "Grid::add_var:Unknown grid part (must be array or maps)" 
-	     << endl;
+	cerr <<"Grid::add_var:Unknown grid part (must be array or maps)"<< endl;
+	throw InternalErr(__FILE__, __LINE__, 
+			  "Unknown grid part (must be array or maps).");
 	return;
     }
 }    
@@ -660,22 +682,16 @@ Grid::check_semantics(string &msg, bool all)
 
     if (!unique_names(_map_vars, name(), type_name(), msg))
 	return false;
-
-    ostrstream oss;
+    msg="";
 
     if (!_array_var) {
-	oss << "Null grid base array in `" << name() << "'" << endl << ends;
-	msg = oss.str();
-	oss.rdbuf()->freeze(0);
+        msg+="Null grid base array in `"+name()+"'\n";
 	return false;
     }
 	
     // Is it an array?
     if (_array_var->type() != dods_array_c) {
-	oss << "Grid `" << name() << "'s' member `"
-	    << _array_var->name() << "' must be an array" << endl << ends;
-	msg = oss.str();
-	oss.rdbuf()->freeze(0);
+	msg+=+ "Grid `"+ name()+"'s' member `"+ _array_var->name()+"' must be an array\n";
 	return false;
     }
 	    
@@ -683,23 +699,14 @@ Grid::check_semantics(string &msg, bool all)
 
     // Array must be of a simple_type.
     if (!av->var()->is_simple_type()) {
-	oss << "The field variable `"
-	    << this->name() 
-	    << "' must be an array of simple type elements (e.g., int32, String)"
-	    << endl << ends;
-	msg = oss.str();
-	oss.freeze(0);
+        msg+="The field variable `"+this->name()+"' must be an array of simple type elements (e.g., int32, String)\n";
 	return false;
     }
 
     // enough maps?
     if ((unsigned)_map_vars.length() != av->dimensions()) {
-	oss << "The number of map variables for grid `"
-	    << this->name() 
-		<< "' does not match the number of dimensions of `"
-		<< av->name() << "'" << endl << ends;
-	msg = oss.str();
-	oss.rdbuf()->freeze(0);
+        msg+="The number of map variables for grid `"+this->name()+ "' does not match the number of dimensions of `";
+	msg+=av->name()+ "'\n";
 	return false;
     }
 
@@ -712,19 +719,12 @@ Grid::check_semantics(string &msg, bool all)
 
 	// check names
 	if (array_var_name == mv->name()) {
-	    oss << "Grid map variable `" << mv->name()
-		<< "' conflicts with the grid array name in grid `"
-		<< name() << "'" << endl << ends;
-	    msg = oss.str();
-	    oss.rdbuf()->freeze(0);
+	    msg+= "Grid map variable `" + mv->name()+"' conflicts with the grid array name in grid `"+ name()+"'\n";
 	    return false;
 	}
 	// check types
 	if (mv->type() != dods_array_c) {
-	    oss << "Grid map variable  `" << mv->name()
-		<< "' is not an array" << endl << ends;
-	    msg = oss.str();
-	    oss.rdbuf()->freeze(0);
+	    msg+= "Grid map variable  `"+ mv->name()+ "' is not an array\n";
 	    return false;
 	}
 
@@ -732,32 +732,20 @@ Grid::check_semantics(string &msg, bool all)
 
 	// Array must be of a simple_type.
 	if (!mv_a->var()->is_simple_type()) {
-	    oss << "The field variable `"
-		<< this->name() 
-		<< "' must be an array of simple type elements (e.g., int32, String)"
-		<< endl << ends;
-	    msg = oss.str();
-	    oss.freeze(0);
+	    msg+= "The field variable `"+ this->name()+ "' must be an array of simple type elements (e.g., int32, String)\n";
 	    return false;
 	}
 
 	// check shape
 	if (mv_a->dimensions() != 1) {// maps must have one dimension
-	    oss << "Grid map variable  `" << mv_a->name()
-		<< "' must be only one dimension" << endl << ends;
-	    msg = oss.str();
-	    oss.rdbuf()->freeze(0);
+	    msg+="Grid map variable  `"+mv_a->name()+"' must be only one dimension\n";
 	    return false;
 	}
 	// size of map must match corresponding array dimension
 	if (mv_a->dimension_size(mv_a->first_dim()) 
 	    != av->dimension_size(ap)) {
-	    oss << "Grid map variable  `" << mv_a->name()
-		<< "'s' size does not match the size of array variable '"
-		<< _array_var->name() << "'s' cooresponding dimension"
-		<< endl << ends;
-	    msg = oss.str();
-	    oss.rdbuf()->freeze(0);
+	    msg+="Grid map variable  `" +mv_a->name()+"'s' size does not match the size of array variable '";
+	    msg+=_array_var->name()+"'s' cooresponding dimension\n";
 	    return false;
 	}
     }

@@ -14,6 +14,14 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.23  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.22  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -23,6 +31,11 @@
 //
 // Revision 1.20.20.1  2000/06/02 18:29:31  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.20.14.1  2000/02/17 05:03:15  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
 //
 // Revision 1.20  1999/05/04 19:47:22  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
@@ -163,7 +176,7 @@ TestSequence::~TestSequence()
 // lines. Line can be no more than 255 characters long.
 
 bool 
-TestSequence::read(const string &dataset, int &error)
+TestSequence::read(const string &dataset)
 {
     char line[256];
 
@@ -189,7 +202,6 @@ TestSequence::read(const string &dataset, int &error)
 	if (_input.eof())
 	    return false;	// error unchanged, nominally false.
 	if (!_input) {
-	    error = 1;
 	    DBG(cerr << "Input file error" << endl);
 	    return false;
 	}

@@ -11,6 +11,14 @@
 // 3/22/9 jhrg9
 
 // $Log: Float32.h,v $
+// Revision 1.12  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.11  2000/08/02 22:46:49  jimg
 // Merged 3.1.8
 //
@@ -29,6 +37,9 @@
 //
 // Revision 1.8.20.1  2000/06/02 18:21:27  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.8.14.1  2000/01/28 22:14:04  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.8.6.1  1999/09/11 04:51:38  tom
 // corrected and added (minute) documentation
@@ -124,7 +135,7 @@ public:
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const string &dataset, int &error) = 0;
+    virtual bool read(const string &dataset) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);

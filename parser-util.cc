@@ -10,6 +10,14 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.20  2000/09/21 16:22:10  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.19  2000/07/09 22:05:37  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -48,6 +56,9 @@
 // Revision 1.13  1999/03/24 23:29:35  jimg
 // Added support for the new Int16, UInt16 and Float32 types.
 // Removed unused error printing functions.
+//
+// Revision 1.16.14.1  2000/03/08 00:09:04  jgarcia
+// replace ostrstream with string;added functions to convert from double and long to string
 //
 // Revision 1.12.6.2  1999/02/05 09:32:36  jimg
 // Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
@@ -101,7 +112,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.19 2000/07/09 22:05:37 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.20 2000/09/21 16:22:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,6 +128,8 @@ static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.19 2000/07/09 22:05:37 
 
 #include "parser.h"		// defines constants such as ID_MAX
 #include "dods-limits.h"
+// Jose Garcia: we need to include this to get the prototype for append_long_to_string.
+#include "util.h"
 
 #ifdef WIN32
 using std::cerr;
@@ -128,6 +141,9 @@ using std::ostrstream;
 void 
 parse_error(const char *s, const int line_num)
 {
+    // Jose Garcia
+    // This assert(s) is (are) only for developing purposes
+    // For production servers remove it by compiling with NDEBUG 
     assert(s);
 
     cerr << "Parse error (line: " << line_num << "):" << endl
@@ -138,23 +154,29 @@ void
 parse_error(parser_arg *arg, const char *msg, const int line_num,
 	    const char *context)
 { 
+    // Jose Garcia
+    // This assert(s) is (are) only for developing purposes
+    // For production servers remove it by compiling with NDEBUG
     assert(arg);
     assert(msg);
 
     arg->set_status(FALSE);
 
-	ostrstream oss;
+    string oss="";
 
     if (line_num != 0)
-	oss << "Error parsing the text on line " << line_num << ":" << endl;
+      {
+	oss+= "Error parsing the text on line " ;
+	append_long_to_string(line_num,10,oss);
+	oss+= ":\n";
+      }
 
     if (context)
-	oss << msg << endl << context << ends;
+	oss+= msg+(string)"\n"+context+(string)"\n";
     else
-	oss << msg << ends;
+	oss+= msg+(string)"\n";
 
-    arg->set_error(new Error(unknown_error, oss.str()));
-    oss.freeze(0);
+    arg->set_error(new Error(unknown_error, oss.c_str()));
 }
 
 void
@@ -207,25 +229,24 @@ check_int16(const char *val, const int line)
     long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
 
     if (v == 0 && val == ptr) {
-	ostrstream oss;
-	oss << "`" << val << "' cannot be decoded as an integer value." 
-	    << ends;
+	string oss="";
+	oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
 
-	parse_error(oss.str(), line);
-	oss.freeze(0);
+	parse_error(oss.c_str(), line);
 
 	return FALSE;
     }
 
     // Don't use the constant from limits.h, use the ones in dods-limits.h
-    if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) {
-	ostrstream oss;
+    if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) { 
+	string oss="";
 
-	oss << "`" << val << "' is not a 16-bit integer value value." << endl
-	    << "It must be between " << DODS_SHRT_MIN << " and "
-	    << DODS_SHRT_MAX << "." << ends;
-	parse_error(oss.str(), line);
-	oss.freeze(0);
+	oss +="`" + (string)val + "' is not a 16-bit integer value value.\nIt must be between ";
+	append_long_to_string(DODS_SHRT_MIN,10,oss);
+	oss+=" and ";
+	append_long_to_string(DODS_SHRT_MAX,10,oss);
+	oss+= ".\n";
+	parse_error(oss.c_str(), line);
 
 	return FALSE;
     }
@@ -240,21 +261,22 @@ check_uint16(const char *val, const int line)
     unsigned long v = strtol(val, &ptr, 0); 
 
     if (v == 0 && val == ptr) {
-	ostrstream oss;
-	oss << "`" << val << "' cannot be decoded as an integer value." 
-	    << ends;
-	parse_error(oss.str(), line);
-	oss.rdbuf()->freeze(0);
+        string oss="";
+        oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
+
+	parse_error(oss.c_str(), line);
+
 	return FALSE;
     }
 
     if (v > DODS_USHRT_MAX) { 
-	ostrstream oss;
-	oss << "`" << val << "' is not a 16-bit integer value value." << endl
-	    << "It must be less than or equal to " << DODS_USHRT_MAX << "."
-	    << ends;
-	parse_error(oss.str(), line);
-	oss.freeze(0);
+        string oss="";
+	oss+="`" + (string)val+ "' is not a 16-bit integer value value.\nIt must be less than or equal to ";
+	append_long_to_string(DODS_USHRT_MAX,10,oss);
+	oss+=".\n";
+
+	parse_error(oss.c_str(), line);
+
 	return FALSE;
     }
 
@@ -268,24 +290,22 @@ check_int32(const char *val, const int line)
     long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
 
     if (v == 0 && val == ptr) {
-	ostrstream oss;
-	oss << "`" << val << "' cannot be decoded as an integer value." 
-	    << ends;
-
-	parse_error(oss.str(), line);
-	oss.freeze(0);
-
+        string oss="";
+        oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
+	
+	parse_error(oss.c_str(), line);
 	return FALSE;
     }
 
     if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
-	ostrstream oss;
-	oss << "`" << val << "' is not a 32-bit integer value value." << endl
-	    << "It must be between " << DODS_INT_MIN << " and "
-	    << DODS_INT_MAX << "." << ends;
+	string oss="";
+	oss+= "`" +(string)val+ "' is not a 32-bit integer value value.\nIt must be between ";
+	append_long_to_string(DODS_INT_MIN,10,oss);
+	oss+=" and ";
+	append_long_to_string( DODS_INT_MAX,10,oss);
+	oss+=".\n";
 
-	parse_error(oss.str(), line);
-	oss.freeze(0);
+	parse_error(oss.c_str(), line);
 
 	return FALSE;
     }
@@ -300,11 +320,10 @@ check_uint32(const char *val, const int line)
     unsigned long v = strtol(val, &ptr, 0);
 
     if (v == 0 && val == ptr) {
-	ostrstream oss;
-	oss << "`" << val << "' cannot be decoded as an integer value." 
-	    << ends;
-	parse_error(oss.str(), line);
-	oss.freeze(0);
+	string oss="";
+	oss+="`"+(string)val+"' cannot be decoded as an integer value.\n" ;
+	parse_error(oss.c_str(), line);
+
 	return FALSE;
     }
 
@@ -329,14 +348,14 @@ check_float32(const char *val, const int num)
 #if 0
     static double range = fabs(log10(DODS_FLT_MAX));
     if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
-	ostrstream oss;
+        string oss="";
 
-	oss << "`" << val << "' is not a 32 bit floating point value value." 
-	    << endl
-	    << "It must be between (+/-)" << DODS_FLT_MAX << " and (+/-)" 
-	    << DODS_FLT_MIN << "." << ends;
-	parse_error(oss.str(), num);
-	oss.freeze(0);
+	oss+= "`" +(string)val+"' is not a 32 bit floating point value value.\nIt must be between (+/-)";
+	append_double_to_string(DODS_FLT_MAX,oss);
+	oss+=" and (+/-)";
+	append_double_to_string(DODS_FLT_MIN,oss);
+	oss+= ".\n";
+	parse_error(oss.c_str(), num);
 
 	return FALSE;
     }
@@ -359,13 +378,14 @@ check_float64(const char *val, const int num)
 #if 0
     static double range = fabs(log10(DODS_DBL_MAX));
     if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
-	ostrstream oss;
-	oss << "`" << val << "' is not a 64 bit floating point value value." 
-	    << endl
-	    << "It must be between (+/-)" << DODS_DBL_MAX << " and (+/-)" 
-	    << DODS_DBL_MIN << "." << ends;
-	parse_error(oss.str(), num);
-	oss.freeze(0);
+	string oss="";
+
+	oss+="`"+(string)val+"' is not a 64 bit floating point value value.\nIt must be between (+/-)";
+	append_double_to_string(DODS_DBL_MAX,oss);
+	oss+= " and (+/-)" ;
+	append_double_to_string(DODS_DBL_MIN,oss);
+	oss+=".\n";
+	parse_error(oss.c_str(), num);
 
 	return FALSE;
     }

@@ -10,6 +10,14 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.57  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.56  2000/09/11 16:31:48  jimg
 // Added methods to make it simpler to access Sequences by row number. The new
 // methods are: get_row(), get_row_number(), get_starting_row_number(),
@@ -29,6 +37,14 @@
 //
 // Revision 1.49.6.3  2000/06/07 23:05:30  jimg
 // The first_*() methods return 0 if there are no variables
+//
+// Revision 1.51.2.2  2000/02/17 05:03:13  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.51.2.1  2000/01/28 22:14:05  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
 //
 // Revision 1.52  2000/01/27 06:29:57  jimg
 // Resolved conflicts from merge with release-3-1-4
@@ -299,6 +315,7 @@
 #include "DDS.h"
 #include "DataDDS.h"
 #include "util.h"
+#include "InternalErr.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -307,6 +324,13 @@
 #ifdef WIN32
 using std::endl;
 #endif
+
+// Jose Garcia 1/28/2000
+// Note: all asserts of nature
+// for (Pix p = _vars.first(); p; _vars.next(p)) {
+//      assert(_vars(p));
+// had been commented out, later when we get sure
+// we do not need then we can remove them all.
 
 static unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
 static unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
@@ -430,8 +454,13 @@ Sequence::set_read_p(bool state)
 void 
 Sequence::add_var(BaseType *bt, Part)
 {
-    assert(bt);
-    _vars.append(bt);
+   if(!bt)
+       throw InternalErr(__FILE__, __LINE__, 
+			 "Cannot add variable: NULL pointer");
+   // Jose Garcia
+   // We append a copy of bt so the owner
+   // of bt is free to deallocate as he wishes.
+    _vars.append(bt->ptr_duplicate());
 
     if (bt->type() == dods_sequence_c) {
 	Sequence *s = dynamic_cast<Sequence *>(bt);
@@ -444,7 +473,7 @@ BaseType *
 Sequence::var(const string &name, btp_stack &s)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	
 	if (_vars(p)->name() == name) {
 	    s.push((BaseType *)this);
@@ -476,7 +505,7 @@ BaseType *
 Sequence::leaf_match(const string &name)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	assert(_vars(p));
+      //assert(_vars(p));
 	
 	if (_vars(p)->name() == name)
 	    return _vars(p);
@@ -506,7 +535,7 @@ Sequence::exact_match(const string &name)
     }
     else {
 	for (Pix p = _vars.first(); p; _vars.next(p)) {
-	    assert(_vars(p));
+	  //assert(_vars(p));
 	    if (_vars(p)->name() == name)
 		return _vars(p);
 	}
@@ -599,12 +628,17 @@ Sequence::get_row(int row, const string &dataset, DDS &dds, bool ce_eval)
       // read, and FALSE indicating there's no more data to read. Note that
       // this behavior is necessary to properly handle variables that contain
       // Sequences. 
-      int error = 0;
-      eof = read(dataset, error) == false;
-      // Despite the comments, as of 3.2 read() should throw Error when it
-      // barfs. Ensure that's the case...
-      if (error)
-	throw Error(unknown_error, "Error reading from the data source!");
+      // Jose Garcia
+      // If an error exists while reading, the implementers of
+      // the surrogate library SHOULD throw an Error object 
+      // which will propagate beyond this point to to the original 
+      // caller. 
+      eof = read(dataset) == false;
+      // Jose Garcia
+      // Now false is returned only to indicate EOF, for errors an
+      // Error object should be throw as an exception!!! I know I said
+      // the same this 3 times in this method, it is just that this is
+      // critical.
     }
 
     // If the ce selection evals to false, read the next row. If true, break

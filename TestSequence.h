@@ -13,10 +13,23 @@
 
 /* 
  * $Log: TestSequence.h,v $
+ * Revision 1.16  2000/09/21 16:22:09  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
  * Revision 1.15  2000/07/09 21:57:10  rmorris
  * Mods's to increase portability, minimuze ifdef's in win32 and account
  * for differences between the Standard C++ Library - most notably, the
  * iostream's.
+ *
+ * Revision 1.14.14.1  2000/02/17 05:03:15  jimg
+ * Added file and line number information to calls to InternalErr.
+ * Resolved compile-time problems with read due to a change in its
+ * parameter list given that errors are now reported using exceptions.
  *
  * Revision 1.14  1999/04/29 02:29:32  jimg
  * Merge of no-gnu branch
@@ -116,7 +129,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset, int &error);
+    virtual bool read(const string &dataset);
 
     virtual int length();
 };

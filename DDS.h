@@ -13,6 +13,14 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.40  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
 // Revision 1.39  2000/08/02 22:46:49  jimg
 // Merged 3.1.8
 //
@@ -50,6 +58,9 @@
 // Revision 1.34.2.1  2000/05/12 18:44:38  jimg
 // Made the duplicate and *_match functions protected to simplfy future
 // subclassing.
+//
+// Revision 1.34.8.1  2000/02/07 21:11:35  jgarcia
+// modified prototypes and implementations to use exceeption handling
 //
 // Revision 1.34  1999/07/22 18:47:44  tom
 // fixed doc typo
@@ -600,12 +611,12 @@ public:
 	@param os The output stream on which to write error objects and
 	messages. 
 	@param server If true, send errors back to client instead of
-	displaying errors on the default output stream. */
-    bool parse_constraint(const string &constraint, ostream &os = cout,
+	displaying errors on the default output stream. */ 
+    void parse_constraint(const string &constraint, ostream &os = cout,
 			  bool server = true);
 
     /** @param out A FILE pointer to which error objects should be wrtten. */
-    bool parse_constraint(const string &constraint, FILE *out,
+    void parse_constraint(const string &constraint, FILE *out,
 			  bool server = true);
     //@}
 
@@ -630,13 +641,13 @@ public:
     //@{
 
     /** Parse a DDS from a file with the given name. */
-    bool parse(string fname);
+    void parse(string fname);
 
     /** Parse a DDS from a file indicated by the input file descriptor. */
-    bool parse(int fd);
+    void parse(int fd);
 
     /** Parse a DDS from a file indicated by the input file descriptor. */
-    bool parse(FILE *in=stdin);
+    void parse(FILE *in=stdin);
     //@}
 
     /** These methods create an ASCII representation of the DDS. This is the
@@ -652,16 +663,16 @@ public:
 
     //@{
     /** Print the entire DDS on the specified output stream. */
-    bool print(ostream &os = cout);
+    void print(ostream &os = cout);
 
     /** Print the entire DDS to the specified file. */
-    bool print(FILE *out);
+    void print(FILE *out);
 
     /** Print the constrained DDS to the specified file. */
-    bool print_constrained(ostream &os = cout);
+    void print_constrained(ostream &os = cout);
 
     /** Print a constrained DDS to the specified file. */
-    bool print_constrained(FILE *out);
+    void print_constrained(FILE *out);
     //@}
 
     /** This function sends the variables described in the constrained DDS to
