@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.f.exp,v $
+# Revision 1.7  2003/05/16 00:18:35  jimg
+# Tests changed because List has been removed from the DAP.
+#
 # Revision 1.6  2000/10/03 22:18:04  jimg
 # Fixes to the tests to accomodate debugging fixes in DDS.cc
 #
@@ -50,7 +53,6 @@ Dataset {
     Int32 i\\\[20\\\];
     String s;
     Int32 j;
-    List Int32 l;
 } test1;
 The data:
 String s = \"Silly test string: one, two, ...\";"

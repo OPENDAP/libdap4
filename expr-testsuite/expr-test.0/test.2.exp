@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.2.exp,v $
+# Revision 1.6  2003/05/16 00:18:35  jimg
+# Tests changed because List has been removed from the DAP.
+#
 # Revision 1.5  2000/10/03 22:18:04  jimg
 # Fixes to the tests to accomodate debugging fixes in DDS.cc
 #
@@ -45,7 +48,6 @@ set test_out "The complete DDS:
 Dataset {
     Int32 i;
     Int32 j;
-    List Int32 l;
 } test1;
 The data:
 Int32 i = 123456789;
