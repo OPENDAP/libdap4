@@ -7,24 +7,31 @@
 // netcdf library function assigned to the open file. If the file is remote,
 // the ID is used to access information about the remote connection.
 //
-// This class is a virtual base class because its ctor is used to make the
-// connection to either a DODS data server or a local file (i.e., it might be
-// used to pass the arguments from the user program's data access API
-// straight into that API's open function. Thus, for each surrogate library,
+// This class should be used as a base class because its ctor is used to make
+// the CONNECT object for either a DODS data server or a local file (i.e., it
+// might be used to pass the arguments from the user program's data access API
+// straight into that API's open function). Thus, for each surrogate library,
 // this class must be subclassed and that subclass must define a ctor with
-// the proper type arguments for the API's open function. See the class
+// the proper type of arguments for the API's open function. See the class
 // NCConnect for an example ctor.
 //
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.4  1995/02/10 21:54:52  jimg
-/* Modified definition of request_data() so that it takes an additional
-/* parameter specifying sync or async behavior.
+/* Revision 1.5  1995/03/09 20:36:09  jimg
+/* Modified so that URLs built by this library no longer supply the
+/* base name of the CGI. Instead the base name is stripped off the front
+/* of the pathname component of the URL supplied by the user. This class
+/* append the suffix _das, _dds or _serv when a Connect object is used to
+/* get the DAS, DDS or Data (resp).
 /*
+ * Revision 1.4  1995/02/10  21:54:52  jimg
+ * Modified definition of request_data() so that it takes an additional
+ * parameter specifying sync or async behavior.
+ *
  * Revision 1.3  1995/02/10  04:43:17  reza
- * Fixed the request_data to pass arguments. The arguments string is added to the
- * file name before being posted by NetConnect. Default arg. is null.
+ * Fixed the request_data to pass arguments. The arguments string is added to
+ * the file name before being posted by NetConnect. Default arg. is null.
  *
  * Revision 1.2  1995/01/31  20:46:56  jimg
  * Added declaration of request_data() mfunc in Connect.
@@ -57,35 +64,42 @@
 class Connect {
 private:
     bool _local;		// is this a local connection
-    String _api_name;		// child ctors MUST set this.
+#ifdef NEVER
+    String _api_name;		// ctor MUST set this.
+#endif
     String _URL;		// URL to remote dataset; --> LOCAL is false
     DAS _das;			// dataset attribute structure --> !LOCAL
     DDS _dds;			// dataset descriptor structure --> ! LOCAL
 
-    String make_url(const String &api, const String &cgi);
+    String make_url(const String &cgi);
     void parse_url(const char *name);
 
 protected:
     String _access;		// broken-out URL components
     String _host;
+    String _cgi_basename;	// base name of CGI (e.g., def --> def_das)
     String _path;
     String _anchor;
 
 public:
     // child classes can use these ctors
-    Connect(const String &name, const String &api); 
-    Connect(const char *name, const String &api);
+    Connect(const String &name, const String &api = ""); 
+#ifdef NEVER
+    Connect(const char *name, const String &api = "");
+#endif
     virtual ~Connect();		// base classes should have virtual dtors
 
     bool is_local();
     const String &URL();
-    const String &api_name();
+    const String &api_name();	// deprecated
     DAS &das();
     DDS &dds();
     
-    bool request_das();		// get the das from the server in the URL
-    bool request_dds();
-    bool request_data(const String &post = (char *)0, bool async = false);
+    // get the DAS, DDS and data from the server/cgi comb using the URL
+    bool request_das(const String &cgi = "das");
+    bool request_dds(const String &cgi = "dds");
+    bool request_data(const String &post = (char *)0, bool async = false,
+		      const String &cgi = "serv");
 };
 
 typedef Connect * ConnectPtr;

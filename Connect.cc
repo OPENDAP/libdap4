@@ -1,7 +1,8 @@
 
 // Implementation for Connect -- a virtual base class that manages
 // connections to DODS servers or local files (the later case really isn't a
-// connection, DODS still uses a Connect object to refer to the open file.
+// connection, but DODS still uses a Connect object to refer to the open
+// file).
 // 
 // jhrg 9/29/94
 //
@@ -11,7 +12,14 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.6  1995/02/22 21:04:00  reza
+// Revision 1.7  1995/03/09 20:36:07  jimg
+// Modified so that URLs built by this library no longer supply the
+// base name of the CGI. Instead the base name is stripped off the front
+// of the pathname component of the URL supplied by the user. This class
+// append the suffix _das, _dds or _serv when a Connect object is used to
+// get the DAS, DDS or Data (resp).
+//
+// Revision 1.6  1995/02/22  21:04:00  reza
 // Added version number capability using CGI status_line.
 //
 // Revision 1.5  1995/02/10  21:53:53  jimg
@@ -20,8 +28,8 @@
 // behavior.
 //
 // Revision 1.4  1995/02/10  04:43:15  reza
-// Fixed the request_data to pass arguments. The arguments string is added to the
-// file name before being posted by NetConnect. Default arg. is null.
+// Fixed the request_data to pass arguments. The arguments string is added to
+// the file name before being posted by NetConnect. Default arg. is null.
 //
 // Revision 1.3  1995/01/31  20:46:04  jimg
 // Fixed problems with the return value (status, fp) in request_das,
@@ -63,7 +71,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.6 1995/02/22 21:04:00 reza Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.7 1995/03/09 20:36:07 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -83,10 +91,25 @@ extern void set_xdrout(FILE *out); // define in BaseType.cc
 
 // Private mfunc
 
+// Given that the Connect object has been construcuted, return a URL that
+// refers to the named CGI program by combining the CGI base name with
+// `cgi'. The latter is a suffix that is used to identify which of the three
+// specific CGIs is to be used (the DAS, DDS or SERV CGI).
+//
+// NB: This does not construct the part of the URL which refers to the data,
+// ony the access protocol, host and CGI are named by this URL. The Data file
+// and any other arguments are sent to the URL via the HTTP POST method.
+//
+// Returns: The URL of a CGI in a String object. 
+
 String
-Connect::make_url(const String &api, const String &cgi)
+Connect::make_url(const String &cgi)
 {
-    String url = _access + "://" + _host + "/cgi-bin/" + api + "_" + cgi;
+#ifdef NEVER
+    String url = _access + "://" + _host + "/cgi-bin/" + _api_name + "_" + cgi;
+#endif
+    String url = _access + "://" + _host + "/cgi-bin/" + _cgi_basename 
+	         + "_" + cgi;
     
     return url;
 }
@@ -101,6 +124,7 @@ Connect::parse_url(const char *name)
 	_URL = "";		// null string
 	_access = "";
 	_host = "";
+	_cgi_basename = "";
 	_path = "";
 	_anchor = "";
 	// das & dds are initialized by children of Connect
@@ -110,7 +134,16 @@ Connect::parse_url(const char *name)
 	_URL = name;
 	_access = uc->access;
 	_host = uc->host;
-	_path = uc->path;
+
+	String path = uc->path;
+
+	_cgi_basename = path.before(path.index("/", 1));
+	_path = path.from(path.index("/", 1));
+	    
+#ifdef NEVER
+	_path = uc->path;//rest of the path
+#endif
+
 	_anchor = uc->anchor;
     }
 
@@ -122,30 +155,35 @@ Connect::parse_url(const char *name)
 Connect::Connect(const String &name, const String &api)
 {
     parse_url((const char *)name);
+#ifdef NEVER
     _api_name = api;
+#endif
 }
 
+#ifdef NEVER
 Connect::Connect(const char *name, const String &api)
 {
     parse_url(name);
+#ifdef NEVER
     _api_name = api;
+#endif
 }
+#endif
 
 Connect::~Connect()
 {
 }
 
+// Added CGI which defaults to "das". jhrg 3/7/95
+
 bool
-Connect::request_das()
+Connect::request_das(const String &cgi)
 {
     // get the das 
 
-    String das_url = make_url(_api_name, "das");
+    String das_url = make_url(cgi);
     bool status = false;
 
-#ifdef NEVER
-    FILE *fp = NetConnect(das_url, _path);
-#endif
     FILE *fp = NetExecute(das_url, _path);
 
     if( fp ) 
@@ -156,17 +194,16 @@ Connect::request_das()
     return status;
 }
 
+// Added CGI which deafults to "dds". jhrg 3/7/95
+
 bool
-Connect::request_dds()
+Connect::request_dds(const String &cgi)
 {
     // get the dds 
 
-    String dds_url = make_url(_api_name, "dds");
+    String dds_url = make_url(cgi);
     bool status = false;
 
-#ifdef NEVER
-    FILE *fp = NetConnect(dds_url, _path);
-#endif
     FILE *fp = NetExecute(dds_url, _path);
 
     if( fp ) 
@@ -189,11 +226,13 @@ Connect::request_dds()
 // completed (async == false) or was correctly initiated (async ==
 // true). Returns false if an error was detected by the NetExecute or
 // NetConnect function.
+//
+// Added optional argument CGI which defaults to "serv". jhrg 3/7/95
 
 bool
-Connect::request_data(const String &post, bool async)
+Connect::request_data(const String &post, bool async, const String &cgi)
 {
-    String data_url = make_url(_api_name, "serv");
+    String data_url = make_url(cgi);
     String Args = _path + " " + post;
     FILE *fp;
 
@@ -223,13 +262,17 @@ Connect::URL()
     return _URL;		// if _local returns ""
 }
 
+// deprecated
+
 const String &
 Connect::api_name()
 {
+#ifdef NEVER
     if (_api_name == "")
 	err_quit("Connect: api_name not set by child class");
+#endif
 	
-    return _api_name;
+    return _path;
 }
 
 DAS &
