@@ -1,3 +1,23 @@
+2000-03-28  James Gallagher  <jimg@dcz.dods.org>
+
+	* Look in the Makefile for this software to see the new support
+	library configure macros in action. These simplify getting the
+	right libraries on the link line without duplicates (which
+	lengthen link times). 
+
+	* Added libdap++-gui.a to the build/install/tar/binary-tar stuff.
+	This library is built with `GUI-enabled' versions of Connect and
+	Error. This is to support our progress indicator and cancel button.
+
+	* Added a new feature to the .dodsrc file and caching. Users can
+	set the default expiration time for a response using a parameter
+	in the RC file. By default the expiration time is 24 hours
+	(written in seconds).
+
+	* Fixed bugs in the caching software. Compressed responses now are
+	cached correctly and responses with several variables are also
+	correctly handled. 
+
 2000-01-26  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with release3-1-4. The next merge should use: update -j
@@ -637,7 +657,7 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	progress indicator and error reporting is not available.
 
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.47 2000/01/27 06:29:55 jimg Exp $
+$Id: ChangeLog,v 1.48 2000/03/28 17:19:16 jimg Exp $
 =======
-$Id: ChangeLog,v 1.47 2000/01/27 06:29:55 jimg Exp $
+$Id: ChangeLog,v 1.48 2000/03/28 17:19:16 jimg Exp $
 >>>>>>> 1.42.2.4
