@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.130 2003/01/15 19:24:39 pwest Exp $
+# $Id: Makefile.in,v 1.131 2003/01/31 23:26:44 reza Exp $
 
 @SET_MAKE@
 
@@ -145,7 +145,7 @@ GNUOBJS = GNU/GetOpt.o GNU/Regex.o GNU/error.o \
 
 GNUHDRS = GNU/Pix.h GNU/gnu-std.h GNU/GetOpt.h GNU/Regex.h GNU/builtin.h \
 	   IteratorAdapter.h ArrayIterAdapter.h AttrIterAdapter.h \
-	   BTIterAdapter.h CaluseIterAdapter.h
+	   BTIterAdapter.h ClauseIterAdapter.h
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc \
