@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.13 1995/01/11 16:11:26 jimg Exp $
+# $Id: Makefile.in,v 1.14 1995/01/19 20:09:12 jimg Exp $
 
 @SET_MAKE@
 
@@ -8,7 +8,7 @@
 
 PROG= das-test dds-test libdas++.a libdds++.a
 CXXFLAGS = -g $(DEFS) -I. -IMap -IStack -IPlex -I$(DODS_ROOT)/include 
-LDFLAGS = @LDFLAGS@ -g -LMAP -LStack -LPlex -L$(DODS_ROOT)/lib
+LDFLAGS = @LDFLAGS@ -g -L. -LMAP -LStack -LPlex -L$(DODS_ROOT)/lib
 LFLAGS=-8
 YFLAGS=-d
 DODS_ROOT=../..
@@ -68,13 +68,20 @@ TYPEHDRS=BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
          List.h Array.h Structure.h Sequence.h Function.h Grid.h
 TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
          List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
-	 util.cc dummy_read.cc
+	 util.cc
 TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	 List.o Array.o Structure.o Sequence.o Function.o Grid.o \
-	 util.o dummy_read.o
+	 util.o
+
+TESTSRCS=TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc\
+         TestArray.cc TestList.cc TestStructure.cc TestSequence.cc\
+         TestFunction.cc TestGrid.cc
+TESTOBJS=TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
+         TestArray.o TestList.o TestStructure.o TestSequence.o\
+         TestFunction.o TestGrid.o
 
 # Added decent into SUBDIRS since it makes little sense to build these
-# libraries without the Map and Stack code.
+# libraries without the Map, Stack and Plex code.
 
 all: libdas++.a libdds++.a
 	for d in $(SUBDIRS); do cd $$d; make; cd ..; done
@@ -92,8 +99,12 @@ libdds++.a:  libdds++.a($(DDSOBJS))
 das-test:  $(DASOBJS) das-test.o
 	$(CXX) $(LDFLAGS) -o das-test $(DASOBJS) das-test.o $(LIBS)
 
-dds-test:   $(DDSOBJS) dds-test.o
-	$(CXX) $(LDFLAGS) -o dds-test $(DDSOBJS) dds-test.o $(LIBS)
+dds-test:   $(DDSOBJS) $(TESTOBJS) dds-test.o
+	$(CXX) $(LDFLAGS) -o dds-test $(DDSOBJS) $(TESTOBJS) dds-test.o $(LIBS)
+
+trans-test: libdds++.a $(TESTOBJS) trans-test.o
+	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) \
+	       trans-test.o -ldds++ $(LIBS)
 
 # Build the DAS scanner (a C object module compiled with C++)
 
@@ -184,7 +195,7 @@ tags:
 
 depend: 
 	makedepend -- $(CXXFLAGS) -I/usr/local/lib/g++-include -- \
-	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) das-test.cc dds-test.cc 
+	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(TESTSRCS) das-test.cc dds-test.cc 
 	for d in $(SUBDIRS); do cd $$d; make depend; cd ..; done
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
