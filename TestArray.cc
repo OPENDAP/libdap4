@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.19  1998/11/10 00:57:44  jimg
+// Fixed errant delete [] (should have been plain delete).
+//
 // Revision 1.18  1996/12/02 18:21:17  jimg
 // Added case for unit32 to ops() member functon.
 //
@@ -160,7 +163,7 @@ TestArray::read(const String &dataset, int &error)
 
 	val2buf(tmp);
 
-	delete[] elem_val;	// alloced in read_val()
+	delete elem_val;	// alloced in buf2val()
 	delete[] tmp;		// alloced above
 
 	break;
