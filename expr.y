@@ -18,6 +18,9 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.35  2000/07/09 21:43:30  rmorris
+ * Mods to increase portability, minimize ifdef's for win32
+ *
  * Revision 1.34  2000/06/07 18:07:00  jimg
  * Merged the pc port branch
  *
@@ -185,7 +188,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.34 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.35 2000/07/09 21:43:30 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -219,7 +222,8 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.34 2000/06/07 18:07:00 jimg Exp
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -644,11 +648,7 @@ exprerror(const string &s)
 void
 exprerror(const char *s)
 {
-#ifdef WIN32
-    std::cerr << "Expression parse error: " << s << endl;
-#else
     cerr << "Expression parse error: " << s << endl;
-#endif
 }
 
 void
@@ -660,11 +660,7 @@ exprerror(const string &s, const string &s2)
 void
 exprerror(const char *s, const char *s2)
 {
-#ifdef WIN32
-    std::cerr << "Expression parse error: " << s << ": " << s2 << endl;
-#else
 	cerr << "Expression parse error: " << s << ": " << s2 << endl;
-#endif
 }
 
 int
@@ -725,19 +721,11 @@ make_array_index(value &i1, value &i2, value &i3)
     index->append((int)i2.v.i);
     index->append((int)i3.v.i);
 
-#ifdef WIN32
-    DBG(Pix dp;\
-	std::cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#else
     DBG(Pix dp;\
 	cout << "index: ";\
 	for (dp = index->first(); dp; index->next(dp))\
 	cout << (*index)(dp) << " ";\
 	cout << endl);
-#endif
 
     return index;
 }
@@ -754,19 +742,11 @@ make_array_index(value &i1, value &i2)
     index->append(1);
     index->append((int)i2.v.i);
 
-#ifdef WIN32
-    DBG(Pix dp;\
-	std::cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#else
     DBG(Pix dp;\
 	cout << "index: ";\
 	for (dp = index->first(); dp; index->next(dp))\
 	cout << (*index)(dp) << " ";\
 	cout << endl);
-#endif
 
     return index;
 }
@@ -783,19 +763,11 @@ make_array_index(value &i1)
     index->append(1);
     index->append((int)i1.v.i);
 
-#ifdef WIN32
     DBG(Pix dp;\
-	std::cout << "index: ";\
+	cout << "index: ";\
 	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#else
-    DBG(Pix dp;\
-	std::cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#endif
+	cout << (*index)(dp) << " ";\
+	cout << endl);
 
     return index;
 }
@@ -805,19 +777,11 @@ make_array_indices(int_list *index)
 {
     int_list_list *indices = new int_list_list;
 
-#ifdef WIN32
-    DBG(Pix dp;\
-	std::cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#else
     DBG(Pix dp;\
 	cout << "index: ";\
 	for (dp = index->first(); dp; index->next(dp))\
 	cout << (*index)(dp) << " ";\
 	cout << endl);
-#endif
 
     assert(index);
     indices->append(index);
@@ -882,23 +846,13 @@ process_array_indices(BaseType *variable, int_list_list *indices)
     assert(variable->type() == dods_array_c);
     Array *a = (Array *)variable; // replace with dynamic cast
 
-#ifdef WIN32
-    DBG(std::cerr << "Before clear_costraint:" << endl);
-    DBG(a->print_decl(std::cerr, "", true, false, true));
-#else
     DBG(cerr << "Before clear_costraint:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
-#endif
 
     a->clear_constraint();	// each projection erases the previous one
 
-#ifdef WIN32
-    DBG(std::cerr << "After clear_costraint:" << endl);
-    DBG(a->print_decl(std::cerr, "", true, false, true));
-#else
     DBG(cerr << "After clear_costraint:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
-#endif
 
     Pix p, r;
     assert(indices);
@@ -920,46 +874,22 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 
 	index->next(q);
 	if (q) {
-#ifdef WIN32
-	    std::cerr << "Too many values in index list for " << a->name() << "." 
-		 << endl;
-#else
 	    cerr << "Too many values in index list for " << a->name() << "." 
 		 << endl;
-#endif
 	    status = false;
 	    goto exit;
 	}
 	
 	if (!a->add_constraint(r, start, stride, stop)) {
-#ifdef WIN32
-	    std::cerr << "Impossible index values in constraint for "
-		 << a->name() << "." << endl;
-#else
 	    cerr << "Impossible index values in constraint for "
 		 << a->name() << "." << endl;
-#endif
 	    status = false;
 	    goto exit;
 	}
 
-#ifdef WIN32
-	DBG(std::cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
-#else
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
-#endif
     }
 
-#ifdef WIN32
-    DBG(std::cerr << "After processing loop:" << endl);
-    DBG(a->print_decl(std::cerr, "", true, false, true));
-
-    DBG(Pix dp;\
-	std::cout << "Array Constraint: ";\
-	for (dp = a->first_dim(); dp; a->next_dim(dp))\
-	    std::cout << a->dimension_size(dp, true) << " ";\
-	std::cout << endl);
-#else
     DBG(cerr << "After processing loop:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
@@ -968,16 +898,10 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	for (dp = a->first_dim(); dp; a->next_dim(dp))\
 	    cout << a->dimension_size(dp, true) << " ";\
 	cout << endl);
-#endif
     
     if (p && !r) {
-#ifdef WIN32
-	std::cerr << "Too many indices in constraint for " << a->name() << "." 
-	     << endl;
-#else
 	cerr << "Too many indices in constraint for " << a->name() << "." 
 	     << endl;
-#endif
 	status= false;
     }
 
@@ -1034,62 +958,33 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 
 	index->next(q);
 	if (q) {
-#ifdef WIN32
-	    std::cerr << "Too many values in index list for " << a->name() << "." 
-		 << endl;
-#else
 	    cerr << "Too many values in index list for " << a->name() << "." 
 		 << endl;
-#endif
 	    status = false;
 	    goto exit;
 	}
 
 	if (!a->add_constraint(a->first_dim(), start, stride, stop)) {
-#ifdef WIN32
-	    std::cerr << "Impossible index values in constraint for "
-		 << a->name() << "." << endl;
-#else
 	    cerr << "Impossible index values in constraint for "
 		 << a->name() << "." << endl;
-#endif
 	    status = false;
 	    goto exit;
 	}
 
-#ifdef WIN32
-	DBG(std::cerr << "Set Constraint: " \
-	    << a->dimension_size(a->first_dim(), true) << endl);
-#else
 	DBG(cerr << "Set Constraint: " \
 	    << a->dimension_size(a->first_dim(), true) << endl);
-#endif
     }
 
-#ifdef WIN32
-    DBG(Pix dp;\
-	std::cout << "Grid Constraint: ";\
-	for (dp = ((Array *)g->array_var())->first_dim(); dp; \
-		 ((Array *)g->array_var())->next_dim(dp))\
-	   std::cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
-	std::cout << endl);
-#else
     DBG(Pix dp;\
 	cout << "Grid Constraint: ";\
 	for (dp = ((Array *)g->array_var())->first_dim(); dp; \
 		 ((Array *)g->array_var())->next_dim(dp))\
 	   cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
 	cout << endl);
-#endif
     
     if (p && !r) {
-#ifdef WIN32
-	std::cerr << "Too many indices in constraint for " 
-	     << g->map_var(r)->name() << "." << endl;
-#else
 	cerr << "Too many indices in constraint for " 
 	     << g->map_var(r)->name() << "." << endl;
-#endif
 	status= false;
     }
 
@@ -1148,15 +1043,9 @@ dereference_string(string &s)
     // By definition, the DDS `D' can have only one variable, so make sure
     // that is true.
     if (d->num_var() != 1) {
-#ifdef WIN32
-	std::cerr << 
-	    "Too many variables in URL; use only single variable projections"
-	     << endl;
-#else
 	cerr << 
 	    "Too many variables in URL; use only single variable projections"
 	     << endl;
-#endif
 	return 0;
     }
 
@@ -1190,15 +1079,9 @@ dereference_variable(rvalue *rv, DDS &dds)
     // the value will be read over the net
     BaseType *btp = rv->bvalue("dummy", dds); 
     if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
-#ifdef WIN32
-	std::cerr << "Variable: " << btp->name() 
-	    << " must be either a string or a url" 
-	    << endl;
-#else
 	cerr << "Variable: " << btp->name() 
 	    << " must be either a string or a url" 
 	    << endl;
-#endif
 	return 0;
     }
 
@@ -1235,11 +1118,7 @@ make_variable(DDS &table, const value &val)
       }
 
       default:
-#ifdef WIN32
-	std::cerr << "Unknow type constant value" << endl;
-#else
 	cerr << "Unknow type constant value" << endl;
-#endif
 	var = (BaseType *)0;
 	return var;
     }

@@ -17,6 +17,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.39  2000/07/09 21:43:29  rmorris
+ * Mods to increase portability, minimize ifdef's for win32
+ *
  * Revision 1.38  2000/06/07 19:33:21  jimg
  * Merged with verson 3.1.6
  *
@@ -202,7 +205,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.38 2000/06/07 19:33:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.39 2000/07/09 21:43:29 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -227,7 +230,8 @@ static char rcsid[] not_used = {"$Id: das.y,v 1.38 2000/06/07 19:33:21 jimg Exp 
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::ends;
+using std::ostrstream;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -415,11 +419,8 @@ attr_tuple:	alias
 		| SCAN_ID 
                 {
 		    AttrTable *at;
-#ifdef WIN32
-		    DBG(std::cerr << "Processing ID: " << $1 << endl);
-#else
 		    DBG(cerr << "Processing ID: " << $1 << endl);
-#endif
+
 		    /* If we are at the outer most level of attributes, make
 		       sure to use the AttrTable in the DAS. */
 		    if (STACK_EMPTY) {
@@ -435,20 +436,13 @@ attr_tuple:	alias
 		    }
 
 		    PUSH(at);
-#ifdef WIN32
-		    DBG(std::cerr << " Pushed attr_tab: " << at << endl);
-#else
 		    DBG(cerr << " Pushed attr_tab: " << at << endl);
-#endif
+
 		}
 		'{' attr_list 
                 {
 		    /* pop top of stack; store in attr_tab */
-#ifdef WIN32
-		    DBG(std::cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
-#endif
 		    POP;
 		}
 		'}'
@@ -462,17 +456,9 @@ attr_tuple:	alias
 
 bytes:		SCAN_INT
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding: " << TYPE_NAME_VALUE($1) << endl);
-#else
 		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($1) << endl);
-#endif
 		    if (!check_byte($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not a Byte value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -487,11 +473,7 @@ bytes:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -500,17 +482,9 @@ bytes:		SCAN_INT
 		}
 		| bytes ',' SCAN_INT
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding: " << TYPE_NAME_VALUE($3) << endl);
-#else
 		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($3) << endl);
-#endif
 		    if (!check_byte($3, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not a Byte value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -525,11 +499,7 @@ bytes:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -545,19 +515,10 @@ int16:		SCAN_INT
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
-			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
 			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_int16($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not an Int16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -572,11 +533,7 @@ int16:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -585,19 +542,10 @@ int16:		SCAN_INT
 		}
 		| int16 ',' SCAN_INT
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
-			<< endl);
-#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
 			<< endl);
-#endif
 		    if (!check_int16($3, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not an Int16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -612,11 +560,7 @@ int16:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -632,19 +576,10 @@ uint16:		SCAN_INT
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
-			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
 			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_uint16($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not an UInt16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -659,11 +594,7 @@ uint16:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -672,20 +603,11 @@ uint16:		SCAN_INT
 		}
 		| uint16 ',' SCAN_INT
 		{
-#ifdef WIN32
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
 			<< endl);
-#else
-		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
-			<< endl);
-#endif
 		    if (!(check_int16($3, das_line_num)
 			  || check_uint16($1, das_line_num))) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not an UInt16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -700,11 +622,7 @@ uint16:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -720,19 +638,10 @@ int32:		SCAN_INT
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
-		    DBG(std::cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
 		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_int32($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -747,11 +656,7 @@ int32:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -760,17 +665,9 @@ int32:		SCAN_INT
 		}
 		| int32 ',' SCAN_INT
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
-#else
-
-#endif
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
 		    if (!check_int32($3, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -785,11 +682,7 @@ int32:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -805,19 +698,10 @@ uint32:		SCAN_INT
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
-		    DBG(std::cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
 		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_uint32($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not an UInt32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -832,11 +716,7 @@ uint32:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -845,17 +725,9 @@ uint32:		SCAN_INT
 		}
 		| uint32 ',' SCAN_INT
 		{
-#ifdef WIN32
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
-#else
-		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
-#endif
 		    if (!check_uint32($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not an UInt32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -870,11 +742,7 @@ uint32:		SCAN_INT
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -885,19 +753,10 @@ uint32:		SCAN_INT
 
 float32:	float_or_int
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($1)\
-			<< endl);
-#else
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($1)\
 			<< endl);
-#endif
 		    if (!check_float32($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not a Float32 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -913,11 +772,7 @@ float32:	float_or_int
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -926,19 +781,10 @@ float32:	float_or_int
 		}
 		| float32 ',' float_or_int
 		{
-#ifdef WIN32
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($3)\
 			<< endl);
-#else
-		    DBG(std::cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($3)\
-			<< endl);
-#endif
 		    if (!check_float32($3, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not a Float32 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -954,11 +800,7 @@ float32:	float_or_int
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -969,19 +811,10 @@ float32:	float_or_int
 
 float64:	float_or_int
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($1)\
-			<< endl);
-#else
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($1)\
 			<< " to attr table: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_float64($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -997,11 +830,7 @@ float64:	float_or_int
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1010,19 +839,10 @@ float64:	float_or_int
 		}
 		| float64 ',' float_or_int
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($3)\
-			<< endl);
-#else
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($3)\
 			<< endl);
-#endif
 		    if (!check_float64($3, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1038,11 +858,7 @@ float64:	float_or_int
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1053,18 +869,10 @@ float64:	float_or_int
 
 strs:		str_or_id
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
-#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
-#endif
 		    /* Assume a string that parses is vaild. */
 		    if (STACK_EMPTY) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "Whoa! Stack empty when adding `" 
 			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1072,11 +880,7 @@ strs:		str_or_id
 			YYABORT;
 		    }
 		    else if (TOP_OF_STACK->append_attr(*name, *type, $1) == 0) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0); 
@@ -1085,17 +889,9 @@ strs:		str_or_id
 		}
 		| strs ',' str_or_id
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
-#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
-#endif
 		    if (STACK_EMPTY) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "Whoa! Stack empty when adding `" 
 			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1103,11 +899,7 @@ strs:		str_or_id
 			YYABORT;
 		    }
 		    else if (TOP_OF_STACK->append_attr(*name, *type, $3) == 0) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1118,17 +910,9 @@ strs:		str_or_id
 
 urls:		url
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
-#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
-#endif
 		    if (!check_url($1, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not a String value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1143,11 +927,7 @@ urls:		url
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1156,17 +936,9 @@ urls:		url
 		}
 		| urls ',' url
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
-#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
-#endif
 		    if (!check_url($3, das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << $1 << "' is not a String value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1181,11 +953,7 @@ urls:		url
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1228,11 +996,7 @@ alias:          SCAN_ALIAS SCAN_ID
 			AttrTable *table = DAS_OBJ(arg)->get_table($4);
 			if (!TOP_OF_STACK->attr_alias(*name, table, 
 						      attr_name($4))) {
-#ifdef WIN32
-				std::ostrstream msg;
-#else
 			    ostrstream msg;
-#endif
 			    msg << "Could not alias `" << $4 << "' and `" 
 				<< *name << "'." << ends;
 			    parse_error((parser_arg *)arg, msg.str());

@@ -9,6 +9,9 @@
 
 
 // $Log: Error.y,v $
+// Revision 1.9  2000/07/09 21:43:29  rmorris
+// Mods to increase portability, minimize ifdef's for win32
+//
 // Revision 1.8  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -51,7 +54,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.y,v 1.8 2000/06/07 18:06:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.y,v 1.9 2000/07/09 21:43:29 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +68,8 @@ static char rcsid[] not_used = {"$Id: Error.y,v 1.8 2000/06/07 18:06:58 jimg Exp
 #include "debug.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -158,11 +162,7 @@ program_type:	SCAN_PTYPE '=' SCAN_INT ';'
 
 program_code:	SCAN_PROGRAM '=' SCAN_STR
 		{
-#ifdef WIN32
-		    DBG(std::cerr << "Program: " << $3 << endl);
-#else
 		    DBG(cerr << "Program: " << $3 << endl);
-#endif
 		    ERROR_OBJ(arg)->program($3);
 		    $$ = true; 
 		}
@@ -174,9 +174,5 @@ program_code:	SCAN_PROGRAM '=' SCAN_STR
 void
 Errorerror(char *s)
 {
-#ifdef WIN32
-    std::cerr << s << " line: " << error_line_num << endl;
-#else
     cerr << s << " line: " << error_line_num << endl;
-#endif
 }

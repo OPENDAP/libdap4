@@ -8,6 +8,9 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: gse.y,v $
+// Revision 1.4  2000/07/09 21:43:30  rmorris
+// Mods to increase portability, minimize ifdef's for win32
+//
 // Revision 1.3  2000/06/07 18:07:01  jimg
 // Merged the pc port branch
 //
@@ -25,16 +28,17 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.y,v 1.3 2000/06/07 18:07:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.y,v 1.4 2000/07/09 21:43:30 rmorris Exp $"};
 
-#include <iostream.h>
+#include <iostream>
 
 #include "Error.h"
 #include "GSEClause.h"
 #include "parser.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -126,11 +130,7 @@ relop:		SCAN_GREATER
 void
 gse_error(const char *str)
 {
-#ifdef WIN32
-    std::cerr << "GSE Error: " << str << endl;
-#else
     cerr << "GSE Error: " << str << endl;
-#endif
 }
 
 static relop

@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.30  2000/07/09 21:43:29  rmorris
+ * Mods to increase portability, minimize ifdef's for win32
+ *
  * Revision 1.29  2000/06/07 18:07:00  jimg
  * Merged the pc port branch
  *
@@ -159,7 +162,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.29 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.30 2000/07/09 21:43:29 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -181,7 +184,9 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.29 2000/06/07 18:07:00 jimg Exp 
 #include "util.h"
 
 #ifdef WIN32
-using namespace std;
+using std::endl;
+using std::ends;
+using std::ostrstream;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -268,11 +273,7 @@ declaration: 	list non_list_decl
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << " " << $2 
 			    << "' is not a valid declaration" << endl 
@@ -295,11 +296,7 @@ non_list_decl:  base_type var ';'
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << " " << $2 
 			    << "' is not a valid declaration" << endl 
@@ -321,11 +318,7 @@ non_list_decl:  base_type var ';'
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << "'" << endl
 			    << "is not a valid declaration." << endl
@@ -347,11 +340,7 @@ non_list_decl:  base_type var ';'
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << "'" << endl
 			    << "is not a valid declaration." << endl 
@@ -379,11 +368,7 @@ non_list_decl:  base_type var ';'
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << "'" << endl
 			    << "is not a valid declaration." << endl 
@@ -396,11 +381,7 @@ non_list_decl:  base_type var ';'
 
                 | error
                 {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 		    ostrstream msg;
-#endif
 		    msg << "In the dataset descriptor object:" << endl
 			<< "Expected a varaible declaration" << endl 
 			<< "(e.g., Int32 i;). Make sure that the" << endl
@@ -498,11 +479,7 @@ array_decl:	'[' SCAN_INTEGER ']'
 
 		 | error
                  {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 		     ostrstream msg;
-#endif
 		     msg << "In the dataset descriptor object:" << endl
 			 << "Expected an array subscript." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
@@ -515,11 +492,7 @@ name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		| SCAN_ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
                 | error 
                 {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 		     msg << "Error parsing the dataset name." << endl
 			 << "The name may be missing or may contain an illegal character." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
