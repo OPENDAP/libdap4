@@ -100,6 +100,7 @@ DAPOBJS = $(OBJDIR)\Array.obj \
 		$(OBJDIR)\Sequence.obj \
 		$(OBJDIR)\Str.obj \
 		$(OBJDIR)\Structure.obj \
+		$(OBJDIR)\TestUrl.obj \
 		$(OBJDIR)\UInt16.obj \
 		$(OBJDIR)\UInt32.obj \
 		$(OBJDIR)\Url.obj \
@@ -118,8 +119,7 @@ TESTOBJS = $(OBJDIR)\TestArray.obj \
 		$(OBJDIR)\TestStr.obj \
 		$(OBJDIR)\TestStructure.obj \
 		$(OBJDIR)\TestUInt16.obj \
-		$(OBJDIR)\TestUInt32.obj \
-		$(OBJDIR)\TestUrl.obj
+		$(OBJDIR)\TestUInt32.obj
 
 LEXOBJS = $(OBJDIR)\das.tab.obj \
 		$(OBJDIR)\dds.tab.obj \
