@@ -32,6 +32,9 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.42  1999/12/15 01:14:37  jimg
+ * Added static members to help control the cache.
+ *
  * Revision 1.41  1999/12/01 21:37:44  jimg
  * Added members to support caching.
  * Added accessors for cache control. libwww 5.2.9 does not supoort these,
@@ -360,6 +363,10 @@ private:
     bool _local;		// Is this a local connection
 
     // The following members are valid only if _LOCAL is false.
+
+    static int _num_remote_conns; // How many remote connections exist?
+    static bool _cache_enabled;	// True if the cache is on.
+    static char *_cache_root;	// If on, where is the cache?
 
     static HTList *_conv;	// List of global converters
     
