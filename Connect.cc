@@ -8,6 +8,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.32  1996/08/13 17:53:34  jimg
+// Corrected misuse of the istrstream class; added calls to the freeze member
+// function where needed.
+// Fixed test for URL -vs- filename in the object ctor.
+//
 // Revision 1.31  1996/07/17 22:27:20  jimg
 // Removed copy of the _output FILE * and bad logic on output() member function.
 // Added reset of _source to 0 in closr_output().
@@ -185,7 +190,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.31 1996/07/17 22:27:20 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.32 1996/08/13 17:53:34 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -424,6 +429,7 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 	      ostrstream cmd_s;
 	      cmd_s << "progress bar " << pro << "\r" << ends;
 	      (void)me->gui()->command(cmd_s.str());
+	      cmd_s.freeze(0);
 	  }
 	  else {
 	      cmd = (String)"progress bar -1\r";
@@ -550,6 +556,7 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 		   << "': " << ends;
 	    
 	    HTChunk_puts(msg, os.str());
+	    os.freeze(0);
 
             HTChunk_puts(msg, HTErrors[index].msg);         /* Error message */
 
@@ -892,8 +899,8 @@ Connect::Connect()
 Connect::Connect(const String &name)
 {
     _gui = new Gui;
-    char *ref = HTParse(name, NULL, PARSE_ALL);
-    if (ref) {
+    char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
+    if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
        	if (_connects == 0)
 	    www_lib_init();
@@ -919,6 +926,8 @@ Connect::Connect(const String &name)
 	_URL = "";
 	_local = true;
     }
+
+    HT_FREE(access_ref);
 }
 
 Connect::Connect(const Connect &copy_from)
