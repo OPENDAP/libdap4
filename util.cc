@@ -4,7 +4,13 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.7  1995/03/04 14:36:48  jimg
+// Revision 1.8  1995/03/04 15:30:11  jimg
+// Fixed List so that it will compile - it still has major bugs.
+// Modified Makefile.in so that test cases include List even though List
+// won't work (but at least the test cases will link and run, so long
+// as you don't try to do anything with Lists...
+//
+// Revision 1.7  1995/03/04  14:36:48  jimg
 // Fixed xdr_str so that it works with the new String objects.
 // Added xdr_str_array for use with arrays of String objects.
 //
@@ -33,7 +39,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.7 1995/03/04 14:36:48 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.8 1995/03/04 15:30:11 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -158,7 +164,7 @@ xdr_str(XDR *xdrs, String **buf)
       case XDR_ENCODE:		// BUF is a pointer to a (String *)
 	assert(buf && *buf);
 	
-	char *out_tmp = (const char *)**buf; // OK
+	char *out_tmp = (const char *)**buf; // cast away const
 
 	return xdr_string(xdrs, &out_tmp, max_str_len);
 
@@ -193,7 +199,7 @@ xdr_str_array(XDR *xdrs, String *buf)
       case XDR_ENCODE:		// BUF is a pointer to a (String *)
 	assert(buf);
 	
-	char *out_tmp = (const char *)*buf; // OK
+	char *out_tmp = (const char *)*buf; // cast away const
 
 	return xdr_string(xdrs, &out_tmp, max_str_len);
 

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.15 1995/03/04 14:41:18 jimg Exp $
+# $Id: Makefile.in,v 1.16 1995/03/04 15:30:10 jimg Exp $
 
 @SET_MAKE@
 
@@ -77,12 +77,12 @@ TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	 util.o
 
 TESTSRCS=TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc\
-         TestArray.cc TestStructure.cc # TestList.cc TestSequence.cc\
-#         TestFunction.cc TestGrid.cc
+         TestArray.cc TestStructure.cc TestList.cc TestSequence.cc\
+         TestFunction.cc TestGrid.cc
 
 TESTOBJS=TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
-         TestArray.o TestStructure.o # TestList.o TestSequence.o\
-#         TestFunction.o TestGrid.o
+         TestArray.o TestStructure.o TestList.o TestSequence.o\
+         TestFunction.o TestGrid.o
 
 # Added decent into SUBDIRS since it makes little sense to build these
 # libraries without the Map, Stack and Plex code.
