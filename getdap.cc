@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.21  1997/02/17 20:28:15  jimg
+// Changed output of verbose option so it is consistent for DAS, DDS and data
+//
 // Revision 1.20  1997/02/13 17:30:17  jimg
 // Added printout of the DODS version number stamp (read from the MIME header).
 // Use the verbose option to enable display.
@@ -88,7 +91,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.20 1997/02/13 17:30:17 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.21 1997/02/17 20:28:15 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -98,7 +101,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.20 1997/02/13 17:30:17 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.20 $";
+const char *VERSION = "$Revision: 1.21 $";
 
 void
 usage(String name)
@@ -224,7 +227,7 @@ main(int argc, char * argv[])
 
     for (int i = getopt.optind; i < argc; ++i) {
 	if (verbose)
-	    cerr << "Fetching " << argv[i] << endl;
+	    cerr << "Fetching: " << argv[i] << endl;
 	
 	String name = argv[i];
 	Connect url(name, trace);
@@ -240,8 +243,11 @@ main(int argc, char * argv[])
 	    for (int j = 0; j < times; ++j) {
 		if (!url.request_das(gui))
 		    continue;
-		if (verbose)
+		if (verbose) {
+		    cerr << "Server version: " << url.server_version() 
+			<< endl;
 		    cerr << "DAS:" << endl;
+		}
 		url.das().print();
 	    }
 	}
@@ -250,8 +256,11 @@ main(int argc, char * argv[])
 	    for (int j = 0; j < times; ++j) {
 		if (!url.request_dds(gui))
 		    continue;
-		if (verbose)
+		if (verbose) {
+		    cerr << "Server version: " << url.server_version() 
+			<< endl;
 		    cerr << "DDS:" << endl;
+		}
 		url.dds().print();
 	    }
 	}
@@ -304,6 +313,9 @@ main(int argc, char * argv[])
 	    for (int j = 0; j < times; ++j) {
 		if (!url.fetch_url(url_string, async))
 		    continue;
+		if (verbose)
+		    cerr << "Server version: " << url.server_version() 
+			<< endl;
 		FILE *fp = url.output();
 		if (!read_data(fp))
 		    continue;
