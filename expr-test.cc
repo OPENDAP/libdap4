@@ -10,6 +10,13 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.25  2000/07/08 01:32:16  rmorris
+// Changes to loopback_pipe method under win32.  A difference between the
+// iostream implementation under win32 (versus unix) means that the loopback
+// pipe can't be a pipe at all.  See win32 code for parse_constraint()
+// for specifics.  As of 7/2000, this code is untested but only gets used
+// on the "server side of the core" or in the core test suite.
+//
 // Revision 1.24  2000/06/07 18:07:00  jimg
 // Merged the pc port branch
 //
@@ -123,7 +130,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.24 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.25 2000/07/08 01:32:16 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -137,6 +144,8 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.24 2000/06/07 18:07:00 ji
 #include <rpc.h>
 #include <winsock.h>
 #include <xdr.h>
+#include <io.h>
+#include <fcntl.h>
 #else
 #include <rpc/types.h>
 #include <netinet/in.h>
@@ -499,10 +508,46 @@ evaluate_dds(DDS &table, bool print_constrained)
 bool
 loopback_pipe(FILE **pout, FILE **pin)
 {
-//  expr-test isn't supported under win32.  It will require
-//  a re-write for those platforms due to that lack of "fork()".
-//  This will allow it to build for now.
-#ifndef WIN32
+#ifdef WIN32
+#if 0
+	//  This code has been left here in the vain hope that we will
+	//  somehow be able to open an ostream given a FILE * under
+	//  win32 at some point - w/o actually openning the file twice.
+	int fd[2];
+	if (_pipe(fd, 1024, _O_BINARY) < 0) {
+	cerr << "Could not open pipe" << endl;
+	return false;
+	}
+
+    *pout = fdopen(fd[1], "w");
+    *pin = fdopen(fd[0], "r");
+#else
+	//  We can't go through a pipe in win32 land because that
+	//  would cause the pipe to be used in the constructor
+	//  for ofstream.  (see the version of DDS::parse_constraint
+	//  that uses a FILE *).  That constructor requires that
+	//  the name of the file is stored in the FILE structure and
+	//  that isn't the case with a pipe.
+
+	//  This is code that has never been show to work as of 7/2000.
+	int tfd;
+
+	//  Create unique temporary file for i/o
+	char *tmp = _tempnam(NULL,"tmp");
+
+	if((*pout = fopen(tmp,"w+b")) == NULL)
+		{
+		cerr << "Could not open loopback file " << tmp << " for writing." << endl;
+		return false;
+		}
+	if((*pin = fopen(tmp,"r+b")) == NULL)
+		{
+		cerr << "Could not open loopback file " << tmp << " for reading." << endl;
+		return false;
+		}
+	free(tmp);
+#endif
+#else
     // make a pipe
 
     int fd[2];
@@ -514,6 +559,7 @@ loopback_pipe(FILE **pout, FILE **pin)
     *pout = fdopen(fd[1], "w");
     *pin = fdopen(fd[0], "r");
 #endif
+
     return true;
 }
 
