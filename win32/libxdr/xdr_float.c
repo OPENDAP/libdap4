@@ -63,12 +63,12 @@ xdr_float(register XDR *xdrs, register float *fp)
 }
 
 #ifdef WIN32
-/*  The entire 8 bytes are reversed under win32.  This is sorta   */
-/*  like indianess - but that usually refers to the byte order of */
-/*  a single word only (0,1,2,3 vs. 3.2.1.0).  This is a double   */
-/*  word (0,1,2,3,4,5,6,7 vs. 7,6,5,4,3,2,1,0).   This could      */
-/*  probably be handled better by setting XDR_PUTLONG() and       */
-/*  XDR_GETDOUBLE().  ROM - 9/2000.                               */
+/*  Under win32, aside from endianess - the opposing halves of doubles are   */
+/*  swapped.  That is, we have the usual conditional reversal of each word   */
+/*  (4 bytes) depending upon whether the byte order of the machine is the    */
+/*  same as "network byte order" or not.  Then on top of that (under win32), */
+/*  the two words that comprise the double are simply exchanged.  This       */
+/*  should probably be tuned for efficiency.                                 */
 bool_t
 xdr_double(register XDR *xdrs, double *dp)
 {
@@ -78,28 +78,28 @@ xdr_double(register XDR *xdrs, double *dp)
 
 	switch (xdrs->x_op) {
 	case XDR_ENCODE:
-		reverse[0] = *(((unsigned char *)dp) + 7);
-		reverse[1] = *(((unsigned char *)dp) + 6);
-		reverse[2] = *(((unsigned char *)dp) + 5);
-		reverse[3] = *(((unsigned char *)dp) + 4);
-		reverse[4] = *(((unsigned char *)dp) + 3);
-		reverse[5] = *(((unsigned char *)dp) + 2);
-		reverse[6] = *(((unsigned char *)dp) + 1);
-		reverse[7] = *(((unsigned char *)dp) + 0);
+		reverse[0] = *(((unsigned char *)dp) + 4);
+		reverse[1] = *(((unsigned char *)dp) + 5);
+		reverse[2] = *(((unsigned char *)dp) + 6);
+		reverse[3] = *(((unsigned char *)dp) + 7);
+		reverse[4] = *(((unsigned char *)dp) + 0);
+		reverse[5] = *(((unsigned char *)dp) + 1);
+		reverse[6] = *(((unsigned char *)dp) + 2);
+		reverse[7] = *(((unsigned char *)dp) + 3);
 		lp = (long *)reverse;
 		retval = XDR_PUTLONG(xdrs, lp++) && XDR_PUTLONG(xdrs, lp);
 		return (retval);
 	case XDR_DECODE:
 		lp = (long *)dp;
 		retval = XDR_GETLONG(xdrs, lp++) && XDR_GETLONG(xdrs, lp);
-		reverse[0] = *(((unsigned char *)dp) + 7);
-		reverse[1] = *(((unsigned char *)dp) + 6);
-		reverse[2] = *(((unsigned char *)dp) + 5);
-		reverse[3] = *(((unsigned char *)dp) + 4);
-		reverse[4] = *(((unsigned char *)dp) + 3);
-		reverse[5] = *(((unsigned char *)dp) + 2);
-		reverse[6] = *(((unsigned char *)dp) + 1);
-		reverse[7] = *(((unsigned char *)dp) + 0);
+		reverse[0] = *(((unsigned char *)dp) + 4);
+		reverse[1] = *(((unsigned char *)dp) + 5);
+		reverse[2] = *(((unsigned char *)dp) + 6);
+		reverse[3] = *(((unsigned char *)dp) + 7);
+		reverse[4] = *(((unsigned char *)dp) + 0);
+		reverse[5] = *(((unsigned char *)dp) + 1);
+		reverse[6] = *(((unsigned char *)dp) + 2);
+		reverse[7] = *(((unsigned char *)dp) + 3);
 		*dp = (*((double *)(reverse)));
 		return (retval);
 	case XDR_FREE:
@@ -112,6 +112,7 @@ bool_t
 xdr_double(register XDR *xdrs, double *dp)
 {
 	register long *lp;
+
 	switch (xdrs->x_op) {
 
 	case XDR_ENCODE:
