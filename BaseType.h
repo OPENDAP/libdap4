@@ -8,9 +8,13 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.21  1996/02/02 00:31:00  jimg
-/* Merge changes for DODS-1.1.0 into DODS-2.x
+/* Revision 1.22  1996/03/05 18:44:52  jimg
+/* Added ce_eval to serailize member function.
+/* Added ops member function.
 /*
+ * Revision 1.21  1996/02/02 00:31:00  jimg
+ * Merge changes for DODS-1.1.0 into DODS-2.x
+ *
  * Revision 1.20  1995/12/09  01:06:33  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -55,19 +59,19 @@
  *
  * Revision 1.14  1995/03/04  14:34:56  jimg
  * Major modifications to the transmission and representation of values:
- * 	Added card() virtual function which is true for classes that
- * 	contain cardinal types (byte, int float, string).
- * 	Changed the representation of Str from the C rep to a C++
- * 	class represenation.
- * 	Chnaged read_val and store_val so that they take and return
- * 	types that are stored by the object (e.g., inthe case of Str
- * 	an URL, read_val returns a C++ String object).
- * 	Modified Array representations so that arrays of card()
- * 	objects are just that - no more storing strings, ... as
- * 	C would store them.
- * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
- * 	an array of a structure is represented as an array of Structure
- * 	objects).
+ * Added card() virtual function which is true for classes that
+ * contain cardinal types (byte, int float, string).
+ * Changed the representation of Str from the C rep to a C++
+ * class represenation.
+ * Chnaged read_val and store_val so that they take and return
+ * types that are stored by the object (e.g., inthe case of Str
+ * an URL, read_val returns a C++ String object).
+ * Modified Array representations so that arrays of card()
+ * objects are just that - no more storing strings, ... as
+ * C would store them.
+ * Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * an array of a structure is represented as an array of Structure
+ * objects).
  *
  * Revision 1.13  1995/02/16  22:46:02  jimg
  * Added _in private member. It is used to keep a copy of the input FILE *
@@ -189,10 +193,12 @@ enum Type {
     structure_t,
     sequence_t,
     function_t,
-    grid_t
+    grid_t,
+    base_type_t,		// these are used in constraint expressions
+    func_ptr_t
 };
 
-class DDS;			// forward declaration
+class DDS;			// forward declaration; see DDS.h
 
 class BaseType {
 private:
@@ -223,7 +229,7 @@ private:
     static XDR *_xdrout;	// xdr pointer for output (default: to stdout)
 
     bool _read_p;		// true if the value has been read
-    bool _send_p;		// true if the variale is to be transmitted
+    bool _send_p;		// true if the variable is to be transmitted
 
 protected:
     void _duplicate(const BaseType &bt);
@@ -302,7 +308,7 @@ public:
 
     // Move data to and from the net.
     virtual bool serialize(const String &dataset, DDS &dds, 
-			   bool flush = false) = 0; 
+			   bool ce_eval = true, bool flush = false) = 0; 
     virtual bool deserialize(bool reuse = false) = 0;
     
     // Write the buffers maintained by XDR to the associated FILE *s.
@@ -322,6 +328,12 @@ public:
 			   bool print_decl_p = true) = 0;
 
     virtual bool check_semantics(bool all = false);
+
+    // This function contains the relational operators used by the CE
+    // evaluator in the DDS class. Each class that wants to be able to
+    // evaluate relational expressions must overload this function. The
+    // implementation in BaseType returns false and prints an error message.
+    virtual bool ops(BaseType &b, int op);
 };
 
 typedef BaseType * BaseTypePtr;
