@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.122 2003/02/26 06:39:13 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.123 2003/02/27 23:22:30 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -59,10 +59,6 @@ static char rcsid[] not_used =
 #include "Connect.h"
 #include "escaping.h"
 #include "RCReader.h"
-
-#if 0
-#define SHOW_MSG (WWWTRACE || HTAlert_interactive())
-#endif
 
 using std::cerr;
 using std::endl;
@@ -178,11 +174,11 @@ Connect::parse_mime(FILE * data_source)
     @param uname Ignored
     @param password Ignored
     @brief Create an instance of Connect. */
-Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate, 
+Connect::Connect(const string &n, bool www_verbose_errors, bool accept_deflate, 
 		 string uname, string password) throw (Error, InternalErr)
     : d_type(unknown_type), d_server(""), d_stream(0), _source(0)
 {
-    name = prune_spaces(name);
+    string name = prune_spaces(n);
     
     // Figure out if the URL starts with 'http', if so, make sure that we
     // talk to an instance of HTTPConnect.
@@ -215,9 +211,15 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate,
     else {
 	DBG(cerr << "Connect: The identifier is a local data source." << endl);
 
+	d_http = 0;
 	_URL = "";
 	_local = true;		// local in this case means non-DODS
     }
+
+    set_accept_deflate(accept_deflate);
+
+    if (uname != "")
+	set_credentials(uname, password);
 }
 
 Connect::~Connect()
@@ -236,24 +238,10 @@ Connect::~Connect()
 FILE *
 Connect::output()
 {
-    if (!d_stream)
-	throw Error("Attempt to get the response stream when one has not been opened.");
-    else 
+    if (d_stream)
 	return d_stream;
-
-#if 0
-    FILE *ret_output = NULL ;
-    if (_local) {
-	ret_output = d_output;
-    } else {
-	ret_output = d_http->output();
-	if( ret_output != d_output ) {
-	    close_source() ;
-	    d_output = ret_output ;
-	}
-    }
-    return ret_output ;
-#endif
+    else 
+	throw Error("Attempt to get the response stream when one has not been opened.");
 }
 
 /** The data retrieved from a remote DODS server will be in XDR
@@ -293,16 +281,6 @@ Connect::close_output()
 	fclose(d_stream);
 	d_stream = 0;
     }
-
-#if 0
-    if (d_output && _local) {
-	int res = fclose(d_output);
-	if( res ) {
-	    DBG(cerr << "Connect::close_output - Failed to close " << (void *)d_output << endl ;) ;
-	}
-	d_output = 0;
-    }
-#endif
 }
 
 void
@@ -393,10 +371,6 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	d_stream = d_http->fetch_url(das_url);
     }
     catch (...) {
-#if 0
-	fclose(d_stream);
-	d_stream = 0;
-#endif
 	close_output();
 	throw;
     }
@@ -663,7 +637,18 @@ Connect::error()
 void 
 Connect::set_credentials(string u, string p)
 {
-    d_http->set_credentials(u, p);
+    if (d_http)
+	d_http->set_credentials(u, p);
+}
+
+/** Set the <c>accept deflate</c> property. 
+    @param deflate True if the client can accept compressed responses, Flase
+    otherwise. */
+void 
+Connect::set_accept_deflate(bool deflate)
+{
+    if (d_http)
+	d_http->set_accept_deflate(deflate);
 }
 
 /** Disable any further use of the client-side cache. In a future version
@@ -750,6 +735,10 @@ Connect::get_cache_control()
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.123  2003/02/27 23:22:30  jimg
+// Removed old code (code inside #if 0 ... #endif) and added a call to
+// HTTPConnect::set_credentials() and set_accept_deflate() in the constructor.
+//
 // Revision 1.122  2003/02/26 06:39:13  jimg
 // Fixed documentation comments.
 //
