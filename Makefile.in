@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.155 2004/08/03 23:15:10 jimg Exp $
+# $Id: Makefile.in,v 1.156 2004/10/22 21:42:40 jimg Exp $
 
 @SET_MAKE@
 
@@ -22,7 +22,8 @@ DEFS = @DEFS@
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 # Use these options for debugging. 12/24/02 jhrg
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-default-inline -fno-defer-pop
-CXXFLAGS = @CXXFLAGS@ -Wall -Wno-deprecated -DNDEBUG
+CXXFLAGS = $(CXXFLAGS_DEBUG) 
+# CXXFLAGS = @CXXFLAGS@ -Wall -Wno-deprecated -DNDEBUG
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 LDFLAGS = -L. @LDFLAGS@ $(CPP_UNIT_LIB)
 LFLAGS = -8
