@@ -12,9 +12,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.16  1996/11/25 03:45:08  jimg
-/* Added prototypes for new functions.
+/* Revision 1.17  1996/11/27 22:40:30  jimg
+/* Added DDS as third parameter to function in the CE evaluator
 /*
+ * Revision 1.16  1996/11/25 03:45:08  jimg
+ * Added prototypes for new functions.
+ *
  * Revision 1.15  1996/11/22 00:08:34  jimg
  * Added compressor and decompresor prototypes.
  *
@@ -101,10 +104,11 @@ FILE *compressor(FILE *output);
 FILE *decompressor(FILE *input);
 String dods_root();
 
-bool func_member(int argc, BaseType *argv[]);
-bool func_null(int argc, BaseType *argv[]);
-BaseType *func_nth(int argc, BaseType *argv[]);
-BaseType *func_length(int argc, BaseType *argv[]);
+bool func_member(int argc, BaseType *argv[], DDS &dds);
+bool func_null(int argc, BaseType *argv[], DDS &dds);
+BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
+BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
+
 bool byte_ops(int i1, int i2, int op);
 bool int_ops(int i1, int i2, int op);
 bool double_ops(double i1, double i2, int op);

@@ -8,6 +8,9 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.3  1996/11/27 22:40:16  jimg
+// Added DDS as third parameter to function in the CE evaluator
+//
 // Revision 1.2  1996/08/13 17:49:58  jimg
 // Fixed a bug in the value() member function where non-existent functions
 // were `evaluated' (producing a core dump).
@@ -22,6 +25,8 @@
 
 #include <assert.h>
 
+#include "expr.h"
+#include "DDS.h"
 #include "Clause.h"
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
@@ -45,12 +50,6 @@ Clause::Clause() : op(0), b_func(0), bt_func(0), arg1(0), args(0)
 
 Clause::~Clause() 
 {
-#if 0
-	if (arg1)
-	    delete arg1;
-
-	delete args;
-#endif
 }
 
 bool
@@ -83,7 +82,7 @@ Clause::value_clause()
 }
 
 bool 
-Clause::value(const String &dataset) 
+Clause::value(const String &dataset, DDS &dds) 
 {
     assert(OK());
     assert(op || b_func);
@@ -91,12 +90,12 @@ Clause::value(const String &dataset)
     if (op) {			// Is it a relational clause?
 	// rvalue::bvalue(...) returns the rvalue encapsulated in a
 	// BaseType *.
-	BaseType *btp = arg1->bvalue(dataset);
+	BaseType *btp = arg1->bvalue(dataset, dds);
 	// The list of rvalues is an implicit logical OR, so assume
 	// FALSE and return TRUE for the first TRUE subclause.
 	bool result = false;
 	for (Pix p = args->first(); p && !result; args->next(p))
-	    result = result || btp->ops(*(*args)(p)->bvalue(dataset), op);
+	    result = result || btp->ops(*(*args)(p)->bvalue(dataset, dds), op);
 
 	return result;
     }
@@ -106,10 +105,10 @@ Clause::value(const String &dataset)
 		
 	int i = 0;
 	for (Pix p = args->first(); p; args->next(p)) {
-	    argv[i++] = (*args)(p)->bvalue(dataset);
+	    argv[i++] = (*args)(p)->bvalue(dataset, dds);
 	}
 
-	bool result = (*b_func)(argc, argv);
+	bool result = (*b_func)(argc, argv, dds);
 	return result;
     }
     else {
@@ -122,7 +121,7 @@ Clause::value(const String &dataset)
 }
 
 bool 
-Clause::value(const String &dataset, BaseType **value) 
+Clause::value(const String &dataset, DDS &dds, BaseType **value) 
 {
     assert(OK());
     assert(bt_func);
@@ -133,10 +132,10 @@ Clause::value(const String &dataset, BaseType **value)
 		
 	int i = 0;
 	for (Pix p = args->first(); p; args->next(p)) {
-	    argv[i++] = (*args)(p)->bvalue(dataset);
+	    argv[i++] = (*args)(p)->bvalue(dataset, dds);
 	}
 
-	*value = (*bt_func)(argc, argv);
+	*value = (*bt_func)(argc, argv, dds);
 	if (*value) {
 	    (*value)->set_read_p(true);
 	    (*value)->set_send_p(true);

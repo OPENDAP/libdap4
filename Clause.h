@@ -11,12 +11,15 @@
 // Interface for the CE Clause class.
 
 // $Log: Clause.h,v $
+// Revision 1.2  1996/11/27 22:40:18  jimg
+// Added DDS as third parameter to function in the CE evaluator
+//
 // Revision 1.1  1996/05/31 22:45:03  jimg
 // Added.
 //
 
-#ifndef clause_h
-#define clause_h
+#ifndef _clause_h_
+#define _clause_h_
 
 #ifdef __GNUG__
 #pragma interface
@@ -50,10 +53,10 @@ struct Clause {
     bool value_clause();
 
     /// Evaluate a clause which returns a boolean value
-    bool value(const String &dataset);
+    bool value(const String &dataset, DDS &dds);
 
     /// Evaluate a clause that returns a value via a BaseType pointer.
-    bool value(const String &dataset, BaseType **value);
+    bool value(const String &dataset, DDS &dds, BaseType **value);
 };
 	
 #endif // clause_h

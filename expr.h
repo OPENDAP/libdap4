@@ -12,6 +12,9 @@
 // 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.9  1996/11/27 22:40:24  jimg
+// Added DDS as third parameter to function in the CE evaluator
+//
 // Revision 1.8  1996/05/31 23:31:01  jimg
 // Updated copyright notice.
 //
@@ -67,11 +70,13 @@ typedef struct {
 
 // Syntactic sugar for `pointer to function returning boolean'
 // (BOOL_FUNC_PTR) and `pointer to function returning BaseType *'
-// (BTP_FUNC_PTR). Both function types take two arguments, an integer (ARGC)
-// and a vector of BaseType *s (ARGV). ARGC is the length of ARGV
+// (BTP_FUNC_PTR). Both function types take three arguments, an integer
+// (ARGC), a vector of BaseType *s (ARGV) and the DDS for the dataset for
+// which these function is being evaluated (analogous to the ENVP in UNIX).
+// ARGC is the length of ARGV.
 
-typedef bool (*bool_func)(int argc, BaseType *argv[]);
-typedef BaseType *(*btp_func)(int argc, BaseType *argv[]);
+typedef bool (*bool_func)(int argc, BaseType *argv[], DDS &dds);
+typedef BaseType *(*btp_func)(int argc, BaseType *argv[], DDS &dds);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array
 // indices.
@@ -97,7 +102,7 @@ struct rvalue {
     // returns the result.
     // NB: The functions referenced by func_rvalues must encapsulate their
     // return values in BaseType *s.
-    BaseType *bvalue(const String &dataset);
+    BaseType *bvalue(const String &dataset, DDS &dds);
 };
 
 typedef SLList<rvalue *> rvalue_list;
@@ -111,7 +116,7 @@ struct func_rvalue {
 
     ~func_rvalue();
 
-    BaseType *bvalue(const String &dataset);
+    BaseType *bvalue(const String &dataset, DDS &dds);
 };
 
 #endif /* _expr_h */

@@ -9,6 +9,9 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.26  1996/11/27 22:40:19  jimg
+// Added DDS as third parameter to function in the CE evaluator
+//
 // Revision 1.25  1996/11/13 19:23:07  jimg
 // Fixed debugging.
 //
@@ -141,7 +144,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.25 1996/11/13 19:23:07 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.26 1996/11/27 22:40:19 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -154,13 +157,13 @@ static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.25 1996/11/13 19:23:07 jimg E
 #include <iostream.h>
 #include <stdiostream.h>
 
+#include "expr.h"
+#include "Clause.h"
 #include "DDS.h"
 #include "Error.h"
 #include "parser.h"
 #include "debug.h"
 #include "util.h"
-
-#include "config_dap.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -366,7 +369,7 @@ DDS::clause_value(Pix p, const String &dataset)
 {
     assert(!expr.empty());
 
-    return expr(p).value(dataset);
+    return expr(p).value(dataset, *this);
 }
 
 
@@ -461,7 +464,7 @@ DDS::eval_function(const String &dataset)
 
     Pix p = first_clause();
     BaseType *result;
-    if (clause(p).value(dataset, &result))
+    if (clause(p).value(dataset, *this, &result))
 	return result;
     else
 	return NULL;
@@ -498,7 +501,7 @@ DDS::eval_selection(const String &dataset)
     for (Pix p = first_clause(); p && result; next_clause(p)) {
 	// A selection expression *must* contain only boolean clauses!
 	assert(clause(p).boolean_clause());
-	result = result && clause(p).value(dataset);
+	result = result && clause(p).value(dataset, *this);
     }
 
     return result;

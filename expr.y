@@ -17,9 +17,12 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.15  1996/10/18 16:55:15  jimg
-/* Fixed the fix for bison 1.25...
+/* Revision 1.16  1996/11/27 22:40:26  jimg
+/* Added DDS as third parameter to function in the CE evaluator
 /*
+ * Revision 1.15  1996/10/18 16:55:15  jimg
+ * Fixed the fix for bison 1.25...
+ *
  * Revision 1.14  1996/10/08 17:04:43  jimg
  * Added a fix for Bison 1.25 so that PARSE_PARAM will still work
  *
@@ -93,7 +96,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.15 1996/10/18 16:55:15 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.16 1996/11/27 22:40:26 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,7 +163,7 @@ rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 
 BaseType *make_variable(DDS &table, const value &val);
 
-rvalue *dereference_variable(rvalue *rv);
+rvalue *dereference_variable(rvalue *rv, DDS &dds);
 rvalue *dereference_url(value &val);
 
 bool_func get_function(const DDS &table, const char *name);
@@ -336,7 +339,7 @@ r_value:        identifier
                 | constant
 		| '*' identifier
 		  {
-		      $$ = dereference_variable($2);
+		      $$ = dereference_variable($2, *DDS_OBJ(arg));
 		      if (!$$)
 			  exprerror("Could not dereference variable", 
 				    ($2)->value->name());
@@ -794,9 +797,10 @@ dereference_url(value &val)
 // is a string and, if all that works, dereference it.
 
 rvalue *
-dereference_variable(rvalue *rv)
+dereference_variable(rvalue *rv, DDS &dds)
 {
-    BaseType *btp = rv->bvalue("dummy"); // the value will be read over the net
+    // the value will be read over the net
+    BaseType *btp = rv->bvalue("dummy", dds); 
     if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
 	cerr << "Variable: " << btp->name() 
 	    << " must be either a string or a url" 

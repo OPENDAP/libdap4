@@ -11,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.31  1996/11/27 22:40:29  jimg
+// Added DDS as third parameter to function in the CE evaluator
+//
 // Revision 1.30  1996/11/25 03:44:39  jimg
 // Added new dods_root function.
 // Fixed compressor().
@@ -165,7 +168,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.30 1996/11/25 03:44:39 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.31 1996/11/27 22:40:29 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -503,7 +506,7 @@ systime()
 // These functions are used by the CE evaluator
 
 bool
-func_member(int argc, BaseType *argv[])
+func_member(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 2) {
 	cerr << "Wrong number of arguments." << endl;
@@ -527,7 +530,7 @@ func_member(int argc, BaseType *argv[])
 }
 
 bool
-func_null(int argc, BaseType *argv[])
+func_null(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 1) {
 	cerr << "Wrong number of arguments." << endl;
@@ -550,7 +553,7 @@ func_null(int argc, BaseType *argv[])
 }
 
 BaseType *
-func_length(int argc, BaseType *argv[])
+func_length(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 1) {
 	cerr << "Wrong number of arguments." << endl;
@@ -589,7 +592,7 @@ func_length(int argc, BaseType *argv[])
 }
 
 BaseType *
-func_nth(int argc, BaseType *argv[])
+func_nth(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 2) {
 	cerr << "Wrong number of arguments." << endl;
