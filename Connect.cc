@@ -3,11 +3,14 @@
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
-//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)//
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 //	dan		Dan Holloway (dan@hollywood.gso.uri.edu)
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.27  1996/06/20 15:59:24  jimg
+// Added conditional definition of union semun {};
+//
 // Revision 1.26  1996/06/18 23:43:42  jimg
 // Added support for a GUI. The GUI is actually contained in a separate program
 // that is run in a subprocess. The core `talks' to the GUI using a pty and a
@@ -167,7 +170,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.26 1996/06/18 23:43:42 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.27 1996/06/20 15:59:24 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -194,12 +197,21 @@ static char rcsid[]={"$Id: Connect.cc,v 1.26 1996/06/18 23:43:42 jimg Exp $"};
 #include "config_dap.h"
 
 // On a sun (4.1.3) these are not prototyped... Maybe other systems too?
-#if (SEM_PROTO == 0)
+#if (HAVE_SEM_PROTO == 0)
 extern "C" {
     int semget(key_t key, int nsems, int flag);
     int semctl(int semid, int semnum, int cmd, union semun arg);
     int semop(int semid, struct sembuf sb[], size_t nops);
 }
+#endif
+
+// osf-3.0 fails to define this in <sys/sem.h>
+#if (HAVE_SEM_UNION == 0)
+union semun {
+    val;
+    struct semid_ds *buf;
+    ushort *array;
+};
 #endif
 
 // Constants used to talk to the GUI.
