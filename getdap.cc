@@ -35,10 +35,9 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.67 2003/03/12 01:07:34 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.68 2003/03/14 20:04:48 jimg Exp $"};
 
 #include <stdio.h>
-#include <assert.h>
 #ifdef WIN32
 #include <io.h>
 #include <fcntl.h>
@@ -58,7 +57,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.67 2003/03/12 01:07:34 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.67 $";
+const char *version = "$Revision: 1.68 $";
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 
@@ -118,19 +117,14 @@ read_data(FILE *fp)
 }
 
 static void
-process_data(Connect *url, DDS &dds, bool verbose = false, 
-	     bool print_rows = false)
+print_data(DDS &dds, bool print_rows = false)
 {
-    if (verbose)
-	fprintf( stderr, "Server version: %s\n",
-		 url->get_version().c_str() ) ;
-
     fprintf( stdout, "The data:\n" ) ;
 
     for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++) {
 	BaseType *v = *i ;
-	if (print_rows && v->type() == dods_sequence_c)
-	    dynamic_cast<Sequence*>(v)->print_val_by_rows(stdout);
+	if (print_rows && (*i)->type() == dods_sequence_c)
+	    dynamic_cast<Sequence*>(*i)->print_val_by_rows(stdout);
 	else
 	    v->print_val(stdout);
     }
@@ -231,7 +225,12 @@ main(int argc, char * argv[])
 		try {
 		    DataDDS dds;
 		    url->read_data(dds, source);
-		    process_data(url, dds, verbose, print_rows);
+
+		    if (verbose)
+			fprintf( stderr, "Server version: %s\n",
+				 url->get_version().c_str() ) ;
+
+		    print_data(dds, print_rows);
 		}
 		catch (Error &e) {
 		    e.display_message();
@@ -292,8 +291,15 @@ main(int argc, char * argv[])
 		for (int j = 0; j < times; ++j) {
 		    DataDDS dds;
 		    try {
+			DBG(cerr << "URL: " << url->URL(false) << endl);
+			DBG(cerr << "CE: " << expr << endl);
 			url->request_data(dds, expr);
-			process_data(url, dds, verbose, print_rows);
+
+			if (verbose)
+			    fprintf( stderr, "Server version: %s\n",
+				     url->get_version().c_str() ) ; 
+
+			print_data(dds, print_rows);
 		    }
 		    catch (Error &e) {
 			e.display_message();
@@ -310,7 +316,7 @@ main(int argc, char * argv[])
 			Response *r = http.fetch_url(url_string);
 			if (verbose)
 			    fprintf( stderr, "Server version: %s\n",
-				     r->get_version().c_str() ) ; 
+				     url->get_version().c_str() ) ; 
 			if (!read_data(r->get_stream()))
 			    continue;
 			delete r;
@@ -339,6 +345,10 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.68  2003/03/14 20:04:48  jimg
+// I tidied up process_data and changed its name to print_data. Removed
+// <assert.h>. Added more instrumentation.
+//
 // Revision 1.67  2003/03/12 01:07:34  jimg
 // Added regular expressions to the AIS subsystem. In an AIS database (XML)
 // it is now possible to list a regular expression in place of an explicit
