@@ -13,6 +13,10 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.29  1998/12/22 04:42:19  jimg
+// Corrected some of the doc comments; fixed spelling and added error return
+// values.
+//
 // Revision 1.28  1998/11/10 01:05:38  jimg
 // This class now holds a list of Clause pointers, not objects.
 //
@@ -356,13 +360,16 @@ public:
 
 	NB: If a dataset contains two constructor types which have field
 	names that are the same (say point.x and pair.x) you should always
-	use fully qualified names to get each of those variables! */
+	use fully qualified names to get each of those variables!
+
+	@return A pointer to the variable or null if not found. */
     BaseType *var(const String &n);
 
-    /** Returns a pointer to the named variable. */
+    /** Returns a pointer to the named variable.
+	@return A pointer to the variable or null if not found. */
     BaseType *var(const char *n);
 
-    /** Seach for for variable {\it n} as above but record all ctor type
+    /** Search for for variable {\it n} as above but record all ctor type
 	variables which ultimately contain {\it n} on {\it s}. This stack
 	can then be used to mark the contained ctor-type variables as part of
 	the current projection.
@@ -371,7 +378,8 @@ public:
 	could not be found. */
     BaseType *var(const String &n, btp_stack &s);
 
-    /** Returns a pointer to the indicated variable. */
+    /** Returns a pointer to the indicated variable.
+	@return A pointer to the variable or null if not found. */
     BaseType *var(Pix p);
     //@}
 
