@@ -10,8 +10,13 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.7  1999/02/22 22:59:07  jimg
+// Added the get_accept_types() accessor.
+// Changed the ctor so that the -t option is recognized.
+//
 // Revision 1.6  1998/12/16 19:10:53  jimg
-// Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
+// Added support for XDODS-Server MIME header. This fixes a problem where our
+// use of Server clashed with Java.
 //
 // Revision 1.5  1998/11/10 01:04:42  jimg
 // Added `ends' to strings made with ostrstream (fixes a bug found with
@@ -42,7 +47,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.6 1998/12/16 19:10:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.7 1999/02/22 22:59:07 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -57,12 +62,12 @@ static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.6 1998/12/16 19:10:53 
 
 DODSFilter::DODSFilter(int argc,char *argv[]) : comp(false), ver(false), 
     bad_options(false), dataset(""), ce(""), cgi_ver(""),
-    anc_dir(""), anc_file(""), cache_dir("")
+    anc_dir(""), anc_file(""), cache_dir(""), accept_types("All")
 {
     program_name = argv[0];
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce:v:d:f:r:");
+    GetOpt getopt (argc, argv, "ce:v:d:f:r:t:");
 
     while ((option_char = getopt()) != EOF)
 	switch (option_char) {
@@ -72,6 +77,7 @@ DODSFilter::DODSFilter(int argc,char *argv[]) : comp(false), ver(false),
 	  case 'd': anc_dir = getopt.optarg; break;
 	  case 'f': anc_file = getopt.optarg; break;
 	  case 'r': cache_dir = getopt.optarg; break;
+	  case 't': accept_types = getopt.optarg; break;
 	  default: bad_options = true; break;
 	}
 
@@ -121,6 +127,12 @@ String
 DODSFilter::get_cache_dir()
 {
   return cache_dir;
+}
+
+String
+DODSFilter::get_accept_types()
+{
+    return accept_types;
 }
 
 bool
