@@ -382,7 +382,16 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
     int error = 0;
     int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
     
-    bool status = get_row(i, dataset, dds, ce_eval);
+    bool status;
+    // This should go away once serialize() uses exceptions to signal errors.
+    // 10/5/2000 jhrg
+    try {
+      status = get_row(i, dataset, dds, ce_eval);
+    }
+    catch (Error &e) {
+      return false;
+    }
+
     while (status && is_end_of_rows(i)) {
       i += d_row_stride;
 
@@ -610,6 +619,13 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.59  2000/10/06 01:26:05  jimg
+// Changed the way serialize() calls read(). The status from read() is
+// returned by the Structure and Sequence serialize() methods; ignored by
+// all others. Any exceptions thrown by read() are caught and discarded.
+// serialize() returns false if read() throws an exception. This should
+// be fixed once all the servers build using the new read() definition.
+//
 // Revision 1.58  2000/09/22 02:17:21  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

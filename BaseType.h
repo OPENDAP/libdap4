@@ -496,6 +496,10 @@ public:
 	DDS::send() function.  It has no BaseType implementation; each
 	child class supplies its own implementation.
 
+	NB: I think that this class should signal errors with exceptions and
+	not a return code. This methods calls read(), which uses exceptions
+	to signal errors.
+
 	@memo Move data to the net.
 	@param dataset The (local) name of dataset to be read.
 	@param dds The Data Descriptor Structure object corresponding to
@@ -694,6 +698,13 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.61  2000/10/06 01:26:04  jimg
+ * Changed the way serialize() calls read(). The status from read() is
+ * returned by the Structure and Sequence serialize() methods; ignored by
+ * all others. Any exceptions thrown by read() are caught and discarded.
+ * serialize() returns false if read() throws an exception. This should
+ * be fixed once all the servers build using the new read() definition.
+ *
  * Revision 1.60  2000/09/22 02:52:58  jimg
  * Fixes to the tests to recognize some of the new error messages. Also,
  * the test drivers were modified to catch the exceptions now thrown by

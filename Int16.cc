@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int16.cc,v 1.10 2000/09/22 02:17:20 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int16.cc,v 1.11 2000/10/06 01:26:05 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -58,8 +58,17 @@ Int16::serialize(const string &dataset, DDS &dds, XDR *sink,
   // libdap++ if we can not read the data that is the problem 
   // of the user or of whoever wrote the surrogate library
   // implemeting read therefore it is an internal error.
+#if 0
   if (!read_p() && !read(dataset))
       throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
+#endif
+  try {
+    if (!read_p())
+      read(dataset);
+  }
+  catch (Error &e) {
+    return false;
+  }
   
   if (ce_eval && !dds.eval_selection(dataset))
     return true;
@@ -175,6 +184,13 @@ Int16::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Int16.cc,v $
+// Revision 1.11  2000/10/06 01:26:05  jimg
+// Changed the way serialize() calls read(). The status from read() is
+// returned by the Structure and Sequence serialize() methods; ignored by
+// all others. Any exceptions thrown by read() are caught and discarded.
+// serialize() returns false if read() throws an exception. This should
+// be fixed once all the servers build using the new read() definition.
+//
 // Revision 1.10  2000/09/22 02:17:20  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

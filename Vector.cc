@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.34 2000/10/02 18:48:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.35 2000/10/06 01:26:05 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -264,8 +264,18 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 {
     bool status = true;
 
+    try {
+      if (!read_p())
+	read(dataset);
+    }
+    catch (Error &e) {
+      return false;
+    }
+
+#if 0
     if (!read_p()) 
 	read(dataset);
+#endif
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
@@ -668,6 +678,13 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.35  2000/10/06 01:26:05  jimg
+// Changed the way serialize() calls read(). The status from read() is
+// returned by the Structure and Sequence serialize() methods; ignored by
+// all others. Any exceptions thrown by read() are caught and discarded.
+// serialize() returns false if read() throws an exception. This should
+// be fixed once all the servers build using the new read() definition.
+//
 // Revision 1.34  2000/10/02 18:48:59  jimg
 // Changed type of num in the serialize method to int
 //
