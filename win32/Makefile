@@ -215,6 +215,7 @@ TYPEOBJS = $(OBJDIR)\BaseType.obj \
 		$(OBJDIR)\Str.obj \
 		$(OBJDIR)\Url.obj \
 		$(OBJDIR)\Vector.obj \
+		$(OBJDIR)\List.obj \
 		$(OBJDIR)\Array.obj \
 		$(OBJDIR)\Structure.obj \
 		$(OBJDIR)\Sequence.obj \
@@ -345,6 +346,7 @@ $(OBJDIR)\Float64.obj : $(SRCDIR)\Float64.cc
 $(OBJDIR)\Str.obj : $(SRCDIR)\Str.cc
 $(OBJDIR)\Url.obj : $(SRCDIR)\Url.cc
 $(OBJDIR)\Vector.obj : $(SRCDIR)\Vector.cc
+$(OBJDIR)\List.obj : $(SRCDIR)\List.cc
 $(OBJDIR)\Array.obj : $(SRCDIR)\Array.cc
 $(OBJDIR)\Structure.obj : $(SRCDIR)\Structure.cc
 $(OBJDIR)\Sequence.obj : $(SRCDIR)\Sequence.cc
@@ -496,6 +498,10 @@ $(OBJDIR)\dds-test.exe		: $(OBJDIR)\dds-test.obj
 $(OBJDIR)\error-test.exe	: $(OBJDIR)\error-test.obj
 	@$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\error-test.obj $(LIBS)
 
+# expr-test will link without the TESTOBJS.  However, a side-effect
+# of failing to link with those is that expr-test will fail during
+# running of the core testsuite.
+# ROM - 12/03.
 $(OBJDIR)\expr-test.exe		: $(OBJDIR)\expr-test.obj $(TESTOBJS)
 	@$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\expr-test.obj $(TESTOBJS) $(LIBS)
 
