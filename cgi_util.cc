@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.61 2004/02/19 19:42:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.62 2004/06/28 17:00:31 pwest Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -583,6 +583,84 @@ set_mime_text(ostream &os, ObjectType type, const string &ver,
     os << endl;
 }
 
+/** Generate an HTTP 1.0 response header for a html document.
+
+    @param out Write the MIME header to this FILE pointer.
+    @param type The type of this this response.
+    @param ver The version string; denotes the DAP spec and implementation
+    version.
+    @param enc How is this response encoded? Can be plain or deflate or the
+    x_... versions of those. Default is x_plain.
+    @param last_modified The time to use for the Last-Modified header value.
+    Default is zero which means use the current time. */
+void
+set_mime_html(FILE *out, ObjectType type, const string &ver, 
+	      EncodingType enc, const time_t last_modified)
+{
+    fprintf( out, "HTTP/1.0 200 OK\n" ) ;
+    fprintf( out, "XDODS-Server: %s\n", ver.c_str() ) ;
+
+    const time_t t = time(0);
+    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
+
+    fprintf( out, "Last-Modified: " ) ;
+    if (last_modified > 0)
+	fprintf( out, "%s\n", rfc822_date(last_modified).c_str() ) ;
+    else 
+	fprintf( out, "%s\n", rfc822_date(t).c_str() ) ;
+
+    fprintf( out, "Content-type: text/html\n" ) ;
+    fprintf( out, "Content-Description: %s\n", descrip[type] ) ;
+    if (type == dods_error)	// don't cache our error responses.
+	fprintf( out, "Cache-Control: no-cache\n" ) ;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
+    if (enc != x_plain)
+	fprintf( out, "Content-Encoding: %s\n", encoding[enc] ) ;
+    fprintf( out, "\n" ) ;
+}
+
+/** Use this function to create a MIME header for a html message.
+
+    @brief Set the MIME type to html.
+    @deprecated Using the C++ iostream class is deprecated.
+
+    @param os Write the MIME header to this stream.
+    @param type The type of the response (i.e., is it a DAS, DDS, et cetera).
+    @param ver The version of the server.
+    @param enc Indicates an encoding was applied to the response payload.
+    Used primarily to tell clients they need to decompress the payload.
+    @param last_modified A RFC 822 date which gives the time the information
+    in the repsonse payload was last changed.
+    @see ObjectType
+    @see EncodingType
+    @see Connect */
+void
+set_mime_html(ostream &os, ObjectType type, const string &ver, 
+	      EncodingType enc, const time_t last_modified)
+{
+    os << "HTTP/1.0 200 OK" << endl;
+    os << "XDODS-Server: " << ver << endl;
+
+    const time_t t = time(0);
+    os << "Date: " << rfc822_date(t) << endl;
+
+    os << "Last-Modified: ";
+    if (last_modified > 0)
+	os << rfc822_date(last_modified) << endl;
+    else 
+	os << rfc822_date(t) << endl;
+
+    os << "Content-type: text/html" << endl; 
+    os << "Content-Description: " << descrip[type] << endl;
+    if (type == dods_error)	// don't cache our error responses.
+	os << "Cache-Control: no-cache" << endl;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
+    if (enc != x_plain)
+	os << "Content-Encoding: " << encoding[enc] << endl;
+    os << endl;
+}
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
     the DataDDS object).
 
@@ -911,6 +989,9 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.62  2004/06/28 17:00:31  pwest
+// html mime header
+//
 // Revision 1.61  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

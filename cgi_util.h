@@ -97,6 +97,12 @@ void set_mime_text(FILE *out, ObjectType type = unknown_type,
 		   const string &version = "", EncodingType enc = x_plain,
 		   const time_t last_modified = 0);
 
+void set_mime_html(ostream &os, ObjectType type = unknown_type, 
+		   const string &version = "", EncodingType enc = x_plain,
+		   const time_t last_modified = 0);
+void set_mime_html(FILE *out, ObjectType type = unknown_type, 
+		   const string &version = "", EncodingType enc = x_plain,
+		   const time_t last_modified = 0);
 
 void set_mime_binary(ostream &os, ObjectType type = unknown_type, 
 		     const string &version = "", EncodingType enc = x_plain,
