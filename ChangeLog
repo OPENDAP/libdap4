@@ -1,3 +1,21 @@
+1999-03-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added support for the new Int16, UInt16 and Float32 types.
+
+1999-03-22  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added the Int16, UInt16 and Float32 datatypes to attributes. See
+	the tests numbered test.18--20.
+
+1999-03-19  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added a call to setprecision(15) in geturl. This makes it so
+	that floating point numbers will print with the full range or
+	precision. It might be that I have to move this when 32 bit floats
+	are added because they have lower precision (8). However, setting
+	the precision at this level (once, before the calls to print_val()
+	start) is probably more efficient.
+
 1999-03-17  James Gallagher  <jimg@dcz.dods.org>
 
 	* Changed cgi_util.cc:find_ancillary_file() so that it looks for
@@ -463,4 +481,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.35 1999/03/18 00:40:40 jimg Exp $
+$Id: ChangeLog,v 1.36 1999/03/24 23:36:20 jimg Exp $
