@@ -11,6 +11,11 @@
 // Interface for the CE Clause class.
 
 // $Log: Clause.h,v $
+// Revision 1.5  1998/10/21 16:35:22  jimg
+// Fixed doc++ comments.
+// Changed member names so they start with an underscore - makes the member
+// functions easier to read.
+//
 // Revision 1.4  1998/01/12 14:27:56  tom
 // Second pass at class documentation.
 //
@@ -33,11 +38,13 @@
 #endif
 
 #include "expr.h"
+#include "RValue.h"
 
-/** A DODS constraint expression is composed of several separate
-    ``clauses'', separated by ampersands (\&).  This is modelled in
-    the DDS class structure as a singly-linked list of Clause
-    objects. 
+/** The selection part of a a DODS constraint expression may contain one or
+    more clauses, separated by ampersands (\&). This is modeled in the DDS
+    class structure as a singly-linked list of Clause objects. In addition, a
+    constraint expression may be a single function call, also represented in
+    the DDS using an instance of Clause.
 
     Each clause object can contain a representation of one of three
     possible forms:
@@ -63,26 +70,33 @@
 
     \end{enumerate}
 
-    The Clause object holds the constraint expression {\it after} it
+    This might be a bit confusing; in the first, and by far more common, form
+    of constraint expressions (CEs) only the first two types of clauses may
+    appear. In the second form of the CE only the last type of clause may
+    occur. The Clause class, however, can store them all.
+
+    The Clause object holds the constraint expression \emph{after} it
     has been parsed.  The parser renders the relational operator into
     an integer, and the functions into pointers.
 
     @memo Holds a section of a constraint expression.
-    @see DDS::parse_constraint
-    */
+    @see DDS::parse_constraint */
 struct Clause {
 
-  /** The relational operator, if any. */
-    int op;
-  /** A pointer to a valid boolean function. */
-    bool_func b_func;
-  /** A pointer to a valid function that returns a pointer to a
-      BaseType. */
-    btp_func bt_func;
+private:
+    /** The relational operator, if any. */
+    int _op;
+    /** A pointer to a valid boolean function. */
+    bool_func _b_func;
+    /** A pointer to a valid function that returns a pointer to a
+	BaseType. */
+    btp_func _bt_func;
 
-    rvalue *arg1;		// only for operator
-    rvalue_list *args;		// vector arg
+    int _argc;			// arg count
+    rvalue *_arg1;		// only for operator
+    rvalue_list *_args;		// vector arg
 
+public:
     Clause(const int oper, rvalue *a1, rvalue_list *rv);
     Clause(bool_func func, rvalue_list *rv);
     Clause(btp_func func, rvalue_list *rv);
