@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.29  1997/09/22 23:08:54  jimg
+// Added DDS * to deserialize parameters.
+//
 // Revision 1.28  1996/12/02 23:10:05  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -173,7 +176,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.28 1996/12/02 23:10:05 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.29 1997/09/22 23:08:54 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -233,7 +236,7 @@ Byte::serialize(const String &dataset, DDS &dds, XDR *sink,
 // deserialize the char on stdin and put the result in _BUF.
 
 bool
-Byte::deserialize(XDR *source, bool)
+Byte::deserialize(XDR *source, DDS *, bool)
 {
     unsigned int num = xdr_char(source, &_buf);
 
