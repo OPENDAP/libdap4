@@ -38,7 +38,11 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.13  1995/07/09 21:29:06  jimg
+// Revision 1.14  1995/08/23 00:11:08  jimg
+// Changed old, deprecated member functions to new ones.
+// Switched from String representation of type to enum.
+//
+// Revision 1.13  1995/07/09  21:29:06  jimg
 // Added copyright notice.
 //
 // Revision 1.12  1995/05/10  15:34:06  jimg
@@ -139,17 +143,19 @@ void
 Structure::_duplicate(const Structure &s)
 {
     set_name(s.name());
-    
+    set_type(s.type());
+
     Structure &cs = (Structure)s; // cast away const
 
     for (Pix p = cs._vars.first(); p; cs._vars.next(p))
 	_vars.append(cs._vars(p)->ptr_duplicate());
 }
 
-Structure::Structure(const String &n) 
-    : BaseType( n, "Structure", (xdrproc_t)NULL)
+Structure::Structure(const String &n) : BaseType(n, structure_t)
 {
+#ifdef NEVER
     set_name(n);
+#endif
 }
 
 Structure::Structure(const Structure &rhs)
@@ -182,27 +188,35 @@ Structure::add_var(BaseType *bt, Part p)
     _vars.append(bt);
 }
 
+#ifdef NEVER
 bool
 Structure::card()
 {
     return false;
 }
+#endif
 
+#ifdef NEVER
 unsigned int
 Structure::size()		// deprecated
 {
     return width();
 }
+#endif
 
 unsigned int
 Structure::width()
 {
+#ifdef NEVER
     unsigned int sz = 0;
 
     for (Pix p = first_var(); p; next_var(p))
-	sz += var(p)->size();
+	sz += var(p)->width();
 
     return sz;
+#endif
+
+    return sizeof(Structure);
 }
 
 bool
@@ -240,20 +254,45 @@ Structure::deserialize(bool reuse)
 unsigned int
 Structure::store_val(void *val, bool reuse)
 {
+    return val2buf(val, reuse);
+}
+
+unsigned int
+Structure::val2buf(void *val, bool reuse)
+{
+    return sizeof(Structure);
+#ifdef NEVER
     assert(val);
     
     unsigned int pos = 0;
     for (Pix p = first_var(); p; next_var(p))
-	pos += var(p)->store_val(val + pos, reuse);
+	pos += var(p)->val2buf(val + pos, reuse);
 
     return pos;
+#endif
 }
 
 unsigned int
 Structure::read_val(void **val)
 {
+    return buf2val(val);
+}
+
+unsigned int
+Structure::buf2val(void **val)
+{
+#ifdef NEVER
     assert(val);
 
+    if (!*val)
+	*val = ptr_duplicate();
+    else
+	*val = placement_dup(*val);
+#endif
+	
+    return sizeof(Structure);
+
+#ifdef NEVER
     if (!*val)
 	*val = new char[size()];
 
@@ -262,10 +301,11 @@ Structure::read_val(void **val)
 
     for (Pix p = first_var(); p; next_var(p)) {
 	tval = *val + pos;
-	pos += var(p)->read_val(&tval);
+	pos += var(p)->buf2val(&tval);
     }
 
     return pos;
+#endif
 }
 
 BaseType *
@@ -303,7 +343,7 @@ Structure::var(Pix p)
 void
 Structure::print_decl(ostream &os, String space, bool print_semi)
 {
-    os << space << type() << " {" << endl;
+    os << space << type_name() << " {" << endl;
     for (Pix p = _vars.first(); p; _vars.next(p))
 	_vars(p)->print_decl(os, space + "    ");
     os << space << "} " << name();
@@ -337,7 +377,7 @@ Structure::check_semantics(bool all)
     if (!BaseType::check_semantics())
 	return false;
 
-    if (!unique(_vars, (const char *)name(), (const char *)type()))
+    if (!unique(_vars, (const char *)name(), (const char *)type_name()))
 	return false;
 
     if (all) 

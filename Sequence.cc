@@ -38,7 +38,11 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.13  1995/07/09 21:29:03  jimg
+// Revision 1.14  1995/08/23 00:11:06  jimg
+// Changed old, deprecated member functions to new ones.
+// Switched from String representation of type to enum.
+//
+// Revision 1.13  1995/07/09  21:29:03  jimg
 // Added copyright notice.
 //
 // Revision 1.12  1995/05/10  15:34:03  jimg
@@ -137,6 +141,7 @@ void
 Sequence::_duplicate(const Sequence &s)
 {
     set_name(s.name());
+    set_type(s.type());
 
     Sequence &cs = (Sequence)s; // cast away const
     
@@ -144,11 +149,7 @@ Sequence::_duplicate(const Sequence &s)
 	add_var(cs.var(p)->ptr_duplicate());
 }
 
-// This ctor is silly -- in order to add fields to a Structure or Sequence,
-// you must use add_var (a mfunc of Structure).
-
-Sequence::Sequence(const String &n) 
-    : BaseType( n, "Sequence", (xdrproc_t)NULL) 
+Sequence::Sequence(const String &n) : BaseType(n, sequence_t) 
 {
 }
 
@@ -214,17 +215,21 @@ Sequence::var(Pix p)
 	return NULL;
 }
 
+#ifdef NEVER
 bool
 Sequence::card()
 {
     return false;
 }
+#endif
 
+#ifdef NEVER
 unsigned int
 Sequence::size()
 {
     return width();
 }
+#endif
 
 unsigned int
 Sequence::width()
@@ -232,7 +237,7 @@ Sequence::width()
     unsigned int sz = 0;
 
     for( Pix p = first_var(); p; next_var(p))
-	sz += var(p)->size();
+	sz += var(p)->width();
 
     return sz;
 }
@@ -269,11 +274,17 @@ Sequence::deserialize(bool reuse)
 unsigned int
 Sequence::store_val(void *val, bool reuse)
 {
+    return val2buf(val, reuse);
+}
+
+unsigned int
+Sequence::val2buf(void *val, bool reuse)
+{
     assert(val);
     
     unsigned int pos = 0;
     for (Pix p = first_var(); p; next_var(p))
-	pos += var(p)->store_val(val + pos, reuse);
+	pos += var(p)->val2buf(val + pos, reuse);
 
     return pos;
 }
@@ -281,17 +292,23 @@ Sequence::store_val(void *val, bool reuse)
 unsigned int
 Sequence::read_val(void **val)
 {
+    return buf2val(val);
+}
+
+unsigned int
+Sequence::buf2val(void **val)
+{
     assert(val);
 
     if (!*val)
-	*val = new char[size()];
+	*val = new char[width()];
     
     unsigned int pos = 0;
     void *tval;
 
     for (Pix p = first_var(); p; next_var(p)) {
 	tval = *val + pos;
-	pos += var(p)->read_val(&tval);
+	pos += var(p)->buf2val(&tval);
     }
 
     return pos;
@@ -300,7 +317,7 @@ Sequence::read_val(void **val)
 void
 Sequence::print_decl(ostream &os, String space, bool print_semi)
 {
-    os << space << type() << " {" << endl;
+    os << space << type_name() << " {" << endl;
     for (Pix p = _vars.first(); p; _vars.next(p))
 	_vars(p)->print_decl(os, space + "    ");
     os << space << "} " << name();
@@ -332,7 +349,7 @@ Sequence::check_semantics(bool all)
     if (!BaseType::check_semantics())
 	return false;
 
-    if (!unique(_vars, (const char *)name(), (const char *)type()))
+    if (!unique(_vars, (const char *)name(), (const char *)type_name()))
 	return false;
 
     if (all) 

@@ -38,7 +38,11 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.12  1995/07/09 21:28:59  jimg
+// Revision 1.13  1995/08/23 00:11:12  jimg
+// Changed old, deprecated member functions to new ones.
+// Switched from String representation of type to enum.
+//
+// Revision 1.12  1995/07/09  21:28:59  jimg
 // Added copyright notice.
 //
 // Revision 1.11  1995/05/10  15:34:00  jimg
@@ -129,6 +133,7 @@ void
 Grid::_duplicate(const Grid &s)
 {
     set_name(s.name());
+    set_type(s.type());
     
     _array_var = s._array_var->ptr_duplicate();
 
@@ -138,8 +143,7 @@ Grid::_duplicate(const Grid &s)
 	_map_vars.append(cs._map_vars(p)->ptr_duplicate());
 }
 
-Grid::Grid(const String &n)
-     : BaseType( n, "Grid", (xdrproc_t)NULL)
+Grid::Grid(const String &n) : BaseType(n, grid_t)
 {
 }
 
@@ -167,24 +171,29 @@ Grid::operator=(const Grid &rhs)
     return *this;
 }
 
+#ifdef NEVER
 bool
 Grid::card()
 {
     return false;
 }
+#endif
+
+#ifdef NEVER
 unsigned int
 Grid::size()
 {
     return width();
 }
+#endif
 
 unsigned int
 Grid::width()
 {
-    unsigned int sz = _array_var->size();
+    unsigned int sz = _array_var->width();
   
     for (Pix p = _map_vars.first(); p; _map_vars.next(p)) 
-	sz += _map_vars(p)->size();
+	sz += _map_vars(p)->width();
   
     return sz;
 }
@@ -228,13 +237,19 @@ Grid::deserialize(bool reuse)
 unsigned int
 Grid::store_val(void *val, bool reuse)
 {
+    return val2buf(val, reuse);
+}
+
+unsigned int
+Grid::val2buf(void *val, bool reuse)
+{
     assert(val);
 
     unsigned int pos = 0;
-    pos += _array_var->store_val(val, reuse);
+    pos += _array_var->val2buf(val, reuse);
 
     for(Pix p = _map_vars.first(); p; _map_vars.next(p))
-	pos += _map_vars(p)->store_val(val + pos, reuse);
+	pos += _map_vars(p)->val2buf(val + pos, reuse);
 
     return pos;
 }
@@ -242,16 +257,22 @@ Grid::store_val(void *val, bool reuse)
 unsigned int
 Grid::read_val(void **val)
 {
+    return buf2val(val);
+}
+
+unsigned int
+Grid::buf2val(void **val)
+{
     assert(val);
 
     if (!*val)
-	*val = new char[size()];
+	*val = new char[width()];
 
-    unsigned int pos = _array_var->read_val(val);
+    unsigned int pos = _array_var->buf2val(val);
 
     for(Pix p = _map_vars.first(); p; _map_vars.next(p)) {
         void *tval = *val + pos;
-	pos += _map_vars(p)->read_val(&tval);
+	pos += _map_vars(p)->buf2val(&tval);
     }
 
     return pos;
@@ -315,7 +336,7 @@ Grid::map_var(Pix p)
 void 
 Grid::print_decl(ostream &os, String space, bool print_semi)
 {
-    os << space << type() << " {" << endl;
+    os << space << type_name() << " {" << endl;
 
     os << space << " ARRAY:" << endl;
     _array_var->print_decl(os, space + "    ");
@@ -356,7 +377,7 @@ Grid::check_semantics(bool all)
     if (!BaseType::check_semantics())
 	return false;
 
-    if (!unique(_map_vars, (const char *)name(), (const char *)type()))
+    if (!unique(_map_vars, (const char *)name(), (const char *)type_name()))
 	return false;
 
     if (!_array_var) {
@@ -365,7 +386,7 @@ Grid::check_semantics(bool all)
     }
 	
     // Is it an array?
-    if (_array_var->type() != "Array") {
+    if (_array_var->type() != array_t) {
 	cerr << "Grid `" << name() << "'s' member `"
 	    << _array_var->name() << "' must be an array" << endl;
 	return false;
@@ -397,7 +418,7 @@ Grid::check_semantics(bool all)
 	    return false;
 	}
 	// check types
-	if (mv->type() != "Array") {
+	if (mv->type() != array_t) {
 	    cerr << "Grid map variable  `" << mv->name()
 		<< "' is not an array" << endl;
 	    return false;
