@@ -9,8 +9,23 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.84  1999/12/01 21:27:05  jimg
+// Substantial changes for the caching software. Added a call to `terminate' the
+// cache once we're done with the libwww code. This writes the .index file
+// required by the cache. Additionally, changed the cache mode from validate to
+// OK. The later forces the cache to not validate every request. Instead
+// expiration is used and the libwww code implements a fall back in those cases
+// where servers don't supply a Date header. Finally, compressed responses break
+// the cache (I think this is libwww's bug) and I've disabled caching compressed
+// data responses. So that users can cache data responses, I've added a new flag
+// in the dodsrc file called NEVER_DEFLATE which allows users to override the
+// clients wishes regarding compression (i.e., users can turn it off). Data
+// responses can thus be cached.
+//
 // Revision 1.83  1999/10/22 04:17:25  cjm
-// Added support for caching.  Most of the code is in www_lib_init(), there is also a modification to read_url() to make use of the cache if it is enabled.
+// Added support for caching.  Most of the code is in www_lib_init(), there
+// is also a modification to read_url() to make use of the cache if it is
+// enabled. 
 //
 // Revision 1.82  1999/09/03 22:07:44  jimg
 // Merged changes from release-3-1-1
@@ -464,7 +479,6 @@
 // Changed request_{das,dds} so that they use the field `_api_name'
 // instead of requiring callers to pass the api name.
 //
-
 // Revision 1.1  1994/10/05  18:02:06  jimg
 // First version of the connection management classes.
 // This commit also includes early versions of the test code.
@@ -476,7 +490,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.83 1999/10/22 04:17:25 cjm Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.84 1999/12/01 21:27:05 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -487,10 +501,6 @@ static char rcsid[] not_used ={"$Id: Connect.cc,v 1.83 1999/10/22 04:17:25 cjm E
 #include <signal.h>
 #include <assert.h>
 #include <errno.h>
-
-#if HAVE_EXPECT
-#include <expect.h>
-#endif
 
 #ifdef __GNUG__
 #include <strstream>
@@ -524,10 +534,18 @@ error to the data server maintainer or to support@unidata.ucar.edu"};
 HTList *Connect::_conv = 0;
 
 // Constants used by the cache. 
+// NB: NEVER_DEFLATE: I added this (12/1/99 jhrg) because libwww 5.2.9 cannot
+// process compressed (i.e., deflated) documents in the cache. Users must be
+// able to choose whether they want compressed data that will always be
+// refreshed or uncompressed data that will be cached. When set this flag
+// overrides the value passed into the Connect object's constructor. This
+// gives users control over the value. Previously, this could only be set by
+// the program that called Connect(...).
 static const int DODS_USE_CACHE = 1;   // 0- Disabled 1- Enabled
 static const int DODS_CACHE_MAX = 20;  // Max cache size in Mbytes
 static const int DODS_CACHED_OBJ = 5;  // Max cache entry size in Mbytes
 static const int DODS_IGN_EXPIRES = 0; // 0- Honor expires 1- Ignore them
+static const int DODS_NEVER_DEFLATE = 0; // 0- allow deflate, 1- disallow
 int CACHE_ENABLED = 0;
 
 #undef CATCH_SIG
@@ -654,11 +672,7 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 
 	  long cl = HTAnchor_length(HTRequest_anchor(request));
 	  if (cl >= 0) {
-#ifdef LIBWWW_5_0
-	      long b_read = HTRequest_bytesRead(request);
-#else
 	      long b_read = HTRequest_bodyRead(request);
-#endif
 	      double pro = (double) b_read/cl*100;
 	      ostrstream cmd_s;
 	      cmd_s << "bar " << pro << "\r" << ends;
@@ -980,9 +994,28 @@ xdods_accept_types_header_gen(HTRequest *pReq, HTStream *target)
 
     string types = "XDODS-Accept-Types: " + me->get_accept_types() + "\r\n";
     if (WWWTRACE) 
-	HTTrace("DODS..... '%s'.\n", types.c_str());
+	HTTrace("DODS........ %s", types.c_str());
     
     PUTBLOCK(types.c_str(), types.length());
+
+    return HT_OK;
+}
+
+int
+cache_control_header_gen(HTRequest *pReq, HTStream *target)
+{
+    Connect *me = (Connect *)HTRequest_context(pReq);
+
+    // If the requestor does not want a cache control header, don't write
+    // one. 12/1/99 jhrg
+    if (me->get_cache_control() == "")
+	return HT_OK;
+
+    string control = "Cache-Control: " + me->get_cache_control() + "\r\n";
+    if (WWWTRACE) 
+	HTTrace("DODS........ %s", control.c_str());
+    
+    PUTBLOCK(control.c_str(), control.length());
 
     return HT_OK;
 }
@@ -1048,6 +1081,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     int MAX_CACHE_SIZE = DODS_CACHE_MAX;
     int MAX_CACHED_OBJ = DODS_CACHED_OBJ;
     int IGNORE_EXPIRES = DODS_IGN_EXPIRES;
+    int NEVER_DEFLATE = DODS_NEVER_DEFLATE;
     int use_cache_file = 1;
     
     // The following code sets up the cache according to the data stored
@@ -1079,7 +1113,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     cifp = getenv("DODS_CACHE_INIT");
     if(!cifp) {
 	if(!homedir) {
-	    // Environment variable wasnt set, and the users home directory
+	    // Environment variable wasn't set, and the users home directory
 	    // is indeterminable, so we will neither read nor write a data 
 	    // file and instead just use the compiled in defaults.
 	    use_cache_file = 0;
@@ -1108,6 +1142,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		fpo << "MAX_CACHE_SIZE=" << MAX_CACHE_SIZE << "\n";
 		fpo << "MAX_CACHED_OBJ=" <<  MAX_CACHED_OBJ << "\n";
 		fpo << "IGNORE_EXPIRES=" << IGNORE_EXPIRES << "\n";
+		fpo << "NEVER_DEFLATE=" << NEVER_DEFLATE << "\n";
 		fpo << "CACHE_ROOT=" << cache_root << "\n";
 		fpo.close();
 	    }
@@ -1120,8 +1155,9 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	    tempstr = new char[256];
 	    int tokenlength;
 	    while(1) {
-		if(fpi.getline(tempstr, 128) < 0) break; // Gets a line from the file.
-		value = index(tempstr, '=');
+		if (fpi.getline(tempstr, 128) < 0) 
+		    break; // Gets a line from the file.
+		value = strchr(tempstr, '=');
 		if(!value) break;
 		tokenlength = (int)value - (int)tempstr;
 		value++;
@@ -1136,6 +1172,12 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		}
 		else if((strncmp(tempstr, "IGNORE_EXPIRES", 14)==0) && tokenlength == 14) {
 		    IGNORE_EXPIRES= atoi(value);
+		}
+		else if ((strncmp(tempstr, "NEVER_DEFLATE", 13) == 0)
+			 && tokenlength == 13) {
+		    // (re)Set the member value iff the dodsrc file changes
+		    // te default. 12/1/99 jhrg
+		    _accept_deflate=accept_deflate = atoi(value) ? false: true;
 		}
 		else if((strncmp(tempstr, "CACHE_ROOT", 10)==0) && tokenlength == 10) {
 		    cache_root = new char[strlen(value)+1];
@@ -1242,44 +1284,46 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTHeader_addParser("xdods-server", NO, server_handler);
     HTHeader_addParser("server", NO, server_handler);
 
-	// Add xdods_accept_types header. 2/17/99 jhrg
+    // Add xdods_accept_types header. 2/17/99 jhrg
     HTHeader_addGenerator(xdods_accept_types_header_gen);
+    // Add Cache-Control header. Use this to suppres caching of compressed
+    // data reqeusts which, for some reason, are broken. 12/1/99 jhrg
+    HTHeader_addGenerator(cache_control_header_gen);
 }
 
-// Before calling this mfunc memory for the timeval struct must be allocated.
 void
 Connect::clone(const Connect &src)
 {
-    // dup the _request, _anchor, ... members here
     _local = src._local;
     
     if (!_local) {
-	_URL = src._URL;
+	_type = src._type;
+	_encoding = src._encoding;
+	_server = src._server;
+
 	_das = src._das;
 	_dds = src._dds;
 	_error = src._error;
+
+	_URL = src._URL;
+	_proj = src._proj;
+	_sel = src._sel;
+	_accept_types = src._accept_types;
+	_cache_control = src._cache_control;
 
 	// Initialize the anchor object.
 	char *ref = HTParse(_URL.c_str(), (char *)0, PARSE_ALL);
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
 	HT_FREE(ref);
-
-	_type = src._type;
-	_encoding = src._encoding;
-
 	// Copy the access method.
 	_method = src._method;
-
-#ifdef LIBWWW_5_0
-	// Copy the timeout value.
-	_tv->tv_sec = src._tv->tv_sec;
-#endif
-
 	// Open the file for non-truncating update.
 	if (_output)
 	    _output = fdopen(dup(fileno(src._output)), "r+");
 	if (_source)
 	    _source = new_xdrstdio(_output, XDR_DECODE);
+
+	_www_errors_to_stderr = src._www_errors_to_stderr;
     }
 }
 
@@ -1299,20 +1343,33 @@ Connect::read_url(string &url, FILE *stream)
 
     HTRequest_setOutputFormat(_request, WWW_SOURCE);
 
-    // Set timeout on sockets.
-    // For libwww 5.1d this must be changed.
-#ifdef LIBWWW_5_0
-    HTEventrg_registerTimeout(_tv, _request, timeout_handler, NO);
-#endif
-
     HTRequest_setAnchor(_request, (HTAnchor *)_anchor);
 
     HTRequest_setOutputStream(_request, HTFWriter_new(_request, stream, YES));
 
     // Set this request to use the cache if possible. 
-    if(CACHE_ENABLED) HTRequest_setReloadMode(_request, HT_CACHE_VALIDATE);
+    // CJM used HT_CACHE_VALIDATE; HT_CACHE_OK supresses the validation.
+    if(CACHE_ENABLED) HTRequest_setReloadMode(_request, HT_CACHE_OK);
+
+    // If the user is asking for data and it might be compressed, turn off
+    // the cache *for this particular request*. Once the servers are all
+    // version 3.2 or greater this won't be necessary since they should all
+    // issue cache-control headers in their responses. (Or we will fix the
+    // libwww bug that makes compressed documents break the cache...).
+    // 12/1/99 jhrg
+    bool suppress_cache = false;
+    if (_accept_deflate && url.find(".dods") != url.npos) {
+	suppress_cache = true;
+	HTCacheMode_setEnabled(false);
+	set_cache_control("no-cache");
+    }
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
+
+    if (suppress_cache) {	// if suppresed above, undo for the next req.
+	HTCacheMode_setEnabled(true);
+	set_cache_control("");
+    }
 
     if (status != YES) {
 	if (SHOW_MSG) cerr << "Can't access resource" << endl;
@@ -1348,14 +1405,14 @@ Connect::Connect()
 
 // public mfuncs
 
-Connect::Connect(string name, bool www_verbose_errors,
-		 bool accept_deflate) : _www_errors_to_stderr(false)
+Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate) 
+    : _accept_types("All"), _cache_control(""), _www_errors_to_stderr(false),
+      _accept_deflate(accept_deflate)
 {
 #ifdef GUI
     _gui = new Gui;
 #endif
-    // Unless a client says otherwise, assume we can process all types.
-    _accept_types = "All";
+
     name = prune_spaces(name);
     char *access_ref = HTParse(name.c_str(), NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
@@ -1363,6 +1420,8 @@ Connect::Connect(string name, bool www_verbose_errors,
        	if (!_conv) {
 	    www_lib_init(www_verbose_errors, accept_deflate);
 	}
+
+	// Find and store any CE given with the URL.
 	size_t dotpos = name.find('?');
 	if (dotpos!=name.npos) {
 	    _URL = name.substr(0, dotpos);
@@ -1383,12 +1442,8 @@ Connect::Connect(string name, bool www_verbose_errors,
 	    _proj = "";
 	    _sel = "";
 	}
-	_local = false;
 
-#ifdef LIBWWW_5_0
-	_tv = new timeval;
-	_tv->tv_sec = DEFAULT_TIMEOUT;
-#endif
+	_local = false;
 	_output = 0;
 	_source = 0;
 	_type = unknown_type;
@@ -1407,9 +1462,6 @@ Connect::Connect(string name, bool www_verbose_errors,
 	_source = 0;
 	_type = unknown_type;
 	_encoding = unknown_enc;
-#ifdef LIBWWW_5_0
-	_tv = 0;
-#endif
 #ifdef GUI
 	delete _gui;
 #endif
@@ -1420,23 +1472,16 @@ Connect::Connect(string name, bool www_verbose_errors,
 
 Connect::Connect(const Connect &copy_from) : _error(undefined_error, "")
 {
-#ifdef LIBWWW_5_0
-    if (copy_from._tv)
-	_tv = new timeval;
-    else 
-	_tv = 0;
-#endif
-
     clone(copy_from);
 }
 
 Connect::~Connect()
 {
     DBG2(cerr << "Entering the Connect dtor" << endl);
+    // Calling this ensures that the WWW library Cache gets updated and the
+    // .index file is written. 11/22/99 jhrg
+    HTCacheTerminate();
 
-#ifdef LIBWWW_5_0
-    delete _tv;
-#endif
 #ifdef GUI
     delete _gui;
 #endif 
@@ -1469,6 +1514,12 @@ Connect::get_www_errors_to_stderr()
     return _www_errors_to_stderr;
 }
 
+void
+Connect::set_accept_types(const string &types)
+{
+    _accept_types = types;
+}
+
 string 
 Connect::get_accept_types()
 {
@@ -1476,9 +1527,15 @@ Connect::get_accept_types()
 }
 
 void
-Connect::set_accept_types(const string &types)
+Connect::set_cache_control(const string &caching)
 {
-    _accept_types = types;
+    _cache_control = caching;
+}
+
+string
+Connect::get_cache_control()
+{
+    return _cache_control;
 }
 
 // Dereference the URL and dump its contents into _OUTPUT. Note that
