@@ -8,6 +8,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.39  1996/11/20 22:29:29  jimg
+// Fixed header parsing. Now I use my own header parsers for the
+// content-description and -encoding headers. Once the values of these headers
+// have been stored in the Connect object it is easy to operate on the data
+// stream. This is simpler than using libwww's stream stack (at least for
+// decompression and error document routing).
+//
 // Revision 1.38  1996/11/20 00:55:29  jimg
 // Fixed a bug with HTLibTerminate() where multiple URLs caused a core dump.
 // Fixed the progress indicator.
@@ -220,7 +227,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.38 1996/11/20 00:55:29 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.39 1996/11/20 22:29:29 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -243,7 +250,7 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.38 1996/11/20 00:55:29 jim
 
 #include <strstream.h>
 #include <fstream.h>
-
+#define DODS_DEBUG 1
 #include "debug.h"
 #include "Connect.h"
 
@@ -626,16 +633,15 @@ get_encoding(String value)
 // This function is registered to handle unknown MIME headers
 
 int 
-header_handler(HTRequest *request, HTResponse */*response*/, const char *token,
-	       const char */*val*/)
+description_handler(HTRequest *request, HTResponse *response, 
+		    const char *token, const char *val)
 {
-    String field, value;
-    istrstream line(token);
-    line >> field; field.downcase();
-    line >> value; value.downcase();
+    String field = token, value = val;
+    field.downcase();
+    value.downcase();
     
-    if (field == "content-description:") {
-	DBG2(cerr << "Found content-description header" << endl);
+    if (field == "content-description") {
+	DBG(cerr << "Found content-description header" << endl);
 	Connect *me = (Connect *)HTRequest_context(request);
 	me->_type = get_type(value);
     }
@@ -643,6 +649,39 @@ header_handler(HTRequest *request, HTResponse */*response*/, const char *token,
 	if (SHOW_MSG)
 	    cerr << "Unknown header: " << token << endl;
     }
+
+    return HT_OK;
+}
+
+int 
+encoding_handler(HTRequest *request, HTResponse *response, const char *token,
+		 const char *val)
+{
+    String field = token, value = val;
+    field.downcase();
+    value.downcase();
+    
+    if (field == "content-encoding") {
+	DBG(cerr << "Found content-encoding header" << endl);
+	Connect *me = (Connect *)HTRequest_context(request);
+	me->_encoding = get_encoding(value);
+    }
+    else {
+	if (SHOW_MSG)
+	    cerr << "Unknown header: " << token << endl;
+    }
+
+    return HT_OK;
+}
+
+int 
+header_handler(HTRequest *, HTResponse *, const char *token, const char *val)
+{
+    String field = token, value = val;
+    field.downcase();
+    value.downcase();
+    
+    cerr << "Unknown header: " << token << ": " << value <<endl;
 
     return HT_OK;
 }
@@ -667,20 +706,26 @@ Connect::www_lib_init()
     SIOUXSettings.asktosaveonclose = false;
 #endif
 
-    /* Initiate W3C Reference Library with a client profile */
+    // Initiate W3C Reference Library with a client profile.
     HTProfile_newPreemptiveClient(CNAME, CVER);
 
-    /* Add progress notification */
+    // Add progress notification, etc.
     HTAlert_add(dods_progress, HT_A_PROGRESS);
     HTAlert_add(dods_error_print, HT_A_MESSAGE);
     HTAlert_add(dods_username_password, HT_A_USER_PW);
 
     HTError_setShow(HT_ERR_SHOW_FATAL);
 
-    /* Add our own filter to update the history list */
+    // Add our own filter to update the history list.
     HTNet_addAfter(terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
 
-    HTHeader_addParser("*", NO, header_handler);
+    // We add our own parsers for content-description and -encoding so that
+    // we can test for these fields and operate on the resulting document
+    // without using the stream stack mechanism (which seems to be very
+    // complicated). jhrg 11/20/96
+    HTHeader_addParser("content-description", NO, description_handler);
+    HTHeader_addParser("content-encoding", NO, encoding_handler);
+    HTHeader_addRegexParser("*", NO, header_handler);
 }
 
 // Before calling this mfunc memory for the timeval struct must be allocated.
@@ -800,19 +845,6 @@ Connect::read_url(String &url, FILE *stream)
 	if (SHOW_MSG) cerr << "Can't access resource" << endl;
 	return false;
     }
-
-    // LoadRelative uses a different anchor than the one bound to the request
-    // in this function. Extract what you need from the anchor used in that
-    // call.
-#if 0
-    HTEncoding enc = HTAnchor_encoding(HTRequest_anchor(_request));
-    _encoding = get_encoding((char *)HTAtom_name(HTList_firstObject(enc)));
-#endif
-#if 0
-    HTList *enc = HTAnchor_encoding(HTRequest_anchor(_request));
-#endif
-    HTList *enc = HTAnchor_encoding(_anchor);
-    _encoding = get_encoding((char *)HTList_firstObject(enc));
 
     HTRequest_delete(_request);
 
