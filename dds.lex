@@ -22,10 +22,13 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.4  1994/12/16 22:22:14  jimg
-/* Changed NEVER to be anything not caught by the earlier rules.
-/* Fixed // style comments so that // ... <eof> works.
+/* Revision 1.5  1994/12/21 16:54:50  jimg
+/* Repaired damage done to NEVER's definition in previous version.
 /*
+# Revision 1.4  1994/12/16  22:22:14  jimg
+# Changed NEVER to be anything not caught by the earlier rules.
+# Fixed // style comments so that // ... <eof> works.
+#
 # Revision 1.3  1994/12/09  21:40:44  jimg
 # Added `=' to the set of recognized lexemes.
 # Added `[' and `]' to the set of rejected characters.
@@ -39,7 +42,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.4 1994/12/16 22:22:14 jimg Exp $"};
+static char rcsid[]={"$Id: dds.lex,v 1.5 1994/12/21 16:54:50 jimg Exp $"};
 
 #include <string.h>
 
@@ -75,7 +78,7 @@ URL 		URL|Url|url
 
 ID  		[a-zA-Z_][a-zA-Z0-9_]*
 INTEGER		[0-9]+
-NEVER		.*
+NEVER		[^][{}:;=a-zA-Z0-9_]
 
 %%
 
