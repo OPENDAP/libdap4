@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.40 1996/06/18 23:44:36 jimg Exp $
+# $Id: Makefile.in,v 1.41 1996/06/22 00:05:27 jimg Exp $
 
 @SET_MAKE@
 
@@ -67,9 +67,9 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
-NETIOSRCS = Connect.cc Connections.cc cgi_util.cc
-NETIOOBJS = Connect.o Connections.o cgi_util.o
-NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h config_netio.h
+NETIOSRCS = Connect.cc Connections.cc cgi_util.cc Gui.cc
+NETIOOBJS = Connect.o Connections.o cgi_util.o Gui.o
+NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h Gui.h
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
