@@ -42,7 +42,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.29 2000/09/07 15:43:11 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.30 2000/09/07 16:16:06 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -89,23 +89,23 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 %%
 
 
-{ATTR}	    	    	daslval = yytext; return ATTR;
+{ATTR}	    	    	daslval = yytext; return SCAN_ATTR;
 
-{ALIAS}                 daslval = yytext; return ALIAS;
-{BYTE}                  daslval = yytext; return BYTE;
-{INT16}                 daslval = yytext; return INT16;
-{UINT16}                daslval = yytext; return UINT16;
-{INT32}                 daslval = yytext; return INT32;
-{UINT32}                daslval = yytext; return UINT32;
-{FLOAT32}               daslval = yytext; return FLOAT32;
-{FLOAT64}               daslval = yytext; return FLOAT64;
-{STRING}                daslval = yytext; return STRING;
-{URL}                   daslval = yytext; return URL;
+{ALIAS}                 daslval = yytext; return SCAN_ALIAS;
+{BYTE}                  daslval = yytext; return SCAN_BYTE;
+{INT16}                 daslval = yytext; return SCAN_INT16;
+{UINT16}                daslval = yytext; return SCAN_UINT16;
+{INT32}                 daslval = yytext; return SCAN_INT32;
+{UINT32}                daslval = yytext; return SCAN_UINT32;
+{FLOAT32}               daslval = yytext; return SCAN_FLOAT32;
+{FLOAT64}               daslval = yytext; return SCAN_FLOAT64;
+{STRING}                daslval = yytext; return SCAN_STRING;
+{URL}                   daslval = yytext; return SCAN_URL;
 
-{ID}  	    	    	daslval = yytext; return ID;
-{INT}	    	    	daslval = yytext; return INT;
-{FLOAT}	    	    	daslval = yytext; return FLOAT;
-{STR}	    	    	daslval = yytext; return STR;
+{ID}  	    	    	daslval = yytext; return SCAN_ID;
+{INT}	    	    	daslval = yytext; return SCAN_INT;
+{FLOAT}	    	    	daslval = yytext; return SCAN_FLOAT;
+{STR}	    	    	daslval = yytext; return SCAN_STR;
 
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;
@@ -132,7 +132,7 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 
 			  daslval = yytext;
 
-			  return STR;
+			  return SCAN_STR;
                         }
 <quote><<EOF>>		{
                           char msg[256];
@@ -159,6 +159,10 @@ yywrap(void)
 
 /*
  * $Log: das.lex,v $
+ * Revision 1.30  2000/09/07 16:16:06  jimg
+ * Added SCAN_ prefix back onto returned constants. This was also lost during
+ * the last merge. Moving comments...
+ *
  * Revision 1.29  2000/09/07 15:43:11  jimg
  * Fixed a bungled merge. Watch out for long diffs in merged code when moving
  * log comments from the start to the end of files.
