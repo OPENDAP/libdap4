@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.28  1996/08/13 18:23:42  jimg
+// Moved float64_ops to util.cc.
+//
 // Revision 1.27  1996/06/04 21:33:25  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -170,15 +173,20 @@
 
 #include "config_dap.h"
 
+static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.28 1996/08/13 18:23:42 jimg Exp $"};
+
 #include <stdlib.h>
 #include <assert.h>
 
 #include "Float64.h"
 #include "DDS.h"
+#include "util.h"
 #include "dods-limits.h"
+#if 0
 #include "parser.h"
 #include "expr.h"
 #include "expr.tab.h"
+#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -253,31 +261,6 @@ Float64::print_val(ostream &os, String space, bool print_decl_p)
     }
     else 
 	os << _buf;
-}
-
-static bool
-double_ops(double i1, double i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP:
-	cerr << "Regexp not valid for float values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
 }
 
 bool
