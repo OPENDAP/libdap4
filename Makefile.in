@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.22 1995/06/23 00:15:08 jimg Exp $
+# $Id: Makefile.in,v 1.23 1995/08/23 00:21:01 jimg Exp $
 
 @SET_MAKE@
 
@@ -118,10 +118,10 @@ libdap++.a: libdap++.a($(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS))
 
 # Build the test drivers
 
-das-test:  $(DASOBJS) das-test.o
+das-test: libdap++.a $(DASOBJS) das-test.o
 	$(CXX) $(LDFLAGS) -o das-test das-test.o $(LIBS)
 
-dds-test:   $(DDSOBJS) $(TESTOBJS) dds-test.o
+dds-test: libdap++.a $(DDSOBJS) $(TESTOBJS) dds-test.o
 	$(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o $(LIBS)
 
 trans-test: libdap++.a $(TESTOBJS) trans-test.o
@@ -191,7 +191,8 @@ dds-check: dds-test
 	${RUNTEST} ${RUNTESTFLAGS} --tool dds-test --srcdir dds-testsuite
 
 trans-check: trans-test
-	trans-test
+	-rootme=`pwd`; export rootme; \
+	${RUNTEST} ${RUNTESTFLAGS} --tool trans-test --srcdir trans-testsuite
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
