@@ -10,6 +10,11 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.30  1996/11/13 19:01:51  jimg
+// Fixed the int32_ops() function so that comparisons with unsigned integers
+// has a better shot at working. Since there are no UInt32 data sets this has
+// not yet been tested.
+//
 // Revision 1.29  1996/08/13 18:31:16  jimg
 // Moved int32_ops to util.cc
 // Added __unused__ to char rcsid[] definition.
@@ -168,7 +173,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.29 1996/08/13 18:31:16 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.30 1996/11/13 19:01:51 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -177,11 +182,6 @@ static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.29 1996/08/13 18:31:16 jimg
 #include "DDS.h"
 #include "util.h"
 #include "dods-limits.h"
-#if 0
-#include "parser.h"
-#include "expr.h"
-#include "expr.tab.h"
-#endif
 #include "debug.h"
 
 #ifdef TRACE_NEW
@@ -260,10 +260,14 @@ Int32::print_val(ostream &os, String space, bool print_decl_p)
 	os << _buf;
 }
 
+// If B is a pointer to an unsigned variable, evaluate OP with both operands
+// cast to unsinged.
+
 bool
 Int32::ops(BaseType &b, int op)
 {
     dods_int32 a1, a2;
+    dods_uint32 ua2;
 
     if (!read_p()) {
 	cerr << "This value not yet read!" << endl;
@@ -282,6 +286,11 @@ Int32::ops(BaseType &b, int op)
       case dods_byte_c:
       case dods_int32_c: {
 	dods_int32 *a2p = &a2;
+	b.buf2val((void **)&a2p);
+	break;
+      }
+      case dods_uint32_c: {
+	dods_uint32 *a2p = &ua2;
 	b.buf2val((void **)&a2p);
 	break;
       }
@@ -318,5 +327,8 @@ Int32::ops(BaseType &b, int op)
 	break;
     }
 
-    return int_ops(a1, a2, op);
+    if (b.type() == dods_uint32_c)
+	return int_ops(a1, ua2, op);
+    else
+	return int_ops(a1, a2, op);
 }
