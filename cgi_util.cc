@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.21  1996/12/03 17:51:58  jimg
+// Fixed a bug in the char * array DESCRIPT where "dods_error" was catenated
+// with "web_error" (due to a missing comma).
+//
 // Revision 1.20  1996/11/25 03:42:37  jimg
 // Removed compress/decompress functions. Better versions are in util.cc
 // Changed from static global version of dods_root to function version.
@@ -103,7 +107,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.20 1996/11/25 03:42:37 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.21 1996/12/03 17:51:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -247,7 +251,7 @@ name_path(const char *path)
 // not be started, true otherwise.
 
 static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
-			"dods_error" "web_error"};
+			"dods_error", "web_error"};
 static char *encoding[]={"unknown", "x-plain", "x-gzip"};
 
 void
