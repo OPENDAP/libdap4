@@ -4,7 +4,11 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.3  1994/11/29 20:16:32  jimg
+// Revision 1.4  1994/12/14 18:04:33  jimg
+// Changed definition of size() so that it returns the number of bytes in
+// the string.
+//
+// Revision 1.3  1994/11/29  20:16:32  jimg
 // Added mfunc for data transmission.
 // Uses special xdr function for serialization and xdr_coder.
 // Removed `type' parameter from ctor.
@@ -44,10 +48,13 @@ Str::ptr_duplicate()
     return new Str(*this);
 }
 
+// Return: The number of characters in the string or 0 if the buffer is not
+// allocated. 
+
 unsigned int
 Str::size()
 {
-    return sizeof(buf);
+    return buf ? strlen(buf): 0;
 }
 
 bool
