@@ -4,7 +4,17 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.7  1994/12/16 22:01:42  jimg
+// Revision 1.8  1995/01/11 16:06:47  jimg
+// Added static XDR pointers to BaseType class and removed the XDR pointers
+// that were class members - now there is only one xdrin and one xdrout
+// for all children of BaseType.
+// Added friend functions to help in setting the FILE * associated with
+// the XDR *s.
+// Removed FILE *in member (but FILE *out was kept as FILE * _out, mfunc
+// expunge()).
+// Changed ctor so that it no longer takes FILE * params.
+//
+// Revision 1.7  1994/12/16  22:01:42  jimg
 // Added mfuncs var() and add_var() to BaseType. These print an error
 // message when called with a simple BaseType (Int32, ...). Classes like
 // Array use them and provide their own definitions.
@@ -51,6 +61,14 @@
 #include <stdio.h>		// for stdin and stdout
 
 #include "BaseType.h"
+#include "util.h"
+
+// Initial definition of the protected static members _xdrin and
+// _xdrout. By default they use the stdin and stdout streams (resp).
+
+XDR * BaseType::_xdrin = new_xdrstdio(stdin, XDR_DECODE);
+XDR * BaseType::_xdrout = new_xdrstdio(stdout, XDR_ENCODE);
+FILE * BaseType::_out = stdout;
 
 // Private copy mfunc
 
@@ -60,13 +78,29 @@ BaseType::duplicate(const BaseType &bt)
     name = bt.name;
     type = bt.type;
     _xdr_coder = bt._xdr_coder;	// just copy this function pointer
-    _in = bt._in;
-    _out = bt._out;
+}
 
-    xdrin = new(XDR);
-    xdrout = new(XDR);
-    xdrstdio_create(xdrin, bt._in, XDR_DECODE);
-    xdrstdio_create(xdrout, bt._out, XDR_ENCODE);
+// friend functions
+
+// Delete the current XDR * assigned to _xdrin, free the strage, create a
+// new XDR * and assign it to _xdrin.
+
+void 
+set_xdrin(FILE *in)
+{
+    delete_xdrstdio(BaseType::_xdrin);
+    BaseType::_xdrin = new_xdrstdio(in, XDR_DECODE);
+}
+
+// Same as above except do it for _xdrout instead of _xdrin and store the
+// OUT in private member _out. _out is used by mfunc expunge().
+
+void 
+set_xdrout(FILE *out)
+{
+    delete_xdrstdio(BaseType::_xdrout);
+    BaseType::_xdrout = new_xdrstdio(out, XDR_ENCODE);
+    BaseType::_out = out;
 }
 
 // Public mfuncs
@@ -78,14 +112,9 @@ BaseType::duplicate(const BaseType &bt)
 // write to std{out,in} (it is for g++ with libg++ at version 2.6 or
 // greater).
 
-BaseType::BaseType(const String &n, const String &t, xdrproc_t xdr, FILE *in,
-		   FILE *out) 
-    : name(n), type(t), _xdr_coder(xdr), _in(in), _out(out)
+BaseType::BaseType(const String &n, const String &t, xdrproc_t xdr)
+    : name(n), type(t), _xdr_coder(xdr)
 {
-    xdrin = new(XDR);
-    xdrout = new(XDR);
-    xdrstdio_create(xdrin, _in, XDR_DECODE);
-    xdrstdio_create(xdrout, _out, XDR_ENCODE);
 } 
 
 BaseType::BaseType(const BaseType &copy_from)
@@ -95,10 +124,6 @@ BaseType::BaseType(const BaseType &copy_from)
     
 BaseType::~BaseType()
 {
-    xdr_destroy(xdrin);		// ... does not close the FILE pointer
-    xdr_destroy(xdrout);
-    delete(xdrin);
-    delete(xdrout);
 }
 
 BaseType &

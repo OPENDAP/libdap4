@@ -8,12 +8,22 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.8  1994/12/16 22:04:21  jimg
-/* Added the mfuncs var() and add_var(). These are used by ctor types. They
-/* need to be defined here so that access to them via BaseType * will work
-/* (actually, so the code will compile). These versions just print error
-/* messages. See Array.h, ... for examples of the real mfuncs.
+/* Revision 1.9  1995/01/11 16:06:48  jimg
+/* Added static XDR pointers to BaseType class and removed the XDR pointers
+/* that were class members - now there is only one xdrin and one xdrout
+/* for all children of BaseType.
+/* Added friend functions to help in setting the FILE * associated with
+/* the XDR *s.
+/* Removed FILE *in member (but FILE *out was kept as FILE * _out, mfunc
+/* expunge()).
+/* Changed ctor so that it no longer takes FILE * params.
 /*
+ * Revision 1.8  1994/12/16  22:04:21  jimg
+ * Added the mfuncs var() and add_var(). These are used by ctor types. They
+ * need to be defined here so that access to them via BaseType * will work
+ * (actually, so the code will compile). These versions just print error
+ * messages. See Array.h, ... for examples of the real mfuncs.
+ *
  * Revision 1.7  1994/12/12  20:33:03  jimg
  * Added enum Part - used to be part of CtorType.
  *
@@ -82,8 +92,11 @@ class BaseType {
 private:
     String name;		// name of the variable
     String type;		// name of the instance's type
-    FILE *_in;			// input for data from server
-    FILE *_out;			// output for data from client
+
+    // _out is used to retain access to the FILE * used by _xdrout. It is
+    // used by the mfunc expunge to flush the buffer ensuring that all the
+    // data is sent enven before the process exits.
+    static FILE *_out;		// output stream for data from server
 
     void duplicate(const BaseType &bt);
 
@@ -92,12 +105,15 @@ protected:
     // of things (e.g., xdr_array()). Each leaf class's ctor must set this.
     xdrproc_t _xdr_coder;
 
-    XDR *xdrin;			// xdr pointer for input (from stdin)
-    XDR *xdrout;		// xdr pointer for output (to stdout)
+    // These static pointers are (by definition) common to all members of
+    // BaseType. The streams associated with them may be changed using mfuncs
+    // of this class.
+    static XDR *_xdrin;		// xdr pointer for input (default: from stdin)
+    static XDR *_xdrout;	// xdr pointer for output (default: to stdout)
 
 public:
     BaseType(const String &n = (char *)0, const String &t = (char *)0,
-	     xdrproc_t xdr = NULL, FILE *in = stdin, FILE *out = stdout);
+	     xdrproc_t xdr = NULL);
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 
@@ -111,6 +127,12 @@ public:
     void set_var_type(const String &t);
 
     xdrproc_t xdr_coder();
+
+    // Access to the XDR * for input and output is limited to serialize and
+    // deserialize. These friend functions can thus access the private and
+    // protected fields of BaseType. They are defined in BaseType.cc
+    friend void set_xdrin(FILE *in);
+    friend void set_xdrout(FILE *out);
 
     // The var() and add_var() mfuncs are only used by ctor classes (Array,
     // Structure, ...). Their BaseType implementations print an error
