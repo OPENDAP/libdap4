@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.26  1996/08/13 18:36:53  jimg
+// Added __unused__ to definition of char rcsid[].
+// Moved str_ops() to util.cc
+//
 // Revision 1.25  1996/06/04 21:33:42  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -154,6 +158,8 @@
 
 #include "config_dap.h"
 
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.26 1996/08/13 18:36:53 jimg Exp $"};
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -163,9 +169,11 @@
 #include "Str.h"
 #include "DDS.h"
 #include "util.h"
+#if 0
 #include "parser.h"
 #include "expr.h"
 #include "expr.tab.h"
+#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -270,32 +278,6 @@ Str::print_val(ostream &os, String space, bool print_decl_p)
     }
     else 
 	os << _buf;
-}
-
-static bool
-string_ops(String &i1, String &i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP: {
-	  Regex r = (const char *)i2;
-	  return i1.matches(r);
-      }
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
 }
 
 bool
