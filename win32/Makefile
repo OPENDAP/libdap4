@@ -93,7 +93,6 @@ DAPOBJS = $(OBJDIR)\Array.obj \
 		$(OBJDIR)\Int32.obj \
 		$(OBJDIR)\InternalErr.obj \
 		$(OBJDIR)\IteratorAdapter.obj \
-		$(OBJDIR)\IteratorAdapterT.obj \
 		$(OBJDIR)\List.obj \
 		$(OBJDIR)\parser-util.obj \
 		$(OBJDIR)\RValue.obj \
@@ -199,7 +198,6 @@ install:
 	copy ..\Int16.h $(INCLUDEDIR)
 	copy ..\UInt16.h $(INCLUDEDIR)
 	copy ..\IteratorAdapter.h $(INCLUDEDIR)
-	copy ..\IteratorAdapterT.h $(INCLUDEDIR)
 	copy ..\Float32.h $(INCLUDEDIR)
 	copy ..\DDS.h $(INCLUDEDIR)
 	copy ..\DataDDS.h $(INCLUDEDIR)
@@ -251,7 +249,6 @@ $(OBJDIR)\Int16.obj : ..\Int16.cc
 $(OBJDIR)\Int32.obj : ..\Int32.cc
 $(OBJDIR)\InternalErr.obj : ..\InternalErr.cc
 $(OBJDIR)\IteratorAdapter.obj : ..\IteratorAdapter.cc
-$(OBJDIR)\IteratorAdapterT.obj : ..\IteratorAdapterT.cc
 $(OBJDIR)\List.obj : ..\List.cc
 $(OBJDIR)\parser-util.obj : ..\parser-util.cc
 $(OBJDIR)\RCReader.obj : ..\RCReader.cc

@@ -618,9 +618,6 @@
 ..\IteratorAdapter.cc : \
 	"..\IteratorAdapter.h"\
 
-..\IteratorAdapterT.cc : \
-	"..\IteratorAdapterT.h"\
-
 ..\List.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
