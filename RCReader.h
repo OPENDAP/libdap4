@@ -67,6 +67,7 @@ public:
     bool has_cache_file() {return  _has_cache_file;}
   
     // GET METHODS
+    const string get_dods_cache_root() {return cache_root;}
     const bool get_use_cache() throw()      {return _dods_use_cache;}
     const int get_max_cache_size()  throw()  {return _dods_cache_max;}
     const int get_max_cached_obj() throw()   {return _dods_cached_obj;}
