@@ -10,6 +10,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.43  1998/02/19 19:41:27  jimg
+// Changed name of ...end_of_sequence to ...start_of_sequence since that is
+// now how it is used. I hope this will reduce confusion.
+// Changed the name of read_end_marker to read_marker (since they are not always
+// end markers anymore).
+//
 // Revision 1.42  1998/02/18 01:00:48  jimg
 // Reverted to the old transfer scheme for Sequences.
 // Added EOI/EOS markers.
@@ -236,7 +242,7 @@
 #endif
 
 static unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
-static unsigned char end_of_instance = 0x5A; // binary pattern 0101 1010
+static unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 
 // Private member functions
 
@@ -264,13 +270,13 @@ Sequence::write_end_of_sequence(XDR *sink)
 }
 
 void
-Sequence::write_end_of_instance(XDR *sink)
+Sequence::write_start_of_instance(XDR *sink)
 {
-    xdr_opaque(sink, (char *)&end_of_instance, 1);
+    xdr_opaque(sink, (char *)&start_of_instance, 1);
 }
 
 unsigned char
-Sequence::read_end_marker(XDR *source)
+Sequence::read_marker(XDR *source)
 {
     unsigned char marker;
     xdr_opaque(source, (char *)&marker, 1);
@@ -279,9 +285,9 @@ Sequence::read_end_marker(XDR *source)
 }
 
 bool
-Sequence::is_end_of_instance(unsigned char marker)
+Sequence::is_start_of_instance(unsigned char marker)
 {
-    return (marker == end_of_instance);
+    return (marker == start_of_instance);
 }
 
 bool
@@ -448,8 +454,10 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
 	    continue;
 	}
 
-	DBG(cerr << "Writing End of Instance marker" << endl);
-	write_end_of_instance(sink);
+	if (level() == 0) {
+	    DBG(cerr << "Writing End of Instance marker" << endl);
+	    write_start_of_instance(sink);
+	}
 
 	for (Pix p = first_var(); p; next_var(p))
 	    if (var(p)->send_p() 
@@ -487,15 +495,17 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
 	return old_deserialize(source, dd, reuse);
     }
 
-    unsigned char marker = read_end_marker(source);
+    if (level() == 0) {
+	unsigned char marker = read_marker(source);
 
-    if (is_end_of_instance(marker))
-	;			// Read more sequence elements
-    else if (is_end_of_sequence(marker))
-	return false;		// No more sequence elements
-    else {
-	_seq_read_error = true;	// Error, don't read more elements
-	return false;
+	if (is_start_of_instance(marker))
+	    ;			// Read more sequence elements
+	else if (is_end_of_sequence(marker))
+	    return false;	// No more sequence elements
+	else {
+	    _seq_read_error = true; // Error, don't read more elements
+	    return false;
+	}
     }
 
     for (Pix p = first_var(); p; next_var(p)) {

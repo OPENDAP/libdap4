@@ -19,6 +19,12 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.34  1998/02/19 19:41:49  jimg
+ * Changed name of ...end_of_sequence to ...start_of_sequence since that is
+ * now how it is used. I hope this will reduce confusion.
+ * Changed the name of read_end_marker to read_marker (since they are not always
+ * end markers anymore).
+ *
  * Revision 1.33  1998/02/05 20:13:56  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -288,30 +294,31 @@
     ``Tom.shoe\_size''.
     
     @memo Holds a sequence. */
+
 class Sequence: public BaseType {
 private:
-    /// Linked list of variables in this sequence.
+    // Linked list of variables in this sequence.
     SLList<BaseTypePtr> _vars;
 
-    /// Level number in a multilevel sequence.
+    // Level number in a multilevel sequence.
     int _level;			
 
-    /// Was there an error reading the sequence?
+    // Was there an error reading the sequence?
     bool _seq_read_error;
 
-    /// Was there an error writing the sequence?
+    // Was there an error writing the sequence?
     bool _seq_write_error;
 
-    /// Make sure the old deserialize is still around?
+    // Make sure the old deserialize is still around.
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     void _duplicate(const Sequence &s);
 
 protected:
     void write_end_of_sequence(XDR *sink);
-    void write_end_of_instance(XDR *sink);
-    unsigned char read_end_marker(XDR *source);
-    bool is_end_of_instance(unsigned char marker);
+    void write_start_of_instance(XDR *sink);
+    unsigned char read_marker(XDR *source);
+    bool is_start_of_instance(unsigned char marker);
     bool is_end_of_sequence(unsigned char marker);
 	
 public:
