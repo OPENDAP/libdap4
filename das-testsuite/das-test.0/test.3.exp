@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.3.exp,v $
-# Revision 1.4  1994/10/05 16:51:49  jimg
+# Revision 1.5  1994/12/09 21:45:47  jimg
+# Modified for new unix.exp.
+#
+# Revision 1.4  1994/10/05  16:51:49  jimg
 # Added TYPE to each of the DAS test files.
 # The `expect' files correcly check for that in the output.
 #
@@ -40,7 +43,7 @@ might cause problems with memory - overwrites, ...\";
     }
 }"
 
-das-test_start $srcdir$test_name -
+das-test_start p $srcdir$test_name -
 
 # send_user "comp output: $comp_output\n"
 # send_user "test out: $test_out\n"
