@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.12  1996/10/31 22:24:05  jimg
+// Fix the help message so that -D is not described as -A...
+//
 // Revision 1.11  1996/10/08 17:13:09  jimg
 // Added test for the -D option so that a Ce can be supplied either with the
 // -c option or using a ? at the end of the URL.
@@ -56,7 +59,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.11 1996/10/08 17:13:09 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.12 1996/10/31 22:24:05 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -75,7 +78,7 @@ usage(String name)
     cerr << "       " << "A: Use Connect's asynchronous mode." << endl;
     cerr << "       " << "d: For each URL, get the DODS DDS." << endl;
     cerr << "       " << "a: For each URL, get the DODS DAS." << endl;
-    cerr << "       " << "A: For each URL, get the DODS Data." << endl;
+    cerr << "       " << "D: For each URL, get the DODS Data." << endl;
     cerr << "       " << "g: Show the progress GUI." << endl;
     cerr << "       " << "c: <expr> is a contraint expression. Used with -D."
          << "       " << "   NB: You can use a `?' for the CE also."
