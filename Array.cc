@@ -4,7 +4,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.10  1994/12/14 20:35:36  dan
+// Revision 1.11  1994/12/16 20:13:31  dan
+// Fixed serialize() and deserialize() for arrays of strings.
+//
+// Revision 1.10  1994/12/14  20:35:36  dan
 // Added dimensions() member function to return number of dimensions
 // contained in the array.
 // Removed alloc_buf() and free_buf() member functions and placed them
@@ -175,9 +178,11 @@ Array::serialize(bool flush, unsigned int num)
 
     if ( var_ptr->get_var_type() == "Str" || var_ptr->get_var_type() == "Url" )
       {
+	char **strBuf = (char **)buf;
 	for ( i = 0; i < num; ++i )
 	  {
-	    status = (bool)xdr_str(xdrout, (char **)&buf);
+	    status = (bool)xdr_str(xdrout, strBuf+i);
+	    if ( status == FALSE ) break;
 	  }
       }
     else
@@ -204,14 +209,17 @@ unsigned int
 Array::deserialize()
 {
     bool status = FALSE;
-    unsigned int num;
+    unsigned int num = 0;
 
     if ( var_ptr->get_var_type() == "Str" || var_ptr->get_var_type() == "Url" )
       {
-	num = size() / var_ptr->size();
-	for ( int i = 0; i < num; ++i )
+	char **strBuf = (char **)buf;
+	for ( int i = 0; i < (size()/var_ptr->size()); ++i )
 	  {
-	    status = (bool)xdr_str(xdrout, (char **)&buf);
+	    //cout << "buf[" << i << "] = " << *(strBuf+i) << endl;
+	    status = (bool)xdr_str(xdrin, strBuf+i);
+	    if ( status == FALSE ) break;
+	    else num++;
 	  }
       }
     else
@@ -298,27 +306,27 @@ Array::print_decl(ostream &os, String space, bool print_semi)
 void 
 Array::print_val(ostream &os, String space)
 {
-  int i;
+  int i, arrLength = size()/var_ptr->size();
 
   if ( var_ptr->get_var_type() == "Str" || var_ptr->get_var_type() == "Url" )
     {
-      char **bufptr = (char **)buf;
-      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
-	os << " = " << *(bufptr+(var_ptr->size()*i)) << ";" << endl;
+      char **strBuf = (char **)buf;
+      for( i = 0; i < arrLength; ++i ) 
+	os << " = " << *(strBuf+i) << ";" << endl;
     }
   else if ( var_ptr->get_var_type() == "Int32" )
     {
-      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
-	os << " = " << *(int *)(buf+(var_ptr->size()*i)) << ";" << endl;
+      for( i = 0; i < arrLength; ++i )
+	os << " = " << *(int *)(buf+i) << ";" << endl;
     }
   else if ( var_ptr->get_var_type() == "Float64" )
     {
-      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
+      for( i = 0; i < arrLength; ++i )
 	os << " = " << *(double *)(buf+(var_ptr->size()*i)) << ";" << endl;
     }
   else if ( var_ptr->get_var_type() == "Byte" )
     {
-      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
+      for( i = 0; i < arrLength; ++i )
 	os << " = " << *(char *)(buf+(var_ptr->size()*i)) << ";" << endl;
     }
 }
