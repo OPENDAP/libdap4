@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.9 2003/03/04 21:41:44 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.10 2003/03/13 23:51:31 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -316,6 +316,9 @@ HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
 
     // HTTPCache::instance returns a valid ptr or 0.
     d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(), true);
+    DBG2(cerr << "Cache object created (" << hex << d_http_cache << dec
+	 << ")" << endl);
+
     if (d_http_cache) {
 	d_http_cache->set_cache_enabled(d_rcr->get_use_cache());
 	d_http_cache->set_expire_ignored(d_rcr->get_ignore_expires());
@@ -600,6 +603,10 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.10  2003/03/13 23:51:31  jimg
+// Added a DBG2 statement to track down a bug. Useful when you cannot use a
+// debugger.
+//
 // Revision 1.9  2003/03/04 21:41:44  jimg
 // Removed code in #if 0 ... #endif. This was mostly WIN32 code that I don't
 // think we need anymore.
