@@ -1,10 +1,46 @@
+/*
+  Copyright 1994-1995 The University of Rhode Island and The Massachusetts
+  Institute of Technology
+
+  Portions of this software were developed by the Graduate School of
+  Oceanography (GSO) at the University of Rhode Island (URI) in collaboration
+  with The Massachusetts Institute of Technology (MIT).
+
+  Access and use of this software shall impose the following obligations and
+  understandings on the user. The user is granted the right, without any fee
+  or cost, to use, copy, modify, alter, enhance and distribute this software,
+  and any derivative works thereof, and its supporting documentation for any
+  purpose whatsoever, provided that this entire notice appears in all copies
+  of the software, derivative works and supporting documentation.  Further,
+  the user agrees to credit URI/MIT in any publications that result from the
+  use of this software or in any product that includes this software. The
+  names URI, MIT and/or GSO, however, may not be used in any advertising or
+  publicity to endorse or promote any products or commercial entity unless
+  specific written permission is obtained from URI/MIT. The user also
+  understands that URI/MIT is not obligated to provide the user with any
+  support, consulting, training or assistance of any kind with regard to the
+  use, operation and performance of this software nor to provide the user
+  with any updates, revisions, new versions or "bug fixes".
+
+  THIS SOFTWARE IS PROVIDED BY URI/MIT "AS IS" AND ANY EXPRESS OR IMPLIED
+  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+  EVENT SHALL URI/MIT BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+  DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+  PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTUOUS
+  ACTION, ARISING OUT OF OR IN CONNECTION WITH THE ACCESS, USE OR PERFORMANCE
+  OF THIS SOFTWARE.
+*/
 
 // A few useful routines which are used in CGI programs.
 //
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
-// Revision 1.7  1995/06/27 17:38:43  jimg
+// Revision 1.8  1995/07/09 21:14:43  jimg
+// Added copyright.
+//
+// Revision 1.7  1995/06/27  17:38:43  jimg
 // Modified the cgi-util-test code so that it correctly uses name_path(); the
 // pointer returned by that function must be delteted.
 //
@@ -38,7 +74,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.7 1995/06/27 17:38:43 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.8 1995/07/09 21:14:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
