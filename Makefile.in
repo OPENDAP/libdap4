@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.30 1996/02/05 19:13:26 jimg Exp $
+# $Id: Makefile.in,v 1.31 1996/03/05 17:45:45 jimg Exp $
 
 @SET_MAKE@
 
@@ -19,7 +19,8 @@ INCS = -I. -IMap -IStack -IPlex -IVec -I../errmsg -I../netio
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@
-LDFLAGS = @LDFLAGS@ -L. -LMAP -LStack -LPlex -LVec -L$(DODS_ROOT)/lib
+LDFLAGS = @LDFLAGS@ -L. -LMAP -LStack -LPlex -LVec -L../netio \
+	  -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d
 LIBS = -ldap++ -lerrmsg @LIBS@
@@ -68,7 +69,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
-EXPR_GRAM_OBJS = lex.expr.o expr.tab.o
+EXPR_GRAM_OBJS = lex.expr.o expr.tab.o expr.o
 
 DASHDRS = AttrTable.h DAS.h 
 DASSRCS = AttrTable.cc DAS.cc
@@ -78,7 +79,7 @@ DDSHDRS = DDS.h
 DDSSRCS = DDS.cc
 DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
 
-EXPRSRCS = 
+EXPRSRCS = expr.cc
 EXPROBJS = DDS.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
 
 TYPEHDRS = BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
@@ -132,7 +133,7 @@ trans-test: libdap++.a $(TESTOBJS) trans-test.o
 
 expr-test: libdap++.a $(EXPROBJS) $(TESTOBJS) expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test $(EXPROBJS) $(TESTOBJS) expr-test.o \
-		$(LIBS)
+		-lnetio $(LIBS)
 
 # Build the DAS scanner (a C source module compiled with C++)
 
@@ -248,7 +249,8 @@ tags:
 
 depend: 
 	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
-	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(TESTSRCS) das-test.cc dds-test.cc 
+	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(EXPRSRCS) $(TESTSRCS) \
+	das-test.cc dds-test.cc  
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
   Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h \
