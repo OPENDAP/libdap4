@@ -22,7 +22,12 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.12  1995/02/10 02:56:21  jimg
+ * Revision 1.13  1995/02/16 15:30:46  jimg
+ * Fixed bug which caused Byte, ... values which were out of range to be
+ * added to the attribute table anyway.
+ * Corrected the number of expected shift-reduce conflicts.
+ *
+ * Revision 1.12  1995/02/10  02:56:21  jimg
  * Added type checking.
  *
  * Revision 1.11  1994/12/22  04:30:56  reza
@@ -97,7 +102,7 @@
 #define FALSE 0
 #endif
 
-static char rcsid[]={"$Id: das.y,v 1.12 1995/02/10 02:56:21 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.13 1995/02/16 15:30:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,7 +135,7 @@ static int check_url(char *val);
 
 %}
 
-%expect 6
+%expect 8
 
 %token ATTR
 
@@ -231,8 +236,10 @@ bytes:		INT
 		{
 		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
 			<< $1 << endl);
-		    check_byte($1);
-		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+		    if (!check_byte($1)) {
+			parse_ok = 0;
+		    }
+		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
 			daserror("Variable redefinition");
 			parse_ok = 0;
 		    }
@@ -241,8 +248,10 @@ bytes:		INT
 		{
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $3 << endl);
-		    check_byte($3);
-		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+		    if (!check_byte($3)) {
+			parse_ok = 0;
+		    }
+		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
 			daserror("Variable redefinition");
 			parse_ok = 0;
 		    }
@@ -253,8 +262,10 @@ ints:		INT
 		{
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $1 << endl);
-		    check_int($1);
-		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+		    if (!check_int($1)) {
+			parse_ok = 0;
+		    }
+		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
 			daserror("Variable redefinition");
 			parse_ok = 0;
 		    }
@@ -263,8 +274,10 @@ ints:		INT
 		{
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $3 << endl);
-		    check_int($3);
-		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+		    if (!check_int($3)) {
+			parse_ok = 0;
+		    }
+		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
 			daserror("Variable redefinition");
 			parse_ok = 0;
 		    }
@@ -275,8 +288,10 @@ floats:		float_or_int
 		{
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< $1 << endl);
-		    check_float($1);
-		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+		    if (!check_float($1)) {
+			parse_ok = 0;
+		    }
+		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
 			daserror("Variable redefinition");
 			parse_ok = 0;
 		    }
@@ -285,8 +300,10 @@ floats:		float_or_int
 		{
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< $3 << endl);
-		    check_float($3);
-		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+		    if (!check_float($3)) {
+			parse_ok = 0;
+		    }
+		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
 			daserror("Variable redefinition");
 			parse_ok = 0;
 		    }
@@ -318,8 +335,10 @@ urls:		STR
 		{
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $1 << endl);
-		    check_url($1);
-		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+		    if (!check_url($1)) {
+			parse_ok = 0;
+		    }
+		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
 			daserror("Variable redefinition");
 			parse_ok = 0;
 		    }
@@ -328,8 +347,10 @@ urls:		STR
 		{
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $3 << endl);
-		    check_url($3);
-		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+		    if (!check_url($3)) {
+			parse_ok = 0;
+		    }
+		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
 			daserror("Variable redefinition");
 			parse_ok = 0;
 		    }
@@ -404,6 +425,10 @@ check_float(char *val)
 
     return TRUE;
 }
+
+/*
+  Maybe someday we will really check the Urls to see if they are valid...
+*/
 
 static int
 check_url(char *val)
