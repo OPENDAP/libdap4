@@ -16,6 +16,9 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.29  1998/04/03 17:44:27  jimg
+ * Patch from Jake Hamby. Added print_all_vals member function.
+ *
  * Revision 1.28  1998/03/17 17:50:52  jimg
  * Added an implementation of element_count().
  *
@@ -278,6 +281,12 @@ public:
 
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
+
+  /** Prints the Structure and all elements of any Sequences contained within.
+    @see Sequence::print_all_vals
+    */
+    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
+				String space = "", bool print_decl_p = true);
 
     virtual bool check_semantics(String &msg, bool all = false);
 };
