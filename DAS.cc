@@ -5,7 +5,13 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.7  1994/10/13 15:46:57  jimg
+// Revision 1.8  1994/10/13 16:42:59  jimg
+// dasrestart was incorrectly declared as void dasrestart(...) in DAS.cc.
+// This caused the alpha to say `Could not read from file' whenever
+// dasrestart was called (which happens whenever a new file is read). Fixed
+// the declaration and removed the test on the (phantom) return value.
+//
+// Revision 1.7  1994/10/13  15:46:57  jimg
 // Added compile-time switched instrumentation.
 // Removed the three definitions of DAS::print().
 // Added DAS::print(ostream &os = cout) -- this is the only function for
@@ -43,7 +49,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.7 1994/10/13 15:46:57 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.8 1994/10/13 16:42:59 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -65,7 +71,7 @@ static char rcsid[]="$Id: DAS.cc,v 1.7 1994/10/13 15:46:57 jimg Exp $";
 
 #include "DAS.h"		// follows pragma since DAS.h is interface
 
-int dasrestart(FILE *yyin);
+void dasrestart(FILE *yyin);
 int dasparse(DAS &table);	// defined in das.tab.c
 
 DAS::DAS(AttrTablePtr dflt, unsigned int sz) : map(dflt, sz)
@@ -197,10 +203,7 @@ DAS::parse(int fd)
 bool
 DAS::parse(FILE *in)
 {
-    if (!dasrestart(in)) {
-	cerr << "Could not read from input source" << endl;
-	return false;
-    }
+    dasrestart(in);
 
     return dasparse(*this) == 0;
 }
