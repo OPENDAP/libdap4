@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.129 2003/01/11 00:04:28 jimg Exp $
+# $Id: Makefile.in,v 1.130 2003/01/15 19:24:39 pwest Exp $
 
 @SET_MAKE@
 
@@ -35,11 +35,11 @@ LIBS = @LIBS@
 
 prefix = @prefix@
 exec_prefix = $(prefix)
-bindir = $(exec_prefix)bin
-libdir = $(exec_prefix)lib
-includedir = $(prefix)include
+bindir = $(exec_prefix)/bin
+libdir = $(exec_prefix)/lib
+includedir = $(prefix)/include
 manext = 1
-mandir = $(prefix)man/man$(manext)
+mandir = $(prefix)/man/man$(manext)
 
 src = $(DODS_ROOT)src
 etcdir = $(DODS_ROOT)etc
@@ -140,10 +140,12 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   VirtualCtorSequence.o VirtualCtorGrid.o util_mit.o
 
 GNUOBJS = GNU/GetOpt.o GNU/Regex.o GNU/error.o \
-	   IteratorAdapter.o IteratorAdapterT.o dap_templates.o
+	   IteratorAdapter.o ArrayIterAdapter.o AttrIterAdapter.o \
+	   BTIterAdapter.o ClauseIterAdapter.o
 
 GNUHDRS = GNU/Pix.h GNU/gnu-std.h GNU/GetOpt.h GNU/Regex.h GNU/builtin.h \
-	   IteratorAdapter.h IteratorAdapterT.h
+	   IteratorAdapter.h ArrayIterAdapter.h AttrIterAdapter.h \
+	   BTIterAdapter.h CaluseIterAdapter.h
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc \
@@ -184,21 +186,21 @@ usage: libdap++.a usage.o
 # Build the test drivers
 
 das-test: libdap++.a das-test.o das.tab.h
-	$(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o libdap++.a \
+	$(CXX) $(LDFLAGS) -o das-test das-test.o libdap++.a \
 		$(LIBS)
 
 dds-test: libdap++.a dds-test.o dds.tab.h
-	$(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o libdap++.a \
+	$(CXX) $(LDFLAGS) -o dds-test dds-test.o libdap++.a \
 		$(LIBS)
 
-gse-test: libdap++.a $(TESTOBJS) lex.gse.o gse-test.o \
+gse-test: libdap++.a lex.gse.o gse-test.o \
 	gse.tab.o
 	$(CXX) $(LDFLAGS) -o gse-test lex.gse.o gse-test.o gse.tab.o \
-		$(TESTOBJS) libdap++.a $(LIBS)
+		libdap++.a $(LIBS)
 
 expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
-	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o lex.expr.o \
-	       libdap++.a $(LIBS)
+	$(CXX) $(LDFLAGS) -o expr-test expr-test.o lex.expr.o \
+	       $(TESTOBJS) libdap++.a $(LIBS)
 
 error-test: error-test.o Error.tab.h $(ERROROBJS) 
 	$(CXX) $(LDFLAGS) -o error-test error-test.o $(ERROROBJS) \
@@ -602,7 +604,7 @@ AttrTable.o: AttrTable.cc config_dap.h Error.h debug.h util.h BaseType.h \
   Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
   GNU/Pix.h IteratorAdapter.h Clause.h expr.h RValue.h List.h Structure.h \
   Constructor.h Sequence.h Grid.h AttrTable.h escaping.h \
-  IteratorAdapterT.h
+  AttrIterAdapter.h
 DAS.o: DAS.cc config_dap.h DAS.h GNU/Pix.h IteratorAdapter.h AttrTable.h \
   Error.h InternalErr.h parser.h GSEClause.h BaseType.h Array.h \
   dods-limits.h Vector.h DDS.h Clause.h expr.h RValue.h Grid.h \
@@ -618,8 +620,8 @@ DDS.o: DDS.cc config_dap.h expr.h BaseType.h InternalErr.h Error.h \
   util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
   Float32.h Float64.h Str.h Url.h List.h Structure.h Sequence.h \
   escaping.h ce_functions.h cgi_util.h ObjectType.h EncodingType.h \
-  IteratorAdapterT.h
-DataDDS.o: DataDDS.cc config_dap.h GNU/Regex.h DataDDS.h DDS.h GNU/Pix.h \
+  BTIterAdapter.h ClauseIterAdapter.h
+DataDDS.o: DataDDS.cc config_dap.h DataDDS.h DDS.h GNU/Pix.h \
   IteratorAdapter.h BaseType.h InternalErr.h Error.h Clause.h expr.h \
   RValue.h debug.h
 Clause.o: Clause.cc config_dap.h expr.h BaseType.h InternalErr.h Error.h \
@@ -658,8 +660,8 @@ Str.o: Str.cc config_dap.h Str.h dods-limits.h BaseType.h InternalErr.h \
 Url.o: Url.cc Url.h dods-limits.h BaseType.h InternalErr.h Error.h Str.h
 Vector.o: Vector.cc config_dap.h Vector.h BaseType.h InternalErr.h \
   Error.h DDS.h GNU/Pix.h IteratorAdapter.h Clause.h expr.h RValue.h \
-  util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
-  Float32.h Float64.h Str.h dods-limits.h Url.h Array.h List.h \
+  escaping.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
+  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h List.h \
   Structure.h Constructor.h Sequence.h Grid.h debug.h
 List.o: List.cc config_dap.h List.h dods-limits.h Vector.h BaseType.h \
   InternalErr.h Error.h DDS.h GNU/Pix.h IteratorAdapter.h Clause.h expr.h \
@@ -670,24 +672,24 @@ Array.o: Array.cc config_dap.h Array.h dods-limits.h Vector.h BaseType.h \
   InternalErr.h Error.h DDS.h GNU/Pix.h IteratorAdapter.h Clause.h expr.h \
   RValue.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
   UInt32.h Float32.h Float64.h Str.h Url.h List.h Structure.h \
-  Constructor.h Sequence.h Grid.h debug.h escaping.h IteratorAdapterT.h
+  Constructor.h Sequence.h Grid.h debug.h escaping.h ArrayIterAdapter.h
 Structure.o: Structure.cc config_dap.h Structure.h GNU/Pix.h \
   IteratorAdapter.h BaseType.h InternalErr.h Error.h Constructor.h DDS.h \
   Clause.h expr.h RValue.h util.h Byte.h dods-datatypes.h Int16.h \
   UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
   Array.h Vector.h List.h Sequence.h Grid.h debug.h escaping.h \
-  IteratorAdapterT.h
+  BTIterAdapter.h
 Sequence.o: Sequence.cc config_dap.h debug.h Error.h InternalErr.h \
   Sequence.h GNU/Pix.h IteratorAdapter.h BaseType.h Constructor.h DDS.h \
   Clause.h expr.h RValue.h DataDDS.h util.h Byte.h dods-datatypes.h \
   Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
   dods-limits.h Url.h Array.h Vector.h List.h Structure.h Grid.h \
-  escaping.h IteratorAdapterT.h
+  escaping.h BTIterAdapter.h
 Grid.o: Grid.cc config_dap.h Grid.h GNU/Pix.h IteratorAdapter.h \
   BaseType.h InternalErr.h Error.h Constructor.h DDS.h Clause.h expr.h \
   RValue.h Array.h dods-limits.h Vector.h util.h Byte.h dods-datatypes.h \
   Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h Url.h \
-  List.h Structure.h Sequence.h escaping.h IteratorAdapterT.h
+  List.h Structure.h Sequence.h escaping.h BTIterAdapter.h
 UInt32.o: UInt32.cc config_dap.h UInt32.h dods-datatypes.h BaseType.h \
   InternalErr.h Error.h DDS.h GNU/Pix.h IteratorAdapter.h Clause.h expr.h \
   RValue.h util.h Byte.h Int16.h UInt16.h Int32.h Float32.h Float64.h \
@@ -862,4 +864,23 @@ HTTPConnectTest.o: HTTPConnectTest.cc GNU/Regex.h HTTPConnect.h \
   Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
   dods-limits.h Url.h Array.h Vector.h DDS.h GNU/Pix.h IteratorAdapter.h \
   Clause.h expr.h RValue.h List.h Structure.h Constructor.h Sequence.h \
-  Grid.h
+  Grid.h debug.h
+cgiUtilTest.o: cgiUtilTest.cc GNU/Regex.h cgi_util.h DDS.h GNU/Pix.h \
+  IteratorAdapter.h BaseType.h InternalErr.h Error.h Clause.h expr.h \
+  RValue.h ObjectType.h EncodingType.h
+AttrTableTest.o: AttrTableTest.cc GNU/Regex.h AttrTable.h GNU/Pix.h \
+  IteratorAdapter.h Error.h
+DDSTest.o: DDSTest.cc DDS.h GNU/Pix.h IteratorAdapter.h BaseType.h \
+  InternalErr.h Error.h Clause.h expr.h RValue.h
+SequenceTest.o: SequenceTest.cc GNU/Regex.h Sequence.h GNU/Pix.h \
+  IteratorAdapter.h BaseType.h InternalErr.h Error.h Constructor.h \
+  Int32.h dods-datatypes.h Str.h dods-limits.h debug.h
+ByteTest.o: ByteTest.cc Byte.h dods-datatypes.h BaseType.h InternalErr.h \
+  Error.h
+DASTest.o: DASTest.cc DAS.h GNU/Pix.h IteratorAdapter.h AttrTable.h \
+  Error.h
+generalUtilTest.o: generalUtilTest.cc util.h BaseType.h InternalErr.h \
+  Error.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
+  Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
+  GNU/Pix.h IteratorAdapter.h Clause.h expr.h RValue.h List.h Structure.h \
+  Constructor.h Sequence.h Grid.h escaping.h

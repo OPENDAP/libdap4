@@ -19,7 +19,7 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
-#include "IteratorAdapterT.h"
+#include "BTIterAdapter.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -313,8 +313,7 @@ Grid::first_map_var()
     if (_map_vars.empty())
 	return 0;
 
-    IteratorAdapterT<BaseType *> *i =
-	new IteratorAdapterT<BaseType *>( _map_vars ) ;
+    BTIterAdapter *i = new BTIterAdapter( _map_vars ) ;
     i->first() ;
     return i ;
 }
@@ -342,17 +341,11 @@ Grid::next_map_var(Pix p)
 BaseType *
 Grid::map_var(Pix p)
 {
-    IteratorAdapterT<BaseType *> *i =
-	(IteratorAdapterT<BaseType *> *)p.getIterator() ;
+    BTIterAdapter *i = (BTIterAdapter *)p.getIterator() ;
     if( !i )
 	return 0 ;
 
-#ifdef WIN32
-    BaseType *dummy = NULL;
-    return i->entry(&dummy);
-#else
     return i->entry() ;
-#endif
 }
 
 /** Returns the number of components in the Grid object.  This is
@@ -774,6 +767,9 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.54  2003/01/15 19:24:39  pwest
+// Removing IteratorAdapterT and replacing with non-templated versions.
+//
 // Revision 1.53  2003/01/10 19:46:40  jimg
 // Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
 // cases files were added on that branch (so they appear on the trunk for

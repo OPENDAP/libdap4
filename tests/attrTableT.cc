@@ -3,8 +3,14 @@
 #endif
 
 #include <iostream>
+#include <vector>
 #include "AttrTable.h"
 #include "Pix.h"
+
+using std::cout ;
+using std::cerr ;
+using std::endl ;
+using std::vector ;
 
 int
 main( int argc, char **argv )
@@ -59,7 +65,7 @@ main( int argc, char **argv )
     }
 
     cout << endl << __LINE__ << " **** find dummy_attr using iter" << endl ;
-    AttrTable::Attr_citer iter ;
+    AttrTable::Attr_iter iter ;
     at.find( "dummy_attr", &dummy_at, iter ) ;
     if( iter != at.attr_end() )
     {
@@ -263,7 +269,7 @@ main( int argc, char **argv )
     }
 
     cout << endl << __LINE__ << " **** iterator through using iter" << endl ;
-    AttrTable::Attr_citer i = at.attr_begin() ;
+    AttrTable::Attr_iter i = at.attr_begin() ;
     ai = attrs.begin() ;
     for( ; i != at.attr_end() && ai != attrs.end(); i++, ai++ )
     {

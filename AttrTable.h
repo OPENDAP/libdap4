@@ -27,6 +27,7 @@
 
 using std::string;
 using std::ostream;
+using std::vector;
 
 /** <b>AttrType</b> identifies the data types which may appear in an
     attribute table object. 
@@ -412,6 +413,9 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.39  2003/01/15 19:24:39  pwest
+ * Removing IteratorAdapterT and replacing with non-templated versions.
+ *
  * Revision 1.38  2003/01/10 19:46:39  jimg
  * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
  * cases files were added on that branch (so they appear on the trunk for

@@ -8,6 +8,10 @@
 #include "util.h"
 #include "Pix.h"
 
+using std::cout ;
+using std::cerr ;
+using std::endl ;
+
 int
 main( int argc, char **argv )
 {
@@ -220,7 +224,7 @@ main( int argc, char **argv )
     }
 
     cout << endl << __LINE__ << " **** iterate dims using iter" << endl ;
-    Array::Dim_citer diter = ar.dim_begin() ;
+    Array::Dim_iter diter = ar.dim_begin() ;
     i = dims.begin() ;
     d = dimsize.begin() ;
     for( ; diter != ar.dim_end() && i != dims.end(); diter++, i++, d++ )
@@ -305,7 +309,7 @@ main( int argc, char **argv )
 		 << endl ;
     diter = ar.dim_begin() ;
     diter++ ;
-    ar.add_constraint( (Array::Dim_iter)diter, 0, 2, 2 ) ;
+    ar.add_constraint( diter, 0, 2, 2 ) ;
 
     cout << endl << __LINE__ << " **** get the length" << endl ;
     l = ar.length() ;
@@ -339,6 +343,9 @@ main( int argc, char **argv )
 
     cout << endl << __LINE__ << " **** print the array" << endl ;
     ar.print_val( cout ) ;
+
+    cout << endl << __LINE__ << " **** delete BaseType" << endl ;
+    delete bt ;
 
     cout << endl << __LINE__ << " **** done" << endl ;
     return 0 ;

@@ -18,6 +18,8 @@ class UInt32 ;
 class Url ;
 class BaseType ;
 
+using std::string ;
+
 extern Byte *NewByte( const string &n = "" ) ;
 extern Float32 *NewFloat32( const string &n = "" ) ;
 extern Float64 *NewFloat64( const string &n = "" ) ;

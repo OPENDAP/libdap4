@@ -28,7 +28,7 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
-#include "IteratorAdapterT.h"
+#include "BTIterAdapter.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -447,8 +447,7 @@ Sequence::first_var()
     if (_vars.empty())
 	return 0;
 
-    IteratorAdapterT<BaseType *> *i =
-	new IteratorAdapterT<BaseType *>( _vars ) ;
+    BTIterAdapter *i = new BTIterAdapter( _vars ) ;
     i->first() ;
     return i ;
 }
@@ -479,17 +478,10 @@ Sequence::next_var(Pix p)
 BaseType *
 Sequence::var(Pix p)
 {
-    IteratorAdapterT<BaseType *> *i =
-	(IteratorAdapterT<BaseType *> *)p.getIterator() ;
-    if( i )
-#ifdef WIN32
-    {
-    BaseType *dummy = NULL;
-    return i->entry(&dummy);
+    BTIterAdapter *i = (BTIterAdapter *)p.getIterator() ;
+    if( i ) {
+	return i->entry() ;
     }
-#else
-    return i->entry() ;
-#endif
     return 0 ;
 }
 
@@ -1112,6 +1104,9 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.67  2003/01/15 19:24:39  pwest
+// Removing IteratorAdapterT and replacing with non-templated versions.
+//
 // Revision 1.66  2003/01/10 19:46:40  jimg
 // Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
 // cases files were added on that branch (so they appear on the trunk for

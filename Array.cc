@@ -20,7 +20,7 @@
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
-#include "IteratorAdapterT.h"
+#include "ArrayIterAdapter.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -227,15 +227,8 @@ specified do not match the array variable.";
 void
 Array::add_constraint(Pix p, int start, int stride, int stop)
 {
-    IteratorAdapterT<Array::dimension> *iter =
-	(IteratorAdapterT<Array::dimension>*)p.getIterator() ;
-#ifdef WIN32
-    //  These dummy var's get around a bug in MS VC++ and are required.
-    struct Array::dimension *dummy = NULL;
-    Dim_iter &i = iter->getIterator(dummy) ;
-#else
+    ArrayIterAdapter *iter = (ArrayIterAdapter *)p.getIterator() ;
     Dim_iter &i = iter->getIterator() ;
-#endif
     add_constraint( i, start, stride, stop ) ;
     return ;
 }
@@ -277,8 +270,7 @@ Array::add_constraint(Dim_iter &i, int start, int stride, int stop)
 Pix 
 Array::first_dim() 
 { 
-    IteratorAdapterT<Array::dimension> *i =
-	new IteratorAdapterT<Array::dimension>( _shape ) ;
+    ArrayIterAdapter *i = new ArrayIterAdapter( _shape ) ;
     i->first() ;
     return i ;
 }
@@ -356,14 +348,8 @@ Array::dimensions(bool constrained)
 int 
 Array::dimension_size(Pix p, bool constrained) 
 { 
-    IteratorAdapterT<Array::dimension> *iter =
-	(IteratorAdapterT<Array::dimension>*)p.getIterator() ;
-#ifdef WIN32
-    struct Array::dimension *dummy = NULL;
-    Dim_iter i = iter->getIterator(dummy) ;
-#else
+    ArrayIterAdapter *iter = (ArrayIterAdapter *)p.getIterator() ;
     Dim_iter i = iter->getIterator() ;
-#endif
     return dimension_size( i, constrained ) ;
 }
 
@@ -407,14 +393,8 @@ Array::dimension_size(Dim_iter &i, bool constrained)
 int 
 Array::dimension_start(Pix p, bool constrained) 
 { 
-    IteratorAdapterT<Array::dimension> *iter =
-	(IteratorAdapterT<Array::dimension>*)p.getIterator() ;
-#ifdef WIN32
-    struct Array::dimension *dummy = NULL;
-    Dim_iter i = iter->getIterator(dummy) ;
-#else
+    ArrayIterAdapter *iter = (ArrayIterAdapter *)p.getIterator() ;
     Dim_iter i = iter->getIterator() ;
-#endif
     return dimension_start( i, constrained ) ;
 }
 
@@ -457,14 +437,8 @@ Array::dimension_start(Dim_iter &i, bool constrained)
 int 
 Array::dimension_stop(Pix p, bool constrained) 
 { 
-    IteratorAdapterT<Array::dimension> *iter =
-	(IteratorAdapterT<Array::dimension> *)p.getIterator() ;
-#ifdef WIN32
-    struct Array::dimension *dummy = NULL;
-    Dim_iter i = iter->getIterator(dummy);
-#else
+    ArrayIterAdapter *iter = (ArrayIterAdapter *)p.getIterator() ;
     Dim_iter i = iter->getIterator() ;
-#endif
     return dimension_stop( i, constrained ) ;
 }
 
@@ -508,14 +482,8 @@ Array::dimension_stop(Dim_iter &i, bool constrained)
 int 
 Array::dimension_stride(Pix p, bool constrained) 
 { 
-    IteratorAdapterT<Array::dimension> *iter =
-	(IteratorAdapterT<Array::dimension> *)p.getIterator() ;
-#ifdef WIN32
-    struct Array::dimension *dummy = NULL;
-    Dim_iter i = iter->getIterator(dummy) ;
-#else
+    ArrayIterAdapter *iter = (ArrayIterAdapter *)p.getIterator() ;
     Dim_iter i = iter->getIterator() ;
-#endif
     return dimension_stride( i, constrained ) ;
 }
 
@@ -550,14 +518,8 @@ Array::dimension_stride(Dim_iter &i, bool constrained)
 string
 Array::dimension_name(Pix p) 
 { 
-    IteratorAdapterT<Array::dimension> *iter =
-	(IteratorAdapterT<Array::dimension> *)p.getIterator() ;
-#ifdef WIN32
-    struct Array::dimension *dummy = NULL;
-    Dim_iter i = iter->getIterator(dummy) ;
-#else
+    ArrayIterAdapter *iter = (ArrayIterAdapter *)p.getIterator() ;
     Dim_iter i = iter->getIterator() ;
-#endif
     return dimension_name( i ) ;
 }
 
@@ -808,6 +770,9 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.56  2003/01/15 19:24:39  pwest
+// Removing IteratorAdapterT and replacing with non-templated versions.
+//
 // Revision 1.55  2003/01/10 19:46:39  jimg
 // Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
 // cases files were added on that branch (so they appear on the trunk for

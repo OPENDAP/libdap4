@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.58 2003/01/10 19:46:40 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.59 2003/01/15 19:24:39 pwest Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -49,7 +49,8 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.58 2003/01/10 19:46:40 jimg Exp
 #include "ce_functions.h"
 #include "cgi_util.h"
 #include "InternalErr.h"
-#include "IteratorAdapterT.h"
+#include "BTIterAdapter.h"
+#include "ClauseIterAdapter.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -353,7 +354,7 @@ DDS::exact_match(const string &name, btp_stack *s)
 Pix 
 DDS::first_var()
 {
-    IteratorAdapterT<BaseType *> *i = new IteratorAdapterT<BaseType *>( vars ) ;
+    BTIterAdapter *i = new BTIterAdapter( vars ) ;
     i->first();
     return i;
 }
@@ -382,17 +383,10 @@ DDS::next_var(Pix p)
 BaseType *
 DDS::var(Pix p)
 {
-    IteratorAdapterT<BaseType *> *i =
-	(IteratorAdapterT<BaseType *> *)p.getIterator() ;
-    if( i )
-#ifdef WIN32
-    {
-    BaseType *dummy = NULL;
-    return i->entry(&dummy);
+    BTIterAdapter *i = (BTIterAdapter *)p.getIterator() ;
+    if( i ) {
+	return i->entry() ;
     }
-#else
-    return i->entry() ;
-#endif
     return 0 ;
 }
 
@@ -412,7 +406,7 @@ DDS::first_clause()
 	throw InternalErr(__FILE__, __LINE__, 
 			  "There are no CE clauses for *this* DDS object.");
 
-    IteratorAdapterT<Clause *> *i = new IteratorAdapterT<Clause *>( expr ) ;
+    ClauseIterAdapter *i = new ClauseIterAdapter( expr ) ;
 
     i->first() ;
     return i ;
@@ -450,19 +444,12 @@ DDS::clause(Pix p)
     if(expr.empty())
 	throw InternalErr(__FILE__, __LINE__, 
 			  "There are no CE clauses for *this* DDS object.");
-    IteratorAdapterT<Clause *> *i =
-	(IteratorAdapterT<Clause *> *)p.getIterator() ;
+    ClauseIterAdapter *i = (ClauseIterAdapter *)p.getIterator() ;
     if( !i )
 	throw InternalErr(__FILE__, __LINE__, 
-			  "No IteratorAdapterT defined for *this* DDS object.");
+			 "No ClauseIterAdapter defined for *this* DDS object.");
 
-#ifdef WIN32
-    Clause *dummy = NULL;
-    return i->entry(&dummy);
-#else
     return i->entry() ;
-#endif
-
 }
 
 /** Returns the value of the indicated clause of a constraint
@@ -474,18 +461,12 @@ DDS::clause_value(Pix p, const string &dataset)
 	throw InternalErr(__FILE__, __LINE__, 
 			  "There are no CE clauses for *this* DDS object.");
 
-    IteratorAdapterT<Clause *> *i =
-	(IteratorAdapterT<Clause *> *)p.getIterator() ;
+    ClauseIterAdapter *i = (ClauseIterAdapter *)p.getIterator() ;
     if( !i )
 	throw InternalErr(__FILE__, __LINE__, 
-			  "No IteratorAdapterT defined for *this* DDS object.");
+			 "No ClauseIterAdapter defined for *this* DDS object.");
 
-#ifdef WIN32
-    Clause *dummy = NULL;
-    return i->entry(&dummy)->value(dataset, *this);
-#else
     return i->entry()->value(dataset, *this);
-#endif
 }
 
 bool
@@ -1248,6 +1229,9 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.59  2003/01/15 19:24:39  pwest
+// Removing IteratorAdapterT and replacing with non-templated versions.
+//
 // Revision 1.58  2003/01/10 19:46:40  jimg
 // Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
 // cases files were added on that branch (so they appear on the trunk for

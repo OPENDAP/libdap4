@@ -9,6 +9,10 @@
 #include "util.h"
 #include "Pix.h"
 
+using std::cout ;
+using std::cerr ;
+using std::endl ;
+
 int
 main( int argc, char **argv )
 {
@@ -148,7 +152,7 @@ main( int argc, char **argv )
     }
 
     cout << endl << __LINE__ << " **** iterate using iter" << endl ;
-    Sequence::Vars_citer v = s.var_begin() ;
+    Sequence::Vars_iter v = s.var_begin() ;
     e = elems.begin() ;
     for( ; v != s.var_end() && e != elems.end(); v++, e++ )
     {

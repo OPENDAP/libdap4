@@ -9,7 +9,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.33 2003/01/10 19:46:39 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.34 2003/01/15 19:24:39 pwest Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -24,7 +24,7 @@ static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.33 2003/01/10 19:46:39 jimg
 #include "util.h"
 #include "AttrTable.h"
 #include "escaping.h"
-#include "IteratorAdapterT.h"
+#include "AttrIterAdapter.h"
 
 using std::cerr;
 using std::string;
@@ -305,8 +305,7 @@ AttrTable::set_name(const string &n)
 Pix 
 AttrTable::first_attr()
 {
-    IteratorAdapterT<entry *> *i =
-	new IteratorAdapterT<entry *>( attr_map ) ;
+    AttrIterAdapter *i = new AttrIterAdapter( attr_map ) ;
     i->first() ;
     return i ;
 }
@@ -336,18 +335,11 @@ AttrTable::next_attr(Pix p)
 AttrTable::entry *
 AttrTable::attr(Pix p)
 {
-    IteratorAdapterT<entry *> *i =
-	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
 
-    if( i )
-#ifdef WIN32
-    {
-    entry *dummy = NULL;
-    return i->entry(&dummy);
+    if( i ) {
+	return i->entry() ;
     }
-#else
-    return i->entry() ;
-#endif
     return 0 ;
 }
 
@@ -355,15 +347,9 @@ AttrTable::attr(Pix p)
 string
 AttrTable::get_name(Pix p)
 {
-    IteratorAdapterT<entry *> *i =
-	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
     assert(i);
-#ifdef WIN32
-    entry *dummy = NULL;
-    return i->entry(&dummy)->name;
-#else
     return i->entry()->name ;
-#endif
 }
 
 string
@@ -378,15 +364,9 @@ AttrTable::get_name( Attr_iter &iter )
 bool
 AttrTable::is_container(Pix p)
 {
-    IteratorAdapterT<entry *> *i =
-	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
     assert(i);
-#ifdef WIN32
-    entry *dummy = NULL;
-    return i->entry(&dummy)->type == Attr_container;
-#else
     return i->entry()->type == Attr_container;
-#endif
 }
 
 bool
@@ -403,15 +383,9 @@ AttrTable::is_container( Attr_iter &i )
 AttrTable *
 AttrTable::get_attr_table(Pix p)
 {
-    IteratorAdapterT<entry *> *i =
-	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
     assert(i);
-#ifdef WIN32
-    entry *dummy = NULL;
-    return i->entry(&dummy)->type == Attr_container ? i->entry(&dummy)->attributes : 0;
-#else
     return i->entry()->type == Attr_container ? i->entry()->attributes : 0;
-#endif
 }
 
 AttrTable *
@@ -440,15 +414,9 @@ AttrTable::get_attr_table(const char *name)
 string
 AttrTable::get_type(Pix p)
 {
-    IteratorAdapterT<entry *> *i =
-	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
     assert(i);
-#ifdef WIN32
-    entry *dummy = NULL;
-    return AttrType_to_String(i->entry(&dummy)->type);
-#else
     return AttrType_to_String(i->entry()->type);
-#endif
 }
 
 string
@@ -1051,6 +1019,9 @@ AttrTable::print(FILE *out, string pad, bool dereference)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.34  2003/01/15 19:24:39  pwest
+// Removing IteratorAdapterT and replacing with non-templated versions.
+//
 // Revision 1.33  2003/01/10 19:46:39  jimg
 // Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
 // cases files were added on that branch (so they appear on the trunk for
