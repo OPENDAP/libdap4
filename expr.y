@@ -18,6 +18,17 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.26  1998/10/21 16:55:15  jimg
+ * Single array element may now be refd as [<int>]. So element seven of the
+ * array `a' can be referenced as a[7]. The old syntax, a[7:7], will still work.
+ * Projection functions are now supported. Functions listed in the projection
+ * part of a CE are evaluated (executed after parsing) as they are found (before
+ * the parse of the rest of the projections or the start of the parse of the
+ * selections. These functions take the same three arguments as the boll and
+ * BaseType * functions (int argc, BaseType *argv[], DDS &dds) but they return
+ * void. They can do whatever they like, but the use I foresee is adding new
+ * (synthesized - see BaseType.cc/h) variables to the DDS.
+ *
  * Revision 1.25  1998/09/17 16:56:50  jimg
  * Made the error messages more verbose (that is, the text in the Error objects
  * sent back to the client).
@@ -134,7 +145,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.25 1998/09/17 16:56:50 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.26 1998/10/21 16:55:15 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -162,6 +173,7 @@ static char rcsid[] __unused__ = {"$Id: expr.y,v 1.25 1998/09/17 16:56:50 jimg E
 #include "util.h"
 #include "parser.h"
 #include "expr.h"
+#include "RValue.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -169,12 +181,14 @@ static char rcsid[] __unused__ = {"$Id: expr.y,v 1.25 1998/09/17 16:56:50 jimg E
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
-// passed in to the parser within a strucutre (which itself is passed as a
-// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+// passed into the parser within a strucutre (which itself is passed as a
+// pointer). Note that the ERROR macro does not explicitly casts OBJ to an
+// ERROR *.
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 #define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
 #define STATUS(arg) ((parser_arg *)(arg))->_status
+
 #if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
 #else
@@ -183,10 +197,12 @@ static char rcsid[] __unused__ = {"$Id: expr.y,v 1.25 1998/09/17 16:56:50 jimg E
 
 int exprlex(void);		/* the scanner; see expr.lex */
 
-void exprerror(const char *s);	/* easier to overload than use stdarg... */
+void exprerror(const char *s);	/* easier to overload than to use stdarg... */
 void exprerror(const char *s, const char *s2);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
+int_list *make_array_index(value &i1, value &i2);
+int_list *make_array_index(value &i1);
 int_list_list *make_array_indices(int_list *index);
 int_list_list *append_array_index(int_list_list *indices, int_list *index);
 void delete_array_indices(int_list_list *indices);
@@ -206,10 +222,9 @@ rvalue *dereference_url(value &val);
 
 bool_func get_function(const DDS &table, const char *name);
 btp_func get_btp_function(const DDS &table, const char *name);
+proj_func get_proj_function(const DDS &table, const char *name);
 
 %}
-
-%expect 6
 
 %union {
     bool boolean;
@@ -243,12 +258,13 @@ btp_func get_btp_function(const DDS &table, const char *name);
 %token <op> LESS_EQL
 %token <op> REGEXP
 
-%type <boolean> constraint_expr projection selection clause array_sel
+%type <boolean> constraint_expr projection proj_clause proj_function array_proj
+%type <boolean> selection clause bool_function
 %type <op> rel_op
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indices
 %type <rval_ptr> r_value constant identifier
-%type <r_val_l_ptr> r_value_list 
+%type <r_val_l_ptr> r_value_list arg_list
 
 %%
 
@@ -261,178 +277,175 @@ constraint_expr: /* empty constraint --> send all */
                  | projection
 		 /* selection only --> project everything */
                  | '&' { (*DDS_OBJ(arg)).mark_all(true); } selection
-                   { 
-		       $$ = $3;
-		   }
+                 { 
+		     $$ = $3;
+		 }
                  | projection '&' selection
-                   {
-		       $$ = $1 && $3;
-		   }
-                 | ID '(' r_value_list ')'
-		   {
-		       btp_func func = get_btp_function(*(DDS_OBJ(arg)), $1);
-		       if (!func) {
-			   exprerror("Not a BaseType pointer function", $1);
-			   String msg = "The function `";
-			   msg += (String)$1 + "' is not defined on this server.";
-			   ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			   STATUS(arg) = false;
-			   $$ = false;
-		       }
-		       else {
-			   (*DDS_OBJ(arg)).append_clause(func, $3);
-			   $$ = true;
-		       }
-		   }
+                 {
+		     $$ = $1 && $3;
+		 }
 ;
 
-projection:	ID 
-                  { 
-		      BaseType *var = (*DDS_OBJ(arg)).var($1);
-		      if (var) {
-			  $$ = (*DDS_OBJ(arg)).mark($1, true);
-		      }
-		      else {
-			  exprerror("No such identifier in dataset", $1);
-			  String msg = "The identifier `";
-			  msg += (String)$1 + "' is not in the dataset.";
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-			  $$ = false;
-		      }
-		  }
-                | FIELD
-                  { 
-		      BaseType *var = (*DDS_OBJ(arg)).var($1);
-		      if (var)
-			  $$ = (*DDS_OBJ(arg)).mark($1, true); // must add parents, too
-		      else {
-			  exprerror("No such field in dataset", $1);
-			  String msg = "The field `";
-			  msg += (String)$1 + "' is not in this dataset.";
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-			  $$ = false;
-		      }
-		  }
-		| array_sel	/* Array *Selection* is a misnomer... */
-		  {
-		      $$ = $1;
-		  }
-                | projection ',' ID
-                  { 
-		      BaseType *var = (*DDS_OBJ(arg)).var($3);
-		      if (var) {
-			  $$ = (*DDS_OBJ(arg)).mark($3, true);
-		      }
-		      else {
-			  exprerror("No such identifier in dataset", $3);
-			  String msg = "The identifier `";
-			  msg += (String)$1 + "' is not in this dataset.";
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-			  $$ = false;
-		      }
+projection:     proj_clause
+                | proj_clause ',' projection
+                {
+		    $$ = $1 && $3;
+		}
+;
 
-		  }
-                | projection ',' FIELD
-                  { 
-		      BaseType *var = (*DDS_OBJ(arg)).var($3);
-		      if (var)
-			  $$ = (*DDS_OBJ(arg)).mark($3, true);
-		      else {
-			  exprerror("No such field in dataset", $3);
-			  String msg = "The field `";
-			  msg += (String)$1 + "' is not in this dataset.";
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-			  $$ = false;
-		      }
-		  }
-                | projection ',' array_sel
-                  {
-		      $$ = $1 && $3;
-		  }
+proj_clause:	ID 
+                { 
+		    BaseType *var = (*DDS_OBJ(arg)).var($1);
+		    if (var) {
+			$$ = (*DDS_OBJ(arg)).mark($1, true);
+		    }
+		    else {
+			exprerror("No such identifier in dataset", $1);
+			String msg = "The identifier `";
+			msg += (String)$1 + "' is not in the dataset.";
+			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			STATUS(arg) = false;
+			$$ = false;
+		    }
+		}
+                | FIELD
+                { 
+		    BaseType *var = (*DDS_OBJ(arg)).var($1);
+		    if (var)
+			$$ = (*DDS_OBJ(arg)).mark($1, true);
+		    else {
+			exprerror("No such field in dataset", $1);
+			String msg = "The field `";
+			msg += (String)$1 + "' is not in this dataset.";
+			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			STATUS(arg) = false;
+			$$ = false;
+		    }
+		}
+                | proj_function
+                {
+		    $$ = $1;
+		}
+		| array_proj
+                {
+		    $$ = $1;
+		}
+;
+
+proj_function:  ID '(' arg_list ')'
+	        {
+		    proj_func p_f = 0;
+		    btp_func f = 0;
+
+		    if ((f = get_btp_function(*(DDS_OBJ(arg)), $1))) {
+			(*DDS_OBJ(arg)).append_clause(f, $3);
+			$$ = true;
+		    }
+		    else if ((p_f = get_proj_function(*(DDS_OBJ(arg)), $1))) {
+			BaseType **args = build_btp_args($3, *(DDS_OBJ(arg)));
+			(*p_f)(($3) ? $3->length():0, args, *(DDS_OBJ(arg)));
+			$$ = true;
+		    }
+		    else {
+			exprerror("Not a registered function", $1);
+			String msg = "The function `";
+			msg += (String)$1 
+			    + "' is not defined on this server.";
+			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			STATUS(arg) = false;
+			$$ = false;
+		    }
+		}
 ;
 
 selection:	clause
 		| selection '&' clause
-                  {
-		      $$ = $1 && $3;
-		  }
+                {
+		    $$ = $1 && $3;
+		}
 ;
 
 clause:		r_value rel_op '{' r_value_list '}'
-                  {
-		      if ($1) {
-			  (*DDS_OBJ(arg)).append_clause($2, $1, $4);
-			  $$ = true;
-		      }
-		      else
-			  $$ = false;
-		  }
+                {
+		    if ($1) {
+			(*DDS_OBJ(arg)).append_clause($2, $1, $4);
+			$$ = true;
+		    }
+		    else
+			$$ = false;
+		}
 		| r_value rel_op r_value
-                  {
-		      if ($1) {
-			  rvalue_list *rv = new rvalue_list;
-			  rv->append($3);
-			  (*DDS_OBJ(arg)).append_clause($2, $1, rv);
-			  $$ = true;
-		      }
-		      else
-			  $$ = false;
-		  }
-		| ID '(' r_value_list ')'
-		  {
-		      bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
-		      if (!b_func) {
-  			  exprerror("Not a boolean function", $1);
-			  String msg = "The function `";
-			  msg += (String)$1 + "' is not defined on this server.";
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-			  $$ = false;
-		      }
-		      else {
-			  (*DDS_OBJ(arg)).append_clause(b_func, $3);
-			  $$ = true;
-		      }
-		  }
+                {
+		    if ($1) {
+			rvalue_list *rv = new rvalue_list;
+			rv->append($3);
+			(*DDS_OBJ(arg)).append_clause($2, $1, rv);
+			$$ = true;
+		    }
+		    else
+			$$ = false;
+		}
+		| bool_function
+                {
+		    $$ = $1;
+		}
+;
+
+bool_function: ID '(' arg_list ')'
+	       {
+		   bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
+		   if (!b_func) {
+		       exprerror("Not a boolean function", $1);
+		       String msg = "The function `";
+		       msg += (String)$1 
+			   + "' is not defined on this server.";
+		       ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+		       STATUS(arg) = false;
+		       $$ = false;
+		   }
+		   else {
+		       (*DDS_OBJ(arg)).append_clause(b_func, $3);
+		       $$ = true;
+		   }
+	       }
 ;
 
 r_value:        identifier
                 | constant
 		| '*' identifier
-		  {
-		      $$ = dereference_variable($2, *DDS_OBJ(arg));
-		      if (!$$) {
-			  exprerror("Could not dereference variable", 
-				    ($2)->value->name());
-			  String msg = "Could not dereference the URL: ";
-			  msg += (String)($2)->value->name();
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-		      }
-		  }
+		{
+		    $$ = dereference_variable($2, *DDS_OBJ(arg));
+		    if (!$$) {
+			exprerror("Could not dereference variable", 
+				  ($2)->value_name());
+			String msg = "Could not dereference the URL: ";
+			msg += (String)($2)->value_name();
+			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			STATUS(arg) = false;
+		    }
+		}
 		| '*' STR
-		  {
-		      $$ = dereference_url($2);
-		      if (!$$)
-			  exprerror("Could not dereference URL", *($2).v.s);
-		  }
-		| ID '(' r_value_list ')'
-		  {
-		      btp_func bt_func = get_btp_function((*DDS_OBJ(arg)), $1);
-		      if (!bt_func) {
-  			  exprerror("Not a BaseType * function", $1);
-			  String msg = "The function `";
-			  msg += (String)$1 + "' is not defined on this server.";
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-			  $$ = 0;
-		      }
-		      $$ = new rvalue(new func_rvalue(bt_func, $3));
-		  }
+		{
+		    $$ = dereference_url($2);
+		    if (!$$)
+			exprerror("Could not dereference URL", *($2).v.s);
+		}
+		| ID '(' arg_list ')'
+		{
+		    btp_func func = get_btp_function((*DDS_OBJ(arg)), $1);
+		    if (func) {
+			$$ = new rvalue(func, $3);
+		    } 
+		    else {  		
+			exprerror("Not a BaseType * function", $1);
+			String msg = "The function `";
+			msg += (String)$1 
+			    + "' is not defined on this server.";
+			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			STATUS(arg) = false;
+			$$ = 0;
+		    }
+		}
 ;
 
 r_value_list:	r_value
@@ -451,138 +464,148 @@ r_value_list:	r_value
 		}
 ;
 
+arg_list:     r_value_list
+              {  
+		  $$ = $1;
+	      }
+              | /* Null, argument lists may be empty */
+              { 
+		  $$ = 0; 
+	      }
+;
+
 identifier:	ID 
-                  { 
-		      BaseType *btp = (*DDS_OBJ(arg)).var($1);
-		      if (!btp) {
-			  exprerror("No such identifier in dataset", $1);
-			  String msg = "The identifier `";
-			  msg += (String)$1 + "' is not in this dataset.";
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-			  $$ = 0;
-		      }
-		      else
-			  $$ = new rvalue(btp);
-		  }
+                { 
+		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
+		    if (!btp) {
+			exprerror("No such identifier in dataset", $1);
+			String msg = "The identifier `";
+			msg += (String)$1 + "' is not in this dataset.";
+			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			STATUS(arg) = false;
+			$$ = 0;
+		    }
+		    else
+			$$ = new rvalue(btp);
+		}
 		| FIELD 
-                  { 
-		      BaseType *btp = (*DDS_OBJ(arg)).var($1);
-		      if (!btp) {
-			  exprerror("No such field in dataset", $1);
-			  String msg = "The field `";
-			  msg += (String)$1 + "' is not in this dataset.";
-			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			  STATUS(arg) = false;
-			  $$ = 0;
-		      }
-		      else
-			  $$ = new rvalue(btp);
-		  }
+                { 
+		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
+		    if (!btp) {
+			exprerror("No such field in dataset", $1);
+			String msg = "The field `";
+			msg += (String)$1 + "' is not in this dataset.";
+			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			STATUS(arg) = false;
+			$$ = 0;
+		    }
+		    else
+			$$ = new rvalue(btp);
+		}
 ;
 
 constant:       INT
-                  {
-		      BaseType *btp = make_variable((*DDS_OBJ(arg)), $1);
-		      $$ = new rvalue(btp);
-		  }
+                {
+		    BaseType *btp = make_variable((*DDS_OBJ(arg)), $1);
+		    $$ = new rvalue(btp);
+		}
 		| FLOAT
-                  {
-		      BaseType *btp = make_variable((*DDS_OBJ(arg)), $1);
-		      $$ = new rvalue(btp);
-		  }
+                {
+		    BaseType *btp = make_variable((*DDS_OBJ(arg)), $1);
+		    $$ = new rvalue(btp);
+		}
 		| STR
-                  { 
-		      BaseType *btp = make_variable((*DDS_OBJ(arg)), $1); 
-		      $$ = new rvalue(btp);
-		  }
+                { 
+		    BaseType *btp = make_variable((*DDS_OBJ(arg)), $1); 
+		    $$ = new rvalue(btp);
+		}
 ;
 
-/* Array *selection* is a misnomer; it is really array *projection*. jhrg */
-array_sel:	ID array_indices 
-                  {
-		      BaseType *var = (*DDS_OBJ(arg)).var($1);
-		      if (var && is_array_t(var)) {
-			  /* calls to set_send_p should be replaced with
-			     calls to DDS::mark so that arrays of Structures,
-			     etc. will be processed correctly when individual
-			     elements are projected using short names (Whew!)
-			     9/1/98 jhrg */
-			  var->set_send_p(true);
-			  $$ = process_array_indices(var, $2);
-			  if (!$$) {
-			      String msg = "The indices given for `";
-			      msg += (String)$1 + "' are out of range.";
-			      ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			      STATUS(arg) = false;
-			  }
-			  delete_array_indices($2);
-		      }
-		      else if (var && is_grid_t(var)) {
-			  var->set_send_p(true);
-			  $$ = process_grid_indices(var, $2);
-			  if (!$$) {
-			      String msg = "The indices given for `";
-			      msg += (String)$1 + "' are out of range.";
-			      ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			      STATUS(arg) = false;
-			  }
-			  delete_array_indices($2);
-		      }
-		      else
-			  $$ = false;
-		  }
+array_proj:	ID array_indices 
+                {
+		    BaseType *var = (*DDS_OBJ(arg)).var($1);
+		    if (var && is_array_t(var)) {
+			/* calls to set_send_p should be replaced with
+			   calls to DDS::mark so that arrays of Structures,
+			   etc. will be processed correctly when individual
+			   elements are projected using short names (Whew!)
+			   9/1/98 jhrg */
+			var->set_send_p(true);
+			$$ = process_array_indices(var, $2);
+			if (!$$) {
+			    String msg = "The indices given for `";
+			    msg += (String)$1 + "' are out of range.";
+			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			    STATUS(arg) = false;
+			}
+			delete_array_indices($2);
+		    }
+		    else if (var && is_grid_t(var)) {
+			var->set_send_p(true);
+			$$ = process_grid_indices(var, $2);
+			if (!$$) {
+			    String msg = "The indices given for `";
+			    msg += (String)$1 + "' are out of range.";
+			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			    STATUS(arg) = false;
+			}
+			delete_array_indices($2);
+		    }
+		    else
+			$$ = false;
+		}
 	        | FIELD array_indices 
-                  {
-		      BaseType *var = (*DDS_OBJ(arg)).var($1);
-		      if (var && is_array_t(var)) {
-			  $$ = (*DDS_OBJ(arg)).mark($1, true) // set all the parents, too
-			      && process_array_indices(var, $2);
-			  if (!$$) {
-			      String msg = "The indices given for `";
-			      msg += (String)$1 + "' are out of range.";
-			      ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			      STATUS(arg) = false;
-			  }
-			  delete_array_indices($2);
-		      }
-		      else if (var && is_grid_t(var)) {
-			  $$ = (*DDS_OBJ(arg)).mark($1, true) // set all the parents, too
-			       && process_grid_indices(var, $2);
-			  if (!$$) {
-			      String msg = "The indices given for `";
-			      msg += (String)$1 + "' are out of range.";
-			      ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			      STATUS(arg) = false;
-			  }
-			  delete_array_indices($2);
-		      }
-		      else
-			  $$ = false;
-		  }
+                {
+		    BaseType *var = (*DDS_OBJ(arg)).var($1);
+		    if (var && is_array_t(var)) {
+			$$ = (*DDS_OBJ(arg)).mark($1, true) 
+			    && process_array_indices(var, $2);
+			if (!$$) {
+			    String msg = "The indices given for `";
+			    msg += (String)$1 + "' are out of range.";
+			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			    STATUS(arg) = false;
+			}
+			delete_array_indices($2);
+		    }
+		    else if (var && is_grid_t(var)) {
+			$$ = (*DDS_OBJ(arg)).mark($1, true)
+			    && process_grid_indices(var, $2);
+			if (!$$) {
+			    String msg = "The indices given for `";
+			    msg += (String)$1 + "' are out of range.";
+			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			    STATUS(arg) = false;
+			}
+			delete_array_indices($2);
+		    }
+		    else
+			$$ = false;
+		}
 ;
 
 array_indices:  array_index
-                  {
-		      $$ = make_array_indices($1);
-		  }
+                {
+		    $$ = make_array_indices($1);
+		}
                 | array_indices array_index
-                  {
-		      $$ = append_array_index($1, $2);
-		  }
+                {
+		    $$ = append_array_index($1, $2);
+		}
 ;
 
-array_index: 	'[' INT ':' INT ']'
-                  {
-		      value val;
-		      val.type = dods_int32_c;
-		      val.v.i = 1;
-		      $$ = make_array_index($2, val, $4);
-		  }
+array_index: 	'[' INT ']'
+                {
+		    $$ = make_array_index($2);
+		}
+		|'[' INT ':' INT ']'
+                {
+		    $$ = make_array_index($2, $4);
+		}
 		| '[' INT ':' INT ':' INT ']'
-                  {
-		      $$ = make_array_index($2, $4, $6);
-		  }
+                {
+		    $$ = make_array_index($2, $4, $6);
+		}
 ;
 
 rel_op:		EQUAL
@@ -627,6 +650,48 @@ make_array_index(value &i1, value &i2, value &i3)
     index->append((int)i1.v.i);
     index->append((int)i2.v.i);
     index->append((int)i3.v.i);
+
+    DBG(Pix dp;\
+	cout << "index: ";\
+	for (dp = index->first(); dp; index->next(dp))\
+	cout << (*index)(dp) << " ";\
+	cout << endl);
+
+    return index;
+}
+
+int_list *
+make_array_index(value &i1, value &i2)
+{
+    int_list *index = new int_list;
+
+    if (i1.type != dods_int32_c || i2.type != dods_int32_c)
+	return (int_list *)0;
+
+    index->append((int)i1.v.i);
+    index->append(1);
+    index->append((int)i2.v.i);
+
+    DBG(Pix dp;\
+	cout << "index: ";\
+	for (dp = index->first(); dp; index->next(dp))\
+	cout << (*index)(dp) << " ";\
+	cout << endl);
+
+    return index;
+}
+
+int_list *
+make_array_index(value &i1)
+{
+    int_list *index = new int_list;
+
+    if (i1.type != dods_int32_c)
+	return (int_list *)0;
+
+    index->append((int)i1.v.i);
+    index->append(1);
+    index->append((int)i1.v.i);
 
     DBG(Pix dp;\
 	cout << "index: ";\
@@ -1012,6 +1077,17 @@ btp_func
 get_btp_function(const DDS &table, const char *name)
 {
     btp_func f;
+
+    if (table.find_function(name, &f))
+	return f;
+    else
+	return 0;
+}
+
+proj_func
+get_proj_function(const DDS &table, const char *name)
+{
+    proj_func f;
 
     if (table.find_function(name, &f))
 	return f;
