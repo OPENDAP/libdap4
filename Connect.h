@@ -32,6 +32,10 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.35  1999/02/18 19:22:38  jimg
+ * Added the field _accept_types and two accessor functions. See Connect.cc and
+ * the documentation comments for more information.
+ *
  * Revision 1.34  1999/01/21 20:42:01  tom
  * Fixed comment formatting problems for doc++
  *
@@ -209,15 +213,12 @@
 
 #include <WWWLib.h>			      /* Global Library Include file */
 #include <WWWApp.h>
+#if 0
 #include <WWWMIME.h>				    /* MIME parser/generator */
-#include <WWWHTML.h>				    /* HTML parser/generator */
-#include <WWWNews.h>				       /* News access module */
 #include <WWWHTTP.h>				       /* HTTP access module */
-#include <WWWFTP.h>
-#include <WWWFile.h>
-#include <WWWGophe.h>
 #include <WWWStream.h>
 #include <WWWTrans.h>
+#endif
 #include <WWWInit.h>
 
 #include "DAS.h"
@@ -340,6 +341,7 @@ private:
     String _URL;		// URL to remote dataset (minus CE)
     String _proj;		// Projection part of initial CE.
     String _sel;		// Selection of initial CE
+    String _accept_types;	// Comma separated list of types understood
 
     HTParentAnchor *_anchor;
     struct timeval *_tv;	// Timeout on socket
@@ -451,6 +453,33 @@ public:
 	@see is_www_errors_to_stderr
 	@param state The state of the property. */
     void set_www_errors_to_stderr(bool state);
+
+    /** Gets the current string of `accepted types'. This string lists all of
+	the DODS datatypes that the client can grok. 
+
+	@see set_accepted_types
+	@return A string listing the types this client declares to servers it
+	can understand. */
+    String get_accept_types();
+
+    /** Sets the list of accepted types. This string is meant to list all of
+	the DODS datatypes that the client can grok and is sent to
+	the server using the XDODS-Accept-Types MIME header. The server will
+	try to only send back to the client datatypes that are listed. If the
+	value of this header is `All', then the server assumes that the
+	client can process all of the DODS datatypes. If only one or two
+	types are \emph{not} understood, then they can be listed, each one
+	prefixed by `!'. Thus, if a client does not understand `Sequences',
+	it could set types to `!Sequences' as opposed to listing all of the
+	DODS datatypes. Multiple values are separated by commas (,).
+
+	Not all servers will honor this and some requests may not be possible
+	to express with a very limited set of datatypes.
+
+	NB: By default, the value `All' is used.
+
+	@param types The string listing datatypes understood by this client. */
+    void set_accept_types(const String &types);
 
   /** Fetch the contents of the indicated URL and put its contents
       into an output file.  A pointer to this file can be retrieved
