@@ -223,7 +223,7 @@ public:
 
     virtual int length();
     
-    int number_of_rows();
+    virtual int number_of_rows();
 
     virtual bool read_row(int row, const string &dataset, DDS &dds, 
 			  bool ce_eval = true);
@@ -233,13 +233,13 @@ public:
 
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    int get_starting_row_number();
+    virtual int get_starting_row_number();
 
-    int get_row_stride();
+    virtual int get_row_stride();
 
-    int get_ending_row_number();
+    virtual int get_ending_row_number();
 
-    void set_row_number_constraint(int start, int stop, int stride = 1);
+    virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 
     // Move me!
     virtual unsigned int val2buf(void *val, bool reuse = false);
@@ -249,11 +249,11 @@ public:
 			  btp_stack *s = 0);
     virtual BaseType *var(const string &n, btp_stack &s);
 
-    BaseType *var_value(size_t row, const string &name);
+    virtual BaseType *var_value(size_t row, const string &name);
 
-    BaseType *var_value(size_t row, size_t i);
+    virtual BaseType *var_value(size_t row, size_t i);
 
-    BaseTypeRow *row_value(size_t row);
+    virtual BaseTypeRow *row_value(size_t row);
 
     virtual void add_var(BaseType *, Part part = nil);
 #if 0
@@ -323,6 +323,10 @@ public:
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.58  2004/11/17 23:31:59  jimg
+ * I made the var_value() methods (among others) virtual. This will allow
+ * me to subclass them in the netCDF CL.
+ *
  * Revision 1.57  2004/07/07 21:08:48  jimg
  * Merged with release-3-4-8FCS
  *
