@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.22 2000/09/22 02:17:19 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.23 2000/10/02 18:49:26 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -86,6 +86,7 @@ Error::operator=(const Error &rhs)
 	_error_message = rhs._error_message;
 	_program_type = rhs._program_type;
 
+	delete[] _program;
 	_program = new char[strlen(rhs._program) + 1];
 	strcpy(_program, rhs._program);
 
@@ -102,7 +103,7 @@ Error::operator=(const Error &rhs)
 // where the code is defined but not the `data'.
 
 bool
-Error::OK()
+Error::OK() const
 {
     // The object is empty - users cannot make these, but this class can!
     bool empty = ((_error_code == undefined_error) 
@@ -156,7 +157,7 @@ Error::parse(FILE *fp)
 }
     
 void
-Error::print(ostream &os)
+Error::print(ostream &os) const
 {
     assert(OK());
 
@@ -180,6 +181,7 @@ Error::print(ostream &os)
     os << "};" << endl;
 }
 
+// deprecated
 ErrorCode
 Error::error_code(ErrorCode ec)
 {
@@ -195,6 +197,24 @@ Error::error_code(ErrorCode ec)
     }
 }
 
+ErrorCode
+Error::get_error_code() const
+{
+    assert(OK());
+    return _error_code;
+}
+
+// Defaults to undefined error.
+void
+Error::set_error_code(ErrorCode ec)
+{
+  _error_code = ec;
+  if (_error_message == "")
+    _error_message = messages[ec];
+  assert(OK());
+}
+
+// Deprecated
 string
 Error::error_message(string msg)
 {
@@ -208,8 +228,24 @@ Error::error_message(string msg)
     }
 }
 
+string
+Error::get_error_message() const
+{
+    assert(OK());
+
+    return string(_error_message);
+}
+
+// Default msg is ""
 void
-Error::display_message(void *pgui)
+Error::set_error_message(string msg)
+{
+	_error_message = msg;
+	assert(OK());
+}
+
+void
+Error::display_message(void *pgui) const
 {
     assert(OK());
 #ifdef GUI
@@ -224,6 +260,7 @@ Error::display_message(void *pgui)
 
 // There ought to be check of object state after _program_type is set. jhrg
 // 2/26/97
+// Deprecated
 
 ProgramType
 Error::program_type(ProgramType pt)
@@ -237,6 +274,22 @@ Error::program_type(ProgramType pt)
     }
 }
 
+ProgramType
+Error::get_program_type() const
+{
+    assert(OK());
+
+    return _program_type;
+}
+
+// Default pt is undefined_prog_type
+void
+Error::set_program_type(ProgramType pt)
+{
+  _program_type = pt;
+}
+
+// Deprecated
 char *
 Error::program(char *pgm)
 {
@@ -247,6 +300,19 @@ Error::program(char *pgm)
 	strcpy(_program, pgm);
 	return _program;
     }
+}
+
+const char *
+Error::get_program() const
+{
+  return _program;
+}
+
+void
+Error::set_program(char *pgm)
+{
+  _program = new char[strlen(pgm) + 1];
+  strcpy(_program, pgm);
 }
 
 // Assuming the object is OK, if the Error object has only a meesage, dispay
@@ -261,7 +327,7 @@ Error::program(char *pgm)
 // null Gui pointer then the message text is displayed on stderr.
 
 string
-Error::correct_error(void *pgui)
+Error::correct_error(void *pgui) const
 {
     assert(OK());
     if (!OK())
@@ -277,6 +343,9 @@ Error::correct_error(void *pgui)
 }
 
 // $Log: Error.cc,v $
+// Revision 1.23  2000/10/02 18:49:26  jimg
+// The Error class now has const accessors
+//
 // Revision 1.22  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -24,7 +24,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.15 2000/09/22 21:45:18 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.16 2000/10/02 18:49:26 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -765,21 +765,21 @@ case 6:
 case 7:
 #line 96 "Error.y"
 { 
-		    ERROR_OBJ(arg)->error_code((ErrorCode)yyvsp[-1].integer);
+		    ERROR_OBJ(arg)->set_error_code((ErrorCode)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 8:
 #line 103 "Error.y"
 { 
-		    ERROR_OBJ(arg)->error_message(yyvsp[0].string);
+		    ERROR_OBJ(arg)->set_error_message(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 case 10:
 #line 111 "Error.y"
 {
-		    ERROR_OBJ(arg)->program_type((ProgramType)yyvsp[-1].integer);
+		    ERROR_OBJ(arg)->set_program_type((ProgramType)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
@@ -787,7 +787,7 @@ case 11:
 #line 118 "Error.y"
 {
 		    DBG(cerr << "Program: " << yyvsp[0].string << endl);
-		    ERROR_OBJ(arg)->program(yyvsp[0].string);
+		    ERROR_OBJ(arg)->set_program(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
@@ -1029,8 +1029,8 @@ Errorerror(char *s)
 
 
 // $Log: Error.tab.c,v $
-// Revision 1.15  2000/09/22 21:45:18  jimg
-// *** empty log message ***
+// Revision 1.16  2000/10/02 18:49:26  jimg
+// The Error class now has const accessors
 //
 // Revision 1.10  2000/09/22 02:17:20  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than

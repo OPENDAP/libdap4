@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.y,v 1.10 2000/09/22 02:17:20 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.y,v 1.11 2000/10/02 18:49:26 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,14 +94,14 @@ program:	program_type program_code { $$ = $1 && $2; }
 
 code:		SCAN_CODE '=' SCAN_INT ';' 
 		{ 
-		    ERROR_OBJ(arg)->error_code((ErrorCode)$3);
+		    ERROR_OBJ(arg)->set_error_code((ErrorCode)$3);
 		    $$ = true; 
 		}
 ;
 
 message:	SCAN_MSG '=' SCAN_STR 
 		{ 
-		    ERROR_OBJ(arg)->error_message($3);
+		    ERROR_OBJ(arg)->set_error_message($3);
 		    $$ = true; 
 		} 
 		';' 
@@ -109,7 +109,7 @@ message:	SCAN_MSG '=' SCAN_STR
 
 program_type:	SCAN_PTYPE '=' SCAN_INT ';'
 		{
-		    ERROR_OBJ(arg)->program_type((ProgramType)$3);
+		    ERROR_OBJ(arg)->set_program_type((ProgramType)$3);
 		    $$ = true; 
 		}
 ;
@@ -117,7 +117,7 @@ program_type:	SCAN_PTYPE '=' SCAN_INT ';'
 program_code:	SCAN_PROGRAM '=' SCAN_STR
 		{
 		    DBG(cerr << "Program: " << $3 << endl);
-		    ERROR_OBJ(arg)->program($3);
+		    ERROR_OBJ(arg)->set_program($3);
 		    $$ = true; 
 		}
 		';' 
@@ -138,6 +138,9 @@ Errorerror(char *s)
 
 
 // $Log: Error.y,v $
+// Revision 1.11  2000/10/02 18:49:26  jimg
+// The Error class now has const accessors
+//
 // Revision 1.10  2000/09/22 02:17:20  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

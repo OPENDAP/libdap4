@@ -145,7 +145,7 @@ public:
 	
 	@memo Is the Error object valid?
 	@return TRUE if the object is valid, FALSE otherwise. */
-    bool OK();
+    bool OK() const;
 
     /** Given an input stream (FILE *) #fp#, parse an Error object from
 	stream. Values for fields of the Error object are parsed and
@@ -169,26 +169,36 @@ public:
 	@memo Print the Error object on the given output stream.
 	@param os A pointer to the output stream on which the Error
 	object is to be rendered. */
-    void print(ostream &os = cout);
+    void print(ostream &os = cout) const;
 
-    /** With no argument, returns the Error object's error code. With an
-	argument, sets the error code to that value.
-	
-	@memo Get or set the error code.
-	@return The Error object's error code. 
-	@param ec The error code.  If this is not included, the
-	undefined error code will be stored. */
-    ErrorCode error_code(ErrorCode ec = undefined_error);
+  //@{ @name Accessors
+  /** Get the error code. */
+  ErrorCode get_error_code() const;
+  
+  /** Get the error message. */
+  string get_error_message() const;
     
-    /** With no argument, return a copy of the objet's error message string.
-	With an argument, set the object's error message to that string.
+  /** get the program type. */
+  ProgramType get_program_type() const;
+
+  /** Get the error handling program. */
+    const char *get_program() const;
+  //@}
+
+  //@{ @name Mutators
+  /** Set the error code */
+  void set_error_code(ErrorCode ec = undefined_error);
     
-	@memo Get or set the error code.
-	@param msg The error message string.  If this is omitted, the
-	function simply returns a copy of the current message string.
-	@return A copy of the Error object's message string. */
-    string error_message(string msg = "");
+  /** Set the error message. */
+  void set_error_message(string msg = "");
     
+  /** Set the program type.*/
+  void set_program_type(ProgramType pt = undefined_prog_type);
+
+  /** Set the error handling program. */
+  void set_program(char *program);
+  //@}
+
     /** Either display the error message in a dialog box and offer the
 	user a single `OK' button or print the message to standard
 	error. If #gui# is not given, then use stderr. In addition, the
@@ -210,28 +220,8 @@ public:
 
 	@see Gui
 	@see correct_error */
-    void display_message(void *gui = 0);
+    void display_message(void *gui = 0) const;
 
-    /** With no argument, return the program type of the error object. With
-	an argument, set the error object's program type field.
-      
-	@memo Get or set the program type.
-	@return The program type of the object. 
-	@see ProgramType */
-    ProgramType program_type(ProgramType pt = undefined_prog_type);
-
-    
-    /** With no argument, return the error correction program. With an
-	argument, set the error correction program to a copy of that value.
-    
-	Note that this is not a pointer to a function, but a character
-	string containing the entire tcl, Java, or other program.
-
-	@memo  Get or set the error correction program.
-	@return the error correction program. */
-    char *program(char *program = 0);
-
-    
     /** This function runs the error correction program, if possible,
 	and returns a string that can be used as the `corrected'
 	value. If there is no error correction program or it is not
@@ -245,10 +235,59 @@ public:
 	process on the client.
 	@see Gui
 	@see display_message */
-    string correct_error(void *gui);
+    string correct_error(void *gui) const;
+
+  /** @{ @name Deprecated methods
+      These methods should not be used because combining the accessors and
+      mutators makes using const objects almost impossible for clients of
+      this class. */
+
+    /** With no argument, return a copy of the objet's error message string.
+	With an argument, set the object's error message to that string.
+    
+	@deprecated
+	@memo Get or set the error code.
+	@param msg The error message string.  If this is omitted, the
+	function simply returns a copy of the current message string.
+	@return A copy of the Error object's message string. */
+    string error_message(string msg = "");
+    
+    /** With no argument, return the program type of the error object. With
+	an argument, set the error object's program type field.
+	
+	@deprecated
+	@memo Get or set the program type.
+	@return The program type of the object. 
+	@see ProgramType */
+    ProgramType program_type(ProgramType pt = undefined_prog_type);
+
+    /** With no argument, return the error correction program. With an
+	argument, set the error correction program to a copy of that value.
+    
+	Note that this is not a pointer to a function, but a character
+	string containing the entire tcl, Java, or other program.
+
+	@deprecated
+	@memo  Get or set the error correction program.
+	@return the error correction program. */
+    char *program(char *program = 0);
+
+    /** With no argument, returns the Error object's error code. With an
+	argument, sets the error code to that value.
+	
+	@deprecated
+	@memo Get or set the error code.
+	@return The Error object's error code. 
+	@param ec The error code.  If this is not included, the
+	undefined error code will be stored. */
+    ErrorCode error_code(ErrorCode ec = undefined_error);
+  //@}
 };
 
 // $Log: Error.h,v $
+// Revision 1.18  2000/10/02 18:49:26  jimg
+// The Error class now has const accessors
+//
 // Revision 1.17  2000/09/22 02:17:20  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and
