@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.cc,v $
+// Revision 1.4  1996/10/28 23:09:14  jimg
+// Fixed compile-time bug in ops() where the type names dods_* were used where
+// the constants dods_*_c should have been used.
+//
 // Revision 1.3  1996/10/18 16:52:18  jimg
 // Fixed an error in the ctor where dods_int32_c was passed instead of
 // dods_uint32_c.
@@ -28,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.3 1996/10/18 16:52:18 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.4 1996/10/28 23:09:14 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -182,7 +186,7 @@ UInt32::ops(BaseType &b, int op)
 	break;
     }
 
-    if (b.type() == dods_uint16 || b.type() == dods_uint32)
+    if (b.type() == dods_uint32_c)
 	return int_ops(a1, ua2, op);
     else
 	return int_ops(a1, a2, op);
