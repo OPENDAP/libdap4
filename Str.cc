@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.33  1998/09/17 17:16:25  jimg
+// Fixed errant comments.
+//
 // Revision 1.32  1998/09/10 19:17:58  jehamby
 // Change Str::print_val() to quote Strings when printing them (so geturl can
 // generate less ambiguous output).
@@ -177,7 +180,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.32 1998/09/10 19:17:58 jehamby Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.33 1998/09/17 17:16:25 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -205,18 +208,11 @@ Str::length()
     return _buf.length();
 }
 
-// return the number of bytes that the value of a Str object occupies when
-// that value is accessed using read_val().
-
 unsigned int
 Str::width()
 {
     return sizeof(String);
 }
-
-// serialize and deserialize manage memory using malloc and free since, in
-// some cases, they must let the xdr library (bundled with the CPU) do the
-// allocation and that library will always use malloc/free.
 
 bool
 Str::serialize(const String &dataset, DDS &dds, XDR *sink, bool ce_eval = true)
@@ -248,13 +244,13 @@ Str::deserialize(XDR *source, DDS *, bool)
 // in this case).
 //
 // NB: return the size of the thing val points to (sizeof val), not the
-// length of the string. Thus if there is an array of of strings (i.e., (char
-// *)s), then the return value of this mfunc can be used to advance to the
-// next char * in that array. This weirdness is needed because C programs
-// which will need to interface to libraries built using this toolkit will
-// not know about g++ Strings and will need to use the C representation for
-// strings, but here in the toolkit I use the String class to cut down on
-// memory management problems.
+// length of the string. Thus if there is an array of of strings, then the
+// return value of this mfunc can be used to advance to the next string in
+// that array. This weirdness is needed because C programs which will need to
+// interface to libraries built using this toolkit will not know about g++
+// Strings and will need to use the C representation for strings, but here in
+// the toolkit I use the String class to cut down on memory management
+// problems.
 
 unsigned int
 Str::buf2val(void **val)
@@ -271,8 +267,7 @@ Str::buf2val(void **val)
 
 // Copy data in VAL to _BUF.
 //
-// Returns the number of bytes needed for _BUF (which is a pointer in this
-// case). 
+// Returns the number of bytes needed for _BUF.
 
 unsigned int
 Str::val2buf(void *val, bool)
