@@ -11,16 +11,19 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.16  1996/08/13 18:42:01  jimg
+// Added __unused__ to definition of char rcsid[].
+//
 // Revision 1.15  1996/06/18 23:48:46  jimg
 // Modified so that the compress/decompress functions use the DODS_ROOT
 // enviroment-variable/define or the user's PATH to find gzip.
 //
 // Revision 1.14  1996/06/08 00:16:42  jimg
 // Fixed a bug in name_path().
-// Added compression functions which create filter processes which automatically
-// compress stdio file streams.
-// Added to set_mime_text() and set_mime_binary() support for compression. These
-// now correctly set the content-encoding field of the mime header.
+// Added compression functions which create filter processes which
+// automatically compress stdio file streams.
+// Added to set_mime_text() and set_mime_binary() support for compression.
+// These now correctly set the content-encoding field of the mime header.
 // Fixed ErrMsgT so that it says `DODS server' when the name of the server is
 // not known.
 //
@@ -80,7 +83,9 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.15 1996/06/18 23:48:46 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.16 1996/08/13 18:42:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,7 +96,6 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.15 1996/06/18 23:48:46 jimg Exp $"};
 #include <iostream.h>
 #include <String.h>
 
-#include "config_dap.h"
 #include "cgi_util.h"
 
 #ifdef TRACE_NEW
