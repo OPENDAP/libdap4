@@ -12,9 +12,12 @@
 // jhrg 1/12/95
 
 /* $Log: TestSequence.h,v $
-/* Revision 1.9  1996/05/31 23:30:30  jimg
-/* Updated copyright notice.
+/* Revision 1.10  1997/07/15 21:55:30  jimg
+/* Changed return type of the length member function.
 /*
+ * Revision 1.9  1996/05/31 23:30:30  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.8  1996/05/29 22:08:52  jimg
  * Made changes necessary to support CEs that return the value of a function
  * instead of the value of a variable. This was done so that it would be
@@ -78,7 +81,7 @@ public:
 
     virtual bool read(const String &dataset, int &error);
 
-    virtual unsigned int length();
+    virtual int length();
 };
 
 #endif
