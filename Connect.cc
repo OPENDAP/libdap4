@@ -12,7 +12,11 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.9  1995/05/22 20:41:37  jimg
+// Revision 1.10  1995/05/30 18:42:45  jimg
+// Modified the request_data member function so that it accepts the variable
+// in addition to the existing arguments.
+//
+// Revision 1.9  1995/05/22  20:41:37  jimg
 // Changed the usage of URLs: we now use straight URLs; no POSTs and no
 // internal parsing of the URL. To select different documents from a DODS
 // server an extension is appended to the URL.
@@ -80,7 +84,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.9 1995/05/22 20:41:37 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.10 1995/05/30 18:42:45 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -235,9 +239,9 @@ Connect::request_dds(const String &cgi)
 // Added optional argument CGI which defaults to "dods". jhrg 3/7/95
 
 bool
-Connect::request_data(bool async, const String &cgi)
+Connect::request_data(const String expr, bool async, const String &cgi)
 {
-    String data_url = _URL + "."  + cgi;
+    String data_url = _URL + "."  + cgi + "?" + expr;
     FILE *fp;
 
     if (async)

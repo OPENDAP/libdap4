@@ -18,10 +18,14 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.7  1995/05/22 20:43:12  jimg
-/* Removed a paramter from the REQUEST_DATA member function: POST is not
-/* needed since we no longer use the post mechanism.
+/* Revision 1.8  1995/05/30 18:42:47  jimg
+/* Modified the request_data member function so that it accepts the variable
+/* in addition to the existing arguments.
 /*
+ * Revision 1.7  1995/05/22  20:43:12  jimg
+ * Removed a paramter from the REQUEST_DATA member function: POST is not
+ * needed since we no longer use the post mechanism.
+ *
  * Revision 1.6  1995/04/17  03:20:52  jimg
  * Removed the `api' field.
  *
@@ -101,7 +105,8 @@ public:
     // get the DAS, DDS and data from the server/cgi comb using the URL
     bool request_das(const String &cgi = "das");
     bool request_dds(const String &cgi = "dds");
-    bool request_data(bool async = false, const String &cgi = "dods");
+    bool request_data(const String expr, bool async = false, 
+		      const String &cgi = "dods");
 };
 
 typedef Connect * ConnectPtr;
