@@ -68,9 +68,63 @@ public:
     CPPUNIT_TEST(symbol_name_test);
     CPPUNIT_TEST(print_xml_test);
     CPPUNIT_TEST(print_xml_test2);
+    CPPUNIT_TEST(transfer_attributes_test);
 
     CPPUNIT_TEST_SUITE_END();
 
+    void transfer_attributes_test() {
+        try {
+                dds1->parse("dds-testsuite/fnoc1.nc.dds");
+                DAS das;
+                das.parse("dds-testsuite/fnoc1.nc.das");
+                dds1->transfer_attributes(&das);
+                
+                AttrTable &at = dds1->get_attr_table();
+                AttrTable::Attr_iter i = at.attr_begin();
+                CPPUNIT_ASSERT(at.get_name(i) == "NC_GLOBAL");
+                CPPUNIT_ASSERT(at.get_name(++i) == "DODS_EXTRA");
+        }
+        catch (Error &e) {
+            cout << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error thrown!");
+        }
+        
+        try {
+                dds2->parse("dds-testsuite/3B42.980909.5.HDF.dds");
+                DAS das;
+                das.parse("dds-testsuite/3B42.980909.5.hacked.HDF.das");
+                dds2->transfer_attributes(&das);
+                
+                AttrTable &at = dds2->get_attr_table();
+                AttrTable::Attr_iter i = at.attr_begin();
+                CPPUNIT_ASSERT(at.get_name(i) == "HDF_GLOBAL");
+                CPPUNIT_ASSERT(at.get_name(++i) == "CoreMetadata");
+        }
+        catch (Error &e) {
+            cout << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error thrown!");
+        }
+
+        try {
+                DDS dds;
+                dds.parse("dds-testsuite/S2000415.HDF.dds");
+                DAS das;
+                das.parse("dds-testsuite/S2000415.HDF.das");
+                dds.transfer_attributes(&das);
+                
+                AttrTable &at = dds.get_attr_table();
+                AttrTable::Attr_iter i = at.attr_begin();
+                CPPUNIT_ASSERT(at.get_name(i) == "HDF_GLOBAL");
+                AttrTable &at2 = dds.var("WVC_Lat")->get_attr_table();
+                at2.print(cout);
+                CPPUNIT_ASSERT(at2.get_name(at2.attr_begin()) == "long_name");
+        }
+        catch (Error &e) {
+            cout << "Error: " << e.get_error_message() << endl;
+            CPPUNIT_ASSERT(!"Error thrown!");
+        }
+    }
+    
     void symbol_name_test() {
 	try {
 	    // read a DDS.
