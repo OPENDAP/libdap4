@@ -79,10 +79,13 @@ AISConnect::request_das(DAS &das) throw(Error, InternalErr)
     Connect::request_das(das);
 
     if (d_ais_merge)
-	d_ais_merge->merge(URL(false), das); // URL(false) --> URL w/o CE
+	    d_ais_merge->merge(URL(false), das); // URL(false) --> URL w/o CE
 }
 
 // $Log: AISConnect.cc,v $
+// Revision 1.6  2004/10/22 21:48:20  jimg
+// Formatting...
+//
 // Revision 1.5  2004/02/19 19:42:51  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
