@@ -24,6 +24,10 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.27  1999/07/22 17:07:47  jimg
+ * Fixed a bug found by Peter Fox. Array index names were not handled properly
+ * after the String to string conversion.
+ *
  * Revision 1.26  1999/05/04 19:47:23  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -143,7 +147,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.26 1999/05/04 19:47:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.27 1999/07/22 17:07:47 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -197,7 +201,7 @@ void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current,
 
 %}
 
-%expect 66
+%expect 56
 
 %token ID
 %token NAME
@@ -433,7 +437,7 @@ array_decl:	'[' INTEGER ']'
 
 		 | '[' ID 
 		 {
-		     id = $2;
+		     id = string($2);
 		 } 
                  '=' INTEGER 
                  { 
