@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.48 2003/12/10 21:11:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.49 2004/01/23 17:26:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1630,9 +1630,9 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.48  2003/12/10 21:11:58  jimg
- * Merge with 3.4. Some of the files contains erros (some tests fail). See
- * the ChangeLog for information about fixes.
+ * Revision 1.49  2004/01/23 17:26:41  jimg
+ * Grammar regeneration (removed List.h; must rebuild the *.tab.c files
+ * and commit them to CVS).
  *
  * Revision 1.44  2003/12/08 18:02:30  edavis
  * Merge release-3-4 into trunk

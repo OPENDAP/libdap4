@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.tab.c,v 1.9 2003/12/10 21:11:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.tab.c,v 1.10 2004/01/23 17:26:41 jimg Exp $"};
 
 #include <iostream>
 
@@ -1268,9 +1268,9 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 }
 
 // $Log: gse.tab.c,v $
-// Revision 1.9  2003/12/10 21:11:58  jimg
-// Merge with 3.4. Some of the files contains erros (some tests fail). See
-// the ChangeLog for information about fixes.
+// Revision 1.10  2004/01/23 17:26:41  jimg
+// Grammar regeneration (removed List.h; must rebuild the *.tab.c files
+// and commit them to CVS).
 //
 // Revision 1.11  2003/12/08 18:02:31  edavis
 // Merge release-3-4 into trunk

@@ -25,7 +25,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.43 2003/12/11 01:08:37 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.44 2004/01/23 17:26:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +43,6 @@ static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.43 2003/12/11 01:08:37 jimg
 
 #include "BaseType.h"
 #include "Array.h"
-#include "List.h"
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
@@ -114,7 +113,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 proj_func get_proj_function(const DDS &table, const char *name);
 
 
-#line 135 "expr.y"
+#line 134 "expr.y"
 #ifndef YYSTYPE
 typedef union {
     bool boolean;
@@ -210,10 +209,10 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   174,   180,   182,   182,   186,   192,   193,   199,   211,
-     215,   221,   241,   242,   248,   257,   268,   274,   287,   288,
-     296,   308,   315,   324,   328,   334,   365,   372,   382,   386,
-     392,   404,   422,   448,   449,   450,   451,   452,   453,   454
+       0,   173,   179,   181,   181,   185,   191,   192,   198,   210,
+     214,   220,   240,   241,   247,   256,   267,   273,   286,   287,
+     295,   307,   314,   323,   327,   333,   364,   371,   381,   385,
+     391,   403,   421,   447,   448,   449,   450,   451,   452,   453
 };
 #endif
 
@@ -1021,36 +1020,36 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 175 "expr.y"
+#line 174 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 182 "expr.y"
+#line 181 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 183 "expr.y"
+#line 182 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 187 "expr.y"
+#line 186 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 194 "expr.y"
+#line 193 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 200 "expr.y"
+#line 199 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
@@ -1064,19 +1063,19 @@ case 8:
 		;
     break;}
 case 9:
-#line 212 "expr.y"
+#line 211 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 10:
-#line 216 "expr.y"
+#line 215 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 11:
-#line 222 "expr.y"
+#line 221 "expr.y"
 {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -1096,13 +1095,13 @@ case 11:
 		;
     break;}
 case 13:
-#line 243 "expr.y"
+#line 242 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 14:
-#line 249 "expr.y"
+#line 248 "expr.y"
 {
 		    if (yyvsp[-4].rval_ptr) {
 			(*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -1113,7 +1112,7 @@ case 14:
 		;
     break;}
 case 15:
-#line 258 "expr.y"
+#line 257 "expr.y"
 {
 		    if (yyvsp[-2].rval_ptr) {
 			rvalue_list *rv = new rvalue_list;
@@ -1126,13 +1125,13 @@ case 15:
 		;
     break;}
 case 16:
-#line 269 "expr.y"
+#line 268 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 17:
-#line 275 "expr.y"
+#line 274 "expr.y"
 {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		   if (!b_func) {
@@ -1145,7 +1144,7 @@ case 17:
 	       ;
     break;}
 case 19:
-#line 289 "expr.y"
+#line 288 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
@@ -1155,7 +1154,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 297 "expr.y"
+#line 296 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
@@ -1167,7 +1166,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 309 "expr.y"
+#line 308 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -1176,7 +1175,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 316 "expr.y"
+#line 315 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -1185,19 +1184,19 @@ case 22:
 		;
     break;}
 case 23:
-#line 325 "expr.y"
+#line 324 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
 case 24:
-#line 329 "expr.y"
+#line 328 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
 case 25:
-#line 335 "expr.y"
+#line 334 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(www2id(string(yyvsp[0].id)));
 		    if (!btp) {
@@ -1230,14 +1229,14 @@ case 25:
 		;
     break;}
 case 26:
-#line 366 "expr.y"
+#line 365 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 27:
-#line 373 "expr.y"
+#line 372 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
 		    // no_such_ident throws an exception.
@@ -1247,19 +1246,19 @@ case 27:
 		;
     break;}
 case 28:
-#line 383 "expr.y"
+#line 382 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 29:
-#line 387 "expr.y"
+#line 386 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 30:
-#line 393 "expr.y"
+#line 392 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-1].id)) {
 			string msg = "The word `";
@@ -1273,7 +1272,7 @@ case 30:
 		;
     break;}
 case 31:
-#line 405 "expr.y"
+#line 404 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-3].id)) {
 			string msg = "The word `";
@@ -1293,7 +1292,7 @@ case 31:
 		;
     break;}
 case 32:
-#line 423 "expr.y"
+#line 422 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-5].id)) {
 			string msg = "The word `";
@@ -1551,7 +1550,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 457 "expr.y"
+#line 456 "expr.y"
 
 
 // All these error reporting function now throw instnaces of Error. The expr
@@ -2188,8 +2187,12 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.43  2003/12/11 01:08:37  jimg
- * More fixes after resolving conflicts. This code still fails some tests.
+ * Revision 1.44  2004/01/23 17:26:41  jimg
+ * Grammar regeneration (removed List.h; must rebuild the *.tab.c files
+ * and commit them to CVS).
+ *
+ * Revision 1.50  2004/01/21 17:46:03  jimg
+ * Removed include of List.h.
  *
  * Revision 1.49  2003/12/08 18:02:31  edavis
  * Merge release-3-4 into trunk
