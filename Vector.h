@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.22  1998/09/17 17:01:12  jimg
+ * Fixed errant documentation.
+ *
  * Revision 1.21  1998/03/17 17:51:28  jimg
  * Added an implementation of element_count().
  *
@@ -291,17 +294,32 @@ public:
       */
     void vec_resize(int l);
 
-  /** Returns a copy of the template array element, #_var#.
-      If the Vector contains simple data types, this will contain the
-      value of the last vector element accessed with the
-      #Vector::var(int i)# function, if any.  If no such access has
-      been made, or if the Vector contains compound data types, the
-      value of the template instance is undefined.
+  /** Returns a copy of the template array element. If the Vector contains
+      simple data types, the template will contain the value of the last
+      vector element accessed with the {\tt Vector::var(int i)} function, if
+      any. If no such access has been made, or if the Vector contains
+      compound data types, the value of the template instance is undefined.
 
-      @memo Returns a pointer to a copy of the array template.
-      @see Vector::var
-      */
-    virtual BaseType *var(const String &name = (char *)0);
+      Note that the parameter {\it exact_match} is not used by this mfunc.
+
+      @param name The name of the variabe to find.
+      @param exact_match Unused.
+      @return A pointer to the BaseType if found, otherwise null.
+      @see Vector::var */
+    virtual BaseType *var(const String &name = (char *)0, 
+			  bool exact_match = true);
+
+    /** This version of var(...) searches for {\it name} and returns a
+	pointer to the BaseType object if found. It uses the same search
+	algorithm as above when {\it exact_match} is false. In addition to
+	returning a pointer to the variable, it pushes onto {\it s} a
+	BaseType pointer to each constructor type that ultimately contains
+	{\it name}.
+
+	@param name Find the variable whose name is {\it name}.
+	@param s Record the path to {\it name}.
+	@return A pointer to the named variable. */
+    virtual BaseType *var(const String &name, btp_stack &s);
 
   /** Returns a pointer to the specified Vector element.  For Vectors
       containing simple data types, the element returned will be a
@@ -316,8 +334,7 @@ public:
       */
     virtual BaseType *var(unsigned int i);
 
-  /** Sets the value of the template variable.
-   */
+    /** Sets the value of the template variable.  */
     virtual void add_var(BaseType *v, Part p = nil);
 
     virtual void print_decl(ostream &os, String space = "    ",
