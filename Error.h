@@ -12,6 +12,9 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.5  1997/02/18 21:26:52  jimg
+// Moved the default ctor back into the public section...
+//
 // Revision 1.4  1997/02/15 07:11:47  jimg
 // Changed comments for doc++.
 // Moved default ctor into the private part of the object.
@@ -88,16 +91,18 @@ private:
     ProgramType _program_type;
     char *_program;
 
-    Error();			// Never create empty error objects!
-
 public:
     /// Constructors for the Error object
     /** It is not possible to create an Error object with only an error code;
         you must supply at a minimum a code and a message. In this case the
 	correction program and program type will be null. In addition, if a
-	program type is given a program *must* also be given. */
+	program type is given a program *must* also be given. 
+
+	NB: Other constructors should be the only callers of this object's
+	default ctor. */
     Error(ErrorCode ec, String msg);
     Error(ErrorCode ec, String msg, ProgramType pt, char *pgm);
+    Error();
     Error(const Error &copy_from);
     
     ~Error();
