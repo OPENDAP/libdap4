@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.19 1996/06/18 23:49:35 jimg Exp $
+# $Id: configure,v 1.20 1996/06/22 00:13:03 jimg Exp $
 
 # Check for fill value usage.
 
@@ -1985,12 +1985,29 @@ fi
 
 case "$host" in
      *sunos*) cat >> confdefs.h <<\EOF
-#define SEM_PROTO 0
+#define HAVE_SEM_PROTO 0
+EOF
+
+	      cat >> confdefs.h <<\EOF
+#define HAVE_SEM_UNION 1
+EOF
+
+	      ;;
+     alpha-dec-osf3.0) cat >> confdefs.h <<\EOF
+#define HAVE_SEM_PROTO 1
+EOF
+
+	      cat >> confdefs.h <<\EOF
+#define HAVE_SEM_UNION 0
 EOF
 
 	      ;;
      *)       cat >> confdefs.h <<\EOF
-#define SEM_PROTO 1
+#define HAVE_SEM_PROTO 1
+EOF
+
+	      cat >> confdefs.h <<\EOF
+#define HAVE_SEM_UNION 1
 EOF
 
 	      ;;
