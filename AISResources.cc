@@ -127,7 +127,7 @@ AISResources::add_resource(const string &primary, const ResourceVector &rv)
     @param primary The URL of the primary resource. 
     @return True if there are AIS resources for <code>primary</code>. */
 bool 
-AISResources::has_resource(const string &primary)
+AISResources::has_resource(const string &primary) const
 {
     return d_db.find(primary) != d_db.end();
 }
@@ -139,7 +139,7 @@ AISResources::has_resource(const string &primary)
     @exception NoSuchPrimaryResource thrown if <code>primary</code> is
     not present in the current mapping. */
 ResourceVector
-AISResources::get_resource(const string &primary) 
+AISResources::get_resource(const string &primary)
     throw(NoSuchPrimaryResource)
 {
     const ResourceMapIter &iter = d_db.find(primary);
@@ -171,7 +171,7 @@ AISResources::read_database(const string &database)
     @exception AISDatabaseWriteFailed thrown if the database could not be
     written. */
 void 
-AISResources::write_database(const string &filename) 
+AISResources::write_database(const string &filename)
     throw(AISDatabaseWriteFailed)
 {
     ofstream fos;
@@ -187,6 +187,9 @@ AISResources::write_database(const string &filename)
 }
 
 // $Log: AISResources.cc,v $
+// Revision 1.5  2003/02/26 06:56:11  jimg
+// Made has_resource const.
+//
 // Revision 1.4  2003/02/26 06:35:48  jimg
 // Added iostream header. Moved the file open out of the constructor; this
 // seemed to be throwing an exception when the file did not exist, even though

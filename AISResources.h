@@ -80,9 +80,9 @@ public:
 			      const Resource &ancillary);
     virtual void add_resource(const string &primary, const ResourceVector &rv);
 
-    virtual bool has_resource(const string &primary);
+    virtual bool has_resource(const string &primary) const;
 
-    virtual ResourceVector get_resource(const string &primary) 
+    virtual ResourceVector get_resource(const string &primary)
 	throw(NoSuchPrimaryResource);
 
     virtual void read_database(const string &database) 
@@ -93,6 +93,9 @@ public:
 };
 
 // $Log: AISResources.h,v $
+// Revision 1.4  2003/02/26 06:56:11  jimg
+// Made has_resource const.
+//
 // Revision 1.3  2003/02/26 00:40:38  jimg
 // Changed name of is_resource to has_resource.
 //
