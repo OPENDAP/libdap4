@@ -42,4 +42,5 @@ proc das-test_exit {} {
 }
 
 proc das-test_version {} {
+    send_user "DAS test suite 1.1\n"
 }
