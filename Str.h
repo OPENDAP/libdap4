@@ -11,9 +11,12 @@
 // jhrg 9/7/94
 
 /* $Log: Str.h,v $
-/* Revision 1.20  1996/12/02 23:10:27  jimg
-/* Added dataset as a parameter to the ops member function.
+/* Revision 1.21  1997/05/13 23:34:22  jimg
+/* Changed max_str_len to 32k - a temporary fix for String variables
 /*
+ * Revision 1.20  1996/12/02 23:10:27  jimg
+ * Added dataset as a parameter to the ops member function.
+ *
  * Revision 1.19  1996/06/04 21:33:44  jimg
  * Multiple connections are now possible. It is now possible to open several
  * URLs at the same time and read from them in a round-robin fashion. To do
@@ -147,7 +150,14 @@
 #include "dods-limits.h"
 #include "BaseType.h"
 
-const unsigned int max_str_len = DODS_UINT_MAX-1; 
+// max_str_len should be large since we always send strings with length bytes
+// as a prefix (so xdr_string will always know how much memory to malloc) but
+// if deserialize gets confused and thinks a ctor (in particular) is a string
+// xdr_string in turn will max_str_len if it cannot get a length byte. A long
+// term solution is to fix DODS, but strings should not routinely be > 32k
+// for the time being... jhrg 4/30/97
+
+const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1; 
 
 class Str: public BaseType {
 protected:
