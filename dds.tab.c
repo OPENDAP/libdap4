@@ -29,16 +29,18 @@
 #define	STRING	273
 #define	URL	274
 
-#line 95 "dds.y"
+#line 99 "dds.y"
+
+
+#define YYSTYPE char *
 
 #ifdef NEVER
-#define YYSTYPE char *
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 #endif
 
-static char rcsid[]={"$Id: dds.tab.c,v 1.4 1995/10/23 23:21:07 jimg Exp $"};
+static char rcsid[]={"$Id: dds.tab.c,v 1.5 1995/12/06 19:45:32 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,11 +98,11 @@ typedef
 
 
 
-#define	YYFINAL		82
+#define	YYFINAL		83
 #define	YYFLAG		-32768
 #define	YYNTBASE	27
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 274 ? yytranslate[x] : 50)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 274 ? yytranslate[x] : 51)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -135,130 +137,133 @@ static const char yytranslate[] = {     0,
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
-     0,     2,     5,    12,    13,    15,    18,    21,    25,    26,
-    34,    35,    43,    44,    45,    46,    61,    62,    63,    64,
-    79,    81,    83,    85,    87,    89,    91,    93,    95,    97,
-    99,   101,   104,   108,   109,   110,   118
+     0,     2,     5,    12,    13,    15,    18,    21,    23,    27,
+    28,    36,    37,    45,    46,    47,    48,    63,    64,    65,
+    66,    81,    83,    85,    87,    89,    91,    93,    95,    97,
+    99,   101,   103,   106,   110,   111,   112,   120
 };
 
 static const short yyrhs[] = {    28,
-     0,    27,    28,     0,     5,    20,    29,    21,    49,    22,
-     0,     0,    30,     0,    29,    30,     0,    39,    30,     0,
-    44,    45,    22,     0,     0,    40,    20,    29,    21,    31,
-    45,    22,     0,     0,    41,    20,    29,    21,    32,    45,
-    22,     0,     0,     0,     0,    42,    20,     6,    23,    33,
-    29,     7,    23,    34,    29,    21,    35,    45,    22,     0,
-     0,     0,     0,    43,    20,     8,    23,    36,    30,     9,
-    23,    37,    29,    21,    38,    45,    22,     0,    10,     0,
-    12,     0,    11,     0,    13,     0,    14,     0,    15,     0,
-    16,     0,    17,     0,    18,     0,    19,     0,     3,     0,
-    45,    46,     0,    24,     4,    25,     0,     0,     0,    24,
-     3,    47,    26,     4,    48,    25,     0,     3,     0
+     0,    27,    28,     0,     5,    20,    29,    21,    50,    22,
+     0,     0,    30,     0,    29,    30,     0,    40,    31,     0,
+    31,     0,    45,    46,    22,     0,     0,    41,    20,    29,
+    21,    32,    46,    22,     0,     0,    42,    20,    29,    21,
+    33,    46,    22,     0,     0,     0,     0,    43,    20,     6,
+    23,    34,    29,     7,    23,    35,    29,    21,    36,    46,
+    22,     0,     0,     0,     0,    44,    20,     8,    23,    37,
+    30,     9,    23,    38,    29,    21,    39,    46,    22,     0,
+    10,     0,    12,     0,    11,     0,    13,     0,    14,     0,
+    15,     0,    16,     0,    17,     0,    18,     0,    19,     0,
+     3,     0,    46,    47,     0,    24,     4,    25,     0,     0,
+     0,    24,     3,    48,    26,     4,    49,    25,     0,     3,
+     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   161,   162,   165,   168,   169,   170,   173,   177,   181,   183,
-   187,   189,   193,   195,   197,   199,   206,   208,   210,   212,
-   220,   223,   226,   229,   232,   235,   236,   237,   238,   239,
-   242,   243,   246,   258,   262,   275,   277
+   167,   168,   171,   174,   175,   176,   179,   183,   190,   194,
+   196,   200,   202,   206,   208,   210,   212,   219,   221,   223,
+   225,   233,   236,   239,   242,   245,   248,   249,   250,   251,
+   252,   255,   256,   259,   271,   275,   288,   290
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","ID","INTEGER",
 "DATASET","INDEPENDENT","DEPENDENT","ARRAY","MAPS","LIST","SEQUENCE","STRUCTURE",
 "FUNCTION","GRID","BYTE","INT32","FLOAT64","STRING","URL","'{'","'}'","';'",
-"':'","'['","']'","'='","datasets","dataset","declarations","declaration","@1",
-"@2","@3","@4","@5","@6","@7","@8","list","structure","sequence","function",
+"':'","'['","']'","'='","datasets","dataset","declarations","declaration","non_list_decl",
+"@1","@2","@3","@4","@5","@6","@7","@8","list","structure","sequence","function",
 "grid","base_type","var","array_decl","@9","@10","name",""
 };
 #endif
 
 static const short yyr1[] = {     0,
-    27,    27,    28,    29,    29,    29,    30,    30,    31,    30,
-    32,    30,    33,    34,    35,    30,    36,    37,    38,    30,
-    39,    40,    41,    42,    43,    44,    44,    44,    44,    44,
-    45,    45,    46,    47,    48,    46,    49
+    27,    27,    28,    29,    29,    29,    30,    30,    31,    32,
+    31,    33,    31,    34,    35,    36,    31,    37,    38,    39,
+    31,    40,    41,    42,    43,    44,    45,    45,    45,    45,
+    45,    46,    46,    47,    48,    49,    47,    50
 };
 
 static const short yyr2[] = {     0,
-     1,     2,     6,     0,     1,     2,     2,     3,     0,     7,
-     0,     7,     0,     0,     0,    14,     0,     0,     0,    14,
-     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-     1,     2,     3,     0,     0,     7,     1
+     1,     2,     6,     0,     1,     2,     2,     1,     3,     0,
+     7,     0,     7,     0,     0,     0,    14,     0,     0,     0,
+    14,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+     1,     1,     2,     3,     0,     0,     7,     1
 };
 
 static const short yydefact[] = {     0,
-     0,     0,     1,     4,     2,    21,    23,    22,    24,    25,
-    26,    27,    28,    29,    30,     0,     5,     0,     0,     0,
-     0,     0,     0,     0,     6,     7,     4,     4,     0,     0,
-    31,     0,    37,     0,     0,     0,     0,     0,     8,     0,
-    32,     3,     9,    11,    13,    17,    34,     0,     0,     0,
-     4,     0,     0,    33,     0,     0,     0,     0,     0,    10,
-    12,     0,     0,    35,    14,    18,     0,     4,     4,    36,
-     0,     0,    15,    19,     0,     0,     0,     0,    16,    20,
-     0,     0
+     0,     0,     1,     4,     2,    22,    24,    23,    25,    26,
+    27,    28,    29,    30,    31,     0,     5,     8,     0,     0,
+     0,     0,     0,     0,     0,     6,     7,     4,     4,     0,
+     0,    32,     0,    38,     0,     0,     0,     0,     0,     9,
+     0,    33,     3,    10,    12,    14,    18,    35,     0,     0,
+     0,     4,     0,     0,    34,     0,     0,     0,     0,     0,
+    11,    13,     0,     0,    36,    15,    19,     0,     4,     4,
+    37,     0,     0,    16,    20,     0,     0,     0,     0,    17,
+    21,     0,     0
 };
 
 static const short yydefgoto[] = {     2,
-     3,    16,    17,    49,    50,    51,    68,    75,    52,    69,
-    76,    18,    19,    20,    21,    22,    23,    32,    41,    53,
-    67,    34
+     3,    16,    17,    18,    50,    51,    52,    69,    76,    53,
+    70,    77,    19,    20,    21,    22,    23,    24,    33,    42,
+    54,    68,    35
 };
 
 static const short yypact[] = {    -4,
-     5,    17,-32768,   105,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,    -3,-32768,   105,     9,    14,
-    18,    20,    43,    44,-32768,-32768,   105,   105,    42,    41,
--32768,    -1,-32768,    28,    57,    69,    29,    30,-32768,    39,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,    26,    43,    43,
-   105,   105,    51,-32768,     2,     6,    47,    80,    97,-32768,
--32768,    90,   102,-32768,-32768,-32768,   101,   105,   105,-32768,
-    81,    93,-32768,-32768,    43,    43,    11,    15,-32768,-32768,
-   127,-32768
+     2,    19,-32768,    35,-32768,-32768,-32768,-32768,-32768,-32768,
+-32768,-32768,-32768,-32768,-32768,    48,-32768,-32768,   107,     8,
+    20,    21,   108,    36,    52,-32768,-32768,    35,    35,    62,
+   119,-32768,     1,-32768,    58,    60,    72,    69,    81,-32768,
+     4,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    91,    36,
+    36,    35,    35,   103,-32768,     5,    10,    -1,   121,   127,
+-32768,-32768,   109,   110,-32768,-32768,-32768,   111,    35,    35,
+-32768,    84,    96,-32768,-32768,    36,    36,    11,    14,-32768,
+-32768,   134,-32768
 };
 
 static const short yypgoto[] = {-32768,
-   126,   -24,   -16,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,   -44,-32768,-32768,
--32768,-32768
+   133,   -26,   -16,   118,-32768,-32768,-32768,-32768,-32768,-32768,
+-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,   -46,-32768,
+-32768,-32768,-32768
 };
 
 
-#define	YYLAST		128
+#define	YYLAST		137
 
 
-static const short yytable[] = {    25,
-     1,    26,    35,    36,    55,    56,     6,     7,     8,     9,
-    10,    11,    12,    13,    14,    15,    81,    24,    25,    25,
-    39,     1,    40,    60,     4,    40,    57,    61,    27,    40,
-    77,    78,    79,    28,    40,    58,    80,    29,    40,    30,
-    25,    47,    48,    71,    72,    31,    33,    37,    38,    42,
-    54,    45,    46,    62,    25,    25,     6,     7,     8,     9,
-    10,    11,    12,    13,    14,    15,     6,     7,     8,     9,
-    10,    11,    12,    13,    14,    15,    59,    43,     6,     7,
-     8,     9,    10,    11,    12,    13,    14,    15,    63,    44,
-     6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
-    64,    73,     6,     7,     8,     9,    10,    11,    12,    13,
-    14,    15,    65,    74,     6,     7,     8,     9,    10,    11,
-    12,    13,    14,    15,    66,    70,    82,     5
+static const short yytable[] = {    26,
+     1,    36,    37,    56,    57,    63,    48,    49,     6,     7,
+     8,     9,    10,    11,    12,    13,    14,    15,    82,    26,
+    26,     4,    40,     1,    41,    58,    61,    28,    41,    78,
+    79,    62,    80,    41,    41,    81,    59,    41,    32,    29,
+    30,    26,    72,    73,     6,     7,     8,     9,    10,    11,
+    12,    13,    14,    15,    34,    26,    26,     6,     7,     8,
+     9,    10,    11,    12,    13,    14,    15,    38,    25,     6,
+     7,     8,     9,    10,    11,    12,    13,    14,    15,    43,
+    44,     6,     7,     8,     9,    10,    11,    12,    13,    14,
+    15,    46,    45,     6,     7,     8,     9,    10,    11,    12,
+    13,    14,    15,    47,    74,     6,     7,     8,     9,    10,
+    11,    12,    13,    14,    15,    55,    75,     7,     8,     9,
+    10,    11,    12,    13,    14,    15,    39,    31,    60,    64,
+    65,    66,    67,    83,     5,    71,    27
 };
 
 static const short yycheck[] = {    16,
-     5,    18,    27,    28,    49,    50,    10,    11,    12,    13,
-    14,    15,    16,    17,    18,    19,     0,    21,    35,    36,
-    22,     5,    24,    22,    20,    24,    51,    22,    20,    24,
-    75,    76,    22,    20,    24,    52,    22,    20,    24,    20,
-    57,     3,     4,    68,    69,     3,     3,     6,     8,    22,
-    25,    23,    23,     7,    71,    72,    10,    11,    12,    13,
-    14,    15,    16,    17,    18,    19,    10,    11,    12,    13,
-    14,    15,    16,    17,    18,    19,    26,    21,    10,    11,
-    12,    13,    14,    15,    16,    17,    18,    19,     9,    21,
-    10,    11,    12,    13,    14,    15,    16,    17,    18,    19,
-     4,    21,    10,    11,    12,    13,    14,    15,    16,    17,
-    18,    19,    23,    21,    10,    11,    12,    13,    14,    15,
-    16,    17,    18,    19,    23,    25,     0,     2
+     5,    28,    29,    50,    51,     7,     3,     4,    10,    11,
+    12,    13,    14,    15,    16,    17,    18,    19,     0,    36,
+    37,    20,    22,     5,    24,    52,    22,    20,    24,    76,
+    77,    22,    22,    24,    24,    22,    53,    24,     3,    20,
+    20,    58,    69,    70,    10,    11,    12,    13,    14,    15,
+    16,    17,    18,    19,     3,    72,    73,    10,    11,    12,
+    13,    14,    15,    16,    17,    18,    19,     6,    21,    10,
+    11,    12,    13,    14,    15,    16,    17,    18,    19,    22,
+    21,    10,    11,    12,    13,    14,    15,    16,    17,    18,
+    19,    23,    21,    10,    11,    12,    13,    14,    15,    16,
+    17,    18,    19,    23,    21,    10,    11,    12,    13,    14,
+    15,    16,    17,    18,    19,    25,    21,    11,    12,    13,
+    14,    15,    16,    17,    18,    19,     8,    20,    26,     9,
+     4,    23,    23,     0,     2,    25,    19
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/local/lib/bison.simple"
@@ -726,66 +731,46 @@ yyreduce:
   switch (yyn) {
 
 case 7:
-#line 174 "dds.y"
-{ if (current->check_semantics())
-			add_entry(table, ctor, &current, part); ;
-    break;}
-case 8:
-#line 178 "dds.y"
+#line 180 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 9:
-#line 182 "dds.y"
-{ current = ctor.pop(); ;
+#line 191 "dds.y"
+{ if (current->check_semantics())
+			add_entry(table, ctor, &current, part); ;
     break;}
 case 10:
-#line 184 "dds.y"
-{ if (current->check_semantics())
-			add_entry(table, ctor, &current, part); ;
+#line 195 "dds.y"
+{ current = ctor.pop(); ;
     break;}
 case 11:
-#line 188 "dds.y"
-{ current = ctor.pop(); ;
-    break;}
-case 12:
-#line 190 "dds.y"
+#line 197 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
-case 13:
-#line 194 "dds.y"
-{ part = independent; ;
-    break;}
-case 14:
-#line 196 "dds.y"
-{ part = dependent;;
-    break;}
-case 15:
-#line 198 "dds.y"
+case 12:
+#line 201 "dds.y"
 { current = ctor.pop(); ;
     break;}
-case 16:
-#line 200 "dds.y"
-{ if (current->check_semantics()) {
-			part = nil; 
-			add_entry(table, ctor, &current, part); 
-		      }
-                    ;
+case 13:
+#line 203 "dds.y"
+{ if (current->check_semantics())
+			add_entry(table, ctor, &current, part); ;
     break;}
-case 17:
+case 14:
 #line 207 "dds.y"
-{ part = array; ;
+{ part = independent; ;
     break;}
-case 18:
+case 15:
 #line 209 "dds.y"
-{ part = maps; ;
+{ part = dependent;;
     break;}
-case 19:
+case 16:
 #line 211 "dds.y"
 { current = ctor.pop(); ;
     break;}
-case 20:
+case 17:
 #line 213 "dds.y"
 { if (current->check_semantics()) {
 			part = nil; 
@@ -793,52 +778,72 @@ case 20:
 		      }
                     ;
     break;}
-case 21:
+case 18:
 #line 220 "dds.y"
-{ ctor.push(NewList()); ;
+{ part = array; ;
+    break;}
+case 19:
+#line 222 "dds.y"
+{ part = maps; ;
+    break;}
+case 20:
+#line 224 "dds.y"
+{ current = ctor.pop(); ;
+    break;}
+case 21:
+#line 226 "dds.y"
+{ if (current->check_semantics()) {
+			part = nil; 
+			add_entry(table, ctor, &current, part); 
+		      }
+                    ;
     break;}
 case 22:
-#line 223 "dds.y"
-{ ctor.push(NewStructure()); ;
+#line 233 "dds.y"
+{ ctor.push(NewList()); ;
     break;}
 case 23:
-#line 226 "dds.y"
-{ ctor.push(NewSequence()); ;
+#line 236 "dds.y"
+{ ctor.push(NewStructure()); ;
     break;}
 case 24:
-#line 229 "dds.y"
-{ ctor.push(NewFunction()); ;
+#line 239 "dds.y"
+{ ctor.push(NewSequence()); ;
     break;}
 case 25:
-#line 232 "dds.y"
-{ ctor.push(NewGrid()); ;
+#line 242 "dds.y"
+{ ctor.push(NewFunction()); ;
     break;}
 case 26:
-#line 235 "dds.y"
-{ current = NewByte(); ;
+#line 245 "dds.y"
+{ ctor.push(NewGrid()); ;
     break;}
 case 27:
-#line 236 "dds.y"
-{ current = NewInt32(); ;
+#line 248 "dds.y"
+{ current = NewByte(); ;
     break;}
 case 28:
-#line 237 "dds.y"
-{ current = NewFloat64(); ;
+#line 249 "dds.y"
+{ current = NewInt32(); ;
     break;}
 case 29:
-#line 238 "dds.y"
-{ current = NewStr(); ;
+#line 250 "dds.y"
+{ current = NewFloat64(); ;
     break;}
 case 30:
-#line 239 "dds.y"
-{ current = NewUrl(); ;
+#line 251 "dds.y"
+{ current = NewStr(); ;
     break;}
 case 31:
-#line 242 "dds.y"
+#line 252 "dds.y"
+{ current = NewUrl(); ;
+    break;}
+case 32:
+#line 255 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
-case 33:
-#line 247 "dds.y"
+case 34:
+#line 260 "dds.y"
 { 
 		     if (current->type() == array_t) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -851,14 +856,14 @@ case 33:
 		     }
 		 ;
     break;}
-case 34:
-#line 259 "dds.y"
+case 35:
+#line 272 "dds.y"
 {
 		     save_str(id, yyvsp[0], dds_line_num);
 		 ;
     break;}
-case 35:
-#line 263 "dds.y"
+case 36:
+#line 276 "dds.y"
 { 
 		     if (current->type() == array_t) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), id);
@@ -871,8 +876,8 @@ case 35:
 		     }
 		 ;
     break;}
-case 37:
-#line 277 "dds.y"
+case 38:
+#line 290 "dds.y"
 { table.set_dataset_name(yyvsp[0]); ;
     break;}
 }
@@ -1073,7 +1078,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 280 "dds.y"
+#line 293 "dds.y"
 
 
 int 
