@@ -10,6 +10,9 @@
 // The Grid Selection Expression Clause class.
 
 // $Log: GSEClause.h,v $
+// Revision 1.2  1999/03/24 23:37:15  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.1  1999/01/21 02:07:44  jimg
 // Created
 //
@@ -65,14 +68,6 @@ private:
 public:
     /** @name Constructors */
     //@{
-#if 0
-    /** Create an instance by parsing a clause. */
-    GSEClause(Grid *grid, const char *clause);
-
-    /** Create an instance by parsing a clause. */
-    GSEClause(Grid *grid, const String &clause);
-#endif
-
     /** Create an instance using discrete parameters. */
     GSEClause(Grid *grid, const String &map, const double value,
 	      const relop op);

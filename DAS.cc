@@ -11,6 +11,9 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.25  1999/03/24 23:37:14  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.24  1998/11/24 06:52:42  jimg
 // Fixed copyright.
 //
@@ -127,7 +130,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.24 1998/11/24 06:52:42 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.25 1999/03/24 23:37:14 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -165,12 +168,6 @@ DAS::das_find(String name)
 DAS::DAS(AttrTable *dflt, unsigned int)
 {
 }
-
-#if 0
-DAS::DAS()
-{
-}
-#endif
 
 DAS::DAS(AttrTable *attr, String name)
 {

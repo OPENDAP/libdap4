@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Int32.h,v $
+ * Revision 1.25  1999/03/24 23:37:15  jimg
+ * Added support for the Int16, UInt16 and Float32 types
+ *
  * Revision 1.24  1998/01/12 14:27:58  tom
  * Second pass at class documentation.
  *
@@ -161,6 +164,18 @@
     */
 
 class Int32: public BaseType {
+    /** This class allows Byte, ..., Float64 acesss to _buf to simplify and
+	speed up the relational operators.
+
+	NB: According to Stroustrup it does not matter where (public, private
+	or protected) friend classes are declared. */
+    friend class Byte;
+    friend class Int16;
+    friend class UInt16;
+    friend class UInt32;
+    friend class Float32;
+    friend class Float64;
+
 protected:
     dods_int32 _buf;
 
@@ -172,8 +187,7 @@ public:
       @param n A String containing the name of the variable to be
       created. 
 
-      @memo The Int32 constructor.
-      */
+      @memo The Int32 constructor. */
     Int32(const String &n = (char *)0);
     virtual ~Int32() {}
 
@@ -193,7 +207,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType &b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const String &dataset);
 };
 
 #endif

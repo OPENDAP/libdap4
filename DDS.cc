@@ -9,6 +9,9 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.40  1999/03/24 23:37:14  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.39  1999/01/21 02:57:02  jimg
 // Added ce_function.h and call to add the projection function
 // `grid_selection_func' to the set of CE functions all servers know about.
@@ -208,7 +211,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.39 1999/01/21 02:57:02 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.40 1999/03/24 23:37:14 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -859,8 +862,8 @@ DDS::check_semantics(bool all)
 // a side effect, mark the DDS so that BaseType's mfuncs can be used to
 // correctly read the variable's value and send it to the client.
 //
-// Returns: true if the constraint expression is true for the current DDS,
-// false otherwise.
+// Returns: true if the constraint expression is valid (parses correctly) for
+// the current DDS, false otherwise.
 
 bool
 DDS::parse_constraint(const String &constraint, ostream &os, bool server = true)

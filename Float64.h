@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Float64.h,v $
+ * Revision 1.23  1999/03/24 23:37:14  jimg
+ * Added support for the Int16, UInt16 and Float32 types
+ *
  * Revision 1.22  1998/01/12 14:27:57  tom
  * Second pass at class documentation.
  *
@@ -157,8 +160,20 @@
     */
 
 class Float64: public BaseType {
+    /** This class allows Byte, ..., Float32 acesss to _buf to simplify and
+	speed up the relational operators.
+
+	NB: According to Stroustrup it does not matter where (public, private
+	or protected) friend classes are declared. */
+    friend class Byte;
+    friend class Int16;
+    friend class UInt16;
+    friend class Int32;
+    friend class UInt32;
+    friend class Float32;
+
 protected:
-    double _buf;
+    dods_float64 _buf;
 
 public:
   /** The Float64 constructor requires only the name of the variable
@@ -189,11 +204,8 @@ public:
     virtual void print_val(ostream &os, String space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType &b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const String &dataset);
 };
-
-/** A pointer to a Float64 instance. */
-typedef Float64 * Float64Ptr;
 
 #endif
 

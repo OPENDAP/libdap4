@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.36  1999/03/24 23:37:15  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.35  1998/10/21 16:41:29  jimg
 // Added some instrumentation (using DBG). This might be useful later on...
 //
@@ -189,7 +192,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.35 1998/10/21 16:41:29 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.36 1999/03/24 23:37:15 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -199,6 +202,9 @@ static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.35 1998/10/21 16:41:29 jimg E
 
 #include "Str.h"
 #include "DDS.h"
+#include "parser.h"
+#include "expr.tab.h"
+#include "Operators.h"
 #include "util.h"
 
 #ifdef TRACE_NEW
@@ -303,7 +309,7 @@ Str::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Str::ops(BaseType &b, int op, const String &dataset)
+Str::ops(BaseType *b, int op, const String &dataset)
 {
     String a2;
     int error; 
@@ -314,54 +320,20 @@ Str::ops(BaseType &b, int op, const String &dataset)
 	return false;
     }
 
-    if (!b.read_p() && !read(dataset, error)) {
+    if (!b->read_p() && !read(dataset, error)) {
 	assert("Arg value not read!" && false);
 	cerr << "Arg value not read!" << endl;
 	return false;
     }
-    else 
-	switch (b.type()) {
-	  case dods_byte_c:
-	  case dods_int32_c: {
-	      dods_int32 i;
-	      dods_int32 *ip = &i;
-	      b.buf2val((void **)&ip);
-	      strstream int_str;
-	      int_str << i;
-	      a2 = int_str.str();
-	      int_str.freeze(0);
-	      break;
-	  }
-	  case dods_uint32_c: {
-	      dods_uint32 ui;
-	      dods_uint32 *uip = &ui;
-	      b.buf2val((void **)&uip);
-	      strstream uint_str;
-	      uint_str << ui;
-	      a2 = uint_str.str();
-	      uint_str.freeze(0);
-	      break;
-	  }
-	  case dods_float64_c: {
-	      double d;
-	      double *dp = &d;
-	      b.buf2val((void **)&dp);
-	      strstream flt_str;
-	      flt_str << d;
-	      a2 = flt_str.str();
-	      flt_str.freeze(0);
-	      break;
-	  }
-	  case dods_str_c: {
-	      String *sp = 0;
-	      b.buf2val((void **)&sp);
-	      a2 = *sp;
-	      break;
-	  }
-	  default:
-	    return false;
-	    break;
-	}
 
-    return string_ops(_buf, a2, op);
+    switch (b->type()) {
+      case dods_str_c:
+	return rops<String, String, StrCmp<String, String> >
+	    (_buf, dynamic_cast<Str *>(b)->_buf, op);
+      case dods_url_c:
+	return rops<String, String, StrCmp<String, String> >
+	    (_buf, dynamic_cast<Url *>(b)->_buf, op);
+      default:
+	return false;
+    }
 }

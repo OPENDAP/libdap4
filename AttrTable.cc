@@ -9,6 +9,9 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.22  1999/03/24 23:37:13  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.21  1998/11/24 06:50:07  jimg
 // Added instrumentation. Used while I was removing DASVHMap.
 //
@@ -89,7 +92,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.21 1998/11/24 06:50:07 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.22 1999/03/24 23:37:13 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -144,8 +147,11 @@ AttrTable::AttrType_to_String(const AttrType at)
     switch (at) {
       case Attr_container: return "Container";
       case Attr_byte: return "Byte";
+      case Attr_int16: return "Int16";
+      case Attr_uint16: return "Uint16";
       case Attr_int32: return "Int32";
       case Attr_uint32: return "Uint32";
+      case Attr_float32: return "Float32";
       case Attr_float64: return "Float64";
       case Attr_string: return "String";
       case Attr_url: return "Url";
@@ -161,12 +167,20 @@ AttrTable::String_to_AttrType(const String &s)
 	return Attr_container;
     else if (s2 == "Byte")
 	return Attr_byte;
+    else if (s2 == "Int16")
+	return Attr_int16;
+    else if (s2 == "Uint16")
+	return Attr_uint16;
+    else if (s2 == "UInt16")	// Support two spellings...
+	return Attr_uint16;
     else if (s2 == "Int32")
 	return Attr_int32;
     else if (s2 == "Uint32")
 	return Attr_uint32;
     else if (s2 == "UInt32")	// Support two spellings...
 	return Attr_uint32;
+    else if (s2 == "Float32")
+	return Attr_float32;
     else if (s2 == "Float64")
 	return Attr_float64;
     else if (s2 == "String")
@@ -481,30 +495,31 @@ void
 AttrTable::print(ostream &os, String pad)
 {
     for(Pix p = attr_map.first(); p; attr_map.next(p)) {
-      if (attr_map(p).is_alias) {
-	os << pad << "Alias " << get_name(p) << " " << attr_map(p).aliased_to << ";" << endl;
-      } else {
-	switch (attr_map(p).type) {
-	  case Attr_container:
-	    os << pad << get_name(p) << " {" << endl;
+	if (attr_map(p).is_alias) {
+	    os << pad << "Alias " << get_name(p) << " " 
+	       << attr_map(p).aliased_to << ";" << endl;
+	} else {
+	    switch (attr_map(p).type) {
+	      case Attr_container:
+		os << pad << get_name(p) << " {" << endl;
 
-	    attr_map(p).value.attributes->print(os, pad + "    ");
+		attr_map(p).value.attributes->print(os, pad + "    ");
 
-	    os << pad << "}" << endl;
-	    break;
+		os << pad << "}" << endl;
+		break;
 
-	  default: {
-		os << pad << get_type(p) << " " << get_name(p) << " " ;
+	      default: {
+		    os << pad << get_type(p) << " " << get_name(p) << " " ;
 
-		StringXPlex *sxp = attr_map(p).value.attr;
+		    StringXPlex *sxp = attr_map(p).value.attr;
 
-		for (int i = 0; i < sxp->high(); ++i)
-		    os << (*sxp)[i] << ", ";
+		    for (int i = 0; i < sxp->high(); ++i)
+			os << (*sxp)[i] << ", ";
 
-		os << (*sxp)[sxp->high()] << ";" << endl;
+		    os << (*sxp)[sxp->high()] << ";" << endl;
+		}
+		break;
 	    }
-	    break;
 	}
-      }
     }
 }

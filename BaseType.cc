@@ -10,6 +10,9 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.35  1999/03/24 23:37:13  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.34  1998/10/21 16:18:19  jimg
 // Added the two member functions: synthesized_p() and set_synthesized_p().
 // These are used to test and record (resp) whether a variable has been
@@ -271,10 +274,16 @@ BaseType::type_name() const
 	return String("Null");
       case dods_byte_c:
 	return String("Byte");
+      case dods_int16_c:
+	return String("Int16");
+      case dods_uint16_c:
+	return String("UInt16");
       case dods_int32_c:
 	return String("Int32");
       case dods_uint32_c:
 	return String("UInt32");
+      case dods_float32_c:
+	return String("Float32");
       case dods_float64_c:
 	return String("Float64");
       case dods_str_c:
@@ -518,11 +527,11 @@ BaseType::check_semantics(String &msg, bool)
 
 // Member functions for the relational operators used in evaluating a
 // relational clause in a constraint expression. Each class that wants these
-// to do something interesting must supply their own versions. These print en
+// to do something interesting must supply their own versions. These print an
 // error message and return False.
 
 bool 
-BaseType::ops(BaseType &, int, const String &)
+BaseType::ops(BaseType *, int, const String &)
 {
     assert("Unimplemented operator" && false);
 

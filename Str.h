@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Str.h,v $
+ * Revision 1.26  1999/03/24 23:37:15  jimg
+ * Added support for the Int16, UInt16 and Float32 types
+ *
  * Revision 1.25  1998/01/12 14:27:59  tom
  * Second pass at class documentation.
  *
@@ -180,6 +183,7 @@ const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1;
     */
     
 class Str: public BaseType {
+
 protected:
     String _buf;
 
@@ -191,8 +195,7 @@ public:
       @param n A String containing the name of the variable to be
       created. 
 
-      @memo The Str constructor.
-      */
+      @memo The Str constructor. */
     Str(const String &n = (char *)0);
     virtual ~Str() {}
 
@@ -216,7 +219,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType &b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const String &dataset);
 };
 
 typedef Str * StrPtr;

@@ -10,6 +10,9 @@
 // The Grid Selection Expression Clause class.
 
 // $Log: GSEClause.cc,v $
+// Revision 1.2  1999/03/24 23:37:14  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.1  1999/01/21 02:07:43  jimg
 // Created
 //
@@ -20,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char __unused__ id[] = {"$Id: GSEClause.cc,v 1.1 1999/01/21 02:07:43 jimg Exp $"};
+static char __unused__ id[] = {"$Id: GSEClause.cc,v 1.2 1999/03/24 23:37:14 jimg Exp $"};
 
 #include <Pix.h>
 
@@ -99,11 +102,20 @@ GSEClause::compute_indices()
       case dods_byte_c:
 	set_start_stop<char>();
 	break;
+      case dods_int16_c:
+	set_start_stop<int>();
+	break;
+      case dods_uint16_c:
+	set_start_stop<unsigned int>();
+	break;
       case dods_int32_c:
 	set_start_stop<int>();
 	break;
       case dods_uint32_c:
 	set_start_stop<unsigned int>();
+	break;
+      case dods_float32_c:
+	set_start_stop<double>();
 	break;
       case dods_float64_c:
 	set_start_stop<double>();
@@ -115,32 +127,6 @@ GSEClause::compute_indices()
 }
 
 // Public methods
-
-#if 0
-GSEClause::GSEClause(Grid *grid, const char *clause)
-{
-    // Initialize the start and stop indices.
-    Pix p = _map->first_dim();
-    assert(p);
-    _start = _map->dimension_start(p);
-    _stop = _map->dimension_stop(p);
-    _expression = clause;
-
-    compute_indices();
-}
-
-GSEClause::GSEClause(Grid *grid, const String &clause)
-{
-    // Initialize the start and stop indices.
-    Pix p = _map->first_dim();
-    assert(p);
-    _start = _map->dimension_start(p);
-    _stop = _map->dimension_stop(p);
-    _expression = clause;
-
-    compute_indices();
-}
-#endif
 
 GSEClause::GSEClause(Grid *grid, const String &map, const double value,
 		     const relop op) 

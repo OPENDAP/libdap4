@@ -18,6 +18,9 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.25  1999/03/24 23:37:13  jimg
+ * Added support for the Int16, UInt16 and Float32 types
+ *
  * Revision 1.24  1999/01/21 20:42:00  tom
  * Fixed comment formatting problems for doc++
  *
@@ -154,14 +157,17 @@
 
     \begin{verbatim}
     enum AttrType {
-        Attr_unknown,
-        Attr_container,
-        Attr_byte,
-        Attr_int32,
-        Attr_uint32,
-        Attr_float64,
-        Attr_string,
-        Attr_url
+	Attr_unknown,
+	Attr_container,
+	Attr_byte,
+	Attr_int16,
+	Attr_uint16,
+	Attr_int32,
+	Attr_uint32,
+	Attr_float32,
+	Attr_float64,
+	Attr_string,
+	Attr_url
     };
     \end{verbatim}
 
@@ -172,8 +178,11 @@ enum AttrType {
     Attr_unknown,
     Attr_container,
     Attr_byte,
+    Attr_int16,
+    Attr_uint16,
     Attr_int32,
     Attr_uint32,
+    Attr_float32,
     Attr_float64,
     Attr_string,
     Attr_url

@@ -11,6 +11,9 @@
 // jhrg 9/7/94
 
 // $Log: Int16.h,v $
+// Revision 1.5  1999/03/24 23:37:15  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.4  1997/12/18 15:06:12  tom
 // First draft of class documentation, entered in doc++ format,
 // in the comments
@@ -39,6 +42,18 @@
 #include "BaseType.h"
 
 class Int16: public BaseType {
+    /** This class allows Byte, ..., Float64 acesss to _buf to simplify and
+	speed up the relational operators.
+
+	NB: According to Stroustrup it does not matter where (public, private
+	or protected) friend classes are declared. */
+    friend class Byte;
+    friend class UInt16;
+    friend class Int32;
+    friend class UInt32;
+    friend class Float32;
+    friend class Float64;
+
 protected:
     dods_int16 _buf;
 
@@ -62,7 +77,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType &b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const String &dataset);
 };
 
 #endif

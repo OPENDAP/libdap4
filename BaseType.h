@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.51  1999/03/24 23:37:13  jimg
+ * Added support for the Int16, UInt16 and Float32 types
+ *
  * Revision 1.50  1999/03/19 16:45:00  jimg
  * Added to the documentation for print_val(). Now contains a blurb about
  * setprecision().
@@ -910,11 +913,6 @@ public:
       */
     virtual bool check_semantics(String &msg, bool all = false);
 
-  //  NB: This class should have a (BaseType *) as its first argument, not
-  //  (BaseType &). A design flaw... 10/19/98 jhrg
-
-
-
   /** This function contains the relational operators used by the
       constraint expression evaluator in the DDS class. Each class
       that wants to be able to evaluate relational expressions must
@@ -960,7 +958,7 @@ public:
       data has come (or is to come).
       @return The boolean value of the comparison.
       */
-    virtual bool ops(BaseType &b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const String &dataset);
 };
 
   /** This is simply a pointer to a BaseType class instance.  All the

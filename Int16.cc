@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Int16.cc,v $
+// Revision 1.5  1999/03/24 23:37:15  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.4  1998/03/19 23:31:06  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
 //
@@ -29,14 +32,17 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Int16.cc,v 1.4 1998/03/19 23:31:06 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Int16.cc,v 1.5 1999/03/24 23:37:15 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
 
-#include "Int32.h"
+#include "Int16.h"
 #include "DDS.h"
 #include "util.h"
+#include "parser.h"
+#include "expr.tab.h"
+#include "Operators.h"
 #include "dods-limits.h"
 #include "debug.h"
 
@@ -93,7 +99,7 @@ Int16::val2buf(void *val, bool)
 unsigned int
 Int16::buf2val(void **val)
 {
-    assert(_buf && val);
+    assert(val);
 
     if (!*val)
 	*val = new dods_int16;
@@ -117,69 +123,47 @@ Int16::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Int16::ops(BaseType &b, int op, const String &dataset)
+Int16::ops(BaseType *b, int op, const String &dataset)
 {
-    dods_int16 a1, a2;
-    int error; 
+    int error = 0;
 
-    if (!read_p() && !read(dataset, &error)) {
+    // Extract the Byte arg's value.
+    if (!read_p() && (!read(dataset, error) || error)) {
 	assert("This value not read!" && false);
 	cerr << "This value not read!" << endl;
 	return false;
     }
-    else {
-	dods_int16 *a1p = &a1;
-	buf2val((void **)&a1p);
-    }
 
-    if (!b.read_p() && !read(dataset, &error)) {
-	assert("Arg value not read!" && false);
-	cerr << "Arg value not yet read!" << endl;
+    // Extract the second arg's value.
+    if (!b->read_p() && (!b->read(dataset, error) || error)) {
+	assert("This value not read!" && false);
+	cerr << "This value not read!" << endl;
 	return false;
     }
-    else 
-	switch (b.type()) {
-	  case dods_byte_c:
-	  case dods_int16_c:
-	  case dods_uint16_c: {	// Might loose data here! jhrg 8/25/96
-	    case dods_int32_c:
-	    case dods_uint32_c: 
-	      dods_int16 *a2p = &a2;
-	      b.buf2val((void **)&a2p);
-	      break;
-	  }
-	  case dods_float64_c: {
-	      double d;
-	      double *dp = &d;
-	      b.buf2val((void **)&dp);
-	      a2 = (dods_int16)d;
-	      break;
-	  }
-	  case dods_str_c: {
-	      String s;
-	      String *sp = &s;
-	      b.buf2val((void **)&sp);
 
-	      char *ptr;
-	      const char *cp = (const char *)s;
-	      long v = strtol(cp, &ptr, 0);
-
-	      if (v == 0 && cp == ptr) {
-		  cerr << "`" << s << "' is not an integer value" << endl;
-		  return false;
-	      }
-	      if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
-		  cerr << "`" << v << "' is not a integer value" << endl;
-		  return false;
-	      }
-
-	      a2 = v;
-	      break;
-	  }
-	  default:
-	    return false;
-	    break;
-	}
-
-    return int_ops(a1, a2, op);
+    switch (b->type()) {
+      case dods_byte_c:
+	return rops<dods_int16, dods_byte, SUCmp<dods_int16, dods_byte> >
+	    (_buf, dynamic_cast<Byte *>(b)->_buf, op);
+      case dods_int16_c:
+	return rops<dods_int16, dods_int16, Cmp<dods_int16, dods_int16> >
+	    (_buf, dynamic_cast<Int16 *>(b)->_buf, op);
+      case dods_uint16_c:
+	return rops<dods_int16, dods_uint16, SUCmp<dods_int16, dods_uint16> >
+	    (_buf, dynamic_cast<UInt16 *>(b)->_buf, op);
+      case dods_int32_c:
+	return rops<dods_int16, dods_int32, Cmp<dods_int16, dods_int32> >
+	    (_buf, dynamic_cast<Int32 *>(b)->_buf, op);
+      case dods_uint32_c:
+	return rops<dods_int16, dods_uint32, SUCmp<dods_int16, dods_uint32> >
+	    (_buf, dynamic_cast<UInt32 *>(b)->_buf, op);
+      case dods_float32_c:
+	return rops<dods_int16, dods_float32, Cmp<dods_int16, dods_float32> >
+	    (_buf, dynamic_cast<Float32 *>(b)->_buf, op);
+      case dods_float64_c:
+	return rops<dods_int16, dods_float64, Cmp<dods_int16, dods_float64> >
+	    (_buf, dynamic_cast<Float64 *>(b)->_buf, op);
+      default:
+	return false;
+    }
 }

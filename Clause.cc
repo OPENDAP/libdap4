@@ -8,6 +8,9 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.7  1999/03/24 23:37:14  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
 // Revision 1.6  1998/11/10 01:09:47  jimg
 // Added to the dtors to make sure the various Clause objects are deleted.
 //
@@ -132,7 +135,7 @@ Clause::value(const String &dataset, DDS &dds)
 	// FALSE and return TRUE for the first TRUE subclause.
 	bool result = false;
 	for (Pix p = _args->first(); p && !result; _args->next(p))
-	    result = result || btp->ops(*(*_args)(p)->bvalue(dataset, dds),
+	    result = result || btp->ops((*_args)(p)->bvalue(dataset, dds),
 					_op, dataset);
 
 	return result;

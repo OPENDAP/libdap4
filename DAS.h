@@ -14,6 +14,9 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.21  1999/03/24 23:37:14  jimg
+ * Added support for the Int16, UInt16 and Float32 types
+ *
  * Revision 1.20  1999/01/21 20:42:01  tom
  * Fixed comment formatting problems for doc++
  *
@@ -112,11 +115,11 @@
 #include "AttrTable.h"
 
 /** The Data Attribute Structure is a set of name-value pairs used to
-    describe the data in a particular dataset.  The name-value pairs
-    are called the ``attributes''.  The values may be of any of the
-    DODS simple data types (Byte, Int32, UInt32, Float64, String and
-    URL), and may be scalar or vector.  (Note that all values are
-    actually stored as String data.)
+    describe the data in a particular dataset. The name-value pairs are
+    called the ``attributes''. The values may be of any of the DODS simple
+    data types (Byte, Int16, UInt16, Int32, UInt32, Float32, Float64, String
+    and URL), and may be scalar or vector. Note that all values are actually
+    stored as String data, making the easy to read/check using a web browser.
     \label{api:das}
 
     A value may also consist of a set of other name-value pairs.  This
@@ -180,9 +183,6 @@
     @see AttrTable */
 class DAS {
 private:
-#if 0
-    DASVHMap map;
-#endif
     struct toplevel_entry {
 	String name;
 	AttrTable *attr_table;
@@ -204,14 +204,6 @@ public:
       @param sz The number of entries in the table. */
     DAS(AttrTable *dflt=(AttrTable *)NULL, 
 	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
-
-#if 0
-    /** Create an empty DAS object. Use #append_attr()# to add attribute tables
-	to it. 
-
-	@see append_attr(). */
-    DAS();
-#endif
 
     /** Create a DAS object with one attribute table. Use #append_attr()#
 	to add additional attributes.
