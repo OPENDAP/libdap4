@@ -57,7 +57,11 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.17  1995/09/05 23:19:45  jimg
+ * Revision 1.18  1995/10/23 22:54:39  jimg
+ * Removed code that was NEVER'd.
+ * Changed some rules so that they call functions in parser_util.cc .
+ *
+ * Revision 1.17  1995/09/05  23:19:45  jimg
  * Fixed a bug in check_float where `=' was used where `==' should have been.
  *
  * Revision 1.16  1995/08/23  00:25:54  jimg
@@ -144,17 +148,7 @@
 
 %{
 
-#define YYSTYPE char *
-#define YYDEBUG 1
-#define YYERROR_VERBOSE 1
-#define ID_MAX 256
-
-#ifndef TRUE
-#define TRUE 1
-#define FALSE 0
-#endif
-
-static char rcsid[]={"$Id: das.y,v 1.17 1995/09/05 23:19:45 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.18 1995/10/23 22:54:39 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -162,6 +156,7 @@ static char rcsid[]={"$Id: das.y,v 1.17 1995/09/05 23:19:45 jimg Exp $"};
 
 #include "config_dap.h"
 #include "debug.h"
+#include "parser.h"
 #include "das.tab.h"
 #include "DAS.h"
 
@@ -178,12 +173,14 @@ static AttrTablePtr attr_tab_ptr;
 void mem_list_report();
 int daslex(void);
 int daserror(char *s);
+#ifdef NEVER
 static void not_a_datatype(char *s);
 static void save_str(char *dst, char *src);
 static int check_byte(char *val);
 static int check_int(char *val);
 static int check_float(char *val);
 static int check_url(char *val);
+#endif
 
 %}
 
@@ -270,24 +267,24 @@ attr_list:  	/* empty */
     	    	| attr_list attr_tuple
 ;
 
-attr_tuple:	BYTE { save_str(type, $1); } 
-                ID { save_str(name, $3); } 
+attr_tuple:	BYTE { save_str(type, $1, das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
 		bytes ';'
 
-		| INT32 { save_str(type, $1); } 
-                ID { save_str(name, $3); } 
+		| INT32 { save_str(type, $1, das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
 		ints ';'
 
-		| FLOAT64 { save_str(type, $1); } 
-                ID { save_str(name, $3); } 
+		| FLOAT64 { save_str(type, $1, das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
 		floats ';'
 
-		| STRING { save_str(type, $1); } 
-                ID { save_str(name, $3); } 
+		| STRING { save_str(type, $1, das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
 		strs ';'
 
-		| URL { save_str(type, $1); } 
-                ID { save_str(name, $3); } 
+		| URL { save_str(type, $1, das_line_num); } 
+                ID { save_str(name, $3, das_line_num); } 
 		urls ';'
 
 		| error { parse_ok = FALSE; } ';'
@@ -297,11 +294,11 @@ bytes:		INT
 		{
 		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
 			<< $1 << endl);
-		    if (!check_byte($1)) {
+		    if (!check_byte($1, das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -309,11 +306,11 @@ bytes:		INT
 		{
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $3 << endl);
-		    if (!check_byte($3)) {
+		    if (!check_byte($3, das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -323,11 +320,11 @@ ints:		INT
 		{
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $1 << endl);
-		    if (!check_int($1)) {
+		    if (!check_int($1, das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -335,11 +332,11 @@ ints:		INT
 		{
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $3 << endl);
-		    if (!check_int($3)) {
+		    if (!check_int($3, das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -349,11 +346,11 @@ floats:		float_or_int
 		{
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< $1 << endl);
-		    if (!check_float($1)) {
+		    if (!check_float($1, das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -361,11 +358,11 @@ floats:		float_or_int
 		{
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< $3 << endl);
-		    if (!check_float($3)) {
+		    if (!check_float($3, das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -377,7 +374,7 @@ strs:		str_or_id
 			<< $1 << endl);
 		    /* assume that a string that parsers is a vaild string */
 		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -386,7 +383,7 @@ strs:		str_or_id
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $3 << endl);
 		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -396,11 +393,11 @@ urls:		STR
 		{
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $1 << endl);
-		    if (!check_url($1)) {
+		    if (!check_url($1, das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, $1)) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -408,11 +405,11 @@ urls:		STR
 		{
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $3 << endl);
-		    if (!check_url($3)) {
+		    if (!check_url($3, das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, $3)) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		}
@@ -426,6 +423,13 @@ float_or_int:   FLOAT | INT
 
 %%
 
+int 
+daserror(char *s)
+{
+    fprintf(stderr, "%s line: %d\n", s, das_line_num);
+}
+
+#ifdef NEVER
 static void
 save_str(char *dst, char *src)
 {
@@ -440,12 +444,6 @@ static void
 not_a_datatype(char *s)
 {
     fprintf(stderr, "`%s' is not a datatype; line %d\n", s, das_line_num);
-}
-
-int 
-daserror(char *s)
-{
-    fprintf(stderr, "%s line: %d\n", s, das_line_num);
 }
 
 static int
@@ -496,4 +494,5 @@ check_url(char *val)
 {
     return TRUE;
 }
+#endif
 
