@@ -1,20 +1,27 @@
 // This may look like C code, but it is really -*- C++ -*-
 
-// Using the VarVHMap class, build a parser for the DAS and add functions
+// Using the DASVHMap class, build a parser for the DAS and add functions
 // that provide access to the variables, their attributes and values.
 //
 // jhrg 7/25/94
 
-/* $Log: DAS.h,v $
-/* Revision 1.2  1994/08/02 19:17:41  jimg
-/* Fixed `$Log$' comments and rcsid[] variables (syntax errors due to //
-/* comments caused compilation failures.
-/* das.tab.c and .h are commited now as well.
-/*
- * Revision 1.1  1994/08/02  18:39:00  jimg
- * This Class is a container that maps Strings onto AttrTable pointers.
- * It inherits from VarVHMap.
- */
+// $Log: DAS.h,v $
+// Revision 1.3  1994/09/09 15:33:40  jimg
+// Changed the base name of this class's parents from `Var' to DAS.
+// Added print() and removed operator<< (see the comments in AttrTable).
+// Added overloaded versions of print() and parse(). They can be called
+// using nothing (which defaults to std{in,out}), with a file descriptor,
+// with a FILE *, or with a String givin a file name.
+//
+// Revision 1.2  1994/08/02  19:17:41  jimg
+// Fixed log comments and rcsid[] variables (syntax errors due to //
+// comments caused compilation failures).
+// das.tab.c and .h are commited now as well.
+//
+// Revision 1.1  1994/08/02  18:39:00  jimg
+// This Class is a container that maps Strings onto AttrTable pointers.
+// It inherits from DASVHMap.
+
 
 #ifndef _DAS_h
 #define _DAS_h 1
@@ -23,33 +30,38 @@
 #pragma interface
 #endif
 
-#include <ostream.h>
+#include <stdio.h>
+
 #include <String.h>
 #include <Pix.h>
 
-#include "VarVHMap.h"
+#include "DASVHMap.h"
 
-class DAS : public VarVHMap {
+class DAS : public DASVHMap {
 private:
 
 protected:
 
 public:
-    DAS(AttrTablePtr dflt=(void *)NULL, unsigned int sz=DEFAULT_INITIAL_CAPACITY);
+    DAS(AttrTablePtr dflt=(void *)NULL, 
+	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
     DAS(DAS& a);
     ~DAS();
 
-    parse(void);
-    parse(String fname);
+    bool parse(String fname);
+    bool parse(int fd);
+    bool parse(FILE *in=stdin);
 
-    friend ostream& operator<< (ostream &os, DAS &das);
+    bool print(String fname);
+    bool print(int fd);
+    bool print(FILE *out=stdout);
 };
 
-inline DAS::DAS(AttrTablePtr dflt, unsigned int sz) : VarVHMap(dflt, sz)
+DAS::DAS(AttrTablePtr dflt, unsigned int sz) : DASVHMap(dflt, sz)
 {
 }
 
-inline DAS::DAS(DAS &das) : VarVHMap(das)
+inline DAS::DAS(DAS &das) : DASVHMap(das)
 {
 }
 
@@ -58,7 +70,7 @@ inline DAS::DAS(DAS &das) : VarVHMap(das)
 // delete all the non empty stuff, but I used the iterator member functions
 // instead. jhrg 7/29/94
 
-inline DAS::~DAS()
+DAS::~DAS()
 {
     for(Pix p = this->first(); p; this->next(p))
 	delete this->contents(p);
