@@ -14,6 +14,9 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.41  1998/12/15 20:49:40  jimg
+ * Added to the documentation on add_constraint().
+ *
  * Revision 1.40  1998/05/19 22:25:14  jimg
  * Fixed up some comments about reset_ and clear_constraint.
  *
@@ -349,6 +352,10 @@ public:
 	of the world to be smaller than it is.  This functions sets the
 	projection for a dimension, and marks that dimension as part of the
 	current projection.
+
+	NB: A stride value <= 0 or > the array size is an error and causes
+	#add_constraint# to return FALSE. Similarly, start or stop values >
+	size also cause a FALSE return value.
 
 	@memo Adds a constraint to an Array dimension.  
 
