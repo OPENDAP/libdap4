@@ -4,7 +4,10 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
-// Revision 1.7  1994/10/13 15:43:29  jimg
+// Revision 1.8  1994/12/07 21:09:24  jimg
+// Added support for vectors of attributes (using XPlex from libg++).
+//
+// Revision 1.7  1994/10/13  15:43:29  jimg
 // Added a new version of append_attr that takes (const char *)s and modified
 // the version that takes strings to take (const String &).
 //
@@ -36,11 +39,13 @@
 // a static class variable String empty (it is initialized to "").
 //
 
-static char rcsid[]="$Id: AttrTable.cc,v 1.7 1994/10/13 15:43:29 jimg Exp $";
+static char rcsid[]="$Id: AttrTable.cc,v 1.8 1994/12/07 21:09:24 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#include <assert.h>
 
 #include <ostream.h>
 
@@ -74,13 +79,30 @@ AttrTable::get_type(Pix p)
     return map(p).type;
 }
 
-String
-AttrTable::get_attr(Pix p)
+// Returns: The number of elements in the vector of attribute values.
+//
+// NB: *Assumes* that the vector is never longer than the actual number of
+// elements. 
+
+unsigned int 
+AttrTable::get_attr_num(Pix p)
 {
-    return map(p).attr;
+    return map(p).attr.length();
 }
 
-// private mfunc that finds the entry with name == target
+// Returns: The string which contains the I(th) attribute value for list
+// element referred to by Pix P.
+//
+// NB: I defaults to the zero(th) element of the vector of values
+
+String
+AttrTable::get_attr(Pix p, unsigned int i)
+{
+    return map(p).attr[i];
+}
+
+// Private mfunc that finds the entry with name == target. If TARGET is not
+// found, returns null.
 
 Pix
 AttrTable::find(const String &target)
@@ -88,24 +110,25 @@ AttrTable::find(const String &target)
     for (Pix p = map.first(); p; map.next(p))
 	if (target == map(p).name)
 	    return p;
+    return 0;
 }
 
 String
-AttrTable::get_attr(const String &name)
+AttrTable::get_attr(const String &name, unsigned int i)
 {
     Pix p = find(name);
     if (p)
-	return map(p).attr;
+	return map(p).attr[i];
     else
 	return (char *)0;
 }
 
 String
-AttrTable::get_attr(const char *name)
+AttrTable::get_attr(const char *name, unsigned int i)
 {
     Pix p = find((String)name);
     if (p)
-	return map(p).attr;
+	return map(p).attr[i];
     else
 	return (char *)0;
 }
@@ -130,40 +153,64 @@ AttrTable::get_type(const char *name)
 	return (char *)0;
 }
 
-// Added this version of append_attr to reduce creation on String temps
+// Add the attribute ATTR to variable NAME with type TYPE. If there exists a
+// variable with that name, append the attribute to the PLex of attributes,
+// otherwise creat an entry for the new variable and append it to the list of
+// vars. 
+//
+// Returns: The length of the attribute PLex (array) for the named variable.
 
-void
-AttrTable::append_attr(const char *name, const char *type, const char *attr)
-{
-    entry e;
-
-    e.name = name;
-    e.type = type;
-    e.attr = attr;
-
-    map.append(e);
-}
-
-void
+unsigned int
 AttrTable::append_attr(const String &name, const String &type, 
 		       const String &attr)
 {
-    entry e;
+    Pix p = find(name);
+    if (p)
+	return map(p).attr.add_high(attr);
+    else {
+	entry e;
 
-    e.name = name;
-    e.type = type;
-    e.attr = attr;
+	e.name = name;
+	e.type = type;
+	unsigned int len = e.attr.add_high(attr);
 
-    map.append(e);
+	map.append(e);
+    
+	return len;		// return the length of the attr XPlex
+    }
 }
 
+// (char *) interface to above mfunc.
+
+unsigned int
+AttrTable::append_attr(const char *name, const char *type, const char *attr)
+{
+    return append_attr((String)name, (String)type, (String)attr);
+}
+
+// Delete the attribute NAME. If NAME is an array of attributes, delete the
+// I(th) element if I is >= 0. If I is -1 (the default), remove the entire
+// attribute even f it is an array of values.
+//
+// Returns: void
+
 void
-AttrTable::del_attr(const String &name)
+AttrTable::del_attr(const String &name, int i)
 {
     Pix p = find(name);
     if (p) {
-	map.prev(p);
-	map.del_after(p);
+	if (i == -1) {		// Delete the whole attribute
+	    map.prev(p);	// p now points to the previous element
+	    map.del_after(p);	// ... delete the following element
+	}
+	else {			// Delete one element from attribute array
+	    StringXPlex &sxp = map(p).attr;
+		
+	    assert(i >= 0 && i < sxp.fence());
+	    for (int j = i+1; j < sxp.fence(); ++j)
+		sxp[j-1] = sxp[j]; // mv array elements to empty space
+	    (void) sxp.del_high(); // rm extra element
+	}
     }
 }
 	
@@ -171,8 +218,15 @@ AttrTable::del_attr(const String &name)
 void
 AttrTable::print(ostream &os, String pad)
 {
-    for(Pix p = map.first(); p; map.next(p))
-	os << pad << map(p).type << " " << map(p).name << " " << map(p).attr
-	   << ";" << endl;
+    for(Pix p = map.first(); p; map.next(p)) {
+	os << pad << map(p).type << " " << map(p).name << " " ;
+
+	StringXPlex &sxp = map(p).attr;
+
+	for (int i = 0; i < sxp.high(); ++i)
+	    os << sxp[i] << ", ";
+
+	os << sxp[sxp.high()] << ";" << endl;
+    }
 }
 

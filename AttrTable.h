@@ -10,11 +10,14 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.8  1994/11/22 14:05:24  jimg
-/* Added code for data transmission to parts of the type hierarchy. Not
-/* complete yet.
-/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+/* Revision 1.9  1994/12/07 21:09:25  jimg
+/* Added support for vectors of attributes (using XPlex from libg++).
 /*
+ * Revision 1.8  1994/11/22  14:05:24  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
  * Revision 1.7  1994/10/13  15:44:36  jimg
  * Added a new version of append_attr (it takes (const char *)s) and
  * changed the types of the old version to (const String &).
@@ -70,20 +73,20 @@
 #include "trace_new.h"
 #endif
 
+#include "String.XPlex.h"
+
 class AttrTable {
 private:
     struct entry {
 	String name;
 	String type;
-	String attr;
+	StringXPlex attr;	// a vector of values. jhrg 12/5/94
     };
 
     DLList<entry> map;
     
     Pix find(const String &target);
 
-protected:
-    
 public:
     AttrTable();
 
@@ -92,17 +95,22 @@ public:
 
     String get_name(Pix p);
     String get_type(Pix p);
-    String get_attr(Pix p);
+    unsigned int get_attr_num(Pix p); // returns the length of the attr vec
+    String get_attr(Pix p, unsigned int i = 0);
 
-    String get_attr(const String &name);
-    String get_attr(const char *name);
+    unsigned int get_attr_num(const String &name); // ret attr vec len
+    unsigned int get_attr_num(const char *name);
+    String get_attr(const String &name, unsigned int i = 0);
+    String get_attr(const char *name, unsigned int i = 0);
     String get_type(const String &name);
     String get_type(const char *name);
 
-    void append_attr(const String &name, const String &type, 
+    unsigned int append_attr(const String &name, const String &type, 
 		     const String &value);
-    void append_attr(const char *name, const char *type, const char *value);
-    void del_attr(const String &name);
+    unsigned int append_attr(const char *name, const char *type, 
+			      const char *value);
+    // by default delete the last element of the attribute vector
+    void del_attr(const String &name, int i = -1);
 
     void print(ostream &os, String pad = "    ");
 };
