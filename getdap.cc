@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.24  1997/09/22 22:26:34  jimg
+// Rewrote the handling of received Sequences in `constrained-trans()'.
+//
 // Revision 1.23  1997/06/05 23:08:51  jimg
 // Modified so that data can be read from stdin (similar to writeval).
 //
@@ -97,7 +100,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.23 1997/06/05 23:08:51 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.24 1997/09/22 22:26:34 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -107,7 +110,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.23 1997/06/05 23:08:51 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.23 $";
+const char *VERSION = "$Revision: 1.24 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -188,16 +191,16 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 	    // Sequences present a special case because I let
 	    // their semantics get out of hand... jhrg 9/12/96
 	  case dods_sequence_c:
-	    ((Sequence *)v)->print_all_vals(cout, url.source());
+	    ((Sequence *)v)->print_all_vals(cout, url.source(), dds);
 	    break;
 	  default:
 	    PERF(cerr << "Deserializing: " << dds.var(q).name() << endl);
-	    if (async && !dds->var(q)->deserialize(url.source())) {
+	    if (async && !v->deserialize(url.source(), dds)) {
 		cerr << "Asynchronous read failure." << endl;
 		exit(1);
 	    }
 	    PERF(cerr << "Deserializing complete" << endl);
-	    dds->var(q)->print_val(cout);
+	    v->print_val(cout);
 	    break;
 	}
     }
