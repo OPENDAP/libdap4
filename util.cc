@@ -11,6 +11,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.30  1996/11/25 03:44:39  jimg
+// Added new dods_root function.
+// Fixed compressor().
+// Fixed systime().
+//
 // Revision 1.29  1996/11/21 23:56:21  jimg
 // Added compressor and decompressor functions.
 //
@@ -160,7 +165,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.29 1996/11/21 23:56:21 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.30 1996/11/25 03:44:39 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -191,9 +196,6 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.29 1996/11/21 23:56:21 jimg 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
-
-static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
-    : DODS_ROOT;
 
 const char DODS_CE_PRX[]={"dods"};
 
@@ -365,6 +367,15 @@ text_to_temp(String text)
     return fp;
 }
 
+String
+dods_root()
+{
+    static const char *dods_root = (getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
+				    : DODS_ROOT);
+
+    return String(dods_root);
+}
+
 FILE *
 compressor(FILE *output)
 {
@@ -405,7 +416,7 @@ compressor(FILE *output)
 	// First try to run gzip using DODS_ROOT (the value read from the
 	// DODS_ROOT environment variable takes precedence over the value set
 	// at build time. If that fails, try the users PATH.
-	String gzip = (String)dods_root + "/etc/gzip";
+	String gzip = (String)dods_root() + "/etc/gzip";
 	(void) execl(gzip, "gzip", "-cf", NULL);
 
 	(void) execlp("gzip", "gzip", "-cf", NULL);
@@ -458,7 +469,7 @@ decompressor(FILE *input)
 	// First try to run gzip using DODS_ROOT (the value read from the
 	// DODS_ROOT environment variable takes precedence over the value set
 	// at build time. If that fails, try the users PATH.
-	String gzip = (String)dods_root + "/etc/gzip";
+	String gzip = (String)dods_root() + "/etc/gzip";
 	(void) execl(gzip, "gzip", "-cdf", NULL);
 
 	(void) execlp("gzip", "gzip", "-cdf", NULL);
@@ -473,11 +484,11 @@ decompressor(FILE *input)
 
 static const int TimLen = 26;	// length of string from asctime()
 
-ostream &
-systime(ostream &os)
+char *
+systime()
 {
     time_t TimBin;
-    char TimStr[TimLen];
+    static char TimStr[TimLen];
 
     if (time(&TimBin) == (time_t)-1)
 	strcpy(TimStr, "time() error           ");
@@ -486,7 +497,7 @@ systime(ostream &os)
 	TimStr[TimLen - 2] = '\0'; // overwrite the \n 
     }
 
-    return os << TimStr;
+    return TimStr;
 }
 
 // These functions are used by the CE evaluator
