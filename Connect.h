@@ -27,13 +27,20 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.14  1996/06/04 21:33:17  jimg
-/* Multiple connections are now possible. It is now possible to open several
-/* URLs at the same time and read from them in a round-robin fashion. To do
-/* this I added data source and sink parameters to the serialize and
-/* deserialize mfuncs. Connect was also modified so that it manages the data
-/* source `object' (which is just an XDR pointer).
+/* Revision 1.15  1996/06/08 00:07:57  jimg
+/* Added support for compression. The Content-Encoding header is used to
+/* determine if the incoming document is compressed (values: x-plain; no
+/* compression, x-gzip; gzip compression). The gzip program is used to
+/* decompress the document. The new software uses UNIX IPC and a separate
+/* subprocess to perform the decompression.
 /*
+ * Revision 1.14  1996/06/04 21:33:17  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
  * Revision 1.13  1996/05/29 21:51:51  jimg
  * Added the enum ObjectType. This is used when a Content-Description header is
  * found by the WWW library to record the type of the object without first
@@ -135,9 +142,7 @@
 #include "DDS.h"
 #include "Error.h"
 #include "util.h"
-
-#define NAME "DODS"
-#define VERSION	"2.0"
+#include "config_dap.h"
 
 #define SHOW_MSG (WWWTRACE || HTAlert_interactive())
 
@@ -153,11 +158,22 @@
 //* type of object without parsing the stream themselves. 
 
 enum ObjectType {
-    unknown,
+    unknown_type,
     dods_das,
     dods_dds,
     dods_data,
     dods_error
+};
+
+/// What type of encoding has been used on the current stream?
+//* DODS understands two types of encoding: x-plain and x-gzip, which
+//* coorespond to plain uncompressed data and data compressed with GNU's gzip
+//* resptively. 
+
+enum EncodingType {
+    unknown_enc,
+    x_plain,
+    x_gzip
 };
 
 class Connect {
@@ -179,6 +195,7 @@ private:
     // The following members are vaild only if _LOCAL is false.
 
     ObjectType _type;		// What type of object is in the stream?
+    EncodingType _encoding;	// What type of encoding is used?
 
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
@@ -187,6 +204,9 @@ private:
     String _URL;		// URL to remote dataset (incl. CE)
 
     HTParentAnchor *_anchor;
+#if 0
+    HTRequest *_request;
+#endif
     struct timeval *_tv;	// Timeout on socket
     HTMethod _method;		// What method are we envoking 
     FILE *_output;		// Destination; a temporary file
@@ -202,7 +222,7 @@ private:
     //* Read a url. Assume that the object's _OUTPUT stream has been set
     //* properly.
     //* Returns true if the read operation succeeds, false otherwise.
-    bool read_url(String &url);
+    bool read_url(String &url, FILE *stream);
 
     //* Separate the text DDS from the binary data in the data object (which
     //* is a bastardized multipart MIME document). The returned FILE * points
@@ -275,7 +295,15 @@ public:
     //* stream. 
     ObjectType type();
 
+    /// Return the type of encoding used on the data in the stream.
+    //* Encoding types are currently limited to x-plain (no special decoding
+    //* required) and x-gzip (compressed using GNU's gzip).
+    EncodingType encoding();
+
+    /// Return a reference to the Connect's DAS object.
     DAS &das();
+
+    /// Return a reference to the Connect's DDS object.
     DDS &dds();
 
     /// Get a reference to the last error.

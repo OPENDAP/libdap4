@@ -3,8 +3,49 @@
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
-//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)//
 
+// $Log: Connect.cc,v $
+// Revision 1.24  1996/06/08 00:07:19  jimg
+// Added support for compression. The Content-Encoding header is used to
+// determine if the incoming document is compressed (values: x-plain; no
+// compression, x-gzip; gzip compression). The gzip program is used to
+// decompress the document. The new software uses UNIX IPC and a separate
+// subprocess to perform the decompression.
+//
+// revision 1.23  1996/06/06 17:07:57  jimg
+// Added support for wwwlib 4.0.
+// Added support for object types.
+//
+// revision 1.22  1996/06/04 21:33:15  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
+// revision 1.21  1996/05/31 23:29:30  jimg
+// Updated copyright notice.
+//
+// Revision 1.20  1996/05/29 21:47:51  jimg
+// Added Content-Description header parsing.
+// Removed Event loop code (HTEvent_loop()).
+// Fixed bug where a copy of _OUTPUT was created using _OUTPUT's file
+// descriptor. When _OUTPUT was closed the copy no longer referenced a valid
+// data source.
+// Fixed problems with asserts and error messaging.
+//
+// Revision 1.19  1996/05/22 18:05:04  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
+// Revision 1.18  1996/05/21 23:46:32  jimg
+// Added support for URLs directly to the class. This uses version 4.0D of
+// the WWW library from W3C.
+//
+// Revision 1.17  1996/04/05 01:25:39  jimg
+// Merged changes from version 1.1.1.
+//
 // Revision 1.16  1996/03/05 23:21:27  jimg
 // Added const to char * parameters and function prototypes.
 //
@@ -113,19 +154,31 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.23 1996/06/06 17:07:57 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.24 1996/06/08 00:07:19 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
 #endif
 
 #include <stdio.h>
+#include <unistd.h>
 #include <assert.h>
+
+#include <sys/types.h>		// Used by the semaphore code in fetch_url()
+#include <sys/ipc.h>
+#include <sys/sem.h>
 
 #include <strstream.h>
 #include <fstream.h>
 
 #include "Connect.h"
+
+// On a sun (4.1.3) these are not prototyped... Maybe other systems too?
+extern "C" {
+    int semget(key_t key, int nsems, int flag);
+    int semctl(int semid, int semnum, int cmd, union semun arg);
+    int semop(int semid, struct sembuf sb[], size_t nops);
+}
 
 const char DODS_PREFIX[]={"dods"};
 const int DEFAULT_TIMEOUT = 100; // timeout in seconds
@@ -249,7 +302,7 @@ timeout_handler(HTRequest *request)
 }
 
 static ObjectType
-get_type(String &value)
+get_type(String value)
 {
     if (value == "dods_das")
 	return dods_das;
@@ -264,7 +317,7 @@ get_type(String &value)
 }
     
 static EncodingType
-get_encoding(String &value)
+get_encoding(String value)
 {
     if (value == "x-plain")
 	return x_plain;
@@ -285,15 +338,18 @@ header_handler(HTRequest *request, const char *token)
     line >> value; value.downcase();
     
     if (field == "content-description:") {
-	DBG(cerr << "Found content-description header" << endl);
+	DBG2(cerr << "Found content-description header" << endl);
 	Connect *me = (Connect *)HTRequest_context(request);
 	me->_type = get_type(value);
     }
+#if 0
+    // Parsed by HTMIME.c (wwwlib).
     else if (field == "content-encoding:") {
 	DBG(cerr << "Found content-encoding header" << endl);
 	Connect *me = (Connect *)HTRequest_context(request);
 	me->_encoding = get_encoding(value);
     }
+#endif
     else {
 	if (SHOW_MSG)
 	    cerr << "Unknown header: " << token << endl;
@@ -391,6 +447,9 @@ Connect::clone(const Connect &src)
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
 	HT_FREE(ref);
 
+	_type = src._type;
+	_encoding = src._encoding;
+
 	// Copy the access method.
 	_method = src._method;
 
@@ -460,30 +519,39 @@ Connect::move_dds(FILE *in)
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
 bool
-Connect::read_url(String &url)
+Connect::read_url(String &url, FILE *stream)
 {
+    assert(stream);
+
     int status = YES;
 
-    HTRequest *request = HTRequest_new();
+    HTRequest *_request = HTRequest_new();
 
-    HTRequest_setContext (request, this); // Bind THIS to request 
+    HTRequest_setContext (_request, this); // Bind THIS to request 
 
-    HTRequest_setOutputFormat(request, WWW_SOURCE);
+    HTRequest_setOutputFormat(_request, WWW_SOURCE);
 
-    // Set timeout on sockets
-    HTEvent_registerTimeout(_tv, request, timeout_handler, NO);
+	// Set timeout on sockets
+    HTEvent_registerTimeout(_tv, _request, timeout_handler, NO);
 
-    HTRequest_setAnchor(request, (HTAnchor *)_anchor);
+    HTRequest_setAnchor(_request, (HTAnchor *)_anchor);
 
-    HTRequest_setOutputStream(request, HTFWriter_new(request, _output, YES));
+    HTRequest_setOutputStream(_request, HTFWriter_new(_request, stream, YES));
 
-    status = HTLoadRelative((const char *)url, _anchor, request);
+    status = HTLoadRelative((const char *)url, _anchor, _request);
+
     if (status != YES) {
 	if (SHOW_MSG) cerr << "Can't access resource" << endl;
 	return false;
     }
 
-    HTRequest_delete(request);
+    // LoadRelative uses a different anchor than the one bound to the request
+    // in this function. Extract what you need from the anchor used in that
+    // call.
+    HTEncoding enc = HTAnchor_encoding(HTRequest_anchor(_request));
+    _encoding = get_encoding((char *)HTAtom_name(enc));
+
+    HTRequest_delete(_request);
 
     return status;
 }
@@ -528,6 +596,8 @@ Connect::Connect(const String &name)
 	_tv->tv_sec = DEFAULT_TIMEOUT;
 	_output = 0;
 	_source = 0;
+	_type = unknown_type;
+	_encoding = unknown_enc;
 
 	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
@@ -585,6 +655,52 @@ Connect::operator=(const Connect &rhs)
     }
 }
 
+static FILE *
+decompress(FILE *input)
+{
+    int pid, data[2];
+
+    if (pipe(data) < 0) {
+	cerr << "Could not create IPC channel for decompresser process" 
+	     << endl;
+	return NULL;
+    }
+    
+    if ((pid = fork()) < 0) {
+	cerr << "Could not fork to create decompresser process" << endl;
+	return NULL;
+    }
+
+    // The parent process closes the write end of the Pipe, and creates a
+    // FILE * using fdopen(). The FILE * is used by the calling program to
+    // access the read end of the Pipe.
+
+    if (pid > 0) {
+	close(data[1]);
+	FILE *output = fdopen(data[0], "r");
+	if (!output) {
+	    cerr << "Parent process could not open channel for decompression"
+		 << endl;
+	    return NULL;
+	}
+	return output;
+    }
+    else {
+	close(data[0]);
+	dup2(fileno(input), 0);	// Read from FILE *input 
+	dup2(data[1], 1);	// Write to the pipe
+
+	DBG2(cerr << "Opening decompression stream." << endl);
+
+	(void) execlp("gzip", "gzip", "-cd", NULL);
+	(void) execl(GZIP, "gzip", "-cd", NULL);
+
+	cerr << "Could not start decompresser!" << endl;
+	cerr << "gzip must be on your path or in DODS_ROOT/etc" << endl;
+	_exit(127);		// Only get here if an error
+    }
+}
+
 // Dereference the URL and dump its contents into _OUTPUT. Note that
 // read_url() does the actual dereferencing; this sets up the _OUTPUT sink.
 
@@ -592,25 +708,47 @@ bool
 Connect::fetch_url(String &url, bool async = false)
 {
     close_output();
+    _encoding = unknown_enc;
+    _type = unknown_type;
 
     if (!async) {
 	char *c = tempnam(NULL, DODS_PREFIX);
-	_output = fopen(c, "w+"); // Open truncated for update.
+	FILE *stream = fopen(c, "w+"); // Open truncated for update.
 	unlink(c);		// When _OUTPUT is closed file is deleted.
 	
-	bool status = read_url(url);
+	if (!read_url(url, stream))
+	    return false;
 
 	// Now rewind the stream so that we can read from the temp file
-	status = fseek(_output, 0L, 0) == 0;
-	if (!status) {
+	if (fseek(stream, 0L, 0) < 0) {
 	    cerr << "Could not rewind stream" << endl;
+	    return false;
 	}
 
-	return status;
+	if (encoding() == x_gzip) {
+	    _output = decompress(stream);
+	    if (!_output)
+		return false;
+	}
+	else {
+	    _output = stream;
+	}
+
+	return true;
     }
     else {
 	int pid, data[2];
-
+	int semaphore = semget(IPC_PRIVATE, 1, 0);
+	if (semaphore < 0) {
+	    cerr << "Could not create semaphore." << endl;
+	    return false;
+	}
+	union semun semun;
+	semun.val = -1;		// Wait for 0 value... 
+	if (semctl(semaphore, 0, SETVAL, semun) < 0) {
+	    cerr << "Could not initialize semaphore." << endl;
+	    return false;
+	}
 	if (pipe(data) < 0) {
 	    cerr << "Could not create IPC channel for receiver process" 
 		 << endl;
@@ -628,6 +766,33 @@ Connect::fetch_url(String &url, bool async = false)
 
 	if (pid > 0) {
 	    close(data[1]);
+	    FILE *stream = fdopen(data[0], "r");
+	    if (!stream) {
+		cerr << "Parent process could not open IPC channel for reading"
+		     << endl;
+		return false;
+	    }
+
+	    // Semaphore wait for completion of read_url(...) in child.
+	    struct sembuf sembuf[1] = {0, 0, SEM_UNDO};
+	    if (semop(semaphore, sembuf, 1) < 0) {
+		cerr << "Could not wait for child to read URL." << endl;
+		return false;
+	    }
+
+	    if (encoding() == x_gzip) {
+		_output = decompress(stream);
+		if (!_output)
+		    return false;
+	    }
+	    else {
+		// Since we are reading asynchronously, do not rewind stream.
+		_output = stream;
+	    }
+
+	    return true;
+
+#if 0
 	    _output = fdopen(data[0], "r");
 	    if (!_output) {
 		cerr << "Parent process could not open IPC channel for reading"
@@ -635,24 +800,34 @@ Connect::fetch_url(String &url, bool async = false)
 		return false;
 	    }
 	    return true;
+#endif
 	}
 	else {
 	    close(data[0]);
 	    _output = fdopen(data[1], "w");
 	    if (!_output)  {
 		cerr << "Child process could not open IPC channel" << endl;
-		exit(0);
+		_exit(127);
 	    }
-	    bool status = read_url(url);
+	    bool status = read_url(url, _output);
+
+	    // Set the semaphore so that the parent will stop blocking
+	    struct sembuf sembuf[1] = {0, 1, SEM_UNDO};
+	    if (semop(semaphore, sembuf, 1) < 0) {
+		cerr << "Could not wait for child to read URL." << endl;
+		return false;
+	    }
+
 	    if (!status) {
 		cerr << "Child process could not read data from the URL"
 		     << endl;
-		exit(0);
+		_exit(127);
 	    }
-	    exit(1);		// successful completion
+	    exit(0);		// successful completion
 	}
     }
 }
+
 
 FILE *
 Connect::output()
