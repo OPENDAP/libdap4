@@ -3,7 +3,11 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
-// Revision 1.9  1994/12/21 03:03:37  reza
+// Revision 1.10  1995/02/10 02:27:53  jimg
+// Fixed an error where two attributes could be declared with the same name
+// (for the same variable) if they hade different types.
+//
+// Revision 1.9  1994/12/21  03:03:37  reza
 // Added overloading functions for get_attr_num().
 //
 // Revision 1.8  1994/12/07  21:09:24  jimg
@@ -41,7 +45,7 @@
 // a static class variable String empty (it is initialized to "").
 //
 
-static char rcsid[]="$Id: AttrTable.cc,v 1.9 1994/12/21 03:03:37 reza Exp $";
+static char rcsid[]="$Id: AttrTable.cc,v 1.10 1995/02/10 02:27:53 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -179,20 +183,23 @@ AttrTable::get_type(const char *name)
 // vars. 
 //
 // Returns: The length of the attribute PLex (array) for the named variable.
+// If an error is detected, returns 0.
 
 unsigned int
 AttrTable::append_attr(const String &name, const String &type, 
 		       const String &attr)
 {
     Pix p = find(name);
-    if (p)
-	return map(p).attr.add_high(attr);
+    if (p && get_type(p) != type)
+	return 0;		// error:same name but diff type
+    else if (p)
+	return map(p).attr.add_high(attr) + 1; // new variable
     else {
 	entry e;
 
 	e.name = name;
 	e.type = type;
-	unsigned int len = e.attr.add_high(attr);
+	unsigned int len = e.attr.add_high(attr) + 1;
 
 	map.append(e);
     
