@@ -10,6 +10,11 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.34  1999/02/22 22:45:10  jimg
+// Added -T option: Use this to send a list of accepted types to the server
+// using the new XDODS-Accept-Types request header. The list must not contain
+// spaces *even* if it is quoted.
+//
 // Revision 1.33  1998/11/10 00:47:53  jimg
 // Delete the dds object (created with new) after calling process_data().
 //
@@ -134,7 +139,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.33 1998/11/10 00:47:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.34 1999/02/22 22:45:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -144,16 +149,16 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.33 1998/11/10 00:47:53 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.33 $";
+const char *VERSION = "$Revision: 1.34 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
 usage(String name)
 {
     cerr << "Usage: " << name 
-	 << "[dDagVvk] [c <expr>] [t <codes>] [m <num>] <url> [<url> ...]" 
+	 << "[dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]" 
 	 << endl
-	 << "[gVvk] [t <codes>] <file> [<file> ...]" 
+	 << "[gVvk] [t <codes>] [T <list>] <file> [<file> ...]" 
 	 << endl;
     cerr << "In the first form of the command, dereference the URL" << endl
 	 << "perform the requested operations. In the second, assume" << endl
@@ -171,6 +176,7 @@ usage(String name)
     cerr << "        k: Keep temporary files created by DODS core" << endl;
     cerr << "        m: Request the same URL <num> times." << endl;
     cerr << "        z: Don't ask the server to compress data." << endl;
+    cerr << "        T: <list> List of `Accepted Types'. Translating servers use this." << endl;
     cerr << "        t: <options> trace output; use -td for default." 
          << endl;
     cerr << "          a: show anchor trace." << endl;
@@ -250,7 +256,7 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 int
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:z");
+    GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:zT:");
     int option_char;
     bool async = false;
     bool get_das = false;
@@ -262,6 +268,7 @@ main(int argc, char * argv[])
     bool trace = false;
     bool multi = false;
     bool accept_deflate = true;
+    String accept_types = "All";
     int times = 1;
     char *tcode = NULL;
     char *expr = NULL;
@@ -290,6 +297,7 @@ main(int argc, char * argv[])
 		break;
 	      case 'm': multi = true; times = atoi(getopt.optarg); break;
 	      case 'z': accept_deflate = false; break;
+	      case 'T': accept_types = getopt.optarg; break;
 	      case 'h':
               case '?':
 	      default:
@@ -330,6 +338,7 @@ main(int argc, char * argv[])
 	    cerr << "Assuming standard input is a DODS data stream." << endl;
 
 	Connect url("stdin", trace, accept_deflate);
+	url.set_accept_types(accept_types);
 
 	DDS *dds = url.read_data(stdin, gui, async);
 	process_data(url, dds, verbose, async);
@@ -341,6 +350,7 @@ main(int argc, char * argv[])
 	
 	String name = argv[i];
 	Connect url(name, trace, accept_deflate);
+	url.set_accept_types(accept_types);
 
 	if (url.is_local()) {
 	    if (verbose) 
