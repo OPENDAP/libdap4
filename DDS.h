@@ -13,6 +13,9 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.24  1998/03/20 00:12:41  jimg
+// Added documentation for the new parse_constraint() member function.
+//
 // Revision 1.23  1998/02/04 14:55:31  tom
 // Another draft of documentation.
 //
@@ -446,6 +449,11 @@ public:
   /** Evaluate a boolean-valued constraint expression. */
     bool eval_selection(const String &dataset);
     
+  /** Parse a constraint expression.
+
+      @name parse\_constraint */
+
+  //@{
   /** Parse the constraint expression given the current DDS. 
 
       @memo Parse a constraint expression .  
@@ -460,6 +468,11 @@ public:
       */ 
     bool parse_constraint(const String &constraint, ostream &os = cout,
 			  bool server = true);
+
+    /** @param out A FILE pointer to which error objects should be wrtten. */
+    bool parse_constraint(const String &constraint, FILE *out,
+			  bool server = true);
+  //@}
 
   /** The DDS maintains a list of BaseType pointers for all the
       constants that the constraint expression parser generates. These
