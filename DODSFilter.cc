@@ -10,6 +10,10 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.14  1999/05/25 21:57:52  dan
+// Added an optional second argument to read_ancillary_dds to support
+// JGOFS usage.
+//
 // Revision 1.13  1999/05/25 21:54:19  dan
 // Added an optional argument to read_ancillary_das to support JGOFS
 // data object usage, where the location of the ancillary DAS file isn't
@@ -82,7 +86,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.13 1999/05/25 21:54:19 dan Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.14 1999/05/25 21:57:52 dan Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__
@@ -221,9 +225,11 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 }
 
 bool
-DODSFilter::read_ancillary_dds(DDS &dds)
+DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
 {
-    string name = find_ancillary_file(dataset, "dds", anc_dir, anc_file);
+    if ( anc_location == "" ) anc_location = anc_dir;
+
+    string name = find_ancillary_file(dataset, "dds", anc_location, anc_file);
     FILE *in = fopen(name.c_str(), "r");
  
     if (in) {
