@@ -8,6 +8,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.40  1996/11/22 00:14:38  jimg
+// Removed decompress() function.
+// Switched to decompressor function in util.cc
+// Wrapped semaphore code in USE_SEM preprocessor define - the semaphore code
+// may not be necessary...
+//
 // Revision 1.39  1996/11/20 22:29:29  jimg
 // Fixed header parsing. Now I use my own header parsers for the
 // content-description and -encoding headers. Once the values of these headers
@@ -227,7 +233,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.39 1996/11/20 22:29:29 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.40 1996/11/22 00:14:38 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -250,7 +256,7 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.39 1996/11/20 22:29:29 jim
 
 #include <strstream.h>
 #include <fstream.h>
-#define DODS_DEBUG 1
+
 #include "debug.h"
 #include "Connect.h"
 
@@ -283,7 +289,7 @@ union semun {
 
 const int SEM_KEY = 123456L;
 const int SEM_PERMS = 0666;
-#endif
+#endif /* USE_SEM */
 
 // In cases where the DODS libraries are not linked with g++ this code won't
 // work properly; dods_root may be NULL or (worse) undefined. jhrg 9/19/96.
@@ -295,7 +301,7 @@ static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT")
 
 static const char DODS_PREFIX[]={"dods"};
 static const int DEFAULT_TIMEOUT = 100; // Timeout in seconds.
-static int keep_temps = 0;	// Set to non-zero value to keep temp files.
+static int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
 
 // Initially, _connects is -1 to indicate that no connection has been made
 // (and thus that the WWW library has not yet been inititalize). Once
@@ -788,6 +794,9 @@ Connect::move_dds(FILE *in)
     FILE *fp = fopen(c, "w+");
     if (!keep_temps)
 	unlink(c);
+    else
+	cerr << "Temporary file for Data Document DDS: " << c << endl;
+
     if (!fp) {
 	cerr << "Could not open anonymous temporary file: " 
 	     << strerror(errno) << endl;
@@ -973,57 +982,6 @@ Connect::operator=(const Connect &rhs)
     }
 }
 
-static FILE *
-decompress(FILE *input)
-{
-    int pid, data[2];
-
-    if (pipe(data) < 0) {
-	cerr << "Could not create IPC channel for decompresser process" 
-	     << endl;
-	return NULL;
-    }
-    
-    if ((pid = fork()) < 0) {
-	cerr << "Could not fork to create decompresser process" << endl;
-	return NULL;
-    }
-
-    // The parent process closes the write end of the Pipe, and creates a
-    // FILE * using fdopen(). The FILE * is used by the calling program to
-    // access the read end of the Pipe.
-
-    if (pid > 0) {
-	close(data[1]);
-	FILE *output = fdopen(data[0], "r");
-	if (!output) {
-	    cerr << "Parent process could not open channel for decompression"
-		 << endl;
-	    return NULL;
-	}
-	return output;
-    }
-    else {
-	close(data[0]);
-	dup2(fileno(input), 0);	// Read from FILE *input 
-	dup2(data[1], 1);	// Write to the pipe
-
-	DBG2(cerr << "Opening decompression stream." << endl);
-
-	// First try to run gzip using DODS_ROOT (the value read from the
-	// DODS_ROOT environment variable takes precedence over the value set
-	// at build time. If that fails, try the users PATH.
-	String gzip = (String)dods_root + "/etc/gzip";
-	(void) execl(gzip, "gzip", "-cd", NULL);
-
-	(void) execlp("gzip", "gzip", "-cd", NULL);
-
-	cerr << "Could not start decompresser!" << endl;
-	cerr << "gzip must be in DODS_ROOT/etc or on your PATH" << endl;
-	_exit(127);		// Only get here if an error
-    }
-}
-
 // Dereference the URL and dump its contents into _OUTPUT. Note that
 // read_url() does the actual dereferencing; this sets up the _OUTPUT sink.
 
@@ -1039,7 +997,9 @@ Connect::fetch_url(String &url, bool async = false)
 	FILE *stream = fopen(c, "w+"); // Open truncated for update.
 	if (!keep_temps)
 	    unlink(c);		// When _OUTPUT is closed file is deleted.
-	
+	else
+	    cerr << "Temporary file for Data document: " << c << endl;
+
 	if (!read_url(url, stream))
 	    return false;
 
@@ -1050,7 +1010,7 @@ Connect::fetch_url(String &url, bool async = false)
 	}
 
 	if (encoding() == x_gzip) {
-	    _output = decompress(stream);
+	    _output = decompressor(stream);
 	    if (!_output)
 		return false;
 	}
@@ -1108,9 +1068,8 @@ Connect::fetch_url(String &url, bool async = false)
 		return false;
 	    }
 #endif
-
 	    if (encoding() == x_gzip) {
-		_output = decompress(stream);
+		_output = decompressor(stream);
 		if (!_output)
 		    return false;
 	    }
