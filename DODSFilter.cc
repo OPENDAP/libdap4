@@ -10,6 +10,10 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.12  1999/05/21 17:15:46  jimg
+// Added instrumentation to the ctor. This simplifies debugging the interaction
+// between the filter programs and the perl script.
+//
 // Revision 1.11  1999/05/19 23:56:57  jimg
 // Changed the support address from @dods to @unidata
 //
@@ -73,7 +77,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.11 1999/05/19 23:56:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.12 1999/05/21 17:15:46 jimg Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__
@@ -117,6 +121,15 @@ DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false),
 	dataset = argv[next_arg];
     else
 	bad_options = true;
+
+    DBG(cerr << "comp: " << comp << endl);
+    DBG(cerr << "ce: " << ce << endl);
+    DBG(cerr << "cgi_ver: " << cgi_ver << endl);
+    DBG(cerr << "ver: " << ver << endl);
+    DBG(cerr << "anc_dir: " << anc_dir << endl);
+    DBG(cerr << "anc_file: " << anc_file << endl);
+    DBG(cerr << "cache_dir: " << cache_dir << endl);
+    DBG(cerr << "accept_types: " << accept_types << endl);
 }
 
 DODSFilter::~DODSFilter()
