@@ -42,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.49 2003/12/08 18:02:31 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.50 2004/01/21 17:46:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,7 +60,6 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.49 2003/12/08 18:02:31 edavis E
 
 #include "BaseType.h"
 #include "Array.h"
-#include "List.h"
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
@@ -1090,6 +1089,9 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.50  2004/01/21 17:46:03  jimg
+ * Removed include of List.h.
+ *
  * Revision 1.49  2003/12/08 18:02:31  edavis
  * Merge release-3-4 into trunk
  *
