@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.20  1996/10/28 23:44:16  jimg
+ * Added unsigned int to set of possible datatypes.
+ *
  * Revision 1.19  1996/10/16 22:35:31  jimg
  * Fixed bad operator in DODS_BISON_VER preprocessor statement.
  *
@@ -112,7 +115,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.y,v 1.19 1996/10/16 22:35:31 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.y,v 1.20 1996/10/28 23:44:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -174,6 +177,7 @@ void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current,
 %token GRID
 %token BYTE
 %token INT32
+%token UINT32
 %token FLOAT64
 %token STRING
 %token URL 
@@ -305,6 +309,7 @@ grid:		GRID
 
 base_type:	BYTE { current = NewByte(); }
 		| INT32 { current = NewInt32(); }
+		| UINT32 { current = NewUInt32(); }
 		| FLOAT64 { current = NewFloat64(); }
 		| STRING { current = NewStr(); }
 		| URL { current = NewUrl(); }

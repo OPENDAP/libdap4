@@ -30,9 +30,12 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.13  1996/10/08 17:10:50  jimg
-/* Added % to the set of characters allowable in identifier names
+/* Revision 1.14  1996/10/28 23:43:17  jimg
+/* Added unsigned int to set of possible datatypes.
 /*
+ * Revision 1.13  1996/10/08 17:10:50  jimg
+ * Added % to the set of characters allowable in identifier names
+ *
  * Revision 1.12  1996/08/26 21:13:13  jimg
  * Changes for version 2.07
  *
@@ -77,11 +80,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.13 1996/10/08 17:10:50 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.14 1996/10/28 23:43:17 jimg Exp $"};
 
 #include <string.h>
 
 #define YYSTYPE char *
+#define YY_NO_UNPUT
 #define YY_DECL int ddslex YY_PROTO(( void ))
 
 #include "dds.tab.h"
@@ -104,6 +108,7 @@ FUNCTION 	FUNCTION|Function|function
 GRID 		GRID|Grid|grid
 BYTE 		BYTE|Byte|byte
 INT32 		INT32|Int32|int32
+UINT32 		UINT32|UInt32|uint32
 FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
@@ -126,6 +131,7 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 {GRID}			ddslval = yytext; return GRID;
 {BYTE}			ddslval = yytext; return BYTE;
 {INT32}			ddslval = yytext; return INT32;
+{UINT32}		ddslval = yytext; return UINT32;
 {FLOAT64}		ddslval = yytext; return FLOAT64;
 {STRING}		ddslval = yytext; return STRING;
 {URL}			ddslval = yytext; return URL;
