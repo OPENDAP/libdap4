@@ -6,11 +6,15 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.6  1994/09/27 22:46:31  jimg
-/* Changed the implementation of the class DAS from one which inherited
-/* from DASVHMap to one which contains an instance of DASVHMap.
-/* Added mfuncs to set/access the new instance variable.
+/* Revision 1.7  1994/10/05 16:44:27  jimg
+/* Changed from Map to DLList for representation of the attribute table.
+/* Added TYPE to the attribute table.
 /*
+ * Revision 1.6  1994/09/27  22:46:31  jimg
+ * Changed the implementation of the class DAS from one which inherited
+ * from DASVHMap to one which contains an instance of DASVHMap.
+ * Added mfuncs to set/access the new instance variable.
+ *
  * Revision 1.5  1994/09/23  14:38:03  jimg
  * Fixed broken header. Agian.
  *
@@ -70,7 +74,8 @@ public:
 
     AttrTable *get_table(const String &name);
     AttrTable *get_table(const char *name); // avoid converting char * to Pix
-    AttrTable *set_table(const String &name, AttrTable *at);
+    AttrTable *add_table(const String &name, AttrTable *at);
+    AttrTable *add_table(const char *name, AttrTable *at);
 
     bool parse(String fname);
     bool parse(int fd);
