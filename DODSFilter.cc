@@ -10,6 +10,11 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.3  1998/03/19 23:34:21  jimg
+// Fixed calls to set_mime_*().
+// Removed the compression code (it is now in DDS::send().
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
 // Revision 1.2  1998/02/11 22:00:46  jimg
 // Added call to util.cc:deflate_exists() to send_data(). This means that
 // send_data() will only try to start the compressor if an executable copy of
@@ -26,7 +31,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.2 1998/02/11 22:00:46 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.3 1998/03/19 23:34:21 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -117,9 +122,9 @@ DODSFilter::read_ancillary_das(DAS &das)
 	    ErrMsgT(msg);
 
 	    // client error message
-	    set_mime_text(dods_error);
+	    set_mime_text(cout, dods_error);
 	    Error e(malformed_expr, msg);
-	    e.print();
+	    e.print(cout);
 
 	    return false;
 	}
@@ -145,9 +150,9 @@ DODSFilter::read_ancillary_dds(DDS &dds)
 	    ErrMsgT(msg);
 
 	    // client error message
-	    set_mime_text(dods_error);
+	    set_mime_text(cout, dods_error);
 	    Error e(malformed_expr, msg);
-	    e.print();
+	    e.print(cout);
 
 	    return false;
 	}
@@ -174,8 +179,8 @@ DODSFilter::print_usage()
 
     // Build an error object to return to the user.
     Error e(unknown_error, emessage);
-    set_mime_text(dods_error);
-    e.print();
+    set_mime_text(cout, dods_error);
+    e.print(cout);
 }
 
 void 
@@ -199,8 +204,8 @@ DODSFilter::send_version_info()
 bool
 DODSFilter::send_das(DAS &das)
 {
-    set_mime_text(dods_das);
-    das.print();
+    set_mime_text(cout, dods_das);
+    das.print(cout);
 
     return true;
 }
@@ -214,18 +219,18 @@ DODSFilter::send_dds(DDS &dds, bool constrained)
 		+  ce;
 	    ErrMsgT(m);
 	    
-	    set_mime_text(dods_error);
+	    set_mime_text(cout, dods_error);
 	    Error e(unknown_error, m);
-	    e.print();
+	    e.print(cout);
 
 	    return false;
 	}
-	set_mime_text(dods_dds);
-	dds.print_constrained();  // send constrained DDS    
+	set_mime_text(cout, dods_dds);
+	dds.print_constrained(cout);  // send constrained DDS    
     }
     else {
-	set_mime_text(dods_dds);
-	dds.print();
+	set_mime_text(cout, dods_dds);
+	dds.print(cout);
     }
 
     return true;
@@ -234,26 +239,11 @@ DODSFilter::send_dds(DDS &dds, bool constrained)
 bool
 DODSFilter::send_data(DDS &dds, FILE *data_stream)
 {
-    if (comp && deflate_exists()) {
-	int childpid;
-	FILE *data_sink = compressor(data_stream, childpid);
-	if (!dds.send(dataset, ce, data_sink, true)) {
-	    ErrMsgT("Could not send compressed data");
-	    // DDS::send() sends the Error object.
-	    return false;
-	}
-	fclose(data_sink);
-	int pid;
-	while ((pid = waitpid(childpid, 0, 0)) > 0) {
-	    DBG(cerr << "pid: " << pid << endl);
-	}
-    }
-    else {
-	if (!dds.send(dataset, ce, data_stream, false)) {
-	    ErrMsgT("Could not send data");
-	    // DDS::send() sends the Error object.
-	    return false;
-	}
+    bool compress = comp && deflate_exists();
+
+    if (!dds.send(dataset, ce, data_stream, compress)) {
+	ErrMsgT((compress) ? "Could not send compressed data" : "Could not send data");
+	return false;
     }
 
     return true;
