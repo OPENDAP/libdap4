@@ -18,6 +18,11 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.27  1998/11/05 23:41:20  jimg
+ * Made error message for errant CEs involving arrays better.
+ * DDS::mark() now used for array variables --- this should fix a potential
+ * problem with structures of arrays.
+ *
  * Revision 1.26  1998/10/21 16:55:15  jimg
  * Single array element may now be refd as [<int>]. So element seven of the
  * array `a' can be referenced as a[7]. The old syntax, a[7:7], will still work.
@@ -145,7 +150,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.26 1998/10/21 16:55:15 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.27 1998/11/05 23:41:20 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -153,6 +158,7 @@ static char rcsid[] __unused__ = {"$Id: expr.y,v 1.26 1998/10/21 16:55:15 jimg E
 #include <assert.h>
 
 #include <String.h>
+#include <string>
 #include <SLList.h>
 
 #include "debug.h"
@@ -199,6 +205,8 @@ int exprlex(void);		/* the scanner; see expr.lex */
 
 void exprerror(const char *s);	/* easier to overload than to use stdarg... */
 void exprerror(const char *s, const char *s2);
+int no_such_func(void *arg, char *name);
+int no_such_id(void *arg, char *name, char *word);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
@@ -300,12 +308,7 @@ proj_clause:	ID
 			$$ = (*DDS_OBJ(arg)).mark($1, true);
 		    }
 		    else {
-			exprerror("No such identifier in dataset", $1);
-			String msg = "The identifier `";
-			msg += (String)$1 + "' is not in the dataset.";
-			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			STATUS(arg) = false;
-			$$ = false;
+			$$ = no_such_id(arg, $1, "identifier");
 		    }
 		}
                 | FIELD
@@ -314,12 +317,7 @@ proj_clause:	ID
 		    if (var)
 			$$ = (*DDS_OBJ(arg)).mark($1, true);
 		    else {
-			exprerror("No such field in dataset", $1);
-			String msg = "The field `";
-			msg += (String)$1 + "' is not in this dataset.";
-			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			STATUS(arg) = false;
-			$$ = false;
+			$$ = no_such_id(arg, $1, "field");
 		    }
 		}
                 | proj_function
@@ -347,13 +345,7 @@ proj_function:  ID '(' arg_list ')'
 			$$ = true;
 		    }
 		    else {
-			exprerror("Not a registered function", $1);
-			String msg = "The function `";
-			msg += (String)$1 
-			    + "' is not defined on this server.";
-			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			STATUS(arg) = false;
-			$$ = false;
+			$$ = no_such_func(arg, $1);
 		    }
 		}
 ;
@@ -395,13 +387,7 @@ bool_function: ID '(' arg_list ')'
 	       {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
 		   if (!b_func) {
-		       exprerror("Not a boolean function", $1);
-		       String msg = "The function `";
-		       msg += (String)$1 
-			   + "' is not defined on this server.";
-		       ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-		       STATUS(arg) = false;
-		       $$ = false;
+		       $$ = no_such_func(arg, $1);
 		   }
 		   else {
 		       (*DDS_OBJ(arg)).append_clause(b_func, $3);
@@ -437,13 +423,7 @@ r_value:        identifier
 			$$ = new rvalue(func, $3);
 		    } 
 		    else {  		
-			exprerror("Not a BaseType * function", $1);
-			String msg = "The function `";
-			msg += (String)$1 
-			    + "' is not defined on this server.";
-			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			STATUS(arg) = false;
-			$$ = 0;
+			$$ = (rvalue *)no_such_func(arg, $1);
 		    }
 		}
 ;
@@ -478,12 +458,7 @@ identifier:	ID
                 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
 		    if (!btp) {
-			exprerror("No such identifier in dataset", $1);
-			String msg = "The identifier `";
-			msg += (String)$1 + "' is not in this dataset.";
-			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			STATUS(arg) = false;
-			$$ = 0;
+			$$ = (rvalue *)no_such_id(arg, $1, "identifier");
 		    }
 		    else
 			$$ = new rvalue(btp);
@@ -492,12 +467,7 @@ identifier:	ID
                 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
 		    if (!btp) {
-			exprerror("No such field in dataset", $1);
-			String msg = "The field `";
-			msg += (String)$1 + "' is not in this dataset.";
-			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			STATUS(arg) = false;
-			$$ = 0;
+			$$ = (rvalue *)no_such_id(arg, $1, "field");
 		    }
 		    else
 			$$ = new rvalue(btp);
@@ -530,7 +500,8 @@ array_proj:	ID array_indices
 			   etc. will be processed correctly when individual
 			   elements are projected using short names (Whew!)
 			   9/1/98 jhrg */
-			var->set_send_p(true);
+			/* var->set_send_p(true); */
+			(*DDS_OBJ(arg)).mark($1, true);
 			$$ = process_array_indices(var, $2);
 			if (!$$) {
 			    String msg = "The indices given for `";
@@ -541,7 +512,8 @@ array_proj:	ID array_indices
 			delete_array_indices($2);
 		    }
 		    else if (var && is_grid_t(var)) {
-			var->set_send_p(true);
+			(*DDS_OBJ(arg)).mark($1, true);
+			/* var->set_send_p(true); */
 			$$ = process_grid_indices(var, $2);
 			if (!$$) {
 			    String msg = "The indices given for `";
@@ -551,8 +523,9 @@ array_proj:	ID array_indices
 			}
 			delete_array_indices($2);
 		    }
-		    else
-			$$ = false;
+		    else {
+			$$ = no_such_id(arg, $1, "array or grid");
+		    }
 		}
 	        | FIELD array_indices 
                 {
@@ -579,8 +552,9 @@ array_proj:	ID array_indices
 			}
 			delete_array_indices($2);
 		    }
-		    else
-			$$ = false;
+		    else {
+			$$ = no_such_id(arg, $1, "array or grid");
+		    }
 		}
 ;
 
@@ -629,6 +603,32 @@ void
 exprerror(const char *s, const char *s2)
 {
     cerr << "Parse error: " << s << ": " << s2 << endl;
+}
+
+int
+no_such_id(void *arg, char *name, char *word)
+{
+    string msg = "No such " + (string)word + " in dataset.";
+    exprerror(msg.data(), name);
+
+    msg = "The identifier `" + (string)name + "' is not in the dataset.";
+    ERROR_OBJ(arg) = new Error(malformed_expr, msg.data());
+    STATUS(arg) = false;
+
+    return false;
+}
+
+int
+no_such_func(void *arg, char *name)
+{
+    exprerror("Not a registered function", name);
+    string msg = "The function `" + (string)name 
+	+ "' is not defined on this server.";
+
+    ERROR_OBJ(arg) = new Error(malformed_expr, msg.data());
+    STATUS(arg) = false;
+
+    return false;
 }
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
