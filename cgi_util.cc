@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.17  1996/10/18 16:33:14  jimg
+// Changed set_mime_binary() and set_mime_text() so that they produce a full
+// HTTP/MIME header.
+//
 // Revision 1.16  1996/08/13 18:42:01  jimg
 // Added __unused__ to definition of char rcsid[].
 //
@@ -85,7 +89,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.16 1996/08/13 18:42:01 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.17 1996/10/18 16:33:14 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -236,7 +240,9 @@ static char *encoding[]={"unknown", "x-plain", "x-gzip"};
 void
 set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-    cout << "Status: 200 " << DVR << endl; // Send server version
+    cout << "HTTP/1.0 200 OK" << endl;
+    cout << "Server: " << DVR << endl;
+    //    cout << "Status: 200 " << DVR << endl; // Send server version
     cout << "Content-type: text/plain" << endl; 
     cout << "Content-Description: " << descrip[type] << endl;
     cout << "Content-Encoding: " << encoding[enc] << endl;
@@ -246,7 +252,9 @@ set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
 void
 set_mime_binary(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-    cout << "Status: 200 " << DVR << endl;
+    cout << "HTTP/1.0 200 OK" << endl;
+    cout << "Server: " << DVR << endl;
+    //    cout << "Status: 200 " << DVR << endl;
     cout << "Content-type: application/octet-stream" << endl; 
     cout << "Content-Description: " << descrip[type] << endl;
     cout << "Content-Encoding: " << encoding[enc] << endl;
