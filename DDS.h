@@ -13,6 +13,9 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.25  1998/07/13 20:20:43  jimg
+// Fixes from the final test of the new build process
+//
 // Revision 1.24  1998/03/20 00:12:41  jimg
 // Added documentation for the new parse_constraint() member function.
 //
@@ -173,8 +176,15 @@
     constraint expression.  It also has methods for directly modifying
     a DDS, and for transmitting it from a server to a client.
 
-    For the client, the DDS object includes methods for parsing ASCII
-    data received from a server into a data object.
+    For the client, the DDS object includes methods for reading the
+    persistent form of the object sent from a server. This includes parsing
+    the ASCII representation of the object and, possibly, reading data
+    received from a server into a data object.
+
+    Note that the class DDS is used to instantiate both DDS and DataDDS
+    objects. A DDS that is empty (contains no actual data) is used by servers
+    to send structural information to the client. The same DDS can becomes a
+    DataDDS when data values are bound to the variables it defines.
 
     For a complete description of the DDS layout and protocol, please
     refer to {\it The DODS User Guide}. 

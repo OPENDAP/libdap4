@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.43  1998/07/13 20:20:42  jimg
+ * Fixes from the final test of the new build process
+ *
  * Revision 1.42  1998/03/17 17:18:52  jimg
  * Added mfuncs element_count(), is_simple_type(), is_vector_type() and
  * is_comstructor_type().
@@ -342,35 +345,31 @@ enum Type {
 
 class DDS;			// forward declaration; see DDS.h
 
-/** This class defines the basic data type features for the DODS data
-    access protocol (DAP) data types.  All the DAP type classes
-    (Float64, Array, etc.) inherit from it.  This class is an abstract
-    one; no variables will ever be stored as BaseType instances, only
-    as instances of its child classes.
+/** This defines the basic data type features for the DODS data access
+    protocol (DAP) data types. All the DAP type classes (Float64, Array,
+    etc.) subclass it. This class is an abstract one; no variables will ever
+    be stored as BaseType instances, only as instances of its child classes.
 
     These classes and their methods give a user the capacity to set up
-    sophisticated data types.  They do {\it not} provide sophisticated
-    ways to access and use this data.  On the server side, in many
-    cases, the class instances will have no data in them at all until
-    the #serialize()# function is called to send data to the client.  On
-    the client side, most DODS application programs will unpack the
-    data promptly into whatever local data structure the programmer
-    deems the most useful.
+    sophisticated data types. They do {\it not} provide sophisticated ways to
+    access and use this data. On the server side, in many cases, the class
+    instances will have no data in them at all until the #serialize# function
+    is called to send data to the client. On the client side, most DODS
+    application programs will unpack the data promptly into whatever local
+    data structure the programmer deems the most useful.
 
-    In order to use these classes on the server side of a DODS
-    client/server connection, you must write a #read()# method for
-    each of the data types you expect to encounter in the application.
-    This function, whose purpose is to read data from a local source
-    into the class instance data buffer, is called in #serialize()#,
-    when the data is about to be sent to the client.  The #read()#
-    function may be called earlier, in the case of data subset
-    requests (constraint expressions) whose evaluation requires
-    it. (For example, the constraint expression ``#a,b&b>c#'' reuires
-    that c be read even though it will not be sent.)
+    In order to use these classes on the server side of a DODS client/server
+    connection, you must write a #read# method for each of the data types you
+    expect to encounter in the application. This function, whose purpose is
+    to read data from a local source into the class instance data buffer, is
+    called in #serialize#, when the data is about to be sent to the client.
+    The #read# function may be called earlier, in the case of data subset
+    requests (constraint expressions) whose evaluation requires it. (For
+    example, the constraint expression ``#a,b&b>c#'' requires that #c# be
+    read even though it will not be sent.)
 
-    For some data types, the #read()# function must be aware of the
-    constraints to be returned. These cautions are outlined where they
-    occur.
+    For some data types, the #read# function must be aware of the constraints
+    to be returned. These cautions are outlined where they occur.
 
     @memo The basic data type for the DODS DAP types.  */
 
@@ -380,7 +379,8 @@ private:
     Type _type;			// instance's type
 
     // xdr_coder is used as an argument to xdr procedures that encode groups
-    // of things (e.g., xdr_array()). Each leaf class's constructor must set this.
+    // of things (e.g., xdr_array()). Each leaf class's constructor must set
+    // this.
     xdrproc_t _xdr_coder;
 
     bool _read_p;		// true if the value has been read

@@ -18,6 +18,9 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.21  1998/07/13 20:20:41  jimg
+ * Fixes from the final test of the new build process
+ *
  * Revision 1.20  1998/01/12 14:27:55  tom
  * Second pass at class documentation.
  *
@@ -370,7 +373,7 @@ public:
       @param name The name of the attribute to add or modify.
       @param type The type of the attribute to add or modify.
       @param value The value to add to the attribute table.
-*/
+  */
   //@{
   ///
     unsigned int append_attr(const String &name, const String &type, 
@@ -389,27 +392,30 @@ public:
       */
     AttrTable *append_container(const String &name);
 
-  /** Adds an alias to the set of attributes.  Once an alias is
-      inserted into an attribute table, reading the attributes for
-      {\it alias} will return those stored for {\it name}. 
+    /** Adds an alias to the set of attributes.  Once an alias is
+	inserted into an attribute table, reading the attributes for
+	{\it alias} will return those stored for {\it name}. 
 
-      Two forms for this function exist: one searches for {\it name}
-      in the AttrTable referenced by {\it at} while the other uses
-      #this#. You can use #DAS::get_attr_table()# to get the attribute
-      table for an arbitrary name.
+	Two forms for this function exist: one searches for {\it name}
+	in the AttrTable referenced by {\it at} while the other uses
+	#this#. You can use #DAS::get_attr_table()# to get the attribute
+	table for an arbitrary name.
 
-      @name attr\_alias()
-      @param alias The alias to insert into the attribute table.
-      @param name The name of the already-existing attribute to which
-      the alias will refer.
-      @param at An attribute table in which to insert the alias.
-      @see DAS::get_attr_table */
-  //@{
-  ///
+	@name attr\_alias()
+	@see get_attr_table */
+    //@{
+
+    /** @param alias The alias to insert into the attribute table.
+	@param name The name of the already-existing attribute to which
+	the alias will refer.
+	@param at An attribute table in which to insert the alias. */
     bool attr_alias(const String &alias, AttrTable *at, const String &name);
-  ///
+
+    /** @param alias The alias to insert into the attribute table.
+	@param name The name of the already-existing attribute to which
+	the alias will refer. */
     bool attr_alias(const String &alias, const String &name);
-  //@}
+    //@}
 
   /** Delete the attribute named {\it name}. If {\it i} is given, and
       the attribute has a vector value, delete the i-th element of the

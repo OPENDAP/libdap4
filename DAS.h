@@ -14,6 +14,9 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.18  1998/07/13 20:20:42  jimg
+ * Fixes from the final test of the new build process
+ *
  * Revision 1.17  1998/02/05 20:13:51  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -101,7 +104,7 @@
     actually stored as String data.)
 
     A value may also consist of a set of other name-value pairs.  This
-    makes it possible to next collections of attributes, giving rise
+    makes it possible to nest collections of attributes, giving rise
     to a hierarchy of attributes.  DODS uses this structure to provide
     information about variables in a dataset.  For example, consider
     the dataset used in the DDS example earlier.
