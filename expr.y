@@ -45,9 +45,12 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.5  1996/02/01 17:43:18  jimg
-/* Added support for lists as operands in constraint expressions.
+/* Revision 1.6  1996/03/02 01:17:09  jimg
+/* Added support for the complete CE spec.
 /*
+ * Revision 1.5  1996/02/01 17:43:18  jimg
+ * Added support for lists as operands in constraint expressions.
+ *
  * Revision 1.4  1995/12/09  01:07:41  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -71,16 +74,19 @@
 
 %{
 
-static char rcsid[]={"$Id: expr.y,v 1.5 1996/02/01 17:43:18 jimg Exp $"};
+static char rcsid[]={"$Id: expr.y,v 1.6 1996/03/02 01:17:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include <String.h>
 #include <SLList.h>
 
 #include "DDS.h"
+
+#include "Connect.h"
 
 #include "BaseType.h"
 #include "Array.h"
@@ -92,7 +98,6 @@ static char rcsid[]={"$Id: expr.y,v 1.5 1996/02/01 17:43:18 jimg Exp $"};
 
 #include "config_dap.h"
 #include "util.h"
-#define DEBUG 1
 #include "debug.h"
 #include "parser.h"
 #include "expr.h"		/* the types IntList, IntListList and value */
@@ -102,22 +107,28 @@ static char rcsid[]={"$Id: expr.y,v 1.5 1996/02/01 17:43:18 jimg Exp $"};
 #endif
 
 int exprlex(void);		/* the scanner; see expr.lex */
-int exprerror(char *s);
 
-bool mark_id(DDS &table, char id[]);
+int exprerror(const char *s);	/* easier to overload than use stdarg... */
+int exprerror(const char *s, const char *s2);
+
 IntList *make_array_index(value &i1, value &i2, value &i3);
 IntListList *make_array_indeces(IntList *index);
 IntListList *append_array_index(IntListList *indeces, IntList *index);
-RValList *make_r_value_list(value *val);
-RValList *append_r_value_list(RValList *rvals, value *val);
-bool process_array_indeces(DDS &dds, char id[], IntListList *indeces);
-BaseType *dereference_url(DDS &table, value &val);
-bool relational_op(value &val1, value &val2, int op);
-bool int32_op(int i1, int i2, int op);
-bool float64_op(double d1, double d2, int op);
-bool str_op(String &s1, String &s2, int op);
-BaseType *get_variable(DDS &table, char id[]);
-BaseType *make_variable(const value &val);
+void delete_array_indeces(IntListList *indeces);
+bool process_array_indeces(BaseType *variable, IntListList *indeces);
+
+bool is_array_t(BaseType *variable);
+
+rvalue_list *make_rvalue_list(DDS &table, rvalue *rv);
+rvalue_list *append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv);
+
+BaseType *make_variable(DDS &table, const value &val);
+
+rvalue *dereference_variable(DDS &table, rvalue *rv);
+rvalue *dereference_url(DDS &table, value &val);
+
+bool_func_ptr get_function(const DDS &table, const char *name);
+btp_func_ptr get_btp_function(const DDS &table, const char *name);
 
 /* 
   The parser recieives a DDS &table as a formal argument. TABLE is the DDS
@@ -135,13 +146,16 @@ BaseType *make_variable(const value &val);
     int op;
     char id[ID_MAX];
 
-    BaseType *variable;
     value val;
+
+    bool_func_ptr bool_func;
+    btp_func_ptr btp_func;
 
     IntList *int_l_ptr;
     IntListList *int_ll_ptr;
-
-    RValList *r_val_l_ptr;
+    
+    rvalue *rval_ptr;
+    rvalue_list *r_val_l_ptr;
 }
 
 %token <val> INT
@@ -160,17 +174,17 @@ BaseType *make_variable(const value &val);
 %token <op> REGEXP
 
 %type <boolean> constraint_expr projection selection clause array_sel
-%type <variable> identifier constant r_value
 %type <op> rel_op
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indeces
-%type <r_val_l_ptr> r_value_list list_str list_int list_float
+%type <rval_ptr> r_value constant identifier
+%type <r_val_l_ptr> r_value_list 
 
 %%
 
-constraint_expr: /* empty */ 
+constraint_expr: /* empty constraint --> send all */
                  {
-		     table.mark_all(true); /* empty constraint --> send all */
+		     table.mark_all(true);
 		     $$ = true;
 		 }
                  /* projection only */
@@ -188,20 +202,56 @@ constraint_expr: /* empty */
 
 projection:	ID 
                   { 
-		      $$ = mark_id(table, $1); 
+		      BaseType *var = table.var($1);
+		      if (var) {
+			  var->set_send_p(true); // add to projection
+			  $$ = true;
+		      }
+		      else {
+			  $$ = false;
+			  exprerror("No such identifier in dataset", $1);
+		      }
 		  }
                 | FIELD
                   { 
-		      $$ = mark_id(table, $1); 
+		      BaseType *var = table.var($1);
+		      if (var)
+			  $$ = table.mark($1, true); // must add parents, too
+		      else {
+			  $$ = false;
+			  exprerror("No such field in dataset", $1);
+		      }
 		  }
-
+		| array_sel
+		  {
+		      $$ = $1;
+		  }
                 | projection ',' ID
                   { 
-		      $$ = $1 && mark_id(table, $3); 
+		      BaseType *var = table.var($3);
+		      if (var) {
+			  var->set_send_p(true);
+			  $$ = true;
+		      }
+		      else {
+			  $$ = false;
+			  exprerror("No such identifier in dataset", $3);
+		      }
+
 		  }
                 | projection ',' FIELD
                   { 
-		      $$ = $1 && mark_id(table, $3); 
+		      BaseType *var = table.var($3);
+		      if (var)
+			  $$ = table.mark($3, true);
+		      else {
+			  $$ = false;
+			  exprerror("No such field in dataset", $3);
+		      }
+		  }
+                | projection ',' array_sel
+                  {
+		      $$ = $1 && $3;
 		  }
 ;
 
@@ -212,54 +262,122 @@ selection:	clause
 		  }
 ;
 
-clause:		identifier rel_op '{' r_value_list '}'
+clause:		r_value rel_op '{' r_value_list '}'
                   {
+		      assert(($1));
 		      table.append_clause($2, $1, $4);
 		      $$ = true;
 		  }
 		| r_value rel_op r_value
                   {
-		      table.append_clause($2, $1, $3);
+		      assert(($1));
+
+		      rvalue_list *rv = new rvalue_list;
+		      rv->append($3);
+		      table.append_clause($2, $1, rv);
 		      $$ = true;
 		  }
-                | array_sel
+		| ID '(' r_value_list ')'
+		  {
+		      bool_func_ptr b_f_ptr = get_function(table, $1);
+		      if (!b_f_ptr) {
+  			  exprerror("Not a boolean function", $1);
+			  $$ = false;
+		      }
+		      else {
+			  table.append_clause(b_f_ptr, $3);
+			  $$ = true;
+		      }
+		  }
 ;
 
 r_value:        identifier
                 | constant
+		| '*' identifier
+		  {
+		      $$ = dereference_variable(table, $2);
+		      if (!$$)
+			  exprerror("Could not dereference variable", 
+				    ($2)->btp->name());
+		  }
+		| '*' STR
+		  {
+		      $$ = dereference_url(table, $2);
+		      if (!$$)
+			  exprerror("Could not dereference URL", *($2).v.s);
+		  }
+		| ID '(' r_value_list ')'
+		  {
+		      btp_func_ptr btp_f_ptr = get_btp_function(table, $1);
+		      if (!btp_f_ptr) {
+  			  exprerror("Not a BaseType * function", $1);
+			  $$ = 0;
+		      }
+		      $$ = new rvalue(new btp_func_rvalue(btp_f_ptr, $3));
+		  }
+;
+
+r_value_list:	r_value
+		{
+		    $$ = make_rvalue_list(table, $1);
+		}
+		| r_value_list ',' r_value
+                {
+		    $$ = append_rvalue_list(table, $1, $3);
+		}
 ;
 
 identifier:	ID 
                   { 
-		      $$ = get_variable(table, $1); 
+		      BaseType *btp = table.var($1);
+		      if (!btp)
+			  exprerror("No such identifier in dataset", $1);
+		      $$ = new rvalue(btp);
 		  }
 		| FIELD 
                   { 
-		      $$ = get_variable(table, $1); 
-		  }
-		| '*' STR 
-                  { 
-		      $$ = dereference_url(table, $2); 
+		      BaseType *btp = table.var($1);
+		      if (!btp)
+			  exprerror("No such field in dataset", $1);
+		      $$ = new rvalue(btp);
 		  }
 ;
 
 constant:       INT
                   {
-		      $$ = make_variable($1);
+		      BaseType *btp = make_variable(table, $1);
+		      $$ = new rvalue(btp);
 		  }
 		| FLOAT
                   {
-		      $$ = make_variable($1);
+		      BaseType *btp = make_variable(table, $1);
+		      $$ = new rvalue(btp);
+		  }
+		| STR
+                  { 
+		      BaseType *btp = make_variable(table, $1); 
+		      $$ = new rvalue(btp);
 		  }
 ;
 
 array_sel:	ID array_indeces 
                   {
-		      $$ = process_array_indeces(table, $1, $2);
+		      BaseType *var = table.var($1);
+		      if (var && is_array_t(var)) {
+			  var->set_send_p(true);
+			  $$ = process_array_indeces(var, $2);
+		      }
+		      else
+			  $$ = false;
 		  }
 	        | FIELD array_indeces 
                   {
-		      $$ = process_array_indeces(table, $1, $2);
+		      BaseType *var = table.var($1);
+		      if (var && is_array_t(var))
+			  $$ = table.mark($1, true) // set all the parents, too
+			  && process_array_indeces(var, $2);
+		      else
+			  $$ = false;
 		  }
 ;
 
@@ -286,41 +404,6 @@ array_index: 	'[' INT ':' INT ']'
 		  }
 ;
 
-r_value_list:	list_str
-		| list_int
-		| list_float
-;
-
-list_str:	STR 
-                { 
-		    $$ = make_r_value_list($1); 
-		}
-                | list_str ',' STR
-                {
-		    $$ = append_r_value_list($1, $3);
-		}
-;
-
-list_int:	INT
-                { 
-		    $$ = make_r_value_list($1); 
-		}
-		| list_int ',' INT
-                {
-		    $$ = append_r_value_list($1, $3);
-		}
-;
-
-list_float:	FLOAT
-                { 
-		    $$ = make_r_value_list($1); 
-		}
-		| list_float ',' FLOAT
-                {
-		    $$ = append_r_value_list($1, $3);
-		}
-;
-
 rel_op:		EQUAL
 		| NOT_EQUAL
 		| GREATER
@@ -333,16 +416,22 @@ rel_op:		EQUAL
 %%
 
 int 
-exprerror(char *s)
+exprerror(const char *s)
 {
-    fprintf(stderr, "%s\n");
+    cerr << "Parse error: " << s << endl;
 }
 
-bool
-mark_id(DDS &table, char id[])
+int 
+exprerror(const char *s, const char *s2)
 {
-    return table.mark(&id[0], true);
+    cerr << "Parse error: " << s << ": " << s2 << endl;
 }
+
+// Given three values (I1, I2, I3), all of which must be integers, build an
+// IntList which contains those values.
+//
+// Returns: A pointer to an IntList of three integers or NULL if any of the
+// values are not integers.
 
 IntList *
 make_array_index(value &i1, value &i2, value &i3)
@@ -391,21 +480,33 @@ append_array_index(IntListList *indeces, IntList *index)
     return indeces;
 }
 
-bool
-process_array_indeces(DDS &dds, char id[], IntListList *indeces)
+// Delete an array indeces list. 
+
+void
+delete_array_indeces(IntListList *indeces)
 {
-    BaseType *variable = dds.var(&id[0]);
+    for (Pix p = indeces->first(); p; indeces->next(p))
+	delete (*indeces)(p);
 
-    if (!variable) {
-	cerr << "Variable " << id << " does not exist." << endl;
-	return false;
-    }
+    delete indeces;
+}
 
+bool
+is_array_t(BaseType *variable)
+{
     if (variable->type() != array_t) {
-	cerr << "Variable " << id << " is not an array." << endl;
+	cerr << "Variable " << variable->name() << " is not an array." << endl;
 	return false;
     }
-    
+    else
+	return true;
+}
+
+bool
+process_array_indeces(BaseType *variable, IntListList *indeces)
+{
+    bool status = true;
+
     Array *a = (Array *)variable; // replace with dynamic cast
 
     a->clear_constraint();	// each projection erases the previous one
@@ -424,13 +525,15 @@ process_array_indeces(DDS &dds, char id[], IntListList *indeces)
 	int stride = (*index)(q);
 	
 	index->next(q);
+
 	int stop = (*index)(q);
 
 	index->next(q);
 	if (q) {
-	    cerr << "Too many values in index list for " << id << "." 
+	    cerr << "Too many values in index list for " << a->name() << "." 
 		 << endl;
-	    return false;
+	    status = false;
+	    goto exit;
 	}
 	
 	a->add_constraint(r, start, stride, stop);
@@ -444,37 +547,37 @@ process_array_indeces(DDS &dds, char id[], IntListList *indeces)
 	cout << endl);
     
     if (p && !r) {
-	cerr << "Too many indeces in constraint for " << id << "." 
+	cerr << "Too many indeces in constraint for " << a->name() << "." 
 	     << endl;
-	return false;
+	status= false;
     }
 
-    return true;
+exit:
+    delete_array_indeces(indeces);
+    return status;
 }
 
 // Create a list of r values and add VAL to the list.
 //
-// Returns: A pointer to the updated RValList.
+// Returns: A pointer to the updated rvalue_list.
 
-RValList *
-make_r_value_list(value *val)
+rvalue_list *
+make_rvalue_list(DDS &table, rvalue *rv)
 {
-    RValList *rvals = new RValList;
+    rvalue_list *rvals = new rvalue_list;
 
-    return append_r_value_list(rvals, val);
+    return append_rvalue_list(table, rvals, rv);
 }
 
-// Given a RValList pointer RVALS and a value pointer VAL, make a variable to
-// hold VAL and append that variable to the list RVALS.
+// Given a rvalue_list pointer RVALS and a value pointer VAL, make a variable
+// to hold VAL and append that variable to the list RVALS.
 //
-// Returns: A pointer to the updated RValList.
+// Returns: A pointer to the updated rvalue_list.
 
-RValList *
-append_r_value_list(RValList *rvals, value *val)
+rvalue_list *
+append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv)
 {
-    BaseType *rval = make_variable(val);
-
-    rvals->append(rval);
+    rvals->append(rv);
 
     return rvals;
 }
@@ -482,148 +585,127 @@ append_r_value_list(RValList *rvals, value *val)
 // Given a string which is a URL, dereference it and return the data it
 // points to.
 
-BaseType *
+static rvalue *
+dereference_string(DDS &table, String &s)
+{
+    String url = s.before("?");	// strip off CE
+    String ce = s.after("?");	// yes, get the CE
+
+    Connect c = Connect(url);	// make the virtual connection
+
+    // the initial URL must be a complete reference to data; thus no
+    // additional CE is needed. 
+    DDS d = c.request_data(ce, false); 
+
+    // By definition, the DDS `D' can have only one variable, so make sure
+    // that is true.
+    if (d.num_var() != 1) {
+	cerr << 
+	    "Too many variables in URL; use only single variable projections"
+	     << endl;
+	return 0;
+    }
+
+    // OK, we're here. The first_var() must be the only var, return it bound
+    // up in an rvalue struct. NB: the *object* must be copied since the one
+    // within DDS `D' will be deleted by D's dtor.
+    BaseType *btp = d.var(d.first_var())->ptr_duplicate();
+    rvalue *rv = new rvalue(btp);
+
+    return rv;
+}
+
+rvalue *
 dereference_url(DDS &table, value &val)
 {
-    cerr << "Urls are not currently supported" << endl;
-    return (BaseType *)0;
+    if (val.type != str_t)
+	return 0;
+
+    return dereference_string(table, *val.v.s);
 }
 
-// Given two values and an operator, perform the operation on the values.
-// Returns: true if the expression is true, false otherwise.
+// Given a rvalue, get the BaseType that encapsulates its value, make sure it
+// is a string and, if all that works, dereference it.
 
-bool
-relational_op(value &val1, value &val2, int op)
+rvalue *
+dereference_variable(DDS &table, rvalue *rv)
 {
-    if (val1.type != val2.type) {
-	cerr << "Operand types in a constraint expression must match" << endl;
-	return false;
+    BaseType *btp = rv->bvalue("dummy"); // the value will be read over the net
+    if (btp->type() != str_t && btp->type() != url_t) {
+	cerr << "Variable: " << btp->name() 
+	    << " must be either a string or a url" 
+	    << endl;
+	return 0;
     }
 
-    switch (val1.type) {
-      case int32_t:
-	return int32_op(val1.v.i, val2.v.i, op);
-      case float64_t:
-	return float64_op(val1.v.f, val2.v.f, op);
-      case str_t:
-	return str_op(*val1.v.s, *val2.v.s, op);
-      default:
-	cerr << "No such datatype" << endl;
-	return false;
-    }
-}
-
-bool
-int32_op(int i1, int i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP:
-	cerr << "Regexp not valid for integers" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-bool
-float64_op(double d1, double d2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return d1 == d2;
-      case NOT_EQUAL:
-	return d1 != d2;
-      case GREATER:
-	return d1 > d2;
-      case GREATER_EQL:
-	return d1 >= d2;
-      case LESS:
-	return d1 < d2;
-      case LESS_EQL:
-	return d1 <= d2;
-      case REGEXP:
-	cerr << "Regexp not valid for floating point types" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-bool
-str_op(String &s1, String &s2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return s1 == s2;
-      case NOT_EQUAL:
-	return s1 != s2;
-      case GREATER:
-	return s1 > s2;
-      case GREATER_EQL:
-	return s1 >= s2;
-      case LESS:
-	return s1 < s2;
-      case LESS_EQL:
-	return s1 <= s2;
-      case REGEXP: 
-	  {
-	      Regex r = s2;
-	      return s1.matches(r);
-	  }
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-// Get a value for ID (which may be either an identifier or a field).
-
-BaseType *
-get_variable(DDS &table, char id[])
-{
-    return table.var(id);
+    String s;
+    String  *sp = &s;
+    btp->buf2val((void **)&sp);
+    
+    return dereference_string(table, s);
 }
 
 // Given a value, wrap it up in a BaseType and return a pointer to the same.
 
 BaseType *
-make_variable(const value &val)
+make_variable(DDS &table, const value &val)
 {
+    BaseType *var;
     switch (val.type) {
       case int32_t: {
-	Int32 *var = NewInt32("dummy");
+	var = (BaseType *)NewInt32("dummy");
 	var->val2buf((void *)&val.v.i);
-	return var;
+	break;
       }
 
       case float64_t: {
-	Float64 *var = NewFloat64("dummy");
+	var = (BaseType *)NewFloat64("dummy");
 	var->val2buf((void *)&val.v.f);
-	return var;
+	break;
       }
 
       case str_t: {
-	Str *var = NewStr("dummy");
-	var->val2buf((void *)&val.v.s);
-	return var;
+	var = (BaseType *)NewStr("dummy");
+	var->val2buf((void *)val.v.s);
+	break;
       }
 
       default:
 	cerr << "Unknow type constant value" << endl;
-	return (BaseType *)0;
+	var = (BaseType *)0;
+	return var;
     }
+
+    var->set_read_p(true);	// ...so the evaluator will know it has data
+    table.append_constant(var);
+
+    return var;
+}
+
+// Given a string (passed in VAL), consult the DDS CE function lookup table
+// to see if a function by that name exists. 
+// NB: function arguments are type-checked at run-time.
+//
+// Returns: A poitner to the function or NULL if not such function exists.
+
+bool_func_ptr
+get_function(const DDS &table, const char *name)
+{
+    bool_func_ptr f;
+
+    if (table.find_function(name, &f))
+	return f;
+    else
+	return 0;
+}
+
+btp_func_ptr
+get_btp_function(const DDS &table, const char *name)
+{
+    btp_func_ptr f;
+
+    if (table.find_function(name, &f))
+	return f;
+    else
+	return 0;
 }
