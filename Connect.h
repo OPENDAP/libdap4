@@ -31,10 +31,13 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.19  1996/10/08 17:02:10  jimg
-/* Added fields for the projection and selection parts of a CE supplied with the
-/* URL passed to the Connect ctor.
+/* Revision 1.20  1996/11/13 18:57:15  jimg
+/* Now uses version 5.0a of the WWW library.
 /*
+ * Revision 1.19  1996/10/08 17:02:10  jimg
+ * Added fields for the projection and selection parts of a CE supplied with
+ * the URL passed to the Connect ctor.
+ *
  * Revision 1.18  1996/07/10 21:25:34  jimg
  * *** empty log message ***
  *
@@ -146,15 +149,18 @@
 #include <String.h>
 #include <SLList.h>
 
-#include "WWWLib.h"		// Global Library Include file
+#include "WWWLib.h"			      /* Global Library Include file */
 #include "WWWApp.h"
-#include "WWWHTTP.h"
-#include "WWWHTML.h"
-
+#include "WWWMIME.h"				    /* MIME parser/generator */
+#include "WWWHTML.h"				    /* HTML parser/generator */
+#include "WWWNews.h"				       /* News access module */
+#include "WWWHTTP.h"				       /* HTTP access module */
+#include "WWWFTP.h"
 #include "WWWFile.h"
-#include "WWWMIME.h"
+#include "WWWGophe.h"
+#include "WWWStream.h"
+#include "WWWTrans.h"
 #include "WWWInit.h"
-#include "WWWRules.h"
 
 #include "DAS.h"
 #include "DDS.h"
@@ -162,12 +168,6 @@
 #include "Gui.h"
 #include "util.h"
 #include "config_dap.h"
-
-#define SHOW_MSG (WWWTRACE || HTAlert_interactive())
-
-#if defined(__svr4__)
-#define CATCH_SIG
-#endif
 
 /// What type of object is in the stream coming from the data server?
 //* When a version 2.x or greater DODS data server sends an object, it uses
@@ -258,10 +258,13 @@ private:
     void close_output();
 
     // These functions are used as callbacks by the WWW library.
+#if 0
     friend int authentication_handler(HTRequest *request, int status);
     friend int redirection_handler(HTRequest *request, int status);
     friend int terminate_handler(HTRequest *request, int status);
-    friend int header_handler(HTRequest *request, const char *token);
+#endif
+    friend int header_handler(HTRequest *request, HTResponse *response,
+			      const char *token, const char *val);
 
     Connect();			// Never call this.
 
