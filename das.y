@@ -1,7 +1,7 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
+// (c) COPYRIGHT URI/MIT 1994-1997
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
@@ -31,6 +31,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.28  1997/02/28 01:01:07  jimg
+ * Tweaked error messages so that they no longer mumble about parse errors.
+ *
  * Revision 1.27  1997/02/10 02:36:57  jimg
  * Fixed bug where attribute type of int32 was broken on 64bit machines.
  *
@@ -156,7 +159,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.27 1997/02/10 02:36:57 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.28 1997/02/28 01:01:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -200,6 +203,9 @@ static char *VAR_ATTR_MSG =
 static char *ATTR_TUPLE_MSG = 
 "Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)\n\
 followed by a name and value.";
+static char *NO_DAS_MSG =
+"The attribute object returned from the dataset was null\n\
+Check that the URL is correct.";
 
 void mem_list_report();
 int daslex(void);
@@ -207,7 +213,7 @@ void daserror(char *s);
 
 %}
 
-%expect 8
+%expect 9
 
 %token ATTR
 
@@ -252,6 +258,11 @@ attributes:    	attribute
 ;
     	    	
 attribute:    	ATTR '{' var_attr_list '}'
+                | error
+                {
+		    parse_error((parser_arg *)arg, NO_DAS_MSG);
+		    YYABORT;
+		}
 ;
 
 var_attr_list: 	/* empty */
@@ -274,7 +285,7 @@ var_attr:   	ID
 		'{' attr_list '}'
 		| error 
                 { 
-		    parse_error((parser_arg *)arg, VAR_ATTR_MSG, das_line_num);
+		    parse_error((parser_arg *)arg, VAR_ATTR_MSG);
 		    YYABORT;
 		}
 ;
@@ -310,8 +321,7 @@ attr_tuple:	BYTE { save_str(type, $1, das_line_num); }
 
 		| error 
                 { 
-		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG, 
-				das_line_num);
+		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG);
 		    YYABORT;
 		} ';'
 ;
@@ -323,16 +333,14 @@ bytes:		INT
 		    if (!check_byte($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Byte value." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!attr_tab->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -344,16 +352,14 @@ bytes:		INT
 		    if (!check_byte($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Byte value." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!attr_tab->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -373,16 +379,14 @@ ints:		INT
 			  || check_uint($1, das_line_num))) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!attr_tab->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -395,16 +399,14 @@ ints:		INT
 			  || check_uint($1, das_line_num))) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!attr_tab->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -419,16 +421,14 @@ floats:		float_or_int
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!attr_tab->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -441,16 +441,14 @@ floats:		float_or_int
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!attr_tab->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -465,8 +463,7 @@ strs:		str_or_id
 		    if (attr_tab->append_attr(name, type, $1) == 0) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0); 
 			YYABORT;
 		    }
@@ -478,8 +475,7 @@ strs:		str_or_id
 		    if (attr_tab->append_attr(name, type, $3) == 0) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -493,16 +489,14 @@ urls:		STR
 		    if (!check_url($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a String value." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!attr_tab->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -514,16 +508,14 @@ urls:		STR
 		    if (!check_url($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a String value." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!attr_tab->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str(), 
-				    das_line_num);
+			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
