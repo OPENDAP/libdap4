@@ -37,19 +37,18 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.12 2003/04/22 19:40:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.13 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <stdio.h>
 
 #include <string>
-#include <strstream>
+#include <sstream>
 
 #include "InternalErr.h"
 #include "util.h"
 
 using std::endl;
-using std::ends;
-using std::ostrstream;
+using std::ostringstream;
 
 InternalErr::InternalErr() : Error()
 {
@@ -84,12 +83,11 @@ InternalErr::InternalErr(const string &file, const int &line, const string &msg)
 InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
     : Error(unknown_error, msg, pt, pgm) 
 {
-    ostrstream oss;
+    ostringstream oss;
     oss << "An internal error was encountered:" << endl
 	<< msg << endl
-	<< "Please report this to support@unidata.ucar.edu" << ends;
+	<< "Please report this to support@unidata.ucar.edu";
     _error_message  = oss.str();
-    oss.freeze(0);
 }
 
 InternalErr::InternalErr(const InternalErr &copy_from)
@@ -111,6 +109,15 @@ InternalErr::OK()
 }
 
 // $Log: InternalErr.cc,v $
+// Revision 1.13  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.12  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

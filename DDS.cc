@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.62 2003/04/22 19:40:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.63 2003/05/23 03:24:57 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -46,7 +46,6 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.62 2003/04/22 19:40:27 jimg Exp
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
-#include <strstream>
 #include <fstream>
 #else
 #include <unistd.h>
@@ -54,31 +53,36 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.62 2003/04/22 19:40:27 jimg Exp
 #endif
 
 #include <iostream>
+#include <algorithm>
+#include <functional>
+
+#include "Regex.h"
 
 #include "expr.h"
 #include "Clause.h"
+#include "DAS.h"
+#include "AttrTable.h"
 #include "DDS.h"
 #include "Error.h"
+#include "InternalErr.h"
+#include "BTIterAdapter.h"
+#include "ClauseIterAdapter.h"
+
 #include "parser.h"
 #include "debug.h"
 #include "util.h"
 #include "escaping.h"
 #include "ce_functions.h"
 #include "cgi_util.h"
-#include "InternalErr.h"
-#include "BTIterAdapter.h"
-#include "ClauseIterAdapter.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-using std::cerr;
-using std::endl;
-using std::ofstream;
-#ifdef WIN32
-using std::strstream;
-#endif
+const string default_schema_location = "http://argon.coas.oregonstate.edu/ndp/dods.xsd";
+const string dods_namespace = "http://www.dods.org/ns/DODS";
+
+using namespace std;
 
 void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
 int ddsparse(void *arg);
@@ -115,9 +119,6 @@ DDS::duplicate(const DDS &dds)
 /** Creates a DDS with the given string for its name. */
 DDS::DDS(const string &n) : name(n)
 {
-    add_function("member", func_member);
-    add_function("null", func_null);
-    add_function("nth", func_nth);
     add_function("length", func_length);
     add_function("grid", func_grid_select);
 }
@@ -164,6 +165,255 @@ DDS::operator=(const DDS &rhs)
     return *this;
 }
 
+#if 0
+/** Given a DAS, find all the attributes in it for the given variable and
+    copy them fromt he DAS to the variable.
+
+    @todo Make the \i das param const. Will require changes to DAS and
+    AttrTable. 
+    @param das Source
+    @param bt Destination */
+static void
+transfer_attr(BaseType *bt, DAS *das)
+{
+    DBG(cerr << " About to cast a " << bt.type_name() << endl);
+
+    // Use the variable's name to find the correct attribtue table in
+    // the DAS object.
+    string name = bt->name();
+    AttrTable *das_attrs = das->get_table(name);
+
+    // Copy attributes from the DAS to the AttrTable that's part of
+    // the variable in the DDS.
+    if (das_attrs)
+	bt->set_attr_table(*das_attrs);
+
+    // If this is a ctor type, call for each child.
+    switch (bt->type()) {
+      case dods_structure_c:
+      case dods_sequence_c: {
+	  Constructor &s = dynamic_cast<Constructor &>(*bt);
+	  for_each(s.var_begin(), s.var_end(), 
+		   bind2nd(ptr_fun(transfer_attr), das));
+	  break;
+      }
+      case dods_grid_c: {
+	  Grid &g = dynamic_cast<Grid &>(*bt);
+	  transfer_attr(g.array_var(), das);
+	  for_each(g.map_begin(), g.map_end(), 
+		   bind2nd(ptr_fun(transfer_attr), das));
+	  break;
+      }	  
+      default:
+	break;
+    }
+}
+#endif
+
+static void transfer_attr(const AttrTable::entry *ep, BaseType *btp);
+static void transfer_attr_table(AttrTable *at, BaseType *btp);
+static void transfer_attr_table(AttrTable *at, Constructor *c);
+
+/** Transfer a single attribute to the table held by a BaseType. If the
+    attribute turns out to be a container, call transfer_attr_table. If not
+    load the discrete attributes into the BaseType. Both this function and
+    transfer_attr_table \i assume that you know that the attributes are
+    destined for the particular BaseType.
+    @param ep The attribute
+    @param btp The destination */
+static void
+transfer_attr(const AttrTable::entry *ep, BaseType *btp)
+{
+    if (ep->is_alias) {
+	throw InternalErr(__FILE__, __LINE__, "Attribute alias");
+    }
+    else if (ep->type == Attr_container) {
+	Constructor *c = dynamic_cast<Constructor*>(btp);
+	if (c)
+	    transfer_attr_table(ep->attributes, c);
+	else
+	    transfer_attr_table(ep->attributes, btp);
+    }
+    else {
+	AttrTable &at = btp->get_attr_table();
+	string n = ep->name;
+	string t = AttrType_to_String(ep->type);
+	vector<string> *attrs = ep->attr;
+	for (vector<string>::iterator i = attrs->begin(); i!=attrs->end(); ++i)
+	    at.append_attr(n, t, *i);
+    }
+}
+
+/** Transfer a container to a BaseType. If the container's name is the same
+    as the BaseType's, then copy the individual attributes from the container
+    into the BaseType's container. If the names are different, install the
+    container itself inside the BaseType's.
+    @param at The attribute container
+    @param btp The destination */
+static void
+transfer_attr_table(AttrTable *at, BaseType *btp)
+{
+    if (at->get_name() == btp->name()) {
+	// for each entry in the table, call transfer_attr()
+	for (AttrTable::Attr_iter i = at->attr_begin(); i!=at->attr_end(); ++i)
+	    transfer_attr(*i, btp);
+    }
+    else {
+	// Clone at because append_container does not and at may be deleted
+	// before we're done with it. 05/22/03 jhrg
+	AttrTable *new_at = new AttrTable(*at);
+	btp->get_attr_table().append_container(new_at, at->get_name());
+    }
+}
+
+/** Transfer an attribute container to a Constructor variable. */
+static void
+transfer_attr_table(AttrTable *at, Constructor *c)
+{
+    for (AttrTable::Attr_iter i = at->attr_begin(); i != at->attr_end(); ++i) {
+	AttrTable::entry *ep = *i;
+	string n = ep->name;
+	bool found = false;
+
+	switch (c->type()) {
+	  case dods_structure_c:
+	  case dods_sequence_c: {
+	      for (Constructor::Vars_iter j = c->var_begin(); j!=c->var_end(); 
+		   ++j) {
+		  if (n == (*j)->name()) { // found match
+		      found = true;
+		      transfer_attr(ep, *j);
+		  }
+	      }
+	      break;
+	  }
+
+	  case dods_grid_c: {
+	      Grid *g = dynamic_cast<Grid*>(c);
+	      if (n == g->array_var()->name()) { // found match
+		  found = true;
+		  transfer_attr(ep, g->array_var());
+	      }
+	      
+	      for (Grid::Map_iter j = g->map_begin(); j!=g->map_end(); ++j) {
+		  if (n == (*j)->name()) { // found match
+		      found = true;
+		      transfer_attr(ep, *j);
+		  }
+	      }
+	      break;
+	  }
+	    
+	  default:
+	    throw InternalErr(__FILE__, __LINE__, "Unknown type.");
+	}
+
+	if (!found)
+	    transfer_attr(ep, c);
+    }
+}
+
+/** An attribute is global if it's name does not match any of the top-level
+    variables. Assume that this functio is called only for top-level
+    attributes. 
+
+    A private method.
+
+    @param name Name of the attribute. 
+    @return True if \i name is a global attribute. */
+bool
+DDS::is_global_attr(string name)
+{
+    for(Vars_iter i = var_begin(); i != var_end(); ++i)
+	if ((*i)->name() == name)
+	    return false;
+
+    return true;
+}
+
+/** Should this attribute be thrown away? Some servers build extra attributes
+    that don't fit back into the DDS. This checks for them by name.
+    @param name The name of the attribute.
+    @return True if the name fits a pattern of attributes known to not mesh
+    well with DDS objects. */
+static bool
+is_in_kill_file(const string &name)
+{
+    static Regex dim(".*_dim_[0-9]*", 1); // HDF `dimension' attributes.
+
+    return dim.match(name.c_str(), name.length()) != -1;
+}
+
+/** If a given AttrTable looks like it's a global attribute container, add it
+    to this object's attributes. Heuristic on the best of days..
+    
+    A private method.
+.
+    @param at The candiate AttrTable */
+void
+DDS::add_global_attribute(AttrTable::entry *entry)
+{
+    string name = entry->name;
+
+    if (is_global_attr(name) && !is_in_kill_file(name))
+	if (entry->type == Attr_container) 
+	    try {
+		// Force the clone of table entry->attributes.
+		// append_container just copies the pointer and
+		// entry->attributes may be deleted before we're done with
+		// it! 05/22/03 jhrg
+		AttrTable *new_at = new AttrTable(*(entry->attributes));
+		d_attr.append_container(new_at, name);
+	    }
+	    catch (Error &e) {
+		// *** Ignore this error for now. We should probably merge
+		// the attributes and this really is something we should for
+		// before hand instead of letting an exception signal the
+		// condition... 05/22/03 jhrg
+	    }
+}
+
+/** Given a DAS object, scavenge attributes from it and load them into this
+    object and the variables it contains. A set of heuristics is used to do
+    this, including the AttrTable find algorithms and some weird stuff with
+    regular expressions to weed out attributes created by some servers that
+    don't fit into the DDS/Variable scheme of things. 
+
+    NB: This method is technically \i unnecessary because a server (or
+    client) can easily add attributes directly using the DDS::get_attr_table
+    or BaseType::get_attr_table methods and then poking values in using any
+    of the methods AttrTable provides. This method exists to ease the
+    transition to DDS objects which contain attribute information for the
+    existing servers (Since they all make DAS objects separately from the
+    DDS). They could be modified to <i>use the same AttrTable methods<\i> but
+    operate on the AttrTable instances in a DDS/BaseType instead of those in
+    a DAS.
+
+    @param das Get attribute information from this DAS. */
+void 
+DDS::transfer_attributes(DAS *das)
+{
+    for (AttrTable::Attr_iter i = das->attr_begin(); i!=das->attr_end(); ++i) {
+	AttrTable::entry *ep = *i;
+	string n = ep->name;
+	bool found = false;
+
+	for (Vars_iter j = var_begin(); j != var_end(); ++j) {
+	    if (n == (*j)->name()) { // found match
+		found = true;
+		transfer_attr(ep, *j);
+	    }
+	}
+
+	if (!found)
+	    add_global_attribute(*i);
+
+    }
+
+    // *** Should include code to 'resolve aliases.'
+}
+
+
 /** Get and set the dataset's name.  This is the name of the dataset
     itself, and is not to be confused with the name of the file or
     disk on which it is stored.
@@ -188,6 +438,13 @@ DDS::set_dataset_name(const string &n)
 
 //@}
 
+/** Get the attribute table for the global attributes. */
+AttrTable &
+DDS::get_attr_table()
+{
+    return d_attr;
+}
+
 /** Get and set the dataset's filename. This is the physical
     location on a disk where the dataset exists.  The dataset name
     is simply a title.
@@ -195,7 +452,7 @@ DDS::set_dataset_name(const string &n)
     @name File Name Accessor
     @see Dataset Name Accessors */
 
-    //@{
+//@{
 /** Gets the dataset file name. */
 string
 DDS::filename()
@@ -899,25 +1156,53 @@ DDS::print_constrained(FILE *out)
     return;
 }
 
-#if 0
-static void
-print_variable(ostream &os, BaseType *var, bool constrained = false)
+class VariablePrintXML : public unary_function<BaseType *, void> {
+    FILE *d_out;
+    bool d_constrained;
+public:
+    VariablePrintXML(FILE *out, bool constrained) 
+	: d_out(out), d_constrained(constrained) {}
+    void operator()(BaseType *bt) {
+	bt->print_xml(d_out, "    ", d_constrained);
+    }
+};
+
+/** Print an XML represnetation of this DDS. This method is used to generate
+    the part of the DDX response. The \t Dataset tag is \i not written by
+    this code. The caller of this method must handle writing that and
+    including the \t dodsBLOB tag.
+
+    @param out Destination.
+    @param constrained True if the output should be limited to just those
+    variables that are in the projection of the current constraint
+    expression. 
+    @param blob The dodsBLOB URL. */
+void
+DDS::print_xml(FILE *out, bool constrained, const string &blob)
 {
-    if(!os)
-	throw InternalErr(__FILE__, __LINE__, 
-			  "The stream is not ready to accept data.");
-    if(!var)
-	throw InternalErr(__FILE__, __LINE__, 
-     "Passing NULL variable to method DDS::print_variable in *this* object.");
+    fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    
+    fprintf(out, "<Dataset name=\"%s\"\n", id2xml(name).c_str());
 
-    os << "Dataset {" << endl;
+    fprintf(out, "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
+    fprintf(out, "xmlns=\"%s\"\n", dods_namespace.c_str());
+    fprintf(out, "xsi:schemaLocation=\"%s  %s\">\n\n", 
+	    dods_namespace.c_str(), default_schema_location.c_str());
 
-    var->print_decl(os, "    ", true, false, constrained);
+    d_attr.print_xml(out, "    ", constrained);
 
-    os << "} function_value;" << endl;
+    fprintf(out, "\n");
+	
+    for_each(var_begin(), var_end(), VariablePrintXML(out, constrained));
+	
+    fprintf(out, "\n");
+
+    fprintf(out, "    <dodsBLOB URL=\"%s\"/>\n", blob.c_str());
+	
+    fprintf(out, "</Dataset>\n");
 }
-#endif
 
+// Used by DDS::send() when returning data from a function call.
 static void
 print_variable(FILE *out, BaseType *var, bool constrained = false)
 {
@@ -1206,6 +1491,15 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.63  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.62  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

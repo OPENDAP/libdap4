@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.69 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.70 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <stdio.h>
 #ifdef WIN32
@@ -57,7 +57,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.69 2003/04/22 19:40:28 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.69 $";
+const char *version = "$Revision: 1.70 $";
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 
@@ -65,37 +65,38 @@ void
 usage(string name)
 {
     cerr << "Usage: " << name << endl;
-    cerr << " [dDaAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" << endl;
-    cerr << " [Vvk] <file> [<file> ...]" << endl;
-    cerr << endl;
-    cerr << "In the first form of the command, dereference the URL and" << endl;
-    cerr << "perform the requested operations. This include routing" << endl;
-    cerr << "the returned information through the DAP processing" << endl;
-    cerr << "library (parsing the returned objects, et c.). If none" << endl;
-    cerr << "of a, d, or D are used with a URL, then the DAP library" << endl;
-    cerr << "routines are NOT used and the URLs contents are dumped" << endl;
-    cerr << "to standard output." << endl;
-    cerr << endl;
-    cerr << "In the second form of the command, assume the files are" << endl;
-    cerr << "DODS data objects (stored in files or read from pipes)" << endl;
-    cerr << "and process them as if -D were given. In this case the" << endl;
-    cerr << "information *must* contain valid MIME header in order" << endl;
-    cerr << "to be processed." << endl;
-    cerr << endl;
-    cerr << "Options:" << endl;
-    cerr << "        d: For each URL, get the DODS DDS." << endl;
-    cerr << "        a: For each URL, get the DODS DAS." << endl;
-    cerr << "        A: Use the AIS for DAS objects." << endl;
-    cerr << "        D: For each URL, get the DODS Data." << endl;
-    cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." <<endl;
-    cerr << "        v: Verbose." << endl;
-    cerr << "        V: Version." << endl;
-    cerr << "        c: <expr> is a contraint expression. Used with -D." << endl;
-    cerr << "           NB: You can use a `?' for the CE also." << endl;
-    cerr << "        k: Keep temporary files created by DODS core\n" << endl;
-    cerr << "        m: Request the same URL <num> times." << endl;
-    cerr << "        z: Don't ask the server to compress data." << endl;
-    cerr << "        s: Print Sequences using numbered rows." << endl;
+    cerr << " [dDaxAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]\n\
+ [Vvk] <file> [<file> ...]\n\
+\n\
+In the first form of the command, dereference the URL and\n\
+perform the requested operations. This include routing\n\
+the returned information through the DAP processing\n\
+library (parsing the returned objects, et c.). If none\n\
+of a, d, or D are used with a URL, then the DAP library\n\
+routines are NOT used and the URLs contents are dumped\n\
+to standard outpu\n\
+\n\
+In the second form of the command, assume the files are\n\
+DODS data objects (stored in files or read from pipes)\n\
+and process them as if -D were given. In this case the\n\
+information *must* contain valid MIME header in order\n\
+to be processed.\n\
+\n\
+Options:\n\
+        d: For each URL, get the DODS DDS.\n\
+        a: For each URL, get the DODS DAS.\n\
+        A: Use the AIS for DAS objects.\n\
+        D: For each URL, get the DODS Data.\n\
+        x: For each URL, get the DDX object. Does not get data.\n\
+        B: <AIS xml dataBase>. Overrides .dodsrc\n\
+        v: Verbose.\n\
+        V: Version.\n\
+        c: <expr> is a contraint expression. Used with -D.\n\
+           NB: You can use a `?' for the CE also.\n\
+        k: Keep temporary files created by DODS core\n\n\
+        m: Request the same URL <num> times.\n\
+        z: Don't ask the server to compress data.\n\
+        s: Print Sequences using numbered rows.\n";
 }
 
 bool
@@ -136,12 +137,13 @@ print_data(DDS &dds, bool print_rows = false)
 MAIN_RETURN
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "daDAVvkB:c:m:zsh?");
+    GetOpt getopt (argc, argv, "daDxAVvkB:c:m:zsh?");
     int option_char;
 
     bool get_das = false;
     bool get_dds = false;
     bool get_data = false;
+    bool get_ddx = false;
     bool cexpr = false;
     bool verbose = false;
     bool multi = false;
@@ -161,6 +163,7 @@ main(int argc, char * argv[])
 	  case 'd': get_dds = true; break;
 	  case 'a': get_das = true; break;
 	  case 'D': get_data = true; break;
+	  case 'x': get_ddx = true; break;
 	  case 'A': use_ais = true; break;
 	  case 'V': fprintf( stderr, "geturl version: %s\n", version) ; exit(0);
 	  case 'v': verbose = true; break;
@@ -282,6 +285,27 @@ main(int argc, char * argv[])
 		}
 	    }
 
+	    else if (get_ddx) {
+		for (int j = 0; j < times; ++j) {
+		    DDS dds;
+		    try {
+			url->request_dds(dds);
+		    }
+		    catch (Error &e) {
+			e.display_message();
+			continue;	// Goto the next URL or exit the loop.
+		    }
+
+		    if (verbose) {
+			fprintf( stderr, "Server version: %s\n",
+					 url->get_version().c_str() ) ; 
+			fprintf( stderr, "DDS:\n" ) ;
+		    }
+
+		    dds.print_xml(stdout, false, "geturl; no blob yet");
+		}
+	    }
+
 	    else if (get_data) {
 		if (expr.empty() && name.find('?') == string::npos) {
 		    fprintf( stderr,
@@ -345,6 +369,15 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.70  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.69  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

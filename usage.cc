@@ -38,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.23 2003/04/22 19:40:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.24 2003/05/23 03:24:58 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -49,11 +49,7 @@ static char rcsid[] not_used = {"$Id: usage.cc,v 1.23 2003/04/22 19:40:29 jimg E
 #include <iostream>
 #include <fstream>
 #include <string>
-#if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
-#else
 #include <sstream>
-#endif
 
 #include "Regex.h"
 
@@ -63,11 +59,7 @@ static char rcsid[] not_used = {"$Id: usage.cc,v 1.23 2003/04/22 19:40:29 jimg E
 
 #include "debug.h"
 
-using std::cerr;
-using std::endl;
-using std::ends;
-using std::ifstream;
-using std::ostrstream;
+using namespace std;
 
 static void
 usage(char *argv[])
@@ -146,7 +138,7 @@ name_is_global(string &name)
 // understand. So, I'm keeping this as two separate functions even though
 // there's some duplication... 3/27/2002 jhrg
 static void
-write_global_attributes(ostrstream &oss, AttrTable *attr, 
+write_global_attributes(ostringstream &oss, AttrTable *attr, 
 			const string prefix = "")
 {
     if (attr) {
@@ -175,7 +167,7 @@ write_global_attributes(ostrstream &oss, AttrTable *attr,
 }
 
 static void
-write_attributes(ostrstream &oss, AttrTable *attr, const string prefix = "")
+write_attributes(ostringstream &oss, AttrTable *attr, const string prefix = "")
 {
     if (attr) {
 	for (AttrTable::Attr_iter a = attr->attr_begin(); a != attr->attr_end(); a++)
@@ -216,7 +208,7 @@ string
 build_global_attributes(DAS &das, DDS &)
 {
     bool found = false;
-    ostrstream ga;
+    ostringstream ga;
 
     ga << "<h3>Dataset Information</h3>\n<center>\n<table>\n";
 
@@ -235,14 +227,10 @@ build_global_attributes(DAS &das, DDS &)
 	}
     }
 
-    ga << "</table>\n</center><p>\n" << ends;
+    ga << "</table>\n</center><p>\n";
 
-    if (found) {
-	string global_attrs = ga.str();
-	ga.rdbuf()->freeze(0);
-
-	return global_attrs;
-    }
+    if (found)
+	return ga.str();
 
     return "";
 }
@@ -271,7 +259,7 @@ fancy_typename(BaseType *v)
       case dods_url_c:
 	return "URL";
       case dods_array_c: {
-	  ostrstream type;
+	  ostringstream type;
 	  Array *a = (Array *)v;
 	  type << "Array of " << fancy_typename(a->var()) <<"s ";
 	  for (Array::Dim_iter p = a->dim_begin(); p != a->dim_end(); p++)
@@ -279,19 +267,9 @@ fancy_typename(BaseType *v)
 	      type << "[" << a->dimension_name(p) << " = 0.." 
 		   << a->dimension_size(p, false)-1 << "]";
 	  }
-	  type << ends;
-	  string fancy = type.str();
-	  type.rdbuf()->freeze(0);
-	  return fancy;
+	  return type.str();
       }
-      case dods_list_c: {
-	  ostrstream type;
-	  List *l = (List *)v;
-	  type << "List of " << fancy_typename(l->var()) <<"s " << ends;
-	  string fancy = type.str();
-	  type.rdbuf()->freeze(0);
-	  return fancy;
-      }
+
       case dods_structure_c:
 	return "Structure";
       case dods_sequence_c:
@@ -305,7 +283,7 @@ fancy_typename(BaseType *v)
 
 // This function does not write #ends# to #vs#. 4/29/99 jhrg
 static void
-write_variable(BaseType *btp, DAS &das, ostrstream &vs)
+write_variable(BaseType *btp, DAS &das, ostringstream &vs)
 {
     vs << "<td align=right valign=top><b>" << btp->name() 
 	<< "</b>:</td>\n"
@@ -327,14 +305,13 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
       case dods_str_c:
       case dods_url_c:
       case dods_array_c:
-      case dods_list_c:
 	vs << "</td>\n";
 	break;
 
       case dods_structure_c: {
 	vs << "<table>\n";
 	Structure *sp = dynamic_cast<Structure *>(btp);
-	for (Structure::Vars_iter p = sp->var_begin(); p != sp->var_end(); p++)
+	for (Constructor::Vars_iter p = sp->var_begin(); p != sp->var_end(); p++)
 	{
 	    vs << "<tr>";
 	    write_variable((*p), das, vs);
@@ -347,7 +324,7 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
       case dods_sequence_c: {
 	vs << "<table>\n";
 	Sequence *sp = dynamic_cast<Sequence *>(btp);
-	for (Sequence::Vars_iter p = sp->var_begin(); p != sp->var_end(); p++)
+	for (Constructor::Vars_iter p = sp->var_begin(); p != sp->var_end(); p++)
 	{
 	    vs << "<tr>";
 	    write_variable((*p), das, vs);
@@ -387,7 +364,7 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 string
 build_variable_summaries(DAS &das, DDS &dds)
 {
-    ostrstream vs;
+    ostringstream vs;
     vs << "<h3>Variables in this Dataset</h3>\n<center>\n<table>\n";
     //    vs << "<tr><th>Variable</th><th>Information</th></tr>\n";
 
@@ -398,12 +375,9 @@ build_variable_summaries(DAS &das, DDS &dds)
 	vs << "</tr>";
     }
 
-    vs << "</table>\n</center><p>\n" << ends;
+    vs << "</table>\n</center><p>\n";
 
-    string html = vs.str();
-    vs.rdbuf()->freeze(0);
-
-    return html;
+    return vs.str();
 }
 
 static void
@@ -532,6 +506,15 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.24  2003/05/23 03:24:58  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.23  2003/04/22 19:40:29  jimg
 // Merged with 3.3.1.
 //

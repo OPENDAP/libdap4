@@ -151,12 +151,16 @@ typedef vector<BaseType *> BaseTypeRow;
     called ``shoe_size'', you can refer to Tom's shoe size as
     ``Tom.shoe_size''.
     
+    @todo Refactor along with Structure movinf methods up into Constructor.
+
     @brief Holds a sequence. */
 
 class Sequence: public Constructor {
 private:
     // Linked list of templates for the variables in this sequence.
+#if 0
     std::vector<BaseType *> _vars;
+#endif
 
     // This holds the values read off the wire. Values are stored in
     // instances of BaseType objects.
@@ -195,8 +199,11 @@ protected:
 
 public:
 
+#if 0
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
+#endif
+
     Sequence(const string &n = "");
 
     Sequence(const Sequence &rhs);
@@ -253,6 +260,7 @@ public:
     BaseTypeRow *row_value(size_t row);
 
     virtual void add_var(BaseType *, Part part = nil);
+#if 0
     /** Returns a reference to the first variable in a Sequence instance.
 	This corresponds to the item in the first column of the table
 	the Sequence represents.  It is not the first row of the table. 
@@ -265,13 +273,17 @@ public:
     Vars_iter var_end() ;
 
     Vars_iter get_vars_iter(int i);
+#endif
 
+#if 0
     Pix first_var();
 
     void next_var(Pix p);
 
     BaseType *var(Pix p);
+#endif
 
+#if 0
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -281,6 +293,7 @@ public:
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
+#endif
 
     virtual void print_one_row(ostream &os, int row, string space,
 			       bool print_row_num = false);
@@ -314,6 +327,15 @@ public:
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.54  2003/05/23 03:24:57  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.53  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

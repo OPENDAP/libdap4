@@ -42,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.47 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.48 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,7 +50,6 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.47 2003/04/22 19:40:28 jimg Exp
 #include <assert.h>
 
 #include <string>
-#include <strstream>
 
 #include "debug.h"
 #include "escaping.h"
@@ -78,8 +77,6 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.47 2003/04/22 19:40:28 jimg Exp
 
 using std::cerr;
 using std::endl;
-using std::ends;
-using std::ostrstream;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -1091,6 +1088,15 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.48  2003/05/23 03:24:57  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.47  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

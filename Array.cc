@@ -50,8 +50,7 @@
 #include "trace_new.h"
 #endif
 
-using std::cerr;
-using std::endl;
+using namespace std;
 
 void
 Array::_duplicate(const Array &a)
@@ -638,6 +637,62 @@ Array::print_decl(FILE *out, string space, bool print_semi,
     }
 }
 
+void
+Array::print_xml(FILE *out, string space, bool constrained) 
+{
+    print_xml_core(out, space, constrained, "Array");
+}
+
+void
+Array::print_as_map_xml(FILE *out, string space, bool constrained)
+{
+    print_xml_core(out, space, constrained, "Map");
+}
+
+class PrintArrayDim : public unary_function<Array::dimension&, void> {
+    FILE *d_out;
+    string d_space;
+    bool d_constrained;
+public:
+    PrintArrayDim(FILE *o, string s, bool c) 
+	: d_out(o), d_space(s), d_constrained(c) {}
+
+    void operator()(Array::dimension &d) {
+	int size = d_constrained ? d.c_size: d.size;
+	if (d.name.empty())
+	    fprintf(d_out, "%s<dimension size=\"%d\"/>\n", d_space.c_str(), 
+		    size);
+	else
+	    fprintf(d_out, "%s<dimension name=\"%s\" size=\"%d\"/>\n", 
+		    d_space.c_str(), id2xml(d.name).c_str(), size);
+    }
+};
+	
+void
+Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
+{
+    if (constrained && !send_p())
+	return;
+
+    fprintf(out, "%s<%s", space.c_str(), tag.c_str());
+    if (!name().empty())
+	fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
+    fprintf(out , ">\n");
+
+    get_attr_table().print_xml(out, space + "    ", constrained);
+
+    BaseType *btp = var();
+    string tmp_name = btp->name();
+    btp->set_name("");
+    btp->print_xml(out, space + "    ", constrained);
+    btp->set_name(tmp_name);
+
+    for_each(dim_begin(), dim_end(), 
+	     PrintArrayDim(out, space + "    ", constrained));
+
+    fprintf(out, "%s</%s>\n", space.c_str(), tag.c_str());
+}
+
 /** Prints the value of the entire (constrained) array.
     @param os The output stream to print on.
     @param space The space to use in printing.
@@ -794,6 +849,15 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.60  2003/05/23 03:24:56  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.59  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

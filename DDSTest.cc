@@ -26,9 +26,14 @@
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <assert.h>
+
+#include <sstream>
 
 #include "DDS.h"
+
+#include "Regex.h"
+#include "util.h"
+#include "debug.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -51,9 +56,18 @@ public:
 	delete dds2; dds2 = 0;
     }
 
+    bool re_match(Regex &r, const string &s) {
+	int match = r.match(s.c_str(), s.length());
+	DBG(cerr << "Match: " << match << " should be: " << s.length() 
+	    << endl);
+	return match == static_cast<int>(s.length());
+    }
+
     CPPUNIT_TEST_SUITE( DDSTest );
 
     CPPUNIT_TEST(symbol_name_test);
+    CPPUNIT_TEST(print_xml_test);
+    CPPUNIT_TEST(print_xml_test2);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -74,6 +88,121 @@ public:
 	    cerr << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught unexpected Error object");
 	}
+    }
+
+    void print_xml_test() {
+	dds2->parse("dds-testsuite/test.19b");
+
+	char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
+	FILE *tmp = get_temp_file(DDSTemp);
+	dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+
+	Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
+<Dataset name=\"test.19\"\n\
+xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\
+xmlns=\"http://www..*.org/ns/DODS\"\n\
+xsi:schemaLocation=\"http://www..*.org/ns/DODS  .*\">\n\
+\n\
+\n\
+    <Int32 name=\"a\"/>\n\
+    <Array name=\"b#c\">\n\
+        <Int32/>\n\
+        <dimension size=\"10\"/>\n\
+    </Array>\n\
+    <Float64 name=\"c d\"/>\n\
+    <Grid name=\"huh\">\n\
+        <Array name=\"Image#data\">\n\
+            <Byte/>\n\
+            <dimension size=\"512\"/>\n\
+        </Array>\n\
+        <Map name=\"colors\">\n\
+            <String/>\n\
+            <dimension size=\"512\"/>\n\
+        </Map>\n\
+    <Grid/>\n\
+\n\
+    <dodsBLOB URL=\"http://localhost/dods/test.xyz\"/>\n\
+</Dataset>\n");
+	CPPUNIT_ASSERT(re_match(r, file_to_string(tmp)));
+	remove(DDSTemp);
+    }
+
+    void print_xml_test2() {
+	dds2->parse("dds-testsuite/test.19b");
+	DAS das;
+	das.parse("dds-testsuite/test.19b.das");
+
+	dds2->transfer_attributes(&das);
+
+	char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
+	FILE *tmp = get_temp_file(DDSTemp);
+	dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
+
+	string output = file_to_string(tmp);
+	DBG(cerr << output << endl);
+
+	Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
+<Dataset name=\"test.19\"\n\
+xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\
+xmlns=\"http://www.dods.org/ns/DODS\"\n\
+xsi:schemaLocation=\"http://www.dods.org/ns/DODS  http://argon.coas.oregonstate.edu/ndp/dods.xsd\">\n\
+\n\
+    <Attribute name=\"NC_GLOBAL\" type=\"Container\">\n\
+        <Attribute name=\"long_name\" type=\"String\">\n\
+            <value>&quot;Attribute merge test&quot;</value>\n\
+        </Attribute>\n\
+        <Attribute name=\"primes\" type=\"Int32\">\n\
+            <value>2</value>\n\
+            <value>3</value>\n\
+            <value>5</value>\n\
+            <value>7</value>\n\
+            <value>11</value>\n\
+        </Attribute>\n\
+    </Attribute>\n\
+\n\
+    <Int32 name=\"a\"/>\n\
+    <Array name=\"b#c\">\n\
+        <Attribute name=\"long_name\" type=\"String\">\n\
+            <value>&quot;b pound c&quot;</value>\n\
+        </Attribute>\n\
+        <Int32/>\n\
+        <dimension size=\"10\"/>\n\
+    </Array>\n\
+    <Float64 name=\"c d\">\n\
+        <Attribute name=\"long_name\" type=\"String\">\n\
+            <value>&quot;c d with a WWW escape sequence&quot;</value>\n\
+        </Attribute>\n\
+        <Attribute name=\"sub\" type=\"Container\">\n\
+            <Attribute name=\"about\" type=\"String\">\n\
+                <value>&quot;Attributes inside attributes&quot;</value>\n\
+            </Attribute>\n\
+            <Attribute name=\"pi\" type=\"Float64\">\n\
+                <value>3.1415</value>\n\
+            </Attribute>\n\
+        </Attribute>\n\
+    </Float64>\n\
+    <Grid name=\"huh\">\n\
+        <Attribute name=\"long_name\" type=\"String\">\n\
+            <value>&quot;The Grid huh&quot;</value>\n\
+        </Attribute>\n\
+        <Array name=\"Image#data\">\n\
+            <Byte/>\n\
+            <dimension size=\"512\"/>\n\
+        </Array>\n\
+        <Map name=\"colors\">\n\
+            <Attribute name=\"long_name\" type=\"String\">\n\
+                <value>&quot;The color map vector&quot;</value>\n\
+            </Attribute>\n\
+            <String/>\n\
+            <dimension size=\"512\"/>\n\
+        </Map>\n\
+    <Grid/>\n\
+\n\
+    <dodsBLOB URL=\"http://localhost/dods/test.xyz\"/>\n\
+</Dataset>\n");
+
+	CPPUNIT_ASSERT(re_match(r, output));
+	remove(DDSTemp);
     }
 };
 

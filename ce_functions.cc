@@ -36,13 +36,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.15 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.16 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <iostream>
 #include <vector>
 
 #include "BaseType.h"
-#include "List.h"
 #include "Array.h"
 #include "Sequence.h"
 #include "Grid.h"
@@ -59,9 +58,6 @@ using std::vector<GSEClause *>;
 #else
 using std::vector;
 #endif
-
-using std::cerr;
-using std::endl;
 
 int gse_parse(void *arg);
 void gse_restart(FILE *in);
@@ -88,79 +84,19 @@ extract_string_argument(BaseType *arg)
     return s;
 }
 
-bool
-func_member(int argc, BaseType *argv[], DDS &dds)
-{
-    if (argc != 2) {
-	cerr << "Wrong number of arguments." << endl;
-	return false;
-    }
-    
-    switch(argv[0]->type()) {
-      case dods_list_c: {
-		List *var = (List *)argv[0];
-		BaseType *btp = (BaseType *)argv[1];
-		bool result = var->member(btp, dds);
-    
-		return result;
-      }
-      
-      default:
-		cerr << "Wrong argument type." << endl;
-		return false;
-    }
-
-}
-
-bool
-func_null(int argc, BaseType *argv[], DDS &)
-{
-    if (argc != 1) {
-		cerr << "Wrong number of arguments." << endl;
-		return false;
-    }
-    
-    switch(argv[0]->type()) {
-      case  dods_list_c: {
-	List *var = (List *)argv[0];
-	bool result = var->null();
-    
-	return result;
-      }
-
-      default:
-		cerr << "Wrong argument type." << endl;
-	return false;
-    }
-
-}
-
 BaseType *
 func_length(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 1) {
-	cerr << "Wrong number of arguments." << endl;
-	return 0;
+	throw Error("Wrong number of arguments to length().");
     }
     
     switch (argv[0]->type()) {
-      case dods_list_c: {
-	  List *var = (List *)argv[0];
-	  dods_int32 result = var->length();
-    
-	  BaseType *ret = (BaseType *)NewInt32("constant");
-	  ret->val2buf(&result);
-	  ret->set_read_p(true);
-	  ret->set_send_p(true);
-	  dds.append_constant(ret); // DDS deletes in its dtor
-
-	  return ret;
-      }
 
       case dods_sequence_c: {
 	  Sequence *var = dynamic_cast<Sequence *>(argv[0]);
 	  if (!var)
-	      throw Error(unknown_error, "Expected a Sequence variable");
+	      throw Error("Expected a Sequence variable in length()");
 	  dods_int32 result = var->length();
     
 	  BaseType *ret = (BaseType *)NewInt32("constant");
@@ -173,36 +109,7 @@ func_length(int argc, BaseType *argv[], DDS &dds)
       }
 
       default:
-	cerr << "Wrong type argument to list operator `length'" << endl;
-	return 0;
-    }
-}
-
-BaseType *
-func_nth(int argc, BaseType *argv[], DDS &)
-{
-    if (argc != 2) {
-	cerr << "Wrong number of arguments." << endl;
-	return 0;
-    }
-    
-    switch (argv[0]->type()) {
-	case dods_list_c: {
-	    if (argv[1]->type() != dods_int32_c) {
-		cerr << "Second argument to NTH must be an integer." << endl;
-		return 0;
-	    }
-	    List *var = (List *)argv[0];
-	    dods_int32 n;
-	    dods_int32 *np = &n;
-	    argv[1]->buf2val((void **)&np);
-
-	    return var->var(n);
-	}
-
-      default:
-	cerr << "Wrong type argument to list operator `nth'" << endl;
-	return 0;
+	throw Error("Wrong type argument to length()");
     }
 }
 
@@ -313,6 +220,15 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.16  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.15  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

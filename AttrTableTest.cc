@@ -106,6 +106,8 @@ public:
     CPPUNIT_TEST(containers_with_spaces_test);
     CPPUNIT_TEST(get_attr_iter_test);
 
+    CPPUNIT_TEST(print_xml_test);
+
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
@@ -260,6 +262,9 @@ String longer%20name \"second test\";";
 	CPPUNIT_ASSERT(t1->get_attr(k, 0) == "houses");	
     }
 
+    void print_xml_test() {
+	at1->print_xml(stdout);
+    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AttrTableTest);

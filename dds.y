@@ -48,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.42 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.43 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,12 +56,7 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.42 2003/04/22 19:40:28 jimg Exp 
 
 #include <iostream>
 #include <stack>
-
-#if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
-#else
 #include <sstream>
-#endif
 
 #include "DDS.h"
 #include "Array.h"
@@ -69,9 +64,7 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.42 2003/04/22 19:40:28 jimg Exp 
 #include "parser.h"
 #include "util.h"
 
-using std::endl;
-using std::ends;
-using std::ostrstream;
+ using namespace std;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -111,7 +104,7 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 
 %}
 
-%expect 56
+%expect 52
 
 %union {
     bool boolean;
@@ -135,10 +128,9 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 %token <word> SCAN_STRING
 %token <word> SCAN_URL 
 
-%type <boolean> datasets dataset declarations declaration array_decl
+%type <boolean> datasets dataset declarations array_decl
 
-%type <word> non_list_decl
-%type <word> base_type list structure sequence grid var var_name name
+%type <word> declaration base_type structure sequence grid var var_name name
 
 %%
 
@@ -173,31 +165,15 @@ declarations:	/* empty */
                 {
 		    $$ = true;
 		}
-		| declaration
-		| declarations declaration
-;
-
-declaration: 	list non_list_decl
-                { 
-		    string smsg;
-		    if (current->check_semantics(smsg))
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    else {
-			invalid_declaration((parser_arg *)arg, smsg, $1, $2);
-			YYABORT;
-		    }
-		}
-                | non_list_decl
-                {
-		    $$ = true;
-		}
+                | declaration { $$ = true; }
+                | declarations declaration { $$ = true; }
 ;
 
 /* This non-terminal is here only to keep types like `List List Int32' from
    parsing. DODS does not allow Lists of Lists. Those types make translation
    to/from arrays too hard. */
 
-non_list_decl:  base_type var ';' 
+declaration:  base_type var ';' 
                 { 
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -258,11 +234,10 @@ non_list_decl:  base_type var ';'
 		    if (is_keyword(string($3), "array"))
 			part = array; 
 		    else {
-			ostrstream msg;
-			msg << BAD_DECLARATION << ends;
-			parse_error((parser_arg *)arg, msg.str(),
+			ostringstream msg;
+			msg << BAD_DECLARATION;
+			parse_error((parser_arg *)arg, msg.str().c_str(),
 				    dds_line_num, $3);
-			msg.freeze(0);
 			YYABORT;
 		    }
                 }
@@ -271,11 +246,10 @@ non_list_decl:  base_type var ';'
 		    if (is_keyword(string($7), "maps"))
 			part = maps; 
 		    else {
-			ostrstream msg;
-			msg << BAD_DECLARATION << ends;
-			parse_error((parser_arg *)arg, msg.str(),
+			ostringstream msg;
+			msg << BAD_DECLARATION;
+			parse_error((parser_arg *)arg, msg.str().c_str(),
 				    dds_line_num, $7);
-			msg.freeze(0);
 			YYABORT;
 		    }
                 }
@@ -301,21 +275,14 @@ non_list_decl:  base_type var ';'
 
                 | error 
                 {
-		    ostrstream msg;
-		    msg << BAD_DECLARATION << ends;
-		    parse_error((parser_arg *)arg, msg.str(),
+		    ostringstream msg;
+		    msg << BAD_DECLARATION;
+		    parse_error((parser_arg *)arg, msg.str().c_str(),
 				dds_line_num, $<word>1);
-		    msg.freeze(0);
 		    YYABORT;
 		}
 ;
  
-
-list:		SCAN_LIST 
-		{ 
-		    ctor->push(NewList()); 
-		}
-;
 
 structure:	SCAN_STRUCTURE
 		{ 
@@ -406,12 +373,11 @@ array_decl:	'[' SCAN_WORD ']'
 
 		 | error
                  {
-		     ostrstream msg;
+		     ostringstream msg;
 		     msg << "In the dataset descriptor object:" << endl
-			 << "Expected an array subscript." << endl << ends;
-		     parse_error((parser_arg *)arg, msg.str(), 
+			 << "Expected an array subscript." << endl;
+		     parse_error((parser_arg *)arg, msg.str().c_str(), 
 				 dds_line_num, $<word>1);
-		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		 }
 ;
@@ -420,12 +386,11 @@ name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		| SCAN_DATASET { (*DDS_OBJ(arg)).set_dataset_name($1); }
                 | error 
                 {
-		  ostrstream msg;
+		  ostringstream msg;
 		  msg << "Error parsing the dataset name." << endl
-		      << "The name may be missing or may contain an illegal character." << endl << ends;
-		     parse_error((parser_arg *)arg, msg.str(),
+		      << "The name may be missing or may contain an illegal character." << endl;
+		     parse_error((parser_arg *)arg, msg.str().c_str(),
 				 dds_line_num, $<word>1);
-		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		}
 ;
@@ -450,12 +415,11 @@ void
 invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type, 
 		    char *name)
 {
-  ostrstream msg;
+  ostringstream msg;
   msg << "In the dataset descriptor object: `" << type << " " << name 
       << "'" << endl << "is not a valid declaration." << endl 
-      << semantic_err_msg << ends;
-  parse_error((parser_arg *)arg, msg.str(), dds_line_num);
-  msg.rdbuf()->freeze(0);
+      << semantic_err_msg;
+  parse_error((parser_arg *)arg, msg.str().c_str(), dds_line_num);
 }
 
 /*
@@ -464,10 +428,10 @@ invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type,
   it exists, the current ctor object is popped off the stack and assigned to
   CURRENT.
 
-  NB: the ctor stack is popped for lists and arrays because they are ctors
-  which contain only a single variable. For other ctor types, several
-  variables may be members and the parse rule (see `declaration' above)
-  determines when to pop the stack. 
+  NB: the ctor stack is popped for arrays because they are ctors which
+  contain only a single variable. For other ctor types, several variables may
+  be members and the parse rule (see `declaration' above) determines when to
+  pop the stack.
 
   Returns: void 
 */
@@ -483,7 +447,7 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
  	const Type &ctor_type = (*ctor)->top()->type();
 
-	if (ctor_type == dods_list_c || ctor_type == dods_array_c) {
+	if (ctor_type == dods_array_c) {
 	    if( *current ) delete *current ;
 	    *current = (*ctor)->top();
 	    (*ctor)->pop();
@@ -497,6 +461,15 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.43  2003/05/23 03:24:57  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.42  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

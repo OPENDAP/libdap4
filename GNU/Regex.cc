@@ -26,7 +26,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include <gnu-std.h>
 #endif
 #include <ctype.h>
+#if 0
 #include <new.h>
+#endif
 #include <builtin.h>
 #include <stdlib.h>
 #include <string.h>

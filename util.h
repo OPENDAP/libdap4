@@ -83,10 +83,6 @@
 #include "Array.h"
 #endif
 
-#ifndef _list_h
-#include "List.h"
-#endif
-
 #ifndef _structure_h
 #include "Structure.h"
 #endif
@@ -138,7 +134,6 @@ Float64 *NewFloat64(const string &n = "");
 Str *NewStr(const string &n = "");
 Url *NewUrl(const string &n = "");
 Array *NewArray(const string &n = "", BaseType *v = 0);
-List *NewList(const string &n = "", BaseType *v = 0);
 Structure *NewStructure(const string &n = "");
 Sequence *NewSequence(const string &n = "");
 Grid *NewGrid(const string &n = "");
@@ -225,10 +220,22 @@ string path_to_filename(string path);
     filename/template to use with mkstemp. */
 char *get_tempfile_template(char *file_template);
 
+FILE *get_temp_file(char *temp);
+string file_to_string(FILE *fp);
+
 time_t parse_time(const char * str, bool expand);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.48  2003/05/23 03:24:58  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.47  2003/04/22 19:40:29  jimg
  * Merged with 3.3.1.
  *

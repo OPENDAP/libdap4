@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.76 2003/04/22 19:40:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.77 2003/05/23 03:24:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +59,7 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.76 2003/04/22 19:40:29 jimg Ex
 #include <sys/stat.h>
 
 #include <string>
-#include <strstream>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
@@ -69,7 +69,6 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.76 2003/04/22 19:40:29 jimg Ex
 #include "BaseType.h"
 #include "Str.h"
 #include "Url.h"
-#include "List.h"
 #include "Sequence.h"
 #include "Error.h"
 #include "parser.h"
@@ -81,11 +80,15 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.76 2003/04/22 19:40:29 jimg Ex
 #include "trace_new.h"
 #endif
 
+using namespace std;
+
+#if 0
 using std::cerr;
 using std::endl;
 using std::ends;
 using std::sort;
 using std::ostrstream;
+#endif
 
 // Remove spaces from the start of a URL and from the start of any constraint
 // expression it contains. 4/7/98 jhrg
@@ -151,12 +154,12 @@ unique_names(vector<BaseType *> l, const string &var_name,
     for (int j = 1; j < nelem; ++j)
     {
 	if (names[j-1] == names[j]) {
-	    ostrstream oss;
+	    ostringstream oss;
 	    oss << "The variable `" << names[j] 
 		 << "' is used more than once in " << type_name << " `"
-		 << var_name << "'" << ends;
+		 << var_name << "'";
 	    msg = oss.str();
-	    oss.rdbuf()->freeze(0);
+
 	    return false;
 	}
     }
@@ -495,11 +498,11 @@ void append_double_to_string(const double &num, string &str)
 {
     // s having 100 characters should be enough for sprintf to do its job.
     // I want to banish all instances of sprintf. 10/5/2001 jhrg
-    ostrstream oss;
+    ostringstream oss;
     oss.precision(9);
     oss << num;
     str += oss.str();
-    oss.freeze(0);
+
 #if 0
     char s[80];
     sprintf(s, "%.9f", num);
@@ -577,7 +580,46 @@ get_tempfile_template(char *file_template)
     return temp;
 }
 
+/** Intended for testing, this may have other uses. The template should be
+    the pathname of the temporary file ending in 'XXXXXX' (as for mkstemp)
+    and will be modified.
+    @param temp Pathname, ending in 'XXXXXX'
+    @return A FILE pointer opened for update. */
+FILE *
+get_temp_file(char *temp)
+{
+    int fd = mkstemp(temp);
+    if (fd < 0)
+	return 0;
+    FILE *tmp = fdopen(fd, "a+");
+    return tmp;
+}
+
+/** Read stuff from a file and dump it into a string. This assumes the file
+    holds character data only. Intended for testing...
+    @param fp Read from this file
+    @return Returns a string which holds the character data. */
+string
+file_to_string(FILE *fp)
+{
+    rewind(fp);
+    ostringstream oss;
+    char c;
+    while (fread(&c, 1, 1, fp))
+	oss << c;
+    return oss.str();
+}
+
 // $Log: util.cc,v $
+// Revision 1.77  2003/05/23 03:24:58  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.76  2003/04/22 19:40:29  jimg
 // Merged with 3.3.1.
 //

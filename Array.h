@@ -117,7 +117,8 @@ private:
 			     
 protected:
     void _duplicate(const Array &a);
-    
+    void print_xml_core(FILE *out, string space, bool constrained, string tag);
+
 public:
 
     typedef std::vector<dimension>::const_iterator Dim_citer ;
@@ -210,6 +211,12 @@ public:
 			    bool constraint_info = false,
 			    bool constrained = false);
 
+    virtual void print_xml(FILE *out, string space = "    ",
+			   bool constrained = false);
+
+    virtual void print_as_map_xml(FILE *out, string space = "    ",
+				  bool constrained = false);
+
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
 
@@ -221,6 +228,15 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.57  2003/05/23 03:24:56  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.56  2003/04/22 19:40:27  jimg
  * Merged with 3.3.1.
  *

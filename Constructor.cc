@@ -36,11 +36,13 @@
 #include "config_dap.h"
 
 #include <string>
-#include <strstream>
+#include <algorithm>
 
 #include "Constructor.h"
+#include "BTIterAdapter.h"
 
 #include "debug.h"
+#include "escaping.h"
 #include "Error.h"
 #include "InternalErr.h"
 
@@ -48,7 +50,7 @@
 #include "trace_new.h"
 #endif
 
-using std::endl;
+using namespace std;
 
 // Private member functions
 
@@ -85,15 +87,172 @@ Constructor::operator=(const Constructor &rhs)
     return *this;
 }
 
-    /** True if the instance can be flattened and printed as a single table
-	of values. For Arrays and Grids this is always false. For Structures
-	and Sequences the conditions are more complex. The implementation
-	provided by this class always returns false. Other classes should
-	override this implementation.
+/** @name Pix interface; deprecated */
+//@{
+/** @brief Returns an index to the first variable in a Constructor instance.
 
-	@brief Check to see whether this variable can be printed simply.
-	@return True if the instance can be printed as a single table of
-	values, false otherwise. */
+    For a Structure, this returns the first variable, for a Sequence, it is
+    the template of the variable in the first column.
+*/
+Pix
+Constructor::first_var()
+{
+    if (_vars.empty())
+	return 0;
+
+    BTIterAdapter *i = new BTIterAdapter( _vars ) ;
+    i->first() ;
+    return i ;
+}
+
+/** @brief Increments the Constructor instance.  
+    This returns a pointer to the
+    next ``column'' in the Constructor, not the next row. */
+void
+Constructor::next_var(Pix p)
+{
+    p.next() ;
+}
+
+/** @brief Returns a pointer to a Constructor member.  
+    This may be another Constructor. */
+BaseType *
+Constructor::var(Pix p)
+{
+    BTIterAdapter *i = (BTIterAdapter *)p.getIterator() ;
+    if( i ) {
+	return i->entry() ;
+    }
+    return 0 ;
+}
+//@}
+
+/** Returns an iterator referencing the first structure element. */
+Constructor::Vars_iter
+Constructor::var_begin()
+{
+    return _vars.begin() ;
+}
+
+/** Returns an iterator referencing the end of the list of structure
+    elements. Does not reference the last structure element. */
+Constructor::Vars_iter
+Constructor::var_end()
+{
+    return _vars.end() ;
+}
+
+/** Return the iterator for the \i ith variable.
+    @param i the index
+    @return The corresponding  Vars_iter */
+Constructor::Vars_iter
+Constructor::get_vars_iter(int i)
+{
+    return _vars.begin() + i;
+}
+
+void
+Constructor::print_decl(ostream &os, string space, bool print_semi,
+			bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+	return;
+
+    os << space << type_name() << " {" << endl;
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->print_decl(os, space + "    ", true,
+			 constraint_info, constrained);
+    }
+    os << space << "} " << id2www(name());
+
+    if (constraint_info) {	// Used by test drivers only.
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
+    if (print_semi)
+	os << ";" << endl;
+}
+
+void
+Constructor::print_decl(FILE *out, string space, bool print_semi,
+			bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+	return;
+
+    fprintf( out, "%s%s {\n", space.c_str(), type_name().c_str() ) ;
+    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->print_decl(out, space + "    ", true,
+			 constraint_info, constrained);
+    }
+    fprintf( out, "%s} %s", space.c_str(), id2www( name() ).c_str() ) ;
+
+    if (constraint_info) {	// Used by test drivers only.
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
+    if (print_semi)
+	fprintf( out, ";\n" ) ;
+}
+
+class PrintField : public unary_function<BaseType *, void> {
+    FILE *d_out;
+    string d_space;
+    bool d_constrained;
+public:
+    PrintField(FILE *o, string s, bool c) 
+	: d_out(o), d_space(s), d_constrained(c) {}
+
+    void operator()(BaseType *btp) {
+	btp->print_xml(d_out, d_space, d_constrained);
+    }
+};
+	
+void
+Constructor::print_xml(FILE *out, string space, bool constrained)
+{
+    bool has_attributes = false; // *** fix me
+    bool has_variables = (var_begin() != var_end());
+
+    fprintf(out, "%s<%s", space.c_str(), type_name().c_str());
+    if (!name().empty())
+	fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
+    
+    if (has_attributes || has_variables) {
+	fprintf(out, ">\n");
+
+	get_attr_table().print_xml(out, space + "    ", constrained);
+
+	for_each(var_begin(), var_end(),
+		 PrintField(out, space + "    ", constrained));
+	
+	fprintf(out, "%s<%s/>\n", space.c_str(), type_name().c_str());
+    }
+    else {
+	fprintf(out, "/>\n");
+    }
+}
+
+/** True if the instance can be flattened and printed as a single table
+    of values. For Arrays and Grids this is always false. For Structures
+    and Sequences the conditions are more complex. The implementation
+    provided by this class always returns false. Other classes should
+    override this implementation.
+
+    @todo Change the name to is_flattenable or something like that. 05/16/03
+    jhrg
+
+    @brief Check to see whether this variable can be printed simply.
+    @return True if the instance can be printed as a single table of
+    values, false otherwise. */
 bool
 Constructor::is_linear()
 {
@@ -101,6 +260,15 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.9  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.8  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

@@ -90,12 +90,16 @@
     ``shoe_size'', then you can refer to Tom's shoe size as
     ``Tom.shoe_size''. 
     
+    @todo Refactor with Sequence moving methods up into Constructor.
+
     @brief Holds a structure (aggregate) type.
 */
 
 class Structure: public Constructor {
 private:
+#if 0
     std::vector<BaseType *> _vars;
+#endif
     
     void _duplicate(const Structure &s);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
@@ -104,8 +108,10 @@ private:
 public:
     Structure(const string &n = "");
 
+#if 0
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
+#endif
 
     Structure(const Structure &rhs);
     virtual ~Structure();
@@ -138,12 +144,15 @@ public:
 
     virtual void add_var(BaseType *bt, Part part = nil);
 
+#if 0
     Pix first_var();
 
     void next_var(Pix p);
 
     BaseType *var(Pix p);
+#endif
 
+#if 0
     /** Returns an iterator referencing the first structure element. */
     Vars_iter var_begin() ;
 
@@ -152,7 +161,9 @@ public:
     Vars_iter var_end() ;
 
     Vars_iter get_vars_iter(int i);
+#endif
 
+#if 0
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -162,6 +173,7 @@ public:
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
+#endif
 
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
@@ -190,6 +202,15 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.46  2003/05/23 03:24:57  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.45  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

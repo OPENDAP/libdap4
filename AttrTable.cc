@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.38 2003/04/22 19:40:27 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.39 2003/05/23 03:24:56 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -61,7 +61,7 @@ using std::vector;
 #endif
 
 string 
-AttrTable::AttrType_to_String(const AttrType at)
+AttrType_to_String(const AttrType at)
 {
     switch (at) {
       case Attr_container: return "Container";
@@ -79,7 +79,7 @@ AttrTable::AttrType_to_String(const AttrType at)
 }
 
 AttrType
-AttrTable::String_to_AttrType(const string &s)
+String_to_AttrType(const string &s)
 {
     string s2 = s;
     downcase(s2);
@@ -1175,7 +1175,63 @@ AttrTable::print(FILE *out, string pad, bool dereference)
     }
 }
 
+/** Print the attribute table in XML. 
+    @param out Destination
+    @param pad Indent lines of text/xml this much. Default is four spaces.
+    @param constrained The DDX contains attribute inforamtion; is this DDX
+    'constrained?' 
+    @param print_container According to the dods.xsd, top-level containers
+    don't include the surrounding <Attribute name=... type=Container> tag. */
+void
+AttrTable::print_xml(FILE *out, string pad, bool constrained)
+{
+    // Why this works: AttrTable is really a hacked class that used to
+    // implement a single level, not nested, set of attributes. Containers
+    // were added several years later by dropping in the 'entry' structure.
+    // It's not a class in its own right; instead accessors from AttrTable
+    // are used to access information from entry. So... the loop below
+    // actually iterates over the entries of *this* (which is an instance of
+    // AttrTable). A container is an entry whose sole value is an AttrTable
+    // instance. 05/19/03 jhrg
+    for (Attr_iter i = attr_begin(); i != attr_end(); ++i) {
+	// To handle aliases, if constrained, check to see if the aliased
+	// variables is part of the current projection. If so, then the
+	// target is going to be sent so just write out the <Alias ...> tag.
+	// If not, we should write out the complete target AttrTable.
+	if (is_container(i)) {
+	    fprintf(out, "%s<Attribute name=\"%s\" type=\"%s\">\n",
+		    pad.c_str(), id2xml(get_name(i)).c_str(), 
+		    get_type(i).c_str());
+
+	    get_attr_table(i)->print_xml(out, pad + "    ", constrained);
+
+	    fprintf(out, "%s</Attribute>\n", pad.c_str());
+	}
+	else {
+	    fprintf(out, "%s<Attribute name=\"%s\" type=\"%s\">\n",
+		pad.c_str(), id2xml(get_name(i)).c_str(), get_type(i).c_str());
+
+	    string value_pad = pad + "    ";
+	    for (unsigned j = 0; j < get_attr_num(i); ++j) {
+		fprintf(out, "%s<value>%s</value>\n", value_pad.c_str(),
+			id2xml(get_attr(i, j)).c_str());
+	    }
+
+	    fprintf(out, "%s</Attribute>\n", pad.c_str());
+	}
+    }
+}
+
 // $Log: AttrTable.cc,v $
+// Revision 1.39  2003/05/23 03:24:56  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.38  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

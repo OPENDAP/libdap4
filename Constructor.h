@@ -30,18 +30,27 @@
 #pragma interface
 #endif
 
+#include <vector>
+#include "Pix.h"
+
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
+
 
 class Constructor: public BaseType {
 private:
     Constructor();		// No default ctor.
 
 protected:
+    std::vector<BaseType *> _vars;
+
     void _duplicate(const Constructor &s);
 
 public:
+    typedef std::vector<BaseType *>::const_iterator Vars_citer ;
+    typedef std::vector<BaseType *>::iterator Vars_iter ;
+
     Constructor(const string &n, const Type &t);
 
     Constructor(const Constructor &copy_from);
@@ -49,8 +58,29 @@ public:
 
     Constructor &operator=(const Constructor &rhs);
 
-  virtual bool is_linear();
+    // Deprecated Pix interface
+    virtual Pix first_var();
+    virtual void next_var(Pix p);
+    virtual BaseType *var(Pix p);
 
+    Vars_iter var_begin();
+    Vars_iter var_end();
+    Vars_iter get_vars_iter(int i);
+
+    virtual bool is_linear();
+
+    virtual void print_decl(ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
+    virtual void print_decl(FILE *out, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
+    virtual void print_xml(FILE *out, string space = "    ", 
+			   bool constrained =false);
 };
 
 #endif // _constructor_h 

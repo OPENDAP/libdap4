@@ -40,14 +40,13 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.128 2003/05/01 23:40:21 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.129 2003/05/23 03:24:57 jimg Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
 #include <unistd.h>
 #endif
 
-#include <strstream>
 #include <fstream>
 
 #include "debug.h"
@@ -603,6 +602,15 @@ Connect::error()
 //@}
 
 // $Log: Connect.cc,v $
+// Revision 1.129  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.128  2003/05/01 23:40:21  jimg
 // Changed catch(...) statements to ones which explicitly declare the types of
 // exceptions (all Error, I think). If these catch clauses re-throw the

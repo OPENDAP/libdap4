@@ -36,14 +36,25 @@
 #ifndef _ce_functions_h
 #define _ce_functions_h
 
+#if 0
 bool func_member(int argc, BaseType *argv[], DDS &dds);
 bool func_null(int argc, BaseType *argv[], DDS &dds);
 BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
+#endif
 BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
 void func_grid_select(int argc, BaseType *argv[], DDS &dds);
 
 // $Log: ce_functions.h,v $
+// Revision 1.7  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.6  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

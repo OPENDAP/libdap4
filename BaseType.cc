@@ -41,7 +41,7 @@
 
 #include <stdio.h>		// for stdin and stdout
 
-#include <strstream>
+#include <sstream>
 #include <string>
 
 #include "debug.h"
@@ -50,10 +50,7 @@
 #include "InternalErr.h"
 #include "escaping.h"
 
-using std::cerr;
-using std::endl;
-using std::ends;
-using std::ostrstream;
+using namespace std;
 
 // Private copy mfunc
 
@@ -68,6 +65,8 @@ BaseType::_duplicate(const BaseType &bt)
     _xdr_coder = bt._xdr_coder;	// just copy this function pointer
 
     d_parent = bt.d_parent;	// copy pointers 6/4/2001 jhrg
+
+    d_attr = bt.d_attr;		// Deep copy.
 }
 
 // Public mfuncs
@@ -93,11 +92,7 @@ BaseType::_duplicate(const BaseType &bt)
     data in this variable to a client DODS process.
     @see Type */
 BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
-#ifdef WIN32
-    : _name(n), _type(t), _xdr_coder((int *)xdr), _read_p(false), _send_p(false),
-#else
     : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
-#endif
       _synthesized_p(false), d_parent(0)
 {
 } 
@@ -132,18 +127,17 @@ BaseType::operator=(const BaseType &rhs)
 string
 BaseType::toString()
 {
-    ostrstream oss;
+    ostringstream oss;
     oss << "BaseType (" << this << "):" << endl
 	<< "          _name: " << _name << endl
 	<< "          _type: " << _type << endl
 	<< "          _read_p: " << _read_p << endl
 	<< "          _send_p: " << _send_p << endl
 	<< "          _synthesized_p: " << _synthesized_p << endl 
-	<< "          d_parent: " << d_parent << endl << ends;
+	<< "          d_parent: " << d_parent << endl
+	<< "          d_attr: " << hex << &d_attr << dec << endl;
 
-    string s = oss.str();
-    oss.freeze(0);
-    return s;
+    return oss.str();
 }
 
 /** @brief Returns the name of the class instance. 
@@ -203,8 +197,6 @@ BaseType::type_name() const
 	return string("Url");
       case dods_array_c:
 	return string("Array");
-      case dods_list_c:
-	return string("List");
       case dods_structure_c:
 	return string("Structure");
       case dods_sequence_c:
@@ -235,7 +227,6 @@ BaseType::is_simple_type()
 	return true;
 
       case dods_array_c:
-      case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
@@ -263,7 +254,6 @@ BaseType::is_vector_type()
 	return false;
 
       case dods_array_c:
-      case dods_list_c:
 	return true;
 
       case dods_structure_c:
@@ -291,7 +281,6 @@ BaseType::is_constructor_type()
       case dods_str_c:
       case dods_url_c:
       case dods_array_c:
-      case dods_list_c:
 	return false;
 
       case dods_structure_c:
@@ -415,6 +404,25 @@ BaseType::set_send_p(bool state)
     _send_p = state;
 }
 
+/** Get this variable's AttrTable. It's generally a bad idea to return a
+    reference to a contained object, but in this case it seems that building
+    an interface inside BaseType is overkill. 
+
+    Use the AttrTable methods to manipulate the table. */
+AttrTable &
+BaseType::get_attr_table()
+{
+    return d_attr;
+}
+
+/** Set this variable's attribute table.
+    @param at Source of the attribtues. */
+void
+BaseType::set_attr_table(const AttrTable &at)
+{
+    d_attr = at;
+}
+
 // Protected method.
 /** Set the <tt>parent</tt> property for this variable. Only instances of
     Constructor or Vector should call this method.
@@ -536,56 +544,50 @@ BaseType::add_var(BaseType *, Part)
 {
 }
 
-  /** Put the data into a local buffer so that it may be sent to a
-      client.  This operation involves reading data from whatever
-      source (often a local disk), and filling out the fields in the
-      data type class.  This is the heart of the DODS DAP Class
-      operation.  Much of the work of implementing a new DODS server
-      API consists in creating the <tt>read()</tt> functions to read various
-      data types.
+/** Put the data into a local buffer so that it may be sent to a client. This
+    operation involves reading data from whatever source (often a local
+    disk), and filling out the fields in the data type class. This is the
+    heart of the DODS DAP Class operation for a server and much of the work
+    of implementing a new DODS server API consists in creating the
+    <tt>read()</tt> functions to read various data types.
 
-      Note that this function is only for DODS servers.  It has no use
-      on the client side of a DODS client/server connection.  The DODS
-      client and server communicate their data with <tt>serialize()</tt> and
-      <tt>deserialize()</tt>.
+    Note that this function is only for DODS servers. It has no use on the
+    client side of a DODS client/server connection. The DODS client and
+    server communicate their data with <tt>serialize()</tt> and
+    <tt>deserialize()</tt>.
 
-      This method is not implemented for the BaseType class, nor
-      for its children.  However, it should be implemented for the
-      specialized children of those classes.  For example, it is not
-      implemented for the Float64 class, but does exist for the
-      NCFloat64 class, specialized to read data from local netCDF
-      files. 
+    This method is implemented here in BaseType so that clients do not need
+    to provide a dummy implmentation. In general, servers will need to
+    provide implementations for each of the data type classes Byte, ..., Grid
+    in specializations of those classes. For example, it is not implemented
+    for the Float64 class, but does exist for the NCFloat64 class,
+    specialized to read data from local netCDF files.
  
-      This method should be implemented to throw Error when it encounters
-      an unrecoverable error.
+    This method should be implemented to throw Error when it encounters
+    an unrecoverable error.
 
-      For an example of use, see the netCDF library classes. The
-      netCDF library is part of the DODS source distribution, and can
-      be found under <tt>$(DODS_ROOT)/src/nc-dods</tt>.
+    For an example of use, see the netCDF library classes. The
+    netCDF library is part of the DODS source distribution, and can
+    be found under <tt>$(DODS_ROOT)/src/nc-dods</tt>.
 
-      In some sub-classes, such as Array or Grid, the
-      <tt>read()</tt> function must explicitly take into account
-      constraint information stored with the class data.  For
-      example, the Grid::read method will be called when only one
-      component of the Grid is to be sent. Your implementation of
-      Grid::read should check send_p() for each member of the Grid
-      before reading that member to avoid reading data into memory
-      that won't be sent (and thus is not needed in memory).
+    In some sub-classes, such as Array or Grid, the <tt>read()</tt> function
+    must explicitly take into account constraint information stored with the
+    class data. For example, the Grid::read method will be called when only
+    one component of the Grid is to be sent. Your implementation of
+    Grid::read should check send_p() for each member of the Grid before
+    reading that member to avoid reading data into memory that won't be sent
+    (and thus is not needed in memory).
 
+    @brief Reads data into a local buffer. 
 
-      @brief Reads data into a local buffer. 
+    @return void. The bool type is a relic. When implementing this method in
+    a sub class, it should always return False. The implementatin in BaseType
+    throws InternalErr always.
 
-      @return The function returns a boolean value, with TRUE indicating
-      that read() should be called again because there's more data to read,
-      and FALSE indicating there's no more data to read. Note that this
-      behavior is necessary to properly handle variables that contain
-      Sequences. WRONG! (9/5/2001 jhrg) Sequences now are read in one shot.
-      The return value of this method should always be false.
+    @param dataset A string naming the dataset from which the data is to
+    be read. The meaning of this string will vary among data APIs.
 
-      @param dataset A string naming the dataset from which the data is to
-      be read. The meaning of this string will vary among data APIs.
-
-	@see BaseType */
+    @see BaseType */
 bool 
 BaseType::read(const string &dataset)
 {
@@ -608,11 +610,7 @@ BaseType::read(const string &dataset)
     @brief Returns a function used to encode elements of an array. 
     @return A C function used to encode data in the XDR format.
 */
-#ifdef WIN32
-int *
-#else
 xdrproc_t
-#endif
 BaseType::xdr_coder()
 {
     return _xdr_coder;
@@ -707,6 +705,33 @@ BaseType::print_decl(FILE *out, string space, bool print_semi,
 
     if (print_semi)
 	fprintf( out, ";\n" ) ;
+}
+
+/** Write the XML representation of this variable. This method is used to
+    build the DDX XML response.
+    @param out Destination.
+    @param space Use this to indent child declarations. Default is "".
+    @param constrained If true, only print this if it's part part of the
+    current projection. Default is False. */
+void
+BaseType::print_xml(FILE *out, string space, bool constrained)
+{
+    if (constrained && !send_p())
+	return;
+
+    fprintf(out, "%s<%s", space.c_str(), type_name().c_str());
+    if (!_name.empty())
+	fprintf(out, " name=\"%s\"", id2xml(_name).c_str());
+
+    if (get_attr_table().get_size() > 0) {
+	fprintf(out, ">\n");	// close the varaible's tag
+	get_attr_table().print_xml(out, space + "    ", constrained);
+	// After attributes, print closing tag
+	fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
+    }
+    else {
+	fprintf(out, "/>\n");	// no attributes; just close tag.
+    }
 }
 
 // Compares the object's current state with the semantics of a particular
@@ -812,15 +837,23 @@ BaseType::check_semantics(string &msg, bool)
 bool 
 BaseType::ops(BaseType *, int, const string &)
 {
-    // Jose Garcia
-    // Even though ops is a public method, it can never being called
-    // by the users because they will never have a BaseType object since
-    // this class is abstract, however any of the child classes could
-    // by mistake call BaseType::ops so this is an internal error.
+    // Even though ops is a public method, it can never be called because
+    // they will never have a BaseType object since this class is abstract,
+    // however any of the child classes could by mistake call BaseType::ops
+    // so this is an internal error. Jose Garcia
     throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.52  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.51  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

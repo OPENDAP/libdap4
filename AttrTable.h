@@ -86,6 +86,9 @@ enum AttrType {
     Attr_url
 };
 
+string AttrType_to_String(const AttrType at);
+AttrType String_to_AttrType(const string &s);
+
 /** An AttrTable (``Attribute Table'') stores a set of names and, for
     each name, either a type and a value, or another attribute table.
     The attribute value can be a vector containing many values of the
@@ -124,10 +127,17 @@ enum AttrType {
     attributes, and <tt>actual_range</tt> and <tt>conversion_data</tt>
     are container attributes containing other attribute tables.
 
+    @todo Look at refactoring this by splitting it into three classes. Move
+    the struct entry into its own calls (maybe called Attribute?), make
+    AttrTable a child of that class and then make alises a separate class,
+    also a child of Attribute. Look at the design of the Java code.
+
     @brief Contains the attributes for a dataset.
     @see DAS
     @see AttrType */
 class AttrTable {
+    // entry needs to be made public to make up for issues with this class'
+    // design. It should probably be moved to it's own class. 05/22/03 jhrg
 public:
     struct entry {
 	string name;
@@ -198,26 +208,21 @@ public:
 	}
     };
 
+    typedef std::vector<entry *>::const_iterator Attr_citer ;
+    typedef std::vector<entry *>::iterator Attr_iter ;
+
 private:
     string d_name;
     std::vector<entry *> attr_map;
 
-public:
-    typedef std::vector<entry *>::const_iterator Attr_citer ;
-    typedef std::vector<entry *>::iterator Attr_iter ;
-
-    friend class AttrTableTest;
-
-private:
     Pix simple_find(const string &target);
 
     Attr_iter simple_find( const string &target, bool unused ) ;
     AttrTable *simple_find_container(const string &target);
 
-    string AttrType_to_String(const AttrType at);
-    AttrType String_to_AttrType(const string &s);
-
     void delete_attr_table();
+
+    friend class AttrTableTest;
 
 protected:
     void clone(const AttrTable &at);
@@ -307,10 +312,21 @@ public:
     void print(ostream &os, string pad = "    ", bool dereference = false);
 
     void print(FILE *out, string pad = "    ", bool dereference = false);
+
+    void print_xml(FILE *out, string pad = "    ", bool constrained = false);
 };
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.45  2003/05/23 03:24:56  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.44  2003/04/22 19:40:27  jimg
  * Merged with 3.3.1.
  *

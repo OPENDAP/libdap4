@@ -31,6 +31,7 @@
 
 #include "Regex.h"
 
+#define DODS_DEBUG
 #include "Sequence.h"
 #include "Int32.h"
 #include "Str.h"
@@ -49,6 +50,7 @@ static const char *s_as_string = \
           _send_p: 0\n\
           _synthesized_p: 0\n\
           d_parent: 0\n\
+          d_attr: 0x.*\n\
 BaseType (0x.*):\n\
           _name: i1\n\
           _type: 4\n\
@@ -56,6 +58,7 @@ BaseType (0x.*):\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
           d_parent: 0x.*\n\
+          d_attr: 0x.*\n\
 BaseType (0x.*):\n\
           _name: str1\n\
           _type: 8\n\
@@ -63,6 +66,7 @@ BaseType (0x.*):\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
           d_parent: 0x.*\n\
+          d_attr: 0x.*\n\
 BaseType (0x.*):\n\
           _name: i2\n\
           _type: 4\n\
@@ -70,6 +74,7 @@ BaseType (0x.*):\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
           d_parent: 0x.*\n\
+          d_attr: 0x.*\n\
 \n\
 ";
 

@@ -41,7 +41,7 @@
 
 #include <algorithm>
 #include <string>
-#include <strstream>
+#include <sstream>
 
 #include "debug.h"
 #include "Error.h"
@@ -52,12 +52,17 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
+#if 0
 #include "BTIterAdapter.h"
+#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
+using namespace std;
+
+#if 0
 using std::cerr;
 using std::endl;
 using std::ends;
@@ -67,6 +72,7 @@ using std::for_each;
 using std::vector<BaseTypeRow *>;
 #else
 using std::vector;
+#endif
 #endif
 
 static const unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
@@ -221,7 +227,7 @@ Sequence::operator=(const Sequence &rhs)
 string
 Sequence::toString()
 {
-    ostrstream oss;
+    ostringstream oss;
 
     oss << BaseType::toString();
 
@@ -230,10 +236,9 @@ Sequence::toString()
 	oss << (*i)->toString();
     }
 
-    oss << endl << ends;
-    string s = oss.str();
-    oss.freeze(0);
-    return s;
+    oss << endl;
+
+    return oss.str();
 }
 
 int
@@ -461,6 +466,7 @@ Sequence::var_value(size_t row, size_t i)
     return (*bt_row_ptr)[i];
 }
 
+#if 0
 /** @brief Returns an index to the first variable in a Sequence instance.
     This corresponds to the item in the first column of the table
     the Sequence represents.  It is not the first row of the table. 
@@ -475,7 +481,9 @@ Sequence::first_var()
     i->first() ;
     return i ;
 }
+#endif
 
+#if 0
 Sequence::Vars_iter
 Sequence::var_begin()
 {
@@ -496,7 +504,9 @@ Sequence::get_vars_iter(int i)
 {
     return _vars.begin() + i;
 }
+#endif
 
+#if 0
 /** @brief Increments the Sequence instance.  
     This returns a pointer to the
     next ``column'' in the Sequence, not the next row. */
@@ -517,6 +527,7 @@ Sequence::var(Pix p)
     }
     return 0 ;
 }
+#endif
 
 unsigned int
 Sequence::width()
@@ -857,6 +868,7 @@ Sequence::buf2val(void **)
     return sizeof(Sequence);
 }
 
+#if 0
 void
 Sequence::print_decl(ostream &os, string space, bool print_semi,
 		     bool constraint_info, bool constrained)
@@ -908,6 +920,7 @@ Sequence::print_decl(FILE *out, string space, bool print_semi,
     if (print_semi)
 	fprintf( out, ";\n" ) ;
 }
+#endif
 
 /** Print the $i^{th}$ row of the sequence. This hopes in writing
     code that spits out sequences for testing. Sequences are now read all
@@ -1137,6 +1150,15 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.71  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.70  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

@@ -37,12 +37,10 @@
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.12 2003/04/22 19:40:27 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.13 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <iostream>
-#include <strstream>
-
-#include <assert.h>
+#include <sstream>
 
 #include "dods-datatypes.h"
 #include "Error.h"
@@ -53,8 +51,7 @@ static char id[] not_used = {"$Id: GSEClause.cc,v 1.12 2003/04/22 19:40:27 jimg 
 #include "parser.h"
 #include "gse.tab.h"
 
-using std::cerr;
-using std::endl;
+using namespace std;
 
 int gse_parse(void *arg);
 void gse_restart(FILE *in);
@@ -113,15 +110,13 @@ void
 GSEClause::set_map_min_max_value(T min, T max)
 {
     DBG(cerr << "Inside set map min max value " << min << ", " << max << endl);
-    std::ostrstream oss1;
-    oss1 << min << std::ends;
+    ostringstream oss1;
+    oss1 << min;
     d_map_min_value = oss1.str();
-    oss1.freeze(0);
 
-    std::ostrstream oss2;
-    oss2 << max << std::ends;
+    ostringstream oss2;
+    oss2 << max;
     d_map_max_value = oss2.str();
-    oss2.freeze(0);
 }
 
 #endif
@@ -388,6 +383,15 @@ GSEClause::get_map_max_value() const
 }
 
 // $Log: GSEClause.cc,v $
+// Revision 1.13  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.12  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

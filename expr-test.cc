@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.36 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.37 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,9 +60,6 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.36 2003/04/22 19:40:28 ji
 #include <GetOpt.h>
 
 #include <string>
-#if 0
-#include <SLList.h>
-#endif
 
 #include "DDS.h"
 #include "DataDDS.h"
@@ -437,16 +434,17 @@ loopback_pipe(FILE **pout, FILE **pin)
 FILE *
 move_dds(FILE *in)
 {
-    char *c = tempnam(NULL, "dods");
-    if (!c) {
+    char dods[] = "/tmp/dodsXXXXXX";
+    int fd;
+    if ((fd = mkstemp(dods)) == -1) {
 	fprintf( stderr, "Could not create temporary file name %s\n",
 			 strerror(errno) ) ;
 	return NULL;
     }
 
-    FILE *fp = fopen(c, "w+b");
+    FILE *fp = fdopen(fd, "w+b");
     if (!keep_temps)
-	unlink(c);
+	unlink(dods);
     if (!fp) {
 	fprintf( stderr, "Could not open anonymous temporary file: %s\n",
 			 strerror(errno) ) ;
@@ -472,7 +470,6 @@ move_dds(FILE *in)
 	return NULL;
     }
     
-    free(c);			// tempnam uses malloc
     return fp;
 }
 
@@ -611,6 +608,15 @@ constrained_trans(const string &dds_name, string dataset,
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.37  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.36  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

@@ -54,6 +54,10 @@
 #include "BaseType.h"
 #endif
 
+#ifndef _das_h
+#include "DAS.h"
+#endif
+
 #ifndef _clause_h
 #include "Clause.h"
 #endif
@@ -176,6 +180,7 @@ private:
 
     string _filename;		// File name (or other OS identifier) for
 				// dataset or part of dataset.
+    AttrTable d_attr;
 
     vector<BaseType *> vars;	// Variables at the top level 
     
@@ -184,6 +189,9 @@ private:
     vector<BaseType *> constants;// List of temporary objects
 
     vector<function> functions; // Known external functions
+
+    bool is_global_attr(string name);
+    void add_global_attribute(AttrTable::entry *entry);
 
 protected:
     void duplicate(const DDS &dds);
@@ -208,9 +216,12 @@ public:
 
     DDS & operator=(const DDS &rhs); 
 
-    string get_dataset_name();
+    virtual void transfer_attributes(DAS *das);
 
+    string get_dataset_name();
     void set_dataset_name(const string &n);
+
+    virtual AttrTable &get_attr_table();
 
     string filename();
     void filename(const string &fn);
@@ -218,11 +229,6 @@ public:
     void add_var(BaseType *bt);
 
     void del_var(const string &n);
-
-#if 0
-    BaseType *var(const string &n);
-    BaseType *var(const char *n);
-#endif
 
     BaseType *var(const string &n, btp_stack &s);
     BaseType *var(const string &n, btp_stack *s = 0);
@@ -247,14 +253,9 @@ public:
 
     void del_var(Vars_iter &i1, Vars_iter &i2);
 
-#if 0
-    template <class FUNC_T> void add_function(const string &name, FUNC_T f);
-#endif
-#if 1
     void add_function(const string &name, bool_func f);
     void add_function(const string &name, btp_func f);
     void add_function(const string &name, proj_func f);
-#endif
 
     bool find_function(const string &name, bool_func *f) const;
     bool find_function(const string &name, btp_func *f) const;
@@ -301,6 +302,8 @@ public:
     void print_constrained(ostream &os = cout);
     void print_constrained(FILE *out);
 
+    void print_xml(FILE *out, bool constrained, const string &blob);
+
     bool send(const string &dataset, const string &constraint, FILE *out, 
 	      bool compressed = true, const string &cgi_ver = "",
 	      time_t lmt = 0);
@@ -311,6 +314,15 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.51  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.50  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

@@ -59,6 +59,9 @@ string www2id(string s, const string &escape = "%",
 #define id2dods id2www
 #define dods2id www2id
 
+string id2xml(string in, const string &not_allowed = "><&'\"");
+string xml2id(string in);
+
 string esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
@@ -67,6 +70,15 @@ string unescattr(string s);
 string munge_error_message(string msg);
 
 // $Log: escaping.h,v $
+// Revision 1.14  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.13  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

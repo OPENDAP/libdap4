@@ -187,7 +187,6 @@ TestSequence::read(const string &dataset)
 	  }
 
 	  case dods_array_c:
-	  case dods_list_c:
 	  case dods_structure_c:
 	  case dods_sequence_c:
 	  case dods_grid_c:
@@ -210,6 +209,15 @@ TestSequence::length()
 }
 
 // $Log: TestSequence.cc,v $
+// Revision 1.31  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.30  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

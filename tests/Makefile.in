@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.3 2003/04/02 19:15:47 pwest Exp $
+# $Id: Makefile.in,v 1.4 2003/05/23 03:24:58 jimg Exp $
 
 @SET_MAKE@
 
@@ -154,7 +154,8 @@ arrayT.o: arrayT.cc TestArray.h ../Array.h ../dods-limits.h ../Vector.h \
   ../IteratorAdapter.h ../Clause.h ../expr.h ../RValue.h ../TestInt16.h \
   ../Int16.h ../dods-datatypes.h ../util.h ../Byte.h ../UInt16.h \
   ../Int32.h ../UInt32.h ../Float32.h ../Float64.h ../Str.h ../Url.h \
-  ../List.h ../Structure.h ../Constructor.h ../Sequence.h ../Grid.h
+  ../../../include/List.h ../Structure.h ../Constructor.h ../Sequence.h \
+  ../Grid.h
 attrTableT.o: attrTableT.cc ../AttrTable.h ../GNU/Pix.h \
   ../IteratorAdapter.h ../Error.h
 ddsPT.o: ddsPT.cc ../DDS.h ../GNU/Pix.h ../IteratorAdapter.h \
@@ -165,8 +166,8 @@ ddsT.o: ddsT.cc ../DDS.h ../GNU/Pix.h ../IteratorAdapter.h ../BaseType.h \
   TestArray.h ../Array.h ../dods-limits.h ../Vector.h ../TestInt16.h \
   ../Int16.h ../dods-datatypes.h ../TestStr.h ../Str.h ../ce_functions.h \
   ../util.h ../Byte.h ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h \
-  ../Float64.h ../Url.h ../List.h ../Structure.h ../Constructor.h \
-  ../Sequence.h ../Grid.h
+  ../Float64.h ../Url.h ../../../include/List.h ../Structure.h \
+  ../Constructor.h ../Sequence.h ../Grid.h ../debug.h
 iterT.o: iterT.cc LongIterAdapter.h ../IteratorAdapter.h ../Array.h \
   ../dods-limits.h ../Vector.h ../BaseType.h ../InternalErr.h ../Error.h \
   ../DDS.h ../GNU/Pix.h ../Clause.h ../expr.h ../RValue.h
@@ -175,12 +176,12 @@ sequenceT.o: sequenceT.cc TestSequence.h ../Sequence.h ../GNU/Pix.h \
   ../Constructor.h ../TestInt16.h ../Int16.h ../dods-datatypes.h \
   ../TestStr.h ../dods-limits.h ../Str.h ../util.h ../Byte.h ../UInt16.h \
   ../Int32.h ../UInt32.h ../Float32.h ../Float64.h ../Url.h ../Array.h \
-  ../Vector.h ../DDS.h ../Clause.h ../expr.h ../RValue.h ../List.h \
-  ../Structure.h ../Grid.h
+  ../Vector.h ../DDS.h ../Clause.h ../expr.h ../RValue.h \
+  ../../../include/List.h ../Structure.h ../Grid.h
 structT.o: structT.cc ../TestStructure.h ../Structure.h ../GNU/Pix.h \
   ../IteratorAdapter.h ../BaseType.h ../InternalErr.h ../Error.h \
   ../Constructor.h ../DDS.h ../Clause.h ../expr.h ../RValue.h TestArray.h \
   ../Array.h ../dods-limits.h ../Vector.h ../TestInt16.h ../Int16.h \
   ../dods-datatypes.h ../TestStr.h ../Str.h ../util.h ../Byte.h \
   ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h ../Float64.h ../Url.h \
-  ../List.h ../Sequence.h ../Grid.h
+  ../../../include/List.h ../Sequence.h ../Grid.h

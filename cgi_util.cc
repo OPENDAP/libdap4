@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.57 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.58 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,7 +64,7 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.57 2003/04/22 19:40:28 jim
 #endif
 
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <fstream>
 #include <string>
 
@@ -82,13 +82,7 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.57 2003/04/22 19:40:28 jim
 #define FILE_DELIMITER '/'
 #endif
 
-using std::cerr;
-using std::endl;
-using std::ends;
-using std::strstream;
-using std::ostrstream;
-using std::ofstream;
-using std::ifstream;
+using namespace std;
 
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
@@ -792,7 +786,7 @@ string
 get_user_supplied_docs(string name, string cgi)
 {
     char tmp[256];
-    ostrstream oss;
+    ostringstream oss;
     ifstream ifs((cgi + ".html").c_str());
 
     if (ifs) {
@@ -822,11 +816,7 @@ get_user_supplied_docs(string name, string cgi)
 	ifs.close();
     }
 
-    oss << ends;
-    string html = oss.str();
-    oss.rdbuf()->freeze(0);
-
-    return html;
+    return oss.str();
 }
 
 // This test code is pretty much obsolete; look at cgiUtilTest.cc 4/17/2001
@@ -892,6 +882,15 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.58  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.57  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

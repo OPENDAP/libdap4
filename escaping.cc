@@ -58,24 +58,15 @@
 
 #include <ctype.h>
 
-#include <strstream>
 #include <iomanip>
 #include <string>
+#include <sstream>
 
 #include "Regex.h"
 #include "Error.h"
 #include "InternalErr.h"
 
-using std::string;
-using std::ostrstream;
-using std::istrstream;
-using std::setfill;
-using std::hex;
-using std::setw;
-using std::oct;
-using std::ends;
-
-const int MAXSTR = 256;
+using namespace std;
 
 // The next four functions were originally defined static, but I removed that
 // to make testing them (see generalUtilTest.cc) easier to write. 5/7/2001
@@ -84,26 +75,19 @@ const int MAXSTR = 256;
 string 
 hexstring(unsigned char val) 
 {
-    char buf[MAXSTR];
+    ostringstream buf; 
+    buf << hex << setw(2) << setfill('0') 
+	<< static_cast<unsigned int>(val);
 
-    ostrstream(buf, MAXSTR) << hex << setw(2) << setfill('0') 
-			    << static_cast<unsigned int>(val) << ends;
-
-    return string(buf);
+    return buf.str();
 }
 
 string 
 unhexstring(string s) 
 {
-#if 0
-    // Originally this code returned val, the string declared below. This
-    // does not work with g++ 2.95.2 (and I'm not sure that it ever did
-    // work...). Note the hoops you must jump through to convert a single
-    // char into a string object. 5/4/2001 jhrg 
-    string val;
-#endif
     int val;
-    istrstream(s.c_str(), MAXSTR) >> hex >> val;
+    istringstream ss(s);
+    ss >> hex >> val;
     char tmp_str[2];
     tmp_str[0] = static_cast<char>(val);
     tmp_str[1] = '\0';
@@ -113,12 +97,11 @@ unhexstring(string s)
 string 
 octstring(unsigned char val) 
 {
-    char buf[MAXSTR];
+    ostringstream buf;
+    buf << oct << setw(3) << setfill('0') 
+	<< static_cast<unsigned int>(val) << ends;
 
-    ostrstream(buf, MAXSTR) << oct << setw(3) << setfill('0') 
-			    << static_cast<unsigned int>(val) << ends;
-
-    return (string)buf;
+    return buf.str();
 }
 
 string
@@ -126,7 +109,8 @@ unoctstring(string s)
 {
     int val;
 
-    istrstream(s.c_str(), MAXSTR) >> oct >> val;
+    istringstream ss(s);
+    ss >> oct >> val;
 
     char tmp_str[2];
     tmp_str[0] = static_cast<char>(val);
@@ -198,6 +182,71 @@ www2id(string in, const string &escape, const string &except)
     return in;
 }
 
+static string
+entity(char c)
+{
+    switch (c) {
+      case '>': return "&gt;";
+      case '<': return "&lt;";
+      case '&': return "&amp;";
+      case '\'': return "&apos;";
+      case '\"': return "&quot;";
+      default:
+	throw InternalErr(__FILE__, __LINE__, "Unrecognized character.");
+    }
+}
+
+/** Replace characters that are not allowed in XML
+
+    @param in The string in which to replace characters.
+    @param not_allowed The set of characters that are not allowed in XML.
+    default: ><&'(single quote)"(double quote)
+    @return The modified identifier. */
+string
+id2xml(string in, const string &not_allowed)
+{
+    string::size_type i = 0;
+
+    while ((i = in.find_first_of(not_allowed, i)) != string::npos) {
+	in.replace(i, 1, entity(in[i]));
+	i++;
+    }
+
+    return in;
+}
+
+/** Given a string that contains XML escape sequences (i.e., entities),
+    translate those back into ASCII characters. Return the modified string.
+
+    @param in The string to modify.
+    @return The modified string. */
+string 
+xml2id(string in)
+{
+    string::size_type i = 0;
+
+    while ((i = in.find("&gt;", i)) != string::npos)
+	in.replace(i, 4, ">");
+
+    i = 0;
+    while ((i = in.find("&lt;", i)) != string::npos)
+	in.replace(i, 4, "<");
+
+    i = 0;
+    while ((i = in.find("&amp;", i)) != string::npos)
+	in.replace(i, 5, "&");
+
+    i = 0;
+    while ((i = in.find("&apos;", i)) != string::npos)
+	in.replace(i, 6, "'");
+
+    i = 0;
+    while ((i = in.find("&quot;", i)) != string::npos)
+	in.replace(i, 6, "\"");
+
+    return in;
+}
+
 /** Return a string that has all the `%<hex digit><hex digit>' sequences
     replaced with underscores (`_').
     @param s The string to transform
@@ -245,10 +294,9 @@ char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]")
 		throw InternalErr(__FILE__, __LINE__, "A caller supplied value for the regular expression in escape should match exactly one character.");
 
 	    unsigned char ascii = *(s.substr(i, 1).data());
-	    ostrstream ostr;
-	    ostr << "_" << hexstring(ascii) << ends;
+	    ostringstream ostr;
+	    ostr << "_" << hexstring(ascii);
 	    s.replace(i, matchlen, ostr.str());
-	    ostr.freeze(0);
 	}
     }
 
@@ -347,6 +395,15 @@ munge_error_message(string msg)
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.27  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.26  2003/04/23 21:33:53  jimg
 // Changes for the unit tests. This involved merging Rob's VC++ changes
 // and fixing a bug in escaping.cc (a call to string::insert invalidated

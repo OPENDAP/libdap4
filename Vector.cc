@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.45 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.46 2003/05/23 03:24:57 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -280,7 +280,6 @@ Vector::var(unsigned int i)
       case dods_str_c:
       case dods_url_c:
       case dods_array_c:
-      case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
@@ -425,7 +424,6 @@ problem with the network connection.");
       case dods_str_c:
       case dods_url_c:
       case dods_array_c:
-      case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
@@ -540,7 +538,6 @@ the network connection.");
       case dods_str_c:
       case dods_url_c:
       case dods_array_c:
-      case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
@@ -814,6 +811,7 @@ Vector::add_var(BaseType *v, Part)
 	<< v->name() << " " << v->type_name() << ")" << endl);
 }
 
+#if 0
 void
 Vector::print_decl(ostream &os, string space, bool print_semi,
 		  bool constraint_info, bool constrained)
@@ -887,6 +885,7 @@ Vector::print_val(FILE *out, string space, bool print_decl_p)
     else
 	fprintf( out, "}" ) ;
 }
+#endif
 
 bool
 Vector::check_semantics(string &msg, bool) 
@@ -895,6 +894,15 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.46  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.45  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

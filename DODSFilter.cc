@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.38 2003/05/13 22:10:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.39 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <iostream>
 #include <string>
@@ -56,13 +56,13 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.38 2003/05/13 22:10:58 j
 #include "DODSFilter.h"
 #include "InternalErr.h"
 
-using std::max;
-using std::min;
+using namespace std;
 
 const string usage = 
-"Usage: <handler name> [options ...] [data source name]\n\
+"Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
 \n\
-options: -o <response>: One of DAS, DDS, DataDDS or Version\n\
+options: -o <response>: One of DAS, DDS, DataDDS or Version (Required)\n\
+         -u <url>: The complete URL minus the CE (required for DDX)\n\
          -c: Compress the response using the deflate algorithm.\n\
          -e <expr>: When returning a DataDDS, use <expr> as the constraint.\n\
          -v <version>: Use <version> as the version number\n\
@@ -171,6 +171,7 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     d_anc_das_lmt = 0; 
     d_anc_dds_lmt = 0;
     d_if_modified_since = -1;
+    d_url = "";
 
     d_program_name = argv[0];
 
@@ -201,6 +202,7 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     DBG(cerr << "d_cache_dir: " << d_cache_dir << endl);
     DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
     DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
+    DBG(cerr << "d_url: " << d_url << endl);
 }
 
 /** Processing the command line options passed to the filter is handled by
@@ -217,7 +219,7 @@ DODSFilter::process_options(int argc, char *argv[]) throw(Error)
     DBG(cerr << "Entering process_options... ");
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce:v:d:f:r:l:o:");
+    GetOpt getopt (argc, argv, "ce:v:d:f:r:l:o:u:");
 
     while ((option_char = getopt()) != EOF) {
 	switch (option_char) {
@@ -228,6 +230,7 @@ DODSFilter::process_options(int argc, char *argv[]) throw(Error)
 	  case 'f': d_anc_file = getopt.optarg; break;
 	  case 'r': d_cache_dir = getopt.optarg; break;
 	  case 'o': set_response(getopt.optarg); break;
+	  case 'u': set_URL(getopt.optarg); break;
 	  case 'l': 
 	    d_conditional_request = true;
 	    d_if_modified_since 
@@ -318,6 +321,26 @@ void
 DODSFilter::set_dataset_name(const string ds)
 {
   d_dataset = ds;
+}
+
+/** Get the URL. This returns the URL, minus the constraint originally sent
+    to the server.
+    @return The URL. */
+string
+DODSFilter::get_URL()
+{
+    return d_url;
+}
+
+/** Set the URL. Set the URL sent to the server. 
+    @param url The URL, minus the constraint. */
+void
+DODSFilter::set_URL(const string &url) throw(Error)
+{
+    if (url.find('?') != url.npos)
+	print_usage();		// Throws Error
+
+    d_url = url;
 }
 
 /** To read version information that is specific to a certain
@@ -699,7 +722,7 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
     time_t data_lmt = get_data_last_modified_time(anc_location);
 
     // If this is a conditional request and the server should send a 304
-    // response, do that and exit. Otherwise, continue on ans send the full
+    // response, do that and exit. Otherwise, continue on and send the full
     // response. 
     if (is_conditional()
 	&& data_lmt <= get_request_if_modified_since()) {
@@ -717,7 +740,45 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
     }
 }
 
+/** Send the DDX response. The DDX never contains data, instead it holds a
+    reference to a Blob response which is used to get the data values. The
+    DDS and DAS objects are built using code that already exists in the
+    servers. 
+
+    @param out Destination
+    @param ddx The dataset's DDS \i with attributes in the variables.
+    @param constrained True if the response is constrained. False by default.
+    @param anc_location Look here for ancillary files. Null by default. */
+void
+DODSFilter::send_ddx(FILE *out, DDS &dds, bool constrained,
+		     const string &anc_location)
+{
+    time_t data_lmt = get_data_last_modified_time(!anc_location.empty() ?
+						  anc_location : d_anc_dir);
+
+    // If this is a conditional request and the server should send a 304
+    // response, do that and exit. Otherwise, continue on and send the full
+    // response. 
+    if (is_conditional()
+	&& data_lmt <= get_request_if_modified_since()) {
+	set_mime_not_modified(out);
+	return;
+    }
+
+    // Send the DDX.	
+    dds.print_xml(out, constrained, d_url + ".blob?" + d_ce);
+}
+
 // $Log: DODSFilter.cc,v $
+// Revision 1.39  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.38  2003/05/13 22:10:58  jimg
 // MOdified DODSFilter so that it takes a -o switch which names the type
 // of response to generate. This can be used to build a single hander

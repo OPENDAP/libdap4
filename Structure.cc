@@ -46,7 +46,9 @@
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
+#if 0
 #include "BTIterAdapter.h"
+#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -370,6 +372,7 @@ Structure::exact_match(const string &name, btp_stack *s)
     return 0;
 }
 
+#if 0
 /** Returns the pseudo-index (Pix) of the first structure element. 
     @deprecated
     @see var_begin() */
@@ -383,7 +386,9 @@ Structure::first_var()
     i->first() ;
     return i ;
 }
+#endif
 
+#if 0
 Structure::Vars_iter
 Structure::var_begin()
 {
@@ -404,7 +409,9 @@ Structure::get_vars_iter(int i)
 {
     return _vars.begin() + i;
 }
+#endif
 
+#if 0
 /** Increments the input index to point to the next element in the
     structure.
     @deprecated use iterator operator ++ with the iterator returned from
@@ -429,7 +436,9 @@ Structure::var(Pix p)
     }
     return 0 ;
 }
+#endif
 
+#if 0
 void
 Structure::print_decl(ostream &os, string space, bool print_semi,
 		      bool constraint_info, bool constrained)
@@ -481,6 +490,7 @@ Structure::print_decl(FILE *out, string space, bool print_semi,
     if (print_semi)
 	fprintf( out, ";\n" ) ;
 }
+#endif
 
 // print the values of the contained variables
 
@@ -585,7 +595,9 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool pr
 // Print the values of the contained variables.
 //
 // Potential bug: This works only for structures that have sequences at their
-// top level. Will it work when sequences are more deeply embedded?
+// top level. Will it work when sequences are more deeply embedded? 
+//
+// No longer a problem as Sequences are now read in full. 05/16/03 jhrg
 
 void
 Structure::print_all_vals(FILE *out, XDR *src, DDS *dds, string space, bool print_decl_p)
@@ -662,6 +674,15 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.55  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.54  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

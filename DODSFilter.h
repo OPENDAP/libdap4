@@ -70,6 +70,10 @@
     <i>have</i> to be called by a CGI program, but that is the normal
     mechanism by which they are invoked.
   
+    @todo Add a test to make sure that the required arguments are given.
+    @todo We need to rethink the ancillary file/directory stuff. I don't
+    think it's ever been used...
+
     @brief Common functions for DODS server filter programs.
     @author jhrg 8/26/97 */
 
@@ -96,6 +100,7 @@ protected:
     string d_anc_dir;		// Look here for ancillary files
     string d_anc_file;		// Use this for ancillary file name
     string d_cache_dir;		// Use this for cache files
+    string d_url;		// URL minus CE.
 
     Response d_response;	// Name of the response to generate
 
@@ -124,6 +129,9 @@ public:
 
     virtual string get_dataset_name();
     virtual void set_dataset_name(const string _dataset);
+
+    virtual string get_URL();
+    virtual void set_URL(const string &url) throw(Error);
 
     virtual string get_dataset_version();
 
@@ -168,9 +176,21 @@ public:
 
     virtual void send_data(DDS &dds, FILE *data_stream,
 			   const string &anc_location = "");
+
+    virtual void send_ddx(FILE *out, DDS &dds, bool constrained = false,
+			  const string &anc_location = "");
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.28  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.27  2003/05/13 22:10:58  jimg
 // MOdified DODSFilter so that it takes a -o switch which names the type
 // of response to generate. This can be used to build a single hander

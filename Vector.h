@@ -122,10 +122,6 @@ public:
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-#if 0
-    virtual bool read(const string &dataset);
-#endif
-
     virtual unsigned int val2buf(void *val, bool reuse = false);
 
     virtual unsigned int buf2val(void **val);
@@ -142,27 +138,20 @@ public:
 
     virtual void add_var(BaseType *v, Part p = nil);
 
-    virtual void print_decl(ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_decl(FILE *out, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_val(ostream &os, string space = "", 
-			   bool print_decl_p = true);
-
-    virtual void print_val(FILE *out, string space = "", 
-			   bool print_decl_p = true);
-
     virtual bool check_semantics(string &msg, bool all = false);
 };
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.39  2003/05/23 03:24:57  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.38  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

@@ -45,7 +45,6 @@ public:
 
 	try
 	{
-	    int w = ar.width() ;
 	    CPPUNIT_FAIL( "Successfully retrieved length, should have failed" ) ;
 	}
 	catch( InternalErr &e )

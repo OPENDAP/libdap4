@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-#include <strstream>
+#include <algorithm>
 
 #include "Grid.h"
 #include "DDS.h"
@@ -49,10 +49,7 @@
 #include "trace_new.h"
 #endif
 
-using std::cerr;
-using std::endl;
-using std::ends;
-using std::ostrstream;
+using namespace std;
 
 void
 Grid::_duplicate(const Grid &s)
@@ -636,6 +633,41 @@ exit:
     return;
 }
 
+class PrintMapField : public unary_function<BaseType *, void> {
+    FILE *d_out;
+    string d_space;
+    bool d_constrained;
+public:
+    PrintMapField(FILE *o, string s, bool c) 
+	: d_out(o), d_space(s), d_constrained(c) {}
+
+    void operator()(BaseType *btp) {
+	Array *a = dynamic_cast<Array*>(btp);
+	if (!a)
+	    throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
+	a->print_as_map_xml(d_out, d_space, d_constrained);
+    }
+};
+
+void
+Grid::print_xml(FILE *out, string space, bool constrained)
+{
+    fprintf(out, "%s<Grid", space.c_str());
+    if (!name().empty())
+	fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
+    
+    fprintf(out, ">\n");
+
+    get_attr_table().print_xml(out, space + "    ", constrained);
+
+    array_var()->print_xml(out, space + "    ", constrained);
+
+    for_each(map_begin(), map_end(),
+	     PrintMapField(out, space + "    ", constrained));
+	
+    fprintf(out, "%s<Grid/>\n", space.c_str());
+}
+
 void 
 Grid::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -800,6 +832,15 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.58  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.57  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

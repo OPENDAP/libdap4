@@ -43,18 +43,13 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.47 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.48 2003/05/23 03:24:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <assert.h>
 
-#if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
-#else
-#include <sstream>
-#endif
 #include <vector>
 
 #include "DAS.h"
@@ -65,11 +60,6 @@ static char rcsid[] not_used = {"$Id: das.y,v 1.47 2003/04/22 19:40:28 jimg Exp 
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
-#endif
-
-#ifdef WIN32
-using std::ends;
-using std::ostrstream;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -513,6 +503,15 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.48  2003/05/23 03:24:57  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
+ *
  * Revision 1.47  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

@@ -71,6 +71,9 @@ public:
     CPPUNIT_TEST(munge_error_message_test);
     CPPUNIT_TEST(get_tempfile_template_test);
 
+    CPPUNIT_TEST(id2xml_test);
+    CPPUNIT_TEST(xml2id_test);
+
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
@@ -223,6 +226,34 @@ public:
 			      tmplt.c_str()) == 0);
 #endif
 #endif
+    }
+
+    void id2xml_test() {
+	CPPUNIT_ASSERT(id2xml("abcdef") == "abcdef");
+	CPPUNIT_ASSERT(id2xml("abc<def") == "abc&lt;def");
+	CPPUNIT_ASSERT(id2xml("abc>def") == "abc&gt;def");
+	CPPUNIT_ASSERT(id2xml("abc&def") == "abc&amp;def");
+	CPPUNIT_ASSERT(id2xml("abc'def") == "abc&apos;def");
+	CPPUNIT_ASSERT(id2xml("abc\"def") == "abc&quot;def");
+	CPPUNIT_ASSERT(id2xml("abc<<def") == "abc&lt;&lt;def");
+	CPPUNIT_ASSERT(id2xml("abc>>def>") == "abc&gt;&gt;def&gt;");
+	CPPUNIT_ASSERT(id2xml("abc&def&") == "abc&amp;def&amp;");
+	CPPUNIT_ASSERT(id2xml("'abc'def") == "&apos;abc&apos;def");
+	CPPUNIT_ASSERT(id2xml("\"abc\"def\"") == "&quot;abc&quot;def&quot;");
+    }
+
+    void xml2id_test() {
+	CPPUNIT_ASSERT(xml2id("abcdef") == "abcdef");
+	CPPUNIT_ASSERT(xml2id("abc&lt;def") == "abc<def");
+	CPPUNIT_ASSERT(xml2id("abc&gt;def") == "abc>def");
+	CPPUNIT_ASSERT(xml2id("abc&amp;def") == "abc&def");
+	CPPUNIT_ASSERT(xml2id("abc&apos;def") == "abc'def");
+	CPPUNIT_ASSERT(xml2id("abc&quot;def") == "abc\"def");
+	CPPUNIT_ASSERT(xml2id("abc&lt;&lt;def") == "abc<<def");
+	CPPUNIT_ASSERT(xml2id("abc&gt;&gt;def&gt;") == "abc>>def>");
+	CPPUNIT_ASSERT(xml2id("abc&amp;def&amp;") == "abc&def&");
+	CPPUNIT_ASSERT(xml2id("&apos;abc&apos;def") == "'abc'def");
+	CPPUNIT_ASSERT(xml2id("&quot;abc&quot;def&quot;") == "\"abc\"def\"");
     }
 };
 

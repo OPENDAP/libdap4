@@ -34,59 +34,37 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.17 2003/04/22 19:40:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.18 2003/05/23 03:24:57 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <string>
-
-#if 0
-#include "Regex.h"
-#endif
 
 #include "DataDDS.h"
 #include "debug.h"
 
-using std::cerr;
-using std::istrstream;
-using std::endl;
+using namespace std;
 
 // private
 
 void
 DataDDS::_version_string_to_numbers()
 {
-#if 0
-    Regex version_regex("[-A-Za-z]+/[0-9]\\.[0-9]+[.0-9a-zA-Z() ]*", 1);
+    string num = _server_version.substr(_server_version.find('/')+1);
 
-    DBG(cerr << "in version string to numbers" << endl);
+    istringstream iss(num.c_str());
 
-    if (version_regex.match(_server_version.c_str(),
-			    _server_version.length()) 
-	!= (int)_server_version.length()) {
-	_server_version_major = 0;
-	_server_version_minor = 0;
-    }
-    else {
-#endif
-	string num = _server_version.substr(_server_version.find('/')+1);
+    iss >> _server_version_major;
+    char c;
+    iss >> c;		// This reads the `.' in the version string
+    iss >> _server_version_minor;
 
-	istrstream iss(num.c_str());
-
-	iss >> _server_version_major;
-	char c;
-	iss >> c;		// This reads the `.' in the version string
-	iss >> _server_version_minor;
-
-	DBG(cerr << "Server version: " << _server_version_major << "." \
-	    << _server_version_minor << endl);
-#if 0
-    }
-#endif
+    DBG(cerr << "Server version: " << _server_version_major << "." \
+	<< _server_version_minor << endl);
 }
 
 // public
@@ -164,6 +142,15 @@ DataDDS::set_sequence_level(int level)
 #endif
 
 // $Log: DataDDS.cc,v $
+// Revision 1.18  2003/05/23 03:24:57  jimg
+// Changes that add support for the DDX response. I've based this on Nathan
+// Potter's work in the Java DAP software. At this point the code can
+// produce a DDX from a DDS and it can merge attributes from a DAS into a
+// DDS to produce a DDX fully loaded with attributes. Attribute aliases
+// are not supported yet. I've also removed all traces of strstream in
+// favor of stringstream. This code should no longer generate warnings
+// about the use of deprecated headers.
+//
 // Revision 1.17  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //
