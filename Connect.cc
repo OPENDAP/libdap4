@@ -8,9 +8,16 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.35  1996/10/08 16:27:47  jimg
+// Added code so that a constraint expression appended to a URL is properly
+// handled. The CE is stored in in the Connect object. When a CE is passed to
+// the request_data member function, Connect correctly combines the projection
+// and selection parts of that CE with the matching parts of any initial CE.
+//
 // Revision 1.34  1996/09/18 23:06:28  jimg
-// Fixed a bug in the dtor which caused the _anchor WWW lib object to be deleted
-// twice under some (likely) conditions. The efence library found the error.
+// Fixed a bug in the dtor which caused the _anchor WWW lib object to be
+// deleted twice under some (likely) conditions. The efence library found the
+// error. 
 //
 // Revision 1.33  1996/08/26 21:12:52  jimg
 // Changes for version 2.07
@@ -21,8 +28,8 @@
 // Fixed test for URL -vs- filename in the object ctor.
 //
 // Revision 1.31  1996/07/17 22:27:20  jimg
-// Removed copy of the _output FILE * and bad logic on output() member function.
-// Added reset of _source to 0 in closr_output().
+// Removed copy of the _output FILE * and bad logic on output() member
+// function. Added reset of _source to 0 in close_output().
 //
 // Revision 1.30  1996/07/10 21:25:32  jimg
 // *** empty log message ***
@@ -197,7 +204,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.34 1996/09/18 23:06:28 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.35 1996/10/08 16:27:47 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -241,14 +248,17 @@ union semun {
 };
 #endif
 
+// In cases where the DODS libraries are not linked with g++ this code won't
+// work properly; dods_root may be NULL or (worse) undefined. jhrg 9/19/96.
+
 static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
     : DODS_ROOT;
 
 // Constants used for temporary files.
 
 static const char DODS_PREFIX[]={"dods"};
-static const int DEFAULT_TIMEOUT = 100; // timeout in seconds
-static int keep_temps = 0;	// Set to non-zero value to keep temp files
+static const int DEFAULT_TIMEOUT = 100; // Timeout in seconds.
+static int keep_temps = 0;	// Set to non-zero value to keep temp files.
 
 int Connect::_connects = false;
 String Connect::_logfile = "";
@@ -913,7 +923,7 @@ Connect::Connect()
 
 // public mfuncs
 
-Connect::Connect(const String &name)
+Connect::Connect(String name)
 {
     _gui = new Gui;
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
@@ -924,7 +934,24 @@ Connect::Connect(const String &name)
 
 	_connects++;		// Record the connect.
 
-	_URL = name;
+	if (name.contains("?")) {
+	    _URL = name.before("?");
+	    String expr = name.after("?");
+	    if (expr.contains("&")) {
+		_proj = expr.before("&");
+		_sel = expr.after(_proj);
+	    }
+	    else {
+		_proj = expr;
+		_sel = "";
+	    }
+	}
+	else {
+	    _URL = name;
+	    _proj = "";
+	    _sel = "";
+	}
+
 	_local = false;
 
 	_tv = new timeval;
@@ -1312,12 +1339,22 @@ exit:
 // M sequences must follow the N-M other variables.
 
 DDS &
-Connect::request_data(const String expr, bool gui_p = true, 
+Connect::request_data(String expr, bool gui_p = true, 
 		      bool async = false, const String &ext = "dods")
 {
     (void)gui()->show_gui(gui_p);
 
-    String data_url = _URL + "." + ext + "?" + expr;
+    String proj, sel;
+    if (expr.contains("&")) {
+      proj = expr.before("&");
+      sel = expr.after(proj);
+    }
+    else {
+      proj = expr;
+      sel = "";
+    }
+
+    String data_url = _URL + "." + ext + "?" + _proj + proj + _sel + sel;
     bool status = fetch_url(data_url, async);
 	
     if (!status) {
