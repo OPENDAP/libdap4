@@ -6,14 +6,22 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.7  1995/12/06 18:33:34  jimg
-/* Added forward decalration of text_to_temp();
+/* Revision 1.8  1996/02/02 00:31:25  jimg
+/* Merge changes for DODS-1.1.0 into DODS-2.x
 /*
+ * Revision 1.7  1995/12/06  18:33:34  jimg
+ * Added forward decalration of text_to_temp();
+ *
  * Revision 1.6  1995/08/26  00:32:12  jimg
  * Removed code enclosed in #ifdef NEVER #endif.
  *
  * Revision 1.5  1995/08/23  00:41:57  jimg
  * xdr_str() now takes a String & instead of a String ** for arg 2.
+ *
+ * Revision 1.4.2.1  1995/09/29 19:28:06  jimg
+ * Fixed problems with xdr.h on an SGI.
+ * Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
+ * the SGI.
  *
  * Revision 1.4  1995/03/04  14:36:50  jimg
  * Fixed xdr_str so that it works with the new String objects.
@@ -31,9 +39,13 @@
  */
 
 #include <stdio.h>
+#ifdef NEVER
+#include <rpc/types.h>
+#include <netinet/in.h>
 #include <rpc/xdr.h>
 #include <SLList.h>
 #include <String.h>
+#endif
 
 #include "BaseType.h"
 #include "Byte.h"

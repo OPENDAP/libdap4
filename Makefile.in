@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.28 1996/02/01 17:43:11 jimg Exp $
+# $Id: Makefile.in,v 1.29 1996/02/02 00:31:10 jimg Exp $
 
 @SET_MAKE@
 
@@ -17,9 +17,9 @@
 PROG= libdap++.a
 DODS_ROOT = ../..
 
-INCS = -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include 
+INCS = -I. -IMap -IStack -IPlex -IVec -I../errmsg -I../netio
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
-CPPFLAGS = $(DEFS) $(INCS) @CPPFLAGS@
+CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@
 LDFLAGS = @LDFLAGS@ -L. -LMAP -LStack -LPlex -LVec -L$(DODS_ROOT)/lib
 LFLAGS = -8
@@ -72,7 +72,7 @@ DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
 EXPR_GRAM_OBJS = lex.expr.o expr.tab.o
 
-DASHDRS = AttrTable.h DAS.h
+DASHDRS = AttrTable.h DAS.h debug.h
 DASSRCS = AttrTable.cc DAS.cc
 DASOBJS = AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
@@ -117,8 +117,9 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
 
 all: $(PROG)
 
-libdap++.a: libdap++.a($(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS))
-	$(RANLIB) libdap++.a
+libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS)
+	$(AR) -cru $@ $?
+	$(RANLIB) $@
 
 # Build the test drivers
 
@@ -195,25 +196,29 @@ expr.tab.o: expr.tab.c		# build using C++ compiler
 # NB: it does not make much sense to install lib{das,dds}.a without the stack
 # map and xplex libraries also installed
 
-install: 
+install: all install-headers
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
-	for h in config_dap.h $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) $(GNUHDRS); \
+
+install-headers:
+	$(INSTALL_DATA) config_dap.h $(includedir)
+	$(INSTALL_DATA) debug.h $(includedir)
+	for h in $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) $(GNUHDRS); \
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
 Makefile: ${srcdir}/Makefile.in
-	${SHELL} ./config.status
+	cd .. && ${SHELL} ./config.status && cd $(dir)
 
 check: libdap++.a das-check dds-check trans-check
 
 # these tests all fail when das-test is linked with -lnew_debug.
 
 das-check: das-test
-	-rootme=`pwd`; export rootme; \
+	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool das-test --srcdir das-testsuite
 
 dds-check: dds-test
-	-rootme=`pwd`; export rootme; \
+	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool dds-test --srcdir dds-testsuite
 
 trans-check: trans-test
@@ -225,16 +230,26 @@ clean:
 	-rm -f $(PROG) das-test dds-test trans-test
 
 distclean: clean
+	-rm -f config.status config.log config.cache
+
+# I added this so tat distclean will not wipe these files out. Thus people
+# without GNU bison/flex (e.g., Dec Alphas which have a scanner generator
+# called `flex' which is definately not a recent GNU flex) can still build
+# the DAP software. Few people should want to hack these grammar files.
+
+grammarclean: clean
 	-rm -f lex.das.c das.tab.c das.tab.h lex.dds.c dds.tab.c dds.tab.h
-	-rm -f config.status config.log config.cache Makefile
 
 tar:
-	cd ..; tar --exclude $(dir)/old -c -f $(dir).tar $(dir); \
-	       gzip $(dir).tar
+	cd .. && tar --exclude $(dir)/old --gzip -c -f $(dir).tar $(dir) &&\
+		cd $(dir)
 
 tags:
 	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
 
+# I added the install of config_dap.h to the depend target so that the files
+# in DODS_ROOT/include would be correct even without users running `make
+# install'.
 depend: 
 	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
 	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(TESTSRCS) das-test.cc dds-test.cc 
@@ -246,4 +261,17 @@ dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
 
 das.tab.c: DAS.h
 
+.SUFFIXES:      .o .cc .c
+
+.c.o:
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
+
+.cc.o:
+	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+
+
+
+
+

@@ -38,7 +38,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.18  1995/12/09 01:06:54  jimg
+// Revision 1.19  1996/02/02 00:31:12  jimg
+// Merge changes for DODS-1.1.0 into DODS-2.x
+//
+// Revision 1.18  1995/12/09  01:06:54  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -59,6 +62,9 @@
 // Revision 1.14  1995/08/23  00:11:06  jimg
 // Changed old, deprecated member functions to new ones.
 // Switched from String representation of type to enum.
+//
+// Revision 1.13.2.1  1995/09/14 20:58:15  jimg
+// Moved some loop index variables out of the loop statement.
 //
 // Revision 1.13  1995/07/09  21:29:03  jimg
 // Added copyright notice.
@@ -159,8 +165,12 @@
 void
 Sequence::_duplicate(const Sequence &s)
 {
+#ifdef NEVER
     set_name(s.name());
     set_type(s.type());
+#endif
+
+    BaseType::_duplicate(s);
 
     Sequence &cs = (Sequence &)s; // cast away const
     

@@ -37,7 +37,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.16  1995/12/06 18:36:23  jimg
+// Revision 1.17  1996/02/02 00:31:24  jimg
+// Merge changes for DODS-1.1.0 into DODS-2.x
+//
+// Revision 1.16  1995/12/06  18:36:23  jimg
 // Added text_to_temp(). This copies the given String to a temporary file and
 // returns a FILE * to that file. The file is unlinked, so one the FILE * is
 // closed, it is removed from the file system.
@@ -50,6 +53,33 @@
 //
 // Revision 1.13  1995/08/23  00:41:58  jimg
 // xdr_str() now takes a String & instead of a String ** for arg 2.
+//
+// Revision 1.12.2.6  1995/10/12 17:01:43  jimg
+// Added {}'s to case statements so that gcc-2.7.0 won't complain about jumping
+// over case statement labels. This only happens when returning values from
+// variable defined within a case label. It is better to use the {}'s than move
+// the definition of the variable.
+//
+// Revision 1.12.2.5  1995/09/29  19:28:04  jimg
+// Fixed problems with xdr.h on an SGI.
+// Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
+// the SGI.
+//
+// Revision 1.12.2.4  1995/09/27  23:17:20  jimg
+// Fixed casts again...
+//
+// Revision 1.12.2.3  1995/09/27  21:49:06  jimg
+// Fixed casts.
+//
+// Revision 1.12.2.2  1995/09/27  19:07:01  jimg
+// Add casts to `cast away' const and unsigned in places where we call various
+// xdr functions (which don't know about, or use, const or unsigned.
+//
+// Revision 1.12.2.1  1995/09/14  20:57:25  jimg
+// Moved variable initializations in xdr_str() and xdr_str_array() out of the
+// switch statement to avoid complaint from gcc 2.7.0 about initializations
+// crossing case labels.
+// Moved some loop index variables out of the loop statement.
 //
 // Revision 1.12  1995/07/09  21:29:28  jimg
 // Added copyright notice.
@@ -102,7 +132,8 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.16 1995/12/06 18:36:23 jimg Exp $"};
+
+static char rcsid[]={"$Id: util.cc,v 1.17 1996/02/02 00:31:24 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -111,6 +142,7 @@ static char rcsid[]={"$Id: util.cc,v 1.16 1995/12/06 18:36:23 jimg Exp $"};
 #include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
+
 #include <rpc/xdr.h>
 
 #ifdef DBMALLOC
@@ -173,7 +205,8 @@ unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
 #endif
 
     // look for any instance of consecutive names that are ==
-    for (int i = 1; i < nelem; ++i)
+    int i;
+    for (i = 1; i < nelem; ++i)
 	if (!strcmp(names[i-1], names[i])) {
 	    cerr << "The variable `" << names[i] 
 		 << "' is used more than once in " << type_name << " `"
@@ -230,6 +263,9 @@ delete_xdrstdio(XDR *xdr)
 // otherwise. The formal parameter BUF is modified as a side effect,
 // including possibly having new memory allocated to hold its value.
 
+// *** is BUF a String ** or String *?
+// *** is BUF ever NULL?
+
 extern "C" bool_t
 xdr_str(XDR *xdrs, String &buf)
 {
@@ -237,18 +273,22 @@ xdr_str(XDR *xdrs, String &buf)
       case XDR_ENCODE:		// BUF is a pointer to a (String *)
 	const char *out_tmp = (const char *)buf;
 
-	return xdr_string(xdrs, &out_tmp, max_str_len);
+	return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
+      }
 
-      case XDR_DECODE:		// BUF is a pointer to a String * or to NULL
-	char *in_tmp = NULL; // = str_tmp;
+      case XDR_DECODE: {	// BUF is a pointer to a String * or to NULL
+	char *in_tmp = NULL;
 	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
-	if (!stat)
+	if (!stat) {
+	    free(in_tmp);
 	    return stat;
+	}
 
-	buf = in_tmp;
+	buf = in_tmp;		// if BUF is a String *, is this correct?
 	free(in_tmp);
 
 	return stat;
+      }
 	
       default:
 	assert(false);

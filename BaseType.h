@@ -8,11 +8,14 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.20  1995/12/09 01:06:33  jimg
-/* Added changes so that relational operators will work properly for all the
-/* datatypes (including Sequences). The relational ops are evaluated in
-/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+/* Revision 1.21  1996/02/02 00:31:00  jimg
+/* Merge changes for DODS-1.1.0 into DODS-2.x
 /*
+ * Revision 1.20  1995/12/09  01:06:33  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
  * Revision 1.19  1995/12/06  21:45:01  jimg
  * Changed read() from three parameters to two.
  * Added constrained flag to print_decl().
@@ -30,6 +33,19 @@
  * Added type_name() member function so that it is simple to get the string
  * representation of a variable's type.
  * Changed the name of read_val/store_val to buf2val/val2buf.
+ *
+ * Revision 1.15.2.3  1995/09/29 19:27:59  jimg
+ * Fixed problems with xdr.h on an SGI.
+ * Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
+ * the SGI.
+ *
+ * Revision 1.15.2.2  1995/09/27  19:06:58  jimg
+ * Add casts to `cast away' const and unsigned in places where we call various
+ * xdr functions (which don't know about, or use, const or unsigned.
+ *
+ * Revision 1.15.2.1  1995/09/14  16:45:20  jimg
+ * Changed _duplicate() member function from private to protected so that the
+ * chilren of BaseType can call it in their implementations of _duplicate().
  *
  * Revision 1.15  1995/05/10  13:45:09  jimg
  * Changed the name of the configuration header file from `config.h' to
@@ -140,6 +156,8 @@
 #endif
 
 #include <stdio.h>
+#include <rpc/types.h>
+#include <netinet/in.h>
 #include <rpc/xdr.h>
 
 #include <iostream.h>

@@ -7,11 +7,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.23  1995/12/09 01:06:31  jimg
-/* Added changes so that relational operators will work properly for all the
-/* datatypes (including Sequences). The relational ops are evaluated in
-/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+/* Revision 1.24  1996/02/02 00:30:58  jimg
+/* Merge changes for DODS-1.1.0 into DODS-2.x
 /*
+ * Revision 1.23  1995/12/09  01:06:31  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
  * Revision 1.22  1995/12/06  21:37:55  jimg
  * Added members to record information about array index constraints.
  * Added mfuns to access/set those members.
@@ -31,6 +34,10 @@
  * Removed card() member function.
  * Removed old, deprecated member functions.
  * Changed the names of read_val and store_val to buf2val and val2buf.
+ *
+ * Revision 1.17.2.1  1995/09/14 20:59:52  jimg
+ * Fixed declaration of, and calls to, _duplicate() by changing the formal
+ * param from a pointer to a reference.
  *
  * Revision 1.17  1995/05/10  13:45:03  jimg
  * Changed the name of the configuration header file from `config.h' to

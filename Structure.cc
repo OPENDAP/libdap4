@@ -38,7 +38,10 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.18  1995/12/09 01:07:00  jimg
+// Revision 1.19  1996/02/02 00:31:13  jimg
+// Merge changes for DODS-1.1.0 into DODS-2.x
+//
+// Revision 1.18  1995/12/09  01:07:00  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -60,6 +63,9 @@
 // Changed old, deprecated member functions to new ones.
 // Switched from String representation of type to enum.
 //
+// Revision 1.13.2.1  1995/09/14 20:58:13  jimg
+// Moved some loop index variables out of the loop statement.
+//
 // Revision 1.13  1995/07/09  21:29:06  jimg
 // Added copyright notice.
 //
@@ -80,19 +86,19 @@
 //
 // Revision 1.9  1995/03/04  14:34:51  jimg
 // Major modifications to the transmission and representation of values:
-// 	Added card() virtual function which is true for classes that
-// 	contain cardinal types (byte, int float, string).
-// 	Changed the representation of Str from the C rep to a C++
-// 	class represenation.
-// 	Chnaged read_val and store_val so that they take and return
-// 	types that are stored by the object (e.g., inthe case of Str
-// 	an URL, read_val returns a C++ String object).
-// 	Modified Array representations so that arrays of card()
-// 	objects are just that - no more storing strings, ... as
-// 	C would store them.
-// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-// 	an array of a structure is represented as an array of Structure
-// 	objects).
+// Added card() virtual function which is true for classes that
+// contain cardinal types (byte, int float, string).
+// Changed the representation of Str from the C rep to a C++
+// class represenation.
+// Chnaged read_val and store_val so that they take and return
+// types that are stored by the object (e.g., inthe case of Str
+// an URL, read_val returns a C++ String object).
+// Modified Array representations so that arrays of card()
+// objects are just that - no more storing strings, ... as
+// C would store them.
+// Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// an array of a structure is represented as an array of Structure
+// objects).
 //
 // Revision 1.8  1995/02/10  02:22:59  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
@@ -161,8 +167,14 @@
 void
 Structure::_duplicate(const Structure &s)
 {
+#ifdef NEVER
     set_name(s.name());
     set_type(s.type());
+
+    Structure &cs = (Structure &)s; // cast away const
+#endif
+    
+    BaseType::_duplicate(s);
 
     Structure &cs = (Structure &)s; // cast away const
 
