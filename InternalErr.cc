@@ -8,6 +8,11 @@
 // Implementation for the InternalErr class.
 
 // $Log: InternalErr.cc,v $
+// Revision 1.2  1999/05/26 17:33:55  jimg
+// Fixed a bad call to Error's ctor. For some reason calling the four arg ctor
+// with the last arg == to 0 caused string to gag. At least that appears to have
+// been the problem...
+//
 // Revision 1.1  1999/05/04 19:43:47  jimg
 // Added
 //
@@ -18,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.1 1999/05/04 19:43:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.2 1999/05/26 17:33:55 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -32,7 +37,7 @@ InternalErr::InternalErr() : Error()
 }
 
 InternalErr::InternalErr(string msg)
-    : Error(unknown_error, "", undefined_prog_type, 0) 
+    : Error(unknown_error, msg)
 {
     ostrstream oss;
     oss << "An internal error was encounterd:" << endl
@@ -43,7 +48,7 @@ InternalErr::InternalErr(string msg)
 }
 
 InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
-    : Error(unknown_error, "", pt, pgm) 
+    : Error(unknown_error, msg, pt, pgm) 
 {
     ostrstream oss;
     oss << "An internal error was encounterd:" << endl
