@@ -11,6 +11,12 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.18  1996/11/13 19:10:03  jimg
+// Added set_mime_error() function. Use this to send MIME headers indicating
+// that an error has occurred. NB: Don't use this when sending back an Error
+// object - this is for those cases where an error object won't do and you must
+// signal an error to the WWW/HTTP software on the client side.
+//
 // Revision 1.17  1996/10/18 16:33:14  jimg
 // Changed set_mime_binary() and set_mime_text() so that they produce a full
 // HTTP/MIME header.
@@ -89,7 +95,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.17 1996/10/18 16:33:14 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.18 1996/11/13 19:10:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,6 +105,10 @@ static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.17 1996/10/18 16:33:14 j
 
 #include <iostream.h>
 #include <String.h>
+
+#if 0
+#include <HTError.h>
+#endif
 
 #include "cgi_util.h"
 
@@ -259,6 +269,15 @@ set_mime_binary(ObjectType type = unknown_type, EncodingType enc = x_plain)
     cout << "Content-Description: " << descrip[type] << endl;
     cout << "Content-Encoding: " << encoding[enc] << endl;
     cout << endl;		// MIME header ends with a blank line
+}
+
+void 
+set_mime_error(int code = HTERR_NOT_FOUND, 
+	       const char *reason = "Dataset not found")
+{
+    cout << "HTTP/1.0 " << code << " " << reason << endl;
+    cout << "Server: " << DVR << endl;
+    cout << endl;
 }
 
 // Open a pipe to a filter process which will compress this process' stdout. 
