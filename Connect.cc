@@ -8,6 +8,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.78  1999/05/26 17:30:24  jimg
+// Added the calls to Error::correct_error(...). These were removed because
+// they use the Gui object. However, they access it through the Connect::Gui()
+// member function which will return NULL until we fix the Gui. Calling the
+// correct_error with a NULL Gui object works in that the error message is
+// displayed on stderr and the Gui stuff is ignored.
+//
 // Revision 1.77  1999/05/21 20:39:23  dan
 // Disabled the Gui interface in the Connect objects.  Primarily
 // this was done in www_libc_init, constructor, destructor, and request_
@@ -437,7 +444,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.77 1999/05/21 20:39:23 dan Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.78 1999/05/26 17:30:24 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1378,9 +1385,7 @@ Connect::request_das(bool gui_p, const string &ext)
 	      status = false;
 	      break;
 	  }
-#ifdef GUI
 	  correction = _error.correct_error(gui());
-#endif
 	  status = false;
 	  break;
       }
@@ -1425,9 +1430,7 @@ Connect::request_dds(bool gui_p, const string &ext)
 	      status = false;
 	      break;
 	  }
-#ifdef GUI
 	  correction = _error.correct_error(gui());
-#endif
 	  status = false;
 	  break;
       }
