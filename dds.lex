@@ -22,10 +22,14 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.3  1994/12/09 21:40:44  jimg
-/* Added `=' to the set of recognized lexemes.
-/* Added `[' and `]' to the set of rejected characters.
+/* Revision 1.4  1994/12/16 22:22:14  jimg
+/* Changed NEVER to be anything not caught by the earlier rules.
+/* Fixed // style comments so that // ... <eof> works.
 /*
+# Revision 1.3  1994/12/09  21:40:44  jimg
+# Added `=' to the set of recognized lexemes.
+# Added `[' and `]' to the set of rejected characters.
+#
 # Revision 1.2  1994/11/10  19:46:49  jimg
 # Added `/' to the set of characters that make up an identifier.
 #
@@ -35,7 +39,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.3 1994/12/09 21:40:44 jimg Exp $"};
+static char rcsid[]={"$Id: dds.lex,v 1.4 1994/12/16 22:22:14 jimg Exp $"};
 
 #include <string.h>
 
@@ -69,9 +73,9 @@ FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
 
-ID  		[a-zA-Z_][a-zA-Z0-9_/]*
+ID  		[a-zA-Z_][a-zA-Z0-9_]*
 INTEGER		[0-9]+
-NEVER		[^a-zA-Z0-9_{};/=]|\[|\]
+NEVER		.*
 
 %%
 
@@ -121,7 +125,9 @@ NEVER		[^a-zA-Z0-9_{};/=]|\[|\]
                         }
 			
 "//"	    	    	BEGIN(comment_new);
-<comment_new>[^\n]*\n	++dds_line_num; BEGIN(INITIAL);
+<comment_new>[^\n]*
+<comment_new>\n		++dds_line_num; BEGIN(INITIAL);
+<comment_new><<EOF>>    yy_init = 1; dds_line_num = 1; yyterminate();
 
 {NEVER}                 {
                           if (yytext) {	/* suppress msgs about `' chars */
