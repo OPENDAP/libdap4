@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.43 2003/12/10 21:11:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.44 2004/01/23 17:12:29 jimg Exp $"};
 
 #include <signal.h>
 
@@ -222,7 +222,6 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     DBG(cerr << "d_comp: " << d_comp << endl);
     DBG(cerr << "d_ce: " << d_ce << endl);
     DBG(cerr << "d_cgi_ver: " << d_cgi_ver << endl);
-    DBG(cerr << "d_ver: " << d_ver << endl);
     DBG(cerr << "d_response: " << d_response << endl);
     DBG(cerr << "d_anc_dir: " << d_anc_dir << endl);
     DBG(cerr << "d_anc_file: " << d_anc_file << endl);
@@ -965,6 +964,10 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.44  2004/01/23 17:12:29  jimg
+// Removed errant DBG() with d_ver field (that field is no longer part of the
+// class.
+//
 // Revision 1.43  2003/12/10 21:11:57  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.
