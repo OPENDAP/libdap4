@@ -1,4 +1,6 @@
 
+/* -*- C++ -*- */
+
 /* 
    (c) COPYRIGHT URI/MIT 1995-1996
    Please read the full copyright statement in the file COPYRIGH.  
@@ -17,9 +19,20 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.10  1996/05/31 23:31:04  jimg
-/* Updated copyright notice.
+/* Revision 1.11  1996/06/11 17:27:11  jimg
+/* Moved debug.h in front of all the other DODS includes - this ensures that the
+/* debug.h included in this file is the one in effect (as opposed to a copy
+/* included by some other include file). We should banish nested includes...
+/* Added support for `Grid constraints'. These are like the Array constraints -
+/* projections where the start, stop and stride of each dimension may be
+/* specified. The new feature required a grammar change (so the parser would
+/* accept grids with the array bracket notation) and two new functions:
+/* is_grid_t() and process_grid_indices(). The actual projection information is
+/* stored in the array members of the Grid.
 /*
+ * Revision 1.10  1996/05/31 23:31:04  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.9  1996/05/29 22:08:57  jimg
  * Made changes necessary to support CEs that return the value of a function
  * instead of the value of a variable. This was done so that it would be
@@ -63,7 +76,7 @@
 
 %{
 
-static char rcsid[]={"$Id: expr.y,v 1.10 1996/05/31 23:31:04 jimg Exp $"};
+static char rcsid[]={"$Id: expr.y,v 1.11 1996/06/11 17:27:11 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +85,8 @@ static char rcsid[]={"$Id: expr.y,v 1.10 1996/05/31 23:31:04 jimg Exp $"};
 
 #include <String.h>
 #include <SLList.h>
+
+#include "debug.h"
 
 #include "DDS.h"
 
@@ -87,7 +102,6 @@ static char rcsid[]={"$Id: expr.y,v 1.10 1996/05/31 23:31:04 jimg Exp $"};
 
 #include "config_dap.h"
 #include "util.h"
-#include "debug.h"
 #include "parser.h"
 #include "expr.h"
 
@@ -104,9 +118,11 @@ int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list_list *make_array_indeces(int_list *index);
 int_list_list *append_array_index(int_list_list *indeces, int_list *index);
 void delete_array_indeces(int_list_list *indeces);
-bool process_array_indeces(BaseType *variable, int_list_list *indeces);
+bool process_array_indeces(BaseType *variable, int_list_list *indeces); 
+bool process_grid_indeces(BaseType *variable, int_list_list *indeces); 
 
 bool is_array_t(BaseType *variable);
+bool is_grid_t(BaseType *variable);
 
 rvalue_list *make_rvalue_list(DDS &table, rvalue *rv);
 rvalue_list *append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv);
@@ -223,7 +239,7 @@ projection:	ID
 			  exprerror("No such field in dataset", $1);
 		      }
 		  }
-		| array_sel
+		| array_sel	/* Array *Selection* is a misnomer... */
 		  {
 		      $$ = $1;
 		  }
@@ -361,12 +377,19 @@ constant:       INT
 		  }
 ;
 
+/* Array *selection* is a misnomer; it is really array *projection*. jhrg */
 array_sel:	ID array_indeces 
                   {
 		      BaseType *var = table.var($1);
 		      if (var && is_array_t(var)) {
 			  var->set_send_p(true);
 			  $$ = process_array_indeces(var, $2);
+			  delete_array_indeces($2);
+		      }
+		      else if (var && is_grid_t(var)) {
+			  var->set_send_p(true);
+			  $$ = process_grid_indeces(var, $2);
+			  delete_array_indeces($2);
 		      }
 		      else
 			  $$ = false;
@@ -374,9 +397,16 @@ array_sel:	ID array_indeces
 	        | FIELD array_indeces 
                   {
 		      BaseType *var = table.var($1);
-		      if (var && is_array_t(var))
+		      if (var && is_array_t(var)) {
 			  $$ = table.mark($1, true) // set all the parents, too
-			  && process_array_indeces(var, $2);
+			      && process_array_indeces(var, $2);
+			  delete_array_indeces($2);
+		      }
+		      else if (var && is_grid_t(var)) {
+			  $$ = table.mark($1, true) // set all the parents, too
+			       && process_grid_indeces(var, $2);
+			  delete_array_indeces($2);
+		      }
 		      else
 			  $$ = false;
 		  }
@@ -496,7 +526,22 @@ bool
 is_array_t(BaseType *variable)
 {
     if (variable->type() != dods_array_c) {
+#if 0
 	cerr << "Variable " << variable->name() << " is not an array." << endl;
+#endif
+	return false;
+    }
+    else
+	return true;
+}
+
+bool
+is_grid_t(BaseType *variable)
+{
+    if (variable->type() != dods_grid_c) {
+#if 0
+	cerr << "Variable " << variable->name() << " is not an grid." << endl;
+#endif
 	return false;
     }
     else
@@ -510,8 +555,14 @@ process_array_indeces(BaseType *variable, int_list_list *indeces)
 
     Array *a = (Array *)variable; // replace with dynamic cast
 
+    DBG(cerr << "Before clear_costraint:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
     a->clear_constraint();	// each projection erases the previous one
     
+    DBG(cerr << "After clear_costraint:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
     Pix p, r;
     for (p = indeces->first(), r = a->first_dim(); 
 	 p && r; 
@@ -541,6 +592,9 @@ process_array_indeces(BaseType *variable, int_list_list *indeces)
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
     }
 
+    DBG(cerr << "After processing loop:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
     DBG(Pix dp;\
 	cout << "Array Constraint: ";\
 	for (dp = a->first_dim(); dp; a->next_dim(dp))\
@@ -554,7 +608,82 @@ process_array_indeces(BaseType *variable, int_list_list *indeces)
     }
 
 exit:
+#if 0
     delete_array_indeces(indeces);
+#endif
+    return status;
+}
+
+bool
+process_grid_indeces(BaseType *variable, int_list_list *indeces)
+{
+    bool status = true;
+
+    Grid *g = (Grid *)variable; // Replace with dynamic cast.
+
+    // First do the constraints on the ARRAY in the grid.
+    status = process_array_indeces(g->array_var(), indeces);
+    if (!status)
+	goto exit;
+
+    // Now process the maps.
+    Pix p, r;
+
+    // Supress all maps by default.
+    for (r = g->first_map_var(); r; g->next_map_var(r))
+	g->map_var(r)->set_send_p(false);
+
+    // Add specified maps to the current projection.
+    for (p = indeces->first(), r = g->first_map_var(); 
+	 p && r; 
+	 indeces->next(p), g->next_map_var(r)) {
+
+	int_list *index = (*indeces)(p);
+
+	Pix q = index->first(); 
+	int start = (*index)(q);
+
+	index->next(q);
+	int stride = (*index)(q);
+	
+	index->next(q);
+
+	int stop = (*index)(q);
+
+	Array *a = (Array *)g->map_var(r);
+	a->set_send_p(true);
+	a->clear_constraint();
+
+	index->next(q);
+	if (q) {
+	    cerr << "Too many values in index list for " << a->name() << "." 
+		 << endl;
+	    status = false;
+	    goto exit;
+	}
+
+	a->add_constraint(a->first_dim(), start, stride, stop);
+	DBG(cerr << "Set Constraint: " \
+	    << a->dimension_size(a->first_dim(), true) << endl);
+    }
+
+    DBG(Pix dp;\
+	cout << "Grid Constraint: ";\
+	for (dp = ((Array *)g->array_var())->first_dim(); dp; \
+		 ((Array *)g->array_var())->next_dim(dp))\
+	   cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
+	cout << endl);
+    
+    if (p && !r) {
+	cerr << "Too many indeces in constraint for " 
+	     << g->map_var(r)->name() << "." << endl;
+	status= false;
+    }
+
+exit:
+#if 0
+    delete_array_indeces(indeces);
+#endif
     return status;
 }
 
