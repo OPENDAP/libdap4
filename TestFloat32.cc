@@ -10,6 +10,9 @@
 // 3/22/99 jhrg
 
 // $Log: TestFloat32.cc,v $
+// Revision 1.3  2000/07/18 03:04:09  rmorris
+// Inserted simple trivial cast that makes VC++ happier.
+//
 // Revision 1.2  1999/04/29 02:29:32  jimg
 // Merge of no-gnu branch
 //
@@ -45,7 +48,7 @@ TestFloat32::read(const string &, int &)
     if (read_p())
 	return true;
 
-    _buf = 99.999;
+    _buf = (float)99.999;
 
     set_read_p(true);
 
