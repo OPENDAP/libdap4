@@ -2,7 +2,7 @@
 /*
    Scanner for the DAS. This file works with gnu's flex scanner generator. It
    returns either ATTR, ID, VAL, TYPE or one of the single character tokens
-   `{', `}', `;', or `\n' as integers. In the case of an ID or VAL, the
+   `{', `}', `;', `,' or `\n' as integers. In the case of an ID or VAL, the
    scanner stores a pointer to the lexeme in yylval (whose type is char *).
 
    The scanner discards all comment text.
@@ -33,7 +33,12 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.7  1994/12/07 21:17:07  jimg
+# Revision 1.8  1994/12/08 16:53:24  jimg
+# Modified the NEVER regexp so that `[' and `]' are not allowed in the
+# input stream. Previously they were not recognized but also not reported
+# as errors.
+#
+# Revision 1.7  1994/12/07  21:17:07  jimg
 # Added `,' (comma) to set of single character tokens recognized by the
 # scanner. Comma is the separator for elements in attribute vectors.
 #
@@ -80,7 +85,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.7 1994/12/07 21:17:07 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.8 1994/12/08 16:53:24 jimg Exp $"};
 
 #include <string.h>
 
@@ -105,7 +110,7 @@ ID  	[a-zA-Z_][a-zA-Z0-9_/]*
 VAL 	[a-zA-Z0-9_.+-]+
 ATTR 	attributes|Attributes|ATTRIBUTES
 TYPE    BYTE|Byte|byte|INT32|Int32|int32|FLOAT64|Float64|float64|STRING|String|string|URL|Url|url
-NEVER   [^a-zA-Z0-9_.+-{};,/]
+NEVER   [^a-zA-Z0-9_.+-{};,]|\[|\]
 
 %%
 
