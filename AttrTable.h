@@ -10,11 +10,23 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.2  1994/08/02 19:17:39  jimg
-/* Fixed `$Log$' comments and rcsid[] variables (syntax errors due to //
-/* comments caused compilation failures.
-/* das.tab.c and .h are commited now as well.
+/* Revision 1.3  1994/09/09 15:26:41  jimg
+/* Removed operator<< and added print() since I have no good way to define
+/* operator>>. It seems best to define all operators from a set (like <<, >>)
+/* or none at all. Since parse() is the input mfunc, it seems that output
+/* should be a mfunc too.
 /*
+ * Revision 1.2  1994/08/02  19:17:39  jimg
+ * Fixed `$Log: AttrTable.h,v $
+ * Fixed `Revision 1.3  1994/09/09 15:26:41  jimg
+ * Fixed `Removed operator<< and added print() since I have no good way to define
+ * Fixed `operator>>. It seems best to define all operators from a set (like <<, >>)
+ * Fixed `or none at all. Since parse() is the input mfunc, it seems that output
+ * Fixed `should be a mfunc too.
+ * Fixed `' comments and rcsid[] variables (syntax errors due to //
+ * comments caused compilation failures.
+ * das.tab.c and .h are commited now as well.
+ *
  * Revision 1.1  1994/08/02  18:30:26  jimg
  * Class which inherits from AttrVHMap. This is the class that is contained by
  * the DAS mapping class. In addition to the methods defined by the AttrVHMap
@@ -43,13 +55,12 @@ public:
     AttrTable(AttrTable& a);
     ~AttrTable();
 
-    friend ostream& operator<< (ostream &os, AttrTable &t);
+    void print(ostream &os);
 };
 
 typedef AttrTable * AttrTablePtr;
 
-inline AttrTable::AttrTable(String& dflt, unsigned int sz) 
-    : AttrVHMap(dflt, sz)
+AttrTable::AttrTable(String& dflt, unsigned int sz) : AttrVHMap(dflt, sz)
 {
 }
 
