@@ -12,6 +12,10 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.8  1999/01/21 02:14:37  jimg
+// Added a new struct for the GSE (Grid Selection Expression) parser. This
+// parser uses exceptions to signal all errors except parse errors.
+//
 // Revision 1.7  1998/11/10 00:45:15  jimg
 // Fixed a memory leak in the parser_arg dtor. If the Error object is created
 // the dtor must delete it.
@@ -53,6 +57,7 @@
 #endif
 
 #include "Error.h"
+#include "GSEClause.h"
 
 /// Pass parameters by reference to a parser.
 /** #parser_arg# is used to pass parameters to the bison parsers and get
@@ -78,6 +83,25 @@ struct parser_arg {
     void set_error(Error *obj) { _error = obj; }
     int status() { return _status; }
     void set_status(int val = 0) { _status = val; }
+};
+
+/** Argument to the GSE parser. Assumes all errors will be signalled by
+    throws; Error objects are not returned. */
+struct gse_arg {
+    GSEClause *_gsec;		// The gse parsed.
+    Grid *_grid;		// The Grid being constrained.
+    int _status;		// The parser's status.
+
+    gse_arg(): _gsec(0), _grid(0), _status(1) {}
+    gse_arg(Grid *g): _gsec(0), _grid(g), _status(1) {}
+    ~gse_arg() {}
+
+    void set_gsec(GSEClause *gsec) { _gsec = gsec; }
+    GSEClause *get_gsec() { return _gsec; }
+    void set_grid(Grid *g) { _grid = g; }
+    Grid *get_grid() { return _grid; }
+    void set_status(int stat) { _status = stat; }
+    int get_status() { return _status; }
 };
 
 /// Generate error messages for the various parsers.
