@@ -4,7 +4,14 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.4  1994/10/05 16:34:14  jimg
+// Revision 1.5  1994/10/18 00:20:46  jimg
+// Added copy ctor, dtor, duplicate, operator=.
+// Added var() for const cahr * (to avoid confusion between char * and
+// Pix (which is void *)).
+// Switched to errmsg library.
+// Added formatting to print().
+//
+// Revision 1.4  1994/10/05  16:34:14  jimg
 // Fixed bug in the parse function(s): the bison generated parser returns
 // 1 on error, 0 on success, but parse() was not checking for this.
 // Instead it returned the value of bison's parser function.
@@ -26,36 +33,64 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.4 1994/10/05 16:34:14 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.5 1994/10/18 00:20:46 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
-#include <stdio.h>
-
-#include <iostream.h>
-#ifdef NEVER
-#include <stdiostream.h>
-#endif
-#include <String.h>
-
-#ifdef NEVER
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <unistd.h>
-#include <fcntl.h>
-#endif
-
 #include "DDS.h"
+#include "errmsg.h"
 #include "util.h"
 
-int ddsrestart(FILE *yyin);
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
+
+void ddsrestart(FILE *yyin);
 int ddsparse(DDS &table);	// defined in dds.tab.c
+
+// Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
+// the `result' of the mfunc.
+//
+// NB: This can't define the formal param to be const since SLList<>first()
+// (which is what DDS::first_var() calls) does not define THIS to be const.
+
+void
+DDS::duplicate(DDS &dds)
+{
+    name = dds.name;
+    // copy the things pointed to by the list, not just the pointers
+    for (Pix src = dds.first_var(); src; dds.next_var(src)) {
+	BaseType *btp = dds.var(src)->ptr_duplicate();
+	add_var(btp);
+    }
+}
 
 DDS::DDS(const String &n) : name(n)
 {
+}
+
+DDS::DDS(DDS &rhs)
+{
+    duplicate(rhs);
+}
+
+DDS::~DDS()
+{
+    for (Pix p = first_var(); p; next_var(p))
+	delete var(p);
+}
+
+DDS &
+DDS::operator=(DDS &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    duplicate(rhs);
+
+    return *this;
 }
 
 String 
@@ -100,6 +135,16 @@ DDS::var(const String &n)
     return 0;
 }
 
+// This is necessary because (char *) can be cast to Pix (because PIX is
+// really (void *)). This must take precedence over the creation of a
+// temporary object (the String).
+
+BaseType *
+DDS::var(const char *n)
+{
+    return var((String)n);
+}
+
 Pix 
 DDS::first_var()
 { 
@@ -107,7 +152,7 @@ DDS::first_var()
 }
 
 void 
-DDS::next_var(Pix &p) 
+DDS::next_var(Pix &p)
 { 
     if (!vars.empty())
 	vars.next(p); 
@@ -126,13 +171,12 @@ DDS::var(Pix p)
 bool
 DDS::parse(FILE *in)
 {
-    if (!in)
-	return false;
-
-    if (!ddsrestart(in)) {
-	cerr << "Could not read from input source" << endl;
+    if (!in) {
+	err_print("DDS::parse: NULL file pointer");
 	return false;
     }
+
+    ddsrestart(in);
 
     return ddsparse(*this) == 0;
 }
@@ -141,14 +185,15 @@ DDS::parse(FILE *in)
 // true. 
 
 bool
-DDS::print(FILE *out)
+DDS::print(ostream &os)
 {
-    cout << "Dataset {" << endl;
+    os << "Dataset {" << endl;
 
     for (Pix p = vars.first(); p; vars.next(p))
-	vars(p)->print_decl();
+	vars(p)->print_decl(os
+);
 
-    cout << "} " << name << ";" << endl;
+    os << "} " << name << ";" << endl;
 					   
     return true;
 }
