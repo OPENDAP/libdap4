@@ -14,6 +14,10 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.39  1998/05/18 23:05:08  jimg
+ * Fixed the documentation of update_length. This member function is
+ * deprecated.
+ *
  * Revision 1.38  1998/05/18 22:21:58  jimg
  * Removed part of the class doc comment about selection and projection since
  * they were not quite correct.
@@ -316,8 +320,11 @@ public:
     virtual bool read(const String &dataset, int &error) = 0;
 
 
-  // Changes the size of the array.  If the array exists, it is
-  //    augmented by a factor of #size#.
+    /** Changes the size property of the array.  If the array exists, it is
+	augmented by a factor of #size#. This does not change the actual size
+	of the array.
+
+	@deprecated */
     void update_length(int size);
 
 
