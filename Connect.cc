@@ -9,6 +9,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.92  2000/04/17 22:13:37  jimg
+// Fixed problems with the _gui member and local connections. The _gui object
+// was not initialized (correct) for local connections but *was* destroyed for
+// them (because the code never checked for local connections in the dtor).
+//
 // Revision 1.91  2000/04/17 21:25:00  jimg
 // Fixed an error where local connections affected the status of the
 // __num_remote_conns field. This caused remote connections, made after one or
@@ -531,7 +536,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.91 2000/04/17 21:25:00 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.92 2000/04/17 22:13:37 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1349,6 +1354,9 @@ Connect::clone(const Connect &src)
 	_dds = src._dds;
 	_error = src._error;
 
+#ifdef GUI
+	_gui = new Gui();
+#endif 
 	_URL = src._URL;
 	_proj = src._proj;
 	_sel = src._sel;
@@ -1368,6 +1376,7 @@ Connect::clone(const Connect &src)
 	    _source = new_xdrstdio(_output, XDR_DECODE);
 
 	_www_errors_to_stderr = src._www_errors_to_stderr;
+	_accept_deflate = src._accept_deflate;
     }
 }
 
@@ -1438,12 +1447,9 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
     : _accept_types("All"), _cache_control(""), _www_errors_to_stderr(false),
       _accept_deflate(accept_deflate)
 {
-#ifdef GUI
-    _gui = new Gui;
-#endif
-
     name = prune_spaces(name);
     char *access_ref = HTParse(name.c_str(), NULL, PARSE_ACCESS);
+
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
        	if (_num_remote_conns == 0) {
@@ -1452,6 +1458,10 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 	_num_remote_conns++;
 	// NB: _cache_enabled and _cache_root are set in www_lib_init.
 	// 12/14/99 jhrg
+
+#ifdef GUI
+	_gui = new Gui;
+#endif
 
 	// Find and store any CE given with the URL.
 	string::size_type dotpos = name.find('?');
@@ -1494,9 +1504,6 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 	_source = 0;
 	_type = unknown_type;
 	_encoding = unknown_enc;
-#ifdef GUI
-	delete _gui;
-#endif
     }
 
     HT_FREE(access_ref);
@@ -1521,8 +1528,12 @@ Connect::~Connect()
     // connections made after one or more local connections were made and
     // then broken, were done with an uninitialized libwww. Note surprisingly,
     // this was bad... 4/17/2000 jhrg
-    if (!_local)
+    if (!_local) {
+#ifdef GUI
+	delete _gui;
+#endif 
 	_num_remote_conns--;
+    }
 
     // Calling this ensures that the WWW library Cache gets updated and the
     // .index file is written. 11/22/99 jhrg
@@ -1534,10 +1545,6 @@ Connect::~Connect()
     }
     else
 	if (_cache_enabled) HTCacheIndex_write(_cache_root);
-
-#ifdef GUI
-    delete _gui;
-#endif 
 
     close_output();
 
