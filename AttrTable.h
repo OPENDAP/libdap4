@@ -10,35 +10,14 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.6  1994/10/05 16:38:15  jimg
-/* Changed internal representation of the attribute table from a Map
-/* to a DLList<>.
+/* Revision 1.7  1994/10/13 15:44:36  jimg
+/* Added a new version of append_attr (it takes (const char *)s) and
+/* changed the types of the old version to (const String &).
 /*
- * Revision 1.5  1994/09/27  22:42:45  jimg
- * Changed definition of the class AttrTable; it no longer inherits from
- * AttrVHMap, instead it uses that class (contains a member that is an instance
- * of AttrVHMap).
- * Added mfuncs to AttrTable so that the new member could be set/accessed.
+ * Revision 1.6  1994/10/05  16:38:15  jimg
+ * Changed internal representation of the attribute table from a Map
+ * to a DLList<>.
  *
- * Revision 1.4  1994/09/15  21:08:54  jimg
- * Added many classes to the BaseType hierarchy - the complete set of types
- * described in the DODS API design documet is not represented.
- * The parser can parse DDS files.
- * Fixed many small problems with BaseType.
- * Added CtorType.
- *
- * Revision 1.3  1994/09/09  15:26:41  jimg
- * Removed operator<< and added print() since I have no good way to define
- * operator>>. It seems best to define all operators from a set (like <<, >>)
- * or none at all. Since parse() is the input mfunc, it seems that output
- * should be a mfunc too.
- *
- * Revision 1.2  1994/08/02  19:17:39  jimg
- * Fixed `$Log: AttrTable.h,v $
- * Fixed `Revision 1.6  1994/10/05 16:38:15  jimg
- * Fixed `Changed internal representation of the attribute table from a Map
- * Fixed `to a DLList<>.
- * Fixed `
  * Revision 1.5  1994/09/27  22:42:45  jimg
  * Changed definition of the class AttrTable; it no longer inherits from
  * AttrVHMap, instead it uses that class (contains a member that is an instance
@@ -81,15 +60,12 @@
 #include <String.h>
 #include <DLList.h>
 
-#ifdef NEVER
-#include "AttrVHMap.h"
+#ifdef TRACE_NEW
+#include "trace_new.h"
 #endif
 
 class AttrTable {
 private:
-#ifdef NEVER
-    AttrVHMap map;		// mapping of names to values
-#endif
     struct entry {
 	String name;
 	String type;
@@ -103,11 +79,6 @@ private:
 protected:
     
 public:
-#ifdef NEVER
-    AttrTable(String& dflt=(char *)0, 
-	      unsigned int sz=DEFAULT_INITIAL_CAPACITY);
-#endif
-
     AttrTable();
 
     Pix first_attr();
@@ -122,7 +93,9 @@ public:
     String get_type(const String &name);
     String get_type(const char *name);
 
-    void append_attr(const String &name, String type, String value);
+    void append_attr(const String &name, const String &type, 
+		     const String &value);
+    void append_attr(const char *name, const char *type, const char *value);
     void del_attr(const String &name);
 
     void print(ostream &os, String pad = "    ");
@@ -131,3 +104,5 @@ public:
 typedef AttrTable * AttrTablePtr;
 
 #endif
+
+
