@@ -22,7 +22,10 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.11  1994/12/22 04:30:56  reza
+ * Revision 1.12  1995/02/10 02:56:21  jimg
+ * Added type checking.
+ *
+ * Revision 1.11  1994/12/22  04:30:56  reza
  * Made save_str static to avoid linking conflict.
  *
  * Revision 1.10  1994/12/16  22:06:23  jimg
@@ -83,12 +86,18 @@
  */
 
 %{
+
 #define YYSTYPE char *
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.11 1994/12/22 04:30:56 reza Exp $"};
+#ifndef TRUE
+#define TRUE 1
+#define FALSE 0
+#endif
+
+static char rcsid[]={"$Id: das.y,v 1.12 1995/02/10 02:56:21 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,16 +121,29 @@ static AttrTablePtr attr_tab_ptr;
 void mem_list_report();
 int daslex(void);
 int daserror(char *s);
+static void not_a_datatype(char *s);
 static void save_str(char *dst, char *src);
+static int check_byte(char *val);
+static int check_int(char *val);
+static int check_float(char *val);
+static int check_url(char *val);
 
 %}
 
-%expect 2
+%expect 6
+
+%token ATTR
 
 %token ID
-%token ATTR
-%token VAL
-%token TYPE
+%token INT
+%token FLOAT
+%token STR
+
+%token BYTE
+%token INT32
+%token FLOAT64
+%token STRING
+%token URL
 
 %%
 
@@ -140,13 +162,21 @@ static void save_str(char *dst, char *src);
 
   For every attribute name-value pair (rule: attr_pair) enter the name and
   value in the table entry for the current variable.
+
+  Tokens:
+
+  BYTE, INT32, FLOAT64, STRING and URL are tokens for the type keywords.
+  The tokens INT, FLOAT, STR and ID are returned by the scanner to indicate
+  the type of the value represented by the string contained in the global
+  daslval. These two types of tokens are used to implement type checking for
+  the atributes. See the rules `bytes', ...
 */
 
 attributes:    	attribute
     	    	| attributes attribute
 ;
     	    	
-attribute:    	ATTR '{' var_attr_list '}'
+attribute:    	ATTR { parse_ok = TRUE; } '{' var_attr_list '}'
 ;
 
 var_attr_list: 	/* empty */
@@ -166,46 +196,150 @@ var_attr:   	ID
 		    DBG2(mem_list_report());
 		} 
 		'{' attr_list '}'
+		| error { parse_ok = FALSE; }
 ;
 
 attr_list:  	/* empty */
-    	    	| attr_pair
-    	    	| attr_list attr_pair
+    	    	| attr_tuple
+    	    	| attr_list attr_tuple
 ;
 
-attr_pair:	attr_type
-		{ 
-		    save_str(type, $1);
-		} 
-                attr_name 
-		{ 
-		    save_str(name, $3);
-		} 
-		attr_val ';' 
+attr_tuple:	BYTE { save_str(type, $1); } 
+                ID { save_str(name, $3); } 
+		bytes ';'
+
+		| INT32 { save_str(type, $1); } 
+                ID { save_str(name, $3); } 
+		ints ';'
+
+		| FLOAT64 { save_str(type, $1); } 
+                ID { save_str(name, $3); } 
+		floats ';'
+
+		| STRING { save_str(type, $1); } 
+                ID { save_str(name, $3); } 
+		strs ';'
+
+		| URL { save_str(type, $1); } 
+                ID { save_str(name, $3); } 
+		urls ';'
+
+		| error { parse_ok = FALSE; } ';'
 ;
 
-attr_name:  	ID
-;
-
-attr_val:   	val
-                | attr_val ',' val
-;
-
-val:		ID
+bytes:		INT
 		{
-		    DBG(cerr << "Adding ID: " << name << " " << type << " "\
+		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
 			<< $1 << endl);
-		    attr_tab_ptr->append_attr(name, type, $1);
+		    check_byte($1);
+		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
 		}
-		| VAL
+		| bytes ',' INT
 		{
-		    DBG(cerr << "Adding VAL: " << name << " " << type << " "\
-			<< $1 << endl);
-		    attr_tab_ptr->append_attr(name, type, $1);
+		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
+			<< $3 << endl);
+		    check_byte($3);
+		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
 		}
 ;
 
-attr_type:      TYPE
+ints:		INT
+		{
+		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
+			<< $1 << endl);
+		    check_int($1);
+		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
+		}
+		| ints ',' INT
+		{
+		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
+			<< $3 << endl);
+		    check_int($3);
+		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
+		}
+;
+
+floats:		float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
+			<< $1 << endl);
+		    check_float($1);
+		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
+		}
+		| floats ',' float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
+			<< $3 << endl);
+		    check_float($3);
+		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
+		}
+;
+
+strs:		str_or_id
+		{
+		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
+			<< $1 << endl);
+		    /* assume that a string that parsers is a vaild string */
+		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
+		}
+		| strs ',' str_or_id
+		{
+		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
+			<< $3 << endl);
+		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
+		}
+;
+
+urls:		STR
+		{
+		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
+			<< $1 << endl);
+		    check_url($1);
+		    if (attr_tab_ptr->append_attr(name, type, $1) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
+		}
+		| strs ',' STR
+		{
+		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
+			<< $3 << endl);
+		    check_url($3);
+		    if (attr_tab_ptr->append_attr(name, type, $3) == 0) {
+			daserror("Variable redefinition");
+			parse_ok = 0;
+		    }
+		}
+;
+
+str_or_id:	STR | ID | INT | FLOAT
+;
+
+float_or_int:   FLOAT | INT
 ;
 
 %%
@@ -220,8 +354,60 @@ save_str(char *dst, char *src)
              << dst << "'" << endl;
 }
 
+static void
+not_a_datatype(char *s)
+{
+    fprintf(stderr, "`%s' is not a datatype; line %d\n", s, das_line_num);
+}
+
 int 
 daserror(char *s)
 {
     fprintf(stderr, "%s line: %d\n", s, das_line_num);
 }
+
+static int
+check_byte(char *val)
+{
+    int v = atoi(val);
+
+    if (abs(v) > 255) {
+	daserror("Not a byte value");
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+static int
+check_int(char *val)
+{
+    int v = atoi(val);
+
+    if (abs(v) > 2147483647) {	/* don't use the constant from limits.h */
+	daserror("Not a 32-bit integer value");
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+static int
+check_float(char *val)
+{
+    double v = atof(val);
+
+    if (v = 0.0) {
+	daserror("Not decodable to a 64-bit float value");
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+static int
+check_url(char *val)
+{
+    return TRUE;
+}
+
