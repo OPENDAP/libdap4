@@ -37,6 +37,9 @@
 
 #include <string>
 #include <algorithm>
+#ifdef WIN32
+#include <functional>
+#endif
 
 #include "Constructor.h"
 #include "BTIterAdapter.h"
@@ -260,6 +263,9 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.13  2004/07/19 07:25:42  rmorris
+// #include <functional> for "unary_function" under win32.
+//
 // Revision 1.12  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //
