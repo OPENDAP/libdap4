@@ -17,6 +17,10 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.42  1998/03/17 17:18:52  jimg
+ * Added mfuncs element_count(), is_simple_type(), is_vector_type() and
+ * is_comstructor_type().
+ *
  * Revision 1.41  1998/02/05 20:13:50  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -448,6 +452,26 @@ public:
   /** Returns the type of the class instance as a String. */
     String type_name() const;	
 
+    /** Returns true if the instance is a simple type variable. */
+    bool is_simple_type();
+    /** Returns true if the instance is a vector type variable. */
+    bool is_vector_type();
+    /** Returns true if the instance is a constructor type variable. */
+    bool is_constructor_type();
+
+    /** Return a count of the total number of variables in this variable.
+	This is used to count the number of variables held by a constructor
+	variable - for simple type and vector variables it always returns 1.
+	Thus looping through a structure's members and tallying the
+	element_count() values returned will yield the total number of
+	members in the structure.
+
+	@memo Count the members of constructor types. Returns 1 for simple
+	types. 
+	@param Count all the simple types in the `tree' of variables rooted
+	at this variable. This parameter has no effect for simple type
+	variables. */
+    virtual int element_count(bool leaves = false);
 
   /** Returns the value of the #read_p# flag.  This flag is TRUE
       when the class instance contains a valid value, and FALSE before

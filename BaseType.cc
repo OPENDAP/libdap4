@@ -10,6 +10,10 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.31  1998/03/17 17:18:32  jimg
+// Added mfuncs element_count(), is_simple_type(), is_vector_type() and
+// is_comstructor_type().
+//
 // Revision 1.30  1997/03/08 19:01:55  jimg
 // Changed default param to check_semantics() from  to String()
 // and removed the default from the argument list in the mfunc definition
@@ -301,6 +305,98 @@ BaseType::type_name() const
 	cerr << "BaseType::type_name: Undefined type" << endl;
 	return String("");
     }
+}
+
+bool
+BaseType::is_simple_type()
+{
+    switch (type()) {
+      case dods_null_c:
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+      case dods_float32_c:
+      case dods_float64_c:
+      case dods_str_c:
+      case dods_url_c:
+	return true;
+
+      case dods_array_c:
+      case dods_list_c:
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_function_c:
+      case dods_grid_c:
+	return false;
+    }
+
+    return false;
+}
+
+bool
+BaseType::is_vector_type()
+{
+    switch (type()) {
+      case dods_null_c:
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+      case dods_float32_c:
+      case dods_float64_c:
+      case dods_str_c:
+      case dods_url_c:
+	return false;
+
+      case dods_array_c:
+      case dods_list_c:
+	return true;
+
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_function_c:
+      case dods_grid_c:
+	return false;
+    }
+    
+    return false;
+}
+
+bool
+BaseType::is_constructor_type()
+{
+    switch (type()) {
+      case dods_null_c:
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+      case dods_float32_c:
+      case dods_float64_c:
+      case dods_str_c:
+      case dods_url_c:
+      case dods_array_c:
+      case dods_list_c:
+	return false;
+
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_function_c:
+      case dods_grid_c:
+	return true;
+    }
+
+    return false;
+}
+
+int
+BaseType::element_count(bool)
+{
+    return 1;
 }
 
 // Return the state of _read_p (true if the value of the variable has been
