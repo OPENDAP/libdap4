@@ -8,6 +8,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.47  1997/02/12 21:42:29  jimg
+// Fixed handling of non fatal errors reported by the www library. Now an
+// optional parameter to the class ctor enables display of these informational
+// messages. However, they are not registered as `web_errors' in the
+// type field of the Connect object.
+// Fixed a bug which introduced extraneous '?'s into URLs.
+//
 // Revision 1.46  1997/02/10 02:27:10  jimg
 // Fixed processing of error returns.
 // Changed return type of request_data() (and related functions) from DDS & to
@@ -267,7 +274,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.46 1997/02/10 02:27:10 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.47 1997/02/12 21:42:29 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -555,21 +562,14 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 
     if (WWWTRACE) cerr << "dods_error_print: Generating message" << endl;
 
-    if (request) {
-	Connect *me = (Connect *)HTRequest_context(request);
-	me->_type = web_error;
-    }
-
     if (!request)
 	if (WWWTRACE) cerr << "dods_error_print: request NULL" << endl;
 
     if (!cur)
 	if (WWWTRACE) cerr << "dods_error_print: cur NULL" << endl;
 
-#if 1
     if (!request || !cur) 
 	return NO;
-#endif
 
     while ((pres = (HTError *) HTList_nextObject(cur))) {
         int index = HTError_index(pres);
@@ -586,6 +586,10 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
                     HTChunk_puts(msg, "Non Fatal Error: ");
 		    break;
 		  case ERR_FATAL:
+		    if (request) {
+			Connect *me = (Connect *)HTRequest_context(request);
+			me->_type = web_error;
+		    }
                     HTChunk_puts(msg, "Fatal Error: ");
 		    break;
 		  case ERR_INFO:
@@ -740,7 +744,7 @@ header_handler(HTRequest *, HTResponse *, const char *token, const char *val)
  
 
 void
-Connect::www_lib_init()
+Connect::www_lib_init(bool www_verbose_errors)
 {
     // Starts Mac GUSI socket library
 #ifdef GUSI
@@ -769,8 +773,11 @@ Connect::www_lib_init()
     HTAlert_add(dods_error_print, HT_A_MESSAGE);
     HTAlert_add(dods_username_password, HT_A_USER_PW);
 
-    HTError_setShow(HT_ERR_SHOW_FATAL);
-
+    if (www_verbose_errors)
+	HTError_setShow(HT_ERR_SHOW_INFO);
+    else
+	HTError_setShow(HT_ERR_SHOW_FATAL);
+	
     // Add our own filter to update the history list.
     HTNet_addAfter(terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
 
@@ -938,14 +945,14 @@ Connect::Connect()
 
 // public mfuncs
 
-Connect::Connect(String name)
+Connect::Connect(String name, bool www_verbose_errors = false)
 {
     _gui = new Gui;
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
        	if (_connects < 0) {
-	    www_lib_init();
+	    www_lib_init(www_verbose_errors);
 	    _connects = 1;
 	}
 	else {
@@ -1237,7 +1244,9 @@ Connect::request_das(bool gui_p = false, const String &ext = "das")
 {
     (void)gui()->show_gui(gui_p);
 
-    String das_url = _URL + "." + ext + "?" + _proj + _sel;
+    String das_url = _URL + "." + ext;
+    if (_proj[0] || _sel[0])
+	das_url = das_url + "?" + _proj + _sel;
     bool status = false;
     String value;
 
@@ -1280,7 +1289,9 @@ Connect::request_dds(bool gui_p = false, const String &ext = "dds")
 {
     (void)gui()->show_gui(gui_p);
 
-    String dds_url = _URL + "." + ext + "?" + _proj + _sel;
+    String dds_url = _URL + "." + ext;
+    if (_proj[0] || _sel[0])
+	dds_url = dds_url + "?" + _proj + _sel;
     bool status = false;
 
     status = fetch_url(dds_url);
