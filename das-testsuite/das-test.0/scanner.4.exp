@@ -1,0 +1,98 @@
+
+# expect/tcl code to test the das scanner
+# jhrg
+#
+# $Log: scanner.4.exp,v $
+# Revision 1.1  1996/07/16 16:54:35  jimg
+# Added.
+#
+#
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+set test_name scanner.4
+
+set prompt "das-test:"
+set timeout 2
+set pass 1
+
+das-test_start s
+
+expect {
+    "${prompt} " { 
+    }
+    timeout { 
+	send_user "Timeout\n"
+	set pass 0
+    }
+}
+
+if {$pass} {
+    set thing "\"Attributes\"\r\n"
+    send $thing
+
+    expect {
+	-re ".*STR=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+# Check that all the special characters pass through the scanner. *DON'T*
+# mess with the strings THING and THING2! In THING2 all the special chars are
+# prefixed by `\\' except `[' which is prefixed by `\\\'; the first two `\'s'
+# yeild a single `\', the third `\' escapes the `['. NB: the `[' in THING is
+# also escaped. The left bracket is special in Tcl even in a string
+
+if {$pass} {
+    set thing "\"This is a long nasty string that has some special characters\
+    embedded:!@#$%^&*()_+|~-=`,./;'\[]{}:<>?\"\r\n"
+
+    set thing2 "\"This is a long nasty string that has some special characters\
+    embedded:!@#\\$\\%\\^\\&\\*\\(\\)\\_\\+\\|\\~\\-\\=\\`\\,\\.\\/\\;\\'\\\[\\]\\{\\}\\:\\<\\>\\?\"\r\n"
+
+
+    send $thing
+
+    expect {
+	-re ".*STR=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+# Strange case where unquoted sequence of characters `dalls through' the
+# scanner cases for ID, Float and int and winds up a string. Maybe we should
+# not allow this to happen? 7/15/96
+
+if {$pass} {
+    set thing "a_0.9\r\n"
+    send $thing
+
+    expect {
+	-re ".*STR=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    pass $test_name
+} else {
+    fail $test_name
+}
+
+das-test_exit
+
+

@@ -1,0 +1,181 @@
+
+# expect/tcl code to test the das scanner
+# jhrg
+#
+# $Log: scanner.b.exp,v $
+# Revision 1.1  1996/07/16 16:54:42  jimg
+# Added.
+#
+#
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+set test_name scanner.b
+
+set prompt "das-test:"
+set timeout 2
+set pass 1
+
+das-test_start s
+
+expect {
+    "${prompt} " { 
+    }
+    timeout { 
+	send_user "Timeout\n"
+	set pass 0
+    }
+}
+
+if {$pass} {
+    set thing "0\r\n"
+    send $thing
+
+    expect {
+	-re ".*INT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "01\r\n"
+    send $thing
+
+    expect {
+	-re ".*INT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "0123456789\r\n"
+    send $thing
+
+    expect {
+	-re ".*INT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "0123456789123456789123456789\r\n"
+    send $thing
+
+    expect {
+	-re ".*INT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "+999\r\n"
+    set thing2 "\\+999\r\n" 
+    send $thing
+
+    expect {
+	-re ".*INT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "-999\r\n"
+    send -- $thing
+
+    expect {
+	-re ".*INT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "+256\r\n"
+    set thing2 "\\+256\r\n"
+    send $thing
+
+    expect {
+	-re ".*INT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "-256\r\n"
+    send -- $thing
+
+    expect {
+	-re ".*INT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "+255\r\n"
+    set thing2 "\\+255\r\n"
+    send $thing
+
+    expect {
+	-re ".*INT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "-255\r\n"
+    send -- $thing
+
+    expect {
+	-re ".*INT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    pass $test_name
+} else {
+    fail $test_name
+}
+
+das-test_exit

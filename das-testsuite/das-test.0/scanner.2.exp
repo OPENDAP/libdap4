@@ -1,0 +1,140 @@
+
+# expect/tcl code to test the das scanner
+# jhrg
+#
+# $Log: scanner.2.exp,v $
+# Revision 1.1  1996/07/16 16:54:33  jimg
+# Added.
+#
+#
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+set test_name scanner.2
+
+set prompt "das-test:"
+set timeout 2
+set pass 1
+
+das-test_start s
+
+expect {
+    "${prompt} " { 
+    }
+    timeout { 
+	send_user "Timeout\n"
+	set pass 0
+    }
+}
+
+if {$pass} {
+    set thing "a\r\n"
+    send $thing
+
+    expect {
+	-re ".*ID=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "averylongidentifierthatishardtoread\r\n"
+    send $thing
+
+    expect {
+	-re ".*ID=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "a_very_long_identifier_that_is_not_hard_to_read\r\n"
+    send $thing
+
+    expect {
+	-re ".*ID=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "One_That_HASCAPITALS\r\n"
+    send $thing
+
+    expect {
+	-re ".*ID=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "One_That_has_1234567890\r\n"
+    send $thing
+
+    expect {
+	-re ".*ID=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "z1234567890\r\n"
+    send $thing
+
+    expect {
+	-re ".*ID=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+# Some things that are *not* identifiers! These should scan as strings.
+
+if {$pass} {
+    set thing "a0.9\r\n"
+    send $thing
+
+    expect {
+	-re ".*STR=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    pass $test_name
+} else {
+    fail $test_name
+}
+
+das-test_exit
+
+

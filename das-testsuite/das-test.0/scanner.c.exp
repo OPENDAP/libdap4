@@ -1,0 +1,188 @@
+
+# expect/tcl code to test the das scanner
+# jhrg
+#
+# $Log: scanner.c.exp,v $
+# Revision 1.1  1996/07/16 16:54:43  jimg
+# Added.
+#
+#
+
+# Some of the float values are not legal but the parser will (should) report
+# those errors.
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+set test_name scanner.c
+
+set prompt "das-test:"
+set timeout 2
+set pass 1
+
+das-test_start s
+
+expect {
+    "${prompt} " { 
+    }
+    timeout { 
+	send_user "Timeout\n"
+	set pass 0
+    }
+}
+
+if {$pass} {
+    set thing "0.0\r\n"
+    send $thing
+
+    expect {
+	-re ".*FLOAT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing ".1\r\n"
+    send $thing
+
+    expect {
+	-re ".*FLOAT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "+1.0\r\n"
+    set thing2 "\\+1.0\r\n"
+    send $thing
+
+    expect {
+	-re ".*FLOAT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "+1.0e9\r\n"
+    set thing2 "\\+1.0e9\r\n"
+    send $thing
+
+    expect {
+	-re ".*FLOAT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "+1.0e+9\r\n"
+    set thing2 "\\+1.0e\\+9\r\n"
+    send $thing
+
+    expect {
+	-re ".*FLOAT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "-1.0e+9\r\n"
+    set thing2 "-1.0e\\+9\r\n"
+    send -- $thing
+
+    expect {
+	-re ".*FLOAT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "-1.0e+99\r\n"
+    set thing2 "-1.0e\\+99\r\n"
+    send -- $thing
+
+    expect {
+	-re ".*FLOAT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "-256.256e-99\r\n"
+    send -- $thing
+
+    expect {
+	-re ".*FLOAT=${thing}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "+255.999e-9999999\r\n"
+    set thing2 "\\+255.999e-9999999\r\n"
+    send -- $thing
+
+    expect {
+	-re ".*FLOAT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    set thing "-255.999e+9999999\r\n"
+    set thing2 "-255.999e\\+9999999\r\n"
+    send -- $thing
+
+    expect {
+	-re ".*FLOAT=${thing2}${prompt} $" { 
+	}
+	timeout { 
+	    send_user "Timeout\n"
+	    set pass 0
+	}
+    }
+}
+
+if {$pass} {
+    pass $test_name
+} else {
+    fail $test_name
+}
+
+das-test_exit
