@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.64 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.65 2003/02/27 23:41:49 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -47,7 +47,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.64 2003/02/21 00:14:25 jimg 
 #include <GetOpt.h>
 #include <string>
 
-#include "Connect.h"
+#include "AISConnect.h"
 
 #ifdef WIN32
 #define MAIN_RETURN void
@@ -58,7 +58,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.64 2003/02/21 00:14:25 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.64 $";
+const char *version = "$Revision: 1.65 $";
 
 extern int keep_temps;		// defined in Connect.cc
 
@@ -126,12 +126,12 @@ read_data(FILE *fp)
 }
 
 static void
-process_data(Connect &url, DDS *dds, bool verbose = false, 
+process_data(Connect *url, DDS &dds, bool verbose = false, 
 	     bool print_rows = false)
 {
-    switch (url.type()) {
+    switch (url->type()) {
       case dods_error:
-	throw url.error();
+	throw url->error();
 	return;
 
       case web_error:
@@ -143,12 +143,12 @@ process_data(Connect &url, DDS *dds, bool verbose = false,
       default: {
 	  if (verbose)
 	      fprintf( stderr, "Server version: %s\n",
-			       url.server_version().c_str() ) ;
+			       url->server_version().c_str() ) ;
 
 	  fprintf( stdout, "The data:\n" ) ;
 
-	  for (DDS::Vars_iter qiter = dds->var_begin();
-	       qiter != dds->var_end(); qiter++)
+	  for (DDS::Vars_iter qiter = dds.var_begin();
+	       qiter != dds.var_end(); qiter++)
 	  {
 	      BaseType *v = (*qiter) ;
 	      if (print_rows && v->type() == dods_sequence_c)
@@ -166,7 +166,7 @@ process_data(Connect &url, DDS *dds, bool verbose = false,
 MAIN_RETURN
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "AdaDgVvkzsc:m:");
+    GetOpt getopt (argc, argv, "daDAVvkc:m:zsh?");
     int option_char;
 
     bool get_das = false;
@@ -177,8 +177,12 @@ main(int argc, char * argv[])
     bool multi = false;
     bool accept_deflate = true;
     bool print_rows = false;
+    bool use_ais = false;
     int times = 1;
+    string expr = "";
+#if 0
     char *expr = "";  // can't use NULL or C++ string conversion will crash
+#endif
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
@@ -189,6 +193,7 @@ main(int argc, char * argv[])
 	  case 'd': get_dds = true; break;
 	  case 'a': get_das = true; break;
 	  case 'D': get_data = true; break;
+	  case 'A': use_ais = true; break;
 	  case 'V': fprintf( stderr, "geturl version: %s\n", version) ; exit(0);
 	  case 'v': verbose = true; break;
 	  case 'k': keep_temps =1; break; // keep_temp is in Connect.cc
@@ -211,20 +216,22 @@ main(int argc, char * argv[])
 		fprintf( stderr, "Fetching: %s\n", argv[i] ) ;
 	
 	    string name = argv[i];
-	    Connect url(name, false, accept_deflate);
-#if 0
-	    url.set_accept_types(accept_types);
-#endif
+	    Connect *url;
+	    if (use_ais)
+		url = new AISConnect(name);
+	    else
+		url = new Connect(name);
 
-	    if (url.is_local()) {
-		if (verbose) 
-		{
-		    fprintf( stderr,
-			     "Assuming that the argument %s is a file\n",
-			     argv[i] ) ;
+	    url->set_accept_deflate(accept_deflate);
 
-		    fprintf( stderr,
-			     "that contains a DODS data object; decoding.\n" ) ;
+	    if (url->is_local()) {
+		if (verbose) {
+		    fprintf(stderr,
+			    "Assuming that the argument %s is a file\n",
+			    argv[i]) ;
+
+		    fprintf(stderr,
+			    "that contains a DODS data object; decoding.\n" );
 		}
 
 		FILE *source;
@@ -242,7 +249,8 @@ main(int argc, char * argv[])
 
 		// NB: local access should never use the popup gui.
 		try {
-		    DDS *dds = url.read_data(source, false, false);
+		    DataDDS dds;
+		    url->read_data(dds, source);
 		    process_data(url, dds, verbose, print_rows);
 		}
 		catch (Error &e) {
@@ -255,9 +263,9 @@ main(int argc, char * argv[])
 
 	    else if (get_das) {
 		for (int j = 0; j < times; ++j) {
+		    DAS das;
 		    try {
-			if (!url.request_das())
-			    continue;
+			url->request_das(das);
 		    }
 		    catch (Error &e) {
 			e.display_message();
@@ -265,10 +273,10 @@ main(int argc, char * argv[])
 		    }
 		    if (verbose) {
 			fprintf( stderr, "Server version: %s\n",
-					 url.server_version().c_str() ) ; 
+					 url->server_version().c_str() ) ; 
 			fprintf( stderr, "DAS:\n" ) ;
 		    }
-		    url.das().print(stdout);
+		    das.print(stdout);
 		}
 	    }
 
@@ -276,7 +284,7 @@ main(int argc, char * argv[])
 		for (int j = 0; j < times; ++j) {
 		    DDS dds;
 		    try {
-			url.request_dds(dds);
+			url->request_dds(dds);
 		    }
 		    catch (Error &e) {
 			e.display_message();
@@ -284,7 +292,7 @@ main(int argc, char * argv[])
 		    }
 		    if (verbose) {
 			fprintf( stderr, "Server version: %s\n",
-					 url.server_version().c_str() ) ; 
+					 url->server_version().c_str() ) ; 
 			fprintf( stderr, "DDS:\n" ) ;
 		    }
 		    dds.print(stdout);
@@ -292,25 +300,20 @@ main(int argc, char * argv[])
 	    }
 
 	    else if (get_data) {
-		if (!(expr || name.find('?') != name.npos)) {
+		if (!(expr == "" || name.find('?') != string::npos)) {
 		    fprintf( stderr,
 			 "Must supply a constraint expression with -D.\n" ) ;
 		    continue;
 		}
 		for (int j = 0; j < times; ++j) {
-		    DDS *dds;
+		    DataDDS dds;
 		    try {
-			dds = url.request_data(expr);
-			if (!dds) {
-			    fprintf( stderr, "Error: %s\n",
-				     url.error().error_message().c_str() ) ;
-			    continue;
-			}
+			url->request_data(dds, expr);
 			process_data(url, dds, verbose, print_rows);
-			delete dds; dds = 0;
 		    }
 		    catch (Error &e) {
 			e.display_message();
+			continue;
 		    }
 		}
 	    }
@@ -327,9 +330,6 @@ main(int argc, char * argv[])
 			if (!read_data(fp))
 			    continue;
 			fclose(fp);
-#if 0
-			http.close_output();
-#endif
 		    }
 		    catch (Error &e) {
 			e.display_message();
@@ -343,13 +343,25 @@ main(int argc, char * argv[])
 	e.display_message();
     }
 
+    return 0;
+
+#if 0
     exit(0); //  Running DejaGun/Cygwin based test suites require this.
 #ifdef WIN32
     return;  //  Visual C++ asks for this.
 #endif
+#endif
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.65  2003/02/27 23:41:49  jimg
+// Updated this to use the new, non-deprecated, methods in Connect (and
+// AISConnect!). The code is a bit tighter. Added a new option, -A, which tells
+// geturl to use the AIS when resolving a URL. In its current incarnation (early
+// prototype) this just handles DAS objects and only uses a single AIS database
+// found by looking for the AIS_DATABASE entry in the ~/.dodsrc configuration
+// file.
+//
 // Revision 1.64  2003/02/21 00:14:25  jimg
 // Repaired copyright.
 //
@@ -392,7 +404,7 @@ main(int argc, char * argv[])
 //
 // Revision 1.52.2.16  2002/07/06 19:17:28  jimg
 // I fixed the `read from stdin/file' behavior. This was broken when I switched
-// from libwww to libcurl.
+// from libwww to libcurl->
 //
 // Revision 1.52.2.15  2002/06/20 03:18:48  jimg
 // Fixes and modifications to the Connect and HTTPConnect classes. Neither
@@ -430,9 +442,9 @@ main(int argc, char * argv[])
 // Merged with release-3-2-8.
 //
 // Revision 1.52.2.9  2001/10/08 16:53:35  jimg
-// Added url.gui() to all calls to Error::display_message(). This prevents a seg
-// fault when display_message is called with nothing (gui == null) but has been
-// ompiled with GUI defined.
+// Added url.gui() to all calls to Error::display_message(). This prevents a
+// seg fault when display_message is called with nothing (gui == null) but
+// has been ompiled with GUI defined.
 //
 // Revision 1.58  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
