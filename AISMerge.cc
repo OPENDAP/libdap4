@@ -59,7 +59,7 @@ AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
 void
 AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
 {
-    if (!d_ais_db.is_resource(primary))
+    if (!d_ais_db.has_resource(primary))
 	return;
 
     try {
@@ -88,6 +88,9 @@ AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
 }
 
 // $Log: AISMerge.cc,v $
+// Revision 1.2  2003/02/26 06:37:35  jimg
+// Changed is_resource() call to has_resource().
+//
 // Revision 1.1  2003/02/25 23:26:32  jimg
 // Added.
 //
