@@ -11,6 +11,13 @@
 // the same values on all machines.
 
 // $Log: dods-limits.h,v $
+// Revision 1.10  2000/03/31 21:03:36  jimg
+// Merged with version 3.1.5.
+//
+// Revision 1.8.6.2  2000/03/20 19:20:33  jimg
+// I removed DODS_CHAR_MAX since we have DODS_UCHAR_MAX and it was the same
+// value. I changed DODS_CHAR_MIN to DODS_UCHAR_MIN.
+//
 // Revision 1.9  1999/09/03 22:07:45  jimg
 // Merged changes from release-3-1-1
 //
@@ -52,8 +59,7 @@
 #define	DODS_SCHAR_MIN	-127
 #define	DODS_SCHAR_MAX	127
 #define	DODS_UCHAR_MAX	(unsigned char)255
-#define	DODS_CHAR_MIN	0
-#define	DODS_CHAR_MAX	(unsigned char)255
+#define	DODS_UCHAR_MIN	0
 
 #define	DODS_SHRT_MIN	-32768
 #define	DODS_SHRT_MAX	32767

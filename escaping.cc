@@ -12,6 +12,12 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.12  2000/03/31 21:02:49  jimg
+// Merged with version 3.1.5.
+//
+// Revision 1.9.6.3  2000/03/31 18:03:11  jimg
+// Fixed bugs with the string class
+//
 // Revision 1.11  2000/01/27 06:30:01  jimg
 // Resolved conflicts from merge with release-3-1-4
 //
@@ -146,9 +152,18 @@ id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
     static Regex badregx(allowable.c_str(), 1);
     static const string ESC = "%";
 
-    int index=0, matchlen;
-    while ((index = badregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
-      s.replace(index, 1, ESC + hexstring(s[index]));
+    // I use two index variables here because the string methods use size_type
+    // indices while the GNU Regex class uses int. On 64bit machines these
+    // are different types and, in particular, passing the signed int in for
+    // a size_type can cause segmentation faults. 3/20/2000 jhrg
+    string::size_type index;
+    int matchlen, re_index = 0;
+    while ((re_index 
+	    = badregx.search(s.c_str(), s.size(), matchlen, re_index))
+	   != -1) {
+	index = re_index;
+	s.replace(index, 1, ESC + hexstring(s[index]));
+    }
 
     if (isdigit(s[0]))
 	s.insert(0, '_');
