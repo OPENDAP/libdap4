@@ -38,7 +38,11 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
-// Revision 1.7  1995/07/09 21:29:07  jimg
+// Revision 1.8  1995/08/23 00:50:01  jimg
+// Fixed the read() member function so that it works correctly for arrays/lists
+// of Structure, ... types.
+//
+// Revision 1.7  1995/07/09  21:29:07  jimg
 // Added copyright notice.
 //
 // Revision 1.6  1995/05/10  13:45:34  jimg
@@ -108,29 +112,78 @@ TestArray::~TestArray()
 {
 }
 
+// This read mfunc does some strange things to get a value - a real program
+// would never get values this way. For testing this is OK.
+
 bool
 TestArray::read(String dataset, String var_name, String constraint)
 {
-    unsigned int wid = var()->width(); // size of the contained variable
+    int i;
 
     // run read() on the contained variable to get, via the read() mfuncs
     // defined in the other Test classes, a value in the *contained* object.
     var()->read(dataset, var_name, constraint);
 
-    // OK, now make an array of those things, and copy the value length()
-    // times. 
-    unsigned int len = length();
-    char *tmp = new char[width()];
-    void *elem_val = 0;		// the null forces a new object to be
-				// allocated 
+    unsigned int array_len = length(); // elements in the array
 
-    var()->read_val(&elem_val);	// read_val() allocates space as an array...
+    switch (var()->type()) {
+      case byte_t:
+      case int32_t:
+      case float64_t:
+      case str_t:
+      case url_t:
 
-    for (int i = 0; i < len; ++i)
-	memcpy(tmp + i * wid, elem_val, wid);
+	// String and Url are grouped with byte, ... because val2buf works
+	// for these types.
 
-    store_val(tmp);
+	unsigned int elem_wid = var()->width(); // size of an element
 
-    delete[] elem_val;
-    delete[] tmp;
+	char *tmp = new char[width()];
+	void *elem_val = 0;	// NULL init gets read_val() to alloc space
+
+	var()->buf2val(&elem_val); // internal buffer to ELEM_VAL
+
+	for (i = 0; i < array_len; ++i)
+	    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+
+
+	val2buf(tmp);
+
+	delete[] elem_val;	// alloced in read_val()
+	delete[] tmp;		// alloced above
+
+	break;
+
+      case list_t:
+      case structure_t:
+      case sequence_t:
+      case function_t:
+      case grid_t:
+	
+	// Arrays of Structure, ... must load each element into the array 
+	// manually. Because these are stored as C++/DODS objects, there is
+	// no need to manipulate blocks of memory by hand as in the above
+	// case. 
+        // NB: Strings are handled like Byte, etc. because, even though they
+	// are represented using C++ objects they are *not* represented using
+	// objects defined by DODS, while Structure, etc. are.
+
+	for (i = 0; i < array_len; ++i) {
+
+	    // Create a new object that is a copy of `var()' (whatever that
+	    // is. The copy will have the value rad in by the read() mfunc
+	    // executed before this switch stmt.
+
+	    BaseType *elem = var()->ptr_duplicate(); 
+
+	    // now load the new instance in the array.
+
+	    set_vec(i, elem);
+	}
+
+	break;
+
+    }
+
+    return true;
 }
