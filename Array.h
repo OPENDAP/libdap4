@@ -7,9 +7,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.21  1995/11/22 22:31:04  jimg
-/* Modified so that the Vector class is now the parent class.
+/* Revision 1.22  1995/12/06 21:37:55  jimg
+/* Added members to record information about array index constraints.
+/* Added mfuns to access/set those members.
+/* Changed read from three to two arguments.
 /*
+ * Revision 1.21  1995/11/22  22:31:04  jimg
+ * Modified so that the Vector class is now the parent class.
+ *
  * Revision 1.20  1995/10/23  23:20:46  jimg
  * Added _send_p and _read_p fields (and their accessors) along with the
  * virtual mfuncs set_send_p() and set_read_p().
@@ -140,6 +145,9 @@ private:
     struct dimension {		// each dimension has a size and a name
 	int size;
 	String name;
+	int start, stop, stride;// a constraint determines these values
+	int c_size;		// size of dimension once constrained
+	bool selected;		// true if this dimension is selected
     };
 
     SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
@@ -157,19 +165,30 @@ public:
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
-    virtual bool read(String dataset, String var_name, String constraint) = 0;
+    virtual bool read(String dataset, String var_name) = 0;
 
+    void update_length(int size);
+
+    // used to create the dimentsions of an array 
     void append_dim(int size, String name = "");
 
+    // once a dimension has be created, set its constraint. This sets the
+    // selected flag and c_size .
+    void add_constraint(Pix &p, int start, int stride, int stop);
+    void reset_constraint();
+    void clear_constraint();
+    
     Pix first_dim();
     void next_dim(Pix &p);
-    int dimension_size(Pix p);
+    int dimension_size(Pix p, bool constrained = false);
     String dimension_name(Pix p);
-    unsigned int dimensions();
+    unsigned int dimensions(bool constrained = false);
 
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true,
-			    bool constraint_info = false);
+			    bool constraint_info = false,
+			    bool constrained = false);
+
     virtual void print_val(ostream &os, String space = "", 
 			   bool print_decl_p = true);
 
