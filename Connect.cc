@@ -15,7 +15,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.109 2001/02/09 22:49:47 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.110 2001/05/04 00:08:43 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -384,7 +384,7 @@ void process_www_errors(HTList *listerr, HTRequest *request) throw(Error)
 		throw Error(no_authorization, msg);
 		break;
 	      default:
-		throw Error(undefined_error, msg);
+		throw Error(msg);
 		break;
 	    }
 	    break;
@@ -514,6 +514,7 @@ int xdods_accept_types_header_gen(HTRequest * pReq, HTStream * target)
     return HT_OK;
 }
 
+// Cache control is broken in libwww, I think. 2/28/2001 jhrg
 int cache_control_header_gen(HTRequest * pReq, HTStream * target)
 {
     Connect *me = (Connect *) HTRequest_context(pReq);
@@ -1322,8 +1323,6 @@ bool Connect::fetch_url(string & url, bool)
 
     free(c);			//  tempnam uses malloc !
 
-    close_output();
-
     _output = stream;
 
     return true;
@@ -1644,6 +1643,10 @@ void Connect::set_credentials(string u, string p)
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.110  2001/05/04 00:08:43  jimg
+// Fixed a bug where an Error object was created with an error code of
+// undefined_error (which make OK() throw and exception).
+//
 // Revision 1.109  2001/02/09 22:49:47  jimg
 // Merged Jose's and Brent's authentication code, modifying it in the process.
 // There are some significant changes in the functions/methods:
