@@ -5,22 +5,27 @@
 // jhrg 9/7/94
 
 /* $Log: Str.h,v $
-/* Revision 1.11  1995/03/04 14:35:05  jimg
-/* Major modifications to the transmission and representation of values:
-/* 	Added card() virtual function which is true for classes that
-/* 	contain cardinal types (byte, int float, string).
-/* 	Changed the representation of Str from the C rep to a C++
-/* 	class represenation.
-/* 	Chnaged read_val and store_val so that they take and return
-/* 	types that are stored by the object (e.g., inthe case of Str
-/* 	an URL, read_val returns a C++ String object).
-/* 	Modified Array representations so that arrays of card()
-/* 	objects are just that - no more storing strings, ... as
-/* 	C would store them.
-/* 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-/* 	an array of a structure is represented as an array of Structure
-/* 	objects).
+/* Revision 1.12  1995/08/22 23:48:20  jimg
+/* Removed card() member function.
+/* Removed old, deprecated member functions.
+/* Changed the names of read_val and store_val to buf2val and val2buf.
 /*
+ * Revision 1.11  1995/03/04  14:35:05  jimg
+ * Major modifications to the transmission and representation of values:
+ * 	Added card() virtual function which is true for classes that
+ * 	contain cardinal types (byte, int float, string).
+ * 	Changed the representation of Str from the C rep to a C++
+ * 	class represenation.
+ * 	Chnaged read_val and store_val so that they take and return
+ * 	types that are stored by the object (e.g., inthe case of Str
+ * 	an URL, read_val returns a C++ String object).
+ * 	Modified Array representations so that arrays of card()
+ * 	objects are just that - no more storing strings, ... as
+ * 	C would store them.
+ * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * 	an array of a structure is represented as an array of Structure
+ * 	objects).
+ *
  * Revision 1.10  1995/02/10  02:22:48  jimg
  * Added DBMALLOC includes and switch to code which uses malloc/free.
  * Private and protected symbols now start with `_'.
@@ -99,9 +104,6 @@ const unsigned int max_str_len = 4096; // UINT_MAX-1; Unreasonable
 
 class Str: public BaseType {
 protected:
-#ifdef NEVER
-    char *_buf;
-#endif
     String _buf;
 
 public:
@@ -110,8 +112,12 @@ public:
 
     virtual BaseType *ptr_duplicate() = 0;
     
+#ifdef NEVER
     virtual bool card();
+#endif
+#ifdef NEVER
     virtual unsigned int size();
+#endif
     virtual unsigned int width();
 
     // Return the length of the stored string or zero if no string has been
@@ -123,8 +129,10 @@ public:
     virtual bool deserialize(bool reuse = false);
 
     virtual bool read(String dataset, String var_name, String constraint) = 0;
-    virtual unsigned int store_val(void *buf, bool reuse = false);
-    virtual unsigned int read_val(void **val);
+    virtual unsigned int store_val(void *buf, bool reuse = false); // dep.
+    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int read_val(void **val); // deprecated name
+    virtual unsigned int buf2val(void **val);
 
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);

@@ -9,12 +9,17 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.11  1995/05/10 13:45:32  jimg
-/* Changed the name of the configuration header file from `config.h' to
-/* `config_dap.h' so that other libraries could have header files which were
-/* installed in the DODS include directory without overwriting this one. Each
-/* config header should follow the convention config_<name>.h.
+/* Revision 1.12  1995/08/22 23:48:22  jimg
+/* Removed card() member function.
+/* Removed old, deprecated member functions.
+/* Changed the names of read_val and store_val to buf2val and val2buf.
 /*
+ * Revision 1.11  1995/05/10  13:45:32  jimg
+ * Changed the name of the configuration header file from `config.h' to
+ * `config_dap.h' so that other libraries could have header files which were
+ * installed in the DODS include directory without overwriting this one. Each
+ * config header should follow the convention config_<name>.h.
+ *
  * Revision 1.10  1995/03/04  14:35:07  jimg
  * Major modifications to the transmission and representation of values:
  * 	Added card() virtual function which is true for classes that
@@ -112,17 +117,30 @@ public:
 
     const Structure &operator=(const Structure &rhs);
     virtual BaseType *ptr_duplicate() = 0;
+#ifdef NEVER
+    virtual Structure * placement_dup(void *place) = 0;
+#endif
 
+#ifdef NEVER
     virtual bool card();
+#endif
+#ifdef NEVER
     virtual unsigned int size();
+#endif
     virtual unsigned int width();
 
     virtual bool serialize(bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
     virtual bool read(String dataset, String var_name, String constraint) = 0;
-    virtual unsigned int store_val(void *val, bool reuse = false);
-    virtual unsigned int read_val(void **val);
+
+    // Do not store values in memory as for C; force uses to work with the
+    // C++ objects as defined by the DAP.
+
+    virtual unsigned int store_val(void *val, bool reuse = false); // dep.
+    virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual unsigned int read_val(void **val); // deprecated name
+    virtual unsigned int buf2val(void **val);
 
     virtual BaseType *var(const String &name);
     virtual void add_var(BaseType *, Part p = nil);

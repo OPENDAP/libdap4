@@ -13,12 +13,17 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.11  1995/05/10 13:45:28  jimg
-/* Changed the name of the configuration header file from `config.h' to
-/* `config_dap.h' so that other libraries could have header files which were
-/* installed in the DODS include directory without overwriting this one. Each
-/* config header should follow the convention config_<name>.h.
+/* Revision 1.12  1995/08/22 23:48:23  jimg
+/* Removed card() member function.
+/* Removed old, deprecated member functions.
+/* Changed the names of read_val and store_val to buf2val and val2buf.
 /*
+ * Revision 1.11  1995/05/10  13:45:28  jimg
+ * Changed the name of the configuration header file from `config.h' to
+ * `config_dap.h' so that other libraries could have header files which were
+ * installed in the DODS include directory without overwriting this one. Each
+ * config header should follow the convention config_<name>.h.
+ *
  * Revision 1.10  1995/03/04  14:35:04  jimg
  * Major modifications to the transmission and representation of values:
  * 	Added card() virtual function which is true for classes that
@@ -116,16 +121,22 @@ public:
     const Sequence &operator=(const Sequence &rhs);
     virtual BaseType *ptr_duplicate() = 0;
 
+#ifdef NEVER
     virtual bool card();
+#endif
+#ifdef NEVER
     virtual unsigned int size();
+#endif
     virtual unsigned int width();
 
     virtual bool serialize(bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
     virtual bool read(String dataset, String var_name, String constraint) = 0;
-    virtual unsigned int store_val(void *buf, bool reuse = false);
-    virtual unsigned int read_val(void **val);
+    virtual unsigned int store_val(void *buf, bool reuse = false); // dep.
+    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int read_val(void **val); // deprecated name
+    virtual unsigned int buf2val(void **val);
 
     virtual BaseType *var(const String &name);
     virtual void add_var(BaseType *, Part p = nil);

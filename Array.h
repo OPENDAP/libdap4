@@ -7,12 +7,17 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.17  1995/05/10 13:45:03  jimg
-/* Changed the name of the configuration header file from `config.h' to
-/* `config_dap.h' so that other libraries could have header files which were
-/* installed in the DODS include directory without overwriting this one. Each
-/* config header should follow the convention config_<name>.h.
+/* Revision 1.18  1995/08/22 23:48:12  jimg
+/* Removed card() member function.
+/* Removed old, deprecated member functions.
+/* Changed the names of read_val and store_val to buf2val and val2buf.
 /*
+ * Revision 1.17  1995/05/10  13:45:03  jimg
+ * Changed the name of the configuration header file from `config.h' to
+ * `config_dap.h' so that other libraries could have header files which were
+ * installed in the DODS include directory without overwriting this one. Each
+ * config header should follow the convention config_<name>.h.
+ *
  * Revision 1.16  1995/04/28  19:53:45  reza
  * First try at adding constraints capability.
  * Enforce a new size calculated from constraint expression.
@@ -127,17 +132,16 @@ private:
 	String name;
     };
 
-    BaseType *_var;		// var that is an array
+    BaseType *_var;		// var that is an array. I.E., if this is an
+				// array of Int32, _var -> an instance of Int32
     SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
 
-    void _duplicate(const Array *a);
-    long _const_length; // Length after constraint 
+    long _const_length;		// Length after constraint 
 
-#ifdef NEVER
-protected:
-#endif
     void *_buf;			// used for arrays of cardinal types
     BaseTypePtrVec _vec;	// used for arrays of all other types
+
+    void _duplicate(const Array *a);
 
 public:
     Array(const String &n = (char *)0, BaseType *v = 0);
@@ -147,9 +151,13 @@ public:
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
+#ifdef NEVER
     virtual bool card();
-    virtual unsigned int size(); // bytes in the pointer to the array
-    virtual unsigned int width();
+#endif
+#ifdef NEVER
+    virtual unsigned int size(); 
+#endif
+    virtual unsigned int width(); // bytes in the pointer to the array
     unsigned int length();	// how many elements are there in the array
     void const_length(long size);
 
@@ -157,8 +165,14 @@ public:
     virtual bool deserialize(bool reuse = false);
 
     virtual bool read(String dataset, String var_name, String constraint) = 0;
-    virtual unsigned int store_val(void *val, bool reuse = false);
-    virtual unsigned int read_val(void **val);
+
+    virtual unsigned int store_val(void *val, bool reuse = false); // dep.
+    virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual unsigned int read_val(void **val); // deprecated name
+    virtual unsigned int buf2val(void **val);
+
+    void set_vec(int i, BaseType *val);
+    BaseType *vec(int i);
 
     virtual BaseType *var(const String &name = (char *)0);
     virtual void add_var(BaseType *v, Part p = nil);
