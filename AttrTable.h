@@ -18,6 +18,10 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.22  1998/08/06 16:07:39  jimg
+ * Field added so that aliases may be displayed as such and not by displaying
+ * the aliased information.
+ *
  * Revision 1.21  1998/07/13 20:20:41  jimg
  * Fixes from the final test of the new build process
  *
@@ -216,6 +220,7 @@ private:
 	AttrType type;
 	
 	bool is_alias;
+        String aliased_to;
 
 	// If type == Attr_container, use attributes to read the contained
 	// table, otherwise use attr to read the vector of values.
