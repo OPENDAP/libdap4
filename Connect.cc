@@ -8,6 +8,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.71  1999/02/18 19:21:40  jimg
+// Added support for the DODS experimental MIME header XDODS-Accept-Types. This
+// will be used to send a lists of `accepted types' from the client to a server.
+// The list tells a server which datatypes the requesting client can understand.
+// This information may be used by both the DDS and DataDDS objects to trigger
+// translations from one type to another.
+//
 // Revision 1.70  1999/01/15 17:07:01  jimg
 // Removed use of the move_dds() member function. The DDS parser now recognizes
 // the `Data:' separator string as marking the end of the DDS part of a data
@@ -387,7 +394,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.70 1999/01/15 17:07:01 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.71 1999/02/18 19:21:40 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -432,7 +439,7 @@ int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
 static const char bad_decomp_msg[]={\
 "The data returned by the server was compressed and the\n\
 decompression program failed to start. Please report this\n\
-error to the data server maintainer or to support@dods.gso.uri.edu"}; 
+error to the data server maintainer or to support@unidata.ucar.edu"}; 
 
 HTList *Connect::_conv = 0;
 
@@ -839,7 +846,27 @@ header_handler(HTRequest *, HTResponse *, const char *token, const char *val)
 
     return HT_OK;
 }
+
+#define PUTBLOCK(b, l)	(*target->isa->put_block)(target, b, l)
+struct _HTStream {
+    const HTStreamClass *	isa;
+    /* ... */
+};
  
+int
+xdods_accept_types_header_gen(HTRequest *pReq, HTStream *target)
+{
+    Connect *me = (Connect *)HTRequest_context(pReq);
+
+    String types = "XDODS-Accept-Types: " + me->get_accept_types() + "\r\n";
+    if (WWWTRACE) 
+	HTTrace("DODS..... '%s'.\n", types.chars());
+    
+    PUTBLOCK(types.chars(), types.length());
+
+    return HT_OK;
+}
+
 // Barely a parser... This is used when reading from local sources of DODS
 // Data objects. It simulates the important actions of the libwww MIME header
 // parser. Those actions fill in certain fields in the Connect object. jhrg
@@ -881,6 +908,7 @@ Connect::parse_mime(FILE *data_source)
 
 void
 Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
+		      //		      String xdods_accept_types)
 {
     // Initialize various parts of the library. This is in lieu of using one
     // of the profiles in HTProfil.c. 02/09/98 jhrg
@@ -951,6 +979,9 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // `Server:' and finally default to 0.0. 12/16/98 jhrg
     HTHeader_addParser("xdods-server", NO, server_handler);
     HTHeader_addParser("server", NO, server_handler);
+
+    // Add xdods_accept_types header. 2/17/99 jhrg
+    HTHeader_addGenerator(xdods_accept_types_header_gen);
 }
 
 // Before calling this mfunc memory for the timeval struct must be allocated.
@@ -1111,6 +1142,8 @@ Connect::Connect(String name, bool www_verbose_errors = false,
 		 bool accept_deflate = true) : _www_errors_to_stderr(false)
 {
     _gui = new Gui;
+    // Unless a client says otherwise, assume we can process all types.
+    _accept_types = "All";
     name = prune_spaces(name);
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
@@ -1205,6 +1238,18 @@ bool
 Connect::get_www_errors_to_stderr()
 {
     return _www_errors_to_stderr;
+}
+
+String 
+Connect::get_accept_types()
+{
+    return _accept_types;
+}
+
+void
+Connect::set_accept_types(const String &types)
+{
+    _accept_types = types;
 }
 
 // Dereference the URL and dump its contents into _OUTPUT. Note that
