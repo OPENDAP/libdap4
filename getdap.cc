@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.50  2000/09/11 16:39:23  jimg
+// Changed the name of Sequence::get_row_numbers() ...
+//
 // Revision 1.49  2000/08/31 00:28:02  rmorris
 // Fixed lost mod for port to win32 - newlines in string constanct
 // not ok with VC++.  (this was in usage()).
@@ -218,7 +221,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.49 2000/08/31 00:28:02 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.50 2000/09/11 16:39:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -233,7 +236,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.49 $";
+const char *version = "$Revision: 1.50 $";
 extern int keep_temps;		// defined in Connect.cc
 
 
@@ -328,11 +331,11 @@ process_data(Connect &url, DDS *dds, bool verbose = false,
 	  cout << " = {" << endl;
 
 	  s->deserialize(url.source(), dds);
-	  cout << s->getRowNumber() << ": ";
+	  cout << s->get_row_number() << ": ";
 	  s->print_val(cout, "", false);
 	  cout << endl;
 	  while (s->deserialize(url.source(), dds)) {
-	    cout << s->getRowNumber() << ": ";
+	    cout << s->get_row_number() << ": ";
 	    s->print_val(cout, "", false);
 	    cout << endl;
 	  }
