@@ -78,7 +78,7 @@ public:
 
     CPPUNIT_TEST(add_resource_test);
     CPPUNIT_TEST(add_resource_vector_test);
-    CPPUNIT_TEST(is_resource_test);
+    CPPUNIT_TEST(has_resource_test);
     CPPUNIT_TEST(get_resource_test);
     CPPUNIT_TEST(read_database_test);
     CPPUNIT_TEST(write_database_test);
@@ -130,10 +130,10 @@ public:
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[1].get_rule() == fallback);
     }
 
-    void is_resource_test() {
-	CPPUNIT_ASSERT(ais->is_resource(fnoc1));
-	CPPUNIT_ASSERT(ais->is_resource(fnoc2));
-	CPPUNIT_ASSERT(ais->is_resource(fnoc3));
+    void has_resource_test() {
+	CPPUNIT_ASSERT(ais->has_resource(fnoc1));
+	CPPUNIT_ASSERT(ais->has_resource(fnoc2));
+	CPPUNIT_ASSERT(ais->has_resource(fnoc3));
     }
 
     void get_resource_test() {
@@ -244,6 +244,10 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISResourcesTest.cc,v $
+// Revision 1.4  2003/02/26 00:38:57  jimg
+// Changed is/has_resource_test to match the new name of the method:
+// has_resource.
+//
 // Revision 1.3  2003/02/25 23:25:55  jimg
 // Fixed for the latest rev of ais_database.xml.
 //
