@@ -14,6 +14,11 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.46  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.45  2000/06/07 18:06:57  jimg
  * Merged the pc port branch
  *
@@ -240,10 +245,6 @@
 #include "dods-limits.h"
 #include "Vector.h"
 
-#ifdef WIN32
-using namespace std;
-#endif
-
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
 /** This class is used to hold arrays of other DODS data. The elements of the
@@ -300,13 +301,8 @@ private:
 
     SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
 
-#ifdef WIN32
-	unsigned int print_array(std::ostream &os, unsigned int index,
-			     unsigned int dims, unsigned int shape[]);
-#else
     unsigned int print_array(ostream &os, unsigned int index, 
 			     unsigned int dims, unsigned int shape[]);
-#endif
 			     
 protected:
     void _duplicate(const Array &a);
@@ -456,15 +452,6 @@ public:
   /** Returns the total number of dimensions in the array. */
     unsigned int dimensions(bool constrained = false);
 
-#ifdef WIN32
-    virtual void print_decl(std::ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_val(std::ostream &os, string space = "", 
-			   bool print_decl_p = true);
-#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -472,7 +459,6 @@ public:
 
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
-#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 };

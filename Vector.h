@@ -12,6 +12,11 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.29  2000/07/09 21:57:10  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.28  2000/06/16 18:15:00  jimg
  * Merged with 3.1.7
  *
@@ -138,7 +143,6 @@
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock.h>
-using namespace std;
 #else
 #include <rpc/types.h>
 #include <netinet/in.h>
@@ -368,15 +372,6 @@ public:
     /** Sets the value of the template variable.  */
     virtual void add_var(BaseType *v, Part p = nil);
 
-#ifdef WIN32
-    virtual void print_decl(std::ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_val(std::ostream &os, string space = "", 
-			   bool print_decl_p = true);
-#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -384,7 +379,6 @@ public:
 
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
-#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 };

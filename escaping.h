@@ -10,6 +10,11 @@
 // Declarations for identifier escaping and un-escaping functions.
 
 // $Log: escaping.h,v $
+// Revision 1.4  2000/07/09 21:57:10  rmorris
+// Mods's to increase portability, minimuze ifdef's in win32 and account
+// for differences between the Standard C++ Library - most notably, the
+// iostream's.
+//
 // Revision 1.3  2000/06/07 18:07:00  jimg
 // Merged the pc port branch
 //
@@ -26,8 +31,10 @@
 // Added
 //
 
+#include <string>
+
 #ifdef WIN32
-using namespace std;
+using std::string;
 #endif
 
 string hexstring(unsigned char val);

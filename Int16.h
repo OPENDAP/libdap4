@@ -11,6 +11,11 @@
 // jhrg 9/7/94
 
 // $Log: Int16.h,v $
+// Revision 1.8  2000/07/09 21:57:09  rmorris
+// Mods's to increase portability, minimuze ifdef's in win32 and account
+// for differences between the Standard C++ Library - most notably, the
+// iostream's.
+//
 // Revision 1.7  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -59,10 +64,6 @@
 
 #include "BaseType.h"
 
-#ifdef WIN32
-using namespace std;
-#endif
-
 class Int16: public BaseType {
     /** This class allows Byte, ..., Float64 acesss to _buf to simplify and
 	speed up the relational operators.
@@ -96,13 +97,8 @@ public:
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-#ifdef WIN32
-    virtual void print_val(std::ostream &os, string space = "",
-			   bool print_decl_p = true);
-#else
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
-#endif
 
     virtual bool ops(BaseType *b, int op, const string &dataset);
 };

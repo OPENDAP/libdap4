@@ -27,7 +27,9 @@
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::string;
+using std::vector;
+using std::ostream;
 #endif
 
 /** {\bf AttrType} identifies the data types which may appear in an
@@ -388,15 +390,17 @@ public:
 	line of the output to provide control of indentation.
 
 	@memo Prints the attribute table.  */
-#ifdef WIN32
-    void print(std::ostream &os, string pad = "    ");
-#else
     void print(ostream &os, string pad = "    ");
-#endif
+
 };
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.30  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.29  2000/06/07 19:33:21  jimg
  * Merged with verson 3.1.6
  *

@@ -16,6 +16,11 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.34  2000/07/09 21:57:10  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.33  2000/06/07 18:06:59  jimg
  * Merged the pc port branch
  *
@@ -209,9 +214,6 @@
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
-using namespace std;
-#endif
 
 /** This data type is used to hold a collection of related data types,
     in a manner roughly corresponding to a C structure.  The member
@@ -306,15 +308,6 @@ public:
     /** Returns a pointer to the {\it p}th element. */
     BaseType *var(Pix p);
 
-#ifdef WIN32
-    virtual void print_decl(std::ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_val(std::ostream &os, string space = "",
-			   bool print_decl_p = true);
-#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -322,19 +315,13 @@ public:
 
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
-#endif
 
     /** Prints the Structure and all elements of any Sequences contained
 	within. 
 	@see Sequence::print_all_vals
     */
-#ifdef WIN32
-    virtual void print_all_vals(std::ostream& os, XDR *src, DDS *dds,
-				string space = "", bool print_decl_p = true);
-#else
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
 				string space = "", bool print_decl_p = true);
-#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 };

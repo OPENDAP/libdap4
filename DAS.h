@@ -14,6 +14,11 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.26  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.25  2000/06/07 19:33:21  jimg
  * Merged with verson 3.1.6
  *
@@ -137,7 +142,8 @@
 #include "AttrTable.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cout;
+using std::ostream;
 #endif
 
 /** The Data Attribute Structure is a set of name-value pairs used to
@@ -293,11 +299,8 @@ public:
 
     /** Creates an ASCII representation of a DAS on the given output
 	stream. */
-#ifdef WIN32
-    bool print(std::ostream &os = std::cout);
-#else
     bool print(ostream &os = cout);
-#endif
+
 };
 
 #endif

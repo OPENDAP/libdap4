@@ -19,6 +19,11 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.40  2000/07/09 21:57:10  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.39  2000/06/07 18:06:59  jimg
  * Merged the pc port branch
  *
@@ -230,9 +235,6 @@
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
-using namespace std;
-#endif
 
 /** This is the interface for the class Sequence. A sequence contains
     a single set of variables, all at the same lexical level just like
@@ -462,29 +464,17 @@ public:
       Sequence. */
     BaseType *var(Pix p);
 
-#ifdef WIN32
-    virtual void print_decl(std::ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
-#endif
 
   /** Prints the first instance of the Sequence. 
 
       @see Sequence::print_all_vals
       */
-#ifdef WIN32
-    virtual void print_val(std::ostream &os, string space = "",
-			   bool print_decl_p = true);
-#else
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
-#endif
 
   /** Prints a formatted version of an entire Sequence (all rows, all
       columns), including nested Sequences.  This is meant to be used
@@ -503,13 +493,8 @@ public:
       @param print_del_p If TRUE, prints the declaration of the
       Sequence as well as its data.
       */
-#ifdef WIN32
-    virtual void print_all_vals(std::ostream& os, XDR *src, DDS *dds, 
-				string space = "", bool print_decl_p = true);
-#else
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds, 
 				string space = "", bool print_decl_p = true);
-#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 };

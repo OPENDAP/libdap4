@@ -13,6 +13,11 @@
 
 /* 
  * $Log: TestSequence.h,v $
+ * Revision 1.15  2000/07/09 21:57:10  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.14  1999/04/29 02:29:32  jimg
  * Merge of no-gnu branch
  *
@@ -88,6 +93,10 @@
 
 #include "Sequence.h"
 #include <fstream>
+
+#ifdef WIN32
+using std::ifstream;
+#endif
 
 class TestSequence: public Sequence {
 private:

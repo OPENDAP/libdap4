@@ -17,6 +17,11 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.35  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.34  2000/06/07 18:06:59  jimg
  * Merged the pc port branch
  *
@@ -212,10 +217,6 @@
 #include "trace_new.h"
 #endif
 
-#ifdef WIN32
-using namespace std;
-#endif
-
 /** The Grid data type is a collection of an Array and a set of ``Map''
     vectors.  The Map vectors are one-dimensional arrays corresponding
     to each dimension of the central Array.  Using this scheme, a Grid
@@ -374,15 +375,6 @@ public:
       @see Array
       @see Structure
       */
-#ifdef WIN32
-    virtual void print_decl(std::ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_val(std::ostream &os, string space = "",
-			   bool print_decl_p = true);
-#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -390,7 +382,6 @@ public:
 
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
-#endif
 
     /** Return true if this Grid is well formed. The array dimensions and
 	number of map vectors must match and both the array and maps must be

@@ -17,6 +17,11 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.55  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.54  2000/06/07 18:06:58  jimg
  * Merged the pc port branch
  *
@@ -317,7 +322,10 @@
 #include "config_dap.h"
 
 #ifdef WIN32
-using namespace std;
+using std::vector;
+using std::stack;
+using std::ostream;
+using std::string;
 #endif
 
 class BaseType;			// Forward declarations
@@ -866,17 +874,10 @@ public:
 	@see DDS::CE
 
     */
-#ifdef WIN32
-    virtual void print_decl(std::ostream &os, string space = "    ",
-			    bool print_semi = true, 
-			    bool constraint_info = false,
-			    bool constrained = false);
-#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true, 
 			    bool constraint_info = false,
 			    bool constrained = false);
-#endif
 
     /** Prints the value of the variable, with its declaration.  This
 	function is primarily intended for debugging DODS applications.
@@ -897,13 +898,8 @@ public:
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value.
     */
-#ifdef WIN32
-    virtual void print_val(std::ostream &os, string space = "",
-			   bool print_decl_p = true) = 0;
-#else
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true) = 0;
-#endif
 
     /** This function checks the class instance for internal
 	consistency.  This is important to check for complex constructor

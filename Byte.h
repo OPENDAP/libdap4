@@ -12,6 +12,11 @@
 
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.27  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.26  2000/06/07 18:06:58  jimg
  * Merged the pc port branch
  *
@@ -175,10 +180,6 @@
 
 #include "BaseType.h"
 
-#ifdef _WIN32
-using namespace std;
-#endif
-
 /** This class is used to hold eight bits of information.  No sign
     information is implied in its value.
 
@@ -227,13 +228,8 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-#ifdef WIN32
-    virtual void print_val(std::ostream &os, string space = "", 
-			   bool print_decl_p = true);
-#else
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
-#endif
 
     virtual bool ops(BaseType *b, int op, const string &dataset);
 };

@@ -12,6 +12,11 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.15  2000/07/09 21:57:09  rmorris
+// Mods's to increase portability, minimuze ifdef's in win32 and account
+// for differences between the Standard C++ Library - most notably, the
+// iostream's.
+//
 // Revision 1.14  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -90,8 +95,10 @@
 #include "Gui.h"
 #endif
 
-#ifdef _WIN32
-using namespace std;
+#ifdef WIN32
+using std::cout;
+using std::string;
+using std::ostream;
 #endif
 
 /** The most common errors within DODS have special codes so that they
@@ -228,11 +235,7 @@ public:
 	@memo Print the Error object on the given output stream.
 	@param os A pointer to the output stream on which the Error
 	object is to be rendered. */
-#ifdef WIN32
-    void print(std::ostream &os = std::cout);
-#else
     void print(ostream &os = cout);
-#endif
 
     /** With no argument, returns the Error object's error code. With an
 	argument, sets the error code to that value.

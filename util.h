@@ -13,6 +13,11 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.34  2000/07/09 21:57:10  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.33  2000/06/16 18:15:01  jimg
  * Merged with 3.1.7
  *
@@ -163,7 +168,7 @@
 #include "Grid.h"
 
 #ifdef WIN32
-using namespace std;
+using std::iostream;
 #endif
 
 string prune_spaces(string);
@@ -180,6 +185,9 @@ FILE *compressor(FILE *output, int &childpid);
 bool deflate_exists();
 const char *dods_root();
 const char *dods_progress();
+#ifdef WIN32
+void flush_stream(iostream ios, FILE *out);
+#endif
 
 bool func_member(int argc, BaseType *argv[], DDS &dds);
 bool func_null(int argc, BaseType *argv[], DDS &dds);

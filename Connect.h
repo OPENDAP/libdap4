@@ -32,6 +32,11 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.45  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
  * Revision 1.44  2000/06/07 18:06:58  jimg
  * Merged the pc port branch
  *
@@ -280,10 +285,6 @@
 #endif
 #include "util.h"
 #include "config_dap.h"
-
-#ifdef WIN32
-using namespace std;
-#endif
 
 /**
 

@@ -11,6 +11,11 @@
 // jhrg 3/24/99
 
 // $Log: Operators.h,v $
+// Revision 1.5  2000/07/09 21:57:09  rmorris
+// Mods's to increase portability, minimuze ifdef's in win32 and account
+// for differences between the Standard C++ Library - most notably, the
+// iostream's.
+//
 // Revision 1.4  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -31,10 +36,6 @@
 #define __operators_h
 
 #include "Regex.h"		// GNU Regex class used for string =~ op.
-
-#ifdef WIN32
-using namespace std;
-#endif
 
 static unsigned
 dods_max(int i1, int i2)
@@ -58,11 +59,7 @@ template<class T1, class T2> class Cmp {
     static bool lt(T1 v1, T2 v2) {return v1 < v2;}
     static bool le(T1 v1, T2 v2) {return v1 <= v2;}
     static bool re(T1 v1, T2 v2) {
-#ifdef WIN32
-	std::cerr << "Illegal operation" << endl;
-#else
 	cerr << "Illegal operation" << endl;
-#endif
 	return false;
     }
 };
@@ -84,11 +81,7 @@ template<class UT1, class T2> class USCmp {
     static bool lt(UT1 v1, T2 v2) {return v1 < dods_max(0, v2);}
     static bool le(UT1 v1, T2 v2) {return v1 <= dods_max(0, v2);}
     static bool re(UT1 v1, T2 v2) {
-#ifdef WIN32
-	std::cerr << "Illegal operation" << endl;
-#else
 	cerr << "Illegal operation" << endl;
-#endif
 	return false;
     }
 };
@@ -114,11 +107,7 @@ template<class T1, class UT2> class SUCmp {
     static bool lt(T1 v1, UT2 v2) {return dods_max(0, v1) < v2;}
     static bool le(T1 v1, UT2 v2) {return dods_max(0, v1) <= v2;}
     static bool re(T1 v1, UT2 v2) {
-#ifdef WIN32
-	std::cerr << "Illegal operation" << endl;
-#else
 	cerr << "Illegal operation" << endl;
-#endif
 	return false;
     }
 };
@@ -185,11 +174,7 @@ bool rops(T1 a, T2 b, int op)
       case SCAN_REGEXP:
 	return C::re(a, b);
       default:
-#ifdef WIN32
-	std::cerr << "Unknown operator" << endl;
-#else
 	cerr << "Unknown operator" << endl;
-#endif
 	return false;
     }
 }

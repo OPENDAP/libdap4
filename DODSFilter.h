@@ -8,6 +8,11 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.15  2000/07/09 21:57:09  rmorris
+// Mods's to increase portability, minimuze ifdef's in win32 and account
+// for differences between the Standard C++ Library - most notably, the
+// iostream's.
+//
 // Revision 1.14  2000/06/07 19:33:21  jimg
 // Merged with verson 3.1.6
 //
@@ -83,9 +88,6 @@
 #include "DAS.h"
 #include "DDS.h"
 
-#ifdef WIN32
-using namespace std;
-#endif
 
 /** When a DODS server receives a request from a DODS client, the
     server CGI script dispatches the request to one of several
