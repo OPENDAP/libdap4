@@ -12,6 +12,10 @@
 
 /* 
  * $Log: Int32.h,v $
+ * Revision 1.23  1997/12/18 15:06:12  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.22  1997/10/09 22:19:21  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -147,6 +151,11 @@
 #include <rpc/xdr.h>
 
 #include "BaseType.h"
+
+/** Holds a 32-bit signed integer. 
+
+    @see BaseType
+    */
 
 class Int32: public BaseType {
 protected:

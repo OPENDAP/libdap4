@@ -32,6 +32,10 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.29  1997/12/18 15:06:10  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.28  1997/09/22 23:05:45  jimg
  * Added comment info.
  *
@@ -199,12 +203,18 @@
 #include "util.h"
 #include "config_dap.h"
 
-/// What type of object is in the stream coming from the data server?
-//* When a version 2.x or greater DODS data server sends an object, it uses
-//* the Content-Description header of the response to indicate the type of
-//* object contained in the response. During the parse of the header a member
-//* of Connect is set to one of these values so that other mfuncs can tell the
-//* type of object without parsing the stream themselves. 
+/**
+
+     When a version 2.x or greater DODS data server sends an
+     object, it uses the Content-Description header of the response to
+     indicate the type of object contained in the response. During the
+     parse of the header a member of Connect is set to one of these
+     values so that other mfuncs can tell the type of object without
+     parsing the stream themselves.  
+
+
+     @memo What type of object is in the stream coming from the data
+     server?  */
 
 enum ObjectType {
     unknown_type,
@@ -215,16 +225,29 @@ enum ObjectType {
     web_error
 };
 
-/// What type of encoding has been used on the current stream?
-//* DODS understands two types of encoding: x-plain and x-gzip, which
-//* coorespond to plain uncompressed data and data compressed with GNU's gzip
-//* resptively. 
+/**  DODS understands two types of encoding: x-plain and x-gzip,
+     which correspond to plain uncompressed data and data compressed
+     with GNU's gzip respectively.  
+
+     @memo What type of encoding has been used on the current stream? */
 
 enum EncodingType {
     unknown_enc,
     x_plain,
     x_gzip
 };
+
+/** Big description here.  Where does the big description wind up? I
+    don't know, do you?  But if I were it, I'd find myself a good warm
+    little hole and curl up in it and wait for someone to find me I
+    hoper it doesn't take too long, I don't know if I can wait until
+    spring maybe the snow will bury me and they won't find me until
+    next April or maybe May, does it always thaw in May? 
+
+    @memo This is the Connect class...
+    @author jhrg
+*/
+
 
 class Connect {
 private:
@@ -271,32 +294,56 @@ private:
 
     SLList<constraint> _data;	// List of expressions & DDSs
 
-    //* Initialize the W3C WWW Library. This should only be called when a
-    //* Connect object is created and there are no other Connect objects in
-    //* existance.
+  /* Initialize the W3C WWW Library. This should only be called when a
+      Connect object is created and there are no other Connect objects in
+      existence.
+
+      @memo Initialize the W3C WWW Library.
+      */
     void www_lib_init(bool www_verbose_errors);
 
-    //* Read a url. Assume that the object's _OUTPUT stream has been set
-    //* properly.
-    //* Returns true if the read operation succeeds, false otherwise.
+  /* Assume that the object's \_OUTPUT stream has been set
+      properly.
+      Returns true if the read operation succeeds, false otherwise.
+
+      @memo Read a URL.
+      */
     bool read_url(String &url, FILE *stream);
 
-    //* Separate the text DDS from the binary data in the data object (which
-    //* is a bastardized multipart MIME document). The returned FILE * points
-    //* to a temporary file which contains the DDS object only. The formal
-    //* parameter IN is advanced so that it points to the first byte of the
-    //* binary data.
+  /* Separate the text DDS from the binary data in the data object (which
+      is a bastardized multipart MIME document). The returned FILE * points
+      to a temporary file which contains the DDS object only. The formal
+      parameter IN is advanced so that it points to the first byte of the
+      binary data.
+
+      @memo Separate the DDS from the binary data.
+      */
     FILE *move_dds(FILE *in);
 
-    //* Copy from one Connect to another. 
+  /* Create a new Connect object.
+
+
+      @memo Copy from one Connect to another. 
+      */
     void clone(const Connect &src);
 
-    //* Close the objects _output stream if it is not NULL or STDOUT.
+  /* Close the output stream of the Connect object.
+
+      @memo Close the object's \_output stream if it is not NULL or
+      STDOUT.  
+      */
     void close_output();
 
+  /* Something to do with the DDS. 
+
+    @memo process data?
+    */
     DDS *process_data(bool async = false);
     
-    /// Simple MIME parser. Use when you cannot use libwww.
+  /* Use when you cannot use libwww. 
+
+    @memo Simple MIME parser. 
+    */
     void parse_mime(FILE *data_source);
 
     friend int description_handler(HTRequest *request, HTResponse *response,
@@ -317,98 +364,166 @@ private:
     Connect();			// Never call this.
 
 public:
+  /** This is for creating an instance of Connect.
+
+    @memo Create an instance of Connect. */
     Connect(String name, bool www_verbose_errors = false); 
     Connect(const Connect &copy_from);
     virtual ~Connect();
 
     Connect &operator=(const Connect &rhs);
 
-    /// Dereference a URL.
-    //* Fetch the named URL and put its contents into the member _OUTPUT.
-    //* If ASYNC is true, then the operation is asynchronous; the mfunc
-    //* returns before the data transfer is complete.
-    //* Returns false if an error is detected, otherwise returns true.
+  /** Fetch the named URL and put its contents into the member
+      \_OUTPUT.  If ASYNC is true, then the operation is asynchronous;
+      the mfunc returns before the data transfer is complete.  Returns
+      false if an error is detected, otherwise returns true.  
+
+      @memo Dereference a URL.  */
     bool fetch_url(String &url, bool async = false);
 
-    /// Access the information contained in this instance.
-    //* Returns a FILE * which can be used to read the data from the object.
+  /** Returns a FILE * which can be used to read the data from
+      the object.  
+
+      @memo Access the information contained in this instance.
+      */
     FILE *output();
 
-    /// Access the XDR input stream (source) for this connection.
-    //* Returns a XDR * which is tied to the current output() stream.
+  /** Returns a XDR * which is tied to the current output()
+      stream.  
+
+      @memo Access the XDR input stream (source) for this connection.
+      */
     XDR *source();
 
-    /// Does this object refer to a local file?
-    //* Return true is the object refers to a local file, otherwise returns
-    //* false .
+  /** Return true is the object refers to a local file, otherwise
+      returns false.  
+
+      @memo Does this object refer to a local file?  
+      */
     bool is_local();
 
-    /// Get the object's URL.
-    //* Return the object's URL in a String. If CE is false, do not include
-    //* the constraint expression part of the URL (the `?' and anything 
-    //* following it). If the object refers to local data, return the null
-    //* string. 
+  /** Return the object's URL in a String. If CE is false, do not
+      include the constraint expression part of the URL (the `?' and
+      anything following it). If the object refers to local data,
+      return the null string.  
+
+      @memo Get the object's URL.
+      */
     String URL(bool CE = true);
 
-    /// Get the Connect's constraint expression.
-    //* Return the constraint expression part of the URL. Note that this CE
-    //* is supplied as part of the URL passed to the Connect's constructor.
-    //* It is not the CE passed into the the request_data(...) mfunc.
-    //* Returns a String which contains the object's base CE.
+  /** Return the constraint expression part of the URL. Note that
+      this CE is supplied as part of the URL passed to the Connect's
+      constructor.  It is not the CE passed into the the
+      request\_data(...) mfunc.  Returns a String which contains the
+      object's base CE.  
+
+      @memo Get the Connect's constraint expression.
+      */
     String CE();
 
-    /// Return the type of the most recent object sent from the server.
-    //* During the parse of the message headers, the object type is set. Use
-    //* this mfunc to read that type information. This will be valid *before*
-    //* the return object is completely parsed so it can be used to decide
-    //* whether to call the das, etc. parser on the data remaining in the input
-    //* stream. 
+  /** During the parse of the message headers, the object type is
+      set. Use this mfunc to read that type information. This will be
+      valid *before* the return object is completely parsed so it can
+      be used to decide whether to call the das, etc. parser on the
+      data remaining in the input stream.  
+
+      @memo Return the type of the most recent object sent from the
+      server.  
+      */
     ObjectType type();
 
-    /// Return the type of encoding used on the data in the stream.
-    //* Encoding types are currently limited to x-plain (no special decoding
-    //* required) and x-gzip (compressed using GNU's gzip).
+  /** Encoding types are currently limited to x-plain (no special
+      decoding required) and x-gzip (compressed using GNU's gzip).  
+
+      @memo Return the type of encoding used on the data in the
+      stream.  
+      */
     EncodingType encoding();
 
     String server_version();
 
-    /// Return a reference to the Connect's DAS object.
+  /** 
+
+      @memo Return a reference to the Connect's DAS object. 
+      */
     DAS &das();
 
-    /// Return a reference to the Connect's DDS object.
+  /** 
+
+      @memo Return a reference to the Connect's DDS object. 
+      */
     DDS &dds();
 
-    /// Get a reference to the last error.
-    //* Returns: The last error object sent from the server. If no error has
-    //* been sent from the server, returns a reference to an empty error
-    //* object. 
+  /** 
+
+      @memo Get a reference to the last error.
+      @return The last error object sent from the server. If no error has
+      been sent from the server, returns a reference to an empty error
+      object. 
+      */
     Error &error();
 
-    /// Return a pointer to the GUI object assoicated with this connection.
+  /** Recall from time's abysmal chasm...
+
+      @memo Returns a GUI object.
+      @return a pointer to the GUI object associated with this
+      connection. 
+      @see GUI 
+      */
     Gui *gui();
 
-    // For each data access there is an associated constraint expression
-    // (even if it is null) and a resulting DDS which describes the type(s)
-    // of the variables that result from evaluating the CE in the environment
-    // of the dataset referred to by a particular instance of Connect.
+  /** For each data access there is an associated constraint
+      expression (even if it is null) and a resulting DDS which
+      describes the type(s) of the variables that result from
+      evaluating the CE in the environment of the dataset referred to
+      by a particular instance of Connect. \URL [blah]{blah} \Ref{IOUmanual}
+
+      @memo Returns the first constraint expression
+      @see DODSFilter
+      */
     Pix first_constraint();
+
+  /** 
+
+      @memo Next constraint. 
+      */
     void next_constraint(Pix &p);
+
+  /** 
+
+      @memo Constraint Expression.
+      */
     String constraint_expression(Pix p);
+
+  /** 
+
+      @memo Constrained DDS.
+      */
     DDS *constraint_dds(Pix p);
 
-    // get the DAS, DDS and data from the server/cgi comb using a URL.
+  /** Get the DAS, DDS and data from the server/cgi combination using
+      a URL. 
+
+      @memo Get the DAS
+      */
     bool request_das(bool gui = false,  const String &ext = "das");
     bool request_dds(bool gui = false, const String &ext = "dds");
 
-    // The actual return type of request_data and read_data is DataDDS.
-    // jhrg 9/19/97
+  /** Something.
+
+      @return The actual return type of request\_data and read\_data
+      is DataDDS. 
+      */
     DDS *request_data(String expr, bool gui = true, bool async = false, 
 		      const String &ext = "dods");
     DDS *read_data(FILE *data_source, bool gui_p = true, bool async = false);
 
-    // For every new data read initiated using this connect, there is a DDS
-    // and constraint expression. The data itself is stored in the dds in the
-    // constraint object.
+  /** For every new data read initiated using this connect, there is a
+      DDS and constraint expression. The data itself is stored in the
+      dds in the constraint object.  
+
+      @memo Appends a constraint expression to the URL?
+      */
     DDS *append_constraint(String expr, DDS &dds);
 };
 

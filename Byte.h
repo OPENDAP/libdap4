@@ -12,6 +12,10 @@
 
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.22  1997/12/18 15:06:09  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.21  1997/10/09 22:19:15  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -147,6 +151,12 @@
 
 #include "BaseType.h"
 
+/** This class is used to hold eight bits of information.  No sign
+    information is implied in its value.
+
+    @memo Holds a single byte. 
+    @see BaseType
+    */
 class Byte: public BaseType {
 protected:
     dods_byte _buf;
@@ -174,6 +184,8 @@ public:
     virtual bool ops(BaseType &b, int op, const String &dataset);
 };
 
+
+/* A pointer to a Byte instance. */
 typedef Byte * BytePtr;
 
 #endif

@@ -17,6 +17,10 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.26  1997/12/18 15:06:11  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.25  1997/10/09 22:19:21  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -170,10 +174,54 @@
 #include "trace_new.h"
 #endif
 
-/** The Grid data-type. A Grid groups a set of N Map vectors with a single
-    N-dimensional array. This type supports data that are stored in
-    rectilinear arrays in a computer but which represent some parameter
-    mapped over a grid that is not, in actuality, rectilinear. */
+/** The Grid data type is a collection of an Array and a set of ``Map''
+    vectors.  The Map vectors are one-dimensional arrays corresponding
+    to each dimension of the central Array.  Using this scheme, a Grid
+    can represent, in a rectilinear array, data which is not in
+    reality rectilinear.  An example will help make it clear.
+
+    Assume that the following array contains measurements of some real
+    quantity, conducted at nine different points in space:
+
+    \begin{verbatim}
+    A = [ 1  2  3  4 ]
+        [ 2  4  6  8 ]
+        [ 3  6  9  12]
+    \end{verbatim}
+
+    To locate this Array in the real world, we could note the location
+    of one corner of the grid, and the grid spacing.  This would allow
+    us to calculate the location of any of the other points of the
+    Array. 
+
+    This approach will not work, however, unless the grid spacing is
+    precisely regular.  If the distance between Row 1 and Row 2 is not
+    the same as the distance between Row 2 and Row 3, the scheme will
+    break down.  The solution is to equip the Array with two Map
+    vectors that define the location of each row or column of the
+    array:
+
+    \begin{verbatim}
+         A = [ 1  2  3  4 ] Row = [ 0 ]
+             [ 2  4  6  8 ]       [ 3 ]
+             [ 3  6  9  12]       [ 8 ]
+
+    Column = [ 0  2  8  27]
+    \end{verbatim}
+
+    The real location of the point in the first row and column of the
+    array is now exactly fixed at (0,0), and the point in the last row
+    and last column is at (8,27). 
+
+    The Grid data type has two parts: an Array, and a singly-linked
+    list of Map vectors to describe the Array.  The access functions
+    for this class include a function to return the Array
+    (#array_var()#), and a set of functions for cycling through the
+    list of Map vectors.
+
+    @memo Holds the Grid data type.
+    @see Array
+    */
 
 class Grid: public BaseType {
 private:
@@ -196,23 +244,51 @@ public:
     virtual BaseType *var(const String &name);
     virtual void add_var(BaseType *bt, Part part);
 
+  /** Returns the Grid Array. */
     BaseType *array_var();
 
+  /** Returns the index of the first Map vector. */
     Pix first_map_var();
+  /** Increments the Map vector index. */
     void next_map_var(Pix &p);
+  /** Given an index, returns the corresponding Map vector. */
     BaseType *map_var(Pix p);
 
     virtual unsigned int width();
 
-    /** Return the number of components in this Grid object. If the optional
-        parameter #constrained# is true then return only those components
-	that are part of the current constraint (i.e., that are projected). */
+  /** Returns the number of components in the Grid object.  This is
+      equal to one plus the number of Map vectors.  If there is a
+      constraint expression in effect, the number of dimensions needed
+      may be smaller than the actual number in the stored data.  (Or
+      the Array might not even be requested.) In this case, a user can
+      request the smaller number with the {\it constrained} flag.
+
+      @memo Returns the number of components in the Grid object. 
+      @return The number of components in the Grid object.
+      @param constrained If TRUE, the function returns the number of
+      components contained in the constrained Grid.  Since a
+      constraint expression might well eliminate one or more of the
+      Grid dimensions, this number can be lower than the actual number
+      of components.  If this parameter is FALSE (the default), the
+      actual number of components will be returned.  */
     virtual int components(bool constrained = false);
 
-    /** Return true if the current projection will yield a Grid that will
-        pass the check_semantics() mfunc. A `Grid' that, when projected, will
-	not pass the check_semantics mfunc must be sent as either a Structure
-	of Arrays or a single Array depending on the projection. */
+  /** Returns TRUE if the current projection will yield a Grid that
+      will pass the #check_semantics()# function. A Grid that, when
+      projected, will not pass the #check_semantics()# function must
+      be sent as either a Structure of Arrays or a single Array
+      depending on the projection.
+
+      The function first checks to see whether the Array is present.
+      Then, for each dimension in the Array part, the function checks
+      the corresponding Map vector to make sure it is present in the
+      projected Grid. If for each projected dimension in the Array
+      component, there is a matching Map vector, then the Grid is
+      valid.
+
+      @return TRUE if the projected grid is still a Grid.  FALSE
+      otherwise. 
+      */
     virtual bool projection_yields_grid();
 
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
@@ -221,9 +297,23 @@ public:
 
     virtual bool read(const String &dataset, int &error) = 0;
 
+  /** Returns the size of the Grid type.  Use the #val2buf()#
+      functions of the member elements to insert values into the Grid
+      buffer. */
     virtual unsigned int val2buf(void *buf, bool reuse = false);
+  /** Returns the size of the Grid type.  Use the #buf2val()#
+      functions of the member elements to read values from the Grid
+      buffer. */
     virtual unsigned int buf2val(void **val);
 
+  /** If the projected Grid is not a valid grid, this function will
+      convert the declaration to an Array or Structure, whichever
+      seems more appropriate.
+
+      @memo Prints the Grid declaration only if a valid Grid.
+      @see Array
+      @see Structure
+      */
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,

@@ -6,11 +6,15 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// Interface for Int32 type. 
+// Interface for Int16 type. 
 //
 // jhrg 9/7/94
 
 // $Log: Int16.h,v $
+// Revision 1.4  1997/12/18 15:06:12  tom
+// First draft of class documentation, entered in doc++ format,
+// in the comments
+//
 // Revision 1.3  1997/09/22 22:59:59  jimg
 // Added DDS * to deserialize parameters.
 //

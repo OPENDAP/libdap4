@@ -11,6 +11,10 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.h,v $
+// Revision 1.5  1997/12/18 15:06:14  tom
+// First draft of class documentation, entered in doc++ format,
+// in the comments
+//
 // Revision 1.4  1997/09/22 22:39:54  jimg
 // Added DDS * to deserialize parameters.
 //
@@ -36,6 +40,11 @@
 #include <rpc/xdr.h>
 
 #include "BaseType.h"
+
+/** Holds a 32-bit unsigned integer. 
+
+    @see BaseType
+    */
 
 class UInt32: public BaseType {
 protected:

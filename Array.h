@@ -14,6 +14,10 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.34  1997/12/18 15:06:09  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.33  1997/08/11 18:19:10  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -198,6 +202,56 @@
 
 const int DODS_MAX_ARRAY = DODS_UINT_MAX;
 
+/** This class is used to hold arrays of other DODS data.  The
+    elements of the array can be simple or compound data types.  There
+    is no limit on the number of dimensions an array can have, or on
+    the size of each dimension.
+
+    If desired, the user can give each dimension of an array a name.
+    You can, for example, have a 360x180 array of temperatures,
+    covering the whole globe with one-degree squares.  In this case,
+    you could name the first dimension ``Longitude'' and the second
+    dimension ``Latitude''.  This can help prevent a great deal of
+    confusion.  
+
+    The Array is used as part of the Grid class, where the dimension
+    names are crucial to its structure.  The dimension names
+    correspond to ``Map'' vectors, holding the actual values for that
+    column of the array.
+
+    Each array dimension carries with it its own ``constraint''.  The
+    constraint takes the form of three integers: the start, stop, and
+    stride values.  This is clearest with an example.  Consider a
+    one-dimensional array 10 elements long.  If the start value of the
+    dimension constraint is 3, then the constrained array appears to
+    be seven elements long.  If the stop value is changed to 7, then
+    the array appears to be five elements long.  If the stride is
+    changed to two, the array will appear to be 3 elements long.
+    Array constraints are written as: #[start:stride:stop]#.
+
+    \begin{verbatim}
+    A = [1 2 3 4 5 6 7 8 9 10]
+
+    A[3::] = [4 5 6 7 8 9 10]
+
+    A[3::7] = [4 5 6 7 8]
+
+    A[3:2:7] = [4 6 8]
+
+    A[0:3:9] = [1 4 7 10]
+    \end{verbatim}
+
+    In addition to the constraint, array dimensions can be
+    ``selected''.  Only selected array dimensions will be sent to the
+    DODS client, and only those parts of the dimension referred to by
+    the constraint will be sent.  The #add_constraint()# function is
+    used to constrain and select a dimension. 
+
+    @memo Holds multi-dimensional arrays.
+    @see Grid
+    @see List 
+    */
+
 class Array: public Vector {
 private:
     struct dimension {		// each dimension has a size and a name
@@ -210,12 +264,12 @@ private:
 
     SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
 
-    unsigned int print_array(ostream &os, unsigned int index,
+    unsigned int print_array(ostream &os, unsigned int index, 
 			     unsigned int dims, unsigned int shape[]);
-
+			     
 protected:
     void _duplicate(const Array &a);
-
+    
 public:
     Array(const String &n = (char *)0, BaseType *v = 0);
     Array(const Array &rhs);
@@ -224,28 +278,119 @@ public:
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
+  /** This function should read local data and fill in the data
+      buffer.  When reading the data, the read function should use the
+      constraint and selection information available for each
+      dimension of the array to decide how much of the array to read.
+      Only the values to be transmitted with #serialize()# must be
+      read. 
+
+      The implementation of this function is part of creating a new
+      DODS server, and is left for the user.  For other details, refer
+      to the description of the #read()# function in the BaseType
+      class. 
+
+      @memo Reads an array into the buffer.
+      @see BaseType::read
+      */
     virtual bool read(const String &dataset, int &error) = 0;
 
+
+  // Changes the size of the array.  If the array exists, it is
+  //    augmented by a factor of #size#.
     void update_length(int size);
 
-    // used to create the dimentsions of an array 
+
+  /** Given a size and a name, this function adds a dimension to the
+      array.  For example, if the Array is already 10 elements long,
+      calling #append_dim# with a size of 5 will transform the array
+      into a 10x5 matrix.  Calling it again with a size of 2 will
+      create a 10x5x2 array, and so on.
+
+      @memo Adds a dimension to an array. 
+      @param size The size of the desired new row.
+      @param name The name of the new dimension.  This defaults to
+      an empty string. 
+      */
     void append_dim(int size, String name = "");
 
-    // once a dimension has be created, set its constraint. This sets the
-    // selected flag and c_size.
+  /** Once a dimension has been created (see #append_dim()#), it can
+      be ``constrained''.  This will make the array appear to the rest
+      of the world to be smaller than it is.  This functions sets the
+      constraint for a dimension, and marks that dimension
+      ``selected''.
+
+      @memo Adds a constraint to an Array dimension.  
+
+      @param p An index (of type Pix) pointing to the dimension in the
+      list of dimensions.
+      @param start The start index of the constraint.
+      @param stride The stride value of the constraint.
+      @param stop The stop index of the constraint.
+      @return TRUE on success, FALSE otherwise.  */
     bool add_constraint(Pix p, int start, int stride, int stop);
+
+  /** Resets the constraint to select the entire dimension. */
     void reset_constraint();
+
+  /** Clears the constraint and marks the dimension not selected. */
     void clear_constraint();
-    
+
+  /** Returns a pointer to the first dimension of the array. */    
     Pix first_dim();
+
+  /** Given a dimension index, returns the index of the next
+      dimension. */
     void next_dim(Pix &p);
 
+  /** Returns the size of the dimension.  
+
+      @param p The Pix index of the dimension.
+      @param constrained If this parameter is TRUE, the function
+      returns the constrained size of the array.  If the dimension is
+      not selected, the function returns zero.  If it is FALSE, the
+      function returns the dimension size whether or not the dimension
+      is constrained.
+      */
     int dimension_size(Pix p, bool constrained = false);
+
+  /** Returns the start index of the constraint.
+
+      @param p The Pix index of the dimension.
+      @param constrained If this parameter is TRUE, the function
+      returns the start index only if the dimension is selected.  If
+      the dimension is not selected, the function returns zero.  If it
+      is FALSE, the function returns the start index whether or not
+      the dimension is constrained.
+      */
     int dimension_start(Pix p, bool constrained = false);
+
+  /** Returns the stop index of the constraint.
+
+      @param p The Pix index of the dimension.
+      @param constrained If this parameter is TRUE, the function
+      returns the stop index only if the dimension is selected.  If
+      the dimension is not selected, the function returns zero.  If it
+      is FALSE, the function returns the stop index whether or not
+      the dimension is constrained.
+      */
     int dimension_stop(Pix p, bool constrained = false);
-    int dimension_stride(Pix p, bool constrained = false);
+
+   /** Returns the stride value of the constraint.
+
+      @param p The Pix index of the dimension.
+      @param constrained If this parameter is TRUE, the function
+      returns the stride value only if the dimension is selected.  If
+      the dimension is not selected, the function returns zero.  If it
+      is FALSE, the function returns the stride value whether or not
+      the dimension is constrained.
+      */
+   int dimension_stride(Pix p, bool constrained = false);
+
+  /** Returns the name of the specified dimension. */
     String dimension_name(Pix p);
 
+  /** Returns the total number of dimensions in the array. */
     unsigned int dimensions(bool constrained = false);
 
     virtual void print_decl(ostream &os, String space = "    ",

@@ -11,6 +11,10 @@
 // jhrg 9/7/94
 
 // $Log: Float32.h,v $
+// Revision 1.4  1997/12/18 15:06:10  tom
+// First draft of class documentation, entered in doc++ format,
+// in the comments
+//
 // Revision 1.3  1997/09/22 23:03:28  jimg
 // Added DDS * to deserialize parameters.
 //
@@ -33,6 +37,11 @@
 #include <rpc/xdr.h>
 
 #include "BaseType.h"
+
+/** Holds a 32-bit floating point value.
+
+    @see BaseType
+    */
 
 class Float32: public BaseType {
 protected:

@@ -16,6 +16,10 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.25  1997/12/18 15:06:13  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.24  1997/10/09 22:19:25  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -167,6 +171,36 @@
 #include "trace_new.h"
 #endif
 
+/** This data type is used to hold a collection of related data types,
+    in a manner roughly corresponding to a C structure.  The member
+    types can be simple or compound types, and can include other
+    Structures. 
+
+    The DODS structure is defined as a singly-linked list.  This means
+    that Structure elements can be accessed either by name, with the
+    #var()# function, or by their position in the list, either with
+    the overloaded version of #var()#, or the combination of the
+    #first_var()# and #next_var()# functions.
+
+    The #val2buf()# and #buf2val()# functions only return the size of
+    the structure.  To read parts of a DODS Structure into an
+    application program, use the #buf2val()# function of the element
+    of the Structure in question. 
+
+    Note that the predicate-setting functions #set_send_p()# and
+    #set_read_p()# set their flags for the Structure as well as for
+    each of the Structure's member elements.
+
+    Similar to C, you can refer to members of Structure elements
+    with a ``.'' notation.  For example, if the Structure has a member
+    Structure called ``Tom'' and Tom has a member Float32 called
+    ``shoe\_size'', then you can refer to Tom's shoe size as
+    ``Tom.shoe\_size''. 
+    
+    @memo Holds a C-style structure.
+    @see Function
+    */
+
 class Structure: public BaseType {
 private:
     SLList<BaseTypePtr> _vars;
@@ -194,14 +228,26 @@ public:
 
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.
+
+  /** Returns the size of the structure. */
     virtual unsigned int val2buf(void *val, bool reuse = false);
+  /** Returns the size of the structure. */
     virtual unsigned int buf2val(void **val);
 
+  /** Returns a pointer to the specified Structure element. */
     virtual BaseType *var(const String &name);
-    virtual void add_var(BaseType *, Part p = nil);
 
+  /** Adds an element to a Structure. */
+    virtual void add_var(BaseType *bt, Part p = nil);
+
+  /** Returns the pseudo-index (Pix) of the first structure element. */
     Pix first_var();
+
+  /** Increments the input index to point to the next element in the
+      structure. */
     void next_var(Pix &p);
+
+  /** Returns a pointer to the {\it p}th element. */
     BaseType *var(Pix p);
 
     virtual void print_decl(ostream &os, String space = "    ",

@@ -12,6 +12,10 @@
 
 /* 
  * $Log: Float64.h,v $
+ * Revision 1.21  1997/12/18 15:06:11  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.20  1997/10/09 22:19:20  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -142,6 +146,12 @@
 #include <rpc/xdr.h>
 
 #include "BaseType.h"
+
+/** Holds a 64-bit (double precision) floating point value.
+
+    @memo Holds a 64-bit floating point number.
+    @see BaseType
+    */
 
 class Float64: public BaseType {
 protected:

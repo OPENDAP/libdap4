@@ -12,6 +12,10 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.17  1997/12/18 15:06:14  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.16  1997/12/18 14:57:05  tom
  * merged conflicts
  *
@@ -99,11 +103,12 @@
       are themselves simple of compound objects.
 
       When each element of the class is a simple data type, the Vector
-      is implemented as a simple array, as in a C program.  A private
-      ``template'' BaseType instance (#_var#) is used to hold
-      information in common to all the members of the array.  The
-      template is also used to pass values back and forth to an
-      application program, as in #var()#.
+      is implemented as a simple array of C types, rather than as an
+      array of BaseType data types.  A single private ``template''
+      BaseType instance (#_var#) is used to hold information in common
+      to all the members of the array.  The template is also used as a
+      container to pass values back and forth to an application
+      program, as in #var()#.
 
       If the elements of the vector are themselves compound data
       types, the array is stored as a vector of BaseType pointers (see
@@ -113,8 +118,7 @@
       program. 
 
       @memo Holds an array of DODS data types.  
-      @see BaseType
-      */
+      @see BaseType */
 
 class Vector: public BaseType {
 private:

@@ -12,6 +12,10 @@
 
 /* 
  * $Log: Url.h,v $
+ * Revision 1.14  1997/12/18 15:06:14  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.13  1997/08/11 18:19:30  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -113,6 +117,11 @@
 
 const unsigned int max_url_len = 255;
 
+/** Holds an internet address (URL).
+
+    @see BaseType
+    @see Str
+    */
 class Url: public Str {
 private:
     String _buf;

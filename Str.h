@@ -12,6 +12,10 @@
 
 /* 
  * $Log: Str.h,v $
+ * Revision 1.24  1997/12/18 15:06:13  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.23  1997/10/09 22:19:24  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -166,6 +170,12 @@
 
 const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1; 
 
+/** Holds character string data.
+
+    @see BaseType
+    @see Url
+    */
+    
 class Str: public BaseType {
 protected:
     String _buf;

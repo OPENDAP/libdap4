@@ -17,6 +17,10 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.38  1997/12/18 15:06:09  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
  * Revision 1.37  1997/10/09 22:19:11  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -244,8 +248,28 @@
 #include "config_dap.h"
 
 
-// PART names the parts of multi-section ctor types; e.g., Function has two
-// sets of variables, the INDEPENDENT variables and the DEPENDENT variables.
+/** {\bf Part} names the parts of multi-section constructor types.
+    For example, the {\bf Function} class type has two sets of
+    variables, the {\it independent} variables and the {\it dependent}
+    variables.  Similarly, the {\bf Grid} class has an {\it array} and
+    the array {\it maps}. Use the {\bf nil} value for data types that
+    don't have separate parts.
+
+\begin{verbatim}
+enum Part {
+    nil,
+    independent,
+    dependent,
+    array,
+    maps
+};
+\end{verbatim}
+
+    @memo Names the parts of multi-section constructor data types.  
+    @see Function
+    @see Grid
+    @see BaseType
+    */
 
 enum Part {
     nil,			// nil is for types that don't have parts...
@@ -254,6 +278,35 @@ enum Part {
     array,
     maps
 };
+
+/** {\bf Type} identifies the data type stored in a particular type
+    class.  All the DODS Data Access Protocol (DAP) types inherit from
+    the BaseType class.
+
+\begin{verbatim}
+enum Type {
+    dods_null_c,
+    dods_byte_c,
+    dods_int16_c,
+    dods_uint16_c,
+    dods_int32_c,
+    dods_uint32_c,
+    dods_float32_c,
+    dods_float64_c,
+    dods_str_c,
+    dods_url_c,
+    dods_array_c,
+    dods_list_c,
+    dods_structure_c,
+    dods_sequence_c,
+    dods_function_c,
+    dods_grid_c
+};
+\end{verbatim}
+
+    @memo Identifies the data type.
+    @see BaseType
+    */
 
 enum Type {
     dods_null_c,
@@ -276,13 +329,43 @@ enum Type {
 
 class DDS;			// forward declaration; see DDS.h
 
+/** This class defines the basic data type features for the DODS data
+    access protocol (DAP) data types.  All the DAP type classes
+    (Float64, Array, etc.) inherit from it.  This class is an abstract
+    one; no variables will ever be stored as BaseType instances, only
+    as instances of its child classes.
+
+    These classes and their methods give a user the capacity to set up
+    sophisticated data types.  They do {\it not} provide sophisticated
+    ways to access and use this data.  On the server side, in many
+    cases, the class instances will have no data in them at all until
+    the #serialize()# function is called to send data to the client.  On
+    the client side, most DODS application programs will unpack the
+    data promptly into whatever local data structure the programmer
+    deems the most useful.
+
+    In order to use these classes on the server side of a DODS
+    client/server connection, you must write a #read()# method for
+    each of the data types you expect to encounter in the application.
+    This function, whose purpose is to read data from a local source
+    into the class instance data buffer, is called in #serialize()#,
+    when the data is about to be sent to the client.  The #read()#
+    function may be called earlier, in the case of data subset
+    requests (constraint expressions).
+
+    For some data types, the #read()# function must be aware of the
+    constraints to be returned. These cautions are outlined where they
+    occur.
+
+    @memo The basic data type for the DODS DAP types.  */
+
 class BaseType {
 private:
     String _name;		// name of the instance
     Type _type;			// instance's type
 
     // xdr_coder is used as an argument to xdr procedures that encode groups
-    // of things (e.g., xdr_array()). Each leaf class's ctor must set this.
+    // of things (e.g., xdr_array()). Each leaf class's constructor must set this.
     xdrproc_t _xdr_coder;
 
     bool _read_p;		// true if the value has been read
@@ -300,93 +383,408 @@ public:
     BaseType &operator=(const BaseType &rhs);
     virtual BaseType *ptr_duplicate() = 0; // alloc new instance and dup THIS.
 
+  /** Returns the name of the class instance. 
+   */
     String name() const;
+
+  /** Sets the name of the class instance. */
     void set_name(const String &n);
 
-    Type type() const;		// return the Type of this instance
-    void set_type(const Type &t); // set the Type
-    String type_name() const;	// return the name of this Type as a String
+  /** Returns the type of the class instance. */
+    Type type() const;
+  /** Sets the type of the class instance. */
+    void set_type(const Type &t);
+  /** Returns the type of the class instance as a String. */
+    String type_name() const;	
 
-    // These mfuncs are used to test/set the _read_p and _send_p fields.
+
+  /** Returns the value of the #read_p# flag.  This flag is TRUE
+      when the class instance contains a valid value, and FALSE before
+      a valid value has been read.
+
+      @memo Returns the value of the #read_p# flag.  */
     bool read_p();
+
+  /** Sets the value of the #read_p# flag.  This flag is TRUE
+      when the class instance contains a valid value, and FALSE before
+      a valid value has been read.  This is meant to be called from
+      the #read()# function.
+
+      @memo Sets the value of the #read_p# flag.  
+      @param state The logical state to set the #read_p# flag.
+      */
     virtual void set_read_p(bool state);
 
+  /** Returns the value of the #send_p# flag.  This flag is TRUE when
+      the data in the class instance is ready to be sent.
+
+      @memo Returns the value of the #send_p# flag. */
     bool send_p();
+
+  /** Sets the value of the #send_p# flag.  This flag is TRUE when
+      the data in the class instance is ready to be sent.  This
+      function is meant to be called from #serialize()#. 
+
+      @param state The logical state to set the #send_p# flag.
+      */
     virtual void set_send_p(bool state);
 
-    // xdr_coder is used to encode arrays of cardinal objects
+  /** The #xdr_coder# function (also "filter primitive") is used to
+      encode and decode each element in a multiple element data
+      structure.  These functions are used to convert data to and from
+      its local representation to the XDR representation, which is
+      used to transmit and receive the data.  See #man xdr# for more
+      information about the available XDR filter primitives.
+
+      Note that this class data is only used for multiple element data
+      types.  The simple data types (Int, Float, and so on), are
+      translated directly.
+
+      @memo Function used to encode elements of an array. */
     xdrproc_t xdr_coder();
 
     // These mfuncs are used to access the _xdrin and _xdrout members.
+  // They are also vestigial remnants of a bygone time, and are no
+  //    longer used  ts.
+
+  /* Returns the #_xdrin# value */
     XDR *xdrin() const;
+
+  /* Returns the #_xdrout# value */
     XDR *xdrout() const;
 
-    // The var() and add_var() mfuncs are only used by ctor classes (Array,
-    // Structure, ...). Their BaseType implementations print an error
-    // message.
+  /** Returns a pointer to the contained variable in a composite
+      class.  The composite classes are those made up of aggregated
+      simple data types.  Array, Grid, and Structure are composite
+      types, while Int and Float are simple types.  This function is
+      only used by composite classes.  The BaseType implementation
+      simply prints an error message.
+
+      @memo Returns a pointer to a member of a constructor class.
+      @param name The name of the class member.
+      @return A pointer to the member named in the {\it name} argument.  */
     virtual BaseType *var(const String &name = (char *)0);
+
+  /** Adds a variable to an instance of a constructor class, such as
+      Array, Structure and so on.  This function is only used by those
+      classes.  The BaseType implementation simply prints an error
+      message. 
+
+      @memo Adds the input data to the class instance. 
+      @param v The data to be added to the constructor type.
+      @param p The part of the constructor data to be modified.
+      @see Part
+      */
+
     virtual void add_var(BaseType *v, Part p = nil);
 
-    // Return the number of bytes that are required to hold the instance's
-    // value. In the case of cardinal types such as Int thi32, this is the size
-    // of one Int32 (four bytes). For a Str or Url, width() returns the
-    // number of bytes needed for a char * variable, not the bytes needed for
-    // the characters since that value can not be determined from type
-    // information alone. For Structure, ... types size() returns the number
-    // of bytes needed to store each of the fields as C would store them in a
-    // struct.
+  /** Return the number of bytes that are required to hold the
+      instance's value. In the case of cardinal types such as Int32,
+      this is the size of one Int32 (four bytes). For a String or Url
+      type, #width()# returns the number of bytes needed for a #char
+      *# variable, not the bytes needed for all the characters, since
+      that value cannot be determined from type information alone.
+      For Structure, and other constructor types size() returns the
+      number of bytes needed to store each of the fields as C would
+      store them in a struct.
+
+      @memo Returns the size of the class instance data. */
     virtual unsigned int width() = 0;
 
-    // Put the data into a local buffer so that it may be serialized. 
-    // For an example, see the Test classes.
+  /** Put the data into a local buffer so that it may be sent to a
+      client.  This operation involves reading data from whatever
+      source (often a local disk), and filling out the fields in the
+      data type class.  This is the heart of the DODS DAP Class
+      operation.  Much of the work of implementing a new DODS server
+      API consists in creating the #read()# functions to read various
+      data types.
+
+      Note that this function is only for DODS servers.  It has no use
+      on the client side of a DODS client/server connection.  The DODS
+      client and server communicate their data with #serialize()# and
+      #deserialize()#.
+
+      This function is not implemented for the BaseType class, nor
+      for its children.  However, it should be implemented for the
+      specialized children of those classes.  For example, it is not
+      implemented for the Float64 class, but does exist for the
+      NCFloat64 class, specialized to read data from local netCDF
+      files. 
+ 
+      For an example of use, see the netCDF library classes. The
+      netCDF library is part of the DODS source distribution, and can
+      be found under #$(DODS_ROOT)/src/nc-dods#.
+
+      Note that for some sub-classes, such as Array, the #read()#
+      function must explicitly take into account constraint
+      information stored with the class data.
+
+      @memo Reads the data into a local buffer.  
+      @return The function returns a boolean value, with TRUE
+      indicating a successful read, and FALSE indicating an error
+      condition.  The error condition may be specified by the #error#
+      argument, depending on the API implementation.
+      @param dataset A string naming the dataset from which the data
+      is to be read.  The meaning of this string will vary among data
+      APIs.
+      @param error An integer indicating a returned error condition.
+      The meaning of this integer will vary among data APIs.
+      @see BaseType::serialize */
     virtual bool read(const String &dataset, int &error) = 0;
     
-    // buf2val() reads the value of the variable from an internal buffer and
-    // stores it in the memory referenced by *VAL. Either the caller must
-    // allocate enough storage to *VAL or set it to null. In the later case,
-    // new will be used to allocate storage. The caller is then responsible
-    // for deallocating storage. Array and List values for cardinal types are
-    // stored as C would store an array (N values stored sequentially).
+  /** Reads the class data into the memory referenced by {\it val}.
+      The caller must allocate enough storage to {\it val} to hold the
+      class data.  If {\it val} is NULL, however, memory will be
+      allocated by this function with #new()#.  Even if the memory is
+      allocated this way, the caller is responsible for deallocating
+      that memory.  Array and List values for cardinal types are
+      stored as C would store an array.
+
+      @memo Reads the class data.  
+
+      @param val A pointer to a pointer to the memory into which the
+      class data will be copied.  If the value pointed to is NULL,
+      memory will be allocated to hold the data, and the pointer value
+      modified accordingly.  The calling program is responsible for
+      deallocating the memory indicated by this pointer.
+
+      @return The size (in bytes) of the information copied to {\it
+      val}.  
+      */
     virtual unsigned int buf2val(void **val) = 0;
 
-    // Store the value pointed to by VAL in the object's internal buffer. This
-    // mfunc does not perform any checks, so callers must be sure that the
-    // thing pointed to can actually be stored in the object's buffer. Note
-    // that only cardinal objects and arrays/lists of cardinals may be stored
-    // using this mfunc.
-    // Return the size (in bytes) of the information copied from VAL.
+  /** Store the value pointed to by {\it val} in the object's internal
+      buffer. This function does not perform any checks, so users must
+      be sure that the thing pointed to can actually be stored in the
+      object's buffer.  For example, an array cannot easily be fit
+      into the data buffer for an Int32 object.  
+
+      Only cardinal objects (Int, Float, Byte, and so on) and arrays
+      and lists of cardinals may be stored using this function.  To
+      put data into more complex constructor functions, use the
+      functions provided by that class.  For example, use the #var()#
+      and #add_var()# members of the Grid class to manipulate data in
+      that class.
+
+      @memo Loads class data.
+
+      @param val A pointer to the data to be inserted into the class
+      data buffer.
+
+      @param reuse A boolean value, indicating whether the class
+      internal data storage can be reused or not.  If this argument is
+      TRUE, the class buffer is assumed to be large enough to hold the
+      incoming data, and it is {\it not} reallocated.  If FALSE, new
+      storage is allocated.  If the internal buffer has not been
+      allocated at all, this argument has no effect.
+      This is currently used only in the Vector class.
+
+      @return The size (in bytes) of the information copied from {\it
+      val}.  
+      @see Grid
+      @see Vector::val2buf
+      */
     virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
 
-    // Move data to and from the net.
+  /** Sends the data from the indicated (local) dataset through the
+      connection identified by the {\it sink} parameter.  If the data
+      is not already incorporated into the object class, read the data
+      from the dataset.  
+
+      This function is only used on the server side of the
+      client/server connection, and is generally only called from the
+      DDS::send() function.  It has no BaseType implementation; each
+      child class supplies its own implementation.
+
+      @memo Move data to the net.
+      @param dataset The (local) name of dataset to be read.
+      @param dds The Data Descriptor Structure object corresponding to
+      this dataset.  See {\it The DODS User Manual} for information
+      about this structure.
+      @param sink A valid XDR pointer to the process connection to the
+      net.  This is generally created with a call to #new_xdrstdio()#. 
+      @param ce_eval A boolean value indicating whether to evaluate
+      the DODS constraint expression that may accompany this dataset.
+      The constraint expression is stored in {\it dds}.
+      @return The function returns TRUE for success, and FALSE
+      otherwise. 
+      @see DDS */
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true) = 0; 
+
+  /** Receives data from the network connection identified by the {\it
+      source} parameter.  The data is put into the class data buffer
+      according to the input {\it dds}.  
+
+      This function is only used on the client side of the
+      DODS client/server connection.
+
+      @memo Receive data from the net.
+      @param source A valid XDR pointer to the process connection to
+      the net.  This is generally created with a call to
+      #new_xdrstdio()#. 
+      @param dds The Data Descriptor Structure object corresponding to
+      this dataset.  See {\it The DODS User Manual} for information
+      about this structure.  This would have been received from the
+      server in an earlier transmission.
+      @param reuse A boolean value, indicating whether the class
+      internal data storage can be reused or not.  If this argument is
+      TRUE, the class buffer is assumed to be large enough to hold the
+      incoming data, and it is {\it not} reallocated.  If FALSE, new
+      storage is allocated.  If the internal buffer has not been
+      allocated at all, this argument has no effect.
+
+      @return The function returns TRUE for success, and FALSE
+      otherwise. 
+      @see DDS 
+      */
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false) = 0;
     
-    // Write the buffers maintained by XDR to the associated FILE *s.
+  /* Write the buffers maintained by XDR to the associated FILE *s. */
+  // This function declaration appears to be a relic of a bygone era.
     bool expunge();
 
-    // Write the variable's declaration. This function has two uses: 1) to
-    // print the variale so that it can be parsed again (i.e., to generate a
-    // textual representation for a binary object, and 2) to print information
-    // useful in debugging DODS.
+  /** Write the variable's declaration in a C-style syntax. This
+      function is used to create the Data Descriptor Structure (DDS),
+      a textual representation of a variable's structure.  See {\it
+      The DODS User Manual} for information about this structure.
+
+      A simple array declaration might look like this:
+      \begin{verbatim}
+      Float64 lat[lat = 180];
+      \end{verbatim}
+      While a more complex declaration (for a Grid, in this case),
+      would look like this:
+      \begin{verbatim}
+      Grid {
+       ARRAY:
+          Int32 sst[time = 404][lat = 180][lon = 360];
+       MAPS:
+          Float64 time[time = 404];
+          Float64 lat[lat = 180];
+          Float64 lon[lon = 360];
+      } sst;
+      \end{verbatim}
+
+      @memo Print an ASCII representation of the variable structure.
+      @param ostream The output stream on which to print the
+      declaration.
+      @param space Each line of the declaration will begin with the
+      characters in this string.  Usually used for leading spaces.
+      @param print_semi A boolean value indicating whether to print a
+      semicolon at the end of the declaration.
+      @param constraint_info A boolean value indicating whether
+      constraint information is to be printed with the declaration.
+      If the value of this parameter is TRUE, #print_decl()# prints
+      the value of the variable's #send_p()# flag after the
+      declaration. 
+      @param constrained If this boolean value is TRUE, the variable's
+      declaration is only printed if is the #send_p()# flag is TRUE.
+      If a constraint expression is in place, and this variable is not
+      requested, the #send_p()# flag is FALSE.
+
+      @see DDS
+      @see DDS::CE
+
+      */
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true, 
 			    bool constraint_info = false,
 			    bool constrained = false);
 
-    // This mfunc is primarily intended for debugging DODS. 
+  /** Prints the value of the variable, with its declaration.  This
+      function is primarily intended for debugging DODS applications.
+
+      @memo Prints the value of the variable.
+      @param ostream The output stream on which to print the value.
+      @param space This value is passed to the #print_decl()#
+      function, and controls the leading spaces of the output.
+      @param print_decl_p A boolean value controlling whether the
+      variable declaration is printed as well as the value.
+      */
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true) = 0;
 
+  /** This function checks the class instance for internal
+      consistency.  This is important to check for complex constructor
+      classes.  For BaseType, an object is semantically correct if it
+      has both a non-null name and type.
+
+      For example, an Int32 instance would return FALSE if it had no
+      name or no type defined.  A Grid instance might return FALSE for
+      more complex reasons, such as having Map arrays of the wrong
+      size or shape.
+
+      This function is used by the DDS class, and will rarely, if
+      ever, be explicitly called by a DODS application program.
+
+      @memo Compare an object's current state with the sematics of its
+      type.
+      @return Returns FALSE when the current state violates some
+      aspect of the type semantics, TRUE otherwise.
+  
+      @param msg A returned String, containing a message indicating
+      the source of any problem.
+      @param all For complex constructor types (Function, Grid,
+      Sequence, Structure), this flag indicates whether to check the
+      sematics of the member variables, too.
+
+      @see DDS::check_semantics 
+      */
     virtual bool check_semantics(String &msg = String(), bool all = false);
 
-    // This function contains the relational operators used by the CE
-    // evaluator in the DDS class. Each class that wants to be able to
-    // evaluate relational expressions must overload this function. The
-    // implementation in BaseType returns false and prints an error message.
+  /** This function contains the relational operators used by the
+      constraint expression evaluator in the DDS class. Each class
+      that wants to be able to evaluate relational expressions must
+      overload this function. The implementation in BaseType returns
+      false and prints an error message.
+
+      The {\it op} argument refers to a table generated by bison from
+      the constraint expression parser.  Use statements like the
+      following to correctly interpret its value:
+
+      \begin{verbatim}
+      switch (op) {
+        case EQUAL:
+          return i1 == i2;
+        case NOT_EQUAL:
+          return i1 != i2;
+        case GREATER:
+          return i1 > i2;
+        case GREATER_EQL:
+          return i1 >= i2;
+        case LESS:
+          return i1 < i2;
+        case LESS_EQL:
+          return i1 <= i2;
+        case REGEXP:
+          cerr << "Regexp not valid for integer values" << endl;
+          return false;
+        default:
+          cerr << "Unknown operator" << endl;
+          return false;
+      }
+      \end{verbatim}
+
+      @memo The class relational operators.
+      @param b The value with which the instance value is to be
+      compared. 
+      @param op An integer index indicating which relational operator
+      is implied. Choose one from the following: #EQUAL#, #NOT_EQUAL#,
+      #GREATER#, #GREATER_EQL#, #LESS#, #LESS_EQL#, and #REGEXP#.
+      @param dataset The name of the dataset from which the instance's
+      data has come (or is to come).
+      @return The boolean value of the comparison.
+      */
     virtual bool ops(BaseType &b, int op, const String &dataset);
 };
 
+  /** This is simply a pointer to a BaseType class instance.  All the
+      DODS types have similar pointer definitions. 
+
+      @memo A pointer to a BaseType
+      @see BaseType
+      */
 typedef BaseType * BaseTypePtr;
 
 #endif 
