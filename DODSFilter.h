@@ -74,20 +74,19 @@
     @author jhrg 8/26/97 */
 
 class DODSFilter {
-private:
-    bool comp;			// True if the output should be compressed.
-    bool ver;			// True if the caller wants version info.
-    bool bad_options;		// True if the options (argc,argv) are bad.
+protected:
+    bool d_comp;		// True if the output should be compressed.
+    bool d_ver;			// True if the caller wants version info.
+    bool d_bad_options;		// True if the options (argc,argv) are bad.
     bool d_conditional_request;
 
-    string program_name;	// Name of the filter program
-    string dataset;		// Name of the dataset/database 
-    string ce;			// Constraint expression 
-    string cgi_ver;		// Version of CGI script (caller)
-    string anc_dir;		// Look here for ancillary files
-    string anc_file;		// Use this for ancillary file name
-    string cache_dir;		// Use this for cache files
-    string accept_types;	// List of types the client understands.
+    string d_program_name;	// Name of the filter program
+    string d_dataset;		// Name of the dataset/database 
+    string d_ce;		// Constraint expression 
+    string d_cgi_ver;		// Version of CGI script (caller)
+    string d_anc_dir;		// Look here for ancillary files
+    string d_anc_file;		// Use this for ancillary file name
+    string d_cache_dir;		// Use this for cache files
 
     time_t d_anc_das_lmt;	// Last modified time of the anc. DAS.
     time_t d_anc_dds_lmt;	// Last modified time of the anc. DDS.
@@ -95,71 +94,95 @@ private:
 
     DODSFilter() {}		// Private default ctor.
 
+    void initialize(int argc, char *argv[]);
+
+    virtual int process_options(int argc, char *argv[]);
+
 public:
-  DODSFilter(int argc, char *argv[]);
+    DODSFilter(int argc, char *argv[]);
 
-  virtual ~DODSFilter();
+    virtual ~DODSFilter();
 
-  bool OK();
+    /** Use this function to test whether the options passed via argc
+	and argv are valid. 
 
-  bool version();
+	@brief Check whether the DODSFilter was initialized with valid
+	arguments. 
+	@return True if the class state is OK, false otherwise. */
+    bool OK() { return !d_bad_options; }
 
-  virtual bool is_conditional();
+    /** Use this function to check whether the client requested version
+	information.  In addition to returning version information about
+	the DODS software, the server can also provide version
+	information about the dataset itself.
 
-  string get_cgi_version();
+	@brief Should the filter send version information to the client
+	program?
 
-  void set_cgi_version(string version);
+	@return True if the -V option was given indicating that the filter
+	should send version information back to the client, False
+	otherwise. 
+	@see DODSFilter::send_version_info */
+    bool version() { return d_ver; }
 
-  string get_ce();
+    bool is_conditional();
 
-  virtual void set_ce(string _ce);
+    string get_cgi_version();
 
-  string get_dataset_name();
+    void set_cgi_version(string version);
 
-  virtual void set_dataset_name(const string _dataset);
+    string get_ce();
 
-  virtual string get_dataset_version();
+    void set_ce(string _ce);
 
-  virtual time_t get_dataset_last_modified_time();
+    string get_dataset_name();
 
-  virtual time_t get_das_last_modified_time(const string &anc_location="");
+    virtual void set_dataset_name(const string _dataset);
 
-  virtual time_t get_dds_last_modified_time(const string &anc_location="");
+    virtual string get_dataset_version();
 
-  virtual time_t get_data_last_modified_time(const string &anc_location="");
+    virtual time_t get_dataset_last_modified_time();
 
-  virtual time_t get_request_if_modified_since();
+    virtual time_t get_das_last_modified_time(const string &anc_location="");
 
-  virtual string get_cache_dir();
+    virtual time_t get_dds_last_modified_time(const string &anc_location="");
 
-  string get_accept_types();
+    virtual time_t get_data_last_modified_time(const string &anc_location="");
 
-  void virtual read_ancillary_das(DAS &das, string anc_location = "");
+    virtual time_t get_request_if_modified_since();
 
-  void virtual read_ancillary_dds(DDS &dds, string anc_location = "");
+    virtual string get_cache_dir();
 
-  void print_usage();
+    virtual void read_ancillary_das(DAS &das, string anc_location = "");
 
-  void send_version_info();
+    virtual void read_ancillary_dds(DDS &dds, string anc_location = "");
 
-  void virtual send_das(DAS &das, const string &anc_location = "");
-  void virtual send_das(ostream &os, DAS &das,
-			const string &anc_location="");
-    void virtual send_das(FILE *out, DAS &das,
+    virtual void print_usage();
+
+    virtual void send_version_info();
+
+    virtual void send_das(DAS &das, const string &anc_location = "");
+    virtual void send_das(ostream &os, DAS &das,
+			  const string &anc_location="");
+    virtual void send_das(FILE *out, DAS &das,
 			  const string &anc_location="");
 
-  void virtual send_dds(DDS &dds, bool constrained = false,
-			const string &anc_location = "");
-  void virtual send_dds(ostream &os, DDS &dds, bool constrained = false,
-			const string &anc_location = "");
-    void virtual send_dds(FILE *out, DDS &dds, bool constrained = false,
+    virtual void send_dds(DDS &dds, bool constrained = false,
+			  const string &anc_location = "");
+    virtual void send_dds(ostream &os, DDS &dds, bool constrained = false,
+			  const string &anc_location = "");
+    virtual void send_dds(FILE *out, DDS &dds, bool constrained = false,
 			  const string &anc_location = "");
 
-  void virtual send_data(DDS &dds, FILE *data_stream,
+    virtual void send_data(DDS &dds, FILE *data_stream,
 			   const string &anc_location = "");
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.25  2003/03/13 23:57:04  jimg
+// Added process_options() and initialize() methods. These facilitate
+// specializing this class.
+//
 // Revision 1.24  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
