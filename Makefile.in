@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.97 1999/05/04 19:47:21 jimg Exp $
+# $Id: Makefile.in,v 1.98 1999/05/05 22:38:32 edavis Exp $
 
 @SET_MAKE@
 
@@ -49,6 +49,9 @@ SHELL = /bin/sh
 srcdir = @srcdir@
 version = @VERSION@
 dir = dap-@VERSION@
+
+COMPONENT_NAME = DODS Core
+AWK = @AWK@
 
 # testsuite specifics
 RUNTEST = runtest
@@ -446,6 +449,14 @@ update-version: check-version
 	if [ ! -d ../$(dir) ]; then \
 	    mv ../dap* ../$(dir);\
 	fi
+	touch $(DODS_ROOT)/VERSION; cat $(DODS_ROOT)/VERSION | \
+	  $(AWK) ' \
+	    BEGIN { found = 0 } \
+	    { if ( $$0 ~ /^$(COMPONENT_NAME):/) \
+	        { print "$(COMPONENT_NAME):", $(version); found = 1 } \
+	      else { print $$0 } } \
+	    END { if ( ! found) { print "$(COMPONENT_NAME):", $(version) } \
+	        }' > $(DODS_ROOT)/VERSION
 
 # Compare the version encoded in this Makefile (set by configure) with the
 # version in version.h. The version make variable is set up near the top of
