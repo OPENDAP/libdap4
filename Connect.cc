@@ -9,6 +9,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.88  2000/03/17 00:11:39  jimg
+// I fixed the bug in libwww which made caching of compressed documents fail.
+// I removed the hacks in this file that prevented data documents from being
+// cached. I also have removed the code that wrote NEVER_DEFLATE to the rc
+// file. The NEVER_DEFLATE option still works; I'm just not including it in the
+// rc file by default.
+//
 // Revision 1.87  2000/01/27 06:29:55  jimg
 // Resolved conflicts from merge with release-3-1-4
 //
@@ -504,7 +511,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.87 2000/01/27 06:29:55 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.88 2000/03/17 00:11:39 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1080,7 +1087,6 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     int MAX_CACHE_SIZE = DODS_CACHE_MAX;
     int MAX_CACHED_OBJ = DODS_CACHED_OBJ;
     int IGNORE_EXPIRES = DODS_IGN_EXPIRES;
-    int NEVER_DEFLATE = DODS_NEVER_DEFLATE;
     int use_cache_file = 1;
     
     // The following code sets up the cache according to the data stored
@@ -1097,16 +1103,16 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     if(homedir != NULL) {
 	if(homedir[strlen(homedir)-1] == '/') homedir[(strlen(homedir)-1)] = (char)0;	 
 	// set default cache root to $HOME/.dods_cache/
-	cache_root = new char[strlen(homedir)+13];
+	cache_root = new char[strlen(homedir)+14];
 	strcpy(cache_root, homedir);
-	strcpy(cache_root+strlen(homedir), "/.dods_cache");
-	cache_root[strlen(homedir)+12] = (char)0;
+	strcpy(cache_root+strlen(homedir), "/.dods_cache/");
+	cache_root[strlen(homedir)+13] = (char)0;
     }
     else { 
 	// Otherwise set the default cache root the /tmp/.dods_cache/
-	cache_root = new char[17];
-	strcpy(cache_root, "/tmp/.dods_cache");
-	cache_root[16] = (char)0;
+	cache_root = new char[18];
+	strcpy(cache_root, "/tmp/.dods_cache/");
+	cache_root[17] = (char)0;
     }
     
     cifp = getenv("DODS_CACHE_INIT");
@@ -1141,7 +1147,9 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		fpo << "MAX_CACHE_SIZE=" << MAX_CACHE_SIZE << "\n";
 		fpo << "MAX_CACHED_OBJ=" <<  MAX_CACHED_OBJ << "\n";
 		fpo << "IGNORE_EXPIRES=" << IGNORE_EXPIRES << "\n";
+#if 0
 		fpo << "NEVER_DEFLATE=" << NEVER_DEFLATE << "\n";
+#endif
 		fpo << "CACHE_ROOT=" << cache_root << "\n";
 		fpo.close();
 	    }
@@ -1172,17 +1180,16 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		else if((strncmp(tempstr, "IGNORE_EXPIRES", 14)==0) && tokenlength == 14) {
 		    IGNORE_EXPIRES= atoi(value);
 		}
-		else if ((strncmp(tempstr, "NEVER_DEFLATE", 13) == 0)
-			 && tokenlength == 13) {
+		else if((strncmp(tempstr, "NEVER_DEFLATE", 13)==0) && tokenlength == 13) {
 		    // (re)Set the member value iff the dodsrc file changes
 		    // te default. 12/1/99 jhrg
 		    _accept_deflate=accept_deflate = atoi(value) ? false: true;
 		}
 		else if((strncmp(tempstr, "CACHE_ROOT", 10)==0) && tokenlength == 10) {
-		    cache_root = new char[strlen(value)+1];
+		    cache_root = new char[strlen(value)+2];
 		    strcpy(cache_root, value);
-		    if(cache_root[strlen(value)-1] == '/') cache_root[strlen(value)-1] = (char)0;
-		    cache_root[strlen(value)] = (char)0;
+		    if (cache_root[strlen(value)-1] != '/')
+			strcat(cache_root, "/");
 		}
 	    }
 	    delete tempstr;
@@ -1192,12 +1199,13 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
         
     // End of cache file parsing.
 
-    // Initial tcp and buffered_tcp transports
+    // Initialize tcp and buffered_tcp transports
     HTTransportInit();
 
     // Set up http and cache protocols. Do this instead of
     // HTProtocolPreemtiveInit(). 
     HTProtocol_add("http", "buffered_tcp", HTTP_PORT, YES, HTLoadHTTP, NULL);
+    HTProtocol_add("file", "local", 0, YES, HTLoadFile, NULL);
     HTProtocol_add("cache", "local", 0, YES, HTLoadCache, NULL);
 
     // Initialize various before and after filters. See HTInit.c.
@@ -1223,13 +1231,18 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     if (accept_deflate) {
 #ifdef HT_ZLIB
 	HTList *content_encodings = HTList_new();
+	HTContentEncoderInit(content_encodings);
+#if 0
 	HTCoding_add(content_encodings, "deflate", NULL, HTZLib_inflate, 1.0);
+#endif
 	HTFormat_setContentCoding(content_encodings);
 #endif /* HT_ZLIB */
     }
 
     // Register MIME headers for HTTP 1.1
     HTMIMEInit();
+    HTBeforeInit();
+    HTAfterInit();
 
 #ifdef GUI
     // Add progress notification, etc.
@@ -1359,21 +1372,27 @@ Connect::read_url(string &url, FILE *stream)
     // issue cache-control headers in their responses. (Or we will fix the
     // libwww bug that makes compressed documents break the cache...).
     // 12/1/99 jhrg
+    // I fixed the libwww bug. 3/16/2000 jhrg
+#if 0
     bool suppress_cache = false;
     if (_accept_deflate && url.find(".dods") != url.npos) {
 	suppress_cache = true;
 	HTCacheMode_setEnabled(false);
 	set_cache_control("no-cache");
     }
+#endif
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
 
+#if 0
     if (suppress_cache) {	// if suppresed above, undo for the next req.
 	HTCacheMode_setEnabled(true);
 	set_cache_control("");
     }
+#endif
 
-    if (_cache_enabled) HTCacheIndex_write(_cache_root);
+    if (_cache_enabled) 
+	HTCacheIndex_write(_cache_root);
 
     if (status != YES) {
 	if (SHOW_MSG) cerr << "Can't access resource" << endl;
@@ -1425,7 +1444,7 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 	    www_lib_init(www_verbose_errors, accept_deflate);
 	}
 	_num_remote_conns++;
-	// NB: _cache_enabled and _cahe_root are set in www_lib_init.
+	// NB: _cache_enabled and _cache_root are set in www_lib_init.
 	// 12/14/99 jhrg
 
 	// Find and store any CE given with the URL.
