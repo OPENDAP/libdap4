@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.33 2000/09/22 02:17:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.34 2000/10/02 18:48:59 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -271,7 +271,7 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 	return true;
 
     // length() is not capacity; it must be set explicitly in read().
-    unsigned int num = length();
+    int num = length();
 
     switch (_var->type()) {
       case dods_byte_c:
@@ -297,10 +297,12 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 	// Note that xdr_bytes and xdr_array both send the length themselves,
 	// so the length is actually sent twice. 12/31/99 jhrg
 	if (_var->type() == dods_byte_c)
-	    status = (bool)xdr_bytes(sink, (char **)&_buf, &num,
+	    status = (bool)xdr_bytes(sink, (char **)&_buf, 
+				     (unsigned int *)&num,
 				     DODS_MAX_ARRAY); 
 	else
-	    status = (bool)xdr_array(sink, (char **)&_buf, &num,
+	    status = (bool)xdr_array(sink, (char **)&_buf,
+				     (unsigned int *)&num,
 				     DODS_MAX_ARRAY, _var->width(),
 #ifdef WIN32
 				     (xdrproc_t)(_var->xdr_coder())
@@ -666,6 +668,9 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.34  2000/10/02 18:48:59  jimg
+// Changed type of num in the serialize method to int
+//
 // Revision 1.33  2000/09/22 02:17:22  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and
