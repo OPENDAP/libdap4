@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.29  1998/02/11 22:12:45  jimg
+// Changed x_gzip to deflate. See Connect.cc/.h
+// Removed old code.
+//
 // Revision 1.28  1997/12/16 01:38:22  jimg
 // Merged release 2.14d changes.
 //
@@ -136,7 +140,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.28 1997/12/16 01:38:22 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.29 1998/02/11 22:12:45 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -200,33 +204,6 @@ do_version(const String &script_ver, const String &dataset_ver)
 
     if (dataset_ver != "")
 	cout << "Dataset version: " << dataset_ver << endl;
-
-    return true;
-}
-
-bool
-do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
-		 const String &dataset, const String &constraint)
-{
-    if (compression) {
-	int childpid;
-	FILE *data_sink = compressor(data_stream, childpid);
-	if (!dds.send(dataset, constraint, data_sink, true)) {
-	    ErrMsgT("Could not send compressed data");
-	    return false;
-	}
-	fclose(data_sink);
-	int pid;
-	while ((pid = waitpid(childpid, 0, 0)) > 0) {
-	    DBG(cerr << "pid: " << pid << endl);
-	}
-    }
-    else {
-	if (!dds.send(dataset, constraint, data_stream, false)) {
-	    ErrMsgT("Could not send data");
-	    return false;
-	}
-    }
 
     return true;
 }
@@ -381,55 +358,6 @@ ErrMsgT(const char *Msgt)
 	 << host_or_addr << ": "<< Msgt << endl;
 }
 
-// Given an open FILE *IN, a separator character (in STOP) and the number of
-// characters in the thing referenced by IN, return characters upto the
-// STOP. The STOP character itself is discarded. Memory for the new word is
-// dynamically allocated using C++'s new facility. In addition, the count of
-// characters in the input source (CL; content length) is decremented. 
-//
-// Once CL is zero, do not continue calling this function!
-//
-// Returns: a newly allocated string.
-
-#if 0
-char *
-fmakeword(FILE *f, const char stop, int *cl) 
-{
-    assert(f && stop && *cl);
-
-    int wsize = CLUMP_SIZE;
-    int ll = 0;
-    char *word = new char[wsize + 1];
-
-    while(1) {
-	assert(ll <= wsize);
-
-        word[ll] = (char)fgetc(f);
-
-	// If the word size is exceeded, allocate more space. What a kluge.
-        if(ll == wsize) {
-            wsize += CLUMP_SIZE;
-	    char *tmp_word_buf = new char[wsize + 1];
-	    memcpy(tmp_word_buf, word, wsize - (CLUMP_SIZE - 1));
-	    delete word;
-	    word = tmp_word_buf;
-	}
-
-        --(*cl);
-
-        if((word[ll] == stop) || (feof(f)) || (!(*cl))) {
-            if(word[ll] != stop) 
-		ll++;
-	    assert(ll <= wsize);
-            word[ll] = '\0';
-            return word;
-	}
-
-        ++ll;
-    }
-}
-#endif
-
 // Given a pathname, return just the filename component with any extension
 // removed. The new string resides in newly allocated memory; the caller must
 // delete it when done using the filename.
@@ -473,7 +401,7 @@ name_path(const char *path)
 
 static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
 			"dods_error", "web_error"};
-static char *encoding[]={"unknown", "x-plain", "x-gzip"};
+static char *encoding[]={"unknown", "deflate", "x-plain"};
 
 void
 set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
