@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.137 2003/03/06 01:42:04 jimg Exp $
+# $Id: Makefile.in,v 1.138 2003/03/07 21:47:27 jimg Exp $
 
 @SET_MAKE@
 
@@ -534,7 +534,7 @@ binary-tar:
 		DODS/etc/INSTALL-servers \
 		DODS/etc/installServers \
 		DODS/etc/nph-dods \
-		DODS/etc/dods.ini \
+		DODS/etc/dods.rc \
 		DODS/etc/asciival \
 		DODS/etc/www_int \
 		DODS/etc/deflate \
