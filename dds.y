@@ -15,7 +15,12 @@
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.7  1994/12/22 04:30:57  reza
+ * Revision 1.8  1995/01/19 20:13:04  jimg
+ * The parser now uses the new utility functions to create new instances
+ * of the variable objects (Byte, ..., Grid).
+ * Fixed the number of shift/reduce conflicts expected (now at 60).
+ *
+ * Revision 1.7  1994/12/22  04:30:57  reza
  * Made save_str static to avoid linking conflict.
  *
  * Revision 1.6  1994/12/16  22:24:23  jimg
@@ -53,7 +58,7 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: dds.y,v 1.7 1994/12/22 04:30:57 reza Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.8 1995/01/19 20:13:04 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,19 +67,9 @@ static char rcsid[]={"$Id: dds.y,v 1.7 1994/12/22 04:30:57 reza Exp $"};
 #include <iostream.h>
 
 #include "dds.tab.h"
+#include "util.h"
 #include "DDS.h"
-
-#include "Byte.h"
-#include "Int32.h"
-#include "Float64.h"
-#include "Str.h"
-#include "Url.h"
 #include "Array.h"
-#include "List.h"
-#include "Structure.h"
-#include "Sequence.h"
-#include "Function.h"
-#include "Grid.h"
 #include "BTXPStack.h"
 
 extern int dds_line_num;
@@ -92,7 +87,7 @@ static void save_str(char *dst, char *src);
 
 %}
 
-%expect 61
+%expect 60
 
 %token ID
 %token INTEGER
@@ -181,26 +176,26 @@ declaration: 	list declaration
                     }
 ;
 
-list:		LIST { ctor.push(new List); }
+list:		LIST { ctor.push(NewList()); }
 ;
 
-structure:	STRUCTURE { ctor.push(new Structure); }
+structure:	STRUCTURE { ctor.push(NewStructure()); }
 ;
 
-sequence:	SEQUENCE { ctor.push(new Sequence); }
+sequence:	SEQUENCE { ctor.push(NewSequence()); }
 ;
 
-function:	FUNCTION { ctor.push(new Function); }
+function:	FUNCTION { ctor.push(NewFunction()); }
 ;
 
-grid:		GRID { ctor.push(new Grid); }
+grid:		GRID { ctor.push(NewGrid()); }
 ;
 
-base_type:	BYTE { current = new Byte; }
-		| INT32 { current = new Int32; }
-		| FLOAT64 { current = new Float64; }
-		| STRING { current = new Str; }
-		| URL { current = new Url; }
+base_type:	BYTE { current = NewByte(); }
+		| INT32 { current = NewInt32(); }
+		| FLOAT64 { current = NewFloat64(); }
+		| STRING { current = NewStr(); }
+		| URL { current = NewUrl(); }
 ;
 
 var:		ID { current->set_var_name($1); }
@@ -213,7 +208,7 @@ array_decl:	'[' INTEGER ']'
 			 ((Array *)current)->append_dim(atoi($2));
 		     }
 		     else {
-			 Array *a = new Array; 
+			 Array *a = NewArray(); 
 			 a->add_var(current); 
 			 a->append_dim(atoi($2));
 			 current = a;
@@ -229,7 +224,7 @@ array_decl:	'[' INTEGER ']'
 			 ((Array *)current)->append_dim(atoi($5), id);
 		     }
 		     else {
-			 Array *a = new Array; 
+			 Array *a = NewArray(); 
 			 a->add_var(current); 
 			 a->append_dim(atoi($5), id);
 			 current = a;
