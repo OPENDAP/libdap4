@@ -8,10 +8,15 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.18  1995/10/23 23:20:49  jimg
-/* Added _send_p and _read_p fields (and their accessors) along with the
-/* virtual mfuncs set_send_p() and set_read_p().
+/* Revision 1.19  1995/12/06 21:45:01  jimg
+/* Changed read() from three parameters to two.
+/* Added constrained flag to print_decl().
+/* Removed store_val() and read_val() (use buf2val() and val2buf() instead).
 /*
+ * Revision 1.18  1995/10/23  23:20:49  jimg
+ * Added _send_p and _read_p fields (and their accessors) along with the
+ * virtual mfuncs set_send_p() and set_read_p().
+ *
  * Revision 1.17  1995/08/26  00:31:25  jimg
  * Removed code enclosed in #ifdef NEVER #endif.
  *
@@ -249,27 +254,24 @@ public:
     // struct.
     virtual unsigned int width() = 0;
 
-    // Put the data into a local buffer so that it may be serialized. This
-    // mfunc must be specialized for each API/format (it is not defined by
-    // the classes Int32, ..., Grid - instead look in TestInt32, ... for
-    // samples). 
-    virtual bool read(String dataset, String var_name, String constraint) = 0;
+    // Put the data into a local buffer so that it may be serialized. 
+    // For an example, see the Test classes.
+    virtual bool read(String dataset, String var_name) = 0;
     
-    // read_val() reads the value of the variable from an internal buffer and
+    // buf2val() reads the value of the variable from an internal buffer and
     // stores it in the memory referenced by *VAL. Either the caller must
     // allocate enough storage to *VAL or set it to null. In the later case,
     // new will be used to allocate storage. The caller is then responsible
-    // for deallocating storage. Array and List values are stored as C would
-    // store an array (N values stored sequentially). Structure, ..., Grid
-    // values are stored as C would store a struct.
-    virtual unsigned int read_val(void **val) = 0;// deprecated name
+    // for deallocating storage. Array and List values for cardinal types are
+    // stored as C would store an array (N values stored sequentially).
     virtual unsigned int buf2val(void **val) = 0;
 
     // Store the value pointed to by VAL in the object's internal buffer. This
     // mfunc does not perform any checks, so callers must be sure that the
-    // thing pointed to can actually be stored in the object's buffer.
+    // thing pointed to can actually be stored in the object's buffer. Note
+    // that only vardinal objects and arrays/lists of cardinals may be stored
+    // using this mfunc.
     // Return the size (in bytes) of the information copied from VAL.
-    virtual unsigned int store_val(void *val, bool reuse = false) = 0; // dep
     virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
 
     // Move data to and from the net.
@@ -285,7 +287,8 @@ public:
     // useful in debugging DODS.
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true, 
-			    bool constraint_info = false);
+			    bool constraint_info = false,
+			    bool constrained = false);
 
     // This mfunc is primarily intended for debugging DODS. 
     virtual void print_val(ostream &os, String space = "",
