@@ -38,6 +38,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.20  1996/03/05 17:44:21  jimg
+// Added ce_eval to serailize member function.
+//
 // Revision 1.19  1996/02/02 00:31:12  jimg
 // Merge changes for DODS-1.1.0 into DODS-2.x
 //
@@ -274,28 +277,28 @@ Sequence::width()
 }
 
 bool
-Sequence::serialize(const String &dataset, DDS &dds, bool flush)
+Sequence::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
     bool status = true;
 
     while (status) {
-	if (!read_p())		// only read if not read already
-	    status = read(dataset);
+	if (!read_p() && !read(dataset)) // only read if not read already
+	    return false;
 
-	if (status && !dds.eval_constraint()) 
-	    return status;
-
-	if (!status)
+	// if we are supposed to eval the selection, then do so. If it's
+	// false, then goto the next record in the sequence (don't return as
+	// with the other serialize mfuncs).
+	if (ce_eval && !dds.eval_selection(dataset)) 
 	    break;
 
 	for (Pix p = first_var(); p; next_var(p))
 	    if (var(p)->send_p() 
-		&& !(status = var(p)->serialize(dataset, dds, false))) 
+		&& !(status = var(p)->serialize(dataset, dds, false, false))) 
 		break;
-
-	if (status && flush)
-	    status = expunge();
     }
+
+    if (flush)
+	status = status && expunge();
 
     return status;
 }
