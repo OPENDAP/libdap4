@@ -31,6 +31,12 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.29  1997/05/06 22:09:57  jimg
+ * Added aliases to the grammar. An alias can appear in place of an attribute
+ * and uses the syntax `alias <var1> <var2>'. If var1 exists, var2 becomes an
+ * alias to it and vice versa. If neither var1 nor var2 exists or if they both
+ * exist, and error is reported and parsing stops.
+ *
  * Revision 1.28  1997/02/28 01:01:07  jimg
  * Tweaked error messages so that they no longer mumble about parse errors.
  *
@@ -159,7 +165,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.28 1997/02/28 01:01:07 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.29 1997/05/06 22:09:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -213,14 +219,17 @@ void daserror(char *s);
 
 %}
 
-%expect 9
+%expect 10
 
 %token ATTR
+
+%token GLOBAL
 
 %token ID
 %token INT
 %token FLOAT
 %token STR
+%token ALIAS
 
 %token BYTE
 %token INT32
@@ -270,8 +279,8 @@ var_attr_list: 	/* empty */
     	    	| var_attr_list var_attr
 ;
 
-var_attr:   	ID 
-		{ 
+var_attr:   	ID
+		{
 		    DBG2(mem_list_report()); /* mem_list_report is in */
 					     /* libdbnew.a  */
 		    attr_tab = DAS_OBJ(arg)->get_table($1);
@@ -295,7 +304,9 @@ attr_list:  	/* empty */
     	    	| attr_list attr_tuple
 ;
 
-attr_tuple:	BYTE { save_str(type, $1, das_line_num); } 
+attr_tuple:	alias
+
+                | BYTE { save_str(type, $1, das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
 		bytes ';'
 
@@ -482,7 +493,7 @@ strs:		str_or_id
 		}
 ;
 
-urls:		STR
+urls:		url
 		{
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $1 << endl);
@@ -501,7 +512,7 @@ urls:		STR
 			YYABORT;
 		    }
 		}
-		| strs ',' STR
+		| strs ',' url
 		{
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< $3 << endl);
@@ -522,12 +533,33 @@ urls:		STR
 		}
 ;
 
+url:		ID | STR
+;
+
 str_or_id:	STR | ID | INT | FLOAT
 ;
 
 float_or_int:   FLOAT | INT
 ;
 
+alias:          ALIAS ID 
+                { 
+		    save_str(name, $2, das_line_num); 
+		} 
+                ID
+                {
+		    if (!attr_tab->attr_alias(name, $4)
+			&& !attr_tab->attr_alias($4, name)) {
+			ostrstream msg;
+			msg << "Could not alias `" << $4 << "' and `" << name
+			    << "'." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+                ';'
+;
 %%
 
 void
