@@ -70,7 +70,7 @@ TESTTARGETS	= $(OBJDIR)\das-test.exe \
 
 # Rule for linking console-mode executables
 {$(OBJDIR)}.obj{$(OBJDIR)}.exe:
-	$(LINK) $(LEXEFLAGS) /out:$@ $< $(LINKLIBS)
+	$(LINK) $(LEXEFLAGS) /out:$@ $< $(TESTOBJS) $(LINKLIBS)
 
 DAPOBJS = $(OBJDIR)\Array.obj \
 		$(OBJDIR)\AttrTable.obj \
@@ -100,7 +100,13 @@ DAPOBJS = $(OBJDIR)\Array.obj \
 		$(OBJDIR)\Sequence.obj \
 		$(OBJDIR)\Str.obj \
 		$(OBJDIR)\Structure.obj \
-		$(OBJDIR)\TestArray.obj \
+		$(OBJDIR)\UInt16.obj \
+		$(OBJDIR)\UInt32.obj \
+		$(OBJDIR)\Url.obj \
+		$(OBJDIR)\util.obj \
+		$(OBJDIR)\Vector.obj
+
+TESTOBJS = $(OBJDIR)\TestArray.obj \
 		$(OBJDIR)\TestByte.obj \
 		$(OBJDIR)\TestFloat32.obj \
 		$(OBJDIR)\TestFloat64.obj \
@@ -113,12 +119,7 @@ DAPOBJS = $(OBJDIR)\Array.obj \
 		$(OBJDIR)\TestStructure.obj \
 		$(OBJDIR)\TestUInt16.obj \
 		$(OBJDIR)\TestUInt32.obj \
-		$(OBJDIR)\TestUrl.obj \
-		$(OBJDIR)\UInt16.obj \
-		$(OBJDIR)\UInt32.obj \
-		$(OBJDIR)\Url.obj \
-		$(OBJDIR)\util.obj \
-		$(OBJDIR)\Vector.obj
+		$(OBJDIR)\TestUrl.obj
 
 LEXOBJS = $(OBJDIR)\das.tab.obj \
 		$(OBJDIR)\dds.tab.obj \
@@ -158,9 +159,9 @@ build_libxdr:
 $(OBJDIR)\libdap++.lib: $(LIBOBJS)
 	$(LINK) $(LLIBFLAGS) /out:$@ $(LIBOBJS)
 
-$(OBJDIR)\geturl.exe: $(OBJDIR)\geturl.obj $(OBJDIR)\libdap++.lib
+$(OBJDIR)\geturl.exe: $(OBJDIR)\geturl.obj $(TESTOBJS) $(OBJDIR)\libdap++.lib
 
-$(OBJDIR)\usage.exe: $(OBJDIR)\usage.obj $(OBJDIR)\libdap++.lib
+$(OBJDIR)\usage.exe: $(OBJDIR)\usage.obj $(TESTOBJS) $(OBJDIR)\libdap++.lib
 
 $(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj $(OBJDIR)\libdap++.lib
 
@@ -242,6 +243,13 @@ $(OBJDIR)\RValue.obj : ..\RValue.cc
 $(OBJDIR)\Sequence.obj : ..\Sequence.cc
 $(OBJDIR)\Str.obj : ..\Str.cc
 $(OBJDIR)\Structure.obj : ..\Structure.cc
+$(OBJDIR)\UInt16.obj : ..\UInt16.cc
+$(OBJDIR)\UInt32.obj : ..\UInt32.cc
+$(OBJDIR)\Url.obj : ..\Url.cc
+$(OBJDIR)\util.obj : ..\Util.cc
+$(OBJDIR)\Vector.obj : ..\Vector.cc
+
+# Test objects
 $(OBJDIR)\TestArray.obj : ..\TestArray.cc
 $(OBJDIR)\TestByte.obj : ..\TestByte.cc
 $(OBJDIR)\TestFloat32.obj : ..\TestFloat32.cc
@@ -256,11 +264,6 @@ $(OBJDIR)\TestStructure.obj : ..\TestStructure.cc
 $(OBJDIR)\TestUInt16.obj : ..\TestUInt16.cc
 $(OBJDIR)\TestUInt32.obj : ..\TestUInt32.cc
 $(OBJDIR)\TestUrl.obj : ..\TestUrl.cc
-$(OBJDIR)\UInt16.obj : ..\UInt16.cc
-$(OBJDIR)\UInt32.obj : ..\UInt32.cc
-$(OBJDIR)\Url.obj : ..\Url.cc
-$(OBJDIR)\util.obj : ..\Util.cc
-$(OBJDIR)\Vector.obj : ..\Vector.cc
 
 # Objects from Bison/Lex generated source
 $(OBJDIR)\das.tab.obj   : ..\das.tab.c
