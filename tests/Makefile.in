@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.10 2005/01/28 17:25:13 jimg Exp $
+# $Id: Makefile.in,v 1.11 2005/02/08 21:31:57 jimg Exp $
 
 @SET_MAKE@
 
@@ -56,12 +56,12 @@ SRCS = LongIterAdapter.cc TestArray.cc TestSequence.cc \
        ddsT.cc iterT.cc sequenceT.cc structT.cc
 
 OBJS = TestArray.o TestSequence.o Unused.o ../TestInt16.o ../TestStr.o \
-       ../TestStructure.o
+       ../TestStructure.o ../TestCommon.o
 
 AOBJS = TestArray.o TestSequence.o ../TestInt16.o ../TestStr.o \
 	../TestStructure.o ../TestFloat64.o ../TestInt32.o \
 	../TestUInt32.o ../TestByte.o ../TestGrid.o \
-        ../TestUrl.o ../TestFloat32.o ../TestUInt16.o
+        ../TestUrl.o ../TestFloat32.o ../TestUInt16.o ../TestCommon.o
 
 all: runtest
 

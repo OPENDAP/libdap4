@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.40 2005/01/28 17:25:13 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.41 2005/02/08 21:31:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -542,6 +542,12 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     fprintf( stdout, "The complete DDS:\n" ) ;
     read_table(server, dds_name, true);
 
+#if 0    
+    DDS::Vars_iter i = server.var_begin();
+    while (i != server.var_end())
+        dynamic_cast<TestCommon&>(*(*i++)).set_series_values(true);
+#endif
+
     status = loopback_pipe(&pout, &pin);
     if (!status) {
 	fprintf( stderr, "Could not create the loopback streams\n" ) ;
@@ -641,6 +647,12 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.41  2005/02/08 21:31:57  jimg
+// Merged with release-3-4-10.
+//
+// Revision 1.36.2.4  2005/02/03 01:26:11  jimg
+// Fixed a conflict form the last merge.
+//
 // Revision 1.40  2005/01/28 17:25:13  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

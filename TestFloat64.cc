@@ -38,6 +38,9 @@
 #endif
 
 #include "config_dap.h"
+
+#include <math.h>
+
 #ifndef WIN32
 #include <unistd.h>
 #else
@@ -114,6 +117,13 @@ TestFloat64::read(const string &)
 }
 
 // $Log: TestFloat64.cc,v $
+// Revision 1.24  2005/02/08 21:31:57  jimg
+// Merged with release-3-4-10.
+//
+// Revision 1.20.2.5  2005/02/08 20:21:19  jimg
+// Minor changes for FC3/gcc-3.4 build. I upgraded cppunit and valgrind
+// and rebuild those inorder to get the unit tests to compile.
+//
 // Revision 1.23  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

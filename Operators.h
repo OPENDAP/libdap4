@@ -38,6 +38,8 @@
 
 #include <Regex.h>		// GNU Regex class used for string =~ op.
 
+using namespace std;
+
 static unsigned
 dods_max(int i1, int i2)
 {
@@ -186,6 +188,12 @@ bool rops(T1 a, T2 b, int op)
 }
 
 // $Log: Operators.h,v $
+// Revision 1.15  2005/02/08 21:31:57  jimg
+// Merged with release-3-4-10.
+//
+// Revision 1.13.2.2  2005/02/03 01:26:44  jimg
+// Changes from Karl Benedict (added using namespace std;).
+//
 // Revision 1.14  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

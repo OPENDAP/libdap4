@@ -1,3 +1,13 @@
+2005-02-08  James Gallagher  <jimg@comet.dods.org>
+
+	* Merged with release-3-4-10
+
+2005-02-08  James Gallagher  <jimg@comet.dods.org>
+
+	* bumped the version up to 3.4.10; tagged.
+
+	* System upgrade to FC3/gcc-3.4; minor fixes for the build.
+
 2005-01-28  James Gallagher  <jimg@comet.dods.org>
 
 	* Merged with release-3-4-9.
@@ -1473,5 +1483,5 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.81 2005/01/28 17:24:06 jimg Exp $
+$Id: ChangeLog,v 1.82 2005/02/08 21:31:57 jimg Exp $
 

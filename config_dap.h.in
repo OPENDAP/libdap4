@@ -174,8 +174,11 @@
    `char[]'. */
 #undef YYTEXT_POINTER
 
-/* Is this code reentrant (pthreads was found)? */
+/* Is this code reentrant (pthreads was found)? Protect this since for FC3
+this symbol is defined in a system header (gthr-default.h) 02/08/05 jhrg */
+#ifndef _REENTRANT
 #undef _REENTRANT
+#endif
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
