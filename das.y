@@ -22,7 +22,10 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.4  1994/09/15 21:10:56  jimg
+ * Revision 1.5  1994/09/27 23:00:39  jimg
+ * Modified to use the new DAS class and new AttrTable class.
+ *
+ * Revision 1.4  1994/09/15  21:10:56  jimg
  * Added commentary to das.y -- how does it work.
  *
  * Revision 1.3  1994/09/09  16:16:38  jimg
@@ -55,13 +58,13 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.4 1994/09/15 21:10:56 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.5 1994/09/27 23:00:39 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "das.tab.h"
-#include "DASVHMap.h"
+#include "DAS.h"
 
 extern int das_line_num;
 
@@ -87,14 +90,14 @@ int daserror(char *s);
   Parser algorithm: 
 
   When a variable is found (rule: var_attr) chech the table to see if some
-  attributes fro that var have already been parsed - if so the var must have
+  attributes for that var have already been parsed - if so the var must have
   a table entry alread allocated; get that entry and use it. Otherwise,
   allocate a new table entry.  
 
   Store the table entry for the current variable in attr_tab_ptr.
 
   For every attribute name-value pair (rule: attr_pair) entry the name and
-  value inthe table entry for the current variable.
+  value in the table entry for the current variable.
 */
 
 attributes: /* empty */
@@ -112,9 +115,10 @@ var_attr_list: 	/* empty */
 
 var_attr:   	ID 
 		{ 
-		  if (!table[$1]) /* new variable or adding to existing one */
-		    table[$1] = new AttrTable;
-		  attr_tab_ptr = table[$1];
+		    if (!table.get_table((String)$1)) /* new var or existing one */
+			attr_tab_ptr = table.set_table((String)$1, new AttrTable);
+		    else
+			attr_tab_ptr = table.get_table((String)$1);
 		} 
 		'{' attr_list '}'
 ;
@@ -134,7 +138,7 @@ attr_pair:	attr_name
 		} 
 		attr_val 
                 { 
-		  (*attr_tab_ptr)[name] = $3;
+		    attr_tab_ptr->get_attr((String)name) = $3;
 		} 
                 ';' 
 ;
