@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.48 2005/01/28 17:25:11 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.49 2005/02/11 21:10:25 jimg Exp $";
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -67,9 +67,9 @@ AttrType_to_String(const AttrType at)
       case Attr_container: return "Container";
       case Attr_byte: return "Byte";
       case Attr_int16: return "Int16";
-      case Attr_uint16: return "Uint16";
+      case Attr_uint16: return "UInt16";
       case Attr_int32: return "Int32";
-      case Attr_uint32: return "Uint32";
+      case Attr_uint32: return "UInt32";
       case Attr_float32: return "Float32";
       case Attr_float64: return "Float64";
       case Attr_string: return "String";
@@ -1268,6 +1268,10 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.49  2005/02/11 21:10:25  jimg
+// Fix for bug 751: Uint16/32 --> UInt16/32 as per examples in the DAP2
+// specification.
+//
 // Revision 1.48  2005/01/28 17:25:11  jimg
 // Resolved conflicts from merge with release-3-4-9
 //
