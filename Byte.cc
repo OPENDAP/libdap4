@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.32  1997/12/31 21:46:50  jimg
+// Added casts in serialize and deserialize to get rid of warnings about
+// signed-ness of buffers passed to XDR functions.
+//
 // Revision 1.31  1997/10/09 22:19:14  jimg
 // Resolved conflicts in merge of 2.14c to trunk.
 //
@@ -189,7 +193,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.31 1997/10/09 22:19:14 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.32 1997/12/31 21:46:50 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -240,7 +244,7 @@ Byte::serialize(const String &dataset, DDS &dds, XDR *sink,
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (!xdr_char(sink, &_buf))
+    if (!xdr_char(sink, (char *)&_buf))
 	return false;
 
     return true;
@@ -251,7 +255,7 @@ Byte::serialize(const String &dataset, DDS &dds, XDR *sink,
 bool
 Byte::deserialize(XDR *source, DDS *, bool)
 {
-    unsigned int num = xdr_char(source, &_buf);
+    unsigned int num = xdr_char(source, (char *)&_buf);
 
     return num;
 }
