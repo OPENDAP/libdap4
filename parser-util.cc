@@ -37,6 +37,9 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.3  1996/05/06 18:33:24  jimg
+// Replaced calls to atoi with calls to strtol.
+//
 // Revision 1.2  1996/05/04 00:07:33  jimg
 // Fixed a bug where Float attributes with the value 0.0 were considered `bad
 // values'.
@@ -44,7 +47,7 @@
 // Revision 1.1  1996/04/04 22:12:19  jimg
 // Added.
 
-static char rcsid[]= {"$Id: parser-util.cc,v 1.2 1996/05/04 00:07:33 jimg Exp $"};
+static char rcsid[]= {"$Id: parser-util.cc,v 1.3 1996/05/06 18:33:24 jimg Exp $"};
 
 #include <stdlib.h>
 #include <string.h>
@@ -73,9 +76,15 @@ save_str(char *dst, const char *src, const int line_num)
 int
 check_byte(const char *val, const int num)
 {
-    int v = atoi(val);
+    char *ptr;
+    long v = strtol(val, &ptr, 0);
 
-    if (abs(v) > DODS_CHAR_MAX) {
+    if (v == 0 && val == ptr) {
+	parse_error("Not decodable to an integer value", num);
+	return FALSE;
+    }
+
+    if (v > DODS_CHAR_MAX || v < DODS_CHAR_MIN) {
 	parse_error("Not a byte value", num);
 	return FALSE;
     }
@@ -83,13 +92,22 @@ check_byte(const char *val, const int num)
     return TRUE;
 }
 
+// This version of check_int will pass base 8, 10 and 16 numbers when they
+// use the ANSI standard for string representation of those number bases.
+
 int
 check_int(const char *val, const int num)
 {
-    int v = atoi(val);
+    char *ptr;
+    long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
+
+    if (v == 0 && val == ptr) {
+	parse_error("Not decodable to an integer value", num);
+	return FALSE;
+    }
 
     /* don't use the constant from limits.h, use the on in dods-limits.h */
-    if ((unsigned)abs(v) > DODS_UINT_MAX) { 
+    if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
 	parse_error("Not a 32-bit integer value", num);
 	return FALSE;
     }
@@ -102,9 +120,6 @@ check_float(const char *val, const int num)
 {
     char *ptr;
     double v = strtod(val, &ptr);
-#ifdef NEVER
-    double v = atof(val);
-#endif
 
     if (v == 0.0 && val == ptr) {
 	parse_error("Not decodable to a 64-bit float value", num);
