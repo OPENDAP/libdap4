@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: scanner.2.exp,v $
+# Revision 1.2  1997/05/05 20:29:22  jimg
+# *** empty log message ***
+#
 # Revision 1.1  1996/07/16 16:54:33  jimg
 # Added.
 #
@@ -114,13 +117,15 @@ if {$pass} {
 }
 
 # Some things that are *not* identifiers! These should scan as strings.
+# But now (5/5/97) people have convinced me to let these through! Arrgh...
+# jhrg.
 
 if {$pass} {
     set thing "a0.9\r\n"
     send $thing
 
     expect {
-	-re ".*STR=${thing}${prompt} $" { 
+	-re ".*ID=${thing}${prompt} $" { 
 	}
 	timeout { 
 	    send_user "Timeout\n"

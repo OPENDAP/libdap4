@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: scanner.4.exp,v $
+# Revision 1.2  1997/05/05 20:29:11  jimg
+# *** empty log message ***
+#
 # Revision 1.1  1996/07/16 16:54:35  jimg
 # Added.
 #
@@ -69,7 +72,7 @@ if {$pass} {
     }
 }
 
-# Strange case where unquoted sequence of characters `dalls through' the
+# Strange case where unquoted sequence of characters `falls through' the
 # scanner cases for ID, Float and int and winds up a string. Maybe we should
 # not allow this to happen? 7/15/96
 
@@ -78,7 +81,7 @@ if {$pass} {
     send $thing
 
     expect {
-	-re ".*STR=${thing}${prompt} $" { 
+	-re ".*ID=${thing}${prompt} $" { 
 	}
 	timeout { 
 	    send_user "Timeout\n"
