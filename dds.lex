@@ -31,6 +31,12 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.16  1997/11/20 20:12:14  jimg
+ * Added the NAME lexeme. This is explicitly for datasets with `.' in their
+ * names. That character cannot be used in the name of a variable since in
+ * DODS it separates parts of a constructor type. However, it can be part of
+ * a dataset name. Using a separate lexeme is required by the parser.
+ *
  * Revision 1.15  1997/08/11 18:19:34  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -84,7 +90,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.15 1997/08/11 18:19:34 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.16 1997/11/20 20:12:14 jimg Exp $"};
 
 #include <string.h>
 
@@ -118,6 +124,7 @@ STRING 		STRING|String|string
 URL 		URL|Url|url
 
 ID  		[a-zA-Z_][a-zA-Z0-9_/%]*
+NAME            [a-zA-Z_/%.][a-zA-Z0-9_/%.]*
 INTEGER		[0-9]+
 NEVER		[^][{}:;=a-zA-Z0-9_%]
 
@@ -141,6 +148,7 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 {URL}			ddslval = yytext; return URL;
 
 {ID}  	    	    	ddslval = yytext; return ID;
+{NAME}                  ddslval = yytext; return NAME;
 {INTEGER}		ddslval = yytext; return INTEGER;
 
 "{" 	    	    	return (int)*yytext;
