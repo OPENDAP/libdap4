@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.13 2003/05/01 23:37:01 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.14 2003/05/02 16:22:52 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -69,7 +69,7 @@ int www_trace = 0;
 
 /** Functor to parse the headers in the d_headers field. After the headers
     have been read off the wire and written into the d_headers field, scan
-    them ans set special fields for certain headers special to the DAP. */
+    them and set special fields for certain headers special to the DAP. */
 
 class ParseHeader : public unary_function<const string &, void> {
     ObjectType type;		// What type of object is in the stream?
@@ -246,7 +246,7 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     if (headers) {
 	BuildHeaders curl_hdrs;
 	curl_hdrs = for_each(headers->begin(), headers->end(), curl_hdrs);
-	header_list = curl_hdrs.get_headers(); // d_cl; // save to later delete.
+	header_list = curl_hdrs.get_headers(); // save to later delete.
 	curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, header_list);
     }
 
@@ -267,9 +267,7 @@ HTTPConnect::read_url(const string &url, FILE *stream,
 	curl_slist_free_all(header_list);
 	// If we set the header list to some unique value, make sure to reset
 	// it to null after we free said value! 
-#if 1
 	curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, 0);
-#endif
     }
 
     // Reset the proxy?
@@ -619,6 +617,10 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.14  2003/05/02 16:22:52  jimg
+// Minor fixes: Fixed a spelling mistake and removed #if 1 ... #endif. Mostly I
+// wanted this code in for the 3.4 branch.
+//
 // Revision 1.13  2003/05/01 23:37:01  jimg
 // Changed some of struct Functors to classes.
 //
