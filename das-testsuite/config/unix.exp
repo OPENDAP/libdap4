@@ -1,20 +1,30 @@
-# Minimal test file for a non-interactive test program
+# Tcl/Expect code for the DAS test.
+
+# Make sure the global var DASTEST is set correctly.
 
 global DASTEST
 if ![info exists DASTEST] then {
     set DASTEST [transform das-test]
 }
 
-proc das-test_start { file } {
+# The four `required' procs are _start, _load, _exit and _version. Since
+# das-test is non-interactive, these are quite simple.
+
+proc das-test_start { ifile ofile } {
     global verbose
     global DASTEST
     global comp_output
 
     if {$verbose >= 1} {
-	send_user "Testing $file...\n"
+	send_user "Testing $ifile $ofile ...\n"
     }
 
-    catch "exec $DASTEST $file" comp_output
+    catch "exec $DASTEST $ifile $ofile" comp_output
+
+    if {$verbose >= 1} {
+	send_user "Comp output:\n$comp_output\n"
+    }
+
 }
 
 proc das-test_load {} {
@@ -25,4 +35,3 @@ proc das-test_exit {} {
 
 proc das-test_version {} {
 }
-
