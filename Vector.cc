@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.15  1996/12/02 18:22:08  jimg
+// Added cases for uint32 to various parts of Vector.
+//
 // Revision 1.14  1996/11/13 19:23:10  jimg
 // Fixed debugging.
 //
@@ -76,7 +79,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.14 1996/11/13 19:23:10 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.15 1996/12/02 18:22:08 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -187,6 +190,7 @@ Vector::var(unsigned int i)
     switch (_var->type()) {
       case dods_byte_c:
       case dods_int32_c:
+      case dods_uint32_c:
       case dods_float64_c: {
 	  // Transfer the ith value to the BaseType *_var; There are more
 	  // efficient ways to get a whole array using buf2val() but this is
@@ -294,6 +298,7 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
     switch (_var->type()) {
       case dods_byte_c:
       case dods_int32_c:
+      case dods_uint32_c:
       case dods_float64_c:
 	assert(_buf);
 
@@ -363,6 +368,7 @@ Vector::deserialize(XDR *source, bool reuse = false)
     switch (_var->type()) {
       case dods_byte_c:
       case dods_int32_c:
+      case dods_uint32_c:
       case dods_float64_c:
 	if (_buf && !reuse) {
 	    delete[] _buf;
@@ -441,6 +447,7 @@ Vector::val2buf(void *val, bool reuse)
     switch (_var->type()) {
       case dods_byte_c:
       case dods_int32_c:
+      case dods_uint32_c:
       case dods_float64_c: {
 	unsigned int array_wid = width();
 
@@ -504,6 +511,7 @@ Vector::buf2val(void **val)
     switch (_var->type()) {
       case dods_byte_c:
       case dods_int32_c:
+      case dods_uint32_c:
       case dods_float64_c:
 	if (!*val)
 	    *val = new char[wid];
