@@ -4,9 +4,15 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.5  1994/11/22 20:47:45  dan
-// 11/22/94 Modified dimension() to return total number of elements.
-//          Modified deserialize to return (bool)status = num | 0.
+// Revision 1.6  1994/12/08 15:51:41  dan
+// Modified size() member to return cumulative size of all dimensions
+// given the variable basetype.
+// Modified serialize() and deserialize() member functions for data
+// transmission using XDR.
+//
+// Revision 1.5  1994/11/22  20:47:45  dan
+// Modified size() to return total number of elements.
+// Fixed erros in deserialize (multiple returns).
 //
 // Revision 1.4  1994/11/22  14:05:19  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
@@ -55,7 +61,7 @@ Array::ptr_duplicate()
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new -- The dtor for Array will delete this object.
 
-Array::Array(const String &n, const String &t, BaseType *v) : var_ptr(v)
+Array::Array(const String &n, const String &t, BaseType *v, FILE *in, FILE *out) : var_ptr(v)
 {
     set_var_name(n);
     set_var_type(t);
@@ -88,9 +94,10 @@ Array::operator=(const Array &rhs)
 unsigned int
 Array::size()
 {
-  int tSize = 1;
-  for (Pix p = first_dim(); p; next_dim(p)) tSize *= dim(p); 
-    return (tSize);
+  unsigned int sz = 1;
+  for (Pix p = first_dim(); p; next_dim(p)) sz *= dim(p); 
+
+  return (sz * var_ptr->size());
 }
 
 // Serialize an array. This uses the BaseType member XDR_CODER to encode each
@@ -100,19 +107,25 @@ Array::size()
 // representation) *before* this call is made.
 
 bool
-Array::serialize(unsigned int num)
+Array::serialize(bool flush, unsigned int num)
 {
-    assert(buf);
+    assert(dods_buf);
 
-    if (num == 0)		// the default
-	num = size();
+    if (num == 0)  
+	num = (size() / var_ptr->size());
 
-    return (bool)xdr_array(xdrout, (char **)&buf, &num, DODS_MAX_ARRAY, 
-			   var_ptr->size(), var_ptr->xdr_coder());
+    int status = xdr_array(xdrout, (char **)&dods_buf, &num, DODS_MAX_ARRAY, 
+				  var_ptr->size(), var_ptr->xdr_coder());
+    expunge();
+    if (status && flush)
+	status = expunge();
+
+    return status;
+
 }
 
 // NB: If you do not allocate any memory to BUF *and* ensure that BUF ==
-// NULL, then deserialize will alloacte the memory for you. However, it will
+// NULL, then deserialize will allocate the memory for you. However, it will
 // do so using malloc so YOU MUST USE FREE, NOT DELETE, TO RELEASE IT. 
 // You can avoid all this hassle by using the mfunc alloc_buf and free_buf
 // in CtorType. You can use free_buf to free the contents of BUF when they
@@ -122,10 +135,11 @@ unsigned int
 Array::deserialize()
 {
     unsigned int num;
-    bool status = (bool)xdr_array(xdrin, (char **)&buf, &num, DODS_MAX_ARRAY,
+
+    bool status = (bool)xdr_array(xdrin, (char **)&dods_buf, &num, DODS_MAX_ARRAY,
 			   var_ptr->size(), var_ptr->xdr_coder());
 
-    return status ? num : (unsigned int)FALSE;
+    return (status ? (num * var_ptr->size()) : (unsigned int)FALSE);
 }
 
 // NAME defaults to NULL. It is present since the definition of this mfunc is
@@ -198,6 +212,13 @@ Array::print_decl(ostream &os, String space, bool print_semi)
 	os << "[" << shape(p) << "]";
     if (print_semi)
 	os << ";" << endl;
+}
+
+void 
+Array::print_val(ostream &os, String space)
+{
+    print_decl(os, "", false);
+    //os << " = " << dods_buf << ";" << endl;
 }
 
 bool
