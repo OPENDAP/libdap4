@@ -15,7 +15,10 @@
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.2  1994/09/15 21:11:56  jimg
+ * Revision 1.3  1994/09/23 14:56:19  jimg
+ * Added code to build in-memory DDS during parse.
+ *
+ * Revision 1.2  1994/09/15  21:11:56  jimg
  * Modified dds.y so that it can parse all the DDS types.
  * Still no error checking beyond what bison gives you.
  *
@@ -28,7 +31,7 @@
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 
-static char rcsid[]={"$Id: dds.y,v 1.2 1994/09/15 21:11:56 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.3 1994/09/23 14:56:19 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +102,7 @@ datasets:	/* empty */
 		| datasets dataset
 ;
 
-dataset:	DATASET '{' declarations '}' name ';'
+dataset:	DATASET '{' declarations '}' name ';' 
 ;
 
 declarations:	/* empty */
@@ -108,20 +111,24 @@ declarations:	/* empty */
 ;
 
 declaration: 	list declaration 
-                    { add_entry(table, ctor, &current, part); }
+                    { if (current->check_semantics())
+			add_entry(table, ctor, &current, part); }
 
                 | base_type var ';' 
-                    { add_entry(table, ctor, &current, part); }
+                    { if (current->check_semantics())
+			add_entry(table, ctor, &current, part); }
 
 		| structure  '{' declarations '}' 
 		    { current = ctor.pop(); } 
                   var ';' 
-                    { add_entry(table, ctor, &current, part); }
+                    { if (current->check_semantics())
+			add_entry(table, ctor, &current, part); }
 
 		| sequence '{' declarations '}' 
                     { current = ctor.pop(); } 
                   var ';' 
-                    { add_entry(table, ctor, &current, part); }
+                    { if (current->check_semantics())
+			add_entry(table, ctor, &current, part); }
 
 		| function '{' INDEPENDENT ':'
 		    { part = independent; }
@@ -130,7 +137,11 @@ declaration: 	list declaration
                   declarations '}' 
                     { current = ctor.pop(); }
                   var ';'
-                    { part = nil; add_entry(table, ctor, &current, part); }
+                    { if (current->check_semantics()) {
+			part = nil; 
+			add_entry(table, ctor, &current, part); 
+		      }
+                    }
 
 		| grid '{' ARRAY ':' 
 		    { part = array; }
@@ -139,7 +150,11 @@ declaration: 	list declaration
                   declarations '}' 
 		    { current = ctor.pop(); }
                   var ';' 
-                    { part = nil; add_entry(table, ctor, &current, part); }
+                    { if (current->check_semantics()) {
+			part = nil; 
+			add_entry(table, ctor, &current, part); 
+		      }
+                    }
 ;
 
 list:		LIST { ctor.push(new List); }
@@ -182,7 +197,7 @@ array_decl:	'[' INTEGER ']'
 		 }
 ;
 
-name:		ID { /* set name of dataset */ }
+name:		ID { table.set_dataset_name($1); }
 ;
 
 %%
