@@ -4,7 +4,10 @@
 // jhrg 1/13/95
 
 // $Log: TestGrid.cc,v $
-// Revision 1.3  1995/02/10 02:33:42  jimg
+// Revision 1.4  1995/03/04 14:38:04  jimg
+// Modified these so that they fit with the changes in the DAP classes.
+//
+// Revision 1.3  1995/02/10  02:33:42  jimg
 // Modified Test<class>.h and .cc so that they used to new definitions of
 // read_val().
 // Modified the classes read() so that they are more in line with the
@@ -26,6 +29,9 @@
 //
 
 #include "TestGrid.h"
+#include "Test.h"
+
+String testgrid = "TestGrid";
 
 Grid *
 NewGrid(const String &n)

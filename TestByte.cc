@@ -9,7 +9,10 @@
 // jhrg 1/12/95
 
 // $Log: TestByte.cc,v $
-// Revision 1.3  1995/02/10 02:33:38  jimg
+// Revision 1.4  1995/03/04 14:38:01  jimg
+// Modified these so that they fit with the changes in the DAP classes.
+//
+// Revision 1.3  1995/02/10  02:33:38  jimg
 // Modified Test<class>.h and .cc so that they used to new definitions of
 // read_val().
 // Modified the classes read() so that they are more in line with the
@@ -35,6 +38,9 @@
 #endif
 
 #include "TestByte.h"
+#include "Test.h"
+
+String testbyte = "TestByte";
 
 // This `helper functions' creates a pointer to the a TestByte and returns
 // that pointer. It takes the same arguments as the class's ctor. If any of

@@ -4,7 +4,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
-// Revision 1.3  1995/02/10 02:33:48  jimg
+// Revision 1.4  1995/03/04 14:38:10  jimg
+// Modified these so that they fit with the changes in the DAP classes.
+//
+// Revision 1.3  1995/02/10  02:33:48  jimg
 // Modified Test<class>.h and .cc so that they used to new definitions of
 // read_val().
 // Modified the classes read() so that they are more in line with the
@@ -30,6 +33,9 @@
 #endif
 
 #include "TestStructure.h"
+#include "Test.h"
+
+String teststructure = "TestStructure";
 
 Structure *
 NewStructure(const String &n)

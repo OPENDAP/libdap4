@@ -4,7 +4,10 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
-// Revision 1.3  1995/02/10 02:33:37  jimg
+// Revision 1.4  1995/03/04 14:38:00  jimg
+// Modified these so that they fit with the changes in the DAP classes.
+//
+// Revision 1.3  1995/02/10  02:33:37  jimg
 // Modified Test<class>.h and .cc so that they used to new definitions of
 // read_val().
 // Modified the classes read() so that they are more in line with the
@@ -32,6 +35,9 @@
 #include <assert.h>
 
 #include "TestArray.h"
+#include "Test.h"
+
+String testarray = "TestArray";
 
 Array *
 NewArray(const String &n, BaseType *v)
@@ -56,4 +62,25 @@ TestArray::~TestArray()
 bool
 TestArray::read(String dataset, String var_name, String constraint)
 {
+    unsigned int wid = var()->width(); // size of the contained variable
+
+    // run read() on the contained variable to get, via the read() mfuncs
+    // defined in the other Test classes, a value in the *contained* object.
+    var()->read(dataset, var_name, constraint);
+
+    // OK, now make an array of those things, and copy the value length()
+    // times. 
+    unsigned int len = length();
+    char *tmp = new char[width()];
+    void *elem_val = 0;		// the null forces a new object to be
+				// allocated 
+
+    var()->read_val(&elem_val);
+
+    for (int i = 0; i < len; ++i)
+	memcpy(tmp + i * wid, elem_val, wid);
+
+    store_val(tmp);
+
+    delete tmp;
 }

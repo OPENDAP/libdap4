@@ -4,7 +4,10 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
-// Revision 1.3  1995/02/10 02:33:49  jimg
+// Revision 1.4  1995/03/04 14:38:11  jimg
+// Modified these so that they fit with the changes in the DAP classes.
+//
+// Revision 1.3  1995/02/10  02:33:49  jimg
 // Modified Test<class>.h and .cc so that they used to new definitions of
 // read_val().
 // Modified the classes read() so that they are more in line with the
@@ -29,7 +32,12 @@
 #pragma implementation
 #endif
 
+#include <String.h>
+
 #include "TestUrl.h"
+#include "Test.h"
+
+String testurl = "TestUrl";
 
 Url *
 NewUrl(const String &n)
@@ -50,15 +58,9 @@ TestUrl::ptr_duplicate()
 bool
 TestUrl::read(String dataset, String var_name, String constraint)
 {
-    const char url_test[]={"http://dcz.gso.uri.edu/avhrr-archive/archive.html"};
+    String url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
 
-    if (_buf) {			// ctor sets BUF to 0
-	free(_buf);
-	_buf = 0;
-    }
-
-    _buf = (char *)malloc(strlen(url_test)+1);
-    strcpy(_buf, url_test);
+    store_val(&url_test);
 
     return true;
 }
