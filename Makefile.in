@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.162 2005/03/30 22:06:53 jimg Exp $
+# $Id: Makefile.in,v 1.163 2005/03/30 23:15:52 jimg Exp $
 
 @SET_MAKE@
 
@@ -906,55 +906,13 @@ PassiveStructure.o: PassiveStructure.cc config_dap.h PassiveStructure.h \
   Error.h InternalErr.h dods-datatypes.h Constructor.h DDS.h \
   BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
   debug.h
-VirtualCtorByte.o: VirtualCtorByte.cc config_dap.h Byte.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
-  Error.h InternalErr.h
-VirtualCtorInt16.o: VirtualCtorInt16.cc config_dap.h Int16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
-  Error.h InternalErr.h
-VirtualCtorUInt16.o: VirtualCtorUInt16.cc config_dap.h UInt16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
-  Error.h InternalErr.h
-VirtualCtorInt32.o: VirtualCtorInt32.cc config_dap.h Int32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
-  Error.h InternalErr.h
-VirtualCtorUInt32.o: VirtualCtorUInt32.cc config_dap.h UInt32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
-  Error.h InternalErr.h
-VirtualCtorFloat32.o: VirtualCtorFloat32.cc config_dap.h Float32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
-  Error.h InternalErr.h
-VirtualCtorFloat64.o: VirtualCtorFloat64.cc config_dap.h Float64.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h \
-  Error.h InternalErr.h
-VirtualCtorStr.o: VirtualCtorStr.cc config_dap.h Str.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
-  InternalErr.h dods-datatypes.h
-VirtualCtorUrl.o: VirtualCtorUrl.cc config_dap.h Url.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
-  InternalErr.h dods-datatypes.h Str.h
-VirtualCtorArray.o: VirtualCtorArray.cc config_dap.h Array.h \
-  dods-limits.h Vector.h BaseType.h AttrTable.h GNU/Pix.h \
-  ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h \
-  Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
-  expr.h RValue.h
-VirtualCtorStructure.o: VirtualCtorStructure.cc config_dap.h Structure.h \
-  GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h Error.h \
-  InternalErr.h dods-datatypes.h Constructor.h DDS.h BaseTypeFactory.h \
-  DAS.h DODSResponseObject.h Clause.h expr.h RValue.h
-VirtualCtorSequence.o: VirtualCtorSequence.cc config_dap.h Sequence.h \
-  GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h Error.h \
-  InternalErr.h dods-datatypes.h Constructor.h
-VirtualCtorGrid.o: VirtualCtorGrid.cc config_dap.h Grid.h GNU/Pix.h \
-  ./IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
-  dods-datatypes.h Constructor.h
 util_mit.o: util_mit.cc config_dap.h ./util_mit.h debug.h
 BaseTypeFactory.o: BaseTypeFactory.cc Byte.h dods-datatypes.h BaseType.h \
   AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h InternalErr.h Int16.h \
   UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
   Array.h Vector.h DDS.h Constructor.h BaseTypeFactory.h DAS.h \
   DODSResponseObject.h Clause.h expr.h RValue.h Structure.h Sequence.h \
-  Grid.h
+  Grid.h debug.h
 Error.o: Error.cc config_dap.h Error.h parser.h GSEClause.h BaseType.h \
   AttrTable.h GNU/Pix.h ./IteratorAdapter.h InternalErr.h \
   dods-datatypes.h Array.h dods-limits.h Vector.h DDS.h Constructor.h \
@@ -1091,7 +1049,7 @@ TestTypeFactory.o: TestTypeFactory.cc TestByte.h Byte.h dods-datatypes.h \
   TestArray.h Array.h Vector.h DDS.h Constructor.h BaseTypeFactory.h \
   DAS.h DODSResponseObject.h Clause.h expr.h RValue.h TestStructure.h \
   Structure.h TestSequence.h Sequence.h TestGrid.h Grid.h \
-  TestTypeFactory.h
+  TestTypeFactory.h debug.h
 das-test.o: das-test.cc config_dap.h GNU/GetOpt.h DAS.h GNU/Pix.h \
   ./IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h das.tab.h
 dds-test.o: dds-test.cc config_dap.h GNU/GetOpt.h parser.h Error.h \
