@@ -45,6 +45,9 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
+// Revision 1.17  1996/04/05 01:25:39  jimg
+// Merged changes from version 1.1.1.
+//
 // Revision 1.16  1996/03/05 23:21:27  jimg
 // Added const to char * parameters and function prototypes.
 //
@@ -55,6 +58,16 @@
 // document.
 // Fixed up bogus comments.
 //
+// Revision 1.14.2.3  1996/03/01 00:07:57  jimg
+// Removed bad attempt at multiple connect implementation.
+//
+// Revision 1.14.2.2  1996/02/23 22:51:00  jimg
+// Added const in prototype of netio files.
+// Added libraries for solaris 2.x
+//
+// Revision 1.14.2.1  1996/02/23 21:38:35  jimg
+// Updated for new configure.in.
+//
 // Revision 1.14  1995/07/09  21:20:44  jimg
 // Fixed date in copyright (it now reads `Copyright 1995 ...').
 //
@@ -62,11 +75,11 @@
 // Added copyright.
 //
 // Revision 1.12  1995/06/27  19:33:47  jimg
-// The mfuncs request_{das,dds,dods} accept a parameter which is appended to the
-// URL and used by the data server CGI to select which filter program is run to
-// handle a particular request. I changed the parameter name from cgi to ext to
-// better represent what was going on (after getting confused several times
-// myself).
+// The mfuncs request_{das,dds,dods} accept a parameter which is appended to
+// the URL and used by the data server CGI to select which filter program is
+// run to handle a particular request. I changed the parameter name from cgi
+// to ext to better represent what was going on (after getting confused
+// several times myself).
 //
 // Revision 1.11  1995/06/01  16:46:35  jimg
 // Removed old code.
@@ -143,7 +156,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.16 1996/03/05 23:21:27 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.17 1996/04/05 01:25:39 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -160,8 +173,6 @@ static char rcsid[]={"$Id: Connect.cc,v 1.16 1996/03/05 23:21:27 jimg Exp $"};
 extern "C" FILE *NetExecute(const char *); // defined in netexec.c
 extern "C" FILE *NetConnect(const char *); // defined in netexec.c
 extern "C" FILE *move_dds(FILE *in); // defined in netexec.c
-extern void set_xdrin(FILE *in); // defined in BaseType.cc
-extern void set_xdrout(FILE *out); // define in BaseType.cc
 
 // Private mfunc
 

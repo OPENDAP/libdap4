@@ -18,16 +18,22 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.10  1996/02/01 21:45:33  jimg
-/* Added list of DDSs and constraint expressions that produced them.
-/* Added mfuncs to manage DDS/CE list.
+/* Revision 1.11  1996/04/05 01:25:40  jimg
+/* Merged changes from version 1.1.1.
 /*
+ * Revision 1.10  1996/02/01 21:45:33  jimg
+ * Added list of DDSs and constraint expressions that produced them.
+ * Added mfuncs to manage DDS/CE list.
+ *
+ * Revision 1.9.2.1  1996/02/23 21:38:37  jimg
+ * Updated for new configure.in.
+ *
  * Revision 1.9  1995/06/27  19:33:49  jimg
- * The mfuncs request_{das,dds,dods} accept a parameter which is appended to the
- * URL and used by the data server CGI to select which filter program is run to
- * handle a particular request. I changed the parameter name from cgi to ext to
- * better represent what was going on (after getting confused several times
- * myself).
+ * The mfuncs request_{das,dds,dods} accept a parameter which is appended to
+ * the URL and used by the data server CGI to select which filter program is
+ * run to handle a particular request. I changed the parameter name from cgi
+ * to ext to better represent what was going on (after getting confused
+ * several times myself).
  *
  * Revision 1.8  1995/05/30  18:42:47  jimg
  * Modified the request_data member function so that it accepts the variable
@@ -68,8 +74,7 @@
  *
  * Revision 1.1  1994/10/05  18:02:08  jimg
  * First version of the connection management classes.
- * This commit also includes early versions of the test code.
- */
+ * This commit also includes early versions of the test code.  */
 
 #ifndef _connect_h
 #define _connect_h
@@ -77,6 +82,11 @@
 #ifdef __GNUG__
 #pragma "interface"
 #endif
+
+#include <stdio.h>
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
 
 #include <String.h>
 #include <SLList.h>
