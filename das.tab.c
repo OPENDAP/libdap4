@@ -1,6 +1,7 @@
 
 /*  A Bison parser, made from das.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.27
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -27,14 +28,14 @@
 #define	SCAN_STRING	270
 #define	SCAN_URL	271
 
-#line 199 "das.y"
+#line 202 "das.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.11 2000/06/16 18:15:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.12 2000/07/18 14:00:01 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +60,8 @@ static char rcsid[] not_used = {"$Id: das.tab.c,v 1.11 2000/06/16 18:15:00 jimg 
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::ends;
+using std::ostrstream;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -197,14 +199,14 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   345,   352,   359,   360,   364,   365,   372,   373,   374,   377,
-   379,   380,   381,   383,   384,   385,   387,   388,   389,   391,
-   392,   393,   395,   396,   397,   399,   400,   401,   403,   404,
-   405,   407,   408,   409,   411,   412,   413,   415,   444,   456,
-   456,   461,   463,   501,   541,   586,   628,   673,   716,   761,
-   801,   846,   886,   927,   970,  1011,  1054,  1086,  1119,  1157,
-  1197,  1197,  1200,  1200,  1200,  1200,  1203,  1203,  1206,  1211,
-  1245
+   349,   356,   363,   364,   368,   369,   376,   377,   378,   381,
+   383,   384,   385,   387,   388,   389,   391,   392,   393,   395,
+   396,   397,   399,   400,   401,   403,   404,   405,   407,   408,
+   409,   411,   412,   413,   415,   416,   417,   419,   442,   450,
+   450,   455,   457,   483,   511,   543,   572,   604,   634,   666,
+   694,   726,   754,   782,   812,   840,   870,   890,   911,   937,
+   965,   965,   968,   968,   968,   968,   971,   971,   974,   979,
+  1009
 };
 #endif
 
@@ -323,7 +325,7 @@ static const short yycheck[] = {    57,
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/lib/bison.simple"
-/* This file comes from bison-1.28.  */
+/* This file comes from bison-1.27.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -536,7 +538,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/lib/bison.simple"
+#line 216 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -864,7 +866,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 346 "das.y"
+#line 350 "das.y"
 {
 		    name = new string();
 		    type = new string();
@@ -872,7 +874,7 @@ case 1:
 		;
     break;}
 case 2:
-#line 352 "das.y"
+#line 356 "das.y"
 {
 		    delete name;
 		    delete type;
@@ -880,93 +882,90 @@ case 2:
 		;
     break;}
 case 6:
-#line 366 "das.y"
+#line 370 "das.y"
 {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG);
 		    YYABORT;
 		;
     break;}
 case 11:
-#line 379 "das.y"
+#line 383 "das.y"
 { *type = "Byte"; ;
     break;}
 case 12:
-#line 380 "das.y"
+#line 384 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 14:
-#line 383 "das.y"
+#line 387 "das.y"
 { save_str(*type, "Int16", das_line_num); ;
     break;}
 case 15:
-#line 384 "das.y"
-{ save_str(*name, yyvsp[0], das_line_num); ;
-    break;}
-case 17:
-#line 387 "das.y"
-{ save_str(*type, "UInt16", das_line_num); ;
-    break;}
-case 18:
 #line 388 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
-case 20:
+case 17:
 #line 391 "das.y"
-{ save_str(*type, "Int32", das_line_num); ;
+{ save_str(*type, "UInt16", das_line_num); ;
     break;}
-case 21:
+case 18:
 #line 392 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
-case 23:
+case 20:
 #line 395 "das.y"
-{ save_str(*type, "UInt32", das_line_num); ;
+{ save_str(*type, "Int32", das_line_num); ;
     break;}
-case 24:
+case 21:
 #line 396 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
-case 26:
+case 23:
 #line 399 "das.y"
-{ save_str(*type, "Float32", das_line_num); ;
+{ save_str(*type, "UInt32", das_line_num); ;
     break;}
-case 27:
+case 24:
 #line 400 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
-case 29:
+case 26:
 #line 403 "das.y"
-{ save_str(*type, "Float64", das_line_num); ;
+{ save_str(*type, "Float32", das_line_num); ;
     break;}
-case 30:
+case 27:
 #line 404 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
-case 32:
+case 29:
 #line 407 "das.y"
+{ save_str(*type, "Float64", das_line_num); ;
+    break;}
+case 30:
+#line 408 "das.y"
+{ save_str(*name, yyvsp[0], das_line_num); ;
+    break;}
+case 32:
+#line 411 "das.y"
 { *type = "String"; ;
     break;}
 case 33:
-#line 408 "das.y"
-{ *name = yyvsp[0]; ;
-    break;}
-case 35:
-#line 411 "das.y"
-{ *type = "Url"; ;
-    break;}
-case 36:
 #line 412 "das.y"
 { *name = yyvsp[0]; ;
     break;}
-case 38:
+case 35:
+#line 415 "das.y"
+{ *type = "Url"; ;
+    break;}
+case 36:
 #line 416 "das.y"
+{ *name = yyvsp[0]; ;
+    break;}
+case 38:
+#line 420 "das.y"
 {
 		    AttrTable *at;
-#ifdef WIN32
-		    DBG(std::cerr << "Processing ID: " << yyvsp[0] << endl);
-#else
 		    DBG(cerr << "Processing ID: " << yyvsp[0] << endl);
-#endif
+
 		    /* If we are at the outer most level of attributes, make
 		       sure to use the AttrTable in the DAS. */
 		    if (STACK_EMPTY) {
@@ -982,46 +981,31 @@ case 38:
 		    }
 
 		    PUSH(at);
-#ifdef WIN32
-		    DBG(std::cerr << " Pushed attr_tab: " << at << endl);
-#else
 		    DBG(cerr << " Pushed attr_tab: " << at << endl);
-#endif
+
 		;
     break;}
 case 39:
-#line 445 "das.y"
+#line 443 "das.y"
 {
 		    /* pop top of stack; store in attr_tab */
-#ifdef WIN32
-		    DBG(std::cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
-#endif
 		    POP;
 		;
     break;}
 case 41:
-#line 457 "das.y"
+#line 451 "das.y"
 { 
 		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG);
 		    YYABORT;
 		;
     break;}
 case 43:
-#line 464 "das.y"
+#line 458 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#else
 		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#endif
 		    if (!check_byte(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[0] << "' is not a Byte value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1036,11 +1020,7 @@ case 43:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1049,19 +1029,11 @@ case 43:
 		;
     break;}
 case 44:
-#line 502 "das.y"
+#line 484 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#else
 		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#endif
 		    if (!check_byte(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[-2] << "' is not a Byte value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1076,11 +1048,7 @@ case 44:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1089,26 +1057,17 @@ case 44:
 		;
     break;}
 case 45:
-#line 542 "das.y"
+#line 512 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_int16(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[0] << "' is not an Int16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1123,11 +1082,7 @@ case 45:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1136,21 +1091,12 @@ case 45:
 		;
     break;}
 case 46:
-#line 587 "das.y"
+#line 544 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl);
-#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
-#endif
 		    if (!check_int16(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[-2] << "' is not an Int16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1165,11 +1111,7 @@ case 46:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1178,26 +1120,17 @@ case 46:
 		;
     break;}
 case 47:
-#line 629 "das.y"
+#line 573 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_uint16(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[0] << "' is not an UInt16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1212,11 +1145,7 @@ case 47:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1225,22 +1154,13 @@ case 47:
 		;
     break;}
 case 48:
-#line 674 "das.y"
+#line 605 "das.y"
 {
-#ifdef WIN32
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
-#else
-		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl);
-#endif
 		    if (!(check_int16(yyvsp[0], das_line_num)
 			  || check_uint16(yyvsp[-2], das_line_num))) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[-2] << "' is not an UInt16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1255,11 +1175,7 @@ case 48:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1268,26 +1184,17 @@ case 48:
 		;
     break;}
 case 49:
-#line 717 "das.y"
+#line 635 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-		    DBG(std::cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_int32(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[0] << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1302,11 +1209,7 @@ case 49:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1315,19 +1218,11 @@ case 49:
 		;
     break;}
 case 50:
-#line 762 "das.y"
+#line 667 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#else
-
-#endif
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    if (!check_int32(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[-2] << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1342,11 +1237,7 @@ case 50:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1355,26 +1246,17 @@ case 50:
 		;
     break;}
 case 51:
-#line 802 "das.y"
+#line 695 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-#ifdef WIN32
-		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-		    DBG(std::cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-#else
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_uint32(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[0] << "' is not an UInt32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1389,11 +1271,7 @@ case 51:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1402,19 +1280,11 @@ case 51:
 		;
     break;}
 case 52:
-#line 847 "das.y"
+#line 727 "das.y"
 {
-#ifdef WIN32
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#else
-		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#endif
 		    if (!check_uint32(yyvsp[-2], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[-2] << "' is not an UInt32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1429,11 +1299,7 @@ case 52:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1442,21 +1308,12 @@ case 52:
 		;
     break;}
 case 53:
-#line 887 "das.y"
+#line 755 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl);
-#else
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
-#endif
 		    if (!check_float32(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[0] << "' is not a Float32 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1472,11 +1329,7 @@ case 53:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -1485,21 +1338,12 @@ case 53:
 		;
     break;}
 case 54:
-#line 928 "das.y"
+#line 783 "das.y"
 {
-#ifdef WIN32
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
-#else
-		    DBG(std::cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl);
-#endif
 		    if (!check_float32(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[-2] << "' is not a Float32 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1515,11 +1359,7 @@ case 54:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1528,21 +1368,12 @@ case 54:
 		;
     break;}
 case 55:
-#line 971 "das.y"
+#line 813 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl);
-#else
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< " to attr table: " << TOP_OF_STACK << endl);
-#endif
 		    if (!check_float64(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[0] << "' is not a Float64 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1558,11 +1389,7 @@ case 55:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1571,21 +1398,12 @@ case 55:
 		;
     break;}
 case 56:
-#line 1012 "das.y"
+#line 841 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl);
-#else
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
-#endif
 		    if (!check_float64(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[-2] << "' is not a Float64 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1601,11 +1419,7 @@ case 56:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1614,20 +1428,12 @@ case 56:
 		;
     break;}
 case 57:
-#line 1055 "das.y"
+#line 871 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#endif
 		    /* Assume a string that parses is vaild. */
 		    if (STACK_EMPTY) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "Whoa! Stack empty when adding `" 
 			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1635,11 +1441,7 @@ case 57:
 			YYABORT;
 		    }
 		    else if (TOP_OF_STACK->append_attr(*name, *type, yyvsp[0]) == 0) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0); 
@@ -1648,19 +1450,11 @@ case 57:
 		;
     break;}
 case 58:
-#line 1087 "das.y"
+#line 891 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#endif
 		    if (STACK_EMPTY) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "Whoa! Stack empty when adding `" 
 			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -1668,11 +1462,7 @@ case 58:
 			YYABORT;
 		    }
 		    else if (TOP_OF_STACK->append_attr(*name, *type, yyvsp[0]) == 0) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1681,19 +1471,11 @@ case 58:
 		;
     break;}
 case 59:
-#line 1120 "das.y"
+#line 912 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#endif
 		    if (!check_url(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[0] << "' is not a String value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1708,11 +1490,7 @@ case 59:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1721,19 +1499,11 @@ case 59:
 		;
     break;}
 case 60:
-#line 1158 "das.y"
+#line 938 "das.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-#endif
 		    if (!check_url(yyvsp[0], das_line_num)) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << yyvsp[-2] << "' is not a String value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1748,11 +1518,7 @@ case 60:
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -1761,13 +1527,13 @@ case 60:
 		;
     break;}
 case 69:
-#line 1207 "das.y"
+#line 975 "das.y"
 { 
 		    *name = yyvsp[0];
 		;
     break;}
 case 70:
-#line 1211 "das.y"
+#line 979 "das.y"
 {
 		    // First try to alias within current lexical scope. If
 		    // that fails then look in the complete environment for
@@ -1788,11 +1554,7 @@ case 70:
 			AttrTable *table = DAS_OBJ(arg)->get_table(yyvsp[0]);
 			if (!TOP_OF_STACK->attr_alias(*name, table, 
 						      attr_name(yyvsp[0]))) {
-#ifdef WIN32
-				std::ostrstream msg;
-#else
 			    ostrstream msg;
-#endif
 			    msg << "Could not alias `" << yyvsp[0] << "' and `" 
 				<< *name << "'." << ends;
 			    parse_error((parser_arg *)arg, msg.str());
@@ -1804,7 +1566,7 @@ case 70:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/lib/bison.simple"
+#line 542 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2024,7 +1786,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 1246 "das.y"
+#line 1010 "das.y"
 
 
 // This function is required for linking, but DODS uses its own error

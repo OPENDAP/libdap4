@@ -1,6 +1,7 @@
 
 /*  A Bison parser, made from dds.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.27
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -34,14 +35,14 @@
 #define	SCAN_STRING	277
 #define	SCAN_URL	278
 
-#line 156 "dds.y"
+#line 159 "dds.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.19 2000/06/16 18:15:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.20 2000/07/18 14:00:01 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +64,9 @@ static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.19 2000/06/16 18:15:00 jimg 
 #include "util.h"
 
 #ifdef WIN32
-using namespace std;
+using std::endl;
+using std::ends;
+using std::ostrstream;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -176,11 +179,11 @@ static const short yyrhs[] = {    33,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   248,   249,   252,   253,   260,   261,   262,   265,   285,   292,
-   313,   318,   339,   344,   365,   367,   369,   374,   397,   419,
-   427,   435,   443,   451,   452,   453,   454,   455,   456,   457,
-   458,   459,   462,   463,   466,   479,   483,   499,   499,   514,
-   515,   516
+   253,   254,   257,   258,   265,   266,   267,   270,   286,   293,
+   310,   315,   332,   337,   354,   356,   358,   363,   382,   400,
+   408,   416,   424,   432,   433,   434,   435,   436,   437,   438,
+   439,   440,   443,   444,   447,   460,   464,   480,   480,   491,
+   492,   493
 };
 #endif
 
@@ -297,7 +300,7 @@ static const short yycheck[] = {    21,
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/lib/bison.simple"
-/* This file comes from bison-1.28.  */
+/* This file comes from bison-1.27.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -510,7 +513,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/lib/bison.simple"
+#line 216 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -838,24 +841,20 @@ yyreduce:
   switch (yyn) {
 
 case 4:
-#line 254 "dds.y"
+#line 259 "dds.y"
 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG);
 		    YYABORT;
 		;
     break;}
 case 8:
-#line 266 "dds.y"
+#line 271 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-1] << " " << yyvsp[0] 
 			    << "' is not a valid declaration" << endl 
@@ -867,17 +866,13 @@ case 8:
 		;
     break;}
 case 10:
-#line 293 "dds.y"
+#line 294 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-2] << " " << yyvsp[-1] 
 			    << "' is not a valid declaration" << endl 
@@ -889,24 +884,20 @@ case 10:
 		;
     break;}
 case 11:
-#line 314 "dds.y"
+#line 311 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 12:
-#line 319 "dds.y"
+#line 316 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-6] << "'" << endl
 			    << "is not a valid declaration." << endl
@@ -918,24 +909,20 @@ case 12:
 		;
     break;}
 case 13:
-#line 340 "dds.y"
+#line 333 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 14:
-#line 345 "dds.y"
+#line 338 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-6] << "'" << endl
 			    << "is not a valid declaration." << endl 
@@ -947,22 +934,22 @@ case 14:
 		;
     break;}
 case 15:
-#line 366 "dds.y"
+#line 355 "dds.y"
 { part = array; ;
     break;}
 case 16:
-#line 368 "dds.y"
+#line 357 "dds.y"
 { part = maps; ;
     break;}
 case 17:
-#line 370 "dds.y"
+#line 359 "dds.y"
 {
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 18:
-#line 375 "dds.y"
+#line 364 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -970,11 +957,7 @@ case 18:
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		    else {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-13] << "'" << endl
 			    << "is not a valid declaration." << endl 
@@ -986,13 +969,9 @@ case 18:
 		;
     break;}
 case 19:
-#line 398 "dds.y"
+#line 383 "dds.y"
 {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 		    ostrstream msg;
-#endif
 		    msg << "In the dataset descriptor object:" << endl
 			<< "Expected a varaible declaration" << endl 
 			<< "(e.g., Int32 i;). Make sure that the" << endl
@@ -1007,7 +986,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 420 "dds.y"
+#line 401 "dds.y"
 { 
 		    if (!ctor) 
 			ctor = new stack<BaseType *>;
@@ -1015,7 +994,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 428 "dds.y"
+#line 409 "dds.y"
 { 
 		    if (!ctor)
 	                ctor = new stack<BaseType *>;
@@ -1023,7 +1002,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 436 "dds.y"
+#line 417 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1031,7 +1010,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 444 "dds.y"
+#line 425 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1039,47 +1018,47 @@ case 23:
 		;
     break;}
 case 24:
-#line 451 "dds.y"
+#line 432 "dds.y"
 { current = NewByte(); ;
     break;}
 case 25:
-#line 452 "dds.y"
+#line 433 "dds.y"
 { current = NewInt16(); ;
     break;}
 case 26:
-#line 453 "dds.y"
+#line 434 "dds.y"
 { current = NewUInt16(); ;
     break;}
 case 27:
-#line 454 "dds.y"
+#line 435 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 455 "dds.y"
+#line 436 "dds.y"
 { current = NewUInt32(); ;
     break;}
 case 29:
-#line 456 "dds.y"
+#line 437 "dds.y"
 { current = NewFloat32(); ;
     break;}
 case 30:
-#line 457 "dds.y"
+#line 438 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 31:
-#line 458 "dds.y"
+#line 439 "dds.y"
 { current = NewStr(); ;
     break;}
 case 32:
-#line 459 "dds.y"
+#line 440 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 33:
-#line 462 "dds.y"
+#line 443 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 35:
-#line 467 "dds.y"
+#line 448 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -1093,13 +1072,13 @@ case 35:
 		 ;
     break;}
 case 36:
-#line 480 "dds.y"
+#line 461 "dds.y"
 {
 		     id = new string(yyvsp[0]);
 		 ;
     break;}
 case 37:
-#line 484 "dds.y"
+#line 465 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), *id);
@@ -1115,13 +1094,9 @@ case 37:
 		 ;
     break;}
 case 39:
-#line 500 "dds.y"
+#line 481 "dds.y"
 {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 		     ostrstream msg;
-#endif
 		     msg << "In the dataset descriptor object:" << endl
 			 << "Expected an array subscript." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
@@ -1130,21 +1105,17 @@ case 39:
 		 ;
     break;}
 case 40:
-#line 514 "dds.y"
+#line 491 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 41:
-#line 515 "dds.y"
+#line 492 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 42:
-#line 517 "dds.y"
+#line 494 "dds.y"
 {
-#ifdef WIN32
-			std::ostrstream msg;
-#else
 			ostrstream msg;
-#endif
 		     msg << "Error parsing the dataset name." << endl
 			 << "The name may be missing or may contain an illegal character." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
@@ -1154,7 +1125,7 @@ case 42:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/lib/bison.simple"
+#line 542 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1374,7 +1345,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 531 "dds.y"
+#line 504 "dds.y"
 
 
 /* 

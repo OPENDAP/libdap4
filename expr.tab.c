@@ -1,6 +1,7 @@
 
 /*  A Bison parser, made from expr.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.27
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -24,12 +25,12 @@
 #define	SCAN_LESS_EQL	267
 #define	SCAN_REGEXP	268
 
-#line 184 "expr.y"
+#line 187 "expr.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.11 2000/06/16 18:15:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.12 2000/07/18 14:00:01 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +64,8 @@ static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.11 2000/06/16 18:15:00 jimg
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -119,7 +121,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 proj_func get_proj_function(const DDS &table, const char *name);
 
 
-#line 279 "expr.y"
+#line 283 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -211,11 +213,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   321,   327,   329,   330,   333,   339,   340,   346,   356,   365,
-   369,   375,   395,   396,   402,   411,   422,   428,   441,   442,
-   443,   455,   461,   473,   480,   489,   493,   499,   508,   519,
-   524,   529,   536,   572,   603,   607,   613,   617,   621,   627,
-   628,   629,   630,   631,   632,   633
+   325,   331,   333,   334,   337,   343,   344,   350,   360,   369,
+   373,   379,   399,   400,   406,   415,   426,   432,   445,   446,
+   447,   459,   465,   477,   484,   493,   497,   503,   512,   523,
+   528,   533,   540,   576,   607,   611,   617,   621,   625,   631,
+   632,   633,   634,   635,   636,   637
 };
 #endif
 
@@ -307,7 +309,7 @@ static const short yycheck[] = {    13,
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/lib/bison.simple"
-/* This file comes from bison-1.28.  */
+/* This file comes from bison-1.27.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -520,7 +522,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/lib/bison.simple"
+#line 216 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -848,36 +850,36 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 322 "expr.y"
+#line 326 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 329 "expr.y"
+#line 333 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 330 "expr.y"
+#line 334 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 334 "expr.y"
+#line 338 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 341 "expr.y"
+#line 345 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 347 "expr.y"
+#line 351 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
@@ -889,7 +891,7 @@ case 8:
 		;
     break;}
 case 9:
-#line 357 "expr.y"
+#line 361 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var)
@@ -900,19 +902,19 @@ case 9:
 		;
     break;}
 case 10:
-#line 366 "expr.y"
-{
-		    yyval.boolean = yyvsp[0].boolean;
-		;
-    break;}
-case 11:
 #line 370 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
+case 11:
+#line 374 "expr.y"
+{
+		    yyval.boolean = yyvsp[0].boolean;
+		;
+    break;}
 case 12:
-#line 376 "expr.y"
+#line 380 "expr.y"
 {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -932,13 +934,13 @@ case 12:
 		;
     break;}
 case 14:
-#line 397 "expr.y"
+#line 401 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 15:
-#line 403 "expr.y"
+#line 407 "expr.y"
 {
 		    if (yyvsp[-4].rval_ptr) {
 			(*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -949,7 +951,7 @@ case 15:
 		;
     break;}
 case 16:
-#line 412 "expr.y"
+#line 416 "expr.y"
 {
 		    if (yyvsp[-2].rval_ptr) {
 			rvalue_list *rv = new rvalue_list;
@@ -962,13 +964,13 @@ case 16:
 		;
     break;}
 case 17:
-#line 423 "expr.y"
+#line 427 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 18:
-#line 429 "expr.y"
+#line 433 "expr.y"
 {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		   if (!b_func) {
@@ -981,7 +983,7 @@ case 18:
 	       ;
     break;}
 case 21:
-#line 444 "expr.y"
+#line 448 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
@@ -995,7 +997,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 456 "expr.y"
+#line 460 "expr.y"
 {
 		    yyval.rval_ptr = dereference_url(yyvsp[0].val);
 		    if (!yyval.rval_ptr)
@@ -1003,7 +1005,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 462 "expr.y"
+#line 466 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
@@ -1015,7 +1017,7 @@ case 23:
 		;
     break;}
 case 24:
-#line 474 "expr.y"
+#line 478 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -1024,7 +1026,7 @@ case 24:
 		;
     break;}
 case 25:
-#line 481 "expr.y"
+#line 485 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -1033,19 +1035,19 @@ case 25:
 		;
     break;}
 case 26:
-#line 490 "expr.y"
+#line 494 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
 case 27:
-#line 494 "expr.y"
+#line 498 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
 case 28:
-#line 500 "expr.y"
+#line 504 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1056,7 +1058,7 @@ case 28:
 		;
     break;}
 case 29:
-#line 509 "expr.y"
+#line 513 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1067,28 +1069,28 @@ case 29:
 		;
     break;}
 case 30:
-#line 520 "expr.y"
+#line 524 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 31:
-#line 525 "expr.y"
+#line 529 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 32:
-#line 530 "expr.y"
+#line 534 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 33:
-#line 537 "expr.y"
+#line 541 "expr.y"
 {
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
 		    if (var && is_array_t(var)) {
@@ -1126,7 +1128,7 @@ case 33:
 		;
     break;}
 case 34:
-#line 573 "expr.y"
+#line 577 "expr.y"
 {
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
 		    if (var && is_array_t(var)) {
@@ -1157,38 +1159,38 @@ case 34:
 		;
     break;}
 case 35:
-#line 604 "expr.y"
+#line 608 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 36:
-#line 608 "expr.y"
+#line 612 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 37:
-#line 614 "expr.y"
+#line 618 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-1].val);
 		;
     break;}
 case 38:
-#line 618 "expr.y"
+#line 622 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-3].val, yyvsp[-1].val);
 		;
     break;}
 case 39:
-#line 622 "expr.y"
+#line 626 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/lib/bison.simple"
+#line 542 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1408,7 +1410,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 636 "expr.y"
+#line 640 "expr.y"
 
 
 void
@@ -1420,11 +1422,7 @@ exprerror(const string &s)
 void
 exprerror(const char *s)
 {
-#ifdef WIN32
-    std::cerr << "Expression parse error: " << s << endl;
-#else
     cerr << "Expression parse error: " << s << endl;
-#endif
 }
 
 void
@@ -1436,11 +1434,7 @@ exprerror(const string &s, const string &s2)
 void
 exprerror(const char *s, const char *s2)
 {
-#ifdef WIN32
-    std::cerr << "Expression parse error: " << s << ": " << s2 << endl;
-#else
 	cerr << "Expression parse error: " << s << ": " << s2 << endl;
-#endif
 }
 
 int
@@ -1501,19 +1495,11 @@ make_array_index(value &i1, value &i2, value &i3)
     index->append((int)i2.v.i);
     index->append((int)i3.v.i);
 
-#ifdef WIN32
-    DBG(Pix dp;\
-	std::cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#else
     DBG(Pix dp;\
 	cout << "index: ";\
 	for (dp = index->first(); dp; index->next(dp))\
 	cout << (*index)(dp) << " ";\
 	cout << endl);
-#endif
 
     return index;
 }
@@ -1530,19 +1516,11 @@ make_array_index(value &i1, value &i2)
     index->append(1);
     index->append((int)i2.v.i);
 
-#ifdef WIN32
-    DBG(Pix dp;\
-	std::cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#else
     DBG(Pix dp;\
 	cout << "index: ";\
 	for (dp = index->first(); dp; index->next(dp))\
 	cout << (*index)(dp) << " ";\
 	cout << endl);
-#endif
 
     return index;
 }
@@ -1559,19 +1537,11 @@ make_array_index(value &i1)
     index->append(1);
     index->append((int)i1.v.i);
 
-#ifdef WIN32
     DBG(Pix dp;\
-	std::cout << "index: ";\
+	cout << "index: ";\
 	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#else
-    DBG(Pix dp;\
-	std::cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#endif
+	cout << (*index)(dp) << " ";\
+	cout << endl);
 
     return index;
 }
@@ -1581,19 +1551,11 @@ make_array_indices(int_list *index)
 {
     int_list_list *indices = new int_list_list;
 
-#ifdef WIN32
-    DBG(Pix dp;\
-	std::cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	std::cout << (*index)(dp) << " ";\
-	std::cout << endl);
-#else
     DBG(Pix dp;\
 	cout << "index: ";\
 	for (dp = index->first(); dp; index->next(dp))\
 	cout << (*index)(dp) << " ";\
 	cout << endl);
-#endif
 
     assert(index);
     indices->append(index);
@@ -1658,23 +1620,13 @@ process_array_indices(BaseType *variable, int_list_list *indices)
     assert(variable->type() == dods_array_c);
     Array *a = (Array *)variable; // replace with dynamic cast
 
-#ifdef WIN32
-    DBG(std::cerr << "Before clear_costraint:" << endl);
-    DBG(a->print_decl(std::cerr, "", true, false, true));
-#else
     DBG(cerr << "Before clear_costraint:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
-#endif
 
     a->clear_constraint();	// each projection erases the previous one
 
-#ifdef WIN32
-    DBG(std::cerr << "After clear_costraint:" << endl);
-    DBG(a->print_decl(std::cerr, "", true, false, true));
-#else
     DBG(cerr << "After clear_costraint:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
-#endif
 
     Pix p, r;
     assert(indices);
@@ -1696,46 +1648,22 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 
 	index->next(q);
 	if (q) {
-#ifdef WIN32
-	    std::cerr << "Too many values in index list for " << a->name() << "." 
-		 << endl;
-#else
 	    cerr << "Too many values in index list for " << a->name() << "." 
 		 << endl;
-#endif
 	    status = false;
 	    goto exit;
 	}
 	
 	if (!a->add_constraint(r, start, stride, stop)) {
-#ifdef WIN32
-	    std::cerr << "Impossible index values in constraint for "
-		 << a->name() << "." << endl;
-#else
 	    cerr << "Impossible index values in constraint for "
 		 << a->name() << "." << endl;
-#endif
 	    status = false;
 	    goto exit;
 	}
 
-#ifdef WIN32
-	DBG(std::cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
-#else
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
-#endif
     }
 
-#ifdef WIN32
-    DBG(std::cerr << "After processing loop:" << endl);
-    DBG(a->print_decl(std::cerr, "", true, false, true));
-
-    DBG(Pix dp;\
-	std::cout << "Array Constraint: ";\
-	for (dp = a->first_dim(); dp; a->next_dim(dp))\
-	    std::cout << a->dimension_size(dp, true) << " ";\
-	std::cout << endl);
-#else
     DBG(cerr << "After processing loop:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
@@ -1744,16 +1672,10 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	for (dp = a->first_dim(); dp; a->next_dim(dp))\
 	    cout << a->dimension_size(dp, true) << " ";\
 	cout << endl);
-#endif
     
     if (p && !r) {
-#ifdef WIN32
-	std::cerr << "Too many indices in constraint for " << a->name() << "." 
-	     << endl;
-#else
 	cerr << "Too many indices in constraint for " << a->name() << "." 
 	     << endl;
-#endif
 	status= false;
     }
 
@@ -1810,62 +1732,33 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 
 	index->next(q);
 	if (q) {
-#ifdef WIN32
-	    std::cerr << "Too many values in index list for " << a->name() << "." 
-		 << endl;
-#else
 	    cerr << "Too many values in index list for " << a->name() << "." 
 		 << endl;
-#endif
 	    status = false;
 	    goto exit;
 	}
 
 	if (!a->add_constraint(a->first_dim(), start, stride, stop)) {
-#ifdef WIN32
-	    std::cerr << "Impossible index values in constraint for "
-		 << a->name() << "." << endl;
-#else
 	    cerr << "Impossible index values in constraint for "
 		 << a->name() << "." << endl;
-#endif
 	    status = false;
 	    goto exit;
 	}
 
-#ifdef WIN32
-	DBG(std::cerr << "Set Constraint: " \
-	    << a->dimension_size(a->first_dim(), true) << endl);
-#else
 	DBG(cerr << "Set Constraint: " \
 	    << a->dimension_size(a->first_dim(), true) << endl);
-#endif
     }
 
-#ifdef WIN32
-    DBG(Pix dp;\
-	std::cout << "Grid Constraint: ";\
-	for (dp = ((Array *)g->array_var())->first_dim(); dp; \
-		 ((Array *)g->array_var())->next_dim(dp))\
-	   std::cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
-	std::cout << endl);
-#else
     DBG(Pix dp;\
 	cout << "Grid Constraint: ";\
 	for (dp = ((Array *)g->array_var())->first_dim(); dp; \
 		 ((Array *)g->array_var())->next_dim(dp))\
 	   cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
 	cout << endl);
-#endif
     
     if (p && !r) {
-#ifdef WIN32
-	std::cerr << "Too many indices in constraint for " 
-	     << g->map_var(r)->name() << "." << endl;
-#else
 	cerr << "Too many indices in constraint for " 
 	     << g->map_var(r)->name() << "." << endl;
-#endif
 	status= false;
     }
 
@@ -1924,15 +1817,9 @@ dereference_string(string &s)
     // By definition, the DDS `D' can have only one variable, so make sure
     // that is true.
     if (d->num_var() != 1) {
-#ifdef WIN32
-	std::cerr << 
-	    "Too many variables in URL; use only single variable projections"
-	     << endl;
-#else
 	cerr << 
 	    "Too many variables in URL; use only single variable projections"
 	     << endl;
-#endif
 	return 0;
     }
 
@@ -1966,15 +1853,9 @@ dereference_variable(rvalue *rv, DDS &dds)
     // the value will be read over the net
     BaseType *btp = rv->bvalue("dummy", dds); 
     if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
-#ifdef WIN32
-	std::cerr << "Variable: " << btp->name() 
-	    << " must be either a string or a url" 
-	    << endl;
-#else
 	cerr << "Variable: " << btp->name() 
 	    << " must be either a string or a url" 
 	    << endl;
-#endif
 	return 0;
     }
 
@@ -2011,11 +1892,7 @@ make_variable(DDS &table, const value &val)
       }
 
       default:
-#ifdef WIN32
-	std::cerr << "Unknow type constant value" << endl;
-#else
 	cerr << "Unknow type constant value" << endl;
-#endif
 	var = (BaseType *)0;
 	return var;
     }

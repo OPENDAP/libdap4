@@ -1,6 +1,7 @@
 
 /*  A Bison parser, made from Error.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.27
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -19,12 +20,12 @@
 #define	SCAN_MSG	262
 #define	SCAN_PROGRAM	263
 
-#line 50 "Error.y"
+#line 53 "Error.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.9 2000/06/16 18:14:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.10 2000/07/18 14:00:01 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +39,8 @@ static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.9 2000/06/16 18:14:59 jimg
 #include "debug.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -61,7 +63,7 @@ int Errorlex();			// the scanner
 void Errorerror(char *s);	// gotta love automatically generated names...
 
 
-#line 92 "Error.y"
+#line 96 "Error.y"
 typedef union {
 #ifdef __SUNPRO_CC
     int boolean;
@@ -135,8 +137,8 @@ static const short yyrhs[] = {     5,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   123,   126,   127,   130,   131,   134,   137,   144,   150,   152,
-   159,   170
+   127,   130,   131,   134,   135,   138,   141,   148,   154,   156,
+   163,   170
 };
 #endif
 
@@ -199,7 +201,7 @@ static const short yycheck[] = {     5,
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/lib/bison.simple"
-/* This file comes from bison-1.28.  */
+/* This file comes from bison-1.27.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -412,7 +414,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/lib/bison.simple"
+#line 216 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -740,65 +742,61 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 123 "Error.y"
+#line 127 "Error.y"
 { yyval.boolean = yyvsp[-2].boolean; STATUS(arg) = yyvsp[-2].boolean; ;
     break;}
 case 2:
-#line 126 "Error.y"
-{ yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
-    break;}
-case 3:
-#line 127 "Error.y"
-{ yyval.boolean = yyvsp[0].boolean; ;
-    break;}
-case 4:
 #line 130 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
-case 5:
+case 3:
 #line 131 "Error.y"
 { yyval.boolean = yyvsp[0].boolean; ;
     break;}
-case 6:
+case 4:
 #line 134 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
-case 7:
+case 5:
+#line 135 "Error.y"
+{ yyval.boolean = yyvsp[0].boolean; ;
+    break;}
+case 6:
 #line 138 "Error.y"
+{ yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
+    break;}
+case 7:
+#line 142 "Error.y"
 { 
 		    ERROR_OBJ(arg)->error_code((ErrorCode)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 8:
-#line 145 "Error.y"
+#line 149 "Error.y"
 { 
 		    ERROR_OBJ(arg)->error_message(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 case 10:
-#line 153 "Error.y"
+#line 157 "Error.y"
 {
 		    ERROR_OBJ(arg)->program_type((ProgramType)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 11:
-#line 160 "Error.y"
+#line 164 "Error.y"
 {
-#ifdef WIN32
-		    DBG(std::cerr << "Program: " << yyvsp[0].string << endl);
-#else
 		    DBG(cerr << "Program: " << yyvsp[0].string << endl);
-#endif
 		    ERROR_OBJ(arg)->program(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/lib/bison.simple"
+#line 542 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1024,9 +1022,5 @@ yyerrhandle:
 void
 Errorerror(char *s)
 {
-#ifdef WIN32
-    std::cerr << s << " line: " << error_line_num << endl;
-#else
     cerr << s << " line: " << error_line_num << endl;
-#endif
 }
