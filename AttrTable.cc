@@ -9,6 +9,11 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.19  1997/08/09 21:18:41  jimg
+// Changed/fixed the type comparison in attr_append so that code which calls
+// unsigned int `UInt32' won't break (the type is called Uint32, but the das
+// parser and scanner accept UInt32 as well).
+//
 // Revision 1.18  1997/07/15 21:58:04  jimg
 // Formatting.
 //
@@ -78,7 +83,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.18 1997/07/15 21:58:04 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.19 1997/08/09 21:18:41 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -127,7 +132,7 @@ AttrTable::simple_find(const String &target)
 }
 
 String 
-AttrTable::AttrTypeToString(const AttrType at)
+AttrTable::AttrType_to_String(const AttrType at)
 {
     switch (at) {
       case Attr_container: return "Container";
@@ -142,7 +147,7 @@ AttrTable::AttrTypeToString(const AttrType at)
 }
 
 AttrType
-AttrTable::StringToAttrType(const String &s)
+AttrTable::String_to_AttrType(const String &s)
 {
     String s2 = capitalize(s);
     if (s2 == "Container")
@@ -152,6 +157,8 @@ AttrTable::StringToAttrType(const String &s)
     else if (s2 == "Int32")
 	return Attr_int32;
     else if (s2 == "Uint32")
+	return Attr_uint32;
+    else if (s2 == "UInt32")	// Support two spellings...
 	return Attr_uint32;
     else if (s2 == "Float64")
 	return Attr_float64;
@@ -230,7 +237,7 @@ String
 AttrTable::get_type(Pix p)
 {
     assert(p);
-    return AttrTypeToString(attr_map(p).type);
+    return AttrType_to_String(attr_map(p).type);
 }
 
 String
@@ -333,7 +340,8 @@ AttrTable::append_attr(const String &name, const String &type,
     Pix p = find(name);
     // If the types don't match OR this attribute is a container, calling
     // this mfunc is an error!
-    if (p && (get_type(p) != type || get_type(p) == "Container"))
+    if (p && (attr_map(p).type != String_to_AttrType(type) 
+	      || get_type(p) == "Container"))
 	return 0;
     else if (p)			// Must be a new attribute value; add it.
 	return attr_map(p).value.attr->add_high(attr) + 1;
@@ -342,7 +350,7 @@ AttrTable::append_attr(const String &name, const String &type,
 
 	e.name = name;
 	e.is_alias = false;
-	e.type = StringToAttrType(type); // Record type using standard names.
+	e.type = String_to_AttrType(type); // Record type using standard names.
 	e.value.attr = new StringXPlex;
 	unsigned int len = e.value.attr->add_high(attr) + 1;
 
