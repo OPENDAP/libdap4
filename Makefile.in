@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.82 1998/09/03 17:20:38 jimg Exp $
+# $Id: Makefile.in,v 1.83 1998/09/09 17:33:28 jimg Exp $
 
 @SET_MAKE@
 
@@ -128,7 +128,7 @@ GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h \
 	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h \
 	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h \
           Stack/BTXPStack.h    GNU/String.h         GNU/Pix.h \
-          GNU/SLList.h         GNU/DLList.h         GNU/RegExp.h \
+          GNU/SLList.h         GNU/DLList.h \
           GNU/GetOpt.h         GNU/Regex.h          GNU/builtin.h
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
