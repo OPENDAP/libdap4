@@ -3,9 +3,12 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.22  1997/06/12 22:48:10  jimg
-/* Fixed #ifdef HAVE_EXPECT #endif.
+/* Revision 1.23  1997/08/08 00:39:47  jimg
+/* Changed type of dods_byte from unsigned char to char.
 /*
+ * Revision 1.22  1997/06/12 22:48:10  jimg
+ * Fixed #ifdef HAVE_EXPECT #endif.
+ *
  * Revision 1.21  1997/06/12 20:57:09  jimg
  * *** empty log message ***
  *
@@ -238,7 +241,7 @@ typedef unsigned short dods_uint16;
 #define XDR_UINT16 xdr_u_short
 
 #if SIZEOF_CHAR == 1
-typedef unsigned char dods_byte;
+typedef char dods_byte;
 #else
 #error "How do I get an 8 bit unsigned integer on this machine?"
 #endif
