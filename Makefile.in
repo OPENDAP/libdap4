@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.154 2004/07/19 05:25:56 rmorris Exp $
+# $Id: Makefile.in,v 1.155 2004/08/03 23:15:10 jimg Exp $
 
 @SET_MAKE@
 
@@ -510,14 +510,8 @@ clean:
 	-rm -f $(PROG) das-test dds-test expr-test \
 		error-test geturl gse-test unit_tests
 	-rm -f $(UNIT_TEST_PROGS)
-	-if [ -d docs ]; \
-	then \
-	    rm -rf docs \
-	fi
-	-if [ -d tests ]; \
-	then \
-	    cd tests; $(MAKE) $(MFLAGS) clean; cd ..; \
-	fi
+	-rm -rf docs
+	-(cd tests; $(MAKE) $(MFLAGS) clean)
 
 distclean: clean
 	-rm -f config.status config.log config.cache
