@@ -1,3 +1,8 @@
+1998-04-07  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed Connect: leading spaces in a URL and/or CE caused either a
+	crash or other problem.
+
 1998-04-03  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Added patches from Jake Hamby which fix various problems with
@@ -376,4 +381,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.23 1998/04/03 18:10:16 jimg Exp $
+$Id: ChangeLog,v 1.24 1998/04/07 22:18:15 jimg Exp $
