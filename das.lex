@@ -33,7 +33,13 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.11  1994/12/21 15:31:07  jimg
+# Revision 1.12  1995/02/10 02:44:58  jimg
+# Scanner now returns different lexemes for each of the different scalar
+# data types.
+# Comments are now done as for sh; the C and C++ style comments are no
+# longer supported.
+#
+# Revision 1.11  1994/12/21  15:31:07  jimg
 # Undid 'fix' to NEVER definition - it was wrong.
 #
 # Revision 1.10  1994/12/16  22:22:43  jimg
@@ -95,7 +101,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.11 1994/12/21 15:31:07 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.12 1995/02/10 02:44:58 jimg Exp $"};
 
 #include <string.h>
 
@@ -114,20 +120,43 @@ int yywrap(void);
     
 %x quote
 %x comment
-%x comment_new
 
 ID  	[a-zA-Z_][a-zA-Z0-9_/]*
-VAL 	[a-zA-Z0-9_.+-]+
+INT	[-+]?[0-9]+
+
+MANTISA ([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
+EXPONENT (E|e)[-+]?[0-9]+
+
+FLOAT	[-+]?{MANTISA}{EXPONENT}?
+
+STR 	[-+a-zA-Z0-9_./:]+
+
 ATTR 	attributes|Attributes|ATTRIBUTES
-TYPE    BYTE|Byte|byte|INT32|Int32|int32|FLOAT64|Float64|float64|STRING|String|string|URL|Url|url
-NEVER   [^a-zA-Z0-9_/.+\-{};,]
+
+BYTE	BYTE|Byte|byte
+INT32	INT32|Int32|int32
+FLOAT64 FLOAT64|Float64|float64
+STRING  STRING|String|string
+URL	URL|Url|url
+
+NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
 
 %%
 
+
 {ATTR}	    	    	daslval = yytext; return ATTR;
-{TYPE}                  daslval = yytext; return TYPE;
+
+{BYTE}                  daslval = yytext; return BYTE;
+{INT32}                 daslval = yytext; return INT32;
+{FLOAT64}               daslval = yytext; return FLOAT64;
+{STRING}                daslval = yytext; return STRING;
+{URL}                   daslval = yytext; return URL;
+
 {ID}  	    	    	daslval = yytext; return ID;
-{VAL}	    	    	daslval = yytext; return VAL;
+{INT}	    	    	daslval = yytext; return INT;
+{FLOAT}	    	    	daslval = yytext; return FLOAT;
+{STR}	    	    	daslval = yytext; return STR;
+
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;
 ";" 	    	    	return (int)*yytext;
@@ -136,6 +165,11 @@ NEVER   [^a-zA-Z0-9_/.+\-{};,]
 [ \t]+
 \n	    	    	++das_line_num;
 <INITIAL><<EOF>>    	yy_init = 1; das_line_num = 1; yyterminate();
+
+"#"	    	    	BEGIN(comment);
+<comment>[^\n]*
+<comment>\n		++das_line_num; BEGIN(INITIAL);
+<comment><<EOF>>        yy_init = 1; das_line_num = 1; yyterminate();
 
 \"			BEGIN(quote); start_line = das_line_num; yymore();
 <quote>[^"\n\\]*	yymore();
@@ -146,7 +180,7 @@ NEVER   [^a-zA-Z0-9_/.+\-{};,]
 			  /* trunc1(yytext, yyleng); */
                           /* rmbslash(yytext); */
 			  daslval = yytext;
-			  return VAL;
+			  return STR;
                         }
 <quote><<EOF>>		{
                           char msg[256];
@@ -155,25 +189,6 @@ NEVER   [^a-zA-Z0-9_/.+\-{};,]
 				  start_line);
 			  YY_FATAL_ERROR(msg);
                         }
-
-"/*"	    	    	BEGIN(comment); start_line = das_line_num;
-<comment>[^*\n]*
-<comment>[^*\n]*\n  	++das_line_num;
-<comment>"*"+[^*/\n]*
-<comment>"*"+[^*/\n]*\n ++das_line_num;
-<comment>"*"+"/"    	BEGIN(INITIAL);
-<comment><<EOF>>	{
-                          char msg[256];
-			  sprintf(msg,
-				  "Unterminated comment (starts on line %d)\n",
-				  start_line);
-			  YY_FATAL_ERROR(msg);
-                        }
-			
-"//"	    	    	BEGIN(comment_new);
-<comment_new>[^\n]*
-<comment_new>\n		++das_line_num; BEGIN(INITIAL);
-<comment_new><<EOF>>    yy_init = 1; das_line_num = 1; yyterminate();
 
 {NEVER}                 {
                           if (yytext) {	/* suppress msgs about `' chars */
@@ -219,3 +234,24 @@ yywrap(void)
 {
     return 1;
 }
+
+#ifdef NEVER
+"/*"	    	    	BEGIN(comment); start_line = das_line_num;
+<comment>[^*\n]*
+<comment>[^*\n]*\n  	++das_line_num;
+<comment>"*"+[^*/\n]*
+<comment>"*"+[^*/\n]*\n ++das_line_num;
+<comment>"*"+"/"    	BEGIN(INITIAL);
+<comment><<EOF>>	{
+                          char msg[256];
+			  sprintf(msg,
+				  "Unterminated comment (starts on line %d)\n",
+				  start_line);
+			  YY_FATAL_ERROR(msg);
+                        }
+			
+"//"	    	    	BEGIN(comment_new);
+<comment_new>[^\n]*
+<comment_new>\n		++das_line_num; BEGIN(INITIAL);
+<comment_new><<EOF>>    yy_init = 1; das_line_num = 1; yyterminate();
+#endif
