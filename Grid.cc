@@ -10,6 +10,11 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.35  1998/08/06 16:19:54  jimg
+// Fixed misuse of read member function in serialize. Test for a read(...)
+// error by checking the value of the `error' parameter, not the return value
+// of the read(...) member function. (from jeh)
+//
 // Revision 1.34  1998/03/17 17:32:00  jimg
 // Added an implmentation of element_count().
 //
@@ -295,8 +300,11 @@ Grid::serialize(const String &dataset, DDS &dds, XDR *sink,
     bool status = true;
     int error = 0;
 
-    if (!read_p() && !read(dataset, error))
-	return false;
+    if (!read_p()) {
+	read(dataset, error);
+	if (error)
+	    return false;
+    }
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
