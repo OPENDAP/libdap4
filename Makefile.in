@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.118 2000/10/30 17:21:27 jimg Exp $
+# $Id: Makefile.in,v 1.119 2001/01/26 19:48:09 jimg Exp $
 
 @SET_MAKE@
 
@@ -17,13 +17,15 @@
 PROG = libdap++.a libdap++-gui.a geturl usage deflate
 DODS_ROOT = ../..
 
+# Unit tests. Experimental. 11/27/2000 jhrg
+CPP_UNIT=/home/jimg/src/CppUnit/test/framework
 WWW_ROOT = @WWW_ROOT@
-INCS = -I. -IGNU @INCS@
+INCS = -I. -IGNU -I$(CPP_UNIT) @INCS@
 DEFS = @DEFS@
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
-LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
+LDFLAGS = -L. -L$(CPP_UNIT) @LDFLAGS@
 LFLAGS = -8
 YFLAGS = -d -v
 TAGS_FLAGS =
@@ -421,7 +423,8 @@ util-check: util-test
 	./util-test
 
 util-test: util-test.o libdap++.a
-	$(CXX) $(LDFLAGS) -o util-test util-test.o libdap++.a $(LIBS)
+	$(CXX) $(LDFLAGS) -o util-test util-test.o libdap++.a \
+		$(LIBS) $(XTRALIBS)
 
 util-test.o: util.cc
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -DTEST -o $@ $<
@@ -437,14 +440,26 @@ server-check: geturl
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool geturl --srcdir server-testsuite
 
+# You must modify TestRunner.cc for each new test class.
+UNIT_TEST_SRC = TestRunner.cc TextTestResult.cc 
+# AttrTableTest.cc DODSFilterTest.cc cgiUtilTest.cc parserUtilTest.cc
+UNIT_TEST_CLASSES = AttrTableTest.o DODSFilterTest.o cgiUtilTest.o \
+	parserUtilTest.o
+UNIT_TEST_SCAFFOLD = TestRunner.o TextTestResult.o
+
+unit_tests: libdap++.a $(UNIT_TEST_SCAFFOLD)
+	$(CXX) -o unit_tests $(LDFLAGS) \
+		$(UNIT_TEST_SCAFFOLD) $(TESTOBJS) \
+		$(UNIT_LDFLAGS) -lcppunit -ldap++ $(LIBS)
+
 # Clean up.
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
 	-rm -f *.bb *.bbg *.da *.gcov
 	-for d in GNU; do cd $$d && rm *.o *~; cd ..; done
-	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
-	       cgi-util-test gse-test
+	-rm -f $(PROG) das-test dds-test expr-test util-test \
+		error-test geturl cgi-util-test gse-test unit_tests
 	-cd doc-html; rm *.html; cd ..;
 	-cd doc-latex; rm *.tex; cd ..;
 
@@ -483,7 +498,9 @@ tar:
 	$(TAR) --exclude 'nc3-dods*' --exclude 'jg-dods*' \
 	  --exclude 'dsp-dods*' --exclude 'math-dods*' --exclude 'hdf-dods*' \
 	  --exclude 'ff-dods*' --exclude 'tools' --exclude 'clients' \
-	  --exclude 'packages*' --exclude 'CVS' --exclude 'old' \
+	  --exclude 'packages*' \
+	  --exclude 'bin' --exclude 'lib' --exclude 'include' \
+	  --exclude 'man' --exclude 'CVS' --exclude 'old' \
 	  --exclude '.#*' --exclude '.flc' --exclude '.snprj' \
 	  --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
 
@@ -501,7 +518,7 @@ binary-tar:
 		DODS/lib/libdap++-gui.a \
 		DODS/include && \
 	    $(TAR) --gzip --create --dereference \
-		--file DODS-$(host)-tools-$(version).tar.gz \
+		--file DODS-tools-$(version)-$(host).tar.gz \
 		DODS/etc/asciival && \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-client-tools-$(version)-$(host).tar.gz \
@@ -558,7 +575,8 @@ tags:
 depend: 
 	@depend@ -m Makefile.in -- $(CPPFLAGS) -- \
 	$(CLIENTSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
-	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS)
+	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS) \
+	$(UNIT_TEST_SRC)
 	$(MAKE) $(MFLAGS) Makefile
 
 .SUFFIXES:      .o .cc .c
@@ -576,24 +594,25 @@ Connect.o: Connect.cc config_dap.h debug.h DataDDS.h DDS.h BaseType.h \
  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
  Structure.h Sequence.h Grid.h escaping.h
 Connections.o: Connections.cc config_dap.h debug.h Connections.h \
- Connect.h DAS.h AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h \
- Error.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
+ Connect.h DAS.h AttrTable.h Error.h DDS.h BaseType.h Clause.h expr.h \
+ RValue.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
  Vector.h List.h Structure.h Sequence.h Grid.h
-AttrTable.o: AttrTable.cc config_dap.h AttrTable.h debug.h util.h \
+AttrTable.o: AttrTable.cc config_dap.h Error.h debug.h util.h \
  BaseType.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
  Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
- Clause.h expr.h RValue.h List.h Structure.h Sequence.h Grid.h
+ Clause.h expr.h RValue.h List.h Structure.h Sequence.h Grid.h \
+ AttrTable.h
 DAS.o: DAS.cc config_dap.h debug.h Error.h parser.h GSEClause.h \
  BaseType.h Array.h dods-limits.h Vector.h DDS.h Clause.h expr.h \
  RValue.h Grid.h DAS.h AttrTable.h InternalErr.h
-parser-util.o: parser-util.cc config_dap.h parser.h Error.h \
+parser-util.o: parser-util.cc config_dap.h debug.h parser.h Error.h \
  GSEClause.h BaseType.h Array.h dods-limits.h Vector.h DDS.h Clause.h \
- expr.h RValue.h debug.h Grid.h util.h Byte.h dods-datatypes.h Int16.h \
+ expr.h RValue.h Grid.h util.h Byte.h dods-datatypes.h Int16.h \
  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h Url.h List.h \
  Structure.h Sequence.h
 DDS.o: DDS.cc config_dap.h expr.h BaseType.h Clause.h RValue.h \
- Connect.h DAS.h AttrTable.h DDS.h debug.h Error.h util.h Byte.h \
+ Connect.h DAS.h AttrTable.h Error.h DDS.h debug.h util.h Byte.h \
  dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
  Structure.h Sequence.h Grid.h parser.h GSEClause.h ce_functions.h \
@@ -727,8 +746,8 @@ TestUInt16.o: TestUInt16.cc config_dap.h TestUInt16.h UInt16.h \
  dods-datatypes.h BaseType.h
 TestFloat32.o: TestFloat32.cc config_dap.h TestFloat32.h Float32.h \
  dods-datatypes.h BaseType.h
-das-test.o: das-test.cc config_dap.h DAS.h AttrTable.h das.tab.h \
- Error.h
+das-test.o: das-test.cc config_dap.h DAS.h AttrTable.h Error.h \
+ das.tab.h
 dds-test.o: dds-test.cc config_dap.h dds.tab.h BaseType.h Int32.h \
  dods-datatypes.h DDS.h Clause.h expr.h RValue.h debug.h util.h Byte.h \
  Int16.h UInt16.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
@@ -741,20 +760,40 @@ expr-test.o: expr-test.cc config_dap.h DDS.h BaseType.h Clause.h \
 error-test.o: error-test.cc config_dap.h Error.h parser.h GSEClause.h \
  BaseType.h Array.h dods-limits.h Vector.h DDS.h Clause.h expr.h \
  RValue.h debug.h Grid.h Error.tab.h
-geturl.o: geturl.cc config_dap.h Connect.h DAS.h AttrTable.h DDS.h \
- BaseType.h Clause.h expr.h RValue.h debug.h Error.h util.h Byte.h \
+geturl.o: geturl.cc config_dap.h Connect.h DAS.h AttrTable.h Error.h \
+ DDS.h BaseType.h Clause.h expr.h RValue.h debug.h util.h Byte.h \
  dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
  Structure.h Sequence.h Grid.h
 cgi_util.o: cgi_util.cc config_dap.h cgi_util.h Connect.h DAS.h \
- AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h Error.h \
+ AttrTable.h Error.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h \
  util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
  Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
  Structure.h Sequence.h Grid.h
 escaping.o: escaping.cc
-DODSFilter.o: DODSFilter.cc config_dap.h DAS.h AttrTable.h DDS.h \
- BaseType.h Clause.h expr.h RValue.h debug.h cgi_util.h Connect.h \
- Error.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
+DODSFilter.o: DODSFilter.cc config_dap.h DAS.h AttrTable.h Error.h \
+ DDS.h BaseType.h Clause.h expr.h RValue.h debug.h cgi_util.h \
+ Connect.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
  Vector.h List.h Structure.h Sequence.h Grid.h DODSFilter.h \
  InternalErr.h
+TestRunner.o: TestRunner.cc TextTestResult.h \
+ /home/jimg/src/CppUnit/test/framework/TestResult.h \
+ /home/jimg/src/CppUnit/test/framework/Guards.h \
+ /home/jimg/src/CppUnit/test/framework/TestFailure.h \
+ /home/jimg/src/CppUnit/test/framework/CppUnitException.h \
+ AttrTableTest.cc /home/jimg/src/CppUnit/test/framework/TestCase.h \
+ /home/jimg/src/CppUnit/test/framework/Test.h \
+ /home/jimg/src/CppUnit/test/framework/TestCaller.h \
+ /home/jimg/src/CppUnit/test/framework/TestSuite.h AttrTable.h Error.h \
+ DODSFilterTest.cc DODSFilter.h DAS.h DDS.h BaseType.h Clause.h expr.h \
+ RValue.h debug.h cgiUtilTest.cc cgi_util.h Connect.h util.h Byte.h \
+ dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+ Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
+ Structure.h Sequence.h Grid.h parserUtilTest.cc parser.h GSEClause.h
+TextTestResult.o: TextTestResult.cc TextTestResult.h \
+ /home/jimg/src/CppUnit/test/framework/TestResult.h \
+ /home/jimg/src/CppUnit/test/framework/Guards.h \
+ /home/jimg/src/CppUnit/test/framework/TestFailure.h \
+ /home/jimg/src/CppUnit/test/framework/CppUnitException.h \
+ /home/jimg/src/CppUnit/test/framework/estring.h

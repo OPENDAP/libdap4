@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.65 2000/10/30 17:21:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.66 2001/01/26 19:48:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -509,6 +509,15 @@ void append_long_to_string(long val, int base, string &str_val)
   str_val+= digits[(int)r.rem];
 }
 
+// base defaults to 10
+string
+long_to_string(long val, int base)
+{
+    string s;
+    append_long_to_string(val, base, s);
+    return s;
+}
+
 // Jose Garcia
 void append_double_to_string(const double &num, string &str)
 {
@@ -516,6 +525,14 @@ void append_double_to_string(const double &num, string &str)
   char s[80];
   sprintf(s, "%.9f", num);
   str+=s;
+}
+
+string
+double_to_string(const double &num)
+{
+    string s;
+    append_double_to_string(num, s);
+    return s;
 }
 
 // Get the version number of the core software. Defining this means that
@@ -563,6 +580,16 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: util.cc,v $
+// Revision 1.66  2001/01/26 19:48:10  jimg
+// Merged with release-3-2-3.
+//
+// Revision 1.65.2.1  2000/11/30 05:24:46  jimg
+// Significant changes and improvements to the AttrTable and DAS classes. DAS
+// now is a child of AttrTable, which makes attributes behave uniformly at
+// all levels of the DAS object. Alias now work. I've added unit tests for
+// several methods in AttrTable and some of the functions in parser-util.cc.
+// In addition, all of the DAS tests now work.
+//
 // Revision 1.65  2000/10/30 17:21:28  jimg
 // Added support for proxy servers (from cjm).
 //

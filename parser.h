@@ -94,10 +94,14 @@ struct gse_arg {
     @return void 
     @memo Generate error messages for the various parsers.
     */
-
-void parse_error(const char *s, const int line_num);
+//@{
 void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
 		 const char *context = 0);
+void parse_error(const char *s, const int line_num = 0, 
+		 const char *context = 0) throw (Error);
+void parse_error(const string &msg, const int line_num, 
+		 const char *context = 0) throw (Error);
+//@}
 
 /** Given a string (#const char *src#), save it to the temporary variable
     pointed to by #dst#. If the string is longer than #ID_MAX#, generate and
@@ -111,7 +115,7 @@ void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
     @memo Save a string to a temporary variable during the parse.
     */
 
-void save_str(char *dst, const char *src, const int line_num);
+void save_str(char *dst, const char *src, const int line_num) throw (Error);
 void save_str(string &dst, const char *src, const int);
 
 /** Check to see if #val# is a valid byte value. If not, generate an error
@@ -150,6 +154,16 @@ int check_float64(const char *val);
 int check_url(const char *val);
 
 // $Log: parser.h,v $
+// Revision 1.15  2001/01/26 19:48:10  jimg
+// Merged with release-3-2-3.
+//
+// Revision 1.14.4.1  2000/11/30 05:24:46  jimg
+// Significant changes and improvements to the AttrTable and DAS classes. DAS
+// now is a child of AttrTable, which makes attributes behave uniformly at
+// all levels of the DAS object. Alias now work. I've added unit tests for
+// several methods in AttrTable and some of the functions in parser-util.cc.
+// In addition, all of the DAS tests now work.
+//
 // Revision 1.14  2000/09/22 02:17:23  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

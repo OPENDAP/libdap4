@@ -2,6 +2,12 @@
 # jhrg
 #
 # $Log: test.16.exp,v $
+# Revision 1.8  2001/01/26 19:48:10  jimg
+# Merged with release-3-2-3.
+#
+# Revision 1.7.4.1  2000/11/30 05:20:19  jimg
+# Added
+#
 # Revision 1.7  2000/09/22 02:52:59  jimg
 # Fixes to the tests to recognize some of the new error messages. Also,
 # the test drivers were modified to catch the exceptions now thrown by
@@ -44,7 +50,7 @@ set test_name test.16
 # exactly.
 
 set test_out "Error parsing the text on line 7
-`i' previously defined.
+An attribute called `i' already exists but is of a different type
 "
 
 das-test_start p $srcdir/$test_name

@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.52 2000/10/30 17:21:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.53 2001/01/26 19:48:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -26,7 +26,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.52 $";
+const char *version = "$Revision: 1.53 $";
 extern int keep_temps;		// defined in Connect.cc
 
 
@@ -34,12 +34,12 @@ void
 usage(string name)
 {
     cerr << "Usage: " << name; 
-	cerr << " [dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]" << endl;
-	cerr << "[gVvk] [t <codes>] [T <list>] <file> [<file> ...]" << endl;
+    cerr << " [dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]" << endl;
+    cerr << "[gVvk] [t <codes>] [T <list>] <file> [<file> ...]" << endl;
     cerr << "In the first form of the command, dereference the URL" << endl;
-	cerr << "perform the requested operations. In the second, assume" << endl;
-	cerr << "the files are DODS data objects (stored in files or read" << endl;
-	cerr << "from pipes) and process them as if -D were given." << endl;
+    cerr << "perform the requested operations. In the second, assume" << endl;
+    cerr << "the files are DODS data objects (stored in files or read" << endl;
+    cerr << "from pipes) and process them as if -D were given." << endl;
     cerr << "        d: For each URL, get the DODS DDS." << endl;
     cerr << "        a: For each URL, get the DODS DAS." << endl;
     cerr << "        D: For each URL, get the DODS Data." << endl;
@@ -388,6 +388,12 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.53  2001/01/26 19:48:09  jimg
+// Merged with release-3-2-3.
+//
+// Revision 1.52.2.1  2000/12/05 00:32:58  jimg
+// Fixed indentation in places.
+//
 // Revision 1.52  2000/10/30 17:21:28  jimg
 // Added support for proxy servers (from cjm).
 //

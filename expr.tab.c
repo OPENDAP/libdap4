@@ -29,7 +29,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.19 2000/09/22 21:45:18 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.20 2001/01/26 19:48:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1985,8 +1985,11 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.19  2000/09/22 21:45:18  jimg
- * *** empty log message ***
+ * Revision 1.20  2001/01/26 19:48:09  jimg
+ * Merged with release-3-2-3.
+ *
+ * Revision 1.19.4.1  2000/11/10 22:39:49  jimg
+ * New build.
  *
  * Revision 1.39  2000/09/22 02:17:23  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than

@@ -153,7 +153,10 @@ void downcase(string &s);
    @return void. This method returns nothing however be aware that it will
    throw and exception of type {\bfstd::invalid_argument} if the parameter
    base is not in the valid range. */
+//@{
 void append_long_to_string(long val, int base, string &str_val);
+string long_to_string(long val, int base = 10);
+//@}
 
 // Jose Garcia
 /**
@@ -168,7 +171,10 @@ void append_long_to_string(long val, int base, string &str_val);
     appended.
 
     @return void. */
+//@{
 void append_double_to_string(const double &num, string &str);
+string double_to_string(const double &num);
+//@}
 
 /** Get the version of the DAP library. */
 string dap_version();
@@ -185,6 +191,16 @@ string path_to_filename(string path);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.39  2001/01/26 19:48:10  jimg
+ * Merged with release-3-2-3.
+ *
+ * Revision 1.38.2.1  2000/11/30 05:24:46  jimg
+ * Significant changes and improvements to the AttrTable and DAS classes. DAS
+ * now is a child of AttrTable, which makes attributes behave uniformly at
+ * all levels of the DAS object. Alias now work. I've added unit tests for
+ * several methods in AttrTable and some of the functions in parser-util.cc.
+ * In addition, all of the DAS tests now work.
+ *
  * Revision 1.38  2000/10/30 17:21:28  jimg
  * Added support for proxy servers (from cjm).
  *

@@ -9,7 +9,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.28 2000/07/09 22:05:35 rmorris Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.29 2001/01/26 19:48:09 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -19,9 +19,10 @@ static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.28 2000/07/09 22:05:35 rmor
 
 #include <iostream>
 
-#include "AttrTable.h"
+#include "Error.h"
 #include "debug.h"
 #include "util.h"
+#include "AttrTable.h"
 
 #ifdef WIN32
 using std::string;
@@ -29,31 +30,24 @@ using std::vector<string>;
 using std::endl;
 #endif
 
-// Private member functions
-
-// When CON_ONLY is true, stop recurring when at the last container.
-// This ensures that the Pix returned will reference the AttrTable which
-// containes the attribute - not the attribute itself.
+// Find the attribute #target#. To reference an arbitrary attribute, a user
+// needs an AttrTable and a Pix pointing to an attribute tuple within that
+// table. 
 Pix 
-AttrTable::find(const string &target, bool cont_only)
+AttrTable::find(const string &target, AttrTable **at)
 {
-    string::size_type dotpos = target.find('.');
-    if (dotpos != target.npos) {
+    string::size_type dotpos = target.rfind('.');
+    if (dotpos != string::npos) {
 	string container = target.substr(0, dotpos);
 	string field = target.substr(dotpos+1);
 	
-	Pix p = simple_find(container);
-	if ((p) && attr_map(p)->type == Attr_container) {
-	    if (cont_only && (field.find('.') == field.npos))
-		return p;
-	    else
-		return attr_map(p)->attributes->find(field, cont_only);
-	}
-	else
-	    return 0;
+	*at = find_container(container);
+	return (*at) ? (*at)->simple_find(field) : 0;
     }
-    else
+    else {
+	*at = this;
 	return simple_find(target);
+    }
 }
 
 Pix
@@ -62,6 +56,39 @@ AttrTable::simple_find(const string &target)
     for (Pix p = attr_map.first(); p; attr_map.next(p))
 	if (target == attr_map(p)->name)
 	    return p;
+    return 0;
+}
+
+// Find the attribute container which holds #target#. Use #this# as the
+// root of the tables to search. If a table called #target# does not exist,
+// return null. The string target may contain dots in which case this
+// function will parse #target#.
+AttrTable *
+AttrTable::find_container(const string &target)
+{
+    string::size_type dotpos = target.find('.');
+    if (dotpos != string::npos) {
+	string container = target.substr(0, dotpos);
+	string field = target.substr(dotpos+1);
+	
+	AttrTable *at= simple_find_container(container);
+	return (at) ? at->find_container(field) : 0;
+    }
+    else {
+	return simple_find_container(target);
+    }
+}
+
+AttrTable *
+AttrTable::simple_find_container(const string &target)
+{
+    if (get_name() == target)
+	return this;
+
+    for (Pix p = attr_map.first(); p; attr_map.next(p))
+	if (is_container(p) && target == attr_map(p)->name)
+	    return attr_map(p)->attributes;
+
     return 0;
 }
 
@@ -135,27 +162,49 @@ AttrTable::AttrTable(const AttrTable &rhs)
     clone(rhs);
 }
 
+void
+AttrTable::delete_attr_table() 
+{
+    for (Pix p = attr_map.first(); p; attr_map.next(p)) {
+	delete attr_map(p);
+	attr_map(p) = 0;
+    }
+}
+
 AttrTable::~AttrTable()
 {
     DBG(cerr << "Entering ~AttrTable (" << this << ")" << endl);
-    for (Pix p = attr_map.first(); p; attr_map.next(p))
-	delete attr_map(p);
+    delete_attr_table();
     DBG(cerr << "Exiting ~AttrTable" << endl);
 }
 
 AttrTable &
 AttrTable::operator=(const AttrTable &rhs)
 {
-    if (this != &rhs)
+    if (this != &rhs) {
+	delete_attr_table();
 	clone(rhs);
+    }
 
     return *this;
 }	    
 
 unsigned int
-AttrTable::get_size()
+AttrTable::get_size() const
 {
     return attr_map.length();
+}
+
+string
+AttrTable::get_name()
+{
+    return d_name;
+}
+
+void
+AttrTable::set_name(const string &n)
+{
+    d_name = n;
 }
 
 Pix 
@@ -194,8 +243,7 @@ AttrTable::get_attr_table(Pix p)
 AttrTable *
 AttrTable::get_attr_table(const string &name)
 {
-    Pix p = find(name, true);	// Return only Pixes to container attributes
-    return (p) ?  get_attr_table(p) : 0;
+    return find_container(name);
 }
 
 AttrTable *
@@ -214,7 +262,7 @@ AttrTable::get_type(Pix p)
 string
 AttrTable::get_type(const string &name)
 {
-    Pix p = find(name);
+    Pix p = simple_find(name);
     return (p) ?  get_type(p) : (string)"";
 }
 
@@ -234,7 +282,7 @@ AttrTable::get_attr_type(Pix p)
 AttrType
 AttrTable::get_attr_type(const string &name)
 {
-    Pix p = find(name);
+    Pix p = simple_find(name);
     return (p) ?  get_attr_type(p) : Attr_unknown;
 }
 
@@ -256,7 +304,7 @@ AttrTable::get_attr_num(Pix p)
 unsigned int 
 AttrTable::get_attr_num(const string &name)
 {
-    Pix p = find(name);
+    Pix p = simple_find(name);
     return (p) ?  get_attr_num(p) : 0;
 }
 
@@ -276,7 +324,7 @@ AttrTable::get_attr(Pix p, unsigned int i)
 string
 AttrTable::get_attr(const string &name, unsigned int i)
 {
-    Pix p = find(name);
+    Pix p = simple_find(name);
     return (p) ? get_attr(p, i) : (string)"";
 }
 
@@ -296,7 +344,7 @@ AttrTable::get_attr_vector(Pix p)
 vector<string> *
 AttrTable::get_attr_vector(const string &name)
 {
-    Pix p = find(name);
+    Pix p = simple_find(name);
     return (p) ?  get_attr_vector(p) : 0;
 }
 
@@ -308,15 +356,20 @@ AttrTable::get_attr_vector(const char *name)
 
 unsigned int
 AttrTable::append_attr(const string &name, const string &type, 
-		       const string &attr)
+		       const string &attr) throw (Error)
 {
-    Pix p = find(name);
+    Pix p = simple_find(name);
+
     // If the types don't match OR this attribute is a container, calling
     // this mfunc is an error!
-    if (p && (attr_map(p)->type != String_to_AttrType(type) 
-	      || get_type(p) == "Container"))
-	return 0;
-    else if (p)	{		// Must be a new attribute value; add it.
+    if (p && (attr_map(p)->type != String_to_AttrType(type)))
+	throw Error(string("An attribute called `") + name 
+		    + string("' already exists but is of a different type"));
+    if (p && (get_type(p) == "Container"))
+	throw Error(string("An attribute called `") + name 
+		    + string("' already exists but is a container."));
+
+    if (p) {			// Must be a new attribute value; add it.
         attr_map(p)->attr->push_back(attr);
 	return attr_map(p)->attr->size();
     } else {			// Must be a completely new attribute; add it
@@ -336,59 +389,108 @@ AttrTable::append_attr(const string &name, const string &type,
 
 unsigned int
 AttrTable::append_attr(const char *name, const char *type, const char *attr)
+    throw (Error)
 {
     return append_attr((string)name, (string)type, (string)attr);
 }
 
 AttrTable *
-AttrTable::append_container(const string &name)
+AttrTable::append_container(const string &name) throw (Error)
 {
-    Pix p = find(name);
-    
-    // Return an error if NAME already exists.
-    if (p)
-	return 0;
-	
+    return append_container(new AttrTable, name);
+}
+
+AttrTable *
+AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
+{
+    if (simple_find(name))
+	throw Error(string("There already exists a container called `")
+		    + name + string("in this attribute table."));
+
+    at->set_name(name);
+
     entry *e = new entry;
     e->name = name;
     e->is_alias = false;
     e->type = Attr_container;
-    e->attributes = new AttrTable();
+    e->attributes = at;
 
     attr_map.append(e);
 
     return e->attributes;
 }
 
-bool
-AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
+// Alias an attribute table. The alias should be added to this object.
+void
+AttrTable::add_container_alias(const string &name, AttrTable *src) 
+    throw (Error)
 {
-    // It is an error for alias to exist already.
-    if (find(alias))
-	return false;
-
-    // Check for null Attrtable for source (information to be aliased).
-    if (!at)
-	return false;
-
-    // Make sure that `name' really exists.
-    Pix p = at->find(name);
-    if (!p)
-	return false;
+    if (simple_find(name))
+	throw Error(string("There already exists a container called `")
+		    + name + string("in this attribute table."));
 
     entry *e = new entry;
-    e->name = alias;
+    e->name = name;
     e->is_alias = true;
-    e->aliased_to = name;
+    e->aliased_to = src->get_name();
+    e->type = Attr_container;
+
+    e->attributes = src;
+
+    attr_map.append(e);
+}
+
+// Assume #source# names an attribute value in some container. Add an alias
+// #name# for that value in this object.
+void
+AttrTable::add_value_alias(AttrTable *das, const string &name, 
+			   const string &source) throw (Error)
+{
+    // find the container that holds #source# and then find #source#'s Pix
+    // within that container. Search at the uppermost level of the attribtue
+    // object to find values defined `above' the current container.
+    AttrTable *at;
+    Pix p = das->find(source, &at);
+
+    // If #source# is not found by looking at the topmost level, look in the
+    // current table (i.e., alias z x where x is in the current container
+    // won't be found by looking for `x' at the top level). See test case 26
+    // in das-testsuite.
+    if (!(at && p)) {
+	p = find(source, &at);
+	if (!(at && p))
+	    throw Error(string("Could not find the attribute `")
+			+ source + string("' in the attribute object."));
+    }
+
+    // If we've got a value to alias and it's being added at the top level of
+    // the DAS, that's an error.
+    if (!at->is_container(p) && this == das)
+	throw Error(string("A value cannot be aliased to the top level of the\
+ DAS;\nOnly containers may be present at that level of the DAS."));
+
+    if (simple_find(name))
+	throw Error(string("There already exists a container called `")
+		    + name + string("in this attribute table."));
+
+    entry *e = new entry;
+    e->name = name;
+    e->is_alias = true;
+    e->aliased_to = source;
     e->type = at->attr_map(p)->type;
     if (e->type == Attr_container)
 	e->attributes = at->get_attr_table(p);
-    else {
+    else
 	e->attr = at->attr_map(p)->attr;
-    }
 
     attr_map.append(e);
-    
+}
+
+// Deprecated
+bool
+AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
+{
+    add_value_alias(at, alias, name);
     return true;
 }
 
@@ -407,7 +509,7 @@ AttrTable::attr_alias(const string &alias, const string &name)
 void
 AttrTable::del_attr(const string &name, int i)
 {
-    Pix p = find(name);
+    Pix p = simple_find(name);
     if (p) {
 	if (i == -1) {		// Delete the whole attribute
 	    attr_map.prev(p);	// p now points to the previous element
@@ -426,43 +528,68 @@ AttrTable::del_attr(const string &name, int i)
 	}
     }
 }
-	
+
+// This is protected.	
+void
+AttrTable::simple_print(ostream &os, string pad, Pix p, bool dereference)
+{
+    switch (attr_map(p)->type) {
+      case Attr_container:
+	os << pad << get_name(p) << " {" << endl;
+
+	attr_map(p)->attributes->print(os, pad + "    ", dereference);
+
+	os << pad << "}" << endl;
+	break;
+
+      default: {
+	    os << pad << get_type(p) << " " << get_name(p) << " " ;
+
+	    vector<string> *sxp = attr_map(p)->attr;
+
+	    for (vector<string>::const_iterator i = sxp->begin(); 
+		 i < (sxp->end()-1); ++i)
+		os << *i << ", ";
+  
+	    os << *(sxp->end()-1) << ";" << endl;
+	}
+	break;
+    }
+}
 	    
 void
-AttrTable::print(ostream &os, string pad)
+AttrTable::print(ostream &os, string pad, bool dereference)
 {
     for(Pix p = attr_map.first(); p; attr_map.next(p)) {
 	if (attr_map(p)->is_alias) {
-	    os << pad << "Alias " << get_name(p) << " " 
-	       << attr_map(p)->aliased_to << ";" << endl;
-	} else {
-	    switch (attr_map(p)->type) {
-	      case Attr_container:
-		os << pad << get_name(p) << " {" << endl;
-
-		attr_map(p)->attributes->print(os, pad + "    ");
-
-		os << pad << "}" << endl;
-		break;
-
-	      default: {
-		    os << pad << get_type(p) << " " << get_name(p) << " " ;
-
-		    vector<string> *sxp = attr_map(p)->attr;
-
-		    for (vector<string>::const_iterator i = sxp->begin(); 
-			 i < (sxp->end()-1); ++i)
-			os << *i << ", ";
-  
-		    os << *(sxp->end()-1) << ";" << endl;
-		}
-		break;
+	    if (dereference) {
+		simple_print(os, pad, p, dereference);
 	    }
+	    else {
+		os << pad << "Alias " << get_name(p) << " " 
+		   << attr_map(p)->aliased_to << ";" << endl;
+	    }
+	} 
+	else {
+	    simple_print(os, pad, p, dereference);
 	}
     }
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.29  2001/01/26 19:48:09  jimg
+// Merged with release-3-2-3.
+//
+// Revision 1.28.4.2  2000/11/30 05:24:46  jimg
+// Significant changes and improvements to the AttrTable and DAS classes. DAS
+// now is a child of AttrTable, which makes attributes behave uniformly at
+// all levels of the DAS object. Alias now work. I've added unit tests for
+// several methods in AttrTable and some of the functions in parser-util.cc.
+// In addition, all of the DAS tests now work.
+//
+// Revision 1.28.4.1  2000/11/22 21:47:42  jimg
+// Changed the implementation of DAS; it now inherits from AttrTable
+//
 // Revision 1.28  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.

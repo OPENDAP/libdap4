@@ -14,7 +14,7 @@
 #define _dods_limits_h
 
 #define	DODS_CHAR_BIT	8
-#define	DODS_SCHAR_MIN	-127
+#define	DODS_SCHAR_MIN	-128
 #define	DODS_SCHAR_MAX	127
 #define	DODS_UCHAR_MAX	(unsigned char)255
 #define	DODS_UCHAR_MIN	0
@@ -43,6 +43,16 @@
 #define	DODS_MB_LEN_MAX	4
 
 // $Log: dods-limits.h,v $
+// Revision 1.12  2001/01/26 19:48:09  jimg
+// Merged with release-3-2-3.
+//
+// Revision 1.11.4.1  2000/11/30 05:24:46  jimg
+// Significant changes and improvements to the AttrTable and DAS classes. DAS
+// now is a child of AttrTable, which makes attributes behave uniformly at
+// all levels of the DAS object. Alias now work. I've added unit tests for
+// several methods in AttrTable and some of the functions in parser-util.cc.
+// In addition, all of the DAS tests now work.
+//
 // Revision 1.11  2000/09/22 02:17:22  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

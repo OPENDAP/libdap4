@@ -213,6 +213,9 @@ private:
     string _sel;		// Selection of initial CE
     string _accept_types;	// Comma separated list of types understood
     string _cache_control;	// should the request be cached? 
+    string _username;           // extracted from URL, or GUI
+    string _passwd;             // extracted from URL, or GUI
+    int _passwd_attempt;	// number of tries with the current user/password
     
     HTParentAnchor *_anchor;
     HTMethod _method;		// What method are we envoking 
@@ -383,6 +386,10 @@ public:
       currently enabled.  All invocations of this function will be
       synchronous, no matter what the value of the {\it async}
       parameter. 
+
+      Also scans the URL for a username/passwd. If present, extracts
+      them, places them in the Connect object, and rebuilds the URL
+      without them.
 
       @memo Dereference a URL.  
       @return Returns false if an error is detected, otherwise returns
@@ -638,6 +645,12 @@ public:
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.50  2001/01/26 19:48:09  jimg
+ * Merged with release-3-2-3.
+ *
+ * Revision 1.49.4.1  2000/11/22 05:35:09  brent
+ * allow username/password in URL for secure data sets
+ *
  * Revision 1.49  2000/09/22 02:17:19  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

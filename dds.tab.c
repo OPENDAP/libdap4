@@ -41,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.28 2000/09/22 21:45:18 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.29 2001/01/26 19:48:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1382,8 +1382,11 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.28  2000/09/22 21:45:18  jimg
- * *** empty log message ***
+ * Revision 1.29  2001/01/26 19:48:09  jimg
+ * Merged with release-3-2-3.
+ *
+ * Revision 1.28.4.1  2000/11/10 22:39:49  jimg
+ * New build.
  *
  * Revision 1.33  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than

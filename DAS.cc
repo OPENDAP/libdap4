@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.32 2000/09/22 02:17:19 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.33 2001/01/26 19:48:09 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -49,10 +49,7 @@ extern int dasparse(void *arg); // defined in das.tab.c
 AttrTable *
 DAS::das_find(string name)
 {
-    for (Pix p = entries.first(); p; entries.next(p))
-	if (entries(p).name == name)
-	    return entries(p).attr_table;
-    return 0;
+    return find_container(name); // Only containers at the top level.
 }
 
 // sz is unused. It was part of the ctor when DAS used the old GNU VHMap
@@ -65,11 +62,9 @@ DAS::DAS(AttrTable *, unsigned int)
 
 DAS::DAS(AttrTable *attr, string name)
 {
-    toplevel_entry tle;
-    tle.name = name;
-    tle.attr_table = attr;
-    entries.append(tle);
+    append_container(attr, name);
 }
+
 // The class DASVHMap knows that it contains pointers to things and correctly
 // makes copies of those things when its copy ctor is called, so DAS can do a
 // simple member-wise copy. Similarly, we don't need to define our own op=.
@@ -79,65 +74,36 @@ DAS::DAS(AttrTable *attr, string name)
 
 DAS::~DAS()
 {
-    for(Pix p = entries.first(); p; entries.next(p)) {
-	DBG(cerr << "entries(p) = " << entries(p).name << "(" 
-	    << entries(p).attr_table << ")" << endl);
-	delete entries(p).attr_table;
-    }
 }
 
 Pix
 DAS::first_var()
 {
-    return entries.first();
+    return AttrTable::first_attr();
 }
 
 void
 DAS::next_var(Pix &p)
 {
-    entries.next(p);
+    AttrTable::next_attr(p);
 }
 
 string
 DAS::get_name(Pix p)
 {
-    return entries(p).name;
+    return AttrTable::get_name(p);
 }
 
 AttrTable *
 DAS::get_table(Pix p)
 {
-    return entries(p).attr_table;
+    return AttrTable::get_attr_table(p);
 }
 
 AttrTable *
 DAS::get_table(const string &name)
 {
-    // `.' separates hierarchies in the DAS.
-    string::size_type dotpos = name.find('.');
-    if (dotpos != name.npos) {
-	string container = name.substr(0, dotpos);
-	string field = name.substr(dotpos+1);
-
-	// The following strangeness is due to the weird implmentation of
-	// DAS/AttrTable objects. For a name like cont1.cont2.var1.a1,
-	// look first in the DAS object for `cont1', if found, look in the
-	// attribute table (AttrTable) for `cont1' for `cont2.var1'. Note
-	// that AttrTable::get_attr_table() takes `cont2.var1.a1' as its
-	// argument but *returns the AttrTable for `cont2.var1'* because `a1'
-	// is the name of the actual attribute. In order to access the data
-	// for `a1', you need *both the AttrTable and the name or Pix of the
-	// attribute*. 
-
-	// The DAS is a simple one-level data structure (names and
-	// AttrTables) while AttrTables are recursive.
-
-	AttrTable *at = das_find(container.c_str());
-	AttrTable *at2 = (at) ? at->get_attr_table(field) : 0;
-	return (at) ? ((at2) ? at2 : at) : 0;
-    }
-    else
-	return das_find(name.c_str());
+    return AttrTable::get_attr_table(name);
 }
 
 // This function is necessary because (char *) arguments will be converted to
@@ -154,11 +120,7 @@ AttrTable *
 DAS::add_table(const string &name, AttrTable *at)
 {
     DBG(cerr << "Adding table: " << name << "(" << at << ")" << endl);
-    toplevel_entry tle;
-    tle.name = name;
-    tle.attr_table = at;
-    entries.append(tle);
-    return at;
+    return AttrTable::append_container(at, name);
 }
 
 AttrTable *
@@ -239,21 +201,34 @@ DAS::parse(FILE *in)
 // true. 
 
 void
-DAS::print(ostream &os)
+DAS::print(ostream &os, bool dereference)
 {
     os << "Attributes {" << endl;
 
-    for(Pix p = entries.first(); p; entries.next(p)) {
-	os << "    " << entries(p).name << " {" << endl;
-	entries(p).attr_table->print(os, "        "); 
-	os << "    }" << endl;
-    }
+    AttrTable::print(os, "    ", dereference);
 
     os << "}" << endl;
 
 }
 
 // $Log: DAS.cc,v $
+// Revision 1.33  2001/01/26 19:48:09  jimg
+// Merged with release-3-2-3.
+//
+// Revision 1.32.4.3  2000/11/30 05:24:46  jimg
+// Significant changes and improvements to the AttrTable and DAS classes. DAS
+// now is a child of AttrTable, which makes attributes behave uniformly at
+// all levels of the DAS object. Alias now work. I've added unit tests for
+// several methods in AttrTable and some of the functions in parser-util.cc.
+// In addition, all of the DAS tests now work.
+//
+// Revision 1.32.4.2  2000/11/22 21:47:42  jimg
+// Changed the implementation of DAS; it now inherits from AttrTable
+//
+// Revision 1.32.4.1  2000/11/22 01:31:30  jimg
+// Made this class a child of AttrTable. Most methods are now simply calls to
+// methods of AttrTable.
+//
 // Revision 1.32  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

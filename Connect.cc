@@ -15,7 +15,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.106 2000/11/25 00:44:47 jgarcia Exp $" };
+    { "$Id: Connect.cc,v 1.107 2001/01/26 19:48:09 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -298,25 +298,29 @@ BOOL dods_username_password(HTRequest * request, HTAlertOpcode /* op */ ,
 	    cerr << "dods_username_password: Bad argument" << endl;
 	return NO;
     }
-#ifdef GUI
+
     Connect *me = (Connect *) HTRequest_context(request);
-#endif
 
     // Put the username in reply using HTAlert_setReplyMessage; use
     // _setReplySecret for the password.
-    string user = "\0";
-    string passwd = "\0";
 
+    if (me->_passwd_attempt >= 1)  // already tried this username/password pair
+	return NO;
+
+    if ((me->_username.length() <= 0) || (me->_passwd.length() <= 0)) {
 #ifdef GUI
-    if (!me->_gui->password(user, passwd))
+    if (!me->_gui->password(me->_username, me->_passwd))
 	return NO;
 #endif
+    }
 
-    if ((user.length() == 0) || (passwd.length() == 0))
+    if ((me->_username.length() == 0) || (me->_passwd.length() == 0))
 	return NO;
 
-    HTAlert_setReplyMessage(reply, user.c_str());
-    HTAlert_setReplySecret(reply, passwd.c_str());
+    HTAlert_setReplyMessage(reply, me->_username.c_str());
+    HTAlert_setReplySecret(reply, me->_passwd.c_str());
+
+    ++(me->_passwd_attempt);
 
     return YES;
 }
@@ -770,7 +774,7 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		    break;	// Gets a line from the file.
 		value = strchr(tempstr, '=');
 		if (!value)
-		    break;
+		    continue;
 		tokenlength = (int) value - (int) tempstr;
 		value++;
 		if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
@@ -1207,6 +1211,10 @@ _accept_deflate(accept_deflate)
 	_type = unknown_type;
 	_encoding = unknown_enc;
     }
+    _username = "";
+    _passwd = "";
+    _passwd_attempt = 0;
+
 
     if (access_ref)
 	HT_FREE(access_ref);
@@ -1313,11 +1321,29 @@ bool Connect::fetch_url(string & url, bool)
 {
     _encoding = unknown_enc;
     _type = unknown_type;
+    int start_pos = 0, end_pos, colon_pos;
 
     /* NB: I've completely removed the async stuff for now. 2/18/97 jhrg */
 
     char *c = tempnam(NULL, DODS_PREFIX);
     FILE *stream = fopen(c, "wb");	// Open truncated for update.
+
+    // look for a user / password pair which may [or may not] be in the url --
+    // look for a '@', If present there are two cases: http:// or file:/
+    // get the user and password substr after these and if neither is 0
+    // length, put them in the Connect object. Rebuild the URL without them.
+    if ((end_pos = url.find('@')) != (int)url.npos) {
+        if (url.find("http://") == 0)
+            start_pos = 7;
+        else if (url.find("file:/") == 0)
+            start_pos = 6;
+        colon_pos = url.find(":", start_pos);
+        if (end_pos > colon_pos) {
+            _username = url.substr(start_pos, colon_pos - start_pos);
+            _passwd = url.substr(colon_pos + 1, end_pos - (colon_pos+1));
+            url.erase(start_pos, end_pos - start_pos + 1);
+        }
+    }
     if (!read_url(url, stream))
 	return false;
 
@@ -1647,10 +1673,21 @@ Error & Connect::error()
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.107  2001/01/26 19:48:09  jimg
+// Merged with release-3-2-3.
+//
+// Revision 1.105.2.2  2000/12/06 18:47:35  jimg
+// Fixed processing of the .dodsrc file. Comments were not ignored, instead
+// they caused the file reader to stop. This meant that comments at the top
+// of the file prevented any of the parameters from being read.
+//
 // Revision 1.106  2000/11/25 00:44:47  jgarcia
-// In Connect::read_url added exception in case there is a fatal error loading an URL
-// It is specially requiere for supporting Connect objects that support HTTP Authorization
-// challenge.
+// In Connect::read_url added an exception in case there is a fatal error
+// loading an URL. It is required for supporting Connect objects that support
+// HTTP Authorization.
+//
+// Revision 1.105.2.1  2000/11/22 05:35:09  brent
+// allow username/password in URL for secure data sets
 //
 // Revision 1.105  2000/10/30 17:21:27  jimg
 // Added support for proxy servers (from cjm).

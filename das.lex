@@ -42,7 +42,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.30 2000/09/07 16:16:06 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.31 2001/01/26 19:48:09 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -61,13 +61,16 @@ static int start_line;		/* used in quote and comment error handlers */
 %x quote
 %x comment
 
+NAN     [Nn][Aa][Nn]
+INF     [Ii][Nn][Ff]
+
 ID  	[a-zA-Z_%][a-zA-Z0-9_./:%+\-()]*
 INT	[-+]?[0-9]+
 
 MANTISA ([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
 EXPONENT (E|e)[-+]?[0-9]+
 
-FLOAT	[-+]?{MANTISA}{EXPONENT}?
+FLOAT	([-+]?{MANTISA}{EXPONENT}?)|({NAN})|({INF})
 
 STR 	[-+a-zA-Z0-9_./:%+\-()]+
 
@@ -102,9 +105,9 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 {STRING}                daslval = yytext; return SCAN_STRING;
 {URL}                   daslval = yytext; return SCAN_URL;
 
-{ID}  	    	    	daslval = yytext; return SCAN_ID;
 {INT}	    	    	daslval = yytext; return SCAN_INT;
 {FLOAT}	    	    	daslval = yytext; return SCAN_FLOAT;
+{ID}  	    	    	daslval = yytext; return SCAN_ID;
 {STR}	    	    	daslval = yytext; return SCAN_STR;
 
 "{" 	    	    	return (int)*yytext;
@@ -159,6 +162,12 @@ yywrap(void)
 
 /*
  * $Log: das.lex,v $
+ * Revision 1.31  2001/01/26 19:48:09  jimg
+ * Merged with release-3-2-3.
+ *
+ * Revision 1.30.4.1  2000/12/13 03:27:15  jimg
+ * *** empty log message ***
+ *
  * Revision 1.30  2000/09/07 16:16:06  jimg
  * Added SCAN_ prefix back onto returned constants. This was also lost during
  * the last merge. Moving comments...

@@ -103,22 +103,8 @@ using std::ostream;
     @memo Holds a DODS Data Attribute Structure.
     @see DDS 
     @see AttrTable */
-class DAS {
+class DAS : public AttrTable {
 private:
-    /** A toplevel_entry is a kind of simple attribute structure that holds
-	only attribute containers. It is only used internally so the usual
-	ctor/dtor code is missing. Copying is done using the default which
-	copies the attr_table pointer (it does not duplicate the referenced
-	AttrTable object). The AttrTables are deleted using the DAS dtor. 
-
-	NB: various old behavior in the DAS parser depends on this. */
-    struct toplevel_entry {
-	string name;
-	AttrTable *attr_table;
-    };
-
-    SLList<toplevel_entry> entries;
-
 protected:
     AttrTable *das_find(string name);
 
@@ -189,11 +175,24 @@ public:
 
     /** Creates an ASCII representation of a DAS on the given output
 	stream. */
-    void print(ostream &os = cout);
+    void print(ostream &os = cout, bool dereference = false);
 };
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.30  2001/01/26 19:48:09  jimg
+ * Merged with release-3-2-3.
+ *
+ * Revision 1.29.4.2  2000/11/30 05:24:46  jimg
+ * Significant changes and improvements to the AttrTable and DAS classes. DAS
+ * now is a child of AttrTable, which makes attributes behave uniformly at
+ * all levels of the DAS object. Alias now work. I've added unit tests for
+ * several methods in AttrTable and some of the functions in parser-util.cc.
+ * In addition, all of the DAS tests now work.
+ *
+ * Revision 1.29.4.1  2000/11/22 21:47:42  jimg
+ * Changed the implementation of DAS; it now inherits from AttrTable
+ *
  * Revision 1.29  2000/09/22 02:17:19  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and
