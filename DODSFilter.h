@@ -8,6 +8,10 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.10  1999/05/25 21:54:50  dan
+// Added an optional second argument to read_ancillary_das to support
+// JGOFS usage.
+//
 // Revision 1.9  1999/05/05 00:48:07  jimg
 // Added the get_cgi_version() member function.
 // Added documentation about get_cgi_version() and the -V option (new).
@@ -225,7 +229,7 @@ public:
 	ancillary data attributes.
 	@return TRUE if an ancillary DAS was found, FALSE otherwise. 
 	@see DAS */
-    bool read_ancillary_das(DAS &das);
+    bool read_ancillary_das(DAS &das, string anc_location = "");
 
     /** Read the ancillary DDS information and merge it into the input
 	DDS object. 
