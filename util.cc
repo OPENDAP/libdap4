@@ -11,6 +11,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.59  2000/07/08 01:25:41  rmorris
+// Changes for "server side of core" (in compressor()) for win32.  As of the
+// time of check-in to cvs the changes are untested, but would only be used
+// on the server side or in the case of the core test suite.
+//
 // Revision 1.58  2000/06/16 18:50:19  jimg
 // Fixes leftover from the last merge plus needed for the merge with version
 // 3.1.7.
@@ -291,7 +296,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.58 2000/06/16 18:50:19 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.59 2000/07/08 01:25:41 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -305,6 +310,7 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.58 2000/06/16 18:50:19 jimg Ex
 #ifdef WIN32
 #include <io.h>
 #include <fcntl.h>
+#include <process.h>
 #endif
 
 #include <sys/types.h>
@@ -640,10 +646,64 @@ deflate_exists()
 FILE *
 compressor(FILE *output, int &childpid)
 {
-//  There is no such thing as a "fork" under win32.  Fortunately, this function
-//  should never be called on win32 platforms because we're using the built-in
-//  compression support in libz.  Ifdef'ng this out allows us to build libdap.
-#ifndef WIN32
+//  There is no such thing as a "fork" under win32.  This makes it so that
+//  we have to juggle handles more aggressively.  This code hasn't been tested
+//  and shown to work as of 07/2000.
+#ifdef WIN32
+	int pid, data[2];
+	int hStdIn,hStdOut;
+
+	if(_pipe(data, 512, O_BINARY | O_NOINHERIT) < 0) {
+	cerr << "Could not create IPC channel for compressor process" 
+	     << endl;
+	return NULL;
+    }
+
+	/*****************************************************************************************/
+	/*  This sets up for the child process, but it has to be reversed for the parent         */
+	/*  after the spawn takes place.                                                         */
+
+	hStdIn  = _dup(_fileno(stdin));  //  Store stdin, stdout so we have sometime to restore to
+	hStdOut = _dup(_fileno(stdout));
+
+	if(_dup2(data[0], _fileno(stdin)) != 0) {  //  Child is to read from read end of pipe
+		cerr << "dup of child stdin failed" << endl;
+		return NULL;
+	}
+	if(_dup2(_fileno(output), _fileno(stdout)) != 0) {  //  Child is to write its's stdout to file
+		cerr << "dup of child stdout failed" << endl;
+		return NULL;
+	}
+	/****************************************************************************************/
+	
+	//  Spawn child process
+	string deflate = "deflate.exe";
+	if((pid = _spawnlp(_P_NOWAIT,deflate.c_str(),deflate.c_str(), "-c", "5", "-s", NULL)) < 0) {
+	cerr << "Could not spawn to create compressor process" << endl;
+	return NULL;
+	}
+
+	//  Restore stdin, stdout for parent and close duplicate copies
+	if(_dup2(hStdIn, _fileno(stdin)) != 0) {
+		cerr << "dup of stdin failed" << endl;
+		return NULL;
+	}
+	if(_dup2(hStdOut, _fileno(stdout)) != 0) {
+		cerr << "dup of stdout failed" << endl;
+		return NULL;
+	}
+	close(hStdIn);
+	close(hStdOut);
+
+	//  Tell the parent that it reads from the opposite end of the
+	//  place where the child writes.
+	close(data[0]);
+	FILE *input = fdopen(data[1], "w");
+	setbuf(input, 0);
+	childpid = pid;
+	return input;
+
+#else
     int pid, data[2];
 
     if (pipe(data) < 0) {
@@ -687,10 +747,6 @@ compressor(FILE *output, int &childpid)
 	_exit(127);		// Only here if an error occurred.
     }
 #endif
-
-	//  Should never get here, but VC++ requires this
-	return ((FILE *)0);
-
 }
 
 // This function returns a pointer to the system time formated for an httpd
