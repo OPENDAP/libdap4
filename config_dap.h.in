@@ -3,9 +3,17 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.2  1994/12/07 21:15:11  jimg
-/* Updated files to work with autoconf 2.1.
-/* */
+/* Revision 1.3  1994/12/12 20:59:52  jimg
+/* Lastest...
+/*
+ * Revision 1.3  1994/12/09  21:43:54  jimg
+ * Added Dan's XDR_INT hack to acconfig.h - modified slightly and duplicated
+ * for floats.
+ *
+ * Revision 1.2  1994/12/07  21:15:09  jimg
+ * Updated files to work with autoconf 2.1.
+ * 
+ */
 
 
 /* Define if using alloca.c.  */
@@ -91,8 +99,10 @@
 
 #if SIZEOF_LONG == 4
 typedef long int32;
+#define XDR_INT32 xdr_long
 #elif SIZEOF_INT == 4
 typedef int int32;
+#define XDR_INT32 xdr_int
 #else
 #error "How do I get a 32 bit integer on this machine?"
 #endif
@@ -105,8 +115,10 @@ typedef unsigned char byte;
 
 #if SIZEOF_DOUBLE == 8
 typedef double float64;
+#define XDR_FLOAT64 xdr_double
 #elif SIZEOF_FLOAT == 8		/* yea, I never heard of this either... */
 typedef float float64;		
+#define XDR_FLOAT64 xdr_float
 #else
 #error "How do I get a 64 bit floating point type on this machine?"
 #endif
