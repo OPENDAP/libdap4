@@ -1,4 +1,3 @@
-
 // -*- C++ -*-
 
 // (c) COPYRIGHT URI/MIT 1994-1996
@@ -14,12 +13,16 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.18  1996/12/03 00:14:58  jimg
-/* Added ostream and bool params to parse_constraint(). The bool parameter is
-/* used to tell the member function that it is running in the server of the
-/* client. The ostream is the sink for error objects (server side) or messages
-/* (client side).
+/* Revision 1.19  1997/03/03 08:17:17  reza
+/* Changed default error object's output stream to cout. This will send it
+/* to the client side (versus the local server's log file, cerr).
 /*
+ * Revision 1.18  1996/12/03 00:14:58  jimg
+ * Added ostream and bool params to parse_constraint(). The bool parameter is
+ * used to tell the member function that it is running in the server of the
+ * client. The ostream is the sink for error objects (server side) or messages
+ * (client side).
+ *
  * Revision 1.17  1996/12/02 23:14:54  jimg
  * Added `filename' field and access functions. This field is for recording the
  * filename associated with the dataset from which the DDS is generated. It does
@@ -257,7 +260,7 @@ public:
 
         Returns true is the constraint expression parses without error, 
 	otherwise false. */
-    bool parse_constraint(const String &constraint, ostream &os = cerr,
+    bool parse_constraint(const String &constraint, ostream &os = cout,
 			  bool server = true);
 
     // Send variable(s) described by the constraint expression CONSTRIANT
