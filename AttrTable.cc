@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.49 2005/02/11 21:10:25 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.50 2005/03/22 21:35:59 jimg Exp $";
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -60,6 +60,9 @@ using std::vector<string>;
 using std::vector;
 #endif
 
+/** Convert an AttrType to it's string representation. 
+    @param at The Attribute Type.
+    @return The type's string representation */
 string 
 AttrType_to_String(const AttrType at)
 {
@@ -282,6 +285,9 @@ AttrTable::append_container(const string &name) throw (Error)
     table already contains an attribute container called
     <tt>name</tt> an exception is thrown.
 
+    @note The value of \e name will override the name of \e at set using the 
+    set_name() method.
+    
     @brief Add a container to the attribute table.
     @return A pointer to the new AttrTable object. 
 */
@@ -1268,6 +1274,9 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.50  2005/03/22 21:35:59  jimg
+// Added to doc/comments.
+//
 // Revision 1.49  2005/02/11 21:10:25  jimg
 // Fix for bug 751: Uint16/32 --> UInt16/32 as per examples in the DAP2
 // specification.
