@@ -31,6 +31,9 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.26  2000/08/16 18:29:02  jimg
+ * Added dot (.) to the set of characters allowed in a variable name
+ *
  * Revision 1.25  2000/06/07 18:07:00  jimg
  * Merged the pc port branch
  *
@@ -131,7 +134,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.25 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.26 2000/08/16 18:29:02 jimg Exp $"};
 
 #include <string.h>
 
@@ -171,7 +174,7 @@ SCAN_FLOAT64 		FLOAT64|Float64|float64
 SCAN_STRING 		STRING|String|string
 SCAN_URL 			URL|Url|url
 
-SCAN_ID				[a-zA-Z_%][-a-zA-Z0-9_/%]*
+SCAN_ID				[a-zA-Z_%.][-a-zA-Z0-9_/%.]*
 SCAN_NAME			[a-zA-Z0-9_/%.][:]?[-a-zA-Z0-9\\_/%.]*
 SCAN_INTEGER		[0-9]+
 NEVER				[^][{}:;=a-zA-Z0-9_%]

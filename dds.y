@@ -22,8 +22,391 @@
    jhrg 8/29/94 
 */
 
+%{
+
+#define YYSTYPE char *
+
+#include "config_dap.h"
+
+static char rcsid[] not_used = {"$Id: dds.y,v 1.31 2000/08/16 18:29:02 jimg Exp $"};
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+#include <iostream>
+#include <stack>
+#if defined(__GNUG__) || defined(WIN32)
+#include <strstream>
+#else
+#include <sstream>
+#endif
+
+#include "DDS.h"
+#include "Array.h"
+#include "Error.h"
+#include "parser.h"
+#include "dds.tab.h"
+#include "util.h"
+
+#ifdef WIN32
+using std::endl;
+using std::ends;
+using std::ostrstream;
+#endif
+
+// These macros are used to access the `arguments' passed to the parser. A
+// pointer to an error object and a pointer to an integer status variable are
+// passed in to the parser within a structure (which itself is passed as a
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+
+#define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
+#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
+#define STATUS(arg) ((parser_arg *)(arg))->_status
+#if DODS_BISON_VER > 124
+#define YYPARSE_PARAM arg
+#else
+#define YYPARSE_PARAM void *arg
+#endif
+
+extern int dds_line_num;	/* defined in dds.lex */
+
+// No global static objects in the dap library! 1/24/2000 jhrg
+static stack<BaseType *> *ctor;
+static BaseType *current;
+static string *id;
+static Part part = nil;		/* Part is defined in BaseType */
+
+static char *NO_DDS_MSG =
+"The descriptor object returned from the dataset was null.\n\
+Check that the URL is correct.";
+
+static char *BAD_DECLARATION =
+"In the dataset descriptor object: Expected a variable declaration\n\
+(e.g., Int32 i;). Make sure that the variable name is not the name\n\
+of a datatype and that the Array: and Maps: sections of a Grid are\n\
+labeled properly.";
+ 
+int ddslex();
+void ddserror(char *s);
+
+void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
+	       Part p);
+void invalid_declaration(parser_arg *arg, string semantic_err_msg, 
+			 char *type, char *name);
+
+%}
+
+%expect 56
+
+%token SCAN_ID
+%token SCAN_NAME
+%token SCAN_INTEGER
+%token SCAN_DATASET
+%token SCAN_INDEPENDENT
+%token SCAN_DEPENDENT
+%token SCAN_ARRAY
+%token SCAN_MAPS
+%token SCAN_LIST
+%token SCAN_SEQUENCE
+%token SCAN_STRUCTURE
+%token SCAN_FUNCTION
+%token SCAN_GRID
+%token SCAN_BYTE
+%token SCAN_INT16
+%token SCAN_UINT16
+%token SCAN_INT32
+%token SCAN_UINT32
+%token SCAN_FLOAT32
+%token SCAN_FLOAT64
+%token SCAN_STRING
+%token SCAN_URL 
+
+%%
+
+datasets:	dataset
+		| datasets dataset
+;
+
+dataset:	SCAN_DATASET '{' declarations '}' name ';'
+                | error
+                {
+		    parse_error((parser_arg *)arg, NO_DDS_MSG);
+		    YYABORT;
+		}
+;
+
+declarations:	/* empty */
+		| declaration
+		| declarations declaration
+;
+
+declaration: 	list non_list_decl
+                { 
+		  string smsg;
+		  if (current->check_semantics(smsg))
+		    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		  else {
+		    invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		    YYABORT;
+		  }
+		}
+                | non_list_decl
+;
+
+/* This non-terminal is here only to keep types like `List List Int32' from
+   parsing. DODS does not allow Lists of Lists. Those types make translation
+   to/from arrays too hard. */
+
+non_list_decl:  base_type var ';' 
+                { 
+		    string smsg;
+		    if (current->check_semantics(smsg))
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    else {
+		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		      YYABORT;
+		    }
+		}
+
+		| structure  '{' declarations '}' 
+		{ 
+		    current = ctor->top(); 
+		    ctor->pop();
+		} 
+                var ';' 
+                { 
+		    string smsg;
+		    if (current->check_semantics(smsg))
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    else {
+		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		      YYABORT;
+		    }
+		}
+
+		| sequence '{' declarations '}' 
+                { 
+		    current = ctor->top(); 
+		    ctor->pop();
+		} 
+                var ';' 
+                { 
+		    string smsg;
+		    if (current->check_semantics(smsg))
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    else {
+		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		      YYABORT;
+		    }
+		}
+
+		| grid '{' SCAN_ARRAY ':' 
+		{ part = array; }
+                declaration SCAN_MAPS ':' 
+		{ part = maps; }
+                declarations '}' 
+		{
+		    current = ctor->top(); 
+		    ctor->pop();
+		}
+                var ';' 
+                {
+		    string smsg;
+		    if (current->check_semantics(smsg)) {
+			part = nil; 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    }
+		    else {
+		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		      YYABORT;
+		    }
+		}
+
+                | error 
+                {
+		    ostrstream msg;
+		    msg << BAD_DECLARATION << ends;
+		    parse_error((parser_arg *)arg, msg.str());
+		    msg.freeze(0);
+		    YYABORT;
+		}
+;
+ 
+
+list:		SCAN_LIST 
+		{ 
+		    if (!ctor) 
+			ctor = new stack<BaseType *>;
+		    ctor->push(NewList()); 
+		}
+;
+
+structure:	SCAN_STRUCTURE
+		{ 
+		    if (!ctor)
+	                ctor = new stack<BaseType *>;
+		    ctor->push(NewStructure()); 
+		}
+;
+
+sequence:	SCAN_SEQUENCE 
+		{ 
+		    if (!ctor)
+			ctor = new stack<BaseType *>;
+		    ctor->push(NewSequence()); 
+		}
+;
+
+grid:		SCAN_GRID 
+		{ 
+		    if (!ctor)
+			ctor = new stack<BaseType *>;
+		    ctor->push(NewGrid()); 
+		}
+;
+
+base_type:	SCAN_BYTE { current = NewByte(); }
+		| SCAN_INT16 { current = NewInt16(); }
+		| SCAN_UINT16 { current = NewUInt16(); }
+		| SCAN_INT32 { current = NewInt32(); }
+		| SCAN_UINT32 { current = NewUInt32(); }
+		| SCAN_FLOAT32 { current = NewFloat32(); }
+		| SCAN_FLOAT64 { current = NewFloat64(); }
+		| SCAN_STRING { current = NewStr(); }
+		| SCAN_URL { current = NewUrl(); }
+;
+
+var:		SCAN_ID { current->set_name($1); }
+ 		| var array_decl
+;
+
+array_decl:	'[' SCAN_INTEGER ']'
+                 { 
+		     if (current->type() == dods_array_c) {
+			 ((Array *)current)->append_dim(atoi($2));
+		     }
+		     else {
+			 Array *a = NewArray(); 
+			 a->add_var(current); 
+			 a->append_dim(atoi($2));
+			 current = a;
+		     }
+		 }
+
+		 | '[' SCAN_ID 
+		 {
+		     id = new string($2);
+		 } 
+                 '=' SCAN_INTEGER 
+                 { 
+		     if (current->type() == dods_array_c) {
+			 ((Array *)current)->append_dim(atoi($5), *id);
+		     }
+		     else {
+			 Array *a = NewArray(); 
+			 a->add_var(current); 
+			 a->append_dim(atoi($5), *id);
+			 current = a;
+		     }
+
+		     delete id;
+		 }
+		 ']'
+
+		 | error
+                 {
+		     ostrstream msg;
+		     msg << "In the dataset descriptor object:" << endl
+			 << "Expected an array subscript." << endl << ends;
+		     parse_error((parser_arg *)arg, msg.str());
+		     msg.rdbuf()->freeze(0);
+		     YYABORT;
+		 }
+;
+
+name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
+		| SCAN_ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
+                | error 
+                {
+		  ostrstream msg;
+		  msg << "Error parsing the dataset name." << endl
+		      << "The name may be missing or may contain an illegal character." << endl << ends;
+		     parse_error((parser_arg *)arg, msg.str());
+		     msg.rdbuf()->freeze(0);
+		     YYABORT;
+		}
+;
+
+%%
+
+/* 
+   This function must be defined. However, use the error reporting code in
+   parser-utils.cc.
+*/
+
+void 
+ddserror(char *)
+{
+}
+
+/*
+  Invalid declaration message.
+*/
+
+void
+invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type, 
+		    char *name)
+{
+  ostrstream msg;
+  msg << "In the dataset descriptor object: `" << type << " " << name 
+      << "'" << endl << "is not a valid declaration." << endl 
+      << semantic_err_msg << ends;
+  parse_error((parser_arg *)arg, msg.str());
+  msg.rdbuf()->freeze(0);
+}
+
+/*
+  Add the variable pointed to by CURRENT to either the topmost ctor object on
+  the stack CTOR or to the dataset variable table TABLE if CTOR is empty.  If
+  it exists, the current ctor object is popped off the stack and assigned to
+  CURRENT.
+
+  NB: the ctor stack is popped for lists and arrays because they are ctors
+  which contain only a single variable. For other ctor types, several
+  variables may be members and the parse rule (see `declaration' above)
+  determines when to pop the stack. 
+
+  Returns: void 
+*/
+
+void	
+add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
+{ 
+    if (!*ctor)
+	*ctor = new stack<BaseType *>;
+
+    if (!(*ctor)->empty()) { /* must be parsing a ctor type */
+	(*ctor)->top()->add_var(*current, part);
+
+ 	const Type &ctor_type = (*ctor)->top()->type();
+
+	if (ctor_type == dods_list_c || ctor_type == dods_array_c) {
+	    *current = (*ctor)->top();
+	    (*ctor)->pop();
+	}
+	else
+	    return;
+    }
+    else
+	table.add_var(*current);
+}
+
 /* 
  * $Log: dds.y,v $
+ * Revision 1.31  2000/08/16 18:29:02  jimg
+ * Added dot (.) to the set of characters allowed in a variable name
+ *
  * Revision 1.30  2000/07/09 21:43:29  rmorris
  * Mods to increase portability, minimize ifdef's for win32
  *
@@ -156,395 +539,3 @@
  * DDS Class test driver and parser and scanner.
  */
 
-%{
-
-#define YYSTYPE char *
-
-#include "config_dap.h"
-
-static char rcsid[] not_used = {"$Id: dds.y,v 1.30 2000/07/09 21:43:29 rmorris Exp $"};
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-
-#include <iostream>
-#include <stack>
-#if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
-#else
-#include <sstream>
-#endif
-
-#include "DDS.h"
-#include "Array.h"
-#include "Error.h"
-#include "parser.h"
-#include "dds.tab.h"
-#include "util.h"
-
-#ifdef WIN32
-using std::endl;
-using std::ends;
-using std::ostrstream;
-#endif
-
-// These macros are used to access the `arguments' passed to the parser. A
-// pointer to an error object and a pointer to an integer status variable are
-// passed in to the parser within a strucutre (which itself is passed as a
-// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
-
-#define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
-#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
-#define STATUS(arg) ((parser_arg *)(arg))->_status
-#if DODS_BISON_VER > 124
-#define YYPARSE_PARAM arg
-#else
-#define YYPARSE_PARAM void *arg
-#endif
-
-extern int dds_line_num;	/* defined in dds.lex */
-
-// No global static objects in the dap library! 1/24/2000 jhrg
-static stack<BaseType *> *ctor;
-static BaseType *current;
-static string *id;
-static Part part = nil;		/* Part is defined in BaseType */
-
-static char *NO_DDS_MSG =
-"The descriptor object returned from the dataset was null.\n\
-Check that the URL is correct.";
-
-int ddslex();
-void ddserror(char *s);
-
-void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
-	       Part p);
-
-%}
-
-%expect 56
-
-%token SCAN_ID
-%token SCAN_NAME
-%token SCAN_INTEGER
-%token SCAN_DATASET
-%token SCAN_INDEPENDENT
-%token SCAN_DEPENDENT
-%token SCAN_ARRAY
-%token SCAN_MAPS
-%token SCAN_LIST
-%token SCAN_SEQUENCE
-%token SCAN_STRUCTURE
-%token SCAN_FUNCTION
-%token SCAN_GRID
-%token SCAN_BYTE
-%token SCAN_INT16
-%token SCAN_UINT16
-%token SCAN_INT32
-%token SCAN_UINT32
-%token SCAN_FLOAT32
-%token SCAN_FLOAT64
-%token SCAN_STRING
-%token SCAN_URL 
-
-%%
-
-datasets:	dataset
-		| datasets dataset
-;
-
-dataset:	SCAN_DATASET '{' declarations '}' name ';'
-                | error
-                {
-		    parse_error((parser_arg *)arg, NO_DDS_MSG);
-		    YYABORT;
-		}
-;
-
-declarations:	/* empty */
-		| declaration
-		| declarations declaration
-;
-
-declaration: 	list non_list_decl
-                { 
-		    string smsg;
-		    if (current->check_semantics(smsg))
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << $1 << " " << $2 
-			    << "' is not a valid declaration" << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-                | non_list_decl
-;
-
-/* This non-terminal is here only to keep types like `List List Int32' from
-   parsing. DODS does not allow Lists of Lists. Those types make translation
-   to/from arrays too hard. */
-
-non_list_decl:  base_type var ';' 
-                { 
-		    string smsg;
-		    if (current->check_semantics(smsg))
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << $1 << " " << $2 
-			    << "' is not a valid declaration" << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-
-		| structure  '{' declarations '}' 
-		{ 
-		    current = ctor->top(); 
-		    ctor->pop();
-		} 
-                var ';' 
-                { 
-		    string smsg;
-		    if (current->check_semantics(smsg))
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << $1 << "'" << endl
-			    << "is not a valid declaration." << endl
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-
-		| sequence '{' declarations '}' 
-                { 
-		    current = ctor->top(); 
-		    ctor->pop();
-		} 
-                var ';' 
-                { 
-		    string smsg;
-		    if (current->check_semantics(smsg))
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << $1 << "'" << endl
-			    << "is not a valid declaration." << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-
-		| grid '{' SCAN_ARRAY ':' 
-		{ part = array; }
-                declaration SCAN_MAPS ':' 
-		{ part = maps; }
-                declarations '}' 
-		{
-		    current = ctor->top(); 
-		    ctor->pop();
-		}
-                var ';' 
-                {
-		    string smsg;
-		    if (current->check_semantics(smsg)) {
-			part = nil; 
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    }
-		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << $1 << "'" << endl
-			    << "is not a valid declaration." << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-
-                | error
-                {
-		    ostrstream msg;
-		    msg << "In the dataset descriptor object:" << endl
-			<< "Expected a varaible declaration" << endl 
-			<< "(e.g., Int32 i;). Make sure that the" << endl
-			<< "variable name is not a reserved word" << endl
-			<< "(Byte, Int32, Float64, String, Url" <<endl
-			<< "Structure, Sequence or Grid - all" << endl
-			<< "forms, byte, Byte and BYTE, are the same)" << endl
-			<< ends;
-		    parse_error((parser_arg *)arg, msg.str());
-		    msg.freeze(0);
-		    YYABORT;
-		}
-;
- 
-
-list:		SCAN_LIST 
-		{ 
-		    if (!ctor) 
-			ctor = new stack<BaseType *>;
-		    ctor->push(NewList()); 
-		}
-;
-
-structure:	SCAN_STRUCTURE
-		{ 
-		    if (!ctor)
-	                ctor = new stack<BaseType *>;
-		    ctor->push(NewStructure()); 
-		}
-;
-
-sequence:	SCAN_SEQUENCE 
-		{ 
-		    if (!ctor)
-			ctor = new stack<BaseType *>;
-		    ctor->push(NewSequence()); 
-		}
-;
-
-grid:		SCAN_GRID 
-		{ 
-		    if (!ctor)
-			ctor = new stack<BaseType *>;
-		    ctor->push(NewGrid()); 
-		}
-;
-
-base_type:	SCAN_BYTE { current = NewByte(); }
-		| SCAN_INT16 { current = NewInt16(); }
-		| SCAN_UINT16 { current = NewUInt16(); }
-		| SCAN_INT32 { current = NewInt32(); }
-		| SCAN_UINT32 { current = NewUInt32(); }
-		| SCAN_FLOAT32 { current = NewFloat32(); }
-		| SCAN_FLOAT64 { current = NewFloat64(); }
-		| SCAN_STRING { current = NewStr(); }
-		| SCAN_URL { current = NewUrl(); }
-;
-
-var:		SCAN_ID { current->set_name($1); }
- 		| var array_decl
-;
-
-array_decl:	'[' SCAN_INTEGER ']'
-                 { 
-		     if (current->type() == dods_array_c) {
-			 ((Array *)current)->append_dim(atoi($2));
-		     }
-		     else {
-			 Array *a = NewArray(); 
-			 a->add_var(current); 
-			 a->append_dim(atoi($2));
-			 current = a;
-		     }
-		 }
-
-		 | '[' SCAN_ID 
-		 {
-		     id = new string($2);
-		 } 
-                 '=' SCAN_INTEGER 
-                 { 
-		     if (current->type() == dods_array_c) {
-			 ((Array *)current)->append_dim(atoi($5), *id);
-		     }
-		     else {
-			 Array *a = NewArray(); 
-			 a->add_var(current); 
-			 a->append_dim(atoi($5), *id);
-			 current = a;
-		     }
-
-		     delete id;
-		 }
-		 ']'
-
-		 | error
-                 {
-		     ostrstream msg;
-		     msg << "In the dataset descriptor object:" << endl
-			 << "Expected an array subscript." << endl << ends;
-		     parse_error((parser_arg *)arg, msg.str());
-		     msg.rdbuf()->freeze(0);
-		     YYABORT;
-		 }
-;
-
-name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
-		| SCAN_ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
-                | error 
-                {
-			ostrstream msg;
-		     msg << "Error parsing the dataset name." << endl
-			 << "The name may be missing or may contain an illegal character." << endl << ends;
-		     parse_error((parser_arg *)arg, msg.str());
-		     msg.rdbuf()->freeze(0);
-		     YYABORT;
-		}
-;
-
-%%
-
-/* 
-   This function must be defined. However, use the error reporting code in
-   parser-utils.cc.
-*/
-
-void 
-ddserror(char *)
-{
-}
-
-/*
-  Add the variable pointed to by CURRENT to either the topmost ctor object on
-  the stack CTOR or to the dataset variable table TABLE if CTOR is empty.  If
-  it exists, the current ctor object is poped off the stack and assigned to
-  CURRENT.
-
-  NB: the ctor stack is poped for lists and arrays because they are ctors
-  which contain only a single variable. For other ctor types, several
-  varaiables may be members and the parse rule (see `declaration' above)
-  determines when to pop the stack. 
-
-  Returns: void 
-*/
-
-void	
-add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
-{ 
-    if (!*ctor)
-	*ctor = new stack<BaseType *>;
-
-    if (!(*ctor)->empty()) { /* must be parsing a ctor type */
-	(*ctor)->top()->add_var(*current, part);
-
- 	const Type &ctor_type = (*ctor)->top()->type();
-
-	if (ctor_type == dods_list_c || ctor_type == dods_array_c) {
-	    *current = (*ctor)->top();
-	    (*ctor)->pop();
-	}
-	else
-	    return;
-    }
-    else
-	table.add_var(*current);
-}

@@ -34,14 +34,14 @@
 #define	SCAN_STRING	277
 #define	SCAN_URL	278
 
-#line 159 "dds.y"
+#line 25 "dds.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.21 2000/08/02 22:46:50 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.22 2000/08/16 18:29:02 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +70,7 @@ using std::ostrstream;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
-// passed in to the parser within a strucutre (which itself is passed as a
+// passed in to the parser within a structure (which itself is passed as a
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
@@ -94,11 +94,19 @@ static char *NO_DDS_MSG =
 "The descriptor object returned from the dataset was null.\n\
 Check that the URL is correct.";
 
+static char *BAD_DECLARATION =
+"In the dataset descriptor object: Expected a variable declaration\n\
+(e.g., Int32 i;). Make sure that the variable name is not the name\n\
+of a datatype and that the Array: and Maps: sections of a Grid are\n\
+labeled properly.";
+ 
 int ddslex();
 void ddserror(char *s);
 
 void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
 	       Part p);
+void invalid_declaration(parser_arg *arg, string semantic_err_msg, 
+			 char *type, char *name);
 
 #ifndef YYSTYPE
 #define YYSTYPE int
@@ -178,11 +186,11 @@ static const short yyrhs[] = {    33,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   253,   254,   257,   258,   265,   266,   267,   270,   286,   293,
-   310,   315,   332,   337,   354,   356,   358,   363,   382,   400,
-   408,   416,   424,   432,   433,   434,   435,   436,   437,   438,
-   439,   440,   443,   444,   447,   460,   464,   480,   480,   491,
-   492,   493
+   127,   128,   131,   132,   139,   140,   141,   144,   154,   161,
+   172,   177,   188,   193,   204,   206,   208,   213,   226,   237,
+   245,   253,   261,   269,   270,   271,   272,   273,   274,   275,
+   276,   277,   280,   281,   284,   297,   301,   317,   317,   328,
+   329,   330
 };
 #endif
 
@@ -840,115 +848,91 @@ yyreduce:
   switch (yyn) {
 
 case 4:
-#line 259 "dds.y"
+#line 133 "dds.y"
 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG);
 		    YYABORT;
 		;
     break;}
 case 8:
-#line 271 "dds.y"
+#line 145 "dds.y"
 { 
-		    string smsg;
-		    if (current->check_semantics(smsg))
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << yyvsp[-1] << " " << yyvsp[0] 
-			    << "' is not a valid declaration" << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
+		  string smsg;
+		  if (current->check_semantics(smsg))
+		    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		  else {
+		    invalid_declaration((parser_arg *)arg, smsg, yyvsp[-1], yyvsp[0]);
+		    YYABORT;
+		  }
 		;
     break;}
 case 10:
-#line 294 "dds.y"
+#line 162 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << yyvsp[-2] << " " << yyvsp[-1] 
-			    << "' is not a valid declaration" << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
+		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-2], yyvsp[-1]);
+		      YYABORT;
 		    }
 		;
     break;}
 case 11:
-#line 311 "dds.y"
+#line 173 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 12:
-#line 316 "dds.y"
+#line 178 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << yyvsp[-6] << "'" << endl
-			    << "is not a valid declaration." << endl
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
+		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-6], yyvsp[-5]);
+		      YYABORT;
 		    }
 		;
     break;}
 case 13:
-#line 333 "dds.y"
+#line 189 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 14:
-#line 338 "dds.y"
+#line 194 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << yyvsp[-6] << "'" << endl
-			    << "is not a valid declaration." << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
+		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-6], yyvsp[-5]);
+		      YYABORT;
 		    }
 		;
     break;}
 case 15:
-#line 355 "dds.y"
+#line 205 "dds.y"
 { part = array; ;
     break;}
 case 16:
-#line 357 "dds.y"
+#line 207 "dds.y"
 { part = maps; ;
     break;}
 case 17:
-#line 359 "dds.y"
+#line 209 "dds.y"
 {
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 18:
-#line 364 "dds.y"
+#line 214 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -956,36 +940,23 @@ case 18:
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << yyvsp[-13] << "'" << endl
-			    << "is not a valid declaration." << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
+		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-13], yyvsp[-12]);
+		      YYABORT;
 		    }
 		;
     break;}
 case 19:
-#line 383 "dds.y"
+#line 227 "dds.y"
 {
 		    ostrstream msg;
-		    msg << "In the dataset descriptor object:" << endl
-			<< "Expected a varaible declaration" << endl 
-			<< "(e.g., Int32 i;). Make sure that the" << endl
-			<< "variable name is not a reserved word" << endl
-			<< "(Byte, Int32, Float64, String, Url" <<endl
-			<< "Structure, Sequence or Grid - all" << endl
-			<< "forms, byte, Byte and BYTE, are the same)" << endl
-			<< ends;
+		    msg << BAD_DECLARATION << ends;
 		    parse_error((parser_arg *)arg, msg.str());
 		    msg.freeze(0);
 		    YYABORT;
 		;
     break;}
 case 20:
-#line 401 "dds.y"
+#line 238 "dds.y"
 { 
 		    if (!ctor) 
 			ctor = new stack<BaseType *>;
@@ -993,7 +964,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 409 "dds.y"
+#line 246 "dds.y"
 { 
 		    if (!ctor)
 	                ctor = new stack<BaseType *>;
@@ -1001,7 +972,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 417 "dds.y"
+#line 254 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1009,7 +980,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 425 "dds.y"
+#line 262 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1017,47 +988,47 @@ case 23:
 		;
     break;}
 case 24:
-#line 432 "dds.y"
+#line 269 "dds.y"
 { current = NewByte(); ;
     break;}
 case 25:
-#line 433 "dds.y"
+#line 270 "dds.y"
 { current = NewInt16(); ;
     break;}
 case 26:
-#line 434 "dds.y"
+#line 271 "dds.y"
 { current = NewUInt16(); ;
     break;}
 case 27:
-#line 435 "dds.y"
+#line 272 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 436 "dds.y"
+#line 273 "dds.y"
 { current = NewUInt32(); ;
     break;}
 case 29:
-#line 437 "dds.y"
+#line 274 "dds.y"
 { current = NewFloat32(); ;
     break;}
 case 30:
-#line 438 "dds.y"
+#line 275 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 31:
-#line 439 "dds.y"
+#line 276 "dds.y"
 { current = NewStr(); ;
     break;}
 case 32:
-#line 440 "dds.y"
+#line 277 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 33:
-#line 443 "dds.y"
+#line 280 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 35:
-#line 448 "dds.y"
+#line 285 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -1071,13 +1042,13 @@ case 35:
 		 ;
     break;}
 case 36:
-#line 461 "dds.y"
+#line 298 "dds.y"
 {
 		     id = new string(yyvsp[0]);
 		 ;
     break;}
 case 37:
-#line 465 "dds.y"
+#line 302 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), *id);
@@ -1093,7 +1064,7 @@ case 37:
 		 ;
     break;}
 case 39:
-#line 481 "dds.y"
+#line 318 "dds.y"
 {
 		     ostrstream msg;
 		     msg << "In the dataset descriptor object:" << endl
@@ -1104,19 +1075,19 @@ case 39:
 		 ;
     break;}
 case 40:
-#line 491 "dds.y"
+#line 328 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 41:
-#line 492 "dds.y"
+#line 329 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 42:
-#line 494 "dds.y"
+#line 331 "dds.y"
 {
-			ostrstream msg;
-		     msg << "Error parsing the dataset name." << endl
-			 << "The name may be missing or may contain an illegal character." << endl << ends;
+		  ostrstream msg;
+		  msg << "Error parsing the dataset name." << endl
+		      << "The name may be missing or may contain an illegal character." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
 		     msg.rdbuf()->freeze(0);
 		     YYABORT;
@@ -1344,7 +1315,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 504 "dds.y"
+#line 341 "dds.y"
 
 
 /* 
@@ -1358,14 +1329,30 @@ ddserror(char *)
 }
 
 /*
+  Invalid declaration message.
+*/
+
+void
+invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type, 
+		    char *name)
+{
+  ostrstream msg;
+  msg << "In the dataset descriptor object: `" << type << " " << name 
+      << "'" << endl << "is not a valid declaration." << endl 
+      << semantic_err_msg << ends;
+  parse_error((parser_arg *)arg, msg.str());
+  msg.rdbuf()->freeze(0);
+}
+
+/*
   Add the variable pointed to by CURRENT to either the topmost ctor object on
   the stack CTOR or to the dataset variable table TABLE if CTOR is empty.  If
-  it exists, the current ctor object is poped off the stack and assigned to
+  it exists, the current ctor object is popped off the stack and assigned to
   CURRENT.
 
-  NB: the ctor stack is poped for lists and arrays because they are ctors
+  NB: the ctor stack is popped for lists and arrays because they are ctors
   which contain only a single variable. For other ctor types, several
-  varaiables may be members and the parse rule (see `declaration' above)
+  variables may be members and the parse rule (see `declaration' above)
   determines when to pop the stack. 
 
   Returns: void 
@@ -1392,3 +1379,141 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
     else
 	table.add_var(*current);
 }
+
+/* 
+ * $Log: dds.tab.c,v $
+ * Revision 1.22  2000/08/16 18:29:02  jimg
+ * Added dot (.) to the set of characters allowed in a variable name
+ *
+ * Revision 1.30  2000/07/09 21:43:29  rmorris
+ * Mods to increase portability, minimize ifdef's for win32
+ *
+ * Revision 1.29  2000/06/07 18:07:00  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.28.6.1  2000/06/02 18:36:38  rmorris
+ * Mod's for port to Win32.
+ *
+ * Revision 1.28  2000/01/27 06:30:00  jimg
+ * Resolved conflicts from merge with release-3-1-4
+ *
+ * Revision 1.27.2.1  2000/01/24 22:25:10  jimg
+ * Removed static global objects
+ *
+ * Revision 1.27  1999/07/22 17:07:47  jimg
+ * Fixed a bug found by Peter Fox. Array index names were not handled properly
+ * after the String to string conversion.
+ *
+ * Revision 1.26  1999/05/04 19:47:23  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
+ * Revision 1.25  1999/04/29 02:29:36  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.24  1999/03/24 23:32:33  jimg
+ * Added support for the new Int16, UInt16 and Float32 types.
+ *
+ * Revision 1.23  1998/08/13 22:12:44  jimg
+ * Fixed error messages.
+ *
+ * Revision 1.22.6.2  1999/02/05 09:32:36  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+ * math code. 
+ *
+ * Revision 1.22.6.1  1999/02/02 21:57:06  jimg
+ * String to string version
+ *
+ * Revision 1.22  1997/11/20 20:14:10  jimg
+ * Added to the name rule so that it recognizes both the ID and NAME lexeme
+ * as valid when parsing the dataset name. NAME (see dds.lex) is just like ID
+ * except that it includes `.'. Thus datasets with names like sst.reynolds.nc
+ * now parse correctly.
+ *
+ * Revision 1.21  1997/02/28 01:31:22  jimg
+ * Added error messages.
+ *
+ * Revision 1.20  1996/10/28 23:44:16  jimg
+ * Added unsigned int to set of possible datatypes.
+ *
+ * Revision 1.19  1996/10/16 22:35:31  jimg
+ * Fixed bad operator in DODS_BISON_VER preprocessor statement.
+ *
+ * Revision 1.18  1996/10/08 17:04:42  jimg
+ * Added a fix for Bison 1.25 so that PARSE_PARAM will still work
+ *
+ * Revision 1.17  1996/08/13 20:54:45  jimg
+ * Generated files.
+ *
+ * Revision 1.16  1996/05/31 23:27:17  jimg
+ * Removed {YYACCEPT;} from rule 2 (dataset: DATASET ...).
+ *
+ * Revision 1.15  1996/05/29 21:59:51  jimg
+ * *** empty log message ***
+ *
+ * Revision 1.14  1996/05/14 15:38:54  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
+ * Revision 1.13  1996/04/05 21:59:38  jimg
+ * Misc Changes for release 2.0.1 of the core software - for developers.
+ *
+ * Revision 1.12  1996/04/05 00:06:45  jimg
+ * Merged changes from version 1.1.1.
+ * Eliminated the static global CTOR.
+ *
+ * Revision 1.11  1995/12/06 19:45:08  jimg
+ * Changed grammar so that List List ... <type> is no longer possible. This
+ * fixed some hard problems in the serailize/deserailize mfuncs.
+ *
+ * Revision 1.10  1995/10/23  22:59:41  jimg
+ * Modified some rules so that they use the functions defined in
+ * parser_util.cc instead of local definitions.
+ *
+ * Revision 1.9  1995/08/23  00:27:47  jimg
+ * Uses new member functions.
+ * Added copyright notice.
+ * Switched from String to enum type representation.
+ *
+ * Revision 1.8.2.1  1996/04/04 23:24:44  jimg
+ * Removed static global CTOR from the dds parser. The stack for constructor
+ * variable is now managed via a pointer. The stack is allocated when first
+ * used by add_entry().
+ *
+ * Revision 1.8  1995/01/19  20:13:04  jimg
+ * The parser now uses the new utility functions to create new instances
+ * of the variable objects (Byte, ..., Grid).
+ * Fixed the number of shift/reduce conflicts expected (now at 60).
+ *
+ * Revision 1.7  1994/12/22  04:30:57  reza
+ * Made save_str static to avoid linking conflict.
+ *
+ * Revision 1.6  1994/12/16  22:24:23  jimg
+ * Switched from a CtorType stack to BaseType stack.
+ * Fixed an error in save_str() (see das.y).
+ * Fixed a bug in the use of append_dim - it was called with $4 when it
+ * should have been called with $5.
+ *
+ * Revision 1.5  1994/12/09  21:42:41  jimg
+ * Added to array: so that an array decl can contain: an int or an id=int.
+ * This is for the named dimensions (see Array.{cc,h}).
+ *
+ * Revision 1.4  1994/11/10  19:50:54  jimg
+ * In the past it was possible to have a null file correctly parse as a
+ * DAS or DDS. However, now that is not possible. It is possible to have
+ * a file that contains no variables parse, but the keyword `Attribute'
+ * or `Dataset' *must* be present. This was changed so that errors from
+ * the CGIs could be detected (since they return nothing in the case of
+ * a error).
+ *
+ * Revision 1.3  1994/09/23  14:56:19  jimg
+ * Added code to build in-memory DDS during parse.
+ *
+ * Revision 1.2  1994/09/15  21:11:56  jimg
+ * Modified dds.y so that it can parse all the DDS types.
+ * Still no error checking beyond what bison gives you.
+ *
+ * Revision 1.1  1994/09/08  21:10:45  jimg
+ * DDS Class test driver and parser and scanner.
+ */
+
