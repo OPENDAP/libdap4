@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
+// Revision 1.14  1996/08/13 20:50:47  jimg
+// Changed definition of the read member function.
+//
 // Revision 1.13  1996/05/31 23:30:28  jimg
 // Updated copyright notice.
 //
@@ -94,7 +97,7 @@ TestSequence::~TestSequence()
 }
 
 bool 
-TestSequence::read(const String &dataset, int &error)
+TestSequence::read(const String &, int &)
 {
     if (read_p())
 	return true;

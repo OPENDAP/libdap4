@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.17  1996/08/13 20:50:39  jimg
+// Changed definition of the read member function.
+//
 // Revision 1.16  1996/05/31 23:30:08  jimg
 // Updated copyright notice.
 //
@@ -122,7 +125,7 @@ TestArray::read(const String &dataset, int &error)
     if (read_p())
 	return true;
 
-    int i;
+    unsigned i;
 
     // run read() on the contained variable to get, via the read() mfuncs
     // defined in the other Test classes, a value in the *contained* object.
@@ -191,7 +194,13 @@ TestArray::read(const String &dataset, int &error)
 	}
 
 	break;
-
+	
+      case dods_array_c:
+      case dods_null_c:
+      default:
+	assert(false);
+	cerr << "__FILE__:__LINE__ Bad DODS data type" << endl;
+	break;
     }
 
     set_read_p(true);

@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
+// Revision 1.14  1996/08/13 20:50:50  jimg
+// Changed definition of the read member function.
+//
 // Revision 1.13  1996/05/31 23:30:37  jimg
 // Updated copyright notice.
 //
@@ -89,7 +92,7 @@ TestUrl::ptr_duplicate()
 }
 
 bool
-TestUrl::read(const String &dataset, int &error)
+TestUrl::read(const String &, int &)
 {
     if (read_p())
 	return true;

@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
+// Revision 1.15  1996/08/13 20:50:49  jimg
+// Changed definition of the read member function.
+//
 // Revision 1.14  1996/05/31 23:30:31  jimg
 // Updated copyright notice.
 //
@@ -96,7 +99,7 @@ TestStr::ptr_duplicate()
 }
 
 bool
-TestStr::read(const String &dataset, int &error)
+TestStr::read(const String &, int &)
 {
     if (read_p())
 	return true;

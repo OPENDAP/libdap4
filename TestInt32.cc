@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestInt32.cc,v $
+// Revision 1.13  1996/08/13 20:50:43  jimg
+// Changed definition of the read member function.
+//
 // Revision 1.12  1996/05/31 23:30:22  jimg
 // Updated copyright notice.
 //
@@ -84,7 +87,7 @@ TestInt32::ptr_duplicate()
 }
 
 bool
-TestInt32::read(const String &dataset, int &error)
+TestInt32::read(const String &, int &)
 {
     if (read_p())
 	return true;
