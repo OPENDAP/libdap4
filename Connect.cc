@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.45  1997/02/04 22:44:31  jimg
+// Fixed bugs in URL() and CE() where the _URL, _proj and _sel members were
+// misused.
+//
 // Revision 1.44  1997/01/28 17:15:19  jimg
 // Wrapped the generic header_handler() in DBG() so that it is only used
 // while debugging.
@@ -258,7 +262,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.44 1997/01/28 17:15:19 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.45 1997/02/04 22:44:31 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1410,9 +1414,9 @@ Connect::URL(bool ce = true)
     }
 
     if (ce)
-	return _URL;
+	return _URL + "?" + _proj + _sel;
     else 
-	return _URL.before("?");
+	return _URL;
 }
 
 String 
@@ -1424,7 +1428,7 @@ Connect::CE()
 	return "";
     }
     
-    return _URL.after("?");
+    return _proj + _sel;
 }
 
 DAS &
