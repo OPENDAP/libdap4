@@ -12,9 +12,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.19  1997/02/10 02:39:26  jimg
-/* Changed return type of dods_root() from String to char *.
+/* Revision 1.20  1997/02/19 02:13:43  jimg
+/* Fixed decompressor and compressor parameter lists.
 /*
+ * Revision 1.19  1997/02/10 02:39:26  jimg
+ * Changed return type of dods_root() from String to char *.
+ *
  * Revision 1.18  1996/12/02 23:19:05  jimg
  * Changed int_ops prototypes so that they use the dods_{uint,int}32 datatypes.
  *
@@ -106,8 +109,8 @@ XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
 FILE *text_to_temp(String text);
 char *systime();
-FILE *compressor(FILE *output);
-FILE *decompressor(FILE *input);
+FILE *compressor(FILE *output, int &childpid);
+FILE *decompressor(FILE *input, int &childpid);
 const char *dods_root();
 
 bool func_member(int argc, BaseType *argv[], DDS &dds);
