@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.127 2003/04/22 19:40:27 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.128 2003/05/01 23:40:21 jimg Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
@@ -97,9 +97,9 @@ Connect::process_data(DataDDS &data, Response *rs)
 		  (*i)->deserialize(xdr_stream, &data);
 	      }
 	  }
-	  catch(...) {
+	  catch(Error &e) {
 	      delete_xdrstdio(xdr_stream);
-	      throw;
+	      throw e;
 	  }
 
 	  delete_xdrstdio(xdr_stream);
@@ -263,9 +263,9 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
     try {
 	rs = d_http->fetch_url(das_url);
     }
-    catch (...) {
+    catch (Error &e) {
 	delete rs;
-	throw;
+	throw e;
     }
 
     d_version = rs->get_version(); // Improve this design!
@@ -292,9 +292,9 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	try {
 	    das.parse(rs->get_stream()); // read and parse the das from a file 
 	}
-	catch (...) {
+	catch (Error &e) {
 	    delete rs;
-	    throw;
+	    throw e;
 	}
 	    
 	break;
@@ -330,9 +330,9 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
     try {
 	rs = d_http->fetch_url(dds_url);
     }
-    catch (...) {
+    catch (Error &e) {
 	delete rs;
-	throw;
+	throw e;
     }
 
     d_version = rs->get_version(); // Improve this design!
@@ -359,9 +359,9 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	try {
 	    dds.parse(rs->get_stream()); // read and parse the dds from a file 
 	}
-	catch (...) {
+	catch (Error &e) {
 	    delete rs;
-	    throw;
+	    throw e;
 	}
 	break;
     }
@@ -403,9 +403,9 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
 	process_data(data, rs);
 	delete rs;
     }
-    catch (...) {
+    catch (Error &e) {
 	delete rs;
-	throw;
+	throw e;
     }
 }
 
@@ -432,9 +432,9 @@ Connect::read_data(DataDDS &data, FILE *data_source) throw(Error, InternalErr)
 
 	delete rs;
     }
-    catch (...) {
+    catch (Error &e) {
 	delete rs;
-	throw;
+	throw e;
     }
 }
 
@@ -603,6 +603,12 @@ Connect::error()
 //@}
 
 // $Log: Connect.cc,v $
+// Revision 1.128  2003/05/01 23:40:21  jimg
+// Changed catch(...) statements to ones which explicitly declare the types of
+// exceptions (all Error, I think). If these catch clauses re-throw the
+// exceptions ad the method declares its exceptions, the (...) causes an
+// immediate call to abort().
+//
 // Revision 1.127  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //
