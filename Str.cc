@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.55 2005/02/10 23:42:55 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.56 2005/02/14 22:19:57 jimg Exp $"};
 
 #include <stdlib.h>
 
@@ -151,19 +151,15 @@ bug in DODS or a problem with the network connection.");
     return false;
 }
 
-// Copy information in the object's internal buffers into the memory pointed
-// to by VAL. If *VAL is null, then allocate memory for the value (a string
-// in this case).
-//
-// NB: return the size of the thing val points to (sizeof val), not the
-// length of the string. Thus if there is an array of of strings (i.e., (char
-// *)s), then the return value of this mfunc can be used to advance to the
-// next char * in that array. This weirdness is needed because C programs
-// which will need to interface to libraries built using this toolkit will
-// not know about C++ strings and will need to use the C representation for
-// strings, but here in the toolkit I use the string class to cut down on
-// memory management problems.
-
+/** Read the object's value and put a copy in the C++ string object
+    referenced by \e **val. If \e *val is null, this method will allocate
+    a string object using new and store the result there. If \e *val 
+    is not null, it will assume that \e *val references a string object
+    and put the value there.
+    
+    @param val A pointer to null or to a string object.
+    @return The sizeof(string*)
+    @exception InternalErr Thrown if \e val is null. */
 unsigned int
 Str::buf2val(void **val)
 {
@@ -171,20 +167,32 @@ Str::buf2val(void **val)
     // The same comment justifying throwing an Error in val2buf applies here.
     if(!val)
 	throw InternalErr(__FILE__, __LINE__, 
-			  "The incoming pointer does not contain any data.");
-
+			  "No place to store a reference to the data.");
+#if 0
+    // This statement break the case where the caller allocates a string
+    // object and passes the address of a pointer to that object for val.
     if (*val)
 	delete static_cast<string *>(*val);
-
-    *val = new string(_buf);
-
+#endif
+    // If *val is null, then the caller has not allocated storage for the 
+    // value; we must. If there is storage there, assume it is a string and
+    // assign _buf's value to that storage.
+    if (!*val)
+        *val = new string(_buf);
+    else
+        *static_cast<string*>(*val) = _buf;
+        
     return sizeof(string*);
 }
 
-// Copy data in VAL to _BUF.
-//
-// Returns the number of bytes needed for _BUF.
-
+/** Store the value referenced by \e val in this object. Even though the
+    type of \e val is \c void*, this method assumes the type is \c string*.
+    Note that the value is copied so the caller if free to throw away/reuse
+    the actual parameter once this call has returned.
+    
+    @param val A pointer to a C++ string object.
+    @exception IntenalErr if \e val is null.
+    @return The width of the pointer. */
 unsigned int
 Str::val2buf(void *val, bool)
 {
@@ -258,6 +266,9 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.56  2005/02/14 22:19:57  jimg
+// Fixed handling of strings. No longer frees storage quite a capriciously.
+//
 // Revision 1.55  2005/02/10 23:42:55  jimg
 // Replaced old style cast with static_cast in val2buf.
 //
