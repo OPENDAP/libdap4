@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.7  1996/06/22 00:11:20  jimg
+// Modified to accomodate the new Gui class.
+//
 // Revision 1.6  1996/06/18 23:55:33  jimg
 // Added support for the GUI progress indicator.
 //
@@ -31,7 +34,7 @@
 // First version. Built to test the new WWW code in the class Connect.
 //
 
-static char rcsid[]={"$Id: getdap.cc,v 1.6 1996/06/18 23:55:33 jimg Exp $"};
+static char rcsid[]={"$Id: getdap.cc,v 1.7 1996/06/22 00:11:20 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -164,7 +167,7 @@ main(int argc, char * argv[])
 
 	if (!get_das && !get_dds) {
 	    if (gui)
-		url.show_gui(gui);
+		url.gui()->show_gui(gui);
 	    String url_string = argv[i];
 	    for (int j = 0; j < times; ++j) {
 		if (!url.fetch_url(url_string, async))
