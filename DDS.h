@@ -14,14 +14,20 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.17  1996/12/02 23:14:54  jimg
-/* Added `filename' field and access functions. This field is for recording the
-/* filename associated with the dataset from which the DDS is generated. It does
-/* not actually have to be a filename; rather it is intended to be used by
-/* BaseType's read() member function when that code must access some OS
-/* controlled resource to get data for a particular variable. For most systems
-/* it will be a file, while for some systems it may be a RDB or blank.
+/* Revision 1.18  1996/12/03 00:14:58  jimg
+/* Added ostream and bool params to parse_constraint(). The bool parameter is
+/* used to tell the member function that it is running in the server of the
+/* client. The ostream is the sink for error objects (server side) or messages
+/* (client side).
 /*
+ * Revision 1.17  1996/12/02 23:14:54  jimg
+ * Added `filename' field and access functions. This field is for recording the
+ * filename associated with the dataset from which the DDS is generated. It does
+ * not actually have to be a filename; rather it is intended to be used by
+ * BaseType's read() member function when that code must access some OS
+ * controlled resource to get data for a particular variable. For most systems
+ * it will be a file, while for some systems it may be a RDB or blank.
+ *
  * Revision 1.16  1996/06/04 21:33:20  jimg
  * Multiple connections are now possible. It is now possible to open several
  * URLs at the same time and read from them in a round-robin fashion. To do
@@ -243,8 +249,16 @@ public:
     // recursively descend aggregate variables.
     bool check_semantics(bool all = false);
 
-    // Evaluate the constraint expression CONSTRAINT given the current DDS.
-    bool parse_constraint(const String &constraint);
+    /// Parse a constraint expression .
+    /** Parse the constraint expression #constraint# given the current
+        #dds#. If #server# is true, then don't display error objects, rather
+        send then back to the client for display. Error objects/messages are
+        written to #os#.
+
+        Returns true is the constraint expression parses without error, 
+	otherwise false. */
+    bool parse_constraint(const String &constraint, ostream &os = cerr,
+			  bool server = true);
 
     // Send variable(s) described by the constraint expression CONSTRIANT
     // from DATASET. if FLUSH is true, flush the output buffer upon
