@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.64 2003/05/30 16:51:45 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.65 2003/09/25 22:33:39 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -1323,7 +1323,7 @@ DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 }
 
 // We start two sinks, one for regular data and one for XDR encoded data.
-static int
+int
 get_sinks(FILE *out, bool compressed, FILE **comp_sink, XDR **xdr_sink)
 {
     // If compressing, start up the sub process.
@@ -1341,16 +1341,16 @@ get_sinks(FILE *out, bool compressed, FILE **comp_sink, XDR **xdr_sink)
 
 // Clean up after sinks; might have to wait for the compressor process to
 // stop. 
-static void
+void
 clean_sinks(int childpid, bool compressed, XDR *xdr_sink, FILE *comp_sink)
 {
     delete_xdrstdio(xdr_sink);
     
     if (compressed) {
 	int res = fclose(comp_sink);
-	if( res ) {
-	    DBG(cerr << "clean_sinks - Failed to close " << (void *)comp_sink << endl ;) ;
-	}
+	if (res)
+	    DBG(cerr << "clean_sinks - Failed to close " << (void *)comp_sink 
+		<< endl);
 
 	int pid = 0 ;
 #ifdef WIN32
@@ -1498,6 +1498,9 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.65  2003/09/25 22:33:39  jimg
+// Made local functions static.
+//
 // Revision 1.64  2003/05/30 16:51:45  jimg
 // Modified transfer_attrs() so that aliases are supported. Unfortunately,
 // aliases are broken in the C++ code and in their design, so this addition/fix
