@@ -8,16 +8,20 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.9  1995/01/11 16:06:48  jimg
-/* Added static XDR pointers to BaseType class and removed the XDR pointers
-/* that were class members - now there is only one xdrin and one xdrout
-/* for all children of BaseType.
-/* Added friend functions to help in setting the FILE * associated with
-/* the XDR *s.
-/* Removed FILE *in member (but FILE *out was kept as FILE * _out, mfunc
-/* expunge()).
-/* Changed ctor so that it no longer takes FILE * params.
+/* Revision 1.10  1995/01/18 18:35:28  dan
+/* Defined abstract virtual function 'readVal' which provides access
+/* to the object's buf for retrieving data subsequent to deserializing.
 /*
+ * Revision 1.9  1995/01/11  16:06:48  jimg
+ * Added static XDR pointers to BaseType class and removed the XDR pointers
+ * that were class members - now there is only one xdrin and one xdrout
+ * for all children of BaseType.
+ * Added friend functions to help in setting the FILE * associated with
+ * the XDR *s.
+ * Removed FILE *in member (but FILE *out was kept as FILE * _out, mfunc
+ * expunge()).
+ * Changed ctor so that it no longer takes FILE * params.
+ *
  * Revision 1.8  1994/12/16  22:04:21  jimg
  * Added the mfuncs var() and add_var(). These are used by ctor types. They
  * need to be defined here so that access to them via BaseType * will work
@@ -146,6 +150,7 @@ public:
     // means read it from the file and into a buffer. The buffer is
     // serialized by the mfunc serialize().
     virtual bool read(String dataset, String var_name, String constraint) = 0;
+    virtual bool readVal(void *stuff) = 0;
 
     // move data to and from the net.
     virtual bool serialize(bool flush = false, unsigned int num = 0) = 0; 
