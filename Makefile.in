@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.25 1995/10/23 23:18:30 jimg Exp $
+# $Id: Makefile.in,v 1.26 1995/12/06 20:01:01 jimg Exp $
 
 @SET_MAKE@
 
@@ -77,20 +77,20 @@ DASOBJS = AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
 DDSHDRS = DDS.h
 DDSSRCS = DDS.cc
-DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) 
+DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
 
 EXPRSRCS = 
 EXPROBJS = DDS.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
 
 TYPEHDRS = BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
-	   List.h Array.h Structure.h Sequence.h Function.h Grid.h
+	   Vector.h List.h Array.h Structure.h Sequence.h Function.h Grid.h
 
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
-	   List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
-	   util.cc
+	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc Function.cc \
+	   Grid.cc util.cc
 
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
-	   List.o Array.o Structure.o Sequence.o Function.o Grid.o \
+	   Vector.o List.o Array.o Structure.o Sequence.o Function.o Grid.o \
 	   util.o
 
 # These object files are built using source code generated from the GNU
