@@ -11,6 +11,14 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.24  1998/09/17 17:05:46  jimg
+// Changes for the new variable lookup scheme. Fields of ctor types no longer
+// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
+// that if there are two `f1's in a dataset, the first will be silently used;
+// There's no warning about the situation. The new code in the var member
+// function passes a stack of BaseType pointers so that the projection
+// information (send_p field) can be set properly.
+//
 // Revision 1.23  1998/08/06 16:22:38  jimg
 // Fixed the misuse of the read(...) member function. See Grid.c (from jeh).
 //
@@ -107,7 +115,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.23 1998/08/06 16:22:38 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.24 1998/09/17 17:05:46 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -213,6 +221,32 @@ Vector::set_read_p(bool state)
 {
     _var->set_read_p(state);
     BaseType::set_read_p(state);
+}
+
+BaseType *
+Vector::var(const String &name, bool exact_match)
+{
+    // Make sure to check for the case where name is the default (the empty
+    // string). 9/1/98 jhrg
+    if (_var->is_constructor_type()) {
+	if (name == "" || _var->name() == name)
+	    return _var;
+	else
+	    return _var->var(name, exact_match);
+    }
+    else
+	return _var;
+}
+
+BaseType *
+Vector::var(const String &name, btp_stack &s)
+{
+    if (_var->is_constructor_type())
+	return _var->var(name, s);
+    else {
+	s.push((BaseType *)this);
+	return _var;
+    }
 }
 
 // Return a pointer the the BaseType object for element I. If the Vector is
@@ -629,12 +663,6 @@ Vector::set_vec(int i, BaseType *val)
     return true;
 }
  
-BaseType *
-Vector::var(const String &)
-{
-    return _var;
-}
-
 // Add the BaseType pointer to this ctor type instance. Propagate the name of
 // the BaseType instance to this instance. This ensures that variables at any
 // given level of the DDS table have unique names (i.e., that Arrays do not
