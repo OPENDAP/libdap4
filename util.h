@@ -1,14 +1,17 @@
 
-// -*- mode: C++ -*-
+// -*- C++ -*-
 
 // declarations for utility functions
 //
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.8  1996/02/02 00:31:25  jimg
-/* Merge changes for DODS-1.1.0 into DODS-2.x
+/* Revision 1.9  1996/04/04 17:38:35  jimg
+/* Merged changes from version 1.1.1.
 /*
+ * Revision 1.8  1996/02/02 00:31:25  jimg
+ * Merge changes for DODS-1.1.0 into DODS-2.x
+ *
  * Revision 1.7  1995/12/06  18:33:34  jimg
  * Added forward decalration of text_to_temp();
  *
@@ -18,7 +21,11 @@
  * Revision 1.5  1995/08/23  00:41:57  jimg
  * xdr_str() now takes a String & instead of a String ** for arg 2.
  *
- * Revision 1.4.2.1  1995/09/29 19:28:06  jimg
+ * Revision 1.4.2.2  1996/02/23 21:37:34  jimg
+ * Updated for new configure.in.
+ * Fixed problems on Solaris 2.4.
+ *
+ * Revision 1.4.2.1  1995/09/29  19:28:06  jimg
  * Fixed problems with xdr.h on an SGI.
  * Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
  * the SGI.
@@ -39,13 +46,6 @@
  */
 
 #include <stdio.h>
-#ifdef NEVER
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#include <SLList.h>
-#include <String.h>
-#endif
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -62,6 +62,7 @@
 
 bool unique(SLList<BaseTypePtr> l, const char *var, const char *type);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
+XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
 FILE *text_to_temp(String text);
 
