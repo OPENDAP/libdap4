@@ -10,6 +10,11 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
+// Revision 1.18  2000/07/19 22:51:40  rmorris
+// Call and return from main in a manner Visual C++ likes and
+// exit the program with exit(0) so that DejaGnu/Cygwin based
+// testsuite can succeed for win32.
+//
 // Revision 1.17  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -52,7 +57,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.17 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.18 2000/07/19 22:51:40 rmorris Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
@@ -96,7 +101,11 @@ usage(string name)
 	 << "    to stdout." << endl;
 }
 
+#ifdef WIN32
+void
+#else
 int
+#endif
 main(int argc, char *argv[])
 {
     GetOpt getopt (argc, argv, "spdc");
@@ -143,7 +152,10 @@ main(int argc, char *argv[])
 	test_class();
     }
 
-    exit(0);
+#ifdef WIN32
+	exit(0); //  DejaGnu/Cygwin based test suite requires this.
+	return;  //  Visual C++ requests this.
+#endif
 }
 
 void

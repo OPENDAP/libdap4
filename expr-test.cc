@@ -10,6 +10,11 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.27  2000/07/19 22:51:40  rmorris
+// Call and return from main in a manner Visual C++ likes and
+// exit the program with exit(0) so that DejaGnu/Cygwin based
+// testsuite can succeed for win32.
+//
 // Revision 1.26  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -127,7 +132,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.26 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.27 2000/07/19 22:51:40 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -324,10 +329,9 @@ main(int argc, char *argv[])
 	constrained_trans(dds_file_name, dataset, constraint);
     }
 
-	exit(0);
-
 #ifdef WIN32
-	return;
+	exit(0); //  DejaGnu/Cygwin based test suite requires this.
+	return;  //  Visual C++ requests this.
 #endif
 }
 

@@ -10,6 +10,11 @@
 // jhrg 4/25/96
 
 // $Log: error-test.cc,v $
+// Revision 1.7  2000/07/19 22:51:40  rmorris
+// Call and return from main in a manner Visual C++ likes and
+// exit the program with exit(0) so that DejaGnu/Cygwin based
+// testsuite can succeed for win32.
+//
 // Revision 1.6  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -43,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: error-test.cc,v 1.6 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: error-test.cc,v 1.7 2000/07/19 22:51:40 rmorris Exp $"};
 
 #include <assert.h>
 
@@ -74,11 +79,15 @@ extern YYSTYPE Errorlval;
 extern int Errordebug;
 const char *prompt = "error-test: ";
 
+#ifdef WIN32
+void
+#else
 int
+#endif
 main(int argc, char *argv[])
 {
 #ifdef WIN32
-	GetOpt getopt (argc, argv, "spd");
+    GetOpt getopt (argc, argv, "spd");
 #else
     GetOpt getopt (argc, argv, "spdo");
 #endif
@@ -126,6 +135,11 @@ main(int argc, char *argv[])
 #ifdef GUI
     if (object_test)
 	test_object(err);
+#endif
+
+#ifdef WIN32
+    exit(0);  //  Cygwin/Dejagu test suites require this to succeed.
+    return;   //  Visual C++ requires this.
 #endif
 }
 
