@@ -38,7 +38,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.27  1995/12/09 01:06:29  jimg
+// Revision 1.28  1996/02/01 22:22:42  jimg
+// Merged changes between DODS-1.1 and DODS 2.x.
+//
+// Revision 1.27  1995/12/09  01:06:29  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -61,12 +64,26 @@
 //
 // Revision 1.22  1995/08/22  23:45:33  jimg
 // Removed DBMALLOC code.
-// Added set_vec/vec mfuncs so that non-Array software can access the BaseType *
-// vector.
+// Added set_vec/vec mfuncs so that non-Array software can access the
+// BaseType * vector.
 // Changed names read_val and store_val to buf2val and val2buf. The old names
 // remain.
 // removed the card member function: used the new _type enum with a switch in
 // its place.
+//
+// Revision 1.21.2.4  1995/09/27 21:49:03  jimg
+// Fixed casts.
+//
+// Revision 1.21.2.3  1995/09/27  19:06:56  jimg
+// Add casts to `cast away' const and unsigned in places where we call various
+// xdr functions (which don't know about, or use, const or unsigned.
+//
+// Revision 1.21.2.2  1995/09/14  20:59:50  jimg
+// Fixed declaration of, and calls to, _duplicate() by changing the formal
+// param from a pointer to a reference.
+//
+// Revision 1.21.2.1  1995/07/11  18:17:09  jimg
+// Added cast of xdr_array (used in BaseType's constructor) to xdrproc_t.
 //
 // Revision 1.21  1995/07/09  21:28:48  jimg
 // Added copyright notice.
@@ -91,19 +108,19 @@
 //
 // Revision 1.16  1995/03/04  14:34:40  jimg
 // Major modifications to the transmission and representation of values:
-// 	Added card() virtual function which is true for classes that
-// 	contain cardinal types (byte, int float, string).
-// 	Changed the representation of Str from the C rep to a C++
-// 	class represenation.
-// 	Chnaged read_val and store_val so that they take and return
-// 	types that are stored by the object (e.g., inthe case of Str
-// 	an URL, read_val returns a C++ String object).
-// 	Modified Array representations so that arrays of card()
-// 	objects are just that - no more storing strings, ... as
-// 	C would store them.
-// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-// 	an array of a structure is represented as an array of Structure
-// 	objects).
+// Added card() virtual function which is true for classes that
+// contain cardinal types (byte, int float, string).
+// Changed the representation of Str from the C rep to a C++
+// class represenation.
+// Chnaged read_val and store_val so that they take and return
+// types that are stored by the object (e.g., inthe case of Str
+// an URL, read_val returns a C++ String object).
+// Modified Array representations so that arrays of card()
+// objects are just that - no more storing strings, ... as
+// C would store them.
+// Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// an array of a structure is represented as an array of Structure
+// objects).
 //
 // Revision 1.15  1995/02/10  02:22:54  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
@@ -221,6 +238,7 @@ Array::update_length(int size)
 
 Array::Array(const String &n, BaseType *v) : Vector(n, v, array_t)
 {
+    _const_length = -1;
 }
 
 Array::Array(const Array &rhs)
@@ -314,7 +332,6 @@ Array::clear_constraint()
 	d.stop = 0;
 	d.stride = 0;
 	d.c_size = 0;
-
 	d.selected = false;
     }
 
