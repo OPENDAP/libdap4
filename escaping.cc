@@ -12,6 +12,11 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.4  1997/02/14 04:18:10  jimg
+// Added allowable and escape parameters to id2dods and dods2id so that the
+// builtin regexs can be overridden if needed.
+// Switched to the `fast compile' mode for the Regex objects.
+//
 // Revision 1.3  1997/02/14 02:24:44  jimg
 // Removed reliance on the dods-hdf code.
 // Introduced a const int MAXSTR with value 256. This matches the length of
@@ -108,25 +113,43 @@ char unoctstring(String s) {
 
 
 // replace characters that are not allowed in DODS identifiers
-String id2dods(String s) {
-    static Regex badregx = "[^0-9a-zA-Z_%]";
-    const char ESC = '%';
+String id2dods(String s, const String allowable = (char *)0) {
+    static Regex badregx("[^0-9a-zA-Z_%]", 1);
+    static const char ESC = '%';
 
-    int index;
-    while ( (index = s.index(badregx)) >= 0)
-	s.at(index,1) = ESC + hexstring(toascii(s[index]));
+    if (allowable) {
+	Regex badregx2(allowable, 1);
+
+	int index;
+	while ((index = s.index(badregx2)) >= 0)
+	    s.at(index,1) = ESC + hexstring(toascii(s[index]));
+    }
+    else {
+	int index;
+	while ((index = s.index(badregx)) >= 0)
+	    s.at(index,1) = ESC + hexstring(toascii(s[index]));
+    }
+
     if (isdigit(s[0]))
 	s.before(0) = '_';
+
     return s;
 }
 
-String dods2id(String s) {
-    static Regex escregx = "%[0-7][0-9a-fA-F]";
+String dods2id(String s, const String escape = (char *)0) {
+    static Regex escregx("%[0-7][0-9a-fA-F]", 1);
 
-    int index;
-    while ( (index = s.index(escregx)) >= 0)
-	s.at(index,3) = unhexstring(s.at(index+1,2));
-
+    if (escape) {
+	Regex escregx2(escape, 1);
+	int index;
+	while ((index = s.index(escregx2)) >= 0)
+	    s.at(index,3) = unhexstring(s.at(index+1,2));
+    }
+    else {
+	int index;
+	while ((index = s.index(escregx)) >= 0)
+	    s.at(index,3) = unhexstring(s.at(index+1,2));
+    }
     return s;
 }
 
