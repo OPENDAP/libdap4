@@ -1,11 +1,11 @@
 
-/* 
-   (c) COPYRIGHT URI/MIT 1994-1996
-   Please read the full copyright statement in the file COPYRIGH.  
+// -*- C++ -*-
 
-   Authors:
-        jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
-*/
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 /*
    Grammar for the DDS. This grammar can be used with the bison parser
@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.17  1996/08/13 20:54:45  jimg
+ * Generated files.
+ *
  * Revision 1.16  1996/05/31 23:27:17  jimg
  * Removed {YYACCEPT;} from rule 2 (dataset: DATASET ...).
  *
@@ -101,20 +104,34 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: dds.y,v 1.16 1996/05/31 23:27:17 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: dds.y,v 1.17 1996/08/13 20:54:45 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include <iostream.h>
 
+#include "DDS.h"
+#include "Array.h"
+#include "Error.h"
+#include "BTXPStack.h"
 #include "parser.h"
 #include "dds.tab.h"
 #include "util.h"
-#include "DDS.h"
-#include "Array.h"
-#include "BTXPStack.h"
+
+// These macros are used to access the `arguments' passed to the parser. A
+// pointer to an error object and a pointer to an integer status variable are
+// passed in to the parser within a strucutre (which itself is passed as a
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+
+#define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
+#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
+#define STATUS(arg) ((parser_arg *)(arg))->_status
+#define YYPARSE_PARAM void *arg
 
 extern int dds_line_num;	/* defined in dds.lex */
 
@@ -124,7 +141,7 @@ static Part part = nil;		/* Part is defined in BaseType */
 static char id[ID_MAX];
 
 int ddslex();
-int ddserror(char *s);
+void ddserror(char *s);
 
 void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, 
 	       Part p);
@@ -153,12 +170,6 @@ void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current,
 
 %%
 
-/* 
-   The parser is called through a function named ddsparse(DDS &table). Once
-   the parse has completed, TABLE is an instance of class DDS which contains
-   objects representing the DDS described by the input to this parser.
-*/   
-
 datasets:	dataset
 		| datasets dataset
 ;
@@ -174,7 +185,7 @@ declarations:	/* empty */
 declaration: 	list non_list_decl
                 { 
 		    if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		}
                 | non_list_decl
 ;
@@ -186,7 +197,7 @@ declaration: 	list non_list_decl
 non_list_decl:  base_type var ';' 
                 { 
 		    if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		}
 
 		| structure  '{' declarations '}' 
@@ -196,7 +207,7 @@ non_list_decl:  base_type var ';'
                 var ';' 
                 { 
 		    if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		}
 
 		| sequence '{' declarations '}' 
@@ -206,7 +217,7 @@ non_list_decl:  base_type var ';'
                 var ';' 
                 { 
 		    if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		}
 
 		| function '{' INDEPENDENT ':'
@@ -221,7 +232,7 @@ non_list_decl:  base_type var ';'
                 { 
 		    if (current->check_semantics()) {
 			part = nil; 
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		}
 
@@ -237,7 +248,7 @@ non_list_decl:  base_type var ';'
                 {
 		    if (current->check_semantics()) {
 			part = nil; 
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		}
 ;
@@ -324,12 +335,12 @@ array_decl:	'[' INTEGER ']'
 		 ']'
 ;
 
-name:		ID { table.set_dataset_name($1); }
+name:		ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
 ;
 
 %%
 
-int 
+void 
 ddserror(char *s)
 {
     fprintf(stderr, "%s line: %d\n", s, dds_line_num);

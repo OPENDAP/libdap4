@@ -24,10 +24,12 @@
 #define	LESS_EQL	268
 #define	REGEXP	269
 
-#line 82 "expr.y"
+#line 80 "expr.y"
 
 
-static char rcsid[]={"$Id: expr.tab.c,v 1.4 1996/06/22 00:12:05 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: expr.tab.c,v 1.5 1996/08/13 20:54:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,8 +52,8 @@ static char rcsid[]={"$Id: expr.tab.c,v 1.4 1996/06/22 00:12:05 jimg Exp $"};
 #include "Sequence.h"
 #include "Function.h"
 #include "Grid.h"
+#include "Error.h"
 
-#include "config_dap.h"
 #include "util.h"
 #include "parser.h"
 #include "expr.h"
@@ -60,10 +62,20 @@ static char rcsid[]={"$Id: expr.tab.c,v 1.4 1996/06/22 00:12:05 jimg Exp $"};
 #include "trace_new.h"
 #endif
 
+// These macros are used to access the `arguments' passed to the parser. A
+// pointer to an error object and a pointer to an integer status variable are
+// passed in to the parser within a strucutre (which itself is passed as a
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+
+#define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
+#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
+#define STATUS(arg) ((parser_arg *)(arg))->_status
+#define YYPARSE_PARAM void *arg
+
 int exprlex(void);		/* the scanner; see expr.lex */
 
-int exprerror(const char *s);	/* easier to overload than use stdarg... */
-int exprerror(const char *s, const char *s2);
+void exprerror(const char *s);	/* easier to overload than use stdarg... */
+void exprerror(const char *s, const char *s2);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list_list *make_array_indices(int_list *index);
@@ -75,26 +87,19 @@ bool process_grid_indices(BaseType *variable, int_list_list *indices);
 bool is_array_t(BaseType *variable);
 bool is_grid_t(BaseType *variable);
 
-rvalue_list *make_rvalue_list(DDS &table, rvalue *rv);
-rvalue_list *append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv);
+rvalue_list *make_rvalue_list(rvalue *rv);
+rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 
 BaseType *make_variable(DDS &table, const value &val);
 
-rvalue *dereference_variable(DDS &table, rvalue *rv);
-rvalue *dereference_url(DDS &table, value &val);
+rvalue *dereference_variable(rvalue *rv);
+rvalue *dereference_url(value &val);
 
 bool_func get_function(const DDS &table, const char *name);
 btp_func get_btp_function(const DDS &table, const char *name);
 
-/* 
-  The parser receives a DDS &table as a formal argument. TABLE is the DDS
-  of the entire dataset; each variable in the constraint expression must be
-  in this DDS and their data types must match the use in the constraint
-  expression.
-*/
 
-
-#line 154 "expr.y"
+#line 157 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -203,11 +208,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   195,   201,   203,   204,   207,   211,   225,   237,   247,   251,
-   264,   274,   280,   281,   287,   293,   302,   316,   317,   318,
-   325,   331,   342,   346,   352,   359,   368,   373,   378,   386,
-   402,   420,   424,   430,   437,   443,   444,   445,   446,   447,
-   448,   449
+   198,   204,   206,   207,   210,   214,   228,   240,   250,   254,
+   267,   277,   283,   284,   290,   296,   305,   319,   320,   321,
+   328,   334,   345,   349,   355,   362,   371,   376,   381,   389,
+   405,   423,   427,   433,   440,   446,   447,   448,   449,   450,
+   451,   452
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","INT","FLOAT",
@@ -441,7 +446,7 @@ int yydebug;			/*  nonzero means print parse trace	*/
 
 /* Prevent warning if -Wstrict-prototypes.  */
 #ifdef __GNUC__
-int yyparse (DDS &table);
+int yyparse (void);
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
@@ -499,8 +504,7 @@ __yy_memcpy (char *from, char *to, int count)
 #endif
 
 int
-yyparse(DDS &table)
-     YYPARSE_PARAM_DECL
+yyparse(YYPARSE_PARAM)
 {
   register int yystate;
   register int yyn;
@@ -782,46 +786,46 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 196 "expr.y"
+#line 199 "expr.y"
 {
-		     table.mark_all(true);
+		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 203 "expr.y"
-{ table.mark_all(true); ;
+#line 206 "expr.y"
+{ (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 204 "expr.y"
+#line 207 "expr.y"
 { 
 		       yyval.boolean = yyvsp[0].boolean;
 		   ;
     break;}
 case 5:
-#line 208 "expr.y"
+#line 211 "expr.y"
 {
 		       yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		   ;
     break;}
 case 6:
-#line 212 "expr.y"
+#line 215 "expr.y"
 {
-		       btp_func func = get_btp_function(table, yyvsp[-3].id);
+		       btp_func func = get_btp_function(*(DDS_OBJ(arg)), yyvsp[-3].id);
 		       if (!func) {
 			   exprerror("Not a BaseType pointer function", yyvsp[-3].id);
 			   yyval.boolean = false;
 		       }
 		       else {
-			   table.append_clause(func, yyvsp[-1].r_val_l_ptr);
+			   (*DDS_OBJ(arg)).append_clause(func, yyvsp[-1].r_val_l_ptr);
 			   yyval.boolean = true;
 		       }
 		   ;
     break;}
 case 7:
-#line 226 "expr.y"
+#line 229 "expr.y"
 { 
-		      BaseType *var = table.var(yyvsp[0].id);
+		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (var) {
 			  var->set_send_p(true); // add to projection
 			  yyval.boolean = true;
@@ -833,11 +837,11 @@ case 7:
 		  ;
     break;}
 case 8:
-#line 238 "expr.y"
+#line 241 "expr.y"
 { 
-		      BaseType *var = table.var(yyvsp[0].id);
+		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (var)
-			  yyval.boolean = table.mark(yyvsp[0].id, true); // must add parents, too
+			  yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[0].id, true); // must add parents, too
 		      else {
 			  yyval.boolean = false;
 			  exprerror("No such field in dataset", yyvsp[0].id);
@@ -845,15 +849,15 @@ case 8:
 		  ;
     break;}
 case 9:
-#line 248 "expr.y"
+#line 251 "expr.y"
 {
 		      yyval.boolean = yyvsp[0].boolean;
 		  ;
     break;}
 case 10:
-#line 252 "expr.y"
+#line 255 "expr.y"
 { 
-		      BaseType *var = table.var(yyvsp[0].id);
+		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (var) {
 			  var->set_send_p(true);
 			  yyval.boolean = true;
@@ -866,11 +870,11 @@ case 10:
 		  ;
     break;}
 case 11:
-#line 265 "expr.y"
+#line 268 "expr.y"
 { 
-		      BaseType *var = table.var(yyvsp[0].id);
+		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (var)
-			  yyval.boolean = table.mark(yyvsp[0].id, true);
+			  yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[0].id, true);
 		      else {
 			  yyval.boolean = false;
 			  exprerror("No such field in dataset", yyvsp[0].id);
@@ -878,71 +882,71 @@ case 11:
 		  ;
     break;}
 case 12:
-#line 275 "expr.y"
+#line 278 "expr.y"
 {
 		      yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		  ;
     break;}
 case 14:
-#line 282 "expr.y"
+#line 285 "expr.y"
 {
 		      yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		  ;
     break;}
 case 15:
-#line 288 "expr.y"
+#line 291 "expr.y"
 {
 		      assert((yyvsp[-4].rval_ptr));
-		      table.append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
+		      (*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
 		      yyval.boolean = true;
 		  ;
     break;}
 case 16:
-#line 294 "expr.y"
+#line 297 "expr.y"
 {
 		      assert((yyvsp[-2].rval_ptr));
 
 		      rvalue_list *rv = new rvalue_list;
 		      rv->append(yyvsp[0].rval_ptr);
-		      table.append_clause(yyvsp[-1].op, yyvsp[-2].rval_ptr, rv);
+		      (*DDS_OBJ(arg)).append_clause(yyvsp[-1].op, yyvsp[-2].rval_ptr, rv);
 		      yyval.boolean = true;
 		  ;
     break;}
 case 17:
-#line 303 "expr.y"
+#line 306 "expr.y"
 {
-		      bool_func b_func = get_function(table, yyvsp[-3].id);
+		      bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		      if (!b_func) {
   			  exprerror("Not a boolean function", yyvsp[-3].id);
 			  yyval.boolean = false;
 		      }
 		      else {
-			  table.append_clause(b_func, yyvsp[-1].r_val_l_ptr);
+			  (*DDS_OBJ(arg)).append_clause(b_func, yyvsp[-1].r_val_l_ptr);
 			  yyval.boolean = true;
 		      }
 		  ;
     break;}
 case 20:
-#line 319 "expr.y"
+#line 322 "expr.y"
 {
-		      yyval.rval_ptr = dereference_variable(table, yyvsp[0].rval_ptr);
+		      yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr);
 		      if (!yyval.rval_ptr)
 			  exprerror("Could not dereference variable", 
 				    (yyvsp[0].rval_ptr)->value->name());
 		  ;
     break;}
 case 21:
-#line 326 "expr.y"
+#line 329 "expr.y"
 {
-		      yyval.rval_ptr = dereference_url(table, yyvsp[0].val);
+		      yyval.rval_ptr = dereference_url(yyvsp[0].val);
 		      if (!yyval.rval_ptr)
 			  exprerror("Could not dereference URL", *(yyvsp[0].val).v.s);
 		  ;
     break;}
 case 22:
-#line 332 "expr.y"
+#line 335 "expr.y"
 {
-		      btp_func bt_func = get_btp_function(table, yyvsp[-3].id);
+		      btp_func bt_func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		      if (!bt_func) {
   			  exprerror("Not a BaseType * function", yyvsp[-3].id);
 			  yyval.rval_ptr = 0;
@@ -951,60 +955,60 @@ case 22:
 		  ;
     break;}
 case 23:
-#line 343 "expr.y"
+#line 346 "expr.y"
 {
-		    yyval.r_val_l_ptr = make_rvalue_list(table, yyvsp[0].rval_ptr);
+		    yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
 		;
     break;}
 case 24:
-#line 347 "expr.y"
+#line 350 "expr.y"
 {
-		    yyval.r_val_l_ptr = append_rvalue_list(table, yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
+		    yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
 		;
     break;}
 case 25:
-#line 353 "expr.y"
+#line 356 "expr.y"
 { 
-		      BaseType *btp = table.var(yyvsp[0].id);
+		      BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (!btp)
 			  exprerror("No such identifier in dataset", yyvsp[0].id);
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 26:
-#line 360 "expr.y"
+#line 363 "expr.y"
 { 
-		      BaseType *btp = table.var(yyvsp[0].id);
+		      BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (!btp)
 			  exprerror("No such field in dataset", yyvsp[0].id);
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 27:
-#line 369 "expr.y"
+#line 372 "expr.y"
 {
-		      BaseType *btp = make_variable(table, yyvsp[0].val);
+		      BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 28:
-#line 374 "expr.y"
+#line 377 "expr.y"
 {
-		      BaseType *btp = make_variable(table, yyvsp[0].val);
+		      BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 29:
-#line 379 "expr.y"
+#line 382 "expr.y"
 { 
-		      BaseType *btp = make_variable(table, yyvsp[0].val); 
+		      BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 30:
-#line 387 "expr.y"
+#line 390 "expr.y"
 {
-		      BaseType *var = table.var(yyvsp[-1].id);
+		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
 		      if (var && is_array_t(var)) {
 			  var->set_send_p(true);
 			  yyval.boolean = process_array_indices(var, yyvsp[0].int_ll_ptr);
@@ -1020,16 +1024,16 @@ case 30:
 		  ;
     break;}
 case 31:
-#line 403 "expr.y"
+#line 406 "expr.y"
 {
-		      BaseType *var = table.var(yyvsp[-1].id);
+		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
 		      if (var && is_array_t(var)) {
-			  yyval.boolean = table.mark(yyvsp[-1].id, true) // set all the parents, too
+			  yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[-1].id, true) // set all the parents, too
 			      && process_array_indices(var, yyvsp[0].int_ll_ptr);
 			  delete_array_indices(yyvsp[0].int_ll_ptr);
 		      }
 		      else if (var && is_grid_t(var)) {
-			  yyval.boolean = table.mark(yyvsp[-1].id, true) // set all the parents, too
+			  yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[-1].id, true) // set all the parents, too
 			       && process_grid_indices(var, yyvsp[0].int_ll_ptr);
 			  delete_array_indices(yyvsp[0].int_ll_ptr);
 		      }
@@ -1038,19 +1042,19 @@ case 31:
 		  ;
     break;}
 case 32:
-#line 421 "expr.y"
+#line 424 "expr.y"
 {
 		      yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		  ;
     break;}
 case 33:
-#line 425 "expr.y"
+#line 428 "expr.y"
 {
 		      yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		  ;
     break;}
 case 34:
-#line 431 "expr.y"
+#line 434 "expr.y"
 {
 		      value val;
 		      val.type = dods_int32_c;
@@ -1059,7 +1063,7 @@ case 34:
 		  ;
     break;}
 case 35:
-#line 438 "expr.y"
+#line 441 "expr.y"
 {
 		      yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		  ;
@@ -1262,16 +1266,16 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 452 "expr.y"
+#line 455 "expr.y"
 
 
-int 
+void
 exprerror(const char *s)
 {
     cerr << "Parse error: " << s << endl;
 }
 
-int 
+void
 exprerror(const char *s, const char *s2)
 {
     cerr << "Parse error: " << s << ": " << s2 << endl;
@@ -1407,7 +1411,13 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	    goto exit;
 	}
 	
-	a->add_constraint(r, start, stride, stop);
+	if (!a->add_constraint(r, start, stride, stop)) {
+	    cerr << "Impossible index values in constraint for "
+		 << a->name() << "." << endl;
+	    status = false;
+	    goto exit;
+	}
+
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
     }
 
@@ -1481,7 +1491,13 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	    goto exit;
 	}
 
-	a->add_constraint(a->first_dim(), start, stride, stop);
+	if (!a->add_constraint(a->first_dim(), start, stride, stop)) {
+	    cerr << "Impossible index values in constraint for "
+		 << a->name() << "." << endl;
+	    status = false;
+	    goto exit;
+	}
+
 	DBG(cerr << "Set Constraint: " \
 	    << a->dimension_size(a->first_dim(), true) << endl);
     }
@@ -1511,11 +1527,11 @@ exit:
 // Returns: A pointer to the updated rvalue_list.
 
 rvalue_list *
-make_rvalue_list(DDS &table, rvalue *rv)
+make_rvalue_list(rvalue *rv)
 {
     rvalue_list *rvals = new rvalue_list;
 
-    return append_rvalue_list(table, rvals, rv);
+    return append_rvalue_list(rvals, rv);
 }
 
 // Given a rvalue_list pointer RVALS and a value pointer VAL, make a variable
@@ -1524,7 +1540,7 @@ make_rvalue_list(DDS &table, rvalue *rv)
 // Returns: A pointer to the updated rvalue_list.
 
 rvalue_list *
-append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv)
+append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 {
     rvals->append(rv);
 
@@ -1535,7 +1551,7 @@ append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv)
 // points to.
 
 static rvalue *
-dereference_string(DDS &table, String &s)
+dereference_string(String &s)
 {
     String url = s.before("?");	// strip off CE
     String ce = s.after("?");	// yes, get the CE
@@ -1565,19 +1581,19 @@ dereference_string(DDS &table, String &s)
 }
 
 rvalue *
-dereference_url(DDS &table, value &val)
+dereference_url(value &val)
 {
     if (val.type != dods_str_c)
 	return 0;
 
-    return dereference_string(table, *val.v.s);
+    return dereference_string(*val.v.s);
 }
 
 // Given a rvalue, get the BaseType that encapsulates its value, make sure it
 // is a string and, if all that works, dereference it.
 
 rvalue *
-dereference_variable(DDS &table, rvalue *rv)
+dereference_variable(rvalue *rv)
 {
     BaseType *btp = rv->bvalue("dummy"); // the value will be read over the net
     if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
@@ -1591,7 +1607,7 @@ dereference_variable(DDS &table, rvalue *rv)
     String  *sp = &s;
     btp->buf2val((void **)&sp);
     
-    return dereference_string(table, s);
+    return dereference_string(s);
 }
 
 // Given a value, wrap it up in a BaseType and return a pointer to the same.

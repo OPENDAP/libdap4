@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.22 1996/07/11 23:38:16 jimg Exp $
+# $Id: configure,v 1.23 1996/08/13 20:54:39 jimg Exp $
 
 # Check for fill value usage.
 
@@ -2067,8 +2067,9 @@ fi
 
     if test "$dods_www_includes"
     then
-	INCS="$INCS $dods_www_includes"
+	INCS="$INCS -I${dods_www_includes}"
 	echo "$ac_t""$dods_www_includes" 1>&6
+	
     else
 	{ echo "configure: error: not found!" 1>&2; exit 1; }
     fi
@@ -2083,7 +2084,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lexpect5.20 -ltcl7.5 $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2087 "configure"
+#line 2088 "configure"
 #include "confdefs.h"
 
 int main() { return 0; }
@@ -2091,7 +2092,7 @@ int t() {
 main()
 ; return 0; }
 EOF
-if { (eval echo configure:2095: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
+if { (eval echo configure:2096: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2108,7 +2109,7 @@ if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
 	 cat >> confdefs.h <<\EOF
 #define HAVE_EXPECT 1
 EOF
- expect=expect5.20; tcl=tcl7.5
+ HAVE_EXPECT=1;expect=expect5.20;tcl=tcl7.5
 else
   echo "$ac_t""no" 1>&6
 \
@@ -2131,7 +2132,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lexpect -ltcl7.4 $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2135 "configure"
+#line 2136 "configure"
 #include "confdefs.h"
 
 int main() { return 0; }
@@ -2139,7 +2140,7 @@ int t() {
 main()
 ; return 0; }
 EOF
-if { (eval echo configure:2143: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
+if { (eval echo configure:2144: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2156,7 +2157,7 @@ if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
 	    cat >> confdefs.h <<\EOF
 #define HAVE_EXPECT 1
 EOF
- expect=expect; tcl=tcl7.4
+ HAVE_EXPECT=1;expect=expect;tcl=tcl7.4
 else
   echo "$ac_t""no" 1>&6
 \
@@ -2385,6 +2386,7 @@ s%@INSTALL@%$INSTALL%g
 s%@CXX@%$CXX%g
 s%@CPP@%$CPP%g
 s%@ALLOCA@%$ALLOCA%g
+s%@INCS@%$INCS%g
 
 CEOF
 EOF

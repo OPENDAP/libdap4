@@ -27,31 +27,51 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: das.tab.c,v 1.3 1996/06/08 00:25:34 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: das.tab.c,v 1.4 1996/08/13 20:54:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
-#include "config_dap.h"
+#include <strstream.h>
+
+#include "DAS.h"
+#include "Error.h"
 #include "debug.h"
 #include "parser.h"
 #include "das.tab.h"
-#include "DAS.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
+// These macros are used to access the `arguments' passed to the parser. A
+// pointer to an error object and a pointer to an integer status variable are
+// passed in to the parser within a strucutre (which itself is passed as a
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+
+#define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
+#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
+#define STATUS(arg) ((parser_arg *)(arg))->_status
+#define YYPARSE_PARAM void *arg
+
 extern int das_line_num;	/* defined in das.lex */
 
 static char name[ID_MAX];	/* holds name in attr_pair rule */
 static char type[ID_MAX];	/* holds type in attr_pair rule */
-static AttrTablePtr attr_tab_ptr;
+static AttrTablePtr attr_tab;
+
+static char *VAR_ATTR_MSG="Expected an identifier followed by a list of \
+attributes.";
+static char *ATTR_TUPLE_MSG="Expected an attribute type (Byte, Int32, \n\
+Float64, String or Url) followed by a name and value.";
 
 void mem_list_report();
 int daslex(void);
-int daserror(char *s);
+void daserror(char *s);
 
 
 #ifndef YYLTYPE
@@ -83,11 +103,11 @@ typedef
 
 
 
-#define	YYFINAL		75
+#define	YYFINAL		74
 #define	YYFLAG		-32768
 #define	YYNTBASE	17
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 267 ? yytranslate[x] : 43)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 267 ? yytranslate[x] : 42)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -121,110 +141,111 @@ static const char yytranslate[] = {     0,
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
-     0,     2,     5,     6,    12,    13,    15,    18,    19,    25,
-    27,    28,    30,    33,    34,    35,    42,    43,    44,    51,
-    52,    53,    60,    61,    62,    69,    70,    71,    78,    79,
-    83,    85,    89,    91,    95,    97,   101,   103,   107,   109,
-   113,   115,   117,   119,   121,   123
+     0,     2,     5,    10,    11,    13,    16,    17,    23,    25,
+    26,    28,    31,    32,    33,    40,    41,    42,    49,    50,
+    51,    58,    59,    60,    67,    68,    69,    76,    77,    81,
+    83,    87,    89,    93,    95,    99,   101,   105,   107,   111,
+   113,   115,   117,   119,   121
 };
 
 static const short yyrhs[] = {    18,
-     0,    17,    18,     0,     0,     3,    19,    13,    20,    14,
-     0,     0,    21,     0,    20,    21,     0,     0,     4,    22,
-    13,    23,    14,     0,     1,     0,     0,    24,     0,    23,
-    24,     0,     0,     0,     8,    25,     4,    26,    36,    15,
-     0,     0,     0,     9,    27,     4,    28,    37,    15,     0,
-     0,     0,    10,    29,     4,    30,    38,    15,     0,     0,
-     0,    11,    31,     4,    32,    39,    15,     0,     0,     0,
-    12,    33,     4,    34,    40,    15,     0,     0,     1,    35,
-    15,     0,     5,     0,    36,    16,     5,     0,     5,     0,
-    37,    16,     5,     0,    42,     0,    38,    16,    42,     0,
-    41,     0,    39,    16,    41,     0,     7,     0,    39,    16,
-     7,     0,     7,     0,     4,     0,     5,     0,     6,     0,
-     6,     0,     5,     0
+     0,    17,    18,     0,     3,    13,    19,    14,     0,     0,
+    20,     0,    19,    20,     0,     0,     4,    21,    13,    22,
+    14,     0,     1,     0,     0,    23,     0,    22,    23,     0,
+     0,     0,     8,    24,     4,    25,    35,    15,     0,     0,
+     0,     9,    26,     4,    27,    36,    15,     0,     0,     0,
+    10,    28,     4,    29,    37,    15,     0,     0,     0,    11,
+    30,     4,    31,    38,    15,     0,     0,     0,    12,    32,
+     4,    33,    39,    15,     0,     0,     1,    34,    15,     0,
+     5,     0,    35,    16,     5,     0,     5,     0,    36,    16,
+     5,     0,    41,     0,    37,    16,    41,     0,    40,     0,
+    38,    16,    40,     0,     7,     0,    38,    16,     7,     0,
+     7,     0,     4,     0,     5,     0,     6,     0,     6,     0,
+     5,     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   217,   218,   221,   221,   224,   225,   226,   229,   241,   242,
-   245,   246,   247,   250,   251,   252,   254,   255,   256,   258,
-   259,   260,   262,   263,   264,   266,   267,   268,   270,   271,
-   273,   285,   299,   311,   325,   337,   351,   361,   372,   384,
-   398,   398,   398,   398,   401,   401
+   226,   227,   230,   233,   234,   235,   238,   250,   251,   258,
+   259,   260,   263,   264,   265,   267,   268,   269,   271,   272,
+   273,   275,   276,   277,   279,   280,   281,   283,   289,   291,
+   312,   335,   356,   379,   401,   425,   439,   454,   475,   498,
+   498,   498,   498,   501,   501
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","ATTR","ID",
 "INT","FLOAT","STR","BYTE","INT32","FLOAT64","STRING","URL","'{'","'}'","';'",
-"','","attributes","attribute","@1","var_attr_list","var_attr","@2","attr_list",
-"attr_tuple","@3","@4","@5","@6","@7","@8","@9","@10","@11","@12","@13","bytes",
-"ints","floats","strs","urls","str_or_id","float_or_int",""
+"','","attributes","attribute","var_attr_list","var_attr","@1","attr_list","attr_tuple",
+"@2","@3","@4","@5","@6","@7","@8","@9","@10","@11","@12","bytes","ints","floats",
+"strs","urls","str_or_id","float_or_int",""
 };
 #endif
 
 static const short yyr1[] = {     0,
-    17,    17,    19,    18,    20,    20,    20,    22,    21,    21,
-    23,    23,    23,    25,    26,    24,    27,    28,    24,    29,
-    30,    24,    31,    32,    24,    33,    34,    24,    35,    24,
-    36,    36,    37,    37,    38,    38,    39,    39,    40,    40,
-    41,    41,    41,    41,    42,    42
+    17,    17,    18,    19,    19,    19,    21,    20,    20,    22,
+    22,    22,    24,    25,    23,    26,    27,    23,    28,    29,
+    23,    30,    31,    23,    32,    33,    23,    34,    23,    35,
+    35,    36,    36,    37,    37,    38,    38,    39,    39,    40,
+    40,    40,    40,    41,    41
 };
 
 static const short yyr2[] = {     0,
-     1,     2,     0,     5,     0,     1,     2,     0,     5,     1,
-     0,     1,     2,     0,     0,     6,     0,     0,     6,     0,
-     0,     6,     0,     0,     6,     0,     0,     6,     0,     3,
-     1,     3,     1,     3,     1,     3,     1,     3,     1,     3,
-     1,     1,     1,     1,     1,     1
+     1,     2,     4,     0,     1,     2,     0,     5,     1,     0,
+     1,     2,     0,     0,     6,     0,     0,     6,     0,     0,
+     6,     0,     0,     6,     0,     0,     6,     0,     3,     1,
+     3,     1,     3,     1,     3,     1,     3,     1,     3,     1,
+     1,     1,     1,     1,     1
 };
 
 static const short yydefact[] = {     0,
-     3,     0,     1,     0,     2,     0,    10,     8,     0,     6,
-     0,     4,     7,     0,    29,    14,    17,    20,    23,    26,
-     0,    12,     0,     0,     0,     0,     0,     0,     9,    13,
-    30,    15,    18,    21,    24,    27,     0,     0,     0,     0,
-     0,    31,     0,    33,     0,    46,    45,     0,    35,    42,
-    43,    44,    41,     0,    37,    39,     0,     0,    16,     0,
-    19,     0,    22,     0,    25,     0,     0,    28,    32,    34,
-    36,    38,    40,     0,     0
+     0,     0,     1,     0,     2,     9,     7,     0,     5,     0,
+     3,     6,     0,    28,    13,    16,    19,    22,    25,     0,
+    11,     0,     0,     0,     0,     0,     0,     8,    12,    29,
+    14,    17,    20,    23,    26,     0,     0,     0,     0,     0,
+    30,     0,    32,     0,    45,    44,     0,    34,    41,    42,
+    43,    40,     0,    36,    38,     0,     0,    15,     0,    18,
+     0,    21,     0,    24,     0,     0,    27,    31,    33,    35,
+    37,    39,     0,     0
 };
 
 static const short yydefgoto[] = {     2,
-     3,     4,     9,    10,    11,    21,    22,    24,    37,    25,
-    38,    26,    39,    27,    40,    28,    41,    23,    43,    45,
-    48,    54,    58,    55,    49
+     3,     8,     9,    10,    20,    21,    23,    36,    24,    37,
+    25,    38,    26,    39,    27,    40,    22,    42,    44,    47,
+    53,    57,    54,    48
 };
 
 static const short yypact[] = {    13,
--32768,     3,-32768,    35,-32768,     0,-32768,-32768,     1,-32768,
-    36,-32768,-32768,    -1,-32768,-32768,-32768,-32768,-32768,-32768,
-    11,-32768,     9,    46,    47,    48,    49,    50,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,    51,    52,    12,    22,
-    26,-32768,    23,-32768,    25,-32768,-32768,    27,-32768,-32768,
--32768,-32768,-32768,    29,-32768,    39,    42,    44,-32768,    55,
--32768,    56,-32768,    12,-32768,    22,    30,-32768,-32768,-32768,
--32768,-32768,    39,    62,-32768
+    35,     3,-32768,     0,-32768,-32768,-32768,     1,-32768,    36,
+-32768,-32768,    -1,-32768,-32768,-32768,-32768,-32768,-32768,    11,
+-32768,     9,    46,    47,    48,    49,    50,-32768,-32768,-32768,
+-32768,-32768,-32768,-32768,-32768,    51,    52,    12,    22,    26,
+-32768,    23,-32768,    25,-32768,-32768,    27,-32768,-32768,-32768,
+-32768,-32768,    29,-32768,    39,    42,    44,-32768,    55,-32768,
+    56,-32768,    12,-32768,    22,    30,-32768,-32768,-32768,-32768,
+-32768,    39,    62,-32768
 };
 
 static const short yypgoto[] = {-32768,
-    61,-32768,-32768,    57,-32768,-32768,    43,-32768,-32768,-32768,
+    61,-32768,    57,-32768,-32768,    53,-32768,-32768,-32768,-32768,
 -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,    24,-32768,   -20,     4
+    24,-32768,   -19,     4
 };
 
 
-#define	YYLAST		68
+#define	YYLAST		73
 
 
-static const short yytable[] = {    15,
-     7,     7,    74,     8,     8,     1,    16,    17,    18,    19,
-    20,    15,   -11,    -5,    12,     1,    46,    47,    16,    17,
-    18,    19,    20,    31,    29,    50,    51,    52,    53,    50,
-    51,    52,    56,    50,    51,    52,    73,    59,    60,    61,
-    62,    63,    64,    65,    66,    72,    72,     6,    14,    32,
-    33,    34,    35,    36,   -41,    42,    44,    67,    68,    69,
-    70,    75,     5,    30,    57,    13,     0,    71
+static const short yytable[] = {    14,
+     6,     6,    73,     7,     7,     1,    15,    16,    17,    18,
+    19,    14,   -10,    -4,    11,     1,    45,    46,    15,    16,
+    17,    18,    19,    30,    28,    49,    50,    51,    52,    49,
+    50,    51,    55,    49,    50,    51,    72,    58,    59,    60,
+    61,    62,    63,    64,    65,    71,    71,     4,    13,    31,
+    32,    33,    34,    35,   -40,    41,    43,    66,    67,    68,
+    69,    74,     5,    56,    12,     0,    70,     0,     0,     0,
+     0,     0,    29
 };
 
 static const short yycheck[] = {     1,
@@ -232,9 +253,10 @@ static const short yycheck[] = {     1,
     12,     1,    14,    14,    14,     3,     5,     6,     8,     9,
     10,    11,    12,    15,    14,     4,     5,     6,     7,     4,
      5,     6,     7,     4,     5,     6,     7,    15,    16,    15,
-    16,    15,    16,    15,    16,    66,    67,    13,    13,     4,
+    16,    15,    16,    15,    16,    65,    66,    13,    13,     4,
      4,     4,     4,     4,    16,     5,     5,    16,    15,     5,
-     5,     0,     2,    21,    41,     9,    -1,    64
+     5,     0,     2,    40,     8,    -1,    63,    -1,    -1,    -1,
+    -1,    -1,    20
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/local/share/bison.simple"
@@ -388,7 +410,7 @@ int yydebug;			/*  nonzero means print parse trace	*/
 
 /* Prevent warning if -Wstrict-prototypes.  */
 #ifdef __GNUC__
-int yyparse (DAS &table, int &parse_ok);
+int yyparse (void);
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
@@ -446,8 +468,7 @@ __yy_memcpy (char *from, char *to, int count)
 #endif
 
 int
-yyparse(DAS &table, int &parse_ok)
-     YYPARSE_PARAM_DECL
+yyparse(YYPARSE_PARAM)
 {
   register int yystate;
   register int yyn;
@@ -728,204 +749,289 @@ yyreduce:
 
   switch (yyn) {
 
-case 3:
-#line 221 "das.y"
-{ parse_ok = TRUE; ;
-    break;}
-case 8:
-#line 230 "das.y"
+case 7:
+#line 239 "das.y"
 { 
 		    DBG2(mem_list_report()); /* mem_list_report is in */
 					     /* libdbnew.a  */
-		    attr_tab_ptr = table.get_table(yyvsp[0]);
+		    attr_tab = DAS_OBJ(arg)->get_table(yyvsp[0]);
 		    DBG2(mem_list_report());
-		    if (!attr_tab_ptr) { /* is this a new var? */
-			attr_tab_ptr = table.add_table(yyvsp[0], new AttrTable);
-			DBG(cerr << "attr_tab_ptr: " << attr_tab_ptr << endl);
+		    if (!attr_tab) { /* is this a new var? */
+			attr_tab = DAS_OBJ(arg)->add_table(yyvsp[0], new AttrTable);
+			DBG(cerr << "attr_tab: " << attr_tab << endl);
 		    }
 		    DBG2(mem_list_report());
 		;
     break;}
-case 10:
-#line 242 "das.y"
-{ parse_ok = FALSE; ;
+case 9:
+#line 252 "das.y"
+{ 
+		    parse_error((parser_arg *)arg, VAR_ATTR_MSG, das_line_num);
+		    YYABORT;
+		;
+    break;}
+case 13:
+#line 263 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 14:
-#line 250 "das.y"
-{ save_str(type, yyvsp[0], das_line_num); ;
-    break;}
-case 15:
-#line 251 "das.y"
+#line 264 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
+    break;}
+case 16:
+#line 267 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 17:
-#line 254 "das.y"
-{ save_str(type, yyvsp[0], das_line_num); ;
-    break;}
-case 18:
-#line 255 "das.y"
+#line 268 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
+    break;}
+case 19:
+#line 271 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 20:
-#line 258 "das.y"
-{ save_str(type, yyvsp[0], das_line_num); ;
-    break;}
-case 21:
-#line 259 "das.y"
+#line 272 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
+    break;}
+case 22:
+#line 275 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 23:
-#line 262 "das.y"
-{ save_str(type, yyvsp[0], das_line_num); ;
-    break;}
-case 24:
-#line 263 "das.y"
+#line 276 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
+    break;}
+case 25:
+#line 279 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 26:
-#line 266 "das.y"
-{ save_str(type, yyvsp[0], das_line_num); ;
-    break;}
-case 27:
-#line 267 "das.y"
+#line 280 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
-case 29:
-#line 270 "das.y"
-{ parse_ok = FALSE; ;
+case 28:
+#line 284 "das.y"
+{ 
+		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG, 
+				das_line_num);
+		    YYABORT;
+		;
     break;}
-case 31:
-#line 274 "das.y"
+case 30:
+#line 292 "das.y"
 {
 		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
 		    if (!check_byte(yyvsp[0], das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << yyvsp[0] << "' is not a Byte value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, yyvsp[0])) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		;
     break;}
-case 32:
-#line 286 "das.y"
+case 31:
+#line 313 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
 		    if (!check_byte(yyvsp[0], das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << yyvsp[-2] << "' is not a Byte value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, yyvsp[0])) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		;
+    break;}
+case 32:
+#line 336 "das.y"
+{
+		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
+			<< yyvsp[0] << endl);
+		    if (!check_int(yyvsp[0], das_line_num)) {
+			ostrstream msg;
+			msg << "`" << yyvsp[0] << "' is not an Int32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!attr_tab->append_attr(name, type, yyvsp[0])) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		;
     break;}
 case 33:
-#line 300 "das.y"
+#line 357 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
 		    if (!check_int(yyvsp[0], das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << yyvsp[-2] << "' is not an Int32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, yyvsp[0])) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		;
     break;}
 case 34:
-#line 312 "das.y"
+#line 380 "das.y"
 {
-		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
+		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_int(yyvsp[0], das_line_num)) {
-			parse_ok = 0;
+		    if (!check_float(yyvsp[0], das_line_num)) {
+			ostrstream msg;
+			msg << "`" << yyvsp[0] << "' is not a Float64 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, yyvsp[0])) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		;
     break;}
 case 35:
-#line 326 "das.y"
+#line 402 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
 		    if (!check_float(yyvsp[0], das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << yyvsp[-2] << "' is not a Float64 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, yyvsp[0])) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		;
     break;}
 case 36:
-#line 338 "das.y"
+#line 426 "das.y"
 {
-		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
+		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_float(yyvsp[0], das_line_num)) {
-			parse_ok = 0;
-		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    /* Assume a string that parses is vaild. */
+		    if (attr_tab->append_attr(name, type, yyvsp[0]) == 0) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0); 
+			YYABORT;
 		    }
 		;
     break;}
 case 37:
-#line 352 "das.y"
+#line 440 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    /* assume that a string that parsers is a vaild string */
-		    if (attr_tab_ptr->append_attr(name, type, yyvsp[0]) == 0) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    if (attr_tab->append_attr(name, type, yyvsp[0]) == 0) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		;
     break;}
 case 38:
-#line 362 "das.y"
+#line 455 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (attr_tab_ptr->append_attr(name, type, yyvsp[0]) == 0) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    if (!check_url(yyvsp[0], das_line_num)) {
+			ostrstream msg;
+			msg << "`" << yyvsp[0] << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (!attr_tab->append_attr(name, type, yyvsp[0])) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		;
     break;}
 case 39:
-#line 373 "das.y"
+#line 476 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
 		    if (!check_url(yyvsp[0], das_line_num)) {
-			parse_ok = 0;
+			ostrstream msg;
+			msg << "`" << yyvsp[-2] << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
-		    }
-		;
-    break;}
-case 40:
-#line 385 "das.y"
-{
-		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
-			<< yyvsp[0] << endl);
-		    if (!check_url(yyvsp[0], das_line_num)) {
-			parse_ok = 0;
-		    }
-		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			parse_error("Variable redefinition", das_line_num);
-			parse_ok = 0;
+		    else if (!attr_tab->append_attr(name, type, yyvsp[0])) {
+			ostrstream msg;
+			msg << "`" << name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
 		    }
 		;
     break;}
@@ -1127,13 +1233,13 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 404 "das.y"
+#line 504 "das.y"
 
 
-int 
-daserror(char *s)
+void
+daserror(char */* s */)
 {
-    fprintf(stderr, "%s line: %d\n", s, das_line_num);
-
-    return 1;
+#if 0
+    cerr << " line: " << das_line_num << ": " << s << endl;
+#endif
 }

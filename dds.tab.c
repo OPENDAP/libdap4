@@ -34,20 +34,34 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: dds.tab.c,v 1.11 1996/06/04 21:33:58 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: dds.tab.c,v 1.12 1996/08/13 20:54:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include <iostream.h>
 
+#include "DDS.h"
+#include "Array.h"
+#include "Error.h"
+#include "BTXPStack.h"
 #include "parser.h"
 #include "dds.tab.h"
 #include "util.h"
-#include "DDS.h"
-#include "Array.h"
-#include "BTXPStack.h"
+
+// These macros are used to access the `arguments' passed to the parser. A
+// pointer to an error object and a pointer to an integer status variable are
+// passed in to the parser within a strucutre (which itself is passed as a
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+
+#define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
+#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
+#define STATUS(arg) ((parser_arg *)(arg))->_status
+#define YYPARSE_PARAM void *arg
 
 extern int dds_line_num;	/* defined in dds.lex */
 
@@ -57,7 +71,7 @@ static Part part = nil;		/* Part is defined in BaseType */
 static char id[ID_MAX];
 
 int ddslex();
-int ddserror(char *s);
+void ddserror(char *s);
 
 void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, 
 	       Part p);
@@ -157,10 +171,10 @@ static const short yyrhs[] = {    28,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   162,   163,   166,   169,   170,   171,   174,   179,   186,   192,
-   196,   202,   206,   212,   214,   216,   220,   228,   230,   232,
-   236,   245,   253,   261,   269,   277,   285,   286,   287,   288,
-   289,   292,   293,   296,   308,   312,   325,   327
+   170,   171,   174,   177,   178,   179,   182,   187,   194,   200,
+   204,   210,   214,   220,   222,   224,   228,   236,   238,   240,
+   244,   253,   261,   269,   277,   285,   293,   294,   295,   296,
+   297,   300,   301,   304,   316,   320,   333,   335
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","ID","INTEGER",
@@ -411,7 +425,7 @@ int yydebug;			/*  nonzero means print parse trace	*/
 
 /* Prevent warning if -Wstrict-prototypes.  */
 #ifdef __GNUC__
-int yyparse (DDS &table);
+int yyparse (void);
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
@@ -469,8 +483,7 @@ __yy_memcpy (char *from, char *to, int count)
 #endif
 
 int
-yyparse(DDS &table)
-     YYPARSE_PARAM_DECL
+yyparse(YYPARSE_PARAM)
 {
   register int yystate;
   register int yyn;
@@ -752,93 +765,93 @@ yyreduce:
   switch (yyn) {
 
 case 7:
-#line 175 "dds.y"
+#line 183 "dds.y"
 { 
 		    if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		;
     break;}
 case 9:
-#line 187 "dds.y"
+#line 195 "dds.y"
 { 
 		    if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		;
     break;}
 case 10:
-#line 193 "dds.y"
+#line 201 "dds.y"
 { 
 		    current = ctor->pop(); 
 		;
     break;}
 case 11:
-#line 197 "dds.y"
+#line 205 "dds.y"
 { 
 		    if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		;
     break;}
 case 12:
-#line 203 "dds.y"
+#line 211 "dds.y"
 { 
 		    current = ctor->pop(); 
 		;
     break;}
 case 13:
-#line 207 "dds.y"
+#line 215 "dds.y"
 { 
 		    if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		;
     break;}
 case 14:
-#line 213 "dds.y"
+#line 221 "dds.y"
 { part = independent; ;
     break;}
 case 15:
-#line 215 "dds.y"
+#line 223 "dds.y"
 { part = dependent;;
     break;}
 case 16:
-#line 217 "dds.y"
+#line 225 "dds.y"
 { 
 		    current = ctor->pop(); 
 		;
     break;}
 case 17:
-#line 221 "dds.y"
+#line 229 "dds.y"
 { 
 		    if (current->check_semantics()) {
 			part = nil; 
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		;
     break;}
 case 18:
-#line 229 "dds.y"
+#line 237 "dds.y"
 { part = array; ;
     break;}
 case 19:
-#line 231 "dds.y"
+#line 239 "dds.y"
 { part = maps; ;
     break;}
 case 20:
-#line 233 "dds.y"
+#line 241 "dds.y"
 {
 		    current = ctor->pop(); 
 		;
     break;}
 case 21:
-#line 237 "dds.y"
+#line 245 "dds.y"
 {
 		    if (current->check_semantics()) {
 			part = nil; 
-			add_entry(table, &ctor, &current, part); 
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		;
     break;}
 case 22:
-#line 246 "dds.y"
+#line 254 "dds.y"
 { 
 		    if (!ctor) 
 			ctor = new BaseTypePtrXPStack;
@@ -846,7 +859,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 254 "dds.y"
+#line 262 "dds.y"
 { 
 		    if (!ctor)
 	                ctor = new BaseTypePtrXPStack;
@@ -854,7 +867,7 @@ case 23:
 		;
     break;}
 case 24:
-#line 262 "dds.y"
+#line 270 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new BaseTypePtrXPStack;
@@ -862,7 +875,7 @@ case 24:
 		;
     break;}
 case 25:
-#line 270 "dds.y"
+#line 278 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new BaseTypePtrXPStack;
@@ -870,7 +883,7 @@ case 25:
 		;
     break;}
 case 26:
-#line 278 "dds.y"
+#line 286 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new BaseTypePtrXPStack;
@@ -878,31 +891,31 @@ case 26:
 		;
     break;}
 case 27:
-#line 285 "dds.y"
+#line 293 "dds.y"
 { current = NewByte(); ;
     break;}
 case 28:
-#line 286 "dds.y"
+#line 294 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 29:
-#line 287 "dds.y"
+#line 295 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 30:
-#line 288 "dds.y"
+#line 296 "dds.y"
 { current = NewStr(); ;
     break;}
 case 31:
-#line 289 "dds.y"
+#line 297 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 32:
-#line 292 "dds.y"
+#line 300 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 34:
-#line 297 "dds.y"
+#line 305 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -916,13 +929,13 @@ case 34:
 		 ;
     break;}
 case 35:
-#line 309 "dds.y"
+#line 317 "dds.y"
 {
 		     save_str(id, yyvsp[0], dds_line_num);
 		 ;
     break;}
 case 36:
-#line 313 "dds.y"
+#line 321 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), id);
@@ -936,8 +949,8 @@ case 36:
 		 ;
     break;}
 case 38:
-#line 327 "dds.y"
-{ table.set_dataset_name(yyvsp[0]); ;
+#line 335 "dds.y"
+{ (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
@@ -1137,10 +1150,10 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 330 "dds.y"
+#line 338 "dds.y"
 
 
-int 
+void 
 ddserror(char *s)
 {
     fprintf(stderr, "%s line: %d\n", s, dds_line_num);
