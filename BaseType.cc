@@ -526,12 +526,13 @@ BaseType::var(const string &, btp_stack &)
 
     NB: When adding a variable to a constructor or an array (this is only
     important for a constructor), if that variable is itself a
-    constructor you <i>must</i> add its children <i>before</i> you add
+    constructor you <i>must</i> add its children <i>before</i> you
     call this method to add the variable to its parent. This method
     copies the variable allocating a new object. One way around this is
     to add the constructor, then get a BaseType pointer to it using
     <tt>var()</tt>. 
 
+    @todo This implementation should probably throw an InternalErr.
     @brief Adds the input data to the class instance. 
     @param bt The data to be added to the constructor type. The caller of
     this method <i>must</i> free memory it allocates for
@@ -845,6 +846,9 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.53  2003/05/30 16:52:45  jimg
+// Minor fixes to the comments.
+//
 // Revision 1.52  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can
