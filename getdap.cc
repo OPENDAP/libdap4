@@ -1,11 +1,14 @@
 
-// (c) COPRIGHT URI/MIT 1996
+// (c) COPYRIGHT URI/MIT 1996
 // Please first read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: getdap.cc,v $
+// Revision 1.3  1996/05/28 17:35:40  jimg
+// Fixed verbose arguments.
+//
 // Revision 1.2  1996/05/28 15:49:55  jimg
 // Removed code that read from the stream after the das/dds parser built the
 // internal object (since there was nothing in that stream after the parse
@@ -15,7 +18,7 @@
 // First version. Built to test the new WWW code in the class Connect.
 //
 
-static char rcsid[]={"$Id: getdap.cc,v 1.2 1996/05/28 15:49:55 jimg Exp $"};
+static char rcsid[]={"$Id: getdap.cc,v 1.3 1996/05/28 17:35:40 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -71,7 +74,7 @@ main(int argc, char * argv[])
     bool verbose = false;
     bool multi = false;
     int times = 1;
-    char code[16];
+    char *vcode;
     int vopts = 0;
 
     while ((option_char = getopt()) != EOF)
@@ -81,22 +84,23 @@ main(int argc, char * argv[])
               case 'd': get_dds = true; break;
 	      case 'a': get_das = true; break;
 	      case 'v': 
-		verbose = true; 
+		verbose = true;
 		vopts = strlen(getopt.optarg);
-		if (vopts > 15)
-		    cerr << "Too many options to verbose! Ignoring..." << endl;
-		else
-		    strcpy(code, getopt.optarg); 
+		if (vopts) {
+		    vcode = new char[vopts + 1];
+		    strcpy(vcode, getopt.optarg); 
+		}
 		break;
 	      case 'm': multi = true; times = atoi(getopt.optarg); break;
 	      case 'h':
               case '?':
 	      default:
-		usage(argv[0]); break;
+		usage(argv[0]); exit(1); break;
 	    }
 
-    if (verbose && vopts < 16 && vopts > 0)
-	for (char c = code[vopts-1]; --vopts; c = code[vopts-1])
+    char c, *cc = vcode;
+    if (verbose && vopts > 0)
+	while ((c = *cc++))
 	    switch (c) {
 	      case 'a': WWWTRACE |= SHOW_ANCHOR_TRACE; break;
 	      case 'b': WWWTRACE |= SHOW_BIND_TRACE; break;
@@ -109,9 +113,11 @@ main(int argc, char * argv[])
 	      case 'u': WWWTRACE |= SHOW_URI_TRACE; break;
 	      case 'd': break;
 	      default:
-		cerr << "Unrecognized verbose option: " << c << endl;
+		cerr << "Unrecognized verbose option: `" << c << "'" << endl;
 		break;
 	    }
+    
+    delete vcode;
 
     for (int i = getopt.optind; i < argc; ++i) {
 	if (verbose)
