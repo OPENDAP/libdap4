@@ -4,7 +4,12 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.6  1994/11/29 19:59:01  jimg
+// Revision 1.7  1994/12/16 22:01:42  jimg
+// Added mfuncs var() and add_var() to BaseType. These print an error
+// message when called with a simple BaseType (Int32, ...). Classes like
+// Array use them and provide their own definitions.
+//
+// Revision 1.6  1994/11/29  19:59:01  jimg
 // Added FILE * input and output buffers. All data set and all data received
 // passes through these buffers. This simplifies testing and makes using
 // the toolkit with files a little easier.
@@ -129,6 +134,25 @@ void
 BaseType::set_var_type(const String &t)
 {
     type = t;
+}
+
+// Return a pointer to the contained variable in a ctor class. For BaseType
+// this always prints an error message. It is defined here so that the ctor
+// descendents of BaseType can access it when they are stored in a BaseType
+// pointer.
+
+BaseType *
+BaseType::var(const String &name)
+{
+    cerr << "var() should only be called for contructor types" << endl;
+}
+
+// See comment for var().
+
+void
+BaseType::add_var(BaseType *v, Part p)
+{
+    cerr << "add_var() should only be called for constructor types" << endl;
 }
 
 // Using this mfunc, objects that contain a (BaseType *) can get the xdr
