@@ -43,6 +43,22 @@ AISConnect::AISConnect(const string &name) throw(AISDatabaseReadFailed)
 	d_ais_merge = new AISMerge(ais_db);
 }
 
+/** Build an AISConnect. This calls Connect's constructor with \c name and
+    accepts its default values for the other parameters. The AIS is
+    initialized to use the database named by \c ais.
+    
+    @param name Create a virtual, AIS-enhanced, connection for this OPeNDAP
+    data source.
+    @param ais Read the AIS information from this XML file.
+    @exception AISDatabaseReadFailed Thrown if the AIS database listed in the
+    <c>~/.dodsrc</c> file could not be opened. */
+AISConnect::AISConnect(const string &name, const string &ais) 
+    throw(AISDatabaseReadFailed)
+    : Connect(name), d_ais_merge(0)
+{
+    d_ais_merge = new AISMerge(ais);
+}
+
 /** Destroy an AISConnect. */
 AISConnect::~AISConnect()
 {
@@ -67,6 +83,12 @@ AISConnect::request_das(DAS &das) throw(Error, InternalErr)
 }
 
 // $Log: AISConnect.cc,v $
+// Revision 1.3  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.2  2003/03/11 10:16:19  jimg
 // if there's no AIS database, the field d_ais_merge is null. Make sure not to
 // dereference that pointer in that case!

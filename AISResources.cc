@@ -27,6 +27,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
+#include <functional>
 
 #include "AISResources.h"
 #include "AISDatabaseParser.h"
@@ -62,6 +64,19 @@ operator<<(ostream &os, const AISResources &ais_res)
     os << "<!DOCTYPE ais SYSTEM \"http://www.opendap.org/ais/ais_database.dtd\">" << endl;
     os << "<ais xmlns=\"http://xml.opendap.org/ais\">" << endl;
 
+    for (AISResources::ResourceRegexpsCIter pos = ais_res.d_re.begin(); 
+	 pos != ais_res.d_re.end(); ++pos) {
+	os << "<entry>" << endl;
+	// write primary
+	os << "<primary regexp=\"" << pos->first << "\"/>" << endl;
+	// write the vector of Resource objects
+	for (ResourceVectorCIter i = pos->second.begin(); 
+	     i != pos->second.end(); ++i) {
+	    os << *i << endl;
+	}
+	os << "</entry>" << endl;
+    }
+
     for (AISResources::ResourceMapCIter pos = ais_res.d_db.begin(); 
 	 pos != ais_res.d_db.end(); ++pos) {
 	os << "<entry>" << endl;
@@ -89,34 +104,56 @@ AISResources::AISResources(const string &database) throw(AISDatabaseReadFailed)
 
 /** Add the given ancillary resource to the in-memory collection of
     mappings between primary and ancillary data sources. 
-    @param primary The target of the new mapping.
+    @param url The target of the new mapping.
     @param Match this ancillary resource to the target (primary). */
 void 
-AISResources::add_resource(const string &primary, const Resource &ancillary)
+AISResources::add_url_resource(const string &url, const Resource &ancillary)
 {
-    ResourceMapIter pos = d_db.find(primary);
-    if (pos == d_db.end()) {
-	// no entry for primary yet, make a ResourceVector
-	ResourceVector rv(1, ancillary);
-	d_db.insert(std::make_pair(primary, rv));
-    }
-    else {
-	// There's already a ResourceVector, append to it.
-	pos->second.push_back(ancillary);
-    }
+    add_url_resource(url, ResourceVector(1, ancillary));
 }
 
 /** Add a vector of AIS resources for the given primary data source URL. If
     there is already an entry for the primary, append the new ancillary
     resources to those.
-    @param primary The target of the new mapping.
+    @param url The target of the new mapping.
     @param Ancillary resources matched to this primary resource. */
 void 
-AISResources::add_resource(const string &primary, const ResourceVector &rv)
+AISResources::add_url_resource(const string &url, const ResourceVector &rv)
 {
-    ResourceMapIter pos = d_db.find(primary);
+    ResourceMapIter pos = d_db.find(url);
     if (pos == d_db.end()) {
-	d_db.insert(std::make_pair(primary, rv));
+	d_db.insert(std::make_pair(url, rv));
+    }
+    else {
+	// There's already a ResourceVector, append to it.
+	for (ResourceVectorCIter i = rv.begin(); i != rv.end(); ++i)
+	    pos->second.push_back(*i);
+    }
+}
+
+/** Add the given ancillary resource to the in-memory collection of
+    mappings between regular expressions and ancillary data sources. 
+    @param re The target of the new mapping.
+    @param Match this ancillary resource to the target (primary). */
+void 
+AISResources::add_regexp_resource(const string &re, const Resource &ancillary)
+{
+    add_regexp_resource(re, ResourceVector(1, ancillary));
+}
+
+/** Add a vector of AIS resources for the given primary data source regular
+    expression. If there is already an entry for the primary, append the new
+    ancillary resources to those.
+
+    @param re The target of the new mapping.
+    @param Ancillary resources matched to this primary resource. */
+void 
+AISResources::add_regexp_resource(const string &re, const ResourceVector &rv)
+{
+    ResourceRegexpsIter pos = find_if(d_re.begin(), d_re.end(), 
+				      FindRegexp(re));
+    if (pos == d_re.end()) {
+	d_re.push_back(std::make_pair(re, rv));
     }
     else {
 	// There's already a ResourceVector, append to it.
@@ -133,11 +170,21 @@ AISResources::add_resource(const string &primary, const ResourceVector &rv)
 bool 
 AISResources::has_resource(const string &primary) const
 {
-    return d_db.find(primary) != d_db.end();
+    return ((d_db.find(primary) != d_db.end())
+	    || (find_if(d_re.begin(), d_re.end(), MatchRegexp(primary)) 
+		!= d_re.end()));
+
 }
 
 /** Return a vector of AIS Resource objects which are bound to the given
-    primary resource. 
+    primary resource. If a given \c primary resource has both an explicit
+    entry for itself \i and matches a regular expression, the AIS resources
+    for both will be combined in one ResourceVector and returned.
+
+    @todo Make this return an empty ResourceVector is no matching resources
+    are found. Clients would not need to call has_resource() which would save
+    some time.
+
     @param primary The URL of the primary resource
     @return a vector of Resource objects.
     @exception NoSuchPrimaryResource thrown if <code>primary</code> is
@@ -146,12 +193,21 @@ ResourceVector
 AISResources::get_resource(const string &primary)
     throw(NoSuchPrimaryResource)
 {
-    const ResourceMapIter &iter = d_db.find(primary);
+    ResourceVector rv;
+    const ResourceMapIter &i = d_db.find(primary);
 
-    if (iter != d_db.end())
-	return iter->second;
-    else
+    if (i != d_db.end())
+	rv = i->second;
+
+    const ResourceRegexpsIter &j = find_if(d_re.begin(), d_re.end(),
+					   MatchRegexp(primary));
+    if (j != d_re.end())
+	copy(j->second.begin(), j->second.end(), inserter(rv, rv.begin()));
+
+    if (rv.size() == 0)
 	throw NoSuchPrimaryResource();
+
+    return rv;	
 }
 
 /** Read the AIS database (an XML 'configuration file') and internalize it.
@@ -191,6 +247,12 @@ AISResources::write_database(const string &filename)
 }
 
 // $Log: AISResources.cc,v $
+// Revision 1.7  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.6  2003/02/27 22:21:01  pwest
 // Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
 // rule

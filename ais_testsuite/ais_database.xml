@@ -27,4 +27,14 @@
 <primary url="http://localhost/dods-test/nph-dods/data/nc/coads_climatology.nc"/>
 <ancillary url="ais_testsuite/coads.das"/>
 </entry>
+
+<entry>
+<primary url="http://localhost/dods-test/nph-dods/data/nc/123.nc"/>
+<ancillary url="ais_testsuite/123.das"/>
+</entry>
+
+<entry>
+<primary regexp="http://localhost/dods-test/nph-dods/data/nc/[0-9]+.*\.nc"/>
+<ancillary url="ais_testsuite/starts_with_number.das"/>
+</entry>
 </ais>

@@ -39,10 +39,12 @@ class AISMergeTest:public TestFixture {
 private:
     AISMerge *ais_merge;
 
-    static string fnoc1, fnoc2, fnoc3, bears, coads;
-    static string fnoc1_ais, fnoc2_ais, fnoc3_das;
+    static string fnoc1, fnoc2, fnoc3, bears, coads, three_fnoc;
+    static string fnoc1_ais, fnoc2_ais, digit_ais, fnoc3_das;
+
     static string fnoc1_ais_string, bears_1_ais_string, coads_ais_string;
     static string fnoc1_merge_ais, fnoc2_merge_ais, fnoc3_merge_ais;
+    static string three_fnoc_merge_ais, starts_with_number_ais_string;
 
     string dump2string(FILE *res) {
 	string stuff = "";
@@ -88,6 +90,11 @@ public:
 	    res = ais_merge->get_ais_resource(rv[0].get_url());
 	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(coads_ais_string) 
 			   != string::npos);
+
+	    rv = ais_merge->d_ais_db.get_resource(three_fnoc);
+	    res = ais_merge->get_ais_resource(rv[0].get_url());
+	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(starts_with_number_ais_string) 
+			   != string::npos);
 	}
 	catch (Error &e) {
 	    cerr << "Error: " << e.get_error_message() << endl;
@@ -131,6 +138,13 @@ public:
 	    ais_merge->merge(fnoc3, das);
 	    das.print(oss);
 	    CPPUNIT_ASSERT(oss.str().find(fnoc3_merge_ais) != string::npos);
+
+	    conn = new Connect(three_fnoc); // test regexp
+	    conn->request_das(das); // with a non-empty das, nothing happens
+	    ais_merge->merge(three_fnoc, das);
+	    das.print(oss);
+	    CPPUNIT_ASSERT(oss.str().find(three_fnoc_merge_ais) 
+			   != string::npos);
 	}
 	catch (Error &e) {
 	    cerr << "Error: " << e.get_error_message() << endl;
@@ -144,9 +158,11 @@ string AISMergeTest::fnoc2 = "http://localhost/dods-test/nph-dods/data/nc/fnoc2.
 string AISMergeTest::fnoc3 = "http://localhost/dods-test/nph-dods/data/nc/fnoc3.nc";
 string AISMergeTest::bears = "http://localhost/dods-test/nph-dods/data/nc/bears.nc";
 string AISMergeTest::coads = "http://localhost/dods-test/nph-dods/data/nc/coads_climatology.nc";
+string AISMergeTest::three_fnoc = "http://localhost/dods-test/nph-dods/data/nc/3fnoc.nc";
 
 string AISMergeTest::fnoc1_ais = "http://localhost/ais/fnoc1.nc.das";
 string AISMergeTest::fnoc2_ais = "http://localhost/ais/fnoc2.nc.das";
+string AISMergeTest::digit_ais = "ais_testsuite/starts_with_number.das";
 
 string AISMergeTest::fnoc1_ais_string = 
 "Attributes {
@@ -169,6 +185,13 @@ string AISMergeTest::coads_ais_string =
 "Attributes {
     COADSX {
         String long_name \"Longitude\";
+    }
+}";
+
+string AISMergeTest::starts_with_number_ais_string =
+"Attributes {
+    NC_GLOBAL {
+        String AIS_Test_info \"This dataset's name starts with a digit.\";
     }
 }";
 
@@ -280,6 +303,41 @@ string AISMergeTest::fnoc3_merge_ais =
     }
 }";
 
+string AISMergeTest::three_fnoc_merge_ais =
+"Attributes {
+    u {
+        String long_name \"UWind\", \"Vector wind eastward component\";
+        String units \"meter per second\";
+        String missing_value \"-32767\";
+        String scale_factor \"0.005\";
+    }
+    v {
+        String long_name \"VWind\", \"Vector wind northward component\";
+        String units \"meter per second\";
+        String missing_value \"-32767\";
+        String scale_factor \"0.005\";
+    }
+    lat {
+        String long_name \"Latitude\";
+        String units \"degree North\";
+    }
+    lon {
+        String long_name \"Longitude\";
+        String units \"degree East\";
+    }
+    time {
+        String units \"hours from base_time\";
+    }
+    NC_GLOBAL {
+        String base_time \"88-245-00:00:00\";
+        String title \" FNOC UV wind components from 1988-245 to 1988-247.\";
+        String AIS_Test_info \"This dataset's name starts with a digit.\";
+    }
+    DODS_EXTRA {
+        String Unlimited_Dimension \"time_a\";
+    }
+}";
+
 CPPUNIT_TEST_SUITE_REGISTRATION(AISMergeTest);
 
 int 
@@ -294,6 +352,12 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISMergeTest.cc,v $
+// Revision 1.3  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.2  2003/03/04 17:56:43  jimg
 // Now uses Response objects.
 //

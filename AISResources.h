@@ -30,6 +30,8 @@
 #include <vector>
 #include <map>
 
+#include "Regex.h"
+
 #ifndef resource_h
 #include "Resource.h"
 #endif
@@ -53,17 +55,45 @@ typedef ResourceVector::const_iterator ResourceVectorCIter;
     parser library uses filenames. The write_database() method takes a
     filename to be symmetrical. 
 
+    @todo Develop some tighter rules about regular expressions in the AIS
+    database. How should they be applied relative to explicit entries?
+
     @brief Manage AIS resources. */
 class AISResources {
 private:
-    friend class AISResourcesTest; // unit tests access to private stuff
-    friend ostream &operator<<(ostream &os, const AISResources &ais_res);
-
     typedef map<string, ResourceVector> ResourceMap;
     typedef ResourceMap::iterator ResourceMapIter;
     typedef ResourceMap::const_iterator ResourceMapCIter;
     
-    ResourceMap d_db;
+    typedef pair<string, ResourceVector> RVPair;
+    typedef vector<RVPair> ResourceRegexps;
+    typedef ResourceRegexps::iterator ResourceRegexpsIter;
+    typedef ResourceRegexps::const_iterator ResourceRegexpsCIter;
+
+    ResourceMap d_db;		// This holds the URL resources
+    ResourceRegexps d_re;	// This holds the regular expression res.
+
+    // Scan RegExps looking for a particular regular expression.
+    struct FindRegexp : public binary_function<RVPair, string, bool> {
+	string local_re;
+	FindRegexp(const string &re) : local_re(re) {}
+	bool operator()(const RVPair &p) { return p.first == local_re; }
+    };
+
+    // Scan RegExps looking for one that matches a URL.
+    // *** Make this more efficient by storing the Regex objects in the
+    // vector. 03/11/03 jhrg
+    struct MatchRegexp : public binary_function<RVPair, string, bool> {
+	string candidate;
+	MatchRegexp(const string &url) : candidate(url) {}
+	bool operator()(const RVPair &p) { 
+	    Regex r(p.first.c_str());
+	    return r.match(candidate.c_str(), candidate.length()) != -1;
+	}
+    };
+
+    friend class AISResourcesTest; // unit tests access to private stuff
+    friend ostream &operator<<(ostream &os, const AISResources &ais_res);
 
 public:
     /** Build an empty instance. */
@@ -72,9 +102,14 @@ public:
 
     virtual ~AISResources() {}
 
-    virtual void add_resource(const string &primary, 
-			      const Resource &ancillary);
-    virtual void add_resource(const string &primary, const ResourceVector &rv);
+    virtual void add_url_resource(const string &url, 
+				  const Resource &ancillary);
+    virtual void add_url_resource(const string &url, const ResourceVector &rv);
+
+    virtual void add_regexp_resource(const string &regexp, 
+				     const Resource &ancillary);
+    virtual void add_regexp_resource(const string &regexp,
+				     const ResourceVector &rv);
 
     virtual bool has_resource(const string &primary) const;
 
@@ -89,6 +124,12 @@ public:
 };
 
 // $Log: AISResources.h,v $
+// Revision 1.6  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.5  2003/02/27 22:21:01  pwest
 // Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
 // rule

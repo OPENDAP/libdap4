@@ -36,8 +36,8 @@ using namespace CppUnit;
 
 class AISDatabaseParserTest:public TestFixture {
 private:
-    string fnoc1, fnoc2, fnoc3;
-    string fnoc1_ais, fnoc2_ais, fnoc3_ais;
+    string fnoc1, fnoc2, fnoc3, number, bears, three_fnoc;
+    string fnoc1_ais, fnoc2_ais, fnoc3_ais, number_ais;
     AISDatabaseParser *ais_parser;
     AISResources *ais;
 
@@ -49,9 +49,16 @@ public:
 	fnoc1 = "http://localhost/dods-test/nph-dods/data/nc/fnoc1.nc";
 	fnoc2 = "http://localhost/dods-test/nph-dods/data/nc/fnoc2.nc";
 	fnoc3 = "http://localhost/dods-test/nph-dods/data/nc/fnoc3.nc";
+	// number is the regular expression that will be in the
+	// ais_database.xml file.
+	number = "http://localhost/dods-test/nph-dods/data/nc/[0-9]+.*\\.nc";
+	bears = "http://localhost/dods-test/nph-dods/data/nc/123bears.nc";
+	three_fnoc = "http://localhost/dods-test/nph-dods/data/nc/3fnoc.nc";
+
 	fnoc1_ais = "http://localhost/ais/fnoc1.nc.das";
 	fnoc2_ais = "ais_testsuite/fnoc2_replace.das";
 	fnoc3_ais = "http://localhost/ais/fnoc3_fallback.das";
+	number_ais = "ais_testsuite/starts_with_number.das";
 
 	ais = new AISResources;
 	ais_parser = new AISDatabaseParser();
@@ -87,6 +94,11 @@ public:
 	    CPPUNIT_ASSERT(trv3.size() == 1);
 	    CPPUNIT_ASSERT(trv3[0].get_url() == fnoc3_ais);
 	    CPPUNIT_ASSERT(trv3[0].get_rule() == Resource::fallback);
+
+	    ResourceVector trv4 = ais->get_resource(bears);
+	    CPPUNIT_ASSERT(trv4.size() == 1);
+	    CPPUNIT_ASSERT(trv4[0].get_url() == number_ais);
+	    CPPUNIT_ASSERT(trv4[0].get_rule() == Resource::overwrite);
 	}
 	catch (AISDatabaseReadFailed &e) {
 	    cerr << endl << "Error: " << e.get_error_message() << endl;
@@ -121,7 +133,7 @@ public:
 
 	try {
 	    ais_parser->intern("ais_testsuite/ais_error_4.xml", ais);
-	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
+	    CPPUNIT_ASSERT(!"ais_error_4.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
@@ -129,7 +141,15 @@ public:
 
 	try {
 	    ais_parser->intern("ais_testsuite/ais_error_5.xml", ais);
-	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
+	    CPPUNIT_ASSERT(!"ais_error_5.xml should fail!");
+	}
+	catch (AISDatabaseReadFailed &e) {
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
+	}
+
+	try {
+	    ais_parser->intern("ais_testsuite/ais_error_6.xml", ais);
+	    CPPUNIT_ASSERT(!"ais_error_6.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
 	    DBG(cerr << "Error: " << e.get_error_message() << endl);
@@ -151,6 +171,12 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISDatabaseParserTest.cc,v $
+// Revision 1.6  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.5  2003/03/04 17:58:32  jimg
 // Fixed Resource::ResourceRule enum usage (fallback, overwrite, replace).
 //

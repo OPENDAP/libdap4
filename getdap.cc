@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.66 2003/03/04 21:09:32 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.67 2003/03/12 01:07:34 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -58,7 +58,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.66 2003/03/04 21:09:32 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.66 $";
+const char *version = "$Revision: 1.67 $";
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 
@@ -66,7 +66,7 @@ void
 usage(string name)
 {
     cerr << "Usage: " << name << endl;
-    cerr << " [dDaAVvk] [-c <expr>] [-m <num>] <url> [<url> ...]" << endl;
+    cerr << " [dDaAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" << endl;
     cerr << " [Vvk] <file> [<file> ...]" << endl;
     cerr << endl;
     cerr << "In the first form of the command, dereference the URL and" << endl;
@@ -88,6 +88,7 @@ usage(string name)
     cerr << "        a: For each URL, get the DODS DAS." << endl;
     cerr << "        A: Use the AIS for DAS objects." << endl;
     cerr << "        D: For each URL, get the DODS Data." << endl;
+    cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." <<endl;
     cerr << "        v: Verbose." << endl;
     cerr << "        V: Version." << endl;
     cerr << "        c: <expr> is a contraint expression. Used with -D." << endl;
@@ -141,7 +142,7 @@ process_data(Connect *url, DDS &dds, bool verbose = false,
 MAIN_RETURN
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "daDAVvkc:m:zsh?");
+    GetOpt getopt (argc, argv, "daDAVvkB:c:m:zsh?");
     int option_char;
 
     bool get_das = false;
@@ -155,6 +156,7 @@ main(int argc, char * argv[])
     bool use_ais = false;
     int times = 1;
     string expr = "";
+    string ais_db = "";
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
@@ -171,6 +173,7 @@ main(int argc, char * argv[])
 	  case 'k': dods_keep_temps = 1; break; // keep_temp is in Connect.cc
 	  case 'c': cexpr = true; expr = getopt.optarg; break;
 	  case 'm': multi = true; times = atoi(getopt.optarg); break;
+	  case 'B': use_ais = true; ais_db = getopt.optarg; break;
 	  case 'z': accept_deflate = false; break;
 	  case 's': print_rows = true; break;
 	  case 'h':
@@ -188,10 +191,15 @@ main(int argc, char * argv[])
 	
 	    string name = argv[i];
 	    Connect *url;
-	    if (use_ais)
-		url = new AISConnect(name);
-	    else
+	    if (use_ais) {
+		if (ais_db != "")
+		    url = new AISConnect(name, ais_db);
+		else
+		    url = new AISConnect(name);
+	    }
+	    else {
 		url = new Connect(name);
+	    }
 
 	    // This overrides the value set in the .dodsrc file.
 	    url->set_accept_deflate(accept_deflate);
@@ -331,6 +339,12 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.67  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.66  2003/03/04 21:09:32  jimg
 // Updated geturl to match changes in the Connect, HTTPConnect and HTTPCache
 // classes. In addition, the program can be used with the prototype AIS (which

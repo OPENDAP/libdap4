@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.138 2003/03/07 21:47:27 jimg Exp $
+# $Id: Makefile.in,v 1.139 2003/03/12 01:07:34 jimg Exp $
 
 @SET_MAKE@
 
@@ -28,7 +28,7 @@ LDFLAGS = -L. @LDFLAGS@ $(CPP_UNIT_LIB)
 LFLAGS = -8
 YFLAGS = -d -v
 TAGS_FLAGS =
-LIBS = @LIBS@ -lxml2
+LIBS = @LIBS@
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
@@ -108,7 +108,8 @@ ERRORHDRS = Error.h InternalErr.h ResponseTooBigErr.h
 ERROROBJS = Error.o InternalErr.o ResponseTooBigErr.o $(ERROR_GRAM_OBJS)
 ERRORSRCS = Error.cc InternalErr.cc ResponseTooBigErr.cc
 
-CLIENTSRCS = Connections.cc  RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc
+CLIENTSRCS = Connections.cc  RCReader.cc Connect.cc HTTPConnect.cc \
+	     HTTPCache.cc
 CLIENTOBJS = Connections.o RCReader.o Connect.o HTTPConnect.o HTTPCache.o
 CLIENTHDRS = Connections.h Connections.cc RCReader.h Connect.h HTTPConnect.h \
 	     ObjectType.h EncodingType.h HTTPCache.h \
@@ -159,7 +160,8 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
 AISSRCS = AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc
-
+AISHDRS = AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h \
+	  AISResources.h Resource.h
 AISOBJS = AISResources.o AISDatabaseParser.o AISMerge.o AISConnect.o
 
 ALLSRCS = $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) $(TESTSRCS) \
@@ -308,7 +310,7 @@ install-headers:
 	$(INSTALL_DATA) debug.h $(includedir)
 	$(INSTALL_DATA) dods-limits.h $(includedir)
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
-		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS); \
+		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS); \
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
 install-geturl: geturl

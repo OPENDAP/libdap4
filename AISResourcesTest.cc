@@ -27,6 +27,8 @@
 
 #include <unistd.h>
 
+#include <algorithm>
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -39,8 +41,8 @@ using namespace CppUnit;
 class AISResourcesTest:public TestFixture {
 private:
     AISResources *ais;
-    string fnoc1, fnoc2, fnoc3;
-    string fnoc1_ais, fnoc2_ais, fnoc3_ais;
+    string fnoc1, fnoc2, fnoc3, regexp, bears, three_fnoc, one_2_3;
+    string fnoc1_ais, fnoc2_ais, fnoc3_ais, digit_ais, one_2_3_ais;
 
 public:
     AISResourcesTest() {} 
@@ -50,20 +52,35 @@ public:
 	fnoc1 = "http://localhost/dods-test/nph-dods/data/nc/fnoc1.nc";
 	fnoc2 = "http://localhost/dods-test/nph-dods/data/nc/fnoc2.nc";
 	fnoc3 = "http://localhost/dods-test/nph-dods/data/nc/fnoc3.nc";
+
+	regexp = "http://localhost/dods-test/nph-dods/data/nc/[0-9]+.*\\.nc";
+	bears = "http://localhost/dods-test/nph-dods/data/nc/123bears.nc";
+	three_fnoc = "http://localhost/dods-test/nph-dods/data/nc/3fnoc.nc";
+	one_2_3 = "http://localhost/dods-test/nph-dods/data/nc/123.nc";
+
+
 	fnoc1_ais = "http://localhost/ais/fnoc1.nc.das";
 	fnoc2_ais = "ais_testsuite/fnoc2_replace.das";
 	fnoc3_ais = "http://localhost/ais/fnoc3_fallback.das";
+	digit_ais = "ais_testsuite/starts_with_number.das";
+	one_2_3_ais = "ais_testsuite/123.das";
 
 	ais = new AISResources;
 
 	Resource r1(fnoc1_ais);
-	ais->add_resource(fnoc1, r1);
+	ais->add_url_resource(fnoc1, r1);
 
 	Resource r2(fnoc2_ais, Resource::fallback);
-	ais->add_resource(fnoc2, r2);
+	ais->add_url_resource(fnoc2, r2);
 
-	ais->add_resource(fnoc3, r1);
-	ais->add_resource(fnoc3, r2);
+	ais->add_url_resource(fnoc3, r1);
+	ais->add_url_resource(fnoc3, r2);
+
+	Resource r3(digit_ais);
+	ais->add_regexp_resource(regexp, r3);
+
+	Resource r4(one_2_3_ais);
+	ais->add_url_resource(one_2_3, r4);
     } 
 
     void tearDown() { 
@@ -72,8 +89,9 @@ public:
 
     CPPUNIT_TEST_SUITE( AISResourcesTest );
 
-    CPPUNIT_TEST(add_resource_test);
-    CPPUNIT_TEST(add_resource_vector_test);
+    CPPUNIT_TEST(add_url_resource_test);
+    CPPUNIT_TEST(add_regexp_resource_test);
+    CPPUNIT_TEST(add_url_resource_vector_test);
     CPPUNIT_TEST(has_resource_test);
     CPPUNIT_TEST(get_resource_test);
     CPPUNIT_TEST(read_database_test);
@@ -81,8 +99,8 @@ public:
 
     CPPUNIT_TEST_SUITE_END();
 
-    void add_resource_test() {
-	// setUp() makes the add_resource calls. 02/13/03 jhrg
+    void add_url_resource_test() {
+	// setUp() makes the add_url_resource calls. 02/13/03 jhrg
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc1) != ais->d_db.end());
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc1)->second.size() == 1);
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc1)->second[0].get_url() == fnoc1_ais);
@@ -101,12 +119,22 @@ public:
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc3)->second[1].get_rule() == Resource::fallback);
     }
 
-    void add_resource_vector_test() {
+    void add_regexp_resource_test() {
+	AISResources::ResourceRegexpsIter pos;
+	pos = find_if(ais->d_re.begin(), ais->d_re.end(), 
+		      AISResources::FindRegexp(regexp));
+	CPPUNIT_ASSERT(pos != ais->d_re.end());
+	CPPUNIT_ASSERT(pos->second.size() == 1);
+	CPPUNIT_ASSERT(pos->second[0].get_url() == digit_ais);
+	CPPUNIT_ASSERT(pos->second[0].get_rule() == Resource::overwrite);
+    }
+
+    void add_url_resource_vector_test() {
 	AISResources *ais2 = new AISResources;
 
 	Resource r1(fnoc1_ais);
 	ResourceVector rv1(1, r1);
-	ais2->add_resource(fnoc2, rv1);
+	ais2->add_url_resource(fnoc2, rv1);
 
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2) != ais2->d_db.end());
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second.size() == 1);
@@ -115,7 +143,7 @@ public:
 
 	Resource r2(fnoc2_ais, Resource::fallback);
 	ResourceVector rv2(1, r2);
-	ais2->add_resource(fnoc2, rv2);
+	ais2->add_url_resource(fnoc2, rv2);
 
 
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2) != ais2->d_db.end());
@@ -130,6 +158,8 @@ public:
 	CPPUNIT_ASSERT(ais->has_resource(fnoc1));
 	CPPUNIT_ASSERT(ais->has_resource(fnoc2));
 	CPPUNIT_ASSERT(ais->has_resource(fnoc3));
+	CPPUNIT_ASSERT(ais->has_resource(bears));
+	CPPUNIT_ASSERT(ais->has_resource(three_fnoc));
     }
 
     void get_resource_test() {
@@ -149,6 +179,25 @@ public:
 	CPPUNIT_ASSERT(trv3[0].get_rule() == Resource::overwrite);
 	CPPUNIT_ASSERT(trv3[1].get_url() == fnoc2_ais);
 	CPPUNIT_ASSERT(trv3[1].get_rule() == Resource::fallback);
+
+	ResourceVector trv4 = ais->get_resource(bears);
+	CPPUNIT_ASSERT(trv4.size() == 1);
+	CPPUNIT_ASSERT(trv4[0].get_url() == digit_ais);
+	CPPUNIT_ASSERT(trv4[0].get_rule() == Resource::overwrite);
+
+	ResourceVector trv5 = ais->get_resource(three_fnoc);
+	CPPUNIT_ASSERT(trv5.size() == 1);
+	CPPUNIT_ASSERT(trv5[0].get_url() == digit_ais);
+	CPPUNIT_ASSERT(trv5[0].get_rule() == Resource::overwrite);
+
+	ResourceVector trv6 = ais->get_resource(one_2_3);
+	CPPUNIT_ASSERT(trv6.size() == 2);
+	CPPUNIT_ASSERT((trv6[0].get_url() == one_2_3_ais 
+			&& trv6[1].get_url() == digit_ais)
+		       || (trv6[1].get_url() == one_2_3_ais 
+			   && trv6[0].get_url() == digit_ais));
+	CPPUNIT_ASSERT(trv6[0].get_rule() == Resource::overwrite);
+	CPPUNIT_ASSERT(trv6[1].get_rule() == Resource::overwrite);
 
 	try {
 	    ResourceVector trv4 = ais->get_resource("http://never");
@@ -178,6 +227,15 @@ public:
 	    CPPUNIT_ASSERT(trv3.size() == 1);
 	    CPPUNIT_ASSERT(trv3[0].get_url() == fnoc3_ais);
 	    CPPUNIT_ASSERT(trv3[0].get_rule() == Resource::fallback);
+
+	    ResourceVector trv6 = ais->get_resource(one_2_3);
+	    CPPUNIT_ASSERT(trv6.size() == 2);
+	    CPPUNIT_ASSERT((trv6[0].get_url() == one_2_3_ais 
+			    && trv6[1].get_url() == digit_ais)
+			   || (trv6[1].get_url() == one_2_3_ais 
+			       && trv6[0].get_url() == digit_ais));
+	    CPPUNIT_ASSERT(trv6[0].get_rule() == Resource::overwrite);
+	    CPPUNIT_ASSERT(trv6[1].get_rule() == Resource::overwrite);
 	}
 	catch (AISDatabaseReadFailed &adrf) {
 	    CPPUNIT_ASSERT(!"Document not well formed and/or valid!");
@@ -207,6 +265,15 @@ public:
 	    CPPUNIT_ASSERT(trv3[0].get_rule() == Resource::overwrite);
 	    CPPUNIT_ASSERT(trv3[1].get_url() == fnoc2_ais);
 	    CPPUNIT_ASSERT(trv3[1].get_rule() == Resource::fallback);
+
+	    ResourceVector trv6 = ais->get_resource(one_2_3);
+	    CPPUNIT_ASSERT(trv6.size() == 2);
+	    CPPUNIT_ASSERT((trv6[0].get_url() == one_2_3_ais 
+			    && trv6[1].get_url() == digit_ais)
+			   || (trv6[1].get_url() == one_2_3_ais 
+			       && trv6[0].get_url() == digit_ais));
+	    CPPUNIT_ASSERT(trv6[0].get_rule() == Resource::overwrite);
+	    CPPUNIT_ASSERT(trv6[1].get_rule() == Resource::overwrite);
 	}
 	catch (AISDatabaseReadFailed &adrf) {
 	    CPPUNIT_ASSERT(!"Document not well formed and/or valid!");
@@ -242,6 +309,12 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISResourcesTest.cc,v $
+// Revision 1.8  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.7  2003/03/04 21:46:22  jimg
 // Fixed some problems with the comments...
 //

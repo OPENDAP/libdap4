@@ -115,11 +115,28 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
 	if (strcmp(name, "primary") == 0) {
 	    state->prev_state = state->state;
 	    state->state = PRIMARY;
-	    // only one attribute, must check for attribute errors.
-	    if (attrs && strcmp(attrs[0], "url") == 0)
+
+#if 0
+	    if (attrs && (strcmp(attrs[0], "url") == 0))
 		state->primary = attrs[1];
 	    else {
 		AISDatabaseParser::aisFatalError(state, "Required attribute 'url' missing from element 'primary'.");
+		break;
+	    }
+#endif
+
+	    if (attrs) {
+		if (strcmp(attrs[0], "url") == 0) {
+		    state->regexp = false;
+		    state->primary = attrs[1];
+		}
+		else if (strcmp(attrs[0], "regexp") == 0) {
+		    state->regexp = true;
+		    state->primary = attrs[1];
+		}
+	    }
+	    else {
+		AISDatabaseParser::aisFatalError(state, "Required attribute 'url' or 'regexp' missing from element 'primary'.");
 		break;
 	    }
 	}
@@ -195,8 +212,13 @@ AISDatabaseParser::aisEndElement(AISParserState *state, const char *name)
       case ENTRY:
 	state->prev_state = state->state;
 	state->state = AIS;
+
 	// record 'primary' and 'rv'
-	state->ais->add_resource(state->primary, state->rv);
+	if (state->regexp)
+	    state->ais->add_regexp_resource(state->primary, state->rv);
+	else
+	    state->ais->add_url_resource(state->primary, state->rv);
+
 	// empty rv for the next set of ancillary resources.
 	state->rv.erase(state->rv.begin(), state->rv.end());
 	break;
@@ -376,6 +398,12 @@ AISDatabaseParser::intern(const string &database, AISResources *ais)
 }
 
 // $Log: AISDatabaseParser.cc,v $
+// Revision 1.5  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.4  2003/02/26 01:27:49  jimg
 // Changed the name of the parse() method to intern().
 //

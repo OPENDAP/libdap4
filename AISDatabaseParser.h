@@ -101,7 +101,9 @@ private:
 	xmlParserCtxtPtr ctxt;	// used for error msg line numbers
 	AISResources *ais; 	// dump info here
 
-	string primary;		// current entry's primary URL
+	string primary;		// current entry's primary URL/Regexp
+	bool regexp;		// True if primary is a regexp
+
 	ResourceVector rv;	// add ancillary entries to rv
     };
     
@@ -122,6 +124,12 @@ public:
 };
 
 // $Log: AISDatabaseParser.h,v $
+// Revision 1.3  2003/03/12 01:07:34  jimg
+// Added regular expressions to the AIS subsystem. In an AIS database (XML)
+// it is now possible to list a regular expression in place of an explicit
+// URL. The AIS will try to match this Regexp against candidate URLs and
+// return the ancillary resources for all those that succeed.
+//
 // Revision 1.2  2003/02/26 01:27:49  jimg
 // Changed the name of the parse() method to intern().
 //
