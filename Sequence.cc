@@ -10,6 +10,13 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.37  1997/09/22 22:48:17  jimg
+// Added DDS * to deserialize parameters.
+// Added End of instance and end of sequence marker constants.
+// Change serialize() and deserialize() mfuncs so that the new markers are
+// used and embedded sequences are sent without needlessly replicating the
+// enclosing sequence's instance.
+//
 // Revision 1.36  1997/07/15 21:53:25  jimg
 // Changed length member function to return -1 instead of 0. Thus the default,
 // when a subclass does not define its own version of this member function, is
@@ -197,11 +204,17 @@
 #include "debug.h"
 #include "Sequence.h"
 #include "DDS.h"
+#include "DataDDS.h"
 #include "util.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
+
+static unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
+static unsigned char end_of_instance = 0x5A; // binary pattern 0101 1010
+
+// Private member functions
 
 void
 Sequence::_duplicate(const Sequence &s)
@@ -210,12 +223,52 @@ Sequence::_duplicate(const Sequence &s)
 
     Sequence &cs = (Sequence &)s; // cast away const
     
+    cs._seq_read_error = s._seq_read_error;
+
     for (Pix p = cs.first_var(); p; cs.next_var(p))
 	add_var(cs.var(p)->ptr_duplicate());
 }
 
+// Protected member functions
+
+void
+Sequence::write_end_of_sequence(XDR *sink)
+{
+    xdr_opaque(sink, (char *)&end_of_sequence, 1);
+}
+
+void
+Sequence::write_end_of_instance(XDR *sink)
+{
+    xdr_opaque(sink, (char *)&end_of_instance, 1);
+}
+
+unsigned char
+Sequence::read_end_marker(XDR *source)
+{
+    unsigned char marker;
+    xdr_opaque(source, (char *)&marker, 1);
+
+    return marker;
+}
+
+bool
+Sequence::is_end_of_instance(unsigned char marker)
+{
+    return (marker == end_of_instance);
+}
+
+bool
+Sequence::is_end_of_sequence(unsigned char marker)
+{
+    return (marker == end_of_sequence);
+}
+
+// Public member functions
+
 Sequence::Sequence(const String &n) : BaseType(n, dods_sequence_c) 
 {
+    _seq_read_error = false;
 }
 
 Sequence::Sequence(const Sequence &rhs)
@@ -324,7 +377,7 @@ Sequence::width()
     return sz;
 }
 
-// This version returns zero. Each API-specific subclass should define a more
+// This version returns -1. Each API-specific subclass should define a more
 // reasonable version. jhrg 5/24/96
 
 int
@@ -356,24 +409,22 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
 		    bool ce_eval = true)
 {
     bool status = true;
-    int error = 1;
+    int error = 0;
 
     while (status) {
 
-	// Check to see if the variable needs to be read. Only read when at
-	// the `top level' of a Sequence (i.e. only issue a read at the
-	// outermost Sequence when dealing with nested Sequences).
-	if (!read_p()) {
-	    if (read_level() == 0) {
-		if (!read(dataset,error)) {
-		    if (error != -1) return false;
-		    else return true; // EOF condition
-		}
-	    }
-	    else return true;	
+	// Check to see if the variable needs to be read.
+	// To read only at the outer most level, mark all nested sequences as
+	// read within the read() mfunc. jhrg 9/17/97
+	// Note that if the read() mfunc called below returns false the break
+	// will exit the enclosing while-loop.
+	// NB: both dataset and error are passed by reference.
+	if (!read_p() && !read(dataset, error)) {
+	    status = !error;
+	    break;
 	}
 
-	// if we are supposed to eval the selection, then do so. If it's
+	// If we are supposed to eval the selection, then do so. If it's
 	// false, then goto the next record in the sequence (don't return as
 	// with the other serialize mfuncs).
 	if (ce_eval && !dds.eval_selection(dataset)) {
@@ -383,29 +434,102 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
 
 	for (Pix p = first_var(); p; next_var(p))
 	    if (var(p)->send_p() 
-		&& !(status = var(p)->serialize(dataset, dds, sink, false))) 
+		&& !(status = var(p)->serialize(dataset, dds, sink, false))) {
+		DBG(cerr << "status: " << status);
 		break;
-	
+	    }
+
+	// send End of Record marker
+	if (status)
+	    write_end_of_instance(sink);
+
 	set_read_p(false);
     }
 
+    // Send Eod of Sequence marker
+    write_end_of_sequence(sink);
+
     return status;
+}
+
+// private mfunc. Use this to read from older servers.
+
+bool
+Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse = false)
+{
+    bool stat = true;
+
+    for (Pix p = first_var(); p; next_var(p)) {
+	stat = var(p)->deserialize(source, dds, reuse);
+	if (!stat) 
+	    break;
+    }
+
+    return stat;
 }
 
 // If there are no variables in this sequence, return true.
 
 bool
-Sequence::deserialize(XDR *source, bool reuse = false)
+Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
 {
     bool stat = true;
+    _seq_read_error = false;
 
-    for (Pix p = first_var(); p; next_var(p)) {
-	stat = var(p)->deserialize(source, reuse);
-	if (!stat) 
-	    return false;
+    // Check for old servers.
+    DataDDS *dd = (DataDDS *)dds; // Use a dynamic cast in the future.
+    if (dd->get_version_major() < 2 
+	|| dd->get_version_major() == 2 && dd->get_version_minor() < 15) {
+	DBG(cerr << "Reading from old server: " << dd->get_version_major() \
+	    << "." << dd->get_version_minor() << endl);
+	return old_deserialize(source, dds, reuse);
     }
 
-    return stat;
+    for (Pix p = first_var(); p; next_var(p)) {
+	stat = var(p)->deserialize(source, dds, reuse);
+	if (!stat) {
+	    // Non-constructor types return false to indicate error, Ctor
+	    // types might include a Sequence so false might mean just that
+	    // the end of the sequence has been reached. 
+	    switch (var(p)->type()) {
+	      case dods_byte_c:
+	      case dods_int16_c:
+	      case dods_uint16_c:
+	      case dods_int32_c:
+	      case dods_uint32_c:
+	      case dods_float32_c:
+	      case dods_float64_c:
+	      case dods_str_c:
+	      case dods_url_c:
+	      case dods_array_c:
+	      case dods_list_c:
+		_seq_read_error = true;
+		break;
+		
+	      default:
+		break;
+	    }
+
+	    return false;
+	}
+	DBG2(var(p)->print_val(cerr));
+    }
+
+    unsigned char marker = read_end_marker(source);
+    if (is_end_of_instance(marker))
+	return true;		// Read more sequence elements
+    else if (is_end_of_sequence(marker))
+	return false;		// No more sequence elements
+    else {
+	_seq_read_error = true;	// Error, don't read more elements
+	return false;
+    }
+}
+
+bool
+Sequence::seq_read_error()
+{
+    return _seq_read_error;
 }
 
 unsigned int
@@ -459,7 +583,7 @@ Sequence::print_val(ostream &os, String space, bool print_decl_p)
     os << " }";
 
     if (print_decl_p)
-	os << ";";
+	os << ";" << endl;
 }
 
 // print_all_vals is from Todd Karakasian. 
@@ -467,7 +591,7 @@ Sequence::print_val(ostream &os, String space, bool print_decl_p)
 // to Sequence? This can wait since print_val is mostly used for debugging...
 
 void
-Sequence::print_all_vals(ostream& os, XDR *src, String space = "",
+Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, String space = "",
 			 bool print_decl_p = true)
 {
     if (print_decl_p) {
@@ -476,12 +600,12 @@ Sequence::print_all_vals(ostream& os, XDR *src, String space = "",
     }
     os << "{ ";
     print_val(os, space, false);
-    while (deserialize(src)) {
+    while (deserialize(src, dds)) {
 	os << ", ";
 	print_val(os, space, false);
     }
     if (print_decl_p)
-        os << "};";
+        os << "};" << endl;
 }
 
 bool
