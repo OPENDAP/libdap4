@@ -17,9 +17,14 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.16  1996/11/27 22:40:26  jimg
-/* Added DDS as third parameter to function in the CE evaluator
+/* Revision 1.17  1996/12/18 18:47:24  jimg
+/* Modified the parser so that it returns Error objects for certain types of
+/* errors. In order to take advantage of this, callers must examine the returned
+/* object and process it as an Error object if status is false.
 /*
+ * Revision 1.16  1996/11/27 22:40:26  jimg
+ * Added DDS as third parameter to function in the CE evaluator
+ *
  * Revision 1.15  1996/10/18 16:55:15  jimg
  * Fixed the fix for bison 1.25...
  *
@@ -96,7 +101,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.16 1996/11/27 22:40:26 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.17 1996/12/18 18:47:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -235,6 +240,12 @@ constraint_expr: /* empty constraint --> send all */
 		       btp_func func = get_btp_function(*(DDS_OBJ(arg)), $1);
 		       if (!func) {
 			   exprerror("Not a BaseType pointer function", $1);
+			   
+			   String msg = "The function: ";
+			   msg += (String)$1 + " is not defined on this server.";
+			   ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			   STATUS(arg) = false;
+				     
 			   $$ = false;
 		       }
 		       else {
@@ -252,8 +263,12 @@ projection:	ID
 			  $$ = true;
 		      }
 		      else {
-			  $$ = false;
 			  exprerror("No such identifier in dataset", $1);
+			  String msg = "The identifier: ";
+			  msg += (String)$1 + " is not in the dataset.";
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
+			  $$ = false;
 		      }
 		  }
                 | FIELD
@@ -262,8 +277,12 @@ projection:	ID
 		      if (var)
 			  $$ = (*DDS_OBJ(arg)).mark($1, true); // must add parents, too
 		      else {
-			  $$ = false;
 			  exprerror("No such field in dataset", $1);
+			  String msg = "The field: ";
+			  msg += (String)$1 + " is not in this dataset.";
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
+			  $$ = false;
 		      }
 		  }
 		| array_sel	/* Array *Selection* is a misnomer... */
@@ -278,8 +297,12 @@ projection:	ID
 			  $$ = true;
 		      }
 		      else {
-			  $$ = false;
 			  exprerror("No such identifier in dataset", $3);
+			  String msg = "The identifier: ";
+			  msg += (String)$1 + " is not in this dataset.";
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
+			  $$ = false;
 		      }
 
 		  }
@@ -289,8 +312,12 @@ projection:	ID
 		      if (var)
 			  $$ = (*DDS_OBJ(arg)).mark($3, true);
 		      else {
-			  $$ = false;
 			  exprerror("No such field in dataset", $3);
+			  String msg = "The field: ";
+			  msg += (String)$1 + " is not in this dataset.";
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
+			  $$ = false;
 		      }
 		  }
                 | projection ',' array_sel
@@ -326,6 +353,10 @@ clause:		r_value rel_op '{' r_value_list '}'
 		      bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
 		      if (!b_func) {
   			  exprerror("Not a boolean function", $1);
+			  String msg = "The function: ";
+			  msg += (String)$1 + " is not defined on this server.";
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
 			  $$ = false;
 		      }
 		      else {
@@ -340,9 +371,14 @@ r_value:        identifier
 		| '*' identifier
 		  {
 		      $$ = dereference_variable($2, *DDS_OBJ(arg));
-		      if (!$$)
+		      if (!$$) {
 			  exprerror("Could not dereference variable", 
 				    ($2)->value->name());
+			  String msg = "Could not dereference: ";
+			  msg += (String)($2)->value->name();
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
+		      }
 		  }
 		| '*' STR
 		  {
@@ -355,6 +391,10 @@ r_value:        identifier
 		      btp_func bt_func = get_btp_function((*DDS_OBJ(arg)), $1);
 		      if (!bt_func) {
   			  exprerror("Not a BaseType * function", $1);
+			  String msg = "The function: ";
+			  msg += (String)$1 + " is not defined on this server.";
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
 			  $$ = 0;
 		      }
 		      $$ = new rvalue(new func_rvalue(bt_func, $3));
