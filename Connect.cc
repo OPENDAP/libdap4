@@ -8,6 +8,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.77  1999/05/21 20:39:23  dan
+// Disabled the Gui interface in the Connect objects.  Primarily
+// this was done in www_libc_init, constructor, destructor, and request_
+// calls using 'ifdef GUI' directives.  To regain use of this code
+// use the '-DGUI' compiler flag.
+//
 // Revision 1.76  1999/05/21 17:22:04  jimg
 // Removed debugging instrumentation left in by accident.
 //
@@ -431,7 +437,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.76 1999/05/21 17:22:04 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.77 1999/05/21 20:39:23 dan Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -675,8 +681,8 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
     // password. Either may be missing, in which case return NO.
 
     string words[2];
-    unsigned int white1 = response.find_first_of(" \t\r\n");
-    unsigned int white2 = response.find_first_not_of(" \t\r\n", white1+1);
+    size_t white1 = response.find_first_of(" \t\r\n");
+    size_t white2 = response.find_first_not_of(" \t\r\n", white1+1);
     words[0] = response.substr(0, white1);
     words[1] = response.substr(white2);
     if (response.find_first_of(" \t\r\n", white2) != response.npos) {
@@ -1005,12 +1011,13 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // Register MIME headers for HTTP 1.1
     HTMIMEInit();
 
+#ifdef GUI
     // Add progress notification, etc.
     HTAlert_add(dods_progress, HT_A_PROGRESS);
     HTAlert_add(dods_error_print, HT_A_MESSAGE);
     HTAlert_add(dods_username_password, HT_A_USER_PW);
     HTAlert_setInteractive(YES);
-
+#endif
     // Disable the cache.
     HTCacheTerminate();
 
@@ -1140,7 +1147,9 @@ Connect::Connect()
 Connect::Connect(string name, bool www_verbose_errors,
 		 bool accept_deflate) : _www_errors_to_stderr(false)
 {
+#ifdef GUI
     _gui = new Gui;
+#endif
     // Unless a client says otherwise, assume we can process all types.
     _accept_types = "All";
     name = prune_spaces(name);
@@ -1150,7 +1159,7 @@ Connect::Connect(string name, bool www_verbose_errors,
        	if (!_conv) {
 	    www_lib_init(www_verbose_errors, accept_deflate);
 	}
-	unsigned int dotpos = name.find('?');
+	size_t dotpos = name.find('?');
 	if (dotpos!=name.npos) {
 	    _URL = name.substr(0, dotpos);
 	    string expr = name.substr(dotpos+1);
@@ -1197,7 +1206,9 @@ Connect::Connect(string name, bool www_verbose_errors,
 #ifdef LIBWWW_5_0
 	_tv = 0;
 #endif
+#ifdef GUI
 	delete _gui;
+#endif
     }
 
     HT_FREE(access_ref);
@@ -1222,7 +1233,9 @@ Connect::~Connect()
 #ifdef LIBWWW_5_0
     delete _tv;
 #endif
+#ifdef GUI
     delete _gui;
+#endif 
 
     close_output();
 
@@ -1344,8 +1357,9 @@ Connect::server_version()
 bool
 Connect::request_das(bool gui_p, const string &ext)
 {
+#ifdef GUI
     (void)gui()->show_gui(gui_p);
-
+#endif
     string das_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
 	das_url = das_url + "?" + _proj + _sel;
@@ -1364,7 +1378,9 @@ Connect::request_das(bool gui_p, const string &ext)
 	      status = false;
 	      break;
 	  }
+#ifdef GUI
 	  correction = _error.correct_error(gui());
+#endif
 	  status = false;
 	  break;
       }
@@ -1389,8 +1405,9 @@ exit:
 bool
 Connect::request_dds(bool gui_p, const string &ext)
 {
+#ifdef GUI
     (void)gui()->show_gui(gui_p);
-
+#endif
     string dds_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
 	dds_url = dds_url + "?" + _proj + _sel;
@@ -1408,7 +1425,9 @@ Connect::request_dds(bool gui_p, const string &ext)
 	      status = false;
 	      break;
 	  }
+#ifdef GUI
 	  correction = _error.correct_error(gui());
+#endif
 	  status = false;
 	  break;
       }
@@ -1503,10 +1522,11 @@ DDS *
 Connect::request_data(string expr, bool gui_p, 
 		      bool async, const string &ext)
 {
+#ifdef GUI
     (void)gui()->show_gui(gui_p);
-
+#endif
     string proj, sel;
-    unsigned int dotpos = expr.find('&');
+    size_t dotpos = expr.find('&');
     if (dotpos != expr.npos) {
 	proj = expr.substr(0, dotpos);
 	sel = expr.substr(dotpos);
@@ -1530,8 +1550,9 @@ Connect::request_data(string expr, bool gui_p,
 DDS *
 Connect::read_data(FILE *data_source, bool gui_p, bool async)
 {
+#ifdef GUI
     (void)gui()->show_gui(gui_p);
-    
+#endif
     // Read from data_source and parse the MIME headers specific to DODS.
     parse_mime(data_source);
 
@@ -1543,7 +1564,11 @@ Connect::read_data(FILE *data_source, bool gui_p, bool async)
 Gui *
 Connect::gui()
 {
+#ifdef GUI
     return _gui;
+#else
+    return NULL;
+#endif
 }
 
 bool
@@ -1600,3 +1625,8 @@ Connect::error()
 {
     return _error;
 }
+
+
+
+
+
