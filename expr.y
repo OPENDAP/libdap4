@@ -18,6 +18,11 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.24  1998/03/19 23:22:38  jimg
+ * Fixed the error messages so they use `' instead of :
+ * Added Error objects for array index errors.
+ * Removed old code (that was surrounded by #if 0 ... #endif).
+ *
  * Revision 1.23  1998/02/05 20:14:03  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -123,7 +128,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.23 1998/02/05 20:14:03 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.24 1998/03/19 23:22:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -263,8 +268,8 @@ constraint_expr: /* empty constraint --> send all */
 		       if (!func) {
 			   exprerror("Not a BaseType pointer function", $1);
 			   
-			   String msg = "The function: ";
-			   msg += (String)$1 + " is not defined on this server.";
+			   String msg = "The function `";
+			   msg += (String)$1 + "' is not defined on this server.";
 			   ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			   STATUS(arg) = false;
 				     
@@ -286,8 +291,8 @@ projection:	ID
 		      }
 		      else {
 			  exprerror("No such identifier in dataset", $1);
-			  String msg = "The identifier: ";
-			  msg += (String)$1 + " is not in the dataset.";
+			  String msg = "The identifier `";
+			  msg += (String)$1 + "' is not in the dataset.";
 			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			  STATUS(arg) = false;
 			  $$ = false;
@@ -300,8 +305,8 @@ projection:	ID
 			  $$ = (*DDS_OBJ(arg)).mark($1, true); // must add parents, too
 		      else {
 			  exprerror("No such field in dataset", $1);
-			  String msg = "The field: ";
-			  msg += (String)$1 + " is not in this dataset.";
+			  String msg = "The field `";
+			  msg += (String)$1 + "' is not in this dataset.";
 			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			  STATUS(arg) = false;
 			  $$ = false;
@@ -320,8 +325,8 @@ projection:	ID
 		      }
 		      else {
 			  exprerror("No such identifier in dataset", $3);
-			  String msg = "The identifier: ";
-			  msg += (String)$1 + " is not in this dataset.";
+			  String msg = "The identifier `";
+			  msg += (String)$1 + "' is not in this dataset.";
 			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			  STATUS(arg) = false;
 			  $$ = false;
@@ -335,8 +340,8 @@ projection:	ID
 			  $$ = (*DDS_OBJ(arg)).mark($3, true);
 		      else {
 			  exprerror("No such field in dataset", $3);
-			  String msg = "The field: ";
-			  msg += (String)$1 + " is not in this dataset.";
+			  String msg = "The field `";
+			  msg += (String)$1 + "' is not in this dataset.";
 			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			  STATUS(arg) = false;
 			  $$ = false;
@@ -375,8 +380,8 @@ clause:		r_value rel_op '{' r_value_list '}'
 		      bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
 		      if (!b_func) {
   			  exprerror("Not a boolean function", $1);
-			  String msg = "The function: ";
-			  msg += (String)$1 + " is not defined on this server.";
+			  String msg = "The function `";
+			  msg += (String)$1 + "' is not defined on this server.";
 			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			  STATUS(arg) = false;
 			  $$ = false;
@@ -396,7 +401,7 @@ r_value:        identifier
 		      if (!$$) {
 			  exprerror("Could not dereference variable", 
 				    ($2)->value->name());
-			  String msg = "Could not dereference: ";
+			  String msg = "Could not dereference the URL: ";
 			  msg += (String)($2)->value->name();
 			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			  STATUS(arg) = false;
@@ -413,8 +418,8 @@ r_value:        identifier
 		      btp_func bt_func = get_btp_function((*DDS_OBJ(arg)), $1);
 		      if (!bt_func) {
   			  exprerror("Not a BaseType * function", $1);
-			  String msg = "The function: ";
-			  msg += (String)$1 + " is not defined on this server.";
+			  String msg = "The function `";
+			  msg += (String)$1 + "' is not defined on this server.";
 			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			  STATUS(arg) = false;
 			  $$ = 0;
@@ -473,11 +478,23 @@ array_sel:	ID array_indices
 		      if (var && is_array_t(var)) {
 			  var->set_send_p(true);
 			  $$ = process_array_indices(var, $2);
+			  if (!$$) {
+			      String msg = "The indices given for `";
+			      msg += (String)$1 + "' are out of range.";
+			      ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			      STATUS(arg) = false;
+			  }
 			  delete_array_indices($2);
 		      }
 		      else if (var && is_grid_t(var)) {
 			  var->set_send_p(true);
 			  $$ = process_grid_indices(var, $2);
+			  if (!$$) {
+			      String msg = "The indices given for `";
+			      msg += (String)$1 + "' are out of range.";
+			      ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			      STATUS(arg) = false;
+			  }
 			  delete_array_indices($2);
 		      }
 		      else
@@ -489,11 +506,23 @@ array_sel:	ID array_indices
 		      if (var && is_array_t(var)) {
 			  $$ = (*DDS_OBJ(arg)).mark($1, true) // set all the parents, too
 			      && process_array_indices(var, $2);
+			  if (!$$) {
+			      String msg = "The indices given for `";
+			      msg += (String)$1 + "' are out of range.";
+			      ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			      STATUS(arg) = false;
+			  }
 			  delete_array_indices($2);
 		      }
 		      else if (var && is_grid_t(var)) {
 			  $$ = (*DDS_OBJ(arg)).mark($1, true) // set all the parents, too
 			       && process_grid_indices(var, $2);
+			  if (!$$) {
+			      String msg = "The indices given for `";
+			      msg += (String)$1 + "' are out of range.";
+			      ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			      STATUS(arg) = false;
+			  }
 			  delete_array_indices($2);
 		      }
 		      else
@@ -624,12 +653,8 @@ is_array_t(BaseType *variable)
 {
     assert(variable);
 
-    if (variable->type() != dods_array_c) {
-#if 0
-	cerr << "Variable " << variable->name() << " is not an array." << endl;
-#endif
+    if (variable->type() != dods_array_c)
 	return false;
-    }
     else
 	return true;
 }
@@ -639,12 +664,8 @@ is_grid_t(BaseType *variable)
 {
     assert(variable);
 
-    if (variable->type() != dods_grid_c) {
-#if 0
-	cerr << "Variable " << variable->name() << " is not an grid." << endl;
-#endif
+    if (variable->type() != dods_grid_c)
 	return false;
-    }
     else
 	return true;
 }
@@ -718,9 +739,6 @@ process_array_indices(BaseType *variable, int_list_list *indices)
     }
 
 exit:
-#if 0
-    delete_array_indices(indices);
-#endif
     return status;
 }
 
@@ -802,9 +820,6 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
     }
 
 exit:
-#if 0
-    delete_array_indices(indices);
-#endif
     return status;
 }
 
