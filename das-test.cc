@@ -7,7 +7,11 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.10  1995/05/10 15:34:07  jimg
+// Revision 1.11  1995/07/08 18:34:31  jimg
+// Removed old code.
+// Removed unnecessary declaration of dasparse().
+//
+// Revision 1.10  1995/05/10  15:34:07  jimg
 // Failed to change `config.h' to `config_dap.h' in these files.
 //
 // Revision 1.9  1995/05/10  13:45:42  jimg
@@ -67,14 +71,16 @@
 #include "trace_new.h"
 #endif
 
-void parser_driver(int argc, char *argv[], int i, bool use_fd, DAS das);
 void plain_driver(DAS das);
 void load_attr_table(AttrTable at);
 void load_attr_table_ptr(AttrTable *atp);
+void parser_driver(int argc, char *argv[], int i, bool use_fd, DAS das);
 void test_scanner();
 
 int daslex();
+#ifdef NEVER
 int dasparse(DAS &);
+#endif
 
 extern int dasdebug;
 const char *prompt = "das-test: ";
@@ -82,12 +88,12 @@ const char *prompt = "das-test: ";
 int
 main(int argc, char *argv[])
 {
+
     GetOpt getopt (argc, argv, "sfp");
     int option_char;
     bool use_fd = false;	// true to exercise the fd functions
     bool test_parser = false;
     bool scanner_test = false;
-
     // process options first so that debugging in on for object instantitaion.
     while ((option_char = getopt ()) != EOF)
 	switch (option_char)
@@ -236,7 +242,6 @@ plain_driver(DAS das)
     das.print();
 }
 
-#ifdef NEVER
 // stuff an AttrTable full of values. Also, print it out.
 
 void
@@ -287,7 +292,6 @@ load_attr_table(AttrTable at)
 	cout << endl;
     }
 }
-#endif
 
 // OK, now try it with a dymanic AttrTable
 
@@ -339,41 +343,3 @@ load_attr_table_ptr(AttrTable *at)
 	cout << endl;
     }
 }
-
-#ifdef NEVER
-    atp->append_attr("month", "String", "Feb");
-    atp->append_attr("month", "String", "Feb");
-    atp->append_attr("Date", "Int32", "12345");
-    atp->append_attr("day", "Int32", "01");
-    atp->append_attr("Time", "Float64", "3.1415");
-
-    cout << "Using the Pix:" << endl;
-    for (Pix p = atp->first_attr(); p; atp->next_attr(p)) {
-	cout << atp->get_name(p) << " " << atp->get_type(p) << " " 
-	     << atp->get_attr(p) << endl;
-    }
-
-    String name = "month";
-    cout << "Using String: " << atp->get_type(name) << " "
-         << atp->get_attr(name) << endl;
-    cout << "Using char *: " << atp->get_type("month") << " " 
-	 << atp->get_attr("month") << endl;
-
-    atp->del_attr("month");
-
-    cout << "After deletion:" << endl;
-    for (p = atp->first_attr(); p; atp->next_attr(p)) {
-	cout << atp->get_name(p) << " " << atp->get_type(p) << " " 
-	     << atp->get_attr(p) << endl;
-    }
-
-    atp->print(cout);
-
-    cout << "After print:" << endl;
-    for (p = atp->first_attr(); p; atp->next_attr(p)) {
-	cout << atp->get_name(p) << " " << atp->get_type(p) << " " 
-	     << atp->get_attr(p) << endl;
-    }
-}
-#endif
-
