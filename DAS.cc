@@ -1,5 +1,5 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
+// (c) COPYRIGHT URI/MIT 1994-1998
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
@@ -11,6 +11,9 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.24  1998/11/24 06:52:42  jimg
+// Fixed copyright.
+//
 // Revision 1.23  1998/11/24 06:46:08  jimg
 // Ripped out the DASVHMap class and replaced it with an SLList of structs. See
 // DAS.h for the (private) struct definition. There are no changes to the class
@@ -124,7 +127,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.23 1998/11/24 06:46:08 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.24 1998/11/24 06:52:42 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
