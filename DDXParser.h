@@ -63,9 +63,6 @@
     default and copy constructors as well as the destructor and assignment
     operator.
 
-    @todo This class should be extended so that the line number is added to
-    error messages.
-
     @see DDS */
 class DDXParser {
 private:
@@ -83,15 +80,8 @@ private:
 
 	inside_alias,
 
-	inside_byte,
-	inside_int16,
-	inside_uint16,
-	inside_int32,
-	inside_uint32,
-	inside_float32,
-	inside_float64,
-	inside_string,
-	inside_url,
+	// This covers Byte, ..., Url.
+	inside_simple_type,
 
 	inside_array,
 	inside_dimension,
@@ -102,6 +92,8 @@ private:
 
 	inside_structure,
 	inside_sequence,
+
+	inside_blob_url,
 
 	parser_unknown,
 	parser_error
@@ -124,11 +116,12 @@ private:
 	object. */
     struct DDXParserState {
 	stack<ParseState> s;
-	int unknown_depth;	// handle recursive unknown tags
+
 	string error_msg;	// Error message(s), if any.
 	xmlParserCtxtPtr ctxt;	// used for error msg line numbers
 
 	DDS *dds;		// dump DDX here
+	string blob_url;	// put URL to blob here
 
 	stack<BaseType*> bt_stack; // current variable(s)
 	stack<AttrTable*> at_stack; // current attribute table
@@ -138,6 +131,8 @@ private:
 	string char_data;	// null after use
 	map<string,string> attributes; // dump XML attributes here
     };
+
+    DDXParserState state;
 
     static void set_state(DDXParserState *state, DDXParser::ParseState s);
     static DDXParser::ParseState get_state(DDXParserState *state);
@@ -150,6 +145,10 @@ private:
 					  const char **attrs);
     static void process_attribute_alias(DDXParserState *state,
 					const char **attrs);
+    static void process_simple_type(DDXParserState *state, const char *name,
+				    const char **attrs);
+    static BaseType *factory(DDXParserState *state, Type t);
+    static void process_blob(DDXParserState *state, const char **attrs);
 
 public:
     void intern(const string &document, DDS *dds)
@@ -169,6 +168,9 @@ public:
 };
 
 // $Log: DDXParser.h,v $
+// Revision 1.2  2003/05/30 02:01:03  jimg
+// Parses top level attributes and simple variables.
+//
 // Revision 1.1  2003/05/29 19:07:15  jimg
 // Added.
 //

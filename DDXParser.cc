@@ -29,9 +29,14 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#if 1
 #define DODS_DEBUG
 #define DODS_DEBUG2
+#endif
+#include "BaseType.h"
+#include "Constructor.h"
 #include "DDXParser.h"
+
 #include "util.h"
 #include "debug.h"
 
@@ -47,15 +52,7 @@ static const not_used char *states[] = {
 
     "alias",
 
-    "byte",
-    "int16",
-    "uint16",
-    "int32",
-    "uint32",
-    "float32",
-    "float64",
-    "string",
-    "url",
+    "simple_type",
 
     "array",
     "dimension",
@@ -66,6 +63,8 @@ static const not_used char *states[] = {
 
     "structure",
     "sequence",
+
+    "blob url",
 
     "unknown",
     "error"
@@ -92,7 +91,8 @@ DDXParser::pop_state(DDXParserState *state)
     state->s.pop();
 }
 
-/** Dump the attrs array into a map<string,string> */
+/** Dump the attrs array into a map<string,string>. Attribute names are
+    always lower case.  */
 bool
 DDXParser::transfer_attrs(DDXParserState *state, const char **attrs)
 {
@@ -101,12 +101,16 @@ DDXParser::transfer_attrs(DDXParserState *state, const char **attrs)
 	return false;
     }
 
-    for (int i = 0; attrs && attrs[i] != 0; i = i + 2)
-	state->attributes[string(attrs[i])] = string(attrs[i+1]);
+    for (int i = 0; attrs && attrs[i] != 0; i = i + 2) {
+	string attr_i = attrs[i];
+	downcase(attr_i);
+	state->attributes[attr_i] = string(attrs[i+1]);
+    }
 
     return true;
 }
 
+/** Is an attribute present. Attribute names are always lowercase. */
 bool
 DDXParser::check_required_attribute(DDXParserState *state, const string &attr)
 {
@@ -155,11 +159,156 @@ DDXParser::process_attribute_element(DDXParserState *state,
 void
 DDXParser::process_attribute_alias(DDXParserState *state, const char **attrs)
 {
-    if (transfer_attrs(state, attrs)
-	&& check_required_attribute(state, string("name"))
-	&& check_required_attribute(state, string("Attribute")))
+    if(transfer_attrs(state, attrs)
+       && check_required_attribute(state, string("name"))
+       && check_required_attribute(state, string("Attribute"))) {
+	set_state(state, inside_alias);
 	state->at_stack.top()->attr_alias(state->attributes["name"],
-					  state->attributes["Attribute"]);
+					  state->attributes["attribute"]);
+    }
+}
+
+/** factory for simple types */
+BaseType *
+DDXParser::factory(DDXParserState *state, Type t)
+{
+    switch (t) {
+      case dods_byte_c:
+	return NewByte(state->attributes["name"]);
+	break;
+
+      case dods_int16_c:
+	return NewInt16(state->attributes["name"]);
+	break;
+
+      case dods_uint16_c:
+	return NewUInt16(state->attributes["name"]);
+	break;
+
+      case dods_int32_c:
+	return NewInt32(state->attributes["name"]);
+	break;
+
+      case dods_uint32_c:
+	return NewUInt32(state->attributes["name"]);
+	break;
+
+      case dods_float32_c:
+	return NewFloat32(state->attributes["name"]);
+	break;
+
+      case dods_float64_c:
+	return NewFloat64(state->attributes["name"]);
+	break;
+
+      case dods_str_c:
+	return NewStr(state->attributes["name"]);
+	break;
+
+      case dods_url_c:
+	return NewUrl(state->attributes["name"]);
+	break;
+	    
+      default: 
+	return 0;
+    }
+}
+
+/** Get the Type enumeration value which matches the given name. */
+static Type
+get_type(const string &name)
+{
+    if (name == "Byte")
+	return dods_byte_c;
+
+    if (name == "Int16")
+	return dods_int16_c;
+
+    if (name == "UInt16")
+	return dods_uint16_c;
+
+    if (name == "Int32")
+	return dods_int32_c;
+
+    if (name == "UInt32")
+	return dods_uint32_c;
+
+    if (name == "Float32")
+	return dods_float32_c;
+
+    if (name == "Float64")
+	return dods_float64_c;
+
+    if (name == "String")
+	return dods_str_c;
+
+    if (name == "Url")
+	return dods_url_c;
+    
+    if (name == "Array")
+	return dods_array_c;
+
+    if (name == "Structure")
+	return dods_structure_c;
+
+    if (name == "Sequence")
+	return dods_sequence_c;
+
+    if (name == "Grid")
+	return dods_grid_c;
+
+    return dods_null_c;
+}
+
+// create a byte, load its name, push onto stack
+void
+DDXParser::process_simple_type(DDXParserState *state, const char *name, 
+			const char **attrs)
+{
+    if (transfer_attrs(state, attrs)
+	&& check_required_attribute(state, string("name"))) {
+	set_state(state, inside_simple_type);
+	BaseType *btp = factory(state, get_type(string(name)));
+	if (!btp)
+	    ddx_fatal_error(state, "Internal parser error; tied to treat a constructor type as a simple type.");
+
+	// Once we make the new variable, we not only load it on to the
+	// BaseType stack, we also load its AttrTable on the AttrTable stack.
+	// The attribute processing software always operates on the AttrTable
+	// at the top of the AttrTable stack (at_stack).
+	state->bt_stack.push(btp);
+	state->at_stack.push(&btp->get_attr_table());
+    }
+}
+
+static bool
+is_simple_type(const char *name)
+{
+    Type t = get_type(string(name));
+    switch (t) {
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+      case dods_float32_c:
+      case dods_float64_c:
+      case dods_str_c:
+      case dods_url_c:
+	return true;
+      default:
+	return false;
+    }
+}
+
+void
+DDXParser::process_blob(DDXParserState *state, const char **attrs)
+{
+   if (transfer_attrs(state, attrs)
+       && check_required_attribute(state, string("url"))) {
+       set_state(state, inside_blob_url);
+       state->blob_url = state->attributes["url"];
+   }
 }
 
 //@}
@@ -172,13 +321,12 @@ DDXParser::process_attribute_alias(DDXParserState *state, const char **attrs)
 //@{
 
 /** Initialize the SAX parser state object. This object is passed to each
-    callback as a void pointer. The initial state is parser_start and the
-    previous state is parser_unknown with the unknown_depth set to zero.
+    callback as a void pointer. The initial state is parser_start.
+
     @param state The SAX parser state. */
 void 
 DDXParser::ddx_start_document(DDXParserState *state) 
 {
-    state->unknown_depth = 0;
     state->error_msg = "";
     state->char_data = "";
 
@@ -188,6 +336,7 @@ DDXParser::ddx_start_document(DDXParserState *state)
     // trick; dds *should* be a child of Structure. To simplify parsing,
     // stuff a Structure on the bt_stack and dump the top level variables
     // there temporarily. Once we're done, transfer the variables to the DDS. 
+    state->bt_stack.push(new Structure("dummy_dds"));
 
     set_state(state, parser_start);
 
@@ -201,13 +350,22 @@ DDXParser::ddx_end_document(DDXParserState *state)
 {
     DBG2(cerr << "Ending state == " << states[get_state(state)] << endl);
 
-    if (state->unknown_depth != 0) {
-	DDXParser::ddx_fatal_error(state, 
-				   "The document contained unbalanced tags.");
+    if (get_state(state) != parser_start)
+	DDXParser::ddx_fatal_error(state, "The document contained unbalanced tags.");
 
-        DBG(cerr << "unknown_depth != 0 (" << state->unknown_depth << ")"
-	    << endl);
-    }
+    // If we've found any sort of error, don't make the DDX; intern() will
+    // take care of the error.
+    if (get_state(state) == parser_error)
+	return;
+
+    // Pop the temporary Structure off the stack and transfer its variables
+    // to the DDS. 
+    Constructor *cp = dynamic_cast<Constructor*>(state->bt_stack.top());
+    for (Constructor::Vars_iter i = cp->var_begin(); i != cp->var_end(); ++i)
+	state->dds->add_var(*i);
+
+    state->bt_stack.pop();
+    delete cp;
 }
 
 /** Process a start element tag. Because the DDX schema uses attributes and
@@ -232,59 +390,78 @@ DDXParser::ddx_start_element(DDXParserState *state, const char *name,
 		state->dds->set_dataset_name(state->attributes["name"]);
 	}
 	else
-	    DDXParser::ddx_error(state, "Expected response to start with 'Dataset'\n");
+	    DDXParser::ddx_error(state, "Expected response to start with a Dataset element; found '%s' instead.", name);
 	break;
 
       case parser_finish:
 	break;
 
       case inside_dataset:
-	// Process attributes
 	if (strcmp(name, "Attribute") == 0) {
 	    process_attribute_element(state, attrs);
+	    // next state: inside_attribtue or inside_attribute_container
 	}
-	// Process aliases
 	else if (strcmp(name, "Alias") == 0) {
-	    set_state(state, inside_alias);
 	    process_attribute_alias(state, attrs);
+	    // next state: inside_alias
 	}
-	// Process variables
-	else if (strcmp(name, "Byte") == 0) {
+	else if (is_simple_type(name)) {
+	    process_simple_type(state, name, attrs);
+	    // next state: inside_ismple_type
 	}
-	// According to the schema, it's OK to have an empty Dataset.
+	else if (strcmp(name, "dodsBLOB") == 0) {
+	    process_blob(state, attrs);
+	    // next state: inside_dods_blob
+	}
+	else
+	    DDXParser::ddx_error(state, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
 	break;
 
       case inside_attribute_container:
 	if (strcmp(name, "Attribute") == 0) {
 	    process_attribute_element(state, attrs);
+	    // next state: inside_attribtue or inside_attribute_container
 	}
-	// Process aliases
 	else if (strcmp(name, "Alias") == 0) {
-	    set_state(state, inside_alias);
 	    process_attribute_alias(state, attrs);
+	    // next state: inside_alias
 	}
-	// It's OK to have an empty Attribute table.
+	else
+	    DDXParser::ddx_error(state, "Expected an Attribute or Alias element; found '%s' instead.", name);
 	break;
 
       case inside_attribute:
 	if (strcmp(name, "Attribute") == 0) {
 	    process_attribute_element(state, attrs);
+	    // next state: inside_attribtue or inside_attribute_container
 	}
-	// Process aliases
 	else if (strcmp(name, "Alias") == 0) {
-	    set_state(state, inside_alias);
 	    process_attribute_alias(state, attrs);
+	    // next state: inside_alias
 	}
 	else if (strcmp(name, "value") == 0)
 	    set_state(state, inside_attribute_value);
 	else
-	    ddx_fatal_error(state, "Expected a 'value' element inside an Attribtue.");
+	    ddx_fatal_error(state, "Expected an 'Attribute', 'Alias' or 'value' element; found '%s' instead.", name);
 	break;
 
       case inside_attribute_value:
 	// value has no child elements and no attributes, nothing to do here
 	break;
 
+      case inside_simple_type:
+	if (strcmp(name, "Attribute") == 0) {
+	    process_attribute_element(state, attrs);
+	    // next state: inside_attribtue or inside_attribute_container
+	}
+	else if (strcmp(name, "Alias") == 0) {
+	    process_attribute_alias(state, attrs);
+	    // next state: inside_alias
+	}
+	else
+	    ddx_fatal_error(state, "Expected an 'Attribute' or 'Alias' element; found '%s' instead.", name);
+	break;
+	
       case parser_unknown:
 	set_state(state, parser_unknown);
 	break;
@@ -311,34 +488,74 @@ DDXParser::ddx_end_element(DDXParserState *state, const char *name)
 
     switch (get_state(state)) {
       case inside_dataset:
-	pop_state(state);
+	if (strcmp(name, "Dataset") == 0)
+	    pop_state(state);
+	else
+	    DDXParser::ddx_error(state, "Expected an end Dataset tag; found '%s' instead.", name);
 	break;
 
       case inside_attribute_container:
+	if (strcmp(name, "Attribute") == 0) {
 	pop_state(state);
 	state->at_stack.pop();	// pop when leaving a container.
 	DBG2(cerr << "Popping at stack" << endl);
+	}
+	else
+	    DDXParser::ddx_error(state, "Expected an end Attribute tag; found '%s' instead.", name);
 	break;
 	
       case inside_attribute:
+	if (strcmp(name, "Attribute") == 0)
 	pop_state(state);
+	else
+	    DDXParser::ddx_error(state, "Expected an end Attribute tag; found '%s' instead.", name);
 	break;
 	
       case inside_attribute_value: {
+	if (strcmp(name, "value") == 0) {
 	pop_state(state);
 	AttrTable *atp = state->at_stack.top();
 	atp->append_attr(state->dods_attr_name, state->dods_attr_type,
 		    state->char_data);
 	state->char_data = "";	// Null this after use.
+	}
+	else
+	    DDXParser::ddx_error(state, "Expected an end value tag; found '%s' instead.", name);
+
 	break;    
       }
 
-      case inside_alias: {
+	// Alias is busted in C++ 05/29/03 jhrg
+      case inside_alias:
 	  pop_state(state);
 	  break;
 
+      case inside_simple_type: {
+	  if (is_simple_type(name)) {
+	      pop_state(state);
+	      BaseType *btp = state->bt_stack.top();
+	      state->bt_stack.pop();
+	      state->at_stack.pop();
+
+	      dynamic_cast<Constructor*>(state->bt_stack.top())->add_var(btp);
+	  }
+	  else
+	      DDXParser::ddx_error(state, "Expected an end tag for a simple type; found '%s' instead.", name);
+	  break;
+      }
+
+      case inside_blob_url:
+	if (strcmp(name, "dodsBLOB") == 0)
+	    pop_state(state);
+	else
+	    DDXParser::ddx_error(state, "Expected an end dodsBLOB tag; found '%s' instead.", name);
+	break;
+
       case parser_unknown:
 	pop_state(state);
+	break;
+
+      case parser_error:
 	break;
 
       default:
@@ -476,8 +693,9 @@ DDXParser::intern(const string &document, DDS *dds)
     throw(DDXParseFailed)
 {
     xmlParserCtxtPtr ctxt;
-    DDXParserState state;
+    // DDXParserState state;
 	
+    
     ctxt = xmlCreateFileParserCtxt(document.c_str());
     if (!ctxt)
 	throw DDXParseFailed(string("Could not initialize the parser with the file: '") + document + string("'."));
@@ -486,7 +704,7 @@ DDXParser::intern(const string &document, DDS *dds)
     state.ctxt = ctxt;		// need ctxt for error messages
 
     ctxt->sax = &ddx_sax_parser;
-    ctxt->userData = &state;
+    ctxt->userData = &this->state;
     ctxt->validate = true;
 
     xmlParseDocument(ctxt);
@@ -495,13 +713,13 @@ DDXParser::intern(const string &document, DDS *dds)
     if (!ctxt->wellFormed) {
 	ctxt->sax = NULL;
 	xmlFreeParserCtxt(ctxt);
-	throw DDXParseFailed(string("\nThe database is not a well formed XML document.\n") + state.error_msg);
+	throw DDXParseFailed(string("\nThe DDX is not a well formed XML document.\n") + state.error_msg);
     }
 
     if (!ctxt->valid) {
 	ctxt->sax = NULL;
 	xmlFreeParserCtxt(ctxt);
-	throw DDXParseFailed(string("\nThe database is not a valid document.\n") + state.error_msg);
+	throw DDXParseFailed(string("\nThe DDX is not a valid document.\n") + state.error_msg);
     }
 
     if (get_state(&state) == parser_error) {
@@ -515,6 +733,9 @@ DDXParser::intern(const string &document, DDS *dds)
 }
 
 // $Log: DDXParser.cc,v $
+// Revision 1.2  2003/05/30 02:00:55  jimg
+// Parses top level attributes and simple variables.
+//
 // Revision 1.1  2003/05/29 19:07:15  jimg
 // Added.
 //
