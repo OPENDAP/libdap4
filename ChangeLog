@@ -1,3 +1,18 @@
+Wed Nov 27 11:02:44 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added DDS as a third argument to the user-defined functions in
+	the CE evaluator. This means that a function (which may be server
+	specific) may look at the value of any variable in the dataset,
+	not just those values passed as parameters. This will facilitate
+	creation of functions which use implicit relations between
+	variables when computing values or performing selections (e.g.,
+	when geo-location information depends on the implicit relation
+	between two or more arrays).
+
+	* Changed the way Makefile dependencies are processed so that
+	Makefile (re)generation is faster (since dependencies rarely
+	change). 
+
 Sun Nov 24 19:45:22 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Tested the library code in a number of situations and fixed many
@@ -158,4 +173,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.5 1996/11/25 03:51:26 jimg Exp $
+$Id: ChangeLog,v 1.6 1996/11/27 22:49:27 jimg Exp $
