@@ -65,85 +65,118 @@ TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe \
 
 # Rule for linking console-mode executables
 {$(OBJDIR)}.obj{$(OBJDIR)}.exe:
-	$(LINK) $(LEXEFLAGS) /out:$@ $< $(TESTOBJS) $(LINKLIBS)
+	$(LINK) $(LEXEFLAGS) /out:$@ $< $(LINKLIBS)
 
-DAPOBJS = $(OBJDIR)\Array.obj \
-		$(OBJDIR)\ArrayIterAdapter.obj \
-		$(OBJDIR)\AttrIterAdapter.obj \
-		$(OBJDIR)\AttrTable.obj \
-		$(OBJDIR)\BaseType.obj \
-		$(OBJDIR)\BTIterAdapter.obj \
-		$(OBJDIR)\Byte.obj \
-		$(OBJDIR)\ce_functions.obj \
-		$(OBJDIR)\cgi_util.obj \
-		$(OBJDIR)\Clause.obj \
-		$(OBJDIR)\ClauseIterAdapter.obj \
+UTILOBJS = $(OBJDIR)\cgi_util.obj \
+		$(OBJDIR)\escaping.obj \
+		$(OBJDIR)\DODSFilter.obj
+
+DAS_GRAM_OBJS = $(OBJDIR)\lex.das.obj \
+		$(OBJDIR)\das.tab.obj \
+		$(OBJDIR)\parser-util.obj
+DDS_GRAM_OBJS = $(OBJDIR)\lex.dds.obj \
+		$(OBJDIR)\dds.tab.obj \
+		$(OBJDIR)\parser-util.obj
+EXPR_GRAM_OBJS = $(OBJDIR)\lex.expr.obj \
+		$(OBJDIR)\expr.tab.obj \
+		$(OBJDIR)\RValue.obj
+ERROR_GRAM_OBJS = $(OBJDIR)\lex.Error.obj \
+		$(OBJDIR)\Error.tab.obj
+GSE_GRAM_OBJS = $(OBJDIR)\lex.gse_.obj \
+		$(OBJDIR)\gse.tab.obj
+
+DASOBJS = $(OBJDIR)\AttrTable.obj \
+		$(OBJDIR)\DAS.obj \
+		$(DAS_GRAM_OBJS)
+
+DDSOBJS = $(OBJDIR)\DDS.obj \
+		$(OBJDIR)\DataDDS.obj \
+		$(DDS_GRAM_OBJS)
+
+EXPROBJS = $(OBJDIR)\Clause.obj \
+		$(OBJDIR)\RValue.obj \
+		$(EXPR_GRAM_OBJS)
+
+ERROROBJS = $(OBJDIR)\Error.obj \
+		$(OBJDIR)\InternalErr.obj \
+		$(OBJDIR)\ResponseTooBigErr.obj \
+		$(ERROR_GRAM_OBJS)
+
+CLIENTOBJS = $(OBJDIR)\Connections.obj \
+		$(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\Connect.obj \
 		$(OBJDIR)\HTTPConnect.obj \
-		$(OBJDIR)\Connections.obj \
-		$(OBJDIR)\Constructor.obj \
-		$(OBJDIR)\DAS.obj \
-		$(OBJDIR)\DataDDS.obj \
-		$(OBJDIR)\DDS.obj \
-		$(OBJDIR)\DODSFilter.obj \
-		$(OBJDIR)\Error.obj \
-		$(OBJDIR)\escaping.obj \
-		$(OBJDIR)\Float32.obj \
-		$(OBJDIR)\Float64.obj \
-		$(OBJDIR)\Grid.obj \
-		$(OBJDIR)\GSEClause.obj \
-		$(OBJDIR)\HTTPCache.obj \
-		$(OBJDIR)\Int16.obj \
+		$(OBJDIR)\HTTPCache.obj
+
+TYPEOBJS = $(OBJDIR)\BaseType.obj \
+		$(OBJDIR)\Byte.obj \
 		$(OBJDIR)\Int32.obj \
-		$(OBJDIR)\InternalErr.obj \
-		$(OBJDIR)\IteratorAdapter.obj \
-		$(OBJDIR)\List.obj \
-		$(OBJDIR)\parser-util.obj \
-		$(OBJDIR)\RValue.obj \
-		$(OBJDIR)\RCReader.obj \
-		$(OBJDIR)\Sequence.obj \
+		$(OBJDIR)\Float64.obj \
 		$(OBJDIR)\Str.obj \
-		$(OBJDIR)\Structure.obj \
-		$(OBJDIR)\TestUrl.obj \
-		$(OBJDIR)\UInt16.obj \
-		$(OBJDIR)\UInt32.obj \
 		$(OBJDIR)\Url.obj \
+		$(OBJDIR)\Vector.obj \
+		$(OBJDIR)\List.obj \
+		$(OBJDIR)\Array.obj \
+		$(OBJDIR)\Structure.obj \
+		$(OBJDIR)\Sequence.obj \
+		$(OBJDIR)\Grid.obj \
+		$(OBJDIR)\UInt32.obj \
 		$(OBJDIR)\util.obj \
-		$(OBJDIR)\util_mit.obj \
-		$(OBJDIR)\Vector.obj
-
-TESTOBJS = $(OBJDIR)\TestArray.obj \
-		$(OBJDIR)\TestByte.obj \
-		$(OBJDIR)\TestFloat32.obj \
-		$(OBJDIR)\TestFloat64.obj \
-		$(OBJDIR)\TestGrid.obj \
-		$(OBJDIR)\TestInt16.obj \
-		$(OBJDIR)\TestInt32.obj \
-		$(OBJDIR)\TestList.obj \
-		$(OBJDIR)\TestSequence.obj \
-		$(OBJDIR)\TestStr.obj \
-		$(OBJDIR)\TestStructure.obj \
-		$(OBJDIR)\TestUInt16.obj \
-		$(OBJDIR)\TestUInt32.obj
-
-LEXOBJS = $(OBJDIR)\das.tab.obj \
-		$(OBJDIR)\dds.tab.obj \
-		$(OBJDIR)\expr.tab.obj \
-		$(OBJDIR)\Error.tab.obj \
-		$(OBJDIR)\gse.tab.obj \
-		$(OBJDIR)\lex.das.obj \
-		$(OBJDIR)\lex.dds.obj \
-		$(OBJDIR)\lex.Error.obj \
-		$(OBJDIR)\lex.expr.obj \
-		$(OBJDIR)\lex.gse_.obj \
+		$(OBJDIR)\ce_functions.obj \
+		$(OBJDIR)\GSEClause.obj \
+		$(GSE_GRAM_OBJS) \
+		$(OBJDIR)\Int16.obj \
+		$(OBJDIR)\UInt16.obj \
+		$(OBJDIR)\Float32.obj \
+		$(OBJDIR)\Constructor.obj \
+		$(OBJDIR)\VirtualCtorByte.obj \
+		$(OBJDIR)\VirtualCtorInt16.obj \
+		$(OBJDIR)\VirtualCtorUInt16.obj \
+		$(OBJDIR)\VirtualCtorInt32.obj \
+		$(OBJDIR)\VirtualCtorUInt32.obj \
+		$(OBJDIR)\VirtualCtorFloat32.obj \
+		$(OBJDIR)\VirtualCtorFloat64.obj \
+		$(OBJDIR)\VirtualCtorStr.obj \
+		$(OBJDIR)\VirtualCtorUrl.obj \
+		$(OBJDIR)\VirtualCtorArray.obj \
+		$(OBJDIR)\VirtualCtorList.obj \
+		$(OBJDIR)\VirtualCtorStructure.obj \
+		$(OBJDIR)\VirtualCtorSequence.obj \
+		$(OBJDIR)\VirtualCtorGrid.obj \
+		$(OBJDIR)\util_mit.obj
 
 GNUOBJS = $(OBJDIR)\GetOpt.obj \
 		$(OBJDIR)\Regex.obj \
-		$(OBJDIR)\gnu_error.obj
+		$(OBJDIR)\gnu_error.obj \
+		$(OBJDIR)\IteratorAdapter.obj \
+		$(OBJDIR)\ArrayIterAdapter.obj \
+		$(OBJDIR)\AttrIterAdapter.obj \
+		$(OBJDIR)\BTIterAdapter.obj \
+		$(OBJDIR)\ClauseIterAdapter.obj
 
-LIBOBJS = $(LEXOBJS) $(GNUOBJS) $(DAPOBJS)
+TESTOBJS = $(OBJDIR)\TestByte.obj \
+		$(OBJDIR)\TestInt32.obj \
+		$(OBJDIR)\TestFloat64.obj \
+		$(OBJDIR)\TestStr.obj \
+		$(OBJDIR)\TestUrl.obj \
+		$(OBJDIR)\TestArray.obj \
+		$(OBJDIR)\TestStructure.obj \
+		$(OBJDIR)\TestList.obj \
+		$(OBJDIR)\TestSequence.obj \
+		$(OBJDIR)\TestGrid.obj \
+		$(OBJDIR)\TestUInt32.obj \
+		$(OBJDIR)\TestInt16.obj \
+		$(OBJDIR)\TestUInt16.obj \
+		$(OBJDIR)\TestFloat32.obj
 
-all: build_libxdr setup $(TARGETS) check
+LIBOBJS = $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) $(EXPROBJS) \
+		$(UTILOBJS) $(CLIENTOBJS)
+
+all: build_libxdr setup grammars $(TARGETS) check
+
+grammars: ..\lex.das.c ..\das.tab.h ..\lex.dds.c ..\dds.tab.h ..\lex.expr.c \
+		..\expr.tab.h ..\lex.Error.c ..\Error.tab.h ..\lex.gse_.c \
+		..\gse.tab.h
 
 check: $(TESTTARGETS)
 	@echo Notice:
@@ -161,13 +194,13 @@ build_libxdr:
 $(OBJDIR)\libdap++.lib: $(LIBOBJS)
 	$(LINK) $(LLIBFLAGS) /out:$@ $(LIBOBJS)
 
-$(OBJDIR)\geturl.exe: $(OBJDIR)\geturl.obj $(TESTOBJS) $(OBJDIR)\libdap++.lib
+$(OBJDIR)\geturl.exe: $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.obj
 
-$(OBJDIR)\usage.exe: $(OBJDIR)\usage.obj $(TESTOBJS) $(OBJDIR)\libdap++.lib
+$(OBJDIR)\usage.exe: $(OBJDIR)\libdap++.lib $(OBJDIR)\usage.obj 
 
-$(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj $(OBJDIR)\libdap++.lib
+$(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj 
 
-$(OBJDIR)\ThreadTest.exe: $(OBJDIR)\ThreadTest.obj
+$(OBJDIR)\ThreadTest.exe:  $(OBJDIR)\libdap++.lib $(OBJDIR)\ThreadTest.obj
 
 install:
 	copy $(OBJDIR)\libdap*.lib $(INSTALLLIBDIR)
@@ -177,103 +210,117 @@ install:
 	copy config_dap.h $(INCLUDEDIR)
 	copy dods-datatypes.h $(INCLUDEDIR)
 	copy ..\debug.h $(INCLUDEDIR)
-	copy ..\dods-limits.h $(INCLUDEDIR)
-	copy ..\Error.h $(INCLUDEDIR)
-	copy ..\InternalErr.h $(INCLUDEDIR)
+	copy ..\cgi_util.h $(INCLUDEDIR)
+	copy ..\escaping.h $(INCLUDEDIR)
+	copy ..\DODSFilter.h $(INCLUDEDIR)
+	copy ..\AttrTable.h $(INCLUDEDIR)
+	copy ..\DAS.h $(INCLUDEDIR)
+	copy ..\parser.h $(INCLUDEDIR)
+	copy ..\DDS.h $(INCLUDEDIR)
+	copy ..\DataDDS.h $(INCLUDEDIR)
 	copy ..\expr.h $(INCLUDEDIR)
 	copy ..\Clause.h $(INCLUDEDIR)
-	copy ..\ClauseIterAdapter.h $(INCLUDEDIR)
 	copy ..\RValue.h $(INCLUDEDIR)
+	copy ..\Error.h $(INCLUDEDIR)
+	copy ..\InternalErr.h $(INCLUDEDIR)
+	copy ..\ResponseTooBigErr.h $(INCLUDEDIR)
+	copy ..\Connections.h $(INCLUDEDIR)
+	copy ..\Connections.cc $(INCLUDEDIR)
+	copy ..\RCReader.h $(INCLUDEDIR)
+	copy ..\Connect.h $(INCLUDEDIR)
+	copy ..\HTTPConnect.h $(INCLUDEDIR)
+	copy ..\ObjectType.h $(INCLUDEDIR)
+	copy ..\EncodingType.h $(INCLUDEDIR)
+	copy ..\HTTPCache.h $(INCLUDEDIR)
+	copy ..\HTTPCacheDisconnectedMode.h $(INCLUDEDIR)
 	copy ..\BaseType.h $(INCLUDEDIR)
-	copy ..\BTIterAdapter.h $(INCLUDEDIR)
 	copy ..\Byte.h $(INCLUDEDIR)
 	copy ..\Int32.h $(INCLUDEDIR)
 	copy ..\GSEClause.h $(INCLUDEDIR)
+	copy ..\Constructor.h $(INCLUDEDIR)
 	copy ..\Float64.h $(INCLUDEDIR)
 	copy ..\Str.h $(INCLUDEDIR)
 	copy ..\Url.h $(INCLUDEDIR)
 	copy ..\Vector.h $(INCLUDEDIR)
 	copy ..\List.h $(INCLUDEDIR)
 	copy ..\Array.h $(INCLUDEDIR)
-	copy ..\ArrayIterAdapter.h $(INCLUDEDIR)
 	copy ..\Structure.h $(INCLUDEDIR)
 	copy ..\Sequence.h $(INCLUDEDIR)
 	copy ..\Grid.h $(INCLUDEDIR)
 	copy ..\UInt32.h $(INCLUDEDIR)
 	copy ..\util.h $(INCLUDEDIR)
-	copy ..\util_mit.h $(INCLUDEDIR)
 	copy ..\Int16.h $(INCLUDEDIR)
 	copy ..\UInt16.h $(INCLUDEDIR)
-	copy ..\IteratorAdapter.h $(INCLUDEDIR)
 	copy ..\Float32.h $(INCLUDEDIR)
-	copy ..\DDS.h $(INCLUDEDIR)
-	copy ..\DataDDS.h $(INCLUDEDIR)
-	copy ..\AttrTable.h $(INCLUDEDIR)
-	copy ..\AttrIterAdapter.h $(INCLUDEDIR)
-	copy ..\DAS.h $(INCLUDEDIR)
-	copy ..\parser.h $(INCLUDEDIR)
+	copy ..\util_mit.h $(INCLUDEDIR)
 	copy ..\GNU\Pix.h $(INCLUDEDIR)
 	copy ..\GNU\gnu-std.h $(INCLUDEDIR)
 	copy ..\GNU\GetOpt.h $(INCLUDEDIR)
 	copy ..\GNU\Regex.h $(INCLUDEDIR)
 	copy ..\GNU\builtin.h $(INCLUDEDIR)
-	copy ..\Connect.h $(INCLUDEDIR)
-	copy ..\Connections.h $(INCLUDEDIR)
-	copy ..\Connections.cc $(INCLUDEDIR)
-	copy ..\Constructor.h $(INCLUDEDIR)
-	copy ..\cgi_util.h $(INCLUDEDIR)
-	copy ..\DODSFilter.h $(INCLUDEDIR)
-	copy ..\escaping.h $(INCLUDEDIR)
-	copy ..\HTTPConnect.h $(INCLUDEDIR)
-	copy ..\HTTPCache.h $(INCLUDEDIR)
-	copy ..\HTTPCacheDisconnectedMode.h $(INCLUDEDIR)
-	copy ..\RCReader.h $(INCLUDEDIR)
-	copy ..\ResponseTooBigErr.h $(INCLUDEDIR)
-	copy ..\ObjectType.h $(INCLUDEDIR)
+	copy ..\IteratorAdapter.h $(INCLUDEDIR)
+	copy ..\ArrayIterAdapter.h $(INCLUDEDIR)
+	copy ..\AttrIterAdapter.h $(INCLUDEDIR)
+	copy ..\BTIterAdapter.h $(INCLUDEDIR)
+	copy ..\ClauseIterAdapter.h $(INCLUDEDIR)
 
 # The DAP Proper
 $(OBJDIR)\Array.obj : ..\Array.cc
-$(OBJDIR)\ArrayIterAdapter.obj : ..\ArrayIterAdapter.cc
-$(OBJDIR)\AttrTable.obj : ..\AttrTable.cc
-$(OBJDIR)\AttrIterAdapter.obj : ..\AttrIterAdapter.cc
+$(OBJDIR)\DDS.obj : ..\DDS.cc
+$(OBJDIR)\DataDDS.obj : ..\DataDDS.cc
 $(OBJDIR)\BaseType.obj : ..\BaseType.cc
 $(OBJDIR)\Byte.obj : ..\Byte.cc
-$(OBJDIR)\BTIterAdapter.obj : ..\BTIterAdapter.cc
-$(OBJDIR)\ce_functions.obj : ..\ce_functions.cc
-$(OBJDIR)\cgi_util.obj : ..\cgi_util.cc
-$(OBJDIR)\Clause.obj : ..\Clause.cc
-$(OBJDIR)\ClauseIterAdapter.obj : ..\ClauseIterAdapter.cc
-$(OBJDIR)\Connect.obj : ..\Connect.cc
-$(OBJDIR)\Connections.obj : ..\Connections.cc
-$(OBJDIR)\Constructor.obj : ..\Constructor.cc
-$(OBJDIR)\DAS.obj : ..\DAS.cc
-$(OBJDIR)\DataDDS.obj : ..\DataDDS.cc
-$(OBJDIR)\DDS.obj : ..\DDS.cc
-$(OBJDIR)\DODSFilter.obj : ..\DODSFilter.cc
-$(OBJDIR)\Error.obj : ..\Error.cc
-$(OBJDIR)\escaping.obj : ..\escaping.cc
-$(OBJDIR)\Float32.obj : ..\Float32.cc
-$(OBJDIR)\Float64.obj : ..\Float64.cc
-$(OBJDIR)\Grid.obj : ..\Grid.cc
-$(OBJDIR)\GSEClause.obj : ..\GSEClause.cc
-$(OBJDIR)\HTTPCache.obj : ..\HTTPCache.cc
-$(OBJDIR)\Int16.obj : ..\Int16.cc
 $(OBJDIR)\Int32.obj : ..\Int32.cc
-$(OBJDIR)\InternalErr.obj : ..\InternalErr.cc
-$(OBJDIR)\IteratorAdapter.obj : ..\IteratorAdapter.cc
-$(OBJDIR)\List.obj : ..\List.cc
-$(OBJDIR)\parser-util.obj : ..\parser-util.cc
-$(OBJDIR)\RCReader.obj : ..\RCReader.cc
-$(OBJDIR)\RValue.obj : ..\RValue.cc
-$(OBJDIR)\Sequence.obj : ..\Sequence.cc
+$(OBJDIR)\Float64.obj : ..\Float64.cc
 $(OBJDIR)\Str.obj : ..\Str.cc
-$(OBJDIR)\Structure.obj : ..\Structure.cc
-$(OBJDIR)\UInt16.obj : ..\UInt16.cc
-$(OBJDIR)\UInt32.obj : ..\UInt32.cc
 $(OBJDIR)\Url.obj : ..\Url.cc
-$(OBJDIR)\util.obj : ..\Util.cc
-$(OBJDIR)\util_mit.obj : ..\Util_mit.cc
 $(OBJDIR)\Vector.obj : ..\Vector.cc
+$(OBJDIR)\List.obj : ..\List.cc
+$(OBJDIR)\Array.obj : ..\Array.cc
+$(OBJDIR)\Structure.obj : ..\Structure.cc
+$(OBJDIR)\Sequence.obj : ..\Sequence.cc
+$(OBJDIR)\Grid.obj : ..\Grid.cc
+$(OBJDIR)\UInt32.obj : ..\UInt32.cc
+$(OBJDIR)\util.obj : ..\util.cc
+$(OBJDIR)\ce_functions.obj : ..\ce_functions.cc
+$(OBJDIR)\GSEClause.obj : ..\GSEClause.cc
+$(OBJDIR)\Int16.obj : ..\Int16.cc
+$(OBJDIR)\UInt16.obj : ..\UInt16.cc
+$(OBJDIR)\Float32.obj : ..\Float32.cc
+$(OBJDIR)\Constructor.obj : ..\Constructor.cc
+$(OBJDIR)\VirtualCtorByte.obj : ..\VirtualCtorByte.cc
+$(OBJDIR)\VirtualCtorInt16.obj : ..\VirtualCtorInt16.cc
+$(OBJDIR)\VirtualCtorUInt16.obj : ..\VirtualCtorUInt16.cc
+$(OBJDIR)\VirtualCtorInt32.obj : ..\VirtualCtorInt32.cc
+$(OBJDIR)\VirtualCtorUInt32.obj : ..\VirtualCtorUInt32.cc
+$(OBJDIR)\VirtualCtorFloat32.obj : ..\VirtualCtorFloat32.cc
+$(OBJDIR)\VirtualCtorFloat64.obj : ..\VirtualCtorFloat64.cc
+$(OBJDIR)\VirtualCtorStr.obj : ..\VirtualCtorStr.cc
+$(OBJDIR)\VirtualCtorUrl.obj : ..\VirtualCtorUrl.cc
+$(OBJDIR)\VirtualCtorArray.obj : ..\VirtualCtorArray.cc
+$(OBJDIR)\VirtualCtorList.obj : ..\VirtualCtorList.cc
+$(OBJDIR)\VirtualCtorStructure.obj : ..\VirtualCtorStructure.cc
+$(OBJDIR)\VirtualCtorSequence.obj : ..\VirtualCtorSequence.cc
+$(OBJDIR)\VirtualCtorGrid.obj : ..\VirtualCtorGrid.cc
+$(OBJDIR)\util_mit.obj : ..\util_mit.cc
+$(OBJDIR)\IteratorAdapter.obj : ..\IteratorAdapter.cc
+$(OBJDIR)\ArrayIterAdapter.obj : ..\ArrayIterAdapter.cc
+$(OBJDIR)\AttrIterAdapter.obj : ..\AttrIterAdapter.cc
+$(OBJDIR)\BTIterAdapter.obj : ..\BTIterAdapter.cc
+$(OBJDIR)\ClauseIterAdapter.obj : ..\ClauseIterAdapter.cc
+$(OBJDIR)\Error.obj : ..\Error.cc
+$(OBJDIR)\InternalErr.obj : ..\InternalErr.cc
+$(OBJDIR)\ResponseTooBigErr.obj : ..\ResponseTooBigErr.cc
+$(OBJDIR)\Clause.obj : ..\Clause.cc
+$(OBJDIR)\RValue.obj : ..\RValue.cc
+$(OBJDIR)\cgi_util.obj : ..\cgi_util.cc
+$(OBJDIR)\escaping.obj : ..\escaping.cc
+$(OBJDIR)\DODSFilter.obj : ..\DODSFilter.cc
+$(OBJDIR)\Connections.obj : ..\Connections.cc
+$(OBJDIR)\RCReader.obj : ..\RCReader.cc
+$(OBJDIR)\Connect.obj : ..\Connect.cc
+$(OBJDIR)\HTTPConnect.obj : ..\HTTPConnect.cc
+$(OBJDIR)\HTTPCache.obj : ..\HTTPCache.cc
 
 # Test objects
 $(OBJDIR)\TestArray.obj : ..\TestArray.cc
@@ -390,10 +437,11 @@ $(OBJDIR)\expr-test.obj  : ..\expr-test.cc $(OBJDIR)\libdap++.lib
 # they generate output for the UNIX world).  This stupid pet trick
 # also properly defines isatty() for the generated source under win32.
 
-# Don't use the built-in "extended DOS" commands with all the
-# fancy flags.  Win95/98 systems don't have those so we must
-# keep it simple.  Sticking with no-flag versions of copy, mkdir,
-# rmdir and del are a safe bet.
+# We once stuck with using very simple ("non-extended") DOS commands
+# w/o all the fancy flags.  That was in support of building on
+# Win95/98.  We no longer support 95/98 so we can go ahead and use
+# the more robust DOS commands.  The below can be made less repititive
+# as a result - when time permits.
 setup:
 	@-mkdir $(OBJDIR)
 	@-mkdir $(INSTALLLIBDIR)
