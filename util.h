@@ -12,10 +12,14 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.21  1997/02/28 01:24:54  jimg
-/* Added String &msg parameter to unique(). Instead of writing messages to
-/* cerr, messages are now written to this string object.
+/* Revision 1.22  1997/03/08 18:58:57  jimg
+/* Changed name of function unique() to unique_names() to avoid a conflict
+/* with the STL.
 /*
+ * Revision 1.21  1997/02/28 01:24:54  jimg
+ * Added String &msg parameter to unique(). Instead of writing messages to
+ * cerr, messages are now written to this string object.
+ *
  * Revision 1.20  1997/02/19 02:13:43  jimg
  * Fixed decompressor and compressor parameter lists.
  *
@@ -107,8 +111,8 @@
 #include "Function.h"
 #include "Grid.h"
 
-bool unique(SLList<BaseTypePtr> l, const char *var, const char *type,
-	    String &msg = "");
+bool unique_names(SLList<BaseTypePtr> l, const char *var, const char *type,
+		  String &msg);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);

@@ -11,6 +11,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.37  1997/03/08 18:58:22  jimg
+// Changed name of function unique() to unique_names() to avoid a conflict
+// with the STL.
+//
 // Revision 1.36  1997/02/28 01:24:28  jimg
 // Added String &msg parameter to unique(). Instead of writing messages to
 // cerr, messages are now written to this string object.
@@ -190,7 +194,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.36 1997/02/28 01:24:28 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.37 1997/03/08 18:58:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -238,8 +242,8 @@ char_cmp(const void *a, const void *b)
 // char **) and the dereference to get (const char *) for strcmp's arguments.
 
 bool
-unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name,
-       String &msg = "")
+unique_names(SLList<BaseTypePtr> l, const char *var_name, 
+	     const char *type_name, String &msg = String())
 {
     // copy the identifier names to an array of char
     char **names = new char *[l.length()];
