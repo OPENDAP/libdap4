@@ -9,6 +9,11 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.38  1999/01/13 16:59:05  jimg
+// Removed call to text_to_temp() (which copied a string to a temp file so that
+// the file could be parsed) with code that feeds the string directly into the
+// parser/scanner.
+//
 // Revision 1.37  1998/11/10 01:08:06  jimg
 // Changed code; now uses a list of Clause pointers instead of using a list of
 // Clause objects. This makes it simpler for the projection functions to add
@@ -199,7 +204,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.37 1998/11/10 01:08:06 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.38 1999/01/13 16:59:05 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -231,6 +236,11 @@ int ddsparse(void *arg);
 
 void exprrestart(FILE *yyin);	// Defined in expr.tab.c
 int exprparse(void *arg);
+
+// Glue routines declared in expr.lex
+void expr_switch_to_buffer(void *new_buffer);
+void expr_delete_buffer(void * buffer);
+void *expr_string(const char *yy_str);
 
 // Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
 // the `result' of the mfunc.
@@ -849,6 +859,7 @@ DDS::check_semantics(bool all)
 bool
 DDS::parse_constraint(const String &constraint, ostream &os, bool server = true)
 {
+#if 0
     FILE *in = text_to_temp(constraint);
 
     if (!in) {
@@ -857,11 +868,18 @@ DDS::parse_constraint(const String &constraint, ostream &os, bool server = true)
     }
 
     exprrestart(in);
+#endif
+
+    exprrestart(0);
+    void *buffer = expr_string((const char *)constraint);
+    expr_switch_to_buffer(buffer);
 
     parser_arg arg(this);
 
     bool status = exprparse((void *)&arg) == 0;
 
+    expr_delete_buffer(buffer);
+    
     //  STATUS is the result of the parser function; if a recoverable error
     //  was found it will be true but arg.status() will be false.
     if (!status || !arg.status()) {// Check parse result
