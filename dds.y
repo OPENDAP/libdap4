@@ -15,7 +15,11 @@
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.4  1994/11/10 19:50:54  jimg
+ * Revision 1.5  1994/12/09 21:42:41  jimg
+ * Added to array: so that an array decl can contain: an int or an id=int.
+ * This is for the named dimensions (see Array.{cc,h}).
+ *
+ * Revision 1.4  1994/11/10  19:50:54  jimg
  * In the past it was possible to have a null file correctly parse as a
  * DAS or DDS. However, now that is not possible. It is possible to have
  * a file that contains no variables parse, but the keyword `Attribute'
@@ -38,8 +42,9 @@
 #define YYSTYPE char *
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
+#define ID_MAX 256
 
-static char rcsid[]={"$Id: dds.y,v 1.4 1994/11/10 19:50:54 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.5 1994/12/09 21:42:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,11 +73,14 @@ extern int dds_line_num;
 static CtorTypePtrXPStack ctor;	/* stack for ctor types */
 static BaseType *current;
 static Part part = nil;		/* Part is defined in CtorType */
+static char id[ID_MAX];
 
 int ddslex();
 int ddserror(char *s);
 void add_entry(DDS &table, CtorTypePtrXPStack &ctor, BaseType **current, 
 	       Part p);
+void save_str(char *dst, char *src);
+
 %}
 
 %expect 61
@@ -202,6 +210,23 @@ array_decl:	'[' INTEGER ']'
 			 current = a;
 		     }
 		 }
+		 | '[' ID 
+		 {
+		     save_str(id, $2);
+		 } 
+                 '=' INTEGER 
+                 { 
+		     if (current->get_var_type() == "Array") {
+			 ((Array *)current)->append_dim(atoi($4), id);
+		     }
+		     else {
+			 Array *a = new Array; 
+			 a->add_var(current); 
+			 a->append_dim(atoi($4), id);
+			 current = a;
+		     }
+		 }
+		 ']'
 ;
 
 name:		ID { table.set_dataset_name($1); }
@@ -244,5 +269,22 @@ add_entry(DDS &table, CtorTypePtrXPStack &ctor, BaseType **current, Part part)
     }
     else
 	table.add_var(*current);
+}
+
+/* 
+   Copy upto ID_MAX - 1 characters from SRC to DST. If SRC contains more
+   characters, print an error message.
+
+   Returns: void
+*/
+
+void
+save_str(char *dst, char *src)
+{
+    strncpy(dst, src, ID_MAX);
+    name[ID_MAX-1] = '\0';		/* in case ... */
+    if (strlen(src) >= ID_MAX) 
+	cerr << "line: " << das_line_num << "`" << src << "' truncated to `"
+             << dst << "'" << endl;
 }
 
