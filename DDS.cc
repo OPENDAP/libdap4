@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.63 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.64 2003/05/30 16:51:45 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -169,8 +169,10 @@ DDS::operator=(const DDS &rhs)
 /** Given a DAS, find all the attributes in it for the given variable and
     copy them fromt he DAS to the variable.
 
-    @todo Make the \i das param const. Will require changes to DAS and
-    AttrTable. 
+    NB: This is an old method to handle merging attributes. It works for the
+    top level variables, but doesn't match nested attribute containers with
+    nested variables. 
+
     @param das Source
     @param bt Destination */
 static void
@@ -210,9 +212,9 @@ transfer_attr(BaseType *bt, DAS *das)
 }
 #endif
 
-static void transfer_attr(const AttrTable::entry *ep, BaseType *btp);
-static void transfer_attr_table(AttrTable *at, BaseType *btp);
-static void transfer_attr_table(AttrTable *at, Constructor *c);
+static void transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp);
+static void transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp);
+static void transfer_attr_table(DAS *das, AttrTable *at, Constructor *c);
 
 /** Transfer a single attribute to the table held by a BaseType. If the
     attribute turns out to be a container, call transfer_attr_table. If not
@@ -222,17 +224,22 @@ static void transfer_attr_table(AttrTable *at, Constructor *c);
     @param ep The attribute
     @param btp The destination */
 static void
-transfer_attr(const AttrTable::entry *ep, BaseType *btp)
+transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp)
 {
     if (ep->is_alias) {
-	throw InternalErr(__FILE__, __LINE__, "Attribute alias");
+	AttrTable *source_table = das->get_attr_table(ep->aliased_to);
+	AttrTable &dest = btp->get_attr_table();
+	if (source_table)
+	    dest.add_container_alias(ep->name, source_table);
+	else
+	    dest.add_value_alias(das, ep->name, ep->aliased_to);
     }
     else if (ep->type == Attr_container) {
 	Constructor *c = dynamic_cast<Constructor*>(btp);
 	if (c)
-	    transfer_attr_table(ep->attributes, c);
+	    transfer_attr_table(das, ep->attributes, c);
 	else
-	    transfer_attr_table(ep->attributes, btp);
+	    transfer_attr_table(das, ep->attributes, btp);
     }
     else {
 	AttrTable &at = btp->get_attr_table();
@@ -251,12 +258,12 @@ transfer_attr(const AttrTable::entry *ep, BaseType *btp)
     @param at The attribute container
     @param btp The destination */
 static void
-transfer_attr_table(AttrTable *at, BaseType *btp)
+transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp)
 {
     if (at->get_name() == btp->name()) {
 	// for each entry in the table, call transfer_attr()
 	for (AttrTable::Attr_iter i = at->attr_begin(); i!=at->attr_end(); ++i)
-	    transfer_attr(*i, btp);
+	    transfer_attr(das, *i, btp);
     }
     else {
 	// Clone at because append_container does not and at may be deleted
@@ -268,7 +275,7 @@ transfer_attr_table(AttrTable *at, BaseType *btp)
 
 /** Transfer an attribute container to a Constructor variable. */
 static void
-transfer_attr_table(AttrTable *at, Constructor *c)
+transfer_attr_table(DAS *das, AttrTable *at, Constructor *c)
 {
     for (AttrTable::Attr_iter i = at->attr_begin(); i != at->attr_end(); ++i) {
 	AttrTable::entry *ep = *i;
@@ -282,7 +289,7 @@ transfer_attr_table(AttrTable *at, Constructor *c)
 		   ++j) {
 		  if (n == (*j)->name()) { // found match
 		      found = true;
-		      transfer_attr(ep, *j);
+		      transfer_attr(das, ep, *j);
 		  }
 	      }
 	      break;
@@ -292,13 +299,13 @@ transfer_attr_table(AttrTable *at, Constructor *c)
 	      Grid *g = dynamic_cast<Grid*>(c);
 	      if (n == g->array_var()->name()) { // found match
 		  found = true;
-		  transfer_attr(ep, g->array_var());
+		  transfer_attr(das, ep, g->array_var());
 	      }
 	      
 	      for (Grid::Map_iter j = g->map_begin(); j!=g->map_end(); ++j) {
 		  if (n == (*j)->name()) { // found match
 		      found = true;
-		      transfer_attr(ep, *j);
+		      transfer_attr(das, ep, *j);
 		  }
 	      }
 	      break;
@@ -309,7 +316,7 @@ transfer_attr_table(AttrTable *at, Constructor *c)
 	}
 
 	if (!found)
-	    transfer_attr(ep, c);
+	    transfer_attr(das, ep, c);
     }
 }
 
@@ -401,7 +408,7 @@ DDS::transfer_attributes(DAS *das)
 	for (Vars_iter j = var_begin(); j != var_end(); ++j) {
 	    if (n == (*j)->name()) { // found match
 		found = true;
-		transfer_attr(ep, *j);
+		transfer_attr(das, ep, *j);
 	    }
 	}
 
@@ -1491,6 +1498,11 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.64  2003/05/30 16:51:45  jimg
+// Modified transfer_attrs() so that aliases are supported. Unfortunately,
+// aliases are broken in the C++ code and in their design, so this addition/fix
+// is of limited use.
+//
 // Revision 1.63  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can
