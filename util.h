@@ -13,6 +13,9 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.30  1999/04/29 21:14:49  jimg
+ * Removed Function include
+ *
  * Revision 1.29  1999/04/29 02:29:37  jimg
  * Merge of no-gnu branch
  *
@@ -142,7 +145,6 @@
 #include "List.h"
 #include "Structure.h"
 #include "Sequence.h"
-#include "Function.h"
 #include "Grid.h"
 
 string prune_spaces(string);
