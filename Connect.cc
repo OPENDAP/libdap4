@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.123 2003/02/27 23:22:30 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.124 2003/03/04 17:54:52 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -67,16 +67,18 @@ using std::ofstream;
 
 extern ObjectType get_type(const string &value);
 
-/** This method should be able to stand on its own, along with similar
-    methods for the DAS and DDS (maybe). That way Connect provides a default
-    way to process a response plus an application can provide its own. */
+/** This private method process data from both local and remote sources. It
+    exists to eliminate duplication of code. */
 void
-Connect::process_data(DataDDS &data) throw(Error, InternalErr)
+Connect::process_data(DataDDS &data, Response *rs) 
+    throw(Error, InternalErr)
 {
-    DBG(cerr << "Entring process_data: d_stream = " << d_stream << endl);
-    switch (type()) {
+    data.set_version(rs->get_version());
+
+    DBG(cerr << "Entring process_data: d_stream = " << rs << endl);
+    switch (rs->get_type()) {
       case dods_error:
-	if (!_error.parse(output()))
+	if (!_error.parse(rs->get_stream()))
 	    throw InternalErr(__FILE__, __LINE__,
 	      "Could not parse the Error object returned by the server!");
 	throw _error;
@@ -89,13 +91,22 @@ Connect::process_data(DataDDS &data) throw(Error, InternalErr)
       case dods_data:
       default: {
 	  // Parse the DDS; throw an exception on error.
-	  data.parse(output());
+	  data.parse(rs->get_stream());
+	  XDR *xdr_stream = new_xdrstdio(rs->get_stream(), XDR_DECODE);
 
 	  // Load the DDS with data.
-	  for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++)
-	  {
-	      (*i)->deserialize(source(), &data);
+	  try {
+	      for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); 
+		   i++) {
+		  (*i)->deserialize(xdr_stream, &data);
+	      }
 	  }
+	  catch(...) {
+	      delete_xdrstdio(xdr_stream);
+	      throw;
+	  }
+
+	  delete_xdrstdio(xdr_stream);
       }
     }
 }
@@ -130,12 +141,16 @@ get_type(const string &value)
 // old GNU libg++, the C++ calls were synchronized with the C calls, but that
 // may no longer be the case. 5/31/99 jhrg
 
-/** Use when you cannot use libwww. */
+/** Use when you cannot use libcurl.
+    @param data_source Read from this stream.
+    @param rs Value/Result parameter. Dump version and type information here.
+    */ 
 void 
-Connect::parse_mime(FILE * data_source)
+Connect::parse_mime(FILE *data_source, Response *rs)
 {
-    char line[256];
+    rs->set_version("dods/0.0"); // initial value; for backward compat.
 
+    char line[256];
     fgets(line, 255, data_source);
     line[strlen(line) - 1] = '\0';	// remove the newline
 
@@ -149,13 +164,13 @@ Connect::parse_mime(FILE * data_source)
 
 	if (header == "content-description:") {
 	    DBG(cout << header << ": " << value << endl);
-	    set_type(get_type(value));
+	    rs->set_type(get_type(value));
 	} else if (header == "xdods-server:") {
 	    DBG(cout << header << ": " << value << endl);
-	    set_server_version(value);
-	} else if (server_version() == "dods/0.0" && header == "server:") {
+	    rs->set_version(value);
+	} else if (rs->get_version() == "dods/0.0" && header == "server:") {
 	    DBG(cout << header << ": " << value << endl);
-	    set_server_version(value);
+	    rs->set_version(value);
 	}
 
 	fgets(line, 255, data_source);
@@ -174,9 +189,10 @@ Connect::parse_mime(FILE * data_source)
     @param uname Ignored
     @param password Ignored
     @brief Create an instance of Connect. */
-Connect::Connect(const string &n, bool www_verbose_errors, bool accept_deflate, 
-		 string uname, string password) throw (Error, InternalErr)
-    : d_type(unknown_type), d_server(""), d_stream(0), _source(0)
+Connect::Connect(const string &n, bool www_verbose_errors, 
+		 bool accept_deflate, string uname, string password) 
+    throw (Error, InternalErr)
+    : d_http(0)
 {
     string name = prune_spaces(n);
     
@@ -218,130 +234,17 @@ Connect::Connect(const string &n, bool www_verbose_errors, bool accept_deflate,
 
     set_accept_deflate(accept_deflate);
 
-    if (uname != "")
-	set_credentials(uname, password);
+    set_credentials(uname, password);
 }
 
 Connect::~Connect()
 {
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
-    if (!_local)
+    if (d_http)
 	delete d_http;
 
-    close_output();
-
     DBG2(cerr << "Leaving the Connect dtor" << endl);
-}
-
-/** It should be an error to call this before a reponse has been generated. */
-FILE *
-Connect::output()
-{
-    if (d_stream)
-	return d_stream;
-    else 
-	throw Error("Attempt to get the response stream when one has not been opened.");
-}
-
-/** The data retrieved from a remote DODS server will be in XDR
-    format.  Use this function to initialize an XDR decoder for that
-    data and to return an XDR pointer to the data.
-
-    @brief Access the XDR input stream (source) for this connection.
-
-    @return Returns a XDR pointer tied to the current output
-    stream.  
-    @see Connect::output
-*/
-XDR *
-Connect::source()
-{
-    if (!_source)
-	_source = new_xdrstdio(output(), XDR_DECODE);
-
-    return _source;
-}
-
-/** Close the output stream of the Connect object. This closes the FILE
-    pointer returned by <tt>output()</tt>. In addition, it also deletes the
-    internal XDR stream object, although users should not have to know
-    about that.
-
-    @brief Close the object's output stream if it is not NULL or
-    STDOUT. */
-void 
-Connect::close_output()
-{
-    DBG(cerr << "Entring close_output()\n");
-
-    close_source();
-
-    if (d_stream) {
-	fclose(d_stream);
-	d_stream = 0;
-    }
-}
-
-void
-Connect::close_source()
-{
-    if (_source) {
-	delete_xdrstdio(_source);
-	_source = 0;
-    }
-}
-
-/** During the parse of the message headers returned from the
-    dereferenced URL, the object type is set. Use this function to
-    read that type information. This will be valid <i>before</i> the
-    return object is completely parsed so it can be used to decide
-    which parser to call to read the data remaining in
-    the input stream.
-
-    The object types are Data, DAS, DDS, Error, and undefined.
-
-    @brief What type is the most recent object sent from the
-    server?
-    @return The type of the object.
-    @see ObjectType */
-ObjectType 
-Connect::type()
-{
-    if (d_type == unknown_type)
-	d_type = d_http->type();
-    return d_type;
-}
-
-/* Move to local access class when written. */
-void
-Connect::set_type(ObjectType ot)
-{
-    d_type = ot;
-}
-
-/** This method should only be called once a response has been requested and
-    received. */
-string 
-Connect::server_version()
-{
-    if (d_server == "") {
-	if (_local)
-	    d_server = "dods/0.0";
-	else 
-	    d_server = d_http->server_version();
-    }
-
-    return d_server;
-}
-
-/** This method is here only because local response access is implemented as
-    a kludge. Once a class for local access is written, this method should
-    move there. */ 
-void
-Connect::set_server_version(const string &sv)
-{
-    d_server = sv;
 }
 
 /** Reads the DAS corresponding to the dataset in the Connect
@@ -350,15 +253,7 @@ Connect::set_server_version(const string &sv)
     escaped and passed as the query string of the request.
 
     @brief Get the DAS from a server.
-    @return TRUE if the DAS was successfully received. FALSE
-    otherwise. 
-    @param gui_p If TRUE, use the client GUI.  Most DAS's are too
-    small to make this worthwhile.
-    @param ext The extension to append to the URL to retrieve the
-    dataset DAS.  This parameter is included for compatibility with
-    future versions of the DODS software.  It currently defaults to
-    the only possible working value, ``das''.
-*/
+    @param das Result. */
 void
 Connect::request_das(DAS &das) throw(Error, InternalErr)
 {
@@ -366,18 +261,18 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
     if (_proj.length() + _sel.length())
 	das_url = das_url + "?" + id2www_ce(_proj + _sel);
 
-    // We need to catch Error exceptions to ensure calling close_output.
+    Response *rs = 0;
     try {
-	d_stream = d_http->fetch_url(das_url);
+	rs = d_http->fetch_url(das_url);
     }
     catch (...) {
-	close_output();
+	delete rs;
 	throw;
     }
 
-    switch (type()) {
+    switch (rs->get_type()) {
       case dods_error: {
-	  if (!_error.parse(output())) {
+	  if (!_error.parse(rs->get_stream())) {
 	      throw InternalErr(__FILE__, __LINE__, 
 			"Could not parse error returned from server.");
 	      break;
@@ -395,21 +290,26 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
       default:
 	// DAS::parse throws an exception on error.
 	try {
-	    das.parse(output());	// read and parse the das from a file 
+	    das.parse(rs->get_stream()); // read and parse the das from a file 
 	}
 	catch (...) {
-	    close_output();
+	    delete rs;
 	    throw;
 	}
 	    
 	break;
     }
 
-    close_output();
+    delete rs;
 }
 
-/** Read data and load it into a DAS object. This is how I'd like the
-    interface for Connect to look; no more objects embedded in the class. */
+/** Reads the DDS corresponding to the dataset in the Connect object's URL.
+    If present in the Connect object's instance, a CE will be escaped,
+    combined with \c expr and passed as the query string of the request.
+
+    @brief Get the DDS from a server.
+    @param dds Result.
+    @param expr Send this constraint expression to the server. */
 void
 Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 {
@@ -426,18 +326,18 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
     string dds_url = _URL + ".dds" + "?" 
 	+ id2www_ce(_proj + proj + _sel + sel);
 
-    // We need to catch Error exceptions to ensure calling close_output.
+    Response *rs = 0;
     try {
-	d_stream = d_http->fetch_url(dds_url);
+	rs = d_http->fetch_url(dds_url);
     }
     catch (...) {
-	close_output();
+	delete rs;
 	throw;
     }
 
-    switch (type()) {
+    switch (rs->get_type()) {
       case dods_error: {
-	  if (!_error.parse(output())) {
+	  if (!_error.parse(rs->get_stream())) {
 	      throw InternalErr(__FILE__, __LINE__, 
 			"Could not parse error returned from server.");
 	      break;
@@ -455,18 +355,27 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
       default:
 	// DDS::prase throws an exception on error.
 	try {
-	    dds.parse(output());	// read and parse the dds from a file 
+	    dds.parse(rs->get_stream()); // read and parse the dds from a file 
 	}
 	catch (...) {
-	    close_output();
+	    delete rs;
 	    throw;
 	}
 	break;
     }
 
-    close_output();
+    delete rs;
 }
 
+/** Reads the DataDDS object corresponding to the dataset in the Connect
+    object's URL. If present in the Connect object's instance, a CE will be
+    escaped, combined with \c expr and passed as the query string of the
+    request. The result is a DataDDS which contains the data values bound to
+    variables.
+
+    @brief Get the DAS from a server.
+    @param data Result.
+    @param expr Send this constraint expression to the server. */
 void
 Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
 {
@@ -483,38 +392,44 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
     string data_url = _URL + ".dods?" 
 	+ id2www_ce(_proj + proj + _sel + sel);
 
+    Response *rs = 0;
     // We need to catch Error exceptions to ensure calling close_output.
     try {
-	d_stream = d_http->fetch_url(data_url);
-	data.set_version(server_version());
-	process_data(data);
+	rs = d_http->fetch_url(data_url);
+	process_data(data, rs);
+	delete rs;
     }
     catch (...) {
-	close_output();
+	delete rs;
 	throw;
     }
-
-    close_output();
 }
 
+/** This is a place holder. A better implementation for reading objects from
+    the local file store is to write FileConnect and have it support the same
+    interface as HTTPConnect.
+
+    @param data Result.
+    @param data_source Read from this open file/stream. */
 void
 Connect::read_data(DataDDS &data, FILE *data_source) throw(Error, InternalErr)
 {
     if (!data_source) 
 	throw InternalErr(__FILE__, __LINE__, "data_source is null.");
 
-    // Read from data_source and parse the MIME headers specific to DODS.
-    parse_mime(data_source);
-
-    data.set_version(server_version());
-
-    d_stream = data_source;
+    Response *rs = 0;
 
     try {
-	process_data(data);
+	rs = new Response(data_source);
+	// Read from data_source and parse the MIME headers specific to DODS.
+	parse_mime(data_source, rs);
+    
+	process_data(data, rs);
+
+	delete rs;
     }
     catch (...) {
-	close_output();
+	delete rs;
 	throw;
     }
 }
@@ -572,63 +487,6 @@ Connect::CE()
     return _proj + _sel;
 }
 
-/** All DODS datasets define a Data Attribute Structure (DAS), to
-    hold a variety of information about the variables in a
-    dataset. This function returns the DAS for the dataset indicated
-    by this Connect object.
-
-    @brief Return a reference to the Connect's DAS object. 
-    @return A reference to the DAS object.
-    @see DAS 
-*/
-DAS & 
-Connect::das()
-{
-    if (_local)
-	throw InternalErr(__FILE__, __LINE__,
-			  "Cannot access DAS for a non-DODS data source.");
-
-    return _das;
-}
-
-/** All DODS datasets define a Data Descriptor Structure (DDS), to
-    hold the data type of each of the variables in a dataset.  This
-    function returns the DDS for the dataset indicated by this
-    Connect object.
-
-    @brief Return a reference to the Connect's DDS object. 
-    @return A reference to the DDS object.
-    @see DDS 
-*/
-DDS & 
-Connect::dds()
-{
-    if (_local)
-	throw InternalErr(__FILE__, __LINE__,
-			  "Cannot access DDS for a non-DODS data source.");
-
-    return _dds;
-}
-
-/** The DODS server uses Error objects to signal error conditions to
-    the client.  If an error condition has occurred while fetching a
-    URL, the Connect object will contain an Error object with
-    information about that error.  The Error object may also contain
-    a program to run to remedy the error.  This function returns the
-    latest Error object received by the Connect object.
-
-    @brief Get a reference to the last Error object.
-    @return The last Error object sent from the server. If no error has
-    been sent from the server, returns a reference to an empty error
-    object. 
-    @see Error 
-*/
-Error & 
-Connect::error()
-{
-    return _error;
-}
-
 /** @brief Set the credentials for responding to challenges while dereferencing
     URLs. 
     @param u The username.
@@ -659,6 +517,72 @@ Connect::disable_cache()
 {
 }
 
+/** @name Remove these...
+    All of these are deprecated and will be removed in a futire version of
+    this code. */
+//@{
+/** All DODS datasets define a Data Attribute Structure (DAS), to
+    hold a variety of information about the variables in a
+    dataset. This function returns the DAS for the dataset indicated
+    by this Connect object.
+
+    @brief Return a reference to the Connect's DAS object. 
+    @return A reference to the DAS object.
+    @deprecated
+    @see DAS 
+*/
+DAS & 
+Connect::das()
+{
+    if (_local)
+	throw InternalErr(__FILE__, __LINE__,
+			  "Cannot access DAS for a non-DODS data source.");
+
+    return _das;
+}
+
+/** All DODS datasets define a Data Descriptor Structure (DDS), to
+    hold the data type of each of the variables in a dataset.  This
+    function returns the DDS for the dataset indicated by this
+    Connect object.
+
+    @brief Return a reference to the Connect's DDS object. 
+    @return A reference to the DDS object.
+    @deprecated
+    @see DDS 
+*/
+DDS & 
+Connect::dds()
+{
+    if (_local)
+	throw InternalErr(__FILE__, __LINE__,
+			  "Cannot access DDS for a non-DODS data source.");
+
+    return _dds;
+}
+
+/** The DODS server uses Error objects to signal error conditions to
+    the client.  If an error condition has occurred while fetching a
+    URL, the Connect object will contain an Error object with
+    information about that error.  The Error object may also contain
+    a program to run to remedy the error.  This function returns the
+    latest Error object received by the Connect object.
+
+    @brief Get a reference to the last Error object.
+    @return The last Error object sent from the server. If no error has
+    been sent from the server, returns a reference to an empty error
+    object. 
+    @deprecated
+    @see Error 
+*/
+Error & 
+Connect::error()
+{
+    return _error;
+}
+//@}
+
+#if 0
 /** Sets the #www_errors_To_stderr# property.
 
     @see is_www_errors_to_stderr
@@ -733,8 +657,13 @@ Connect::get_cache_control()
 {
     return "";
 }
+#endif
 
 // $Log: Connect.cc,v $
+// Revision 1.124  2003/03/04 17:54:52  jimg
+// Removed many old methods (methods that were used with libwww). Switched to
+// the new Response objects.
+//
 // Revision 1.123  2003/02/27 23:22:30  jimg
 // Removed old code (code inside #if 0 ... #endif) and added a call to
 // HTTPConnect::set_credentials() and set_accept_deflate() in the constructor.
