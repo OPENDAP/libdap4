@@ -1,3 +1,25 @@
+Tue Oct  8 09:23:57 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Modified geturl so that CEs can be passed in using ? in the URL
+	in addition to the program's -c option.
+
+	* Added `%' to the set of characters allowable in identifiers.
+
+	* Added code so that a constraint expression appended to a URL is
+ 	properly handled. The CE is stored in in the Connect object. When
+	a CE is passed to the request_data member function, Connect
+	correctly combines the projection and selection parts of that CE
+	with the matching parts of any initial CE. 
+
+	* Fixed up the grammar files for Bison 1.25
+
+Thu Sep 12 14:05:49 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added a new option to geturl; -D which can be used to get data. 
+
+	* Fixed Array::print_array; used indirectly by the new option to
+	geturl. 
+
 Mon Aug 26 13:18:21 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Fixed various configure.in files so that the different size ints
@@ -61,4 +83,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.2 1996/08/26 21:12:50 jimg Exp $
+$Id: ChangeLog,v 1.3 1996/10/08 17:15:25 jimg Exp $
