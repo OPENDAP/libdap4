@@ -39,15 +39,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.35 2003/02/21 00:14:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.36 2003/03/13 23:58:25 jimg Exp $"};
 
 #include <iostream>
 #include <strstream>
 #include <string>
 #include <algorithm>
-#if 0
-#include <sys/ddi.h>
-#endif
 
 #include <GetOpt.h>
 
@@ -73,7 +70,9 @@ using std::ostrstream;
     <dl>
     <dt><i>filename</i><dd>
     The name of the file on which the filter is to operate.  Usually
-    this would be the file whose data has been requested.
+    this would be the file whose data has been requested. In fact, this class
+    can be specialized and <i>any meaning</i> can be associated to this
+    string. It could be the name of a database, for example.
 
     <dt><tt>-c</tt><dd>
     Send compressed data. Data are compressed using the deflate program.
@@ -117,105 +116,126 @@ using std::ostrstream;
     by a {\tt !}. If the list contains only the keyword `All', then the
     client is declaring that it can understand all DODS types.
 
-    <dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is
-    a conditional request; send a complete response if and only if
-    the data has changed since <i>time</i>. If it has not changed
-    since <i>time</i>, then send a 304 (Not Modified)
-    response. The <i>time</i> parameter is the
-    <tt>Last-Modified</tt> time from an If-Modified-Since
-    condition GET request.  It is given in seconds since the start
-    of the Unix epoch (Midnight, 1 Jan 1970).
+    <dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is a
+    conditional request; send a complete response if and only if the data has
+    changed since <i>time</i>. If it has not changed since <i>time</i>, then
+    send a 304 (Not Modified) response. The <i>time</i> parameter is the
+    <tt>Last-Modified</tt> time from an If-Modified-Since condition GET
+    request. It is given in seconds since the start of the Unix epoch
+    (Midnight, 1 Jan 1970).
 
     </dl>
 
+    @todo Option processing should happen in a method so that it can be
+    specialized. 
+
     @brief DODSFilter constructor. */
 
-DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false), 
-    bad_options(false), d_conditional_request(false), dataset(""), ce(""),
-    cgi_ver(""), anc_dir(""), anc_file(""), cache_dir(""),
-    accept_types("All"), d_anc_das_lmt(0), d_anc_dds_lmt(0),
-    d_if_modified_since(-1)
+DODSFilter::DODSFilter(int argc, char *argv[]) 
 {
-    program_name = argv[0];
-
-    int option_char;
-    GetOpt getopt (argc, argv, "ce:v:Vd:f:r:t:l:");
-
-    while ((option_char = getopt()) != EOF)
-	switch (option_char) {
-	  case 'c': comp = true; break;
-	  case 'e': ce = getopt.optarg; break;
-	  case 'v': cgi_ver = getopt.optarg; break;
-	  case 'V': ver = true; break;
-	  case 'd': anc_dir = getopt.optarg; break;
-	  case 'f': anc_file = getopt.optarg; break;
-	  case 'r': cache_dir = getopt.optarg; break;
-	  case 't': accept_types = getopt.optarg; break;
-	  case 'l': 
-	    d_conditional_request = true;
-	    d_if_modified_since 
-		= static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
-	    break;
-	  default: bad_options = true; break;
-	}
-
-    int next_arg = getopt.optind;
-    if(next_arg < argc)
-	dataset = argv[next_arg];
-    else if (!ver)
-	bad_options = true;
-
-    // Both dataset and ce could be set at this point (dataset must be, ce
-    // might be). If they contain any WWW-style esacpes (%<hex digit>,hex
-    // digit>) then undo that escaping.
-    dataset = www2id(dataset, "%", "%20");
-    ce = www2id(ce, "%", "%20");
-
-    DBG(cerr << "comp: " << comp << endl);
-    DBG(cerr << "ce: " << ce << endl);
-    DBG(cerr << "cgi_ver: " << cgi_ver << endl);
-    DBG(cerr << "ver: " << ver << endl);
-    DBG(cerr << "anc_dir: " << anc_dir << endl);
-    DBG(cerr << "anc_file: " << anc_file << endl);
-    DBG(cerr << "cache_dir: " << cache_dir << endl);
-    DBG(cerr << "accept_types: " << accept_types << endl);
-    DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
-    DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
+    initialize(argc, argv);
 }
 
 DODSFilter::~DODSFilter()
 {
 }
 
-/** Use this function to test whether the options passed via argc
-    and argv are valid. 
+/** Initialialize. Specializations can call this once an empty DODSFilter has
+    been created using the default constructor. Using a method such as this
+    provides a way to specialize the process_options() method and then have
+    that specialization called by the subclass' constructor. 
 
-    @brief Check whether the DODSFilter was initialized with valid
-    arguments. 
-    @return True if the class state is OK, false otherwise. */
-bool
-DODSFilter::OK()
+    This class and any class that specializes it should call this method in
+    its constructor.     
+
+    @param argc The argument count
+    @param argv The vector of char * argument strings. */
+void
+DODSFilter::initialize(int argc, char *argv[])
 {
+    // Set default values. Don't use the C++ constructor initialization so
+    // that a subclass can have more control over this process.
+    d_comp = false;
+    d_ver = false; 
+    d_bad_options = false; 
+    d_conditional_request = false;
+    d_dataset = "";
+    d_ce = "";
+    d_cgi_ver = "";
+    d_anc_dir = "";
+    d_anc_file = "";
+    d_cache_dir = "";
+    d_anc_das_lmt = 0; 
+    d_anc_dds_lmt = 0;
+    d_if_modified_since = -1;
 
-    return !bad_options;
+    d_program_name = argv[0];
+
+    // This should be specialized by a subclass.
+    int next_arg = process_options(argc, argv);
+
+    // Look at what's left after processing the command line options. Either
+    // there MUST be a dataset name OR the caller is asking for version
+    // information. If neither is true, then the options are bad.
+    if(next_arg < argc)
+	d_dataset = argv[next_arg];
+    else if (!d_ver)		
+	d_bad_options = true;
+
+    // Both dataset and ce could be set at this point (dataset must be, ce
+    // might be). If they contain any WWW-style esacpes (%<hex digit>,hex
+    // digit>) then undo that escaping.
+    d_dataset = www2id(d_dataset, "%", "%20");
+    d_ce = www2id(d_ce, "%", "%20");
+
+    DBG(cerr << "d_comp: " << d_comp << endl);
+    DBG(cerr << "d_ce: " << d_ce << endl);
+    DBG(cerr << "d_cgi_ver: " << d_cgi_ver << endl);
+    DBG(cerr << "d_ver: " << d_ver << endl);
+    DBG(cerr << "d_anc_dir: " << d_anc_dir << endl);
+    DBG(cerr << "d_anc_file: " << d_anc_file << endl);
+    DBG(cerr << "d_cache_dir: " << d_cache_dir << endl);
+    DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
+    DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
 }
 
-/** Use this function to check whether the client requested version
-    information.  In addition to returning version information about
-    the DODS software, the server can also provide version
-    information about the dataset itself.
-
-    @brief Should the filter send version information to the client
-    program?
-
-    @return TRUE if the -v option was given indicating that the filter
-    should send version information back to the client, FALSE
-    otherwise. 
-    @see DODSFilter::send_version_info */
-bool
-DODSFilter::version()
+/** Processing the command line options passed to the filter is handled by
+    this method so that specializations can change the options easily. 
+    
+    @param argc The argument count
+    @param argv The vector of char * argument strings. 
+    @return The index of the next, unprocessed, argument. This must be the
+    identifier passed to the filter program that identifies the data source.
+    It's often a file name. */
+int
+DODSFilter::process_options(int argc, char *argv[])
 {
-    return ver;
+    DBG(cerr << "Entering process_options... ");
+
+    int option_char;
+    GetOpt getopt (argc, argv, "ce:v:Vd:f:r:t:l:");
+
+    while ((option_char = getopt()) != EOF) {
+	switch (option_char) {
+	  case 'c': d_comp = true; break;
+	  case 'e': d_ce = getopt.optarg; break;
+	  case 'v': d_cgi_ver = getopt.optarg; break;
+	  case 'V': d_ver = true; break;
+	  case 'd': d_anc_dir = getopt.optarg; break;
+	  case 'f': d_anc_file = getopt.optarg; break;
+	  case 'r': d_cache_dir = getopt.optarg; break;
+	  case 'l': 
+	    d_conditional_request = true;
+	    d_if_modified_since 
+		= static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
+	    break;
+	  default: d_bad_options = true; break;
+	}
+    }
+
+    DBGN(cerr << "exiting." << endl);
+
+    return getopt.optind;	// return the index of the next argument
 }
 
 /** @brief Is this request conditional? 
@@ -244,7 +264,7 @@ DODSFilter::is_conditional()
 void
 DODSFilter::set_cgi_version(string version)
 {
-    cgi_ver = version;
+    d_cgi_ver = version;
 }
 
 /** Return the version information passed to the instance when it was
@@ -255,7 +275,7 @@ DODSFilter::set_cgi_version(string version)
 string
 DODSFilter::get_cgi_version()
 {
-    return cgi_ver;
+    return d_cgi_ver;
 }
 
 /** Return the entire constraint expression in a string.  This
@@ -267,13 +287,13 @@ DODSFilter::get_cgi_version()
 string
 DODSFilter::get_ce()
 {
-    return ce;
+    return d_ce;
 }
 
 void
 DODSFilter::set_ce(string _ce)
 {
-    ce = www2id(_ce, "%", "%20");
+    d_ce = www2id(_ce, "%", "%20");
 }
 
 /** The ``dataset name'' is the filename or other string that the
@@ -287,13 +307,13 @@ DODSFilter::set_ce(string _ce)
 string
 DODSFilter::get_dataset_name()
 {
-    return dataset;
+    return d_dataset;
 }
 
 void
-DODSFilter::set_dataset_name(const string _dataset)
+DODSFilter::set_dataset_name(const string ds)
 {
-  dataset = _dataset;
+  d_dataset = ds;
 }
 
 /** To read version information that is specific to a certain
@@ -332,7 +352,7 @@ DODSFilter::get_dataset_version()
 time_t
 DODSFilter::get_dataset_last_modified_time()
 {
-    return last_modified_time(dataset);
+    return last_modified_time(d_dataset);
 }
 
 /** Get the last modified time for the dataset's DAS. This time, given in
@@ -347,7 +367,7 @@ DODSFilter::get_dataset_last_modified_time()
 time_t
 DODSFilter::get_das_last_modified_time(const string &anc_location)
 {
-    string name = find_ancillary_file(dataset, "das", anc_location, anc_file);
+    string name = find_ancillary_file(d_dataset, "das", anc_location, d_anc_file);
     return max((name != "") ? last_modified_time(name) : 0,
 		    get_dataset_last_modified_time()); 
 }
@@ -362,7 +382,7 @@ DODSFilter::get_das_last_modified_time(const string &anc_location)
 time_t
 DODSFilter::get_dds_last_modified_time(const string &anc_location)
 {
-    string name = find_ancillary_file(dataset, "dds", anc_location, anc_file);
+    string name = find_ancillary_file(d_dataset, "dds", anc_location, d_anc_file);
     return max((name != "") ? last_modified_time(name) : 0,
 		    get_dataset_last_modified_time()); 
 }
@@ -383,10 +403,10 @@ DODSFilter::get_dds_last_modified_time(const string &anc_location)
 time_t
 DODSFilter::get_data_last_modified_time(const string &anc_location)
 {
-    string dds_name = find_ancillary_file(dataset, "dds", anc_location,
-					  anc_file);
-    string das_name = find_ancillary_file(dataset, "dds", anc_location,
-					  anc_file);
+    string dds_name = find_ancillary_file(d_dataset, "dds", anc_location,
+					  d_anc_file);
+    string das_name = find_ancillary_file(d_dataset, "dds", anc_location,
+					  d_anc_file);
     time_t m = max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
 			(dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
     // Note that this is a call to get_dataset_... not get_data_...
@@ -417,22 +437,7 @@ DODSFilter::get_request_if_modified_since()
 string
 DODSFilter::get_cache_dir()
 {
-  return cache_dir;
-}
-
-/** Get the list of accepted datatypes sent by the client. If no list was
-    sent, return the string `All'. 
-
-    NB: The funny spelling `accept types' instead of `accepted types'
-    mirrors the name of the HTTP request header field name which in turn
-    mirrors the common practice of using `accept' over `accepted'.
-
-    @see DODSFilter
-    @return A string containing a list of the accepted types. */
-string
-DODSFilter::get_accept_types()
-{
-    return accept_types;
+  return d_cache_dir;
 }
 
 /** Read the ancillary DAS information and merge it into the input
@@ -447,9 +452,9 @@ DODSFilter::get_accept_types()
 void
 DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 {
-    string name = find_ancillary_file(dataset, "das", 
-			      (anc_location == "") ? anc_dir : anc_location, 
-				      anc_file);
+    string name = find_ancillary_file(d_dataset, "das", 
+			      (anc_location == "") ? d_anc_dir : anc_location, 
+				      d_anc_file);
 
     FILE *in = fopen(name.c_str(), "r");
     if (in) {
@@ -473,9 +478,9 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 void
 DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
 {
-    string name = find_ancillary_file(dataset, "dds", 
-			      (anc_location == "") ? anc_dir : anc_location, 
-				      anc_file);
+    string name = find_ancillary_file(d_dataset, "dds", 
+			      (anc_location == "") ? d_anc_dir : anc_location, 
+				      d_anc_file);
     FILE *in = fopen(name.c_str(), "r");
     if (in) {
 	dds.parse(in);
@@ -498,14 +503,15 @@ maintainer, or to support@unidata.ucar.edu.";
     sent back to the client program telling them that the server is
     broken. 
 
+    @todo Rewrite to use a stringstream and endl for portability.
     @brief Print usage information for a filter program. */
 void 
 DODSFilter::print_usage()
 {
     // Write a message to the WWW server error log file.
     string oss="";
-    oss+= "Usage: " +program_name+ " -V | [-c] [-v <cgi version>] [-e <ce>]";
-    oss+= "       [-d <ancillary file directory>] [-f <ancillary file name>]";
+    oss+= "Usage: " + d_program_name + " -V | [-c] [-v <cgi version>] [-e <ce>]\n";
+    oss+= "       [-d <ancillary file directory>] [-f <ancillary file name>]\n";
     oss+= "       <dataset>\n";
     ErrMsgT(oss.c_str());
 
@@ -521,14 +527,14 @@ void
 DODSFilter::send_version_info()
 {
     fprintf( stdout, "HTTP/1.0 200 OK\n" ) ;
-    fprintf( stdout, "XDODS-Server: %s\n", cgi_ver.c_str() ) ;
+    fprintf( stdout, "XDODS-Server: %s\n", d_cgi_ver.c_str() ) ;
     fprintf( stdout, "Content-Type: text/plain\n" ) ;
     fprintf( stdout, "\n" ) ;
 
     fprintf( stdout, "DODS server core software: %s\n", DVR ) ;
 
-    if (cgi_ver != "")
-	fprintf( stdout, "Server vision: %s\n", cgi_ver.c_str() ) ;
+    if (d_cgi_ver != "")
+	fprintf( stdout, "Server vision: %s\n", d_cgi_ver.c_str() ) ;
 
     string v = get_dataset_version();
     if (v != "")
@@ -558,7 +564,7 @@ DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location)
 	set_mime_not_modified(os);
     }
     else {
-	set_mime_text(os, dods_das, cgi_ver, x_plain, das_lmt);
+	set_mime_text(os, dods_das, d_cgi_ver, x_plain, das_lmt);
 	das.print(os);
     }
 }
@@ -572,7 +578,7 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location)
 	set_mime_not_modified(out);
     }
     else {
-	set_mime_text(out, dods_das, cgi_ver, x_plain, das_lmt);
+	set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
 	das.print(out);
     }
     fflush( stdout ) ;
@@ -604,7 +610,7 @@ DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
-	dds.parse_constraint(ce, os, true);
+	dds.parse_constraint(d_ce, os, true);
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional() 
@@ -612,7 +618,7 @@ DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
 	set_mime_not_modified(os);
     }
     else {
-	set_mime_text(os, dods_dds, cgi_ver, x_plain, dds_lmt);
+	set_mime_text(os, dods_dds, d_cgi_ver, x_plain, dds_lmt);
 	if (constrained)
 	    dds.print_constrained(os);
 	else
@@ -626,7 +632,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
-	dds.parse_constraint(ce, out, true);
+	dds.parse_constraint(d_ce, out, true);
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional() 
@@ -634,7 +640,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
 	set_mime_not_modified(out);
     }
     else {
-	set_mime_text(out, dods_dds, cgi_ver, x_plain, dds_lmt);
+	set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
 	if (constrained)
 	    dds.print_constrained(out);
 	else
@@ -667,7 +673,7 @@ DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location)
 void
 DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 {
-    bool compress = comp && deflate_exists();
+    bool compress = d_comp && deflate_exists();
     time_t data_lmt = get_data_last_modified_time(anc_location);
 
     // If this is a conditional request and the server should send a 304
@@ -681,7 +687,7 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 
     // Jose Garcia
     // DDS::send may return false or throw an exception
-    if (!dds.send(dataset, ce, data_stream, compress, cgi_ver,
+    if (!dds.send(d_dataset, d_ce, data_stream, compress, d_cgi_ver,
 		  data_lmt)) {
 	ErrMsgT((compress) ? "Could not send compressed data" : 
 		"Could not send data");
@@ -690,11 +696,16 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.36  2003/03/13 23:58:25  jimg
+// Hacked documentation. Added process_options() and initialize(). Changed the
+// names of the fields so that they all begin with 'd_'.
+//
 // Revision 1.35  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
 // Revision 1.34  2003/02/09 12:18:31  rmorris
-// Fix to compile under win32.  Problem with min/max diffs under win32 and unix.
+// Fix to compile under win32. Problem with min/max diffs under win32 and
+// unix.
 //
 // Revision 1.30  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
@@ -788,9 +799,8 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 // Revision 1.23.2.4  2001/05/07 17:19:08  jimg
 // The dataset name and CE are now passed through www2id() which removes WWW
 // escape sequences (those %<hex digit><hex digit> things) and replaces them
-// with the correct ASCII characters.
-// Fixed a bug where DAS::parse(FILE *) and DDS::parse(FILE *) were often called
-// with a null FILE *.
+// with the correct ASCII characters. Fixed a bug where DAS::parse(FILE *)
+// and DDS::parse(FILE *) were often called with a null FILE *.
 //
 // Revision 1.23.2.3  2001/05/03 23:36:31  jimg
 // Removed all the catch clauses for Error and InternalErr. Code that uses
@@ -798,11 +808,11 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 // of the current URI servers do this.
 //
 // Revision 1.23.2.2  2001/05/03 20:23:47  jimg
-// Added the methods is_conditional() and get_request_if_modified_since(). These
-// are used to determine if the request was conditional and, if so, to get the
-// value of the If-Modified-Since header.
-// Modified the send_das(), send_dds() and send_data() methods so that a 304
-// (not modified) response is sent if appropriate.
+// Added the methods is_conditional() and get_request_if_modified_since().
+// These are used to determine if the request was conditional and, if so, to
+// get the value of the If-Modified-Since header. Modified the send_das(),
+// send_dds() and send_data() methods so that a 304 (not modified) response
+// is sent if appropriate.
 //
 // Revision 1.23.2.1  2001/04/23 22:34:46  jimg
 // Added support for the Last-Modified MIME header in server responses.`
@@ -866,11 +876,11 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 // Merged changes from the release-3-0-2 branch
 //
 // Revision 1.15.4.1  1999/06/01 15:43:51  jimg
-// Made dods/3.0 the default version number. This makes is simpler to debug dods
-// servers since running the server filter programs will generate valid headers
-// now. Before you had to remember to use the -v option and give a version
-// string/number or the MIME header would not be valid. This confused the MIME
-// header parse which hosed the data stream.
+// Made dods/3.0 the default version number. This makes is simpler to debug
+// dods servers since running the server filter programs will generate valid
+// headers now. Before you had to remember to use the -v option and give a
+// version string/number or the MIME header would not be valid. This confused
+// the MIME header parse which hosed the data stream.
 //
 // Revision 1.15  1999/05/26 17:37:02  jimg
 // Added a bit where, before sending caught Error objects to the client, we
@@ -893,14 +903,13 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 // Changed the support address from @dods to @unidata
 //
 // Revision 1.10  1999/05/05 00:36:36  jimg
-// Added the -V option. -v now is used to pass the version information from the
-// CGI to the C++ software; -V triggers output of the version message. This
-// allows the DODSFilter class to pass information about the server's version to
-// the core software.
-// All set_mime_*() functions are now passes the CGI version information so that
-// all MIME headers contain information about the server's version.
-// Added the get_cgi_version() member function so that clients of DODSFilter can
-// find out the version number.
+// Added the -V option. -v now is used to pass the version information from
+// the CGI to the C++ software; -V triggers output of the version message.
+// This allows the DODSFilter class to pass information about the server's
+// version to the core software. All set_mime_*() functions are now passes
+// the CGI version information so that all MIME headers contain information
+// about the server's version. Added the get_cgi_version() member function so
+// that clients of DODSFilter can find out the version number.
 //
 // Revision 1.9  1999/05/04 19:47:21  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
