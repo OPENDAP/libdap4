@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.86 1998/10/21 16:40:41 jimg Exp $
+# $Id: Makefile.in,v 1.87 1998/11/10 01:00:29 jimg Exp $
 
 @SET_MAKE@
 
@@ -61,6 +61,7 @@ CP = cp
 AWK = @AWK@
 CC = @CC@
 CXX = @CXX@
+PURIFY = purify -chain-length="10"
 YACC = @YACC@
 LEX = @LEX@
 AR = ar
@@ -129,7 +130,7 @@ GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h \
 	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h \
 	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h \
           Stack/BTXPStack.h    GNU/String.h         GNU/Pix.h \
-          GNU/SLList.h         GNU/DLList.h \
+          GNU/SLList.h         GNU/DLList.h 	    GNU/gnu-std.h \
           GNU/GetOpt.h         GNU/Regex.h          GNU/builtin.h
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
@@ -161,6 +162,9 @@ deflate: deflate.o
 geturl: libdap++.a $(TESTOBJS) geturl.o
 	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) $(LIBS)
 
+pure-geturl: libdap++.a $(TESTOBJS) geturl.o
+	$(PURIFY) $(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) $(LIBS)
+
 # The program named usage is the filter that is run by the CGI dispatch
 # script as the `usage server'. This filter is the same for all different
 # server types so it does not need to be specialized for each API.
@@ -175,14 +179,24 @@ test-drivers: das-test dds-test expr-test error-test cgi-util-test www-test
 das-test: libdap++.a $(TESTOBJS) das-test.o das.tab.h
 	$(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o $(LIBS)
 
+pure-das-test: libdap++.a $(TESTOBJS) das-test.o das.tab.h
+	$(PURIFY) $(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o $(LIBS)
+
 dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
 	$(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o $(LIBS)
+
+pure-dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
+	$(PURIFY) $(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o $(LIBS)
 
 # trans-test: libdap++.a $(TESTOBJS) trans-test.o
 #	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
 
 expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o \
+	       $(LIBS)
+
+pure-expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
+	$(PURIFY) $(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o \
 	       $(LIBS)
 
 error-test: error-test.o Error.tab.h $(ERROROBJS) $(TESTOBJS)
@@ -194,8 +208,10 @@ cgi-util-test: libdap++.a cgi_util.o $(TESTOBJS)
 	$(CXX) $(LDFLAGS) -o cgi-util-test cgi_util.o $(TESTOBJS) $(LIBS)
 	-rm -f cgi_util.o
 
-www-test: www-test.o
-	$(CC) $(LDFLAGS) -o www-test www-test.o -lwww
+# This program is no longer part of the software. 10/27/98 jhrg
+#
+# www-test: www-test.o
+# 	$(CC) $(LDFLAGS) -o www-test www-test.o -lwww
 
 # The grammar targets.
 
@@ -386,7 +402,7 @@ grammarclean: clean
 docs:
 	@echo "Building reference documentation."
 	-mkdir docs-html;
-	# First build the HTML docs, then the tex docs.
+        # First build the HTML docs, then the tex docs.
 	$(DOCXX) -H -d docs-html -f -B /dev/null *.h
 	-mkdir docs-latex;
 	$(DOCXX) -t -o docs-latex/dap-reference.tex *.h
@@ -396,15 +412,15 @@ docs:
 # that the root directory for DODS is called `DODS' (no version number).
 .PHONY: tar
 tar:
-	@echo "You should first run distclean in DODS_ROOT!"
-	@echo "(ignore this if you have)"
+	-rm -r config.cache config.log config.status
 	cd $(DODS_ROOT)/.. && \
-	tar --exclude '*/old' --exclude '*/nc-dods*' --exclude '*/jg-dods*' \
+	tar --exclude '*/nc-dods*' --exclude '*/jg-dods*' \
 	    --exclude '*/math-dods*' --exclude '*/dsp-dods*' \
 	    --exclude '*/hdf-dods*' --exclude '*/writeval*' \
 	    --exclude '*/ff-dods*' --exclude '*/matlab-GUI*' \
 	    --exclude '*/jdap*' --exclude '*/doc' --exclude '*/packages*' \
-	    --exclude '*/url-builder*' --exclude '*/.#*' --exclude '*/CVS' \
+	    --exclude '*/url-builder*' --exclude '*url-directory*' \
+	    --exclude '*/.#*' --exclude '*/CVS' --exclude '*/old' \
 	    --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
 
 .PHONY: update-version
