@@ -12,9 +12,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.12  1996/05/31 23:31:11  jimg
-/* Updated copyright notice.
+/* Revision 1.13  1996/08/13 20:47:21  jimg
+/* Added prototypes for the *_ops() functions.
 /*
+ * Revision 1.12  1996/05/31 23:31:11  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.11  1996/05/29 22:09:00  jimg
  * Made changes necessary to support CEs that return the value of a function
  * instead of the value of a variable. This was done so that it would be
@@ -88,6 +91,10 @@ bool func_member(int argc, BaseType *argv[]);
 bool func_null(int argc, BaseType *argv[]);
 BaseType *func_nth(int argc, BaseType *argv[]);
 BaseType *func_length(int argc, BaseType *argv[]);
+bool byte_ops(int i1, int i2, int op);
+bool int_ops(int i1, int i2, int op);
+bool double_ops(double i1, double i2, int op);
+bool string_ops(String &i1, String &i2, int op);
 
 extern "C" bool_t xdr_str(XDR *xdrs, String &buf);
 #if 0
