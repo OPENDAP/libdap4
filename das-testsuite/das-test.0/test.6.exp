@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.6.exp,v $
-# Revision 1.3  1994/12/09 21:45:51  jimg
+# Revision 1.4  1995/02/10 03:31:16  jimg
+# Modified test cases for type checking.
+#
+# Revision 1.3  1994/12/09  21:45:51  jimg
 # Modified for new unix.exp.
 #
 # Revision 1.2  1994/09/09  16:15:26  jimg
@@ -26,8 +29,15 @@ set test_name test.6
 # exactly.
 
 set test_out "Reading from: $srcdir$test_name
-Unterminated comment (starts on line 8)
-"
+Attributes {
+    var_11 {
+        string slota val1;
+        string slotb val2;
+    }
+}
+parse error line: 7
+Character `*' is not allowed (except within quotes) and has been ignored
+parse() returned: 0"
 
 das-test_start p $srcdir$test_name -
 

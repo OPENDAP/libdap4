@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.3.exp,v $
-# Revision 1.5  1994/12/09 21:45:47  jimg
+# Revision 1.6  1995/02/10 03:31:14  jimg
+# Modified test cases for type checking.
+#
+# Revision 1.5  1994/12/09  21:45:47  jimg
 # Modified for new unix.exp.
 #
 # Revision 1.4  1994/10/05  16:51:49  jimg
@@ -37,7 +40,7 @@ Attributes {
     var1 {
         string comment \"One thing about these long comments is that they
 might cause problems with memory - overwrites, ...\";
-        string comment2 \"This quote test a \\\"quote within a quote\\\", he said\";
+        string comment2 \"This quote tests a \\\"quote within a quote\\\", he said\";
         string quote1 \"\\\"\";
         string quote2 \"\\7 seven\";
     }
