@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS dods_root dods_relative dir fullpath INCS DODS_PACKAGES_DIR VERSION DVR PERL TAR depend build build_cpu build_vendor build_os host host_cpu host_vendor host_os CXX LN_S AWK CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXXFLAGS ac_ct_CXX RANLIB ac_ct_RANLIB SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LEX LEXLIB LEX_OUTPUT_ROOT YACC GCC_ROOT CPP EGREP ALLOCA packages LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS dods_root dods_relative dir fullpath INCS DODS_PACKAGES_DIR VERSION DVR PERL TAR depend build build_cpu build_vendor build_os host host_cpu host_vendor host_os CXX LN_S AWK CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXXFLAGS ac_ct_CXX RANLIB ac_ct_RANLIB SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LEX LEXLIB LEX_OUTPUT_ROOT YACC GCC_ROOT VALGRIND CPP EGREP ALLOCA packages LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1563,6 +1563,10 @@ host_os=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 # 1/1/2005, you can probably remove it.
 case "${host_cpu}:${host_vendor}:${host_os}" in
      powerpc:apple:netbsd*)
+       CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
+       CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
+       break;;
+     alphaev56:dec:osf5.*)
        CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
        CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
        break;;
@@ -3313,6 +3317,42 @@ echo $ECHO_N "checking for gcc's libgcc.a... $ECHO_C" >&6
 
     echo "$as_me:$LINENO: result: $GCC_ROOT" >&5
 echo "${ECHO_T}$GCC_ROOT" >&6
+
+# Extract the first word of "valgrind", so it can be a program name with args.
+set dummy valgrind; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_VALGRIND+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$VALGRIND"; then
+  ac_cv_prog_VALGRIND="$VALGRIND" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_VALGRIND="valgrind --logfile=memcheck"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+VALGRIND=$ac_cv_prog_VALGRIND
+if test -n "$VALGRIND"; then
+  echo "$as_me:$LINENO: result: $VALGRIND" >&5
+echo "${ECHO_T}$VALGRIND" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -7478,6 +7518,7 @@ s,@LEXLIB@,$LEXLIB,;t t
 s,@LEX_OUTPUT_ROOT@,$LEX_OUTPUT_ROOT,;t t
 s,@YACC@,$YACC,;t t
 s,@GCC_ROOT@,$GCC_ROOT,;t t
+s,@VALGRIND@,$VALGRIND,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@ALLOCA@,$ALLOCA,;t t
