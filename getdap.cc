@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.48  2000/08/16 00:39:17  jimg
+// Added an option (-s) to test the Sequence::getRowNumber method.
+//
 // Revision 1.47  2000/08/08 20:46:17  rmorris
 // Trivial removal of a hack fragment left behind from a earlier fix.
 //
@@ -211,7 +214,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.47 2000/08/08 20:46:17 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.48 2000/08/16 00:39:17 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -226,53 +229,52 @@ using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.47 $";
+const char *version = "$Revision: 1.48 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
 usage(string name)
 {
-    cerr << "Usage: " << name 
-	 << "[dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]" 
-	 << endl
-	 << "[gVvk] [t <codes>] [T <list>] <file> [<file> ...]" 
-	 << endl;
-    cerr << "In the first form of the command, dereference the URL" << endl
-	 << "perform the requested operations. In the second, assume" << endl
-	 << "the files are DODS data objects (stored in files or read" << endl
-	 << "from pipes) and process them as if -D were given." <<endl;
-    cerr << "        d: For each URL, get the DODS DDS." << endl;
-    cerr << "        a: For each URL, get the DODS DAS." << endl;
-    cerr << "        D: For each URL, get the DODS Data." << endl;
-    cerr << "        g: Show the progress GUI." << endl;
-    cerr << "        v: Verbose." << endl;
-    cerr << "        V: Version." << endl;
-    cerr << "        c: <expr> is a contraint expression. Used with -D."
-	 << endl;
-    cerr << "           NB: You can use a `?' for the CE also." << endl;
-    cerr << "        k: Keep temporary files created by DODS core" << endl;
-    cerr << "        m: Request the same URL <num> times." << endl;
-    cerr << "        z: Don't ask the server to compress data." << endl;
-    cerr << "        T: <list> List of `Accepted Types'. Translating servers use this." << endl;
-    cerr << "        t: <options> trace output; use -td for default." 
-         << endl;
-    cerr << "          a: show anchor trace." << endl;
-    cerr << "          A: show app trace." << endl;
-    cerr << "          b: show bind trace." << endl;
-    cerr << "          c: show cache trace." << endl;
-    cerr << "          h: show auth trace." << endl;
-    cerr << "          i: show pics trace." << endl;
-    cerr << "          k: show core trace." << endl;
-    cerr << "          l: show sgml trace." << endl;
-    cerr << "          m: show mem trace." << endl;
-    cerr << "          p: show protocol trace." << endl;
-    cerr << "          s: show stream trace." << endl;
-    cerr << "          t: show thread trace." << endl;
-    cerr << "          u: show uri trace." << endl;
-    cerr << "          U: show util trace." << endl;
-    cerr << "          x: show mux trace." << endl;
-    cerr << "          z: show all traces." << endl;
-    cerr << "       Without D, d or a, print the URL." << endl;
+  cerr << "Usage: " << name << 
+"[dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]
+[gVvk] [t <codes>] [T <list>] <file> [<file> ...]
+
+In the first form of the command, dereference the URL
+perform the requested operations. In the second, assume
+the files are DODS data objects (stored in files or read
+from pipes) and process them as if -D were given.
+        d: For each URL, get the DODS DDS.
+        a: For each URL, get the DODS DAS.
+        D: For each URL, get the DODS Data.
+        g: Show the progress GUI.
+        v: Verbose.
+        V: Version.
+        c: <expr> is a contraint expression. Used with -D.
+           NB: You can use a `?' for the CE also.
+        k: Keep temporary files created by DODS core
+        m: Request the same URL <num> times.
+        z: Don't ask the server to compress data.
+        T: <list> List of `Accepted Types'. Translating servers use this.
+        s: Print Sequences using numbered rows.
+
+        t: <options> trace output; use -td for default.
+          a: show anchor trace.
+          A: show app trace.
+          b: show bind trace.
+          c: show cache trace.
+          h: show auth trace.
+          i: show pics trace.
+          k: show core trace.
+          l: show sgml trace.
+          m: show mem trace.
+          p: show protocol trace.
+          s: show stream trace.
+          t: show thread trace.
+          u: show uri trace.
+          U: show util trace.
+          x: show mux trace.
+          z: show all traces.
+       Without D, d or a, print the URL." << endl;
 }
 
 bool
@@ -296,42 +298,61 @@ read_data(FILE *fp)
 }
 
 static void
-process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
+process_data(Connect &url, DDS *dds, bool verbose = false, 
+	     bool print_rows = false)
 {
 
-    if (verbose)
-	cerr << "Server version: " << url.server_version() << endl;
+  if (verbose)
+    cerr << "Server version: " << url.server_version() << endl;
 
-    cout << "The data:" << endl;
+  cout << "The data:" << endl;
 
-    bool sequence_found = false;
-    for (Pix q = dds->first_var(); q; dds->next_var(q)) {
-	BaseType *v = dds->var(q);
-	switch (v->type()) {
-	    // Sequences present a special case because I let
-	    // their semantics get out of hand... jhrg 9/12/96
-	  case dods_sequence_c: {
-	    Sequence *s = dynamic_cast<Sequence *>(v);
-	    s->print_all_vals(cout, url.source(), dds);
-	    sequence_found = true;
-	    break;
+  bool sequence_found = false;
+  for (Pix q = dds->first_var(); q; dds->next_var(q)) {
+    BaseType *v = dds->var(q);
+    switch (v->type()) {
+      // Sequences present a special case because I let
+      // their semantics get out of hand... jhrg 9/12/96
+    case dods_sequence_c: {
+      Sequence *s = dynamic_cast<Sequence *>(v);
+      // print_rows and the code here was added to test the row number
+      // feature in Sequence. 8/15/2000 jhrg
+      if (print_rows)
+	{
+	  s->print_decl(cout);
+	  cout << " = {" << endl;
+
+	  s->deserialize(url.source(), dds);
+	  cout << s->getRowNumber() << ": ";
+	  s->print_val(cout, "", false);
+	  cout << endl;
+	  while (s->deserialize(url.source(), dds)) {
+	    cout << s->getRowNumber() << ": ";
+	    s->print_val(cout, "", false);
+	    cout << endl;
 	  }
-	  case dods_structure_c: {
-	    Structure *s = dynamic_cast<Structure *>(v);
-	    s->print_all_vals(cout, url.source(), dds);
-	    break;
-	  }
-	  default:
-	    if ((sequence_found || async) && !v->deserialize(url.source(), dds)) {
-		cerr << "Asynchronous read failure." << endl;
-		exit(1);
-	    }
-	    v->print_val(cout);
-	    break;
+	  cout << "};" << endl;
 	}
+      else
+	s->print_all_vals(cout, url.source(), dds);
+      sequence_found = true;
+      break;
     }
+    case dods_structure_c: {
+      Structure *s = dynamic_cast<Structure *>(v);
+      s->print_all_vals(cout, url.source(), dds);
+    }
+    default:
+      if (sequence_found && !v->deserialize(url.source(), dds)) {
+	cerr << "Read failure." << endl;
+	exit(1);
+      }
+      v->print_val(cout);
+      break;
+    }
+  }
     
-    cout << endl;
+  cout << endl;
 }
 
 #ifdef WIN32
@@ -341,197 +362,203 @@ int
 #endif
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:zT:");
-    int option_char;
-    bool async = false;
-    bool get_das = false;
-    bool get_dds = false;
-    bool get_data = false;
-    bool gui = false;
-    bool cexpr = false;
-    bool verbose = false;
-    bool trace = false;
-    bool multi = false;
-    bool accept_deflate = true;
-    string accept_types = "All";
-    int times = 1;
-    char *tcode = NULL;
-    char *expr = "";  // can't use NULL or C++ string conversion will crash
-    int topts = 0;
+  GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:zT:s");
+  int option_char;
+  bool async = false;
+  bool get_das = false;
+  bool get_dds = false;
+  bool get_data = false;
+  bool gui = false;
+  bool cexpr = false;
+  bool verbose = false;
+  bool trace = false;
+  bool multi = false;
+  bool accept_deflate = true;
+  string accept_types = "All";
+  int times = 1;
+  char *tcode = NULL;
+  char *expr = "";  // can't use NULL or C++ string conversion will crash
+  int topts = 0;
+  bool print_rows = false;
 
 #ifdef WIN32
-	_setmode(_fileno(stdout), _O_BINARY);
+  _setmode(_fileno(stdout), _O_BINARY);
 #endif
 
-    while ((option_char = getopt()) != EOF)
-	switch (option_char)
-	    {
-              case 'A': async = true; break;
-              case 'd': get_dds = true; break;
-	      case 'a': get_das = true; break;
-	      case 'D': get_data = true; break;
-	      case 'V': cerr << "geturl version: " << version << endl; exit(0);
-	      case 'v': verbose = true; break;
-	      case 'g': gui = true; break;
-	      case 'k': keep_temps =1; break; // keep_temp is in Connect.cc
-	      case 'c':
-		cexpr = true; expr = getopt.optarg; break;
-	      case 't': 
-		trace = true;
-		topts = strlen(getopt.optarg);
-		if (topts) {
-		    tcode = new char[topts + 1];
-		    strcpy(tcode, getopt.optarg); 
-		}
-		break;
-	      case 'm': multi = true; times = atoi(getopt.optarg); break;
-	      case 'z': accept_deflate = false; break;
-	      case 'T': accept_types = getopt.optarg; break;
-	      case 'h':
-              case '?':
-	      default:
-		usage(argv[0]); exit(1); break;
-	    }
+  while ((option_char = getopt()) != EOF)
+    switch (option_char)
+      {
+      case 'A': async = true; break;
+      case 'd': get_dds = true; break;
+      case 'a': get_das = true; break;
+      case 'D': get_data = true; break;
+      case 'V': cerr << "geturl version: " << version << endl; exit(0);
+      case 'v': verbose = true; break;
+      case 'g': gui = true; break;
+      case 'k': keep_temps =1; break; // keep_temp is in Connect.cc
+      case 'c':
+	cexpr = true; expr = getopt.optarg; break;
+      case 't': 
+	trace = true;
+	topts = strlen(getopt.optarg);
+	if (topts) {
+	  tcode = new char[topts + 1];
+	  strcpy(tcode, getopt.optarg); 
+	}
+	break;
+      case 'm': multi = true; times = atoi(getopt.optarg); break;
+      case 'z': accept_deflate = false; break;
+      case 'T': accept_types = getopt.optarg; break;
+      case 's': print_rows = true; break;
+      case 'h':
+      case '?':
+      default:
+	usage(argv[0]); exit(1); break;
+      }
 
-    char c, *cc = tcode;
-    if (trace && topts > 0)
-	while ((c = *cc++))
-	    switch (c) {
-	      case 'a': WWWTRACE |= SHOW_ANCHOR_TRACE; break;
-	      case 'A': WWWTRACE |= SHOW_APP_TRACE; break;
-	      case 'b': WWWTRACE |= SHOW_BIND_TRACE; break;
-	      case 'c': WWWTRACE |= SHOW_CACHE_TRACE; break;
-	      case 'h': WWWTRACE |= SHOW_AUTH_TRACE; break;
-	      case 'i': WWWTRACE |= SHOW_PICS_TRACE; break;
-	      case 'k': WWWTRACE |= SHOW_CORE_TRACE; break;
-	      case 'l': WWWTRACE |= SHOW_SGML_TRACE; break;
-	      case 'm': WWWTRACE |= SHOW_MEM_TRACE; break;
-	      case 'p': WWWTRACE |= SHOW_PROTOCOL_TRACE; break;
-	      case 's': WWWTRACE |= SHOW_STREAM_TRACE; break;
-	      case 't': WWWTRACE |= SHOW_THREAD_TRACE; break;
-	      case 'u': WWWTRACE |= SHOW_URI_TRACE; break;
-	      case 'U': WWWTRACE |= SHOW_UTIL_TRACE; break;
-	      case 'x': WWWTRACE |= SHOW_MUX_TRACE; break;
-	      case 'z': WWWTRACE = SHOW_ALL_TRACE; break;
-	      default:
-		cerr << "Unrecognized trace option: `" << c << "'" << endl;
-		break;
-	    }
+  char c, *cc = tcode;
+  if (trace && topts > 0)
+    while ((c = *cc++))
+      switch (c) {
+      case 'a': WWWTRACE |= SHOW_ANCHOR_TRACE; break;
+      case 'A': WWWTRACE |= SHOW_APP_TRACE; break;
+      case 'b': WWWTRACE |= SHOW_BIND_TRACE; break;
+      case 'c': WWWTRACE |= SHOW_CACHE_TRACE; break;
+      case 'h': WWWTRACE |= SHOW_AUTH_TRACE; break;
+      case 'i': WWWTRACE |= SHOW_PICS_TRACE; break;
+      case 'k': WWWTRACE |= SHOW_CORE_TRACE; break;
+      case 'l': WWWTRACE |= SHOW_SGML_TRACE; break;
+      case 'm': WWWTRACE |= SHOW_MEM_TRACE; break;
+      case 'p': WWWTRACE |= SHOW_PROTOCOL_TRACE; break;
+      case 's': WWWTRACE |= SHOW_STREAM_TRACE; break;
+      case 't': WWWTRACE |= SHOW_THREAD_TRACE; break;
+      case 'u': WWWTRACE |= SHOW_URI_TRACE; break;
+      case 'U': WWWTRACE |= SHOW_UTIL_TRACE; break;
+      case 'x': WWWTRACE |= SHOW_MUX_TRACE; break;
+      case 'z': WWWTRACE = SHOW_ALL_TRACE; break;
+      default:
+	cerr << "Unrecognized trace option: `" << c << "'" << endl;
+	break;
+      }
     
-    delete tcode;
+  delete tcode;
 
-    // If after processing all the command line options there is nothing left
-    // (no URL oor file) assume that we should read from stdin.
-    if (getopt.optind == argc) {
-	if (verbose)
-	    cerr << "Assuming standard input is a DODS data stream." << endl;
+  // If after processing all the command line options there is nothing left
+  // (no URL oor file) assume that we should read from stdin.
+  if (getopt.optind == argc) {
+    if (verbose)
+      cerr << "Assuming standard input is a DODS data stream." << endl;
 
-	Connect url("stdin", trace, accept_deflate);
-	url.set_accept_types(accept_types);
+    Connect url("stdin", trace, accept_deflate);
+    url.set_accept_types(accept_types);
 
-	DDS *dds = url.read_data(stdin, gui, async);
-	process_data(url, dds, verbose, async);
-    }
+    DDS *dds = url.read_data(stdin, gui, async);
+    process_data(url, dds, verbose, print_rows);
+  }
 
-    for (int i = getopt.optind; i < argc; ++i)
-	{
-	if (verbose)
-	    cerr << "Fetching: " << argv[i] << endl;
+  for (int i = getopt.optind; i < argc; ++i)
+    {
+      if (verbose)
+	cerr << "Fetching: " << argv[i] << endl;
 	
-	string name = argv[i];
-	Connect url(name, trace, accept_deflate);
-	url.set_accept_types(accept_types);
+      string name = argv[i];
+      Connect url(name, trace, accept_deflate);
+      url.set_accept_types(accept_types);
 
-	if (url.is_local())
+      if (url.is_local())
+	{
+	  if (verbose) 
+	    cerr << "Assuming that the argument " << argv[i] 
+		 << " is a file" << endl 
+		 << "that contains a DODS data object; decoding." << endl;
+
+	  DDS *dds = url.read_data(fopen(argv[i], "r"), gui, async);
+	  process_data(url, dds, verbose, print_rows);
+	  continue;		// Do not run the following IF stmt.
+	}
+
+      if (get_das)
+	{
+	  for (int j = 0; j < times; ++j)
+	    {
+	      if (!url.request_das(gui))
+		continue;
+	      if (verbose)
 		{
-	    if (verbose) 
-		cerr << "Assuming that the argument " << argv[i] 
-		     << " is a file" << endl 
-		     << "that contains a DODS data object; decoding." << endl;
-
-	    DDS *dds = url.read_data(fopen(argv[i], "r"), gui, async);
-	    process_data(url, dds, verbose, async);
-	    continue;		// Do not run the following IF stmt.
+		  cerr << "Server version: " << url.server_version() 
+		       << endl;
+		  cerr << "DAS:" << endl;
 		}
+	      url.das().print();
+	    }
+	}
 
-	if (get_das)
+      if (get_dds)
+	{
+	  for (int j = 0; j < times; ++j)
+	    {
+	      if (!url.request_dds(gui))
+		continue;
+	      if (verbose)
 		{
-	    for (int j = 0; j < times; ++j)
-			{
-			if (!url.request_das(gui))
-				continue;
-			if (verbose)
-				{
-				cerr << "Server version: " << url.server_version() 
-				<< endl;
-				cerr << "DAS:" << endl;
-				}
-		url.das().print();
-			}
+		  cerr << "Server version: " << url.server_version() 
+		       << endl;
+		  cerr << "DDS:" << endl;
 		}
+	      url.dds().print();
+	    }
+	}
 
-	if (get_dds)
+      if (get_data)
+	{
+	  if (!(expr || name.find('?') != name.npos))
+	    {
+	      cerr << "Must supply a constraint expression with -D."
+		   << endl;
+	      continue;
+	    }
+	  for (int j = 0; j < times; ++j)
+	    {
+	      DDS *dds = url.request_data(expr, gui, async);
+
+	      if (!dds)
 		{
-	    for (int j = 0; j < times; ++j)
-			{
-			if (!url.request_dds(gui))
-				continue;
-			if (verbose)
-				{
-				cerr << "Server version: " << url.server_version() 
-				<< endl;
-				cerr << "DDS:" << endl;
-				}
-			url.dds().print();
-			}
+		  cerr << "Error: " << url.error().error_message() << endl;
+		  continue;
 		}
+	      process_data(url, dds, verbose, print_rows);
+	      delete dds;
+	    }
+	}
 
-	if (get_data)
-		{
-	    if (!(expr || name.find('?') != name.npos))
-			{
-			cerr << "Must supply a constraint expression with -D."
-				<< endl;
-			continue;
-			}
-	    for (int j = 0; j < times; ++j)
-			{
-			DDS *dds = url.request_data(expr, gui, async);
-
-			if (!dds)
-				{
-				cerr << "Error: " << url.error().error_message() << endl;
-				continue;
-				}
-			process_data(url, dds, verbose, async);
-			delete dds;
-			}
-		}
-
-	if (!get_das && !get_dds && !get_data)
-		{
+      if (!get_das && !get_dds && !get_data)
+	{
 #ifdef GUI
-	    url.gui()->show_gui(gui);
+	  url.gui()->show_gui(gui);
 #endif
-	    string url_string = argv[i];
-	    for (int j = 0; j < times; ++j)
-			{
-			if (!url.fetch_url(url_string, async))
-				continue;
-			if (verbose)
-				cerr << "Server version: " << url.server_version() 
-				<< endl;
-			FILE *fp = url.output();
-			if (!read_data(fp))
-				continue;
-			fclose(fp);
-			}
-		}	    
+	  string url_string = argv[i];
+	  for (int j = 0; j < times; ++j)
+	    {
+	      if (!url.fetch_url(url_string, async))
+		continue;
+	      if (verbose)
+		cerr << "Server version: " << url.server_version() 
+		     << endl;
+	      FILE *fp = url.output();
+	      if (!read_data(fp))
+		continue;
+	      fclose(fp);
+	    }
+	}	    
     }
 
 #ifdef WIN32
-	exit(0); //  Running DejaGun/Cygwin based test suites require this.
-	return;  //  Visual C++ asks for this.
+  exit(0); //  Running DejaGun/Cygwin based test suites require this.
+  return;  //  Visual C++ asks for this.
 #endif
 }
+
+
+
+
 
