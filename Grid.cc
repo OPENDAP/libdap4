@@ -38,6 +38,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.19  1996/03/05 18:10:14  jimg
+// Fixed serialize bug where Maps might not be sent.
+// Added ce_eval to serailize member function.
+//
 // Revision 1.18  1996/02/02 00:31:05  jimg
 // Merge changes for DODS-1.1.0 into DODS-2.x
 //
@@ -234,30 +238,30 @@ Grid::width()
 }
 
 bool
-Grid::serialize(const String &dataset, DDS &dds, bool flush)
+Grid::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
     bool status = true;
 
-    if (!read_p())		// only read if not read already
-	status = read(dataset);
-
-    if (status && !dds.eval_constraint()) 
-	return status;
-
-    if (!status)
+    if (!read_p() && !read(dataset))
 	return false;
 
+    if (ce_eval && !dds.eval_selection(dataset))
+	return true;
+
     if (_array_var->send_p() 
-	&& !(status = _array_var->serialize(dataset, dds, false))) 
+	&& !(status = _array_var->serialize(dataset, dds, false, false))) 
 	return false;
 
     for (Pix p = _map_vars.first(); p; _map_vars.next(p))
 	if  (_map_vars(p)->send_p() 
-	     && !(status = _map_vars(p)->serialize(dataset, dds, false)) ) 
+	     && !(status = _map_vars(p)->serialize(dataset, dds, false, 
+						   false))) 
 	    break;
-	
-    if (status && flush)
-	status = expunge();
+
+    // flush the stream *even* if status is false, but preserve the value of
+    // status if it's false.
+    if (flush)
+	status = status && expunge();
 
     return status;
 }
@@ -461,7 +465,8 @@ Grid::check_semantics(bool all)
 	    return false;
 	}
 	// size of map must match corresponding array dimension
-	if (mv_a->dimension_size(mv_a->first_dim()) != av->dimension_size(ap)) {
+	if (mv_a->dimension_size(mv_a->first_dim()) 
+	    != av->dimension_size(ap)) {
 	    cerr << "Grid map variable  `" << mv_a->name()
 		<< "'s' size does not match the size of array variable '"
 		<< _array_var->name() << "'s' cooresponding dimension"
@@ -473,7 +478,7 @@ Grid::check_semantics(bool all)
     if (all) {
 	if (!_array_var->check_semantics(true))
 	    return false;
-	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	for (p = _map_vars.first(); p; _map_vars.next(p))
 	    if (!_map_vars(p)->check_semantics(true))
 		return false;
     }
