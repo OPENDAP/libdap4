@@ -12,6 +12,9 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.8  1999/01/21 02:55:54  jimg
+// Added include of stdio.h for FILE *.
+//
 // Revision 1.7  1998/01/14 22:55:03  tom
 // First draft of doc++ class documentation.
 //
@@ -46,6 +49,7 @@
 #pragma interface
 #endif
 
+#include <stdio.h>		// For FILE *
 #include "Gui.h"
 
 
