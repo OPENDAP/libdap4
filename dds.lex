@@ -22,9 +22,13 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.5  1994/12/21 16:54:50  jimg
-/* Repaired damage done to NEVER's definition in previous version.
+/* Revision 1.6  1995/02/10 02:57:40  jimg
+/* Switched to sh style comments. C and C++ style comments are no longer
+/* supported.
 /*
+# Revision 1.5  1994/12/21  16:54:50  jimg
+# Repaired damage done to NEVER's definition in previous version.
+#
 # Revision 1.4  1994/12/16  22:22:14  jimg
 # Changed NEVER to be anything not caught by the earlier rules.
 # Fixed // style comments so that // ... <eof> works.
@@ -42,7 +46,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.5 1994/12/21 16:54:50 jimg Exp $"};
+static char rcsid[]={"$Id: dds.lex,v 1.6 1995/02/10 02:57:40 jimg Exp $"};
 
 #include <string.h>
 
@@ -58,7 +62,6 @@ int yywrap(void);
 %}
     
 %x comment
-%x comment_new
 
 DATASET 	DATASET|Dataset|dataset 
 INDEPENDENT 	INDEPENDENT|Independent|independent
@@ -113,24 +116,10 @@ NEVER		[^][{}:;=a-zA-Z0-9_]
 \n	    	    	++dds_line_num;
 <INITIAL><<EOF>>    	yy_init = 1; dds_line_num = 1; yyterminate();
 
-"/*"	    	    	BEGIN(comment); start_line = dds_line_num;
-<comment>[^*\n]*
-<comment>[^*\n]*\n  	++dds_line_num;
-<comment>"*"+[^*/\n]*
-<comment>"*"+[^*/\n]*\n ++dds_line_num;
-<comment>"*"+"/"    	BEGIN(INITIAL);
-<comment><<EOF>>	{
-                          char msg[256];
-			  sprintf(msg,
-				  "Unterminated comment (starts on line %d)\n",
-				  start_line);
-			  YY_FATAL_ERROR(msg);
-                        }
-			
-"//"	    	    	BEGIN(comment_new);
-<comment_new>[^\n]*
-<comment_new>\n		++dds_line_num; BEGIN(INITIAL);
-<comment_new><<EOF>>    yy_init = 1; dds_line_num = 1; yyterminate();
+"#"	    	    	BEGIN(comment);
+<comment>[^\n]*
+<comment>\n		++dds_line_num; BEGIN(INITIAL);
+<comment><<EOF>>        yy_init = 1; dds_line_num = 1; yyterminate();
 
 {NEVER}                 {
                           if (yytext) {	/* suppress msgs about `' chars */
