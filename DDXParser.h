@@ -44,6 +44,10 @@
 #include "BaseType.h"
 #endif
 
+#ifndef base_type_factory_h
+#include "BaseTypeFactory.h"
+#endif
+
 /** Parse the XML text which encodes the network/persistent representation of
     the DDX object. In the current implementation, the DDX is held by an
     instance of the class DDS which in turn holds variables which include
@@ -56,13 +60,13 @@
     methods are public because making them private complicates compilation.
     They should not be called by anything other than the \i intern method.
     They do not throw exceptions because exceptions from within callbacks are
-    not reliable or portable (although exceptions themselves are not 100%
-    portable...). To signal errors, the methods record information in the
-    DDXParser object. Once the error handler is called, construction of an
-    DDX/DDS object ends even though the SAX parser still calls the various
-    callback functions. The parser treats \i warnings, \i errors and \i
-    fatal_errors the same way; when any are found parsing stops. The \i
-    intern method throws an DDXParseFailed exception if an error was found.
+    not reliable or portable. To signal errors, the methods record
+    information in the DDXParser object. Once the error handler is called,
+    construction of an DDX/DDS object ends even though the SAX parser still
+    calls the various callback functions. The parser treats \i warnings, \i
+    errors and \i fatal_errors the same way; when any are found parsing
+    stops. The \i intern method throws an DDXParseFailed exception if an
+    error was found.
 
     Note that this class uses the C++-supplied default definitions for the
     default and copy constructors as well as the destructor and assignment
@@ -102,6 +106,8 @@ private:
 	parser_error
     };
 
+    BaseTypeFactory *d_factory;
+
     // These stacks hold the state of the parse as it progresses.
     stack<ParseState> s;	// Current parse state
     stack<BaseType*> bt_stack;	// current variable(s)
@@ -126,6 +132,9 @@ private:
     DDXParser::ParseState get_state();
     void pop_state();
 
+    // Glue for the BaseTypeFactory class.
+    BaseType *factory(Type t, const string &name);
+
     /** @name Parser Actions
 
 	These methods are the 'actions' carried out by the start_element and
@@ -149,7 +158,12 @@ private:
     void finish_variable(const char *tag, Type t, const char *expected);
     //@}
 
+    /// Define the default ctor here to prevent its use.
+    DDXParser() {}
+
 public:
+    DDXParser(BaseTypeFactory *factory) : d_factory(factory) {}
+
     void intern(const string &document, DDS *dest_dds, string *blob)
 	throw(DDXParseFailed);
 
@@ -165,6 +179,9 @@ public:
 };
 
 // $Log: DDXParser.h,v $
+// Revision 1.7  2005/03/30 21:29:05  jimg
+// Now uses the BaseTypeFactory class.
+//
 // Revision 1.6  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //
