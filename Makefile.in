@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.21 1995/06/17 19:48:41 jimg Exp $
+# $Id: Makefile.in,v 1.22 1995/06/23 00:15:08 jimg Exp $
 
 @SET_MAKE@
 
@@ -29,13 +29,16 @@ LIBS = -ldap++ -lerrmsg @LIBS@
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
 
-prefix = $(DODS_ROOT)
+prefix = @prefix@
 exec_prefix = $(prefix)
 bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
 includedir = $(prefix)/include
 manext = 1
 mandir = $(prefix)/man/man$(manext)
+
+src = $(DODS_ROOT)/src
+etcdir = $(DODS_ROOT)/etc
 
 INSTALLMAN = man
 
