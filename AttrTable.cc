@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.45 2004/08/03 23:03:23 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.46 2004/08/25 23:36:29 jimg Exp $";
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -292,7 +292,7 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
 
     if (simple_find(name))
 	throw Error(string("There already exists a container called `")
-		    + name + string("in this attribute table."));
+		    + name + string("' in this attribute table."));
     DBG(cerr << "Setting appended attribute container name to: "
         << lname << endl);
     at->set_name(lname);
@@ -1266,6 +1266,11 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.46  2004/08/25 23:36:29  jimg
+// I added a second test to del_attr_table() to check the case when a
+// scalar attribute is followed by a container. I also fixed a typo in
+// append_container()'s error message text.
+//
 // Revision 1.45  2004/08/03 23:03:23  jimg
 // Fixed an error in clone() and added del_attr_table(Attr_iter).
 //
