@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.65 2003/02/27 23:41:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.66 2003/03/04 21:09:32 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -58,53 +58,44 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.65 2003/02/27 23:41:49 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.65 $";
+const char *version = "$Revision: 1.66 $";
 
-extern int keep_temps;		// defined in Connect.cc
+extern int dods_keep_temps;	// defined in HTTPResponse.h
 
 void
 usage(string name)
 {
-    fprintf( stderr, "Usage: %s", name.c_str() ) ;
-    fprintf( stderr, " [dDaVvk] [-c <expr>] [-m <num>] <url> [<url> ...]\n" ) ;
-    fprintf( stderr, "[Vvk] <file> [<file> ...]\n" ) ;
-    fprintf( stderr, "\n" ) ;
-    fprintf( stderr,
-	     "In the first form of the command, dereference the URL and\n" ) ;
-    fprintf( stderr,
-	     "perform the requested operations. This include routing\n" ) ;
-    fprintf( stderr,
-	     "the returned information through the DAP processing\n" ) ;
-    fprintf( stderr,
-	     "library (parsing the returned objects, et c.). If none\n" ) ;
-    fprintf( stderr,
-	     "of a, d, or D are used with a URL, then the DAP library\n" ) ;
-    fprintf( stderr,
-	     "routines are NOT used and the URLs contents are dumped\n" ) ;
-    fprintf( stderr,
-	     "to standard output.\n" ) ;
-    fprintf( stderr,
-	     "In the second form of the command, assume the files are\n" ) ;
-    fprintf( stderr,
-	     "DODS data objects (stored in files or read from pipes)\n" ) ;
-    fprintf( stderr,
-	     "and process them as if -D were given. In this case the\n" ) ;
-    fprintf( stderr,
-	     "information *must* contain valid MIME header in order\n" ) ;
-    fprintf( stderr, "to be processed." ) ;
-    fprintf( stderr, "\n" ) ;
-    fprintf( stderr, "Options:\n" ) ;
-    fprintf( stderr, "        d: For each URL, get the DODS DDS.\n" ) ;
-    fprintf( stderr, "        a: For each URL, get the DODS DAS.\n" ) ;
-    fprintf( stderr, "        D: For each URL, get the DODS Data.\n" ) ;
-    fprintf( stderr, "        v: Verbose.\n" ) ;
-    fprintf( stderr, "        V: Version.\n" ) ;
-    fprintf( stderr, "        c: <expr> is a contraint expression. Used with -D.\n" ) ;
-    fprintf( stderr, "           NB: You can use a `?' for the CE also.\n" ) ;
-    fprintf( stderr, "        k: Keep temporary files created by DODS core\n" );
-    fprintf( stderr, "        m: Request the same URL <num> times.\n" ) ;
-    fprintf( stderr, "        z: Don't ask the server to compress data.\n" ) ;
-    fprintf( stderr, "        s: Print Sequences using numbered rows.\n" ) ;
+    cerr << "Usage: " << name << endl;
+    cerr << " [dDaAVvk] [-c <expr>] [-m <num>] <url> [<url> ...]" << endl;
+    cerr << " [Vvk] <file> [<file> ...]" << endl;
+    cerr << endl;
+    cerr << "In the first form of the command, dereference the URL and" << endl;
+    cerr << "perform the requested operations. This include routing" << endl;
+    cerr << "the returned information through the DAP processing" << endl;
+    cerr << "library (parsing the returned objects, et c.). If none" << endl;
+    cerr << "of a, d, or D are used with a URL, then the DAP library" << endl;
+    cerr << "routines are NOT used and the URLs contents are dumped" << endl;
+    cerr << "to standard output." << endl;
+    cerr << endl;
+    cerr << "In the second form of the command, assume the files are" << endl;
+    cerr << "DODS data objects (stored in files or read from pipes)" << endl;
+    cerr << "and process them as if -D were given. In this case the" << endl;
+    cerr << "information *must* contain valid MIME header in order" << endl;
+    cerr << "to be processed." << endl;
+    cerr << endl;
+    cerr << "Options:" << endl;
+    cerr << "        d: For each URL, get the DODS DDS." << endl;
+    cerr << "        a: For each URL, get the DODS DAS." << endl;
+    cerr << "        A: Use the AIS for DAS objects." << endl;
+    cerr << "        D: For each URL, get the DODS Data." << endl;
+    cerr << "        v: Verbose." << endl;
+    cerr << "        V: Version." << endl;
+    cerr << "        c: <expr> is a contraint expression. Used with -D." << endl;
+    cerr << "           NB: You can use a `?' for the CE also." << endl;
+    cerr << "        k: Keep temporary files created by DODS core\n" << endl;
+    cerr << "        m: Request the same URL <num> times." << endl;
+    cerr << "        z: Don't ask the server to compress data." << endl;
+    cerr << "        s: Print Sequences using numbered rows." << endl;
 }
 
 bool
@@ -129,38 +120,22 @@ static void
 process_data(Connect *url, DDS &dds, bool verbose = false, 
 	     bool print_rows = false)
 {
-    switch (url->type()) {
-      case dods_error:
-	throw url->error();
-	return;
+    if (verbose)
+	fprintf( stderr, "Server version: %s\n",
+		 url->get_version().c_str() ) ;
 
-      case web_error:
-	// Web errors (those reported in the return document's MIME header)
-	// are processed by the WWW library.
-	return;
+    fprintf( stdout, "The data:\n" ) ;
 
-      case dods_data: 
-      default: {
-	  if (verbose)
-	      fprintf( stderr, "Server version: %s\n",
-			       url->server_version().c_str() ) ;
-
-	  fprintf( stdout, "The data:\n" ) ;
-
-	  for (DDS::Vars_iter qiter = dds.var_begin();
-	       qiter != dds.var_end(); qiter++)
-	  {
-	      BaseType *v = (*qiter) ;
-	      if (print_rows && v->type() == dods_sequence_c)
-		  dynamic_cast<Sequence*>(v)->print_val_by_rows(stdout);
-	      else
-		  v->print_val(stdout);
-	  }
-      }
-
-      fprintf( stdout, "\n" ) ;
-      fflush( stdout ) ;
+    for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++) {
+	BaseType *v = *i ;
+	if (print_rows && v->type() == dods_sequence_c)
+	    dynamic_cast<Sequence*>(v)->print_val_by_rows(stdout);
+	else
+	    v->print_val(stdout);
     }
+
+    fprintf( stdout, "\n" ) ;
+    fflush( stdout ) ;
 }
 
 MAIN_RETURN
@@ -180,9 +155,6 @@ main(int argc, char * argv[])
     bool use_ais = false;
     int times = 1;
     string expr = "";
-#if 0
-    char *expr = "";  // can't use NULL or C++ string conversion will crash
-#endif
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
@@ -196,9 +168,8 @@ main(int argc, char * argv[])
 	  case 'A': use_ais = true; break;
 	  case 'V': fprintf( stderr, "geturl version: %s\n", version) ; exit(0);
 	  case 'v': verbose = true; break;
-	  case 'k': keep_temps =1; break; // keep_temp is in Connect.cc
-	  case 'c':
-	    cexpr = true; expr = getopt.optarg; break;
+	  case 'k': dods_keep_temps = 1; break; // keep_temp is in Connect.cc
+	  case 'c': cexpr = true; expr = getopt.optarg; break;
 	  case 'm': multi = true; times = atoi(getopt.optarg); break;
 	  case 'z': accept_deflate = false; break;
 	  case 's': print_rows = true; break;
@@ -222,6 +193,7 @@ main(int argc, char * argv[])
 	    else
 		url = new Connect(name);
 
+	    // This overrides the value set in the .dodsrc file.
 	    url->set_accept_deflate(accept_deflate);
 
 	    if (url->is_local()) {
@@ -271,11 +243,13 @@ main(int argc, char * argv[])
 			e.display_message();
 			continue;
 		    }
+
 		    if (verbose) {
 			fprintf( stderr, "Server version: %s\n",
-					 url->server_version().c_str() ) ; 
+					 url->get_version().c_str() ) ; 
 			fprintf( stderr, "DAS:\n" ) ;
 		    }
+
 		    das.print(stdout);
 		}
 	    }
@@ -290,17 +264,19 @@ main(int argc, char * argv[])
 			e.display_message();
 			continue;	// Goto the next URL or exit the loop.
 		    }
+
 		    if (verbose) {
 			fprintf( stderr, "Server version: %s\n",
-					 url->server_version().c_str() ) ; 
+					 url->get_version().c_str() ) ; 
 			fprintf( stderr, "DDS:\n" ) ;
 		    }
+
 		    dds.print(stdout);
 		}
 	    }
 
 	    else if (get_data) {
-		if (!(expr == "" || name.find('?') != string::npos)) {
+		if (expr.empty() && name.find('?') == string::npos) {
 		    fprintf( stderr,
 			 "Must supply a constraint expression with -D.\n" ) ;
 		    continue;
@@ -323,13 +299,13 @@ main(int argc, char * argv[])
 		string url_string = argv[i];
 		for (int j = 0; j < times; ++j) {
 		    try {
-			FILE *fp = http.fetch_url(url_string);
+			Response *r = http.fetch_url(url_string);
 			if (verbose)
 			    fprintf( stderr, "Server version: %s\n",
-				     http.server_version().c_str() ) ; 
-			if (!read_data(fp))
+				     r->get_version().c_str() ) ; 
+			if (!read_data(r->get_stream()))
 			    continue;
-			fclose(fp);
+			delete r;
 		    }
 		    catch (Error &e) {
 			e.display_message();
@@ -345,6 +321,7 @@ main(int argc, char * argv[])
 
     return 0;
 
+    // *** Can we remove this? 03/04/03 jhrg
 #if 0
     exit(0); //  Running DejaGun/Cygwin based test suites require this.
 #ifdef WIN32
@@ -354,6 +331,11 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.66  2003/03/04 21:09:32  jimg
+// Updated geturl to match changes in the Connect, HTTPConnect and HTTPCache
+// classes. In addition, the program can be used with the prototype AIS (which
+// works for DAS objects only). See the -A option.
+//
 // Revision 1.65  2003/02/27 23:41:49  jimg
 // Updated this to use the new, non-deprecated, methods in Connect (and
 // AISConnect!). The code is a bit tighter. Added a new option, -A, which tells
