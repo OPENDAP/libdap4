@@ -37,7 +37,12 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.15  1995/10/23 23:06:07  jimg
+// Revision 1.16  1995/12/06 18:36:23  jimg
+// Added text_to_temp(). This copies the given String to a temporary file and
+// returns a FILE * to that file. The file is unlinked, so one the FILE * is
+// closed, it is removed from the file system.
+//
+// Revision 1.15  1995/10/23  23:06:07  jimg
 // Fixed cast of out_tmp in xdr_str().
 //
 // Revision 1.14  1995/08/26  00:32:10  jimg
@@ -97,7 +102,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.15 1995/10/23 23:06:07 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.16 1995/12/06 18:36:23 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -105,6 +110,7 @@ static char rcsid[]={"$Id: util.cc,v 1.15 1995/10/23 23:06:07 jimg Exp $"};
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <unistd.h>
 #include <rpc/xdr.h>
 
 #ifdef DBMALLOC
@@ -125,6 +131,8 @@ static char rcsid[]={"$Id: util.cc,v 1.15 1995/10/23 23:06:07 jimg Exp $"};
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
+
+#define DODS_CE_PRX "dods-ce"
 
 static int
 char_cmp(const void *a, const void *b)
@@ -246,4 +254,26 @@ xdr_str(XDR *xdrs, String &buf)
 	assert(false);
 	return 0;
     }
+}
+
+// Given a string, copy that string to a temporary file which will be removed
+// from the file system upon closing.
+//
+// Returns: A FILE * to the temporary file.
+
+FILE *
+text_to_temp(String text)
+{
+    char *c = tempnam(NULL, DODS_CE_PRX);
+    FILE *fp = fopen(c, "w+");
+
+    fputs((const char *)text, fp);
+
+    fclose(fp);		/* once full, close file */
+    
+    fp = fopen(c, "r");	/* get file pointer */
+    if (unlink(c) < 0)	/* now when fp is closed, file is rm'd */
+	err_sys("Could not unlink tmp file %s", c);
+
+    return fp;
 }
