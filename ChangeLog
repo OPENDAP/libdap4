@@ -1,3 +1,10 @@
+2001-02-09  James Gallagher  <jimg@dcz.dods.org>
+
+	* Substantial changes to Connect to support HTTP authentication.
+	libdap++ now support three ways of supplying credentials: via
+	Connect's ctor, in a URL (using Netscape's convention and via a
+	popup. 
+
 2001-01-26  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with release-3-2-3. The next merge should use -j
@@ -860,9 +867,9 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.61 2001/01/26 19:19:14 jimg Exp $
+$Id: ChangeLog,v 1.62 2001/02/09 22:58:46 jimg Exp $
 
 <<<<<<< ChangeLog
 =======
-$Id: ChangeLog,v 1.61 2001/01/26 19:19:14 jimg Exp $
+$Id: ChangeLog,v 1.62 2001/02/09 22:58:46 jimg Exp $
 >>>>>>> 1.42.2.16
