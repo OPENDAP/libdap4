@@ -17,6 +17,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.31  1997/05/21 00:10:35  jimg
+ * Added a fix for aliases between top level groups of attributes.
+ *
  * Revision 1.30  1997/05/13 23:32:19  jimg
  * Added changes to handle the new Alias and lexical scoping rules.
  *
@@ -154,7 +157,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.30 1997/05/13 23:32:19 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.31 1997/05/21 00:10:35 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -570,7 +573,15 @@ alias:          ALIAS ID
 		    // information from the source's name (since TABLE is
 		    // the AttrTable that contains the attribute named by the
 		    // rightmost part of the source.
-		    if (!TOP_OF_STACK->attr_alias(name, $4)) {
+		    if (STACK_EMPTY) {
+			// Look for the $4 in the DAS object, not in the
+			// AttrTable on the top of the stack (because there
+			// is no object on the stack so we must be working at
+			// the outer most level of the attribute object).
+			AttrTable *at = DAS_OBJ(arg)->get_table($4);
+			DAS_OBJ(arg)->add_table(name, at);
+		    }
+		    else if (!TOP_OF_STACK->attr_alias(name, $4)) {
 			AttrTable *table = DAS_OBJ(arg)->get_table($4);
 			if (!TOP_OF_STACK->attr_alias(name, table, 
 						      attr_name((String)$4))) {
