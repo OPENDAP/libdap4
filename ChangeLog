@@ -1,3 +1,12 @@
+1999-03-17  James Gallagher  <jimg@dcz.dods.org>
+
+	* Changed cgi_util.cc:find_ancillary_file() so that it looks for
+	<pathname>.ext in addition to <basename>.ext and the other
+	variations. This means that the current convention of naming
+	ancillary DAS files <filename>.das will work for both the
+	DODS_Date(), etc., functions (whose Factory classes were using
+	this convention) and the regular DAS filter program. 
+
 1999-02-24  James Gallagher  <jimg@dcz.dods.org>
 
 	* An interim revision changed the way incoming data documents were
@@ -454,4 +463,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.34 1999/02/24 22:55:32 jimg Exp $
+$Id: ChangeLog,v 1.35 1999/03/18 00:40:40 jimg Exp $
