@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.59 1997/02/10 02:35:29 jimg Exp $
+# $Id: Makefile.in,v 1.60 1997/02/13 17:31:25 jimg Exp $
 
 @SET_MAKE@
 
@@ -262,7 +262,8 @@ Error.tab.o: Error.tab.c	# build using C++ compiler
 
 # Standard targets with some customization for das-test and dds-test
 
-install: all install-headers install-geturl install-gui install-usage
+install: all install-headers install-geturl install-gui install-usage \
+	install-version
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
 
@@ -285,6 +286,10 @@ install-gui:
 install-usage: usage
 	$(INSTALL_PROGRAM) usage $(etcdir)
 	$(STRIP) $(etcdir)/usage
+
+install-version:
+	$(INSTALL_PROGRAM) dods-core-version $(etcdir)
+	chmod 755 $(etcdir)/dods-core-version
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
