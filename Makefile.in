@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.51 1996/11/14 00:43:34 jimg Exp $
+# $Id: Makefile.in,v 1.52 1996/11/15 23:22:02 jimg Exp $
 
 @SET_MAKE@
 
@@ -136,7 +136,7 @@ TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
 all: grammars $(PROG)
 
-libdap++.a: grammars $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
+libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
 	    $(EXPROBJS) $(NETIOOBJS)
 	    $(AR) cru $@ $?
 	    $(RANLIB) $@
@@ -253,7 +253,7 @@ Error.tab.o: Error.tab.c	# build using C++ compiler
 
 # Standard targets with some customization for das-test and dds-test
 
-install: all install-headers install-geturl
+install: all install-headers install-geturl install-gui
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
 
@@ -268,6 +268,9 @@ install-headers:
 install-geturl:
 	$(INSTALL_PROGRAM) geturl $(etcdir)
 	$(STRIP) $(etcdir)/geturl
+
+install-gui:
+	$(INSTALL_PROGRAM) dods_gui.tcl errorr.tcl progress.tcl $(etcdir)
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
