@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Byte.cc,v 1.44 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Byte.cc,v 1.45 2002/06/18 15:36:24 tom Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -37,9 +37,19 @@ static char rcsid[] not_used = {"$Id: Byte.cc,v 1.44 2001/10/14 01:28:38 jimg Ex
 using std::cerr;
 using std::endl;
 
-// NB: Even though Byte is a cardinal type, xdr_char is *not* used to
-// transport Byte arrays over the network. Instead, Byte is a special case
-// handled in Array.
+/** The Byte constructor requires only the name of the variable
+    to be created.  The name may be omitted, which will create a
+    nameless variable.  This may be adequate for some applications. 
+      
+    \note Even though Byte is a cardinal type, xdr_char is <i>not</i>
+    used to transport Byte arrays over the network. Instead, Byte is
+    a special case handled in Array.
+
+    @brief The Byte constructor.
+    @param n A string containing the name of the variable to be
+    created. 
+
+*/
 
 Byte::Byte(const string &n) : BaseType(n, dods_byte_c)
 {
@@ -69,17 +79,19 @@ Byte::width()
     return sizeof(dods_byte);
 }
 
-// Serialize the contents of member _BUF (the object's internal buffer, used
-// to hold data) and write the result to stdout. If FLUSH is true, write the
-// contents of the output buffer to the kernel. FLUSH is false by default. If
-// CE_EVAL is true, evaluate the current constraint expression; only send
-// data if the CE evaluates to true.
-//
-// NB: See the comment in BaseType re: why we don't use XDR_CODER here
-//
-// Returns: false if a failure to read, send or flush is detected, true
-// otherwise. 
+/** Serialize the contents of member _BUF (the object's internal
+    buffer, used to hold data) and write the result to stdout. If
+    FLUSH is true, write the contents of the output buffer to the
+    kernel. FLUSH is false by default. If CE_EVAL is true, evaluate
+    the current constraint expression; only send data if the CE
+    evaluates to true. 
 
+    @note See the comment in BaseType about why we don't use XDR_CODER
+    here. 
+
+    @return False if a failure to read, send or flush is detected, true
+    otherwise. 
+*/
 bool
 Byte::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
@@ -98,8 +110,9 @@ problem with the network connection.");
     return true;
 }
 
-// deserialize the char on stdin and put the result in _BUF.
-
+/** @brief Deserialize the char on stdin and put the result in
+    <tt>_BUF</tt>. 
+*/
 bool
 Byte::deserialize(XDR *source, DDS *, bool)
 {
@@ -111,12 +124,11 @@ bug in DODS or a problem with the network connection.");
     return false;
 }
 
-// Store the value referenced by VAL in the object's internal buffer. REUSE
-// has no effect because this class does not dynamically allocate storage for
-// the internal buffer.
-//
-// Returns: size in bytes of the value's representation.
+/** Store the value referenced by <i>val</i> in the object's internal
+    buffer. <i>reuse</i> has no effect because this class does not
+    dynamically allocate storage for the internal buffer.
 
+    @return The size (in bytes) of the value's representation.  */
 unsigned int
 Byte::val2buf(void *val, bool)
 {
@@ -215,6 +227,9 @@ Byte::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Byte.cc,v $
+// Revision 1.45  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.44  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

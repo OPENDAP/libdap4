@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.35 2001/08/27 16:39:42 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.36 2002/06/18 15:36:24 tom Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -48,13 +48,30 @@ DAS::das_find(string name)
     return find_container(name); // Only containers at the top level.
 }
 
-// sz is unused. It was part of the ctor when DAS used the old GNU VHMap
-// class. I switched from that to a SLList of struct toplevel_entry objects
-// because the VHMap class had bugs I didn't want to fix. 11/23/98 jhrg
+/** Create a DAS from a single attribute table.  
 
+    \note In an older version of this class, <tt>dflt</tt> and <tt>sz</tt>
+    initialized a hash table. That is no longer used and these
+    params should no longer matter. Note that this constructor is
+    effectively the empty constructor. 11/23/98 jhrg
+
+    @param dflt A pointer to a valid attribute table.
+    @param sz The number of entries in the table. This is unused. It
+    was part of the ctor when DAS used the old GNU VHMap class. I
+    switched from that to a SLList of struct toplevel_entry objects
+    because the VHMap class had bugs I didn't want to fix. 11/23/98
+    jhrg  */
 DAS::DAS(AttrTable *, unsigned int)
 {
 }
+
+/** Create a DAS object with one attribute table. Use <tt>append_attr()</tt>
+    to add additional attributes.
+
+    @see append_attr()
+    @param attr The initial AttrTable. 
+    @param name The name of the DAS parent structure.
+*/
 
 DAS::DAS(AttrTable *attr, string name)
 {
@@ -72,46 +89,67 @@ DAS::~DAS()
 {
 }
 
+/** @brief Returns a pointer to the first attribute table. */
 Pix
 DAS::first_var()
 {
     return AttrTable::first_attr();
 }
 
+/** @brief Increments an attribute table pointer to indicate the next table
+    in the series. */
 void
 DAS::next_var(Pix &p)
 {
     AttrTable::next_attr(p);
 }
 
+/** @brief Returns the name of the indicated attribute table. */
 string
 DAS::get_name(Pix p)
 {
     return AttrTable::get_name(p);
 }
 
+/** @brief Returns the attribute table with the given name. 
+    @name get_table()
+*/
+  
+  //@{
+/** @brief Returns the indicated attribute table. */
 AttrTable *
 DAS::get_table(Pix p)
 {
     return AttrTable::get_attr_table(p);
 }
 
+/** @brief Returns the attribute table with the given name string. */
 AttrTable *
 DAS::get_table(const string &name)
 {
     return AttrTable::get_attr_table(name);
 }
 
-// This function is necessary because (char *) arguments will be converted to
-// Pixs (and not strings). Without this mfunc get_table(name) needs a cast;
-// it seems tough to believe folks will always remember that.
+/** @brief Returns the attribute table with the given name. 
 
+    This function is necessary because (char *) arguments will be
+    converted to Pixs (and not strings). Without this member
+    function get_table(name) needs a cast, and it seems tough to
+    believe folks will always remember that.   
+*/
 AttrTable *
 DAS::get_table(const char *name)
 {
     return get_table((string)name);
 }
+//@}
 
+/** @brief Adds an attribute table to the DAS.
+    @name add_table()
+*/
+  //@{
+
+/** @brief Adds an attribute table to the DAS. */
 AttrTable *
 DAS::add_table(const string &name, AttrTable *at)
 {
@@ -119,15 +157,26 @@ DAS::add_table(const string &name, AttrTable *at)
     return AttrTable::append_container(at, name);
 }
 
+/** @brief Adds an attribute table to the DAS. */
 AttrTable *
 DAS::add_table(const char *name, AttrTable *at)
 {
     return add_table((string)name, at);
 }
 
-// Read attributes from a file. Returns false if unable to open the file,
-// otherwise returns the result of the mfunc parse.
+//@}
 
+/** @brief Reads a DAS in from an external source. 
+
+    @name parse()
+*/
+    //@{
+
+
+/** @brief Reads a DAS from the named file. 
+
+    Read attributes from a file. Returns false if unable to open
+    the file, otherwise returns the result of the mfunc parse. */
 void
 DAS::parse(string fname)
 {
@@ -142,13 +191,16 @@ DAS::parse(string fname)
     fclose(in);
 }
 
-// Read attributes from a file descriptor. If the file descriptor cannot be
-// fdopen'd, return false, otherwise return the status of the mfunc parse.
-// 
-// NB: Added call to dup() within fdopen so that once the FILE * is closed the
-// decriptor fd will not also be closed (instead the duplicate descriptor will
-// be closed). Thus further information can be read from the descriptor fd.
+/** @brief Read attributes from a file descriptor. 
 
+    If the file descriptor cannot be fdopen'd, return false, otherwise
+    return the status of the mfunc parse. 
+
+    \note Added call to dup() within fdopen so that once the FILE * is
+    closed the decriptor fd will not also be closed (instead the
+    duplicate descriptor will be closed). Thus further information can
+    be read from the descriptor fd. 
+*/
 void
 DAS::parse(int fd)
 {
@@ -169,9 +221,13 @@ DAS::parse(int fd)
 }
 
     
-// Read attributes from in (which defaults to stdin). If dasrestart() fails,
-// return false, otherwise return the status of dasparse().
 
+/** @brief Reads a DAS from an open file descriptor. 
+
+    Read attributes from in (which defaults to stdin). If
+    dasrestart() fails, return false, otherwise return the status
+    of dasparse(). 
+*/
 void
 DAS::parse(FILE *in)
 {
@@ -193,12 +249,19 @@ DAS::parse(FILE *in)
     }
 }
 
-// Write attributes from tables to `out' (which defaults to stdout). Return
-// true. 
-//
-// When an identifier contains a character that contains characters that
-// cannot be present in a URL (e.g., a space) AttrTable::print(...) replaces
-// those characters with WWW escape codes. 7/13/2001 jhrg
+//@}
+
+/** @brief Creates an ASCII representation of a DAS on the given output
+    stream. 
+
+    Write attributes from tables to `out' (which defaults to
+    stdout). Return true. 
+
+    When an identifier contains a character that contains
+    characters that cannot be present in a URL (e.g., a space)
+    AttrTable::print replaces those characters with WWW
+    escape codes. 7/13/2001 jhrg 
+*/
 
 void
 DAS::print(ostream &os, bool dereference)
@@ -212,6 +275,9 @@ DAS::print(ostream &os, bool dereference)
 }
 
 // $Log: DAS.cc,v $
+// Revision 1.36  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.35  2001/08/27 16:39:42  jimg
 // Fixed up cruft from merge.
 //

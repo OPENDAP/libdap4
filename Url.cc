@@ -16,6 +16,14 @@
 #include <assert.h>
 
 #include "Url.h"
+/** The URL constructor requires only the name of the variable
+    to be created.  The name may be omitted, which will create a
+    nameless variable.  This may be adequate for some applications. 
+      
+    @param n A string containing the name of the variable to be
+    created. 
+
+*/
 
 Url::Url(const string &n) : Str(n)
 {
@@ -23,6 +31,9 @@ Url::Url(const string &n) : Str(n)
 }
 
 // $Log: Url.cc,v $
+// Revision 1.18  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.17  2000/09/22 02:17:21  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -39,9 +39,11 @@
 #include "BaseType.h"
 #endif
 
+/** @brief Holds an unisigned 16-bit integer. */
+
 class UInt16: public BaseType {
-    /** This class allows Byte, ..., Float64 acesss to _buf to simplify and
-	speed up the relational operators.
+    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to 
+	simplify and speed up the relational operators.
 
 	NB: According to Stroustrup it does not matter where (public, private
 	or protected) friend classes are declared. */
@@ -73,7 +75,7 @@ public:
 
     virtual bool read(const string &dataset) = 0;
 
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
     virtual void print_val(ostream &os, string space = "",
@@ -83,6 +85,9 @@ public:
 };
 
 // $Log: UInt16.h,v $
+// Revision 1.10  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.9  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

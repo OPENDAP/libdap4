@@ -34,22 +34,22 @@
     NB: This class Adds some text to the message and might, in the future,
     hold information not also held in Error. However, all Error objects
     thrown on the server-side of DODS that cannot be resolved (and that's all
-    of them for now, 5/3/99 jhrg) will be sent to the client-side \emph{using
-    Error ojbects}. That is, the information recorded in an InternalErr
-    object will be sent by calling the #print(...)# mfunc of Error.
+    of them for now, 5/3/99 jhrg) will be sent to the client-side <i>using
+    Error objects</i>. That is, the information recorded in an InternalErr
+    object will be sent by calling the <tt>print(...)</tt> mfunc of Error.
 
-    @memo A class for software fault reporting.
+    @brief A class for software fault reporting.
     @author jhrg */
 
 class InternalErr: public Error {
 
 public:
-    /** These constructors always set the error code to #internal_error#.
+    /** These constructors always set the error code to <tt>internal_error</tt>.
 	
 	Note that there is no way to specify an error correction program for
 	an internal error.
 
-	@memo Constructors for the Error object
+	@brief Constructors for the Error object
 	@name Constructors */
     //@{
     /// 
@@ -66,13 +66,13 @@ public:
 
     virtual ~InternalErr();
 
-    /** 
-	@memo Is the InternalErr object valid?
-	@return TRUE if the object is valid, FALSE otherwise. */
-    bool OK();
+  bool OK();
 };
 
 // $Log: InternalErr.h,v $
+// Revision 1.7  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.6  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

@@ -32,7 +32,7 @@
     structure.  It is for use on the client side of the DODS
     connection. 
     
-    @memo Holds a DODS DDS.
+    @brief Holds a DODS DDS.
     @see Connect
     */
 
@@ -50,47 +50,24 @@ private:
     int _sequence_level;
 #endif
 public:
-  /** The DataDDS constructor needs a name and a version string.  This
-      is generally received from the server.
-      */
-    DataDDS(const string &n = "", const string &v = "");
-    virtual ~DataDDS();
+<<<<<<< DataDDS.h
+  DataDDS(const string &n = "", const string &v = "");
+  virtual ~DataDDS();
 
-  /** Sets the version string.  This typically looks something like:
-      #DODS/2.15#, where ``2'' is the major version number, and ``15''
-      the minor number.
-      */
-    void set_version(const string &v);
-  /** Returns the major version number. */
-    int get_version_major();
-  /** Returns the minor version number. */
-    int get_version_minor();
+  void set_version(const string &v);
+  int get_version_major();
+  int get_version_minor();
 
 #if 0
-  /** Return the last level of a sequence object that was read. Note
-      that #Sequence::deserialize()# is the main user of this
-      information and it really only matters in cases where the
-      Sequence object contains other Sequence objects. In that case,
-      this information provides state for #Sequence::deserialize()# so
-      that it can return to the level at which it last read.
-
-      @name sequence\_level()
-      @memo Returns the level of the last sequence read.  */
-    int sequence_level();
-    
-  /** Set the value for #sequence_level()#. Use this function to store
-      state information about the current sequence. This is used
-      mostly when reading nested sequences so that
-      #Sequence::deserialize()# can return to the correct level when
-      resuming a deserialization from a subsequent call.
-
-      @name set\_sequence\_level(int level)
-      @memo Sets the level of the sequence being read.  */
-    void set_sequence_level(int level);
+  int sequence_level();
+  void set_sequence_level(int level);
 #endif
 };
 
 // $Log: DataDDS.h,v $
+// Revision 1.10  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.9  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

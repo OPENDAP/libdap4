@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: RValue.cc,v 1.7 2000/09/22 02:17:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.8 2002/06/18 15:36:24 tom Exp $"};
 
 #include <assert.h>
 
@@ -54,6 +54,13 @@ rvalue::value_name()
 // NB: this must be defined after the struct func_rvalue (since it uses
 // func_rvalue's bvalue() mfunc. 
 
+/** Return the BaseType * that contains a value for a given rvalue. If the
+    rvalue is a BaseType *, ensures that the read mfunc has been
+    called. If the rvalue is a func_rvalue, evaluates the func_rvalue and
+    returns the result.
+      
+    NB: The functions referenced by func_rvalues must encapsulate their
+    return values in BaseType *s. */
 BaseType *
 rvalue::bvalue(const string &dataset, DDS &dds) 
 {
@@ -87,9 +94,15 @@ rvalue::bvalue(const string &dataset, DDS &dds)
     }
 }
 
-/* This function performs a common task but does not fit within the RValue
-   class well. It is used by Clause and expr.y. */
 
+/** Build an argument list suitable for calling a <tt>btp_func</tt>,
+    <tt>bool_func</tt>, and so on. Since this takes an <tt>rvalue_list</tt> and
+    not an rvalue, it is a function rather than a class
+    member. 
+
+    This function performs a common task but does not fit within the RValue
+   class well. It is used by Clause and expr.y. */
+*/
 BaseType **
 build_btp_args(rvalue_list *args, DDS &dds)
 {
@@ -121,6 +134,9 @@ build_btp_args(rvalue_list *args, DDS &dds)
 }
 
 // $Log: RValue.cc,v $
+// Revision 1.8  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.7  2000/09/22 02:17:21  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

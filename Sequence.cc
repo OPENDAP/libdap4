@@ -122,12 +122,21 @@ Sequence::is_end_of_sequence(unsigned char marker)
 
 // Public member functions
 
+/** The Sequence constructor requires only the name of the variable
+    to be created.  The name may be omitted, which will create a
+    nameless variable.  This may be adequate for some applications. 
+      
+    @param n A string containing the name of the variable to be
+    created. 
+
+    @brief The Sequence constructor. */
 Sequence::Sequence(const string &n) : Constructor(n, dods_sequence_c), 
     d_row_number(-1), d_starting_row_number(-1),
     d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
+/** @brief The Sequence copy constructor. */
 Sequence::Sequence(const Sequence &rhs) : Constructor(rhs)
 {
     _duplicate(rhs);
@@ -250,8 +259,15 @@ Sequence::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
-// NB: Part p defaults to nil for this class
+/** @brief Adds a variable to the Sequence.  
+    
+    Remember that if you wish to add a member to a nested
+    Sequence, you must use the <tt>add_var()</tt> of that
+    Sequence.  This means that variable names need not be unique
+    among a set of nested Sequences. 
 
+    @param bt A pointer to the DODS type variable to add to this Sequence.
+    @param part defaults to nil */
 void 
 Sequence::add_var(BaseType *bt, Part)
 {
@@ -284,9 +300,9 @@ Sequence::var(const string &name, btp_stack &s)
 }
 
 BaseType *
-Sequence::var(const string &name, bool exact, btp_stack *s)
+Sequence::var(const string &name, bool exact_match, btp_stack *s)
 {
-    if (exact)
+    if (exact_match)
 	return exact_match(name, s);
     else
 	return leaf_match(name, s);
@@ -343,6 +359,9 @@ Sequence::exact_match(const string &name, btp_stack *s)
     return 0;
 }
 
+/** @brief Get a whole row from the sequence. 
+    @param row Get <i>row</i> from the sequence.
+    @return A BaseTypeRow object (vector<BaseType *>). */
 BaseTypeRow *
 Sequence::row_value(size_t row)
 {
@@ -351,6 +370,11 @@ Sequence::row_value(size_t row)
     return d_values[row];
 }
 
+/** @brief Get the BaseType pointer to the named variable of a given row. 
+    @param row Read from <i>row</i> in the sequence.
+    @param name Return <i>name</i> from <i>row</i>.
+    @return A BaseType which holds the variable and its value. 
+    @see number_of_rows */
 BaseType *
 Sequence::var_value(size_t row, const string &name)
 {
@@ -369,6 +393,11 @@ Sequence::var_value(size_t row, const string &name)
 	return *bt_row_iter;
 }
 
+/** @brief Get the BaseType pointer to the $i^{th}$ variable of <i>row</i>.
+    @param row Read from <i>row</i> in the sequence.
+    @param i Return the $i^{th}$ variable from <i>row</i>.
+    @return A BaseType which holds the variable and its value.
+    @see number_of_rows */
 BaseType *
 Sequence::var_value(size_t row, size_t i)
 {
@@ -382,6 +411,10 @@ Sequence::var_value(size_t row, size_t i)
     return (*bt_row_ptr)[i];
 }
 
+/** @brief Returns an index to the first variable in a Sequence instance.
+    This corresponds to the item in the first column of the table
+    the Sequence represents.  It is not the first row of the table. 
+*/
 Pix
 Sequence::first_var()
 {
@@ -391,6 +424,9 @@ Sequence::first_var()
 	return _vars.first();
 }
 
+/** @brief Increments the Sequence instance.  
+    This returns a pointer to the
+    next ``column'' in the Sequence, not the next row. */
 void
 Sequence::next_var(Pix &p)
 {
@@ -398,6 +434,8 @@ Sequence::next_var(Pix &p)
 	_vars.next(p);
 }
 
+/** @brief Returns a pointer to a Sequence member.  
+    This may be another Sequence. */
 BaseType *
 Sequence::var(Pix p)
 {
@@ -421,6 +459,21 @@ Sequence::width()
 // This version returns -1. Each API-specific subclass should define a more
 // reasonable version. jhrg 5/24/96
 
+/** Returns the number of elements in a Sequence object. Note that
+    this is <i>not</i> the number of items in a row, but the number
+    of rows in the complete sequence object. To be meaningful, this
+    must be computed after constraint expresseion (CE) evaluation.
+    The purpose of this function is to facilitate translations
+    between Sequence objects and Array objects, particularly when
+    the Sequence is too large to be transferred from the server to
+    the client in its entirety.
+
+    This function, to be useful, must be specialized for the API and
+    data format in use.  
+
+    @return The base implentation returns -1, indicating that the
+    length is not known.  Sub-classes specific to a particular API
+    will have a more complete implementation. */
 int
 Sequence::length()
 {
@@ -432,9 +485,6 @@ Sequence::number_of_rows()
 {
     return d_values.size();
 }
-
-// Advance the sequence to row number ROW. Note that we can only advance, it
-// is not possible to backup (yet, that could be implemented).
 
 // Notes:
 // Assume that read() is implemented so that, when reading data for a nested
@@ -456,6 +506,32 @@ Sequence::number_of_rows()
 // beyond this point to to the original caller.
 // Jose Garcia
 
+/** Read row number <i>row</i> into the Sequence. The values of
+    the row are obtained using the members of the sequence. This
+    method calls the overloaded Sequence::read() method to read
+    each row. The rows are counted using by the object (see
+    <tt>get_row_number()</tt>). If a selection expression has been
+    supplied, rows are counted only if they satisfy that
+    expression.
+
+    Note that we can only advance.  It is not possible to back up
+    (though there is nothing theoretically against it).
+
+    Used on the server side.
+
+    NB: The first row is row number zero. A Sequence with 100 rows will
+    have row numbers 0 to 99.
+
+    @return A boolean value, with TRUE indicating that read_row
+    should be called again because there's more data to be read.
+    FALSE indicates the end of the Sequence.
+    @param row The row number to read.
+    @param dataset A string, often a file name, used to refer to t he
+    dataset. 
+    @param dds A reference to the DDS for this dataset.
+    @param ce_eval If True, evaluate any CE, otherwise do not.
+    @return True if there are more rows to read, False if the EOF was
+    found. */
 bool
 Sequence::read_row(int row, const string &dataset, DDS &dds, bool ce_eval)
 {
@@ -536,9 +612,25 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 }
 
 
+/** @brief Deserialize (read from the network) the entire Sequence.
 
-// A return value of false indicates that an EOS marker was found, while a
-// value of true indicates that there are more rows to be read.
+    This method used to read a single row at a time. Now the entire
+    sequence is read at once. The method used to return True to indicate
+    that more data needed to be deserialized and False when the sequence
+    was completely read. Now it simply returns true. This might seem odd,
+    but it is because all of the other implementation of this method
+    return true when the XDR readers succeed and False otherwise. Making
+    this method return true breaks existing software the least.
+
+    @param source An XDR stream.
+    @param dds A DataDDS from which to read.
+    @param reuse Passed to child objects when they are deserialized.
+    @exception Error if a sequence stream marker cannot be read.
+    @exception InternalErr if the <tt>dds</tt> param is not a DataDDS.
+    @return A return value of false indicates that an EOS ("end of
+    Sequence") marker was found, while a value of true indicates
+    that there are more rows to be read. 
+*/
 bool
 Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 {
@@ -586,25 +678,64 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 
 // Return the current row number.
 
+/** Return the starting row number if the sequence was constrained using
+    row numbers (instead of, or in addition to, a relational constraint).
+    If a relational constraint was also given, the row number corresponds
+    to the row number of the sequence <i>after</i> applying the relational
+    constraint.
+
+    If the bracket notation was not used to constrain this sequence, this
+    method returns -1.
+
+    @brief Get the starting row number.
+    @return The starting row number. */
 int
 Sequence::get_starting_row_number()
 {
   return d_starting_row_number;
 }
 
+/** Return the row stride number if the sequence was constrained using
+    row numbers (instead of, or in addition to, a relational constraint).
+    If a relational constraint was also given, the row stride is applied
+    to the sequence <i>after</i> applying the relational constraint.
+
+    If the bracket notation was not used to constrain this sequence, this
+    method returns -1.
+
+    @brief Get the row stride.
+    @return The row stride. */
 int
 Sequence::get_row_stride()
 {
   return d_row_stride;
 }
 
+/** Return the ending row number if the sequence was constrained using
+    row numbers (instead of, or in addition to, a relational constraint).
+    If a relational constraint was also given, the row number corresponds
+    to the row number of the sequence <i>after</i> applying the
+    relational constraint.
+
+    If the bracket notation was not used to constrain this sequence, this
+    method returns -1.
+
+    @brief Get the ending row number.
+    @return The ending row number. */
 int
 Sequence::get_ending_row_number()
 {
   return d_ending_row_number;
 }
 
-// stride defaults to 1.
+/** Set the start, stop and stride for a row-number type constraint.
+    This should be used only when the sequence is constrained using the
+    bracket notation (which supplies start, stride and stop information).
+    If omitted, the stride defaults to 1.
+
+    @param start The starting row number. The first row is row zero.
+    @param stop The eding row number. The 20th row is row 19.
+    @param stride The stride. A stride of two skips every other row. */
 void
 Sequence::set_row_number_constraint(int start, int stop, int stride)
 {
@@ -672,6 +803,9 @@ Sequence::print_decl(ostream &os, string space, bool print_semi,
 	os << ";" << endl;
 }
 
+/** Print the $i^{th}$ row of the sequence. This hopes in writing
+    code that spits out sequences for testing. Sequences are now read all
+    at once, this method does not change that. */
 void 
 Sequence::print_one_row(ostream &os, int row, string space, 
 			bool print_row_num)
@@ -710,7 +844,18 @@ Sequence::print_one_row(ostream &os, int row, string space,
     os << " }";
 }
 
+/** @brief Prints each row on its own line with a row number. 
 
+    This is a special output method for sequences. Uses
+    <tt>print_one_row</tt> with <tt>print_row_num</tt> True. 
+
+    @param os The output stream on which to print the Sequence.
+    @param space The leading spaces of the output.
+    @param print_decl_p If TRUE, prints the declaration of the
+    Sequence as well as its data.
+    @param print_row_numbers If TRUE, prints the row numbers next
+    to the Sequence instances (rows).
+*/ 
 void
 Sequence::print_val_by_rows(ostream &os, string space, bool print_decl_p,
 			    bool print_row_numbers)
@@ -736,6 +881,11 @@ Sequence::print_val_by_rows(ostream &os, string space, bool print_decl_p,
         os << ";" << endl;
 }
 
+/** Print the values held by the sequence. This is used mostly for
+    debugging.
+    @param os Where should the text go?
+    @param space Leading spaces, used by formatting code.
+    @param print_decl_p If True, print the variable's declaration. */
 void 
 Sequence::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -746,8 +896,28 @@ Sequence::print_val(ostream &os, string space, bool print_decl_p)
 // We need to integrate this into print_val somehow, maybe by adding an XDR *
 // to Sequence? This can wait since print_val is mostly used for debugging...
 //
-// Deprecated. No longer needed since print_vals does its job.
+// Deprecated. 
 
+/** Prints a formatted version of an entire Sequence (all rows, all
+    columns), including nested Sequences.  This is meant to be used
+    on the client side of a DODS connection, and the source of the
+    Sequence data to be printed is specified with an XDR pointer. 
+
+    This function is no longer needed, since print_val_by_rows.
+
+    @deprecated
+    @brief Print the entire sequence.
+    @param os The output stream on which to print the Sequence.
+    @param src The external source from which the data is to come.
+    This is passed to <tt>deserialize()</tt>.
+    @param dds The Data Descriptor Structure object corresponding to
+    this dataset.  See <i>The DODS User Manual</i> for information
+    about this structure.  This would have been received from the
+    server in an earlier transmission.
+    @param space The leading spaces of the output.
+    @param print_decl_p If TRUE, prints the declaration of the
+    Sequence as well as its data.
+*/
 void
 Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, string space,
 			 bool print_decl_p)
@@ -773,6 +943,9 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.65  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.64  2002/06/03 21:53:59  jimg
 // Removed level stuff. The level() and set_level() methods were not being used
 // anymore, so I removed them.

@@ -46,11 +46,11 @@
     Assume that the following array contains measurements of some real
     quantity, conducted at nine different points in space:
 
-    \begin{verbatim}
+    <pre>
     A = [ 1  2  3  4 ]
         [ 2  4  6  8 ]
         [ 3  6  9  12]
-    \end{verbatim}
+    </pre>
 
     To locate this Array in the real world, we could note the location
     of one corner of the grid, and the grid spacing.  This would allow
@@ -64,13 +64,13 @@
     vectors that define the location of each row or column of the
     array:
 
-    \begin{verbatim}
+    <pre>
          A = [ 1  2  3  4 ] Row = [ 0 ]
              [ 2  4  6  8 ]       [ 3 ]
              [ 3  6  9  12]       [ 8 ]
 
     Column = [ 0  2  8  27]
-    \end{verbatim}
+    </pre>
 
     The real location of the point in the first row and column of the
     array is now exactly fixed at (0,0), and the point in the last row
@@ -79,10 +79,10 @@
     The Grid data type has two parts: an Array, and a singly-linked
     list of Map vectors to describe the Array.  The access functions
     for this class include a function to return the Array
-    (#array_var()#), and a set of functions for cycling through the
+    (<tt>array_var()</tt>), and a set of functions for cycling through the
     list of Map vectors.
 
-    @memo Holds the Grid data type.
+    @brief Holds the Grid data type.
     @see Array
     */
 
@@ -94,124 +94,63 @@ private:
     void _duplicate(const Grid &s);
 
 public:
-    /** The Grid constructor requires only the name of the variable to be
-	created. The name may be omitted, which will create a nameless
-	variable. This may be adequate for some applications.
-      
-	@param n A string containing the name of the variable to be created.
-
-	@memo The Grid constructor. */
-    Grid(const string &n = "");
-
-    /** The Grid copy constructor. */
-    Grid(const Grid &rhs);
-    virtual ~Grid();
+  Grid(const string &n = "");
+  Grid(const Grid &rhs);
+  virtual ~Grid();
     
-    Grid &operator=(const Grid &rhs);
-    virtual BaseType *ptr_duplicate() = 0;
+  Grid &operator=(const Grid &rhs);
+  virtual BaseType *ptr_duplicate() = 0;
 
-    virtual int element_count(bool leaves = false);
+  virtual int element_count(bool leaves = false);
 
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
+  virtual void set_send_p(bool state);
+  virtual void set_read_p(bool state);
 
-    /** Note the paramter #exact_match# is not used by this mfunc.
+  virtual BaseType *var(const string &name, bool exact_match = true,
+			btp_stack *s = 0);
 
-	@see BaseType.h */
-    virtual BaseType *var(const string &name, bool exact_match = true,
-			  btp_stack *s = 0);
+  virtual BaseType *var(const string &name, btp_stack &s);
 
-    /// @deprecated
-    virtual BaseType *var(const string &name, btp_stack &s);
+  virtual void add_var(BaseType *bt, Part part);
 
-    virtual void add_var(BaseType *bt, Part part);
+  BaseType *array_var();
 
-    /** Returns the Grid Array. */
-    BaseType *array_var();
+  Pix first_map_var();
+  void next_map_var(Pix &p);
+  BaseType *map_var(Pix p);
 
-    /** Returns the index of the first Map vector. */
-    Pix first_map_var();
-    /** Increments the Map vector index. */
-    void next_map_var(Pix &p);
-    /** Given an index, returns the corresponding Map vector. */
-    BaseType *map_var(Pix p);
+  virtual unsigned int width();
 
-    virtual unsigned int width();
+  virtual int components(bool constrained = false);
 
-  /** Returns the number of components in the Grid object.  This is
-      equal to one plus the number of Map vectors.  If there is a
-      constraint expression in effect, the number of dimensions needed
-      may be smaller than the actual number in the stored data.  (Or
-      the Array might not even be requested.) In this case, a user can
-      request the smaller number with the {\it constrained} flag.
+  virtual bool projection_yields_grid();
 
-      @memo Returns the number of components in the Grid object. 
-      @return The number of components in the Grid object.
-      @param constrained If TRUE, the function returns the number of
-      components contained in the constrained Grid.  Since a
-      constraint expression might well eliminate one or more of the
-      Grid dimensions, this number can be lower than the actual number
-      of components.  If this parameter is FALSE (the default), the
-      actual number of components will be returned.  */
-    virtual int components(bool constrained = false);
+  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			 bool ce_eval = true);
+  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-  /** Returns TRUE if the current projection will yield a Grid that
-      will pass the #check_semantics()# function. A Grid that, when
-      projected, will not pass the #check_semantics()# function must
-      be sent as either a Structure of Arrays or a single Array
-      depending on the projection.
+  virtual bool read(const string &dataset) = 0;
 
-      The function first checks to see whether the Array is present.
-      Then, for each dimension in the Array part, the function checks
-      the corresponding Map vector to make sure it is present in the
-      projected Grid. If for each projected dimension in the Array
-      component, there is a matching Map vector, then the Grid is
-      valid.
+  virtual unsigned int val2buf(void *buf, bool reuse = false);
 
-      @return TRUE if the projected grid is still a Grid.  FALSE
-      otherwise. 
-      */
-    virtual bool projection_yields_grid();
+  virtual unsigned int buf2val(void **val);
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+  virtual void print_decl(ostream &os, string space = "    ",
+			  bool print_semi = true,
+			  bool constraint_info = false,
+			  bool constrained = false);
 
-    virtual bool read(const string &dataset) = 0;
+  virtual void print_val(ostream &os, string space = "",
+			 bool print_decl_p = true);
 
-  /** Returns the size of the Grid type.  Use the #val2buf()#
-      functions of the member elements to insert values into the Grid
-      buffer. */
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
-  /** Returns the size of the Grid type.  Use the #buf2val()#
-      functions of the member elements to read values from the Grid
-      buffer. */
-    virtual unsigned int buf2val(void **val);
-
-  /** If the projected Grid is not a valid grid, this function will
-      convert the declaration to an Array or Structure, whichever
-      seems more appropriate.
-
-      @memo Prints the Grid declaration only if a valid Grid.
-      @see Array
-      @see Structure
-      */
-    virtual void print_decl(ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_val(ostream &os, string space = "",
-			   bool print_decl_p = true);
-
-    /** Return true if this Grid is well formed. The array dimensions and
-	number of map vectors must match and both the array and maps must be
-	of simple-type elements. */
-    virtual bool check_semantics(string &msg, bool all = false);
+  virtual bool check_semantics(string &msg, bool all = false);
 };
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.41  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.40  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
  *

@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.7 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.8 2002/06/18 15:36:24 tom Exp $"};
 
 #include <stdio.h>
 
@@ -77,6 +77,9 @@ InternalErr::~InternalErr()
 {
 }
 
+/** 
+    @brief Is the InternalErr object valid?
+    @return TRUE if the object is valid, FALSE otherwise. */
 bool
 InternalErr::OK()
 {
@@ -84,6 +87,9 @@ InternalErr::OK()
 }
 
 // $Log: InternalErr.cc,v $
+// Revision 1.8  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.7  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

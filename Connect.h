@@ -76,7 +76,7 @@ using std::string;
     of Connect is set to one of these values so that other mfuncs can tell
     the type of object without parsing the stream themselves.
 
-     \begin{verbatim}
+     \code
      enum ObjectType {
        unknown_type,
        dods_das,
@@ -85,9 +85,9 @@ using std::string;
        dods_error,
        web_error
      };
-     \end{verbatim}
+     \endcode
 
-    @memo The type of object in the stream coming from the data
+    @brief The type of object in the stream coming from the data
     server.  */
 
 enum ObjectType {
@@ -103,15 +103,15 @@ enum ObjectType {
     correspond to plain uncompressed data and data compressed with zlib's LZW
     algorithm respectively.
 
-     \begin{verbatim}
+     <pre>
      enum EncodingType {
        unknown_enc,
        deflate,
        x_plain
      };
-     \end{verbatim}
+     </pre>
 
-    @memo The type of encoding used on the current stream. */
+    @brief The type of encoding used on the current stream. */
 
 enum EncodingType {
     unknown_enc,
@@ -136,16 +136,17 @@ enum EncodingType {
     information about these features. See the DODSFilter class for
     information on servers that compress data.
 
-    N.B.: This file may be built two different ways. If the compile-time
-    symbol #GUI# is defined, a version of Connect is built which will use a
-    simple graphical window to display transmission status information. The
-    graphical display is useful for interactive clients, but won't work for
-    non-interactive programs. For those clients, build the DAP library with
-    #GUI# {\emph undefined}. Without #GUI# defined, errors will result in
-    Connect throwing an Error object. Clients can catch these objects and try
-    to correct the error.
+    @note This file may be built two different ways. If the
+    compile-time symbol <tt>GUI</tt> is defined, a version of Connect
+    is built which will use a simple graphical window to display
+    transmission status information. The graphical display is useful
+    for interactive clients, but won't work for non-interactive
+    programs. For those clients, build the DAP library with
+    <tt>GUI</tt> <i>undefined</i>. Without <tt>GUI</tt> defined,
+    errors will result in Connect throwing an Error object. Clients
+    can catch these objects and try to correct the error.
 
-    @memo Holds information about the link from a DODS client to a
+    @brief Holds information about the link from a DODS client to a
     dataset.
     @see DDS
     @see DAS
@@ -211,456 +212,149 @@ private:
     bool _www_errors_to_stderr; // FALSE for messages to stderr
     bool _accept_deflate;
 
-    /* Initialize the W3C WWW Library. This should only be called when a
-       Connect object is created and there are no other Connect objects in
-       existence. */
-    void www_lib_init(bool www_verbose_errors, bool accept_deflate);
+  void www_lib_init(bool www_verbose_errors, bool accept_deflate);
 
-    /* Assume that the object's \_OUTPUT stream has been set
-       properly. Error signals something's wrong. */
-    void read_url(string &url, FILE *stream) throw(Error);
+  void read_url(string &url, FILE *stream) throw(Error);
 
     /* Separate the text DDS from the binary data in the data object (which
        is a bastardized multipart MIME document). The returned FILE * points
        to a temporary file which contains the DDS object only. The formal
        parameter IN is advanced so that it points to the first byte of the
        binary data. */
-    FILE *move_dds(FILE *in);
+  FILE *move_dds(FILE *in);
 
-    /* Create a new Connect object. */
-    void clone(const Connect &src);
+  void clone(const Connect &src);
 
     /* Something to do with the DDS. */
     DDS *process_data(bool async = false) throw(Error, InternalErr);
     
-    /* Use when you cannot use libwww. */
-    void parse_mime(FILE *data_source);
+  void parse_mime(FILE *data_source);
 
-    /** If a URL contains a username/password pair (in the convention
-	established by Netscape, et al.) then extract that information from
-	the URL and load it into the this object. Remove the information from
-	the URL.
-	@memo Extract a username and password from a URL.
-	@param url The url on which to operate. Note that this is a parameter
-	only to support the method #fetch_url#. */
-    void extract_auth_info(string &url);
+  void extract_auth_info(string &url);
 
-    friend BOOL dods_username_password(HTRequest * request, HTAlertOpcode,
-				       int, const char *, void *, 
-				       HTAlertPar * reply);
+  friend BOOL dods_username_password(HTRequest * request, HTAlertOpcode,
+				     int, const char *, void *, 
+				     HTAlertPar * reply);
 
-    friend BOOL dods_progress(HTRequest * request, HTAlertOpcode op, int, 
-			      const char *, void * input, HTAlertPar *);
+  friend BOOL dods_progress(HTRequest * request, HTAlertOpcode op, int, 
+			    const char *, void * input, HTAlertPar *);
 
-    friend int timeout_handler(HTRequest *request);
+  friend int timeout_handler(HTRequest *request);
 
-    friend int description_handler(HTRequest *request, HTResponse *response,
-				   const char *token, const char *val);
+  friend int description_handler(HTRequest *request, HTResponse *response,
+				 const char *token, const char *val);
 
-    friend int encoding_handler(HTRequest *request, HTResponse *response,
-				const char *token, const char *val);
-
-    friend int server_handler(HTRequest *request, HTResponse *response,
+  friend int encoding_handler(HTRequest *request, HTResponse *response,
 			      const char *token, const char *val);
 
-    friend int header_handler(HTRequest *request, HTResponse *response,
-			      const char *token, const char *val);
+  friend int server_handler(HTRequest *request, HTResponse *response,
+			    const char *token, const char *val);
 
-    friend void process_www_errors(HTList *listerr, HTRequest *request) 
-	throw(Error);
+  friend int header_handler(HTRequest *request, HTResponse *response,
+			    const char *token, const char *val);
 
-    Connect();			// Never call this.
+  friend void process_www_errors(HTList *listerr, HTRequest *request) 
+    throw(Error);
+
+  Connect();			// Never call this.
 
 public:
-  /** The Connect constructor requires a #name#, which is the URL to
-      which the connection is to be made.  You can specify that you
-      want to see the #verbose# form of any WWW library errors.
-      This can be useful for debugging.  The default is to suppress
-      these errors. Callers can use the #accept_deflate# parameter to
-      request that servers are told the client (caller of Connect
-      ctor) \em{can} process return documents that are compressed with 
-      gzip.
-
-      @param name The URL for the virtual connection.
-      @param www_verbose_errors False: show only WWW Fatal errors, True: show
-      WWW informational messages, too. This effects message display but not
-      exceptions. If Connect is compiled to throw execptions for certain WWW
-      errors, it will do so regardless of the value of this parameter.
-      @param accept_defalte Provides compile-time control for on-the-fly
-      compression. If True clients will ask servers to compress responses.
-      @param uname If given along woth password, supply this as the Username
-      in all HTTP requests.
-      @param password Use this as the password with #uname# above.
-      @memo Create an instance of Connect. */
-    Connect(string name, bool www_verbose_errors = false,
+  Connect(string name, bool www_verbose_errors = false,
 	    bool accept_deflate = true, string uname = "",
 	    string password = ""); 
 
-    /** The Connect copy construtor. */
-    Connect(const Connect &copy_from);
-    virtual ~Connect();
+  Connect(const Connect &copy_from);
+  virtual ~Connect();
 
-    Connect &operator=(const Connect &rhs);
+  Connect &operator=(const Connect &rhs);
 
-    /** Gets the state of the #www_errors_to_stderr# property. If TRUE this
-	means that http errors will be printed to stderr in addition to being
-	reported in the Error object. If FALSE only the Error object will be
-	used. 
+    
+  bool get_www_errors_to_stderr();
 
-	@return TRUE if WWW errors should got to stderr, FALSE if only the
-	Error object should be used. */
-    bool get_www_errors_to_stderr();
+    
+  void set_www_errors_to_stderr(bool state);
 
-    /** Sets the #www_errors_To_stderr# property.
+    
+  string get_accept_types();
 
-	@see is_www_errors_to_stderr
-	@param state The state of the property. */
-    void set_www_errors_to_stderr(bool state);
+     
+  void set_accept_types(const string &types);
 
-    /** Gets the current string of `accepted types'. This string lists all of
-	the DODS datatypes that the client can grok. 
+    
+  string get_cache_control();
 
-	@see set_accepted_types
-	@return A string listing the types this client declares to servers it
-	can understand. */
-    string get_accept_types();
+    
+  void set_cache_control(const string &caching);
 
-    /** Sets the list of accepted types. This string is meant to list all of
-	the DODS datatypes that the client can grok and is sent to
-	the server using the XDODS-Accept-Types MIME header. The server will
-	try to only send back to the client datatypes that are listed. If the
-	value of this header is `All', then the server assumes that the
-	client can process all of the DODS datatypes. If only one or two
-	types are \emph{not} understood, then they can be listed, each one
-	prefixed by `!'. Thus, if a client does not understand `Sequences',
-	it could set types to `!Sequences' as opposed to listing all of the
-	DODS datatypes. Multiple values are separated by commas (,).
+  
+  bool fetch_url(string &url, bool async = false) throw(Error);
 
-	Not all servers will honor this and some requests may not be possible
-	to express with a very limited set of datatypes.
+  
+  FILE *output();
 
-	NB: By default, the value `All' is used.
+    
+  void close_output();
 
-	@param types The string listing datatypes understood by this client.
-    */ 
-    void set_accept_types(const string &types);
+  
+  XDR *source();
 
-    /** Get the string which describes the default cache control value. This
-	is sent with all outgoing messages.<p>
-	NB: The libwww 5.2.9 cache does not honor this.
-	@return The cache control header value. */
-    string get_cache_control();
+  
+  bool is_local();
 
-    /** Set the cache control header value.
-	@see get_cache_control
-	@see HTTP/1.1 Specification, sec. 14.9.
-	@param caching Should be no-cache to disable caching. */
-    void set_cache_control(const string &caching);
+  
+  string URL(bool CE = true);
 
-  /** Fetch the contents of the indicated URL and put its contents
-      into an output file.  A pointer to this file can be retrieved
-      with the #output()# function. \emph{A program that uses that FILE
-      pointer must be sure not to close it with fclose().} Instead, use
-      Connect::close_output(). 
+  
+  string CE();
 
-      This mthods also scans the URL for a username/passwd. If present,
-      extracts them, places them in the Connect object, and rebuilds the URL
-      without them.
+  ObjectType type();
 
-      This method is here so that Connect can be used to read from any URL,
-      not just URLs which return DAS, DDS or DataDDS objects. Because of
-      this, #fetch_url# neither automatically appends a suffix nor does it
-      route the response through any of the parsers which decode responses
-      from a DODS server. In addition, #fetch_url# also does \emph{not}
-      escape any characters in the URL. That is the responsibility of the
-      caller. This includes characters that break URLs and those that break
-      DODS CEs.
+  
+  EncodingType encoding();
 
-      Note that the asynchronous transfer feature of DODS is not
-      currently enabled.  All invocations of this function will be
-      synchronous, no matter what the value of the {\it async}
-      parameter. 
+  
+  string server_version();
 
-      @memo Dereference a URL.  
-      @return Always returns true.
-      @exception Error indicates some problem reading from the web server
-      (not the DODS server, other methods report those errors).
-      @param url A string containing the URL to be dereferenced.  The
-      data referred to by this URL will wind up available through a
-      file pointer retrieved from the #output()# function.
-      @see Connect::output */
-    bool fetch_url(string &url, bool async = false) throw(Error);
+  
+  DAS &das();
 
-  /** Returns a file pointer which can be used to read the data
-      fetched from a URL.
+  
+  DDS &dds();
 
-      Note that occasionally this may be directed to #stdout#.  If this
-      is the case, users should avoid closing it.
+  
+  Error &error();
 
-      @memo Access the information contained in this Connect instance.
-      @see Connect::fetch_url
-      @return A #(FILE *)# indicating a file containing the data
-      received from a dereferenced URL.  */
-    FILE *output();
+  
+  void *gui();
 
-    /** Close the output stream of the Connect object. This closes the FILE
-	pointer returned by #output()#. In addition, it also deletes the
-	internal XDR stream object, although users should not have to know
-	about that\ldots
+  
+  bool request_das(bool gui = false,  const string &ext = "das")
+    throw(Error, InternalErr);
 
-	@memo Close the object's output stream if it is not NULL or
-	STDOUT. */
-    void close_output();
+  
+  bool request_dds(bool gui = false, const string &ext = "dds")
+    throw(Error, InternalErr);
 
-  /** The data retrieved from a remote DODS server will be in XDR
-      format.  Use this function to initialize an XDR decoder for that
-      data and to return an XDR pointer to the data.
+  
+  DDS *request_data(string expr, bool gui = false, bool async = false, 
+		    const string &ext = "dods") throw(Error, InternalErr);
 
-      @memo Access the XDR input stream (source) for this connection.
+  
+  DDS *read_data(FILE *data_source, bool gui = false, bool async = false)
+    throw(Error, InternalErr);
 
-      @return Returns a XDR pointer tied to the current output
-      stream.  
-      @see Connect::output
-      */
-    XDR *source();
+    
+  void set_credentials(string u, string p);
 
-  /** The Connect class can be used for ``connections'' to local
-      files.  This means that local files can continue to be accessed
-      with a DODS-compliant API.
+  void disable_cache();
 
-      @memo Does this object refer to a local file?  
-
-      @return Return TRUE if the Connect object refers to a local
-      file, otherwise returns FALSE.  */
-    bool is_local();
-
-  /** Return the Connect object's URL in a string.  The URL was set by
-      the class constructor, and may not be reset.  If you want to
-      open another URL, you must create another Connect object.  There
-      is a Connections class created to handle the management of
-      multiple Connect objects.
-
-      @memo Get the object's URL.
-      @see Connections
-      @return A string containing the URL of the data to which the
-      Connect object refers.  If the object refers to local data,
-      the function returns the null string.  
-      @param CE If TRUE, the returned URL will include any constraint
-      expression enclosed with the Connect object's URL (including the
-      #?#).  If FALSE, any constraint expression will be removed from
-      the URL.  The default is TRUE.
-      */
-    string URL(bool CE = true);
-
-  /** Return the constraint expression (CE) part of the Connect URL. Note
-      that this CE is supplied as part of the URL passed to the
-      Connect's constructor.  It is not the CE passed to the 
-      #request_data()# function.
-
-      @memo Get the Connect's constraint expression.
-      @return A string containing the constraint expression (if any)
-      submitted to the Connect object's constructor.  */
-    string CE();
-
-  /** During the parse of the message headers returned from the
-      dereferenced URL, the object type is set. Use this function to
-      read that type information. This will be valid {\it before} the
-      return object is completely parsed so it can be used to decide
-      which parser to call to read the data remaining in
-      the input stream.
-
-      The object types are Data, DAS, DDS, Error, and undefined.
-
-      @memo What type is the most recent object sent from the
-      server?
-      @return The type of the object.
-      @see ObjectType */
-    ObjectType type();
-
-  /** During the parse of the message headers returned from the
-      dereferenced URL, the encoding type is set. Use this function to
-      read that type information. This will be valid {\it before} the
-      return object is completely parsed so it can be used to decide
-      which decoder to call (if any) to read the data remaining in
-      the input stream.
-
-      The encoding types are currently limited to x-plain (no special
-      decoding required) and x-gzip (compressed using GNU's gzip).  
-
-      @memo What type of encoding was used on the data in the stream? 
-      @return The type of the compression.
-      @see EncodingType
-      */
-    EncodingType encoding();
-
-  /** Returns a string containing the version of DODS used by the
-      server. */
-    string server_version();
-
-  /** All DODS datasets define a Data Attribute Structure (DAS), to
-      hold a variety of information about the variables in a
-      dataset. This function returns the DAS for the dataset indicated
-      by this Connect object.
-
-      @memo Return a reference to the Connect's DAS object. 
-      @return A reference to the DAS object.
-      @see DAS 
-      */
-    DAS &das();
-
-  /** All DODS datasets define a Data Descriptor Structure (DDS), to
-      hold the data type of each of the variables in a dataset.  This
-      function returns the DDS for the dataset indicated by this
-      Connect object.
-
-      @memo Return a reference to the Connect's DDS object. 
-      @return A reference to the DDS object.
-      @see DDS 
-      */
-    DDS &dds();
-
-  /** The DODS server uses Error objects to signal error conditions to
-      the client.  If an error condition has occurred while fetching a
-      URL, the Connect object will contain an Error object with
-      information about that error.  The Error object may also contain
-      a program to run to remedy the error.  This function returns the
-      latest Error object received by the Connect object.
-
-      @memo Get a reference to the last error.
-      @return The last Error object sent from the server. If no error has
-      been sent from the server, returns a reference to an empty error
-      object. 
-      @see Error 
-      */
-    Error &error();
-
-  /** The DODS client can display graphic information to a user with
-      the DODS Graphical User Interface (GUI).  Typically used for a
-      progress indicator, the GUI is simply a shell capable of
-      interpreting arbitrary graphical commands (with tcl/tk).  The
-      Gui object is created anew when the Connect object is first
-      created.  This function returns a pointer to the Gui object, so
-      you can modify the GUI as desired.
-
-      This member will be removed since its presence makes it hard to build
-      Gui and non-gui versions of the DAP. The Gui object is accessed is in
-      Connect and Error, but in the later case an instance of Gui is always
-      passed to the instance of Error. Thus, even though it is a dubious
-      design, we can use the private member _gui and pass the pointer to
-      outside classes. Eventually, Connect must be redesigned.
-
-      @memo Returns a pointer to a Gui object.
-      @return a pointer to the Gui object associated with this
-      connection. 
-      @deprecated 
-      @see Gui */
-    void *gui();
-
-  /** Reads the DAS corresponding to the dataset in the Connect
-      object's URL. Although DODS does not support usig CEs with DAS
-      requests, if present in the Connect object's instance, they will be
-      escaped and passed as the query string of the request.
-
-      @memo Get the DAS from a server.
-      @return TRUE if the DAS was successfully received. FALSE
-      otherwise. 
-      @param gui If TRUE, use the client GUI.  Most DAS's are too
-      small to make this worthwhile.
-      @param ext The extension to append to the URL to retrieve the
-      dataset DAS.  This parameter is included for compatibility with
-      future versions of the DODS software.  It currently defaults to
-      the only possible working value, ``das''.
-      */
-    bool request_das(bool gui = false,  const string &ext = "das")
-	throw(Error, InternalErr);
-
-  /** Reads the DDS corresponding to the dataset in the Connect
-      object's URL. Although CEs are rarely used with this method, if present
-      it will be escaped.
-
-      @memo Get the DDS from a server.
-      @return TRUE if the DDS was successfully received. FALSE
-      otherwise. 
-      @param gui If TRUE, use the client GUI.  Most DDS's are too
-      small to make this worthwhile.
-      @param ext The extension to append to the URL to retrieve the
-      dataset DDS.  This parameter is included for compatibility with
-      future versions of the DODS software.  It currently defaults to
-      the only possible working value, ``dds''.
-      */
-    bool request_dds(bool gui = false, const string &ext = "dds")
-	throw(Error, InternalErr);
-
-  /** Reads data from the Connect object's server.  This method sets
-      up the BaseType variables in a DDS, and sends a request using
-      #fetch_url()#.  Upon return, it caches the data on a disk, then
-      unpacks it into the DDS storage. Unlike #fetch_url#, this method
-      escapes the CE part of the URL.
-
-      @return A reference to the DataDDS object which contains the
-      variables (BaseType pointers) generated from the DDS sent with
-      the data. These variables are guaranteed to be large enough to
-      hold the data, even if the constraint expression changed the
-      type of the variable from that which appeared in the original
-      DDS received from the dataset when this connection was made.
-      @param expr A string containign a constraint expression.  The
-      function adds the clauses of this constraint expression to the
-      Connect object's original CE.  If the constraint expression
-      contains one or more Sequences, these must be the {\it last}
-      objects specified in the projection clause.  If you request N
-      variables and M of them are Sequences, all the M sequences must
-      follow the N-M other variables. 
-      @param gui If this is TRUE, use the DODS client GUI.  See the
-      Gui class for a description of this feature.
-      @param async  If this is TRUE, this function reads data
-      asynchronously, returning before the read completes. Synchronous
-      reads are the default, and the only possible action as of DODS
-      version 2.15.
-      @param ext The extension to append to the URL to retrieve the
-      dataset data.  This parameter is included for compatibility with
-      future versions of the DODS software.  It currently defaults to
-      the only possible working value, ``dods''.
-      @see DataDDS
-      @see Gui */
-    DDS *request_data(string expr, bool gui = false, bool async = false, 
-		      const string &ext = "dods") throw(Error, InternalErr);
-
-  /** This function reads cached data from a disk file.
-
-      @return A reference to the DataDDS object which contains the
-      variables (BaseType pointers) generated from the DDS sent with
-      the data. 
-      @param gui If this is TRUE, use the DODS client GUI.  See the
-      Gui class for a description of this feature.
-      @param async  If this is TRUE, this function reads data
-      asynchronously, returning before the read completes. Synchronous
-      reads are the default, and the only possible action as of DODS
-      version 2.15.
-      @param ext The extension to append to the URL to retrieve the
-      dataset data.  This parameter is included for compatibility with
-      future versions of the DODS software.  It currently defaults to
-      the only possible working value, ``dods''.
-      @see DataDDS
-      @see Gui */
-    DDS *read_data(FILE *data_source, bool gui = false, bool async = false)
-	throw(Error, InternalErr);
-
-    /** Set the credentials for responding to challenges while dereferencing
-	URLs. 
-	@param u The username.
-	@param p The password. 
-	@see extract_auth_info() */
-    void set_credentials(string u, string p);
-
-    /** Disable any further use of the client-side cache. In a future version
-	of this software, this should be handled so that the www library is
-	not initialized with the cache running by default. */
-    void disable_cache();
-	
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.58  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.57  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
  *

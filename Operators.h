@@ -80,8 +80,8 @@ template<class UT1, class T2> class USCmp {
     comparison. This class is one implementation of the comparison policy
     used by rops. This class is here to make writing the Byte::ops, ...
     member functions simpler. It is not necessary since the functions could
-    twiddle the order of arguments to rops and use #USCmp#. Having this class
-    make Byte:ops, ... simper to read and write.
+    twiddle the order of arguments to rops and use <tt>USCmp</tt>. Having 
+    this class make Byte:ops, ... simper to read and write.
 
     @see Byte::ops
     @see USCmp
@@ -128,17 +128,17 @@ template<class T1, class T2> class StrCmp {
     have to be explicitly listed as friend functions in each of the DODS
     simple type classes. In the current implementation, only the simple type
     classes must be friends - to see why, look at Byte::ops and note that it
-    accesses the #_buf# member of Int16, ..., Float64 and thus must be a
+    accesses the <tt>_buf</tt> member of Int16, ..., Float64 and thus must be a
     friend of those classes.
 
     NB: This would all be simpler if: 1) g++ supported template friend
     functions (without explicit listing of all the template's arguments). 2)
     we did not have unsigned types.
 
-    @param T1 The type of #a#.
-    @param T2 The type of #b#.
-    @param C A class which implements the policy used for comparing #a# and
-    #b#. 
+    @param T1 The type of <tt>a</tt>.
+    @param T2 The type of <tt>b</tt>.
+    @param C A class which implements the policy used for comparing <tt>a</tt> 
+    and    <tt>b</tt>. 
     @param a The first argument.
     @param b The second argument.
     @param op The relational operator.
@@ -173,6 +173,9 @@ bool rops(T1 a, T2 b, int op)
 }
 
 // $Log: Operators.h,v $
+// Revision 1.9  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.8  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

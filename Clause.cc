@@ -67,6 +67,7 @@ Clause::~Clause()
     }
 }
 
+/** @brief Checks the "representation invariant" of a clause. */
 bool
 Clause::OK()
 {
@@ -87,6 +88,7 @@ Clause::OK()
 	return false;
 }
 
+/** @brief Return true if the clause returns a boolean value. */
 bool 
 Clause::boolean_clause()
 {
@@ -95,6 +97,7 @@ Clause::boolean_clause()
     return _op || _b_func;
 }
 
+/** @brief Return true if the clause returns a value in a BaseType pointer. */
 bool
 Clause::value_clause()
 {
@@ -103,6 +106,7 @@ Clause::value_clause()
     return (_bt_func != 0);
 }
 
+/** @brief Evaluate a clause which returns a boolean value */
 bool 
 Clause::value(const string &dataset, DDS &dds) 
 {
@@ -140,6 +144,7 @@ Clause::value(const string &dataset, DDS &dds)
     }
 }
 
+/** @brief Evaluate a clause that returns a value via a BaseType pointer. */
 bool 
 Clause::value(const string &dataset, DDS &dds, BaseType **value) 
 {
@@ -172,6 +177,9 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 }
 
 // $Log: Clause.cc,v $
+// Revision 1.14  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.13  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

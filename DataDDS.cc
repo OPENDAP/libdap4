@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.12 2002/06/03 22:21:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.13 2002/06/18 15:36:24 tom Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -63,6 +63,9 @@ DataDDS::_version_string_to_numbers()
 }
 
 // public
+/** The DataDDS constructor needs a name and a version string.  This
+    is generally received from the server.
+*/
 
 DataDDS::DataDDS(const string &n, const string &v)
     :DDS(n), _server_version(v)
@@ -77,6 +80,10 @@ DataDDS::~DataDDS()
 {
 }
 
+/** Sets the version string.  This typically looks something like:
+    <tt>DODS/2.15</tt>, where ``2'' is the major version number, and ``15''
+    the minor number.
+*/
 void
 DataDDS::set_version(const string &v)
 {
@@ -84,12 +91,14 @@ DataDDS::set_version(const string &v)
     _version_string_to_numbers();
 }
 
+/** @brief Returns the major version number. */
 int
 DataDDS::get_version_major()
 {
     return _server_version_major;
 }
 
+/** @brief Returns the minor version number. */
 int
 DataDDS::get_version_minor()
 {
@@ -97,12 +106,29 @@ DataDDS::get_version_minor()
 }
 
 #if 0
+/** Return the last level of a sequence object that was read. Note
+    that <tt>Sequence::deserialize()</tt> is the main user of this
+    information and it really only matters in cases where the
+    Sequence object contains other Sequence objects. In that case,
+    this information provides state for <tt>Sequence::deserialize()</tt> so
+    that it can return to the level at which it last read.
+
+    @name sequence_level()
+    @brief Returns the level of the last sequence read.  */
 int
 DataDDS::sequence_level()
 {
     return _sequence_level;
 }
 
+/** Set the value for <tt>sequence_level()</tt>. Use this function to store
+    state information about the current sequence. This is used
+    mostly when reading nested sequences so that
+    <tt>Sequence::deserialize()</tt> can return to the correct level when
+    resuming a deserialization from a subsequent call.
+
+    @name set_sequence_level(int level)
+    @brief Sets the level of the sequence being read.  */
 void
 DataDDS::set_sequence_level(int level)
 {
@@ -111,6 +137,9 @@ DataDDS::set_sequence_level(int level)
 #endif
 
 // $Log: DataDDS.cc,v $
+// Revision 1.13  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.12  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

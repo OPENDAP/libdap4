@@ -147,74 +147,50 @@ private:
     void compute_indices();
 
 public:
-    /** @name Constructors */
-    //@{
-    /** Create an instance using discrete parameters. */
-    GSEClause(Grid *grid, const string &map, const double value,
-	      const relop op);
+  /** @name Constructors */
+  //@{
+  GSEClause(Grid *grid, const string &map, const double value,
+	    const relop op);
 
-    /** Create an instance using discrete parameters. */
-    GSEClause(Grid *grid, const string &map, const double value1,
-	      const relop op1, const double value2, const relop op2);
+  GSEClause(Grid *grid, const string &map, const double value1,
+	    const relop op1, const double value2, const relop op2);
 
-    /** Create an instance using a grid and an expression. */
-    GSEClause(Grid *grid, const string &expr);
+  GSEClause(Grid *grid, const string &expr);
 
-    /** Create an instance using a grid and an expression. */
-    GSEClause(Grid *grid, char *expr);
-    //@}
+  GSEClause(Grid *grid, char *expr);
+  //@}
     
-    /** Class invariant. 
-	@return True if the object is valid, otherwise False. */
-    bool OK() const;
+  bool OK() const;
 
-    /** @name Accessors */
-    //@{
-    /** Get a pointer to the map variable constrained by this clause.
-	@return The Array object. */
-    Array *get_map() const;
+  /** @name Accessors */
+  //@{
+  Array *get_map() const;
 
-    /** Get the name of the map variable constrained by this clause.
-	@return The Array object's name. */
-    string get_map_name() const;
+  string get_map_name() const;
 
-    /** Get the starting index of the clause's map variable as constrained by
-	this clause.
-	@return The start index. */
-    int get_start() const;
+  int get_start() const;
 
-    /** Get the stopping index of the clause's map variable as constrained by
-	this clause.
-	@return The stop index. */
-    int get_stop() const;
+  int get_stop() const;
 
-    /** Get the minimum map vector value. Useful in messages back to users.
-	@return The minimum map vetor value. */
-    string get_map_min_value() const;
+  string get_map_min_value() const;
 
-    /** Get the maximum map vector value. Useful in messages back to users.
-	@return The maximum map vetor value. */
-    string get_map_max_value() const;
-    //@}
+  string get_map_max_value() const;
+  //@}
 
-    /** @name Mutators */
-    //@{
-    /** Set the pointer to the map vector contrained by this clause.
-	Note that this method also sets the name of the map vector.
-	@return void */
-    void set_map(Array *map);
+  /** @name Mutators */
+  //@{
+  void set_map(Array *map);
 
-    /** Set the starting index.
-	@return void */
-    void set_start(int start);
+  void set_start(int start);
 
-    /** Set the stopping index.
-	@return void */
-    void set_stop(int stop);
-    //@}
+  void set_stop(int stop);
+  //@}
 };
 
 // $Log: GSEClause.h,v $
+// Revision 1.8  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.7  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

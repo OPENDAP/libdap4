@@ -38,15 +38,14 @@
 #include "BaseType.h"
 #endif
 
-/** Holds a 64-bit (double precision) floating point value.
+/** @brief Holds a 64-bit (double precision) floating point value.
 
-    @memo Holds a 64-bit floating point number.
     @see BaseType
     */
 
 class Float64: public BaseType {
-    /** This class allows Byte, ..., Float32 acesss to _buf to simplify and
-	speed up the relational operators.
+    /** This class allows Byte, ..., Float32 access to <tt>_buf</tt> to 
+	simplify and speed up the relational operators.
 
 	NB: According to Stroustrup it does not matter where (public, private
 	or protected) friend classes are declared. */
@@ -61,43 +60,37 @@ protected:
     dods_float64 _buf;
 
 public:
-  /** The Float64 constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
+  Float64(const string &n = "");
+  virtual ~Float64() {}
 
-      @memo The Float64 constructor.
-      */
-    Float64(const string &n = "");
-    virtual ~Float64() {}
+  Float64(const Float64 &copy_from);
 
-    Float64(const Float64 &copy_from);
+  Float64 &operator=(const Float64 &rhs);
 
-    Float64 &operator=(const Float64 &rhs);
-
-    virtual BaseType *ptr_duplicate() = 0;
+  virtual BaseType *ptr_duplicate() = 0;
     
-    virtual unsigned int width();
+  virtual unsigned int width();
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			 bool ce_eval = true);
+  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const string &dataset) = 0;
+  virtual bool read(const string &dataset) = 0;
 
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+  virtual unsigned int val2buf(void *val, bool reuse = false);
+  virtual unsigned int buf2val(void **val);
 
-    virtual void print_val(ostream &os, string space = "", 
-			   bool print_decl_p = true);
+  virtual void print_val(ostream &os, string space = "", 
+			 bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const string &dataset);
+  virtual bool ops(BaseType *b, int op, const string &dataset);
 };
 
 /* 
  * $Log: Float64.h,v $
+ * Revision 1.31  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.30  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *

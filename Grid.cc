@@ -48,10 +48,20 @@ Grid::_duplicate(const Grid &s)
     }
 }
 
+/** The Grid constructor requires only the name of the variable
+    to be created.  The name may be omitted, which will create a
+    nameless variable.  This may be adequate for some applications. 
+      
+    @param n A string containing the name of the variable to be
+    created. 
+
+    @brief The Grid constructor.
+*/
 Grid::Grid(const string &n) : Constructor(n, dods_grid_c)
 {
 }
 
+/** @brief The Grid copy constructor. */
 Grid::Grid(const Grid &rhs) : Constructor(rhs)
 {
     _duplicate(rhs);
@@ -164,12 +174,22 @@ Grid::deserialize(XDR *source, DDS *dds, bool reuse)
     return false;
 }
 
+/** @brief Returns the size of the Grid type.  
+
+    Use the <tt>val2buf()</tt>
+    functions of the member elements to insert values into the Grid
+    buffer. 
+
+    @return The size (in bytes) of the value's representation.  */
 unsigned int
 Grid::val2buf(void *, bool)
 {
     return sizeof(Grid);
 }
 
+/** Returns the size of the Grid type.  Use the <tt>buf2val()</tt>
+    functions of the member elements to read values from the Grid
+    buffer. */
 unsigned int
 Grid::buf2val(void **)
 {
@@ -182,6 +202,10 @@ Grid::var(const string &name, btp_stack &s)
     return var(name, true, &s);
 }
 
+  /** Note the parameter <i>exact_match</i> is not used by this
+      member function.
+
+      @see BaseType */
 BaseType *
 Grid::var(const string &name, bool, btp_stack *s)
 {
@@ -197,6 +221,22 @@ Grid::var(const string &name, bool, btp_stack *s)
 		s->push(static_cast<BaseType *>(this));
 	    return _map_vars(p);
 	}
+
+    return 0;
+}
+
+/** This probably shouldn't be here.
+
+    @deprecated */
+BaseType *
+Grid::var(const string &name, bool)
+{
+    if (_array_var->name() == name)
+	return _array_var;
+
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	if (_map_vars(p)->name() == name)
+	    return _map_vars(p);
 
     return 0;
 }    
@@ -230,12 +270,14 @@ Grid::add_var(BaseType *bt, Part part)
     }
 }    
 
+/** @brief Returns the Grid Array. */
 BaseType *
 Grid::array_var()
 {
     return _array_var;
 }
 
+/** @brief Returns the index of the first Map vector. */
 Pix 
 Grid::first_map_var()
 {
@@ -245,6 +287,7 @@ Grid::first_map_var()
 	return _map_vars.first();
 }
 
+/** @brief Increments the Map vector index. */
 void 
 Grid::next_map_var(Pix &p)
 {
@@ -252,6 +295,7 @@ Grid::next_map_var(Pix &p)
 	_map_vars.next(p);
 }
 
+/** @brief Given an index, returns the corresponding Map vector. */
 BaseType *
 Grid::map_var(Pix p)
 {
@@ -261,6 +305,21 @@ Grid::map_var(Pix p)
 	return 0;
 }
 
+/** Returns the number of components in the Grid object.  This is
+    equal to one plus the number of Map vectors.  If there is a
+    constraint expression in effect, the number of dimensions needed
+    may be smaller than the actual number in the stored data.  (Or
+    the Array might not even be requested.) In this case, a user can
+    request the smaller number with the <i>constrained</i> flag.
+
+    @brief Returns the number of components in the Grid object. 
+    @return The number of components in the Grid object.
+    @param constrained If TRUE, the function returns the number of
+    components contained in the constrained Grid.  Since a
+    constraint expression might well eliminate one or more of the
+    Grid dimensions, this number can be lower than the actual number
+    of components.  If this parameter is FALSE (the default), the
+    actual number of components will be returned.  */
 int
 Grid::components(bool constrained)
 {
@@ -283,6 +342,22 @@ Grid::components(bool constrained)
 // When projected (using whatever the current constraint provides in the way
 // of a projection), is the object still a Grid?
 
+/** Returns TRUE if the current projection will yield a Grid that
+    will pass the <tt>check_semantics()</tt> function. A Grid that, when
+    projected, will not pass the <tt>check_semantics()</tt> function must
+    be sent as either a Structure of Arrays or a single Array
+    depending on the projection.
+
+    The function first checks to see whether the Array is present.
+    Then, for each dimension in the Array part, the function checks
+    the corresponding Map vector to make sure it is present in the
+    projected Grid. If for each projected dimension in the Array
+    component, there is a matching Map vector, then the Grid is
+    valid.
+
+    @return TRUE if the projected grid is still a Grid.  FALSE
+    otherwise. 
+*/
 bool
 Grid::projection_yields_grid()
 {
@@ -322,11 +397,17 @@ Grid::projection_yields_grid()
     return valid;
 }
 
-// This mfunc has been modified so that if the user projects a Grid such that
-// the number of components in the Grid no longer match up properly (the
-// Array dimension no longer matches the number of Map vectors) whatever is
-// in the projection is sent not as a Grid but as a simple array or Structure
-// of Arrays, whichever is appropriate. 
+/** This mfunc has been modified so that if the user projects a Grid
+    such that the number of components in the Grid no longer match
+    up properly (the Array dimension no longer matches the number of
+    Map vectors) whatever is in the projection is sent not as a Grid
+    but as a simple array or Structure of Arrays, whichever is
+    appropriate.
+
+
+    @brief Prints the Grid declaration only if a valid Grid.
+    @see Array
+    @see Structure */
 
 void 
 Grid::print_decl(ostream &os, string space, bool print_semi,
@@ -426,6 +507,10 @@ Grid::print_val(ostream &os, string space, bool print_decl_p)
 
 // Grids have ugly semantics.
 
+/** @brief Return true if this Grid is well formed. 
+
+    The array dimensions and number of map vectors must match and
+    both the array and maps must be of simple-type elements. */
 bool
 Grid::check_semantics(string &msg, bool all)
 {
@@ -514,6 +599,9 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.52  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.51  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

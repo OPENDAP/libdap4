@@ -14,7 +14,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.117 2002/06/03 22:21:15 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.118 2002/06/18 15:36:24 tom Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -572,6 +572,7 @@ cache_control_header_gen(HTRequest * pReq, HTStream * target)
 // old GNU libg++, the C++ calls were synchronized with the C calls, but that
 // may no longer be the case. 5/31/99 jhrg
 
+/** Use when you cannot use libwww. */
 void 
 Connect::parse_mime(FILE * data_source)
 {
@@ -607,6 +608,13 @@ Connect::parse_mime(FILE * data_source)
 // I moved this code from fetch_url() because at some point I think it should
 // go in Connect's ctor. I cannot get that to work right now; don't know why.
 // 2/8/2001 jhrg
+/** If a URL contains a username/password pair (in the convention
+    established by Netscape, et al.) then extract that information from
+    the URL and load it into the this object. Remove the information from
+    the URL.
+    @brief Extract a username and password from a URL.
+    @param url The url on which to operate. Note that this is a parameter
+    only to support the method <tt>fetch_url</tt>. */
 void 
 Connect::extract_auth_info(string &url)
 {
@@ -630,6 +638,9 @@ Connect::extract_auth_info(string &url)
     }
 }
 
+/** Initialize the W3C WWW Library. This should only be called when a
+    Connect object is created and there are no other Connect objects in
+    existence. */
 void 
 Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 {
@@ -787,6 +798,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTHeader_addGenerator(cache_control_header_gen);
 }
 
+/** Create a new Connect object. */
 void 
 Connect::clone(const Connect & src)
 {
@@ -834,6 +846,8 @@ Connect::clone(const Connect & src)
 // Use the URL designated when the Connect object was created as the
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
+/** Assume that the object's _OUTPUT stream has been set
+    properly. Error signals something's wrong. */
 void
 Connect::read_url(string & url, FILE * stream) throw(Error)
 {
@@ -881,9 +895,8 @@ Connect::read_url(string & url, FILE * stream) throw(Error)
     HTRequest_delete(_request);
 }
 
-// This ctor is declared private so that it won't ever be called by users,
-// thus forcing them to create Connects which point somewhere.
-
+/** This ctor is declared private so that it won't ever be called by users,
+    thus forcing them to create Connects which point somewhere. */
 Connect::Connect()
 {
     assert(false);
@@ -891,6 +904,26 @@ Connect::Connect()
 
 // public mfuncs
 
+/** The Connect constructor requires a <tt>name</tt>, which is the
+    URL to which the connection is to be made.  You can specify that
+    you want to see the <tt>verbose</tt> form of any WWW library
+    errors.  This can be useful for debugging.  The default is to
+    suppress these errors. Callers can use the
+    <tt>accept_deflate</tt> parameter to request that servers are
+    told the client (caller of Connect ctor) <i>can</i> process return
+    documents that are compressed with gzip.
+
+    @param name The URL for the virtual connection.
+    @param www_verbose_errors False: show only WWW Fatal errors, True: show
+    WWW informational messages, too. This affects message display but not
+    exceptions. If Connect is compiled to throw exceptions for certain WWW
+    errors, it will do so regardless of the value of this parameter.
+    @param accept_deflate Provides compile-time control for on-the-fly
+    compression. If True clients will ask servers to compress responses.
+    @param uname If given along woth password, supply this as the Username
+    in all HTTP requests.
+    @param password Use this as the password with <tt>uname</tt> above.
+    @brief Create an instance of Connect. */
 Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate, 
 		 string uname, string password) :
     _accept_types("All"), _cache_control(""), _username(uname),
@@ -963,6 +996,7 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate,
 	HT_FREE(access_ref);
 }
 
+/** The Connect copy constructor. */
 Connect::Connect(const Connect & copy_from):_error(undefined_error, "")
 {
     clone(copy_from);
@@ -1029,36 +1063,95 @@ Connect::operator = (const Connect & rhs)
     }
 }
 
+/** @brief Sets the <tt>www_errors_to_stderr</tt> property.
+
+    This controls where http errors get printed.
+
+    @see get_www_errors_to_stderr
+    @param state The desired state of the property.  TRUE means
+    that http errors get printed on stderr as well as in the Error
+    object.  FALSE prints them only in the Error object. */
 void 
 Connect::set_www_errors_to_stderr(bool state)
 {
     _www_errors_to_stderr = state;
 }
 
+/** @brief Gets the state of the <tt>www_errors_to_stderr</tt>
+    property. 
+
+    If TRUE this means that http errors will be printed
+    to stderr in addition to being reported in the Error
+    object. If FALSE only the Error object will be 	used. 
+
+    @return TRUE if WWW errors should got to stderr, FALSE if only the
+    Error object should be used. */
 bool 
 Connect::get_www_errors_to_stderr()
 {
     return _www_errors_to_stderr;
 }
 
+/** Sets the list of accepted types. This string is meant to list all of
+    the DODS datatypes that the client can grok and is sent to
+    the server using the XDODS-Accept-Types MIME header. The server will
+    try to only send back to the client datatypes that are listed. If the
+    value of this header is `All', then the server assumes that the
+    client can process all of the DODS datatypes. If only one or two
+    types are <i>not</i> understood, then they can be listed, each one
+    prefixed by `!'. Thus, if a client does not understand `Sequences',
+    it could set types to `!Sequences' as opposed to listing all of the
+    DODS datatypes. Multiple values are separated by commas (,).
+
+    Not all servers will honor this and some requests may not be possible
+    to express with a very limited set of datatypes.
+
+    @note By default (if this function is never called) the value
+    `All' is used. 
+
+    @brief Set the types a client can accept.
+    @param types The string listing datatypes understood by this client.
+*/
 void 
 Connect::set_accept_types(const string & types)
 {
     _accept_types = types;
 }
 
+/** Gets the current string of `accepted types.' This string lists all of
+    the DODS datatypes that the client can grok. 
+
+    @brief Retrieve a list of types a DODS client can understand.
+    @see set_accepted_types
+    @return A string listing the types this client declares to servers it
+    can understand. */
 string 
 Connect::get_accept_types()
 {
     return _accept_types;
 }
 
+/** @brief Set the cache control header value.
+
+    http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+
+    @see get_cache_control
+    @see HTTP/1.1 Specification (RFC 2616), sec. 14.9.
+    @param caching A string containing the desired caching
+    directive. Should be <tt>no-cache</tt> to disable caching. */
 void 
 Connect::set_cache_control(const string & caching)
 {
     _cache_control = caching;
 }
 
+/** Get the string which describes the default cache control value. This
+    is sent with all outgoing messages.
+
+    @note N.b. The libwww 5.2.9 cache does not honor this.
+
+    @brief Get the cache control directive.
+    @return The cache control header value. */
 string 
 Connect::get_cache_control()
 {
@@ -1073,6 +1166,47 @@ Connect::get_cache_control()
 // the design of Connect, the caller of fetch_url will never know that their
 // async operation was actually synchronous.
 
+/** Fetch the contents of the indicated URL and put its contents
+    into an output file.  A pointer to this file can be retrieved
+    with the <tt>output()</tt> function. <i>A program that uses that
+    FILE pointer must be sure not to close it with
+    <tt>fclose()</tt>.</i> Instead, use
+    <tt>Connect::close_output()</tt>. If <i>async</i> is TRUE, then
+    the operation is asynchronous, and the function returns before
+    the data transfer is complete. This method is here so that
+    Connect can be used to read from any URL, not just URLs which
+    return DAS, DDS or DataDDS objects. Because of this,
+    <tt>fetch_url</tt> neither automatically appends a suffix nor
+    does it route the response through any of the parsers which
+    decode responses from a DODS server.
+
+    This method also scans the URL for a username/passwd. If present,
+    extracts them, places them in the Connect object, and rebuilds the URL
+    without them.
+
+    This method is here so that Connect can be used to read from any URL,
+    not just URLs which return DAS, DDS or DataDDS objects. Because of
+    this, <tt>fetch_url</tt> neither automatically appends a suffix nor does it
+    route the response through any of the parsers which decode responses
+    from a DODS server. In addition, <tt>fetch_url</tt> also does <i>not</i>
+    escape any characters in the URL. That is the responsibility of the
+    caller. This includes characters that break URLs and those that break
+    DODS CEs.
+
+    @note Note that the asynchronous transfer feature of DODS is not
+    currently enabled.  All invocations of this function will be
+    synchronous, no matter what the value of the <i>async</i>
+    parameter. 
+
+    @brief Dereference a URL.  
+    @return Always returns true.
+    @exception Error indicates some problem reading from the web server
+    (not the DODS server, other methods report those errors).
+    @param url A string containing the URL to be dereferenced.  The
+    data referred to by this URL will wind up available through a
+    file pointer retrieved from the <tt>output()</tt> function.
+    @param async Not currently implemented.
+    @see Connect::output */
 bool 
 Connect::fetch_url(string & url, bool) throw(Error)
 {
@@ -1119,6 +1253,16 @@ Connect::fetch_url(string & url, bool) throw(Error)
     return true;		// Faux status; for compat with old code.
 }
 
+/** Returns a file pointer which can be used to read the data
+    fetched from a URL.
+
+    Note that occasionally this may be directed to <tt>stdout</tt>.  If this
+    is the case, users should avoid closing it.
+
+    @brief Access the information contained in this Connect instance.
+    @see Connect::fetch_url
+    @return A <tt>(FILE *)</tt> indicating a file containing the data
+    received from a dereferenced URL.  */
 FILE *
 Connect::output()
 {
@@ -1126,6 +1270,16 @@ Connect::output()
     return _output;
 }
 
+/** The data retrieved from a remote DODS server will be in XDR
+    format.  Use this function to initialize an XDR decoder for that
+    data and to return an XDR pointer to the data.
+
+    @brief Access the XDR input stream (source) for this connection.
+
+    @return Returns a XDR pointer tied to the current output
+    stream.  
+    @see Connect::output
+*/
 XDR *
 Connect::source()
 {
@@ -1135,6 +1289,13 @@ Connect::source()
     return _source;
 }
 
+/** Close the output stream of the Connect object. This closes the FILE
+    pointer returned by <tt>output()</tt>. In addition, it also deletes the
+    internal XDR stream object, although users should not have to know
+    about that.
+
+    @brief Close the object's output stream if it is not NULL or
+    STDOUT. */
 void 
 Connect::close_output()
 {
@@ -1149,18 +1310,47 @@ Connect::close_output()
     }
 }
 
+/** During the parse of the message headers returned from the
+    dereferenced URL, the object type is set. Use this function to
+    read that type information. This will be valid <i>before</i> the
+    return object is completely parsed so it can be used to decide
+    which parser to call to read the data remaining in
+    the input stream.
+
+    The object types are Data, DAS, DDS, Error, and undefined.
+
+    @brief What type is the most recent object sent from the
+    server?
+    @return The type of the object.
+    @see ObjectType */
 ObjectType 
 Connect::type()
 {
     return _type;
 }
 
+/** During the parse of the message headers returned from the
+    dereferenced URL, the encoding type is set. Use this function to
+    read that type information. This will be valid <i>before</i> the
+    return object is completely parsed so it can be used to decide
+    which decoder to call (if any) to read the data remaining in
+    the input stream.
+
+    The encoding types are currently limited to x-plain (no special
+    decoding required) and x-gzip (compressed using GNU's gzip).  
+
+    @brief What type of encoding was used on the data in the stream? 
+    @return The type of the compression.
+    @see EncodingType
+*/
 EncodingType 
 Connect::encoding()
 {
     return _encoding;
 }
 
+/** Returns a string containing the version of DODS used by the
+    server. */
 string 
 Connect::server_version()
 {
@@ -1169,6 +1359,21 @@ Connect::server_version()
 
 // Added EXT which defaults to "das". jhrg 3/7/95
 
+/** Reads the DAS corresponding to the dataset in the Connect
+    object's URL. Although DODS does not support usig CEs with DAS
+    requests, if present in the Connect object's instance, they will be
+    escaped and passed as the query string of the request.
+
+    @brief Get the DAS from a server.
+    @return TRUE if the DAS was successfully received. FALSE
+    otherwise. 
+    @param gui_p If TRUE, use the client GUI.  Most DAS's are too
+    small to make this worthwhile.
+    @param ext The extension to append to the URL to retrieve the
+    dataset DAS.  This parameter is included for compatibility with
+    future versions of the DODS software.  It currently defaults to
+    the only possible working value, ``das''.
+*/
 bool 
 Connect::request_das(bool gui_p, const string & ext) throw(Error, InternalErr)
 {
@@ -1236,6 +1441,20 @@ Connect::request_das(bool gui_p, const string & ext) throw(Error, InternalErr)
 
 // Added EXT which deafults to "dds". jhrg 3/7/95
 
+/** Reads the DDS corresponding to the dataset in the Connect
+    object's URL. Although CEs are rarely used with this method, if present
+    it will be escaped.
+
+    @brief Get the DDS from a server.
+    @return TRUE if the DDS was successfully received. FALSE
+    otherwise. 
+    @param gui_p If TRUE, use the client GUI.  Most DDS's are too
+    small to make this worthwhile.
+    @param ext The extension to append to the URL to retrieve the
+    dataset DDS.  This parameter is included for compatibility with
+    future versions of the DODS software.  It currently defaults to
+    the only possible working value, ``dds''.
+*/
 bool 
 Connect::request_dds(bool gui_p, const string & ext) throw(Error, InternalErr)
 {
@@ -1366,6 +1585,38 @@ Connect::process_data(bool async) throw(Error, InternalErr)
 // expression changed the type of the variable from that which appeared in the
 // origianl DDS received from the dataset when this connection was made.
 
+/** Reads data from the Connect object's server.  This method sets
+    up the BaseType variables in a DDS, and sends a request using
+    <tt>fetch_url()</tt>.  Upon return, it caches the data on a disk, then
+    unpacks it into the DDS storage. Unlike <tt>fetch_url</tt>, this method
+    escapes the CE part of the URL.
+
+    @brief Calls <tt>fetch_url()</tt> to retrieve data from the server.
+    @return A reference to the DataDDS object which contains the
+    variables (BaseType pointers) generated from the DDS sent with
+    the data. These variables are guaranteed to be large enough to
+    hold the data, even if the constraint expression changed the
+    type of the variable from that which appeared in the original
+    DDS received from the dataset when this connection was made.
+    @param expr A string containign a constraint expression.  The
+    function adds the clauses of this constraint expression to the
+    Connect object's original CE.  If the constraint expression
+    contains one or more Sequences, these must be the <i>last</i>
+    objects specified in the projection clause.  If you request N
+    variables and M of them are Sequences, all the M sequences must
+    follow the N-M other variables. 
+    @param gui_p If this is TRUE, use the DODS client GUI.  See the
+    Gui class for a description of this feature.
+    @param async  If this is TRUE, this function reads data
+    asynchronously, returning before the read completes. Synchronous
+    reads are the default, and the only possible action as of DODS
+    version 2.15.
+    @param ext The extension to append to the URL to retrieve the
+    dataset data.  This parameter is included for compatibility with
+    future versions of the DODS software.  It currently defaults to
+    the only possible working value, ``dods''.
+    @see DataDDS
+    @see Gui */
 DDS *
 Connect::request_data(string expr, bool gui_p, bool async, 
 		      const string & ext) throw(Error, InternalErr)
@@ -1402,6 +1653,20 @@ Connect::request_data(string expr, bool gui_p, bool async,
     }
 }
 
+/** @brief Read cached data from a disk file.
+
+    @return A reference to the DataDDS object which contains the
+    variables (BaseType pointers) generated from the DDS sent with
+    the data. 
+    @param data_source A file pointer to the cache file.
+    @param gui_p If this is TRUE, use the DODS client GUI.  See the
+    Gui class for a description of this feature.
+    @param async  If this is TRUE, this function reads data
+    asynchronously, returning before the read completes. Synchronous
+    reads are the default, and the only possible action as of DODS
+    version 2.15.
+    @see DataDDS
+    @see Gui */
 DDS *
 Connect::read_data(FILE * data_source, bool gui_p, bool async) 
     throw(Error, InternalErr)
@@ -1430,6 +1695,26 @@ Connect::read_data(FILE * data_source, bool gui_p, bool async)
     }
 }
 
+/** The DODS client can display graphic information to a user with
+    the DODS Graphical User Interface (GUI).  Typically used for a
+    progress indicator, the GUI is simply a shell capable of
+    interpreting arbitrary graphical commands (with tcl/tk).  The
+    Gui object is created anew when the Connect object is first
+    created.  This function returns a pointer to the Gui object, so
+    you can modify the GUI as desired.
+
+    This member will be removed since its presence makes it hard to build
+    Gui and non-gui versions of the DAP. The Gui object is accessed is in
+    Connect and Error, but in the later case an instance of Gui is always
+    passed to the instance of Error. Thus, even though it is a dubious
+    design, we can use the private member <tt>_gui</tt> and pass the pointer to
+    outside classes. Eventually, Connect must be redesigned.
+
+    @brief Returns a pointer to a Gui object.
+    @return a pointer to the Gui object associated with this
+    connection. 
+    @deprecated 
+    @see Gui */
 void *
 Connect::gui()
 {
@@ -1440,12 +1725,36 @@ Connect::gui()
 #endif
 }
 
+/** The Connect class can be used for ``connections'' to local
+    files.  This means that local files can continue to be accessed
+    with a DODS-compliant API.
+
+    @brief Does this object refer to a local file?  
+
+    @return Return TRUE if the Connect object refers to a local
+    file, otherwise returns FALSE.  */
 bool 
 Connect::is_local()
 {
     return _local;
 }
 
+/** Return the Connect object's URL in a string.  The URL was set by
+    the class constructor, and may not be reset.  If you want to
+    open another URL, you must create another Connect object.  There
+    is a Connections class created to handle the management of
+    multiple Connect objects.
+
+    @brief Get the object's URL.
+    @see Connections
+    @return A string containing the URL of the data to which the
+    Connect object refers.  If the object refers to local data,
+    the function returns the null string.  
+    @param ce If TRUE, the returned URL will include any constraint
+    expression enclosed with the Connect object's URL (including the
+    <tt>?</tt>).  If FALSE, any constraint expression will be removed from
+    the URL.  The default is TRUE.
+*/
 string 
 Connect::URL(bool ce)
 {
@@ -1461,6 +1770,14 @@ Connect::URL(bool ce)
 	return _URL;
 }
 
+/** Return the constraint expression (CE) part of the Connect URL. Note
+    that this CE is supplied as part of the URL passed to the
+    Connect's constructor.  It is not the CE passed to the 
+    <tt>request_data()</tt> function.
+
+    @brief Get the Connect's constraint expression.
+    @return A string containing the constraint expression (if any)
+    submitted to the Connect object's constructor.  */
 string 
 Connect::CE()
 {
@@ -1473,6 +1790,15 @@ Connect::CE()
     return _proj + _sel;
 }
 
+/** All DODS datasets define a Data Attribute Structure (DAS), to
+    hold a variety of information about the variables in a
+    dataset. This function returns the DAS for the dataset indicated
+    by this Connect object.
+
+    @brief Return a reference to the Connect's DAS object. 
+    @return A reference to the DAS object.
+    @see DAS 
+*/
 DAS & 
 Connect::das()
 {
@@ -1481,6 +1807,15 @@ Connect::das()
     return _das;
 }
 
+/** All DODS datasets define a Data Descriptor Structure (DDS), to
+    hold the data type of each of the variables in a dataset.  This
+    function returns the DDS for the dataset indicated by this
+    Connect object.
+
+    @brief Return a reference to the Connect's DDS object. 
+    @return A reference to the DDS object.
+    @see DDS 
+*/
 DDS & 
 Connect::dds()
 {
@@ -1489,12 +1824,30 @@ Connect::dds()
     return _dds;
 }
 
+/** The DODS server uses Error objects to signal error conditions to
+    the client.  If an error condition has occurred while fetching a
+    URL, the Connect object will contain an Error object with
+    information about that error.  The Error object may also contain
+    a program to run to remedy the error.  This function returns the
+    latest Error object received by the Connect object.
+
+    @brief Get a reference to the last Error object.
+    @return The last Error object sent from the server. If no error has
+    been sent from the server, returns a reference to an empty error
+    object. 
+    @see Error 
+*/
 Error & 
 Connect::error()
 {
     return _error;
 }
 
+/** @brief Set the credentials for responding to challenges while dereferencing
+    URLs. 
+    @param u The username.
+    @param p The password. 
+    @see extract_auth_info() */
 void 
 Connect::set_credentials(string u, string p)
 {
@@ -1502,6 +1855,9 @@ Connect::set_credentials(string u, string p)
     _password = p;
 }
 
+/** Disable any further use of the client-side cache. In a future version
+    of this software, this should be handled so that the www library is
+    not initialized with the cache running by default. */
 void
 Connect::disable_cache()
 {
@@ -1510,6 +1866,9 @@ Connect::disable_cache()
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.118  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.117  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

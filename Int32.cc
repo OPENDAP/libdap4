@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int32.cc,v 1.44 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int32.cc,v 1.45 2002/06/18 15:36:24 tom Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -37,6 +37,13 @@ static char rcsid[] not_used = {"$Id: Int32.cc,v 1.44 2001/10/14 01:28:38 jimg E
 using std::cerr;
 using std::endl;
 
+/** The Int32 constructor requires only the name of the variable
+    to be created.  The name may be omitted, which will create a
+    nameless variable.  This may be adequate for some applications. 
+      
+    @param n A string containing the name of the variable to be
+    created. 
+*/
 Int32::Int32(const string &n) 
     : BaseType(n, dods_int32_c, (xdrproc_t)XDR_INT32)
 {
@@ -198,6 +205,9 @@ Int32::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Int32.cc,v $
+// Revision 1.45  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.44  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

@@ -33,14 +33,15 @@
 #define FALSE 0
 #endif
 
-/** #parser_arg# is used to pass parameters to the bison parsers and get
-    error codes and objects in return. If #status()# is true, then the
-    #object()# returns a pointer to the object built during the parse
-    process. If #status()# is false, then the #error()# returns a pointer to
-    an Error object.
+/** <tt>parser_arg</tt> is used to pass parameters to the bison parsers and get
+    error codes and objects in return. If <tt>status()</tt> is true, then the
+    <tt>object()</tt> returns a pointer to the object built during the parse
+    process. If <tt>status()</tt> is false, then the <tt>error()</tt>
+    returns a pointer to an Error object.
 
-    Note that the #object()# mfunc returns a void pointer. 
-    @memo Pass parameters by reference to a parser.
+    Note that the <tt>object()</tt> mfunc returns a void pointer. 
+    @brief Pass parameters by reference to a parser.
+    @brief Pass parameters by reference to a parser.
     */
 
 struct parser_arg {
@@ -84,19 +85,22 @@ struct gse_arg {
 };
 
 
-/** #parser_error()# generates error messages for the various parsers used by
-    the DODS core. There are two versions of the function, one which takes a
-    #const char *message# and a #const int line_num# and writes the message
-    and line number too stderr and a second which takes an additional
-    #parser_arg *arg# parameter and writes the error message into an Error
-    object which is returned to the caller via the #arg# parameter.
+/** <tt>parser_error()</tt> generates error messages for the various
+    parsers used by the DODS core. There are two versions of the
+    function, one which takes a <tt>const char *message</tt> and a
+    <tt>const int line_num</tt> and writes the message and line number
+    too stderr and a second which takes an additional <tt>parser_arg
+    *arg</tt> parameter and writes the error message into an Error
+    object which is returned to the caller via the <tt>arg</tt>
+    parameter.
 
     \note{The second version of this function also accepts a third parameter
-    (#const char *context#) which can be used to provide an additional line
-    of information beyond what is in the string #message#.}
+    (<tt>const char *context</tt>) which can be used to provide an
+    additional line of information beyond what is in the string
+    <tt>message</tt>.} 
 
     @return void 
-    @memo Generate error messages for the various parsers.
+    @brief Generate error messages for the various parsers.
     */
 //@{
 void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
@@ -107,16 +111,18 @@ void parse_error(const string &msg, const int line_num,
 		 const char *context = 0) throw (Error);
 //@}
 
-/** Given a string (#const char *src#), save it to the temporary variable
-    pointed to by #dst#. If the string is longer than #ID_MAX#, generate and
-    error indicating that #src# was truncated to #ID_MAX# characters during
-    the copy operation. There are two versions of this function; one calls
-    the version of #parser_error()# which writes to stderr. The version which
-    accepts the #parser_arg *arg# argument calls the version of
-    #parser_error()# which generates and Error object.
+/** Given a string (<tt>const char *src</tt>), save it to the
+    temporary variable pointed to by <tt>dst</tt>. If the string is
+    longer than <tt>ID_MAX</tt>, generate and error indicating that
+    <tt>src</tt> was truncated to <tt>ID_MAX</tt> characters during
+    the copy operation. There are two versions of this function; one
+    calls the version of <tt>parser_error()</tt> which writes to
+    stderr. The version which accepts the <tt>parser_arg *arg</tt>
+    argument calls the version of <tt>parser_error()</tt> which
+    generates and Error object.
 
     @return void 
-    @memo Save a string to a temporary variable during the parse.
+    @brief Save a string to a temporary variable during the parse.
     */
 
 void save_str(char *dst, const char *src, const int line_num) throw (Error);
@@ -124,21 +130,24 @@ void save_str(string &dst, const char *src, const int);
 
 bool is_keyword(string id, const string &keyword);
 
-/** Check to see if #val# is a valid byte value. If not, generate an error
-    message using #parser_error()#. There are two versions of #check_byte()#,
-    one which calls #parser_error()# and prints an error message to stderr an
-    one which calls #parser_error()# and generates and Error object.
+/** Check to see if <tt>val</tt> is a valid byte value. If not,
+    generate an error message using <tt>parser_error()</tt>. There are
+    two versions of <tt>check_byte()</tt>, one which calls
+    <tt>parser_error()</tt> and prints an error message to stderr an
+    one which calls <tt>parser_error()</tt> and generates and Error
+    object.
 
-    @return Returns: True if #val# is a byte value, False otherwise. 
-    @memo Is the value a valid byte?
+    @return Returns: True if <i>val</i> is a byte value, False otherwise. 
+    @brief Is the value a valid byte?
     */
 
 int check_byte(const char *val);
 
-/** Like #check_byte()# but for 32-bit integers (#check_uint()# is for
-    unsigned integers). 
+/** Like <tt>check_byte()</tt> but for 32-bit integers
+    (<tt>check_uint()</tt> is for unsigned integers). 
 
-    @memo Is the value a valid integer?
+
+    @brief Is the value a valid integer?
     */
 
 int check_int16(const char *val);
@@ -146,20 +155,23 @@ int check_uint16(const char *val);
 int check_int32(const char *val);
 int check_uint32(const char *val);
 
-/** Like #check_byte()# but for 64-bit float values.
+/** Like <tt>check_byte()</tt> but for 64-bit float values.
 
-    @memo Is the value a valid float? */
+    @brief Is the value a valid float? */
 
 int check_float32(const char *val);
 int check_float64(const char *val);
 
 /** Currently this function always returns true.
 
-    @memo Is the value a valid URL? */
+    @brief Is the value a valid URL? */
 
 int check_url(const char *val);
 
 // $Log: parser.h,v $
+// Revision 1.17  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.16  2001/08/24 17:46:23  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

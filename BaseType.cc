@@ -48,13 +48,26 @@ BaseType::_duplicate(const BaseType &bt)
 
 // Public mfuncs
 
-// Note that the ctor (as well as the copy ctor via duplicate)
-// open/initialize the (XDRS *)s XDRIN and XDROUT to reference sdtin and
-// stdout. This means that writing to std{in,out} must work correctly, and
-// probably means that is must be OK to mix calls to cout/cin with calls that
-// write to std{out,in} (it is for g++ with libg++ at version 2.6 or
-// greater).
+/** The BaseType constructor needs a name, a type, and the name of
+    an XDR filter.  The BaseType class exists to provide data to
+    type classes that inherit from it.  The constructors of those
+    classes call the BaseType constructor; it is never called
+    directly. 
 
+    Note that the constructor (as well as the copy constructor via
+    _duplicate) open/initialize the (XDRS *)s XDRIN and XDROUT to
+    reference sdtin and stdout. This means that writing to
+    std{in,out} must work correctly, and probably means that is
+    must be OK to mix calls to cout/cin with calls that write to
+    std{out,in} (it is for g++ with libg++ at version 2.6 or
+    greater).
+
+    @brief The BaseType constructor.
+    @param n A string containing the name of the new variable.
+    @param t The type of the variable.
+    @param xdr A pointer to an XDR filter to use to transmit the
+    data in this variable to a client DODS process.
+    @see Type */
 BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
 #ifdef WIN32
     : _name(n), _type(t), _xdr_coder((int *)xdr), _read_p(false), _send_p(false),
@@ -65,6 +78,7 @@ BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
 {
 } 
 
+/** @brief The BaseType copy constructor. */
 BaseType::BaseType(const BaseType &copy_from)
 {
     _duplicate(copy_from);
@@ -87,6 +101,10 @@ BaseType::operator=(const BaseType &rhs)
     return *this;
 }
 
+/** Write out the object's internal fields in a string. To be used for
+    debugging when regular inspection w/ddd or gdb isn't enough.
+
+    @return A string which shows the object's internal stuff. */
 string
 BaseType::toString()
 {
@@ -104,12 +122,15 @@ BaseType::toString()
     return s;
 }
 
+/** @brief Returns the name of the class instance. 
+ */
 string 
 BaseType::name() const
 {
     return _name; 
 }
 
+/** @brief Sets the name of the class instance. */
 void 
 BaseType::set_name(const string &n)
 { 
@@ -117,18 +138,21 @@ BaseType::set_name(const string &n)
     _name = www2id(name);	// www2id writes into its param.
 }
 
+/** @brief Returns the type of the class instance. */
 Type
 BaseType::type() const
 {
     return _type;
 }
 
+/** @brief Sets the type of the class instance. */
 void
 BaseType::set_type(const Type &t)
 {
     _type = t;
 }
 
+/** @brief Returns the type of the class instance as a string. */
 string
 BaseType::type_name() const
 {
@@ -169,6 +193,7 @@ BaseType::type_name() const
     }
 }
 
+/** @brief Returns true if the instance is a simple type variable. */
 bool
 BaseType::is_simple_type()
 {
@@ -196,6 +221,7 @@ BaseType::is_simple_type()
     return false;
 }
 
+/** @brief Returns true if the instance is a vector type variable. */
 bool
 BaseType::is_vector_type()
 {
@@ -225,6 +251,7 @@ BaseType::is_vector_type()
     return false;
 }
 
+/** @brief Returns true if the instance is a constructor type variable. */
 bool
 BaseType::is_constructor_type()
 {
@@ -252,18 +279,51 @@ BaseType::is_constructor_type()
     return false;
 }
 
+/** Return a count of the total number of variables in this variable.
+    This is used to count the number of variables held by a constructor
+    variable - for simple type and vector variables it always
+    returns 1.
+
+    For compound data types, there are two ways to count members.
+    You can count the members, or you can count the simple members
+    and add that to the count of the compound members.  For
+    example, if a Structure contains an Int32 and another
+    Structure that itself contains two Int32 members, the element
+    count of the top-level structure could be two (one Int32 and
+    one Structure) or three (one Int32 by itself and two Int32's
+    in the subsidiary Structure).  Use the <i>leaves</i> parameter
+    to control which kind of counting you desire.
+
+    @brief Count the members of constructor types. 
+    @return Returns 1 for simple
+    types.  For compound members, the count depends on the
+    <i>leaves</i> argument.
+    @param leaves This parameter is only relevant if the object
+    contains other compound data types.  If FALSE, the function
+    counts only the data variables mentioned in the object's
+    declaration.  If TRUE, it counts the simple members, and adds
+    that to the sum of the counts for the compound members.
+    This parameter has no effect for simple type variables. */
 int
 BaseType::element_count(bool)
 {
     return 1;
 }
 
+/** Returns true if the variable is a synthesized variable. A synthesized
+    variable is one that is added to the dataset by the server (usually
+    with a `projection function'. */
 bool
 BaseType::synthesized_p()
 {
     return _synthesized_p;
 }
 
+/** Set the synthesized flag. Before setting this flag be sure to set the
+    <tt>read_p()</tt> state. Once this flag is set you cannot
+    alter the state of the <tt>read_p</tt> flag!
+	
+    @see synthesized_p() */
 void
 BaseType::set_synthesized_p(bool state)
 {
@@ -273,12 +333,25 @@ BaseType::set_synthesized_p(bool state)
 // Return the state of _read_p (true if the value of the variable has been
 // read (and is in memory) false otherwise).
 
+/** Returns the value of the <tt>read_p</tt> flag.  This flag is TRUE
+    when the class instance contains a valid value, and FALSE before
+    a valid value has been read.
+
+    @brief Returns the value of the #read_p# flag.  */
 bool
 BaseType::read_p()
 {
     return _read_p;
 }
 
+/** Sets the value of the <tt>read_p</tt> flag.  This flag is TRUE when the
+    class instance contains a valid value, and FALSE before a valid
+    value has been read.  This is meant to be called from the
+    <tt>read()</tt> function. Data is ready to be sent when <i>both</i> the
+    <tt>_send_p</tt> and <tt>_read_p</tt> flags are set to TRUE.
+
+    @brief Sets the value of the #read_p# flag.  
+    @param state The logical state to set the <tt>read_p</tt> flag.  */
 void
 BaseType::set_read_p(bool state)
 {
@@ -292,12 +365,26 @@ BaseType::set_read_p(bool state)
 // Return the state of _send_p (true if the variable should be sent, false
 // otherwise).
 
+/** Returns the value of the <tt>send_p</tt> flag.  This flag is TRUE if
+    this variable is to be sent to the client.  This is determined
+    by evaluating the constraint expression.  The <tt>_send_p</tt> flag is
+    set to TRUE for all variables in the constraint expression's
+    ``projection'' clause.
+
+    @brief Returns the value of the #send_p# flag. */
 bool
 BaseType::send_p()
 {
     return _send_p;
 }
 
+/** Sets the value of the <tt>send_p</tt> flag.  This
+    function is meant to be called from <tt>serialize()</tt>.  Data is
+    ready to be sent when <i>both</i> the <tt>_send_p</tt> and
+    <tt>_read_p</tt> flags are set to TRUE.
+
+    @param state The logical state to set the <tt>send_p</tt> flag.
+*/
 void 
 BaseType::set_send_p(bool state)
 {
@@ -305,6 +392,12 @@ BaseType::set_send_p(bool state)
 }
 
 // Protected method.
+/** Set the <tt>parent</tt> property for this variable. Only instances of
+    Constructor or Vector should call this method.
+
+    @param parent Pointer to the Constructor of Vector parent variable.
+    @exception InternalErr thrown if called with anything other than a
+    Constructor or Vector. */
 void
 BaseType::set_parent(BaseType *parent) throw(InternalErr)
 {
@@ -316,6 +409,14 @@ BaseType::set_parent(BaseType *parent) throw(InternalErr)
 }
 
 // Public method.
+/** Return a pointer to the Constructor or Vector which holds (contains)
+    this variable. If this variable is at the top level, this method
+    returns null.
+
+    NB: The modifier for this property is protected. It should only be
+    modified by Constructor and Vector.
+
+    @return A BaseType pointer to the variable's parent. */
 BaseType *
 BaseType::get_parent()
 {
@@ -326,13 +427,58 @@ BaseType::get_parent()
 //
 // Return a pointer to the contained variable in a ctor class.
 
+/** Returns a pointer to the contained variable in a composite
+    class.  The composite classes are those made up of aggregated
+    simple data types.  Array, Grid, and Structure are composite
+    types, while Int and Float are simple types.  This function is
+    only used by composite classes.  The BaseType implementation
+    always returns null.
+
+    Several of the subclasses overload this function with
+    alternate access methods that make sense for that particular
+    data type. For example, the Array class defines a <tt>*var(int
+    i)</tt> method that returns the ith entry in the Array data,
+    and the Structure provides a <tt>*var(Pix p)</tt> function
+    using a pseudo-index to access the different members of the
+    structure.
+
+    @brief Returns a pointer to a member of a constructor class.
+    @param name The name of the class member.  
+    @param exact_match
+    True if only interested in variables whose full names match
+    <tt>name</tt> exactly. If false, returns the first variable
+    whose name matches <tt>name</tt>. For example, if
+    <tt>name</tt> is x and point.x is a variable, then var("x",
+    false) would return a <tt>BaseType</tt> pointer to point.x. If
+    <tt>exact_match</tt> was <tt>true</tt> then <tt>name</tt>
+    would need to be "point.x" for <tt>var</tt> to return that
+    pointer. This feature simplifies constraint expressions for
+    datasets which have complex, nested, constructor variables.
+
+    @return A pointer to the member named in the <i>name</i>
+    argument.  If no name is given, the function returns the first
+    (only) variable.  For example, an Array has only one variable,
+    while a Structure can have many. */
 BaseType *
 BaseType::var(const string &, bool, btp_stack*)
 {
     return static_cast<BaseType *>(0);
 }
 
-// Deprecated
+/** This version of var(...) searches for <i>name</i> and returns a
+    pointer to the BaseType object if found. It uses the same search
+    algorithm as above when <i>exact_match</i> is false. In addition to
+    returning a pointer to the variable, it pushes onto <i>s</i> a
+    BaseType pointer to each constructor type that ultimately contains
+    <i>name</i>.
+
+    \note{The BaseType implementation always returns null. }
+
+    @deprecated
+    @brief Returns a pointer to a member of a constructor class.
+    @param name Find the variable whose name is <i>name</i>.
+    @param s Record the path to </i>name</i>.
+    @return A pointer to the named variable. */
 BaseType *
 BaseType::var(const string &, btp_stack &)
 {
@@ -341,6 +487,26 @@ BaseType::var(const string &, btp_stack &)
 
 // Defined by constructor types (Array, ...)
 
+/** Adds a variable to an instance of a constructor class, such as
+    Array, Structure and so on.  This function is only used by those
+    classes.  The BaseType implementation simply prints an error
+    message. 
+
+    NB: When adding a variable to a constructor or an array (this is only
+    important for a constructor), if that variable is itself a
+    constructor you <i>must</i> add its children <i>before</i> you add
+    call this method to add the variable to its parent. This method
+    copies the variable allocating a new object. One way around this is
+    to add the constructor, then get a BaseType pointer to it using
+    <tt>var()</tt>. 
+
+    @brief Adds the input data to the class instance. 
+    @param bt The data to be added to the constructor type. The caller of
+    this method <i>must</i> free memory it allocates for
+    <tt>v</tt>. This method 
+    will make a deep copy of the object pointed to by <tt>v</tt>.
+    @param part The part of the constructor data to be modified.
+    @see Part */
 void
 BaseType::add_var(BaseType *, Part)
 {
@@ -348,6 +514,20 @@ BaseType::add_var(BaseType *, Part)
 
 // Using this mfunc, objects that contain a (BaseType *) can get the xdr
 // function used to serialize the object.
+/** The <tt>xdr_coder</tt> function (also "filter primitive") is used to
+    encode and decode each element in a multiple element data
+    structure.  These functions are used to convert data to and from
+    its local representation to the XDR representation, which is
+    used to transmit and receive the data.  See <tt>man xdr</tt> for more
+    information about the available XDR filter primitives.
+
+    Note that this class data is only used for multiple element data
+    types.  The simple data types (Int, Float, and so on), are
+    translated directly.
+
+    @brief Returns a function used to encode elements of an array. 
+    @return A C function used to encode data in the XDR format.
+*/
 #ifdef WIN32
 int *
 #else
@@ -361,6 +541,49 @@ BaseType::xdr_coder()
 // send a printed representation of the variable's declaration to cout. If
 // print_semi is true, append a semicolon and newline.
 
+/** Write the variable's declaration in a C-style syntax. This
+    function is used to create textual representation of the Data
+    Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for
+    information about this structure.
+
+    A simple array declaration might look like this:
+    \verbatim
+    Float64 lat[lat = 180];
+    \endverbatim
+    While a more complex declaration (for a Grid, in this case),
+    would look like this:
+    \verbatim
+    Grid {
+    ARRAY:
+    Int32 sst[time = 404][lat = 180][lon = 360];
+    MAPS:
+    Float64 time[time = 404];
+    Float64 lat[lat = 180];
+    Float64 lon[lon = 360];
+    } sst;
+    \endverbatim
+
+    @brief Print an ASCII representation of the variable structure.
+    @param os The output stream on which to print the
+    declaration.
+    @param space Each line of the declaration will begin with the
+    characters in this string.  Usually used for leading spaces.
+    @param print_semi A boolean value indicating whether to print a
+    semicolon at the end of the declaration.
+    @param constraint_info A boolean value indicating whether
+    constraint information is to be printed with the declaration.
+    If the value of this parameter is TRUE, <tt>print_decl()</tt> prints
+    the value of the variable's <tt>send_p()</tt> flag after the
+    declaration. 
+    @param constrained If this boolean value is TRUE, the variable's
+    declaration is only printed if is the <tt>send_p()</tt> flag is TRUE.
+    If a constraint expression is in place, and this variable is not
+    requested, the <tt>send_p()</tt> flag is FALSE.
+
+    @see DDS
+    @see DDS::CE
+
+*/
 void 
 BaseType::print_decl(ostream &os, string space, bool print_semi, 
 		     bool constraint_info, bool constrained)
@@ -394,6 +617,34 @@ BaseType::print_decl(ostream &os, string space, bool print_semi,
 //
 // Returns: true if the object is semantically correct, false otherwise.
 
+/** This function checks the class instance for internal
+    consistency.  This is important to check for complex constructor
+    classes.  For BaseType, an object is semantically correct if it
+    has both a non-null name and type.
+
+    For example, an Int32 instance would return FALSE if it had no
+    name or no type defined.  A Grid instance might return FALSE for
+    more complex reasons, such as having Map arrays of the wrong
+    size or shape.
+
+    This function is used by the DDS class, and will rarely, if
+    ever, be explicitly called by a DODS application program.  A
+    variable must pass this test before it is sent, but there may be
+    many other stages in a retrieve operation where it would fail.
+
+    @brief Compare an object's current state with the sematics of its
+    type.
+    @return Returns FALSE when the current state violates some
+    aspect of the type semantics, TRUE otherwise.
+  
+    @param msg A returned string, containing a message indicating
+    the source of any problem.
+    @param all For complex constructor types (Grid,
+    Sequence, Structure), this flag indicates whether to check the
+    sematics of the member variables, too.
+
+    @see DDS::check_semantics 
+*/
 bool
 BaseType::check_semantics(string &msg, bool)
 {
@@ -410,6 +661,51 @@ BaseType::check_semantics(string &msg, bool)
 // to do something interesting must supply their own versions. These print an
 // error message and return False.
 
+/** This function contains the relational operators used by the
+    constraint expression evaluator in the DDS class. Each class
+    that wants to be able to evaluate relational expressions must
+    overload this function. The implementation in BaseType returns
+    false and prints an error message.
+
+    The <i>op</i> argument refers to a table generated by bison from
+    the constraint expression parser.  Use statements like the
+    following to correctly interpret its value:
+
+    \verbatim
+    switch (op) {
+    case EQUAL:
+    return i1 == i2;
+    case NOT_EQUAL:
+    return i1 != i2;
+    case GREATER:
+    return i1 > i2;
+    case GREATER_EQL:
+    return i1 >= i2;
+    case LESS:
+    return i1 < i2;
+    case LESS_EQL:
+    return i1 <= i2;
+    case REGEXP:
+    cerr << "Regular expressions not valid for integer values" << endl;
+    return false;
+    default:
+    cerr << "Unknown operator" << endl;
+    return false;
+    }
+    \endverbatim
+
+    This function is used by the constraint expression evaluator.
+
+    @brief The class relational operators.
+    @param b The value with which the instance value is to be
+    compared. 
+    @param op An integer index indicating which relational operator
+    is implied. Choose one from the following: <tt>EQUAL</tt>,
+    <tt>NOT_EQUAL</tt>, <tt>GREATER</tt>, <tt>GREATER_EQL</tt>,
+    <tt>LESS</tt>, <tt>LESS_EQL</tt>, and <tt>REGEXP</tt>. 
+    @param dataset The name of the dataset from which the instance's
+    data has come (or is to come).
+    @return The boolean value of the comparison. */
 bool 
 BaseType::ops(BaseType *, int, const string &)
 {
@@ -422,6 +718,9 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.46  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.45  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

@@ -32,37 +32,37 @@
     Each clause object can contain a representation of one of three
     possible forms:
 
-    \begin{enumerate}
+    <ol>
 
-    \item A relational clause, where an operator tests the relation
+    <li> A relational clause, where an operator tests the relation
     between two operands.  This kind of clause evaluates to a boolean
-    value. For example: #a > b#.
+    value. For example: <tt>a > b</tt>.
 
-    \item A boolean function, where some function operates on
+    <li> A boolean function, where some function operates on
     arguments in the clause to return a boolean value.  For example,
-    consider a scalar A and a list L.  The clause #find(A,L)# might
-    return TRUE if A is a member of L (if the #find()# function is
+    consider a scalar A and a list L.  The clause <tt>find(A,L)</tt> might
+    return TRUE if A is a member of L (if the <tt>find()</tt> function is
     defined). 
 
-    \item A clause that returns a pointer to a DODS BaseType value.
+    <li> A clause that returns a pointer to a DODS BaseType value.
     This is a clause that evaluates to some data value (be it scalar
-    or vector).  For example, #sig0()# might be included in the
+    or vector).  For example, <tt>sig0()</tt> might be included in the
     constraint expression parser to calculate density from pressure,
-    temperature, and salinity.  In this case, #sig0(p,t,s)# would be a
+    temperature, and salinity.  In this case, <tt>sig0(p,t,s)</tt> would be a
     clause that evaluates to a data value.
 
-    \end{enumerate}
+    </ol>
 
     This might be a bit confusing; in the first, and by far more common, form
     of constraint expressions (CEs) only the first two types of clauses may
     appear. In the second form of the CE only the last type of clause may
     occur. The Clause class, however, can store them all.
 
-    The Clause object holds the constraint expression \emph{after} it
+    The Clause object holds the constraint expression <i>after</i> it
     has been parsed.  The parser renders the relational operator into
     an integer, and the functions into pointers.
 
-    @memo Holds a section of a constraint expression.
+    @brief Holds a fragment of a constraint expression.
     @see DDS::parse_constraint */
 struct Clause {
 
@@ -87,23 +87,21 @@ public:
 
     virtual ~Clause();
 
-    /// Checks the "representation invariant" of a clause.
-    bool OK();
+  bool OK();
 
-    /// Return true if the clause returns a boolean value.
-    bool boolean_clause();
+  bool boolean_clause();
 
-    /// Return true if the clause returns a value in a BaseType pointer.
-    bool value_clause();
+  bool value_clause();
 
-    /// Evaluate a clause which returns a boolean value
-    bool value(const string &dataset, DDS &dds);
+  bool value(const string &dataset, DDS &dds);
 
-    /// Evaluate a clause that returns a value via a BaseType pointer.
-    bool value(const string &dataset, DDS &dds, BaseType **value);
+  bool value(const string &dataset, DDS &dds, BaseType **value);
 };
 	
 // $Log: Clause.h,v $
+// Revision 1.9  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.8  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

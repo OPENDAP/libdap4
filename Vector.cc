@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.40 2002/06/03 22:21:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.41 2002/06/18 15:36:24 tom Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -55,7 +55,22 @@ Vector::_duplicate(const Vector &v)
     if (v._buf)			// only copy if data present
 	val2buf(v._buf);	// store this's value in v's _BUF.
 }
+    /** The Vector constructor requires the name of the variable to be
+	created, and a pointer to an object of the type the Vector is to
+	hold.  The name may be omitted, which will create a nameless
+	variable.  The template object may not be omitted.
+      
+	@param n A string containing the name of the variable to be
+	created. 
+	@param v A pointer to a variable of the type to be included 
+	in the Vector. 
+	@param t The type of the resulting Vector object, from the Type
+	enum list.  There is no DODS Vector object, so all uses of this
+	method will be from the List or Array classes.  This defaults to
+	<tt>dods_null_c</tt>.
 
+	@see Type
+	@brief The Vector constructor.  */
 Vector::Vector(const string &n, BaseType *v, const Type &t) 
     :BaseType(n, t), _length(-1), _var(v), _buf(0), _vec(0)
 {
@@ -64,6 +79,7 @@ Vector::Vector(const string &n, BaseType *v, const Type &t)
 	_var->set_parent(this);
 }
 
+    /** The Vector copy constructor. */
 Vector::Vector(const Vector &rhs) : BaseType(rhs)
 {
     DBG(cerr << "Entering Vector const ctor for object: " << this << endl);
@@ -118,6 +134,12 @@ Vector::element_count(bool leaves)
 // _send_p (_read_p) but also _VAR's copy. This does not matter much when _VAR
 // is a scalar, but does matter when it is an aggregate.
 
+    /** This function sets the <tt>send_p</tt> flag for both the Vector itself
+	and its element template.  This does not matter much when the
+	Vector contains simple data types, but does become significant
+	when the Vector contains compound types.  
+
+	@brief Indicates that the data is ready to send. */
 void
 Vector::set_send_p(bool state)
 {
@@ -125,6 +147,12 @@ Vector::set_send_p(bool state)
     BaseType::set_send_p(state);
 }
 
+    /** This function sets the <tt>read_p</tt> flag for both the Vector itself
+	and its element template.  This does not matter much when the
+	Vector contains simple data types, but does become significant
+	when the Vector contains compound types.
+
+	@brief Indicates that the data is ready to send.  */
 void 
 Vector::set_read_p(bool state)
 {
@@ -132,6 +160,19 @@ Vector::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
+    /** Returns a copy of the template array element. If the Vector contains
+	simple data types, the template will contain the value of the last
+	vector element accessed with the {\tt Vector::var(int i)} function,
+	if any. If no such access has been made, or if the Vector contains
+	compound data types, the value held by the template instance is
+	undefined.
+
+	Note that the parameter <i>exact_match</i> is not used by this mfunc.
+
+	@param name The name of the variabe to find.
+	@param exact_match Unused.
+	@return A pointer to the BaseType if found, otherwise null.
+	@see Vector::var */
 BaseType *
 Vector::var(const string &name, bool exact_match)
 {
@@ -147,6 +188,16 @@ Vector::var(const string &name, bool exact_match)
 	return _var;
 }
 
+    /** This version of var(...) searches for <i>name</i> and returns a
+	pointer to the BaseType object if found. It uses the same search
+	algorithm as above when <i>exact_match</i> is false. In addition to
+	returning a pointer to the variable, it pushes onto <i>s</i> a
+	BaseType pointer to each constructor type that ultimately contains
+	<i>name</i>.
+
+	@param name Find the variable whose name is <i>name</i>.
+	@param s Record the path to <i>name</i>.
+	@return A pointer to the named variable. */
 BaseType *
 Vector::var(const string &name, btp_stack &s)
 {
@@ -167,6 +218,16 @@ Vector::var(const string &name, btp_stack &s)
 //
 // Returns: A BaseType pointer to the Ith element of the Vector.
 
+    /** Returns a pointer to the specified Vector element.  For Vectors
+	containing simple data types, the element returned will be a
+	copy of the indicated element.  For compound types, the return
+	pointer will indicate the element itself.
+
+	@param i The index of the desired Vector element.  Zero
+	indicates the first element of the Vector.
+	@return A pointer to a BaseType class instance containing
+	the value of the indicated element.
+	@see BaseType::var */
 BaseType *
 Vector::var(unsigned int i)
 {
@@ -213,6 +274,11 @@ Vector::var(unsigned int i)
 //
 // Returns: The number of bytes used to store the vector.
 
+    /** Returns the number of bytes needed to hold the <i>entire</i>
+	array.  This is equal to <tt>length()</tt> times the width of each
+	element. 
+
+	@brief Returns the width of the data, in bytes. */
 unsigned int
 Vector::width()
 {
@@ -226,6 +292,10 @@ Vector::width()
 
 // Returns: the number of elements in the vector. 
 
+    /** Returns the number of elements in the vector. Note that some
+	child classes of Vector use the length of -1 as a flag value.
+
+	@see Array::append_dim */
 int
 Vector::length()
 {
@@ -236,6 +306,8 @@ Vector::length()
 //
 // Returns: void
 
+    /** Sets the length of the vector.  This function does not allocate
+	any new space. */
 void
 Vector::set_length(int l)
 {
@@ -245,26 +317,28 @@ Vector::set_length(int l)
 // #l# is the number of elements the vector can hold (e.g., if l == 20, then
 // the vector can hold elements 0, .., 19).
 
+    /** Resizes a Vector.  If the input length is greater than the
+	current length of the Vector, new memory is allocated (the
+	Vector moved if necessary), and the new entries are appended to
+	the end of the array and padded with Null values.  If the input
+	length is shorter, the tail values are discarded. */
 void
 Vector::vec_resize(int l)
 {
     _vec.resize((l > 0) ? l : 0, 0); // Fill with NULLs
 }
 
-// Serialize a Vector. This uses the BaseType member XDR_CODER to encode each
-// element of a cardinal array. See Sun's XDR manual. For Arrays of Str and
-// Url types, send the element count over as a prefix to the data so that
-// deserialize will know how many elements to read.
-//
-// The boolean parameter FLUSH determines whether the data stream is flushed
-// after this call or not. If FLUSH is false, then the stream is flushed when
-// its local buffer fills. if it is true, then it is flushed at the end of
-// this call.
-//
-// NB: Arrays of cardinal types must already be in BUF (in the local machine's
-// representation) *before* this call is made.
-//
-// Returns: true if the data was successfully writen, false otherwise.
+/** @brief Serialize a Vector. 
+
+    This uses the BaseType member xdr_coder to encode each element of
+    a cardinal array. See Sun's XDR manual. For Arrays of Str and Url
+    types, send the element count over as a prefix to the data so that
+    deserialize will know how many elements to read. 
+
+    NB: Arrays of cardinal types must already be in BUF (in the local machine's
+    representation) <i>before</i> this call is made.
+*/
+
 
 bool
 Vector::serialize(const string &dataset, DDS &dds, XDR *sink, 
@@ -484,6 +558,23 @@ the network connection.");
 //
 // Returns: The number of bytes used by the array
 
+    /** Copies data into the class instance buffer.  This function
+	assumes that the input <i>val</i> indicates memory which
+	contains, in row major order, enough elements of the correct
+	type to fill the array. For an array of a cardinal type the
+	memory is simply copied in whole into the Vector buffer.  For
+	compound types, the subsidiary <tt>val2buf</tt> is called
+	<tt>length()</tt> times on each successive piece of <i>val</i>.
+
+	@brief Reads data into the Vector buffer.
+	@return The number of bytes used by the array.
+	@param val A pointer to the input data.
+	@param reuse A boolean value, indicating whether the class
+	internal data storage can be reused or not.  If this argument is
+	TRUE, the class buffer is assumed to be large enough to hold the
+	incoming data, and it is <i>not</i> reallocated.  If FALSE, new
+	storage is allocated.  If the internal buffer has not been
+	allocated at all, this argument has no effect. */
 unsigned int
 Vector::val2buf(void *val, bool reuse)
 {
@@ -558,6 +649,24 @@ Vector::val2buf(void *val, bool reuse)
 //
 // Returns: The number of bytes used to store the array.
  
+    /** Copies data from the Vector buffer.  This function assumes that
+	<i>val</i> points to an array large enough to hold N instances of
+	the `C' representation of the element type.  In the case of a
+	Vector containing compound elements, this function assumes that
+	<i>val</i> points to an array large enough to hold N instances of
+	the DODS class used to represent that type.
+
+	Use this function only with Vectors containing simple DODS
+	types.  See <tt>set_vec()</tt> to access members of Vectors containing
+	compound types.
+
+	@return The number of bytes used to store the array.
+	@param val A pointer to a pointer to the memory into which the
+	class data will be copied.  If the value pointed to is NULL,
+	memory will be allocated to hold the data, and the pointer value
+	modified accordingly.  The calling program is responsible for
+	deallocating the memory indicated by this pointer.  
+	@see Vector::set_vec */
 unsigned int
 Vector::buf2val(void **val)
 {
@@ -612,6 +721,24 @@ Vector::buf2val(void **val)
 //
 // Returns: False if a type mis-match is detected, True otherwise.
 
+    /** Sets an element of the vector to a given value.  If the type of
+	the input and the type of the Vector do not match, an error
+	condition is returned.
+
+	Use this function only with Vectors containing compound DODS
+	types.  See <tt>buf2val()</tt> to access members of Vectors containing
+	simple types.
+
+	NOTE: The memory allocated by this function should be freed using
+	delete, <i>not</i> delete[]!
+ 
+	@brief Sets element <i>i</i> to value <i>val</i>.
+	@return void
+	was a type mismatch.
+	@param i The index of the element to be changed.
+	@param val A pointer to the value to be inserted into the
+	array.  
+	@see Vector::buf2val */
 void
 Vector::set_vec(unsigned int i, BaseType *val)
 {
@@ -635,12 +762,15 @@ Vector::set_vec(unsigned int i, BaseType *val)
 
 }
  
-// Add the BaseType pointer to this ctor type instance. Propagate the name of
-// the BaseType instance to this instance. This ensures that variables at any
-// given level of the DDS table have unique names (i.e., that Arrays do not
-// have their default name "").
-// NB: Part p defaults to nil for this class
+/** @brief Add the BaseType pointer to this constructor type
+    instance. 
 
+    Propagate the name of the BaseType instance to this instance. This
+    ensures that variables at any given level of the DDS table have
+    unique names (i.e., that Arrays do not have their default name "").
+
+    NB: Part p defaults to nil for this class
+*/
 void
 Vector::add_var(BaseType *v, Part)
 {
@@ -700,6 +830,9 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.41  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.40  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.27 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.28 2002/06/18 15:36:24 tom Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -36,23 +36,39 @@ static char *messages[]={"Unknown error", "No such file",
 			 "No such variable", "Malformed expression",
 			 "No authorization", "Cannot read file"};
 
+/** @brief Create a default Error object.  */
+
 Error::Error()
     : _error_code(undefined_error), _error_message(""), 
       _program_type(undefined_prog_type), _program(0)
 {
 }
 
+/** @brief Create an Error object with an error code and a message */
 Error::Error(ErrorCode ec, string msg)
     : _error_code(ec), _error_message(msg), 
       _program_type(undefined_prog_type), _program(0)
 {
 }
 
+/** @brief Create an Error object with only a message. 
+
+    I've modified Error so that only a message string needs to be given.
+    In this case the constructor will use the message code
+    <tt>unknown_error</tt>. It is a bit misleading, but those
+    codes are turning out to be more of a problem than anything
+    else since they don't seem 
+    very useful but are a pain to supply. (10/11/2000 jhrg)
+
+*/
+
 Error::Error(string msg)
     : _error_code(unknown_error), _error_message(msg), 
       _program_type(undefined_prog_type), _program(0)
 {
 }
+
+/** @brief Create a descriptive Error object. */
 
 Error::Error(ErrorCode ec, string msg, ProgramType pt, char *pgm)
     : _error_code(ec), _error_message(msg), 
@@ -62,6 +78,7 @@ Error::Error(ErrorCode ec, string msg, ProgramType pt, char *pgm)
     strcpy(_program, pgm);
 }
 
+/** @brief Error object copy constructor. */
 Error::Error(const Error &copy_from)
     : _error_code(copy_from._error_code),
       _error_message(copy_from._error_message),
@@ -78,6 +95,7 @@ Error::~Error()
     delete _program; _program = 0;
 }
 
+/** The assignment operator copies the error correction. */
 Error &
 Error::operator=(const Error &rhs)
 {
@@ -102,12 +120,16 @@ Error::operator=(const Error &rhs)
     }
 }
 
-// To be a valid, an Error object must either be: 1) empty, 2) contain a
-// message and a program or 3) contain only a message. 
-//
-// NB: This mfunc does not test for malformed messages or programs - ones
-// where the code is defined but not the `data'.
+    /** Use this function to determine whether an Error object is
+	valid.  To be a valid, an Error object must either be: 1)
+	empty, 2) contain a message and a program or 3) contain only a
+	message.  
 
+        NB: This mfunc does not test for malformed messages or
+	programs - ones where the code is defined but not the `data'.
+	
+	@brief Is the Error object valid?
+	@return TRUE if the object is valid, FALSE otherwise. */
 bool
 Error::OK() const
 {
@@ -132,6 +154,14 @@ Error::OK() const
     return empty || message || program;
 }
 
+/** Given an input stream (FILE *) <tt>fp</tt>, parse an Error object from
+    stream. Values for fields of the Error object are parsed and
+    THIS is set accordingly.  This is how a DODS client might
+    receive an error object from a server.
+    
+    @brief Parse an Error object.
+    @param fp A valid file pointer to an input stream.
+    @return TRUE if no error was detected, FALSE otherwise.  */
 bool
 Error::parse(FILE *fp)
 {
@@ -164,6 +194,18 @@ Error::parse(FILE *fp)
       return OK();		// Check object consistancy
 }
     
+/** Creates a printable representation of the Error object.  It is
+    suitable for framing, and also for printing and sending over a
+    network. 
+
+    The printed representation produced by this function can be
+    parsed by the parse() memeber function. Thus parse and print
+    form a symetrical pair that can be used to send and receive an
+    Error object over the network in a MIME document.
+    
+    @brief Print the Error object on the given output stream.
+    @param os A pointer to the output stream on which the Error
+    object is to be rendered. */
 void
 Error::print(ostream &os) const
 {
@@ -191,6 +233,14 @@ Error::print(ostream &os) const
 }
 
 // deprecated
+/** With no argument, returns the Error object's error code. With an
+    argument, sets the error code to that value.
+	
+    @deprecated
+    @brief Get or set the error code.
+    @return The Error object's error code. 
+    @param ec The error code.  If this is not included, the
+    undefined error code will be stored. */
 ErrorCode
 Error::error_code(ErrorCode ec)
 {
@@ -206,6 +256,7 @@ Error::error_code(ErrorCode ec)
     }
 }
 
+/** @brief Get the error code. */
 ErrorCode
 Error::get_error_code() const
 {
@@ -213,7 +264,11 @@ Error::get_error_code() const
     return _error_code;
 }
 
-// Defaults to undefined error.
+/** @brief Set the error code 
+
+    If the input error code is an empty string, the error code is set
+    to "undefined error."
+*/
 void
 Error::set_error_code(ErrorCode ec)
 {
@@ -224,6 +279,14 @@ Error::set_error_code(ErrorCode ec)
 }
 
 // Deprecated
+/** With no argument, return a copy of the objet's error message string.
+    With an argument, set the object's error message to that string.
+    
+    @deprecated
+    @brief Get or set the error code.
+    @param msg The error message string.  If this is omitted, the
+    function simply returns a copy of the current message string.
+    @return A copy of the Error object's message string. */
 string
 Error::error_message(string msg)
 {
@@ -237,6 +300,7 @@ Error::error_message(string msg)
     }
 }
 
+/** @brief Get the error message. */
 string
 Error::get_error_message() const
 {
@@ -246,6 +310,7 @@ Error::get_error_message() const
 }
 
 // Default msg is ""
+/** @brief Set the error message. */
 void
 Error::set_error_message(string msg)
 {
@@ -253,6 +318,28 @@ Error::set_error_message(string msg)
 	assert(OK());
 }
 
+/** Either display the error message in a dialog box and offer the
+    user a single `OK' button or print the message to standard
+    error. If <tt>gui</tt> is not given, then use stderr. In addition, the
+    class Gui provides other means for the user to control how
+    messages are displayed and those may be used to select either
+    graphical or text devices.
+
+    Note that the void <tt>* gui</tt> gets cast to a pointer to Gui when
+    Error.cc is compiled with the preprocessor symbol <tt>GUI</tt> defined.
+    When that symbol is not defined, the method ignores the param
+    <tt>gui</tt>. I've hidden the type (GUI *) because when
+    <tt>GUI</tt> is not defined the dap++ library is built without
+    the Gui class. 
+
+    @brief Display the error message in a dialog box or on stderr.
+    @param pgui A pointer to a valid Gui class instance.  This would
+    be attached to a GUI process running on a client machine, and
+    that process will display the message.  If the pointer is not
+    provided, the message will be displayed on the client's stderr.
+
+    @see Gui
+    @see correct_error */
 void
 Error::display_message(void *pgui) const
 {
@@ -271,6 +358,13 @@ Error::display_message(void *pgui) const
 // 2/26/97
 // Deprecated
 
+/** With no argument, return the program type of the error object. With
+    an argument, set the error object's program type field.
+	
+    @deprecated
+    @brief Get or set the program type.
+    @return The program type of the object. 
+    @see ProgramType */
 ProgramType
 Error::program_type(ProgramType pt)
 {
@@ -283,6 +377,7 @@ Error::program_type(ProgramType pt)
     }
 }
 
+/** @brief get the program type. */
 ProgramType
 Error::get_program_type() const
 {
@@ -291,7 +386,11 @@ Error::get_program_type() const
     return _program_type;
 }
 
-// Default pt is undefined_prog_type
+/** @brief Set the program type.
+
+// The default program type t is undefined_prog_type.
+
+*/
 void
 Error::set_program_type(ProgramType pt)
 {
@@ -299,6 +398,15 @@ Error::set_program_type(ProgramType pt)
 }
 
 // Deprecated
+/** With no argument, return the error correction program. With an
+    argument, set the error correction program to a copy of that value.
+    
+    Note that this is not a pointer to a function, but a character
+    string containing the entire tcl, Java, or other program.
+
+    @deprecated
+    @brief  Get or set the error correction program.
+    @return the error correction program. */
 char *
 Error::program(char *pgm)
 {
@@ -311,12 +419,14 @@ Error::program(char *pgm)
     }
 }
 
+/** @brief Get the error handling program. */
 const char *
 Error::get_program() const
 {
   return _program;
 }
 
+/** @brief Set the error handling program. */
 void
 Error::set_program(char *pgm)
 {
@@ -324,17 +434,27 @@ Error::set_program(char *pgm)
   strcpy(_program, pgm);
 }
 
-// Assuming the object is OK, if the Error object has only a meesage, display
-// it in a dialog box. Once the user dismisses the dialog, return the null
-// string. However, if program() is true, then source the code it returns in
-// the Gui object and return the value of Gui::command(). Note that this
-// means that the code in the program must run itself (i.e., in addition to
-// any procedure definitions, etc. it must also contain the necessary
-// instructions to popup an initial window).
-//
-// I added a check for non-null Gui pointer. If this mfunc is called with a
-// null Gui pointer then the message text is displayed on stderr.
 
+/** This function runs the error correction program, if possible,
+    and returns a string that can be used as the `corrected'
+    value. If there is no error correction program or it is not
+    possible to run the program, the function simply displays the
+    error message. If the error correction program cannot be run,
+    the function returns the null string.
+    
+    If program() is true, then source the code it returns in
+    the Gui object and return the value of Gui::command(). Note that this
+    means that the code in the program must run itself (i.e., in addition to
+    any procedure definitions, etc. it must also contain the necessary
+    instructions to popup an initial window).
+
+    @brief Run the error correction program or print the error message.
+    @return A corrected string or "".  
+    @param pgui A pointer to a Gui class object handling a GUI
+    process on the client.  f this function is called with a
+    null Gui pointer then the message text is displayed on stderr.
+    @see Gui
+    @see display_message */
 string
 Error::correct_error(void *pgui) const
 {
@@ -352,6 +472,9 @@ Error::correct_error(void *pgui) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.28  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.27  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

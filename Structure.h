@@ -63,26 +63,28 @@
 
     The DODS structure is defined as a singly-linked list.  This means
     that Structure elements can be accessed either by name, with the
-    #var()# function, or by their position in the list, either with
-    the overloaded version of #var()#, or the combination of the
-    #first_var()# and #next_var()# functions.
+    <tt>var()</tt> function, or by their position in the list, either with
+    the overloaded version of <tt>var()</tt>, or the combination of the
+    <tt>first_var()</tt> and <tt>next_var()</tt> functions.
 
-    The #val2buf()# and #buf2val()# functions only return the size of
+    The <tt>val2buf()</tt> and <tt>buf2val()</tt> functions only
+    return the size of 
     the structure.  To read parts of a DODS Structure into an
-    application program, use the #buf2val()# function of the element
+    application program, use the <tt>buf2val()</tt> function of the element
     of the Structure in question. 
 
-    Note that the predicate-setting functions #set_send_p()# and
-    #set_read_p()# set their flags for the Structure as well as for
+    Note that the predicate-setting functions <tt>set_send_p()</tt> and
+    <tt>set_read_p()</tt> set their flags for the Structure as well as for
     each of the Structure's member elements.
 
     Similar to C, you can refer to members of Structure elements
     with a ``.'' notation.  For example, if the Structure has a member
     Structure called ``Tom'' and Tom has a member Float32 called
-    ``shoe\_size'', then you can refer to Tom's shoe size as
-    ``Tom.shoe\_size''. 
+    ``shoe_size'', then you can refer to Tom's shoe size as
+    ``Tom.shoe_size''. 
     
-    @memo Holds a structure (aggregate) type. */
+    @brief Holds a structure (aggregate) type.
+*/
 
 class Structure: public Constructor {
 private:
@@ -93,84 +95,66 @@ private:
     BaseType *exact_match(const string &name, btp_stack *s = 0);
 
 public:
-    /** The Structure constructor requires only the name of the variable
-	to be created.  The name may be omitted, which will create a
-	nameless variable.  This may be adequate for some applications. 
-      
-	@param n A string containing the name of the variable to be
-	created. 
+  Structure(const string &n = "");
 
-	@memo The Structure constructor. */
-    Structure(const string &n = "");
+  Structure(const Structure &rhs);
+  virtual ~Structure();
 
-    /** The Structure copy constructor. */
-    Structure(const Structure &rhs);
-    virtual ~Structure();
+  Structure &operator=(const Structure &rhs);
+  virtual BaseType *ptr_duplicate() = 0;
 
-    Structure &operator=(const Structure &rhs);
-    virtual BaseType *ptr_duplicate() = 0;
+  virtual int element_count(bool leaves = false);
+  virtual bool is_linear();
 
-    virtual int element_count(bool leaves = false);
-    virtual bool is_linear();
+  virtual void set_send_p(bool state);
+  virtual void set_read_p(bool state);
 
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
+  virtual unsigned int width();
 
-    virtual unsigned int width();
+  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			 bool ce_eval = true);
+  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
-
-    virtual bool read(const string &dataset) = 0;
+  virtual bool read(const string &dataset) = 0;
 
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.
 
-    /** Returns the size of the structure. */
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    /** Returns the size of the structure. */
-    virtual unsigned int buf2val(void **val);
+  virtual unsigned int val2buf(void *val, bool reuse = false);
+  virtual unsigned int buf2val(void **val);
 
-    /** Returns a pointer to the specified Structure element. */
-    virtual BaseType *var(const string &name, bool exact_match = true,
-			  btp_stack *s = 0);
+  virtual BaseType *var(const string &name, bool exact_match = true,
+			btp_stack *s = 0);
 
-    virtual BaseType *var(const string &name, btp_stack &s);
+  virtual BaseType *var(const string &name, btp_stack &s);
 
-    /** Adds an element to a Structure. */
-    virtual void add_var(BaseType *bt, Part p = nil);
+  virtual void add_var(BaseType *bt, Part part = nil);
 
-    /** Returns the pseudo-index (Pix) of the first structure element. */
-    Pix first_var();
+  Pix first_var();
 
-    /** Increments the input index to point to the next element in the
-	structure. */
-    void next_var(Pix &p);
+  void next_var(Pix &p);
 
-    /** Returns a pointer to the {\it p}th element. */
-    BaseType *var(Pix p);
+  BaseType *var(Pix p);
 
-    virtual void print_decl(ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
+  virtual void print_decl(ostream &os, string space = "    ",
+			  bool print_semi = true,
+			  bool constraint_info = false,
+			  bool constrained = false);
 
-    virtual void print_val(ostream &os, string space = "",
-			   bool print_decl_p = true);
+  virtual void print_val(ostream &os, string space = "",
+			 bool print_decl_p = true);
 
-    /** Prints the Structure and all elements of any Sequences contained
-	within. 
-	@see Sequence::print_all_vals
-    */
-    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
-				string space = "", bool print_decl_p = true);
+  virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
+			      string space = "", bool print_decl_p = true);
 
-    virtual bool check_semantics(string &msg, bool all = false);
+  virtual bool check_semantics(string &msg, bool all = false);
 };
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.41  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.40  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
  *

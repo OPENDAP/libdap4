@@ -34,7 +34,9 @@
 using std::cout;
 using std::ostream;
 
-/** The Data Attribute Structure is a set of name-value pairs used to
+/** @brief Hold attribute data for a DODS dataset.
+
+    The Data Attribute Structure is a set of name-value pairs used to
     describe the data in a particular dataset. The name-value pairs are
     called the ``attributes''. The values may be of any of the DODS simple
     data types (Byte, Int16, UInt16, Int32, UInt32, Float32, Float64, String
@@ -51,10 +53,10 @@ using std::ostream;
     In the following example of a DAS, several of the attribute
     collections have names corresponding to the names of variables in
     the DDS example.  The attributes in that collection are said to
-    belong to that variable.  For example, the #lat# variable has an
-    attribute ``units'' of ``degrees\_north''.
+    belong to that variable.  For example, the <tt>lat</tt> variable has an
+    attribute ``units'' of ``degrees_north''.
 
-    \begin{verbatim}
+    <pre>
     Attributes {
         GLOBAL {
             String title "Reynolds Optimum Interpolation (OI) SST";
@@ -84,7 +86,7 @@ using std::ostream;
             Int32 missing_value 32767;
         }
     }
-    \end{verbatim}
+    </pre>
 
     Attributes may have arbitrary names, although in most datasets it
     is important to choose these names so a reader will know what they
@@ -98,7 +100,6 @@ using std::ostream;
     The DAS class is simply a sequence of attribute tables and names.
     It may be thought of as the top level of the attribute hierarchy.
 
-    @memo Holds a DODS Data Attribute Structure.
     @see DDS 
     @see AttrTable */
 class DAS : public AttrTable {
@@ -107,77 +108,35 @@ protected:
     AttrTable *das_find(string name);
 
 public:
-    /** Create a DAS from a single attribute table.  
+  DAS(AttrTable *dflt=(AttrTable *)NULL, unsigned int sz=0);
 
-	\note{In an older version of this class, #dflt# and #sz#
-	initialized a hash table. That is no longer used and these
-	params should no longer matter. Note that this constructor is
-	effectively the empty constructor. 11/23/98 jhrg}
+  DAS(AttrTable *attr_table, string name);
 
-	@param dflt A pointer to a valid attribute table.
-	@param sz The number of entries in the table. */
-    DAS(AttrTable *dflt=(AttrTable *)NULL, unsigned int sz=0);
+  virtual ~DAS();
 
-    /** Create a DAS object with one attribute table. Use #append_attr()#
-	to add additional attributes.
+  Pix first_var();
+  void next_var(Pix &p);
+  string get_name(Pix p);
+  AttrTable *get_table(Pix p);
 
-	@see append_attr()
-	@param attr_table The initial AttrTable. */
-    DAS(AttrTable *attr_table, string name);
+  AttrTable *get_table(const string &name);
+  AttrTable *get_table(const char *name); // avoid converting char * to Pix
 
-    virtual ~DAS();
+  AttrTable *add_table(const string &name, AttrTable *at);
+  AttrTable *add_table(const char *name, AttrTable *at);
 
-    /** Returns a pointer to the first attribute table. */
-    Pix first_var();
-    /** Increments an attribute table pointer to indicate the next table
-	in the series. */
-    void next_var(Pix &p);
-    /** Returns the name of the indicated attribute table. */
-    string get_name(Pix p);
-    /** Returns the indicated attribute table. */
-    AttrTable *get_table(Pix p);
+  void parse(string fname);
+  void parse(int fd);
+  void parse(FILE *in=stdin);
 
-    /** Returns the attribute table with the given name. 
-	@name get\_table()
-    */
-
-    //@{
-    /** Returns the attribute table with the given name string. */
-    AttrTable *get_table(const string &name);
-    /** Returns the attribute table with the given name. */
-    AttrTable *get_table(const char *name); // avoid converting char * to Pix
-    //@}
-
-    /** Adds an attribute table to the DAS.
-	@name add\_table()
-    */
-    //@{
-    /** Adds an attribute table to the DAS. */
-    AttrTable *add_table(const string &name, AttrTable *at);
-    /** Adds an attribute table to the DAS. */
-    AttrTable *add_table(const char *name, AttrTable *at);
-    //@}
-
-    /** Reads a DAS in from an external source. 
-
-	@name parse()
-    */
-    //@{
-    /** Reads a DAS from the named file. */
-    void parse(string fname);
-    /** Reads a DAS from the given file descriptor. */
-    void parse(int fd);
-    /** Reads a DAS from an open file descriptor. */
-    void parse(FILE *in=stdin);
-    //@}
-
-    /** Creates an ASCII representation of a DAS on the given output
-	stream. */
-    void print(ostream &os = cout, bool dereference = false);
+  void print(ostream &os = cout, bool dereference = false);
 };
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.32  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.31  2001/08/27 16:38:34  jimg
  * Merged with release-3-2-6
  *

@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.7 2002/06/03 22:21:15 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.8 2002/06/18 15:36:24 tom Exp $"};
 
 #include <iostream>
 #include <strstream>
@@ -210,6 +210,7 @@ GSEClause::compute_indices()
 
 // Public methods
 
+/** @brief Create an instance using discrete parameters. */
 GSEClause::GSEClause(Grid *grid, const string &map, const double value,
 		     const relop op) 
     : d_map(0),
@@ -226,6 +227,7 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value,
     compute_indices();
 }
 
+/** @brief Create an instance using discrete parameters. */
 GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
 		     const relop op1, const double value2, const relop op2) 
     : d_map(0),
@@ -242,14 +244,18 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
     compute_indices();
 }
 
+/** @brief Create an instance using a grid and an expression. */
 GSEClause::GSEClause(Grid *grid, const string &expr)
 {
 }
 
+/** @brief Create an instance using a grid and an expression. */
 GSEClause::GSEClause(Grid *grid, char *expr)
 {
 }
 
+/** Class invariant. 
+    @return True if the object is valid, otherwise False. */
 bool
 GSEClause::OK() const
 {
@@ -261,36 +267,52 @@ GSEClause::OK() const
     return true;
 }
 
+/** @brief Get a pointer to the map variable constrained by this clause.
+    @return The Array object. */
 Array *
 GSEClause::get_map() const
 {
     return d_map;
 }
 
+/** @brief Set the pointer to the map vector contrained by this clause.
+
+    Note that this method also sets the name of the map vector.
+    @return void */
 void
 GSEClause::set_map(Array *map)
 {
     d_map = map;
 }
 
+/** @brief Get the name of the map variable constrained by this clause.
+    @return The Array object's name. */
 string
 GSEClause::get_map_name() const
 {
     return d_map->name();
 }
 
+/** @brief Get the starting index of the clause's map variable as
+    constrained by this clause.
+    @return The start index. */
 int
 GSEClause::get_start() const
 {
     return d_start;
 }
 
+/** @brief Set the starting index.
+    @return void */
 void
 GSEClause::set_start(int start)
 {
     d_start = start;
 }
 
+/** @brief Get the stopping index of the clause's map variable as
+    constrained by this clause.
+    @return The stop index. */
 int
 GSEClause::get_stop() const
 {
@@ -298,18 +320,28 @@ GSEClause::get_stop() const
     return d_stop;
 }
 
+/** @brief Set the stopping index.
+    @return void */
 void
 GSEClause::set_stop(int stop)
 {
     d_stop = stop;
 }
 
+/** @brief Get the minimum map vector value. 
+
+    Useful in messages back to users.
+    @return The minimum map vetor value. */
 string
 GSEClause::get_map_min_value() const
 {
     return d_map_min_value;
 }
 
+/** @brief Get the maximum map vector value. 
+
+    Useful in messages back to users.
+    @return The maximum map vetor value. */
 string
 GSEClause::get_map_max_value() const
 {
@@ -317,6 +349,9 @@ GSEClause::get_map_max_value() const
 }
 
 // $Log: GSEClause.cc,v $
+// Revision 1.8  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.7  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

@@ -57,10 +57,18 @@ Structure::_duplicate(const Structure &s)
     }
 }
 
+/** The Structure constructor requires only the name of the variable
+    to be created.  The name may be omitted, which will create a
+    nameless variable.  This may be adequate for some applications. 
+      
+    @param n A string containing the name of the variable to be
+    created. 
+*/
 Structure::Structure(const string &n) :Constructor(n, dods_structure_c)
 {
 }
 
+/** The Structure copy constructor. */
 Structure::Structure(const Structure &rhs) :Constructor(rhs)
 {
     _duplicate(rhs);
@@ -135,8 +143,12 @@ Structure::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
-// NB: Part p defaults to nil for this class
+// NB: Part defaults to nil for this class
 
+/** Adds an element to a Structure. 
+
+    @param bt A pointer to the DODS type variable to add to this Structure.
+    @param part defaults to nil */
 void 
 Structure::add_var(BaseType *bt, Part)
 {
@@ -197,15 +209,16 @@ Structure::deserialize(XDR *source, DDS *dds, bool reuse)
     return false;
 }
 
-// This mfunc assumes that val contains values for all the elements of the
-// strucuture in the order those elements are declared.
-
+/**  This function assumes that val contains values for all the elements of the
+     structure in the order those elements are declared.
+     @return Returns the size of the structure. */
 unsigned int
 Structure::val2buf(void *, bool)
 {
     return sizeof(Structure);
 }
 
+/** Returns the size of the structure. */
 unsigned int
 Structure::buf2val(void **)
 {
@@ -265,8 +278,7 @@ Structure::leaf_match(const string &name, btp_stack *s)
     return 0;
 }
 
-// Breadth-first search for NAME. If NAME contains one or more dots (.) ...
-
+/** Breadth-first search for NAME. If NAME contains one or more dots (.) */
 BaseType *
 Structure::exact_match(const string &name, btp_stack *s)
 {
@@ -305,6 +317,7 @@ Structure::exact_match(const string &name, btp_stack *s)
     return 0;
 }
 
+/** Returns the pseudo-index (Pix) of the first structure element. */
 Pix
 Structure::first_var()
 {
@@ -314,6 +327,8 @@ Structure::first_var()
 	return _vars.first();
 }
 
+/** Increments the input index to point to the next element in the
+    structure. */
 void
 Structure::next_var(Pix &p)
 {
@@ -322,6 +337,7 @@ Structure::next_var(Pix &p)
     }
 }
 
+/** Returns a pointer to the <i>p</i>th element. */
 BaseType *
 Structure::var(Pix p)
 {
@@ -382,6 +398,10 @@ Structure::print_val(ostream &os, string space, bool print_decl_p)
 // Potential bug: This works only for structures that have sequences at their
 // top level. Will it work when sequences are more deeply embedded?
 
+/** Prints the Structure and all elements of any Sequences contained
+    within. 
+    @see Sequence::print_all_vals
+*/
 void
 Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool print_decl_p)
 {
@@ -451,6 +471,9 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.49  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.48  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

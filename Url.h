@@ -33,7 +33,7 @@
 
 const unsigned int max_url_len = 255;
 
-/** Holds an internet address (URL).
+/** @brief Holds an internet address (URL).
 
     @see BaseType
     @see Str */
@@ -46,23 +46,17 @@ protected:
     friend class Str;
 
 public:
-  /** The URL constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
+  Url(const string &n = "");
+  virtual ~Url() {}
 
-      @memo The URL constructor.
-      */
-    Url(const string &n = "");
-    virtual ~Url() {}
-
-    virtual BaseType *ptr_duplicate() = 0;
+  virtual BaseType *ptr_duplicate() = 0;
 };
 
 /* 
  * $Log: Url.h,v $
+ * Revision 1.20  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.19  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

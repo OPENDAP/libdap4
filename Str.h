@@ -42,7 +42,7 @@
 
 const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1; 
 
-/** Holds character string data.
+/** @brief Holds character string data.
 
     @see BaseType
     @see Url
@@ -54,14 +54,6 @@ protected:
     string _buf;
 
 public:
-  /** The Str constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
-
-      @memo The Str constructor. */
     Str(const string &n = "");
 
     virtual ~Str() {}
@@ -84,7 +76,7 @@ public:
 
     virtual bool read(const string &dataset) = 0;
 
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
     virtual void print_val(ostream &os, string space = "",
@@ -95,6 +87,9 @@ public:
 
 /* 
  * $Log: Str.h,v $
+ * Revision 1.34  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.33  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *

@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.26 2002/06/03 22:21:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.27 2002/06/18 15:36:24 tom Exp $"};
 
 #include <iostream>
 #if defined(__GNUG__) || defined(WIN32)
@@ -37,6 +37,74 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.26 2002/06/03 22:21:15 j
 using std::endl;
 using std::ends;
 using std::ostrstream;
+
+/** Create an instance of DODSFilter using the command line
+    arguments passed by the CGI (or other) program.  The default
+    constructor is private; this and the copy constructor (which is
+    just the default copy constructor) are the only way to create an
+    instance of DODSFilter.
+
+    These are the valid options:
+
+    <dl>
+    <dt><i>filename</i><dd>
+    The name of the file on which the filter is to operate.  Usually
+    this would be the file whose data has been requested.
+
+    <dt><tt>-c</tt><dd>
+    Send compressed data. Data are compressed using the deflate program.
+    The W3C's libwww will recognize this and automatically decompress
+    these data.
+
+    <dt><tt>-e</tt> <i>expression</i><dd>
+    This option specifies a non-blank constraint expression used to
+    subsample a dataset.
+
+    <dt><tt>-v</tt> <i>cgi-version</i><dd> Set the CGI/Server version to
+    <tt>cgi-version</tt>. This is a way for the caller to set version
+    information passed back to the client either as the response to a
+    version request of in the response headers.
+
+    <dt><tt>-V</tt><dd> Specifies that this request is just for version
+    information. Servers can check to see if this was given using the
+    <tt>version</tt> mfunc. Note that version information is sent from within
+    DODSFilter so that sophisticated servers can support versioning data
+    sources inaddition to the server software.
+
+    <dt><tt>-d</tt> <i>ancdir</i><dd>
+    Specifies that ancillary data be sought in the <i>ancdir</i>
+    directory. 
+
+    <dt><tt>-f</tt> <i>ancfile</i><dd>
+    Specifies that ancillary data may be found in a file called 
+    <i>ancfile</i>.
+
+    <dt><tt>-r</tt> <i>cache directory</i><dd>
+    Specify a directory to use if/when files are to be cached. Not all
+    handlers support caching and each uses its own rules tailored to a
+    specific file or data type.
+
+    <dt><tt>-t</tt> <i>list of types</i><dd> Specifies a list of
+    types accepted by 
+    the client. This information is passed to a server by a client using
+    the XDODS-Accept-Types header. The comma separated list contains each
+    type the client can understand <i>or</i>, each type the client does
+    <i>not</i> understand. In the latter case the type names are prefixed
+    by a {\tt !}. If the list contains only the keyword `All', then the
+    client is declaring that it can understand all DODS types.
+
+    <dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is
+    a conditional request; send a complete response if and only if
+    the data has changed since <i>time</i>. If it has not changed
+    since <i>time</i>, then send a 304 (Not Modified)
+    response. The <i>time</i> parameter is the
+    <tt>Last-Modified</tt> time from an If-Modified-Since
+    condition GET request.  It is given in seconds since the start
+    of the Unix epoch (Midnight, 1 Jan 1970).
+
+    </dl>
+
+    @brief DODSFilter constructor. */
 
 DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false), 
     bad_options(false), d_conditional_request(false), dataset(""), ce(""),
@@ -95,6 +163,12 @@ DODSFilter::~DODSFilter()
 {
 }
 
+/** Use this function to test whether the options passed via argc
+    and argv are valid. 
+
+    @brief Check whether the DODSFilter was initialized with valid
+    arguments. 
+    @return True if the class state is OK, false otherwise. */
 bool
 DODSFilter::OK()
 {
@@ -102,30 +176,70 @@ DODSFilter::OK()
     return !bad_options;
 }
 
+/** Use this function to check whether the client requested version
+    information.  In addition to returning version information about
+    the DODS software, the server can also provide version
+    information about the dataset itself.
+
+    @brief Should the filter send version information to the client
+    program?
+
+    @return TRUE if the -v option was given indicating that the filter
+    should send version information back to the client, FALSE
+    otherwise. 
+    @see DODSFilter::send_version_info */
 bool
 DODSFilter::version()
 {
     return ver;
 }
 
+/** @brief Is this request conditional? 
+
+    @return True if the request is conditional.
+    @see get_request_if_modified_since(). */
 bool
 DODSFilter::is_conditional()
 {
     return d_conditional_request;
 }
 
+/** Set the CGI/Server version number. Servers use this when answering
+    requests for version information. The vesion `number' should include
+    both the name of the server (e.g., <tt>ff_dods</tt>) as well
+    as the version 
+    number. Since this information is typically divined by configure,
+    it's up to the executable to poke the correct value in using this
+    method.
+
+    Note that the -v switch that this class understands is deprecated
+    since it is usually called by Perl code. It makes more sense to have
+    the actual C++ software set the version string. 
+
+    @param version A version string for this server. */
 void
 DODSFilter::set_cgi_version(string version)
 {
     cgi_ver = version;
 }
 
+/** Return the version information passed to the instance when it was
+    created. This string is passed to the DODSFilter ctor using the -v
+    option.
+
+    @return The version string supplied at initialization. */
 string
 DODSFilter::get_cgi_version()
 {
     return cgi_ver;
 }
 
+/** Return the entire constraint expression in a string.  This
+    includes both the projection and selection clauses, but not the
+    question mark.
+
+    @brief Get the constraint expression. 
+    @return A string object that contains the constraint expression. */
 string
 DODSFilter::get_ce()
 {
@@ -138,6 +252,14 @@ DODSFilter::set_ce(string _ce)
     ce = www2id(_ce, "%", "%20");
 }
 
+/** The ``dataset name'' is the filename or other string that the
+    filter program will use to access the data. In some cases this
+    will indicate a disk file containing the data.  In others, it
+    may represent a database query or some other exotic data
+    access method. 
+
+    @brief Get the dataset name. 
+    @return A string object that contains the name of the dataset. */
 string
 DODSFilter::get_dataset_name()
 {
@@ -150,18 +272,54 @@ DODSFilter::set_dataset_name(const string _dataset)
   dataset = _dataset;
 }
 
+/** To read version information that is specific to a certain
+    dataset, override this method with an implementation that does
+    what you want. By default, this returns an empty string.
+
+    @brief Get the version information for the dataset.  
+    @return A string object that contains the dataset version
+    information.  */ 
 string
 DODSFilter::get_dataset_version()
 {
     return "";
 }
 
+/** Get the dataset's last modified time. This returns the time at which
+    the dataset was last modified as defined by UNIX's notion of
+    modification. This does not take into account the modification of an
+    ancillary DAS or DDS. Time is given in seconds since the epoch (1 Jan
+    1970 00:00:00 GMT).
+
+    This method perform a simple check on the file named by the dataset
+    given when the DODSFilter instance was created. If the dataset is not
+    a filter, this method returns the current time. Servers which provide
+    access to non-file-based data should subclass DODSFilter and supply a
+    more suitable version of this method.
+
+    From the stat(2) man page: ``Traditionally, <tt>st_mtime</tt>
+    is changed by mknod(2), utime(2), and write(2). The
+    <tt>st_mtime</tt> is not changed for 
+    changes in owner, group, hard link count, or mode.''
+	
+    @return Time of the last modification in seconds since the epoch.
+    @see get_das_last_modified_time()
+    @see get_dds_last_modified_time() */
 time_t
 DODSFilter::get_dataset_last_modified_time()
 {
     return last_modified_time(dataset);
 }
 
+/** Get the last modified time for the dataset's DAS. This time, given in
+    seconds since the epoch (1 Jan 1970 00:00:00 GMT), is the greater of
+    the datasets's and any ancillary DAS' last modified time.
+
+    @param anc_location A directory to search for ancillary files (in
+    addition to the CWD).
+    @return Time of last modification of the DAS.
+    @see get_dataset_last_modified_time()
+    @see get_dds_last_modified_time() */
 time_t
 DODSFilter::get_das_last_modified_time(const string &anc_location)
 {
@@ -170,6 +328,13 @@ DODSFilter::get_das_last_modified_time(const string &anc_location)
 	       get_dataset_last_modified_time()); 
 }
 
+/** Get the last modified time for the dataset's DDS. This time, given in
+    seconds since the epoch (1 Jan 1970 00:00:00 GMT), is the greater of
+    the datasets's and any ancillary DDS' last modified time.
+
+    @return Time of last modification of the DDS.
+    @see get_dataset_last_modified_time()
+    @see get_dds_last_modified_time() */
 time_t
 DODSFilter::get_dds_last_modified_time(const string &anc_location)
 {
@@ -178,6 +343,19 @@ DODSFilter::get_dds_last_modified_time(const string &anc_location)
 	       get_dataset_last_modified_time()); 
 }
 
+/** Get the last modified time to be used for a particular data request.
+    This method should look at both the contraint expression and any
+    ancillary files for this dataset. The implementation provided here
+    returns the latest time returned by the <tt>get_dataset</tt>...(),
+    <tt>get_das</tt>...() and <tt>get_dds</tt>...() methods and
+    does not currently check the CE.
+
+    @param anc_location A directory to search for ancillary files (in
+    addition to the CWD).
+    @return Time of last modification of the data.
+    @see get_dataset_last_modified_time()
+    @see get_das_last_modified_time()
+    @see get_dds_last_modified_time() */
 time_t
 DODSFilter::get_data_last_modified_time(const string &anc_location)
 {
@@ -193,24 +371,55 @@ DODSFilter::get_data_last_modified_time(const string &anc_location)
     return max(m, n); 
 }
 
+/** Get the value of a conditional request's If-Modified-Since header.
+    This value is used to determine if the request should get a full
+    response or a Not Modified (304) response. The time is given in
+    seconds since the Unix epoch (midnight, 1 Jan 1970). If no time was
+    given with the request, this methods returns -1.
+
+    @return If-Modified-Since time from a condition GET request. */
 time_t
 DODSFilter::get_request_if_modified_since()
 {
     return d_if_modified_since;
 }
 
+/** The <tt>cache_dir</tt> is used to hold the cached .dds and .das files.
+    By default, this returns an empty string (store cache files in
+    current directory.
+
+    @brief Get the cache directory.
+    @return A string object that contains the cache file directory.  */
 string
 DODSFilter::get_cache_dir()
 {
   return cache_dir;
 }
 
+/** Get the list of accepted datatypes sent by the client. If no list was
+    sent, return the string `All'. 
+
+    NB: The funny spelling `accept types' instead of `accepted types'
+    mirrors the name of the HTTP request header field name which in turn
+    mirrors the common practice of using `accept' over `accepted'.
+
+    @see DODSFilter
+    @return A string containing a list of the accepted types. */
 string
 DODSFilter::get_accept_types()
 {
     return accept_types;
 }
 
+/** Read the ancillary DAS information and merge it into the input
+    DAS object.
+
+    @brief Test if ancillary data must be read.
+    @param das A DAS object that will be augmented with the
+    ancillary data attributes.
+    @param anc_location The directory in which the external DAS file resides.
+    @return void
+    @see DAS */
 void
 DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 {
@@ -223,6 +432,15 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 	das.parse(in);
 }
 
+/** Read the ancillary DDS information and merge it into the input
+    DDS object. 
+
+    @brief Test if ancillary data must be read.
+    @param dds A DDS object that will be augmented with the
+    ancillary data properties.
+    @param anc_location The directory in which the external DAS file resides.
+    @return void
+    @see DDS */
 void
 DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
 {
@@ -238,6 +456,15 @@ static const char *emessage = \
 "DODS internal server error; usage error. Please report this to the dataset \
 maintainer, or to support@unidata.ucar.edu.";
 
+/** This message is printed when the filter program is incorrectly
+    invoked by the dispatch CGI.  This is an error in the server
+    installation or the CGI implementation, so the error message is
+    written to stderr instead of stdout.  A server's stderr messages
+    show up in the httpd log file. In addition, an error object is
+    sent back to the client program telling them that the server is
+    broken. 
+
+    @brief Print usage information for a filter program. */
 void 
 DODSFilter::print_usage()
 {
@@ -251,6 +478,11 @@ DODSFilter::print_usage()
     throw Error(unknown_error, emessage);
 }
 
+/** This function formats and sends to stdout version
+    information from the httpd server, the server dispatch scripts,
+    the DODS core software, and (optionally) the dataset.
+
+    @brief Send version information back to the client program. */ 
 void 
 DODSFilter::send_version_info()
 {
@@ -271,6 +503,16 @@ DODSFilter::send_version_info()
 
 // I've written a few unit tests for this method (see DODSFilterTest.cc) but
 // it's very hard to test well. 5/1/2001 jhrg
+/** This function formats and prints an ASCII representation of a
+    DAS on stdout.  This has the effect of sending the DAS object
+    back to the client program.
+
+    @brief Transmit a DAS.
+    @param os The output stream to which the DAS is to be sent.
+    @param das The DAS object to be sent.
+    @param anc_location The directory in which the external DAS file resides.
+    @return void
+    @see DAS */
 void
 DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location)
 {
@@ -291,6 +533,20 @@ DODSFilter::send_das(DAS &das, const string &anc_location)
     send_das(cout, das, anc_location);
 }
 
+/** This function formats and prints an ASCII representation of a
+    DDS on stdout.  When called by a CGI program, this has the
+    effect of sending a DDS object back to the client
+    program. Either an entire DDS or a constrained DDS may be sent.
+
+    @brief Transmit a DDS.
+    @param os The output stream to which the DAS is to be sent.
+    @param dds The DDS to send back to a client.
+    @param constrained If this argument is true, evaluate the
+    current constraint expression and send the `constrained DDS'
+    back to the client. 
+    @param anc_location The directory in which the external DAS file resides.
+    @return void
+    @see DDS */
 void
 DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
 		     const string &anc_location)
@@ -319,6 +575,20 @@ DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location)
     send_dds(cout, dds, constrained, anc_location);
 }
 
+/** Send the data in the DDS object back to the client
+    program.  The data is encoded in XDR format, and enclosed in a
+    MIME document which is all sent to stdout.  This has the effect
+    of sending it back to the client.
+
+    @brief Transmit data.
+    @param dds A DDS object containing the data to be sent.
+    @param data_stream A pointer to the XDR sink into which the data
+    is to be put for encoding and transmission.
+    @param anc_location A directory to search for ancillary files (in
+    addition to the CWD).  This is used in a call to 
+    get_data_last_modified_time(). 
+    @return void
+    @see DDS */
 void
 DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 {
@@ -345,6 +615,9 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.27  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.26  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

@@ -33,9 +33,9 @@ using std::ostream;
 
 /** The most common errors within DODS have special codes so that they
     can be spotted easily by the DODS client software. Any error
-    without a matching code gets the #unknown_error# code.
+    without a matching code gets the <tt>unknown_error</tt> code.
 
-    \begin{verbatim}
+    <pre>
     enum ErrorCode {
        undefined_error = -1,
        unknown_error,
@@ -46,9 +46,9 @@ using std::ostream;
        no_authorization, 
        can_not_read_file
     };
-    \end{verbatim}
+    </pre>
 
-    @memo An enumerated type for common errors.  */
+    @brief An enumerated type for common errors.  */
 enum ErrorCode {
     undefined_error = -1,
     unknown_error,		// any error not one of the followinng
@@ -66,20 +66,20 @@ enum ErrorCode {
     member function of the Error class. If an Error object does not
     have an associated correction program, the program type is NULL.
 
-    \begin{verbatim}
+    <pre>
     enum ProgramType {
        undefined_prog_type = -1,
        no_program, 
        java,
        tcl
     };
-    \end{verbatim}
+    </pre>
 
     Note that as of DODS Core version 2.15, only the tcl
     implementation is functional.  You can include a Java program, but
     it will not work properly. 
 
-    @memo An enumerated type for `correction programs'.*/
+    @brief An enumerated type for `correction programs'.*/
 
 enum ProgramType {
     undefined_prog_type = -1,
@@ -97,10 +97,10 @@ enum ProgramType {
     should never be displayed to the user. The program or function can
     be used for error correction controlled by the user.
 
-    This class is used on both clients and servers.  The #print()# and
-    #parse()# methods are used to send the object back and forth.
+    This class is used on both clients and servers.  The <tt>print()</tt> and
+    <tt>parse()</tt> methods are used to send the object back and forth.
 
-    @memo A class for error processing.
+    @brief A class for error processing.
     @author jhrg */
 
 class Error {
@@ -114,184 +114,69 @@ public:
     /** It is not possible to create an Error object with only an error code;
 	you must supply at a minimum a code and a message. In this case the
 	correction program and program type will be null. In addition, if a
-	program type is given a program {\it must} also be given. 
-
-	I've modified Error so that only a message string needs to be given.
-	In this case the constructor will use the message code
-	`unknown_error'. It is a bit missleading, but those codes are turning
-	out to be more of a problem than anything else since they don't seem
-	very useful but are a pain to supply. 10/11/2000 jhrg
+	program type is given a program <i>must</i> also be given. 
 
 	Other class constructors should be the only callers of this object's
 	default constructor.
  
-	@memo Constructors for the Error object
+	@brief Constructors for the Error object
 	@name Constructors */
     //@{
-    ///
     Error(ErrorCode ec, string msg);
-    ///
     Error(string msg);
-    ///
     Error(ErrorCode ec, string msg, ProgramType pt, char *pgm);
-    ///
     Error();
     //@}
 
-    /** Copy constructor for Error class. */
     Error(const Error &copy_from);
-    
     virtual ~Error();
 
-    /** The assignment operator copies the error correction. */
-    Error &operator=(const Error &rhs);
+  Error &operator=(const Error &rhs);
+  bool OK() const;
 
-    /** Use this function to determine whether an Error object is
-	valid. An Error object is valid if it contains either an error
-	code and message and an optional program type and program.
-	
-	@memo Is the Error object valid?
-	@return TRUE if the object is valid, FALSE otherwise. */
-    bool OK() const;
+  bool parse(FILE *fp);
 
-    /** Given an input stream (FILE *) #fp#, parse an Error object from
-	stream. Values for fields of the Error object are parsed and
-	THIS is set accordingly.  This is how a DODS client might
-	receive an error object from a server.
-    
-	@memo Parse an Error object.
-	@param fp A valid file pointer to an input stream.
-	@return TRUE if no error was detected, FALSE otherwise.  */
-    bool parse(FILE *fp);
+  void print(ostream &os = cout) const;
 
-    /** Creates a printable representation of the Error object.  It is
-	suitable for framing, and also for printing and sending over a
-	network. 
-
-	The printed representation produced by this function can be
-	parsed by the parse() memeber function. Thus parse and print
-	form a symetrical pair that can be used to send and receive an
-	Error object over the network in a MIME document.
-    
-	@memo Print the Error object on the given output stream.
-	@param os A pointer to the output stream on which the Error
-	object is to be rendered. */
-    void print(ostream &os = cout) const;
-
-  //@{ @name Accessors
-  /** Get the error code. */
   ErrorCode get_error_code() const;
   
-  /** Get the error message. */
   string get_error_message() const;
     
-  /** get the program type. */
   ProgramType get_program_type() const;
 
-  /** Get the error handling program. */
-    const char *get_program() const;
-  //@}
+  const char *get_program() const;
 
-  //@{ @name Mutators
-  /** Set the error code */
   void set_error_code(ErrorCode ec = undefined_error);
     
-  /** Set the error message. */
   void set_error_message(string msg = "");
     
-  /** Set the program type.*/
   void set_program_type(ProgramType pt = undefined_prog_type);
 
-  /** Set the error handling program. */
   void set_program(char *program);
-  //@}
 
-    /** Either display the error message in a dialog box and offer the
-	user a single `OK' button or print the message to standard
-	error. If #gui# is not given, then use stderr. In addition, the
-	class Gui provides other means for the user to control how
-	messages are displayed and those may be used to select either
-	graphical or text devices.
+  void display_message(void *gui = 0) const;
 
-	Note that the void * #gui# gets cast to a pointer to Gui when
-	Error.cc is compiled with the preprocessor symbol #GUI# defined.
-	When that symbol is not defined, the method ignores the param #gui#.
-	I've hidden the type (GUI *) because when #GUI# is not defined the
-	dap++ library is built without the Gui class.
+  string correct_error(void *gui) const;
 
-	@memo Display the error message in a dialog box or on stderr.
-	@param gui A pointer to a valid Gui class instance.  This would
-	be attached to a GUI process running on a client machine, and
-	that process will display the message.  If the pointer is not
-	provided, the message will be displayed on the client's stderr.
-
-	@see Gui
-	@see correct_error */
-    void display_message(void *gui = 0) const;
-
-    /** This function runs the error correction program, if possible,
-	and returns a string that can be used as the `corrected'
-	value. If there is no error correction program or it is not
-	possible to run the program, the function simply displays the
-	error message. If the error correction program cannot be run,
-	the function returns the null string.
-    
-	@memo Run the error correction program or print the error message.
-	@return A corrected string or "".  
-	@param gui A pointer to a Gui class object handling a GUI
-	process on the client.
-	@see Gui
-	@see display_message */
-    string correct_error(void *gui) const;
-
-  /** @{ @name Deprecated methods
+  /** @name Deprecated methods
       These methods should not be used because combining the accessors and
       mutators makes using const objects almost impossible for clients of
       this class. */
-
-    /** With no argument, return a copy of the objet's error message string.
-	With an argument, set the object's error message to that string.
+  //@{
+  string error_message(string msg = "");
     
-	@deprecated
-	@memo Get or set the error code.
-	@param msg The error message string.  If this is omitted, the
-	function simply returns a copy of the current message string.
-	@return A copy of the Error object's message string. */
-    string error_message(string msg = "");
-    
-    /** With no argument, return the program type of the error object. With
-	an argument, set the error object's program type field.
-	
-	@deprecated
-	@memo Get or set the program type.
-	@return The program type of the object. 
-	@see ProgramType */
-    ProgramType program_type(ProgramType pt = undefined_prog_type);
+  ProgramType program_type(ProgramType pt = undefined_prog_type);
 
-    /** With no argument, return the error correction program. With an
-	argument, set the error correction program to a copy of that value.
-    
-	Note that this is not a pointer to a function, but a character
-	string containing the entire tcl, Java, or other program.
+  char *program(char *program = 0);
 
-	@deprecated
-	@memo  Get or set the error correction program.
-	@return the error correction program. */
-    char *program(char *program = 0);
-
-    /** With no argument, returns the Error object's error code. With an
-	argument, sets the error code to that value.
-	
-	@deprecated
-	@memo Get or set the error code.
-	@return The Error object's error code. 
-	@param ec The error code.  If this is not included, the
-	undefined error code will be stored. */
-    ErrorCode error_code(ErrorCode ec = undefined_error);
+  ErrorCode error_code(ErrorCode ec = undefined_error);
   //@}
 };
 
 // $Log: Error.h,v $
+// Revision 1.22  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.21  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

@@ -38,14 +38,14 @@
 #include "BaseType.h"
 #endif
 
-/** Holds a 32-bit signed integer. 
+/** @brief Holds a 32-bit signed integer. 
 
     @see BaseType
     */
 
 class Int32: public BaseType {
-    /** This class allows Byte, ..., Float64 acesss to _buf to simplify and
-	speed up the relational operators.
+    /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to 
+	simplify and speed up the relational operators.
 
 	NB: According to Stroustrup it does not matter where (public, private
 	or protected) friend classes are declared. */
@@ -60,43 +60,38 @@ protected:
     dods_int32 _buf;
 
 public:
-  /** The Int32 constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
+  Int32(const string &n = "");
 
-      @memo The Int32 constructor. */
-    Int32(const string &n = "");
+  Int32(const Int32 &copy_from);
 
-    Int32(const Int32 &copy_from);
+  Int32 &operator=(const Int32 &rhs);
 
-    Int32 &operator=(const Int32 &rhs);
+  virtual ~Int32();
 
-    virtual ~Int32();
-
-    virtual BaseType *ptr_duplicate() = 0;
+  virtual BaseType *ptr_duplicate() = 0;
     
-    virtual unsigned int width();
+  virtual unsigned int width();
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const string &dataset) = 0;
+  virtual bool read(const string &dataset) = 0;
 
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+  virtual unsigned int val2buf(void *val, bool reuse = false);
+  virtual unsigned int buf2val(void **val);
+  
+  virtual void print_val(ostream &os, string space = "",
+			 bool print_decl_p = true);
 
-    virtual void print_val(ostream &os, string space = "",
-			   bool print_decl_p = true);
-
-    virtual bool ops(BaseType *b, int op, const string &dataset);
+  virtual bool ops(BaseType *b, int op, const string &dataset);
 };
 
 /* 
  * $Log: Int32.h,v $
+ * Revision 1.33  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.32  2001/06/15 23:49:02  jimg
  * Merged with release-3-2-4.
  *

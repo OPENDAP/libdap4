@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.56 2002/06/03 22:21:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.57 2002/06/18 15:36:24 tom Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -82,7 +82,7 @@ DDS::duplicate(const DDS &dds)
 	add_var(dds_tmp.var(src)); // add_var() dups the BaseType.
     }
 }
-
+/** Creates a DDS with the given string for its name. */
 DDS::DDS(const string &n) : name(n)
 {
     add_function("member", func_member);
@@ -92,6 +92,7 @@ DDS::DDS(const string &n) : name(n)
     add_function("grid", func_grid_select);
 }
 
+/** The DDS copy constructor. */
 DDS::DDS(const DDS &rhs)
 {
     duplicate(rhs);
@@ -129,30 +130,54 @@ DDS::operator=(const DDS &rhs)
     return *this;
 }
 
+/** Get and set the dataset's name.  This is the name of the dataset
+    itself, and is not to be confused with the name of the file or
+    disk on which it is stored.
+
+    @name Dataset Name Accessors */
+
+    //@{
+      
+/** Returns the dataset's name. */
 string 
 DDS::get_dataset_name()
 { 
     return name; 
 }
 
+/** Sets the dataset name. */
 void
 DDS::set_dataset_name(const string &n) 
 { 
     name = n; 
 }
 
+//@}
+
+/** Get and set the dataset's filename. This is the physical
+    location on a disk where the dataset exists.  The dataset name
+    is simply a title.
+
+    @name File Name Accessor
+    @see Dataset Name Accessors */
+
+    //@{
+/** Gets the dataset file name. */
 string
 DDS::filename()
 {
     return _filename;
 }
 
+/** Set the dataset's filename. */
 void
 DDS::filename(const string &fn)
 {
     _filename = fn;
 }
+//@}
 
+/** @brief Adds a variable to the DDS. */
 void
 DDS::add_var(BaseType *bt)
 { 
@@ -166,6 +191,7 @@ DDS::add_var(BaseType *bt)
     vars.append(btp);
 }
 
+/** @brief Removes a variable from the DDS. */
 void 
 DDS::del_var(const string &n)
 { 
@@ -177,18 +203,34 @@ DDS::del_var(const string &n)
 	}
 }
 
+/** Search for for variable <i>n</i> as above but record all
+    compound type variables which ultimately contain <i>n</i> on
+    <i>s</i>. This stack can then be used to mark the contained
+    compound-type variables as part of the current projection.
+
+    @return A BaseType pointer to the variable <i>n</i> or 0 if <i>n</i>
+    could not be found. */
 BaseType *
 DDS::var(const string &n, btp_stack &s)
 {
     return var(n, &s);
 }    
 
-// Find the variable named N. Accepts both simple names and *fully* qualified
-// aggregate names.
-//
-// Returns: A BaseType * to a variable whose name in N. If no such variable
-// can be found, returns NULL.
+/** @brief Find the variable with the given name.
 
+    Returns a pointer to the named variable. If the name contains one or
+    more field separators then the function looks for a variable whose
+    name matches exactly. If the name contains no field separators then
+    the funciton looks first in the top level and then in all subsequent
+    levels and returns the first occurrence found. In general, this
+    function searches constructor types in the order in which they appear
+    in the DDS, but there is no requirement that it do so. 
+
+    \note{If a dataset contains two constructor types which have field
+    names that are the same (say point.x and pair.x) you should always
+    use fully qualified names to get each of those variables.}
+
+    @return A BaseType pointer to the variable or null if not found. */
 BaseType *
 DDS::var(const string &n, btp_stack *s)
 {
@@ -248,22 +290,29 @@ DDS::exact_match(const string &name, btp_stack *s)
     return 0;			// It is not here.
 }
 
-// This is necessary because (char *) can be cast to Pix (because PIX is
-// really (void *)). This must take precedence over the creation of a
-// temporary object (the string).
 
+/** @brief Returns a pointer to the named variable.
+
+    This is necessary because (char *) can be cast to Pix (because
+    Pix is really (void *)). This must take precedence over the
+    creation of a temporary object (the string). 
+
+    @return A pointer to the variable or null if not found. */
 BaseType *
 DDS::var(const char *n, btp_stack *s)
 {
     return var((string)n, s);
 }
 
+/** @brief Returns the first variable in the DDS. */
 Pix 
 DDS::first_var()
 { 
     return vars.first(); 
 }
 
+/** @brief Increments the DDS variable counter to point at the next
+    variable. */
 void 
 DDS::next_var(Pix &p)
 { 
@@ -271,6 +320,7 @@ DDS::next_var(Pix &p)
 	vars.next(p); 
 }
 
+/** Returns a pointer to the indicated variable. */
 BaseType *
 DDS::var(Pix p)
 { 
@@ -280,12 +330,15 @@ DDS::var(Pix p)
 	return 0;
 }
 
+/** @brief Returns the number of variables in the DDS. */
 int
 DDS::num_var()
 {
     return vars.length();
 }
 
+/** Returns a pointer to the first clause in a parsed constraint
+    expression. */
 Pix
 DDS::first_clause()
 {
@@ -296,6 +349,8 @@ DDS::first_clause()
     return expr.first();
 }
 
+/** Increments a pointer to indicate the next clause in a parsed
+    constraint expression. */
 void
 DDS::next_clause(Pix &p)
 {
@@ -309,6 +364,7 @@ DDS::next_clause(Pix &p)
     expr.next(p);
 }
 
+/** Returns a clause of a parsed constraint expression. */
 Clause &
 DDS::clause(Pix p)
 {
@@ -322,6 +378,8 @@ DDS::clause(Pix p)
     return *expr(p);
 }
 
+/** Returns the value of the indicated clause of a constraint
+    expression. */
 bool
 DDS::clause_value(Pix p, const string &dataset)
 {
@@ -333,6 +391,18 @@ DDS::clause_value(Pix p, const string &dataset)
 }
 
 
+/** @brief Add a clause to a constraint expression.
+
+    This function adds an operator clause to the constraint
+    expression. 
+
+    @param op An integer indicating the operator in use.  These
+    values are generated by {\tt bison}.
+    @param arg1 A pointer to the argument on the left side of the
+    operator. 
+    @param arg2 A pointer to a list of the arguments on the right
+    side of the operator.
+*/
 void
 DDS::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
 {
@@ -341,6 +411,15 @@ DDS::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
     expr.append(clause);
 }
 
+/** @brief Add a clause to a constraint expression.
+
+    This function adds a boolean function clause to the constraint
+    expression. 
+
+    @param func A pointer to a boolean function from the list of
+    supported functions.
+    @param args A list of arguments to that function.
+*/
 void
 DDS::append_clause(bool_func func, rvalue_list *args)
 {
@@ -349,6 +428,15 @@ DDS::append_clause(bool_func func, rvalue_list *args)
     expr.append(clause);
 }
 
+/** @brief Add a clause to a constraint expression.
+
+    This function adds a real-valued (BaseType) function clause to
+    the constraint expression.
+
+    @param func A pointer to a BaseType function from the list of
+    supported functions.
+    @param args A list of arguments to that function.
+*/
 void
 DDS::append_clause(btp_func func, rvalue_list *args)
 {
@@ -357,13 +445,33 @@ DDS::append_clause(btp_func func, rvalue_list *args)
     expr.append(clause);
 }
 
+/** The DDS maintains a list of BaseType pointers for all the constants
+    that the constraint expression parser generates. These objects are
+    deleted by the DDS destructor. Note that there are no list accessors;
+    these constants are never accessed from the list. The list is simply
+    a convenient way to make sure the constants are disposed of properly.
+
+    the constraint expression parser. */
 void
 DDS::append_constant(BaseType *btp)
 {
     constants.append(btp);
 }
 
+/** Each DDS carries with it a list of external functions it can use to
+    evaluate a constraint expression. If a constraint contains any of
+    these functions, the entries in the list allow the parser to evaluate
+    it. The functions are of two types: those that return boolean values,
+    and those that return real (also called BaseType) values.
+
+    These methods are used to manipulate this list of known
+    external functions.
+
+    @name External Function Accessors
+*/
+    //@{
 #if 0
+/** Add a function to the list. */
 template<class FUNC_T>
 void 
 DDS::add_function(const string &name, FUNC_T f)
@@ -374,12 +482,14 @@ DDS::add_function(const string &name, FUNC_T f)
 #endif
 
 #if 1
+/** @brief Add a boolean function to the list. */
 void
 DDS::add_function(const string &name, bool_func f)
 {
     function func(name, f);
     functions.append(func);
 }
+/** @brief Add a BaseType function to the list. */
 void
 DDS::add_function(const string &name, btp_func f)
 {
@@ -387,6 +497,7 @@ DDS::add_function(const string &name, btp_func f)
     functions.append(func);
 }
 
+/** @brief Add a projection function to the list. */
 void
 DDS::add_function(const string &name, proj_func f)
 {
@@ -395,6 +506,7 @@ DDS::add_function(const string &name, proj_func f)
 }
 #endif
 
+/** @brief Find a Boolean function with a given name in the function list. */
 bool
 DDS::find_function(const string &name, bool_func *f) const
 {
@@ -409,6 +521,7 @@ DDS::find_function(const string &name, bool_func *f) const
     return false;
 }
 
+/** @brief Find a BaseType function with a given name in the function list. */
 bool
 DDS::find_function(const string &name, btp_func *f) const
 {
@@ -423,6 +536,7 @@ DDS::find_function(const string &name, btp_func *f) const
     return false;
 }
 
+/** @brief Find a projection function with a given name in the function list. */
 bool
 DDS::find_function(const string &name, proj_func *f) const
 {
@@ -436,8 +550,11 @@ DDS::find_function(const string &name, proj_func *f) const
 
     return false;
 }
+    //@}
 
 
+/** @brief Does the current constraint expression return a BaseType
+    pointer? */
 bool
 DDS::functional_expression()
 {
@@ -448,6 +565,7 @@ DDS::functional_expression()
     return clause(p).value_clause();
 }
 
+/** @brief Evaluate a function-valued constraint expression. */
 BaseType *
 DDS::eval_function(const string &dataset)
 {
@@ -463,6 +581,7 @@ DDS::eval_function(const string &dataset)
 	return NULL;
 }
 
+/** @brief Does the current constraint expression return a boolean value? */ 
 bool
 DDS::boolean_expression()
 {
@@ -476,6 +595,7 @@ DDS::boolean_expression()
     return boolean;
 }
 
+/** @brief Evaluate a boolean-valued constraint expression. */
 bool
 DDS::eval_selection(const string &dataset)
 {
@@ -502,6 +622,7 @@ DDS::eval_selection(const string &dataset)
     return result;
 }
 
+/** @brief Parse a DDS from a file with the given name. */
 void
 DDS::parse(string fname)
 {
@@ -517,6 +638,7 @@ DDS::parse(string fname)
 }
 
 
+/** @brief Parse a DDS from a file indicated by the input file descriptor. */
 void
 DDS::parse(int fd)
 {
@@ -531,9 +653,12 @@ DDS::parse(int fd)
     fclose(in);
 }
 
-// Read structure from IN (which defaults to stdin). If ddsrestart() fails,
-// return false, otherwise return the status of ddsparse().
+/** @brief Parse a DDS from a file indicated by the input file descriptor. 
 
+    Read structure from IN (which defaults to stdin). If
+    ddsrestart() fails, return false, otherwise return the status
+    of ddsparse(). 
+*/
 void
 DDS::parse(FILE *in)
 {
@@ -557,10 +682,12 @@ DDS::parse(FILE *in)
     }
 }
 
-// Write strucutre from tables to OUT (which defaults to stdout). 
-//
-// Returns true. 
+/** @brief Print the entire DDS on the specified output stream. 
 
+    Write structure from tables to OUT (which defaults to stdout). 
+
+    @return TRUE
+*/
 void
 DDS::print(ostream &os)
 {
@@ -572,6 +699,7 @@ DDS::print(ostream &os)
     os << "} " << id2www(name) << ";" << endl;
 }
 
+/** @brief Print the entire DDS to the specified file. */
 void
 DDS::print(FILE *out)
 {
@@ -586,13 +714,17 @@ DDS::print(FILE *out)
 	return;
 }
 
-// Print those parts (variables) of the DDS structure to OS that are marked
-// to be sent after evaluating the constraint expression.
-//
-// NB: this function only works for scalars at the top level.
-//
-// Returns true.
+/** @brief Print the constrained DDS to the specified output
+    stream.
+    
+    Print those parts (variables) of the DDS structure to OS that
+    are marked to be sent after evaluating the constraint
+    expression. 
 
+    \note This function only works for scalars at the top level.
+
+    @returns true.
+*/
 void
 DDS::print_constrained(ostream &os)
 {
@@ -606,7 +738,16 @@ DDS::print_constrained(ostream &os)
 
     os << "} " << id2www(name) << ";" << endl;
 }
+/** @brief Print a constrained DDS to the specified file. 
 
+    Print those parts (variables) of the DDS structure to OS that
+    are marked to be sent after evaluating the constraint
+    expression. 
+
+    \note This function only works for scalars at the top level.
+
+    @returns true.
+*/
 void
 DDS::print_constrained(FILE *out)
 {
@@ -659,15 +800,20 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
     return;
 }
 
-// Check the semantics of the DDS describing a complete dataset. If ALL is
-// true, check not only the semantics of THIS->TABLE, but also recurrsively
-// all ctor types in the THIS->TABLE. By default, ALL is false since parsing
-// a DDS input file runns semantic checks on all variables (but not the
-// dataset itself.
-//
-// Returns: true if the conventions for the DDS are not violated, false
-// otherwise. 
+/** @brief Check the semantics of each of the variables represented in the
+    DDS. 
 
+    Check the semantics of the DDS describing a complete dataset. If ALL is
+    true, check not only the semantics of THIS->TABLE, but also recurrsively
+    all ctor types in the THIS->TABLE. By default, ALL is false since parsing
+    a DDS input file runns semantic checks on all variables (but not the
+    dataset itself.
+
+    @return TRUE if the conventions for the DDS are not violated, FALSE
+    otherwise. 
+    @param all If true, recursively check the individual members of
+    compound variables.
+    @see BaseType::check_semantics */
 bool
 DDS::check_semantics(bool all)
 {
@@ -689,12 +835,20 @@ DDS::check_semantics(bool all)
     return true;
 }
 
-// Evaluate the constraint expression; return the value of the expression. As
-// a side effect, mark the DDS so that BaseType's mfuncs can be used to
-// correctly read the variable's value and send it to the client.
-//
-// Returns: void
+/** @brief Parse the constraint expression given the current DDS. 
 
+    Evaluate the constraint expression; return the value of the
+    expression. As a side effect, mark the DDS so that BaseType's
+    mfuncs can be used to correctly read the variable's value and
+    send it to the client. 
+
+    @return void
+    @param constraint A string containing the constraint
+    expression. 
+    @param os The output stream on which to write error objects and
+    messages. 
+    @param server If true, send errors back to client instead of
+    displaying errors on the default output stream. */ 
 void
 DDS::parse_constraint(const string &constraint, ostream &os, bool server)
 {
@@ -709,6 +863,20 @@ DDS::parse_constraint(const string &constraint, ostream &os, bool server)
     expr_delete_buffer(buffer);
 }
 
+/** @brief Parse the constraint expression given the current DDS. 
+
+    Evaluate the constraint expression; return the value of the
+    expression. As a side effect, mark the DDS so that BaseType's
+    mfuncs can be used to correctly read the variable's value and
+    send it to the client. 
+
+    @return void
+    @param constraint A string containing the constraint
+    expression. 
+    @param out A FILE pointer to which error objects should be wrtten. 
+    @param server If true, send errors back to client instead of
+    displaying errors on the default output stream. 
+*/
 void
 DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
@@ -760,8 +928,24 @@ clean_sinks(int childpid, bool compressed, XDR *xdr_sink, FILE *comp_sink)
     }
 }
 
-// Returns: true if successful, false otherwise.
+/** This function sends the variables described in the constrained DDS to
+    the output described by the FILE pointer. This function calls
+    <tt>parse_constraint()</tt>, <tt>BaseType::read()</tt>, and
+    <tt>BaseType::serialize()</tt>.
 
+    @return True if successful, false otherwise.
+    @param dataset The name of the dataset to send.
+    @param constraint A string containing the entire constraint
+    expression received in the original data request.
+    @param out A pointer to the output buffer for the data.
+    @param compressed If true, send compressed data.
+    @param cgi_ver version information from the caller that identifies
+    the server sending data.
+    @param lmt A <tt>time_t</tt> value to use in making a "Last
+    Modifed" header for the  sent data.
+    @see parse_constraint
+    @see BaseType::read
+    @see BaseType::serialize */
 bool 
 DDS::send(const string &dataset, const string &constraint, FILE *out, 
 	  bool compressed, const string &cgi_ver, time_t lmt)
@@ -820,19 +1004,22 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
     return status;
 }
 
-// Mark the named variable by setting its SEND_P flag to STATE (true
-// indicates that it is to be sent).
-//
-// NB: For aggregate types this sets each part to STATE when STATE is
-// True. Thus, if State is True and N is `exp1.test', then both `exp1' and
-// `test' have their SEND_P flag set to True. If STATE is Flase, then the
-// SEND_P flag of the `test' is set to False, but `exp1' is left
-// unchanged. This means that a single variable can be removed from the
-// current projection without removing all the other children of its
-// parent. See the mfunc set_send_p().
-//
-// Returns: True if the named variable was found, false otherwise.
+/** @brief Mark the <tt>send_p</tt> flag of the named variable to
+    <i>state</i>.  
 
+    Mark the named variable by setting its SEND_P flag to STATE (true
+    indicates that it is to be sent). Names must be fully qualified.
+
+    @note For aggregate types this sets each part to STATE when STATE is
+    True. Thus, if State is True and N is `exp1.test', then both `exp1' and
+    `test' have their SEND_P flag set to True. If STATE is False, then the
+    SEND_P flag of the `test' is set to False, but `exp1' is left
+    unchanged. This means that a single variable can be removed from the
+    current projection without removing all the other children of its
+    parent. See the mfunc set_send_p().
+
+    @return True if the named variable was found, false otherwise.
+*/
 bool
 DDS::mark(const string &n, bool state)
 {
@@ -910,11 +1097,12 @@ DDS::mark(const string &n, bool state)
 
     return false;		// not found
 }
-#endif
-// Set the SEND_P member of every variable in the DDS to STATE.
-//
-// Returns: void
 
+/** Mark the member variable <tt>send_p</tt> flags to
+    <i>state</i>. 
+
+    @return Void
+*/
 void
 DDS::mark_all(bool state)
 {
@@ -923,6 +1111,9 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.57  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.56  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

@@ -71,6 +71,7 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
     \note{DODS uses zero-based indexing.}
 
+    @brief A multidimensional array of identical data types.
     @see Grid
     @see List */
 
@@ -155,6 +156,9 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.52  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.51  2002/05/23 15:22:39  tom
  * modified for doxygen
  *

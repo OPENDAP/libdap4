@@ -43,19 +43,19 @@
       When each element of the class is a simple data type, the Vector
       is implemented as a simple array of C types, rather than as an
       array of BaseType data types.  A single private ``template''
-      BaseType instance (#_var#) is used to hold information in common
+      BaseType instance (<tt>_var</tt>) is used to hold information in common
       to all the members of the array.  The template is also used as a
       container to pass values back and forth to an application
-      program, as in #var()#.
+      program, as in <tt>var()</tt>.
 
       If the elements of the vector are themselves compound data
       types, the array is stored as a vector of BaseType pointers (see
-      the DODS class {\bf BaseTypePtrVec}). The template is still used to
+      the DODS class <b>BaseTypePtrVec</b>). The template is still used to
       hold information in common to all the members of the array, but
       is not used to pass information to and from the application
       program. 
 
-      @memo Holds a one-dimensional collection of DODS data types.  
+      @brief Holds a one-dimensional collection of DODS data types.  
       @see BaseType 
       @see List
       @see Array
@@ -76,180 +76,48 @@ protected:
     void _duplicate(const Vector &v);
 
 public:
-    /** The Vector constructor requires the name of the variable to be
-	created, and a pointer to an object of the type the Vector is to
-	hold.  The name may be omitted, which will create a nameless
-	variable.  The template object may not be omitted.
-      
-	@param n A string containing the name of the variable to be
-	created. 
-	@param v A pointer to a variable of the type to be included 
-	in the Vector. 
-	@param t The type of the resulting Vector object, from the Type
-	enum list.  There is no DODS Vector object, so all uses of this
-	method will be from the List or Array classes.  This defaults to
-	#dods_null_c#.
+  Vector(const string &n = "", BaseType *v = 0, const Type &t = dods_null_c);
 
-	@see Type
-	@memo The List constructor.  */
-    Vector(const string &n = "", BaseType *v = 0, const Type &t = dods_null_c);
+  Vector(const Vector &rhs);
 
-    /** The Vector copy constructor. */
-    Vector(const Vector &rhs);
+  virtual ~Vector();
 
-    virtual ~Vector();
+  Vector &operator=(const Vector &rhs);
+  virtual BaseType *ptr_duplicate() = 0; 
 
-    Vector &operator=(const Vector &rhs);
-    virtual BaseType *ptr_duplicate() = 0; 
+  virtual int element_count(bool leaves);
 
-    virtual int element_count(bool leaves);
+  virtual void set_send_p(bool state); 
 
-    /** This function sets the #send_p# flag for both the Vector itself
-	and its element template.  This does not matter much when the
-	Vector contains simple data types, but does become significant
-	when the Vector contains compound types.  
+  virtual void set_read_p(bool state);
 
-	@memo Indicates that the data is ready to send. */
-    virtual void set_send_p(bool state); 
+  virtual unsigned int width();
 
-    /** This function sets the #read_p# flag for both the Vector itself
-	and its element template.  This does not matter much when the
-	Vector contains simple data types, but does become significant
-	when the Vector contains compound types.
+  virtual int length();
 
-	@memo Indicates that the data is ready to send.  */
-    virtual void set_read_p(bool state);
+  virtual void set_length(int l);
 
-    /** Returns the number of bytes needed to hold the {\it entire}
-	array.  This is equal to #length()# times the width of each
-	element. 
+  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			 bool ce_eval = true);
+  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-	@memo Returns the width of the data, in bytes. */
-    virtual unsigned int width();
+  virtual bool read(const string &dataset) = 0;
 
-    /** Returns the number of elements in the vector. Note that some
-	child classes of Vector use the length of -1 as a flag value.
+  virtual unsigned int val2buf(void *val, bool reuse = false);
 
-	@see Array::append_dim */
-    virtual int length();
+  virtual unsigned int buf2val(void **val);
 
-    /** Sets the length of the vector.  This function does not allocate
-	any new space. */
-    virtual void set_length(int l);
+  void set_vec(unsigned int i, BaseType *val);
 
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+  void vec_resize(int l);
 
-    virtual bool read(const string &dataset) = 0;
+  virtual BaseType *var(const string &name = "", bool exact_match = true);
 
-    /** Copies data into the class instance buffer.  This function
-	assumes that the input {\it val} indicates memory which
-	contains, in row major order, enough elements of the correct
-	type to fill the array. For an array of a cardinal type the
-	memory is simply copied in whole into the Vector buffer.  For
-	compound types, the subsidiary #val2buf# is called #length()#
-	times on each successive piece of {\it val}.
+  virtual BaseType *var(const string &name, btp_stack &s);
 
-	@memo Reads data into the Vector buffer.
-	@return The number of bytes used by the array.
-	@param val A pointer to the input data.
-	@param reuse A boolean value, indicating whether the class
-	internal data storage can be reused or not.  If this argument is
-	TRUE, the class buffer is assumed to be large enough to hold the
-	incoming data, and it is {\it not} reallocated.  If FALSE, new
-	storage is allocated.  If the internal buffer has not been
-	allocated at all, this argument has no effect. */
-    virtual unsigned int val2buf(void *val, bool reuse = false);
+  virtual BaseType *var(unsigned int i);
 
-    /** Copies data from the Vector buffer.  This function assumes that
-	{\it val} points to an array large enough to hold N instances of
-	the `C' representation of the element type.  In the case of a
-	Vector containing compound elements, this function assumes that
-	{\it val} points to an array large enough to hold N instances of
-	the DODS class used to represent that type.
-
-	Use this function only with Vectors containing simple DODS
-	types.  See #set_vec()# to access members of Vectors containing
-	compound types.
-
-	@return The number of bytes used to store the array.
-	@param val A pointer to a pointer to the memory into which the
-	class data will be copied.  If the value pointed to is NULL,
-	memory will be allocated to hold the data, and the pointer value
-	modified accordingly.  The calling program is responsible for
-	deallocating the memory indicated by this pointer.  
-	@see Vector::set_vec */
-    virtual unsigned int buf2val(void **val);
-
-    /** Sets an element of the vector to a given value.  If the type of
-	the input and the type of the Vector do not match, an error
-	condition is returned.
-
-	Use this function only with Vectors containing compound DODS
-	types.  See #buf2val()# to access members of Vectors containing
-	simple types.
-
-	NOTE: The memory allocated by this function should be freed using
-	delete, \emph{not} delete[]!
- 
-	@memo Sets element #i# to value #val#.
-	@return void
-	was a type mismatch.
-	@param i The index of the element to be changed.
-	@param val A pointer to the value to be inserted into the
-	array.  
-	@see Vector::buf2val */
-    void set_vec(unsigned int i, BaseType *val);
-
-    /** Resizes a Vector.  If the input length is greater than the
-	current length of the Vector, new memory is allocated (the
-	Vector moved if necessary), and the new entries are appended to
-	the end of the array and padded with Null values.  If the input
-	length is shorter, the tail values are discarded. */
-    void vec_resize(int l);
-
-    /** Returns a copy of the template array element. If the Vector contains
-	simple data types, the template will contain the value of the last
-	vector element accessed with the {\tt Vector::var(int i)} function,
-	if any. If no such access has been made, or if the Vector contains
-	compound data types, the value held by the template instance is
-	undefined.
-
-	Note that the parameter {\it exact\_match} is not used by this mfunc.
-
-	@param name The name of the variabe to find.
-	@param exact_match Unused.
-	@return A pointer to the BaseType if found, otherwise null.
-	@see Vector::var */
-    virtual BaseType *var(const string &name = "", bool exact_match = true);
-
-    /** This version of var(...) searches for {\it name} and returns a
-	pointer to the BaseType object if found. It uses the same search
-	algorithm as above when {\it exact\_match} is false. In addition to
-	returning a pointer to the variable, it pushes onto {\it s} a
-	BaseType pointer to each constructor type that ultimately contains
-	{\it name}.
-
-	@param name Find the variable whose name is {\it name}.
-	@param s Record the path to {\it name}.
-	@return A pointer to the named variable. */
-    virtual BaseType *var(const string &name, btp_stack &s);
-
-    /** Returns a pointer to the specified Vector element.  For Vectors
-	containing simple data types, the element returned will be a
-	copy of the indicated element.  For compound types, the return
-	pointer will indicate the element itself.
-
-	@param i The index of the desired Vector element.  Zero
-	indicates the first element of the Vector.
-	@return A pointer to a BaseType class instance containing
-	the value of the indicated element.
-	@see BaseType::var */
-    virtual BaseType *var(unsigned int i);
-
-    /** Sets the value of the template variable.  */
-    virtual void add_var(BaseType *v, Part p = nil);
+  virtual void add_var(BaseType *v, Part p = nil);
 
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
@@ -264,6 +132,9 @@ public:
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.34  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.33  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *

@@ -60,20 +60,20 @@ Array::update_length(int size)
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
-  /** The Array constructor requires the name of the variable to be
-      created, and the type of data the Array is to hold.  The name
-      may be omitted, which will create a nameless variable.  The
-      template pointer may also be omitted.  Note that if the template
-      pointer is omitted when the Array is created, it <i>must</i> be
-      added (with <tt>add_var()</tt>) before <tt>read()</tt> or
-      <tt>deserialize()</tt> is called. 
+/** The Array constructor requires the name of the variable to be
+    created, and the type of data the Array is to hold.  The name
+    may be omitted, which will create a nameless variable.  The
+    template pointer may also be omitted.  Note that if the template
+    pointer is omitted when the Array is created, it <i>must</i> be
+    added (with <tt>add_var()</tt>) before <tt>read()</tt> or
+    <tt>deserialize()</tt> is called. 
       
-      @param n A string containing the name of the variable to be
-      created. 
-      @param v A pointer to a variable of the type to be included 
-      in the Array. 
-      @brief Array constructor
-  */
+    @param n A string containing the name of the variable to be
+    created. 
+    @param v A pointer to a variable of the type to be included 
+    in the Array. 
+    @brief Array constructor
+*/
 Array::Array(const string &n, BaseType *v) : Vector(n, v, dods_array_c)
 {
 }
@@ -615,6 +615,9 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.54  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.53  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

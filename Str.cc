@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.46 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.47 2002/06/18 15:36:24 tom Exp $"};
 
 #include <assert.h>
 #include <stdlib.h>
@@ -38,6 +38,14 @@ using std::endl;
 
 string escattr(string s);
 
+/** The Str constructor requires only the name of the variable
+    to be created.  The name may be omitted, which will create a
+    nameless variable.  This may be adequate for some applications. 
+      
+    @param n A string containing the name of the variable to be
+    created. 
+
+*/
 Str::Str(const string &n) : BaseType(n, dods_str_c), _buf("")
 {
 }
@@ -205,6 +213,9 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.47  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.46  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

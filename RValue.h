@@ -23,34 +23,27 @@ private:
     SLList<rvalue *> *args;		// arguments to the function
 
 public:
-    rvalue(BaseType *bt);
-    rvalue(btp_func f, SLList<rvalue *> *a);
-    rvalue();
+  rvalue(BaseType *bt);
+  rvalue(btp_func f, SLList<rvalue *> *a);
+  rvalue();
 
-    virtual ~rvalue();
+  virtual ~rvalue();
 
-    string value_name();
+  string value_name();
 
-    // Return the BaseType * that contains a value for a given rvalue. If the
-    // rvalue is a BaseType *, ensures that the read mfunc has been
-    // called. If the rvalue is a func_rvalue, evaluates the func_rvalue and
-    // returns the result.
-    // NB: The functions referenced by func_rvalues must encapsulate their
-    // return values in BaseType *s.
-    BaseType *bvalue(const string &dataset, DDS &dds);
+  BaseType *bvalue(const string &dataset, DDS &dds);
 };
 
 // This type def must come after the class definition above. It is used in
 // the Clause and DDS classes.
 typedef SLList<rvalue *> rvalue_list;
 
-/** Build an argument list suitable for calling a #btp_func#,
-    #bool_func#, and so on. Since this takes an #rvalue_list# and
-    not an rvalue, it is a function rather than a class
-    member. */
 BaseType **build_btp_args(rvalue_list *args, DDS &dds);
 
 // $Log: RValue.h,v $
+// Revision 1.7  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.6  2000/09/22 02:17:21  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

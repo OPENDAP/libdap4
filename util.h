@@ -127,12 +127,12 @@ void downcase(string &s);
 /** Fast, safe conversions from long to a character representation which gets
    appended to a string. This method will take a long value 'val' and it will
    recursively divide it by 'base' in order to "extract" one by one the
-   digits which compose it; these digits will be {\bfappended} to the string
-   'str_val' which will become the textual representation of 'val'. Please
-   notice that the digits "extracted" from 'val' will vary depending on the
+   digits which compose it; these digits will be <i>appended</i> to the string
+   <tt>str_val</tt> which will become the textual representation of 'val'. Please
+   notice that the digits ``extracted'' from `val' will vary depending on the
    base chosen for the conversion; for example val=15 converted to base 10
-   will yield the digits {1,5}, converted to base 16 will yield {F} and
-   converted to base 2 will yield {1,1,1,1}.
+   will yield the digits (1,5), converted to base 16 will yield (F) and
+   converted to base 2 will yield (1,1,1,1).
 
    @param val The long value we which to convert to string.
 
@@ -141,7 +141,8 @@ void downcase(string &s);
    bases are 2 (binary), 10 (decimal) and 16 (hexadecimal).
 
    @param str_val This is the string that will hold the textual
-   representation of 'val'. The string str_val should be pre-set to an empty
+   representation of 'val'. The string <tt>str_val</tt> should be
+   pre-set to an empty 
    string ("") otherwise the output of this function will just append the
    textual representation of val to whatever data is there; these feature may
    be useful if you wish to append a long value to a string s1 (just like
@@ -149,7 +150,7 @@ void downcase(string &s);
    use string::operator+ between s1 and s2.
 
    @return void. This method returns nothing however be aware that it will
-   throw and exception of type {\bfstd::invalid_argument} if the parameter
+   throw and exception of type <tt>std::invalid_argument</tt> if the parameter
    base is not in the valid range. */
 //@{
 void append_long_to_string(long val, int base, string &str_val);
@@ -205,6 +206,9 @@ char *get_tempfile_template(char *file_template);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.42  2002/06/18 15:36:24  tom
+ * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
  * Revision 1.41  2002/06/03 22:21:16  jimg
  * Merged with release-3-2-9
  *

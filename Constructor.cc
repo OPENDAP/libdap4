@@ -55,6 +55,15 @@ Constructor::operator=(const Constructor &rhs)
     return *this;
 }
 
+    /** True if the instance can be flattened and printed as a single table
+	of values. For Arrays and Grids this is always false. For Structures
+	and Sequences the conditions are more complex. The implementation
+	provided by this class always returns false. Other classes should
+	override this implementation.
+
+	@brief Check to see whether this variable can be printed simply.
+	@return True if the instance can be printed as a single table of
+	values, false otherwise. */
 bool
 Constructor::is_linear()
 {
@@ -62,6 +71,9 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.4  2002/06/18 15:36:24  tom
+// Moved comments and edited to accommodate doxygen documentation-generator.
+//
 // Revision 1.3  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //
