@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.8 1994/10/25 15:27:05 jimg Exp $
+# $Id: Makefile.in,v 1.9 1994/10/26 18:19:43 jimg Exp $
 
 @SET_MAKE@
 
@@ -67,10 +67,12 @@ DDSOBJS=DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS)
 
 TYPEHDRS=BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
          CtorType.h List.h Array.h Structure.h Sequence.h Function.h Grid.h
-TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc CtorType.cc \
-         List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc util.cc
-TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o CtorType.o \
-	 List.o Array.o Structure.o Sequence.o Function.o Grid.o util.o
+TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
+         List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
+	 util.cc # CtorType.cc
+TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
+	 List.o Array.o Structure.o Sequence.o Function.o Grid.o \
+	 util.o # CtorType.o 
 
 # Added decent into SUBDIRS since it makes little sense to build these
 # libraries without the Map and Stack code.
