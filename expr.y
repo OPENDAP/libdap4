@@ -1,13 +1,11 @@
 
-/* -*- C++ -*- */
+// -*- C++ -*-
 
-/* 
-   (c) COPYRIGHT URI/MIT 1995-1996
-   Please read the full copyright statement in the file COPYRIGH.  
-
-   Authors:
-        jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
-*/
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 /*
   This is the parser for the DODS constraint expression grammar. The parser
@@ -19,11 +17,17 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.12  1996/06/18 23:54:31  jimg
-/* Fixes for Grid constraints. These include not deleting the array indices
-/* lists after processing the Array component of a grid (but before processing
-/* the Maps...).
+/* Revision 1.13  1996/08/13 19:00:21  jimg
+/* Added __unused__ to definition of char rcsid[].
+/* Switched to the parser_arg object for communication with callers. Removed
+/* unused parameters from dereference_{url, variable}, make_rvalue_list and
+/* append_rvalue_list.
 /*
+ * Revision 1.12  1996/06/18 23:54:31  jimg
+ * Fixes for Grid constraints. These include not deleting the array indices
+ * lists after processing the Array component of a grid (but before processing
+ * the Maps...).
+ *
  * Revision 1.11  1996/06/11 17:27:11  jimg
  * Moved debug.h in front of all the other DODS includes - this ensures that
  * the debug.h included in this file is the one in effect (as opposed to a copy
@@ -81,7 +85,9 @@
 
 %{
 
-static char rcsid[]={"$Id: expr.y,v 1.12 1996/06/18 23:54:31 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.13 1996/08/13 19:00:21 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -104,8 +110,8 @@ static char rcsid[]={"$Id: expr.y,v 1.12 1996/06/18 23:54:31 jimg Exp $"};
 #include "Sequence.h"
 #include "Function.h"
 #include "Grid.h"
+#include "Error.h"
 
-#include "config_dap.h"
 #include "util.h"
 #include "parser.h"
 #include "expr.h"
@@ -114,10 +120,20 @@ static char rcsid[]={"$Id: expr.y,v 1.12 1996/06/18 23:54:31 jimg Exp $"};
 #include "trace_new.h"
 #endif
 
+// These macros are used to access the `arguments' passed to the parser. A
+// pointer to an error object and a pointer to an integer status variable are
+// passed in to the parser within a strucutre (which itself is passed as a
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+
+#define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
+#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
+#define STATUS(arg) ((parser_arg *)(arg))->_status
+#define YYPARSE_PARAM void *arg
+
 int exprlex(void);		/* the scanner; see expr.lex */
 
-int exprerror(const char *s);	/* easier to overload than use stdarg... */
-int exprerror(const char *s, const char *s2);
+void exprerror(const char *s);	/* easier to overload than use stdarg... */
+void exprerror(const char *s, const char *s2);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list_list *make_array_indices(int_list *index);
@@ -129,23 +145,16 @@ bool process_grid_indices(BaseType *variable, int_list_list *indices);
 bool is_array_t(BaseType *variable);
 bool is_grid_t(BaseType *variable);
 
-rvalue_list *make_rvalue_list(DDS &table, rvalue *rv);
-rvalue_list *append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv);
+rvalue_list *make_rvalue_list(rvalue *rv);
+rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
 
 BaseType *make_variable(DDS &table, const value &val);
 
-rvalue *dereference_variable(DDS &table, rvalue *rv);
-rvalue *dereference_url(DDS &table, value &val);
+rvalue *dereference_variable(rvalue *rv);
+rvalue *dereference_url(value &val);
 
 bool_func get_function(const DDS &table, const char *name);
 btp_func get_btp_function(const DDS &table, const char *name);
-
-/* 
-  The parser receives a DDS &table as a formal argument. TABLE is the DDS
-  of the entire dataset; each variable in the constraint expression must be
-  in this DDS and their data types must match the use in the constraint
-  expression.
-*/
 
 %}
 
@@ -194,13 +203,13 @@ btp_func get_btp_function(const DDS &table, const char *name);
 
 constraint_expr: /* empty constraint --> send all */
                  {
-		     table.mark_all(true);
+		     (*DDS_OBJ(arg)).mark_all(true);
 		     $$ = true;
 		 }
                  /* projection only */
                  | projection
 		 /* selection only --> project everything */
-                 | '&' { table.mark_all(true); } selection
+                 | '&' { (*DDS_OBJ(arg)).mark_all(true); } selection
                    { 
 		       $$ = $3;
 		   }
@@ -210,13 +219,13 @@ constraint_expr: /* empty constraint --> send all */
 		   }
                  | ID '(' r_value_list ')'
 		   {
-		       btp_func func = get_btp_function(table, $1);
+		       btp_func func = get_btp_function(*(DDS_OBJ(arg)), $1);
 		       if (!func) {
 			   exprerror("Not a BaseType pointer function", $1);
 			   $$ = false;
 		       }
 		       else {
-			   table.append_clause(func, $3);
+			   (*DDS_OBJ(arg)).append_clause(func, $3);
 			   $$ = true;
 		       }
 		   }
@@ -224,7 +233,7 @@ constraint_expr: /* empty constraint --> send all */
 
 projection:	ID 
                   { 
-		      BaseType *var = table.var($1);
+		      BaseType *var = (*DDS_OBJ(arg)).var($1);
 		      if (var) {
 			  var->set_send_p(true); // add to projection
 			  $$ = true;
@@ -236,9 +245,9 @@ projection:	ID
 		  }
                 | FIELD
                   { 
-		      BaseType *var = table.var($1);
+		      BaseType *var = (*DDS_OBJ(arg)).var($1);
 		      if (var)
-			  $$ = table.mark($1, true); // must add parents, too
+			  $$ = (*DDS_OBJ(arg)).mark($1, true); // must add parents, too
 		      else {
 			  $$ = false;
 			  exprerror("No such field in dataset", $1);
@@ -250,7 +259,7 @@ projection:	ID
 		  }
                 | projection ',' ID
                   { 
-		      BaseType *var = table.var($3);
+		      BaseType *var = (*DDS_OBJ(arg)).var($3);
 		      if (var) {
 			  var->set_send_p(true);
 			  $$ = true;
@@ -263,9 +272,9 @@ projection:	ID
 		  }
                 | projection ',' FIELD
                   { 
-		      BaseType *var = table.var($3);
+		      BaseType *var = (*DDS_OBJ(arg)).var($3);
 		      if (var)
-			  $$ = table.mark($3, true);
+			  $$ = (*DDS_OBJ(arg)).mark($3, true);
 		      else {
 			  $$ = false;
 			  exprerror("No such field in dataset", $3);
@@ -287,7 +296,7 @@ selection:	clause
 clause:		r_value rel_op '{' r_value_list '}'
                   {
 		      assert(($1));
-		      table.append_clause($2, $1, $4);
+		      (*DDS_OBJ(arg)).append_clause($2, $1, $4);
 		      $$ = true;
 		  }
 		| r_value rel_op r_value
@@ -296,18 +305,18 @@ clause:		r_value rel_op '{' r_value_list '}'
 
 		      rvalue_list *rv = new rvalue_list;
 		      rv->append($3);
-		      table.append_clause($2, $1, rv);
+		      (*DDS_OBJ(arg)).append_clause($2, $1, rv);
 		      $$ = true;
 		  }
 		| ID '(' r_value_list ')'
 		  {
-		      bool_func b_func = get_function(table, $1);
+		      bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
 		      if (!b_func) {
   			  exprerror("Not a boolean function", $1);
 			  $$ = false;
 		      }
 		      else {
-			  table.append_clause(b_func, $3);
+			  (*DDS_OBJ(arg)).append_clause(b_func, $3);
 			  $$ = true;
 		      }
 		  }
@@ -317,20 +326,20 @@ r_value:        identifier
                 | constant
 		| '*' identifier
 		  {
-		      $$ = dereference_variable(table, $2);
+		      $$ = dereference_variable($2);
 		      if (!$$)
 			  exprerror("Could not dereference variable", 
 				    ($2)->value->name());
 		  }
 		| '*' STR
 		  {
-		      $$ = dereference_url(table, $2);
+		      $$ = dereference_url($2);
 		      if (!$$)
 			  exprerror("Could not dereference URL", *($2).v.s);
 		  }
 		| ID '(' r_value_list ')'
 		  {
-		      btp_func bt_func = get_btp_function(table, $1);
+		      btp_func bt_func = get_btp_function((*DDS_OBJ(arg)), $1);
 		      if (!bt_func) {
   			  exprerror("Not a BaseType * function", $1);
 			  $$ = 0;
@@ -341,24 +350,24 @@ r_value:        identifier
 
 r_value_list:	r_value
 		{
-		    $$ = make_rvalue_list(table, $1);
+		    $$ = make_rvalue_list($1);
 		}
 		| r_value_list ',' r_value
                 {
-		    $$ = append_rvalue_list(table, $1, $3);
+		    $$ = append_rvalue_list($1, $3);
 		}
 ;
 
 identifier:	ID 
                   { 
-		      BaseType *btp = table.var($1);
+		      BaseType *btp = (*DDS_OBJ(arg)).var($1);
 		      if (!btp)
 			  exprerror("No such identifier in dataset", $1);
 		      $$ = new rvalue(btp);
 		  }
 		| FIELD 
                   { 
-		      BaseType *btp = table.var($1);
+		      BaseType *btp = (*DDS_OBJ(arg)).var($1);
 		      if (!btp)
 			  exprerror("No such field in dataset", $1);
 		      $$ = new rvalue(btp);
@@ -367,17 +376,17 @@ identifier:	ID
 
 constant:       INT
                   {
-		      BaseType *btp = make_variable(table, $1);
+		      BaseType *btp = make_variable((*DDS_OBJ(arg)), $1);
 		      $$ = new rvalue(btp);
 		  }
 		| FLOAT
                   {
-		      BaseType *btp = make_variable(table, $1);
+		      BaseType *btp = make_variable((*DDS_OBJ(arg)), $1);
 		      $$ = new rvalue(btp);
 		  }
 		| STR
                   { 
-		      BaseType *btp = make_variable(table, $1); 
+		      BaseType *btp = make_variable((*DDS_OBJ(arg)), $1); 
 		      $$ = new rvalue(btp);
 		  }
 ;
@@ -385,7 +394,7 @@ constant:       INT
 /* Array *selection* is a misnomer; it is really array *projection*. jhrg */
 array_sel:	ID array_indices 
                   {
-		      BaseType *var = table.var($1);
+		      BaseType *var = (*DDS_OBJ(arg)).var($1);
 		      if (var && is_array_t(var)) {
 			  var->set_send_p(true);
 			  $$ = process_array_indices(var, $2);
@@ -401,14 +410,14 @@ array_sel:	ID array_indices
 		  }
 	        | FIELD array_indices 
                   {
-		      BaseType *var = table.var($1);
+		      BaseType *var = (*DDS_OBJ(arg)).var($1);
 		      if (var && is_array_t(var)) {
-			  $$ = table.mark($1, true) // set all the parents, too
+			  $$ = (*DDS_OBJ(arg)).mark($1, true) // set all the parents, too
 			      && process_array_indices(var, $2);
 			  delete_array_indices($2);
 		      }
 		      else if (var && is_grid_t(var)) {
-			  $$ = table.mark($1, true) // set all the parents, too
+			  $$ = (*DDS_OBJ(arg)).mark($1, true) // set all the parents, too
 			       && process_grid_indices(var, $2);
 			  delete_array_indices($2);
 		      }
@@ -451,13 +460,13 @@ rel_op:		EQUAL
 
 %%
 
-int 
+void
 exprerror(const char *s)
 {
     cerr << "Parse error: " << s << endl;
 }
 
-int 
+void
 exprerror(const char *s, const char *s2)
 {
     cerr << "Parse error: " << s << ": " << s2 << endl;
@@ -593,7 +602,13 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	    goto exit;
 	}
 	
-	a->add_constraint(r, start, stride, stop);
+	if (!a->add_constraint(r, start, stride, stop)) {
+	    cerr << "Impossible index values in constraint for "
+		 << a->name() << "." << endl;
+	    status = false;
+	    goto exit;
+	}
+
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
     }
 
@@ -667,7 +682,13 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	    goto exit;
 	}
 
-	a->add_constraint(a->first_dim(), start, stride, stop);
+	if (!a->add_constraint(a->first_dim(), start, stride, stop)) {
+	    cerr << "Impossible index values in constraint for "
+		 << a->name() << "." << endl;
+	    status = false;
+	    goto exit;
+	}
+
 	DBG(cerr << "Set Constraint: " \
 	    << a->dimension_size(a->first_dim(), true) << endl);
     }
@@ -697,11 +718,11 @@ exit:
 // Returns: A pointer to the updated rvalue_list.
 
 rvalue_list *
-make_rvalue_list(DDS &table, rvalue *rv)
+make_rvalue_list(rvalue *rv)
 {
     rvalue_list *rvals = new rvalue_list;
 
-    return append_rvalue_list(table, rvals, rv);
+    return append_rvalue_list(rvals, rv);
 }
 
 // Given a rvalue_list pointer RVALS and a value pointer VAL, make a variable
@@ -710,7 +731,7 @@ make_rvalue_list(DDS &table, rvalue *rv)
 // Returns: A pointer to the updated rvalue_list.
 
 rvalue_list *
-append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv)
+append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 {
     rvals->append(rv);
 
@@ -721,7 +742,7 @@ append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv)
 // points to.
 
 static rvalue *
-dereference_string(DDS &table, String &s)
+dereference_string(String &s)
 {
     String url = s.before("?");	// strip off CE
     String ce = s.after("?");	// yes, get the CE
@@ -751,19 +772,19 @@ dereference_string(DDS &table, String &s)
 }
 
 rvalue *
-dereference_url(DDS &table, value &val)
+dereference_url(value &val)
 {
     if (val.type != dods_str_c)
 	return 0;
 
-    return dereference_string(table, *val.v.s);
+    return dereference_string(*val.v.s);
 }
 
 // Given a rvalue, get the BaseType that encapsulates its value, make sure it
 // is a string and, if all that works, dereference it.
 
 rvalue *
-dereference_variable(DDS &table, rvalue *rv)
+dereference_variable(rvalue *rv)
 {
     BaseType *btp = rv->bvalue("dummy"); // the value will be read over the net
     if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
@@ -777,7 +798,7 @@ dereference_variable(DDS &table, rvalue *rv)
     String  *sp = &s;
     btp->buf2val((void **)&sp);
     
-    return dereference_string(table, s);
+    return dereference_string(s);
 }
 
 // Given a value, wrap it up in a BaseType and return a pointer to the same.
