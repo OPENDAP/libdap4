@@ -10,6 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.11  1996/06/11 17:30:36  jimg
+// Fixed -k (constraint expression) option when used with -p (parser) option.
+//
 // Revision 1.10  1996/06/04 21:34:00  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -59,7 +62,7 @@
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.10 1996/06/04 21:34:00 jimg Exp $"};
+static char rcsid[]= {"$Id: expr-test.cc,v 1.11 1996/06/11 17:30:36 jimg Exp $"};
 
 #include <stdio.h>
 #include <errno.h>
@@ -87,7 +90,7 @@ static char rcsid[]= {"$Id: expr-test.cc,v 1.10 1996/06/04 21:34:00 jimg Exp $"}
 #define DODS_DDS_PRX "dods_dds"
 
 void test_scanner();
-void test_parser(DDS &table, const String &dds_name);
+void test_parser(DDS &table, const String &dds_name, const String &constraint);
 bool read_table(DDS &table, const String &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
 bool transmit(DDS &write, bool verb);
@@ -181,7 +184,7 @@ main(int argc, char *argv[])
     }
 
     if (parser_test) {
-	test_parser(table, dds_file_name);
+	test_parser(table, dds_file_name, constraint);
     }
 
     if (evaluate_test) {
@@ -287,15 +290,23 @@ test_scanner()
 // stdin and thus the expr scanner exits immediately.
 
 void
-test_parser(DDS &table, const String &dds_name)
+test_parser(DDS &table, const String &dds_name, const String &constraint)
 {
     read_table(table, dds_name, true);
 
-    exprrestart(stdin);
+    bool status;
 
-    cout << prompt;
+    if (constraint != "") 
+	status = table.parse_constraint(constraint);
+    else {
+	exprrestart(stdin);
 
-    if (exprparse(table) == 0)
+	cout << prompt;
+
+	status = (exprparse(table) == 0);
+    }
+
+    if (status)
 	cout << "Input parsed" << endl;
     else
 	cout << "Input did not parse" << endl;
@@ -442,19 +453,16 @@ loopback_pipe(FILE **pout, FILE **pin)
 }
 
 
-/* 
-   Originally in netexec.c (part of the netio library).
-
-  Read the DDS from the data stream. Leave the binary information behind. The
-  DDS is moved, without parsing it, into a file and a pointer to that FILE is
-  returned. The argument IN (the input FILE stream) is positioned so that the
-  next byte is the binary data.
-
-  The binary data follows the text `Data:', which itself starts a line.
-
-  Returns: a FILE * which contains the DDS describing the binary information
-  in IF.
-*/
+// Originally in netexec.c (part of the netio library).
+// Read the DDS from the data stream. Leave the binary information behind. The
+// DDS is moved, without parsing it, into a file and a pointer to that FILE is
+// returned. The argument IN (the input FILE stream) is positioned so that the
+// next byte is the binary data.
+//
+// The binary data follows the text `Data:', which itself starts a line.
+//
+// Returns: a FILE * which contains the DDS describing the binary information
+// in IF.
 
 FILE *
 move_dds(FILE *in)
@@ -467,9 +475,7 @@ move_dds(FILE *in)
     }
 
     FILE *fp = fopen(c, "w+");
-#if 0
     unlink(c);
-#endif
     if (!fp) {
 	cerr << "Could not open anonymous temporary file: " 
 	     << strerror(errno) << endl;
