@@ -28,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.33 2000/09/22 02:17:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.34 2001/05/04 00:09:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -274,8 +274,13 @@ base_type:	SCAN_BYTE { current = NewByte(); }
 		| SCAN_URL { current = NewUrl(); }
 ;
 
-var:		SCAN_ID { current->set_name($1); }
+var:		var_name { current->set_name($1); }
  		| var array_decl
+;
+
+var_name:       SCAN_ID | SCAN_BYTE | SCAN_INT16 | SCAN_INT32 | SCAN_UINT16
+                | SCAN_UINT32 | SCAN_FLOAT32 | SCAN_FLOAT64 | SCAN_STRING
+                | SCAN_URL | SCAN_STRUCTURE | SCAN_SEQUENCE | SCAN_GRID
 ;
 
 array_decl:	'[' SCAN_INTEGER ']'
@@ -324,7 +329,7 @@ array_decl:	'[' SCAN_INTEGER ']'
 ;
 
 name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
-		| SCAN_ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
+		| var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
                 | error 
                 {
 		  ostrstream msg;
@@ -403,6 +408,9 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.34  2001/05/04 00:09:23  jimg
+ * Added a rule that allows varaible names to be the names of datatypes.
+ *
  * Revision 1.33  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and
