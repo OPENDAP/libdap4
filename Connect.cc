@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.64  1998/04/03 17:39:07  jimg
+// Fixed a bug in process_data where sequences were not handled properly. Patch
+// from Jake Hamby.
+//
 // Revision 1.63  1998/03/26 00:19:24  jimg
 // Changed from converters to the _conv member in www_lib_init.
 //
@@ -356,7 +360,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.63 1998/03/26 00:19:24 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.64 1998/04/03 17:39:07 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1335,9 +1339,15 @@ Connect::process_data(bool async = false)
 	  // reading to to the caller.
 	  if (!async) {
 	      XDR *s = source();
-	      for (Pix q = dds->first_var(); q; dds->next_var(q))
-		  if (!dds->var(q)->deserialize(s, dds))
+	      for (Pix q = dds->first_var(); q; dds->next_var(q)) {
+		  BaseType *v = dds->var(q);
+		  // Because sequences have multiple rows, bail out and let
+		  // the caller deserialize as they read the data.
+		  if (v->type() == dods_sequence_c)
+		    break;
+		  if (!v->deserialize(s, dds))
 		      return 0;
+	      }
 	  }
 
 	  return dds;
