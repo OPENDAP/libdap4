@@ -117,17 +117,19 @@ using namespace std;
     in between calls to the two methods.
 
     @todo Change the way responses are locked. See the three methods:
-
-    FILE *get_cached_response(const string &url, vector<string> &headers)
-	throw(Error, InternalErr);
-    FILE *get_cached_response_body(const string &url) 
-	throw(Error, InternalErr);
-    void release_cached_response(FILE *response) throw(Error);
-
-    What must change is that callers must tell the cache when they are done.
-    Either replace these with a method that can be used for reading, so that
+    <ul>
+    <li>FILE *get_cached_response(const string &url, vector<string> &headers)
+	throw(Error, InternalErr);</li>
+    <li>FILE *get_cached_response_body(const string &url) 
+	throw(Error, InternalErr);</li>
+    <li>void release_cached_response(FILE *response) throw(Error);</li>
+    </ul>
+    <p>
+    What must change: The clients must tell the cache when they are done
+    using a particular entry. 
+    Either replace this with a method that can be used for reading, so that
     when the method is no longer used, the lock is released OR have the
-    method return an object which, when destroyed, frees the lock.
+    methods return an object which, when destroyed, frees a lock.
 
     @todo Change the entry locking scheme to distinguish between entries
     accessed for reading and for writing.
@@ -136,7 +138,8 @@ using namespace std;
     current software throws an exception if there's an attempt to modify an
     entry that is locked by another thread. Maybe it should block instead?
     Maybe we should provide a tests to see if an update would block (one that
-    returns right away and one that blocks).
+    returns right away and one that blocks). Note: Rob Morris added tests for
+    MT-safety. 02/06/03 jhrg
 
     @author James Gallagher <jgallagher@gso.uri.edu> */
 class HTTPCache {
@@ -370,6 +373,9 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.4  2003/02/20 23:11:59  jimg
+// Fixed class comment.
+//
 // Revision 1.3  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.
