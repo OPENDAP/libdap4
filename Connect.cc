@@ -12,7 +12,14 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.11  1995/06/01 16:46:35  jimg
+// Revision 1.12  1995/06/27 19:33:47  jimg
+// The mfuncs request_{das,dds,dods} accept a parameter which is appended to the
+// URL and used by the data server CGI to select which filter program is run to
+// handle a particular request. I changed the parameter name from cgi to ext to
+// better represent what was going on (after getting confused several times
+// myself).
+//
+// Revision 1.11  1995/06/01  16:46:35  jimg
 // Removed old code.
 //
 // Revision 1.10  1995/05/30  18:42:45  jimg
@@ -87,7 +94,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.11 1995/06/01 16:46:35 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.12 1995/06/27 19:33:47 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -147,14 +154,14 @@ Connect::~Connect()
 {
 }
 
-// Added CGI which defaults to "das". jhrg 3/7/95
+// Added EXT which defaults to "das". jhrg 3/7/95
 
 bool
-Connect::request_das(const String &cgi)
+Connect::request_das(const String &ext)
 {
     // get the das 
 
-    String das_url = _URL + "."  + cgi;
+    String das_url = _URL + "."  + ext;
     bool status = false;
 
     FILE *fp = NetExecute(das_url);
@@ -167,14 +174,14 @@ Connect::request_das(const String &cgi)
     return status;
 }
 
-// Added CGI which deafults to "dds". jhrg 3/7/95
+// Added EXT which deafults to "dds". jhrg 3/7/95
 
 bool
-Connect::request_dds(const String &cgi)
+Connect::request_dds(const String &ext)
 {
     // get the dds 
 
-    String dds_url = _URL + "."  + cgi;
+    String dds_url = _URL + "."  + ext;
     bool status = false;
 
     FILE *fp = NetExecute(dds_url);
@@ -199,12 +206,12 @@ Connect::request_dds(const String &cgi)
 // true). Returns false if an error was detected by the NetExecute or
 // NetConnect functions.
 //
-// Added optional argument CGI which defaults to "dods". jhrg 3/7/95
+// Added optional argument EXT which defaults to "dods". jhrg 3/7/95
 
 bool
-Connect::request_data(const String expr, bool async, const String &cgi)
+Connect::request_data(const String expr, bool async, const String &ext)
 {
-    String data_url = _URL + "."  + cgi + "?" + expr;
+    String data_url = _URL + "."  + ext + "?" + expr;
     FILE *fp;
 
     if (async)

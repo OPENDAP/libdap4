@@ -18,10 +18,17 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.8  1995/05/30 18:42:47  jimg
-/* Modified the request_data member function so that it accepts the variable
-/* in addition to the existing arguments.
+/* Revision 1.9  1995/06/27 19:33:49  jimg
+/* The mfuncs request_{das,dds,dods} accept a parameter which is appended to the
+/* URL and used by the data server CGI to select which filter program is run to
+/* handle a particular request. I changed the parameter name from cgi to ext to
+/* better represent what was going on (after getting confused several times
+/* myself).
 /*
+ * Revision 1.8  1995/05/30  18:42:47  jimg
+ * Modified the request_data member function so that it accepts the variable
+ * in addition to the existing arguments.
+ *
  * Revision 1.7  1995/05/22  20:43:12  jimg
  * Removed a paramter from the REQUEST_DATA member function: POST is not
  * needed since we no longer use the post mechanism.
@@ -79,9 +86,6 @@ private:
     DAS _das;			// dataset attribute structure --> !LOCAL
     DDS _dds;			// dataset descriptor structure --> ! LOCAL
 
-#ifdef NEVER
-    String make_url(const String &cgi);
-#endif
     void parse_url(const char *name);
 
 protected:
@@ -103,10 +107,10 @@ public:
     DDS &dds();
     
     // get the DAS, DDS and data from the server/cgi comb using the URL
-    bool request_das(const String &cgi = "das");
-    bool request_dds(const String &cgi = "dds");
+    bool request_das(const String &ext = "das");
+    bool request_dds(const String &ext = "dds");
     bool request_data(const String expr, bool async = false, 
-		      const String &cgi = "dods");
+		      const String &ext = "dods");
 };
 
 typedef Connect * ConnectPtr;
