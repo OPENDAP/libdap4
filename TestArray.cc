@@ -4,7 +4,10 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
-// Revision 1.4  1995/03/04 14:38:00  jimg
+// Revision 1.5  1995/03/16 17:32:27  jimg
+// Fixed bugs with read()s new & delete calls.
+//
+// Revision 1.4  1995/03/04  14:38:00  jimg
 // Modified these so that they fit with the changes in the DAP classes.
 //
 // Revision 1.3  1995/02/10  02:33:37  jimg
@@ -32,12 +35,15 @@
 #pragma implementation
 #endif
 
+#include "config.h"
+
 #include <assert.h>
 
 #include "TestArray.h"
-#include "Test.h"
 
-String testarray = "TestArray";
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 Array *
 NewArray(const String &n, BaseType *v)
@@ -75,12 +81,13 @@ TestArray::read(String dataset, String var_name, String constraint)
     void *elem_val = 0;		// the null forces a new object to be
 				// allocated 
 
-    var()->read_val(&elem_val);
+    var()->read_val(&elem_val);	// read_val() allocates space as an array...
 
     for (int i = 0; i < len; ++i)
 	memcpy(tmp + i * wid, elem_val, wid);
 
     store_val(tmp);
 
-    delete tmp;
+    delete[] elem_val;
+    delete[] tmp;
 }
