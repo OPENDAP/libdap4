@@ -28,6 +28,9 @@
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.20  1999/03/24 23:30:55  jimg
+ * Fixed some of the comments.
+ *
  * Revision 1.19  1999/01/21 02:21:44  jimg
  * Made the store_op(), ... functions static.
  * Added glue routines for scanning strings.
@@ -102,7 +105,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.19 1999/01/21 02:21:44 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.20 1999/03/24 23:30:55 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -213,8 +216,8 @@ yywrap(void)
 // header expr.tab.h nor is YY_BUFFER_STATE. Including these here allows them
 // to see the type definitions in lex.expr.c (where YY_BUFFER_STATE is
 // defined) and allows callers to declare them (since callers outside of this
-// file cannot declare YY_BUFFER_STATE variable). Note that I changed the name
-// of the expr_scan_string function to expr_string because C++ cannot
+// file cannot declare the YY_BUFFER_STATE variable). Note that I changed the
+// name of the expr_scan_string function to expr_string because C++ cannot
 // distinguish by return type. 1/12/99 jhrg
 
 void *
@@ -237,7 +240,7 @@ expr_delete_buffer(void *buf)
 
 // Note that since atoi() (or strtol()) does not care about signedness, this
 // will dump an unsigned value into a signed variable. However, if the value
-// is used in an unsigned context (i.e., with an operand that  is of unsigned
+// is used in an unsigned context (i.e., with an operand that is of unsigned
 // type) then the signed value can be cast back to unsigned without losing
 // information.
 
