@@ -11,12 +11,16 @@ PKGDIR		= ..\..\..\packages
 # Setup basic compiler flags for all .obj's
 CC		= cl
 CFLAGS		= /nologo /ML /W0 /GR /GX /c
+#CFLAGS		= /nologo /MLd /Zi /W0 /GR /GX /c	# flags for debugger
 
 # Setup linker flags for libraries and .exe's
 LINK		= link
 LIBPATH		= /libpath:$(PKGDIR)\lib /libpath:$(OBJDIR) /libpath:$(INSTALLLIBDIR)
+#LEXEFLAGS	= /DEBUG /subsystem:console $(LIBPATH)	# flags for debugger
+#LLIBFLAGS	= -lib					# flags for debugger
 LEXEFLAGS	= /nologo /subsystem:console $(LIBPATH)
 LLIBFLAGS	= -lib /nologo
+
 DODSLIBS	= libwww.lib librx.lib libz.lib libdap++.lib libxdr.lib
 SYSLIBS		= ws2_32.lib advapi32.lib
 LINKLIBS	= $(DODSLIBS) $(SYSLIBS)
