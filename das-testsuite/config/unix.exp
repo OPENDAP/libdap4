@@ -21,6 +21,14 @@ proc das-test_start { sw {ifile ""} {ofile ""}} {
 	exp_internal 1
     }
 
+    if {$ifile != ""} {
+	set ifile "< $ifile"
+    }
+
+    if {$ofile != ""} {
+	set ofile "> $ofile"
+    }
+
     switch $sw {
 	p {catch "exec $DASTEST -p $ifile $ofile" comp_output}
 	s {eval "spawn $DASTEST -s"}
@@ -42,5 +50,5 @@ proc das-test_exit {} {
 }
 
 proc das-test_version {} {
-    send_user "DAS test suite 1.1\n"
+    send_user "DAS test suite 1.2\n"
 }

@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.16.exp,v $
+# Revision 1.5  1997/05/13 23:29:17  jimg
+# *** empty log message ***
+#
 # Revision 1.4  1997/03/27 18:19:57  jimg
 # Update for version 2.13
 #
@@ -29,8 +32,7 @@ set test_name test.16
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Reading from: $srcdir$test_name
-Attributes {
+set test_out "Attributes {
     var1 {
         Int32 i 1;
     }
@@ -38,7 +40,7 @@ Attributes {
 `i' previously defined.
 parse() returned: 0"
 
-das-test_start p $srcdir$test_name -
+das-test_start p $srcdir$test_name
 
 if {$test_out == $comp_output} { # check comp_output
     pass "$test_name"

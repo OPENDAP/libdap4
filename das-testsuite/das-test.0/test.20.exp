@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.20.exp,v $
+# Revision 1.2  1997/05/13 23:29:22  jimg
+# *** empty log message ***
+#
 # Revision 1.1  1997/01/28 18:17:52  jimg
 # *** empty log message ***
 #
@@ -19,15 +22,14 @@ set test_name test.20
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Reading from: das-testsuite/test.20
-Attributes {
+set test_out "Attributes {
     var11 {
-        string value1 m/s;
+        String value1 m/s;
         String value2 \"miles/hour\";
     }
 }"
 
-das-test_start p $srcdir$test_name -
+das-test_start p $srcdir$test_name
 
 if ![string compare $test_out $comp_output] {
     pass "$test_name"

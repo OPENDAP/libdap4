@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.1.exp,v $
+# Revision 1.8  1997/05/13 23:29:10  jimg
+# *** empty log message ***
+#
 # Revision 1.7  1996/05/14 15:40:40  jimg
 # These changes have already been checked in once before. However, I
 # corrupted the source repository and restored it from a 5/9/96 backup
@@ -40,35 +43,34 @@ set test_name test.1
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Reading from: $srcdir$test_name
-Attributes {
+set test_out "Attributes {
     var1 {
-        string name bob;
-        string type human;
-        int32 age 19;
+        String name bob;
+        String type human;
+        Int32 age 19;
     }
     var2 {
-        string name joe;
-        string type dog;
-        int32 age 8;
+        String name joe;
+        String type dog;
+        Int32 age 8;
     }
     var3 {
-        int32 size 8;
-        string color red;
-        string type art;
+        Int32 size 8;
+        String color red;
+        String type art;
     }
     var4 {
     }
     var5 {
-        string height 5.0in.;
-        string units inches;
-        float64 max 5.0;
-        string weight 100lbs;
-        string color red;
+        String height 5.0in.;
+        String units inches;
+        Float64 max 5.0;
+        String weight 100lbs;
+        String color red;
     }
 }"
 
-das-test_start p $srcdir$test_name -
+das-test_start p $srcdir$test_name
 
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"

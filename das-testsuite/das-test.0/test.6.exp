@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.6.exp,v $
+# Revision 1.9  1997/05/13 23:29:28  jimg
+# *** empty log message ***
+#
 # Revision 1.8  1997/03/27 18:20:00  jimg
 # Update for version 2.13
 #
@@ -42,18 +45,17 @@ set test_name test.6
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Reading from: $srcdir$test_name
-Attributes {
+set test_out "Attributes {
     var_11 {
-        string slota val1;
-        string slotb val2;
+        String slota val1;
+        String slotb val2;
     }
 }
 Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)
 followed by a name and value.
 parse() returned: 0"
 
-das-test_start p $srcdir$test_name -
+das-test_start p $srcdir$test_name
 
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"

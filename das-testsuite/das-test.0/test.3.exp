@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.3.exp,v $
+# Revision 1.8  1997/05/13 23:29:24  jimg
+# *** empty log message ***
+#
 # Revision 1.7  1996/05/14 15:40:50  jimg
 # These changes have already been checked in once before. However, I
 # corrupted the source repository and restored it from a 5/9/96 backup
@@ -40,18 +43,17 @@ set test_name test.3
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Reading from: $srcdir$test_name
-Attributes {
+set test_out "Attributes {
     var1 {
-        string comment \"One thing about these long comments is that they
+        String comment \"One thing about these long comments is that they
 might cause problems with memory - overwrites, ...\";
-        string comment2 \"This quote tests a \\\"quote within a quote\\\", he said\";
-        string quote1 \"\\\"\";
-        string quote2 \"\\7 seven\";
+        String comment2 \"This quote tests a \\\"quote within a quote\\\", he said\";
+        String quote1 \"\\\"\";
+        String quote2 \"\\7 seven\";
     }
 }"
 
-das-test_start p $srcdir$test_name -
+das-test_start p $srcdir$test_name
 
 # send_user "comp output: $comp_output\n"
 # send_user "test out: $test_out\n"
