@@ -8,6 +8,9 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.4  1998/08/06 16:11:47  jimg
+// Added cache_dir member (from jeh).
+//
 // Revision 1.3  1998/02/04 14:55:32  tom
 // Another draft of documentation.
 //
@@ -61,6 +64,7 @@ private:
     String cgi_ver;		// Version of CGI script (caller)
     String anc_dir;		// Look here for ancillary files
     String anc_file;		// Use this for ancillary file name
+    String cache_dir;		// Use this for cache files
 
     DODSFilter() {}		// Private default ctor.
 
@@ -152,6 +156,14 @@ public:
       @return A String object that contains the dataset version
       information.  */ 
     virtual String get_dataset_version();
+
+  /** The cache_dir is used to hold the cached .dds and .das files.
+      By default, this returns an empty string (store cache files in
+      current directory.
+
+      @memo Get the cache directory.
+      @return A String object that contains the cache file directory.  */
+    virtual String get_cache_dir();
 
   /** Read the ancillary DAS information and merge it into the input
       DAS object.
