@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.52 2000/09/22 02:17:19 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.53 2000/10/03 22:16:22 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -529,7 +529,6 @@ DDS::parse(string fname)
     parse(in);
 
     fclose(in);
-
 }
 
 
@@ -545,7 +544,6 @@ DDS::parse(int fd)
     parse(in);
 
     fclose(in);
-
 }
 
 // Read structure from IN (which defaults to stdin). If ddsrestart() fails,
@@ -564,7 +562,7 @@ DDS::parse(FILE *in)
 
     bool status = ddsparse((void *)&arg) == 0;
 
-    cout << "Status from parser: " << status << endl;
+    DBG(cout << "Status from parser: " << status << endl);
 
     //  STATUS is the result of the parser function; if a recoverable error
     //  was found it will be true but arg.status() will be false.
@@ -948,6 +946,9 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.53  2000/10/03 22:16:22  jimg
+// Put debgging output in parse() method inside DBG().
+//
 // Revision 1.52  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and
