@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.10  1996/09/19 16:53:35  jimg
+// Added code to process sequences correctly when given the -D (get data)
+// option.
+//
 // Revision 1.9  1996/09/05 16:28:06  jimg
 // Added a new option to geturl, -D, which uses the Connect::request_data member
 // function to get data. Thus -a, -d and -D can be used to get the das, dds and
@@ -48,7 +52,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.9 1996/09/05 16:28:06 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.10 1996/09/19 16:53:35 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -205,8 +209,19 @@ main(int argc, char * argv[])
 		DDS &dds = url.request_data(expr, gui, async);
 
 		cout << "The data:" << endl;
-		for (Pix q = dds.first_var(); q; dds.next_var(q))
-		    dds.var(q)->print_val(cout);
+		for (Pix q = dds.first_var(); q; dds.next_var(q)) {
+		    BaseType *v = dds.var(q);
+		    switch (v->type()) {
+			// Sequences present a special case because I let
+			// their semantics get out of hand... jhrg 9/12/96
+		      case dods_sequence_c:
+			((Sequence *)v)->print_all_vals(cout, url.source());
+			break;
+		      default:
+			dds.var(q)->print_val(cout);
+			break;
+		    }
+		}
 	    }
 	}
 
