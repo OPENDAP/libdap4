@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.8.exp,v $
+# Revision 1.7  2003/05/16 00:15:57  jimg
+# Test changes because List has been removed from the DAP.
+#
 # Revision 1.6  2000/10/03 22:18:04  jimg
 # Fixes to the tests to accomodate debugging fixes in DDS.cc
 #
@@ -41,7 +44,6 @@ set test_name test.8
 set test_out "DDS past semantic check
 DDS past full semantic check
 Dataset {
-    List Int32 i\[10\]\[20\];
     Sequence {
         String name;
         Int32 age;
@@ -53,7 +55,6 @@ Dataset {
             Int32 i;
             Float64 f\[10\];
         } data;
-        List String folks;
     } exp;
 } data6;"
 

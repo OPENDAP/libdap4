@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.10.exp,v $
+# Revision 1.9  2003/05/16 00:15:57  jimg
+# Test changes because List has been removed from the DAP.
+#
 # Revision 1.8  2000/10/03 22:18:04  jimg
 # Fixes to the tests to accomodate debugging fixes in DDS.cc
 #
@@ -62,7 +65,6 @@ Dataset {
         Int32 g\[10\];
         Int32 h\[10\];
     } test4;
-    List Int32 i\[10\]\[20\];
     Sequence {
         String name;
         Int32 age;
@@ -74,7 +76,6 @@ Dataset {
             Int32 i;
             Float64 f\[10\];
         } data;
-        List String folks;
     } exp;
     Grid {
      ARRAY:

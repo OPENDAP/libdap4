@@ -19,8 +19,6 @@ dataset {
 	int32 h[10];
     } test4;
 
-    List Int32 i[10][20];
-
     Sequence {
 	String name;
 	Int32 age;
@@ -33,7 +31,6 @@ dataset {
 	    int32 i;
 	    float64 f[10];
 	} data;
-	List String folks;
     } exp;
 
     Grid {
