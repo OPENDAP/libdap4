@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.44 2004/07/07 21:08:46 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.45 2004/08/03 23:03:23 jimg Exp $";
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -113,6 +113,8 @@ String_to_AttrType(const string &s)
 void
 AttrTable::clone(const AttrTable &at)
 {
+    d_name = at.d_name;
+    
     Attr_citer i = at.attr_map.begin() ;
     Attr_citer ie = at.attr_map.end() ;
     for( ; i != ie; i++ )
@@ -291,7 +293,8 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
     if (simple_find(name))
 	throw Error(string("There already exists a container called `")
 		    + name + string("in this attribute table."));
-
+    DBG(cerr << "Setting appended attribute container name to: "
+        << lname << endl);
     at->set_name(lname);
 
     entry *e = new entry;
@@ -308,9 +311,9 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
 /** Look for an attribute or an attribute container. If used to search
     for an attribute container, this method returns the container's \e
     parent using the value-result parameter \c at and a reference to the
-    container using the Pix return value. If used to search for an
-    attribute, the attribute's container is returned using \c at; the
-    attribute itself can be accessed using the Pix return value.
+    container using the iterator value-result parameter \c iter. If used 
+    to search for an attribute, the attribute's container is returned using 
+    \c at; the attribute itself can be accessed using the iterator \c iter.
 
     @param target The name (using dot notation) of the attribute or
     container to find.
@@ -835,6 +838,19 @@ AttrTable::get_attr_table( Attr_iter iter )
     return (*iter)->type == Attr_container ? (*iter)->attributes : 0 ;
 }
 
+/** Delete the referenced AttrTable object. 
+    @note calling this method <b>invalidates</b> the iterator \e iter.
+    @param iter points to the entry to be deleted. */
+void
+AttrTable::del_attr_table(Attr_iter iter)
+{
+    if ((*iter)->type != Attr_container)
+        return;
+        
+    delete (*iter); (*iter) = 0;
+    attr_map.erase(iter);
+}
+
 /** Get the type name of an attribute referenced by \e iter.
     @param iter Reference to the Attribute.
     @return A string with the name of this attribute datatype. */
@@ -1250,6 +1266,9 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.45  2004/08/03 23:03:23  jimg
+// Fixed an error in clone() and added del_attr_table(Attr_iter).
+//
 // Revision 1.44  2004/07/07 21:08:46  jimg
 // Merged with release-3-4-8FCS
 //
