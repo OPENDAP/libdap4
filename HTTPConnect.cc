@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.12 2003/05/01 23:25:14 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.13 2003/05/01 23:37:01 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -71,10 +71,11 @@ int www_trace = 0;
     have been read off the wire and written into the d_headers field, scan
     them ans set special fields for certain headers special to the DAP. */
 
-struct ParseHeader : public unary_function<const string &, void> {
+class ParseHeader : public unary_function<const string &, void> {
     ObjectType type;		// What type of object is in the stream?
     string server;		// Server's version string.
 
+public:
     ParseHeader() :type(unknown_type), server("dods/0.0") { }
 
     void operator()(const string &header) {
@@ -104,6 +105,14 @@ struct ParseHeader : public unary_function<const string &, void> {
 	    DBG2(cout << name << ": " << value << endl);
 	    server = value;
 	}
+    }
+
+    ObjectType get_object_type() {
+	return type;
+    }
+    
+    string get_server() {
+	return server;
     }
 };
 
@@ -197,15 +206,20 @@ HTTPConnect::www_lib_init() throw(Error, InternalErr)
 /** Functor to add a single string to a curl_slist. This is used to transfer
     a list of headers from a vector<string> object to a curl_slist. */
 
-struct BuildHeaders : public unary_function<const string &, void> {
+class BuildHeaders : public unary_function<const string &, void> {
     struct curl_slist *d_cl;
 
+public:
     BuildHeaders() : d_cl(0) {}
 
     void operator()(const string &header) {
 	DBG(cerr << "Adding '" << header.c_str() << "' to the header list." 
 	    << endl);
 	d_cl = curl_slist_append(d_cl, header.c_str());
+    }
+
+    struct curl_slist *get_headers() {
+	return d_cl;
     }
 };
 
@@ -232,7 +246,7 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     if (headers) {
 	BuildHeaders curl_hdrs;
 	curl_hdrs = for_each(headers->begin(), headers->end(), curl_hdrs);
-	header_list = curl_hdrs.d_cl; // save to later delete.
+	header_list = curl_hdrs.get_headers(); // d_cl; // save to later delete.
 	curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, header_list);
     }
 
@@ -368,8 +382,8 @@ HTTPConnect::fetch_url(const string &url) throw(Error, InternalErr)
     ParseHeader parser;
     parser = for_each(d_headers.begin(), d_headers.end(), ParseHeader());
 
-    stream->set_type(parser.type);
-    stream->set_version(parser.server);
+    stream->set_type(parser.get_object_type());
+    stream->set_version(parser.get_server());
     stream->set_headers(d_headers);
     
     return stream;
@@ -605,6 +619,9 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.13  2003/05/01 23:37:01  jimg
+// Changed some of struct Functors to classes.
+//
 // Revision 1.12  2003/05/01 23:25:14  jimg
 // Fixed a bug in the code that handles conditional requests. Once a conditional
 // request was made, the curl_slist was freed but the HTTPHEADER option (set
