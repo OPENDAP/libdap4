@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.17 1996/06/08 00:25:31 jimg Exp $
+# $Id: configure,v 1.18 1996/06/11 17:59:57 jimg Exp $
 
 # Check for fill value usage.
 
@@ -605,8 +605,8 @@ ac_configure=$ac_aux_dir/configure # This should be Cygnus configure.
 
 
 
-dir=`pwd`
-dir2=`basename ${dir}`
+fulldir=`pwd`
+dir=`basename ${fulldir}`
 
 
 
@@ -626,7 +626,7 @@ cat >> confdefs.h <<\EOF
 EOF
 
 
-dodsroot=`echo $dir | sed 's@\(.*\)/.*/.*@\1@'`
+dodsroot=`echo $fulldir | sed 's@\(.*\)/.*/.*@\1@'`
 gzip=${dodsroot}/etc/gzip
 cat >> confdefs.h <<EOF
 #define GZIP "$gzip"
@@ -2176,7 +2176,7 @@ s%@includedir@%$includedir%g
 s%@oldincludedir@%$oldincludedir%g
 s%@infodir@%$infodir%g
 s%@mandir@%$mandir%g
-s%@dir2@%$dir2%g
+s%@dir@%$dir%g
 s%@depend@%$depend%g
 s%@host@%$host%g
 s%@host_alias@%$host_alias%g
