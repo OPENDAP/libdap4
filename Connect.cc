@@ -8,6 +8,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.59  1997/12/16 00:40:07  jimg
+// Fixed what may have been a lingering problem with version number strings
+// in the server_handler() function.
+// Added initialization of _server to `dods/0.0' in ctor. Thus _server will
+// have a value even for older servers that don't support server version
+// numbers.
+//
 // Revision 1.58  1997/09/22 23:06:52  jimg
 // Changed code so that the new DataDDS objects are used/created when
 // accessing data.
@@ -328,7 +335,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.58 1997/09/22 23:06:52 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.59 1997/12/16 00:40:07 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -798,9 +805,9 @@ server_handler(HTRequest *request, HTResponse */*response*/,
     value.downcase();
     
     if (field == "server") {
-	DBG(cerr << "Found server header" << endl);
+	DBG(cerr << "Found server header: " << value << endl);
 	Connect *me = (Connect *)HTRequest_context(request);
-	me->_server = String(value);
+	me->_server = value;
     }
     else {
 	if (SHOW_MSG)
@@ -1106,6 +1113,8 @@ Connect::Connect(String name, bool www_verbose_errors = false)
 	_source = 0;
 	_type = unknown_type;
 	_encoding = unknown_enc;
+	// Assume servers that don't announce themselves are old servers.
+	_server = "dods/0.0";
 
 	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
