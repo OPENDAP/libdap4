@@ -4,7 +4,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.5  1994/10/18 00:20:46  jimg
+// Revision 1.6  1994/11/03 04:58:02  reza
+// Added two overloading for function parse to make it consistent with DAS class.
+//
+// Revision 1.5  1994/10/18  00:20:46  jimg
 // Added copy ctor, dtor, duplicate, operator=.
 // Added var() for const cahr * (to avoid confusion between char * and
 // Pix (which is void *)).
@@ -33,7 +36,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.5 1994/10/18 00:20:46 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.6 1994/11/03 04:58:02 reza Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -164,6 +167,41 @@ DDS::var(Pix p)
     if (!vars.empty() && p)
 	return vars(p); 
 }
+
+bool
+ DDS::parse(String fname)
+{
+    FILE *in = fopen(fname, "r");
+
+    if (!in) {
+        cerr << "Could not open: " << fname << endl;
+        return false;
+      }
+
+    bool status = parse(in);
+
+    fclose(in);
+
+    return status;
+  }
+
+
+bool
+DDS::parse(int fd)
+{
+    FILE *in = fdopen(dup(fd), "r");
+
+    if (!in) {
+        cerr << "Could not access file" << endl;
+        return false;
+      }
+
+    bool status = parse(in);
+
+    fclose(in);
+
+    return status;
+  }
 
 // Read structure from IN (which defaults to stdin). If ddsrestart() fails,
 // return false, otherwise return the status of ddsparse().

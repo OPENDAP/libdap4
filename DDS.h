@@ -7,13 +7,16 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.4  1994/10/18 00:20:47  jimg
-/* Added copy ctor, dtor, duplicate, operator=.
-/* Added var() for const cahr * (to avoid confusion between char * and
-/* Pix (which is void *)).
-/* Switched to errmsg library.
-/* Added formatting to print().
+/* Revision 1.5  1994/11/03 04:58:03  reza
+/* Added two overloading for function parse to make it consistent with DAS class.
 /*
+ * Revision 1.4  1994/10/18  00:20:47  jimg
+ * Added copy ctor, dtor, duplicate, operator=.
+ * Added var() for const cahr * (to avoid confusion between char * and
+ * Pix (which is void *)).
+ * Switched to errmsg library.
+ * Added formatting to print().
+ *
  * Revision 1.3  1994/09/23  14:42:23  jimg
  * Added mfunc check_semantics().
  * Replaced print mfunc stub with real code.
@@ -73,6 +76,8 @@ public:
     BaseType *var(Pix p);
 
     // Interface to the parser
+    bool parse(String fname);
+    bool parse(int fd);
     bool parse(FILE *in=stdin);
 
     bool print(ostream &os = cout);
