@@ -36,8 +36,10 @@
 #ifndef _error_h
 #define _error_h
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <stdio.h>		// For FILE *
@@ -67,6 +69,7 @@ using std::ostream;
     </pre>
 
     @brief An enumerated type for common errors.  */
+/*
 enum ErrorCode {
     undefined_error = -1,
     unknown_error,		// any error not one of the followinng
@@ -77,7 +80,20 @@ enum ErrorCode {
     no_authorization,
     can_not_read_file,
     cannot_read_file
-};
+    }; 
+*/ 
+
+typedef int ErrorCode; //using standard errno+netCDF error codes from server
+// Internal DAP errors
+#define    undefined_error   1000
+#define    unknown_error     1001	
+#define    internal_error    1002	      
+#define    no_such_file      1003
+#define    no_such_variable  1004
+#define    malformed_expr    1005
+#define    no_authorization  1006
+#define    can_not_read_file 1007
+#define    cannot_read_file  1008
 
 /** Some Error objects may contain programs which can be used to
     correct the reported error. These programs are run using a public
@@ -194,6 +210,19 @@ public:
 };
 
 // $Log: Error.h,v $
+// Revision 1.27  2003/09/30 22:06:54  jimg
+// Changes from the release-3-4 branch were small (and there was no change
+// here); I copied the file since we're not yet ready to merge the 3.4
+// branch but need the new file to work on translation (over in nc3-dods).
+//
+// Revision 1.26.2.2  2003/06/23 11:49:18  rmorris
+// The #pragma interface directive to GCC makes the dynamic typing functionality
+// go completely haywire under OS X on the PowerPC.  We can't use that directive
+// on that platform and it was ifdef'd out for that case.
+//
+// Revision 1.26.2.1  2003/06/06 08:28:28  reza
+// Error code changes in the error object.
+//
 // Revision 1.26  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //
