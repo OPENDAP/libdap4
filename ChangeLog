@@ -1,3 +1,9 @@
+Tue Dec 16 00:32:31 1997  James Gallagher  <jimg@localhost>
+
+	* Added DODS_Dispatch.pm perl class. This class centralizes a lot
+	of the code that used to be replicated in each of the perl scripts
+	used to dispatch the various `methods' of a DODS server.
+
 Mon Dec 15 17:26:37 1997  James Gallagher  <jimg@localhost>
 
 	* Many small bug fixes that were fixed before being added to the
@@ -296,4 +302,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.13 1997/12/16 01:34:15 jimg Exp $
+$Id: ChangeLog,v 1.14 1997/12/16 08:33:45 jimg Exp $
