@@ -17,21 +17,6 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
-/* dbyte */
-#undef DBYTE
-
-/* dfloat32 */
-#undef DFLOAT32
-
-/* dfloat64 */
-#undef DFLOAT64
-
-/* dint16 */
-#undef DINT16
-
-/* int32 */
-#undef DINT32
-
 /* Set instrumentation to level 1 (see debug.h) */
 #undef DODS_DEBUG
 
