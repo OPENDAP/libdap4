@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.75 1998/03/27 22:34:06 jimg Exp $
+# $Id: Makefile.in,v 1.76 1998/03/31 23:03:00 jimg Exp $
 
 @SET_MAKE@
 
@@ -393,6 +393,11 @@ dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
   Stack/BTStack.h 
 
 das.tab.c: DAS.h
+
+# Force build of String.XPlex.o using no optimization. This is a temporary
+# work-around for a bug in gcc 2.8.1 on at least the SPARC. 
+Plex/String.XPlex.o: Plex/String.XPlex.cc
+	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -O0 -o $@ $<
 
 .SUFFIXES:      .o .cc .c
 
