@@ -31,6 +31,7 @@
 
 #include "AISMerge.h"
 #include "AISExceptions.h"
+#include "Response.h"
 
 /** Access an AIS resource. The resource may be a local file or a URL. Assume
     all resource URIs have no leading spaces. This method is public so that a
@@ -44,7 +45,7 @@
     resource could not be opened. This method does not throw an exception for
     resources that cannot be opened because that can happen for a number of
     reasons which are hardly 'exceptional.' */
-FILE *
+Response *
 AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
 {
     if (res.find("http:") == 0 || res.find("file:") == 0 
@@ -52,7 +53,7 @@ AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
 	return d_http.fetch_url(res);
     }
     else {
-	return fopen(res.c_str(), "r");
+	return new Response(fopen(res.c_str(), "r"));
     }
 }
 
@@ -79,20 +80,21 @@ AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
 	ResourceVector rv = d_ais_db.get_resource(primary);
 	
 	for (ResourceVectorIter i = rv.begin(); i != rv.end(); ++i) {
-	    FILE *ais_resource = get_ais_resource(i->get_url());
+	    Response *ais_resource = get_ais_resource(i->get_url());
 	    switch (i->get_rule()) {
 	      case Resource::overwrite:
-		das.parse(ais_resource);
+		das.parse(ais_resource->get_stream());
 		break;
 	      case Resource::replace:
 		das.erase();
-		das.parse(ais_resource);
+		das.parse(ais_resource->get_stream());
 		break;
 	      case Resource::fallback:
 		if (das.get_size() == 0)
-		    das.parse(ais_resource);
+		    das.parse(ais_resource->get_stream());
 		break;
 	    }
+	    delete ais_resource;
 	}
     }
     catch (NoSuchPrimaryResource &e) {
@@ -101,6 +103,9 @@ AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
 }
 
 // $Log: AISMerge.cc,v $
+// Revision 1.5  2003/03/04 17:57:35  jimg
+// Now uses Response objects.
+//
 // Revision 1.4  2003/02/27 23:20:49  jimg
 // Added to the documentation.
 //

@@ -75,18 +75,18 @@ public:
     void get_ais_resource_test() {
 	try {
 	    ResourceVector rv = ais_merge->d_ais_db.get_resource(fnoc1);
-	    FILE *res = ais_merge->get_ais_resource(rv[0].get_url());
-	    CPPUNIT_ASSERT(dump2string(res).find(fnoc1_ais_string) 
+	    Response *res = ais_merge->get_ais_resource(rv[0].get_url());
+	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(fnoc1_ais_string) 
 			   != string::npos);
 
 	    rv = ais_merge->d_ais_db.get_resource(bears);
 	    res = ais_merge->get_ais_resource(rv[0].get_url());
-	    CPPUNIT_ASSERT(dump2string(res).find(bears_1_ais_string) 
+	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(bears_1_ais_string) 
 			   != string::npos);
 
 	    rv = ais_merge->d_ais_db.get_resource(coads);
 	    res = ais_merge->get_ais_resource(rv[0].get_url());
-	    CPPUNIT_ASSERT(dump2string(res).find(coads_ais_string) 
+	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(coads_ais_string) 
 			   != string::npos);
 	}
 	catch (Error &e) {
@@ -294,6 +294,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISMergeTest.cc,v $
+// Revision 1.2  2003/03/04 17:56:43  jimg
+// Now uses Response objects.
+//
 // Revision 1.1  2003/02/25 23:29:52  jimg
 // Added.
 //

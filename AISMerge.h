@@ -46,6 +46,10 @@
 #include "AISExceptions.h"
 #endif
 
+#ifndef response_h
+#include "Response.h"
+#endif
+
 /** Manage a single AIS database. Open an AIS database and handle merging DAP
     objects with the ancillary resources it references. This class uses
     AISResources to actually open the AIS database and locate AIS resources
@@ -73,13 +77,16 @@ public:
     virtual ~AISMerge() {}
 
     // Change this when HTTPConnect/HTTPCache are changed.
-    virtual FILE *get_ais_resource(const string &res) 
+    virtual Response *get_ais_resource(const string &res) 
 	throw(Error, InternalErr);
 
     virtual void merge(const string &primary, DAS &das) throw(InternalErr);
 };
 
 // $Log: AISMerge.h,v $
+// Revision 1.2  2003/03/04 17:57:10  jimg
+// Now uses Response objects.
+//
 // Revision 1.1  2003/02/25 23:26:13  jimg
 // Added.
 //
