@@ -12,7 +12,10 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.10  1995/05/30 18:42:45  jimg
+// Revision 1.11  1995/06/01 16:46:35  jimg
+// Removed old code.
+//
+// Revision 1.10  1995/05/30  18:42:45  jimg
 // Modified the request_data member function so that it accepts the variable
 // in addition to the existing arguments.
 //
@@ -84,7 +87,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.10 1995/05/30 18:42:45 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.11 1995/06/01 16:46:35 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -115,21 +118,6 @@ extern void set_xdrout(FILE *out); // define in BaseType.cc
 //
 // Returns: The URL of a CGI in a String object. 
 
-#ifdef NEVER
-String
-Connect::make_url(const String &cgi)
-{
-#ifdef NEVER
-    String url = _access + "://" + _host + "/cgi-bin/" + _cgi_basename 
-	         + "_" + cgi;
-#endif
-
-    String url = _URL + "."  + cgi;
-
-    return url;
-}
-#endif
-
 void
 Connect::parse_url(const char *name)
 {
@@ -138,36 +126,11 @@ Connect::parse_url(const char *name)
     if (uc == NULL) {		// local file
 	_local = true;
 	_URL = "";		// null string
-#ifdef NEVER
-	_access = "";
-	_host = "";
-	_cgi_basename = "";
-	_path = "";
-	_anchor = "";
-#endif
 	// das & dds are initialized by children of Connect
     }
     else {
 	_local = false;
 	_URL = name;
-#ifdef NEVER
-	_access = uc->access;
-	_host = uc->host;
-
-	// remove code which parsed the path component of a URL. We don't do
-	// this any longer - URLs must be completely specified by the user
-	// (possibly via the locator)
-
-#ifdef NEVER
-	String path = uc->path;
-
-	_cgi_basename = path.before(path.index("/", 1));
-	_path = path.from(path.index("/", 1));
-#endif
-
-	_path = uc->path
-	_anchor = uc->anchor;
-#endif
     }
 
     free_url_comp(uc);
