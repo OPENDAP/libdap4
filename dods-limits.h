@@ -11,6 +11,12 @@
 // the same values on all machines.
 
 // $Log: dods-limits.h,v $
+// Revision 1.3  1996/06/07 17:15:17  jimg
+// Changed *_MIN limits so that they are in line with values in Harbison &
+// Steele (which makes them one less in absolute value than the values in Sun's
+// header). This fixes a problem when comparing signed int values to
+// DODS_INT_MIN. Also changed the values to be base 10 (from base 16).
+//
 // Revision 1.2  1996/05/31 23:30:57  jimg
 // Updated copyright notice.
 //
@@ -18,20 +24,21 @@
 // Added. Built using the SunOS 4.1.3 limits.h file.
 //
 
-#define	DODS_CHAR_BIT		 0x8
-#define	DODS_SCHAR_MIN		-0x80
-#define	DODS_SCHAR_MAX		 0x7F
-#define	DODS_UCHAR_MAX		 0xFF
-#define	DODS_CHAR_MIN		-0x80
-#define	DODS_CHAR_MAX		 0x7F
-#define	DODS_SHRT_MIN		-0x8000
-#define	DODS_SHRT_MAX		 0x7FFF
-#define	DODS_USHRT_MAX		 0xFFFF
-#define	DODS_INT_MIN		-0x80000000
-#define	DODS_INT_MAX		 0x7FFFFFFF
-#define	DODS_UINT_MAX		 0xFFFFFFFF
-#define	DODS_LONG_MIN		-0x80000000
-#define	DODS_LONG_MAX		 0x7FFFFFFF
-#define	DODS_ULONG_MAX		 0xFFFFFFFF
-#define	DODS_MB_LEN_MAX		4
+#define	DODS_CHAR_BIT		 8
+#define	DODS_SCHAR_MIN		 -127
+#define	DODS_SCHAR_MAX		 127
+#define	DODS_UCHAR_MAX		 255
+#define	DODS_CHAR_MIN		 -127
+#define	DODS_CHAR_MAX		 127
+#define	DODS_SHRT_MIN		 -32767
+#define	DODS_SHRT_MAX		 32767
+#define	DODS_USHRT_MAX		 65535
+#define	DODS_INT_MIN		 -2147483647
+#define	DODS_INT_MAX		 2147483647
+#define	DODS_UINT_MAX		 4294967295
+#define	DODS_LONG_MIN		 -2147483647
+#define	DODS_LONG_MAX		 2147483647
+#define	DODS_ULONG_MAX		 4294967295
+
+#define	DODS_MB_LEN_MAX		 4
 
