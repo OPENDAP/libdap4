@@ -10,6 +10,17 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.35  1998/09/17 17:08:52  jimg
+// Changes for the new variable lookup scheme. Fields of ctor types no longer
+// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
+// that if there are two `f1's in a dataset, the first will be silently used;
+// There's no warning about the situation. The new code in the var member
+// function passes a stack of BaseType pointers so that the projection
+// information (send_p field) can be set properly.
+// Changed the implementation of print_all_vals to use type() instead of
+// type_name().
+// Added leaf_match and exact_match.
+//
 // Revision 1.34  1998/08/06 16:21:25  jimg
 // Fixed the misuse of the read(...) member function. See Grid.c (from jeh).
 //
@@ -358,7 +369,57 @@ Structure::buf2val(void **)
 }
 
 BaseType *
-Structure::var(const String &name)
+Structure::var(const String &name, btp_stack &s)
+{
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	assert(_vars(p));
+	
+	if (_vars(p)->name() == name) {
+	    s.push((BaseType *)this);
+	    return _vars(p);
+	}
+
+        if (_vars(p)->is_constructor_type()) {
+	    BaseType *btp = _vars(p)->var(name, s);
+	    if (btp) {
+		s.push((BaseType *)this);
+		return btp;
+	    }
+	}
+    }
+
+    return 0;
+}
+
+BaseType *
+Structure::var(const String &name, bool exact)
+{
+    if (exact)
+	return exact_match(name);
+    else
+	return leaf_match(name);
+}
+
+BaseType *
+Structure::leaf_match(const String &name)
+{
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	assert(_vars(p));
+	
+	if (_vars(p)->name() == name)
+	    return _vars(p);
+        if (_vars(p)->is_constructor_type()) {
+	    BaseType *btp = _vars(p)->var(name, false);
+	    if (btp)
+		return btp;
+	}
+    }
+
+    return 0;
+}
+
+BaseType *
+Structure::exact_match(const String &name)
 {
     if (name.contains(".")) {
 	String n = (String)name; // cast away const
@@ -457,36 +518,49 @@ Structure::print_val(ostream &os, String space, bool print_decl_p)
 	os << ";" << endl;
 }
 
-// print the values of the contained variables
+// Print the values of the contained variables.
+//
+// Potential bug: This works only for structures that have sequences at their
+// top level. Will it work when sequences are more deeply embedded?
+
 void
 Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, String space, bool print_decl_p)
 {
-  if (print_decl_p) {
-    print_decl(os, space, false);
-    os << " = ";
-  }
-
-  os << "{ ";
-  bool sequence_found = false;
-  for (Pix p = first_var(); p; next_var(p), (void)(p && os << ", ")) {
-    assert(var(p));
-    if (var(p)->type_name() == "Sequence") { // special handling
-      (dynamic_cast<Sequence*>(var(p)))->print_all_vals(os, src, dds, "", false);
-      sequence_found = true;
-    } else if (var(p)->type_name() == "Structure") {
-      (dynamic_cast<Structure*>(var(p)))->print_all_vals(os, src, dds, "", false);
-    } else {
-      // If a sequence was found, we still need to deserialize() remaining vars
-      if(sequence_found)
-	var(p)->deserialize(src, dds);
-      var(p)->print_val(os, "", false);
+    if (print_decl_p) {
+	print_decl(os, space, false);
+	os << " = ";
     }
-  }
 
-  os << " }";
+    os << "{ ";
+    bool sequence_found = false;
+    for (Pix p = first_var(); p; next_var(p), (void)(p && os << ", ")) {
+	assert(var(p));
+	switch (var(p)->type()) {
+	  case dods_sequence_c:
+	    (dynamic_cast<Sequence*>(var(p)))->print_all_vals(os, src, dds, 
+							      "", false);
+	    sequence_found = true;
+	    break;
+	  
+	  case dods_structure_c:
+	    (dynamic_cast<Structure*>(var(p)))->print_all_vals(os, src, dds, 
+							       "", false);
+	    break;
+	  
+	  default:
+	    // If a sequence was found, we still need to deserialize()
+	    // remaining vars.
+	    if(sequence_found)
+		var(p)->deserialize(src, dds);
+	    var(p)->print_val(os, "", false);
+	    break;
+	}
+    }
 
-  if (print_decl_p)
-    os << ";" << endl;
+    os << " }";
+
+    if (print_decl_p)
+	os << ";" << endl;
 }
 
 bool
