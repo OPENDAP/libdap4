@@ -10,6 +10,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.40  1997/12/31 20:55:15  jimg
+// Changed name of read_level() to level() to reduce confusion in child
+// classes. Also changed return type from unsigned int to int. This allows
+// callers to store flags, etc. in the _level field - not the best thing, but
+// a realistic expectation
+//
 // Revision 1.39  1997/12/16 01:36:18  jimg
 // Merged changes from release-2.14d.
 //
@@ -399,8 +405,8 @@ Sequence::set_level(int lvl)
     _level = lvl;
 }
 
-unsigned int
-Sequence::read_level()
+int
+Sequence::level()
 {
     return _level;
 }
