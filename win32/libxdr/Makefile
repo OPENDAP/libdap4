@@ -61,13 +61,20 @@ $(OBJDIR)\xdr_reference.obj : .\xdr_reference.c
 $(OBJDIR)\xdr_stdio.obj : .\xdr_stdio.c
 $(OBJDIR)\xdrtest.obj: .\xdrtest.c
 
+# Don't use the built-in "extended DOS" commands with all the
+# fancy flags.  Win95/98 systems don't have those so we must
+# keep it simple.  Sticking with no-flag versions of copy, mkdir,
+# rmdir and del are a safe bet.
 setup:
 	@-mkdir $(OBJDIR)
 	@-mkdir $(INSTALLDIR)
 	@-mkdir $(INCLUDEDIR)
 
 clean:
-	@-rmdir /S /Q $(OBJDIR)
+	@-del $(OBJDIR)\*.obj
+	@-del $(OBJDIR)\*.lib
+	@-del $(OBJDIR)\*.exe
+	@-rmdir $(OBJDIR)
 
 !INCLUDE "dependancies"
 

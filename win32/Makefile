@@ -27,7 +27,7 @@ LINKLIBS	= $(DODSLIBS) $(SYSLIBS)
 
 # Setup compiler tools.  BISON_HAIRY and BISON_SIMPLE environment variables
 # must be set to the _full_ path for bison.simple and bison.hairy respectively.
-# These tools can (as of 5/2000) be downloaded and installed from
+# These tools can (as of 7/2000) be downloaded and installed from
 # ftp://ftp.uni-koeln.de/pc/win32/misc/unxutils.zip.  They must also be on
 # the path.
 LEX	= flex
@@ -36,7 +36,7 @@ AWK	= gawk
 
 # Setup compiler includes and defines for libraries and .exe's
 INCS		= /I . /I .. /I ..\GNU /I ..\..\..\packages\include \
-		  /I ..\..\..\packages\include\w3c-libwww \
+		  /I ..\..\..\packages\include\libwww \
 		  /I ..\..\..\include
 DEFSLIB		= /D WIN32 /D _LIB /D _WINDOWS
 DEFSEXE		= /D WIN32 /D _CONSOLE
@@ -370,6 +370,11 @@ $(OBJDIR)\expr-test.obj  : ..\expr-test.cc $(OBJDIR)\libdap++.lib
 # (that is, even though these utils can run under win32 - by definition
 # they generate output for the UNIX world).  This stupid pet trick
 # also properly defines isatty() for the generated source under win32.
+
+# Don't use the built-in "extended DOS" commands with all the
+# fancy flags.  Win95/98 systems don't have those so we must
+# keep it simple.  Sticking with no-flag versions of copy, mkdir,
+# rmdir and del are a safe bet.
 setup:
 	@-mkdir $(OBJDIR)
 	@-mkdir $(INSTALLLIBDIR)
@@ -383,8 +388,11 @@ setup:
 clean:
 	@cd libxdr
 	@-nmake clean
-	@cd ..
-	@-rmdir /S /Q $(OBJDIR)
+	@cd .. 
+	@-del $(OBJDIR)\*.obj
+	@-del $(OBJDIR)\*.lib
+	@-del $(OBJDIR)\*.exe
+	@-rmdir $(OBJDIR)
 	@-del unistd.h
 
 grammarclean:
