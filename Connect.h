@@ -31,9 +31,12 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.17  1996/06/21 23:14:15  jimg
-/* Removed GUI code to a new class - Gui.
+/* Revision 1.18  1996/07/10 21:25:34  jimg
+/* *** empty log message ***
 /*
+ * Revision 1.17  1996/06/21 23:14:15  jimg
+ * Removed GUI code to a new class - Gui.
+ *
  * Revision 1.16  1996/06/18 23:41:01  jimg
  * Added support for a GUI. The GUI is actually contained in a separate program
  * that is run in a subprocess. The core `talks' to the GUI using a pty and a
@@ -146,7 +149,9 @@
 
 #include "WWWFile.h"
 #include "WWWMIME.h"
+#if 0
 #include "WWWGuess.h"		// Content type guesser
+#endif
 #include "WWWInit.h"
 #include "WWWRules.h"
 
@@ -276,8 +281,7 @@ public:
     FILE *output();
 
     /// Access the XDR input stream (source) for this connection.
-    //* Returns a XDR * which is tied to the stream STREAM. Default is the
-    //* current output() stream.
+    //* Returns a XDR * which is tied to the current output() stream.
     XDR *source();
 
     /// Does this object refer to a local file?

@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.30  1996/07/10 21:25:32  jimg
+// *** empty log message ***
+//
 // Revision 1.29  1996/06/22 00:00:23  jimg
 // Added Gui pointer to the Error oject's correct_error mfunc call.
 //
@@ -176,7 +179,9 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.29 1996/06/22 00:00:23 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __attribute__ ((__unused__)) ={"$Id: Connect.cc,v 1.30 1996/07/10 21:25:32 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -197,10 +202,8 @@ static char rcsid[]={"$Id: Connect.cc,v 1.29 1996/06/22 00:00:23 jimg Exp $"};
 #include <strstream.h>
 #include <fstream.h>
 
-#define DEBUG2 1		// WWW defines DEBUG; use DEBUG2 here.
 #include "debug.h"
 #include "Connect.h"
-#include "config_dap.h"
 
 // On a sun (4.1.3) these are not prototyped... Maybe other systems too?
 #if (HAVE_SEM_PROTO == 0)
@@ -291,7 +294,6 @@ int
 redirection_handler(HTRequest *request, int status)
 {
     bool result = true;
-    Connect *me = (Connect *)HTRequest_context(request);
     HTAnchor *new_anchor = HTRequest_redirection(request);
 
     // Make sure we do a reload from cache
@@ -317,8 +319,6 @@ redirection_handler(HTRequest *request, int status)
 int
 terminate_handler(HTRequest *request, int status) 
 {
-    Connect *me = (Connect *)HTRequest_context(request);
-
     if (status != HT_LOADED) {
 	HTAlertCallback *cbf = HTAlert_find(HT_A_MESSAGE);
 	if (cbf) (*cbf)(request, HT_A_MESSAGE, HT_MSG_NULL, NULL,
@@ -361,8 +361,9 @@ timeout_handler(HTRequest *request)
 // Use the GUI to report progress to the user.
 
 BOOL
-dods_progress (HTRequest * request, HTAlertOpcode op, int msgnum, 
-	       const char * dfault, void * input, HTAlertPar * reply)
+dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */, 
+	       const char * /* dfault */, void * input,
+	       HTAlertPar * /* reply */)
 {
     Connect *me = (Connect *)HTRequest_context(request);
     String cmd;
@@ -453,8 +454,9 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int msgnum,
 }
 
 BOOL
-dods_username_password (HTRequest * request, HTAlertOpcode op, int msgnum, 
-			const char * dfault, void * input, HTAlertPar * reply)
+dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
+			int /* msgnum */, const char * /* dfault */,
+			void * /* input */, HTAlertPar * reply)
 {
     if (!request) {
         if (WWWTRACE) TTYPrint(TDEST, "HTProgress.. Bad argument\n");
@@ -490,9 +492,9 @@ dods_username_password (HTRequest * request, HTAlertOpcode op, int msgnum,
 #include "www-error-msgs.h"
 
 BOOL 
-dods_error_print (HTRequest * request, HTAlertOpcode op,
-		  int msgnum, CONST char * dfault, void * input,
-		  HTAlertPar * reply)
+dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
+		  int /* msgnum */, CONST char * /* dfault */, void * input,
+		  HTAlertPar * /* reply */)
 {
     HTList *cur = (HTList *) input;
     HTError *pres;
@@ -1081,7 +1083,7 @@ Connect::fetch_url(String &url, bool async = false)
 	    }
 
 	    // Semaphore wait for completion of read_url(...) in child.
-	    struct sembuf sembuf[1] = {0, 0, SEM_UNDO};
+	    struct sembuf sembuf[1] = {{0, 0, SEM_UNDO}};
 	    if (semop(semaphore, sembuf, 1) < 0) {
 		cerr << "Could not wait for child to read URL." << endl;
 		return false;
@@ -1109,7 +1111,7 @@ Connect::fetch_url(String &url, bool async = false)
 	    bool status = read_url(url, _output);
 
 	    // Set the semaphore so that the parent will stop blocking
-	    struct sembuf sembuf[1] = {0, 1, SEM_UNDO};
+	    struct sembuf sembuf[1] = {{0, 1, SEM_UNDO}};
 	    if (semop(semaphore, sembuf, 1) < 0) {
 		cerr << "Could not wait for child to read URL." << endl;
 		return false;
@@ -1383,21 +1385,25 @@ Connect::next_constraint(Pix &p)
 String
 Connect::constraint_expression(Pix p)
 {
-    if (!_data.empty() && p)
-	return _data(p)._expression;
+    assert(!_data.empty() && p);
+
+    return _data(p)._expression;
 }
 
 DDS &
 Connect::constraint_dds(Pix p)
 {
-    if (!_data.empty() && p)
-	return _data(p)._dds;
+    assert(!_data.empty() && p);
+
+    return _data(p)._dds;
 }
 
 DDS &
 Connect::append_constraint(String expr, DDS &dds)
 {
     constraint c(expr, dds);
+
+    _data.append(c);
 
     return _data.rear()._dds;
 }
