@@ -3,6 +3,12 @@
 # jhrg
 #
 # $Log: test.i.exp,v $
+# Revision 1.9  2003/04/22 19:40:30  jimg
+# Merged with 3.3.1.
+#
+# Revision 1.8.8.1  2003/04/18 04:11:53  jimg
+# Updated for the new version of test.5.
+#
 # Revision 1.8  2000/10/03 22:18:04  jimg
 # Fixes to the tests to accomodate debugging fixes in DDS.cc
 #
@@ -44,7 +50,7 @@ set test_file test.5
 
 # The variable test_equation is the equation to test.
 
-set test_equation {g\[1:4:9\]\[1:4:9\]\[1:4:9\]}
+set test_equation {g\[0:2:4\]\[0:2:4\]\[0:2:4\]}
 
 # The variable `test_out' is a string that contains the text that should be
 # stored in comp_output by das-test_start. The two strings should match
@@ -57,11 +63,11 @@ Dataset {
     String s;
     Grid {
      ARRAY:
-        Float64 val\\\[length = 10\\\]\\\[width = 10\\\]\\\[height = 20\\\];
+        Float64 val\\\[length = 5\\\]\\\[width = 6\\\]\\\[height = 7\\\];
      MAPS:
-        Float64 length\\\[10\\\];
-        Float64 width\\\[10\\\];
-        Float64 height\\\[20\\\];
+        Float64 length\\\[5\\\];
+        Float64 width\\\[6\\\];
+        Float64 height\\\[7\\\];
     } g;
 } test1;
 The data:

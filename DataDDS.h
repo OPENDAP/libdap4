@@ -94,7 +94,13 @@ public:
 // unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
 //
 // $Log: DataDDS.h,v $
+// Revision 1.14  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.13  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.12.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.12  2003/01/23 00:22:24  jimg

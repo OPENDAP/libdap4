@@ -35,7 +35,7 @@
 #include "AttrTable.h"
 
 using namespace CppUnit;
-using std::ends ;
+using namespace std;
 
 class AttrTableTest:public TestFixture {
 private:
@@ -104,6 +104,7 @@ public:
     CPPUNIT_TEST(erase_test);
     CPPUNIT_TEST(names_with_spaces_test);
     CPPUNIT_TEST(containers_with_spaces_test);
+    CPPUNIT_TEST(get_attr_iter_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -211,7 +212,6 @@ public:
 	string attrs = "String long%20name first;
 String longer%20name \"second test\";";
 	CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
-
 	delete t; t = 0;
     }
 
@@ -226,16 +226,35 @@ String longer%20name \"second test\";";
 	    e.display_message();
 	    CPPUNIT_ASSERT("Caught Error exception!" && false);
 	}
+
 	ostringstream oss;
 	top->print(oss, "");
-	Regex r("Data%20Field {
-.*String long%20name first;
-.*Alias an%20alias long%20name;
-}
-");
+	Regex r("Data%20Field {\n\
+.*String long%20name first;\n\
+.*Alias an%20alias long%20name;\n\
+}\n");
 	CPPUNIT_ASSERT(re_match(r, oss.str().c_str()));
 	delete top; top = 0;
+    }
 
+    void get_attr_iter_test() {
+	int n = at1->get_size();
+	CPPUNIT_ASSERT(n == 3);
+
+	for (AttrTable::Attr_iter j = at1->attr_begin(); j != at1->attr_end(); ++j) 
+	    cerr << "Name: " << at1->get_name(j) << endl;
+
+	AttrTable::Attr_iter i = at1->get_attr_iter(0);
+	CPPUNIT_ASSERT(at1->get_name(i) == "a");
+	i = at1->get_attr_iter(2);
+	CPPUNIT_ASSERT(at1->get_name(i) == "c");
+
+	i = at1->get_attr_iter(1);
+        CPPUNIT_ASSERT(at1->is_container(i));
+	AttrTable *t1 = at1->get_attr_table(i);
+	AttrTable::Attr_iter k = t1->get_attr_iter(1);
+	CPPUNIT_ASSERT(t1->get_name(k) == "type");
+	CPPUNIT_ASSERT(t1->get_attr(k, 0) == "houses");	
     }
 
 };

@@ -36,6 +36,7 @@
 #include "debug.h"
 
 using namespace CppUnit;
+using namespace std;
 
 class DODSFilterTest : public TestFixture {
 private:

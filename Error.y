@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.y,v 1.13 2003/02/21 00:14:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.y,v 1.14 2003/04/22 19:40:27 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,7 +160,13 @@ Errorerror(char *s)
 
 
 // $Log: Error.y,v $
+// Revision 1.14  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.13  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.12.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.12  2003/01/23 00:22:24  jimg

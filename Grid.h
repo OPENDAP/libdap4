@@ -189,11 +189,23 @@ public:
         It does not reference the last Map vector */
     Map_iter map_end() ;
 
+    Map_iter get_map_iter(int i);
 };
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.45  2003/04/22 19:40:27  jimg
+ * Merged with 3.3.1.
+ *
+ * Revision 1.43.2.2  2003/04/15 01:17:12  jimg
+ * Added a method to get the iterator for a variable (or map) given its
+ * index. To get the iterator for the ith variable/map, call
+ * get_vars_iter(i).
+ *
  * Revision 1.44  2003/02/21 00:14:24  jimg
+ * Repaired copyright.
+ *
+ * Revision 1.43.2.1  2003/02/21 00:10:07  jimg
  * Repaired copyright.
  *
  * Revision 1.43  2003/01/23 00:22:24  jimg

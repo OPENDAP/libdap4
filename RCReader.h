@@ -40,8 +40,15 @@ using std::ofstream;
 using std::ifstream;
 using std::endl;
 
-class RCReader
-{
+/** Read the .dodsrc file. By default the file ~/.dodsrc is read. If the
+    environment variable DODS_CONF is set, use that value as the pathname to
+    the configuration file. Else, if the environment variable DODS_CACHE_INIT
+    is set, use that value. 
+
+    NB: DODS_CACHE_INIT is deprecated and may be removed in the future. 
+
+    @author Jose Garcia <jgarcia@ucar.edu> */
+class RCReader {
 private:
     string lockstr;	        // Lock file path
     string cifp;		// Configuration file name.
@@ -158,11 +165,20 @@ public:
 };
 
 // $Log: RCReader.h,v $
+// Revision 1.8  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.5.2.2  2003/03/07 22:58:56  jimg
+// Added class doc comment.
+//
 // Revision 1.7  2003/02/27 23:37:16  jimg
 // Added get/set_ais_database() methods along with code to parse an
 // AIS_DATABASE entry in the configuration file.
 //
 // Revision 1.6  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.5.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.5  2003/01/23 00:22:24  jimg

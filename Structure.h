@@ -43,19 +43,6 @@
 #pragma interface
 #endif
 
-#if 0
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
 #include <vector>
 #include "Pix.h"
 
@@ -71,9 +58,6 @@
 #include "DDS.h"
 #endif
 
-#if 0
-#include "config_dap.h"
-#endif
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
@@ -167,6 +151,8 @@ public:
 	elements. Does not reference the last structure element. */
     Vars_iter var_end() ;
 
+    Vars_iter get_vars_iter(int i);
+
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -204,7 +190,18 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.45  2003/04/22 19:40:28  jimg
+ * Merged with 3.3.1.
+ *
+ * Revision 1.43.2.2  2003/04/15 01:17:12  jimg
+ * Added a method to get the iterator for a variable (or map) given its
+ * index. To get the iterator for the ith variable/map, call
+ * get_vars_iter(i).
+ *
  * Revision 1.44  2003/02/21 00:14:25  jimg
+ * Repaired copyright.
+ *
+ * Revision 1.43.2.1  2003/02/21 00:10:07  jimg
  * Repaired copyright.
  *
  * Revision 1.43  2003/01/23 00:22:24  jimg

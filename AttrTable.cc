@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.37 2003/02/25 23:27:27 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.38 2003/04/22 19:40:27 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -59,142 +59,6 @@ using std::vector<string>;
 #else
 using std::vector;
 #endif
-
-// Find the attribute #target#. To reference an arbitrary attribute, a user
-// needs an AttrTable and a Pix pointing to an attribute tuple within that
-// table. 
-/** Look for an attribute or an attribute container. If used to search
-    for an attribute container, this method returns the container's <i>
-    parent</i> using the value-result parameter <tt>at</tt> and a
-    reference to the 
-    container using the Pix return value. If used to search for an
-    attribute, the attribute's container is returned using <tt>at</tt>; the
-    attribute itself can be accessed using the Pix return value.
-
-    @brief Find an attribute or container with a given name.
-    @param target The name (using dot notation) of the attribute or
-    container to find.
-    @param at A value-result used to return the attribute container in
-    which <tt>target</tt> was found. Null if <tt>target</tt> was not found.
-    @return A Pix which can be used to access <tt>target</tt> from
-    within <tt>at</tt>. 
-    Null if the attribute or container does not exist. */
-Pix 
-AttrTable::find(const string &target, AttrTable **at)
-{
-    string::size_type dotpos = target.rfind('.');
-    if (dotpos != string::npos) {
-	string container = target.substr(0, dotpos);
-	string field = target.substr(dotpos+1);
-	
-	*at = find_container(container);
-	return (*at) ? (*at)->simple_find(field) : (IteratorAdapter *)0;
-    }
-    else {
-	*at = this;
-	return simple_find(target);
-    }
-}
-
-void
-AttrTable::find( const string &target, AttrTable **at, Attr_iter &iter )
-{
-    string::size_type dotpos = target.rfind('.');
-    if (dotpos != string::npos)
-    {
-	string container = target.substr(0, dotpos);
-	string field = target.substr(dotpos+1);
-
-	*at = find_container( container ) ;
-	if(*at)
-	{
-	    iter = (*at)->simple_find(field, true) ;
-	} else {
-	    iter = attr_map.end() ;
-	}
-    }
-    else {
-	*at = this;
-	iter = simple_find(target, true);
-    }
-}
-
-Pix
-AttrTable::simple_find(const string &target)
-{
-    for (Pix p = first_attr(); p; next_attr(p))
-    {
-	if (target == attr(p)->name)
-	{
-	    return p ;
-	}
-    }
-    return (IteratorAdapter *)0;
-}
-
-AttrTable::Attr_iter
-AttrTable::simple_find( const string &target, bool )
-{
-    Attr_iter i ;
-    for( i = attr_map.begin(); i != attr_map.end(); i++ )
-    {
-	if( target == (*i)->name )
-	{
-	    break ;
-	}
-    }
-    return i ;
-}
-
-// Find the attribute container which holds #target#. Use #this# as the
-// root of the tables to search. If a table called #target# does not exist,
-// return null. The string target may contain dots in which case this
-// function will parse #target#.
-/** Look in this attribute table for an attribute container named
-    <tt>target</tt>. The search starts at this attribute table;
-    <tt>target</tt> should
-    use the dot notation to name containers held within children of this
-    attribute table. 
-
-    To search the entire DAS object, make sure to invoke this method from
-    that object.
-
-    @brief Find an attribute with a given name.
-    @param target The attribute container to find.
-    @return A pointer to the attribute table or null if the container
-    cannot be found. */
-AttrTable *
-AttrTable::find_container(const string &target)
-{
-    string::size_type dotpos = target.find('.');
-    if (dotpos != string::npos) {
-	string container = target.substr(0, dotpos);
-	string field = target.substr(dotpos+1);
-	
-	AttrTable *at= simple_find_container(container);
-	return (at) ? at->find_container(field) : 0;
-    }
-    else {
-	return simple_find_container(target);
-    }
-}
-
-AttrTable *
-AttrTable::simple_find_container(const string &target)
-{
-    if (get_name() == target)
-	return this;
-
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++)
-    {
-	if (is_container(i) && target == (*i)->name)
-	{
-	    return (*i)->attributes;
-	}
-    }
-
-    return 0;
-}
 
 string 
 AttrTable::AttrType_to_String(const AttrType at)
@@ -244,8 +108,8 @@ AttrTable::String_to_AttrType(const string &s)
 	return Attr_unknown;
 }
 
-// Protected member functions
-
+/** Clone the given attribute table in <tt>this</tt>. 
+    Protected. */
 void
 AttrTable::clone(const AttrTable &at)
 {
@@ -258,8 +122,9 @@ AttrTable::clone(const AttrTable &at)
     }
 }
 
-// Public member functions
+/** @name Instance management functions */
 
+//@{
 AttrTable::AttrTable()
 {
 }
@@ -297,6 +162,7 @@ AttrTable::operator=(const AttrTable &rhs)
 
     return *this;
 }	    
+//@}
 
 /** Attributes that are containers count one attribute, as do
     attributes with both scalar and vector values. 
@@ -325,350 +191,23 @@ AttrTable::set_name(const string &n)
     d_name = www2id(n);
 }
 
-/** @brief Get a reference to the first entry in this attribute table. 
-    @return Pix; returns null if there's nothing in the list. */
-Pix 
-AttrTable::first_attr()
-{
-    AttrIterAdapter *i = new AttrIterAdapter( attr_map ) ;
-    i->first() ;
-    return i ;
-}
+/** If the given name already refers to an attribute, and the attribute has a
+    value, the given value is appended to the attribute vector. Calling this
+    function repeatedly is the way to append to an attribute vector.
 
-AttrTable::Attr_iter
-AttrTable::attr_begin()
-{
-    return attr_map.begin() ;
-}
+    The function returns an error condition if the attribute is a container,
+    or if the type of the input value does not match the existing attribute's
+    type. Use <tt>append_container()</tt> to add container attributes.
 
-AttrTable::Attr_iter
-AttrTable::attr_end()
-{
-    return attr_map.end() ;
-}
-
-/** Advance to the next element of this attribute table. Set to null when
-    there are no more elements in the list.
-    @brief Increment a Pix pointer into the attribute table.
-    @param p Pix to advance. */
-void
-AttrTable::next_attr(Pix p)
-{
-    p.next() ;
-}
-
-AttrTable::entry *
-AttrTable::attr(Pix p)
-{
-    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
-
-    if( i ) {
-	return i->entry() ;
-    }
-    return 0 ;
-}
-
-/** @brief Returns the name of the attribute table. */
-string
-AttrTable::get_name(Pix p)
-{
-    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
-    assert(i);
-    return i->entry()->name ;
-}
-
-string
-AttrTable::get_name( Attr_iter &iter )
-{
-    assert( iter != attr_map.end() ) ;
-
-    return (*iter)->name ;
-}
-
-/** @brief Returns true if the attribute is a container. */
-bool
-AttrTable::is_container(Pix p)
-{
-    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
-    assert(i);
-    return i->entry()->type == Attr_container;
-}
-
-bool
-AttrTable::is_container( Attr_iter &i )
-{
-    return (*i)->type == Attr_container ;
-}
-
-/** Get the attribute container referenced by <tt>p</tt>. If no
-    such container exists, then return null. 
-    @brief Return an attribute container.
-    @param p Reference to a table contained by this object.
-    @return The child attribute table. */
-AttrTable *
-AttrTable::get_attr_table(Pix p)
-{
-    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
-    assert(i);
-    return i->entry()->type == Attr_container ? i->entry()->attributes : 0;
-}
-
-AttrTable *
-AttrTable::get_attr_table( Attr_iter &iter )
-{
-    assert( iter != attr_map.end() ) ;
-    return (*iter)->type == Attr_container ? (*iter)->attributes : 0 ;
-}
-
-/** @brief Get an attribute container. */
-AttrTable *
-AttrTable::get_attr_table(const string &name)
-{
-    return find_container(name);
-}
-
-AttrTable *
-AttrTable::get_attr_table(const char *name)
-{
-    return get_attr_table((string)name);
-}
-
-/** @brief Get the type name of an attribute.
-    @param p
-    @return A string with the name of this attribute datatype. */
-string
-AttrTable::get_type(Pix p)
-{
-    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
-    assert(i);
-    return AttrType_to_String(i->entry()->type);
-}
-
-string
-AttrTable::get_type( Attr_iter &iter )
-{
-    assert( iter != attr_map.end() ) ;
-    return AttrType_to_String( (*iter)->type ) ;
-}
-
-/** @brief Get the type name of an attribute within this attribute table. */
-string
-AttrTable::get_type(const string &name)
-{
-    Pix p = simple_find(name);
-    return (p) ?  get_type(p) : (string)"";
-}
-
-string
-AttrTable::get_type(const char *name)
-{
-    return get_type((string)name);
-}
-
-/** @brief Get the type of an attribute.
-    @param p
-    @return The datatype of this attribute in an instance of AttrType. */
-AttrType
-AttrTable::get_attr_type(Pix p)
-{
-    return attr(p)->type;
-}
-
-AttrType
-AttrTable::get_attr_type( Attr_iter &iter )
-{
-    return (*iter)->type ;
-}
-
-/** @brief Get the type of an attribute.
-    @return The <tt>AttrType</tt> value describing the attribute. */
-AttrType
-AttrTable::get_attr_type(const string &name)
-{
-    Pix p = simple_find(name);
-    return (p) ?  get_attr_type(p) : Attr_unknown;
-}
-
-AttrType
-AttrTable::get_attr_type(const char *name)
-{
-    return get_attr_type((string)name);
-}
-
-/** If the indicated attribute is a container attribute, this function
-    returns the number of attributes in <i>its</i> attribute table. If the
-    indicated attribute is not a container, the method returns the number
-    of values for the attribute (1 for a scalar attribute, N for a vector
-    attribute value).
-    @param p
-    @return The number of elements in the attribute.
-    @brief Get the number of attributes in this container.
-*/
-unsigned int 
-AttrTable::get_attr_num(Pix p)
-{
-    assert(p);
-    return (attr(p)->type == Attr_container)
-	? attr(p)->attributes->get_size() 
-	: attr(p)->attr->size();
-}
-
-unsigned int
-AttrTable::get_attr_num( Attr_iter &iter )
-{
-    assert( iter != attr_map.end() ) ;
-    return ( (*iter)->type == Attr_container )
-	? (*iter)->attributes->get_size()
-	: (*iter)->attr->size() ;
-}
-
-/** If the indicated attribute is a container attribute, this function
-    returns the number of attributes in <i>its</i> attribute table. If the
-    indicated attribute is not a container, the method returns the number
-    of values for the attribute (1 for a scalar attribute, N for a vector
-    attribute value). 
-    @brief Get the number of attributes in this container.
-*/
-unsigned int 
-AttrTable::get_attr_num(const string &name)
-{
-    Attr_iter iter = simple_find(name, true);
-    return (iter != attr_map.end()) ?  get_attr_num(iter) : 0;
-}
-
-unsigned int 
-AttrTable::get_attr_num(const char *name)
-{
-    return get_attr_num((string)name);
-}
-
-/** Returns the value of an attribute. If the attribute has a vector
-    value, you can indicate which is the desired value with the index
-    argument, <tt>i</tt>. If the argument is omitted, the first value is
-    returned. If the attribute has only a single value, the index
-    argument is ignored. If <tt>i</tt> is greater than the number of
-    elements in the attribute, an error is produced.
-
-    All values in an attribute table are stored as string data. They may
-    be converted to a more appropriate internal format by the calling
-    program.
-
-    @brief Return the value of an attribute.
-    @param p
-    @param i The attribute value index, zero-based.
-    @return If the indicated attribute is a container, this function
-    returns the string ``None''. If using a name to refer to the attribute
-    and the named attribute does not exist, return the empty string. */
-string
-AttrTable::get_attr(Pix p, unsigned int i)
-{
-    assert(p);
-    return attr(p)->type == Attr_container ? (string)"None" : (*attr(p)->attr)[i];
-}
-
-string
-AttrTable::get_attr(Attr_iter &iter, unsigned int i)
-{
-    assert(iter != attr_map.end());
-    return (*iter)->type == Attr_container ? (string)"None" : (*(*iter)->attr)[i];
-}
-
-/** Get the value of an attribute. If the attribute has a vector value,
-    you can indicate which is the desired value with the index argument,
-    <tt>i</tt>. If the argument is omitted, the first value is
-    returned. If the 
-    attribute has only a single value, the index argument is ignored. If
-    <tt>i</tt> is greater than the number of elements in the
-    attribute, an error is produced.
-
-    All values in an attribute table are stored as string data. They may
-    be converted to a more appropriate internal format by the calling
-    program. 
-    @brief Get the value of an attribute.
-*/
-string
-AttrTable::get_attr(const string &name, unsigned int i)
-{
-    Pix p = simple_find(name);
-    return (p) ? get_attr(p, i) : (string)"";
-}
-
-string
-AttrTable::get_attr(const char *name, unsigned int i)
-{
-    return get_attr((string)name, i);
-}
-
-/** Returns a pointer to the vector of values associated with the
-    attribute referenced by Pix <tt>p</tt> or named <tt>name</tt>. 
-
-    Note that all values in an attribute table are stored as string data.
-    They may be converted to a more appropriate internal format by the
-    calling program.
-
-    @brief Return a vector-valued attribute.
-    @param p
-    @return If the indicated attribute is a container, this function
-    returns the null pointer.  Otherwise returns a pointer to the
-    the attribute vector value. */
-vector<string> *
-AttrTable::get_attr_vector(Pix p)
-{
-    assert(p);
-    return attr(p)->type != Attr_container ? attr(p)->attr : 0;
-}
-
-vector<string> *
-AttrTable::get_attr_vector(Attr_iter &iter)
-{
-    assert(iter != attr_map.end());
-    return (*iter)->type != Attr_container ? (*iter)->attr : 0;
-}
-
-/** Get a pointer to the vector of values associated with the attribute
-    referenced by Pix <tt>p</tt> or named <tt>name</tt>.
-
-    Note that all values in an attribute table are stored as string data.
-    They may be converted to a more appropriate internal format by the
-    calling program.
-
-    @return If the indicated attribute is a container, this function
-    returns the null pointer.  Otherwise returns a pointer to the
-    the attribute vector value. 
-    @brief Get a vector-valued attribute.
-*/
-vector<string> *
-AttrTable::get_attr_vector(const string &name)
-{
-    Pix p = simple_find(name);
-    return (p) ?  get_attr_vector(p) : 0;
-}
-
-vector<string> *
-AttrTable::get_attr_vector(const char *name)
-{
-    return get_attr_vector((string)name);
-}
-
-/** If the given name already refers to
-    an attribute, and the attribute has a value, the given value is
-    appended to the attribute vector. Calling this function repeatedly is
-    the way to append to an attribute vector.
-
-    The function returns an error condition if the attribute is a
-    container, or if the type of the input value does not match the
-    existing attribute's type. Use <tt>append_container()</tt> to
-    add container attributes.
-
-    This method performs a simple search for <tt>name</tt> in this
-    attribute table only; sub-tables are not searched and the dot
-    notation is not recognized.
+    This method performs a simple search for <tt>name</tt> in this attribute
+    table only; sub-tables are not searched and the dot notation is not
+    recognized.
 
     @brief Add an attribute to the table.
     @return Returns the length of the added attribute value.
     @param name The name of the attribute to add or modify.
     @param type The type of the attribute to add or modify.
-    @param attr The value to add to the attribute table. */
+    @param attribute The value to add to the attribute table. */
 unsigned int
 AttrTable::append_attr(const string &name, const string &type, 
 		       const string &attribute) throw (Error)
@@ -767,6 +306,614 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
 
     return e->attributes;
 }
+
+/** Look for an attribute or an attribute container. If used to search
+    for an attribute container, this method returns the container's {\it
+    parent} using the value-result parameter #at# and a reference to the
+    container using the Pix return value. If used to search for an
+    attribute, the attribute's container is returned using #at#; the
+    attribute itself can be accessed using the Pix return value.
+
+    @param target The name (using dot notation) of the attribute or
+    container to find.
+    @param at A value-result used to return the attribute container in
+    which #target# was found. Null if #target# was not found.
+    @param iter The itereator which will reference the attribute found
+    which can be used to access #target# from within #at#. References
+    dim_end() within #at# if the attribute or container does not exist. */
+
+void
+AttrTable::find( const string &target, AttrTable **at, Attr_iter &iter )
+{
+    string::size_type dotpos = target.rfind('.');
+    if (dotpos != string::npos)
+    {
+	string container = target.substr(0, dotpos);
+	string field = target.substr(dotpos+1);
+
+	*at = find_container( container ) ;
+	if(*at)
+	{
+	    iter = (*at)->simple_find(field, true) ;
+	} else {
+	    iter = attr_map.end() ;
+	}
+    }
+    else {
+	*at = this;
+	iter = simple_find(target, true);
+    }
+}
+
+// Private
+AttrTable::Attr_iter
+AttrTable::simple_find( const string &target, bool )
+{
+    Attr_iter i ;
+    for( i = attr_map.begin(); i != attr_map.end(); i++ )
+    {
+	if( target == (*i)->name )
+	{
+	    break ;
+	}
+    }
+    return i ;
+}
+
+/** Look in this attribute table for an attribute container named
+    <tt>target</tt>. The search starts at this attribute table;
+    <tt>target</tt> should
+    use the dot notation to name containers held within children of this
+    attribute table. 
+
+    To search the entire DAS object, make sure to invoke this method from
+    that object.
+
+    @brief Find an attribute with a given name.
+    @param target The attribute container to find.
+    @return A pointer to the attribute table or null if the container
+    cannot be found. */
+AttrTable *
+AttrTable::find_container(const string &target)
+{
+    string::size_type dotpos = target.find('.');
+    if (dotpos != string::npos) {
+	string container = target.substr(0, dotpos);
+	string field = target.substr(dotpos+1);
+	
+	AttrTable *at= simple_find_container(container);
+	return (at) ? at->find_container(field) : 0;
+    }
+    else {
+	return simple_find_container(target);
+    }
+}
+
+// Private
+AttrTable *
+AttrTable::simple_find_container(const string &target)
+{
+    if (get_name() == target)
+	return this;
+
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++)
+    {
+	if (is_container(i) && target == (*i)->name)
+	{
+	    return (*i)->attributes;
+	}
+    }
+
+    return 0;
+}
+
+/** Each of the following accessors get information using the name of an
+    attribute. They perform a simple search for the name in this
+    attribute table only; sub-tables are not searched and the dot
+    notation is not recognized.
+
+    @name Accessors using an attribute name */
+//@{
+
+/** @brief Get an attribute container. */
+AttrTable *
+AttrTable::get_attr_table(const string &name)
+{
+    return find_container(name);
+}
+
+AttrTable *
+AttrTable::get_attr_table(const char *name)
+{
+    return get_attr_table((string)name);
+}
+
+/** @brief Get the type name of an attribute within this attribute table. */
+string
+AttrTable::get_type(const string &name)
+{
+    Pix p = simple_find(name);
+    return (p) ?  get_type(p) : (string)"";
+}
+
+string
+AttrTable::get_type(const char *name)
+{
+    return get_type((string)name);
+}
+
+/** @brief Get the type of an attribute.
+    @return The <tt>AttrType</tt> value describing the attribute. */
+AttrType
+AttrTable::get_attr_type(const string &name)
+{
+    Pix p = simple_find(name);
+    return (p) ?  get_attr_type(p) : Attr_unknown;
+}
+
+AttrType
+AttrTable::get_attr_type(const char *name)
+{
+    return get_attr_type((string)name);
+}
+
+/** If the indicated attribute is a container attribute, this function
+    returns the number of attributes in <i>its</i> attribute table. If the
+    indicated attribute is not a container, the method returns the number
+    of values for the attribute (1 for a scalar attribute, N for a vector
+    attribute value). 
+    @brief Get the number of attributes in this container.
+*/
+unsigned int 
+AttrTable::get_attr_num(const string &name)
+{
+    Attr_iter iter = simple_find(name, true);
+    return (iter != attr_map.end()) ?  get_attr_num(iter) : 0;
+}
+
+unsigned int 
+AttrTable::get_attr_num(const char *name)
+{
+    return get_attr_num((string)name);
+}
+
+/** Get a pointer to the vector of values associated with the attribute
+    referenced by Pix <tt>p</tt> or named <tt>name</tt>.
+
+    Note that all values in an attribute table are stored as string data.
+    They may be converted to a more appropriate internal format by the
+    calling program.
+
+    @return If the indicated attribute is a container, this function
+    returns the null pointer.  Otherwise returns a pointer to the
+    the attribute vector value. 
+    @brief Get a vector-valued attribute.
+*/
+vector<string> *
+AttrTable::get_attr_vector(const string &name)
+{
+    Pix p = simple_find(name);
+    return (p) ?  get_attr_vector(p) : 0;
+}
+
+vector<string> *
+AttrTable::get_attr_vector(const char *name)
+{
+    return get_attr_vector((string)name);
+}
+
+/** Delete the attribute named <tt>name</tt>. If <tt>i</tt> is given, and
+    the attribute has a vector value, delete the <tt>i</tt>$^th$
+    element of the vector.
+
+    You can use this function to delete container attributes, although
+    the <tt>i</tt> parameter has no meaning for that operation.
+
+    @brief Deletes an attribute.
+    @param name The name of the attribute to delete.  This can be an
+    attribute of any type, including containers. However, this method
+    looks only in this attribute table and does not recognize the dot
+    notation. 
+    @param i If the named attribute is a vector, and <tt>i</tt> is
+    non-negative, the i-th entry in the vector is deleted, and the
+    array is repacked.  If <tt>i</tt> equals -1 (the default), the
+    entire attribute is deleted. */
+void
+AttrTable::del_attr(const string &name, int i)
+{
+    string lname = www2id(name);
+
+    Attr_iter iter = simple_find( lname, true ) ;
+    if ( iter != attr_map.end() ) {
+	if (i == -1) {		// Delete the whole attribute
+	    entry *e = *iter ;
+	    attr_map.erase( iter ) ;
+	    delete e ;
+	}
+	else {			// Delete one element from attribute array
+	    // Don't try to delete elements from the vector of values if the
+	    // map is a container!
+	    if ((*iter)->type == Attr_container) 
+		return;
+
+	    vector<string> *sxp = (*iter)->attr;
+		
+	    assert(i >= 0 && i < (int)sxp->size());
+	    sxp->erase(sxp->begin() + i); // rm the element
+	}
+    }
+}
+
+//@} Accessors using an attribute name
+
+/** @name Deprecated Pix accessors */
+//@{
+
+// Private, deprecated
+Pix
+AttrTable::simple_find(const string &target)
+{
+    for (Pix p = first_attr(); p; next_attr(p))
+    {
+	if (target == attr(p)->name)
+	{
+	    return p ;
+	}
+    }
+    return (IteratorAdapter *)0;
+}
+
+/** @brief Get a reference to the first entry in this attribute table. 
+    @return Pix; returns null if there's nothing in the list. 
+    @deprecated */
+Pix 
+AttrTable::first_attr()
+{
+    AttrIterAdapter *i = new AttrIterAdapter( attr_map ) ;
+    i->first() ;
+    return i ;
+}
+
+/** Advance to the next element of this attribute table. Set to null when
+    there are no more elements in the list.
+    @brief Increment a Pix pointer into the attribute table.
+    @param p Pix to advance. 
+    @deprecated */
+void
+AttrTable::next_attr(Pix p)
+{
+    p.next() ;
+}
+
+AttrTable::entry *
+AttrTable::attr(Pix p)
+{
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
+
+    if( i ) {
+	return i->entry() ;
+    }
+    return 0 ;
+}
+
+/** @brief Returns the name of the attribute table. 
+    @deprecated */
+string
+AttrTable::get_name(Pix p)
+{
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
+    assert(i);
+    return i->entry()->name ;
+}
+
+/** @brief Returns true if the attribute is a container. 
+    @deprecated */
+bool
+AttrTable::is_container(Pix p)
+{
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
+    assert(i);
+    return i->entry()->type == Attr_container;
+}
+
+/** Get the attribute container referenced by <tt>p</tt>. If no
+    such container exists, then return null. 
+    @brief Return an attribute container.
+    @param p Reference to a table contained by this object.
+    @return The child attribute table. 
+    @deprecated */
+AttrTable *
+AttrTable::get_attr_table(Pix p)
+{
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
+    assert(i);
+    return i->entry()->type == Attr_container ? i->entry()->attributes : 0;
+}
+
+/** @brief Get the type name of an attribute.
+    @param p
+    @return A string with the name of this attribute datatype. 
+    @deprecated */
+string
+AttrTable::get_type(Pix p)
+{
+    AttrIterAdapter *i = (AttrIterAdapter *)p.getIterator() ;
+    assert(i);
+    return AttrType_to_String(i->entry()->type);
+}
+
+/** @brief Get the type of an attribute.
+    @param p
+    @return The datatype of this attribute in an instance of AttrType. 
+    @deprecated */
+AttrType
+AttrTable::get_attr_type(Pix p)
+{
+    return attr(p)->type;
+}
+
+/** If the indicated attribute is a container attribute, this function
+    returns the number of attributes in <i>its</i> attribute table. If the
+    indicated attribute is not a container, the method returns the number
+    of values for the attribute (1 for a scalar attribute, N for a vector
+    attribute value).
+    @param p
+    @return The number of elements in the attribute.
+    @brief Get the number of attributes in this container.
+
+    @deprecated */
+unsigned int 
+AttrTable::get_attr_num(Pix p)
+{
+    assert(p);
+    return (attr(p)->type == Attr_container)
+	? attr(p)->attributes->get_size() 
+	: attr(p)->attr->size();
+}
+
+/** Returns the value of an attribute. If the attribute has a vector
+    value, you can indicate which is the desired value with the index
+    argument, <tt>i</tt>. If the argument is omitted, the first value is
+    returned. If the attribute has only a single value, the index
+    argument is ignored. If <tt>i</tt> is greater than the number of
+    elements in the attribute, an error is produced.
+
+    All values in an attribute table are stored as string data. They may
+    be converted to a more appropriate internal format by the calling
+    program.
+
+    @brief Return the value of an attribute.
+    @param p
+    @param i The attribute value index, zero-based.
+    @return If the indicated attribute is a container, this function
+    returns the string ``None''. If using a name to refer to the attribute
+    and the named attribute does not exist, return the empty string. 
+    @deprecated */
+string
+AttrTable::get_attr(Pix p, unsigned int i)
+{
+    assert(p);
+    return attr(p)->type == Attr_container ? (string)"None" : (*attr(p)->attr)[i];
+}
+
+/** Get the value of an attribute. If the attribute has a vector value,
+    you can indicate which is the desired value with the index argument,
+    <tt>i</tt>. If the argument is omitted, the first value is
+    returned. If the 
+    attribute has only a single value, the index argument is ignored. If
+    <tt>i</tt> is greater than the number of elements in the
+    attribute, an error is produced.
+
+    All values in an attribute table are stored as string data. They may
+    be converted to a more appropriate internal format by the calling
+    program. 
+    @brief Get the value of an attribute.
+
+    @deprecated */
+string
+AttrTable::get_attr(const string &name, unsigned int i)
+{
+    Pix p = simple_find(name);
+    return (p) ? get_attr(p, i) : (string)"";
+}
+
+/** Returns a pointer to the vector of values associated with the
+    attribute referenced by Pix <tt>p</tt> or named <tt>name</tt>. 
+
+    Note that all values in an attribute table are stored as string data.
+    They may be converted to a more appropriate internal format by the
+    calling program.
+
+    @brief Return a vector-valued attribute.
+    @param p
+    @return If the indicated attribute is a container, this function
+    returns the null pointer.  Otherwise returns a pointer to the
+    the attribute vector value. 
+    @deprecated */
+vector<string> *
+AttrTable::get_attr_vector(Pix p)
+{
+    assert(p);
+    return attr(p)->type != Attr_container ? attr(p)->attr : 0;
+}
+
+/** Look for an attribute or an attribute container. If used to search for an
+    attribute container, this method returns the container's <i> parent</i>
+    using the value-result parameter <tt>at</tt> and a reference to the
+    container using the Pix return value. If used to search for an attribute,
+    the attribute's container is returned using <tt>at</tt>; the attribute
+    itself can be accessed using the Pix return value.
+
+    @brief Find an attribute or container with a given name.
+    @param target The name (using dot notation) of the attribute or
+    container to find.
+    @param at A value-result used to return the attribute container in
+    which <tt>target</tt> was found. Null if <tt>target</tt> was not found.
+    @return A Pix which can be used to access <tt>target</tt> from
+    within <tt>at</tt>. 
+    Null if the attribute or container does not exist. 
+    @deprecated */
+Pix 
+AttrTable::find(const string &target, AttrTable **at)
+{
+    string::size_type dotpos = target.rfind('.');
+    if (dotpos != string::npos) {
+	string container = target.substr(0, dotpos);
+	string field = target.substr(dotpos+1);
+	
+	*at = find_container(container);
+	return (*at) ? (*at)->simple_find(field) : (IteratorAdapter *)0;
+    }
+    else {
+	*at = this;
+	return simple_find(target);
+    }
+}
+
+/** @name get information using an iterator */
+//@{
+/** Get an iterator to the first entry in this attribute table. 
+    @return Attr_iter; references the end of the array if empty list. */
+AttrTable::Attr_iter
+AttrTable::attr_begin()
+{
+    return attr_map.begin() ;
+}
+
+/** Get an iterator to the end attribute table. Does not point to 
+    the last attribute in the table
+    @return Attr_iter */
+AttrTable::Attr_iter
+AttrTable::attr_end()
+{
+    return attr_map.end() ;
+}
+
+/** Given an index \c i, return the \c Attr_iter to the corresponding
+    element. This method provides a way to use all the methods that take an
+    \c Attr_iter using a simple integer index. Use the get_attr_num() or
+    get_size() methods to determine how many items the AttrTable contains.
+
+    @param i The index
+    @return The corresponding Attr_iter
+    @see get_attr_num, get_size */
+AttrTable::Attr_iter
+AttrTable::get_attr_iter(int i)
+{
+    return attr_map.begin() + i;
+}
+
+/** Returns the name of the attribute referenced by #iter#. */
+string
+AttrTable::get_name( Attr_iter &iter )
+{
+    assert( iter != attr_map.end() ) ;
+
+    return (*iter)->name ;
+}
+
+/** Returns true if the attribute referenced by #iter# is a container. */
+bool
+AttrTable::is_container( Attr_iter &i )
+{
+    return (*i)->type == Attr_container ;
+}
+
+/** Get the attribute container referenced by #iter#. If no
+    such container exists, then return a reference to the end of the
+    table.
+    @param iter Reference to a table contained by this object.
+    @return The child attribute table. */
+AttrTable *
+AttrTable::get_attr_table( Attr_iter &iter )
+{
+    assert( iter != attr_map.end() ) ;
+    return (*iter)->type == Attr_container ? (*iter)->attributes : 0 ;
+}
+
+/** Get the type name of an attribute referenced by #iter#.
+    @param iter
+    @return A string with the name of this attribute datatype. */
+string
+AttrTable::get_type( Attr_iter &iter )
+{
+    assert( iter != attr_map.end() ) ;
+    return AttrType_to_String( (*iter)->type ) ;
+}
+
+/** Get the type of the attribute referenced by #iter#.
+    @param iter
+    @return The datatype of this attribute in an instance of AttrType. */
+AttrType
+AttrTable::get_attr_type( Attr_iter &iter )
+{
+    return (*iter)->type ;
+}
+
+/** If the attribute referenced by #iter# is a container attribute, this
+    method returns the number of attributes in {\it its} attribute table.
+    If the indicated attribute is not a container, the method returns the 
+    number of values for the attribute (1 for a scalar attribute, N for a 
+    vector attribute value).
+    @param iter Reference to an attribute
+    @return The number of elements in the attribute. */
+unsigned int
+AttrTable::get_attr_num( Attr_iter &iter )
+{
+    assert( iter != attr_map.end() ) ;
+    return ( (*iter)->type == Attr_container )
+	? (*iter)->attributes->get_size()
+	: (*iter)->attr->size() ;
+}
+
+/** Returns the value of an attribute. If the attribute has a vector
+    value, you can indicate which is the desired value with the index
+    argument, #i#. If the argument is omitted, the first value is
+    returned. If the attribute has only a single value, the index
+    argument is ignored. If #i# is greater than the number of
+    elements in the attribute, an error is produced.
+
+    All values in an attribute table are stored as string data. They may
+    be converted to a more appropriate internal format by the calling
+    program.
+
+    @param iter Reference to an attribute
+    @param i The attribute value index, zero-based.
+    @return If the indicated attribute is a container, this function
+    returns the string ``None''. If using a name to refer to the attribute
+    and the named attribute does not exist, return the empty string. */
+string
+AttrTable::get_attr(Attr_iter &iter, unsigned int i)
+{
+    assert(iter != attr_map.end());
+    return (*iter)->type == Attr_container ? (string)"None" : (*(*iter)->attr)[i];
+}
+
+string
+AttrTable::get_attr(const char *name, unsigned int i)
+{
+    return get_attr((string)name, i);
+}
+
+/** Returns a pointer to the vector of values associated with the
+    attribute referenced by iterator #iter#. 
+
+    Note that all values in an attribute table are stored as string data.
+    They may be converted to a more appropriate internal format by the
+    calling program.
+
+    @param iter
+    @return If the indicated attribute is a container, this function
+    returns the null pointer.  Otherwise returns a pointer to the
+    the attribute vector value. */
+vector<string> *
+AttrTable::get_attr_vector(Attr_iter &iter)
+{
+    assert(iter != attr_map.end());
+    return (*iter)->type != Attr_container ? (*iter)->attr : 0;
+}
+
+//@} Accessors that use an iterator
 
 // Alias an attribute table. The alias should be added to this object.
 /** @brief Add an alias to a container held by this attribute table. 
@@ -887,54 +1034,6 @@ AttrTable::attr_alias(const string &alias, const string &name)
     return attr_alias(alias, this, name);
 }
 
-// Delete the attribute NAME. If NAME is an attribute vector, delete the
-// I(th) element if I is >= 0. If I is -1 (the default), remove the entire
-// attribute even if it is an array of values.
-//
-// Returns: void
-
-/** Delete the attribute named <tt>name</tt>. If <tt>i</tt> is given, and
-    the attribute has a vector value, delete the <tt>i</tt>$^th$
-    element of the vector.
-
-    You can use this function to delete container attributes, although
-    the <tt>i</tt> parameter has no meaning for that operation.
-
-    @brief Deletes an attribute.
-    @param name The name of the attribute to delete.  This can be an
-    attribute of any type, including containers. However, this method
-    looks only in this attribute table and does not recognize the dot
-    notation. 
-    @param i If the named attribute is a vector, and <tt>i</tt> is
-    non-negative, the i-th entry in the vector is deleted, and the
-    array is repacked.  If <tt>i</tt> equals -1 (the default), the
-    entire attribute is deleted. */
-void
-AttrTable::del_attr(const string &name, int i)
-{
-    string lname = www2id(name);
-
-    Attr_iter iter = simple_find( lname, true ) ;
-    if ( iter != attr_map.end() ) {
-	if (i == -1) {		// Delete the whole attribute
-	    entry *e = *iter ;
-	    attr_map.erase( iter ) ;
-	    delete e ;
-	}
-	else {			// Delete one element from attribute array
-	    // Don't try to delete elements from the vector of values if the
-	    // map is a container!
-	    if ((*iter)->type == Attr_container) 
-		return;
-
-	    vector<string> *sxp = (*iter)->attr;
-		
-	    assert(i >= 0 && i < (int)sxp->size());
-	    sxp->erase(sxp->begin() + i); // rm the element
-	}
-    }
-}
-
 /** Erase the entire attribute table. This returns an AttrTable to the empty
     state that's the same as the object generated by the null constructor.
     @brief Erase the attribute table. */
@@ -951,7 +1050,11 @@ AttrTable::erase()
     d_name = "";
 }
 
-// This is protected.	
+/** A simple printer that does nothing fancy with aliases.
+    Protected.
+    @deprecated
+    @see simple_print(FILE *out, string pad, Attr_iter &i, bool dereference);
+*/
 void
 AttrTable::simple_print(ostream &os, string pad, Attr_iter &i,
 			bool dereference)
@@ -980,6 +1083,8 @@ AttrTable::simple_print(ostream &os, string pad, Attr_iter &i,
     }
 }
 
+/** A simple printer that does nothing fancy with aliases. 
+    Protected. */
 void
 AttrTable::simple_print(FILE *out, string pad, Attr_iter &i,
 			bool dereference)
@@ -1008,6 +1113,7 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter &i,
 	break;
     }
 }
+
 /** Prints an ASCII representation of the attribute table to the
     indicated output stream. The <tt>pad</tt> argument is prefixed to each
     line of the output to provide control of indentation.
@@ -1037,6 +1143,16 @@ AttrTable::print(ostream &os, string pad, bool dereference)
     }
 }
 
+/** Prints an ASCII representation of the attribute table to the
+    indicated FILE pointer. The \c pad argument is prefixed to each
+    line of the output to provide control of indentation.
+
+    @memo Prints the attribute table.
+    @param out Print to the given output FILE.
+    @param pad Indent elements of a table using this string of spaces. By
+    default this is a string of four spaces
+    @param dereference If true, follow aliases. Default is false. */
+
 void
 AttrTable::print(FILE *out, string pad, bool dereference)
 {
@@ -1060,10 +1176,20 @@ AttrTable::print(FILE *out, string pad, bool dereference)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.38  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.35.2.2  2003/04/15 00:47:43  jimg
+// Added get_attr_iter method.
+// Added documentation from the header.
+//
 // Revision 1.37  2003/02/25 23:27:27  jimg
 // Added erase() method.
 //
 // Revision 1.36  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.35.2.1  2003/02/21 00:10:06  jimg
 // Repaired copyright.
 //
 // Revision 1.35  2003/01/23 00:22:23  jimg

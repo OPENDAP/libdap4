@@ -396,6 +396,15 @@ Structure::var_end()
     return _vars.end() ;
 }
 
+/** Return the iterator for the \i ith variable.
+    @param i the index
+    @return The corresponding  Vars_iter */
+Structure::Vars_iter
+Structure::get_vars_iter(int i)
+{
+    return _vars.begin() + i;
+}
+
 /** Increments the input index to point to the next element in the
     structure.
     @deprecated use iterator operator ++ with the iterator returned from
@@ -653,7 +662,18 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.54  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.52.2.2  2003/04/15 01:17:12  jimg
+// Added a method to get the iterator for a variable (or map) given its
+// index. To get the iterator for the ith variable/map, call
+// get_vars_iter(i).
+//
 // Revision 1.53  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.52.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.52  2003/01/23 00:22:24  jimg

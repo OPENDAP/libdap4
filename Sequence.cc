@@ -488,6 +488,15 @@ Sequence::var_end()
     return _vars.end() ;
 }
 
+/** Return the iterator for the \i ith variable.
+    @param i the index
+    @return The corresponding  Vars_iter */
+Sequence::Vars_iter
+Sequence::get_vars_iter(int i)
+{
+    return _vars.begin() + i;
+}
+
 /** @brief Increments the Sequence instance.  
     This returns a pointer to the
     next ``column'' in the Sequence, not the next row. */
@@ -1128,7 +1137,18 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.70  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.68.2.2  2003/04/15 01:17:12  jimg
+// Added a method to get the iterator for a variable (or map) given its
+// index. To get the iterator for the ith variable/map, call
+// get_vars_iter(i).
+//
 // Revision 1.69  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.68.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.68  2003/01/23 00:22:24  jimg

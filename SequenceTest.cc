@@ -27,7 +27,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <strstream.h>
+#include <strstream>
 #include <string>
 
 #include "Regex.h"
@@ -39,36 +39,38 @@
 
 using namespace CppUnit;
 
-static const char *s_as_string = 
-"BaseType (0x.*):
-          _name: s
-          _type: 13
-          _read_p: 0
-          _send_p: 0
-          _synthesized_p: 0
-          d_parent: (nil)
-BaseType (0x.*):
-          _name: i1
-          _type: 4
-          _read_p: 0
-          _send_p: 0
-          _synthesized_p: 0
-          d_parent: 0x.*
-BaseType (0x.*):
-          _name: str1
-          _type: 8
-          _read_p: 0
-          _send_p: 0
-          _synthesized_p: 0
-          d_parent: 0x.*
-BaseType (0x.*):
-          _name: i2
-          _type: 4
-          _read_p: 0
-          _send_p: 0
-          _synthesized_p: 0
-          d_parent: 0x.*
-
+//  Note: MS VC++ won't tolerate the embedded newlines in strings, hence the \n
+//  is explicit.
+static const char *s_as_string = \
+"BaseType (0x.*)\n\
+          _name: s\n\
+          _type: 13\n\
+          _read_p: 0\n\
+          _send_p: 0\n\
+          _synthesized_p: 0\n\
+          d_parent: (nil)\n\
+BaseType (0x.*):\n\
+          _name: i1\n\
+          _type: 4\n\
+          _read_p: 0\n\
+          _send_p: 0\n\
+          _synthesized_p: 0\n\
+          d_parent: 0x.*\n\
+BaseType (0x.*):\n\
+          _name: str1\n\
+          _type: 8\n\
+          _read_p: 0\n\
+          _send_p: 0\n\
+          _synthesized_p: 0\n\
+          d_parent: 0x.*\n\
+BaseType (0x.*):\n\
+          _name: i2\n\
+          _type: 4\n\
+          _read_p: 0\n\
+          _send_p: 0\n\
+          _synthesized_p: 0\n\
+          d_parent: 0x.*\n\
+\n\
 ";
 
 static Regex s_regex(s_as_string);

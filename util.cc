@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.75 2003/02/27 23:17:56 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.76 2003/04/22 19:40:29 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -578,10 +578,16 @@ get_tempfile_template(char *file_template)
 }
 
 // $Log: util.cc,v $
+// Revision 1.76  2003/04/22 19:40:29  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.75  2003/02/27 23:17:56  jimg
 // Changed prune_spaces() so taht it takes a const string &.
 //
 // Revision 1.74  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.73.2.1  2003/02/21 00:10:08  jimg
 // Repaired copyright.
 //
 // Revision 1.73  2003/01/23 00:22:25  jimg

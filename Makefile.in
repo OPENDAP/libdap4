@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.140 2003/03/13 23:50:36 jimg Exp $
+# $Id: Makefile.in,v 1.141 2003/04/22 19:40:28 jimg Exp $
 
 @SET_MAKE@
 
@@ -212,6 +212,12 @@ expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
 error-test: error-test.o Error.tab.h $(ERROROBJS) 
 	$(CXX) $(LDFLAGS) -o error-test error-test.o $(ERROROBJS) \
 		libdap++.a $(LIBS)
+
+# *** Remove this when we're done hacking the idl client Pix code. 04/14/03
+# *** jhrg
+
+tryme: tryme.o LongIterAdapter.o libdap++.a
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 # The grammar targets.
 

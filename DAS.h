@@ -129,14 +129,16 @@ protected:
     AttrTable *das_find(string name);
 
 public:
-  DAS(AttrTable *dflt=(AttrTable *)NULL, unsigned int sz=0);
+    DAS(AttrTable *dflt=(AttrTable *)NULL, unsigned int sz=0);
 
-  DAS(AttrTable *attr_table, string name);
+    DAS(AttrTable *attr_table, string name);
 
-  virtual ~DAS();
+    virtual ~DAS();
 
-  Pix first_var();
-  void next_var(Pix p);
+    Pix first_var();
+    void next_var(Pix p);
+    string get_name(Pix p);
+    AttrTable *get_table(Pix p);
 
     /** Returns a reference to the first attribute table. */
     AttrTable::Attr_iter var_begin() ;
@@ -145,28 +147,24 @@ public:
         point to an attribute. */
     AttrTable::Attr_iter var_end() ;
 
-  string get_name(Pix p);
- 
-   /** Returns the name of the referenced attribute table. */
+    /** Returns the name of the referenced attribute table. */
     string get_name(Attr_iter &i);
-
-  AttrTable *get_table(Pix p);
 
     /** Returns the referenced attribute table. */
     AttrTable *get_table(Attr_iter &i);
 
 
-  AttrTable *get_table(const string &name);
-  AttrTable *get_table(const char *name); // avoid converting char * to Pix
+    AttrTable *get_table(const string &name);
+    AttrTable *get_table(const char *name); // avoid converting char * to Pix
 
-  AttrTable *add_table(const string &name, AttrTable *at);
-  AttrTable *add_table(const char *name, AttrTable *at);
+    AttrTable *add_table(const string &name, AttrTable *at);
+    AttrTable *add_table(const char *name, AttrTable *at);
 
-  void parse(string fname);
-  void parse(int fd);
-  void parse(FILE *in=stdin);
+    void parse(string fname);
+    void parse(int fd);
+    void parse(FILE *in=stdin);
 
-  void print(ostream &os = cout, bool dereference = false);
+    void print(ostream &os = cout, bool dereference = false);
 
     /** Creates an ASCII representation of a DAS on the given output
 	stream.
@@ -177,7 +175,16 @@ public:
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.36  2003/04/22 19:40:27  jimg
+ * Merged with 3.3.1.
+ *
+ * Revision 1.34.2.2  2003/04/15 01:19:31  jimg
+ * Rearranged some of the methods so that their organization makes more sense.
+ *
  * Revision 1.35  2003/02/21 00:14:24  jimg
+ * Repaired copyright.
+ *
+ * Revision 1.34.2.1  2003/02/21 00:10:07  jimg
  * Repaired copyright.
  *
  * Revision 1.34  2003/01/23 00:22:24  jimg

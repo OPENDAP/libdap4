@@ -29,12 +29,15 @@
 
 // Tests for Byte. Tests features of BaseType, too. 7/19/2001 jhrg
 
-#include <strstream.h>
+#include <strstream>
 
 #include "Byte.h"
 
 using namespace CppUnit;
 using std::ends ;
+
+using std::ostrstream;
+using std::ends;
 
 class ByteTest : public TestFixture {
 private:

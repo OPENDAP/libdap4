@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include "AISDatabaseParser.h"
 #include "util.h"
@@ -398,6 +399,9 @@ AISDatabaseParser::intern(const string &database, AISResources *ais)
 }
 
 // $Log: AISDatabaseParser.cc,v $
+// Revision 1.6  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.5  2003/03/12 01:07:34  jimg
 // Added regular expressions to the AIS subsystem. In an AIS database (XML)
 // it is now possible to list a regular expression in place of an explicit

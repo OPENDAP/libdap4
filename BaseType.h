@@ -225,21 +225,21 @@ public:
   void set_type(const Type &t);
   string type_name() const;	
 
-  bool is_simple_type();
-  bool is_vector_type();
-  bool is_constructor_type();
+  virtual bool is_simple_type();
+  virtual bool is_vector_type();
+  virtual bool is_constructor_type();
 
   virtual int element_count(bool leaves = false);
 
-  bool synthesized_p();
+  virtual bool synthesized_p();
 
-  void set_synthesized_p(bool state);
+  virtual void set_synthesized_p(bool state);
 
-  bool read_p();
+  virtual bool read_p();
 
   virtual void set_read_p(bool state);
 
-  bool send_p();
+  virtual bool send_p();
 
   virtual void set_send_p(bool state);
 
@@ -322,7 +322,7 @@ public:
       allocated at all, this argument has no effect.
       This is currently used only in the Vector class.
 
-      @return The size (in bytes) of the information copied from <i>	val</i>.  
+      @return The size (in bytes) of the information copied from <i>val</i>.
       @see Grid
       @see Vector::val2buf */
   virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
@@ -410,7 +410,7 @@ public:
 	floats have 8), use the setprecision() I/O manipulator. 
 
 	@memo Prints the value of the variable.
-	@param ostream The output stream on which to print the value.
+	@param os The output stream on which to print the value.
 	@param space This value is passed to the #print_decl()#
 	function, and controls the leading spaces of the output.
 	@param print_decl_p A boolean value controlling whether the
@@ -450,7 +450,18 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.71  2003/04/22 19:40:27  jimg
+ * Merged with 3.3.1.
+ *
+ * Revision 1.69.2.2  2003/04/18 03:08:49  jimg
+ * I made a number of the send and read predicate methods virtual. I was working
+ * on a bug in the grid() function, and while this wasn't a fix, it seems like a
+ * reasonable thing to do.
+ *
  * Revision 1.70  2003/02/21 00:14:24  jimg
+ * Repaired copyright.
+ *
+ * Revision 1.69.2.1  2003/02/21 00:10:06  jimg
  * Repaired copyright.
  *
  * Revision 1.69  2003/01/23 00:22:23  jimg

@@ -79,7 +79,13 @@ typedef std::vector<int_list *>::const_iterator int_list_citer ;
 typedef std::vector<int_list *>::iterator int_list_iter ;
 
 // $Log: expr.h,v $
+// Revision 1.18  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.17  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.16.2.1  2003/02/21 00:10:08  jimg
 // Repaired copyright.
 //
 // Revision 1.16  2003/01/23 00:22:24  jimg

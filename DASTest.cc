@@ -75,7 +75,8 @@ public:
 	CPPUNIT_ASSERT(das->get_table("var1")->get_attr("y#z", 0) == "15");
 
 	string s = das->get_table("var1.component1.inner component")->get_attr("tag");
-	CPPUNIT_ASSERT(s == "\"xyz123\"");
+	string *str = new string("\"xyz123\"");
+	CPPUNIT_ASSERT(s == str->c_str());
     }
 
 };

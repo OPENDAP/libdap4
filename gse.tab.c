@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.tab.c,v 1.5 2003/02/26 06:46:32 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.tab.c,v 1.6 2003/04/22 19:40:28 jimg Exp $"};
 
 #include <iostream>
 
@@ -1177,7 +1177,10 @@ yyreturn:
 void
 gse_error(const char *str)
 {
-    throw InternalErr(__FILE__, __LINE__, "gse_error() called.");
+    throw Error(
+"An expression passed to the grid() function could not be parsed.\n\
+Exmples of expressions that will work are: \"i>=10.0\" or \"23.6<i<56.0\"\n\
+where \"i\" is the name of one of the Grid's map vectors.");
 }
 
 static relop
@@ -1265,10 +1268,16 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 }
 
 // $Log: gse.tab.c,v $
-// Revision 1.5  2003/02/26 06:46:32  jimg
-// Updated grammars.
+// Revision 1.6  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.8.2.2  2003/04/21 23:28:20  jimg
+// Updates to the grammar and configure files.
 //
 // Revision 1.9  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.8.2.1  2003/02/21 00:10:08  jimg
 // Repaired copyright.
 //
 // Revision 1.8  2003/01/23 00:22:25  jimg

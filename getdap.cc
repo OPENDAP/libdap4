@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.68 2003/03/14 20:04:48 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.69 2003/04/22 19:40:28 jimg Exp $"};
 
 #include <stdio.h>
 #ifdef WIN32
@@ -57,7 +57,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.68 2003/03/14 20:04:48 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.68 $";
+const char *version = "$Revision: 1.69 $";
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 
@@ -345,6 +345,9 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.69  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.68  2003/03/14 20:04:48  jimg
 // I tidied up process_data and changed its name to print_data. Removed
 // <assert.h>. Added more instrumentation.
@@ -369,6 +372,9 @@ main(int argc, char * argv[])
 // file.
 //
 // Revision 1.64  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.63.2.1  2003/02/21 00:10:08  jimg
 // Repaired copyright.
 //
 // Revision 1.63  2003/01/23 00:22:25  jimg

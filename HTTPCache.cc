@@ -34,6 +34,7 @@
 #include <pthread.h>
 #endif
 
+#define DODS_DEBUG
 #include <iostream>
 #include <strstream>
 #include <algorithm>
@@ -530,9 +531,9 @@ HTTPCache::remove_cache_entry(CacheEntry *entry) throw(InternalErr)
     REMOVE(string(entry->cachename + CACHE_META).c_str());
 
     d_current_size -= entry->size;
-    DBG(cerr << "Current size (after decrement): " << d_current_size << endl);
+    DBG2(cerr << "Current size (after decrement): " << d_current_size << endl);
 
-    DBG(cerr << "Deleting CacheEntry: " << entry << endl);
+    DBG2(cerr << "Deleting CacheEntry: " << entry << endl);
     delete entry;
 }
 
@@ -553,6 +554,8 @@ HTTPCache::remove_cache_entry(CacheEntry *entry) throw(InternalErr)
 void
 HTTPCache::perform_garbage_collection()
 {
+    DBG(cerr << "Performing garbage collection" << endl);
+
     // Remove all the expired responses.
     expired_gc();
 
@@ -691,16 +694,16 @@ HTTPCache::add_entry_to_cache_table(HTTPCache::CacheEntry *entry)
 
     if (!d_cache_table[hash]) {
 	d_cache_table[hash] = new CachePointers;
-	DBG(cerr << "Allocated d_cache_table[" << hash << "]: " 
+	DBG2(cerr << "Allocated d_cache_table[" << hash << "]: " 
 	    << d_cache_table[hash] << endl);
     }
 
     d_cache_table[hash]->push_back(entry);
-    DBG(cerr << "Pushing entry: " << entry << " onto d_cache_table[" 
+    DBG2(cerr << "Pushing entry: " << entry << " onto d_cache_table[" 
 	<< hash << "]" << endl);
 
     d_current_size += entry->size;
-    DBG(cerr << "Current size (after increment): " << d_current_size << endl);
+    DBG2(cerr << "Current size (after increment): " << d_current_size << endl);
 }
 
 /** Get a pointer to a CacheEntry from the cache table. Providing a way to
@@ -1621,6 +1624,8 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 {
     LOCK(&d_cache_mutex);
 
+    DBG(cerr << "Caching url: " << url << "." << endl);
+
     // If this is not an http or https URL, don't cache.
     if (url.find("http:") == string::npos &&
 	url.find("https:") == string::npos)
@@ -1641,7 +1646,8 @@ HTTPCache::cache_response(const string &url, time_t request_time,
     try {	
 	parse_headers(entry, headers); // etag, lm, date, age, expires, max_age.
 	if (entry->no_cache) {
-	    DBG(cerr << "Deleting CacheEntry: " << entry << endl);
+	    DBG(cerr << "Not cache-able; deleting CacheEntry: " << entry 
+		<< "(" << url << ")" << endl);
 	    delete entry;
 	    UNLOCK(&d_cache_mutex);
 	    return false;
@@ -1660,7 +1666,8 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 	DBG(cerr << e.get_error_message() << endl);
 	REMOVE(entry->cachename.c_str());
 	REMOVE(string(entry->cachename + CACHE_META).c_str());
-	DBG(cerr << "Deleting CacheEntry: " << entry << endl);
+	DBG(cerr << "Too big; deleting CacheEntry: " << entry << "(" << url 
+	    << ")" << endl);
 	delete entry;
 	UNLOCK(&d_cache_mutex);
 	return false;
@@ -1670,8 +1677,10 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 
     add_entry_to_cache_table(entry);
 
-    if (++d_new_entries > DUMP_FREQUENCY)
+    if (++d_new_entries > DUMP_FREQUENCY) {
+	UNLOCK(&d_cache_mutex);
 	cache_index_write();	// resets d_new_entries
+    }
     
     UNLOCK(&d_cache_mutex);
 
@@ -1757,6 +1766,8 @@ HTTPCache::update_response(const string &url, time_t request_time,
 {
     LOCK(&d_cache_mutex);
 
+    DBG(cerr << "Updating the response headers for: " << url << endl);
+
     CacheEntry *entry = get_entry_from_cache_table(url);
     if (!entry) {
 	UNLOCK(&d_cache_mutex);
@@ -1789,7 +1800,7 @@ HTTPCache::update_response(const string &url, time_t request_time,
     copy(old_headers.begin(), old_headers.end(), 
 	 inserter(merged_headers, merged_headers.begin()));
 
-    // Read the value back out. Use reverse iterators with back_inserter to
+    // Read the values back out. Use reverse iterators with back_inserter to
     // preserve header order. NB: vector<> does not support push_front so we
     // can't use front_inserter(). 01/09/03 jhrg
     vector<string> result;
@@ -1901,6 +1912,8 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
     
     FILE *body = open_body(entry->cachename);
 
+    DBG(cerr << "Returning: " << url << " from the cache." << endl);
+
     entry->hits++;		// Mark hit
     entry->locked++;		// lock entry
     d_locked_entries[body] = entry; // record lock, see release_cached_r...
@@ -1940,6 +1953,8 @@ HTTPCache::get_cached_response_body(const string &url)
     }
 
     FILE *body = open_body(entry->cachename); // throws InternalErr
+
+    DBG(cerr << "Returning body for: " << url << " from the cache." << endl);
 
     entry->hits++;		// Mark hit
     entry->locked++;		// lock entry
@@ -2047,6 +2062,9 @@ HTTPCache::purge_cache() throw(Error)
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.8  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.7  2003/03/13 23:55:57  jimg
 // Significant changes regarding the mutex code. I found out that since
 // config_dap.h was not being included, the mutex code was never built! Once
@@ -2061,6 +2079,9 @@ HTTPCache::purge_cache() throw(Error)
 // Modified cache_response() so that only http and https URLs are cached.
 //
 // Revision 1.4  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.3.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.3  2003/01/23 00:22:24  jimg

@@ -3,6 +3,13 @@
 # servers on other hosts or other versions of the servers.
 
 # $Log: dodsdev.exp,v $
+# Revision 1.3  2003/04/22 19:40:30  jimg
+# Merged with 3.3.1.
+#
+# Revision 1.2.2.1  2003/04/18 03:37:30  jimg
+# Set the host to localhost and the test dir to dods-test (the current
+# release).
+#
 # Revision 1.2  2002/06/03 22:21:17  jimg
 # Merged with release-3-2-9
 #
@@ -32,9 +39,10 @@ global host
 source ../../etc/common_tests.exp
 
 # Server machine name
-set host "dodsdev.gso.uri.edu"
+# set host "dodsdev.gso.uri.edu"
+set host "localhost"
 # CGI directory on $host
-set test_dir "dods-3.2"
+set test_dir "dods-test"
 
 source "server-testsuite/geturl.0/urls.tcl"
 

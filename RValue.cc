@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: RValue.cc,v 1.11 2003/02/21 00:14:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.12 2003/04/22 19:40:28 jimg Exp $"};
 
 #include <assert.h>
 
@@ -49,7 +49,7 @@ rvalue::rvalue(BaseType *bt): value(bt), func(0), args(0)
 {
 }
 
-rvalue::rvalue(btp_func f, rvalue_list *a) : value(0), func(f), args(a)
+rvalue::rvalue(btp_func f, vector<rvalue *> *a) : value(0), func(f), args(a)
 {
 }
 
@@ -89,19 +89,26 @@ BaseType *
 rvalue::bvalue(const string &dataset, DDS &dds) 
 {
     if (value) {
-	if (!value->read_p())
+	if (!value->read_p()) {
+	    // Huh?! Before reading the variable, set the 'send_p flag. This
+	    // will ensure that all the subvariables in a constructor-type
+	    // variable are read. 04/17/03 jhrg
+	    bool send = value->send_p();
+	    value->set_send_p(true);
+	 
 	    value->read(dataset);
+	 
+	    value->set_send_p(send);
+	}
 	return value;
     }
     else if (func) {
 	int argc = args->size();
 	// Add space for null terminator
 #ifdef WIN32
-	//  MS Visual C++ 6.0 doesn't allow arithmetic expressions in []
-	//  except in the left-most [] with the new operator.
-	BaseType **argv = new BaseType*[argc + 1];
+	BaseType **argv = (new (BaseType*)) + argc + 1;
 #else
-	BaseType *argv[argc + 1];
+	BaseType **argv = new (BaseType*)[argc + 1];
 #endif
 
 	int index = 0;
@@ -126,7 +133,7 @@ rvalue::bvalue(const string &dataset, DDS &dds)
     member. 
 
     This function performs a common task but does not fit within the RValue
-   class well. It is used by Clause and expr.y. */
+    class well. It is used by Clause and expr.y. */
 BaseType **
 build_btp_args(rvalue_list *args, DDS &dds)
 {
@@ -137,18 +144,16 @@ build_btp_args(rvalue_list *args, DDS &dds)
 
     // Add space for a null terminator
 #ifdef WIN32
-	//  MS Visual C++ 6.0 doesn't allow arithmetic expressions in []
-	//  except in the left-most [] with the new operator.
-	BaseType **argv = new BaseType*[argc + 1];
+	BaseType **argv = (new (BaseType *)) + argc + 1;
 #else
     BaseType **argv = new (BaseType *)[argc + 1];
 #endif
+
     string dataset = dds.filename();
 		
     int index = 0;
     if (argc) {
-	for (rvalue::Args_iter i = args->begin(); i != args->end(); i++)
-	{
+	for (rvalue::Args_iter i = args->begin(); i != args->end(); i++) {
 	    argv[index++] = (*i)->bvalue(dataset, dds);
 	}
     }
@@ -159,7 +164,24 @@ build_btp_args(rvalue_list *args, DDS &dds)
 }
 
 // $Log: RValue.cc,v $
+// Revision 1.12  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.10.2.3  2003/04/18 07:14:35  rmorris
+// Fixed portability problem with the new operator used in tandem
+// with [] in VC++.
+//
+// Revision 1.10.2.2  2003/04/18 03:29:03  jimg
+// Added set/reset of the send_p flag when a variable is read in the bvalue()
+// method. If this is not done then all the parts of a constructor type (like
+// Grid) won't be read (e.g., the Grid's map vectors are not read). I reset
+// send_p after reading in case the variable is an argument to a function and
+// not part of the current projection. That's pretty unlikely, but possible.
+//
 // Revision 1.11  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.10.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.10  2003/01/23 00:22:24  jimg

@@ -92,7 +92,13 @@ public:
 };
 
 // $Log: InternalErr.h,v $
+// Revision 1.10  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.9  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.8.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.8  2003/01/23 00:22:24  jimg

@@ -38,7 +38,7 @@
 #include <unistd.h>
 
 #include <string>
-#include <strstream.h>
+#include <strstream>
 
 #include "Regex.h"
 
@@ -47,6 +47,10 @@
 using namespace CppUnit;
 using std::streampos ;
 using std::ends ;
+
+using std::ostrstream;
+using std::streampos;
+using std::ends;
 
 class cgiUtilTest : public TestFixture {
 private:
@@ -120,25 +124,25 @@ public:
     }
 
     void set_mime_text_test() {
-	Regex r1("HTTP/1.0 200 OK
-XDODS-Server: dods-test/0.00
-Date: \\(.*\\)
-Last-Modified: \\1
-Content-type: text/plain
-Content-Description: dods_das
-
+	Regex r1("HTTP/1.0 200 OK\n\
+XDODS-Server: dods-test/0.00\n\
+Date: \\(.*\\)\n\
+Last-Modified: \\1\n\
+Content-type: text/plain\n\
+Content-Description: dods_das\n\
+\n\
 ");
 	set_mime_text(oss, dods_das, "dods-test/0.00");	oss << ends;
 	CPPUNIT_ASSERT(re_match(r1, oss.str()));
 	reset_oss();
 
-	Regex r2("HTTP/1.0 200 OK
-XDODS-Server: dods-test/0.00
-Date: \\(.*\\)
-Last-Modified: \\1
-Content-type: text/plain
-Content-Description: dods_dds
-
+	Regex r2("HTTP/1.0 200 OK\n\
+XDODS-Server: dods-test/0.00\n\
+Date: \\(.*\\)\n\
+Last-Modified: \\1\n\
+Content-type: text/plain\n\
+Content-Description: dods_dds\n\
+\n\
 ");
 	set_mime_text(oss, dods_dds, "dods-test/0.00");	oss << ends;
 	CPPUNIT_ASSERT(re_match(r2, oss.str()));
@@ -146,13 +150,13 @@ Content-Description: dods_dds
 
 	struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0}; // 1 Jan 2000
 	time_t t = mktime(&tm);
-	Regex r3("HTTP/1.0 200 OK
-XDODS-Server: dods-test/0.00
-Date: \\(.*\\)
-Last-Modified: Sat, 01 Jan 2000 08:00:00 GMT
-Content-type: text/plain
-Content-Description: dods_dds
-
+	Regex r3("HTTP/1.0 200 OK\n\
+XDODS-Server: dods-test/0.00\n\
+Date: \\(.*\\)\n\
+Last-Modified: Sat, 01 Jan 2000 08:00:00 GMT\n\
+Content-type: text/plain\n\
+Content-Description: dods_dds\n\
+\n\
 ");
 	set_mime_text(oss, dods_dds, "dods-test/0.00", x_plain, t);
 	oss << ends;
@@ -194,7 +198,16 @@ main( int argc, char* argv[] )
 }
 
 // $Log: cgiUtilTest.cc,v $
+// Revision 1.8  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.5.2.2  2003/04/18 00:54:24  rmorris
+// Ported dap unit tests to win32.
+//
 // Revision 1.7  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.5.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.6  2003/02/03 21:42:36  pwest

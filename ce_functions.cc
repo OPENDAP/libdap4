@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.14 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.15 2003/04/22 19:40:28 jimg Exp $"};
 
 #include <iostream>
 #include <vector>
@@ -224,6 +224,8 @@ parse_gse_expression(gse_arg *arg, BaseType *expr)
 void 
 func_grid_select(int argc, BaseType *argv[], DDS &dds)
 {
+    DBG(cerr << "Entering func_grid_select..." << endl);
+
     if (argc < 1)
 	throw Error(unknown_error, "Wrong number of arguments to grid()");
 
@@ -232,7 +234,8 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 	throw Error("The first argument to grid() must be a Grid variable!");
 
     // Mark this grid as part of the current projection.
-    dds.mark(grid->name(), true);
+    if (!dds.mark(grid->name(), true))
+	throw Error("Could not find the variable: " + grid->name());
 
     // argv[1..n] holds strings; each are little expressions to be parsed.
     vector<GSEClause *> clauses;
@@ -305,10 +308,21 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
     
     // Make sure we reread the grid's array, too. 9/24/2001 jhrg
     grid_array->set_read_p(false);
+
+    DBG(cerr << "Exiting func_grid_select." << endl);
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.15  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.13.2.2  2003/04/18 03:33:58  jimg
+// Added check to grid(); throws Error if the named Grid does not exist.
+//
 // Revision 1.14  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.13.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.13  2003/01/23 00:22:24  jimg

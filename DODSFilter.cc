@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.36 2003/03/13 23:58:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.37 2003/04/22 19:40:27 jimg Exp $"};
 
 #include <iostream>
 #include <strstream>
@@ -58,6 +58,8 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.36 2003/03/13 23:58:25 j
 #include "InternalErr.h"
 
 using std::ostrstream;
+using std::max;
+using std::min;
 
 /** Create an instance of DODSFilter using the command line
     arguments passed by the CGI (or other) program.  The default
@@ -369,7 +371,7 @@ DODSFilter::get_das_last_modified_time(const string &anc_location)
 {
     string name = find_ancillary_file(d_dataset, "das", anc_location, d_anc_file);
     return max((name != "") ? last_modified_time(name) : 0,
-		    get_dataset_last_modified_time()); 
+	       get_dataset_last_modified_time()); 
 }
 
 /** Get the last modified time for the dataset's DDS. This time, given in
@@ -384,7 +386,7 @@ DODSFilter::get_dds_last_modified_time(const string &anc_location)
 {
     string name = find_ancillary_file(d_dataset, "dds", anc_location, d_anc_file);
     return max((name != "") ? last_modified_time(name) : 0,
-		    get_dataset_last_modified_time()); 
+	       get_dataset_last_modified_time()); 
 }
 
 /** Get the last modified time to be used for a particular data request.
@@ -408,7 +410,7 @@ DODSFilter::get_data_last_modified_time(const string &anc_location)
     string das_name = find_ancillary_file(d_dataset, "dds", anc_location,
 					  d_anc_file);
     time_t m = max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
-			(dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
+		   (dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
     // Note that this is a call to get_dataset_... not get_data_...
     time_t n = get_dataset_last_modified_time();
 
@@ -696,16 +698,33 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.37  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.30.2.4  2003/04/06 23:04:34  rmorris
+// Make the using:: statements for min, max #ifdef'd out for win32.
+//
 // Revision 1.36  2003/03/13 23:58:25  jimg
 // Hacked documentation. Added process_options() and initialize(). Changed the
 // names of the fields so that they all begin with 'd_'.
 //
+// Revision 1.30.2.3  2003/03/03 19:31:58  jimg
+// Added using std::min and std::max back to the code. They are needed for gcc
+// 3.2.1. and should be present for any ANSI C++ compiler; gcc 2 is laid back
+// about that stuff.
+//
 // Revision 1.35  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
+// Revision 1.30.2.2  2003/02/21 00:10:07  jimg
+// Repaired copyright.
+//
+// Revision 1.30.2.1  2003/02/17 23:38:21  rmorris
+// Fix to compile under win32.  Problems with min/max def's under win32 and
+// UNIX.
+//
 // Revision 1.34  2003/02/09 12:18:31  rmorris
-// Fix to compile under win32. Problem with min/max diffs under win32 and
-// unix.
+// Fix to compile under win32.  Problem with min/max diffs under win32 and unix.
 //
 // Revision 1.30  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is

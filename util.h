@@ -229,10 +229,16 @@ time_t parse_time(const char * str, bool expand);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.47  2003/04/22 19:40:29  jimg
+ * Merged with 3.3.1.
+ *
  * Revision 1.46  2003/02/27 23:17:56  jimg
  * Changed prune_spaces() so taht it takes a const string &.
  *
  * Revision 1.45  2003/02/21 00:14:25  jimg
+ * Repaired copyright.
+ *
+ * Revision 1.44.2.1  2003/02/21 00:10:08  jimg
  * Repaired copyright.
  *
  * Revision 1.44  2003/01/23 00:22:25  jimg

@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.11 2003/02/21 00:14:24 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.12 2003/04/22 19:40:27 jimg Exp $"};
 
 #include <iostream>
 #include <strstream>
@@ -245,7 +245,13 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value,
       d_map_min_value(""), d_map_max_value("")
 {
     d_map = dynamic_cast<Array *>(grid->var(map));
+    if (!d_map)
+	throw Error(string("The variable '") + map 
+		    + string("' does not exist in the grid '")
+		    + grid->name() + string("'."));
+
     DBG(cerr << d_map->toString());
+
     // Initialize the start and stop indices.
     Array::Dim_iter iter = d_map->dim_begin();
     d_start = d_map->dimension_start(iter);
@@ -262,7 +268,13 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
       d_map_min_value(""), d_map_max_value("")
 {
     d_map = dynamic_cast<Array *>(grid->var(map));
+    if (!d_map)
+	throw Error(string("The variable '") + map 
+		    + string("' does not exist in the grid '")
+		    + grid->name() + string("'."));
+
     DBG(cerr << d_map->toString());
+
     // Initialize the start and stop indices.
     Array::Dim_iter iter = d_map->dim_begin();
     d_start = d_map->dimension_start(iter);
@@ -376,7 +388,17 @@ GSEClause::get_map_max_value() const
 }
 
 // $Log: GSEClause.cc,v $
+// Revision 1.12  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.10.2.2  2003/04/18 03:12:19  jimg
+// Added a check to make sure that the map vector used to build an instance
+// actually exists. If not, throw an error.
+//
 // Revision 1.11  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.10.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.10  2003/01/23 00:22:24  jimg

@@ -129,7 +129,7 @@ string unoctstring(string s) {
 
 /** Replace characters that are not allowed in DODS identifiers.
 
-    @param s The string in which to replace characters.
+    @param in The string in which to replace characters.
     @param allowable The set of characters that are allowed in a URI.
     default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
     0123456789_.!~*'()-";
@@ -153,7 +153,7 @@ id2www(string in, const string &allowable)
     servers. The only difference between this function and id2www is that
     #[]:{}&# have been added to the allowable set of characters.
 
-    @param s The string in which to replace characters.
+    @param in The string in which to replace characters.
     @param allowable The set of characters that are allowed in a URI.
     default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
     0123456789_.!~*'()-[]:{}&";
@@ -167,7 +167,7 @@ id2www_ce(string in, const string &allowable)
 /** Given a string that contains WWW escape sequences, translate those escape
     sequences back into ASCII characters. Return the modified string. 
 
-    @param s The string to modify.
+    @param in The string to modify.
     @param escape The character used to signal the begining of an escape
     sequence. default: "%"
     @param except If there is some escape code that should not be removed by
@@ -338,7 +338,13 @@ munge_error_message(string msg)
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.25  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.24  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.23.2.1  2003/02/21 00:10:08  jimg
 // Repaired copyright.
 //
 // Revision 1.23  2003/01/23 00:22:24  jimg

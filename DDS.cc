@@ -34,33 +34,26 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.61 2003/02/21 00:14:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.62 2003/04/22 19:40:27 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
-#ifdef WIN32
-#include <io.h>
-#include <process.h>
-#else
-#include <unistd.h>
-#endif
-
 #include <stdio.h>
 #include <sys/types.h>
 
-#ifndef WIN32
+#ifdef WIN32
+#include <io.h>
+#include <process.h>
+#include <strstream>
+#include <fstream>
+#else
+#include <unistd.h>
 #include <sys/wait.h>
 #endif
 
 #include <iostream>
-
-#ifdef WIN32
-#include <strstream>
-#else
-#include <fstream>
-#endif
 
 #include "expr.h"
 #include "Clause.h"
@@ -118,6 +111,7 @@ DDS::duplicate(const DDS &dds)
 	add_var(*i); // add_var() dups the BaseType.
     }
 }
+
 /** Creates a DDS with the given string for its name. */
 DDS::DDS(const string &n) : name(n)
 {
@@ -176,7 +170,7 @@ DDS::operator=(const DDS &rhs)
 
     @name Dataset Name Accessors */
 
-    //@{
+//@{
       
 /** Returns the dataset's name. */
 string 
@@ -393,6 +387,15 @@ DDS::Vars_iter
 DDS::var_end()
 {
     return vars.end() ;
+}
+
+/** Return the iterator for the \i ith variable.
+    @param i the index
+    @return The corresponding  Vars_iter */
+DDS::Vars_iter
+DDS::get_vars_iter(int i)
+{
+    return vars.begin() + i;
 }
 
 /** @brief Increments the DDS variable counter to point at the next
@@ -1159,6 +1162,8 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
     parent. See the mfunc set_send_p().
 
     @return True if the named variable was found, false otherwise.
+
+    @todo This should throw an exception on error!!!
 */
 bool
 DDS::mark(const string &n, bool state)
@@ -1188,58 +1193,6 @@ DDS::mark(const string &n, bool state)
     return true;
 }
 
-#if 0
-    string::size_type dotpos = n.find('.');
-    if (dotpos != n.npos) {
-	string aggregate = n.substr(0, dotpos);
-	string field = n.substr(dotpos+1);
-	BaseType *variable = var(aggregate); // get first variable from DDS
-	if (!variable) {
-	    DBG(cerr << "Could not find variable " << n << endl);
-	    return false;	// no such variable
-	}
-	else if (state)
-	    variable->BaseType::set_send_p(state); // set iff state == true
-
-	while ((dotpos = field.find('.')) != field.npos) {
-	    aggregate = field.substr(0, dotpos);
-	    variable = variable->var(aggregate); // get child var using parent
-	    if (!variable) {
-		DBG(cerr << "Could not find variable " << n << endl);
-		return false;	// no such variable
-	    }
-	    else if (state)
-		variable->BaseType::set_send_p(state); // set iff state == true
-	    
-	    field = field.substr(dotpos+1);
-	}
-
-	variable->var(field)->set_send_p(state); // set last child
-
-	return true;		// marked field and its parents
-    }
-    else {
-	btp_stack s;
-	BaseType *variable = var(n, s);
-	if (!variable) {
-	    DBG(cerr << "Could not find variable " << n << endl);
-	    return false;
-	}
-	variable->set_send_p(state);
-	
-	// Now check the btp_stack and run BaseType::set_send_p for every
-	// BaseType pointer on the stack.
-	while (!s.empty()) {
-	    s.top()->BaseType::set_send_p(state);
-	    s.pop();
-	}
-
-	return true;
-    }
-
-    return false;		// not found
-}
-#endif
 /** Mark the member variable <tt>send_p</tt> flags to
     <i>state</i>. 
 
@@ -1253,7 +1206,21 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.62  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.60.2.3  2003/04/18 03:09:58  jimg
+// I combined some of the win32 #ifdef code and removed some old code.
+//
+// Revision 1.60.2.2  2003/04/15 01:17:12  jimg
+// Added a method to get the iterator for a variable (or map) given its
+// index. To get the iterator for the ith variable/map, call
+// get_vars_iter(i).
+//
 // Revision 1.61  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.60.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.60  2003/01/23 00:22:24  jimg

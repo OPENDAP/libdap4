@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.16 2003/02/21 00:14:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.17 2003/04/22 19:40:27 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -164,7 +164,13 @@ DataDDS::set_sequence_level(int level)
 #endif
 
 // $Log: DataDDS.cc,v $
+// Revision 1.17  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.16  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.15.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.15  2003/01/23 00:22:24  jimg

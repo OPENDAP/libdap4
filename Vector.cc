@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.44 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.45 2003/04/22 19:40:28 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -193,7 +193,7 @@ Vector::set_read_p(bool state)
 
 	Note that the parameter <i>exact_match</i> is not used by this mfunc.
 
-	@param name The name of the variabe to find.
+	@param n The name of the variabe to find.
 	@param exact_match Unused.
 	@return A pointer to the BaseType if found, otherwise null.
 	@see Vector::var */
@@ -221,7 +221,7 @@ Vector::var(const string &n, bool exact_match)
 	BaseType pointer to each constructor type that ultimately contains
 	<i>name</i>.
 
-	@param name Find the variable whose name is <i>name</i>.
+	@param n Find the variable whose name is <i>name</i>.
 	@param s Record the path to <i>name</i>.
 	@return A pointer to the named variable. */
 BaseType *
@@ -895,7 +895,13 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.45  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.44  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.43.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.43  2003/01/23 00:22:24  jimg

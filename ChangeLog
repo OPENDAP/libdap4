@@ -1,3 +1,43 @@
+2003-04-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged release-3-3-1.
+
+	* The RCReader class now supports using the environment variable
+	DODS_CONF to point toward a dodsrc file. The value of the envar
+	supersedes the default ~/.odsrc.
+
+	* In HTTPCache: changed catch(...) clauses so that they explicitly
+	name exceptions. The code was catching and re-throwing exceptions
+	and in methods where the types of exceptions were caught this
+	caused abort to be called, even when the re-thrown exception was
+	one of the declared types.
+
+	* Several bugs in the grid() function were fixed. First, the
+	function was not checking to make sure that map vectors using in
+	the selection sub-expressions passed to grid() actually existed.
+	Also, the mechanism used to read values of variables used as
+	arguments to CE functions was broken; constructor types were not
+	completely read but *were* marked as though they were. Look in
+	RValue for the latter fix.
+
+	* Some of the unit tests included code that wouldn't compile with
+	gcc 3.2.x; fixed. I'm now using gcc 3.2.2 for development (but
+	nightly builds also continue with 2.95.3 and VC++ as well).
+
+	* Added methods to DAS, AttrTable and DDS so that an integer index
+	can be used to access variables and attributes. This was done so
+	that the idl command-line client could iterate over instances
+	without actually having to work with C++ iterator objects.
+
+	* IteratorAdapter is no longer templated. This change was made to
+	accommodate the MS VC++ compiler. Also, doxygen comments have been
+	added to the code.
+
+2003-01-23    <jimg@dcz.dods.org>
+
+	* Made release 3.3.0. Not merged since there were very, very few
+	changes. 
+
 2003-01-22    <jimg@dcz.dods.org>
 
 	* I changed the source files so that they are clearly covered by
@@ -1240,4 +1280,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.73 2003/01/23 06:22:51 jimg Exp $
+$Id: ChangeLog,v 1.74 2003/04/22 19:40:27 jimg Exp $

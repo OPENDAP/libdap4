@@ -6,6 +6,12 @@
 # jhrg
 #
 # $Log: test.n.exp,v $
+# Revision 1.7  2003/04/22 19:40:30  jimg
+# Merged with 3.3.1.
+#
+# Revision 1.6.8.1  2003/04/18 04:11:53  jimg
+# Updated for the new version of test.5.
+#
 # Revision 1.6  2000/10/03 22:18:04  jimg
 # Fixes to the tests to accomodate debugging fixes in DDS.cc
 #
@@ -55,18 +61,18 @@ Dataset {
     String s;
     Grid {
      ARRAY:
-        Float64 val\\\[length = 10\\\]\\\[width = 10\\\]\\\[height = 20\\\];
+        Float64 val\\\[length = 5\\\]\\\[width = 6\\\]\\\[height = 7\\\];
      MAPS:
-        Float64 length\\\[10\\\];
-        Float64 width\\\[10\\\];
-        Float64 height\\\[20\\\];
+        Float64 length\\\[5\\\];
+        Float64 width\\\[6\\\];
+        Float64 height\\\[7\\\];
     } g;
 } test1;
 The data:
 Structure {
-    Float64 length\\\[10\\\];
-    Float64 width\\\[10\\\];
-} g = { {99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999}, {99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999, 99.999} };"
+    Float64 length\\\[5\\\];
+    Float64 width\\\[6\\\];
+} g = { {99.999, 99.999, 99.999, 99.999, 99.999}, {99.999, 99.999, 99.999, 99.999, 99.999, 99.999} };"
 
 expr-test_start p ${srcdir}/${test_file} ${test_equation}
 

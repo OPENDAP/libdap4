@@ -41,6 +41,11 @@
 
 using namespace CppUnit;
 
+#ifdef WIN32
+#define F_OK 0
+#define W_OK 2
+#endif
+
 inline static int
 file_size(string name)
 {
@@ -429,7 +434,12 @@ public:
 	    CPPUNIT_ASSERT(gc->is_url_in_cache(expired));
 	    delete rs;
 	
-	    sleep(1);		// Needed for the `expired' response.
+#ifdef WIN32
+	    Sleep(1000);
+#else
+	    sleep(1);
+#endif
+
 	    gc->perform_garbage_collection();
 
 	    CPPUNIT_ASSERT(!gc->is_url_in_cache(expired) 
@@ -646,6 +656,12 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPCacheTest.cc,v $
+// Revision 1.7  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.3.2.2  2003/04/18 00:54:24  rmorris
+// Ported dap unit tests to win32.
+//
 // Revision 1.6  2003/03/04 23:19:37  jimg
 // Fixed some of the unit tests.
 //
@@ -653,6 +669,9 @@ main( int argc, char* argv[] )
 // Now uses Response objects.
 //
 // Revision 1.4  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.3.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.3  2003/01/23 00:22:24  jimg

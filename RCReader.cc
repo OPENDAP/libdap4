@@ -340,17 +340,19 @@ RCReader::RCReader()
     homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
 
     //  Normally, I'd prefer this for WinNT-based systems.
-    //  if (getenv("APPDATA"))
-    //  homedir = getenv("APPDATA");
-    //  else if (getenv("TEMP"))
-    //  homedir = getenv("TEMP");
-    //  else if (getenv("TMP"))
-    //  homedir = getenv("TMP");
+#if 0
+    if (getenv("APPDATA"))
+	homedir = getenv("APPDATA");
+    else if (getenv("TEMP"))
+	homedir = getenv("TEMP");
+    else if (getenv("TMP"))
+	homedir = getenv("TMP");
+#endif
 
 #else
     //  Should be ok for Unix
     if (getenv("HOME"))
-		homedir = getenv("HOME");
+	homedir = getenv("HOME");
 #endif // WIN32
   
     // If there is a leading '/' at the end of $HOME, remove it. 
@@ -372,8 +374,10 @@ RCReader::RCReader()
 	    + string(DIR_SEP_STRING);
     }
 #endif
-  
-    if (getenv("DODS_CACHE_INIT"))
+
+    if (getenv("DODS_CONF"))
+	cifp = getenv("DODS_CONF");
+    else if (getenv("DODS_CACHE_INIT"))
 	cifp = getenv("DODS_CACHE_INIT");
   
     // If the HOME environment variable wasn't set, and the users home
@@ -435,15 +439,25 @@ RCReader::instance()
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.9  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.8  2003/03/13 23:49:32  jimg
 // Added DGB lines to track down a bug. These seem useful when you cannot use a
 // debugger.
+//
+// Revision 1.5.2.2  2003/03/07 23:00:01  jimg
+// Fixed up code indentation... Added use of env var DODS_CONF. DODS_CACHE_INIT
+// should be deprecated.
 //
 // Revision 1.7  2003/02/27 23:37:15  jimg
 // Added get/set_ais_database() methods along with code to parse an
 // AIS_DATABASE entry in the configuration file.
 //
 // Revision 1.6  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.5.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.5  2003/01/23 00:22:24  jimg

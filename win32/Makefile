@@ -6,8 +6,8 @@ INCLUDEDIR	= ..\..\..\include
 
 # Setup basic compiler flags for all .obj's
 CC		= cl
-CFLAGS		= /nologo /MT /W3 /GR /GX /c
 #CFLAGS		= /nologo /MTd /Zi /W3 /GR /GX /c	# flags for debugger
+CFLAGS		= /nologo /MT /W3 /GR /GX /c
 
 # Setup linker flags for libraries and .exe's
 LINK		= link
@@ -20,6 +20,7 @@ LLIBFLAGS	= -lib /nologo
 DODSLIBS	= libdap++.lib pthreadVCE.lib libcurl.lib librx.lib libz.lib libxdr.lib
 SYSLIBS		= ws2_32.lib advapi32.lib
 LINKLIBS	= $(DODSLIBS) $(SYSLIBS)
+CPPUNITLIBS	= $(LINKLIBS) cppunit_dll.lib
 
 # Setup compiler tools.  BISON_HAIRY and BISON_SIMPLE environment variables
 # must be set to the _full_ path for bison.simple and bison.hairy respectively.
@@ -32,14 +33,17 @@ AWK	= gawk
 
 # Setup compiler includes and defines for libraries and .exe's
 INCS		= /I . /I .. /I ..\GNU /I $(INCLUDEDIR) /I $(INCLUDEDIR)\pthreads
+CPPUNITINCS	= $(INCS) /I $(INCLUDEDIR)/cppunit
 DEFSLIB		= /D WIN32 /D _LIB /D _WINDOWS
 DEFSEXE		= /D WIN32 /D _CONSOLE
 CPPLIBFLAGS	= $(DEFSLIB) $(INCS)
 CPPEXEFLAGS	= $(DEFSEXE) $(INCS)
+CPPUNITFLAGS	= $(DEFSEXE) $(CPPUNITINCS)
 
-# Combine compiler flags - for objects going into .obj's and for objects going into .exe's
+# Combine compiler flags - for objects going into .obj's, exe's
 LIBOBJFLAGS	= $(CFLAGS) $(CPPLIBFLAGS)
 EXEOBJFLAGS	= $(CFLAGS) $(CPPEXEFLAGS)
+CPPUNITOBJFLAGS	= $(CFLAGS) $(CPPUNITFLAGS)
 
 # Define the targets
 TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe \
@@ -65,7 +69,7 @@ TESTTARGETS	= $(OBJDIR)\das-test.exe \
 
 # Rule for linking console-mode executables
 {$(OBJDIR)}.obj{$(OBJDIR)}.exe:
-	$(LINK) $(LEXEFLAGS) /out:$@ $< $(LINKLIBS)
+	@$(LINK) $(LEXEFLAGS) /out:$@ $< $(LINKLIBS)
 
 UTILOBJS = $(OBJDIR)\cgi_util.obj \
 		$(OBJDIR)\escaping.obj \
@@ -172,8 +176,8 @@ TESTOBJS = $(OBJDIR)\TestByte.obj \
 LIBOBJS = $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) $(EXPROBJS) \
 		$(UTILOBJS) $(CLIENTOBJS)
 
-all: build_libxdr setup grammars $(TARGETS)
-#all: build_libxdr setup grammars $(TARGETS) check
+all: build_libxdr setup grammars $(TARGETS) check
+#all: build_libxdr setup grammars $(TARGETS) check unit_check
 
 grammars: ..\lex.das.c ..\das.tab.h ..\lex.dds.c ..\dds.tab.h ..\lex.expr.c \
 		..\expr.tab.h ..\lex.Error.c ..\Error.tab.h ..\lex.gse_.c \
@@ -181,10 +185,11 @@ grammars: ..\lex.das.c ..\das.tab.h ..\lex.dds.c ..\dds.tab.h ..\lex.expr.c \
 
 check: $(TESTTARGETS)
 	@echo Notice:
-	@echo Test programs have been built, but they currently can
-	@echo only be run under DejaGnu in a Cygwin environment.
-	@echo To validate the Win32 Dods core, install cygwin and move
-	@echo the executables into a dods distribution to run them there.
+	@echo Core Test programs have been built, but they must be
+	@echo executed using DejaGnu in a Cygwin environment.  If
+	@echo validation of the Win32 Dods core is required, install
+	@echo Cygwin w/Dejagnu and move the testsuites there in order
+	@echo to run them.
 
 build_libxdr:
 	@cd libxdr
@@ -418,10 +423,6 @@ $(OBJDIR)\deflate.obj    : ..\deflate.c
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tc ..\deflate.c
 
 # Test Suite Objects.
-# There is no DejaGnu for win32 so these tests can only be run
-# under cygwin or via some (as yet non-existant) script that invokes
-# them with the appropriate args and compares their output to their
-# expected output.  These are all console-mode applications.
 $(OBJDIR)\das-test.obj   : ..\das-test.cc $(OBJDIR)\libdap++.lib
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\das-test.cc
 $(OBJDIR)\dds-test.obj   : ..\dds-test.cc $(OBJDIR)\libdap++.lib
@@ -430,6 +431,85 @@ $(OBJDIR)\error-test.obj : ..\error-test.cc $(OBJDIR)\libdap++.lib
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\error-test.cc
 $(OBJDIR)\expr-test.obj  : ..\expr-test.cc $(OBJDIR)\libdap++.lib
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\expr-test.cc
+
+$(OBJDIR)\das-test.exe		: $(OBJDIR)\das-test.obj $(TESTOBJS)
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\das-test.obj $(TESTOBJS) $(LINKLIBS)
+
+$(OBJDIR)\dds-test.exe		: $(OBJDIR)\dds-test.obj $(TESTOBJS)
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\dds-test.obj $(TESTOBJS) $(LINKLIBS)
+
+$(OBJDIR)\error-test.exe	: $(OBJDIR)\error-test.obj $(TESTOBJS)
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\error-test.obj $(TESTOBJS) $(LINKLIBS)
+
+$(OBJDIR)\expr-test.exe		: $(OBJDIR)\expr-test.obj $(TESTOBJS)
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\expr-test.obj $(TESTOBJS) $(LINKLIBS)
+
+# cppUnit-based Unit test objects
+UNIT_TEST_PROGS = $(OBJDIR)\parserUtilTest.exe \
+		$(OBJDIR)\generalUtilTest.exe \
+		$(OBJDIR)\DASTest.exe \
+		$(OBJDIR)\DDSTest.exe \
+		$(OBJDIR)\ByteTest.exe \
+		$(OBJDIR)\SequenceTest.exe \
+		$(OBJDIR)\AttrTableTest.exe \
+		$(OBJDIR)\cgiUtilTest.exe \
+		$(OBJDIR)\HTTPCacheTest.exe \
+		$(OBJDIR)\HTTPConnectTest.exe
+
+unit_check: $(UNIT_TEST_PROGS)
+	$(OBJDIR)\cgiUtilTest
+#	$(OBJDIR)\HTTPConnectTest
+	$(OBJDIR)\HTTPCacheTest
+	$(OBJDIR)\SequenceTest
+	$(OBJDIR)\AttrTableTest
+	$(OBJDIR)\DDSTest
+	$(OBJDIR)\ByteTest
+	$(OBJDIR)\DASTest
+	$(OBJDIR)\generalUtilTest
+	$(OBJDIR)\parserUtilTest
+
+
+$(OBJDIR)\parserUtilTest.exe	: $(OBJDIR)\parserUtilTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\parserUtilTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\generalUtilTest.exe	: $(OBJDIR)\generalUtilTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\generalUtilTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\DASTest.exe		: $(OBJDIR)\DASTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\DASTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\ByteTest.exe		: $(OBJDIR)\ByteTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\ByteTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\SequenceTest.exe	: $(OBJDIR)\SequenceTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\SequenceTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\AttrTableTest.exe	: $(OBJDIR)\AttrTableTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\AttrTableTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\DDSTest.exe		: $(OBJDIR)\DDSTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\DDSTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\cgiUtilTest.exe	: $(OBJDIR)\cgiUtilTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\cgiUtilTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\HTTPCacheTest.exe	: $(OBJDIR)\HTTPCacheTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\HTTPCacheTest.obj $(CPPUNITLIBS)
+$(OBJDIR)\HTTPConnectTest.exe	: $(OBJDIR)\HTTPConnectTest.obj
+	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\HTTPConnectTest.obj $(CPPUNITLIBS)
+
+$(OBJDIR)\parserUtilTest.obj	: ..\parserUtilTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\parserUtilTest.cc
+$(OBJDIR)\generalUtilTest.obj	: ..\generalUtilTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\generalUtilTest.cc
+$(OBJDIR)\DASTest.obj		: ..\DASTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\DASTest.cc
+$(OBJDIR)\ByteTest.obj		: ..\ByteTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\ByteTest.cc
+$(OBJDIR)\SequenceTest.obj	: ..\SequenceTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\SequenceTest.cc
+$(OBJDIR)\AttrTableTest.obj	: ..\AttrTableTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\AttrTableTest.cc
+$(OBJDIR)\DDSTest.obj		: ..\DDSTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\DDSTest.cc
+$(OBJDIR)\cgiUtilTest.obj	: ..\cgiUtilTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\cgiUtilTest.cc
+$(OBJDIR)\HTTPCacheTest.obj	: ..\HTTPCacheTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\HTTPCacheTest.cc
+$(OBJDIR)\HTTPConnectTest.obj	: ..\HTTPConnectTest.cc
+	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\HTTPConnectTest.cc
 
 # Create the install and intermediate file directories if they
 # don't exist.  We also have to create a temporary unistd.h because

@@ -32,6 +32,12 @@
 #include "debug.h"
 #include "util.h"
 #include "escaping.h"
+#include <assert.h>
+#include <string>
+
+using std::cerr;
+using std::endl;
+using std::string;
 
 string hexstring(unsigned char val); // originally declared static
 string unhexstring(string s);
@@ -121,7 +127,7 @@ public:
     // This is the code in expr.lex that removes emclosing double quotes and
     // %20 sequences from a string. I copied this here because that actual
     // function uses globals and would be hard to test. 7/11/2001 jhrg
-    string *store_str(char *text) {
+    string *store_str(const char *text) {
 	string *s = new string(www2id(string(text)));
 
 	if (*s->begin() == '\"' && *(s->end()-1) == '\"') {
@@ -132,6 +138,8 @@ public:
 	return s;
     }
 
+#if 0
+    // Note that vc++ does not like string escapes in macros. 04/21/03 jhrg
     void ce_string_parse_test() {
 	CPPUNIT_ASSERT(*store_str("testing") == "testing");
 	CPPUNIT_ASSERT(*store_str("\"testing\"") == "testing");
@@ -156,16 +164,74 @@ public:
 	CPPUNIT_ASSERT(munge_error_message("An \\\"E\\\"rror") == "\"An \\\"E\\\"rror\"");
     }
 
+#else
+    void ce_string_parse_test() {
+	string *str = new string("testing");
+	string *str1 = new string("testing");
+	assert(*store_str(str->c_str()) == str1->c_str());
+	*str = "\"testing\"";
+	*str1 = "testing";
+	assert(*store_str(str->c_str()) == str1->c_str());
+	*str = "\"test%20ing\"";
+	*str1 = "test ing";
+	assert(*store_str(str->c_str()) == str1->c_str());
+	delete str;
+	delete str1;
+    }
+
+    void escattr_test()	{
+	// The backslash escapes the double quote; in the returned string the
+	// first two backslashes are a single escaped bs, the third bs
+	// escapes the double quote.
+	string *str = new string("this_contains a double quote (\")");
+	string *str1 = new string("this_contains a double quote (\\\")");
+	assert(escattr(str->c_str()) == str1->c_str());
+	*str = "this_contains a backslash (\\)";
+	*str1 = "this_contains a backslash (\\\\)";
+	assert(escattr(str->c_str()) == str1->c_str());
+	delete str;
+	delete str1;
+    }
+
+    void munge_error_message_test() {
+	string *str = new string("An Error");
+	string *str1 = new string("\"An Error\"");
+	assert(munge_error_message(str->c_str()) == str1->c_str());
+	*str = "\"An Error\"";
+	*str1 = "\"An Error\"";
+	assert(munge_error_message(str->c_str()) == str1->c_str());
+	*str = "An \"E\"rror";
+	*str1 = "\"An \\\"E\\\"rror\"";
+	assert(munge_error_message(str->c_str()) == str1->c_str());
+	*str = "An \\\"E\\\"rror";
+	*str1 = "\"An \\\"E\\\"rror\"";
+	assert(munge_error_message(str->c_str()) == str1->c_str());
+	delete str;
+	delete str1;
+    }
+#endif
+
     void get_tempfile_template_test() {
-	if (putenv("TMPDIR=/tmp") == 0) {
-	    DBG2(cerr << "TMPDIR: " << getenv("TMPDIR") << endl);
+#ifdef WIN32
+	if (_putenv("TMPDIR=C:\\") == 0) {
+	    cerr << "TMPDIR: " << getenv("TMPDIR") << endl;
+	    assert(strcmp(get_tempfile_template("DODSXXXXXX"),
+			  "C:\\DODSXXXXXX") == 0);
+	}
+	else
+	    cerr << "Did not test setting TMPDIR; no test" << endl;
+#else
+	if (setenv("TMPDIR", "/tmp", 1) == 0) {
+	    cerr << "TMPDIR: " << getenv("TMPDIR") << endl;
 	    CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
 			  "/tmp/DODSXXXXXX") == 0);
 	}
 	else
 	    cerr << "Did not test setting TMPDIR; no test" << endl;
+#endif
 
-	if (putenv("TMPDIR=/usr/local/tmp/") == 0)
+#ifndef WIN32
+	if (setenv("TMPDIR", "/usr/local/tmp/", 1) == 0)
 	    CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
 			  "/usr/local/tmp//DODSXXXXXX") == 0);
 	else
@@ -175,8 +241,9 @@ public:
 	string tmplt = P_tmpdir;
 	tmplt.append("/"); tmplt.append("DODSXXXXXX");
 	putenv("TMPDIR=");
-	CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"), tmplt.c_str()) 
-	       == 0);
+	CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"), 
+			      tmplt.c_str()) == 0);
+#endif
 #endif
     }
 };

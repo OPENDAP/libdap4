@@ -26,10 +26,12 @@
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <assert.h>
 
 #include "DDS.h"
 
 using namespace CppUnit;
+using namespace std;
 
 class DDSTest : public TestFixture {
 private:

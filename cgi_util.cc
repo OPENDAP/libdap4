@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.56 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.57 2003/04/22 19:40:28 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -273,13 +273,13 @@ find_ancillary_file(string pathname, string ext, string dir, string file)
 // group memebrs. For example, 00stuff.hdf, 01stuff.hdf, 02stuff.hdf, ..., is
 // a group and is has `stuff' as its basename. 
 
-/** Assume that <tt>pathname</tt> refers to a file that is one of a
+/** Assume that <tt>name</tt> refers to a file that is one of a
     group of files which share a common `base' name and differ only by
     some prefix or suffix digits (e.g. <tt>00base</tt>, <tt>01base</tt>,
     ... or <tt>base00</tt>, ... have the base name <tt>base</tt>). This
     function looks for a file <tt>base.ext</tt>.
 
-    @param pathname The pathname (full or relative) to one member of a group
+    @param name The name (full or relative) to one member of a group
     of files.
     @param ext The extension of the group's ancillary file. Note that
     <tt>ext</tt> should include a period (.) if that needs to
@@ -541,7 +541,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
     @brief Set the MIME type to text.
     @param os Write the MIME header to this stream.
     @param type The type of the response (i.e., is it a DAS, DDS, et cetera).
-    @param version The version of the server.
+    @param ver The version of the server.
     @param enc Indicates an encoding was applied to the response payload.
     Used primarily to tell clients they need to decompress the payload.
     @param last_modified A RFC 822 date which gives the time the information
@@ -613,7 +613,7 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
     @brief Create MIME headers for binary data.
     @param os Write the MIME header to this stream.
     @param type The type of the response (i.e., is it data, et cetera).
-    @param version The version of the server.
+    @param ver The version of the server.
     @param enc Indicates an encoding was applied to the response payload.
     Used primarily to tell clients they need to decompress the payload.
     @param last_modified A RFC 822 date which gives the time the information
@@ -892,7 +892,13 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.57  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.56  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.55.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.55  2003/01/23 00:22:24  jimg

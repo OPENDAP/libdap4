@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.31 2003/02/21 00:14:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.32 2003/04/22 19:40:27 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -484,10 +484,6 @@ Error::set_program(char *pgm)
 
     @brief Run the error correction program or print the error message.
     @return A corrected string or "".  
-    @param pgui A pointer to a Gui class object handling a GUI
-    process on the client.  f this function is called with a
-    null Gui pointer then the message text is displayed on stderr.
-    @see Gui
     @see display_message */
 string
 Error::correct_error(void *) const
@@ -501,7 +497,13 @@ Error::correct_error(void *) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.32  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.31  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.30.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.30  2003/01/23 00:22:24  jimg

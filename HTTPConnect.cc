@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.10 2003/03/13 23:51:31 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.11 2003/04/22 19:40:27 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -544,9 +544,10 @@ HTTPConnect::plain_fetch_url(const string &url) throw(Error, InternalErr)
     try {
 	read_url(url, stream);	// Throws Error.
     }
-    catch(...) {
+
+    catch(Error &e) {
 	close_temp(stream, dods_temp);
-	throw;
+	throw e;
     }
 
     rewind(stream);
@@ -603,6 +604,25 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.11  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
+// Revision 1.3.2.4  2003/04/18 03:22:58  jimg
+// Undid a typo that made it into CVS...
+//
+// Revision 1.3.2.3  2003/04/18 03:21:17  jimg
+// I removed some old code (some of which has been seriously hacked already on
+// the trunk) and changed the catch part of a try-catch block so that it only
+// catches and re-throws the objects listed in the throw() declaration. Using
+// catch(...) and re-throwing when exceptions have been explicitly declared
+// aborts.
+//
+// Revision 1.3.2.2  2003/04/09 20:36:21  jimg
+// Changed the catch(...) clauses to ones that explicitly name the objects. By
+// just using catch(...) with a method that declares the types of exceptions it
+// throws causes an abort if the catch(...) re-throws the exception.
+// I also removed some old code that called output(), et cetera.
+//
 // Revision 1.10  2003/03/13 23:51:31  jimg
 // Added a DBG2 statement to track down a bug. Useful when you cannot use a
 // debugger.
@@ -622,6 +642,9 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 // Removed old code.
 //
 // Revision 1.5  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.3.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.4  2003/02/20 23:13:52  jimg

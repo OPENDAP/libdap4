@@ -83,7 +83,13 @@ TestStructure::read(const string &dataset)
 }
 
 // $Log: TestStructure.cc,v $
+// Revision 1.20  2003/04/22 19:40:28  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.19  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
+// Revision 1.18.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.18  2003/01/23 00:22:24  jimg

@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.39 2003/02/21 00:14:24 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.40 2003/04/22 19:40:27 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -337,7 +337,13 @@ DAS::print(FILE *out, bool dereference)
 }
 
 // $Log: DAS.cc,v $
+// Revision 1.40  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.39  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.38.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.38  2003/01/23 00:22:24  jimg

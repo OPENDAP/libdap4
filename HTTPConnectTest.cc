@@ -22,11 +22,14 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+
+#define DODS_DEBUG
  
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <iterator>
 #include <string>
 #include <algorithm>
 
@@ -37,6 +40,7 @@
 #include "debug.h"
 
 using namespace CppUnit;
+using namespace std;
 
 class HTTPConnectTest : public TestFixture {
 private:
@@ -147,12 +151,12 @@ public:
 			   && !feof(stuff->get_stream()));
 	    delete stuff;
 	}
-	catch (Error &e) {
-	    cerr << "Error: " << e.get_error_message() << endl;
-	    CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
-	}
 	catch (InternalErr &e) {
 	    cerr << "InternalErr: " << e.get_error_message() << endl;
+	    CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
+	}
+	catch (Error &e) {
+	    cerr << "Error: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
 	}
     }
@@ -217,11 +221,11 @@ public:
     }
 
     void cache_test() {
+	DBG(cerr << endl << "Entering Caching tests." << endl);
+
 	// The cache-testsuite/dodsrc file turns this off; all the other
 	// params are set up. 
 	http->d_http_cache->set_cache_enabled(true);
-
-	DBG(cerr << endl << "Entering Caching tests." << endl);
 
 	fetch_url_test();
 	get_response_headers_test();
@@ -244,6 +248,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPConnectTest.cc,v $
+// Revision 1.7  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.6  2003/03/04 17:21:47  jimg
 // Now uses Response objects.
 //
@@ -251,6 +258,9 @@ main( int argc, char* argv[] )
 // Added fetch_url() tests for "file:" URLs.
 //
 // Revision 1.4  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
+// Revision 1.3.2.1  2003/02/21 00:10:07  jimg
 // Repaired copyright.
 //
 // Revision 1.3  2003/01/23 00:22:24  jimg

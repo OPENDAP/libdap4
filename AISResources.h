@@ -43,6 +43,8 @@
 using std::string;
 using std::vector;
 using std::map;
+using std::pair;
+using std::binary_function;
 
 typedef vector<Resource> ResourceVector;
 typedef ResourceVector::iterator ResourceVectorIter;
@@ -124,6 +126,9 @@ public:
 };
 
 // $Log: AISResources.h,v $
+// Revision 1.7  2003/04/22 19:40:27  jimg
+// Merged with 3.3.1.
+//
 // Revision 1.6  2003/03/12 01:07:34  jimg
 // Added regular expressions to the AIS subsystem. In an AIS database (XML)
 // it is now possible to list a regular expression in place of an explicit
