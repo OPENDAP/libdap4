@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.14  1996/11/20 00:37:47  jimg
+// Modified -D option to correctly process the Asynchronous option.
+//
 // Revision 1.13  1996/11/16 00:20:47  jimg
 // Fixed a bug where multiple urls failed.
 //
@@ -62,7 +65,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.13 1996/11/16 00:20:47 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.14 1996/11/20 00:37:47 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -178,23 +181,14 @@ main(int argc, char * argv[])
     
     delete vcode;
 
-    Connect *url;
-
     for (int i = getopt.optind; i < argc; ++i) {
 	if (verbose)
 	    cerr << "Fetching " << argv[i] << ":" << endl;
 	
 	String name = argv[i];
-#if 0
 	Connect url(name);
-#endif
-	// This produces a memory leak, but not a big one since the program
-	// will exit once all the URLs are read. If each Connect object is
-	// deleted then the WWW library will need to be (re)initialized for
-	// each object. If the objects are not freed, the WWW library is
-	// initialized only once. jhrg 11/15/96
-	url = new Connect(name);
-	if (url->is_local()) {
+
+	if (url.is_local()) {
 	    cerr << "Skipping the URL `" << argv[i] 
 		 << "' because it lacks the `http' access protocol." 
 		 << endl; 
@@ -203,21 +197,21 @@ main(int argc, char * argv[])
 
 	if (get_das) {
 	    for (int j = 0; j < times; ++j) {
-		if (!url->request_das(gui))
+		if (!url.request_das(gui))
 		    exit(1);
 		if (verbose)
 		    cerr << "DAS:" << endl;
-		url->das().print();
+		url.das().print();
 	    }
 	}
 
 	if (get_dds) {
 	    for (int j = 0; j < times; ++j) {
-		if (!url->request_dds(gui))
+		if (!url.request_dds(gui))
 		    exit(1);
 		if (verbose)
 		    cerr << "DDS:" << endl;
-		url->dds().print();
+		url.dds().print();
 	    }
 	}
 
@@ -228,7 +222,7 @@ main(int argc, char * argv[])
 		exit(1);
 	    }
 	    for (int j = 0; j < times; ++j) {
-		DDS &dds = url->request_data(expr, gui, async);
+		DDS &dds = url.request_data(expr, gui, async);
 
 		cout << "The data:" << endl;
 		for (Pix q = dds.first_var(); q; dds.next_var(q)) {
@@ -237,9 +231,13 @@ main(int argc, char * argv[])
 			// Sequences present a special case because I let
 			// their semantics get out of hand... jhrg 9/12/96
 		      case dods_sequence_c:
-			((Sequence *)v)->print_all_vals(cout, url->source());
+			((Sequence *)v)->print_all_vals(cout, url.source());
 			break;
 		      default:
+			if (async && !dds.var(q)->deserialize(url.source())) {
+			    cerr << "Asynchronous read failure." << endl;
+			    exit(1);
+			}
 			dds.var(q)->print_val(cout);
 			break;
 		    }
@@ -249,12 +247,12 @@ main(int argc, char * argv[])
 
 	if (!get_das && !get_dds && !get_data) {
 	    if (gui)
-		url->gui()->show_gui(gui);
+		url.gui()->show_gui(gui);
 	    String url_string = argv[i];
 	    for (int j = 0; j < times; ++j) {
-		if (!url->fetch_url(url_string, async))
+		if (!url.fetch_url(url_string, async))
 		    exit(1);
-		FILE *fp = url->output();
+		FILE *fp = url.output();
 		if (!read_data(fp))
 		    exit(1);
 		fclose(fp);
