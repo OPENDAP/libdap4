@@ -18,15 +18,23 @@
 */
 
 /* $Log: Error.lex,v $
-/* Revision 1.1  1996/05/31 23:18:16  jimg
-/* Added.
+/* Revision 1.2  1996/08/13 18:18:17  jimg
+/* Added __unused__ to rcsid definition.
+/* Added include of assert.h.
 /*
+ * Revision 1.1  1996/05/31 23:18:16  jimg
+ * Added.
+ *
  */
 
 %{
-static char rcsid[]={"$Id: Error.lex,v 1.1 1996/05/31 23:18:16 jimg Exp $"};
+
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: Error.lex,v 1.2 1996/08/13 18:18:17 jimg Exp $"};
 
 #include <string.h>
+#include <assert.h>
 
 #define YY_DECL int Errorlex YY_PROTO(( void ))
 
