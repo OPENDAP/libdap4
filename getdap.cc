@@ -1,5 +1,5 @@
 
-// (c) COPYRIGHT URI/MIT 1996
+// (c) COPYRIGHT URI/MIT 1997
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.23  1997/06/05 23:08:51  jimg
+// Modified so that data can be read from stdin (similar to writeval).
+//
 // Revision 1.22  1997/03/05 08:29:32  jimg
 // Silly bug where show_gui() was not called in some cases.
 //
@@ -94,7 +97,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.22 1997/03/05 08:29:32 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.23 1997/06/05 23:08:51 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -104,14 +107,21 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.22 1997/03/05 08:29:32 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.22 $";
+const char *VERSION = "$Revision: 1.23 $";
+extern int keep_temps;		// defined in Connect.cc
 
 void
 usage(String name)
 {
     cerr << "Usage: " << name 
-	 << "[dDagVv] [c <expr>] [t <codes>] [m <num>] <url> [<url> ...]" 
+	 << "[dDagVvk] [c <expr>] [t <codes>] [m <num>] <url> [<url> ...]" 
+	 << endl
+	 << "[gVvk] [t <codes>] <file> [<file> ...]" 
 	 << endl;
+    cerr << "In the first form of the command, dereference the URL" << endl
+	 << "perform the requested operations. In the second, assume" << endl
+	 << "the files are DODS data objects (stored in files or read" << endl
+	 << "from pipes) and process them as if -D were given." <<endl;
 #if 0
     cerr << "       " << "A: Use Connect's asynchronous mode." << endl;
 #endif
@@ -126,6 +136,7 @@ usage(String name)
     cerr << "       " << "   NB: You can use a `?' for the CE also." << endl;
     cerr << "       " << "t: <options> trace output; use -td for default." 
          << endl;
+    cerr << "        k:  Keep temporary files created by DODS core" << endl;
     cerr << "       " << "   a: show_anchor_trace." << endl;
     cerr << "       " << "   b: show_bind_trace." << endl;
     cerr << "       " << "   c: show_cache_trace." << endl;
@@ -136,8 +147,10 @@ usage(String name)
     cerr << "       " << "   t: show_thread_trace." << endl;
     cerr << "       " << "   u: show_uri_trace." << endl;
     cerr << "       " << "m: Request the same URL <num> times." << endl;
+#if 0
     cerr << "       " << "Without A, use the synchronous mode." << endl;
-    cerr << "       " << "Without d or a, print the URL." << endl;
+#endif
+    cerr << "       " << "Without D, d or a, print the URL." << endl;
 }
 
 bool
@@ -160,11 +173,40 @@ read_data(FILE *fp)
     return true;
 }
 
+static void
+process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
+{
+
+    if (verbose)
+	cerr << "Server version: " << url.server_version() << endl;
+
+    cout << "The data:" << endl;
+
+    for (Pix q = dds->first_var(); q; dds->next_var(q)) {
+	BaseType *v = dds->var(q);
+	switch (v->type()) {
+	    // Sequences present a special case because I let
+	    // their semantics get out of hand... jhrg 9/12/96
+	  case dods_sequence_c:
+	    ((Sequence *)v)->print_all_vals(cout, url.source());
+	    break;
+	  default:
+	    PERF(cerr << "Deserializing: " << dds.var(q).name() << endl);
+	    if (async && !dds->var(q)->deserialize(url.source())) {
+		cerr << "Asynchronous read failure." << endl;
+		exit(1);
+	    }
+	    PERF(cerr << "Deserializing complete" << endl);
+	    dds->var(q)->print_val(cout);
+	    break;
+	}
+    }
+}
 
 int
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "AdaDgVvc:t:m:");
+    GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:");
     int option_char;
     bool async = false;
     bool get_das = false;
@@ -190,6 +232,7 @@ main(int argc, char * argv[])
 	      case 'V': cerr << "geturl version: " << VERSION << endl; exit(0);
 	      case 'v': verbose = true; break;
 	      case 'g': gui = true; break;
+	      case 'k': keep_temps =1; break; // keep_temp is in Connect.cc
 	      case 'c':
 		cexpr = true; expr = getopt.optarg; break;
 	      case 't': 
@@ -228,6 +271,18 @@ main(int argc, char * argv[])
     
     delete tcode;
 
+    // If after processing all the command line options there is nothing left
+    // (no URL oor file) assume that we should read from stdin.
+    if (getopt.optind == argc) {
+	if (verbose)
+	    cerr << "Assuming standard input is a DODS data stream." << endl;
+
+	Connect url("stdin", trace);
+
+	DDS *dds = url.read_data(stdin, gui, async);
+	process_data(url, dds, verbose, async);
+    }
+
     for (int i = getopt.optind; i < argc; ++i) {
 	if (verbose)
 	    cerr << "Fetching: " << argv[i] << endl;
@@ -236,10 +291,14 @@ main(int argc, char * argv[])
 	Connect url(name, trace);
 
 	if (url.is_local()) {
-	    cerr << "Skipping the URL `" << argv[i] 
-		 << "' because it lacks the `http' access protocol." 
-		 << endl; 
-	    continue;
+	    if (verbose) 
+		cerr << "Assuming that the argument " << argv[i] 
+		     << " is a file" << endl 
+		     << "that contains a DODS data object; decoding." << endl;
+
+	    DDS *dds = url.read_data(fopen(argv[i], "r"), gui, async);
+	    process_data(url, dds, verbose, async);
+	    continue;		// Do not run the following IF stmt.
 	}
 
 	if (get_das) {
@@ -280,32 +339,7 @@ main(int argc, char * argv[])
 		    cerr << "Error reading data" << endl;
 		    continue;
 		}
-
-		if (verbose)
-		    cerr << "Server version: " << url.server_version() 
-			<< endl;
-
-		cout << "The data:" << endl;
-		for (Pix q = dds->first_var(); q; dds->next_var(q)) {
-		    BaseType *v = dds->var(q);
-		    switch (v->type()) {
-			// Sequences present a special case because I let
-			// their semantics get out of hand... jhrg 9/12/96
-		      case dods_sequence_c:
-			((Sequence *)v)->print_all_vals(cout, url.source());
-			break;
-		      default:
-			PERF(cerr << "Deserializing: " << dds.var(q).name() \
-			     << endl);
-			if (async && !dds->var(q)->deserialize(url.source())) {
-			    cerr << "Asynchronous read failure." << endl;
-			    exit(1);
-			}
-			PERF(cerr << "Deserializing complete" << endl);
-			dds->var(q)->print_val(cout);
-			break;
-		    }
-		}
+		process_data(url, dds, verbose, async);
 	    }
 	}
 
