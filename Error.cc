@@ -8,6 +8,11 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.17  1999/05/26 17:32:01  jimg
+// Added a message for the `unknown_error' constant.
+// Added a test in correct_error for a NULL Gui object. If the Gui object is
+// null, display the message text on stderr and ignore the Gui object.
+//
 // Revision 1.16  1999/05/04 19:47:21  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -89,7 +94,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.16 1999/05/04 19:47:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.17 1999/05/26 17:32:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -100,7 +105,7 @@ static char rcsid[] not_used = {"$Id: Error.cc,v 1.16 1999/05/04 19:47:21 jimg E
 void Errorrestart(FILE *yyin);	// defined in Error.tab.c
 int Errorparse(void *arg);	
 
-static char *messages[]={"", "No such file", 
+static char *messages[]={"Unknown error", "No such file", 
 			 "No such variable", "Malformed expression",
 			 "No authorization", "Cannot read file"};
 
@@ -319,6 +324,9 @@ Error::program(char *pgm)
 // means that the code in the program must run itself (i.e., in addition to
 // any procedure definitions, etc. it must also contain the necessary
 // instructions to popup an initial window).
+//
+// I added a check for non-null Gui pointer. If this mfunc is called with a
+// null Gui pointer then the message text is displayed on stderr.
 
 string
 Error::correct_error(Gui *gui)
@@ -327,10 +335,10 @@ Error::correct_error(Gui *gui)
     if (!OK())
 	return string("");
 
-    if (program()) {
+    if (gui && program()) {
 	string result;
 
-	if (gui->response(program(), result))
+	if (gui && gui->response(program(), result))
 	    return result;
 	else
 	    return string("");
