@@ -41,7 +41,10 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.13  1995/08/26 00:32:04  jimg
+// Revision 1.14  1995/10/23 22:55:33  jimg
+// Added RCSID.
+//
+// Revision 1.13  1995/08/26  00:32:04  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.12  1995/07/09  21:29:24  jimg
@@ -94,6 +97,8 @@
 // Revision 1.1  1994/08/02  18:08:38  jimg
 // Test driver for DAS (and AttrTable) classes.
 //
+
+static char rcsid[]= {"$Id: das-test.cc,v 1.14 1995/10/23 22:55:33 jimg Exp $"};
 
 #include "config_dap.h"
 
