@@ -1,7 +1,7 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1999
+// (c) COPYRIGHT URI/MIT 1999,2000
 // Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
@@ -285,6 +285,9 @@ public:
 };
 
 // $Log: Error.h,v $
+// Revision 1.19  2000/10/03 21:04:08  jimg
+// Updated copyright
+//
 // Revision 1.18  2000/10/02 18:49:26  jimg
 // The Error class now has const accessors
 //

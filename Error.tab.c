@@ -24,7 +24,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.16 2000/10/02 18:49:26 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.17 2000/10/03 21:04:08 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1029,7 +1029,10 @@ Errorerror(char *s)
 
 
 // $Log: Error.tab.c,v $
-// Revision 1.16  2000/10/02 18:49:26  jimg
+// Revision 1.17  2000/10/03 21:04:08  jimg
+// Updated copyright
+//
+// Revision 1.11  2000/10/02 18:49:26  jimg
 // The Error class now has const accessors
 //
 // Revision 1.10  2000/09/22 02:17:20  jimg
