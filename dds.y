@@ -50,6 +50,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.15  1996/05/29 21:59:51  jimg
+ * *** empty log message ***
+ *
  * Revision 1.14  1996/05/14 15:38:54  jimg
  * These changes have already been checked in once before. However, I
  * corrupted the source repository and restored it from a 5/9/96 backup
@@ -121,7 +124,7 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: dds.y,v 1.14 1996/05/14 15:38:54 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.15 1996/05/29 21:59:51 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -178,12 +181,12 @@ void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current,
    the parse has completed, TABLE is an instance of class DDS which contains
    objects representing the DDS described by the input to this parser.
 */   
-
+/*
 datasets:	dataset
 		| datasets dataset
 ;
-
-dataset:	DATASET '{' declarations '}' name ';' 
+*/
+dataset:	DATASET '{' declarations '}' name ';' { YYACCEPT; }
 ;
 
 declarations:	/* empty */

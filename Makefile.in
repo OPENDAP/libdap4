@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.36 1996/05/22 18:05:14 jimg Exp $
+# $Id: Makefile.in,v 1.37 1996/05/29 21:57:16 jimg Exp $
 
 @SET_MAKE@
 
@@ -86,7 +86,7 @@ DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
 
 EXPRHDRS = expr.h Clause.h
 EXPRSRCS = expr.cc Clause.cc
-EXPROBJS = DDS.o Clause.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
+EXPROBJS = expr.o Clause.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
 
 ERRORHDRS = Error.h
 ERROROBJS = Error.o $(ERROR_GRAM_OBJS)
@@ -109,25 +109,28 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 GNUOBJS = BaseTypeVec.o String.Plex.o String.XPlex.o BTPlex.o BTStack.o \
 	  BTXPStack.o BTXPlex.o AttrMap.o AttrVHMap.o DASMap.o DASVHMap.o
 
-GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h	\
-	  Map/AttrVHMap.h      Plex/String.XPlex.h  Stack/BTdefs.h	\
-	  Map/Attrdefs.h       Plex/String.defs.h   Vec/BaseTypeVec.h	\
-	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h	\
-	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h       \
+GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h \
+	  Map/AttrVHMap.h      Plex/String.XPlex.h  Stack/BTdefs.h \
+	  Map/Attrdefs.h       Plex/String.defs.h   Vec/BaseTypeVec.h \
+	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h \
+	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h \
 	  Stack/BTXPStack.h
 
-TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc\
-	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc\
+TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
+	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc \
 	   TestFunction.cc TestGrid.cc
 
-TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
-	   TestArray.o TestStructure.o TestList.o TestSequence.o\
+TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
+	   TestArray.o TestStructure.o TestList.o TestSequence.o \
 	   TestFunction.o TestGrid.o
+
+TESTPROGSRCS = 	das-test.cc dds-test.cc expr-test.cc trans-test.cc \
+		error-test.cc geturl.cc
 
 all: $(PROG)
 
 libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
-	    $(NETIOOBJS)
+	    $(EXPROBJS) $(NETIOOBJS)
 	$(AR) -cru $@ $?
 	$(RANLIB) $@
 
@@ -142,17 +145,17 @@ dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
 trans-test: libdap++.a $(TESTOBJS) trans-test.o
 	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
 
-expr-test: libdap++.a $(EXPROBJS) $(TESTOBJS) expr-test.o expr.tab.h
-	$(CXX) $(LDFLAGS) -o expr-test $(EXPROBJS) $(TESTOBJS) expr-test.o \
+expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
+	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o \
 	       $(LIBS)
 
-error-test: $(ERROROBJS) error-test.o Error.tab.h
-	$(CXX) $(LDFLAGS) -o error-test $(ERROROBJS) error-test.o 
+error-test: error-test.o Error.tab.h
+	$(CXX) $(LDFLAGS) -o error-test error-test.o 
 
-geturl: libdap.a $(TESTCLASSOBJS)
-	$(CXX) $(LDFLAGS) -o geturl $(TESTCLASSOBJS) $(LIBS)
+geturl: libdap++.a $(TESTOBJS) geturl.o
+	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) $(LIBS)
 
-cgi-util-test: cgi_util.o libdap.a
+cgi-util-test: libdap++.a cgi_util.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST_CGI_UTIL -c cgi_util.cc
 	$(CXX) $(LDFLAGS) -o cgi-util-test cgi_util.o $(LIBS)
 	-rm -f cgi_util.o
@@ -303,9 +306,7 @@ tags:
 depend: 
 	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
 	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(EXPRSRCS) $(TESTSRCS) \
-	$(ERRORSRCS) $(NETIOSRC) \
-	das-test.cc dds-test.cc expr-test.cc trans-test.cc error-test.cc \
-	geturl.cc
+	$(ERRORSRCS) $(NETIOSRC) $(TESTPROGSRCS)
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
   Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h \
