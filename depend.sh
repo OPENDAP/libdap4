@@ -3,7 +3,7 @@
 # depend is a script replacement for makedepend. It requires gcc.
 # -s causes system includes to be added to the dependencies.
 # -b <extension> causes <extension> to be used instead of `bak' when naming
-#    the backup coy of the Makefile.
+#    the backup copy of the Makefile.
 # -m <makefile name> causes depend to use <makefile name> instead of
 #    `Makefile'. 
 # -n Don't actually make the dependencies, just print out what would have been 
@@ -14,7 +14,8 @@
 # Added -b option. Added `-E' to CFLAGS.
 # jhrg 3/5/96
 #
-# $Id: depend.sh,v 1.9 1999/08/18 16:02:53 jimg Exp $
+
+# $Id: depend.sh,v 1.10 1999/11/04 23:59:58 jimg Exp $
 
 usage="depend [-s][-t][-b <ext>][-m <makefile name>] -- <compiler options> -- <files>"
 CFLAGS="-E -MM -MG"

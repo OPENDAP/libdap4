@@ -1,7 +1,7 @@
 
 # Common code for dejaGNU-based automated tests.
 
-# $Id: common_tests.exp,v 1.3 1999/05/25 21:44:13 ndp Exp $
+# $Id: common_tests.exp,v 1.4 1999/11/04 23:59:58 jimg Exp $
 
 # Compare $expected to the global $comp_output. Run `pass' if they match,
 # `fail' otherwise unless `xfailp' is true in which case run `xfail' if they
@@ -29,7 +29,7 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
     # in $expected, then procede to compare $expected to $comp_output.
 
     if {[file exists $expected] && [file isfile $expected]} {
-	if {$verbose >= 1} {
+	if {$verbose >= 2} {
 	    send_user "PWD: [pwd]\n"
 	    send_user "Reading file: $expected\n"
 	}
@@ -44,7 +44,7 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
 
     set result [string $str_test $expected $comp_output]
 
-    if {$verbose >= 1} {
+    if {$verbose >= 2} {
 	send_user "Result of $str_test: $result\n"
     }
 
@@ -53,10 +53,15 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
     # pattern matches (i.e., test passed). Arrgh!!! This is Nathan's patch.
     # 5/25/99 jhrg
     if {$str_test == "compare"} {
-	set result !$result
+	if {$result == 1} {
+	    set result 0
+	}
+	if {$result == 0} {
+	    set result 1
+	}
     }
 
-    if $result {
+    if {$result == 1} {
 	pass "$msg"
 	send_user "PASS: $msg\n"
     } elseif {$xfailp == 1} {
@@ -66,7 +71,7 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
 	fail "$msg"
     }
 
-    if {$verbose >= 1} {
+    if {$verbose >= 2 || ($verbose == 1 && $result != 1)} {
 	send_user "Comp output:$comp_output\n"
 	send_user "Expected output:$expected\n"
     }
