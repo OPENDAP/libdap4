@@ -1,15 +1,82 @@
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+ 
 // (c) COPYRIGHT URI/MIT 1995-1996,1999
-// Please read the full copyright statement in the file COPYRIGHT.
+// Please read the full copyright statement in the file COPYRIGHT_URI.
 //
 // Authors:
-//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 // Implementation for TestStr. See TestByte.cc
 //
 // jhrg 1/12/95
 
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include <string>
+
+#include "TestStr.h"
+
+Str *
+NewStr(const string &n)
+{
+    return new TestStr(n);
+}
+
+TestStr::TestStr(const string &n) : Str(n)
+{
+}
+
+BaseType *
+TestStr::ptr_duplicate()
+{
+    return new TestStr(*this);
+}
+
+bool
+TestStr::read(const string &)
+{
+    if (read_p())
+	return true;
+
+    string dods_str_test="Silly test string: one, two, ...";
+    
+    (void) val2buf(&dods_str_test);
+
+    set_read_p(true);
+
+    return true;
+}
+
 // $Log: TestStr.cc,v $
+// Revision 1.18  2003/01/23 00:22:24  jimg
+// Updated the copyright notice; this implementation of the DAP is
+// copyrighted by OPeNDAP, Inc.
+//
 // Revision 1.17  2000/09/21 16:22:09  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -90,42 +157,3 @@
 // Created as an example of subclassing the class hierarchy rooted at
 // BaseType.
 //
-
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include <string>
-
-#include "TestStr.h"
-
-Str *
-NewStr(const string &n)
-{
-    return new TestStr(n);
-}
-
-TestStr::TestStr(const string &n) : Str(n)
-{
-}
-
-BaseType *
-TestStr::ptr_duplicate()
-{
-    return new TestStr(*this);
-}
-
-bool
-TestStr::read(const string &)
-{
-    if (read_p())
-	return true;
-
-    string dods_str_test="Silly test string: one, two, ...";
-    
-    (void) val2buf(&dods_str_test);
-
-    set_read_p(true);
-
-    return true;
-}

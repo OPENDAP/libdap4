@@ -20,16 +20,16 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// You can contact OPeNDAP at 
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112
  
 // This file was derived from the libwww source code of 1998/08/20. The
 // copyright for the source of this derivative work can be found in the file
-// W3C_COPYRIGHT.
+// COPYRIGHT_W3C.
 
                          
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util_mit.cc,v 1.2 2003/01/10 19:46:41 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util_mit.cc,v 1.3 2003/01/23 00:22:25 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,11 +1,39 @@
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2002 OPeNDAP, Inc. 
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112
+ 
+// This file was derived from the libwww source code of 1998/08/20. The
+// copyright for the source of this derivative work can be found in the file
+// COPYRIGHT_W3C.
+
 /*
   Picked up from the w3c. 2/10/1998 jhrg
 
   Modified: Added the -s (silent) option to suppress diagnostic messages.
 */
 
-const char *rcsid={"$Id: deflate.c,v 1.4 2000/09/22 02:17:22 jimg Exp $"};
+const char *rcsid={"$Id: deflate.c,v 1.5 2003/01/23 00:22:24 jimg Exp $"};
 
 #include "stdlib.h"
 #include "stdio.h"
@@ -132,6 +160,10 @@ int main (int argc, char ** argv)
 
 /* 
    $Log: deflate.c,v $
+   Revision 1.5  2003/01/23 00:22:24  jimg
+   Updated the copyright notice; this implementation of the DAP is
+   copyrighted by OPeNDAP, Inc.
+
    Revision 1.4  2000/09/22 02:17:22  jimg
    Rearranged source files so that the CVS logs appear at the end rather than
    the start. Also made the ifdef guard symbols use the same naming scheme and

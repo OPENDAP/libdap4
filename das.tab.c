@@ -23,14 +23,14 @@
 # define	SCAN_STRING	267
 # define	SCAN_URL	268
 
-#line 18 "das.y"
+#line 40 "das.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.29 2003/01/15 19:24:39 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.30 2003/01/23 00:22:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -202,14 +202,14 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   164,   164,   180,   181,   185,   186,   192,   193,   194,
-     197,   199,   199,   199,   203,   203,   203,   207,   207,   207,
-     211,   211,   211,   215,   215,   215,   219,   219,   219,   223,
-     223,   223,   227,   227,   227,   231,   231,   231,   235,   235,
-     235,   263,   263,   269,   273,   279,   283,   289,   293,   299,
-     303,   309,   313,   319,   323,   329,   333,   339,   343,   349,
-     353,   359,   362,   365,   368,   368,   368,   368,   368,   369,
-     369,   369,   369,   370,   370,   370,   373,   373,   373
+       0,   186,   186,   202,   203,   207,   208,   214,   215,   216,
+     219,   221,   221,   221,   225,   225,   225,   229,   229,   229,
+     233,   233,   233,   237,   237,   237,   241,   241,   241,   245,
+     245,   245,   249,   249,   249,   253,   253,   253,   257,   257,
+     257,   285,   285,   291,   295,   301,   305,   311,   315,   321,
+     325,   331,   335,   341,   345,   351,   355,   361,   365,   371,
+     375,   381,   384,   387,   390,   390,   390,   390,   390,   391,
+     391,   391,   391,   392,   392,   392,   395,   395,   395
 };
 #endif
 
@@ -348,7 +348,7 @@ static const short yycheck[] =
       38,   114,   112
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 3 "/usr/share/bison/bison.simple"
 
 /* Skeleton output parser for bison,
 
@@ -661,7 +661,7 @@ yystpcpy (yydest, yysrc)
 # endif
 #endif
 
-#line 315 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 315 "/usr/share/bison/bison.simple"
 
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -1055,7 +1055,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 165 "das.y"
+#line 187 "das.y"
 {
 		    name = new string();
 		    type = new string();
@@ -1064,7 +1064,7 @@ case 1:
 		;
     break;}
 case 2:
-#line 172 "das.y"
+#line 194 "das.y"
 {
 		    POP;	// pop the DAS/AttrTable before stack's dtor
 		    delete name;
@@ -1073,85 +1073,85 @@ case 2:
 		;
     break;}
 case 6:
-#line 187 "das.y"
+#line 209 "das.y"
 {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG, das_line_num);
 		;
     break;}
 case 11:
-#line 199 "das.y"
+#line 221 "das.y"
 { save_str(*type, "Byte", das_line_num); ;
     break;}
 case 12:
-#line 200 "das.y"
+#line 222 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 14:
-#line 203 "das.y"
+#line 225 "das.y"
 { save_str(*type, "Int16", das_line_num); ;
     break;}
 case 15:
-#line 204 "das.y"
+#line 226 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 17:
-#line 207 "das.y"
+#line 229 "das.y"
 { save_str(*type, "UInt16", das_line_num); ;
     break;}
 case 18:
-#line 208 "das.y"
+#line 230 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 20:
-#line 211 "das.y"
+#line 233 "das.y"
 { save_str(*type, "Int32", das_line_num); ;
     break;}
 case 21:
-#line 212 "das.y"
+#line 234 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 23:
-#line 215 "das.y"
+#line 237 "das.y"
 { save_str(*type, "UInt32", das_line_num); ;
     break;}
 case 24:
-#line 216 "das.y"
+#line 238 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 26:
-#line 219 "das.y"
+#line 241 "das.y"
 { save_str(*type, "Float32", das_line_num); ;
     break;}
 case 27:
-#line 220 "das.y"
+#line 242 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 29:
-#line 223 "das.y"
+#line 245 "das.y"
 { save_str(*type, "Float64", das_line_num); ;
     break;}
 case 30:
-#line 224 "das.y"
+#line 246 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 32:
-#line 227 "das.y"
+#line 249 "das.y"
 { *type = "String"; ;
     break;}
 case 33:
-#line 228 "das.y"
+#line 250 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 35:
-#line 231 "das.y"
+#line 253 "das.y"
 { *type = "Url"; ;
     break;}
 case 36:
-#line 232 "das.y"
+#line 254 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 38:
-#line 236 "das.y"
+#line 258 "das.y"
 {
 		    DBG(cerr << "Processing ID: " << yyvsp[0] << endl);
 		    
@@ -1173,7 +1173,7 @@ case 38:
 		;
     break;}
 case 39:
-#line 256 "das.y"
+#line 278 "das.y"
 {
 		    /* pop top of stack; store in attr_tab */
 		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
@@ -1181,134 +1181,134 @@ case 39:
 		;
     break;}
 case 41:
-#line 264 "das.y"
+#line 286 "das.y"
 { 
 		    parse_error(ATTR_TUPLE_MSG, das_line_num, yyvsp[0]);
 		;
     break;}
 case 43:
-#line 270 "das.y"
+#line 292 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_byte);
 		;
     break;}
 case 44:
-#line 274 "das.y"
+#line 296 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_byte);
 		;
     break;}
 case 45:
-#line 280 "das.y"
+#line 302 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_int16);
 		;
     break;}
 case 46:
-#line 284 "das.y"
+#line 306 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_int16);
 		;
     break;}
 case 47:
-#line 290 "das.y"
+#line 312 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_uint16);
 		;
     break;}
 case 48:
-#line 294 "das.y"
+#line 316 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_uint16);
 		;
     break;}
 case 49:
-#line 300 "das.y"
+#line 322 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_int32);
 		;
     break;}
 case 50:
-#line 304 "das.y"
+#line 326 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_int32);
 		;
     break;}
 case 51:
-#line 310 "das.y"
+#line 332 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_uint32);
 		;
     break;}
 case 52:
-#line 314 "das.y"
+#line 336 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_uint32);
 		;
     break;}
 case 53:
-#line 320 "das.y"
+#line 342 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_float32);
 		;
     break;}
 case 54:
-#line 324 "das.y"
+#line 346 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_float32);
 		;
     break;}
 case 55:
-#line 330 "das.y"
+#line 352 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_float64);
 		;
     break;}
 case 56:
-#line 334 "das.y"
+#line 356 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_float64);
 		;
     break;}
 case 57:
-#line 340 "das.y"
+#line 362 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], 0);
 		;
     break;}
 case 58:
-#line 344 "das.y"
+#line 366 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], 0);
 		;
     break;}
 case 59:
-#line 350 "das.y"
+#line 372 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_url);
 		;
     break;}
 case 60:
-#line 354 "das.y"
+#line 376 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_url);
 		;
     break;}
 case 76:
-#line 374 "das.y"
+#line 396 "das.y"
 { 
 		    *name = yyvsp[0];
 		;
     break;}
 case 77:
-#line 378 "das.y"
+#line 400 "das.y"
 {
 		    add_alias(DAS_OBJ(arg), TOP_OF_STACK, *name, string(yyvsp[0]))
                 ;
     break;}
 }
 
-#line 705 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 705 "/usr/share/bison/bison.simple"
 
 
   yyvsp -= yylen;
@@ -1539,7 +1539,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 384 "das.y"
+#line 406 "das.y"
 
 
 // This function is required for linking, but DODS uses its own error
@@ -1650,8 +1650,9 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.29  2003/01/15 19:24:39  pwest
- * Removing IteratorAdapterT and replacing with non-templated versions.
+ * Revision 1.30  2003/01/23 00:22:24  jimg
+ * Updated the copyright notice; this implementation of the DAP is
+ * copyrighted by OPeNDAP, Inc.
  *
  * Revision 1.44  2003/01/10 19:46:41  jimg
  * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many

@@ -21,7 +21,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// You can contact OPeNDAP at 
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
 #ifndef _http_cache_h
 #define _http_cache_h
@@ -370,6 +370,10 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.3  2003/01/23 00:22:24  jimg
+// Updated the copyright notice; this implementation of the DAP is
+// copyrighted by OPeNDAP, Inc.
+//
 // Revision 1.2  2003/01/10 19:46:40  jimg
 // Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
 // cases files were added on that branch (so they appear on the trunk for

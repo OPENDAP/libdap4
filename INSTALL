@@ -1,5 +1,5 @@
 
-	$Id: INSTALL,v 1.9 2001/10/14 01:28:38 jimg Exp $
+	$Id: INSTALL,v 1.10 2003/01/23 00:22:24 jimg Exp $
 
 Installing the DAP library software for DODS.
 
@@ -16,7 +16,7 @@ BUILDING THE SOFTWARE
   To build the DODS DAP library and the geturl client program, follow these
   steps:  
 
-  0. Please skim REQUIREMENTS, SUGGESTIONS, and NOTES sections of this file
+  0. Please skim REQUIREMENTS and NOTES sections of this file
      before reporting problems. Thanks.
 
   1. Type `./configure' at the system prompt. On some systems you may have
@@ -24,7 +24,8 @@ BUILDING THE SOFTWARE
 
   2. Type `make' to build the library, `make check' to build the test
      software.  You must have the GNU automated testing software DejaGNU
-     to run `make check.'
+     to run `make check.' If you have the CppUnit unit-test software, then
+     'make unit-check' should build and run the unit tests.
 
   3. Type `make install' to install the DAP library.  DODS is usually
      installed in its own directory tree.  Some of the DODS software depends
@@ -43,16 +44,19 @@ BUILDING THE SOFTWARE
 REQUIREMENTS
 
   o Before building this software, you must have built and installed the
-    packages software (in src/packages). The packages software consists of
-    the WWW library and other libraries not universally available that DODS
-    uses. To build that software, see its INSTALL file. To get that software,
-    see the DODS web page http://unidata.ucar.edu/packages/dods/.
+    packages software (in src/packages). This software consists of the WWW
+    library and other libraries not universally available that DODS uses (the
+    libraries are: libcurl 7.10.2 or greater, libz 1.1.3 or greater and
+    librx). To get that software from us, see the DODS web page
+    http://unidata.ucar.edu/packages/dods/. To build that software, see its
+    INSTALL file.
 
   o You should have gcc/g++ 2.95.x or greater. You'll also need to get the
     stdc++ library that matches the compiler (whatever version). NB: gcc
     2.8.x and earlier *won't* build DODS. We're working on modifying the
-    software so that it will build with a variety of compilers. It's close,
-    but there are one or two outstanding problems.
+    software so that it will build with a variety of compilers. As of
+    01/22/03 we have built the code using Microsoft's Visual C++ 6.0 and GNU
+    Ggcc/++ 3.2.1.
 
   O We now ship the C++ source files generated using bison and flex so these
     programs are no longer required to build the source code. However, to do
@@ -68,13 +72,14 @@ NOTES
     dependencies. 
 
   o If you are building on a new platform (one for which we don't supply
-    binaries), please run the tests and tell us about any failures. To do
-    this you'll need to get the GNU test system called DejaGNU. It is very
-    simple to install so don't be shy! If the tests run, try building a
-    binary tarball using the `binary-tar' target of the Makefile. This will
-    provide a set of binaries others can use and will be greatly appreciated.
+    binaries), please run the tests and tell us about any failures. To do a
+    really complete job of this you'll need to get the GNU test system called
+    DejaGNU and CppUnit. It is very simple to install these and we're very
+    willing to help, so don't be shy! If the tests run, try building a binary
+    tarball using the `binary-tar' target of the Makefile. This will provide
+    a set of binaries others can use and will be greatly appreciated.
 
-  o If you are developing code that uses DODS, get autoconf and CVS (both
+  o If you are developing code that uses the DAP, get autoconf and CVS (both
     from GNU). We maintain a CVS-managed source tree that people outside the
     group may access.
 

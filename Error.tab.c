@@ -18,12 +18,12 @@
 # define	SCAN_MSG	262
 # define	SCAN_PROGRAM	263
 
-#line 10 "Error.y"
+#line 32 "Error.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.24 2003/01/15 19:24:39 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.25 2003/01/23 00:22:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,7 +58,7 @@ int Errorlex();			// the scanner
 void Errorerror(char *s);	// gotta love automatically generated names...
 
 
-#line 50 "Error.y"
+#line 72 "Error.y"
 #ifndef YYSTYPE
 typedef union {
 #ifdef __SUNPRO_CC
@@ -138,8 +138,8 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,    81,    84,    85,    88,    89,    92,    95,   102,   102,
-     110,   117,   117
+       0,   103,   106,   107,   110,   111,   114,   117,   124,   124,
+     132,   139,   139
 };
 #endif
 
@@ -217,7 +217,7 @@ static const short yycheck[] =
       12,    12,    -1,    12
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 3 "/usr/share/bison/bison.simple"
 
 /* Skeleton output parser for bison,
 
@@ -530,7 +530,7 @@ yystpcpy (yydest, yysrc)
 # endif
 #endif
 
-#line 315 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 315 "/usr/share/bison/bison.simple"
 
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -924,52 +924,52 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 81 "Error.y"
+#line 103 "Error.y"
 { yyval.boolean = yyvsp[-2].boolean; STATUS(arg) = yyvsp[-2].boolean; ;
     break;}
 case 2:
-#line 84 "Error.y"
+#line 106 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 3:
-#line 85 "Error.y"
+#line 107 "Error.y"
 { yyval.boolean = yyvsp[0].boolean; ;
     break;}
 case 4:
-#line 88 "Error.y"
+#line 110 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 5:
-#line 89 "Error.y"
+#line 111 "Error.y"
 { yyval.boolean = yyvsp[0].boolean; ;
     break;}
 case 6:
-#line 92 "Error.y"
+#line 114 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 7:
-#line 96 "Error.y"
+#line 118 "Error.y"
 { 
 		    ERROR_OBJ(arg)->set_error_code((ErrorCode)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 8:
-#line 103 "Error.y"
+#line 125 "Error.y"
 { 
 		    ERROR_OBJ(arg)->set_error_message(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 case 10:
-#line 111 "Error.y"
+#line 133 "Error.y"
 {
 		    ERROR_OBJ(arg)->set_program_type((ProgramType)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 11:
-#line 118 "Error.y"
+#line 140 "Error.y"
 {
 		    DBG(cerr << "Program: " << yyvsp[0].string << endl);
 		    ERROR_OBJ(arg)->set_program(yyvsp[0].string);
@@ -978,7 +978,7 @@ case 11:
     break;}
 }
 
-#line 705 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 705 "/usr/share/bison/bison.simple"
 
 
   yyvsp -= yylen;
@@ -1209,7 +1209,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 126 "Error.y"
+#line 148 "Error.y"
 
 
 void
@@ -1225,8 +1225,9 @@ Errorerror(char *s)
 
 
 // $Log: Error.tab.c,v $
-// Revision 1.24  2003/01/15 19:24:39  pwest
-// Removing IteratorAdapterT and replacing with non-templated versions.
+// Revision 1.25  2003/01/23 00:22:24  jimg
+// Updated the copyright notice; this implementation of the DAP is
+// copyrighted by OPeNDAP, Inc.
 //
 // Revision 1.11  2000/10/02 18:49:26  jimg
 // The Error class now has const accessors

@@ -27,12 +27,12 @@
 # define	SCAN_STRING	271
 # define	SCAN_URL	272
 
-#line 25 "dds.y"
+#line 47 "dds.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.37 2003/01/15 19:24:39 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.38 2003/01/23 00:22:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,7 +94,7 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 			 char *type, char *name);
 
 
-#line 94 "dds.y"
+#line 116 "dds.y"
 #ifndef YYSTYPE
 typedef union {
     bool boolean;
@@ -185,12 +185,12 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   123,   123,   134,   135,   138,   142,   150,   154,   155,
-     158,   168,   178,   198,   198,   216,   216,   234,   234,   234,
-     234,   280,   292,   298,   304,   310,   316,   317,   318,   319,
-     320,   321,   322,   323,   324,   327,   328,   331,   331,   331,
-     331,   331,   332,   332,   332,   332,   333,   333,   333,   333,
-     334,   337,   358,   358,   358,   385,   397,   398,   399
+       0,   145,   145,   156,   157,   160,   164,   172,   176,   177,
+     180,   190,   200,   220,   220,   238,   238,   256,   256,   256,
+     256,   302,   314,   320,   326,   332,   338,   339,   340,   341,
+     342,   343,   344,   345,   346,   349,   350,   353,   353,   353,
+     353,   353,   354,   354,   354,   354,   355,   355,   355,   355,
+     356,   359,   380,   380,   380,   407,   419,   420,   421
 };
 #endif
 
@@ -334,7 +334,7 @@ static const short yycheck[] =
       13,    14,    15,    16,    17,    18
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 3 "/usr/share/bison/bison.simple"
 
 /* Skeleton output parser for bison,
 
@@ -647,7 +647,7 @@ yystpcpy (yydest, yysrc)
 # endif
 #endif
 
-#line 315 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 315 "/usr/share/bison/bison.simple"
 
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -1041,26 +1041,26 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 124 "dds.y"
+#line 146 "dds.y"
 {
 		    /* On entry to the parser, make the BaseType stack. */
 		    ctor = new stack<BaseType *>;
                 ;
     break;}
 case 2:
-#line 129 "dds.y"
+#line 151 "dds.y"
 {
 		    delete ctor;
 		;
     break;}
 case 5:
-#line 139 "dds.y"
+#line 161 "dds.y"
 {
 		    yyval.boolean = yyvsp[-3].boolean && yyvsp[-1].word;
 		;
     break;}
 case 6:
-#line 143 "dds.y"
+#line 165 "dds.y"
 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG,
  				dds_line_num, yyvsp[0].word);
@@ -1068,13 +1068,13 @@ case 6:
 		;
     break;}
 case 7:
-#line 151 "dds.y"
+#line 173 "dds.y"
 {
 		    yyval.boolean = true;
 		;
     break;}
 case 10:
-#line 159 "dds.y"
+#line 181 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -1086,13 +1086,13 @@ case 10:
 		;
     break;}
 case 11:
-#line 169 "dds.y"
+#line 191 "dds.y"
 {
 		    yyval.boolean = true;
 		;
     break;}
 case 12:
-#line 179 "dds.y"
+#line 201 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -1113,7 +1113,7 @@ case 12:
 		;
     break;}
 case 13:
-#line 199 "dds.y"
+#line 221 "dds.y"
 { 
 		    if( current ) delete current ;
 		    current = ctor->top(); 
@@ -1121,7 +1121,7 @@ case 13:
 		;
     break;}
 case 14:
-#line 205 "dds.y"
+#line 227 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -1134,7 +1134,7 @@ case 14:
 		;
     break;}
 case 15:
-#line 217 "dds.y"
+#line 239 "dds.y"
 { 
 		    if( current ) delete current ;
 		    current = ctor->top(); 
@@ -1142,7 +1142,7 @@ case 15:
 		;
     break;}
 case 16:
-#line 223 "dds.y"
+#line 245 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -1155,7 +1155,7 @@ case 16:
 		;
     break;}
 case 17:
-#line 235 "dds.y"
+#line 257 "dds.y"
 { 
 		    if (is_keyword(string(yyvsp[-1].word), "array"))
 			part = array; 
@@ -1170,7 +1170,7 @@ case 17:
                 ;
     break;}
 case 18:
-#line 248 "dds.y"
+#line 270 "dds.y"
 { 
 		    if (is_keyword(string(yyvsp[-1].word), "maps"))
 			part = maps; 
@@ -1185,7 +1185,7 @@ case 18:
                 ;
     break;}
 case 19:
-#line 261 "dds.y"
+#line 283 "dds.y"
 {
 		    if( current ) delete current ;
 		    current = ctor->top(); 
@@ -1193,7 +1193,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 267 "dds.y"
+#line 289 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -1208,7 +1208,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 281 "dds.y"
+#line 303 "dds.y"
 {
 		    ostrstream msg;
 		    msg << BAD_DECLARATION << ends;
@@ -1219,71 +1219,71 @@ case 21:
 		;
     break;}
 case 22:
-#line 293 "dds.y"
+#line 315 "dds.y"
 { 
 		    ctor->push(NewList()); 
 		;
     break;}
 case 23:
-#line 299 "dds.y"
+#line 321 "dds.y"
 { 
 		    ctor->push(NewStructure()); 
 		;
     break;}
 case 24:
-#line 305 "dds.y"
+#line 327 "dds.y"
 { 
 		    ctor->push(NewSequence()); 
 		;
     break;}
 case 25:
-#line 311 "dds.y"
+#line 333 "dds.y"
 { 
 		    ctor->push(NewGrid()); 
 		;
     break;}
 case 26:
-#line 316 "dds.y"
+#line 338 "dds.y"
 { if( current ) delete current ;current = NewByte(); ;
     break;}
 case 27:
-#line 317 "dds.y"
+#line 339 "dds.y"
 { if( current ) delete current ;current = NewInt16(); ;
     break;}
 case 28:
-#line 318 "dds.y"
+#line 340 "dds.y"
 { if( current ) delete current ;current = NewUInt16(); ;
     break;}
 case 29:
-#line 319 "dds.y"
+#line 341 "dds.y"
 { if( current ) delete current ;current = NewInt32(); ;
     break;}
 case 30:
-#line 320 "dds.y"
+#line 342 "dds.y"
 { if( current ) delete current ;current = NewUInt32(); ;
     break;}
 case 31:
-#line 321 "dds.y"
+#line 343 "dds.y"
 { if( current ) delete current ;current = NewFloat32(); ;
     break;}
 case 32:
-#line 322 "dds.y"
+#line 344 "dds.y"
 { if( current ) delete current ;current = NewFloat64(); ;
     break;}
 case 33:
-#line 323 "dds.y"
+#line 345 "dds.y"
 { if( current ) delete current ;current = NewStr(); ;
     break;}
 case 34:
-#line 324 "dds.y"
+#line 346 "dds.y"
 { if( current ) delete current ;current = NewUrl(); ;
     break;}
 case 35:
-#line 327 "dds.y"
+#line 349 "dds.y"
 { current->set_name(yyvsp[0].word); ;
     break;}
 case 51:
-#line 338 "dds.y"
+#line 360 "dds.y"
 { 
 		     if (!check_int32(yyvsp[-1].word)) {
 			 string msg = "In the dataset descriptor object:\n";
@@ -1305,13 +1305,13 @@ case 51:
 		 ;
     break;}
 case 52:
-#line 359 "dds.y"
+#line 381 "dds.y"
 {
 		     id = new string(yyvsp[0].word);
 		 ;
     break;}
 case 53:
-#line 363 "dds.y"
+#line 385 "dds.y"
 { 
 		     if (!check_int32(yyvsp[0].word)) {
 			 string msg = "In the dataset descriptor object:\n";
@@ -1334,7 +1334,7 @@ case 53:
 		 ;
     break;}
 case 55:
-#line 386 "dds.y"
+#line 408 "dds.y"
 {
 		     ostrstream msg;
 		     msg << "In the dataset descriptor object:" << endl
@@ -1346,15 +1346,15 @@ case 55:
 		 ;
     break;}
 case 56:
-#line 397 "dds.y"
+#line 419 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0].word); ;
     break;}
 case 57:
-#line 398 "dds.y"
+#line 420 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0].word); ;
     break;}
 case 58:
-#line 400 "dds.y"
+#line 422 "dds.y"
 {
 		  ostrstream msg;
 		  msg << "Error parsing the dataset name." << endl
@@ -1367,7 +1367,7 @@ case 58:
     break;}
 }
 
-#line 705 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 705 "/usr/share/bison/bison.simple"
 
 
   yyvsp -= yylen;
@@ -1598,7 +1598,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 411 "dds.y"
+#line 433 "dds.y"
 
 
 /* 
@@ -1666,8 +1666,9 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.37  2003/01/15 19:24:39  pwest
- * Removing IteratorAdapterT and replacing with non-templated versions.
+ * Revision 1.38  2003/01/23 00:22:24  jimg
+ * Updated the copyright notice; this implementation of the DAP is
+ * copyrighted by OPeNDAP, Inc.
  *
  * Revision 1.39  2003/01/10 19:46:41  jimg
  * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many

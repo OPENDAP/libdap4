@@ -20,12 +20,12 @@
 # define	SCAN_LESS_EQL	264
 # define	SCAN_REGEXP	265
 
-#line 19 "expr.y"
+#line 41 "expr.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.29 2003/01/15 19:24:39 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.30 2003/01/23 00:22:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,7 +117,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 proj_func get_proj_function(const DDS &table, const char *name);
 
 
-#line 116 "expr.y"
+#line 138 "expr.y"
 #ifndef YYSTYPE
 typedef union {
     bool boolean;
@@ -213,10 +213,10 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   155,   161,   163,   163,   167,   173,   174,   180,   192,
-     196,   202,   222,   223,   229,   238,   249,   255,   268,   269,
-     277,   289,   296,   305,   309,   315,   344,   351,   361,   365,
-     371,   383,   401,   427,   428,   429,   430,   431,   432,   433
+       0,   177,   183,   185,   185,   189,   195,   196,   202,   214,
+     218,   224,   244,   245,   251,   260,   271,   277,   290,   291,
+     299,   311,   318,   327,   331,   337,   366,   373,   383,   387,
+     393,   405,   423,   449,   450,   451,   452,   453,   454,   455
 };
 #endif
 
@@ -317,7 +317,7 @@ static const short yycheck[] =
        9
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 3 "/usr/share/bison/bison.simple"
 
 /* Skeleton output parser for bison,
 
@@ -630,7 +630,7 @@ yystpcpy (yydest, yysrc)
 # endif
 #endif
 
-#line 315 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 315 "/usr/share/bison/bison.simple"
 
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -1024,36 +1024,36 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 156 "expr.y"
+#line 178 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 163 "expr.y"
+#line 185 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 164 "expr.y"
+#line 186 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 168 "expr.y"
+#line 190 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 175 "expr.y"
+#line 197 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 181 "expr.y"
+#line 203 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
@@ -1067,19 +1067,19 @@ case 8:
 		;
     break;}
 case 9:
-#line 193 "expr.y"
+#line 215 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 10:
-#line 197 "expr.y"
+#line 219 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 11:
-#line 203 "expr.y"
+#line 225 "expr.y"
 {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -1099,13 +1099,13 @@ case 11:
 		;
     break;}
 case 13:
-#line 224 "expr.y"
+#line 246 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 14:
-#line 230 "expr.y"
+#line 252 "expr.y"
 {
 		    if (yyvsp[-4].rval_ptr) {
 			(*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -1116,7 +1116,7 @@ case 14:
 		;
     break;}
 case 15:
-#line 239 "expr.y"
+#line 261 "expr.y"
 {
 		    if (yyvsp[-2].rval_ptr) {
 			rvalue_list *rv = new rvalue_list;
@@ -1129,13 +1129,13 @@ case 15:
 		;
     break;}
 case 16:
-#line 250 "expr.y"
+#line 272 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 17:
-#line 256 "expr.y"
+#line 278 "expr.y"
 {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		   if (!b_func) {
@@ -1148,7 +1148,7 @@ case 17:
 	       ;
     break;}
 case 19:
-#line 270 "expr.y"
+#line 292 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
@@ -1158,7 +1158,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 278 "expr.y"
+#line 300 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
@@ -1170,7 +1170,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 290 "expr.y"
+#line 312 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -1179,7 +1179,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 297 "expr.y"
+#line 319 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -1188,19 +1188,19 @@ case 22:
 		;
     break;}
 case 23:
-#line 306 "expr.y"
+#line 328 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
 case 24:
-#line 310 "expr.y"
+#line 332 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
 case 25:
-#line 316 "expr.y"
+#line 338 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(www2id(string(yyvsp[0].id)));
 		    if (!btp) {
@@ -1231,14 +1231,14 @@ case 25:
 		;
     break;}
 case 26:
-#line 345 "expr.y"
+#line 367 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 27:
-#line 352 "expr.y"
+#line 374 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
 		    // no_such_ident throws an exception.
@@ -1248,19 +1248,19 @@ case 27:
 		;
     break;}
 case 28:
-#line 362 "expr.y"
+#line 384 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 29:
-#line 366 "expr.y"
+#line 388 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 30:
-#line 372 "expr.y"
+#line 394 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-1].id)) {
 			string msg = "The word `";
@@ -1274,7 +1274,7 @@ case 30:
 		;
     break;}
 case 31:
-#line 384 "expr.y"
+#line 406 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-3].id)) {
 			string msg = "The word `";
@@ -1294,7 +1294,7 @@ case 31:
 		;
     break;}
 case 32:
-#line 402 "expr.y"
+#line 424 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-5].id)) {
 			string msg = "The word `";
@@ -1321,7 +1321,7 @@ case 32:
     break;}
 }
 
-#line 705 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 705 "/usr/share/bison/bison.simple"
 
 
   yyvsp -= yylen;
@@ -1552,7 +1552,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 436 "expr.y"
+#line 458 "expr.y"
 
 
 // All these error reporting function now throw instnaces of Error. The expr
@@ -2191,8 +2191,9 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.29  2003/01/15 19:24:39  pwest
- * Removing IteratorAdapterT and replacing with non-templated versions.
+ * Revision 1.30  2003/01/23 00:22:24  jimg
+ * Updated the copyright notice; this implementation of the DAP is
+ * copyrighted by OPeNDAP, Inc.
  *
  * Revision 1.43  2003/01/10 19:46:41  jimg
  * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
