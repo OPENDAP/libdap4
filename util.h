@@ -13,6 +13,9 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.27  1999/01/21 02:12:35  jimg
+ * Moved prototypes to ce_functions.h
+ *
  * Revision 1.26  1998/04/07 22:15:35  jimg
  * Added declaration of prune_spaces(String)
  *
@@ -137,11 +140,6 @@ FILE *compressor(FILE *output, int &childpid);
 bool deflate_exists();
 const char *dods_root();
 const char *dods_progress();
-
-bool func_member(int argc, BaseType *argv[], DDS &dds);
-bool func_null(int argc, BaseType *argv[], DDS &dds);
-BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
-BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
 bool byte_ops(int i1, int i2, int op);
 bool int_ops(dods_int32 i1, dods_int32 i2, int op);
