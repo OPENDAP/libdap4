@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.100 1999/05/09 04:26:52 jimg Exp $
+# $Id: Makefile.in,v 1.101 1999/05/20 20:32:17 jimg Exp $
 
 @SET_MAKE@
 
@@ -21,7 +21,7 @@ WWW_ROOT = @WWW_ROOT@
 INCS = -I. -IGNU @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
-CXXFLAGS = @CXXFLAGS@ -Wall
+CXXFLAGS = @CXXFLAGS@ -Wall -fPIC
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
@@ -239,7 +239,7 @@ das.tab.c das.tab.h: das.y DAS.h munge-bison.awk
 	mv tmp das.tab.c
 
 das.tab.o: das.tab.c		# build using C++ compiler
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c das.tab.c -o das.tab.o
+	$(CXX) $(CXXFLAGS) -O0 $(CPPFLAGS) -c das.tab.c -o das.tab.o
 
 # Build the DDS Scanner.
 
@@ -257,7 +257,7 @@ dds.tab.c dds.tab.h: dds.y munge-bison.awk
 	mv tmp dds.tab.c
 
 dds.tab.o: dds.tab.c		# build using C++ compiler
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c dds.tab.c -o dds.tab.o
+	$(CXX) $(CXXFLAGS) -O0 $(CPPFLAGS) -c dds.tab.c -o dds.tab.o
 
 # Build the CE Scanner.
 
@@ -488,10 +488,10 @@ dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
 
 das.tab.c: DAS.h
 
-# Force build of String.XPlex.o using no optimization. This is a temporary
-# work-around for a bug in gcc 2.8.1 on at least the SPARC. 
-#Plex/String.XPlex.o: Plex/String.XPlex.cc
-#	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -O0 -o $@ $<
+# Force compilation of these files using -O0. This is needed when using
+# -fPIC and may only be necessary on sparc machines. 5/19/99 jhrg
+util.o: util.cc
+	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -O0 -o $@ $<
 
 .SUFFIXES:      .o .cc .c
 
@@ -502,6 +502,3 @@ das.tab.c: DAS.h
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
 
 include dependencies
-
-
-
