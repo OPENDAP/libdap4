@@ -9,12 +9,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
-// Revision 1.97  2000/07/18 08:01:53  rmorris
-// Temporary short-term fix to get Dods to run on win95-based systems by
-// turning off client-side caching on that OS.  Feature doesn't run under win9x
-// for currently unknown reasons that _appear_ to be external to our code.
-// Permanent fix should be forth-comming shortly.  Patch is isolated between
-// a single WIN95_CACHE_HACK ifdef.
+// Revision 1.98  2000/07/18 12:49:04  rmorris
+// Fixed failure to initialize a structure element appropriately when
+// retrieving the Win32 OS version information for the WIN95_CACHE_HACK.
 //
 // Revision 1.96  2000/07/18 03:56:09  rmorris
 // Changes made in an attempt to debug client-side caching under win95-based
@@ -568,7 +565,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.97 2000/07/18 08:01:53 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.98 2000/07/18 12:49:04 rmorris Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1265,6 +1262,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	OSVERSIONINFO vinfo;
 
 	//  Indicates win95-based systems (95/98/etc).
+	vinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	GetVersionEx(&vinfo);
 	if(vinfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
 		{
