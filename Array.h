@@ -14,6 +14,10 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.38  1998/05/18 22:21:58  jimg
+ * Removed part of the class doc comment about selection and projection since
+ * they were not quite correct.
+ *
  * Revision 1.37  1998/02/05 20:13:49  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -211,32 +215,29 @@
 
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
-/** This class is used to hold arrays of other DODS data.  The
-    elements of the array can be simple or compound data types.  There
-    is no limit on the number of dimensions an array can have, or on
-    the size of each dimension.
+/** This class is used to hold arrays of other DODS data. The elements of the
+    array can be simple or compound data types. There is no limit on the
+    number of dimensions an array can have, or on the size of each dimension.
 
-    If desired, the user can give each dimension of an array a name.
-    You can, for example, have a 360x180 array of temperatures,
-    covering the whole globe with one-degree squares.  In this case,
-    you could name the first dimension ``Longitude'' and the second
-    dimension ``Latitude''.  This can help prevent a great deal of
-    confusion.  
+    If desired, the user can give each dimension of an array a name. You can,
+    for example, have a 360x180 array of temperatures, covering the whole
+    globe with one-degree squares. In this case, you could name the first
+    dimension ``Longitude'' and the second dimension ``Latitude''. This can
+    help prevent a great deal of confusion.
 
-    The Array is used as part of the Grid class, where the dimension
-    names are crucial to its structure.  The dimension names
-    correspond to ``Map'' vectors, holding the actual values for that
-    column of the array.
+    The Array is used as part of the Grid class, where the dimension names
+    are crucial to its structure. The dimension names correspond to ``Map''
+    vectors, holding the actual values for that column of the array.
 
-    Each array dimension carries with it its own ``constraint''.  The
-    constraint takes the form of three integers: the start, stop, and
-    stride values.  This is clearest with an example.  Consider a
-    one-dimensional array 10 elements long.  If the start value of the
-    dimension constraint is 3, then the constrained array appears to
-    be seven elements long.  If the stop value is changed to 7, then
-    the array appears to be five elements long.  If the stride is
-    changed to two, the array will appear to be 3 elements long.
-    Array constraints are written as: #[start:stride:stop]#.
+    Each array dimension carries with it its own projection information. The
+    projection inforamtion takes the form of three integers: the start, stop,
+    and stride values. This is clearest with an example. Consider a
+    one-dimensional array 10 elements long. If the start value of the
+    dimension constraint is 3, then the constrained array appears to be seven
+    elements long. If the stop value is changed to 7, then the array appears
+    to be five elements long. If the stride is changed to two, the array will
+    appear to be 3 elements long. Array constraints are written as:
+    #[start:stride:stop]#.
 
     \begin{verbatim}
     A = [1 2 3 4 5 6 7 8 9 10]
@@ -250,21 +251,7 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     A[0:3:9] = [1 4 7 10]
     \end{verbatim}
 
-    In addition to the constraint, array dimensions can be
-    ``selected''.  If the selection flag for a particular array
-    dimension is not set to TRUE, that dimension will not be sent to
-    the DODS client.  If the selection flag is set, only those parts
-    of the dimension referred to by the constraint will be sent.  The
-    #add_constraint()# function is used to constrain and select a
-    dimension.
-
-    The words ``selection'' and ``constraint'' can be a little
-    confusing because they seem to refer to a DODS constraint
-    expression.  In the case of an Array, however, they refer to the
-    manner in which the Array is sampled and returned to a client.  A
-    DODS constraint expression can contain a description of how an
-    Array is to be constrained and selected, but it is a much more
-    general structure.
+    NB: DODS uses zero-based indexing.
 
     @memo Holds multi-dimensional arrays.
     @see Grid
