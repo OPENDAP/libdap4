@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.58  1997/09/22 23:06:52  jimg
+// Changed code so that the new DataDDS objects are used/created when
+// accessing data.
+//
 // Revision 1.57  1997/06/06 17:52:08  jimg
 // Last minute changes for version 2.14
 //
@@ -324,7 +328,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.57 1997/06/06 17:52:08 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.58 1997/09/22 23:06:52 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -350,6 +354,7 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.57 1997/06/06 17:52:08 jim
 #include <stdiostream.h>
 
 #include "debug.h"
+#include "DataDDS.h"
 #include "Connect.h"
 
 #define SHOW_MSG (WWWTRACE || HTAlert_interactive())
@@ -1394,7 +1399,7 @@ Connect::process_data(bool async = false)
       default: {
 	  // First read the DDS into a new object.
 
-	  DDS *dds = new DDS("received_data");
+	  DataDDS *dds = new DataDDS("received_data", _server);
 	  FILE *dds_fp = move_dds(_output);
 	  if (!dds_fp || !dds->parse(dds_fp)) {
 	      cerr << "Could not parse data DDS." << endl;
@@ -1407,7 +1412,7 @@ Connect::process_data(bool async = false)
 	  if (!async) {
 	      XDR *s = source();
 	      for (Pix q = dds->first_var(); q; dds->next_var(q))
-		  if (!dds->var(q)->deserialize(s))
+		  if (!dds->var(q)->deserialize(s, dds))
 		      return 0;
 	  }
 
