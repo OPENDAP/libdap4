@@ -9,6 +9,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.97  2000/07/18 08:01:53  rmorris
+// Temporary short-term fix to get Dods to run on win95-based systems by
+// turning off client-side caching on that OS.  Feature doesn't run under win9x
+// for currently unknown reasons that _appear_ to be external to our code.
+// Permanent fix should be forth-comming shortly.  Patch is isolated between
+// a single WIN95_CACHE_HACK ifdef.
+//
 // Revision 1.96  2000/07/18 03:56:09  rmorris
 // Changes made in an attempt to debug client-side caching under win95-based
 // systems.  Is currently unsuccessful, but these changes made the code somewhat
@@ -561,7 +568,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.96 2000/07/18 03:56:09 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.97 2000/07/18 08:01:53 rmorris Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1231,8 +1238,9 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     
 	if(getenv("DODS_CACHE_INIT"))
 		cifp = getenv("DODS_CACHE_INIT");
+
     if(cifp.length() == 0)
-	{
+		{
 		if(homedir.length() == 0)
 			{
 			// Environment variable wasn't set, and the users home directory
@@ -1245,81 +1253,112 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 			// Environment variable wasnt set, get data from $HOME/.dodsrc
 			cifp = homedir + string(DIR_SEP_STRING) + src_name;
 			}
-	}
+		}
 
-    if(use_cache_file) {
+#define WIN95_CACHE_HACK
+#if defined(WIN32) && defined(WIN95_CACHE_HACK)
+	//  Temporary hack in lieu of a fix.  Caching doesn't work under windows
+	//  95/98 and why has yet to be determined.  This lets us bypass the problem
+	//  in the short-term by turning of client-side caching for win95-based
+	//  systems such as win95, win98 and future products based upon them.
+	//  rom - 07/17/2000.
+	OSVERSIONINFO vinfo;
+
+	//  Indicates win95-based systems (95/98/etc).
+	GetVersionEx(&vinfo);
+	if(vinfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
+		{
+		use_cache_file	= false;
+		USE_CACHE		= false;
+		}
+#endif
+
+    if(use_cache_file)
+	{
 	// Open the file.  If it exists, read the settings from it.  
 	// If it doesnt exist, save the default settings to it.
 	ifstream fpi(cifp.c_str());
-	if(!fpi) {
+	if(!fpi)
+		{
 	    ofstream fpo(cifp.c_str());
-	    if(!fpo) {
-		// File couldnt be created.  Nothing needs to be done here,
-		// the program will simply use the defaults.
-	    }
-	    else {
-		// This means we just created the file.  We will now save
-		// the defaults in it for future use.	    
-		fpo << "USE_CACHE=" << USE_CACHE << "\n";
-		fpo << "MAX_CACHE_SIZE=" << MAX_CACHE_SIZE << "\n";
-		fpo << "MAX_CACHED_OBJ=" <<  MAX_CACHED_OBJ << "\n";
-		fpo << "IGNORE_EXPIRES=" << IGNORE_EXPIRES << "\n";
+	    if(!fpo)
+			{
+			// File couldnt be created.  Nothing needs to be done here,
+			// the program will simply use the defaults.
+			}
+	    else
+			{
+			// This means we just created the file.  We will now save
+			// the defaults in it for future use.	    
+			fpo << "USE_CACHE=" << USE_CACHE << "\n";
+			fpo << "MAX_CACHE_SIZE=" << MAX_CACHE_SIZE << "\n";
+			fpo << "MAX_CACHED_OBJ=" <<  MAX_CACHED_OBJ << "\n";
+			fpo << "IGNORE_EXPIRES=" << IGNORE_EXPIRES << "\n";
 #if 0
-		fpo << "NEVER_DEFLATE=" << NEVER_DEFLATE << "\n";
+			fpo << "NEVER_DEFLATE=" << NEVER_DEFLATE << "\n";
 #endif
-		fpo << "CACHE_ROOT=" << cache_root << "\n";
-		fpo << "DEFAULT_EXPIRES=" << DEFAULT_EXPIRES << "\n";
-		fpo.close();
-	    }
-	}
-	else {
+			fpo << "CACHE_ROOT=" << cache_root << "\n";
+			fpo << "DEFAULT_EXPIRES=" << DEFAULT_EXPIRES << "\n";
+			fpo.close();
+			}
+		}
+	else
+		{
 	    // The file exists and we may now begin to parse it.  
 	    // Defaults are already stored in the variables, if the correct
 	    // tokens are found in the file then those defaults will be 
 	    // overwritten. 
     	    tempstr = new char[256];
 	    int tokenlength;
-	    while(1) {
+	    while(1)
+			{
 #ifdef WIN32
-		fpi.getline(tempstr, 128);
-		if (!fpi.good())  //  Ok for unix also ???
+			fpi.getline(tempstr, 128);
+			if (!fpi.good())  //  Ok for unix also ???
 #else
-		if (fpi.getline(tempstr, 128) < 0)
+			if (fpi.getline(tempstr, 128) < 0)
 #endif
-		    break; // Gets a line from the file.
-		value = strchr(tempstr, '=');
-		if(!value) break;
-		tokenlength = (int)value - (int)tempstr;
-		value++;
-		if((strncmp(tempstr, "USE_CACHE", 9) == 0) && tokenlength == 9) {
-		    USE_CACHE = atoi(value);
+				break; // Gets a line from the file.
+			value = strchr(tempstr, '=');
+			if(!value) break;
+			tokenlength = (int)value - (int)tempstr;
+			value++;
+			if((strncmp(tempstr, "USE_CACHE", 9) == 0) && tokenlength == 9)
+				{
+				USE_CACHE = atoi(value);
+				}
+			else if((strncmp(tempstr, "MAX_CACHE_SIZE", 14)==0) && tokenlength == 14)
+				{
+				MAX_CACHE_SIZE= atoi(value);
+				}
+			else if((strncmp(tempstr, "MAX_CACHED_OBJ", 14)==0) && tokenlength == 14)
+				{
+				MAX_CACHED_OBJ= atoi(value); 
+				}
+			else if((strncmp(tempstr, "IGNORE_EXPIRES", 14)==0) && tokenlength == 14)
+				{
+				IGNORE_EXPIRES= atoi(value);
+				}
+			else if((strncmp(tempstr, "NEVER_DEFLATE", 13)==0) && tokenlength == 13)
+				{
+				// (re)Set the member value iff the dodsrc file changes
+				// te default. 12/1/99 jhrg
+				_accept_deflate=accept_deflate = atoi(value) ? false: true;
+				}
+			else if((strncmp(tempstr, "CACHE_ROOT", 10)==0) && tokenlength == 10)
+				{
+				cache_root = value;
+				if(cache_root[cache_root.length() - 1] != DIR_SEP_CHAR)
+					cache_root += string(DIR_SEP_STRING);
+				}
+			else if((strncmp(tempstr, "DEFAULT_EXPIRES", 15)==0) && tokenlength == 15)
+				{
+				DEFAULT_EXPIRES = atoi(value);
+				}
+			}
+		delete tempstr;
+		fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
 		}
-		else if((strncmp(tempstr, "MAX_CACHE_SIZE", 14)==0) && tokenlength == 14) {
-		    MAX_CACHE_SIZE= atoi(value);
-		}
-		else if((strncmp(tempstr, "MAX_CACHED_OBJ", 14)==0) && tokenlength == 14) {
-		    MAX_CACHED_OBJ= atoi(value); 
-		}
-		else if((strncmp(tempstr, "IGNORE_EXPIRES", 14)==0) && tokenlength == 14) {
-		    IGNORE_EXPIRES= atoi(value);
-		}
-		else if((strncmp(tempstr, "NEVER_DEFLATE", 13)==0) && tokenlength == 13) {
-		    // (re)Set the member value iff the dodsrc file changes
-		    // te default. 12/1/99 jhrg
-		    _accept_deflate=accept_deflate = atoi(value) ? false: true;
-		}
-		else if((strncmp(tempstr, "CACHE_ROOT", 10)==0) && tokenlength == 10) {
-			cache_root = value;
-			if(cache_root[cache_root.length() - 1] != DIR_SEP_CHAR)
-				cache_root += string(DIR_SEP_STRING);
-		}
-		else if((strncmp(tempstr, "DEFAULT_EXPIRES", 15)==0) && tokenlength == 15) {
-		    DEFAULT_EXPIRES = atoi(value);
-		}
-	    }
-	    delete tempstr;
-	    fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
-	}
     }
         
     // End of cache file parsing.
@@ -1353,15 +1392,16 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTFormat_setTransferCoding(transfer_encodings);
 
     // Register the default set of content encoders and decoders
-    if (accept_deflate) {
+    if (accept_deflate)
+		{
 #ifdef HT_ZLIB
-	HTList *content_encodings = HTList_new();
-	HTContentEncoderInit(content_encodings);
-	// HTContentEncoderInit adds `deflate' if libwww was built with
-	// HT_ZLIB defined. 3/28/2000 jhrg
-	HTFormat_setContentCoding(content_encodings);
+		HTList *content_encodings = HTList_new();
+		HTContentEncoderInit(content_encodings);
+		// HTContentEncoderInit adds `deflate' if libwww was built with
+		// HT_ZLIB defined. 3/28/2000 jhrg
+		HTFormat_setContentCoding(content_encodings);
 #endif /* HT_ZLIB */
-    }
+		}
 
     // Register MIME headers for HTTP 1.1
     HTMIMEInit();
@@ -1375,40 +1415,44 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTAlert_add(dods_username_password, HT_A_USER_PW);
     HTAlert_setInteractive(YES);
 #endif
-    if(!USE_CACHE) {
-	// Disable the cache. 
-	HTCacheTerminate();
-	_cache_enabled = false;
-    }
-    else {
-	// Instead, set up the cache.
-	// Remove any stale lock file.  This may not be safe if multiple
-	// people are using the same cache directory at once.
-	lockstr = cache_root + string(".lock");
-	remove(lockstr.c_str());
+    if(!USE_CACHE)
+		{
+		// Disable the cache. 
+		HTCacheTerminate();
+		_cache_enabled = false;
+		}
+    else
+		{
+		// Instead, set up the cache.
+		// Remove any stale lock file.  This may not be safe if multiple
+		// people are using the same cache directory at once.
+		lockstr = cache_root + string(".lock");
+		remove(lockstr.c_str());
 
-	//  We have to escape spaces.  Utilizing the escape functionality
-	//  forces us, in turn, to use the "file:" convention for URL's.
+		//  We have to escape spaces.  Utilizing the escape functionality
+		//  forces us, in turn, to use the "file:" convention for URL's.
 #ifdef WIN32
-	string croot = string("file:/") + cache_root;
+		string croot = string("file:/") + cache_root;
 #else
-	string croot = string("file:") + cache_root;
+		string croot = string("file:") + cache_root;
 #endif
-	croot = id2dods(string(croot),string(" "));
+		croot = id2dods(string(croot),string(" "));
 
-	if(HTCacheInit(croot.c_str(), MAX_CACHE_SIZE) == YES) {
-	    HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
-	    if(IGNORE_EXPIRES) HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
-	    else HTCacheMode_setExpires(HT_EXPIRES_AUTO);
-	    HTCacheMode_setDefaultExpiration(DEFAULT_EXPIRES);
-	    _cache_enabled = true;
-	}
-	else {
-	    // Disable the cache. 
-	    HTCacheTerminate();
-	    _cache_enabled = false;
-	}
-    }
+		if(HTCacheInit(croot.c_str(), MAX_CACHE_SIZE) == YES)
+			{
+			HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
+			if(IGNORE_EXPIRES) HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
+			else HTCacheMode_setExpires(HT_EXPIRES_AUTO);
+			HTCacheMode_setDefaultExpiration(DEFAULT_EXPIRES);
+			_cache_enabled = true;
+			}
+		else
+			{
+			// Disable the cache. 
+			HTCacheTerminate();
+			_cache_enabled = false;
+			}
+		}
     
     if (www_verbose_errors)
 	HTError_setShow(HT_ERR_SHOW_INFO);
