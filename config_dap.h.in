@@ -3,8 +3,9 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.3  1994/12/12 20:59:52  jimg
-/* Lastest...
+/* Revision 1.4  1995/02/10 02:38:32  jimg
+/* Added DBMALLOC to set of flags defined with configure is given the
+/* --enable-dbnew switch.
 /*
  * Revision 1.3  1994/12/09  21:43:54  jimg
  * Added Dan's XDR_INT hack to acconfig.h - modified slightly and duplicated
@@ -50,6 +51,11 @@
 /* If defined, enable memory leak detection through libdbnew.a. Make sure to */
 /* link with that library. */
 #undef TRACE_NEW
+
+/* If defined, enable memory leak detection through libdbmalloc.a. Nominally */
+/* not necessary with c++, but useful with the DODS library because it (and  */
+/* xdr) make use of malloc/free. */
+#undef DBMALLOC
 
 /* If defined, the DBG() macro defined in debug.h is activated. This macro */
 /* is used for nominal program instrumentation */
