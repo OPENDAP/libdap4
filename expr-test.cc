@@ -39,43 +39,55 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
-// Revision 1.1  1995/10/13 03:02:26  jimg
+// Revision 1.2  1995/10/23 23:08:17  jimg
+// Fixed scanner display code to match current scanner.
+// Added code to test simple evaluator.
+// Fixed type declarations (YYSTYPE, ...).
+//
+// Revision 1.1  1995/10/13  03:02:26  jimg
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.1 1995/10/13 03:02:26 jimg Exp $"};
+static char rcsid[]= {"$Id: expr-test.cc,v 1.2 1995/10/23 23:08:17 jimg Exp $"};
 
 #include <stdio.h>
 #include <iostream.h>
 #include <GetOpt.h>
 
-#define YYSTYPE char *
+#include <String.h>
+#include <SLList.h>
 
+#include "DDS.h"
+#include "BaseType.h"
 #include "expr.tab.h"
 
 void test_scanner();
-void test_parser();
-void test_class();
+void test_parser(DDS &table, String &dds_name);
+bool read_table(DDS &table, String &name, bool print);
+void evaluate_dds(DDS &table);
 
-int exprlex();
-int exprparse();
+int exprlex();			// exprlex() uses the global exprlval
+int exprparse(DDS &table);
+
 int exprrestart(FILE *in);
 
 extern YYSTYPE exprlval;
 extern int exprdebug;
 const char *prompt = "expr-test: ";
-const char *options = "spdc";
+const char *options = "sp:de";
 
 int
 main(int argc, char *argv[])
 {
     GetOpt getopt(argc, argv, options);
     int option_char;
-    int scanner_test = 0, parser_test = 0, class_test = 0;
+    int scanner_test = 0, parser_test = 0, evaluate_test = 0;
+    String dds_file_name;
+    DDS table;
 
     // process options
 
-    while ((option_char = getopt ()) != EOF)
+    while ((option_char = getopt()) != EOF)
 	switch (option_char)
 	  {
 	    case 'd': 
@@ -86,9 +98,10 @@ main(int argc, char *argv[])
 	      break;
 	    case 'p':
 	      parser_test = 1;
+	      dds_file_name = getopt.optarg;
 	      break;
-	    case 'c':
-	      class_test = 1;
+	    case 'e':
+	      evaluate_test = 1;
 	      break;
 	    case '?': 
 	      cerr << "usage: " << argv[0] << " " << options 
@@ -102,16 +115,16 @@ main(int argc, char *argv[])
     }
 
     if (parser_test) {
-	test_parser();
+	test_parser(table, dds_file_name);
     }
 
-    if (class_test) {
-	test_class();
+    if (evaluate_test) {
+	evaluate_dds(table);
     }
 }
 
 void
-test_scanner(void)
+test_scanner()
 {
     int tok;
 
@@ -120,37 +133,40 @@ test_scanner(void)
     while ((tok = exprlex())) {
 	switch (tok) {
 	  case ID:
-	    cout << "ID: " << exprlval << endl;
+	    cout << "ID: " << exprlval.char_ptr << endl;
 	    break;
 	  case STR:
-	    cout << "STR: " << exprlval << endl;
+	    cout << "STR: " << exprlval.char_ptr << endl;
+	    break;
+	  case FIELD:
+	    cout << "FIELD: " << exprlval.char_ptr << endl;
 	    break;
 	  case INT:
-	    cout << "INT: " << exprlval << endl;
+	    cout << "INT: " << exprlval.char_ptr << endl;
 	    break;
 	  case FLOAT:
-	    cout << "FLOAT: " << exprlval << endl;
+	    cout << "FLOAT: " << exprlval.char_ptr << endl;
 	    break;
 	  case EQUAL:
-	    cout << "EQUAL: " << exprlval << endl;
+	    cout << "EQUAL: " << exprlval.char_ptr << endl;
 	    break;
 	  case NOT_EQUAL:
-	    cout << "NOT_EQUAL: " << exprlval << endl;
+	    cout << "NOT_EQUAL: " << exprlval.char_ptr << endl;
 	    break;
 	  case GREATER:
-	    cout << "GREATER: " << exprlval << endl;
+	    cout << "GREATER: " << exprlval.char_ptr << endl;
 	    break;
 	  case GREATER_EQL:
-	    cout << "GREATER_EQL: " << exprlval << endl;
+	    cout << "GREATER_EQL: " << exprlval.char_ptr << endl;
 	    break;
 	  case LESS:
-	    cout << "LESS: " << exprlval << endl;
+	    cout << "LESS: " << exprlval.char_ptr << endl;
 	    break;
 	  case LESS_EQL:
-	    cout << "LESS_EQL: " << exprlval << endl;
+	    cout << "LESS_EQL: " << exprlval.char_ptr << endl;
 	    break;
 	  case REGEXP:
-	    cout << "REGEXP: " << exprlval << endl;
+	    cout << "REGEXP: " << exprlval.char_ptr << endl;
 	    break;
 	  case '*':
 	    cout << "Dereference" << endl;
@@ -192,73 +208,58 @@ test_scanner(void)
     }
 }
 
+// NB: The DDS is read in via a file because reading from stdin must be
+// terminated by EOF. However, the EOF used to terminate the DDS also closes
+// stdin and thus the expr scanner exits immediately.
+
 void
-test_parser(void)
+test_parser(DDS &table, String &dds_name)
 {
+    cout << "Enter a DDS:" << endl;
+
+    read_table(table, dds_name, true);
+
     exprrestart(stdin);
 
     cout << prompt;
 
-    if (exprparse() == 0)
+    if (exprparse(table) == 0)
 	cout << "Input parsed" << endl;
     else
 	cout << "Input did not parse" << endl;
 }
 
-void
-test_class(void)
+// Read a DDS from stdin and build the cooresponding DDS. IF PRINT is true,
+// print the text reprsentation of that DDS on the stdout. The DDS TABLE is
+// modified as a side effect.
+//
+// Returns: true iff that DDS pasted the semantic_check() mfunc, otherwise
+// false.
+
+bool
+read_table(DDS &table, String &name, bool print)
 {
-#ifdef NEVER
-    DDS table;
-    int status = table.parse();
-    cout << "Status from parser: " << status << endl;
+    int parse = table.parse(name);
     
-    if (table.check_semantics())
-	cout << "DDS past semantic check" << endl;
-    else 
-	cout << "DDS filed semantic check" << endl;
+    if (!parse) {
+	cout << "Input did not parse" << endl;
+	return false;
+    }
+    
+    if (print)
+	table.print();
 
     if (table.check_semantics(true))
-	cout << "DDS past full semantic check" << endl;
-    else 
-	cout << "DDS filed full semantic check" << endl;
+	return true;
+    else {
+	cout << "Input did not pass semantic checks" << endl;
+	return false;
+    }
+}
 
-    table.print();
-
-    DDS table2 = table;		// test copy ctor;
-    table2.print();
-
-    DDS table3;
-    table3 = table;		// test operator=
-
-    cout << "Dataset name: " << table.get_dataset_name() << endl;
-
-    String name = "goofy";
-    table.add_var(NewInt32(name)); // table dtor should delete this object
-
-    table.print();
-
-    BaseType *btp = table.var(name);
-
-    btp->print_decl(cout, true); // print out goofy w/semicolon
-
-    table.del_var(name);
-
-    table.print();
-
-    table.add_var(NewInt32("goofy"));
-
-    table.print();
-
-    btp = table.var("goofy");
-
-    btp->print_decl(cout, true); // print out goofy w/semicolon
-
-    table.del_var("goofy");
-
-    table.print();
-
+void
+evaluate_dds(DDS &table)
+{
     for (Pix p = table.first_var(); p; table.next_var(p))
-	table.var(p)->print_decl(cout, true);	// print them all w/semicolons
-#endif
+	table.var(p)->print_decl(cout, "", true, true);
 }
