@@ -15,11 +15,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.28 2003/01/10 19:46:40 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.29 2003/01/13 22:55:07 jimg Exp $"};
 
 #include <iostream>
 #include <strstream>
 #include <string>
+#include <algorithm>
 #if 0
 #include <sys/ddi.h>
 #endif
@@ -137,7 +138,7 @@ DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false),
     int next_arg = getopt.optind;
     if(next_arg < argc)
 	dataset = argv[next_arg];
-    else
+    else if (!ver)
 	bad_options = true;
 
     // Both dataset and ce could be set at this point (dataset must be, ce
@@ -323,8 +324,8 @@ time_t
 DODSFilter::get_das_last_modified_time(const string &anc_location)
 {
     string name = find_ancillary_file(dataset, "das", anc_location, anc_file);
-    return max((name != "") ? last_modified_time(name) : 0,
-	       get_dataset_last_modified_time()); 
+    return std::max((name != "") ? last_modified_time(name) : 0,
+		    get_dataset_last_modified_time()); 
 }
 
 /** Get the last modified time for the dataset's DDS. This time, given in
@@ -338,8 +339,8 @@ time_t
 DODSFilter::get_dds_last_modified_time(const string &anc_location)
 {
     string name = find_ancillary_file(dataset, "dds", anc_location, anc_file);
-    return max((name != "") ? last_modified_time(name) : 0,
-	       get_dataset_last_modified_time()); 
+    return std::max((name != "") ? last_modified_time(name) : 0,
+		    get_dataset_last_modified_time()); 
 }
 
 /** Get the last modified time to be used for a particular data request.
@@ -362,12 +363,12 @@ DODSFilter::get_data_last_modified_time(const string &anc_location)
 					  anc_file);
     string das_name = find_ancillary_file(dataset, "dds", anc_location,
 					  anc_file);
-    time_t m = max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
-		   (dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
+    time_t m = std::max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
+			(dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
     // Note that this is a call to get_dataset_... not get_data_...
     time_t n = get_dataset_last_modified_time();
     // g++ did not compile `max(max(x,y),z)' 4/23/2001 jhrg
-    return max(m, n); 
+    return std::max(m, n); 
 }
 
 /** Get the value of a conditional request's If-Modified-Since header.
@@ -665,6 +666,10 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.29  2003/01/13 22:55:07  jimg
+// When a filter program got the -V option without a dataset, It was returning
+// usage information. Fixed.
+//
 // Revision 1.28  2003/01/10 19:46:40  jimg
 // Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
 // cases files were added on that branch (so they appear on the trunk for
