@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.76  1999/05/21 17:22:04  jimg
+// Removed debugging instrumentation left in by accident.
+//
 // Revision 1.75  1999/05/21 00:46:42  jimg
 // Using ifstream in parse_mime(...) confuses the downstream parser since the
 // FILE * is not advanced. I switched back to the fgets(...) code and the some
@@ -428,7 +431,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.75 1999/05/21 00:46:42 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.76 1999/05/21 17:22:04 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -930,7 +933,6 @@ Connect::parse_mime(FILE *data_source)
 
     while ((string)line != "") {
 	char h[256], v[256];
-	cerr << "line: " << line << endl;
 	sscanf(line, "%s %s\n", h, v);
 	string header = h;
 	string value = v;
