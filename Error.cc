@@ -8,6 +8,9 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.9  1997/02/27 01:06:47  jimg
+// Fixed problem with consistency check in Error::error_code().
+//
 // Revision 1.8  1997/02/18 21:22:18  jimg
 // Allow empty Error objects.
 //
@@ -50,7 +53,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.8 1997/02/18 21:22:18 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.9 1997/02/27 01:06:47 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -60,6 +63,10 @@ static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.8 1997/02/18 21:22:18 jimg 
 
 void Errorrestart(FILE *yyin);	// defined in Error.tab.c
 int Errorparse(void *arg);	
+
+static char *messages[]={"\"Unknown error\"", "\"No such file\"", 
+			 "\"No such variable\"", "\"Malformed expression\"",
+			 "\"No authorization\""};
 
 Error::Error()
     : _error_code(undefined_error), _error_message(""), 
@@ -198,6 +205,8 @@ Error::error_code(ErrorCode ec = undefined_error)
 	return _error_code;
     else {
 	_error_code = ec;
+	if (_error_message == "")
+	    _error_message = messages[ec];
 	assert(OK());
 	return _error_code;
     }
@@ -227,6 +236,9 @@ Error::display_message(Gui *gui = 0)
     else
 	cerr << _error_message << endl;
 }
+
+// There ought to be check of object state after _program_type is set. jhrg
+// 2/26/97
 
 ProgramType
 Error::program_type(ProgramType pt = undefined_prog_type)
