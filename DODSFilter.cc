@@ -10,6 +10,11 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.13  1999/05/25 21:54:19  dan
+// Added an optional argument to read_ancillary_das to support JGOFS
+// data object usage, where the location of the ancillary DAS file isn't
+// readily available through the 'dataset' argument of the command line.
+//
 // Revision 1.12  1999/05/21 17:15:46  jimg
 // Added instrumentation to the ctor. This simplifies debugging the interaction
 // between the filter programs and the perl script.
@@ -77,7 +82,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.12 1999/05/21 17:15:46 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.13 1999/05/25 21:54:19 dan Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__
@@ -186,9 +191,11 @@ DODSFilter::get_accept_types()
 }
 
 bool
-DODSFilter::read_ancillary_das(DAS &das)
+DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 {
-    string name = find_ancillary_file(dataset, "das", anc_dir, anc_file);
+    if ( anc_location == "" ) anc_location = anc_dir;
+
+    string name = find_ancillary_file(dataset, "das", anc_location, anc_file);
     FILE *in = fopen(name.c_str(), "r");
  
     if (in) {
@@ -341,4 +348,16 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream)
 	
     return true;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
