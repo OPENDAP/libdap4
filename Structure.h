@@ -8,6 +8,13 @@
 //
 // jhrg 9/14/94
 
+/* $Log: Structure.h,v $
+/* Revision 1.2  1994/09/23 14:45:27  jimg
+/* Added mfunc check_semantics().
+/* Added sanity checking on the variable list (is it empty?).
+/*
+ */
+
 #ifndef _Structure_h
 #define _Structure_h 1
 
@@ -35,6 +42,7 @@ public:
     BaseType *var(Pix p);
 
     virtual void print_decl(bool print_semi = true);
+    virtual bool check_semantics(bool all = false);
 };
 
 #endif

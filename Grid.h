@@ -5,9 +5,16 @@
 // array) of dimension N and N single dimension arrays (map arrays). For any
 // dimension n of the main array, the size of the nth map array must match
 // the size of the main array's nth dimension. Grids are used to map
-// non-integer scales multidimensional point data.
+// non-integer scales to multidimensional point data.
 //
 // jhrg 9/15/94
+
+/* $Log: Grid.h,v $
+/* Revision 1.2  1994/09/23 14:45:29  jimg
+/* Added mfunc check_semantics().
+/* Added sanity checking on the variable list (is it empty?).
+/*
+ */
 
 #ifndef _Grid_h
 #define _Grid_h 1
@@ -22,7 +29,7 @@
 class Grid: public CtorType {
 private:
     BaseType *array_var_;
-    SLList<BaseTypePtr> map_vars_;
+    SLList<BaseTypePtr> map_vars;
 
 public:
     Grid(const String &n = (char *)0, const String &t = "Grid");
@@ -39,6 +46,7 @@ public:
     BaseType *map_var(Pix p);
 
     virtual void print_decl(bool print_semi = true);
+    virtual bool check_semantics(bool all = false);
 };
 
 #endif
