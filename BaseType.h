@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.47  1998/11/10 01:10:25  jimg
+ * Changed text of regexp error message.
+ *
  * Revision 1.46  1998/10/21 16:19:47  jimg
  * Added the two member functions: synthesized_p() and set_synthesized_p().
  * These are used to test and record (resp) whether a variable has been
@@ -914,7 +917,7 @@ public:
         case LESS_EQL:
           return i1 <= i2;
         case REGEXP:
-          cerr << "Regexp not valid for integer values" << endl;
+          cerr << "Regular expressions not valid for integer values" << endl;
           return false;
         default:
           cerr << "Unknown operator" << endl;
