@@ -13,10 +13,10 @@
 # Added -b option. Added `-E' to CFLAGS.
 # jhrg 3/5/96
 #
-# $Id: depend.sh,v 1.7 1996/11/13 23:39:07 jimg Exp $
+# $Id: depend.sh,v 1.8 1998/07/09 21:12:45 jimg Exp $
 
 usage="depend [-s][-b <ext>][-m <makefile name>] -- <compiler options> -- <files>"
-CFLAGS="-E -MM"
+CFLAGS="-E -MM -MG"
 tmp=/usr/tmp/depend$$
 makefile=Makefile
 bak=bak
