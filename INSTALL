@@ -1,13 +1,13 @@
 
-$Id: INSTALL,v 1.3 1996/02/02 00:31:06 jimg Exp $
+$Id: INSTALL,v 1.4 1996/11/13 18:43:35 jimg Exp $
 
 Building the DAP library:
 
 1) Type `./configure' at the system prompt. On some systems you may have to
 type `sh configure'.
 
-Ignore the warnings about not finding das.tab.h and dds.tab.h (in the src/dap
-directory); they don't exist until bison builds them.
+Ignore the warnings about not finding das.tab.h and dds.tab.h, ...; they
+don't exist until bison builds them.
 
 2) Type `make' to build the library, `make check' to build the test
 software. NB: you must have the GNU automated testing software DejaGNU to run
@@ -15,9 +15,7 @@ the makefile's check target.
 
 3) Type `make install' to install the DAP library.
 
-4) Go to the directory DODS_ROOT/reporitng-problems and install send-pr. Then
-use send-pr to report any problems you find with this software. Using send-pr
-will help ensure that once we receive your report we don't loose it.
+Notes:
 
 1) To build with program instrumentation use `--enable-debug=<level>' where
 <level> is 1 or 2. 
@@ -33,10 +31,10 @@ test code), use `./configure'. If you want the extra features, use
 
 Debugging aids in the DODS API:
 
-debug: simple program instrumentation -- see the file debug.h in
+DBG: simple program instrumentation -- see the file debug.h in
 $(DODS_ROOT)/include for more information
 
-debug2: more elaborate program instrumentation -- by convention this is used
+DBG2: more elaborate program instrumentation -- by convention this is used
 for output that is half a page or more, while DEBUG is used for single line
 output.
 
@@ -45,4 +43,6 @@ overloaded versions of new, new[] delete and delete[]. It also contains code
 to `walk the malloc chain' and simple checks for out-of-bounds errors.
 
 efence: a freely available bounds checker for dynamically allocated
-memory. When used with dbnew, efence must be set to 8-byte alignment.
+memory. When used with dbnew, efence must be set to 8-byte alignment. efence
+will find all over- or under-writes of dynamically allocated memory, but only
+works on some machines.
