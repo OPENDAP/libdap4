@@ -19,6 +19,9 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.42  2000/08/16 00:37:54  jimg
+ * Added d_row_number field and getRowNumber method.
+ *
  * Revision 1.41  2000/08/02 22:46:49  jimg
  * Merged 3.1.8
  *
@@ -356,6 +359,10 @@ private:
     // Was there an error writing the sequence?
     bool _seq_write_error;
 
+  // The number of the row that has just been deserialized. Before
+  // deserialize has been called, this member is -1. 
+  int d_row_number;
+
     // Make sure the old deserialize is still around.
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 
@@ -433,6 +440,15 @@ public:
       #seq_read_error()#.  
       */
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+
+  /** Rows in a Sequence are numbered 0 to N for a Sequence with N+1 rows.
+      This method returns the number of the current row (the row that has
+      just been deserialized). If deserialize() has not yet been called, this
+      method returns -1.
+
+      @memo Get the current row number of the Sequence.
+      @return The current row number f the Sequence. */
+  virtual int getRowNumber();
 
   /** Was there an error reading the sequence?  This function is
       called after a call to #deserialize()# returns FALSE, implying
