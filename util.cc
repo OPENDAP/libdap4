@@ -11,6 +11,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.25  1996/07/15 20:30:35  jimg
+// Added __unused__ to rcsid to suppress warnings from g++ -Wall.
+// Fixed a bug in xdr_str(): a pointer to the decoded string was assigned to the
+// formal parameter BUF instead of the string value itself.
+//
 // Revision 1.24  1996/05/31 23:31:09  jimg
 // Updated copyright notice.
 //
@@ -137,7 +142,9 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.24 1996/05/31 23:31:09 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.25 1996/07/15 20:30:35 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -291,7 +298,7 @@ xdr_str(XDR *xdrs, String &buf)
 	if (!stat)
 	    return stat;
 
-	buf = in_tmp;
+	buf = dods_str_tmp;
 	
 	return stat;
       }
