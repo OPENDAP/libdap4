@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.35  1998/10/21 16:41:29  jimg
+// Added some instrumentation (using DBG). This might be useful later on...
+//
 // Revision 1.34  1998/10/19 19:32:13  jimg
 // Fixed a bug in ops(): buf2val was used incorrectly and string_ops never
 // got the right strings. since the values were always "" for both arguments,
@@ -186,7 +189,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.34 1998/10/19 19:32:13 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.35 1998/10/21 16:41:29 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -225,6 +228,8 @@ Str::serialize(const String &dataset, DDS &dds, XDR *sink, bool ce_eval = true)
 {
     int error;
 
+    DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
+
     if (!read_p() && !read(dataset, error))
 	return false;
 
@@ -233,6 +238,7 @@ Str::serialize(const String &dataset, DDS &dds, XDR *sink, bool ce_eval = true)
 
     if (!xdr_str(sink, _buf))
 	return false;
+    DBG(cerr << "Exiting: buf = " << _buf << endl);
 
     return true;
 }
