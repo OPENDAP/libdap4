@@ -10,6 +10,14 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.9  1996/09/05 16:28:06  jimg
+// Added a new option to geturl, -D, which uses the Connect::request_data member
+// function to get data. Thus -a, -d and -D can be used to get the das, dds and
+// data from a DODS server. Because the request_data member function requires a
+// constraint expression I also added the option -c; this option takes as a single
+// argument a constraint expression and passes it to the request_data member
+// function. You must use -c <expr> with -D.
+//
 // Revision 1.8  1996/08/13 20:13:36  jimg
 // Added __unused__ to definition of char rcsid[].
 // Added code so that local `URLs' are skipped.
@@ -40,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.8 1996/08/13 20:13:36 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.9 1996/09/05 16:28:06 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -54,11 +62,15 @@ void
 usage(String name)
 {
     cerr << "Usage: " << name 
-	 << "[Ada] [v <codes>] [m <num>] <url> [<url> ...]" << endl;
+	 << "[AdDa] [c <expr>] [v <codes>] [m <num>] <url> [<url> ...]" 
+	 << endl;
     cerr << "       " << "A: Use Connect's asynchronous mode." << endl;
     cerr << "       " << "d: For each URL, get the DODS DDS." << endl;
     cerr << "       " << "a: For each URL, get the DODS DAS." << endl;
+    cerr << "       " << "A: For each URL, get the DODS Data." << endl;
     cerr << "       " << "g: Show the progress GUI." << endl;
+    cerr << "       " << "c: <expr> is a contraint expression. Used with -D."
+	 << endl;
     cerr << "       " << "v: Verbose output." << endl;
     cerr << "       " << "m: Request the same URL <num> times." << endl;
     cerr << "       " << "Without A, use the synchronous mode." << endl;
@@ -89,16 +101,19 @@ read_data(FILE *fp)
 int
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "Adagv:m:");
+    GetOpt getopt (argc, argv, "AdaDgc:v:m:");
     int option_char;
     bool async = false;
     bool get_das = false;
     bool get_dds = false;
+    bool get_data = false;
     bool gui = false;
+    bool cexpr = false;
     bool verbose = false;
     bool multi = false;
     int times = 1;
     char *vcode = NULL;
+    char *expr = NULL;
     int vopts = 0;
 
     while ((option_char = getopt()) != EOF)
@@ -107,7 +122,10 @@ main(int argc, char * argv[])
               case 'A': async = true; break;
               case 'd': get_dds = true; break;
 	      case 'a': get_das = true; break;
+	      case 'D': get_data = true; break;
 	      case 'g': gui = true; break;
+	      case 'c':
+		cexpr = true; expr = getopt.optarg; break;
 	      case 'v': 
 		verbose = true;
 		vopts = strlen(getopt.optarg);
@@ -177,7 +195,22 @@ main(int argc, char * argv[])
 	    }
 	}
 
-	if (!get_das && !get_dds) {
+	if (get_data) {
+	    if (!expr) {
+		cerr << "Must supply a constraint expression with -D."
+		     << endl;
+		exit(1);
+	    }
+	    for (int j = 0; j < times; ++j) {
+		DDS &dds = url.request_data(expr, gui, async);
+
+		cout << "The data:" << endl;
+		for (Pix q = dds.first_var(); q; dds.next_var(q))
+		    dds.var(q)->print_val(cout);
+	    }
+	}
+
+	if (!get_das && !get_dds && !get_data) {
 	    if (gui)
 		url.gui()->show_gui(gui);
 	    String url_string = argv[i];
