@@ -9,7 +9,10 @@
 // jhrg 1/12/95
 
 // $Log: TestByte.cc,v $
-// Revision 1.4  1995/03/04 14:38:01  jimg
+// Revision 1.5  1995/03/16 17:42:43  jimg
+// Minor fixes.
+//
+// Revision 1.4  1995/03/04  14:38:01  jimg
 // Modified these so that they fit with the changes in the DAP classes.
 //
 // Revision 1.3  1995/02/10  02:33:38  jimg
@@ -42,9 +45,9 @@
 
 String testbyte = "TestByte";
 
-// This `helper functions' creates a pointer to the a TestByte and returns
-// that pointer. It takes the same arguments as the class's ctor. If any of
-// the variable classes are subclassed (e.g., to make a new Byte like
+// The NewByte `helper function' creates a pointer to the a TestByte and
+// returns that pointer. It takes the same arguments as the class's ctor. If
+// any of the variable classes are subclassed (e.g., to make a new Byte like
 // HDFByte) then the corresponding function here, and in the other class
 // definition files, needs to be changed so that it creates an instnace of
 // the new (sub)class. Continuing the earlier example, that would mean that
