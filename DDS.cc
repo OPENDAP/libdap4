@@ -9,6 +9,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.36  1998/10/21 16:38:12  jimg
+// The find_function() member function now checks for the name AND the function
+// type before returning a value. This means that a bool and BaseType * function
+// may have the same name but, because of their different types, still work
+// properly in context.
+//
 // Revision 1.35  1998/09/17 17:21:27  jimg
 // Changes for the new variable lookup scheme. Fields of ctor types no longer
 // need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
@@ -188,7 +194,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.35 1998/09/17 17:21:27 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.36 1998/10/21 16:38:12 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -519,6 +525,17 @@ DDS::append_constant(BaseType *btp)
     constants.append(btp);
 }
 
+#if 0
+template<class FUNC_T>
+void 
+DDS::add_function(const String &name, FUNC_T f)
+{
+    function func(name, f);
+    functions.append(func);
+}
+#endif
+
+#if 1
 void
 DDS::add_function(const String &name, bool_func f)
 {
@@ -533,15 +550,22 @@ DDS::add_function(const String &name, btp_func f)
     functions.append(func);
 }
 
+void
+DDS::add_function(const String &name, proj_func f)
+{
+    function func(name, f);
+    functions.append(func);
+}
+#endif
+
 bool
 DDS::find_function(const String &name, bool_func *f) const
 {
     if (functions.empty())
-	return 0;
+	return false;
 
     for (Pix p = functions.first(); p; functions.next(p))
-	if (name == functions(p).name) {
-	    *f = functions(p).b_func;
+	if (name == functions(p).name && (*f = functions(p).b_func)) {
 	    return true;
 	}
 
@@ -552,11 +576,24 @@ bool
 DDS::find_function(const String &name, btp_func *f) const
 {
     if (functions.empty())
-	return 0;
+	return false;
 
     for (Pix p = functions.first(); p; functions.next(p))
-	if (name == functions(p).name) {
-	    *f = functions(p).bt_func;
+	if (name == functions(p).name && (*f = functions(p).bt_func)) {
+	    return true;
+	}
+
+    return false;
+}
+
+bool
+DDS::find_function(const String &name, proj_func *f) const
+{
+    if (functions.empty())
+	return false;
+
+    for (Pix p = functions.first(); p; functions.next(p))
+	if (name == functions(p).name && (*f = functions(p).p_func)) {
 	    return true;
 	}
 
