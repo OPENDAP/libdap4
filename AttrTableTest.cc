@@ -27,8 +27,8 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <strstream.h>
 #include <string>
+#include <sstream>
 
 #include "Regex.h"
 
@@ -206,12 +206,12 @@ public:
 	AttrTable *t = new AttrTable;
 	t->append_attr("long name", "String", "first");
 	t->append_attr("longer name", "String", "\"second test\"");
-	ostrstream oss;
-	t->print(oss, ""); oss << ends;
-	cerr << "oss: " << oss.str() << endl;
-	Regex r("String long%20name first;
-String longer%20name \"second test\";");
-	CPPUNIT_ASSERT(re_match(r, oss.str()));
+	ostringstream oss;
+	t->print(oss, "");
+	string attrs = "String long%20name first;
+String longer%20name \"second test\";";
+	CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
+
 	delete t; t = 0;
     }
 
@@ -226,14 +226,14 @@ String longer%20name \"second test\";");
 	    e.display_message();
 	    CPPUNIT_ASSERT("Caught Error exception!" && false);
 	}
-	ostrstream oss;
-	top->print(oss, ""); oss << ends;
+	ostringstream oss;
+	top->print(oss, "");
 	Regex r("Data%20Field {
 .*String long%20name first;
 .*Alias an%20alias long%20name;
 }
 ");
-	CPPUNIT_ASSERT(re_match(r, oss.str()));
+	CPPUNIT_ASSERT(re_match(r, oss.str().c_str()));
 	delete top; top = 0;
 
     }
