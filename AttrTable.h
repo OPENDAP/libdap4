@@ -242,7 +242,6 @@ public:
     AttrTable & operator=(const AttrTable &rhs);
     //@}
 
-    
     unsigned int get_size() const;
 
     string get_name();
@@ -420,6 +419,8 @@ public:
 
     void del_attr(const string &name, int i = -1);
 
+    void erase();
+
     void print(ostream &os, string pad = "    ", bool dereference = false);
 
     /** Prints an ASCII representation of the attribute table to the
@@ -436,6 +437,9 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.43  2003/02/25 23:27:50  jimg
+ * Added erase() method.
+ *
  * Revision 1.42  2003/02/21 00:14:24  jimg
  * Repaired copyright.
  *
