@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.14  1995/07/09 21:29:04  jimg
+// Revision 1.15  1995/08/23 00:18:30  jimg
+// Now uses newer function names.
+// Uses the new xdr_str() function in util.cc
+//
+// Revision 1.14  1995/07/09  21:29:04  jimg
 // Added copyright notice.
 //
 // Revision 1.13  1995/05/10  15:34:05  jimg
@@ -142,8 +146,7 @@
 #include "trace_new.h"
 #endif
 
-Str::Str(const String &n) 
-    : BaseType(n, "String", (xdrproc_t)xdr_str_array), _buf("")
+Str::Str(const String &n) : BaseType(n, str_t), _buf("")
 {
 }
 
@@ -162,17 +165,24 @@ Str::length()
     return _buf.length();
 }
 
+#ifdef NEVER
 bool
 Str::card()
 {
+#ifdef NEVER
     return true;
+#endif
+    return false;
 }
+#endif
 
+#ifdef NEVER
 unsigned int
 Str::size()			// deprecated
 {
     return width();
 }
+#endif
 
 // return the number of bytes that the value of a Str object occupies when
 // that value is accessed using read_val().
@@ -190,26 +200,29 @@ Str::width()
 bool
 Str::serialize(bool flush)
 {
+#ifdef NEVER
     String *tmp = &_buf;	// kluge for xdr_str
+#endif
 
-    bool stat = (bool)xdr_str(_xdrout, &tmp);
+    bool stat = (bool)xdr_str(_xdrout, _buf /* &tmp */);
     if (stat && flush)
 	stat = expunge();
 
     return stat;
 }
 
-// deserialize the double on stdin and put the result in BUF.
+// deserialize the String on stdin and put the result in BUF.
 
 bool
 Str::deserialize(bool reuse)
 {
+#ifdef NEVER
     String *tmp = &_buf;
+#endif
 
-    return (bool)xdr_str(_xdrin, &tmp);
+    return (bool)xdr_str(_xdrin, _buf /* &tmp */);
 }
 
-// FIXME old comments
 // Copy information in the object's internal buffers into the memory pointed
 // to by VAL. If *VAL is null, then allocate memory for the value (a string
 // in this case).
@@ -225,6 +238,12 @@ Str::deserialize(bool reuse)
 
 unsigned int
 Str::read_val(void **val)
+{
+    return buf2val(val);
+}
+
+unsigned int
+Str::buf2val(void **val)
 {
     assert(val);
 
@@ -244,6 +263,12 @@ Str::read_val(void **val)
 unsigned int
 Str::store_val(void *val, bool reuse)
 {
+    return val2buf(val, reuse);
+}
+
+unsigned int
+Str::val2buf(void *val, bool reuse)
+{
     assert(val);
 
     _buf = *(String *)val;
@@ -261,3 +286,4 @@ Str::print_val(ostream &os, String space, bool print_decl_p)
     else 
 	os << _buf;
 }
+
