@@ -39,6 +39,11 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.10  1996/05/30 17:14:56  jimg
+// Fixed the allocation of vectors of DODS variable objects; use the
+// ptr_duplicate member function instead of the copy ctor in val2buf().
+// Fixed allocation of vector of String in buf2val(). From Reza.
+//
 // Revision 1.9  1996/05/29 22:08:53  jimg
 // Made changes necessary to support CEs that return the value of a function
 // instead of the value of a variable. This was done so that it would be
@@ -80,7 +85,7 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.9 1996/05/29 22:08:53 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.10 1996/05/30 17:14:56 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -471,10 +476,10 @@ Vector::val2buf(void *val, bool reuse)
 
 	vec_resize(len);
 
-	for (unsigned i = 0; i < len; ++i) {
-	    _vec[i] = _var;	// init with empty instance of correct class
+ 	for (int i = 0; i < len; ++i) {
+	    _vec[i] = _var->ptr_duplicate(); //changed, reza
 	    _vec[i]->val2buf(val + i * elem_wid, reuse);
-	}
+ 	}
 
 	break;
       }
@@ -520,6 +525,9 @@ Vector::buf2val(void **val)
       case dods_url_c: {
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
+
+ 	if (!*val)
+	    *val = new String [len]; 
 
 	for (unsigned i = 0; i < len; ++i) {
 	    void *val_elem = *val + i * elem_wid;
