@@ -10,6 +10,13 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.42  1998/02/18 01:00:48  jimg
+// Reverted to the old transfer scheme for Sequences.
+// Added EOI/EOS markers.
+// The code supports (via version numbers in the header of the return
+// documents) reading from the old-style servers (which do not have EOI/EOS
+// markers.
+//
 // Revision 1.41  1998/02/05 20:13:55  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -214,7 +221,6 @@
 #endif
 
 #define DODS_DEBUG 1
-
 #include "config_dap.h"
 
 #include <assert.h>
@@ -242,6 +248,8 @@ Sequence::_duplicate(const Sequence &s)
     Sequence &cs = (Sequence &)s; // cast away const
     
     cs._seq_read_error = s._seq_read_error;
+    cs._seq_write_error = s._seq_write_error;
+    cs._level = s._level;
 
     for (Pix p = cs.first_var(); p; cs.next_var(p))
 	add_var(cs.var(p)->ptr_duplicate());
@@ -420,12 +428,6 @@ Sequence::level()
     return _level;
 }
 
-// Note that in Sequence's serialize() mfunc I assume that it is best to read
-// the entire instance of the sequence in at once. However, each
-// specialization of Sequence::read() will determine exactly what that means.
-// 
-// jhrg 4/12/96
-
 bool
 Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
 		    bool ce_eval = true)
@@ -434,144 +436,91 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
     int error = 0;
 
     while (status) {
-	// Check to see if the variable needs to be read.
-	// To read only at the outer most level, mark all nested sequences as
-	// read within the read() mfunc. jhrg 9/17/97
-	// Note that if the read() mfunc called below returns false the break
-	// will exit the enclosing while-loop.
-	// NB: both dataset and error are passed by reference.
-	if (!read_p() && !read(dataset, error)) {
-	    status = !error;
-	    break;
+	if (!read_p()) {
+	    if (level() != 0)	// Read only the outermost level.
+		return true;
+	    if (!read(dataset, error))
+		break;		// EOF or error. Exit the loop.
 	}
 
-	// If we are supposed to eval the selection, then do so. If it's
-	// false, then goto the next record in the sequence (don't return as
-	// with the other serialize mfuncs).
 	if (ce_eval && !dds.eval_selection(dataset)) {
-	    set_read_p(false);	// so that the next instance will be read
+	    set_read_p(false);	// ...so that the next instance will be read
 	    continue;
 	}
 
-	for (Pix p = first_var(); p; next_var(p)) {
-	    if (var(p)->send_p()) {
-		status = var(p)->serialize(dataset, dds, sink, false);
-		DBG(cerr << "status: " << status << endl);
-		if (!status)
-		    break;
+	DBG(cerr << "Writing End of Instance marker" << endl);
+	write_end_of_instance(sink);
+
+	for (Pix p = first_var(); p; next_var(p))
+	    if (var(p)->send_p() 
+		&& !var(p)->serialize(dataset, dds, sink, false)) {
+		error = 1;
+		status = false;	// Exit outer while-loop.
+		break;		// Exit inner for-loop
 	    }
-	}
-
-	// Send End of Instance marker
-	if (status) {
-	    DBG(cerr << "Writing End of Instance marker" << endl);
-	    write_end_of_instance(sink);
-	}
-
-	set_read_p(false);
+	
+	set_read_p(false);	// ...so this will read the next instance
     }
 
-    // Send End of Sequence marker
-    DBG(cerr << "Writing End of Sequence marker" << endl);
-    write_end_of_sequence(sink);
+    if (!error && level() == 0) {
+	DBG(cerr << "Writing End of Sequence marker" << endl);
+	write_end_of_sequence(sink);
+    }
 
-    return status;
+    return !error;		// Return true if no error.
 }
 
 // private mfunc. Use this to read from older servers.
+
+bool
+Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
+{
+    bool stat = true;
+    DataDDS *dd = (DataDDS *)dds; // Use a dynamic cast in the future.
+
+    DBG2(cerr << "Reading from server version: " << dd->get_version_major() \
+	 << "." << dd->get_version_minor() << endl);
+
+    // Check for old servers.
+    if (dd->get_version_major() < 2 
+	|| dd->get_version_major() == 2 && dd->get_version_minor() < 15) {
+	return old_deserialize(source, dd, reuse);
+    }
+
+    unsigned char marker = read_end_marker(source);
+
+    if (is_end_of_instance(marker))
+	;			// Read more sequence elements
+    else if (is_end_of_sequence(marker))
+	return false;		// No more sequence elements
+    else {
+	_seq_read_error = true;	// Error, don't read more elements
+	return false;
+    }
+
+    for (Pix p = first_var(); p; next_var(p)) {
+	stat = var(p)->deserialize(source, dds, reuse);
+	if (!stat) 
+	    return stat;
+    }
+
+    return stat;
+}
 
 bool
 Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse = false)
 {
     bool stat = true;
 
+    DBG2(cerr << "Entering old_deserialize()" << endl);
+
     for (Pix p = first_var(); p; next_var(p)) {
 	stat = var(p)->deserialize(source, dds, reuse);
 	if (!stat) 
-	    break;
+	    return false;
     }
 
     return stat;
-}
-
-// If there are no variables in this sequence, return true.
-
-bool
-Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
-{
-    bool stat = true;
-    _seq_read_error = false;
-
-    DataDDS *dd = (DataDDS *)dds; // Use a dynamic cast in the future.
-
-    // Check for old servers.
-    if (dd->get_version_major() < 2 
-	|| dd->get_version_major() == 2 && dd->get_version_minor() < 15) {
-	DBG(cerr << "Reading from old server: " << dd->get_version_major() \
-	    << "." << dd->get_version_minor() << endl);
-	return old_deserialize(source, dds, reuse);
-    }
-
-    DBG(cerr << "Reading from new server: " << dd->get_version_major() \
-	<< "." << dd->get_version_minor() << endl);
-
-    if (level() > dd->sequence_level())
-	dd->set_sequence_level(level()); // remember deepest level
-
-    for (Pix p = first_var(); p; next_var(p)) {
-	// When returning to a deserialize in progress, skip to the lowest
-	// level previously visited and resume. That means skip all
-	// variables that are not sequences until the level last read is >=
-	// the level of the current object.
-	if (dd->sequence_level() > level()
-	    && var(p)->type() != dods_sequence_c)
-	    continue;
-
-	stat = var(p)->deserialize(source, dds, reuse);
-	if (!stat) {
-	    // Non-constructor types return false to indicate error, Ctor
-	    // types might include a Sequence so false might mean just that
-	    // the end of the sequence has been reached. 
-	    switch (var(p)->type()) {
-	      case dods_byte_c:
-	      case dods_int16_c:
-	      case dods_uint16_c:
-	      case dods_int32_c:
-	      case dods_uint32_c:
-	      case dods_float32_c:
-	      case dods_float64_c:
-	      case dods_str_c:
-	      case dods_url_c:
-	      case dods_array_c:
-	      case dods_list_c:
-		_seq_read_error = true;
-		break;
-		
-	      default:
-		break;
-	    }
-
-	    return false;
-	}
-	DBG2(var(p)->print_val(cerr));
-    }
-
-    // When backing out of recursive calls, don't try to read the EOI/EOS
-    // markers. 
-    if (dd->sequence_level() != level())
-	return true;
-
-    unsigned char marker = read_end_marker(source);
-    if (is_end_of_instance(marker))
-	return true;		// Read more sequence elements
-    else if (is_end_of_sequence(marker)) {
-	dd->set_sequence_level(dd->sequence_level() - 1); // decrement level
-	return false;		// No more sequence elements
-    }
-    else {
-	_seq_read_error = true;	// Error, don't read more elements
-	return false;
-    }
 }
 
 bool
