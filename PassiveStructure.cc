@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: PassiveStructure.cc,v 1.1 2004/07/09 16:34:38 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: PassiveStructure.cc,v 1.2 2005/02/16 22:22:36 pwest Exp $"};
 
 #include <stdlib.h>
 
@@ -96,12 +96,19 @@ PassiveStructure::operator=(const PassiveStructure &rhs)
 bool
 PassiveStructure::read( const string &dataset )
 {
+    for( Vars_iter i = _vars.begin(); i != _vars.end(); i++ )
+    {
+	(*i)->read( dataset ) ;
+    }
     set_read_p( true ) ;
 
     return true ;
 }
 
 // $Log: PassiveStructure.cc,v $
+// Revision 1.2  2005/02/16 22:22:36  pwest
+// implemented read
+//
 // Revision 1.1  2004/07/09 16:34:38  pwest
 // Adding Passive Data Model objects
 //
