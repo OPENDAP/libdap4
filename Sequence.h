@@ -1,4 +1,3 @@
-
 // -*- C++ -*-
 
 // (c) COPYRIGHT URI/MIT 1994-1996
@@ -19,9 +18,12 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.23  1996/09/23 20:16:13  jimg
-/* Fixed lame declaration of print_all_vals().
+/* Revision 1.24  1996/09/24 19:13:23  jimg
+/* Fixed conflict between two version of print_all_vals prototypes.
 /*
+ * Revision 1.23  1996/09/23 20:16:13  jimg
+ * Fixed lame declaration of print_all_vals().
+ *
  * Revision 1.22  1996/08/26 21:13:01  jimg
  * Changes for version 2.07
  *
@@ -223,12 +225,12 @@ public:
 
     /// Print the entire sequence.
     /** Circumvent the problem with #print_val()# where only the first
-      instance of the sequence is printed. Note that this version takes an
-      XDR * as its second argument.
+        instance of the sequence is printed. Note that this version takes an
+        XDR * as its second argument.
 
-      Returns: void */
-    void print_all_vals(ostream& os, XDR *src, String space ="", 
-			bool print_decl_p = true);
+        Returns: void */
+    void print_all_vals(ostream& os, XDR *src, String space = "",
+			bool print_del_p = true);
 
     virtual bool check_semantics(bool all = false);
 };
