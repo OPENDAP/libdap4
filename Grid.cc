@@ -10,6 +10,9 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.39  1999/12/02 00:24:32  jimg
+// Fixed print_val for Grids that decay to Structures.
+//
 // Revision 1.38  1999/04/29 02:29:30  jimg
 // Merge of no-gnu branch
 //
@@ -594,9 +597,14 @@ Grid::print_val(ostream &os, string space, bool print_decl_p)
 	os << " = ";
     }
 
-    os << "{ ARRAY: ";
+    bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
+    if (pyg)
+	os << "{ ARRAY: ";
+    else
+	os << "{";
     _array_var->print_val(os, "", false);
-    os << " MAPS: ";
+    if (pyg)
+	os << " MAPS: ";
     for (Pix p = _map_vars.first(); p; 
 	 _map_vars.next(p), (void)(p && os << ", "))
 	_map_vars(p)->print_val(os, "", false);
