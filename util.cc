@@ -1,4 +1,3 @@
-
 // (c) COPYRIGHT URI/MIT 1994-1996
 // Please read the full copyright statement in the file COPYRIGH.  
 //
@@ -11,6 +10,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.39  1997/05/01 18:54:35  jimg
+// Fixed an error in date_func where argv[0] was used as a BaseType instead of
+// a BaseType *.
+//
 // Revision 1.38  1997/03/27 18:18:28  jimg
 // Added dods_progress() function that looks for an environment variable to see
 // if the user wants the progress indicator visible. Thus, they can use one
@@ -200,7 +203,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.38 1997/03/27 18:18:28 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.39 1997/05/01 18:54:35 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -656,6 +659,37 @@ func_nth(int argc, BaseType *argv[], DDS &)
 	cerr << "Wrong type argument to list operator `nth'" << endl;
 	return 0;
     }
+}
+
+// The start of a simple function to select elements of an array based on
+// date. Date uses the following notation: yyyyddd or yyyymmdd.
+// This version is basically here to test so features relating to array
+// projections and CE functions.
+//
+// jhrg 4/14//97
+
+BaseType *
+func_date(int argc, BaseType *argv[], DDS &)
+{
+    if (argc < 2 || argc > 3) {
+	cerr << "Wrong number of arguments to func_date" << endl;
+	return 0;
+    }
+
+    if (argv[0]->type() != dods_array_c) {
+	cerr << "Arg1 must be an array" << endl;
+	return 0;
+    }
+
+    Array *a = (Array *)argv[0];
+
+    // The test function ignores the other arguments and sets a simple
+    // constraint on the first dimension.
+
+    a->clear_constraint();
+    a->add_constraint(a->first_dim(), 0, 1, 10);
+
+    return a;
 }
 
 bool
