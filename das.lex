@@ -33,7 +33,11 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.8  1994/12/08 16:53:24  jimg
+# Revision 1.9  1994/12/09 21:39:29  jimg
+# Fixed scanner's treatment of `//' comments which end with an EOF
+# (instead of a \n).
+#
+# Revision 1.8  1994/12/08  16:53:24  jimg
 # Modified the NEVER regexp so that `[' and `]' are not allowed in the
 # input stream. Previously they were not recognized but also not reported
 # as errors.
@@ -85,7 +89,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.8 1994/12/08 16:53:24 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.9 1994/12/09 21:39:29 jimg Exp $"};
 
 #include <string.h>
 
@@ -161,7 +165,9 @@ NEVER   [^a-zA-Z0-9_.+-{};,]|\[|\]
                         }
 			
 "//"	    	    	BEGIN(comment_new);
-<comment_new>[^\n]*\n	++das_line_num; BEGIN(INITIAL);
+<comment_new>[^\n]*
+<comment_new>\n		++das_line_num; BEGIN(INITIAL);
+<comment_new><<EOF>>    yy_init = 1; das_line_num = 1; yyterminate();
 
 {NEVER}                 {
                           if (yytext) {	/* suppress msgs about `' chars */
