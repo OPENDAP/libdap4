@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.44 1996/08/13 18:35:19 jimg Exp $
+# $Id: Makefile.in,v 1.45 1996/08/26 21:12:57 jimg Exp $
 
 @SET_MAKE@
 
@@ -126,8 +126,7 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 	   TestArray.o TestStructure.o TestList.o TestSequence.o \
 	   TestFunction.o TestGrid.o
 
-TESTPROGSRCS = 	das-test.cc dds-test.cc expr-test.cc trans-test.cc \
-		error-test.cc geturl.cc
+TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
 all: $(PROG)
 
@@ -285,8 +284,7 @@ error-check: error-test
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
-	-rm -f $(PROG) das-test dds-test trans-test expr-test error-test \
-		geturl
+	-rm -f $(PROG) das-test dds-test expr-test error-test geturl
 
 distclean: clean
 	-rm -f config.status config.log config.cache
@@ -310,9 +308,9 @@ tags:
 	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
 
 depend: 
-	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
-	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(EXPRSRCS) $(TESTSRCS) \
-	$(ERRORSRCS) $(NETIOSRC) $(TESTPROGSRCS)
+	@depend@ -- $(CPPFLAGS) -I/usr/local/lib/g++-include -- \
+	$(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
+	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS)
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
   Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h \

@@ -22,14 +22,14 @@
 #define	STRING	266
 #define	URL	267
 
-#line 135 "das.y"
+#line 140 "das.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.tab.c,v 1.4 1996/08/13 20:54:41 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.tab.c,v 1.5 1996/08/26 21:13:12 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -168,11 +168,11 @@ static const short yyrhs[] = {    18,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   226,   227,   230,   233,   234,   235,   238,   250,   251,   258,
-   259,   260,   263,   264,   265,   267,   268,   269,   271,   272,
-   273,   275,   276,   277,   279,   280,   281,   283,   289,   291,
-   312,   335,   356,   379,   401,   425,   439,   454,   475,   498,
-   498,   498,   498,   501,   501
+   231,   232,   235,   238,   239,   240,   243,   255,   256,   263,
+   264,   265,   268,   269,   270,   272,   273,   274,   276,   277,
+   278,   280,   281,   282,   284,   285,   286,   288,   294,   296,
+   317,   340,   361,   384,   406,   430,   444,   459,   480,   503,
+   503,   503,   503,   506,   506
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","ATTR","ID",
@@ -750,7 +750,7 @@ yyreduce:
   switch (yyn) {
 
 case 7:
-#line 239 "das.y"
+#line 244 "das.y"
 { 
 		    DBG2(mem_list_report()); /* mem_list_report is in */
 					     /* libdbnew.a  */
@@ -764,54 +764,54 @@ case 7:
 		;
     break;}
 case 9:
-#line 252 "das.y"
+#line 257 "das.y"
 { 
 		    parse_error((parser_arg *)arg, VAR_ATTR_MSG, das_line_num);
 		    YYABORT;
 		;
     break;}
 case 13:
-#line 263 "das.y"
+#line 268 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 14:
-#line 264 "das.y"
+#line 269 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 16:
-#line 267 "das.y"
+#line 272 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 17:
-#line 268 "das.y"
+#line 273 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 19:
-#line 271 "das.y"
+#line 276 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 20:
-#line 272 "das.y"
+#line 277 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 22:
-#line 275 "das.y"
+#line 280 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 23:
-#line 276 "das.y"
+#line 281 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 25:
-#line 279 "das.y"
+#line 284 "das.y"
 { save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 26:
-#line 280 "das.y"
+#line 285 "das.y"
 { save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 28:
-#line 284 "das.y"
+#line 289 "das.y"
 { 
 		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG, 
 				das_line_num);
@@ -819,7 +819,7 @@ case 28:
 		;
     break;}
 case 30:
-#line 292 "das.y"
+#line 297 "das.y"
 {
 		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -842,7 +842,7 @@ case 30:
 		;
     break;}
 case 31:
-#line 313 "das.y"
+#line 318 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -865,7 +865,7 @@ case 31:
 		;
     break;}
 case 32:
-#line 336 "das.y"
+#line 341 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -888,7 +888,7 @@ case 32:
 		;
     break;}
 case 33:
-#line 357 "das.y"
+#line 362 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -911,7 +911,7 @@ case 33:
 		;
     break;}
 case 34:
-#line 380 "das.y"
+#line 385 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -935,7 +935,7 @@ case 34:
 		;
     break;}
 case 35:
-#line 402 "das.y"
+#line 407 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -959,7 +959,7 @@ case 35:
 		;
     break;}
 case 36:
-#line 426 "das.y"
+#line 431 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -975,7 +975,7 @@ case 36:
 		;
     break;}
 case 37:
-#line 440 "das.y"
+#line 445 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -990,7 +990,7 @@ case 37:
 		;
     break;}
 case 38:
-#line 455 "das.y"
+#line 460 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -1013,7 +1013,7 @@ case 38:
 		;
     break;}
 case 39:
-#line 476 "das.y"
+#line 481 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
@@ -1233,7 +1233,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 504 "das.y"
+#line 509 "das.y"
 
 
 void

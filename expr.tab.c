@@ -24,12 +24,12 @@
 #define	LESS_EQL	268
 #define	REGEXP	269
 
-#line 80 "expr.y"
+#line 86 "expr.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.tab.c,v 1.5 1996/08/13 20:54:46 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.tab.c,v 1.6 1996/08/26 21:13:19 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +99,7 @@ bool_func get_function(const DDS &table, const char *name);
 btp_func get_btp_function(const DDS &table, const char *name);
 
 
-#line 157 "expr.y"
+#line 163 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -208,11 +208,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   198,   204,   206,   207,   210,   214,   228,   240,   250,   254,
-   267,   277,   283,   284,   290,   296,   305,   319,   320,   321,
-   328,   334,   345,   349,   355,   362,   371,   376,   381,   389,
-   405,   423,   427,   433,   440,   446,   447,   448,   449,   450,
-   451,   452
+   204,   210,   212,   213,   216,   220,   234,   246,   256,   260,
+   273,   283,   289,   290,   296,   302,   311,   325,   326,   327,
+   334,   340,   351,   355,   361,   368,   377,   382,   387,   395,
+   411,   429,   433,   439,   446,   452,   453,   454,   455,   456,
+   457,   458
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","INT","FLOAT",
@@ -786,30 +786,30 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 199 "expr.y"
+#line 205 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 206 "expr.y"
+#line 212 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 207 "expr.y"
+#line 213 "expr.y"
 { 
 		       yyval.boolean = yyvsp[0].boolean;
 		   ;
     break;}
 case 5:
-#line 211 "expr.y"
+#line 217 "expr.y"
 {
 		       yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		   ;
     break;}
 case 6:
-#line 215 "expr.y"
+#line 221 "expr.y"
 {
 		       btp_func func = get_btp_function(*(DDS_OBJ(arg)), yyvsp[-3].id);
 		       if (!func) {
@@ -823,7 +823,7 @@ case 6:
 		   ;
     break;}
 case 7:
-#line 229 "expr.y"
+#line 235 "expr.y"
 { 
 		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (var) {
@@ -837,7 +837,7 @@ case 7:
 		  ;
     break;}
 case 8:
-#line 241 "expr.y"
+#line 247 "expr.y"
 { 
 		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (var)
@@ -849,13 +849,13 @@ case 8:
 		  ;
     break;}
 case 9:
-#line 251 "expr.y"
+#line 257 "expr.y"
 {
 		      yyval.boolean = yyvsp[0].boolean;
 		  ;
     break;}
 case 10:
-#line 255 "expr.y"
+#line 261 "expr.y"
 { 
 		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (var) {
@@ -870,7 +870,7 @@ case 10:
 		  ;
     break;}
 case 11:
-#line 268 "expr.y"
+#line 274 "expr.y"
 { 
 		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (var)
@@ -882,19 +882,19 @@ case 11:
 		  ;
     break;}
 case 12:
-#line 278 "expr.y"
+#line 284 "expr.y"
 {
 		      yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		  ;
     break;}
 case 14:
-#line 285 "expr.y"
+#line 291 "expr.y"
 {
 		      yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		  ;
     break;}
 case 15:
-#line 291 "expr.y"
+#line 297 "expr.y"
 {
 		      assert((yyvsp[-4].rval_ptr));
 		      (*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -902,7 +902,7 @@ case 15:
 		  ;
     break;}
 case 16:
-#line 297 "expr.y"
+#line 303 "expr.y"
 {
 		      assert((yyvsp[-2].rval_ptr));
 
@@ -913,7 +913,7 @@ case 16:
 		  ;
     break;}
 case 17:
-#line 306 "expr.y"
+#line 312 "expr.y"
 {
 		      bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		      if (!b_func) {
@@ -927,7 +927,7 @@ case 17:
 		  ;
     break;}
 case 20:
-#line 322 "expr.y"
+#line 328 "expr.y"
 {
 		      yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr);
 		      if (!yyval.rval_ptr)
@@ -936,7 +936,7 @@ case 20:
 		  ;
     break;}
 case 21:
-#line 329 "expr.y"
+#line 335 "expr.y"
 {
 		      yyval.rval_ptr = dereference_url(yyvsp[0].val);
 		      if (!yyval.rval_ptr)
@@ -944,7 +944,7 @@ case 21:
 		  ;
     break;}
 case 22:
-#line 335 "expr.y"
+#line 341 "expr.y"
 {
 		      btp_func bt_func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		      if (!bt_func) {
@@ -955,19 +955,19 @@ case 22:
 		  ;
     break;}
 case 23:
-#line 346 "expr.y"
+#line 352 "expr.y"
 {
 		    yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
 		;
     break;}
 case 24:
-#line 350 "expr.y"
+#line 356 "expr.y"
 {
 		    yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
 		;
     break;}
 case 25:
-#line 356 "expr.y"
+#line 362 "expr.y"
 { 
 		      BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (!btp)
@@ -976,7 +976,7 @@ case 25:
 		  ;
     break;}
 case 26:
-#line 363 "expr.y"
+#line 369 "expr.y"
 { 
 		      BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		      if (!btp)
@@ -985,28 +985,28 @@ case 26:
 		  ;
     break;}
 case 27:
-#line 372 "expr.y"
+#line 378 "expr.y"
 {
 		      BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 28:
-#line 377 "expr.y"
+#line 383 "expr.y"
 {
 		      BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 29:
-#line 382 "expr.y"
+#line 388 "expr.y"
 { 
 		      BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 30:
-#line 390 "expr.y"
+#line 396 "expr.y"
 {
 		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
 		      if (var && is_array_t(var)) {
@@ -1024,7 +1024,7 @@ case 30:
 		  ;
     break;}
 case 31:
-#line 406 "expr.y"
+#line 412 "expr.y"
 {
 		      BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
 		      if (var && is_array_t(var)) {
@@ -1042,19 +1042,19 @@ case 31:
 		  ;
     break;}
 case 32:
-#line 424 "expr.y"
+#line 430 "expr.y"
 {
 		      yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		  ;
     break;}
 case 33:
-#line 428 "expr.y"
+#line 434 "expr.y"
 {
 		      yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		  ;
     break;}
 case 34:
-#line 434 "expr.y"
+#line 440 "expr.y"
 {
 		      value val;
 		      val.type = dods_int32_c;
@@ -1063,7 +1063,7 @@ case 34:
 		  ;
     break;}
 case 35:
-#line 441 "expr.y"
+#line 447 "expr.y"
 {
 		      yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		  ;
@@ -1266,7 +1266,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 455 "expr.y"
+#line 461 "expr.y"
 
 
 void

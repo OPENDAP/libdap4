@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.30  1996/08/26 21:12:59  jimg
+// Changes for version 2.07
+//
 // Revision 1.29  1996/08/13 18:36:12  jimg
 // Added void casts to values computed in print_val() for loops.
 //
@@ -415,6 +418,25 @@ Sequence::print_val(ostream &os, String space, bool print_decl_p)
 
     if (print_decl_p)
 	os << ";";
+}
+
+// From Todd Karakasian. 
+
+void
+Sequence::print_all_vals(ostream& os, XDR *src, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(os);
+	os << " = ";
+    }
+    os << "{ ";
+    print_val(os,"",false);
+    while (deserialize(src)) {
+	os << ", ";
+	print_val(os,"",false);
+    }
+    if (print_decl_p)
+        os << "};";
 }
 
 bool

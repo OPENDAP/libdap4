@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.33  1996/08/26 21:12:52  jimg
+// Changes for version 2.07
+//
 // Revision 1.32  1996/08/13 17:53:34  jimg
 // Corrected misuse of the istrstream class; added calls to the freeze member
 // function where needed.
@@ -190,7 +193,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.32 1996/08/13 17:53:34 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.33 1996/08/26 21:12:52 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -735,6 +738,13 @@ Connect::www_lib_init()
 
     // Register a call back function for the Net Manager
     HTNetCall_addBefore(HTLoadStart, 0);
+#if 0
+    // For version 4.1b1
+    HTAuthCall_add      (const char *           scheme,
+                                 HTAuthParCallback *    parser,
+                                 HTAuthGenCallback *    generator,
+                                 HTAuthGcCallback *     gc);
+#endif
     HTNetCall_addAfter(authentication_handler, HT_NO_ACCESS);
     HTNetCall_addAfter(redirection_handler, HT_PERM_REDIRECT);
     HTNetCall_addAfter(redirection_handler, HT_TEMP_REDIRECT);
@@ -847,7 +857,8 @@ Connect::read_url(String &url, FILE *stream)
 
     HTRequest_setOutputFormat(_request, WWW_SOURCE);
 
-	// Set timeout on sockets
+    // Set timeout on sockets.
+    // For 4.1b1 use HTEventrg_registerTimeout(...)
     HTEvent_registerTimeout(_tv, _request, timeout_handler, NO);
 
     HTRequest_setAnchor(_request, (HTAnchor *)_anchor);

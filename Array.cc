@@ -10,6 +10,9 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.37  1996/08/26 21:12:48  jimg
+// Changes for version 2.07
+//
 // Revision 1.36  1996/08/13 16:46:14  jimg
 // Added bounds checking to the add_constraint member function. add_constraint()
 // now returns false when a bogus constraint is used.
@@ -535,9 +538,13 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
     }
     else {
 	os << "{";
-	for (unsigned i = 0; i < shape[dims-1]-1; ++i) {
+	// Fixed an off-by-one error in the following loop. Since the array
+	// length is shape[dims-1]-1 *and* since we want one less dimension
+	// than that, the correct limit on this loop is shape[dims-2]-1. From
+	// Todd Karakasian.
+	for (unsigned i = 0; i < shape[dims-2]-1; ++i) {
 	    index = print_array(os, index, dims - 1, shape + 1);
-	    os << "},";
+	    os << ",";		// Removed the extra `}'. Also from Todd
 	}
 	index = print_array(os, index, dims - 1, shape + 1);
 	os << "}";

@@ -27,9 +27,12 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.10  1996/08/13 18:56:24  jimg
-/* Added __unused__ to definition of char rcsid[].
+/* Revision 1.11  1996/08/26 21:13:17  jimg
+/* Changes for version 2.07
 /*
+ * Revision 1.10  1996/08/13 18:56:24  jimg
+ * Added __unused__ to definition of char rcsid[].
+ *
  * Revision 1.9  1996/05/31 23:31:03  jimg
  * Updated copyright notice.
  *
@@ -72,7 +75,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.10 1996/08/13 18:56:24 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.11 1996/08/26 21:13:17 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -97,7 +100,7 @@ void store_op(int op);
 
 %x quote
     
-ID		[a-zA-Z_][a-zA-Z0-9_]*
+ID		[a-zA-Z_][a-zA-Z0-9_/%]*
 FIELD           {ID}\.{ID}(\.{ID})*
 INT		[-+]?[0-9]+
 

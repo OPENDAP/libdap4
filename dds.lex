@@ -30,9 +30,12 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.11  1996/08/13 18:51:52  jimg
-/* Added __unused__ to definition of char rcsid[].
+/* Revision 1.12  1996/08/26 21:13:13  jimg
+/* Changes for version 2.07
 /*
+ * Revision 1.11  1996/08/13 18:51:52  jimg
+ * Added __unused__ to definition of char rcsid[].
+ *
  * Revision 1.10  1996/05/31 23:30:55  jimg
  * Updated copyright notice.
  *
@@ -71,7 +74,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.11 1996/08/13 18:51:52 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.12 1996/08/26 21:13:13 jimg Exp $"};
 
 #include <string.h>
 
@@ -102,7 +105,7 @@ FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
 
-ID  		[a-zA-Z_][a-zA-Z0-9_]*
+ID  		[a-zA-Z_][a-zA-Z0-9_/%]*
 INTEGER		[0-9]+
 NEVER		[^][{}:;=a-zA-Z0-9_]
 

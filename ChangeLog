@@ -1,3 +1,22 @@
+Mon Aug 26 13:18:21 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed various configure.in files so that the different size ints
+	are defined properly.
+
+	* Fixed up the config_dap.h problem in the jg-dods directory.
+
+	* Added classes for 32 bit floats, 32 bit unsigned ints and 16 bit
+	signed and unsigned ints. These are *not* built by default - I'll
+	let the various users have a chance to include these new classes in
+	their software before they are added to the build (and thus must
+	be sub-classed by users of the DAP).
+
+Fri Aug 16 09:34:00 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed configure tests for sem.h prototypes and the semctl union.
+	A new test which scans the sem.h header is in aclocal.m4 (in etc)
+	and the configure script uses that test.
+
 Tue Aug 13 10:54:02 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Fixed bugs in Grid: bad constraint expressions would cause core
@@ -42,4 +61,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.1 1996/08/13 20:59:58 jimg Exp $
+$Id: ChangeLog,v 1.2 1996/08/26 21:12:50 jimg Exp $

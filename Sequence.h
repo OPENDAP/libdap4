@@ -19,13 +19,16 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.21  1996/06/04 21:33:39  jimg
-/* Multiple connections are now possible. It is now possible to open several
-/* URLs at the same time and read from them in a round-robin fashion. To do
-/* this I added data source and sink parameters to the serialize and
-/* deserialize mfuncs. Connect was also modified so that it manages the data
-/* source `object' (which is just an XDR pointer).
+/* Revision 1.22  1996/08/26 21:13:01  jimg
+/* Changes for version 2.07
 /*
+ * Revision 1.21  1996/06/04 21:33:39  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
  * Revision 1.20  1996/05/31 23:29:59  jimg
  * Updated copyright notice.
  *
@@ -214,6 +217,14 @@ public:
 
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
+
+    /// Print the entire sequence.
+    /** Circumvent the problem with #print_val()# where only the first
+      instance of the sequence is printed. Note that this version takes an
+      XDR * as its second argument.
+
+      Returns: void */
+    void print_all_vals(ostream& os, XDR *src, bool print_decl_p);
 
     virtual bool check_semantics(bool all = false);
 };
