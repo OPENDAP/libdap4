@@ -33,7 +33,12 @@
 #include "AISExceptions.h"
 
 /** Access an AIS resource. The resource may be a local file or a URL. Assume
-    all resource URIs have no leading spaces.
+    all resource URIs have no leading spaces. This method is public so that a
+    client of libdap++ can specialize its behavior. This implementation
+    dereferences a URL or opens a file and returns a FILE pointer which can
+    be used to read the contents. In the case of a URL, 'the contents' means
+    the body of the HTTP response. For a file, it means the entire file.
+
     @param resource The AIS resource. 
     @return Either an open FILE * which points to the resource or null if the
     resource could not be opened. This method does not throw an exception for
@@ -53,6 +58,14 @@ AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
 
 /** Access the AIS ancillary resources matched to <code>primary</code> and
     merge those with the DAS object <c>das</c>.
+
+    This method uses AISResources::has_resource(...) to determine if \c primary
+    has an entry in the AIS database. It uses AISResources::get_resource(...)
+    to get a ResourceVector of AIS resources for \c primary. It then uses its
+    own get_ais_resources(...) to access the actual resources via a FILE
+    pointer. Clients may use this information to specialize
+    AISMerge::merge(...). 
+
     @param primary The URL of the primary resource.
     @param das The target of the merge operation. This must already contain
     the DAS for <c>primary</c>. */
@@ -88,6 +101,9 @@ AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
 }
 
 // $Log: AISMerge.cc,v $
+// Revision 1.4  2003/02/27 23:20:49  jimg
+// Added to the documentation.
+//
 // Revision 1.3  2003/02/27 22:21:01  pwest
 // Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
 // rule
