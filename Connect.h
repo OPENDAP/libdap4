@@ -32,6 +32,9 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.25  1997/03/05 08:25:28  jimg
+ * Removed the static global _logfile. See Connect.cc.
+ *
  * Revision 1.24  1997/02/13 17:35:39  jimg
  * Added a field to store information from the MIME header `Server:'. Added
  * a member function to access the value of the field and a MIME header
@@ -230,7 +233,9 @@ private:
     // The following members are vaild only if _LOCAL is false.
 
     static int _connects;	// Are there any remote connect objects?
+#if 0
     static String _logfile;	// If !"", log remote access to the named file
+#endif
     static HTList *_conv;	// List of global converters
     
     ObjectType _type;		// What type of object is in the stream?
