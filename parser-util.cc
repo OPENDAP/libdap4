@@ -10,6 +10,12 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.14  1999/03/29 17:35:50  jimg
+// Fixed (I hope) a bug in check_float{32,64} where 0.0 did not check out as a
+// valid floating point number. Note that the DODS_{FLT,DBL}_{MIN,MAX} constants
+// are the absolute values of the bigest and smallest numbers representable,
+// unlike the similar constants for integer types.
+//
 // Revision 1.13  1999/03/24 23:29:35  jimg
 // Added support for the new Int16, UInt16 and Float32 types.
 // Removed unused error printing functions.
@@ -59,7 +65,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.13 1999/03/24 23:29:35 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.14 1999/03/29 17:35:50 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -250,12 +256,11 @@ check_float32(const char *val, const int num)
 	return FALSE;
     }
 
-    if (fabs(v) > DODS_FLT_MAX || fabs(v) < DODS_FLT_MIN) { 
+    if (fabs(v) > DODS_FLT_MAX) { 
 	ostrstream oss;
 	oss << "`" << val << "' is not a 32 bit floating point value value." 
 	    << endl
-	    << "It must be between (+/-)" << DODS_FLT_MIN << " and (+/-)"
-	    << DODS_FLT_MAX << "." << ends;
+	    << "It must be between (+/-)" << DODS_FLT_MAX << "." << ends;
 	parse_error(oss.str(), num);
 	oss.freeze(0);
 	return FALSE;
@@ -276,12 +281,11 @@ check_float64(const char *val, const int num)
     }
 
     // I'm not sure how this would work, so this is a placeholder. 3/19/99 jhrg
-    if (fabs(v) > DODS_DBL_MAX || fabs(v) < DODS_DBL_MIN) { 
+    if (fabs(v) > DODS_DBL_MAX) { 
 	ostrstream oss;
 	oss << "`" << val << "' is not a 64 bit floating point value value." 
 	    << endl
-	    << "It must be between (+/-)" << DODS_DBL_MIN << " and (+/-)"
-	    << DODS_DBL_MAX << "." << ends;
+	    << "It must be between (+/-)" << DODS_DBL_MAX << "." << ends;
 	parse_error(oss.str(), num);
 	oss.freeze(0);
 	return FALSE;
