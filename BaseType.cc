@@ -122,7 +122,7 @@ BaseType &
 BaseType::operator=(const BaseType &rhs)
 {
     if (this == &rhs)
-	return *this;
+	    return *this;
 
     _duplicate(rhs);
 
@@ -520,15 +520,15 @@ BaseType::get_parent()
     simple types. This function is only used by composite classes. The
     BaseType implementation always returns null.
 
-    Several of the subclasses overload this function with alternate access
+    Several of the subclasses provide alternate access
     methods that make sense for that particular data type. For example, the
     Array class defines a <tt>*var(int i)</tt> method that returns the ith
-    entry in the Array data, and the Structure provides a <tt>*var(Pix
-    p)</tt> function using a pseudo-index to access the different members of
-    the structure.
+    entry in the Array data, and the Structure provides a 
+    <tt>*var(Vars_iter)</tt> function using a pseudo-index to access the 
+    different members of the structure.
 
     @brief Returns a pointer to a member of a constructor class.
-    @param n The name of the class member.  
+    @param n The name of the class member.  Defaults to ""
     @param exact
     True if only interested in variables whose full names match
     \e n exactly. If false, returns the first variable
@@ -539,13 +539,14 @@ BaseType::get_parent()
     would need to be \c "point.x" for var to return that
     pointer. This feature simplifies constraint expressions for
     datasets which have complex, nested, constructor variables.
-    @param s Record the path to \e n.
+    Defaults to true.
+    @param s Record the path to \e n. Defaults to null
 
     @return A pointer to the member named in the \e n argument. If no name is
     given, the function returns the first (only) variable.  For example, an
     Array has only one variable, while a Structure can have many. */
 BaseType *
-BaseType::var(const string &, bool, btp_stack*)
+BaseType::var(const string &n, bool exact, btp_stack *s)
 {
     return static_cast<BaseType *>(0);
 }
@@ -557,7 +558,9 @@ BaseType::var(const string &, bool, btp_stack*)
     BaseType pointer to each constructor type that ultimately contains
     <i>name</i>.
 
-    @note The BaseType implementation always returns null.
+    @note The BaseType implementation always returns null. There are no default
+    values for the parameters. If var() is called w/o any params, the three
+    parameter version will be used.
 
     @deprecated This method is deprecated because is tries first to use
     exact_match and, if that fails, then tries leaf_match. It's better to use
@@ -932,6 +935,11 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.59  2004/11/16 18:33:35  jimg
+// Changed the prototype for add_var() so that it takes three arguments. This
+// matches the version used elsewhere in the type hierarchy and fixes some
+// glitches with subclasses calling the correct method, esp. in the netCDF CL.
+//
 // Revision 1.58  2004/10/22 21:43:45  jimg
 // toString() now uses type_name() in place of type().
 //
