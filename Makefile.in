@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.49 1996/10/31 22:24:56 jimg Exp $
+# $Id: Makefile.in,v 1.50 1996/11/13 19:04:34 jimg Exp $
 
 @SET_MAKE@
 
@@ -294,6 +294,7 @@ error-check: error-test
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
+	-for d in Plex Vec Stack Map; do cd $$d; rm *.o *~; cd ..; done
 	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
 	       cgi-util-test
 
