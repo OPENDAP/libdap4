@@ -1,3 +1,9 @@
+1998-03-09  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Removed the -fno-rtti flag from the DAP library build. The
+	library needs RTTI so that software written using exceptions can
+	catch derived exception classes.
+
 1998-02-11  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Added the DODS_Cache.pm class (which was in the hdf-dods server
@@ -321,4 +327,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.15 1998/02/11 22:41:19 jimg Exp $
+$Id: ChangeLog,v 1.16 1998/03/10 06:00:42 jimg Exp $
