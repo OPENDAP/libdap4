@@ -13,6 +13,13 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
+// Revision 1.18  1996/07/16 17:49:29  jimg
+// Added usage function.
+// Added version option.
+// Fixed calling logic - now a usage message is printed when no options are
+// given.
+// Fixed warnings about signed -vs- unsigned compares.
+//
 // Revision 1.17  1996/05/31 23:30:49  jimg
 // Updated copyright notice.
 //
@@ -79,9 +86,9 @@
 // Test driver for DAS (and AttrTable) classes.
 //
 
-static char rcsid[]= {"$Id: das-test.cc,v 1.17 1996/05/31 23:30:49 jimg Exp $"};
-
 #include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: das-test.cc,v 1.18 1996/07/16 17:49:29 jimg Exp $"};
 
 #include <iostream.h>
 #include <String.h>
@@ -107,22 +114,37 @@ int daslex();
 
 extern int dasdebug;
 const char *prompt = "das-test: ";
+const char *version = "version 1.18";
+
+void
+usage(String name)
+{
+    cerr << "usage: " << name 
+	 << " [-v] [-s] [-c] [-p -f {in-file out-file} ...]" << endl
+	 << " s: Test the DAS scanner." << endl
+	 << " p: Scan and parse from <in-file>; print to <out-file>." << endl
+	 << " `-' for either file is taken to mean stdin/stdout." << endl
+	 << " f: Test the `file descriptor' version of the das parser." << endl
+	 << " c: Test building the DAS from C++ code." << endl
+	 << " v: Print the version of das-test and exit." << endl;
+}
 
 int
 main(int argc, char *argv[])
 {
 
-    GetOpt getopt (argc, argv, "sfp");
+    GetOpt getopt (argc, argv, "scfpv");
     int option_char;
     bool use_fd = false;	// true to exercise the fd functions
-    bool test_parser = false;
+    bool parser_test = false;
     bool scanner_test = false;
-    // process options first so that debugging in on for object instantitaion.
+    bool code_test = false;
+
     while ((option_char = getopt ()) != EOF)
 	switch (option_char)
 	  {
 	    case 'p':
-	      test_parser = true;
+	      parser_test = true;
 	      break;
 	    case 'f':
 	      use_fd = true;
@@ -130,20 +152,43 @@ main(int argc, char *argv[])
 	    case 's':
 	      scanner_test = true;
 	      break;
+	    case 'c':
+	      code_test = true;
+	      break;
+	    case 'v':
+	      cerr << argv[0] << ": " << version << endl;
+	      exit(0);
 	    case '?': 
-	      cerr << "usage: " << argv[0] << " [f] [p in-file1 out-file1 ...]"
-		   << endl;
+	    default:
+	      usage(argv[0]);
+	      exit(1);
 	  }
 
     DAS das;
 
-    if (test_parser)
-	for (int i = getopt.optind; i < argc; i+=2)
-	    parser_driver(argc, argv, i, use_fd, das);
-    else if (scanner_test)
+    if (!parser_test && !scanner_test && !code_test) {
+	usage(argv[0]);
+	exit(1);
+    }
+	
+    if (parser_test) {
+	if (argc >= 2 && !(argc % 2)) {
+	    for (int i = getopt.optind; i < argc; i+=2)
+		parser_driver(argc, argv, i, use_fd, das);
+	}
+	else {
+	    usage(argv[0]);
+	    exit(1);
+	}
+    }
+
+    if (scanner_test)
 	test_scanner();
-    else
+
+    if (code_test)
 	plain_driver(das);
+
+    exit(0);
 }
 
 void
@@ -285,7 +330,7 @@ load_attr_table(AttrTable at)
     Pix p;
     for (p = at.first_attr(); p; at.next_attr(p)) {
 	cout << at.get_name(p) << " " << at.get_type(p) << " ";
-	for (int i = 0; i < at.get_attr_num(p); ++i)
+	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
 	     cout << at.get_attr(p, i) << " ";
 	cout << endl;
     }
@@ -301,7 +346,7 @@ load_attr_table(AttrTable at)
     cout << "After deletion:" << endl;
     for (p = at.first_attr(); p; at.next_attr(p)) {
 	cout << at.get_name(p) << " " << at.get_type(p) << " ";
-	for (int i = 0; i < at.get_attr_num(p); ++i)
+	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
 	     cout << at.get_attr(p, i) << " ";
 	cout << endl;
     }
@@ -311,7 +356,7 @@ load_attr_table(AttrTable at)
     cout << "After print:" << endl;
     for (p = at.first_attr(); p; at.next_attr(p)) {
 	cout << at.get_name(p) << " " << at.get_type(p) << " ";
-	for (int i = 0; i < at.get_attr_num(p); ++i)
+	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
 	     cout << at.get_attr(p, i) << " ";
 	cout << endl;
     }
@@ -337,7 +382,7 @@ load_attr_table_ptr(AttrTable *at)
     Pix p;
     for (p = at->first_attr(); p; at->next_attr(p)) {
 	cout << at->get_name(p) << " " << at->get_type(p) << " ";
-	for (int i = 0; i < at->get_attr_num(p); ++i)
+	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
 	     cout << at->get_attr(p, i) << " ";
 	cout << endl;
     }
@@ -353,7 +398,7 @@ load_attr_table_ptr(AttrTable *at)
     cout << "After deletion:" << endl;
     for (p = at->first_attr(); p; at->next_attr(p)) {
 	cout << at->get_name(p) << " " << at->get_type(p) << " ";
-	for (int i = 0; i < at->get_attr_num(p); ++i)
+	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
 	     cout << at->get_attr(p, i) << " ";
 	cout << endl;
     }
@@ -363,7 +408,7 @@ load_attr_table_ptr(AttrTable *at)
     cout << "After print:" << endl;
     for (p = at->first_attr(); p; at->next_attr(p)) {
 	cout << at->get_name(p) << " " << at->get_type(p) << " ";
-	for (int i = 0; i < at->get_attr_num(p); ++i)
+	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
 	     cout << at->get_attr(p, i) << " ";
 	cout << endl;
     }
