@@ -11,6 +11,12 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.44  2000/08/07 21:08:43  rmorris
+// Removed default argument definition.  Under MS VC++ one can't define a
+// default argument in both a method declaration and its's definition -
+// plus that's redundant anyway.  Just setup default args in the declaration
+// (in the .h) only or VC++ will choke.
+//
 // Revision 1.43  2000/08/02 22:46:49  jimg
 // Merged 3.1.8
 //
@@ -221,7 +227,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.43 2000/08/02 22:46:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.44 2000/08/07 21:08:43 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -670,7 +676,7 @@ set_mime_binary(ostream &os, ObjectType type, const string &ver,
 
 void 
 set_mime_error(FILE *out, int code, const string &reason,
-	       const string &version = "")
+	       const string &version)
 {
 #ifdef WIN32
 	strstream os;
@@ -685,7 +691,7 @@ set_mime_error(FILE *out, int code, const string &reason,
 
 void
 set_mime_error(ostream &os, int code, const string &reason,
-	       const string &version = "")
+	       const string &version)
 {
     os << "HTTP/1.0 " << code << " " << reason << endl;
     if (version == "")
