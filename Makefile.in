@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.53 1996/11/16 00:44:48 jimg Exp $
+# $Id: Makefile.in,v 1.54 1996/11/20 00:58:58 jimg Exp $
 
 @SET_MAKE@
 
@@ -325,8 +325,10 @@ tar:
 tags:
 	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
 
+.PHONY: depend
 depend: 
-	@depend@ -- $(CPPFLAGS) -I/usr/local/lib/g++-include -- \
+	@depend@ -m dependencies \
+	-- $(CPPFLAGS) -I/usr/local/lib/g++-include -- \
 	$(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
 	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS)
 
@@ -345,6 +347,7 @@ das.tab.c: DAS.h
 .cc.o:
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+include dependencies
+
 
 
