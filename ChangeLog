@@ -1,3 +1,24 @@
+Mon Dec 15 17:26:37 1997  James Gallagher  <jimg@localhost>
+
+	* Many small bug fixes that were fixed before being added to the
+	TODO list.
+
+	* Added DataDDS class which makes the version number read by
+	Connect available to any member function that can access a DDS
+	pointer (since DDS *s can reference DataDDS objects).
+
+	* Added the DODSFilter class to simplify writing servers that
+	conform to a set of standards Re: the placement and naming of
+	ancillary files, version numbers, etc.
+
+	* Added new Sequence processing code along with backward
+	compatibility. Nested sequences are sent more efficiently. In
+	addition, sequences may be followed by other variables in a Data
+	object (an old bug).
+
+	* Added new characters to those allowed in DDS NAME lexeme. This
+	means that a file with _ and . in the name will parse.
+
 Wed Aug 20 14:12:54 1997  James Gallagher  <jimg@localhost>
 
 	* Added newline after data in process_data() in geturl.cc.
@@ -275,4 +296,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.12 1997/12/16 01:26:33 jimg Exp $
+$Id: ChangeLog,v 1.13 1997/12/16 01:34:15 jimg Exp $
