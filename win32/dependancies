@@ -1,20 +1,25 @@
-# Microsoft Developer Studio Generated Dependency File for libdap++
+# Microsoft Developer Studio Generated Dependency File
 
 ..\Array.cc : \
 	"..\Array.h"\
+	"..\ArrayIterAdapter.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
 	"..\List.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
@@ -26,26 +31,51 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
+	
 
 ..\ArrayIterAdapter.cc : \
+	"..\Array.h"\
 	"..\ArrayIterAdapter.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
+	"..\RValue.h"\
+	"..\Vector.h"\
 	
+
+..\AttrIterAdapter.cc : \
+	"..\AttrIterAdapter.h"\
+	"..\AttrTable.h"\
+	"..\Error.h"\
+	"..\IteratorAdapter.h"\
+	
+
 ..\AttrTable.cc : \
 	"..\Array.h"\
+	"..\AttrIterAdapter.h"\
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
 	"..\List.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
@@ -56,26 +86,32 @@
 	"..\UInt32.h"\
 	"..\Url.h"\
 	"..\util.h"\
-	"..\Vector.h"\	
+	"..\Vector.h"\
+	
 
-..\AttrIterAdapter.cc : \
-	"..\AttrIterAdapter.h"\
+..\AttrTableTest.cc : \
+	"..\AttrTable.h"\
+	"..\Error.h"\
+	
 
 ..\BaseType.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
@@ -87,18 +123,33 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
+	
+
+..\BaseTypeTest.cc : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\DDS.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\RValue.h"\
+	
 
 ..\BTIterAdapter.cc : \
-	"..\BTIterAdapter.h"\	
+	"..\BaseType.h"\
+	"..\BTIterAdapter.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
+	
 
 ..\Byte.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
 	"..\expr.h"\
@@ -109,6 +160,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\Operators.h"\
 	"..\parser.h"\
@@ -124,12 +176,19 @@
 	"..\Vector.h"\
 	
 
+..\ByteTest.cc : \
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	
+
 ..\ce_functions.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -142,6 +201,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
@@ -158,17 +218,15 @@
 
 ..\cgi_util.cc : \
 	"..\Array.h"\
-	"..\AttrTable.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\cgi_util.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
-	"..\Connect.h"\
-	"..\DAS.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\EncodingType.h"\
 	"..\Error.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
@@ -176,7 +234,9 @@
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
+	"..\ObjectType.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
 	"..\Str.h"\
@@ -188,17 +248,40 @@
 	"..\util.h"\
 	"..\Vector.h"\
 	
+
+..\cgiUtilTest.cc : \
+	"..\BaseType.h"\
+	"..\cgi_util.h"\
+	"..\Clause.h"\
+	"..\DDS.h"\
+	"..\EncodingType.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\ObjectType.h"\
+	"..\RValue.h"\
+	
+
 ..\Clause.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
+	"..\Error.h"\
 	"..\expr.h"\
+	"..\InternalErr.h"\
 	"..\RValue.h"\
+	
 
 ..\ClauseIterAdapter.cc : \
-	"..\ClauseIterAdapter.h"\	
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\ClauseIterAdapter.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
+	"..\RValue.h"\
+	
 
 ..\Connect.cc : \
 	"..\Array.h"\
@@ -206,21 +289,29 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
 	"..\Connect.h"\
+	"..\Constructor.h"\
 	"..\DAS.h"\
 	"..\DataDDS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\HTTPConnect.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\RCReader.h"\
+	"..\ResponseTooBigErr.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
 	"..\Str.h"\
@@ -239,10 +330,11 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
 	"..\Connect.h"\
 	"..\Connections.h"\
+	"..\Constructor.h"\
 	"..\DAS.h"\
+	"..\DataDDS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -251,9 +343,16 @@
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\HTTPConnect.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\RCReader.h"\
+	"..\ResponseTooBigErr.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
 	"..\Str.h"\
@@ -264,6 +363,23 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
+	
+
+..\Constructor.cc : \
+	"..\BaseType.h"\
+	"..\Constructor.h"\
+	"..\debug.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	"..\trace_new.h"\
+	
+
+"..\das-test.cc" : \
+	"..\AttrTable.h"\
+	"..\DAS.h"\
+	"..\das.tab.h"\
+	"..\Error.h"\
+	"..\trace_new.h"\
 	
 
 ..\DAS.cc : \
@@ -271,45 +387,60 @@
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DAS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
+	"..\InternalErr.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
 	"..\Vector.h"\
 	
 
+..\DASTest.cc : \
+	"..\AttrTable.h"\
+	"..\DAS.h"\
+	"..\Error.h"\
+	
+
 ..\DataDDS.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
 	"..\DataDDS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
+	"..\Error.h"\
 	"..\expr.h"\
+	"..\InternalErr.h"\
 	"..\RValue.h"\
 	
 
-..\DDS.cc : \
+..\DataDDSTest.cc : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\DataDDS.h"\
+	"..\DDS.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\RValue.h"\
+	
+
+"..\dds-test.cc" : \
 	"..\Array.h"\
-	"..\AttrTable.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
-	"..\ce_functions.h"\
-	"..\cgi_util.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
-	"..\Connect.h"\
-	"..\DAS.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
+	"..\dds.tab.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
 	"..\expr.h"\
@@ -319,6 +450,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
@@ -331,7 +463,88 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
+	
 
+..\DDS.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\BTIterAdapter.h"\
+	"..\Byte.h"\
+	"..\ce_functions.h"\
+	"..\cgi_util.h"\
+	"..\Clause.h"\
+	"..\ClauseIterAdapter.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\EncodingType.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
+	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\dds.tab.c : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\DDSTest.cc : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\DDS.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\RValue.h"\
+	
 
 ..\DODSFilter.cc : \
 	"..\Array.h"\
@@ -340,21 +553,24 @@
 	"..\Byte.h"\
 	"..\cgi_util.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
-	"..\Connect.h"\
+	"..\Constructor.h"\
 	"..\DAS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\DODSFilter.h"\
+	"..\EncodingType.h"\
 	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
+	"..\ObjectType.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
 	"..\Str.h"\
@@ -367,50 +583,100 @@
 	"..\Vector.h"\
 	
 
+..\DODSFilterTest.cc : \
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\DAS.h"\
+	"..\DDS.h"\
+	"..\DODSFilter.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\RValue.h"\
+	
+
+"..\error-test.cc" : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\error.tab.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\InternalErr.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
 ..\Error.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
+	"..\InternalErr.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
 	"..\Vector.h"\
 	
 
-..\Error.tab.c : \
-	"..\Array.h"\
-	"..\BaseType.h"\
-	"..\Clause.h"\
-	".\config_dap.h"\
-	"..\DDS.h"\
-	"..\debug.h"\
-	"..\dods-limits.h"\
-	"..\Error.h"\
-	"..\expr.h"\
-	"..\Grid.h"\
-	"..\GSEClause.h"\
-	"..\parser.h"\
-	"..\RValue.h"\
-	"..\trace_new.h"\
-	"..\Vector.h"\
-	
-
-
-
-..\Float32.cc : \
+..\error.tab.c : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\escaping.cc : \
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	
+
+"..\expr-test.cc" : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DataDDS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -423,6 +689,82 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\expr.tab.c : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Connect.h"\
+	"..\Constructor.h"\
+	"..\DAS.h"\
+	"..\DataDDS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\HTTPConnect.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\parser.h"\
+	"..\RCReader.h"\
+	"..\ResponseTooBigErr.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Float32.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\Operators.h"\
 	"..\parser.h"\
@@ -443,9 +785,8 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
 	"..\expr.h"\
@@ -456,6 +797,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\Operators.h"\
 	"..\parser.h"\
@@ -471,21 +813,23 @@
 	"..\Vector.h"\
 	
 
-..\Grid.cc : \
+..\generalUtilTest.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
@@ -499,18 +843,109 @@
 	"..\Vector.h"\
 	
 
-..\gse.tab.c : \
+..\geturl.cc : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Connect.h"\
+	"..\Constructor.h"\
+	"..\DAS.h"\
+	"..\DataDDS.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\HTTPConnect.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\RCReader.h"\
+	"..\ResponseTooBigErr.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Grid.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\BTIterAdapter.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+"..\gse-test.cc" : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
 	"..\expr.h"\
 	"..\Grid.h"\
+	"..\gse.tab.h"\
 	"..\GSEClause.h"\
+	"..\InternalErr.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\gse.tab.c : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\InternalErr.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
@@ -521,33 +956,137 @@
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
 	"..\expr.h"\
 	"..\Grid.h"\
+	"..\gse.tab.h"\
 	"..\GSEClause.h"\
+	"..\InternalErr.h"\
+	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
 	"..\Vector.h"\
+	
 
+..\HTTPCache.cc : \
+	"..\debug.h"\
+	"..\Error.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\InternalErr.h"\
+	"..\ResponseTooBigErr.h"\
+	"..\util_mit.h"\
+	
 
-..\HTTPCAche.cc : \
+..\HTTPCacheTest.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
+	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
 	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
 	"..\Grid.h"\
-	"..\GSEClause.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\HTTPConnect.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\RCReader.h"\
+	"..\ResponseTooBigErr.h"\
 	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
 	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\HTTPConnect.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\HTTPConnect.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\RCReader.h"\
+	"..\ResponseTooBigErr.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\HTTPConnectTest.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\HTTPConnect.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\RCReader.h"\
+	"..\ResponseTooBigErr.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
 	"..\Vector.h"\
 	
 
@@ -556,7 +1095,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -569,6 +1108,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\Operators.h"\
 	"..\parser.h"\
@@ -589,7 +1129,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -602,6 +1142,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\Operators.h"\
 	"..\parser.h"\
@@ -618,19 +1159,112 @@
 	
 
 ..\InternalErr.cc : \
-	".\config_dap.h"\
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
 	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
 	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
 
 ..\IteratorAdapter.cc : \
 	"..\IteratorAdapter.h"\
+	
+
+..\lex.das.c : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\das.tab.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\InternalErr.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\lex.dds.c : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dds.tab.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\InternalErr.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\lex.Error.c : \
+	"..\error.tab.h"\
+	
+
+..\lex.expr.c : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\InternalErr.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\lex.gse_.c : \
+	"..\gse.tab.h"\
+	
 
 ..\List.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -643,6 +1277,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
@@ -660,47 +1295,93 @@
 "..\parser-util.cc" : \
 	"..\Array.h"\
 	"..\BaseType.h"\
+	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
 	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\parserUtilTest.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\InternalErr.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
 	"..\Vector.h"\
 	
 
+..\RCReader.cc : \
+	"..\RCReader.h"\
+	
+
+..\ResponseTooBigErr.cc : \
+	"..\Error.h"\
+	"..\ResponseTooBigErr.h"\
+	
+
 ..\RValue.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
+	"..\Error.h"\
 	"..\expr.h"\
+	"..\InternalErr.h"\
 	"..\RValue.h"\
 	
 
 ..\Sequence.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
+	"..\BTIterAdapter.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DataDDS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
 	"..\List.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
@@ -714,16 +1395,30 @@
 	"..\Vector.h"\
 	
 
+..\SequenceTest.cc : \
+	"..\BaseType.h"\
+	"..\Constructor.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\trace_new.h"\
+	
+
 ..\Str.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
 	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\expr.tab.h"\
 	"..\Float32.h"\
@@ -732,6 +1427,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\Operators.h"\
 	"..\parser.h"\
@@ -750,18 +1446,23 @@
 ..\Structure.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
+	"..\BTIterAdapter.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\IteratorAdapter.h"\
 	"..\List.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
@@ -779,11 +1480,11 @@
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
 	"..\expr.h"\
+	"..\InternalErr.h"\
 	"..\RValue.h"\
 	"..\TestArray.h"\
 	"..\trace_new.h"\
@@ -793,54 +1494,61 @@
 ..\TestByte.cc : \
 	"..\BaseType.h"\
 	"..\Byte.h"\
-	".\config_dap.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
 	"..\TestByte.h"\
 	
 
 ..\TestFloat32.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
+	"..\Error.h"\
 	"..\Float32.h"\
+	"..\InternalErr.h"\
 	"..\TestFloat32.h"\
 	
 
 ..\TestFloat64.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
+	"..\Error.h"\
 	"..\Float64.h"\
+	"..\InternalErr.h"\
 	"..\TestFloat64.h"\
 	
 
 ..\TestGrid.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
+	"..\Error.h"\
 	"..\Grid.h"\
+	"..\InternalErr.h"\
 	"..\TestGrid.h"\
 	"..\trace_new.h"\
 	
 
 ..\TestInt16.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
+	"..\Error.h"\
 	"..\Int16.h"\
+	"..\InternalErr.h"\
 	"..\TestInt16.h"\
 	
 
 ..\TestInt32.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
+	"..\Error.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\TestInt32.h"\
 	
 
 ..\TestList.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
 	"..\expr.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\RValue.h"\
 	"..\TestList.h"\
@@ -850,8 +1558,10 @@
 
 ..\TestSequence.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\debug.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
 	"..\Sequence.h"\
 	"..\TestSequence.h"\
 	"..\trace_new.h"\
@@ -859,8 +1569,9 @@
 
 ..\TestStr.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
 	"..\Str.h"\
 	"..\TestStr.h"\
 	
@@ -868,10 +1579,11 @@
 ..\TestStructure.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
-	"..\debug.h"\
+	"..\Error.h"\
 	"..\expr.h"\
+	"..\InternalErr.h"\
 	"..\RValue.h"\
 	"..\Structure.h"\
 	"..\TestStructure.h"\
@@ -880,25 +1592,67 @@
 
 ..\TestUInt16.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
 	"..\TestUInt16.h"\
 	"..\UInt16.h"\
 	
 
 ..\TestUInt32.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
 	"..\TestUInt32.h"\
 	"..\UInt32.h"\
 	
 
 ..\TestUrl.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
 	"..\Str.h"\
 	"..\TestUrl.h"\
 	"..\Url.h"\
+	
+
+..\ThreadTest.cc : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\Connect.h"\
+	"..\Constructor.h"\
+	"..\DAS.h"\
+	"..\DataDDS.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\HTTPCache.h"\
+	"..\HTTPCacheDisconnectedMode.h"\
+	"..\HTTPConnect.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\RCReader.h"\
+	"..\ResponseTooBigErr.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
 	
 
 ..\UInt16.cc : \
@@ -906,7 +1660,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -919,6 +1673,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\Operators.h"\
 	"..\parser.h"\
@@ -939,7 +1694,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -952,6 +1707,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\Operators.h"\
 	"..\parser.h"\
@@ -969,10 +1725,46 @@
 
 ..\Url.cc : \
 	"..\BaseType.h"\
-	".\config_dap.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
 	"..\Str.h"\
 	"..\Url.h"\
+	
+
+..\usage.cc : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\cgi_util.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DAS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\EncodingType.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\ObjectType.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
 	
 
 ..\util.cc : \
@@ -980,7 +1772,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -993,6 +1785,7 @@
 	"..\GSEClause.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
@@ -1007,21 +1800,28 @@
 	"..\Vector.h"\
 	
 
+..\util_mit.cc : \
+	"..\debug.h"\
+	
+
 ..\Vector.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	".\config_dap.h"\
+	"..\Constructor.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\escaping.h"\
 	"..\expr.h"\
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
+	"..\InternalErr.h"\
 	"..\List.h"\
 	"..\RValue.h"\
 	"..\Sequence.h"\
@@ -1033,4 +1833,127 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
+	
+
+..\VirtualCtorArray.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\RValue.h"\
+	"..\Vector.h"\
+	
+
+..\VirtualCtorByte.cc : \
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	
+
+..\VirtualCtorFloat32.cc : \
+	"..\BaseType.h"\
+	"..\Error.h"\
+	"..\Float32.h"\
+	"..\InternalErr.h"\
+	
+
+..\VirtualCtorFloat64.cc : \
+	"..\BaseType.h"\
+	"..\Error.h"\
+	"..\Float64.h"\
+	"..\InternalErr.h"\
+	
+
+..\VirtualCtorGrid.cc : \
+	"..\BaseType.h"\
+	"..\Constructor.h"\
+	"..\Error.h"\
+	"..\Grid.h"\
+	"..\InternalErr.h"\
+	"..\trace_new.h"\
+	
+
+..\VirtualCtorInt16.cc : \
+	"..\BaseType.h"\
+	"..\Error.h"\
+	"..\Int16.h"\
+	"..\InternalErr.h"\
+	
+
+..\VirtualCtorInt32.cc : \
+	"..\BaseType.h"\
+	"..\Error.h"\
+	"..\Int32.h"\
+	"..\InternalErr.h"\
+	
+
+..\VirtualCtorList.cc : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\DDS.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Vector.h"\
+	
+
+..\VirtualCtorSequence.cc : \
+	"..\BaseType.h"\
+	"..\Constructor.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	"..\Sequence.h"\
+	"..\trace_new.h"\
+	
+
+..\VirtualCtorStr.cc : \
+	"..\BaseType.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	"..\Str.h"\
+	
+
+..\VirtualCtorStructure.cc : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\Constructor.h"\
+	"..\DDS.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\InternalErr.h"\
+	"..\RValue.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	
+
+..\VirtualCtorUInt16.cc : \
+	"..\BaseType.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	"..\UInt16.h"\
+	
+
+..\VirtualCtorUInt32.cc : \
+	"..\BaseType.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	"..\UInt32.h"\
+	
+
+..\VirtualCtorUrl.cc : \
+	"..\BaseType.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\InternalErr.h"\
+	"..\Str.h"\
+	"..\Url.h"\
 	
