@@ -10,6 +10,9 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.34  1998/03/17 17:32:00  jimg
+// Added an implmentation of element_count().
+//
 // Revision 1.33  1997/09/22 23:02:10  jimg
 // Added DDS * to deserialize parameters.
 //
@@ -235,6 +238,21 @@ Grid::operator=(const Grid &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+int
+Grid::element_count(bool leaves)
+{
+    if (!leaves)
+	return _map_vars.length() + 1;
+    else {
+	int i = 0;
+	for (Pix p = first_map_var(); p; next_map_var(p))
+	    i += map_var(p)->element_count(leaves);
+
+	i += array_var()->element_count(leaves);
+	return i;
+    }
 }
 
 void
