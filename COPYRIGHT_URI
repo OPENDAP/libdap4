@@ -1,5 +1,5 @@
 
-  $Id: COPYRIGHT_URI,v 1.2 2003/12/08 18:02:29 edavis Exp $
+  $Id: COPYRIGHT_URI,v 1.3 2005/03/18 21:31:11 jimg Exp $
 
   (c) Copyright 1994-2000 by
   The University of Rhode Island and The Massachusetts Institute of Technology
@@ -13,16 +13,14 @@
   or cost, to use, copy, modify, alter, enhance and distribute this software,
   and any derivative works thereof, and its supporting documentation for any
   purpose whatsoever, provided that this entire notice appears in all copies
-  of the software, derivative works and supporting documentation.  Further,
-  the user agrees to credit URI/MIT in any publications that result from the
-  use of this software or in any product that includes this software. The
-  names URI, MIT and/or GSO, however, may not be used in any advertising or
-  publicity to endorse or promote any products or commercial entity unless
-  specific written permission is obtained from URI/MIT. The user also
-  understands that URI/MIT is not obligated to provide the user with any
-  support, consulting, training or assistance of any kind with regard to the
-  use, operation and performance of this software nor to provide the user
-  with any updates, revisions, new versions or "bug fixes".
+  of the software, derivative works and supporting documentation. The names
+  URI, MIT and/or GSO, may not be used in any advertising or publicity to
+  endorse or promote any products or commercial entity unless specific
+  written permission is obtained from URI/MIT. The user also understands that
+  URI/MIT is not obligated to provide the user with any support, consulting,
+  training or assistance of any kind with regard to the use, operation and
+  performance of this software nor to provide the user with any updates,
+  revisions, new versions or "bug fixes".
 
   THIS SOFTWARE IS PROVIDED BY URI/MIT "AS IS" AND ANY EXPRESS OR IMPLIED
   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
