@@ -17,6 +17,10 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.30  1998/08/31 21:47:31  jimg
+ * Changed check_semantics so that the array and map vectors must of composed
+ * of simple-type elements.
+ *
  * Revision 1.29  1998/03/17 17:32:36  jimg
  * Added an implementation of element_count().
  *
@@ -343,6 +347,9 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
+    /** Return true if this Grid is well formed. The array dimensions and
+	number of map vectors must match and both the array and maps must be
+	of simple-type elements. */
     virtual bool check_semantics(String &msg, bool all = false);
 };
 
