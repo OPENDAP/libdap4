@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.7 2003/02/27 23:36:10 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.8 2003/03/04 17:28:37 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -49,12 +49,13 @@ static char rcsid[] not_used =
 #include <sstream>
 #endif
 
-// #define DODS_DEBUG 1
 #include "debug.h"
 #include "Regex.h"
 #include "HTTPConnect.h"
 #include "HTTPCache.h"
 #include "RCReader.h"
+#include "HTTPResponse.h"
+#include "HTTPCacheResponse.h"
 
 using std::cerr;
 using std::endl;
@@ -84,9 +85,10 @@ int www_trace = 0;
     them ans set special fields for certain headers special to the DAP. */
 
 struct ParseHeader : public unary_function<const string &, void> {
-    HTTPConnect *d_http;
+    ObjectType type;		// What type of object is in the stream?
+    string server;		// Server's version string.
 
-    ParseHeader(HTTPConnect *http) : d_http(http) {}
+    ParseHeader() :type(unknown_type), server("dods/0.0") { }
 
     void operator()(const string &header) {
 #ifdef WIN32
@@ -102,21 +104,21 @@ struct ParseHeader : public unary_function<const string &, void> {
 	    line >> value;
 	    downcase(value);
 	    DBG2(cout << name << ": " << value << endl);
-	    d_http->d_type = get_type(value);
+	    type = get_type(value);
 	}
 	else if (name == "xdods-server:") {
 	    string value; 
 	    line >> value;
 	    downcase(value);
 	    DBG2(cout << name << ": " << value << endl);
-	    d_http->d_server = value;
+	    server = value;
 	}
-	else if (d_http->d_server == "dods/0.0" && name == "server:") {
+	else if (server == "dods/0.0" && name == "server:") {
 	    string value; 
 	    line >> value;
 	    downcase(value);
 	    DBG2(cout << name << ": " << value << endl);
-	    d_http->d_server = value;
+	    server = value;
 	}
     }
 };
@@ -316,8 +318,7 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
     file information to be used by this virtual connection. */
 
 HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
-    : d_username(""), d_password(""), d_is_response_present(false),
-      d_type(unknown_type), d_server("dods/0.0"), d_cached_response(false)
+    : d_username(""), d_password("")
 {
     d_accept_deflate = rcr->get_deflate();
     d_rcr = rcr;
@@ -340,11 +341,13 @@ HTTPConnect::~HTTPConnect()
 {
     DBG2(cerr << "Entering the HTTPConnect dtor" << endl);
 
+#if 0
 #if defined(WIN32) || defined(TEST_WIN32_TEMPS)
     //  Get rid of any intermediate files
     std::vector < string >::const_iterator i;
     for (i = d_tfname.begin(); i != d_tfname.end(); i++)
 	remove((*i).c_str());
+#endif
 #endif
 
     curl_easy_cleanup(d_curl);
@@ -364,24 +367,25 @@ HTTPConnect::~HTTPConnect()
     @exception InternalErr Thrown if a temporary file to hold the response
     could not be opened. */
 
-FILE *
+Response *
 HTTPConnect::fetch_url(const string &url) throw(Error, InternalErr)
 {
     // Clear/Reset values from previous requests.
-    d_type = unknown_type;
     d_headers.clear();
-    d_is_response_present = false;
-    FILE *stream;
+    Response *stream;
 
     if (d_http_cache->is_cache_enabled())
 	stream = caching_fetch_url(url);
     else
 	stream = plain_fetch_url(url);
+    
+    ParseHeader parser;
+    parser = for_each(d_headers.begin(), d_headers.end(), ParseHeader());
 
-    for_each(d_headers.begin(), d_headers.end(), ParseHeader(this));
-
-    d_is_response_present = true;
-
+    stream->set_type(parser.type);
+    stream->set_version(parser.server);
+    stream->set_headers(d_headers);
+    
     return stream;
 }
 
@@ -410,13 +414,8 @@ HTTPConnect::get_temp_file(FILE *&stream) throw(InternalErr)
     char *dods_temp = get_tempfile_template("dodsXXXXXX");
 
     // Open truncated for update. NB: mkstemp() returns a file descriptor.
-    // On WIN32 unlink removes the file regardless of other open descriptors;
-    // on Unix the file exists until no process holds an open descriptor to
-    // it. 
 #if defined(WIN32) || defined(TEST_WIN32_TEMPS)
     stream = fopen(_mktemp(dods_temp), "w+b");
-    if (stream)
-	d_tfname.push_back(string(dods_temp));
 #else
     stream = fdopen(mkstemp(dods_temp), "w+");
 #endif
@@ -427,26 +426,15 @@ HTTPConnect::get_temp_file(FILE *&stream) throw(InternalErr)
     return dods_temp;
 }
 
-/** Simple function that handles freeing the temporary file created using the
-    get_temp_File() method. This function, under UNIX, also removes the name
-    from the file system. If the caller has the file open, it can still use
-    that descriptor/FILE pointer. This trick keeps us from having to remember
-    to delete the temp file. The file is deleted even if the process calls
-    abort(). We can't do this under Win32.
-
-    @param dods_temp The name of the temporary file to delete. This pointer
-    \e should have been returned by get_temp_file(). */
-
-static inline void
-delete_temp_file(char *dods_temp)
+/** Close the temporary file opened for read_url(). */
+inline void
+close_temp(FILE *s, const string &name)
 {
-#ifndef WIN32
-    if (!keep_temps)
-	unlink(dods_temp);
-    else
-	cerr << "Temporary file for Data: " << dods_temp << endl;
-#endif
-    delete[] dods_temp;
+    int res = fclose(s);
+    if (res)
+	DBG(cerr << "Failed to close " << (void *)s << endl);
+	
+    unlink(name.c_str());
 }
 
 /** Dereference a URL. This method looks first in the HTTP cache to see if a
@@ -456,6 +444,11 @@ delete_temp_file(char *dods_temp)
     cases, the information returned by dereferencing the URL will be stored
     in the cache. 
     
+    Return a Response pointer to fetch_url() which, in turn, uses
+    ParseHeaders to read stuff from d_headers and fills in the Response
+    version and type fields. Thus this method and plain_fetch_url() only have
+    to get the stream pointer set, the resources to release and d_headers.
+
     A private method.
 
     @param url The URL to dereference.
@@ -464,90 +457,89 @@ delete_temp_file(char *dods_temp)
     @exception InternalErr Thrown if a temporary file to hold the response
     could not be opened. */
 
-FILE *
+Response *
 HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 {
-    FILE *stream;
     DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
+
     if (d_http_cache->is_url_in_cache(url)) { // url in cache
-	DBG(cerr << "yes... ");
+	DBGN(cerr << "yes... ");
+
 	if (d_http_cache->is_url_valid(url)) { // url in cache and valid
-	    DBG(cerr << "and it's valid; using cached response." << endl);
-	    stream = d_http_cache->get_cached_response(url, d_headers);
-	    d_cached_response = true;
+	    DBGN(cerr << "and it's valid; using cached response." << endl);
+
+	    FILE *s = d_http_cache->get_cached_response(url, d_headers);
+	    HTTPCacheResponse *crs = new HTTPCacheResponse(s, d_http_cache);
+	    
+	    return crs;
 	}
 	else {			// url in cache but not valid; validate
-	    DBG(cerr << "but it's not valid; validating... ");
+	    DBGN(cerr << "but it's not valid; validating... ");
+
 	    vector<string> cond_hdrs 
 		= d_http_cache->get_conditional_request_headers(url);
 	    FILE *body = 0;
-	    char *dods_temp = get_temp_file(body);
+	    string dods_temp = get_temp_file(body);
 	    time_t now = time(0); // When was the request made (now).
 	    long http_status;
 
 	    try {
 		http_status = read_url(url, body, &cond_hdrs);
+		rewind(body);
 	    }
 	    catch(Error &e) {
-		int res = fclose(body);
-		if( res ) {
-		    DBG(cerr << "HTTPConnect::caching_fetch_url - Failed to close " << (void *)body << endl ;) ;
-		}
-		body = 0 ;
-		delete_temp_file(dods_temp);
+		close_temp(body, dods_temp);
 		throw;
 	    }
 
 	    switch (http_status) {
 	      case 200: {		// New headers and new body
-		    DBG(cerr << "read a brand new response; caching." << endl);
+		    DBGN(cerr << "read a new response; caching." << endl);
+
 		    d_http_cache->cache_response(url, now, d_headers, body);
-		    stream = body;
-		    d_cached_response = false;
+		    HTTPResponse *rs = new HTTPResponse(body, dods_temp);
+
+		    return rs;
 		}
 		break;
 
 	      case 304: {		// Just new headers, use cached body
-		    DBG(cerr << "cached response valid; updating." << endl);
-		    int res = fclose(body);
-		    if( res ) {
-			DBG(cerr << "HTTPConnect::caching_fetch_url - Failed to close " << (void *)body << endl ;) ;
-		    }
-		    body = 0 ;
-		    delete_temp_file(dods_temp);
+		    DBGN(cerr << "cached response valid; updating." << endl);
+
+		    close_temp(body, dods_temp);
 		    d_http_cache->update_response(url, now, d_headers);
-		    stream = d_http_cache->get_cached_response_body(url);
-		    d_cached_response = true;
+		    FILE *s = d_http_cache->get_cached_response_body(url);
+		    HTTPCacheResponse *crs = new HTTPCacheResponse(s, d_http_cache);
+		    return crs;
 		}
 		break;
 
 	      default: {		// Oops.
-		    int res = fclose(body);
-		    if( res ) {
-			DBG(cerr << "HTTPConnect::caching_fetch_url - Failed to close " << (void *)body << endl ;) ;
-		    }
-		    body = 0 ;
-		    delete_temp_file(dods_temp);
-		    throw Error("Bad response from the HTTP server: This implemenation of the DAP does not understand how to handle an HTTP status response of " + long_to_string(http_status));
+		  close_temp(body, dods_temp);
+
+		  throw Error("Bad response from the HTTP server: This implemenation of the DAP does not understand how to handle an HTTP status response of " + long_to_string(http_status));
 		}
 		break;
 	    }
 	}
     }
     else {			// url not in cache; get it and cache it
-	DBG(cerr << "no; getting response and caching." << endl);
+	DBGN(cerr << "no; getting response and caching." << endl);
 	time_t now = time(0);
-	stream = plain_fetch_url(url);
-	d_http_cache->cache_response(url, now, d_headers, stream);
-	d_cached_response = false;
+	Response *rs = plain_fetch_url(url);
+	d_http_cache->cache_response(url, now, d_headers, rs->get_stream());
+	
+	return rs;
     }
 
-    return stream;
+    throw InternalErr(__FILE__, __LINE__, "Unexpected cache response.");
 }
 
-/** Dereference a URL and load its body into a temporary file. Use
-    HTTPConnect::output() to get a pointer to that temporary file. This
+
+/** Dereference a URL and load its body into a temporary file. This
     method ignores the HTTP cache.
+
+    @todo make this return a Response or HTTPResponse.
     
     A private method.
 
@@ -557,91 +549,24 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
     @exception InternalErr Thrown if a temporary file to hold the response
     could not be opened. */
 
-FILE *
+Response *
 HTTPConnect::plain_fetch_url(const string &url) throw(Error, InternalErr)
 {
     DBG(cerr << "Getting URL: " << url << endl);
     FILE *stream = 0;
-    char *dods_temp = get_temp_file(stream);
+    string dods_temp = get_temp_file(stream);
 
     try {
 	read_url(url, stream);	// Throws Error.
     }
     catch(...) {
-	int res = fclose(stream);
-	if( res ) {
-	    DBG(cerr << "HTTPConnect::plain_fetch_url - Failed to close " << (void *)stream << endl ;) ;
-	}
-	stream = 0 ;
-	delete_temp_file(dods_temp);
+	close_temp(stream, dods_temp);
 	throw;
     }
 
-    rewind(stream);		// This may break on linux 2.2; in that case,
-				// close and reopen the file. However, this
-				// bug might have been a problem in libwww
-    delete_temp_file(dods_temp);
+    rewind(stream);
 
-    d_cached_response = false;
-
-    return stream;
-}
-
-/** True if fetch_url() has been called and a response has been received. 
-    @deprecated */
-
-bool
-HTTPConnect::is_response_present()
-{
-    return d_is_response_present;
-}
-
-/** Get the HTTP response headers. 
-    @return A vector of strings, one string for each header. 
-    @exeception IntenalErr The is_response_present() property is false. */
-
-std::vector<string>
-HTTPConnect::get_response_headers() throw(InternalErr)
-{
-    if (!d_is_response_present)
-	throw InternalErr(__FILE__, __LINE__, "Caller tried to access invalid response information");
-
-    return d_headers;
-}
-
-/** During the parse of the message headers returned from the dereferenced
-    URL, the object type is set. Use this function to read that type
-    information. This will be valid {\it before} the return object is
-    completely parsed so it can be used to decide which parser to call to
-    read the data remaining in the input stream.
-
-    The object types are Data, DAS, DDS, Error, and undefined.
-
-    @memo What type is the most recent object sent from the server?
-
-    @return The type of the object.
-    @see ObjectType 
-    @exeception IntenalErr The is_response_present() property is false. */
-
-ObjectType 
-HTTPConnect::type() throw(InternalErr)
-{
-    if (!d_is_response_present)
-	throw InternalErr(__FILE__, __LINE__, "Caller tried to access response invalid response information");
-
-    return d_type;
-}
-
-/** Returns a string containing the version of DODS used by the server. 
-    @exeception IntenalErr The is_response_present() property is false. */
-
-string 
-HTTPConnect::server_version() throw(InternalErr)
-{
-    if (!d_is_response_present)
-	throw InternalErr(__FILE__, __LINE__, "Caller tried to access response invalid response information");
-
-    return d_server;
+    return new HTTPResponse(stream, dods_temp);
 }
 
 /** Set the <c>accept deflate</c> property. If true, the DAP client announces
@@ -665,6 +590,8 @@ HTTPConnect::set_accept_deflate(bool deflate)
     (say using a pop up dialog) and to not hack the URL to pass that
     information to libcurl. Note that the 'credentials in the URL' scheme \i
     is part of the URL standard.
+
+    This method does nothing if \c u, the username, is empty.
 	
     @param u The username.
     @param p The password. 
@@ -673,8 +600,12 @@ HTTPConnect::set_accept_deflate(bool deflate)
     @see extract_auth_info() */
 
 void 
-HTTPConnect::set_credentials(string u, string p) throw(InternalErr)
+HTTPConnect::set_credentials(const string &u, const string &p) 
+    throw(InternalErr)
 {
+    if (u.empty())
+	return;
+
     // Store the credentials locally.
     d_username = u;
     d_password = p;
@@ -687,6 +618,10 @@ HTTPConnect::set_credentials(string u, string p) throw(InternalErr)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.8  2003/03/04 17:28:37  jimg
+// Switched to Response objects. Removed unneeded methods. The Response objects
+// now control the release of resources such as deleting temporary files, et c.
+//
 // Revision 1.7  2003/02/27 23:36:10  jimg
 // Added set_accept_deflate() method.
 //

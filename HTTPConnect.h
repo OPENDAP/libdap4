@@ -50,6 +50,10 @@
 #include "HTTPCache.h"
 #endif
 
+#ifndef response_h
+#include "Response.h"
+#endif
+
 #ifndef _util_h
 #include "util.h"
 #endif
@@ -83,6 +87,7 @@ private:
     RCReader *d_rcr;
     HTTPCache *d_http_cache;
 
+#if 0
 #ifdef WIN32
     // We need to keep the different filenames associated with d_output
     // (over time) around under win32 because an unlink() at time 'now'
@@ -92,6 +97,7 @@ private:
     // Connect destructor using d_tfname to remove such intermediate
     // files..
     vector<string> d_tfname;			
+#endif
 #endif
 
     char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
@@ -103,20 +109,28 @@ private:
     string d_password;		// extracted from URL
     string d_upstring;		// used to pass info into curl
 
+#if 0
     bool d_is_response_present;	// Is there something to look at?
+#endif
 
     // These four members are valid only after a fetch_url() call.
+    // *** Try to remove this field. 03/03/03 jhrg
     vector<string> d_headers;	// Response headers
+#if 0
     ObjectType d_type;		// What type of object is in the stream?
     string d_server;		// Server's version string.
+    // *** I think this can be removed.02/28/03 jhrg
     bool d_cached_response;	// True if response was from cache.
+#endif
 
     void www_lib_init() throw(Error, InternalErr);
     long read_url(const string &url, FILE *stream,
 		  const vector<string> *headers = 0) throw(Error);
     char *get_temp_file(FILE *&stream) throw(InternalErr);
-    FILE *plain_fetch_url(const string &url) throw(Error, InternalErr);
-    FILE *caching_fetch_url(const string &url) throw(Error, InternalErr);
+    Response *plain_fetch_url(const string &url) 
+	throw(Error, InternalErr);
+    Response *caching_fetch_url(const string &url) 
+	throw(Error, InternalErr);
 
     bool url_uses_proxy_for(const string &url) throw();
     bool url_uses_no_proxy_for(const string &url) throw();
@@ -131,24 +145,28 @@ private:
     friend struct ParseHeader;
 
 protected:
-    // These methods are not supported and are implmented here as private
-    // methods to suppress the C++-supplied default versions (which will
-    // break this object). 6/14/2002 jhrg
+    /** @name Suppress default methods
+	These methods are not supported and are implmented here as protected
+	methods to suppress the C++-supplied default versions (which will
+	break this object). */
+    //@{
     HTTPConnect() { }
     HTTPConnect(const HTTPConnect &copy_from) { }
     HTTPConnect &operator=(const HTTPConnect &rhs) { 
-	throw InternalErr(__FILE__, __LINE__, "Call to unsupported op=");
+	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }
+    //@}
 
 public:
     HTTPConnect(RCReader *rcr) throw(Error, InternalErr);
 
     virtual ~HTTPConnect();
 
-    void set_credentials(string u, string p) throw(InternalErr);
+    void set_credentials(const string &u, const string &p) throw(InternalErr);
     void set_accept_deflate(bool defalte);
 
-    FILE *fetch_url(const string &url) throw(Error, InternalErr);
+    Response *fetch_url(const string &url) throw(Error, InternalErr);
+#if 0
     bool is_response_present();
 
     vector<string> get_response_headers() throw(InternalErr);
@@ -156,9 +174,14 @@ public:
     // names. 02/27/03 jhrg
     ObjectType type() throw(InternalErr);
     string server_version() throw(InternalErr);
+#endif
 };
 
 // $Log: HTTPConnect.h,v $
+// Revision 1.7  2003/03/04 17:28:18  jimg
+// Switched to Response objects. Removed unneeded methods. The Response objects
+// now control the release of resources such as deleting temporary files, et c.
+//
 // Revision 1.6  2003/02/27 23:36:10  jimg
 // Added set_accept_deflate() method.
 //
