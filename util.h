@@ -12,9 +12,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.17  1996/11/27 22:40:30  jimg
-/* Added DDS as third parameter to function in the CE evaluator
+/* Revision 1.18  1996/12/02 23:19:05  jimg
+/* Changed int_ops prototypes so that they use the dods_{uint,int}32 datatypes.
 /*
+ * Revision 1.17  1996/11/27 22:40:30  jimg
+ * Added DDS as third parameter to function in the CE evaluator
+ *
  * Revision 1.16  1996/11/25 03:45:08  jimg
  * Added prototypes for new functions.
  *
@@ -110,14 +113,14 @@ BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
 BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
 bool byte_ops(int i1, int i2, int op);
-bool int_ops(int i1, int i2, int op);
+bool int_ops(dods_int32 i1, dods_int32 i2, int op);
+bool int_ops(dods_uint32 i1, dods_int32 i2, int op);
+bool int_ops(dods_int32 i1, dods_uint32 i2, int op);
+bool int_ops(dods_uint32 i1, dods_uint32 i2, int op);
 bool double_ops(double i1, double i2, int op);
 bool string_ops(String &i1, String &i2, int op);
 
 extern "C" bool_t xdr_str(XDR *xdrs, String &buf);
-#if 0
-extern "C" bool_t xdr_str_array(XDR *xdrs, String *buf);
-#endif
 
 Byte *NewByte(const String &n = (char *)0);
 Int32 *NewInt32(const String &n = (char *)0);
