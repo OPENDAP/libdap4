@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1996,1998,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,6 +11,9 @@
 // the same values on all machines.
 
 // $Log: dods-limits.h,v $
+// Revision 1.8  1999/05/04 19:47:24  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.7  1999/03/19 21:42:07  jimg
 // Added constants for floating point values. Changed some formatting.
 //

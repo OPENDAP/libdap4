@@ -19,6 +19,9 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.38  1999/05/04 19:47:22  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.37  1999/04/29 02:29:31  jimg
  * Merge of no-gnu branch
  *
@@ -311,7 +314,7 @@
 class Sequence: public BaseType {
 private:
     // Linked list of variables in this sequence.
-    SLList<BaseTypePtr> _vars;
+    SLList<BaseType *> _vars;
 
     // Level number in a multilevel sequence.
     int _level;			

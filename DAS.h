@@ -14,6 +14,9 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.23  1999/05/04 19:47:20  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.22  1999/04/29 02:29:28  jimg
  * Merge of no-gnu branch
  *
@@ -111,11 +114,14 @@
 #pragma interface
 #endif
 
-#if 0
-#include "DASVHMap.h"
-#endif
+#include <stdio.h>
+
+#include <string>
+#include <iostream>
 
 #include "SLList.h"
+#include "Pix.h"
+
 #include "AttrTable.h"
 
 /** The Data Attribute Structure is a set of name-value pairs used to

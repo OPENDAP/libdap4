@@ -31,6 +31,9 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.24  1999/05/04 19:47:23  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.23  1999/04/29 02:29:36  jimg
  * Merge of no-gnu branch
  *
@@ -122,7 +125,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.23 1999/04/29 02:29:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.24 1999/05/04 19:47:23 jimg Exp $"};
 
 #include <string.h>
 
@@ -151,7 +154,6 @@ MAPS 		MAPS|Maps|maps
 LIST 		LIST|List|list
 SEQUENCE 	SEQUENCE|Sequence|sequence
 STRUCTURE 	STRUCTURE|Structure|structure
-FUNCTION 	FUNCTION|Function|function
 GRID 		GRID|Grid|grid
 BYTE 		BYTE|Byte|byte
 INT16 		INT16|Int16|int16
@@ -178,7 +180,6 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 {LIST}			ddslval = yytext; return LIST;
 {SEQUENCE}		ddslval = yytext; return SEQUENCE;
 {STRUCTURE}		ddslval = yytext; return STRUCTURE;
-{FUNCTION}		ddslval = yytext; return FUNCTION;
 {GRID}			ddslval = yytext; return GRID;
 {BYTE}			ddslval = yytext; return BYTE;
 {INT16}			ddslval = yytext; return INT16;

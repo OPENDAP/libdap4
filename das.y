@@ -17,6 +17,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.35  1999/05/04 19:47:23  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.34  1999/04/29 02:29:35  jimg
  * Merge of no-gnu branch
  *
@@ -176,7 +179,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.34 1999/04/29 02:29:35 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.35 1999/05/04 19:47:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -220,7 +223,7 @@ extern int das_line_num;	/* defined in das.lex */
 static string name;	/* holds name in attr_pair rule */
 static string type;	/* holds type in attr_pair rule */
 
-static vector<AttrTablePtr> *attr_tab_stack;
+static vector<AttrTable *> *attr_tab_stack;
 
 // I use a vector of AttrTable pointers for a stack
 
@@ -313,7 +316,7 @@ attribute:    	ATTR
                 /* Create the AttrTable stack if necessary */
                 {
 		    if (!attr_tab_stack)
-			attr_tab_stack = new vector<AttrTablePtr>;
+			attr_tab_stack = new vector<AttrTable *>;
 		}
                 '{' attr_list '}'
                 | error

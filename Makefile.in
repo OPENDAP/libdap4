@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.96 1999/04/29 18:40:03 jimg Exp $
+# $Id: Makefile.in,v 1.97 1999/05/04 19:47:21 jimg Exp $
 
 @SET_MAKE@
 
@@ -83,7 +83,7 @@ DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
 EXPR_GRAM_OBJS = lex.expr.o expr.tab.o RValue.o
 ERROR_GRAM_OBJS = lex.Error.o Error.tab.o
-GSE_GRAM_OBJS = lex.gse.o gse-test.o gse.tab.o
+GSE_GRAM_OBJS = lex.gse.o gse.tab.o
 GRAM_SRCS = lex.das.c das.tab.c lex.dds.c dds.tab.c lex.expr.c expr.tab.c \
 	    RValue.cc lex.Error.c Error.tab.c lex.gse_.c gse.tab.c
 
@@ -99,22 +99,21 @@ EXPRHDRS = expr.h Clause.h RValue.h
 EXPRSRCS = Clause.cc RValue.cc
 EXPROBJS = Clause.o RValue.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
 
-ERRORHDRS = Error.h
-ERROROBJS = Error.o $(ERROR_GRAM_OBJS)
-ERRORSRCS = Error.cc
+ERRORHDRS = Error.h InternalErr.h
+ERROROBJS = Error.o InternalErr.o $(ERROR_GRAM_OBJS)
+ERRORSRCS = Error.cc InternalErr.cc
 
 TYPEHDRS = BaseType.h Byte.h Int32.h \
 	   Float64.h Str.h Url.h Vector.h List.h Array.h Structure.h \
-	   Sequence.h Function.h Grid.h UInt32.h util.h \
-	   Int16.h UInt16.h Float32.h
+	   Sequence.h Grid.h UInt32.h util.h Int16.h UInt16.h Float32.h
 
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
-	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc Function.cc \
+	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc \
 	   Grid.cc UInt32.cc util.cc ce_functions.cc GSEClause.cc \
 	   Int16.cc UInt16.cc Float32.cc 
 
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
-	   Vector.o List.o Array.o Structure.o Sequence.o Function.o Grid.o \
+	   Vector.o List.o Array.o Structure.o Sequence.o Grid.o \
            UInt32.o util.o ce_functions.o GSEClause.o $(GSE_GRAM_OBJS) \
 	   Int16.o UInt16.o Float32.o 
 
@@ -130,13 +129,11 @@ GNUHDRS = GNU/Pix.h \
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc \
-	   TestFunction.cc TestGrid.cc TestUInt32.cc TestInt16.cc \
-	   TestUInt16.cc TestFloat32.cc
+	   TestGrid.cc TestUInt32.cc TestInt16.cc TestUInt16.cc TestFloat32.cc
 
 TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 	   TestArray.o TestStructure.o TestList.o TestSequence.o \
-	   TestFunction.o TestGrid.o TestUInt32.o TestInt16.o \
-	   TestUInt16.o TestFloat32.o
+	   TestGrid.o TestUInt32.o TestInt16.o TestUInt16.o TestFloat32.o
 
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
@@ -476,7 +473,7 @@ depend:
 	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS)
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
-  Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h Grid.h 
+  Str.h Url.h Array.h List.h Structure.h Sequence.h Grid.h 
 
 das.tab.c: DAS.h
 

@@ -11,6 +11,9 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.35  1999/05/04 19:47:23  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.34  1999/04/29 02:29:34  jimg
 // Merge of no-gnu branch
 //
@@ -168,7 +171,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.34 1999/04/29 02:29:34 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.35 1999/05/04 19:47:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -197,6 +200,23 @@ static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
 
 // The next two functions are helpers used to simplify creating the *_dods
 // filter programs.
+
+void
+usage(const string &name)
+{
+    // Write a message to the WWW server error log file.
+    const string msg = " [-c] <dataset> [constraint]";
+    const string msg2 = " -v [<script_version> <dataset>]";
+    string usage = "Usage: " + name + msg + "\n" + name + msg2;
+
+    ErrMsgT(usage);
+
+    // Build an error object to return to the user.
+    Error *ErrorObj = new Error(no_such_file, 
+			(string)"\"DODS internal error; missing parameter.\"");
+    set_mime_text(cout, dods_error);
+    ErrorObj->print(cout);
+}    
 
 void
 usage(const char *name)
@@ -325,8 +345,7 @@ find_ancillary_file(string pathname, string ext, string dir, string file)
 // netCDF file name with the addition of .dds
 
 bool
-read_ancillary_dds(DDS &dds, string dataset, string dir, 
-		   string file)
+read_ancillary_dds(DDS &dds, string dataset, string dir, string file)
 {
     string name = find_ancillary_file(dataset, "dds", dir, file);
     FILE *in = fopen(name.c_str(), "r");
@@ -355,8 +374,7 @@ read_ancillary_dds(DDS &dds, string dataset, string dir,
 }
     
 bool
-read_ancillary_das(DAS &das, string dataset, string dir,
-		   string file)
+read_ancillary_das(DAS &das, string dataset, string dir, string file)
 {
     string name = find_ancillary_file(dataset, "das", dir, file);
     FILE *in = fopen(name.c_str(), "r");
@@ -392,7 +410,7 @@ read_ancillary_das(DAS &das, string dataset, string dir,
 // Returns: void
 
 void 
-ErrMsgT(const string Msgt)
+ErrMsgT(const string &Msgt)
 {
     time_t TimBin;
     char TimStr[TimLen];
@@ -423,6 +441,23 @@ ErrMsgT(const string Msgt)
 // Returns: A filename, with path and extension information removed. If
 // memory for the new name cannot be allocated, does not return!
 
+string
+name_path(const string &path)
+{
+    if (path == "")
+	return string("");
+
+    size_t delim = path.find_last_of(FILE_DELIMITER);
+
+    string new_path = path.substr(delim + 1);
+
+    if ((delim = new_path.find(".")) != string::npos)
+	new_path = new_path.substr(0, delim);
+
+    return new_path;
+}
+
+#if 0
 char *
 name_path(const char *path)
 {
@@ -443,6 +478,7 @@ name_path(const char *path)
 
     return newp;
 }
+#endif
 
 // Send string to set the transfer (mime) type and server version
 // Note that the content description filed is used to indicate whether valid

@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.21  1999/05/04 19:47:22  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.20  1999/04/29 02:29:31  jimg
 // Merge of no-gnu branch
 //
@@ -178,7 +181,6 @@ TestArray::read(const string &dataset, int &error)
       case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
-      case dods_function_c:
       case dods_grid_c:
 	
 	// Arrays of Structure, ... must load each element into the array 

@@ -16,6 +16,9 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.32  1999/05/04 19:47:22  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.31  1999/04/29 02:29:31  jimg
  * Merge of no-gnu branch
  *
@@ -220,13 +223,11 @@
     ``shoe\_size'', then you can refer to Tom's shoe size as
     ``Tom.shoe\_size''. 
     
-    @memo Holds a C-style structure.
-    @see Function
-    */
+    @memo Holds a structure (aggregate) type. */
 
 class Structure: public BaseType {
 private:
-    SLList<BaseTypePtr> _vars;
+    SLList<BaseType *> _vars;
     
     void _duplicate(const Structure &s);
     BaseType *leaf_match(const string &name);

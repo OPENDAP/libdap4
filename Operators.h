@@ -11,6 +11,9 @@
 // jhrg 3/24/99
 
 // $Log: Operators.h,v $
+// Revision 1.3  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.2  1999/04/29 02:29:31  jimg
 // Merge of no-gnu branch
 //
@@ -113,15 +116,7 @@ template<class T1, class T2> class StrCmp {
     static bool le(T1 v1, T2 v2) {return v1 <= v2;}
     static bool re(T1 v1, T2 v2) {
 	Regex r(v2.c_str());
-#if 0
-	int status = r.match(v1.c_str(), v1.length());
-#endif
-
 	return r.match(v1.c_str(), v1.length()) > 0;
-#if 0
-	cerr << "v1: " << v1 << " v2: " << v2 << " status: " << status << endl;
-	return status > 0;
-#endif
     }
 };
 

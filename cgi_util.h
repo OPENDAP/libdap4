@@ -37,6 +37,7 @@
     @param name The name of the filter program.
     */
 void usage(const char *name);
+void usage(const string &name);
 
 /** This sends a formatted block of text to the client, containing
     version information about various aspects of the server.  The
@@ -169,7 +170,7 @@ bool read_ancillary_das(DAS &das, string dataset, string dir = "",
 
     @memo Logs an error message.
     */
-void ErrMsgT(const string Msgt);
+void ErrMsgT(const string &Msgt);
 
 /** Given a pathname, this function returns just the file name
     component of the path.  That is, given #/a/b/c/ralph.nc.das#, it
@@ -182,6 +183,7 @@ void ErrMsgT(const string Msgt);
     of the given pathname.
     */
 char *name_path(const char *path);
+string name_path(const string &path);
 
 /** These functions are used to create the MIME header for a message
     from a server to a client.  They can, of course, be used for any

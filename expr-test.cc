@@ -10,6 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.22  1999/05/04 19:47:24  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.21  1999/04/29 02:29:36  jimg
 // Merge of no-gnu branch
 //
@@ -111,7 +114,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.21 1999/04/29 02:29:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.22 1999/05/04 19:47:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -233,11 +236,6 @@ main(int argc, char *argv[])
 	  case 'e':
 	    evaluate_test = true;
 	    break;
-#if 0
-	  case 't':
-	    trans_test = true;
-	    break;
-#endif
 	  case 'c':
 	    print_constrained = true;
 	    break;
@@ -265,9 +263,6 @@ main(int argc, char *argv[])
 	    break;
 	}
 
-#if 0
-    if (!scanner_test && !parser_test && !evaluate_test && !trans_test 
-#endif
     if (!scanner_test && !parser_test && !evaluate_test	&& !whole_enchalada) {
 	cerr << usage << endl;
 	exit(1);
@@ -290,12 +285,6 @@ main(int argc, char *argv[])
     if (evaluate_test) {
 	evaluate_dds(table, print_constrained);
     }
-
-#if 0
-    if (trans_test) {
-	transmit(table, exprdebug || verbose);
-    }
-#endif
 
     if (whole_enchalada) {
 	constrained_trans(dds_file_name, dataset, constraint);
@@ -478,94 +467,6 @@ evaluate_dds(DDS &table, bool print_constrained)
 	for (Pix p = table.first_var(); p; table.next_var(p))
 	    table.var(p)->print_decl(cout, "", true, true);
 }
-
-// Given that a DDS has been created (nominally via read_table() above and
-// that a constraint expression has been entered, send data from the DDS to a
-// second DDS instance via the serialize/deserialize mfuncs. 
-
-#if 0
-bool
-transmit(DDS &write, bool verb)
-{
-    bool status;
-    FILE *pin, *pout;
-
-    status = loopback_pipe(&pin, &pout);
-    if (!status) {
-	cerr << "expr-test: Could not create the loopback streams" << endl;
-	return false;
-    }
-
-    XDR *sink = new_xdrstdio(pout, XDR_ENCODE);
-    XDR *source = new_xdrstdio(pin, XDR_DECODE);
-
-    // duplicate the DDS (create the variables for reading)
-
-    DDS read = write;
-
-    // for each variable in the write DDS, read it (loading it with dummy
-    // values from the mfuncs supplied by the Test classes) and send it. Then
-    // read the variable values back into the read DDS and print the received
-    // values. 
-
-    string dummy = "dummy";
-    Pix wp, rp;
-    for (wp = write.first_var(), rp = read.first_var(); 
-	 wp && rp; 
-	 write.next_var(wp), read.next_var(rp)) {
-
-	// This code only works for scalar variables at the top level of the
-	// DDS. It also ignores the read_p() mfunc.
-	if (write.var(wp)->send_p()) { // only works for scalars
-	    int error = 0;
-	    status = write.var(wp)->read(dummy, error);
-	    if (error)
-		status = false;
-
-	    if (verb) {
-		cout << "Variable to be written:" << endl;
-		write.var(wp)->print_val(cout);
-		cout << endl;
-		cout.flush();
-	    }
-
-	    status = write.var(wp)->serialize(dummy, write, sink, true);
-	    if (!status) {
-		cerr << "Could not write";
-		write.var(wp)->print_decl(cerr);
-		exit(1);
-	    }
-
-	    // The following line passes a pointer to a DDS into a mfunc that
-	    // expects a pointer to a DataDDS (which is accessed via a cast
-	    // for now). This works here only because this function -
-	    // transmit() - can only be used with scalar types which don't
-	    // use the DataDDS. jhrg 9/19/97.
-	    status = read.var(rp)->deserialize(source, &read);
-	    if (!status) {
-		cerr << "Could not read";
-		read.var(wp)->print_decl(cerr);
-		exit(1);
-	    }
-
-	    if (verb)
-		cout << "Variable read:" << endl;
-
-	    read.var(rp)->print_val(cout);
-
-	    if (verb)
-		cout << endl;
-	}
-
-	cout.flush();
-    }
-
-    delete_xdrstdio(sink);
-    delete_xdrstdio(source);
-
-    return true;
-}
-#endif
 
 // create a pipe for the caller's process which can be used by the DODS
 // software to write to ad read from itself.

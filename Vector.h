@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.26  1999/05/04 19:47:23  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.25  1999/04/29 02:29:34  jimg
  * Merge of no-gnu branch
  *
@@ -122,7 +125,6 @@
 #include <rpc/xdr.h>
 
 #include "BaseType.h"
-// #include "BaseTypeVec.h"
 #include "DDS.h"
 
   /** Holds a one-dimensional array of DODS data types.  This class
@@ -159,9 +161,6 @@ private:
 
     void *_buf;			// array which holds cardinal data
 
-#if 0
-    BaseTypePtrVec _vec;	// used for vectors of all other types
-#endif
     vector<BaseType *> _vec;
 
 protected:

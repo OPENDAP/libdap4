@@ -10,6 +10,9 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.9  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.8  1999/04/29 02:29:28  jimg
 // Merge of no-gnu branch
 //
@@ -57,7 +60,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.8 1999/04/29 02:29:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.9 1999/05/04 19:47:21 jimg Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__
@@ -238,7 +241,7 @@ DODSFilter::send_version_info()
     cout << "Core software version: " << DVR << endl;
 
     if (cgi_ver != "")
-	cout << "Server Script Revision: " << cgi_ver << endl;
+	cout << "Server vision: " << cgi_ver << endl;
 
     string v = get_dataset_version();
     if (v != "")

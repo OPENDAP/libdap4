@@ -18,6 +18,9 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.27  1999/05/04 19:47:20  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.26  1999/04/29 02:29:26  jimg
  * Merge of no-gnu branch
  *
@@ -467,8 +470,6 @@ public:
       @memo Prints the attribute table.  */
     void print(ostream &os, string pad = "    ");
 };
-
-typedef AttrTable * AttrTablePtr;
 
 #endif
 

@@ -13,6 +13,9 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.12  1999/05/04 19:47:24  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.11  1999/04/29 02:29:37  jimg
 // Merge of no-gnu branch
 //
@@ -67,7 +70,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.11 1999/04/29 02:29:37 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.12 1999/05/04 19:47:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -341,8 +344,6 @@ fancy_typename(BaseType *v)
 	return "Structure";
       case dods_sequence_c:
 	return "Sequence";
-      case dods_function_c:
-	return "Function";
       case dods_grid_c:
 	return "Grid";
       default:
@@ -350,6 +351,7 @@ fancy_typename(BaseType *v)
     }
 }
 
+// This function does not write #ends# to #vs#. 4/29/99 jhrg
 static void
 write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 {
@@ -357,7 +359,7 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 	<< "</b>:</td>\n"
 	<< "<td align=left valign=top>" << fancy_typename(btp)
 	    << "<br>";
-    //	    << "</td>\n<td align=left valign=top>";
+
     AttrTable *attr = das.get_table(btp->name());
 	    
     if (attr)			// Not all variables have attributes!
@@ -407,25 +409,6 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 	}
 	vs << "</table>\n";
 	break;
-      }
-
-      case dods_function_c: {
-#if 0
-	vs << "<table>\n";
-	Function *fp = (Function *)btp;
-{	for (Pix p = fp->first_indep_var(); p; fp->next_indep_var(p)) {
-	    vs << "<tr>";
-	    write_variable(fp->indep_var(p), das, vs);
-	    vs << "</tr>";
-	}
-}{	for (Pix p = fp->first_dep_var(); p; fp->next_dep_var(p)) {
-	    vs << "<tr>";
-	    write_variable(fp->dep_var(p), das, vs);
-	    vs << "</tr>";
-	}
-}	vs << "</table>\n";
-	break;
-#endif
       }
 
       case dods_grid_c: {

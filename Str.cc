@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.38  1999/05/04 19:47:22  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.37  1999/04/29 02:29:31  jimg
 // Merge of no-gnu branch
 //
@@ -202,16 +205,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.37 1999/04/29 02:29:31 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.38 1999/05/04 19:47:22 jimg Exp $"};
 
 #include <assert.h>
 #include <stdlib.h>
-
-#ifdef __GNUG__
-#include <strstream>
-#else
-#include <sstream>
-#endif
 
 #include "Str.h"
 #include "DDS.h"

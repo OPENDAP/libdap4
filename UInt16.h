@@ -1,7 +1,8 @@
+
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1996,1997,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,6 +12,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt16.h,v $
+// Revision 1.3  1999/05/04 19:47:23  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.2  1999/04/29 02:29:34  jimg
 // Merge of no-gnu branch
 //

@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.53  1999/05/04 19:47:20  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.52  1999/04/29 02:29:27  jimg
  * Merge of no-gnu branch
  *
@@ -307,32 +310,25 @@ class DDS;
 typedef stack<BaseType *> btp_stack;
 
 /** {\bf Part} names the parts of multi-section constructor types.
-    For example, the {\bf Function} class type has two sets of
-    variables, the {\it independent} variables and the {\it dependent}
-    variables.  Similarly, the {\bf Grid} class has an {\it array} and
+    For example, the {\bf Grid} class has an {\it array} and
     the array {\it maps}. Use the {\bf nil} value for data types that
     don't have separate parts.
 
 \begin{verbatim}
 enum Part {
     nil,
-    independent,
-    dependent,
     array,
     maps
 };
 \end{verbatim}
 
     @memo Names the parts of multi-section constructor data types.  
-    @see Function
     @see Grid
     @see BaseType
     */
 
 enum Part {
     nil,			// nil is for types that don't have parts...
-    independent,
-    dependent,
     array,
     maps
 };
@@ -357,7 +353,6 @@ enum Type {
     dods_list_c,
     dods_structure_c,
     dods_sequence_c,
-    dods_function_c,
     dods_grid_c
 };
 \end{verbatim}
@@ -381,7 +376,6 @@ enum Type {
     dods_list_c,
     dods_structure_c,
     dods_sequence_c,
-    dods_function_c,
     dods_grid_c
 };
 
@@ -897,7 +891,7 @@ public:
   
 	@param msg A returned string, containing a message indicating
 	the source of any problem.
-	@param all For complex constructor types (Function, Grid,
+	@param all For complex constructor types (Grid,
 	Sequence, Structure), this flag indicates whether to check the
 	sematics of the member variables, too.
 
@@ -951,7 +945,5 @@ public:
 	@return The boolean value of the comparison. */
     virtual bool ops(BaseType *b, int op, const string &dataset);
 };
-
-typedef BaseType *BaseTypePtr;
 
 #endif 

@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Str.h,v $
+ * Revision 1.28  1999/05/04 19:47:22  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.27  1999/04/29 02:29:31  jimg
  * Merge of no-gnu branch
  *
@@ -161,14 +164,11 @@
 #pragma interface
 #endif
 
-#ifdef NEVER
-#include <limits.h>
-#endif
-
-#include <string>
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+
+#include <string>
 
 #include "dods-limits.h"
 #include "BaseType.h"

@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1998
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1998-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,6 +11,9 @@
 #define rvalue_h
 
 // $Log: RValue.h,v $
+// Revision 1.4  1999/05/04 19:47:22  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.3  1999/04/29 02:29:31  jimg
 // Merge of no-gnu branch
 //

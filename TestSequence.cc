@@ -14,6 +14,9 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.20  1999/05/04 19:47:22  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.19  1999/04/29 02:29:32  jimg
 // Merge of no-gnu branch
 //
@@ -232,7 +235,6 @@ TestSequence::read(const string &dataset, int &error)
 	  case dods_list_c:
 	  case dods_structure_c:
 	  case dods_sequence_c:
-	  case dods_function_c:
 	  case dods_grid_c:
 	  default:
 	    cerr << "Broken Sequence::read() mfunc! This type not implemented"

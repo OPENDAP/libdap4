@@ -11,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.54  1999/05/04 19:47:24  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.53  1999/04/29 03:04:52  jimg
 // Merged ferret changes
 //
@@ -269,7 +272,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.53 1999/04/29 03:04:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.54 1999/05/04 19:47:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -341,7 +344,7 @@ prune_spaces(string name)
 // no duplicate elements, otherwise return false.
 
 bool
-unique_names(SLList<BaseTypePtr> l, const string &var_name, 
+unique_names(SLList<BaseType *> l, const string &var_name, 
 	     const string &type_name, string &msg)
 {
     // copy the identifier names to a vector

@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Url.h,v $
+ * Revision 1.18  1999/05/04 19:47:23  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.17  1999/04/29 02:29:34  jimg
  * Merge of no-gnu branch
  *
@@ -117,10 +120,6 @@
 #pragma interface
 #endif
 
-#ifdef NEVER
-#include <limits.h>
-#endif
-
 #include <string>
 
 #include "dods-limits.h"
@@ -138,7 +137,7 @@ class Url: public Str {
 protected:
     string _buf;
 
-    /** This enable instances of Str to access _buf in this class. */
+    /** This enables instances of Str to access _buf in this class. */
     friend class Str;
 
 public:

@@ -8,6 +8,9 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.8  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.7  1999/04/29 02:29:28  jimg
 // Merge of no-gnu branch
 //
@@ -41,7 +44,12 @@
 #pragma "interface"
 #endif
 
+#include <stdio.h>
+
 #include <string>
+
+#include "DAS.h"
+#include "DDS.h"
 
 /** When a DODS server receives a request from a DODS client, the
     server CGI script dispatches the request to one of several
@@ -83,108 +91,105 @@ private:
     DODSFilter() {}		// Private default ctor.
 
 public:
-  /** Create an instance of DODSFilter using the command line
-      arguments passed by the CGI (or other) program.  The default
-      constructor is private; this and the copy constructor (which is
-      just the default constructor) are the only way to create an
-      instance of DODSFilter.
+    /** Create an instance of DODSFilter using the command line
+	arguments passed by the CGI (or other) program.  The default
+	constructor is private; this and the copy constructor (which is
+	just the default constructor) are the only way to create an
+	instance of DODSFilter.
 
-      These are the valid options:
-      \begin{description}
-      \item[{\it filename}]
-      The name of the file on which the filter is to operate.  Usually
-      this would be the file whose data has been requested.
-      \item[#-c#]
-      Send compressed data.  This is not implemented as of DODS
-      version 2.14.
-      \item[#-e# {\it expression}]
-      This option specifies a non-blank constraint expression used to
-      subsample a dataset.
-      \item[#-v# {\it cgi-version}]
-      Specifies that this request is just for version information.
-      The {\it cgi-version} is the version of the dispatch CGI that
-      invoked this command.  This is passed to the filter program so
-      that it can be formatted into the returned message.
-      \item[#-d# {\it ancdir}]
-      Specifies that ancillary data be sought in the {\it ancdir}
-      directory. 
-      \item[#-f# {\it ancfile}]
-      Specifies that ancillary data may be found in a file called {\it
-      ancfile}.
-      \item[#-t# {\it list of types}]
-      Specifies a list of types accepted by the client. This information is
-      passed to a server by a client using the XDODS-Accept-Types header. The
-      comma separated list contains each type the client can understand
-      \emph{or}, each type the client does \emph{not} understand. In the
-      latter case the type names are prefixed by a {\tt !}. If the list
-      contains only the keyword `All', then the client is declaring that it
-      can understand all DODS types.
-      \end{description}
+	These are the valid options:
+	\begin{description}
+	\item[{\it filename}]
+	The name of the file on which the filter is to operate.  Usually
+	this would be the file whose data has been requested.
+	\item[#-c#]
+	Send compressed data. Data are compressed using the deflate program.
+	The W3C's libwww will recognize this and automatiacally decompress
+	these data.
+	\item[#-e# {\it expression}]
+	This option specifies a non-blank constraint expression used to
+	subsample a dataset.
+	\item[#-v# {\it cgi-version}]
+	Specifies that this request is just for version information.
+	The {\it cgi-version} is the version of the dispatch CGI that
+	invoked this command.  This is passed to the filter program so
+	that it can be formatted into the returned message.
+	\item[#-d# {\it ancdir}]
+	Specifies that ancillary data be sought in the {\it ancdir}
+	directory. 
+	\item[#-f# {\it ancfile}]
+	Specifies that ancillary data may be found in a file called {\it
+	ancfile}.
+	\item[#-t# {\it list of types}]
+	Specifies a list of types accepted by the client. This information is
+	passed to a server by a client using the XDODS-Accept-Types header. The
+	comma separated list contains each type the client can understand
+	\emph{or}, each type the client does \emph{not} understand. In the
+	latter case the type names are prefixed by a {\tt !}. If the list
+	contains only the keyword `All', then the client is declaring that it
+	can understand all DODS types.
+	\end{description}
 
-      @memo DODSFilter constructor.
-      */
+	@memo DODSFilter constructor. */
     DODSFilter(int argc, char *argv[]);
 
     virtual ~DODSFilter();
 
-  /** Use this function to test whether the options passed via argc
-      and argv are valid. 
+    /** Use this function to test whether the options passed via argc
+	and argv are valid. 
 
-      @memo Check whether the DODSFilter was initialized with valid
-      arguments. 
-      @return True if the class state is OK, false otherwise. 
-
-      */
+	@memo Check whether the DODSFilter was initialized with valid
+	arguments. 
+	@return True if the class state is OK, false otherwise. */
     bool OK();
 
-  /** Use this function to check whether the client requested version
-      information.  In addition to returning version information about
-      the DODS software, the server can also provide version
-      information about the dataset itself.
+    /** Use this function to check whether the client requested version
+	information.  In addition to returning version information about
+	the DODS software, the server can also provide version
+	information about the dataset itself.
 
-      @memo Should the filter send version information to the client
-      program?
+	@memo Should the filter send version information to the client
+	program?
 
-      @return TRUE if the -v option was given indicating that the filter
-      should send version information back to the client, FALSE
-      otherwise. 
-      @see DODSFilter::send_version_info
-      */
+	@return TRUE if the -v option was given indicating that the filter
+	should send version information back to the client, FALSE
+	otherwise. 
+	@see DODSFilter::send_version_info */
     bool version();
 
-  /** Return the entire constraint expression in a string.  This
-      includes both the projection and selection clauses, but not the
-      question mark.
+    /** Return the entire constraint expression in a string.  This
+	includes both the projection and selection clauses, but not the
+	question mark.
 
-      @memo Get the constraint expression. 
-      @return A string object that contains the constraint expression. */
+	@memo Get the constraint expression. 
+	@return A string object that contains the constraint expression. */
     string get_ce();
 
-  /** The ``dataset name'' is the filename or other string that the
-      filter program will use to access the data. In some cases this
-      will indicate a disk file containing the data.  In others, it
-      may represent a database query or some other exotic data
-      access method. 
+    /** The ``dataset name'' is the filename or other string that the
+	filter program will use to access the data. In some cases this
+	will indicate a disk file containing the data.  In others, it
+	may represent a database query or some other exotic data
+	access method. 
 
-      @memo Get the dataset name. 
-      @return A string object that contains the name of the dataset. */
+	@memo Get the dataset name. 
+	@return A string object that contains the name of the dataset. */
     string get_dataset_name();
 
-  /** To read version information that is specific to a certain
-      dataset, override this method with an implementation that does
-      what you want. By default, this returns an empty string.
+    /** To read version information that is specific to a certain
+	dataset, override this method with an implementation that does
+	what you want. By default, this returns an empty string.
 
-      @memo Get the version information for the dataset.  
-      @return A string object that contains the dataset version
-      information.  */ 
+	@memo Get the version information for the dataset.  
+	@return A string object that contains the dataset version
+	information.  */ 
     virtual string get_dataset_version();
 
-  /** The #cache_dir# is used to hold the cached .dds and .das files.
-      By default, this returns an empty string (store cache files in
-      current directory.
+    /** The #cache_dir# is used to hold the cached .dds and .das files.
+	By default, this returns an empty string (store cache files in
+	current directory.
 
-      @memo Get the cache directory.
-      @return A string object that contains the cache file directory.  */
+	@memo Get the cache directory.
+	@return A string object that contains the cache file directory.  */
     virtual string get_cache_dir();
 
     /** Get the list of accepted datatypes sent by the client. If no list was
@@ -198,86 +203,82 @@ public:
 	@return A string containing a list of the accepted types. */
     string get_accept_types();
 
-  /** Read the ancillary DAS information and merge it into the input
-      DAS object.
+    /** Read the ancillary DAS information and merge it into the input
+	DAS object.
 
-      @memo Test if ancillary data must be read.
-      @param das A DAS object that will be augmented with the
-      ancillary data attributes.
-      @return TRUE if an ancillary DAS was found, FALSE otherwise. 
-      @see DAS
-      */
+	@memo Test if ancillary data must be read.
+	@param das A DAS object that will be augmented with the
+	ancillary data attributes.
+	@return TRUE if an ancillary DAS was found, FALSE otherwise. 
+	@see DAS */
     bool read_ancillary_das(DAS &das);
 
-  /** Read the ancillary DDS information and merge it into the input
-      DDS object. 
+    /** Read the ancillary DDS information and merge it into the input
+	DDS object. 
 
-      @memo Test if ancillary data must be read.
-      @param dds A DDS object that will be augmented with the
-      ancillary data properties.
-      @return TRUE if an ancillary DDS was found, FALSE otherwise. 
-      @see DDS
-      */
+	@memo Test if ancillary data must be read.
+	@param dds A DDS object that will be augmented with the
+	ancillary data properties.
+	@return TRUE if an ancillary DDS was found, FALSE otherwise. 
+	@see DDS */
     bool read_ancillary_dds(DDS &dds);
 
-  /** This message is printed when the filter program is incorrectly
-      invoked by the dispatch CGI.  This is an error in the server
-      installation or the CGI implementation, so the error message is
-      written to stderr instead of stdout.  A server's stderr messages
-      show up in the httpd log file. In addition, an error object is
-      sent back to the client program telling them that the server is
-      broken. 
+    /** This message is printed when the filter program is incorrectly
+	invoked by the dispatch CGI.  This is an error in the server
+	installation or the CGI implementation, so the error message is
+	written to stderr instead of stdout.  A server's stderr messages
+	show up in the httpd log file. In addition, an error object is
+	sent back to the client program telling them that the server is
+	broken. 
 
-      @memo Print usage information for a filter program.
-      */
+	@memo Print usage information for a filter program. */
     void print_usage();
 
-  /** This function formats and sends to stdout version
-      information from the httpd server, the server dispatch scripts,
-      the DODS core software, and (optionally) the dataset.
+    /** This function formats and sends to stdout version
+	information from the httpd server, the server dispatch scripts,
+	the DODS core software, and (optionally) the dataset.
 
-      @memo Send version information back to the client program. */ 
+	@memo Send version information back to the client program. */ 
     void send_version_info();
 
-  /** This function formats and prints an ASCII representation of a
-      DAS on stdout.  This has the effect of sending the DAS object
-      back to the client program.
+    /** This function formats and prints an ASCII representation of a
+	DAS on stdout.  This has the effect of sending the DAS object
+	back to the client program.
 
-      @memo Transmit a DAS.
-      @param das The DAS object to be sent.
-      @return TRUE if the operation succeeded, FALSE otherwise. If the
-      send fails, an error object may still be sent. 
-      @see DAS */
+	@memo Transmit a DAS.
+	@param das The DAS object to be sent.
+	@return TRUE if the operation succeeded, FALSE otherwise. If the
+	send fails, an error object may still be sent. 
+	@see DAS */
     bool send_das(DAS &das);
 
-  /** This function formats and prints an ASCII representation of a
-      DDS on stdout.  When called by a CGI program, this has the
-      effect of sending a DDS object back to the client
-      program. Either an entire DDS or a constrained DDS may be sent.
+    /** This function formats and prints an ASCII representation of a
+	DDS on stdout.  When called by a CGI program, this has the
+	effect of sending a DDS object back to the client
+	program. Either an entire DDS or a constrained DDS may be sent.
 
-      @memo Transmit a DDS.
-      @param dds The DDS to send back to a client.
-      @param constrained If this argument is true, evaluate the
-      current constraint expression and send the `constrained DDS'
-      back to the client. 
-      @return TRUE if the operation succeeded, FALSE otherwise. If the
-      send fails, an error object may still be sent. 
-      @see DDS */
+	@memo Transmit a DDS.
+	@param dds The DDS to send back to a client.
+	@param constrained If this argument is true, evaluate the
+	current constraint expression and send the `constrained DDS'
+	back to the client. 
+	@return TRUE if the operation succeeded, FALSE otherwise. If the
+	send fails, an error object may still be sent. 
+	@see DDS */
     bool send_dds(DDS &dds, bool constrained = false);
 
-  /** Send the data in the DDS object back to the client
-      program.  The data is encoded in XDR format, and enclosed in a
-      MIME document which is all sent to stdout.  This has the effect
-      of sending it back to the client.
+    /** Send the data in the DDS object back to the client
+	program.  The data is encoded in XDR format, and enclosed in a
+	MIME document which is all sent to stdout.  This has the effect
+	of sending it back to the client.
 
-      @memo Transmit data.
-      @param dds A DDS object containing the data to be sent.
-      @param data_stream A pointer to the XDR sink into which the data
-      is to be put for encoding and transmission.
-      @return TRUE if the operation succeeded, FALSE otherwise. If the
-      send fails, an error object may still be sent. 
-      @see DDS
-      */
+	@memo Transmit data.
+	@param dds A DDS object containing the data to be sent.
+	@param data_stream A pointer to the XDR sink into which the data
+	is to be put for encoding and transmission.
+	@return TRUE if the operation succeeded, FALSE otherwise. If the
+	send fails, an error object may still be sent. 
+	@see DDS */
     bool send_data(DDS &dds, FILE *data_stream);
 };
 

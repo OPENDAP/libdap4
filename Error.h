@@ -12,6 +12,9 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.10  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.9  1999/04/29 02:29:29  jimg
 // Merge of no-gnu branch
 //
@@ -51,7 +54,7 @@
 #ifndef _error_h
 #define _error_h
 
-#ifdef __GUNG__
+#ifdef __GNUG__
 #pragma interface
 #endif
 
@@ -70,7 +73,7 @@
        no_such_file,
        no_such_variable,
        malformed_expr,
-       no_authorization,
+       no_authorization, 
        can_not_read_file
     };
     \end{verbatim}
@@ -129,146 +132,139 @@ enum ProgramType {
     @author jhrg */
 
 class Error {
-private:
+protected:
     ErrorCode _error_code;
     string _error_message;
     ProgramType _program_type;
     char *_program;
 
 public:
-  /** It is not possible to create an Error object with only an error code;
-      you must supply at a minimum a code and a message. In this case the
-      correction program and program type will be null. In addition, if a
-      program type is given a program {\it must} also be given. 
+    /** It is not possible to create an Error object with only an error code;
+	you must supply at a minimum a code and a message. In this case the
+	correction program and program type will be null. In addition, if a
+	program type is given a program {\it must} also be given. 
 
-      Other class constructors should be the only callers of this object's
-      default constructor.
+	Other class constructors should be the only callers of this object's
+	default constructor.
  
-      @memo Constructors for the Error object
-      @name Constructors
-      */
-  //@{
-  ///
+	@memo Constructors for the Error object
+	@name Constructors */
+    //@{
+    ///
     Error(ErrorCode ec, string msg);
-  ///
+    ///
     Error(ErrorCode ec, string msg, ProgramType pt, char *pgm);
-  ///
+    ///
     Error();
-  //@}
+    //@}
 
-  /** Copy constructor for Error class. */
+    /** Copy constructor for Error class. */
     Error(const Error &copy_from);
     
-    ~Error();
+    virtual ~Error();
 
-  /** The assignment operator copies the error correction. */
+    /** The assignment operator copies the error correction. */
     Error &operator=(const Error &rhs);
 
-  /** Use this function to determine whether an Error object is
-      valid. An Error object is valid if it contains either an error
-      code and message and an optional program type and program.
+    /** Use this function to determine whether an Error object is
+	valid. An Error object is valid if it contains either an error
+	code and message and an optional program type and program.
 	
-      @memo Is the Error object valid?
-      @return TRUE if the object is valid, FALSE otherwise.
-      */
+	@memo Is the Error object valid?
+	@return TRUE if the object is valid, FALSE otherwise. */
     bool OK();
 
-  /** Given an input stream (FILE *) #fp#, parse an Error object from
-      stream. Values for fields of the Error object are parsed and
-      THIS is set accordingly.  This is how a DODS client might
-      receive an error object from a server.
+    /** Given an input stream (FILE *) #fp#, parse an Error object from
+	stream. Values for fields of the Error object are parsed and
+	THIS is set accordingly.  This is how a DODS client might
+	receive an error object from a server.
     
-      @memo Parse an Error object.
-      @param fp A valid file pointer to an input stream.
-      @return TRUE if no error was detected, FALSE otherwise.  */
+	@memo Parse an Error object.
+	@param fp A valid file pointer to an input stream.
+	@return TRUE if no error was detected, FALSE otherwise.  */
     bool parse(FILE *fp);
 
-  /** Creates a printable representation of the Error object.  It is
-      suitable for framing, and also for printing and sending over a
-      network. 
+    /** Creates a printable representation of the Error object.  It is
+	suitable for framing, and also for printing and sending over a
+	network. 
 
-      The printed representation produced by this function can be
-      parsed by the parse() memeber function. Thus parse and print
-      form a symetrical pair that can be used to send and receive an
-      Error object over the network in a MIME document.
+	The printed representation produced by this function can be
+	parsed by the parse() memeber function. Thus parse and print
+	form a symetrical pair that can be used to send and receive an
+	Error object over the network in a MIME document.
     
-      @memo Print the Error object on the given output stream.
-      @param os A pointer to the output stream on which the Error
-      object is to be rendered.  
-      */
+	@memo Print the Error object on the given output stream.
+	@param os A pointer to the output stream on which the Error
+	object is to be rendered. */
     void print(ostream &os = cout);
 
-  /** With no argument, returns the Error object's error code. With an
-      argument, sets the error code to that value.
+    /** With no argument, returns the Error object's error code. With an
+	argument, sets the error code to that value.
 	
-      @memo Get or set the error code.
-      @return The Error object's error code. 
-      @param ec The error code.  If this is not included, the
-      undefined error code will be stored. */
+	@memo Get or set the error code.
+	@return The Error object's error code. 
+	@param ec The error code.  If this is not included, the
+	undefined error code will be stored. */
     ErrorCode error_code(ErrorCode ec = undefined_error);
     
-  /** With no argument, return a copy of the objet's error message string.
-      With an argument, set the object's error message to that string.
+    /** With no argument, return a copy of the objet's error message string.
+	With an argument, set the object's error message to that string.
     
-      @memo Get or set the error code.
-      @param msg The error message string.  If this is omitted, the
-      function simply returns a copy of the current message string.
-      @return A copy of the Error object's message string. 
-      */
+	@memo Get or set the error code.
+	@param msg The error message string.  If this is omitted, the
+	function simply returns a copy of the current message string.
+	@return A copy of the Error object's message string. */
     string error_message(string msg = "");
     
     
-  /** Either display the error message in a dialog box and offer the
-      user a single `OK' button or print the message to standard
-      error. If #gui# is not given, then use stderr. In addition, the
-      class Gui provides other means for the user to control how
-      messages are displayed and those may be used to select either
-      graphical or text devices.
+    /** Either display the error message in a dialog box and offer the
+	user a single `OK' button or print the message to standard
+	error. If #gui# is not given, then use stderr. In addition, the
+	class Gui provides other means for the user to control how
+	messages are displayed and those may be used to select either
+	graphical or text devices.
 
-      @memo Display the error message in a dialog box or on stderr.
-      @param gui A pointer to a valid Gui class instance.  This would
-      be attached to a GUI process running on a client machine, and
-      that process will display the message.  If the pointer is not
-      provided, the message will be displayed on the client's stderr.
+	@memo Display the error message in a dialog box or on stderr.
+	@param gui A pointer to a valid Gui class instance.  This would
+	be attached to a GUI process running on a client machine, and
+	that process will display the message.  If the pointer is not
+	provided, the message will be displayed on the client's stderr.
 
-      @see Gui */
+	@see Gui */
     void display_message(Gui *gui = 0);
 
-  /** With no argument, return the program type of the error object. With
-      an argument, set the error object's program type field.
+    /** With no argument, return the program type of the error object. With
+	an argument, set the error object's program type field.
       
-      @memo Get or set the program type.
-      @return The program type of the object. 
-      @see ProgramType
-      */
+	@memo Get or set the program type.
+	@return The program type of the object. 
+	@see ProgramType */
     ProgramType program_type(ProgramType pt = undefined_prog_type);
 
     
-  /** With no argument, return the error correction program. With an
-      argument, set the error correction program to a copy of that value.
+    /** With no argument, return the error correction program. With an
+	argument, set the error correction program to a copy of that value.
     
-      Note that this is not a pointer to a function, but a character
-      string containing the entire tcl, Java, or other program.
+	Note that this is not a pointer to a function, but a character
+	string containing the entire tcl, Java, or other program.
 
-      @memo  Get or set the error correction program.
-      @return the error correction program. 
-      */
+	@memo  Get or set the error correction program.
+	@return the error correction program. */
     char *program(char *program = 0);
 
     
-  /** This function runs the error correction program, if possible,
-      and returns a string that can be used as the `corrected'
-      value. If there is no error correction program or it is not
-      possible to run the program, the function simply displays the
-      error message. If the error correction program cannot be run,
-      the function returns the null string.
+    /** This function runs the error correction program, if possible,
+	and returns a string that can be used as the `corrected'
+	value. If there is no error correction program or it is not
+	possible to run the program, the function simply displays the
+	error message. If the error correction program cannot be run,
+	the function returns the null string.
     
-      @memo Run the error correction program or print the error message.
-      @return A corrected string or "".  
-      @param gui A pointer to a Gui class object handling a GUI
-      process on the client.
-      @see Gui
-      */
+	@memo Run the error correction program or print the error message.
+	@return A corrected string or "".  
+	@param gui A pointer to a Gui class object handling a GUI
+	process on the client.
+	@see Gui */
     string correct_error(Gui *gui);
 };
 

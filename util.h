@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -13,6 +13,9 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.31  1999/05/04 19:47:24  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.30  1999/04/29 21:14:49  jimg
  * Removed Function include
  *
@@ -148,7 +151,7 @@
 #include "Grid.h"
 
 string prune_spaces(string);
-bool unique_names(SLList<BaseTypePtr> l, const string &var, const string &type,
+bool unique_names(SLList<BaseType *> l, const string &var, const string &type,
 		  string &msg);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
@@ -180,7 +183,6 @@ Array *NewArray(const string &n = "", BaseType *v = 0);
 List *NewList(const string &n = "", BaseType *v = 0);
 Structure *NewStructure(const string &n = "");
 Sequence *NewSequence(const string &n = "");
-Function *NewFunction(const string &n = "");
 Grid *NewGrid(const string &n = "");
 
 void downcase(string &s);

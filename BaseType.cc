@@ -10,6 +10,9 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.37  1999/05/04 19:47:20  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.36  1999/04/29 02:29:27  jimg
 // Merge of no-gnu branch
 //
@@ -303,8 +306,6 @@ BaseType::type_name() const
 	return string("Structure");
       case dods_sequence_c:
 	return string("Sequence");
-      case dods_function_c:
-	return string("Function");
       case dods_grid_c:
 	return string("Grid");
       default:
@@ -333,7 +334,6 @@ BaseType::is_simple_type()
       case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
-      case dods_function_c:
       case dods_grid_c:
 	return false;
     }
@@ -363,7 +363,6 @@ BaseType::is_vector_type()
 
       case dods_structure_c:
       case dods_sequence_c:
-      case dods_function_c:
       case dods_grid_c:
 	return false;
     }
@@ -391,7 +390,6 @@ BaseType::is_constructor_type()
 
       case dods_structure_c:
       case dods_sequence_c:
-      case dods_function_c:
       case dods_grid_c:
 	return true;
     }

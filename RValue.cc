@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1996-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,13 +11,16 @@
 // jhrg 3/4/96
 
 // $Log: RValue.cc,v $
+// Revision 1.4  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.3  1999/04/29 02:29:31  jimg
 // Merge of no-gnu branch
 //
 // Revision 1.2  1999/01/21 02:54:27  jimg
 // Fixed dataset; this variable should be the filename of the dataset, not the
-// value returned by get_data_name() which is the DODS name of the dataset. This
-// value is not set by the dds.filename() method.
+// value returned by get_data_name() which is the DODS name of the dataset.
+// This value is not set by the dds.filename() method.
 //
 // Revision 1.1  1998/10/21 16:14:16  jimg
 // Added. Based on code that used to be in expr.h/cc
@@ -58,7 +61,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: RValue.cc,v 1.3 1999/04/29 02:29:31 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.4 1999/05/04 19:47:21 jimg Exp $"};
 
 #include <assert.h>
 
@@ -92,10 +95,6 @@ string
 rvalue::value_name()
 {
     assert(value);
-#if 0
-    if (!value)
-	throw not_a_basetype;
-#endif
 
     return value->name();
 }

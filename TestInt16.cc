@@ -1,6 +1,6 @@
 
 // (c) COPYRIGHT URI/MIT 1999
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // 3/22/99 jhrg
 
 // $Log: TestInt16.cc,v $
+// Revision 1.3  1999/05/04 19:47:22  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.2  1999/04/29 02:29:32  jimg
 // Merge of no-gnu branch
 //

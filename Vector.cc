@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.27  1999/05/04 19:47:23  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.26  1999/04/29 02:29:34  jimg
 // Merge of no-gnu branch
 //
@@ -128,7 +131,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.26 1999/04/29 02:29:34 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.27 1999/05/04 19:47:23 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -174,16 +177,6 @@ Vector::Vector(const Vector &rhs)
     _duplicate(rhs);
 }
 
-#if 0
-static void
-delete_base_type(BaseType *bt)
-{
-    DBG(cerr << "Deleting BaseTyep pointer: " << hex << bt << dec << endl);
-    if (bt)
-	delete bt;
-}
-#endif
-
 Vector::~Vector()
 {
     DBG(cerr << "Entering Vector dtor for object: " << this << endl);
@@ -195,9 +188,6 @@ Vector::~Vector()
     else	
 	for (unsigned int i = 0; i < _vec.size(); ++i)
 	    delete _vec[i];
-#if 0
-	_vec.apply(delete_base_type);
-#endif
 }
 
 const Vector &
@@ -302,7 +292,6 @@ Vector::var(unsigned int i)
       case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
-      case dods_function_c:
       case dods_grid_c:
 	return _vec[i];
 	break;
@@ -348,37 +337,13 @@ Vector::set_length(int l)
     _length = l;
 }
 
-#if DODS_DEBUG == 1
-static void
-print_basetype_pointer(BaseType *btp)
-{
-    cerr << btp << " ";
-}
-#endif
-
 // #l# is the number of elements the vector can hold (e.g., if l == 20, then
 // the vector can hold elements 0, .., 19).
 
 void
 Vector::vec_resize(int l)
 {
-    int s = _vec.capacity();
-    _vec.resize((l > 0) ? l : 0, 0);
-
-    if (l > s) {
-	DBG(cerr << "Filling new elements (" << s-1 << ", " << l-s \
-	    << ") with NULL"  << endl);
-#if 0
-	_vec.fill(0, max(s-1, 0), l-s);
-#endif
-#if DODS_DEBUG == 1
-	cerr << "Just extended the BaseType pointer vector: ";
-#if 0
-	_vec.apply(print_basetype_pointer);
-#endif
-	cerr << endl;
-#endif
-    }
+    _vec.resize((l > 0) ? l : 0, 0); // Fill with NULLs
 }
 
 // Serialize a Vector. This uses the BaseType member XDR_CODER to encode each
@@ -443,7 +408,6 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
       case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
-      case dods_function_c:
       case dods_grid_c:
 	assert(_vec.capacity());
 
@@ -531,7 +495,6 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
       case dods_list_c:
       case dods_structure_c:
       case dods_sequence_c:
-      case dods_function_c:
       case dods_grid_c:
 	status = (bool)xdr_int(source, (int *)&num);
 	if (!status)
@@ -696,9 +659,6 @@ Vector::set_vec(unsigned int i, BaseType *val)
     if (i >= _vec.capacity())
 	vec_resize(i + 10);
 
-#if 0
-    _vec.elem(i) = val;
-#endif
     _vec[i] = val;
 
     return true;

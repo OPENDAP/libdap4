@@ -8,6 +8,9 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.16  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
 // Revision 1.15  1999/04/29 02:29:29  jimg
 // Merge of no-gnu branch
 //
@@ -86,7 +89,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.15 1999/04/29 02:29:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.16 1999/05/04 19:47:21 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -97,7 +100,7 @@ static char rcsid[] not_used = {"$Id: Error.cc,v 1.15 1999/04/29 02:29:29 jimg E
 void Errorrestart(FILE *yyin);	// defined in Error.tab.c
 int Errorparse(void *arg);	
 
-static char *messages[]={"Unknown error", "No such file", 
+static char *messages[]={"", "No such file", 
 			 "No such variable", "Malformed expression",
 			 "No authorization", "Cannot read file"};
 

@@ -17,6 +17,9 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.33  1999/05/04 19:47:21  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.32  1999/04/29 02:29:30  jimg
  * Merge of no-gnu branch
  *
@@ -249,7 +252,7 @@
 class Grid: public BaseType {
 private:
     BaseType *_array_var;
-    SLList<BaseTypePtr> _map_vars;
+    SLList<BaseType *> _map_vars;
     
     void _duplicate(const Grid &s);
 

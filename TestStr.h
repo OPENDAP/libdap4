@@ -12,6 +12,9 @@
 
 /* 
  * $Log: TestStr.h,v $
+ * Revision 1.11  1999/05/04 19:47:22  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.10  1999/04/29 02:29:33  jimg
  * Merge of no-gnu branch
  *
@@ -70,9 +73,7 @@
 #pragma interface
 #endif
 
-#ifdef NEVER
-#include <limits.h>
-#endif
+#include <string>
 
 #include "dods-limits.h"
 #include "Str.h"
@@ -86,8 +87,6 @@ public:
     
     virtual bool read(const string &dataset, int &error);
 };
-
-typedef TestStr * TestStrPtr;
 
 #endif
 

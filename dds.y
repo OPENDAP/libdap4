@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.26  1999/05/04 19:47:23  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
  * Revision 1.25  1999/04/29 02:29:36  jimg
  * Merge of no-gnu branch
  *
@@ -140,7 +143,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.25 1999/04/29 02:29:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.26 1999/05/04 19:47:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -157,9 +160,6 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.25 1999/04/29 02:29:36 jimg Exp 
 #include "DDS.h"
 #include "Array.h"
 #include "Error.h"
-#if 0
-#include "BTXPStack.h"
-#endif
 #include "parser.h"
 #include "dds.tab.h"
 #include "util.h"
@@ -180,9 +180,6 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.25 1999/04/29 02:29:36 jimg Exp 
 
 extern int dds_line_num;	/* defined in dds.lex */
 
-#if 0
-static BaseTypePtrXPStack *ctor; /* stack for ctor types */
-#endif
 static stack<BaseType *> *ctor;
 static BaseType *current;
 static Part part = nil;		/* Part is defined in BaseType */
@@ -328,34 +325,6 @@ non_list_decl:  base_type var ';'
 		    }
 		}
 
-		| function '{' INDEPENDENT ':'
-		{ part = independent; }
-                declarations DEPENDENT ':' 
-		{ part = dependent;} 
-                declarations '}' 
-                { 
-		    current = ctor->top();
-		    ctor->pop();
-		}
-                var ';'
-                { 
-		    string smsg;
-		    if (current->check_semantics(smsg)) {
-			part = nil; 
-			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    }
-		    else {
-			ostrstream msg;
-			msg << "In the dataset descriptor object:" << endl
-			    << "`" << $1 << "'" << endl
-			    << "is not a valid declaration." << endl 
-			    << smsg << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-
 		| grid '{' ARRAY ':' 
 		{ part = array; }
                 declaration MAPS ':' 
@@ -423,14 +392,6 @@ sequence:	SEQUENCE
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
 		    ctor->push(NewSequence()); 
-		}
-;
-
-function:	FUNCTION 
-		{ 
-		    if (!ctor)
-			ctor = new stack<BaseType *>;
-		    ctor->push(NewFunction()); 
 		}
 ;
 
