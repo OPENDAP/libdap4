@@ -10,17 +10,21 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.11  1996/10/08 17:13:09  jimg
+// Added test for the -D option so that a Ce can be supplied either with the
+// -c option or using a ? at the end of the URL.
+//
 // Revision 1.10  1996/09/19 16:53:35  jimg
 // Added code to process sequences correctly when given the -D (get data)
 // option.
 //
 // Revision 1.9  1996/09/05 16:28:06  jimg
-// Added a new option to geturl, -D, which uses the Connect::request_data member
-// function to get data. Thus -a, -d and -D can be used to get the das, dds and
-// data from a DODS server. Because the request_data member function requires a
-// constraint expression I also added the option -c; this option takes as a single
-// argument a constraint expression and passes it to the request_data member
-// function. You must use -c <expr> with -D.
+// Added a new option to geturl, -D, which uses the Connect::request_data
+// member function to get data. Thus -a, -d and -D can be used to get the
+// das, dds and data from a DODS server. Because the request_data member
+// function requires a constraint expression I also added the option -c; this
+// option takes as a single argument a constraint expression and passes it to
+// the request_data member function. You must use -c <expr> with -D.
 //
 // Revision 1.8  1996/08/13 20:13:36  jimg
 // Added __unused__ to definition of char rcsid[].
@@ -52,7 +56,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.10 1996/09/19 16:53:35 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.11 1996/10/08 17:13:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -74,8 +78,10 @@ usage(String name)
     cerr << "       " << "A: For each URL, get the DODS Data." << endl;
     cerr << "       " << "g: Show the progress GUI." << endl;
     cerr << "       " << "c: <expr> is a contraint expression. Used with -D."
+         << "       " << "   NB: You can use a `?' for the CE also."
 	 << endl;
-    cerr << "       " << "v: Verbose output." << endl;
+    cerr << "       " << "v: <options> Verbose output; use -vd for default." 
+         << endl;
     cerr << "       " << "m: Request the same URL <num> times." << endl;
     cerr << "       " << "Without A, use the synchronous mode." << endl;
     cerr << "       " << "Without d or a, print the URL." << endl;
@@ -200,7 +206,7 @@ main(int argc, char * argv[])
 	}
 
 	if (get_data) {
-	    if (!expr) {
+	    if (!(expr || name.contains("?"))) {
 		cerr << "Must supply a constraint expression with -D."
 		     << endl;
 		exit(1);
