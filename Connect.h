@@ -32,6 +32,10 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.38  1999/05/21 20:41:45  dan
+ * Changed default 'gui' flag to 'false' in request_data, and read_data
+ * methods.
+ *
  * Revision 1.37  1999/04/29 03:04:51  jimg
  * Merged ferret changes
  *
@@ -724,7 +728,7 @@ public:
       the only possible working value, ``dods''.
       @see DataDDS
       @see Gui */
-    DDS *request_data(string expr, bool gui = true, bool async = false, 
+    DDS *request_data(string expr, bool gui = false, bool async = false, 
 		      const string &ext = "dods");
 
   /** This function reads cached data from a disk file.
@@ -745,7 +749,7 @@ public:
       @see DataDDS
       @see Gui 
       */
-    DDS *read_data(FILE *data_source, bool gui = true, bool async = false);
+    DDS *read_data(FILE *data_source, bool gui = false, bool async = false);
 };
 
 #endif // _connect_h
