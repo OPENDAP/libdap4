@@ -13,9 +13,15 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.2  1994/09/23 14:48:32  jimg
-/* Fixed some errors in comments.
+/* Revision 1.3  1994/10/17 23:34:50  jimg
+/* Added code to print_decl so that variable declarations are pretty
+/* printed.
+/* Added private mfunc duplicate().
+/* Added ptr_duplicate().
+/* Added Copy ctor, dtor and operator=.
 /*
+ * Revision 1.2  1994/09/23  14:48:32  jimg
+ * Fixed some errors in comments.
  */
 
 #ifndef _Sequence_h
@@ -28,13 +34,21 @@
 #include <SLList.h>
 #include "Structure.h"
 
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
+
 class Sequence: public Structure {
 private:
+    void duplicate(const Sequence &s);
 
 public:
     Sequence(const String &n = (char *)0, const String &t = "Sequence");
-    // use the default copy ctor, and op=
-    virtual ~Sequence() {}
+    Sequence(const Sequence &rhs);
+    virtual ~Sequence();
+
+    const Sequence &operator=(const Sequence &rhs);
+    virtual BaseType *ptr_duplicate();
 };
 
 #endif

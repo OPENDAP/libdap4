@@ -4,7 +4,14 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.2  1994/09/23 14:45:28  jimg
+// Revision 1.3  1994/10/17 23:34:53  jimg
+// Added code to print_decl so that variable declarations are pretty
+// printed.
+// Added private mfunc duplicate().
+// Added ptr_duplicate().
+// Added Copy ctor, dtor and operator=.
+//
+// Revision 1.2  1994/09/23  14:45:28  jimg
 // Added mfunc check_semantics().
 // Added sanity checking on the variable list (is it empty?).
 //
@@ -12,11 +19,58 @@
 #include "Grid.h"
 #include "Array.h"		// for downcasts
 #include "util.h"
+#include "errmsg.h"
+
+void
+Grid::duplicate(const Grid &s)
+{
+    set_var_name(s.get_var_name());
+    set_var_type(s.get_var_type());
+    
+    array_var_ = s.array_var_->ptr_duplicate();
+
+    Grid &cs = (Grid)s;		// cast away const;
+
+    for (Pix p = cs.map_vars.first(); p; cs.map_vars.next(p))
+	map_vars.append(cs.map_vars(p)->ptr_duplicate());
+}
+
+// protected
+
+BaseType *
+Grid::ptr_duplicate()
+{
+    return new Grid(*this);
+}
 
 Grid::Grid(const String &n, const String &t)
 {
     set_var_name(n);
     set_var_type(t);
+}
+
+Grid::Grid(const Grid &rhs)
+{
+    duplicate(rhs);
+}
+
+Grid::~Grid()
+{
+    delete array_var_;
+
+    for (Pix p = map_vars.first(); p; map_vars.next(p))
+	delete map_vars(p);
+}
+
+const Grid &
+Grid::operator=(const Grid &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    duplicate(rhs);
+
+    return *this;
 }
 
 BaseType *
@@ -43,7 +97,7 @@ Grid::add_var(BaseType *bt, Part part)
 	map_vars.append(bt);
 	return;
       default:
-	error("Unknown grid part (must be array or maps)\n");
+	err_quit("Grid::add_var:Unknown grid part (must be array or maps)");
 	return;
     }
 }    
@@ -75,20 +129,20 @@ Grid::map_var(Pix p)
 }
 
 void 
-Grid::print_decl(bool print_semi)
+Grid::print_decl(ostream &os, String space, bool print_semi)
 {
-    cout << get_var_type() << " {" << endl;
+    os << space << get_var_type() << " {" << endl;
 
-    cout << "ARRAY:" << endl;
-    array_var_->print_decl();
+    os << space << " ARRAY:" << endl;
+    array_var_->print_decl(os, space + "    ");
 
-    cout << "MAPS:" << endl;
+    os << space << " MAPS:" << endl;
     for (Pix p = map_vars.first(); p; map_vars.next(p))
-	map_vars(p)->print_decl();
+	map_vars(p)->print_decl(os, space + "    ");
 
-    cout << "} " << get_var_name();
+    os << space << "} " << get_var_name();
     if (print_semi)
-	cout << ";" << endl;
+	os << ";" << endl;
 }
 
 // Grids have ugly semantics.

@@ -4,7 +4,14 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.2  1994/09/23 14:31:36  jimg
+// Revision 1.3  1994/10/17 23:34:42  jimg
+// Added code to print_decl so that variable declarations are pretty
+// printed.
+// Added private mfunc duplicate().
+// Added ptr_duplicate().
+// Added Copy ctor, dtor and operator=.
+//
+// Revision 1.2  1994/09/23  14:31:36  jimg
 // Added check_semantics mfunc.
 // Added sanity checking for access to shape list (is it empty?).
 // Added cvs log listing to Array.cc.
@@ -15,11 +22,53 @@
 #endif
 
 #include "Array.h"
+#include "errmsg.h"
+#include "debug.h"
+
+void
+Array::duplicate(const Array &a)
+{
+    set_var_name(a.get_var_name());
+    set_var_type(a.get_var_type());
+
+    shape = a.shape;
+    var_ptr = a.var_ptr->ptr_duplicate();
+}
+
+BaseType *
+Array::ptr_duplicate()
+{
+    return new Array(*this);
+}
+
+// Construct an instance of Array. The (BaseType *) is assumed to be
+// allocated using new -- The dtor for Array will delete this object.
 
 Array::Array(const String &n, const String &t, BaseType *v) : var_ptr(v)
 {
     set_var_name(n);
     set_var_type(t);
+}
+
+Array::Array(const Array &rhs)
+{
+    duplicate(rhs);
+}
+
+Array::~Array()
+{
+    delete var_ptr;
+}
+
+const Array &
+Array::operator=(const Array &rhs)
+{
+    if (this == &rhs)
+	return *this;
+    
+    duplicate(rhs);
+
+    return *this;
 }
 
 // NAME defaults to NULL. It is present since the definition of this mfunc is
@@ -41,18 +90,14 @@ Array::var(const String &name)
 void
 Array::add_var(BaseType *v, Part p)
 {
-    if (var_ptr) {
-	error("Attempt to overwrite base type of an arry\n");
-	return;
-    }
+    if (var_ptr)
+	err_quit("Array::add_var:Attempt to overwrite base type of an arry");
 
     var_ptr = v;
     set_var_name(v->get_var_name());
 
-#ifdef DEBUG
-    cerr << "Array::add_var: Added variable " << v << " (" 
-	 << v->get_var_name() << " " << v->get_var_type() << ")" << endl;
-#endif
+    DBG(cerr << "Array::add_var: Added variable " << v << " (" \
+	 << v->get_var_name() << " " << v->get_var_type() << ")" << endl);
 }
 
 void 
@@ -89,13 +134,13 @@ Array::dimensions()
 
 
 void
-Array::print_decl(bool print_semi)
+Array::print_decl(ostream &os, String space, bool print_semi)
 {
-    var_ptr->print_decl(false);		// print it, but w/o semicolon
+    var_ptr->print_decl(os, space, false); // print it, but w/o semicolon
     for (Pix p = shape.first(); p; shape.next(p))
-	cout << "[" << shape(p) << "]";
+	os << "[" << shape(p) << "]";
     if (print_semi)
-	cout << ";" << endl;
+	os << ";" << endl;
 }
 
 bool

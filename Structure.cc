@@ -4,7 +4,14 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.2  1994/09/23 14:45:26  jimg
+// Revision 1.3  1994/10/17 23:34:47  jimg
+// Added code to print_decl so that variable declarations are pretty
+// printed.
+// Added private mfunc duplicate().
+// Added ptr_duplicate().
+// Added Copy ctor, dtor and operator=.
+//
+// Revision 1.2  1994/09/23  14:45:26  jimg
 // Added mfunc check_semantics().
 // Added sanity checking on the variable list (is it empty?).
 //
@@ -19,10 +26,54 @@
 #include "Structure.h"
 #include "util.h"
 
+// private
+
+void
+Structure::duplicate(const Structure &s)
+{
+    set_var_name(s.get_var_name());
+    set_var_type(s.get_var_type());
+    
+    Structure &cs = (Structure)s; // cast away const
+
+    for (Pix p = cs.vars.first(); p; cs.vars.next(p))
+	vars.append(cs.vars(p)->ptr_duplicate());
+}
+
+// protected
+
+BaseType *
+Structure::ptr_duplicate()
+{
+    return new Structure(*this);
+}
+
 Structure::Structure(const String &n, const String &t)
 {
     set_var_name(n);
     set_var_type(t);
+}
+
+Structure::Structure(const Structure &rhs)
+{
+    duplicate(rhs);
+}
+
+Structure::~Structure()
+{
+    for (Pix p = vars.first(); p; vars.next(p))
+	delete vars(p);
+}
+
+const Structure &
+Structure::operator=(const Structure &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    duplicate(rhs);
+
+    return *this;
 }
 
 // NB: Part p defaults to nil for this class
@@ -64,14 +115,14 @@ Structure::var(Pix p)
 }
 
 void
-Structure::print_decl(bool print_semi)
+Structure::print_decl(ostream &os, String space, bool print_semi)
 {
-    cout << get_var_type() << " {" << endl;
+    os << space << get_var_type() << " {" << endl;
     for (Pix p = vars.first(); p; vars.next(p))
-	vars(p)->print_decl();
-    cout << "} " << get_var_name();
+	vars(p)->print_decl(os, space + "    ");
+    os << space << "} " << get_var_name();
     if (print_semi)
-	cout << ";" << endl;
+	os << ";" << endl;
 }
 
 // To seamantically OK, a structure's members must have unique names.
