@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.88 1999/01/08 23:58:43 jimg Exp $
+# $Id: Makefile.in,v 1.89 1999/01/21 02:55:30 jimg Exp $
 
 @SET_MAKE@
 
@@ -83,8 +83,9 @@ DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
 EXPR_GRAM_OBJS = lex.expr.o expr.tab.o RValue.o
 ERROR_GRAM_OBJS = lex.Error.o Error.tab.o
+GSE_GRAM_OBJS = lex.gse.o gse-test.o gse.tab.o
 GRAM_SRCS = lex.das.c das.tab.c lex.dds.c dds.tab.c lex.expr.c expr.tab.c \
-	    RValue.cc lex.Error.c Error.tab.c
+	    RValue.cc lex.Error.c Error.tab.c lex.gse_.c gse.tab.c
 
 DASHDRS = AttrTable.h DAS.h 
 DASSRCS = AttrTable.cc DAS.cc parser-util.cc
@@ -109,13 +110,12 @@ TYPEHDRS = BaseType.h Byte.h Int32.h \
 
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc Function.cc \
-	   Grid.cc UInt32.cc util.cc
+	   Grid.cc UInt32.cc util.cc ce_functions.cc GSEClause.cc
 # Int16.cc Uint16.cc Float32.cc 
 
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   Vector.o List.o Array.o Structure.o Sequence.o Function.o Grid.o \
-           UInt32.o  util.o
-# Int16.o Uint16.o Float32.o
+           UInt32.o util.o ce_functions.o GSEClause.o $(GSE_GRAM_OBJS)
 
 # These object files are built using source code generated from the GNU
 # libg++ source with `genclass'. They are part of the the DAP library.
@@ -193,8 +193,15 @@ pure-dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
 # trans-test: libdap++.a $(TESTOBJS) trans-test.o
 #	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
 
+gse-test.o: gse-test.cc
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -O0 gse-test.cc -o gse-test.o
+
+gse-test: libdap++.a $(TESTOBJS) lex.gse.o gse-test.o gse.tab.h gse.tab.o
+	$(CXX) $(LDFLAGS) -o gse-test lex.gse.o gse-test.o gse.tab.o \
+		$(TESTOBJS) $(LIBS)
+
 expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
-	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o \
+	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o lex.expr.o \
 	       $(LIBS)
 
 pure-expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
@@ -274,6 +281,22 @@ expr.tab.c expr.tab.h: expr.y munge-bison.awk
 
 expr.tab.o: expr.tab.c		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c expr.tab.c -o expr.tab.o
+
+# Build the grid selection sub_expression scanner and  parser
+
+lex.gse_.c: gse.lex gse.tab.c gse.tab.h
+	$(LEX) $(LFLAGS) -Pgse_ gse.lex
+
+lex.gse.o: lex.gse_.c
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.gse_.c -o lex.gse.o
+
+gse.tab.c gse.tab.h: gse.y munge-bison.awk
+	$(YACC) $(YFLAGS) -p gse_ gse.y
+#	$(AWK) -f munge-bison.awk gse.tab.c > tmp
+#	mv tmp gse.tab.c
+
+gse.tab.o: gse.tab.c		# build using C++ compiler
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c gse.tab.c -o gse.tab.o
 
 # Build the Error object scanner.
 
@@ -380,7 +403,7 @@ clean:
 	-rm -f *.bb *.bbg *.da *.gcov
 	-for d in Plex Vec Stack Map GNU; do cd $$d && rm *.o *~; cd ..; done
 	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
-	       cgi-util-test
+	       cgi-util-test gse-test
 	-cd doc-html; rm *.html; cd ..;
 	-cd doc-latex; rm *.tex; cd ..;
 
