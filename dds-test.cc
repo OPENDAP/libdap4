@@ -8,8 +8,6 @@
 #include <iostream.h>
 #include <GetOpt.h>
 
-#include "Space.h"
-
 #define YYSTYPE char *
 
 #include "dds.tab.h"
@@ -37,8 +35,6 @@ main(int argc, char *argv[])
 	switch (option_char)
 	  {
 	    case 'd': 
-	      space_debug = 1;	// defined in Space.h
-	      executable_name = "das-test"; // defined in Space.h
 	      ddsdebug = 1;
 	      break;
 	    case 's':
