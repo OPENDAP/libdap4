@@ -11,6 +11,11 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.33  1999/03/17 23:05:46  jimg
+// Added to find_ancillary_file() so that <pathname>.ext will also be checked.
+// This ensures that ancillary DAS files such as 1998-6-avhrr.dat.das will be
+// used properly.
+//
 // Revision 1.32  1998/12/16 19:10:53  jimg
 // Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
 //
@@ -149,13 +154,14 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.32 1998/12/16 19:10:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.33 1999/03/17 23:05:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <assert.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -266,6 +272,8 @@ do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
 //
 // Returns: A string naming the ancillary file of a null string if no
 // matching file was found.
+//
+// NB: This code now checks for <pathname>.ext 3/17/99 jhrg
 
 String
 find_ancillary_file(String pathname, String ext, String dir, String file)
@@ -277,29 +285,24 @@ find_ancillary_file(String pathname, String ext, String dir, String file)
     ext = "." + ext;
 
     String name = directory + basename + ext;
-    int fd;
-    if ((fd = open((const char *)name, O_RDONLY)) >= 0) {
-	close(fd);
+    if (access((const char *)name, F_OK) == 0)
 	return name;
-    }
 
     name = dir + basename + ext;
-    if ((fd = open((const char *)name, O_RDONLY)) >= 0) {
-	close(fd);
+    if (access((const char *)name, F_OK) == 0)
 	return name;
-    }
+
+    name = pathname + ext;
+    if (access((const char *)name, F_OK) == 0)
+	return name;
 
     name = directory + file + ext;
-    if ((fd = open((const char *)name, O_RDONLY)) >= 0) {
-	close(fd);
+    if (access((const char *)name, F_OK) == 0)
 	return name;
-    }
 
     name = dir + file + ext;
-    if ((fd = open((const char *)name, O_RDONLY)) >= 0) {
-	close(fd);
+    if (access((const char *)name, F_OK) == 0)
 	return name;
-    }
 
     return "";
 }
