@@ -10,6 +10,11 @@
 // 3/22/9 jhrg9
 
 // $Log: Float32.cc,v $
+// Revision 1.12  2000/08/22 19:42:28  jimg
+// Fixed the assert() in buf2val(). It tested _buf and when that contained 0
+// it would fail. This was probably copied from other methods where _buf is
+// a pointer.
+//
 // Revision 1.11  2000/07/09 22:05:35  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -58,7 +63,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Float32.cc,v 1.11 2000/07/09 22:05:35 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: Float32.cc,v 1.12 2000/08/22 19:42:28 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -130,7 +135,7 @@ Float32::val2buf(void *val, bool)
 unsigned int
 Float32::buf2val(void **val)
 {
-    assert(_buf && val);
+    assert(val);
 
     if (!*val)
 	*val = new dods_float32;

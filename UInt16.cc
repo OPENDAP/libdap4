@@ -10,6 +10,11 @@
 // jhrg 9/7/94
 
 // $Log: UInt16.cc,v $
+// Revision 1.11  2000/08/22 19:42:28  jimg
+// Fixed the assert() in buf2val(). It tested _buf and when that contained 0
+// it would fail. This was probably copied from other methods where _buf is
+// a pointer.
+//
 // Revision 1.10  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -59,7 +64,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: UInt16.cc,v 1.10 2000/07/09 22:05:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: UInt16.cc,v 1.11 2000/08/22 19:42:28 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -133,7 +138,7 @@ UInt16::val2buf(void *val, bool)
 unsigned int
 UInt16::buf2val(void **val)
 {
-    assert(_buf && val);
+    assert(val);
 
     if (!*val)
 	*val = new dods_uint16;
