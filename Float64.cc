@@ -4,7 +4,10 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.4  1994/11/29 20:10:39  jimg
+// Revision 1.5  1994/12/09 21:35:58  jimg
+// Used the XDR_INT32 and XDR_FLOAT64 symbols defined in config.h.
+//
+// Revision 1.4  1994/11/29  20:10:39  jimg
 // Added functions for data transmission.
 // Added boolean parameter to serialize which, when true, causes the output
 // buffer to be flushed. The default value is false.
@@ -41,7 +44,7 @@
 #include "Float64.h"
 
 Float64::Float64(const String &n, FILE *in, FILE *out) 
-    : BaseType(n, "Float64", xdr_double, in, out)
+    : BaseType(n, "Float64", XDR_FLOAT64, in, out)
 {
 }
 

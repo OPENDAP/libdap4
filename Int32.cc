@@ -4,10 +4,11 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.5  1994/12/07 21:23:18  jimg
-// Added config.h
-// Changed xdr_long to XDR_LONG (defined in config.h, based on the target
-// machine.
+// Revision 1.6  1994/12/09 21:35:59  jimg
+// Used the XDR_INT32 and XDR_FLOAT64 symbols defined in config.h.
+//
+// Revision 1.5  1994/12/07  21:23:18  jimg
+// Changed from xdr_long to XDR_INT32 (defined in config.h by configure)
 //
 // Revision 1.4  1994/11/29  20:10:36  jimg
 // Added functions for data transmission.
@@ -40,7 +41,7 @@
 #include "config.h"
 
 Int32::Int32(const String &n, FILE *in, FILE *out) 
-    : BaseType(n, "Int32", XDR_LONG, in, out)
+    : BaseType(n, "Int32", XDR_INT32, in, out)
 {
 }
 
