@@ -4,7 +4,13 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.3  1994/11/22 14:06:22  jimg
+// Revision 1.4  1994/11/29 20:21:23  jimg
+// Added xdr_str and xdr_url functions (C linkage). These provide a way for
+// the Str and Url classes to en/decode strings (Urls are effectively strings)
+// with only two parameters. Thus the Array ad List classes might actually
+// work as planned.
+//
+// Revision 1.3  1994/11/22  14:06:22  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
 // complete yet.
 // Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
@@ -14,13 +20,17 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.3 1994/11/22 14:06:22 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.4 1994/11/29 20:21:23 jimg Exp $"};
 
 #include <string.h>
 #include <stdlib.h>
+#include <rpc/xdr.h>
 
 #include <SLList.h>
+
 #include "BaseType.h"
+#include "Str.h"
+#include "Url.h"
 #include "errmsg.h"
 #include "config.h"
 #include "debug.h"
@@ -85,3 +95,23 @@ unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
 
     return true;
 }
+
+// These functions are used to en/decode Str and Url type variables. They are
+// defined as extern C since they are passed via function pointers to
+// routines in the xdr library where they are executed. 
+// These functions are defined so that *every* direct descendent of BaseType
+// has an en/decoder which takes exactly two argumnets: an XDR * and a buffer
+// pointer.
+
+extern "C" bool_t
+xdr_url(XDR *xdrs, char **buf)
+{
+    return xdr_string(xdrs, buf, max_url_len);
+}
+
+extern "C" bool_t
+xdr_str(XDR *xdrs, char **buf)
+{
+    return xdr_string(xdrs, buf, max_str_len);
+}
+    
