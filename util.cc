@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.81 2004/07/07 21:08:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.82 2004/07/19 07:23:23 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -577,6 +577,7 @@ get_tempfile_template(char *file_template)
     and will be modified.
     @param temp Pathname, ending in 'XXXXXX'
     @return A FILE pointer opened for update. */
+#ifndef WIN32
 FILE *
 get_temp_file(char *temp)
 {
@@ -586,6 +587,7 @@ get_temp_file(char *temp)
     FILE *tmp = fdopen(fd, "a+");
     return tmp;
 }
+#endif
 
 /** Read stuff from a file and dump it into a string. This assumes the file
     holds character data only. Intended for testing...
@@ -603,6 +605,9 @@ file_to_string(FILE *fp)
 }
 
 // $Log: util.cc,v $
+// Revision 1.82  2004/07/19 07:23:23  rmorris
+// Remove use of function under win32 via #ifdef.  It uses mkstemp.
+//
 // Revision 1.81  2004/07/07 21:08:49  jimg
 // Merged with release-3-4-8FCS
 //
