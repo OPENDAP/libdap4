@@ -90,7 +90,7 @@ private:
 
     // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
     char *_buf;			// array which holds cardinal data
-
+    vector<string> d_str;        // special storage for strings. jhrg 2/11/05
     vector<BaseType *> _vec;	// array for other data
 
 protected:
@@ -144,6 +144,9 @@ public:
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.44  2005/02/14 22:11:53  jimg
+ * Added d_str, a field to hold string values.
+ *
  * Revision 1.43  2004/11/15 21:47:03  jimg
  * Added a btp_stack paramter to var() so that it will match the prototype
  * declared in BaseType. This fixed a problem in the inhertiance hierarchy
