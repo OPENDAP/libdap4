@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.157 2005/01/28 17:25:12 jimg Exp $
+# $Id: Makefile.in,v 1.158 2005/02/08 21:31:23 jimg Exp $
 
 @SET_MAKE@
 
@@ -259,7 +259,7 @@ lex.das.c: das.lex das.tab.c das.tab.h
 	$(LEX) $(LFLAGS) -Pdas das.lex
 
 lex.das.o: lex.das.c
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.das.c -o lex.das.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-unused -c lex.das.c -o lex.das.o
 
 # Build the DAS parser
 # Note that awk is used to add a param to dasparse().
@@ -276,7 +276,7 @@ lex.dds.c: dds.lex dds.tab.c dds.tab.h
 	$(LEX) $(LFLAGS) -Pdds dds.lex
 
 lex.dds.o: lex.dds.c
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.dds.c -o lex.dds.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c lex.dds.c -o lex.dds.o
 
 # Build the DDS parser
 
@@ -292,7 +292,7 @@ lex.expr.c: expr.lex expr.tab.c expr.tab.h
 	$(LEX) $(LFLAGS) -Pexpr expr.lex
 
 lex.expr.o: lex.expr.c
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.expr.c -o lex.expr.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c lex.expr.c -o lex.expr.o
 
 # Build the CE parser
 
@@ -308,7 +308,7 @@ lex.gse_.c: gse.lex gse.tab.c gse.tab.h
 	$(LEX) $(LFLAGS) -Pgse_ gse.lex
 
 lex.gse.o: lex.gse_.c
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.gse_.c -o lex.gse.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c lex.gse_.c -o lex.gse.o
 
 gse.tab.c gse.tab.h: gse.y
 	$(YACC) $(YFLAGS) -p gse_ gse.y
@@ -322,7 +322,7 @@ lex.Error.c: Error.lex Error.tab.c Error.tab.h
 	$(LEX) $(LFLAGS) -PError Error.lex
 
 lex.Error.o: lex.Error.c
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.Error.c -o lex.Error.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c lex.Error.c -o lex.Error.o
 
 # Build the Error object parser.
 
