@@ -9,6 +9,11 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.cc,v $
+// Revision 1.7  1999/05/05 00:40:11  jimg
+// Modified the DataDDS class so that a version string may begin with any
+// character sequence, not just `dods'. This means that each server can identify
+// itself in the version string.
+//
 // Revision 1.6  1999/04/29 02:29:29  jimg
 // Merge of no-gnu branch
 //
@@ -40,7 +45,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.6 1999/04/29 02:29:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.7 1999/05/05 00:40:11 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -66,11 +71,11 @@ static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.6 1999/04/29 02:29:29 jimg 
 void
 DataDDS::_version_string_to_numbers()
 {
-    static Regex version_regex("dods/[0-9]\\.[0-9]+[.0-9a-zA-Z]*", 1);
+    static Regex version_regex("[a-z]+/[0-9]\\.[0-9]+[.0-9a-zA-Z]*", 1);
 
     DBG(cerr << "in version string to numbers" << endl);
 
-    if (version_regex.match(_server_version.c_str(), _server_version.size()) != (int)_server_version.size()) {
+    if (version_regex.match(_server_version.c_str(), _server_version.length()) != (int)_server_version.length()) {
 	_server_version_major = 0;
 	_server_version_minor = 0;
     }
