@@ -4,7 +4,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.11  1994/12/16 20:13:31  dan
+// Revision 1.12  1994/12/19 20:52:45  jimg
+// Minor modifications to the print_val mfunc.
+//
+// Revision 1.11  1994/12/16  20:13:31  dan
 // Fixed serialize() and deserialize() for arrays of strings.
 //
 // Revision 1.10  1994/12/14  20:35:36  dan
@@ -326,9 +329,13 @@ Array::print_val(ostream &os, String space)
     }
   else if ( var_ptr->get_var_type() == "Byte" )
     {
-      for( i = 0; i < arrLength; ++i )
-	os << " = " << *(char *)(buf+(var_ptr->size()*i)) << ";" << endl;
+      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
+	os << " = " << *(unsigned char *)(buf+(var_ptr->size()*i)) << ";" 
+	   << endl;
     }
+  else {
+      // what about strucutres, ...
+  }
 }
 
 bool
