@@ -8,6 +8,14 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.26  1996/06/18 23:43:42  jimg
+// Added support for a GUI. The GUI is actually contained in a separate program
+// that is run in a subprocess. The core `talks' to the GUI using a pty and a
+// simple command language.
+// Removed GZIP preprocessor define and added DODS_ROOT define. Added checks in
+// the code to use the environment variable DODS_ROOT in preference to the
+// compile-time value (if non-null).
+//
 // Revision 1.25  1996/06/08 00:08:47  jimg
 // Fixed comments.
 //
@@ -159,7 +167,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.25 1996/06/08 00:08:47 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.26 1996/06/18 23:43:42 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -167,26 +175,47 @@ static char rcsid[]={"$Id: Connect.cc,v 1.25 1996/06/08 00:08:47 jimg Exp $"};
 
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
 #include <assert.h>
 
 #include <sys/types.h>		// Used by the semaphore code in fetch_url()
 #include <sys/ipc.h>
 #include <sys/sem.h>
+#include <sys/wait.h>
+
+#include <expect.h>
 
 #include <strstream.h>
 #include <fstream.h>
 
+#define DEBUG2 1		// WWW defines DEBUG; use DEBUG2 here.
+#include "debug.h"
 #include "Connect.h"
+#include "config_dap.h"
 
 // On a sun (4.1.3) these are not prototyped... Maybe other systems too?
+#if (SEM_PROTO == 0)
 extern "C" {
     int semget(key_t key, int nsems, int flag);
     int semctl(int semid, int semnum, int cmd, union semun arg);
     int semop(int semid, struct sembuf sb[], size_t nops);
 }
+#endif
 
-const char DODS_PREFIX[]={"dods"};
-const int DEFAULT_TIMEOUT = 100; // timeout in seconds
+// Constants used to talk to the GUI.
+
+static const int OK = 1;
+static const int ERROR = 2;
+static const char *GUI_PROMPT = "% ";
+static const char *GUI_EXIT_COMMAND = "exit\r";
+
+static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
+    : DODS_ROOT;
+
+// Constants used for temporary files.
+
+static const char DODS_PREFIX[]={"dods"};
+static const int DEFAULT_TIMEOUT = 100; // timeout in seconds
 
 int Connect::_connects = false;
 String Connect::_logfile = "";
@@ -297,13 +326,119 @@ int
 timeout_handler(HTRequest *request)
 {
     Connect *me = (Connect *)HTRequest_context(request);
+    String cmd;
 
-    if (SHOW_MSG) 
-	cerr << "Request timeout..." << endl;
+    if (!me->progress_visible())
+	cmd = (String)"progress popup \"Request timeout...\"\r";
+    else
+	cmd = (String)"progress text \"Request timeout...\"\r";
+	
+    me->progress_visible(me->send_gui_command(cmd));
+
+    if (me->progress_visible()) {
+	sleep(3);
+	cmd = (String)"progress popdown\r";
+	me->send_gui_command(cmd);
+	me->progress_visible(false);
+    }
 
     HTRequest_kill(request);
 
     return 0;
+}
+
+// Use the GUI to report progress to the user.
+
+BOOL
+dods_progress (HTRequest * request, HTAlertOpcode op, int msgnum, 
+	       const char * dfault, void * input, HTAlertPar * reply)
+{
+    Connect *me = (Connect *)HTRequest_context(request);
+    String cmd;
+
+    if (!request) {
+        if (WWWTRACE) TTYPrint(TDEST, "HTProgress.. Bad argument\n");
+        return NO;
+    }
+
+    switch (op) {
+      case HT_PROG_DNS:
+	if (!me->progress_visible())
+	    cmd = (String)"progress popup \"Looking up " + (char *)input + "\"\r";
+	else
+	    cmd = (String)"progress text \"Looking up " + (char *)input + "\"\r";
+	
+	me->progress_visible(me->send_gui_command(cmd));
+        break;
+
+      case HT_PROG_CONNECT:
+	if (!me->progress_visible())
+	    cmd = (String)"progress popup \"Contacting host...\"\r";
+	else
+	    cmd = (String)"progress text \"Contacting host...\"\r";
+	
+	me->progress_visible(me->send_gui_command(cmd));
+        break;
+
+      case HT_PROG_ACCEPT:
+	if (!me->progress_visible())
+	    cmd = (String)"progress popup \"Waiting for connection...\"\r";
+	else
+	    cmd = (String)"progress text \"Waiting for connection...\"\r";
+	
+	me->progress_visible(me->send_gui_command(cmd));
+        break;
+
+      case HT_PROG_READ: {
+	  if (!me->progress_visible())
+	      cmd = (String)"progress popup \"Reading...\"\r";
+	  else
+	      cmd = (String)"progress text \"Reading...\"\r";
+	  me->progress_visible(me->send_gui_command(cmd));
+	  
+	  if (!me->progress_visible()) // Bail if window won't popup
+	      break;
+
+	  long cl = HTAnchor_length(HTRequest_anchor(request));
+	  if (cl > 0) {
+	      long b_read = HTRequest_bytesRead(request);
+	      double pro = (double) b_read/cl*100;
+	      ostrstream cmd_s;
+	      cmd_s << "progress bar " << pro << "\r" << ends;
+	      (void)me->send_gui_command(cmd_s.str());
+	  }
+	  else {
+	      cmd = (String)"progress bar -1\r";
+	      (void)me->send_gui_command(cmd);
+	  }
+	  
+	  break;
+      }
+
+      case HT_PROG_WRITE:
+	// DODS *NEVER* writes. Ever. Well, it does write the request header...
+	break;
+
+      case HT_PROG_DONE:
+	cmd = (String)"progress popdown\r";
+	me->send_gui_command(cmd);
+	me->progress_visible(false);
+        break;
+
+      case HT_PROG_WAIT:
+	if (!me->progress_visible())
+	    cmd = (String)"progress popup \"Waiting for free socket...\"\r";
+	else
+	    cmd = (String)"progress text \"Waiting for free socket...\"\r";
+	me->progress_visible(me->send_gui_command(cmd));
+        break;
+
+      default:
+        TTYPrint(TDEST, "UNKNOWN PROGRESS STATE\n");
+        break;
+    }
+
+    return YES;
 }
 
 static ObjectType
@@ -363,6 +498,7 @@ header_handler(HTRequest *request, const char *token)
     return HT_OK;
 }
  
+
 void
 Connect::www_lib_init()
 {
@@ -417,7 +553,7 @@ Connect::www_lib_init()
 
     // Register our User Prompts etc in the Alert Manager
     if (HTAlert_interactive()) {
-	HTAlert_add(HTProgress, HT_A_PROGRESS);
+	HTAlert_add(dods_progress, HT_A_PROGRESS);
 	HTAlert_add(HTError_print, HT_A_MESSAGE);
 	HTAlert_add(HTPromptUsernameAndPassword, HT_A_USER_PW);
     }
@@ -433,6 +569,108 @@ Connect::www_lib_init()
     HTHeader_addParser("*", NO, header_handler);
 }
 
+// Start the GUI.
+
+bool
+Connect::start_gui()
+{
+    if (!show_gui())		// Don't start it if it won't be used.
+	return true;
+
+    if (_gui != -1)		// Already running? Don't start if so!
+	return true;
+
+    // As per the rules first try dods_root/etc/GUI then look on the user's
+    // PATH. If both fail, return false.
+    String gui = getenv("DODS_GUI");
+    if (gui == "")
+	gui = "wish";
+
+    String gui_cmd = (String)dods_root + "/etc/" + gui;
+    _gui = exp_spawnl((char *)(const char *)gui_cmd, 
+		      (char *)(const char *)gui, NULL);
+    if (_gui == -1)
+	if ((_gui = exp_spawnl((char *)(const char *)gui, 
+			       (char *)(const char *)gui, NULL)) == -1)
+	    return false;
+    
+    _gui_pid = exp_pid;		// Save the PID so we can clean up later. 
+
+    int status = exp_expectl(_gui, 
+			     exp_exact, GUI_PROMPT, OK, 
+			     exp_end);
+    switch (status) {
+      case OK:
+	DBG2(cerr << "Started the GUI" << endl);
+	break;
+      case ERROR:
+      case EXP_TIMEOUT:
+      case EXP_EOF:
+      case EXP_FULLBUFFER:
+      default:
+	cerr << "Could not start the GUI." << endl;
+	kill(_gui_pid, SIGKILL);
+	waitpid(_gui_pid, NULL, 0);
+	_user_wants_gui = false; // No GUI if we cannot get it working!
+	_gui = -1;
+	return false;
+    }
+
+    // GUI init command either comes from an environment variable or uses the
+    // default (my tcl/tk program).
+    String gui_init = getenv("DODS_GUI_INIT");
+    if (gui_init == "")
+	gui_init = (String)"source " + dods_root + "/etc/dods_gui.tcl\r";
+
+    if (!send_gui_command(gui_init)) {
+	kill(_gui_pid, SIGKILL);
+	waitpid(_gui_pid, NULL, 0);
+	_user_wants_gui = false;
+	_gui = -1;
+	return false;
+    }
+    else
+	return true;
+	
+}
+
+// Stop the GUI.
+
+void
+Connect::stop_gui()
+{
+    if (!show_gui() || _gui < 0) // Don't try to stop what is not running.
+	return;
+    
+    String command = GUI_EXIT_COMMAND;
+    int status = write(_gui, (const char *)command, command.length());
+    if (status != command.length()) {
+	cerr << "Wrong number of chars transferred to GUI!" << endl;
+	return;
+    }
+    
+    status = exp_expectl(_gui, exp_exact, "", OK, exp_end);
+
+    switch (status) {
+      case OK:
+	return;
+      case EXP_TIMEOUT:
+      case EXP_EOF:
+      case EXP_FULLBUFFER:
+      default:
+	DBG2(cerr << "Communication breakdown!" << endl);
+	kill(_gui_pid, SIGKILL);
+	waitpid(_gui_pid, NULL, 0);
+	_user_wants_gui = false;
+	_gui = -1;
+	return;
+    }
+
+    waitpid(_gui_pid, NULL, 0);
+
+    _gui = -1;
+}
+
 // Before calling this mfunc memory for the timeval struct must be allocated.
 
 void
@@ -446,6 +684,12 @@ Connect::clone(const Connect &src)
 	_das = src._das;
 	_dds = src._dds;
 	_error = src._error;
+
+	if (_gui > -1)
+	    (void)start_gui();
+
+	_show_gui = src._show_gui;
+	_user_wants_gui = src._user_wants_gui;
 
 	// Initialize the anchor object.
 	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
@@ -591,7 +835,26 @@ Connect::Connect(const String &name)
        	if (_connects == 0)
 	    www_lib_init();
 
-	_connects++;		// record the connect
+	_connects++;		// Record the connect.
+
+#if DEBUG2
+	exp_loguser = 1;	// Defined in expect_comm.h (see expect.h).
+#else
+	exp_loguser = 0;
+#endif
+
+	_gui = -1;		// Don't start the GUI until it's needed.
+
+	// _SHOW_GUI is false because it is shown (by default) only in
+	// request_data(). 
+	_show_gui = false;
+
+	String dods_gui = getenv("DODS_GUI");
+	dods_gui.downcase();
+	if (dods_gui == "no")
+	    _user_wants_gui = false; // Users explicitly say "no"...
+	else
+	    _user_wants_gui = true; // Otherwise assume "yes".
 
 	_URL = name;
 	_local = false;
@@ -647,6 +910,9 @@ Connect::~Connect()
 	HTList_delete(_conv);
 	HTLibTerminate();
     }
+
+    if (_gui > -1)
+	stop_gui();
 }
 
 Connect &
@@ -697,11 +963,16 @@ decompress(FILE *input)
 
 	DBG2(cerr << "Opening decompression stream." << endl);
 
+	// First try to run gzip using DODS_ROOT (the value read from the
+	// DODS_ROOT environment variable takes precedence over the value set
+	// at build time. If that fails, try the users PATH.
+	String gzip = (String)dods_root + "/etc/gzip";
+	(void) execl(gzip, "gzip", "-cd", NULL);
+
 	(void) execlp("gzip", "gzip", "-cd", NULL);
-	(void) execl(GZIP, "gzip", "-cd", NULL);
 
 	cerr << "Could not start decompresser!" << endl;
-	cerr << "gzip must be on your path or in DODS_ROOT/etc" << endl;
+	cerr << "gzip must be in DODS_ROOT/etc or on your PATH" << endl;
 	_exit(127);		// Only get here if an error
     }
 }
@@ -796,16 +1067,6 @@ Connect::fetch_url(String &url, bool async = false)
 	    }
 
 	    return true;
-
-#if 0
-	    _output = fdopen(data[0], "r");
-	    if (!_output) {
-		cerr << "Parent process could not open IPC channel for reading"
-		     << endl;
-		return false;
-	    }
-	    return true;
-#endif
 	}
 	else {
 	    close(data[0]);
@@ -877,11 +1138,81 @@ Connect::encoding()
     return _encoding;
 }
 
+// When STATE is -1 return the state of the progress indicator (true ==
+// mapped). When State is true or false, set the _progress_indicator flag
+// accordingly. 
+
+bool
+Connect::progress_visible(int state = -1)
+{
+    if (state < 0)
+	return _progress_visible;
+    else
+	return (_progress_visible = state);
+}
+
+bool
+Connect::send_gui_command(String command)
+{
+    if (!show_gui())		// Bail if were not supposed to be here...
+	return true;
+
+    DBG2(cerr << "Sending the GUI: " << command << endl);
+
+    if (_gui < 0) {
+	bool running = start_gui();
+	if (!running)
+	    return false;
+    }
+    
+    int status = write(_gui, (const char *)command, command.length());
+    if (status != command.length()) {
+	cerr << "Wrong number of chars transferred to GUI!" << endl;
+	_user_wants_gui = false;
+	return false;
+    }
+    
+    String response = command + "\nOK\r\n" + GUI_PROMPT;
+    String anything = (String)"*\r\n" + GUI_PROMPT;
+    status = exp_expectl(_gui, 
+			 exp_exact, (const char *)response, OK, 
+			 exp_glob, (const char *)anything, ERROR,
+			 exp_end);
+
+    switch (status) {
+      case OK:
+	return true;
+      case ERROR:
+      case EXP_TIMEOUT:
+      case EXP_EOF:
+      case EXP_FULLBUFFER:
+      default:
+	cerr << "GUI Could not execute command: " << command << endl
+	     << "Shutting down the GUI." << endl;
+	kill(_gui_pid, SIGKILL);
+	waitpid(_gui_pid, NULL, 0);
+	_user_wants_gui = false;
+	_gui = -1;
+	return false;
+    }
+}
+
+bool
+Connect::show_gui(int state = -1)
+{
+    if (state < 0)
+	return _show_gui && _user_wants_gui;
+    else
+	return (_show_gui = (bool)state) && _user_wants_gui;
+}
+
 // Added EXT which defaults to "das". jhrg 3/7/95
 
 bool
-Connect::request_das(const String &ext = "das")
+Connect::request_das(bool gui = false, const String &ext = "das")
 {
+    (void) show_gui(false);
+
     String das_url = _URL + "." + ext;
     bool status = false;
     String value;
@@ -914,8 +1245,10 @@ exit:
 // Added EXT which deafults to "dds". jhrg 3/7/95
 
 bool
-Connect::request_dds(const String &ext = "dds")
+Connect::request_dds(bool gui = false, const String &ext = "dds")
 {
+    (void)show_gui(gui);
+
     String dds_url = _URL + "." + ext;
     bool status = false;
 
@@ -957,11 +1290,12 @@ exit:
 // origianl DDS received from the dataset when this connection was made.
 
 DDS &
-Connect::request_data(const String expr, bool async = false, 
+Connect::request_data(const String expr, bool gui = true, bool async = false, 
 		      const String &ext = "dods")
 {
-    String data_url = _URL + "." + ext + "?" + expr;
+    (void)show_gui(gui);
 
+    String data_url = _URL + "." + ext + "?" + expr;
     bool status = fetch_url(data_url, async);
 	
     if (!status) {
