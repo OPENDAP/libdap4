@@ -8,6 +8,9 @@
 // Implementation for the CE Clause class.
 
 // $Log: Error.cc,v $
+// Revision 1.3  1996/06/03 06:26:51  jimg
+// Added declarations for Errorparse() and Errorrestart().
+//
 // Revision 1.2  1996/06/01 00:03:38  jimg
 // Added.
 //
@@ -16,11 +19,15 @@
 #pragma implementation
 #endif
 
-static char rcsid[]={"$Id: Error.cc,v 1.2 1996/06/01 00:03:38 jimg Exp $"};
+static char rcsid[]={"$Id: Error.cc,v 1.3 1996/06/03 06:26:51 jimg Exp $"};
 
 #include <assert.h>
 
 #include "Error.h"
+#include "parser.h"
+
+void Errorrestart(FILE *yyin);
+int Errorparse(parser_arg *arg); // defined in dds.tab.c
 
 Error::Error()
     : _error_code(undefined_error), _error_message(""), 
