@@ -19,17 +19,22 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.11  1996/06/11 17:27:11  jimg
-/* Moved debug.h in front of all the other DODS includes - this ensures that the
-/* debug.h included in this file is the one in effect (as opposed to a copy
-/* included by some other include file). We should banish nested includes...
-/* Added support for `Grid constraints'. These are like the Array constraints -
-/* projections where the start, stop and stride of each dimension may be
-/* specified. The new feature required a grammar change (so the parser would
-/* accept grids with the array bracket notation) and two new functions:
-/* is_grid_t() and process_grid_indices(). The actual projection information is
-/* stored in the array members of the Grid.
+/* Revision 1.12  1996/06/18 23:54:31  jimg
+/* Fixes for Grid constraints. These include not deleting the array indices
+/* lists after processing the Array component of a grid (but before processing
+/* the Maps...).
 /*
+ * Revision 1.11  1996/06/11 17:27:11  jimg
+ * Moved debug.h in front of all the other DODS includes - this ensures that
+ * the debug.h included in this file is the one in effect (as opposed to a copy
+ * included by some other include file). We should banish nested includes...
+ * Added support for `Grid constraints'. These are like the Array constraints -
+ * projections where the start, stop and stride of each dimension may be
+ * specified. The new feature required a grammar change (so the parser would
+ * accept grids with the array bracket notation) and two new functions:
+ * is_grid_t() and process_grid_indices(). The actual projection information is
+ * stored in the array members of the Grid.
+ *
  * Revision 1.10  1996/05/31 23:31:04  jimg
  * Updated copyright notice.
  *
@@ -76,7 +81,7 @@
 
 %{
 
-static char rcsid[]={"$Id: expr.y,v 1.11 1996/06/11 17:27:11 jimg Exp $"};
+static char rcsid[]={"$Id: expr.y,v 1.12 1996/06/18 23:54:31 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,11 +120,11 @@ int exprerror(const char *s);	/* easier to overload than use stdarg... */
 int exprerror(const char *s, const char *s2);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
-int_list_list *make_array_indeces(int_list *index);
-int_list_list *append_array_index(int_list_list *indeces, int_list *index);
-void delete_array_indeces(int_list_list *indeces);
-bool process_array_indeces(BaseType *variable, int_list_list *indeces); 
-bool process_grid_indeces(BaseType *variable, int_list_list *indeces); 
+int_list_list *make_array_indices(int_list *index);
+int_list_list *append_array_index(int_list_list *indices, int_list *index);
+void delete_array_indices(int_list_list *indices);
+bool process_array_indices(BaseType *variable, int_list_list *indices); 
+bool process_grid_indices(BaseType *variable, int_list_list *indices); 
 
 bool is_array_t(BaseType *variable);
 bool is_grid_t(BaseType *variable);
@@ -181,7 +186,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 %type <boolean> constraint_expr projection selection clause array_sel
 %type <op> rel_op
 %type <int_l_ptr> array_index
-%type <int_ll_ptr> array_indeces
+%type <int_ll_ptr> array_indices
 %type <rval_ptr> r_value constant identifier
 %type <r_val_l_ptr> r_value_list 
 
@@ -378,45 +383,45 @@ constant:       INT
 ;
 
 /* Array *selection* is a misnomer; it is really array *projection*. jhrg */
-array_sel:	ID array_indeces 
+array_sel:	ID array_indices 
                   {
 		      BaseType *var = table.var($1);
 		      if (var && is_array_t(var)) {
 			  var->set_send_p(true);
-			  $$ = process_array_indeces(var, $2);
-			  delete_array_indeces($2);
+			  $$ = process_array_indices(var, $2);
+			  delete_array_indices($2);
 		      }
 		      else if (var && is_grid_t(var)) {
 			  var->set_send_p(true);
-			  $$ = process_grid_indeces(var, $2);
-			  delete_array_indeces($2);
+			  $$ = process_grid_indices(var, $2);
+			  delete_array_indices($2);
 		      }
 		      else
 			  $$ = false;
 		  }
-	        | FIELD array_indeces 
+	        | FIELD array_indices 
                   {
 		      BaseType *var = table.var($1);
 		      if (var && is_array_t(var)) {
 			  $$ = table.mark($1, true) // set all the parents, too
-			      && process_array_indeces(var, $2);
-			  delete_array_indeces($2);
+			      && process_array_indices(var, $2);
+			  delete_array_indices($2);
 		      }
 		      else if (var && is_grid_t(var)) {
 			  $$ = table.mark($1, true) // set all the parents, too
-			       && process_grid_indeces(var, $2);
-			  delete_array_indeces($2);
+			       && process_grid_indices(var, $2);
+			  delete_array_indices($2);
 		      }
 		      else
 			  $$ = false;
 		  }
 ;
 
-array_indeces:  array_index
+array_indices:  array_index
                   {
-		      $$ = make_array_indeces($1);
+		      $$ = make_array_indices($1);
 		  }
-                | array_indeces array_index
+                | array_indices array_index
                   {
 		      $$ = append_array_index($1, $2);
 		  }
@@ -488,9 +493,9 @@ make_array_index(value &i1, value &i2, value &i3)
 }
 
 int_list_list *
-make_array_indeces(int_list *index)
+make_array_indices(int_list *index)
 {
-    int_list_list *indeces = new int_list_list;
+    int_list_list *indices = new int_list_list;
 
     DBG(Pix dp;\
 	cout << "index: ";\
@@ -498,28 +503,28 @@ make_array_indeces(int_list *index)
 	cout << (*index)(dp) << " ";\
 	cout << endl);
 
-    indeces->append(index);
+    indices->append(index);
 
-    return indeces;
+    return indices;
 }
 
 int_list_list *
-append_array_index(int_list_list *indeces, int_list *index)
+append_array_index(int_list_list *indices, int_list *index)
 {
-    indeces->append(index);
+    indices->append(index);
 
-    return indeces;
+    return indices;
 }
 
-// Delete an array indeces list. 
+// Delete an array indices list. 
 
 void
-delete_array_indeces(int_list_list *indeces)
+delete_array_indices(int_list_list *indices)
 {
-    for (Pix p = indeces->first(); p; indeces->next(p))
-	delete (*indeces)(p);
+    for (Pix p = indices->first(); p; indices->next(p))
+	delete (*indices)(p);
 
-    delete indeces;
+    delete indices;
 }
 
 bool
@@ -549,7 +554,7 @@ is_grid_t(BaseType *variable)
 }
 
 bool
-process_array_indeces(BaseType *variable, int_list_list *indeces)
+process_array_indices(BaseType *variable, int_list_list *indices)
 {
     bool status = true;
 
@@ -564,11 +569,11 @@ process_array_indeces(BaseType *variable, int_list_list *indeces)
     DBG(a->print_decl(cerr, "", true, false, true));
 
     Pix p, r;
-    for (p = indeces->first(), r = a->first_dim(); 
+    for (p = indices->first(), r = a->first_dim(); 
 	 p && r; 
-	 indeces->next(p), a->next_dim(r)) {
+	 indices->next(p), a->next_dim(r)) {
 
-	int_list *index = (*indeces)(p);
+	int_list *index = (*indices)(p);
 
 	Pix q = index->first(); 
 	int start = (*index)(q);
@@ -602,27 +607,27 @@ process_array_indeces(BaseType *variable, int_list_list *indeces)
 	cout << endl);
     
     if (p && !r) {
-	cerr << "Too many indeces in constraint for " << a->name() << "." 
+	cerr << "Too many indices in constraint for " << a->name() << "." 
 	     << endl;
 	status= false;
     }
 
 exit:
 #if 0
-    delete_array_indeces(indeces);
+    delete_array_indices(indices);
 #endif
     return status;
 }
 
 bool
-process_grid_indeces(BaseType *variable, int_list_list *indeces)
+process_grid_indices(BaseType *variable, int_list_list *indices)
 {
     bool status = true;
 
     Grid *g = (Grid *)variable; // Replace with dynamic cast.
 
     // First do the constraints on the ARRAY in the grid.
-    status = process_array_indeces(g->array_var(), indeces);
+    status = process_array_indices(g->array_var(), indices);
     if (!status)
 	goto exit;
 
@@ -634,11 +639,11 @@ process_grid_indeces(BaseType *variable, int_list_list *indeces)
 	g->map_var(r)->set_send_p(false);
 
     // Add specified maps to the current projection.
-    for (p = indeces->first(), r = g->first_map_var(); 
+    for (p = indices->first(), r = g->first_map_var(); 
 	 p && r; 
-	 indeces->next(p), g->next_map_var(r)) {
+	 indices->next(p), g->next_map_var(r)) {
 
-	int_list *index = (*indeces)(p);
+	int_list *index = (*indices)(p);
 
 	Pix q = index->first(); 
 	int start = (*index)(q);
@@ -675,14 +680,14 @@ process_grid_indeces(BaseType *variable, int_list_list *indeces)
 	cout << endl);
     
     if (p && !r) {
-	cerr << "Too many indeces in constraint for " 
+	cerr << "Too many indices in constraint for " 
 	     << g->map_var(r)->name() << "." << endl;
 	status= false;
     }
 
 exit:
 #if 0
-    delete_array_indeces(indeces);
+    delete_array_indices(indices);
 #endif
     return status;
 }
@@ -725,7 +730,7 @@ dereference_string(DDS &table, String &s)
 
     // the initial URL must be a complete reference to data; thus no
     // additional CE is needed. 
-    DDS d = c.request_data(ce, false); 
+    DDS d = c.request_data(ce, false, false); 
 
     // By definition, the DDS `D' can have only one variable, so make sure
     // that is true.
