@@ -9,18 +9,22 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.85  1999/12/15 01:14:10  jimg
+// More fixes for caching. Caching now works correctly for programs that use
+// multiple Connect objects. The Cache index is now updated more frequently.
+//
 // Revision 1.84  1999/12/01 21:27:05  jimg
-// Substantial changes for the caching software. Added a call to `terminate' the
-// cache once we're done with the libwww code. This writes the .index file
-// required by the cache. Additionally, changed the cache mode from validate to
-// OK. The later forces the cache to not validate every request. Instead
-// expiration is used and the libwww code implements a fall back in those cases
-// where servers don't supply a Date header. Finally, compressed responses break
-// the cache (I think this is libwww's bug) and I've disabled caching compressed
-// data responses. So that users can cache data responses, I've added a new flag
-// in the dodsrc file called NEVER_DEFLATE which allows users to override the
-// clients wishes regarding compression (i.e., users can turn it off). Data
-// responses can thus be cached.
+// Substantial changes for the caching software. Added a call to `terminate'
+// the cache once we're done with the libwww code. This writes the .index
+// file required by the cache. Additionally, changed the cache mode from
+// validate to OK. The later forces the cache to not validate every request.
+// Instead expiration is used and the libwww code implements a fall back in
+// those cases where servers don't supply a Date header. Finally, compressed
+// responses break the cache (I think this is libwww's bug) and I've disabled
+// caching compressed data responses. So that users can cache data responses,
+// I've added a new flag in the dodsrc file called NEVER_DEFLATE which allows
+// users to override the clients wishes regarding compression (i.e., users
+// can turn it off). Data responses can thus be cached.
 //
 // Revision 1.83  1999/10/22 04:17:25  cjm
 // Added support for caching.  Most of the code is in www_lib_init(), there
@@ -490,7 +494,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.84 1999/12/01 21:27:05 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.85 1999/12/15 01:14:10 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -532,6 +536,9 @@ decompression program failed to start. Please report this\n\
 error to the data server maintainer or to support@unidata.ucar.edu"}; 
 
 HTList *Connect::_conv = 0;
+int Connect::_num_remote_conns = 0;
+bool Connect::_cache_enabled = 0;
+char *Connect::_cache_root = 0;
 
 // Constants used by the cache. 
 // NB: NEVER_DEFLATE: I added this (12/1/99 jhrg) because libwww 5.2.9 cannot
@@ -546,7 +553,6 @@ static const int DODS_CACHE_MAX = 20;  // Max cache size in Mbytes
 static const int DODS_CACHED_OBJ = 5;  // Max cache entry size in Mbytes
 static const int DODS_IGN_EXPIRES = 0; // 0- Honor expires 1- Ignore them
 static const int DODS_NEVER_DEFLATE = 0; // 0- allow deflate, 1- disallow
-int CACHE_ENABLED = 0;
 
 #undef CATCH_SIG
 #ifdef CATCH_SIG
@@ -1187,6 +1193,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		}
 	    }
 	    delete tempstr;
+	    fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
 	}
     }
         
@@ -1241,7 +1248,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     if(!USE_CACHE) {
 	// Disable the cache. 
 	HTCacheTerminate();
-	CACHE_ENABLED = 0;
+	_cache_enabled = false;
     }
     else {
 	// Instead, set up the cache.
@@ -1252,16 +1259,18 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	strcpy(tempstr+strlen(cache_root), "/.lock");
 	tempstr[strlen(cache_root)+6] = (char)0;
 	remove(tempstr);
+	_cache_root = new char[strlen(cache_root)+1];
+	strcpy(_cache_root, cache_root);
 	if(HTCacheInit(cache_root, MAX_CACHE_SIZE) == YES) {
 	    HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
 	    if(IGNORE_EXPIRES) HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
 	    else HTCacheMode_setExpires(HT_EXPIRES_AUTO);
-	    CACHE_ENABLED = 1;
+	    _cache_enabled = true;
 	}
 	else {
 	    // Disable the cache. 
 	    HTCacheTerminate();
-	    CACHE_ENABLED = 0;
+	    _cache_enabled = false;
 	}
     }
     
@@ -1349,7 +1358,7 @@ Connect::read_url(string &url, FILE *stream)
 
     // Set this request to use the cache if possible. 
     // CJM used HT_CACHE_VALIDATE; HT_CACHE_OK supresses the validation.
-    if(CACHE_ENABLED) HTRequest_setReloadMode(_request, HT_CACHE_OK);
+    if(_cache_enabled) HTRequest_setReloadMode(_request, HT_CACHE_OK);
 
     // If the user is asking for data and it might be compressed, turn off
     // the cache *for this particular request*. Once the servers are all
@@ -1370,6 +1379,8 @@ Connect::read_url(string &url, FILE *stream)
 	HTCacheMode_setEnabled(true);
 	set_cache_control("");
     }
+
+    if (_cache_enabled) HTCacheIndex_write(_cache_root);
 
     if (status != YES) {
 	if (SHOW_MSG) cerr << "Can't access resource" << endl;
@@ -1417,9 +1428,12 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
     char *access_ref = HTParse(name.c_str(), NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
-       	if (!_conv) {
+       	if (_num_remote_conns == 0) {
 	    www_lib_init(www_verbose_errors, accept_deflate);
 	}
+	_num_remote_conns++;
+	// NB: _cache_enabled and _cahe_root are set in www_lib_init.
+	// 12/14/99 jhrg
 
 	// Find and store any CE given with the URL.
 	size_t dotpos = name.find('?');
@@ -1473,14 +1487,23 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 Connect::Connect(const Connect &copy_from) : _error(undefined_error, "")
 {
     clone(copy_from);
+    _num_remote_conns++;
 }
 
 Connect::~Connect()
 {
     DBG2(cerr << "Entering the Connect dtor" << endl);
+    _num_remote_conns--;
     // Calling this ensures that the WWW library Cache gets updated and the
     // .index file is written. 11/22/99 jhrg
-    HTCacheTerminate();
+    if (_num_remote_conns == 0) {
+	if (_cache_enabled) HTCacheTerminate();
+	HTList_delete(_conv);
+	_conv = 0;
+	delete[] _cache_root;
+    }
+    else
+	if (_cache_enabled) HTCacheIndex_write(_cache_root);
 
 #ifdef GUI
     delete _gui;
