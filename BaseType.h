@@ -1,5 +1,5 @@
 
-// This may look like C code, but it is really -*- C++ -*-
+// -*- C++ -*-
 
 // Base class for the variables in a dataset. This is used to store the
 // type-invariant information that describes a variable as given in the DODS
@@ -8,13 +8,17 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.2  1994/09/15 21:08:56  jimg
-/* Added many classes to the BaseType hierarchy - the complete set of types
-/* described in the DODS API design documet is not represented.
-/* The parser can parse DDS files.
-/* Fixed many small problems with BaseType.
-/* Added CtorType.
+/* Revision 1.3  1994/09/23 14:34:44  jimg
+/* Added mfunc check_semantics().
+/* Moved definition of dtor to BaseType.cc.
 /*
+ * Revision 1.2  1994/09/15  21:08:56  jimg
+ * Added many classes to the BaseType hierarchy - the complete set of types
+ * described in the DODS API design documet is now represented.
+ * The parser can parse DDS files.
+ * Fixed many small problems with BaseType.
+ * Added CtorType.
+ *
  * Revision 1.1  1994/09/09  15:28:42  jimg
  * Class for base type variables. Int32, ... inherit from this class.
  */
@@ -41,7 +45,7 @@ protected:
 public:
     BaseType(const String &n = (char *)0, const String &t = (char *)0);
     BaseType(const BaseType &copy_from);
-    virtual ~BaseType();
+    virtual ~BaseType() {}
 
     BaseType &operator=(const BaseType &rhs);
 
@@ -52,6 +56,7 @@ public:
     void set_var_type(const String &t);
 
     virtual void print_decl(bool print_semi = true);
+    virtual bool check_semantics(bool all = false);
 };
 
 typedef BaseType * BaseTypePtr;

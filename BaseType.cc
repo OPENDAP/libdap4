@@ -4,9 +4,13 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.2  1994/09/15 21:08:36  jimg
+// Revision 1.3  1994/09/23 14:34:42  jimg
+// Added mfunc check_semantics().
+// Moved definition of dtor to BaseType.cc.
+//
+// Revision 1.2  1994/09/15  21:08:36  jimg
 // Added many classes to the BaseType hierarchy - the complete set of types
-// described in the DODS API design documet is not represented.
+// described in the DODS API design documet is now represented.
 // The parser can parse DDS files.
 // Fixed many small problems with BaseType.
 // Added CtorType.
@@ -49,10 +53,6 @@ BaseType::BaseType(const BaseType &copy_from)
     duplicate(copy_from);
 }
     
-BaseType::~BaseType()
-{
-}
-
 BaseType &
 BaseType::operator=(const BaseType &rhs)
 {
@@ -65,7 +65,7 @@ BaseType::operator=(const BaseType &rhs)
 }
 
 String 
-BaseType::get_var_name() 
+BaseType::get_var_name()
 { 
     return name; 
 }
@@ -97,4 +97,26 @@ BaseType::print_decl(bool print_semi)
     cout << type << " " << name;
     if (print_semi)
 	cout << ";" << endl;
+}
+
+// Compares the object's current state with the semantics of a particular
+// type. This will typically be defined in ctor classes (which have
+// complicated semantics). For BaseType, an object is semantically correct if
+// it has both a non-null name and type.
+//
+// NB: This is not the same as an invariant -- during the parse objects exist
+// but have no name. Also, the bool ALL defaults to false for BaseType. It is
+// used by children of CtorType.
+//
+// Returns: true if the object is semantically correct, false otherwise.
+
+bool
+BaseType::check_semantics(bool all)
+{
+    bool sem = ((const char *)type && (const char *)name);
+
+    if (!sem) 
+	cerr << "Every variable must have both a name and a type" << endl;
+
+    return sem;
 }
