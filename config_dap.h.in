@@ -2,17 +2,30 @@
 #ifndef _DODS_CONFIG_H_
 #define _DODS_CONFIG_H_
 
-/* Matching #endif in config.h.bot */
+/* $Log: config_dap.h.in,v $
+/* Revision 1.2  1994/12/07 21:15:11  jimg
+/* Updated files to work with autoconf 2.1.
+/* */
+
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
+
+/* Define to empty if the keyword does not work.  */
+#undef const
 
 /* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
    This function is required for alloca.c support on those systems.  */
 #undef CRAY_STACKSEG_END
 
-/* Define if you have alloca.h and it should be used (not Ultrix).  */
+/* Define if you have alloca, as a function or macro.  */
+#undef HAVE_ALLOCA
+
+/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
 #undef HAVE_ALLOCA_H
+
+/* Define as __inline if that's what the C compiler calls it.  */
+#undef inline
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
@@ -55,19 +68,23 @@
 /* The number of bytes in a long.  */
 #undef SIZEOF_LONG
 
-/* Define if you have the fl library (-lfl).  */
-#undef HAVE_LIBFL
+/* Define if you have the strdup function.  */
+#undef HAVE_STRDUP
+
+/* Define if you have the <fcntl.h> header file.  */
+#undef HAVE_FCNTL_H
+
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
+
+/* Define if you have the <unistd.h> header file.  */
+#undef HAVE_UNISTD_H
 
 /*
   Determine at compile-time the sizes of various datatypes. This uses symbols
   defined by configure (See configure.in).
   jhrg 10/24/94
 */
-
-/* $Log: config_dap.h.in,v $
-/* Revision 1.1  1994/10/26 18:03:13  jimg
-/* Added
-/* */
 
 #ifndef __DODS_DATATYPES__
 #define __DODS_DATATYPES__
@@ -96,4 +113,6 @@ typedef float float64;
 
 #endif /* __DODS_DATATYPES__ */
 
-#endif /* _DODS_CONFIG_H_ *defined* in config.h.top */
+#endif /* _DODS_CONFIG_H_ */
+
+
