@@ -1,0 +1,13 @@
+
+# -*- Perl -*-
+# byte values that should not parse, in various ways...
+
+Attributes {
+    test {
+	Byte b "this is not a byte";
+	byte c -256;
+	byte d 255;		# This on is OK
+	byte e 2550;
+	byte f 2.55;
+    }
+}
