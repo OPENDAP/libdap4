@@ -17,6 +17,9 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.29  1998/03/17 17:32:36  jimg
+ * Added an implementation of element_count().
+ *
  * Revision 1.28  1998/02/05 20:13:54  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -233,7 +236,7 @@ class Grid: public BaseType {
 private:
     BaseType *_array_var;
     SLList<BaseTypePtr> _map_vars;
-
+    
     void _duplicate(const Grid &s);
 
 public:
@@ -253,6 +256,8 @@ public:
     
     const Grid &operator=(const Grid &rhs);
     virtual BaseType *ptr_duplicate() = 0;
+
+    virtual int element_count(bool leaves = false);
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
