@@ -11,10 +11,14 @@
 #define YYSTYPE char *
 
 #include "dds.tab.h"
+#include "BaseType.h"
+#include "Int32.h"
 #include "DDS.h"
 
 void test_scanner();
 void test_parser();
+void test_class();
+
 int ddslex();
 int ddsparse(DDS &);
 
@@ -59,6 +63,7 @@ main(int argc, char *argv[])
     }
 
     if (class_test) {
+	test_class();
     }
 }
 
@@ -144,6 +149,26 @@ test_parser(void)
     if (table.check_semantics())
 	cout << "DDS past semantic check" << endl;
     else 
+	cout << "DDS failed semantic check" << endl;
+
+    if (table.check_semantics(true))
+	cout << "DDS past full semantic check" << endl;
+    else 
+	cout << "DDS failed full semantic check" << endl;
+
+    table.print();
+}
+
+void
+test_class(void)
+{
+    DDS table;
+    int status = table.parse();
+    cout << "Status from parser: " << status << endl;
+    
+    if (table.check_semantics())
+	cout << "DDS past semantic check" << endl;
+    else 
 	cout << "DDS filed semantic check" << endl;
 
     if (table.check_semantics(true))
@@ -152,4 +177,40 @@ test_parser(void)
 	cout << "DDS filed full semantic check" << endl;
 
     table.print();
+
+    DDS table2 = table;		// test copy ctor;
+    table2.print();
+
+    DDS table3;
+    table3 = table;		// test operator=
+
+    cout << "Dataset name: " << table.get_dataset_name() << endl;
+
+    String name = "goofy";
+    table.add_var(new Int32(name)); // table dtor should delete this object
+
+    table.print();
+
+    BaseType *btp = table.var(name);
+
+    btp->print_decl(cout, true); // print out goofy w/semicolon
+
+    table.del_var(name);
+
+    table.print();
+
+    table.add_var(new Int32("goofy"));
+
+    table.print();
+
+    btp = table.var("goofy");
+
+    btp->print_decl(cout, true); // print out goofy w/semicolon
+
+    table.del_var("goofy");
+
+    table.print();
+
+    for (Pix p = table.first_var(); p; table.next_var(p))
+	table.var(p)->print_decl(cout, true);	// print them all w/semicolons
 }
