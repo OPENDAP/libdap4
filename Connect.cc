@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.51  1997/02/19 02:11:34  jimg
+// Fixed ctors (removed lame error object initializers).
+//
 // Revision 1.50  1997/02/17 20:21:44  jimg
 // Fixed a bug in the ctors introduced by making Error's ctor private.
 //
@@ -286,7 +289,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.50 1997/02/17 20:21:44 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.51 1997/02/19 02:11:34 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -350,6 +353,11 @@ const int SEM_PERMS = 0666;
 static const char DODS_PREFIX[]={"dods"};
 static const int DEFAULT_TIMEOUT = 100; // Timeout in seconds.
 static int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
+
+static const char bad_decomp_msg[]={\
+"The data returned by the server was compressed and the\n\
+decompression program failed to start. Please report this\n\
+error to the data server maintainer or to gmilkowski@gso.uri.edu"}; 
 
 // Initially, _connects is -1 to indicate that no connection has been made.
 
@@ -972,7 +980,7 @@ Connect::close_output()
 // This ctor is decalred private so that it won't ever be called by users,
 // thus forcing them to create Connects which point somewhere.
 
-Connect::Connect(): _error(undefined_error, "")
+Connect::Connect()
 {
     assert(false);
 }
@@ -980,7 +988,6 @@ Connect::Connect(): _error(undefined_error, "")
 // public mfuncs
 
 Connect::Connect(String name, bool www_verbose_errors = false)
-     : _error(undefined_error, "")
 {
     _gui = new Gui;
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
@@ -1105,8 +1112,11 @@ Connect::fetch_url(String &url, bool async = false)
     // HACK, Fix the asynchronous + compression bug and re-enable
     // asynchronous connects.
     async = false;
-
+    
+    // NB: I've completely removed the async stuff for now. 2/18/97 jhrg
+#if 0
     if (!async) {
+#endif
 	PERF(cerr << "Entering fetch_url() [synchronous]" << endl);
 
 	char *c = tempnam(NULL, DODS_PREFIX);
@@ -1126,17 +1136,25 @@ Connect::fetch_url(String &url, bool async = false)
 	}
 
 	if (encoding() == x_gzip) {
-	    _output = decompressor(stream);
-	    if (!_output)
+	    DBG(cerr << "encoding is gzip!" << endl);
+	    int childpid;
+	    _output = decompressor(stream, childpid);
+	    if (!_output) {
+		DBG(cerr << "decompressor failure!" << endl);
+		_error.error_code(unknown_error);
+		_error.error_message(bad_decomp_msg);
 		return false;
+	    }
 	}
 	else {
+	    DBG(cerr << "encoding is plain!" << endl);
 	    _output = stream;
 	}
 
 	PERF(cerr << "Leaving fetch_url() [synchronous]" << endl);
 
 	return true;
+#if 0
     }
     else {
 	PERF(cerr << "Entering fetch_url() [async]" << endl);
@@ -1238,6 +1256,7 @@ Connect::fetch_url(String &url, bool async = false)
 	    exit(0);		// successful completion
 	}
     }
+#endif
 }
 
 // Remove the duplication of _connect and subsequent close(). This would hav
@@ -1454,7 +1473,7 @@ Connect::request_data(String expr, bool gui_p = true,
 	  // object. 
 
 	  // If the transmission is synchronous, read all the data into the
-	  // DDS D. If asynchronous, just return the DDS and leave the
+	  // DDS. If asynchronous, just return the DDS and leave the
 	  // reading to to the caller.
 	  if (!async) {
 	      XDR *s = source();
