@@ -7,9 +7,17 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.9  1996/02/01 17:43:10  jimg
-/* Added support for lists as operands in constraint expressions.
+/* Revision 1.10  1996/03/05 18:32:26  jimg
+/* Added the clause and function subclasses. Clause is used to hold a single
+/* clause of the current CE. Clause has ctors, a dtor (which is currently
+/* broken) and member function used to get the boolean value of the clause.
+/* Function is used to hold a single pointer to either a function returning a
+/* boolean or a BaseType *. The DDS class contains a list of clauses and a list
+/* of functions.
 /*
+ * Revision 1.9  1996/02/01 17:43:10  jimg
+ * Added support for lists as operands in constraint expressions.
+ *
  * Revision 1.8  1995/12/09  01:06:39  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -63,6 +71,8 @@
 
 #include <stdio.h>
 
+#include "config_dap.h"
+
 #include <iostream.h>
 #include <String.h>
 #include <Pix.h>
@@ -70,21 +80,86 @@
 
 #include "BaseType.h"
 #include "expr.h"
+#include "debug.h"
 
 class DDS {
 private:
-    struct rel_clause {
-	int op;			// operator code from parser
-	BaseType *arg1;		// argument 1 for OP
-	bool arg2_is_vector;	// use V_ARG2 if true, else use S_ARG2.
-	BaseType *s_arg2;	// scalar arg; must be same type as ARG1
-	RValList *v_arg2;	// vector arg; elems must match type of ARG1
+    // This struct is used to hold a clause in the constraint expression
+    // (CE). A CE is made up of N clauses, all of which are &&'d together to
+    // get the value of the CE. 
+    struct clause {
+	rvalue *arg1;
+	bool_func_ptr f;	// this to choose which to evaluate
+
+	int op;			// operator code from parser; used iff ARG1
+	rvalue_list *args;	// vector arg
+
+	clause(const int oper, rvalue *a1, rvalue_list *rv)
+	    : op(oper), f(0), arg1(a1), args(rv) {}
+	clause(bool_func_ptr func, rvalue_list *rv)
+	    : op(0), f(func), arg1(0), args(rv) {}
+	clause() : op(0), f(0), arg1(0), args(0) {}
+
+	~clause() {
+#ifdef NEVER
+	    if (arg1)
+		delete arg1;
+
+	    delete args;
+#endif
+	}
+
+	bool value(const String &dataset) {
+	    if (arg1) {		// is it an rvalue?
+		// rvalue::bvalue(...) returns the rvalue encapsulated in a
+		// BaseType *.
+		BaseType *btp = arg1->bvalue(dataset);
+		// The list of rvalues is an implicit logical OR, so assume
+		// FALSE and return TRUE for the first TRUE subclause.
+		bool result = false;
+		for (Pix p = args->first(); p && !result; args->next(p))
+		    result = result || btp->ops(*(*args)(p)->bvalue(dataset), 
+						op);
+
+		return result;
+	    }
+	    else {		// otherwise it must a bool function
+		int argc = args->length();
+		BaseType *argv[argc];
+		
+		int i = 0;
+		for (Pix p = args->first(); p; args->next(p))
+		    argv[i++] = (*args)(p)->bvalue(dataset);
+
+		bool result = (*f)(argc, argv);
+		return result;
+	    }
+	}
     };
 	
+    // This struct is used to hold all the known `user defined' functions
+    // (including those that are `built-in'). 
+    struct function {
+	String name;
+	bool_func_ptr f_ptr;
+	btp_func_ptr btp_f_ptr;
+
+	function(const String &n, const bool_func_ptr f)
+	    : name(n), f_ptr(f), btp_f_ptr(0) {}
+	function(const String &n, const btp_func_ptr f)
+	    : name(n), f_ptr(0), btp_f_ptr(f) {}
+	function(): name(""), f_ptr(0), btp_f_ptr(0) {}
+    };
+
     String name;		// the dataset name
     SLList<BaseTypePtr> vars;	// variables at the top level 
     
-    SLList<rel_clause> expr;
+    SLList<clause> expr;
+    // list of constants created by the parser; these must be deleted by the
+    // DDS's dtor. The expr parser builds this list.
+    SLList<BaseTypePtr> constants;
+
+    SLList<function> functions; // known external functions
 
     void duplicate(const DDS &dds);
 
@@ -106,23 +181,32 @@ public:
     Pix first_var();
     void next_var(Pix &p);
     BaseType *var(Pix p);
+    int num_var();
 
     // Interface to the parsed expression
     Pix first_clause();
     void next_clause(Pix &p);
-    int clause_op(Pix p);
-    bool clause_arg2_is_vector(Pix p);
-    BaseType *clause_arg1(Pix p);
-    BaseType *clause_s_arg2(Pix p);
-    RValList *clause_v_arg2(Pix p);
-    void append_clause(int op, BaseType *arg1, BaseType *arg2);
-    void append_clause(int op, BaseType *arg1, RValList *arg2);
+    bool clause_value(Pix p, const String &dataset);
+
+    void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
+    void append_clause(bool_func_ptr f, rvalue_list *args);
+
+    // DDS maintains a list of BaseType *s for all the constants that the
+    // expr parser generates. These objects can be deleted when we are done
+    // with the DDS.
+    void append_constant(BaseType *btp);
+
+    // manipulate the FUNCTIONS member.
+    void add_function(const String &name, bool_func_ptr f);
+    void add_function(const String &name, btp_func_ptr f);
+    bool find_function(const String &name, bool_func_ptr *f) const;
+    bool find_function(const String &name, btp_func_ptr *f) const;
 
     // evaluate the current constraint
-    bool eval_constraint();
+    bool eval_selection(const String &dataset);
 
     // evaluate the projectons
-    bool mark_all(bool state);
+    void mark_all(bool state);
     bool mark(const String &name, bool state);
 
     // Interface to the parser
