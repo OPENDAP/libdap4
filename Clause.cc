@@ -8,6 +8,10 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.2  1996/08/13 17:49:58  jimg
+// Fixed a bug in the value() member function where non-existent functions
+// were `evaluated' (producing a core dump).
+//
 // Revision 1.1  1996/05/31 23:18:55  jimg
 // Added.
 //
@@ -109,11 +113,11 @@ Clause::value(const String &dataset)
 	return result;
     }
     else {
-	assert(false);
 	cerr << "Internal error: " << endl
 	     << "The constraint expression parser built an invalid clause."
 	     << endl
 	     << "Please report this error." << endl;
+	return false;
     }
 }
 
@@ -133,15 +137,20 @@ Clause::value(const String &dataset, BaseType **value)
 	}
 
 	*value = (*bt_func)(argc, argv);
-	(*value)->set_read_p(true);
-	(*value)->set_send_p(true);
-	return true;
+	if (*value) {
+	    (*value)->set_read_p(true);
+	    (*value)->set_send_p(true);
+	    return true;
+	}
+	else {
+	    return false;
+	}
     }
     else {
-	assert(false);
 	cerr << "Internal error:" << endl
 	    << "The constraint expression parser built an invalid clause."
 	    << endl
 	    << "Please report this error." << endl;
+	return false;
     }
 }
