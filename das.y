@@ -22,7 +22,10 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.6  1994/10/05 16:46:51  jimg
+ * Revision 1.7  1994/10/18 00:23:18  jimg
+ * Added debugging statements.
+ *
+ * Revision 1.6  1994/10/05  16:46:51  jimg
  * Modified the DAS grammar so that TYPE tokens (from the scanner) were
  * parsed correcly and added to the new AttrTable class.
  * Changed the code used to add entries based on changes to AttrTable.
@@ -64,13 +67,19 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.6 1994/10/05 16:46:51 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.7 1994/10/18 00:23:18 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "debug.h"
 #include "das.tab.h"
 #include "DAS.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 extern int das_line_num;
 
@@ -78,6 +87,7 @@ static char name[ID_MAX];	/* holds name in attr_pair rule */
 static char type[ID_MAX];	/* holds type in attr_pair rule */
 static AttrTablePtr attr_tab_ptr;
 
+void mem_list_report();
 int daslex(void);
 int daserror(char *s);
 void save_str(char *dst, char *src);
@@ -106,7 +116,7 @@ void save_str(char *dst, char *src);
 
   Store the table entry for the current variable in attr_tab_ptr.
 
-  For every attribute name-value pair (rule: attr_pair) entry the name and
+  For every attribute name-value pair (rule: attr_pair) enter the name and
   value in the table entry for the current variable.
 */
 
@@ -125,9 +135,14 @@ var_attr_list: 	/* empty */
 
 var_attr:   	ID 
 		{ 
-		    attr_tab_ptr = table.get_table((String)$1);
-		    if (!attr_tab_ptr) /* is this a new var? */
+		    DBG2(mem_list_report());
+		    attr_tab_ptr = table.get_table($1);
+		    DBG2(mem_list_report());
+		    if (!attr_tab_ptr) { /* is this a new var? */
 			attr_tab_ptr = table.add_table($1, new AttrTable);
+			DBG(cerr << "attr_tab_ptr: " << attr_tab_ptr << endl);
+		    }
+		    DBG2(mem_list_report());
 		} 
 		'{' attr_list '}'
 ;
