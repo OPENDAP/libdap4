@@ -1,3 +1,8 @@
+Sun Mar 23 17:01:12 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed the nasty decompression bug where child process exit
+	status was never caught. This caused process tables to fill, etc.
+
 Thu Mar  6 21:14:38 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* See TODO list for bugs fixed.
@@ -229,4 +234,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.9 1997/03/07 05:15:07 jimg Exp $
+$Id: ChangeLog,v 1.10 1997/03/24 01:02:36 jimg Exp $
