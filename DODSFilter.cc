@@ -10,6 +10,9 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.11  1999/05/19 23:56:57  jimg
+// Changed the support address from @dods to @unidata
+//
 // Revision 1.10  1999/05/05 00:36:36  jimg
 // Added the -V option. -v now is used to pass the version information from the
 // CGI to the C++ software; -V triggers output of the version message. This
@@ -70,7 +73,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.10 1999/05/05 00:36:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.11 1999/05/19 23:56:57 jimg Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__
@@ -227,7 +230,7 @@ DODSFilter::read_ancillary_dds(DDS &dds)
 
 static const char *emessage = \
 "DODS internal server error. Please report this to the dataset maintainer, \
-or to support@dods.gso.uri.edu.";
+or to support@unidata.ucar.edu.";
 
 void 
 DODSFilter::print_usage()
