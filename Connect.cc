@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.29  1996/06/22 00:00:23  jimg
+// Added Gui pointer to the Error oject's correct_error mfunc call.
+//
 // Revision 1.28  1996/06/21 23:15:03  jimg
 // Removed GUI code to a new class - Gui.
 //
@@ -173,7 +176,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.28 1996/06/21 23:15:03 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.29 1996/06/22 00:00:23 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -408,7 +411,7 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int msgnum,
 	      break;
 
 	  long cl = HTAnchor_length(HTRequest_anchor(request));
-	  if (cl > 0) {
+	  if (cl >= 0) {
 	      long b_read = HTRequest_bytesRead(request);
 	      double pro = (double) b_read/cl*100;
 	      ostrstream cmd_s;
@@ -585,9 +588,12 @@ dods_error_print (HTRequest * request, HTAlertOpcode op,
 	String response;	// Not used
 	Connect *me = (Connect *)HTRequest_context(request);
 
-	if (!me->gui()->response(command, response)) {
-	    DBG2(cerr << "GUI Failure in dods_error_print()" << endl);
+	if (me->gui()->show_gui()) {
+	    if (!me->gui()->response(command, response))
+		cerr << "GUI Failure in dods_error_print()" << endl;
 	}
+	else
+	    cerr << (char *)HTChunk_data(msg) << endl;
 
         HTChunk_delete(msg);
     }
@@ -1187,7 +1193,7 @@ Connect::request_das(bool gui_p = false, const String &ext = "das")
 	    goto exit;
 	}
 	    
-	String correction = _error.correct_error();
+	String correction = _error.correct_error(gui());
 	// put the test for various error codes here
 	status = false;
     }
@@ -1221,7 +1227,7 @@ Connect::request_dds(bool gui_p = false, const String &ext = "dds")
 	    goto exit;
 	}
 	    
-	String correction = _error.correct_error();
+	String correction = _error.correct_error(gui());
 	// put the test for various error codes here
 	status = false;
     }
@@ -1266,7 +1272,7 @@ Connect::request_data(const String expr, bool gui_p = true,
 	    exit(1);
 	}
 	    
-	String correction = _error.correct_error();
+	String correction = _error.correct_error(gui());
 	// put the test for various error codes here
 	exit(1);		// improve this!!
     }
