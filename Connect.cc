@@ -8,6 +8,16 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.61  1998/02/11 21:56:20  jimg
+// Mayor modifications for libwww 5.1 compression support. I removed lots of
+// old code that was superfluous and changed the way the library is initialized
+// to make that more efficient.
+// Removed the old Semaphore hacks.
+// Removed the content-encoding handler (that is now done by libwww).
+// The Ctor and www_lib_init now take a flag that controls whether the server
+// is told that the client can decompress data. Note that this does not mean
+// data *will* be compressed, just that the client can process it if it is.
+//
 // Revision 1.60  1998/02/05 20:13:50  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -338,7 +348,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.60 1998/02/05 20:13:50 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.61 1998/02/11 21:56:20 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -374,31 +384,6 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.60 1998/02/05 20:13:50 jim
 #define CATCH_SIG
 #endif
 
-#define USE_SEM 0
-
-#if USE_SEM
-// On a sun (4.1.3) these are not prototyped... Maybe other systems too?
-#if (HAVE_SEM_PROTO == 0)
-extern "C" {
-    int semget(key_t key, int nsems, int flag);
-    int semctl(int semid, int semnum, int cmd, ...);
-    int semop(int semid, struct sembuf sb[], size_t nops);
-}
-#endif
-
-// osf-3.0 fails to define this in <sys/sem.h>
-#if (HAVE_SEM_UNION == 0)
-union semun {
-    int val;
-    struct semid_ds *buf;
-    ushort *array;
-};
-#endif
-
-const int SEM_KEY = 123456L;
-const int SEM_PERMS = 0666;
-#endif /* USE_SEM */
-
 // Constants used for temporary files.
 
 static const char DODS_PREFIX[]={"dods"};
@@ -408,14 +393,11 @@ int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
 static const char bad_decomp_msg[]={\
 "The data returned by the server was compressed and the\n\
 decompression program failed to start. Please report this\n\
-error to the data server maintainer or to gmilkowski@gso.uri.edu"}; 
+error to the data server maintainer or to support@dods.gso.uri.edu"}; 
 
 // Initially, _connects is -1 to indicate that no connection has been made.
 
 int Connect::_connects = -1;
-#if 0
-String Connect::_logfile = "";
-#endif
 HTList *Connect::_conv = 0;
 
 #ifdef CATCH_SIG
@@ -453,16 +435,6 @@ terminate_handler (HTRequest * request, HTResponse * /*response*/,
 			HTRequest_error(request), NULL);
     }
     
-    // Remove all code that deals with the log files. If DODS clients ever
-    // support a log of http accesses this can be resurrected (maybe in its
-    // own object?).
-#if 0
-    // For libwww 5.1d, add our own state variable in place of the isOpen()
-    // call. Replace add() with addLine().
-    if (HTLog_isOpen()) 
-	HTLog_addLine(request, status);
-#endif
-
     return HT_OK;
 }
 
@@ -647,10 +619,10 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
     if (WWWTRACE) cerr << "dods_error_print: Generating message" << endl;
 
     if (!request)
-	if (WWWTRACE) cerr << "dods_error_print: request NULL" << endl;
+	if (WWWTRACE) cerr << "dods_error_print: Null request." << endl;
 
     if (!cur)
-	if (WWWTRACE) cerr << "dods_error_print: cur NULL" << endl;
+	if (WWWTRACE) cerr << "dods_error_print: Null error list." << endl;
 
     if (!request || !cur) 
 	return NO;
@@ -755,17 +727,6 @@ get_type(String value)
 	return unknown_type;
 }
     
-static EncodingType
-get_encoding(String value)
-{
-    if (value == "x-plain")
-	return x_plain;
-    else if (value == "x-gzip")
-	return x_gzip;
-    else
-	return unknown_enc;
-}
-    
 // This function is registered to handle unknown MIME headers
 
 int 
@@ -780,27 +741,6 @@ description_handler(HTRequest *request, HTResponse */*response*/,
 	DBG(cerr << "Found content-description header" << endl);
 	Connect *me = (Connect *)HTRequest_context(request);
 	me->_type = get_type(value);
-    }
-    else {
-	if (SHOW_MSG)
-	    cerr << "Unknown header: " << token << endl;
-    }
-
-    return HT_OK;
-}
-
-int 
-encoding_handler(HTRequest *request, HTResponse */*response*/, 
-		 const char *token, const char *val)
-{
-    String field = token, value = val;
-    field.downcase();
-    value.downcase();
-    
-    if (field == "content-encoding") {
-	DBG(cerr << "Found content-encoding header" << endl);
-	Connect *me = (Connect *)HTRequest_context(request);
-	me->_encoding = get_encoding(value);
     }
     else {
 	if (SHOW_MSG)
@@ -870,10 +810,6 @@ Connect::parse_mime(FILE *data_source)
 	    DBG(cout << header << ": " << value << endl);
 	    _type = get_type(value);
 	}
-	else if (header == "content-encoding:") {
-	    DBG(cout << header << ": " << value << endl);
-	    _encoding = get_encoding(value);
-	}
 	else if (header == "server:") {
 	    DBG(cout << header << ": " << value << endl);
 	    _server = value;
@@ -884,34 +820,58 @@ Connect::parse_mime(FILE *data_source)
 }
 
 void
-Connect::www_lib_init(bool www_verbose_errors)
+Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 {
-    // Starts Mac GUSI socket library
-#ifdef GUSI
-    GUSISetup(GUSIwithSIOUXSockets);
-    GUSISetup(GUSIwithInternetSockets);
-#endif
+    // Initialize various parts of the library. This is in lieu of using one
+    // of the profiles in HTProfil.c. 02/09/98 jhrg
+    
+    // Initial tcp and buffered_tcp transports
+    HTTransportInit();
 
-#ifdef __MWERKS__
-    InitGraf((Ptr) &qd.thePort); 
-    InitFonts(); 
-    InitWindows(); 
-    InitMenus(); TEInit(); 
-    InitDialogs(nil); 
-    InitCursor();
-    SIOUXSettings.asktosaveonclose = false;
-#endif
+    // Set up http and cache protocols. Do this instead of
+    // HTProtocolPreemtiveInit(). 
+    HTProtocol_add("http", "buffered_tcp", HTTP_PORT, YES, HTLoadHTTP, NULL);
+    HTProtocol_add("cache","local",0,YES,HTLoadCache,  NULL);
 
-    // Initiate W3C Reference Library with a client profile.
-    HTProfile_newPreemptiveClient(CNAME, CVER);
+    // Initialize various before and after filters. See HTInit.c.
+    HTNetInit();
 
-    // Disable the cache.
-    HTCacheTerminate();
+    // Add basic authentication.
+    HTAAInit();
+
+    // Add proxy handling here. In HTProfile_newPreem...()
+    // HTProxy_getEnvVars() is called. 02/09/98 jhrg
+    
+    // Register the default set of converters.
+    HTList *converters = HTList_new();
+    HTConverterInit(converters);
+    HTFormat_setConversion(converters);
+
+    // Register the default set of transfer encoders and decoders
+    HTList *transfer_encodings = HTList_new();
+    HTTransferEncoderInit(transfer_encodings);
+    HTFormat_setTransferCoding(transfer_encodings);
+
+    // Register the default set of content encoders and decoders
+    if (accept_deflate) {
+#ifdef HT_ZLIB
+	HTList *content_encodings = HTList_new();
+	HTCoding_add(content_encodings, "deflate", NULL, HTZLib_inflate, 1.0);
+	HTFormat_setContentCoding(content_encodings);
+#endif /* HT_ZLIB */
+    }
+
+    // Register MIME headers for HTTP 1.1
+    HTMIMEInit();
 
     // Add progress notification, etc.
     HTAlert_add(dods_progress, HT_A_PROGRESS);
     HTAlert_add(dods_error_print, HT_A_MESSAGE);
     HTAlert_add(dods_username_password, HT_A_USER_PW);
+    HTAlert_setInteractive(YES);
+
+    // Disable the cache.
+    HTCacheTerminate();
 
     if (www_verbose_errors)
 	HTError_setShow(HT_ERR_SHOW_INFO);
@@ -926,10 +886,7 @@ Connect::www_lib_init(bool www_verbose_errors)
     // without using the stream stack mechanism (which seems to be very
     // complicated). jhrg 11/20/96
     HTHeader_addParser("content-description", NO, description_handler);
-    HTHeader_addParser("content-encoding", NO, encoding_handler);
     HTHeader_addParser("server", NO, server_handler);
-
-    DBG(HTHeader_addRegexParser("*", NO, header_handler));
 }
 
 // Before calling this mfunc memory for the timeval struct must be allocated.
@@ -1088,15 +1045,15 @@ Connect::Connect()
 
 // public mfuncs
 
-Connect::Connect(String name, bool www_verbose_errors = false)
+Connect::Connect(String name, bool www_verbose_errors = false,
+		 bool accept_deflate = true)
 {
-    _comp_childpid = 0;
     _gui = new Gui;
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
        	if (_connects < 0) {
-	    www_lib_init(www_verbose_errors);
+	    www_lib_init(www_verbose_errors, accept_deflate);
 	    _connects = 1;
 	}
 	else {
@@ -1168,14 +1125,6 @@ Connect::~Connect()
 {
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
-    if (_comp_childpid != 0) { 
-	int pid;
-	while ((pid = waitpid(_comp_childpid, 0, 0)) > 0) {
-	    DBG(cerr << "fetch_url:pid: " << pid << endl);
-	}
-	_comp_childpid = 0;
-    }
-
     delete _tv;
 
     _connects--;
@@ -1183,9 +1132,6 @@ Connect::~Connect()
     // If this is the last connect, close the log file.
     if (_connects == 0) {
 #if 0
-	if (_logfile != "") 
-	    HTLog_close();
-
 	// Replace this with code to flush the cache once that is being used.
 	// It *appears* from the code (HTLib.c) that this function is mostly
 	// for PC users. jhrg 11/24/96
@@ -1241,32 +1187,9 @@ Connect::fetch_url(String &url, bool)
 	return false;
     }
    
-    if (_comp_childpid != 0) { 
-	int pid;
-	while ((pid = waitpid(_comp_childpid, 0, 0)) > 0) {
-	    DBG(cerr << "fetch_url:pid: " << pid << endl);
-	}
-	_comp_childpid = 0;
-    }
-
     close_output();
 
-    if (encoding() == x_gzip) {
-	DBG(cerr << "encoding is gzip!" << endl);
-	_output = decompressor(stream, _comp_childpid);
-	if (!_output) {
-	    DBG(cerr << "decompressor failure!" << endl);
-	    _error.error_code(unknown_error);
-	    _error.error_message(bad_decomp_msg);
-	    return false;
-	}
-    }
-    else {
-	DBG(cerr << "encoding is plain!" << endl);
-	_output = stream;
-    }
-   
-    PERF(cerr << "Leaving fetch_url() [synchronous]" << endl);
+    _output = stream;
    
     return true;
 }
@@ -1502,33 +1425,7 @@ Connect::read_data(FILE *data_source, bool gui_p = true, bool async = false)
     // Read from data_source and parse the MIME headers specific to DODS.
     parse_mime(data_source);
 
-    // Connect the _output member of Connect so the class can process the
-    // DODS data object.
-
-    if (_comp_childpid != 0) { 
-	int pid;
-	while ((pid = waitpid(_comp_childpid, 0, 0)) > 0) {
-	    DBG(cerr << "fetch_url:pid: " << pid << endl);
-	}
-	_comp_childpid = 0;
-    }
-
-    close_output();
-
-    if (encoding() == x_gzip) {
-	DBG(cerr << "encoding is gzip!" << endl);
-	_output = decompressor(data_source, _comp_childpid);
-	if (!_output) {
-	    DBG(cerr << "decompressor failure!" << endl);
-	    _error.error_code(unknown_error);
-	    _error.error_message(bad_decomp_msg);
-	    return 0;
-	}
-    }
-    else {
-	DBG(cerr << "encoding is plain!" << endl);
-	_output = data_source;
-    }
+    _output = data_source;
 
     return process_data(async);
 }
