@@ -13,6 +13,9 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.5  1998/02/09 20:11:43  jimg
+// Added/fixed doc++ comments.
+//
 // Revision 1.4  1998/02/05 20:14:07  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -36,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.4 1998/02/05 20:14:07 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.5 1998/02/09 20:11:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -59,13 +62,12 @@ usage(char *argv[])
 	 << "      program" << endl; 
 }
 
-/// Look for the override file.
 /** Look for the override file by taking the dataset name and appending
     `.ovr' to it. If such a file exists, then read it in and store the
     contents in #doc#. Note that the file contents are not checked to see if
     they are valid HTML (which they must be). 
 
-    Returns: True if the `override file' is present, false otherwise. in the
+    @return True if the `override file' is present, false otherwise. in the
     later case #doc#'s contents are undefined.
 */
 
@@ -87,13 +89,13 @@ found_override(String name, String &doc)
     return true;
 }
 
-/// Read and discard the MIME header of the stream #in#.
 /** Read the input stream #in# and discard the MIME header. The MIME header
     is separated from the body of the document by a single blank line. If no
     MIME header is found, then the input stream is `emptied' and will contain
     nothing.
 
-    Returns: True if a MIME header is found, false otherwise.
+    @memo Read and discard the MIME header of the stream #in#.
+    @return True if a MIME header is found, false otherwise.
 */
 
 bool
@@ -109,7 +111,6 @@ remove_mime_header(FILE *in)
     return false;
 }    
 
-/// Look for the user supplied CGI- and dataset-specific HTML* documents.
 /** Look in the CGI directory (given by #cgi#) for a per-cgi HTML* file. Also
     look for a dataset-specific HTML* document. Catenate the documents and
     return them in a single String variable.
@@ -132,7 +133,8 @@ remove_mime_header(FILE *in)
     NB: An HTML* file contains HTML without the <html>, <head> or <body> tags
     (my own notation).
 
-    Returns: A String which contains these two documents catenated. Documents
+    @memo Look for the user supplied CGI- and dataset-specific HTML* documents.
+    @return A String which contains these two documents catenated. Documents
     that don't exist are treated as `empty'.
 */
 
@@ -338,7 +340,6 @@ name_is_global(String &name)
     return name.matches(global);
 }
 
-/// Build the global attribute HTML* document.
 /** Given the DAS and DDS, build the HTML* document which contains all the
     global attributes for this dataset. A global attribute is defined here as
     any attribute not bound to variable in the dataset. Thus the attributes
@@ -347,7 +348,8 @@ name_is_global(String &name)
     with those names the attributes will NOT be considered `global
     attributes'.
 
-    Returns: A String object containing the global attributes in human
+    @memo Build the global attribute HTML* document.
+    @return A String object containing the global attributes in human
     readable form (as an HTML* document).
 */
 
@@ -538,11 +540,11 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
     }
 }
 
-/// Build the variable summaries.
 /** Given the DAS and the DDS build an HTML table which describes each one of
     the variables by listing its name, datatype and all of its attriutes.
 
-    Returns: A String object containing the variable summary information in
+    @memo Build the variable summaries.
+    @return A String object containing the variable summary information in
     human readable form (as an HTML* document).
 */
 
