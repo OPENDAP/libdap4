@@ -18,9 +18,13 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.2  1995/01/31 20:46:56  jimg
-/* Added declaration of request_data() mfunc in Connect.
+/* Revision 1.3  1995/02/10 04:43:17  reza
+/* Fixed the request_data to pass arguments. The arguments string is added to the
+/* file name before being posted by NetConnect. Default arg. is null.
 /*
+ * Revision 1.2  1995/01/31  20:46:56  jimg
+ * Added declaration of request_data() mfunc in Connect.
+ *
  * Revision 1.1  1995/01/10  16:23:04  jimg
  * Created new `common code' library for the net I/O stuff.
  *
@@ -77,7 +81,7 @@ public:
     
     bool request_das();		// get the das from the server in the URL
     bool request_dds();
-    bool request_data();
+    bool request_data(const String &post = (char *)0);
 };
 
 typedef Connect * ConnectPtr;

@@ -11,7 +11,11 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.3  1995/01/31 20:46:04  jimg
+// Revision 1.4  1995/02/10 04:43:15  reza
+// Fixed the request_data to pass arguments. The arguments string is added to the
+// file name before being posted by NetConnect. Default arg. is null.
+//
+// Revision 1.3  1995/01/31  20:46:04  jimg
 // Fixed problems with the return value (status, fp) in request_das,
 // request_dds and request_data.
 // Added declarations for set_xdrin() and set_xdr_out().
@@ -51,7 +55,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.3 1995/01/31 20:46:04 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.4 1995/02/10 04:43:15 reza Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -181,12 +185,14 @@ Connect::request_dds()
 }
 
 bool
-Connect::request_data()
+Connect::request_data(const String &post)
 {
 
     String data_url = make_url(_api_name, "serv");
 
-    FILE *fp = NetConnect(data_url, _path);
+    String Args = _path + " " + post;
+
+    FILE *fp = NetConnect(data_url, Args);
 
     if (fp) 
       set_xdrin(fp);
