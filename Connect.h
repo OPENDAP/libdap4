@@ -32,6 +32,9 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.28  1997/09/22 23:05:45  jimg
+ * Added comment info.
+ *
  * Revision 1.27  1997/06/06 00:45:15  jimg
  * Added read_data(), parse_mime() and process_data() mfuncs.
  *
@@ -393,10 +396,12 @@ public:
     String constraint_expression(Pix p);
     DDS *constraint_dds(Pix p);
 
-    // get the DAS, DDS and data from the server/cgi comb using a URL
+    // get the DAS, DDS and data from the server/cgi comb using a URL.
     bool request_das(bool gui = false,  const String &ext = "das");
     bool request_dds(bool gui = false, const String &ext = "dds");
 
+    // The actual return type of request_data and read_data is DataDDS.
+    // jhrg 9/19/97
     DDS *request_data(String expr, bool gui = true, bool async = false, 
 		      const String &ext = "dods");
     DDS *read_data(FILE *data_source, bool gui_p = true, bool async = false);
