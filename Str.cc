@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.53 2004/07/07 21:08:48 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.54 2004/09/16 15:21:47 jimg Exp $"};
 
 #include <stdlib.h>
 
@@ -178,7 +178,7 @@ Str::buf2val(void **val)
 
     *val = new string(_buf);
 
-    return sizeof(string);
+    return sizeof(string*);
 }
 
 // Copy data in VAL to _BUF.
@@ -197,7 +197,7 @@ Str::val2buf(void *val, bool)
 
     _buf = *(string *)val;
 
-    return sizeof(string);
+    return sizeof(string*);
 }
 
 void 
@@ -258,6 +258,10 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.54  2004/09/16 15:21:47  jimg
+// Fixed the return values of buf2val() and val2buf(). They now return the size
+// of a std::string pointer, std::string.
+//
 // Revision 1.53  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //
