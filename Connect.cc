@@ -8,6 +8,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.62  1998/03/19 23:48:24  jimg
+// Removed old code associated with the (bogus) caching scheme.
+// Removed the _connects field.
+// Used _conv as a flag to ensure the www library is intialized only once.
+//
 // Revision 1.61  1998/02/11 21:56:20  jimg
 // Mayor modifications for libwww 5.1 compression support. I removed lots of
 // old code that was superfluous and changed the way the library is initialized
@@ -348,7 +353,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.61 1998/02/11 21:56:20 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.62 1998/03/19 23:48:24 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -395,9 +400,6 @@ static const char bad_decomp_msg[]={\
 decompression program failed to start. Please report this\n\
 error to the data server maintainer or to support@dods.gso.uri.edu"}; 
 
-// Initially, _connects is -1 to indicate that no connection has been made.
-
-int Connect::_connects = -1;
 HTList *Connect::_conv = 0;
 
 #ifdef CATCH_SIG
@@ -843,7 +845,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // HTProxy_getEnvVars() is called. 02/09/98 jhrg
     
     // Register the default set of converters.
-    HTList *converters = HTList_new();
+    _conv = HTList_new();
     HTConverterInit(converters);
     HTFormat_setConversion(converters);
 
@@ -1052,14 +1054,9 @@ Connect::Connect(String name, bool www_verbose_errors = false,
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
-       	if (_connects < 0) {
+       	if (!_conv) {
 	    www_lib_init(www_verbose_errors, accept_deflate);
-	    _connects = 1;
 	}
-	else {
-	    _connects++;		// Record the connect.
-	}
-
 	if (name.contains("?")) {
 	    _URL = name.before("?");
 	    String expr = name.after("?");
@@ -1111,14 +1108,6 @@ Connect::Connect(const Connect &copy_from) : _error(undefined_error, "")
     _tv = new timeval;
 
     clone(copy_from);
-    
-    if (!_local) {
-	// if COPY_FROM is remote, then there must be at least one connect
-	if (_connects == 0)	
-	    assert(false);
-
-	_connects++;		// record the connect
-    }
 }
 
 Connect::~Connect()
@@ -1126,18 +1115,6 @@ Connect::~Connect()
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
     delete _tv;
-
-    _connects--;
-    
-    // If this is the last connect, close the log file.
-    if (_connects == 0) {
-#if 0
-	// Replace this with code to flush the cache once that is being used.
-	// It *appears* from the code (HTLib.c) that this function is mostly
-	// for PC users. jhrg 11/24/96
-	HTLibTerminate();
-#endif
-    }
 
     close_output();
 
@@ -1193,9 +1170,6 @@ Connect::fetch_url(String &url, bool)
    
     return true;
 }
-
-// Remove the duplication of _connect and subsequent close(). This would have
-// the side-effect of spuriously closing the data channel. jhrg 7/16/96
 
 FILE *
 Connect::output()
@@ -1330,12 +1304,10 @@ Connect::process_data(bool async = false)
 {
     switch (type()) {
       case dods_error: {
-	  String correction;
 	  if (!_error.parse(_output)) {
 	      cerr << "Could not parse error object" << endl;
 	      break;
 	  }
-	  correction = _error.correct_error(gui());
 	  return 0;
       }
 
@@ -1489,43 +1461,4 @@ Error &
 Connect::error()
 {
     return _error;
-}
-
-Pix 
-Connect::first_constraint()
-{
-    return _data.first();
-}
-
-void
-Connect::next_constraint(Pix &p)
-{
-    if (!_data.empty() && p)
-	_data.next(p);
-}
-
-String
-Connect::constraint_expression(Pix p)
-{
-    assert(!_data.empty() && p);
-
-    return _data(p)._expression;
-}
-
-DDS *
-Connect::constraint_dds(Pix p)
-{
-    assert(!_data.empty() && p);
-
-    return &_data(p)._dds;
-}
-
-DDS *
-Connect::append_constraint(String expr, DDS &dds)
-{
-    constraint c(expr, dds);
-
-    _data.append(c);
-
-    return &_data.rear()._dds;
 }
