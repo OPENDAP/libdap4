@@ -57,7 +57,10 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.16  1995/08/23 00:25:54  jimg
+ * Revision 1.17  1995/09/05 23:19:45  jimg
+ * Fixed a bug in check_float where `=' was used where `==' should have been.
+ *
+ * Revision 1.16  1995/08/23  00:25:54  jimg
  * Added copyright notice.
  * Fixed some bogus comments.
  *
@@ -151,7 +154,7 @@
 #define FALSE 0
 #endif
 
-static char rcsid[]={"$Id: das.y,v 1.16 1995/08/23 00:25:54 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.17 1995/09/05 23:19:45 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -166,7 +169,7 @@ static char rcsid[]={"$Id: das.y,v 1.16 1995/08/23 00:25:54 jimg Exp $"};
 #include "trace_new.h"
 #endif
 
-extern int das_line_num;
+extern int das_line_num;	/* defined in das.lex */
 
 static char name[ID_MAX];	/* holds name in attr_pair rule */
 static char type[ID_MAX];	/* holds type in attr_pair rule */
@@ -476,7 +479,7 @@ check_float(char *val)
 {
     double v = atof(val);
 
-    if (v = 0.0) {
+    if (v == 0.0) {
 	daserror("Not decodable to a 64-bit float value");
 	return FALSE;
     }
