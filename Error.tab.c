@@ -24,7 +24,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.tab.c,v 1.4 1996/08/26 21:12:54 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.tab.c,v 1.5 1996/10/08 17:05:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,7 +45,11 @@ static char rcsid[] __unused__ = {"$Id: Error.tab.c,v 1.4 1996/08/26 21:12:54 ji
 
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
 #define STATUS(arg) ((parser_arg *)(arg))->_status
+#if DODS_BISON_VER >= 125
+#define YYPARSE_PARAM arg
+#else
 #define YYPARSE_PARAM void *arg
+#endif
 
 extern int error_line_num;	// defined in Error.lex
 
@@ -53,7 +57,7 @@ int Errorlex();			// the scanner
 void Errorerror(char *s);	// gotta love automatically generated names...
 
 
-#line 53 "Error.y"
+#line 57 "Error.y"
 typedef union {
     bool boolean;
     int integer;
@@ -138,7 +142,7 @@ static const short yyrhs[] = {     5,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    80,    83,    86,    89,    92,    99,   105,   107,   114,   121
+    84,    87,    90,    93,    96,   103,   109,   111,   118,   125
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","INT","STR",
@@ -685,44 +689,44 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 80 "Error.y"
+#line 84 "Error.y"
 { yyval.boolean = yyvsp[-2].boolean; STATUS(arg) = yyvsp[-2].boolean; ;
     break;}
 case 2:
-#line 83 "Error.y"
+#line 87 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 3:
-#line 86 "Error.y"
+#line 90 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 4:
-#line 89 "Error.y"
+#line 93 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 5:
-#line 93 "Error.y"
+#line 97 "Error.y"
 { 
 		    ERROR_OBJ(arg)->error_code((ErrorCode)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 6:
-#line 100 "Error.y"
+#line 104 "Error.y"
 { 
 		    ERROR_OBJ(arg)->error_message(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 case 8:
-#line 108 "Error.y"
+#line 112 "Error.y"
 {
 		    ERROR_OBJ(arg)->program_type((ProgramType)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 9:
-#line 115 "Error.y"
+#line 119 "Error.y"
 {
 		    DBG(cerr << "Program: " << yyvsp[0].string << endl);
 		    ERROR_OBJ(arg)->program(yyvsp[0].string);
@@ -927,7 +931,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 123 "Error.y"
+#line 127 "Error.y"
 
 
 void
