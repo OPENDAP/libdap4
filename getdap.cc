@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.30  1998/03/20 00:23:25  jimg
+// Improved the error message reporting.
+//
 // Revision 1.29  1998/02/19 19:45:00  jimg
 // Changed error messages so that ones from geturl that are not obviously from
 // geturl are prefixed by `geturl: '.
@@ -121,7 +124,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.29 1998/02/19 19:45:00 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.30 1998/03/20 00:23:25 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -131,7 +134,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.29 1998/02/19 19:45:00 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.29 $";
+const char *VERSION = "$Revision: 1.30 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -372,7 +375,7 @@ main(int argc, char * argv[])
 	    for (int j = 0; j < times; ++j) {
 		DDS *dds = url.request_data(expr, gui, async);
 		if (!dds) {
-		    cerr << "geturl: Error reading data" << endl;
+		    cerr << "Error: " << url.error().error_message() << endl;
 		    continue;
 		}
 		process_data(url, dds, verbose, async);
