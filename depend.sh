@@ -5,6 +5,8 @@
 # -m <makefile name> causes <makefile name> to be used instead of `Makefile'.
 # 
 # jhrg 4/28/95
+#
+# $Id: depend.sh,v 1.2 1995/06/12 19:05:11 jimg Exp $
 
 usage="depend [-s][-m <makefile name>] -- <compiler options> -- <files>"
 CFLAGS=-MM
