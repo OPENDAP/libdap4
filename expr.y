@@ -18,6 +18,9 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.37  2000/09/14 10:30:20  rmorris
+ * Added usage of ends and ostrstream elements in the std namespace for win32.
+ *
  * Revision 1.36  2000/09/11 16:17:47  jimg
  * Added Sequence selection using row numbers. This `selection' operation
  * uses the brackets a la arrays and grids.
@@ -192,7 +195,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.36 2000/09/11 16:17:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.37 2000/09/14 10:30:20 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -229,6 +232,8 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.36 2000/09/11 16:17:47 jimg Exp
 #ifdef WIN32
 using std::cerr;
 using std::endl;
+using std::ends;
+using std::ostrstream;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
