@@ -11,7 +11,10 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.5  1995/02/10 21:53:53  jimg
+// Revision 1.6  1995/02/22 21:04:00  reza
+// Added version number capability using CGI status_line.
+//
+// Revision 1.5  1995/02/10  21:53:53  jimg
 // Modified request_data() so that it takes an additional (optional)
 // parameter which specifies synchronous (default) of Asynchronous
 // behavior.
@@ -60,7 +63,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.5 1995/02/10 21:53:53 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.6 1995/02/22 21:04:00 reza Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -148,6 +151,8 @@ Connect::request_das()
     if( fp ) 
       status = _das.parse(fp);    // read and parse the das from a file 
 
+    fclose(fp);
+
     return status;
 }
 
@@ -166,6 +171,8 @@ Connect::request_dds()
 
     if( fp ) 
       status = _dds.parse(fp);    // read and parse the das from a file 
+      
+    fclose(fp);
    
     return status;
 }

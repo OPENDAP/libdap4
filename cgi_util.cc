@@ -4,7 +4,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
-// Revision 1.2  1995/02/22 19:53:32  jimg
+// Revision 1.3  1995/02/22 21:03:59  reza
+// Added version number capability using CGI status_line.
+//
+// Revision 1.2  1995/02/22  19:53:32  jimg
 // Fixed usage of time functions in ErrMsgT; use ctime instead of localtime
 // and asctime.
 // Fixed TimStr bug in ErrMsgT.
@@ -21,7 +24,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.2 1995/02/22 19:53:32 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.3 1995/02/22 21:03:59 reza Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -159,10 +162,27 @@ name_path(char *path)
 
     (void) strcpy(newp, cp);	// copy last component of path
     if ((cp = strrchr(newp, '.')) != NULL)
-	*cp = '\0';		// strip off any extension
+      *cp = '\0';               /* strip off any extension */
 
     return newp;
+  }
+
+// Send string to set the transfer (mime) type and server version
+//
+void
+set_mime_text()
+{
+  cout << "Status: 200 " << DVR << endl;  /* send server version */
+  cout << "Content-type: test/plain\n" << endl; 
 }
+
+void
+set_mime_binary()
+{
+  cout << "Status: 200 " << DVR << endl;
+  cout << "Content-type: application/octet-stream\n" << endl; 
+}
+
 
 #ifdef TEST_CGI_UTIL
 
@@ -225,3 +245,4 @@ main(int argc, char *argv[])
 }
 
 #endif
+
