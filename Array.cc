@@ -10,6 +10,11 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.41  1997/12/15 18:10:19  jimg
+// Changed check_semantics() so that it returns an error message instead of
+// printing one (thus it now works like all the other implementations of
+// check_semantics().
+//
 // Revision 1.40  1997/03/08 19:01:52  jimg
 // Changed default param to check_semantics() from  to String()
 // and removed the default from the argument list in the mfunc definition
@@ -27,8 +32,8 @@
 // Changes for version 2.07
 //
 // Revision 1.36  1996/08/13 16:46:14  jimg
-// Added bounds checking to the add_constraint member function. add_constraint()
-// now returns false when a bogus constraint is used.
+// Added bounds checking to the add_constraint member function.
+// add_constraint() now returns false when a bogus constraint is used.
 //
 // Revision 1.35  1996/06/11 17:21:31  jimg
 // Fixed a bug in clear_constraint(); the dimension variables in the list
@@ -605,7 +610,7 @@ Array::check_semantics(String &msg, bool)
     bool sem = BaseType::check_semantics(msg) && !_shape.empty();
 
     if (!sem)
-	cerr << "An array variable must have dimensions" << endl;
+	msg = "An array variable must have dimensions";
 
     return sem;
 }
