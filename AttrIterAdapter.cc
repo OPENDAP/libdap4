@@ -31,49 +31,46 @@
 
 #include "AttrIterAdapter.h"
 
-AttrIterAdapter::
-AttrIterAdapter( std::vector<AttrTable::entry *> &vec ) :
+AttrIterAdapter::AttrIterAdapter( std::vector<AttrTable::entry *> &vec ) :
     _vec( vec )
 {
 }
 
-AttrIterAdapter::
-~AttrIterAdapter(void)
+AttrIterAdapter::~AttrIterAdapter( )
 {
 }
 
-void AttrIterAdapter::
-first(void)
+void
+AttrIterAdapter::first( )
 {
     _i = _vec.begin() ;
 }
 
-void AttrIterAdapter::
-next(void)
+void
+AttrIterAdapter::next( )
 {
     _i++ ;
 }
 
-AttrIterAdapter::
-operator bool(void)
+AttrIterAdapter::operator bool( )
 {
     return ( _i != _vec.end() ) ;
 }
 
-bool AttrIterAdapter::
-operator==( const IteratorAdapter &i )
+bool
+AttrIterAdapter::operator==( const IteratorAdapter &i )
 { 
     return _i == ((const AttrIterAdapter &)i)._i ; 
 }
 
-AttrTable::entry *AttrIterAdapter::
-entry(void)
+AttrTable::entry *
+AttrIterAdapter::entry( )
 {
     return *_i ;
 }
 
-AttrIterAdapter::iter &AttrIterAdapter::
-getIterator(void)
+AttrIterAdapter::iter &
+AttrIterAdapter::getIterator( )
 {
     return _i ;
 }

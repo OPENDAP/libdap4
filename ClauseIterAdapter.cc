@@ -31,49 +31,46 @@
 
 #include "ClauseIterAdapter.h"
 
-ClauseIterAdapter::
-ClauseIterAdapter( std::vector<Clause *> &vec ) :
+ClauseIterAdapter::ClauseIterAdapter( std::vector<Clause *> &vec ) :
     _vec( vec )
 {
 }
 
-ClauseIterAdapter::
-~ClauseIterAdapter(void)
+ClauseIterAdapter::~ClauseIterAdapter( )
 {
 }
 
-void ClauseIterAdapter::
-first(void)
+void
+ClauseIterAdapter::first( )
 {
     _i = _vec.begin() ;
 }
 
-void ClauseIterAdapter::
-next(void)
+void
+ClauseIterAdapter::next( )
 {
     _i++ ;
 }
 
-ClauseIterAdapter::
-operator bool(void)
+ClauseIterAdapter::operator bool( )
 {
     return ( _i != _vec.end() ) ;
 }
 
-bool ClauseIterAdapter::
-operator==( const IteratorAdapter &i )
+bool
+ClauseIterAdapter::operator==( const IteratorAdapter &i )
 { 
     return _i == ((const ClauseIterAdapter &)i)._i ; 
 }
 
-Clause *ClauseIterAdapter::
-entry(void)
+Clause *
+ClauseIterAdapter::entry( )
 {
     return *_i ;
 }
 
-ClauseIterAdapter::iter &ClauseIterAdapter::
-getIterator(void)
+ClauseIterAdapter::iter &
+ClauseIterAdapter::getIterator( )
 {
     return _i ;
 }

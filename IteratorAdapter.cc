@@ -31,15 +31,13 @@
 
 #include "IteratorAdapter.h"
 
-IteratorAdapter::
-IteratorAdapter( ) :
+IteratorAdapter::IteratorAdapter( ) :
     _i( 0 ),
     _ref(0)
 {
 }
 
-IteratorAdapter::
-IteratorAdapter( IteratorAdapter *iter ) :
+IteratorAdapter::IteratorAdapter( IteratorAdapter *iter ) :
     _i( iter ),
     _ref(0)
 { 
@@ -48,8 +46,7 @@ IteratorAdapter( IteratorAdapter *iter ) :
     }
 }
 
-IteratorAdapter::
-IteratorAdapter( const IteratorAdapter &iter ) :
+IteratorAdapter::IteratorAdapter( const IteratorAdapter &iter ) :
     _i( iter._i ),
     _ref(0)
 { 
@@ -58,16 +55,15 @@ IteratorAdapter( const IteratorAdapter &iter ) :
     }
 }
 
-IteratorAdapter::
-~IteratorAdapter(void)
+IteratorAdapter::~IteratorAdapter( )
 {
     if( _i ) {
 	_i->free() ;
     }
 }
 
-IteratorAdapter &IteratorAdapter::
-operator=( const IteratorAdapter &iter )
+IteratorAdapter &
+IteratorAdapter::operator=( const IteratorAdapter &iter )
 {
     if (&iter == this) {	/* assignment to self 09/12/02 jhrg */
 	return *this;
@@ -86,24 +82,23 @@ operator=( const IteratorAdapter &iter )
     return *this; 
 }
 
-void IteratorAdapter::
-first(void)
+void
+IteratorAdapter::first( )
 {
     if( _i ) {
 	_i->first() ;
     }
 }
 
-void IteratorAdapter::
-next(void)
+void
+IteratorAdapter::next( )
 {
     if( _i ) {
 	_i->next() ;
     }
 }
 
-IteratorAdapter::
-operator bool(void)
+IteratorAdapter::operator bool( )
 {
     if( _i ) {
 	return *_i ;
@@ -113,8 +108,8 @@ operator bool(void)
 }
 
 /*
-bool IteratorAdapter::
-operator==( void *op2 )
+bool
+IteratorAdapter::operator==( void *op2 )
 { 
     if( op2 == NULL ) {
 	return !(*this) ; 
@@ -123,8 +118,8 @@ operator==( void *op2 )
     return false ;
 }
 
-bool IteratorAdapter::
-operator!=( void *op2 )
+bool
+IteratorAdapter::operator!=( void *op2 )
 { 
     if( op2 == NULL ) {
 	return *this ;
@@ -134,8 +129,8 @@ operator!=( void *op2 )
 }
 */
 
-bool IteratorAdapter::
-operator==( const IteratorAdapter &i )
+bool
+IteratorAdapter::operator==( const IteratorAdapter &i )
 { 
     if( _i && i._i ) {
 	return *_i == *(i._i) ; 
@@ -148,8 +143,8 @@ operator==( const IteratorAdapter &i )
     return false ;
 }
 
-bool IteratorAdapter::
-operator!=( const IteratorAdapter &i )
+bool
+IteratorAdapter::operator!=( const IteratorAdapter &i )
 { 
     if( _i && i._i ) {
 	return !(*_i == *(i._i)) ; 
@@ -162,26 +157,26 @@ operator!=( const IteratorAdapter &i )
     return true ;
 }
 
-IteratorAdapter *IteratorAdapter::
-getIterator(void)
+IteratorAdapter *
+IteratorAdapter::getIterator( )
 {
     return _i ;
 }
 
-void IteratorAdapter::
-incref(void)
+void
+IteratorAdapter::incref( )
 {
     _ref++ ;
 }
 
-void IteratorAdapter::
-decref(void)
+void
+IteratorAdapter::decref( )
 {
     _ref-- ;
 }
 
-void IteratorAdapter::
-free(void)
+void
+IteratorAdapter::free( )
 {
     if( --_ref == 0 ) {
 	delete this ;

@@ -31,49 +31,46 @@
 
 #include "ArrayIterAdapter.h"
 
-ArrayIterAdapter::
-ArrayIterAdapter( std::vector<Array::dimension> &vec ) :
+ArrayIterAdapter::ArrayIterAdapter( std::vector<Array::dimension> &vec ) :
     _vec( vec )
 {
 }
 
-ArrayIterAdapter::
-~ArrayIterAdapter(void)
+ArrayIterAdapter::~ArrayIterAdapter( )
 {
 }
 
-void ArrayIterAdapter::
-first(void)
+void
+ArrayIterAdapter::first( )
 {
     _i = _vec.begin() ;
 }
 
-void ArrayIterAdapter::
-next(void)
+void
+ArrayIterAdapter::next( )
 {
     _i++ ;
 }
 
-ArrayIterAdapter::
-operator bool(void)
+ArrayIterAdapter::operator bool( )
 {
     return ( _i != _vec.end() ) ;
 }
 
-bool ArrayIterAdapter::
-operator==( const IteratorAdapter &i )
+bool
+ArrayIterAdapter::operator==( const IteratorAdapter &i )
 { 
     return _i == ((const ArrayIterAdapter &)i)._i ; 
 }
 
-Array::dimension ArrayIterAdapter::
-entry(void)
+Array::dimension
+ArrayIterAdapter::entry( )
 {
     return *_i ;
 }
 
-ArrayIterAdapter::iter &ArrayIterAdapter::
-getIterator(void)
+ArrayIterAdapter::iter &
+ArrayIterAdapter::getIterator( )
 {
     return _i ;
 }

@@ -31,49 +31,46 @@
 
 #include "BTIterAdapter.h"
 
-BTIterAdapter::
-BTIterAdapter( std::vector<BaseType *> &vec ) :
+BTIterAdapter::BTIterAdapter( std::vector<BaseType *> &vec ) :
     _vec( vec )
 {
 }
 
-BTIterAdapter::
-~BTIterAdapter(void)
+BTIterAdapter::~BTIterAdapter( )
 {
 }
 
-void BTIterAdapter::
-first(void)
+void
+BTIterAdapter::first( )
 {
     _i = _vec.begin() ;
 }
 
-void BTIterAdapter::
-next(void)
+void
+BTIterAdapter::next( )
 {
     _i++ ;
 }
 
-BTIterAdapter::
-operator bool(void)
+BTIterAdapter::operator bool( )
 {
     return ( _i != _vec.end() ) ;
 }
 
-bool BTIterAdapter::
-operator==( const IteratorAdapter &i )
+bool
+BTIterAdapter::operator==( const IteratorAdapter &i )
 { 
     return _i == ((const BTIterAdapter &)i)._i ; 
 }
 
-BaseType *BTIterAdapter::
-entry(void)
+BaseType *
+BTIterAdapter::entry( )
 {
     return *_i ;
 }
 
-BTIterAdapter::iter &BTIterAdapter::
-getIterator(void)
+BTIterAdapter::iter &
+BTIterAdapter::getIterator( )
 {
     return _i ;
 }
