@@ -10,6 +10,12 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.2  1998/02/11 22:00:46  jimg
+// Added call to util.cc:deflate_exists() to send_data(). This means that
+// send_data() will only try to start the compressor if an executable copy of
+// deflate can be found. If, for any reason a copy of deflate cannot be found
+// data is sent without trying to compress it.
+//
 // Revision 1.1  1997/08/28 20:39:02  jimg
 // Created
 //
@@ -20,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.1 1997/08/28 20:39:02 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.2 1998/02/11 22:00:46 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -228,7 +234,7 @@ DODSFilter::send_dds(DDS &dds, bool constrained)
 bool
 DODSFilter::send_data(DDS &dds, FILE *data_stream)
 {
-    if (comp) {
+    if (comp && deflate_exists()) {
 	int childpid;
 	FILE *data_sink = compressor(data_stream, childpid);
 	if (!dds.send(dataset, ce, data_sink, true)) {
