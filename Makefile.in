@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.71 1998/03/03 17:51:43 jimg Exp $
+# $Id: Makefile.in,v 1.72 1998/03/11 00:37:07 jimg Exp $
 
 @SET_MAKE@
 
@@ -21,7 +21,7 @@ WWW_ROOT = @WWW_ROOT@
 INCS = -I. -IMap -IStack -IPlex -IVec @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
-CXXFLAGS = @CXXFLAGS@ -Wall -fno-rtti -fno-exceptions
+CXXFLAGS = @CXXFLAGS@ -Wall
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d -v
