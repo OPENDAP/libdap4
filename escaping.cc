@@ -12,6 +12,9 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.8  1998/09/10 23:37:11  jehamby
+// Forgot to update hexstring() to generate correct high-ASCII escapes.
+//
 // Revision 1.7  1998/09/10 19:38:03  jehamby
 // Update escaping routines to not mangle high-ASCII characters with toascii()
 // and to generate a correct escape sequence in octstring() for such characters
@@ -75,11 +78,11 @@
 
 const int MAXSTR = 256;
 
-String hexstring(int val) {
+String hexstring(unsigned char val) {
     static char buf[MAXSTR];
 
     ostrstream(buf,MAXSTR) << hex << setw(2) << setfill('0') <<
-	val << ends;
+	(unsigned int)val << ends;
 
     return (String)buf;
 }
