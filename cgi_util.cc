@@ -37,7 +37,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
-// Revision 1.9  1995/07/09 21:20:42  jimg
+// Revision 1.10  1996/03/05 23:22:06  jimg
+// Addedconst to the char * function definitions.
+//
+// Revision 1.9  1995/07/09  21:20:42  jimg
 // Fixed date in copyright (it now reads `Copyright 1995 ...').
 //
 // Revision 1.8  1995/07/09  21:14:43  jimg
@@ -77,7 +80,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.9 1995/07/09 21:20:42 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.10 1996/03/05 23:22:06 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -193,14 +196,14 @@ fmakeword(FILE *f, const char stop, int *cl)
 // memory for the new name cannot be allocated, does not return!
 
 char *
-name_path(char *path)
+name_path(const char *path)
 {
     if (!path)
 	return NULL;
 
     char *cp = strrchr(path, FILE_DELIMITER);
     if (cp == 0)                // no delimiter
-	cp = path;
+	strcpy(cp, path);	// used to be: cp = path; jhrg 2/26/96
     else                        // skip delimeter
 	cp++;
 
