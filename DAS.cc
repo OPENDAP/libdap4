@@ -32,7 +32,11 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.13  1995/05/10 13:45:11  jimg
+// Revision 1.14  1995/07/08 18:31:11  jimg
+// Added extern keyword for the external declarations of dasparse and
+// dasrestart.
+//
+// Revision 1.13  1995/05/10  13:45:11  jimg
 // Changed the name of the configuration header file from `config.h' to
 // `config_dap.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
@@ -105,7 +109,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.13 1995/05/10 13:45:11 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.14 1995/07/08 18:31:11 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -122,8 +126,8 @@ static char rcsid[]="$Id: DAS.cc,v 1.13 1995/05/10 13:45:11 jimg Exp $";
 
 #include "DAS.h"		// follows pragma since DAS.h is interface
 
-void dasrestart(FILE *yyin);
-int dasparse(DAS &table, int &parse_ok); // defined in das.tab.c
+extern void dasrestart(FILE *yyin);
+extern int dasparse(DAS &table, int &parse_ok); // defined in das.tab.c
 
 DAS::DAS(AttrTablePtr dflt, unsigned int sz) : map(dflt, sz)
 {
