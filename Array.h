@@ -7,11 +7,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.4  1994/11/22 14:05:22  jimg
-/* Added code for data transmission to parts of the type hierarchy. Not
-/* complete yet.
-/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+/* Revision 1.5  1994/12/09 21:36:34  jimg
+/* Added support for named array dimensions.
 /*
+ * Revision 1.4  1994/11/22  14:05:22  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
  * Revision 1.3  1994/10/17  23:34:43  jimg
  * Added code to print_decl so that variable declarations are pretty
  * printed.
@@ -45,14 +48,19 @@ const int DODS_MAX_ARRAY = UINT_MAX;
 
 class Array: public CtorType {
 private:
+    struct {			// each dimension has a size and a name
+	int size;
+	String name;
+    } dimension;
+
     BaseType *var_ptr;		// var that is an array
-    SLList<int> shape;		// list of dimension sizes (i.e., the shape)
+    SLList<dimension> shape;	// list of dimensions (i.e., the shape)
 
     void duplicate(const Array &a);
 
 public:
-    Array(const String &n = (char *)0, const String &t = "Array",
-	  BaseType *v = 0);
+    Array(const String &n = (char *)0, BaseType *v = 0, FILE *in = stdin,
+	  FILE *out = stdout);
     Array(const Array &rhs);
     virtual ~Array();
 
@@ -69,11 +77,13 @@ public:
     virtual BaseType *var(const String &name = (char *)0);
     virtual void add_var(BaseType *v, Part p = nil);
 
-    void append_dim(int dim);
+    void append_dim(int size, String name = "");
 
     Pix first_dim();
     void next_dim(Pix &p);
-    int dim(Pix p);
+    int dim(Pix p);		// deprecated
+    int dimension_size(Pix p);
+    String dimension_name(Pix p);
 
     int dimensions();
 

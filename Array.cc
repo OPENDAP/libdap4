@@ -4,7 +4,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.6  1994/12/08 15:51:41  dan
+// Revision 1.7  1994/12/09 21:36:33  jimg
+// Added support for named array dimensions.
+//
+// Revision 1.6  1994/12/08  15:51:41  dan
 // Modified size() member to return cumulative size of all dimensions
 // given the variable basetype.
 // Modified serialize() and deserialize() member functions for data
@@ -12,7 +15,7 @@
 //
 // Revision 1.5  1994/11/22  20:47:45  dan
 // Modified size() to return total number of elements.
-// Fixed erros in deserialize (multiple returns).
+// Fixed errors in deserialize (multiple returns).
 //
 // Revision 1.4  1994/11/22  14:05:19  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
@@ -61,7 +64,7 @@ Array::ptr_duplicate()
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new -- The dtor for Array will delete this object.
 
-Array::Array(const String &n, const String &t, BaseType *v, FILE *in, FILE *out) : var_ptr(v)
+Array::Array(const String &n, BaseType *v, FILE *in, FILE *out) : var_ptr(v) 
 {
     set_var_name(n);
     set_var_type(t);
@@ -95,7 +98,8 @@ unsigned int
 Array::size()
 {
   unsigned int sz = 1;
-  for (Pix p = first_dim(); p; next_dim(p)) sz *= dim(p); 
+  for (Pix p = first_dim(); p; next_dim(p)) 
+      sz *= dim(p); 
 
   return (sz * var_ptr->size());
 }
@@ -116,7 +120,7 @@ Array::serialize(bool flush, unsigned int num)
 
     int status = xdr_array(xdrout, (char **)&dods_buf, &num, DODS_MAX_ARRAY, 
 				  var_ptr->size(), var_ptr->xdr_coder());
-    expunge();
+    expunge();			// *** Why?
     if (status && flush)
 	status = expunge();
 
@@ -136,8 +140,9 @@ Array::deserialize()
 {
     unsigned int num;
 
-    bool status = (bool)xdr_array(xdrin, (char **)&dods_buf, &num, DODS_MAX_ARRAY,
-			   var_ptr->size(), var_ptr->xdr_coder());
+    bool status = (bool)xdr_array(xdrin, (char **)&dods_buf, &num,
+				  DODS_MAX_ARRAY, var_ptr->size(),
+				  var_ptr->xdr_coder()); 
 
     return (status ? (num * var_ptr->size()) : (unsigned int)FALSE);
 }
@@ -171,10 +176,16 @@ Array::add_var(BaseType *v, Part p)
 	 << v->get_var_name() << " " << v->get_var_type() << ")" << endl);
 }
 
+// Add the dimension DIM to the list of dimensions for this array. If NAME is
+// given, set it to the name of this dimension. NAME defaults to "".
+//
+// Returns: void
+
 void 
-Array::append_dim(int dim)
+Array::append_dim(int size, String name)
 { 
-    shape.append(dim); 
+    dimension d = {size, name};
+    shape.append(d); 
 }
 
 Pix 
@@ -190,11 +201,31 @@ Array::next_dim(Pix &p)
 	shape.next(p); 
 }
 
+// deprecated
+
 int 
 Array::dim(Pix p) 
 { 
     if (!shape.empty() && p)
 	return shape(p); 
+}
+
+// Return the size of the array dimension referred to by P.
+
+int 
+Array::dimension_size(Pix p) 
+{ 
+    if (!shape.empty() && p)
+	return shape(p).size; 
+}
+
+// Return the name of the array dimension referred to by P.
+
+String
+Array::dimension_name(Pix p) 
+{ 
+    if (!shape.empty() && p)
+	return shape(p).name; 
 }
 
 int 
@@ -208,8 +239,14 @@ void
 Array::print_decl(ostream &os, String space, bool print_semi)
 {
     var_ptr->print_decl(os, space, false); // print it, but w/o semicolon
-    for (Pix p = shape.first(); p; shape.next(p))
-	os << "[" << shape(p) << "]";
+
+    for (Pix p = shape.first(); p; shape.next(p)) {
+	os << "[";
+	if (shape(p).name != "")
+	    os << shape(p).name << "=";
+	os << shape(p).size << "]";
+    }
+
     if (print_semi)
 	os << ";" << endl;
 }
