@@ -13,13 +13,19 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.2  1996/12/18 18:41:33  jimg
+// Added massive fixes for the processing of attributes to sort out the `global
+// attributes'. Also added changes to the overall layout of the resulting
+// document so that the hierarchy of the data is represented. Added some new
+// utility functions.
+//
 // Revision 1.1  1996/12/11 19:55:18  jimg
 // Created.
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.1 1996/12/11 19:55:18 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.2 1996/12/18 18:41:33 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -31,6 +37,7 @@ static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.1 1996/12/11 19:55:18 jimg 
 #include <strstream.h>
 
 #include "cgi_util.h"
+#include "debug.h"
 
 static void
 usage(char *argv[])
@@ -294,7 +301,21 @@ name_in_dds(DDS &dds, const String &name)
 	  default:
 	    assert("Unknown type" && false);
 	}
-    }    
+    }
+
+    return false;
+}
+
+// This code could use a real `kill-file' some day - about the same time that
+// the rest of the server gets a `rc' file... For the present just see if a
+// small collection of regexs match the name.
+
+static bool
+name_in_kill_file(const String &name)
+{
+    static Regex dim(".*_dim_[0-9]*", 1); // HDF `dimension' attributes.
+
+    return name.matches(dim);
 }
 
 /// Build the global attribute HTML* document.
@@ -313,35 +334,43 @@ name_in_dds(DDS &dds, const String &name)
 String
 build_global_attributes(DAS &das, DDS &dds)
 {
+    bool found = false;
     ostrstream ga;
+
     ga << "<h3>Dataset Information</h3>\n<center>\n<table>\n";
 
     for (Pix p = das.first_var(); p; das.next_var(p)) {
 	String name = das.get_name(p);
 
-	if (!name_in_dds(dds, name)) {
+	if (!name_in_kill_file(name) && !name_in_dds(dds, name)) {
 	    AttrTable *attr = das.get_table(p);
 
-	    for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
-		int num_attr = attr->get_attr_num(a);
+	    if (attr) {
+		for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
+		    int num_attr = attr->get_attr_num(a);
 
-		ga << "\n<tr><td align=right valign=top><b>" 
-		   << attr->get_name(a) << "</b>:</td>\n";
-		ga << "<td align=left>";
-		for (int i = 0; i < num_attr; ++i)
-		    ga << attr->get_attr(a, i) << "<br>";
-		ga << "</td></tr>\n";
-
+		    found = true;
+		    ga << "\n<tr><td align=right valign=top><b>" 
+		       << attr->get_name(a) << "</b>:</td>\n";
+		    ga << "<td align=left>";
+		    for (int i = 0; i < num_attr; ++i)
+			ga << attr->get_attr(a, i) << "<br>";
+		    ga << "</td></tr>\n";
+		}
 	    }
 	}
     }
 
     ga << "</table>\n</center><p>\n" << ends;
 
-    String global_attrs = ga.str();
-    ga.freeze(0);
+    if (found) {
+	String global_attrs = ga.str();
+	ga.freeze(0);
 
-    return global_attrs;
+	return global_attrs;
+    }
+
+    return "";
 }
 
 static String
@@ -402,16 +431,17 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 	<< "<td align=left valign=top>" << fancy_typename(btp)
 	    << "<br>";
     //	    << "</td>\n<td align=left valign=top>";
-    AttrTable *attr =das.get_table(btp->name());
+    AttrTable *attr = das.get_table(btp->name());
 	    
-    for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
-	int num = attr->get_attr_num(a);
+    if (attr)			// Not all variables have attributes!
+	for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
+	    int num = attr->get_attr_num(a);
 	    
-	vs << attr->get_name(a) << ": ";
-	for (int i = 0; i < num; ++i, (void)(i<num && vs << ", "))
-	    vs << attr->get_attr(a, i);
-	vs << "<br>\n";
-    }
+	    vs << attr->get_name(a) << ": ";
+	    for (int i = 0; i < num; ++i, (void)(i<num && vs << ", "))
+		vs << attr->get_attr(a, i);
+	    vs << "<br>\n";
+	}
 
     switch (btp->type()) {
       case dods_byte_c:
@@ -513,6 +543,16 @@ build_variable_summaries(DAS &das, DDS &dds)
     return html;
 }
 
+static void
+html_header()
+{
+    cout << "HTTP/1.0 200 OK" << endl;
+    cout << "Server: " << DVR << endl;
+    cout << "Content-type: text/html" << endl; 
+    cout << "Content-Description: dods_description" << endl;
+    cout << endl;			// MIME header ends with a blank line
+}
+
 int 
 main(int argc, char *argv[])
 {
@@ -525,28 +565,37 @@ main(int argc, char *argv[])
     String doc;
 
     if (found_override(name, doc)) {
+	html_header();
 	cout << doc;
 	exit(0);
     }
 
-    // User is not overriding the DAS/DDS generated information, so read the
-    // DAS, DDS and user supplied documents.
+    // The user is not overriding the DAS/DDS generated information, so read
+    // the DAS, DDS and user supplied documents. 
 
     String cgi = argv[2];
 
     DAS das;
-    FILE *in = popen(cgi + "_das " + name, "r");
+    String command = cgi + "_das '" + name + "'";
+    DBG(cerr << "DAS Command: " << command << endl);
+
+    FILE *in = popen(command, "r");
     if (in && remove_mime_header(in)) {
 	das.parse(in);
 	pclose(in);
     }
 
     DDS dds;
-    in = popen(cgi + "_dds " + name, "r");
+    command = cgi + "_dds '" + name + "'";
+    DBG(cerr << "DDS Command: " << command << endl);
+
+    in = popen(cgi + "_dds '" + name + "'", "r");
     if (in && remove_mime_header(in)) {
 	dds.parse(in);
 	pclose(in);
     }
+
+    // Build the HTML* documents.
 
     String user_html = get_user_supplied_docs(name, cgi);
 
@@ -554,12 +603,17 @@ main(int argc, char *argv[])
 
     String variable_sum = build_variable_summaries(das, dds);
 
-    cout << "<html><head><title>Dataset Information</title></head>" << endl;
-    cout << "<html>" << endl;
+    // Write out the HTML document.
 
-    cout << global_attrs << endl;
+    html_header();
 
-    cout << "<hr>" << endl;
+    if (global_attrs) {
+	cout << "<html><head><title>Dataset Information</title></head>" 
+	     << endl 
+	     << "<html>" << endl 
+	     << global_attrs << endl 
+	     << "<hr>" << endl;
+    }
 
     cout << variable_sum << endl;
 
