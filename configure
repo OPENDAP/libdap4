@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.25 1996/08/26 21:13:05 jimg Exp $
+# $Id: configure,v 1.26 1996/09/19 16:55:41 jimg Exp $
 
 # Check for fill value usage.
 
@@ -2013,6 +2013,7 @@ EOF
 fi
 
 
+    found=0
     for ac_hdr in sys/sem.h
 do
 ac_safe=`echo "$ac_hdr" | tr './\055' '___'`
@@ -2021,12 +2022,12 @@ if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2025 "configure"
+#line 2026 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2030: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2031: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -2054,7 +2055,7 @@ done
     if test $found -eq 1
     then
         echo "checking Looking at semaphore features in sem.h" 1>&6
-        if grep 'extern int  *semctl(' /usr/include/sys/sem.h >/dev/null 2>&1
+        if grep 'extern int  *semctl.*(' /usr/include/sys/sem.h >/dev/null 2>&1
         then
             cat >> confdefs.h <<\EOF
 #define HAVE_SEM_PROTO 1
@@ -2131,7 +2132,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lexpect5.20 -ltcl7.5 $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2135 "configure"
+#line 2136 "configure"
 #include "confdefs.h"
 
 int main() { return 0; }
@@ -2139,7 +2140,7 @@ int t() {
 main()
 ; return 0; }
 EOF
-if { (eval echo configure:2143: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
+if { (eval echo configure:2144: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2170,7 +2171,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lexpect -ltcl7.4 $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2174 "configure"
+#line 2175 "configure"
 #include "confdefs.h"
 
 int main() { return 0; }
@@ -2178,7 +2179,7 @@ int t() {
 main()
 ; return 0; }
 EOF
-if { (eval echo configure:2182: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
+if { (eval echo configure:2183: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2201,6 +2202,54 @@ fi
 	then
 	    LIBS="$LIBS -l${expect} -l${tcl}"
 	fi
+    fi
+
+            
+    ac_safe=`echo "tclRegexp.h" | tr './\055' '___'`
+echo $ac_n "checking for tclRegexp.h""... $ac_c" 1>&6
+if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2215 "configure"
+#include "confdefs.h"
+#include <tclRegexp.h>
+EOF
+ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
+{ (eval echo configure:2220: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+ac_err=`grep -v '^ *+' conftest.out`
+if test -z "$ac_err"; then
+  rm -rf conftest*
+  eval "ac_cv_header_$ac_safe=yes"
+else
+  echo "$ac_err" >&5
+  rm -rf conftest*
+  eval "ac_cv_header_$ac_safe=no"
+fi
+rm -f conftest*
+fi
+if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  found=1
+else
+  echo "$ac_t""no" 1>&6
+found=0
+fi
+
+
+       
+    tcl_include_paths="/usr/local/src/tcl7.4/ /usr/local/src/tcl7.5/generic"
+
+    if test $found -eq 0
+    then
+	for d in $tcl_include_paths
+	do
+	    if test -f ${d}/tclRegexp.h
+	    then
+		INCS="$INCS $d"
+	        break
+	    fi
+        done
     fi
 
     cat >> confdefs.h <<EOF
