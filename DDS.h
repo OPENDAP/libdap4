@@ -7,9 +7,18 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.6  1995/02/10 02:30:49  jimg
-/* Misc comment edits.
+/* Revision 1.7  1995/12/06 21:05:08  jimg
+/* Added print_constrained(): prints only those parts of the DDS that satisfy
+/* the constraint expression (projection + array selection).
+/* Added eval_constraint(): given the text of a constraint expression, evaluate
+/* it in the environment of the current DDS.
+/* Added mark*(): add the named variables to the current projection.
+/* Added send(): combines many functions like reading and serializing variables
+/* with constraint evaluation.
 /*
+ * Revision 1.6  1995/02/10  02:30:49  jimg
+ * Misc comment edits.
+ *
  * Revision 1.5  1994/11/03  04:58:03  reza
  * Added two overloading for function parse to make it consistent with DAS
  * class. 
@@ -58,14 +67,14 @@ private:
     String name;		// the dataset name
     SLList<BaseTypePtr> vars;	// variables at the top level 
     
-    void duplicate(DDS &dds);
+    void duplicate(const DDS &dds);
 
 public:
     DDS(const String &n = (char *)0);
-    DDS(DDS &dds);
+    DDS(const DDS &dds);
     ~DDS();
 
-    DDS & operator=(DDS &rhs);
+    DDS & operator=(const DDS &rhs);
 
     String get_dataset_name();
     void set_dataset_name(const String &n);
@@ -84,8 +93,31 @@ public:
     bool parse(int fd);
     bool parse(FILE *in=stdin);
 
+    // Print the entire DDS.
     bool print(ostream &os = cout);
+    bool print(FILE *out);
+
+    // Print only those parts of the DDS marked for transmission after
+    // evaluating a constraint expression.
+    bool print_constrained(ostream &os = cout);
+    bool print_constrained(FILE *out);
+
+    // Check the semantics of the variables in the DDS. if ALL is true,
+    // recursively descend aggregate variables.
     bool check_semantics(bool all = false);
+
+    // Evaluate the constraint expression CONSTRAINT given the current DDS.
+    bool eval_constraint(String constraint);
+
+    // Send VAR_NAME from DATASET given CONSTRAINT. if FLUSH is true, flush
+    // the output buffer upon completion. Use OUT as the output buffer if not
+    // null, otherwise use STDOUT. This mfunc uses eval_constraint(),
+    // BaseType::read() and BaseType::serailize() as well as other mfuncs.
+    bool send(String dataset, String var_name, String constraint, 
+	      bool flush = false, FILE *out = 0);
+
+    bool mark_all(bool state);
+    bool mark(const String &name, bool state);
 };
 
 #endif
