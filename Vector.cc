@@ -39,6 +39,11 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.5  1996/03/05 01:09:09  jimg
+// Added to the Vector dtor (now the BaseType * vector is properly deleted.
+// Created the vec_resize() member function.
+// Modified serialize() member function so that the ce_eval flag is used.
+//
 // Revision 1.4  1996/02/01 17:43:14  jimg
 // Added support for lists as operands in constraint expressions.
 //
@@ -48,14 +53,14 @@
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
 //
 // Revision 1.2  1995/12/06  19:52:26  jimg
-// Modified print_decl() so that the declaration is printed only if the variable
-// is selected.
+// Modified print_decl() so that the declaration is printed only if the
+// variable is selected.
 //
 // Revision 1.1  1995/11/22  22:30:18  jimg
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.4 1996/02/01 17:43:14 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.5 1996/03/05 01:09:09 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -89,21 +94,37 @@ Vector::_duplicate(const Vector &v)
 }
 
 Vector::Vector(const String &n, BaseType *v, const Type &t) 
-    :BaseType(n, t), _length(-1), _var(v), _buf(0)
+    :BaseType(n, t), _length(-1), _var(v), _buf(0), _vec(0)
 {
+    DBG(cerr << "Entering Vector ctor for object: " << this << endl);
 }
 
 Vector::Vector(const Vector &rhs)
 {
+    DBG(cerr << "Entering Vector const ctor for object: " << this << endl);
+    DBG(cerr << "RHS: " << &rhs << endl);
+
     _duplicate(rhs);
+}
+
+static void
+delete_base_type(BaseType *bt)
+{
+    if (bt)
+	delete bt;
 }
 
 Vector::~Vector()
 {
+    DBG(cerr << "Entering Vector dtor for object: " << this << endl);
+
     delete _var;
 
     if (_buf)
 	delete[] _buf;
+    else {
+	_vec.apply(delete_base_type);
+    }
 }
 
 const Vector &
@@ -209,6 +230,18 @@ Vector::set_length(int l)
     _length = l;
 }
 
+void
+Vector::vec_resize(int l)
+{
+    int s = _vec.capacity();
+    _vec.resize((l > 0) ? l : 0);
+
+    BaseType **cur = &_vec.elem(s);
+    BaseType **fin = &_vec.elem(l-1);
+    while (cur <= fin)
+	*cur++ = 0;
+}
+
 // Serialize a Vector. This uses the BaseType member XDR_CODER to encode each
 // element of a cardinal array. See Sun's XDR manual. For Arrays of Str and
 // Url types, send the element count over as a prefix to the data so that
@@ -225,18 +258,15 @@ Vector::set_length(int l)
 // Returns: true if the data was successfully writen, false otherwise.
 
 bool
-Vector::serialize(const String &dataset, DDS &dds, bool flush)
+Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
     bool status = true;
 
-    if (!read_p())		// only read if not read already
-	status = read(dataset);
-
-    if (status && !dds.eval_constraint()) // if the constraint is false, return
-	return status;
-
-    if (!status)
+    if (!read_p() && !read(dataset))
 	return false;
+
+    if (ce_eval && !dds.eval_selection(dataset))
+	return true;
 
     unsigned int num = length();
 
@@ -246,9 +276,8 @@ Vector::serialize(const String &dataset, DDS &dds, bool flush)
       case float64_t:
 	assert(_buf);
 
-	status = (bool)xdr_int(xdrout(), &num); // send length
-	if (!status)
-	    return status;
+	if (!(bool)xdr_int(xdrout(), &num)) // send vector length
+	    return false;
 
 	if (_var->type() == byte_t)
 	    status = (bool)xdr_bytes(xdrout(), (char **)&_buf, &num,
@@ -274,7 +303,7 @@ Vector::serialize(const String &dataset, DDS &dds, bool flush)
 	    return status;
 
 	for (int i = 0; status && i < num; ++i)	// test status in loop
-	    status = _vec[i]->serialize(dataset, dds, false);
+	    status = _vec[i]->serialize(dataset, dds, false, false);
 	
 	break;
 
@@ -284,8 +313,8 @@ Vector::serialize(const String &dataset, DDS &dds, bool flush)
 	break;
     }
 
-    if (status && flush)
-	status = expunge();
+    if (flush)
+	status = status && expunge();
 
     return status;
 }
@@ -358,11 +387,11 @@ Vector::deserialize(bool reuse)
 	if (!status)
 	    return status;
 
-	_vec.resize(num);
+	vec_resize(num);
 	set_length(num);
 
 	for (int i = 0; status && i < num; ++i) {
-	    _vec[i] = _var;	// init to empty object of correct class
+	    _vec[i] = _var->ptr_duplicate();
 	    _vec[i]->deserialize();
 	}
 
@@ -418,7 +447,7 @@ Vector::val2buf(void *val, bool reuse)
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 
-	_vec.resize(len);
+	vec_resize(len);
 
 	for (int i = 0; i < len; ++i) {
 	    _vec[i] = _var;	// init with empty instance of correct class
@@ -466,7 +495,7 @@ Vector::buf2val(void **val)
 	break;
 
       case str_t:
-      case url_t:
+      case url_t: {
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 
@@ -476,6 +505,7 @@ Vector::buf2val(void **val)
 	}
 
 	break;
+      }
 
       default:
 	cerr << "Array::buf2val: Can be called for arrays of Byte, Int32, \n"
@@ -498,7 +528,7 @@ Vector::set_vec(int i, BaseType *val)
     assert(val);
 
     if (i >= _vec.capacity())
-	_vec.resize(i + 10);
+	vec_resize(i + 10);
 
     _vec.elem(i) = val;
 }
