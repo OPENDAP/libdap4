@@ -38,6 +38,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.24  1996/05/16 22:44:52  jimg
+// Dan's changes for 2.0.
+//
 // Revision 1.23  1996/05/14 15:38:35  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -283,6 +286,18 @@ Sequence::width()
     return sz;
 }
 
+void
+Sequence::set_level(int lvl)
+{
+    _level = lvl;
+}
+
+unsigned int
+Sequence::read_level()
+{
+    return _level;
+}
+
 // Note that in Sequence's serialize() mfunc I assume that it is best to read
 // the entire instance of the sequence in at once. However, each
 // specialization of Sequence::read() will determine exactly what that means.
@@ -293,10 +308,23 @@ bool
 Sequence::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
     bool status = true;
+    int error = 1;
 
     while (status) {
-	if (!read_p() && !read(dataset)) // only read if not read already
-	    return false;
+
+	// Check to see if the variable needs to be read. Only read when at
+	// the `top level' of a Sequence (i.e. only issue a read at the
+	// outermost Sequence when dealing with nested Sequences).
+	if (!read_p() && read_level() == 0) {
+	    if (!read(dataset, error)) { // error is a value-result parameter
+		if (error != -1) 
+		    return false;
+		else 
+		    return true;        // EOF condition (!read() && !error)
+	    }
+	    else 
+		return true;
+	}
 
 	// if we are supposed to eval the selection, then do so. If it's
 	// false, then goto the next record in the sequence (don't return as

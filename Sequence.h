@@ -13,9 +13,12 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.17  1996/03/05 17:43:49  jimg
-/* Added ce_eval to serailize member function.
+/* Revision 1.18  1996/05/16 22:44:53  jimg
+/* Dan's changes for 2.0.
 /*
+ * Revision 1.17  1996/03/05 17:43:49  jimg
+ * Added ce_eval to serailize member function.
+ *
  * Revision 1.16  1995/12/09  01:06:55  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -132,6 +135,8 @@ class Sequence: public BaseType {
 private:
     SLList<BaseTypePtr> _vars;
 
+    int _level;			// Level number in a multilevel sequence.
+
     void _duplicate(const Sequence &s);
 
 public:
@@ -147,11 +152,14 @@ public:
 
     virtual unsigned int width();
 
+    virtual void set_level(int lvl);
+    virtual unsigned int read_level();
+
     virtual bool serialize(const String &dataset, DDS &dds, 
 			   bool ce_eval = true, bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(const String &dataset) = 0;
+    virtual bool read(const String &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
