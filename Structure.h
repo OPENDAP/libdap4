@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -16,10 +16,16 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.31  1999/04/29 02:29:31  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.30  1998/09/17 17:07:15  jimg
  * Fixes to the documentation.
  * Added leaf_match and exact_match mfuncs (support for the new var member
  * function).
+ *
+ * Revision 1.29.6.1  1999/02/02 21:57:02  jimg
+ * String to string version
  *
  * Revision 1.29  1998/04/03 17:44:27  jimg
  * Patch from Jake Hamby. Added print_all_vals member function.
@@ -223,20 +229,20 @@ private:
     SLList<BaseTypePtr> _vars;
     
     void _duplicate(const Structure &s);
-    BaseType *leaf_match(const String &name);
-    BaseType *exact_match(const String &name);
+    BaseType *leaf_match(const string &name);
+    BaseType *exact_match(const string &name);
 
 public:
     /** The Structure constructor requires only the name of the variable
 	to be created.  The name may be omitted, which will create a
 	nameless variable.  This may be adequate for some applications. 
       
-	@param n A String containing the name of the variable to be
+	@param n A string containing the name of the variable to be
 	created. 
 
-	@memo The Structure constructor.
-    */
-    Structure(const String &n = (char *)0);
+	@memo The Structure constructor. */
+    Structure(const string &n = "");
+
     /** The Structure copy constructor. */
     Structure(const Structure &rhs);
     virtual ~Structure();
@@ -251,11 +257,11 @@ public:
 
     virtual unsigned int width();
 
-    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.
@@ -266,9 +272,9 @@ public:
     virtual unsigned int buf2val(void **val);
 
     /** Returns a pointer to the specified Structure element. */
-    virtual BaseType *var(const String &name, bool exact_match = true);
+    virtual BaseType *var(const string &name, bool exact_match = true);
 
-    virtual BaseType *var(const String &name, btp_stack &s);
+    virtual BaseType *var(const string &name, btp_stack &s);
 
     /** Adds an element to a Structure. */
     virtual void add_var(BaseType *bt, Part p = nil);
@@ -283,12 +289,12 @@ public:
     /** Returns a pointer to the {\it p}th element. */
     BaseType *var(Pix p);
 
-    virtual void print_decl(ostream &os, String space = "    ",
+    virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
 
-    virtual void print_val(ostream &os, String space = "",
+    virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
 
     /** Prints the Structure and all elements of any Sequences contained
@@ -296,9 +302,9 @@ public:
 	@see Sequence::print_all_vals
     */
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
-				String space = "", bool print_decl_p = true);
+				string space = "", bool print_decl_p = true);
 
-    virtual bool check_semantics(String &msg, bool all = false);
+    virtual bool check_semantics(string &msg, bool all = false);
 };
 
 #endif

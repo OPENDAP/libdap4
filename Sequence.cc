@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.49  1999/04/29 02:29:31  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.48  1999/04/22 22:28:26  jimg
 // Uses dynamic_cast
 //
@@ -20,6 +23,9 @@
 // There's no warning about the situation. The new code in the var member
 // function passes a stack of BaseType pointers so that the projection
 // information (send_p field) can be set properly.
+//
+// Revision 1.46.6.1  1999/02/02 21:57:01  jimg
+// String to string version
 //
 // Revision 1.46  1998/04/03 17:41:42  jimg
 // Patch from Jake Hamby to print_all_vals(). deserialize needed to be called
@@ -34,8 +40,8 @@
 // Revision 1.43  1998/02/19 19:41:27  jimg
 // Changed name of ...end_of_sequence to ...start_of_sequence since that is
 // now how it is used. I hope this will reduce confusion.
-// Changed the name of read_end_marker to read_marker (since they are not always
-// end markers anymore).
+// Changed the name of read_end_marker to read_marker (since they are not
+// always end markers anymore).
 //
 // Revision 1.42  1998/02/18 01:00:48  jimg
 // Reverted to the old transfer scheme for Sequences.
@@ -318,7 +324,7 @@ Sequence::is_end_of_sequence(unsigned char marker)
 
 // Public member functions
 
-Sequence::Sequence(const String &n) 
+Sequence::Sequence(const string &n) 
     : BaseType(n, dods_sequence_c), _level(0), _seq_read_error(false),
       _seq_write_error(false)
 {
@@ -393,7 +399,7 @@ Sequence::add_var(BaseType *bt, Part)
 }
 
 BaseType *
-Sequence::var(const String &name, btp_stack &s)
+Sequence::var(const string &name, btp_stack &s)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
 	assert(_vars(p));
@@ -416,7 +422,7 @@ Sequence::var(const String &name, btp_stack &s)
 }
 
 BaseType *
-Sequence::var(const String &name, bool exact)
+Sequence::var(const string &name, bool exact)
 {
     if (exact)
 	return exact_match(name);
@@ -425,7 +431,7 @@ Sequence::var(const String &name, bool exact)
 }
 
 BaseType *
-Sequence::leaf_match(const String &name)
+Sequence::leaf_match(const string &name)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
 	assert(_vars(p));
@@ -443,13 +449,12 @@ Sequence::leaf_match(const String &name)
 }
 
 BaseType *
-Sequence::exact_match(const String &name)
+Sequence::exact_match(const string &name)
 {
-    if (name.contains(".")) {
-	String n = (String)name; // cast away const
-	String aggregate = n.before(".");
-	String field = n.from(".");
-	field = field.after(".");
+    unsigned int dot_pos = name.find("."); // zero-based index of `.'
+    if (dot_pos != string::npos) {
+	string aggregate = name.substr(0, dot_pos);
+	string field = name.substr(dot_pos + 1);
 
 	BaseType *agg_ptr = var(aggregate);
 	if (agg_ptr)
@@ -523,8 +528,8 @@ Sequence::level()
 }
 
 bool
-Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
-		    bool ce_eval = true)
+Sequence::serialize(const string &dataset, DDS &dds, XDR *sink,
+		    bool ce_eval)
 {
     bool status = true;
     int error = 0;
@@ -567,7 +572,7 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
+Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool stat = true;
     DataDDS *dd = (DataDDS *)dds; // Use a dynamic cast in the future.
@@ -606,7 +611,7 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
 // private mfunc. Use this to read from older servers.
 
 bool
-Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse = false)
+Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool stat = true;
 
@@ -640,7 +645,7 @@ Sequence::buf2val(void **)
 }
 
 void
-Sequence::print_decl(ostream &os, String space, bool print_semi,
+Sequence::print_decl(ostream &os, string space, bool print_semi,
 		     bool constraint_info, bool constrained)
 {
     if (constrained && !send_p())
@@ -664,7 +669,7 @@ Sequence::print_decl(ostream &os, String space, bool print_semi,
 }
 
 void 
-Sequence::print_val(ostream &os, String space, bool print_decl_p)
+Sequence::print_val(ostream &os, string space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -686,8 +691,8 @@ Sequence::print_val(ostream &os, String space, bool print_decl_p)
 // to Sequence? This can wait since print_val is mostly used for debugging...
 
 void
-Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, String space = "",
-			 bool print_decl_p = true)
+Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, string space,
+			 bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os);
@@ -705,13 +710,12 @@ Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, String space = "",
 }
 
 bool
-Sequence::check_semantics(String &msg, bool all = false)
+Sequence::check_semantics(string &msg, bool all)
 {
     if (!BaseType::check_semantics(msg))
 	return false;
 
-    if (!unique_names(_vars, (const char *)name(), (const char *)type_name(),
-		      msg))
+    if (!unique_names(_vars, name(), type_name(), msg))
 	return false;
 
     if (all) 

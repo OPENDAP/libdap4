@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.38  1999/04/29 02:29:30  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.37  1998/09/17 17:20:00  jimg
 // Changes for the new variable lookup scheme. Fields of ctor types no longer
 // need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
@@ -21,6 +24,9 @@
 // Revision 1.36  1998/08/31 21:46:09  jimg
 // Changed the check_semantics member function so that the array and map
 // vectors must be composed of simple-type elements.
+//
+// Revision 1.35.2.1  1999/02/02 21:56:59  jimg
+// String to string version
 //
 // Revision 1.35  1998/08/06 16:19:54  jimg
 // Fixed misuse of read member function in serialize. Test for a read(...)
@@ -205,7 +211,11 @@
 #include "config_dap.h"
 
 #include <assert.h>
-#include <strstream.h>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
 #include "Grid.h"
 #include "DDS.h"
@@ -229,7 +239,7 @@ Grid::_duplicate(const Grid &s)
 	_map_vars.append(cs._map_vars(p)->ptr_duplicate());
 }
 
-Grid::Grid(const String &n) : BaseType(n, dods_grid_c)
+Grid::Grid(const string &n) : BaseType(n, dods_grid_c)
 {
 }
 
@@ -306,8 +316,8 @@ Grid::width()
 }
 
 bool
-Grid::serialize(const String &dataset, DDS &dds, XDR *sink, 
-		bool ce_eval = true)
+Grid::serialize(const string &dataset, DDS &dds, XDR *sink, 
+		bool ce_eval)
 {
     bool status = true;
     int error = 0;
@@ -335,7 +345,7 @@ Grid::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-Grid::deserialize(XDR *source, DDS *dds, bool reuse = false)
+Grid::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool status;
     
@@ -365,7 +375,7 @@ Grid::buf2val(void **)
 }
 
 BaseType *
-Grid::var(const String &name, btp_stack &s)
+Grid::var(const string &name, btp_stack &s)
 {
     if (_array_var->name() == name) {
 	s.push((BaseType *)this);
@@ -382,7 +392,7 @@ Grid::var(const String &name, btp_stack &s)
 }
 
 BaseType *
-Grid::var(const String &name, bool)
+Grid::var(const string &name, bool)
 {
     if (_array_var->name() == name)
 	return _array_var;
@@ -443,7 +453,7 @@ Grid::map_var(Pix p)
 }
 
 int
-Grid::components(bool constrained = false)
+Grid::components(bool constrained)
 {
     int comp;
 
@@ -510,7 +520,7 @@ Grid::projection_yields_grid()
 // of Arrays, whichever is appropriate. 
 
 void 
-Grid::print_decl(ostream &os, String space, bool print_semi,
+Grid::print_decl(ostream &os, string space, bool print_semi,
 		 bool constraint_info, bool constrained)
 {
     if (constrained && !send_p())
@@ -577,7 +587,7 @@ exit:
 }
 
 void 
-Grid::print_val(ostream &os, String space, bool print_decl_p)
+Grid::print_val(ostream &os, string space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -599,13 +609,12 @@ Grid::print_val(ostream &os, String space, bool print_decl_p)
 // Grids have ugly semantics.
 
 bool
-Grid::check_semantics(String &msg, bool all = false)
+Grid::check_semantics(string &msg, bool all)
 {
     if (!BaseType::check_semantics(msg))
 	return false;
 
-    if (!unique_names(_map_vars, (const char *)name(), 
-		      (const char *)type_name(), msg))
+    if (!unique_names(_map_vars, name(), type_name(), msg))
 	return false;
 
     ostrstream oss;
@@ -613,7 +622,7 @@ Grid::check_semantics(String &msg, bool all = false)
     if (!_array_var) {
 	oss << "Null grid base array in `" << name() << "'" << endl << ends;
 	msg = oss.str();
-	oss.freeze(0);
+	oss.rdbuf()->freeze(0);
 	return false;
     }
 	
@@ -622,7 +631,7 @@ Grid::check_semantics(String &msg, bool all = false)
 	oss << "Grid `" << name() << "'s' member `"
 	    << _array_var->name() << "' must be an array" << endl << ends;
 	msg = oss.str();
-	oss.freeze(0);
+	oss.rdbuf()->freeze(0);
 	return false;
     }
 	    
@@ -646,11 +655,11 @@ Grid::check_semantics(String &msg, bool all = false)
 		<< "' does not match the number of dimensions of `"
 		<< av->name() << "'" << endl << ends;
 	msg = oss.str();
-	oss.freeze(0);
+	oss.rdbuf()->freeze(0);
 	return false;
     }
 
-    const String array_var_name = av->name();
+    const string array_var_name = av->name();
     Pix p, ap;
     for (p = _map_vars.first(), ap = av->first_dim();
 	 p; _map_vars.next(p), av->next_dim(ap)) {
@@ -663,7 +672,7 @@ Grid::check_semantics(String &msg, bool all = false)
 		<< "' conflicts with the grid array name in grid `"
 		<< name() << "'" << endl << ends;
 	    msg = oss.str();
-	    oss.freeze(0);
+	    oss.rdbuf()->freeze(0);
 	    return false;
 	}
 	// check types
@@ -671,7 +680,7 @@ Grid::check_semantics(String &msg, bool all = false)
 	    oss << "Grid map variable  `" << mv->name()
 		<< "' is not an array" << endl << ends;
 	    msg = oss.str();
-	    oss.freeze(0);
+	    oss.rdbuf()->freeze(0);
 	    return false;
 	}
 
@@ -693,7 +702,7 @@ Grid::check_semantics(String &msg, bool all = false)
 	    oss << "Grid map variable  `" << mv_a->name()
 		<< "' must be only one dimension" << endl << ends;
 	    msg = oss.str();
-	    oss.freeze(0);
+	    oss.rdbuf()->freeze(0);
 	    return false;
 	}
 	// size of map must match corresponding array dimension
@@ -704,7 +713,7 @@ Grid::check_semantics(String &msg, bool all = false)
 		<< _array_var->name() << "'s' cooresponding dimension"
 		<< endl << ends;
 	    msg = oss.str();
-	    oss.freeze(0);
+	    oss.rdbuf()->freeze(0);
 	    return false;
 	}
     }

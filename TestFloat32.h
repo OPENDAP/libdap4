@@ -12,6 +12,9 @@
 
 /* 
  * $Log: TestFloat32.h,v $
+ * Revision 1.2  1999/04/29 02:29:32  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.1  1999/03/24 23:40:05  jimg
  * Added
  *
@@ -28,12 +31,12 @@
 
 class TestFloat32: public Float32 {
 public:
-    TestFloat32(const String &n = (char *)0);
+    TestFloat32(const string &n = (char *)0);
     virtual ~TestFloat32() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 #endif

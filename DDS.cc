@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -9,6 +9,9 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.41  1999/04/29 02:29:28  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.40  1999/03/24 23:37:14  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
@@ -26,11 +29,11 @@
 // Clause objects. This makes it simpler for the projection functions to add
 // `invisible' selection clauses.
 //
-// Revision 1.36  1998/10/21 16:38:12  jimg
-// The find_function() member function now checks for the name AND the function
-// type before returning a value. This means that a bool and BaseType * function
-// may have the same name but, because of their different types, still work
-// properly in context.
+// Revision 1.36 1998/10/21 16:38:12 jimg 
+// The find_function() member function now checks for the name AND the
+// function type before returning a value. This means that a bool and
+// BaseType * function may have the same name but, because of their different
+// types, still work properly in context.
 //
 // Revision 1.35  1998/09/17 17:21:27  jimg
 // Changes for the new variable lookup scheme. Fields of ctor types no longer
@@ -40,6 +43,13 @@
 // function passes a stack of BaseType pointers so that the projection
 // information (send_p field) can be set properly.
 // Added exact_match and leaf_match.
+//
+// Revision 1.34.6.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.34.6.1  1999/02/02 21:56:57  jimg
+// String to string version
 //
 // Revision 1.34  1998/03/19 23:36:58  jimg
 // Fixed calls to set_mime_*().
@@ -54,8 +64,8 @@
 //
 // Revision 1.32  1997/04/15 18:02:45  jimg
 // Added optional argument to print_variable functions so that the variable can
-// be printed using the current constraint. Changed the call to print_variable()
-// in DDS::send() so that the constrained variable is printed.
+// be printed using the current constraint. Changed the call to
+// print_variable() in DDS::send() so that the constrained variable is printed.
 //
 // Revision 1.31  1997/03/08 19:03:38  jimg
 // Changed call to `unique()' to `unique_names()' (see util.cc).
@@ -211,7 +221,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.40 1999/03/24 23:37:14 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.41 1999/04/29 02:29:28 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -221,8 +231,8 @@ static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.40 1999/03/24 23:37:14 jimg E
 #include <stdio.h>
 #include <assert.h>
 
-#include <iostream.h>
-#include <stdiostream.h>
+#include <iostream>
+#include <fstream>
 
 #include "expr.h"
 #include "Clause.h"
@@ -242,7 +252,8 @@ static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.40 1999/03/24 23:37:14 jimg E
 void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
 int ddsparse(void *arg);
 
-void exprrestart(FILE *yyin);	// Defined in expr.tab.c
+struct yy_buffer_state;
+yy_buffer_state *expr_scan_string(const char *str);
 int exprparse(void *arg);
 
 // Glue routines declared in expr.lex
@@ -270,9 +281,9 @@ DDS::duplicate(const DDS &dds)
     }
 }
 
-DDS::DDS(const String &n) : name(n)
+DDS::DDS(const string &n) : name(n)
 {
-    add_function("member", func_member); // See util.cc for func_* definitions
+    add_function("member", func_member);
     add_function("null", func_null);
     add_function("nth", func_nth);
     add_function("length", func_length);
@@ -312,26 +323,26 @@ DDS::operator=(const DDS &rhs)
     return *this;
 }
 
-String 
+string 
 DDS::get_dataset_name()
 { 
     return name; 
 }
 
 void
-DDS::set_dataset_name(const String &n) 
+DDS::set_dataset_name(const string &n) 
 { 
     name = n; 
 }
 
-String
+string
 DDS::filename()
 {
     return _filename;
 }
 
 void
-DDS::filename(const String &fn)
+DDS::filename(const string &fn)
 {
     _filename = fn;
 }
@@ -345,7 +356,7 @@ DDS::add_var(BaseType *bt)
 }
 
 void 
-DDS::del_var(const String &n)
+DDS::del_var(const string &n)
 { 
     Pix pp = 0;			// previous Pix
 
@@ -359,7 +370,7 @@ DDS::del_var(const String &n)
 }
 
 BaseType *
-DDS::var(const String &n, btp_stack &s)
+DDS::var(const string &n, btp_stack &s)
 {
     for (Pix p = vars.first(); p; vars.next(p)) {
 	BaseType *btp = vars(p);
@@ -389,7 +400,7 @@ DDS::var(const String &n, btp_stack &s)
 // can be found, returns NULL.
 
 BaseType *
-DDS::var(const String &n)
+DDS::var(const string &n)
 {
     BaseType *v = exact_match(n);
     if (v)
@@ -403,7 +414,7 @@ DDS::var(const String &n)
 }
 
 BaseType *
-DDS::leaf_match(const String &n) 
+DDS::leaf_match(const string &n) 
 {
     for (Pix p = vars.first(); p; vars.next(p)) {
 	BaseType *btp = vars(p);
@@ -423,13 +434,12 @@ DDS::leaf_match(const String &n)
 }
 
 BaseType *
-DDS::exact_match(const String &n)
+DDS::exact_match(const string &name)
 {
-    if (n.contains(".")) {
-	String name = (String)n; // cast away const
-	String aggregate = name.before(".");
-	String field = name.from(".");
-	field = field.after(".");
+    unsigned int dot_pos = name.find(".");
+    if (dot_pos != string::npos) {
+	string aggregate = name.substr(0, dot_pos);
+	string field = name.substr(dot_pos + 1);
 
 	BaseType *agg_ptr = var(aggregate);
 	if (agg_ptr)
@@ -440,10 +450,10 @@ DDS::exact_match(const String &n)
     else {
 	for (Pix p = vars.first(); p; vars.next(p)) {
 	    BaseType *btp = vars(p);
-	    DBG(cerr << "Looking at " << n << " in: " << btp << endl);
+	    DBG(cerr << "Looking at " << name << " in: " << btp << endl);
 	    // Look for the name in the current ctor type or the top level
-	    if (btp->name() == n) {
-		DBG(cerr << "Found " << n << " in: " << btp << endl);
+	    if (btp->name() == name) {
+		DBG(cerr << "Found " << name << " in: " << btp << endl);
 		return btp;
 	    }
 	}
@@ -454,12 +464,12 @@ DDS::exact_match(const String &n)
 
 // This is necessary because (char *) can be cast to Pix (because PIX is
 // really (void *)). This must take precedence over the creation of a
-// temporary object (the String).
+// temporary object (the string).
 
 BaseType *
 DDS::var(const char *n)
 {
-    return var((String)n);
+    return var((string)n);
 }
 
 Pix 
@@ -515,7 +525,7 @@ DDS::clause(Pix p)
 }
 
 bool
-DDS::clause_value(Pix p, const String &dataset)
+DDS::clause_value(Pix p, const string &dataset)
 {
     assert(!expr.empty());
 
@@ -553,41 +563,16 @@ DDS::append_constant(BaseType *btp)
     constants.append(btp);
 }
 
-#if 0
 template<class FUNC_T>
 void 
-DDS::add_function(const String &name, FUNC_T f)
+DDS::add_function(const string &name, FUNC_T f)
 {
     function func(name, f);
     functions.append(func);
 }
-#endif
-
-#if 1
-void
-DDS::add_function(const String &name, bool_func f)
-{
-    function func(name, f);
-    functions.append(func);
-}
-
-void
-DDS::add_function(const String &name, btp_func f)
-{
-    function func(name, f);
-    functions.append(func);
-}
-
-void
-DDS::add_function(const String &name, proj_func f)
-{
-    function func(name, f);
-    functions.append(func);
-}
-#endif
 
 bool
-DDS::find_function(const String &name, bool_func *f) const
+DDS::find_function(const string &name, bool_func *f) const
 {
     if (functions.empty())
 	return false;
@@ -601,7 +586,7 @@ DDS::find_function(const String &name, bool_func *f) const
 }
 
 bool
-DDS::find_function(const String &name, btp_func *f) const
+DDS::find_function(const string &name, btp_func *f) const
 {
     if (functions.empty())
 	return false;
@@ -615,7 +600,7 @@ DDS::find_function(const String &name, btp_func *f) const
 }
 
 bool
-DDS::find_function(const String &name, proj_func *f) const
+DDS::find_function(const string &name, proj_func *f) const
 {
     if (functions.empty())
 	return false;
@@ -628,6 +613,7 @@ DDS::find_function(const String &name, proj_func *f) const
     return false;
 }
 
+
 bool
 DDS::functional_expression()
 {
@@ -639,7 +625,7 @@ DDS::functional_expression()
 }
 
 BaseType *
-DDS::eval_function(const String &dataset)
+DDS::eval_function(const string &dataset)
 {
     assert(expr.length() == 1);
 
@@ -665,7 +651,7 @@ DDS::boolean_expression()
 }
 
 bool
-DDS::eval_selection(const String &dataset)
+DDS::eval_selection(const string &dataset)
 {
     if (expr.empty()) {
 	DBG(cerr << "No selection recorded" << endl);
@@ -689,9 +675,9 @@ DDS::eval_selection(const String &dataset)
 }
 
 bool
-DDS::parse(String fname)
+DDS::parse(string fname)
 {
-    FILE *in = fopen(fname, "r");
+    FILE *in = fopen(fname.c_str(), "r");
 
     if (!in) {
         cerr << "Could not open: " << fname << endl;
@@ -771,7 +757,7 @@ DDS::print(ostream &os)
 bool 
 DDS::print(FILE *out)
 {
-    ostdiostream os(out);
+    ofstream os(fileno(out));
     return print(os);
 }
 
@@ -801,7 +787,7 @@ DDS::print_constrained(ostream &os)
 bool
 DDS::print_constrained(FILE *out)
 {
-    ostdiostream os(out);
+    ofstream os(fileno(out));
     return print_constrained(os);
 }
 
@@ -824,7 +810,7 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
     assert(out);
     assert(var);
 
-    ostdiostream os(out);
+    ofstream os(fileno(out));
     print_variable(os, var, constrained);
 }
 
@@ -841,13 +827,13 @@ bool
 DDS::check_semantics(bool all)
 {
     // The dataset must have a name
-    if (name == (char *)0) {
+    if (name == "") {
 	cerr << "A dataset must have a name" << endl;
 	return false;
     }
 
-    String msg;
-    if (!unique_names(vars, (const char *)name, (const char *)"Dataset", msg))
+    string msg;
+    if (!unique_names(vars, name, "Dataset", msg))
 	return false;
 
     if (all) 
@@ -866,21 +852,9 @@ DDS::check_semantics(bool all)
 // the current DDS, false otherwise.
 
 bool
-DDS::parse_constraint(const String &constraint, ostream &os, bool server = true)
+DDS::parse_constraint(const string &constraint, ostream &os, bool server)
 {
-#if 0
-    FILE *in = text_to_temp(constraint);
-
-    if (!in) {
-	cerr << "DDS::parse_constraint: Null input stream" << endl;
-	return false;
-    }
-
-    exprrestart(in);
-#endif
-
-    exprrestart(0);
-    void *buffer = expr_string((const char *)constraint);
+    void *buffer = expr_string(constraint.c_str());
     expr_switch_to_buffer(buffer);
 
     parser_arg arg(this);
@@ -907,9 +881,9 @@ DDS::parse_constraint(const String &constraint, ostream &os, bool server = true)
 }
 
 bool
-DDS::parse_constraint(const String &constraint, FILE *out, bool server = true)
+DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
-    ostdiostream os(out);
+    ofstream os(fileno(out));
     return parse_constraint(constraint, os, server);
 }
 
@@ -922,8 +896,8 @@ DDS::parse_constraint(const String &constraint, FILE *out, bool server = true)
 // Returns: true if successful, false otherwise.
 
 bool 
-DDS::send(const String &dataset, const String &constraint, FILE *out, 
-	  bool compressed = true)
+DDS::send(const string &dataset, const string &constraint, FILE *out, 
+	  bool compressed)
 {
     bool status = true;
 
@@ -1022,12 +996,12 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 // Returns: True if the named variable was found, false otherwise.
 
 bool
-DDS::mark(const String &n, bool state)
+DDS::mark(const string &n, bool state)
 {
-    if (n.contains(".")) {
-	String field = (String &)n; // cast away const
-
-	String aggregate = field.before(".");
+    unsigned int dotpos = n.find('.');
+    if (dotpos != n.npos) {
+	string aggregate = n.substr(0, dotpos);
+	string field = n.substr(dotpos+1);
 	BaseType *variable = var(aggregate); // get first variable from DDS
 	if (!variable) {
 	    DBG(cerr << "Could not find variable " << n << endl);
@@ -1036,10 +1010,8 @@ DDS::mark(const String &n, bool state)
 	else if (state)
 	    variable->BaseType::set_send_p(state); // set iff state == true
 
-	field = field.after(".");
-
-	while (field.contains(".")) {
-	    aggregate = field.before(".");
+	while ((dotpos = field.find('.')) != field.npos) {
+	    aggregate = field.substr(0, dotpos);
 	    variable = variable->var(aggregate); // get child var using parent
 	    if (!variable) {
 		DBG(cerr << "Could not find variable " << n << endl);
@@ -1047,8 +1019,8 @@ DDS::mark(const String &n, bool state)
 	    }
 	    else if (state)
 		variable->BaseType::set_send_p(state); // set iff state == true
-
-	    field = field.after(".");
+	    
+	    field = field.substr(dotpos+1);
 	}
 
 	variable->var(field)->set_send_p(state); // set last child

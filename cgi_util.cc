@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,13 +11,27 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.34  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.33  1999/03/17 23:05:46  jimg
 // Added to find_ancillary_file() so that <pathname>.ext will also be checked.
 // This ensures that ancillary DAS files such as 1998-6-avhrr.dat.das will be
 // used properly.
 //
 // Revision 1.32  1998/12/16 19:10:53  jimg
-// Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
+// Added support for XDODS-Server MIME header. This fixes a problem where our
+// use of Server clashed with Java 
+//
+// Revision 1.31.6.3  1999/03/17 23:43:05  jimg
+// Added pathanme.ext patch from the GNU String version.
+//
+// Revision 1.31.6.2  1999/02/05 09:32:35  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code.
+//
+// Revision 1.31.6.1  1999/02/02 21:57:05  jimg
+// String to string version
 //
 // Revision 1.31  1998/03/19 23:30:08  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
@@ -81,7 +95,7 @@
 // HTTP/MIME header.
 //
 // Revision 1.16  1996/08/13 18:42:01  jimg
-// Added __unused__ to definition of char rcsid[].
+// Added not_used to definition of char rcsid[].
 //
 // Revision 1.15  1996/06/18 23:48:46  jimg
 // Modified so that the compress/decompress functions use the DODS_ROOT
@@ -154,20 +168,19 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.33 1999/03/17 23:05:46 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.34 1999/04/29 02:29:34 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <assert.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <iostream.h>
-#include <stdiostream.h>
-#include <String.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 #include "cgi_util.h"
 
@@ -197,7 +210,7 @@ usage(const char *name)
 
     // Build an error object to return to the user.
     Error *ErrorObj = new Error(no_such_file, 
-			(String)"\"DODS internal error; missing parameter.\"");
+			(string)"\"DODS internal error; missing parameter.\"");
     set_mime_text(cout, dods_error);
     ErrorObj->print(cout);
 }
@@ -206,7 +219,7 @@ usage(const char *name)
 // function to work.
 
 bool
-do_version(const String &script_ver, const String &dataset_ver)
+do_version(const string &script_ver, const string &dataset_ver)
 {
     cout << "HTTP/1.0 200 OK" << endl
 	 << "XDODS-Server: " << DVR << endl
@@ -228,7 +241,7 @@ do_version(const String &script_ver, const String &dataset_ver)
 // 02/13/98 jhrg
 bool
 do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
-		 const String &dataset, const String &constraint)
+		 const string &dataset, const string &constraint)
 {
     if (compression) {
 	int childpid;
@@ -275,33 +288,33 @@ do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
 //
 // NB: This code now checks for <pathname>.ext 3/17/99 jhrg
 
-String
-find_ancillary_file(String pathname, String ext, String dir, String file)
+string
+find_ancillary_file(string pathname, string ext, string dir, string file)
 {
-    int slash = pathname.index("/", -1) + 1;
-    String directory = pathname.at(0, slash);
-    String basename = pathname.at(slash, pathname.index(".", -1)-slash);
+    unsigned int slash = pathname.rfind('/') + 1;
+    string directory = pathname.substr(0, slash);
+    string basename = pathname.substr(slash, pathname.find('.',slash)-slash);
     
     ext = "." + ext;
 
-    String name = directory + basename + ext;
-    if (access((const char *)name, F_OK) == 0)
-	return name;
-
-    name = dir + basename + ext;
-    if (access((const char *)name, F_OK) == 0)
+    string name = directory + basename + ext;
+    if (access(name.c_str(), F_OK) == 0)
 	return name;
 
     name = pathname + ext;
-    if (access((const char *)name, F_OK) == 0)
+    if (access(name.c_str(), F_OK) == 0)
+	return name;
+
+    name = dir + basename + ext;
+    if (access(name.c_str(), F_OK) == 0)
 	return name;
 
     name = directory + file + ext;
-    if (access((const char *)name, F_OK) == 0)
+    if (access(name.c_str(), F_OK) == 0)
 	return name;
 
     name = dir + file + ext;
-    if (access((const char *)name, F_OK) == 0)
+    if (access(name.c_str(), F_OK) == 0)
 	return name;
 
     return "";
@@ -312,18 +325,18 @@ find_ancillary_file(String pathname, String ext, String dir, String file)
 // netCDF file name with the addition of .dds
 
 bool
-read_ancillary_dds(DDS &dds, String dataset, String dir = "", 
-		   String file = "")
+read_ancillary_dds(DDS &dds, string dataset, string dir, 
+		   string file)
 {
-    String name = find_ancillary_file(dataset, "dds", dir, file);
-    FILE *in = fopen((const char *)name, "r");
+    string name = find_ancillary_file(dataset, "dds", dir, file);
+    FILE *in = fopen(name.c_str(), "r");
  
     if (in) {
 	int status = dds.parse(in);
 	fclose(in);
     
 	if(!status) {
-	    String msg = "Parse error in external file " + dataset + ".dds";
+	    string msg = "Parse error in external file " + dataset + ".dds";
 
 	    // server error message
 	    ErrMsgT(msg);
@@ -342,18 +355,18 @@ read_ancillary_dds(DDS &dds, String dataset, String dir = "",
 }
     
 bool
-read_ancillary_das(DAS &das, String dataset, String dir = "", 
-		   String file = "")
+read_ancillary_das(DAS &das, string dataset, string dir,
+		   string file)
 {
-    String name = find_ancillary_file(dataset, "das", dir, file);
-    FILE *in = fopen((const char *)name, "r");
+    string name = find_ancillary_file(dataset, "das", dir, file);
+    FILE *in = fopen(name.c_str(), "r");
  
     if (in) {
 	int status = das.parse(in);
 	fclose(in);
     
 	if(!status) {
-	    String msg = "Parse error in external file " + dataset + ".das";
+	    string msg = "Parse error in external file " + dataset + ".das";
 
 	    // server error message
 	    ErrMsgT(msg);
@@ -379,7 +392,7 @@ read_ancillary_das(DAS &das, String dataset, String dir = "",
 // Returns: void
 
 void 
-ErrMsgT(const char *Msgt)
+ErrMsgT(const string Msgt)
 {
     time_t TimBin;
     char TimStr[TimLen];
@@ -405,7 +418,7 @@ ErrMsgT(const char *Msgt)
 // delete it when done using the filename.
 // Originally from the netcdf distribution (ver 2.3.2).
 // 
-// *** Change to String class argument and return type. jhrg
+// *** Change to string class argument and return type. jhrg
 //
 // Returns: A filename, with path and extension information removed. If
 // memory for the new name cannot be allocated, does not return!
@@ -446,14 +459,14 @@ static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
 static char *encoding[]={"unknown", "deflate", "x-plain"};
 
 void
-set_mime_text(FILE *out, ObjectType type = unknown_type, EncodingType enc = x_plain)
+set_mime_text(FILE *out, ObjectType type, EncodingType enc)
 {
-    ostdiostream os(out);
+    ofstream os(fileno(out));
     set_mime_text(os, type, enc);
 }
 
 void
-set_mime_text(ostream &os, ObjectType type = unknown_type, EncodingType enc = x_plain)
+set_mime_text(ostream &os, ObjectType type, EncodingType enc)
 {
     os << "HTTP/1.0 200 OK" << endl;
     os << "XDODS-Server: " << DVR << endl;
@@ -467,14 +480,14 @@ set_mime_text(ostream &os, ObjectType type = unknown_type, EncodingType enc = x_
 }
 
 void
-set_mime_binary(FILE *out, ObjectType type = unknown_type, EncodingType enc = x_plain)
+set_mime_binary(FILE *out, ObjectType type, EncodingType enc)
 {
-    ostdiostream os(out);
+    ofstream os(fileno(out));
     set_mime_binary(os, type, enc);
 }
 
 void
-set_mime_binary(ostream &os, ObjectType type = unknown_type, EncodingType enc = x_plain)
+set_mime_binary(ostream &os, ObjectType type, EncodingType enc)
 {
     os << "HTTP/1.0 200 OK" << endl;
     os << "XDODS-Server: " << DVR << endl;
@@ -486,16 +499,14 @@ set_mime_binary(ostream &os, ObjectType type = unknown_type, EncodingType enc = 
 }
 
 void 
-set_mime_error(FILE *out, int code = HTERR_NOT_FOUND, 
-	       const char *reason = "Dataset not found")
+set_mime_error(FILE *out, int code, const char *reason)
 {
-    ostdiostream os(out);
+    ofstream os(fileno(out));
     set_mime_error(os, code, reason);
 }
 
 void 
-set_mime_error(ostream &os, int code = HTERR_NOT_FOUND, 
-	       const char *reason = "Dataset not found")
+set_mime_error(ostream &os, int code, const char *reason)
 {
     os << "HTTP/1.0 " << code << " " << reason << endl;
     os << "XDODS-Server: " << DVR << endl;
@@ -509,7 +520,7 @@ main(int argc, char *argv[])
 {
     // test ErrMsgT
     ErrMsgT("Error");
-    String smsg = "String Error";
+    string smsg = "String Error";
     ErrMsgT(smsg);
     char *cmsg = "char * error";
     ErrMsgT(cmsg);

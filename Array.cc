@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,8 +10,14 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.43  1999/04/29 02:29:26  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.42  1998/12/15 20:50:23  jimg
 // Added fix for strides <= 0 (which results in division by zero).
+//
+// Revision 1.41.4.1  1999/02/02 21:56:54  jimg
+// String to string version
 //
 // Revision 1.41  1997/12/15 18:10:19  jimg
 // Changed check_semantics() so that it returns an error message instead of
@@ -266,7 +272,7 @@ Array::update_length(int size)
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
-Array::Array(const String &n, BaseType *v) : Vector(n, v, dods_array_c)
+Array::Array(const string &n, BaseType *v) : Vector(n, v, dods_array_c)
 {
 }
 
@@ -298,7 +304,7 @@ Array::operator=(const Array &rhs)
 // Returns: void
 
 void 
-Array::append_dim(int size, String name)
+Array::append_dim(int size, string name)
 { 
     dimension d;
 
@@ -444,7 +450,7 @@ Array::dimension_size(Pix p, bool constrained)
 }
 
 int 
-Array::dimension_start(Pix p, bool constrained = false) 
+Array::dimension_start(Pix p, bool constrained) 
 { 
     int start = 0;
 
@@ -462,7 +468,7 @@ Array::dimension_start(Pix p, bool constrained = false)
 }
 
 int 
-Array::dimension_stop(Pix p, bool constrained = false) 
+Array::dimension_stop(Pix p, bool constrained) 
 { 
     int stop = 0;
 
@@ -480,7 +486,7 @@ Array::dimension_stop(Pix p, bool constrained = false)
 }
 
 int 
-Array::dimension_stride(Pix p, bool constrained = false) 
+Array::dimension_stride(Pix p, bool constrained) 
 { 
     int stride = 0;
 
@@ -499,7 +505,7 @@ Array::dimension_stride(Pix p, bool constrained = false)
 
 // Return the name of the array dimension referred to by P.
 
-String
+string
 Array::dimension_name(Pix p) 
 { 
     assert(!_shape.empty() && p);
@@ -508,7 +514,7 @@ Array::dimension_name(Pix p)
 }
 
 void
-Array::print_decl(ostream &os, String space, bool print_semi,
+Array::print_decl(ostream &os, string space, bool print_semi,
 		  bool constraint_info, bool constrained)
 {
     if (constrained && !send_p())
@@ -581,7 +587,7 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
 // print the value given the current constraint.
 
 void 
-Array::print_val(ostream &os, String space, bool print_decl_p)
+Array::print_val(ostream &os, string space, bool print_decl_p)
 {
     // print the declaration if print decl is true.
     // for each dimension,
@@ -595,12 +601,13 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
     }
 
     unsigned int dims = dimensions(true);
-    unsigned int shape[dims];
+    unsigned int *shape = new unsigned int[dims];
     unsigned int i = 0;
     for (Pix p = first_dim(); p; next_dim(p))
 	shape[i++] = dimension_size(p, true);
 
     print_array(os, 0, dims, shape);
+    delete [] shape;
 
     if (print_decl_p) {
 	os << ";" << endl;
@@ -608,7 +615,7 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Array::check_semantics(String &msg, bool)
+Array::check_semantics(string &msg, bool)
 {
     bool sem = BaseType::check_semantics(msg) && !_shape.empty();
 

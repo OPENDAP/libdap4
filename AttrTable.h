@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -18,6 +18,9 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.26  1999/04/29 02:29:26  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.25  1999/03/24 23:37:13  jimg
  * Added support for the Int16, UInt16 and Float32 types
  *
@@ -26,6 +29,9 @@
  *
  * Revision 1.23  1998/12/28 21:39:39  jimg
  * Fixed comments for get_attr().
+ *
+ * Revision 1.22.2.1  1999/02/02 19:43:39  jimg
+ * StringSPlex Removed
  *
  * Revision 1.22  1998/08/06 16:07:39  jimg
  * Field added so that aliases may be displayed as such and not by displaying
@@ -142,15 +148,14 @@
 #endif
 
 #include <Pix.h>
-#include <String.h>
+#include <string>
+#include <vector>
 #include <DLList.h>
 
 #include "config_dap.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
-
-#include "String.XPlex.h"
 
 /** {\bf AttrType} identifies the data types which may appear in an
     attribute table object. 
@@ -193,7 +198,7 @@ enum AttrType {
     The attribute value can be a vector containing many values of the
     same type.  The attributes can have any of the types listed in the
     #AttrType# list.  However, all attribute types are stored as
-    String data, except for the container type, which is stored as a
+    string data, except for the container type, which is stored as a
     pointer to another attribute table.
 
     Each element in the attribute table can itself be an attribute
@@ -208,12 +213,12 @@ enum AttrType {
     An attribute table might look something like this:
 
     \begin{verbatim}
-    String long_name "Weekly Means of Sea Surface Temperature";
+    string long_name "Weekly Means of Sea Surface Temperature";
     actual_range {
         Float64 min -1.8;
         Float64 max 35.09;
     }
-    String units "degC";
+    string units "degC";
     conversion_data {
         Float64 add_offset 0.;
         Float64 scale_factor 0.0099999998;
@@ -231,26 +236,26 @@ enum AttrType {
 class AttrTable {
 private:
     struct entry {
-	String name;
+	string name;
 	AttrType type;
 	
 	bool is_alias;
-        String aliased_to;
+        string aliased_to;
 
 	// If type == Attr_container, use attributes to read the contained
 	// table, otherwise use attr to read the vector of values.
 	union {
 	    AttrTable *attributes;
-	    StringXPlex *attr;	// a vector of values. jhrg 12/5/94
+	    vector<string> *attr;	// a vector of values. jhrg 12/5/94
 	} value;
     };
 
     DLList<entry> attr_map;
     
-    Pix find(const String &target, bool cont_only = false);
-    Pix simple_find(const String &target);
-    String AttrType_to_String(const AttrType at);
-    AttrType String_to_AttrType(const String &s);
+    Pix find(const string &target, bool cont_only = false);
+    Pix simple_find(const string &target);
+    string AttrType_to_String(const AttrType at);
+    AttrType String_to_AttrType(const string &s);
 
 public:
     AttrTable();
@@ -264,7 +269,7 @@ public:
     void next_attr(Pix &p);
 
   /** Returns the name of the attribute. */
-    String get_name(Pix p);
+    string get_name(Pix p);
 
   /** Returns true if the attribute is a container. */
     bool is_container(Pix p);
@@ -281,22 +286,22 @@ public:
   ///
     AttrTable *get_attr_table(Pix p);
   ///
-    AttrTable *get_attr_table(const String &name);
+    AttrTable *get_attr_table(const string &name);
   ///
     AttrTable *get_attr_table(const char *name);
   //@}
 
-  /** Returns the type of an attribute in a String.
+  /** Returns the type of an attribute in a string.
 
       @name get\_type()
       */
   //@{
   ///
-    String get_type(Pix p);
+    string get_type(Pix p);
   ///
-    String get_type(const String &name);
+    string get_type(const string &name);
   ///
-    String get_type(const char *name);
+    string get_type(const char *name);
   //@}
 
   /** Returns the type of an attribute using AttrType.
@@ -308,7 +313,7 @@ public:
   ///
     AttrType get_attr_type(Pix p);
   ///
-    AttrType get_attr_type(const String &name);
+    AttrType get_attr_type(const string &name);
   ///
     AttrType get_attr_type(const char *name);
   //@}
@@ -325,7 +330,7 @@ public:
   ///
     unsigned int get_attr_num(Pix p);
   ///
-    unsigned int get_attr_num(const String &name);
+    unsigned int get_attr_num(const string &name);
   ///
     unsigned int get_attr_num(const char *name);
   //@}
@@ -337,7 +342,7 @@ public:
       the index argument is ignored.  If {\it i} is greater than the
       number of elements in the attribute, an error is produced.
 
-      Note that all values in an attribute table are stored as String
+      Note that all values in an attribute table are stored as string
       data.  They may be converted to a more appropriate internal
       format by the calling program.
 
@@ -347,17 +352,17 @@ public:
       and the named attribute does not exist, return the empty string. */
   //@{
   ///
-    String get_attr(Pix p, unsigned int i = 0);
+    string get_attr(Pix p, unsigned int i = 0);
   ///
-    String get_attr(const String &name, unsigned int i = 0);
+    string get_attr(const string &name, unsigned int i = 0);
   ///
-    String get_attr(const char *name, unsigned int i = 0);
+    string get_attr(const char *name, unsigned int i = 0);
   //@}
     
   /** Returns a pointer to the vector of values associated with the
       attribute referenced by Pix {\it p} or named {\it name}. 
 
-      Note that all values in an attribute table are stored as String
+      Note that all values in an attribute table are stored as string
       data.  They may be converted to a more appropriate internal
       format by the calling program.
 
@@ -369,11 +374,11 @@ public:
       */
   //@{
   ///
-    StringXPlex *get_attr_vector(Pix p);
+    vector<string> *get_attr_vector(Pix p);
   ///
-    StringXPlex *get_attr_vector(const String &name);
+    vector<string> *get_attr_vector(const string &name);
   ///
-    StringXPlex *get_attr_vector(const char *name);
+    vector<string> *get_attr_vector(const char *name);
   //@}
 
   /** Adds an attribute to the table.  If the given name already
@@ -396,8 +401,8 @@ public:
   */
   //@{
   ///
-    unsigned int append_attr(const String &name, const String &type, 
-			     const String &value);
+    unsigned int append_attr(const string &name, const string &type, 
+			     const string &value);
   ///
     unsigned int append_attr(const char *name, const char *type, 
 			     const char *value);
@@ -410,7 +415,7 @@ public:
       @return A pointer to the new AttrTable object. 
       @memo Create a new container attribute.
       */
-    AttrTable *append_container(const String &name);
+    AttrTable *append_container(const string &name);
 
     /** Adds an alias to the set of attributes.  Once an alias is
 	inserted into an attribute table, reading the attributes for
@@ -429,12 +434,12 @@ public:
 	@param name The name of the already-existing attribute to which
 	the alias will refer.
 	@param at An attribute table in which to insert the alias. */
-    bool attr_alias(const String &alias, AttrTable *at, const String &name);
+    bool attr_alias(const string &alias, AttrTable *at, const string &name);
 
     /** @param alias The alias to insert into the attribute table.
 	@param name The name of the already-existing attribute to which
 	the alias will refer. */
-    bool attr_alias(const String &alias, const String &name);
+    bool attr_alias(const string &alias, const string &name);
     //@}
 
   /** Delete the attribute named {\it name}. If {\it i} is given, and
@@ -453,14 +458,14 @@ public:
       array is repacked.  If {\it i} equals -1 (the default), the
       entire attribute is deleted.
       */
-    void del_attr(const String &name, int i = -1);
+    void del_attr(const string &name, int i = -1);
 
   /** Prints an ASCII representation of the attribute table to the
       indicated output stream.  The {\it pad} argument is prefixed to
       each line of the output to provide control of indentation.
 
       @memo Prints the attribute table.  */
-    void print(ostream &os, String pad = "    ");
+    void print(ostream &os, string pad = "    ");
 };
 
 typedef AttrTable * AttrTablePtr;

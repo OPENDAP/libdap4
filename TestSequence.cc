@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -14,6 +14,12 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.19  1999/04/29 02:29:32  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.18.6.1  1999/02/02 21:57:03  jimg
+// String to string version
+//
 // Revision 1.18  1998/02/05 20:13:57  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -92,7 +98,11 @@
 #pragma implementation
 #endif
 
-#include <strstream.h>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
 #include "TestSequence.h"
 
@@ -105,7 +115,7 @@ TestSequence::_duplicate(const TestSequence &ts)
 }
 
 Sequence *
-NewSequence(const String &n)
+NewSequence(const string &n)
 {
     return new TestSequence(n);
 }
@@ -116,7 +126,7 @@ TestSequence::ptr_duplicate()
     return new TestSequence(*this);
 }
 
-TestSequence::TestSequence(const String &n) : Sequence(n)
+TestSequence::TestSequence(const string &n) : Sequence(n)
 {
     _input_opened = false;
 }
@@ -134,7 +144,7 @@ TestSequence::~TestSequence()
 // lines. Line can be no more than 255 characters long.
 
 bool 
-TestSequence::read(const String &dataset, int &error)
+TestSequence::read(const string &dataset, int &error)
 {
     char line[256];
 
@@ -142,7 +152,7 @@ TestSequence::read(const String &dataset, int &error)
 	return true;
 
     if (!_input_opened) {
-	_input.open(dataset);
+	_input.open(dataset.c_str());
 	_input_opened = true;
 	// For now, use the DDS to get the variable names/types so read the 
 	// first line and ignore it.
@@ -165,8 +175,8 @@ TestSequence::read(const String &dataset, int &error)
 	    return false;
 	}
 
-	String l = line;
-	if (l.matches(RXwhite) || l[0] == '#')	// Blank or comment line
+	string l = line;
+	if (l.find_first_not_of(" \t\n\r") != l.npos || l[0] == '#')	// Blank or comment line
 	    continue;
 	else
 	    break;		// Assume valid line.
@@ -211,7 +221,7 @@ TestSequence::read(const String &dataset, int &error)
 	  }
 	  case dods_str_c:
 	  case dods_url_c: {
-	      String s;
+	      string s;
 	      iss >> s;
 	      var(p)->val2buf((void*)&s);
 	      var(p)->set_read_p(true);

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,18 +10,28 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.16  1999/04/29 02:29:37  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.15  1999/04/22 22:31:11  jimg
 // Comments
 //
 // Revision 1.14  1999/03/29 17:35:50  jimg
 // Fixed (I hope) a bug in check_float{32,64} where 0.0 did not check out as a
-// valid floating point number. Note that the DODS_{FLT,DBL}_{MIN,MAX} constants
-// are the absolute values of the bigest and smallest numbers representable,
-// unlike the similar constants for integer types.
+// valid floating point number. Note that the DODS_{FLT,DBL}_{MIN,MAX}
+// constants are the absolute values of the bigest and smallest numbers
+// representable, unlike the similar constants for integer types.
 //
 // Revision 1.13  1999/03/24 23:29:35  jimg
 // Added support for the new Int16, UInt16 and Float32 types.
 // Removed unused error printing functions.
+//
+// Revision 1.12.6.2  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.12.6.1  1999/02/02 21:57:08  jimg
+// String to string version
 //
 // Revision 1.12  1998/03/19 23:28:42  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
@@ -40,7 +50,7 @@
 // Added functions to test unsigned integers.
 //
 // Revision 1.7  1996/08/13 20:43:38  jimg
-// Added __unused__ to definition of char rcsid[].
+// Added not_used to definition of char rcsid[].
 // Added a new parse_error function that builds an Error object and returns it
 // instead of printing to stderr.
 // Added versions of check_*() that take parser_arg and a context string. These
@@ -68,15 +78,19 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.15 1999/04/22 22:31:11 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.16 1999/04/29 02:29:37 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
+#include <math.h>
 
-#include <iostream.h>
-#include <strstream.h>
+#include <iostream>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
 #include "parser.h"		// defines constants such as ID_MAX
 #include "dods-limits.h"
@@ -91,8 +105,8 @@ parse_error(const char *s, const int line_num)
 }
 
 void
-parse_error(parser_arg *arg, const char *msg, const int line_num = 0,
-	    const char *context = 0)
+parse_error(parser_arg *arg, const char *msg, const int line_num,
+	    const char *context)
 { 
     assert(arg);
     assert(msg);
@@ -121,6 +135,12 @@ save_str(char *dst, const char *src, const int line_num)
     if (strlen(src) >= ID_MAX) 
 	cerr << "line: " << line_num << "`" << src << "' truncated to `"
              << dst << "'" << endl;
+}
+
+void
+save_str(string &dst, const char *src, const int)
+{
+    dst = src;
 }
 
 int
@@ -155,19 +175,23 @@ check_int16(const char *val, const int line)
 	ostrstream oss;
 	oss << "`" << val << "' cannot be decoded as an integer value." 
 	    << ends;
+
 	parse_error(oss.str(), line);
 	oss.freeze(0);
+
 	return FALSE;
     }
 
     // Don't use the constant from limits.h, use the ones in dods-limits.h
     if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) { 
 	ostrstream oss;
+
 	oss << "`" << val << "' is not a 16-bit integer value value." << endl
 	    << "It must be between " << DODS_SHRT_MIN << " and "
 	    << DODS_SHRT_MAX << "." << ends;
 	parse_error(oss.str(), line);
 	oss.freeze(0);
+
 	return FALSE;
     }
 
@@ -185,7 +209,7 @@ check_uint16(const char *val, const int line)
 	oss << "`" << val << "' cannot be decoded as an integer value." 
 	    << ends;
 	parse_error(oss.str(), line);
-	oss.freeze(0);
+	oss.rdbuf()->freeze(0);
 	return FALSE;
     }
 
@@ -212,8 +236,10 @@ check_int32(const char *val, const int line)
 	ostrstream oss;
 	oss << "`" << val << "' cannot be decoded as an integer value." 
 	    << ends;
+
 	parse_error(oss.str(), line);
 	oss.freeze(0);
+
 	return FALSE;
     }
 
@@ -222,8 +248,10 @@ check_int32(const char *val, const int line)
 	oss << "`" << val << "' is not a 32-bit integer value value." << endl
 	    << "It must be between " << DODS_INT_MIN << " and "
 	    << DODS_INT_MAX << "." << ends;
+
 	parse_error(oss.str(), line);
 	oss.freeze(0);
+
 	return FALSE;
     }
 
@@ -257,18 +285,23 @@ check_float32(const char *val, const int num)
 {
     char *ptr;
     double v = strtod(val, &ptr);
-    if (fabs(v) == 0.0 && val == ptr) {
+
+    if (v == 0.0 && val == ptr) {
 	parse_error("Not decodable to a 32-bit float value", num);
 	return FALSE;
     }
 
-    if (fabs(v) > DODS_FLT_MAX) { 
+    static double range = fabs(log10(DODS_FLT_MAX));
+    if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
 	ostrstream oss;
+
 	oss << "`" << val << "' is not a 32 bit floating point value value." 
 	    << endl
-	    << "It must be between (+/-)" << DODS_FLT_MAX << "." << ends;
+	    << "It must be between (+/-)" << DODS_FLT_MAX << " and (+/-)" 
+	    << DODS_FLT_MIN << "." << ends;
 	parse_error(oss.str(), num);
 	oss.freeze(0);
+
 	return FALSE;
     }
 
@@ -281,19 +314,22 @@ check_float64(const char *val, const int num)
     char *ptr;
     double v = strtod(val, &ptr);
 
-    if (fabs(v) == 0.0 && val == ptr) {
+    if (v == 0.0 && val == ptr) {
 	parse_error("Not decodable to a 64-bit float value", num);
 	return FALSE;
     }
 
-    // I'm not sure how this would work, so this is a placeholder. 3/19/99 jhrg
-    if (fabs(v) > DODS_DBL_MAX) { 
+    static double range = fabs(log10(DODS_DBL_MAX));
+    if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
 	ostrstream oss;
+
 	oss << "`" << val << "' is not a 64 bit floating point value value." 
 	    << endl
-	    << "It must be between (+/-)" << DODS_DBL_MAX << "." << ends;
+	    << "It must be between (+/-)" << DODS_DBL_MAX << " and (+/-)" 
+	    << DODS_DBL_MIN << "." << ends;
 	parse_error(oss.str(), num);
 	oss.freeze(0);
+
 	return FALSE;
     }
 

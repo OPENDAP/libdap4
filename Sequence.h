@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1997
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -19,9 +19,15 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.37  1999/04/29 02:29:31  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.36  1998/09/17 17:17:48  jimg
  * Added leaf_match and exact_match.
  * Added two new versions of the var member function.
+ *
+ * Revision 1.35.6.1  1999/02/02 21:57:01  jimg
+ * String to string version
  *
  * Revision 1.35  1998/03/17 17:40:08  jimg
  * Added an implementation of element_count().
@@ -320,8 +326,8 @@ private:
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     void _duplicate(const Sequence &s);
-    BaseType *leaf_match(const String &name);
-    BaseType *exact_match(const String &name);
+    BaseType *leaf_match(const string &name);
+    BaseType *exact_match(const string &name);
 
 protected:
     void write_end_of_sequence(XDR *sink);
@@ -335,12 +341,12 @@ public:
       to be created.  The name may be omitted, which will create a
       nameless variable.  This may be adequate for some applications. 
       
-      @param n A String containing the name of the variable to be
+      @param n A string containing the name of the variable to be
       created. 
 
       @memo The Sequence constructor.
       */
-    Sequence(const String &n = (char *)0);
+    Sequence(const string &n = "");
   /** The Sequence copy constructor. */
     Sequence(const Sequence &rhs);
     virtual ~Sequence();
@@ -378,7 +384,7 @@ public:
   /** Returns the level number. */
     virtual int level();
 
-    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
 
   /** Deserialize (read from the network) one instance of the current
@@ -411,14 +417,13 @@ public:
       @return TRUE on success, FALSE on failure, {\it or} the end of
       the Sequence. 
       */
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual BaseType *var(const String &name, bool exact_match = true);
-
-    virtual BaseType *var(const String &name, btp_stack &s);
+    virtual BaseType *var(const string &name, bool exact_match = true);
+    virtual BaseType *var(const string &name, btp_stack &s);
 
   /** Adds a variable to the Sequence.  Remember that if you wish to
       add a member to a nested Sequence, you must use the #add_var()#
@@ -438,7 +443,7 @@ public:
       Sequence. */
     BaseType *var(Pix p);
 
-    virtual void print_decl(ostream &os, String space = "    ",
+    virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
@@ -447,7 +452,7 @@ public:
 
       @see Sequence::print_all_vals
       */
-    virtual void print_val(ostream &os, String space = "",
+    virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
 
     
@@ -469,9 +474,9 @@ public:
       Sequence as well as its data.
       */
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds, 
-				String space = "", bool print_decl_p = true);
+				string space = "", bool print_decl_p = true);
 
-    virtual bool check_semantics(String &msg, bool all = false);
+    virtual bool check_semantics(string &msg, bool all = false);
 };
 
 #endif

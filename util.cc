@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.52  1999/04/29 02:29:37  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.51  1999/03/24 23:23:44  jimg
 // Removed the *_ops code. Those operations are now done by the template
 // classes and function(s) in Operators.h.
@@ -27,6 +30,13 @@
 //
 // Revision 1.47  1998/09/02 23:59:11  jimg
 // Removed func_date to avoid conflicts with a copy in ff-dods-2.15.
+//
+// Revision 1.46.6.2  1999/02/05 09:32:37  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code.
+//
+// Revision 1.46.6.1  1999/02/02 21:57:08  jimg
+// String to string version
 //
 // Revision 1.46  1998/04/07 22:12:49  jimg
 // Added prune_spaces(String) function. This can be used to remove leading
@@ -120,7 +130,7 @@
 // Added the *_ops() functions (moved from various class files).
 //
 // Revision 1.25  1996/07/15 20:30:35  jimg
-// Added __unused__ to rcsid to suppress warnings from g++ -Wall. Fixed a bug
+// Added not_used to rcsid to suppress warnings from g++ -Wall. Fixed a bug
 // in xdr_str(): a pointer to the decoded string was assigned to the formal
 // parameter BUF instead of the string value itself.
 //
@@ -251,15 +261,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.51 1999/03/24 23:23:44 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.52 1999/04/29 02:29:37 jimg Exp $"};
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
+#include <ctype.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -268,9 +278,15 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.51 1999/03/24 23:23:44 jimg 
 #include <dbmalloc.h>
 #endif
 
-#include <strstream.h>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
 #include <SLList.h>
-#include <String.h>
+#include <string>
+#include <vector>
+#include <algorithm>
 #include <Regex.h>
 
 #include "BaseType.h"
@@ -289,63 +305,48 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.51 1999/03/24 23:23:44 jimg 
 
 const char DODS_CE_PRX[]={"dods"};
 
-// Remove spaces from the start of a URL and fromthe start of any constraint
+// Remove spaces from the start of a URL and from the start of any constraint
 // expression it contains. 4/7/98 jhrg
 
-String 
-prune_spaces(String name)
+string 
+prune_spaces(string name)
 {
     // If the URL does not even have white space return.
-    if (!name.contains(RXwhite))
+    if (name.find_first_of(' ')==name.npos)
 	return name;
     else {
 	// Strip leading spaces from http://...
-	int i = 0;
-	while (name.at(i, 1) == " ")
-	    i++;
-	name = name.after(--i);
+	unsigned int i = name.find_first_not_of(' ');
+	name = name.substr(i);
 	
 	// Strip leading spaces from constraint part (following `?').
-	int j = i = name.index("?") + 1;
-	while (name.at(i, 1) == " ")
-	    i++;
-	--i;
-	name.at(j, name.after(i).length()) = name.after(i);
+	unsigned int j = name.find('?') + 1;
+	i = name.find_first_not_of(' ', j);
+	name.erase(j, i-j);
 
 	return name;
     }
 }
 
-static int
-char_cmp(const void *a, const void *b)
-{
-    return strcmp(*(char **)a, *(char **)b);
-}
-
 // Compare elements in a SLList of (BaseType *)s and return true if there are
-// no duplicate elements, otherwise return false. Uses the same number of
-// compares as qsort. (Guess why :-)
-//
-// NB: The elements of the array to be sorted are pointers to chars; the
-// compare function gets pointers to those elements, thus the cast to (const
-// char **) and the dereference to get (const char *) for strcmp's arguments.
+// no duplicate elements, otherwise return false.
 
 bool
-unique_names(SLList<BaseTypePtr> l, const char *var_name, 
-	     const char *type_name, String &msg)
+unique_names(SLList<BaseTypePtr> l, const string &var_name, 
+	     const string &type_name, string &msg)
 {
-    // copy the identifier names to an array of char
-    char **names = new char *[l.length()];
+    // copy the identifier names to a vector
+    vector<string> names(l.length());
 
     int nelem = 0;
     for (Pix p = l.first(); p; l.next(p)) {
 	assert(l(p));
-	names[nelem++] = strdup((const char *)l(p)->name());
+	names[nelem++] = l(p)->name();
 	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
     }
     
     // sort the array of names
-    qsort(names, nelem, sizeof(char *), char_cmp);
+    sort(names.begin(), names.end());
 	
 #ifdef DODS_DEBUG2
     cout << "unique:" << endl;
@@ -356,22 +357,15 @@ unique_names(SLList<BaseTypePtr> l, const char *var_name,
     // look for any instance of consecutive names that are ==
     int i;
     for (i = 1; i < nelem; ++i)
-	if (!strcmp(names[i-1], names[i])) {
+	if (names[i-1] == names[i]) {
 	    ostrstream oss;
 	    oss << "The variable `" << names[i] 
 		 << "' is used more than once in " << type_name << " `"
 		 << var_name << "'" << ends;
 	    msg = oss.str();
-	    oss.freeze(0);
-	    for (i = 0; i < nelem; i++)
-		free(names[i]);	// strdup uses malloc
-	    delete [] names;
+	    oss.rdbuf()->freeze(0);
 	    return false;
 	}
-
-    for (i = 0; i < nelem; i++)
-	free(names[i]);		// strdup uses malloc
-    delete [] names;
 
     return true;
 }
@@ -415,7 +409,7 @@ delete_xdrstdio(XDR *xdr)
 // defined as extern C since it is passed via function pointers to routines
 // in the xdr library where it is executed. This function is defined so
 // that Str and Url have an en/decoder which takes exactly two argumnets: an
-// XDR * and a String reference.
+// XDR * and a string reference.
 //
 // NB: this function is *not* used for arrays (i.e., it is not the function
 // referenced by BaseType's _xdr_coder field when the object is a Str or Url.
@@ -427,21 +421,18 @@ delete_xdrstdio(XDR *xdr)
 // otherwise. The formal parameter BUF is modified as a side effect.
 
 extern "C" bool_t
-xdr_str(XDR *xdrs, String &buf)
+xdr_str(XDR *xdrs, string &buf)
 {
     DBG(cerr << "In xdr_str, xdrs: " << xdrs << endl);
 
     switch (xdrs->x_op) {
-      case XDR_ENCODE: {	// BUF is a pointer to a (String *)
-	assert(buf);
-	
-	const char *out_tmp = (const char *)buf;
+      case XDR_ENCODE: {	// BUF is a pointer to a (string *)
+	const char *out_tmp = buf.c_str();
 
 	return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
       }
 
       case XDR_DECODE: {
-	assert(buf);
 	char *in_tmp = NULL;
 
 	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
@@ -460,36 +451,6 @@ xdr_str(XDR *xdrs, String &buf)
 	return 0;
     }
 }
-
-// Given a string, copy that string to a temporary file which will be removed
-// from the file system upon closing.
-//
-// Returns: A FILE * to the temporary file.
-
-#if 0
-FILE *
-text_to_temp(String text)
-{
-    char *c = tempnam(NULL, DODS_CE_PRX);
-    FILE *fp = fopen(c, "w+");	// create temp
-    unlink(c);			// make anonymous
-    if (!fp) {
-	cerr << "Could not create anonymous temporary file: "
-	    << strerror(errno) << endl;
-	return NULL;
-    }
-    free(c);			// tempnam uses malloc! 10/27/98 jhrg
-    fputs((const char *)text, fp); // dump information
-
-    if (fseek(fp, 0L, 0 == -1)) { // rewind in preparation for reading
-	cerr << "Could not rewind anonymous temporary file: "
-	    << strerror(errno) << endl;
-	return NULL;
-    }
-
-    return fp;
-}
-#endif
 
 const char *
 dods_root()
@@ -524,14 +485,14 @@ deflate_exists()
     int status = false;
     struct stat buf;
 
-    String deflate = (String)dods_root() + "/etc/deflate";
+    string deflate = (string)dods_root() + "/etc/deflate";
 
     // Check that the file exists...
     // First look for deflate using DODS_ROOT (compile-time constant subsumed
     // by an environment variable) and if that fails in the CWD which finds
     // the program when it is in the same directory as the dispatch script
     // and other server components. 2/11/98 jhrg
-    status = (stat((const char *)deflate, &buf) == 0)
+    status = (stat(deflate.c_str(), &buf) == 0)
 	|| (stat("./deflate", &buf) == 0);
 
     // and that it can be executed.
@@ -580,8 +541,9 @@ compressor(FILE *output, int &childpid)
 	// First try to run deflate using DODS_ROOT (the value read from the
 	// DODS_ROOT environment variable takes precedence over the value set
 	// at build time. If that fails, try the CWD.
-	String deflate = (String)dods_root() + "/etc/deflate";
-	(void) execl(deflate, "deflate", "-c",  "5", "-s", NULL);
+	string deflate = (string)dods_root() + "/etc/deflate";
+	(void) execl(deflate.c_str(), "deflate", "-c",  "5", "-s", NULL);
+	cerr << "Could not run " << deflate << endl;
 	(void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
 	cerr << "Warning: Could not start compressor!" << endl;
 	cerr << "defalte should be in DODS_ROOT/etc or in the CWD!" 
@@ -610,3 +572,9 @@ systime()
 
     return &TimStr[0];
 }
+
+void downcase(string &s) {
+  for(unsigned int i=0; i<s.length(); i++)
+    s[i] = tolower(s[i]);
+}
+

@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -13,6 +13,12 @@
 
 /* 
  * $Log: TestSequence.h,v $
+ * Revision 1.14  1999/04/29 02:29:32  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.13.6.1  1999/02/02 21:57:03  jimg
+ * String to string version
+ *
  * Revision 1.13  1998/01/13 04:15:44  jimg
  * Added a copy ctor since TestSequence has its own private data members. g++
  * 2.7.2.3 (?) running on Linux complained (apparently) about it being missing.
@@ -80,8 +86,8 @@
 #pragma interface
 #endif
 
-#include <fstream.h>
 #include "Sequence.h"
+#include <fstream>
 
 class TestSequence: public Sequence {
 private:
@@ -94,14 +100,14 @@ private:
     void _duplicate(const TestSequence &ts);
 
 public:
-    TestSequence(const String &n = (char *)0);
+    TestSequence(const string &n = "");
     TestSequence(const TestSequence &rhs);
 
     virtual ~TestSequence();
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 
     virtual int length();
 };

@@ -2,8 +2,8 @@
 /* -*- C++ -*- */
 
 /*
-  (c) COPYRIGHT URI/MIT 1994-1996
-  Please read the full copyright statement in the file COPYRIGH.  
+  (c) COPYRIGHT URI/MIT 1994-1999
+  Please read the full copyright statement in the file COPYRIGHT.
 
   Authors:
 	jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -28,6 +28,9 @@
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.21  1999/04/29 02:29:36  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.20  1999/03/24 23:30:55  jimg
  * Fixed some of the comments.
  *
@@ -41,6 +44,13 @@
  *
  * Revision 1.17  1998/10/21 16:45:50  jimg
  * Now includes RValue.h. Needed because expr.tab.h needs it.
+ *
+ * Revision 1.16.6.2  1999/02/05 09:32:36  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+ * math code. 
+ *
+ * Revision 1.16.6.1  1999/02/02 21:57:07  jimg
+ * String to string version
  *
  * Revision 1.16  1998/03/26 00:26:23  jimg
  * Added % to the set of characters that can start and ID
@@ -61,7 +71,7 @@
  * Changes for version 2.07
  *
  * Revision 1.10  1996/08/13 18:56:24  jimg
- * Added __unused__ to definition of char rcsid[].
+ * Added not_used to definition of char rcsid[].
  *
  * Revision 1.9  1996/05/31 23:31:03  jimg
  * Updated copyright notice.
@@ -105,12 +115,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.20 1999/03/24 23:30:55 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.lex,v 1.21 1999/04/29 02:29:36 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
 
-#include <String.h>
+#include <string>
 #include <SLList.h>
 
 #define YY_DECL int exprlex YY_PROTO(( void ))
@@ -268,10 +278,10 @@ store_id()
 static void
 store_str()
 {
-    String *s = new String(yytext);
-    int l = s->length();
+    string *s = new string(yytext);  // XXX memory leak?
+    unsigned int l = s->length();
 
-    *s = s->at(1, l - 2);	/* strip the \"'s from front and back */
+    *s = s->substr(1, l-2);  /* strip the \"'s from front and back */
 
     exprlval.val.type = dods_str_c;
     exprlval.val.v.s = s;

@@ -1,9 +1,7 @@
+// -*- C++ -*-
 
-
-// -*- c++ -*-
-
-// (c) COPRIGHT URI/MIT 1995-1996
-// Please first read the full copyright statement in the file COPYRIGH.  
+// (c) COPRIGHT URI/MIT 1995-1999
+// Please first read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
@@ -11,10 +9,16 @@
 // Interface for the CE Clause class.
 
 // $Log: Clause.h,v $
+// Revision 1.6  1999/04/29 02:29:27  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.5  1998/10/21 16:35:22  jimg
 // Fixed doc++ comments.
 // Changed member names so they start with an underscore - makes the member
 // functions easier to read.
+//
+// Revision 1.4.6.1  1999/02/02 21:56:56  jimg
+// String to string version
 //
 // Revision 1.4  1998/01/12 14:27:56  tom
 // Second pass at class documentation.
@@ -114,10 +118,10 @@ public:
     bool value_clause();
 
     /// Evaluate a clause which returns a boolean value
-    bool value(const String &dataset, DDS &dds);
+    bool value(const string &dataset, DDS &dds);
 
     /// Evaluate a clause that returns a value via a BaseType pointer.
-    bool value(const String &dataset, DDS &dds, BaseType **value);
+    bool value(const string &dataset, DDS &dds, BaseType **value);
 };
 	
 #endif // clause_h

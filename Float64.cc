@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.37  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.36  1999/04/01 22:50:02  jimg
 // Switched to DODS type names and fixed float-vs-double bungle
 //
@@ -19,6 +22,13 @@
 // Revision 1.34  1999/03/19 17:40:52  jimg
 // Added a call to ios::precision in read(). This sets the precision to 15. The
 // default value, 6, was rounding some values.
+//
+// Revision 1.33.6.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.33.6.1  1999/02/02 21:56:58  jimg
+// String to string version
 //
 // Revision 1.33  1998/03/19 23:31:22  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
@@ -199,7 +209,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.36 1999/04/01 22:50:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Float64.cc,v 1.37 1999/04/29 02:29:29 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -218,7 +228,7 @@ static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.36 1999/04/01 22:50:02 ji
 #include "trace_new.h"
 #endif
 
-Float64::Float64(const String &n) 
+Float64::Float64(const string &n) 
 : BaseType(n, dods_float64_c, (xdrproc_t)XDR_FLOAT64)
 {
 }
@@ -230,8 +240,8 @@ Float64::width()
 }
 
 bool
-Float64::serialize(const String &dataset, DDS &dds, XDR *sink, 
-		   bool ce_eval = true)
+Float64::serialize(const string &dataset, DDS &dds, XDR *sink, 
+		   bool ce_eval)
 {
     int error;
 
@@ -279,7 +289,7 @@ Float64::buf2val(void **val)
 }
 
 void 
-Float64::print_val(ostream &os, String space, bool print_decl_p)
+Float64::print_val(ostream &os, string space, bool print_decl_p)
 {
     os.precision(DODS_DBL_DIG);
 
@@ -292,7 +302,7 @@ Float64::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Float64::ops(BaseType *b, int op, const String &dataset)
+Float64::ops(BaseType *b, int op, const string &dataset)
 {
     int error = 0;
 

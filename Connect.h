@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please first read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please first read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
@@ -32,12 +32,18 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.36  1999/04/29 02:29:28  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.35  1999/02/18 19:22:38  jimg
  * Added the field _accept_types and two accessor functions. See Connect.cc and
  * the documentation comments for more information.
  *
  * Revision 1.34  1999/01/21 20:42:01  tom
  * Fixed comment formatting problems for doc++
+ *
+ * Revision 1.33.4.1  1999/02/02 21:56:56  jimg
+ * String to string version
  *
  * Revision 1.33  1998/06/04 06:31:33  jimg
  * Added two new member functions to get/set the www_errors_to_stderr property.
@@ -208,7 +214,7 @@
 #include <netinet/in.h>
 #include <rpc/xdr.h>
 
-#include <String.h>
+#include <string>
 #include <SLList.h>
 
 #include <WWWLib.h>			      /* Global Library Include file */
@@ -330,7 +336,7 @@ private:
     
     ObjectType _type;		// What type of object is in the stream?
     EncodingType _encoding;	// What type of encoding is used?
-    String _server;
+    string _server;
 
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
@@ -338,10 +344,10 @@ private:
 
     Gui *_gui;			// Used for progress, error display.
 
-    String _URL;		// URL to remote dataset (minus CE)
-    String _proj;		// Projection part of initial CE.
-    String _sel;		// Selection of initial CE
-    String _accept_types;	// Comma separated list of types understood
+    string _URL;		// URL to remote dataset (minus CE)
+    string _proj;		// Projection part of initial CE.
+    string _sel;		// Selection of initial CE
+    string _accept_types;	// Comma separated list of types understood
 
     HTParentAnchor *_anchor;
     struct timeval *_tv;	// Timeout on socket
@@ -365,7 +371,7 @@ private:
 
       @memo Read a URL.
       */
-    bool read_url(String &url, FILE *stream);
+    bool read_url(string &url, FILE *stream);
 
   /* Separate the text DDS from the binary data in the data object (which
       is a bastardized multipart MIME document). The returned FILE * points
@@ -430,7 +436,7 @@ public:
       gzip.
 
       @memo Create an instance of Connect. */
-    Connect(String name, bool www_verbose_errors = false,
+    Connect(string name, bool www_verbose_errors = false,
 	    bool accept_deflate = true); 
 
   /** The Connect copy construtor. */
@@ -460,7 +466,7 @@ public:
 	@see set_accepted_types
 	@return A string listing the types this client declares to servers it
 	can understand. */
-    String get_accept_types();
+    string get_accept_types();
 
     /** Sets the list of accepted types. This string is meant to list all of
 	the DODS datatypes that the client can grok and is sent to
@@ -479,7 +485,7 @@ public:
 	NB: By default, the value `All' is used.
 
 	@param types The string listing datatypes understood by this client. */
-    void set_accept_types(const String &types);
+    void set_accept_types(const string &types);
 
   /** Fetch the contents of the indicated URL and put its contents
       into an output file.  A pointer to this file can be retrieved
@@ -495,14 +501,14 @@ public:
       @memo Dereference a URL.  
       @return Returns false if an error is detected, otherwise returns
       true.  
-      @param url A String containing the URL to be dereferenced.  The
+      @param url A string containing the URL to be dereferenced.  The
       data referred to by this URL will wind up available through a
       file pointer retrieved from the #output()# function.
       @param async If true, the read operation will proceed
       asynchronously.  In other words, the function may return before
       the read is complete.
       @see Connect::output */
-    bool fetch_url(String &url, bool async = false);
+    bool fetch_url(string &url, bool async = false);
 
   /** Returns a file pointer which can be used to read the data
       fetched from a URL.
@@ -538,7 +544,7 @@ public:
       file, otherwise returns FALSE.  */
     bool is_local();
 
-  /** Return the Connect object's URL in a String.  The URL was set by
+  /** Return the Connect object's URL in a string.  The URL was set by
       the class constructor, and may not be reset.  If you want to
       open another URL, you must create another Connect object.  There
       is a Connections class created to handle the management of
@@ -546,7 +552,7 @@ public:
 
       @memo Get the object's URL.
       @see Connections
-      @return A String containing the URL of the data to which the
+      @return A string containing the URL of the data to which the
       Connect object refers.  If the object refers to local data,
       the function returns the null string.  
       @param CE If TRUE, the returned URL will include any constraint
@@ -554,7 +560,7 @@ public:
       #?#).  If FALSE, any constraint expression will be removed from
       the URL.  The default is TRUE.
       */
-    String URL(bool CE = true);
+    string URL(bool CE = true);
 
   /** Return the constraint expression (CE) part of the Connect URL. Note
       that this CE is supplied as part of the URL passed to the
@@ -562,9 +568,9 @@ public:
       #request_data()# function.
 
       @memo Get the Connect's constraint expression.
-      @return A String containing the constraint expression (if any)
+      @return A string containing the constraint expression (if any)
       submitted to the Connect object's constructor.  */
-    String CE();
+    string CE();
 
   /** During the parse of the message headers returned from the
       dereferenced URL, the object type is set. Use this function to
@@ -597,9 +603,9 @@ public:
       */
     EncodingType encoding();
 
-  /** Returns a String containing the version of DODS used by the
+  /** Returns a string containing the version of DODS used by the
       server. */
-    String server_version();
+    string server_version();
 
   /** All DODS datasets define a Data Attribute Structure (DAS), to
       hold a variety of information about the variables in a
@@ -666,7 +672,7 @@ public:
       future versions of the DODS software.  It currently defaults to
       the only possible working value, ``das''.
       */
-    bool request_das(bool gui = false,  const String &ext = "das");
+    bool request_das(bool gui = false,  const string &ext = "das");
 
   /** Reads the DDS corresponding to the dataset in the Connect
       object's URL. 
@@ -681,7 +687,7 @@ public:
       future versions of the DODS software.  It currently defaults to
       the only possible working value, ``dds''.
       */
-    bool request_dds(bool gui = false, const String &ext = "dds");
+    bool request_dds(bool gui = false, const string &ext = "dds");
 
   /** Reads data from the Connect object's server.  This function sets
       up the BaseType variables in a DDS, and sends a request using
@@ -713,8 +719,8 @@ public:
       the only possible working value, ``dods''.
       @see DataDDS
       @see Gui */
-    DDS *request_data(String expr, bool gui = true, bool async = false, 
-		      const String &ext = "dods");
+    DDS *request_data(string expr, bool gui = true, bool async = false, 
+		      const string &ext = "dods");
 
   /** This function reads cached data from a disk file.
 

@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -12,8 +12,14 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.9  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.8  1999/01/21 02:55:54  jimg
 // Added include of stdio.h for FILE *.
+//
+// Revision 1.7.6.1  1999/02/02 21:56:58  jimg
+// String to string version
 //
 // Revision 1.7  1998/01/14 22:55:03  tom
 // First draft of doc++ class documentation.
@@ -125,7 +131,7 @@ enum ProgramType {
 class Error {
 private:
     ErrorCode _error_code;
-    String _error_message;
+    string _error_message;
     ProgramType _program_type;
     char *_program;
 
@@ -143,9 +149,9 @@ public:
       */
   //@{
   ///
-    Error(ErrorCode ec, String msg);
+    Error(ErrorCode ec, string msg);
   ///
-    Error(ErrorCode ec, String msg, ProgramType pt, char *pgm);
+    Error(ErrorCode ec, string msg, ProgramType pt, char *pgm);
   ///
     Error();
   //@}
@@ -209,7 +215,7 @@ public:
       function simply returns a copy of the current message string.
       @return A copy of the Error object's message string. 
       */
-    String error_message(String msg = "");
+    string error_message(string msg = "");
     
     
   /** Either display the error message in a dialog box and offer the
@@ -263,7 +269,7 @@ public:
       process on the client.
       @see Gui
       */
-    String correct_error(Gui *gui);
+    string correct_error(Gui *gui);
 };
 
 #endif // _error_h

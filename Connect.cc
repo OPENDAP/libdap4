@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1997
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.73  1999/04/29 02:29:27  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.72  1999/02/23 01:32:59  jimg
 // Removed more of the code in process_data. Because of fixes in the scanner,
 // this code no longer needs to rewind after parsing the DDS of a data
@@ -16,20 +19,22 @@
 // day...
 //
 // Revision 1.71  1999/02/18 19:21:40  jimg
-// Added support for the DODS experimental MIME header XDODS-Accept-Types. This
-// will be used to send a lists of `accepted types' from the client to a server.
-// The list tells a server which datatypes the requesting client can understand.
-// This information may be used by both the DDS and DataDDS objects to trigger
-// translations from one type to another.
+// Added support for the DODS experimental MIME header XDODS-Accept-Types.
+// This will be used to send a lists of `accepted types' from the client to a
+// server. The list tells a server which datatypes the requesting client can
+// understand. This information may be used by both the DDS and DataDDS
+// objects to trigger translations from one type to another.
 //
 // Revision 1.70  1999/01/15 17:07:01  jimg
-// Removed use of the move_dds() member function. The DDS parser now recognizes
-// the `Data:' separator string as marking the end of the DDS part of a data
-// document. This means that Connect no longer needs to copy the DDS part of the
-// data document to a separate (temporary) text file before parsing it.
+// Removed use of the move_dds() member function. The DDS parser now
+// recognizes the `Data:' separator string as marking the end of the DDS part
+// of a data document. This means that Connect no longer needs to copy the
+// DDS part of the data document to a separate (temporary) text file before
+// parsing it.
 //
 // Revision 1.69  1998/12/16 19:10:53  jimg
-// Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
+// Added support for XDODS-Server MIME header. This fixes a problem where our
+// use of Server clashed with Java
 //
 // Revision 1.68  1998/11/10 01:08:34  jimg
 // Patched memory leaks found with Purify.
@@ -37,12 +42,18 @@
 // Revision 1.67  1998/09/08 22:27:11  jimg
 // Removed PERF macro.
 //
+// Revision 1.66.4.2  1999/02/05 09:32:33  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code.
+//
+// Revision 1.66.4.1  1999/02/02 21:56:56  jimg
+// String to string version
+//
 // Revision 1.66  1998/06/04 06:29:11  jimg
 // Added two new member functions to set/get the new www_errors_to_stderr
-// property. This controls whether www errors (like host not found) are reported
-// on stderr in addition to the Error object. The default is to NOT report them
-// to stderr.
-// WWW errors are now recorded in the Error object.
+// property. This controls whether www errors (like host not found) are
+// reported on stderr in addition to the Error object. The default is to NOT
+// report them to stderr. WWW errors are now recorded in the Error object.
 //
 // Revision 1.65  1998/04/07 22:14:31  jimg
 // Added a call to prune_spaces to the default ctor. Removing spaces prevents
@@ -401,7 +412,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.72 1999/02/23 01:32:59 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.73 1999/04/29 02:29:27 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -422,9 +433,12 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.72 1999/02/23 01:32:59 jim
 #include <expect.h>
 #endif
 
-#include <strstream.h>
-#include <fstream.h>
-#include <stdiostream.h>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
+#include <fstream>
 
 #include "debug.h"
 #include "DataDDS.h"
@@ -477,7 +491,7 @@ SetSignal(void)
 // This function is registered to handle the result of the request
 
 int 
-http_terminate_handler (HTRequest * request, HTResponse * /*response*/,
+http_terminate_handler(HTRequest * request, HTResponse * /*response*/,
 			void * /*param*/, int status) 
 {
     if (status != HT_LOADED) {
@@ -495,18 +509,18 @@ int
 timeout_handler(HTRequest *request)
 {
     Connect *me = (Connect *)HTRequest_context(request);
-    String cmd;
+    string cmd;
 
     if (!me->gui()->progress_visible())
-	cmd = (String)"progress popup \"Request timeout...\"\r";
+	cmd = (string)"progress popup \"Request timeout...\"\r";
     else
-	cmd = (String)"progress text \"Request timeout...\"\r";
+	cmd = (string)"progress text \"Request timeout...\"\r";
 	
     me->gui()->progress_visible(me->gui()->command(cmd));
 
     if (me->gui()->progress_visible()) {
 	sleep(3);
-	cmd = (String)"progress popdown\r";
+	cmd = (string)"progress popdown\r";
 	me->gui()->command(cmd);
 	me->gui()->progress_visible(false);
     }
@@ -529,15 +543,15 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
     }
 
     Connect *me = (Connect *)HTRequest_context(request);
-    String cmd;
+    string cmd;
 
     switch (op) {
       case HT_PROG_DNS:
 	if (!me->gui()->progress_visible())
-	    cmd = (String)"progress popup \"Looking up " + (char *)input 
+	    cmd = (string)"progress popup \"Looking up " + (char *)input 
 	          + "\"\r";
 	else
-	    cmd = (String)"progress text \"Looking up " + (char *)input 
+	    cmd = (string)"progress text \"Looking up " + (char *)input 
 	          + "\"\r";
 	
 	me->gui()->progress_visible(me->gui()->command(cmd));
@@ -545,27 +559,27 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 
       case HT_PROG_CONNECT:
 	if (!me->gui()->progress_visible())
-	    cmd = (String)"progress popup \"Contacting host...\"\r";
+	    cmd = (string)"progress popup \"Contacting host...\"\r";
 	else
-	    cmd = (String)"progress text \"Contacting host...\"\r";
+	    cmd = (string)"progress text \"Contacting host...\"\r";
 	
 	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       case HT_PROG_ACCEPT:
 	if (!me->gui()->progress_visible())
-	    cmd = (String)"progress popup \"Waiting for connection...\"\r";
+	    cmd = (string)"progress popup \"Waiting for connection...\"\r";
 	else
-	    cmd = (String)"progress text \"Waiting for connection...\"\r";
+	    cmd = (string)"progress text \"Waiting for connection...\"\r";
 	
 	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       case HT_PROG_READ: {
 	  if (!me->gui()->progress_visible())
-	      cmd = (String)"progress popup \"Reading...\"\r";
+	      cmd = (string)"progress popup \"Reading...\"\r";
 	  else
-	      cmd = (String)"progress text \"Reading...\"\r";
+	      cmd = (string)"progress text \"Reading...\"\r";
 	  me->gui()->progress_visible(me->gui()->command(cmd));
 	  
 	  if (!me->gui()->progress_visible()) // Bail if window won't popup
@@ -582,10 +596,10 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 	      ostrstream cmd_s;
 	      cmd_s << "progress bar " << pro << "\r" << ends;
 	      (void)me->gui()->command(cmd_s.str());
-	      cmd_s.freeze(0);
+	      cmd_s.rdbuf()->freeze(0);
 	  }
 	  else {
-	      cmd = (String)"progress bar -1\r";
+	      cmd = (string)"progress bar -1\r";
 	      (void)me->gui()->command(cmd);
 	  }
 	  
@@ -597,16 +611,16 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 	break;
 
       case HT_PROG_DONE:
-	cmd = (String)"progress popdown\r";
+	cmd = (string)"progress popdown\r";
 	me->gui()->command(cmd);
 	me->gui()->progress_visible(false);
         break;
 
       case HT_PROG_WAIT:
 	if (!me->gui()->progress_visible())
-	    cmd = (String)"progress popup \"Waiting for free socket...\"\r";
+	    cmd = (string)"progress popup \"Waiting for free socket...\"\r";
 	else
-	    cmd = (String)"progress text \"Waiting for free socket...\"\r";
+	    cmd = (string)"progress text \"Waiting for free socket...\"\r";
 	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
@@ -632,8 +646,8 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
 
     // Put the username in reply using HTAlert_setReplyMessage; use
     // _setReplySecret for the password.
-    String cmd = "password\r";
-    String response;
+    string cmd = "password\r";
+    string response;
 
     if (!me->gui()->response(cmd, response))
 	return NO;
@@ -641,15 +655,19 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
     // Extract two words from RESPONSE; #1 is the username and #2 is the
     // password. Either may be missing, in which case return NO.
 
-    String words[2];
-    if (split(response, words, 2, RXwhite) != 2) {
+    string words[2];
+    unsigned int white1 = response.find_first_of(" \t\r\n");
+    unsigned int white2 = response.find_first_not_of(" \t\r\n", white1+1);
+    words[0] = response.substr(0, white1);
+    words[1] = response.substr(white2);
+    if (response.find_first_of(" \t\r\n", white2) != response.npos) {
 	DBG2(cerr << "Wrong number of words in response: " << response \
 	     << endl);
 	return NO;
     }
 
-    HTAlert_setReplyMessage(reply, (const char *)words[0]);
-    HTAlert_setReplySecret(reply, (const char *)words[1]);
+    HTAlert_setReplyMessage(reply, words[0].c_str());
+    HTAlert_setReplySecret(reply, words[1].c_str());
 
     return YES;
 }
@@ -743,9 +761,9 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
     }
 
     if (msg) {
-	String command = (String)"dialog \"" + (char *)HTChunk_data(msg) 
+	string command = (string)"dialog \"" + (char *)HTChunk_data(msg) 
 	    + "\" error\r";
-	String response;	// Not used
+	string response;	// Not used
 	Connect *me = (Connect *)HTRequest_context(request);
 
 	if (me->gui()->show_gui()) {
@@ -762,7 +780,7 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 	    // Load into the error object here. 
 	    Error &e = me->error();
 	    e.error_code(unknown_error);
-	    String s = (char *)HTChunk_data(msg);
+	    string s = (char *)HTChunk_data(msg);
 	    e.error_message(s);
 	}
 
@@ -773,7 +791,7 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 }
 
 static ObjectType
-get_type(String value)
+get_type(string value)
 {
     if (value == "dods_das")
 	return dods_das;
@@ -795,9 +813,9 @@ int
 description_handler(HTRequest *request, HTResponse */*response*/, 
 		    const char *token, const char *val)
 {
-    String field = token, value = val;
-    field.downcase();
-    value.downcase();
+    string field = token, value = val;
+    downcase(field);
+    downcase(field);
     
     if (field == "content-description") {
 	DBG(cerr << "Found content-description header" << endl);
@@ -816,9 +834,9 @@ int
 server_handler(HTRequest *request, HTResponse */*response*/, 
 	       const char *token, const char *val)
 {
-    String field = token, value = val;
-    field.downcase();
-    value.downcase();
+    string field = token, value = val;
+    downcase(field);
+    downcase(value);
     
     if (field == "xdods-server") {
 	DBG(cerr << "Found dods server header: " << value << endl);
@@ -845,9 +863,9 @@ server_handler(HTRequest *request, HTResponse */*response*/,
 int 
 header_handler(HTRequest *, HTResponse *, const char *token, const char *val)
 {
-    String field = token, value = val;
-    field.downcase();
-    value.downcase();
+    string field = token, value = val;
+    downcase(field);
+    downcase(value);
     
     cerr << "Unknown header: " << token << ": " << value <<endl;
 
@@ -865,11 +883,11 @@ xdods_accept_types_header_gen(HTRequest *pReq, HTStream *target)
 {
     Connect *me = (Connect *)HTRequest_context(pReq);
 
-    String types = "XDODS-Accept-Types: " + me->get_accept_types() + "\r\n";
+    string types = "XDODS-Accept-Types: " + me->get_accept_types() + "\r\n";
     if (WWWTRACE) 
-	HTTrace("DODS..... '%s'.\n", types.chars());
+	HTTrace("DODS..... '%s'.\n", types.c_str());
     
-    PUTBLOCK(types.chars(), types.length());
+    PUTBLOCK(types.c_str(), types.length());
 
     return HT_OK;
 }
@@ -882,19 +900,19 @@ xdods_accept_types_header_gen(HTRequest *pReq, HTStream *target)
 void
 Connect::parse_mime(FILE *data_source)
 {    
-    istdiostream is(data_source);
+    ifstream is(fileno(data_source));
     
     char line[256];
 
     is.getline(line, 256);
     
-    while ((String)line != "") {
+    while ((string)line != "") {
 	char h[256], v[256];
 	sscanf(line, "%s %s\n", h, v);
-	String header = h;
-	String value = v;
-	header.downcase();
-	value.downcase();
+	string header = h;
+	string value = v;
+	downcase(header);
+	downcase(value);
 
 	if (header == "content-description:") {
 	    DBG(cout << header << ": " << value << endl);
@@ -915,7 +933,6 @@ Connect::parse_mime(FILE *data_source)
 
 void
 Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
-		      //		      String xdods_accept_types)
 {
     // Initialize various parts of the library. This is in lieu of using one
     // of the profiles in HTProfil.c. 02/09/98 jhrg
@@ -1006,7 +1023,7 @@ Connect::clone(const Connect &src)
 	_error = src._error;
 
 	// Initialize the anchor object.
-	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
+	char *ref = HTParse(_URL.c_str(), (char *)0, PARSE_ALL);
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
 	HT_FREE(ref);
 
@@ -1087,7 +1104,7 @@ Connect::move_dds(FILE *in)
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
 bool
-Connect::read_url(String &url, FILE *stream)
+Connect::read_url(string &url, FILE *stream)
 {
     assert(stream);
 
@@ -1109,7 +1126,7 @@ Connect::read_url(String &url, FILE *stream)
 
     HTRequest_setOutputStream(_request, HTFWriter_new(_request, stream, YES));
 
-    status = HTLoadRelative((const char *)url, _anchor, _request);
+    status = HTLoadRelative(url.c_str(), _anchor, _request);
 
     if (status != YES) {
 	if (SHOW_MSG) cerr << "Can't access resource" << endl;
@@ -1145,25 +1162,28 @@ Connect::Connect()
 
 // public mfuncs
 
-Connect::Connect(String name, bool www_verbose_errors = false,
-		 bool accept_deflate = true) : _www_errors_to_stderr(false)
+Connect::Connect(string name, bool www_verbose_errors,
+		 bool accept_deflate) : _www_errors_to_stderr(false)
 {
     _gui = new Gui;
     // Unless a client says otherwise, assume we can process all types.
     _accept_types = "All";
     name = prune_spaces(name);
-    char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
+    char *access_ref = HTParse(name.c_str(), NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
        	if (!_conv) {
 	    www_lib_init(www_verbose_errors, accept_deflate);
 	}
-	if (name.contains("?")) {
-	    _URL = name.before("?");
-	    String expr = name.after("?");
-	    if (expr.contains("&")) {
-		_proj = expr.before("&");
-		_sel = expr.after(_proj);
+	unsigned int dotpos = name.find('?');
+	if (dotpos!=name.npos) {
+	    _URL = name.substr(0, dotpos);
+	    string expr = name.substr(dotpos+1);
+
+	    dotpos = expr.find('&');
+	    if (dotpos!=expr.npos) {
+		_proj = expr.substr(0, dotpos);
+		_sel = expr.substr(dotpos); // XXX includes '&'
 	    }
 	    else {
 		_proj = expr;
@@ -1175,7 +1195,6 @@ Connect::Connect(String name, bool www_verbose_errors = false,
 	    _proj = "";
 	    _sel = "";
 	}
-
 	_local = false;
 
 	_tv = new timeval;
@@ -1188,7 +1207,7 @@ Connect::Connect(String name, bool www_verbose_errors = false,
 	// Assume servers that don't announce themselves are old servers.
 	_server = "dods/0.0";
 
-	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
+	char *ref = HTParse(_URL.c_str(), (char *)0, PARSE_ALL);
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
 	HT_FREE(ref);
     }
@@ -1247,14 +1266,14 @@ Connect::get_www_errors_to_stderr()
     return _www_errors_to_stderr;
 }
 
-String 
+string 
 Connect::get_accept_types()
 {
     return _accept_types;
 }
 
 void
-Connect::set_accept_types(const String &types)
+Connect::set_accept_types(const string &types)
 {
     _accept_types = types;
 }
@@ -1268,7 +1287,7 @@ Connect::set_accept_types(const String &types)
 // async operation was actually synchronous.
 
 bool
-Connect::fetch_url(String &url, bool)
+Connect::fetch_url(string &url, bool)
 {
     _encoding = unknown_enc;
     _type = unknown_type;
@@ -1328,7 +1347,7 @@ Connect::encoding()
     return _encoding;
 }
 
-String
+string
 Connect::server_version()
 {
     return _server;
@@ -1337,15 +1356,15 @@ Connect::server_version()
 // Added EXT which defaults to "das". jhrg 3/7/95
 
 bool
-Connect::request_das(bool gui_p = false, const String &ext = "das")
+Connect::request_das(bool gui_p, const string &ext)
 {
     (void)gui()->show_gui(gui_p);
 
-    String das_url = _URL + "." + ext;
+    string das_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
 	das_url = das_url + "?" + _proj + _sel;
     bool status = false;
-    String value;
+    string value;
 
     status = fetch_url(das_url);
     if (!status)
@@ -1353,7 +1372,7 @@ Connect::request_das(bool gui_p = false, const String &ext = "das")
 
     switch (type()) {
       case dods_error: {
-	  String correction;
+	  string correction;
 	  if (!_error.parse(_output)) {
 	      cerr << "Could not parse error object" << endl;
 	      status = false;
@@ -1382,11 +1401,11 @@ exit:
 // Added EXT which deafults to "dds". jhrg 3/7/95
 
 bool
-Connect::request_dds(bool gui_p = false, const String &ext = "dds")
+Connect::request_dds(bool gui_p, const string &ext)
 {
     (void)gui()->show_gui(gui_p);
 
-    String dds_url = _URL + "." + ext;
+    string dds_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
 	dds_url = dds_url + "?" + _proj + _sel;
     bool status = false;
@@ -1397,7 +1416,7 @@ Connect::request_dds(bool gui_p = false, const String &ext = "dds")
     
     switch (type()) {
       case dods_error: {
-	  String correction;
+	  string correction;
 	  if (!_error.parse(_output)) {
 	      cerr << "Could not parse error object" << endl;
 	      status = false;
@@ -1428,7 +1447,7 @@ exit:
 // This is a private mfunc.
 
 DDS *
-Connect::process_data(bool async = false)
+Connect::process_data(bool async)
 {
     switch (type()) {
       case dods_error: {
@@ -1524,22 +1543,23 @@ Connect::process_data(bool async = false)
 // M sequences must follow the N-M other variables.
 
 DDS *
-Connect::request_data(String expr, bool gui_p = true, 
-		      bool async = false, const String &ext = "dods")
+Connect::request_data(string expr, bool gui_p, 
+		      bool async, const string &ext)
 {
     (void)gui()->show_gui(gui_p);
 
-    String proj, sel;
-    if (expr.contains("&")) {
-	proj = expr.before("&");
-	sel = expr.after(proj);
+    string proj, sel;
+    unsigned int dotpos = expr.find('&');
+    if (dotpos != expr.npos) {
+	proj = expr.substr(0, dotpos);
+	sel = expr.substr(dotpos);
     }
     else {
 	proj = expr;
 	sel = "";
     }
 
-    String data_url = _URL + "." + ext + "?" + _proj + proj + _sel + sel;
+    string data_url = _URL + "." + ext + "?" + _proj + proj + _sel + sel;
     bool status = fetch_url(data_url, async);
 	
     if (!status) {
@@ -1551,7 +1571,7 @@ Connect::request_data(String expr, bool gui_p = true,
 }
 
 DDS *
-Connect::read_data(FILE *data_source, bool gui_p = true, bool async = false)
+Connect::read_data(FILE *data_source, bool gui_p, bool async)
 {
     (void)gui()->show_gui(gui_p);
     
@@ -1575,8 +1595,8 @@ Connect::is_local()
     return _local;
 }
 
-String
-Connect::URL(bool ce = true)
+string
+Connect::URL(bool ce)
 {
     if (_local) {
 	cerr << "URL(): This call is only valid for a remote connection."
@@ -1590,7 +1610,7 @@ Connect::URL(bool ce = true)
 	return _URL;
 }
 
-String 
+string 
 Connect::CE()
 {
     if (_local) {

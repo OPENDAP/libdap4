@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -13,8 +13,18 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
+// Revision 1.21  1999/04/29 02:29:35  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.20  1999/03/24 23:34:15  jimg
 // Added support for the new Int16, UInt16 and Float32 types.
+//
+// Revision 1.19.14.2  1999/02/05 09:32:35  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.19.14.1  1999/02/02 21:57:06  jimg
+// String to string version
 //
 // Revision 1.19  1997/05/13 23:37:44  jimg
 // Changed options and command `format' so that das-test is similar to
@@ -95,10 +105,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das-test.cc,v 1.20 1999/03/24 23:34:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das-test.cc,v 1.21 1999/04/29 02:29:35 jimg Exp $"};
 
-#include <iostream.h>
-#include <String.h>
+#include <iostream>
+#include <string>
 #include <Pix.h>
 #include <GetOpt.h>
 
@@ -124,7 +134,7 @@ const char *prompt = "das-test: ";
 const char *version = "version 1.18";
 
 void
-usage(String name)
+usage(string name)
 {
     cerr << "usage: " << name 
 	 << " [-v] [-s] [-d] [-c] [-p] {< in-file > out-file}" << endl
@@ -193,7 +203,7 @@ test_scanner()
 {
     int tok;
 
-    cout << prompt;		// first prompt
+    cout << prompt << flush;		// first prompt
     while ((tok = daslex())) {
 	switch (tok) {
 	  case ATTR:
@@ -260,7 +270,7 @@ test_scanner()
 	  default:
 	    cout << "Error: Unrecognized input" << endl;
 	}
-	cout << prompt;		// print prompt after output
+	cout << prompt << flush;		// print prompt after output
     }
 }
 
@@ -283,7 +293,7 @@ plain_driver(DAS &das)
     AttrTable *atp;
     AttrTable *dummy;
 
-    String name = "test";
+    string name = "test";
     atp = new AttrTable;
     load_attr_table_ptr(atp);
     dummy = das.get_table(name);
@@ -322,7 +332,7 @@ load_attr_table(AttrTable at)
 	cout << endl;
     }
 
-    String name = "month";
+    string name = "month";
     cout << "Using String: " << at.get_type(name) << " " 
 	 << at.get_attr(name, 0) << " " << at.get_attr(name, 1) << endl;
     cout << "Using char *: " << at.get_type("month") << " " 
@@ -374,7 +384,7 @@ load_attr_table_ptr(AttrTable *at)
 	cout << endl;
     }
 
-    String name = "month";
+    string name = "month";
     cout << "Using String: " << at->get_type(name) << " " 
 	 << at->get_attr(name, 0) << " " << at->get_attr(name, 1) << endl;
     cout << "Using char *: " << at->get_type("month") << " " 

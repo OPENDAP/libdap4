@@ -1,7 +1,7 @@
 
 /* 
-   (c) COPYRIGHT URI/MIT 1994-1996
-   Please read the full copyright statement in the file COPYRIGH.  
+   (c) COPYRIGHT URI/MIT 1994-1996,1998,1999
+   Please read the full copyright statement in the file COPYRIGHT.
 
    Authors:
         jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -19,6 +19,12 @@
 
 /* 
  * $Log: Error.lex,v $
+ * Revision 1.5  1999/04/29 02:29:29  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.4.2.1  1999/02/05 09:32:34  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined math code
+ *
  * Revision 1.4  1998/08/06 16:14:47  jimg
  * Fixed the cvs log. It cannot have the $ Log $ and the comment thing on the
  * same line...
@@ -27,7 +33,7 @@
  * Added define of YY_NO_UNPUT to suppress creation of that function.
  *
  * Revision 1.2  1996/08/13 18:18:17  jimg
- * Added __unused__ to rcsid definition.
+ * Added not_used to rcsid definition.
  * Added include of assert.h.
  *
  * Revision 1.1  1996/05/31 23:18:16  jimg
@@ -39,7 +45,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.lex,v 1.4 1998/08/06 16:14:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.lex,v 1.5 1999/04/29 02:29:29 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>

@@ -24,7 +24,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define alloca __builtin_alloca
 #elif defined(sparc)
 #include <alloca.h>
-extern "C" void *__builtin_alloca(...);
 #elif defined(_AIX)
 #pragma alloca
 #else
@@ -34,6 +33,8 @@ char *alloca ();
 #include <unistd.h>
 #include <string.h>		// Added these. 10/20/98 jhrg
 #include <GetOpt.h>
+#include <stdlib.h>
+#include <string.h>
 
 char* GetOpt::nextchar = 0;
 int GetOpt::first_nonopt = 0;

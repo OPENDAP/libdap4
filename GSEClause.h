@@ -10,6 +10,9 @@
 // The Grid Selection Expression Clause class.
 
 // $Log: GSEClause.h,v $
+// Revision 1.3  1999/04/29 02:29:30  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.2  1999/03/24 23:37:15  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
@@ -24,7 +27,7 @@
 #pragma interface
 #endif
 
-#include "String.h"
+#include <string>
 
 #include "BaseType.h"
 #include "Array.h"
@@ -58,7 +61,7 @@ private:
     relop _op1, _op2;
     int _start;
     int _stop;
-    String _expression;		// Original expression before parsing
+    string _expression;		// Original expression before parsing
 
     GSEClause();		// Hidden default constructor.
 
@@ -69,11 +72,11 @@ public:
     /** @name Constructors */
     //@{
     /** Create an instance using discrete parameters. */
-    GSEClause(Grid *grid, const String &map, const double value,
+    GSEClause(Grid *grid, const string &map, const double value,
 	      const relop op);
 
     /** Create an instance using discrete parameters. */
-    GSEClause(Grid *grid, const String &map, const double value1,
+    GSEClause(Grid *grid, const string &map, const double value1,
 	      const relop op1, const double value2, const relop op2);
     //@}
     
@@ -89,7 +92,7 @@ public:
 
     /** Get the name of the map variable constrained by this clause.
 	@return The Array object's name. */
-    String get_map_name() const;
+    string get_map_name() const;
 
     /** Get the starting index of the clause's map variable as constrained by
 	this clause.

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,12 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
+// Revision 1.15  1999/04/29 02:29:33  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.14.14.1  1999/02/02 21:57:04  jimg
+// String to string version
+//
 // Revision 1.14  1996/08/13 20:50:50  jimg
 // Changed definition of the read member function.
 //
@@ -71,17 +77,17 @@
 #pragma implementation
 #endif
 
-#include <String.h>
+#include <string>
 
 #include "TestUrl.h"
 
 Url *
-NewUrl(const String &n)
+NewUrl(const string &n)
 {
     return new TestUrl(n);
 }
 
-TestUrl::TestUrl(const String &n) : Url(n)
+TestUrl::TestUrl(const string &n) : Url(n)
 {
 }
 
@@ -92,12 +98,12 @@ TestUrl::ptr_duplicate()
 }
 
 bool
-TestUrl::read(const String &, int &)
+TestUrl::read(const string &, int &)
 {
     if (read_p())
 	return true;
 
-    String url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
+    string url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
 
     val2buf(&url_test);
 

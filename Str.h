@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -12,8 +12,14 @@
 
 /* 
  * $Log: Str.h,v $
+ * Revision 1.27  1999/04/29 02:29:31  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.26  1999/03/24 23:37:15  jimg
  * Added support for the Int16, UInt16 and Float32 types
+ *
+ * Revision 1.25.6.1  1999/02/02 21:57:01  jimg
+ * String to string version
  *
  * Revision 1.25  1998/01/12 14:27:59  tom
  * Second pass at class documentation.
@@ -159,7 +165,7 @@
 #include <limits.h>
 #endif
 
-#include <String.h>
+#include <string>
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
@@ -185,18 +191,19 @@ const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1;
 class Str: public BaseType {
 
 protected:
-    String _buf;
+    string _buf;
 
 public:
   /** The Str constructor requires only the name of the variable
       to be created.  The name may be omitted, which will create a
       nameless variable.  This may be adequate for some applications. 
       
-      @param n A String containing the name of the variable to be
+      @param n A string containing the name of the variable to be
       created. 
 
       @memo The Str constructor. */
-    Str(const String &n = (char *)0);
+    Str(const string &n = "");
+
     virtual ~Str() {}
 
     virtual BaseType *ptr_duplicate() = 0;
@@ -207,22 +214,20 @@ public:
     // stored in the instance's internal buffer.
     unsigned int length();
 
-    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual void print_val(ostream &os, String space = "",
+    virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const string &dataset);
 };
-
-typedef Str * StrPtr;
 
 #endif
 

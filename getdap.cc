@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.36  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.35  1999/04/22 22:30:52  jimg
 // Uses dynamic_cast
 //
@@ -23,6 +26,13 @@
 //
 // Revision 1.32  1998/09/08 22:23:51  jimg
 // Removed PERF macro calls.
+//
+// Revision 1.31.6.2  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.31.6.1  1999/02/02 21:57:08  jimg
+// String to string version
 //
 // Revision 1.31  1998/04/03 17:46:04  jimg
 // Patch from Jake Hamby; fixed bug where Structures which contained sequences
@@ -113,7 +123,7 @@
 // the request_data member function. You must use -c <expr> with -D.
 //
 // Revision 1.8  1996/08/13 20:13:36  jimg
-// Added __unused__ to definition of char rcsid[].
+// Added not_used to definition of char rcsid[].
 // Added code so that local `URLs' are skipped.
 //
 // Revision 1.7  1996/06/22 00:11:20  jimg
@@ -142,21 +152,21 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.35 1999/04/22 22:30:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.36 1999/04/29 02:29:36 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
 
 #include <GetOpt.h>
-#include <String.h>
+#include <string>
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.35 $";
+const char *VERSION = "$Revision: 1.36 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
-usage(String name)
+usage(string name)
 {
     cerr << "Usage: " << name 
 	 << "[dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]" 
@@ -275,10 +285,10 @@ main(int argc, char * argv[])
     bool trace = false;
     bool multi = false;
     bool accept_deflate = true;
-    String accept_types = "All";
+    string accept_types = "All";
     int times = 1;
     char *tcode = NULL;
-    char *expr = NULL;
+    char *expr = "";  // can't use NULL or C++ string conversion will crash
     int topts = 0;
 
     while ((option_char = getopt()) != EOF)
@@ -355,7 +365,7 @@ main(int argc, char * argv[])
 	if (verbose)
 	    cerr << "Fetching: " << argv[i] << endl;
 	
-	String name = argv[i];
+	string name = argv[i];
 	Connect url(name, trace, accept_deflate);
 	url.set_accept_types(accept_types);
 
@@ -397,7 +407,7 @@ main(int argc, char * argv[])
 	}
 
 	if (get_data) {
-	    if (!(expr || name.contains("?"))) {
+	    if (!(expr || name.find('?') != name.npos)) {
 		cerr << "Must supply a constraint expression with -D."
 		     << endl;
 		continue;
@@ -415,7 +425,7 @@ main(int argc, char * argv[])
 
 	if (!get_das && !get_dds && !get_data) {
 	    url.gui()->show_gui(gui);
-	    String url_string = argv[i];
+	    string url_string = argv[i];
 	    for (int j = 0; j < times; ++j) {
 		if (!url.fetch_url(url_string, async))
 		    continue;

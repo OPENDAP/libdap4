@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1996,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,12 @@
 // jhrg 10/27/96
 
 // $Log: TestUInt32.cc,v $
+// Revision 1.2  1999/04/29 02:29:33  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.1.14.1  1999/02/02 21:57:04  jimg
+// String to string version
+//
 // Revision 1.1  1996/10/28 23:06:40  jimg
 // Added.
 //
@@ -21,12 +27,12 @@
 #include "TestUInt32.h"
 
 UInt32 *
-NewUInt32(const String &n)
+NewUInt32(const string &n)
 {
     return new TestUInt32(n);
 }
 
-TestUInt32::TestUInt32(const String &n) : UInt32(n)
+TestUInt32::TestUInt32(const string &n) : UInt32(n)
 {
 }
 
@@ -37,7 +43,7 @@ TestUInt32::ptr_duplicate()
 }
 
 bool
-TestUInt32::read(const String &, int &)
+TestUInt32::read(const string &, int &)
 {
     if (read_p())
 	return true;

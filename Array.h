@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -14,11 +14,17 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.43  1999/04/29 02:29:26  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.42  1999/01/21 20:42:00  tom
  * Fixed comment formatting problems for doc++
  *
  * Revision 1.41  1998/12/15 20:49:40  jimg
  * Added to the documentation on add_constraint().
+ *
+ * Revision 1.40.4.1  1999/02/02 21:56:55  jimg
+ * String to string version
  *
  * Revision 1.40  1998/05/19 22:25:14  jimg
  * Fixed up some comments about reset_ and clear_constraint.
@@ -274,7 +280,7 @@ class Array: public Vector {
 private:
     struct dimension {		// each dimension has a size and a name
 	int size;
-	String name;
+	string name;
 	int start, stop, stride;// a constraint determines these values
 	int c_size;		// size of dimension once constrained
 	bool selected;		// true if this dimension is selected
@@ -297,13 +303,13 @@ public:
       added (with #add_var()#) before #read()# or #deserialize()# is
       called. 
       
-      @param n A String containing the name of the variable to be
+      @param n A string containing the name of the variable to be
       created. 
       @param v A pointer to a variable of the type to be included 
       in the Array. 
 
       @memo The Array constructor.  */
-    Array(const String &n = (char *)0, BaseType *v = 0);
+    Array(const string &n = "", BaseType *v = 0);
   /** The Array copy constructor. */
     Array(const Array &rhs);
     virtual ~Array();
@@ -326,7 +332,7 @@ public:
       @memo Reads an array into the buffer.
       @see BaseType::read
       */
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
 
     /** Changes the size property of the array.  If the array exists, it is
@@ -348,7 +354,7 @@ public:
       @param name The name of the new dimension.  This defaults to
       an empty string. 
       */
-    void append_dim(int size, String name = "");
+    void append_dim(int size, string name = "");
 
     /** Once a dimension has been created (see #append_dim()#), it can
 	be ``constrained''.  This will make the array appear to the rest
@@ -428,20 +434,20 @@ public:
    int dimension_stride(Pix p, bool constrained = false);
 
   /** Returns the name of the specified dimension. */
-    String dimension_name(Pix p);
+    string dimension_name(Pix p);
 
   /** Returns the total number of dimensions in the array. */
     unsigned int dimensions(bool constrained = false);
 
-    virtual void print_decl(ostream &os, String space = "    ",
+    virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
 
-    virtual void print_val(ostream &os, String space = "", 
+    virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool check_semantics(String &msg, bool all = false);
+    virtual bool check_semantics(string &msg, bool all = false);
 };
 
 #endif

@@ -1,6 +1,6 @@
 
 // (c) COPYRIGHT URI/MIT 1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,11 +10,21 @@
 // jhrg 4/25/96
 
 // $Log: error-test.cc,v $
+// Revision 1.4  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.3.14.2  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.3.14.1  1999/02/02 21:57:07  jimg
+// String to string version
+//
 // Revision 1.3  1997/02/19 04:53:40  jimg
 // Changed (void) to ().
 //
 // Revision 1.2  1996/08/13 18:52:52  jimg
-// Added __unused__ to definition of char rcsid[].
+// Added not_used to definition of char rcsid[].
 // Now tests the Gui.
 //
 // Revision 1.1  1996/05/31 23:28:16  jimg
@@ -23,11 +33,11 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: error-test.cc,v 1.3 1997/02/19 04:53:40 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: error-test.cc,v 1.4 1999/04/29 02:29:36 jimg Exp $"};
 
 #include <assert.h>
 
-#include <iostream.h>
+#include <iostream>
 #include <GetOpt.h>
 
 #include "Error.h"
@@ -104,7 +114,7 @@ test_scanner()
 {
     int tok;
 
-    cout << prompt;		// first prompt
+    cout << prompt << flush;		// first prompt
     while ((tok = Errorlex())) {
 	switch (tok) {
 	  case ERROR:
@@ -143,7 +153,7 @@ test_scanner()
 	  default:
 	    cout << "Error: Unrecognized input" << endl;
 	}
-	cout << prompt;		// print prompt after output
+	cout << prompt << flush;		// print prompt after output
     }
 }
 
@@ -166,7 +176,7 @@ test_object(Error &err)
 {
     Gui g;
 
-    String response = err.correct_error(&g);
+    string response = err.correct_error(&g);
     
     cout << "Response: " << response << endl;
 }

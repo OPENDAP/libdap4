@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -12,10 +12,16 @@
 // 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.11  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.10  1998/10/21 16:43:36  jimg
 // Added typedef for projection functions (proj_func).
 // Removed the structs rvalue and func_rvalue - these have been merged into a
 // single class RValue which is defined in Rvalue.cc/h.
+//
+// Revision 1.9.14.1  1999/02/02 21:57:07  jimg
+// String to string version
 //
 // Revision 1.9  1996/11/27 22:40:24  jimg
 // Added DDS as third parameter to function in the CE evaluator
@@ -54,7 +60,7 @@
 #ifndef _expr_h
 #define _expr_h
 
-#include <String.h>
+#include <string>
 #include <SLList.h>
 
 #include "config_dap.h"
@@ -69,7 +75,7 @@ typedef struct {
     union {
 	dods_int32 i;
 	dods_float64 f;
-	String *s;
+	string *s;
     } v;
 } value;
 

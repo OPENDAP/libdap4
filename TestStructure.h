@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -13,6 +13,12 @@
 
 /* 
  * $Log: TestStructure.h,v $
+ * Revision 1.12  1999/04/29 02:29:33  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.11.10.1  1999/02/02 21:57:04  jimg
+ * String to string version
+ *
  * Revision 1.11  1997/08/11 18:19:28  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -75,12 +81,12 @@
 
 class TestStructure: public Structure {
 public:
-    TestStructure(const String &n = (char *)0);
+    TestStructure(const string &n = "");
     virtual ~TestStructure();
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 #endif

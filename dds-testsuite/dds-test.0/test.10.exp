@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.10.exp,v $
+# Revision 1.6  1999/04/29 02:29:39  jimg
+# Merge of no-gnu branch
+#
 # Revision 1.5  1997/03/27 18:20:07  jimg
 # Update for version 2.13
 #
@@ -32,21 +35,48 @@ set test_name test.10
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Status from parser: 0
-DDS failed semantic check
-DDS failed full semantic check
+set test_out "Status from parser: 1
+DDS past semantic check
+DDS past full semantic check
 Dataset {
-} ;
-In the dataset descriptor object:
-`structure {
+    Structure {
         Int32 i;
-        int32 i;
-    } test;'
-is not a valid declaration.
-The variable `i' is used more than once in Structure `test'
-
-A dataset must have a name
-A dataset must have a name"
+        Int32 j;
+    } test;
+    Sequence {
+        Int32 i;
+        Int32 j\[10\];
+    } test2;
+    Grid {
+     ARRAY:
+        Float64 f\[10\]\[10\];
+     MAPS:
+        Int32 g\[10\];
+        Int32 h\[10\];
+    } test4;
+    List Int32 i\[10\]\[20\];
+    Sequence {
+        String name;
+        Int32 age;
+    } person;
+    Structure {
+        Int32 j;
+        Int32 i;
+        Structure {
+            Int32 i;
+            Float64 f\[10\];
+        } data;
+        List String folks;
+    } exp;
+    Grid {
+     ARRAY:
+        Float64 g\[10\]\[10\]\[10\];
+     MAPS:
+        Float64 lat\[10\];
+        Float64 lon\[10\];
+        Float64 weirdness\[10\];
+    } strange;
+} data6;"
 
 dds-test_start p $srcdir$test_name
 
@@ -68,7 +98,7 @@ dds-test_start p $srcdir$test_name
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"
 } else {
-    xfail "$test_name"
+    fail "$test_name"
 }
 
 

@@ -10,11 +10,21 @@
 // 3/22/9 jhrg9
 
 // $Log: Float32.cc,v $
+// Revision 1.9  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.8  1999/04/01 22:50:02  jimg
 // Switched to DODS type names and fixed float-vs-double bungle
 //
 // Revision 1.7  1999/03/24 23:40:05  jimg
 // Added
+//
+// Revision 1.5.6.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.5.6.1  1999/02/02 21:56:58  jimg
+// String to string version
 //
 // Revision 1.5  1998/03/19 23:32:59  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
@@ -38,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.8 1999/04/01 22:50:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Float32.cc,v 1.9 1999/04/29 02:29:29 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -55,8 +65,8 @@ static char rcsid[] __unused__ = {"$Id: Float32.cc,v 1.8 1999/04/01 22:50:02 jim
 #include "trace_new.h"
 #endif
 
-Float32::Float32(const String &n) 
-: BaseType(n, dods_float32_c, (xdrproc_t)XDR_FLOAT32)
+Float32::Float32(const string &n) 
+    : BaseType(n, dods_float32_c, (xdrproc_t)XDR_FLOAT32)
 {
 }
 
@@ -67,7 +77,7 @@ Float32::width()
 }
 
 bool
-Float32::serialize(const String &dataset, DDS &dds, XDR *sink, 
+Float32::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		   bool ce_eval = true)
 {
     int error;
@@ -116,7 +126,7 @@ Float32::buf2val(void **val)
 }
 
 void 
-Float32::print_val(ostream &os, String space, bool print_decl_p)
+Float32::print_val(ostream &os, string space, bool print_decl_p)
 {
     os.precision(DODS_FLT_DIG);
 
@@ -129,7 +139,7 @@ Float32::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Float32::ops(BaseType *b, int op, const String &dataset)
+Float32::ops(BaseType *b, int op, const string &dataset)
 {
     int error = 0;
 

@@ -13,6 +13,9 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.11  1999/04/29 02:29:37  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.10  1999/04/22 22:30:52  jimg
 // Uses dynamic_cast
 //
@@ -25,10 +28,18 @@
 // Added support for the new Int16, UInt16 and Float32 types.
 //
 // Revision 1.7  1998/12/16 19:10:53  jimg
-// Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
+// Added support for XDODS-Server MIME header. This fixes a problem where our
+// use of Server clashed with Java.
 //
 // Revision 1.6  1998/10/21 16:56:24  jimg
 // Removed name_in_dds using #if 0 ... #endif
+//
+// Revision 1.5.6.2  1999/02/05 09:32:37  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.5.6.1  1999/02/02 21:57:08  jimg
+// String to string version
 //
 // Revision 1.5  1998/02/09 20:11:43  jimg
 // Added/fixed doc++ comments.
@@ -56,16 +67,21 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.10 1999/04/22 22:30:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.11 1999/04/29 02:29:37 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
 
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
 
-#include <String.h>
-#include <strstream.h>
+#include <string>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
+#include <Regex.h>
 
 #include "cgi_util.h"
 #include "debug.h"
@@ -89,9 +105,9 @@ usage(char *argv[])
 */
 
 bool
-found_override(String name, String &doc)
+found_override(string name, string &doc)
 {
-    ifstream ifs(name + ".ovr");
+    ifstream ifs((name + ".ovr").c_str());
     if (!ifs)
 	return false;
 
@@ -155,12 +171,12 @@ remove_mime_header(FILE *in)
     that don't exist are treated as `empty'.
 */
 
-String
-get_user_supplied_docs(String name, String cgi)
+string
+get_user_supplied_docs(string name, string cgi)
 {
     char tmp[256];
     ostrstream oss;
-    ifstream ifs(cgi + ".html");
+    ifstream ifs((cgi + ".html").c_str());
 
     if (ifs) {
 	while (!ifs.eof()) {
@@ -172,16 +188,16 @@ get_user_supplied_docs(String name, String cgi)
 	oss << "<hr>";
     }
 
-    ifs.open(name + ".html");
+    ifs.open((name + ".html").c_str());
 
     // If name.html cannot be opened, look for basename.html
     if (!ifs) {
-	int slash = name.index("/", -1);
-	String pathanme = name.before(slash);
-	String filename = name.after(slash);
-	filename = filename.at(RXalpha);
-	String new_name = pathanme + "/" + filename + ".html";
-	ifs.open(new_name);
+	unsigned int slash = name.find_last_of('/');
+	string pathname = name.substr(0, slash);
+	string filename = name.substr(slash+1);
+	// filename = filename.at(RXalpha); // XXX can't do this with string
+	string new_name = pathname + "/" + filename; // XXX + ".html"
+	ifs.open(new_name.c_str());
     }
 
     if (ifs) {
@@ -193,8 +209,8 @@ get_user_supplied_docs(String name, String cgi)
     }
 
     oss << ends;
-    String html = oss.str();
-    oss.freeze(0);
+    string html = oss.str();
+    oss.rdbuf()->freeze(0);
 
     return html;
 }
@@ -204,19 +220,19 @@ get_user_supplied_docs(String name, String cgi)
 // small collection of regexs match the name.
 
 static bool
-name_in_kill_file(const String &name)
+name_in_kill_file(const string &name)
 {
     static Regex dim(".*_dim_[0-9]*", 1); // HDF `dimension' attributes.
 
-    return name.matches(dim);
+    return dim.match(name.c_str(), name.length()) != -1;
 }
 
 static bool
-name_is_global(String &name)
+name_is_global(string &name)
 {
     static Regex global("\\(.*global.*\\)\\|\\(.*dods.*\\)", 1);
-    name.downcase();
-    return name.matches(global);
+    downcase(name);
+    return global.match(name.c_str(), name.length()) != -1;
 }
 
 /** Given the DAS and DDS, build the HTML* document which contains all the
@@ -228,11 +244,11 @@ name_is_global(String &name)
     attributes'.
 
     @memo Build the global attribute HTML* document.
-    @return A String object containing the global attributes in human
+    @return A string object containing the global attributes in human
     readable form (as an HTML* document).
 */
 
-String
+string
 build_global_attributes(DAS &das, DDS &)
 {
     bool found = false;
@@ -241,7 +257,7 @@ build_global_attributes(DAS &das, DDS &)
     ga << "<h3>Dataset Information</h3>\n<center>\n<table>\n";
 
     for (Pix p = das.first_var(); p; das.next_var(p)) {
-	String name = das.get_name(p);
+	string name = das.get_name(p);
 
 	// I used `name_in_dds' originally, but changed to `name_is_global'
 	// because aliases between groups of attributes can result in
@@ -269,8 +285,8 @@ build_global_attributes(DAS &das, DDS &)
     ga << "</table>\n</center><p>\n" << ends;
 
     if (found) {
-	String global_attrs = ga.str();
-	ga.freeze(0);
+	string global_attrs = ga.str();
+	ga.rdbuf()->freeze(0);
 
 	return global_attrs;
     }
@@ -278,10 +294,10 @@ build_global_attributes(DAS &das, DDS &)
     return "";
 }
 
-static String
+static string
 fancy_typename(BaseType *v)
 {
-    String fancy;
+    string fancy;
     switch (v->type()) {
       case dods_byte_c:
 	return "Byte";
@@ -309,16 +325,16 @@ fancy_typename(BaseType *v)
 	      type << "[" << a->dimension_name(p) << " = 0.." 
 		   << a->dimension_size(p, false)-1 << "]";
 	  type << ends;
-	  String fancy = type.str();
-	  type.freeze(0);
+	  string fancy = type.str();
+	  type.rdbuf()->freeze(0);
 	  return fancy;
       }
       case dods_list_c: {
 	  ostrstream type;
 	  List *l = (List *)v;
 	  type << "List of " << fancy_typename(l->var()) <<"s " << ends;
-	  String fancy = type.str();
-	  type.freeze(0);
+	  string fancy = type.str();
+	  type.rdbuf()->freeze(0);
 	  return fancy;
       }
       case dods_structure_c:
@@ -397,17 +413,17 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 #if 0
 	vs << "<table>\n";
 	Function *fp = (Function *)btp;
-	for (Pix p = fp->first_indep_var(); p; fp->next_indep_var(p)) {
+{	for (Pix p = fp->first_indep_var(); p; fp->next_indep_var(p)) {
 	    vs << "<tr>";
 	    write_variable(fp->indep_var(p), das, vs);
 	    vs << "</tr>";
 	}
-	for (Pix p = fp->first_dep_var(); p; fp->next_dep_var(p)) {
+}{	for (Pix p = fp->first_dep_var(); p; fp->next_dep_var(p)) {
 	    vs << "<tr>";
 	    write_variable(fp->dep_var(p), das, vs);
 	    vs << "</tr>";
 	}
-	vs << "</table>\n";
+}	vs << "</table>\n";
 	break;
 #endif
       }
@@ -434,11 +450,11 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
     the variables by listing its name, datatype and all of its attriutes.
 
     @memo Build the variable summaries.
-    @return A String object containing the variable summary information in
+    @return A string object containing the variable summary information in
     human readable form (as an HTML* document).
 */
 
-String
+string
 build_variable_summaries(DAS &das, DDS &dds)
 {
     ostrstream vs;
@@ -453,8 +469,8 @@ build_variable_summaries(DAS &das, DDS &dds)
 
     vs << "</table>\n</center><p>\n" << ends;
 
-    String html = vs.str();
-    vs.freeze(0);
+    string html = vs.str();
+    vs.rdbuf()->freeze(0);
 
     return html;
 }
@@ -477,8 +493,8 @@ main(int argc, char *argv[])
 	exit(1);
     }
 
-    String name = argv[1];
-    String doc;
+    string name = argv[1];
+    string doc;
 
     if (found_override(name, doc)) {
 	html_header();
@@ -489,13 +505,13 @@ main(int argc, char *argv[])
     // The user is not overriding the DAS/DDS generated information, so read
     // the DAS, DDS and user supplied documents. 
 
-    String cgi = argv[2];
+    string cgi = argv[2];
 
     DAS das;
-    String command = cgi + "_das '" + name + "'";
+    string command = cgi + "_das '" + name + "'";
     DBG(cerr << "DAS Command: " << command << endl);
 
-    FILE *in = popen(command, "r");
+    FILE *in = popen(command.c_str(), "r");
     if (in && remove_mime_header(in)) {
 	das.parse(in);
 	pclose(in);
@@ -505,7 +521,7 @@ main(int argc, char *argv[])
     command = cgi + "_dds '" + name + "'";
     DBG(cerr << "DDS Command: " << command << endl);
 
-    in = popen(cgi + "_dds '" + name + "'", "r");
+    in = popen((cgi + "_dds '" + name + "'").c_str(), "r");
     if (in && remove_mime_header(in)) {
 	dds.parse(in);
 	pclose(in);
@@ -513,17 +529,17 @@ main(int argc, char *argv[])
 
     // Build the HTML* documents.
 
-    String user_html = get_user_supplied_docs(name, cgi);
+    string user_html = get_user_supplied_docs(name, cgi);
 
-    String global_attrs = build_global_attributes(das, dds);
+    string global_attrs = build_global_attributes(das, dds);
 
-    String variable_sum = build_variable_summaries(das, dds);
+    string variable_sum = build_variable_summaries(das, dds);
 
     // Write out the HTML document.
 
     html_header();
 
-    if (global_attrs) {
+    if (global_attrs.length()) {
 	cout << "<html><head><title>Dataset Information</title></head>" 
 	     << endl 
 	     << "<html>" << endl 

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,16 +10,18 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.36  1999/04/29 02:29:27  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.35  1999/03/24 23:37:13  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
-// Revision 1.34  1998/10/21 16:18:19  jimg
-// Added the two member functions: synthesized_p() and set_synthesized_p().
-// These are used to test and record (resp) whether a variable has been
-// synthesized by the server or is part of the data set. This feature was added
-// to help support the creation of variables by the new projection functions.
-// Variables that are created by projection function calls are called `synthesized
-// variables'.
+// Revision 1.34 1998/10/21 16:18:19 jimg Added the two member functions:
+// synthesized_p() and set_synthesized_p(). These are used to test and record
+// (resp) whether a variable has been synthesized by the server or is part of
+// the data set. This feature was added to help support the creation of
+// variables by the new projection functions. Variables that are created by
+// projection function calls are called `synthesized variables'.
 //
 // Revision 1.33  1998/09/17 17:23:20  jimg
 // Changes for the new variable lookup scheme. Fields of ctor types no longer
@@ -28,6 +30,9 @@
 // There's no warning about the situation. The new code in the var member
 // function passes a stack of BaseType pointers so that the projection
 // information (send_p field) can be set properly.
+//
+// Revision 1.32.6.1  1999/02/02 21:56:55  jimg
+// String to string version
 //
 // Revision 1.32  1998/03/19 23:20:05  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
@@ -216,7 +221,7 @@ BaseType::_duplicate(const BaseType &bt)
 // write to std{out,in} (it is for g++ with libg++ at version 2.6 or
 // greater).
 
-BaseType::BaseType(const String &n, const Type &t, xdrproc_t xdr)
+BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
     : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
       _synthesized_p(false)
 {
@@ -242,14 +247,14 @@ BaseType::operator=(const BaseType &rhs)
     return *this;
 }
 
-String 
+string 
 BaseType::name() const
 {
     return _name; 
 }
 
 void 
-BaseType::set_name(const String &n)
+BaseType::set_name(const string &n)
 { 
     _name = n; 
 }
@@ -266,45 +271,45 @@ BaseType::set_type(const Type &t)
     _type = t;
 }
 
-String
+string
 BaseType::type_name() const
 {
     switch(_type) {
       case dods_null_c:
-	return String("Null");
+	return string("Null");
       case dods_byte_c:
-	return String("Byte");
+	return string("Byte");
       case dods_int16_c:
-	return String("Int16");
+	return string("Int16");
       case dods_uint16_c:
-	return String("UInt16");
+	return string("UInt16");
       case dods_int32_c:
-	return String("Int32");
+	return string("Int32");
       case dods_uint32_c:
-	return String("UInt32");
+	return string("UInt32");
       case dods_float32_c:
-	return String("Float32");
+	return string("Float32");
       case dods_float64_c:
-	return String("Float64");
+	return string("Float64");
       case dods_str_c:
-	return String("String");
+	return string("String");
       case dods_url_c:
-	return String("Url");
+	return string("Url");
       case dods_array_c:
-	return String("Array");
+	return string("Array");
       case dods_list_c:
-	return String("List");
+	return string("List");
       case dods_structure_c:
-	return String("Structure");
+	return string("Structure");
       case dods_sequence_c:
-	return String("Sequence");
+	return string("Sequence");
       case dods_function_c:
-	return String("Function");
+	return string("Function");
       case dods_grid_c:
-	return String("Grid");
+	return string("Grid");
       default:
 	cerr << "BaseType::type_name: Undefined type" << endl;
-	return String("");
+	return string("");
     }
 }
 
@@ -451,13 +456,13 @@ BaseType::set_send_p(bool state)
 // Return a pointer to the contained variable in a ctor class.
 
 BaseType *
-BaseType::var(const String &, bool)
+BaseType::var(const string &, bool)
 {
     return (BaseType *)0;
 }
 
 BaseType *
-BaseType::var(const String &, btp_stack &)
+BaseType::var(const string &, btp_stack &)
 {
     return (BaseType *)0;
 }
@@ -482,7 +487,7 @@ BaseType::xdr_coder()
 // print_semi is true, append a semicolon and newline.
 
 void 
-BaseType::print_decl(ostream &os, String space, bool print_semi, 
+BaseType::print_decl(ostream &os, string space, bool print_semi, 
 		     bool constraint_info, bool constrained)
 {
     // if printing the constrained declaration, exit if this variable was not
@@ -515,9 +520,9 @@ BaseType::print_decl(ostream &os, String space, bool print_semi,
 // Returns: true if the object is semantically correct, false otherwise.
 
 bool
-BaseType::check_semantics(String &msg, bool)
+BaseType::check_semantics(string &msg, bool)
 {
-    bool sem = (_type != dods_null_c && (const char *)_name);
+    bool sem = (_type != dods_null_c && _name.length());
 
     if (!sem) 
 	msg = "Every variable must have both a name and a type\n";
@@ -531,7 +536,7 @@ BaseType::check_semantics(String &msg, bool)
 // error message and return False.
 
 bool 
-BaseType::ops(BaseType *, int, const String &)
+BaseType::ops(BaseType *, int, const string &)
 {
     assert("Unimplemented operator" && false);
 

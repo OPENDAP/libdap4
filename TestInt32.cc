@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1996,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,12 @@
 // jhrg 1/12/95
 
 // $Log: TestInt32.cc,v $
+// Revision 1.14  1999/04/29 02:29:32  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.13.14.1  1999/02/02 21:57:03  jimg
+// String to string version
+//
 // Revision 1.13  1996/08/13 20:50:43  jimg
 // Changed definition of the read member function.
 //
@@ -71,12 +77,12 @@
 #include "TestInt32.h"
 
 Int32 *
-NewInt32(const String &n)
+NewInt32(const string &n)
 {
     return new TestInt32(n);
 }
 
-TestInt32::TestInt32(const String &n) : Int32(n)
+TestInt32::TestInt32(const string &n) : Int32(n)
 {
 }
 
@@ -87,7 +93,7 @@ TestInt32::ptr_duplicate()
 }
 
 bool
-TestInt32::read(const String &, int &)
+TestInt32::read(const string &, int &)
 {
     if (read_p())
 	return true;

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1998
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,6 +11,10 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.26  1999/04/29 02:29:28  jimg
+// Merge of no-gnu branch
+//
+
 // Revision 1.25  1999/03/24 23:37:14  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
@@ -18,14 +22,21 @@
 // Fixed copyright.
 //
 // Revision 1.23  1998/11/24 06:46:08  jimg
-// Ripped out the DASVHMap class and replaced it with an SLList of structs. See
-// DAS.h for the (private) struct definition. There are no changes to the class
-// interface. I did add a default ctor (DAS()), but that conflicted with another
-// (old) ctor that had defaults for its two parameters, so I bagged that for
-// now.
+// Ripped out the DASVHMap class and replaced it with an SLList of structs.
+// See DAS.h for the (private) struct definition. There are no changes to the
+// class interface. I did add a default ctor (DAS()), but that conflicted
+// with another (old) ctor that had defaults for its two parameters, so I
+// bagged that for now.
 //
 // Revision 1.22  1998/08/13 22:11:24  jimg
 // Added include of unistd.h for dup(2).
+//
+// Revision 1.21.14.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.21.14.1  1999/02/02 21:56:57  jimg
+// String to string version
 //
 // Revision 1.21  1997/06/06 00:44:02  jimg
 // Removed add_table(char *, ...).
@@ -130,7 +141,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.25 1999/03/24 23:37:14 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.26 1999/04/29 02:29:28 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -139,10 +150,11 @@ static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.25 1999/03/24 23:37:14 jimg Ex
 #include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
+#include <unistd.h>
 
-#include <iostream.h>
+#include <iostream>
 #include <Pix.h>
-#include <String.h>
+#include <string>
 
 #include "DAS.h"		// follows pragma since DAS.h is interface
 #include "Error.h"
@@ -153,7 +165,7 @@ extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
 
 AttrTable *
-DAS::das_find(String name)
+DAS::das_find(string name)
 {
     for (Pix p = entries.first(); p; entries.next(p))
 	if (entries(p).name == name)
@@ -165,11 +177,11 @@ DAS::das_find(String name)
 // class. I switched from that to a SLList of struct toplevel_entry objects
 // because the VHMap class had bugs I didn't want to fix. 11/23/98 jhrg
 
-DAS::DAS(AttrTable *dflt, unsigned int)
+DAS::DAS(AttrTable *, unsigned int)
 {
 }
 
-DAS::DAS(AttrTable *attr, String name)
+DAS::DAS(AttrTable *attr, string name)
 {
     toplevel_entry tle;
     tle.name = name;
@@ -205,7 +217,7 @@ DAS::next_var(Pix &p)
     entries.next(p);
 }
 
-String
+string
 DAS::get_name(Pix p)
 {
     return entries(p).name;
@@ -218,13 +230,13 @@ DAS::get_table(Pix p)
 }
 
 AttrTable *
-DAS::get_table(const String &name)
+DAS::get_table(const string &name)
 {
     // `.' separates hierarchies in the DAS.
-    if (name.contains(".")) {
-	String n = (String)name; // cast away const
-	String container = n.before(".");
-	String field = n.after(".");
+    unsigned int dotpos = name.find('.');
+    if (dotpos != name.npos) {
+	string container = name.substr(0, dotpos);
+	string field = name.substr(dotpos+1);
 
 	// The following strangeness is due to the weird implmentation of
 	// DAS/AttrTable objects. For a name like cont1.cont2.var1.a1,
@@ -239,26 +251,26 @@ DAS::get_table(const String &name)
 	// The DAS is a simple one-level data structure (names and
 	// AttrTables) while AttrTables are recursive.
 
-	AttrTable *at = das_find(container);
+	AttrTable *at = das_find(container.c_str());
 	AttrTable *at2 = (at) ? at->get_attr_table(field) : 0;
 	return (at) ? ((at2) ? at2 : at) : 0;
     }
     else
-	return das_find(name);
+	return das_find(name.c_str());
 }
 
 // This function is necessary because (char *) arguments will be converted to
-// Pixs (and not Strings). Without this mfunc get_table(name) needs a cast;
+// Pixs (and not strings). Without this mfunc get_table(name) needs a cast;
 // it seems tough to believe folks will always remember that.
 
 AttrTable *
 DAS::get_table(const char *name)
 {
-    return get_table((String)name);
+    return get_table((string)name);
 }
 
 AttrTable *
-DAS::add_table(const String &name, AttrTable *at)
+DAS::add_table(const string &name, AttrTable *at)
 {
     DBG(cerr << "Adding table: " << name << "(" << at << ")" << endl);
     toplevel_entry tle;
@@ -271,16 +283,16 @@ DAS::add_table(const String &name, AttrTable *at)
 AttrTable *
 DAS::add_table(const char *name, AttrTable *at)
 {
-    return add_table((String)name, at);
+    return add_table((string)name, at);
 }
 
 // Read attributes from a file. Returns false if unable to open the file,
 // otherwise returns the result of the mfunc parse.
 
 bool
-DAS::parse(String fname)
+DAS::parse(string fname)
 {
-    FILE *in = fopen(fname, "r");
+    FILE *in = fopen(fname.c_str(), "r");
 
     if (!in) {
 	cerr << "Could not open: " << fname << endl;

@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1997,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -13,6 +13,12 @@
 
 /* 
  * $Log: TestArray.h,v $
+ * Revision 1.10  1999/04/29 02:29:31  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.9.10.1  1999/02/02 21:57:02  jimg
+ * String to string version
+ *
  * Revision 1.9  1997/08/11 18:19:20  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -69,12 +75,12 @@
 
 class TestArray: public Array {
 public:
-    TestArray(const String &n = (char *)0, BaseType *v = 0);
+    TestArray(const string &n = "", BaseType *v = 0);
     virtual ~TestArray();
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 #endif

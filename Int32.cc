@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,8 +10,18 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.35  1999/04/29 02:29:30  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.34  1999/03/24 23:37:15  jimg
 // Added support for the Int16, UInt16 and Float32 types
+//
+// Revision 1.33.6.2  1999/02/05 09:32:35  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.33.6.1  1999/02/02 21:57:00  jimg
+// String to string version
 //
 // Revision 1.33  1998/03/11 00:29:44  jimg
 // Fixed a bug in buf2val(...) where the assert failed when the value held by
@@ -30,7 +40,7 @@
 //
 // Revision 1.29  1996/08/13 18:31:16  jimg
 // Moved int32_ops to util.cc
-// Added __unused__ to char rcsid[] definition.
+// Added not_used to char rcsid[] definition.
 // Removed system includes.
 //
 // Revision 1.28  1996/06/04 21:33:34  jimg
@@ -186,7 +196,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.34 1999/03/24 23:37:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int32.cc,v 1.35 1999/04/29 02:29:30 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -204,7 +214,7 @@ static char rcsid[] __unused__ = {"$Id: Int32.cc,v 1.34 1999/03/24 23:37:15 jimg
 #include "trace_new.h"
 #endif
 
-Int32::Int32(const String &n) : BaseType(n, dods_int32_c, (xdrproc_t)XDR_INT32)
+Int32::Int32(const string &n) : BaseType(n, dods_int32_c, (xdrproc_t)XDR_INT32)
 {
 }
 
@@ -215,8 +225,8 @@ Int32::width()
 }
 
 bool
-Int32::serialize(const String &dataset, DDS &dds, XDR *sink,
-		 bool ce_eval = true)
+Int32::serialize(const string &dataset, DDS &dds, XDR *sink,
+		 bool ce_eval)
 {
     int error;
 
@@ -266,7 +276,7 @@ Int32::buf2val(void **val)
 // Print BUF to stdout with its declaration. Intended mostly for debugging.
 
 void 
-Int32::print_val(ostream &os, String space, bool print_decl_p)
+Int32::print_val(ostream &os, string space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -277,7 +287,7 @@ Int32::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Int32::ops(BaseType *b, int op, const String &dataset)
+Int32::ops(BaseType *b, int op, const string &dataset)
 {
     int error = 0;
 

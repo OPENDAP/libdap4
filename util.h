@@ -13,6 +13,9 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.29  1999/04/29 02:29:37  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.28  1999/03/24 23:25:10  jimg
  * Added includes and New*() definitions for the Int16, UInt16 and Float32
  * types.
@@ -20,6 +23,9 @@
  *
  * Revision 1.27  1999/01/21 02:12:35  jimg
  * Moved prototypes to ce_functions.h
+ *
+ * Revision 1.26.6.1  1999/02/02 21:57:08  jimg
+ * String to string version
  *
  * Revision 1.26  1998/04/07 22:15:35  jimg
  * Added declaration of prune_spaces(String)
@@ -117,6 +123,9 @@
  * work as planned.
  */
 
+#ifndef _util_h
+#define _util_h 1
+
 #include <stdio.h>
 
 #include "BaseType.h"
@@ -136,35 +145,42 @@
 #include "Function.h"
 #include "Grid.h"
 
-String prune_spaces(String);
-bool unique_names(SLList<BaseTypePtr> l, const char *var, const char *type,
-		  String &msg);
+string prune_spaces(string);
+bool unique_names(SLList<BaseTypePtr> l, const string &var, const string &type,
+		  string &msg);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
-FILE *text_to_temp(String text);
+FILE *text_to_temp(string text);
 char *systime();
 FILE *compressor(FILE *output, int &childpid);
 bool deflate_exists();
 const char *dods_root();
 const char *dods_progress();
 
-bool string_ops(String &i1, String &i2, int op);
+bool func_member(int argc, BaseType *argv[], DDS &dds);
+bool func_null(int argc, BaseType *argv[], DDS &dds);
+BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
+BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
-extern "C" bool_t xdr_str(XDR *xdrs, String &buf);
+extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
 
-Byte *NewByte(const String &n = (char *)0);
-Int16 *NewInt16(const String &n = (char *)0);
-UInt16 *NewUInt16(const String &n = (char *)0);
-Int32 *NewInt32(const String &n = (char *)0);
-UInt32 *NewUInt32(const String &n = (char *)0);
-Float32 *NewFloat32(const String &n = (char *)0);
-Float64 *NewFloat64(const String &n = (char *)0);
-Str *NewStr(const String &n = (char *)0);
-Url *NewUrl(const String &n = (char *)0);
-Array *NewArray(const String &n = (char *)0, BaseType *v = 0);
-List *NewList(const String &n = (char *)0, BaseType *v = 0);
-Structure *NewStructure(const String &n = (char *)0);
-Sequence *NewSequence(const String &n = (char *)0);
-Function *NewFunction(const String &n = (char *)0);
-Grid *NewGrid(const String &n = (char *)0);
+Byte *NewByte(const string &n = "");
+Int16 *NewInt16(const string &n = "");
+UInt16 *NewUInt16(const string &n = "");
+Int32 *NewInt32(const string &n = "");
+UInt32 *NewUInt32(const string &n = "");
+Float32 *NewFloat32(const string &n = "");
+Float64 *NewFloat64(const string &n = "");
+Str *NewStr(const string &n = "");
+Url *NewUrl(const string &n = "");
+Array *NewArray(const string &n = "", BaseType *v = 0);
+List *NewList(const string &n = "", BaseType *v = 0);
+Structure *NewStructure(const string &n = "");
+Sequence *NewSequence(const string &n = "");
+Function *NewFunction(const string &n = "");
+Grid *NewGrid(const string &n = "");
+
+void downcase(string &s);
+
+#endif

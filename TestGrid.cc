@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1996,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,12 @@
 // jhrg 1/13/95
 
 // $Log: TestGrid.cc,v $
+// Revision 1.13  1999/04/29 02:29:32  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.12.14.1  1999/02/02 21:57:03  jimg
+// String to string version
+//
 // Revision 1.12  1996/05/31 23:30:19  jimg
 // Updated copyright notice.
 //
@@ -66,7 +72,7 @@
 #include "TestGrid.h"
 
 Grid *
-NewGrid(const String &n)
+NewGrid(const string &n)
 {
     return new TestGrid(n);
 }
@@ -77,7 +83,7 @@ TestGrid::ptr_duplicate()
     return new TestGrid(*this);
 }
 
-TestGrid::TestGrid(const String &n) : Grid(n)
+TestGrid::TestGrid(const string &n) : Grid(n)
 {
 }
 
@@ -86,7 +92,7 @@ TestGrid::~TestGrid()
 }
 
 bool
-TestGrid::read(const String &dataset, int &error)
+TestGrid::read(const string &dataset, int &error)
 {
     if (read_p())
 	return true;

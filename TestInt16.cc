@@ -10,6 +10,9 @@
 // 3/22/99 jhrg
 
 // $Log: TestInt16.cc,v $
+// Revision 1.2  1999/04/29 02:29:32  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.1  1999/03/24 23:40:06  jimg
 // Added
 //
@@ -21,12 +24,12 @@
 #include "TestInt16.h"
 
 Int16 *
-NewInt16(const String &n)
+NewInt16(const string &n)
 {
     return new TestInt16(n);
 }
 
-TestInt16::TestInt16(const String &n) : Int16(n)
+TestInt16::TestInt16(const string &n) : Int16(n)
 {
 }
 
@@ -37,7 +40,7 @@ TestInt16::ptr_duplicate()
 }
 
 bool
-TestInt16::read(const String &, int &)
+TestInt16::read(const string &, int &)
 {
     if (read_p())
 	return true;

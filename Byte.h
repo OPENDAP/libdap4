@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -12,8 +12,14 @@
 
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.25  1999/04/29 02:29:27  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.24  1999/03/24 23:37:14  jimg
  * Added support for the Int16, UInt16 and Float32 types
+ *
+ * Revision 1.23.6.1  1999/02/02 21:56:55  jimg
+ * String to string version
  *
  * Revision 1.23  1998/01/12 14:27:55  tom
  * Second pass at class documentation.
@@ -81,7 +87,7 @@
  * class represenation.
  * Chnaged read_val and store_val so that they take and return
  * types that are stored by the object (e.g., inthe case of Str
- * an URL, read_val returns a C++ String object).
+ * an URL, read_val returns a C++ string object).
  * Modified Array representations so that arrays of card()
  * objects are just that - no more storing strings, ... as
  * C would store them.
@@ -184,30 +190,31 @@ public:
       to be created.  The name may be omitted, which will create a
       nameless variable.  This may be adequate for some applications. 
       
-      @param n A String containing the name of the variable to be
+      @param n A string containing the name of the variable to be
       created. 
 
       @memo The Byte constructor. */
-    Byte(const String &n = (char *)0);
+    Byte(const string &n = "");
+
     virtual ~Byte() {}
 
     virtual BaseType *ptr_duplicate() = 0;
 
     virtual unsigned int width();
 
-    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual void print_val(ostream &os, String space = "", 
+    virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const string &dataset);
 };
 
 #endif

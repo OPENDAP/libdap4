@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.8  1999/04/29 02:29:28  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.7  1999/02/22 22:59:07  jimg
 // Added the get_accept_types() accessor.
 // Changed the ctor so that the -t option is recognized.
@@ -22,6 +25,13 @@
 // Added `ends' to strings made with ostrstream (fixes a bug found with
 // purify).
 // Added catch for throws from within the CE evaluation functions.
+//
+// Revision 1.4.2.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.4.2.1  1999/02/02 21:56:57  jimg
+// String to string version
 //
 // Revision 1.4  1998/08/06 16:12:30  jimg
 // Added cache dir methods and stuff to ctor (from jeh)
@@ -47,11 +57,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.7 1999/02/22 22:59:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.8 1999/04/29 02:29:28 jimg Exp $"};
 
-#include <iostream.h>
-#include <strstream.h>
-#include <String.h>
+#include <iostream>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
+#include <string>
 #include <GetOpt.h>
 
 #include "DAS.h"
@@ -60,7 +74,7 @@ static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.7 1999/02/22 22:59:07 
 #include "cgi_util.h"
 #include "DODSFilter.h"
 
-DODSFilter::DODSFilter(int argc,char *argv[]) : comp(false), ver(false), 
+DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false), 
     bad_options(false), dataset(""), ce(""), cgi_ver(""),
     anc_dir(""), anc_file(""), cache_dir(""), accept_types("All")
 {
@@ -105,31 +119,31 @@ DODSFilter::version()
     return ver;
 }
 
-String
+string
 DODSFilter::get_ce()
 {
     return ce;
 }
 
-String
+string
 DODSFilter::get_dataset_name()
 {
     return dataset;
 }
 
-String
+string
 DODSFilter::get_dataset_version()
 {
     return "";
 }
 
-String
+string
 DODSFilter::get_cache_dir()
 {
   return cache_dir;
 }
 
-String
+string
 DODSFilter::get_accept_types()
 {
     return accept_types;
@@ -138,15 +152,15 @@ DODSFilter::get_accept_types()
 bool
 DODSFilter::read_ancillary_das(DAS &das)
 {
-    String name = find_ancillary_file(dataset, "das", anc_dir, anc_file);
-    FILE *in = fopen((const char *)name, "r");
+    string name = find_ancillary_file(dataset, "das", anc_dir, anc_file);
+    FILE *in = fopen(name.c_str(), "r");
  
     if (in) {
 	int status = das.parse(in);
 	fclose(in);
     
 	if(!status) {
-	    String msg = "Parse error in external file " + dataset + ".das";
+	    string msg = "Parse error in external file " + dataset + ".das";
 
 	    // server error message
 	    ErrMsgT(msg);
@@ -166,15 +180,15 @@ DODSFilter::read_ancillary_das(DAS &das)
 bool
 DODSFilter::read_ancillary_dds(DDS &dds)
 {
-    String name = find_ancillary_file(dataset, "dds", anc_dir, anc_file);
-    FILE *in = fopen((const char *)name, "r");
+    string name = find_ancillary_file(dataset, "dds", anc_dir, anc_file);
+    FILE *in = fopen(name.c_str(), "r");
  
     if (in) {
 	int status = dds.parse(in);
 	fclose(in);
     
 	if(!status) {
-	    String msg = "Parse error in external file " + dataset + ".dds";
+	    string msg = "Parse error in external file " + dataset + ".dds";
 
 	    // server error message
 	    ErrMsgT(msg);
@@ -205,7 +219,7 @@ DODSFilter::print_usage()
 	<< " [-d <ancillary file directory>] [-f <ancillary file name>]"
 	<< " <dataset>" << ends;
     ErrMsgT(oss.str());
-    oss.freeze(0);
+    oss.rdbuf()->freeze(0);
 
     // Build an error object to return to the user.
     Error e(unknown_error, emessage);
@@ -226,7 +240,7 @@ DODSFilter::send_version_info()
     if (cgi_ver != "")
 	cout << "Server Script Revision: " << cgi_ver << endl;
 
-    String v = get_dataset_version();
+    string v = get_dataset_version();
     if (v != "")
 	cout << "Dataset version: " << v << endl;
 }
@@ -245,7 +259,7 @@ DODSFilter::send_dds(DDS &dds, bool constrained)
 {
     if (constrained) {
 	if (!dds.parse_constraint(ce, cout, true)) {
-	    String m = program_name + ": parse error in constraint: " 
+	    string m = program_name + ": parse error in constraint: " 
 		+  ce;
 	    ErrMsgT(m);
 	    

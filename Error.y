@@ -1,14 +1,24 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 
 // $Log: Error.y,v $
+// Revision 1.7  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.6.4.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code.
+//
+// Revision 1.6.4.1  1999/02/02 21:56:58  jimg
+// String to string version
+//
 // Revision 1.6  1997/08/23 00:17:19  jimg
 // Added to the `description' rule so that Error objects with only a code
 // will parse.
@@ -35,14 +45,13 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.y,v 1.6 1997/08/23 00:17:19 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.y,v 1.7 1999/04/29 02:29:29 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 
-#include <iostream.h>
+#include <iostream>
 
 #include "Error.h"
 
@@ -71,7 +80,11 @@ void Errorerror(char *s);	// gotta love automatically generated names...
 %}
 
 %union {
+#ifdef __SUNPRO_CC
+    int boolean;
+#else
     bool boolean;
+#endif
     int integer;
     char *string;
 }

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -8,6 +8,16 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.15  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.14.6.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.14.6.1  1999/02/02 21:56:58  jimg
+// String to string version
+//
 // Revision 1.14  1998/03/20 00:18:55  jimg
 // Fixed a bug where _program was feed into strlen even when it is NULL.
 //
@@ -76,7 +86,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.14 1998/03/20 00:18:55 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.15 1999/04/29 02:29:29 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -97,13 +107,13 @@ Error::Error()
 {
 }
 
-Error::Error(ErrorCode ec, String msg)
+Error::Error(ErrorCode ec, string msg)
     : _error_code(ec), _error_message(msg), 
       _program_type(undefined_prog_type), _program(0)
 {
 }
 
-Error::Error(ErrorCode ec, String msg, ProgramType pt, char *pgm)
+Error::Error(ErrorCode ec, string msg, ProgramType pt, char *pgm)
     : _error_code(ec), _error_message(msg), 
       _program_type(pt), _program(0)
 {
@@ -205,7 +215,7 @@ Error::parse(FILE *fp)
 }
     
 void
-Error::print(ostream &os = cout)
+Error::print(ostream &os)
 {
     assert(OK());
 
@@ -215,8 +225,7 @@ Error::print(ostream &os = cout)
     
     // If the error message is wrapped in double quotes, print it, else, add
     // wrapping double quotes.
-    if (_error_message.index("\"", 0) == 0
-	&& _error_message.index("\"", -1) + 1 == (signed int)_error_message.length())
+    if (*_error_message.begin() == '"' && *(_error_message.end()-1) == '"')
 	os << "    " << "message = " << _error_message << ";" << endl;
     else
 	os << "    " << "message = " << "\"" << _error_message << "\"" << ";" 
@@ -231,7 +240,7 @@ Error::print(ostream &os = cout)
 }
 
 ErrorCode
-Error::error_code(ErrorCode ec = undefined_error)
+Error::error_code(ErrorCode ec)
 {
     assert(OK());
     if (ec == undefined_error)
@@ -245,26 +254,26 @@ Error::error_code(ErrorCode ec = undefined_error)
     }
 }
 
-String
-Error::error_message(String msg = "")
+string
+Error::error_message(string msg)
 {
     assert(OK());
     if (msg == "")
-	return String(_error_message);
+	return string(_error_message);
     else {
 	_error_message = msg;
 	assert(OK());
-	return String (_error_message);
+	return string (_error_message);
     }
 }
 
 void
-Error::display_message(Gui *gui = 0)
+Error::display_message(Gui *gui)
 {
     assert(OK());
     if (gui && gui->show_gui()) {
-	String cmd = (String)"dialog " + _error_message + "\r";
-	String response;	// not used
+	string cmd = (string)"dialog " + _error_message + "\r";
+	string response;	// not used
 	// You must use response() with dialog so that expect will wait for
 	// the user to hit OK.
 	gui->response(cmd, response);
@@ -277,7 +286,7 @@ Error::display_message(Gui *gui = 0)
 // 2/26/97
 
 ProgramType
-Error::program_type(ProgramType pt = undefined_prog_type)
+Error::program_type(ProgramType pt)
 {
     assert(OK());
     if (pt == undefined_prog_type)
@@ -289,7 +298,7 @@ Error::program_type(ProgramType pt = undefined_prog_type)
 }
 
 char *
-Error::program(char *pgm = 0)
+Error::program(char *pgm)
 {
     if (pgm == 0)
 	return _program;
@@ -308,23 +317,23 @@ Error::program(char *pgm = 0)
 // any procedure definitions, etc. it must also contain the necessary
 // instructions to popup an initial window).
 
-String
+string
 Error::correct_error(Gui *gui)
 {
     assert(OK());
     if (!OK())
-	return String("");
+	return string("");
 
     if (program()) {
-	String result;
+	string result;
 
 	if (gui->response(program(), result))
 	    return result;
 	else
-	    return String("");
+	    return string("");
     }
     else {
 	display_message(gui);
-	return String("");
+	return string("");
     }
 }

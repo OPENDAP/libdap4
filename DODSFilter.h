@@ -1,19 +1,25 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1997
-// Please first read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-1999
+// Please first read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.7  1999/04/29 02:29:28  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.6  1999/02/22 22:58:02  jimg
 // Added the get_accept_types() accessor. Also added to the ctor so that the -t
 // option will be parsed properly and used to set the value of accept_types.
 //
 // Revision 1.5  1999/01/21 20:42:01  tom
 // Fixed comment formatting problems for doc++
+//
+// Revision 1.4.2.1  1999/02/02 21:56:57  jimg
+// String to string version
 //
 // Revision 1.4  1998/08/06 16:11:47  jimg
 // Added cache_dir member (from jeh).
@@ -35,7 +41,7 @@
 #pragma "interface"
 #endif
 
-#include <String.h>
+#include <string>
 
 /** When a DODS server receives a request from a DODS client, the
     server CGI script dispatches the request to one of several
@@ -65,14 +71,14 @@ private:
     bool ver;			// True if the caller wants version info.
     bool bad_options;		// True if the options (argc,argv) are bad.
 
-    String program_name;	// Name of the filter program
-    String dataset;		// Name of the dataset/database 
-    String ce;			// Constraint expression 
-    String cgi_ver;		// Version of CGI script (caller)
-    String anc_dir;		// Look here for ancillary files
-    String anc_file;		// Use this for ancillary file name
-    String cache_dir;		// Use this for cache files
-    String accept_types;	// List of types the client understands.
+    string program_name;	// Name of the filter program
+    string dataset;		// Name of the dataset/database 
+    string ce;			// Constraint expression 
+    string cgi_ver;		// Version of CGI script (caller)
+    string anc_dir;		// Look here for ancillary files
+    string anc_file;		// Use this for ancillary file name
+    string cache_dir;		// Use this for cache files
+    string accept_types;	// List of types the client understands.
 
     DODSFilter() {}		// Private default ctor.
 
@@ -146,13 +152,13 @@ public:
       */
     bool version();
 
-  /** Return the entire constraint expression in a String.  This
+  /** Return the entire constraint expression in a string.  This
       includes both the projection and selection clauses, but not the
       question mark.
 
       @memo Get the constraint expression. 
-      @return A String object that contains the constraint expression. */
-    String get_ce();
+      @return A string object that contains the constraint expression. */
+    string get_ce();
 
   /** The ``dataset name'' is the filename or other string that the
       filter program will use to access the data. In some cases this
@@ -161,25 +167,25 @@ public:
       access method. 
 
       @memo Get the dataset name. 
-      @return A String object that contains the name of the dataset. */
-    String get_dataset_name();
+      @return A string object that contains the name of the dataset. */
+    string get_dataset_name();
 
   /** To read version information that is specific to a certain
       dataset, override this method with an implementation that does
       what you want. By default, this returns an empty string.
 
       @memo Get the version information for the dataset.  
-      @return A String object that contains the dataset version
+      @return A string object that contains the dataset version
       information.  */ 
-    virtual String get_dataset_version();
+    virtual string get_dataset_version();
 
   /** The #cache_dir# is used to hold the cached .dds and .das files.
       By default, this returns an empty string (store cache files in
       current directory.
 
       @memo Get the cache directory.
-      @return A String object that contains the cache file directory.  */
-    virtual String get_cache_dir();
+      @return A string object that contains the cache file directory.  */
+    virtual string get_cache_dir();
 
     /** Get the list of accepted datatypes sent by the client. If no list was
 	sent, return the string `All'. 
@@ -190,7 +196,7 @@ public:
 
 	@see DODSFilter
 	@return A string containing a list of the accepted types. */
-    String get_accept_types();
+    string get_accept_types();
 
   /** Read the ancillary DAS information and merge it into the input
       DAS object.

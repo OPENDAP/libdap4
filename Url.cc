@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,12 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
+// Revision 1.16  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.15.14.1  1999/02/02 21:57:04  jimg
+// String to string version
+//
 // Revision 1.15  1996/06/04 21:33:48  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -102,11 +108,10 @@
 #endif
 
 #include <assert.h>
-#include <string.h>
 
 #include "Url.h"
 
-Url::Url(const String &n) : Str(n)
+Url::Url(const string &n) : Str(n)
 {
     set_type(dods_url_c);		// override the type set by Str
 }

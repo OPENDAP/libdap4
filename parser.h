@@ -1,8 +1,8 @@
 
 // -*- c++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -12,6 +12,9 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.11  1999/04/29 02:29:37  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.10  1999/03/24 23:28:36  jimg
 // Added support for the new Int16, UInt16 and Float32 types.
 // Removed some unused versions of the error printing functions.
@@ -26,6 +29,10 @@
 // Revision 1.7  1998/11/10 00:45:15  jimg
 // Fixed a memory leak in the parser_arg dtor. If the Error object is created
 // the dtor must delete it.
+//
+// Revision 1.6.14.1  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
 //
 // Revision 1.6  1997/02/28 01:30:53  jimg
 // Tweaked comments.
@@ -51,6 +58,8 @@
 
 #ifndef _parser_h
 #define _parser_h
+
+#include "Error.h"
 
 #define YYDEBUG 1
 #undef YYERROR_VERBOSE
@@ -145,6 +154,7 @@ void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
     */
 
 void save_str(char *dst, const char *src, const int line_num);
+void save_str(string &dst, const char *src, const int);
 
 /** Check to see if #val# is a valid byte value. If not, generate an error
     message using #parser_error()#. There are two versions of #check_byte()#,

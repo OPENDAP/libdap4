@@ -1,7 +1,7 @@
 
 /* 
-   (c) COPYRIGHT URI/MIT 1994-1996
-   Please read the full copyright statement in the file COPYRIGH.  
+   (c) COPYRIGHT URI/MIT 1994-1999
+   Please read the full copyright statement in the file COPYRIGHT.
 
    Authors:
         jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -31,6 +31,9 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.23  1999/04/29 02:29:36  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.22  1999/03/24 23:32:49  jimg
  * Added support for the new Int16, UInt16 and Float32 types.
  *
@@ -43,9 +46,13 @@
  * Replace this hack with MP/MIME code!
  *
  * Revision 1.20  1999/01/21 02:51:27  jimg
- * The dds scanner now recognizes the token `Data:' as an EOF marker. This means
- * that the data document can be scanned without splitting the DDS and binary
- * data parts into two files.
+ * The dds scanner now recognizes the token `Data:' as an EOF marker. This
+ * means that the data document can be scanned without splitting the DDS and
+ * binary data parts into two files.
+ *
+ * Revision 1.19.6.1  1999/02/05 09:32:36  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+ * math code. 
  *
  * Revision 1.19  1998/03/26 00:26:24  jimg
  * Added % to the set of characters that can start and ID
@@ -75,7 +82,7 @@
  * Changes for version 2.07
  *
  * Revision 1.11  1996/08/13 18:51:52  jimg
- * Added __unused__ to definition of char rcsid[].
+ * Added not_used to definition of char rcsid[].
  *
  * Revision 1.10  1996/05/31 23:30:55  jimg
  * Updated copyright notice.
@@ -115,7 +122,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.22 1999/03/24 23:32:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.23 1999/04/29 02:29:36 jimg Exp $"};
 
 #include <string.h>
 

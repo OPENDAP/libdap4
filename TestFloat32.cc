@@ -10,6 +10,9 @@
 // 3/22/99 jhrg
 
 // $Log: TestFloat32.cc,v $
+// Revision 1.2  1999/04/29 02:29:32  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.1  1999/03/24 23:40:05  jimg
 // Added
 //
@@ -21,12 +24,12 @@
 #include "TestFloat32.h"
 
 Float32 *
-NewFloat32(const String &n)
+NewFloat32(const string &n)
 {
     return new TestFloat32(n);
 }
 
-TestFloat32::TestFloat32(const String &n) : Float32(n)
+TestFloat32::TestFloat32(const string &n) : Float32(n)
 {
 }
 
@@ -37,7 +40,7 @@ TestFloat32::ptr_duplicate()
 }
  
 bool
-TestFloat32::read(const String &, int &)
+TestFloat32::read(const string &, int &)
 {
     if (read_p())
 	return true;

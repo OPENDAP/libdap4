@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1997
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -17,8 +17,18 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.34  1999/04/29 02:29:35  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.33  1999/03/24 23:33:44  jimg
  * Added support for the new Int16, UInt16 and Float32 types.
+ *
+ * Revision 1.32.12.2  1999/02/05 09:32:35  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+ * math code. 
+ *
+ * Revision 1.32.12.1  1999/02/02 21:57:06  jimg
+ * String to string version
  *
  * Revision 1.32  1997/07/01 00:13:23  jimg
  * Fixed a bug when vectors of UInt32 were used. I changed the way the type
@@ -166,15 +176,19 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.33 1999/03/24 23:33:44 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.34 1999/04/29 02:29:35 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <assert.h>
 
-#include <strstream.h>
-#include <SLList.h>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
+#include <vector>
 
 #include "DAS.h"
 #include "Error.h"
@@ -203,17 +217,17 @@ static char rcsid[] __unused__ = {"$Id: das.y,v 1.33 1999/03/24 23:33:44 jimg Ex
 
 extern int das_line_num;	/* defined in das.lex */
 
-static char name[ID_MAX];	/* holds name in attr_pair rule */
-static char type[ID_MAX];	/* holds type in attr_pair rule */
+static string name;	/* holds name in attr_pair rule */
+static string type;	/* holds type in attr_pair rule */
 
-static SLList<AttrTablePtr> *attr_tab_stack;
+static vector<AttrTablePtr> *attr_tab_stack;
 
-// I use a SLList of AttrTable pointers for a stack
+// I use a vector of AttrTable pointers for a stack
 
-#define TOP_OF_STACK (attr_tab_stack->front())
-#define PUSH(x) (attr_tab_stack->prepend((x)))
-#define POP (attr_tab_stack->remove_front())
-#define STACK_LENGTH (attr_tab_stack->length())
+#define TOP_OF_STACK (attr_tab_stack->back())
+#define PUSH(x) (attr_tab_stack->push_back(x))
+#define POP (attr_tab_stack->pop_back())
+#define STACK_LENGTH (attr_tab_stack->size())
 #define STACK_EMPTY (attr_tab_stack->empty())
 
 #define TYPE_NAME_VALUE(x) type << " " << name << " " << (x)
@@ -228,7 +242,7 @@ Check that the URL is correct.";
 void mem_list_report();
 int daslex(void);
 void daserror(char *s);
-String attr_name(String name);
+string attr_name(string name);
 
 %}
 
@@ -299,7 +313,7 @@ attribute:    	ATTR
                 /* Create the AttrTable stack if necessary */
                 {
 		    if (!attr_tab_stack)
-			attr_tab_stack = new SLList<AttrTablePtr>;
+			attr_tab_stack = new vector<AttrTablePtr>;
 		}
                 '{' attr_list '}'
                 | error
@@ -316,8 +330,8 @@ attr_list:  	/* empty */
 
 attr_tuple:	alias
 
-                | BYTE { save_str(type, "Byte", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+                | BYTE { type = "Byte"; }
+                ID { name = $3; } 
 		bytes ';'
 
 		| INT16 { save_str(type, "Int16", das_line_num); } 
@@ -344,12 +358,12 @@ attr_tuple:	alias
                 ID { save_str(name, $3, das_line_num); } 
 		float64 ';'
 
-		| STRING { save_str(type, "String", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+		| STRING { type = "String"; } 
+                ID { name = $3; } 
 		strs ';'
 
-		| URL { save_str(type, "Url", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+		| URL { type = "Url"; } 
+                ID { name = $3; } 
 		urls ';'
 
 		| ID 
@@ -361,13 +375,13 @@ attr_tuple:	alias
 		    if (STACK_EMPTY) {
 			at = DAS_OBJ(arg)->get_table($1);
 			if (!at)
-			    at = DAS_OBJ(arg)->add_table((String)$1, 
+			    at = DAS_OBJ(arg)->add_table($1, 
 							 new AttrTable);
 		    }
 		    else {
-			at = TOP_OF_STACK->get_attr_table((String)$1);
+			at = TOP_OF_STACK->get_attr_table((string)$1);
 			if (!at)
-			    at = TOP_OF_STACK->append_container((String)$1);
+			    at = TOP_OF_STACK->append_container((string)$1);
 		    }
 
 		    PUSH(at);
@@ -395,14 +409,14 @@ bytes:		INT
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Byte value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -458,14 +472,14 @@ int16:		INT
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -530,14 +544,14 @@ int32:		INT
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -634,14 +648,14 @@ float32:	float_or_int
 			msg << "`" << $1 << "' is not a Float32 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -656,14 +670,14 @@ float64:	float_or_int
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -676,14 +690,14 @@ float64:	float_or_int
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -697,7 +711,7 @@ strs:		str_or_id
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0); 
+			msg.rdbuf()->freeze(0); 
 			YYABORT;
 		    }
 		}
@@ -708,7 +722,7 @@ strs:		str_or_id
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -721,14 +735,14 @@ urls:		url
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a String value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -739,14 +753,14 @@ urls:		url
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a String value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -763,7 +777,7 @@ float_or_int:   FLOAT | INT
 
 alias:          ALIAS ID 
                 { 
-		    save_str(name, $2, das_line_num); 
+		    name = $2;
 		} 
                 ID
                 {
@@ -780,17 +794,17 @@ alias:          ALIAS ID
 			// is no object on the stack so we must be working at
 			// the outer most level of the attribute object).
 			AttrTable *at = DAS_OBJ(arg)->get_table($4);
-			DAS_OBJ(arg)->add_table(name, at);
+			DAS_OBJ(arg)->add_table(name.c_str(), at);
 		    }
 		    else if (!TOP_OF_STACK->attr_alias(name, $4)) {
 			AttrTable *table = DAS_OBJ(arg)->get_table($4);
 			if (!TOP_OF_STACK->attr_alias(name, table, 
-						      attr_name((String)$4))) {
+						      attr_name($4))) {
 			    ostrstream msg;
 			    msg << "Could not alias `" << $4 << "' and `" 
 				<< name << "'." << ends;
 			    parse_error((parser_arg *)arg, msg.str());
-			    msg.freeze(0);
+			    msg.rdbuf()->freeze(0);
 			    YYABORT;
 			}
 		    }
@@ -810,12 +824,12 @@ daserror(char *)
 // Return the rightmost component of name (where each component is separated
 // by `.'.
 
-String
-attr_name(String name)
+string
+attr_name(string name)
 {
-    String n = name.after(".");
-    if (n.contains("."))
-	return attr_name(n);
+    unsigned int i = name.rfind('.');
+    if(i==name.npos)
+      return name;
     else
-	return n;
+      return name.substr(i+1);
 }

@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -12,8 +12,14 @@
 
 /* 
  * $Log: Url.h,v $
+ * Revision 1.17  1999/04/29 02:29:34  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.16  1999/03/24 23:35:11  jimg
  * Added support for the new Int16, UInt16 and Float32 types.
+ *
+ * Revision 1.15.6.1  1999/02/02 21:57:04  jimg
+ * String to string version
  *
  * Revision 1.15  1998/01/12 14:28:00  tom
  * Second pass at class documentation.
@@ -115,7 +121,7 @@
 #include <limits.h>
 #endif
 
-#include <String.h>
+#include <string>
 
 #include "dods-limits.h"
 #include "BaseType.h"
@@ -129,23 +135,23 @@ const unsigned int max_url_len = 255;
     @see Str */
 class Url: public Str {
 
+protected:
+    string _buf;
+
     /** This enable instances of Str to access _buf in this class. */
     friend class Str;
-
-protected:
-    String _buf;
 
 public:
   /** The URL constructor requires only the name of the variable
       to be created.  The name may be omitted, which will create a
       nameless variable.  This may be adequate for some applications. 
       
-      @param n A String containing the name of the variable to be
+      @param n A string containing the name of the variable to be
       created. 
 
       @memo The URL constructor.
       */
-    Url(const String &n = (char *)0);
+    Url(const string &n = "");
     virtual ~Url() {}
 
     virtual BaseType *ptr_duplicate() = 0;

@@ -4,6 +4,13 @@
 
 /* 
  * $Log: config_dap.h.in,v $
+ * Revision 1.27  1999/04/29 02:29:34  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.26.6.1  1999/02/05 09:35:28  jimg
+ * Changed the macro __unused__ to not_used to avoid a conflict in Red Hat's
+ * inlined math code.
+ *
  * Revision 1.26  1997/12/31 20:07:37  jimg
  * Removed the old, errant, test for 4 byte doubles.
  *
@@ -219,9 +226,9 @@
 /* GNU gcc/g++ provides a way to mark variables, etc. as unused */
 
 #if defined(__GNUG__) || defined(__GNUC__)
-#define __unused__ __attribute__ ((unused))
+#define not_used __attribute__ ((unused))
 #else
-#define __unused__ 
+#define not_used 
 #endif
 
 /*

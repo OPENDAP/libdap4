@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -12,8 +12,14 @@
 
 /* 
  * $Log: Float64.h,v $
+ * Revision 1.24  1999/04/29 02:29:29  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.23  1999/03/24 23:37:14  jimg
  * Added support for the Int16, UInt16 and Float32 types
+ *
+ * Revision 1.22.6.1  1999/02/02 21:56:59  jimg
+ * String to string version
  *
  * Revision 1.22  1998/01/12 14:27:57  tom
  * Second pass at class documentation.
@@ -180,31 +186,31 @@ public:
       to be created.  The name may be omitted, which will create a
       nameless variable.  This may be adequate for some applications. 
       
-      @param n A String containing the name of the variable to be
+      @param n A string containing the name of the variable to be
       created. 
 
       @memo The Float64 constructor.
       */
-    Float64(const String &n = (char *)0);
+    Float64(const string &n = "");
     virtual ~Float64() {}
 
     virtual BaseType *ptr_duplicate() = 0;
     
     virtual unsigned int width();
 
-    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual void print_val(ostream &os, String space = "", 
+    virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const string &dataset);
 };
 
 #endif

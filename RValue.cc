@@ -11,6 +11,9 @@
 // jhrg 3/4/96
 
 // $Log: RValue.cc,v $
+// Revision 1.3  1999/04/29 02:29:31  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.2  1999/01/21 02:54:27  jimg
 // Fixed dataset; this variable should be the filename of the dataset, not the
 // value returned by get_data_name() which is the DODS name of the dataset. This
@@ -55,7 +58,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: RValue.cc,v 1.2 1999/01/21 02:54:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.3 1999/04/29 02:29:31 jimg Exp $"};
 
 #include <assert.h>
 
@@ -85,7 +88,7 @@ rvalue::~rvalue()
     // frees. 
 }
 
-String
+string
 rvalue::value_name()
 {
     assert(value);
@@ -102,7 +105,7 @@ rvalue::value_name()
 // func_rvalue's bvalue() mfunc. 
 
 BaseType *
-rvalue::bvalue(const String &dataset, DDS &dds) 
+rvalue::bvalue(const string &dataset, DDS &dds) 
 {
     int error = 0;
 
@@ -142,7 +145,7 @@ build_btp_args(rvalue_list *args, DDS &dds)
 
     // Add space for a null terminator
     BaseType **argv = new (BaseType *)[argc + 1]; 
-    String dataset = dds.filename();
+    string dataset = dds.filename();
 		
     int i = 0;
     if (argc) {

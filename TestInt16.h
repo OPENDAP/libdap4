@@ -13,6 +13,9 @@
 
 /* 
  * $Log: TestInt16.h,v $
+ * Revision 1.2  1999/04/29 02:29:32  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.1  1999/03/24 23:40:06  jimg
  * Added
  *
@@ -29,12 +32,12 @@
 
 class TestInt16: public Int16 {
 public:
-    TestInt16(const String &n = (char *)0);
+    TestInt16(const string &n = "");
     virtual ~TestInt16() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 #endif

@@ -11,6 +11,9 @@
 // 1/15/99 jhrg
 
 // $Log: ce_functions.cc,v $
+// Revision 1.4  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.3  1999/04/22 22:30:52  jimg
 // Uses dynamic_cast
 //
@@ -24,7 +27,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: ce_functions.cc,v 1.3 1999/04/22 22:30:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.4 1999/04/29 02:29:34 jimg Exp $"};
 
 #include <iostream.h>
 #include <vector.h>
@@ -50,7 +53,7 @@ void gse_switch_to_buffer(void *new_buffer);
 void gse_delete_buffer(void * buffer);
 void *gse_string(const char *yy_str);
 
-String
+string
 extract_string_argument(BaseType *arg)
 {
     if (arg->type() != dods_str_c)
@@ -59,9 +62,9 @@ extract_string_argument(BaseType *arg)
     
     // Use String until conversion of String to string is complete. 9/3/98
     // jhrg
-    String *sp = 0;
+    string *sp = 0;
     arg->buf2val((void **)&sp);
-    String s = sp->chars();
+    string s = *sp;
     delete sp;
 
     DBG(cerr << "s: " << s << endl);
@@ -219,7 +222,7 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
     vector<GSEClause *> clauses;
     for (int i = 1; i < argc; ++i) {
 	gse_restart(0);
-	void *cls = gse_string(extract_string_argument(argv[i]));
+	void *cls = gse_string(extract_string_argument(argv[i]).c_str());
 	gse_switch_to_buffer(cls);
 	gse_arg *arg = new gse_arg(grid);
 	bool status = gse_parse((void *)arg) == 0;
@@ -232,7 +235,7 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 
     for (Pix p = grid->first_map_var(); p; grid->next_map_var(p)) {
 	Array *map = dynamic_cast<Array *>(grid->map_var(p));
-	String map_name = map->name();
+	string map_name = map->name();
 	// Init start and stop to the whole vector.
 	// For each instance of map_name in the vector<GSEClause>
 	//     if clause-instance (CI) start >= current map start

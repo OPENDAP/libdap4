@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -13,6 +13,9 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.31  1999/04/29 02:29:28  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.30  1999/01/21 20:42:01  tom
 // Fixed comment formatting problems for doc++
 //
@@ -31,6 +34,9 @@
 // Added leaf_match and exact_match.
 // Added two new versions of the var member function.
 // Fixed documentation.
+//
+// Revision 1.25.4.1  1999/02/02 21:56:57  jimg
+// String to string version
 //
 // Revision 1.25  1998/07/13 20:20:43  jimg
 // Fixes from the final test of the new build process
@@ -168,8 +174,8 @@
 
 #include "config_dap.h"
 
-#include <iostream.h>
-#include <String.h>
+#include <iostream>
+#include <string>
 #include <Pix.h>
 #include <SLList.h>
 
@@ -270,42 +276,44 @@ private:
     // This struct is used to hold all the known `user defined' functions
     // (including those that are `built-in'). 
     struct function {
-	String name;
+	string name;
 	bool_func b_func;
 	btp_func bt_func;
 	proj_func p_func;
 
-	function(const String &n, const bool_func f)
+	function(const string &n, const bool_func f)
 	    : name(n), b_func(f), bt_func(0), p_func(0) {}
-	function(const String &n, const btp_func f)
+	function(const string &n, const btp_func f)
 	    : name(n), b_func(0), bt_func(f), p_func(0) {}
-	function(const String &n, const proj_func f)
+	function(const string &n, const proj_func f)
 	    : name(n), b_func(0), bt_func(0), p_func(f) {}
 	function(): name(""), b_func(0), bt_func(0), p_func(0) {}
     };
 
-    String name;		// The dataset name
+    string name;		// The dataset name
 
-    String _filename;		// File name (or other OS identifier) for
+    string _filename;		// File name (or other OS identifier) for
 				// dataset or part of dataset.
 
-    SLList<BaseTypePtr> vars;	// Variables at the top level 
+    SLList<BaseType *> vars;	// Variables at the top level 
     
     SLList<Clause *> expr;	// List of CE Clauses
 
-    SLList<BaseTypePtr> constants;// List of temporary objects
+    SLList<BaseType *> constants;// List of temporary objects
 
     SLList<function> functions; // Known external functions
 
     void duplicate(const DDS &dds);
-    BaseType *leaf_match(const String &name);
-    BaseType *exact_match(const String &name);
+    BaseType *leaf_match(const string &name);
+    BaseType *exact_match(const string &name);
 
 public:
     /** Creates a DDS with the given string for its name. */
-    DDS(const String &n = (char *)0);
+    DDS(const string &n = "");
+
     /** The DDS copy constructor. */
     DDS(const DDS &dds);
+
     ~DDS();
 
     DDS & operator=(const DDS &rhs); 
@@ -317,24 +325,26 @@ public:
 	@name Dataset Name Accessors */
 
     //@{
+      
     /** Returns the dataset's name. */
-    String get_dataset_name();
+    string get_dataset_name();
+
     /** Sets the dataset name. */
-    void set_dataset_name(const String &n);
+    void set_dataset_name(const string &n);
     //@}
 
     /** Get and set the dataset's filename. This is the physical
-      location on a disk where the dataset exists.  The dataset name
-      is simply a title.
+	location on a disk where the dataset exists.  The dataset name
+	is simply a title.
 
-      @name File Name Accessor
-      @see Dataset Name Accessors */
+	@name File Name Accessor
+	@see Dataset Name Accessors */
 
     //@{
     /** Gets the dataset file name. */
-    String filename();
+    string filename();
     /** Set the dataset's filename. */
-    void filename(const String &fn);
+    void filename(const string &fn);
     //@}
 
     /** Methods for manipulating the DDS contents. 
@@ -343,15 +353,16 @@ public:
 	@name Variable Methods */
 
     //@{
+
     /** Adds a variable to the DDS. */
     void add_var(BaseType *bt);
+
     /** Removes a variable from the DDS. */
-    void del_var(const String &n);
+    void del_var(const string &n);
 
     /** Returns a pointer to a variable from the DDS. 
 
-	@name var()
-    */
+	@name var() */
 
     //@{
     /** Returns a pointer to the named variable. If the name contains one or
@@ -367,7 +378,7 @@ public:
 	use fully qualified names to get each of those variables.}
 
 	@return A pointer to the variable or null if not found. */
-    BaseType *var(const String &n);
+    BaseType *var(const string &n);
 
     /** Returns a pointer to the named variable.
 	@return A pointer to the variable or null if not found. */
@@ -380,21 +391,22 @@ public:
 
 	@return A BaseType pointer to the variable {\it n} or 0 if {\it n}
 	could not be found. */
-    BaseType *var(const String &n, btp_stack &s);
+    BaseType *var(const string &n, btp_stack &s);
 
-    /** Returns a pointer to the indicated variable.
-	@return A pointer to the variable or null if not found. */
+    /** Returns a pointer to the indicated variable. */
     BaseType *var(Pix p);
     //@}
 
     /** Returns the first variable in the DDS. */
     Pix first_var();
+
     /** Increments the DDS variable counter to point at the next
 	variable. */
     void next_var(Pix &p);
+
     /** Returns the number of variables in the DDS. */
     int num_var();
-    //@}
+    //@} This is the end of the `Methods for manip...' subsection.
 
     /** Each DDS carries with it a list of external functions it can use to
 	evaluate a constraint expression. If a constraint contains any of
@@ -402,43 +414,37 @@ public:
 	it. The functions are of two types: those that return boolean values,
 	and those that return real (also called BaseType) values.
 
-      These methods are used to manipulate this list of known
-      external functions.
+	These methods are used to manipulate this list of known
+	external functions.
 
-      @name External Function Accessors
-      @memo Manipulate the list of external functions.  */
+	@name External Function Accessors
+	@memo Manipulate the list of external functions.  */
 
     //@{
-#if 0
-    template<class FUNC_T> void add_function(const String &name, FUNC_T f);
-#endif
-#if 1
-    /** Add a boolean function to the list. */
-    void add_function(const String &name, bool_func f);
-    /** Add a BaseType function to the list. */
-    void add_function(const String &name, btp_func f);
-    /** Add a projection function to the list. */
-    void add_function(const String &name, proj_func f);
-#endif
+    /** Add a function to the list. */
+    template <class FUNC_T> void add_function(const string &name, FUNC_T f);
 
-    /** Find a boolean function with a given name in the function list. */
-    bool find_function(const String &name, bool_func *f) const;
+    /** Find a Boolean function with a given name in the function list. */
+    bool find_function(const string &name, bool_func *f) const;
+
     /** Find a BaseType function with a given name in the function list. */
-    bool find_function(const String &name, btp_func *f) const;
+    bool find_function(const string &name, btp_func *f) const;
+
     /** Find a projection function with a given name in the function list. */
-    bool find_function(const String &name, proj_func *f) const;
+    bool find_function(const string &name, proj_func *f) const;
+
     //@}
 
     /** These member functions are used to access and manipulate the
-      constraint expression that may be part of a DDS.  Most of them
-      are only used by the constraint expression parser.
+	constraint expression that may be part of a DDS.  Most of them
+	are only used by the constraint expression parser.
 
-      Refer to {\it The DODS User Manual} for a complete description
-      of constraint expressions.
+	Refer to {\it The DODS User Manual} for a complete description
+	of constraint expressions.
 
-      @name Constraint Expression
-      @memo Constraint expression manipulators and accessors.
-      @see Clause */
+	@name Constraint Expression
+	@memo Constraint expression manipulators and accessors.
+	@see Clause */
 
     //@{
     /** Returns a pointer to the first clause in a parsed constraint
@@ -449,13 +455,15 @@ public:
     void next_clause(Pix &p);
     /** Returns a clause of a parsed constraint expression. */
     Clause &clause(Pix p);
+
     /** Returns the value of the indicated clause of a constraint
 	expression. */
-    bool clause_value(Pix p, const String &dataset);
+    bool clause_value(Pix p, const string &dataset);
 
     /** Adds a clause to a constraint expression.
 
-	@name append\_clause() */
+	@name append\_clause()
+    */
 
     //@{
     /** This function adds an operator clause to the constraint
@@ -467,7 +475,9 @@ public:
 	@param arg1 A pointer to the argument on the left side of the
 	operator. 
 	@param arg2 A pointer to a list of the arguments on the right
-	side of the operator. */
+	side of the operator.
+    */
+
     void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
     /** This function adds a boolean function clause to the constraint
 	expression. 
@@ -479,6 +489,7 @@ public:
 	@param args A list of arguments to that function.
 	@see External Function Accessors */
     void append_clause(bool_func func, rvalue_list *args);
+
     /** This function adds a real-valued (BaseType) function clause to
 	the constraint expression.
 
@@ -489,8 +500,8 @@ public:
 	@param args A list of arguments to that function.
 	@see External Function Accessors */
     void append_clause(btp_func func, rvalue_list *args);
-
     //@}
+
     /** Does the current constraint expression return a BaseType
 	pointer? */
     bool functional_expression();
@@ -499,10 +510,10 @@ public:
     bool boolean_expression();
 
     /** Evaluate a function-valued constraint expression. */
-    BaseType *eval_function(const String &dataset);
+    BaseType *eval_function(const string &dataset);
 
     /** Evaluate a boolean-valued constraint expression. */
-    bool eval_selection(const String &dataset);
+    bool eval_selection(const string &dataset);
     
     /** Parse a constraint expression.
 
@@ -520,13 +531,14 @@ public:
 	messages. 
 	@param server If true, send errors back to client instead of
 	displaying errors on the default output stream. */ 
-    bool parse_constraint(const String &constraint, ostream &os = cout,
+    bool parse_constraint(const string &constraint, ostream &os = cout,
 			  bool server = true);
 
     /** @param out A FILE pointer to which error objects should be wrtten. */
-    bool parse_constraint(const String &constraint, FILE *out,
+    bool parse_constraint(const string &constraint, FILE *out,
 			  bool server = true);
     //@}
+
     /** The DDS maintains a list of BaseType pointers for all the constants
 	that the constraint expression parser generates. These objects are
 	deleted by the DDS destructor. Note that there are no list accessors;
@@ -537,8 +549,7 @@ public:
 	the constraint expression parser. */
     void append_constant(BaseType *btp);
 
-    //@}
-    /** Read a DDS from a file. This method calls a generated parser,
+    /** Read a DDS from a file.  This method calls a generated parser,
 	#ddsparse()#, to interpret an ASCII representation of a DDS, and
 	regenerate that DDS in memory.
 
@@ -547,10 +558,13 @@ public:
 	@see Print Methods */
 
     //@{
+
     /** Parse a DDS from a file with the given name. */
-    bool parse(String fname);
+    bool parse(string fname);
+
     /** Parse a DDS from a file indicated by the input file descriptor. */
     bool parse(int fd);
+
     /** Parse a DDS from a file indicated by the input file descriptor. */
     bool parse(FILE *in=stdin);
     //@}
@@ -593,14 +607,14 @@ public:
 	@see parse_constraint
 	@see BaseType::read
 	@see BaseType::serialize */
-
-    bool send(const String &dataset, const String &constraint, FILE *out, 
+    bool send(const string &dataset, const string &constraint, FILE *out, 
 	      bool compressed = true);
 
     /** Mark the member variable #send_p# flags to {\it state}. */
     void mark_all(bool state);
+
     /** Mark the #send_p# flag of the named variable to {\it state}. */
-    bool mark(const String &name, bool state);
+    bool mark(const string &name, bool state);
 
     /** Check the semantics of each of the variables represented in the
 	DDS. 

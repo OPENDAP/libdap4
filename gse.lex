@@ -24,6 +24,9 @@
 
 /*
  * $Log: gse.lex,v $
+ * Revision 1.2  1999/04/29 02:29:37  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.1  1999/01/21 02:07:44  jimg
  * Created
  *
@@ -33,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: gse.lex,v 1.1 1999/01/21 02:07:44 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.lex,v 1.2 1999/04/29 02:29:37 jimg Exp $"};
 
 #define YY_DECL int gse_lex YY_PROTO(( void ))
 #define ID_MAX 256

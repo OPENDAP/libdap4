@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1996,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,12 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
+// Revision 1.16  1999/04/29 02:29:33  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.15.14.1  1999/02/02 21:57:03  jimg
+// String to string version
+//
 // Revision 1.15  1996/08/13 20:50:49  jimg
 // Changed definition of the read member function.
 //
@@ -76,19 +82,17 @@
 #pragma implementation
 #endif
 
-#include <string.h>
-
-#include <String.h>
+#include <string>
 
 #include "TestStr.h"
 
 Str *
-NewStr(const String &n)
+NewStr(const string &n)
 {
     return new TestStr(n);
 }
 
-TestStr::TestStr(const String &n) : Str(n)
+TestStr::TestStr(const string &n) : Str(n)
 {
 }
 
@@ -99,12 +103,12 @@ TestStr::ptr_duplicate()
 }
 
 bool
-TestStr::read(const String &, int &)
+TestStr::read(const string &, int &)
 {
     if (read_p())
 	return true;
 
-    String dods_str_test="Silly test string: one, two, ...";
+    string dods_str_test="Silly test string: one, two, ...";
     
     (void) val2buf(&dods_str_test);
 

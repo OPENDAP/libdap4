@@ -11,6 +11,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt16.h,v $
+// Revision 1.2  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.1  1999/03/24 23:40:06  jimg
 // Added
 //
@@ -58,26 +61,26 @@ protected:
     dods_uint16 _buf;
 
 public:
-    UInt16(const String &n = (char *)0);
+    UInt16(const string &n = "");
     virtual ~UInt16() {}
 
     virtual BaseType *ptr_duplicate() = 0;
     
     virtual unsigned int width();
 
-    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual void print_val(ostream &os, String space = "",
+    virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const string &dataset);
 };
 
 #endif

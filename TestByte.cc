@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1996,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -15,6 +15,12 @@
 // jhrg 1/12/95
 
 // $Log: TestByte.cc,v $
+// Revision 1.15  1999/04/29 02:29:32  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.14.14.1  1999/02/02 21:57:02  jimg
+// String to string version
+//
 // Revision 1.14  1996/08/13 20:50:40  jimg
 // Changed definition of the read member function.
 //
@@ -98,12 +104,12 @@
 // changing. 
 
 Byte *
-NewByte(const String &n)
+NewByte(const string &n)
 {
     return new TestByte(n);
 }
 
-TestByte::TestByte(const String &n) : Byte(n)
+TestByte::TestByte(const string &n) : Byte(n)
 {
 }
 
@@ -114,7 +120,7 @@ TestByte::ptr_duplicate()
 }
 
 bool
-TestByte::read(const String &, int &)
+TestByte::read(const string &, int &)
 {
     if (read_p())
 	return true;

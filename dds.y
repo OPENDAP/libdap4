@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1997
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -24,11 +24,21 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.25  1999/04/29 02:29:36  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.24  1999/03/24 23:32:33  jimg
  * Added support for the new Int16, UInt16 and Float32 types.
  *
  * Revision 1.23  1998/08/13 22:12:44  jimg
  * Fixed error messages.
+ *
+ * Revision 1.22.6.2  1999/02/05 09:32:36  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+ * math code. 
+ *
+ * Revision 1.22.6.1  1999/02/02 21:57:06  jimg
+ * String to string version
  *
  * Revision 1.22  1997/11/20 20:14:10  jimg
  * Added to the name rule so that it recognizes both the ID and NAME lexeme
@@ -130,20 +140,26 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.y,v 1.24 1999/03/24 23:32:33 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.25 1999/04/29 02:29:36 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 
-#include <iostream.h>
-#include <strstream.h>
+#include <iostream>
+#include <stack>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
 #include "DDS.h"
 #include "Array.h"
 #include "Error.h"
+#if 0
 #include "BTXPStack.h"
+#endif
 #include "parser.h"
 #include "dds.tab.h"
 #include "util.h"
@@ -164,10 +180,13 @@ static char rcsid[] __unused__ = {"$Id: dds.y,v 1.24 1999/03/24 23:32:33 jimg Ex
 
 extern int dds_line_num;	/* defined in dds.lex */
 
+#if 0
 static BaseTypePtrXPStack *ctor; /* stack for ctor types */
+#endif
+static stack<BaseType *> *ctor;
 static BaseType *current;
 static Part part = nil;		/* Part is defined in BaseType */
-static char id[ID_MAX];
+static string id;
 
 static char *NO_DDS_MSG =
 "The descriptor object returned from the dataset was null.\n\
@@ -176,7 +195,7 @@ Check that the URL is correct.";
 int ddslex();
 void ddserror(char *s);
 
-void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, 
+void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
 	       Part p);
 
 %}
@@ -227,7 +246,7 @@ declarations:	/* empty */
 
 declaration: 	list non_list_decl
                 { 
-		    String smsg;
+		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
@@ -237,7 +256,7 @@ declaration: 	list non_list_decl
 			    << "' is not a valid declaration" << endl 
 			    << smsg << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -250,7 +269,7 @@ declaration: 	list non_list_decl
 
 non_list_decl:  base_type var ';' 
                 { 
-		    String smsg;
+		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
@@ -260,18 +279,19 @@ non_list_decl:  base_type var ';'
 			    << "' is not a valid declaration" << endl 
 			    << smsg << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
 
 		| structure  '{' declarations '}' 
 		{ 
-		    current = ctor->pop(); 
+		    current = ctor->top(); 
+		    ctor->pop();
 		} 
                 var ';' 
                 { 
-		    String smsg;
+		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
@@ -281,18 +301,19 @@ non_list_decl:  base_type var ';'
 			    << "is not a valid declaration." << endl
 			    << smsg << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
 
 		| sequence '{' declarations '}' 
                 { 
-		    current = ctor->pop(); 
+		    current = ctor->top(); 
+		    ctor->pop();
 		} 
                 var ';' 
                 { 
-		    String smsg;
+		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
@@ -302,7 +323,7 @@ non_list_decl:  base_type var ';'
 			    << "is not a valid declaration." << endl 
 			    << smsg << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -313,11 +334,12 @@ non_list_decl:  base_type var ';'
 		{ part = dependent;} 
                 declarations '}' 
                 { 
-		    current = ctor->pop(); 
+		    current = ctor->top();
+		    ctor->pop();
 		}
                 var ';'
                 { 
-		    String smsg;
+		    string smsg;
 		    if (current->check_semantics(smsg)) {
 			part = nil; 
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
@@ -329,7 +351,7 @@ non_list_decl:  base_type var ';'
 			    << "is not a valid declaration." << endl 
 			    << smsg << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -340,11 +362,12 @@ non_list_decl:  base_type var ';'
 		{ part = maps; }
                 declarations '}' 
 		{
-		    current = ctor->pop(); 
+		    current = ctor->top(); 
+		    ctor->pop();
 		}
                 var ';' 
                 {
-		    String smsg;
+		    string smsg;
 		    if (current->check_semantics(smsg)) {
 			part = nil; 
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
@@ -356,7 +379,7 @@ non_list_decl:  base_type var ';'
 			    << "is not a valid declaration." << endl 
 			    << smsg << ends;
 			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
@@ -382,7 +405,7 @@ non_list_decl:  base_type var ';'
 list:		LIST 
 		{ 
 		    if (!ctor) 
-			ctor = new BaseTypePtrXPStack;
+			ctor = new stack<BaseType *>;
 		    ctor->push(NewList()); 
 		}
 ;
@@ -390,7 +413,7 @@ list:		LIST
 structure:	STRUCTURE
 		{ 
 		    if (!ctor)
-	                ctor = new BaseTypePtrXPStack;
+	                ctor = new stack<BaseType *>;
 		    ctor->push(NewStructure()); 
 		}
 ;
@@ -398,7 +421,7 @@ structure:	STRUCTURE
 sequence:	SEQUENCE 
 		{ 
 		    if (!ctor)
-			ctor = new BaseTypePtrXPStack;
+			ctor = new stack<BaseType *>;
 		    ctor->push(NewSequence()); 
 		}
 ;
@@ -406,7 +429,7 @@ sequence:	SEQUENCE
 function:	FUNCTION 
 		{ 
 		    if (!ctor)
-			ctor = new BaseTypePtrXPStack;
+			ctor = new stack<BaseType *>;
 		    ctor->push(NewFunction()); 
 		}
 ;
@@ -414,7 +437,7 @@ function:	FUNCTION
 grid:		GRID 
 		{ 
 		    if (!ctor)
-			ctor = new BaseTypePtrXPStack;
+			ctor = new stack<BaseType *>;
 		    ctor->push(NewGrid()); 
 		}
 ;
@@ -449,7 +472,7 @@ array_decl:	'[' INTEGER ']'
 
 		 | '[' ID 
 		 {
-		     save_str(id, $2, dds_line_num);
+		     id = $2;
 		 } 
                  '=' INTEGER 
                  { 
@@ -471,7 +494,7 @@ array_decl:	'[' INTEGER ']'
 		     msg << "In the dataset descriptor object:" << endl
 			 << "Expected an array subscript." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
-		     msg.freeze(0);
+		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		 }
 ;
@@ -484,7 +507,7 @@ name:		NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		     msg << "Error parsing the dataset name." << endl
 			 << "The name may be missing or may contain an illegal character." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
-		     msg.freeze(0);
+		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		}
 ;
@@ -516,18 +539,20 @@ ddserror(char *)
 */
 
 void	
-add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, Part part)
+add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 { 
     if (!*ctor)
-	*ctor = new BaseTypePtrXPStack;
+	*ctor = new stack<BaseType *>;
 
     if (!(*ctor)->empty()) { /* must be parsing a ctor type */
 	(*ctor)->top()->add_var(*current, part);
 
  	const Type &ctor_type = (*ctor)->top()->type();
 
-	if (ctor_type == dods_list_c || ctor_type == dods_array_c)
-	    *current = (*ctor)->pop();
+	if (ctor_type == dods_list_c || ctor_type == dods_array_c) {
+	    *current = (*ctor)->top();
+	    (*ctor)->pop();
+	}
 	else
 	    return;
     }

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.37  1999/04/29 02:29:31  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.36  1998/11/10 00:58:49  jimg
 // Fixed up memory leaks in the calls to unique_names().
 //
@@ -23,6 +26,9 @@
 // Changed the implementation of print_all_vals to use type() instead of
 // type_name().
 // Added leaf_match and exact_match.
+//
+// Revision 1.34.2.1  1999/02/02 21:57:01  jimg
+// String to string version
 //
 // Revision 1.34  1998/08/06 16:21:25  jimg
 // Fixed the misuse of the read(...) member function. See Grid.c (from jeh).
@@ -197,7 +203,6 @@
 
 #include "config_dap.h"
 
-#include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -225,7 +230,7 @@ Structure::_duplicate(const Structure &s)
     }
 }
 
-Structure::Structure(const String &n) : BaseType(n, dods_structure_c)
+Structure::Structure(const string &n) : BaseType(n, dods_structure_c)
 {
 }
 
@@ -314,8 +319,8 @@ Structure::width()
 // false. This bug might be fixed using exceptions.
 
 bool
-Structure::serialize(const String &dataset, DDS &dds, XDR *sink, 
-		     bool ce_eval = true)
+Structure::serialize(const string &dataset, DDS &dds, XDR *sink, 
+		     bool ce_eval)
 {
     bool status = true;
     int error = 0;
@@ -338,7 +343,7 @@ Structure::serialize(const String &dataset, DDS &dds, XDR *sink,
 }
 
 bool
-Structure::deserialize(XDR *source, DDS *dds, bool reuse = false)
+Structure::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool status = true;
 
@@ -372,7 +377,7 @@ Structure::buf2val(void **)
 }
 
 BaseType *
-Structure::var(const String &name, btp_stack &s)
+Structure::var(const string &name, btp_stack &s)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
 	assert(_vars(p));
@@ -395,7 +400,7 @@ Structure::var(const String &name, btp_stack &s)
 }
 
 BaseType *
-Structure::var(const String &name, bool exact)
+Structure::var(const string &name, bool exact)
 {
     if (exact)
 	return exact_match(name);
@@ -404,7 +409,7 @@ Structure::var(const String &name, bool exact)
 }
 
 BaseType *
-Structure::leaf_match(const String &name)
+Structure::leaf_match(const string &name)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
 	assert(_vars(p));
@@ -422,13 +427,12 @@ Structure::leaf_match(const String &name)
 }
 
 BaseType *
-Structure::exact_match(const String &name)
+Structure::exact_match(const string &name)
 {
-    if (name.contains(".")) {
-	String n = (String)name; // cast away const
-	String aggregate = n.before(".");
-	String field = n.from(".");
-	field = field.after(".");
+    unsigned int dot_pos = name.find("."); // zero-based index of `.'
+    if (dot_pos != string::npos) {
+	string aggregate = name.substr(0, dot_pos);
+	string field = name.substr(dot_pos + 1);
 
 	BaseType *agg_ptr = var(aggregate);
 	if (agg_ptr)
@@ -474,7 +478,7 @@ Structure::var(Pix p)
 }
 
 void
-Structure::print_decl(ostream &os, String space, bool print_semi,
+Structure::print_decl(ostream &os, string space, bool print_semi,
 		      bool constraint_info, bool constrained)
 {
     if (constrained && !send_p())
@@ -502,7 +506,7 @@ Structure::print_decl(ostream &os, String space, bool print_semi,
 // print the values of the contained variables
 
 void 
-Structure::print_val(ostream &os, String space, bool print_decl_p)
+Structure::print_val(ostream &os, string space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -527,7 +531,7 @@ Structure::print_val(ostream &os, String space, bool print_decl_p)
 // top level. Will it work when sequences are more deeply embedded?
 
 void
-Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, String space, bool print_decl_p)
+Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -567,22 +571,15 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, String space, bool pr
 }
 
 bool
-Structure::check_semantics(String &msg, bool all = false)
+Structure::check_semantics(string &msg, bool all)
 {
     if (!BaseType::check_semantics(msg))
 	return false;
     
     bool status = true;
 
-    char *n = new char[name().length()+1];
-    strcpy(n , (const char *)name());
-    char *tn = new char[type_name().length()+1];
-    strcpy(tn, (const char *)type_name());
-
-    if (!unique_names(_vars, n, tn, msg)) {
-	status = false;
-	goto exit;
-    }
+    if (!unique_names(_vars, name(), type_name(), msg))
+	return false;
 
     if (all) 
 	for (Pix p = _vars.first(); p; _vars.next(p)) {
@@ -594,8 +591,6 @@ Structure::check_semantics(String &msg, bool all = false)
 	}
 
  exit:
-    delete[] n;
-    delete[] tn;
     return status;
 }
 

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,8 +10,18 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
+// Revision 1.15  1999/04/29 02:29:35  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.14  1999/03/24 23:33:11  jimg
 // Added support for the new Int16, UInt16 and Float32 types.
+//
+// Revision 1.13.4.2  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.13.4.1  1999/02/02 21:57:06  jimg
+// String to string version
 //
 // Revision 1.13  1997/12/16 00:45:41  jimg
 // Added code for NAME lexeme.
@@ -32,9 +42,9 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds-test.cc,v 1.14 1999/03/24 23:33:11 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.15 1999/04/29 02:29:35 jimg Exp $"};
 
-#include <iostream.h>
+#include <iostream>
 #include <GetOpt.h>
 
 #define YYSTYPE char *
@@ -57,7 +67,7 @@ extern int ddsdebug;
 const char *prompt = "dds-test: ";
 
 void
-usage(String name)
+usage(string name)
 {
     cerr << "usage: " << name
 	 << " [s] [pd] [c]" << endl
@@ -125,7 +135,7 @@ test_scanner(void)
 {
     int tok;
 
-    cout << prompt;		// first prompt
+    cout << prompt << flush;		// first prompt
     while ((tok = ddslex())) {
 	switch (tok) {
 	  case DATASET:
@@ -218,7 +228,7 @@ test_scanner(void)
 	  default:
 	    cout << "Error: Unrecognized input" << endl;
 	}
-	cout << prompt;		// print prompt after output
+	cout << prompt << flush;		// print prompt after output
     }
 }
 
@@ -269,14 +279,14 @@ test_class(void)
 
     cout << "Dataset name: " << table.get_dataset_name() << endl;
 
-    String name = "goofy";
+    string name = "goofy";
     table.add_var(NewInt32(name)); // table dtor should delete this object
 
     table.print();
 
     BaseType *btp = table.var(name);
 
-    btp->print_decl(cout, true); // print out goofy w/semicolon
+    btp->print_decl(cout, "", true); // print out goofy w/semicolon
 
     table.del_var(name);
 
@@ -288,12 +298,12 @@ test_class(void)
 
     btp = table.var("goofy");
 
-    btp->print_decl(cout, true); // print out goofy w/semicolon
+    btp->print_decl(cout, "", true); // print out goofy w/semicolon
 
     table.del_var("goofy");
 
     table.print();
 
     for (Pix p = table.first_var(); p; table.next_var(p))
-	table.var(p)->print_decl(cout, true);	// print them all w/semicolons
+	table.var(p)->print_decl(cout, "", true);	// print them all w/semicolons
 }

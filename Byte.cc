@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,8 +10,18 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.36  1999/04/29 02:29:27  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.35  1999/03/24 23:37:14  jimg
 // Added support for the Int16, UInt16 and Float32 types
+//
+// Revision 1.34.2.2  1999/02/05 09:32:33  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.34.2.1  1999/02/02 21:56:55  jimg
+// String to string version
 //
 // Revision 1.34  1998/08/06 16:10:39  jimg
 // Added cast in call to abs. I'm not sure why...
@@ -203,7 +213,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.35 1999/03/24 23:37:14 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Byte.cc,v 1.36 1999/04/29 02:29:27 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -225,7 +235,7 @@ static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.35 1999/03/24 23:37:14 jimg 
 // transport Byte arrays over the network. Instead, Byte is a special case
 // handled in Array.
 
-Byte::Byte(const String &n) : BaseType(n, dods_byte_c)
+Byte::Byte(const string &n) : BaseType(n, dods_byte_c)
 {
 }
 
@@ -247,8 +257,7 @@ Byte::width()
 // otherwise. 
 
 bool
-Byte::serialize(const String &dataset, DDS &dds, XDR *sink, 
-		bool ce_eval = true)
+Byte::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
     int error;
 
@@ -306,7 +315,7 @@ Byte::buf2val(void **val)
 // Print BUF to stdout with its declaration. Intended mostly for debugging.
 
 void 
-Byte::print_val(ostream &os, String space, bool print_decl_p)
+Byte::print_val(ostream &os, string space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -317,7 +326,7 @@ Byte::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Byte::ops(BaseType *b, int op, const String &dataset)
+Byte::ops(BaseType *b, int op, const string &dataset)
 {
     int error = 0;
 

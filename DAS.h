@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -14,6 +14,9 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.22  1999/04/29 02:29:28  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.21  1999/03/24 23:37:14  jimg
  * Added support for the Int16, UInt16 and Float32 types
  *
@@ -24,6 +27,9 @@
  * Replaced the DASVHMap object with an SLList of toplevel_entry structs. The
  * DASVHMap software is not being maintained by the FSF and had bugs. There are
  * no changes to the DAS class interface.
+ *
+ * Revision 1.18.4.1  1999/02/02 21:56:57  jimg
+ * String to string version
  *
  * Revision 1.18  1998/07/13 20:20:42  jimg
  * Fixes from the final test of the new build process
@@ -109,8 +115,6 @@
 #include "DASVHMap.h"
 #endif
 
-#include <String.h>
-
 #include "SLList.h"
 #include "AttrTable.h"
 
@@ -184,82 +188,81 @@
 class DAS {
 private:
     struct toplevel_entry {
-	String name;
+	string name;
 	AttrTable *attr_table;
     };
 
     SLList<toplevel_entry> entries;
 
-    AttrTable *das_find(String name);
+    AttrTable *das_find(string name);
 
 public:
-  /** Create a DAS from a single attribute table.  
+    /** Create a DAS from a single attribute table.  
 
-      \note{In an older version of this class, #dflt# and #sz#
-      initialized a hash table. That is no longer used ant these
-      params should no longer matter. Note that this constructor is
-      effectively the empty constructor. 11/23/98 jhrg}
+	\note{In an older version of this class, #dflt# and #sz#
+	initialized a hash table. That is no longer used and these
+	params should no longer matter. Note that this constructor is
+	effectively the empty constructor. 11/23/98 jhrg}
 
-      @param dflt A pointer to a valid attribute table.
-      @param sz The number of entries in the table. */
-    DAS(AttrTable *dflt=(AttrTable *)NULL, 
-	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
+	@param dflt A pointer to a valid attribute table.
+	@param sz The number of entries in the table. */
+    DAS(AttrTable *dflt=(AttrTable *)NULL, unsigned int sz=0);
 
     /** Create a DAS object with one attribute table. Use #append_attr()#
 	to add additional attributes.
 
 	@see append_attr()
 	@param attr_table The initial AttrTable. */
-    DAS(AttrTable *attr_table, String name);
+    DAS(AttrTable *attr_table, string name);
 
     ~DAS();
 
-  /** Returns a pointer to the first attribute table. */
+    /** Returns a pointer to the first attribute table. */
     Pix first_var();
-  /** Increments an attribute table pointer to indicate the next table
-      in the series. */
+    /** Increments an attribute table pointer to indicate the next table
+	in the series. */
     void next_var(Pix &p);
-  /** Returns the name of the indicated attribute table. */
-    String get_name(Pix p);
-  /** Returns the indicated attribute table. */
+    /** Returns the name of the indicated attribute table. */
+    string get_name(Pix p);
+    /** Returns the indicated attribute table. */
     AttrTable *get_table(Pix p);
 
-  /** Returns the attribute table with the given name. 
-      @name get\_table()
-      */
+    /** Returns the attribute table with the given name. 
+	@name get\_table()
+    */
 
-  //@{
-  /** Returns the attribute table with the given name String. */
-    AttrTable *get_table(const String &name);
-  /** Returns the attribute table with the given name. */
+    //@{
+    /** Returns the attribute table with the given name string. */
+    AttrTable *get_table(const string &name);
+    /** Returns the attribute table with the given name. */
     AttrTable *get_table(const char *name); // avoid converting char * to Pix
-  //@}
+    //@}
 
-  /** Adds an attribute table to the DAS.
-      @name add\_table()
-      */
-  //@{
-  /** Adds an attribute table to the DAS. */
-    AttrTable *add_table(const String &name, AttrTable *at);
-  /** Adds an attribute table to the DAS. */
+    /** Adds an attribute table to the DAS.
+	@name add\_table()
+    */
+    //@{
+    /** Adds an attribute table to the DAS. */
+    AttrTable *add_table(const string &name, AttrTable *at);
+    /** Adds an attribute table to the DAS. */
     AttrTable *add_table(const char *name, AttrTable *at);
-  //@}
+    //@}
 
-  /** Reads a DAS in from an external source. 
+    /** Reads a DAS in from an external source. 
 
-      @name parse()
-      */
-  //@{
-  /** Reads a DAS from the named file. */
-    bool parse(String fname);
-  /** Reads a DAS from the given file descriptor. */
+	@name parse()
+    */
+    //@{
+    /** Reads a DAS from the named file. */
+    bool parse(string fname);
+    /** Reads a DAS from the given file descriptor. */
     bool parse(int fd);
-  /** Reads a DAS from an open file descriptor. */
+    /** Reads a DAS from an open file descriptor. */
     bool parse(FILE *in=stdin);
-  //@}
+    //@}
 
-  /** Creates an ASCII representation of a DAS on the given output
-      stream. */
+    /** Creates an ASCII representation of a DAS on the given output
+	stream. */
     bool print(ostream &os = cout);
 };
 

@@ -10,6 +10,9 @@
 // 1/17/99 jhrg
 
 // $Log: gse-test.cc,v $
+// Revision 1.3  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.2  1999/03/24 23:30:07  jimg
 // Added minimal support for the new Int16, UInt16 and Float32 types.
 //
@@ -19,7 +22,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: gse-test.cc,v 1.2 1999/03/24 23:30:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.3 1999/04/29 02:29:36 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,8 +34,8 @@ static char rcsid[] __unused__ = {"$Id: gse-test.cc,v 1.2 1999/03/24 23:30:07 ji
 #include <streambuf.h>
 #include <iostream.h>
 #include <stdiostream.h>
+#include <string>
 
-#include <String.h>
 #include <GetOpt.h>
 
 #include "BaseType.h"
@@ -47,7 +50,7 @@ static char rcsid[] __unused__ = {"$Id: gse-test.cc,v 1.2 1999/03/24 23:30:07 ji
 
 void test_gse_scanner(const char *str);
 void test_gse_scanner(bool show_prompt);
-void test_parser(const String &dds_file);
+void test_parser(const string &dds_file);
 
 int gse_lex();			// gse_lex() uses the global gse_exprlval
 int gse_parse(void *arg);
@@ -60,10 +63,10 @@ void *gse_string(const char *yy_str);
 
 extern int gse_debug;
 
-const String version = "$Revision: 1.2 $";
-const String prompt = "gse-test: ";
-const String options = "sS:p:dv";
-const String usage = "gse-test [-s [-S string] -d -v [-p dds file]\n\
+const string version = "$Revision: 1.3 $";
+const string prompt = "gse-test: ";
+const string options = "sS:p:dv";
+const string usage = "gse-test [-s [-S string] -d -v [-p dds file]\n\
 Test the grid selections expression evaluation software.\n\
 Options:\n\
 	-s: Feed the input stream directly into the expression scanner, does\n\
@@ -76,12 +79,12 @@ Options:\n\
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, options);
+    GetOpt getopt(argc, argv, options.c_str());
     int option_char;
     bool scan_gse = false, scan_gse_string = false;
     bool test_parse = false;
-    String constraint = "";
-    String dds_file;
+    string constraint = "";
+    string dds_file;
     // process options
 
     while ((option_char = getopt()) != EOF)
@@ -120,7 +123,7 @@ main(int argc, char *argv[])
 
     if (scan_gse) {
 	if (scan_gse_string)
-	    test_gse_scanner(constraint);
+	    test_gse_scanner(constraint.c_str());
 	else
 	    test_gse_scanner(true);
 	exit(0);
@@ -205,7 +208,7 @@ new_map(int size)
 }
 
 void
-test_parser(const String &dds_file)
+test_parser(const string &dds_file)
 {
     // Read the grid
 

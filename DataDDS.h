@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1997
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -13,6 +13,12 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.h,v $
+// Revision 1.4  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.3.6.1  1999/02/02 21:56:58  jimg
+// String to string version
+//
 // Revision 1.3  1998/02/05 20:13:52  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -32,8 +38,8 @@
 
 #include "config_dap.h"
 
-#include <iostream.h>
-#include <String.h>
+#include <iostream>
+#include <string>
 #include <Pix.h>
 #include <SLList.h>
 
@@ -53,7 +59,7 @@
 
 class DataDDS : public DDS {
 private:
-    String _server_version;
+    string _server_version;
     int _server_version_major;
     int _server_version_minor;
 
@@ -66,14 +72,14 @@ public:
   /** The DataDDS constructor needs a name and a version string.  This
       is generally received from the server.
       */
-    DataDDS(const String &n = (char *)0, const String &v = (char *)0);
+    DataDDS(const string &n = "", const string &v = "");
     virtual ~DataDDS();
 
   /** Sets the version string.  This typically looks something like:
       #DODS/2.15#, where ``2'' is the major version number, and ``15''
       the minor number.
       */
-    void set_version(const String &v);
+    void set_version(const string &v);
   /** Returns the major version number. */
     int get_version_major();
   /** Returns the minor version number. */

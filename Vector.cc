@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.26  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.25  1999/03/24 23:34:49  jimg
 // Added support for the new Int16, UInt16 and Float32 types.
 //
@@ -21,6 +24,13 @@
 // There's no warning about the situation. The new code in the var member
 // function passes a stack of BaseType pointers so that the projection
 // information (send_p field) can be set properly.
+//
+// Revision 1.23.2.2  1999/02/05 09:32:35  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.23.2.1  1999/02/02 21:57:04  jimg
+// String to string version
 //
 // Revision 1.23  1998/08/06 16:22:38  jimg
 // Fixed the misuse of the read(...) member function. See Grid.c (from jeh).
@@ -57,7 +67,7 @@
 // Fixed debugging.
 //
 // Revision 1.13  1996/08/13 18:39:25  jimg
-// Added __unused__ to definition of char rcsid[].
+// Added not_used to definition of char rcsid[].
 // Fixed int -vs- unsigned int discrepancies.
 //
 // Revision 1.12  1996/06/04 21:33:50  jimg
@@ -118,16 +128,14 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.25 1999/03/24 23:34:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.26 1999/04/29 02:29:34 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <assert.h>
-#include <algo.h>
-
-// #include <minmax.h>
+#include <algorithm>
 
 #include "Vector.h"
 #include "util.h"
@@ -152,7 +160,7 @@ Vector::_duplicate(const Vector &v)
 	val2buf(v._buf);	// store this's value in v's _BUF.
 }
 
-Vector::Vector(const String &n, BaseType *v, const Type &t) 
+Vector::Vector(const string &n, BaseType *v, const Type &t) 
     :BaseType(n, t), _length(-1), _var(v), _buf(0), _vec(0)
 {
     DBG(cerr << "Entering Vector ctor for object: " << this << endl);
@@ -166,6 +174,7 @@ Vector::Vector(const Vector &rhs)
     _duplicate(rhs);
 }
 
+#if 0
 static void
 delete_base_type(BaseType *bt)
 {
@@ -173,6 +182,7 @@ delete_base_type(BaseType *bt)
     if (bt)
 	delete bt;
 }
+#endif
 
 Vector::~Vector()
 {
@@ -183,7 +193,11 @@ Vector::~Vector()
     if (_buf)
 	delete[] _buf;
     else	
+	for (unsigned int i = 0; i < _vec.size(); ++i)
+	    delete _vec[i];
+#if 0
 	_vec.apply(delete_base_type);
+#endif
 }
 
 const Vector &
@@ -227,7 +241,7 @@ Vector::set_read_p(bool state)
 }
 
 BaseType *
-Vector::var(const String &name, bool exact_match)
+Vector::var(const string &name, bool exact_match)
 {
     // Make sure to check for the case where name is the default (the empty
     // string). 9/1/98 jhrg
@@ -242,7 +256,7 @@ Vector::var(const String &name, bool exact_match)
 }
 
 BaseType *
-Vector::var(const String &name, btp_stack &s)
+Vector::var(const string &name, btp_stack &s)
 {
     if (_var->is_constructor_type())
 	return _var->var(name, s);
@@ -349,15 +363,19 @@ void
 Vector::vec_resize(int l)
 {
     int s = _vec.capacity();
-    _vec.resize((l > 0) ? l : 0);
+    _vec.resize((l > 0) ? l : 0, 0);
 
     if (l > s) {
 	DBG(cerr << "Filling new elements (" << s-1 << ", " << l-s \
 	    << ") with NULL"  << endl);
+#if 0
 	_vec.fill(0, max(s-1, 0), l-s);
+#endif
 #if DODS_DEBUG == 1
 	cerr << "Just extended the BaseType pointer vector: ";
+#if 0
 	_vec.apply(print_basetype_pointer);
+#endif
 	cerr << endl;
 #endif
     }
@@ -379,8 +397,8 @@ Vector::vec_resize(int l)
 // Returns: true if the data was successfully writen, false otherwise.
 
 bool
-Vector::serialize(const String &dataset, DDS &dds, XDR *sink, 
-		  bool ce_eval = true)
+Vector::serialize(const string &dataset, DDS &dds, XDR *sink, 
+		  bool ce_eval)
 {
     bool status = true;
     int error = 0;
@@ -433,9 +451,9 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
 	if (!status)
 	    return status;
 
-	for (unsigned i = 0; status && i < num; ++i)	// test status in loop
+{	for (unsigned i = 0; status && i < num; ++i)	// test status in loop
 	    status = _vec[i]->serialize(dataset, dds, sink, false);
-	
+}
 	break;
 
       default:
@@ -452,7 +470,7 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
 // stored using the `C' representations because these objects often are used
 // to build huge arrays (e.g., an array of 1024 by 1024 bytes). However,
 // arrays of non-cardinal types are stored as Vectors of the C++ objects or
-// DODS objects (Str and Url are vectors of the String class, Structure, ...,
+// DODS objects (Str and Url are vectors of the string class, Structure, ...,
 // Grid are vectors of the DODS Structure, ... classes). 
 //
 // The boolean parameter REUSE determines whether internal storage is reused
@@ -465,7 +483,7 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
 // Returns: True is successful, false otherwise.
 
 bool
-Vector::deserialize(XDR *source, DDS *dds, bool reuse = false)
+Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool status;
     unsigned int num;
@@ -522,11 +540,11 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse = false)
 	vec_resize(num);
 	set_length(num);
 
-	for (unsigned i = 0; status && i < num; ++i) {
+{	for (unsigned i = 0; status && i < num; ++i) {
 	    _vec[i] = _var->ptr_duplicate();
 	    _vec[i]->deserialize(source, dds);
 	}
-
+}
 	break;
 
       default:
@@ -641,7 +659,7 @@ Vector::buf2val(void **val)
 	unsigned int len = length();
 
  	if (!*val)
-	    *val = new String [len]; 
+	    *val = new string [len]; 
 
 	for (unsigned i = 0; i < len; ++i) {
 	    void *val_elem = (char *)*val + i * elem_wid;
@@ -667,9 +685,9 @@ Uint32, Float32, Float64, String and Url only.\n";
 // Returns: False if a type mis-match is detected, True otherwise.
 
 bool
-Vector::set_vec(int i, BaseType *val)
+Vector::set_vec(unsigned int i, BaseType *val)
 {
-    assert(i > -1);
+    assert(i >= 0);
     assert(val);
 
     if (val->type() != _var->type())
@@ -678,7 +696,10 @@ Vector::set_vec(int i, BaseType *val)
     if (i >= _vec.capacity())
 	vec_resize(i + 10);
 
+#if 0
     _vec.elem(i) = val;
+#endif
+    _vec[i] = val;
 
     return true;
 }
@@ -700,7 +721,7 @@ Vector::add_var(BaseType *v, Part)
 }
 
 void
-Vector::print_decl(ostream &os, String space, bool print_semi,
+Vector::print_decl(ostream &os, string space, bool print_semi,
 		  bool constraint_info, bool constrained)
 {
     if (constrained && !send_p())
@@ -711,7 +732,7 @@ Vector::print_decl(ostream &os, String space, bool print_semi,
 }
 
 void 
-Vector::print_val(ostream &os, String space, bool print_decl_p)
+Vector::print_val(ostream &os, string space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -737,7 +758,7 @@ Vector::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Vector::check_semantics(String &msg, bool) 
+Vector::check_semantics(string &msg, bool) 
 {
     return BaseType::check_semantics(msg);
 }

@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -17,6 +17,9 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.32  1999/04/29 02:29:30  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.31  1998/09/17 17:19:42  jimg
  * Added leaf_match and exact_match.
  * Added two new versions of the var member function.
@@ -24,6 +27,9 @@
  * Revision 1.30  1998/08/31 21:47:31  jimg
  * Changed check_semantics so that the array and map vectors must of composed
  * of simple-type elements.
+ *
+ * Revision 1.29.6.1  1999/02/02 21:56:59  jimg
+ * String to string version
  *
  * Revision 1.29  1998/03/17 17:32:36  jimg
  * Added an implementation of element_count().
@@ -252,12 +258,12 @@ public:
       to be created.  The name may be omitted, which will create a
       nameless variable.  This may be adequate for some applications. 
       
-      @param n A String containing the name of the variable to be
+      @param n A string containing the name of the variable to be
       created. 
 
       @memo The Grid constructor.
       */
-    Grid(const String &n = (char *)0);
+    Grid(const string &n = "");
   /** The Grid copy constructor. */
     Grid(const Grid &rhs);
     virtual ~Grid();
@@ -273,9 +279,9 @@ public:
     /** Note the paramter #exact_match# is not used by this mfunc.
 
 	@see BaseType.h */
-    virtual BaseType *var(const String &name, bool exact_match = true);
+    virtual BaseType *var(const string &name, bool exact_match = true);
 
-    virtual BaseType *var(const String &name, btp_stack &s);
+    virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part);
 
@@ -326,11 +332,11 @@ public:
       */
     virtual bool projection_yields_grid();
 
-    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
   /** Returns the size of the Grid type.  Use the #val2buf()#
       functions of the member elements to insert values into the Grid
@@ -349,18 +355,18 @@ public:
       @see Array
       @see Structure
       */
-    virtual void print_decl(ostream &os, String space = "    ",
+    virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
 
-    virtual void print_val(ostream &os, String space = "",
+    virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
 
     /** Return true if this Grid is well formed. The array dimensions and
 	number of map vectors must match and both the array and maps must be
 	of simple-type elements. */
-    virtual bool check_semantics(String &msg, bool all = false);
+    virtual bool check_semantics(string &msg, bool all = false);
 };
 
 #endif

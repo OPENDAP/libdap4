@@ -10,6 +10,9 @@
 // The Grid Selection Expression Clause class.
 
 // $Log: GSEClause.cc,v $
+// Revision 1.3  1999/04/29 02:29:30  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.2  1999/03/24 23:37:14  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
@@ -23,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char __unused__ id[] = {"$Id: GSEClause.cc,v 1.2 1999/03/24 23:37:14 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.3 1999/04/29 02:29:30 jimg Exp $"};
 
 #include <Pix.h>
 
@@ -128,7 +131,7 @@ GSEClause::compute_indices()
 
 // Public methods
 
-GSEClause::GSEClause(Grid *grid, const String &map, const double value,
+GSEClause::GSEClause(Grid *grid, const string &map, const double value,
 		     const relop op) 
     : _map((Array *)grid->var(map)), _value1(value), _value2(0), _op1(op), 
       _op2(dods_nop_op)
@@ -143,7 +146,7 @@ GSEClause::GSEClause(Grid *grid, const String &map, const double value,
     compute_indices();
 }
 
-GSEClause::GSEClause(Grid *grid, const String &map, const double value1,
+GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
 		     const relop op1, const double value2, const relop op2) 
     : _map((Array *)grid->var(map)), _value1(value1), _value2(value2), 
       _op1(op1), _op2(op2)
@@ -175,7 +178,7 @@ GSEClause::get_map() const
     return _map;
 }
 
-String
+string
 GSEClause::get_map_name() const
 {
     return _map->name();

@@ -1,8 +1,8 @@
 
 // -*- c++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -51,7 +51,7 @@ void usage(const char *name);
     @param dataset_ver The version of the dataset.
     @return TRUE for success.
     */
-bool do_version(const String &script_ver, const String &dataset_ver);
+bool do_version(const string &script_ver, const string &dataset_ver);
 
 /** This function sends data to the client.
 
@@ -71,7 +71,7 @@ bool do_version(const String &script_ver, const String &dataset_ver);
     @return TRUE for success, FALSE otherwise.
     */
 bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
-		      const String &dataset, const String &constraint);
+		      const string &dataset, const string &constraint);
 
 /** This function accepts a dataset path name, and searches for a
     matching ancillary data file name with a very specific set of
@@ -100,7 +100,7 @@ bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
     /b/ralph.das
     \end{verbatim}
 
-    The function will return a String containing the name of the first
+    The function will return a string containing the name of the first
     file in the list that exists, if any. 
 
     @memo Find a file with ancillary data.  
@@ -109,12 +109,12 @@ bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
     @param dir The input directory in which the desired file may be
     found. 
     @param file The input filename the desired file may have.
-    @return A String containing the pathname of the file found by
+    @return A string containing the pathname of the file found by
     searching with the given components.  If no file was found, the
     null string is returned.
     */
-String find_ancillary_file(String pathname, String ext, String dir, 
-			   String file);
+string find_ancillary_file(string pathname, string ext, string dir, 
+			   string file);
 
 /** This function searches for an ancillary data file (using the
     #find_ancillary_file# function) containing the DDS for a
@@ -126,7 +126,7 @@ String find_ancillary_file(String pathname, String ext, String dir,
     @memo Read an ancillary DDS.
     @param dds The DDS of a dataset.  The ancillary DDS, if any, is
     ``folded'' into the existing DDS information.
-    @param dataset A String containing the name of the dataset whose
+    @param dataset A string containing the name of the dataset whose
     DDS is to be read.
     @param dir An optional parameter specifying a secondary directory
     in which to look for an ancillary DDS file. This is used as an
@@ -137,8 +137,8 @@ String find_ancillary_file(String pathname, String ext, String dir,
     @return TRUE if the dataset DDS was found and read, FALSE
     otherwise. 
     */
-bool read_ancillary_dds(DDS &dds, String dataset, String dir = "", 
-			String file = "");
+bool read_ancillary_dds(DDS &dds, string dataset, string dir = "", 
+			string file = "");
 
 /** This function searches for an ancillary data file (using the
     #find_ancillary_file# function) containing the DAS for a
@@ -150,7 +150,7 @@ bool read_ancillary_dds(DDS &dds, String dataset, String dir = "",
     @memo Read an ancillary DAS.
     @param das The DAS of a dataset.  The ancillary DAS, if any, is
     ``folded'' into the existing DAS information.
-    @param dataset A String containing the name of the dataset whose
+    @param dataset A string containing the name of the dataset whose
     DAS is to be read.
     @param dir An optional parameter specifying a secondary directory
     in which to look for an ancillary DAS file. This is used as an
@@ -161,15 +161,15 @@ bool read_ancillary_dds(DDS &dds, String dataset, String dir = "",
     @return TRUE if the dataset DAS was found and read, FALSE
     otherwise. 
     */
-bool read_ancillary_das(DAS &das, String dataset, String dir = "", 
-			String file = "");
+bool read_ancillary_das(DAS &das, string dataset, string dir = "", 
+			string file = "");
 
 /** Prints an error message in the #httpd# system log file, along with
     a time stamp and the client host name (or address).
 
     @memo Logs an error message.
     */
-void ErrMsgT(const char *Msgt);
+void ErrMsgT(const string Msgt);
 
 /** Given a pathname, this function returns just the file name
     component of the path.  That is, given #/a/b/c/ralph.nc.das#, it
@@ -209,7 +209,7 @@ char *name_path(const char *path);
 
       set_mime_text(dods_das);
 
-      String dataset = argv[1];
+      string dataset = argv[1];
 
       // Read the matlab string variables for attributes
       DAS *das_table = read_attributes(dataset);

@@ -3,7 +3,7 @@
 // Copyright (c) 1996, California Institute of Technology.
 // ALL RIGHTS RESERVED.   U.S. Government Sponsorship acknowledged.
 //
-// Please read the full copyright notice in the file COPYRIGH
+// Please read the full copyright notice in the file COPYRIGHT
 // in this directory.
 //
 // Author: Todd Karakashian, NASA/Jet Propulsion Laboratory
@@ -12,6 +12,9 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.9  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.8  1998/09/10 23:37:11  jehamby
 // Forgot to update hexstring() to generate correct high-ASCII escapes.
 //
@@ -19,6 +22,9 @@
 // Update escaping routines to not mangle high-ASCII characters with toascii()
 // and to generate a correct escape sequence in octstring() for such characters
 // through judicious casting (cast to a unsigned char, then an unsigned int).
+//
+// Revision 1.6.6.1  1999/02/02 21:57:07  jimg
+// String to string version
 //
 // Revision 1.6  1998/03/19 23:29:47  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
@@ -72,108 +78,93 @@
 // -Todd
 
 #include <ctype.h>
-#include <strstream.h>
-#include <iomanip.h>
-#include <String.h>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
+#include <iomanip>
+#include <string>
+#include <Regex.h>
 
 const int MAXSTR = 256;
 
-String hexstring(unsigned char val) {
+string hexstring(unsigned char val) {
     static char buf[MAXSTR];
 
     ostrstream(buf,MAXSTR) << hex << setw(2) << setfill('0') <<
 	(unsigned int)val << ends;
 
-    return (String)buf;
+    return (string)buf;
 }
 
-char unhexstring(String s) {
+char unhexstring(string s) {
     int val;
-    static char buf[MAXSTR];
 
-    strcpy(buf,(const char *)s);
-    istrstream(buf,MAXSTR) >> hex >> val;
+    istrstream(s.c_str(),MAXSTR) >> hex >> val;
 
     return (char)val;
 }
 
-String octstring(unsigned char val) {
+string octstring(unsigned char val) {
     static char buf[MAXSTR];
 
     ostrstream(buf,MAXSTR) << oct << setw(3) << setfill('0') <<
 	(unsigned int)val << ends;
 
-    return (String)buf;
+    return (string)buf;
 }
 
-char unoctstring(String s) {
+char unoctstring(string s) {
     int val;
-    static char buf[MAXSTR];
 
-    strcpy(buf,(const char *)s);
-    istrstream(buf,MAXSTR) >> oct >> val;
+    istrstream(s.c_str(),MAXSTR) >> oct >> val;
 
     return (char)val;
 }
 
 
 // replace characters that are not allowed in DODS identifiers
-String id2dods(String s, const String allowable = (char *)0) {
-    static Regex badregx("[^0-9a-zA-Z_%]", 1);
-    static const char ESC = '%';
+string id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
+    static Regex badregx(allowable.c_str(), 1);
+    static const string ESC = "%";
 
-    if (allowable) {
-	Regex badregx2(allowable, 1);
-
-	int index;
-	while ((index = s.index(badregx2)) >= 0)
-	    s.at(index,1) = (String)ESC + hexstring(s[index]);
-    }
-    else {
-	int index;
-	while ((index = s.index(badregx)) >= 0)
-	    s.at(index,1) = (String)ESC + hexstring(s[index]);
-    }
+    int index=0, matchlen;
+    while ((index = badregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
+      s.replace(index, 1, ESC + hexstring(s[index]));
 
     if (isdigit(s[0]))
-	s.before(0) = '_';
+	s.insert(0, '_');
 
     return s;
 }
 
-String dods2id(String s, const String escape = (char *)0) {
-    static Regex escregx("%[0-7][0-9a-fA-F]", 1);
+string dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]") {
+    static Regex escregx(escape.c_str(), 1);
 
-    if (escape) {
-	Regex escregx2(escape, 1);
-	int index;
-	while ((index = s.index(escregx2)) >= 0)
-	    s.at(index,3) = unhexstring(s.at(index+1,2));
-    }
-    else {
-	int index;
-	while ((index = s.index(escregx)) >= 0)
-	    s.at(index,3) = unhexstring(s.at(index+1,2));
-    }
+    int index=0, matchlen;
+    while ((index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
+      s.replace(index, 3, unhexstring(s.substr(index+1,2)));
+
     return s;
 }
 
 // Escape non-printable characters and quotes from an HDF attribute
-String escattr(String s) {
+string escattr(string s) {
     static Regex nonprintable("[^ !-~]");
-    const char ESC = '\\';
+    const string ESC = "\\";
     const char QUOTE = '\"';
-    const String ESCQUOTE = (String)ESC + (String)QUOTE;
+    const string ESCQUOTE = ESC + QUOTE;
 
     // escape non-printing characters with octal escape
-    int index = 0;
-    while ( (index = s.index(nonprintable)) >= 0)
-	s.at(index,1) = (String)ESC + octstring(s[index]);
+    int index = 0, matchlen;
+    while ( (index = nonprintable.search(s.c_str(), s.size(), matchlen, index)) != -1)
+	s.replace(index,1, ESC + octstring(s[index]));
 
     // escape " with backslash
     index = 0;
-    while ( (index = s.index(QUOTE,index)) >= 0) {
-	s.at(index,1) = ESCQUOTE;
+    while ( (index = s.find(QUOTE,index)) != (int)s.npos) {
+	s.replace(index,1, ESCQUOTE);
 	index += ESCQUOTE.length();
     }
 
@@ -185,32 +176,32 @@ String escattr(String s) {
 //          Regex foo = "\\\\";
 //       because both C++ strings and libg++ regex's also employ \ as
 //       an escape character!
-String unescattr(String s) {
+string unescattr(string s) {
     static Regex escregx("\\\\[01][0-7][0-7]");  // matches 4 characters
     static Regex escquoteregex("[^\\\\]\\\\\"");  // matches 3 characters
     static Regex escescregex("\\\\\\\\");      // matches 2 characters
-    const char ESC = '\\';
+    const string ESC = "\\";
     const char QUOTE = '\"';
-    const String ESCQUOTE = (String)ESC + (String)QUOTE;
+    const string ESCQUOTE = ESC + QUOTE;
 
     // unescape any octal-escaped ASCII characters
-    int index = 0;
-    while ( (index = s.index(escregx,index)) >= 0) {
-	s.at(index,4) = unoctstring(s.at(index+1,3));
+    int index = 0, matchlen;
+    while ( (index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1) {
+	s.replace(index,4, unoctstring(s.substr(index+1,3)));
 	index++;
     }
 
     // unescape any escaped quotes
     index = 0;
-    while ( (index = s.index(escquoteregex,index)) >= 0) {
-	s.at(index+1,2) = QUOTE;
+    while ( (index = escquoteregex.search(s.c_str(), s.size(), matchlen, index)) != -1) {
+	s.replace(index+1,2, QUOTE);
 	index++;
     }
 
     // unescape any escaped backslashes
     index = 0;
-    while ( (index = s.index(escescregex,index)) >= 0) {
-	s.at(index,2) = ESC;
+    while ( (index = escescregex.search(s.c_str(), s.size(), matchlen, index)) != -1) {
+	s.replace(index,2, ESC);
 	index++;
     }
 

@@ -1,6 +1,6 @@
 
-// (c) COPRIGHT URI/MIT 1996
-// Please first read the full copyright statement in the file COPYRIGH.  
+// (c) COPRIGHT URI/MIT 1996,1998,1999
+// Please first read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
@@ -8,6 +8,9 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.8  1999/04/29 02:29:27  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.7  1999/03/24 23:37:14  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
@@ -19,6 +22,9 @@
 // Replaced repeated code (to build arg lists) with a function call (it's a
 // function call because it needs to be called from inside the expr parser,
 // too).
+//
+// Revision 1.4.14.1  1999/02/02 21:56:56  jimg
+// String to string version
 //
 // Revision 1.4  1996/12/02 23:10:08  jimg
 // Added dataset as a parameter to the ops member function.
@@ -122,7 +128,7 @@ Clause::value_clause()
 }
 
 bool 
-Clause::value(const String &dataset, DDS &dds) 
+Clause::value(const string &dataset, DDS &dds) 
 {
     assert(OK());
     assert(_op || _b_func);
@@ -145,6 +151,7 @@ Clause::value(const String &dataset, DDS &dds)
 
 	bool result = (*_b_func)(_argc, argv, dds);
 	delete[] argv;		// Cache me!
+
 	return result;
     }
     else {
@@ -157,7 +164,7 @@ Clause::value(const String &dataset, DDS &dds)
 }
 
 bool 
-Clause::value(const String &dataset, DDS &dds, BaseType **value) 
+Clause::value(const string &dataset, DDS &dds, BaseType **value) 
 {
     assert(OK());
     assert(_bt_func);

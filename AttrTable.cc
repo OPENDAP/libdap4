@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -9,11 +9,21 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.23  1999/04/29 02:29:26  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.22  1999/03/24 23:37:13  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
 // Revision 1.21  1998/11/24 06:50:07  jimg
 // Added instrumentation. Used while I was removing DASVHMap.
+//
+// Revision 1.20.2.2  1999/02/05 09:32:10  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.20.2.1  1999/02/02 19:43:13  jimg
+// StringSPlex Removed
 //
 // Revision 1.20  1998/08/06 16:06:42  jimg
 // Now prints aliases as such rather than replicating the aliased entry.
@@ -37,7 +47,7 @@
 // collision with the STL'd map class.
 //
 // Revision 1.14  1996/08/13 20:49:30  jimg
-// Added __unused__ to definition of char rcsid[].
+// Added not_used to definition of char rcsid[].
 //
 // Revision 1.13  1996/05/31 23:29:21  jimg
 // Updated copyright notice.
@@ -92,7 +102,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.22 1999/03/24 23:37:13 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.23 1999/04/29 02:29:26 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -100,10 +110,11 @@ static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.22 1999/03/24 23:37:13 ji
 
 #include <assert.h>
 
-#include <ostream.h>
+#include <iostream>
 
 #include "AttrTable.h"
 #include "debug.h"
+#include "util.h"
 
 // Private member functions
 
@@ -111,16 +122,16 @@ static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.22 1999/03/24 23:37:13 ji
 // This ensures that the Pix returned will reference the AttrTable which
 // containes the attribute - not the attribute itself.
 Pix 
-AttrTable::find(const String &target, bool cont_only = false)
+AttrTable::find(const string &target, bool cont_only)
 {
-    if (target.contains(".")) {
-	String name = (String)target; // cast away const
-	String container = name.before(".");
-	String field = name.after(".");
+    unsigned int dotpos = target.find('.');
+    if (dotpos != target.npos) {
+	string container = target.substr(0, dotpos);
+	string field = target.substr(dotpos+1);
 	
 	Pix p = simple_find(container);
 	if ((p) && attr_map(p).type == Attr_container) {
-	    if (cont_only && !field.contains("."))
+	    if (cont_only && (field.find('.')==field.npos))
 		return p;
 	    else
 		return attr_map(p).value.attributes->find(field, cont_only);
@@ -133,7 +144,7 @@ AttrTable::find(const String &target, bool cont_only = false)
 }
 
 Pix
-AttrTable::simple_find(const String &target)
+AttrTable::simple_find(const string &target)
 {
     for (Pix p = attr_map.first(); p; attr_map.next(p))
 	if (target == attr_map(p).name)
@@ -141,7 +152,7 @@ AttrTable::simple_find(const String &target)
     return 0;
 }
 
-String 
+string 
 AttrTable::AttrType_to_String(const AttrType at)
 {
     switch (at) {
@@ -160,32 +171,30 @@ AttrTable::AttrType_to_String(const AttrType at)
 }
 
 AttrType
-AttrTable::String_to_AttrType(const String &s)
+AttrTable::String_to_AttrType(const string &s)
 {
-    String s2 = capitalize(s);
-    if (s2 == "Container")
+    string s2 = s;
+    downcase(s2);
+
+    if (s2 == "container")
 	return Attr_container;
-    else if (s2 == "Byte")
+    else if (s2 == "byte")
 	return Attr_byte;
-    else if (s2 == "Int16")
+    else if (s2 == "int16")
 	return Attr_int16;
-    else if (s2 == "Uint16")
+    else if (s2 == "uint16")
 	return Attr_uint16;
-    else if (s2 == "UInt16")	// Support two spellings...
-	return Attr_uint16;
-    else if (s2 == "Int32")
+    else if (s2 == "int32")
 	return Attr_int32;
-    else if (s2 == "Uint32")
+    else if (s2 == "uint32")
 	return Attr_uint32;
-    else if (s2 == "UInt32")	// Support two spellings...
-	return Attr_uint32;
-    else if (s2 == "Float32")
+    else if (s2 == "float32")
 	return Attr_float32;
-    else if (s2 == "Float64")
+    else if (s2 == "float64")
 	return Attr_float64;
-    else if (s2 == "String")
+    else if (s2 == "string")
 	return Attr_string;
-    else if (s2 == "Url")
+    else if (s2 == "url")
 	return Attr_url;
     else 
 	return Attr_unknown;
@@ -234,7 +243,7 @@ AttrTable::next_attr(Pix &p)
     attr_map.next(p);
 }
 
-String
+string
 AttrTable::get_name(Pix p)
 {
     assert(p);
@@ -256,7 +265,7 @@ AttrTable::get_attr_table(Pix p)
 }
 
 AttrTable *
-AttrTable::get_attr_table(const String &name)
+AttrTable::get_attr_table(const string &name)
 {
     Pix p = find(name, true);	// Return only Pixes to container attributes
     return (p) ?  get_attr_table(p) : 0;
@@ -265,27 +274,27 @@ AttrTable::get_attr_table(const String &name)
 AttrTable *
 AttrTable::get_attr_table(const char *name)
 {
-    return get_attr_table((String)name);
+    return get_attr_table((string)name);
 }
 
-String
+string
 AttrTable::get_type(Pix p)
 {
     assert(p);
     return AttrType_to_String(attr_map(p).type);
 }
 
-String
-AttrTable::get_type(const String &name)
+string
+AttrTable::get_type(const string &name)
 {
     Pix p = find(name);
-    return (p) ?  get_type(p) : (String)"";
+    return (p) ?  get_type(p) : (string)"";
 }
 
-String
+string
 AttrTable::get_type(const char *name)
 {
-    return get_type((String)name);
+    return get_type((string)name);
 }
 
 AttrType
@@ -296,7 +305,7 @@ AttrTable::get_attr_type(Pix p)
 }
 
 AttrType
-AttrTable::get_attr_type(const String &name)
+AttrTable::get_attr_type(const string &name)
 {
     Pix p = find(name);
     return (p) ?  get_attr_type(p) : Attr_unknown;
@@ -305,18 +314,18 @@ AttrTable::get_attr_type(const String &name)
 AttrType
 AttrTable::get_attr_type(const char *name)
 {
-    return get_attr_type((String)name);
+    return get_attr_type((string)name);
 }
 
 unsigned int 
 AttrTable::get_attr_num(Pix p)
 {
     assert(p);
-    return attr_map(p).type == Attr_container ? 0 : attr_map(p).value.attr->length();
+    return attr_map(p).type == Attr_container ? 0 : attr_map(p).value.attr->size();
 }
 
 unsigned int 
-AttrTable::get_attr_num(const String &name)
+AttrTable::get_attr_num(const string &name)
 {
     Pix p = find(name);
     return (p) ?  get_attr_num(p) : 0;
@@ -325,52 +334,52 @@ AttrTable::get_attr_num(const String &name)
 unsigned int 
 AttrTable::get_attr_num(const char *name)
 {
-    return get_attr_num((String)name);
+    return get_attr_num((string)name);
 }
 
-String
+string
 AttrTable::get_attr(Pix p, unsigned int i)
 {
     assert(p);
-    return attr_map(p).type == Attr_container ? (String)"None" : (*attr_map(p).value.attr)[i];
+    return attr_map(p).type == Attr_container ? (string)"None" : (*attr_map(p).value.attr)[i];
 }
 
-String
-AttrTable::get_attr(const String &name, unsigned int i)
+string
+AttrTable::get_attr(const string &name, unsigned int i)
 {
     Pix p = find(name);
-    return (p) ? get_attr(p, i) : (String)"";
+    return (p) ? get_attr(p, i) : (string)"";
 }
 
-String
+string
 AttrTable::get_attr(const char *name, unsigned int i)
 {
-    return get_attr((String)name, i);
+    return get_attr((string)name, i);
 }
 
-StringXPlex *
+vector<string> *
 AttrTable::get_attr_vector(Pix p)
 {
     assert(p);
     return attr_map(p).type != Attr_container ? attr_map(p).value.attr : 0;
 }
 
-StringXPlex *
-AttrTable::get_attr_vector(const String &name)
+vector<string> *
+AttrTable::get_attr_vector(const string &name)
 {
     Pix p = find(name);
     return (p) ?  get_attr_vector(p) : 0;
 }
 
-StringXPlex *
+vector<string> *
 AttrTable::get_attr_vector(const char *name)
 {
-    return get_attr_vector((String)name);
+    return get_attr_vector((string)name);
 }
 
 unsigned int
-AttrTable::append_attr(const String &name, const String &type, 
-		       const String &attr)
+AttrTable::append_attr(const string &name, const string &type, 
+		       const string &attr)
 {
     Pix p = find(name);
     // If the types don't match OR this attribute is a container, calling
@@ -378,31 +387,32 @@ AttrTable::append_attr(const String &name, const String &type,
     if (p && (attr_map(p).type != String_to_AttrType(type) 
 	      || get_type(p) == "Container"))
 	return 0;
-    else if (p)			// Must be a new attribute value; add it.
-	return attr_map(p).value.attr->add_high(attr) + 1;
-    else {			// Must be a completely new attribute; add it
+    else if (p)	{		// Must be a new attribute value; add it.
+        attr_map(p).value.attr->push_back(attr);
+	return attr_map(p).value.attr->size();
+    } else {			// Must be a completely new attribute; add it
 	entry e;
 
 	e.name = name;
 	e.is_alias = false;
 	e.type = String_to_AttrType(type); // Record type using standard names.
-	e.value.attr = new StringXPlex;
-	unsigned int len = e.value.attr->add_high(attr) + 1;
+	e.value.attr = new vector<string>;
+	e.value.attr->push_back(attr);
 
 	attr_map.append(e);
     
-	return len;		// return the length of the attr XPlex
+	return e.value.attr->size();	// return the length of the attr vector
     }
 }
 
 unsigned int
 AttrTable::append_attr(const char *name, const char *type, const char *attr)
 {
-    return append_attr((String)name, (String)type, (String)attr);
+    return append_attr((string)name, (string)type, (string)attr);
 }
 
 AttrTable *
-AttrTable::append_container(const String &name)
+AttrTable::append_container(const string &name)
 {
     Pix p = find(name);
     
@@ -422,7 +432,7 @@ AttrTable::append_container(const String &name)
 }
 
 bool
-AttrTable::attr_alias(const String &alias, AttrTable *at, const String &name)
+AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
 {
     // It is an error for alias to exist already.
     if (find(alias))
@@ -454,19 +464,19 @@ AttrTable::attr_alias(const String &alias, AttrTable *at, const String &name)
 }
 
 bool
-AttrTable::attr_alias(const String &alias, const String &name)
+AttrTable::attr_alias(const string &alias, const string &name)
 {
     return attr_alias(alias, this, name);
 }
 
-// Delete the attribute NAME. If NAME is an array of attributes, delete the
+// Delete the attribute NAME. If NAME is an attribute vector, delete the
 // I(th) element if I is >= 0. If I is -1 (the default), remove the entire
-// attribute even f it is an array of values.
+// attribute even if it is an array of values.
 //
 // Returns: void
 
 void
-AttrTable::del_attr(const String &name, int i)
+AttrTable::del_attr(const string &name, int i)
 {
     Pix p = find(name);
     if (p) {
@@ -480,19 +490,17 @@ AttrTable::del_attr(const String &name, int i)
 	    if (attr_map(p).type == Attr_container) 
 		return;
 
-	    StringXPlex *sxp = attr_map(p).value.attr;
+	    vector<string> *sxp = attr_map(p).value.attr;
 		
-	    assert(i >= 0 && i < sxp->fence());
-	    for (int j = i+1; j < sxp->fence(); ++j)
-		sxp[j-1] = sxp[j]; // mv array elements to empty space
-	    (void) sxp->del_high(); // rm extra element
+	    assert(i >= 0 && i < (int)sxp->size());
+	    sxp->erase(sxp->begin() + i); // rm the element
 	}
     }
 }
 	
 	    
 void
-AttrTable::print(ostream &os, String pad)
+AttrTable::print(ostream &os, string pad)
 {
     for(Pix p = attr_map.first(); p; attr_map.next(p)) {
 	if (attr_map(p).is_alias) {
@@ -511,12 +519,13 @@ AttrTable::print(ostream &os, String pad)
 	      default: {
 		    os << pad << get_type(p) << " " << get_name(p) << " " ;
 
-		    StringXPlex *sxp = attr_map(p).value.attr;
+		    vector<string> *sxp = attr_map(p).value.attr;
 
-		    for (int i = 0; i < sxp->high(); ++i)
-			os << (*sxp)[i] << ", ";
-
-		    os << (*sxp)[sxp->high()] << ";" << endl;
+		    for (vector<string>::const_iterator i = sxp->begin(); 
+			 i < (sxp->end()-1); ++i)
+			os << *i << ", ";
+  
+		    os << *(sxp->end()-1) << ";" << endl;
 		}
 		break;
 	    }

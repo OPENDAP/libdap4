@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
 // (c) COPYRIGHT URI/MIT 1999
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -11,8 +11,14 @@
 // 3/22/9 jhrg9
 
 // $Log: Float32.h,v $
+// Revision 1.8  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.7  1999/03/24 23:40:05  jimg
 // Added
+//
+// Revision 1.5.6.1  1999/02/02 21:56:58  jimg
+// String to string version
 //
 // Revision 1.5  1998/01/12 14:27:57  tom
 // Second pass at class documentation.
@@ -70,30 +76,31 @@ public:
       to be created.  The name may be omitted, which will create a
       nameless variable.  This may be adequate for some applications. 
       
-      @param n A String containing the name of the variable to be
+      @param n A string containing the name of the variable to be
       created. 
 
       @memo The Float32 constructor. */
-    Float32(const String &n = (char *)0);
+    Float32(const string &n = "");
+
     virtual ~Float32() {}
 
     virtual BaseType *ptr_duplicate() = 0;
     
     virtual unsigned int width();
 
-    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const String &dataset, int &error) = 0;
+    virtual bool read(const string &dataset, int &error) = 0;
 
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual void print_val(ostream &os, String space = "", 
+    virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool ops(BaseType *b, int op, const String &dataset);
+    virtual bool ops(BaseType *b, int op, const string &dataset);
 };
 
 #endif

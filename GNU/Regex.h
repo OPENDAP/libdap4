@@ -37,28 +37,27 @@ struct re_registers;
 class Regex
 {
 private:
-
-                     Regex(const Regex&) {}  // no X(X&)
-  void               operator = (const Regex&) {} // no assignment
+    Regex(const Regex&) {}  // no X(X&)
+    void operator = (const Regex&) {} // no assignment
 
 protected:
-  re_pattern_buffer* buf;
-  re_registers*      reg;
+    re_pattern_buffer* buf;
+    re_registers* reg;
 
 public:
-                     Regex(const char* t, 
-                           int fast = 0, 
-                           int bufsize = 40, 
-                           const char* transtable = 0);
+    Regex(const char* t, 
+	  int fast = 0, 
+	  int bufsize = 40, 
+	  const char* transtable = 0);
 
-                    ~Regex();
+    ~Regex();
 
-  int                match(const char* s, int len, int pos = 0) const;
-  int                search(const char* s, int len, 
-                            int& matchlen, int startpos = 0) const;
-  int                match_info(int& start, int& length, int nth = 0) const;
+    int match(const char* s, int len, int pos = 0) const;
+    int search(const char* s, int len, 
+	       int& matchlen, int startpos = 0) const;
+    int match_info(int& start, int& length, int nth = 0) const;
 
-  int                OK() const;  // representation invariant
+    int OK() const;  // representation invariant
 };
 
 // some built in regular expressions

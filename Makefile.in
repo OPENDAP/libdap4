@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.93 1999/03/30 19:07:54 jimg Exp $
+# $Id: Makefile.in,v 1.94 1999/04/29 02:29:30 jimg Exp $
 
 @SET_MAKE@
 
@@ -9,7 +9,7 @@
 
 # The library libdap++.a contains the code for the generation of the DAS and
 # DDS structures plus the code for data transmission and the GNU libg++.a
-# classes Map, Stack, Plex and Vec.
+# classes Map, Stack and Vec.
 # geturl is a simple program that uses the dap++ library plus others to fetch
 # a url. In addition it can read and process DAS and DDS objects, displaying
 # the print representation on the screen.
@@ -18,7 +18,7 @@ PROG = libdap++.a geturl usage deflate
 DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
-INCS = -I. -IMap -IStack -IPlex -IVec -IGNU @INCS@
+INCS = -I. -IMap -IStack -IVec -IGNU @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
@@ -122,15 +122,11 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 # These object files are built using source code generated from the GNU
 # libg++ source with `genclass'. They are part of the the DAP library.
 
-GNUOBJS = Vec/BaseTypeVec.o Plex/String.Plex.o Plex/String.XPlex.o \
-	  Stack/BTPlex.o Stack/BTStack.o Stack/BTXPStack.o Stack/BTXPlex.o \
-	  Map/AttrMap.o Map/AttrVHMap.o Map/DASMap.o Map/DASVHMap.o \
-          GNU/String.o GNU/SLList.o GNU/DLList.o GNU/GetOpt.o GNU/Regex.o \
-          GNU/error.o GNU/hash.o
+GNUOBJS = GNU/SLList.o GNU/DLList.o GNU/GetOpt.o GNU/Regex.o GNU/error.o 
 
-GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h \
-	  Map/AttrVHMap.h      Plex/String.XPlex.h  Stack/BTdefs.h \
-	  Map/Attrdefs.h       Plex/String.defs.h   Vec/BaseTypeVec.h \
+GNUHDRS = Map/AttrMap.h        Stack/BTXPlex.h \
+	  Map/AttrVHMap.h      Stack/BTdefs.h \
+	  Map/Attrdefs.h       Vec/BaseTypeVec.h \
 	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h \
 	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h \
           Stack/BTXPStack.h    GNU/String.h         GNU/Pix.h \
@@ -485,16 +481,14 @@ depend:
 	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS)
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
-  Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h \
-  Grid.h Stack/BTXPStack.h Stack/BTXPlex.h Stack/BTPlex.h Stack/BTdefs.h \
-  Stack/BTStack.h 
+  Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h Grid.h 
 
 das.tab.c: DAS.h
 
 # Force build of String.XPlex.o using no optimization. This is a temporary
 # work-around for a bug in gcc 2.8.1 on at least the SPARC. 
-Plex/String.XPlex.o: Plex/String.XPlex.cc
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -O0 -o $@ $<
+#Plex/String.XPlex.o: Plex/String.XPlex.cc
+#	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -O0 -o $@ $<
 
 .SUFFIXES:      .o .cc .c
 

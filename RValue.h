@@ -11,6 +11,9 @@
 #define rvalue_h
 
 // $Log: RValue.h,v $
+// Revision 1.3  1999/04/29 02:29:31  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.2  1999/01/21 20:42:01  tom
 // Fixed comment formatting problems for doc++
 //
@@ -37,7 +40,7 @@ public:
 
     ~rvalue();
 
-    String value_name();
+    string value_name();
 
     // Return the BaseType * that contains a value for a given rvalue. If the
     // rvalue is a BaseType *, ensures that the read mfunc has been
@@ -45,7 +48,7 @@ public:
     // returns the result.
     // NB: The functions referenced by func_rvalues must encapsulate their
     // return values in BaseType *s.
-    BaseType *bvalue(const String &dataset, DDS &dds);
+    BaseType *bvalue(const string &dataset, DDS &dds);
 };
 
 // This type def must come after the class definition above. It is used in

@@ -19,6 +19,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #pragma implementation
 #endif
 #include <builtin.h>
+#include <stdlib.h>
 
 void default_one_arg_error_handler(const char* msg)
 {

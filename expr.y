@@ -1,8 +1,8 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -18,6 +18,9 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.30  1999/04/29 02:29:36  jimg
+ * Merge of no-gnu branch
+ *
  * Revision 1.29  1999/04/22 22:30:52  jimg
  * Uses dynamic_cast
  *
@@ -31,20 +34,28 @@
  *
  * Revision 1.26  1998/10/21 16:55:15  jimg
  * Single array element may now be refd as [<int>]. So element seven of the
- * array `a' can be referenced as a[7]. The old syntax, a[7:7], will still work.
- * Projection functions are now supported. Functions listed in the projection
- * part of a CE are evaluated (executed after parsing) as they are found (before
- * the parse of the rest of the projections or the start of the parse of the
- * selections. These functions take the same three arguments as the boll and
- * BaseType * functions (int argc, BaseType *argv[], DDS &dds) but they return
- * void. They can do whatever they like, but the use I foresee is adding new
- * (synthesized - see BaseType.cc/h) variables to the DDS.
+ * array `a' can be referenced as a[7]. The old syntax, a[7:7], will still
+ * work. Projection functions are now supported. Functions listed in the
+ * projection part of a CE are evaluated (executed after parsing) as they are
+ * found (before the parse of the rest of the projections or the start of the
+ * parse of the selections. These functions take the same three arguments as
+ * the boll and BaseType * functions (int argc, BaseType *argv[], DDS &dds)
+ * but they return void. They can do whatever they like, but the use I
+ * foresee is adding new (synthesized - see BaseType.cc/h) variables to the
+ * DDS.
  *
  * Revision 1.25  1998/09/17 16:56:50  jimg
  * Made the error messages more verbose (that is, the text in the Error objects
  * sent back to the client).
  * Fixed a bug where non-existent fields could be accessed - with predictably
  * bad results.
+ *
+ * Revision 1.24.6.2  1999/02/05 09:32:36  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+ * math code. 
+ *
+ * Revision 1.24.6.1  1999/02/02 21:57:07  jimg
+ * String to string version
  *
  * Revision 1.24  1998/03/19 23:22:38  jimg
  * Fixed the error messages so they use `' instead of :
@@ -87,7 +98,7 @@
  * Added a fix for Bison 1.25 so that PARSE_PARAM will still work
  *
  * Revision 1.13  1996/08/13 19:00:21  jimg
- * Added __unused__ to definition of char rcsid[].
+ * Added not_used to definition of char rcsid[].
  * Switched to the parser_arg object for communication with callers. Removed
  * unused parameters from dereference_{url, variable}, make_rvalue_list and
  * append_rvalue_list.
@@ -149,21 +160,19 @@
  * rules now return several different types.
  *
  * Revision 1.1  1995/10/13  03:04:08  jimg
- * First version. Incorporates Glenn's suggestions.
- */
+ * First version. Incorporates Glenn's suggestions. */
 
 %{
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.29 1999/04/22 22:30:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.30 1999/04/29 02:29:36 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-#include <String.h>
 #include <string>
 #include <SLList.h>
 
@@ -213,6 +222,11 @@ void exprerror(const char *s);	/* easier to overload than to use stdarg... */
 void exprerror(const char *s, const char *s2);
 int no_such_func(void *arg, char *name);
 int no_such_ident(void *arg, char *name, char *word);
+
+void exprerror(const string &s); 
+void exprerror(const string &s, const string &s2);
+int no_such_func(void *arg, const string &name);
+int no_such_ident(void *arg, const string &name, const string &word);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
@@ -410,8 +424,8 @@ r_value:        identifier
 		    if (!$$) {
 			exprerror("Could not dereference variable", 
 				  ($2)->value_name());
-			String msg = "Could not dereference the URL: ";
-			msg += (String)($2)->value_name();
+			string msg = "Could not dereference the URL: ";
+			msg += ($2)->value_name();
 			ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			STATUS(arg) = false;
 		    }
@@ -510,8 +524,8 @@ array_proj:	ID array_indices
 			(*DDS_OBJ(arg)).mark($1, true);
 			$$ = process_array_indices(var, $2);
 			if (!$$) {
-			    String msg = "The indices given for `";
-			    msg += (String)$1 + "' are out of range.";
+			    string msg = "The indices given for `";
+			    msg += (string)$1 + (string)"' are out of range.";
 			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			    STATUS(arg) = false;
 			}
@@ -522,8 +536,8 @@ array_proj:	ID array_indices
 			/* var->set_send_p(true); */
 			$$ = process_grid_indices(var, $2);
 			if (!$$) {
-			    String msg = "The indices given for `";
-			    msg += (String)$1 + "' are out of range.";
+			    string msg = "The indices given for `";
+			    msg += (string)$1 + (string)"' are out of range.";
 			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			    STATUS(arg) = false;
 			}
@@ -540,8 +554,8 @@ array_proj:	ID array_indices
 			$$ = (*DDS_OBJ(arg)).mark($1, true) 
 			    && process_array_indices(var, $2);
 			if (!$$) {
-			    String msg = "The indices given for `";
-			    msg += (String)$1 + "' are out of range.";
+			    string msg = "The indices given for `";
+			    msg += (string)$1 + (string)"' are out of range.";
 			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			    STATUS(arg) = false;
 			}
@@ -551,8 +565,8 @@ array_proj:	ID array_indices
 			$$ = (*DDS_OBJ(arg)).mark($1, true)
 			    && process_grid_indices(var, $2);
 			if (!$$) {
-			    String msg = "The indices given for `";
-			    msg += (String)$1 + "' are out of range.";
+			    string msg = "The indices given for `";
+			    msg += (string)$1 + (string)"' are out of range.";
 			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			    STATUS(arg) = false;
 			}
@@ -600,15 +614,33 @@ rel_op:		EQUAL
 %%
 
 void
+exprerror(const string &s)
+{ 
+    exprerror(s.c_str());
+}
+
+void
 exprerror(const char *s)
 {
     cerr << "Parse error: " << s << endl;
 }
 
 void
+exprerror(const string &s, const string &s2)
+{
+    exprerror(s.c_str(), s2.c_str());
+}
+
+void
 exprerror(const char *s, const char *s2)
 {
     cerr << "Parse error: " << s << ": " << s2 << endl;
+}
+
+int
+no_such_ident(void *arg, const string &name, const string &word)
+{
+    return no_such_ident(arg, name.c_str(), word.c_str());
 }
 
 int
@@ -622,6 +654,12 @@ no_such_ident(void *arg, char *name, char *word)
     STATUS(arg) = false;
 
     return false;
+}
+
+int
+no_such_func(void *arg, const string &name)
+{
+    return no_such_func(arg, name.c_str());
 }
 
 int
@@ -962,10 +1000,11 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 // points to.
 
 static rvalue *
-dereference_string(String &s)
+dereference_string(string &s)
 {
-    String url = s.before("?");	// strip off CE
-    String ce = s.after("?");	// yes, get the CE
+    unsigned int qpos = s.find('?');
+    string url = s.substr(0, qpos);	// strip off CE
+    string ce = s.substr(qpos+1);	// yes, get the CE
 
     // I don't think that the `false' is really necessary, but g++ seems to
     // want it. jhrg 2/10/97
@@ -1020,8 +1059,8 @@ dereference_variable(rvalue *rv, DDS &dds)
 	return 0;
     }
 
-    String s;
-    String  *sp = &s;
+    string s;
+    string  *sp = &s;
     btp->buf2val((void **)&sp);
     
     return dereference_string(s);

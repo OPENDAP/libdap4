@@ -11,12 +11,17 @@
 // jhrg 3/24/99
 
 // $Log: Operators.h,v $
+// Revision 1.2  1999/04/29 02:29:31  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.1  1999/03/24 23:37:37  jimg
 // Added
 //
 
 #ifndef __operators_h
 #define __operators_h
+
+#include "Regex.h"		// GNU Regex class used for string =~ op.
 
 static unsigned
 dods_max(int i1, int i2)
@@ -107,8 +112,16 @@ template<class T1, class T2> class StrCmp {
     static bool lt(T1 v1, T2 v2) {return v1 < v2;}
     static bool le(T1 v1, T2 v2) {return v1 <= v2;}
     static bool re(T1 v1, T2 v2) {
-	Regex r((const char *)v2);
-	return v1.matches(r);
+	Regex r(v2.c_str());
+#if 0
+	int status = r.match(v1.c_str(), v1.length());
+#endif
+
+	return r.match(v1.c_str(), v1.length()) > 0;
+#if 0
+	cerr << "v1: " << v1 << " v2: " << v2 << " status: " << status << endl;
+	return status > 0;
+#endif
     }
 };
 

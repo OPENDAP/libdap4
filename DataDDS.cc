@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -9,8 +9,18 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.cc,v $
+// Revision 1.6  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.5  1998/11/10 01:01:11  jimg
 // version_regex now fast compiled.
+//
+// Revision 1.4.4.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.4.4.1  1999/02/02 21:56:58  jimg
+// String to string version
 //
 // Revision 1.4  1998/06/05 21:29:54  jimg
 // Changed the version regex used to check for the version string pattern so
@@ -30,16 +40,21 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.5 1998/11/10 01:01:11 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.6 1999/04/29 02:29:29 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
-#include <iostream.h>
-#include <strstream.h>
+#include <iostream>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
-#include <String.h>
+#include <string>
+#include <Regex.h>
 
 #include "DataDDS.h"
 #include "debug.h"
@@ -55,14 +70,14 @@ DataDDS::_version_string_to_numbers()
 
     DBG(cerr << "in version string to numbers" << endl);
 
-    if (!_server_version.matches(version_regex)) {
+    if (version_regex.match(_server_version.c_str(), _server_version.size()) != (int)_server_version.size()) {
 	_server_version_major = 0;
 	_server_version_minor = 0;
     }
     else {
-	String num = _server_version.after("/");
+	string num = _server_version.substr(_server_version.find('/')+1);
 
-	istrstream iss((const char *)num);
+	istrstream iss(num.c_str());
 
 	iss >> _server_version_major;
 	char c;
@@ -76,7 +91,7 @@ DataDDS::_version_string_to_numbers()
 
 // public
 
-DataDDS::DataDDS(const String &n = (char *)0, const String &v = (char *)0)
+DataDDS::DataDDS(const string &n, const string &v)
     :DDS(n), _server_version(v), _sequence_level(0)
 {
     _version_string_to_numbers();
@@ -87,7 +102,7 @@ DataDDS::~DataDDS()
 }
 
 void
-DataDDS::set_version(const String &v)
+DataDDS::set_version(const string &v)
 {
     _server_version = v;
     _version_string_to_numbers();

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1996,1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,8 +10,14 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.20  1999/04/29 02:29:31  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.19  1998/11/10 00:57:44  jimg
 // Fixed errant delete [] (should have been plain delete).
+//
+// Revision 1.18.14.1  1999/02/02 21:57:02  jimg
+// String to string version
 //
 // Revision 1.18  1996/12/02 18:21:17  jimg
 // Added case for unit32 to ops() member functon.
@@ -103,7 +109,7 @@
 #endif
 
 Array *
-NewArray(const String &n, BaseType *v)
+NewArray(const string &n, BaseType *v)
 {
     return new TestArray(n, v);
 }
@@ -114,7 +120,7 @@ TestArray::ptr_duplicate()
     return new TestArray(*this);
 }
 
-TestArray::TestArray(const String &n, BaseType *v) : Array(n, v)
+TestArray::TestArray(const string &n, BaseType *v) : Array(n, v)
 {
 }
 
@@ -126,7 +132,7 @@ TestArray::~TestArray()
 // would never get values this way. For testing this is OK.
 
 bool
-TestArray::read(const String &dataset, int &error)
+TestArray::read(const string &dataset, int &error)
 {
     if (read_p())
 	return true;

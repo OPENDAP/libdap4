@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,12 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
+// Revision 1.14  1999/04/29 02:29:33  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.13.14.1  1999/02/02 21:57:03  jimg
+// String to string version
+//
 // Revision 1.13  1996/05/31 23:30:34  jimg
 // Updated copyright notice.
 //
@@ -73,7 +79,7 @@
 #include "TestStructure.h"
 
 Structure *
-NewStructure(const String &n)
+NewStructure(const string &n)
 {
     return new TestStructure(n);
 }
@@ -84,7 +90,7 @@ TestStructure::ptr_duplicate()
     return new TestStructure(*this);
 }
 
-TestStructure::TestStructure(const String &n) : Structure(n)
+TestStructure::TestStructure(const string &n) : Structure(n)
 {
 }
 
@@ -96,7 +102,7 @@ TestStructure::~TestStructure()
 // comprise the structure. 
 
 bool
-TestStructure::read(const String &dataset, int &error)
+TestStructure::read(const string &dataset, int &error)
 {
     if (read_p())
 	return true;

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1994-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.37  1999/04/29 02:29:31  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.36  1999/03/24 23:37:15  jimg
 // Added support for the Int16, UInt16 and Float32 types
 //
@@ -29,6 +32,13 @@
 // Change Str::print_val() to quote Strings when printing them (so geturl can
 // generate less ambiguous output).
 //
+// Revision 1.31.6.2  1999/02/05 09:32:35  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.31.6.1  1999/02/02 21:57:01  jimg
+// String to string version
+//
 // Revision 1.31  1998/03/19 23:30:49  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
 //
@@ -45,7 +55,7 @@
 // Added case for unit32 to ops() member functon.
 //
 // Revision 1.26  1996/08/13 18:36:53  jimg
-// Added __unused__ to definition of char rcsid[].
+// Added not_used to definition of char rcsid[].
 // Moved str_ops() to util.cc
 //
 // Revision 1.25  1996/06/04 21:33:42  jimg
@@ -192,13 +202,16 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.36 1999/03/24 23:37:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.37 1999/04/29 02:29:31 jimg Exp $"};
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 
-#include <strstream.h>
+#ifdef __GNUG__
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
 #include "Str.h"
 #include "DDS.h"
@@ -211,9 +224,9 @@ static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.36 1999/03/24 23:37:15 jimg E
 #include "trace_new.h"
 #endif
 
-String escattr(String s);
+string escattr(string s);
 
-Str::Str(const String &n) : BaseType(n, dods_str_c), _buf("")
+Str::Str(const string &n) : BaseType(n, dods_str_c), _buf("")
 {
 }
 
@@ -226,11 +239,11 @@ Str::length()
 unsigned int
 Str::width()
 {
-    return sizeof(String);
+    return sizeof(string);
 }
 
 bool
-Str::serialize(const String &dataset, DDS &dds, XDR *sink, bool ce_eval = true)
+Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
     int error;
 
@@ -249,7 +262,7 @@ Str::serialize(const String &dataset, DDS &dds, XDR *sink, bool ce_eval = true)
     return true;
 }
 
-// deserialize the String on stdin and put the result in BUF.
+// deserialize the string on stdin and put the result in BUF.
 
 bool
 Str::deserialize(XDR *source, DDS *, bool)
@@ -262,13 +275,13 @@ Str::deserialize(XDR *source, DDS *, bool)
 // in this case).
 //
 // NB: return the size of the thing val points to (sizeof val), not the
-// length of the string. Thus if there is an array of of strings, then the
-// return value of this mfunc can be used to advance to the next string in
-// that array. This weirdness is needed because C programs which will need to
-// interface to libraries built using this toolkit will not know about g++
-// Strings and will need to use the C representation for strings, but here in
-// the toolkit I use the String class to cut down on memory management
-// problems.
+// length of the string. Thus if there is an array of of strings (i.e., (char
+// *)s), then the return value of this mfunc can be used to advance to the
+// next char * in that array. This weirdness is needed because C programs
+// which will need to interface to libraries built using this toolkit will
+// not know about C++ strings and will need to use the C representation for
+// strings, but here in the toolkit I use the string class to cut down on
+// memory management problems.
 
 unsigned int
 Str::buf2val(void **val)
@@ -278,9 +291,9 @@ Str::buf2val(void **val)
     if (*val)
 	delete *val;
 
-    *val = new String(_buf);
+    *val = new string(_buf);
 
-    return sizeof(String);
+    return sizeof(string);
 }
 
 // Copy data in VAL to _BUF.
@@ -292,13 +305,13 @@ Str::val2buf(void *val, bool)
 {
     assert(val);
 
-    _buf = *(String *)val;
+    _buf = *(string *)val;
 
-    return sizeof(String);
+    return sizeof(string);
 }
 
 void 
-Str::print_val(ostream &os, String space, bool print_decl_p)
+Str::print_val(ostream &os, string space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -309,9 +322,8 @@ Str::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Str::ops(BaseType *b, int op, const String &dataset)
+Str::ops(BaseType *b, int op, const string &dataset)
 {
-    String a2;
     int error; 
 
     if (!read_p() && !read(dataset, error)) {
@@ -328,12 +340,15 @@ Str::ops(BaseType *b, int op, const String &dataset)
 
     switch (b->type()) {
       case dods_str_c:
-	return rops<String, String, StrCmp<String, String> >
+	return rops<string, string, StrCmp<string, string> >
 	    (_buf, dynamic_cast<Str *>(b)->_buf, op);
       case dods_url_c:
-	return rops<String, String, StrCmp<String, String> >
+	return rops<string, string, StrCmp<string, string> >
 	    (_buf, dynamic_cast<Url *>(b)->_buf, op);
       default:
 	return false;
     }
 }
+
+
+

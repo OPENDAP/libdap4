@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1995-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -10,6 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.21  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
 // Revision 1.20  1999/03/24 23:32:05  jimg
 // Added a verbose mode.
 // Commented out the old transmit(...) function. Use constrained_trans(...)
@@ -24,6 +27,13 @@
 // Revision 1.17  1998/09/17 17:00:02  jimg
 // Added include files to get rid of compiler messages about missing
 // prototypes.
+//
+// Revision 1.16.6.2  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.16.6.1  1999/02/02 21:57:07  jimg
+// String to string version
 //
 // Revision 1.16  1998/03/26 00:15:53  jimg
 // Added keep_temps global for use with debuggers to keep those temp file
@@ -44,7 +54,7 @@
 // Changed so that compression is not used.
 //
 // Revision 1.12  1996/08/13 18:55:20  jimg
-// Added __unused__ to definition of char rcsid[].
+// Added not_used to definition of char rcsid[].
 // Uses the parser_arg object to communicate with the parser.
 //
 // Revision 1.11  1996/06/11 17:30:36  jimg
@@ -101,7 +111,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.20 1999/03/24 23:32:05 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.21 1999/04/29 02:29:36 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,12 +123,11 @@ static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.20 1999/03/24 23:32:05 
 #include <netinet/in.h>
 #include <rpc/xdr.h>
 
-#include <streambuf.h>
-#include <iostream.h>
-#include <stdiostream.h>
+#include <iostream>
+#include <fstream>
 #include <GetOpt.h>
 
-#include <String.h>
+#include <string>
 #include <SLList.h>
 
 #include "DDS.h"
@@ -134,17 +143,14 @@ static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.20 1999/03/24 23:32:05 
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
 
-void test_scanner(const char *str);
+void test_scanner(const string &str);
 void test_scanner(bool show_prompt);
-void test_parser(DDS &table, const String &dds_name, const String &constraint);
-bool read_table(DDS &table, const String &name, bool print);
+void test_parser(DDS &table, const string &dds_name, const string &constraint);
+bool read_table(DDS &table, const string &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
-#if 0
-bool transmit(DDS &write, bool verb);
-#endif
 bool loopback_pipe(FILE **pout, FILE **pin);
-bool constrained_trans(const String &dds_name, String dataset,
-		       const String &ce);
+bool constrained_trans(const string &dds_name, string dataset,
+		       const string &ce);
 
 int exprlex();			// exprlex() uses the global exprlval
 int exprparse(void *arg);
@@ -159,55 +165,50 @@ extern int exprdebug;
 
 static int keep_temps = 0;
 
-const String version = "version 1.12";
-const String prompt = "expr-test: ";
-#if 0
-const String options = "sS:detcvp:w:f:k:v";
-#endif
-const String options = "sS:decvp:w:f:k:v";
-const String usage = "expr-test [-s [-S string] -d -c -v [-p dds-file]\n\
-[-e expr] [-w dds-file] [-f data-file] [-k expr]]\n\
-Test the expression evaluation software.\n\
-Options:\n\
-	-s: Feed the input stream directly into the expression scanner, does\n\
-	    not parse.\n\
-        -S: <string> Scan the string as if it was standard input.\n\
-	-d: Turn on expression parser debugging.\n\
-	-c: Print the constrained DDS (the one that will be returned\n\
-	    prepended to a data transmission. Must also supply -p and -e \n\
-	-t: Test transmission of data. This uses the Test*classes.\n\
-	    Transmission is done using a single process that writes and then\n\
-	    reads from a pipe. Must also suppply -p.\n\
+const string version = "version 1.12";
+const string prompt = "expr-test: ";
+const string options = "sS:decvp:w:f:k:v";
+const string usage = "\
+expr-test [-s [-S string] -d -c -v [-p dds-file]
+[-e expr] [-w dds-file] [-f data-file] [-k expr]]
+Test the expression evaluation software.
+Options:
+	-s: Feed the input stream directly into the expression scanner, does
+	    not parse.
+        -S: <string> Scan the string as if it was standard input.
+	-d: Turn on expression parser debugging.
+	-c: Print the constrained DDS (the one that will be returned
+	    prepended to a data transmission. Must also supply -p and -e 
+	-t: Test transmission of data. This uses the Test*classes.
+	    Transmission is done using a single process that writes and then
+	    reads from a pipe. Must also suppply -p.
         -v: Verbose output
-        -V: Print the version of expr-test\n\
-  	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,\n\
-	    then prompt for an expression and parse that expression, given\n\
-	    the DDS object.\n\
-	-e: Evaluate the constraint expression. Must be used with -p.\n\
-	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\n\
-	     This prompts for the constraint expression and the optional\n\
-             data file name. NOTE: The CE parser Error objects do not print\n\
-             with this option.\n\
-        -f: A file to use for data. Currently only used by -w for sequences.\n\
-	-k: A constraint expression to use with the data. Works with -p,\n\
-	    -e, -t and -w\n";
+        -V: Print the version of expr-test
+  	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,
+	    then prompt for an expression and parse that expression, given
+	    the DDS object.
+	-e: Evaluate the constraint expression. Must be used with -p.
+	-w: Do the whole enchilada. You don't need to supply -p, -e, ...
+	     This prompts for the constraint expression and the optional
+             data file name. NOTE: The CE parser Error objects do not print
+             with this option.
+        -f: A file to use for data. Currently only used by -w for sequences.
+	-k: A constraint expression to use with the data. Works with -p,
+	    -e, -t and -w";
 
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, options);
+    GetOpt getopt(argc, argv, options.c_str());
     int option_char;
     bool scanner_test = false, parser_test = false, evaluate_test = false;
-#if 0
-    bool trans_test = false, print_constrained = false;
-#endif
     bool print_constrained = false;
     bool whole_enchalada = false, constraint_expr = false;
     bool scan_string = false;
     bool verbose = false;
-    String dds_file_name;
-    String dataset = "";
-    String constraint = "";
+    string dds_file_name;
+    string dataset = "";
+    string constraint = "";
     DDS table;
 
     // process options
@@ -305,10 +306,10 @@ main(int argc, char *argv[])
 
 
 void
-test_scanner(const char *str)
+test_scanner(const string &str)
 {
     exprrestart(0);
-    void *buffer = expr_string(str);
+    void *buffer = expr_string(str.c_str());
     expr_switch_to_buffer(buffer);
 
     test_scanner(false);
@@ -397,7 +398,7 @@ test_scanner(bool show_prompt)
 	  default:
 	    cout << "Error: Unrecognized input" << endl;
 	}
-	cout << prompt;		// print prompt after output
+	cout << prompt << flush;		// print prompt after output
     }
 }
 
@@ -406,7 +407,7 @@ test_scanner(bool show_prompt)
 // stdin and thus the expr scanner exits immediately.
 
 void
-test_parser(DDS &table, const String &dds_name, const String &constraint)
+test_parser(DDS &table, const string &dds_name, const string &constraint)
 {
     read_table(table, dds_name, true);
 
@@ -448,7 +449,7 @@ test_parser(DDS &table, const String &dds_name, const String &constraint)
 // false.
 
 bool
-read_table(DDS &table, const String &name, bool print)
+read_table(DDS &table, const string &name, bool print)
 {
     int parse = table.parse(name);
     
@@ -507,7 +508,7 @@ transmit(DDS &write, bool verb)
     // read the variable values back into the read DDS and print the received
     // values. 
 
-    String dummy = "dummy";
+    string dummy = "dummy";
     Pix wp, rp;
     for (wp = write.first_var(), rp = read.first_var(); 
 	 wp && rp; 
@@ -652,14 +653,12 @@ move_dds(FILE *in)
 void
 parse_mime(FILE *data_source)
 {
-    istdiostream is(data_source);
-    
     char line[256];
 
-    is.getline(line, 256);
+    fgets(line, 256, data_source);
     
-    while ((String)line != "")
-	is.getline(line, 256);
+    while (line[0] != '\n')
+	fgets(line, 256, data_source);
 }
 
 // Test the transmission of constrained datasets. Use read_table() to read
@@ -678,8 +677,8 @@ parse_mime(FILE *data_source)
 // output stream, followed by the binary data.
 
 bool
-constrained_trans(const String &dds_name, String dataset, 
-		  const String &constraint) 
+constrained_trans(const string &dds_name, string dataset, 
+		  const string &constraint) 
 {
     bool status;
     FILE *pin, *pout;
@@ -696,7 +695,7 @@ constrained_trans(const String &dds_name, String dataset,
     }
 
     // If the CE was not passed in, read it from the command line.
-    String ce;
+    string ce;
     if (constraint == "") {
 	cout << "Constraint:";
 	char c[256];
