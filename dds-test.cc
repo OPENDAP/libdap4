@@ -11,9 +11,8 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.24 2002/06/03 22:21:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.25 2003/01/10 19:46:41 jimg Exp $"};
 
-#include <iostream>
 #include <GetOpt.h>
 
 #include "parser.h"
@@ -23,10 +22,6 @@ static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.24 2002/06/03 22:21:15 jim
 #include "DDS.h"
 #include "util.h"
 #include "Error.h"
-
-using std::cerr;
-using std::endl;
-using std::flush;
 
 void test_scanner();
 void test_parser();
@@ -42,15 +37,16 @@ const char *prompt = "dds-test: ";
 void
 usage(string name)
 {
-    cerr << "usage: " << name
-	 << " [s] [pd] [c]" << endl
-	 << " s: Test the scanner." << endl
-	 << " p: Test the parser; reads from stdin and prints the" << endl
-	 << "    internal structure to stdout." << endl
-	 << " d: Turn on parser debugging. (only for the hard core.)" << endl
-	 << " c: Test the C++ code for manipulating DDS objects." << endl
-	 << "    Reads from stdin, parses and writes the modified DDS" << endl
-	 << "    to stdout." << endl;
+    fprintf( stderr, "usage: %s %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n",
+		     name.c_str(),
+		     "[s] [pd] [c]",
+		     "s: Test the scanner.",
+		     "p: Test the parser; reads from stdin and prints the",
+		     "   internal structure to stdout.",
+		     "d: Turn on parser debugging. (only for the hard core.)",
+		     "c: Test the C++ code for manipulating DDS objects.",
+		     "   Reads from stdin, parses and writes the modified DDS",
+		     "   to stdout." ) ;
 }
 
 #ifdef WIN32
@@ -120,82 +116,84 @@ test_scanner(void)
 {
     int tok;
 
-    cout << prompt << flush;		// first prompt
+    fprintf( stdout, "%s", prompt ) ; // first prompt
+    fflush( stdout ) ;
     while ((tok = ddslex())) {
 	switch (tok) {
 	  case SCAN_DATASET:
-	    cout << "DATASET" << endl;
+	    fprintf( stdout, "DATASET\n" ) ;
 	    break;
 	  case SCAN_LIST:
-	    cout << "LIST" << endl;
+	    fprintf( stdout, "LIST\n" ) ;
 	    break;
 	  case SCAN_SEQUENCE:
-	    cout << "SEQUENCE" << endl;
+	    fprintf( stdout, "SEQUENCE\n" ) ;
 	    break;
 	  case SCAN_STRUCTURE:
-	    cout << "STRUCTURE" << endl;
+	    fprintf( stdout, "STRUCTURE\n" ) ;
 	    break;
 	  case SCAN_FUNCTION:
-	    cout << "FUNCTION" << endl;
+	    fprintf( stdout, "FUNCTION\n" ) ;
 	    break;
 	  case SCAN_GRID:
-	    cout << "GRID" << endl;
+	    fprintf( stdout, "GRID\n" ) ;
 	    break;
 	  case SCAN_BYTE:
-	    cout << "BYTE" << endl;
+	    fprintf( stdout, "BYTE\n" ) ;
 	    break;
 	  case SCAN_INT16:
-	    cout << "INT16" << endl;
+	    fprintf( stdout, "INT16\n" ) ;
 	    break;
 	  case SCAN_UINT16:
-	    cout << "UINT16" << endl;
+	    fprintf( stdout, "UINT16\n" ) ;
 	    break;
 	  case SCAN_INT32:
-	    cout << "INT32" << endl;
+	    fprintf( stdout, "INT32\n" ) ;
 	    break;
 	  case SCAN_UINT32:
-	    cout << "UINT32" << endl;
+	    fprintf( stdout, "UINT32\n" ) ;
 	    break;
 	  case SCAN_FLOAT32:
-	    cout << "FLOAT32" << endl;
+	    fprintf( stdout, "FLOAT32\n" ) ;
 	    break;
 	  case SCAN_FLOAT64:
-	    cout << "FLOAT64" << endl;
+	    fprintf( stdout, "FLOAT64\n" ) ;
 	    break;
 	  case SCAN_STRING:
-	    cout << "STRING" << endl;
+	    fprintf( stdout, "STRING\n" ) ;
 	    break;
 	  case SCAN_URL:
-	    cout << "Url" << endl;
+	    fprintf( stdout, "Url\n" ) ;
 	    break;
 	  case SCAN_WORD:
-	    cout << "WORD: " << ddslval.word << endl;
+	    fprintf( stdout, "WORD: %s\n", ddslval.word ) ;
 	    break;
 	  case '{':
-	    cout << "Left Brace" << endl;
+	    fprintf( stdout, "Left Brace\n" ) ;
 	    break;
 	  case '}':
-	    cout << "Right Brace" << endl;
+	    fprintf( stdout, "Right Brace\n" ) ;
 	    break;
 	  case '[':
-	    cout << "Left Bracket" << endl;
+	    fprintf( stdout, "Left Bracket\n" ) ;
 	    break;
 	  case ']':
-	    cout << "Right Bracket" << endl;
+	    fprintf( stdout, "Right Bracket\n" ) ;
 	    break;
 	  case ';':
-	    cout << "Semicolon" << endl;
+	    fprintf( stdout, "Semicolon\n" ) ;
 	    break;
 	  case ':':
-	    cout << "Colon" << endl;
+	    fprintf( stdout, "Colon\n" ) ;
 	    break;
 	  case '=':
-	    cout << "Assignment" << endl;
+	    fprintf( stdout, "Assignment\n" ) ;
 	    break;
 	  default:
-	    cout << "Error: Unrecognized input" << endl;
+	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
 	}
-	cout << prompt << flush;		// print prompt after output
+	fprintf( stdout, "%s", prompt ) ; // print prompt after output
+	fflush( stdout ) ;
     }
 }
 
@@ -206,16 +204,16 @@ test_parser(void)
     table.parse();
     
     if (table.check_semantics())
-	cout << "DDS past semantic check" << endl;
+	fprintf( stdout, "DDS past semantic check\n" ) ;
     else 
-	cout << "DDS failed semantic check" << endl;
+	fprintf( stdout, "DDS failed semantic check\n" ) ;
 
     if (table.check_semantics(true))
-	cout << "DDS past full semantic check" << endl;
+	fprintf( stdout, "DDS past full semantic check\n" ) ;
     else 
-	cout << "DDS failed full semantic check" << endl;
+	fprintf( stdout, "DDS failed full semantic check\n" ) ;
 
-    table.print();
+    table.print( stdout );
 }
 
 void
@@ -225,55 +223,78 @@ test_class(void)
     table.parse();
     
     if (table.check_semantics())
-	cout << "DDS past semantic check" << endl;
+	fprintf( stdout, "DDS past semantic check\n" ) ;
     else 
-	cout << "DDS filed semantic check" << endl;
+	fprintf( stdout, "DDS filed semantic check\n" ) ;
 
     if (table.check_semantics(true))
-	cout << "DDS past full semantic check" << endl;
+	fprintf( stdout, "DDS past full semantic check\n" ) ;
     else 
-	cout << "DDS filed full semantic check" << endl;
+	fprintf( stdout, "DDS filed full semantic check\n" ) ;
 
-    table.print();
+    table.print( stdout );
 
     DDS table2 = table;		// test copy ctor;
-    table2.print();
+    table2.print( stdout );
 
     DDS table3;
     table3 = table;		// test operator=
 
-    cout << "Dataset name: " << table.get_dataset_name() << endl;
+    fprintf( stdout, "Dataset name: %s\n", table.get_dataset_name().c_str()) ;
 
     string name = "goofy";
     table.add_var(NewInt32(name)); // table dtor should delete this object
 
-    table.print();
+    table.print( stdout );
 
     BaseType *btp = table.var(name);
 
-    btp->print_decl(cout, "", true); // print out goofy w/semicolon
+    btp->print_decl(stdout, "", true); // print out goofy w/semicolon
 
     table.del_var(name);
 
-    table.print();
+    table.print( stdout );
 
     table.add_var(NewInt32("goofy"));
 
-    table.print();
+    table.print( stdout );
 
     btp = table.var("goofy");
 
-    btp->print_decl(cout, "", true); // print out goofy w/semicolon
+    btp->print_decl(stdout, "", true); // print out goofy w/semicolon
 
     table.del_var("goofy");
 
-    table.print();
+    table.print( stdout );
 
-    for (Pix p = table.first_var(); p; table.next_var(p))
-	table.var(p)->print_decl(cout, "", true);	// print them all w/semicolons
+    for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++)
+	(*p)->print_decl(stdout, "", true);	// print them all w/semicolons
 }
 
 // $Log: dds-test.cc,v $
+// Revision 1.25  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.21.4.7  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.21.4.6  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.21.4.5  2002/09/05 22:52:55  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.24  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

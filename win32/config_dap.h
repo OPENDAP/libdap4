@@ -9,6 +9,8 @@
 
 #define HAVE_ALLOCA 1
 #define HAVE_ALLOCA_H 1
+#define HAVE_PTHREAD_H 1
+#define HAVE_MKTIME 1
 #define STDC_HEADERS 1
 #define CNAME "DODS"
 #define CVER "$VERSION"

@@ -1,13 +1,13 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1999,2001
+// (c) COPYRIGHT URI/MIT 1994-1999,2001,2002
 // Please first read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
-//	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
-//	dan		Dan Holloway (dan@hollywood.gso.uri.edu)
-//	reza		Reza Nekovei (reza@intcomm.net)
+//	jhrg,jimg	James Gallagher <jgallagher@gso.uri.edu>
+//	dan		Dan Holloway <dholloway@gso.uri.edu>
+//	reza		Reza Nekovei <rnekovei@ieee.org>
 
 // Connect objects are used as containers for information pertaining to a
 // connection that a user program makes to a dataset. The dataset may be
@@ -22,11 +22,9 @@
 // variables with the URL initially presented to the class when the object
 // was instantiated.
 //
-// Connect also provides additional services such as automatic decompression
-// of compressed data, transmission progress reports and error processing.
+// Connect also provides additional services such as error processing.
 //
-// Connect will almost certainly need to be specialized for each
-// client-library. Connect in not intended for use on the server-side of DODS.
+// Connect is not intended for use on the server-side of DODS.
 //
 // jhrg 9/29/94
 
@@ -40,12 +38,6 @@
 #include <stdio.h>
 
 #include <string>
-#include <vector>
-#include <SLList.h>
-
-#include <WWWLib.h>		/* Global Library Include file */
-#include <WWWApp.h>
-#include <WWWInit.h>
 
 #ifndef _das_h
 #include "DAS.h"
@@ -59,65 +51,19 @@
 #include "Error.h"
 #endif
 
-#if defined(GUI) && !defined(_gui_h)
-#include "Gui.h"
-#endif
-
 #ifndef _util_h
 #include "util.h"
 #endif
 
-using std::vector;
+#ifndef _datadds_h
+#include "DataDDS.h"
+#endif
+
+#ifndef _httpconnect_h
+#include "HTTPConnect.h"
+#endif
+
 using std::string;
-
-/** When a version 2.x or greater DODS data server sends an object, it uses
-    the Content-Description header of the response to indicate the type of
-    object contained in the response. During the parse of the header a member
-    of Connect is set to one of these values so that other mfuncs can tell
-    the type of object without parsing the stream themselves.
-
-     \code
-     enum ObjectType {
-       unknown_type,
-       dods_das,
-       dods_dds,
-       dods_data,
-       dods_error,
-       web_error
-     };
-     \endcode
-
-    @brief The type of object in the stream coming from the data
-    server.  */
-
-enum ObjectType {
-    unknown_type,
-    dods_das,
-    dods_dds,
-    dods_data,
-    dods_error,
-    web_error
-};
-
-/** DODS understands two types of encoding: x-plain and deflate, which
-    correspond to plain uncompressed data and data compressed with zlib's LZW
-    algorithm respectively.
-
-     <pre>
-     enum EncodingType {
-       unknown_enc,
-       deflate,
-       x_plain
-     };
-     </pre>
-
-    @brief The type of encoding used on the current stream. */
-
-enum EncodingType {
-    unknown_enc,
-    deflate,
-    x_plain
-};
 
 /** Connect objects are used as containers for information pertaining
     to the connection a user program makes to a dataset. The
@@ -152,211 +98,225 @@ enum EncodingType {
     @see DAS
     @see DODSFilter
     @see Error
-    @see Gui
     @author jhrg */
 
 class Connect {
 private:
-    bool _local;		// Is this a local connection
+    bool _local;		// Is this a local connection?
 
-    // The following members are valid only if _LOCAL is false.
+    HTTPConnect *d_http;
 
-    static int _num_remote_conns;	// How many remote connections exist?
-    static bool _cache_enabled;		// True if the cache is on.
-    static char *_cache_root;		// If on, where is the cache?
-#ifdef WIN32
-    // We need to keep the different filenames associated with _output
-    // (over time) around under win32 because an unlink() at time 'now'
-    // doesn't delete a file at some time (now + n) as it does under
-    // UNIX. Unix will delete the file when the last process using the
-    // file closes it - win32 will not. Under win32, we count on the
-    // Connect destructor using _tfname to remove such intermediate
-    // files..
-    vector<string> _tfname;			
-#endif
+    // Fields for values which will be read from different types of
+    // connections (e.g., HTTPConnect) or set locally using a mutator.
+    ObjectType d_type;		
+    string d_server;
 
-    static HTList *_conv;	// List of global converters
-    
-    ObjectType _type;		// What type of object is in the stream?
-    EncodingType _encoding;	// What type of encoding is used?
-    string _server;
+    FILE *d_stream;
+    XDR *_source;		// XDR (binary) data source stream
 
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
     Error _error;		// Error object
 
-#ifdef GUI
-    Gui *_gui;			// Used for progress, error display.
-#else
-    void *_gui;			// Place holder. Makes this header work for
-				// Connect with and w/o -DGUI. Assumes
-				// sizeof(Gui*) == sizeof(void*). 4/16/2001
-				// jhrg
-#endif
-
     string _URL;		// URL to remote dataset (minus CE)
     string _proj;		// Projection part of initial CE.
     string _sel;		// Selection of initial CE
-    string _accept_types;	// Comma separated list of types understood
-    string _cache_control;	// should the request be cached? 
-    string _username;           // extracted from URL, or GUI
-    string _password;		// extracted from URL, or GUI
-    int _password_attempt;	// number of tries with the user/password
-    int _always_validate;
+
+    void process_data(DataDDS &data) throw(Error, InternalErr);
     
-    HTParentAnchor *_anchor;
-    HTMethod _method;		// What method are we envoking 
-    FILE *_output;		// Destination; a temporary file
-    XDR *_source;		// Data source stream
+    // Use when you cannot use libwww/libcurl. Reads HTTP response. 
+    void parse_mime(FILE *data_source);
 
-    bool _www_errors_to_stderr; // FALSE for messages to stderr
-    bool _accept_deflate;
+    // These should never be used.
+    Connect() { }
+    Connect(const Connect &rhs) { }
+    Connect &operator=(const Connect &rhs);
 
-  void www_lib_init(bool www_verbose_errors, bool accept_deflate);
+    // Moved these four here 12/20/02 jhrg
+    FILE *output();
+    XDR *source();
 
-  void read_url(string &url, FILE *stream) throw(Error);
-
-    /* Separate the text DDS from the binary data in the data object (which
-       is a bastardized multipart MIME document). The returned FILE * points
-       to a temporary file which contains the DDS object only. The formal
-       parameter IN is advanced so that it points to the first byte of the
-       binary data. */
-  FILE *move_dds(FILE *in);
-
-  void clone(const Connect &src);
-
-    /* Something to do with the DDS. */
-    DDS *process_data(bool async = false) throw(Error, InternalErr);
-    
-  void parse_mime(FILE *data_source);
-
-  void extract_auth_info(string &url);
-
-  friend BOOL dods_username_password(HTRequest * request, HTAlertOpcode,
-				     int, const char *, void *, 
-				     HTAlertPar * reply);
-
-  friend BOOL dods_progress(HTRequest * request, HTAlertOpcode op, int, 
-			    const char *, void * input, HTAlertPar *);
-
-  friend int timeout_handler(HTRequest *request);
-
-  friend int description_handler(HTRequest *request, HTResponse *response,
-				 const char *token, const char *val);
-
-  friend int encoding_handler(HTRequest *request, HTResponse *response,
-			      const char *token, const char *val);
-
-  friend int server_handler(HTRequest *request, HTResponse *response,
-			    const char *token, const char *val);
-
-  friend int header_handler(HTRequest *request, HTResponse *response,
-			    const char *token, const char *val);
-
-  friend void process_www_errors(HTList *listerr, HTRequest *request) 
-    throw(Error);
-
-  Connect();			// Never call this.
+    void close_output();
+    void close_source();
 
 public:
-  Connect(string name, bool www_verbose_errors = false,
+    Connect(string name, bool www_verbose_errors = false,
 	    bool accept_deflate = true, string uname = "",
-	    string password = ""); 
+	    string password = "") throw (Error, InternalErr); 
 
-  Connect(const Connect &copy_from);
-  virtual ~Connect();
+    virtual ~Connect();
 
-  Connect &operator=(const Connect &rhs);
+    bool is_local();
 
-    
-  bool get_www_errors_to_stderr();
+    string URL(bool CE = true);
+    string CE();
 
-    
-  void set_www_errors_to_stderr(bool state);
+    ObjectType type();
+    void set_type(ObjectType ot);
 
-    
-  string get_accept_types();
+    string server_version();
+    void set_server_version(const string &sv);
 
-     
-  void set_accept_types(const string &types);
+    DAS &das();
 
-    
-  string get_cache_control();
+    DDS &dds();
 
-    
-  void set_cache_control(const string &caching);
+    // remove
+    Error &error();
 
-  
-  bool fetch_url(string &url, bool async = false) throw(Error);
+    // deprecated
+    void *gui() {
+	return 0;
+    }
 
-  
-  FILE *output();
+    void request_das(DAS &das) throw(Error, InternalErr);
 
-    
-  void close_output();
+    // deprecated 
+    bool request_das(bool gui = false,  const string &ext = "das")
+	throw(Error, InternalErr) {
+	request_das(_das);
+	return true;
+    }
 
-  
-  XDR *source();
+    void request_dds(DDS &dds, string expr = "") throw(Error, InternalErr);
 
-  
-  bool is_local();
+    // deprecated
+    bool request_dds(bool gui = false, const string &ext = "dds")
+	throw(Error, InternalErr) {
+	request_dds(_dds, "");
 
-  
-  string URL(bool CE = true);
+	return true;
+    }
 
-  
-  string CE();
+    void request_data(DataDDS &data, string expr = "") 
+	throw(Error, InternalErr);
 
-  ObjectType type();
+    // deprecated
+    DDS *request_data(string expr, bool gui = false, bool async = false, 
+		      const string &ext = "dods") throw(Error, InternalErr) {
+	DataDDS *new_dds = new DataDDS("received_data");
+	request_data(*new_dds, expr);
+	return new_dds;
+    }
 
-  
-  EncodingType encoding();
+    void read_data(DataDDS &data, FILE *data_source) throw(Error, InternalErr);
 
-  
-  string server_version();
+    // deprecated
+    DDS *read_data(FILE *data_source, bool gui, bool async)
+	throw(Error, InternalErr) {
+	DataDDS *data = new DataDDS;
+	read_data(*data, data_source);
+	return data;
+    }
 
-  
-  DAS &das();
+    // remove
+    bool get_www_errors_to_stderr();
 
-  
-  DDS &dds();
+    // remove
+    void set_www_errors_to_stderr(bool state);
 
-  
-  Error &error();
+    // remove
+    string get_accept_types();
 
-  
-  void *gui();
+    // remove
+    void set_accept_types(const string &types);
 
-  
-  bool request_das(bool gui = false,  const string &ext = "das")
-    throw(Error, InternalErr);
+    // remove
+    string get_cache_control();
 
-  
-  bool request_dds(bool gui = false, const string &ext = "dds")
-    throw(Error, InternalErr);
+    // remove
+    void set_cache_control(const string &caching);
 
-  
-  DDS *request_data(string expr, bool gui = false, bool async = false, 
-		    const string &ext = "dods") throw(Error, InternalErr);
+    void set_credentials(string u, string p);
 
-  
-  DDS *read_data(FILE *data_source, bool gui = false, bool async = false)
-    throw(Error, InternalErr);
-
-    
-  void set_credentials(string u, string p);
-
-  void disable_cache();
-
+    void disable_cache();
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.59  2003/01/10 19:46:40  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.49.4.19  2002/12/24 00:18:06  jimg
+ * Made output(), close_output(), source() and close_source() private. These
+ * four methods made up a deprecated interface to data. All data accessed
+ * using this class is now read directly from a returned DataDDS instance.
+ * The request_data() and request_dds() methods now have a constraint
+ * expression parameter that defaults to the empty string.
+ *
+ * Revision 1.49.4.18  2002/12/05 20:36:19  pwest
+ * Corrected problems with IteratorAdapter code, making methods non-inline,
+ * creating source files and template instantiation file. Cleaned up file
+ * descriptors and memory management problems. Corrected problem in Connect
+ * where the xdr source was not being cleaned up or a new one created when a
+ * new file was opened for reading.
+ *
+ * Revision 1.49.4.17  2002/09/13 16:12:21  jimg
+ * Added guards for our header includes.
+ *
+ * Revision 1.49.4.16  2002/08/08 06:54:56  jimg
+ * Changes for thread-safety. In many cases I found ugly places at the
+ * tops of files while looking for globals, et c., and I fixed them up
+ * (hopefully making them easier to read, ...). Only the files RCReader.cc
+ * and usage.cc actually use pthreads synchronization functions. In other
+ * cases I removed static objects where they were used for supposed
+ * improvements in efficiency which had never actually been verifiied (and
+ * which looked dubious).
+ *
+ * Revision 1.49.4.15  2002/07/06 19:36:32  jimg
+ * Added throw(...) specification to Connect's ctor.
+ *
+ * Revision 1.49.4.14  2002/06/21 22:23:07  jimg
+ * I revised the basic interface to this class. The old interface is implemented
+ * using the new one. Methods to get objects from DODS objects now take
+ * references to the containers for those objects as formal parameters. This
+ * enables a user of Connect to control how/when/where those containers are
+ * created and managed.
+ *
+ * Revision 1.49.4.13  2002/06/20 23:59:37  jimg
+ * I added a new method to access the DDS. This represents the first
+ * substantive change to Connect's interface in a long time. The new method
+ * is request_dds(DDS &dds, string expr, const string &ext = "dds"). Use this
+ * method to have Connect read a DDS for you into an instance of DDS your
+ * code has allocated/created. This makes Connect much more flexible since
+ * your program (e.g., a subclass of Connect) can have many DDS objects, not
+ * just the one that Connect holds internally, without duplicating the code
+ * that reads URLs (which would have become a major problem when we start
+ * supporting access by other protocols). This is far from complete, but just
+ * this one method makes it possible to rewrite nce-dods/NCConnect so that
+ * it'll work with the new Connect that uses libcurl (through an instance of
+ * HTTPConnect).
+ *
+ * Revision 1.49.4.12  2002/06/20 06:22:13  jimg
+ * Put the local FILE * member back in the class. Local access should now work
+ * as before.
+ *
+ * Revision 1.49.4.11  2002/06/20 03:18:48  jimg
+ * Fixes and modifications to the Connect and HTTPConnect classes. Neither
+ * of these two classes is complete, but they should compile and their
+ * basic functions should work.
+ *
+ * Revision 1.49.4.10  2002/06/18 23:04:33  jimg
+ * Removed the old libwww includes.
+ *
+ * Revision 1.49.4.9  2002/06/18 21:55:03  jimg
+ * Partially reworked Connect interface. I've removed all the explicit
+ * references to HTTP.
+ *
  * Revision 1.58  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *
  * Revision 1.57  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
+ *
+ * Revision 1.49.4.8  2002/05/27 00:49:33  jimg
+ * Removed gui Progress indicator stuff. The methods that took a bool to
+ * swtich on/off the PI now ignore that bool (request_das, request_dds,
+ * request_data and read_data). In addition, I made the methods that took
+ * a bool to switch on/off asynchornous I/O explicitly ignore that param
+ * as well since it's never actually used by the code.
  *
  * Revision 1.49.4.7  2002/01/17 00:42:03  jimg
  * I added a new method to disable use of the cache. This provides a way
@@ -675,7 +635,6 @@ public:
  *
  * Revision 1.1  1994/10/05  18:02:08  jimg
  * First version of the connection management classes.
- * This commit also includes early versions of the test code. 
- */
+ * This commit also includes early versions of the test code. */
 
 #endif // _connect_h

@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.38 2002/06/03 22:21:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.39 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -178,9 +178,17 @@ declaration: 	list non_list_decl
 non_list_decl:  base_type var ';' 
                 { 
 		    string smsg;
-		    if (current->check_semantics(smsg))
+		    if (current->check_semantics(smsg)) {
+			/* BaseType *current_save = current ; */
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		    else {
+			/* FIX
+			if( current_save == current )
+			{
+			    delete current ;
+			    current = 0 ;
+			}
+			*/
+		    } else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
 		      YYABORT;
 		    }
@@ -189,6 +197,7 @@ non_list_decl:  base_type var ';'
 
 		| structure  '{' declarations '}' 
 		{ 
+		    if( current ) delete current ;
 		    current = ctor->top(); 
 		    ctor->pop();
 		} 
@@ -206,6 +215,7 @@ non_list_decl:  base_type var ';'
 
 		| sequence '{' declarations '}' 
                 { 
+		    if( current ) delete current ;
 		    current = ctor->top(); 
 		    ctor->pop();
 		} 
@@ -249,6 +259,7 @@ non_list_decl:  base_type var ';'
                 }
                 declarations '}' 
 		{
+		    if( current ) delete current ;
 		    current = ctor->top(); 
 		    ctor->pop();
 		}
@@ -302,15 +313,15 @@ grid:		SCAN_GRID
 		}
 ;
 
-base_type:	SCAN_BYTE { current = NewByte(); }
-		| SCAN_INT16 { current = NewInt16(); }
-		| SCAN_UINT16 { current = NewUInt16(); }
-		| SCAN_INT32 { current = NewInt32(); }
-		| SCAN_UINT32 { current = NewUInt32(); }
-		| SCAN_FLOAT32 { current = NewFloat32(); }
-		| SCAN_FLOAT64 { current = NewFloat64(); }
-		| SCAN_STRING { current = NewStr(); }
-		| SCAN_URL { current = NewUrl(); }
+base_type:	SCAN_BYTE { if( current ) delete current ;current = NewByte(); }
+		| SCAN_INT16 { if( current ) delete current ;current = NewInt16(); }
+		| SCAN_UINT16 { if( current ) delete current ;current = NewUInt16(); }
+		| SCAN_INT32 { if( current ) delete current ;current = NewInt32(); }
+		| SCAN_UINT32 { if( current ) delete current ;current = NewUInt32(); }
+		| SCAN_FLOAT32 { if( current ) delete current ;current = NewFloat32(); }
+		| SCAN_FLOAT64 { if( current ) delete current ;current = NewFloat64(); }
+		| SCAN_STRING { if( current ) delete current ;current = NewStr(); }
+		| SCAN_URL { if( current ) delete current ;current = NewUrl(); }
 ;
 
 var:		var_name { current->set_name($1); }
@@ -339,6 +350,7 @@ array_decl:	'[' SCAN_WORD ']'
 			 Array *a = NewArray(); 
 			 a->add_var(current); 
 			 a->append_dim(atoi($2));
+			 if( current ) delete current ;
 			 current = a;
 		     }
 		 }
@@ -362,6 +374,7 @@ array_decl:	'[' SCAN_WORD ']'
 			 Array *a = NewArray(); 
 			 a->add_var(current); 
 			 a->append_dim(atoi($5), *id);
+			 if( current ) delete current ;
 			 current = a;
 		     }
 
@@ -449,6 +462,7 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
  	const Type &ctor_type = (*ctor)->top()->type();
 
 	if (ctor_type == dods_list_c || ctor_type == dods_array_c) {
+	    if( *current ) delete *current ;
 	    *current = (*ctor)->top();
 	    (*ctor)->pop();
 	}
@@ -461,6 +475,17 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.39  2003/01/10 19:46:41  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.33.4.7  2002/12/24 00:24:44  jimg
+ * I removed a variable, current_save, that was unused after Patrick fixed a bug.
+ *
+ * Revision 1.33.4.6  2002/11/21 21:24:17  pwest
+ * memory leak cleanup and file descriptor cleanup
+ *
  * Revision 1.38  2002/06/03 22:21:16  jimg
  * Merged with release-3-2-9
  *

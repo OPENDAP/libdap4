@@ -1,10 +1,11 @@
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
-//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
-
+//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 // Utility functions used by the api.
 //
@@ -12,18 +13,21 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.71 2002/06/03 22:21:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.72 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <ctype.h>
+#ifndef TM_IN_SYS_TIME
+#include <time.h>
+#else
+#include <sys/time.h>
+#endif
+
 #ifndef WIN32
 #include <unistd.h>
-#endif
-#include <errno.h>
-#include <time.h>
-#include <ctype.h>
-#ifdef WIN32
+#else
 #include <io.h>
 #include <fcntl.h>
 #include <process.h>
@@ -32,19 +36,13 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.71 2002/06/03 22:21:16 jimg Ex
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
-#else
-#include <sstream>
-#endif
 #include <string>
+#include <strstream>
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
 
-#include <SLList.h>
-#include <DLList.h>
-#include <Regex.h>
+#include "Regex.h"
 
 #include "BaseType.h"
 #include "Str.h"
@@ -66,8 +64,6 @@ using std::endl;
 using std::ends;
 using std::sort;
 using std::ostrstream;
-
-const char DODS_CE_PRX[]={"dods"};
 
 // Remove spaces from the start of a URL and from the start of any constraint
 // expression it contains. 4/7/98 jhrg
@@ -92,20 +88,22 @@ prune_spaces(string name)
     }
 }
 
-// Compare elements in a SLList of (BaseType *)s and return true if there are
+// Compare elements in a list of (BaseType *)s and return true if there are
 // no duplicate elements, otherwise return false.
 
 bool
-unique_names(SLList<BaseType *> l, const string &var_name, 
+unique_names(vector<BaseType *> l, const string &var_name, 
 	     const string &type_name, string &msg)
 {
     // copy the identifier names to a vector
-    vector<string> names(l.length());
+    vector<string> names(l.size());
 
     int nelem = 0;
-    for (Pix p = l.first(); p; l.next(p)) {
-	assert(l(p));
-	names[nelem++] = l(p)->name();
+    typedef std::vector<BaseType *>::const_iterator citer ;
+    for (citer i = l.begin(); i != l.end(); i++)
+    {
+	assert(*i);
+	names[nelem++] = (*i)->name();
 	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
     }
     
@@ -128,53 +126,18 @@ unique_names(SLList<BaseType *> l, const string &var_name,
 #endif
     
     // look for any instance of consecutive names that are ==
-    int i;
-    for (i = 1; i < nelem; ++i)
-	if (names[i-1] == names[i]) {
+    for (int j = 1; j < nelem; ++j)
+    {
+	if (names[j-1] == names[j]) {
 	    ostrstream oss;
-	    oss << "The variable `" << names[i] 
+	    oss << "The variable `" << names[j] 
 		 << "' is used more than once in " << type_name << " `"
 		 << var_name << "'" << ends;
 	    msg = oss.str();
 	    oss.rdbuf()->freeze(0);
 	    return false;
 	}
-
-    return true;
-}
-
-bool
-unique_names(DLList<BaseType *> l, const string &var_name, 
-	     const string &type_name, string &msg)
-{
-    // copy the identifier names to a vector
-    vector<string> names(l.length());
-
-    int nelem = 0;
-    for (Pix p = l.first(); p; l.next(p)) {
-	assert(l(p));
-	names[nelem++] = l(p)->name();
-	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
     }
-    
-    // sort the array of names
-    sort(names.begin(), names.end());
-	
-#ifdef DODS_DEBUG2
-    cout << "unique:" << endl;
-    for (int ii = 0; ii < nelem; ++ii)
-	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#endif
-    
-    // look for any instance of consecutive names that are ==
-    int i;
-    for (i = 1; i < nelem; ++i)
-	if (names[i-1] == names[i]) {
-	    msg="";
-	    msg+="The variable `"+names[i]+"' is used more than once in "+type_name+" `";
-	    msg+=var_name+"'\n";
-	    return false;
-	}
 
     return true;
 }
@@ -264,29 +227,8 @@ xdr_str(XDR *xdrs, string &buf)
 const char *
 dods_root()
 {
-    static const char *dods_root = (getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
-				    : DODS_ROOT);
-
-    return dods_root;
-}
-
-// Changed from the old DODS_SHOW_PROGRESS to the current value of
-// DODS_USE_GUI. 5/25/2001 jhrg
-const char *
-dods_progress()
-{
-    static const char *dods_progress = NULL;
-    if (!dods_progress && getenv("DODS_USE_GUI")) {
-	string t1 = getenv("DODS_USE_GUI");
-	downcase(t1);		// All this because downcase modifiies its
-				// argument... 5/30/2001 jhrg
-	dods_progress = t1.c_str();
-    }
-    else {
-	dods_progress = "yes";
-    }
-
-    return dods_progress;
+    char *dods_root = 0;
+    return ((dods_root = getenv("DODS_ROOT")) ? dods_root : DODS_ROOT);
 }
 
 // Return true if the program deflate exists and is executable by user, group
@@ -332,70 +274,72 @@ deflate_exists()
     return (status != 0);
 }
 
-// Note that decompression is handled automatically by libwww 5.1. 2/10/1998
-// jhrg
-
 FILE *
 compressor(FILE *output, int &childpid)
 {
-//  There is no such thing as a "fork" under win32.  This makes it so that
-//  we have to juggle handles more aggressively.  This code hasn't been tested
-//  and shown to work as of 07/2000.
 #ifdef WIN32
-	int pid, data[2];
-	int hStdIn,hStdOut;
+    //  There is no such thing as a "fork" under win32. This makes it so that
+    //  we have to juggle handles more aggressively. This code hasn't been
+    //  tested and shown to work as of 07/2000.
+    int pid, data[2];
+    int hStdIn,hStdOut;
 
-	if(_pipe(data, 512, O_BINARY | O_NOINHERIT) < 0) {
+    if(_pipe(data, 512, O_BINARY | O_NOINHERIT) < 0) {
 	cerr << "Could not create IPC channel for compressor process" 
 	     << endl;
 	return NULL;
     }
 
-	/*****************************************************************************************/
-	/*  This sets up for the child process, but it has to be reversed for the parent         */
-	/*  after the spawn takes place.                                                         */
 
-	hStdIn  = _dup(_fileno(stdin));  //  Store stdin, stdout so we have sometime to restore to
-	hStdOut = _dup(_fileno(stdout));
+    // This sets up for the child process, but it has to be reversed for the
+    // parent after the spawn takes place.
 
-	if(_dup2(data[0], _fileno(stdin)) != 0) {  //  Child is to read from read end of pipe
-		cerr << "dup of child stdin failed" << endl;
-		return NULL;
-	}
-	if(_dup2(_fileno(output), _fileno(stdout)) != 0) {  //  Child is to write its's stdout to file
-		cerr << "dup of child stdout failed" << endl;
-		return NULL;
-	}
-	/****************************************************************************************/
+    // Store stdin, stdout so we have something to restore to
+    hStdIn  = _dup(_fileno(stdin));  
+    hStdOut = _dup(_fileno(stdout));
+
+    // Child is to read from read end of pipe
+    if(_dup2(data[0], _fileno(stdin)) != 0) {
+	cerr << "dup of child stdin failed" << endl;
+	return NULL;
+    }
+    // Child is to write its's stdout to file
+    if(_dup2(_fileno(output), _fileno(stdout)) != 0) {
+	cerr << "dup of child stdout failed" << endl;
+	return NULL;
+    }
 	
-	//  Spawn child process
-	string deflate = "deflate.exe";
-	if((pid = _spawnlp(_P_NOWAIT,deflate.c_str(),deflate.c_str(), "-c", "5", "-s", NULL)) < 0) {
+    // Spawn child process
+    string deflate = "deflate.exe";
+    if((pid = _spawnlp(_P_NOWAIT, deflate.c_str(), deflate.c_str(), 
+		       "-c", "5", "-s", NULL)) < 0) {
 	cerr << "Could not spawn to create compressor process" << endl;
 	return NULL;
-	}
+    }
 
-	//  Restore stdin, stdout for parent and close duplicate copies
-	if(_dup2(hStdIn, _fileno(stdin)) != 0) {
-		cerr << "dup of stdin failed" << endl;
-		return NULL;
-	}
-	if(_dup2(hStdOut, _fileno(stdout)) != 0) {
-		cerr << "dup of stdout failed" << endl;
-		return NULL;
-	}
-	close(hStdIn);
-	close(hStdOut);
+    // Restore stdin, stdout for parent and close duplicate copies
+    if(_dup2(hStdIn, _fileno(stdin)) != 0) {
+	cerr << "dup of stdin failed" << endl;
+	return NULL;
+    }
+    if(_dup2(hStdOut, _fileno(stdout)) != 0) {
+	cerr << "dup of stdout failed" << endl;
+	return NULL;
+    }
+    close(hStdIn);
+    close(hStdOut);
 
-	//  Tell the parent that it reads from the opposite end of the
-	//  place where the child writes.
-	close(data[0]);
-	FILE *input = fdopen(data[1], "w");
-	setbuf(input, 0);
-	childpid = pid;
-	return input;
+    // Tell the parent that it reads from the opposite end of the
+    // place where the child writes.
+    close(data[0]);
+    FILE *input = fdopen(data[1], "w");
+    setbuf(input, 0);
+    childpid = pid;
+    return input;
 
 #else
+    FILE *ret_file = NULL ;
+
     int pid, data[2];
 
     if (pipe(data) < 0) {
@@ -415,10 +359,9 @@ compressor(FILE *output, int &childpid)
 
     if (pid > 0) {
 	close(data[0]);
-	FILE *input = fdopen(data[1], "w");
-	setbuf(input, 0);
+	ret_file = fdopen(data[1], "w");
+	setbuf(ret_file, 0);
 	childpid = pid;
-	return input;
     }
     else {
 	close(data[1]);
@@ -438,37 +381,36 @@ compressor(FILE *output, int &childpid)
 	     << endl;
 	_exit(127);		// Only here if an error occurred.
     }
+
+    return ret_file ;
 #endif
 }
 
 // This function returns a pointer to the system time formated for an httpd
 // log file.
 
-static const int TimLen = 26;	// length of string from asctime()
-
-char *
+string
 systime()
 {
     time_t TimBin;
-    static char TimStr[TimLen];
 
     if (time(&TimBin) == (time_t)-1)
-	strcpy(TimStr, "time() error           ");
+	return string("time() error");
     else {
-	strcpy(TimStr, ctime(&TimBin));
-	TimStr[TimLen - 2] = '\0'; // overwrite the \n 
+	string TimStr = ctime(&TimBin);
+	return TimStr.substr(0, TimStr.size() - 2); // remove the \n 
     }
-
-    return &TimStr[0];
 }
 
-void downcase(string &s) {
-  for(unsigned int i=0; i<s.length(); i++)
-    s[i] = tolower(s[i]);
+void 
+downcase(string &s) 
+{
+    for(unsigned int i=0; i<s.length(); i++)
+	s[i] = tolower(s[i]);
 }
 
 #ifdef WIN32
-//  Sometime need to buffer within an iostream under win32 when
+//  Sometimes need to buffer within an iostream under win32 when
 //  we want the output to go to a FILE *.  This is because
 //  it's not possible to associate an ofstream with a FILE *
 //  under the Standard ANSI C++ Library spec.  Unix systems
@@ -489,32 +431,32 @@ void flush_stream(iostream ios, FILE *out)
 #endif
 
 // Jose Garcia
-void append_long_to_string(long val, int base, string &str_val) 
+void 
+append_long_to_string(long val, int base, string &str_val) 
 {
-  // The array digits contains 36 elements which are the 
-  // posible valid digits for out bases in the range
-  // [2,36]
-  char digits[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  // result of val / base  
-  ldiv_t r;                                
+    // The array digits contains 36 elements which are the 
+    // posible valid digits for out bases in the range
+    // [2,36]
+    char digits[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // result of val / base  
+    ldiv_t r;                                
   
-  if (base > 36 || base < 2)
-    {
-      // no conversion if wrong base 
-      std::invalid_argument ex("The parameter base has an invalid value.");
-      throw ex;
+    if (base > 36 || base < 2) {
+	// no conversion if wrong base 
+	std::invalid_argument ex("The parameter base has an invalid value.");
+	throw ex;
     }
-  if (val < 0)
-    str_val+= '-';
-  r = ldiv (labs(val), base);
+    if (val < 0)
+	str_val+= '-';
+    r = ldiv (labs(val), base);
 
-  // output digits of val/base first 
-  if (r.quot > 0)
-    append_long_to_string (r.quot, base, str_val);
+    // output digits of val/base first 
+    if (r.quot > 0)
+	append_long_to_string (r.quot, base, str_val);
   
-  // output last digit 
+    // output last digit 
   
-  str_val+= digits[(int)r.rem];
+    str_val+= digits[(int)r.rem];
 }
 
 // base defaults to 10
@@ -557,26 +499,27 @@ double_to_string(const double &num)
 string
 dap_version()
 {
-  return (string)DVR;
+    return (string)DVR;
 }
 
 // Given a pathname, return the file at the end of the path. This is used
 // when reporting errors (maybe other times, too) to keep the server from
 // revealing too much about its organization when sending error responses
 // back to clients. 10/11/2000 jhrg
+// MT-safe. 08/05/02 jhrg
 
 #ifdef WIN32
-const static char path_sep[]={"\\"};
+static const char path_sep[]={"\\"};
 #else
-const static char path_sep[]={"/"};
+static const char path_sep[]={"/"};
 #endif
 
 string
 path_to_filename(string path)
 {
-  string::size_type pos = path.rfind(path_sep);
+    string::size_type pos = path.rfind(path_sep);
   
-  return (pos == string::npos) ? path : path.substr(++pos);
+    return (pos == string::npos) ? path : path.substr(++pos);
 }
 
 // Look around for a reasonable place to put a temporary file. Check first
@@ -613,6 +556,57 @@ get_tempfile_template(char *file_template)
 }
 
 // $Log: util.cc,v $
+// Revision 1.72  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.65.2.19  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.65.2.18  2002/11/06 21:53:06  jimg
+// I changed the includes of Regex.h from <Regex.h> to "Regex.h". This means
+// make depend will include the header in the list of dependencies.
+//
+// Revision 1.65.2.17  2002/10/23 17:40:39  jimg
+// Added compile-time switch for time.h versus sys/time.h.
+//
+// Revision 1.65.2.16  2002/10/18 22:52:00  jimg
+// Combined some win32 #ifdefs and removed an unused global variable.
+//
+// Revision 1.65.2.15  2002/09/22 14:34:20  rmorris
+// VC++ considers 'x' in 'for(int x,...)' to not be just for that scope of the
+// block associated with that for.  When there are multiple of such type of
+// thing - VC++ see redeclarations of the same var - moved to use different
+// var names to prevent the error.
+//
+// Revision 1.65.2.14  2002/09/05 22:52:55  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.65.2.13  2002/08/22 21:23:23  jimg
+// Fixes for the Win32 Build made at ESRI by Vlad Plenchoy and myslef.
+//
+// Revision 1.65.2.12  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
+// Revision 1.65.2.11  2002/08/06 23:22:33  jimg
+// Removed systime() because it's not used by the library and it's not
+// MT-Safe. If this is used by any of the servers, I'll recode the function
+// so that it returns a string.
+//
 // Revision 1.71  2002/06/03 22:21:16  jimg
 // Merged with release-3-2-9
 //

@@ -10,33 +10,34 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.13 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.14 2003/01/10 19:46:40 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <iostream>
-#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
-#else
-#include <sstream>
-#endif
-
 #include <string>
-#include <Regex.h>
+
+#if 0
+#include "Regex.h"
+#endif
 
 #include "DataDDS.h"
 #include "debug.h"
 
+using std::cerr;
 using std::istrstream;
+using std::endl;
 
 // private
 
 void
 DataDDS::_version_string_to_numbers()
 {
-    static Regex version_regex("[-A-Za-z]+/[0-9]\\.[0-9]+[.0-9a-zA-Z() ]*",1);
+#if 0
+    Regex version_regex("[-A-Za-z]+/[0-9]\\.[0-9]+[.0-9a-zA-Z() ]*", 1);
 
     DBG(cerr << "in version string to numbers" << endl);
 
@@ -47,6 +48,7 @@ DataDDS::_version_string_to_numbers()
 	_server_version_minor = 0;
     }
     else {
+#endif
 	string num = _server_version.substr(_server_version.find('/')+1);
 
 	istrstream iss(num.c_str());
@@ -58,8 +60,9 @@ DataDDS::_version_string_to_numbers()
 
 	DBG(cerr << "Server version: " << _server_version_major << "." \
 	    << _server_version_minor << endl);
- 
+#if 0
     }
+#endif
 }
 
 // public
@@ -137,6 +140,36 @@ DataDDS::set_sequence_level(int level)
 #endif
 
 // $Log: DataDDS.cc,v $
+// Revision 1.14  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.10.4.7  2002/12/24 00:19:35  jimg
+// I removed the Regex code from the implementation of server_version(). It
+// seemed to serve no purpose. Ultimately, I'd like to remove all use of the
+// Regex class...
+//
+// Revision 1.10.4.6  2002/12/01 14:37:52  rmorris
+// Smalling changes for the win32 porting and maintenance work.
+//
+// Revision 1.10.4.5  2002/11/06 21:53:06  jimg
+// I changed the includes of Regex.h from <Regex.h> to "Regex.h". This means
+// make depend will include the header in the list of dependencies.
+//
+// Revision 1.10.4.4  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
+// Revision 1.10.4.3  2002/08/06 23:12:37  jimg
+// Fixed this class so that it's MT-Safe by changing the static Regex in
+// _version_string_to_numbers to an automatic variable.
+//
 // Revision 1.13  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

@@ -10,19 +10,28 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.57 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.58 2003/01/10 19:46:40 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
-#ifndef WIN32
+#ifdef WIN32
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
 #endif
+
 #include <stdio.h>
-#include <assert.h>
+#include <sys/types.h>
+
+#ifndef WIN32
+#include <sys/wait.h>
+#endif
 
 #include <iostream>
+
 #ifdef WIN32
 #include <strstream>
 #else
@@ -31,7 +40,6 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.57 2002/06/18 15:36:24 tom Exp 
 
 #include "expr.h"
 #include "Clause.h"
-#include "Connect.h"
 #include "DDS.h"
 #include "Error.h"
 #include "parser.h"
@@ -41,6 +49,7 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.57 2002/06/18 15:36:24 tom Exp 
 #include "ce_functions.h"
 #include "cgi_util.h"
 #include "InternalErr.h"
+#include "IteratorAdapterT.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -48,6 +57,7 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.57 2002/06/18 15:36:24 tom Exp 
 
 using std::cerr;
 using std::endl;
+using std::ofstream;
 #ifdef WIN32
 using std::strstream;
 #endif
@@ -78,8 +88,9 @@ DDS::duplicate(const DDS &dds)
     DDS &dds_tmp = const_cast<DDS &>(dds);
 
     // copy the things pointed to by the list, not just the pointers
-    for (Pix src = dds_tmp.first_var(); src; dds_tmp.next_var(src)) {
-	add_var(dds_tmp.var(src)); // add_var() dups the BaseType.
+    for (Vars_iter i = dds_tmp.var_begin(); i != dds_tmp.var_end(); i++)
+    {
+	add_var(*i); // add_var() dups the BaseType.
     }
 }
 /** Creates a DDS with the given string for its name. */
@@ -100,21 +111,25 @@ DDS::DDS(const DDS &rhs)
 
 DDS::~DDS()
 {
-    Pix p;
-
     // delete all the variables in this DDS
-    for (p = first_var(); p; next_var(p)) {
-	delete var(p);
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++)
+    {
+	BaseType *btp = *i ;
+	delete btp ;
     }
     
     // delete all the constants created by the parser for CE evaluation
-    for (p = constants.first(); p; constants.next(p)) {
-	delete constants(p); constants(p) = 0; 
+    for (Constants_iter j = constants.begin(); j != constants.end(); j++)
+    {
+	BaseType *btp = *j ;
+	delete btp ;
     }
 
     if (!expr.empty()) {
-	for (p = first_clause(); p; next_clause(p)) {
-	    delete expr(p); expr(p) = 0;
+	for (Clause_iter k = expr.begin(); k != expr.end(); k++)
+	{
+	    Clause *cp = *k ;
+	    delete cp ;
 	}
     }
 }
@@ -188,19 +203,44 @@ DDS::add_var(BaseType *bt)
     DBG(cerr << "In DDS::add_var(), bt's addres is: " << bt << endl);
 
     BaseType *btp = bt->ptr_duplicate();
-    vars.append(btp);
+    vars.push_back(btp);
 }
 
 /** @brief Removes a variable from the DDS. */
 void 
 DDS::del_var(const string &n)
 { 
-    for (Pix p = vars.first(); p; vars.next(p))
-	if (vars(p)->name() == n) {
-	    delete vars(p); vars(p) = 0;
-	    vars.del(p, -1);
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++)
+    {
+	if ((*i)->name() == n) {
+	    BaseType *bt = *i ;
+	    vars.erase(i) ;
+	    delete bt ;
 	    return;
 	}
+    }
+}
+
+void
+DDS::del_var(Vars_iter &i)
+{
+    if( i != vars.end() )
+    {
+	BaseType *bt = *i ;
+	vars.erase(i) ;
+	delete bt ;
+    }
+}
+
+void
+DDS::del_var(Vars_iter &i1, Vars_iter &i2)
+{
+    for( Vars_iter i_tmp = i1; i_tmp != i2; i_tmp++ )
+    {
+	BaseType *bt = *i_tmp ;
+	delete bt ;
+    }
+    vars.erase(i1, i2) ;
 }
 
 /** Search for for variable <i>n</i> as above but record all
@@ -215,6 +255,23 @@ DDS::var(const string &n, btp_stack &s)
 {
     return var(n, &s);
 }    
+
+/** @brief Returns a pointer to the named variable.
+
+    The following comment is no longer true; the implementation of Pix has
+    been chnaged. 01/09/03 jhrg
+
+    This is necessary because (char *) can be cast to Pix (because
+    Pix is really (void *)). This must take precedence over the
+    creation of a temporary object (the string). 
+
+    @return A pointer to the variable or null if not found. */
+
+BaseType *
+DDS::var(const char *n, btp_stack *s)
+{
+    return var((string)n, s);
+}
 
 /** @brief Find the variable with the given name.
 
@@ -234,18 +291,19 @@ DDS::var(const string &n, btp_stack &s)
 BaseType *
 DDS::var(const string &n, btp_stack *s)
 {
-    BaseType *v = exact_match(n, s);
+    string name = www2id(n);
+    BaseType *v = exact_match(name, s);
     if (v)
 	return v;
 
-    return leaf_match(n, s);
+    return leaf_match(name, s);
 }
 
 BaseType *
 DDS::leaf_match(const string &n, btp_stack *s) 
 {
-    for (Pix p = vars.first(); p; vars.next(p)) {
-	BaseType *btp = vars(p);
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
+	BaseType *btp = *i;
 	DBG(cerr << "Looking at " << n << " in: " << btp << endl);
 	// Look for the name in the dataset's top-level
 	if (btp->name() == n) {
@@ -263,8 +321,8 @@ DDS::leaf_match(const string &n, btp_stack *s)
 BaseType *
 DDS::exact_match(const string &name, btp_stack *s)
 {
-    for (Pix p = vars.first(); p; vars.next(p)) {
-	BaseType *btp = vars(p);
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
+	BaseType *btp = *i;
 	DBG(cerr << "Looking for " << name << " in: " << btp << endl);
 	// Look for the name in the current ctor type or the top level
 	if (btp->name() == name) {
@@ -291,50 +349,58 @@ DDS::exact_match(const string &name, btp_stack *s)
 }
 
 
-/** @brief Returns a pointer to the named variable.
-
-    This is necessary because (char *) can be cast to Pix (because
-    Pix is really (void *)). This must take precedence over the
-    creation of a temporary object (the string). 
-
-    @return A pointer to the variable or null if not found. */
-BaseType *
-DDS::var(const char *n, btp_stack *s)
-{
-    return var((string)n, s);
-}
-
 /** @brief Returns the first variable in the DDS. */
 Pix 
 DDS::first_var()
-{ 
-    return vars.first(); 
+{
+    IteratorAdapterT<BaseType *> *i = new IteratorAdapterT<BaseType *>( vars ) ;
+    i->first();
+    return i;
+}
+
+DDS::Vars_iter
+DDS::var_begin()
+{
+    return vars.begin();
+}
+
+DDS::Vars_iter
+DDS::var_end()
+{
+    return vars.end() ;
 }
 
 /** @brief Increments the DDS variable counter to point at the next
     variable. */
 void 
-DDS::next_var(Pix &p)
+DDS::next_var(Pix p)
 { 
-    if (!vars.empty() && p)
-	vars.next(p); 
+    p.next() ;
 }
 
 /** Returns a pointer to the indicated variable. */
 BaseType *
 DDS::var(Pix p)
-{ 
-    if (!vars.empty() && p)
-	return vars(p); 
-    else
-	return 0;
+{
+    IteratorAdapterT<BaseType *> *i =
+	(IteratorAdapterT<BaseType *> *)p.getIterator() ;
+    if( i )
+#ifdef WIN32
+    {
+    BaseType *dummy = NULL;
+    return i->entry(&dummy);
+    }
+#else
+    return i->entry() ;
+#endif
+    return 0 ;
 }
 
 /** @brief Returns the number of variables in the DDS. */
 int
 DDS::num_var()
 {
-    return vars.length();
+    return vars.size();
 }
 
 /** Returns a pointer to the first clause in a parsed constraint
@@ -346,36 +412,57 @@ DDS::first_clause()
 	throw InternalErr(__FILE__, __LINE__, 
 			  "There are no CE clauses for *this* DDS object.");
 
-    return expr.first();
+    IteratorAdapterT<Clause *> *i = new IteratorAdapterT<Clause *>( expr ) ;
+
+    i->first() ;
+    return i ;
+}
+
+DDS::Clause_iter
+DDS::clause_begin()
+{
+    return expr.begin() ;
+}
+
+DDS::Clause_iter
+DDS::clause_end()
+{
+    return expr.end() ;
 }
 
 /** Increments a pointer to indicate the next clause in a parsed
     constraint expression. */
 void
-DDS::next_clause(Pix &p)
+DDS::next_clause(Pix p)
 {
     if(expr.empty())
 	throw InternalErr(__FILE__, __LINE__, 
 			  "There are no CE clauses for *this* DDS object.");
-    if(!p)
-	throw InternalErr(__FILE__, __LINE__, 
-		    "Passing NULL pix as an index for the CE clauses list.");
-
-    expr.next(p);
+    p.next() ;
 }
 
-/** Returns a clause of a parsed constraint expression. */
-Clause &
+/** Returns a clause of a parsed constraint expression. 
+
+    The return type of this method was changed on the release-3-2 branch. */
+Clause *
 DDS::clause(Pix p)
 {
     if(expr.empty())
 	throw InternalErr(__FILE__, __LINE__, 
 			  "There are no CE clauses for *this* DDS object.");
-    if(!p)
-      throw InternalErr(__FILE__, __LINE__, 
-		  "Passing NULL pix as an index for the CE clauses list.");
-    
-    return *expr(p);
+    IteratorAdapterT<Clause *> *i =
+	(IteratorAdapterT<Clause *> *)p.getIterator() ;
+    if( !i )
+	throw InternalErr(__FILE__, __LINE__, 
+			  "No IteratorAdapterT defined for *this* DDS object.");
+
+#ifdef WIN32
+    Clause *dummy = NULL;
+    return i->entry(&dummy);
+#else
+    return i->entry() ;
+#endif
+
 }
 
 /** Returns the value of the indicated clause of a constraint
@@ -387,9 +474,29 @@ DDS::clause_value(Pix p, const string &dataset)
 	throw InternalErr(__FILE__, __LINE__, 
 			  "There are no CE clauses for *this* DDS object.");
 
-    return expr(p)->value(dataset, *this);
+    IteratorAdapterT<Clause *> *i =
+	(IteratorAdapterT<Clause *> *)p.getIterator() ;
+    if( !i )
+	throw InternalErr(__FILE__, __LINE__, 
+			  "No IteratorAdapterT defined for *this* DDS object.");
+
+#ifdef WIN32
+    Clause *dummy = NULL;
+    return i->entry(&dummy)->value(dataset, *this);
+#else
+    return i->entry()->value(dataset, *this);
+#endif
 }
 
+bool
+DDS::clause_value(Clause_iter &iter, const string &dataset)
+{
+    if(expr.empty())
+	throw InternalErr(__FILE__, __LINE__, 
+			  "There are no CE clauses for *this* DDS object.");
+
+    return (*iter)->value(dataset, *this);
+}
 
 /** @brief Add a clause to a constraint expression.
 
@@ -408,7 +515,7 @@ DDS::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
 {
     Clause *clause = new Clause(op, arg1, arg2);
 
-    expr.append(clause);
+    expr.push_back(clause);
 }
 
 /** @brief Add a clause to a constraint expression.
@@ -425,7 +532,7 @@ DDS::append_clause(bool_func func, rvalue_list *args)
 {
     Clause *clause = new Clause(func, args);
 
-    expr.append(clause);
+    expr.push_back(clause);
 }
 
 /** @brief Add a clause to a constraint expression.
@@ -442,7 +549,7 @@ DDS::append_clause(btp_func func, rvalue_list *args)
 {
     Clause *clause = new Clause(func, args);
 
-    expr.append(clause);
+    expr.push_back(clause);
 }
 
 /** The DDS maintains a list of BaseType pointers for all the constants
@@ -455,7 +562,7 @@ DDS::append_clause(btp_func func, rvalue_list *args)
 void
 DDS::append_constant(BaseType *btp)
 {
-    constants.append(btp);
+    constants.push_back(btp);
 }
 
 /** Each DDS carries with it a list of external functions it can use to
@@ -477,7 +584,7 @@ void
 DDS::add_function(const string &name, FUNC_T f)
 {
     function func(name, f);
-    functions.append(func);
+    functions.push_back(func);
 }
 #endif
 
@@ -487,14 +594,14 @@ void
 DDS::add_function(const string &name, bool_func f)
 {
     function func(name, f);
-    functions.append(func);
+    functions.push_back(func);
 }
 /** @brief Add a BaseType function to the list. */
 void
 DDS::add_function(const string &name, btp_func f)
 {
     function func(name, f);
-    functions.append(func);
+    functions.push_back(func);
 }
 
 /** @brief Add a projection function to the list. */
@@ -502,7 +609,7 @@ void
 DDS::add_function(const string &name, proj_func f)
 {
     function func(name, f);
-    functions.append(func);
+    functions.push_back(func);
 }
 #endif
 
@@ -513,10 +620,12 @@ DDS::find_function(const string &name, bool_func *f) const
     if (functions.empty())
 	return false;
 
-    for (Pix p = functions.first(); p; functions.next(p))
-	if (name == functions(p).name && (*f = functions(p).b_func)) {
+    for (Functions_citer i = functions.begin(); i != functions.end(); i++)
+    {
+	if (name == (*i).name && (*f = (*i).b_func)) {
 	    return true;
 	}
+    }
 
     return false;
 }
@@ -528,10 +637,12 @@ DDS::find_function(const string &name, btp_func *f) const
     if (functions.empty())
 	return false;
 
-    for (Pix p = functions.first(); p; functions.next(p))
-	if (name == functions(p).name && (*f = functions(p).bt_func)) {
+    for (Functions_citer i = functions.begin(); i != functions.end(); i++)
+    {
+	if (name == (*i).name && (*f = (*i).bt_func)) {
 	    return true;
 	}
+    }
 
     return false;
 }
@@ -543,8 +654,8 @@ DDS::find_function(const string &name, proj_func *f) const
     if (functions.empty())
 	return false;
 
-    for (Pix p = functions.first(); p; functions.next(p))
-	if (name == functions(p).name && (*f = functions(p).p_func)) {
+    for (Functions_citer i = functions.begin(); i != functions.end(); i++)
+	if (name == (*i).name && (*f = (*i).p_func)) {
 	    return true;
 	}
 
@@ -561,21 +672,21 @@ DDS::functional_expression()
     if (expr.empty())
 	return false;
 
-    Pix p = first_clause();
-    return clause(p).value_clause();
+    Clause *cp = expr[0] ;
+    return cp->value_clause();
 }
 
 /** @brief Evaluate a function-valued constraint expression. */
 BaseType *
 DDS::eval_function(const string &dataset)
 {
-    if (expr.length() != 1)
+    if (expr.size() != 1)
 	throw InternalErr(__FILE__, __LINE__, 
 			  "The length of the list of CE clauses is not 1.");
 
-    Pix p = first_clause();
+    Clause *cp = expr[0] ;
     BaseType *result;
-    if (clause(p).value(dataset, *this, &result))
+    if (cp->value(dataset, *this, &result))
 	return result;
     else
 	return NULL;
@@ -589,8 +700,10 @@ DDS::boolean_expression()
 	return false;
 
     bool boolean = true;
-    for (Pix p = first_clause(); p; next_clause(p))
-	boolean = boolean && clause(p).boolean_clause();
+    for (Clause_iter i = expr.begin(); i != expr.end(); i++)
+    {
+	boolean = boolean && (*i)->boolean_clause();
+    }
     
     return boolean;
 }
@@ -611,12 +724,13 @@ DDS::eval_selection(const string &dataset)
     // values. See DDS::clause::value(...) for inforamtion on logical ORs in
     // CEs. 
     bool result = true;
-    for (Pix p = first_clause(); p && result; next_clause(p)) {
+    for (Clause_iter i = expr.begin(); i != expr.end() && result; i++)
+    {
 	// A selection expression *must* contain only boolean clauses!
-	if(!(clause(p).boolean_clause()))
+	if(!((*i)->boolean_clause()))
 	    throw InternalErr(__FILE__, __LINE__, 
                 "A selection expression must contain only boolean clauses.");
-	result = result && clause(p).value(dataset, *this);
+	result = result && (*i)->value(dataset, *this);
     }
 
     return result;
@@ -634,7 +748,10 @@ DDS::parse(string fname)
 
     parse(in);
 
-    fclose(in);
+    int res = fclose(in);
+    if( res ) {
+	DBG(cerr << "DDS::parse - Failed to close file " << (void *)in << endl ;) ;
+    }
 }
 
 
@@ -642,7 +759,11 @@ DDS::parse(string fname)
 void
 DDS::parse(int fd)
 {
+#ifdef WIN32
+    FILE *in = fdopen(_dup(fd), "r");
+#else
     FILE *in = fdopen(dup(fd), "r");
+#endif
 
     if (!in) {
 	throw InternalErr(__FILE__, __LINE__, "Could not access file.");
@@ -650,7 +771,10 @@ DDS::parse(int fd)
 
     parse(in);
 
-    fclose(in);
+    int res = fclose(in);
+    if( res ) {
+	DBG(cerr << "DDS::parse(fd) - Failed to close " << (void *)in << endl ;) ;
+    }
 }
 
 /** @brief Parse a DDS from a file indicated by the input file descriptor. 
@@ -693,8 +817,8 @@ DDS::print(ostream &os)
 {
     os << "Dataset {" << endl;
 
-    for (Pix p = vars.first(); p; vars.next(p))
-	vars(p)->print_decl(os);
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++)
+	(*i)->print_decl(os);
 
     os << "} " << id2www(name) << ";" << endl;
 }
@@ -703,15 +827,16 @@ DDS::print(ostream &os)
 void
 DDS::print(FILE *out)
 {
-#ifdef WIN32
-    strstream os;
-    print(os);
-    flush_stream(os, out);
-#else
-    ofstream os(fileno(out));
-    print(os);
-#endif
-	return;
+    fprintf( out, "Dataset {\n" ) ;
+
+    for( Vars_citer i = vars.begin(); i != vars.end(); i++ )
+    {
+	(*i)->print_decl( out ) ;
+    }
+
+    fprintf( out, "} %s;\n", id2www(name).c_str() ) ;
+
+    return ;
 }
 
 /** @brief Print the constrained DDS to the specified output
@@ -730,11 +855,11 @@ DDS::print_constrained(ostream &os)
 {
     os << "Dataset {" << endl;
 
-    for (Pix p = vars.first(); p; vars.next(p))
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++)
 	// for each variable, indent with four spaces, print a trailing
 	// semi-colon, do not print debugging information, print only
 	// variables in the current projection.
-	vars(p)->print_decl(os, "    ", true, false, true);
+	(*i)->print_decl(os, "    ", true, false, true);
 
     os << "} " << id2www(name) << ";" << endl;
 }
@@ -751,17 +876,22 @@ DDS::print_constrained(ostream &os)
 void
 DDS::print_constrained(FILE *out)
 {
-#ifdef WIN32
-    strstream os;
-    print_constrained(os);
-    flush_stream(os, out);
-#else
-    ofstream os(fileno(out));
-    print_constrained(os);
-#endif
-	return;
+    fprintf( out, "Dataset {\n" ) ;
+
+    for (Vars_citer i = vars.begin(); i != vars.end(); i++)
+    {
+	// for each variable, indent with four spaces, print a trailing
+	// semi-colon, do not print debugging information, print only
+	// variables in the current projection.
+	(*i)->print_decl( out, "    ", true, false, true ) ;
+    }
+
+    fprintf( out, "} %s;\n", id2www(name).c_str() ) ;
+
+    return;
 }
 
+#if 0
 static void
 print_variable(ostream &os, BaseType *var, bool constrained = false)
 {
@@ -778,6 +908,7 @@ print_variable(ostream &os, BaseType *var, bool constrained = false)
 
     os << "} function_value;" << endl;
 }
+#endif
 
 static void
 print_variable(FILE *out, BaseType *var, bool constrained = false)
@@ -789,14 +920,12 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
 	throw InternalErr(__FILE__, __LINE__, 
      "Passing NULL variable to method DDS::print_variable in *this* object.");
 
-#ifdef WIN32
-    strstream os;
-    print_variable(os, var, constrained);
-    flush_stream(os, out);
-#else
-    ofstream os(fileno(out));
-    print_variable(os, var, constrained);
-#endif
+    fprintf( out, "Dataset {\n" ) ;
+
+    var->print_decl( out, "    ", true, false, constrained ) ;
+
+    fprintf( out, "} function_value;\n" ) ;
+
     return;
 }
 
@@ -828,8 +957,8 @@ DDS::check_semantics(bool all)
 	return false;
 
     if (all) 
-	for (Pix p = vars.first(); p; vars.next(p))
-	    if (!vars(p)->check_semantics(msg, true))
+	for (Vars_iter i = vars.begin(); i != vars.end(); i++)
+	    if (!(*i)->check_semantics(msg, true))
 		return false;
 
     return true;
@@ -880,15 +1009,17 @@ DDS::parse_constraint(const string &constraint, ostream &os, bool server)
 void
 DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
-#ifdef WIN32
-    strstream os;
-    parse_constraint(constraint, os, server);	
-    flush_stream(os, out);
-#else
-    ofstream os(fileno(out));
-    parse_constraint(constraint, os, server);
-#endif
-	return;
+    void *buffer = expr_string( constraint.c_str( ) ) ;
+    expr_switch_to_buffer( buffer ) ;
+
+    parser_arg arg( this ) ;
+
+    // For all errors, exprparse will throw Error. 
+    exprparse( (void *)&arg ) ;
+
+    expr_delete_buffer( buffer ) ;
+
+    return;
 }
 
 // We start two sinks, one for regular data and one for XDR encoded data.
@@ -916,8 +1047,12 @@ clean_sinks(int childpid, bool compressed, XDR *xdr_sink, FILE *comp_sink)
     delete_xdrstdio(xdr_sink);
     
     if (compressed) {
-	fclose(comp_sink);
-	int pid;
+	int res = fclose(comp_sink);
+	if( res ) {
+	    DBG(cerr << "clean_sinks - Failed to close " << (void *)comp_sink << endl ;) ;
+	}
+
+	int pid = 0 ;
 #ifdef WIN32
 	while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
 #else
@@ -993,10 +1128,10 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 	print_constrained((compressed) ? comp_sink : out); 
 	fprintf((compressed) ? comp_sink : out, "Data:\n");
 
-	for (Pix q = first_var(); q; next_var(q)) 
-	    if (var(q)->send_p()) // only process projected variables
-		status = status && var(q)->serialize(dataset, *this,
-						     xdr_sink, true);
+	for (Vars_iter i = vars.begin(); i != vars.end(); i++)
+	    if ((*i)->send_p()) // only process projected variables
+		status = status && (*i)->serialize(dataset, *this,
+						   xdr_sink, true);
     
 	clean_sinks(childpid, compressed, xdr_sink, comp_sink);
     }
@@ -1042,6 +1177,8 @@ DDS::mark(const string &n, bool state)
 	DBG(cerr << "Set variable " << s->top()->name() << endl);
 	s->pop();
     }
+
+    delete s ;
 
     return true;
 }
@@ -1097,7 +1234,7 @@ DDS::mark(const string &n, bool state)
 
     return false;		// not found
 }
-
+#endif
 /** Mark the member variable <tt>send_p</tt> flags to
     <i>state</i>. 
 
@@ -1106,11 +1243,85 @@ DDS::mark(const string &n, bool state)
 void
 DDS::mark_all(bool state)
 {
-    for (Pix p = first_var(); p; next_var(p))
-	var(p)->set_send_p(state);
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++)
+	(*i)->set_send_p(state);
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.58  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.53.4.22  2002/12/31 16:43:20  rmorris
+// Patches to handle some of the fancier template code under VC++ 6.0.
+//
+// Revision 1.53.4.21  2002/12/27 19:34:42  jimg
+// Modified the var() methods so that www2id() is called before looking
+// up identifier names. See bug 563.
+//
+// Revision 1.53.4.20  2002/12/20 00:53:52  jimg
+// I removed the static void print_variable(...) because it's no longer
+// used by our code.
+//
+// Revision 1.53.4.19  2002/12/17 22:35:02  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.53.4.18  2002/11/21 21:24:17  pwest
+// memory leak cleanup and file descriptor cleanup
+//
+// Revision 1.53.4.17  2002/11/06 22:56:52  pwest
+// Memory delete errors and uninitialized memory read errors corrected
+//
+// Revision 1.53.4.16  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.53.4.15  2002/10/02 17:50:36  pwest
+// Added two new del_vars methods. The first takes an iterator and deltes the
+// variable referenced by that iterator. The iterator now points to the element
+// after the deleted element. The second method takes two iterators and will
+// delete the variables starting from the first iterator and up to, not
+// including the second iterator.
+//
+// Revision 1.53.4.14  2002/09/22 14:27:51  rmorris
+// VC++ doesn't allow consider x in 'for(int x,...)' to be only for that
+// scope of the block for that loop - therefor multiple of these in the
+// same function are illegal because the 'x' is considered multiply
+// declared.  Removed.
+//
+// Revision 1.53.4.13  2002/09/12 22:49:57  pwest
+// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+// than taking a reference to a Pix, taking a Pix value.
+//
+// Revision 1.53.4.12  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.53.4.11  2002/08/22 21:23:23  jimg
+// Fixes for the Win32 Build made at ESRI by Vlad Plenchoy and myslef.
+//
+// Revision 1.53.4.10  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
+// Revision 1.53.4.9  2002/06/20 03:18:48  jimg
+// Fixes and modifications to the Connect and HTTPConnect classes. Neither
+// of these two classes is complete, but they should compile and their
+// basic functions should work.
+//
 // Revision 1.57  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

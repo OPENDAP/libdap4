@@ -9,7 +9,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.32 2002/06/18 15:36:24 tom Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.33 2003/01/10 19:46:39 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -24,14 +24,17 @@ static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.32 2002/06/18 15:36:24 tom 
 #include "util.h"
 #include "AttrTable.h"
 #include "escaping.h"
+#include "IteratorAdapterT.h"
 
+using std::cerr;
 using std::string;
+using std::endl;
+
 #ifdef WIN32
 using std::vector<string>;
 #else
 using std::vector;
 #endif
-using std::endl;
 
 // Find the attribute #target#. To reference an arbitrary attribute, a user
 // needs an AttrTable and a Pix pointing to an attribute tuple within that
@@ -61,7 +64,7 @@ AttrTable::find(const string &target, AttrTable **at)
 	string field = target.substr(dotpos+1);
 	
 	*at = find_container(container);
-	return (*at) ? (*at)->simple_find(field) : 0;
+	return (*at) ? (*at)->simple_find(field) : (IteratorAdapter *)0;
     }
     else {
 	*at = this;
@@ -69,13 +72,54 @@ AttrTable::find(const string &target, AttrTable **at)
     }
 }
 
+void
+AttrTable::find( const string &target, AttrTable **at, Attr_iter &iter )
+{
+    string::size_type dotpos = target.rfind('.');
+    if (dotpos != string::npos)
+    {
+	string container = target.substr(0, dotpos);
+	string field = target.substr(dotpos+1);
+
+	*at = find_container( container ) ;
+	if(*at)
+	{
+	    iter = (*at)->simple_find(field, true) ;
+	} else {
+	    iter = attr_map.end() ;
+	}
+    }
+    else {
+	*at = this;
+	iter = simple_find(target, true);
+    }
+}
+
 Pix
 AttrTable::simple_find(const string &target)
 {
-    for (Pix p = attr_map.first(); p; attr_map.next(p))
-	if (target == attr_map(p)->name)
-	    return p;
-    return 0;
+    for (Pix p = first_attr(); p; next_attr(p))
+    {
+	if (target == attr(p)->name)
+	{
+	    return p ;
+	}
+    }
+    return (IteratorAdapter *)0;
+}
+
+AttrTable::Attr_iter
+AttrTable::simple_find( const string &target, bool )
+{
+    Attr_iter i ;
+    for( i = attr_map.begin(); i != attr_map.end(); i++ )
+    {
+	if( target == (*i)->name )
+	{
+	    break ;
+	}
+    }
+    return i ;
 }
 
 // Find the attribute container which holds #target#. Use #this# as the
@@ -117,9 +161,13 @@ AttrTable::simple_find_container(const string &target)
     if (get_name() == target)
 	return this;
 
-    for (Pix p = attr_map.first(); p; attr_map.next(p))
-	if (is_container(p) && target == attr_map(p)->name)
-	    return attr_map(p)->attributes;
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++)
+    {
+	if (is_container(i) && target == (*i)->name)
+	{
+	    return (*i)->attributes;
+	}
+    }
 
     return 0;
 }
@@ -177,9 +225,12 @@ AttrTable::String_to_AttrType(const string &s)
 void
 AttrTable::clone(const AttrTable &at)
 {
-    for (Pix p = at.attr_map.first(); p; at.attr_map.next(p)) {
-	entry *e = new entry(*at.attr_map(p));
-	attr_map.append(e);
+    Attr_citer i = at.attr_map.begin() ;
+    Attr_citer ie = at.attr_map.end() ;
+    for( ; i != ie; i++ )
+    {
+	entry *e = new entry( *(*i) ) ;
+	attr_map.push_back( e ) ;
     }
 }
 
@@ -197,9 +248,10 @@ AttrTable::AttrTable(const AttrTable &rhs)
 void
 AttrTable::delete_attr_table() 
 {
-    for (Pix p = attr_map.first(); p; attr_map.next(p)) {
-	delete attr_map(p);
-	attr_map(p) = 0;
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++)
+    {
+	entry *e = *i ;
+	delete e ;
     }
 }
 
@@ -229,7 +281,7 @@ AttrTable::operator=(const AttrTable &rhs)
 unsigned int
 AttrTable::get_size() const
 {
-    return attr_map.length();
+    return attr_map.size();
 }
 
 /** @brief Get the name of this attribute table. 
@@ -253,7 +305,22 @@ AttrTable::set_name(const string &n)
 Pix 
 AttrTable::first_attr()
 {
-    return attr_map.first();
+    IteratorAdapterT<entry *> *i =
+	new IteratorAdapterT<entry *>( attr_map ) ;
+    i->first() ;
+    return i ;
+}
+
+AttrTable::Attr_iter
+AttrTable::attr_begin()
+{
+    return attr_map.begin() ;
+}
+
+AttrTable::Attr_iter
+AttrTable::attr_end()
+{
+    return attr_map.end() ;
 }
 
 /** Advance to the next element of this attribute table. Set to null when
@@ -261,25 +328,71 @@ AttrTable::first_attr()
     @brief Increment a Pix pointer into the attribute table.
     @param p Pix to advance. */
 void
-AttrTable::next_attr(Pix &p)
+AttrTable::next_attr(Pix p)
 {
-    attr_map.next(p);
+    p.next() ;
+}
+
+AttrTable::entry *
+AttrTable::attr(Pix p)
+{
+    IteratorAdapterT<entry *> *i =
+	(IteratorAdapterT<entry *> *)p.getIterator() ;
+
+    if( i )
+#ifdef WIN32
+    {
+    entry *dummy = NULL;
+    return i->entry(&dummy);
+    }
+#else
+    return i->entry() ;
+#endif
+    return 0 ;
 }
 
 /** @brief Returns the name of the attribute table. */
 string
 AttrTable::get_name(Pix p)
 {
-    assert(p);
-    return attr_map(p)->name;
+    IteratorAdapterT<entry *> *i =
+	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    assert(i);
+#ifdef WIN32
+    entry *dummy = NULL;
+    return i->entry(&dummy)->name;
+#else
+    return i->entry()->name ;
+#endif
+}
+
+string
+AttrTable::get_name( Attr_iter &iter )
+{
+    assert( iter != attr_map.end() ) ;
+
+    return (*iter)->name ;
 }
 
 /** @brief Returns true if the attribute is a container. */
 bool
 AttrTable::is_container(Pix p)
 {
-    assert(p);
-    return attr_map(p)->type == Attr_container;
+    IteratorAdapterT<entry *> *i =
+	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    assert(i);
+#ifdef WIN32
+    entry *dummy = NULL;
+    return i->entry(&dummy)->type == Attr_container;
+#else
+    return i->entry()->type == Attr_container;
+#endif
+}
+
+bool
+AttrTable::is_container( Attr_iter &i )
+{
+    return (*i)->type == Attr_container ;
 }
 
 /** Get the attribute container referenced by <tt>p</tt>. If no
@@ -290,8 +403,22 @@ AttrTable::is_container(Pix p)
 AttrTable *
 AttrTable::get_attr_table(Pix p)
 {
-    assert(p);
-    return attr_map(p)->type == Attr_container ? attr_map(p)->attributes : 0;
+    IteratorAdapterT<entry *> *i =
+	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    assert(i);
+#ifdef WIN32
+    entry *dummy = NULL;
+    return i->entry(&dummy)->type == Attr_container ? i->entry(&dummy)->attributes : 0;
+#else
+    return i->entry()->type == Attr_container ? i->entry()->attributes : 0;
+#endif
+}
+
+AttrTable *
+AttrTable::get_attr_table( Attr_iter &iter )
+{
+    assert( iter != attr_map.end() ) ;
+    return (*iter)->type == Attr_container ? (*iter)->attributes : 0 ;
 }
 
 /** @brief Get an attribute container. */
@@ -313,8 +440,22 @@ AttrTable::get_attr_table(const char *name)
 string
 AttrTable::get_type(Pix p)
 {
-    assert(p);
-    return AttrType_to_String(attr_map(p)->type);
+    IteratorAdapterT<entry *> *i =
+	(IteratorAdapterT<entry *> *)p.getIterator() ;
+    assert(i);
+#ifdef WIN32
+    entry *dummy = NULL;
+    return AttrType_to_String(i->entry(&dummy)->type);
+#else
+    return AttrType_to_String(i->entry()->type);
+#endif
+}
+
+string
+AttrTable::get_type( Attr_iter &iter )
+{
+    assert( iter != attr_map.end() ) ;
+    return AttrType_to_String( (*iter)->type ) ;
 }
 
 /** @brief Get the type name of an attribute within this attribute table. */
@@ -337,8 +478,13 @@ AttrTable::get_type(const char *name)
 AttrType
 AttrTable::get_attr_type(Pix p)
 {
-    assert(p);
-    return attr_map(p)->type;
+    return attr(p)->type;
+}
+
+AttrType
+AttrTable::get_attr_type( Attr_iter &iter )
+{
+    return (*iter)->type ;
 }
 
 /** @brief Get the type of an attribute.
@@ -369,9 +515,18 @@ unsigned int
 AttrTable::get_attr_num(Pix p)
 {
     assert(p);
-    return (attr_map(p)->type == Attr_container)
-	? attr_map(p)->attributes->get_size() 
-	: attr_map(p)->attr->size();
+    return (attr(p)->type == Attr_container)
+	? attr(p)->attributes->get_size() 
+	: attr(p)->attr->size();
+}
+
+unsigned int
+AttrTable::get_attr_num( Attr_iter &iter )
+{
+    assert( iter != attr_map.end() ) ;
+    return ( (*iter)->type == Attr_container )
+	? (*iter)->attributes->get_size()
+	: (*iter)->attr->size() ;
 }
 
 /** If the indicated attribute is a container attribute, this function
@@ -384,8 +539,8 @@ AttrTable::get_attr_num(Pix p)
 unsigned int 
 AttrTable::get_attr_num(const string &name)
 {
-    Pix p = simple_find(name);
-    return (p) ?  get_attr_num(p) : 0;
+    Attr_iter iter = simple_find(name, true);
+    return (iter != attr_map.end()) ?  get_attr_num(iter) : 0;
 }
 
 unsigned int 
@@ -415,7 +570,14 @@ string
 AttrTable::get_attr(Pix p, unsigned int i)
 {
     assert(p);
-    return attr_map(p)->type == Attr_container ? (string)"None" : (*attr_map(p)->attr)[i];
+    return attr(p)->type == Attr_container ? (string)"None" : (*attr(p)->attr)[i];
+}
+
+string
+AttrTable::get_attr(Attr_iter &iter, unsigned int i)
+{
+    assert(iter != attr_map.end());
+    return (*iter)->type == Attr_container ? (string)"None" : (*(*iter)->attr)[i];
 }
 
 /** Get the value of an attribute. If the attribute has a vector value,
@@ -460,7 +622,14 @@ vector<string> *
 AttrTable::get_attr_vector(Pix p)
 {
     assert(p);
-    return attr_map(p)->type != Attr_container ? attr_map(p)->attr : 0;
+    return attr(p)->type != Attr_container ? attr(p)->attr : 0;
+}
+
+vector<string> *
+AttrTable::get_attr_vector(Attr_iter &iter)
+{
+    assert(iter != attr_map.end());
+    return (*iter)->type != Attr_container ? (*iter)->attr : 0;
 }
 
 /** Get a pointer to the vector of values associated with the attribute
@@ -509,24 +678,24 @@ AttrTable::get_attr_vector(const char *name)
     @param attr The value to add to the attribute table. */
 unsigned int
 AttrTable::append_attr(const string &name, const string &type, 
-		       const string &attr) throw (Error)
+		       const string &attribute) throw (Error)
 {
     string lname = www2id(name);
 
-    Pix p = simple_find(lname);
+    Attr_iter iter = simple_find( lname, true ) ;
 
     // If the types don't match OR this attribute is a container, calling
     // this mfunc is an error!
-    if (p && (attr_map(p)->type != String_to_AttrType(type)))
+    if (iter != attr_map.end() && ((*iter)->type != String_to_AttrType(type)))
 	throw Error(string("An attribute called `") + name 
 		    + string("' already exists but is of a different type"));
-    if (p && (get_type(p) == "Container"))
+    if (iter != attr_map.end() && (get_type(iter) == "Container"))
 	throw Error(string("An attribute called `") + name 
 		    + string("' already exists but is a container."));
 
-    if (p) {			// Must be a new attribute value; add it.
-        attr_map(p)->attr->push_back(attr);
-	return attr_map(p)->attr->size();
+    if (iter != attr_map.end()) {    // Must be a new attribute value; add it.
+        (*iter)->attr->push_back(attribute);
+	return (*iter)->attr->size();
     } else {			// Must be a completely new attribute; add it
 	entry *e = new entry;
 
@@ -534,9 +703,9 @@ AttrTable::append_attr(const string &name, const string &type,
 	e->is_alias = false;
 	e->type = String_to_AttrType(type); // Record type using standard names.
 	e->attr = new vector<string>;
-	e->attr->push_back(attr);
+	e->attr->push_back(attribute);
 
-	attr_map.append(e);
+	attr_map.push_back(e);
     
 	return e->attr->size();	// return the length of the attr vector
     }
@@ -560,7 +729,19 @@ AttrTable::append_attr(const char *name, const char *type, const char *attr)
 AttrTable *
 AttrTable::append_container(const string &name) throw (Error)
 {
-    return append_container(new AttrTable, name);
+    AttrTable *new_at = new AttrTable ;
+    AttrTable *ret = NULL ;
+    try
+    {
+	ret = append_container( new_at, name ) ;
+    }
+    catch( Error &e )
+    {
+	// an error occurred, attribute with that name already exists
+	delete new_at ;
+	throw e ;
+    }
+    return ret ;
 }
 
 /** Append a new attribute container to this attribute table. The new
@@ -589,7 +770,7 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
     e->type = Attr_container;
     e->attributes = at;
 
-    attr_map.append(e);
+    attr_map.push_back(e);
 
     return e->attributes;
 }
@@ -618,7 +799,7 @@ AttrTable::add_container_alias(const string &name, AttrTable *src)
 
     e->attributes = src;
 
-    attr_map.append(e);
+    attr_map.push_back(e);
 }
 
 // Assume #source# names an attribute value in some container. Add an alias
@@ -669,13 +850,13 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     e->name = lname;
     e->is_alias = true;
     e->aliased_to = lsource;
-    e->type = at->attr_map(p)->type;
+    e->type = at->attr(p)->type;
     if (e->type == Attr_container)
 	e->attributes = at->get_attr_table(p);
     else
-	e->attr = at->attr_map(p)->attr;
+	e->attr = at->attr(p)->attr;
 
-    attr_map.append(e);
+    attr_map.push_back(e);
 }
 
 // Deprecated
@@ -740,19 +921,20 @@ AttrTable::del_attr(const string &name, int i)
 {
     string lname = www2id(name);
 
-    Pix p = simple_find(lname);
-    if (p) {
+    Attr_iter iter = simple_find( lname, true ) ;
+    if ( iter != attr_map.end() ) {
 	if (i == -1) {		// Delete the whole attribute
-	    attr_map.prev(p);	// p now points to the previous element
-	    attr_map.del_after(p);	// ... delete the following element
+	    entry *e = *iter ;
+	    attr_map.erase( iter ) ;
+	    delete e ;
 	}
 	else {			// Delete one element from attribute array
 	    // Don't try to delete elements from the vector of values if the
 	    // map is a container!
-	    if (attr_map(p)->type == Attr_container) 
+	    if ((*iter)->type == Attr_container) 
 		return;
 
-	    vector<string> *sxp = attr_map(p)->attr;
+	    vector<string> *sxp = (*iter)->attr;
 		
 	    assert(i >= 0 && i < (int)sxp->size());
 	    sxp->erase(sxp->begin() + i); // rm the element
@@ -762,21 +944,22 @@ AttrTable::del_attr(const string &name, int i)
 
 // This is protected.	
 void
-AttrTable::simple_print(ostream &os, string pad, Pix p, bool dereference)
+AttrTable::simple_print(ostream &os, string pad, Attr_iter &i,
+			bool dereference)
 {
-    switch (attr_map(p)->type) {
+    switch ((*i)->type) {
       case Attr_container:
-	os << pad << id2www(get_name(p)) << " {" << endl;
+	os << pad << id2www(get_name(i)) << " {" << endl;
 
-	attr_map(p)->attributes->print(os, pad + "    ", dereference);
+	(*i)->attributes->print(os, pad + "    ", dereference);
 
 	os << pad << "}" << endl;
 	break;
 
       default: {
-	    os << pad << get_type(p) << " " << id2www(get_name(p)) << " " ;
+	    os << pad << get_type(i) << " " << id2www(get_name(i)) << " " ;
 
-	    vector<string> *sxp = attr_map(p)->attr;
+	    vector<string> *sxp = (*i)->attr;
 	    
 	    vector<string>::iterator last = sxp->end()-1;
 	    for (vector<string>::iterator i = sxp->begin(); i != last; ++i)
@@ -787,7 +970,35 @@ AttrTable::simple_print(ostream &os, string pad, Pix p, bool dereference)
 	break;
     }
 }
+
+void
+AttrTable::simple_print(FILE *out, string pad, Attr_iter &i,
+			bool dereference)
+{
+    switch ((*i)->type) {
+      case Attr_container:
+	fprintf( out, "%s%s {\n", pad.c_str(), id2www( get_name(i) ).c_str()) ;
+
+	(*i)->attributes->print(out, pad + "    ", dereference);
+
+	fprintf( out, "%s}\n", pad.c_str() ) ;
+	break;
+
+      default: {
+	    fprintf( out, "%s%s %s ", pad.c_str(), get_type(i).c_str(),
+				      id2www(get_name(i)).c_str() ) ;
+
+	    vector<string> *sxp = (*i)->attr;
 	    
+	    vector<string>::iterator last = sxp->end()-1;
+	    for (vector<string>::iterator i = sxp->begin(); i != last; ++i)
+		fprintf( out, "%s, ", (*i).c_str() ) ;
+  
+	    fprintf( out, "%s;\n", (*(sxp->end()-1)).c_str() ) ;
+	}
+	break;
+    }
+}
 /** Prints an ASCII representation of the attribute table to the
     indicated output stream. The <tt>pad</tt> argument is prefixed to each
     line of the output to provide control of indentation.
@@ -800,23 +1011,91 @@ AttrTable::simple_print(ostream &os, string pad, Pix p, bool dereference)
 void
 AttrTable::print(ostream &os, string pad, bool dereference)
 {
-    for(Pix p = attr_map.first(); p; attr_map.next(p)) {
-	if (attr_map(p)->is_alias) {
+    for(Attr_iter i = attr_map.begin(); i != attr_map.end(); i++)
+    {
+	if ((*i)->is_alias) {
 	    if (dereference) {
-		simple_print(os, pad, p, dereference);
+		simple_print(os, pad, i, dereference);
 	    }
 	    else {
-		os << pad << "Alias " << id2www(get_name(p)) << " " 
-		   << id2www(attr_map(p)->aliased_to) << ";" << endl;
+		os << pad << "Alias " << id2www(get_name(i)) << " " 
+		   << id2www((*i)->aliased_to) << ";" << endl;
 	    }
 	} 
 	else {
-	    simple_print(os, pad, p, dereference);
+	    simple_print(os, pad, i, dereference);
+	}
+    }
+}
+
+void
+AttrTable::print(FILE *out, string pad, bool dereference)
+{
+    for(Attr_iter i = attr_map.begin(); i != attr_map.end(); i++)
+    {
+	if ((*i)->is_alias) {
+	    if (dereference) {
+		simple_print(out, pad, i, dereference);
+	    }
+	    else {
+		fprintf( out, "%sAlias %s %s;\n",
+			      pad.c_str(),
+			      id2www(get_name(i)).c_str(),
+			      id2www((*i)->aliased_to).c_str() ) ;
+	    }
+	} 
+	else {
+	    simple_print(out, pad, i, dereference);
 	}
     }
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.33  2003/01/10 19:46:39  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.28.4.13  2002/12/31 16:43:20  rmorris
+// Patches to handle some of the fancier template code under VC++ 6.0.
+//
+// Revision 1.28.4.12  2002/12/17 22:35:02  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.28.4.11  2002/12/01 14:37:52  rmorris
+// Smalling changes for the win32 porting and maintenance work.
+//
+// Revision 1.28.4.10  2002/11/06 22:56:52  pwest
+// Memory delete errors and uninitialized memory read errors corrected
+//
+// Revision 1.28.4.9  2002/10/28 21:17:43  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.28.4.8  2002/09/12 22:49:57  pwest
+// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+// than taking a reference to a Pix, taking a Pix value.
+//
+// Revision 1.28.4.7  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.28.4.6  2002/08/08 06:54:56  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.32  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

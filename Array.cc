@@ -15,18 +15,18 @@
 
 #include "config_dap.h"
 
-#include <assert.h>
-
 #include "Array.h"
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
+#include "IteratorAdapterT.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
+using std::cerr;
 using std::endl;
 
 void
@@ -51,8 +51,10 @@ void
 Array::update_length(int size)
 {
     int length = 1;
-    for (Pix p = _shape.first(); p; _shape.next(p))
-	length *= _shape(p).c_size > 0 ? _shape(p).c_size : 1;
+    for (Dim_citer i = _shape.begin(); i != _shape.end(); i++)
+    {
+	length *= (*i).c_size > 0 ? (*i).c_size : 1;
+    }
 
     set_length(length);
 }
@@ -89,6 +91,12 @@ Array::~Array()
 {
     DBG(cerr << "Entering ~Array (" << this << ")" << endl);
     DBG(cerr << "Exiting ~Array" << endl);
+}
+
+BaseType *
+Array::ptr_duplicate()
+{
+    return new Array(*this);
 }
 
 Array &
@@ -133,7 +141,7 @@ Array::append_dim(int size, string name)
     d.c_size = size;
     d.selected = true;		// assume all dims selected.
 
-    _shape.append(d); 
+    _shape.push_back(d); 
 
     update_length(size);
 }
@@ -149,17 +157,16 @@ Array::reset_constraint()
 {
     set_length(-1);
 
-    for (Pix p = _shape.first(); p; _shape.next(p)) {
-	dimension d = _shape(p);
-	
-	d.start = 0;
-	d.stop = d.size - 1;
-	d.stride = 1;
-	d.c_size = d.size;
+    for (Dim_iter i = _shape.begin(); i != _shape.end(); i++)
+    {
+	(*i).start = 0;
+	(*i).stop = (*i).size - 1;
+	(*i).stride = 1;
+	(*i).c_size = (*i).size;
 
-	d.selected = true;
+	(*i).selected = true;
 
-	update_length(d.size);
+	update_length((*i).size);
     }
 }
 
@@ -176,14 +183,13 @@ Array::reset_constraint()
 void
 Array::clear_constraint()
 {
-    for (Pix p = _shape.first(); p; _shape.next(p)) {
-	dimension &d = _shape(p);
-	
-	d.start = 0;
-	d.stop = 0;
-	d.stride = 0;
-	d.c_size = 0;
-	d.selected = false;
+    for (Dim_iter i = _shape.begin(); i != _shape.end(); i++)
+    {
+	(*i).start = 0;
+	(*i).stop = 0;
+	(*i).stride = 0;
+	(*i).c_size = 0;
+	(*i).selected = false;
     }
 
     set_length(-1);
@@ -193,7 +199,7 @@ Array::clear_constraint()
 
 // Note: MS VC++ won't tolerate embedded newlines in strings, hence the \n
 // is explicit.  
-static char *array_sss = \
+static const char *array_sss = \
 "Invalid constraint parameters: At least one of the start, stride or stop \n\
 specified do not match the array variable.";
 
@@ -221,7 +227,23 @@ specified do not match the array variable.";
 void
 Array::add_constraint(Pix p, int start, int stride, int stop)
 {
-    dimension &d = _shape(p);
+    IteratorAdapterT<Array::dimension> *iter =
+	(IteratorAdapterT<Array::dimension>*)p.getIterator() ;
+#ifdef WIN32
+    //  These dummy var's get around a bug in MS VC++ and are required.
+    struct Array::dimension *dummy = NULL;
+    Dim_iter &i = iter->getIterator(dummy) ;
+#else
+    Dim_iter &i = iter->getIterator() ;
+#endif
+    add_constraint( i, start, stride, stop ) ;
+    return ;
+}
+
+void
+Array::add_constraint(Dim_iter &i, int start, int stride, int stop)
+{
+    dimension &d = *i ;
 
     // Check for bad constraints.
     // Jose Garcia
@@ -244,7 +266,6 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
     d.selected = true;
 
     update_length(d.c_size);
-
 }
 
 /** Returns a pointer to the first dimension of the array.  Use 
@@ -256,7 +277,22 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
 Pix 
 Array::first_dim() 
 { 
-    return _shape.first();
+    IteratorAdapterT<Array::dimension> *i =
+	new IteratorAdapterT<Array::dimension>( _shape ) ;
+    i->first() ;
+    return i ;
+}
+
+Array::Dim_iter
+Array::dim_begin()
+{
+    return _shape.begin() ;
+}
+
+Array::Dim_iter
+Array::dim_end()
+{
+    return _shape.end() ;
 }
 
 /** Given a dimension index, increments it to point to the next
@@ -269,10 +305,9 @@ Array::first_dim()
             after the one specified by <i>p</i>.
 */
 void 
-Array::next_dim(Pix &p) 
+Array::next_dim(Pix p) 
 { 
-    if (!_shape.empty() && p)
-	_shape.next(p); 
+    p.next() ;
 }
 
 /** Return the total number of dimensions contained in the array.
@@ -288,13 +323,17 @@ unsigned int
 Array::dimensions(bool constrained)
 {
     unsigned int dim = 0;
-    for(Pix p = first_dim(); p; next_dim(p)) 
+    for(Dim_citer i = _shape.begin(); i != _shape.end(); i++) 
+    {
 	if (constrained) {
-	    if (_shape(p).selected)
+	    if ((*i).selected)
 		dim++;
 	}
 	else
+	{
 	    dim++;
+	}
+    }
 
     return dim;
 }
@@ -317,17 +356,31 @@ Array::dimensions(bool constrained)
 int 
 Array::dimension_size(Pix p, bool constrained) 
 { 
+    IteratorAdapterT<Array::dimension> *iter =
+	(IteratorAdapterT<Array::dimension>*)p.getIterator() ;
+#ifdef WIN32
+    struct Array::dimension *dummy = NULL;
+    Dim_iter i = iter->getIterator(dummy) ;
+#else
+    Dim_iter i = iter->getIterator() ;
+#endif
+    return dimension_size( i, constrained ) ;
+}
+
+int 
+Array::dimension_size(Dim_iter &i, bool constrained) 
+{ 
     int size = 0;
 
-    if (!_shape.empty() && p)
+    if (!_shape.empty())
 	if (constrained) {
-	    if (_shape(p).selected)
-		size = _shape(p).c_size;
+	    if ((*i).selected)
+		size = (*i).c_size;
 	    else
 		size = 0;
 	}
 	else
-	    size = _shape(p).size; 
+	    size = (*i).size; 
 
     return size;
 }
@@ -354,17 +407,31 @@ Array::dimension_size(Pix p, bool constrained)
 int 
 Array::dimension_start(Pix p, bool constrained) 
 { 
+    IteratorAdapterT<Array::dimension> *iter =
+	(IteratorAdapterT<Array::dimension>*)p.getIterator() ;
+#ifdef WIN32
+    struct Array::dimension *dummy = NULL;
+    Dim_iter i = iter->getIterator(dummy) ;
+#else
+    Dim_iter i = iter->getIterator() ;
+#endif
+    return dimension_start( i, constrained ) ;
+}
+
+int 
+Array::dimension_start(Dim_iter &i, bool constrained) 
+{ 
     int start = 0;
 
-    if (!_shape.empty() && p)
+    if (!_shape.empty())
 	if (constrained) {
-	    if (_shape(p).selected)
-		start = _shape(p).start;
+	    if ((*i).selected)
+		start = (*i).start;
 	    else
 		start= 0;
 	}
 	else
-	    start = _shape(p).start; 
+	    start = (*i).start; 
 
     return start;
 }
@@ -390,17 +457,31 @@ Array::dimension_start(Pix p, bool constrained)
 int 
 Array::dimension_stop(Pix p, bool constrained) 
 { 
+    IteratorAdapterT<Array::dimension> *iter =
+	(IteratorAdapterT<Array::dimension> *)p.getIterator() ;
+#ifdef WIN32
+    struct Array::dimension *dummy = NULL;
+    Dim_iter i = iter->getIterator(dummy);
+#else
+    Dim_iter i = iter->getIterator() ;
+#endif
+    return dimension_stop( i, constrained ) ;
+}
+
+int 
+Array::dimension_stop(Dim_iter &i, bool constrained) 
+{ 
     int stop = 0;
 
-    if (!_shape.empty() && p)
+    if (!_shape.empty())
 	if (constrained) {
-	    if (_shape(p).selected)
-		stop = _shape(p).stop;
+	    if ((*i).selected)
+		stop = (*i).stop;
 	    else
 		stop= 0;
 	}
 	else
-	    stop = _shape(p).stop; 
+	    stop = (*i).stop; 
 
     return stop;
 }
@@ -427,17 +508,31 @@ Array::dimension_stop(Pix p, bool constrained)
 int 
 Array::dimension_stride(Pix p, bool constrained) 
 { 
+    IteratorAdapterT<Array::dimension> *iter =
+	(IteratorAdapterT<Array::dimension> *)p.getIterator() ;
+#ifdef WIN32
+    struct Array::dimension *dummy = NULL;
+    Dim_iter i = iter->getIterator(dummy) ;
+#else
+    Dim_iter i = iter->getIterator() ;
+#endif
+    return dimension_stride( i, constrained ) ;
+}
+
+int 
+Array::dimension_stride(Dim_iter &i, bool constrained) 
+{ 
     int stride = 0;
 
-    if (!_shape.empty() && p)
+    if (!_shape.empty())
 	if (constrained) {
-	    if (_shape(p).selected)
-		stride = _shape(p).stride;
+	    if ((*i).selected)
+		stride = (*i).stride;
 	    else
 		stride= 0;
 	}
 	else
-	    stride = _shape(p).stride; 
+	    stride = (*i).stride; 
 
     return stride;
 }
@@ -455,6 +550,20 @@ Array::dimension_stride(Pix p, bool constrained)
 string
 Array::dimension_name(Pix p) 
 { 
+    IteratorAdapterT<Array::dimension> *iter =
+	(IteratorAdapterT<Array::dimension> *)p.getIterator() ;
+#ifdef WIN32
+    struct Array::dimension *dummy = NULL;
+    Dim_iter i = iter->getIterator(dummy) ;
+#else
+    Dim_iter i = iter->getIterator() ;
+#endif
+    return dimension_name( i ) ;
+}
+
+string
+Array::dimension_name(Dim_iter &i) 
+{ 
   // Jose Garcia
   // Since this method is public, it is possible for a user
   // to call it before the Array object has been properly set
@@ -463,11 +572,7 @@ Array::dimension_name(Pix p)
   if (_shape.empty())
       throw  InternalErr(__FILE__, __LINE__, 
 			 "*This* array has no dimensions.");
-  if (!p)
-      throw  InternalErr(__FILE__, __LINE__, 
-			 "The pointer indicating the dimension is null.");
-
-  return _shape(p).name; 
+  return (*i).name; 
 }
 
 /** Prints a declaration for the Array.  This is what appears in a
@@ -496,33 +601,64 @@ Array::print_decl(ostream &os, string space, bool print_semi,
     // print it, but w/o semicolon
     var()->print_decl(os, space, false, constraint_info, constrained); 
 
-    for (Pix p = _shape.first(); p; _shape.next(p)) {
-	if (constrained && !_shape(p).selected)
+    for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
+	if (constrained && !((*i).selected))
 	    continue;
 	os << "[";
-	if (_shape(p).name != "")
-	    os << id2www(_shape(p).name) << " = ";
+	if ((*i).name != "")
+	    os << id2www((*i).name) << " = ";
 	if (constrained)
-	    os << _shape(p).c_size << "]";
+	    os << (*i).c_size << "]";
 	else
-	    os << _shape(p).size << "]";
+	    os << (*i).size << "]";
     }
 
     if (print_semi)
 	os << ";" << endl;
 }
 
-// Print an array. This is a private member function.
-//
-// OS is the stream used for writing
-// INDEX is the index of VEC to start printing
-// DIMS is the number of dimensions in the array
-// SHAPE holds the size of the dimensions of the array. This is really a
-// hold-over from an old version of this which was a plain function; I could
-// use Array mfuncs to find out the size of the dimensions...
-//
-// Returns: the number of elements written.
+void
+Array::print_decl(FILE *out, string space, bool print_semi,
+		  bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+	return;
 
+    // print it, but w/o semicolon
+    var()->print_decl(out, space, false, constraint_info, constrained); 
+
+    for (Dim_citer i = _shape.begin(); i != _shape.end(); i++)
+    {
+	if (constrained && !((*i).selected))
+	    continue;
+	fprintf( out, "[" ) ;
+	if ((*i).name != "")
+	{
+	    fprintf( out, "%s = ", id2www((*i).name).c_str() ) ;
+	}
+	if (constrained)
+	{
+	    fprintf( out, "%d]", (*i).c_size ) ;
+	}
+	else
+	{
+	    fprintf( out, "%d]", (*i).size ) ;
+	}
+    }
+
+    if( print_semi )
+    {
+	fprintf( out, ";\n" ) ;
+    }
+}
+
+/** Prints the value of the entire (constrained) array.
+    @param os The output stream to print on.
+    @param space The space to use in printing.
+    @param print_decl_p A boolean value indicating whether you want
+    the Array declaration to precede the Array value.
+    @brief Print the value given the current constraint.
+*/
 unsigned int
 Array::print_array(ostream &os, unsigned int index, unsigned int dims, 
 		   unsigned int shape[])
@@ -557,14 +693,41 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
     }
 }
 
-/** Prints the value of the entire (constrained) array.
+unsigned int
+Array::print_array(FILE *out, unsigned int index, unsigned int dims, 
+		   unsigned int shape[])
+{
+    if (dims == 1) {
+	fprintf( out, "{" ) ;
+	for (unsigned i = 0; i < shape[0]-1; ++i) {
+	    var(index++)->print_val(out, "", false);
+	    fprintf( out, ", " ) ;
+	}
+	var(index++)->print_val(out, "", false);
+	fprintf( out, "}" ) ;
 
-    @param os The output stream to print on.
-    @param space The space to use in printing.
-    @param print_decl_p A boolean value indicating whether you want
-    the Array declaration to precede the Array value.
-    @brief Print the value given the current constraint.
-*/
+	return index;
+    }
+    else {
+	fprintf( out, "{" ) ;
+	// Fixed an off-by-one error in the following loop. Since the array
+	// length is shape[dims-1]-1 *and* since we want one less dimension
+	// than that, the correct limit on this loop is shape[dims-2]-1. From
+	// Todd Karakasian.
+	// The saga continues; the loop test should be `i < shape[0]-1'. jhrg
+	// 9/12/96.
+	for (unsigned i = 0; i < shape[0]-1; ++i) {
+	    index = print_array(out, index, dims - 1, shape + 1);
+	    fprintf( out, "," ) ;	// Removed the extra `}'. Also from Todd
+	}
+	index = print_array(out, index, dims - 1, shape + 1);
+	fprintf( out, "}" ) ;
+
+	return index;
+    }
+}
+
+// print the value given the current constraint.
 
 void 
 Array::print_val(ostream &os, string space, bool print_decl_p)
@@ -582,9 +745,9 @@ Array::print_val(ostream &os, string space, bool print_decl_p)
 
     unsigned int dims = dimensions(true);
     unsigned int *shape = new unsigned int[dims];
-    unsigned int i = 0;
-    for (Pix p = first_dim(); p; next_dim(p))
-	shape[i++] = dimension_size(p, true);
+    unsigned int index = 0;
+    for (Dim_iter i = _shape.begin(); i != _shape.end(); i++)
+	shape[index++] = dimension_size(i, true);
 
     print_array(os, 0, dims, shape);
     delete [] shape;
@@ -592,6 +755,35 @@ Array::print_val(ostream &os, string space, bool print_decl_p)
 
     if (print_decl_p) {
 	os << ";" << endl;
+    }
+}
+
+void 
+Array::print_val(FILE *out, string space, bool print_decl_p)
+{
+    // print the declaration if print decl is true.
+    // for each dimension,
+    //   for each element, 
+    //     print the array given its shape, number of dimensions.
+    // Add the `;'
+    
+    if (print_decl_p) {
+	print_decl(out, space, false, false, false);
+	fprintf( out, " = " ) ;
+    }
+
+    unsigned int dims = dimensions(true);
+    unsigned int *shape = new unsigned int[dims];
+    unsigned int index = 0;
+    for (Dim_iter i = _shape.begin(); i != _shape.end(); i++)
+	shape[index++] = dimension_size(i, true);
+
+    print_array(out, 0, dims, shape);
+    delete [] shape;
+    shape = 0;
+
+    if (print_decl_p) {
+	fprintf( out, ";\n" ) ;
     }
 }
 
@@ -603,6 +795,7 @@ Array::print_val(ostream &os, string space, bool print_decl_p)
     @brief Check semantic features of the Array.
     @return A boolean value.  FALSE means there was a problem.
 */
+
 bool
 Array::check_semantics(string &msg, bool)
 {
@@ -615,6 +808,53 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.55  2003/01/10 19:46:39  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.48.4.13  2002/12/31 16:43:20  rmorris
+// Patches to handle some of the fancier template code under VC++ 6.0.
+//
+// Revision 1.48.4.12  2002/12/17 22:35:02  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.48.4.11  2002/12/01 14:37:52  rmorris
+// Smalling changes for the win32 porting and maintenance work.
+//
+// Revision 1.48.4.10  2002/10/28 21:17:43  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.48.4.9  2002/09/22 14:24:58  rmorris
+// Changed the 1st arg in add_constraint(Dim_iter &i,...).  The l-value
+// designation isn't used within and VC++ won't swallow passing a non-lvalue
+// in - so "&" was removed and all is well.
+//
+// Revision 1.48.4.8  2002/09/12 22:49:57  pwest
+// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+// than taking a reference to a Pix, taking a Pix value.
+//
+// Revision 1.48.4.7  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.48.4.6  2002/08/08 06:54:56  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.54  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
@@ -623,6 +863,12 @@ Array::check_semantics(string &msg, bool)
 //
 // Revision 1.52  2002/05/23 15:22:39  tom
 // modified for doxygen
+//
+// Revision 1.48.4.5  2002/05/22 16:57:51  jimg
+// I modified the `data type classes' so that they do not need to be
+// subclassed for clients. It might be the case that, for a complex client,
+// subclassing is still the best way to go, but you're not required to do
+// it anymore.
 //
 // Revision 1.48.4.4  2001/10/30 06:51:32  rmorris
 // Omit use of unescaped newline in string constant.  MS VC++ won't tolerate.

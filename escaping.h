@@ -12,11 +12,9 @@
 #ifndef _escaping_h
 #define _escaping_h
 
-#ifdef WIN32
 #include <string>
 
 using std::string;
-#endif
 
 string hexstring(unsigned char val);
 string unhexstring(string s);
@@ -29,13 +27,16 @@ string unoctstring(string s);
 // [-A-Za-z0-9_.!~*'()].
 
 string id2www(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.!~*'()-");
+
 string id2www_ce(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.!~*'()-[]:{}&=<>,");
-//[0-7][0-9a-fA-F]
+
 string www2id(string s, const string &escape = "%",
 	      const string &except = "");
+
 // Include these for compatibility with the old names. 7/19/2001 jhrg
 #define id2dods id2www
 #define dods2id www2id
+
 string esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
@@ -44,6 +45,23 @@ string unescattr(string s);
 string munge_error_message(string msg);
 
 // $Log: escaping.h,v $
+// Revision 1.10  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.5.4.10  2002/10/08 05:33:45  jimg
+// Removed unnecessary #ifdef WIN32.
+//
+// Revision 1.5.4.9  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.9  2002/06/03 22:21:16  jimg
 // Merged with release-3-2-9
 //

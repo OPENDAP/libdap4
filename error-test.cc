@@ -11,20 +11,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: error-test.cc,v 1.9 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: error-test.cc,v 1.10 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <assert.h>
 
-#include <iostream>
 #include <GetOpt.h>
 
 #include "Error.h"
 #include "parser.h"
 #include "Error.tab.h"
-
-using std::cerr;
-using std::endl;
-using std::flush;
 
 void test_scanner();
 void test_parser(Error &err);
@@ -108,15 +103,15 @@ void
 usage()
 {
 #ifdef WIN32
-    cerr << "usage: " << "error-test: [d][sp] <  filename ..."  << endl;
+    fprintf( stderr, "usage: error-test: [d][sp] <  filename ...\n" ) ;
 #else
-    cerr << "usage: " << "error-test: [d][spo] <  filename ..."  << endl;
+    fprintf( stderr, "usage: error-test: [d][spo] <  filename ...\n" ) ;
 #endif
-    cerr << "       " << "d: extra parser debugging information" << endl;
-    cerr << "       " << "s: run the scanner" << endl;
-    cerr << "       " << "p: run the parser" << endl;
+    fprintf( stderr, "       d: extra parser debugging information\n" ) ;
+    fprintf( stderr, "       s: run the scanner\n" ) ;
+    fprintf( stderr, "       p: run the parser\n" ) ;
 #ifdef WIN32
-    cerr << "       " << "o: evaluate the object, runs the parser" << endl;
+    fprintf( stderr, "       o: evaluate the object, runs the parser\n" ) ;
 #endif
 }
 
@@ -125,46 +120,48 @@ test_scanner()
 {
     int tok;
 
-    cout << prompt << flush;		// first prompt
+    fprintf( stdout, "%s", prompt ) ; // first prompt
+    fflush( stdout ) ;
     while ((tok = Errorlex())) {
 	switch (tok) {
 	  case SCAN_ERROR:
-	    cout << "ERROR" << endl;
+	    fprintf( stdout, "ERROR\n" ) ;
 	    break;
 	  case SCAN_CODE:
-	    cout << "CODE" << endl;
+	    fprintf( stdout, "CODE\n" ) ;
 	    break;
 	  case SCAN_PTYPE:
-	    cout << "PTYPE" << endl;
+	    fprintf( stdout, "PTYPE\n" ) ;
 	    break;
 	  case SCAN_MSG:
-	    cout << "MSG" << endl;
+	    fprintf( stdout, "MSG\n" ) ;
 	    break;
 	  case SCAN_PROGRAM:
-	    cout << "PROGRAM" << endl;
+	    fprintf( stdout, "PROGRAM\n" ) ;
 	    break;
 	  case SCAN_STR:
-	    cout << Errorlval.string << endl;
+	    fprintf( stdout, "%s\n", Errorlval.string ) ;
 	    break;
 	  case SCAN_INT:
-	    cout << Errorlval.integer << endl;
+	    fprintf( stdout, "%d\n", Errorlval.integer ) ;
 	    break;
 	  case '{':
-	    cout << "Left Brace" << endl;
+	    fprintf( stdout, "Left Brace\n" ) ;
 	    break;
 	  case '}':
-	    cout << "Right Brace" << endl;
+	    fprintf( stdout, "Right Brace\n" ) ;
 	    break;
 	  case ';':
-	    cout << "Semicolon" << endl;
+	    fprintf( stdout, "Semicolon\n" ) ;
 	    break;
 	  case '=':
-	    cout << "Assignment" << endl;
+	    fprintf( stdout, "Assignment\n" ) ;
 	    break;
 	  default:
-	    cout << "Error: Unrecognized input" << endl;
+	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
 	}
-	cout << prompt << flush;		// print prompt after output
+	fprintf( stdout, "%s", prompt ) ; // print prompt after output
+	fflush( stdout ) ;
     }
 }
 
@@ -172,17 +169,17 @@ void
 test_parser(Error &err)
 {
     int status = err.parse(stdin);
-    cout << "Status from parser: " << status << endl;
+    fprintf( stdout, "Status from parser: %d\n", status ) ;
     
     if (err.OK())
-	cout << "Error passed OK check" << endl;
+	fprintf( stdout, "Error passed OK check\n" ) ;
     else 
-	cout << "Error failed OK check" << endl;
+	fprintf( stdout, "Error failed OK check\n" ) ;
 
-    err.print();
+    err.print(stdout);
 }
 
-#ifndef WIN32
+#ifdef GUI
 void
 test_object(Error &err)
 {
@@ -190,11 +187,19 @@ test_object(Error &err)
 
     string response = err.correct_error(&g);
     
-    cout << "Response: " << response << endl;
+    fprintf( stdout, "Response: %s\n", response.c_str() ) ;
 }
 #endif
 
 // $Log: error-test.cc,v $
+// Revision 1.10  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.8.4.2  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
 // Revision 1.9  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

@@ -1,4 +1,12 @@
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// (c) COPYRIGHT URI/MIT 1995-1999
+// Please read the full copyright statement in the file COPYRIGHT.
+//
+// Authors:
+//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
+
 #ifdef _GNUG_
 #pragma implementation
 #endif
@@ -71,6 +79,20 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.5  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.1.2.3  2002/08/08 06:54:56  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.4  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

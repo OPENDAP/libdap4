@@ -1,23 +1,27 @@
 
-// Tests for the AttrTable class.
+// -*- C++ -*-
 
-#include "TestCase.h"
-#include "TestCaller.h"
-#include "TestSuite.h"
+#include <cppunit/TextTestRunner.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include <strstream.h>
-#include <Regex.h>
+#include <string>
+
+#include "Regex.h"
 
 #include "AttrTable.h"
 
-class AttrTableTest:public TestCase {
+using namespace CppUnit;
+
+class AttrTableTest:public TestFixture {
 private:
     AttrTable *at1;
     AttrTable *cont_a, *cont_b, *cont_c, *cont_ba, *cont_ca, *cont_caa;
 
 public:
-    AttrTableTest(string name):TestCase(name) {
-    } 
+    AttrTableTest() {} 
+    ~AttrTableTest() {} 
 
     void setUp() { 
 	at1 = new AttrTable;
@@ -68,75 +72,87 @@ public:
 	return r.match(s, strlen(s)) == (int)strlen(s);
     }
 
+    CPPUNIT_TEST_SUITE( AttrTableTest );
+
+    CPPUNIT_TEST(find_container_test);
+    CPPUNIT_TEST(find_test);
+    CPPUNIT_TEST(copy_ctor);
+    CPPUNIT_TEST(assignment);
+    CPPUNIT_TEST(names_with_spaces_test);
+    CPPUNIT_TEST(containers_with_spaces_test);
+
+    CPPUNIT_TEST_SUITE_END();
+
     // Tests for methods
     void find_container_test() {
 	AttrTable *tmp = at1->find_container("a");
-	assert(tmp != 0);
-	assert(tmp == cont_a);
+	CPPUNIT_ASSERT(tmp != 0);
+	CPPUNIT_ASSERT(tmp == cont_a);
 
-	assert(at1->find_container("b.ba") == cont_ba);
-	assert(at1->find_container("a.b") == 0);
-	assert(at1->find_container("c.ca.caa") == cont_caa);
-	assert(at1->find_container("caa") == 0);
+	CPPUNIT_ASSERT(at1->find_container("b.ba") == cont_ba);
+	CPPUNIT_ASSERT(at1->find_container("a.b") == 0);
+	CPPUNIT_ASSERT(at1->find_container("c.ca.caa") == cont_caa);
+	CPPUNIT_ASSERT(at1->find_container("caa") == 0);
 
-	assert(at1->find_container("a.size") == 0);
-	assert(at1->find_container("b.ba.name") == 0);
+	CPPUNIT_ASSERT(at1->find_container("a.size") == 0);
+	CPPUNIT_ASSERT(at1->find_container("b.ba.name") == 0);
     } 
 
     void find_test() { 
 	AttrTable *tmp;
-	Pix p = at1->find("a", &tmp);
-	assert(tmp && p && tmp->is_container(p)
-	       && tmp->get_name(p) == "a");
-	p = at1->find("a.size", &tmp);
-	assert(tmp && p && !tmp->is_container(p)
-	       && tmp->get_name(p) == "size" && tmp->get_attr(p) == "7");
-	p = at1->find("b.type", &tmp);
-	assert(tmp && p && !tmp->is_container(p)
-	       && tmp->get_name(p) == "type"
-	       && tmp->get_attr(p) == "houses");
-	p = at1->find("c.ca.caa.color", &tmp);
-	assert(tmp && p && !tmp->is_container(p)
-	       && tmp->get_name(p) == "color"
-	       && tmp->get_attr(p) == "red");
-	p = at1->find("d.size", &tmp);
-	assert(!tmp);
-	p = at1->find("c.size", &tmp);
-	assert(tmp == cont_c && !p);
+	AttrTable::Attr_iter iter ;
+	at1->find("a", &tmp, iter);
+	CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && tmp->is_container(iter)
+	       && tmp->get_name(iter) == "a");
+	at1->find("a.size", &tmp, iter);
+	CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter)
+	       && tmp->get_name(iter) == "size" && tmp->get_attr(iter) == "7");
+	at1->find("b.type", &tmp, iter);
+	CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter)
+	       && tmp->get_name(iter) == "type"
+	       && tmp->get_attr(iter) == "houses");
+	at1->find("c.ca.caa.color", &tmp, iter);
+	CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter)
+	       && tmp->get_name(iter) == "color"
+	       && tmp->get_attr(iter) == "red");
+	at1->find("d.size", &tmp, iter);
+	CPPUNIT_ASSERT(!tmp);
+	at1->find("c.size", &tmp, iter);
+	CPPUNIT_ASSERT(tmp == cont_c && iter == tmp->attr_end());
     } 
 
     void copy_ctor() {
 	AttrTable at2 = *at1;
-	Pix p = at2.first_attr(); 
-	assert(at2.get_name(p) == "a");
-	assert(at2.is_container(p));
-	AttrTable *tmp = at2.get_attr_table(p);
-	Pix q = tmp->first_attr();
-	assert(tmp->get_name(q) == "size");
-	at2.next_attr(p);
-	assert(at2.get_name(p) == "b");
-	assert(at2.is_container(p));
-	at2.next_attr(p);
-	assert(at2.get_name(p) == "c");
-	assert(at2.is_container(p));
+	AttrTable::Attr_iter piter = at2.attr_begin(); 
+	CPPUNIT_ASSERT(at2.get_name(piter) == "a");
+	CPPUNIT_ASSERT(at2.is_container(piter));
+	AttrTable *tmp = at2.get_attr_table(piter);
+	AttrTable::Attr_iter qiter = tmp->attr_begin();
+	CPPUNIT_ASSERT(tmp->get_name(qiter) == "size");
+	piter++ ;
+	CPPUNIT_ASSERT(at2.get_name(piter) == "b");
+	CPPUNIT_ASSERT(at2.is_container(piter));
+	piter++ ;
+	CPPUNIT_ASSERT(at2.get_name(piter) == "c");
+	CPPUNIT_ASSERT(at2.is_container(piter));
     }
 
     void assignment() {
 	AttrTable at2;
 	at2 = *at1;
 
-	Pix p = at2.first_attr(); 
-	assert(at2.get_name(p) == "a");
-	assert(at2.is_container(p));
-	AttrTable *tmp = at2.get_attr_table(p);
-	Pix q = tmp->first_attr();
-	assert(tmp->get_name(q) == "size");
-	at2.next_attr(p);
-	assert(at2.get_name(p) == "b");
-	assert(at2.is_container(p));
-	at2.next_attr(p);
-	assert(at2.get_name(p) == "c");
-	assert(at2.is_container(p));
+	AttrTable::Attr_iter piter = at2.attr_begin(); 
+	CPPUNIT_ASSERT(at2.get_name(piter) == "a");
+	CPPUNIT_ASSERT(at2.is_container(piter));
+	AttrTable *tmp = at2.get_attr_table(piter);
+	AttrTable::Attr_iter qiter = tmp->attr_begin();
+	CPPUNIT_ASSERT(tmp->get_name(qiter) == "size");
+	piter++ ;
+	CPPUNIT_ASSERT(at2.get_name(piter) == "b");
+	CPPUNIT_ASSERT(at2.is_container(piter));
+	piter++ ;
+	CPPUNIT_ASSERT(at2.get_name(piter) == "c");
+	CPPUNIT_ASSERT(at2.is_container(piter));
     }
 
     void names_with_spaces_test() {
@@ -148,9 +164,8 @@ public:
 	ostrstream oss;
 	t->print(oss, ""); oss << ends;
 	Regex r("String long%20name first;
-String longer%20name \"second test\";
-");
-	assert(re_match(r, oss.str()));
+String longer%20name \"second test\";");
+	CPPUNIT_ASSERT(re_match(r, oss.str()));
 	delete t; t = 0;
     }
 
@@ -163,7 +178,7 @@ String longer%20name \"second test\";
 	}
 	catch (Error &e) {
 	    e.display_message();
-	    assert("Caught Error exception!" && false);
+	    CPPUNIT_ASSERT("Caught Error exception!" && false);
 	}
 	ostrstream oss;
 	top->print(oss, ""); oss << ends;
@@ -172,29 +187,23 @@ String longer%20name \"second test\";
 .*Alias an%20alias long%20name;
 }
 ");
-	assert(re_match(r, oss.str()));
+	CPPUNIT_ASSERT(re_match(r, oss.str()));
 	delete top; top = 0;
 
     }
 
-    static Test *suite() { TestSuite *s = new TestSuite("AttrTableTest");
-
-    s->addTest(new TestCaller < AttrTableTest > ("find_container_test",
-						 &AttrTableTest::
-						 find_container_test));
-    s->addTest(new TestCaller < AttrTableTest >
-	       ("find_test", &AttrTableTest::find_test));
-    s->addTest(new TestCaller < AttrTableTest >
-	       ("copy_ctor", &AttrTableTest::copy_ctor));
-    s->addTest(new TestCaller < AttrTableTest >
-	       ("assignment", &AttrTableTest::assignment));
-    s->addTest(new TestCaller < AttrTableTest >
-	       ("names_with_spaces_test", 
-		&AttrTableTest::names_with_spaces_test));
-    s->addTest(new TestCaller < AttrTableTest >
-	       ("containers_with_spaces_test", 
-		&AttrTableTest::containers_with_spaces_test));
-    
-    return s;
-    }
 };
+
+CPPUNIT_TEST_SUITE_REGISTRATION(AttrTableTest);
+
+int 
+main( int argc, char* argv[] )
+{
+    CppUnit::TextTestRunner runner;
+    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+
+    runner.run();
+
+    return 0;
+}
+

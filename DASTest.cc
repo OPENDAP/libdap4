@@ -1,19 +1,23 @@
 
-// Tests for the AttrTable class.
+// -*- C++ -*-
 
-#include "TestCase.h"
-#include "TestCaller.h"
-#include "TestSuite.h"
+#include <cppunit/TextTestRunner.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
+
+#include <string>
 
 #include "DAS.h"
 
-class DASTest:public TestCase {
+using namespace CppUnit;
+
+class DASTest: public TestFixture {
 private:
     DAS *das, *das2;
 
 public:
-    DASTest(string name):TestCase(name) {
-    } 
+    DASTest() {}
+    ~DASTest() {}
 
     void setUp() { 
 	das = new DAS();
@@ -25,10 +29,17 @@ public:
 	delete das2; das2 = 0;
     }
 
+    CPPUNIT_TEST_SUITE( DASTest );
+
+    CPPUNIT_TEST(error_values_test);
+    CPPUNIT_TEST(symbol_name_test);
+
+    CPPUNIT_TEST_SUITE_END();
+
     void error_values_test() {
 	try {
 	    das->parse("das-testsuite/bad_value_test.1");
-	    das->print(cerr);
+	    das->print(stderr);
 	}
 	catch (Error &e) {
 	    e.display_message();
@@ -37,18 +48,23 @@ public:
 
     void symbol_name_test() {
 	das->parse("das-testsuite/test.33");
-	assert(das->get_table("var1")->get_attr("y#z", 0) == "15");
+	CPPUNIT_ASSERT(das->get_table("var1")->get_attr("y#z", 0) == "15");
 
 	string s = das->get_table("var1.component1.inner component")->get_attr("tag");
-	assert(s == "\"xyz123\"");
+	CPPUNIT_ASSERT(s == "\"xyz123\"");
     }
 
-    static Test *suite() { 
-	TestSuite *s = new TestSuite("DASTest");
-
-	s->addTest(new TestCaller < DASTest >
-		   ("symbol_name_test", &DASTest::symbol_name_test));
-
-	return s;
-    }
 };
+
+CPPUNIT_TEST_SUITE_REGISTRATION(DASTest);
+
+int 
+main( int argc, char* argv[] )
+{
+    CppUnit::TextTestRunner runner;
+    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+
+    runner.run();
+
+    return 0;
+}

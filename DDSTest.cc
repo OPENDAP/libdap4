@@ -1,18 +1,22 @@
 
-// Tests for the DataDDS class.
 
-#include "TestCase.h"
-#include "TestCaller.h"
-#include "TestSuite.h"
+// -*- C++ -*-
+
+#include <cppunit/TextTestRunner.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include "DDS.h"
 
-class DDSTest : public TestCase {
+using namespace CppUnit;
+
+class DDSTest : public TestFixture {
 private:
     DDS *dds1, *dds2;
 
 public: 
-    DDSTest (string name) : TestCase (name) {}
+    DDSTest() {}
+    ~DDSTest() {}
 
     void setUp() {
 	dds1 = new DDS("test1");
@@ -23,6 +27,12 @@ public:
 	delete dds1; dds1 = 0;
 	delete dds2; dds2 = 0;
     }
+
+    CPPUNIT_TEST_SUITE( DDSTest );
+
+    CPPUNIT_TEST(symbol_name_test);
+
+    CPPUNIT_TEST_SUITE_END();
 
     void symbol_name_test() {
 	// read a DDS.
@@ -36,16 +46,20 @@ public:
 	assert(dds2->var("c d"));
 	assert(!dds2->var("c%20d"));
     }
-
-    static Test *suite ()  {
-	TestSuite *s = new TestSuite("DDSTest");
-	s->addTest(new TestCaller<DDSTest>
-		   ("symbol_name_test", &DDSTest::symbol_name_test));
-
-	return s;
-    }
 };
 
+CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
+
+int 
+main( int argc, char* argv[] )
+{
+    CppUnit::TextTestRunner runner;
+    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+
+    runner.run();
+
+    return 0;
+}
 
 
 

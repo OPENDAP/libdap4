@@ -14,11 +14,9 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das-test.cc,v 1.29 2002/06/03 22:21:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das-test.cc,v 1.30 2003/01/10 19:46:41 jimg Exp $"};
 
-#include <iostream>
 #include <string>
-#include <Pix.h>
 #include <GetOpt.h>
 
 #define YYSTYPE char *
@@ -30,10 +28,6 @@ static char rcsid[] not_used = {"$Id: das-test.cc,v 1.29 2002/06/03 22:21:15 jim
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
-
-using std::cerr;
-using std::endl;
-using std::flush;
 
 void plain_driver(DAS &das, bool deref_alias);
 void load_attr_table(AttrTable at);
@@ -50,14 +44,15 @@ const char *version = "version 1.18";
 void
 usage(string name)
 {
-    cerr << "usage: " << name 
-	 << " [-v] [-s] [-d] [-c] [-p] {< in-file > out-file}" << endl
-	 << " s: Test the DAS scanner." << endl
-	 << " p: Scan and parse from <in-file>; print to <out-file>." << endl
-	 << " c: Test building the DAS from C++ code." << endl
-	 << " v: Print the version of das-test and exit." << endl
-	 << " d: Print parser debugging information." << endl
-	 << " r: Print the DAS with aliases deReferenced." << endl;
+    fprintf( stderr, "usage: %s %s\n %s\n %s\n %s\n %s\n %s\n %s\n",
+		     name.c_str(),
+		     "[-v] [-s] [-d] [-c] [-p] {< in-file > out-file}",
+		     "s: Test the DAS scanner.",
+		     "p: Scan and parse from <in-file>; print to <out-file>.",
+		     "c: Test building the DAS from C++ code.",
+		     "v: Print the version of das-test and exit.",
+		     "d: Print parser debugging information.",
+		     "r: Print the DAS with aliases deReferenced." ) ;
 }
 
 #ifdef WIN32
@@ -87,7 +82,7 @@ main(int argc, char *argv[])
 	      code_test = true;
 	      break;
 	    case 'v':
-	      cerr << argv[0] << ": " << version << endl;
+	      fprintf( stderr, "%s: %s\n", argv[0], version ) ;
 	      exit(0);
 	    case 'd':
 	      dasdebug = 1;
@@ -134,64 +129,66 @@ test_scanner()
 {
     int tok;
 
-    cout << prompt << flush;		// first prompt
+    fprintf( stdout, "%s", prompt ) ; // first prompt
+    fflush( stdout ) ;
     while ((tok = daslex())) {
 	switch (tok) {
 	  case SCAN_ATTR:
-	    cout << "ATTR" << endl;
+	    fprintf( stdout, "ATTR\n" ) ;
 	    break;
 	  case SCAN_ALIAS:
-	    cout << "ALIAS" << endl;
+	    fprintf( stdout, "ALIAS\n" ) ;
 	    break;
 	  case SCAN_WORD:
-	    cout << "WORD=" << daslval << endl;
+	    fprintf( stdout, "WORD=%s\n", daslval ) ;
 	    break;
 
 	  case SCAN_BYTE:
-	    cout << "BYTE" << endl;
+	    fprintf( stdout, "BYTE\n" ) ;
 	    break;
 	  case SCAN_INT16:
-	    cout << "INT16" << endl;
+	    fprintf( stdout, "INT16\n" ) ;
 	    break;
 	  case SCAN_UINT16:
-	    cout << "UINT16" << endl;
+	    fprintf( stdout, "UINT16\n" ) ;
 	    break;
 	  case SCAN_INT32:
-	    cout << "INT32" << endl;
+	    fprintf( stdout, "INT32\n" ) ;
 	    break;
 	  case SCAN_UINT32:
-	    cout << "UINT32" << endl;
+	    fprintf( stdout, "UINT32\n" ) ;
 	    break;
 	  case SCAN_FLOAT32:
-	    cout << "FLOAT32" << endl;
+	    fprintf( stdout, "FLOAT32\n" ) ;
 	    break;
 	  case SCAN_FLOAT64:
-	    cout << "FLOAT64" << endl;
+	    fprintf( stdout, "FLOAT64\n" ) ;
 	    break;
 	  case SCAN_STRING:
-	    cout << "STRING" << endl;
+	    fprintf( stdout, "STRING\n" ) ;
 	    break;
 	  case SCAN_URL:
-	    cout << "URL" << endl;
+	    fprintf( stdout, "URL\n" ) ;
 	    break;
 
 	  case '{':
-	    cout << "Left Brace" << endl;
+	    fprintf( stdout, "Left Brace\n" ) ;
 	    break;
 	  case '}':
-	    cout << "Right Brace" << endl;
+	    fprintf( stdout, "Right Brace\n" ) ;
 	    break;
 	  case ';':
-	    cout << "Semicolon" << endl;
+	    fprintf( stdout, "Semicolon\n" ) ;
 	    break;
 	  case ',':
-	    cout << "Comma" << endl;
+	    fprintf( stdout, "Comma\n" ) ;
 	    break;
 
 	  default:
-	    cout << "Error: Unrecognized input" << endl;
+	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
 	}
-	cout << prompt << flush;		// print prompt after output
+	fprintf( stdout, "%s", prompt ) ; // print prompt after output
+	fflush( stdout ) ;
     }
 }
 
@@ -201,7 +198,7 @@ parser_driver(DAS &das, bool deref_alias)
 {
     das.parse();
 
-    das.print(cout, deref_alias);
+    das.print(stdout, deref_alias);
 }
 
 // Given a DAS, add some stuff to it.
@@ -223,7 +220,7 @@ plain_driver(DAS &das, bool deref_alias)
     load_attr_table_ptr(atp);
     das.add_table(name, atp);
 
-    das.print(cout, deref_alias);
+    das.print(stdout, deref_alias);
 }
 
 // stuff an AttrTable full of values. Also, print it out.
@@ -242,39 +239,57 @@ load_attr_table(AttrTable at)
     at.append_attr("day", "Int32", "01");
     at.append_attr("Time", "Float64", "3.1415");
 
-    cout << "Using the Pix:" << endl;
-    Pix p;
-    for (p = at.first_attr(); p; at.next_attr(p)) {
-	cout << at.get_name(p) << " " << at.get_type(p) << " ";
+    fprintf( stdout, "Using the Pix:\n" ) ;
+    for (Pix p = at.first_attr(); p; at.next_attr(p)) {
+	fprintf( stdout, "%s %s ", at.get_name(p).c_str(),
+				   at.get_type(p).c_str() ) ;
 	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
-	     cout << at.get_attr(p, i) << " ";
-	cout << endl;
+	     fprintf( stdout, "%s ", at.get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "\n" ) ;
+    }
+
+    fprintf( stdout, "Using the iterator:\n" ) ;
+    for (AttrTable::Attr_iter p = at.attr_begin(); p != at.attr_end(); p++)
+    {
+	fprintf( stdout, "%s %s ", at.get_name(p).c_str(),
+				   at.get_type(p).c_str() ) ;
+	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
+	     fprintf( stdout, "%s ", at.get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "\n" ) ;
     }
 
     string name = "month";
-    cout << "Using String: " << at.get_type(name) << " " 
-	 << at.get_attr(name, 0) << " " << at.get_attr(name, 1) << endl;
-    cout << "Using char *: " << at.get_type("month") << " " 
-	 << at.get_attr("month", 0) << " " << at.get_attr("month", 1) << endl;
+    fprintf( stdout, "Using String: %s %s %s\n",
+		     at.get_type(name).c_str(),
+		     at.get_attr(name, 0).c_str(),
+		     at.get_attr(name, 1).c_str()) ;
+    fprintf( stdout, "Using char *: %s %s %s\n",
+		     at.get_type("month").c_str(),
+		     at.get_attr("month", 0).c_str(),
+		     at.get_attr("month", 1).c_str() ) ;
 
     at.del_attr("month");
 
-    cout << "After deletion:" << endl;
-    for (p = at.first_attr(); p; at.next_attr(p)) {
-	cout << at.get_name(p) << " " << at.get_type(p) << " ";
+    fprintf( stdout, "After deletion:\n" ) ;
+    for (AttrTable::Attr_iter p = at.attr_begin(); p != at.attr_end(); p++)
+    {
+	fprintf( stdout, "%s %s ", at.get_name(p).c_str(),
+				   at.get_type(p).c_str() ) ;
 	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
-	     cout << at.get_attr(p, i) << " ";
-	cout << endl;
+	     fprintf( stdout, "%s ", at.get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "\n" ) ;
     }
 
-    at.print(cout);
+    at.print(stdout);
 
-    cout << "After print:" << endl;
-    for (p = at.first_attr(); p; at.next_attr(p)) {
-	cout << at.get_name(p) << " " << at.get_type(p) << " ";
+    fprintf( stdout, "After print:\n" ) ;
+    for (AttrTable::Attr_iter p = at.attr_begin(); p != at.attr_end(); p++)
+    {
+	fprintf( stdout, "%s %s ", at.get_name(p).c_str(),
+				   at.get_type(p).c_str() ) ;
 	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
-	     cout << at.get_attr(p, i) << " ";
-	cout << endl;
+	     fprintf( stdout, "%s ", at.get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "\n" ) ;
     }
 }
 
@@ -294,43 +309,90 @@ load_attr_table_ptr(AttrTable *at)
     at->append_attr("day", "Int32", "01");
     at->append_attr("Time", "Float64", "3.1415");
 
-    cout << "Using the Pix:" << endl;
-    Pix p;
-    for (p = at->first_attr(); p; at->next_attr(p)) {
-	cout << at->get_name(p) << " " << at->get_type(p) << " ";
+    fprintf( stdout, "Using the Pix:\n" ) ;
+    for (Pix p = at->first_attr(); p; at->next_attr(p)) {
+	fprintf( stdout, "%s %s ", at->get_name(p).c_str(),
+				   at->get_type(p).c_str() ) ;
 	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
-	     cout << at->get_attr(p, i) << " ";
-	cout << endl;
+	     fprintf( stdout, "%s ", at->get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "\n" ) ;
+    }
+
+    fprintf( stdout, "Using the iterator:\n" ) ;
+    for (AttrTable::Attr_iter p = at->attr_begin(); p != at->attr_end(); p++)
+    {
+	fprintf( stdout, "%s %s ", at->get_name(p).c_str(),
+				   at->get_type(p).c_str() ) ;
+	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
+	     fprintf( stdout, "%s ", at->get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "\n" ) ;
     }
 
     string name = "month";
-    cout << "Using String: " << at->get_type(name) << " " 
-	 << at->get_attr(name, 0) << " " << at->get_attr(name, 1) << endl;
-    cout << "Using char *: " << at->get_type("month") << " " 
-	 << at->get_attr("month", 0) << " " << at->get_attr("month", 1) << endl;
+    fprintf( stdout, "Using String: %s %s %s\n",
+		     at->get_type(name).c_str(),
+		     at->get_attr(name, 0).c_str(),
+		     at->get_attr(name, 1).c_str() ) ;
+    fprintf( stdout, "Using char *: %s %s %s\n",
+		     at->get_type("month").c_str(),
+		     at->get_attr("month", 0).c_str(),
+		     at->get_attr("month", 1).c_str() ) ;
 
     at->del_attr("month");
 
-    cout << "After deletion:" << endl;
-    for (p = at->first_attr(); p; at->next_attr(p)) {
-	cout << at->get_name(p) << " " << at->get_type(p) << " ";
+    fprintf( stdout, "After deletion:\n" ) ;
+    for (AttrTable::Attr_iter p = at->attr_begin(); p != at->attr_end(); p++)
+    {
+	fprintf( stdout, "%s %s ", at->get_name(p).c_str(),
+				   at->get_type(p).c_str() ) ;
 	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
-	     cout << at->get_attr(p, i) << " ";
-	cout << endl;
+	     fprintf( stdout, "%s ", at->get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "\n" ) ;
     }
 
-    at->print(cout);
+    at->print(stdout);
 
-    cout << "After print:" << endl;
-    for (p = at->first_attr(); p; at->next_attr(p)) {
-	cout << at->get_name(p) << " " << at->get_type(p) << " ";
+    fprintf( stdout, "After print:\n" ) ;
+    for (AttrTable::Attr_iter p = at->attr_begin(); p !=at->attr_end(); p++)
+    {
+	fprintf( stdout, "%s %s ", at->get_name(p).c_str(), 
+				   at->get_type(p).c_str() ) ;
 	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
-	     cout << at->get_attr(p, i) << " ";
-	cout << endl;
+	     fprintf( stdout, "%s ", at->get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "\n" ) ;
     }
 }
 
 // $Log: das-test.cc,v $
+// Revision 1.30  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.26.4.7  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.26.4.6  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.26.4.5  2002/09/22 14:34:20  rmorris
+// VC++ considers 'x' in 'for(int x,...)' to not be just for that scope of the
+// block associated with that for.  When there are multiple of such type of
+// thing - VC++ see redeclarations of the same var - moved to use different
+// var names to prevent the error.
+//
+// Revision 1.26.4.4  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.29  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //

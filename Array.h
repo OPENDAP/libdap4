@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include <SLList.h>
+#include <vector>
 
 #ifndef _dods_limits_h
 #include "dods-limits.h"
@@ -76,7 +76,7 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     @see List */
 
 class Array: public Vector {
-private:
+public:
     struct dimension {		// each dimension has a size and a name
 	int size;
 	string name;
@@ -85,41 +85,52 @@ private:
 	bool selected;		// true if this dimension is selected
     };
 
-    SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
+private:
+    std::vector<dimension> _shape;	// list of dimensions (i.e., the shape)
 
     unsigned int print_array(ostream &os, unsigned int index, 
+			     unsigned int dims, unsigned int shape[]);
+    unsigned int print_array(FILE *out, unsigned int index, 
 			     unsigned int dims, unsigned int shape[]);
 			     
 protected:
     void _duplicate(const Array &a);
     
 public:
+
+    typedef std::vector<dimension>::const_iterator Dim_citer ;
+    typedef std::vector<dimension>::iterator Dim_iter ;
+
     Array(const string &n = "", BaseType *v = 0);
     Array(const Array &rhs);
     virtual ~Array();
 
     Array &operator=(const Array &rhs);
-    virtual BaseType *ptr_duplicate() = 0; 
-
-  /** This function should read local data and fill in the data
-      buffer.  When reading the data, the read function should use the
-      constraint and selection information available for each
-      dimension of the array to decide how much of the array to read.
-      Only the values to be transmitted with <tt>serialize()</tt> must be
-      read. 
-
-      The implementation of this function is part of creating a new
-      DODS server, and is left for the user.  For other details, refer
-      to the description of the <tt>read()</tt> function in the BaseType
-      class. 
-
-      @see BaseType::read
-      */
-    virtual bool read(const string &dataset) = 0;
+    virtual BaseType *ptr_duplicate();
 
     void update_length(int size);
 
     void append_dim(int size, string name = "");
+
+    /** Once a dimension has been created (see #append_dim()#), it can
+	be ``constrained''.  This will make the array appear to the rest
+	of the world to be smaller than it is.  This functions sets the
+	projection for a dimension, and marks that dimension as part of the
+	current projection.
+
+	\note{A stride value <= 0 or > the array size is an error and causes
+	#add_constraint# to return FALSE. Similarly, start or stop values >
+	size also cause a FALSE return value.}
+
+	@memo Adds a constraint to an Array dimension.  
+
+	@param i An STL iterator pointing to the dimension in the list of 
+	dimensions.
+	@param start The start index of the constraint.
+	@param stride The stride value of the constraint.
+	@param stop The stop index of the constraint.
+	@return void; in case of failure it throws an exception. */
+    void add_constraint(Dim_iter &i, int start, int stride, int stop);
 
     void add_constraint(Pix p, int start, int stride, int stop);
 
@@ -129,17 +140,41 @@ public:
 
     Pix first_dim();
 
-    void next_dim(Pix &p);
+    void next_dim(Pix p);
+
+    /** Returns an iterator to the first dimension of the array.
+     */
+    Dim_iter dim_begin() ;
+
+    /** Returns an iterator to the end of the dimension, does not point
+	to the last element of the array
+    */
+    Dim_iter dim_end() ;
+
+    /** Given a dimension index, returns the index of the next dimension.
+	@param p The Pix index of the dimension.
+	@deprecated use iterator operator ++ with the iterator returned from
+	dim_begin
+	@see dim_begin() */
 
     int dimension_size(Pix p, bool constrained = false);
+    int dimension_size(Dim_iter &i, bool constrained = false);
 
     int dimension_start(Pix p, bool constrained = false);
 
+    int dimension_start(Dim_iter &i, bool constrained = false);
+
     int dimension_stop(Pix p, bool constrained = false);
 
-   int dimension_stride(Pix p, bool constrained = false);
+    int dimension_stop(Dim_iter &i, bool constrained = false);
+
+    int dimension_stride(Pix p, bool constrained = false);
+
+    int dimension_stride(Dim_iter &i, bool constrained = false);
 
     string dimension_name(Pix p);
+
+    string dimension_name(Dim_iter &i);
 
     unsigned int dimensions(bool constrained = false);
 
@@ -148,7 +183,15 @@ public:
 			    bool constraint_info = false,
 			    bool constrained = false);
 
+    virtual void print_decl(FILE *out, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
     virtual void print_val(ostream &os, string space = "", 
+			   bool print_decl_p = true);
+
+    virtual void print_val(FILE *out, string space = "", 
 			   bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);
@@ -156,11 +199,54 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.53  2003/01/10 19:46:39  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.48.4.9  2002/12/17 22:35:02  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.48.4.8  2002/11/05 01:12:37  jimg
+ * Minor formatting changes.
+ *
+ * Revision 1.48.4.7  2002/10/28 21:17:43  pwest
+ * Converted all return values and method parameters to use non-const iterator.
+ * Added operator== and operator!= methods to IteratorAdapter to handle Pix
+ * problems.
+ *
+ * Revision 1.48.4.6  2002/09/22 14:12:56  rmorris
+ * VC++ couldn't handle overload of add_constraint(Pix, ...) and add_constraint
+ * (Dim_iter, ...).  It was picking up the wrong one for some reason.  I simply
+ * swapped the order in which they were declared.  I changed the use of
+ * "vector" to "std::vector" everywhere.  The 'using' directive was no longer
+ * cutting it in this case.
+ *
+ * Revision 1.48.4.5  2002/09/12 22:49:57  pwest
+ * Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+ * than taking a reference to a Pix, taking a Pix value.
+ *
+ * Revision 1.48.4.4  2002/09/05 22:52:54  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
  * Revision 1.52  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *
  * Revision 1.51  2002/05/23 15:22:39  tom
  * modified for doxygen
+ *
+ * Revision 1.48.4.3  2002/05/22 16:57:51  jimg
+ * I modified the `data type classes' so that they do not need to be
+ * subclassed for clients. It might be the case that, for a complex client,
+ * subclassing is still the best way to go, but you're not required to do
+ * it anymore.
  *
  * Revision 1.50  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.

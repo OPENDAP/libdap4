@@ -28,11 +28,13 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
+#include "IteratorAdapterT.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
+using std::cerr;
 using std::endl;
 using std::ends;
 using std::ostrstream;
@@ -43,8 +45,8 @@ using std::vector<BaseTypeRow *>;
 using std::vector;
 #endif
 
-static unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
-static unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
+static const unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
+static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 
 // Private member functions
 
@@ -59,8 +61,9 @@ Sequence::_duplicate(const Sequence &s)
     Sequence &cs = const_cast<Sequence &>(s);
     
     // Copy the template BaseType objects.
-    for (Pix p = cs.first_var(); p; cs.next_var(p)) {
-	add_var(cs.var(p));
+    for (Vars_iter i = cs.var_begin(); i != cs.var_end(); i++)
+    {
+	add_var((*i)) ;
     }
 
     // Copy the BaseType objects used to hold values.
@@ -142,6 +145,12 @@ Sequence::Sequence(const Sequence &rhs) : Constructor(rhs)
     _duplicate(rhs);
 }
 
+BaseType *
+Sequence::ptr_duplicate()
+{
+    return new Sequence(*this);
+}
+
 static inline void
 delete_bt(BaseType *bt_ptr)
 {
@@ -163,8 +172,10 @@ delete_rows(BaseTypeRow *bt_row_ptr)
 
 Sequence::~Sequence()
 {
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-	delete _vars(p); _vars(p) = 0;
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	BaseType *btp = *i ;
+	delete btp ;
     }
 
     for_each(d_values.begin(), d_values.end(), delete_rows);
@@ -190,8 +201,10 @@ Sequence::toString()
 
     oss << BaseType::toString();
 
-    for (Pix p = _vars.first(); p; _vars.next(p))
-	oss << _vars(p)->toString();
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	oss << (*i)->toString();
+    }
 
     oss << endl << ends;
     string s = oss.str();
@@ -203,11 +216,13 @@ int
 Sequence::element_count(bool leaves)
 {
     if (!leaves)
-	return _vars.length();
+	return _vars.size();
     else {
 	int i = 0;
-	for (Pix p = first_var(); p; next_var(p))
-	    i += var(p)->element_count(true);
+	for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++)
+	{
+	    i += (*iter)->element_count(true);
+	}
 	return i;
     }
 }
@@ -217,8 +232,9 @@ Sequence::is_linear()
 {
     bool linear = true;
     bool seq_found = false;
-    for (Pix p = first_var(); linear && p; next_var(p)) {
-	if (var(p)->type() == dods_sequence_c) {
+    for (Vars_iter iter = _vars.begin(); linear && iter != _vars.end(); iter++)
+    {
+	if ((*iter)->type() == dods_sequence_c) {
 	    // A linear sequence cannot have more than one child seq. at any
 	    // one level. If we've already found a seq at this level, return
 	    // false. 
@@ -227,14 +243,14 @@ Sequence::is_linear()
 		break;
 	    }
 	    seq_found = true;
-	    linear = dynamic_cast<Sequence *>(var(p))->is_linear();
+	    linear = dynamic_cast<Sequence *>((*iter))->is_linear();
 	}
-	else if (var(p)->type() == dods_structure_c) {
-	    linear = dynamic_cast<Structure*>(var(p))->is_linear();
+	else if ((*iter)->type() == dods_structure_c) {
+	    linear = dynamic_cast<Structure*>((*iter))->is_linear();
 	}
 	else {
 	    // A linear sequence cannot have Arrays, Lists or Grids.
-	    linear = var(p)->is_simple_type();
+	    linear = (*iter)->is_simple_type();
 	}
     }
 
@@ -244,8 +260,10 @@ Sequence::is_linear()
 void
 Sequence::set_send_p(bool state)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p))
-	_vars(p)->set_send_p(state);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->set_send_p(state);
+    }
 
     BaseType::set_send_p(state);
 }
@@ -253,8 +271,10 @@ Sequence::set_send_p(bool state)
 void
 Sequence::set_read_p(bool state)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p))
-	_vars(p)->set_read_p(state);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->set_read_p(state);
+    }
 
     BaseType::set_read_p(state);
 }
@@ -282,7 +302,7 @@ Sequence::add_var(BaseType *bt, Part)
 
    BaseType *bt_copy = bt->ptr_duplicate();
    bt_copy->set_parent(this);
-   _vars.append(bt_copy);
+   _vars.push_back(bt_copy);
 
    DBG(cerr << "In Sequence::add_var(), bt_copy: " << bt_copy <<endl);
    DBG2(cerr << bt_copy->toString() << endl);
@@ -290,8 +310,10 @@ Sequence::add_var(BaseType *bt, Part)
 
 // Deprecated
 BaseType *
-Sequence::var(const string &name, btp_stack &s)
+Sequence::var(const string &n, btp_stack &s)
 {
+    string name = www2id(n);
+
     BaseType *btp = exact_match(name, &s);
     if (btp)
 	return btp;
@@ -300,9 +322,11 @@ Sequence::var(const string &name, btp_stack &s)
 }
 
 BaseType *
-Sequence::var(const string &name, bool exact_match, btp_stack *s)
+Sequence::var(const string &n, bool exact, btp_stack *s)
 {
-    if (exact_match)
+    string name = www2id(n);
+
+    if (exact)
 	return exact_match(name, s);
     else
 	return leaf_match(name, s);
@@ -311,14 +335,15 @@ Sequence::var(const string &name, bool exact_match, btp_stack *s)
 BaseType *
 Sequence::leaf_match(const string &name, btp_stack *s)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-	if (_vars(p)->name() == name) {
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	if ((*i)->name() == name) {
 	    if (s)
 		s->push(static_cast<BaseType *>(this));
-	    return _vars(p);
+	    return *i;
 	}
-        if (_vars(p)->is_constructor_type()) {
-	    BaseType *btp = _vars(p)->var(name, false, s);
+        if ((*i)->is_constructor_type()) {
+	    BaseType *btp = (*i)->var(name, false, s);
 	    if (btp) {
 		if (s)
 		    s->push(static_cast<BaseType *>(this));
@@ -333,11 +358,12 @@ Sequence::leaf_match(const string &name, btp_stack *s)
 BaseType *
 Sequence::exact_match(const string &name, btp_stack *s)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-	if (_vars(p)->name() == name) {
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	if ((*i)->name() == name) {
 	    if (s)
 		s->push(static_cast<BaseType *>(this));
-	    return _vars(p);
+	    return *i;
 	}
     }
 
@@ -420,18 +446,32 @@ Sequence::first_var()
 {
     if (_vars.empty())
 	return 0;
-    else
-	return _vars.first();
+
+    IteratorAdapterT<BaseType *> *i =
+	new IteratorAdapterT<BaseType *>( _vars ) ;
+    i->first() ;
+    return i ;
+}
+
+Sequence::Vars_iter
+Sequence::var_begin()
+{
+    return _vars.begin() ;
+}
+
+Sequence::Vars_iter
+Sequence::var_end()
+{
+    return _vars.end() ;
 }
 
 /** @brief Increments the Sequence instance.  
     This returns a pointer to the
     next ``column'' in the Sequence, not the next row. */
 void
-Sequence::next_var(Pix &p)
+Sequence::next_var(Pix p)
 {
-    if (!_vars.empty() && p)
-	_vars.next(p);
+    p.next() ;
 }
 
 /** @brief Returns a pointer to a Sequence member.  
@@ -439,10 +479,18 @@ Sequence::next_var(Pix &p)
 BaseType *
 Sequence::var(Pix p)
 {
-    if (!_vars.empty() && p)
-	return _vars(p);
-    else 
-	return NULL;
+    IteratorAdapterT<BaseType *> *i =
+	(IteratorAdapterT<BaseType *> *)p.getIterator() ;
+    if( i )
+#ifdef WIN32
+    {
+    BaseType *dummy = NULL;
+    return i->entry(&dummy);
+    }
+#else
+    return i->entry() ;
+#endif
+    return 0 ;
 }
 
 unsigned int
@@ -450,8 +498,10 @@ Sequence::width()
 {
     unsigned int sz = 0;
 
-    for( Pix p = first_var(); p; next_var(p))
-	sz += var(p)->width();
+    for(Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	sz += (*i)->width();
+    }
 
     return sz;
 }
@@ -595,9 +645,10 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 	write_start_of_instance(sink);
 
 	// In this loop serialize will signal an error with an exception.
-	for (Pix p = first_var(); p; next_var(p)) {
-	    if (var(p)->send_p())
-		var(p)->serialize(dataset, dds, sink, false);
+	for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++)
+	{
+	    if ((*iter)->send_p())
+		(*iter)->serialize(dataset, dds, sink, false);
 	}
 
 	set_read_p(false);	// ...so this will read the next instance
@@ -658,12 +709,13 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 		 << name() << endl);
 	    BaseTypeRow *bt_row_ptr = new BaseTypeRow;
 	    // Read the instance's values, building up the row
-	    for (Pix p = first_var(); p; next_var(p)) {
-		BaseType *bt_ptr = var(p)->ptr_duplicate();
+	    for (Vars_iter iter = _vars.begin(); iter != _vars.end(); iter++)
+	    {
+		BaseType *bt_ptr = (*iter)->ptr_duplicate();
 		bt_ptr->deserialize(source, dds, reuse);
 		DBG2(cerr << "Deserialized " << bt_ptr->name() << " ("
 		     << bt_ptr << ") = ");
-		DBG2(bt_ptr->print_val(cerr, ""));
+		DBG2(bt_ptr->print_val(stderr, ""));
 		bt_row_ptr->push_back(bt_ptr);
 	    }
 	    // Append this row to those accumulated.
@@ -756,8 +808,9 @@ Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse)
 
     DBG2(cerr << "Entering old_deserialize()" << endl);
 
-    for (Pix p = first_var(); p; next_var(p)) {
-	stat = var(p)->deserialize(source, dds, reuse);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	stat = (*i)->deserialize(source, dds, reuse);
 	if (!stat) 
 	    return false;
     }
@@ -787,9 +840,11 @@ Sequence::print_decl(ostream &os, string space, bool print_semi,
 	return;
 
     os << space << type_name() << " {" << endl;
-    for (Pix p = _vars.first(); p; _vars.next(p))
-	_vars(p)->print_decl(os, space + "    ", true, constraint_info,
-			     constrained);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->print_decl(os, space + "    ", true,
+			 constraint_info, constrained);
+    }
     os << space << "} " << id2www(name());
 
     if (constraint_info) {	// Used by test drivers only.
@@ -801,6 +856,32 @@ Sequence::print_decl(ostream &os, string space, bool print_semi,
 
     if (print_semi)
 	os << ";" << endl;
+}
+
+void
+Sequence::print_decl(FILE *out, string space, bool print_semi,
+		     bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+	return;
+
+    fprintf( out, "%s%s {\n", space.c_str(), type_name().c_str() ) ;
+    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->print_decl(out, space + "    ", true,
+			 constraint_info, constrained);
+    }
+    fprintf( out, "%s} %s", space.c_str(), id2www( name() ).c_str() ) ;
+
+    if (constraint_info) {	// Used by test drivers only.
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
+    if (print_semi)
+	fprintf( out, ";\n" ) ;
 }
 
 /** Print the $i^{th}$ row of the sequence. This hopes in writing
@@ -844,6 +925,43 @@ Sequence::print_one_row(ostream &os, int row, string space,
     os << " }";
 }
 
+void 
+Sequence::print_one_row(FILE *out, int row, string space, 
+			bool print_row_num)
+{
+    if (print_row_num)
+	fprintf( out, "\n%d: ", row ) ;
+
+    fprintf( out, "{ " ) ;
+
+    int elements = element_count() - 1;
+    int j;
+    BaseType *bt_ptr;
+    // Print first N-1 elements of the row.
+    for (j = 0; j < elements; ++j) {
+	bt_ptr = var_value(row, j);
+	if (bt_ptr) {		// data
+	    if (bt_ptr->type() == dods_sequence_c)
+		dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+		    (out, space, false, print_row_num);
+	    else
+		bt_ptr->print_val(out, space, false);
+	    fprintf( out, ", " ) ;
+	}
+    }
+
+    // Print Nth element; end with a `}.'
+    bt_ptr = var_value(row, j);
+    if (bt_ptr) {		// data
+	if (bt_ptr->type() == dods_sequence_c)
+	    dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+		(out, space, false, print_row_num);
+	else
+	    bt_ptr->print_val(out, space, false);
+    }
+
+    fprintf( out, " }" ) ;
+}
 /** @brief Prints each row on its own line with a row number. 
 
     This is a special output method for sequences. Uses
@@ -881,6 +999,31 @@ Sequence::print_val_by_rows(ostream &os, string space, bool print_decl_p,
         os << ";" << endl;
 }
 
+void
+Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
+			    bool print_row_numbers)
+{
+    if (print_decl_p) {
+	print_decl(out, space, false);
+	fprintf( out, " = " ) ;
+    }
+
+    fprintf( out, "{ " ) ;
+
+    int rows = number_of_rows() - 1;
+    int i;
+    for (i = 0; i < rows; ++i) {
+	print_one_row(out, i, space, print_row_numbers);
+	    fprintf( out, ", " ) ;
+    }
+    print_one_row(out, i, space, print_row_numbers);
+
+    fprintf( out, " }" ) ;
+
+    if (print_decl_p)
+        fprintf( out, ";\n" ) ;
+}
+
 /** Print the values held by the sequence. This is used mostly for
     debugging.
     @param os Where should the text go?
@@ -890,6 +1033,12 @@ void
 Sequence::print_val(ostream &os, string space, bool print_decl_p)
 {
     print_val_by_rows(os, space, print_decl_p, false);
+}
+
+void 
+Sequence::print_val(FILE *out, string space, bool print_decl_p)
+{
+    print_val_by_rows(out, space, print_decl_p, false);
 }
 
 // print_all_vals is from Todd Karakasian. 
@@ -925,6 +1074,22 @@ Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, string space,
     print_val(os, space, print_decl_p);
 }
 
+// print_all_vals is from Todd Karakasian. 
+// We need to integrate this into print_val somehow, maybe by adding an XDR *
+// to Sequence? This can wait since print_val is mostly used for debugging...
+//
+// Deprecated. No longer needed since print_vals does its job.
+
+void
+Sequence::print_all_vals(FILE *out, XDR *src, DDS *dds, string space,
+			 bool print_decl_p)
+{
+#if 0
+    deserialize(src, dds);
+#endif
+    print_val(out, space, print_decl_p);
+}
+
 bool
 Sequence::check_semantics(string &msg, bool all)
 {
@@ -935,20 +1100,76 @@ Sequence::check_semantics(string &msg, bool all)
 	return false;
 
     if (all) 
-	for (Pix p = _vars.first(); p; _vars.next(p))
-	    if (!_vars(p)->check_semantics(msg, true))
+	for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+	{
+	    if (!(*i)->check_semantics(msg, true))
+	    {
 		return false;
+	    }
+	}
 
     return true;
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.66  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.59.4.24  2002/12/31 16:43:20  rmorris
+// Patches to handle some of the fancier template code under VC++ 6.0.
+//
+// Revision 1.59.4.23  2002/12/27 19:34:42  jimg
+// Modified the var() methods so that www2id() is called before looking
+// up identifier names. See bug 563.
+//
+// Revision 1.59.4.22  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.59.4.21  2002/12/01 14:37:52  rmorris
+// Smalling changes for the win32 porting and maintenance work.
+//
+// Revision 1.59.4.20  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.59.4.19  2002/09/12 22:49:57  pwest
+// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+// than taking a reference to a Pix, taking a Pix value.
+//
+// Revision 1.59.4.18  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.59.4.17  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.65  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
 // Revision 1.64  2002/06/03 21:53:59  jimg
 // Removed level stuff. The level() and set_level() methods were not being used
 // anymore, so I removed them.
+//
+// Revision 1.59.4.16  2002/05/22 16:57:51  jimg
+// I modified the `data type classes' so that they do not need to be
+// subclassed for clients. It might be the case that, for a complex client,
+// subclassing is still the best way to go, but you're not required to do
+// it anymore.
 //
 // Revision 1.59.4.15  2002/03/29 18:36:40  jimg
 // _duplicate() no longer calls Constructor::_duplicate.

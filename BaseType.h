@@ -250,57 +250,7 @@ public:
       @brief Returns the size of the class instance data. */
   virtual unsigned int width() = 0;
 
-  /** Put the data into a local buffer so that it may be sent to a
-      client.  This operation involves reading data from whatever
-      source (often a local disk), and filling out the fields in the
-      data type class.  This is the heart of the DODS DAP Class
-      operation.  Much of the work of implementing a new DODS server
-      API consists in creating the <tt>read()</tt> functions to read various
-      data types.
-
-      Note that this function is only for DODS servers.  It has no use
-      on the client side of a DODS client/server connection.  The DODS
-      client and server communicate their data with <tt>serialize()</tt> and
-      <tt>deserialize()</tt>.
-
-      This method is not implemented for the BaseType class, nor
-      for its children.  However, it should be implemented for the
-      specialized children of those classes.  For example, it is not
-      implemented for the Float64 class, but does exist for the
-      NCFloat64 class, specialized to read data from local netCDF
-      files. 
- 
-      This method should be implemented to throw Error when it encounters
-      an unrecoverable error.
-
-      For an example of use, see the netCDF library classes. The
-      netCDF library is part of the DODS source distribution, and can
-      be found under <tt>$(DODS_ROOT)/src/nc-dods</tt>.
-
-      In some sub-classes, such as Array or Grid, the
-      <tt>read()</tt> function must explicitly take into account
-      constraint information stored with the class data.  For
-      example, the Grid::read method will be called when only one
-      component of the Grid is to be sent. Your implementation of
-      Grid::read should check send_p() for each member of the Grid
-      before reading that member to avoid reading data into memory
-      that won't be sent (and thus is not needed in memory).
-
-
-      @brief Reads data into a local buffer. 
-
-      @return The function returns a boolean value, with TRUE indicating
-      that read() should be called again because there's more data to read,
-      and FALSE indicating there's no more data to read. Note that this
-      behavior is necessary to properly handle variables that contain
-      Sequences. WRONG! (9/5/2001 jhrg) Sequences now are read in one shot.
-      The return value of this method should always be false.
-
-      @param dataset A string naming the dataset from which the data is to
-      be read. The meaning of this string will vary among data APIs.
-
-      @see BaseType */
-  virtual bool read(const string &dataset) = 0;
+    virtual bool read(const string &dataset);
     
   /** Reads the class data into the memory referenced by <i>val</i>.
       The caller must allocate enough storage to <i>val</i> to hold the
@@ -318,7 +268,7 @@ public:
       modified accordingly.  The calling program is responsible for
       deallocating the memory indicated by this pointer.
 
-      @return The size (in bytes) of the information copied to <i>	val</i>.  
+      @return The size (in bytes) of the information copied to <i>val</i>.  
   */
   virtual unsigned int buf2val(void **val) = 0;
 
@@ -413,32 +363,61 @@ public:
     // This function declaration appears to be a relic of a bygone era.
   bool expunge();
 
-  virtual void print_decl(ostream &os, string space = "    ",
-			  bool print_semi = true, 
-			  bool constraint_info = false,
-			  bool constrained = false);
+    virtual void print_decl(FILE *out, string space = "    ", 
+			    bool print_semi = true, 
+			    bool constraint_info = false, 
+			    bool constrained = false);
 
-  /** Prints the value of the variable, with its declaration.  This
-      function is primarily intended for debugging DODS applications.
-      However, it can be overloaded and used to do some useful things. Take a
-      look at the asciival and writeval clients, both of which overload this
-      to output the values of variables in different ways.
+    virtual void print_decl(ostream &os, string space = "    ", 
+			    bool print_semi = true, 
+			    bool constraint_info = false, 
+			    bool constrained = false);
 
-      NB: This function uses C++'s iostream to handle creating the print
-      representations of simple type variables. For floating point numbers
-      this is set to six digits of precision by default. If you want more
-      precision (IEEE 64-bit floats have 15 digits of precision, 32-bit
-      floats have 8), use the setprecision() I/O manipulator. 
+    /** Prints the value of the variable, with its declaration.  This
+	function is primarily intended for debugging DODS applications.
+	However, it can be overloaded and used to do some useful things. Take a
+	look at the asciival and writeval clients, both of which overload this
+	to output the values of variables in different ways.
 
-      @brief Prints the value of the variable.
-      @param os The output stream on which to print the value.
-      @param space This value is passed to the <tt>print_decl()</tt>
-      function, and controls the leading spaces of the output.
-      @param print_decl_p A boolean value controlling whether the
-      variable declaration is printed as well as the value.
-  */
-  virtual void print_val(ostream &os, string space = "",
-			 bool print_decl_p = true) = 0;
+	NB: This function uses C++'s iostream to handle creating the print
+	representations of simple type variables. For floating point numbers
+	this is set to six digits of precision by default. If you want more
+	precision (IEEE 64-bit floats have 15 digits of precision, 32-bit
+	floats have 8), use the setprecision() I/O manipulator. 
+
+	@memo Prints the value of the variable.
+	@param ostream The output stream on which to print the value.
+	@param space This value is passed to the #print_decl()#
+	function, and controls the leading spaces of the output.
+	@param print_decl_p A boolean value controlling whether the
+	variable declaration is printed as well as the value.
+	@deprecated
+	@see print_val(FILE *out, string space, bool print_decl_p) = 0;
+    */
+    virtual void print_val(ostream &os, string space = "",
+			   bool print_decl_p = true) = 0;
+
+    /** Prints the value of the variable, with its declaration.  This
+	function is primarily intended for debugging DODS applications.
+	However, it can be overloaded and used to do some useful things. Take a
+	look at the asciival and writeval clients, both of which overload this
+	to output the values of variables in different ways.
+
+	NB: This function uses C++'s iostream to handle creating the print
+	representations of simple type variables. For floating point numbers
+	this is set to six digits of precision by default. If you want more
+	precision (IEEE 64-bit floats have 15 digits of precision, 32-bit
+	floats have 8), use the setprecision() I/O manipulator. 
+
+	@memo Prints the value of the variable.
+	@param out The output FILE on which to print the value.
+	@param space This value is passed to the #print_decl()#
+	function, and controls the leading spaces of the output.
+	@param print_decl_p A boolean value controlling whether the
+	variable declaration is printed as well as the value.
+    */
+    virtual void print_val(FILE *out, string space = "",
+			   bool print_decl_p = true) = 0;
 
   virtual bool check_semantics(string &msg, bool all = false);
 
@@ -447,11 +426,33 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.68  2003/01/10 19:46:39  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.61.4.12  2002/12/17 22:35:02  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.61.4.11  2002/09/05 22:52:54  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
  * Revision 1.67  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *
  * Revision 1.66  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
+ *
+ * Revision 1.61.4.10  2002/05/09 16:56:17  jimg
+ * The read method is no longer abstract. BaseType implements a version that
+ * throws InternalErr when called. See BaseType.cc.
  *
  * Revision 1.61.4.9  2002/03/01 21:03:08  jimg
  * Significant changes to the var(...) methods. These now take a btp_stack

@@ -15,10 +15,9 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int32.cc,v 1.45 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: Int32.cc,v 1.46 2003/01/10 19:46:40 jimg Exp $"};
 
 #include <stdlib.h>
-#include <assert.h>
 
 #include "Int32.h"
 #include "DDS.h"
@@ -54,6 +53,12 @@ Int32::Int32(const Int32 &copy_from) : BaseType(copy_from)
     _buf = copy_from._buf;
 }
     
+BaseType *
+Int32::ptr_duplicate()
+{
+    return new Int32(*this);
+}
+
 Int32::~Int32()
 {
     DBG(cerr << "~Int32" << endl);
@@ -153,6 +158,17 @@ Int32::print_val(ostream &os, string space, bool print_decl_p)
 	os << _buf;
 }
 
+void 
+Int32::print_val(FILE *out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(out, space, false);
+	fprintf( out, " = %d;\n", (int)_buf ) ;
+    }
+    else 
+	fprintf( out, "%d", (int)_buf ) ;
+}
+
 bool
 Int32::ops(BaseType *b, int op, const string &dataset)
 {
@@ -205,8 +221,31 @@ Int32::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Int32.cc,v $
+// Revision 1.46  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.40.4.7  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.40.4.6  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.45  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
+//
+// Revision 1.40.4.5  2002/05/22 16:57:51  jimg
+// I modified the `data type classes' so that they do not need to be
+// subclassed for clients. It might be the case that, for a complex client,
+// subclassing is still the best way to go, but you're not required to do
+// it anymore.
 //
 // Revision 1.44  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.

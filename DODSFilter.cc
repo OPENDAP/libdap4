@@ -15,27 +15,26 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.27 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.28 2003/01/10 19:46:40 jimg Exp $"};
 
 #include <iostream>
-#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
-#else
-#include <sstream>
-#endif
 #include <string>
+#if 0
+#include <sys/ddi.h>
+#endif
+
 #include <GetOpt.h>
 
 #include "DAS.h"
 #include "DDS.h"
 #include "debug.h"
 #include "cgi_util.h"
+#include "util.h"
 #include "escaping.h"
 #include "DODSFilter.h"
 #include "InternalErr.h"
 
-using std::endl;
-using std::ends;
 using std::ostrstream;
 
 /** Create an instance of DODSFilter using the command line
@@ -428,8 +427,13 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 				      anc_file);
 
     FILE *in = fopen(name.c_str(), "r");
-    if (in)
+    if (in) {
 	das.parse(in);
+	int res = fclose( in ) ;
+	if( res ) {
+	    DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
+	}
+    }
 }
 
 /** Read the ancillary DDS information and merge it into the input
@@ -448,8 +452,13 @@ DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
 			      (anc_location == "") ? anc_dir : anc_location, 
 				      anc_file);
     FILE *in = fopen(name.c_str(), "r");
-    if (in)
+    if (in) {
 	dds.parse(in);
+	int res = fclose( in ) ;
+	if( res ) {
+	    DBG(cerr << "DODSFilter::read_ancillary_dds - Failed to close " << (void *)in << endl ;) ;
+	}
+    }
 }
 
 static const char *emessage = \
@@ -486,19 +495,21 @@ DODSFilter::print_usage()
 void 
 DODSFilter::send_version_info()
 {
-    cout << "HTTP/1.0 200 OK" << endl
-	 << "XDODS-Server: " << cgi_ver << endl
-	 << "Content-Type: text/plain" << endl
-	 << endl;
+    fprintf( stdout, "HTTP/1.0 200 OK\n" ) ;
+    fprintf( stdout, "XDODS-Server: %s\n", cgi_ver.c_str() ) ;
+    fprintf( stdout, "Content-Type: text/plain\n" ) ;
+    fprintf( stdout, "\n" ) ;
 
-    cout << "DODS server core software: " << DVR << endl;
+    fprintf( stdout, "DODS server core software: %s\n", DVR ) ;
 
     if (cgi_ver != "")
-	cout << "Server vision: " << cgi_ver << endl;
+	fprintf( stdout, "Server vision: %s\n", cgi_ver.c_str() ) ;
 
     string v = get_dataset_version();
     if (v != "")
-	cout << "Dataset version: " << v << endl;
+	fprintf( stdout, "Dataset version: %s\n", v.c_str() ) ;
+    
+    fflush( stdout ) ;
 }
 
 // I've written a few unit tests for this method (see DODSFilterTest.cc) but
@@ -528,9 +539,24 @@ DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location)
 }
 
 void
+DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location)
+{
+    time_t das_lmt = get_das_last_modified_time(anc_location);
+    if (is_conditional()
+	&& das_lmt <= get_request_if_modified_since()) {
+	set_mime_not_modified(out);
+    }
+    else {
+	set_mime_text(out, dods_das, cgi_ver, x_plain, das_lmt);
+	das.print(out);
+    }
+    fflush( stdout ) ;
+}
+
+void
 DODSFilter::send_das(DAS &das, const string &anc_location)
 {
-    send_das(cout, das, anc_location);
+    send_das(stdout, das, anc_location);
 }
 
 /** This function formats and prints an ASCII representation of a
@@ -570,9 +596,33 @@ DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
 }
 
 void
+DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
+		     const string &anc_location)
+{
+    // If constrained, parse the constriant. Throws Error or InternalErr.
+    if (constrained)
+	dds.parse_constraint(ce, out, true);
+
+    time_t dds_lmt = get_dds_last_modified_time(anc_location);
+    if (is_conditional() 
+	&& dds_lmt <= get_request_if_modified_since()) {
+	set_mime_not_modified(out);
+    }
+    else {
+	set_mime_text(out, dods_dds, cgi_ver, x_plain, dds_lmt);
+	if (constrained)
+	    dds.print_constrained(out);
+	else
+	    dds.print(out);
+    }
+
+    fflush( stdout ) ;
+}
+
+void
 DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location)
 {
-    send_dds(cout, dds, constrained, anc_location);
+    send_dds(stdout, dds, constrained, anc_location);
 }
 
 /** Send the data in the DDS object back to the client
@@ -615,6 +665,37 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.28  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.23.2.19  2002/12/20 00:46:58  jimg
+// I removed the include of sys/ddi.h. This header was not found on my
+// machine (Red Hat 7.3).
+//
+// Revision 1.23.2.18  2002/12/17 22:35:02  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.23.2.17  2002/12/01 14:37:52  rmorris
+// Smalling changes for the win32 porting and maintenance work.
+//
+// Revision 1.23.2.16  2002/11/21 21:24:17  pwest
+// memory leak cleanup and file descriptor cleanup
+//
+// Revision 1.23.2.15  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
+// Revision 1.23.2.14  2002/06/18 22:50:06  jimg
+// Added include of util.h. This was necessary because I removed the include of
+// Connect.h from cgi_util.h.
+//
 // Revision 1.27  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

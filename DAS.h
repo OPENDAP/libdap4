@@ -24,8 +24,7 @@
 #include <string>
 #include <iostream>
 
-#include <SLList.h>
-#include <Pix.h>
+#include "Pix.h"
 
 #ifndef _attrtable_h
 #include "AttrTable.h"
@@ -115,9 +114,25 @@ public:
   virtual ~DAS();
 
   Pix first_var();
-  void next_var(Pix &p);
+  void next_var(Pix p);
+
+    /** Returns a reference to the first attribute table. */
+    AttrTable::Attr_iter var_begin() ;
+
+    /** Returns a reference to the end of the attribute table. Does not 
+        point to an attribute. */
+    AttrTable::Attr_iter var_end() ;
+
   string get_name(Pix p);
+ 
+   /** Returns the name of the referenced attribute table. */
+    string get_name(Attr_iter &i);
+
   AttrTable *get_table(Pix p);
+
+    /** Returns the referenced attribute table. */
+    AttrTable *get_table(Attr_iter &i);
+
 
   AttrTable *get_table(const string &name);
   AttrTable *get_table(const char *name); // avoid converting char * to Pix
@@ -130,10 +145,47 @@ public:
   void parse(FILE *in=stdin);
 
   void print(ostream &os = cout, bool dereference = false);
+
+    /** Creates an ASCII representation of a DAS on the given output
+	stream.
+	@param out output FILE on which to print the DAS
+    */
+    void print(FILE *out, bool dereference = false);
 };
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.33  2003/01/10 19:46:40  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.29.4.8  2002/12/17 22:35:02  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.29.4.7  2002/11/18 18:51:59  jimg
+ * Changed the include of Pix.h from #include <Pix.h> to "Pix.h" to fix
+ * a problem with the dependencies (see today's check in of Makefile.in).
+ *
+ * Revision 1.29.4.6  2002/10/28 21:17:44  pwest
+ * Converted all return values and method parameters to use non-const iterator.
+ * Added operator== and operator!= methods to IteratorAdapter to handle Pix
+ * problems.
+ *
+ * Revision 1.29.4.5  2002/09/12 22:49:57  pwest
+ * Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+ * than taking a reference to a Pix, taking a Pix value.
+ *
+ * Revision 1.29.4.4  2002/09/05 22:52:54  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
  * Revision 1.32  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *

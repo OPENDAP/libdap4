@@ -62,7 +62,7 @@ public:
 
     Str &operator=(const Str &rhs);
 
-    virtual BaseType *ptr_duplicate() = 0;
+    virtual BaseType *ptr_duplicate();
     
     virtual unsigned int width();
 
@@ -74,12 +74,13 @@ public:
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual bool read(const string &dataset) = 0;
-
-    virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
     virtual void print_val(ostream &os, string space = "",
+			   bool print_decl_p = true);
+
+    virtual void print_val(FILE *out, string space = "",
 			   bool print_decl_p = true);
 
     virtual bool ops(BaseType *b, int op, const string &dataset);
@@ -87,8 +88,22 @@ public:
 
 /* 
  * $Log: Str.h,v $
+ * Revision 1.35  2003/01/10 19:46:40  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.32.4.3  2002/12/17 22:35:03  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
  * Revision 1.34  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
+ * Revision 1.32.4.2  2002/05/22 16:57:51  jimg
+ * I modified the `data type classes' so that they do not need to be
+ * subclassed for clients. It might be the case that, for a complex client,
+ * subclassing is still the best way to go, but you're not required to do
+ * it anymore.
  *
  * Revision 1.33  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6

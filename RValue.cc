@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: RValue.cc,v 1.8 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.9 2003/01/10 19:46:40 jimg Exp $"};
 
 #include <assert.h>
 
@@ -70,7 +70,7 @@ rvalue::bvalue(const string &dataset, DDS &dds)
 	return value;
     }
     else if (func) {
-	int argc = args->length();
+	int argc = args->size();
 	// Add space for null terminator
 #ifdef WIN32
 	//  MS Visual C++ 6.0 doesn't allow arithmetic expressions in []
@@ -80,13 +80,14 @@ rvalue::bvalue(const string &dataset, DDS &dds)
 	BaseType *argv[argc + 1];
 #endif
 
-	int i = 0;
-	for (Pix p = args->first(); p; args->next(p)) {
-	    assert((*args)(p));
-	    argv[i++] = (*args)(p)->bvalue(dataset, dds);
+	int index = 0;
+	for (Args_iter i = args->begin(); i != args->end(); i++)
+	{
+	    assert(*i) ;
+	    argv[index++] = (*i)->bvalue(dataset, dds);
 	}
 
-	argv[i] = 0;		// Add null terminator
+	argv[index] = 0;		// Add null terminator
 	return (*func)(argc, argv, dds);
     }
     else {
@@ -102,14 +103,13 @@ rvalue::bvalue(const string &dataset, DDS &dds)
 
     This function performs a common task but does not fit within the RValue
    class well. It is used by Clause and expr.y. */
-*/
 BaseType **
 build_btp_args(rvalue_list *args, DDS &dds)
 {
     int argc = 0;
 
     if (args)
-	argc = args->length();
+	argc = args->size();
 
     // Add space for a null terminator
 #ifdef WIN32
@@ -121,19 +121,40 @@ build_btp_args(rvalue_list *args, DDS &dds)
 #endif
     string dataset = dds.filename();
 		
-    int i = 0;
+    int index = 0;
     if (argc) {
-	for (Pix p = args->first(); p; args->next(p)) {
-	    argv[i++] = (*args)(p)->bvalue(dataset, dds);
+	for (rvalue::Args_iter i = args->begin(); i != args->end(); i++)
+	{
+	    argv[index++] = (*i)->bvalue(dataset, dds);
 	}
     }
 
-    argv[i] = 0;		// Add the null terminator.
+    argv[index] = 0;		// Add the null terminator.
 
     return argv;
 }
 
 // $Log: RValue.cc,v $
+// Revision 1.9  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.7.4.2  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.7.4.1  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.8  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

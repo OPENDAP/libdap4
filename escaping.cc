@@ -39,7 +39,7 @@
 #include <iomanip>
 #include <string>
 
-#include <Regex.h>
+#include "Regex.h"
 #include "Error.h"
 #include "InternalErr.h"
 
@@ -59,12 +59,12 @@ const int MAXSTR = 256;
 // jhrg
 
 string hexstring(unsigned char val) {
-    static char buf[MAXSTR];
+    char buf[MAXSTR];
 
-    ostrstream(buf,MAXSTR) << hex << setw(2) << setfill('0') <<
-	(unsigned int)val << ends;
+    ostrstream(buf, MAXSTR) << hex << setw(2) << setfill('0') 
+			    << static_cast<unsigned int>(val) << ends;
 
-    return (string)buf;
+    return string(buf);
 }
 
 string unhexstring(string s) 
@@ -77,18 +77,18 @@ string unhexstring(string s)
     string val;
 #endif
     int val;
-    istrstream(s.c_str(),MAXSTR) >> hex >> val;
-    static char tmp_str[2];
+    istrstream(s.c_str(), MAXSTR) >> hex >> val;
+    char tmp_str[2];
     tmp_str[0] = static_cast<char>(val);
     tmp_str[1] = '\0';
     return string(tmp_str);
 }
 
 string octstring(unsigned char val) {
-    static char buf[MAXSTR];
+    char buf[MAXSTR];
 
-    ostrstream(buf,MAXSTR) << oct << setw(3) << setfill('0') <<
-	(unsigned int)val << ends;
+    ostrstream(buf, MAXSTR) << oct << setw(3) << setfill('0') 
+			    << static_cast<unsigned int>(val) << ends;
 
     return (string)buf;
 }
@@ -96,9 +96,9 @@ string octstring(unsigned char val) {
 string unoctstring(string s) {
     int val;
 
-    istrstream(s.c_str(),MAXSTR) >> oct >> val;
+    istrstream(s.c_str(), MAXSTR) >> oct >> val;
 
-    static char tmp_str[2];
+    char tmp_str[2];
     tmp_str[0] = static_cast<char>(val);
     tmp_str[1] = '\0';
     return string(tmp_str);
@@ -114,21 +114,12 @@ string unoctstring(string s) {
 string
 id2www(string in, const string &allowable)
 {
-    static const string ESC = "%";
     string::size_type i = 0;
 
     while ((i = in.find_first_not_of(allowable, i)) != string::npos) {
-	in.replace(i, 1, ESC + hexstring(in[i]));
+	in.replace(i, 1, "%" + hexstring(in[i]));
 	i++;
     }
-
-    // We cannot undo this with certainty. 7/20/2001 jhrg
-    // I think this was added before the parsers could handle names that
-    // began with digits. Note the IDs still cannot. 7/26/2001 jhrg
-#if 0
-    if (isdigit(in[0]))
-	in.insert(0, "_");
-#endif
 
     return in;
 }
@@ -200,7 +191,7 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]")
     with `_<ASCII code>' where <ASCII code> is the ASCII code for the
     characters replaced. If the pattern to be replaced is a WWW escape
     sequence, then replace the % with an _ and keep the two digit ASCII code
-    that follows it.
+    that follows it. Note that the ASCII code is in hex.
 
     To escape all non-alphanumeric characters, use "[^A-Za-z0-9_]" for
     #escape#.
@@ -238,7 +229,7 @@ char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]")
     @param s The attribute to modify.
     @return The modified attribute. */
 string escattr(string s) {
-    static Regex nonprintable("[^ !-~]", 1);
+    Regex nonprintable("[^ !-~]", 1);
     const string ESC = "\\";
     const string DOUBLE_ESC = ESC + ESC;
     const string QUOTE = "\"";
@@ -274,9 +265,9 @@ string escattr(string s) {
 
     @param s The escaped attribute. @return The unescaped attribute. */
 string unescattr(string s) {
-    static Regex escregx("\\\\[01][0-7][0-7]", 1);  // matches 4 characters
-    static Regex escquoteregex("[^\\\\]\\\\\"", 1);  // matches 3 characters
-    static Regex escescregex("\\\\\\\\",1);      // matches 2 characters
+    Regex escregx("\\\\[01][0-7][0-7]", 1);  // matches 4 characters
+    Regex escquoteregex("[^\\\\]\\\\\"", 1);  // matches 3 characters
+    Regex escescregex("\\\\\\\\",1);      // matches 2 characters
     const string ESC = "\\";
     const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
@@ -324,6 +315,25 @@ munge_error_message(string msg)
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.22  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.16.2.12  2002/12/27 19:32:54  jimg
+// Updated the documentation for char2ASCII (to reflect Dan's modification).
+//
+// Revision 1.16.2.11  2002/11/06 21:53:06  jimg
+// I changed the includes of Regex.h from <Regex.h> to "Regex.h". This means
+// make depend will include the header in the list of dependencies.
+//
+// Revision 1.16.2.10  2002/08/06 22:29:54  jimg
+// Fixed functions here so that they are all MT-Safe. Mostly this meant that
+// static Regex objects are now automatic variables. There might be a slight
+// performance penalty, but it's a lot easier than adding pthread_once calls
+// (something we can always do later on... assuming there isn't a better way to
+// handle these implementations that doesn't involve Regex).
+//
 // Revision 1.21  2002/06/03 22:21:16  jimg
 // Merged with release-3-2-9
 //

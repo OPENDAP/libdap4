@@ -1,262 +1,197 @@
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
-#ifndef _dods_config_h
-#define _dods_config_h
+/* config_dap.h.in.  Generated from configure.in by autoheader.  */
 
-/* Wrap the defines in this section with HAVE_CONFIG_H so that
-   libraries/servers that define these symbols on the command line won't
-   redefine them when/if this file is included in their code. */
+#ifndef _config_dap_h
+#define _config_dap_h
 
-#ifdef HAVE_CONFIG_H
+/* What sort of HTTP client is this? */
+#undef CNAME
 
-/* Define if using alloca.c.  */
-#undef C_ALLOCA
-
-/* Define to empty if the keyword does not work.  */
-#undef const
-
-/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
-   This function is required for alloca.c support on those systems.  */
+/* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
+   systems. This function is required for `alloca.c' support on those systems.
+   */
 #undef CRAY_STACKSEG_END
 
-/* Define if you have alloca, as a function or macro.  */
+/* Client version number */
+#undef CVER
+
+/* Define to 1 if using `alloca.c'. */
+#undef C_ALLOCA
+
+/* dbyte */
+#undef DBYTE
+
+/* dfloat32 */
+#undef DFLOAT32
+
+/* dfloat64 */
+#undef DFLOAT64
+
+/* dint16 */
+#undef DINT16
+
+/* int32 */
+#undef DINT32
+
+/* Set instrumentation to level 1 (see debug.h) */
+#undef DODS_DEBUG
+
+/* Set instrumentation to level 2 */
+#undef DODS_DEBUG2
+
+/* The relative path to the root of the DODS source tree */
+#undef DODS_RELATIVE
+
+/* The full path to the root of the DODS source tree */
+#undef DODS_ROOT
+
+/* uint16 */
+#undef DUINT16
+
+/* uint32 */
+#undef DUINT32
+
+/* Client name and vesion combined */
+#undef DVR
+
+/* Define to 1 if you have `alloca', as a function or macro. */
 #undef HAVE_ALLOCA
 
-/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
+/* Define to 1 if you have <alloca.h> and it should be used (not on Ultrix).
+   */
 #undef HAVE_ALLOCA_H
 
-/* Define as __inline if that's what the C compiler calls it.  */
-#undef inline
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `mktime' function. */
+#undef HAVE_MKTIME
+
+/* Define to 1 if you have the <pthread.h> header file. */
+#undef HAVE_PTHREAD_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
+/* Define to 1 if you have the `strftime' function. */
+#undef HAVE_STRFTIME
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the `timegm' function. */
+#undef HAVE_TIMEGM
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* The size of a `char', as computed by sizeof. */
+#undef SIZEOF_CHAR
+
+/* The size of a `double', as computed by sizeof. */
+#undef SIZEOF_DOUBLE
+
+/* The size of a `float', as computed by sizeof. */
+#undef SIZEOF_FLOAT
+
+/* The size of a `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of a `long', as computed by sizeof. */
+#undef SIZEOF_LONG
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
    automatically deduced at run-time.
-	STACK_DIRECTION > 0 => grows toward higher addresses
-	STACK_DIRECTION < 0 => grows toward lower addresses
-	STACK_DIRECTION = 0 => direction of growth unknown
- */
+        STACK_DIRECTION > 0 => grows toward higher addresses
+        STACK_DIRECTION < 0 => grows toward lower addresses
+        STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION
 
-/* Define if you have the ANSI C header files.  */
+/* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Define if your <sys/time.h> declares struct tm.  */
-#undef TM_IN_SYS_TIME
-
-/* Client application name */
-#undef CNAME
-
-/* Client Application version */
-#undef CVER
-
-/* DODS Version */
-#undef DVR
-
-/* If defined, enable memory leak detection through libdbnew.a. Make sure to */
-/* link with that library. */
+/* Use the dbnew library to trace bew/delete calls */
 #undef TRACE_NEW
 
-/* If defined, enable memory leak detection through libdbmalloc.a. Nominally */
-/* not necessary with c++, but useful with the DODS library because it (and  */
-/* xdr) make use of malloc/free. */
-#undef DBMALLOC
+/* xdr float32 */
+#undef XDR_FLOAT32
 
-/* If defined, the DBG() macro defined in debug.h is activated. This macro */
-/* is used for nominal program instrumentation */
-#undef DODS_DEBUG
+/* xdr float64 */
+#undef XDR_FLOAT64
 
-/* If defined, the DBG2() macro defined in debug.h is activated. This macro */
-/* is used for detailed program instrumentation. Anything that prints half a */
-/* page or more of stuff every time it is executed should be inside DBG2(), */
-/* not DBG(). */
-#undef DODS_DEBUG2
+/* xdr int16 */
+#undef XDR_INT16
 
-/* The number of bytes in a char.  */
-#undef SIZEOF_CHAR
+/* xdr int32 */
+#undef XDR_INT32
 
-/* The number of bytes in a double.  */
-#undef SIZEOF_DOUBLE
+/* xdr uint16 */
+#undef XDR_UINT16
 
-/* The number of bytes in a float.  */
-#undef SIZEOF_FLOAT
+/* xdr uint32 */
+#undef XDR_UINT32
 
-/* The number of bytes in a int.  */
-#undef SIZEOF_INT
+/* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
+   `char[]'. */
+#undef YYTEXT_POINTER
 
-/* The number of bytes in a long.  */
-#undef SIZEOF_LONG
+/* Is this code reentrant (pthreads was found)? */
+#undef _REENTRANT
 
-/* Define as 1 if you have the expect library (which requries tcl) */
-#ifndef HAVE_EXPECT
-#undef HAVE_EXPECT
-#endif
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
 
-/* Define if you have the strdup function.  */
-#undef HAVE_STRDUP
+/* Define as `__inline' if that's what the C compiler calls it, or to nothing
+   if it is not supported. */
+#undef inline
 
-/* Define if you have the <fcntl.h> header file.  */
-#undef HAVE_FCNTL_H
+/* Define to `unsigned' if <sys/types.h> does not define. */
+#undef size_t
 
-/* Define if you have the <limits.h> header file.  */
-#undef HAVE_LIMITS_H
-
-/* Define if you have the <unistd.h> header file.  */
-#undef HAVE_UNISTD_H
-
-/* Where is DODS_ROOT? This can be changed at runtime by an environment
-   variable. */
-#ifndef DODS_ROOT
-#undef DODS_ROOT
-#endif
-
-/* Does <sys/sem.h> contain prototypes for semctl(), ... ? */
-#undef HAVE_SEM_PROTO
-
-/* Does <sys/sem.h> contain the definition of union semun {}? */
-#undef HAVE_SEM_UNION
-
-/* What version of Bison are we using */
-#undef DODS_BISON_VER
-
-#endif /* HAVE_CONFIG_H */
-
-/* GNU gcc/g++ provides a way to mark variables, etc. as unused */
-
+/* Shorthand for gcc's unused attribute feature */
 #if defined(__GNUG__) || defined(__GNUC__)
 #define not_used __attribute__ ((unused))
 #else
 #define not_used 
-#endif
+#endif /* __GNUG__ || __GNUC__ */
 
-/* 
- * $Log: config_dap.h.in,v $
- * Revision 1.30  2002/06/03 22:21:15  jimg
- * Merged with release-3-2-9
- *
- * Revision 1.29.4.1  2002/03/01 21:03:08  jimg
- * Significant changes to the var(...) methods. These now take a btp_stack
- * pointer and are used by DDS::mark(...). The exact_match methods have also
- * been updated so that leaf variables which contain dots in their names
- * will be found. Note that constructor variables with dots in their names
- * will break the lookup routines unless the ctor is the last field in the
- * constraint expression. These changes were made to fix bug 330.
- *
- * Revision 1.29  2000/09/22 02:17:22  jimg
- * Rearranged source files so that the CVS logs appear at the end rather than
- * the start. Also made the ifdef guard symbols use the same naming scheme and
- * wrapped headers included in other headers in those guard symbols (to cut
- * down on extraneous file processing - See Lakos).
- *
- * Revision 1.28  2000/08/02 22:46:49  jimg
- * Merged 3.1.8
- *
- * Revision 1.27.6.1  2000/08/02 21:07:14  jimg
- * Moved the typedefs for cardinal datatypes to the header dods-datatypes.h.
- * That file is included by all the DODS Headers that need those typedefs and
- * this header is now only included by .cc or .c files. No source code outside
- * of the DODS DAP should ever include this header!
- *
- * Revision 1.27  1999/04/29 02:29:34  jimg
- * Merge of no-gnu branch
- *
- * Revision 1.26.6.1  1999/02/05 09:35:28  jimg
- * Changed the macro __unused__ to not_used to avoid a conflict in Red Hat's
- * inlined math code.
- *
- * Revision 1.26  1997/12/31 20:07:37  jimg
- * Removed the old, errant, test for 4 byte doubles.
- *
- * Revision 1.25  1997/10/04 00:32:58  jimg
- * Release 2.14c fixes
- *
- * Revision 1.24.2.1  1997/08/20 22:05:49  jimg
- * Changed dods_byte from char to unsigned char.
- *
- * Revision 1.24  1997/08/11 18:19:31  jimg
- * Fixed comment leaders for new CVS version
- *
- * Revision 1.23  1997/08/08 00:39:47  jimg
- * Changed type of dods_byte from unsigned char to char.
- *
- * Revision 1.22  1997/06/12 22:48:10  jimg
- * Fixed #ifdef HAVE_EXPECT #endif.
- *
- * Revision 1.21  1997/06/12 20:57:09  jimg
- * *** empty log message ***
- *
- * Revision 1.20  1997/06/06 17:52:13  jimg
- * Last minute changes for version 2.14
- *
- * Revision 1.19  1997/06/06 04:58:22  jimg
- * Wrapped DODS_ROOT in #ifndef ... #endif.
- *
- * Revision 1.18  1996/10/08 15:22:41  jimg
- * Added symbol for Bison version; we need to test for 1.22, 1.24 and 1.25. The
- * symbol is defined to be the version number without the decimal point.
- *
- * Revision 1.17  1996/10/01 16:27:38  jimg
- * Changed XDR_SHORT to XDR_INT16 and XDR_USHORT to XDR_UINT16 (to match the
- * Int16 and UInt16 classes).
- *
- * Revision 1.16  1996/08/26 21:13:03  jimg
- * Changes for version 2.07
- *
- * Revision 1.15  1996/08/13 18:42:48  jimg
- * Added __unused__ macro.
- *
- * Revision 1.14  1996/07/08 23:19:49  jimg
- * Added HAVE_EXPECT compile-time variable.
- *
- * Revision 1.13  1996/06/20 15:54:29  jimg
- * Added HAVE_SEM_UNION for hosts that do not define the union semun {} union.
- * Changed SEM_PROTO to HAVE_SEM_PROTO to be more inline with other similar
- * defines.
- *
- * Revision 1.12  1996/06/18 21:33:01  jimg
- * Added define SEM_PROTO which is used to control inclusion of the semaphore
- * prototypes in Connect.cc.
- * Removed GZIP define and replaced it with a DODS_ROOT define (which is the
- * double quoted path to the DODS root directory of the build).
- *
- * Revision 1.11  1996/06/07 05:07:29  jimg
- * Added GZIP define.
- *
- * Revision 1.10  1996/06/05 20:42:12  jimg
- * Moved symbols from config_netio.h.in to this file.
- *
- * Revision 1.9  1996/05/14 15:38:49  jimg
- * These changes have already been checked in once before. However, I
- * corrupted the source repository and restored it from a 5/9/96 backup
- * tape. The previous version's log entry should cover the changes.
- *
- * Revision 1.8  1996/04/05 21:59:32  jimg
- * Misc Changes for release 2.0.1 of the core software - for developers.
- *
- * Revision 1.7  1996/04/05 16:59:24  jimg
- * Re: XDR_INT and XDR_FLOAT; Moved cast of xdr_int, long, float and double
- * from here to the places where the functions are passed as parameters. This
- * fixes the bug that the return values of these functions were being cast to
- * an incompatible type where they were used.
- *
- * Revision 1.6  1996/04/04 18:03:55  jimg
- * Fixed comment headers.
- *
- * Revision 1.5  1995/06/28  17:13:28  dan
- * Modifed XDR_type definitions to explicitly cast to (xdrproc_t),
- * resolving problem associated with <rpc/xdr.h> in OSF 3.X.
- *
- * Revision 1.4  1995/02/10  02:38:32  jimg
- * Added DBMALLOC to set of flags defined with configure is given the
- * --enable-dbnew switch.
- *
- * Revision 1.3  1994/12/09  21:43:54  jimg
- * Added Dan's XDR_INT hack to acconfig.h - modified slightly and duplicated
- * for floats.
- *
- * Revision 1.2  1994/12/07  21:15:09  jimg
- * Updated files to work with autoconf 2.1.
- * 
- */
-
-#endif /* _dods_config_h */
-
-
+#endif /* _config_dap_h */

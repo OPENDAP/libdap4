@@ -17,18 +17,6 @@
 #pragma interface
 #endif
 
-#if 0
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif // 0
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif
@@ -68,15 +56,12 @@ public:
 
   Byte &operator=(const Byte &rhs);
 
-  virtual BaseType *ptr_duplicate() = 0;
-
   virtual unsigned int width();
 
-  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			 bool ce_eval = true);
-  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+    virtual BaseType *ptr_duplicate();
 
-  virtual bool read(const string &dataset) = 0;
+    bool serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval);
+    bool deserialize(XDR *source, DDS *, bool);
 
   virtual unsigned int val2buf(void *val, bool reuse = false);
   virtual unsigned int buf2val(void **val);
@@ -84,13 +69,39 @@ public:
   virtual void print_val(ostream &os, string space = "", 
 			 bool print_decl_p = true);
 
-  virtual bool ops(BaseType *b, int op, const string &dataset);
+    virtual void print_val(FILE *out, string space = "", 
+			   bool print_decl_p = true);
+
+    virtual bool ops(BaseType *b, int op, const string &dataset);
 };
 
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.33  2003/01/10 19:46:39  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.30.4.4  2002/12/17 22:35:02  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.30.4.3  2002/08/08 06:54:56  jimg
+ * Changes for thread-safety. In many cases I found ugly places at the
+ * tops of files while looking for globals, et c., and I fixed them up
+ * (hopefully making them easier to read, ...). Only the files RCReader.cc
+ * and usage.cc actually use pthreads synchronization functions. In other
+ * cases I removed static objects where they were used for supposed
+ * improvements in efficiency which had never actually been verifiied (and
+ * which looked dubious).
+ *
  * Revision 1.32  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
+ * Revision 1.30.4.2  2002/05/22 16:57:51  jimg
+ * I modified the `data type classes' so that they do not need to be
+ * subclassed for clients. It might be the case that, for a complex client,
+ * subclassing is still the best way to go, but you're not required to do
+ * it anymore.
  *
  * Revision 1.31  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6

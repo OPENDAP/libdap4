@@ -6,7 +6,8 @@ INCLUDEDIR	= ..\..\..\..\include
 
 # Setup compiler and linker flags
 CC		= cl
-CFLAGS		= /nologo /ML /W0 /GR /GX /c
+CFLAGS		= /nologo /MT /W0 /GR /GX /c
+#CFLAGS		= /nologo /ML /W0 /GR /GX /c
 #CFLAGS		= /MLd /Zi /W3 /GR /GX /c	# debug
 LINK		= link
 LFLAGS		= -lib /nologo

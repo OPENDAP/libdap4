@@ -34,7 +34,7 @@ Clause::Clause(bool_func func, rvalue_list *rv)
     assert(OK());
 
     if (_args)			// account for null arg list
-	_argc = _args->length();
+	_argc = _args->size();
     else
 	_argc = 0;
 }
@@ -45,7 +45,7 @@ Clause::Clause(btp_func func, rvalue_list *rv)
     assert(OK());
 
     if (_args)
-	_argc = _args->length();
+	_argc = _args->size();
     else
 	_argc = 0;
 }
@@ -120,9 +120,13 @@ Clause::value(const string &dataset, DDS &dds)
 	// The list of rvalues is an implicit logical OR, so assume
 	// FALSE and return TRUE for the first TRUE subclause.
 	bool result = false;
-	for (Pix p = _args->first(); p && !result; _args->next(p))
-	    result = result || btp->ops((*_args)(p)->bvalue(dataset, dds),
+	for (rvalue_list_iter i = _args->begin();
+	     i != _args->end() && !result;
+	     i++)
+	{
+	    result = result || btp->ops((*i)->bvalue(dataset, dds),
 					_op, dataset);
+	}
 
 	return result;
     }
@@ -177,6 +181,26 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 }
 
 // $Log: Clause.cc,v $
+// Revision 1.15  2003/01/10 19:46:39  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.12.4.4  2002/10/28 21:17:43  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.12.4.3  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.14  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

@@ -1,23 +1,25 @@
 
-// Tests for the AttrTable class.
+// -*- C++ -*-
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
 
-#include <Regex.h>
+#include <strstream.h>
+#include <string>
 
-#include "TestSequence.h"
-#include "TestInt32.h"
-#include "TestStr.h"
-#include "SequenceTest.h"
-#define DODS_DEBUG
+#include "Regex.h"
+
+#include "Sequence.h"
+#include "Int32.h"
+#include "Str.h"
+
+// #define DODS_DEBUG
 #include "debug.h"
-
-CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);
 
 using namespace CppUnit;
 
-const static char *s_as_string = 
+static const char *s_as_string = 
 "BaseType (0x.*):
           _name: s
           _type: 13
@@ -51,68 +53,76 @@ BaseType (0x.*):
 
 static Regex s_regex(s_as_string);
 
-SequenceTest::SequenceTest()
-{
-}
+class SequenceTest : public TestFixture {
+private:
+    Sequence *s, *sss, *ts, *tts;
 
-SequenceTest::~SequenceTest()
-{
-}
+public:
+    SequenceTest() {}
+    ~SequenceTest() {}
 
-void
-SequenceTest::setUp() 
-{ 
-    // Set up a simple sequence. Used to test ctor, assigment, et cetera.
-    s = new TestSequence("s");
-    s->add_var(new TestInt32("i1"));
-    s->add_var(new TestStr("str1"));
-    s->add_var(new TestInt32("i2"));
+    void setUp() { 
+	// Set up a simple sequence. Used to test ctor, assigment, et cetera.
+	s = new Sequence("s");
+	s->add_var(new Int32("i1"));
+	s->add_var(new Str("str1"));
+	s->add_var(new Int32("i2"));
 
-    // Set up sss, used to test multi-level sequences
-    sss = new TestSequence("sss");
-    sss->add_var(new TestInt32("i1"));
+	// Set up sss, used to test multi-level sequences
+	sss = new Sequence("sss");
+	sss->add_var(new Int32("i1"));
 	
-    TestSequence *ts = new TestSequence("child_of_sss");
-    ts->add_var(new TestStr("str1"));
+	ts = new Sequence("child_of_sss");
+	ts->add_var(new Str("str1"));
 	
-    TestSequence *tts = new TestSequence("child_of_child_of_sss");
-    tts->add_var(new TestInt32("i2"));
-    ts->add_var(tts);
+	tts = new Sequence("child_of_child_of_sss");
+	tts->add_var(new Int32("i2"));
+	ts->add_var(tts);
 
-    sss->add_var(ts);		// This has to be here because add_var adds
+	sss->add_var(ts);	// This has to be here because add_var adds
 				// copies of its argument.
-} 
+    } 
 
-void
-SequenceTest::tearDown() 
-{ 
-    delete s; s = 0;
-    delete sss; sss = 0;
-}
+    void tearDown() { 
+	delete s; s = 0;
+	delete sss; sss = 0;
+	delete ts; ts = 0;
+	delete tts; tts = 0;
+    }
 
-// Tests for methods
-void
-SequenceTest::ctor_test() 
-{
-    CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
-}
+    bool re_match(Regex &r, const char *s) {
+	return r.match(s, strlen(s)) == (int)strlen(s);
+    }
 
-void
-SequenceTest::assignment() 
-{
-    TestSequence ts2;
+    // Tests for methods
+    void ctor_test() {
+	CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
+    }
 
-    ts2 = *s;
-    DBG(cerr << "ts2: " << ts2.toString() << endl);
-    CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
-}
+    void assignment() {
+	Sequence ts2;
 
-void
-SequenceTest::copy_ctor() 
-{
-    TestSequence s2 = *s;
-    CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
-}
+	ts2 = *s;
+	DBG(cerr << "ts2: " << ts2.toString() << endl);
+	CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
+    }
+
+    void copy_ctor() {
+	Sequence s2 = *s;
+	CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
+    }
+
+    CPPUNIT_TEST_SUITE( SequenceTest );
+
+    CPPUNIT_TEST(ctor_test);
+    CPPUNIT_TEST(assignment);
+    CPPUNIT_TEST(copy_ctor);
+
+    CPPUNIT_TEST_SUITE_END();
+
+};
+
+CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);
 
 int 
 main( int argc, char* argv[] )

@@ -76,50 +76,56 @@ protected:
     void _duplicate(const Vector &v);
 
 public:
-  Vector(const string &n = "", BaseType *v = 0, const Type &t = dods_null_c);
+    Vector(const string &n = "", BaseType *v = 0, const Type &t = dods_null_c);
+    Vector(const Vector &rhs);
 
-  Vector(const Vector &rhs);
+    virtual ~Vector();
 
-  virtual ~Vector();
+    Vector &operator=(const Vector &rhs);
+    virtual BaseType *ptr_duplicate() = 0; 
 
-  Vector &operator=(const Vector &rhs);
-  virtual BaseType *ptr_duplicate() = 0; 
+    virtual int element_count(bool leaves);
 
-  virtual int element_count(bool leaves);
+    virtual void set_send_p(bool state); 
 
-  virtual void set_send_p(bool state); 
+    virtual void set_read_p(bool state);
 
-  virtual void set_read_p(bool state);
+    virtual unsigned int width();
 
-  virtual unsigned int width();
+    virtual int length();
 
-  virtual int length();
+    virtual void set_length(int l);
 
-  virtual void set_length(int l);
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			 bool ce_eval = true);
-  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+#if 0
+    virtual bool read(const string &dataset);
+#endif
 
-  virtual bool read(const string &dataset) = 0;
+    virtual unsigned int val2buf(void *val, bool reuse = false);
 
-  virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual unsigned int buf2val(void **val);
 
-  virtual unsigned int buf2val(void **val);
+    void set_vec(unsigned int i, BaseType *val);
 
-  void set_vec(unsigned int i, BaseType *val);
+    void vec_resize(int l);
 
-  void vec_resize(int l);
+    virtual BaseType *var(const string &name = "", bool exact_match = true);
 
-  virtual BaseType *var(const string &name = "", bool exact_match = true);
+    virtual BaseType *var(const string &name, btp_stack &s);
 
-  virtual BaseType *var(const string &name, btp_stack &s);
+    virtual BaseType *var(unsigned int i);
 
-  virtual BaseType *var(unsigned int i);
-
-  virtual void add_var(BaseType *v, Part p = nil);
+    virtual void add_var(BaseType *v, Part p = nil);
 
     virtual void print_decl(ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
+    virtual void print_decl(FILE *out, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
@@ -127,13 +133,34 @@ public:
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
 
+    virtual void print_val(FILE *out, string space = "", 
+			   bool print_decl_p = true);
+
     virtual bool check_semantics(string &msg, bool all = false);
 };
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.35  2003/01/10 19:46:40  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.31.4.5  2002/12/27 19:34:42  jimg
+ * Modified the var() methods so that www2id() is called before looking
+ * up identifier names. See bug 563.
+ *
+ * Revision 1.31.4.4  2002/12/17 22:35:03  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
  * Revision 1.34  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
+ * Revision 1.31.4.3  2002/05/22 16:57:51  jimg
+ * I modified the `data type classes' so that they do not need to be
+ * subclassed for clients. It might be the case that, for a complex client,
+ * subclassing is still the best way to go, but you're not required to do
+ * it anymore.
  *
  * Revision 1.33  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6

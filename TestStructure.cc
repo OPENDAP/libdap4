@@ -10,6 +10,26 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
+// Revision 1.17  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.16.4.2  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.16.4.1  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.16  2000/09/21 16:22:09  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -126,9 +146,12 @@ TestStructure::read(const string &dataset)
     if (read_p())
 	return true;
 
-    for (Pix p = first_var(); p; next_var(p)) {
-	if (!var(p)->read(dataset))
+    for (Vars_iter i = var_begin(); i != var_end(); i++)
+    {
+	if (!(*i)->read(dataset))
+	{
 	    return false;
+	}
     }
 
     set_read_p(true);

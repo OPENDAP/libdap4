@@ -23,9 +23,9 @@
 
 #include <iostream>
 #include <string>
-#include <Pix.h>
-#include <SLList.h>
-#include <DLList.h>
+#include <vector>
+
+#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -154,13 +154,13 @@ private:
     string _filename;		// File name (or other OS identifier) for
 				// dataset or part of dataset.
 
-    DLList<BaseType *> vars;	// Variables at the top level 
+    vector<BaseType *> vars;	// Variables at the top level 
     
-    SLList<Clause *> expr;	// List of CE Clauses
+    vector<Clause *> expr;	// List of CE Clauses
 
-    SLList<BaseType *> constants;// List of temporary objects
+    vector<BaseType *> constants;// List of temporary objects
 
-    SLList<function> functions; // Known external functions
+    vector<function> functions; // Known external functions
 
 protected:
     void duplicate(const DDS &dds);
@@ -168,137 +168,166 @@ protected:
     BaseType *exact_match(const string &name, btp_stack *s = 0);
 
 public:
-  DDS(const string &n = "");
+    typedef std::vector<BaseType *>::const_iterator Vars_citer ;
+    typedef std::vector<BaseType *>::iterator Vars_iter ;
+    typedef std::vector<Clause *>::const_iterator Clause_citer ;
+    typedef std::vector<Clause *>::iterator Clause_iter ;
+    typedef std::vector<BaseType *>::const_iterator Constants_citer ;
+    typedef std::vector<BaseType *>::iterator Constants_iter ;
+    typedef std::vector<function>::const_iterator Functions_citer ;
+    typedef std::vector<function>::iterator Functions_iter ;
 
-  DDS(const DDS &dds);
+    DDS(const string &n = "");
 
-  virtual ~DDS();
+    DDS(const DDS &dds);
 
-  DDS & operator=(const DDS &rhs); 
+    virtual ~DDS();
 
-  string get_dataset_name();
+    DDS & operator=(const DDS &rhs); 
 
-  void set_dataset_name(const string &n);
+    string get_dataset_name();
 
-  string filename();
-  void filename(const string &fn);
+    void set_dataset_name(const string &n);
 
-  void add_var(BaseType *bt);
+    string filename();
+    void filename(const string &fn);
 
-  void del_var(const string &n);
+    void add_var(BaseType *bt);
 
-  BaseType *var(const string &n);
+    void del_var(const string &n);
 
-  BaseType *var(const char *n);
-  BaseType *var(const string &n, btp_stack &s);
-  BaseType *var(const string &n, btp_stack *s = 0);
-  BaseType *var(const char *n, btp_stack *s = 0);
-  BaseType *var(Pix p);
+#if 0
+    BaseType *var(const string &n);
+    BaseType *var(const char *n);
+#endif
+
+    BaseType *var(const string &n, btp_stack &s);
+    BaseType *var(const string &n, btp_stack *s = 0);
+    BaseType *var(const char *n, btp_stack *s = 0);
+
+    BaseType *var(Pix p);
  
-  Pix first_var();
+    Pix first_var();
+    void next_var(Pix p);
+    int num_var();
 
-  void next_var(Pix &p);
+    /** Returns the first variable in the DDS. */
+    Vars_iter var_begin();
 
-  int num_var();
+    /** Returns the reference to the end of the variable list in the DDS. 
+	This does not point to a variable, but to the end of the list */
+    Vars_iter var_end();
+
+    void del_var(Vars_iter &i);
+
+    void del_var(Vars_iter &i1, Vars_iter &i2);
 
 #if 0
     template <class FUNC_T> void add_function(const string &name, FUNC_T f);
 #endif
 #if 1
-  void add_function(const string &name, bool_func f);
-  void add_function(const string &name, btp_func f);
-  void add_function(const string &name, proj_func f);
+    void add_function(const string &name, bool_func f);
+    void add_function(const string &name, btp_func f);
+    void add_function(const string &name, proj_func f);
 #endif
 
     bool find_function(const string &name, bool_func *f) const;
     bool find_function(const string &name, btp_func *f) const;
     bool find_function(const string &name, proj_func *f) const;
 
+    Pix first_clause();
+    void next_clause(Pix p);
+    Clause *clause(Pix p);
+    bool clause_value(Pix p, const string &dataset);
 
-    /** These member functions are used to access and manipulate the
-	constraint expression that may be part of a DDS.  Most of them
-	are only used by the constraint expression parser.
+    void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
+    void append_clause(bool_func func, rvalue_list *args);
+    void append_clause(btp_func func, rvalue_list *args);
 
-	Refer to <i>The DODS User Manual</i> for a complete description
-	of constraint expressions.
+    bool functional_expression();
+    bool boolean_expression();
+    bool eval_selection(const string &dataset);
+    BaseType *eval_function(const string &dataset);
+    /** Returns the first clause in a parsed constraint expression. */
+    Clause_iter clause_begin();
 
-	@name Constraint Expression
-	@see Clause */
+    /** Returns a reference to the end of the list of clauses in a parsed 
+	constraint expression. It does not reference the last clause */
+    Clause_iter clause_end();
 
-    //@{
-  Pix first_clause();
-  void next_clause(Pix &p);
-  Clause &clause(Pix p);
-  bool clause_value(Pix p, const string &dataset);
+    /** Returns the value of the indicated clause of a constraint
+	expression. */
+    bool clause_value(Clause_iter &i, const string &dataset);
 
-  void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
-  void append_clause(bool_func func, rvalue_list *args);
-  void append_clause(btp_func func, rvalue_list *args);
-
-  bool functional_expression();
-  bool boolean_expression();
-  BaseType *eval_function(const string &dataset);
-
-  bool eval_selection(const string &dataset);
-    //@}   
-    
-    /** Parse a constraint expression.
-
-	@name parse_constraint */
-
-    //@{
     void parse_constraint(const string &constraint, ostream &os = cout,
 			  bool server = true);
 
     void parse_constraint(const string &constraint, FILE *out,
 			  bool server = true);
-    //@}
 
-  void append_constant(BaseType *btp);
+    void append_constant(BaseType *btp);
 
-    /** Read a DDS from a file.  This method calls a generated parser,
-	<tt>ddsparse()</tt>, to interpret an ASCII representation of a DDS, and
-	regenerate that DDS in memory.
+    void parse(string fname);
+    void parse(int fd);
+    void parse(FILE *in=stdin);
 
-	@name Read Methods
-	@see Print Methods */
+    void print(ostream &os = cout);
+    void print(FILE *out);
+    void print_constrained(ostream &os = cout);
+    void print_constrained(FILE *out);
 
-    //@{
+    bool send(const string &dataset, const string &constraint, FILE *out, 
+	      bool compressed = true, const string &cgi_ver = "",
+	      time_t lmt = 0);
 
-  void parse(string fname);
-  void parse(int fd);
-  void parse(FILE *in=stdin);
-    //@}
-
-    /** These methods create an ASCII representation of the DDS. This is the
-	form in which the DDS is transmitted to the client process. A DDS can
-	be output entire, or subject to the constraint of a constraint
-	expression. In most cases, a constrained DDS will be smaller than the
-	original, since the purpose of the expression is to discard some of
-	the data in the dataset.
-
-	@name Print Methods
-	@see Read Methods */
-
-    //@{
-  void print(ostream &os = cout);
-  void print(FILE *out);
-  void print_constrained(ostream &os = cout);
-  void print_constrained(FILE *out);
-    //@}
-
-  bool send(const string &dataset, const string &constraint, FILE *out, 
-	    bool compressed = true, const string &cgi_ver = "",
-	    time_t lmt = 0);
-
-  void mark_all(bool state);
-
-  bool mark(const string &name, bool state);
-
-  bool check_semantics(bool all = false);
+    void mark_all(bool state);
+    bool mark(const string &name, bool state);
+    bool check_semantics(bool all = false);
 };
 
 // $Log: DDS.h,v $
+// Revision 1.47  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.41.4.11  2002/12/17 22:35:02  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.41.4.10  2002/11/18 18:51:59  jimg
+// Changed the include of Pix.h from #include <Pix.h> to "Pix.h" to fix
+// a problem with the dependencies (see today's check in of Makefile.in).
+//
+// Revision 1.41.4.9  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.41.4.8  2002/10/02 17:50:36  pwest
+// Added two new del_vars methods. The first takes an iterator and deltes the
+// variable referenced by that iterator. The iterator now points to the element
+// after the deleted element. The second method takes two iterators and will
+// delete the variables starting from the first iterator and up to, not
+// including the second iterator.
+//
+// Revision 1.41.4.7  2002/09/22 14:15:43  rmorris
+// Changed the use of vector to std::vector.  The 'using' directive for VC++
+// no longer cut it in this case.
+//
+// Revision 1.41.4.6  2002/09/12 22:49:57  pwest
+// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+// than taking a reference to a Pix, taking a Pix value.
+//
+// Revision 1.41.4.5  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.46  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

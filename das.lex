@@ -42,7 +42,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.34 2002/06/03 22:21:15 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.35 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <string.h>
 
@@ -83,7 +83,7 @@ URL	URL|Url|url
    disambiguate functions when IDs have parens in them and adding colons
    makes parsing the array projections hard. 10/31/2001 jhrg */
 
-WORD    [-+a-zA-Z0-9_/%.:\\()][-+a-zA-Z0-9_/%.:\\()#]*
+WORD    [-+a-zA-Z0-9_/%.:\\()*][-+a-zA-Z0-9_/%.:\\()#*]*
 
 NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 
@@ -154,6 +154,16 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 
 /*
  * $Log: das.lex,v $
+ * Revision 1.35  2003/01/10 19:46:41  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.30.4.6  2002/06/11 00:40:52  jimg
+ * I added '*' to the set of characters allowed in a WORD in both the DAS
+ * and DDS scanners. It's not allowed in the expr scanner because that
+ * would cause conflicts with the URL dereference operator.
+ *
  * Revision 1.34  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
  *

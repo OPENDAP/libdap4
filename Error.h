@@ -23,10 +23,6 @@
 #include <iostream>
 #include <string>
 
-#if defined(GUI) && !defined(_gui_h)
-#include "Gui.h"
-#endif
-
 using std::cout;
 using std::string;
 using std::ostream;
@@ -138,6 +134,8 @@ public:
 
   void print(ostream &os = cout) const;
 
+    void print(FILE *out) const;
+
   ErrorCode get_error_code() const;
   
   string get_error_message() const;
@@ -174,8 +172,19 @@ public:
 };
 
 // $Log: Error.h,v $
+// Revision 1.23  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.20.2.3  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
 // Revision 1.22  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
+//
+// Revision 1.20.2.2  2002/05/26 23:36:09  jimg
+// Removed code specific to the GUI-based progress indicator.
 //
 // Revision 1.21  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6

@@ -30,13 +30,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.lex,v 1.25 2002/06/03 22:21:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.lex,v 1.26 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
 
 #include <string>
+#if 0
 #include <SLList.h>
+#endif
 
 #define YY_DECL int exprlex YY_PROTO(( void ))
 
@@ -71,16 +73,13 @@ static void store_op(int op);
 
 NAN		[Nn][Aa][Nn]
 INF		[Ii][Nn][Ff]
-/*
-SCAN_INT	[-+]?[0-9]+
-SCAN_MANTISA	([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
-SCAN_EXPONENT	(E|e)[-+]?[0-9]+
-
-SCAN_FLOAT	([-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?)|({NAN})|({INF})
-*/
-
 /* See das.lex for comments about the characters allowed in a WORD.
-   10/31/2001 jhrg */
+   10/31/2001 jhrg 
+
+   I've added '*' to the set of characters in a WORD for both the DDS and DAS
+   scanners, but not here because it'll conflict with the url dereference
+   operator. 6/10/2002 jhrg
+*/
 
 SCAN_WORD       [-+a-zA-Z0-9_/%.\\][-+a-zA-Z0-9_/%.\\#]*
 
@@ -220,6 +219,20 @@ store_op(int op)
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.26  2003/01/10 19:46:41  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.23.4.7  2002/11/06 21:53:06  jimg
+ * I changed the includes of Regex.h from <Regex.h> to "Regex.h". This means
+ * make depend will include the header in the list of dependencies.
+ *
+ * Revision 1.23.4.6  2002/06/11 00:40:52  jimg
+ * I added '*' to the set of characters allowed in a WORD in both the DAS
+ * and DDS scanners. It's not allowed in the expr scanner because that
+ * would cause conflicts with the URL dereference operator.
+ *
  * Revision 1.25  2002/06/03 22:21:16  jimg
  * Merged with release-3-2-9
  *

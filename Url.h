@@ -42,20 +42,40 @@ class Url: public Str {
 protected:
     string _buf;
 
-    /** This enables instances of Str to access _buf in this class. */
+    // This enables methods of Str to access _buf in this class.
     friend class Str;
 
 public:
   Url(const string &n = "");
   virtual ~Url() {}
 
-  virtual BaseType *ptr_duplicate() = 0;
+    virtual BaseType *ptr_duplicate();
 };
 
 /* 
  * $Log: Url.h,v $
+ * Revision 1.21  2003/01/10 19:46:40  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.19.4.2  2002/08/08 06:54:57  jimg
+ * Changes for thread-safety. In many cases I found ugly places at the
+ * tops of files while looking for globals, et c., and I fixed them up
+ * (hopefully making them easier to read, ...). Only the files RCReader.cc
+ * and usage.cc actually use pthreads synchronization functions. In other
+ * cases I removed static objects where they were used for supposed
+ * improvements in efficiency which had never actually been verifiied (and
+ * which looked dubious).
+ *
  * Revision 1.20  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
+ *
+ * Revision 1.19.4.1  2002/05/22 16:57:51  jimg
+ * I modified the `data type classes' so that they do not need to be
+ * subclassed for clients. It might be the case that, for a complex client,
+ * subclassing is still the best way to go, but you're not required to do
+ * it anymore.
  *
  * Revision 1.19  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than

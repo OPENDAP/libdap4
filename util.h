@@ -15,6 +15,7 @@
 #define _util_h 1
 
 #include <stdio.h>
+#include <vector>
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -79,15 +80,13 @@
 using std::iostream;
 
 string prune_spaces(string);
-bool unique_names(SLList<BaseType *> l, const string &var, const string &type,
-		  string &msg);
-bool unique_names(DLList<BaseType *> l, const string &var, const string &type,
+bool unique_names(vector<BaseType *> l, const string &var, const string &type,
 		  string &msg);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
 FILE *text_to_temp(string text);
-char *systime();
+string systime();
 FILE *compressor(FILE *output, int &childpid);
 bool deflate_exists();
 const char *dods_root();
@@ -204,8 +203,42 @@ string path_to_filename(string path);
     filename/template to use with mkstemp. */
 char *get_tempfile_template(char *file_template);
 
+time_t parse_time(const char * str, bool expand);
+
 /* 
  * $Log: util.h,v $
+ * Revision 1.43  2003/01/10 19:46:41  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.38.2.7  2002/10/18 23:03:09  jimg
+ * Added a declaration for parse_time().
+ *
+ * Revision 1.38.2.6  2002/09/05 22:52:55  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
+ * Revision 1.38.2.5  2002/08/08 06:54:57  jimg
+ * Changes for thread-safety. In many cases I found ugly places at the
+ * tops of files while looking for globals, et c., and I fixed them up
+ * (hopefully making them easier to read, ...). Only the files RCReader.cc
+ * and usage.cc actually use pthreads synchronization functions. In other
+ * cases I removed static objects where they were used for supposed
+ * improvements in efficiency which had never actually been verifiied (and
+ * which looked dubious).
+ *
+ * Revision 1.38.2.4  2002/08/06 23:22:33  jimg
+ * Removed systime() because it's not used by the library and it's not
+ * MT-Safe. If this is used by any of the servers, I'll recode the function
+ * so that it returns a string.
+ *
  * Revision 1.42  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *

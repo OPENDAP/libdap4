@@ -20,15 +20,17 @@ class rvalue {
 private:
     BaseType *value;
     btp_func func;		// pointer to a function returning BaseType *
-    SLList<rvalue *> *args;		// arguments to the function
+    std::vector<rvalue *> *args;		// arguments to the function
 
 public:
-  rvalue(BaseType *bt);
-  rvalue(btp_func f, rvalue_list *a);
-  rvalue();
+    typedef std::vector<rvalue *>::iterator Args_iter ;
+    typedef std::vector<rvalue *>::const_iterator Args_citer ;
 
-  virtual ~rvalue();
+    rvalue(BaseType *bt);
+    rvalue(btp_func f, vector<rvalue *> *a);
+    rvalue();
 
+    virtual ~rvalue();
   string value_name();
 
   BaseType *bvalue(const string &dataset, DDS &dds);
@@ -36,11 +38,38 @@ public:
 
 // This type def must come after the class definition above. It is used in
 // the Clause and DDS classes.
-typedef SLList<rvalue *> rvalue_list;
+typedef std::vector<rvalue *> rvalue_list;
+typedef std::vector<rvalue *>::const_iterator rvalue_list_citer ;
+typedef std::vector<rvalue *>::iterator rvalue_list_iter ;
 
 BaseType **build_btp_args(rvalue_list *args, DDS &dds);
 
 // $Log: RValue.h,v $
+// Revision 1.9  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.6.4.3  2002/10/29 22:21:01  pwest
+// added operator== and operator!= operators to IteratorAdapter and
+// IteratorAdapterT classes to handle Pix == Pix use.
+//
+// Revision 1.6.4.2  2002/09/22 14:18:36  rmorris
+// I had to make one of the iterator typedef's public as it is used
+// external to this class - If it was making it through GNU C++, I don't
+// know why.  VC++ can't swallow that.  Changes all uses of vector to
+// std::vector as the 'using' directive no longer cuts it in this case.
+//
+// Revision 1.6.4.1  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.8  2002/06/18 19:37:03  tom
 // l
 // Removed SLList from constructor call sequence, to match .cc file.

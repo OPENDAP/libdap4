@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.36 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.37 2003/01/10 19:46:40 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -27,7 +27,6 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.36 2002/06/18 15:36:24 tom Exp $
 
 #include <iostream>
 #include <string>
-#include <Pix.h>
 
 #include "DAS.h"		// follows pragma since DAS.h is interface
 #include "Error.h"
@@ -96,10 +95,22 @@ DAS::first_var()
     return AttrTable::first_attr();
 }
 
+AttrTable::Attr_iter
+DAS::var_begin()
+{
+    return AttrTable::attr_begin() ;
+}
+
+AttrTable::Attr_iter
+DAS::var_end()
+{
+    return AttrTable::attr_end() ;
+}
+
 /** @brief Increments an attribute table pointer to indicate the next table
     in the series. */
 void
-DAS::next_var(Pix &p)
+DAS::next_var(Pix p)
 {
     AttrTable::next_attr(p);
 }
@@ -109,6 +120,12 @@ string
 DAS::get_name(Pix p)
 {
     return AttrTable::get_name(p);
+}
+
+string
+DAS::get_name(Attr_iter &i)
+{
+    return AttrTable::get_name(i);
 }
 
 /** @brief Returns the attribute table with the given name. 
@@ -124,6 +141,12 @@ DAS::get_table(Pix p)
 }
 
 /** @brief Returns the attribute table with the given name string. */
+AttrTable *
+DAS::get_table(Attr_iter &i)
+{
+    return AttrTable::get_attr_table(i);
+}
+
 AttrTable *
 DAS::get_table(const string &name)
 {
@@ -188,7 +211,10 @@ DAS::parse(string fname)
 
     parse(in);
 
-    fclose(in);
+    int res = fclose(in);
+    if( res ) {
+	DBG(cerr << "DAS::parse - Failed to close file " << (void *)in << endl ;) ;
+    }
 }
 
 /** @brief Read attributes from a file descriptor. 
@@ -216,8 +242,10 @@ DAS::parse(int fd)
 
     parse(in);
 
-    fclose(in);
-
+    int res = fclose(in);
+    if( res ) {
+	DBG(cerr << "DAS::parse(fd) - Failed to close " << (void *)in << endl ;) ;
+    }
 }
 
     
@@ -274,7 +302,56 @@ DAS::print(ostream &os, bool dereference)
 
 }
 
+void
+DAS::print(FILE *out, bool dereference)
+{
+    fprintf( out, "Attributes {\n" ) ;
+
+    AttrTable::print(out, "    ", dereference);
+
+    fprintf( out, "}\n" ) ;
+}
+
 // $Log: DAS.cc,v $
+// Revision 1.37  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.32.4.10  2002/12/17 22:35:02  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.32.4.9  2002/11/21 21:24:17  pwest
+// memory leak cleanup and file descriptor cleanup
+//
+// Revision 1.32.4.8  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.32.4.7  2002/09/12 22:49:57  pwest
+// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+// than taking a reference to a Pix, taking a Pix value.
+//
+// Revision 1.32.4.6  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.32.4.5  2002/08/08 06:54:56  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.36  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

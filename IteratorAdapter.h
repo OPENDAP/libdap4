@@ -1,56 +1,52 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-#ifndef _ITERATORADAPTER_H
-#define _ITERATORADAPTER_H
+// (c) COPYRIGHT URI/MIT 2002
+// Please read the full copyright statement in the file COPYRIGHT.
+//
+// Authors:
+//	Patrick West <pwest@ucar.edu>
+
+#ifndef _iterator_adapter_h
+#define _iterator_adapter_h
+
+#ifdef __GNUG__
+#pragma interface
+#endif
 
 #include <stdio.h>
 
 class IteratorAdapter
 {
-#if 0
-    friend bool operator==(IteratorAdapter op1, IteratorAdapter op2);
-#endif
 
 public:
     /* constructors */
-    IteratorAdapter( ) : _i( 0 ), _ref(0) { }
-    IteratorAdapter( IteratorAdapter *iter ) : _i( iter ), _ref(0) { 
-	if( _i ) 
-	    _i->incref(); 
-    }
-    IteratorAdapter( const IteratorAdapter &iter ) : _i( iter._i ), _ref(0) { 
-	if( _i ) 
-	    _i->incref(); 
-    }
+    IteratorAdapter( ) ;
+    IteratorAdapter( IteratorAdapter *iter ) ;
+    IteratorAdapter( const IteratorAdapter &iter ) ;
 
     /* assignment operator */
-    IteratorAdapter &operator=( const IteratorAdapter &iter ) {
-	if (&iter == this)	/* assignment to self 09/12/02 jhrg */
-	    return *this;
-
-	if( _i ) 
-	    _i->free(); 
-	_i = iter._i; 
-	_ref = 0; 
-	if( _i ) 
-	    _i->incref(); 
-	return *this; 
-    }
+    IteratorAdapter &operator=( const IteratorAdapter &iter ) ;
 
     /* destructor */
-    virtual ~IteratorAdapter( ) { if( _i ) _i->free() ; }
+    virtual ~IteratorAdapter( ) ;
 
     /* public methods */
-    virtual void first( ) { if( _i ) _i->first() ; }
-    virtual void next( ) { if( _i ) _i->next() ; }
-    virtual operator bool( ) { if( _i ) return *_i ; return false ; }
-    IteratorAdapter *getIterator( ) { return _i ; }
+    virtual void first( ) ;
+    virtual void next( ) ;
+
+    virtual operator bool( ) ;
+    //virtual bool operator==( void *op2 ) ;
+    //virtual bool operator!=( void *op2 ) ;
+    virtual bool operator==( const IteratorAdapter &i ) ;
+    virtual bool operator!=( const IteratorAdapter &i ) ;
+
+    IteratorAdapter *getIterator( ) ;
 
     /* reference counting */
-    virtual void incref( ) { _ref++ ; }
-    virtual void decref( ) { _ref-- ; }
-    virtual void free( ) { if( --_ref == 0 ) delete this ; }
+    virtual void incref( ) ;
+    virtual void decref( ) ;
+    virtual void free( ) ;
 
 protected:
 
@@ -60,15 +56,34 @@ private:
     int _ref ;
 } ;
 
-#if 0
-bool 
-operator==(IteratorAdapter op1, IteratorAdapter op2)
-{
-    return op1._i == op2._i;
-}
-#endif
-
 // $Log: IteratorAdapter.h,v $
+// Revision 1.3  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.2.2.5  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.2.2.4  2002/12/05 20:36:19  pwest
+// Corrected problems with IteratorAdapter code, making methods non-inline,
+// creating source files and template instantiation file. Cleaned up file
+// descriptors and memory management problems. Corrected problem in Connect
+// where the xdr source was not being cleaned up or a new one created when a
+// new file was opened for reading.
+//
+// Revision 1.2.2.3  2002/11/05 01:11:49  jimg
+// Added some boilerplate and fiddled with formatting.
+//
+// Revision 1.2.2.2  2002/10/29 22:21:00  pwest
+// added operator== and operator!= operators to IteratorAdapter and
+// IteratorAdapterT classes to handle Pix == Pix use.
+//
+// Revision 1.2.2.1  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
 // Revision 1.2  2002/09/13 16:27:47  jimg
 // Added a CVS log.
 // Added an emacs mode setting to match the rest of our code (always an ongoing

@@ -512,6 +512,62 @@ BaseType::add_var(BaseType *, Part)
 {
 }
 
+  /** Put the data into a local buffer so that it may be sent to a
+      client.  This operation involves reading data from whatever
+      source (often a local disk), and filling out the fields in the
+      data type class.  This is the heart of the DODS DAP Class
+      operation.  Much of the work of implementing a new DODS server
+      API consists in creating the <tt>read()</tt> functions to read various
+      data types.
+
+      Note that this function is only for DODS servers.  It has no use
+      on the client side of a DODS client/server connection.  The DODS
+      client and server communicate their data with <tt>serialize()</tt> and
+      <tt>deserialize()</tt>.
+
+      This method is not implemented for the BaseType class, nor
+      for its children.  However, it should be implemented for the
+      specialized children of those classes.  For example, it is not
+      implemented for the Float64 class, but does exist for the
+      NCFloat64 class, specialized to read data from local netCDF
+      files. 
+ 
+      This method should be implemented to throw Error when it encounters
+      an unrecoverable error.
+
+      For an example of use, see the netCDF library classes. The
+      netCDF library is part of the DODS source distribution, and can
+      be found under <tt>$(DODS_ROOT)/src/nc-dods</tt>.
+
+      In some sub-classes, such as Array or Grid, the
+      <tt>read()</tt> function must explicitly take into account
+      constraint information stored with the class data.  For
+      example, the Grid::read method will be called when only one
+      component of the Grid is to be sent. Your implementation of
+      Grid::read should check send_p() for each member of the Grid
+      before reading that member to avoid reading data into memory
+      that won't be sent (and thus is not needed in memory).
+
+
+      @brief Reads data into a local buffer. 
+
+      @return The function returns a boolean value, with TRUE indicating
+      that read() should be called again because there's more data to read,
+      and FALSE indicating there's no more data to read. Note that this
+      behavior is necessary to properly handle variables that contain
+      Sequences. WRONG! (9/5/2001 jhrg) Sequences now are read in one shot.
+      The return value of this method should always be false.
+
+      @param dataset A string naming the dataset from which the data is to
+      be read. The meaning of this string will vary among data APIs.
+
+	@see BaseType */
+bool 
+BaseType::read(const string &dataset)
+{
+    throw InternalErr("Unimplemented BaseType::read() method called.");
+}
+
 // Using this mfunc, objects that contain a (BaseType *) can get the xdr
 // function used to serialize the object.
 /** The <tt>xdr_coder</tt> function (also "filter primitive") is used to
@@ -604,6 +660,29 @@ BaseType::print_decl(ostream &os, string space, bool print_semi,
 
     if (print_semi)
 	os << ";" << endl;
+}
+
+void 
+BaseType::print_decl(FILE *out, string space, bool print_semi, 
+		     bool constraint_info, bool constrained)
+{
+    // if printing the constrained declaration, exit if this variable was not
+    // selected. 
+    if (constrained && !send_p())
+	return;
+
+    fprintf( out, "%s%s %s", space.c_str(), type_name().c_str(),
+			     id2www(_name).c_str() ) ;
+
+    if (constraint_info) {
+	if (send_p())
+	    fprintf( stdout, ": Send True" ) ;
+	else
+	    fprintf( stdout, ": Send False" ) ;
+    }
+
+    if (print_semi)
+	fprintf( out, ";\n" ) ;
 }
 
 // Compares the object's current state with the semantics of a particular
@@ -718,6 +797,14 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.48  2003/01/10 19:46:39  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.42.4.10  2002/12/17 22:35:02  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
 // Revision 1.47  2002/06/27 16:26:48  tom
 // typo
 //
@@ -726,6 +813,13 @@ BaseType::ops(BaseType *, int, const string &)
 //
 // Revision 1.45  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
+//
+// Revision 1.42.4.9  2002/05/09 16:55:08  jimg
+// Added a definition for read(). This method was abstract; now it has an
+// implementation, albeit one that just throws an InternalErr exception. This
+// means that clients do not have to subclass the datatypes anymore! Simple
+// clients such as geturl should work just fine linking to the library without a
+// dummy set of specializations for the datatypes.
 //
 // Revision 1.42.4.8  2002/04/03 13:34:29  jimg
 // Added using std::endl and std::ends.

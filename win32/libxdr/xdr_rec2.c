@@ -13,6 +13,15 @@
 */
 
 /* $Log: xdr_rec2.c,v $
+/* Revision 1.2  2003/01/10 19:46:44  jimg
+/* Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+/* cases files were added on that branch (so they appear on the trunk for
+/* the first time).
+/*
+/* Revision 1.1.6.1  2002/10/13 21:47:44  rmorris
+/* Convert to using unix text file format.  This is in support of a move
+/* toward using automated nightly builds for win32.
+/*
 /* Revision 1.1  2000/05/19 06:32:48  rmorris
 /* added code for xdr library for win32 dods.
 /*
@@ -31,7 +40,7 @@
  *
   */
 
-static char rcsid[]={"$Id: xdr_rec2.c,v 1.1 2000/05/19 06:32:48 rmorris Exp $"};
+static char rcsid[]={"$Id: xdr_rec2.c,v 1.2 2003/01/10 19:46:44 jimg Exp $"};
 
 #include <stdio.h>
 #include <xdr.h>

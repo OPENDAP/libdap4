@@ -11,11 +11,7 @@
 
 #include "config_dap.h"
 
-#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
-#else
-#include <sstream>
-#endif
 
 #include "Grid.h"
 #include "DDS.h"
@@ -23,6 +19,7 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
+#include "IteratorAdapterT.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -41,10 +38,11 @@ Grid::_duplicate(const Grid &s)
 
     Grid &cs = const_cast<Grid &>(s);
 
-    for (Pix p = cs._map_vars.first(); p; cs._map_vars.next(p)) {
-	BaseType *btp = cs._map_vars(p)->ptr_duplicate();
+    for (Map_iter i = cs._map_vars.begin(); i != cs._map_vars.end(); i++)
+    {
+	BaseType *btp = (*i)->ptr_duplicate();
 	btp->set_parent(this);
-	_map_vars.append(btp);
+	_map_vars.push_back(btp);
     }
 }
 
@@ -71,9 +69,17 @@ Grid::~Grid()
 {
     delete _array_var; _array_var = 0;
 
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p)) {
-	delete _map_vars(p); _map_vars(p) = 0;
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+    {
+	BaseType *btp = *i ;
+	delete btp ;
     }
+}
+
+BaseType *
+Grid::ptr_duplicate()
+{
+    return new Grid(*this);
 }
 
 Grid &
@@ -84,8 +90,10 @@ Grid::operator=(const Grid &rhs)
 
     delete _array_var; _array_var = 0;
 
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p)) {
-	delete _map_vars(p); _map_vars(p) = 0;
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+    {
+	BaseType *btp = *i ;
+	delete btp ;
     }
 
     dynamic_cast<Constructor &>(*this) = rhs;
@@ -99,11 +107,13 @@ int
 Grid::element_count(bool leaves)
 {
     if (!leaves)
-	return _map_vars.length() + 1;
+	return _map_vars.size() + 1;
     else {
 	int i = 0;
-	for (Pix p = first_map_var(); p; next_map_var(p))
-	    i += map_var(p)->element_count(leaves);
+	for (Map_iter j = _map_vars.begin(); j != _map_vars.end(); j++)
+	{
+	    j += (*j)->element_count(leaves);
+	}
 
 	i += array_var()->element_count(leaves);
 	return i;
@@ -115,8 +125,10 @@ Grid::set_send_p(bool state)
 {
     _array_var->set_send_p(state);
 
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	_map_vars(p)->set_send_p(state);
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+    {
+	(*i)->set_send_p(state);
+    }
 
     BaseType::set_send_p(state);
 }
@@ -126,8 +138,10 @@ Grid::set_read_p(bool state)
 {
     _array_var->set_read_p(state);
 
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	_map_vars(p)->set_read_p(state);
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+    {
+	(*i)->set_read_p(state);
+    }
 
     BaseType::set_read_p(state);
 }
@@ -137,8 +151,10 @@ Grid::width()
 {
     unsigned int sz = _array_var->width();
   
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p)) 
-	sz += _map_vars(p)->width();
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+    {
+	sz += (*i)->width();
+    }
   
     return sz;
 }
@@ -156,9 +172,13 @@ Grid::serialize(const string &dataset, DDS &dds, XDR *sink,
     if (_array_var->send_p())
 	_array_var->serialize(dataset, dds, sink, false);
 
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	if (_map_vars(p)->send_p())
-	    _map_vars(p)->serialize(dataset, dds, sink, false);
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+    {
+	if ((*i)->send_p())
+	{
+	    (*i)->serialize(dataset, dds, sink, false);
+	}
+    }
 
     return true;
 }
@@ -168,8 +188,10 @@ Grid::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     _array_var->deserialize(source, dds, reuse);
 
-    for(Pix p = _map_vars.first(); p; _map_vars.next(p))
-	_map_vars(p)->deserialize(source, dds, reuse);
+    for(Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+    {
+	(*i)->deserialize(source, dds, reuse);
+    }
 
     return false;
 }
@@ -207,24 +229,30 @@ Grid::var(const string &name, btp_stack &s)
 
       @see BaseType */
 BaseType *
-Grid::var(const string &name, bool, btp_stack *s)
+Grid::var(const string &n, bool, btp_stack *s)
 {
+    string name = www2id(n);
+
     if (_array_var->name() == name) {
 	if (s)
 	    s->push(static_cast<BaseType *>(this));
 	return _array_var;
     }
 
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	if (_map_vars(p)->name() == name) {
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+    {
+	if ((*i)->name() == name)
+	{
 	    if (s)
 		s->push(static_cast<BaseType *>(this));
-	    return _map_vars(p);
+	    return *i;
 	}
+    }
 
     return 0;
 }
 
+#if 0
 /** This probably shouldn't be here.
 
     @deprecated */
@@ -240,6 +268,7 @@ Grid::var(const string &name, bool)
 
     return 0;
 }    
+#endif
 
 void 
 Grid::add_var(BaseType *bt, Part part)
@@ -260,7 +289,7 @@ Grid::add_var(BaseType *bt, Part part)
       case maps: {
 	BaseType *btp = bt->ptr_duplicate();
 	btp->set_parent(this);
-	_map_vars.append(btp);
+	_map_vars.push_back(btp);
 	return;
       }
       default:
@@ -283,26 +312,47 @@ Grid::first_map_var()
 {
     if (_map_vars.empty())
 	return 0;
-    else
-	return _map_vars.first();
+
+    IteratorAdapterT<BaseType *> *i =
+	new IteratorAdapterT<BaseType *>( _map_vars ) ;
+    i->first() ;
+    return i ;
+}
+
+Grid::Map_iter
+Grid::map_begin()
+{
+    return _map_vars.begin() ;
+}
+
+Grid::Map_iter
+Grid::map_end()
+{
+    return _map_vars.end() ;
 }
 
 /** @brief Increments the Map vector index. */
 void 
-Grid::next_map_var(Pix &p)
+Grid::next_map_var(Pix p)
 {
-    if (!_map_vars.empty() && p)
-	_map_vars.next(p);
+    p.next() ;
 }
 
 /** @brief Given an index, returns the corresponding Map vector. */
 BaseType *
 Grid::map_var(Pix p)
 {
-    if (!_map_vars.empty() && p)
-	return _map_vars(p);
-    else
-	return 0;
+    IteratorAdapterT<BaseType *> *i =
+	(IteratorAdapterT<BaseType *> *)p.getIterator() ;
+    if( !i )
+	return 0 ;
+
+#ifdef WIN32
+    BaseType *dummy = NULL;
+    return i->entry(&dummy);
+#else
+    return i->entry() ;
+#endif
 }
 
 /** Returns the number of components in the Grid object.  This is
@@ -325,15 +375,21 @@ Grid::components(bool constrained)
 {
     int comp;
 
-    if (constrained) {
+    if (constrained)
+    {
 	comp = _array_var->send_p() ? 1: 0;
 
-	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	    if (_map_vars(p)->send_p())
+	for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+	{
+	    if ((*i)->send_p())
+	    {
 		comp++;
+	    }
+	}
     }
-    else {
-	comp = 1 + _map_vars.length();
+    else
+    {
+	comp = 1 + _map_vars.size();
     }
 
     return comp;
@@ -372,24 +428,25 @@ Grid::projection_yields_grid()
     if (!a->send_p())
 	return false;
 
-    for (Pix p = a->first_dim(), m = first_map_var(); 
-	 valid && p && m;
-	 a->next_dim(p), next_map_var(m)) {
-	if (a->dimension_size(p, true)) {
+    Array::Dim_iter i = a->dim_begin() ;
+    Map_iter m = map_begin() ;
+    for( ; valid && i != a->dim_end() && m != map_end(); i++, m++)
+    {
+	if (a->dimension_size(i, true)) {
 	    // Check the matching Map vector; the Map projection must equal
 	    // the Array dimension projection
-	    Array *map = (Array *)map_var(m);
-	    Pix fd = map->first_dim(); // Maps have only one dimension!
+	    Array *map = (Array *)(*m);
+	    Array::Dim_iter fd = map->dim_begin(); // Maps have only one dim!
 	    valid = map->dimension_start(fd, true) 
-		    == a->dimension_start(p, true)
+		    == a->dimension_start(i, true)
 		&& map->dimension_stop(fd, true) 
-                   == a->dimension_stop(p, true)
+                   == a->dimension_stop(i, true)
 		&& map->dimension_stride(fd, true) 
-                   == a->dimension_stride(p, true);
+                   == a->dimension_stride(i, true);
 	}
 	else {
 	    // Corresponding Map vector must be excluded from the projection.
-	    Array *map = (Array *)map_var(m);
+	    Array *map = (Array *)(*m);
 	    valid = !map->send_p();
 	}
     }
@@ -423,9 +480,10 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
     if (constrained && projection == 1) {
 	_array_var->print_decl(os, space, true, constraint_info,
 			       constrained);
-	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	    _map_vars(p)->print_decl(os, space, true, constraint_info,
-				     constrained);
+	for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+	{
+	    (*i)->print_decl(os, space, true, constraint_info, constrained);
+	}
 	goto exit;		// Skip end material.
     }
     // If there are M (< N) componets (Array and Maps combined) in a N
@@ -438,9 +496,11 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
 	_array_var->print_decl(os, space + "    ", true, constraint_info,
 			       constrained);
 
-	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	    _map_vars(p)->print_decl(os, space + "    ", true, 
-				     constraint_info, constrained);
+	for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+	{
+	    (*i)->print_decl(os, space + "    ", true,
+			     constraint_info, constrained);
+	}
 
 	os << space << "} " << id2www(name());
     }
@@ -454,9 +514,11 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
 			       constrained);
 
 	os << space << " MAPS:" << endl;
-	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	    _map_vars(p)->print_decl(os, space + "    ", true, constraint_info,
-				     constrained);
+	for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
+	{
+	    (*i)->print_decl(os, space + "    ", true,
+			     constraint_info, constrained);
+	}
 
 	os << space << "} " << id2www(name());
     }
@@ -470,6 +532,78 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
 
     if (print_semi)
 	os << ";" << endl;
+
+    // If sending just one comp, skip sending the terminal semicolon, etc.
+exit:
+    return;
+}
+
+void 
+Grid::print_decl(FILE *out, string space, bool print_semi,
+		 bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+	return;
+
+    // If we are printing the declaration of a constrained Grid then check for
+    // the case where the projection removes all but one component; the
+    // resulting object is a simple array.
+    int projection = components(true);
+    if (constrained && projection == 1) {
+	_array_var->print_decl(out, space, true, constraint_info,
+			       constrained);
+	for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++)
+	{
+	    (*i)->print_decl(out, space, true, constraint_info, constrained);
+	}
+	goto exit;		// Skip end material.
+    }
+    // If there are M (< N) componets (Array and Maps combined) in a N
+    // component Grid, send the M components as elements of a Struture.
+    // This will preserve the grouping without violating the rules for a
+    // Grid. 
+    else if (constrained && !projection_yields_grid()) {
+	fprintf( out, "%sStructure {\n", space.c_str() ) ;
+
+	_array_var->print_decl(out, space + "    ", true, constraint_info,
+			       constrained);
+
+	for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++)
+	{
+	    (*i)->print_decl(out, space + "    ", true,
+			     constraint_info, constrained);
+	}
+
+	fprintf( out, "%s} %s", space.c_str(), id2www( name() ).c_str() ) ;
+    }
+    else {
+	// The number of elements in the (projected) Grid must be such that
+	// we have a valid Grid object; send it as such.
+	fprintf( out, "%s%s {\n", space.c_str(), type_name().c_str() ) ;
+
+	fprintf( out, "%s ARRAY:\n", space.c_str() ) ;
+	_array_var->print_decl(out, space + "    ", true, constraint_info,
+			       constrained);
+
+	fprintf( out, "%s MAPS:\n", space.c_str() ) ;
+	for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++)
+	{
+	    (*i)->print_decl(out, space + "    ", true,
+			     constraint_info, constrained);
+	}
+
+	fprintf( out, "%s} %s", space.c_str(), id2www( name() ).c_str() ) ;
+    }
+
+    if (constraint_info) {
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
+    if (print_semi)
+	fprintf( out, ";\n" ) ;
 
     // If sending just one comp, skip sending the terminal semicolon, etc.
 exit:
@@ -496,13 +630,46 @@ Grid::print_val(ostream &os, string space, bool print_decl_p)
     _array_var->print_val(os, "", false);
     if (pyg || !send_p())
 	os << " MAPS: ";
-    for (Pix p = _map_vars.first(); p; 
-	 _map_vars.next(p), (void)(p && os << ", "))
-	_map_vars(p)->print_val(os, "", false);
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); 
+	 i++, (void)(i != _map_vars.end() && os << ", "))
+    {
+	(*i)->print_val(os, "", false);
+    }
     os << " }";
 
     if (print_decl_p)
 	os << ";" << endl;
+}
+
+void 
+Grid::print_val(FILE *out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(out, space, false);
+	fprintf( out, " = " ) ;
+    }
+
+    // If we are printing a value on the client-side, projection_yields_grid
+    // should not be called since we don't *have* a projection without a
+    // contraint. I think that if we are here and send_p() is not true, then
+    // the value of this function should be ignored. 4/6/2000 jhrg
+    bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
+    if (pyg || !send_p())
+	fprintf( out, "{ ARRAY: " ) ;
+    else
+	fprintf( out, "{" ) ;
+    _array_var->print_val(out, "", false);
+    if (pyg || !send_p())
+	fprintf( out, " MAPS: " ) ;
+    for( Map_citer i = _map_vars.begin(); i != _map_vars.end(); 
+	 i++, (void)(i != _map_vars.end() && fprintf( out, ", " ) ) )
+    {
+	(*i)->print_val(out, "", false);
+    }
+    fprintf( out, " }" ) ;
+
+    if (print_decl_p)
+	fprintf( out, ";\n" ) ;
 }
 
 // Grids have ugly semantics.
@@ -541,18 +708,19 @@ Grid::check_semantics(string &msg, bool all)
     }
 
     // enough maps?
-    if ((unsigned)_map_vars.length() != av->dimensions()) {
+    if ((unsigned)_map_vars.size() != av->dimensions()) {
         msg+="The number of map variables for grid `"+this->name()+ "' does not match the number of dimensions of `";
 	msg+=av->name()+ "'\n";
 	return false;
     }
 
     const string array_var_name = av->name();
-    Pix p, ap;
-    for (p = _map_vars.first(), ap = av->first_dim();
-	 p; _map_vars.next(p), av->next_dim(ap)) {
+    Array::Dim_iter asi = av->dim_begin() ;
+    for (Map_iter mvi = _map_vars.begin();
+	 mvi != _map_vars.end(); mvi++, asi++)
+    {
 
-	BaseType *mv = _map_vars(p);
+	BaseType *mv = *mvi;
 
 	// check names
 	if (array_var_name == mv->name()) {
@@ -579,8 +747,11 @@ Grid::check_semantics(string &msg, bool all)
 	    return false;
 	}
 	// size of map must match corresponding array dimension
-	if (mv_a->dimension_size(mv_a->first_dim()) 
-	    != av->dimension_size(ap)) {
+	Array::Dim_iter mv_asi = mv_a->dim_begin() ;
+	int mv_a_size = mv_a->dimension_size(mv_asi) ;
+	int av_size = av->dimension_size(asi) ;
+	if (mv_a_size != av_size)
+	{
 	    msg+="Grid map variable  `" +mv_a->name()+"'s' size does not match the size of array variable '";
 	    msg+=_array_var->name()+"'s' cooresponding dimension\n";
 	    return false;
@@ -590,20 +761,79 @@ Grid::check_semantics(string &msg, bool all)
     if (all) {
 	if (!_array_var->check_semantics(msg, true))
 	    return false;
-	for (p = _map_vars.first(); p; _map_vars.next(p))
-	    if (!_map_vars(p)->check_semantics(msg, true))
+	for (Map_iter mvi = _map_vars.begin(); mvi != _map_vars.end(); mvi++)
+	{
+	    if (!(*mvi)->check_semantics(msg, true))
+	    {
 		return false;
+	    }
+	}
     }
 
     return true;
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.53  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.46.4.15  2002/12/31 16:43:20  rmorris
+// Patches to handle some of the fancier template code under VC++ 6.0.
+//
+// Revision 1.46.4.14  2002/12/27 19:34:42  jimg
+// Modified the var() methods so that www2id() is called before looking
+// up identifier names. See bug 563.
+//
+// Revision 1.46.4.13  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.46.4.12  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.46.4.11  2002/09/22 14:31:08  rmorris
+// VC++ doesn't consider x in 'for(int x,...)' to be only for the block
+// associated with the loop.  Multiple of these therefore case a error
+// because VC++ sees multiple definitions.  Changed to use different vars names
+// in each such block.
+//
+// Revision 1.46.4.10  2002/09/12 22:49:57  pwest
+// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+// than taking a reference to a Pix, taking a Pix value.
+//
+// Revision 1.46.4.9  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.46.4.8  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.52  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
 // Revision 1.51  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
+//
+// Revision 1.46.4.7  2002/05/22 16:57:51  jimg
+// I modified the `data type classes' so that they do not need to be
+// subclassed for clients. It might be the case that, for a complex client,
+// subclassing is still the best way to go, but you're not required to do
+// it anymore.
 //
 // Revision 1.46.4.6  2002/03/01 21:03:08  jimg
 // Significant changes to the var(...) methods. These now take a btp_stack

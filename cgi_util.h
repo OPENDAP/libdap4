@@ -15,10 +15,12 @@
 #ifndef _cgi_util_h
 #define _cgi_util_h
 
-#ifndef _connect_h
-#include "Connect.h"		// For ObjectType and EncodingType defs 
+#ifndef _dds_h
+#include "DDS.h"
 #endif
 
+#include "ObjectType.h"
+#include "EncodingType.h"
 
 /** The CGI utilities include a variety of functions useful to
     programmers developing DODS CGI filter programs. However, before jumping
@@ -46,7 +48,13 @@ void ErrMsgT(const string &Msgt);
 
 string name_path(const string &path);
 
-char *rfc822_date(const time_t t);
+/** Given a constant pointer to a time_t, return a RFC 822/1123 style date.
+    This function returns the RFC 822 date with the exception that the RFC
+    1123 modification for four-digit years is implemented.
+
+    @return The RFC 822/1123 style date in C++ string.
+    @param t A const time_t pointer. */
+string rfc822_date(const time_t t);
 
 time_t last_modified_time(string name);
 //@}
@@ -79,10 +87,10 @@ void set_mime_binary(FILE *out, ObjectType type = unknown_type,
 		     const string &version = "", EncodingType enc = x_plain,
 		     const time_t last_modified = 0);
 
-void set_mime_error(ostream &os, int code = HTERR_NOT_FOUND, 
+void set_mime_error(ostream &os, int code = 404, 
 		    const string &reason = "Dataset not found",
 		    const string &version = "");
-void set_mime_error(FILE *out, int code = HTERR_NOT_FOUND, 
+void set_mime_error(FILE *out, int code = 404, 
 		    const string &reason = "Dataset not found",
 		    const string &version = "");
 

@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.8 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.9 2003/01/10 19:46:40 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -36,7 +36,7 @@ InternalErr::InternalErr(const string &msg) : Error()
 {
     _error_code=internal_error;
     _error_message="";
-    _error_message+="An internal error was encounterd:\n";
+    _error_message+="An internal error was encountered:\n";
     _error_message+=msg+"\n";
     _error_message+="Please report this to support@unidata.ucar.edu\n";
 }
@@ -61,7 +61,7 @@ InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
     : Error(unknown_error, msg, pt, pgm) 
 {
     ostrstream oss;
-    oss << "An internal error was encounterd:" << endl
+    oss << "An internal error was encountered:" << endl
 	<< msg << endl
 	<< "Please report this to support@unidata.ucar.edu" << ends;
     _error_message  = oss.str();
@@ -87,6 +87,14 @@ InternalErr::OK()
 }
 
 // $Log: InternalErr.cc,v $
+// Revision 1.9  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.6.4.2  2002/12/13 04:53:23  jimg
+// Fixed spelling of `encounterd.'
+//
 // Revision 1.8  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
@@ -104,10 +112,10 @@ InternalErr::OK()
 //
 // Revision 1.5  2000/09/21 16:22:08  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
+// Many methods that returned error codes now throw exceptions. There are
 // two classes which are thrown by the software, Error and InternalErr.
 // InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
+// the library. Error is used to report all other errors. Since InternalErr
 // is a subclass of Error, programs need only to catch Error.
 //
 // Revision 1.4  2000/07/09 22:05:36  rmorris
@@ -115,7 +123,7 @@ InternalErr::OK()
 // for differences in the iostreams implementations.
 //
 // Revision 1.3  2000/06/07 19:33:21  jimg
-// Merged with verson 3.1.6
+// Merged with version 3.1.6
 //
 // Revision 1.2.2.1  2000/06/02 20:23:45  jimg
 // Added a constructor that takes the file name and line number. This helps in
@@ -137,5 +145,3 @@ InternalErr::OK()
 //
 // Revision 1.1  1999/05/04 19:43:47  jimg
 // Added
-//
-

@@ -21,8 +21,6 @@
 
 #include <iostream>
 #include <string>
-#include <Pix.h>
-#include <SLList.h>
 
 #ifndef _dds_h
 #include "DDS.h"
@@ -50,21 +48,34 @@ private:
     int _sequence_level;
 #endif
 public:
-<<<<<<< DataDDS.h
-  DataDDS(const string &n = "", const string &v = "");
-  virtual ~DataDDS();
+    DataDDS(const string &n = "", const string &v = "");
+    virtual ~DataDDS();
 
-  void set_version(const string &v);
-  int get_version_major();
-  int get_version_minor();
+    void set_version(const string &v);
+    int get_version_major();
+    int get_version_minor();
 
-#if 0
-  int sequence_level();
-  void set_sequence_level(int level);
-#endif
+    int sequence_level();
+    
+    void set_sequence_level(int level);
 };
 
+// Revision 1.8.4.1  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // $Log: DataDDS.h,v $
+// Revision 1.11  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
 // Revision 1.10  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

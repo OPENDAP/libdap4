@@ -145,6 +145,8 @@ int Regex::OK() const
  some built-in Regular expressions
 */
 
+#if 0
+// See my comment about these in Regex.h. 11/05/02 jhrg
 const Regex RXwhite("[ \n\t\r\v\f]+", 1);
 const Regex RXint("-?[0-9]+", 1);
 #if 0
@@ -155,4 +157,5 @@ const Regex RXlowercase("[a-z]+", 1);
 const Regex RXuppercase("[A-Z]+", 1);
 const Regex RXalphanum("[0-9A-Za-z]+", 1);
 const Regex RXidentifier("[A-Za-z_][A-Za-z0-9_]*", 1);
+#endif
 

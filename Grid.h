@@ -22,8 +22,9 @@
 #pragma interface
 #endif
 
-#include <SLList.h>
-#include <Pix.h>
+#include <vector>
+
+#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -89,70 +90,137 @@
 class Grid: public Constructor {
 private:
     BaseType *_array_var;
-    SLList<BaseType *> _map_vars;
+    std::vector<BaseType *> _map_vars;
     
     void _duplicate(const Grid &s);
 
 public:
-  Grid(const string &n = "");
-  Grid(const Grid &rhs);
-  virtual ~Grid();
+
+    Grid(const string &n = "");
+    Grid(const Grid &rhs);
+    virtual ~Grid();
+
+    typedef std::vector<BaseType *>::const_iterator Map_citer ;
+    typedef std::vector<BaseType *>::iterator Map_iter ;
+
     
-  Grid &operator=(const Grid &rhs);
-  virtual BaseType *ptr_duplicate() = 0;
+    Grid &operator=(const Grid &rhs);
+    virtual BaseType *ptr_duplicate();
 
-  virtual int element_count(bool leaves = false);
+    virtual int element_count(bool leaves = false);
 
-  virtual void set_send_p(bool state);
-  virtual void set_read_p(bool state);
+    virtual void set_send_p(bool state);
+    virtual void set_read_p(bool state);
 
-  virtual BaseType *var(const string &name, bool exact_match = true,
-			btp_stack *s = 0);
+    virtual BaseType *var(const string &name, bool exact_match = true,
+			  btp_stack *s = 0);
 
-  virtual BaseType *var(const string &name, btp_stack &s);
+    virtual BaseType *var(const string &name, btp_stack &s);
 
-  virtual void add_var(BaseType *bt, Part part);
+    virtual void add_var(BaseType *bt, Part part);
 
-  BaseType *array_var();
+    BaseType *array_var();
 
-  Pix first_map_var();
-  void next_map_var(Pix &p);
-  BaseType *map_var(Pix p);
+    Pix first_map_var();
+    void next_map_var(Pix p);
+    BaseType *map_var(Pix p);
 
-  virtual unsigned int width();
+    virtual unsigned int width();
 
-  virtual int components(bool constrained = false);
+    virtual int components(bool constrained = false);
 
-  virtual bool projection_yields_grid();
+    virtual bool projection_yields_grid();
 
-  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			 bool ce_eval = true);
-  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-  virtual bool read(const string &dataset) = 0;
+#if 0
+    virtual bool read(const string &dataset);
+#endif
 
-  virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int val2buf(void *buf, bool reuse = false);
 
-  virtual unsigned int buf2val(void **val);
+    virtual unsigned int buf2val(void **val);
 
-  virtual void print_decl(ostream &os, string space = "    ",
-			  bool print_semi = true,
-			  bool constraint_info = false,
-			  bool constrained = false);
+    virtual void print_decl(ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
 
-  virtual void print_val(ostream &os, string space = "",
-			 bool print_decl_p = true);
+    virtual void print_decl(FILE *out, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
 
-  virtual bool check_semantics(string &msg, bool all = false);
+    virtual void print_val(ostream &os, string space = "",
+			   bool print_decl_p = true);
+
+     virtual void print_val(FILE *out, string space = "",
+			   bool print_decl_p = true);
+
+   virtual bool check_semantics(string &msg, bool all = false);
+    /** Returns an iterator referencing the first Map vector. */
+    Map_iter map_begin() ;
+
+    /** Returns an iterator referencing the end of the list of Map vectors.
+        It does not reference the last Map vector */
+    Map_iter map_end() ;
+
 };
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.42  2003/01/10 19:46:40  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.38.4.10  2002/12/27 19:34:42  jimg
+ * Modified the var() methods so that www2id() is called before looking
+ * up identifier names. See bug 563.
+ *
+ * Revision 1.38.4.9  2002/12/17 22:35:03  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.38.4.8  2002/11/18 18:51:59  jimg
+ * Changed the include of Pix.h from #include <Pix.h> to "Pix.h" to fix
+ * a problem with the dependencies (see today's check in of Makefile.in).
+ *
+ * Revision 1.38.4.7  2002/10/28 21:17:44  pwest
+ * Converted all return values and method parameters to use non-const iterator.
+ * Added operator== and operator!= methods to IteratorAdapter to handle Pix
+ * problems.
+ *
+ * Revision 1.38.4.6  2002/09/22 14:15:43  rmorris
+ * Changed the use of vector to std::vector.  The 'using' directive for VC++
+ * no longer cut it in this case.
+ *
+ * Revision 1.38.4.5  2002/09/12 22:49:57  pwest
+ * Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+ * than taking a reference to a Pix, taking a Pix value.
+ *
+ * Revision 1.38.4.4  2002/09/05 22:52:54  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
  * Revision 1.41  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *
  * Revision 1.40  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
+ *
+ * Revision 1.38.4.3  2002/05/22 16:57:51  jimg
+ * I modified the `data type classes' so that they do not need to be
+ * subclassed for clients. It might be the case that, for a complex client,
+ * subclassing is still the best way to go, but you're not required to do
+ * it anymore.
  *
  * Revision 1.38.4.2  2002/03/01 21:03:08  jimg
  * Significant changes to the var(...) methods. These now take a btp_stack

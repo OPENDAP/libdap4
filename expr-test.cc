@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.32 2002/06/03 22:21:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.33 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +20,6 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.32 2002/06/03 22:21:16 ji
 #endif
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #ifdef WIN32
 #include <rpc.h>
@@ -34,12 +33,12 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.32 2002/06/03 22:21:16 ji
 #include <rpc/xdr.h>
 #endif
 
-#include <iostream>
-#include <fstream>
 #include <GetOpt.h>
 
 #include <string>
+#if 0
 #include <SLList.h>
+#endif
 
 #include "DDS.h"
 #include "DataDDS.h"
@@ -52,9 +51,6 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.32 2002/06/03 22:21:16 ji
 #include "debug.h"
 
 using std::cin;
-using std::cerr;
-using std::endl;
-using std::flush;
 
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
@@ -79,7 +75,7 @@ void *expr_string(const char *yy_str);
 
 extern int exprdebug;
 
-static int keep_temps = 0;
+static int keep_temps = 0;	// MT-safe; test code.
 
 const string version = "version 1.12";
 const string prompt = "expr-test: ";
@@ -171,17 +167,17 @@ main(int argc, char *argv[])
 	    verbose = true;
 	    break;
 	  case 'V':
-	    cerr << argv[0] << ": " << version << endl;
+	    fprintf( stderr, "%s: %s\n", argv[0], version.c_str() ) ;
 	    exit(0);
 	  case '?': 
 	  default:
-	    cerr << usage << endl; 
+	    fprintf( stderr, "%s\n", usage.c_str() ) ;
 	    exit(1);
 	    break;
 	}
 
     if (!scanner_test && !parser_test && !evaluate_test	&& !whole_enchalada) {
-	cerr << usage << endl;
+	fprintf( stderr, "%s\n", usage.c_str() ) ;
 	exit(1);
     }
 
@@ -232,83 +228,84 @@ void
 test_scanner(bool show_prompt)
 {
     if (show_prompt) 
-	cout << prompt;		// first prompt
+	fprintf( stdout, "%s", prompt.c_str() )	; // first prompt
 
     int tok;
     while ((tok = exprlex())) {
 	switch (tok) {
 	  case SCAN_WORD:
-	    cout << "WORD: " << exprlval.id << endl;
+	    fprintf( stdout, "WORD: %s\n", exprlval.id ) ;
 	    break;
 	  case SCAN_STR:
-	    cout << "STR: " << *exprlval.val.v.s << endl;
+	    fprintf( stdout, "STR: %s\n", exprlval.val.v.s->c_str() ) ;
 	    break;
 #if 0
 	  case SCAN_INT:
-	    cout << "INT: " << exprlval.val.v.i << endl;
+	    fprintf( stdout, "INT: %d\n", exprlval.val.v.i ) ;
 	    break;
 	  case SCAN_FLOAT:
-	    cout << "FLOAT: " << exprlval.val.v.f << endl;
+	    fprintf( stdout, "FLOAT: %f\n", exprlval.val.v.f ) ;
 	    break;
 #endif
 	  case SCAN_EQUAL:
-	    cout << "EQUAL: " << exprlval.op << endl;
+	    fprintf( stdout, "EQUAL: %d\n", exprlval.op ) ;
 	    break;
 	  case SCAN_NOT_EQUAL:
-	    cout << "NOT_EQUAL: " << exprlval.op << endl;
+	    fprintf( stdout, "NOT_EQUAL: %d\n", exprlval.op ) ;
 	    break;
 	  case SCAN_GREATER:
-	    cout << "GREATER: " << exprlval.op << endl;
+	    fprintf( stdout, "GREATER: %d\n", exprlval.op ) ;
 	    break;
 	  case SCAN_GREATER_EQL:
-	    cout << "GREATER_EQL: " << exprlval.op << endl;
+	    fprintf( stdout, "GREATER_EQL: %d\n", exprlval.op ) ;
 	    break;
 	  case SCAN_LESS:
-	    cout << "LESS: " << exprlval.op << endl;
+	    fprintf( stdout, "LESS: %d\n", exprlval.op ) ;
 	    break;
 	  case SCAN_LESS_EQL:
-	    cout << "LESS_EQL: " << exprlval.op << endl;
+	    fprintf( stdout, "LESS_EQL: %d\n", exprlval.op ) ;
 	    break;
 	  case SCAN_REGEXP:
-	    cout << "REGEXP: " << exprlval.op << endl;
+	    fprintf( stdout, "REGEXP: %d\n", exprlval.op ) ;
 	    break;
 	  case '*':
-	    cout << "Dereference" << endl;
+	    fprintf( stdout, "Dereference\n" ) ;
 	    break;
 	  case '.':
-	    cout << "Field Selector" << endl;
+	    fprintf( stdout, "Field Selector\n" ) ;
 	    break;
 	  case ',':
-	    cout << "List Element Separator" << endl;
+	    fprintf( stdout, "List Element Separator\n" ) ;
 	    break;
 	  case '[':
-	    cout << "Left Bracket" << endl;
+	    fprintf( stdout, "Left Bracket\n" ) ;
 	    break;
 	  case ']':
-	    cout << "Right Bracket" << endl;
+	    fprintf( stdout, "Right Bracket\n" ) ;
 	    break;
 	  case '(':
-	    cout << "Left Paren" << endl;
+	    fprintf( stdout, "Left Paren\n" ) ;
 	    break;
 	  case ')':
-	    cout << "Right Paren" << endl;
+	    fprintf( stdout, "Right Paren\n" ) ;
 	    break;
 	  case '{':
-	    cout << "Left Brace" << endl;
+	    fprintf( stdout, "Left Brace\n" ) ;
 	    break;
 	  case '}':
-	    cout << "Right Brace" << endl;
+	    fprintf( stdout, "Right Brace\n" ) ;
 	    break;
 	  case ':':
-	    cout << "Colon" << endl;
+	    fprintf( stdout, "Colon\n" ) ;
 	    break;
 	  case '&':
-	    cout << "Ampersand" << endl;
+	    fprintf( stdout, "Ampersand\n" ) ;
 	    break;
 	  default:
-	    cout << "Error: Unrecognized input" << endl;
+	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
 	}
-	cout << prompt << flush;		// print prompt after output
+	fprintf( stdout, "%s", prompt.c_str() ) ; // print prompt after output
+	fflush( stdout ) ;
     }
 }
 
@@ -327,12 +324,12 @@ test_parser(DDS &table, const string &dds_name, const string &constraint)
 	}
 	else {
 	    exprrestart(stdin);
-	    cout << prompt;
+	    fprintf( stdout, "%s", prompt.c_str() ) ;
 	    parser_arg arg(&table);
 	    exprparse((void *)&arg);
 	}
 
-	cout << "Input parsed" << endl;	// Parser throws on failure.
+	fprintf( stdout, "Input parsed\n" ) ;	// Parser throws on failure.
     }
     catch (Error &e) {
 	e.display_message();
@@ -352,12 +349,12 @@ read_table(DDS &table, const string &name, bool print)
     table.parse(name);
     
     if (print)
-	table.print();
+	table.print( stdout );
 
     if (table.check_semantics(true))
 	return true;
     else {
-	cout << "Input did not pass semantic checks" << endl;
+	fprintf( stdout, "Input did not pass semantic checks\n" ) ;
 	return false;
     }
 }
@@ -366,10 +363,10 @@ void
 evaluate_dds(DDS &table, bool print_constrained)
 {
     if (print_constrained)
-	table.print_constrained();
+	table.print_constrained( stdout );
     else
-	for (Pix p = table.first_var(); p; table.next_var(p))
-	    table.var(p)->print_decl(cout, "", true, true);
+	for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++)
+	    (*p)->print_decl(stdout, "", true, true);
 }
 
 // create a pipe for the caller's process which can be used by the DODS
@@ -381,7 +378,7 @@ loopback_pipe(FILE **pout, FILE **pin)
 #ifdef WIN32
     int fd[2];
     if (_pipe(fd, 1024, _O_BINARY) < 0) {
-	cerr << "Could not open pipe" << endl;
+	fprintf( stderr, "Could not open pipe\n" ) ;
 	return false;
     }
 
@@ -390,7 +387,7 @@ loopback_pipe(FILE **pout, FILE **pin)
 #else
     int fd[2];
     if (pipe(fd) < 0) {
-	cerr << "Could not open pipe" << endl;
+	fprintf( stderr, "Could not open pipe\n" ) ;
 	return false;
     }
 
@@ -418,8 +415,8 @@ move_dds(FILE *in)
 {
     char *c = tempnam(NULL, "dods");
     if (!c) {
-	cerr << "Could not create temporary file name" << strerror(errno)
-	    << endl;
+	fprintf( stderr, "Could not create temporary file name %s\n",
+			 strerror(errno) ) ;
 	return NULL;
     }
 
@@ -427,8 +424,8 @@ move_dds(FILE *in)
     if (!keep_temps)
 	unlink(c);
     if (!fp) {
-	cerr << "Could not open anonymous temporary file: " 
-	     << strerror(errno) << endl;
+	fprintf( stderr, "Could not open anonymous temporary file: %s\n",
+			 strerror(errno) ) ;
 	return NULL;
     }
 	    
@@ -446,8 +443,8 @@ move_dds(FILE *in)
 
     fflush(fp);
     if (fseek(fp, 0L, 0) < 0) {
-	cerr << "Could not rewind data DDS stream: " << strerror(errno)
-	    << endl;
+	fprintf( stderr, "Could not rewind data DDS stream: %s\n",
+		 strerror(errno) ) ;
 	return NULL;
     }
     
@@ -499,23 +496,23 @@ constrained_trans(const string &dds_name, string dataset,
     DDS server;			// could use DataDDS, but no need when
 				// sending. 
 
-    cout << "The complete DDS:" << endl;
+    fprintf( stdout, "The complete DDS:\n" ) ;
     read_table(server, dds_name, true);
 
     status = loopback_pipe(&pout, &pin);
     if (!status) {
-	cerr << "Could not create the loopback streams" << endl;
+	fprintf( stderr, "Could not create the loopback streams\n" ) ;
 	return false;
     }
 
     // If the CE was not passed in, read it from the command line.
     string ce;
     if (constraint == "") {
-	cout << "Constraint:";
+	fprintf( stdout, "Constraint:" ) ;
 	char c[256];
 	cin.getline(c, 256);
 	if (!cin) {
-	    cerr << "Could nore read the constraint expression" << endl;
+	    fprintf( stderr, "Could nore read the constraint expression\n" ) ;
 	    exit(1);
 	}
 	ce = c;
@@ -524,11 +521,11 @@ constrained_trans(const string &dds_name, string dataset,
 	ce = constraint;
 
     if (dataset == "") {
-	cout << "Data file:";
+	fprintf( stdout, "Data file:" ) ;
 	char c[256];
 	cin.getline(c, 255);
 	if (!cin) {
-	    cerr << "Could nore read the data file name" << endl;
+	    fprintf( stderr, "Could nore read the data file name\n" ) ;
 	    exit(1);
 	}
 	dataset = c;
@@ -541,7 +538,7 @@ constrained_trans(const string &dds_name, string dataset,
 	// We're at that awkward stage between two different error processing
 	// techniques. 4/6/2000 jhrg
 	if (!server.send(dataset, ce, pout, false)) {
-	    cerr << "Could not send the DDS" << endl;
+	    fprintf( stderr, "Could not send the DDS\n" ) ;
 	    return false;
 	}
     }
@@ -562,7 +559,7 @@ constrained_trans(const string &dds_name, string dataset,
     try {
 	DataDDS dds("Test_data", "DODS/3.2"); // Must use DataDDS on receving end
 	FILE *dds_fp = move_dds(pin);
-	DBG(cerr << "Moved the DDS to a temp file" << endl);
+	DBG( fprintf( stderr, "Moved the DDS to a temp file\n" ) ) ;
 	parse_mime(dds_fp);
 	dds.parse(dds_fp);
 	fclose(dds_fp);
@@ -572,10 +569,11 @@ constrained_trans(const string &dds_name, string dataset,
 	// Back on the client side; deserialize the data *using the newly
 	// generated DDS* (the one sent with the data).
 
-	cout << "The data:" << endl;
-	for (Pix q = dds.first_var(); q; dds.next_var(q)) {
-	    dds.var(q)->deserialize(source, &dds);
-	    dds.var(q)->print_val(cout);
+	fprintf( stdout, "The data:\n" ) ;
+	for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++)
+	{
+	    (*q)->deserialize(source, &dds);
+	    (*q)->print_val(stdout);
 	}
 
 	delete_xdrstdio(source);
@@ -589,6 +587,42 @@ constrained_trans(const string &dds_name, string dataset,
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.33  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.29.4.10  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.29.4.9  2002/11/06 21:53:06  jimg
+// I changed the includes of Regex.h from <Regex.h> to "Regex.h". This means
+// make depend will include the header in the list of dependencies.
+//
+// Revision 1.29.4.8  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.29.4.7  2002/09/05 22:52:55  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.29.4.6  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.32  2002/06/03 22:21:16  jimg
 // Merged with release-3-2-9
 //

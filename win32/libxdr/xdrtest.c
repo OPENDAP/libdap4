@@ -3,7 +3,7 @@
  *		Not for Resale. All copies to include this notice.
  */
 #ifndef lint	/* SUPPRESS 592 */
-static char rcsid[] = "$Id: xdrtest.c,v 1.1 2000/05/19 06:32:48 rmorris Exp $" ;
+static char rcsid[] = "$Id: xdrtest.c,v 1.2 2003/01/10 19:46:44 jimg Exp $" ;
 #endif
 
 /*

@@ -7,7 +7,7 @@
 
 #include "DODSFilter.h"
 #include "DAS.h"
-#include <Regex.h>
+#include "Regex.h"
 #include <strstream>
 
 class DODSFilterTest : public TestCase {

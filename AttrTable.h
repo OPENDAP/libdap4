@@ -19,15 +19,13 @@
 #include <string>
 #include <vector>
 
-#include <Pix.h>
-#include <DLList.h>
+#include "Pix.h"
 
 #ifndef _error_h
 #include "Error.h"
 #endif
 
 using std::string;
-using std::vector;
 using std::ostream;
 
 /** <b>AttrType</b> identifies the data types which may appear in an
@@ -106,7 +104,7 @@ enum AttrType {
     @see DAS
     @see AttrType */
 class AttrTable {
-private:
+public:
     struct entry {
 	string name;
 	AttrType type;
@@ -117,7 +115,7 @@ private:
 	// If type == Attr_container, use attributes to read the contained
 	// table, otherwise use attr to read the vector of values.
 	AttrTable *attributes;
-	vector<string> *attr;	// a vector of values. jhrg 12/5/94
+	std::vector<string> *attr;	// a vector of values. jhrg 12/5/94
 
 	entry(): name(""), type(Attr_unknown), is_alias(false),
 		 aliased_to("") {
@@ -159,8 +157,8 @@ private:
 		  break;
 	      }
 	      default: {
-		  vector<string> *src_attr = rhs.attr;
-		  vector<string> *dest_attr = new vector<string>(*src_attr);
+		  std::vector<string> *src_attr = rhs.attr;
+		  std::vector<string> *dest_attr = new std::vector<string>(*src_attr);
 		  attr = dest_attr;
 		  break;
 	      }
@@ -176,10 +174,19 @@ private:
 	}
     };
 
+private:
     string d_name;
-    DLList<entry *> attr_map;
-    
+    std::vector<entry *> attr_map;
+
+public:
+    typedef std::vector<entry *>::const_iterator Attr_citer ;
+    typedef std::vector<entry *>::iterator Attr_iter ;
+
+    friend class AttrTableTest;
+
+private:
     Pix simple_find(const string &target);
+    Attr_iter simple_find( const string &target, bool unused ) ;
     AttrTable *simple_find_container(const string &target);
 
     string AttrType_to_String(const AttrType at);
@@ -190,27 +197,55 @@ private:
 protected:
     /** Clone the given attribute table in <tt>this</tt>. */
     void clone(const AttrTable &at);
+    /** A simple printer that does nothing fancy with aliases.
+	@deprecated
+	@see simple_print(FILE *out, string pad, Attr_iter &i, bool dereference);
+    */
+    void simple_print(ostream &os, string pad, Attr_iter &i,
+		      bool dereference);
+
     /** A simple printer that does nothing fancy with aliases. */
-    void simple_print(ostream &os, string pad, Pix p, bool dereference);
+    void simple_print(FILE *out, string pad, Attr_iter &i,
+		      bool dereference);
 
 public:
-  /** @name Instance management functions */
+    /** @name Instance management functions */
 
-  //@{
+    //@{
     AttrTable();
     AttrTable(const AttrTable &rhs);
     virtual ~AttrTable();
     AttrTable & operator=(const AttrTable &rhs);
-  //@}
+    //@}
 
     
-  unsigned int get_size() const;
+    unsigned int get_size() const;
 
-  string get_name();
+    string get_name();
 
-  AttrTable *find_container(const string &target);
+    AttrTable *find_container(const string &target);
 
-  Pix find(const string &target, AttrTable **at);
+    /** @name Accessors */
+    //@{
+
+    Pix find(const string &target, AttrTable **at);
+
+    /** Look for an attribute or an attribute container. If used to search
+	for an attribute container, this method returns the container's {\it
+	parent} using the value-result parameter #at# and a reference to the
+	container using the Pix return value. If used to search for an
+	attribute, the attribute's container is returned using #at#; the
+	attribute itself can be accessed using the Pix return value.
+
+	@param target The name (using dot notation) of the attribute or
+	container to find.
+	@param at A value-result used to return the attribute container in
+	which #target# was found. Null if #target# was not found.
+	@param iter The itereator which will reference the attribute found
+	which can be used to access #target# from within #at#. References
+	dim_end() within #at# if the attribute or container does not exist.
+    */
+    void find(const string &target, AttrTable **at, Attr_iter &iter);
 
     /** Each of the following accessors get information using the name of an
 	attribute. They perform a simple search for the name in this
@@ -218,86 +253,200 @@ public:
 	notation is not recognized.
 
 	@name Accessors using an attribute name */
-  //@{
+    //@{
 	
-  AttrTable *get_attr_table(const string &name);
-  AttrTable *get_attr_table(const char *name);
+    AttrTable *get_attr_table(const string &name);
+    AttrTable *get_attr_table(const char *name);
 
-  string get_type(const string &name);
-  string get_type(const char *name);
+    string get_type(const string &name);
+    string get_type(const char *name);
 
-  AttrType get_attr_type(const string &name);
-  AttrType get_attr_type(const char *name);
+    AttrType get_attr_type(const string &name);
+    AttrType get_attr_type(const char *name);
 
-  unsigned int get_attr_num(const string &name);
-  unsigned int get_attr_num(const char *name);
+    unsigned int get_attr_num(const string &name);
+    unsigned int get_attr_num(const char *name);
 
-  string get_attr(const string &name, unsigned int i = 0);
-  string get_attr(const char *name, unsigned int i = 0);
+    string get_attr(const string &name, unsigned int i = 0);
+    string get_attr(const char *name, unsigned int i = 0);
 
-  vector<string> *get_attr_vector(const string &name);
+    vector<string> *get_attr_vector(const string &name);
     vector<string> *get_attr_vector(const char *name);
-  //@}
+    //@}
 
 
-  /** The following accessors get information using a Pix pseudo-index
-      pointer into the AttrTable structure.
+    Pix first_attr();
 
-      @name Accessors using a Pix
-  */
-  //@{
-
-  Pix first_attr();
-
-  void next_attr(Pix &p);
-
-  string get_name(Pix p);
-
-  bool is_container(Pix p);
-
-  AttrTable *get_attr_table(Pix p);
-
-  string get_type(Pix p);
-
-  AttrType get_attr_type(Pix p);
-
-  unsigned int get_attr_num(Pix p);
-
-  string get_attr(Pix p, unsigned int i = 0);
+    void next_attr(Pix p);
     
-  vector<string> *get_attr_vector(Pix p);
-  //@}
+    AttrTable::entry *AttrTable::attr(Pix p);
 
+    string get_name(Pix p);
 
-  void set_name(const string &n);
+    bool is_container(Pix p);
 
-  unsigned int append_attr(const string &name, const string &type, 
-			   const string &value) throw (Error);
-  unsigned int append_attr(const char *name, const char *type, 
-			   const char *value) throw (Error);
+    AttrTable *get_attr_table(Pix p);
 
-  AttrTable *append_container(const string &name) throw (Error);
+    string get_type(Pix p);
 
-  AttrTable *append_container(AttrTable *at, const string &name) 
-    throw (Error);
+    AttrType get_attr_type(Pix p);
 
-  void add_container_alias(const string &name, AttrTable *src) 
+    unsigned int get_attr_num(Pix p);
+
+    string get_attr(Pix p, unsigned int i = 0);
+    
+    vector<string> *get_attr_vector(Pix p);
+
+    void set_name(const string &n);
+
+    unsigned int append_attr(const string &name, const string &type, 
+			     const string &value) throw (Error);
+    unsigned int append_attr(const char *name, const char *type, 
+			     const char *value) throw (Error);
+
+    AttrTable *append_container(const string &name) throw (Error);
+
+    AttrTable *append_container(AttrTable *at, const string &name) 
 	throw (Error);
 
-  void add_value_alias(AttrTable *das, const string &name, 
+    /** @name get information using an iterator */
+    //@{
+    /** Get an iterator to the first entry in this attribute table. 
+	@return Attr_iter; references the end of the array if empty list. */
+    Attr_iter attr_begin() ;
+
+    /** Get an iterator to the end attribute table. Does not point to 
+	the last attribute in the table
+	@return Attr_iter */
+    Attr_iter attr_end() ;
+
+    /** Returns the name of the attribute referenced by #iter#. */
+    string get_name(Attr_iter &iter);
+
+    /** Returns true if the attribute referenced by #iter# is a container. */
+    bool is_container(Attr_iter &iter);
+
+    /** Get the attribute container referenced by #iter#. If no
+	such container exists, then return a reference to the end of the
+	table.
+	@param iter Reference to a table contained by this object.
+	@return The child attribute table. */
+    AttrTable *get_attr_table(Attr_iter &iter);
+
+    /** Get the type name of an attribute referenced by #iter#.
+	@param iter
+	@return A string with the name of this attribute datatype. */
+    string get_type(Attr_iter &iter);
+
+    /** Get the type of the attribute referenced by #iter#.
+	@param iter
+	@return The datatype of this attribute in an instance of AttrType. */
+    AttrType get_attr_type(Attr_iter &iter);
+
+    /** If the attribute referenced by #iter# is a container attribute, this
+        method returns the number of attributes in {\it its} attribute table.
+	If the indicated attribute is not a container, the method returns the 
+	number of values for the attribute (1 for a scalar attribute, N for a 
+	vector attribute value).
+	@param iter Reference to an attribute
+	@return The number of elements in the attribute. */
+    unsigned int get_attr_num(Attr_iter &iter);
+
+    /** Returns the value of an attribute. If the attribute has a vector
+	value, you can indicate which is the desired value with the index
+	argument, #i#. If the argument is omitted, the first value is
+	returned. If the attribute has only a single value, the index
+	argument is ignored. If #i# is greater than the number of
+	elements in the attribute, an error is produced.
+
+	All values in an attribute table are stored as string data. They may
+	be converted to a more appropriate internal format by the calling
+	program.
+
+	@param iter Reference to an attribute
+	@param i The attribute value index, zero-based.
+	@return If the indicated attribute is a container, this function
+	returns the string ``None''. If using a name to refer to the attribute
+	and the named attribute does not exist, return the empty string. */
+    string get_attr(Attr_iter &iter, unsigned int i = 0);
+
+    /** Returns a pointer to the vector of values associated with the
+	attribute referenced by iterator #iter#. 
+
+	Note that all values in an attribute table are stored as string data.
+	They may be converted to a more appropriate internal format by the
+	calling program.
+
+	@param iter
+	@return If the indicated attribute is a container, this function
+	returns the null pointer.  Otherwise returns a pointer to the
+	the attribute vector value. */
+    std::vector<string> *get_attr_vector(Attr_iter &iter);
+    //@} Accessors that use an iterator
+
+    void add_container_alias(const string &name, AttrTable *src) 
+	throw (Error);
+
+    void add_value_alias(AttrTable *das, const string &name, 
 			 const string &source) throw (Error);
 
-  bool attr_alias(const string &alias, AttrTable *at, const string &name);
+    bool attr_alias(const string &alias, AttrTable *at, const string &name);
 
-  bool attr_alias(const string &alias, const string &name);
+    bool attr_alias(const string &alias, const string &name);
 
-  void del_attr(const string &name, int i = -1);
+    void del_attr(const string &name, int i = -1);
 
-  void print(ostream &os, string pad = "    ", bool dereference = false);
+    void print(ostream &os, string pad = "    ", bool dereference = false);
+
+    /** Prints an ASCII representation of the attribute table to the
+	indicated FILE pointer. The #pad# argument is prefixed to each
+	line of the output to provide control of indentation.
+
+	@memo Prints the attribute table.
+	@param out Print to the given output FILE.
+	@param pad Indent elements of a table using this string of spaces. By
+	default this is a string of four spaces
+	@param dereference If true, follow aliases. Default is false. */
+    void print(FILE *out, string pad = "    ", bool dereference = false);
 };
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.38  2003/01/10 19:46:39  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.32.4.11  2002/12/17 22:35:02  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.32.4.10  2002/11/18 18:51:59  jimg
+ * Changed the include of Pix.h from #include <Pix.h> to "Pix.h" to fix
+ * a problem with the dependencies (see today's check in of Makefile.in).
+ *
+ * Revision 1.32.4.9  2002/10/28 21:17:43  pwest
+ * Converted all return values and method parameters to use non-const iterator.
+ * Added operator== and operator!= methods to IteratorAdapter to handle Pix
+ * problems.
+ *
+ * Revision 1.32.4.8  2002/09/22 14:15:42  rmorris
+ * Changed the use of vector to std::vector.  The 'using' directive for VC++
+ * no longer cut it in this case.
+ *
+ * Revision 1.32.4.7  2002/09/12 22:49:57  pwest
+ * Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+ * than taking a reference to a Pix, taking a Pix value.
+ *
+ * Revision 1.32.4.6  2002/09/05 22:52:54  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
  * Revision 1.37  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *

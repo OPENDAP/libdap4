@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.5 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.6 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,9 +20,6 @@ static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.5 2001/09/28 17:50:07 jimg
 #include <errno.h>
 #include <assert.h>
 
-#include <streambuf.h>
-#include <iostream.h>
-#include <stdiostream.h>
 #include <string>
 
 #include <GetOpt.h>
@@ -53,7 +50,7 @@ void *gse_string(const char *yy_str);
 
 extern int gse_debug;
 
-const string version = "$Revision: 1.5 $";
+const string version = "$Revision: 1.6 $";
 const string prompt = "gse-test: ";
 const string options = "sS:p:dv";
 const string usage = "gse-test [-s [-S string] -d -v [-p dds file]\n\
@@ -95,17 +92,17 @@ main(int argc, char *argv[])
 	    dds_file = getopt.optarg;
 	    break;
 	  case 'v':
-	    cerr << argv[0] << ": " << version << endl;
+	    fprintf( stderr, "%s: %s\n", argv[0], version.c_str() ) ;
 	    exit(0);
 	  case '?': 
 	  default:
-	    cerr << usage << endl; 
+	    fprintf( stderr, "%s\n", usage.c_str() ) ;
 	    exit(1);
 	    break;
 	}
 
     if (!scan_gse && !test_parse) {
-	cerr << usage << endl;
+	fprintf( stderr, "%s\n", usage.c_str() ) ;
 	exit(1);
     }
 
@@ -143,42 +140,42 @@ void
 test_gse_scanner(bool show_prompt)
 {
     if (show_prompt) 
-	cout << prompt;		// first prompt
+	fprintf( stdout, "%s", prompt.c_str() ) ;// first prompt
 
     int tok;
     while ((tok = gse_lex())) {
 	switch (tok) {
-	  case SCAN_ID:
-	    cout << "ID: " << gse_lval.id << endl;
+	  case SCAN_WORD:
+	    fprintf( stdout, "WORD: %s\n", gse_lval.id ) ;
 	    break;
 	  case SCAN_INT:
-	    cout << "INT: " << gse_lval.val << endl;
+	    fprintf( stdout, "INT: %d\n", (int)gse_lval.val ) ;
 	    break;
 	  case SCAN_FLOAT:
-	    cout << "FLOAT: " << gse_lval.val << endl;
+	    fprintf( stdout, "FLOAT: %f\n", gse_lval.val ) ;
 	    break;
 	  case SCAN_EQUAL:
-	    cout << "EQUAL: " << gse_lval.op << endl;
+	    fprintf( stdout, "EQUAL: %d\n", gse_lval.op ) ;
 	    break;
 	  case SCAN_NOT_EQUAL:
-	    cout << "NOT_EQUAL: " << gse_lval.op << endl;
+	    fprintf( stdout, "NOT_EQUAL: %d\n", gse_lval.op ) ;
 	    break;
 	  case SCAN_GREATER:
-	    cout << "GREATER: " << gse_lval.op << endl;
+	    fprintf( stdout, "GREATER: %d\n", gse_lval.op ) ;
 	    break;
 	  case SCAN_GREATER_EQL:
-	    cout << "GREATER_EQL: " << gse_lval.op << endl;
+	    fprintf( stdout, "GREATER_EQL: %d\n", gse_lval.op ) ;
 	    break;
 	  case SCAN_LESS:
-	    cout << "LESS: " << gse_lval.op << endl;
+	    fprintf( stdout, "LESS: %d\n", gse_lval.op ) ;
 	    break;
 	  case SCAN_LESS_EQL:
-	    cout << "LESS_EQL: " << gse_lval.op << endl;
+	    fprintf( stdout, "LESS_EQL: %d\n", gse_lval.op ) ;
 	    break;
 	  default:
-	    cout << "Error: Unrecognized input" << endl;
+	    fprintf( stdout, "Error: Unrecognized input\n" ) ;
 	}
-	cout << prompt;		// print prompt after output
+	fprintf( stdout, "%s", prompt.c_str() ) ; // print prompt after output
     }
 }
 
@@ -211,13 +208,14 @@ test_parser(const string &dds_file)
     Grid *grid = 0;
     DDS dds;
     dds.parse(dds_file);
-    for (Pix p = dds.first_var(); p; dds.next_var(p)) {
-	if (dds.var(p)->type() == dods_grid_c)
-	    grid = dynamic_cast<Grid *>(dds.var(p));
+    for (DDS::Vars_iter p = dds.var_begin(); p != dds.var_end(); p++)
+    {
+	if ((*p)->type() == dods_grid_c)
+	    grid = dynamic_cast<Grid *>((*p));
     }
     if (!grid) {
-	cerr << "Could not find a grid variable in the DDS, exiting." 
-	     << endl;
+	fprintf( stderr,
+		 "Could not find a grid variable in the DDS, exiting.\n" ) ; 
 	exit(1);
     }
     
@@ -225,10 +223,12 @@ test_parser(const string &dds_file)
     // Array values, but does need valid map data. Assume that the maps are
     // all either Float64 or Int32 maps.
 
-    for (Pix p = grid->first_map_var(); p; grid->next_map_var(p)) {
-	Array *map = dynamic_cast<Array *>(grid->map_var(p));
+    for (Grid::Map_iter p = grid->map_begin(); p != grid->map_end(); p++)
+    {
+	Array *map = dynamic_cast<Array *>((*p));
 	// Can safely assume that maps are one-dimensional Arrays.
-	int size = map->dimension_size((Pix)map->first_dim());
+	Array::Dim_iter diter = map->dim_begin() ;
+	int size = map->dimension_size(diter);
 	switch(map->var()->type()) {
 	  case dods_int16_c: {
 	    dods_int16 *vec = new_map<dods_int16>(size);
@@ -251,23 +251,24 @@ test_parser(const string &dds_file)
 	    break;
 	  }
 	  default:
-	    cerr << "Invalid map vector type in grid, exiting." << endl;
+	    fprintf( stderr, "Invalid map vector type in grid, exiting.\n" ) ;
 	    exit(1);
 	}
     }
 
-    dds.print();
-    for (Pix p = grid->first_map_var(); p; grid->next_map_var(p))
-	grid->map_var(p)->print_val(cout);
+    dds.print(stdout);
+    for (Grid::Map_iter p = grid->map_begin(); p != grid->map_end(); p++)
+	(*p)->print_val(stdout);
 
     // Parse the GSE and mark the selection in the Grid.
 
     gse_restart(stdin);
 
-    cout << prompt << flush;
+    fprintf( stdout, "%s", prompt.c_str() ) ;
+    fflush( stdout ) ;
     
     gse_arg *arg = new gse_arg(grid);
-    bool status;
+    bool status = false ;
     try {
 	status = gse_parse((void *)arg) == 0;
     }
@@ -277,17 +278,39 @@ test_parser(const string &dds_file)
     }
 
     if (status) {
-	cout << "Input parsed" << endl;
+	fprintf( stdout, "Input parsed\n" ) ;
 	GSEClause *gsec = arg->get_gsec();
-	cout << "Start: " << gsec->get_start() 
-	     << " Stop: " << gsec->get_stop()
-	     << endl;
+	fprintf( stdout, "Start: %d Stop: %d\n", gsec->get_start(),
+						 gsec->get_stop() ) ;
     }
     else
-	cout << "Input did not parse" << endl;
+	fprintf( stdout, "Input did not parse\n" ) ;
 }
 
 // $Log: gse-test.cc,v $
+// Revision 1.6  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.4.4.4  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.4.4.3  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.4.4.2  2002/09/05 22:52:55  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.5  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

@@ -15,7 +15,7 @@
 #define _expr_h
 
 #include <string>
-#include <SLList.h>
+#include <vector>
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -49,10 +49,33 @@ typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds);
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array
 // indices.
 
-typedef SLList<int> int_list;
-typedef SLList<int_list *> int_list_list;
+typedef std::vector<int> int_list;
+typedef std::vector<int>::const_iterator int_citer ;
+typedef std::vector<int>::iterator int_iter ;
+typedef std::vector<int_list *> int_list_list;
+typedef std::vector<int_list *>::const_iterator int_list_citer ;
+typedef std::vector<int_list *>::iterator int_list_iter ;
 
 // $Log: expr.h,v $
+// Revision 1.15  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.13.4.3  2002/09/22 14:22:02  rmorris
+// Changed 'vector' to 'std::vector' as the 'using' directive is no longer
+// cutting it in this case.
+//
+// Revision 1.13.4.2  2002/09/05 22:52:55  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.14  2002/06/03 22:21:16  jimg
 // Merged with release-3-2-9
 //

@@ -34,7 +34,8 @@
 #include <rpc/xdr.h>
 #endif
 
-#include <SLList.h>
+#include <vector>
+#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -88,75 +89,162 @@
 
 class Structure: public Constructor {
 private:
-    SLList<BaseType *> _vars;
+    std::vector<BaseType *> _vars;
     
     void _duplicate(const Structure &s);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
     BaseType *exact_match(const string &name, btp_stack *s = 0);
 
 public:
-  Structure(const string &n = "");
+    Structure(const string &n = "");
 
-  Structure(const Structure &rhs);
-  virtual ~Structure();
+    typedef std::vector<BaseType *>::const_iterator Vars_citer ;
+    typedef std::vector<BaseType *>::iterator Vars_iter ;
 
-  Structure &operator=(const Structure &rhs);
-  virtual BaseType *ptr_duplicate() = 0;
+    Structure(const Structure &rhs);
+    virtual ~Structure();
 
-  virtual int element_count(bool leaves = false);
-  virtual bool is_linear();
+    Structure &operator=(const Structure &rhs);
+    virtual BaseType *ptr_duplicate();
 
-  virtual void set_send_p(bool state);
-  virtual void set_read_p(bool state);
+    virtual int element_count(bool leaves = false);
+    virtual bool is_linear();
 
-  virtual unsigned int width();
+    virtual void set_send_p(bool state);
+    virtual void set_read_p(bool state);
 
-  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			 bool ce_eval = true);
-  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+    virtual unsigned int width();
 
-  virtual bool read(const string &dataset) = 0;
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.
 
-  virtual unsigned int val2buf(void *val, bool reuse = false);
-  virtual unsigned int buf2val(void **val);
+    virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual unsigned int buf2val(void **val);
 
-  virtual BaseType *var(const string &name, bool exact_match = true,
-			btp_stack *s = 0);
+    virtual BaseType *var(const string &name, bool exact_match = true,
+			  btp_stack *s = 0);
 
-  virtual BaseType *var(const string &name, btp_stack &s);
+    virtual BaseType *var(const string &name, btp_stack &s);
 
-  virtual void add_var(BaseType *bt, Part part = nil);
+    virtual void add_var(BaseType *bt, Part part = nil);
 
-  Pix first_var();
+    Pix first_var();
 
-  void next_var(Pix &p);
+    void next_var(Pix p);
 
-  BaseType *var(Pix p);
+    BaseType *var(Pix p);
 
-  virtual void print_decl(ostream &os, string space = "    ",
-			  bool print_semi = true,
-			  bool constraint_info = false,
-			  bool constrained = false);
+    /** Returns an iterator referencing the first structure element. */
+    Vars_iter var_begin() ;
 
-  virtual void print_val(ostream &os, string space = "",
-			 bool print_decl_p = true);
+    /** Returns an iterator referencing the end of the list of structure
+	elements. Does not reference the last structure element. */
+    Vars_iter var_end() ;
 
-  virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
-			      string space = "", bool print_decl_p = true);
+    virtual void print_decl(ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
 
-  virtual bool check_semantics(string &msg, bool all = false);
+    virtual void print_decl(FILE *out, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
+    virtual void print_val(ostream &os, string space = "",
+			   bool print_decl_p = true);
+
+    virtual void print_val(FILE *out, string space = "",
+			   bool print_decl_p = true);
+
+    /** Prints the Structure and all elements of any Sequences contained
+	within. 
+	@deprecated
+	@see print_all_vals(FILE *out, XDR *src, DDS *dds, string space, bool print_decl_p);
+    */
+    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
+				string space = "", bool print_decl_p = true);
+
+    /** Prints the Structure and all elements of any Sequences contained
+	within. 
+	@deprecated
+	@see Sequence::print_all_vals
+    */
+    virtual void print_all_vals(FILE *out, XDR *src, DDS *dds,
+				string space = "", bool print_decl_p = true);
+
+    virtual bool check_semantics(string &msg, bool all = false);
 };
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.42  2003/01/10 19:46:40  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.37.4.13  2002/12/27 19:34:42  jimg
+ * Modified the var() methods so that www2id() is called before looking
+ * up identifier names. See bug 563.
+ *
+ * Revision 1.37.4.12  2002/12/17 22:35:03  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.37.4.11  2002/10/29 22:21:01  pwest
+ * added operator== and operator!= operators to IteratorAdapter and
+ * IteratorAdapterT classes to handle Pix == Pix use.
+ *
+ * Revision 1.37.4.10  2002/10/28 21:17:44  pwest
+ * Converted all return values and method parameters to use non-const iterator.
+ * Added operator== and operator!= methods to IteratorAdapter to handle Pix
+ * problems.
+ *
+ * Revision 1.37.4.9  2002/10/18 22:47:52  jimg
+ * Resolved conflicts with Rob's changes
+ *
+ * Revision 1.37.4.8  2002/09/22 14:21:11  rmorris
+ * Changed 'vector' to 'std::vector', as the using directive is no longer
+ * cutting it for VC++ in this case.  Made on of the iterator typedef's
+ * public as it is used external to this class.
+ *
+ * Revision 1.37.4.7  2002/09/12 22:49:58  pwest
+ * Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+ * than taking a reference to a Pix, taking a Pix value.
+ *
+ * Revision 1.37.4.6  2002/09/05 22:52:54  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
+ * Revision 1.37.4.5  2002/08/08 06:54:57  jimg
+ * Changes for thread-safety. In many cases I found ugly places at the
+ * tops of files while looking for globals, et c., and I fixed them up
+ * (hopefully making them easier to read, ...). Only the files RCReader.cc
+ * and usage.cc actually use pthreads synchronization functions. In other
+ * cases I removed static objects where they were used for supposed
+ * improvements in efficiency which had never actually been verifiied (and
+ * which looked dubious).
+ *
  * Revision 1.41  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *
  * Revision 1.40  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
+ *
+ * Revision 1.37.4.4  2002/05/22 16:57:51  jimg
+ * I modified the `data type classes' so that they do not need to be
+ * subclassed for clients. It might be the case that, for a complex client,
+ * subclassing is still the best way to go, but you're not required to do
+ * it anymore.
  *
  * Revision 1.37.4.3  2002/03/01 21:03:08  jimg
  * Significant changes to the var(...) methods. These now take a btp_stack

@@ -1,9 +1,11 @@
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
 // (c) COPYRIGHT URI/MIT 1995-1999
 // Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
-//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 // Implementation for class Vector. This class is the basis for all the
 // vector-type classes in DODS (Array, List). 
@@ -12,16 +14,16 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.41 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.42 2003/01/10 19:46:40 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
-#include <assert.h>
 #include <algorithm>
 
 #include "Vector.h"
+#include "escaping.h"
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
@@ -174,8 +176,10 @@ Vector::set_read_p(bool state)
 	@return A pointer to the BaseType if found, otherwise null.
 	@see Vector::var */
 BaseType *
-Vector::var(const string &name, bool exact_match)
+Vector::var(const string &n, bool exact_match)
 {
+    string name = www2id(n);
+
     // Make sure to check for the case where name is the default (the empty
     // string). 9/1/98 jhrg
     if (_var->is_constructor_type()) {
@@ -199,8 +203,10 @@ Vector::var(const string &name, bool exact_match)
 	@param s Record the path to <i>name</i>.
 	@return A pointer to the named variable. */
 BaseType *
-Vector::var(const string &name, btp_stack &s)
+Vector::var(const string &n, btp_stack &s)
 {
+    string name = www2id(n);
+
     if (_var->is_constructor_type())
 	return _var->var(name, s);
     else {
@@ -344,7 +350,7 @@ bool
 Vector::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		  bool ce_eval)
 {
-	int i = 0;
+    int i = 0;
 
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr
@@ -797,6 +803,17 @@ Vector::print_decl(ostream &os, string space, bool print_semi,
     var()->print_decl(os, " ", print_semi, constraint_info, constrained);
 }
 
+void
+Vector::print_decl(FILE *out, string space, bool print_semi,
+		  bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+	return;
+
+    fprintf( out, "%s%s", space.c_str(), type_name().c_str() ) ;
+    var()->print_decl(out, " ", print_semi, constraint_info, constrained);
+}
+
 void 
 Vector::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -823,6 +840,32 @@ Vector::print_val(ostream &os, string space, bool print_decl_p)
 	os << "}";
 }
 
+void 
+Vector::print_val(FILE *out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(out, space, false);
+	fprintf( out, " = " ) ;
+    }
+
+    fprintf( out, "{ " ) ;
+
+    unsigned int i;
+    unsigned int l = length();
+
+    for (i = 0; i < l-1; ++i) {
+	var(i)->print_val(out, "", false);
+	fprintf( out, ", " ) ;
+    }
+
+    var(i)->print_val(out, "", false);
+
+    if (print_decl_p)
+	fprintf( out, "};\n" ) ;
+    else
+	fprintf( out, "}" ) ;
+}
+
 bool
 Vector::check_semantics(string &msg, bool) 
 {
@@ -830,11 +873,38 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.42  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.35.4.12  2002/12/27 19:34:42  jimg
+// Modified the var() methods so that www2id() is called before looking
+// up identifier names. See bug 563.
+//
+// Revision 1.35.4.11  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.35.4.10  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.41  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
 // Revision 1.40  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
+//
+// Revision 1.35.4.9  2002/05/22 16:57:51  jimg
+// I modified the `data type classes' so that they do not need to be
+// subclassed for clients. It might be the case that, for a complex client,
+// subclassing is still the best way to go, but you're not required to do
+// it anymore.
 //
 // Revision 1.35.4.8  2002/01/30 18:52:26  jimg
 // Vector now throws an InternalErr object when a DataDDS arrives and the amount

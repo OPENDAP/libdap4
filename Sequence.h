@@ -25,7 +25,7 @@
 #endif
 
 #include <vector>
-#include <SLList.h>
+#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -133,11 +133,11 @@ typedef vector<BaseType *> BaseTypeRow;
 class Sequence: public Constructor {
 private:
     // Linked list of templates for the variables in this sequence.
-    SLList<BaseType *> _vars;
+    std::vector<BaseType *> _vars;
 
     // This holds the values read off the wire. Values are stored in
     // instances of BaseType objects.
-    vector<BaseTypeRow *> d_values;
+    std::vector<BaseTypeRow *> d_values;
 
     // The number of the row that has just been deserialized. Before
     // deserialized has been called, this member is -1. 
@@ -171,127 +171,174 @@ protected:
     bool is_end_of_sequence(unsigned char marker);
 
 public:
+
+    typedef std::vector<BaseType *>::const_iterator Vars_citer ;
+    typedef std::vector<BaseType *>::iterator Vars_iter ;
     Sequence(const string &n = "");
 
     Sequence(const Sequence &rhs);
 
     virtual ~Sequence();
 
-    /** Assigment. When overloading, make absolutely sure to call this
-	version (use: #dynamic_cast<Sequence &>(*this) = rhs;#). */
     Sequence &operator=(const Sequence &rhs);
 
-    virtual BaseType *ptr_duplicate() = 0;
+    virtual BaseType *ptr_duplicate();
 
     virtual string toString();
 
     virtual int element_count(bool leaves = false);
 
-    /** A linear sequence is any sequence that holds only simple types and/or
-	a single linear sequence. So they can be nested sequences, but they
-	cannot contain Arrays or Grids and they cannot contain more than one
-	linear sequence at any given level. Structures are allowed since they
-	can be flattened within the Sequence that holds them.
-
-	A better name for this would be is_flat or is_flatenable. 2/18/2002
-	jhrg 
-
-	@return True if the Sequence can be flattened, False otherwise. */
     virtual bool is_linear();
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
 
-#if 0
-  // The following methods appear to have disappeared.
+    virtual unsigned int width();
 
-    bool is_super_sequence();
-    bool is_eos_found();
-    bool is_child_eos_found();
-#endif 
-
-
-  virtual unsigned int width();
-
-  virtual int length();
+    virtual int length();
     
-  int number_of_rows();
+    int number_of_rows();
 
-  virtual bool read_row(int row, const string &dataset, DDS &dds, 
-			bool ce_eval = true);
+    virtual bool read_row(int row, const string &dataset, DDS &dds, 
+			  bool ce_eval = true);
 
-<<<<<<< Sequence.h
-  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			 bool ce_eval = true);
-=======
->>>>>>> 1.48
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
 
-  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-  int get_starting_row_number();
+    int get_starting_row_number();
 
-  int get_row_stride();
+    int get_row_stride();
 
-  int get_ending_row_number();
+    int get_ending_row_number();
 
-  void set_row_number_constraint(int start, int stop, int stride = 1);
-
-    /** Reads a single instance of a Sequence.
-	@return TRUE on success, FALSE on failure, <i>or</i> the end of
-	the Sequence. */
-  virtual bool read(const string &dataset) = 0;
+    void set_row_number_constraint(int start, int stop, int stride = 1);
 
     // Move me!
-  virtual unsigned int val2buf(void *val, bool reuse = false);
-  virtual unsigned int buf2val(void **val);
+    virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual unsigned int buf2val(void **val);
 
-  virtual BaseType *var(const string &name, bool exact_match = true,
-			btp_stack *s = 0);
-  virtual BaseType *var(const string &name, btp_stack &s);
+    virtual BaseType *var(const string &name, bool exact_match = true,
+			  btp_stack *s = 0);
+    virtual BaseType *var(const string &name, btp_stack &s);
 
-  BaseType *var_value(size_t row, const string &name);
+    BaseType *var_value(size_t row, const string &name);
 
-  BaseType *var_value(size_t row, size_t i);
+    BaseType *var_value(size_t row, size_t i);
 
-  BaseTypeRow *row_value(size_t row);
+    BaseTypeRow *row_value(size_t row);
 
-  virtual void add_var(BaseType *, Part part = nil);
+    virtual void add_var(BaseType *, Part part = nil);
+    /** Returns a reference to the first variable in a Sequence instance.
+	This corresponds to the item in the first column of the table
+	the Sequence represents.  It is not the first row of the table. 
+    */
+    Vars_iter var_begin() ;
 
-  Pix first_var();
+    /** Returns a reference to the end of the Sequence instance, not the 
+	last element
+    */
+    Vars_iter var_end() ;
 
-  void next_var(Pix &p);
+    Pix first_var();
 
-  BaseType *var(Pix p);
+    void next_var(Pix p);
 
-  virtual void print_decl(ostream &os, string space = "    ",
-			  bool print_semi = true,
-			  bool constraint_info = false,
-			  bool constrained = false);
+    BaseType *var(Pix p);
 
-  virtual void print_one_row(ostream &os, int row, string space,
-			     bool print_row_num = false);
+    virtual void print_decl(ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
 
-  virtual void print_val_by_rows(ostream &os, string space = "",
-				 bool print_decl_p = true,
-				 bool print_row_numners = true);
+    virtual void print_decl(FILE *out, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
 
-  virtual void print_val(ostream &os, string space = "",
-			 bool print_decl_p = true);
+    virtual void print_one_row(ostream &os, int row, string space,
+			       bool print_row_num = false);
 
-  virtual void print_all_vals(ostream& os, XDR *src, DDS *dds, 
-			      string space = "", bool print_decl_p = true);
+     virtual void print_one_row(FILE *out, int row, string space,
+			       bool print_row_num = false);
 
-  virtual bool check_semantics(string &msg, bool all = false);
+   virtual void print_val_by_rows(ostream &os, string space = "",
+				   bool print_decl_p = true,
+				   bool print_row_numners = true);
+
+    virtual void print_val_by_rows(FILE *out, string space = "",
+				   bool print_decl_p = true,
+				   bool print_row_numbers = true);
+
+    virtual void print_val(ostream &os, string space = "",
+			   bool print_decl_p = true);
+
+    virtual void print_val(FILE *out, string space = "",
+			   bool print_decl_p = true);
+
+    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds, 
+				string space = "", bool print_decl_p = true);
+
+    virtual void print_all_vals(FILE *out, XDR *src, DDS *dds, 
+				string space = "", bool print_decl_p = true);
+
+    virtual bool check_semantics(string &msg, bool all = false);
+
 };
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.50  2003/01/10 19:46:40  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.45.4.16  2002/12/27 19:34:42  jimg
+ * Modified the var() methods so that www2id() is called before looking
+ * up identifier names. See bug 563.
+ *
+ * Revision 1.45.4.15  2002/12/17 22:35:03  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.45.4.14  2002/10/28 21:17:44  pwest
+ * Converted all return values and method parameters to use non-const iterator.
+ * Added operator== and operator!= methods to IteratorAdapter to handle Pix
+ * problems.
+ *
+ * Revision 1.45.4.13  2002/09/22 14:20:01  rmorris
+ * Changed all vector to std::vector as the using directive is no longer
+ * cutting it in this case.
+ *
+ * Revision 1.45.4.12  2002/09/13 16:29:45  jimg
+ * Repaired a bad doc comment.
+ *
+ * Revision 1.45.4.11  2002/09/12 22:49:58  pwest
+ * Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+ * than taking a reference to a Pix, taking a Pix value.
+ *
+ * Revision 1.45.4.10  2002/09/05 22:52:54  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
  * Revision 1.49  2002/06/18 15:36:24  tom
  * Moved comments and edited to accommodate doxygen documentation-generator.
  *
  * Revision 1.48  2002/06/03 21:53:38  jimg
  * Removed level stuff. The level() and set_level() methods were not being used
  * anymore, so I removed them.
+ *
+ * Revision 1.45.4.9  2002/05/22 16:57:51  jimg
+ * I modified the `data type classes' so that they do not need to be
+ * subclassed for clients. It might be the case that, for a complex client,
+ * subclassing is still the best way to go, but you're not required to do
+ * it anymore.
  *
  * Revision 1.45.4.8  2002/03/29 18:40:20  jimg
  * Updated comments and/or removed dead code.

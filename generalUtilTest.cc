@@ -1,9 +1,12 @@
 
+
+// -*- C++ -*-
+
 // Tests for the util functions in util.cc and escaping.cc
 
-#include "TestCase.h"
-#include "TestCaller.h"
-#include "TestSuite.h"
+#include <cppunit/TextTestRunner.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include "util.h"
 #include "escaping.h"
@@ -11,17 +14,34 @@
 string hexstring(unsigned char val); // originally declared static
 string unhexstring(string s);
 
-class generalUtilTest : public TestCase {
+using namespace CppUnit;
+
+class generalUtilTest : public TestFixture {
 private:
 
 public: 
-    generalUtilTest (string name) : TestCase (name) {}
+    generalUtilTest() {}
+    ~generalUtilTest() {}
 
     void setUp() {
     }
 
     void tearDown() {
     }
+
+    CPPUNIT_TEST_SUITE(generalUtilTest);
+
+    CPPUNIT_TEST(path_to_filename_test);
+    CPPUNIT_TEST(hexstring_test);
+    CPPUNIT_TEST(unhexstring_test);
+    CPPUNIT_TEST(id2www_test);
+    CPPUNIT_TEST(www2id_test);
+    CPPUNIT_TEST(ce_string_parse_test);
+    CPPUNIT_TEST(escattr_test);
+    CPPUNIT_TEST(munge_error_message_test);
+    CPPUNIT_TEST(get_tempfile_template_test);
+
+    CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
     void path_to_filename_test() {
@@ -135,43 +155,19 @@ public:
 	       == 0);
 #endif
     }
-
-    static Test *suite ()  {
-	TestSuite *s = new TestSuite("generalUtilTest");
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("path_to_filename_test",
-		    &generalUtilTest::path_to_filename_test));
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("hexstring_test", &generalUtilTest::hexstring_test));
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("unhexstring_test", &generalUtilTest::unhexstring_test));
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("www2id_test", &generalUtilTest::www2id_test));
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("id2www_test", &generalUtilTest::id2www_test));
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("ce_string_parse_test", 
-		    &generalUtilTest::ce_string_parse_test));
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("munge_error_message_test", 
-		    &generalUtilTest::munge_error_message_test));
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("get_tempfile_template_test", 
-		    &generalUtilTest::get_tempfile_template_test));
-
-	s->addTest(new TestCaller<generalUtilTest>
-		   ("escattr_test", &generalUtilTest::escattr_test));
-
-	return s;
-    }
 };
+
+CPPUNIT_TEST_SUITE_REGISTRATION(generalUtilTest);
+
+int 
+main( int argc, char* argv[] )
+{
+    CppUnit::TextTestRunner runner;
+    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+
+    runner.run();
+
+    return 0;
+}
 
 

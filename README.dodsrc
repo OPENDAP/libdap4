@@ -1,4 +1,4 @@
-$Id: README.dodsrc,v 1.2 2001/06/15 23:49:02 jimg Exp $
+$Id: README.dodsrc,v 1.3 2003/01/10 19:46:40 jimg Exp $
 
 The DODS client-side configuration file (.dodsrc) is used to configure how
 clients cache responses and how they interact with proxy servers. By default
@@ -115,6 +115,7 @@ meanings are:
      If REG_NOSUB is set, then when PREG is passed to regexec, that
      routine will report only success or failure, and nothing about the
      registers. Add 8 to <flags>.
+
 The NO_PROXY parameter provides a simple way to say that access to a certain
 host should never go through a proxy without using the more complicated
 regular expression syntax. The syntax of NO_PROXY is:

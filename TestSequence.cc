@@ -14,6 +14,26 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.27  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.23.4.5  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.23.4.4  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
 // Revision 1.26  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
 //
@@ -254,47 +274,48 @@ TestSequence::read(const string &dataset)
 
     istrstream iss(line);
 
-    for (Pix p = first_var(); p; next_var(p)) {
+    for (Vars_iter iter = var_begin(); iter != var_end(); iter++)
+    {
 	// Don't use the read mfuncs since for now within Test* they always
 	// return the same hardcoded values (not much use for testing
 	// sequences).
-	switch (var(p)->type()) {
+	switch ((*iter)->type()) {
 	  case dods_byte_c: {
 	      unsigned int ui;
 	      iss >> ui;
 	      char b = ui;
-	      var(p)->val2buf((void*)&b);
-	      var(p)->set_read_p(true);
+	      (*iter)->val2buf((void*)&b);
+	      (*iter)->set_read_p(true);
 	      break;
 	  }
 	  case dods_int32_c: {
 	      int i;
 	      iss >> i;
 	      DBG(cerr << "Int32 value read :" << i << endl);
-	      var(p)->val2buf((void*)&i);
-	      var(p)->set_read_p(true);
+	      (*iter)->val2buf((void*)&i);
+	      (*iter)->set_read_p(true);
 	      break;
 	  }
 	  case dods_uint32_c: {
 	      unsigned int ui;
 	      iss >> ui;
-	      var(p)->val2buf((void*)&ui);
-	      var(p)->set_read_p(true);
+	      (*iter)->val2buf((void*)&ui);
+	      (*iter)->set_read_p(true);
 	      break;
 	  }
 	  case dods_float64_c: {
 	      double d;
 	      iss >> d;
-	      var(p)->val2buf((void*)&d);
-	      var(p)->set_read_p(true);
+	      (*iter)->val2buf((void*)&d);
+	      (*iter)->set_read_p(true);
 	      break;
 	  }
 	  case dods_str_c:
 	  case dods_url_c: {
 	      string s;
 	      iss >> s;
-	      var(p)->val2buf((void*)&s);
-	      var(p)->set_read_p(true);
+	      (*iter)->val2buf((void*)&s);
+	      (*iter)->set_read_p(true);
 	      break;
 	  }
 

@@ -5,32 +5,38 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// The Usage server. Arguments: two arguments; the dataset name and the
-// pathname and `api prefix' of the data server. Returns a HTML document that
-// describes what information this dataset contains, special characteristics
-// of the server users might want to know and any special information that
-// the dataset providers want to make available. 
-// jhrg 12/9/96
+// The Usage server. Arguments: three arguments; filter options, the dataset
+// name and the pathname and `api prefix' of the data server. Returns a HTML
+// document that describes what information this dataset contains, special
+// characteristics of the server users might want to know and any special
+// information that the dataset providers want to make available. jhrg
+// 12/9/96
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.19 2002/06/03 22:21:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.20 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
-#include <assert.h>
+
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 #include <iostream>
 #include <fstream>
-
 #include <string>
 #if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
 #endif
-#include <Regex.h>
+
+#include "Regex.h"
 
 #include "cgi_util.h"
+#include "util.h"
+#include "DAS.h"
+
 #include "debug.h"
 
 using std::cerr;
@@ -42,30 +48,72 @@ using std::ostrstream;
 static void
 usage(char *argv[])
 {
-    cerr << argv[0] << " <filename> <CGI directory>" << endl
-	 << "      Takes two required arguments; the dataset filename" << endl
-	 << "      and the directory and api prefix for the filter" << endl
-	 << "      program" << endl; 
+    cerr << argv[0] << "<options> <filename> <CGI directory>" << endl
+         << "Takes three required arguments; command options to be" << endl
+	 << "passed to the filter programsm the dataset filename and" << endl
+	 << "the directory and api prefix for the filter program." << endl; 
 }
 
 // This code could use a real `kill-file' some day - about the same time that
 // the rest of the server gets a `rc' file... For the present just see if a
 // small collection of regexs match the name.
 
+// The pthread code here is used to ensure that the static objects dim and
+// global (in name_in_kill_file() and name_is_global()) are initialized only
+// once. If the pthread package is not present when libdap++ is built, this
+// code is *not* MT-Safe.
+
+static Regex *dim_ptr;
+#if HAVE_PTHREAD_H
+static pthread_once_t dim_once_control = PTHREAD_ONCE_INIT;
+#endif
+
+static void
+init_dim_regex()
+{
+    // MT-Safe if called via pthread_once or similar
+    static Regex dim(".*_dim_[0-9]*", 1); // HDF `dim' attributes.
+    dim_ptr = &dim;
+}
+
 static bool
 name_in_kill_file(const string &name)
 {
-    static Regex dim(".*_dim_[0-9]*", 1); // HDF `dimension' attributes.
+#if HAVE_PTHREAD_H
+    pthread_once(&dim_once_control, init_dim_regex);
+#else
+    if (!dim_ptr)
+	init_dim_regex();
+#endif
 
-    return dim.match(name.c_str(), name.length()) != -1;
+    return dim_ptr->match(name.c_str(), name.length()) != -1;
+}
+
+static Regex *global_ptr;
+#if HAVE_PTHREAD_H
+static pthread_once_t global_once_control = PTHREAD_ONCE_INIT;
+#endif
+
+static void
+init_global_regex()
+{
+    // MT-Safe if called via pthread_once or similar
+    static Regex global("\\(.*global.*\\)\\|\\(.*dods.*\\)", 1);
+    global_ptr = &global;
 }
 
 static bool
 name_is_global(string &name)
 {
-    static Regex global("\\(.*global.*\\)\\|\\(.*dods.*\\)", 1);
+#if HAVE_PTHREAD_H
+    pthread_once(&global_once_control, init_global_regex);
+#else
+    if (!global_ptr)
+	init_global_regex();
+#endif
+
     downcase(name);
-    return global.match(name.c_str(), name.length()) != -1;
+    return global_ptr->match(name.c_str(), name.length()) != -1;
 }
 
 // write_global_attributes and write_attributes are almost the same except
@@ -78,7 +126,8 @@ write_global_attributes(ostrstream &oss, AttrTable *attr,
 			const string prefix = "")
 {
     if (attr) {
-	for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
+	for (AttrTable::Attr_iter a = attr->attr_begin(); a != attr->attr_end(); a++)
+	{
 	    if (attr->is_container(a))
 		write_global_attributes(oss, attr->get_attr_table(a), 
 				 (prefix == "") ? attr->get_name(a) 
@@ -105,7 +154,8 @@ static void
 write_attributes(ostrstream &oss, AttrTable *attr, const string prefix = "")
 {
     if (attr) {
-	for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
+	for (AttrTable::Attr_iter a = attr->attr_begin(); a != attr->attr_end(); a++)
+	{
 	    if (attr->is_container(a))
 		write_attributes(oss, attr->get_attr_table(a), 
 				 (prefix == "") ? attr->get_name(a) 
@@ -146,7 +196,8 @@ build_global_attributes(DAS &das, DDS &)
 
     ga << "<h3>Dataset Information</h3>\n<center>\n<table>\n";
 
-    for (Pix p = das.first_var(); p; das.next_var(p)) {
+    for (AttrTable::Attr_iter p = das.var_begin(); p != das.var_end(); p++)
+    {
 	string name = das.get_name(p);
 
 	// I used `name_in_dds' originally, but changed to `name_is_global'
@@ -155,7 +206,7 @@ build_global_attributes(DAS &das, DDS &)
 	// global attributes. jhrg. 5/22/97
 	if (!name_in_kill_file(name) && name_is_global(name)) {
 	    AttrTable *attr = das.get_table(p);
-	    found = attr->first_attr() != 0; // we have global attrs
+	    found = attr->first_attr() != (Pix)0; // we have global attrs
 	    write_global_attributes(ga, attr, "");
 	}
     }
@@ -199,9 +250,11 @@ fancy_typename(BaseType *v)
 	  ostrstream type;
 	  Array *a = (Array *)v;
 	  type << "Array of " << fancy_typename(a->var()) <<"s ";
-	  for (Pix p = a->first_dim(); p; a->next_dim(p))
+	  for (Array::Dim_iter p = a->dim_begin(); p != a->dim_end(); p++)
+	  {
 	      type << "[" << a->dimension_name(p) << " = 0.." 
 		   << a->dimension_size(p, false)-1 << "]";
+	  }
 	  type << ends;
 	  string fancy = type.str();
 	  type.rdbuf()->freeze(0);
@@ -257,9 +310,10 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
       case dods_structure_c: {
 	vs << "<table>\n";
 	Structure *sp = dynamic_cast<Structure *>(btp);
-	for (Pix p = sp->first_var(); p; sp->next_var(p)) {
+	for (Structure::Vars_iter p = sp->var_begin(); p != sp->var_end(); p++)
+	{
 	    vs << "<tr>";
-	    write_variable(sp->var(p), das, vs);
+	    write_variable((*p), das, vs);
 	    vs << "</tr>";
 	}
 	vs << "</table>\n";
@@ -269,9 +323,10 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
       case dods_sequence_c: {
 	vs << "<table>\n";
 	Sequence *sp = dynamic_cast<Sequence *>(btp);
-	for (Pix p = sp->first_var(); p; sp->next_var(p)) {
+	for (Sequence::Vars_iter p = sp->var_begin(); p != sp->var_end(); p++)
+	{
 	    vs << "<tr>";
-	    write_variable(sp->var(p), das, vs);
+	    write_variable((*p), das, vs);
 	    vs << "</tr>";
 	}
 	vs << "</table>\n";
@@ -282,9 +337,10 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 	vs << "<table>\n";
 	Grid *gp = dynamic_cast<Grid *>(btp);
 	write_variable(gp->array_var(), das, vs);
-	for (Pix p = gp->first_map_var(); p; gp->next_map_var(p)) {
+	for (Grid::Map_iter p = gp->map_begin(); p != gp->map_end(); p++)
+	{
 	    vs << "<tr>";
-	    write_variable(gp->map_var(p), das, vs);
+	    write_variable((*p), das, vs);
 	    vs << "</tr>";
 	}
 	vs << "</table>\n";
@@ -292,7 +348,7 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
       }
 
       default:
-	assert("Unknown type" && false);
+	throw InternalErr(__FILE__, __LINE__, "Unknown type");
     }
 }
 
@@ -311,9 +367,10 @@ build_variable_summaries(DAS &das, DDS &dds)
     vs << "<h3>Variables in this Dataset</h3>\n<center>\n<table>\n";
     //    vs << "<tr><th>Variable</th><th>Information</th></tr>\n";
 
-    for (Pix p = dds.first_var(); p; dds.next_var(p)) {
+    for (DDS::Vars_iter p = dds.var_begin(); p != dds.var_end(); p++)
+    {
 	vs << "<tr>";
-	write_variable(dds.var(p), das, vs);
+	write_variable((*p), das, vs);
 	vs << "</tr>";
     }
 
@@ -328,11 +385,11 @@ build_variable_summaries(DAS &das, DDS &dds)
 static void
 html_header()
 {
-    cout << "HTTP/1.0 200 OK" << endl;
-    cout << "XDODS-Server: " << DVR << endl;
-    cout << "Content-type: text/html" << endl; 
-    cout << "Content-Description: dods_description" << endl;
-    cout << endl;			// MIME header ends with a blank line
+    fprintf( stdout, "HTTP/1.0 200 OK\n" ) ;
+    fprintf( stdout, "XDODS-Server: %s\n", DVR ) ;
+    fprintf( stdout, "Content-type: text/html\n" ) ;
+    fprintf( stdout, "Content-Description: dods_description\n" ) ;
+    fprintf( stdout, "\n" ) ;	// MIME header ends with a blank line
 }
 
 #ifdef WIN32
@@ -342,27 +399,29 @@ int
 #endif 
 main(int argc, char *argv[])
 {
-    if (argc != 3) {
+    if (argc != 4) {
 	usage(argv);
 	exit(1);
     }
 
-    string name = argv[1];
+    string options = argv[1];
+
+    string name = argv[2];
     string doc;
 
     if (found_override(name, doc)) {
 	html_header();
-	cout << doc;
+	fprintf( stdout, "%s", doc.c_str() ) ;
 	exit(0);
     }
 
-    // The user is not overriding the DAS/DDS generated information, so read
+    // The site is not overriding the DAS/DDS generated information, so read
     // the DAS, DDS and user supplied documents. 
 
-    string cgi = argv[2];
+    string cgi = argv[3];
 
     DAS das;
-    string command = cgi + "_das '" + name + "'";
+    string command = "./" + cgi + "_das " + options + " '" + name + "'";
     DBG(cerr << "DAS Command: " << command << endl);
 
     try {
@@ -380,7 +439,7 @@ main(int argc, char *argv[])
 #endif
 
 	DDS dds;
-	command = cgi + "_dds '" + name + "'";
+	command = "./" + cgi + "_dds '" + name + "'";
 	DBG(cerr << "DDS Command: " << command << endl);
 
 #ifndef WIN32
@@ -409,31 +468,31 @@ main(int argc, char *argv[])
 	html_header();
 
 	if (global_attrs.length()) {
-	    cout << "<html><head><title>Dataset Information</title></head>" 
-		 << endl 
-		 << "<html>" << endl 
-		 << global_attrs << endl 
-		 << "<hr>" << endl;
+	    fprintf( stdout, "%s\n%s\n%s\n%s\n",
+			"<html><head><title>Dataset Information</title></head>",
+		        "<html>",
+			global_attrs.c_str(),
+		        "<hr>" ) ;
 	}
 
-	cout << variable_sum << endl;
+	fprintf( stdout, "%s\n", variable_sum.c_str() ) ;
 
-	cout << "<hr>" << endl;
+	fprintf( stdout, "<hr>\n" ) ;
 
-	cout << user_html << endl;
+	fprintf( stdout, "%s\n", user_html.c_str() ) ;
 
-	cout << "</html>" << endl;
+	fprintf( stdout, "</html>\n" ) ;
     }
     catch (Error &e) {
 	string error_msg = e.get_error_message();
-	cout << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\"\n"
-	     << "\"http://www.w3.org/TR/REC-html40/loose.dtd\">\n"
-	     << "<html><head><title>DODS Error</title>\n"
-	     << "</head>\n" 
-	     << "<body>\n"
-	     << "<h3>Error building the DODS dataset usage repsonse</h3>:\n"
-	     << error_msg
-	     << "<hr>\n";
+	fprintf( stdout, "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\"\n" ) ;
+	fprintf( stdout, "\"http://www.w3.org/TR/REC-html40/loose.dtd\">\n") ;
+	fprintf( stdout, "<html><head><title>DODS Error</title>\n" ) ;
+	fprintf( stdout, "</head>\n" ) ;
+	fprintf( stdout, "<body>\n" ) ;
+	fprintf( stdout, "<h3>Error building the DODS dataset usage repsonse</h3>:\n" ) ;
+	fprintf( stdout, "%s", error_msg.c_str() ) ;
+	fprintf( stdout, "<hr>\n" ) ;
 
 #ifndef WIN32
 	return 1;
@@ -449,8 +508,59 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.20  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.16.2.16  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.16.2.15  2002/11/18 03:18:35  rmorris
+// Minor porting change - VC++ required an explicit cast.
+//
+// Revision 1.16.2.14  2002/11/06 21:53:06  jimg
+// I changed the includes of Regex.h from <Regex.h> to "Regex.h". This means
+// make depend will include the header in the list of dependencies.
+//
+// Revision 1.16.2.13  2002/10/28 21:17:45  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.16.2.12  2002/09/05 22:52:55  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.16.2.11  2002/08/06 21:24:03  jimg
+// Made MT-Safe. Uses/requires pthreads; if configure cannot find pthreads,
+// then this code is *not* MT-Safe.
+//
+// Revision 1.16.2.10  2002/06/18 22:49:19  jimg
+// Added include of util.h and DAS.h. This was necessary because I removed the
+// an include of Connect.h in cgi_util.h (a bad idea anyway).
+//
+// Revision 1.16.2.9  2002/06/06 01:03:37  jimg
+// I modified main() so that it accepts (and expects) a third argument which
+// holds command line options which are to be passed to the filter programs.
+// This enables the dispatch code to pass along various options/arguments to the
+// filters. Most important of these is the -r <cache_dir> option because the
+// .info service for HDF files was often broken without it (see bug 453).
+//
 // Revision 1.19  2002/06/03 22:21:16  jimg
 // Merged with release-3-2-9
+//
+// Revision 1.16.2.8  2002/05/09 22:00:22  jimg
+// Fixed a bug in usage. If the CWD is not on the PATH (that is if `.' is not
+// onthe PATH) then usage was not finding the das and dds handlers. I changed
+// the code so that it now looks for ./<api>_das, ... where the `./' is new.
+// This fixes the bug.
 //
 // Revision 1.16.2.7  2002/03/27 17:37:49  jimg
 // Fixed printing of nested attributes. I replaced code that wrote out the

@@ -15,12 +15,6 @@
 
 #include <Regex.h>		// GNU Regex class used for string =~ op.
 
-#if 0
-#ifndef _debug_h
-#include "debug.h"
-#endif
-#endif
-
 static unsigned
 dods_max(int i1, int i2)
 {
@@ -33,7 +27,7 @@ dods_max(int i1, int i2)
     
     @see rops
     @see USCmp
-    @SUCmp */
+    @see SUCmp */
 template<class T1, class T2> class Cmp {
  public:
     static bool eq(T1 v1, T2 v2) {return v1 == v2;}
@@ -63,9 +57,6 @@ template<class UT1, class T2> class USCmp {
     static bool gr(UT1 v1, T2 v2) {return v1 > dods_max(0, v2);}
     static bool ge(UT1 v1, T2 v2) {return v1 >= dods_max(0, v2);}
     static bool lt(UT1 v1, T2 v2) {
-#if 0
-	DBG(cerr << "v1: " << v1 << " v2: " << v2 << endl);
-#endif
 	return v1 < dods_max(0, v2);
     }
     static bool le(UT1 v1, T2 v2) {return v1 <= dods_max(0, v2);}
@@ -147,10 +138,6 @@ template<class T1, class T2> class StrCmp {
 template<class T1, class T2, class C>
 bool rops(T1 a, T2 b, int op)
 {
-#if 0
-    DBG(cerr << "a: " << a << " b: " << b << endl);
-#endif
-
     switch (op) {
       case SCAN_EQUAL:
 	return C::eq(a, b);
@@ -173,6 +160,20 @@ bool rops(T1 a, T2 b, int op)
 }
 
 // $Log: Operators.h,v $
+// Revision 1.10  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.6.4.3  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.9  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

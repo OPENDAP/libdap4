@@ -124,17 +124,29 @@ public:
   void virtual send_das(DAS &das, const string &anc_location = "");
   void virtual send_das(ostream &os, DAS &das,
 			const string &anc_location="");
+    void virtual send_das(FILE *out, DAS &das,
+			  const string &anc_location="");
 
   void virtual send_dds(DDS &dds, bool constrained = false,
 			const string &anc_location = "");
   void virtual send_dds(ostream &os, DDS &dds, bool constrained = false,
 			const string &anc_location = "");
+    void virtual send_dds(FILE *out, DDS &dds, bool constrained = false,
+			  const string &anc_location = "");
 
   void virtual send_data(DDS &dds, FILE *data_stream,
 			   const string &anc_location = "");
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.22  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.18.2.5  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
 // Revision 1.21  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //

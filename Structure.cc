@@ -16,18 +16,19 @@
 #include "config_dap.h"
 
 #include <stdlib.h>
-#include <assert.h>
 
 #include "Structure.h"
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
+#include "IteratorAdapterT.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
+using std::cerr;
 using std::endl;
 
 // Jose Garcia 1/26/2000
@@ -44,16 +45,17 @@ Structure::_duplicate(const Structure &s)
 
     DBG(cerr << "Copying strucutre: " << name() << endl);
 
-    for (Pix p = cs._vars.first(); p; cs._vars.next(p)) {
+    for (Vars_iter i = cs._vars.begin(); i != cs._vars.end(); i++)
+    {
 	DBG(cerr << "Copying field: " << cs.name() << endl);
 	// Jose Garcia
 	// I think this assert here is part of a debugging 
 	// process since it is going along with a DBG call
 	// I leave it here since it can be remove by defining NDEBUG.
-	// assert(cs._vars(p));
-	BaseType *btp = cs._vars(p)->ptr_duplicate();
+	// assert(*i);
+	BaseType *btp = (*i)->ptr_duplicate();
 	btp->set_parent(this);
-	_vars.append(btp);
+	_vars.push_back(btp);
     }
 }
 
@@ -76,9 +78,17 @@ Structure::Structure(const Structure &rhs) :Constructor(rhs)
 
 Structure::~Structure()
 {
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-	delete _vars(p); _vars(p) = 0;
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	BaseType *btp = *i ;
+	delete btp ;
     }
+}
+
+BaseType *
+Structure::ptr_duplicate()
+{
+    return new Structure(*this);
 }
 
 Structure &
@@ -98,11 +108,13 @@ int
 Structure::element_count(bool leaves)
 {
     if (!leaves)
-	return _vars.length();
+	return _vars.size();
     else {
 	int i = 0;
-	for (Pix p = first_var(); p; next_var(p))
-	    i += var(p)->element_count(leaves);
+	for (Vars_iter j = _vars.begin(); j != _vars.end(); j++)
+	{
+	    j += (*j)->element_count(leaves);
+	}
 	return i;
     }
 }
@@ -111,11 +123,12 @@ bool
 Structure::is_linear()
 {
     bool linear = true;
-    for (Pix p = first_var(); linear && p; next_var(p)) {
-	if (var(p)->type() == dods_structure_c)
-	    linear = linear && dynamic_cast<Structure*>(var(p))->is_linear();
+    for (Vars_iter i = _vars.begin(); linear && i != _vars.end(); i++)
+    {
+	if ((*i)->type() == dods_structure_c)
+	    linear = linear && dynamic_cast<Structure*>((*i))->is_linear();
 	else 
-	    linear = linear && var(p)->is_simple_type();
+	    linear = linear && (*i)->is_simple_type();
     }
 
     return linear;
@@ -124,9 +137,10 @@ Structure::is_linear()
 void
 Structure::set_send_p(bool state)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-      //assert(_vars(p));
-	_vars(p)->set_send_p(state);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	//assert(*i);
+	(*i)->set_send_p(state);
     }
 
     BaseType::set_send_p(state);
@@ -135,9 +149,10 @@ Structure::set_send_p(bool state)
 void
 Structure::set_read_p(bool state)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-      //assert(_vars(p));
-	_vars(p)->set_read_p(state);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	//assert(*i);
+	(*i)->set_read_p(state);
     }
 
     BaseType::set_read_p(state);
@@ -165,7 +180,7 @@ Structure::add_var(BaseType *bt, Part)
     // inside"
     BaseType *btp = bt->ptr_duplicate();
     btp->set_parent(this);
-    _vars.append(btp);
+    _vars.push_back(btp);
 }
 
 unsigned int
@@ -173,8 +188,10 @@ Structure::width()
 {
     unsigned int sz = 0;
 
-    for( Pix p = first_var(); p; next_var(p))
-	sz += var(p)->width();
+    for( Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	sz += (*i)->width();
+    }
 
     return sz;
 }
@@ -193,9 +210,13 @@ Structure::serialize(const string &dataset, DDS &dds, XDR *sink,
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    for (Pix p = first_var(); p; next_var(p)) 
-	if (var(p)->send_p())
-	    var(p)->serialize(dataset, dds, sink, false);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	if ((*i)->send_p())
+	{
+	    (*i)->serialize(dataset, dds, sink, false);
+	}
+    }
 
     return true;
 }
@@ -203,8 +224,10 @@ Structure::serialize(const string &dataset, DDS &dds, XDR *sink,
 bool
 Structure::deserialize(XDR *source, DDS *dds, bool reuse)
 {
-    for (Pix p = first_var(); p; next_var(p))
-	var(p)->deserialize(source, dds, reuse);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->deserialize(source, dds, reuse);
+    }
 
     return false;
 }
@@ -230,8 +253,10 @@ Structure::buf2val(void **)
 // the variable to be found. If S is not null, push the path to NAME on the
 // statck.
 BaseType *
-Structure::var(const string &name, bool exact, btp_stack *s)
+Structure::var(const string &n, bool exact, btp_stack *s)
 {
+    string name = www2id(n);
+
     if (exact)
 	return exact_match(name, s);
     else
@@ -241,8 +266,10 @@ Structure::var(const string &name, bool exact, btp_stack *s)
 // Get rid of this method ASAP.
 // A depth-first search for leaf nodes matching NAME.
 BaseType *
-Structure::var(const string &name, btp_stack &s)
+Structure::var(const string &n, btp_stack &s)
 {
+    string name = www2id(n);
+
     BaseType *btp = exact_match(name, &s);
     if (btp)
 	return btp;
@@ -255,16 +282,17 @@ Structure::var(const string &name, btp_stack &s)
 BaseType *
 Structure::leaf_match(const string &name, btp_stack *s)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-	if (_vars(p)->name() == name) {
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	if ((*i)->name() == name) {
 	    if (s) {
 		DBG(cerr << "Pushing " << this->name() << endl);
 		s->push(static_cast<BaseType *>(this));
 	    }
-	    return _vars(p);
+	    return *i;
 	}
-        if (_vars(p)->is_constructor_type()) {
-	    BaseType *btp = _vars(p)->var(name, false, s);
+        if ((*i)->is_constructor_type()) {
+	    BaseType *btp = (*i)->var(name, false, s);
 	    if (btp) {
 		if (s) {
 		    DBG(cerr << "Pushing " << this->name() << endl);
@@ -282,17 +310,18 @@ Structure::leaf_match(const string &name, btp_stack *s)
 BaseType *
 Structure::exact_match(const string &name, btp_stack *s)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-	DBG(cerr << "Looking at " << _vars(p)->name() << " in: " << _vars(p) 
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	DBG(cerr << "Looking at " << (*i)->name() << " in: " << *i
 	    << endl);
-	if (_vars(p)->name() == name) {
-	    DBG(cerr << "Found " << _vars(p)->name() << " in: " 
-		<< _vars(p) << endl);
+	if ((*i)->name() == name) {
+	    DBG(cerr << "Found " << (*i)->name() << " in: " 
+		<< *i << endl);
 	    if (s) {
 		DBG(cerr << "Pushing " << this->name() << endl);
 		s->push(static_cast<BaseType *>(this));
 	    }
-	    return _vars(p);
+	    return *i;
 	}
     }
 
@@ -317,34 +346,63 @@ Structure::exact_match(const string &name, btp_stack *s)
     return 0;
 }
 
-/** Returns the pseudo-index (Pix) of the first structure element. */
+/** Returns the pseudo-index (Pix) of the first structure element. 
+    @deprecated
+    @see var_begin() */
 Pix
 Structure::first_var()
 {
     if (_vars.empty())
 	return 0;
-    else
-	return _vars.first();
+
+    IteratorAdapterT<BaseType *> *i =
+	new IteratorAdapterT<BaseType *>( _vars ) ;
+    i->first() ;
+    return i ;
+}
+
+Structure::Vars_iter
+Structure::var_begin()
+{
+    return _vars.begin() ;
+}
+
+Structure::Vars_iter
+Structure::var_end()
+{
+    return _vars.end() ;
 }
 
 /** Increments the input index to point to the next element in the
-    structure. */
+    structure.
+    @deprecated use iterator operator ++ with the iterator returned from
+    var_begin()
+    @see var_begin() */
 void
-Structure::next_var(Pix &p)
+Structure::next_var(Pix p)
 {
-    if (!_vars.empty() && p) {
-	_vars.next(p);
-    }
+    p.next();
 }
 
-/** Returns a pointer to the <i>p</i>th element. */
+/** Returns a pointer to the <i>p</i>th element.
+    @deprecated use iterator operator * with the iterator returned from
+    var_begin() to reference the element
+    @see var_begin() */
 BaseType *
 Structure::var(Pix p)
 {
-    if (!_vars.empty() && p)
-	return _vars(p);
-    else 
-	return NULL;
+    IteratorAdapterT<BaseType *> *i =
+	(IteratorAdapterT<BaseType *> *)p.getIterator() ;
+    if( i )
+#ifdef WIN32
+    {
+    BaseType *dummy = NULL;
+    return i->entry(&dummy);
+    }
+#else
+    return i->entry() ;
+#endif
+    return 0 ;
 }
 
 void
@@ -355,9 +413,10 @@ Structure::print_decl(ostream &os, string space, bool print_semi,
 	return;
 
     os << space << type_name() << " {" << endl;
-    for (Pix p = _vars.first(); p; _vars.next(p)) {
-	_vars(p)->print_decl(os, space + "    ", true, constraint_info,
-			     constrained);
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->print_decl(os, space + "    ", true,
+			 constraint_info, constrained);
     }
     os << space << "} " << id2www(name());
 
@@ -372,6 +431,32 @@ Structure::print_decl(ostream &os, string space, bool print_semi,
 	os << ";" << endl;
 }
 
+void
+Structure::print_decl(FILE *out, string space, bool print_semi,
+		      bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+	return;
+
+    fprintf( out, "%s%s {\n", space.c_str(), type_name().c_str() ) ;
+    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++)
+    {
+	(*i)->print_decl(out, space + "    ", true,
+			 constraint_info, constrained);
+    }
+    fprintf( out, "%s} %s", space.c_str(), id2www( name() ).c_str() ) ;
+
+    if (constraint_info) {
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
+    if (print_semi)
+	fprintf( out, ";\n" ) ;
+}
+
 // print the values of the contained variables
 
 void 
@@ -383,14 +468,37 @@ Structure::print_val(ostream &os, string space, bool print_decl_p)
     }
 
     os << "{ ";
-    for (Pix p = _vars.first(); p; _vars.next(p), (void)(p && os << ", ")) {
-	_vars(p)->print_val(os, "", false);
+    for (Vars_iter i = _vars.begin(); i != _vars.end();
+	    i++, (void)(i != _vars.end() && os << ", "))
+    {
+	(*i)->print_val(os, "", false);
     }
 
     os << " }";
 
     if (print_decl_p)
 	os << ";" << endl;
+}
+
+void 
+Structure::print_val(FILE *out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(out, space, false);
+	fprintf( out, " = " ) ;
+    }
+
+    fprintf( out, "{ " ) ;
+    for (Vars_citer i = _vars.begin(); i != _vars.end();
+	    i++, (void)(i != _vars.end() && fprintf( out, ", " ) ) )
+    {
+	(*i)->print_val(out, "", false);
+    }
+
+    fprintf( out, " }" ) ;
+
+    if (print_decl_p)
+	fprintf( out, ";\n" ) ;
 }
 
 // Print the values of the contained variables.
@@ -416,16 +524,19 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool pr
     os << "{ ";
 
     bool sequence_found = false;
-    for (Pix p = first_var(); p; next_var(p), (void)(p && os << ", ")) {
-	switch (var(p)->type()) {
+    for (Vars_iter i = _vars.begin();
+	 i != _vars.end();
+	 i++, (void)(i != _vars.end() && os << ", "))
+    {
+	switch ((*i)->type()) {
 	  case dods_sequence_c:
-	    (dynamic_cast<Sequence*>(var(p)))->print_all_vals(os, src, dds, 
+	    (dynamic_cast<Sequence*>((*i)))->print_all_vals(os, src, dds, 
 							      "", false);
 	    sequence_found = true;
 	    break;
 	  
 	  case dods_structure_c:
-	    (dynamic_cast<Structure*>(var(p)))->print_all_vals(os, src, dds, 
+	    (dynamic_cast<Structure*>((*i)))->print_all_vals(os, src, dds, 
 							       "", false);
 	    break;
 	  
@@ -433,8 +544,8 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool pr
 	    // If a sequence was found, we still need to deserialize()
 	    // remaining vars.
 	    if(sequence_found)
-		var(p)->deserialize(src, dds);
-	    var(p)->print_val(os, "", false);
+		(*i)->deserialize(src, dds);
+	    (*i)->print_val(os, "", false);
 	    break;
 	}
     }
@@ -443,6 +554,58 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool pr
 
     if (print_decl_p)
 	os << ";" << endl;
+#endif
+}
+
+// Print the values of the contained variables.
+//
+// Potential bug: This works only for structures that have sequences at their
+// top level. Will it work when sequences are more deeply embedded?
+
+void
+Structure::print_all_vals(FILE *out, XDR *src, DDS *dds, string space, bool print_decl_p)
+{
+    print_val(out, space, print_decl_p);
+
+#if 0
+    if (print_decl_p) {
+	print_decl(out, space, false);
+	fprintf( out, " = " ) ;
+    }
+
+    fprintf( out, "{ " ) ;
+
+    bool sequence_found = false;
+    for (Vars_citer i = _vars.begin();
+	 i != _vars.end();
+	 i++, (void)(i != _vars.end() && fprintf( out, ", " ) ) )
+    {
+	switch ((*i)->type()) {
+	  case dods_sequence_c:
+	    (dynamic_cast<Sequence*>((*i)))->print_all_vals(out, src, dds, 
+							      "", false);
+	    sequence_found = true;
+	    break;
+	  
+	  case dods_structure_c:
+	    (dynamic_cast<Structure*>((*i)))->print_all_vals(out, src, dds, 
+							       "", false);
+	    break;
+	  
+	  default:
+	    // If a sequence was found, we still need to deserialize()
+	    // remaining vars.
+	    if(sequence_found)
+		(*i)->deserialize(src, dds);
+	    (*i)->print_val(out, "", false);
+	    break;
+	}
+    }
+
+    fprintf( out, " }" ) ;
+
+    if (print_decl_p)
+	fprintf( out, ";\n" ) ;
 #endif
 }
 
@@ -458,24 +621,85 @@ Structure::check_semantics(string &msg, bool all)
 	return false;
 
     if (all) 
-	for (Pix p = _vars.first(); p; _vars.next(p)) {
-	  //assert(_vars(p));
-	    if (!_vars(p)->check_semantics(msg, true)) {
+    {
+	for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
+	{
+	    //assert(*i);
+	    if (!(*i)->check_semantics(msg, true)) {
 		status = false;
 		goto exit;
 	    }
 	}
+    }
 
  exit:
     return status;
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.50  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.43.4.18  2002/12/31 16:43:20  rmorris
+// Patches to handle some of the fancier template code under VC++ 6.0.
+//
+// Revision 1.43.4.17  2002/12/27 19:34:42  jimg
+// Modified the var() methods so that www2id() is called before looking
+// up identifier names. See bug 563.
+//
+// Revision 1.43.4.16  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.43.4.15  2002/12/01 14:37:52  rmorris
+// Smalling changes for the win32 porting and maintenance work.
+//
+// Revision 1.43.4.14  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.43.4.13  2002/09/22 14:31:08  rmorris
+// VC++ doesn't consider x in 'for(int x,...)' to be only for the block
+// associated with the loop.  Multiple of these therefore case a error
+// because VC++ sees multiple definitions.  Changed to use different vars names
+// in each such block.
+//
+// Revision 1.43.4.12  2002/09/12 22:49:58  pwest
+// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
+// than taking a reference to a Pix, taking a Pix value.
+//
+// Revision 1.43.4.11  2002/09/05 22:52:54  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.43.4.10  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.49  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
 // Revision 1.48  2002/06/03 22:21:15  jimg
 // Merged with release-3-2-9
+//
+// Revision 1.43.4.9  2002/05/22 16:57:51  jimg
+// I modified the `data type classes' so that they do not need to be
+// subclassed for clients. It might be the case that, for a complex client,
+// subclassing is still the best way to go, but you're not required to do
+// it anymore.
 //
 // Revision 1.43.4.8  2002/03/01 21:03:08  jimg
 // Significant changes to the var(...) methods. These now take a btp_stack

@@ -20,7 +20,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.42 2002/06/03 22:21:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.43 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +29,6 @@ static char rcsid[] not_used = {"$Id: expr.y,v 1.42 2002/06/03 22:21:16 jimg Exp
 
 #include <string>
 #include <strstream>
-#include <SLList.h>
 
 #include "debug.h"
 #include "escaping.h"
@@ -148,7 +147,7 @@ proj_func get_proj_function(const DDS &table, const char *name);
 %type <op> rel_op
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indices
-%type <rval_ptr> r_value id_or_const identifier
+%type <rval_ptr> r_value id_or_const
 %type <r_val_l_ptr> r_value_list arg_list
 
 %%
@@ -211,7 +210,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
 		    }
 		    else if ((p_f = get_proj_function(*(DDS_OBJ(arg)), $1))) {
 			BaseType **args = build_btp_args($3, *(DDS_OBJ(arg)));
-			(*p_f)(($3) ? $3->length():0, args, *(DDS_OBJ(arg)));
+			(*p_f)(($3) ? $3->size():0, args, *(DDS_OBJ(arg)));
 			$$ = true;
 		    }
 		    else {
@@ -240,7 +239,7 @@ clause:		r_value rel_op '{' r_value_list '}'
                 {
 		    if ($1) {
 			rvalue_list *rv = new rvalue_list;
-			rv->append($3);
+			rv->push_back($3);
 			(*DDS_OBJ(arg)).append_clause($2, $1, rv);
 			$$ = true;
 		    }
@@ -311,17 +310,6 @@ arg_list:     r_value_list
               { 
 		  $$ = 0; 
 	      }
-;
-
-identifier:	SCAN_WORD 
-                { 
-		    BaseType *btp = (*DDS_OBJ(arg)).var(www2id(string($1)));
-		    if (!btp) {
-			no_such_ident(arg, www2id(string($1)), "identifier");
-		    }
-		    else
-			$$ = new rvalue(btp);
-		}
 ;
 
 id_or_const:    SCAN_WORD
@@ -572,14 +560,13 @@ make_array_index(value &i1, value &i2, value &i3)
 	|| i3.type != dods_uint32_c)
 	return (int_list *)0;
 
-    index->append((int)i1.v.i);
-    index->append((int)i2.v.i);
-    index->append((int)i3.v.i);
+    index->push_back((int)i1.v.i);
+    index->push_back((int)i2.v.i);
+    index->push_back((int)i3.v.i);
 
-    DBG(Pix dp;\
-	cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	cout << (*index)(dp) << " ";\
+    DBG(cout << "index: ";\
+	for (int_iter dp = index->begin(); dp != index->end(); dp++)\
+	cout << (*dp) << " ";\
 	cout << endl);
 
     return index;
@@ -593,14 +580,13 @@ make_array_index(value &i1, value &i2)
     if (i1.type != dods_uint32_c || i2.type != dods_uint32_c)
 	return (int_list *)0;
 
-    index->append((int)i1.v.i);
-    index->append(1);
-    index->append((int)i2.v.i);
+    index->push_back((int)i1.v.i);
+    index->push_back(1);
+    index->push_back((int)i2.v.i);
 
-    DBG(Pix dp;\
-	cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	cout << (*index)(dp) << " ";\
+    DBG(cout << "index: ";\
+	for (int_citer dp = index->begin(); dp != index->end(); dp++)\
+	cout << (*dp) << " ";\
 	cout << endl);
 
     return index;
@@ -614,14 +600,13 @@ make_array_index(value &i1)
     if (i1.type != dods_uint32_c)
 	return (int_list *)0;
 
-    index->append((int)i1.v.i);
-    index->append(1);
-    index->append((int)i1.v.i);
+    index->push_back((int)i1.v.i);
+    index->push_back(1);
+    index->push_back((int)i1.v.i);
 
-    DBG(Pix dp;\
-	cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	cout << (*index)(dp) << " ";\
+    DBG(cout << "index: ";\
+	for (int_citer dp = index->begin(); dp != index->end(); dp++)\
+	cout << (*dp) << " ";\
 	cout << endl);
 
     return index;
@@ -632,14 +617,13 @@ make_array_indices(int_list *index)
 {
     int_list_list *indices = new int_list_list;
 
-    DBG(Pix dp;\
-	cout << "index: ";\
-	for (dp = index->first(); dp; index->next(dp))\
-	cout << (*index)(dp) << " ";\
+    DBG(cout << "index: ";\
+	for (int_citer dp = index->begin(); dp != index->end(); dp++)\
+	cout << (*dp) << " ";\
 	cout << endl);
 
     assert(index);
-    indices->append(index);
+    indices->push_back(index);
 
     return indices;
 }
@@ -650,7 +634,7 @@ append_array_index(int_list_list *indices, int_list *index)
     assert(indices);
     assert(index);
 
-    indices->append(index);
+    indices->push_back(index);
 
     return indices;
 }
@@ -662,9 +646,10 @@ delete_array_indices(int_list_list *indices)
 {
     assert(indices);
 
-    for (Pix p = indices->first(); p; indices->next(p)) {
-	assert((*indices)(p));
-	delete (*indices)(p);
+    for (int_list_citer i = indices->begin(); i != indices->end(); i++) {
+	int_list *il = *i ;
+	assert(il);
+	delete il;
     }
 
     delete indices;
@@ -716,34 +701,39 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	   string("The constraint expression evaluator expected an array; ")
 		    + variable->name() + " is not an array.");
 		   
+    if (a->dimensions(true) != (unsigned)indices->size())
+	throw Error(malformed_expr, 
+	   string("Error: The number of dimenstions in the constraint for ")
+		    + variable->name() 
+		    + " must match the number in the array.");
+		   
     DBG(cerr << "Before clear_costraint:" << endl);
-    DBG(a->print_decl(cerr, "", true, false, true));
+    DBG(a->print_decl(stderr, "", true, false, true));
 
     a->clear_constraint();	// each projection erases the previous one
 
     DBG(cerr << "After clear_costraint:" << endl);
-    DBG(a->print_decl(cerr, "", true, false, true));
+    DBG(a->print_decl(stderr, "", true, false, true));
 
-    Pix p, r;
     assert(indices);
-    for (p = indices->first(), r = a->first_dim(); 
-	 p && r; 
-	 indices->next(p), a->next_dim(r)) {
-	assert((*indices)(p));
-	int_list *index = (*indices)(p);
+    int_list_citer p = indices->begin() ;
+    Array::Dim_iter r = a->dim_begin() ;
+    for (; p != indices->end() && r != a->dim_end(); p++, r++) {
+	int_list *index = *p;
+	assert(index);
 
-	Pix q = index->first(); 
-	assert(q);
-	int start = (*index)(q);
+	int_citer q = index->begin(); 
+	assert(q!=index->end());
+	int start = *q;
 
-	index->next(q);
-	int stride = (*index)(q);
+	q++;
+	int stride = *q;
 	
-	index->next(q);
-	int stop = (*index)(q);
+	q++;
+	int stop = *q;
 
-	index->next(q);
-	if (q) {
+	q++;
+	if (q != index->end()) {
 	    throw Error(malformed_expr,
 			string("Too many values in index list for ")
 			+ a->name() + ".");
@@ -758,15 +748,14 @@ process_array_indices(BaseType *variable, int_list_list *indices)
     }
 
     DBG(cerr << "After processing loop:" << endl);
-    DBG(a->print_decl(cerr, "", true, false, true));
+    DBG(a->print_decl(stderr, "", true, false, true));
 
-    DBG(Pix dp;\
-	cout << "Array Constraint: ";\
-	for (dp = a->first_dim(); dp; a->next_dim(dp))\
+    DBG(cout << "Array Constraint: ";\
+	for (Array::Dim_iter dp = a->dim_begin(); dp != a->dim_end(); dp++)\
 	    cout << a->dimension_size(dp, true) << " ";\
 	cout << endl);
     
-    if (p && !r) {
+    if (p != indices->end() && r == a->dim_end()) {
 	throw Error(malformed_expr,
 		    string("Too many indices in constraint for ")
 		    + a->name() + ".");
@@ -786,42 +775,55 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
     if (!g)
 	throw Error(unknown_error, "Expected a Grid variable");
 
+    Array *a = dynamic_cast<Array *>(g->array_var());
+    if (!a)
+	throw InternalErr(__FILE__, __LINE__, "Malformed Grid variable");
+    if (a->dimensions(true) != (unsigned)indices->size())
+	throw Error(malformed_expr, 
+	   string("Error: The number of dimenstions in the constraint for ")
+		    + variable->name() 
+		    + " must match the number in the grid.");
+		   
     // First do the constraints on the ARRAY in the grid.
     process_array_indices(g->array_var(), indices);
 
     // Now process the maps.
-    Pix p, r;
+    Grid::Map_iter r = g->map_begin() ;
 
     // Supress all maps by default.
-    for (r = g->first_map_var(); r; g->next_map_var(r))
-	g->map_var(r)->set_send_p(false);
+    for (; r != g->map_end(); r++)
+    {
+	(*r)->set_send_p(false);
+    }
 
     // Add specified maps to the current projection.
     assert(indices);
-    for (p = indices->first(), r = g->first_map_var(); 
-	 p && r; 
-	 indices->next(p), g->next_map_var(r)) {
-	assert((*indices)(p));
-	int_list *index = (*indices)(p);
+    int_list_citer p = indices->begin();
+    r = g->map_begin(); 
+    for (; p != indices->end() && r != g->map_end(); p++, r++)
+    {
+	int_list *index = *p;
+	assert(index);
 
-	Pix q = index->first(); 
-	assert(q);
-	int start = (*index)(q);
+	int_citer q = index->begin(); 
+	assert(q != index->end());
+	int start = *q;
 
-	index->next(q);
-	int stride = (*index)(q);
+	q++;
+	int stride = *q;
 	
-	index->next(q);
-	int stop = (*index)(q);
+	q++;
+	int stop = *q;
 
-	assert(g->map_var(r));
-	assert(g->map_var(r)->type() == dods_array_c);
-	Array *a = (Array *)g->map_var(r);
+	BaseType *btp = *r;
+	assert(btp);
+	assert(btp->type() == dods_array_c);
+	Array *a = (Array *)btp;
 	a->set_send_p(true);
 	a->clear_constraint();
 
-	index->next(q);
-	if (q) {
+	q++;
+	if (q!=index->end()) {
 	    throw Error(malformed_expr,
 			string("Too many values in index list for ")
 			+ a->name() + ".");
@@ -830,23 +832,25 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	DBG(cerr << "process_grid_indices: Setting constraint on "\
 	    << a->name() << "[" << start << ":" << stop << "]" << endl);
 
-	a->add_constraint(a->first_dim(), start, stride, stop);
+	Array::Dim_iter si = a->dim_begin() ;
+	a->add_constraint(si, start, stride, stop);
 
-	DBG(cerr << "Set Constraint: " \
-	    << a->dimension_size(a->first_dim(), true) << endl);
+	DBG(Array::Dim_iter aiter = a->dim_begin() ; \
+	    cerr << "Set Constraint: " \
+	    << a->dimension_size(aiter, true) << endl);
     }
 
-    DBG(Pix dp;\
-	cout << "Grid Constraint: ";\
-	for (dp = ((Array *)g->array_var())->first_dim(); dp; \
-		 ((Array *)g->array_var())->next_dim(dp))\
+    DBG(cout << "Grid Constraint: ";\
+	for (Array::Dim_iter dp = ((Array *)g->array_var())->dim_begin();
+	     dp != ((Array *)g->array_var())->dim_end(); \
+	     dp++)\
 	   cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
 	cout << endl);
     
-    if (p && !r) {
+    if (p!=indices->end() && r==g->map_end()) {
 	throw Error(malformed_expr,
 		    string("Too many indices in constraint for ")
-		    + g->map_var(r)->name() + ".");
+		    + (*r)->name() + ".");
     }
 
     return status;
@@ -865,22 +869,23 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
 
     // Add specified maps to the current projection.
     assert(indices);
-    for (Pix p = indices->first(); p; indices->next(p)) {
-	assert((*indices)(p));
-	int_list *index = (*indices)(p);
+    for (int_list_citer p = indices->begin(); p != indices->end(); p++)
+    {
+	int_list *index = *p;
+	assert(index);
 
-	Pix q = index->first(); 
-	assert(q);
-	int start = (*index)(q);
+	int_citer q = index->begin(); 
+	assert(q!=index->end());
+	int start = *q;
 
-	index->next(q);
-	int stride = (*index)(q);
+	q++;
+	int stride = *q;
 	
-	index->next(q);
-	int stop = (*index)(q);
+	q++;
+	int stop = *q;
 
-	index->next(q);
-	if (q) {
+	q++;
+	if (q!=index->end()) {
 	  throw Error(malformed_expr, 
 		      string("Too many values in index list for ")
 		      + s->name() + ".");
@@ -917,7 +922,7 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
     assert(rvals);
     assert(rv);
 
-    rvals->append(rv);
+    rvals->push_back(rv);
 
     return rvals;
 }
@@ -928,13 +933,14 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 static rvalue *
 dereference_string(string &s)
 {
+    // FIX Once Connect/HTTPConnect settle down. ***
     unsigned int qpos = s.find('?');
     string url = s.substr(0, qpos);	// strip off CE
     string ce = s.substr(qpos+1);	// yes, get the CE
 
     // I don't think that the `false' is really necessary, but g++ seems to
     // want it. jhrg 2/10/97
-    Connect c = Connect(url, false); // make the virtual connection
+    Connect c(url, false); // make the virtual connection
 
     // the initial URL must be a complete reference to data; thus no
     // additional CE is needed. 
@@ -950,7 +956,7 @@ dereference_string(string &s)
     // OK, we're here. The first_var() must be the only var, return it bound
     // up in an rvalue struct. NB: the *object* must be copied since the one
     // within DDS `D' will be deleted by D's dtor.
-    BaseType *btp = d->var(d->first_var())->ptr_duplicate();
+    BaseType *btp = (*(d->var_begin()))->ptr_duplicate();
     rvalue *rv = new rvalue(btp);
 
     delete d;
@@ -1065,6 +1071,41 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.43  2003/01/10 19:46:41  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
+ * Revision 1.39.4.16  2002/12/17 22:35:03  pwest
+ * Added and updated methods using stdio. Deprecated methods using iostream.
+ *
+ * Revision 1.39.4.15  2002/11/05 00:53:52  jimg
+ * Removed 'identifier.' It was flagged as unneeded by bison.
+ *
+ * Revision 1.39.4.14  2002/10/28 21:17:44  pwest
+ * Converted all return values and method parameters to use non-const iterator.
+ * Added operator== and operator!= methods to IteratorAdapter to handle Pix
+ * problems.
+ *
+ * Revision 1.39.4.13  2002/09/05 22:52:55  pwest
+ * Replaced the GNU data structures SLList and DLList with the STL container
+ * class vector<>. To maintain use of Pix, changed the Pix.h header file to
+ * redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+ * outside of the DAP should compile and link with no problems. Added methods
+ * to the different classes where Pix is used to include methods to use STL
+ * iterators. Replaced the use of Pix within the DAP to use iterators instead.
+ * Updated comments for documentation, updated the test suites, and added some
+ * unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+ *
+ * Revision 1.39.4.12  2002/07/06 20:56:06  jimg
+ * Somehow the code added on 6.11.2002 that checked to ensure that the number of
+ * dimensions in an array's constraint matched the number of dimensions in the
+ * array was LOST. Hmmm... I added it back again. Looks like it was a casualty
+ * of the libcurl migration.
+ *
+ * Revision 1.39.4.11  2002/06/18 23:05:33  jimg
+ * Updated grammar files when replacing libwww.
+ *
  * Revision 1.42  2002/06/03 22:21:16  jimg
  * Merged with release-3-2-9
  *

@@ -21,7 +21,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.43 2002/06/03 22:21:15 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.44 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -365,9 +365,9 @@ str_or_id:	SCAN_WORD
 float_or_int:   SCAN_WORD
 ;
 
-name:           SCAN_WORD | SCAN_ALIAS | SCAN_BYTE | SCAN_INT16 | SCAN_UINT16
-                | SCAN_INT32 | SCAN_UINT32 | SCAN_FLOAT32 | SCAN_FLOAT64
-                | SCAN_STRING | SCAN_URL
+name:           SCAN_WORD | SCAN_ATTR | SCAN_ALIAS | SCAN_BYTE | SCAN_INT16 
+                | SCAN_UINT16 | SCAN_INT32 | SCAN_UINT32 | SCAN_FLOAT32 
+                | SCAN_FLOAT64 | SCAN_STRING | SCAN_URL
 ;
 
 alias:          SCAN_ALIAS SCAN_WORD
@@ -491,8 +491,16 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.44  2003/01/10 19:46:41  jimg
+ * Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+ * cases files were added on that branch (so they appear on the trunk for
+ * the first time).
+ *
  * Revision 1.43  2002/06/03 22:21:15  jimg
  * Merged with release-3-2-9
+ *
+ * Revision 1.40.4.8  2002/05/31 21:33:34  jimg
+ * A name can now include the reserved word `attributes.'
  *
  * Revision 1.40.4.7  2002/03/14 20:03:08  jimg
  * Changed the parser so that the attriute type names can also be names of

@@ -1,17 +1,13 @@
-
 # Setup directories for intermediate files and built components
 OBJDIR		= .\objects
 INSTALLLIBDIR	= ..\..\..\lib
 INSTALLEXEDIR	= ..\..\..\bin
 INCLUDEDIR	= ..\..\..\include
 
-# Directory containing 3rd-party packages used by Dods
-PKGDIR		= ..\..\packages
-
 # Setup basic compiler flags for all .obj's
 CC		= cl
-CFLAGS		= /nologo /ML /W0 /GR /GX /c
-#CFLAGS		= /nologo /MLd /Zi /W3 /GR /GX /c	# flags for debugger
+CFLAGS		= /nologo /MT /W3 /GR /GX /c
+#CFLAGS		= /nologo /MTd /Zi /W3 /GR /GX /c	# flags for debugger
 
 # Setup linker flags for libraries and .exe's
 LINK		= link
@@ -21,7 +17,7 @@ LIBPATH		= /libpath:$(OBJDIR) /libpath:$(INSTALLLIBDIR)
 LEXEFLAGS	= /nologo /subsystem:console $(LIBPATH)
 LLIBFLAGS	= -lib /nologo
 
-DODSLIBS	= libwww.lib librx.lib libz.lib libdap++.lib libxdr.lib
+DODSLIBS	= libdap++.lib pthreadVCE.lib libcurl.lib librx.lib libz.lib libxdr.lib
 SYSLIBS		= ws2_32.lib advapi32.lib
 LINKLIBS	= $(DODSLIBS) $(SYSLIBS)
 
@@ -35,9 +31,7 @@ YACC	= bison
 AWK	= gawk
 
 # Setup compiler includes and defines for libraries and .exe's
-INCS		= /I . /I .. /I ..\GNU \
-		  /I ..\..\..\include \
-		  /I ..\..\..\include\w3c-libwww
+INCS		= /I . /I .. /I ..\GNU /I $(INCLUDEDIR) /I $(INCLUDEDIR)\pthreads
 DEFSLIB		= /D WIN32 /D _LIB /D _WINDOWS
 DEFSEXE		= /D WIN32 /D _CONSOLE
 CPPLIBFLAGS	= $(DEFSLIB) $(INCS)
@@ -49,13 +43,14 @@ EXEOBJFLAGS	= $(CFLAGS) $(CPPEXEFLAGS)
 
 # Define the targets
 TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe \
-		  $(OBJDIR)\usage.exe $(OBJDIR)\deflate.exe
+		  $(OBJDIR)\usage.exe $(OBJDIR)\deflate.exe \
+		  $(OBJDIR)\ThreadTest.exe
 
 # Define the testsuite objects
-TESTTARGETS	= $(OBJDIR)\das-test.exe \
-		  $(OBJDIR)\dds-test.exe \
-		  $(OBJDIR)\error-test.exe \
-		  $(OBJDIR)\expr-test.exe
+#TESTTARGETS	= $(OBJDIR)\das-test.exe \
+#		  $(OBJDIR)\dds-test.exe \
+#		  $(OBJDIR)\error-test.exe \
+#		  $(OBJDIR)\expr-test.exe
 
 # Clear built-in rules and set new ones
 .SUFFIXES :
@@ -80,6 +75,7 @@ DAPOBJS = $(OBJDIR)\Array.obj \
 		$(OBJDIR)\cgi_util.obj \
 		$(OBJDIR)\Clause.obj \
 		$(OBJDIR)\Connect.obj \
+		$(OBJDIR)\HTTPConnect.obj \
 		$(OBJDIR)\Connections.obj \
 		$(OBJDIR)\Constructor.obj \
 		$(OBJDIR)\DAS.obj \
@@ -92,12 +88,16 @@ DAPOBJS = $(OBJDIR)\Array.obj \
 		$(OBJDIR)\Float64.obj \
 		$(OBJDIR)\Grid.obj \
 		$(OBJDIR)\GSEClause.obj \
+		$(OBJDIR)\HTTPCache.obj \
 		$(OBJDIR)\Int16.obj \
 		$(OBJDIR)\Int32.obj \
 		$(OBJDIR)\InternalErr.obj \
+		$(OBJDIR)\IteratorAdapter.obj \
+		$(OBJDIR)\IteratorAdapterT.obj \
 		$(OBJDIR)\List.obj \
 		$(OBJDIR)\parser-util.obj \
 		$(OBJDIR)\RValue.obj \
+		$(OBJDIR)\RCReader.obj \
 		$(OBJDIR)\Sequence.obj \
 		$(OBJDIR)\Str.obj \
 		$(OBJDIR)\Structure.obj \
@@ -106,6 +106,7 @@ DAPOBJS = $(OBJDIR)\Array.obj \
 		$(OBJDIR)\UInt32.obj \
 		$(OBJDIR)\Url.obj \
 		$(OBJDIR)\util.obj \
+		$(OBJDIR)\util_mit.obj \
 		$(OBJDIR)\Vector.obj
 
 TESTOBJS = $(OBJDIR)\TestArray.obj \
@@ -133,12 +134,9 @@ LEXOBJS = $(OBJDIR)\das.tab.obj \
 		$(OBJDIR)\lex.expr.obj \
 		$(OBJDIR)\lex.gse_.obj \
 
-GNUOBJS = $(OBJDIR)\DLList.obj \
-		$(OBJDIR)\GetOpt.obj \
+GNUOBJS = $(OBJDIR)\GetOpt.obj \
 		$(OBJDIR)\Regex.obj \
-		$(OBJDIR)\SLList.obj \
-		$(OBJDIR)\gnu_error.obj \
-		$(OBJDIR)\hash.obj
+		$(OBJDIR)\gnu_error.obj
 
 LIBOBJS = $(LEXOBJS) $(GNUOBJS) $(DAPOBJS)
 
@@ -165,6 +163,8 @@ $(OBJDIR)\geturl.exe: $(OBJDIR)\geturl.obj $(TESTOBJS) $(OBJDIR)\libdap++.lib
 $(OBJDIR)\usage.exe: $(OBJDIR)\usage.obj $(TESTOBJS) $(OBJDIR)\libdap++.lib
 
 $(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj $(OBJDIR)\libdap++.lib
+
+$(OBJDIR)\ThreadTest.exe: $(OBJDIR)\ThreadTest.obj
 
 install:
 	copy $(OBJDIR)\libdap*.lib $(INSTALLLIBDIR)
@@ -195,8 +195,11 @@ install:
 	copy ..\Grid.h $(INCLUDEDIR)
 	copy ..\UInt32.h $(INCLUDEDIR)
 	copy ..\util.h $(INCLUDEDIR)
+	copy ..\util_mit.h $(INCLUDEDIR)
 	copy ..\Int16.h $(INCLUDEDIR)
 	copy ..\UInt16.h $(INCLUDEDIR)
+	copy ..\IteratorAdapter.h $(INCLUDEDIR)
+	copy ..\IteratorAdapterT.h $(INCLUDEDIR)
 	copy ..\Float32.h $(INCLUDEDIR)
 	copy ..\DDS.h $(INCLUDEDIR)
 	copy ..\DataDDS.h $(INCLUDEDIR)
@@ -204,8 +207,6 @@ install:
 	copy ..\DAS.h $(INCLUDEDIR)
 	copy ..\parser.h $(INCLUDEDIR)
 	copy ..\GNU\Pix.h $(INCLUDEDIR)
-	copy ..\GNU\SLList.h $(INCLUDEDIR)
-	copy ..\GNU\DLList.h $(INCLUDEDIR)
 	copy ..\GNU\gnu-std.h $(INCLUDEDIR)
 	copy ..\GNU\GetOpt.h $(INCLUDEDIR)
 	copy ..\GNU\Regex.h $(INCLUDEDIR)
@@ -217,6 +218,12 @@ install:
 	copy ..\cgi_util.h $(INCLUDEDIR)
 	copy ..\DODSFilter.h $(INCLUDEDIR)
 	copy ..\escaping.h $(INCLUDEDIR)
+	copy ..\HTTPConnect.h $(INCLUDEDIR)
+	copy ..\HTTPCache.h $(INCLUDEDIR)
+	copy ..\HTTPCacheDisconnectedMode.h $(INCLUDEDIR)
+	copy ..\RCReader.h $(INCLUDEDIR)
+	copy ..\ResponseTooBigErr.h $(INCLUDEDIR)
+	copy ..\ObjectType.h $(INCLUDEDIR)
 
 # The DAP Proper
 $(OBJDIR)\Array.obj : ..\Array.cc
@@ -239,11 +246,15 @@ $(OBJDIR)\Float32.obj : ..\Float32.cc
 $(OBJDIR)\Float64.obj : ..\Float64.cc
 $(OBJDIR)\Grid.obj : ..\Grid.cc
 $(OBJDIR)\GSEClause.obj : ..\GSEClause.cc
+$(OBJDIR)\HTTPCache.obj : ..\HTTPCache.cc
 $(OBJDIR)\Int16.obj : ..\Int16.cc
 $(OBJDIR)\Int32.obj : ..\Int32.cc
 $(OBJDIR)\InternalErr.obj : ..\InternalErr.cc
+$(OBJDIR)\IteratorAdapter.obj : ..\IteratorAdapter.cc
+$(OBJDIR)\IteratorAdapterT.obj : ..\IteratorAdapterT.cc
 $(OBJDIR)\List.obj : ..\List.cc
 $(OBJDIR)\parser-util.obj : ..\parser-util.cc
+$(OBJDIR)\RCReader.obj : ..\RCReader.cc
 $(OBJDIR)\RValue.obj : ..\RValue.cc
 $(OBJDIR)\Sequence.obj : ..\Sequence.cc
 $(OBJDIR)\Str.obj : ..\Str.cc
@@ -252,6 +263,7 @@ $(OBJDIR)\UInt16.obj : ..\UInt16.cc
 $(OBJDIR)\UInt32.obj : ..\UInt32.cc
 $(OBJDIR)\Url.obj : ..\Url.cc
 $(OBJDIR)\util.obj : ..\Util.cc
+$(OBJDIR)\util_mit.obj : ..\Util_mit.cc
 $(OBJDIR)\Vector.obj : ..\Vector.cc
 
 # Test objects
@@ -330,16 +342,10 @@ $(OBJDIR)\lex.gse_.obj  : ..\lex.gse_.c
 # complicated as a result.  This conflict, along with a similar
 # conflict between "Error.cc" and "error.cc" is what makes the
 # following explicit dependancies necessary.
-$(OBJDIR)\DLList.obj : ..\GNU\DLList.cc
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\DLList.cc
 $(OBJDIR)\GetOpt.obj : ..\GNU\GetOpt.cc
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\GetOpt.cc
 $(OBJDIR)\Regex.obj : ..\GNU\Regex.cc
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\Regex.cc
-$(OBJDIR)\SLList.obj : ..\GNU\SLList.cc
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\SLList.cc
-$(OBJDIR)\hash.obj : ..\GNU\hash.cc
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\hash.cc
 $(OBJDIR)\gnu_error.obj : ..\GNU\error.cc
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\error.cc
 

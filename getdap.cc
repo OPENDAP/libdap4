@@ -11,10 +11,14 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.61 2002/06/03 22:21:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.62 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 #include <GetOpt.h>
 #include <string>
@@ -30,78 +34,67 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.61 2002/06/03 22:21:16 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.61 $";
+const char *version = "$Revision: 1.62 $";
 
 extern int keep_temps;		// defined in Connect.cc
 
 void
 usage(string name)
 {
-    cerr << "Usage: " << name
-	 << " [dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]" << endl
-	 << "[gVvk] [t <codes>] [T <list>] <file> [<file> ...]" << endl
-	 << endl
-	 << "In the first form of the command, dereference the URL" << endl
-	 << "perform the requested operations. This include routing" << endl
-	 << "the returned information through the DAP processing" << endl
-	 << "library (parsing the returned objects, et c.). If none" << endl
-	 << "of a, d, or D are used with a URL, then the DAP library" << endl
-	 << "routines are NOT used and the URLs contents are dumped" << endl
-	 << "to standard output." << endl
-	 << "In the second form of the command, assume the files are" << endl
-	 << "DODS data objects (stored in files or read from pipes)" << endl
-	 << "and process them as if -D were given. In this case the" << endl
-	 << "information *must* contain valid MIME header in order" <<endl
-	 << "to be processed."
-	 << endl
-	 << "Options:" << endl
-	 << "        d: For each URL, get the DODS DDS." << endl
-	 << "        a: For each URL, get the DODS DAS." << endl
-	 << "        D: For each URL, get the DODS Data." << endl
-	 << "        g: Show the progress GUI." << endl
-	 << "        v: Verbose." << endl
-	 << "        V: Version." << endl
-	 << "        c: <expr> is a contraint expression. Used with -D." << endl
-	 << "           NB: You can use a `?' for the CE also." << endl
-	 << "        k: Keep temporary files created by DODS core" << endl
-	 << "        m: Request the same URL <num> times." << endl
-	 << "        z: Don't ask the server to compress data." << endl
-	 << "        T: <list> List of `Accepted Types'. Translating servers use this." << endl
-	 << "        s: Print Sequences using numbered rows." << endl
-	 << endl
-	 << "        t: <options> trace output; use -tz for default." << endl
-	 << "          a: show anchor trace." << endl
-	 << "          A: show app trace." << endl
-	 << "          b: show bind trace." << endl
-	 << "          c: show cache trace." << endl
-	 << "          h: show auth trace." << endl
-	 << "          i: show pics trace." << endl
-	 << "          k: show core trace." << endl
-	 << "          l: show sgml trace." << endl
-	 << "          m: show mem trace." << endl
-	 << "          p: show protocol trace." << endl
-	 << "          s: show stream trace." << endl
-	 << "          t: show thread trace." << endl
-	 << "          u: show uri trace." << endl
-	 << "          U: show util trace." << endl
-	 << "          x: show mux trace." << endl
-	 << "          z: show all traces." << endl;
+    fprintf( stderr, "Usage: %s", name.c_str() ) ;
+    fprintf( stderr, " [dDaVvk] [-c <expr>] [-m <num>] <url> [<url> ...]\n" ) ;
+    fprintf( stderr, "[Vvk] <file> [<file> ...]\n" ) ;
+    fprintf( stderr, "\n" ) ;
+    fprintf( stderr,
+	     "In the first form of the command, dereference the URL and\n" ) ;
+    fprintf( stderr,
+	     "perform the requested operations. This include routing\n" ) ;
+    fprintf( stderr,
+	     "the returned information through the DAP processing\n" ) ;
+    fprintf( stderr,
+	     "library (parsing the returned objects, et c.). If none\n" ) ;
+    fprintf( stderr,
+	     "of a, d, or D are used with a URL, then the DAP library\n" ) ;
+    fprintf( stderr,
+	     "routines are NOT used and the URLs contents are dumped\n" ) ;
+    fprintf( stderr,
+	     "to standard output.\n" ) ;
+    fprintf( stderr,
+	     "In the second form of the command, assume the files are\n" ) ;
+    fprintf( stderr,
+	     "DODS data objects (stored in files or read from pipes)\n" ) ;
+    fprintf( stderr,
+	     "and process them as if -D were given. In this case the\n" ) ;
+    fprintf( stderr,
+	     "information *must* contain valid MIME header in order\n" ) ;
+    fprintf( stderr, "to be processed." ) ;
+    fprintf( stderr, "\n" ) ;
+    fprintf( stderr, "Options:\n" ) ;
+    fprintf( stderr, "        d: For each URL, get the DODS DDS.\n" ) ;
+    fprintf( stderr, "        a: For each URL, get the DODS DAS.\n" ) ;
+    fprintf( stderr, "        D: For each URL, get the DODS Data.\n" ) ;
+    fprintf( stderr, "        v: Verbose.\n" ) ;
+    fprintf( stderr, "        V: Version.\n" ) ;
+    fprintf( stderr, "        c: <expr> is a contraint expression. Used with -D.\n" ) ;
+    fprintf( stderr, "           NB: You can use a `?' for the CE also.\n" ) ;
+    fprintf( stderr, "        k: Keep temporary files created by DODS core\n" );
+    fprintf( stderr, "        m: Request the same URL <num> times.\n" ) ;
+    fprintf( stderr, "        z: Don't ask the server to compress data.\n" ) ;
+    fprintf( stderr, "        s: Print Sequences using numbered rows.\n" ) ;
 }
 
 bool
 read_data(FILE *fp)
 {
-    char c;
-    
     if (!fp) {
-	cerr << "geturl: Whoa!!! Null stream pointer." << endl;
+	fprintf( stderr, "geturl: Whoa!!! Null stream pointer.\n" ) ;
 	return false;
     }
 
     // Changed from a loop that used getc() to one that uses fread(). getc()
     // worked fine for transfers of text information, but *not* for binary
     // transfers. fread() will handle both.
-
+    char c;
     while (fp && !feof(fp) && fread(&c, 1, 1, fp))
 	printf("%c", c);	// stick with stdio 
 
@@ -125,44 +118,43 @@ process_data(Connect &url, DDS *dds, bool verbose = false,
       case dods_data: 
       default: {
 	  if (verbose)
-	      cerr << "Server version: " << url.server_version() << endl;
+	      fprintf( stderr, "Server version: %s\n",
+			       url.server_version().c_str() ) ;
 
-	  cout << "The data:" << endl;
+	  fprintf( stdout, "The data:\n" ) ;
 
-	  for (Pix q = dds->first_var(); q; dds->next_var(q)) {
-	      BaseType *v = dds->var(q);
+	  for (DDS::Vars_iter qiter = dds->var_begin();
+	       qiter != dds->var_end(); qiter++)
+	  {
+	      BaseType *v = (*qiter) ;
 	      if (print_rows && v->type() == dods_sequence_c)
-		  dynamic_cast<Sequence*>(v)->print_val_by_rows(cout);
+		  dynamic_cast<Sequence*>(v)->print_val_by_rows(stdout);
 	      else
-		  v->print_val(cout);
+		  v->print_val(stdout);
 	  }
       }
 
-      cout << endl;
+      fprintf( stdout, "\n" ) ;
+      fflush( stdout ) ;
     }
 }
 
 MAIN_RETURN
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:zT:s");
+    GetOpt getopt (argc, argv, "AdaDgVvkzsc:m:");
     int option_char;
-    bool async = false;
+
     bool get_das = false;
     bool get_dds = false;
     bool get_data = false;
-    bool gui = false;
     bool cexpr = false;
     bool verbose = false;
-    bool trace = false;
     bool multi = false;
     bool accept_deflate = true;
-    string accept_types = "All";
-    int times = 1;
-    char *tcode = NULL;
-    char *expr = "";  // can't use NULL or C++ string conversion will crash
-    int topts = 0;
     bool print_rows = false;
+    int times = 1;
+    char *expr = "";  // can't use NULL or C++ string conversion will crash
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
@@ -170,27 +162,16 @@ main(int argc, char * argv[])
 
     while ((option_char = getopt()) != EOF)
 	switch (option_char) {
-	  case 'A': async = true; break;
 	  case 'd': get_dds = true; break;
 	  case 'a': get_das = true; break;
 	  case 'D': get_data = true; break;
-	  case 'V': cerr << "geturl version: " << version << endl; exit(0);
+	  case 'V': fprintf( stderr, "geturl version: %s\n", version) ; exit(0);
 	  case 'v': verbose = true; break;
-	  case 'g': gui = true; break;
 	  case 'k': keep_temps =1; break; // keep_temp is in Connect.cc
 	  case 'c':
 	    cexpr = true; expr = getopt.optarg; break;
-	  case 't': 
-	    trace = true;
-	    topts = strlen(getopt.optarg);
-	    if (topts) {
-		tcode = new char[topts + 1];
-		strcpy(tcode, getopt.optarg); 
-	    }
-	    break;
 	  case 'm': multi = true; times = atoi(getopt.optarg); break;
 	  case 'z': accept_deflate = false; break;
-	  case 'T': accept_types = getopt.optarg; break;
 	  case 's': print_rows = true; break;
 	  case 'h':
 	  case '?':
@@ -198,158 +179,144 @@ main(int argc, char * argv[])
 	    usage(argv[0]); exit(1); break;
 	}
 
-    char c, *cc = tcode;
-    if (trace && topts > 0)
-	while ((c = *cc++))
-	    switch (c) {
-	      case 'a': WWWTRACE |= SHOW_ANCHOR_TRACE; break;
-	      case 'A': WWWTRACE |= SHOW_APP_TRACE; break;
-	      case 'b': WWWTRACE |= SHOW_BIND_TRACE; break;
-	      case 'c': WWWTRACE |= SHOW_CACHE_TRACE; break;
-	      case 'h': WWWTRACE |= SHOW_AUTH_TRACE; break;
-	      case 'i': WWWTRACE |= SHOW_PICS_TRACE; break;
-	      case 'k': WWWTRACE |= SHOW_CORE_TRACE; break;
-	      case 'l': WWWTRACE |= SHOW_SGML_TRACE; break;
-	      case 'm': WWWTRACE |= SHOW_MEM_TRACE; break;
-	      case 'p': WWWTRACE |= SHOW_PROTOCOL_TRACE; break;
-	      case 's': WWWTRACE |= SHOW_STREAM_TRACE; break;
-	      case 't': WWWTRACE |= SHOW_THREAD_TRACE; break;
-	      case 'u': WWWTRACE |= SHOW_URI_TRACE; break;
-	      case 'U': WWWTRACE |= SHOW_UTIL_TRACE; break;
-	      case 'x': WWWTRACE |= SHOW_MUX_TRACE; break;
-	      case 'z': WWWTRACE = SHOW_ALL_TRACE; break;
-	      default:
-		cerr << "Unrecognized trace option: `" << c << "'" << endl;
-		break;
-	    }
-    
-    delete[] tcode; tcode = 0;
-
-    // If after processing all the command line options there is nothing left
-    // (no URL or file) assume that we should read from stdin.
-    for (int i = getopt.optind; i < argc; ++i) {
-	if (verbose)
-	    cerr << "Fetching: " << argv[i] << endl;
+    try {
+	// If after processing all the command line options there is nothing
+	// left (no URL or file) assume that we should read from stdin.
+	for (int i = getopt.optind; i < argc; ++i) {
+	    if (verbose)
+		fprintf( stderr, "Fetching: %s\n", argv[i] ) ;
 	
-	string name = argv[i];
-	Connect url(name, trace, accept_deflate);
-	url.set_accept_types(accept_types);
+	    string name = argv[i];
+	    Connect url(name, false, accept_deflate);
+#if 0
+	    url.set_accept_types(accept_types);
+#endif
 
-	if (url.is_local()) {
-	    if (verbose) 
-		cerr << "Assuming that the argument " << argv[i] 
-		     << " is a file" << endl 
-		     << "that contains a DODS data object; decoding." << endl;
+	    if (url.is_local()) {
+		if (verbose) 
+		{
+		    fprintf( stderr,
+			     "Assuming that the argument %s is a file\n",
+			     argv[i] ) ;
 
-	    FILE *source;
-	    if (strcmp(argv[i], "-") == 0)
-		source = stdin;
-	    else
-		source = fopen(argv[i], "r");
+		    fprintf( stderr,
+			     "that contains a DODS data object; decoding.\n" ) ;
+		}
+
+		FILE *source;
+		if (strcmp(argv[i], "-") == 0)
+		    source = stdin;
+		else
+		    source = fopen(argv[i], "r");
 	    
-	    if (!source) {
-		cerr << "The input source: " << argv[i] 
-		     << " could not be opened." << endl;
-		break;
-	    }
+		if (!source) {
+		    fprintf( stderr,
+			     "The input source: %s could not be opened",
+			     argv[i] ) ;
+		    break;
+		}
 
-	    // NB: local access should never use the popup gui.
-	    try {
-		DDS *dds = url.read_data(source, false, false);
-		process_data(url, dds, verbose, print_rows);
-	    }
-	    catch (Error &e) {
-		e.display_message(url.gui());
-		break;
-	    }
-	    if (source != stdin)
-		fclose(source);
-	}
-
-	else if (get_das) {
-	    for (int j = 0; j < times; ++j) {
+		// NB: local access should never use the popup gui.
 		try {
-		    if (!url.request_das(gui))
-			continue;
+		    DDS *dds = url.read_data(source, false, false);
+		    process_data(url, dds, verbose, print_rows);
 		}
 		catch (Error &e) {
-		    e.display_message(url.gui());
-		    continue;
+		    e.display_message();
+		    break;
 		}
-		if (verbose) {
-		    cerr << "Server version: " << url.server_version() 
-			 << endl;
-		    cerr << "DAS:" << endl;
-		}
-		url.das().print();
+		if (source != stdin)
+		    fclose(source);
 	    }
-	}
 
-	else if (get_dds) {
-	    for (int j = 0; j < times; ++j) {
-		try {
-		    if (!url.request_dds(gui))
-			continue;
-		}
-		catch (Error &e) {
-		    e.display_message(url.gui());
-		    continue;	// Goto the next URL or exit the loop.
-		}
-		if (verbose) {
-		    cerr << "Server version: " << url.server_version() 
-			 << endl;
-		    cerr << "DDS:" << endl;
-		}
-		url.dds().print();
-	    }
-	}
-
-	else if (get_data) {
-	    if (!(expr || name.find('?') != name.npos)) {
-		cerr << "Must supply a constraint expression with -D."
-		     << endl;
-		continue;
-	    }
-	    for (int j = 0; j < times; ++j) {
-		DDS *dds;
-		try {
-		    dds = url.request_data(expr, gui, async);
-		    if (!dds) {
-			cerr << "Error: " << url.error().error_message() << endl;
+	    else if (get_das) {
+		for (int j = 0; j < times; ++j) {
+		    try {
+			if (!url.request_das())
+			    continue;
+		    }
+		    catch (Error &e) {
+			e.display_message();
 			continue;
 		    }
-		    process_data(url, dds, verbose, print_rows);
-		    delete dds; dds = 0;
-		}
-		catch (Error &e) {
-		    e.display_message(url.gui());
+		    if (verbose) {
+			fprintf( stderr, "Server version: %s\n",
+					 url.server_version().c_str() ) ; 
+			fprintf( stderr, "DAS:\n" ) ;
+		    }
+		    url.das().print(stdout);
 		}
 	    }
-	}
 
-	else { // if (!get_das && !get_dds && !get_data) {
-#ifdef GUI
-	    url.gui()->show_gui(gui);
-#endif
-	    string url_string = argv[i];
-	    for (int j = 0; j < times; ++j) {
-		try {
-		    if (!url.fetch_url(url_string))
-			continue;	
-		    if (verbose)
-			cerr << "Server version: " << url.server_version() 
-			     << endl;
-		    FILE *fp = url.output();
-		    if (!read_data(fp))
-			continue;
-		    url.close_output();
+	    else if (get_dds) {
+		for (int j = 0; j < times; ++j) {
+		    DDS dds;
+		    try {
+			url.request_dds(dds);
+		    }
+		    catch (Error &e) {
+			e.display_message();
+			continue;	// Goto the next URL or exit the loop.
+		    }
+		    if (verbose) {
+			fprintf( stderr, "Server version: %s\n",
+					 url.server_version().c_str() ) ; 
+			fprintf( stderr, "DDS:\n" ) ;
+		    }
+		    dds.print(stdout);
 		}
-		catch (Error &e) {
-		    e.display_message(url.gui());
+	    }
+
+	    else if (get_data) {
+		if (!(expr || name.find('?') != name.npos)) {
+		    fprintf( stderr,
+			 "Must supply a constraint expression with -D.\n" ) ;
 		    continue;
 		}
+		for (int j = 0; j < times; ++j) {
+		    DDS *dds;
+		    try {
+			dds = url.request_data(expr);
+			if (!dds) {
+			    fprintf( stderr, "Error: %s\n",
+				     url.error().error_message().c_str() ) ;
+			    continue;
+			}
+			process_data(url, dds, verbose, print_rows);
+			delete dds; dds = 0;
+		    }
+		    catch (Error &e) {
+			e.display_message();
+		    }
+		}
 	    }
-	}	    
+
+	    else { // if (!get_das && !get_dds && !get_data)
+		HTTPConnect http(RCReader::instance());
+		string url_string = argv[i];
+		for (int j = 0; j < times; ++j) {
+		    try {
+			FILE *fp = http.fetch_url(url_string);
+			if (verbose)
+			    fprintf( stderr, "Server version: %s\n",
+				     http.server_version().c_str() ) ; 
+			if (!read_data(fp))
+			    continue;
+			fclose(fp);
+#if 0
+			http.close_output();
+#endif
+		    }
+		    catch (Error &e) {
+			e.display_message();
+			continue;
+		    }
+		}
+	    }	    
+	}
+    }
+    catch (Error &e) {
+	e.display_message();
     }
 
     exit(0); //  Running DejaGun/Cygwin based test suites require this.
@@ -359,8 +326,65 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.62  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.52.2.22  2002/12/24 00:26:10  jimg
+// Modified to use the current interface of Connect; removed calls to deprecated
+// methods.
+//
+// Revision 1.52.2.21  2002/12/18 23:27:01  pwest
+// verbose message was being printed when not in verbose mode.
+//
+// Revision 1.52.2.20  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.52.2.19  2002/10/28 21:17:44  pwest
+// Converted all return values and method parameters to use non-const iterator.
+// Added operator== and operator!= methods to IteratorAdapter to handle Pix
+// problems.
+//
+// Revision 1.52.2.18  2002/09/05 22:52:55  pwest
+// Replaced the GNU data structures SLList and DLList with the STL container
+// class vector<>. To maintain use of Pix, changed the Pix.h header file to
+// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
+// outside of the DAP should compile and link with no problems. Added methods
+// to the different classes where Pix is used to include methods to use STL
+// iterators. Replaced the use of Pix within the DAP to use iterators instead.
+// Updated comments for documentation, updated the test suites, and added some
+// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
+//
+// Revision 1.52.2.17  2002/08/22 21:23:23  jimg
+// Fixes for the Win32 Build made at ESRI by Vlad Plenchoy and myslef.
+//
+// Revision 1.52.2.16  2002/07/06 19:17:28  jimg
+// I fixed the `read from stdin/file' behavior. This was broken when I switched
+// from libwww to libcurl.
+//
+// Revision 1.52.2.15  2002/06/20 03:18:48  jimg
+// Fixes and modifications to the Connect and HTTPConnect classes. Neither
+// of these two classes is complete, but they should compile and their
+// basic functions should work.
+//
+// Revision 1.52.2.14  2002/06/18 22:59:06  jimg
+// As part of the switch to libcurl, I had to edit this file. The raw access to
+// HTTP now uses an instnace of HTTPConnect, not Connect.
+//
 // Revision 1.61  2002/06/03 22:21:16  jimg
 // Merged with release-3-2-9
+//
+// Revision 1.61  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+// Revision 1.52.2.13  2002/05/28 22:32:32  jimg
+// This client no longer links with the Test* classes. The DAP implementation
+// was changed so that it no longer requires clients to subclass the data type
+// classes.
+//
+// Revision 1.52.2.12  2002/05/27 01:08:30  jimg
+// Removed the last vestiges of the progress indicator code in this simple
+// client.
 //
 // Revision 1.52.2.11  2002/02/04 19:04:06  jimg
 // Fixed bad use of delete (shouldhave been delete[])

@@ -331,12 +331,7 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
-	
 
-
-..\GNU\DLList.cc : \
-	"..\GNU\DLList.h"\
-	
 
 ..\DODSFilter.cc : \
 	"..\Array.h"\
@@ -544,6 +539,24 @@
 	"..\RValue.h"\
 	"..\trace_new.h"\
 	"..\Vector.h"\
+
+
+..\HTTPCAche.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	".\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
 	
 
 ..\Int16.cc : \
@@ -619,6 +632,12 @@
 	"..\Error.h"\
 	"..\Gui.h"\
 	"..\InternalErr.h"\
+
+..\IteratorAdapter.cc : \
+	"..\IteratorAdapter.h"\
+
+..\IteratorAdapterT.cc : \
+	"..\IteratorAdapterT.h"\
 
 ..\List.cc : \
 	"..\Array.h"\
@@ -709,10 +728,6 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
-	
-
-..\GNU\SLList.cc : \
-	"..\GNU\SLList.h"\
 	
 
 ..\Str.cc : \

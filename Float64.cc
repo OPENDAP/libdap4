@@ -15,10 +15,9 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Float64.cc,v 1.46 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: Float64.cc,v 1.47 2003/01/10 19:46:40 jimg Exp $"};
 
 #include <stdlib.h>
-#include <assert.h>
 
 #include <iomanip>
 
@@ -56,6 +55,12 @@ Float64::Float64(const Float64 &copy_from) : BaseType(copy_from)
     _buf = copy_from._buf;
 }
     
+BaseType *
+Float64::ptr_duplicate()
+{
+    return new Float64(*this);
+}
+
 Float64 &
 Float64::operator=(const Float64 &rhs)
 {
@@ -150,6 +155,20 @@ Float64::print_val(ostream &os, string space, bool print_decl_p)
 	os << _buf;
 }
 
+void
+Float64::print_val(FILE *out, string space, bool print_decl_p)
+{
+    // FIX: need to set precision in the printing somehow.
+    // os.precision(DODS_DBL_DIG);
+
+    if (print_decl_p) {
+	print_decl(out, space, false);
+	fprintf( out, " = %.15g;\n", _buf ) ;
+    }
+    else 
+	fprintf( out, "%.15g", _buf ) ;
+}
+
 bool
 Float64::ops(BaseType *b, int op, const string &dataset)
 {
@@ -201,8 +220,31 @@ Float64::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Float64.cc,v $
+// Revision 1.47  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.42.4.7  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.42.4.6  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
 // Revision 1.46  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
+//
+// Revision 1.42.4.5  2002/05/22 16:57:51  jimg
+// I modified the `data type classes' so that they do not need to be
+// subclassed for clients. It might be the case that, for a complex client,
+// subclassing is still the best way to go, but you're not required to do
+// it anymore.
 //
 // Revision 1.45  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.

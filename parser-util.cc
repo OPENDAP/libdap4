@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.25 2002/06/03 22:21:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.26 2003/01/10 19:46:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +31,7 @@ static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.25 2002/06/03 22:21:16 
 #include "dods-limits.h"
 #include "util.h"		// Jose Garcia: for append_long_to_string.
 
+using std::cerr;
 using std::endl;
 
 // Deprecated, but still used by the HDF4 EOS server code. 
@@ -281,6 +282,14 @@ check_url(const char *)
 }
 
 // $Log: parser-util.cc,v $
+// Revision 1.26  2003/01/10 19:46:41  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.21.4.6  2002/12/01 14:37:52  rmorris
+// Smalling changes for the win32 porting and maintenance work.
+//
 // Revision 1.25  2002/06/03 22:21:16  jimg
 // Merged with release-3-2-9
 //

@@ -1,5 +1,9 @@
+#ifndef _PIX_H
+#define _PIX_H
 
-#ifndef _Pix_h
-#define _Pix_h 1
-typedef void* Pix;
-#endif
+#include "IteratorAdapter.h"
+
+typedef IteratorAdapter Pix ;
+
+#endif // _PIX_H
+

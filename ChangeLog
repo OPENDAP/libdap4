@@ -1,3 +1,4 @@
+<<<<<<< ChangeLog
 2002-06-03    <jimg@dcz.dods.org>
 
 	* Sequence.cc (print_all_vals): Removed Sequence::level and
@@ -10,6 +11,99 @@
 
 	* Merged with release-3-2-9
 
+=======
+2002-08-08    <jimg@dcz.dods.org>
+
+	* I Replaced the single VirtualCtors.cc file, which had a virtual
+	constructor for each of the data type classes in it (see Meyers
+	for a discussion of virtual ctors), with a set of files with one
+	virtual ctor per file. The old VirtualCtors.o file was *not*
+	included in the libdap++ library because of link-time problems it
+	would introduce. The new files *are* included. For any of the
+	data type classes you specialize, you must provide a virtual ctor
+	that returns an instance of your specialization. For any of the
+	data types you do *not* specialize, the library will use the
+	default virtual ctor.
+
+	* The library libdap++.a is now `apartment thread safe.' The
+	phrase comes from Microsoft's documentation; it means that the
+	library can be used in a limited sense with MT software. The limit
+	is that objects created using the library cannot be shared by
+	threads. A MT program can create several instances of Connect, for
+	example, but each instance can only be used by a single thread.
+
+2002-06-21    <jimg@dcz.dods.org>
+
+	* Connect.cc: Fairly extensive additions to Connect's interface.
+	The old interface is still supported, but its use is deprecated.
+
+	* VirtualCtors.cc: Added this file. It can be linked with clients
+	so that they don't have to provide definitions for the NewByte(),
+	..., NewGrid() 'virutal constructor' functions. This will work
+	only for those clients that don't need to subclass the various
+	types. There maybe a better way to do this; either use a real
+	factory class passed to DDS or by putting each of the New*()
+	virtual ctors in its own file and adding those to the library.
+	That way the linker will only extract them if they are needed. 
+
+2002-06-11    <jimg@dcz.dods.org>
+
+	* expr.y (process_array_indices): Arrays and Grids can no longer
+	be partially constrained (those constraints didn't work).
+
+2002-06-10    <jimg@dcz.dods.org>
+
+	* das.lex: Added '*' to the set of chars allowed in a WORD. Same
+	for dds.lex.
+
+2002-06-05    <jimg@dcz.dods.org>
+
+	* usage.cc: Modified so that option inforamtion passed in by
+	DODS_Dispatch.pm gets passed onto the filter programs (see bug 453).
+
+2002-05-31    <jimg@dcz.dods.org>
+
+	* das.y: Bug 450; The reserved word attributes can now be used as
+	an attribute name.
+
+2002-05-28    <jimg@dcz.dods.org>
+
+	* Makefile.in: Geturl is no linked without the Test* classes. This
+	demonstrates that libdap++ can be used without subclassing. Look
+	at geturl.cc for an example. Of course, there are limitations on
+	what you can do without subclassing the data types...
+
+	* geturl.cc: Geturl no longer links with the Test* classes. It was
+	modified so that it can use the versions of the classes that are
+	part of libdap++.a (which is a recent change to the library). The
+	geturl.cc file now contains the `virtual ctors' used by the
+	library to instantiate the instances of the various variables.
+
+2002-05-26    <jimg@dcz.dods.org>
+
+	* Connect.h: Removed code specific to the GUI-based progress
+	indicator. 
+
+	* Error.h: Removed code specific to the GUI-based progress indicator.
+
+2002-05-22    <jimg@dcz.dods.org>
+
+	* Byte.h, Byte.cc, ..., Grid.h, Grid.cc: It is no longer necessary
+	to subclass the data type classes when building a client.
+
+2002-05-10    <jimg@dcz.dods.org>
+
+	* Connect.cc (www_lib_init): Joe Sirott found and fixed a bug when
+	making (many) multiple requests.
+
+2002-05-09    <jimg@dcz.dods.org>
+
+	* BaseType.cc (read): This method is not longer abstract.
+
+	* usage.cc (main): Fixed a bug triggered when PATH lacks `.'
+	
+
+>>>>>>> 1.60.4.37
 2002-04-03    <jimg@dcz.dods.org>
 
 	* Makefile.in (binary-tar): Fixed binary-tar target.
@@ -1136,4 +1230,17 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.68 2002/06/03 21:55:05 jimg Exp $
+$Id: ChangeLog,v 1.69 2003/01/10 19:46:39 jimg Exp $
+
+<<<<<<< ChangeLog
+=======
+$Id: ChangeLog,v 1.69 2003/01/10 19:46:39 jimg Exp $
+=======
+$Id: ChangeLog,v 1.69 2003/01/10 19:46:39 jimg Exp $
+>>>>>>> 1.62
+<<<<<<< ChangeLog
+=======
+>>>>>>> 1.42.2.16
+<<<<<<< ChangeLog
+=======
+>>>>>>> 1.60.4.37

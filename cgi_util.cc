@@ -12,17 +12,31 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.53 2002/06/18 15:36:24 tom Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.54 2003/01/10 19:46:40 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <ctype.h>
-#ifndef WIN32
-#include <unistd.h>
+
+#ifndef TM_IN_SYS_TIME
+#include <time.h>
+#else
+#include <sys/time.h>
 #endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifndef WIN32
+#include <unistd.h>
+#include <sys/wait.h>
+#else
+#include <io.h>
+#include <fcntl.h>
+#include <process.h>
+// Win32 does not define this. 08/21/02 jhrg
+#define F_OK 0
+#endif
 
 #include <iostream>
 #include <strstream>
@@ -30,6 +44,7 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.53 2002/06/18 15:36:24 tom
 #include <string>
 
 #include "cgi_util.h"
+#include "util.h"		// This supplies flush_stream for WIN32.
 #include "debug.h"
 
 #ifdef TRACE_NEW
@@ -69,18 +84,18 @@ static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
 bool
 do_version(const string &script_ver, const string &dataset_ver)
 {
-    cout << "HTTP/1.0 200 OK" << endl
-	 << "XDODS-Server: " << DVR << endl
-	 << "Content-Type: text/plain" << endl
-	 << endl;
+    fprintf( stdout, "HTTP/1.0 200 OK\n" ) ;
+    fprintf( stdout, "XDODS-Server: %s\n", DVR ) ;
+    fprintf( stdout, "Content-Type: text/plain\n" ) ;
+    fprintf( stdout, "\n" ) ;
     
-    cout << "Core software version: " << DVR << endl;
+    fprintf( stdout, "Core software version: %s\n", DVR ) ;
 
     if (script_ver != "")
-	cout << "Server Script Revision: " << script_ver << endl;
+	fprintf( stdout, "Server Script Revision: %s\n", script_ver.c_str() ) ;
 
     if (dataset_ver != "")
-	cout << "Dataset version: " << dataset_ver << endl;
+	fprintf( stdout,  "Dataset version: %s\n", dataset_ver.c_str() ) ;
 
     return true;
 }
@@ -406,24 +421,23 @@ name_path(const string &path)
 //                   / ( ("+" / "-") 4DIGIT )        ; Local differential
 //                                                   ;  hours+min. (HHMM)
 
-static char *days[]={"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-static char *months[]={"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", 
+static const char *days[]={"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+static const char *months[]={"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", 
 			"Aug", "Sep", "Oct", "Nov", "Dec"};
 
 /** Given a constant pointer to a <tt>time_t</tt>, return a RFC
-    822/1123 style date. 
-    This function returns the RFC 822 date with the exception that the RFC
-    1123 modification for four-digit years is implemented. The date is
-    returned in a statically allocated char array so it must be copied before
-    being used.
+    822/1123 style date.
 
-    @return The RFC 822/1123 style date in a statically allocated char[].
+    This function returns the RFC 822 date with the exception that the RFC
+    1123 modification for four-digit years is implemented.
+
+    @return The RFC 822/1123 style date in a C++ string.
     @param t A const <tt>time_t</tt> pointer. */
-char *
+string
 rfc822_date(const time_t t)
 {
     struct tm *stm = gmtime(&t);
-    static char d[256];		// parnoid, should use ostrstream.
+    char d[256];
 
     sprintf(d, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday], 
 	    stm->tm_mday, months[stm->tm_mon], 
@@ -434,7 +448,7 @@ rfc822_date(const time_t t)
 #endif
 	    1900 + stm->tm_year,
 	    stm->tm_hour, stm->tm_min, stm->tm_sec);
-    return d;
+    return string(d);
 }
 
 /** Get the last modified time. Assume <tt>name</tt> is a file and
@@ -446,7 +460,9 @@ time_t
 last_modified_time(string name)
 {
     struct stat m;
-    if (stat(name.c_str(), &m) == 0 && S_ISREG(m.st_mode))
+
+	if (stat(name.c_str(), &m) == 0 && (S_IFREG & m.st_mode))
+
 	return m.st_mtime;
     else
 	return time(0);
@@ -462,9 +478,9 @@ last_modified_time(string name)
 // Returns: false if the compression output filter was to be used but could
 // not be started, true otherwise.
 
-static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
+static const char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
 			"dods_error", "web_error"};
-static char *encoding[]={"unknown", "deflate", "x-plain"};
+static const char *encoding[]={"unknown", "deflate", "x-plain"};
 
 /**
    @param out Write the MIME header to this FILE pointer. */
@@ -472,15 +488,27 @@ void
 set_mime_text(FILE *out, ObjectType type, const string &ver, 
 	      EncodingType enc, const time_t last_modified)
 {
-#ifdef WIN32
-    strstream os;
-    set_mime_text(os, type, ver, enc, last_modified);	
-    flush_stream(os, out);
-#else
-    ofstream os(fileno(out));
-    set_mime_text(os, type, ver, enc, last_modified);
-#endif
-    return;
+    fprintf( out, "HTTP/1.0 200 OK\n" ) ;
+    fprintf( out, "XDODS-Server: %s\n", ver.c_str() ) ;
+
+    const time_t t = time(0);
+    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
+
+    fprintf( out, "Last-Modified: " ) ;
+    if (last_modified > 0)
+	fprintf( out, "%s\n", rfc822_date(last_modified).c_str() ) ;
+    else 
+	fprintf( out, "%s\n", rfc822_date(t).c_str() ) ;
+
+    fprintf( out, "Content-type: text/plain\n" ) ;
+    fprintf( out, "Content-Description: %s\n", descrip[type] ) ;
+    if (type == dods_error)	// don't cache our error responses.
+	fprintf( out, "Cache-Control: no-cache\n" ) ;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
+    if (enc != x_plain)
+	fprintf( out, "Content-Encoding: %s\n", encoding[enc] ) ;
+    fprintf( out, "\n" ) ;
 }
 
 /** Use this function to create a MIME header for a text message.
@@ -529,16 +557,29 @@ void
 set_mime_binary(FILE *out, ObjectType type, const string &ver, 
 		EncodingType enc, const time_t last_modified)
 {
-#ifdef WIN32
-    strstream os;
-    set_mime_binary(os, type, ver, enc, last_modified);
-    flush_stream(os, out);
-#else
-    ofstream os(fileno(out));
-    set_mime_binary(os, type, ver, enc, last_modified);
-#endif
+    fprintf( out, "HTTP/1.0 200 OK\n" ) ;
+    fprintf( out, "XDODS-Server: %s\n", ver.c_str() ) ;
+    const time_t t = time(0);
+    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
 
-    return;
+    fprintf( out, "Last-Modified: " ) ;
+    if (last_modified > 0)
+	fprintf( out, "%s\n", rfc822_date(last_modified).c_str() ) ;
+    else 
+	fprintf( out, "%s\n", rfc822_date(t).c_str() ) ;
+
+    fprintf( out, "Content-type: application/octet-stream\n" ) ;
+    fprintf( out, "Content-Description: %s\n", descrip[type] ) ;
+    if (enc != x_plain) {
+	// Until we fix the bug in the cache WRT compressed data, supress
+	// caching for those requests. 11/30/99 jhrg
+#if 0
+       	fprintf( out, "Cache-Control: no-cache\n" ) ;
+#endif
+	// Fixed the bug in the libwww. 3/17/2000 jhrg
+	fprintf( out, "Content-Encoding: %s\n", encoding[enc] ) ;
+    }
+    fprintf( out, "\n" ) ;
 }
 
 /** Use this function to create a MIME header for a message containing binary
@@ -585,15 +626,15 @@ void
 set_mime_error(FILE *out, int code, const string &reason,
 	       const string &version)
 {
-#ifdef WIN32
-    strstream os;
-    set_mime_error(os, code, reason, version);	
-    flush_stream(os, out);
-#else
-    ofstream os(fileno(out));
-    set_mime_error(os, code, reason, version);
-#endif
-    return;
+    fprintf( out, "HTTP/1.0 %d %s\n", code, reason.c_str() ) ;
+    if (version == "")
+      fprintf( out, "XDODS-Server: %s\n", DVR ) ;
+    else
+      fprintf( out, "XDODS-Server: %s\n", version.c_str() ) ;
+    const time_t t = time(0);
+    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
+    fprintf( out, "Cache-Control: no-cache\n" ) ;
+    fprintf( out, "\n" ) ;
 }
 
 /** Use this function to create a MIME header for a message signaling an
@@ -624,15 +665,10 @@ set_mime_error(ostream &os, int code, const string &reason,
 void 
 set_mime_not_modified(FILE *out)
 {
-#ifdef WIN32
-    strstream os;
-    set_mime_not_modified(os);
-    flush_stream(os, out);
-#else
-    ofstream os(fileno(out));
-    set_mime_not_modified(os);
-#endif
-    return;
+    fprintf( out, "HTTP/1.0 304 NOT MODIFIED\n" ) ;
+    const time_t t = time(0);
+    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
+    fprintf( out, "\n" ) ;
 }
 
 /** Use this function to create a response signalling that the target of a
@@ -788,38 +824,38 @@ main(int argc, char *argv[])
     string name_path_p;
     string name = "stuff";
     name_path_p = name_path(name);
-    cout << name << ": " << name_path_p << endl;
+    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
 
     name = "stuff.Z";
     name_path_p = name_path(name);
-    cout << name << ": " << name_path_p << endl;
+    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
 
     name = "/usr/local/src/stuff.Z";
     name_path_p = name_path(name);
-    cout << name << ": " << name_path_p << endl;
+    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
 
     name = "/usr/local/src/stuff.tar.Z";
     name_path_p = name_path(name);
-    cout << name << ": " << name_path_p << endl;
+    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
 
     name = "/usr/local/src/stuff";
     name_path_p = name_path(name);
-    cout << name << ": " << name_path_p << endl;
+    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
 
     name = "";
     name_path_p = name_path(name);
-    cout << name << ": " << name_path_p << endl;
+    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
 
     // Test mime header generators and compressed output
-    cout << "MIME text header:" << endl;
-    set_mime_text(cout, dods_das, "dods-test/0.00");
-    cout << "MIME binary header:" << endl;
-    set_mime_binary(cout, dods_data, "dods-test/0.00");
+    fprintf( stdout, "MIME text header:\n" ) ;
+    set_mime_text(stdout, dods_das, "dods-test/0.00");
+    fprintf( stdout, "MIME binary header:\n" ) ;
+    set_mime_binary(stdout, dods_data, "dods-test/0.00");
 
 #if 0
-    cout << "Some data..." << endl;
+    fprintf( stdout, "Some data...\n" ) ;
 
-    cout << "MIME binary header and compressed data:" << endl;
+    fprintf( stdout, "MIME binary header and compressed data:\n" ) ;
     set_mime_binary(dods_data, x_gzip);
     FILE *out = compress_stdout();
     fprintf(out, "Compresses data...\n");
@@ -831,6 +867,32 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.54  2003/01/10 19:46:40  jimg
+// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
+// cases files were added on that branch (so they appear on the trunk for
+// the first time).
+//
+// Revision 1.47.4.22  2002/12/17 22:35:03  pwest
+// Added and updated methods using stdio. Deprecated methods using iostream.
+//
+// Revision 1.47.4.21  2002/10/23 17:40:38  jimg
+// Added compile-time switch for time.h versus sys/time.h.
+//
+// Revision 1.47.4.20  2002/08/22 21:23:23  jimg
+// Fixes for the Win32 Build made at ESRI by Vlad Plenchoy and myslef.
+//
+// Revision 1.47.4.19  2002/08/08 06:54:57  jimg
+// Changes for thread-safety. In many cases I found ugly places at the
+// tops of files while looking for globals, et c., and I fixed them up
+// (hopefully making them easier to read, ...). Only the files RCReader.cc
+// and usage.cc actually use pthreads synchronization functions. In other
+// cases I removed static objects where they were used for supposed
+// improvements in efficiency which had never actually been verifiied (and
+// which looked dubious).
+//
+// Revision 1.47.4.18  2002/06/18 22:52:19  jimg
+// Remove do_data_transfer(); use the corresponding DODSFilter method instead.
+//
 // Revision 1.53  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
