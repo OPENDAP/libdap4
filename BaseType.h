@@ -16,9 +16,12 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.30  1996/09/19 16:14:26  jimg
-/* Fixed syntax errors in the enum `Type'.
+/* Revision 1.31  1996/11/20 00:58:05  jimg
+/* Ripped out old code.
 /*
+ * Revision 1.30  1996/09/19 16:14:26  jimg
+ * Fixed syntax errors in the enum `Type'.
+ *
  * Revision 1.29  1996/08/26 19:36:41  jimg
  * Added type constants for 32 bit unsigned ints, 16 bit signed and unsigned
  * ints and 32 bit floats.
@@ -257,31 +260,9 @@ private:
     String _name;		// name of the instance
     Type _type;			// instance's type
 
-#if 0
-    static FILE *_out;		// output stream for data from server
-    static FILE *_in;		// like _out but for input
-#endif
-
     // xdr_coder is used as an argument to xdr procedures that encode groups
     // of things (e.g., xdr_array()). Each leaf class's ctor must set this.
-
     xdrproc_t _xdr_coder;
-
-    // These static pointers are (by definition) common to all instances of
-    // BaseType (and its children). The streams associated with them may be
-    // changed using functions that are friends of this class.
-    //
-    // NB: It is normal for each of these two static class members to use a
-    // small amount of dynamically allocated memory (allocated within the xdr
-    // library using malloc). The first call to serialize() will malloc a
-    // 4104 and a 136 byte block. The first call to deserialize() will malloc
-    // a 4104 byte block. These will not be deallocated even when all the
-    // objects are destroyed. However, once created they won't be re
-    // allocated again.
-#if 0
-    static XDR *_xdrin;		// xdr pointer for input (default: from stdin)
-    static XDR *_xdrout;	// xdr pointer for output (default: to stdout)
-#endif
 
     bool _read_p;		// true if the value has been read
     bool _send_p;		// true if the variable is to be transmitted
@@ -314,14 +295,6 @@ public:
 
     // xdr_coder is used to encode arrays of cardinal objects
     xdrproc_t xdr_coder();
-
-    // Access to the XDR * for input and output is limited to serialize and
-    // deserialize. These friend functions are used to set the FILE * used by
-    // those XDR pointers. They are defined in BaseType.cc
-#if 0
-    friend void set_xdrin(FILE *in);
-    friend void set_xdrout(FILE *out);
-#endif
 
     // These mfuncs are used to access the _xdrin and _xdrout members.
     XDR *xdrin() const;
