@@ -5,6 +5,40 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
+// Implementation for the CE Clause class.
+
+// $Log: Error.cc,v $
+// Revision 1.2  1996/06/01 00:03:38  jimg
+// Added.
+//
+
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+static char rcsid[]={"$Id: Error.cc,v 1.2 1996/06/01 00:03:38 jimg Exp $"};
+
+#include <assert.h>
+
+#include "Error.h"
+
+Error::Error()
+    : _error_code(undefined_error), _error_message(""), 
+      _program_type(undefined_prog_type), _program(0)
+{
+}
+
+Error::Error(ErrorCode ec, String msg)
+    : _error_code(ec), _error_message(msg), 
+      _program_type(undefined_prog_type), _program(0)
+{
+}
+
+Error::Error(ErrorCode ec, String msg, ProgramType pt, char *pgm)
+    : _error_code(ec), _error_message(msg), 
+      _program_type(pt), _program(0)
+{
+    _program = new char[strlen(pgm) + 1];
     strcpy(_program, pgm);
 }
 
