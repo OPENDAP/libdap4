@@ -1,7 +1,6 @@
 
 /*  A Bison parser, made from expr.y
- by  GNU Bison version 1.25
-  */
+    by GNU Bison version 1.28  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -12,25 +11,25 @@
 #define yychar exprchar
 #define yydebug exprdebug
 #define yynerrs exprnerrs
-#define	SCAN_INT	258
-#define	SCAN_FLOAT	259
-#define	SCAN_STR	260
-#define	SCAN_ID	261
-#define	SCAN_FIELD	262
-#define	SCAN_EQUAL	263
-#define	SCAN_NOT_EQUAL	264
-#define	SCAN_GREATER	265
-#define	SCAN_GREATER_EQL	266
-#define	SCAN_LESS	267
-#define	SCAN_LESS_EQL	268
-#define	SCAN_REGEXP	269
+#define	SCAN_INT	257
+#define	SCAN_FLOAT	258
+#define	SCAN_STR	259
+#define	SCAN_ID	260
+#define	SCAN_FIELD	261
+#define	SCAN_EQUAL	262
+#define	SCAN_NOT_EQUAL	263
+#define	SCAN_GREATER	264
+#define	SCAN_GREATER_EQL	265
+#define	SCAN_LESS	266
+#define	SCAN_LESS_EQL	267
+#define	SCAN_REGEXP	268
 
-#line 181 "expr.y"
+#line 184 "expr.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.10 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.11 2000/06/16 18:15:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -120,7 +119,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 proj_func get_proj_function(const DDS &table, const char *name);
 
 
-#line 276 "expr.y"
+#line 279 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -151,7 +150,7 @@ typedef union {
 #define	YYFLAG		-32768
 #define	YYNTBASE	25
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 269 ? yytranslate[x] : 42)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 268 ? yytranslate[x] : 42)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -179,8 +178,8 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
-     6,     7,     8,     9,    10,    11,    12,    13,    14
+     2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
+     7,     8,     9,    10,    11,    12,    13,    14
 };
 
 #if YYDEBUG != 0
@@ -212,11 +211,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   318,   324,   326,   327,   330,   336,   337,   343,   353,   362,
-   366,   372,   392,   393,   399,   408,   419,   425,   438,   439,
-   440,   452,   458,   470,   477,   486,   490,   496,   505,   516,
-   521,   526,   533,   569,   600,   604,   610,   614,   618,   624,
-   625,   626,   627,   628,   629,   630
+   321,   327,   329,   330,   333,   339,   340,   346,   356,   365,
+   369,   375,   395,   396,   402,   411,   422,   428,   441,   442,
+   443,   455,   461,   473,   480,   489,   493,   499,   508,   519,
+   524,   529,   536,   572,   603,   607,   613,   617,   621,   627,
+   628,   629,   630,   631,   632,   633
 };
 #endif
 
@@ -307,7 +306,8 @@ static const short yycheck[] = {    13,
     23,    59,    21,     2
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "bison.simple"
+#line 3 "/usr/lib/bison.simple"
+/* This file comes from bison-1.28.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -324,46 +324,66 @@ static const short yycheck[] = {    13,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
    This special exception was added by the Free Software Foundation
    in version 1.24 of Bison.  */
 
-#ifndef alloca
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else /* not GNU C.  */
-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
-#include <alloca.h>
-#else /* not sparc */
-#if defined (MSDOS) && !defined (__TURBOC__)
-#include <malloc.h>
-#else /* not MSDOS, or __TURBOC__ */
-#if defined(_AIX)
-#include <malloc.h>
- #pragma alloca
-#else /* not MSDOS, __TURBOC__, or _AIX */
-#ifdef __hpux
-#ifdef __cplusplus
-extern "C" {
-void *alloca (unsigned int);
-};
-#else /* not __cplusplus */
-void *alloca ();
-#endif /* not __cplusplus */
-#endif /* __hpux */
-#endif /* not _AIX */
-#endif /* not MSDOS, or __TURBOC__ */
-#endif /* not sparc.  */
-#endif /* not GNU C.  */
-#endif /* alloca not defined.  */
-
 /* This is the parser code that is written into each bison parser
   when the %semantic_parser declaration is not specified in the grammar.
   It was written by Richard Stallman by simplifying the hairy parser
   used when %semantic_parser is specified.  */
+
+#ifndef YYSTACK_USE_ALLOCA
+#ifdef alloca
+#define YYSTACK_USE_ALLOCA
+#else /* alloca not defined */
+#ifdef __GNUC__
+#define YYSTACK_USE_ALLOCA
+#define alloca __builtin_alloca
+#else /* not GNU C.  */
+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
+#define YYSTACK_USE_ALLOCA
+#include <alloca.h>
+#else /* not sparc */
+/* We think this test detects Watcom and Microsoft C.  */
+/* This used to test MSDOS, but that is a bad idea
+   since that symbol is in the user namespace.  */
+#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
+#if 0 /* No need for malloc.h, which pollutes the namespace;
+	 instead, just don't use alloca.  */
+#include <malloc.h>
+#endif
+#else /* not MSDOS, or __TURBOC__ */
+#if defined(_AIX)
+/* I don't know what this was needed for, but it pollutes the namespace.
+   So I turned it off.   rms, 2 May 1997.  */
+/* #include <malloc.h>  */
+ #pragma alloca
+#define YYSTACK_USE_ALLOCA
+#else /* not MSDOS, or __TURBOC__, or _AIX */
+#if 0
+#ifdef __hpux /* haible@ilog.fr says this works for HPUX 9.05 and up,
+		 and on HPUX 10.  Eventually we can turn this on.  */
+#define YYSTACK_USE_ALLOCA
+#define alloca __builtin_alloca
+#endif /* __hpux */
+#endif
+#endif /* not _AIX */
+#endif /* not MSDOS, or __TURBOC__ */
+#endif /* not sparc */
+#endif /* not GNU C */
+#endif /* alloca not defined */
+#endif /* YYSTACK_USE_ALLOCA not defined */
+
+#ifdef YYSTACK_USE_ALLOCA
+#define YYSTACK_ALLOC alloca
+#else
+#define YYSTACK_ALLOC malloc
+#endif
 
 /* Note: there must be only one dollar sign in this file.
    It is replaced by the list of actions, each action
@@ -373,8 +393,8 @@ void *alloca ();
 #define yyclearin	(yychar = YYEMPTY)
 #define YYEMPTY		-2
 #define YYEOF		0
-#define YYACCEPT	return(0)
-#define YYABORT 	return(1)
+#define YYACCEPT	goto yyacceptlab
+#define YYABORT 	goto yyabortlab
 #define YYERROR		goto yyerrlab1
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -455,12 +475,12 @@ int yydebug;			/*  nonzero means print parse trace	*/
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 10000
 #endif
-
-/* Prevent warning if -Wstrict-prototypes.  */
-#ifdef __GNUC__
-int yyparse (void);
-#endif
 
+/* Define __yy_memcpy.  Note that the size argument
+   should be passed with type unsigned int, because that is what the non-GCC
+   definitions require.  With GCC, __builtin_memcpy takes an arg
+   of type size_t, but it can handle unsigned int.  */
+
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
 #define __yy_memcpy(TO,FROM,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
 #else				/* not GNU C or C++ */
@@ -472,7 +492,7 @@ static void
 __yy_memcpy (to, from, count)
      char *to;
      char *from;
-     int count;
+     unsigned int count;
 {
   register char *f = from;
   register char *t = to;
@@ -487,10 +507,10 @@ __yy_memcpy (to, from, count)
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_memcpy (char *to, char *from, int count)
+__yy_memcpy (char *to, char *from, unsigned int count)
 {
-  register char *f = from;
   register char *t = to;
+  register char *f = from;
   register int i = count;
 
   while (i-- > 0)
@@ -500,7 +520,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "bison.simple"
+#line 217 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -520,6 +540,15 @@ __yy_memcpy (char *to, char *from, int count)
 #define YYPARSE_PARAM_ARG
 #define YYPARSE_PARAM_DECL
 #endif /* not YYPARSE_PARAM */
+
+/* Prevent warning if -Wstrict-prototypes.  */
+#ifdef __GNUC__
+#ifdef YYPARSE_PARAM
+int yyparse (void *);
+#else
+int yyparse (void);
+#endif
+#endif
 
 int
 yyparse(YYPARSE_PARAM_ARG)
@@ -548,6 +577,7 @@ yyparse(YYPARSE_PARAM_ARG)
 #endif
 
   int yystacksize = YYINITDEPTH;
+  int yyfree_stacks = 0;
 
 #ifdef YYPURE
   int yychar;
@@ -632,18 +662,32 @@ yynewstate:
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  yyerror("parser stack overflow");
+	  if (yyfree_stacks)
+	    {
+	      free (yyss);
+	      free (yyvs);
+#ifdef YYLSP_NEEDED
+	      free (yyls);
+#endif
+	    }
 	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
-      __yy_memcpy ((char *)yyss, (char *)yyss1, size * sizeof (*yyssp));
-      yyvs = (YYSTYPE *) alloca (yystacksize * sizeof (*yyvsp));
-      __yy_memcpy ((char *)yyvs, (char *)yyvs1, size * sizeof (*yyvsp));
+#ifndef YYSTACK_USE_ALLOCA
+      yyfree_stacks = 1;
+#endif
+      yyss = (short *) YYSTACK_ALLOC (yystacksize * sizeof (*yyssp));
+      __yy_memcpy ((char *)yyss, (char *)yyss1,
+		   size * (unsigned int) sizeof (*yyssp));
+      yyvs = (YYSTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yyvsp));
+      __yy_memcpy ((char *)yyvs, (char *)yyvs1,
+		   size * (unsigned int) sizeof (*yyvsp));
 #ifdef YYLSP_NEEDED
-      yyls = (YYLTYPE *) alloca (yystacksize * sizeof (*yylsp));
-      __yy_memcpy ((char *)yyls, (char *)yyls1, size * sizeof (*yylsp));
+      yyls = (YYLTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yylsp));
+      __yy_memcpy ((char *)yyls, (char *)yyls1,
+		   size * (unsigned int) sizeof (*yylsp));
 #endif
 #endif /* no yyoverflow */
 
@@ -804,36 +848,36 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 319 "expr.y"
+#line 322 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 326 "expr.y"
+#line 329 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 327 "expr.y"
+#line 330 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 331 "expr.y"
+#line 334 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 338 "expr.y"
+#line 341 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 344 "expr.y"
+#line 347 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
@@ -845,7 +889,7 @@ case 8:
 		;
     break;}
 case 9:
-#line 354 "expr.y"
+#line 357 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var)
@@ -856,19 +900,19 @@ case 9:
 		;
     break;}
 case 10:
-#line 363 "expr.y"
+#line 366 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 11:
-#line 367 "expr.y"
+#line 370 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 12:
-#line 373 "expr.y"
+#line 376 "expr.y"
 {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -888,13 +932,13 @@ case 12:
 		;
     break;}
 case 14:
-#line 394 "expr.y"
+#line 397 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 15:
-#line 400 "expr.y"
+#line 403 "expr.y"
 {
 		    if (yyvsp[-4].rval_ptr) {
 			(*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -905,7 +949,7 @@ case 15:
 		;
     break;}
 case 16:
-#line 409 "expr.y"
+#line 412 "expr.y"
 {
 		    if (yyvsp[-2].rval_ptr) {
 			rvalue_list *rv = new rvalue_list;
@@ -918,13 +962,13 @@ case 16:
 		;
     break;}
 case 17:
-#line 420 "expr.y"
+#line 423 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 18:
-#line 426 "expr.y"
+#line 429 "expr.y"
 {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		   if (!b_func) {
@@ -937,7 +981,7 @@ case 18:
 	       ;
     break;}
 case 21:
-#line 441 "expr.y"
+#line 444 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
@@ -951,7 +995,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 453 "expr.y"
+#line 456 "expr.y"
 {
 		    yyval.rval_ptr = dereference_url(yyvsp[0].val);
 		    if (!yyval.rval_ptr)
@@ -959,7 +1003,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 459 "expr.y"
+#line 462 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
@@ -971,7 +1015,7 @@ case 23:
 		;
     break;}
 case 24:
-#line 471 "expr.y"
+#line 474 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -980,7 +1024,7 @@ case 24:
 		;
     break;}
 case 25:
-#line 478 "expr.y"
+#line 481 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -989,19 +1033,19 @@ case 25:
 		;
     break;}
 case 26:
-#line 487 "expr.y"
+#line 490 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
 case 27:
-#line 491 "expr.y"
+#line 494 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
 case 28:
-#line 497 "expr.y"
+#line 500 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1012,7 +1056,7 @@ case 28:
 		;
     break;}
 case 29:
-#line 506 "expr.y"
+#line 509 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1023,28 +1067,28 @@ case 29:
 		;
     break;}
 case 30:
-#line 517 "expr.y"
+#line 520 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 31:
-#line 522 "expr.y"
+#line 525 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 32:
-#line 527 "expr.y"
+#line 530 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 33:
-#line 534 "expr.y"
+#line 537 "expr.y"
 {
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
 		    if (var && is_array_t(var)) {
@@ -1082,7 +1126,7 @@ case 33:
 		;
     break;}
 case 34:
-#line 570 "expr.y"
+#line 573 "expr.y"
 {
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
 		    if (var && is_array_t(var)) {
@@ -1113,38 +1157,38 @@ case 34:
 		;
     break;}
 case 35:
-#line 601 "expr.y"
+#line 604 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 36:
-#line 605 "expr.y"
+#line 608 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 37:
-#line 611 "expr.y"
+#line 614 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-1].val);
 		;
     break;}
 case 38:
-#line 615 "expr.y"
+#line 618 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-3].val, yyvsp[-1].val);
 		;
     break;}
 case 39:
-#line 619 "expr.y"
+#line 622 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "bison.simple"
+#line 543 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1339,8 +1383,32 @@ yyerrhandle:
 
   yystate = yyn;
   goto yynewstate;
+
+ yyacceptlab:
+  /* YYACCEPT comes here.  */
+  if (yyfree_stacks)
+    {
+      free (yyss);
+      free (yyvs);
+#ifdef YYLSP_NEEDED
+      free (yyls);
+#endif
+    }
+  return 0;
+
+ yyabortlab:
+  /* YYABORT comes here.  */
+  if (yyfree_stacks)
+    {
+      free (yyss);
+      free (yyvs);
+#ifdef YYLSP_NEEDED
+      free (yyls);
+#endif
+    }
+  return 1;
 }
-#line 633 "expr.y"
+#line 636 "expr.y"
 
 
 void

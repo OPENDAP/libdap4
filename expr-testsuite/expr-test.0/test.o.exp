@@ -5,6 +5,12 @@
 # jhrg
 #
 # $Log: test.o.exp,v $
+# Revision 1.2  2000/06/16 18:15:02  jimg
+# Merged with 3.1.7
+#
+# Revision 1.1.20.1  2000/06/15 02:24:58  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
 # Revision 1.1  1998/09/02 02:06:53  jimg
 # Make sure to escape []s with \\\ (three backslashes).
 #
@@ -58,7 +64,7 @@ Structure {
     Int32 o;
 } s3 = { 123456789 };"
 
-expr-test_start p ${srcdir}${test_file} ${test_equation}
+expr-test_start p ${srcdir}/${test_file} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"

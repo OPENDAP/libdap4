@@ -10,6 +10,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.53  2000/06/16 18:15:00  jimg
+// Merged with 3.1.7
+//
+// Revision 1.49.6.3  2000/06/07 23:05:30  jimg
+// The first_*() methods return 0 if there are no variables
+//
 // Revision 1.52  2000/01/27 06:29:57  jimg
 // Resolved conflicts from merge with release-3-1-4
 //
@@ -491,7 +497,10 @@ Sequence::exact_match(const string &name)
 Pix
 Sequence::first_var()
 {
-    return _vars.first();
+    if (_vars.empty())
+	return 0;
+    else
+	return _vars.first();
 }
 
 void

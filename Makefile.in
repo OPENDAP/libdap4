@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.113 2000/06/07 19:33:21 jimg Exp $
+# $Id: Makefile.in,v 1.114 2000/06/16 18:15:00 jimg Exp $
 
 @SET_MAKE@
 
@@ -478,14 +478,12 @@ docs:
 tar:
 	-rm -r config.cache config.log config.status
 	cd $(DODS_ROOT)/.. && \
-	$(TAR) --exclude '*/nc*-dods*' --exclude '*/jg-dods*' \
-	    --exclude '*/math-dods*' --exclude '*/dsp-dods*' \
-	    --exclude '*/hdf-dods*' --exclude '*/tools*' \
-	    --exclude '*/ff-dods*' --exclude '*/clients*' \
-	    --exclude '*/doc' --exclude '*/packages*' \
-	    --exclude '*/.#*' --exclude '*/CVS' --exclude '*/old' \
-	    --exclude '*/.flc' --exclude '*/.snprj' \
-	    --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
+	$(TAR) --exclude 'nc3-dods*' --exclude 'jg-dods*' \
+	  --exclude 'dsp-dods*' --exclude 'math-dods*' --exclude 'hdf-dods*' \
+	  --exclude 'ff-dods*' --exclude 'tools' --exclude 'clients' \
+	  --exclude 'packages*' --exclude 'CVS' --exclude 'old' \
+	  --exclude '.#*' --exclude '.flc' --exclude '.snprj' \
+	  --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
 
 .PHONY: binary-tar
 binary-tar:
@@ -496,7 +494,7 @@ binary-tar:
 	    cd $(DODS_ROOT)/.. && \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-dap-library-$(version)-$(host).tar.gz \
-		--exclude '*/CVS' \
+		--exclude 'CVS' \
 		DODS/lib/libdap++.a \
 		DODS/lib/libdap++-gui.a \
 		DODS/include && \
@@ -510,6 +508,7 @@ binary-tar:
 		DODS/bin/urlqueue && \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-server-tools-$(version)-$(host).tar.gz \
+		--exclude 'CVS' \
 		DODS/etc/INSTALL-servers \
 		DODS/etc/installServers \
 		DODS/etc/asciival \
@@ -573,7 +572,7 @@ Connect.o: Connect.cc config_dap.h debug.h DataDDS.h BaseType.h \
  Clause.h expr.h RValue.h DDS.h Connect.h DAS.h AttrTable.h Error.h \
  util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
  Str.h dods-limits.h Url.h Array.h Vector.h List.h Structure.h \
- Sequence.h Grid.h
+ Sequence.h Grid.h escaping.h
 Connections.o: Connections.cc debug.h Connections.h config_dap.h \
  Connect.h DAS.h AttrTable.h DDS.h BaseType.h Clause.h expr.h RValue.h \
  Error.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \

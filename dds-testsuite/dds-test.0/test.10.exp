@@ -2,6 +2,12 @@
 # jhrg
 #
 # $Log: test.10.exp,v $
+# Revision 1.7  2000/06/16 18:15:01  jimg
+# Merged with 3.1.7
+#
+# Revision 1.6.6.1  2000/06/15 02:24:57  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
 # Revision 1.6  1999/04/29 02:29:39  jimg
 # Merge of no-gnu branch
 #
@@ -78,7 +84,7 @@ Dataset {
     } strange;
 } data6;"
 
-dds-test_start p $srcdir$test_name
+dds-test_start p $srcdir/$test_name
 
 #send_user "comp_output: $comp_output\n"
 #send_user "test_out: $test_out\n"

@@ -10,6 +10,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.45  2000/06/16 18:14:59  jimg
+// Merged with 3.1.7
+//
+// Revision 1.43.6.1  2000/06/14 16:59:00  jimg
+// Added instrumentation for the dtor.
+//
 // Revision 1.44  2000/06/07 18:06:57  jimg
 // Merged the pc port branch
 //
@@ -293,6 +299,8 @@ Array::Array(const Array &rhs)
 
 Array::~Array()
 {
+    DBG(cerr << "Entering ~Array (" << this << ")" << endl);
+    DBG(cerr << "Exiting ~Array" << endl);
 }
 
 const Array &

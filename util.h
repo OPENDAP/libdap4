@@ -13,6 +13,12 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.33  2000/06/16 18:15:01  jimg
+ * Merged with 3.1.7
+ *
+ * Revision 1.31.6.1  2000/06/14 16:59:54  jimg
+ * Added a new varient of unique_names for DLLists.
+ *
  * Revision 1.32  2000/06/07 18:07:01  jimg
  * Merged the pc port branch
  *
@@ -162,6 +168,8 @@ using namespace std;
 
 string prune_spaces(string);
 bool unique_names(SLList<BaseType *> l, const string &var, const string &type,
+		  string &msg);
+bool unique_names(DLList<BaseType *> l, const string &var, const string &type,
 		  string &msg);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);

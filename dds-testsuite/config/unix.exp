@@ -18,7 +18,7 @@ proc dds-test_start { options {ifile ""} {ofile ""}} {
     global spawn_id
 
     if {$verbose >= 1} {
-	verbose "Starting $DDSTEST $options $ifile $ofile ...\n"
+	verbose "Starting ./$DDSTEST $options $ifile $ofile ...\n"
 	exp_internal 1
     }
 
@@ -31,8 +31,8 @@ proc dds-test_start { options {ifile ""} {ofile ""}} {
     }
 
     switch $options {
-	p {catch "exec $DDSTEST -p $ifile $ofile" comp_output}
-	s {spawn $DDSTEST -s}
+	p {catch "exec ./$DDSTEST -p $ifile $ofile" comp_output}
+	s {spawn ./$DDSTEST -s}
     }
 
     if {$verbose >= 1} {

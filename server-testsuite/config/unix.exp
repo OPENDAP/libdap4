@@ -3,7 +3,7 @@
 # various servers (hdf, dsp, netcdf, matlab, ...) on serveral different
 # platforms. 
 # 
-# $Id: unix.exp,v 1.1 1997/08/29 22:01:52 jimg Exp $
+# $Id: unix.exp,v 1.2 2000/06/16 18:15:02 jimg Exp $
 
 # Make sure the global var GETURL is set correctly.
 
@@ -70,13 +70,13 @@ proc geturl_start { {switches ""} {urls ""} {file ""}} {
 	    send_user "Testing geturl $switches $urls ...\n"
 	    exp_internal 1
 	}
-	catch "exec $GETURL $switches $urls" comp_output
+	catch "exec ./$GETURL $switches $urls" comp_output
     } else {
 	if {$verbose >= 1} {
 	    send_user "Testing geturl $switches $urls >& $file ...\n"
 	    exp_internal 1
 	}
-	catch "exec $GETURL $switches $urls > $file" comp_output
+	catch "exec ./$GETURL $switches $urls > $file" comp_output
     }
 }
 

@@ -11,6 +11,12 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.57  2000/06/16 18:15:01  jimg
+// Merged with 3.1.7
+//
+// Revision 1.55.4.1  2000/06/14 16:59:54  jimg
+// Added a new varient of unique_names for DLLists.
+//
 // Revision 1.56  2000/06/07 18:07:01  jimg
 // Merged the pc port branch
 //
@@ -281,7 +287,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.56 2000/06/07 18:07:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.57 2000/06/16 18:15:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -314,6 +320,7 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.56 2000/06/07 18:07:01 jimg Ex
 #include <algorithm>
 
 #include <SLList.h>
+#include <DLList.h>
 #include <Regex.h>
 
 #include "BaseType.h"
@@ -377,6 +384,7 @@ unique_names(SLList<BaseType *> l, const string &var_name,
 	DBG(std::cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
 #else
 	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
+<<<<<<< util.cc
 #endif
     }
     
@@ -393,6 +401,56 @@ unique_names(SLList<BaseType *> l, const string &var_name,
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
 #endif
+=======
+    }
+    
+    // sort the array of names
+    sort(names.begin(), names.end());
+	
+#ifdef DODS_DEBUG2
+    cout << "unique:" << endl;
+    for (int ii = 0; ii < nelem; ++ii)
+	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
+#endif
+
+    // look for any instance of consecutive names that are ==
+    int i;
+    for (i = 1; i < nelem; ++i)
+	if (names[i-1] == names[i]) {
+	    ostrstream oss;
+	    oss << "The variable `" << names[i] 
+		 << "' is used more than once in " << type_name << " `"
+		 << var_name << "'" << ends;
+	    msg = oss.str();
+	    oss.rdbuf()->freeze(0);
+	    return false;
+	}
+
+    return true;
+}
+
+bool
+unique_names(DLList<BaseType *> l, const string &var_name, 
+	     const string &type_name, string &msg)
+{
+    // copy the identifier names to a vector
+    vector<string> names(l.length());
+
+    int nelem = 0;
+    for (Pix p = l.first(); p; l.next(p)) {
+	assert(l(p));
+	names[nelem++] = l(p)->name();
+	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
+    }
+    
+    // sort the array of names
+    sort(names.begin(), names.end());
+	
+#ifdef DODS_DEBUG2
+    cout << "unique:" << endl;
+    for (int ii = 0; ii < nelem; ++ii)
+	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
+>>>>>>> 1.55.4.1
 #endif
 
     // look for any instance of consecutive names that are ==

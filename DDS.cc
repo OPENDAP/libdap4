@@ -9,6 +9,13 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.47  2000/06/16 18:14:59  jimg
+// Merged with 3.1.7
+//
+// Revision 1.44.2.2  2000/06/14 17:01:40  jimg
+// Fixed a bug in del_var; the BaseType pointer vars(p) must be deleted
+// before calling DLList.del(p).
+//
 // Revision 1.46  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -252,7 +259,11 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.46 2000/06/07 18:06:58 jimg Exp $"};
+<<<<<<< DDS.cc
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.47 2000/06/16 18:14:59 jimg Exp $"};
+=======
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.47 2000/06/16 18:14:59 jimg Exp $"};
+>>>>>>> 1.44.2.2
 
 #ifdef __GNUG__
 #pragma implementation
@@ -395,15 +406,12 @@ DDS::add_var(BaseType *bt)
 void 
 DDS::del_var(const string &n)
 { 
-    Pix pp = 0;			// previous Pix
-
     for (Pix p = vars.first(); p; vars.next(p))
 	if (vars(p)->name() == n) {
-	    vars.del_after(pp);	// pp points to the pos before p
+	    delete vars(p);
+	    vars.del(p, -1);
 	    return;
 	}
-	else
-	    pp = p;
 }
 
 BaseType *

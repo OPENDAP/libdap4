@@ -7,13 +7,13 @@ typedef union {
     int integer;
     char *string;
 } YYSTYPE;
-#define	SCAN_INT	258
-#define	SCAN_STR	259
-#define	SCAN_ERROR	260
-#define	SCAN_CODE	261
-#define	SCAN_PTYPE	262
-#define	SCAN_MSG	263
-#define	SCAN_PROGRAM	264
+#define	SCAN_INT	257
+#define	SCAN_STR	258
+#define	SCAN_ERROR	259
+#define	SCAN_CODE	260
+#define	SCAN_PTYPE	261
+#define	SCAN_MSG	262
+#define	SCAN_PROGRAM	263
 
 
 extern YYSTYPE Errorlval;

@@ -10,6 +10,12 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.42  2000/06/16 18:14:59  jimg
+// Merged with 3.1.7
+//
+// Revision 1.38.6.1  2000/06/07 23:05:31  jimg
+// The first_*() methods return 0 if there are no variables
+//
 // Revision 1.41  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -452,7 +458,10 @@ Grid::array_var()
 Pix 
 Grid::first_map_var()
 {
-    return _map_vars.first();
+    if (_map_vars.empty())
+	return 0;
+    else
+	return _map_vars.first();
 }
 
 void 

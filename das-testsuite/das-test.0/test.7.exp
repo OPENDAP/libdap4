@@ -2,6 +2,12 @@
 # jhrg
 #
 # $Log: test.7.exp,v $
+# Revision 1.8  2000/06/16 18:15:01  jimg
+# Merged with 3.1.7
+#
+# Revision 1.7.10.1  2000/06/15 02:24:57  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
 # Revision 1.7  1999/03/24 23:42:23  jimg
 # Added or updated for the new simple types (Int16, UInt16 and Float32)
 #
@@ -51,7 +57,7 @@ Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,
 Float64, String or Url) followed by a name and value.
 parse() returned: 0"
 
-das-test_start p $srcdir$test_name
+das-test_start p $srcdir/$test_name
 
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"

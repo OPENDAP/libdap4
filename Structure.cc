@@ -10,6 +10,12 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.39  2000/06/16 18:15:00  jimg
+// Merged with 3.1.7
+//
+// Revision 1.37.6.2  2000/06/07 23:05:30  jimg
+// The first_*() methods return 0 if there are no variables
+//
 // Revision 1.38  2000/01/27 06:29:58  jimg
 // Resolved conflicts from merge with release-3-1-4
 //
@@ -460,8 +466,10 @@ Structure::exact_match(const string &name)
 Pix
 Structure::first_var()
 {
-    assert(_vars.first());
-    return _vars.first();
+    if (_vars.empty())
+	return 0;
+    else
+	return _vars.first();
 }
 
 void

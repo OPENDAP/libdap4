@@ -1,20 +1,46 @@
+2000-06-16  James Gallagher  <jimg@dcz.dods.org>
+
+	* Note: This release was made to patch a bug which shows up in the
+	version of loaddods that supports loading the DAS into a
+	structure (version 3.1.5 of loaddods). You need this code to build
+	that version of loaddods.
+
+	* Fixed the tests so they work on my machine (where I don't have
+	`.' in my PATH). I also added some `/'s in places where is *seems*
+	DejaGnu was supplying them before. If extras creep in that should
+	not e a problem.
+
+	* Fixed (by Ethan) the tar and binary-tar targets.
+
+	* Added a fair amount of instrumentation to the dtors of various
+	methods. 
+
+	* Fixed a bug in DDS. The del_var method must delete the BaseType
+	before deleting the list element. I also changes from a SLList to
+	a DLList to get a cleaner delete method.
+
 2000-06-07  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with version 3.1.6. Used cvs update -d -j release-3-1-5
 	-j release-3-1. The next merge should use -j release-3-1-6 -j
 	release-3-1. 
 
+	* Added code to Vector so that each element of vector<BaseType *>
+	_vec is explicitly copied and deleted.
+
+	* Fixed bugs in Grid, Structure and Sequence. The methods used to
+	get the Pix pointing to the first variable would segfault if there
+	were no variables. Now they return 0.
+
 	* DODSFilter now has a set_ce() method. This means that a server
 	can easily rewrite the CE it gets without loosing the other
 	features of DODSFilter.
 
-	* The progress indicator now has a cancel button!
-
 	* Connect.cc: Fixed bugs with local connections and the libwww and
-	Gui initializations. Merged Brent's progress indicator cancel button
+	Gui initializations. 
 
-	* Fixed a bugs in AttrTable. Container attributes below the top
-	level were broken i the last release. Changed the get_attr_num()
+	* Fixed a bug in AttrTable. Container attributes below the top
+	level were broken in the last release. Changed the get_attr_num()
 	method so that it returns a sensible value for both containers and
 	`plain' attributes. Added to struct entry so that it is more a
 	complete class. Added methods so that operator= and the copy-ctor
@@ -720,16 +746,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-<<<<<<< ChangeLog
-<<<<<<< ChangeLog
-<<<<<<< ChangeLog
-$Id: ChangeLog,v 1.54 2000/06/07 19:34:30 jimg Exp $
-=======
-$Id: ChangeLog,v 1.54 2000/06/07 19:34:30 jimg Exp $
->>>>>>> 1.42.2.4
-=======
-$Id: ChangeLog,v 1.54 2000/06/07 19:34:30 jimg Exp $
->>>>>>> 1.42.2.7
-=======
-$Id: ChangeLog,v 1.54 2000/06/07 19:34:30 jimg Exp $
->>>>>>> 1.42.2.8
+$Id: ChangeLog,v 1.55 2000/06/16 18:14:59 jimg Exp $

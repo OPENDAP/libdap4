@@ -30,8 +30,8 @@ proc das-test_start { sw {ifile ""} {ofile ""}} {
     }
 
     switch $sw {
-	p {catch "exec $DASTEST -p $ifile $ofile" comp_output}
-	s {eval "spawn $DASTEST -s"}
+	p {catch "exec ./$DASTEST -p $ifile $ofile" comp_output}
+	s {eval "spawn ./$DASTEST -s"}
     }
 
     if {$verbose >= 1} {

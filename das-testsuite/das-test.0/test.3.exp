@@ -2,6 +2,12 @@
 # jhrg
 #
 # $Log: test.3.exp,v $
+# Revision 1.9  2000/06/16 18:15:01  jimg
+# Merged with 3.1.7
+#
+# Revision 1.8.38.1  2000/06/15 02:24:57  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
 # Revision 1.8  1997/05/13 23:29:24  jimg
 # *** empty log message ***
 #
@@ -24,7 +30,7 @@
 # Changed expected outcomes to match new das.print() mfunc.
 #
 # Revision 1.2  1994/09/09  16:15:22  jimg
-# Fixed namign of the test (was given as $srcdir/$test_name, should have been
+# Fixed namign of the test (was given as $srcdir//$test_name, should have been
 # $srcdir$test_name).
 #
 # Revision 1.1  1994/08/29  19:57:21  jimg
@@ -53,7 +59,7 @@ might cause problems with memory - overwrites, ...\";
     }
 }"
 
-das-test_start p $srcdir$test_name
+das-test_start p $srcdir/$test_name
 
 # send_user "comp output: $comp_output\n"
 # send_user "test out: $test_out\n"

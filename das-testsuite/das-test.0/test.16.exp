@@ -2,6 +2,12 @@
 # jhrg
 #
 # $Log: test.16.exp,v $
+# Revision 1.6  2000/06/16 18:15:01  jimg
+# Merged with 3.1.7
+#
+# Revision 1.5.38.1  2000/06/15 02:24:57  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
 # Revision 1.5  1997/05/13 23:29:17  jimg
 # *** empty log message ***
 #
@@ -40,7 +46,7 @@ set test_out "Attributes {
 `i' previously defined.
 parse() returned: 0"
 
-das-test_start p $srcdir$test_name
+das-test_start p $srcdir/$test_name
 
 if {$test_out == $comp_output} { # check comp_output
     pass "$test_name"

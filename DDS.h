@@ -13,6 +13,12 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.37  2000/06/16 18:14:59  jimg
+// Merged with 3.1.7
+//
+// Revision 1.34.2.2  2000/06/14 17:00:53  jimg
+// Changed vars from a SLList of BaseType *s to a DLList.
+//
 // Revision 1.36  2000/06/07 19:33:21  jimg
 // Merged with verson 3.1.6
 //
@@ -204,6 +210,7 @@
 #include <string>
 #include <Pix.h>
 #include <SLList.h>
+#include <DLList.h>
 
 #include "BaseType.h"
 #include "Clause.h"
@@ -325,7 +332,7 @@ private:
     string _filename;		// File name (or other OS identifier) for
 				// dataset or part of dataset.
 
-    SLList<BaseType *> vars;	// Variables at the top level 
+    DLList<BaseType *> vars;	// Variables at the top level 
     
     SLList<Clause *> expr;	// List of CE Clauses
 

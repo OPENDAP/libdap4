@@ -2,8 +2,17 @@
 # jhrg
 #
 # $Log: test.20.exp,v $
+# Revision 1.6  2000/06/16 18:15:01  jimg
+# Merged with 3.1.7
+#
+# Revision 1.4.6.2  2000/06/15 02:24:57  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
 # Revision 1.5  2000/04/07 00:20:36  jimg
 # Fixed expresion tests.
+#
+# Revision 1.4.6.1  1999/10/19 16:48:40  jimg
+# Version 3.1.2
 #
 # Revision 1.4  1999/04/29 00:05:39  jimg
 # *** empty log message ***
@@ -50,7 +59,7 @@ It must be between -32768 and 32767.
 `80000' is not an Int16 value.
 parse() returned: 0"
 
-das-test_start p $srcdir$test_name
+das-test_start p $srcdir/$test_name
 
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"

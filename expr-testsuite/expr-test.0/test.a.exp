@@ -3,6 +3,12 @@
 # jhrg
 #
 # $Log: test.a.exp,v $
+# Revision 1.3  2000/06/16 18:15:02  jimg
+# Merged with 3.1.7
+#
+# Revision 1.2.28.1  2000/06/15 02:24:58  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
 # Revision 1.2  1998/03/27 04:28:48  jimg
 # Fixed tests for the new DDS::send() mime header stuff
 #
@@ -48,7 +54,7 @@ Structure {
     Int32 k;
 } s1 = { 123456789, 123456789 };"
 
-expr-test_start p ${srcdir}${test_file} ${test_equation}
+expr-test_start p ${srcdir}/${test_file} ${test_equation}
 
 if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"

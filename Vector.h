@@ -12,6 +12,15 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.28  2000/06/16 18:15:00  jimg
+ * Merged with 3.1.7
+ *
+ * Revision 1.26.6.1  2000/06/07 23:08:31  jimg
+ * Added code to explicitly delete BaseType *s in _vec.
+ * Also tried recoding using DLList, but that didn't fix the problem I was
+ * after---fixed in the client code but decided to leave this is with #if 0
+ * just in case.
+ *
  * Revision 1.27  2000/06/07 18:06:59  jimg
  * Merged the pc port branch
  *
@@ -173,7 +182,12 @@ private:
 
     void *_buf;			// array which holds cardinal data
 
+#if 1
     vector<BaseType *> _vec;
+#endif
+#if 0
+    DLList<BaseType *> _vec;
+#endif
 
 protected:
     // This function copies the private members of Vector.

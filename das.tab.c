@@ -1,7 +1,6 @@
 
 /*  A Bison parser, made from das.y
- by  GNU Bison version 1.25
-  */
+    by GNU Bison version 1.28  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -12,30 +11,30 @@
 #define yychar daschar
 #define yydebug dasdebug
 #define yynerrs dasnerrs
-#define	SCAN_ATTR	258
-#define	SCAN_ID	259
-#define	SCAN_INT	260
-#define	SCAN_FLOAT	261
-#define	SCAN_STR	262
-#define	SCAN_ALIAS	263
-#define	SCAN_BYTE	264
-#define	SCAN_INT16	265
-#define	SCAN_UINT16	266
-#define	SCAN_INT32	267
-#define	SCAN_UINT32	268
-#define	SCAN_FLOAT32	269
-#define	SCAN_FLOAT64	270
-#define	SCAN_STRING	271
-#define	SCAN_URL	272
+#define	SCAN_ATTR	257
+#define	SCAN_ID	258
+#define	SCAN_INT	259
+#define	SCAN_FLOAT	260
+#define	SCAN_STR	261
+#define	SCAN_ALIAS	262
+#define	SCAN_BYTE	263
+#define	SCAN_INT16	264
+#define	SCAN_UINT16	265
+#define	SCAN_INT32	266
+#define	SCAN_UINT32	267
+#define	SCAN_FLOAT32	268
+#define	SCAN_FLOAT64	269
+#define	SCAN_STRING	270
+#define	SCAN_URL	271
 
-#line 189 "das.y"
+#line 199 "das.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.10 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.11 2000/06/16 18:15:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,7 +125,7 @@ string attr_name(string name);
 #define	YYFLAG		-32768
 #define	YYNTBASE	22
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 272 ? yytranslate[x] : 64)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 271 ? yytranslate[x] : 64)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -154,9 +153,9 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
-     6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
-    16,    17
+     2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
+     7,     8,     9,    10,    11,    12,    13,    14,    15,    16,
+    17
 };
 
 #if YYDEBUG != 0
@@ -198,14 +197,14 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   335,   342,   349,   350,   354,   355,   362,   363,   364,   367,
-   369,   370,   371,   373,   374,   375,   377,   378,   379,   381,
-   382,   383,   385,   386,   387,   389,   390,   391,   393,   394,
-   395,   397,   398,   399,   401,   402,   403,   405,   434,   446,
-   446,   451,   453,   483,   515,   552,   586,   623,   658,   695,
-   727,   764,   796,   829,   864,   897,   932,   952,   973,  1003,
-  1035,  1035,  1038,  1038,  1038,  1038,  1041,  1041,  1044,  1049,
-  1083
+   345,   352,   359,   360,   364,   365,   372,   373,   374,   377,
+   379,   380,   381,   383,   384,   385,   387,   388,   389,   391,
+   392,   393,   395,   396,   397,   399,   400,   401,   403,   404,
+   405,   407,   408,   409,   411,   412,   413,   415,   444,   456,
+   456,   461,   463,   501,   541,   586,   628,   673,   716,   761,
+   801,   846,   886,   927,   970,  1011,  1054,  1086,  1119,  1157,
+  1197,  1197,  1200,  1200,  1200,  1200,  1203,  1203,  1206,  1211,
+  1245
 };
 #endif
 
@@ -323,7 +322,8 @@ static const short yycheck[] = {    57,
      0,     0,     4,    38,   107,    -1,    -1,    -1,   105
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "bison.simple"
+#line 3 "/usr/lib/bison.simple"
+/* This file comes from bison-1.28.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -340,46 +340,66 @@ static const short yycheck[] = {    57,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
    This special exception was added by the Free Software Foundation
    in version 1.24 of Bison.  */
 
-#ifndef alloca
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else /* not GNU C.  */
-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
-#include <alloca.h>
-#else /* not sparc */
-#if defined (MSDOS) && !defined (__TURBOC__)
-#include <malloc.h>
-#else /* not MSDOS, or __TURBOC__ */
-#if defined(_AIX)
-#include <malloc.h>
- #pragma alloca
-#else /* not MSDOS, __TURBOC__, or _AIX */
-#ifdef __hpux
-#ifdef __cplusplus
-extern "C" {
-void *alloca (unsigned int);
-};
-#else /* not __cplusplus */
-void *alloca ();
-#endif /* not __cplusplus */
-#endif /* __hpux */
-#endif /* not _AIX */
-#endif /* not MSDOS, or __TURBOC__ */
-#endif /* not sparc.  */
-#endif /* not GNU C.  */
-#endif /* alloca not defined.  */
-
 /* This is the parser code that is written into each bison parser
   when the %semantic_parser declaration is not specified in the grammar.
   It was written by Richard Stallman by simplifying the hairy parser
   used when %semantic_parser is specified.  */
+
+#ifndef YYSTACK_USE_ALLOCA
+#ifdef alloca
+#define YYSTACK_USE_ALLOCA
+#else /* alloca not defined */
+#ifdef __GNUC__
+#define YYSTACK_USE_ALLOCA
+#define alloca __builtin_alloca
+#else /* not GNU C.  */
+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
+#define YYSTACK_USE_ALLOCA
+#include <alloca.h>
+#else /* not sparc */
+/* We think this test detects Watcom and Microsoft C.  */
+/* This used to test MSDOS, but that is a bad idea
+   since that symbol is in the user namespace.  */
+#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
+#if 0 /* No need for malloc.h, which pollutes the namespace;
+	 instead, just don't use alloca.  */
+#include <malloc.h>
+#endif
+#else /* not MSDOS, or __TURBOC__ */
+#if defined(_AIX)
+/* I don't know what this was needed for, but it pollutes the namespace.
+   So I turned it off.   rms, 2 May 1997.  */
+/* #include <malloc.h>  */
+ #pragma alloca
+#define YYSTACK_USE_ALLOCA
+#else /* not MSDOS, or __TURBOC__, or _AIX */
+#if 0
+#ifdef __hpux /* haible@ilog.fr says this works for HPUX 9.05 and up,
+		 and on HPUX 10.  Eventually we can turn this on.  */
+#define YYSTACK_USE_ALLOCA
+#define alloca __builtin_alloca
+#endif /* __hpux */
+#endif
+#endif /* not _AIX */
+#endif /* not MSDOS, or __TURBOC__ */
+#endif /* not sparc */
+#endif /* not GNU C */
+#endif /* alloca not defined */
+#endif /* YYSTACK_USE_ALLOCA not defined */
+
+#ifdef YYSTACK_USE_ALLOCA
+#define YYSTACK_ALLOC alloca
+#else
+#define YYSTACK_ALLOC malloc
+#endif
 
 /* Note: there must be only one dollar sign in this file.
    It is replaced by the list of actions, each action
@@ -389,8 +409,8 @@ void *alloca ();
 #define yyclearin	(yychar = YYEMPTY)
 #define YYEMPTY		-2
 #define YYEOF		0
-#define YYACCEPT	return(0)
-#define YYABORT 	return(1)
+#define YYACCEPT	goto yyacceptlab
+#define YYABORT 	goto yyabortlab
 #define YYERROR		goto yyerrlab1
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -471,12 +491,12 @@ int yydebug;			/*  nonzero means print parse trace	*/
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 10000
 #endif
-
-/* Prevent warning if -Wstrict-prototypes.  */
-#ifdef __GNUC__
-int yyparse (void);
-#endif
 
+/* Define __yy_memcpy.  Note that the size argument
+   should be passed with type unsigned int, because that is what the non-GCC
+   definitions require.  With GCC, __builtin_memcpy takes an arg
+   of type size_t, but it can handle unsigned int.  */
+
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
 #define __yy_memcpy(TO,FROM,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
 #else				/* not GNU C or C++ */
@@ -488,7 +508,7 @@ static void
 __yy_memcpy (to, from, count)
      char *to;
      char *from;
-     int count;
+     unsigned int count;
 {
   register char *f = from;
   register char *t = to;
@@ -503,10 +523,10 @@ __yy_memcpy (to, from, count)
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_memcpy (char *to, char *from, int count)
+__yy_memcpy (char *to, char *from, unsigned int count)
 {
-  register char *f = from;
   register char *t = to;
+  register char *f = from;
   register int i = count;
 
   while (i-- > 0)
@@ -516,7 +536,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "bison.simple"
+#line 217 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -536,6 +556,15 @@ __yy_memcpy (char *to, char *from, int count)
 #define YYPARSE_PARAM_ARG
 #define YYPARSE_PARAM_DECL
 #endif /* not YYPARSE_PARAM */
+
+/* Prevent warning if -Wstrict-prototypes.  */
+#ifdef __GNUC__
+#ifdef YYPARSE_PARAM
+int yyparse (void *);
+#else
+int yyparse (void);
+#endif
+#endif
 
 int
 yyparse(YYPARSE_PARAM_ARG)
@@ -564,6 +593,7 @@ yyparse(YYPARSE_PARAM_ARG)
 #endif
 
   int yystacksize = YYINITDEPTH;
+  int yyfree_stacks = 0;
 
 #ifdef YYPURE
   int yychar;
@@ -648,18 +678,32 @@ yynewstate:
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  yyerror("parser stack overflow");
+	  if (yyfree_stacks)
+	    {
+	      free (yyss);
+	      free (yyvs);
+#ifdef YYLSP_NEEDED
+	      free (yyls);
+#endif
+	    }
 	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
-      __yy_memcpy ((char *)yyss, (char *)yyss1, size * sizeof (*yyssp));
-      yyvs = (YYSTYPE *) alloca (yystacksize * sizeof (*yyvsp));
-      __yy_memcpy ((char *)yyvs, (char *)yyvs1, size * sizeof (*yyvsp));
+#ifndef YYSTACK_USE_ALLOCA
+      yyfree_stacks = 1;
+#endif
+      yyss = (short *) YYSTACK_ALLOC (yystacksize * sizeof (*yyssp));
+      __yy_memcpy ((char *)yyss, (char *)yyss1,
+		   size * (unsigned int) sizeof (*yyssp));
+      yyvs = (YYSTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yyvsp));
+      __yy_memcpy ((char *)yyvs, (char *)yyvs1,
+		   size * (unsigned int) sizeof (*yyvsp));
 #ifdef YYLSP_NEEDED
-      yyls = (YYLTYPE *) alloca (yystacksize * sizeof (*yylsp));
-      __yy_memcpy ((char *)yyls, (char *)yyls1, size * sizeof (*yylsp));
+      yyls = (YYLTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yylsp));
+      __yy_memcpy ((char *)yyls, (char *)yyls1,
+		   size * (unsigned int) sizeof (*yylsp));
 #endif
 #endif /* no yyoverflow */
 
@@ -820,7 +864,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 336 "das.y"
+#line 346 "das.y"
 {
 		    name = new string();
 		    type = new string();
@@ -828,7 +872,7 @@ case 1:
 		;
     break;}
 case 2:
-#line 342 "das.y"
+#line 352 "das.y"
 {
 		    delete name;
 		    delete type;
@@ -836,86 +880,86 @@ case 2:
 		;
     break;}
 case 6:
-#line 356 "das.y"
+#line 366 "das.y"
 {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG);
 		    YYABORT;
 		;
     break;}
 case 11:
-#line 369 "das.y"
+#line 379 "das.y"
 { *type = "Byte"; ;
     break;}
 case 12:
-#line 370 "das.y"
+#line 380 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 14:
-#line 373 "das.y"
+#line 383 "das.y"
 { save_str(*type, "Int16", das_line_num); ;
     break;}
 case 15:
-#line 374 "das.y"
+#line 384 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 17:
-#line 377 "das.y"
+#line 387 "das.y"
 { save_str(*type, "UInt16", das_line_num); ;
     break;}
 case 18:
-#line 378 "das.y"
+#line 388 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 20:
-#line 381 "das.y"
+#line 391 "das.y"
 { save_str(*type, "Int32", das_line_num); ;
     break;}
 case 21:
-#line 382 "das.y"
+#line 392 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 23:
-#line 385 "das.y"
+#line 395 "das.y"
 { save_str(*type, "UInt32", das_line_num); ;
     break;}
 case 24:
-#line 386 "das.y"
+#line 396 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 26:
-#line 389 "das.y"
+#line 399 "das.y"
 { save_str(*type, "Float32", das_line_num); ;
     break;}
 case 27:
-#line 390 "das.y"
+#line 400 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 29:
-#line 393 "das.y"
+#line 403 "das.y"
 { save_str(*type, "Float64", das_line_num); ;
     break;}
 case 30:
-#line 394 "das.y"
+#line 404 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 32:
-#line 397 "das.y"
+#line 407 "das.y"
 { *type = "String"; ;
     break;}
 case 33:
-#line 398 "das.y"
+#line 408 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 35:
-#line 401 "das.y"
+#line 411 "das.y"
 { *type = "Url"; ;
     break;}
 case 36:
-#line 402 "das.y"
+#line 412 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 38:
-#line 406 "das.y"
+#line 416 "das.y"
 {
 		    AttrTable *at;
 #ifdef WIN32
@@ -946,7 +990,7 @@ case 38:
 		;
     break;}
 case 39:
-#line 435 "das.y"
+#line 445 "das.y"
 {
 		    /* pop top of stack; store in attr_tab */
 #ifdef WIN32
@@ -958,14 +1002,14 @@ case 39:
 		;
     break;}
 case 41:
-#line 447 "das.y"
+#line 457 "das.y"
 { 
 		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG);
 		    YYABORT;
 		;
     break;}
 case 43:
-#line 454 "das.y"
+#line 464 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
@@ -979,6 +1023,14 @@ case 43:
 			ostrstream msg;
 #endif
 			msg << "`" << yyvsp[0] << "' is not a Byte value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -997,7 +1049,7 @@ case 43:
 		;
     break;}
 case 44:
-#line 484 "das.y"
+#line 502 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
@@ -1015,6 +1067,14 @@ case 44:
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1029,7 +1089,7 @@ case 44:
 		;
     break;}
 case 45:
-#line 516 "das.y"
+#line 542 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -1054,6 +1114,14 @@ case 45:
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1068,7 +1136,7 @@ case 45:
 		;
     break;}
 case 46:
-#line 553 "das.y"
+#line 587 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
@@ -1088,6 +1156,14 @@ case 46:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1102,7 +1178,7 @@ case 46:
 		;
     break;}
 case 47:
-#line 587 "das.y"
+#line 629 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -1127,6 +1203,14 @@ case 47:
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1141,7 +1225,7 @@ case 47:
 		;
     break;}
 case 48:
-#line 624 "das.y"
+#line 674 "das.y"
 {
 #ifdef WIN32
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
@@ -1162,6 +1246,14 @@ case 48:
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1176,7 +1268,7 @@ case 48:
 		;
     break;}
 case 49:
-#line 659 "das.y"
+#line 717 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -1201,6 +1293,14 @@ case 49:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1215,7 +1315,7 @@ case 49:
 		;
     break;}
 case 50:
-#line 696 "das.y"
+#line 762 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
@@ -1233,6 +1333,14 @@ case 50:
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1247,7 +1355,7 @@ case 50:
 		;
     break;}
 case 51:
-#line 728 "das.y"
+#line 802 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -1272,6 +1380,14 @@ case 51:
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1286,7 +1402,7 @@ case 51:
 		;
     break;}
 case 52:
-#line 765 "das.y"
+#line 847 "das.y"
 {
 #ifdef WIN32
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
@@ -1304,6 +1420,14 @@ case 52:
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1318,7 +1442,7 @@ case 52:
 		;
     break;}
 case 53:
-#line 797 "das.y"
+#line 887 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE(yyvsp[0])\
@@ -1339,6 +1463,14 @@ case 53:
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1353,7 +1485,7 @@ case 53:
 		;
     break;}
 case 54:
-#line 830 "das.y"
+#line 928 "das.y"
 {
 #ifdef WIN32
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE(yyvsp[0])\
@@ -1374,6 +1506,14 @@ case 54:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1388,14 +1528,14 @@ case 54:
 		;
     break;}
 case 55:
-#line 865 "das.y"
+#line 971 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
 #else
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
-			<< endl);
+			<< " to attr table: " << TOP_OF_STACK << endl);
 #endif
 		    if (!check_float64(yyvsp[0], das_line_num)) {
 #ifdef WIN32
@@ -1405,6 +1545,14 @@ case 55:
 #endif
 			msg << "`" << yyvsp[0] << "' is not a Float64 value." 
 			    << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -1423,7 +1571,7 @@ case 55:
 		;
     break;}
 case 56:
-#line 898 "das.y"
+#line 1012 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
@@ -1444,6 +1592,14 @@ case 56:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1458,7 +1614,7 @@ case 56:
 		;
     break;}
 case 57:
-#line 933 "das.y"
+#line 1055 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
@@ -1466,7 +1622,19 @@ case 57:
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 #endif
 		    /* Assume a string that parses is vaild. */
-		    if (TOP_OF_STACK->append_attr(*name, *type, yyvsp[0]) == 0) {
+		    if (STACK_EMPTY) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
+			ostrstream msg;
+#endif
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (TOP_OF_STACK->append_attr(*name, *type, yyvsp[0]) == 0) {
 #ifdef WIN32
 			std::ostrstream msg;
 #else
@@ -1480,14 +1648,26 @@ case 57:
 		;
     break;}
 case 58:
-#line 953 "das.y"
+#line 1087 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 #else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 #endif
-		    if (TOP_OF_STACK->append_attr(*name, *type, yyvsp[0]) == 0) {
+		    if (STACK_EMPTY) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
+			ostrstream msg;
+#endif
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (TOP_OF_STACK->append_attr(*name, *type, yyvsp[0]) == 0) {
 #ifdef WIN32
 			std::ostrstream msg;
 #else
@@ -1501,7 +1681,7 @@ case 58:
 		;
     break;}
 case 59:
-#line 974 "das.y"
+#line 1120 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
@@ -1515,6 +1695,14 @@ case 59:
 			ostrstream msg;
 #endif
 			msg << "`" << yyvsp[0] << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -1533,7 +1721,7 @@ case 59:
 		;
     break;}
 case 60:
-#line 1004 "das.y"
+#line 1158 "das.y"
 {
 #ifdef WIN32
 		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
@@ -1547,6 +1735,14 @@ case 60:
 			ostrstream msg;
 #endif
 			msg << "`" << yyvsp[-2] << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -1565,13 +1761,13 @@ case 60:
 		;
     break;}
 case 69:
-#line 1045 "das.y"
+#line 1207 "das.y"
 { 
 		    *name = yyvsp[0];
 		;
     break;}
 case 70:
-#line 1049 "das.y"
+#line 1211 "das.y"
 {
 		    // First try to alias within current lexical scope. If
 		    // that fails then look in the complete environment for
@@ -1608,7 +1804,7 @@ case 70:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "bison.simple"
+#line 543 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1803,8 +1999,32 @@ yyerrhandle:
 
   yystate = yyn;
   goto yynewstate;
+
+ yyacceptlab:
+  /* YYACCEPT comes here.  */
+  if (yyfree_stacks)
+    {
+      free (yyss);
+      free (yyvs);
+#ifdef YYLSP_NEEDED
+      free (yyls);
+#endif
+    }
+  return 0;
+
+ yyabortlab:
+  /* YYABORT comes here.  */
+  if (yyfree_stacks)
+    {
+      free (yyss);
+      free (yyvs);
+#ifdef YYLSP_NEEDED
+      free (yyls);
+#endif
+    }
+  return 1;
 }
-#line 1084 "das.y"
+#line 1246 "das.y"
 
 
 // This function is required for linking, but DODS uses its own error

@@ -10,6 +10,12 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.39  2000/06/16 18:14:59  jimg
+// Merged with 3.1.7
+//
+// Revision 1.37.6.1  2000/06/14 16:59:01  jimg
+// Added instrumentation for the dtor.
+//
 // Revision 1.38  2000/06/07 18:06:57  jimg
 // Merged the pc port branch
 //
@@ -251,6 +257,8 @@ BaseType::BaseType(const BaseType &copy_from)
     
 BaseType::~BaseType()
 {
+    DBG(cerr << "Entering ~BaseType (" << this << ")" << endl);
+    DBG(cerr << "Exiting ~BaseType" << endl);
 }
 
 BaseType &

@@ -9,7 +9,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.26 2000/06/07 19:33:21 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.27 2000/06/16 18:14:59 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -131,8 +131,10 @@ AttrTable::AttrTable(const AttrTable &rhs)
 
 AttrTable::~AttrTable()
 {
-    for (Pix p = attr_map.first();p ; attr_map.next(p))
+    DBG(cerr << "Entering ~AttrTable (" << this << ")" << endl);
+    for (Pix p = attr_map.first(); p; attr_map.next(p))
 	delete attr_map(p);
+    DBG(cerr << "Exiting ~AttrTable" << endl);
 }
 
 AttrTable &
@@ -455,6 +457,12 @@ AttrTable::print(ostream &os, string pad)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.27  2000/06/16 18:14:59  jimg
+// Merged with 3.1.7
+//
+// Revision 1.23.6.4  2000/06/14 16:59:00  jimg
+// Added instrumentation for the dtor.
+//
 // Revision 1.26  2000/06/07 19:33:21  jimg
 // Merged with verson 3.1.6
 //

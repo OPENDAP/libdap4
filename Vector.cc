@@ -11,6 +11,18 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.30  2000/06/16 18:15:00  jimg
+// Merged with 3.1.7
+//
+// Revision 1.27.6.2  2000/06/14 16:59:01  jimg
+// Added instrumentation for the dtor.
+//
+// Revision 1.27.6.1  2000/06/07 23:08:31  jimg
+// Added code to explicitly delete BaseType *s in _vec.
+// Also tried recoding using DLList, but that didn't fix the problem I was
+// after---fixed in the client code but decided to leave this is with #if 0
+// just in case.
+//
 // Revision 1.29  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -142,7 +154,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.29 2000/06/07 18:06:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.30 2000/06/16 18:15:00 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -167,7 +179,12 @@ Vector::_duplicate(const Vector &v)
     _length = v._length;
     _var = v._var->ptr_duplicate(); // use ptr_duplicate() 
 
-    _vec = v._vec;		// use BaseTypeVec's copy.
+    if (v._vec.size() == 0)
+	_vec = v._vec;
+    else {
+	for (unsigned int i = 0; i < _vec.size(); ++i)
+	    _vec[i] = v._vec[i];
+    }
 
     _buf = 0;			// init to null
     if (v._buf)			// only copy if data present
@@ -190,7 +207,7 @@ Vector::Vector(const Vector &rhs)
 
 Vector::~Vector()
 {
-    DBG(cerr << "Entering Vector dtor for object: " << this << endl);
+    DBG(cerr << "Entering ~Vector (" << this << ")" << endl);
 
     delete _var;
 
@@ -199,6 +216,8 @@ Vector::~Vector()
     else	
 	for (unsigned int i = 0; i < _vec.size(); ++i)
 	    delete _vec[i];
+
+    DBG(cerr << "Exiting ~Vector" << endl);
 }
 
 const Vector &
@@ -378,7 +397,7 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 {
     bool status = true;
     int error = 0;
-	unsigned int i = 0;
+    unsigned int i = 0;
 
     if (!read_p()) {
 	read(dataset, error);
@@ -414,10 +433,11 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 	    status = (bool)xdr_array(sink, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY, _var->width(),
 #ifdef WIN32
-					(xdrproc_t)(_var->xdr_coder()));
+				     (xdrproc_t)(_var->xdr_coder())
 #else
-				     _var->xdr_coder());
+				     _var->xdr_coder()
 #endif 
+				     );
 	break;
 
       case dods_str_c:
@@ -427,20 +447,21 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
-		assert(_vec.capacity());
+	assert(_vec.capacity());
 
-		status = (bool)xdr_int(sink, (int *)&num); // send length
-		if (!status)
-			return status;
+	status = (bool)xdr_int(sink, (int *)&num); // send length
+	if (!status)
+	    return status;
 
-		for (i = 0; status && i < num; ++i)	// test status in loop
-			status = _vec[i]->serialize(dataset, dds, sink, false);
+	for (i = 0; status && i < num; ++i)	// test status in loop
+	    status = _vec[i]->serialize(dataset, dds, sink, false);
 
-		break;
+	break;
+
       default:
-		cerr << "Vector::serialize: Unknow type\n";
-		status = false;
-		break;
+	cerr << "Vector::serialize: Unknow type\n";
+	status = false;
+	break;
     }
 
     return status;
@@ -468,7 +489,7 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool status;
     unsigned int num;
-	unsigned int i = 0;
+unsigned int i = 0;
 
     switch (_var->type()) {
       case dods_byte_c:
@@ -519,24 +540,24 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
-		status = (bool)xdr_int(source, (int *)&num);
-		if (!status)
-			return status;
+	status = (bool)xdr_int(source, (int *)&num);
+	if (!status)
+	    return status;
 
-		vec_resize(num);
-		set_length(num);
+	vec_resize(num);
+	set_length(num);
 
-		for (i = 0; status && i < num; ++i)
-			{
-			_vec[i] = _var->ptr_duplicate();
-			_vec[i]->deserialize(source, dds);
-			}
+	for (i = 0; status && i < num; ++i)
+	    {
+		_vec[i] = _var->ptr_duplicate();
+		_vec[i]->deserialize(source, dds);
+	    }
 
-		break;
-      default:
-		cerr << "Vector::deserialize: Unknow type\n";
-		status = false;
-		break;
+	break;
+  default:
+    cerr << "Vector::deserialize: Unknow type\n";
+    status = false;
+    break;
     }
 
     return status;
@@ -681,7 +702,6 @@ Vector::set_vec(unsigned int i, BaseType *val)
 
     if (i >= _vec.capacity())
 	vec_resize(i + 10);
-
     _vec[i] = val;
 
     return true;
