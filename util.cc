@@ -11,6 +11,12 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.38  1997/03/27 18:18:28  jimg
+// Added dods_progress() function that looks for an environment variable to see
+// if the user wants the progress indicator visible. Thus, they can use one
+// environment variable to control the GUI as a whole or this one to control
+// just the progress indicator.
+//
 // Revision 1.37  1997/03/08 18:58:22  jimg
 // Changed name of function unique() to unique_names() to avoid a conflict
 // with the STL.
@@ -194,7 +200,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.37 1997/03/08 18:58:22 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.38 1997/03/27 18:18:28 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -407,6 +413,16 @@ dods_root()
 				    : DODS_ROOT);
 
     return dods_root;
+}
+
+const char *
+dods_progress()
+{
+    static const char *dods_progress = (getenv("SHOW_DODS_PROGRESS") 
+					? getenv("SHOW_DODS_PROGRESS") 
+					: "yes");
+
+    return dods_progress;
 }
 
 FILE *
