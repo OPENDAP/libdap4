@@ -144,8 +144,16 @@ test_parser(void)
     DDS table;
     int status = table.parse();
     cout << "Status from parser: " << status << endl;
+    
+    if (table.check_semantics())
+	cout << "DDS past semantic check" << endl;
+    else 
+	cout << "DDS filed semantic check" << endl;
 
-    for (Pix p = table.first_var(); p; table.next_var(p))
-	table.var(p)->print_decl();
-					   
+    if (table.check_semantics(true))
+	cout << "DDS past full semantic check" << endl;
+    else 
+	cout << "DDS filed full semantic check" << endl;
+
+    table.print();
 }
