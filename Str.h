@@ -5,10 +5,16 @@
 // jhrg 9/7/94
 
 /* $Log: Str.h,v $
-/* Revision 1.6  1994/12/14 19:18:02  jimg
-/* Added mfunc len(). Replaced size() with a mfunc that returns the size of
-/* a pointer to a string (this simplifies Structure, ...).
+/* Revision 1.7  1995/01/11 15:54:36  jimg
+/* Added modifications necessary for BaseType's static XDR pointers. This
+/* was mostly a name change from xdrin/out to _xdrin/out.
+/* Removed the two FILE pointers from ctors, since those are now set with
+/* functions which are friends of BaseType.
 /*
+ * Revision 1.6  1994/12/14  19:18:02  jimg
+ * Added mfunc len(). Replaced size() with a mfunc that returns the size of
+ * a pointer to a string (this simplifies Structure, ...).
+ *
  * Revision 1.5  1994/11/29  20:16:33  jimg
  * Added mfunc for data transmission.
  * Uses special xdr function for serialization and xdr_coder.
@@ -52,7 +58,7 @@ private:
     char *buf;
 
 public:
-    Str(const String &n = (char *)0, FILE *in = stdin, FILE *out = stdout);
+    Str(const String &n = (char *)0);
     virtual ~Str() {}
 
     virtual BaseType *ptr_duplicate();

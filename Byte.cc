@@ -4,7 +4,13 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.3  1994/11/29 20:06:32  jimg
+// Revision 1.4  1995/01/11 15:54:26  jimg
+// Added modifications necessary for BaseType's static XDR pointers. This
+// was mostly a name change from xdrin/out to _xdrin/out.
+// Removed the two FILE pointers from ctors, since those are now set with
+// functions which are friends of BaseType.
+//
+// Revision 1.3  1994/11/29  20:06:32  jimg
 // Added mfuncs for data transmission.
 // Made the xdr_coder function pointer xdr_bytes() while (de)serialize() uses
 // xdr_char().
@@ -32,13 +38,12 @@
 
 #include "Byte.h"
 
-// NB: This ctor sets _xdr_coder to xdr_bytes(). That is the functionthat
+// NB: This ctor sets _xdr_coder to xdr_bytes(). That is the function that
 // should be used to en/decode arrays or lists of bytes. However, for a
 // single byte, we *must* use xdr_char() (which puts a single byte in 4 (yes
 // four) bytes). See serialize() and deserialize().
 
-Byte::Byte(const String &n, FILE *in, FILE *out) 
-    : BaseType(n, "Byte", xdr_bytes, in, out)
+Byte::Byte(const String &n) : BaseType(n, "Byte", xdr_bytes)
 {
 }
 
@@ -57,19 +62,19 @@ Byte::size()
 bool
 Byte::serialize(bool flush, unsigned int num)
 {
-    bool stat = (bool)xdr_char(xdrout, &buf);
+    bool stat = (bool)xdr_char(_xdrout, &buf);
     if (stat && flush)
 	stat = expunge();
 
     return stat;
 }
 
-// deserialize the double on stdin and put the result in BUF.
+// deserialize the char on stdin and put the result in BUF.
 
 unsigned int
 Byte::deserialize()
 {
-    unsigned int num = xdr_char(xdrin, &buf);
+    unsigned int num = xdr_char(_xdrin, &buf);
 
     return num;
 }

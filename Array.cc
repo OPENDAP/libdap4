@@ -4,7 +4,13 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.12  1994/12/19 20:52:45  jimg
+// Revision 1.13  1995/01/11 15:54:39  jimg
+// Added modifications necessary for BaseType's static XDR pointers. This
+// was mostly a name change from xdrin/out to _xdrin/out.
+// Removed the two FILE pointers from ctors, since those are now set with
+// functions which are friends of BaseType.
+//
+// Revision 1.12  1994/12/19  20:52:45  jimg
 // Minor modifications to the print_val mfunc.
 //
 // Revision 1.11  1994/12/16  20:13:31  dan
@@ -87,8 +93,8 @@ Array::ptr_duplicate()
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new -- The dtor for Array will delete this object.
 
-Array::Array(const String &n, FILE *in, FILE *out, BaseType *v)
-     : BaseType( n, "Array", xdr_array, in, out), var_ptr(v)
+Array::Array(const String &n, BaseType *v)
+     : BaseType( n, "Array", xdr_array), var_ptr(v)
 {
     set_var_name(n);
 }
@@ -184,14 +190,15 @@ Array::serialize(bool flush, unsigned int num)
 	char **strBuf = (char **)buf;
 	for ( i = 0; i < num; ++i )
 	  {
-	    status = (bool)xdr_str(xdrout, strBuf+i);
-	    if ( status == FALSE ) break;
+	    status = (bool)xdr_str(_xdrout, strBuf+i);
+	    if ( status == FALSE ) 
+		break;
 	  }
       }
     else
       {
-	status = (bool)xdr_array(xdrout, (char **)&buf, &num, DODS_MAX_ARRAY, 
-				  var_ptr->size(), var_ptr->xdr_coder());
+	status = (bool)xdr_array(_xdrout, (char **)&buf, &num, DODS_MAX_ARRAY, 
+				 var_ptr->size(), var_ptr->xdr_coder());
       }
 
     if (status && flush)
@@ -220,14 +227,14 @@ Array::deserialize()
 	for ( int i = 0; i < (size()/var_ptr->size()); ++i )
 	  {
 	    //cout << "buf[" << i << "] = " << *(strBuf+i) << endl;
-	    status = (bool)xdr_str(xdrin, strBuf+i);
+	    status = (bool)xdr_str(_xdrin, strBuf+i);
 	    if ( status == FALSE ) break;
 	    else num++;
 	  }
       }
     else
       {
-	status = (bool)xdr_array(xdrin, (char **)&buf, &num, DODS_MAX_ARRAY, 
+	status = (bool)xdr_array(_xdrin, (char **)&buf, &num, DODS_MAX_ARRAY, 
 				 var_ptr->size(), var_ptr->xdr_coder());
       }
 

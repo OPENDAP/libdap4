@@ -10,9 +10,15 @@
 // jhrg 9/15/94
 
 /* $Log: Grid.h,v $
-/* Revision 1.5  1994/12/15 21:25:45  dan
-/* Added print_val() member function.
+/* Revision 1.6  1995/01/11 15:54:48  jimg
+/* Added modifications necessary for BaseType's static XDR pointers. This
+/* was mostly a name change from xdrin/out to _xdrin/out.
+/* Removed the two FILE pointers from ctors, since those are now set with
+/* functions which are friends of BaseType.
 /*
+ * Revision 1.5  1994/12/15  21:25:45  dan
+ * Added print_val() member function.
+ *
  * Revision 1.4  1994/11/22  14:05:57  jimg
  * Added code for data transmission to parts of the type hierarchy. Not
  * complete yet.
@@ -53,7 +59,7 @@ private:
     void duplicate(const Grid &s);
 
 public:
-    Grid(const String &n = (char *)0, FILE *in = stdin, FILE *out = stdout);
+    Grid(const String &n = (char *)0);
     Grid(const Grid &rhs);
     virtual ~Grid();
     

@@ -4,7 +4,13 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.5  1994/12/16 15:16:39  dan
+// Revision 1.6  1995/01/11 15:54:49  jimg
+// Added modifications necessary for BaseType's static XDR pointers. This
+// was mostly a name change from xdrin/out to _xdrin/out.
+// Removed the two FILE pointers from ctors, since those are now set with
+// functions which are friends of BaseType.
+//
+// Revision 1.5  1994/12/16  15:16:39  dan
 // Modified Structure class removing inheritance from class CtorType
 // and directly inheriting from class BaseType to alloc calling
 // BaseType's constructor directly.
@@ -58,8 +64,10 @@ Structure::ptr_duplicate()
     return new Structure(*this);
 }
 
-Structure::Structure(const String &n, FILE *in, FILE *out)
-     : BaseType( n, "Structure", (xdrproc_t)NULL, in, out)
+// public
+
+Structure::Structure(const String &n) 
+    : BaseType( n, "Structure", (xdrproc_t)NULL)
 {
     set_var_name(n);
 }

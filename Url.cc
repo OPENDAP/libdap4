@@ -4,7 +4,13 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
-// Revision 1.3  1994/11/29 20:16:35  jimg
+// Revision 1.4  1995/01/11 15:54:37  jimg
+// Added modifications necessary for BaseType's static XDR pointers. This
+// was mostly a name change from xdrin/out to _xdrin/out.
+// Removed the two FILE pointers from ctors, since those are now set with
+// functions which are friends of BaseType.
+//
+// Revision 1.3  1994/11/29  20:16:35  jimg
 // Added mfunc for data transmission.
 // Uses special xdr function for serialization and xdr_coder.
 // Removed `type' parameter from ctor.
@@ -32,8 +38,7 @@
 #include "Url.h"
 #include "util.h"
 
-Url::Url(const String &n, FILE *in, FILE *out) 
-    : BaseType(n, "Url", xdr_url, in, out)
+Url::Url(const String &n) : BaseType(n, "Url", (xdrproc_t)xdr_url)
 {
     _buf = 0;
 }
@@ -53,7 +58,7 @@ Url::size()
 bool
 Url::serialize(bool flush, unsigned int num)
 {
-    bool stat = (bool)xdr_url(xdrout, &_buf);
+    bool stat = (bool)xdr_url(_xdrout, &_buf);
     if (stat && flush)
 	stat = expunge();
 
@@ -65,7 +70,7 @@ Url::serialize(bool flush, unsigned int num)
 unsigned int
 Url::deserialize()
 {
-    unsigned int num = xdr_url(xdrin, &_buf);
+    unsigned int num = xdr_url(_xdrin, &_buf);
 
     return num;
 }

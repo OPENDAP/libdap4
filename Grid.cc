@@ -4,7 +4,13 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.4  1994/12/14 20:56:57  dan
+// Revision 1.5  1995/01/11 15:54:46  jimg
+// Added modifications necessary for BaseType's static XDR pointers. This
+// was mostly a name change from xdrin/out to _xdrin/out.
+// Removed the two FILE pointers from ctors, since those are now set with
+// functions which are friends of BaseType.
+//
+// Revision 1.4  1994/12/14  20:56:57  dan
 // Fixed deserialize() to return correct size count.
 // Fixed check_semantics() to use new Array dimension member functions.
 //
@@ -24,6 +30,8 @@
 #include "Array.h"		// for downcasts
 #include "util.h"
 #include "errmsg.h"
+
+// private
 
 void
 Grid::duplicate(const Grid &s)
@@ -46,8 +54,10 @@ Grid::ptr_duplicate()
     return new Grid(*this);
 }
 
-Grid::Grid(const String &n, FILE *in, FILE *out)
-     : BaseType( n, "Grid", (xdrproc_t)NULL, in, out)
+// public
+
+Grid::Grid(const String &n)
+     : BaseType( n, "Grid", (xdrproc_t)NULL)
 {
     set_var_name(n);
 }
@@ -81,8 +91,8 @@ Grid::size()
 {
     unsigned int sz = array_var_->size();
   
-    for( Pix p = map_vars.first(); p; map_vars.next(p)) 
-      sz += map_vars(p)->size();
+    for (Pix p = map_vars.first(); p; map_vars.next(p)) 
+	sz += map_vars(p)->size();
   
     return sz;
 }
@@ -92,14 +102,15 @@ Grid::serialize(bool flush, unsigned int num)
 {
     bool status;
 
-    if( !(status = array_var_->serialize(false,0))) 
-      return (bool)FALSE;
+    if (!(status = array_var_->serialize(false,0))) 
+	return (bool)FALSE;
 
-    for( Pix p = map_vars.first(); p; map_vars.next(p))
-      if ( !(status = map_vars(p)->serialize(false)) ) break;
+    for (Pix p = map_vars.first(); p; map_vars.next(p))
+	if  (!(status = map_vars(p)->serialize(false)) ) 
+	    break;
 	
-    if ( status && flush )
-      status = expunge();
+    if (status && flush)
+	status = expunge();
 
     return status;
 }
@@ -109,14 +120,17 @@ Grid::deserialize()
 {
     unsigned int num, sz = 0;
 
-    if ((num = array_var_->deserialize()) == 0) return (unsigned int)FALSE;
+    if ((num = array_var_->deserialize()) == 0) 
+	return (unsigned int)FALSE;
+
     sz += num;
 
-    for( Pix p = map_vars.first(); p; map_vars.next(p)) 
-      {
-	if ((num = map_vars(p)->deserialize()) == 0) break;
+    for( Pix p = map_vars.first(); p; map_vars.next(p)) {
+	if ((num = map_vars(p)->deserialize()) == 0) 
+	    break;
 	sz += num;
-      }
+    }
+
     return num ? sz : (unsigned int)FALSE;
 }
 

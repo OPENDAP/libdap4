@@ -4,7 +4,13 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.5  1994/12/15 21:21:13  dan
+// Revision 1.6  1995/01/11 15:54:53  jimg
+// Added modifications necessary for BaseType's static XDR pointers. This
+// was mostly a name change from xdrin/out to _xdrin/out.
+// Removed the two FILE pointers from ctors, since those are now set with
+// functions which are friends of BaseType.
+//
+// Revision 1.5  1994/12/15  21:21:13  dan
 // Modified Sequence class to directly inherit from class BaseType
 // Modified constructors to reflect new inheritance.
 //
@@ -54,11 +60,13 @@ Sequence::ptr_duplicate()
     return new Sequence(*this);
 }
 
+// public
+
 // This ctor is silly -- in order to add fields to a Structure or Sequence,
 // you must use add_var (a mfunc of Structure).
 
-Sequence::Sequence(const String &n, FILE *in, FILE *out) 
-     : BaseType( n, "Sequence", (xdrproc_t)NULL, in, out) 
+Sequence::Sequence(const String &n) 
+    : BaseType( n, "Sequence", (xdrproc_t)NULL) 
 {
     set_var_name(n);
 }
@@ -124,17 +132,17 @@ Sequence::var(Pix p)
     if (!vars.empty() && p)
 	return vars(p);
     else 
-      return NULL;
+	return NULL;
 }
 
 unsigned int
 Sequence::size()
 {
-  unsigned int sz = 0;
-  for( Pix p = first_var(); p; next_var(p))
-    sz += var(p)->size();
+    unsigned int sz = 0;
+    for( Pix p = first_var(); p; next_var(p))
+	sz += var(p)->size();
 
-  return sz;
+    return sz;
 }
 
 bool
@@ -142,10 +150,10 @@ Sequence::serialize(bool flush, unsigned int num)
 {
     bool status;
 
-    for (Pix p = first_var(); p; next_var(p)) 
-      {
+    for (Pix p = first_var(); p; next_var(p)) {
 	if ( !(status = var(p)->serialize(false)) ) break;
-      }
+    }
+
     if (status && flush)
 	status = expunge();
 
@@ -158,9 +166,10 @@ Sequence::deserialize()
     unsigned int num, sz = 0;
 
     for (Pix p = first_var(); p; next_var(p)) {
-      if ( !(num = var(p)->deserialize()) ) break;
-      else sz += num;
+	if ( !(num = var(p)->deserialize()) ) break;
+	else sz += num;
     }
+
     return num ? sz : (unsigned int)FALSE;
 }
 

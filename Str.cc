@@ -4,7 +4,13 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.6  1994/12/22 04:32:23  reza
+// Revision 1.7  1995/01/11 15:54:33  jimg
+// Added modifications necessary for BaseType's static XDR pointers. This
+// was mostly a name change from xdrin/out to _xdrin/out.
+// Removed the two FILE pointers from ctors, since those are now set with
+// functions which are friends of BaseType.
+//
+// Revision 1.6  1994/12/22  04:32:23  reza
 // Changed the default type to String (from Str) to match DDS parser.
 //
 // Revision 1.5  1994/12/14  19:18:00  jimg
@@ -43,8 +49,7 @@
 #include "Str.h"
 #include "util.h"
 
-Str::Str(const String &n, FILE *in, FILE *out)
-    : BaseType(n, "String", xdr_str, in, out)
+Str::Str(const String &n) : BaseType(n, "String", xdr_str)
 {
     buf = 0;			// read() frees if buf != 0
 }
@@ -76,7 +81,7 @@ Str::size()
 bool
 Str::serialize(bool flush, unsigned int num)
 {
-    bool stat = (bool)xdr_str(xdrout, &buf);
+    bool stat = (bool)xdr_str(_xdrout, &buf);
     if (stat && flush)
 	stat = expunge();
 
@@ -88,7 +93,7 @@ Str::serialize(bool flush, unsigned int num)
 unsigned int
 Str::deserialize()
 {
-    unsigned int num = xdr_str(xdrin, &buf);
+    unsigned int num = xdr_str(_xdrin, &buf);
 
     return num;
 }

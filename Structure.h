@@ -9,10 +9,16 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.5  1994/12/16 15:17:15  dan
-/* Removed inheritance from class CtorType, now directly inherits
-/* from class BaseType.
+/* Revision 1.6  1995/01/11 15:54:51  jimg
+/* Added modifications necessary for BaseType's static XDR pointers. This
+/* was mostly a name change from xdrin/out to _xdrin/out.
+/* Removed the two FILE pointers from ctors, since those are now set with
+/* functions which are friends of BaseType.
 /*
+ * Revision 1.5  1994/12/16  15:17:15  dan
+ * Removed inheritance from class CtorType, now directly inherits
+ * from class BaseType.
+ *
  * Revision 1.4  1994/11/22  14:06:13  jimg
  * Added code for data transmission to parts of the type hierarchy. Not
  * complete yet.
@@ -52,7 +58,7 @@ private:
     void duplicate(const Structure &s);
 
 public:
-    Structure(const String &n = (char *)0, FILE *in = stdin, FILE *out = stdout);
+    Structure(const String &n = (char *)0);
     Structure(const Structure &rhs);
     virtual ~Structure();
 
