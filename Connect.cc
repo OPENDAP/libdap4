@@ -9,6 +9,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.83  1999/10/22 04:17:25  cjm
+// Added support for caching.  Most of the code is in www_lib_init(), there is also a modification to read_url() to make use of the cache if it is enabled.
+//
 // Revision 1.82  1999/09/03 22:07:44  jimg
 // Merged changes from release-3-1-1
 //
@@ -473,7 +476,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.82 1999/09/03 22:07:44 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.83 1999/10/22 04:17:25 cjm Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -519,6 +522,13 @@ decompression program failed to start. Please report this\n\
 error to the data server maintainer or to support@unidata.ucar.edu"}; 
 
 HTList *Connect::_conv = 0;
+
+// Constants used by the cache. 
+static const int DODS_USE_CACHE = 1;   // 0- Disabled 1- Enabled
+static const int DODS_CACHE_MAX = 20;  // Max cache size in Mbytes
+static const int DODS_CACHED_OBJ = 5;  // Max cache entry size in Mbytes
+static const int DODS_IGN_EXPIRES = 0; // 0- Honor expires 1- Ignore them
+int CACHE_ENABLED = 0;
 
 #undef CATCH_SIG
 #ifdef CATCH_SIG
@@ -1028,7 +1038,118 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 {
     // Initialize various parts of the library. This is in lieu of using one
     // of the profiles in HTProfil.c. 02/09/98 jhrg
+    char * cifp;
+    char * homedir;  // cache init file path and home directory.
+    char * cache_root;  // Location of actual cache. 
+    char * tempstr;
+    char * value;
+    // Defaults to use if cache file doesnt exist. 
+    int USE_CACHE = DODS_USE_CACHE;
+    int MAX_CACHE_SIZE = DODS_CACHE_MAX;
+    int MAX_CACHED_OBJ = DODS_CACHED_OBJ;
+    int IGNORE_EXPIRES = DODS_IGN_EXPIRES;
+    int use_cache_file = 1;
     
+    // The following code sets up the cache according to the data stored
+    // in the following places, in this order.  First the environment 
+    // variable DODS_CACHE_INIT is checked for a path to the data file. 
+    // If this fails, $HOME/.dodsrc is checked.  Failing this, the 
+    // compiled-in defaults are used.    However, if the path for the 
+    // file exists and the file does not, then the compiled-in defaults
+    // will be written to a file at the location given. 8-1-99 cjm
+    
+    // Store the users home directory.
+    homedir = getenv("HOME");
+    // If there is a leading '/' at the end of $HOME, remove it. 
+    if(homedir != NULL) {
+	if(homedir[strlen(homedir)-1] == '/') homedir[(strlen(homedir)-1)] = (char)0;	 
+	// set default cache root to $HOME/.dods_cache/
+	cache_root = new char[strlen(homedir)+13];
+	strcpy(cache_root, homedir);
+	strcpy(cache_root+strlen(homedir), "/.dods_cache");
+	cache_root[strlen(homedir)+12] = (char)0;
+    }
+    else { 
+	// Otherwise set the default cache root the /tmp/.dods_cache/
+	cache_root = new char[17];
+	strcpy(cache_root, "/tmp/.dods_cache");
+	cache_root[16] = (char)0;
+    }
+    
+    cifp = getenv("DODS_CACHE_INIT");
+    if(!cifp) {
+	if(!homedir) {
+	    // Environment variable wasnt set, and the users home directory
+	    // is indeterminable, so we will neither read nor write a data 
+	    // file and instead just use the compiled in defaults.
+	    use_cache_file = 0;
+	}
+	else {
+	    // Environment variable wasnt set, get data from $HOME/.dodsrc
+	    cifp = new char[strlen(homedir)+9]; 
+	    strcpy(cifp, homedir);
+	    strcpy(cifp+strlen(homedir), "/.dodsrc");
+	}
+    }
+    if(use_cache_file) {
+	// Open the file.  If it exists, read the settings from it.  
+	// If it doesnt exist, save the default settings to it.
+	ifstream fpi(cifp);
+	if(!fpi) {
+	    ofstream fpo(cifp);
+	    if(!fpo) {
+		// File couldnt be created.  Nothing needs to be done here,
+		// the program will simply use the defaults.
+	    }
+	    else {
+		// This means we just created the file.  We will now save
+		// the defaults in it for future use.	    
+		fpo << "USE_CACHE=" << USE_CACHE << "\n";
+		fpo << "MAX_CACHE_SIZE=" << MAX_CACHE_SIZE << "\n";
+		fpo << "MAX_CACHED_OBJ=" <<  MAX_CACHED_OBJ << "\n";
+		fpo << "IGNORE_EXPIRES=" << IGNORE_EXPIRES << "\n";
+		fpo << "CACHE_ROOT=" << cache_root << "\n";
+		fpo.close();
+	    }
+	}
+	else {
+	    // The file exists and we may now begin to parse it.  
+	    // Defaults are already stored in the variables, if the correct
+	    // tokens are found in the file then those defaults will be 
+	    // overwritten. 
+	    tempstr = new char[256];
+	    int tokenlength;
+	    while(1) {
+		if(fpi.getline(tempstr, 128) < 0) break; // Gets a line from the file.
+		value = index(tempstr, '=');
+		if(!value) break;
+		tokenlength = (int)value - (int)tempstr;
+		value++;
+		if((strncmp(tempstr, "USE_CACHE", 9) == 0) && tokenlength == 9) {
+		    USE_CACHE = atoi(value);
+		}
+		else if((strncmp(tempstr, "MAX_CACHE_SIZE", 14)==0) && tokenlength == 14) {
+		    MAX_CACHE_SIZE= atoi(value);
+		}
+		else if((strncmp(tempstr, "MAX_CACHED_OBJ", 14)==0) && tokenlength == 14) {
+		    MAX_CACHED_OBJ= atoi(value); 
+		}
+		else if((strncmp(tempstr, "IGNORE_EXPIRES", 14)==0) && tokenlength == 14) {
+		    IGNORE_EXPIRES= atoi(value);
+		}
+		else if((strncmp(tempstr, "CACHE_ROOT", 10)==0) && tokenlength == 10) {
+		    cache_root = new char[strlen(value)+1];
+		    strcpy(cache_root, value);
+		    if(cache_root[strlen(value)-1] == '/') cache_root[strlen(value)-1] = (char)0;
+		    cache_root[strlen(value)] = (char)0;
+		}
+	    }
+	    delete tempstr;
+	}
+    }
+        
+    // End of cache file parsing.
+
     // Initial tcp and buffered_tcp transports
     HTTransportInit();
 
@@ -1075,9 +1196,33 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTAlert_add(dods_username_password, HT_A_USER_PW);
     HTAlert_setInteractive(YES);
 #endif
-    // Disable the cache.
-    HTCacheTerminate();
-
+    if(!USE_CACHE) {
+	// Disable the cache. 
+	HTCacheTerminate();
+	CACHE_ENABLED = 0;
+    }
+    else {
+	// Instead, set up the cache.
+	// Remove any stale lock file.  This may not be safe if multiple
+	// people are using the same cache directory at once.
+	tempstr = new char[strlen(cache_root)+7];
+	strcpy(tempstr, cache_root);
+	strcpy(tempstr+strlen(cache_root), "/.lock");
+	tempstr[strlen(cache_root)+6] = (char)0;
+	remove(tempstr);
+	if(HTCacheInit(cache_root, MAX_CACHE_SIZE) == YES) {
+	    HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
+	    if(IGNORE_EXPIRES) HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
+	    else HTCacheMode_setExpires(HT_EXPIRES_AUTO);
+	    CACHE_ENABLED = 1;
+	}
+	else {
+	    // Disable the cache. 
+	    HTCacheTerminate();
+	    CACHE_ENABLED = 0;
+	}
+    }
+    
     if (www_verbose_errors)
 	HTError_setShow(HT_ERR_SHOW_INFO);
     else
@@ -1097,12 +1242,11 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTHeader_addParser("xdods-server", NO, server_handler);
     HTHeader_addParser("server", NO, server_handler);
 
-    // Add xdods_accept_types header. 2/17/99 jhrg
+	// Add xdods_accept_types header. 2/17/99 jhrg
     HTHeader_addGenerator(xdods_accept_types_header_gen);
 }
 
 // Before calling this mfunc memory for the timeval struct must be allocated.
-
 void
 Connect::clone(const Connect &src)
 {
@@ -1164,6 +1308,9 @@ Connect::read_url(string &url, FILE *stream)
     HTRequest_setAnchor(_request, (HTAnchor *)_anchor);
 
     HTRequest_setOutputStream(_request, HTFWriter_new(_request, stream, YES));
+
+    // Set this request to use the cache if possible. 
+    if(CACHE_ENABLED) HTRequest_setReloadMode(_request, HT_CACHE_VALIDATE);
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
 
