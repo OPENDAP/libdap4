@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.62 1997/03/27 18:16:28 jimg Exp $
+# $Id: Makefile.in,v 1.63 1997/05/13 23:40:45 jimg Exp $
 
 @SET_MAKE@
 
@@ -24,7 +24,7 @@ CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
-YFLAGS = -d
+YFLAGS = -d -v
 LIBS = -ldap++ -lwww @LIBS@
 TAGS_FLAGS = -b
 
