@@ -40,6 +40,13 @@ Array::_duplicate(const Array &a)
 // when selecting from grids since users may not select from all dimensions
 // in which case that means they want the whole thing. Array projection
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
+    
+/** @deprecated Changes the size property of the array.  If the array
+    exists, it is augmented by a factor of <tt>size</tt>. This does
+    not change the actual size of the array.
+
+    @brief Changes the size property of the array.  
+*/
 void
 Array::update_length(int size)
 {
@@ -61,15 +68,31 @@ Array::update_length(int size)
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
+  /** The Array constructor requires the name of the variable to be
+      created, and the type of data the Array is to hold.  The name
+      may be omitted, which will create a nameless variable.  The
+      template pointer may also be omitted.  Note that if the template
+      pointer is omitted when the Array is created, it <i>must</i> be
+      added (with <tt>add_var()</tt>) before <tt>read()</tt> or
+      <tt>deserialize()</tt> is called. 
+      
+      @param n A string containing the name of the variable to be
+      created. 
+      @param v A pointer to a variable of the type to be included 
+      in the Array. 
+      @brief Array constructor
+  */
 Array::Array(const string &n, BaseType *v) : Vector(n, v, dods_array_c)
 {
 }
 
+/** @brief The Array copy constructor. */
 Array::Array(const Array &rhs) : Vector(rhs)
 {
     _duplicate(rhs);
 }
 
+/** @brief The Array destructor. */
 Array::~Array()
 {
     DBG(cerr << "Entering ~Array (" << this << ")" << endl);
@@ -89,12 +112,18 @@ Array::operator=(const Array &rhs)
     return *this;
 }
 
-// Add the dimension DIM to the list of dimensions for this array. If NAME is
-// given, set it to the name of this dimension. NAME defaults to "".
-//
-// Sets Vector's length member as a side effect.
-//
-// Returns: void
+/** Given a size and a name, this function adds a dimension to the
+    array.  For example, if the Array is already 10 elements long,
+    calling <tt>append_dim</tt> with a size of 5 will transform the array
+    into a 10x5 matrix.  Calling it again with a size of 2 will
+    create a 10x5x2 array, and so on.  This sets Vector's length
+    member as a side effect. 
+
+    @param size The size of the desired new row.
+    @param name The name of the new dimension.  This defaults to
+    an empty string. 
+    @brief Add a dimension of a given size.
+*/
 
 void 
 Array::append_dim(int size, string name)
@@ -117,8 +146,11 @@ Array::append_dim(int size, string name)
     update_length(size);
 }
 
-// Reset the dimension contraint information so that the entire array is
-// `selected'
+/** Resets the dimension constraint information so that the entire
+    array is selected. 
+
+    @brief Reset constraint to select entire array.
+*/
 
 void
 Array::reset_constraint()
@@ -139,11 +171,16 @@ Array::reset_constraint()
     }
 }
 
-// Tell the Array object to clear the constraint information about
-// dimensions. Do this *once* before calling add_constraint() for each new 
-// constraint expression. Only the dimensions explicitly selected using
-// Array::add_constraint(...) will be sent.
 
+/** Tell the Array object to clear the constraint information about
+    dimensions. Do this <i>once</i> before calling
+    <tt>add_constraint()</tt> for each new constraint expression. Only
+    the dimensions explicitly selected using <tt>add_constraint()</tt>
+    will be sent.
+
+    @brief Clears the projection; add each projected dimension explicitly using
+    <tt>add_constraint</tt>. 
+*/
 void
 Array::clear_constraint()
 {
@@ -160,11 +197,32 @@ Array::clear_constraint()
     set_length(-1);
 }
 
-// the start and stop indeces are inclusive.
+// the start and stop indices are inclusive.
 
 static char *array_sss = \
 "Invalid constraint parameters: At least one of the start, stride or stop 
 specified do not match the array variable.";
+
+/** Once a dimension has been created (see <tt>append_dim()</tt>), it can
+    be ``constrained''.  This will make the array appear to the rest
+    of the world to be smaller than it is.  This functions sets the
+    projection for a dimension, and marks that dimension as part of the
+    current projection.
+    
+    A stride value <= 0 or > the array size is an error and causes
+    <tt>add_constraint</tt> to return FALSE. Similarly, start or
+    stop values greater than the dimension size will cause a FALSE
+    return value.
+
+    @brief Adds a dimension constraint to an Array.
+
+    @param p An index (of type Pix) pointing to the dimension in the
+    list of dimensions.
+    @param start The start index of the constraint.
+    @param stride The stride value of the constraint.
+    @param stop The stop index of the constraint.
+    @return void; in case of failure it throws an exception. 
+*/
 
 void
 Array::add_constraint(Pix p, int start, int stride, int stop)
@@ -195,12 +253,27 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
 
 }
 
+/** Returns a pointer to the first dimension of the array.  Use 
+    <tt>next_dim()</tt> to return successive dimensions.
+
+    @brief Return first dimension of array.
+    @return A <b>Pix</b> object indicating the first array dimension.
+*/    
 Pix 
 Array::first_dim() 
 { 
     return _shape.first();
 }
 
+/** Given a dimension index, increments it to point to the next
+    dimension.   Use <tt>first_dim()</tt> to return the first dimensions.
+
+    @brief Return next array dimension.
+    @param p A <b>Pix</b> object indicating the array dimension immediately
+           before the desired one.
+    @return A <b>Pix</b> object indicating the array dimension immediately 
+            after the one specified by <i>p</i>.
+*/
 void 
 Array::next_dim(Pix &p) 
 { 
@@ -208,9 +281,14 @@ Array::next_dim(Pix &p)
 	_shape.next(p); 
 }
 
-// Return the number of dimensions contained in the array. When CONSTRAINED
-// is true, return the number of dimensions given the most recently evaluated
-// constraint expression. By default, constraint is false.
+/** Return the total number of dimensions contained in the array.
+    When <i>constrained</i> is TRUE, return the number of dimensions
+    given the most recently evaluated constraint expression. 
+
+    @brief Return the total number of dimensions in the array.
+    @param constrained A boolean flag to indicate whether the array is
+    constrained or not.  By default, constrained is FALSE.
+*/
 
 unsigned int
 Array::dimensions(bool constrained)
@@ -227,9 +305,20 @@ Array::dimensions(bool constrained)
     return dim;
 }
 
-// Return the size of the array dimension referred to by P. If CONSTRAINED is
-// true, return the size of this dimension giventhe current
-// constraint. CONSTRAINED is false by default.
+/** Return the size of the array dimension referred to by <i>p</i>. 
+    If the dimension is constrained (indicated with the
+    <i>constrained</i> argument), the constrained size is returned.
+
+    @brief Returns the size of the dimension.  
+
+    @param p The Pix index of the dimension.
+    @param constrained If this parameter is TRUE, the function
+    returns the constrained size of the array.  If the dimension is
+    not selected, the function returns zero.  If it is FALSE, the
+    function returns the dimension size whether or not the dimension
+    is constrained.  The default value is FALSE.
+    @return An integer containing the size of the specified dimension.
+*/
 
 int 
 Array::dimension_size(Pix p, bool constrained) 
@@ -249,6 +338,25 @@ Array::dimension_size(Pix p, bool constrained)
     return size;
 }
 
+/** Use this function to return the start index of an array
+    dimension.  If the array is constrained (indicated with the
+    <i>constrained</i> argument), the start index of the constrained
+    array is returned (or zero if the dimension in question is not
+    selected at all).  See also <tt>dimension_stop()</tt> and
+    <tt>dimension_stride()</tt>.
+
+    @brief Return the start index of a dimension.
+
+    @param p The Pix index of the dimension.
+    @param constrained If this parameter is TRUE, the function
+    returns the start index only if the dimension is constrained
+    (subject to a start, stop, or stride constraint).  If
+    the dimension is not constrained, the function returns zero.  If it
+    is FALSE, the function returns the start index whether or not
+    the dimension is constrained. 
+    @return The desired start index.
+*/
+
 int 
 Array::dimension_start(Pix p, bool constrained) 
 { 
@@ -267,6 +375,24 @@ Array::dimension_start(Pix p, bool constrained)
     return start;
 }
 
+/** Use this function to return the stop index of an array
+    dimension.  If the array is constrained (indicated with the
+    <i>constrained</i> argument), the stop index of the constrained
+    array is returned (or zero if the dimension in question is not
+    selected at all).  See also <tt>dimension_start()</tt> and
+    <tt>dimension_stride()</tt>.
+
+    @brief Return the stop index of the constraint.
+
+    @param p The Pix index of the dimension.
+    @param constrained If this parameter is TRUE, the function
+    returns the stop index only if the dimension is  constrained
+    (subject to a start, stop, or stride constraint).  If
+    the dimension is not constrained, the function returns zero.  If it
+    is FALSE, the function returns the stop index whether or not
+    the dimension is constrained. 
+    @return The desired stop index.
+*/
 int 
 Array::dimension_stop(Pix p, bool constrained) 
 { 
@@ -285,6 +411,25 @@ Array::dimension_stop(Pix p, bool constrained)
     return stop;
 }
 
+/** Use this function to return the stride value of an array
+    dimension.  If the array is constrained (indicated with the
+    <i>constrained</i> argument), the stride value of the constrained
+    array is returned (or zero if the dimension in question is not
+    selected at all).  See also <tt>dimension_stop()</tt> and
+    <tt>dimension_start()</tt>.
+
+    @brief Returns the stride value of the constraint.
+
+    @param p The Pix index of the dimension.
+    @param constrained If this parameter is TRUE, the function
+    returns the stride value only if the dimension is constrained
+    (subject to a start, stop, or stride constraint).  If
+    the dimension is not constrained, the function returns zero.  If it
+    is FALSE, the function returns the stride value whether or not
+    the dimension is constrained. 
+    @return The stride value requested, or zero, if <i>constrained</i>
+    is TRUE and the dimension is not selected.
+*/
 int 
 Array::dimension_stride(Pix p, bool constrained) 
 { 
@@ -303,8 +448,16 @@ Array::dimension_stride(Pix p, bool constrained)
     return stride;
 }
 
-// Return the name of the array dimension referred to by P.
+/** This function returns the name of the dimension indicated with
+    <i>p</i>.  Since this method is public, it is possible to call it
+    before the Array object has been properly initialized.  This will
+    cause an exception.  So don't do that.
 
+    @brief Returns the name of the specified dimension. 
+
+    @param p The Pix index of the dimension.
+    @return A pointer to a string containing the dimension name.
+*/
 string
 Array::dimension_name(Pix p) 
 { 
@@ -312,17 +465,33 @@ Array::dimension_name(Pix p)
   // Since this method is public, it is possible for a user
   // to call it before the Array object has been properly set
   // this will cause an exception which is the user's fault.
-  // User in thins context is the developer of the surrogate library.
+  // (User in this context is the developer of the surrogate library.)
   if (_shape.empty())
       throw  InternalErr(__FILE__, __LINE__, 
 			 "*This* array has no dimensions.");
   if (!p)
       throw  InternalErr(__FILE__, __LINE__, 
-			 "The pointer indicating the dimesion is null.");
+			 "The pointer indicating the dimension is null.");
 
   return _shape(p).name; 
 }
 
+/** Prints a declaration for the Array.  This is what appears in a
+    DDS.  If the Array is constrained, the declaration will allocate
+    only enough space for the constrained values.
+
+    @brief Prints a DDS entry for the Array.
+    @param os An output stream to prin on.
+    @param space A string containing spaces to precede the
+    declaration.
+    @param print_semi A boolean indicating whether to print a
+    semi-colon after the declaration.  (TRUE means ``print a
+    semi-colon.'') 
+    @param constraint_info A boolean value.  See
+    <tt>BaseType::print_decl()</tt>.
+    @param constrained This argument should be TRUE if the Array is
+    constrained, and FALSE otherwise.
+*/
 void
 Array::print_decl(ostream &os, string space, bool print_semi,
 		  bool constraint_info, bool constrained)
@@ -394,7 +563,14 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
     }
 }
 
-// print the value given the current constraint.
+/** Prints the value of the entire (constrained) array.
+
+    @param os The output stream to print on.
+    @param space The space to use in printing.
+    @param print_decl_p A boolean value indicating whether you want
+    the Array declaration to precede the Array value.
+    @brief Print the value given the current constraint.
+*/
 
 void 
 Array::print_val(ostream &os, string space, bool print_decl_p)
@@ -425,6 +601,14 @@ Array::print_val(ostream &os, string space, bool print_decl_p)
     }
 }
 
+/** This function checks semantic features of the Array.  Currently,
+    the only check specific to the Array is that there must be
+    dimensions.  The rest is inherited from
+    <tt>BaseType::check_semantics()</tt>.
+
+    @brief Check semantic features of the Array.
+    @return A boolean value.  FALSE means there was a problem.
+*/
 bool
 Array::check_semantics(string &msg, bool)
 {
@@ -437,6 +621,9 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.52  2002/05/23 15:22:39  tom
+// modified for doxygen
+//
 // Revision 1.51  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

@@ -30,10 +30,10 @@ using std::string;
 using std::vector;
 using std::ostream;
 
-/** {\bf AttrType} identifies the data types which may appear in an
+/** <b>AttrType</b> identifies the data types which may appear in an
     attribute table object. 
 
-    \begin{verbatim}
+    \code
     enum AttrType {
 	Attr_unknown,
 	Attr_container,
@@ -47,9 +47,8 @@ using std::ostream;
 	Attr_string,
 	Attr_url
     };
-    \end{verbatim}
+    \endcode
 
-    @memo Identifies attribute table data types.
     @see AttrTable */
 enum AttrType {
     Attr_unknown,
@@ -69,7 +68,7 @@ enum AttrType {
     each name, either a type and a value, or another attribute table.
     The attribute value can be a vector containing many values of the
     same type.  The attributes can have any of the types listed in the
-    #AttrType# list.  However, all attribute types are stored as
+    <tt>AttrType</tt> list.  However, all attribute types are stored as
     string data, except for the container type, which is stored as a
     pointer to another attribute table.
 
@@ -79,12 +78,12 @@ enum AttrType {
     linked.
 
     The attribute tables have a standard printed representation.
-    There is a member function #print()# for writing this form.  Use
-    the #DAS::parse()# function to read the printed form.
+    There is a member function <tt>print()</tt> for writing this form.  Use
+    the <tt>DAS::parse()</tt> function to read the printed form.
 
     An attribute table might look something like this:
 
-    \begin{verbatim}
+    \verbatim
     string long_name "Weekly Means of Sea Surface Temperature";
     actual_range {
         Float64 min -1.8;
@@ -96,13 +95,13 @@ enum AttrType {
         Float64 scale_factor 0.0099999998;
     }
     Int32 missing_value 32767;
-    \end{verbatim}
+    \endverbatim
 
-    Here, #long_name#, #units#, and #missing_value# are simple
-    attributes, and #actual_range# and #conversion_data# are container
-    attributes containing other attribute tables.
+    Here, <tt>long_name</tt>, <tt>units</tt>, and
+    <tt>missing_value</tt> are simple 
+    attributes, and <tt>actual_range</tt> and <tt>conversion_data</tt>
+    are container attributes containing other attribute tables.
 
-    @memo Holds a table of Attributes.  
     @see DAS
     @see AttrType */
 class AttrTable {
@@ -188,26 +187,21 @@ private:
     void delete_attr_table();
 
 protected:
-    /** Clone the given attribute table in #this#. */
+    /** Clone the given attribute table in <tt>this</tt>. */
     void clone(const AttrTable &at);
     /** A simple printer that does nothing fancy with aliases. */
     void simple_print(ostream &os, string pad, Pix p, bool dereference);
 
 public:
-    /** @name Instance management */
-    //@{
-    ///
-    AttrTable();
-    ///
-    AttrTable(const AttrTable &rhs);
-    ///
-    virtual ~AttrTable();
-    ///
-    AttrTable & operator=(const AttrTable &rhs);
-    //@}
+  /** @name Instance management functions */
 
-    /** @name Accessors */
-    //@{
+  //@{
+    AttrTable();
+    AttrTable(const AttrTable &rhs);
+    virtual ~AttrTable();
+    AttrTable & operator=(const AttrTable &rhs);
+  //@}
+
     /** Get the number of entries in this attribute table. Attributes
 	that are containers count one attribute, as do attributes with both
 	scalar and vector values. 
@@ -219,7 +213,8 @@ public:
     string get_name();
 
     /** Look in this attribute table for an attribute container named
-	#target#. The search starts at this attribute table; #target# should
+	<tt>target</tt>. The search starts at this attribute table;
+	<tt>target</tt> should
 	use the dot notation to name containers held within children of this
 	attribute table. 
 
@@ -232,17 +227,19 @@ public:
     AttrTable *find_container(const string &target);
 
     /** Look for an attribute or an attribute container. If used to search
-	for an attribute container, this method returns the container's {\it
-	parent} using the value-result parameter #at# and a reference to the
+	for an attribute container, this method returns the container's <i>
+	parent</i> using the value-result parameter <tt>at</tt> and a
+	reference to the 
 	container using the Pix return value. If used to search for an
-	attribute, the attribute's container is returned using #at#; the
+	attribute, the attribute's container is returned using <tt>at</tt>; the
 	attribute itself can be accessed using the Pix return value.
 
 	@param target The name (using dot notation) of the attribute or
 	container to find.
 	@param at A value-result used to return the attribute container in
-	which #target# was found. Null if #target# was not found.
-	@return A Pix which can be used to access #target# from within #at#.
+	which <tt>target</tt> was found. Null if <tt>target</tt> was not found.
+	@return A Pix which can be used to access <tt>target</tt> from
+	within <tt>at</tt>. 
 	Null if the attribute or container does not exist. */
     Pix find(const string &target, AttrTable **at);
 
@@ -251,66 +248,45 @@ public:
 	attribute table only; sub-tables are not searched and the dot
 	notation is not recognized.
 
-	@name get information using attribute names */
-    //@{
+	@name Accessors using an attribute name */
+  //@{
+	/** Get an attribute container. */
 
-    /** @name get\_attr\_table */
-    //@{
-    /// Get an attribute container. 
     AttrTable *get_attr_table(const string &name);
-    /// 
     AttrTable *get_attr_table(const char *name);
-    //@}
 
-    /** @name get\_type */
-    //@{
     /** Get the type name of an attribute within this attribute table. */
     string get_type(const string &name);
-    ///
     string get_type(const char *name);
-    //@}
 
-    /** @name get\_attr\_type */
-    //@{
     /** Get the type of an attribute using AttrType. */
     AttrType get_attr_type(const string &name);
-    /// 
     AttrType get_attr_type(const char *name);
-    //@}
 
-    /** @name get\_attr\_num */
-    //@{
     /** If the indicated attribute is a container attribute, this function
-	returns the number of attributes in {\it its} attribute table. If the
+	returns the number of attributes in <i>its</i> attribute table. If the
 	indicated attribute is not a container, the method returns the number
 	of values for the attribute (1 for a scalar attribute, N for a vector
 	attribute value). */
     unsigned int get_attr_num(const string &name);
-    ///
     unsigned int get_attr_num(const char *name);
-    //@} 
 
-    /** @name get\_attr */
-    //@{
     /** Get the value of an attribute. If the attribute has a vector value,
 	you can indicate which is the desired value with the index argument,
-	#i#. If the argument is omitted, the first value is returned. If the
+	<tt>i</tt>. If the argument is omitted, the first value is
+	returned. If the 
 	attribute has only a single value, the index argument is ignored. If
-	#i# is greater than the number of elements in the attribute, an error
-	is produced.
+	<tt>i</tt> is greater than the number of elements in the
+	attribute, an error is produced.
 
 	All values in an attribute table are stored as string data. They may
 	be converted to a more appropriate internal format by the calling
 	program. */
     string get_attr(const string &name, unsigned int i = 0);
-    ///
     string get_attr(const char *name, unsigned int i = 0);
-    //@}
 
-    /** @name get\_attr\_vector */
-    //@{
     /** Get a pointer to the vector of values associated with the attribute
-	referenced by Pix #p# or named #name#.
+	referenced by Pix <tt>p</tt> or named <tt>name</tt>.
 
 	Note that all values in an attribute table are stored as string data.
 	They may be converted to a more appropriate internal format by the
@@ -320,13 +296,17 @@ public:
 	returns the null pointer.  Otherwise returns a pointer to the
 	the attribute vector value. */
     vector<string> *get_attr_vector(const string &name);
-    ///
     vector<string> *get_attr_vector(const char *name);
-    //@}
-    //@} Accessors that use names
+  //@}
 
-    /** @name get information using a Pix */
-    //@{
+
+  /** The following accessors get information using a Pix pseudo-index
+      pointer into the AttrTable structure.
+
+      @name Accessors using a Pix
+  */
+  //@{
+
     /** Get a reference to the first entry in this attribute table. 
 	@return Pix; returns null if there's nothing in the list. */
     Pix first_attr();
@@ -342,7 +322,7 @@ public:
     /** Returns true if the attribute is a container. */
     bool is_container(Pix p);
 
-    /** Get the attribute container referenced by #p#. If no
+    /** Get the attribute container referenced by <tt>p</tt>. If no
 	such container exists, then return null. 
 	@param p Reference to a table contained by this object.
 	@return The child attribute table. */
@@ -359,19 +339,20 @@ public:
     AttrType get_attr_type(Pix p);
 
     /** If the indicated attribute is a container attribute, this function
-	returns the number of attributes in {\it its} attribute table. If the
+	returns the number of attributes in <i>its</i> attribute table. If the
 	indicated attribute is not a container, the method returns the number
 	of values for the attribute (1 for a scalar attribute, N for a vector
 	attribute value).
 	@param p
-	@return The number of elements in the attribute. */
+	@return The number of elements in the attribute.
+    */ 
     unsigned int get_attr_num(Pix p);
 
     /** Returns the value of an attribute. If the attribute has a vector
 	value, you can indicate which is the desired value with the index
-	argument, #i#. If the argument is omitted, the first value is
+	argument, <tt>i</tt>. If the argument is omitted, the first value is
 	returned. If the attribute has only a single value, the index
-	argument is ignored. If #i# is greater than the number of
+	argument is ignored. If <tt>i</tt> is greater than the number of
 	elements in the attribute, an error is produced.
 
 	All values in an attribute table are stored as string data. They may
@@ -386,7 +367,7 @@ public:
     string get_attr(Pix p, unsigned int i = 0);
     
     /** Returns a pointer to the vector of values associated with the
-	attribute referenced by Pix #p# or named #name#. 
+	attribute referenced by Pix <tt>p</tt> or named <tt>name</tt>. 
 
 	Note that all values in an attribute table are stored as string data.
 	They may be converted to a more appropriate internal format by the
@@ -397,12 +378,9 @@ public:
 	returns the null pointer.  Otherwise returns a pointer to the
 	the attribute vector value. */
     vector<string> *get_attr_vector(Pix p);
-    //@} Accessors that use a pix
+  //@}
 
-    //@} Accessors
 
-    /** @name Mutators */
-    //@{
     /** Set the name of this attribute table.
 	@param n The new name of the attribute table. */
     void set_name(const string &n);
@@ -414,76 +392,71 @@ public:
 
 	The function returns an error condition if the attribute is a
 	container, or if the type of the input value does not match the
-	existing attribute's type. Use #append_container()# to add container
-	attributes.
+	existing attribute's type. Use <tt>append_container()</tt> to
+	add container attributes.
 
-	This method performs a simple search for #name# in this attribute
-	table only; sub-tables are not searched and the dot notation is not
-	recognized.
+	This method performs a simple search for <tt>name</tt> in this
+	attribute table only; sub-tables are not searched and the dot
+	notation is not recognized.
 
-	@name append\_attr() 
 	@return Returns the length of the added attribute value.
 	@param name The name of the attribute to add or modify.
 	@param type The type of the attribute to add or modify.
 	@param value The value to add to the attribute table. */
-    //@{
-    ///
     unsigned int append_attr(const string &name, const string &type, 
 			     const string &value) throw (Error);
-    ///
     unsigned int append_attr(const char *name, const char *type, 
 			     const char *value) throw (Error);
-    //@}
 
     /** Create and append an attribute container to this AttrTable. If this
-	attribute table already contains an attribute container called #name#
-	an exception is thrown.
+	attribute table already contains an attribute container called
+	<tt>name</tt> an exception is thrown.
 
 	@return A pointer to the new AttrTable object. 
-	@memo Create a new container attribute. */
+    */
     AttrTable *append_container(const string &name) throw (Error);
 
     /** Append a new attribute container to this attribute table. The new
-	container is #at# and its name is set to #name#. If this attribute
-	table already contains an attribute container called #name# an
-	exception is thrown.
+	container is <tt>at</tt> and its name is set to
+	<tt>name</tt>. If this attribute 
+	table already contains an attribute container called
+	<tt>name</tt> an exception is thrown.
 
 	@return A pointer to the new AttrTable object. 
-	@memo Create a new container attribute. */
+    */
     AttrTable *append_container(AttrTable *at, const string &name) 
 	throw (Error);
 
     /** Add an alias to a container held by this attribute table. 
-	@param name The name of the alias. May {\it not} use dot notation.
+	@param name The name of the alias. May <i>not</i> use dot notation.
 	@param src The existing attribute container to alias.
-	@exception Error if an attribute, container or alias called #name#
-	already exists in this attribute table. */
+	@exception Error if an attribute, container or alias called
+	<tt>name</tt> already exists in this attribute table. */
     void add_container_alias(const string &name, AttrTable *src) 
 	throw (Error);
 
     /** Add an alias to an attribute held by this attribute table.
-	@param name The name of the alias. May {\it not} use dot notation.
+	@param name The name of the alias. May <i>not</i> use dot notation.
 	@param source The name of the attribute to alias. May use dot
 	notation. 
 	@exception Error if the attribute table already contains an
-	attribute, container or alias called #name# or if an attribute called
-	#source# does not exist. */
+	attribute, container or alias called <tt>name</tt> or if an
+	attribute called <tt>source</tt> does not exist. */
     void add_value_alias(AttrTable *das, const string &name, 
 			 const string &source) throw (Error);
 
     /** Adds an alias to the set of attributes.  Once an alias is
 	inserted into an attribute table, reading the attributes for
-	{\it alias} will return those stored for {\it name}. 
+	<i>alias</i> will return those stored for <i>name</i>. 
 
-	Two forms for this function exist: one searches for {\it name}
-	in the AttrTable referenced by {\it at} while the other uses
-	#this#. You can use #DAS::get_attr_table()# to get the attribute
-	table for an arbitrary name.
+	Two forms for this function exist: one searches for <i>name</i>
+	in the AttrTable referenced by <i>at</i> while the other uses
+	<tt>this</tt>. You can use <tt>DAS::get_attr_table()</tt> to
+	get the attribute table for an arbitrary name.
 
-	@name attr\_alias()
+	@name attr_alias()
 	@see get_attr_table
 	@deprecated */
-    //@{
 
     /** @param alias The alias to insert into the attribute table.
 	@param name The name of the already-existing attribute to which
@@ -497,41 +470,40 @@ public:
 	@param name The name of the already-existing attribute to which
 	the alias will refer. */
     bool attr_alias(const string &alias, const string &name);
-    //@}
 
-    /** Delete the attribute named #name#. If #i# is given, and
-	the attribute has a vector value, delete the #i#$^th$ element of the
-	vector.
+    /** Delete the attribute named <tt>name</tt>. If <tt>i</tt> is given, and
+	the attribute has a vector value, delete the <tt>i</tt>$^th$
+	element of the vector.
 
 	You can use this function to delete container attributes, although
-	the #i# parameter has no meaning for that operation.
+	the <tt>i</tt> parameter has no meaning for that operation.
 
-	@memo Deletes an attribute. 
 	@param name The name of the attribute to delete.  This can be an
 	attribute of any type, including containers. However, this method
 	looks only in this attribute table and does not recognize the dot
 	notation. 
-	@param i If the named attribute is a vector, and #i# is
+	@param i If the named attribute is a vector, and <tt>i</tt> is
 	non-negative, the i-th entry in the vector is deleted, and the
-	array is repacked.  If #i# equals -1 (the default), the
+	array is repacked.  If <tt>i</tt> equals -1 (the default), the
 	entire attribute is deleted. */
     void del_attr(const string &name, int i = -1);
 
     /** Prints an ASCII representation of the attribute table to the
-	indicated output stream. The #pad# argument is prefixed to each
+	indicated output stream. The <tt>pad</tt> argument is prefixed to each
 	line of the output to provide control of indentation.
 
-	@memo Prints the attribute table.
 	@param os Print to the given output stream.
 	@param pad Indent elements of a table using this string of spaces. By
 	default this is a string of four spaces
 	@param dereference If true, follow aliases. Default is false. */
     void print(ostream &os, string pad = "    ", bool dereference = false);
-    //@}
 };
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.35  2002/05/23 15:22:39  tom
+ * modified for doxygen
+ *
  * Revision 1.34  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *
