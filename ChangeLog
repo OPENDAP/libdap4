@@ -1,5 +1,8 @@
 2002-06-03    <jimg@dcz.dods.org>
 
+	* Sequence.cc (print_all_vals): Removed Sequence::level and
+	set_level() methods and the private _level field.
+
 	* dods-limits.h (DODS_ULONG_MAX): Added U suffix to unsigned
 	numerical constants.
 
@@ -1133,4 +1136,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.67 2002/06/03 21:46:16 jimg Exp $
+$Id: ChangeLog,v 1.68 2002/06/03 21:55:05 jimg Exp $
