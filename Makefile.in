@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.45 1996/08/26 21:12:57 jimg Exp $
+# $Id: Makefile.in,v 1.46 1996/09/19 16:50:38 jimg Exp $
 
 @SET_MAKE@
 
@@ -67,6 +67,7 @@ RANLIB = @RANLIB@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
+STRIP = strip
 
 NETIOSRCS = Connect.cc Connections.cc cgi_util.cc Gui.cc
 NETIOOBJS = Connect.o Connections.o cgi_util.o Gui.o
@@ -132,8 +133,8 @@ all: $(PROG)
 
 libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
 	    $(EXPROBJS) $(NETIOOBJS)
-	$(AR) -cru $@ $?
-	$(RANLIB) $@
+	    $(AR) -cru $@ $?
+	    $(RANLIB) $@
 
 # geturl is really a test driver, but it is so useful in other contexts that
 # I have decided to build it as part of the `all' target. jhrg 7/11/96
@@ -244,7 +245,7 @@ Error.tab.o: Error.tab.c	# build using C++ compiler
 
 # Standard targets with some customization for das-test and dds-test
 
-install: all install-headers
+install: all install-headers install-geturl
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
 
@@ -255,6 +256,10 @@ install-headers:
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
 		 $(GNUHDRS) $(NETIOHDRS); \
 	    do $(INSTALL_DATA) $$h $(includedir); done
+
+install-geturl:
+	$(INSTALL_PROGRAM) geturl $(etcdir)
+	$(STRIP) $(etcdir)/geturl
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
@@ -284,7 +289,8 @@ error-check: error-test
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
-	-rm -f $(PROG) das-test dds-test expr-test error-test geturl
+	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
+	       cgi-util-test
 
 distclean: clean
 	-rm -f config.status config.log config.cache
