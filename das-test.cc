@@ -7,7 +7,11 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.6  1994/12/07 21:21:47  jimg
+// Revision 1.7  1995/02/10 03:28:55  jimg
+// Removed dummy_read.cc
+// Updates das-test.cc so that type checking gets tested.
+//
+// Revision 1.6  1994/12/07  21:21:47  jimg
 // Added code to test the scanner - it is selected using the -s option.
 //
 // Revision 1.5  1994/10/13  16:12:07  jimg
@@ -105,15 +109,36 @@ test_scanner(void)
 	  case ATTR:
 	    cout << "ATTR" << endl;
 	    break;
+
 	  case ID:
 	    cout << "ID=" << daslval << endl;
 	    break;
-	  case VAL:
-	    cout << "VAL=" << daslval << endl;
+	  case STR:
+	    cout << "STR=" << daslval << endl;
 	    break;
-	  case TYPE:
-	    cout << "TYPE" << endl;
+	  case INT:
+	    cout << "INT=" << daslval << endl;
 	    break;
+	  case FLOAT:
+	    cout << "FLOAT=" << daslval << endl;
+	    break;
+
+	  case BYTE:
+	    cout << "BYTE" << endl;
+	    break;
+	  case INT32:
+	    cout << "INT32" << endl;
+	    break;
+	  case FLOAT64:
+	    cout << "FLOAT64" << endl;
+	    break;
+	  case STRING:
+	    cout << "STRING" << endl;
+	    break;
+	  case URL:
+	    cout << "URL" << endl;
+	    break;
+
 	  case '{':
 	    cout << "Left Brace" << endl;
 	    break;
@@ -126,6 +151,7 @@ test_scanner(void)
 	  case ',':
 	    cout << "Comma" << endl;
 	    break;
+
 	  default:
 	    cout << "Error: Unrecognized input" << endl;
 	}
