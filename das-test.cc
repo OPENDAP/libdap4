@@ -7,7 +7,10 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.3  1994/09/27 22:58:59  jimg
+// Revision 1.4  1994/10/05 16:48:52  jimg
+// Added code to print the return value of the DAS::parse() mfunc.
+//
+// Revision 1.3  1994/09/27  22:58:59  jimg
 // das-test no longer uses Space.cc for new/delete debugging - that system
 // did not work on alphas).
 //
@@ -51,17 +54,21 @@ main(int argc, char *argv[])
     for (int i = getopt.optind; i < argc; i+=2) {
 	if (strcmp(argv[i], "-") == 0) {
 	    cout << "Enter attributes:\n";
-	    das.parse();
+	    int status = das.parse();
+	    cout << "parse() returned: " << status << endl;
 	}
 	else {
 	    cout << "Reading from: " << argv[i] << endl;
 	    if (use_fd) {
 		int fd = open(argv[i], O_RDONLY);
-		das.parse(fd);
+		int status = das.parse(fd);
+		cout << "parse() returned: " << status << endl;
 		close(fd);
 	    }
-	    else
-		das.parse(argv[i]);
+	    else {
+		int status = das.parse(argv[i]);
+		cout << "parse() returned: " << status << endl;
+	    }
 	}
 
 	if (strcmp(argv[i+1], "-") == 0)
