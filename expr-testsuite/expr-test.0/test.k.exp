@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.k.exp,v $
+# Revision 1.7  2000/10/03 22:18:04  jimg
+# Fixes to the tests to accomodate debugging fixes in DDS.cc
+#
 # Revision 1.6  2000/09/22 02:53:00  jimg
 # Fixes to the tests to recognize some of the new error messages. Also,
 # the test drivers were modified to catch the exceptions now thrown by
@@ -45,12 +48,10 @@ set test_equation {i\[1:2\]\[2:4\]}
 # exactly.
 
 set test_out "The complete DDS:
-Status from parser: 1
 Dataset {
     Int32 i\\\[20\\\]\\\[10\\\];
     String s;
 } test1;
-Status from parser: 1
 The data:
 Int32 i\\\[2\\\]\\\[3\\\] = {{123456789, 123456789, 123456789},{123456789, 123456789, 123456789}};"
 

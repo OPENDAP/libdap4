@@ -2,7 +2,7 @@
 # expect/tcl code to test the dds parser and scanner
 # jhrg
 #
-# $Id: test.16.exp,v 1.1 2000/08/16 18:30:22 jimg Exp $
+# $Id: test.16.exp,v 1.2 2000/10/03 22:18:04 jimg Exp $
 
 global comp_output		# contains output from dds-test_start
 global verbose			# this and srcdir are set by runtest.exp
@@ -16,8 +16,7 @@ set test_name test.16
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Status from parser: 1
-DDS past semantic check
+set test_out "DDS past semantic check
 DDS past full semantic check
 Dataset {
     Int32 i.x\[10\];
@@ -47,6 +46,9 @@ if ![string compare $test_out $comp_output] { # check comp_output
 }
 
 # $Log: test.16.exp,v $
+# Revision 1.2  2000/10/03 22:18:04  jimg
+# Fixes to the tests to accomodate debugging fixes in DDS.cc
+#
 # Revision 1.1  2000/08/16 18:30:22  jimg
 # Added tests for dots in variable names and fancier error messages
 #

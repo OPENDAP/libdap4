@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.q.exp,v $
+# Revision 1.4  2000/10/03 22:18:04  jimg
+# Fixes to the tests to accomodate debugging fixes in DDS.cc
+#
 # Revision 1.3  2000/09/22 02:53:00  jimg
 # Fixes to the tests to recognize some of the new error messages. Also,
 # the test drivers were modified to catch the exceptions now thrown by
@@ -48,13 +51,11 @@ set test_equation {x,y,f}
 # exactly.
 
 set test_out "The complete DDS:
-Status from parser: 1
 Dataset {
     Int16 x;
     UInt16 y;
     Float32 f;
 } data5;
-Status from parser: 1
 The data:
 Int16 x = 32000;
 UInt16 y = 64000;
