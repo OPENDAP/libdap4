@@ -4,7 +4,11 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
-// Revision 1.4  1995/03/16 16:29:24  reza
+// Revision 1.5  1995/05/22 20:36:10  jimg
+// Added #include "config_netio.h"
+// Removed old code.
+//
+// Revision 1.4  1995/03/16  16:29:24  reza
 // Fixed bugs in ErrMsgT and mime type.
 //
 // Revision 1.3  1995/02/22  21:03:59  reza
@@ -27,7 +31,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.4 1995/03/16 16:29:24 reza Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.5 1995/05/22 20:36:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,6 +41,8 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.4 1995/03/16 16:29:24 reza Exp $"};
 
 #include <iostream.h>
 #include <String.h>
+
+#include "config_netio.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -61,11 +67,6 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.4 1995/03/16 16:29:24 reza Exp $"};
 void 
 ErrMsgT(char *Msgt)
 {
-#ifdef NEVER
-    // main() should call setlocale(); don't override its call. jhrg
-    (void)setlocale(LC_ALL, "");
-#endif
-
     time_t TimBin;
     char TimStr[TimLen];
 
