@@ -7,14 +7,17 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.10  1996/03/05 18:32:26  jimg
-/* Added the clause and function subclasses. Clause is used to hold a single
-/* clause of the current CE. Clause has ctors, a dtor (which is currently
-/* broken) and member function used to get the boolean value of the clause.
-/* Function is used to hold a single pointer to either a function returning a
-/* boolean or a BaseType *. The DDS class contains a list of clauses and a list
-/* of functions.
+/* Revision 1.11  1996/04/04 18:41:07  jimg
+/* Merged changes from version 1.1.1.
 /*
+ * Revision 1.10  1996/03/05 18:32:26  jimg
+ * Added the clause and function subclasses. Clause is used to hold a single
+ * clause of the current CE. Clause has ctors, a dtor (which is currently
+ * broken) and member function used to get the boolean value of the clause.
+ * Function is used to hold a single pointer to either a function returning a
+ * boolean or a BaseType *. The DDS class contains a list of clauses and a list
+ * of functions.
+ *
  * Revision 1.9  1996/02/01 17:43:10  jimg
  * Added support for lists as operands in constraint expressions.
  *
@@ -31,6 +34,13 @@
  * Added mark*(): add the named variables to the current projection.
  * Added send(): combines many functions like reading and serializing variables
  * with constraint evaluation.
+ *
+ * Revision 1.6.2.2  1996/03/01 00:06:11  jimg
+ * Removed bad attempt at multiple connect implementation.
+ *
+ * Revision 1.6.2.1  1996/02/23 21:37:26  jimg
+ * Updated for new configure.in.
+ * Fixed problems on Solaris 2.4.
  *
  * Revision 1.6  1995/02/10  02:30:49  jimg
  * Misc comment edits.
