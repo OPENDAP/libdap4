@@ -1,4 +1,3 @@
-
 /*
   Copyright 1994, 1995 The University of Rhode Island and The Massachusetts
   Institute of Technology
@@ -38,6 +37,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.18  1996/04/04 19:15:14  jimg
+// Merged changes from version 1.1.1.
+// Fixed bug in send() - wrong number of arguments to serialize.
+//
 // Revision 1.17  1996/03/05 18:38:45  jimg
 // Moved many of the DDS member functions into the subclasses clause and
 // function. Also, because the rvalue and func_rvalue classes (defined in
@@ -70,6 +73,13 @@
 //
 // Revision 1.12  1995/08/23  00:06:30  jimg
 // Changed from old mfuncs to new(er) ones.
+//
+// Revision 1.11.2.2  1996/03/01 00:06:09  jimg
+// Removed bad attempt at multiple connect implementation.
+//
+// Revision 1.11.2.1  1996/02/23 21:37:24  jimg
+// Updated for new configure.in.
+// Fixed problems on Solaris 2.4.
 //
 // Revision 1.11  1995/07/09  21:28:55  jimg
 // Added copyright notice.
@@ -124,7 +134,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.17 1996/03/05 18:38:45 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.18 1996/04/04 19:15:14 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -143,6 +153,7 @@ static char rcsid[]="$Id: DDS.cc,v 1.17 1996/03/05 18:38:45 jimg Exp $";
 #include "util.h"
 
 #include "config_dap.h"
+
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
@@ -622,7 +633,7 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	for (Pix q = first_var(); q; next_var(q)) {
 	    if (var(q)->send_p()) { // only process projected variables
 		DBG(cerr << "Serializing: " << var(q)->name() << endl);
-		status = status && var(q)->serialize(dataset, *this, flush);
+		status = status && var(q)->serialize(dataset, *this, true, flush);
 	    }
 	}
     }
