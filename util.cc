@@ -37,7 +37,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.14  1995/08/26 00:32:10  jimg
+// Revision 1.15  1995/10/23 23:06:07  jimg
+// Fixed cast of out_tmp in xdr_str().
+//
+// Revision 1.14  1995/08/26  00:32:10  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.13  1995/08/23  00:41:58  jimg
@@ -94,7 +97,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.14 1995/08/26 00:32:10 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.15 1995/10/23 23:06:07 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -224,7 +227,7 @@ xdr_str(XDR *xdrs, String &buf)
 {
     switch (xdrs->x_op) {
       case XDR_ENCODE:		// BUF is a pointer to a (String *)
-	char *out_tmp = (const char *)buf; // cast away const
+	const char *out_tmp = (const char *)buf;
 
 	return xdr_string(xdrs, &out_tmp, max_str_len);
 
