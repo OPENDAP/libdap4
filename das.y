@@ -31,6 +31,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.22  1996/06/07 15:05:16  jimg
+ * Removed old type checking code - use the type checkers in parser-util.cc.
+ *
  * Revision 1.21  1996/05/31 23:30:52  jimg
  * Updated copyright notice.
  *
@@ -133,7 +136,7 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: das.y,v 1.21 1996/05/31 23:30:52 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.22 1996/06/07 15:05:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,14 +161,6 @@ static AttrTablePtr attr_tab_ptr;
 void mem_list_report();
 int daslex(void);
 int daserror(char *s);
-#ifdef NEVER
-static void not_a_datatype(char *s);
-static void save_str(char *dst, char *src);
-static int check_byte(char *val);
-static int check_int(char *val);
-static int check_float(char *val);
-static int check_url(char *val);
-#endif
 
 %}
 
@@ -415,71 +410,3 @@ daserror(char *s)
 
     return 1;
 }
-
-#ifdef NEVER
-static void
-save_str(char *dst, char *src)
-{
-    strncpy(dst, src, ID_MAX);
-    dst[ID_MAX-1] = '\0';		/* in case ... */
-    if (strlen(src) >= ID_MAX) 
-	cerr << "line: " << das_line_num << "`" << src << "' truncated to `"
-             << dst << "'" << endl;
-}
-
-static void
-not_a_datatype(char *s)
-{
-    fprintf(stderr, "`%s' is not a datatype; line %d\n", s, das_line_num);
-}
-
-static int
-check_byte(char *val)
-{
-    int v = atoi(val);
-
-    if (abs(v) > 255) {
-	daserror("Not a byte value");
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-static int
-check_int(char *val)
-{
-    int v = atoi(val);
-
-    if (abs(v) > 2147483647) {	/* don't use the constant from limits.h */
-	daserror("Not a 32-bit integer value");
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-static int
-check_float(char *val)
-{
-    double v = atof(val);
-
-    if (v == 0.0) {
-	daserror("Not decodable to a 64-bit float value");
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-/*
-  Maybe someday we will really check the Urls to see if they are valid...
-*/
-
-static int
-check_url(char *val)
-{
-    return TRUE;
-}
-#endif
-
