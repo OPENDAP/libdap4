@@ -1,7 +1,7 @@
 
 # Common code for dejaGNU-based automated tests.
 
-# $Id: common_tests.exp,v 1.2 1999/05/25 15:19:06 jimg Exp $
+# $Id: common_tests.exp,v 1.3 1999/05/25 21:44:13 ndp Exp $
 
 # Compare $expected to the global $comp_output. Run `pass' if they match,
 # `fail' otherwise unless `xfailp' is true in which case run `xfail' if they
@@ -14,6 +14,16 @@
 proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
     global comp_output
     global verbose
+
+
+    # Make sure that the string test method passed in through $str_test is
+    # either "compare" or "match" (The Tcl built in string function supports
+    # several other methods, but this code DOES NOT!)
+    # 5/26/99 ndp
+    if {$str_test != "compare"  &&  $str_test != "match"} {
+	send_user "BAD TEST METHOD: \"$str_test\". YOU MUST USE \"compare\" or \"match\".\n"
+	fail "Improper use of compare_stdout. \"$str_test\" is an unsupported method. Use \"compare\" or \"match\"."
+    }
 
     # If $expected is the name of a file, read that file's contents and store
     # in $expected, then procede to compare $expected to $comp_output.
@@ -61,3 +71,4 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
 	send_user "Expected output:$expected\n"
     }
 }
+
