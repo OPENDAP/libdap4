@@ -1,3 +1,20 @@
+2000-09-11  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added methods to Sequence to provide access to row number
+	constraint information. These methods (get_starting_row_number,
+	...) provide access to the indices given in a CE. Also added is a
+	method to set these values (until explicitly set the stating
+	and ending row numbers and the stride are -1). In addition there
+	is a method to get the current row number (useful when reading
+	row-by-row with read()) and a method to read the ith row into the
+	sequence. 
+
+	* Added Sequence row number selection. It is now possible to
+	request the first 10 rows of a sequence, or row 7 through 11 and
+	to do so using a stride. The notation is the same as for Arrays
+	and Grids; it uses the square brackets and colon separated
+	integers for start, stride and stop. 
+
 2000-08-31  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with 3.1.10. The next merge should use update -d -j
@@ -789,9 +806,9 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.58 2000/08/31 23:44:16 jimg Exp $
+$Id: ChangeLog,v 1.59 2000/09/11 17:00:06 jimg Exp $
 
 <<<<<<< ChangeLog
 =======
-$Id: ChangeLog,v 1.58 2000/08/31 23:44:16 jimg Exp $
+$Id: ChangeLog,v 1.59 2000/09/11 17:00:06 jimg Exp $
 >>>>>>> 1.42.2.16
