@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.15  1996/11/27 22:12:33  jimg
+// Expanded help to include all the verbose options.
+// Added PERF macros to code around request_data() call.
+//
 // Revision 1.14  1996/11/20 00:37:47  jimg
 // Modified -D option to correctly process the Asynchronous option.
 //
@@ -65,7 +69,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.14 1996/11/20 00:37:47 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.15 1996/11/27 22:12:33 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -87,10 +91,20 @@ usage(String name)
     cerr << "       " << "D: For each URL, get the DODS Data." << endl;
     cerr << "       " << "g: Show the progress GUI." << endl;
     cerr << "       " << "c: <expr> is a contraint expression. Used with -D."
+	 << endl;
          << "       " << "   NB: You can use a `?' for the CE also."
 	 << endl;
     cerr << "       " << "v: <options> Verbose output; use -vd for default." 
          << endl;
+    cerr << "       " << "   a: show_anchor_trace." << endl;
+    cerr << "       " << "   b: show_bind_trace." << endl;
+    cerr << "       " << "   c: show_cache_trace." << endl;
+    cerr << "       " << "   l: show_sgml_trace." << endl;
+    cerr << "       " << "   m: show_mem_trace." << endl;
+    cerr << "       " << "   p: show_protocol_trace." << endl;
+    cerr << "       " << "   s: show_stream_trace." << endl;
+    cerr << "       " << "   t: show_thread_trace." << endl;
+    cerr << "       " << "   u: show_uri_trace." << endl;
     cerr << "       " << "m: Request the same URL <num> times." << endl;
     cerr << "       " << "Without A, use the synchronous mode." << endl;
     cerr << "       " << "Without d or a, print the URL." << endl;
@@ -234,10 +248,13 @@ main(int argc, char * argv[])
 			((Sequence *)v)->print_all_vals(cout, url.source());
 			break;
 		      default:
+			PERF(cerr << "Deserializing: " << dds.var(q).name() \
+			     << endl);
 			if (async && !dds.var(q)->deserialize(url.source())) {
 			    cerr << "Asynchronous read failure." << endl;
 			    exit(1);
 			}
+			PERF(cerr << "Deserializing complete" << endl);
 			dds.var(q)->print_val(cout);
 			break;
 		    }
