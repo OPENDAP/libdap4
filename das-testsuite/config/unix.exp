@@ -10,7 +10,7 @@ if ![info exists DASTEST] then {
 # The four `required' procs are _start, _load, _exit and _version. Since
 # das-test is non-interactive, these are quite simple.
 
-proc das-test_start { ifile ofile } {
+proc das-test_start { sw {ifile ""} {ofile ""}} {
     global verbose
     global DASTEST
     global comp_output
@@ -19,18 +19,24 @@ proc das-test_start { ifile ofile } {
 	send_user "Testing $ifile $ofile ...\n"
     }
 
-    catch "exec $DASTEST -p $ifile $ofile" comp_output
-
-    if {$verbose >= 1} {
-	send_user "Comp output:\n$comp_output\n"
+    switch $sw {
+	p {catch "exec $DASTEST -p $ifile $ofile" comp_output}
+	s {spawn $DASTEST -s}
     }
 
+    if {$verbose >= 1} {
+	switch $sw {
+	    p {send_user "Comp output:\n$comp_output\n"}
+	    s {send_user "Program running: spawn_id=$spawn_id\n"}
+	}
+    }
 }
 
 proc das-test_load {} {
 }
 
 proc das-test_exit {} {
+    send -raw ""
 }
 
 proc das-test_version {} {
