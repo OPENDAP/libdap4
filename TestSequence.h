@@ -13,6 +13,10 @@
 
 /* 
  * $Log: TestSequence.h,v $
+ * Revision 1.13  1998/01/13 04:15:44  jimg
+ * Added a copy ctor since TestSequence has its own private data members. g++
+ * 2.7.2.3 (?) running on Linux complained (apparently) about it being missing.
+ *
  * Revision 1.12  1997/10/09 22:19:26  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -86,9 +90,13 @@ private:
 
     /// True if _input has been opened.
     bool _input_opened;
+    
+    void _duplicate(const TestSequence &ts);
 
 public:
     TestSequence(const String &n = (char *)0);
+    TestSequence(const TestSequence &rhs);
+
     virtual ~TestSequence();
 
     virtual BaseType *ptr_duplicate();
