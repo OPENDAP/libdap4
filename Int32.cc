@@ -4,7 +4,15 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.3  1994/09/23 14:36:08  jimg
+// Revision 1.4  1994/11/29 20:10:36  jimg
+// Added functions for data transmission.
+// Added boolean parameter to serialize which, when true, causes the output
+// buffer to be flushed. The default value is false.
+// Added FILE *in and *out parameters to the ctor. The default values are
+// stdin/out.
+// Removed the `type' parameter from the ctor.
+//
+// Revision 1.3  1994/09/23  14:36:08  jimg
 // Fixed errors in comments.
 //
 // Revision 1.2  1994/09/15  21:08:44  jimg
@@ -25,6 +33,48 @@
 
 #include "Int32.h"
 
-Int32::Int32(const String &n, const String &t) : BaseType(n, t)
+Int32::Int32(const String &n, FILE *in, FILE *out) 
+    : BaseType(n, "Int32", xdr_long, in, out)
 {
+}
+
+BaseType *
+Int32::ptr_duplicate()
+{
+    return new Int32(*this);
+}
+
+unsigned int
+Int32::size()
+{
+    return sizeof(buf);
+}
+
+bool
+Int32::serialize(bool flush, unsigned int num)
+{
+    bool stat = (bool)xdr_long(xdrout, &buf);
+    if (stat && flush)
+	stat = expunge();
+
+    return stat;
+}
+
+// deserialize the double on stdin and put the result in BUF.
+
+unsigned int
+Int32::deserialize()
+{
+    unsigned int num = xdr_long(xdrin, &buf);
+
+    return num;
+}
+
+// Print BUF to stdout with its declaration. Intended mostly for debugging.
+
+void 
+Int32::print_val(ostream &os, String space)
+{
+    print_decl(os, "", false);
+    os << " = " << buf << ";" << endl;
 }

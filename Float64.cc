@@ -4,7 +4,15 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.3  1994/11/22 14:05:46  jimg
+// Revision 1.4  1994/11/29 20:10:39  jimg
+// Added functions for data transmission.
+// Added boolean parameter to serialize which, when true, causes the output
+// buffer to be flushed. The default value is false.
+// Added FILE *in and *out parameters to the ctor. The default values are
+// stdin/out.
+// Removed the `type' parameter from the ctor.
+//
+// Revision 1.3  1994/11/22  14:05:46  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
 // complete yet.
 // Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
@@ -32,8 +40,8 @@
 
 #include "Float64.h"
 
-Float64::Float64(const String &n, const String &t) 
-    : BaseType(n, t, xdr_double)
+Float64::Float64(const String &n, FILE *in, FILE *out) 
+    : BaseType(n, "Float64", xdr_double, in, out)
 {
 }
 
@@ -50,13 +58,21 @@ Float64::size()
 }
 
 // Serialize the contents of member BUF and write the result to stdout. NUM
-// defaults to zero -- it is used by descendents of CtorType.
+// defaults to zero -- it is used by descendents of CtorType. If FLUSH is
+// true, write the contents of the output buffer to the kernel. FLUSH is
+// false by default.
+//
 // NB: See the comment in BaseType re: why we don't use XDR_CODER here
 
 bool
-Float64::serialize(unsigned int num)
+Float64::serialize(bool flush, unsigned int num)
 {
-    return (bool)xdr_double(xdrout, &buf);
+    bool stat = (bool)xdr_double(xdrout, &buf);
+
+    if (stat && flush)
+	 stat = expunge();
+
+    return stat;
 }
 
 // deserialize the double on stdin and put the result in BUF.
@@ -64,9 +80,9 @@ Float64::serialize(unsigned int num)
 unsigned int
 Float64::deserialize()
 {
-    bool status = xdr_double(xdrin, &buf);
+    unsigned int num = xdr_double(xdrin, &buf);
 
-    return status ? size(): 0;
+    return num;
 }
 
 // Print BUF to stdout with its declaration. Intended mostly for debugging.

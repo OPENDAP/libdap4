@@ -5,11 +5,19 @@
 // jhrg 9/7/94
 
 /* $Log: Float64.h,v $
-/* Revision 1.3  1994/11/22 14:05:50  jimg
-/* Added code for data transmission to parts of the type hierarchy. Not
-/* complete yet.
-/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+/* Revision 1.4  1994/11/29 20:10:40  jimg
+/* Added functions for data transmission.
+/* Added boolean parameter to serialize which, when true, causes the output
+/* buffer to be flushed. The default value is false.
+/* Added FILE *in and *out parameters to the ctor. The default values are
+/* stdin/out.
+/* Removed the `type' parameter from the ctor.
 /*
+ * Revision 1.3  1994/11/22  14:05:50  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
  * Revision 1.2  1994/09/23  14:36:11  jimg
  * Fixed errors in comments.
  *
@@ -35,7 +43,8 @@ private:
     double buf;
 
 public:
-    Float64(const String &n = (char *)0, const String &t = "Float64");
+    Float64(const String &n = (char *)0, FILE *in = stdin, 
+	    FILE *out = stdout);
     virtual ~Float64() {}
 
     virtual BaseType *ptr_duplicate();
@@ -45,7 +54,7 @@ public:
     // defined in <API>_read.c (e.g., nc_read.cc, ...)
     virtual bool read(String dataset, String var_name, String constraint);
 
-    virtual bool serialize(unsigned int num = 0);
+    virtual bool serialize(bool flush = false, unsigned int num = 0);
     virtual unsigned int deserialize();
 
     virtual void print_val(ostream &os, String space = "");
