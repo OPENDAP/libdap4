@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.148 2004/01/22 16:45:44 jimg Exp $
+# $Id: Makefile.in,v 1.149 2004/01/22 16:49:38 jimg Exp $
 
 @SET_MAKE@
 
@@ -253,7 +253,7 @@ lex.das.o: lex.das.c
 das.tab.c das.tab.h: das.y DAS.h
 	$(YACC) $(YFLAGS) -p das das.y
 
-das.tab.o: das.tab.c		# build using C++ compiler
+das.tab.o: das.tab.c das.y DAS.h # build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c das.tab.c -o das.tab.o
 
 # Build the DDS Scanner.
@@ -269,7 +269,7 @@ lex.dds.o: lex.dds.c
 dds.tab.c dds.tab.h: dds.y
 	$(YACC) $(YFLAGS) -p dds dds.y
 
-dds.tab.o: dds.tab.c		# build using C++ compiler
+dds.tab.o: dds.tab.c dds.y      # build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c dds.tab.c -o dds.tab.o
 
 # Build the CE Scanner.
@@ -285,7 +285,7 @@ lex.expr.o: lex.expr.c
 expr.tab.c expr.tab.h: expr.y
 	$(YACC) $(YFLAGS) -p expr expr.y
 
-expr.tab.o: expr.tab.c		# build using C++ compiler
+expr.tab.o: expr.tab.c expr.y		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c expr.tab.c -o expr.tab.o
 
 # Build the grid selection sub_expression scanner and parser
@@ -299,7 +299,7 @@ lex.gse.o: lex.gse_.c
 gse.tab.c gse.tab.h: gse.y
 	$(YACC) $(YFLAGS) -p gse_ gse.y
 
-gse.tab.o: gse.tab.c		# build using C++ compiler
+gse.tab.o: gse.tab.c gse.y 		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c gse.tab.c -o gse.tab.o
 
 # Build the Error object scanner.
@@ -315,7 +315,7 @@ lex.Error.o: lex.Error.c
 Error.tab.c Error.tab.h: Error.y
 	$(YACC) $(YFLAGS) -p Error Error.y
 
-Error.tab.o: Error.tab.c	# build using C++ compiler
+Error.tab.o: Error.tab.c Error.y	# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c Error.tab.c -o Error.tab.o
 
 # Standard targets
