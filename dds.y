@@ -50,7 +50,11 @@
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.9  1995/08/23 00:27:47  jimg
+ * Revision 1.10  1995/10/23 22:59:41  jimg
+ * Modified some rules so that they use the functions defined in
+ * parser_util.cc instead of local definitions.
+ *
+ * Revision 1.9  1995/08/23  00:27:47  jimg
  * Uses new member functions.
  * Added copyright notice.
  * Switched from String to enum type representation.
@@ -93,12 +97,14 @@
  */
 
 %{
+#ifdef NEVER
 #define YYSTYPE char *
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
+#endif
 
-static char rcsid[]={"$Id: dds.y,v 1.9 1995/08/23 00:27:47 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.10 1995/10/23 22:59:41 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,13 +112,14 @@ static char rcsid[]={"$Id: dds.y,v 1.9 1995/08/23 00:27:47 jimg Exp $"};
 
 #include <iostream.h>
 
+#include "parser.h"
 #include "dds.tab.h"
 #include "util.h"
 #include "DDS.h"
 #include "Array.h"
 #include "BTXPStack.h"
 
-extern int dds_line_num;
+extern int dds_line_num;	/* defined in dds.lex */
 
 static BaseTypePtrXPStack ctor;	/* stack for ctor types */
 static BaseType *current;
@@ -121,9 +128,9 @@ static char id[ID_MAX];
 
 int ddslex();
 int ddserror(char *s);
+
 void add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, 
 	       Part p);
-static void save_str(char *dst, char *src);
 
 %}
 
@@ -254,7 +261,7 @@ array_decl:	'[' INTEGER ']'
 		 }
 		 | '[' ID 
 		 {
-		     save_str(id, $2);
+		     save_str(id, $2, dds_line_num);
 		 } 
                  '=' INTEGER 
                  { 
@@ -312,22 +319,3 @@ add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, Part part)
     else
 	table.add_var(*current);
 }
-
-/* 
-   Copy upto ID_MAX - 1 characters from SRC to DST. If SRC contains more
-   characters, print an error message.
-
-   Returns: void
-*/
-
-static void
-save_str(char *dst, char *src)
-{
-    strncpy(dst, src, ID_MAX);
-    dst[ID_MAX-1] = '\0';	       
-    if (strlen(src) >= ID_MAX) 
-	cerr << "line: " << dds_line_num << "`" << src << "' truncated to `"
-             << dst << "'" << endl;
-}
-
-
