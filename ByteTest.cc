@@ -29,15 +29,12 @@
 
 // Tests for Byte. Tests features of BaseType, too. 7/19/2001 jhrg
 
-#include <strstream>
+#include <sstream>
 
 #include "Byte.h"
 
 using namespace CppUnit;
-using std::ends ;
-
-using std::ostrstream;
-using std::ends;
+using namespace std;
 
 class ByteTest : public TestFixture {
 private:
@@ -79,20 +76,20 @@ public:
     }
 
     void decl_mangling_test() {
-	ostrstream oss;
-	tb1->print_decl(oss, "", false); oss << ends;
+	ostringstream oss;
+	tb1->print_decl(oss, "", false);
 	CPPUNIT_ASSERT(string(oss.str()) == "Byte tb1");
 
-	ostrstream oss2;
-	tb2->print_decl(oss2, "", false); oss2 << ends;
+	ostringstream oss2;
+	tb2->print_decl(oss2, "", false);
 	CPPUNIT_ASSERT(string(oss2.str()) == "Byte tb2%20name%20with%20spaces");
 
-	ostrstream oss3;
-	tb3->print_decl(oss3, "", false); oss3 << ends;
+	ostringstream oss3;
+	tb3->print_decl(oss3, "", false);
 	CPPUNIT_ASSERT(string(oss3.str()) == "Byte tb3%20%25");
 
-	ostrstream oss4;
-	tb4->print_decl(oss4, "", false); oss4 << ends;
+	ostringstream oss4;
+	tb4->print_decl(oss4, "", false);
 	CPPUNIT_ASSERT(string(oss4.str()) == "Byte tb4%20%23");
     }
 

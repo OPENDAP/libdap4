@@ -2,9 +2,7 @@
 #pragma implementation
 #endif
 
-#if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
-#else
+#if 0
 #include <sstream>
 #endif
 
@@ -12,9 +10,7 @@
 
 #include "debug.h"
 
-using std::cerr;
-using std::endl;
-using std::istrstream;
+using namespace std;
 
 void
 TestSequence::_duplicate(const TestSequence &ts)

@@ -11,7 +11,8 @@
 
 #include <iostream>
 #include <fstream>
-#include <strstream>
+#include <sstream>
+
 #include "DDS.h"
 #include "Pix.h"
 #include "TestArray.h"
@@ -21,10 +22,7 @@
 #include "util.h"
 #include "debug.h"
 
-using std::cerr ;
-using std::endl ;
-using std::ostrstream ;
-using std::ifstream ;
+using namespace std;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 				      // timeouts. 
@@ -370,9 +368,7 @@ public:
 	CPPUNIT_ASSERT( projf ) ;
 
 	{
-	    char *tmpstr = new char[2048] ;
-	    memset( tmpstr, '\0', 2048 ) ;
-	    ostrstream strm( tmpstr, 2048 ) ;
+	    ostringstream strm;
 	    dds.print( strm ) ;
 	    string outstr = strm.str() ;
 	    CPPUNIT_ASSERT( cprint == outstr ) ;
@@ -381,7 +377,6 @@ public:
 		DBG2( cerr << "expected output = " << cprint << endl ) ;
 		DBG2( cerr << "output received = " << outstr << endl ) ;
 	    }
-	    delete [] tmpstr ;
 	}
 
 	{
@@ -392,9 +387,7 @@ public:
 	}
 
 	{
-	    char *tmpstr = new char[2048] ;
-	    memset( tmpstr, '\0', 2048 ) ;
-	    ostrstream strm( tmpstr, 2048 ) ;
+	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
 	    string outstr = strm.str() ;
 	    CPPUNIT_ASSERT( nprint == outstr ) ;
@@ -403,7 +396,6 @@ public:
 		DBG2( cerr << "expected output = " << nprint << endl ) ;
 		DBG2( cerr << "output received = " << outstr << endl ) ;
 	    }
-	    delete [] tmpstr ;
 	}
 
 	{
@@ -416,9 +408,7 @@ public:
 	dds.mark_all( true ) ;
 
 	{
-	    char *tmpstr = new char[2048] ;
-	    memset( tmpstr, '\0', 2048 ) ;
-	    ostrstream strm( tmpstr, 2048 ) ;
+	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
 	    string outstr = strm.str() ;
 	    CPPUNIT_ASSERT( cprint == outstr ) ;
@@ -427,7 +417,6 @@ public:
 		DBG2( cerr << "expected output = " << cprint << endl ) ;
 		DBG2( cerr << "output received = " << outstr << endl ) ;
 	    }
-	    delete [] tmpstr ;
 	}
 
 	{
@@ -441,9 +430,7 @@ public:
 	CPPUNIT_ASSERT( mark_ret == true ) ;
 
 	{
-	    char *tmpstr = new char[2048] ;
-	    memset( tmpstr, '\0', 2048 ) ;
-	    ostrstream strm( tmpstr, 2048 ) ;
+	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
 	    string outstr = strm.str() ;
 	    CPPUNIT_ASSERT( pprint == outstr ) ;
@@ -452,7 +439,6 @@ public:
 		DBG2( cerr << "expected output = " << pprint << endl ) ;
 		DBG2( cerr << "output received = " << outstr << endl ) ;
 	    }
-	    delete [] tmpstr ;
 	}
 
 	{
@@ -466,9 +452,7 @@ public:
     void testFile( char *fn, const string &expstr )
     {
 	ifstream ifs( fn ) ;
-	char *tmpstr = new char[2048] ;
-	memset( tmpstr, '\0', 2048 ) ;
-	ostrstream strm( tmpstr, 2048 ) ;
+	ostringstream strm;
 	char line[80];
 	while( !ifs.eof( ) )
 	{
@@ -484,7 +468,6 @@ public:
 	    DBG2( cerr << "expected output = " << expstr << endl ) ;
 	    DBG2( cerr << "output received = " << outstr << endl ) ;
 	}
-	delete [] tmpstr ;
     }
 };
 
