@@ -26,9 +26,6 @@ bool read_ancillary_das(DAS &das, String dataset, String dir = "",
 			String file = "");
 void ErrMsgT(const char *Msgt);
 
-#if 0
-char *fmakeword(FILE *f, const char stop, int *cl) ;
-#endif
 char *name_path(const char *path);
 
 void set_mime_text(ObjectType type = unknown_type, 
