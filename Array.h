@@ -13,9 +13,12 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.28  1996/05/31 23:29:19  jimg
-/* Updated copyright notice.
+/* Revision 1.29  1996/06/22 00:13:34  jimg
+/* Fixed a comment.
 /*
+ * Revision 1.28  1996/05/31 23:29:19  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.27  1996/05/16 22:49:55  jimg
  * Dan's changes for version 2.0. Added a parameter to read that returns
  * an error code so that EOF can be distinguished from an actual error when
@@ -212,7 +215,7 @@ public:
     void append_dim(int size, String name = "");
 
     // once a dimension has be created, set its constraint. This sets the
-    // selected flag and c_size .
+    // selected flag and c_size.
     void add_constraint(Pix p, int start, int stride, int stop);
     void reset_constraint();
     void clear_constraint();
