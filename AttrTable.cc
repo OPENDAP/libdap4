@@ -1,10 +1,12 @@
-
 // Implementation of the attribute table (AttrTable) class.
 //
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
-// Revision 1.8  1994/12/07 21:09:24  jimg
+// Revision 1.9  1994/12/21 03:03:37  reza
+// Added overloading functions for get_attr_num().
+//
+// Revision 1.8  1994/12/07  21:09:24  jimg
 // Added support for vectors of attributes (using XPlex from libg++).
 //
 // Revision 1.7  1994/10/13  15:43:29  jimg
@@ -39,7 +41,7 @@
 // a static class variable String empty (it is initialized to "").
 //
 
-static char rcsid[]="$Id: AttrTable.cc,v 1.8 1994/12/07 21:09:24 jimg Exp $";
+static char rcsid[]="$Id: AttrTable.cc,v 1.9 1994/12/21 03:03:37 reza Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -88,6 +90,24 @@ unsigned int
 AttrTable::get_attr_num(Pix p)
 {
     return map(p).attr.length();
+}
+unsigned int 
+AttrTable::get_attr_num(const String &name)
+{
+    Pix p = find(name);
+    if (p)
+        return map(p).attr.length();
+    else
+        return 0;
+}
+unsigned int 
+AttrTable::get_attr_num(const char *name)
+{
+    Pix p = find((String)name);
+    if (p)
+        return map(p).attr.length();
+    else
+        return 0;
 }
 
 // Returns: The string which contains the I(th) attribute value for list
