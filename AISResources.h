@@ -55,26 +55,10 @@ typedef ResourceVector::const_iterator ResourceVectorCIter;
 
     Note that read_database() takes filenames because the underlying XML
     parser library uses filenames. The write_database() method takes a
-    filename to be symmetrical. */
+    filename to be symmetrical. 
+
+    @brief Manage AIS resources. */
 class AISResources {
-public:
-    /** Build an empty instance. */
-    AISResources() {}
-
-    AISResources(const string &database) throw(AISDatabaseReadFailed) ;
-
-    void add_resource(const string &primary, const Resource &ancillary);
-    void add_resource(const string &primary, const ResourceVector &rv);
-
-    bool is_resource(const string &primary);
-
-    ResourceVector get_resource(const string &primary) 
-	throw(NoSuchPrimaryResource);
-
-    void read_database(const string &database) throw(AISDatabaseReadFailed);
-    
-    void write_database(const string &filename) throw(AISDatabaseWriteFailed);
-
 private:
     friend class AISResourcesTest; // unit tests access to private stuff
     friend ostream &operator<<(ostream &os, const AISResources &ais_res);
@@ -84,9 +68,34 @@ private:
     typedef ResourceMap::const_iterator ResourceMapCIter;
     
     ResourceMap d_db;
+
+public:
+    /** Build an empty instance. */
+    AISResources() {}
+    AISResources(const string &database) throw(AISDatabaseReadFailed);
+
+    virtual ~AISResources() {}
+
+    virtual void add_resource(const string &primary, 
+			      const Resource &ancillary);
+    virtual void add_resource(const string &primary, const ResourceVector &rv);
+
+    virtual bool has_resource(const string &primary);
+
+    virtual ResourceVector get_resource(const string &primary) 
+	throw(NoSuchPrimaryResource);
+
+    virtual void read_database(const string &database) 
+	throw(AISDatabaseReadFailed);
+    
+    virtual void write_database(const string &filename) 
+	throw(AISDatabaseWriteFailed);
 };
 
 // $Log: AISResources.h,v $
+// Revision 1.3  2003/02/26 00:40:38  jimg
+// Changed name of is_resource to has_resource.
+//
 // Revision 1.2  2003/02/20 22:19:02  jimg
 // Added throw() specification to second constructor.
 //

@@ -30,7 +30,7 @@
 #include "AISResources.h"
 #include "AISDatabaseParser.h"
 
-/** Output the XML fragment for a Resource. This class is a friend of the
+/** Output the XML fragment for a Resource. This function is a friend of the
     Resource class. 
     @see Resource. */
 ostream &
@@ -52,10 +52,10 @@ operator<<(ostream &os, const Resource &r)
 ostream &
 operator<<(ostream &os, const AISResources &ais_res)
 {
-    os << "<?xml version=\"1.0\" encoding=\"US-ASCII\" standalone=\"no\"?>"
+    os << "<?xml version=\"1.0\" encoding=\"US-ASCII\" standalone=\"yes\"?>"
        << endl;
-    os << "<!DOCTYPE ais_database SYSTEM \"ais_database.dtd\">" << endl;
-    os << "<ais>" << endl;
+    os << "<!DOCTYPE ais SYSTEM \"http://www.opendap.org/ais/ais_database.dtd\">" << endl;
+    os << "<ais xmlns=\"http://xml.opendap.org/ais\">" << endl;
 
     for (AISResources::ResourceMapCIter pos = ais_res.d_db.begin(); 
 	 pos != ais_res.d_db.end(); ++pos) {
@@ -126,7 +126,7 @@ AISResources::add_resource(const string &primary, const ResourceVector &rv)
     @param primary The URL of the primary resource. 
     @return True if there are AIS resources for <code>primary</code>. */
 bool 
-AISResources::is_resource(const string &primary)
+AISResources::has_resource(const string &primary)
 {
     return d_db.find(primary) != d_db.end();
 }
@@ -150,7 +150,7 @@ AISResources::get_resource(const string &primary)
 }
 
 /** Read the AIS database (an XML 'configuration file') and internalize it.
-    @param database A URL to the AIS database.
+    @param database A file/pathname to the AIS database.
     @exception AISDatabaseReadFailed thrown if the database could not be
     read. */
 void 
@@ -184,6 +184,9 @@ AISResources::write_database(const string &filename)
 }
 
 // $Log: AISResources.cc,v $
+// Revision 1.2  2003/02/26 00:39:39  jimg
+// Changed name of is_resource to has_resource.
+//
 // Revision 1.1  2003/02/20 22:15:01  jimg
 // Added.
 //
