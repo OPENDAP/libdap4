@@ -7,7 +7,11 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.2  1994/09/09 16:13:16  jimg
+// Revision 1.3  1994/09/27 22:58:59  jimg
+// das-test no longer uses Space.cc for new/delete debugging - that system
+// did not work on alphas).
+//
+// Revision 1.2  1994/09/09  16:13:16  jimg
 // Added code to test the stdin, FILE * and file descriptor functions of
 // class DAS.
 //
@@ -21,12 +25,11 @@
 #include <GetOpt.h>
 
 #include "DAS.h"
-#include "Space.h"
 
 int
 main(int argc, char *argv[])
 {
-    GetOpt getopt (argc, argv, "d");
+    GetOpt getopt (argc, argv, "f");
     int option_char;
     bool use_fd = false;	// true to exercise the fd functions
 
@@ -34,15 +37,11 @@ main(int argc, char *argv[])
     while ((option_char = getopt ()) != EOF)
 	switch (option_char)
 	  {
-	    case 'd': 
-	      space_debug = 1;
-	      executable_name = "das-test";
-	      break;
 	    case 'f':
 	      use_fd = true;
 	      break;
 	    case '?': 
-	      cerr << "usage: " << argv[0] << " [df] in-file1 out-file1 ..."
+	      cerr << "usage: " << argv[0] << " [f] in-file1 out-file1 ..."
 		   << endl;
 	  }
 
