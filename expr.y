@@ -17,12 +17,15 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.13  1996/08/13 19:00:21  jimg
-/* Added __unused__ to definition of char rcsid[].
-/* Switched to the parser_arg object for communication with callers. Removed
-/* unused parameters from dereference_{url, variable}, make_rvalue_list and
-/* append_rvalue_list.
+/* Revision 1.14  1996/10/08 17:04:43  jimg
+/* Added a fix for Bison 1.25 so that PARSE_PARAM will still work
 /*
+ * Revision 1.13  1996/08/13 19:00:21  jimg
+ * Added __unused__ to definition of char rcsid[].
+ * Switched to the parser_arg object for communication with callers. Removed
+ * unused parameters from dereference_{url, variable}, make_rvalue_list and
+ * append_rvalue_list.
+ *
  * Revision 1.12  1996/06/18 23:54:31  jimg
  * Fixes for Grid constraints. These include not deleting the array indices
  * lists after processing the Array component of a grid (but before processing
@@ -87,7 +90,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.13 1996/08/13 19:00:21 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.14 1996/10/08 17:04:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,7 +131,11 @@ static char rcsid[] __unused__ = {"$Id: expr.y,v 1.13 1996/08/13 19:00:21 jimg E
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 #define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
 #define STATUS(arg) ((parser_arg *)(arg))->_status
+#if DODS_BISON_VER >= 125
+#define YYPARSE_PARAM arg
+#else
 #define YYPARSE_PARAM void *arg
+#endif
 
 int exprlex(void);		/* the scanner; see expr.lex */
 

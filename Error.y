@@ -9,6 +9,9 @@
 
 
 // $Log: Error.y,v $
+// Revision 1.3  1996/10/08 17:04:39  jimg
+// Added a fix for Bison 1.25 so that PARSE_PARAM will still work
+//
 // Revision 1.2  1996/08/13 18:21:19  jimg
 // Switched to parser_arg object for communication with caller.
 // Fixed bogus declaration of Errorerror() (from int to void).
@@ -20,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.y,v 1.2 1996/08/13 18:21:19 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.y,v 1.3 1996/10/08 17:04:39 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +44,11 @@ static char rcsid[] __unused__ = {"$Id: Error.y,v 1.2 1996/08/13 18:21:19 jimg E
 
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
 #define STATUS(arg) ((parser_arg *)(arg))->_status
+#if DODS_BISON_VER >= 125
+#define YYPARSE_PARAM arg
+#else
 #define YYPARSE_PARAM void *arg
+#endif
 
 extern int error_line_num;	// defined in Error.lex
 

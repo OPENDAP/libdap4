@@ -31,6 +31,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.24  1996/10/08 17:04:40  jimg
+ * Added a fix for Bison 1.25 so that PARSE_PARAM will still work
+ *
  * Revision 1.23  1996/08/13 18:46:38  jimg
  * Added parser_arg object macros.
  * `Fixed' error messages.
@@ -143,7 +146,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.23 1996/08/13 18:46:38 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.24 1996/10/08 17:04:40 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -170,7 +173,11 @@ static char rcsid[] __unused__ = {"$Id: das.y,v 1.23 1996/08/13 18:46:38 jimg Ex
 #define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
 #define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
 #define STATUS(arg) ((parser_arg *)(arg))->_status
+#if DODS_BISON_VER >= 125
+#define YYPARSE_PARAM arg
+#else
 #define YYPARSE_PARAM void *arg
+#endif
 
 extern int das_line_num;	/* defined in das.lex */
 

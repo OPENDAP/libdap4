@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.18  1996/10/08 17:04:42  jimg
+ * Added a fix for Bison 1.25 so that PARSE_PARAM will still work
+ *
  * Revision 1.17  1996/08/13 20:54:45  jimg
  * Generated files.
  *
@@ -106,7 +109,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.y,v 1.17 1996/08/13 20:54:45 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.y,v 1.18 1996/10/08 17:04:42 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -131,7 +134,11 @@ static char rcsid[] __unused__ = {"$Id: dds.y,v 1.17 1996/08/13 20:54:45 jimg Ex
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 #define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
 #define STATUS(arg) ((parser_arg *)(arg))->_status
+#if DODS_BISON_VER >= 125
+#define YYPARSE_PARAM arg
+#else
 #define YYPARSE_PARAM void *arg
+#endif
 
 extern int dds_line_num;	/* defined in dds.lex */
 
