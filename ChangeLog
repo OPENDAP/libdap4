@@ -1,17 +1,8 @@
-<<<<<<< ChangeLog
-2002-06-03    <jimg@dcz.dods.org>
+2003-01-10    <jimg@dcz.dods.org>
 
-	* Sequence.cc (print_all_vals): Removed Sequence::level and
-	set_level() methods and the private _level field.
+	* Merged with changes tagged release-3-2-10 (from the release-3-2
+	branch). 
 
-	* dods-limits.h (DODS_ULONG_MAX): Added U suffix to unsigned
-	numerical constants.
-
-2002-04-30    <jimg@dcz.dods.org>
-
-	* Merged with release-3-2-9
-
-=======
 2002-08-08    <jimg@dcz.dods.org>
 
 	* I Replaced the single VirtualCtors.cc file, which had a virtual
@@ -61,6 +52,16 @@
 	* usage.cc: Modified so that option inforamtion passed in by
 	DODS_Dispatch.pm gets passed onto the filter programs (see bug 453).
 
+
+
+2002-06-03    <jimg@dcz.dods.org>
+
+	* Sequence.cc (print_all_vals): Removed Sequence::level and
+	set_level() methods and the private _level field.
+
+	* dods-limits.h (DODS_ULONG_MAX): Added U suffix to unsigned
+	numerical constants.
+
 2002-05-31    <jimg@dcz.dods.org>
 
 	* das.y: Bug 450; The reserved word attributes can now be used as
@@ -102,8 +103,10 @@
 
 	* usage.cc (main): Fixed a bug triggered when PATH lacks `.'
 	
+2002-04-30    <jimg@dcz.dods.org>
 
->>>>>>> 1.60.4.37
+	* Merged with release-3-2-9
+
 2002-04-03    <jimg@dcz.dods.org>
 
 	* Makefile.in (binary-tar): Fixed binary-tar target.
@@ -1230,13 +1233,13 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.69 2003/01/10 19:46:39 jimg Exp $
+$Id: ChangeLog,v 1.70 2003/01/10 19:49:31 jimg Exp $
 
 <<<<<<< ChangeLog
 =======
-$Id: ChangeLog,v 1.69 2003/01/10 19:46:39 jimg Exp $
+$Id: ChangeLog,v 1.70 2003/01/10 19:49:31 jimg Exp $
 =======
-$Id: ChangeLog,v 1.69 2003/01/10 19:46:39 jimg Exp $
+$Id: ChangeLog,v 1.70 2003/01/10 19:49:31 jimg Exp $
 >>>>>>> 1.62
 <<<<<<< ChangeLog
 =======
