@@ -3,9 +3,15 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.6  1996/04/04 18:03:55  jimg
-/* Fixed comment headers.
+/* Revision 1.7  1996/04/05 16:59:24  jimg
+/* Re: XDR_INT and XDR_FLOAT; Moved cast of xdr_int, long, float and double from
+/* here to the places where the functions are passed as parameters. This fixes
+/* the bug that the return values of these functions were being cast to an
+/* incompatible type where they were used.
 /*
+ * Revision 1.6  1996/04/04 18:03:55  jimg
+ * Fixed comment headers.
+ *
  * Revision 1.5  1995/06/28  17:13:28  dan
  * Modifed XDR_type definitions to explicitly cast to (xdrproc_t),
  * resolving problem associated with <rpc/xdr.h> in OSF 3.X.
@@ -112,10 +118,10 @@
 
 #if SIZEOF_LONG == 4
 typedef long int32;
-#define XDR_INT32 (xdrproc_t)xdr_long
+#define XDR_INT32 xdr_long
 #elif SIZEOF_INT == 4
 typedef int int32;
-#define XDR_INT32 (xdrproc_t)xdr_int
+#define XDR_INT32 xdr_int
 #else
 #error "How do I get a 32 bit integer on this machine?"
 #endif
@@ -128,10 +134,10 @@ typedef unsigned char byte;
 
 #if SIZEOF_DOUBLE == 8
 typedef double float64;
-#define XDR_FLOAT64 (xdrproc_t)xdr_double
+#define XDR_FLOAT64 xdr_double
 #elif SIZEOF_FLOAT == 8		/* yea, I never heard of this either... */
 typedef float float64;		
-#define XDR_FLOAT64 (xdrproc_t)xdr_float
+#define XDR_FLOAT64 xdr_float
 #else
 #error "How do I get a 64 bit floating point type on this machine?"
 #endif
