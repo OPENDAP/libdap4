@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.31  1996/07/17 22:27:20  jimg
+// Removed copy of the _output FILE * and bad logic on output() member function.
+// Added reset of _source to 0 in closr_output().
+//
 // Revision 1.30  1996/07/10 21:25:32  jimg
 // *** empty log message ***
 //
@@ -181,7 +185,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __attribute__ ((__unused__)) ={"$Id: Connect.cc,v 1.30 1996/07/10 21:25:32 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.31 1996/07/17 22:27:20 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -197,7 +201,9 @@ static char rcsid[] __attribute__ ((__unused__)) ={"$Id: Connect.cc,v 1.30 1996/
 #include <sys/sem.h>
 #include <sys/wait.h>
 
+#if HAVE_EXPECT
 #include <expect.h>
+#endif
 
 #include <strstream.h>
 #include <fstream.h>
@@ -867,8 +873,10 @@ Connect::close_output()
 	_output = 0;
     }
 
-    if (_source)
+    if (_source) {
 	delete_xdrstdio(_source);
+	_source = 0;
+    }
 }
 
 // This ctor is decalred private so that it won't ever be called by users,
@@ -1127,10 +1135,13 @@ Connect::fetch_url(String &url, bool async = false)
     }
 }
 
+// Remove the duplication of _connect and subsequent close(). This would hav
+// the side-effect of spuriously closing the data channel. jhrg 7/16/96
 
 FILE *
 Connect::output()
 {
+#if 0
     if (_output && _output != stdout) {
 	FILE *ret_val = fdopen(dup(fileno(_output)), "r");
 	if (!ret_val) {
@@ -1145,6 +1156,7 @@ Connect::output()
 	return ret_val;
     }
     else
+#endif
 	// NB: Users should make sure they don't close stdout.
 	return _output;		
 }
@@ -1296,7 +1308,7 @@ Connect::request_data(const String expr, bool gui_p = true,
     DDS &d = append_constraint(expr, dds);
 
     // If the transmission is synchronous, read all the data into the DDS D.
-    // If asynchronous, just return the DDS and leave the reading to t he
+    // If asynchronous, just return the DDS and leave the reading to to he
     // caller. 
     if (!async) {
 	XDR *s = source();
