@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.5 1994/10/05 16:40:28 jimg Exp $
+# $Id: Makefile.in,v 1.6 1994/10/13 15:49:54 jimg Exp $
 
 @SET_MAKE@
 
@@ -8,14 +8,14 @@
 
 PROG= das-test dds-test libdas++.a libdds++.a
 CFLAGS = -g -I$(DODS_ROOT)/include
-CXXFLAGS = -g -DUSE_LIBGXX_INLINES -IMap -IStack -I. -I$(DODS_ROOT)/include 
+CXXFLAGS = -g $(DEFS) -IMap -IStack -I. -I$(DODS_ROOT)/include 
 LDFLAGS = -g -L$(DODS_ROOT)/lib
 LFLAGS=-8
 YFLAGS=-d
 DODS_ROOT=../..
-DEBUG_LIB=-ldebug_new
-DEFS = @DEFS@
-LIBS = -lg++map -lg++stack @LIBS@
+DEBUG_LIB=#-ldbnew
+DEFS = @DEFS@# -DTRACE_NEW -DDEBUG
+LIBS = -lg++map -lg++stack -lerrmsg @LIBS@
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
@@ -47,6 +47,7 @@ CXX = g++# @CXX@
 YACC = bison# @YACC@
 LEX = flex# @LEX@
 AR = ar
+TAGS = etags
 RANLIB = @RANLIB@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -84,10 +85,12 @@ libdds++.a:  libdds++.a($(DDSOBJS))
 # Build the test drivers
 
 das-test:  $(DASOBJS) das-test.o
-	$(CXX) $(LDFLAGS) -o das-test $(DASOBJS) das-test.o $(LIBS)
+	$(CXX) $(LDFLAGS) -o das-test $(DASOBJS) das-test.o \
+	       $(LIBS) $(DEBUG_LIB)
 
 dds-test:   $(DDSOBJS) dds-test.o
-	$(CXX) $(LDFLAGS) -o dds-test $(DDSOBJS) dds-test.o $(LIBS)
+	$(CXX) $(LDFLAGS) -o dds-test $(DDSOBJS) dds-test.o \
+	       $(LIBS) $(DEBUG_LIB)
 
 # Build the DAS scanner (a C object module compiled with C++)
 
@@ -185,6 +188,9 @@ distclean: clean
 	-rm -f site.exp
 
 tar:
+
+tags:
+	$(TAGS) *.{cc,h,lex,y}
 
 depend: 
 	makedepend -- $(CXXFLAGS) -I/usr/local/lib/g++-include -- \
