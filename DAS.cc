@@ -11,6 +11,13 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.23  1998/11/24 06:46:08  jimg
+// Ripped out the DASVHMap class and replaced it with an SLList of structs. See
+// DAS.h for the (private) struct definition. There are no changes to the class
+// interface. I did add a default ctor (DAS()), but that conflicted with another
+// (old) ctor that had defaults for its two parameters, so I bagged that for
+// now.
+//
 // Revision 1.22  1998/08/13 22:11:24  jimg
 // Added include of unistd.h for dup(2).
 //
@@ -117,7 +124,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.22 1998/08/13 22:11:24 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.23 1998/11/24 06:46:08 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -139,10 +146,36 @@ static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.22 1998/08/13 22:11:24 jimg Ex
 extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
 
-DAS::DAS(AttrTablePtr dflt, unsigned int sz) : map(dflt, sz)
+AttrTable *
+DAS::das_find(String name)
+{
+    for (Pix p = entries.first(); p; entries.next(p))
+	if (entries(p).name == name)
+	    return entries(p).attr_table;
+    return 0;
+}
+
+// sz is unused. It was part of the ctor when DAS used the old GNU VHMap
+// class. I switched from that to a SLList of struct toplevel_entry objects
+// because the VHMap class had bugs I didn't want to fix. 11/23/98 jhrg
+
+DAS::DAS(AttrTable *dflt, unsigned int)
 {
 }
 
+#if 0
+DAS::DAS()
+{
+}
+#endif
+
+DAS::DAS(AttrTable *attr, String name)
+{
+    toplevel_entry tle;
+    tle.name = name;
+    tle.attr_table = attr;
+    entries.append(tle);
+}
 // The class DASVHMap knows that it contains pointers to things and correctly
 // makes copies of those things when its copy ctor is called, so DAS can do a
 // simple member-wise copy. Similarly, we don't need to define our own op=.
@@ -152,34 +185,36 @@ DAS::DAS(AttrTablePtr dflt, unsigned int sz) : map(dflt, sz)
 
 DAS::~DAS()
 {
-    for(Pix p = map.first(); p; map.next(p)) {
-	DBG(cerr << "map.contents() = " << map.contents(p) << endl);
-	delete map.contents(p);
+    for(Pix p = entries.first(); p; entries.next(p)) {
+	DBG(cerr << "entries(p) = " << entries(p).name << "(" 
+	    << entries(p).attr_table << ")" << endl);
+	if (entries(p).attr_table)
+	    delete entries(p).attr_table;
     }
 }
 
 Pix
 DAS::first_var()
 {
-    return map.first();
+    return entries.first();
 }
 
 void
 DAS::next_var(Pix &p)
 {
-    map.next(p);
+    entries.next(p);
 }
 
 String
 DAS::get_name(Pix p)
 {
-    return map.key(p);
+    return entries(p).name;
 }
 
 AttrTable *
 DAS::get_table(Pix p)
 {
-    return map.contents(p);
+    return entries(p).attr_table;
 }
 
 AttrTable *
@@ -204,12 +239,12 @@ DAS::get_table(const String &name)
 	// The DAS is a simple one-level data structure (names and
 	// AttrTables) while AttrTables are recursive.
 
-	AttrTable *at = map[container];
+	AttrTable *at = das_find(container);
 	AttrTable *at2 = (at) ? at->get_attr_table(field) : 0;
 	return (at) ? ((at2) ? at2 : at) : 0;
     }
     else
-	return map[name];
+	return das_find(name);
 }
 
 // This function is necessary because (char *) arguments will be converted to
@@ -225,7 +260,12 @@ DAS::get_table(const char *name)
 AttrTable *
 DAS::add_table(const String &name, AttrTable *at)
 {
-    return map[name] = at;
+    DBG(cerr << "Adding table: " << name << "(" << at << ")" << endl);
+    toplevel_entry tle;
+    tle.name = name;
+    tle.attr_table = at;
+    entries.append(tle);
+    return at;
 }
 
 AttrTable *
@@ -315,10 +355,9 @@ DAS::print(ostream &os)
 {
     os << "Attributes {" << endl;
 
-    for(Pix p = map.first(); p; map.next(p)) {
-	os << "    " << map.key(p) << " {" << endl;
-	// map.contents(p) is an (AttrTable *)
-	map.contents(p)->print(os, "        "); 
+    for(Pix p = entries.first(); p; entries.next(p)) {
+	os << "    " << entries(p).name << " {" << endl;
+	entries(p).attr_table->print(os, "        "); 
 	os << "    }" << endl;
     }
 
