@@ -8,6 +8,12 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.12  1999/09/03 22:07:44  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.11.2.1  1999/08/28 06:43:04  jimg
+// Fixed the implementation/interface pragmas and misc comments
+//
 // Revision 1.11  1999/05/25 21:57:12  dan
 // Added an optional second argument to read_ancillary_dds to support JGOFS
 // usage.
@@ -53,7 +59,7 @@
 #define _DODSFilter_h
 
 #ifdef __GNUG__
-#pragma "interface"
+#pragma interface
 #endif
 
 #include <stdio.h>

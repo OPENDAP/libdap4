@@ -10,6 +10,12 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.17  1999/09/03 22:07:44  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.16.2.1  1999/08/28 06:43:04  jimg
+// Fixed the implementation/interface pragmas and misc comments
+//
 // Revision 1.16  1999/07/22 17:11:51  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -95,12 +101,12 @@
 //
 
 #ifdef __GNUG__
-#pragma "implemenation"
+#pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.16 1999/07/22 17:11:51 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.17 1999/09/03 22:07:44 jimg Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__

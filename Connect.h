@@ -32,8 +32,14 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.40  1999/09/03 22:07:44  jimg
+ * Merged changes from release-3-1-1
+ *
  * Revision 1.39  1999/08/23 18:57:44  jimg
  * Merged changes from release 3.1.0
+ *
+ * Revision 1.38.4.3  1999/08/28 06:43:03  jimg
+ * Fixed the implementation/interface pragmas and misc comments
  *
  * Revision 1.38.4.2  1999/08/10 00:40:04  jimg
  * Changes for the new source code organization
@@ -225,7 +231,7 @@
 #define _connect_h
 
 #ifdef __GNUG__
-#pragma "interface"
+#pragma interface
 #endif
 
 #include <stdio.h>

@@ -9,8 +9,14 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.82  1999/09/03 22:07:44  jimg
+// Merged changes from release-3-1-1
+//
 // Revision 1.81  1999/08/23 18:57:44  jimg
 // Merged changes from release 3.1.0
+//
+// Revision 1.80.2.2  1999/08/28 06:43:03  jimg
+// Fixed the implementation/interface pragmas and misc comments
 //
 // Revision 1.80.2.1  1999/08/09 22:57:49  jimg
 // Removed GUI code; reactivate by defining GUI
@@ -461,16 +467,16 @@
 // This commit also includes early versions of the test code.
 //
 
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
 #include "config_dap.h"
+
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.82 1999/09/03 22:07:44 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
-#endif
-
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.81 1999/08/23 18:57:44 jimg Exp $"};
-
-#ifdef __GNUG__
-#pragma "implemenation"
 #endif
 
 #include <stdio.h>
@@ -478,13 +484,6 @@ static char rcsid[] not_used ={"$Id: Connect.cc,v 1.81 1999/08/23 18:57:44 jimg 
 #include <signal.h>
 #include <assert.h>
 #include <errno.h>
-
-#if 0
-#include <sys/types.h>		// Used by the semaphore code in fetch_url()
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/wait.h>
-#endif
 
 #if HAVE_EXPECT
 #include <expect.h>

@@ -11,6 +11,15 @@
 // the same values on all machines.
 
 // $Log: dods-limits.h,v $
+// Revision 1.9  1999/09/03 22:07:45  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.8.6.1  1999/08/28 06:42:10  jimg
+// Fixed the value of DODS_SHRT_MIN
+//
+// Revision 1.1  1999/08/23 21:25:48  jimg
+// Initial revision
+//
 // Revision 1.8  1999/05/04 19:47:24  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -46,7 +55,7 @@
 #define	DODS_CHAR_MIN	0
 #define	DODS_CHAR_MAX	(unsigned char)255
 
-#define	DODS_SHRT_MIN	-32767
+#define	DODS_SHRT_MIN	-32768
 #define	DODS_SHRT_MAX	32767
 #define	DODS_USHRT_MAX	(unsigned short)65535
 

@@ -1,3 +1,9 @@
+1999-08-27  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed the value of DODS_SHRT_MIN in dods-limits.h
+
+	* Now compiles with gcc 2.95
+
 1999-05-27  James Gallagher  <jimg@dcz.dods.org>
 
 	* Misc bug fixes.
@@ -556,4 +562,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.42 1999/05/28 05:42:29 jimg Exp $
+$Id: ChangeLog,v 1.43 1999/09/03 22:07:43 jimg Exp $

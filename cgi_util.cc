@@ -11,6 +11,12 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.37  1999/09/03 22:07:45  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.36.6.1  1999/08/28 06:43:04  jimg
+// Fixed the implementation/interface pragmas and misc comments
+//
 // Revision 1.36  1999/05/05 00:49:21  jimg
 // Added version number optional argument. This provides a way for code that
 // uses these functions to pass version information in so that it can be
@@ -176,7 +182,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.36 1999/05/05 00:49:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.37 1999/09/03 22:07:45 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -427,9 +433,9 @@ ErrMsgT(const string &Msgt)
 	TimStr[TimLen - 2] = '\0'; // overwrite the \n 
     }
 
-    char *host_or_addr = getenv("REMOTE_HOST") ? getenv("REMOTE_HOST") :
+    const char *host_or_addr = getenv("REMOTE_HOST") ? getenv("REMOTE_HOST") :
 	getenv("REMOTE_ADDR");
-    char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") : 
+    const char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") : 
 	"DODS server"; 
 
     cerr << "[" << TimStr << "] CGI: " << script << " failed for " 

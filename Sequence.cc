@@ -10,6 +10,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.50  1999/09/03 22:07:44  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.49.6.1  1999/08/28 06:43:04  jimg
+// Fixed the implementation/interface pragmas and misc comments
+//
 // Revision 1.49  1999/04/29 02:29:31  jimg
 // Merge of no-gnu branch
 //
@@ -548,7 +554,7 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink,
 	}
 
 	if (level() == 0) {
-	    DBG(cerr << "Writing End of Instance marker" << endl);
+	    DBG(cerr << "Writing Start of Instance marker" << endl);
 	    write_start_of_instance(sink);
 	}
 
