@@ -1,5 +1,7 @@
 1998-03-19  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
+	* Added error messages when array indices are out of range.
+
 	* Fixed yesterday's fix... Error objects are no longer compressed.
 	I moved compression into DDS::send (from DODSFilter::send_data)
 	and structured send() so that the mime header generators no longer
@@ -360,4 +362,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.19 1998/03/19 17:22:27 jimg Exp $
+$Id: ChangeLog,v 1.20 1998/03/19 23:20:23 jimg Exp $
