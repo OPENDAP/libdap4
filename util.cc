@@ -11,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.50  1999/03/09 00:23:16  jimg
+// Fixed the error messages in compressor().
+//
 // Revision 1.49  1999/01/21 02:10:57  jimg
 // Moved various CE functions to the file ce_functions.cc/.h.
 //
@@ -243,7 +246,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.49 1999/01/21 02:10:57 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.50 1999/03/09 00:23:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -574,12 +577,19 @@ compressor(FILE *output, int &childpid)
 	// at build time. If that fails, try the CWD.
 	String deflate = (String)dods_root() + "/etc/deflate";
 	(void) execl(deflate, "deflate", "-c",  "5", "-s", NULL);
+	// Commented out the two following error messages. They confuse
+	// people and serve no purpose. The `Could not start...' error
+	// message gets the job done. 3/8/99 jhrg
+#if 0
 	cerr << "Could not run " << deflate << endl;
+#endif
 	(void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
+#if 0
 	cerr << "Could not run ./deflate" << endl;
+#endif
 
-	cerr << "Could not start compressor!" << endl;
-	cerr << "defalte must be in DODS_ROOT/etc or in the CWD!" 
+	cerr << "Warning: Could not start compressor!" << endl;
+	cerr << "defalte should be in DODS_ROOT/etc or in the CWD!" 
 	     << endl;
 	_exit(127);		// Only here if an error occurred.
     }
