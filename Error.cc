@@ -8,6 +8,9 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.14  1998/03/20 00:18:55  jimg
+// Fixed a bug where _program was feed into strlen even when it is NULL.
+//
 // Revision 1.13  1998/02/05 20:13:53  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -73,7 +76,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.13 1998/02/05 20:13:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.14 1998/03/20 00:18:55 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -113,8 +116,10 @@ Error::Error(const Error &copy_from)
       _error_message(copy_from._error_message),
       _program_type(copy_from._program_type), _program(0)
 {
-    _program = new char[strlen(copy_from._program) + 1];
-    strcpy(_program, copy_from._program);
+    if (copy_from._program) {
+	_program = new char[strlen(copy_from._program) + 1];
+	strcpy(_program, copy_from._program);
+    }
 }    
 
 Error::~Error()
