@@ -87,6 +87,10 @@
 #include "HTTPConnect.h"
 #endif
 
+#ifndef response_h
+#include "Response.h"
+#endif
+
 using std::string;
 
 /** Connect objects are used as containers for information pertaining
@@ -130,14 +134,7 @@ private:
 
     HTTPConnect *d_http;
 
-    // Fields for values which will be read from different types of
-    // connections (e.g., HTTPConnect) or set locally using a mutator.
-    ObjectType d_type;		
-    string d_server;
-
-    FILE *d_stream;
-    XDR *_source;		// XDR (binary) data source stream
-
+    // *** These are used by deprecated methods only!
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
     Error _error;		// Error object
@@ -146,24 +143,20 @@ private:
     string _proj;		// Projection part of initial CE.
     string _sel;		// Selection of initial CE
 
-    void process_data(DataDDS &data) throw(Error, InternalErr);
+    void process_data(DataDDS &data, Response *rs) 
+	throw(Error, InternalErr);
     
     // Use when you cannot use libwww/libcurl. Reads HTTP response. 
-    void parse_mime(FILE *data_source);
-
-    // Moved these four here 12/20/02 jhrg
-    FILE *output();
-    XDR *source();
-
-    void close_output();
-    void close_source();
+    void parse_mime(FILE *data_source, Response *rs);
 
 protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
-    Connect() {throw InternalErr(__FILE__, __LINE__, "Unimplemented constructor");}
-    Connect(const Connect &rhs) {throw InternalErr(__FILE__, __LINE__, "Unimplemented copy constructor");}
-    Connect &operator=(const Connect &rhs) {throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment operator");}
+    Connect() { }
+    Connect(const Connect &rhs) { }
+    Connect &operator=(const Connect &rhs) {
+	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
+    }
     //@}
 
 public:
@@ -179,12 +172,6 @@ public:
     virtual string URL(bool CE = true);
     virtual string CE();
     
-    ObjectType type();
-    void set_type(ObjectType ot);
-
-    string server_version();
-    void set_server_version(const string &sv);
-
     void set_credentials(string u, string p);
     void set_accept_deflate(bool deflate);
 
@@ -200,6 +187,7 @@ public:
     virtual void request_data(DataDDS &data, string expr = "") 
 	throw(Error, InternalErr);
 
+    // *** The Response breaks this, replace with a FileConnect
     virtual void read_data(DataDDS &data, FILE *data_source) 
 	throw(Error, InternalErr);
 
@@ -246,17 +234,23 @@ public:
     DAS &das();
     DDS &dds();
     Error &error();
+#if 0
     bool get_www_errors_to_stderr();
     void set_www_errors_to_stderr(bool state);
     string get_accept_types();
     void set_accept_types(const string &types);
     string get_cache_control();
     void set_cache_control(const string &caching);
+#endif
     //@}
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.63  2003/03/04 17:34:48  jimg
+ * Modified to use Response objects. Removed many old methods which no longer
+ * have any meaning (i.e., they were hold overs from several years ago).
+ *
  * Revision 1.62  2003/02/27 23:24:52  jimg
  * Moved the empty constructor, et c., from private to protected so that
  * children can define their own empty ctors to suppress the C++ default
