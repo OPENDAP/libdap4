@@ -143,6 +143,11 @@ LIBOBJS = $(LEXOBJS) $(GNUOBJS) $(DAPOBJS)
 all: build_libxdr setup $(TARGETS) check
 
 check: $(TESTTARGETS)
+	@echo Notice:
+	@echo Test programs have been built, but they currently can
+	@echo only be run under DejaGnu in a Cygwin environment.
+	@echo To validate the Win32 Dods core, install cygwin and move
+	@echo the executables into a dods distribution to run them there.
 
 build_libxdr:
 	@cd libxdr
@@ -153,11 +158,11 @@ build_libxdr:
 $(OBJDIR)\libdap++.lib: $(LIBOBJS)
 	$(LINK) $(LLIBFLAGS) /out:$@ $(LIBOBJS)
 
-$(OBJDIR)\geturl.exe: $(OBJDIR)\geturl.obj
+$(OBJDIR)\geturl.exe: $(OBJDIR)\geturl.obj $(OBJDIR)\libdap++.lib
 
-$(OBJDIR)\usage.exe: $(OBJDIR)\usage.obj
+$(OBJDIR)\usage.exe: $(OBJDIR)\usage.obj $(OBJDIR)\libdap++.lib
 
-$(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj
+$(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj $(OBJDIR)\libdap++.lib
 
 install:
 	copy $(OBJDIR)\libdap*.lib $(INSTALLLIBDIR)
@@ -341,20 +346,18 @@ $(OBJDIR)\usage.obj    : ..\usage.cc
 $(OBJDIR)\deflate.obj    : ..\deflate.c
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tc ..\deflate.c
 
-# Test Suite Objects.  expr-test will not run successfully
-# under win32 because of differences between iostream implementations
-# under win32 and unix (specifically, because of ofstream).  Also,
-# there is no DejaGnu for win32 so these tests can only be run manually
-# or via some (as yet non-existant) script that invokes them with
-# the appropriate args and compares their output to their expected
-# output.  These are all console-mode applications.
-$(OBJDIR)\das-test.obj   : ..\das-test.cc
+# Test Suite Objects.
+# There is no DejaGnu for win32 so these tests can only be run
+# under cygwin or via some (as yet non-existant) script that invokes
+# them with the appropriate args and compares their output to their
+# expected output.  These are all console-mode applications.
+$(OBJDIR)\das-test.obj   : ..\das-test.cc $(OBJDIR)\libdap++.lib
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\das-test.cc
-$(OBJDIR)\dds-test.obj   : ..\dds-test.cc
+$(OBJDIR)\dds-test.obj   : ..\dds-test.cc $(OBJDIR)\libdap++.lib
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\dds-test.cc
-$(OBJDIR)\error-test.obj : ..\error-test.cc
+$(OBJDIR)\error-test.obj : ..\error-test.cc $(OBJDIR)\libdap++.lib
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\error-test.cc
-$(OBJDIR)\expr-test.obj  : ..\expr-test.cc
+$(OBJDIR)\expr-test.obj  : ..\expr-test.cc $(OBJDIR)\libdap++.lib
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\expr-test.cc
 
 # Create the install and intermediate file directories if they
