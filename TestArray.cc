@@ -55,11 +55,13 @@ using std::endl;
 
 extern int test_variable_sleep_interval;
 
+#if 0
 Array *
 NewArray(const string &n, BaseType *v)
 {
     return new TestArray(n, v);
 }
+#endif
 
 void
 TestArray::_duplicate(const TestArray &ts)
@@ -203,6 +205,9 @@ TestArray::set_series_values(bool sv)
 }
 
 // $Log: TestArray.cc,v $
+// Revision 1.34  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.33  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

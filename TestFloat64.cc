@@ -53,11 +53,13 @@
 
 extern int test_variable_sleep_interval;
 
+#if 0
 Float64 *
 NewFloat64(const string &n)
 {
     return new TestFloat64(n);
 }
+#endif
 
 void
 TestFloat64::_duplicate(const TestFloat64 &ts)
@@ -117,6 +119,9 @@ TestFloat64::read(const string &)
 }
 
 // $Log: TestFloat64.cc,v $
+// Revision 1.25  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.24  2005/02/08 21:31:57  jimg
 // Merged with release-3-4-10.
 //

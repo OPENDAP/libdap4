@@ -51,11 +51,13 @@
 
 extern int test_variable_sleep_interval;
 
+#if 0
 Int16 *
 NewInt16(const string &n)
 {
     return new TestInt16(n);
 }
+#endif
 
 void
 TestInt16::_duplicate(const TestInt16 &ts)
@@ -115,6 +117,9 @@ TestInt16::read(const string &)
 }
 
 // $Log: TestInt16.cc,v $
+// Revision 1.12  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.11  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

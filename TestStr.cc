@@ -54,11 +54,14 @@
 
 extern int test_variable_sleep_interval;
 
+#if 0
 Str *
 NewStr(const string &n)
 {
     return new TestStr(n);
 }
+#endif
+
 void
 TestStr::_duplicate(const TestStr &ts)
 {
@@ -114,6 +117,9 @@ TestStr::read(const string &)
 }
 
 // $Log: TestStr.cc,v $
+// Revision 1.24  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.23  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

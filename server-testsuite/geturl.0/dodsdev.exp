@@ -3,6 +3,9 @@
 # servers on other hosts or other versions of the servers.
 
 # $Log: dodsdev.exp,v $
+# Revision 1.5  2005/03/30 23:12:02  jimg
+# Modified to use the new factory class.
+#
 # Revision 1.4  2003/12/11 01:08:38  jimg
 # More fixes after resolving conflicts. This code still fails some tests.
 #
@@ -46,7 +49,7 @@ source ../../etc/common_tests.exp
 
 # Server machine name
 # set host "dodsdev.gso.uri.edu"
-set host "dodsdev.gso.uri.edu"
+set host "localhost"
 # CGI directory on $host
 set test_dir "dods-3.4"
 

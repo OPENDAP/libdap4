@@ -53,11 +53,13 @@
 
 extern int test_variable_sleep_interval;
 
+#if 0
 Float32 *
 NewFloat32(const string &n)
 {
     return new TestFloat32(n);
 }
+#endif
 
 void
 TestFloat32::_duplicate(const TestFloat32 &ts)
@@ -117,6 +119,9 @@ TestFloat32::read(const string &)
 }
 
 // $Log: TestFloat32.cc,v $
+// Revision 1.14  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.13  2005/02/08 21:31:57  jimg
 // Merged with release-3-4-10.
 //

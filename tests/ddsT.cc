@@ -17,6 +17,7 @@
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestStr.h"
+#include "TestTypeFactory.h"
 #include "ce_functions.h"
 #include "util.h"
 #include "debug.h"
@@ -60,14 +61,17 @@ CPPUNIT_TEST_SUITE_END( ) ;
 
 private:
     /* TEST PRIVATE DATA */
-
+    TestTypeFactory *factory;
+    
 public:
     void setUp()
     {
+        factory = new TestTypeFactory;
     }
 
     void tearDown() 
     {
+        delete factory; factory = 0;
     }
 
     void ddsT_test()
@@ -99,32 +103,32 @@ public:
 
 	try
 	{
-	    BaseType *bt = NewInt16( "var1" ) ;
+	    BaseType *bt = factory->NewInt16( "var1" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = NewInt16( "var2" ) ;
+	    bt = factory->NewInt16( "var2" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = NewInt16( "var3" ) ;
+	    bt = factory->NewInt16( "var3" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = NewInt16( "var4" ) ;
+	    bt = factory->NewInt16( "var4" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = NewInt16( "var5" ) ;
+	    bt = factory->NewInt16( "var5" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = NewStr( "var6" ) ;
+	    bt = factory->NewStr( "var6" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = NewArray( "var7", NewInt16( "" ) ) ;
+	    bt = factory->NewArray( "var7", factory->NewInt16( "" ) ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = NewStructure( "var8" ) ;
+	    bt = factory->NewStructure( "var8" ) ;
 	    Structure *s = (Structure *)bt ;
-	    BaseType *bts1 = NewStructure( "var9" ) ;
+	    BaseType *bts1 = factory->NewStructure( "var9" ) ;
 	    Structure *s1 = (Structure *)bts1 ;
-	    BaseType *bts2 = NewInt16( "var10" ) ;
+	    BaseType *bts2 = factory->NewInt16( "var10" ) ;
 	    s1->add_var( bts2 ) ;
 	    delete bts2 ; bts2 = 0 ;
 	    s->add_var( bts1 ) ;

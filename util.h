@@ -129,6 +129,7 @@ BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
 extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
 
+#if 0
 Byte *NewByte(const string &n = "");
 Int16 *NewInt16(const string &n = "");
 UInt16 *NewUInt16(const string &n = "");
@@ -142,6 +143,7 @@ Array *NewArray(const string &n = "", BaseType *v = 0);
 Structure *NewStructure(const string &n = "");
 Sequence *NewSequence(const string &n = "");
 Grid *NewGrid(const string &n = "");
+#endif
 
 void downcase(string &s);
 // Jose Garcia
@@ -232,6 +234,9 @@ time_t parse_time(const char * str, bool expand);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.51  2005/03/30 23:12:02  jimg
+ * Modified to use the new factory class.
+ *
  * Revision 1.50  2003/12/11 01:08:37  jimg
  * More fixes after resolving conflicts. This code still fails some tests.
  *

@@ -73,11 +73,13 @@
 
 extern int test_variable_sleep_interval;
 
+#if 0
 Byte *
 NewByte(const string &n)
 {
     return new TestByte(n);
 }
+#endif
 
 void
 TestByte::_duplicate(const TestByte &ts)
@@ -136,6 +138,9 @@ TestByte::read(const string &)
 }
 
 // $Log: TestByte.cc,v $
+// Revision 1.25  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.24  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

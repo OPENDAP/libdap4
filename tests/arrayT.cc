@@ -12,6 +12,7 @@
 #include <iostream>
 #include "TestArray.h"
 #include "TestInt16.h"
+#include "TestTypeFactory.h"
 #include "util.h"
 #include "Pix.h"
 
@@ -29,14 +30,17 @@ CPPUNIT_TEST_SUITE_END( ) ;
 
 private:
     /* TEST PRIVATE DATA */
-
+    TestTypeFactory *factory;
+    
 public:
     void setUp()
     {
+        factory = new TestTypeFactory;
     }
 
     void tearDown() 
     {
+        delete factory; factory = 0;
     }
 
     void arrayT_test()
@@ -46,7 +50,7 @@ public:
 	int l = ar.length() ;
 	CPPUNIT_ASSERT( l == -1 ) ;
 
-	BaseType *bt = NewInt16() ;
+	BaseType *bt = factory->NewInt16() ;
 	ar.add_var( bt ) ;
 
 	l = ar.length() ;

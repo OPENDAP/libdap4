@@ -51,11 +51,13 @@
 
 extern int test_variable_sleep_interval;
 
+#if 0
 UInt32 *
 NewUInt32(const string &n)
 {
     return new TestUInt32(n);
 }
+#endif
 
 void
 TestUInt32::_duplicate(const TestUInt32 &ts)
@@ -116,6 +118,9 @@ TestUInt32::read(const string &)
 }
 
 // $Log: TestUInt32.cc,v $
+// Revision 1.12  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.11  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

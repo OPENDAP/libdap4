@@ -36,11 +36,13 @@
 #include "config_dap.h"
 #include "TestStructure.h"
 
+#if 0
 Structure *
 NewStructure(const string &n)
 {
     return new TestStructure(n);
 }
+#endif
 
 void
 TestStructure::_duplicate(const TestStructure &ts)
@@ -116,6 +118,9 @@ TestStructure::set_series_values(bool sv)
 }
 
 // $Log: TestStructure.cc,v $
+// Revision 1.25  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.24  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

@@ -14,6 +14,7 @@
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestStr.h"
+#include "TestTypeFactory.h"
 #include "util.h"
 #include "Pix.h"
 
@@ -30,29 +31,32 @@ CPPUNIT_TEST_SUITE_END( ) ;
 
 private:
     /* TEST PRIVATE DATA */
-
+    TestTypeFactory *factory;
+    
 public:
     void setUp()
     {
+        factory = new TestTypeFactory;
     }
 
     void tearDown() 
     {
+        delete factory; factory = 0;
     }
 
     void structT_test()
     {
 	TestStructure s( "my_structure" ) ;
 
-	BaseType *bt = NewInt16( "name_int16" ) ;
+	BaseType *bt = factory->NewInt16( "name_int16" ) ;
 	s.add_var( bt ) ;
 	delete bt ; bt = 0 ;
 
-	bt = NewStr( "name_str" ) ;
+	bt = factory->NewStr( "name_str" ) ;
 	s.add_var( bt ) ;
 	delete bt ; bt = 0 ;
 
-	Array *abt = NewArray( "name_array", NewInt16( "array_int" ) ) ;
+	Array *abt = factory->NewArray( "name_array", factory->NewInt16( "array_int" ) ) ;
 	abt->append_dim( 4, "dim1" ) ;
 	abt->append_dim( 3, "dim2" ) ;
 	abt->append_dim( 2, "dim3" ) ;

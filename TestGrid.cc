@@ -38,11 +38,13 @@
 
 extern int test_variable_sleep_interval;
 
+#if 0
 Grid *
 NewGrid(const string &n)
 {
     return new TestGrid(n);
 }
+#endif
 
 void
 TestGrid::_duplicate(const TestGrid &ts)
@@ -119,6 +121,9 @@ TestGrid::set_series_values(bool sv)
 }
 
 // $Log: TestGrid.cc,v $
+// Revision 1.22  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.21  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

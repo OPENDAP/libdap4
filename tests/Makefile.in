@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.11 2005/02/08 21:31:57 jimg Exp $
+# $Id: Makefile.in,v 1.12 2005/03/30 23:09:06 jimg Exp $
 
 @SET_MAKE@
 
@@ -12,7 +12,7 @@ PROGS = arrayT attrTableT structT sequenceT ddsT ddsPT iterT
 DODS_ROOT = ../../../
 
 INCS = -I. -I.. -I../GNU -I$(DODS_ROOT)include @INCS@ $(CPP_UNIT_INC)
-DEFS = @DEFS@
+DEFS = @DEFS@ -DDEFAULT_BASETYPE_FACTORY
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 # Use these options for debugging. 12/24/02 jhrg
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-default-inline -fno-defer-pop
@@ -51,17 +51,21 @@ RANLIB = @RANLIB@
 STRIP = strip
 VALGRIND = @VALGRIND@
 
-SRCS = LongIterAdapter.cc TestArray.cc TestSequence.cc \
-       Unused.cc arrayT.cc attrTableT.cc ddsPT.cc \
+# SRCS = LongIterAdapter.cc TestArray.cc TestSequence.cc \
+#       Unused.cc arrayT.cc attrTableT.cc ddsPT.cc \
+#       ddsT.cc iterT.cc sequenceT.cc structT.cc
+#
+#OBJS = TestArray.o TestSequence.o Unused.o ../TestInt16.o ../TestStr.o \
+#       ../TestStructure.o ../TestCommon.o
+#
+#AOBJS = TestArray.o TestSequence.o ../TestInt16.o ../TestStr.o \
+#	../TestStructure.o ../TestFloat64.o ../TestInt32.o \
+#	../TestUInt32.o ../TestByte.o ../TestGrid.o \
+#        ../TestUrl.o ../TestFloat32.o ../TestUInt16.o ../TestCommon.o
+
+RCS = LongIterAdapter.cc \
+       arrayT.cc attrTableT.cc ddsPT.cc \
        ddsT.cc iterT.cc sequenceT.cc structT.cc
-
-OBJS = TestArray.o TestSequence.o Unused.o ../TestInt16.o ../TestStr.o \
-       ../TestStructure.o ../TestCommon.o
-
-AOBJS = TestArray.o TestSequence.o ../TestInt16.o ../TestStr.o \
-	../TestStructure.o ../TestFloat64.o ../TestInt32.o \
-	../TestUInt32.o ../TestByte.o ../TestGrid.o \
-        ../TestUrl.o ../TestFloat32.o ../TestUInt16.o ../TestCommon.o
 
 all: runtest
 
@@ -82,25 +86,25 @@ runtest: $(PROGS)
 # I have decided to build it as part of the `all' target. jhrg 7/11/96
 
 arrayT : ../libdap++.a arrayT.o $(OBJS)
-	$(CXX) $(LDFLAGS) -o arrayT arrayT.o $(OBJS) -lcppunit -ldap++ $(LIBS)
+	$(CXX) $(LDFLAGS) -o arrayT arrayT.o $(OBJS) -lcppunit -ldap++ -ltest-types++ $(LIBS)
 
 attrTableT : ../libdap++.a attrTableT.o $(OBJS)
-	$(CXX) $(LDFLAGS) -o attrTableT attrTableT.o $(OBJS) -lcppunit -ldap++ $(LIBS)
+	$(CXX) $(LDFLAGS) -o attrTableT attrTableT.o $(OBJS) -lcppunit -ldap++ -ltest-types++ $(LIBS)
 
 structT : ../libdap++.a structT.o $(OBJS)
-	$(CXX) $(LDFLAGS) -o structT structT.o $(OBJS) -lcppunit -ldap++ $(LIBS)
+	$(CXX) $(LDFLAGS) -o structT structT.o $(OBJS) -lcppunit -ldap++ -ltest-types++ $(LIBS)
 
 sequenceT : ../libdap++.a sequenceT.o $(OBJS)
-	$(CXX) $(LDFLAGS) -o sequenceT sequenceT.o $(OBJS) -lcppunit -ldap++ $(LIBS)
+	$(CXX) $(LDFLAGS) -o sequenceT sequenceT.o $(OBJS) -lcppunit -ldap++ -ltest-types++ $(LIBS)
 
 ddsT : ../libdap++.a ddsT.o $(OBJS)
-	$(CXX) $(LDFLAGS) -o ddsT ddsT.o $(OBJS) -lcppunit -ldap++ $(LIBS)
+	$(CXX) $(LDFLAGS) -o ddsT ddsT.o $(OBJS) -lcppunit -ldap++ -ltest-types++ $(LIBS)
 
 ddsPT : ../libdap++.a ddsPT.o $(AOBJS)
-	$(CXX) $(LDFLAGS) -o ddsPT ddsPT.o $(AOBJS) -lcppunit -ldap++ $(LIBS)
+	$(CXX) $(LDFLAGS) -o ddsPT ddsPT.o $(AOBJS) -lcppunit -ldap++ -ltest-types++ $(LIBS)
 
 iterT : ../libdap++.a iterT.o LongIterAdapter.o $(OBJS)
-	$(CXX) $(LDFLAGS) -o iterT iterT.o LongIterAdapter.o $(OBJS) -lcppunit -ldap++ $(LIBS)
+	$(CXX) $(LDFLAGS) -o iterT iterT.o LongIterAdapter.o $(OBJS) -lcppunit -ldap++ -ltest-types++ $(LIBS)
 
 # Standard targets
 
@@ -142,55 +146,3 @@ depend:
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
 
 # DO NOT DELETE; depend requires this line
-LongIterAdapter.o: LongIterAdapter.cc LongIterAdapter.h \
-  ../IteratorAdapter.h ../Array.h ../dods-limits.h ../Vector.h \
-  ../BaseType.h ../AttrTable.h ../GNU/Pix.h ../Error.h ../InternalErr.h \
-  ../dods-datatypes.h ../DDS.h ../DAS.h ../DODSResponseObject.h \
-  ../Clause.h ../expr.h ../RValue.h
-TestArray.o: TestArray.cc TestArray.h ../Array.h ../dods-limits.h \
-  ../Vector.h ../BaseType.h ../AttrTable.h ../GNU/Pix.h \
-  ../IteratorAdapter.h ../Error.h ../InternalErr.h ../dods-datatypes.h \
-  ../DDS.h ../DAS.h ../DODSResponseObject.h ../Clause.h ../expr.h \
-  ../RValue.h
-TestSequence.o: TestSequence.cc TestSequence.h ../Sequence.h ../GNU/Pix.h \
-  ../IteratorAdapter.h ../BaseType.h ../AttrTable.h ../Error.h \
-  ../InternalErr.h ../dods-datatypes.h ../Constructor.h ../debug.h
-Unused.o: Unused.cc Unused.h
-arrayT.o: arrayT.cc TestArray.h ../Array.h ../dods-limits.h ../Vector.h \
-  ../BaseType.h ../InternalErr.h ../Error.h ../dods-datatypes.h ../DDS.h \
-  ../GNU/Pix.h ../IteratorAdapter.h ../Clause.h ../expr.h ../RValue.h \
-  ../TestInt16.h ../Int16.h ../TestCommon.h ../util.h ../Byte.h \
-  ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h ../Float64.h ../Str.h \
-  ../Url.h ../List.h ../Structure.h ../Constructor.h ../Sequence.h \
-  ../Grid.h
-attrTableT.o: attrTableT.cc ../AttrTable.h ../GNU/Pix.h \
-  ../IteratorAdapter.h ../Error.h
-ddsPT.o: ddsPT.cc ../DDS.h ../GNU/Pix.h ../IteratorAdapter.h \
-  ../BaseType.h ../AttrTable.h ../Error.h ../InternalErr.h \
-  ../dods-datatypes.h ../DAS.h ../DODSResponseObject.h ../Clause.h \
-  ../expr.h ../RValue.h
-ddsT.o: ddsT.cc ../DDS.h ../GNU/Pix.h ../IteratorAdapter.h ../BaseType.h \
-  ../InternalErr.h ../Error.h ../dods-datatypes.h ../Clause.h ../expr.h \
-  ../RValue.h TestArray.h ../Array.h ../dods-limits.h ../Vector.h \
-  ../TestInt16.h ../Int16.h ../TestCommon.h ../TestStr.h ../Str.h \
-  ../ce_functions.h ../util.h ../Byte.h ../UInt16.h ../Int32.h \
-  ../UInt32.h ../Float32.h ../Float64.h ../Url.h ../List.h ../Structure.h \
-  ../Constructor.h ../Sequence.h ../Grid.h ../debug.h
-iterT.o: iterT.cc LongIterAdapter.h ../IteratorAdapter.h ../Array.h \
-  ../dods-limits.h ../Vector.h ../BaseType.h ../AttrTable.h ../GNU/Pix.h \
-  ../Error.h ../InternalErr.h ../dods-datatypes.h ../DDS.h ../DAS.h \
-  ../DODSResponseObject.h ../Clause.h ../expr.h ../RValue.h
-sequenceT.o: sequenceT.cc TestSequence.h ../Sequence.h ../GNU/Pix.h \
-  ../IteratorAdapter.h ../BaseType.h ../InternalErr.h ../Error.h \
-  ../dods-datatypes.h ../Constructor.h ../TestInt16.h ../Int16.h \
-  ../TestCommon.h ../TestStr.h ../dods-limits.h ../Str.h ../util.h \
-  ../Byte.h ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h ../Float64.h \
-  ../Url.h ../Array.h ../Vector.h ../DDS.h ../Clause.h ../expr.h \
-  ../RValue.h ../List.h ../Structure.h ../Grid.h
-structT.o: structT.cc ../TestStructure.h ../Structure.h ../GNU/Pix.h \
-  ../IteratorAdapter.h ../BaseType.h ../InternalErr.h ../Error.h \
-  ../dods-datatypes.h ../Constructor.h ../DDS.h ../Clause.h ../expr.h \
-  ../RValue.h ../TestCommon.h TestArray.h ../Array.h ../dods-limits.h \
-  ../Vector.h ../TestInt16.h ../Int16.h ../TestStr.h ../Str.h ../util.h \
-  ../Byte.h ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h ../Float64.h \
-  ../Url.h ../List.h ../Sequence.h ../Grid.h

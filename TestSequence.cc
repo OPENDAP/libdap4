@@ -50,11 +50,13 @@ TestSequence::_duplicate(const TestSequence &ts)
     d_series_values = ts.d_series_values;
 }
 
+#if 0
 Sequence *
 NewSequence(const string &n)
 {
     return new TestSequence(n);
 }
+#endif
 
 BaseType *
 TestSequence::ptr_duplicate()
@@ -143,6 +145,9 @@ TestSequence::length()
 }
 
 // $Log: TestSequence.cc,v $
+// Revision 1.35  2005/03/30 23:12:01  jimg
+// Modified to use the new factory class.
+//
 // Revision 1.34  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

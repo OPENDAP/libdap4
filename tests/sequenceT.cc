@@ -13,6 +13,7 @@
 #include "TestSequence.h"
 #include "TestInt16.h"
 #include "TestStr.h"
+#include "TestTypeFactory.h"
 #include "util.h"
 #include "Pix.h"
 
@@ -29,27 +30,30 @@ CPPUNIT_TEST_SUITE_END( ) ;
 
 private:
     /* TEST PRIVATE DATA */
-
+    TestTypeFactory *factory;
+    
 public:
     void setUp()
     {
+        factory = new TestTypeFactory;
     }
 
     void tearDown() 
     {
+        delete factory; factory = 0;
     }
 
     void sequenceT_test()
     {
 	TestSequence s( "Supporters" ) ;
 
-	BaseType *nm = NewStr( "Name" ) ;
+	BaseType *nm = factory->NewStr( "Name" ) ;
 	s.add_var( nm ) ;
 
-	BaseType *age = NewInt16( "Age" ) ;
+	BaseType *age = factory->NewInt16( "Age" ) ;
 	s.add_var( age ) ;
 
-	TestSequence *friends = (TestSequence *)NewSequence( "Friends" ) ;
+	TestSequence *friends = (TestSequence *)factory->NewSequence( "Friends" ) ;
 	friends->add_var( nm ) ;
 	delete nm ; nm = 0 ;
 	friends->add_var( age ) ;
