@@ -13,6 +13,9 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.32  1999/05/05 00:51:02  jimg
+// Added cgi_ver parameter to send() member function.
+//
 // Revision 1.31  1999/04/29 02:29:28  jimg
 // Merge of no-gnu branch
 //
@@ -604,11 +607,13 @@ public:
 	expression received in the original data request.
 	@param out A pointer to the output buffer for the data.
 	@param compressed If true, send compressed data.
+	@param cgi_ver version information from the caller that identifies
+	the server sending data.
 	@see parse_constraint
 	@see BaseType::read
 	@see BaseType::serialize */
     bool send(const string &dataset, const string &constraint, FILE *out, 
-	      bool compressed = true);
+	      bool compressed = true, const string &cgi_ver = DVR);
 
     /** Mark the member variable #send_p# flags to {\it state}. */
     void mark_all(bool state);
