@@ -3,9 +3,15 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.11  1996/06/07 05:07:29  jimg
-/* Added GZIP define.
+/* Revision 1.12  1996/06/18 21:33:01  jimg
+/* Added define SEM_PROTO which is used to control inclusion of the semaphore
+/* prototypes in Connect.cc.
+/* Removed GZIP define and replaced it with a DODS_ROOT define (which is the
+/* double quoted path to the DODS root directory of the build).
 /*
+ * Revision 1.11  1996/06/07 05:07:29  jimg
+ * Added GZIP define.
+ *
  * Revision 1.10  1996/06/05 20:42:12  jimg
  * Moved symbols from config_netio.h.in to this file.
  *
@@ -133,8 +139,12 @@
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
-/* Where is gzip? */
-#undef GZIP
+/* Where is DODS_ROOT? This can be changed at runtime by an environment
+   variable. */
+#undef DODS_ROOT
+
+/* Does <sys/sem.h> contain prototypes for semctl(), ... ? */
+#undef SEM_PROTO
 
 /*
   Determine at compile-time the sizes of various datatypes. This uses symbols
