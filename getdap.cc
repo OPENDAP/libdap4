@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.5  1996/06/08 00:18:38  jimg
+// Initialized vcode to null.
+//
 // Revision 1.4  1996/05/29 22:05:57  jimg
 // Fixed up the copyright header.
 //
@@ -25,7 +28,7 @@
 // First version. Built to test the new WWW code in the class Connect.
 //
 
-static char rcsid[]={"$Id: getdap.cc,v 1.4 1996/05/29 22:05:57 jimg Exp $"};
+static char rcsid[]={"$Id: getdap.cc,v 1.5 1996/06/08 00:18:38 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -81,7 +84,7 @@ main(int argc, char * argv[])
     bool verbose = false;
     bool multi = false;
     int times = 1;
-    char *vcode;
+    char *vcode = NULL;
     int vopts = 0;
 
     while ((option_char = getopt()) != EOF)
