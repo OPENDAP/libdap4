@@ -10,6 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.23  2000/04/07 00:19:29  jimg
+// Added exception handling
+//
 // Revision 1.22  1999/05/04 19:47:24  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -114,7 +117,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.22 1999/05/04 19:47:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.23 2000/04/07 00:19:29 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -621,10 +624,20 @@ constrained_trans(const string &dds_name, string dataset,
 	dataset = c;
     }
 
-    // send the variable given the constraint; TRUE flushes the I/O channel.
-    // Currently only Sequence uses the `dataset' parameter.
-    if (!server.send(dataset, ce, pout, false)) {
-	cerr << "Could not send the DDS" << endl;
+    try {
+	// send the variable given the constraint; TRUE flushes the I/O
+	// channel. Currently only Sequence uses the `dataset' parameter.
+	//
+	// We're at that awkward stage between two different error processing
+	// techniques. 4/6/2000 jhrg
+	if (!server.send(dataset, ce, pout, false)) {
+	    cerr << "Could not send the DDS" << endl;
+	    return false;
+	}
+    }
+    catch(Error &e) {
+	e.display_message();
+	fclose(pout);
 	return false;
     }
 
