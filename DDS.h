@@ -13,6 +13,9 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.28  1998/11/10 01:05:38  jimg
+// This class now holds a list of Clause pointers, not objects.
+//
 // Revision 1.27  1998/10/21 16:40:13  jimg
 // Added a proj_func member (for support of Projection Functions).
 // Fixed up the doc++ comments.
@@ -280,7 +283,7 @@ private:
 
     SLList<BaseTypePtr> vars;	// Variables at the top level 
     
-    SLList<Clause> expr;	// List of CE Clauses
+    SLList<Clause *> expr;	// List of CE Clauses
 
     SLList<BaseTypePtr> constants;// List of temporary objects
 
