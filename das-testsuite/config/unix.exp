@@ -19,7 +19,7 @@ proc das-test_start { ifile ofile } {
 	send_user "Testing $ifile $ofile ...\n"
     }
 
-    catch "exec $DASTEST $ifile $ofile" comp_output
+    catch "exec $DASTEST -p $ifile $ofile" comp_output
 
     if {$verbose >= 1} {
 	send_user "Comp output:\n$comp_output\n"

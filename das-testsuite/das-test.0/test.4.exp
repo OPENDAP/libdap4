@@ -2,7 +2,11 @@
 # jhrg
 #
 # $Log: test.4.exp,v $
-# Revision 1.4  1994/10/05 16:51:50  jimg
+# Revision 1.5  1994/10/13 16:04:12  jimg
+# Now works with the new das-test (but only when das-test is compiled
+# w/o DEBUG and TRACE_NEW).
+#
+# Revision 1.4  1994/10/05  16:51:50  jimg
 # Added TYPE to each of the DAS test files.
 # The `expect' files correcly check for that in the output.
 #
@@ -35,7 +39,8 @@ Attributes {
         string b c;
     }
 }
-parse error, expecting \`ID\' line: 5"
+parse error, expecting `ID' line: 5
+parse() returned: 0"
 
 das-test_start $srcdir$test_name -
 
