@@ -11,6 +11,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.61  2000/07/10 00:19:32  rmorris
+// Removed (trivial) explicit mention of namespace for iostream in
+// flush_stream().
+//
 // Revision 1.60  2000/07/09 22:05:37  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -295,7 +299,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.60 2000/07/09 22:05:37 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.61 2000/07/10 00:19:32 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -754,7 +758,7 @@ void downcase(string &s) {
 //  it's not possible to associate an ofstream with a FILE *
 //  under the Standard ANSI C++ Library spec.  Unix systems
 //  don't follow the spec in this regard.
-void flush_stream(std::iostream ios, FILE *out)
+void flush_stream(iostream ios, FILE *out)
 {
 	int nbytes;
 	char buffer[512];
