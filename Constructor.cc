@@ -145,6 +145,21 @@ Constructor::var_end()
     return _vars.end() ;
 }
 
+/** Return a reverse iterator that references the last element. */
+Constructor::Vars_riter
+Constructor::var_rbegin()
+{
+    return _vars.rbegin();
+}
+
+/** Return a reverse iterator that references a point 'before' the first
+    element. */
+Constructor::Vars_riter
+Constructor::var_rend()
+{
+    return _vars.rend();
+}
+
 /** Return the iterator for the \i ith variable.
     @param i the index
     @return The corresponding  Vars_iter */
@@ -152,6 +167,15 @@ Constructor::Vars_iter
 Constructor::get_vars_iter(int i)
 {
     return _vars.begin() + i;
+}
+
+/** Return the BaseType pointer for the \e ith variable.
+    @param i This index
+    @return The corresponding BaseType*. */
+BaseType *
+Constructor::get_var_index(int i)
+{
+    return *(_vars.begin() + i);
 }
 
 void
@@ -263,6 +287,10 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.14  2004/11/16 17:56:05  jimg
+// Added accessors for the new reverse iterators. Also added a new method
+// to access variables using an integer index.
+//
 // Revision 1.13  2004/07/19 07:25:42  rmorris
 // #include <functional> for "unary_function" under win32.
 //
