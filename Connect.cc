@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.43  1996/12/18 19:17:20  jimg
+// Removed the DODS_PERF define.
+//
 // Revision 1.42  1996/12/02 23:10:10  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -251,7 +254,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.42 1996/12/02 23:10:10 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.43 1996/12/18 19:17:20 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -275,7 +278,6 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.42 1996/12/02 23:10:10 jim
 #include <strstream.h>
 #include <fstream.h>
 
-#define DODS_PERF 1
 #include "debug.h"
 #include "Connect.h"
 
