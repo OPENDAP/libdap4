@@ -30,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.30 2003/01/23 00:22:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.31 2003/01/27 18:12:55 pwest Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -348,7 +348,7 @@ static const short yycheck[] =
       38,   114,   112
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/bison/bison.simple"
+#line 3 "/twilek/d/pwest/local/share/bison/bison.simple"
 
 /* Skeleton output parser for bison,
 
@@ -661,7 +661,7 @@ yystpcpy (yydest, yysrc)
 # endif
 #endif
 
-#line 315 "/usr/share/bison/bison.simple"
+#line 315 "/twilek/d/pwest/local/share/bison/bison.simple"
 
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -1308,7 +1308,7 @@ case 77:
     break;}
 }
 
-#line 705 "/usr/share/bison/bison.simple"
+#line 705 "/twilek/d/pwest/local/share/bison/bison.simple"
 
 
   yyvsp -= yylen;
@@ -1650,7 +1650,10 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.30  2003/01/23 00:22:24  jimg
+ * Revision 1.31  2003/01/27 18:12:55  pwest
+ * Updating tests files, including in dap configure. Removed dap_templates.cc
+ *
+ * Revision 1.45  2003/01/23 00:22:24  jimg
  * Updated the copyright notice; this implementation of the DAP is
  * copyrighted by OPeNDAP, Inc.
  *
