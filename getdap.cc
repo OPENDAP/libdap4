@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.59 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.60 2001/10/29 21:17:06 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -30,11 +30,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.59 2001/10/14 01:28:38 jimg 
 using std::cerr;
 using std::endl;
 
-<<<<<<< geturl.cc
-const char *version = "$Revision: 1.59 $";
-=======
-const char *version = "$Revision: 1.59 $";
->>>>>>> 1.52.2.9
+const char *version = "$Revision: 1.60 $";
 
 extern int keep_temps;		// defined in Connect.cc
 
@@ -363,6 +359,9 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.60  2001/10/29 21:17:06  jimg
+// Fixed bad job of resolving conflict(s) from the last merge.
+//
 // Revision 1.59  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //
