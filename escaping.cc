@@ -12,6 +12,11 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.7  1998/09/10 19:38:03  jehamby
+// Update escaping routines to not mangle high-ASCII characters with toascii()
+// and to generate a correct escape sequence in octstring() for such characters
+// through judicious casting (cast to a unsigned char, then an unsigned int).
+//
 // Revision 1.6  1998/03/19 23:29:47  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
 //
@@ -89,11 +94,11 @@ char unhexstring(String s) {
     return (char)val;
 }
 
-String octstring(int val) {
+String octstring(unsigned char val) {
     static char buf[MAXSTR];
 
     ostrstream(buf,MAXSTR) << oct << setw(3) << setfill('0') <<
-	val << ends;
+	(unsigned int)val << ends;
 
     return (String)buf;
 }
@@ -119,12 +124,12 @@ String id2dods(String s, const String allowable = (char *)0) {
 
 	int index;
 	while ((index = s.index(badregx2)) >= 0)
-	    s.at(index,1) = (String)ESC + hexstring(toascii(s[index]));
+	    s.at(index,1) = (String)ESC + hexstring(s[index]);
     }
     else {
 	int index;
 	while ((index = s.index(badregx)) >= 0)
-	    s.at(index,1) = (String)ESC + hexstring(toascii(s[index]));
+	    s.at(index,1) = (String)ESC + hexstring(s[index]);
     }
 
     if (isdigit(s[0]))
@@ -160,7 +165,7 @@ String escattr(String s) {
     // escape non-printing characters with octal escape
     int index = 0;
     while ( (index = s.index(nonprintable)) >= 0)
-	s.at(index,1) = (String)ESC + octstring(toascii(s[index]));
+	s.at(index,1) = (String)ESC + octstring(s[index]);
 
     // escape " with backslash
     index = 0;
