@@ -10,6 +10,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.45  1998/02/11 20:28:17  jimg
+// Added/fixed support for on-the-fly compression of data. The current code
+// uses a subprocess to run a compression filter, deflate, which uses the LZW
+// compression algorithm in zlib 1.0.4.
+//
 // Revision 1.44  1998/02/05 20:14:09  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -221,7 +226,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.44 1998/02/05 20:14:09 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.45 1998/02/11 20:28:17 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -230,6 +235,9 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.44 1998/02/05 20:14:09 jimg 
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifdef DBMALLOC
 #include <dbmalloc.h>
@@ -446,6 +454,39 @@ dods_progress()
     return dods_progress;
 }
 
+// Return true if the program deflate exists and is executable by user, group
+// and world. If this returns false the caller should assume that server
+// filter programs won't be able to find the deflate program and thus won't
+// be able to compress the return document. 
+// NB: this works because this function uses the same rules as compressor()
+// (which follows) to look for deflate. 2/11/98 jhrg
+
+bool
+deflate_exists()
+{
+    DBG(cerr << "Entering deflate_exists...");
+    int status = false;
+    struct stat buf;
+
+    String deflate = (String)dods_root() + "/etc/deflate";
+
+    // Check that the file exists...
+    // First look for deflate using DODS_ROOT (compile-time constant subsumed
+    // by an environment variable) and if that fails in the CWD which finds
+    // the program when it is in the same directory as the dispatch script
+    // and other server components. 2/11/98 jhrg
+    status = (stat((const char *)deflate, &buf) == 0)
+	|| (stat("./deflate", &buf) == 0);
+
+    // and that it can be executed.
+    status &= buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH);
+    DBG(cerr << " returning " << (status ? "true." : "false.") << endl);
+    return status;
+}
+
+// Note that decompression is handled automatically by libwww 5.1. 2/10/1998
+// jhrg
+
 FILE *
 compressor(FILE *output, int &childpid)
 {
@@ -480,77 +521,24 @@ compressor(FILE *output, int &childpid)
 
 	DBG(cerr << "Opening compression stream." << endl);
 
-	// First try to run gzip using DODS_ROOT (the value read from the
+	// First try to run deflate using DODS_ROOT (the value read from the
 	// DODS_ROOT environment variable takes precedence over the value set
-	// at build time. If that fails, try the users PATH.
-	String gzip = (String)dods_root() + "/etc/gzip";
-	(void) execl(gzip, "gzip", "-cf", NULL);
-
-	(void) execlp("gzip", "gzip", "-cf", NULL);
+	// at build time. If that fails, try the CWD.
+	String deflate = (String)dods_root() + "/etc/deflate";
+	(void) execl(deflate, "deflate", "-c",  "5", "-s", NULL);
+	cerr << "Could not run " << deflate << endl;
+	(void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
+	cerr << "Could not run ./deflate" << endl;
 
 	cerr << "Could not start compressor!" << endl;
-	cerr << "gzip must be in DODS_ROOT/etc or on your PATH" << endl;
-	_exit(127);		// Only get here if an error
-    }
-}
-
-FILE *
-decompressor(FILE *input, int &childpid)
-{
-    int pid;
-    int data[2];
-
-    if (pipe(data) < 0) {
-	cerr << "Could not create IPC channel for decompressor process" 
+	cerr << "defalte must be in DODS_ROOT/etc or in the CWD!" 
 	     << endl;
-	return NULL;
-    }
-    
-    if ((pid = fork()) < 0) {
-	cerr << "Could not fork to create decompressor process" << endl;
-	return NULL;
-    }
-
-    // The parent process closes the write end of the Pipe, and creates a
-    // FILE * using fdopen(). The FILE * is used by the calling program to
-    // access the read end of the Pipe.
-
-    if (pid > 0) {
-	DBG(cerr << "Decompressor parent." << endl);
-	DBG(cerr << "pipe fds: data[0]: " << data[0] << " data[1]: " \
-	    << data[1] << endl);
-
-	close(data[1]);
-	FILE *output = fdopen(data[0], "r");
-	childpid = pid;
-	return output;
-    }
-    else {
-	DBG(sleep(1));
-	DBG(cerr << "Decompressor child." << endl);
-	DBG(cerr << "pipe fds: data[0]: " << data[0] << " data[1]: " \
-	    << data[1] << endl);
-
-	close(data[0]);
-	dup2(fileno(input), 0);	// Read from FILE *input 
-	dup2(data[1], 1);	// Write to the pipe
-	// close(data[1]);
-
-	// First try to run gzip using DODS_ROOT (the value read from the
-	// DODS_ROOT environment variable takes precedence over the value set
-	// at build time. If that fails, try the users PATH.
-	String gzip = (String)dods_root() + "/etc/gzip";
-	(void) execl(gzip, "gzip", "-cdf", NULL);
-
-	(void) execlp("gzip", "gzip", "-cdf", NULL);
-
-	cerr << "Could not start decompressor!" << endl;
-	cerr << "gzip must be in DODS_ROOT/etc or on your PATH" << endl;
-	_exit(127);		// Only get here if an error
+	_exit(127);		// Only here if an error occurred.
     }
 }
 
-// This function prints the system time to the ostream object.
+// This function returns a pointer to the system time formated for an httpd
+// log file.
 
 static const int TimLen = 26;	// length of string from asctime()
 
@@ -567,7 +555,7 @@ systime()
 	TimStr[TimLen - 2] = '\0'; // overwrite the \n 
     }
 
-    return TimStr;
+    return &TimStr[0];
 }
 
 // These functions are used by the CE evaluator
