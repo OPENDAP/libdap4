@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.73 1998/03/25 19:29:57 jimg Exp $
+# $Id: Makefile.in,v 1.74 1998/03/27 22:27:13 jimg Exp $
 
 @SET_MAKE@
 
@@ -118,14 +118,14 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 
 GNUOBJS = Vec/BaseTypeVec.o Plex/String.Plex.o Plex/String.XPlex.o \
 	  Stack/BTPlex.o Stack/BTStack.o Stack/BTXPStack.o Stack/BTXPlex.o \
-	  Map/AttrMap.o Map/AttrVHMap.o Map/DASMap.o Map/DASVHMap.o
+	  Map/AttrMap.o Map/AttrVHMap.o Map/DASMap.o Map/DASVHMap.o String.o
 
 GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h \
 	  Map/AttrVHMap.h      Plex/String.XPlex.h  Stack/BTdefs.h \
 	  Map/Attrdefs.h       Plex/String.defs.h   Vec/BaseTypeVec.h \
 	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h \
 	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h \
-	  Stack/BTXPStack.h
+	  Stack/BTXPStack.h    String.h
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestList.cc TestSequence.cc \
