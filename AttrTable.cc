@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.46 2004/08/25 23:36:29 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.47 2004/10/22 21:47:04 jimg Exp $";
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -838,17 +838,20 @@ AttrTable::get_attr_table( Attr_iter iter )
     return (*iter)->type == Attr_container ? (*iter)->attributes : 0 ;
 }
 
-/** Delete the referenced AttrTable object. 
+/** Delete the iterator.  Since AttrTable stores pointers to AttrTable
+    objects, the caller should be sure to delete the AttrTable itself.
+    This method does not take care of that operation.
+    
     @note calling this method <b>invalidates</b> the iterator \e iter.
-    @param iter points to the entry to be deleted. */
-void
+    @param iter points to the entry to be deleted.
+    @return The Attr_iter for the element following \e iter */
+AttrTable::Attr_iter
 AttrTable::del_attr_table(Attr_iter iter)
 {
     if ((*iter)->type != Attr_container)
-        return;
+        return ++iter;
         
-    delete (*iter); (*iter) = 0;
-    attr_map.erase(iter);
+    return attr_map.erase(iter);
 }
 
 /** Get the type name of an attribute referenced by \e iter.
@@ -1266,6 +1269,10 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.47  2004/10/22 21:47:04  jimg
+// Modified del_attr_table() so that it returns the Attr_iter following the one
+// that has just been deleted.
+//
 // Revision 1.46  2004/08/25 23:36:29  jimg
 // I added a second test to del_attr_table() to check the case when a
 // scalar attribute is followed by a container. I also fixed a typo in

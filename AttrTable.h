@@ -307,7 +307,7 @@ public:
     string get_name(Attr_iter iter);
     bool is_container(Attr_iter iter);
     AttrTable *get_attr_table(Attr_iter iter);
-    void AttrTable::del_attr_table(Attr_iter iter);
+    Attr_iter del_attr_table(Attr_iter iter);
     string get_type(Attr_iter iter);
     AttrType get_attr_type(Attr_iter iter);
     unsigned int get_attr_num(Attr_iter iter);
@@ -330,6 +330,10 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.51  2004/10/22 21:47:21  jimg
+ * Modified del_attr_table() so that it returns the Attr_iter following the one
+ * that has just been deleted.
+ *
  * Revision 1.50  2004/08/03 23:02:17  jimg
  * Fixed comment/doc errors. Added del_attr_table().
  *
