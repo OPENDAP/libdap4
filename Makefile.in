@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.4 1994/09/27 22:44:45 jimg Exp $
+# $Id: Makefile.in,v 1.5 1994/10/05 16:40:28 jimg Exp $
 
 @SET_MAKE@
 
@@ -8,7 +8,7 @@
 
 PROG= das-test dds-test libdas++.a libdds++.a
 CFLAGS = -g -I$(DODS_ROOT)/include
-CXXFLAGS = -g -DUSE_LIBGXX_INLINES -I$(DODS_ROOT)/include -IMap -IStack -I.
+CXXFLAGS = -g -DUSE_LIBGXX_INLINES -IMap -IStack -I. -I$(DODS_ROOT)/include 
 LDFLAGS = -g -L$(DODS_ROOT)/lib
 LFLAGS=-8
 YFLAGS=-d
@@ -63,8 +63,8 @@ DDSHDRS=DDS.h
 DDSSRCS=DDS.cc
 DDSOBJS=DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) 
 
-TYPEHDRS=Byte.h Int32.h Float64.h Str.h Url.h \
-         List.h Array.h Structure.h Sequence.h Function.h Grid.h
+TYPEHDRS=BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
+         CtorType.h List.h Array.h Structure.h Sequence.h Function.h Grid.h
 TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
          List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc util.cc
 TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
