@@ -11,6 +11,12 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.25  1997/03/27 18:13:27  jimg
+// Fixed a problem in set_mime_*() where Content-Encoding was sent with the
+// value x-plain. This caused Netscape on Windows to barf. I'm not sure that it
+// is a real error, but sending C-E only when its value is x-gzip or
+// x-compressed apparently causes the message to go away.
+//
 // Revision 1.24  1997/03/12 01:07:23  jimg
 // Removed code that set the HTTP protocol version header based on the value
 // of the SERVER_PROTOCOL environment variable. In servers that support
@@ -120,7 +126,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.24 1997/03/12 01:07:23 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.25 1997/03/27 18:13:27 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -282,24 +288,22 @@ set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
     cout << "Server: " << DVR << endl;
     cout << "Content-type: text/plain" << endl; 
     cout << "Content-Description: " << descrip[type] << endl;
-    cout << "Content-Encoding: " << encoding[enc] << endl;
+    // Don't write a Content-Encoding header for x-plain since that breaks
+    // Netscape on NT. jhrg 3/23/97
+    if (enc != x_plain)
+	cout << "Content-Encoding: " << encoding[enc] << endl;
     cout << endl;
 }
 
 void
 set_mime_binary(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-#if 0
-    char *protocol = getenv("SERVER_PROTOCOL");
-    if (!protocol)
-	protocol = "HTTP/1.0";
-#endif
-
     cout << "HTTP/1.0 200 OK" << endl;
     cout << "Server: " << DVR << endl;
     cout << "Content-type: application/octet-stream" << endl; 
     cout << "Content-Description: " << descrip[type] << endl;
-    cout << "Content-Encoding: " << encoding[enc] << endl;
+    if (enc != x_plain)
+	cout << "Content-Encoding: " << encoding[enc] << endl;
     cout << endl;
 }
 
@@ -307,12 +311,6 @@ void
 set_mime_error(int code = HTERR_NOT_FOUND, 
 	       const char *reason = "Dataset not found")
 {
-#if 0
-    char *protocol = getenv("SERVER_PROTOCOL");
-    if (!protocol)
-	protocol = "HTTP/1.0";
-#endif
-
     cout << "HTTP/1.0 " << code << " " << reason << endl;
     cout << "Server: " << DVR << endl;
     cout << endl;
