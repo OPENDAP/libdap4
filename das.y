@@ -22,7 +22,10 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.10  1994/12/16 22:06:23  jimg
+ * Revision 1.11  1994/12/22 04:30:56  reza
+ * Made save_str static to avoid linking conflict.
+ *
+ * Revision 1.10  1994/12/16  22:06:23  jimg
  * Fixed a bug in save_str() where the global NAME was used instead of the
  * parameter DST.
  *
@@ -85,7 +88,7 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.10 1994/12/16 22:06:23 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.11 1994/12/22 04:30:56 reza Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,7 +112,7 @@ static AttrTablePtr attr_tab_ptr;
 void mem_list_report();
 int daslex(void);
 int daserror(char *s);
-void save_str(char *dst, char *src);
+static void save_str(char *dst, char *src);
 
 %}
 
@@ -207,7 +210,7 @@ attr_type:      TYPE
 
 %%
 
-void
+static void
 save_str(char *dst, char *src)
 {
     strncpy(dst, src, ID_MAX);

@@ -15,7 +15,10 @@
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.6  1994/12/16 22:24:23  jimg
+ * Revision 1.7  1994/12/22 04:30:57  reza
+ * Made save_str static to avoid linking conflict.
+ *
+ * Revision 1.6  1994/12/16  22:24:23  jimg
  * Switched from a CtorType stack to BaseType stack.
  * Fixed an error in save_str() (see das.y).
  * Fixed a bug in the use of append_dim - it was called with $4 when it
@@ -50,7 +53,7 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: dds.y,v 1.6 1994/12/16 22:24:23 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.7 1994/12/22 04:30:57 reza Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +88,7 @@ int ddslex();
 int ddserror(char *s);
 void add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, 
 	       Part p);
-void save_str(char *dst, char *src);
+static void save_str(char *dst, char *src);
 
 %}
 
@@ -284,13 +287,14 @@ add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, Part part)
    Returns: void
 */
 
-void
+static void
 save_str(char *dst, char *src)
 {
     strncpy(dst, src, ID_MAX);
-    dst[ID_MAX-1] = '\0';		/* in case ... */
+    dst[ID_MAX-1] = '\0';	       
     if (strlen(src) >= ID_MAX) 
 	cerr << "line: " << dds_line_num << "`" << src << "' truncated to `"
              << dst << "'" << endl;
 }
+
 
