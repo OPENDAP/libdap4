@@ -7,12 +7,16 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.5  1994/11/03 04:58:03  reza
-/* Added two overloading for function parse to make it consistent with DAS class.
+/* Revision 1.6  1995/02/10 02:30:49  jimg
+/* Misc comment edits.
 /*
+ * Revision 1.5  1994/11/03  04:58:03  reza
+ * Added two overloading for function parse to make it consistent with DAS
+ * class. 
+ *
  * Revision 1.4  1994/10/18  00:20:47  jimg
  * Added copy ctor, dtor, duplicate, operator=.
- * Added var() for const cahr * (to avoid confusion between char * and
+ * Added var() for const char * (to avoid confusion between char * and
  * Pix (which is void *)).
  * Switched to errmsg library.
  * Added formatting to print().
