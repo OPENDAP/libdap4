@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.36  1996/10/18 16:40:09  jimg
+// Changed request_das() and request_dds() so that they now pass any initial
+// constraint to the DAS and DDS servers.
+//
 // Revision 1.35  1996/10/08 16:27:47  jimg
 // Added code so that a constraint expression appended to a URL is properly
 // handled. The CE is stored in in the Connect object. When a CE is passed to
@@ -204,7 +208,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.35 1996/10/08 16:27:47 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.36 1996/10/18 16:40:09 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1257,7 +1261,7 @@ Connect::request_das(bool gui_p = false, const String &ext = "das")
 {
     (void)gui()->show_gui(gui_p);
 
-    String das_url = _URL + "." + ext;
+    String das_url = _URL + "." + ext + "?" + _proj + _sel;
     bool status = false;
     String value;
 
@@ -1293,7 +1297,7 @@ Connect::request_dds(bool gui_p = false, const String &ext = "dds")
 {
     (void)gui()->show_gui(gui_p);
 
-    String dds_url = _URL + "." + ext;
+    String dds_url = _URL + "." + ext + "?" + _proj + _sel;
     bool status = false;
 
     status = fetch_url(dds_url);
