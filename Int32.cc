@@ -4,7 +4,12 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.4  1994/11/29 20:10:36  jimg
+// Revision 1.5  1994/12/07 21:23:18  jimg
+// Added config.h
+// Changed xdr_long to XDR_LONG (defined in config.h, based on the target
+// machine.
+//
+// Revision 1.4  1994/11/29  20:10:36  jimg
 // Added functions for data transmission.
 // Added boolean parameter to serialize which, when true, causes the output
 // buffer to be flushed. The default value is false.
@@ -32,9 +37,10 @@
 #endif
 
 #include "Int32.h"
+#include "config.h"
 
 Int32::Int32(const String &n, FILE *in, FILE *out) 
-    : BaseType(n, "Int32", xdr_long, in, out)
+    : BaseType(n, "Int32", XDR_LONG, in, out)
 {
 }
 
