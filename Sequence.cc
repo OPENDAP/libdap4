@@ -38,7 +38,11 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.15  1995/08/26 00:31:43  jimg
+// Revision 1.16  1995/10/23 23:21:01  jimg
+// Added _send_p and _read_p fields (and their accessors) along with the
+// virtual mfuncs set_send_p() and set_read_p().
+//
+// Revision 1.15  1995/08/26  00:31:43  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.14  1995/08/23  00:11:06  jimg
@@ -146,7 +150,7 @@ Sequence::_duplicate(const Sequence &s)
     set_name(s.name());
     set_type(s.type());
 
-    Sequence &cs = (Sequence)s; // cast away const
+    Sequence &cs = (Sequence &)s; // cast away const
     
     for (Pix p = cs.first_var(); p; cs.next_var(p))
 	add_var(cs.var(p)->ptr_duplicate());
@@ -176,6 +180,24 @@ Sequence::operator=(const Sequence &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+void
+Sequence::set_send_p(bool state)
+{
+    for (Pix p = _vars.first(); p; _vars.next(p))
+	_vars(p)->set_send_p(state);
+
+    BaseType::set_send_p(state);
+}
+
+void
+Sequence::set_read_p(bool state)
+{
+    for (Pix p = _vars.first(); p; _vars.next(p))
+	_vars(p)->set_read_p(state);
+
+    BaseType::set_read_p(state);
 }
 
 // NB: Part p defaults to nil for this class
@@ -283,12 +305,21 @@ Sequence::buf2val(void **val)
 }
 
 void
-Sequence::print_decl(ostream &os, String space, bool print_semi)
+Sequence::print_decl(ostream &os, String space, bool print_semi,
+		  bool constraint_info)
 {
     os << space << type_name() << " {" << endl;
     for (Pix p = _vars.first(); p; _vars.next(p))
-	_vars(p)->print_decl(os, space + "    ");
+	_vars(p)->print_decl(os, space + "    ", true, constraint_info);
     os << space << "} " << name();
+
+    if (constraint_info) {
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
     if (print_semi)
 	os << ";" << endl;
 }

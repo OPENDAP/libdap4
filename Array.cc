@@ -38,7 +38,11 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.23  1995/08/26 00:31:21  jimg
+// Revision 1.24  1995/10/23 23:20:44  jimg
+// Added _send_p and _read_p fields (and their accessors) along with the
+// virtual mfuncs set_send_p() and set_read_p().
+//
+// Revision 1.23  1995/08/26  00:31:21  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.22  1995/08/22  23:45:33  jimg
@@ -182,20 +186,19 @@
 #endif
 
 void
-Array::_duplicate(const Array *a)
+Array::_duplicate(const Array &a)
 {
-    set_name(a->name());
-    set_type(a->type());
+    BaseType::_duplicate(a);
 
-    _const_length = a->_const_length;
-    _shape = a->_shape;
-    _var = a->_var->ptr_duplicate();
-    _vec = a->_vec;
+    _const_length = a._const_length;
+    _shape = a._shape;
+    _var = a._var->ptr_duplicate();
+    _vec = a._vec;
     
     _buf = 0;    
     // copy the buffer's contents if there are any
-    if (a->_buf) {
-	val2buf(a->_buf);
+    if (a._buf) {
+	val2buf(a._buf);
     }
 }
 
@@ -209,7 +212,7 @@ Array::Array(const String &n, BaseType *v)
 
 Array::Array(const Array &rhs)
 {
-    _duplicate(&rhs);
+    _duplicate(rhs);
 }
 
 Array::~Array()
@@ -226,9 +229,23 @@ Array::operator=(const Array &rhs)
     if (this == &rhs)
 	return *this;
     
-    _duplicate(&rhs);
+    _duplicate(rhs);
 
     return *this;
+}
+
+void
+Array::set_send_p(bool state)
+{
+    _var->set_send_p(state);
+    BaseType::set_send_p(state);
+}
+
+void 
+Array::set_read_p(bool state)
+{
+    _var->set_read_p(state);
+    BaseType::set_read_p(state);
 }
 
 // set the length (number of elements) after constraint evaluation
@@ -544,14 +561,13 @@ Array::vec(int i)
     return _vec[i];
 }
 
-// NAME defaults to NULL. It is present since the definition of this mfunc is
-// inherited from BaseType, which declares it like this since some ctor types
-// have several member variables.
-
 BaseType *
 Array::var(const String &name)
 {
-    return _var;
+    if (_var->name() == name)
+	return _var;
+    else
+	return _var->var(name);
 }
 
 // Add the BaseType pointer to this ctor type instance. Propagate the name of
@@ -630,9 +646,11 @@ Array::dimension_name(Pix p)
 }
 
 void
-Array::print_decl(ostream &os, String space, bool print_semi)
+Array::print_decl(ostream &os, String space, bool print_semi,
+		  bool constraint_info)
 {
-    _var->print_decl(os, space, false); // print it, but w/o semicolon
+    // print it, but w/o semicolon
+    _var->print_decl(os, space, false, constraint_info); 
 
     for (Pix p = _shape.first(); p; _shape.next(p)) {
 	os << "[";

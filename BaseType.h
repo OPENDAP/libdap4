@@ -8,9 +8,13 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.17  1995/08/26 00:31:25  jimg
-/* Removed code enclosed in #ifdef NEVER #endif.
+/* Revision 1.18  1995/10/23 23:20:49  jimg
+/* Added _send_p and _read_p fields (and their accessors) along with the
+/* virtual mfuncs set_send_p() and set_read_p().
 /*
+ * Revision 1.17  1995/08/26  00:31:25  jimg
+ * Removed code enclosed in #ifdef NEVER #endif.
+ *
  * Revision 1.16  1995/08/23  00:04:44  jimg
  * Switched from String representation of data type to Type enum.
  * Added type_name() member function so that it is simple to get the string
@@ -169,8 +173,6 @@ private:
     static FILE *_out;		// output stream for data from server
     static FILE *_in;		// like _out but for input
 
-    void _duplicate(const BaseType &bt);
-
     // xdr_coder is used as an argument to xdr procedures that encode groups
     // of things (e.g., xdr_array()). Each leaf class's ctor must set this.
     xdrproc_t _xdr_coder;
@@ -189,6 +191,12 @@ private:
     static XDR *_xdrin;		// xdr pointer for input (default: from stdin)
     static XDR *_xdrout;	// xdr pointer for output (default: to stdout)
 
+    bool _read_p;		// true if the value has been read
+    bool _send_p;		// true if the variale is to be transmitted
+
+protected:
+    void _duplicate(const BaseType &bt);
+
 public:
     BaseType(const String &n = (char *)0, const Type &t = null_t,
 	     xdrproc_t xdr = NULL);
@@ -204,6 +212,13 @@ public:
     Type type() const;		// return the Type of this instance
     void set_type(const Type &t); // set the Type
     String type_name() const;	// return the name of this Type as a String
+
+    // These mfuncs are used to test/set the _read_p and _send_p fields.
+    bool read_p();
+    virtual void set_read_p(bool state);
+
+    bool send_p();
+    virtual void set_send_p(bool state);
 
     // xdr_coder is used to encode arrays of cardinal objects
     xdrproc_t xdr_coder();
@@ -264,8 +279,15 @@ public:
     // Write the buffers maintained by XDR to the associated FILE *s.
     bool expunge();
 
+    // Write the variable's declaration. This function has two uses: 1) to
+    // print the variale so that it can be parsed again (i.e., to generate a
+    // textual representation for a binary object, and 2) to print information
+    // useful in debugging DODS.
     virtual void print_decl(ostream &os, String space = "    ",
-			    bool print_semi = true);
+			    bool print_semi = true, 
+			    bool constraint_info = false);
+
+    // This mfunc is primarily intended for debugging DODS. 
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true) = 0;
 

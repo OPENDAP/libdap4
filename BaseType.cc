@@ -38,7 +38,11 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.17  1995/08/26 00:31:24  jimg
+// Revision 1.18  1995/10/23 23:20:47  jimg
+// Added _send_p and _read_p fields (and their accessors) along with the
+// virtual mfuncs set_send_p() and set_read_p().
+//
+// Revision 1.17  1995/08/26  00:31:24  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.16  1995/08/23  00:04:45  jimg
@@ -193,7 +197,7 @@ set_xdrout(FILE *out)
 // greater).
 
 BaseType::BaseType(const String &n, const Type &t, xdrproc_t xdr)
-    : _name(n), _type(t), _xdr_coder(xdr)
+    : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false)
 {
 } 
 
@@ -275,6 +279,35 @@ BaseType::type_name() const
     }
 }
 
+// Return the state of _read_p (true if the value of the variable has been
+// read (and is in memory) false otherwise).
+bool
+BaseType::read_p()
+{
+    return _read_p;
+}
+
+void
+BaseType::set_read_p(bool state)
+{
+    _read_p = state;
+}
+
+
+// Return the state of _send_p (true if the variable should be sent, false
+// otherwise).
+bool
+BaseType::send_p()
+{
+    return _send_p;
+}
+
+void 
+BaseType::set_send_p(bool state)
+{
+    _send_p = state;
+}
+
 // Return a pointer to the contained variable in a ctor class. For BaseType
 // this always prints an error message. It is defined here so that the ctor
 // descendents of BaseType can access it when they are stored in a BaseType
@@ -321,9 +354,18 @@ BaseType::xdrout() const
 // print_semi is true, append a semicolon and newline.
 
 void 
-BaseType::print_decl(ostream &os, String space, bool print_semi)
+BaseType::print_decl(ostream &os, String space, bool print_semi, 
+		     bool constraint_info)
 {
     os << space << type_name() << " " << _name;
+
+    if (constraint_info) {
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
     if (print_semi)
 	os << ";" << endl;
 }

@@ -38,7 +38,11 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.14  1995/08/26 00:31:33  jimg
+// Revision 1.15  1995/10/23 23:20:55  jimg
+// Added _send_p and _read_p fields (and their accessors) along with the
+// virtual mfuncs set_send_p() and set_read_p().
+//
+// Revision 1.14  1995/08/26  00:31:33  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.13  1995/08/23  00:11:12  jimg
@@ -140,7 +144,7 @@ Grid::_duplicate(const Grid &s)
     
     _array_var = s._array_var->ptr_duplicate();
 
-    Grid &cs = (Grid)s;		// cast away const;
+    Grid &cs = (Grid &)s;		// cast away const;
 
     for (Pix p = cs._map_vars.first(); p; cs._map_vars.next(p))
 	_map_vars.append(cs._map_vars(p)->ptr_duplicate());
@@ -172,6 +176,28 @@ Grid::operator=(const Grid &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+void
+Grid::set_send_p(bool state)
+{
+    _array_var->set_send_p(state);
+
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	_map_vars(p)->set_send_p(state);
+
+    BaseType::set_send_p(state);
+}
+
+void
+Grid::set_read_p(bool state)
+{
+    _array_var->set_read_p(state);
+
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	_map_vars(p)->set_read_p(state);
+
+    BaseType::set_read_p(state);
 }
 
 unsigned int
@@ -301,18 +327,27 @@ Grid::map_var(Pix p)
 }
 
 void 
-Grid::print_decl(ostream &os, String space, bool print_semi)
+Grid::print_decl(ostream &os, String space, bool print_semi,
+		 bool constraint_info)
 {
     os << space << type_name() << " {" << endl;
 
     os << space << " ARRAY:" << endl;
-    _array_var->print_decl(os, space + "    ");
+    _array_var->print_decl(os, space + "    ", true, constraint_info);
 
     os << space << " MAPS:" << endl;
     for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	_map_vars(p)->print_decl(os, space + "    ");
+	_map_vars(p)->print_decl(os, space + "    ", true, constraint_info);
 
     os << space << "} " << name();
+
+    if (constraint_info) {
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
     if (print_semi)
 	os << ";" << endl;
 }

@@ -13,9 +13,13 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.13  1995/08/26 00:31:44  jimg
-/* Removed code enclosed in #ifdef NEVER #endif.
+/* Revision 1.14  1995/10/23 23:21:03  jimg
+/* Added _send_p and _read_p fields (and their accessors) along with the
+/* virtual mfuncs set_send_p() and set_read_p().
 /*
+ * Revision 1.13  1995/08/26  00:31:44  jimg
+ * Removed code enclosed in #ifdef NEVER #endif.
+ *
  * Revision 1.12  1995/08/22  23:48:23  jimg
  * Removed card() member function.
  * Removed old, deprecated member functions.
@@ -124,6 +128,9 @@ public:
     const Sequence &operator=(const Sequence &rhs);
     virtual BaseType *ptr_duplicate() = 0;
 
+    virtual void set_send_p(bool state);
+    virtual void set_read_p(bool state);
+
     virtual unsigned int width();
 
     virtual bool serialize(bool flush = false);
@@ -143,7 +150,8 @@ public:
     BaseType *var(Pix p);
 
     virtual void print_decl(ostream &os, String space = "    ",
-			    bool print_semi = true);
+			    bool print_semi = true,
+			    bool constraint_info = false);
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
     virtual bool check_semantics(bool all = false);

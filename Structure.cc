@@ -38,7 +38,11 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.15  1995/08/26 00:31:49  jimg
+// Revision 1.16  1995/10/23 23:21:04  jimg
+// Added _send_p and _read_p fields (and their accessors) along with the
+// virtual mfuncs set_send_p() and set_read_p().
+//
+// Revision 1.15  1995/08/26  00:31:49  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.14  1995/08/23  00:11:08  jimg
@@ -148,7 +152,7 @@ Structure::_duplicate(const Structure &s)
     set_name(s.name());
     set_type(s.type());
 
-    Structure &cs = (Structure)s; // cast away const
+    Structure &cs = (Structure &)s; // cast away const
 
     for (Pix p = cs._vars.first(); p; cs._vars.next(p))
 	_vars.append(cs._vars(p)->ptr_duplicate());
@@ -178,6 +182,24 @@ Structure::operator=(const Structure &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+void
+Structure::set_send_p(bool state)
+{
+    for (Pix p = _vars.first(); p; _vars.next(p))
+	_vars(p)->set_send_p(state);
+
+    BaseType::set_send_p(state);
+}
+
+void
+Structure::set_read_p(bool state)
+{
+    for (Pix p = _vars.first(); p; _vars.next(p))
+	_vars(p)->set_read_p(state);
+
+    BaseType::set_read_p(state);
 }
 
 // NB: Part p defaults to nil for this class
@@ -283,12 +305,21 @@ Structure::var(Pix p)
 }
 
 void
-Structure::print_decl(ostream &os, String space, bool print_semi)
+Structure::print_decl(ostream &os, String space, bool print_semi,
+		      bool constraint_info)
 {
     os << space << type_name() << " {" << endl;
     for (Pix p = _vars.first(); p; _vars.next(p))
-	_vars(p)->print_decl(os, space + "    ");
+	_vars(p)->print_decl(os, space + "    ", true, constraint_info);
     os << space << "} " << name();
+
+    if (constraint_info) {
+	if (send_p())
+	    cout << ": Send True";
+	else
+	    cout << ": Send False";
+    }
+
     if (print_semi)
 	os << ";" << endl;
 }

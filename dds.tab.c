@@ -31,12 +31,14 @@
 
 #line 95 "dds.y"
 
+#ifdef NEVER
 #define YYSTYPE char *
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
+#endif
 
-static char rcsid[]={"$Id: dds.tab.c,v 1.3 1995/08/26 00:32:06 jimg Exp $"};
+static char rcsid[]={"$Id: dds.tab.c,v 1.4 1995/10/23 23:21:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,13 +46,14 @@ static char rcsid[]={"$Id: dds.tab.c,v 1.3 1995/08/26 00:32:06 jimg Exp $"};
 
 #include <iostream.h>
 
+#include "parser.h"
 #include "dds.tab.h"
 #include "util.h"
 #include "DDS.h"
 #include "Array.h"
 #include "BTXPStack.h"
 
-extern int dds_line_num;
+extern int dds_line_num;	/* defined in dds.lex */
 
 static BaseTypePtrXPStack ctor;	/* stack for ctor types */
 static BaseType *current;
@@ -59,9 +62,9 @@ static char id[ID_MAX];
 
 int ddslex();
 int ddserror(char *s);
+
 void add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, 
 	       Part p);
-static void save_str(char *dst, char *src);
 
 
 #ifndef YYLTYPE
@@ -157,10 +160,10 @@ static const short yyrhs[] = {    28,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   158,   159,   162,   165,   166,   167,   170,   174,   178,   180,
-   184,   186,   190,   192,   194,   196,   203,   205,   207,   209,
-   217,   220,   223,   226,   229,   232,   233,   234,   235,   236,
-   239,   240,   243,   255,   259,   272,   274
+   161,   162,   165,   168,   169,   170,   173,   177,   181,   183,
+   187,   189,   193,   195,   197,   199,   206,   208,   210,   212,
+   220,   223,   226,   229,   232,   235,   236,   237,   238,   239,
+   242,   243,   246,   258,   262,   275,   277
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","ID","INTEGER",
@@ -723,47 +726,47 @@ yyreduce:
   switch (yyn) {
 
 case 7:
-#line 171 "dds.y"
+#line 174 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 8:
-#line 175 "dds.y"
+#line 178 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 9:
-#line 179 "dds.y"
+#line 182 "dds.y"
 { current = ctor.pop(); ;
     break;}
 case 10:
-#line 181 "dds.y"
+#line 184 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 11:
-#line 185 "dds.y"
+#line 188 "dds.y"
 { current = ctor.pop(); ;
     break;}
 case 12:
-#line 187 "dds.y"
+#line 190 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 13:
-#line 191 "dds.y"
+#line 194 "dds.y"
 { part = independent; ;
     break;}
 case 14:
-#line 193 "dds.y"
+#line 196 "dds.y"
 { part = dependent;;
     break;}
 case 15:
-#line 195 "dds.y"
+#line 198 "dds.y"
 { current = ctor.pop(); ;
     break;}
 case 16:
-#line 197 "dds.y"
+#line 200 "dds.y"
 { if (current->check_semantics()) {
 			part = nil; 
 			add_entry(table, ctor, &current, part); 
@@ -771,19 +774,19 @@ case 16:
                     ;
     break;}
 case 17:
-#line 204 "dds.y"
+#line 207 "dds.y"
 { part = array; ;
     break;}
 case 18:
-#line 206 "dds.y"
+#line 209 "dds.y"
 { part = maps; ;
     break;}
 case 19:
-#line 208 "dds.y"
+#line 211 "dds.y"
 { current = ctor.pop(); ;
     break;}
 case 20:
-#line 210 "dds.y"
+#line 213 "dds.y"
 { if (current->check_semantics()) {
 			part = nil; 
 			add_entry(table, ctor, &current, part); 
@@ -791,51 +794,51 @@ case 20:
                     ;
     break;}
 case 21:
-#line 217 "dds.y"
+#line 220 "dds.y"
 { ctor.push(NewList()); ;
     break;}
 case 22:
-#line 220 "dds.y"
+#line 223 "dds.y"
 { ctor.push(NewStructure()); ;
     break;}
 case 23:
-#line 223 "dds.y"
+#line 226 "dds.y"
 { ctor.push(NewSequence()); ;
     break;}
 case 24:
-#line 226 "dds.y"
+#line 229 "dds.y"
 { ctor.push(NewFunction()); ;
     break;}
 case 25:
-#line 229 "dds.y"
+#line 232 "dds.y"
 { ctor.push(NewGrid()); ;
     break;}
 case 26:
-#line 232 "dds.y"
+#line 235 "dds.y"
 { current = NewByte(); ;
     break;}
 case 27:
-#line 233 "dds.y"
+#line 236 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 234 "dds.y"
+#line 237 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 29:
-#line 235 "dds.y"
+#line 238 "dds.y"
 { current = NewStr(); ;
     break;}
 case 30:
-#line 236 "dds.y"
+#line 239 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 31:
-#line 239 "dds.y"
+#line 242 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 33:
-#line 244 "dds.y"
+#line 247 "dds.y"
 { 
 		     if (current->type() == array_t) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -849,13 +852,13 @@ case 33:
 		 ;
     break;}
 case 34:
-#line 256 "dds.y"
+#line 259 "dds.y"
 {
-		     save_str(id, yyvsp[0]);
+		     save_str(id, yyvsp[0], dds_line_num);
 		 ;
     break;}
 case 35:
-#line 260 "dds.y"
+#line 263 "dds.y"
 { 
 		     if (current->type() == array_t) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), id);
@@ -869,7 +872,7 @@ case 35:
 		 ;
     break;}
 case 37:
-#line 274 "dds.y"
+#line 277 "dds.y"
 { table.set_dataset_name(yyvsp[0]); ;
     break;}
 }
@@ -1070,7 +1073,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 277 "dds.y"
+#line 280 "dds.y"
 
 
 int 
@@ -1109,22 +1112,3 @@ add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, Part part)
     else
 	table.add_var(*current);
 }
-
-/* 
-   Copy upto ID_MAX - 1 characters from SRC to DST. If SRC contains more
-   characters, print an error message.
-
-   Returns: void
-*/
-
-static void
-save_str(char *dst, char *src)
-{
-    strncpy(dst, src, ID_MAX);
-    dst[ID_MAX-1] = '\0';	       
-    if (strlen(src) >= ID_MAX) 
-	cerr << "line: " << dds_line_num << "`" << src << "' truncated to `"
-             << dst << "'" << endl;
-}
-
-

@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.12  1995/08/23 00:06:30  jimg
+// Revision 1.13  1995/10/23 23:20:50  jimg
+// Added _send_p and _read_p fields (and their accessors) along with the
+// virtual mfuncs set_send_p() and set_read_p().
+//
+// Revision 1.12  1995/08/23  00:06:30  jimg
 // Changed from old mfuncs to new(er) ones.
 //
 // Revision 1.11  1995/07/09  21:28:55  jimg
@@ -93,7 +97,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.12 1995/08/23 00:06:30 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.13 1995/10/23 23:20:50 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -103,6 +107,7 @@ static char rcsid[]="$Id: DDS.cc,v 1.12 1995/08/23 00:06:30 jimg Exp $";
 
 #include "DDS.h"
 #include "errmsg.h"
+#include "debug.h"
 #include "util.h"
 
 #include "config_dap.h"
@@ -188,14 +193,53 @@ DDS::del_var(const String &n)
 	    pp = p;
 }
 
+// Return a porinter to the named variable. This mfunc does some unusual
+// things: if a name contains one or more `.'s then it assumes that N is the
+// name of some aggregate member - it searches for the Structure, ..., Grid
+// member named and returns a pointer to that member (regardless of nesting
+// level). In addition, if simple name is given, but that name does not
+// appear in the list of top-level variables, var() will search aggregates
+// for a field by that name and return a pointer to it iff that field name is
+// unique.
+// 
+// Returns: A baseType * to a variable whose name in N. If no such variable
+// can be found, returns null.
+
 BaseType *
 DDS::var(const String &n)
-{ 
-    for (Pix p = vars.first(); p; vars.next(p))
-	if (vars(p)->name() == n)
-	    return vars(p);
+{
+    if (n.contains(".")) {
+	String name = (String)n; // cast away const
+	String aggregate = name.before(".");
+	String field = name.from(".");
+	field = field.after(".");
 
-    return 0;
+	BaseType *agg_ptr = var(aggregate);
+	if (agg_ptr)
+	    return agg_ptr->var(field);	// recurse
+	else
+	    return 0;		// qualified names must be *fully* qualified
+    }
+    else {
+	for (Pix p = vars.first(); p; vars.next(p)) {
+	    // Look for the name in the dataset's top-level
+	    if (vars(p)->name() == n) {
+		DBG(cerr << "Found " << n);
+		return var(p);
+	    }
+	    // otherwise, see if it is part of an aggregate
+#ifdef NEVER
+	    if (vars(p)->type() == structure_t
+		|| vars(p)->type() == sequence_t
+		|| vars(p)->type() == function_t
+		|| vars(p)->type() == grid_t
+		&& var(n))
+		return var(n);
+#endif
+	}
+    }
+
+    return 0;			// It is not here.
 }
 
 // This is necessary because (char *) can be cast to Pix (because PIX is

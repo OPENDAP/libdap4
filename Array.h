@@ -7,9 +7,13 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.19  1995/08/26 00:31:23  jimg
-/* Removed code enclosed in #ifdef NEVER #endif.
+/* Revision 1.20  1995/10/23 23:20:46  jimg
+/* Added _send_p and _read_p fields (and their accessors) along with the
+/* virtual mfuncs set_send_p() and set_read_p().
 /*
+ * Revision 1.19  1995/08/26  00:31:23  jimg
+ * Removed code enclosed in #ifdef NEVER #endif.
+ *
  * Revision 1.18  1995/08/22  23:48:12  jimg
  * Removed card() member function.
  * Removed old, deprecated member functions.
@@ -144,7 +148,7 @@ private:
     void *_buf;			// used for arrays of cardinal types
     BaseTypePtrVec _vec;	// used for arrays of all other types
 
-    void _duplicate(const Array *a);
+    void _duplicate(const Array &a);
 
 public:
     Array(const String &n = (char *)0, BaseType *v = 0);
@@ -153,6 +157,9 @@ public:
 
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
+
+    virtual void set_send_p(bool state);
+    virtual void set_read_p(bool state);
 
     virtual unsigned int width(); // bytes in the pointer to the array
     unsigned int length();	// how many elements are there in the array
@@ -183,7 +190,8 @@ public:
     unsigned int dimensions();
 
     virtual void print_decl(ostream &os, String space = "    ",
-			    bool print_semi = true);
+			    bool print_semi = true,
+			    bool constraint_info = false);
     virtual void print_val(ostream &os, String space = "", 
 			   bool print_decl_p = true);
 
