@@ -14,6 +14,9 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.40  1998/05/19 22:25:14  jimg
+ * Fixed up some comments about reset_ and clear_constraint.
+ *
  * Revision 1.39  1998/05/18 23:05:08  jimg
  * Fixed the documentation of update_length. This member function is
  * deprecated.
@@ -341,44 +344,44 @@ public:
       */
     void append_dim(int size, String name = "");
 
-  /** Once a dimension has been created (see #append_dim()#), it can
-      be ``constrained''.  This will make the array appear to the rest
-      of the world to be smaller than it is.  This functions sets the
-      constraint for a dimension, and marks that dimension
-      ``selected''.
+    /** Once a dimension has been created (see #append_dim()#), it can
+	be ``constrained''.  This will make the array appear to the rest
+	of the world to be smaller than it is.  This functions sets the
+	projection for a dimension, and marks that dimension as part of the
+	current projection.
 
-      @memo Adds a constraint to an Array dimension.  
+	@memo Adds a constraint to an Array dimension.  
 
-      @param p An index (of type Pix) pointing to the dimension in the
-      list of dimensions.
-      @param start The start index of the constraint.
-      @param stride The stride value of the constraint.
-      @param stop The stop index of the constraint.
-      @return TRUE on success, FALSE otherwise.  */
+	@param p An index (of type Pix) pointing to the dimension in the
+	list of dimensions.
+	@param start The start index of the constraint.
+	@param stride The stride value of the constraint.
+	@param stop The stop index of the constraint.
+	@return TRUE on success, FALSE otherwise.  */
     bool add_constraint(Pix p, int start, int stride, int stop);
 
-  /** Resets the constraint to select the entire dimension. */
+    /** Resets the projection to select the complete array. */
     void reset_constraint();
 
-  /** Clears the constraint and marks the dimension not selected. */
+    /** Clears the projection; add each projected dimension explicitly using
+	add_constraint. */
     void clear_constraint();
 
-  /** Returns a pointer to the first dimension of the array. */    
+    /** Returns a pointer to the first dimension of the array. */    
     Pix first_dim();
 
-  /** Given a dimension index, returns the index of the next
-      dimension. */
+    /** Given a dimension index, returns the index of the next
+	dimension. */
     void next_dim(Pix &p);
 
-  /** Returns the size of the dimension.  
+    /** Returns the size of the dimension.  
 
-      @param p The Pix index of the dimension.
-      @param constrained If this parameter is TRUE, the function
-      returns the constrained size of the array.  If the dimension is
-      not selected, the function returns zero.  If it is FALSE, the
-      function returns the dimension size whether or not the dimension
-      is constrained.
-      */
+	@param p The Pix index of the dimension.
+	@param constrained If this parameter is TRUE, the function
+	returns the constrained size of the array.  If the dimension is
+	not selected, the function returns zero.  If it is FALSE, the
+	function returns the dimension size whether or not the dimension
+	is constrained. */
     int dimension_size(Pix p, bool constrained = false);
 
   /** Returns the start index of the constraint.
