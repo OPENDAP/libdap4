@@ -8,9 +8,15 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.7  1994/12/12 20:33:03  jimg
-/* Added enum Part - used to be part of CtorType.
+/* Revision 1.8  1994/12/16 22:04:21  jimg
+/* Added the mfuncs var() and add_var(). These are used by ctor types. They
+/* need to be defined here so that access to them via BaseType * will work
+/* (actually, so the code will compile). These versions just print error
+/* messages. See Array.h, ... for examples of the real mfuncs.
 /*
+ * Revision 1.7  1994/12/12  20:33:03  jimg
+ * Added enum Part - used to be part of CtorType.
+ *
  * Revision 1.6  1994/11/29  19:14:15  jimg
  * Added mroe support for data transmission; BaseType now contains enough
  * functionality to support transmission of all the simple datatypes.
@@ -105,6 +111,12 @@ public:
     void set_var_type(const String &t);
 
     xdrproc_t xdr_coder();
+
+    // The var() and add_var() mfuncs are only used by ctor classes (Array,
+    // Structure, ...). Their BaseType implementations print an error
+    // message.
+    virtual BaseType *var(const String &name = (char *)0);
+    virtual void add_var(BaseType *v, Part p = nil);
 
     virtual unsigned int size() = 0; // local representation size in bytes
 
