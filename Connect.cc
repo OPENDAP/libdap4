@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.63  1998/03/26 00:19:24  jimg
+// Changed from converters to the _conv member in www_lib_init.
+//
 // Revision 1.62  1998/03/19 23:48:24  jimg
 // Removed old code associated with the (bogus) caching scheme.
 // Removed the _connects field.
@@ -353,7 +356,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.62 1998/03/19 23:48:24 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.63 1998/03/26 00:19:24 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -846,8 +849,8 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     
     // Register the default set of converters.
     _conv = HTList_new();
-    HTConverterInit(converters);
-    HTFormat_setConversion(converters);
+    HTConverterInit(_conv);
+    HTFormat_setConversion(_conv);
 
     // Register the default set of transfer encoders and decoders
     HTList *transfer_encodings = HTList_new();
