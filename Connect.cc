@@ -8,6 +8,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.52  1997/03/05 08:24:33  jimg
+// Fixed the logfile bug; when linking with ld or cc static objects are not
+// initialized. The _logfile member was a static global object and caused core
+// dumps when it was not initialized.
+//
 // Revision 1.51  1997/02/19 02:11:34  jimg
 // Fixed ctors (removed lame error object initializers).
 //
@@ -289,7 +294,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.51 1997/02/19 02:11:34 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.52 1997/03/05 08:24:33 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -362,7 +367,9 @@ error to the data server maintainer or to gmilkowski@gso.uri.edu"};
 // Initially, _connects is -1 to indicate that no connection has been made.
 
 int Connect::_connects = -1;
+#if 0
 String Connect::_logfile = "";
+#endif
 HTList *Connect::_conv = 0;
 
 #ifdef CATCH_SIG
@@ -1067,10 +1074,10 @@ Connect::~Connect()
     
     // If this is the last connect, close the log file.
     if (_connects == 0) {
+#if 0
 	if (_logfile != "") 
 	    HTLog_close();
 
-#if 0
 	// Replace this with code to flush the cache once that is being used.
 	// It *appears* from the code (HTLib.c) that this function is mostly
 	// for PC users. jhrg 11/24/96
