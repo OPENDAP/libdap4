@@ -9,6 +9,10 @@
 
 
 // $Log: Error.y,v $
+// Revision 1.6  1997/08/23 00:17:19  jimg
+// Added to the `description' rule so that Error objects with only a code
+// will parse.
+//
 // Revision 1.5  1997/02/14 23:56:11  jimg
 // Changed grammar to allow Error objects which have no `program' component.
 // That is, the program part is absent. Previously the program part had to be
@@ -31,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.y,v 1.5 1997/02/14 23:56:11 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.y,v 1.6 1997/08/23 00:17:19 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,6 +56,7 @@ static char rcsid[] __unused__ = {"$Id: Error.y,v 1.5 1997/02/14 23:56:11 jimg E
 
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
 #define STATUS(arg) ((parser_arg *)(arg))->_status
+
 #if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
 #else
@@ -100,6 +105,7 @@ contents:	description program { $$ = $1 && $2; }
 ;
 
 description:	code message { $$ = $1 && $2; }
+                | code { $$ = $1; }
 ;
 
 program:	program_type program_code { $$ = $1 && $2; }
