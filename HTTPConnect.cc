@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.6 2003/02/27 08:32:51 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.7 2003/02/27 23:36:10 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -644,14 +644,32 @@ HTTPConnect::server_version() throw(InternalErr)
     return d_server;
 }
 
+/** Set the <c>accept deflate</c> property. If true, the DAP client announces
+    to a server that it can accept responses compressed using the \c deflate
+    algorithm. This property is automatically set using a value from the
+    <c>.dodsrc</c> configuration file. This method provides a way to override
+    that behavior. NB: If the configuration file is not present or does not
+    include a value for this property, it is set to \c false.
+
+    @param deflate True sets the <c>accept deflate</c> property, False clears
+    it. */
+void
+HTTPConnect::set_accept_deflate(bool deflate)
+{
+    d_accept_deflate = deflate;
+}
+
 /** Set the credentials for responding to challenges while dereferencing
     URLs. Alternatively, these can be embedded in the URL. This method
-    provide a way for clients of HTTPConnect to get credentials from users
-    (say using a popup dialog) and not have to hack the URL to pass that
-    information to libcurl. 
+    provides a way for clients of HTTPConnect to get credentials from users
+    (say using a pop up dialog) and to not hack the URL to pass that
+    information to libcurl. Note that the 'credentials in the URL' scheme \i
+    is part of the URL standard.
 	
     @param u The username.
     @param p The password. 
+    @exception InternalErr The credentials could not be registered with
+    libcurl. 
     @see extract_auth_info() */
 
 void 
@@ -669,6 +687,9 @@ HTTPConnect::set_credentials(string u, string p) throw(InternalErr)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.7  2003/02/27 23:36:10  jimg
+// Added set_accept_deflate() method.
+//
 // Revision 1.6  2003/02/27 08:32:51  jimg
 // Removed old code.
 //

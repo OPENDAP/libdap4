@@ -146,16 +146,22 @@ public:
     virtual ~HTTPConnect();
 
     void set_credentials(string u, string p) throw(InternalErr);
+    void set_accept_deflate(bool defalte);
 
     FILE *fetch_url(const string &url) throw(Error, InternalErr);
     bool is_response_present();
 
     vector<string> get_response_headers() throw(InternalErr);
+    // Add methods with get_* names for these properties; deprecate the old
+    // names. 02/27/03 jhrg
     ObjectType type() throw(InternalErr);
     string server_version() throw(InternalErr);
 };
 
 // $Log: HTTPConnect.h,v $
+// Revision 1.6  2003/02/27 23:36:10  jimg
+// Added set_accept_deflate() method.
+//
 // Revision 1.5  2003/02/27 18:21:48  jimg
 // I removed old code (code inside #if 0 ... #endif) and changed the private
 // definitions of HTTPConnect(), ... to protected definitions. These methods
