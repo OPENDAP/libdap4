@@ -32,6 +32,10 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.46  2000/07/13 07:07:13  rmorris
+ * Mod to keep the intermediate file name in the Connect object in the
+ * case of win32 (unlink() works differently on win32,  needed another approach).
+ *
  * Revision 1.45  2000/07/09 21:57:09  rmorris
  * Mods's to increase portability, minimuze ifdef's in win32 and account
  * for differences between the Standard C++ Library - most notably, the
@@ -384,9 +388,17 @@ private:
 
     // The following members are valid only if _LOCAL is false.
 
-    static int _num_remote_conns; // How many remote connections exist?
-    static bool _cache_enabled;	// True if the cache is on.
-    static char *_cache_root;	// If on, where is the cache?
+    static int _num_remote_conns;	// How many remote connections exist?
+    static bool _cache_enabled;		// True if the cache is on.
+    static char *_cache_root;		// If on, where is the cache?
+#ifdef WIN32
+	// We need to keep the name associated with _output around under win32
+	// because an unlink() at time 'now' doesn't delete a file at some time
+	// (now + n) as it does under UNIX.  Unix will delete the file when the
+	// last process using the file closes it - win32 will not.  Under win32,
+	// we count on the Connect destructor using _tfname to remove the file.
+	string _tfname;			
+#endif
 
     static HTList *_conv;	// List of global converters
     
