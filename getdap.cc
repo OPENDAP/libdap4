@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.49  2000/08/31 00:28:02  rmorris
+// Fixed lost mod for port to win32 - newlines in string constanct
+// not ok with VC++.  (this was in usage()).
+//
 // Revision 1.48  2000/08/16 00:39:17  jimg
 // Added an option (-s) to test the Sequence::getRowNumber method.
 //
@@ -214,7 +218,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.48 2000/08/16 00:39:17 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.49 2000/08/31 00:28:02 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -229,52 +233,53 @@ using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.48 $";
+const char *version = "$Revision: 1.49 $";
 extern int keep_temps;		// defined in Connect.cc
+
 
 void
 usage(string name)
 {
-  cerr << "Usage: " << name << 
-"[dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]
-[gVvk] [t <codes>] [T <list>] <file> [<file> ...]
+    cerr << "Usage: " << name; 
+	cerr << " [dDagVvk] [c <expr>] [t <codes>] [m <num>] [-T <list>] <url> [<url> ...]" << endl;
+	cerr << "[gVvk] [t <codes>] [T <list>] <file> [<file> ...]" << endl;
+    cerr << "In the first form of the command, dereference the URL" << endl;
+	cerr << "perform the requested operations. In the second, assume" << endl;
+	cerr << "the files are DODS data objects (stored in files or read" << endl;
+	cerr << "from pipes) and process them as if -D were given." << endl;
+    cerr << "        d: For each URL, get the DODS DDS." << endl;
+    cerr << "        a: For each URL, get the DODS DAS." << endl;
+    cerr << "        D: For each URL, get the DODS Data." << endl;
+    cerr << "        g: Show the progress GUI." << endl;
+    cerr << "        v: Verbose." << endl;
+    cerr << "        V: Version." << endl;
+    cerr << "        c: <expr> is a contraint expression. Used with -D." << endl;
+    cerr << "           NB: You can use a `?' for the CE also." << endl;
+    cerr << "        k: Keep temporary files created by DODS core" << endl;
+    cerr << "        m: Request the same URL <num> times." << endl;
+    cerr << "        z: Don't ask the server to compress data." << endl;
+    cerr << "        T: <list> List of `Accepted Types'. Translating servers use this." << endl;
+	cerr << "        s: Print Sequences using numbered rows." << endl;
+	cerr << endl;
+    cerr << "        t: <options> trace output; use -td for default." << endl;
+    cerr << "          a: show anchor trace." << endl;
+    cerr << "          A: show app trace." << endl;
+    cerr << "          b: show bind trace." << endl;
+    cerr << "          c: show cache trace." << endl;
+    cerr << "          h: show auth trace." << endl;
+    cerr << "          i: show pics trace." << endl;
+    cerr << "          k: show core trace." << endl;
+    cerr << "          l: show sgml trace." << endl;
+    cerr << "          m: show mem trace." << endl;
+    cerr << "          p: show protocol trace." << endl;
+    cerr << "          s: show stream trace." << endl;
+    cerr << "          t: show thread trace." << endl;
+    cerr << "          u: show uri trace." << endl;
+    cerr << "          U: show util trace." << endl;
+    cerr << "          x: show mux trace." << endl;
+    cerr << "          z: show all traces." << endl;
+    cerr << "       Without D, d or a, print the URL." << endl;
 
-In the first form of the command, dereference the URL
-perform the requested operations. In the second, assume
-the files are DODS data objects (stored in files or read
-from pipes) and process them as if -D were given.
-        d: For each URL, get the DODS DDS.
-        a: For each URL, get the DODS DAS.
-        D: For each URL, get the DODS Data.
-        g: Show the progress GUI.
-        v: Verbose.
-        V: Version.
-        c: <expr> is a contraint expression. Used with -D.
-           NB: You can use a `?' for the CE also.
-        k: Keep temporary files created by DODS core
-        m: Request the same URL <num> times.
-        z: Don't ask the server to compress data.
-        T: <list> List of `Accepted Types'. Translating servers use this.
-        s: Print Sequences using numbered rows.
-
-        t: <options> trace output; use -td for default.
-          a: show anchor trace.
-          A: show app trace.
-          b: show bind trace.
-          c: show cache trace.
-          h: show auth trace.
-          i: show pics trace.
-          k: show core trace.
-          l: show sgml trace.
-          m: show mem trace.
-          p: show protocol trace.
-          s: show stream trace.
-          t: show thread trace.
-          u: show uri trace.
-          U: show util trace.
-          x: show mux trace.
-          z: show all traces.
-       Without D, d or a, print the URL." << endl;
 }
 
 bool
