@@ -24,12 +24,12 @@
 #define	SCAN_LESS_EQL	267
 #define	SCAN_REGEXP	268
 
-#line 187 "expr.y"
+#line 191 "expr.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.14 2000/09/11 16:40:17 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.15 2000/09/21 02:52:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -127,7 +127,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 proj_func get_proj_function(const DDS &table, const char *name);
 
 
-#line 290 "expr.y"
+#line 294 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -219,11 +219,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   332,   338,   340,   341,   344,   350,   351,   357,   367,   376,
-   380,   386,   406,   407,   413,   422,   433,   439,   452,   453,
-   454,   466,   472,   484,   491,   500,   504,   510,   519,   530,
-   535,   540,   547,   554,   563,   567,   573,   577,   581,   587,
-   588,   589,   590,   591,   592,   593
+   336,   342,   344,   345,   348,   354,   355,   361,   371,   380,
+   384,   390,   410,   411,   417,   426,   437,   443,   456,   457,
+   458,   470,   476,   488,   495,   504,   508,   514,   523,   534,
+   539,   544,   551,   558,   567,   571,   577,   581,   585,   591,
+   592,   593,   594,   595,   596,   597
 };
 #endif
 
@@ -856,36 +856,36 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 333 "expr.y"
+#line 337 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 340 "expr.y"
+#line 344 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 341 "expr.y"
+#line 345 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 345 "expr.y"
+#line 349 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 352 "expr.y"
+#line 356 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 358 "expr.y"
+#line 362 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
@@ -897,7 +897,7 @@ case 8:
 		;
     break;}
 case 9:
-#line 368 "expr.y"
+#line 372 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var)
@@ -908,19 +908,19 @@ case 9:
 		;
     break;}
 case 10:
-#line 377 "expr.y"
-{
-		    yyval.boolean = yyvsp[0].boolean;
-		;
-    break;}
-case 11:
 #line 381 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
+case 11:
+#line 385 "expr.y"
+{
+		    yyval.boolean = yyvsp[0].boolean;
+		;
+    break;}
 case 12:
-#line 387 "expr.y"
+#line 391 "expr.y"
 {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -940,13 +940,13 @@ case 12:
 		;
     break;}
 case 14:
-#line 408 "expr.y"
+#line 412 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 15:
-#line 414 "expr.y"
+#line 418 "expr.y"
 {
 		    if (yyvsp[-4].rval_ptr) {
 			(*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -957,7 +957,7 @@ case 15:
 		;
     break;}
 case 16:
-#line 423 "expr.y"
+#line 427 "expr.y"
 {
 		    if (yyvsp[-2].rval_ptr) {
 			rvalue_list *rv = new rvalue_list;
@@ -970,13 +970,13 @@ case 16:
 		;
     break;}
 case 17:
-#line 434 "expr.y"
+#line 438 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 18:
-#line 440 "expr.y"
+#line 444 "expr.y"
 {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		   if (!b_func) {
@@ -989,7 +989,7 @@ case 18:
 	       ;
     break;}
 case 21:
-#line 455 "expr.y"
+#line 459 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
@@ -1003,7 +1003,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 467 "expr.y"
+#line 471 "expr.y"
 {
 		    yyval.rval_ptr = dereference_url(yyvsp[0].val);
 		    if (!yyval.rval_ptr)
@@ -1011,7 +1011,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 473 "expr.y"
+#line 477 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
@@ -1023,7 +1023,7 @@ case 23:
 		;
     break;}
 case 24:
-#line 485 "expr.y"
+#line 489 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -1032,7 +1032,7 @@ case 24:
 		;
     break;}
 case 25:
-#line 492 "expr.y"
+#line 496 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -1041,19 +1041,19 @@ case 25:
 		;
     break;}
 case 26:
-#line 501 "expr.y"
+#line 505 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
 case 27:
-#line 505 "expr.y"
+#line 509 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
 case 28:
-#line 511 "expr.y"
+#line 515 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1064,7 +1064,7 @@ case 28:
 		;
     break;}
 case 29:
-#line 520 "expr.y"
+#line 524 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1075,28 +1075,28 @@ case 29:
 		;
     break;}
 case 30:
-#line 531 "expr.y"
+#line 535 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 31:
-#line 536 "expr.y"
+#line 540 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 32:
-#line 541 "expr.y"
+#line 545 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 33:
-#line 548 "expr.y"
+#line 552 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
 		    yyval.boolean = no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
@@ -1105,7 +1105,7 @@ case 33:
 		;
     break;}
 case 34:
-#line 555 "expr.y"
+#line 559 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
 		    yyval.boolean = no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
@@ -1114,31 +1114,31 @@ case 34:
 		;
     break;}
 case 35:
-#line 564 "expr.y"
+#line 568 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 36:
-#line 568 "expr.y"
+#line 572 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 37:
-#line 574 "expr.y"
+#line 578 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-1].val);
 		;
     break;}
 case 38:
-#line 578 "expr.y"
+#line 582 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-3].val, yyvsp[-1].val);
 		;
     break;}
 case 39:
-#line 582 "expr.y"
+#line 586 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		;
@@ -1365,7 +1365,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 596 "expr.y"
+#line 600 "expr.y"
 
 
 void
