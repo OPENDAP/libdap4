@@ -50,26 +50,39 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.2  1995/10/23 23:11:31  jimg
-/* Fixed scanner to use the new definition of YYSTYPE.
+/* Revision 1.3  1995/12/06 18:57:37  jimg
+/* Because the %union{} changed, the return types of some of the rules also
+/* changed.
+/* Returns integer codes for relops.
+/* Returns a tagged union for most other values.
 /*
+# Revision 1.2  1995/10/23  23:11:31  jimg
+# Fixed scanner to use the new definition of YYSTYPE.
+#
 # Revision 1.1  1995/10/13  03:03:17  jimg
 # Scanner. Incorporates Glenn's suggestions.
 #
  */
 
 %{
-static char rcsid[]={"$Id: expr.lex,v 1.2 1995/10/23 23:11:31 jimg Exp $"};
+static char rcsid[]={"$Id: expr.lex,v 1.3 1995/12/06 18:57:37 jimg Exp $"};
 
 #include <string.h>
 
 #include <String.h>
 #include <SLList.h>
 
-/* #define YYSTYPE char * */
 #define YY_DECL int exprlex YY_PROTO(( void ))
 
+#include "parser.h"
+#include "expr.h"
 #include "expr.tab.h"
+
+void store_int32();
+void store_float64();
+void store_id();
+void store_str();
+void store_op(int op);
 
 %}
 
@@ -98,21 +111,21 @@ NEVER		[^][":*.)(,&a-zA-Z0-9_]
 
 %%
 
-{ID}		exprlval.char_ptr = yytext; return ID;
-{FIELD}		exprlval.char_ptr = yytext; return FIELD;
-{INT}		exprlval.char_ptr = yytext; return INT;
+{ID}		store_id(); return ID;
+{FIELD}		store_id(); return FIELD;
+{INT}		store_int32(); return INT;
 
-{FLOAT}		exprlval.char_ptr = yytext; return FLOAT;
+{FLOAT}		store_float64(); return FLOAT;
 
-{STR}		exprlval.char_ptr = yytext; return STR;
+{STR}		store_str(); return STR;
 
-{EQUAL}		exprlval.char_ptr = yytext; return EQUAL;
-{NOT_EQUAL}	exprlval.char_ptr = yytext; return NOT_EQUAL;
-{GREATER}	exprlval.char_ptr = yytext; return GREATER;
-{GREATER_EQL}	exprlval.char_ptr = yytext; return GREATER_EQL;
-{LESS}		exprlval.char_ptr = yytext; return LESS;
-{LESS_EQL}	exprlval.char_ptr = yytext; return LESS_EQL;
-{REGEXP}	exprlval.char_ptr = yytext; return REGEXP;
+{EQUAL}		store_op(EQUAL); return EQUAL;
+{NOT_EQUAL}	store_op(NOT_EQUAL); return NOT_EQUAL;
+{GREATER}	store_op(GREATER); return GREATER;
+{GREATER_EQL}	store_op(GREATER_EQL); return GREATER_EQL;
+{LESS}		store_op(LESS); return LESS;
+{LESS_EQL}	store_op(LESS_EQL); return LESS_EQL;
+{REGEXP}	store_op(REGEXP); return REGEXP;
 
 "["    	    	return (int)*yytext;
 "]"    	    	return (int)*yytext;
@@ -134,7 +147,7 @@ NEVER		[^][":*.)(,&a-zA-Z0-9_]
 <quote>\\.		yymore();
 <quote>\"		{ 
     			  BEGIN(INITIAL); 
-			  exprlval.char_ptr = yytext;
+                          store_str();
 			  return STR;
                         }
 <quote><<EOF>>		{
@@ -155,4 +168,39 @@ int
 yywrap(void)
 {
     return 1;
+}
+
+void
+store_int32()
+{
+    exprlval.val.type = Int32;
+    exprlval.val.v.int32 = atoi(yytext);
+}
+
+void
+store_float64()
+{
+    exprlval.val.type = Float64;
+    exprlval.val.v.float64 = atof(yytext);
+}
+
+void
+store_id()
+{
+    exprlval.val.type = Id;
+    strncpy(exprlval.val.v.id, yytext, ID_MAX-1);
+    exprlval.val.v.id[ID_MAX] = '\0';
+}
+
+void
+store_str()
+{
+    exprlval.val.type = Str;
+    exprlval.val.v.str = yytext;
+}
+
+void
+store_op(int op)
+{
+    exprlval.op = op;
 }
