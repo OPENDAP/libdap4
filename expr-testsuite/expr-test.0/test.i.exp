@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.i.exp,v $
+# Revision 1.5  1998/03/27 04:28:51  jimg
+# Fixed tests for the new DDS::send() mime header stuff
+#
 # Revision 1.4  1997/06/05 22:52:35  jimg
 # *** empty log message ***
 #
@@ -47,11 +50,6 @@ Dataset {
         Float64 height\\\[20\\\];
     } g;
 } test1;
-HTTP/1.0 200 OK
-Server: DODS/*
-Content-type: application/octet-stream
-Content-Description: dods_data
-
 The data:
 Grid {
  ARRAY:
