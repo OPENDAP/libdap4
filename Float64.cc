@@ -38,6 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.20  1996/04/04 18:37:02  jimg
+// Merged changes from version 1.1.1.
+// Removed unneeded include files.
+//
 // Revision 1.19  1996/03/05 18:24:53  jimg
 // Added ce_eval to serailize member function.
 // Fixed serialize so that expunge() is always called when the member function
@@ -163,11 +167,6 @@
 
 #include <stdlib.h>		// for atoi()
 #include <assert.h>
-#ifdef NEVER
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
 
 #include "Float64.h"
 #include "DDS.h"
