@@ -109,19 +109,7 @@ private:
     vector<string> d_headers;	// Response headers
     ObjectType d_type;		// What type of object is in the stream?
     string d_server;		// Server's version string.
-#if 0
-    FILE *d_output;		// Data reside in this temp file.
-#endif
     bool d_cached_response;	// True if response was from cache.
-
-    // These methods are not supported and are implmented here as private
-    // methods to suppress the C++-supplied default versions (which will
-    // break this object). 6/14/2002 jhrg
-    HTTPConnect() { }
-    HTTPConnect(const HTTPConnect &copy_from) { }
-    HTTPConnect &operator=(const HTTPConnect &rhs) { 
-	throw InternalErr(__FILE__, __LINE__, "Call to unsupported op=");
-    }
 
     void www_lib_init() throw(Error, InternalErr);
     long read_url(const string &url, FILE *stream,
@@ -142,6 +130,16 @@ private:
     friend class HTTPConnectTest;
     friend struct ParseHeader;
 
+protected:
+    // These methods are not supported and are implmented here as private
+    // methods to suppress the C++-supplied default versions (which will
+    // break this object). 6/14/2002 jhrg
+    HTTPConnect() { }
+    HTTPConnect(const HTTPConnect &copy_from) { }
+    HTTPConnect &operator=(const HTTPConnect &rhs) { 
+	throw InternalErr(__FILE__, __LINE__, "Call to unsupported op=");
+    }
+
 public:
     HTTPConnect(RCReader *rcr) throw(Error, InternalErr);
 
@@ -155,14 +153,17 @@ public:
     vector<string> get_response_headers() throw(InternalErr);
     ObjectType type() throw(InternalErr);
     string server_version() throw(InternalErr);
-
-#if 0
-    FILE *output() throw(InternalErr);
-    void close_output() throw(InternalErr);
-#endif
 };
 
 // $Log: HTTPConnect.h,v $
+// Revision 1.5  2003/02/27 18:21:48  jimg
+// I removed old code (code inside #if 0 ... #endif) and changed the private
+// definitions of HTTPConnect(), ... to protected definitions. These methods
+// are present to prevent C++ defaults from being called. I made them
+// protected so that specializations of this class can hide their own
+// empty constructor, et cetera. When these are private a subclass cannot do
+// that.
+//
 // Revision 1.4  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
