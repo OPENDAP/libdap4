@@ -26,6 +26,8 @@
 #ifndef _http_cache_h
 #define _http_cache_h
 
+#include "config_dap.h"		// BAD ***
+
 #ifdef __GNUG__
 #pragma interface
 #endif
@@ -75,6 +77,9 @@ using namespace std;
 
 /** Implements a single-user MT-safe HTTP 1.1 compliant (mostly) cache.
 
+    <i>Clients that run as users lacking a writable HOME directory MUST
+    disable this cache. Use Connect::set_cache_enable(false).</i>
+
     The design of this class was taken from the W3C libwww software. That
     code was originally written by Henrik Frystyk Nielsen, Copyright MIT
     1995. See the file MIT_COPYRIGHT. This software is a complete rewrite in
@@ -116,21 +121,6 @@ using namespace std;
     Something to help clients deal with URLs that are removed from the cache
     in between calls to the two methods.
 
-    @todo Change the way responses are locked. See the three methods:
-    <ul>
-    <li>FILE *get_cached_response(const string &url, vector<string> &headers)
-	throw(Error, InternalErr);</li>
-    <li>FILE *get_cached_response_body(const string &url) 
-	throw(Error, InternalErr);</li>
-    <li>void release_cached_response(FILE *response) throw(Error);</li>
-    </ul>
-    <p>
-    What must change: The clients must tell the cache when they are done
-    using a particular entry. 
-    Either replace this with a method that can be used for reading, so that
-    when the method is no longer used, the lock is released OR have the
-    methods return an object which, when destroyed, frees a lock.
-
     @todo Change the entry locking scheme to distinguish between entries
     accessed for reading and for writing.
 
@@ -143,7 +133,8 @@ using namespace std;
 
     @author James Gallagher <jgallagher@gso.uri.edu> */
 class HTTPCache {
-    /** A private class used to store information about responses in the
+public:
+    /** A struct used to store information about responses in the
 	cache's volatile memory. 
 
 	About entry locking: An entry is locked using both a mutex and a
@@ -154,7 +145,6 @@ class HTTPCache {
 	This way the client can tell the HTTPCache object that it is done
 	with <code>FILE *response</code> and the class can arrange to update
 	the lock counter and mutex. */
-public:
     struct CacheEntry {
 	// Location
 	string url;
@@ -351,7 +341,7 @@ public:
     bool get_always_validate() const;
 
     void set_cache_control(const vector<string> &cc) throw(InternalErr);
-    vector<string> get_cache_control() const;
+    vector<string> get_cache_control();
 
     bool cache_response(const string &url, time_t request_time,
 			const vector<string> &headers, const FILE *body)
@@ -361,7 +351,7 @@ public:
     void update_response(const string &url, time_t request_time,
 			 const vector<string> &headers) throw(Error);
 
-    bool is_url_in_cache(const string &url) const;
+    bool is_url_in_cache(const string &url);
     bool is_url_valid(const string &url) throw(Error);
     FILE *get_cached_response(const string &url, vector<string> &headers)
 	throw(Error, InternalErr);
@@ -373,6 +363,13 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.6  2003/03/13 23:53:55  jimg
+// Fixed documentation. Added #include "config_dap.h" which will have to be
+// removed somehow, after hacking up the configure script. removed the const
+// qualifier from some methods because they lock a mutex. These could be marked
+// const volatile, but I bet there are a lot of compilers that don't support
+// that yet...
+//
 // Revision 1.5  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
