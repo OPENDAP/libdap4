@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.37  1999/05/26 17:35:01  jimg
+// The Gui option is now disabled; gui is always false.
+// One call to gui()->... has been removed with #if 0 ... #endif.
+//
 // Revision 1.36  1999/04/29 02:29:36  jimg
 // Merge of no-gnu branch
 //
@@ -152,7 +156,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.36 1999/04/29 02:29:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.37 1999/05/26 17:35:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -162,7 +166,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.36 1999/04/29 02:29:36 jimg 
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.36 $";
+const char *VERSION = "$Revision: 1.37 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -300,7 +304,9 @@ main(int argc, char * argv[])
 	      case 'D': get_data = true; break;
 	      case 'V': cerr << "geturl version: " << VERSION << endl; exit(0);
 	      case 'v': verbose = true; break;
-	      case 'g': gui = true; break;
+	      case 'g': /* gui = true; gui is always false until we fix the
+			   whole `progress indicator feature. 5/26/99 jhrg */
+		break;
 	      case 'k': keep_temps =1; break; // keep_temp is in Connect.cc
 	      case 'c':
 		cexpr = true; expr = getopt.optarg; break;
@@ -424,7 +430,9 @@ main(int argc, char * argv[])
 	}
 
 	if (!get_das && !get_dds && !get_data) {
+#if 0
 	    url.gui()->show_gui(gui);
+#endif
 	    string url_string = argv[i];
 	    for (int j = 0; j < times; ++j) {
 		if (!url.fetch_url(url_string, async))
