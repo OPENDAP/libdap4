@@ -25,7 +25,7 @@
 
 # Common code for dejaGNU-based automated tests.
 
-# $Id: common_tests.exp,v 1.8 2004/01/22 17:29:37 jimg Exp $
+# $Id: common_tests.exp,v 1.9 2004/07/07 21:17:54 jimg Exp $
 
 # Compare $expected to the global $comp_output. Run `pass' if they match,
 # `fail' otherwise unless `xfailp' is true in which case run `xfail' if they
@@ -128,16 +128,20 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
 	}
 
 	# $len is set to the smallest of $tlen or $clen to avoid running off
-	# the end either of the strings.
-	for {set i 0} {$i < $len} {incr i} {
-	    set c [string index $comp_output $i]
-	    set t [string index $expected $i]
-	    if {$t != $c} {
-		send_user "comp_output ($c) and expected ($t) differ at $i.\n"
+	# the end either of the strings. Only send this info with $verbose is
+	# at least 3. This is producing too much output in most cases!
+	# 06/28/04 jhrg
+	if {$verbose >= 3} {
+	    for {set i 0} {$i < $len} {incr i} {
+		set c [string index $comp_output $i]
+		set t [string index $expected $i]
+		if {$t != $c} {
+		    send_user "comp_output ($c) and expected ($t) differ at $i.\n"
+		}
 	    }
 	}
-	
-	fail "$msg"
+
+	# fail "$msg"
     }
 }
 
