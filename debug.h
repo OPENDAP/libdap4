@@ -10,6 +10,11 @@
   
 /* 
  * $Log: debug.h,v $
+ * Revision 1.7  1998/09/08 21:34:41  jimg
+ * Fixed up this file for use with C as well as C++.
+ * Removed the old PERF macro since it was based on a non-POSIX time function
+ * (systime()) and was never used!
+ *
  * Revision 1.6  1997/08/11 18:19:35  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -35,22 +40,26 @@
 #ifndef _DEBUG_H
 #define _DEBUG_H
 
+#ifdef __cplusplus
+#define FILE_N_LINE cerr << __FILE__ << ": " << __LINE__ << ":"
+#else
+#define FILE_N_LINE fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);
+#endif /* cplusplus */
+
 #ifdef DODS_DEBUG
-#define DBG(x) cerr << __FILE__ << ":" << __LINE__ << ":"; x
+#define DBG(x) FILE_N_LINE; x
 #else
 #define DBG(x) /* x */
 #endif
 
 #ifdef DODS_DEBUG2
-#define DBG2(x) cerr << __FILE__ << ":" << __LINE__ << ":"; x
+#define DBG2(x) FILE_N_LINE; x
 #else
 #define DBG2(x) /* x */
 #endif
 
 #ifdef DODS_PERF
-#define PERF(x) cerr << __FILE__ << ":" << __LINE__ << ":" << systime() << ":"; x
-#else
-#define PERF(x) /* x */
+#error "Deprecated macro!"
 #endif
 
 #endif /* _DEBUG_H */
