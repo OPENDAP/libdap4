@@ -113,7 +113,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.22 1996/06/04 21:33:15 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.23 1996/06/06 17:07:57 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -124,8 +124,6 @@ static char rcsid[]={"$Id: Connect.cc,v 1.22 1996/06/04 21:33:15 jimg Exp $"};
 
 #include <strstream.h>
 #include <fstream.h>
-
-#include "config_netio.h"
 
 #include "Connect.h"
 
@@ -253,16 +251,27 @@ timeout_handler(HTRequest *request)
 static ObjectType
 get_type(String &value)
 {
-    if (value == "das")
+    if (value == "dods_das")
 	return dods_das;
-    else if (value == "dds")
+    else if (value == "dods_dds")
 	return dods_dds;
-    else if (value == "data")
+    else if (value == "dods_data")
 	return dods_data;
-    else if (value == "error")
+    else if (value == "dods_error")
 	return dods_error;
     else
-	return unknown;
+	return unknown_type;
+}
+    
+static EncodingType
+get_encoding(String &value)
+{
+    if (value == "x-plain")
+	return x_plain;
+    else if (value == "x-gzip")
+	return x_gzip;
+    else
+	return unknown_enc;
 }
     
 // This function is registered to handle unknown MIME headers
@@ -279,6 +288,11 @@ header_handler(HTRequest *request, const char *token)
 	DBG(cerr << "Found content-description header" << endl);
 	Connect *me = (Connect *)HTRequest_context(request);
 	me->_type = get_type(value);
+    }
+    else if (field == "content-encoding:") {
+	DBG(cerr << "Found content-encoding header" << endl);
+	Connect *me = (Connect *)HTRequest_context(request);
+	me->_encoding = get_encoding(value);
     }
     else {
 	if (SHOW_MSG)
@@ -308,7 +322,7 @@ Connect::www_lib_init()
 #endif
 
     // Initiate W3C Reference Library
-    HTLibInit(NAME, VERSION);
+    HTLibInit(CNAME, CVER);
 
     // Initialize the protocol modules
     HTProtocol_add("http", YES, HTLoadHTTP, NULL);
@@ -675,6 +689,12 @@ ObjectType
 Connect::type()
 {
     return _type;
+}
+
+EncodingType
+Connect::encoding()
+{
+    return _encoding;
 }
 
 // Added EXT which defaults to "das". jhrg 3/7/95
