@@ -1,3 +1,9 @@
+1998-10-21  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added projection functions to the CE syntax. These functions are
+	executed *during* the parse of the projection clause. They can be
+	used to add new (synthetic) variables to the DDS.
+
 1998-10-14  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* expr.y: Added parse of single array indeces to the projection
@@ -399,4 +405,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.27 1998/10/15 03:22:07 jimg Exp $
+$Id: ChangeLog,v 1.28 1998/10/21 17:45:04 jimg Exp $
