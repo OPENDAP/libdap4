@@ -9,6 +9,11 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.24  1996/08/13 18:07:48  jimg
+// The parser (dds.y) is now called using the parser_arg object.
+// the member function eval_function() now returns a NULL BaseType * when the
+// function in the CE does not exist.
+//
 // Revision 1.23  1996/06/04 21:33:19  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -131,7 +136,9 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.23 1996/06/04 21:33:19 jimg Exp $";
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.24 1996/08/13 18:07:48 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -145,6 +152,8 @@ static char rcsid[]="$Id: DDS.cc,v 1.23 1996/06/04 21:33:19 jimg Exp $";
 #include <stdiostream.h>
 
 #include "DDS.h"
+#include "Error.h"
+#include "parser.h"
 #include "debug.h"
 #include "util.h"
 
@@ -154,11 +163,11 @@ static char rcsid[]="$Id: DDS.cc,v 1.23 1996/06/04 21:33:19 jimg Exp $";
 #include "trace_new.h"
 #endif
 
-void ddsrestart(FILE *yyin);
-int ddsparse(DDS &table);	// defined in dds.tab.c
+void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
+int ddsparse(void *arg);
 
-void exprrestart(FILE *yyin);
-int exprparse(DDS &table);
+void exprrestart(FILE *yyin);	// Defined in expr.tab.c
+int exprparse(void *arg);
 
 // Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
 // the `result' of the mfunc.
@@ -232,6 +241,8 @@ DDS::set_dataset_name(const String &n)
 void
 DDS::add_var(BaseType *bt)
 { 
+    assert(bt);
+
     vars.append(bt); 
 }
 
@@ -446,9 +457,10 @@ DDS::eval_function(const String &dataset)
 
     Pix p = first_clause();
     BaseType *result;
-    (void) clause(p).value(dataset, &result);
-    
-    return result;
+    if (clause(p).value(dataset, &result))
+	return result;
+    else
+	return NULL;
 }
 
 bool
@@ -529,15 +541,29 @@ DDS::parse(int fd)
 bool
 DDS::parse(FILE *in)
 {
-    assert(in);
+    if (!in) {
+	cerr << "DDS::parse: Null input stream" << endl;
+	return false;
+    }
 
     ddsrestart(in);
 
-    bool status = ddsparse(*this) == 0;
+    parser_arg arg(this);
 
-    fclose(in);
+    bool status = ddsparse((void *)&arg) == 0;
 
-    return status;
+    //  STATUS is the result of the parser function; if a recoverable error
+    //  was found it will be true but arg.status() will be false.
+    if (!status || !arg.status()) {// Check parse result
+	if (arg.error())
+	    arg.error()->display_message();
+#if 0
+	cerr << "Error parsing DDS object!" << endl;
+#endif
+	return false;
+    }
+    else
+	return true;
 }
 
 // Write strucutre from tables to OUT (which defaults to stdout). 
@@ -658,9 +684,29 @@ DDS::parse_constraint(const String &constraint)
 {
     FILE *in = text_to_temp(constraint);
 
+    if (!in) {
+	cerr << "DDS::parse_constraint: Null input stream" << endl;
+	return false;
+    }
+
     exprrestart(in);
-    
-    return exprparse(*this) == 0; // status == 0 indicates success
+
+    parser_arg arg(this);
+
+    bool status = exprparse((void *)&arg) == 0;
+
+    //  STATUS is the result of the parser function; if a recoverable error
+    //  was found it will be true but arg.status() will be false.
+    if (!status || !arg.status()) {// Check parse result
+	if (arg.error())
+	    arg.error()->display_message();
+#if 0
+	cerr << "Error parsing constraint expression!" << endl;
+#endif
+	return false;
+    }
+    else
+	return true;
 }
 
 // Send the named variable. This mfunc combines BaseTypes read() and
