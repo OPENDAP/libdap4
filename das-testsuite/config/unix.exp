@@ -1,0 +1,28 @@
+# Minimal test file for a non-interactive test program
+
+global DASTEST
+if ![info exists DASTEST] then {
+    set DASTEST [transform das-test]
+}
+
+proc das-test_start { file } {
+    global verbose
+    global DASTEST
+    global comp_output
+
+    if {$verbose >= 1} {
+	send_user "Testing $file...\n"
+    }
+
+    catch "exec $DASTEST $file" comp_output
+}
+
+proc das-test_load {} {
+}
+
+proc das-test_exit {} {
+}
+
+proc das-test_version {} {
+}
+
