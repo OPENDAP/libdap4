@@ -12,7 +12,11 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.7  1995/03/09 20:36:07  jimg
+// Revision 1.8  1995/04/17 03:19:22  jimg
+// Added code which takes the cgi basename from the URL supplied by the
+// user. Still, the cgi must be in `cgi-bin'.
+//
+// Revision 1.7  1995/03/09  20:36:07  jimg
 // Modified so that URLs built by this library no longer supply the
 // base name of the CGI. Instead the base name is stripped off the front
 // of the pathname component of the URL supplied by the user. This class
@@ -71,7 +75,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.7 1995/03/09 20:36:07 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.8 1995/04/17 03:19:22 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -105,9 +109,6 @@ extern void set_xdrout(FILE *out); // define in BaseType.cc
 String
 Connect::make_url(const String &cgi)
 {
-#ifdef NEVER
-    String url = _access + "://" + _host + "/cgi-bin/" + _api_name + "_" + cgi;
-#endif
     String url = _access + "://" + _host + "/cgi-bin/" + _cgi_basename 
 	         + "_" + cgi;
     
@@ -139,10 +140,6 @@ Connect::parse_url(const char *name)
 
 	_cgi_basename = path.before(path.index("/", 1));
 	_path = path.from(path.index("/", 1));
-	    
-#ifdef NEVER
-	_path = uc->path;//rest of the path
-#endif
 
 	_anchor = uc->anchor;
     }
@@ -155,20 +152,7 @@ Connect::parse_url(const char *name)
 Connect::Connect(const String &name, const String &api)
 {
     parse_url((const char *)name);
-#ifdef NEVER
-    _api_name = api;
-#endif
 }
-
-#ifdef NEVER
-Connect::Connect(const char *name, const String &api)
-{
-    parse_url(name);
-#ifdef NEVER
-    _api_name = api;
-#endif
-}
-#endif
 
 Connect::~Connect()
 {
@@ -214,10 +198,9 @@ Connect::request_dds(const String &cgi)
     return status;
 }
 
-// Read data from the server at _PATH. If ASYNC is true, make the rad using
-// NetConnect (which forks so that it can return *before* the read
-// completes). Otherwise use the synchronous read. Synchronous reads are the
-// default. 
+// Read data from the server at _PATH. If ASYNC is true, read asynchronously
+// using NetConnect (which forks so that it can return *before* the read
+// completes). Synchronous reads (using NetExecute) are the default. 
 //
 // NB: This function does not actually read the data (in either case), it
 // just sets up the BaseType static class member so that data *can* be read. 
@@ -225,7 +208,7 @@ Connect::request_dds(const String &cgi)
 // Returns: true if the read from the server to the local buffer was
 // completed (async == false) or was correctly initiated (async ==
 // true). Returns false if an error was detected by the NetExecute or
-// NetConnect function.
+// NetConnect functions.
 //
 // Added optional argument CGI which defaults to "serv". jhrg 3/7/95
 
@@ -267,11 +250,6 @@ Connect::URL()
 const String &
 Connect::api_name()
 {
-#ifdef NEVER
-    if (_api_name == "")
-	err_quit("Connect: api_name not set by child class");
-#endif
-	
     return _path;
 }
 
