@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.48 1996/10/28 23:45:47 jimg Exp $
+# $Id: Makefile.in,v 1.49 1996/10/31 22:24:56 jimg Exp $
 
 @SET_MAKE@
 
@@ -17,6 +17,7 @@
 PROG= libdap++.a geturl
 DODS_ROOT = ../..
 
+WWW_ROOT = @WWW_ROOT@
 INCS = -I. -IMap -IStack -IPlex -IVec @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
@@ -280,7 +281,7 @@ dds-check: dds-test
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool dds-test --srcdir dds-testsuite
 
-expr-check: dds-test
+expr-check: expr-test
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool expr-test --srcdir expr-testsuite
 
