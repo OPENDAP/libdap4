@@ -9,13 +9,17 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.cc,v $
+// Revision 1.2  1997/12/16 00:37:14  jimg
+// Changed _version_string_to_numbers() so that it does something sensible
+// when the version string is hosed.
+//
 // Revision 1.1  1997/09/22 22:19:27  jimg
 // Created this subclass of DDS to hold version information in the data DDS
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.1 1997/09/22 22:19:27 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.2 1997/12/16 00:37:14 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -27,6 +31,7 @@ static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.1 1997/09/22 22:19:27 jim
 #include <String.h>
 
 #include "DataDDS.h"
+#include "debug.h"
 
 // private
 
@@ -35,14 +40,27 @@ static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.1 1997/09/22 22:19:27 jim
 void
 DataDDS::_version_string_to_numbers()
 {
-    String num = _server_version.after("/");
+    static Regex version_regex("dods/[0-9]\\.[0-9]+");
 
-    istrstream iss((const char *)num);
+    DBG(cerr << "in version string to numbers" << endl);
 
-    iss >> _server_version_major;
-    char c;
-    iss >> c;			// This reads the `.' in the version string
-    iss >> _server_version_minor;
+    if (!_server_version.matches(version_regex)) {
+	_server_version_major = 0;
+	_server_version_minor = 0;
+    }
+    else {
+	String num = _server_version.after("/");
+
+	istrstream iss((const char *)num);
+
+	iss >> _server_version_major;
+	char c;
+	iss >> c;		// This reads the `.' in the version string
+	iss >> _server_version_minor;
+
+	DBG(cerr << "Server version: " << _server_version_major << "." \
+	    << _server_version_minor << endl);
+    }
 }
 
 // public
