@@ -84,25 +84,26 @@ public:
 	    throw Error(string("An AIS Resource object was created with an unknown rule type '") + r);
     }
 
-    /** @memo Return the resource URL. */ 
-    string get_url() const {
+    virtual ~Resource() {}
+    /** Return the resource URL. */ 
+    virtual string get_url() const {
 	return d_url;
     }
 
-    /** @memo Set the resource URL.
+    /** Set the resource URL.
 	@param u The resource's URL. */
-    void set_url(const string &u) {
+    virtual void set_url(const string &u) {
 	d_url = u;
     }
 
-    /** @memo Return combination rule for this resource. */
-    ResourceRule get_rule() const {
+    /** Return combination rule for this resource. */
+    virtual ResourceRule get_rule() const {
 	return d_rule;
     }
 
-    /** @memo Set the resource's combination rule.
+    /** Set the resource's combination rule.
 	@param r The combination rule. */
-    void set_rule(const ResourceRule &r) {
+    virtual void set_rule(const ResourceRule &r) {
 	d_rule = r;
     }
 
@@ -120,6 +121,9 @@ private:
 };
 
 // $Log: Resource.h,v $
+// Revision 1.3  2003/02/26 06:38:28  jimg
+// Made methods virtual.
+//
 // Revision 1.2  2003/02/20 23:10:19  jimg
 // Fixed copyright date.
 //
