@@ -38,7 +38,13 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.15  1995/07/09 21:28:52  jimg
+// Revision 1.16  1995/08/23 00:04:45  jimg
+// Switched from String representation of data type to Type enum.
+// Added type_name() member function so that it is simple to get the string
+// representation of a variable's type.
+// Changed the name of read_val/store_val to buf2val/val2buf.
+//
+// Revision 1.15  1995/07/09  21:28:52  jimg
 // Added copyright notice.
 //
 // Revision 1.14  1995/05/10  15:33:54  jimg
@@ -150,7 +156,7 @@ BaseType::_duplicate(const BaseType &bt)
 
 // friend functions
 
-// Delete the current XDR * assigned to _xdrin, free the strage, create a
+// Delete the current XDR * assigned to _xdrin, free the storage, create a
 // new XDR * and assign it to _xdrin.
 
 void 
@@ -183,7 +189,7 @@ set_xdrout(FILE *out)
 // write to std{out,in} (it is for g++ with libg++ at version 2.6 or
 // greater).
 
-BaseType::BaseType(const String &n, const String &t, xdrproc_t xdr)
+BaseType::BaseType(const String &n, const Type &t, xdrproc_t xdr)
     : _name(n), _type(t), _xdr_coder(xdr)
 {
 } 
@@ -208,6 +214,7 @@ BaseType::operator=(const BaseType &rhs)
     return *this;
 }
 
+#ifdef NEVER
 // deprecated
 
 String 
@@ -235,6 +242,7 @@ BaseType::set_var_type(const String &t)
 }
 
 // new names (changed to fit with the new naming scheme)
+#endif
 
 String 
 BaseType::name() const
@@ -248,16 +256,50 @@ BaseType::set_name(const String &n)
     _name = n; 
 }
 
-String
+Type
 BaseType::type() const
 {
     return _type;
 }
 
 void
-BaseType::set_type(const String &t)
+BaseType::set_type(const Type &t)
 {
     _type = t;
+}
+
+String
+BaseType::type_name() const
+{
+    switch(_type) {
+      case null_t:
+	return String("Null");
+      case byte_t:
+	return String("Byte");
+      case int32_t:
+	return String("Int32");
+      case float64_t:
+	return String("Float64");
+      case str_t:
+	return String("String");
+      case url_t:
+	return String("Url");
+      case array_t:
+	return String("Array");
+      case list_t:
+	return String("List");
+      case structure_t:
+	return String("Structure");
+      case sequence_t:
+	return String("Sequence");
+      case function_t:
+	return String("Function");
+      case grid_t:
+	return String("Grid");
+      default:
+	cerr << "BaseType::type_name: Undefined type" << endl;
+	return String("");
+    }
 }
 
 // Return a pointer to the contained variable in a ctor class. For BaseType
@@ -294,7 +336,7 @@ BaseType::xdr_coder()
 void 
 BaseType::print_decl(ostream &os, String space, bool print_semi)
 {
-    os << space << _type << " " << _name;
+    os << space << type_name() << " " << _name;
     if (print_semi)
 	os << ";" << endl;
 }
@@ -313,7 +355,7 @@ BaseType::print_decl(ostream &os, String space, bool print_semi)
 bool
 BaseType::check_semantics(bool all)
 {
-    bool sem = ((const char *)_type && (const char *)_name);
+    bool sem = (_type != null_t && (const char *)_name);
 
     if (!sem) 
 	cerr << "Every variable must have both a name and a type" << endl;

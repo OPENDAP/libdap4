@@ -8,12 +8,18 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.15  1995/05/10 13:45:09  jimg
-/* Changed the name of the configuration header file from `config.h' to
-/* `config_dap.h' so that other libraries could have header files which were
-/* installed in the DODS include directory without overwriting this one. Each
-/* config header should follow the convention config_<name>.h.
+/* Revision 1.16  1995/08/23 00:04:44  jimg
+/* Switched from String representation of data type to Type enum.
+/* Added type_name() member function so that it is simple to get the string
+/* representation of a variable's type.
+/* Changed the name of read_val/store_val to buf2val/val2buf.
 /*
+ * Revision 1.15  1995/05/10  13:45:09  jimg
+ * Changed the name of the configuration header file from `config.h' to
+ * `config_dap.h' so that other libraries could have header files which were
+ * installed in the DODS include directory without overwriting this one. Each
+ * config header should follow the convention config_<name>.h.
+ *
  * Revision 1.14  1995/03/04  14:34:56  jimg
  * Major modifications to the transmission and representation of values:
  * 	Added card() virtual function which is true for classes that
@@ -136,6 +142,7 @@ enum Part {
 };
 
 enum Type {
+    null_t,			// use null_t when you don't know
     byte_t,
     int32_t,
     float64_t,
@@ -152,16 +159,15 @@ enum Type {
 class BaseType {
 private:
     String _name;		// name of the instance
+#ifdef NEVER
     String _type;		// name of the instance's type
+#endif
+    Type _type;			// instance's type
 
     // _out is used to retain access to the FILE * used by _xdrout. It is
     // used by the mfunc expunge to flush the buffer.
     static FILE *_out;		// output stream for data from server
     static FILE *_in;		// like _out but for input
-
-#ifdef NEVER
-    Type _type;
-#endif
 
     void _duplicate(const BaseType &bt);
 
@@ -185,7 +191,7 @@ protected:
     static XDR *_xdrout;	// xdr pointer for output (default: to stdout)
 
 public:
-    BaseType(const String &n = (char *)0, const String &t = (char *)0,
+    BaseType(const String &n = (char *)0, const Type &t = null_t,
 	     xdrproc_t xdr = NULL);
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
@@ -193,22 +199,27 @@ public:
     BaseType &operator=(const BaseType &rhs);
     virtual BaseType *ptr_duplicate() = 0; // alloc new instance and dup THIS.
 
+#ifdef NEVER
     String get_var_name() const; // deprecated
     void set_var_name(const String &n); // deprecated
 
     String get_var_type() const; // deprecated
     void set_var_type(const String &t); // deprecated
+#endif
 
     String name() const;
     void set_name(const String &n);
 
-    String type() const;
-    void set_type(const String &t);
+    Type type() const;		// return the Type of this instance
+    void set_type(const Type &t); // set the Type
+    String type_name() const;	// return the name of this Type as a String
 
     // Return true if the object is one of the cardinal types. Arrays of
     // these objects are represented specially to improve transmission
     // efficiency 
+#ifdef NEVER
     virtual bool card() = 0;
+#endif
 
     // xdr_coder is used to encode arrays of cardinal objects
     xdrproc_t xdr_coder();
@@ -233,7 +244,9 @@ public:
     // information alone. For Structure, ... types size() returns the number
     // of bytes needed to store each of the fields as C would store them in a
     // struct.
+#ifdef NEVER
     virtual unsigned int size() = 0;// deprecated
+#endif
     virtual unsigned int width() = 0;
 
     // Put the data into a local buffer so that it may be serialized. This
@@ -249,13 +262,15 @@ public:
     // for deallocating storage. Array and List values are stored as C would
     // store an array (N values stored sequentially). Structure, ..., Grid
     // values are stored as C would store a struct.
-    virtual unsigned int read_val(void **val) = 0;
+    virtual unsigned int read_val(void **val) = 0;// deprecated name
+    virtual unsigned int buf2val(void **val) = 0;
 
     // Store the value pointed to by VAL in the object's internal buffer. This
     // mfunc does not perform any checks, so callers must be sure that the
     // thing pointed to can actually be stored in the object's buffer.
     // Return the size (in bytes) of the information copied from VAL.
-    virtual unsigned int store_val(void *val, bool reuse = false) = 0;
+    virtual unsigned int store_val(void *val, bool reuse = false) = 0; // dep
+    virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
 
     // Move data to and from the net.
     virtual bool serialize(bool flush = false) = 0; 
