@@ -59,6 +59,9 @@
     default and copy constructors as well as the destructor and assignment
     operator.
 
+    This class should be extended so that the line number is added to error
+    messages. 
+
     @see AISResource */
 class AISDatabaseParser {
 private:
@@ -75,12 +78,19 @@ private:
 	PARSER_ERROR
     };
 
-    /** This holds the state information for the SAX parser which is used to
+    /** This holds the state information for the SAX parser that is used to
 	intern the XML AIS database. The parser is designed to ignore unknown
 	tags and attributes, so long as the input is well-formed. Note that a
-	pointer to an AISResources object is part of the SAX parser state. AS
-	the XML input document is parser, information is added to that
-	object. */
+	pointer to an AISResources object is part of the SAX parser state. As
+	the XML input document is parsed, information is added to that
+	object. Also note that an AISParserState object holds a pointer to
+	the xmlParserCtxt which, in turn, holds a pointer to AISParserState
+	(via its \c userData field). This cirular referencing is done because
+	libxml2's SAX parser invokes the callbacks using just the
+	AISParserState instance but we need the whole xmlParserCtxt for some
+	of the callbacks. 
+
+	@see aisWarning. */
     struct AISParserState {
 	ParseState state;	// current state
 	ParseState prev_state;	// previous state
@@ -88,6 +98,7 @@ private:
  
 	string error_msg;	// Error message(s), if any.
 
+	xmlParserCtxtPtr ctxt;	// used for error msg line numbers
 	AISResources *ais; 	// dump info here
 
 	string primary;		// current entry's primary URL
@@ -95,7 +106,7 @@ private:
     };
     
 public:
-    void parse(const string &database, AISResources *ais)
+    void intern(const string &database, AISResources *ais)
 	throw(AISDatabaseReadFailed);
 
     static void aisStartDocument(AISParserState *state);
@@ -111,6 +122,9 @@ public:
 };
 
 // $Log: AISDatabaseParser.h,v $
+// Revision 1.2  2003/02/26 01:27:49  jimg
+// Changed the name of the parse() method to intern().
+//
 // Revision 1.1  2003/02/20 22:06:50  jimg
 // Added.
 //

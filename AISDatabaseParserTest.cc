@@ -64,14 +64,14 @@ public:
 
     CPPUNIT_TEST_SUITE( AISDatabaseParserTest );
 
-    CPPUNIT_TEST(parse_test);
+    CPPUNIT_TEST(intern_test);
     CPPUNIT_TEST(errant_database_test);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void parse_test() {
+    void intern_test() {
 	try {
-	    ais_parser->parse("ais_testsuite/ais_database.xml", ais);
+	    ais_parser->intern("ais_testsuite/ais_database.xml", ais);
 
 	    ResourceVector trv1 = ais->get_resource(fnoc1);
 	    CPPUNIT_ASSERT(trv1.size() == 1);
@@ -96,7 +96,7 @@ public:
 
     void errant_database_test() {
 	try {
-	    ais_parser->parse("ais_testsuite/ais_error_1.xml", ais);
+	    ais_parser->intern("ais_testsuite/ais_error_1.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_1.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -104,7 +104,7 @@ public:
 	}
 
 	try {
-	    ais_parser->parse("ais_testsuite/ais_error_2.xml", ais);
+	    ais_parser->intern("ais_testsuite/ais_error_2.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_2.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -112,7 +112,7 @@ public:
 	}
 
 	try {
-	    ais_parser->parse("ais_testsuite/ais_error_3.xml", ais);
+	    ais_parser->intern("ais_testsuite/ais_error_3.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -120,7 +120,7 @@ public:
 	}
 
 	try {
-	    ais_parser->parse("ais_testsuite/ais_error_4.xml", ais);
+	    ais_parser->intern("ais_testsuite/ais_error_4.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -128,7 +128,7 @@ public:
 	}
 
 	try {
-	    ais_parser->parse("ais_testsuite/ais_error_5.xml", ais);
+	    ais_parser->intern("ais_testsuite/ais_error_5.xml", ais);
 	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
@@ -151,6 +151,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISDatabaseParserTest.cc,v $
+// Revision 1.4  2003/02/26 01:27:49  jimg
+// Changed the name of the parse() method to intern().
+//
 // Revision 1.3  2003/02/25 23:25:30  jimg
 // Fixed for latest rev of the ais_database.xml.
 //

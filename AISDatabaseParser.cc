@@ -43,10 +43,11 @@ static const not_used char *states[] = {
     "ERROR"
 };
 
-/** These methods are declared static in the class header. This gives them C
+/** @name SAX Parser Callbacks
+
+    These methods are declared static in the class header. This gives them C
     linkage which allows them to be used as callbacks by the SAX parser
-    engine.
-    @see aisSAXParser. */
+    engine. */
 //@{
 
 /** Initialize the SAX parser state object. This object is passed to each
@@ -325,8 +326,14 @@ static xmlSAXHandler aisSAXParser = {
     (fatalErrorSAXFunc)AISDatabaseParser::aisFatalError // fatalError 
 };
 
+/** Parse an AIS database encoded in XML. The information in the XML document
+    is loaded into an instance of AISResources. 
+    @param database Read from this XML file.
+    @param ais Load information into this instance of AISResources.
+    @exception AISDatabaseReadFailed Thrown if the XML document could not be
+    read or parsed. */
 void
-AISDatabaseParser::parse(const string &database, AISResources *ais)
+AISDatabaseParser::intern(const string &database, AISResources *ais)
     throw(AISDatabaseReadFailed)
 {
     xmlParserCtxtPtr ctxt;
@@ -369,6 +376,9 @@ AISDatabaseParser::parse(const string &database, AISResources *ais)
 }
 
 // $Log: AISDatabaseParser.cc,v $
+// Revision 1.4  2003/02/26 01:27:49  jimg
+// Changed the name of the parse() method to intern().
+//
 // Revision 1.3  2003/02/25 04:18:53  jimg
 // Added line numbers to error messages. Improved message formatting a little.
 //
