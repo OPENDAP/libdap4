@@ -13,6 +13,9 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.7  1998/12/16 19:10:53  jimg
+// Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
+//
 // Revision 1.6  1998/10/21 16:56:24  jimg
 // Removed name_in_dds using #if 0 ... #endif
 //
@@ -42,7 +45,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.6 1998/10/21 16:56:24 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.7 1998/12/16 19:10:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -578,7 +581,7 @@ static void
 html_header()
 {
     cout << "HTTP/1.0 200 OK" << endl;
-    cout << "Server: " << DVR << endl;
+    cout << "DODS_Server: " << DVR << endl;
     cout << "Content-type: text/html" << endl; 
     cout << "Content-Description: dods_description" << endl;
     cout << endl;			// MIME header ends with a blank line

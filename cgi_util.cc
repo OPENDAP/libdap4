@@ -11,6 +11,9 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.32  1998/12/16 19:10:53  jimg
+// Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
+//
 // Revision 1.31  1998/03/19 23:30:08  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
 //
@@ -146,7 +149,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.31 1998/03/19 23:30:08 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.32 1998/12/16 19:10:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -200,7 +203,7 @@ bool
 do_version(const String &script_ver, const String &dataset_ver)
 {
     cout << "HTTP/1.0 200 OK" << endl
-	 << "Server: " << DVR << endl
+	 << "XDODS-Server: " << DVR << endl
 	 << "Content-Type: text/plain" << endl
 	 << endl;
     
@@ -450,7 +453,7 @@ void
 set_mime_text(ostream &os, ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
     os << "HTTP/1.0 200 OK" << endl;
-    os << "Server: " << DVR << endl;
+    os << "XDODS-Server: " << DVR << endl;
     os << "Content-type: text/plain" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     // Don't write a Content-Encoding header for x-plain since that breaks
@@ -471,7 +474,7 @@ void
 set_mime_binary(ostream &os, ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
     os << "HTTP/1.0 200 OK" << endl;
-    os << "Server: " << DVR << endl;
+    os << "XDODS-Server: " << DVR << endl;
     os << "Content-type: application/octet-stream" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     if (enc != x_plain)
@@ -492,7 +495,7 @@ set_mime_error(ostream &os, int code = HTERR_NOT_FOUND,
 	       const char *reason = "Dataset not found")
 {
     os << "HTTP/1.0 " << code << " " << reason << endl;
-    os << "Server: " << DVR << endl;
+    os << "XDODS-Server: " << DVR << endl;
     os << endl;
 }
 

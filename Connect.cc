@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.69  1998/12/16 19:10:53  jimg
+// Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
+//
 // Revision 1.68  1998/11/10 01:08:34  jimg
 // Patched memory leaks found with Purify.
 //
@@ -378,7 +381,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.68 1998/11/10 01:08:34 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.69 1998/12/16 19:10:53 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -797,7 +800,12 @@ server_handler(HTRequest *request, HTResponse */*response*/,
     field.downcase();
     value.downcase();
     
-    if (field == "server") {
+    if (field == "xdods-server") {
+	DBG(cerr << "Found dods server header: " << value << endl);
+	Connect *me = (Connect *)HTRequest_context(request);
+	me->_server = value;
+    }
+    else if (field == "server") {
 	DBG(cerr << "Found server header: " << value << endl);
 	Connect *me = (Connect *)HTRequest_context(request);
 	me->_server = value;
@@ -851,6 +859,10 @@ Connect::parse_mime(FILE *data_source)
 	if (header == "content-description:") {
 	    DBG(cout << header << ": " << value << endl);
 	    _type = get_type(value);
+	}
+	else if (header == "xdods-server:") {
+	    DBG(cout << header << ": " << value << endl);
+	    _server = value;
 	}
 	else if (header == "server:") {
 	    DBG(cout << header << ": " << value << endl);
@@ -923,11 +935,15 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // Add our own filter to update the history list.
     HTNet_addAfter(http_terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
 
-    // We add our own parsers for content-description and -encoding so that
+    // We add our own parsers for content-description and server so that
     // we can test for these fields and operate on the resulting document
     // without using the stream stack mechanism (which seems to be very
     // complicated). jhrg 11/20/96
     HTHeader_addParser("content-description", NO, description_handler);
+    // Added DODS server header because `Server:' is used by Java. We check
+    // first for `XDODS-Server:' and use that if found. Then look for
+    // `Server:' and finally default to 0.0. 12/16/98 jhrg
+    HTHeader_addParser("xdods-server", NO, server_handler);
     HTHeader_addParser("server", NO, server_handler);
 }
 

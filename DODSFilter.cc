@@ -10,6 +10,9 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.6  1998/12/16 19:10:53  jimg
+// Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
+//
 // Revision 1.5  1998/11/10 01:04:42  jimg
 // Added `ends' to strings made with ostrstream (fixes a bug found with
 // purify).
@@ -39,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.5 1998/11/10 01:04:42 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.6 1998/12/16 19:10:53 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -202,7 +205,7 @@ void
 DODSFilter::send_version_info()
 {
     cout << "HTTP/1.0 200 OK" << endl
-	 << "Server: " << DVR << endl
+	 << "XDODS-Server: " << DVR << endl
 	 << "Content-Type: text/plain" << endl
 	 << endl;
     
