@@ -9,6 +9,14 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.34  1998/03/19 23:36:58  jimg
+// Fixed calls to set_mime_*().
+// Removed old code (that was surrounded by #if 0 ... #endif).
+// Added a version of parse_constraint(...) that works with FILE *
+// Completely hacked send(...). It now takes care of setting up the compression
+// sub process.
+// Removed `compressed' flag from parse_constraint(...).
+//
 // Revision 1.33  1998/02/11 21:57:12  jimg
 // Changed x_gzip to deflate. See Connect.cc/.h
 //
@@ -171,7 +179,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.33 1998/02/11 21:57:12 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.34 1998/03/19 23:36:58 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -605,9 +613,6 @@ DDS::parse(FILE *in)
     if (!status || !arg.status()) {// Check parse result
 	if (arg.error())
 	    arg.error()->display_message();
-#if 0
-	cerr << "Error parsing DDS object!" << endl;
-#endif
 	return false;
     }
     else
@@ -729,8 +734,7 @@ DDS::check_semantics(bool all)
 // false otherwise.
 
 bool
-DDS::parse_constraint(const String &constraint, ostream &os, 
-		      bool server = true)
+DDS::parse_constraint(const String &constraint, ostream &os, bool server = true)
 {
     FILE *in = text_to_temp(constraint);
 
@@ -750,7 +754,7 @@ DDS::parse_constraint(const String &constraint, ostream &os,
     if (!status || !arg.status()) {// Check parse result
 	if (arg.error()) {
 	    if (server) {
-		set_mime_text(dods_error);
+		set_mime_text(os, dods_error);
 		arg.error()->print(os);
 	    }
 	    else
@@ -760,6 +764,13 @@ DDS::parse_constraint(const String &constraint, ostream &os,
     }
     else
 	return true;
+}
+
+bool
+DDS::parse_constraint(const String &constraint, FILE *out, bool server = true)
+{
+    ostdiostream os(out);
+    return parse_constraint(constraint, os, server);
 }
 
 // Send the named variable. This mfunc combines BaseTypes read() and
@@ -776,32 +787,75 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 {
     bool status = true;
 
-    XDR *sink = new_xdrstdio(out, XDR_ENCODE);
-    ostdiostream os(out);	// set up output stream
-
-    if ((status = parse_constraint(constraint, os))) {
+    if ((status = parse_constraint(constraint, out, true))) {
 	// Handle *functional* constraint expressions specially 
 	if (functional_expression()) {
 	    BaseType *var = eval_function(dataset);
-	    set_mime_binary(dods_data, (compressed) ? deflate : x_plain);
-	    print_variable(os, var, true);
-	    os << "Data:" << endl;
+	    set_mime_binary(out, dods_data, (compressed) ? deflate : x_plain);
+
+	    // If compressing, start up the sub process.
+	    int childpid;	// Used to wait for compressor sub proc
+	    FILE *comp_sink = 0;
+	    XDR *xdr_sink;
+	    if (compressed) {
+		comp_sink = compressor(out, childpid);
+		xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
+	    }
+	    else {
+		xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+	    }
+
+	    print_variable((compressed) ? comp_sink : out, var, true);
+	    fprintf((compressed) ? comp_sink : out, "Data:\n");
+
 	    // In the following call to serialize, suppress CE evaluation.
-	    status = var->serialize(dataset, *this, sink, false);
+	    status = var->serialize(dataset, *this, xdr_sink, false);
+
+	    delete_xdrstdio(xdr_sink);
+
+	    // Wait for the compressor sub process to stop
+	    if (compressed) {
+		fclose(comp_sink);
+		int pid;
+		while ((pid = waitpid(childpid, 0, 0)) > 0) {
+		    DBG(cerr << "pid: " << pid << endl);
+		}
+	    }
 	}
 	else {
-	    set_mime_binary(dods_data, (compressed) ? deflate : x_plain);
-	    print_constrained(os); // send constrained DDS
-	    os << "Data:" << endl; // send `Data:' marker
+	    set_mime_binary(out, dods_data, (compressed) ? deflate : x_plain);
+
+	    int childpid;	// Used to wait for compressor sub proc
+	    FILE *comp_sink = 0;
+	    XDR *xdr_sink;
+	    if (compressed) {
+		comp_sink = compressor(out, childpid);
+		xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
+	    }
+	    else {
+		xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+	    }
+
+	    // send constrained DDS	    
+	    print_constrained((compressed) ? comp_sink : out); 
+	    fprintf((compressed) ? comp_sink : out, "Data:\n");
 
 	    for (Pix q = first_var(); q; next_var(q)) 
 		if (var(q)->send_p()) // only process projected variables
 		    status = status && var(q)->serialize(dataset, *this,
-							 sink, true);
+							 xdr_sink, true);
+
+	    delete_xdrstdio(xdr_sink);
+	    
+	    if (compressed) {
+		fclose(comp_sink);
+		int pid;
+		while ((pid = waitpid(childpid, 0, 0)) > 0) {
+		    DBG(cerr << "pid: " << pid << endl);
+		}
+	    }
 	}
     }
-
-    delete_xdrstdio(sink);
 
     return status;
 }
