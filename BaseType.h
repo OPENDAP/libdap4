@@ -41,12 +41,10 @@
 #include "InternalErr.h"
 #endif
 
-#ifdef WIN32
 using std::vector;
 using std::stack;
 using std::ostream;
 using std::string;
-#endif
 
 class BaseType;			// Forward declarations
 class DDS;
@@ -232,12 +230,12 @@ public:
     */
     virtual BaseType *ptr_duplicate() = 0; // alloc new instance and dup THIS.
 
-    /** Returns the name of the class instance. 
+    /** Returns the name of the class instance. b
      */
     string name() const;
 
     /** Sets the name of the class instance. */
-    void set_name(const string &n);
+    virtual void set_name(const string &n);
 
     /** Returns the type of the class instance. */
     Type type() const;
@@ -741,6 +739,16 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.63  2001/08/27 16:38:34  jimg
+ * Merged with release-3-2-6
+ *
+ * Revision 1.61.4.5  2001/08/21 16:32:18  dan
+ * Changed set_name accessor to 'virtual void' so that name fields
+ * of subclassed types could be accessed through the BaseType pointer.
+ *
+ * Revision 1.61.4.4  2001/08/18 01:48:11  jimg
+ * Removed WIN32 compile guards from using statements.
+ *
  * Revision 1.62  2001/06/15 23:49:01  jimg
  * Merged with release-3-2-4.
  *

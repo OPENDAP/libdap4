@@ -362,22 +362,25 @@ public:
       into an output file.  A pointer to this file can be retrieved
       with the #output()# function. \emph{A program that uses that FILE
       pointer must be sure not to close it with fclose().} Instead, use
-      Connect::close_output(). If {\it async} is true, then the
-      operation is asynchronous, and the function returns before the
-      data transfer is complete. This method is here so that Connect can be
-      used to read from any URL, not just URLs which return DAS, DDS or
-      DataDDS objects. Because of this, fetch_url neither automatically
-      appends a suffix nor does it route the response through any of the
-      parsers which decode responses from a DODS server.
+      Connect::close_output(). 
+
+      This mthods also scans the URL for a username/passwd. If present,
+      extracts them, places them in the Connect object, and rebuilds the URL
+      without them.
+
+      This method is here so that Connect can be used to read from any URL,
+      not just URLs which return DAS, DDS or DataDDS objects. Because of
+      this, #fetch_url# neither automatically appends a suffix nor does it
+      route the response through any of the parsers which decode responses
+      from a DODS server. In addition, #fetch_url# also does \emph{not}
+      escape any characters in the URL. That is the responsibility of the
+      caller. This includes characters that break URLs and those that break
+      DODS CEs.
 
       Note that the asynchronous transfer feature of DODS is not
       currently enabled.  All invocations of this function will be
       synchronous, no matter what the value of the {\it async}
       parameter. 
-
-      Also scans the URL for a username/passwd. If present, extracts
-      them, places them in the Connect object, and rebuilds the URL
-      without them.
 
       @memo Dereference a URL.  
       @return Returns false if an error is detected, otherwise returns
@@ -554,7 +557,9 @@ public:
     void *gui();
 
   /** Reads the DAS corresponding to the dataset in the Connect
-      object's URL. 
+      object's URL. Although DODS does not support usig CEs with DAS
+      requests, if present in the Connect object's instance, they will be
+      escaped and passed as the query string of the request.
 
       @memo Get the DAS from a server.
       @return TRUE if the DAS was successfully received. FALSE
@@ -569,7 +574,8 @@ public:
     bool request_das(bool gui = false,  const string &ext = "das");
 
   /** Reads the DDS corresponding to the dataset in the Connect
-      object's URL. 
+      object's URL. Although CEs are rarely used with this method, if present
+      it will be escaped.
 
       @memo Get the DDS from a server.
       @return TRUE if the DDS was successfully received. FALSE
@@ -583,10 +589,11 @@ public:
       */
     bool request_dds(bool gui = false, const string &ext = "dds");
 
-  /** Reads data from the Connect object's server.  This function sets
+  /** Reads data from the Connect object's server.  This method sets
       up the BaseType variables in a DDS, and sends a request using
       #fetch_url()#.  Upon return, it caches the data on a disk, then
-      unpacks it into the DDS storage.
+      unpacks it into the DDS storage. Unlike #fetch_url#, this method
+      escapes the CE part of the URL.
 
       @return A reference to the DataDDS object which contains the
       variables (BaseType pointers) generated from the DDS sent with
@@ -645,6 +652,22 @@ public:
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.55  2001/08/27 16:38:34  jimg
+ * Merged with release-3-2-6
+ *
+ * Revision 1.49.4.5  2001/07/28 01:10:41  jimg
+ * Some of the numeric type classes did not have copy ctors or operator=.
+ * I added those where they were needed.
+ * In every place where delete (or delete []) was called, I set the pointer
+ * just deleted to zero. Thus if for some reason delete is called again
+ * before new memory is allocated there won't be a mysterious crash. This is
+ * just good form when using delete.
+ * I added calls to www2id and id2www where appropriate. The DAP now handles
+ * making sure that names are escaped and unescaped as needed. Connect is
+ * set to handle CEs that contain names as they are in the dataset (see the
+ * comments/Log there). Servers should not handle escaping or unescaping
+ * characters on their own.
+ *
  * Revision 1.54  2001/06/15 23:49:01  jimg
  * Merged with release-3-2-4.
  *
