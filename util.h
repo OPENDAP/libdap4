@@ -13,6 +13,11 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.28  1999/03/24 23:25:10  jimg
+ * Added includes and New*() definitions for the Int16, UInt16 and Float32
+ * types.
+ * Removed declarations for the old *_ops functions.
+ *
  * Revision 1.27  1999/01/21 02:12:35  jimg
  * Moved prototypes to ce_functions.h
  *
@@ -116,8 +121,11 @@
 
 #include "BaseType.h"
 #include "Byte.h"
+#include "Int16.h"
+#include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
+#include "Float32.h"
 #include "Float64.h"
 #include "Str.h"
 #include "Url.h"
@@ -141,19 +149,16 @@ bool deflate_exists();
 const char *dods_root();
 const char *dods_progress();
 
-bool byte_ops(int i1, int i2, int op);
-bool int_ops(dods_int32 i1, dods_int32 i2, int op);
-bool int_ops(dods_uint32 i1, dods_int32 i2, int op);
-bool int_ops(dods_int32 i1, dods_uint32 i2, int op);
-bool int_ops(dods_uint32 i1, dods_uint32 i2, int op);
-bool double_ops(double i1, double i2, int op);
 bool string_ops(String &i1, String &i2, int op);
 
 extern "C" bool_t xdr_str(XDR *xdrs, String &buf);
 
 Byte *NewByte(const String &n = (char *)0);
+Int16 *NewInt16(const String &n = (char *)0);
+UInt16 *NewUInt16(const String &n = (char *)0);
 Int32 *NewInt32(const String &n = (char *)0);
 UInt32 *NewUInt32(const String &n = (char *)0);
+Float32 *NewFloat32(const String &n = (char *)0);
 Float64 *NewFloat64(const String &n = (char *)0);
 Str *NewStr(const String &n = (char *)0);
 Url *NewUrl(const String &n = (char *)0);
