@@ -40,11 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.124 2003/03/04 17:54:52 jimg Exp $" };
-
-#ifdef GUI
-#include "Gui.h"
-#endif
+    { "$Id: Connect.cc,v 1.125 2003/03/04 21:45:17 jimg Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
@@ -185,14 +181,15 @@ Connect::parse_mime(FILE *data_source, Response *rs)
 
     @param name The URL for the virtual connection.
     @param www_verbose_errors Ignored
-    @param accept_deflate Ignored
-    @param uname Ignored
-    @param password Ignored
+    @param accept_deflate Does this client accept deflated responses? True by
+    default. 
+    @param uname Use this username for authentication. Null by default.
+    @param password Passwrod to use for authentication. Null by default.
     @brief Create an instance of Connect. */
 Connect::Connect(const string &n, bool www_verbose_errors, 
 		 bool accept_deflate, string uname, string password) 
     throw (Error, InternalErr)
-    : d_http(0)
+    : d_http(0), d_version("unknown")
 {
     string name = prune_spaces(n);
     
@@ -270,6 +267,8 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	throw;
     }
 
+    d_version = rs->get_version(); // Improve this design!
+
     switch (rs->get_type()) {
       case dods_error: {
 	  if (!_error.parse(rs->get_stream())) {
@@ -335,6 +334,8 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	throw;
     }
 
+    d_version = rs->get_version(); // Improve this design!
+
     switch (rs->get_type()) {
       case dods_error: {
 	  if (!_error.parse(rs->get_stream())) {
@@ -396,6 +397,8 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
     // We need to catch Error exceptions to ensure calling close_output.
     try {
 	rs = d_http->fetch_url(data_url);
+	d_version = rs->get_version(); // Improve this design!
+
 	process_data(data, rs);
 	delete rs;
     }
@@ -513,8 +516,19 @@ Connect::set_accept_deflate(bool deflate)
     of this software, this should be handled so that the www library is
     not initialized with the cache running by default. */
 void
-Connect::disable_cache()
+Connect::set_cache_enabled(bool cache)
 {
+    if (d_http)
+	d_http->set_cache_enabled(cache);
+}
+
+bool
+Connect::is_cache_enabled()
+{
+    if (d_http)
+	return d_http->is_cache_enabled();
+    else
+	return false;
 }
 
 /** @name Remove these...
@@ -582,84 +596,11 @@ Connect::error()
 }
 //@}
 
-#if 0
-/** Sets the #www_errors_To_stderr# property.
-
-    @see is_www_errors_to_stderr
-    @param state The state of the property. */
-void 
-Connect::set_www_errors_to_stderr(bool state)
-{
-}
-
-/** Gets the state of the #www_errors_to_stderr# property. If TRUE this
-    means that http errors will be printed to stderr in addition to being
-    reported in the Error object. If FALSE only the Error object will be
-    used. 
-
-    @return TRUE if WWW errors should got to stderr, FALSE if only the
-    Error object should be used. */
-bool 
-Connect::get_www_errors_to_stderr()
-{
-    return false;
-}
-
-/** Sets the list of accepted types. This string is meant to list all of
-    the DODS datatypes that the client can grok and is sent to
-    the server using the XDODS-Accept-Types MIME header. The server will
-    try to only send back to the client datatypes that are listed. If the
-    value of this header is `All', then the server assumes that the
-    client can process all of the DODS datatypes. If only one or two
-    types are \emph{not} understood, then they can be listed, each one
-    prefixed by `!'. Thus, if a client does not understand `Sequences',
-    it could set types to `!Sequences' as opposed to listing all of the
-    DODS datatypes. Multiple values are separated by commas (,).
-
-    Not all servers will honor this and some requests may not be possible
-    to express with a very limited set of datatypes.
-
-    NB: By default, the value `All' is used.
-
-    @param types The string listing datatypes understood by this client. */ 
-void 
-Connect::set_accept_types(const string & types)
-{
-}
-
-/** Gets the current string of `accepted types'. This string lists all of
-    the DODS datatypes that the client can grok. 
-
-    @see set_accepted_types
-    @return A string listing the types this client declares to servers it
-    can understand. */
-string 
-Connect::get_accept_types()
-{
-    return "All";
-}
-
-/** Set the cache control header value.
-    @see get_cache_control
-    @see HTTP/1.1 Specification, sec. 14.9.
-    @param caching Should be no-cache to disable caching. */
-void 
-Connect::set_cache_control(const string & caching)
-{
-}
-
-/** Get the string which describes the default cache control value. This
-    is sent with all outgoing messages.<p>
-    NB: The libwww 5.2.9 cache does not honor this.
-    @return The cache control header value. */
-string 
-Connect::get_cache_control()
-{
-    return "";
-}
-#endif
-
 // $Log: Connect.cc,v $
+// Revision 1.125  2003/03/04 21:45:17  jimg
+// Removed code in #if 0 ... #endif. Added get_version(). Fixed constructor
+// documentation.
+//
 // Revision 1.124  2003/03/04 17:54:52  jimg
 // Removed many old methods (methods that were used with libwww). Switched to
 // the new Response objects.
