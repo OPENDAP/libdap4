@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.41 2003/12/08 18:02:29 edavis Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.42 2004/02/19 19:42:52 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -54,7 +54,7 @@ using std::cerr;
 using std::string;
 using std::endl;
 
-#ifdef WIN32
+#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
 using std::vector<string>;
 #else
 using std::vector;
@@ -138,10 +138,8 @@ AttrTable::AttrTable(const AttrTable &rhs)
 void
 AttrTable::delete_attr_table() 
 {
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++)
-    {
-	entry *e = *i ;		// Why not 'delete *i;'? 02/25/03 jhrg
-	delete e ;
+    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
+	delete *i; *i = 0;
     }
 }
 
@@ -270,10 +268,10 @@ AttrTable::append_container(const string &name) throw (Error)
     catch( Error &e )
     {
 	// an error occurred, attribute with that name already exists
-	delete new_at ;
-	throw e ;
+	delete new_at; new_at = 0;
+	throw e;
     }
-    return ret ;
+    return ret;
 }
 
 /** Append a new attribute container to this attribute table. The new
@@ -533,7 +531,7 @@ AttrTable::del_attr(const string &name, int i)
 	if (i == -1) {		// Delete the whole attribute
 	    entry *e = *iter ;
 	    attr_map.erase( iter ) ;
-	    delete e ;
+	    delete e ; e = 0;
 	}
 	else {			// Delete one element from attribute array
 	    // Don't try to delete elements from the vector of values if the
@@ -1054,8 +1052,7 @@ void
 AttrTable::erase()
 {
     for (Attr_iter i = attr_map.begin(); i != attr_map.end(); i++) {
-	delete *i;
-	*i = 0;
+	delete *i; *i = 0;
     }
 
     attr_map.erase(attr_map.begin(), attr_map.end());
@@ -1253,6 +1250,21 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.42  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.38.2.3  2004/02/11 22:26:45  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.38.2.2  2004/01/17 13:37:50  rmorris
+// Mod's to account for differences in usage statements containing template
+// reference between MS VC++ 6.0 and MS VC++ 7.0.
+//
 // Revision 1.41  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

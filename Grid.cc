@@ -93,7 +93,7 @@ Grid::~Grid()
     for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
     {
 	BaseType *btp = *i ;
-	delete btp ;
+	delete btp ; btp = 0;
     }
 }
 
@@ -865,6 +865,17 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.62  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.57.2.4  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
 // Revision 1.61  2003/12/10 21:11:57  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.

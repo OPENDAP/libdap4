@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.50 2004/01/26 18:58:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.51 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,7 +80,7 @@ labeled properly.";
  
 int ddslex();
 void ddserror(char *s);
-
+void error_exit_cleanup();
 void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
 	       Part p);
 void invalid_declaration(parser_arg *arg, string semantic_err_msg, 
@@ -177,12 +177,12 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   137,   137,   148,   149,   152,   156,   164,   168,   169,
-     176,   196,   196,   214,   214,   232,   232,   232,   232,   276,
-     287,   293,   299,   305,   306,   307,   308,   309,   310,   311,
-     312,   313,   316,   317,   320,   320,   320,   320,   320,   321,
-     321,   321,   321,   322,   322,   322,   322,   323,   326,   347,
-     347,   347,   374,   385,   386,   387
+       0,   137,   137,   148,   149,   152,   156,   165,   170,   171,
+     178,   199,   199,   218,   218,   237,   237,   237,   237,   282,
+     293,   299,   305,   311,   312,   313,   314,   315,   316,   317,
+     318,   319,   322,   323,   326,   326,   326,   326,   326,   327,
+     327,   327,   327,   328,   328,   328,   328,   329,   332,   353,
+     353,   353,   382,   393,   394,   395
 };
 #endif
 
@@ -1036,7 +1036,7 @@ case 1:
 case 2:
 #line 143 "dds.y"
 {
-		    delete ctor;
+		    delete ctor; ctor = 0;
 		;
     break;}
 case 5:
@@ -1050,25 +1050,26 @@ case 6:
 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG,
  				dds_line_num, yyvsp[0].word);
+		    error_exit_cleanup();
 		    YYABORT;
 		;
     break;}
 case 7:
-#line 165 "dds.y"
+#line 166 "dds.y"
 {
 		    yyval.boolean = true;
 		;
     break;}
 case 8:
-#line 168 "dds.y"
+#line 170 "dds.y"
 { yyval.boolean = true; ;
     break;}
 case 9:
-#line 169 "dds.y"
+#line 171 "dds.y"
 { yyval.boolean = true; ;
     break;}
 case 10:
-#line 177 "dds.y"
+#line 179 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -1083,13 +1084,14 @@ case 10:
 			*/
 		    } else {
 		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-2].word, yyvsp[-1].word);
+		      error_exit_cleanup();
 		      YYABORT;
 		    }
                     strcpy(yyval.word,yyvsp[-1].word);
 		;
     break;}
 case 11:
-#line 197 "dds.y"
+#line 200 "dds.y"
 { 
 		    if( current ) delete current ;
 		    current = ctor->top(); 
@@ -1097,20 +1099,21 @@ case 11:
 		;
     break;}
 case 12:
-#line 203 "dds.y"
+#line 206 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-6].word, yyvsp[-1].word);
+		      error_exit_cleanup();
 		      YYABORT;
 		    }
                     strcpy(yyval.word,yyvsp[-1].word);
 		;
     break;}
 case 13:
-#line 215 "dds.y"
+#line 219 "dds.y"
 { 
 		    if( current ) delete current ;
 		    current = ctor->top(); 
@@ -1118,20 +1121,21 @@ case 13:
 		;
     break;}
 case 14:
-#line 221 "dds.y"
+#line 225 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-6].word, yyvsp[-1].word);
+		      error_exit_cleanup();
 		      YYABORT;
 		    }
                     strcpy(yyval.word,yyvsp[-1].word);
 		;
     break;}
 case 15:
-#line 233 "dds.y"
+#line 238 "dds.y"
 { 
 		    if (is_keyword(string(yyvsp[-1].word), "array"))
 			part = array; 
@@ -1145,7 +1149,7 @@ case 15:
                 ;
     break;}
 case 16:
-#line 245 "dds.y"
+#line 250 "dds.y"
 { 
 		    if (is_keyword(string(yyvsp[-1].word), "maps"))
 			part = maps; 
@@ -1159,7 +1163,7 @@ case 16:
                 ;
     break;}
 case 17:
-#line 257 "dds.y"
+#line 262 "dds.y"
 {
 		    if( current ) delete current ;
 		    current = ctor->top(); 
@@ -1167,7 +1171,7 @@ case 17:
 		;
     break;}
 case 18:
-#line 263 "dds.y"
+#line 268 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -1176,13 +1180,14 @@ case 18:
 		    }
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, yyvsp[-13].word, yyvsp[-1].word);
+		      error_exit_cleanup();
 		      YYABORT;
 		    }
                     strcpy(yyval.word,yyvsp[-1].word);
 		;
     break;}
 case 19:
-#line 277 "dds.y"
+#line 283 "dds.y"
 {
 		    ostringstream msg;
 		    msg << BAD_DECLARATION;
@@ -1192,65 +1197,65 @@ case 19:
 		;
     break;}
 case 20:
-#line 288 "dds.y"
+#line 294 "dds.y"
 { 
 		    ctor->push(NewStructure()); 
 		;
     break;}
 case 21:
-#line 294 "dds.y"
+#line 300 "dds.y"
 { 
 		    ctor->push(NewSequence()); 
 		;
     break;}
 case 22:
-#line 300 "dds.y"
+#line 306 "dds.y"
 { 
 		    ctor->push(NewGrid()); 
 		;
     break;}
 case 23:
-#line 305 "dds.y"
+#line 311 "dds.y"
 { if( current ) delete current ;current = NewByte(); ;
     break;}
 case 24:
-#line 306 "dds.y"
+#line 312 "dds.y"
 { if( current ) delete current ;current = NewInt16(); ;
     break;}
 case 25:
-#line 307 "dds.y"
+#line 313 "dds.y"
 { if( current ) delete current ;current = NewUInt16(); ;
     break;}
 case 26:
-#line 308 "dds.y"
+#line 314 "dds.y"
 { if( current ) delete current ;current = NewInt32(); ;
     break;}
 case 27:
-#line 309 "dds.y"
+#line 315 "dds.y"
 { if( current ) delete current ;current = NewUInt32(); ;
     break;}
 case 28:
-#line 310 "dds.y"
+#line 316 "dds.y"
 { if( current ) delete current ;current = NewFloat32(); ;
     break;}
 case 29:
-#line 311 "dds.y"
+#line 317 "dds.y"
 { if( current ) delete current ;current = NewFloat64(); ;
     break;}
 case 30:
-#line 312 "dds.y"
+#line 318 "dds.y"
 { if( current ) delete current ;current = NewStr(); ;
     break;}
 case 31:
-#line 313 "dds.y"
+#line 319 "dds.y"
 { if( current ) delete current ;current = NewUrl(); ;
     break;}
 case 32:
-#line 316 "dds.y"
+#line 322 "dds.y"
 { current->set_name(yyvsp[0].word); ;
     break;}
 case 48:
-#line 327 "dds.y"
+#line 333 "dds.y"
 { 
 		     if (!check_int32(yyvsp[-1].word)) {
 			 string msg = "In the dataset descriptor object:\n";
@@ -1272,19 +1277,21 @@ case 48:
 		 ;
     break;}
 case 49:
-#line 348 "dds.y"
+#line 354 "dds.y"
 {
 		     id = new string(yyvsp[0].word);
 		 ;
     break;}
 case 50:
-#line 352 "dds.y"
+#line 358 "dds.y"
 { 
 		     if (!check_int32(yyvsp[0].word)) {
 			 string msg = "In the dataset descriptor object:\n";
 			 msg += "Expected an array subscript.\n";
 			 parse_error((parser_arg *)arg, msg.c_str(), 
 				 dds_line_num, yyvsp[0].word);
+			 error_exit_cleanup();
+			 YYABORT;
 		     }
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0].word), *id);
@@ -1297,11 +1304,11 @@ case 50:
 			 current = a;
 		     }
 
-		     delete id;
+		     delete id; id = 0;
 		 ;
     break;}
 case 52:
-#line 375 "dds.y"
+#line 383 "dds.y"
 {
 		     ostringstream msg;
 		     msg << "In the dataset descriptor object:" << endl
@@ -1312,15 +1319,15 @@ case 52:
 		 ;
     break;}
 case 53:
-#line 385 "dds.y"
+#line 393 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0].word); ;
     break;}
 case 54:
-#line 386 "dds.y"
+#line 394 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0].word); ;
     break;}
 case 55:
-#line 388 "dds.y"
+#line 396 "dds.y"
 {
 		  ostringstream msg;
 		  msg << "Error parsing the dataset name." << endl
@@ -1563,7 +1570,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 398 "dds.y"
+#line 406 "dds.y"
 
 
 /* 
@@ -1574,6 +1581,19 @@ yyreturn:
 void 
 ddserror(char *)
 {
+}
+
+/*
+  Error clean up. Call this before calling YYBORT. Don't call this on a
+  normal exit.
+*/
+
+void
+error_exit_cleanup()
+{
+    delete id; id = 0;
+    delete current; current = 0;
+    delete ctor; ctor = 0;
 }
 
 /*
@@ -1620,18 +1640,33 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 	    if( *current ) delete *current ;
 	    *current = (*ctor)->top();
 	    (*ctor)->pop();
-	}
-	else
+
+	    // Return here to avoid deleting the new value of 'current.'
 	    return;
+	}
     }
-    else
+    else {
 	table.add_var(*current);
+    }
+
+    if (*current) 
+	delete *current; 
+    *current = 0;
 }
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.50  2004/01/26 18:58:01  jimg
- * Build fixes.
+ * Revision 1.51  2004/02/19 19:42:52  jimg
+ * Merged with release-3-4-2FCS and resolved conflicts.
+ *
+ * Revision 1.42.2.2  2004/02/13 18:28:54  jimg
+ * Added error_exit_cleanup(). Plugged leaks when exiting under error
+ * conditions.
+ *
+ * Revision 1.42.2.1  2004/02/04 00:05:11  jimg
+ * Memory errors: I've fixed a number of memory errors (leaks, references)
+ * found using valgrind. Many remain. I need to come up with a systematic
+ * way of running the tests under valgrind.
  *
  * Revision 1.44  2003/12/08 18:02:30  edavis
  * Merge release-3-4 into trunk

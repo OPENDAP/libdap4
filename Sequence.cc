@@ -57,7 +57,14 @@
 #include "trace_new.h"
 #endif
 
+
 using namespace std;
+
+// I don't know if this is needed given the namespace declaration above...
+// 02/18/04 jhrg
+#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
+using std::vector<BaseTypeRow *>;
+#endif
 
 static const unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
 static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
@@ -169,8 +176,7 @@ static inline void
 delete_bt(BaseType *bt_ptr)
 {
     DBG(cerr << "In delete_bt: " << bt_ptr << endl);
-    delete bt_ptr;
-    bt_ptr = 0;
+    delete bt_ptr; bt_ptr = 0;
 }
 
 static inline void
@@ -180,8 +186,7 @@ delete_rows(BaseTypeRow *bt_row_ptr)
 
     for_each(bt_row_ptr->begin(), bt_row_ptr->end(), delete_bt);
 
-    delete bt_row_ptr;
-    bt_row_ptr = 0;
+    delete bt_row_ptr; bt_row_ptr = 0;
 }
 
 Sequence::~Sequence()
@@ -189,7 +194,7 @@ Sequence::~Sequence()
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
     {
 	BaseType *btp = *i ;
-	delete btp ;
+	delete btp ; btp = 0;
     }
 
     for_each(d_values.begin(), d_values.end(), delete_rows);
@@ -1144,9 +1149,39 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.73  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
 // Revision 1.72  2003/12/10 21:11:58  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.
+// Revision 1.70.2.8  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.70.2.7  2004/01/17 13:37:50  rmorris
+// Mod's to account for differences in usage statements containing template
+// reference between MS VC++ 6.0 and MS VC++ 7.0.
+//
+// Revision 1.70.2.6  2003/11/25 18:21:16  jimg
+// Comments for buf2val() and val2buf() improved.
+//
+// Revision 1.70.2.5  2003/11/19 18:21:59  jimg
+// Fixed a bug in the deserialize() method introduced for the last bug fix
+// (#682).
+//
+// Revision 1.70.2.4  2003/11/18 21:59:10  jimg
+// deserialize() now throws Error if the version number is < 2.15. This means
+// that all servers MUST produce valid version strings and that the old method
+// may be eliminated.
+//
+// Revision 1.70.2.3  2003/09/06 22:54:37  jimg
+// Added set_in_selection() method. Updated the documentation.
+//
 //
 // Revision 1.71  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan

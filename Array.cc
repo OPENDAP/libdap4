@@ -146,9 +146,7 @@ Array::operator=(const Array &rhs)
     @param size The size of the desired new row.
     @param name The name of the new dimension.  This defaults to
     an empty string. 
-    @brief Add a dimension of a given size.
-*/
-
+    @brief Add a dimension of a given size. */
 void 
 Array::append_dim(int size, string name)
 { 
@@ -260,18 +258,18 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
 }
 
 /** Once a dimension has been created (see append_dim()), it can
-    be ``constrained''.  This will make the array appear to the rest
+    be constrained.  This will make the array appear to the rest
     of the world to be smaller than it is.  This functions sets the
     projection for a dimension, and marks that dimension as part of the
     current projection.
 
-    \note A stride value <= 0 or > the array size is an error and causes
+    @note A stride value <= 0 or > the array size is an error and causes
     add_constraint to throw an Error. Similarly, start or stop values >
     size also cause an Error exception to be thrown.
 
     @brief Adds a constraint to an Array dimension.  
 
-    @param i An STL iterator pointing to the dimension in the list of 
+    @param i An iterator pointing to the dimension in the list of 
     dimensions.
     @param start The start index of the constraint.
     @param stride The stride value of the constraint.
@@ -308,6 +306,9 @@ Array::add_constraint(Dim_iter &i, int start, int stride, int stop)
 
 /** Returns a pointer to the first dimension of the array.  Use 
     <tt>next_dim()</tt> to return successive dimensions.
+
+    @deprecated Methods which use the Pix objects are deprecated in favor of
+    the methods which use iterators.
 
     @brief Return first dimension of array.
     @return A <b>Pix</b> object indicating the first array dimension.
@@ -385,6 +386,8 @@ Array::dimensions(bool constrained)
     <i>constrained</i> argument), the constrained size is returned.
 
     @brief Returns the size of the dimension.  
+    @deprecated Methods which use the Pix objects are deprecated in favor of
+    the methods which use iterators.
 
     @param p The Pix index of the dimension.
     @param constrained If this parameter is TRUE, the function
@@ -403,6 +406,23 @@ Array::dimension_size(Pix p, bool constrained)
     return dimension_size( i, constrained ) ;
 }
 
+/** Return the size of the array dimension referred to by <i>i</i>. 
+    If the dimension is constrained the constrained size is returned if 
+    <i>constrained</i> is \c true. 
+
+    @brief Returns the size of the dimension.  
+
+    @param i The dimension.
+
+    @param constrained If this parameter is TRUE, the method returns the
+    constrained size of the array so long as a constraint has been applied to
+    this dimension. If TRUE and no constraint has been applied, this method
+    returns zero. If it is FALSE, the method ignores any constraint that
+    has been applied to this dimension and returns the full size of the
+    dimension. The default value is FALSE.
+
+    @return An integer containing the size of the specified dimension.
+*/
 int 
 Array::dimension_size(Dim_iter &i, bool constrained) 
 { 
@@ -429,6 +449,8 @@ Array::dimension_size(Dim_iter &i, bool constrained)
     <tt>dimension_stride()</tt>.
 
     @brief Return the start index of a dimension.
+    @deprecated Methods which use the Pix objects are deprecated in favor of
+    the methods which use iterators.
 
     @param p The Pix index of the dimension.
     @param constrained If this parameter is TRUE, the function
@@ -448,6 +470,24 @@ Array::dimension_start(Pix p, bool constrained)
     return dimension_start( i, constrained ) ;
 }
 
+/** Use this function to return the start index of an array
+    dimension.  If the array is constrained (indicated with the
+    <i>constrained</i> argument), the start index of the constrained
+    array is returned (or zero if the dimension in question is not
+    selected at all).  See also <tt>dimension_stop()</tt> and
+    <tt>dimension_stride()</tt>.
+
+    @brief Return the start index of a dimension.
+
+    @param i The dimension.
+    @param constrained If this parameter is TRUE, the function
+    returns the start index only if the dimension is constrained
+    (subject to a start, stop, or stride constraint).  If
+    the dimension is not constrained, the function returns zero.  If it
+    is FALSE, the function returns the start index whether or not
+    the dimension is constrained. 
+    @return The desired start index.
+*/
 int 
 Array::dimension_start(Dim_iter &i, bool constrained) 
 { 
@@ -474,6 +514,8 @@ Array::dimension_start(Dim_iter &i, bool constrained)
     <tt>dimension_stride()</tt>.
 
     @brief Return the stop index of the constraint.
+    @deprecated Methods which use the Pix objects are deprecated in favor of
+    the methods which use iterators.
 
     @param p The Pix index of the dimension.
     @param constrained If this parameter is TRUE, the function
@@ -492,6 +534,24 @@ Array::dimension_stop(Pix p, bool constrained)
     return dimension_stop( i, constrained ) ;
 }
 
+/** Use this function to return the stop index of an array
+    dimension.  If the array is constrained (indicated with the
+    <i>constrained</i> argument), the stop index of the constrained
+    array is returned (or zero if the dimension in question is not
+    selected at all).  See also <tt>dimension_start()</tt> and
+    <tt>dimension_stride()</tt>.
+
+    @brief Return the stop index of the constraint.
+
+    @param i The dimension.
+    @param constrained If this parameter is TRUE, the function
+    returns the stop index only if the dimension is  constrained
+    (subject to a start, stop, or stride constraint).  If
+    the dimension is not constrained, the function returns zero.  If it
+    is FALSE, the function returns the stop index whether or not
+    the dimension is constrained. 
+    @return The desired stop index.
+*/
 int 
 Array::dimension_stop(Dim_iter &i, bool constrained) 
 { 
@@ -518,6 +578,8 @@ Array::dimension_stop(Dim_iter &i, bool constrained)
     <tt>dimension_start()</tt>.
 
     @brief Returns the stride value of the constraint.
+    @deprecated Methods which use the Pix objects are deprecated in favor of
+    the methods which use iterators.
 
     @param p The Pix index of the dimension.
     @param constrained If this parameter is TRUE, the function
@@ -537,6 +599,25 @@ Array::dimension_stride(Pix p, bool constrained)
     return dimension_stride( i, constrained ) ;
 }
 
+/** Use this function to return the stride value of an array
+    dimension.  If the array is constrained (indicated with the
+    <i>constrained</i> argument), the stride value of the constrained
+    array is returned (or zero if the dimension in question is not
+    selected at all).  See also <tt>dimension_stop()</tt> and
+    <tt>dimension_start()</tt>.
+
+    @brief Returns the stride value of the constraint.
+
+    @param i The dimension.
+    @param constrained If this parameter is TRUE, the function
+    returns the stride value only if the dimension is constrained
+    (subject to a start, stop, or stride constraint).  If
+    the dimension is not constrained, the function returns zero.  If it
+    is FALSE, the function returns the stride value whether or not
+    the dimension is constrained. 
+    @return The stride value requested, or zero, if <i>constrained</i>
+    is TRUE and the dimension is not selected.
+*/
 int 
 Array::dimension_stride(Dim_iter &i, bool constrained) 
 { 
@@ -561,6 +642,8 @@ Array::dimension_stride(Dim_iter &i, bool constrained)
     cause an exception.  So don't do that.
 
     @brief Returns the name of the specified dimension. 
+    @deprecated Methods which use the Pix objects are deprecated in favor of
+    the methods which use iterators.
 
     @param p The Pix index of the dimension.
     @return A pointer to a string containing the dimension name.
@@ -573,6 +656,16 @@ Array::dimension_name(Pix p)
     return dimension_name( i ) ;
 }
 
+/** This function returns the name of the dimension indicated with
+    <i>p</i>.  Since this method is public, it is possible to call it
+    before the Array object has been properly initialized.  This will
+    cause an exception.  So don't do that.
+
+    @brief Returns the name of the specified dimension. 
+
+    @param i The dimension.
+    @return A pointer to a string containing the dimension name.
+*/
 string
 Array::dimension_name(Dim_iter &i) 
 { 
@@ -591,8 +684,10 @@ Array::dimension_name(Dim_iter &i)
     DDS.  If the Array is constrained, the declaration will allocate
     only enough space for the constrained values.
 
+    @deprecated Use the FILE * interface.
+
     @brief Prints a DDS entry for the Array.
-    @param os An output stream to prin on.
+    @param os An output stream to print on.
     @param space A string containing spaces to precede the
     declaration.
     @param print_semi A boolean indicating whether to print a
@@ -629,6 +724,23 @@ Array::print_decl(ostream &os, string space, bool print_semi,
 	os << ";" << endl;
 }
 
+/** Prints a declaration for the Array.  This is what appears in a
+    DDS.  If the Array is constrained, the declaration will reflect
+    the size of the Array once the constraint is applied.
+
+    @brief Prints a DDS entry for the Array.
+
+    @param out Write the output to this FILE *.
+    @param space A string containing spaces to precede the
+    declaration.
+    @param print_semi A boolean indicating whether to print a
+    semi-colon after the declaration.  (TRUE means ``print a
+    semi-colon.'') 
+    @param constraint_info A boolean value.  See
+    <tt>BaseType::print_decl()</tt>.
+    @param constrained This argument should be TRUE if the Array is
+    constrained, and FALSE otherwise.
+*/
 void
 Array::print_decl(FILE *out, string space, bool print_semi,
 		  bool constraint_info, bool constrained)
@@ -721,6 +833,8 @@ Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
 }
 
 /** Prints the value of the entire (constrained) array.
+
+    @deprecated Use the FILE * interface.
     @param os The output stream to print on.
     @param space The space to use in printing.
     @param print_decl_p A boolean value indicating whether you want
@@ -761,6 +875,16 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
     }
 }
 
+/** Prints the values in ASCII of the entire (constrained) array. This method
+    Attempts to make an aesthetically pleasing display. However, it is
+    primarily intended for debugging purposes.
+
+    @param out Write the output to this FILE *.
+    @param space The space to use in printing.
+    @param print_decl_p A boolean value indicating whether you want
+    the Array declaration to precede the Array value.
+    @brief Print the value given the current constraint.
+*/
 unsigned int
 Array::print_array(FILE *out, unsigned int index, unsigned int dims, 
 		   unsigned int shape[])
@@ -818,8 +942,7 @@ Array::print_val(ostream &os, string space, bool print_decl_p)
 	shape[index++] = dimension_size(i, true);
 
     print_array(os, 0, dims, shape);
-    delete [] shape;
-    shape = 0;
+    delete [] shape; shape = 0;
 
     if (print_decl_p) {
 	os << ";" << endl;
@@ -847,8 +970,7 @@ Array::print_val(FILE *out, string space, bool print_decl_p)
 	shape[index++] = dimension_size(i, true);
 
     print_array(out, 0, dims, shape);
-    delete [] shape;
-    shape = 0;
+    delete [] shape; shape = 0;
 
     if (print_decl_p) {
 	fprintf( out, ";\n" ) ;
@@ -876,6 +998,20 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.62  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.59.2.3  2004/02/11 22:26:45  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.59.2.2  2004/01/29 06:51:49  jimg
+// Fixed up the doxygen comments.
+//
 // Revision 1.61  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //
@@ -951,7 +1087,7 @@ Array::check_semantics(string &msg, bool)
 // (hopefully making them easier to read, ...). Only the files RCReader.cc
 // and usage.cc actually use pthreads synchronization functions. In other
 // cases I removed static objects where they were used for supposed
-// improvements in efficiency which had never actually been verifiied (and
+// improvements in efficiency which had never actually been verified (and
 // which looked dubious).
 //
 // Revision 1.54  2002/06/18 15:36:24  tom

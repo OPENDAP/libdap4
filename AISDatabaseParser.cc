@@ -37,6 +37,8 @@
 #include "util.h"
 #include "debug.h"
 
+using namespace std;
+
 static const not_used char *states[] = {
     "START",
     "FINISH",
@@ -407,6 +409,12 @@ AISDatabaseParser::intern(const string &database, AISResources *ais)
 }
 
 // $Log: AISDatabaseParser.cc,v $
+// Revision 1.8  2004/02/19 19:42:51  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.6.2.3  2004/01/22 17:09:52  jimg
+// Added std namespace declarations since the DBG() macro uses cerr.
+//
 // Revision 1.7  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

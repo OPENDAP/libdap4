@@ -39,12 +39,17 @@
 
 #include <assert.h>
 
+#include <algorithm>
+
 #include "expr.h"
 #include "DDS.h"
 #include "Clause.h"
 
 using std::cerr;
 using std::endl;
+#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
+using std::for_each;
+#endif
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
     : _op(oper), _b_func(0), _bt_func(0), _arg1(a1), _args(rv) 
@@ -78,16 +83,23 @@ Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _arg1(0), _args(0)
 {
 }
 
+static inline void
+delete_rvalue(rvalue *rv)
+{
+    delete rv; rv = 0;
+}
+
 Clause::~Clause() 
 {
     if (_arg1) {
-	delete _arg1;
-	_arg1 = 0;
+	delete _arg1; _arg1 = 0;
     }
     
     if (_args) {
-	delete _args;
-	_args = 0;
+	// _args is a pointer to a vector<rvalue*> and we must must delete
+	// each rvalue pointer here explicitly. 02/03/04 jhrg
+	for_each(_args->begin(), _args->end(), delete_rvalue);
+	delete _args; _args = 0;
     }
 }
 
@@ -205,6 +217,28 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 }
 
 // $Log: Clause.cc,v $
+// Revision 1.20  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.18.2.4  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.18.2.3  2004/02/08 23:50:13  rmorris
+// for_each must explicitly come from std:: under VC++ 6.0 only.
+//
+// Revision 1.18.2.2  2004/02/05 16:05:59  jimg
+// Added <algorithm> because I use for_each() in the dtor.
+//
+// Revision 1.18.2.1  2004/02/04 00:05:10  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
 // Revision 1.19  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

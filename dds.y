@@ -48,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.44 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.45 2004/02/19 19:42:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -96,7 +96,7 @@ labeled properly.";
  
 int ddslex();
 void ddserror(char *s);
-
+void error_exit_cleanup();
 void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
 	       Part p);
 void invalid_declaration(parser_arg *arg, string semantic_err_msg, 
@@ -141,7 +141,7 @@ start:
                 }
                 datasets
                 {
-		    delete ctor;
+		    delete ctor; ctor = 0;
 		}
 ;
 
@@ -157,6 +157,7 @@ dataset:	SCAN_DATASET '{' declarations '}' name ';'
                 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG,
  				dds_line_num, $<word>1);
+		    error_exit_cleanup();
 		    YYABORT;
 		}
 ;
@@ -165,6 +166,7 @@ declarations:	/* empty */
                 {
 		    $$ = true;
 		}
+
                 | declaration { $$ = true; }
                 | declarations declaration { $$ = true; }
 ;
@@ -188,6 +190,7 @@ declaration:  base_type var ';'
 			*/
 		    } else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		      error_exit_cleanup();
 		      YYABORT;
 		    }
                     strcpy($$,$2);
@@ -206,6 +209,7 @@ declaration:  base_type var ';'
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $6);
+		      error_exit_cleanup();
 		      YYABORT;
 		    }
                     strcpy($$,$6);
@@ -224,6 +228,7 @@ declaration:  base_type var ';'
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $6);
+		      error_exit_cleanup();
 		      YYABORT;
 		    }
                     strcpy($$,$6);
@@ -268,6 +273,7 @@ declaration:  base_type var ';'
 		    }
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $13);
+		      error_exit_cleanup();
 		      YYABORT;
 		    }
                     strcpy($$,$13);
@@ -355,6 +361,8 @@ array_decl:	'[' SCAN_WORD ']'
 			 msg += "Expected an array subscript.\n";
 			 parse_error((parser_arg *)arg, msg.c_str(), 
 				 dds_line_num, $5);
+			 error_exit_cleanup();
+			 YYABORT;
 		     }
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi($5), *id);
@@ -367,7 +375,7 @@ array_decl:	'[' SCAN_WORD ']'
 			 current = a;
 		     }
 
-		     delete id;
+		     delete id; id = 0;
 		 }
 		 ']'
 
@@ -405,6 +413,19 @@ name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
 void 
 ddserror(char *)
 {
+}
+
+/*
+  Error clean up. Call this before calling YYBORT. Don't call this on a
+  normal exit.
+*/
+
+void
+error_exit_cleanup()
+{
+    delete id; id = 0;
+    delete current; current = 0;
+    delete ctor; ctor = 0;
 }
 
 /*
@@ -451,16 +472,34 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 	    if( *current ) delete *current ;
 	    *current = (*ctor)->top();
 	    (*ctor)->pop();
-	}
-	else
+
+	    // Return here to avoid deleting the new value of 'current.'
 	    return;
+	}
     }
-    else
+    else {
 	table.add_var(*current);
+    }
+
+    if (*current) 
+	delete *current; 
+    *current = 0;
 }
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.45  2004/02/19 19:42:53  jimg
+ * Merged with release-3-4-2FCS and resolved conflicts.
+ *
+ * Revision 1.42.2.2  2004/02/13 18:28:54  jimg
+ * Added error_exit_cleanup(). Plugged leaks when exiting under error
+ * conditions.
+ *
+ * Revision 1.42.2.1  2004/02/04 00:05:11  jimg
+ * Memory errors: I've fixed a number of memory errors (leaks, references)
+ * found using valgrind. Many remain. I need to come up with a systematic
+ * way of running the tests under valgrind.
+ *
  * Revision 1.44  2003/12/08 18:02:30  edavis
  * Merge release-3-4 into trunk
  *

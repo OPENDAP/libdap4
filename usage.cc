@@ -38,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.26 2003/12/10 21:11:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.27 2004/02/19 19:42:53 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -64,7 +64,7 @@ using namespace std;
 static void
 usage(char *argv[])
 {
-    cerr << argv[0] << " <options> <filename> <CGI directory>" << endl
+    cerr << argv[0] << " <options> <filename> <CGI prefix>" << endl
          << "Takes three required arguments; command options to be" << endl
 	 << "passed to the filter programs, the dataset filename and" << endl
 	 << "the directory and api prefix for the filter program." << endl; 
@@ -142,12 +142,12 @@ write_global_attributes(ostringstream &oss, AttrTable *attr,
 			const string prefix = "")
 {
     if (attr) {
-	for (AttrTable::Attr_iter a = attr->attr_begin(); a != attr->attr_end(); a++)
-	{
+	AttrTable::Attr_iter a;
+	for (a = attr->attr_begin(); a != attr->attr_end(); a++) {
 	    if (attr->is_container(a))
 		write_global_attributes(oss, attr->get_attr_table(a), 
-				 (prefix == "") ? attr->get_name(a) 
-				 : prefix + string(".") + attr->get_name(a));
+					(prefix == "") ? attr->get_name(a) 
+					: prefix + string(".") + attr->get_name(a));
 	    else {
 		oss << "\n<tr><td align=right valign=top><b>"; 
 		if (prefix != "")
@@ -170,8 +170,8 @@ static void
 write_attributes(ostringstream &oss, AttrTable *attr, const string prefix = "")
 {
     if (attr) {
-	for (AttrTable::Attr_iter a = attr->attr_begin(); a != attr->attr_end(); a++)
-	{
+	AttrTable::Attr_iter a;
+	for (a = attr->attr_begin(); a != attr->attr_end(); a++) {
 	    if (attr->is_container(a))
 		write_attributes(oss, attr->get_attr_table(a), 
 				 (prefix == "") ? attr->get_name(a) 
@@ -212,8 +212,7 @@ build_global_attributes(DAS &das, DDS &)
 
     ga << "<h3>Dataset Information</h3>\n<center>\n<table>\n";
 
-    for (AttrTable::Attr_iter p = das.var_begin(); p != das.var_end(); p++)
-    {
+    for (AttrTable::Attr_iter p = das.var_begin(); p != das.var_end(); p++) {
 	string name = das.get_name(p);
 
 	// I used `name_in_dds' originally, but changed to `name_is_global'
@@ -222,7 +221,14 @@ build_global_attributes(DAS &das, DDS &)
 	// global attributes. jhrg. 5/22/97
 	if (!name_in_kill_file(name) && name_is_global(name)) {
 	    AttrTable *attr = das.get_table(p);
+#if 0
 	    found = attr->first_attr() != (Pix)0; // we have global attrs
+#endif
+	    // The above line is probably broken. But that doesn't really
+	    // matter  in this case because I think we should have the
+	    // section even if it is empty (given that we've found a global
+	    // name).
+	    found = true;
 	    write_global_attributes(ga, attr, "");
 	}
     }
@@ -262,8 +268,7 @@ fancy_typename(BaseType *v)
 	  ostringstream type;
 	  Array *a = (Array *)v;
 	  type << "Array of " << fancy_typename(a->var()) <<"s ";
-	  for (Array::Dim_iter p = a->dim_begin(); p != a->dim_end(); p++)
-	  {
+	  for (Array::Dim_iter p = a->dim_begin(); p != a->dim_end(); p++) {
 	      type << "[" << a->dimension_name(p) << " = 0.." 
 		   << a->dimension_size(p, false)-1 << "]";
 	  }
@@ -281,14 +286,13 @@ fancy_typename(BaseType *v)
     }
 }
 
-// This function does not write #ends# to #vs#. 4/29/99 jhrg
 static void
 write_variable(BaseType *btp, DAS &das, ostringstream &vs)
 {
     vs << "<td align=right valign=top><b>" << btp->name() 
-	<< "</b>:</td>\n"
-	<< "<td align=left valign=top>" << fancy_typename(btp)
-	    << "<br>";
+       << "</b>:</td>\n"
+       << "<td align=left valign=top>" << fancy_typename(btp)
+       << "<br>";
 
     AttrTable *attr = das.get_table(btp->name());
 	    
@@ -335,17 +339,17 @@ write_variable(BaseType *btp, DAS &das, ostringstream &vs)
       }
 
       case dods_grid_c: {
-	vs << "<table>\n";
-	Grid *gp = dynamic_cast<Grid *>(btp);
-	write_variable(gp->array_var(), das, vs);
-	for (Grid::Map_iter p = gp->map_begin(); p != gp->map_end(); p++)
-	{
-	    vs << "<tr>";
-	    write_variable((*p), das, vs);
-	    vs << "</tr>";
-	}
-	vs << "</table>\n";
-	break;
+	  vs << "<table>\n";
+	  Grid *gp = dynamic_cast<Grid *>(btp);
+	  write_variable(gp->array_var(), das, vs);
+	  Grid::Map_iter p;
+	  for (p = gp->map_begin(); p != gp->map_end(); p++) {
+	      vs << "<tr>";
+	      write_variable((*p), das, vs);
+	      vs << "</tr>";
+	  }
+	  vs << "</table>\n";
+	  break;
       }
 
       default:
@@ -368,8 +372,7 @@ build_variable_summaries(DAS &das, DDS &dds)
     vs << "<h3>Variables in this Dataset</h3>\n<center>\n<table>\n";
     //    vs << "<tr><th>Variable</th><th>Information</th></tr>\n";
 
-    for (DDS::Vars_iter p = dds.var_begin(); p != dds.var_end(); p++)
-    {
+    for (DDS::Vars_iter p = dds.var_begin(); p != dds.var_end(); p++) {
 	vs << "<tr>";
 	write_variable((*p), das, vs);
 	vs << "</tr>";
@@ -466,11 +469,11 @@ main(int argc, char *argv[])
 	html_header();
 
 	if (global_attrs.length()) {
-	    fprintf( stdout, "%s\n%s\n%s\n%s\n",
-			"<html><head><title>Dataset Information</title></head>",
-		        "<html>",
-			global_attrs.c_str(),
-		        "<hr>" ) ;
+	    fprintf(stdout, "%s\n%s\n%s\n%s\n",
+		    "<html><head><title>Dataset Information</title></head>",
+		    "<body>",
+		    global_attrs.c_str(),
+		    "<hr>" ) ;
 	}
 
 	fprintf( stdout, "%s\n", variable_sum.c_str() ) ;
@@ -479,7 +482,7 @@ main(int argc, char *argv[])
 
 	fprintf( stdout, "%s\n", user_html.c_str() ) ;
 
-	fprintf( stdout, "</html>\n" ) ;
+	fprintf( stdout, "</body>\n</html>\n" ) ;
     }
     catch (Error &e) {
 	string error_msg = e.get_error_message();
@@ -506,6 +509,19 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.27  2004/02/19 19:42:53  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.23.2.3  2004/02/05 16:08:32  jimg
+// Resolved conflict from an update (fprintf() on line 480).
+//
+// Revision 1.23.2.2  2004/01/30 18:07:24  jimg
+// Fixed bug 692. The switch from strstream to stringstream was partially
+// botched because we left ends operator calls in the code. This ended the
+// strings that were generated in some of the functions. When that was
+// concatenated with the stringstream is ended the string, typically after the
+// first variable or attribute was written. I removed the calls to ends.
+//
 // Revision 1.26  2003/12/10 21:11:58  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.

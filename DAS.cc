@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.41 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.42 2004/02/19 19:42:52 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -61,6 +61,11 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.41 2003/12/08 18:02:29 edavis Ex
 
 using std::cerr;
 using std::endl;
+
+// Glue routines declared in das.lex
+extern void das_switch_to_buffer(void *new_buffer);
+extern void das_delete_buffer(void * buffer);
+extern void *das_buffer(FILE *fp);
 
 extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
@@ -287,11 +292,17 @@ DAS::parse(FILE *in)
 	throw InternalErr(__FILE__, __LINE__, "Null input stream.");
     }
 
+#if 0
     dasrestart(in);
+#endif
+    void *buffer = das_buffer(in);
+    das_switch_to_buffer(buffer);
 
     parser_arg arg(this);
 
     bool status = dasparse((void *)&arg) == 0;
+
+    das_delete_buffer(buffer);
 
     //  STATUS is the result of the parser function; if a recoverable error
     //  was found it will be true but arg.status() will be false.
@@ -351,6 +362,14 @@ DAS::print(FILE *out, bool dereference)
 }
 
 // $Log: DAS.cc,v $
+// Revision 1.42  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.40.2.3  2004/02/04 00:05:10  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
 // Revision 1.41  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

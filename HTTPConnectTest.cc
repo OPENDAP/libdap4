@@ -74,7 +74,7 @@ public:
     }
 
     void tearDown() {
-	delete http;
+	delete http; http = 0;
     }
 
     CPPUNIT_TEST_SUITE( HTTPConnectTest );
@@ -130,12 +130,12 @@ public:
 		     ostream_iterator<string>(cerr, "\n")));
 	    CPPUNIT_ASSERT(status == 304);
 	    
-	    delete resp_h;
+	    delete resp_h; resp_h = 0;
 
 	}
 	catch(Error &e) {
 	    cerr << e.get_error_message() << endl;
-	    delete resp_h;
+	    delete resp_h; resp_h = 0;
 	    CPPUNIT_ASSERT(!"Should not get an Error");
 	}
     }
@@ -147,7 +147,7 @@ public:
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 
 			   && !ferror(stuff->get_stream()) 
 			   && !feof(stuff->get_stream()));
-	    delete stuff;
+	    delete stuff; stuff = 0;
 
 	    stuff = http->fetch_url(dsp_das_url);
 	    DBG2(char ln[1024];
@@ -160,27 +160,27 @@ public:
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
 			   && !ferror(stuff->get_stream()) 
 			   && !feof(stuff->get_stream()));
-	    delete stuff;
+	    delete stuff; stuff = 0;
 
 	    stuff = http->fetch_url("file:///etc/passwd");
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 
 			   && !ferror(stuff->get_stream()) 
 			   && !feof(stuff->get_stream()));
-	    delete stuff;
+	    delete stuff; stuff = 0;
 
 	    stuff = http->fetch_url("file://HTTPConnect.cc");
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 
 			   && !ferror(stuff->get_stream()) 
 			   && !feof(stuff->get_stream()));
-	    delete stuff;
+	    delete stuff; stuff = 0;
 	}
 	catch (InternalErr &e) {
-	    delete stuff;
+	    delete stuff; stuff = 0;
 	    cerr << "InternalErr: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
 	}
 	catch (Error &e) {
-	    delete stuff;
+	    delete stuff; stuff = 0;
 	    cerr << "Error: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
 	}
@@ -201,10 +201,10 @@ public:
 	    CPPUNIT_ASSERT((*h)[4] == "Content-Description: dods_das");
 	    CPPUNIT_ASSERT(h->size() == 5);
 
-	    delete r;
+	    delete r; r = 0;
 	}
 	catch (InternalErr &e) {
-	    delete r;
+	    delete r; r = 0;
 	    CPPUNIT_ASSERT(!"Caught an exception from get_response_headers");
 	}
     }
@@ -214,10 +214,10 @@ public:
 	Regex version("dap/[0-9]+\\.[0-9]+\\.[0-9]+");
 	try {
 	    CPPUNIT_ASSERT(re_match(version, r->get_version().c_str()));
-	    delete r;
+	    delete r; r = 0;
 	}
 	catch (InternalErr &e) {
-	    delete r;
+	    delete r; r = 0;
 	    CPPUNIT_ASSERT(!"Caught an exception from server_version");
 	}
 	
@@ -227,10 +227,10 @@ public:
 	Response *r = http->fetch_url(dsp_das_url);
 	try {
 	    CPPUNIT_ASSERT(r->get_type() == dods_das);
-	    delete r;
+	    delete r; r = 0;
 	}
 	catch (InternalErr &e) {
-	    delete r;
+	    delete r; r = 0;
 	    CPPUNIT_ASSERT(!"Caught an exception from type()");
 	}
 
@@ -245,10 +245,10 @@ public:
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
 			   && !ferror(stuff->get_stream()) 
 			   && !feof(stuff->get_stream()));
-	    delete stuff;
+	    delete stuff; stuff = 0;
 	}
 	catch (InternalErr &e) {
-	    delete stuff;
+	    delete stuff; stuff = 0;
 	    CPPUNIT_ASSERT(!"Caught exception from output");
 	}
     }
@@ -296,7 +296,7 @@ public:
 	DBG(cerr << endl << http->d_upstring << endl);
 	CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_test");
 	CPPUNIT_ASSERT(status == 200);
-	delete resp_h;
+	delete resp_h; resp_h = 0;
     }
 	
 };
@@ -321,6 +321,17 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPConnectTest.cc,v $
+// Revision 1.10  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.8.2.6  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
 // Revision 1.9  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

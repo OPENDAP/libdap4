@@ -148,8 +148,7 @@ public:
 	with <code>FILE *response</code> and the class can arrange to update
 	the lock counter and mutex. */
     struct CacheEntry {
-	// Location
-	string url;
+	string url;		// Location
 	int hash;
 	int hits;		// Hit counts
 
@@ -162,7 +161,7 @@ public:
 	time_t age;
 	time_t max_age;		// From Cache-Control
 
-	long size;		// Size of cached entity body
+	unsigned long size;	// Size of cached entity body
 	bool range;		// Range is not currently supported. 10/02/02
 				// jhrg 
 
@@ -187,12 +186,19 @@ public:
    };
 
 #ifdef WIN32
-	//  Declared private below for gcc.  There appears to be a
-	//  difference in public vs. private under gcc when objects
-	//  share the same source file (??).
+    //  Declared private below for gcc.  There appears to be a
+    //  difference in public vs. private under gcc when objects
+    //  share the same source file (??).
+    //
+    // My guess is that this was a bug in older versions of gcc. I've made
+    // the functors classes (they were structs) and made them friends (so
+    // they can access private stuff). We should not need this any longer,
+    // but I'm hesitant to remove it since I cannot easily test with VC++.
+    // 01/23/04 jhrg
+    unsigned long d_max_entry_size;	// Max individual entry size.
+
     void remove_cache_entry(CacheEntry *entry) throw(InternalErr);
     bool stopGC() const;
-    int d_max_entry_size;	// Max individual entry size.
 #endif
 
 private:
@@ -206,13 +212,13 @@ private:
     bool d_expire_ignored;
     bool d_always_validate;
 
-    int d_total_size;		// How much can we store?
-    int d_folder_size;		// How much of that is meta data?
-    int d_gc_buffer;		// How much memory needed as buffer?
+    unsigned long d_total_size;	// How much can we store?
+    unsigned long d_folder_size; // How much of that is meta data?
+    unsigned long d_gc_buffer;	// How much memory needed as buffer?
 #ifndef WIN32  //  Declared public above for win32
-    int d_max_entry_size;	// Max individual entry size.
+    unsigned long d_max_entry_size;	// Max individual entry size.
 #endif
-    int d_current_size;
+    unsigned long d_current_size;
     int d_default_expiration;
 
     vector<string> d_cache_control;
@@ -247,24 +253,20 @@ private:
     CacheTable d_cache_table;
 
     map<FILE *, CacheEntry *> d_locked_entries;
+    vector<string> d_open_files;
 
     static HTTPCache *_instance;
 
     friend class HTTPCacheTest;	// Unit tests
-    
+    friend class HTTPCacheInterruptHandler;
+
     // Functors used with STL algorithms
 
-    //#ifndef WIN32
-	//  Are both a struct and a Class as of 6/14/03.  It appears gcc
-	//  is allowing this.  VC++ does not.  I believe jimg is
-	//  in the middle of something in this regard.  ROM - 6/14/03.
-    // Changed struct to class. 07/10/03 jhrg
     friend class DeleteExpired;
     friend class DeleteByHits;
     friend class DeleteCacheEntry;
     friend class DeleteUnlockedCacheEntry;
     friend class WriteOneCacheEntry;
-    //#endif
 
     // Private methods
 
@@ -326,6 +328,8 @@ private:
 #endif
     bool startGC() const;
 
+    void cache_index_write() throw(Error);
+
     void perform_garbage_collection();
     void expired_gc();
     void hits_gc();
@@ -336,8 +340,6 @@ public:
     virtual ~HTTPCache();
 
     string get_cache_root() const;
-
-    void cache_index_write() throw(Error);
 
     void set_cache_enabled(bool mode);
     bool is_cache_enabled() const;
@@ -351,11 +353,11 @@ public:
     void set_expire_ignored(bool mode);
     bool is_expire_ignored() const;
 
-    void set_max_size(int size);
-    int get_max_size() const;
+    void set_max_size(unsigned long size);
+    unsigned long get_max_size() const;
 
-    void set_max_entry_size(int size);
-    int get_max_entry_size() const;
+    void set_max_entry_size(unsigned long size);
+    unsigned long get_max_entry_size() const;
 
     void set_default_expiration(int exp_time);
     int get_default_expiration() const;
@@ -386,6 +388,25 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.10  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.8.2.7  2004/02/10 20:54:50  jimg
+// Added a field that's used to record files opened for writing *while* they are
+// open. Also moved cache_write_index() to the private part of the interface.
+// this lets it be called from inside an interrupt handler w/o unlocking the
+// class interface.
+//
+// Revision 1.8.2.6  2004/01/23 22:03:49  jimg
+// Fixed some comments after testing.
+//
+// Revision 1.8.2.5  2004/01/22 20:47:24  jimg
+// Fix for bug 689. I added tests to make sure the cache size doesn't wind
+// up being set to a negative number. I also changed the types of the cache
+// size and entry size from int to unsigned long. Added information to
+// the default .dodsrc file explaining the units of the CACHE_SIZE and
+// MAX_ENTRY_SIZE parameters.
+//
 // Revision 1.9  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //
@@ -458,7 +479,7 @@ public:
 //
 // Revision 1.1.2.9  2002/11/04 07:30:42  rmorris
 // Private CacheEntry won't fly here.  As used elsewhere, it must not be
-// either private or protected.  It must be public.  I generatlly made it
+// either private or protected.  It must be public.  I generally made it
 // so this code would compile under both win32 and unix, but it hasn't
 // apparently been runtime tested anywhere as yet.  An assumption I make
 // since it won't compile and some of the problems were just typo's

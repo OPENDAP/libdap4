@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.60 2003/12/10 21:11:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.61 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -203,7 +203,7 @@ do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
     The function will return a string containing the name of the first
     file in the list that exists, if any. 
 
-    NB: This code now checks for <pathname>.ext 3/17/99 jhrg
+    @note This code now checks for <code>pathname.ext</code> 3/17/99 jhrg
 
     @brief Find a file with ancillary data.  
     @param pathname The input pathname of a dataset.
@@ -802,8 +802,8 @@ remove_mime_header(FILE *in)
     allows one `per-dataset' file to be used for a collection of files with
     the same root name.
 
-    NB: An HTML* file contains HTML without the <html>, <head> or <body> tags
-    (my own notation).
+    @note An HTML* file contains HTML without the \c html, \c head or \c body
+    tags (my own notation).
 
     @brief Look for the user supplied CGI- and dataset-specific HTML*
     documents. 
@@ -911,6 +911,14 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.61  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.57.2.6  2004/02/04 00:05:11  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
 // Revision 1.60  2003/12/10 21:11:58  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.
@@ -1169,7 +1177,7 @@ main(int argc, char *argv[])
 // Merge of no-gnu branch
 //
 // Revision 1.33  1999/03/17 23:05:46  jimg
-// Added to find_ancillary_file() so that <pathname>.ext will also be checked.
+// Added to find_ancillary_file() so that pathname.ext will also be checked.
 // This ensures that ancillary DAS files such as 1998-6-avhrr.dat.das will be
 // used properly.
 //

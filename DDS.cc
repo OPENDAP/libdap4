@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.67 2003/12/10 21:11:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.68 2004/02/19 19:42:52 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -52,6 +52,7 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.67 2003/12/10 21:11:57 jimg Exp
 #include <sys/wait.h>
 #endif
 
+#include <assert.h>
 #include <iostream>
 #include <algorithm>
 #include <functional>
@@ -98,6 +99,11 @@ void expr_switch_to_buffer(void *new_buffer);
 void expr_delete_buffer(void * buffer);
 void *expr_string(const char *yy_str);
 
+// Glue for the DDS parser defined in dds.lex
+void dds_switch_to_buffer(void *new_buffer);
+void dds_delete_buffer(void * buffer);
+void *dds_buffer(FILE *fp);
+
 // Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
 // the `result' of the mfunc.
 //
@@ -137,21 +143,21 @@ DDS::~DDS()
     for (Vars_iter i = vars.begin(); i != vars.end(); i++)
     {
 	BaseType *btp = *i ;
-	delete btp ;
+	delete btp ; btp = 0;
     }
     
     // delete all the constants created by the parser for CE evaluation
     for (Constants_iter j = constants.begin(); j != constants.end(); j++)
     {
 	BaseType *btp = *j ;
-	delete btp ;
+	delete btp ; btp = 0;
     }
 
     if (!expr.empty()) {
 	for (Clause_iter k = expr.begin(); k != expr.end(); k++)
 	{
 	    Clause *cp = *k ;
-	    delete cp ;
+	    delete cp ; cp = 0;
 	}
     }
 }
@@ -500,7 +506,7 @@ DDS::del_var(const string &n)
 	if ((*i)->name() == n) {
 	    BaseType *bt = *i ;
 	    vars.erase(i) ;
-	    delete bt ;
+	    delete bt ; bt = 0;
 	    return;
 	}
     }
@@ -513,7 +519,7 @@ DDS::del_var(Vars_iter &i)
     {
 	BaseType *bt = *i ;
 	vars.erase(i) ;
-	delete bt ;
+	delete bt ; bt = 0;
     }
 }
 
@@ -523,7 +529,7 @@ DDS::del_var(Vars_iter &i1, Vars_iter &i2)
     for( Vars_iter i_tmp = i1; i_tmp != i2; i_tmp++ )
     {
 	BaseType *bt = *i_tmp ;
-	delete bt ;
+	delete bt ; bt = 0;
     }
     vars.erase(i1, i2) ;
 }
@@ -1040,11 +1046,14 @@ DDS::parse(string fname)
 	throw Error(can_not_read_file, "Could not open: " + fname);
     }
 
-    parse(in);
-
-    int res = fclose(in);
-    if( res ) {
-	DBG(cerr << "DDS::parse - Failed to close file " << (void *)in << endl ;) ;
+    try {
+	parse(in);
+	int res = fclose(in);
+	assert(res == 0);
+    }
+    catch (Error &e) {
+	fclose(in);
+	throw e;
     }
 }
 
@@ -1063,11 +1072,14 @@ DDS::parse(int fd)
 	throw InternalErr(__FILE__, __LINE__, "Could not access file.");
     }
 
-    parse(in);
-
-    int res = fclose(in);
-    if( res ) {
-	DBG(cerr << "DDS::parse(fd) - Failed to close " << (void *)in << endl ;) ;
+    try {
+	parse(in);
+	int res = fclose(in);
+	assert(res == 0);
+    }
+    catch (Error &e) {
+	fclose(in);
+	throw e;
     }
 }
 
@@ -1084,11 +1096,14 @@ DDS::parse(FILE *in)
 	throw InternalErr(__FILE__, __LINE__, "Null input stream.");
     }
 
-    ddsrestart(in);
+    void *buffer = dds_buffer(in);
+    dds_switch_to_buffer(buffer);
 
     parser_arg arg(this);
 
     bool status = ddsparse((void *)&arg) == 0;
+
+    dds_delete_buffer(buffer);
 
     DBG(cout << "Status from parser: " << status << endl);
 
@@ -1543,7 +1558,7 @@ DDS::mark(const string &n, bool state)
 	s->pop();
     }
 
-    delete s ;
+    delete s ; s = 0;
 
     return true;
 }
@@ -1561,6 +1576,32 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.68  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.62.2.10  2004/02/16 12:42:14  rmorris
+// Well, everybody really needs assert.
+//
+// Revision 1.62.2.9  2004/02/15 21:17:21  rmorris
+// Win32 needs assert.h when one uses assert.
+//
+// Revision 1.62.2.8  2004/02/13 18:22:28  jimg
+// I added code to catch throws in the parse() methods and close open files.
+// DDS::parse(FILE *in) does NOT do this because 'in' defaults to stdin.
+//
+// Revision 1.62.2.7  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.62.2.6  2004/02/04 00:05:11  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
 // Revision 1.67  2003/12/10 21:11:57  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.149 2004/01/22 16:49:38 jimg Exp $
+# $Id: Makefile.in,v 1.150 2004/02/19 19:42:52 jimg Exp $
 
 @SET_MAKE@
 
@@ -22,7 +22,7 @@ DEFS = @DEFS@
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 # Use these options for debugging. 12/24/02 jhrg
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-default-inline -fno-defer-pop
-CXXFLAGS = @CXXFLAGS@ -Wall -Wno-deprecated
+CXXFLAGS = @CXXFLAGS@ -Wall -Wno-deprecated -DNDEBUG
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 LDFLAGS = -L. @LDFLAGS@ $(CPP_UNIT_LIB)
 LFLAGS = -8
@@ -79,6 +79,7 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
+VALGRIND = @VALGRIND@
 
 UTILSRCS = cgi_util.cc escaping.cc DODSFilter.cc SignalHandler.cc
 UTILOBJS = cgi_util.o escaping.o DODSFilter.o SignalHandler.o
@@ -377,18 +378,25 @@ collect-coverage-data:
 	     gcov -l -o ../ $$f >> $$cov_dat; \
          done)
 
-# These tests all fail when linking with -lnew_debug.
+# To perform memory testing, use
+# DASTEST="valgrind --leak-check=yes --logfile=das_memcheck ./das-test"
+#
+# Also make sure to export GLIBCPP_FORCE_NEW=1 in the shell that executes the
+# tests. This will keep libstdc++ from pooling memory which will keep
+# valgrind from reporting those blocks as still reachable.
+#
+# Collate the das_memcheck.pid* file using: for f in `ls -1
+# das_memcheck.pid*`; do cat $f >> das_memcheck; done
 
 das-check: das-test
-	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool das-test --srcdir das-testsuite
 
+# DDSTEST
 dds-check: dds-test
-	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool dds-test --srcdir dds-testsuite
 
+# EXPRTEST
 expr-check: expr-test
-	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool expr-test --srcdir expr-testsuite
 
 # A Summary run of a test for threads
@@ -397,12 +405,12 @@ thread-check: ThreadTest
 
 # This tests the servers
 
+# GETURL
 server-check: geturl
-	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool geturl --srcdir server-testsuite
 
+# GETURL
 grid-func-check: geturl
-	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool geturl --srcdir grid-func-testsuite
 
 # Listing the unit test code here gets the depend target to build
@@ -472,7 +480,11 @@ HTTPConnectTest: HTTPConnectTest.o libdap++.a
 	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
 
 unit-check: $(UNIT_TEST_PROGS)
-	for t in $(UNIT_TEST_PROGS); do echo $$t; ./$$t; done
+	@echo "If using valgrind, export GLIBCPP_FORCE_NEW (gcc 3.2.2+)"
+	@echo "and build using CXXDEBUG_FLAGS."
+	-for t in $(UNIT_TEST_PROGS); do echo $$t; $(VALGRIND) ./$$t; done
+	-rm memcheck
+	-for m in `ls -1 memcheck.pid*`; do cat $$m >> memcheck; rm $$m; done
 	-(cd tests && $(MAKE) $(MFLAGS) all)
 
 # Clean up.
@@ -658,8 +670,11 @@ HTTPConnect.o: HTTPConnect.cc config_dap.h debug.h GNU/Regex.h \
   Array.h Vector.h DDS.h DAS.h Clause.h expr.h RValue.h Structure.h \
   Constructor.h Sequence.h Grid.h HTTPCacheResponse.h
 HTTPCache.o: HTTPCache.cc config_dap.h Error.h InternalErr.h \
-  ResponseTooBigErr.h HTTPCache.h HTTPCacheDisconnectedMode.h util_mit.h \
-  debug.h
+  ResponseTooBigErr.h SignalHandler.h EventHandler.h cgi_util.h DDS.h \
+  GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h dods-datatypes.h \
+  DAS.h Clause.h expr.h RValue.h ObjectType.h EncodingType.h \
+  HTTPCacheInterruptHandler.h HTTPCache.h HTTPCacheDisconnectedMode.h \
+  debug.h util_mit.h
 AttrTable.o: AttrTable.cc config_dap.h Error.h debug.h util.h BaseType.h \
   AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h dods-datatypes.h \
   Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
@@ -1006,11 +1021,13 @@ DODSFilter.o: DODSFilter.cc config_dap.h GNU/GetOpt.h DAS.h GNU/Pix.h \
   ObjectType.h EncodingType.h util.h Byte.h Int16.h UInt16.h Int32.h \
   UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
   Structure.h Constructor.h Sequence.h Grid.h escaping.h DODSFilter.h \
-  SignalHandler.h EventHandler.h
+  SignalHandler.h EventHandler.h AlarmHandler.h
 SignalHandler.o: SignalHandler.cc config_dap.h SignalHandler.h \
   EventHandler.h Error.h cgi_util.h DDS.h GNU/Pix.h IteratorAdapter.h \
   BaseType.h AttrTable.h InternalErr.h dods-datatypes.h DAS.h Clause.h \
-  expr.h RValue.h ObjectType.h EncodingType.h
+  expr.h RValue.h ObjectType.h EncodingType.h util.h Byte.h Int16.h \
+  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
+  Array.h Vector.h Structure.h Constructor.h Sequence.h Grid.h
 HTTPCacheTest.o: HTTPCacheTest.cc HTTPCache.h config_dap.h Error.h \
   InternalErr.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
   HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
@@ -1019,7 +1036,8 @@ HTTPCacheTest.o: HTTPCacheTest.cc HTTPCache.h config_dap.h Error.h \
   AttrTable.h GNU/Pix.h IteratorAdapter.h dods-datatypes.h Byte.h Int16.h \
   UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
   Array.h Vector.h DDS.h DAS.h Clause.h expr.h RValue.h Structure.h \
-  Constructor.h Sequence.h Grid.h
+  Constructor.h Sequence.h Grid.h SignalHandler.h EventHandler.h \
+  cgi_util.h EncodingType.h
 HTTPConnectTest.o: HTTPConnectTest.cc GNU/Regex.h HTTPConnect.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
   ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \

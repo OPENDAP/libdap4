@@ -23,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.35 2004/01/26 18:58:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.36 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,10 +37,7 @@ static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.35 2004/01/26 18:58:01 jim
 #include "debug.h"
 #include "util.h"
 
-#ifdef WIN32
-using std::cerr;
-using std::endl;
-#endif
+using namespace std;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -58,7 +55,7 @@ int Errorlex();			// the scanner
 void Errorerror(char *s);	// gotta love automatically generated names...
 
 
-#line 72 "Error.y"
+#line 69 "Error.y"
 #ifndef YYSTYPE
 typedef union {
 #ifdef __SUNPRO_CC
@@ -138,8 +135,8 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   103,   106,   107,   110,   111,   114,   117,   124,   124,
-     132,   139,   139
+       0,   100,   103,   104,   107,   108,   111,   114,   121,   121,
+     129,   136,   136
 };
 #endif
 
@@ -924,52 +921,52 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 103 "Error.y"
+#line 100 "Error.y"
 { yyval.boolean = yyvsp[-2].boolean; STATUS(arg) = yyvsp[-2].boolean; ;
     break;}
 case 2:
-#line 106 "Error.y"
+#line 103 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 3:
-#line 107 "Error.y"
+#line 104 "Error.y"
 { yyval.boolean = yyvsp[0].boolean; ;
     break;}
 case 4:
-#line 110 "Error.y"
+#line 107 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 5:
-#line 111 "Error.y"
+#line 108 "Error.y"
 { yyval.boolean = yyvsp[0].boolean; ;
     break;}
 case 6:
-#line 114 "Error.y"
+#line 111 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 7:
-#line 118 "Error.y"
+#line 115 "Error.y"
 { 
 		    ERROR_OBJ(arg)->set_error_code((ErrorCode)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 8:
-#line 125 "Error.y"
+#line 122 "Error.y"
 { 
 		    ERROR_OBJ(arg)->set_error_message(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 case 10:
-#line 133 "Error.y"
+#line 130 "Error.y"
 {
 		    ERROR_OBJ(arg)->set_program_type((ProgramType)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 11:
-#line 140 "Error.y"
+#line 137 "Error.y"
 {
 		    DBG(cerr << "Program: " << yyvsp[0].string << endl);
 		    ERROR_OBJ(arg)->set_program(yyvsp[0].string);
@@ -1209,7 +1206,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 148 "Error.y"
+#line 145 "Error.y"
 
 
 void
@@ -1225,8 +1222,11 @@ Errorerror(char *s)
 
 
 // $Log: Error.tab.c,v $
-// Revision 1.35  2004/01/26 18:58:01  jimg
-// Build fixes.
+// Revision 1.36  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.14.2.1  2004/01/22 17:09:52  jimg
+// Added std namespace declarations since the DBG() macro uses cerr.
 //
 // Revision 1.15  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk

@@ -54,59 +54,6 @@ public:
     virtual ~EventHandler() {}
 };
 
-/** Handle the time out alarm. When an OPeNDAP server runs until the time out
-    alarm is triggered, this class provides the concrete implementation of
-    EventHandler::handle_signal(). 
-    
-    @see EventHandler
-    @see SignalHandler
-    @author James Gallagher <jgallagher@opendap.org> */
-class AlarmHandler : public EventHandler {
-private:
-    FILE *d_stream;		// Sink for the Error object.
-    string d_version;
-
-    // Ensure that d_stream gets initialized...
-    AlarmHandler() {}
-
-public:
-    /** Store information to be used by the handler.
-	@param s Write to this stream. */
-    AlarmHandler(FILE *s) : d_stream(s) {}
-    
-    virtual ~AlarmHandler() {
-	fclose(d_stream);
-    }
-
-    /** Handle an alarm signal. When one of our servers gets an alarm, that
-	means it has hit its time out. We need to dump two CRLF pairs down
-	the stream and then send an Error object explaining that a timeout
-	has been reached. 
-
-	Because this is a signal handler, it should call only reentrant
-	system services, functions, et cetera. Generally that eliminates
-	stdio functions but I'm using them anyway. This handler never returns
-	to the code that was running when the alarm signal was raised.
-
-	@param signum We know it is SIGALRM; here as a check 
-	@return Never returns; calls exit after sending the Error object. */
-    virtual void handle_signal(int signum) {
-	if (signum != SIGALRM)
-	    fprintf(stderr, "SIGALRM handler caught another signal!\n");
-#if 0
-	// Use this code, or a variant, once we have reliable error delivery.
-	fprintf(d_stream, "\n\n\n\n");
-	Error e("The server has timed out. This happens when a request\n\
-takes longer to process than the server's preset time-out value.\n\
-Try making a request for a smaller amount of data. You can also contact\n\
-the server's administrator and request that the time-out value be increased.");
-	e.print(d_stream);
-#endif
-	exit(1);
-    }
-
-};
-
 /** Test Handler. This is used with the SignalHandlerTest unit tests. */
 class TestHandler : public EventHandler {
 public:
@@ -121,6 +68,12 @@ public:
 };
 
 // $Log: EventHandler.h,v $
+// Revision 1.3  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.1.2.3  2004/02/10 21:06:44  jimg
+// I removed AlarmHandler from this class and put it in its own header.
+//
 // Revision 1.2  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

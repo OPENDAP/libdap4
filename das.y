@@ -43,7 +43,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.49 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.50 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,6 +61,8 @@ static char rcsid[] not_used = {"$Id: das.y,v 1.49 2003/12/08 18:02:30 edavis Ex
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
+
+using namespace std;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -503,6 +505,12 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.50  2004/02/19 19:42:52  jimg
+ * Merged with release-3-4-2FCS and resolved conflicts.
+ *
+ * Revision 1.47.2.1  2004/01/22 17:09:52  jimg
+ * Added std namespace declarations since the DBG() macro uses cerr.
+ *
  * Revision 1.49  2003/12/08 18:02:30  edavis
  * Merge release-3-4 into trunk
  *

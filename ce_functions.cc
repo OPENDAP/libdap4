@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.17 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.18 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <iostream>
 #include <vector>
@@ -53,7 +53,7 @@ static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.17 2003/12/08 18:02:30
 #include "debug.h"
 #include "util.h"
 
-#ifdef WIN32
+#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
 using std::vector<GSEClause *>;
 #else
 using std::vector;
@@ -156,7 +156,7 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 	parse_gse_expression(arg, argv[i]);
 	clauses.push_back(arg->get_gsec());
     }
-    delete arg;
+    delete arg; arg = 0;
 
     // In this loop we have to iterate over the map vectors and the grid
     // dimensions at the same time and set the grid's array's constraint to
@@ -225,6 +225,21 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.18  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.15.2.3  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.15.2.2  2004/01/17 13:37:50  rmorris
+// Mod's to account for differences in usage statements containing template
+// reference between MS VC++ 6.0 and MS VC++ 7.0.
+//
 // Revision 1.17  2003/12/08 18:02:30  edavis
 // Merge release-3-4 into trunk
 //

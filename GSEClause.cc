@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.15 2003/12/10 21:11:57 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.16 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <iostream>
 #include <sstream>
@@ -60,7 +60,6 @@ void gse_restart(FILE *in);
 void gse_switch_to_buffer(void *new_buffer);
 void gse_delete_buffer(void * buffer);
 void *gse_string(const char *yy_str);
-
 
 // Private methods
 
@@ -383,6 +382,14 @@ GSEClause::get_map_max_value() const
 }
 
 // $Log: GSEClause.cc,v $
+// Revision 1.16  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.12.2.2  2004/02/04 00:05:11  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
 // Revision 1.15  2003/12/10 21:11:57  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.

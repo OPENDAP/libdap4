@@ -31,16 +31,37 @@
 #include "EventHandler.h"
 #include "InternalErr.h"
 
-/** Singleton to handle signals. This class also adapts the C-style function
-    call interface to one suited for C++.
+typedef void Sigfunc(int);	// Plauger, 1992
 
-    Based on "Applying Design Patterns to Simplify Signal Handling", Douglas
-    C. Schmidt, 1998, http://www.cs.wustl.edu/~schmidt/signal-patterns.html.
+/** Singleton to handle signals. This class adapts the C-style function call
+    interface to one suited for C++. This class records a signal's old
+    action/handler when it installs new handler. When a signal is caught, the
+    new handler (registered with this class) is run and then the old
+    action/handler is performed. This ensures that when libdap++ is embedded
+    in code which has a handler for a signal such as SIGINT which does
+    something other than the default, that thing, whatever it may be, gets
+    done. 
+
+    This class treats signals it registers (using the EventHandler abstract
+    class) differently than ones registered using the \c signal() or \c
+    sigaction() system interfaces. If the register_handler() method is called
+    and an instance of EventHandler is already bound to \e signum, then the
+    old EventHandler is returned. However, if there's an exisitng handler
+    that was set up with \c sigaction(), ..., it won't be returned. Instead it
+    will either be run after the newly registered EventHandler or ignored,
+    depending on register_handler()'s \e override parameter.
+
+    This may be used only for POSIX.1 signals which cause process
+    termination. They are: SIGHUP, SIGINT, SIGKILL, SIGPIPE, SIGALRM,
+    SIGTERM, SIGUSR1, and SIGUSR2.
+
+    @note Based on "Applying Design Patterns to Simplify Signal Handling",
+    Douglas C. Schmidt, 1998,
+    http://www.cs.wustl.edu/~schmidt/signal-patterns.html.
 
     @see EvenHandler
     @author James Gallagher <jgallagher@opendap.org> */
-class SignalHandler
-{
+class SignalHandler {
 private:
     // Ensure we're a Singleton.
     SignalHandler() {}
@@ -54,25 +75,51 @@ private:
     // a portability issue. 
     static EventHandler *d_signal_handlers[NSIG];
 
+    // This array holds the old signal handlers. Once the handler in
+    // d_signal_handler[signum] is run, look here to see what the original
+    // action was. This is important since libdap++ is often embedded in code
+    // that already has a non-default signal handler for things like SIGINT.
+    static Sigfunc *d_old_handlers[NSIG];
+
     // Entry point adapter installed into sigaction(). This must be static
     // method (or a regular C-function) to conform to sigaction's interface.
-    // this is part of SignalHandler that uses the Adapter pattern.
+    // this is the part of SignalHandler that uses the Adapter pattern.
     static void dispatcher(int signum);
 
-    friend void initialize_signal_handler();
+    // Delete the global instance. Call this with atexit().
+    static void delete_instance();
+
+    // Call this using pthread_once() to ensure there's only one instance
+    // when running in a MT world.
+    static void initialize_instance();
 
     friend class SignalHandlerTest;
+    friend class HTTPCacheTest;
 
 public:
     static SignalHandler *instance();
 
-    EventHandler *register_handler(int signum, EventHandler *eh)
-	throw(InternalErr);
+    ///
+    virtual ~SignalHandler() {}
+
+    EventHandler *register_handler(int signum, EventHandler *eh, 
+				   bool override = false) throw(InternalErr);
 
     EventHandler *remove_handler(int signum);
 };
 
 // $Log: SignalHandler.h,v $
+// Revision 1.3  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.1.2.4  2004/02/11 17:13:33  jimg
+// Changed how this class creates its instance. It is now very similar to
+// RCReader and much more in line with HTTPCache. Also, made this a friend of
+// HTTPCacheTest to smooth over some testing woes.
+//
+// Revision 1.1.2.3  2004/02/10 20:44:33  jimg
+// Added support for remembering and running old handlers/actions.
+//
 // Revision 1.2  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

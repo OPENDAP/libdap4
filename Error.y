@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.y,v 1.15 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: Error.y,v 1.16 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,10 +47,7 @@ static char rcsid[] not_used = {"$Id: Error.y,v 1.15 2003/12/08 18:02:29 edavis 
 #include "debug.h"
 #include "util.h"
 
-#ifdef WIN32
-using std::cerr;
-using std::endl;
-#endif
+using namespace std;
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -160,6 +157,12 @@ Errorerror(char *s)
 
 
 // $Log: Error.y,v $
+// Revision 1.16  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.14.2.1  2004/01/22 17:09:52  jimg
+// Added std namespace declarations since the DBG() macro uses cerr.
+//
 // Revision 1.15  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -153,8 +153,8 @@ public:
 	*str = "\"test%20ing\"";
 	*str1 = "test ing";
 	CPPUNIT_ASSERT(*store_str(str->c_str()) == str1->c_str());
-	delete str;
-	delete str1;
+	delete str; str = 0;
+	delete str1; str1 = 0;
     }
 
     void escattr_test()	{

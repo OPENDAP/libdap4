@@ -93,7 +93,7 @@ void *threads_work(void *a)
 			printf("thread %ld pulled data from the url\n",pthread_self());
 		else
 			printf("thread %ld did NOT pull data from the url\n",pthread_self());
-		delete r;
+		delete r;  r = 0;
 	}
 	catch (Error &e)
 	{

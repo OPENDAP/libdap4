@@ -70,20 +70,15 @@ void ErrMsgT(const string &Msgt);
 
 string name_path(const string &path);
 
-/** Given a constant pointer to a time_t, return a RFC 822/1123 style date.
-    This function returns the RFC 822 date with the exception that the RFC
-    1123 modification for four-digit years is implemented.
-
-    @return The RFC 822/1123 style date in C++ string.
-    @param t A const time_t pointer. */
 string rfc822_date(const time_t t);
 
 time_t last_modified_time(string name);
 //@}
+#if 0
 
-/** These functions are used to create the MIME header for a message
+/** These functions are used to create the MIME headers for a message
     from a server to a client. They are public but should not be called
-    directly unless necessary. Use DODSFilter instead.
+    directly unless absolutely necessary. Use DODSFilter instead.
 
     NB: These functions actually write both the response status line
     <i>and</i> the header.
@@ -92,7 +87,8 @@ time_t last_modified_time(string name);
     @name MIME utility functions
     @see DODSFilter
 */
-
+#endif
+/** @name Functions to write MIME headers */
 //@{
 void set_mime_text(ostream &os, ObjectType type = unknown_type, 
 		   const string &version = "", EncodingType enc = x_plain,

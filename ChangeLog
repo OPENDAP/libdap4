@@ -1,3 +1,41 @@
+2004-02-18  James Gallagher  <jimg@comet.dods.org>
+
+	* Merge release-3-4-2FCS.
+
+2004-02-16  James Gallagher  <jimg@comet.dods.org>
+
+	* Other fixes:
+	The DBG() macros now include namespace std declarations.
+	Used valgrind to isolate some memory leaks; others remain and this
+	will be an on-going process.
+	Made sure all calls to delete also set the pointer to null; this
+	fixes some dual-delete bugs.
+	Some of the doxygen comments have been improved.
+	Fixed places were the switch from strstream to stringstream was
+	botched. 
+
+	* Fixed the following bugs since version 3.4.5:
+	696: Infinite loop in the HDF4 server (w/character variables).
+	698: libdap++ now returns better error messages when the httpd
+	reports an error.
+	692: The info response now works.
+	695: The client-side cache is more robust. It does not leave cruft
+	around when a user interrupts a program.
+	691: Error responses were not parsed/processed correctly when
+	received by clients in some circumstances. Now they are.
+
+2004-01-30  James Gallagher  <jimg@comet.dods.org>
+
+	* usage.cc: Fixed bug 692. Only one global attribute and one
+	variable were output. The cause: ends operators left over from the
+	strstream code...
+
+2004-01-22  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added namespace std declarations to some files. The DBG() macro
+	uses cerr and thus the std namespace or std::cerr must be declared
+	for newer compilers.
+
 2003-12-08  Yuan Ho  <yuanho@ucar.edu>
 
         * Merge release-3-4 into trunk.
@@ -1387,4 +1425,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.78 2004/01/23 17:10:23 jimg Exp $
+$Id: ChangeLog,v 1.79 2004/02/19 19:42:52 jimg Exp $

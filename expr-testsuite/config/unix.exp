@@ -5,7 +5,7 @@
 
 global EXPRTEST
 if ![info exists EXPRTEST] then {
-    set EXPRTEST [transform expr-test]
+    set EXPRTEST [transform ./expr-test]
 }
 
 # The four required proc for expr-test.
@@ -23,8 +23,8 @@ proc expr-test_start { options {ifile ""} {eqn ""} {file "dummy"}} {
     }
 
     switch $options {
-	p {catch "exec ./$EXPRTEST -w $ifile -k $eqn -f $file" comp_output}
-	s {spawn ./$EXPRTEST -s}
+	p {catch "exec $EXPRTEST -w $ifile -k $eqn -f $file" comp_output}
+	s {spawn $EXPRTEST -s}
     }
 
     if {$verbose >= 1} {

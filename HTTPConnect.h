@@ -61,7 +61,7 @@
 #endif
 
 using std::string;
-#ifdef WIN32
+#if defined(_MSC_VER) && (_MSC_VER == 1200)  //  VC++ 6.0 only
 using std::vector<string>;
 #else
 using std::vector;
@@ -102,7 +102,7 @@ private:
     void www_lib_init() throw(Error, InternalErr);
     long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
 		  const vector<string> *headers = 0) throw(Error);
-    char *get_temp_file(FILE *&stream) throw(InternalErr);
+    string get_temp_file(FILE *&stream) throw(InternalErr);
     HTTPResponse *plain_fetch_url(const string &url) 
 	throw(Error, InternalErr);
     HTTPResponse *caching_fetch_url(const string &url) 
@@ -160,6 +160,18 @@ public:
 };
 
 // $Log: HTTPConnect.h,v $
+// Revision 1.11  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.9.2.8  2004/02/04 00:05:11  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
+// Revision 1.9.2.7  2004/01/17 13:37:50  rmorris
+// Mod's to account for differences in usage statements containing template
+// reference between MS VC++ 6.0 and MS VC++ 7.0.
+//
 // Revision 1.10  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -46,14 +46,6 @@ public:
 	int l = ar.length() ;
 	CPPUNIT_ASSERT( l == -1 ) ;
 
-	try
-	{
-	    CPPUNIT_FAIL( "Successfully retrieved length, should have failed" ) ;
-	}
-	catch( InternalErr &e )
-	{
-	}
-
 	BaseType *bt = NewInt16() ;
 	ar.add_var( bt ) ;
 

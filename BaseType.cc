@@ -609,45 +609,41 @@ BaseType::add_var(BaseType *, Part)
 {
 }
 
-/** Put the data into a local buffer so that it may be sent to a client. This
-    operation involves reading data from whatever source (often a local
-    disk), and filling out the fields in the data type class. This is the
-    heart of the DODS DAP Class operation for a server and much of the work
-    of implementing a new DODS server API consists in creating the
-    <tt>read()</tt> functions to read various data types.
+/** This method should be implemented for each of the data type classes (Byte,
+    ..., Grid) when using the DAP class library to build a server. This
+    method is only for DAP servers. The library provides a default
+    definition here which throws an InternalErr exception.
 
-    Note that this function is only for DODS servers. It has no use on the
-    client side of a DODS client/server connection. The DODS client and
-    server communicate their data with <tt>serialize()</tt> and
-    <tt>deserialize()</tt>.
+    When implementing a new DAP server, the Byte, ..., Grid data type classes
+    are usually specialized. In each of those specializations read() should
+    be defined to read values from the data source and store them in the
+    object's local buffer. The read() method is called by other methods in
+    this library. When writing read(), follow these rules:
 
-    This method is implemented here in BaseType so that clients do not need
-    to provide a dummy implmentation. In general, servers will need to
-    provide implementations for each of the data type classes Byte, ..., Grid
-    in specializations of those classes. For example, it is not implemented
-    for the Float64 class, but does exist for the NCFloat64 class,
-    specialized to read data from local netCDF files.
- 
-    This method should be implemented to throw Error when it encounters
-    an unrecoverable error.
+    <ul>
+    <li> read() should throw Error if it encounters an error. The message
+	  should be verbose enough to be understood by someone running a
+	  client on a different machine.</li>
+    <li> The value(s) should be read iff either send_p() of
+          is_in_selection() return true. If neither of these return true, the
+	  value(s) should not be read. This is important when writing read()
+	  for a Constructor type such as Grid where a client may ask for only
+	  the map vectors (ans thus reading the much larger Array part is not
+	  needed).</li>
+    <li>The Array::read() and Grid::read() methods should take into account
+	  any restrictions on Array sizes.</li>
+    </ul>
 
-    For an example of use, see the netCDF library classes. The
-    netCDF library is part of the DODS source distribution, and can
-    be found under <tt>$(DODS_ROOT)/src/nc-dods</tt>.
+    @brief Read data into a local buffer. 
 
-    In some sub-classes, such as Array or Grid, the <tt>read()</tt> function
-    must explicitly take into account constraint information stored with the
-    class data. For example, the Grid::read method will be called when only
-    one component of the Grid is to be sent. Your implementation of
-    Grid::read should check send_p() for each member of the Grid before
-    reading that member to avoid reading data into memory that won't be sent
-    (and thus is not needed in memory).
+    @return The return value of this method should always be false. This
+    method used to use the return value to indicate that Sequence values
+    remained and still needed to be read. However, all Sequence values are
+    now read in a single call to read(). The return value is retained because
+    it's conceivable that a server might want to implement read() and make
+    use of the return value. Only the specialization would use the return
+    value; it is always ignored by the DAP library.
 
-    @brief Reads data into a local buffer. 
-
-    @return void. The bool type is a relic. When implementing this method in
-    a sub class, it should always return False. The implementatin in BaseType
-    throws InternalErr always.
     @param dataset A string naming the dataset from which the data is to
     be read. The meaning of this string will vary among data APIs.
 
@@ -936,12 +932,18 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.56  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.54  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+// Revision 1.51.2.5  2004/01/22 17:09:52  jimg
+// Added std namespace declarations since the DBG() macro uses cerr.
+//
 // Revision 1.55  2003/12/10 21:11:57  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.
 //
-// Revision 1.54  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
 //
 // Revision 1.51.2.3  2003/09/28 20:57:22  rmorris
 // Discontinued use of XDR_PROC typedef, using xdrproc_t instead - a

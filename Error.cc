@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.34 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.35 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -48,47 +48,53 @@ static char rcsid[] not_used = {"$Id: Error.cc,v 1.34 2003/12/08 18:02:29 edavis
 
 using namespace std;
 
-void Errorrestart(FILE *yyin);	// defined in Error.tab.c
-int Errorparse(void *arg);	
+// Glue routines declared in Error.lex
+extern void Error_switch_to_buffer(void *new_buffer);
+extern void Error_delete_buffer(void * buffer);
+extern void *Error_buffer(FILE *fp);
+
+extern void Errorrestart(FILE *yyin);	// defined in Error.tab.c
+extern int Errorparse(void *arg);	
 
 static const char *err_messages[]={"Unknown error", "No such file", 
-			 "No such variable", "Malformed expression",
-			 "No authorization", "Cannot read file"};
+				   "No such variable", "Malformed expression",
+				   "No authorization", "Cannot read file"};
 
-/** @brief Create a default Error object.  */
-
+/** Specializations of Error should use this to set the error code and
+    message. */
 Error::Error()
     : _error_code(undefined_error), _error_message(""), 
       _program_type(undefined_prog_type), _program(0)
 {
 }
 
-/** @brief Create an Error object with an error code and a message */
+/** Create an instance with a specific code and message string. This ctor
+    provides a way to to use any code and string you'd like. The code can be
+    one of the standard codes or it may be specific to your server. Thus a
+    client which can tell it's dealing with a specific type of server can use
+    the code accordingly. In general, clients simply show the error message
+    to users or write it to a log file.
+
+    @param ec The error code
+    @param msg The error message string. */
 Error::Error(ErrorCode ec, string msg)
     : _error_code(ec), _error_message(msg), 
       _program_type(undefined_prog_type), _program(0)
 {
 }
 
-/** @brief Create an Error object with only a message. 
-
-    I've modified Error so that only a message string needs to be given.
-    In this case the constructor will use the message code
-    <tt>unknown_error</tt>. It is a bit misleading, but those
-    codes are turning out to be more of a problem than anything
-    else since they don't seem 
-    very useful but are a pain to supply. (10/11/2000 jhrg)
-
-*/
-
+/** Create an instance with a specific message. The error code is set to \c
+    unknown_error.
+    
+    @param msg The error message. 
+    @see ErrorCode */
 Error::Error(string msg)
     : _error_code(unknown_error), _error_message(msg), 
       _program_type(undefined_prog_type), _program(0)
 {
 }
 
-/** @brief Create a descriptive Error object. */
-
+/** @deprecated The error-correction program feature is deprecated. */
 Error::Error(ErrorCode ec, string msg, ProgramType pt, char *pgm)
     : _error_code(ec), _error_message(msg), 
       _program_type(pt), _program(0)
@@ -97,7 +103,6 @@ Error::Error(ErrorCode ec, string msg, ProgramType pt, char *pgm)
     strcpy(_program, pgm);
 }
 
-/** @brief Error object copy constructor. */
 Error::Error(const Error &copy_from)
     : _error_code(copy_from._error_code),
       _error_message(copy_from._error_message),
@@ -114,7 +119,6 @@ Error::~Error()
     delete _program; _program = 0;
 }
 
-/** The assignment operator copies the error correction. */
 Error &
 Error::operator=(const Error &rhs)
 {
@@ -139,16 +143,12 @@ Error::operator=(const Error &rhs)
     }
 }
 
-    /** Use this function to determine whether an Error object is
-	valid.  To be a valid, an Error object must either be: 1)
-	empty, 2) contain a message and a program or 3) contain only a
-	message.  
+/** Use this function to determine whether an Error object is
+    valid.  To be a valid, an Error object must either be: 1)
+    empty or contain a message and a code.
 
-        NB: This mfunc does not test for malformed messages or
-	programs - ones where the code is defined but not the `data'.
-	
-	@brief Is the Error object valid?
-	@return TRUE if the object is valid, FALSE otherwise. */
+    @brief Is the Error object valid?
+    @return TRUE if the object is valid, FALSE otherwise. */
 bool
 Error::OK() const
 {
@@ -174,9 +174,9 @@ Error::OK() const
 }
 
 /** Given an input stream (FILE *) <tt>fp</tt>, parse an Error object from
-    stream. Values for fields of the Error object are parsed and
-    THIS is set accordingly.  This is how a DODS client might
-    receive an error object from a server.
+    stream. Values for fields of the Error object are parsed and \c this is
+    set accordingly. This is how a client program receives an error object
+    from a server.
     
     @brief Parse an Error object.
     @param fp A valid file pointer to an input stream.
@@ -185,18 +185,21 @@ bool
 Error::parse(FILE *fp)
 {
     if (!fp)
-      throw InternalErr(__FILE__, __LINE__, "Null input stream"); 
+	throw InternalErr(__FILE__, __LINE__, "Null input stream"); 
 
-    Errorrestart(fp);
+    void *buffer = Error_buffer(fp);
+    Error_switch_to_buffer(buffer);
 
     parser_arg arg(this);
 
     bool status;
     try {
-      status = Errorparse((void *)&arg) == 0;
+	status = Errorparse((void *)&arg) == 0;
+	Error_delete_buffer(buffer);
     }
     catch (Error &e) {
-      throw InternalErr(__FILE__, __LINE__, e.error_message());
+	throw InternalErr(__FILE__, __LINE__, e.error_message());
+	Error_delete_buffer(buffer);
     }
 
     // STATUS is the result of the parser function; if a recoverable error
@@ -204,23 +207,12 @@ Error::parse(FILE *fp)
     // I'm throwing an InternalErr here since Error objects are generated by
     // the core; they should always parse! 9/21/2000 jhrg
     if (!status || !arg.status())
-      throw InternalErr(__FILE__, __LINE__, "Error parsing error object!");
+	throw InternalErr(__FILE__, __LINE__, "Error parsing error object!");
     else
-      return OK();		// Check object consistancy
+	return OK();		// Check object consistency
 }
     
-/** Creates a printable representation of the Error object.  It is
-    suitable for framing, and also for printing and sending over a
-    network. 
-
-    The printed representation produced by this function can be
-    parsed by the parse() memeber function. Thus parse and print
-    form a symetrical pair that can be used to send and receive an
-    Error object over the network in a MIME document.
-    
-    @brief Print the Error object on the given output stream.
-    @param os A pointer to the output stream on which the Error
-    object is to be rendered. */
+/** @deprecated Use the FILE * version instead. */
 void
 Error::print(ostream &os) const
 {
@@ -247,6 +239,16 @@ Error::print(ostream &os) const
     os << "};" << endl;
 }
 
+/** Creates a printable representation of the Error object. It is suitable
+    for framing, and also for printing and sending over a network.
+
+    The printed representation produced by this function can be parsed by the
+    parse() member function. Thus parse and print form a symmetrical pair
+    that can be used to send and receive an Error object over the network in
+    a MIME document.
+    
+    @param out A pointer to the output stream on which the Error object is to
+    be rendered. */
 void
 Error::print(FILE *out) const
 {
@@ -265,22 +267,14 @@ Error::print(FILE *out) const
 
     if (_program_type != undefined_prog_type) {
 	fprintf( out, "    program_type = %d;\n",
-		      static_cast<int>(_program_type) ) ;
+		 static_cast<int>(_program_type) ) ;
 	fprintf( out, "    program = %s;\n", _program ) ;
     }
 
     fprintf( out, "};\n" ) ;
 }
 
-// deprecated
-/** With no argument, returns the Error object's error code. With an
-    argument, sets the error code to that value.
-	
-    @deprecated Use the set/get methods instead.
-    @brief Get or set the error code.
-    @return The Error object's error code. 
-    @param ec The error code.  If this is not included, the
-    undefined error code will be stored. */
+/** @deprecated Use the set/get methods instead. */
 ErrorCode
 Error::error_code(ErrorCode ec)
 {
@@ -289,14 +283,18 @@ Error::error_code(ErrorCode ec)
 	return _error_code;
     else {
 	_error_code = ec;
-	if (_error_message == "")
-	    _error_message = err_messages[ec];
+	// Added check to make sure that messages is not accessed beyond its
+	// bounds. 02/02/04 jhrg
+	if (_error_message == "" 
+	    && ec > undefined_error && ec <= cannot_read_file)
+	    _error_message = err_messages[ec - undefined_error - 1];
+
 	assert(OK());
 	return _error_code;
     }
 }
 
-/** @brief Get the error code. */
+/** Get the ErrorCode for this instance. */
 ErrorCode
 Error::get_error_code() const
 {
@@ -304,29 +302,25 @@ Error::get_error_code() const
     return _error_code;
 }
 
-/** @brief Set the error code 
+/** Set the ErrorCode. If the current error message has not been set, use \e
+    ec to set the error message. The resulting error message string is the
+    same as the ErrorCode name. If \e ec is not within the range of values
+    for an OPeNDAP ErrorCode, the error message is left unchanged.
 
-    If the input error code is an empty string, the error code is set
-    to "undefined error."
-*/
+    @param ec The new ErrorCode value. */
 void
 Error::set_error_code(ErrorCode ec)
 {
-  _error_code = ec;
-  if (_error_message == "")
-    _error_message = err_messages[ec];
-  assert(OK());
+    _error_code = ec;
+    // Added check to make sure that messages is not accessed beyond its
+    // bounds. 02/02/04 jhrg
+    if (_error_message == ""
+	&& ec > undefined_error && ec <= cannot_read_file)
+	_error_message = err_messages[ec - undefined_error - 1];
+    assert(OK());
 }
 
-// Deprecated
-/** With no argument, return a copy of the objet's error message string.
-    With an argument, set the object's error message to that string.
-    
-    @deprecated Use the set/get methods instead.
-    @brief Get or set the error code.
-    @param msg The error message string.  If this is omitted, the
-    function simply returns a copy of the current message string.
-    @return A copy of the Error object's message string. */
+/** @deprecated Use the set/get methods instead. */
 string
 Error::error_message(string msg)
 {
@@ -340,7 +334,7 @@ Error::error_message(string msg)
     }
 }
 
-/** @brief Get the error message. */
+/** Return the current error message. */
 string
 Error::get_error_message() const
 {
@@ -349,20 +343,15 @@ Error::get_error_message() const
     return string(_error_message);
 }
 
-// Default msg is ""
-/** @brief Set the error message. */
+/** Set the error message. */
 void
 Error::set_error_message(string msg)
 {
-	_error_message = msg;
-	assert(OK());
+    _error_message = msg;
+    assert(OK());
 }
 
-/** Display the error message on stderr.
-
-    This class used to support displaying messages using a GUI dialog box.
-    That feature has been removed; the <code>void *</code> argument is a
-    relict of that era. */
+/** @deprecated Use get_error_message() instead. */
 void
 Error::display_message(void *) const
 {
@@ -370,17 +359,7 @@ Error::display_message(void *) const
     cerr << _error_message << endl;
 }
 
-// There ought to be check of object state after _program_type is set. jhrg
-// 2/26/97
-// Deprecated
-
-/** With no argument, return the program type of the error object. With
-    an argument, set the error object's program type field.
-	
-    @deprecated Use the set/get methods instead.
-    @brief Get or set the program type.
-    @return The program type of the object. 
-    @see ProgramType */
+/** @deprecated The error-correction program feature is deprecated. */
 ProgramType
 Error::program_type(ProgramType pt)
 {
@@ -393,7 +372,7 @@ Error::program_type(ProgramType pt)
     }
 }
 
-/** @brief get the program type. */
+/** @deprecated The error-correction program feature is deprecated. */
 ProgramType
 Error::get_program_type() const
 {
@@ -402,27 +381,14 @@ Error::get_program_type() const
     return _program_type;
 }
 
-/** @brief Set the program type.
-
-// The default program type t is undefined_prog_type.
-
-*/
+/** @deprecated The error-correction program feature is deprecated. */
 void
 Error::set_program_type(ProgramType pt)
 {
-  _program_type = pt;
+    _program_type = pt;
 }
 
-// Deprecated
-/** With no argument, return the error correction program. With an
-    argument, set the error correction program to a copy of that value.
-    
-    Note that this is not a pointer to a function, but a character
-    string containing the entire tcl, Java, or other program.
-
-    @deprecated Use the set/get methods instead.
-    @brief  Get or set the error correction program.
-    @return the error correction program. */
+/** @deprecated The error-correction program feature is deprecated. */
 char *
 Error::program(char *pgm)
 {
@@ -435,38 +401,22 @@ Error::program(char *pgm)
     }
 }
 
-/** @brief Get the error handling program. */
+/** @deprecated The error-correction program feature is deprecated. */
 const char *
 Error::get_program() const
 {
-  return _program;
+    return _program;
 }
 
-/** @brief Set the error handling program. */
+/** @deprecated The error-correction program feature is deprecated. */
 void
 Error::set_program(char *pgm)
 {
-  _program = new char[strlen(pgm) + 1];
-  strcpy(_program, pgm);
+    _program = new char[strlen(pgm) + 1];
+    strcpy(_program, pgm);
 }
 
-
-/** This function runs the error correction program, if possible,
-    and returns a string that can be used as the `corrected'
-    value. If there is no error correction program or it is not
-    possible to run the program, the function simply displays the
-    error message. If the error correction program cannot be run,
-    the function returns the null string.
-    
-    If program() is true, then source the code it returns in
-    the Gui object and return the value of Gui::command(). Note that this
-    means that the code in the program must run itself (i.e., in addition to
-    any procedure definitions, etc. it must also contain the necessary
-    instructions to popup an initial window).
-
-    @brief Run the error correction program or print the error message.
-    @return A corrected string or "".  
-    @see display_message */
+/** @deprecated The error-correction program feature is deprecated. */
 string
 Error::correct_error(void *) const
 {
@@ -479,6 +429,18 @@ Error::correct_error(void *) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.35  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.32.2.3  2004/02/04 00:05:11  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
+// Revision 1.32.2.2  2004/02/03 00:18:08  jimg
+// Fixed bug 691. The array messages was improperly accessed. I also revamped
+// the doxygen comments and re-indented the code.
+//
 // Revision 1.34  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //
@@ -521,7 +483,7 @@ Error::correct_error(void *) const
 // (hopefully making them easier to read, ...). Only the files RCReader.cc
 // and usage.cc actually use pthreads synchronization functions. In other
 // cases I removed static objects where they were used for supposed
-// improvements in efficiency which had never actually been verifiied (and
+// improvements in efficiency which had never actually been verified (and
 // which looked dubious).
 //
 // Revision 1.28  2002/06/18 15:36:24  tom

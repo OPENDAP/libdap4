@@ -24,7 +24,7 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
 #include <stdio.h>		// for create_cache_root_test
-#include <unistd.h>		// ibid [sic]
+#include <unistd.h>		// ditto
 
 #include <string>
 #include <vector>
@@ -37,6 +37,10 @@
 
 #include "HTTPCache.h"
 #include "HTTPConnect.h"	// Used to generate a response to cache.
+#ifndef WIN32				// Signals are exquisitely non-portable.
+#include "SignalHandler.h"	// Needed to clean up this singleton.
+#endif
+#include "RCReader.h"		// ditto
 #include "debug.h"
 
 #if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
@@ -74,7 +78,7 @@ print_entry(HTTPCache *, HTTPCache::CacheEntry **e)
 class HTTPCacheTest : public TestFixture {
 private:
     HTTPCache *hc;
-    HTTPConnect http_conn;
+    HTTPConnect *http_conn;
     string index_file_line;
     string localhost_url;
     string expired;
@@ -84,7 +88,10 @@ private:
 protected:
 
 public:
-    HTTPCacheTest() : http_conn(RCReader::instance()) {
+    HTTPCacheTest() : http_conn(0) {
+	putenv("DODS_CONF=./cache-testsuite/dodsrc");
+	http_conn = new HTTPConnect(RCReader::instance());
+
 	DBG2(cerr << "Entring HTTPCacheTest ctor... ");
 	hash_value = 1306;
 	localhost_url = "http://localhost/test-304.html";
@@ -100,6 +107,7 @@ public:
     }
 
     ~HTTPCacheTest() { 
+	delete http_conn; http_conn = 0;
 	DBG2(cerr << "Entering the HTTPCacheTest dtor... ");
 	DBG2(cerr << "exiting." << endl);
     }
@@ -114,7 +122,7 @@ public:
     void tearDown() {
 	// Called after every test.
 	DBG2(cerr << "Entering HTTPCacheTest::tearDown... " << endl);
-	delete hc;
+	delete hc; hc = 0;
 	DBG2(cerr << "exiting tearDown" << endl);
     }
 
@@ -147,6 +155,10 @@ public:
     CPPUNIT_TEST(instance_test);
     CPPUNIT_TEST(get_conditional_response_headers_test);
     CPPUNIT_TEST(update_response_test);
+
+#if 0
+    CPPUNIT_TEST(interrupt_test);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -181,6 +193,8 @@ public:
 	CPPUNIT_ASSERT(e->lm == 1062690740);
 	// Skip ahead ...
 	CPPUNIT_ASSERT(e->must_revalidate == false);
+
+	delete e; e = 0;
     }
 
     // This will also test the add_entry_to_cache_table() method.
@@ -232,8 +246,8 @@ public:
 	CPPUNIT_ASSERT(e);
 	CPPUNIT_ASSERT(e->url == localhost_url);
 
-	delete hc_3;
-	delete hc_4;
+	delete hc_3; hc = 0;
+	delete hc_4; hc = 0;
     }
 
     void create_cache_root_test() {
@@ -261,16 +275,6 @@ public:
 	hc->set_cache_root("/home/jimg/test_cache");
 	CPPUNIT_ASSERT(hc->d_cache_root == "/home/jimg/test_cache/");
 	remove("/home/jimg/test_cache/");
-
-	try {
-	    hc->set_cache_root("/root/never/ever/");
-	    CPPUNIT_ASSERT(!"Created cache in root's dir. Bad.");
-	}
-	catch (Error &e) {
-	    CPPUNIT_ASSERT("OK, caught an error");
-	}
-
-	remove("/root/never/ever/");
     }
 
     void get_single_user_lock_test() {
@@ -332,6 +336,8 @@ public:
 	    CPPUNIT_ASSERT(true && "could not create entry file");
 	}
 	remove(e->cachename.c_str());
+
+	delete e; e = 0;
     }
 
     void parse_headers_test() {
@@ -339,6 +345,8 @@ public:
 	
 	hc->parse_headers(e, h);
 	CPPUNIT_ASSERT(e->lm == 784025377);
+
+	delete e; e = 0;
     }
 
     void calculate_time_test() {
@@ -348,6 +356,8 @@ public:
 	hc->calculate_time(e, time(0));
 	CPPUNIT_ASSERT(e->corrected_initial_age > 249300571);
 	CPPUNIT_ASSERT(e->freshness_lifetime == 86400);
+
+	delete e; e = 0;
     }
 
     void write_metadata_test() {
@@ -375,10 +385,11 @@ public:
 
 	remove(e->cachename.c_str());
 	remove(string(e->cachename + ".meta").c_str());
+	delete e; e = 0;
     }
 
     void cache_response_test() {
-	HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+	HTTPResponse *rs = http_conn->fetch_url(localhost_url);
 	try {
 	    time_t now = time(0);
 	    vector<string> *headers = rs->get_headers();
@@ -388,10 +399,10 @@ public:
 
 	    HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(localhost_url);
 	    CPPUNIT_ASSERT(file_size(e->cachename) == 343);
-	    delete rs;
+	    delete rs; rs = 0;
 	}
 	catch (Error &e) {
-	    delete rs;
+	    delete rs; rs = 0;
 	    cerr << "Error: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught unexpected Error/InternalErr");
 	}
@@ -408,7 +419,7 @@ public:
 	FILE *cached_body = hc->get_cached_response(localhost_url, 
 						    cached_headers);
 
-	HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+	HTTPResponse *rs = http_conn->fetch_url(localhost_url);
 	vector<string> *headers = rs->get_headers();
 
 	// headers and cached_headers should match, except for the values.
@@ -436,7 +447,7 @@ public:
 	CPPUNIT_ASSERT(feof(rs->get_stream()) && feof(cached_body));
 
 	hc->release_cached_response(cached_body);
-	delete rs;
+	delete rs; rs = 0;
     }
 
     void perform_garbage_collection_test() {
@@ -444,17 +455,17 @@ public:
 	    delete hc; hc = 0;
 	    auto_ptr<HTTPCache> gc(new HTTPCache("cache-testsuite/gc_cache", true));
 
-	    HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+	    HTTPResponse *rs = http_conn->fetch_url(localhost_url);
 	    gc->cache_response(localhost_url, time(0), *(rs->get_headers()),
 			       rs->get_stream());
 	    CPPUNIT_ASSERT(gc->is_url_in_cache(localhost_url));
-	    delete rs;
+	    delete rs; rs = 0;
 
-	    rs = http_conn.fetch_url(expired);
+	    rs = http_conn->fetch_url(expired);
 	    gc->cache_response(expired, time(0), *(rs->get_headers()),
 			       rs->get_stream());
 	    CPPUNIT_ASSERT(gc->is_url_in_cache(expired));
-	    delete rs;
+	    delete rs; rs = 0;
 
 	    sleep(2);
 
@@ -475,21 +486,21 @@ public:
 	    auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
 
 	    time_t now = time(0);
-	    HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+	    HTTPResponse *rs = http_conn->fetch_url(localhost_url);
 	    pc->cache_response(localhost_url, now, *(rs->get_headers()),
 			       rs->get_stream());
 
 	    CPPUNIT_ASSERT(pc->is_url_in_cache(localhost_url));
-	    delete rs;
+	    delete rs; rs = 0;
 
 	    string expired = "http://dodsdev.gso.uri.edu/cgi-bin/expires.sh";
 	    now = time(0);
-	    rs = http_conn.fetch_url(expired);
+	    rs = http_conn->fetch_url(expired);
 	    pc->cache_response(expired, now, *(rs->get_headers()), 
 			       rs->get_stream());
 
 	    CPPUNIT_ASSERT(pc->is_url_in_cache(expired));
-	    delete rs;
+	    delete rs; rs = 0;
 
 	    HTTPCache::CacheEntry *e1 = pc->get_entry_from_cache_table(expired);
 	    HTTPCache::CacheEntry *e2 = pc->get_entry_from_cache_table(localhost_url);
@@ -528,18 +539,18 @@ public:
 	    HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache", true);
 
 	    if (!c->is_url_in_cache(localhost_url)) {
-		HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+		HTTPResponse *rs = http_conn->fetch_url(localhost_url);
 		c->cache_response(localhost_url, time(0), 
 				  *(rs->get_headers()), rs->get_stream());
-		delete rs;
+		delete rs; rs = 0;
 	    }
 	    CPPUNIT_ASSERT(c->is_url_in_cache(localhost_url));
 
 	    if (!c->is_url_in_cache(expired)) {
-		HTTPResponse *rs = http_conn.fetch_url(expired);
+		HTTPResponse *rs = http_conn->fetch_url(expired);
 		c->cache_response(expired, time(0), 
 				  *(rs->get_headers()), rs->get_stream());
-		delete rs;
+		delete rs; rs = 0;
 	    }
 	    CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
@@ -559,29 +570,36 @@ public:
 	    cerr << "Exception: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(false);
 	}
+
+	// Call this here to simulate exiting the program. This ensures that
+	// the next test's call to instance() gets a fresh cache. The static
+	// method will still be run at exit, but that's OK since it tests the
+	// value of _instance and simply returns with it's zero.
+	HTTPCache::delete_instance();
+#ifndef WIN32
+	SignalHandler::delete_instance();
+#endif
     }
     
     void get_conditional_response_headers_test() {
 	try {
-	    delete hc; hc = 0;
 	    HTTPCache *c = HTTPCache::instance("cache-testsuite/header_cache",
 					       true);
 	    CPPUNIT_ASSERT(c->get_cache_root() 
 			   == "cache-testsuite/header_cache/");
-
 	    if (!c->is_url_in_cache(localhost_url)) {
-		HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+		HTTPResponse *rs = http_conn->fetch_url(localhost_url);
 		c->cache_response(localhost_url, time(0), 
 				  *(rs->get_headers()), rs->get_stream());
-		delete rs;
+		delete rs; rs = 0;
 	    }
 	    CPPUNIT_ASSERT(c->is_url_in_cache(localhost_url));
 
 	    if (!c->is_url_in_cache(expired)) {
-		HTTPResponse *rs = http_conn.fetch_url(expired);
+		HTTPResponse *rs = http_conn->fetch_url(expired);
 		c->cache_response(expired, time(0), 
 				  *(rs->get_headers()), rs->get_stream());
-		delete rs;
+		delete rs; rs = 0;
 	    }
 	    CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
@@ -603,6 +621,11 @@ public:
 	    cerr << "Exception: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(false);
 	}
+
+	HTTPCache::delete_instance();
+#ifndef WIN32
+	SignalHandler::delete_instance();
+#endif
     }
 
     void update_response_test() {
@@ -610,17 +633,17 @@ public:
 	    HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache",
 					       true);
 	    if (!c->is_url_in_cache(localhost_url)) {
-		HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+		HTTPResponse *rs = http_conn->fetch_url(localhost_url);
 		c->cache_response(localhost_url, time(0), 
 				  *(rs->get_headers()), rs->get_stream());
-		delete rs;
+		delete rs; rs = 0;
 	    }
 
 	    if (!c->is_url_in_cache(expired)) {
-		HTTPResponse *rs = http_conn.fetch_url(expired);
+		HTTPResponse *rs = http_conn->fetch_url(expired);
 		c->cache_response(expired, time(0), 
 				  *(rs->get_headers()), rs->get_stream());
-		delete rs;
+		delete rs; rs = 0;
 	    }
 
 	    // Yes, there's stuff here.
@@ -649,7 +672,8 @@ public:
 	    c->update_response(localhost_url, time(0), new_h);
 	
 	    vector<string> updated_h;
-	    (void) c->get_cached_response(localhost_url, updated_h);
+	    cr =  c->get_cached_response(localhost_url, updated_h);
+	    c->release_cached_response(cr);
 	    DBG(copy(updated_h.begin(), updated_h.end(),
 		     ostream_iterator<string>(cerr, "\n")));
 	
@@ -665,7 +689,40 @@ public:
 	    cerr << "Exception: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(false);
 	}
+
+	HTTPCache::delete_instance();
+#ifndef WIN32
+	SignalHandler::delete_instance();
+#endif
     }
+
+    // Only run this interactively since you need to hit Ctrl-c to generate
+    // SIGINT while the cache is doing its thing. 02/10/04 jhrg
+    void interrupt_test() {
+	try {
+	    HTTPCache *c = HTTPCache::instance("cache-testsuite/interrupt_cache", true);
+	    string coads = "http://localhost/data/nc/coads_climatology.nc";
+	    if (!c->is_url_in_cache(coads)) {
+		HTTPResponse *rs = http_conn->fetch_url(coads);
+		cerr << "In interrupt test, hit ctrl-c now... ";
+		c->cache_response(coads, time(0), 
+				  *(rs->get_headers()), rs->get_stream());
+		cerr << "to late.";
+		delete rs; rs = 0;
+	    }
+	}
+	catch(Error &e) {
+	    cerr << "Exception: " << e.get_error_message() << endl;
+	    CPPUNIT_ASSERT(false);
+	}
+
+	// Call this here to simulate exiting the program. This ensures that
+	// the next test's call to instance() gets a fresh cache. The static
+	// method will still be run at exit, but that's OK since it tests the
+	// value of _instance and simply returns with it's zero.
+	HTTPCache::delete_instance();
+    }
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPCacheTest);
@@ -687,6 +744,36 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPCacheTest.cc,v $
+// Revision 1.11  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.9.2.9  2004/02/15 22:48:36  rmorris
+// Removed SignalHandler method calls under win32.  Signal handling is not
+// portable.
+//
+// Revision 1.9.2.8  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.9.2.7  2004/02/11 17:34:25  jimg
+// Updated to test interrupting the cache during writes. The tests require that
+// HTTPCache be recompiled with debugging on.
+//
+// Revision 1.9.2.6  2004/02/10 20:50:32  jimg
+// Test cache behavior when writing a file is interrupted. You must fiddle with
+// the code (and HTTPCache.cc) and recompile to run this test.
+//
+// Revision 1.9.2.5  2004/01/22 20:47:24  jimg
+// Fix for bug 689. I added tests to make sure the cache size doesn't wind
+// up being set to a negative number. I also changed the types of the cache
+// size and entry size from int to unsigned long. Added information to
+// the default .dodsrc file explaining the units of the CACHE_SIZE and
+// MAX_ENTRY_SIZE parameters.
+//
 // Revision 1.10  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.72 2003/12/10 21:11:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.73 2004/02/19 19:42:53 jimg Exp $"};
 
 #include <stdio.h>
 #ifdef WIN32
@@ -51,7 +51,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.72 2003/12/10 21:11:58 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.72 $";
+const char *version = "$Revision: 1.73 $";
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 
@@ -221,6 +221,7 @@ main(int argc, char * argv[])
 		    fprintf( stderr,
 			     "The input source: %s could not be opened",
 			     argv[i] ) ;
+		    delete url; url = 0;
 		    break;
 		}
 
@@ -237,6 +238,7 @@ main(int argc, char * argv[])
 		}
 		catch (Error &e) {
 		    e.display_message();
+		    delete url; url = 0;
 		    break;
 		}
 		if (source != stdin)
@@ -256,6 +258,7 @@ main(int argc, char * argv[])
 		    }
 		    catch (Error &e) {
 			e.display_message();
+			delete url; url = 0;
 			continue;
 		    }
 
@@ -277,6 +280,7 @@ main(int argc, char * argv[])
 		    }
 		    catch (Error &e) {
 			e.display_message();
+			delete url; url = 0;
 			continue;	// Goto the next URL or exit the loop.
 		    }
 
@@ -330,6 +334,7 @@ main(int argc, char * argv[])
 		    }
 		    catch (Error &e) {
 			e.display_message();
+			delete url; url = 0;
 			continue;
 		    }
 		}
@@ -350,16 +355,19 @@ main(int argc, char * argv[])
 		for (int j = 0; j < times; ++j) {
 		    try {
 			Response *r = http.fetch_url(url_string);
-			if (!read_data(r->get_stream()))
+			if (!read_data(r->get_stream())) {
 			    continue;
-			delete r;
+			}
+			delete r; r = 0;
 		    }
 		    catch (Error &e) {
 			e.display_message();
 			continue;
 		    }
 		}
-	    }	    
+	    }
+
+	    delete url; url = 0;
 	}
     }
     catch (Error &e) {
@@ -370,6 +378,22 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.73  2004/02/19 19:42:53  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.69.2.8  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.69.2.7  2004/02/04 00:05:11  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
 // Revision 1.72  2003/12/10 21:11:58  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.

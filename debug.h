@@ -37,9 +37,17 @@
 #define _debug_h
 
 #ifdef __cplusplus
+
+#include <iostream>
+using std::cerr;
+using std::string;
+using std::endl;
 #define FILE_N_LINE cerr << __FILE__ << ": " << __LINE__ << ":"
+
 #else
+
 #define FILE_N_LINE fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);
+
 #endif /* cplusplus */
 
 #ifdef DODS_DEBUG
@@ -48,6 +56,14 @@
 #else
 #define DBG(x) /* x */
 #define DBGN(x) /* x */
+#endif
+
+/** The purpose of DODS_DEBUG1 is to look at only a handful of the DBG()
+    macros by changing them to DBG1() macros and definging DODS_DEBUG1. */
+#ifdef DODS_DEBUG1
+#define DBG1(x) FILE_N_LINE; x
+#else
+#define DBG1(x) /* x */
 #endif
 
 #ifdef DODS_DEBUG2
@@ -62,6 +78,15 @@
 
 /* 
  * $Log: debug.h,v $
+ * Revision 1.14  2004/02/19 19:42:53  jimg
+ * Merged with release-3-4-2FCS and resolved conflicts.
+ *
+ * Revision 1.12.2.2  2004/02/10 20:43:37  jimg
+ * Added DBG1 macro.
+ *
+ * Revision 1.12.2.1  2004/01/23 00:16:24  jimg
+ * Added Frank Warmerdam's suggestion about <iostream> and std decls.
+ *
  * Revision 1.13  2003/12/08 18:02:30  edavis
  * Merge release-3-4 into trunk
  *

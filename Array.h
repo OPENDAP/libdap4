@@ -57,18 +57,18 @@
 
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
-/** This class is used to hold arrays of other DODS data. The elements of the
-    array can be simple or compound data types. There is no limit on the
-    number of dimensions an array can have, or on the size of each dimension.
+/** This class is used to hold arrays of data. The elements of the array can
+    be simple or compound data types. There is no limit on the number of
+    dimensions an array can have, or on the size of each dimension.
 
     If desired, the user can give each dimension of an array a name. You can,
     for example, have a 360x180 array of temperatures, covering the whole
     globe with one-degree squares. In this case, you could name the first
-    dimension ``Longitude'' and the second dimension ``Latitude''. This can
+    dimension \e Longitude and the second dimension \e Latitude. This can
     help prevent a great deal of confusion.
 
     The Array is used as part of the Grid class, where the dimension names
-    are crucial to its structure. The dimension names correspond to ``Map''
+    are crucial to its structure. The dimension names correspond to \e Map
     vectors, holding the actual values for that column of the array.
 
     Each array dimension carries with it its own projection information. The
@@ -93,28 +93,33 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     A[0:3:9] = [1 4 7 10]
     \endverbatim
 
-    \note{DODS uses zero-based indexing.}
+    @note Arrays use zero-based indexing.
 
     @brief A multidimensional array of identical data types.
     @see Grid
-    @see List */
+    @see Vector
+    @see dimension */
 
 class Array: public Vector {
 public:
     /** Information about a dimension. Each Array has one or more dimensions.
-	A cooresponding instance of this struct holds the natural size, name,
-	constraint information and constrained size. The boolean \e selected
-	is no longer used. 
+	For each of an Array's dimensions, a cooresponding instance of this
+	struct holds the natural size, name, constraint information and
+	constrained size.
 
-        Instead of using this struct's fileds directly, use Array's methods.
+        @note Instead of using this struct's fileds directly, use Array's
+        dimension accessor methods.
 
-        This sturct is public because its type is used in public typedefs. */
-    struct dimension {		// each dimension has a size and a name
-	int size;
-	string name;
-	int start, stop, stride;// a constraint determines these values
-	int c_size;		// size of dimension once constrained
-	bool selected;		// true if this dimension is selected
+        @note This sturct is public because its type is used in public
+        typedefs. */
+    struct dimension {
+	int size;		///< The unconstrained dimension size.
+	string name;		///< The name of this dimension.
+	int start;		///< The constriant start index
+	int stop;		///< The constraint end index
+	int stride;		///< The constraint stride
+	int c_size;		///< Size of dimension once constrained
+	bool selected;		///< \c True if a constraint has been applied to this dimension.
     };
 
 private:
@@ -130,8 +135,18 @@ protected:
     void print_xml_core(FILE *out, string space, bool constrained, string tag);
 
 public:
+    /** A constant iterator used to access the various dimensions of an
+	Array. 
 
+        @see dim_begin()
+	@see dim_end() */
     typedef std::vector<dimension>::const_iterator Dim_citer ;
+    /** An iterator used to access the various dimensions of an
+	Array. Most of the methods that access various properties of a
+	dimension use an instance of Dim_iter.
+
+        @see dim_begin()
+	@see dim_end() */
     typedef std::vector<dimension>::iterator Dim_iter ;
 
     Array(const string &n = "", BaseType *v = 0);
@@ -209,6 +224,12 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.59  2004/02/19 19:42:52  jimg
+ * Merged with release-3-4-2FCS and resolved conflicts.
+ *
+ * Revision 1.56.2.3  2004/01/29 06:46:44  jimg
+ * Fixed up the doxygen comments.
+ *
  * Revision 1.58  2003/12/08 18:02:29  edavis
  * Merge release-3-4 into trunk
  *

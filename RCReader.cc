@@ -64,6 +64,8 @@
 #include "RCReader.h"
 #include "debug.h"
 
+using namespace std;
+
 RCReader* RCReader::_instance = 0;
 
 // This variable (instance_control) is used to ensure that in a MT
@@ -92,6 +94,8 @@ RCReader::write_rc_file(const string &pathname)
 	fpo << "# DODS client configuation file. See the DODS" << endl;
 	fpo << "# users guide for information." << endl;
 	fpo << "USE_CACHE=" << _dods_use_cache << endl;
+	fpo << "# Cache and object size are given in megabytes (20 ==> 20Mb)." 
+	    << endl;
 	fpo << "MAX_CACHE_SIZE=" <<_dods_cache_max  << endl;
 	fpo << "MAX_CACHED_OBJ=" << _dods_cached_obj << endl;
 	fpo << "IGNORE_EXPIRES=" << _dods_ign_expires  << endl;
@@ -261,8 +265,7 @@ RCReader::read_rc_file(const string &pathname)
 	    }
 	}
     
-	delete [] tempstr;
-	tempstr = 0;
+	delete [] tempstr; tempstr = 0;
     
 	fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
 	
@@ -270,17 +273,6 @@ RCReader::read_rc_file(const string &pathname)
     }  // End of cache file parsing.
 
     return false;
-}
-
-// This function deletes the object which calls the destructor. In this case
-// it doesn't do anything, but ... 10/08/02 jhrg
-void  
-rcreader_clean()
-{
-    if (RCReader::_instance) {
-	delete RCReader::_instance;
-	RCReader::_instance = 0;
-    }
 }
 
 // Helper for check_env_var(). This is its main logic, separated out for the
@@ -344,8 +336,6 @@ RCReader::check_env_var(const string &variable_name)
 
 RCReader::RCReader()
 {
-    atexit(rcreader_clean);
-  
     d_rc_file_path = "";
     d_cache_root = "";
 
@@ -398,10 +388,13 @@ RCReader::RCReader()
     if (!d_rc_file_path.empty())
 	read_rc_file(d_rc_file_path);
 
+#if 0
+    // Hmmm. This seems odd. Let HTTPCache manage the cache. 02/11/04 jhrg
     if (_dods_use_cache) {
 	string lockstr = d_cache_root + string(".lock");
 	remove(lockstr.c_str());
     }
+#endif
 }
 
 RCReader::~RCReader()
@@ -416,11 +409,42 @@ RCReader::~RCReader()
 #endif
 }
 
-void
-initialize_instance()
+/** Static void private method. */
+void  
+RCReader::delete_instance()
 {
-    // MT-Safe if called via pthread_once or similar
+	//  Under Linux PTHREAD_ONCE_INIT is 0 in pthread.h.  Under win32, it's a 2
+	//  element structure { FALSE, -1 }.  One can't be sure, but perhaps using
+	//  the pthread library in the following way is peering under the hood to
+	//  much and causing a portability issues.
+
+    if (RCReader::_instance)
+	{
+#if HAVE_PTHREAD_H
+	//  Under Linux PTHREAD_ONCE_INIT is 0 in pthread.h.  Under win32, it's a 2
+	//  element structure { FALSE, -1 }.  ROM - 02/15/04.
+#ifndef WIN32
+	instance_control = PTHREAD_ONCE_INIT;
+#else
+	//  Therefore, I must try something else under win32.
+	instance_control.done = FALSE;
+	instance_control.started = -1;
+#endif
+#endif
+	delete RCReader::_instance; RCReader::_instance = 0;
+    }
+}
+
+/** Static void private method. */
+void
+RCReader::initialize_instance()
+{
+    DBG(cerr << "RCReader::initialize_instance() ... ");
+
     RCReader::_instance = new RCReader;
+    atexit(RCReader::delete_instance);
+
+    DBGN(cerr << "exiting." << endl);
 }
 
 RCReader* 
@@ -439,6 +463,56 @@ RCReader::instance()
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.11  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.9.2.14  2004/02/16 11:55:28  rmorris
+// Minor #endif missing.
+//
+// Revision 1.9.2.13  2004/02/16 10:51:01  rmorris
+// We may be peeking under the hook of the pthread library more than was
+// intended (??) when we choose to assign PTHREAD_ONCE_INIT to pthread_once_t
+// vars using "=".  Under unix such things are integer values.  Under win32,
+// it is a structure.  These under-the-hood differences in the pthread library
+// cross-platform may be moot points if we stuck with the agreed upon API to
+// pthreads which (fingers crossed) doesn't vary across platforms.  Such an
+// assignment was done in a single place (see delete_instance()) only.  Something
+// about the recent extended use of the pthread library has me worried.
+//
+// Revision 1.9.2.12  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.9.2.11  2004/02/11 17:07:34  jimg
+// I moved 'using namespace std;' back down to where it is in all the files. I
+// don't know why I moved it up in the first place. I think I was stabbing in the
+// dark... Also, (more importantly) I modified the initialize_instance and
+// delete_instance static methods so that they work like the SignalHandler and
+// HTTPCache classes. It now works to call RCReader::delete_instance() and then
+// get a brand new pointer using RCReader::instance(). This is important for
+// various tests (and maybe elsewhere).
+//
+// Revision 1.9.2.10  2004/01/25 08:03:02  rmorris
+// Moved using namespace std down, yet still above debug.h.  VC++ 7.x was
+// choking and I cross tested (compiled) _everywhere_.
+//
+// Revision 1.9.2.9  2004/01/23 00:23:11  jimg
+// Moved "using namespace std;" before include of debug.h.
+//
+// Revision 1.9.2.8  2004/01/22 20:47:24  jimg
+// Fix for bug 689. I added tests to make sure the cache size doesn't wind
+// up being set to a negative number. I also changed the types of the cache
+// size and entry size from int to unsigned long. Added information to
+// the default .dodsrc file explaining the units of the CACHE_SIZE and
+// MAX_ENTRY_SIZE parameters.
+//
+// Revision 1.9.2.7  2004/01/22 17:09:52  jimg
+// Added std namespace declarations since the DBG() macro uses cerr.
+//
 // Revision 1.10  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

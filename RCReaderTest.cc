@@ -86,18 +86,11 @@ public:
 	// in the CWD and test to see if check_env_var finds it.
 	char cwd[1024];
 	getcwd(cwd, 1024);
-	DBG(cerr << "CWD: " << cwd << endl);
-	string rc = cwd;
-	rc += "/.dodsrc";
-	DBG(cerr << "RC: " << rc << endl);
-	ifstream ifp(rc.c_str()); // This should create .dodsrc in the CWD
 
-	char dc[1024];
-	strncpy(dc, "DODS_CONF=", 1024);
-	strncat(dc, cwd, 1024-strlen("DODS_CONF="));
-	dc[1023] = '\0';
-	DBG(cerr << "dc: " << dc << endl);
-	putenv(dc);
+	string rc = string(cwd) + string("/.dodsrc");
+	ifstream ifp(rc.c_str()); // This should create .dodsrc in the CWD
+	string dc = string("DODS_CONF=") + string(cwd);
+	putenv(const_cast<char*>(dc.c_str()));
 
 	// Return existing file
 	CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == rc);
@@ -109,17 +102,10 @@ public:
 	// directory and see if check_env_var() makes the RC file.
 	char cwd[1024];
 	getcwd(cwd, 1024);
-	DBG(cerr << "CWD: " << cwd << endl);
-	string rc = cwd;
-	rc += "/.dodsrc";
-	DBG(cerr << "RC: " << rc << endl);
 
-	char dc[1024];
-	strncpy(dc, "DODS_CONF=", 1024);
-	strncat(dc, cwd, 1024-strlen("DODS_CONF="));
-	dc[1023] = '\0';
-	DBG(cerr << "dc: " << dc << endl);
-	putenv(dc);
+	string rc = string(cwd) + string("/.dodsrc");
+	string dc = string("DODS_CONF=") + string(cwd);
+	putenv(const_cast<char*>(dc.c_str()));
 
 	// Create the file.
 	CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == rc);
@@ -136,8 +122,8 @@ public:
 	string home = getenv("HOME");
 	if (*home.rbegin() != '/')
 	    home += "/";
-	rcreader_clean();
-	initialize_instance();
+	RCReader::delete_instance();
+	RCReader::initialize_instance();
 	RCReader *reader = RCReader::instance();
 	CPPUNIT_ASSERT(reader->d_rc_file_path == home + string(".dodsrc"));
 	DBG(cerr << "Cache root: " << reader->get_dods_cache_root() << endl);
@@ -163,8 +149,8 @@ public:
 	DBG(cerr << "dc: " << dc << endl);
 	putenv(dc);
 
-	rcreader_clean();
-	initialize_instance();
+	RCReader::delete_instance();
+	RCReader::initialize_instance();
 	RCReader *reader = RCReader::instance();
 	DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
 	CPPUNIT_ASSERT(reader->d_rc_file_path 
@@ -190,6 +176,17 @@ main( int argc, char* argv[] )
 }
 
 // $Log: RCReaderTest.cc,v $
+// Revision 1.3  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.1.2.3  2004/02/12 23:34:57  jimg
+// Fixed two tests that came back as using uninitialized memory. I'm not sure it
+// if was a real problem, but valgrind now reports zero errors for all the unit
+// tests.
+//
+// Revision 1.1.2.2  2004/02/11 17:35:01  jimg
+// Updated for new instance initialization methods.
+//
 // Revision 1.2  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

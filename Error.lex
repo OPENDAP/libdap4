@@ -41,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.lex,v 1.12 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: Error.lex,v 1.13 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -125,6 +125,28 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
 			}
 %%
 
+// These three glue routines enable DDS to reclaim the memory used to parse a
+// DDS off the wire. They are here because this file can see the YY_*
+// symbols; the file DDS.cc cannot.
+
+void *
+Error_buffer(FILE *fp)
+{
+    return (void *)Error_create_buffer(fp, YY_BUF_SIZE);
+}
+
+void
+Error_switch_to_buffer(void *buf)
+{
+    Error_switch_to_buffer((YY_BUFFER_STATE)buf);
+}
+
+void
+Error_delete_buffer(void *buf)
+{
+    Error_delete_buffer((YY_BUFFER_STATE)buf);
+}
+
 void
 store_integer()
 {
@@ -139,6 +161,14 @@ store_string()
 
 /* 
  * $Log: Error.lex,v $
+ * Revision 1.13  2004/02/19 19:42:52  jimg
+ * Merged with release-3-4-2FCS and resolved conflicts.
+ *
+ * Revision 1.11.2.1  2004/02/04 00:05:11  jimg
+ * Memory errors: I've fixed a number of memory errors (leaks, references)
+ * found using valgrind. Many remain. I need to come up with a systematic
+ * way of running the tests under valgrind.
+ *
  * Revision 1.12  2003/12/08 18:02:29  edavis
  * Merge release-3-4 into trunk
  *

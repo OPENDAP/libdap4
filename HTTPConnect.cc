@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.15 2003/12/08 18:02:29 edavis Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.16 2004/02/19 19:42:52 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -67,6 +67,57 @@ int www_trace = 0;
 
 // Keep the temporary files; useful for debugging.
 int dods_keep_temps = 0;
+
+#define CLIENT_ERR_MIN 400
+#define CLIENT_ERR_MAX 417
+static char *http_client_errors[CLIENT_ERR_MAX - CLIENT_ERR_MIN +1] = {
+    "Bad Request:",
+    "Unauthorized: Contact the server administrator.",
+    "Payment Required.",
+    "Forbidden: Contact the server administrator.",
+    "Not Found: The data source or server could not be found.\n\
+Often this means that the OPeNDAP server is missing or needs attention;\n\
+Please contact the server administrator.",
+    "Method Not Allowed.",
+    "Not Acceptable.",
+    "Proxy Authentication Required.",
+    "Request Time-out.",
+    "Conflict.",
+    "Gone:.",
+    "Length Required.",
+    "Precondition Failed.",
+    "Request Entity Too Large.",
+    "Request URI Too Large.",
+    "Unsupported Media Type.",
+    "Requested Range Not Satisfiable.",
+    "Expectation Failed."
+};
+
+#define SERVER_ERR_MIN 500
+#define SERVER_ERR_MAX 505
+static char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN +1] = {
+    "Internal Server Error.",
+    "Not Implemented.",
+    "Bad Gateway.",
+    "Service Unavailable.",
+    "Gateway Time-out.",
+    "HTTP Version Not Supported."
+};
+
+/** This function translates the HTTP status codes into error messages. It
+    works for those code greater than or equal to 400. */
+static string
+http_status_to_string(int status)
+{
+    if (status >= CLIENT_ERR_MIN && status <= CLIENT_ERR_MAX)
+	return string(http_client_errors[status - CLIENT_ERR_MIN]);
+    else if (status >= SERVER_ERR_MIN && status <= SERVER_ERR_MAX)
+	return string(http_server_errors[status - SERVER_ERR_MIN]);
+    else 
+	return string(
+"Unknown Error: This indicates a problem with libdap++.\n\
+Please report this to support@unidata.ucar.edu.");
+}
 
 /** Functor to parse the headers in the d_headers field. After the headers
     have been read off the wire and written into the d_headers field, scan
@@ -105,6 +156,11 @@ public:
 	    downcase(value);
 	    DBG2(cout << name << ": " << value << endl);
 	    server = value;
+	}
+	else if (type == unknown_type && name == "content-type:" 
+		 && line.str().find("text/html") != string::npos) {
+	    DBG2(cout << name << ": text/html..." << endl);
+	    type = web_error;
 	}
     }
 
@@ -466,16 +522,16 @@ HTTPConnect::fetch_url(const string &url) throw(Error, InternalErr)
     file onto a vector which is used during object destruction to delete all
     the temporary files.
 
-    Delete the returned char* using delete[].
+    @note Delete the returned char* using delete[].
 
     A private method.
 
     @param stream A value-result parameter; the open file descriptor is
     returned via this parameter.
-    @return The name of the temporary file
+    @return The name of the temporary file.
     @exception InternalErr thrown if the FILE* could not be opened. */
 
-char *
+string
 HTTPConnect::get_temp_file(FILE *&stream) throw(InternalErr)
 {
     // get_tempfile_template() uses new, must call delete
@@ -491,7 +547,10 @@ HTTPConnect::get_temp_file(FILE *&stream) throw(InternalErr)
     if (!stream)
 	throw InternalErr("I/O Error: Failed to open a temporary file for the data values.");
 
-    return dods_temp;
+    string dods_temp_s = dods_temp;
+    delete[] dods_temp; dods_temp = 0;
+
+    return dods_temp_s;
 }
 
 /** Close the temporary file opened for read_url(). */
@@ -602,8 +661,16 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 
 	      default: {		// Oops.
 		  close_temp(body, dods_temp);
-
-		  throw Error("Bad response from the HTTP server: This implemenation of the DAP does not understand how to handle an HTTP status response of " + long_to_string(http_status));
+		  if (http_status >= 400) {
+		      string msg = "Error while reading the URL: ";
+		      msg += url;
+		      msg += ".\nThe OPeNDAP server returned the following message:\n";
+		      msg += http_status_to_string(http_status);
+		      throw Error(msg);
+		  }
+		  else 
+		      throw InternalErr(__FILE__, __LINE__,
+"Bad response from the HTTP server: " + long_to_string(http_status));
 		}
 		break;
 	    }
@@ -643,7 +710,14 @@ HTTPConnect::plain_fetch_url(const string &url) throw(Error, InternalErr)
     vector<string> *resp_hdrs = new vector<string>;
 
     try {
-	read_url(url, stream, resp_hdrs);	// Throws Error.
+	int status = read_url(url, stream, resp_hdrs);	// Throws Error.
+	if (status >= 400) {
+	    string msg = "Error while reading the URL: ";
+	    msg += url;
+	    msg += ".\nThe OPeNDAP server returned the following message:\n";
+	    msg += http_status_to_string(status);
+	    throw Error(msg);
+	}
     }
 
     catch(Error &e) {
@@ -718,6 +792,21 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.16  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.14.2.13  2004/02/11 21:52:23  jimg
+// Added two char* arrays which hold HTTP 1.1 error messages. These are used to
+// provide better feedback when the OPeNDAP server's httpd returns an error
+// (i.e., when the request does not even make it into the Dispatch code). I also
+// tidied up some calls to delete by setting 'x' in delete x to null after the
+// call to delete.
+//
+// Revision 1.14.2.12  2004/02/04 00:05:11  jimg
+// Memory errors: I've fixed a number of memory errors (leaks, references)
+// found using valgrind. Many remain. I need to come up with a systematic
+// way of running the tests under valgrind.
+//
 // Revision 1.15  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.130 2003/12/08 18:02:29 edavis Exp $" };
+    { "$Id: Connect.cc,v 1.131 2004/02/19 19:42:52 jimg Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
@@ -81,6 +81,7 @@ Connect::process_data(DataDDS &data, Response *rs)
       case web_error:
 	// Web errors (those reported in the return document's MIME header)
 	// are processed by the WWW library.
+	throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 	return;
 
       case dods_data: {
@@ -105,9 +106,11 @@ Connect::process_data(DataDDS &data, Response *rs)
       }
 
       default:
-	throw Error("The site did not return a valid response.\n\
-This may indicate that the server at the site is not correctly configured,\n\
-or that the URL has changed.");
+	throw Error(
+"The site did not return a valid response (it lacked the\n\
+expected content description header value of 'dods_data').\n\
+This may indicate that the server at the site is not correctly\n\
+configured, or that the URL has changed.");
     }
 }
 
@@ -303,7 +306,7 @@ Connect::~Connect()
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
     if (d_http)
-	delete d_http;
+	delete d_http; d_http = 0;
 
     DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
@@ -324,12 +327,12 @@ Connect::request_version() throw(Error, InternalErr)
 	rs = d_http->fetch_url(version_url);
     }
     catch (Error &e) {
-	delete rs;
+	delete rs; rs = 0;
 	throw e;
     }
 
     d_version = rs->get_version();
-    delete rs;
+    delete rs; rs = 0;
     return d_version;
 }
 
@@ -352,7 +355,7 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	rs = d_http->fetch_url(das_url);
     }
     catch (Error &e) {
-	delete rs;
+	delete rs; rs = 0;
 	throw e;
     }
 
@@ -380,19 +383,21 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	    das.parse(rs->get_stream()); // read and parse the das from a file 
 	}
 	catch (Error &e) {
-	    delete rs;
+	    delete rs; rs = 0;
 	    throw e;
 	}
 	    
 	break;
 
       default:
-	throw Error("The site did not return a valid response.\n\
-This may indicate that the server at the site is not correctly configured,\n\
-or that the URL has changed.");
+	throw Error(
+"The site did not return a valid response (it lacked the\n\
+expected content description header value of 'dods_das').\n\
+This may indicate that the server at the site is not correctly\n\
+configured, or that the URL has changed.");
     }
 
-    delete rs;
+    delete rs; rs = 0;
 }
 
 /** Reads the DDS corresponding to the dataset in the Connect object's URL.
@@ -423,7 +428,7 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	rs = d_http->fetch_url(dds_url);
     }
     catch (Error &e) {
-	delete rs;
+	delete rs; rs = 0;
 	throw e;
     }
 
@@ -451,18 +456,20 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	    dds.parse(rs->get_stream()); // read and parse the dds from a file 
 	}
 	catch (Error &e) {
-	    delete rs;
+	    delete rs; rs = 0;
 	    throw e;
 	}
 	break;
 
       default:
-	throw Error("The site did not return a valid response.\n\
-This may indicate that the server at the site is not correctly configured,\n\
-or that the URL has changed.");
+	throw Error(
+"The site did not return a valid response (it lacked the\n\
+expected content description header value of 'dods_dds').\n\
+This may indicate that the server at the site is not correctly\n\
+configured, or that the URL has changed.");
     }
 
-    delete rs;
+    delete rs; rs = 0;
 }
 
 /** Reads the DataDDS object corresponding to the dataset in the Connect
@@ -497,10 +504,10 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
 	d_version = rs->get_version(); // Improve this design!
 
 	process_data(data, rs);
-	delete rs;
+	delete rs; rs = 0;
     }
     catch (Error &e) {
-	delete rs;
+	delete rs; rs = 0;
 	throw e;
     }
 }
@@ -526,10 +533,10 @@ Connect::read_data(DataDDS &data, FILE *data_source) throw(Error, InternalErr)
     
 	process_data(data, rs);
 
-	delete rs;
+	delete rs; rs = 0;
     }
     catch (Error &e) {
-	delete rs;
+	delete rs; rs = 0;
 	throw e;
     }
 }
@@ -703,6 +710,23 @@ Connect::error()
 //@}
 
 // $Log: Connect.cc,v $
+// Revision 1.131  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.128.2.7  2004/02/11 22:26:46  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
+// Revision 1.128.2.6  2004/01/28 20:39:17  jimg
+// I changed the error messages returned when a valid Content-Description
+// header is not returned to make it more obvious that's the problem. This
+// adresses (at least in part) a problem reported by Kevin O'Brien
+// regarding Benno's server at LDEO.
+//
 // Revision 1.130  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

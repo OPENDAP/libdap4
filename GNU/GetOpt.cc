@@ -75,8 +75,17 @@ GetOpt::exchange (char **argv)
   /* Interchange the two blocks of data in argv.  */
 
   memcpy (temp, &argv[first_nonopt], nonopts_size);
+
+  /* valgrind complains about this because in some cases the memory areas
+     overlap. I switched to memmove. See the memcpy & memmove man pages.
+     02/12/04 jhrg */
+#if 0
   memcpy (&argv[first_nonopt], &argv[last_nonopt],
          (optind - last_nonopt) * sizeof (char *));
+#endif
+  memmove (&argv[first_nonopt], &argv[last_nonopt],
+         (optind - last_nonopt) * sizeof (char *));
+
   memcpy (&argv[first_nonopt + optind - last_nonopt], temp,
          nonopts_size);
 

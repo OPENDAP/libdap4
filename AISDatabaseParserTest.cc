@@ -66,8 +66,8 @@ public:
     } 
 
     void tearDown() { 
-	delete ais_parser;
-	delete ais;
+	delete ais_parser; ais_parser = 0;
+	delete ais; ais = 0;
     }
 
     CPPUNIT_TEST_SUITE( AISDatabaseParserTest );
@@ -172,6 +172,17 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISDatabaseParserTest.cc,v $
+// Revision 1.9  2004/02/19 19:42:51  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.7.2.1  2004/02/11 22:26:45  jimg
+// Changed all calls to delete so that whenever we use 'delete x' or
+// 'delete[] x' the code also sets 'x' to null. This ensures that if a
+// pointer is deleted more than once (e.g., when an exception is thrown,
+// the method that throws may clean up and then the catching method may
+// also clean up) the second, ..., call to delete gets a null pointer
+// instead of one that points to already deleted memory.
+//
 // Revision 1.8  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

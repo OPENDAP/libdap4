@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.45 2004/01/26 18:58:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.46 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <signal.h>
 
@@ -69,6 +69,7 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.45 2004/01/26 18:58:01 j
 #ifndef WIN32
 #include "SignalHandler.h"
 #include "EventHandler.h"
+#include "AlarmHandler.h"
 #endif
 
 using namespace std;
@@ -540,13 +541,16 @@ DODSFilter::get_timeout() const
 }
 
 /** Use values of this instance to establish a timeout alarm for the server.
-    If the timeout value is zero, do nothing. When the alarm handler is
-    called, two CRLF pairs are dumps to the stream and then an Error object
-    is sent. No attempt is made to write the 'correct' MIME headers for an
-    Error object. Instead, a savvy client will know that when an exception is
-    thrown during a deserialize operation, it should scan ahead in the input
-    stream for an Error object. Dumb clients will never get the Error
-    object... */
+    If the timeout value is zero, do nothing. 
+
+    @todo When the alarm handler is called, two CRLF pairs are dumped to the
+    stream and then an Error object is sent. No attempt is made to write the
+    'correct' MIME headers for an Error object. Instead, a savvy client will
+    know that when an exception is thrown during a deserialize operation, it
+    should scan ahead in the input stream for an Error object. Add this, or a
+    sensible variant once libdap++ supports reliable error delivery. Dumb
+    clients will never get the Error object... */
+
 void
 DODSFilter::establish_timeout(FILE *stream)
 {
@@ -964,6 +968,12 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.46  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.37.2.7  2004/02/10 21:05:53  jimg
+// I broke the AlarmHandler class out into its own header. Included here.
+//
 // Revision 1.45  2004/01/26 18:58:01  jimg
 // Build fixes.
 //

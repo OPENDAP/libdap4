@@ -5,7 +5,7 @@
 
 global DDSTEST
 if ![info exists DDSTEST] then {
-    set DDSTEST [transform dds-test]
+    set DDSTEST [transform ./dds-test]
 }
 
 # The four required proc for dds-test.
@@ -31,8 +31,8 @@ proc dds-test_start { options {ifile ""} {ofile ""}} {
     }
 
     switch $options {
-	p {catch "exec ./$DDSTEST -p $ifile $ofile" comp_output}
-	s {spawn ./$DDSTEST -s}
+	p {catch "exec $DDSTEST -p $ifile $ofile" comp_output}
+	s {spawn $DDSTEST -s}
     }
 
     if {$verbose >= 1} {

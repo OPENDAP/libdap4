@@ -10,4 +10,5 @@ cp dot.index dods_cache/.index
 rm -rf gc_cache
 rm -rf purge_cache
 rm -rf header_cache
+rm -rf interrupt_cache
  

@@ -87,8 +87,7 @@ public:
     } 
 
     void tearDown() { 
-	delete at1;
-	at1 = 0;
+	delete at1; at1 = 0;
     }
 
     bool re_match(Regex &r, const char *s) {

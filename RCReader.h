@@ -54,8 +54,8 @@ private:
     string d_cache_root;
 
     bool _dods_use_cache;	// 0- Disabled 1- Enabled
-    int _dods_cache_max;	// Max cache size in Mbytes
-    int _dods_cached_obj;	// Max cache entry size in Mbytes
+    unsigned long _dods_cache_max; // Max cache size in Mbytes
+    unsigned long _dods_cached_obj; // Max cache entry size in Mbytes
     int _dods_ign_expires;	// 0- Honor expires 1- Ignore them
   
     // NB: NEVER_DEFLATE: I added this (12/1/99 jhrg) because libwww 5.2.9
@@ -108,8 +108,8 @@ private:
     string check_env_var(const string &variable_name);
     string check_string(string env_var);
 
-    friend void initialize_instance();
-    friend void rcreader_clean();
+    static void initialize_instance();
+    static void delete_instance();
 
     friend class RCReaderTest;
 
@@ -120,7 +120,7 @@ public:
     const string get_dods_cache_root() {return d_cache_root;}
     const bool get_use_cache() throw()      {return _dods_use_cache;}
     const int get_max_cache_size()  throw()  {return _dods_cache_max;}
-    const int get_max_cached_obj() throw()   {return _dods_cached_obj;}
+    const unsigned long get_max_cached_obj() throw()   {return _dods_cached_obj;}
     const int get_ignore_expires() throw()  {return _dods_ign_expires;}
     const int get_default_expires() throw() {return _dods_default_expires;}
     const int get_always_validate() throw() {return _dods_always_validate;}
@@ -164,6 +164,20 @@ public:
 };
 
 // $Log: RCReader.h,v $
+// Revision 1.10  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
+// Revision 1.8.2.3  2004/02/11 17:10:48  jimg
+// I made initialize_instance() and delete_instance() static void methods so
+// they can be used in pthread_once() and atexit().
+//
+// Revision 1.8.2.2  2004/01/22 20:47:24  jimg
+// Fix for bug 689. I added tests to make sure the cache size doesn't wind
+// up being set to a negative number. I also changed the types of the cache
+// size and entry size from int to unsigned long. Added information to
+// the default .dodsrc file explaining the units of the CACHE_SIZE and
+// MAX_ENTRY_SIZE parameters.
+//
 // Revision 1.9  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

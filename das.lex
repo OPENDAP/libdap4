@@ -62,7 +62,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.39 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.40 2004/02/19 19:42:52 jimg Exp $"};
 
 #include <string.h>
 
@@ -75,6 +75,8 @@ static char rcsid[] not_used ={"$Id: das.lex,v 1.39 2003/12/08 18:02:30 edavis E
 #define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
 
 #include "das.tab.h"
+
+using namespace std;
 
 int das_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */
@@ -172,8 +174,41 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 			}
 %%
 
+// These three glue routines enable DDS to reclaim the memory used to parse a
+// DDS off the wire. They are here because this file can see the YY_*
+// symbols; the file DDS.cc cannot.
+
+void *
+das_buffer(FILE *fp)
+{
+    return (void *)das_create_buffer(fp, YY_BUF_SIZE);
+}
+
+void
+das_switch_to_buffer(void *buf)
+{
+    das_switch_to_buffer((YY_BUFFER_STATE)buf);
+}
+
+void
+das_delete_buffer(void *buf)
+{
+    das_delete_buffer((YY_BUFFER_STATE)buf);
+}
+
 /*
  * $Log: das.lex,v $
+ * Revision 1.40  2004/02/19 19:42:52  jimg
+ * Merged with release-3-4-2FCS and resolved conflicts.
+ *
+ * Revision 1.38.2.3  2004/02/04 00:05:11  jimg
+ * Memory errors: I've fixed a number of memory errors (leaks, references)
+ * found using valgrind. Many remain. I need to come up with a systematic
+ * way of running the tests under valgrind.
+ *
+ * Revision 1.38.2.2  2004/01/22 17:09:52  jimg
+ * Added std namespace declarations since the DBG() macro uses cerr.
+ *
  * Revision 1.39  2003/12/08 18:02:30  edavis
  * Merge release-3-4 into trunk
  *

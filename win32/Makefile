@@ -31,7 +31,7 @@ MDCFLAGS	= /MD /D HAVE_PTHREAD_H		# Multi-Threaded DLL Model
 STDCFLAGS	= /MLd				# Single-Threaded Model, debug version
 MTDCFLAGS	= /MTd /D HAVE_PTHREAD_H	# Multi-Threaded Model, debug version
 MDDCFLAGS	= /MDd /D HAVE_PTHREAD_H	# Multi-Thread DLL Model, debug version
-CFLAGS		= /nologo /W3 /GR /GX /c
+CFLAGS		= /nologo /W0 /GR /GX /c
 
 # Setup linker flags for libraries
 STLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
