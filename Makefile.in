@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.87 1998/11/10 01:00:29 jimg Exp $
+# $Id: Makefile.in,v 1.88 1999/01/08 23:58:43 jimg Exp $
 
 @SET_MAKE@
 
@@ -83,6 +83,8 @@ DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
 EXPR_GRAM_OBJS = lex.expr.o expr.tab.o RValue.o
 ERROR_GRAM_OBJS = lex.Error.o Error.tab.o
+GRAM_SRCS = lex.das.c das.tab.c lex.dds.c dds.tab.c lex.expr.c expr.tab.c \
+	    RValue.cc lex.Error.c Error.tab.c
 
 DASHDRS = AttrTable.h DAS.h 
 DASSRCS = AttrTable.cc DAS.cc parser-util.cc
@@ -144,7 +146,7 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
 ALLSRCS = $(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
-	  $(TESTSRCS) $(TESTPROGSRCS) 
+	  $(TESTSRCS) $(TESTPROGSRCS) $(GRAM_SRCS)
 
 all: grammars $(PROG)
 
