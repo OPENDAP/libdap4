@@ -2,7 +2,11 @@
 # jhrg
 #
 # $Log: test.3.exp,v $
-# Revision 1.1  1994/08/29 19:57:21  jimg
+# Revision 1.2  1994/09/09 16:15:22  jimg
+# Fixed namign of the test (was given as $srcdir/$test_name, should have been
+# $srcdir$test_name).
+#
+# Revision 1.1  1994/08/29  19:57:21  jimg
 # Test procedures for the DAS parser, scanner and C++ class.
 #
 
@@ -18,7 +22,7 @@ set test_name test.3
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Reading from: $srcdir/$test_name
+set test_out "Reading from: $srcdir$test_name
 Attributes {
 var1{
 quote1 \"\\\"\";
@@ -29,7 +33,7 @@ comment2 \"This quote test a \\\"quote within a quote\\\", he said\";
 }
 }"
 
-das-test_start $srcdir/$test_name
+das-test_start $srcdir$test_name -
 
 # send_user "comp output: $comp_output\n"
 # send_user "test out: $test_out\n"

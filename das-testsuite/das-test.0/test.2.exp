@@ -2,7 +2,11 @@
 # jhrg
 #
 # $Log: test.2.exp,v $
-# Revision 1.1  1994/08/29 19:57:20  jimg
+# Revision 1.2  1994/09/09 16:15:21  jimg
+# Fixed namign of the test (was given as $srcdir/$test_name, should have been
+# $srcdir$test_name).
+#
+# Revision 1.1  1994/08/29  19:57:20  jimg
 # Test procedures for the DAS parser, scanner and C++ class.
 #
 
@@ -18,7 +22,7 @@ set test_name test.2
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Reading from: $srcdir/$test_name
+set test_out "Reading from: $srcdir$test_name
 Attributes {
 a{
 d 4;
@@ -26,7 +30,7 @@ b c;
 }
 }"
 
-das-test_start $srcdir/$test_name
+das-test_start $srcdir$test_name -
 
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"
