@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.116 2000/09/22 05:34:52 jimg Exp $
+# $Id: Makefile.in,v 1.117 2000/10/02 18:48:17 jimg Exp $
 
 @SET_MAKE@
 
@@ -309,7 +309,7 @@ lex.gse_.c: gse.lex gse.tab.c gse.tab.h
 lex.gse.o: lex.gse_.c
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.gse_.c -o lex.gse.o
 
-gse.tab.c gse.tab.h: gse.y munge-bison.awk
+gse.tab.c gse.tab.h: gse.y
 	$(YACC) $(YFLAGS) -p gse_ gse.y
 
 gse.tab.o: gse.tab.c		# build using C++ compiler
