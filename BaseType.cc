@@ -4,7 +4,14 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.3  1994/09/23 14:34:42  jimg
+// Revision 1.4  1994/10/17 23:30:46  jimg
+// Added ptr_duplicate virtual mfunc. Child classes can also define this
+// to copy parts that BaseType does not have (and allocate correctly sized
+// pointers.
+// Removed protected mfunc error() -- use errmsg library instead.
+// Added formatted printing of types (works with DDS::print()).
+//
+// Revision 1.3  1994/09/23  14:34:42  jimg
 // Added mfunc check_semantics().
 // Moved definition of dtor to BaseType.cc.
 //
@@ -22,10 +29,6 @@
 #pragma implementation
 #endif
 
-#include <stdlib.h>		// for abort()
-
-#include <String.h>
-
 #include "BaseType.h"
 
 // Private copy mfunc
@@ -37,12 +40,20 @@ BaseType::duplicate(const BaseType &bt)
     type = bt.type;
 }
 
-void
-BaseType::error(const String &msg)
+// ptr_duplicate is a protected mfunc that is used to allocate a new instance
+// of BaseType on the heap. Child classes can like Array can override this to
+// add special behavior. Having a mfunc in the `Type Hierarchy' that performs
+// allocation frees the caller from figuring out the type of an object and
+// then using a switch to create the correct pointer type. See the duplicate
+// mfunc of any of the CtorType descendents.
+
+BaseType *
+BaseType::ptr_duplicate()
 {
-    cout << msg;
-    abort();
+    return new BaseType(*this);	// Copy ctor calls duplicate to do the work
 }
+
+// Public mfuncs
 
 BaseType::BaseType(const String &n, const String &t) : name(n), type(t)
 {
@@ -65,7 +76,7 @@ BaseType::operator=(const BaseType &rhs)
 }
 
 String 
-BaseType::get_var_name()
+BaseType::get_var_name() const
 { 
     return name; 
 }
@@ -77,7 +88,7 @@ BaseType::set_var_name(const String &n)
 }
 
 String
-BaseType::get_var_type()
+BaseType::get_var_type() const
 {
     return type;
 }
@@ -92,11 +103,11 @@ BaseType::set_var_type(const String &t)
 // print_semi is true, append a semicolon and newline.
 
 void 
-BaseType::print_decl(bool print_semi)
+BaseType::print_decl(ostream &os, String space, bool print_semi)
 {
-    cout << type << " " << name;
+    os << space << type << " " << name;
     if (print_semi)
-	cout << ";" << endl;
+	os << ";" << endl;
 }
 
 // Compares the object's current state with the semantics of a particular
