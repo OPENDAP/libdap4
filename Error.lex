@@ -17,10 +17,15 @@
   scanners. It must be processed by GNU's flex scanner generator.
 */
 
-/* $Log: Error.lex,v $
-/* Revision 1.3  1996/10/28 23:46:55  jimg
-/* Added define of YY_NO_UNPUT to suppress creation of that function.
-/*
+/* 
+ * $Log: Error.lex,v $
+ * Revision 1.4  1998/08/06 16:14:47  jimg
+ * Fixed the cvs log. It cannot have the $ Log $ and the comment thing on the
+ * same line...
+ *
+ * Revision 1.3  1996/10/28 23:46:55  jimg
+ * Added define of YY_NO_UNPUT to suppress creation of that function.
+ *
  * Revision 1.2  1996/08/13 18:18:17  jimg
  * Added __unused__ to rcsid definition.
  * Added include of assert.h.
@@ -34,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.lex,v 1.3 1996/10/28 23:46:55 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.lex,v 1.4 1998/08/06 16:14:47 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
