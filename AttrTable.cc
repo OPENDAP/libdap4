@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.39 2003/05/23 03:24:56 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.40 2003/05/30 16:54:53 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -178,7 +178,7 @@ AttrTable::get_size() const
 /** @brief Get the name of this attribute table. 
     @return A string containing the name. */
 string
-AttrTable::get_name()
+AttrTable::get_name() const
 {
     return d_name;
 }
@@ -1195,10 +1195,17 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
     // instance. 05/19/03 jhrg
     for (Attr_iter i = attr_begin(); i != attr_end(); ++i) {
 	// To handle aliases, if constrained, check to see if the aliased
-	// variables is part of the current projection. If so, then the
+	// variable is part of the current projection. If so, then the
 	// target is going to be sent so just write out the <Alias ...> tag.
-	// If not, we should write out the complete target AttrTable.
-	if (is_container(i)) {
+	// If not, don't write the alias (we should write out the complete
+	// target AttrTable, but that's not what the Java code does)
+	if ((*i)->is_alias) {
+	    fprintf(out, "%s<Alias name=\"%s\" Attribute=\"%s\">\n",
+		    pad.c_str(), id2xml(get_name(i)).c_str(), 
+		    (*i)->aliased_to.c_str());
+
+	}
+	else if (is_container(i)) {
 	    fprintf(out, "%s<Attribute name=\"%s\" type=\"%s\">\n",
 		    pad.c_str(), id2xml(get_name(i)).c_str(), 
 		    get_type(i).c_str());
@@ -1223,6 +1230,10 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.40  2003/05/30 16:54:53  jimg
+// get_name() is now a const method. Added alias support to the print_xml()
+// method.
+//
 // Revision 1.39  2003/05/23 03:24:56  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can
