@@ -35,14 +35,14 @@
 #define	STRING	277
 #define	URL	278
 
-#line 144 "dds.y"
+#line 150 "dds.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.16 2000/01/27 06:30:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.17 2000/03/28 17:02:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,10 +79,11 @@ static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.16 2000/01/27 06:30:00 jimg 
 
 extern int dds_line_num;	/* defined in dds.lex */
 
+// No global static objects in the dap library! 1/24/2000 jhrg
 static stack<BaseType *> *ctor;
 static BaseType *current;
+static string *id;
 static Part part = nil;		/* Part is defined in BaseType */
-static string id;
 
 static char *NO_DDS_MSG =
 "The descriptor object returned from the dataset was null.\n\
@@ -172,11 +173,11 @@ static const short yyrhs[] = {    33,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   231,   232,   235,   236,   243,   244,   245,   248,   264,   271,
-   288,   293,   310,   315,   332,   334,   336,   341,   360,   378,
-   386,   394,   402,   410,   411,   412,   413,   414,   415,   416,
-   417,   418,   421,   422,   425,   438,   442,   456,   456,   467,
-   468,   469
+   238,   239,   242,   243,   250,   251,   252,   255,   271,   278,
+   295,   300,   317,   322,   339,   341,   343,   348,   367,   385,
+   393,   401,   409,   417,   418,   419,   420,   421,   422,   423,
+   424,   425,   428,   429,   432,   445,   449,   465,   465,   476,
+   477,   478
 };
 #endif
 
@@ -833,14 +834,14 @@ yyreduce:
   switch (yyn) {
 
 case 4:
-#line 237 "dds.y"
+#line 244 "dds.y"
 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG);
 		    YYABORT;
 		;
     break;}
 case 8:
-#line 249 "dds.y"
+#line 256 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -858,7 +859,7 @@ case 8:
 		;
     break;}
 case 10:
-#line 272 "dds.y"
+#line 279 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -876,14 +877,14 @@ case 10:
 		;
     break;}
 case 11:
-#line 289 "dds.y"
+#line 296 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 12:
-#line 294 "dds.y"
+#line 301 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -901,14 +902,14 @@ case 12:
 		;
     break;}
 case 13:
-#line 311 "dds.y"
+#line 318 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 14:
-#line 316 "dds.y"
+#line 323 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -926,22 +927,22 @@ case 14:
 		;
     break;}
 case 15:
-#line 333 "dds.y"
+#line 340 "dds.y"
 { part = array; ;
     break;}
 case 16:
-#line 335 "dds.y"
+#line 342 "dds.y"
 { part = maps; ;
     break;}
 case 17:
-#line 337 "dds.y"
+#line 344 "dds.y"
 {
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 18:
-#line 342 "dds.y"
+#line 349 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -961,7 +962,7 @@ case 18:
 		;
     break;}
 case 19:
-#line 361 "dds.y"
+#line 368 "dds.y"
 {
 		    ostrstream msg;
 		    msg << "In the dataset descriptor object:" << endl
@@ -978,7 +979,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 379 "dds.y"
+#line 386 "dds.y"
 { 
 		    if (!ctor) 
 			ctor = new stack<BaseType *>;
@@ -986,7 +987,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 387 "dds.y"
+#line 394 "dds.y"
 { 
 		    if (!ctor)
 	                ctor = new stack<BaseType *>;
@@ -994,7 +995,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 395 "dds.y"
+#line 402 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1002,7 +1003,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 403 "dds.y"
+#line 410 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1010,47 +1011,47 @@ case 23:
 		;
     break;}
 case 24:
-#line 410 "dds.y"
+#line 417 "dds.y"
 { current = NewByte(); ;
     break;}
 case 25:
-#line 411 "dds.y"
+#line 418 "dds.y"
 { current = NewInt16(); ;
     break;}
 case 26:
-#line 412 "dds.y"
+#line 419 "dds.y"
 { current = NewUInt16(); ;
     break;}
 case 27:
-#line 413 "dds.y"
+#line 420 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 414 "dds.y"
+#line 421 "dds.y"
 { current = NewUInt32(); ;
     break;}
 case 29:
-#line 415 "dds.y"
+#line 422 "dds.y"
 { current = NewFloat32(); ;
     break;}
 case 30:
-#line 416 "dds.y"
+#line 423 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 31:
-#line 417 "dds.y"
+#line 424 "dds.y"
 { current = NewStr(); ;
     break;}
 case 32:
-#line 418 "dds.y"
+#line 425 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 33:
-#line 421 "dds.y"
+#line 428 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 35:
-#line 426 "dds.y"
+#line 433 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -1064,27 +1065,29 @@ case 35:
 		 ;
     break;}
 case 36:
-#line 439 "dds.y"
+#line 446 "dds.y"
 {
-		     id = string(yyvsp[0]);
+		     id = new string(yyvsp[0]);
 		 ;
     break;}
 case 37:
-#line 443 "dds.y"
+#line 450 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
-			 ((Array *)current)->append_dim(atoi(yyvsp[0]), id);
+			 ((Array *)current)->append_dim(atoi(yyvsp[0]), *id);
 		     }
 		     else {
 			 Array *a = NewArray(); 
 			 a->add_var(current); 
-			 a->append_dim(atoi(yyvsp[0]), id);
+			 a->append_dim(atoi(yyvsp[0]), *id);
 			 current = a;
 		     }
+
+		     delete id;
 		 ;
     break;}
 case 39:
-#line 457 "dds.y"
+#line 466 "dds.y"
 {
 		     ostrstream msg;
 		     msg << "In the dataset descriptor object:" << endl
@@ -1095,15 +1098,15 @@ case 39:
 		 ;
     break;}
 case 40:
-#line 467 "dds.y"
+#line 476 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 41:
-#line 468 "dds.y"
+#line 477 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 42:
-#line 470 "dds.y"
+#line 479 "dds.y"
 {
 		     ostrstream msg;
 		     msg << "Error parsing the dataset name." << endl
@@ -1335,7 +1338,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 480 "dds.y"
+#line 489 "dds.y"
 
 
 /* 

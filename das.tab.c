@@ -28,14 +28,14 @@
 #define	STRING	270
 #define	URL	271
 
-#line 176 "das.y"
+#line 186 "das.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.8 2000/01/27 06:29:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.9 2000/03/28 17:02:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -76,8 +76,10 @@ static char rcsid[] not_used = {"$Id: das.tab.c,v 1.8 2000/01/27 06:29:59 jimg E
 
 extern int das_line_num;	/* defined in das.lex */
 
-static string name;	/* holds name in attr_pair rule */
-static string type;	/* holds type in attr_pair rule */
+// No global static objects. We go through this every so often, I guess I
+// should learn... 1/24/2000 jhrg
+static string *name;	/* holds name in attr_pair rule */
+static string *type;	/* holds type in attr_pair rule */
 
 static vector<AttrTable *> *attr_tab_stack;
 
@@ -89,7 +91,7 @@ static vector<AttrTable *> *attr_tab_stack;
 #define STACK_LENGTH (attr_tab_stack->size())
 #define STACK_EMPTY (attr_tab_stack->empty())
 
-#define TYPE_NAME_VALUE(x) type << " " << name << " " << (x)
+#define TYPE_NAME_VALUE(x) *type << " " << *name << " " << (x)
 
 static char *ATTR_TUPLE_MSG = 
 "Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,\n\
@@ -116,11 +118,11 @@ string attr_name(string name);
 
 
 
-#define	YYFINAL		118
+#define	YYFINAL		119
 #define	YYFLAG		-32768
 #define	YYNTBASE	22
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 271 ? yytranslate[x] : 63)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 271 ? yytranslate[x] : 64)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -155,49 +157,51 @@ static const char yytranslate[] = {     0,
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
-     0,     2,     5,     6,    12,    14,    15,    17,    20,    22,
-    23,    24,    31,    32,    33,    40,    41,    42,    49,    50,
-    51,    58,    59,    60,    67,    68,    69,    76,    77,    78,
-    85,    86,    87,    94,    95,    96,   103,   104,   105,   112,
-   113,   117,   119,   123,   125,   129,   131,   135,   137,   141,
-   143,   147,   149,   153,   155,   159,   161,   165,   167,   171,
-   173,   175,   177,   179,   181,   183,   185,   187,   188,   189
+     0,     1,     4,     6,     9,    14,    16,    17,    19,    22,
+    24,    25,    26,    33,    34,    35,    42,    43,    44,    51,
+    52,    53,    60,    61,    62,    69,    70,    71,    78,    79,
+    80,    87,    88,    89,    96,    97,    98,   105,   106,   107,
+   114,   115,   119,   121,   125,   127,   131,   133,   137,   139,
+   143,   145,   149,   151,   155,   157,   161,   163,   167,   169,
+   173,   175,   177,   179,   181,   183,   185,   187,   189,   190,
+   191
 };
 
-static const short yyrhs[] = {    23,
-     0,    22,    23,     0,     0,     3,    24,    18,    25,    19,
-     0,     1,     0,     0,    26,     0,    25,    26,     0,    60,
-     0,     0,     0,     9,    27,     4,    28,    48,    20,     0,
-     0,     0,    10,    29,     4,    30,    49,    20,     0,     0,
-     0,    11,    31,     4,    32,    50,    20,     0,     0,     0,
-    12,    33,     4,    34,    51,    20,     0,     0,     0,    13,
-    35,     4,    36,    52,    20,     0,     0,     0,    14,    37,
-     4,    38,    53,    20,     0,     0,     0,    15,    39,     4,
-    40,    54,    20,     0,     0,     0,    16,    41,     4,    42,
-    55,    20,     0,     0,     0,    17,    43,     4,    44,    56,
-    20,     0,     0,     0,     4,    45,    18,    25,    46,    19,
-     0,     0,     1,    47,    20,     0,     5,     0,    48,    21,
-     5,     0,     5,     0,    49,    21,     5,     0,     5,     0,
-    50,    21,     5,     0,     5,     0,    51,    21,     5,     0,
-     5,     0,    52,    21,     5,     0,    59,     0,    53,    21,
-    59,     0,    59,     0,    54,    21,    59,     0,    58,     0,
-    55,    21,    58,     0,    57,     0,    56,    21,    57,     0,
-     4,     0,     7,     0,     7,     0,     4,     0,     5,     0,
-     6,     0,     6,     0,     5,     0,     0,     0,     8,     4,
-    61,     4,    62,    20,     0
+static const short yyrhs[] = {    -1,
+    23,    24,     0,    25,     0,    24,    25,     0,     3,    18,
+    26,    19,     0,     1,     0,     0,    27,     0,    26,    27,
+     0,    61,     0,     0,     0,     9,    28,     4,    29,    49,
+    20,     0,     0,     0,    10,    30,     4,    31,    50,    20,
+     0,     0,     0,    11,    32,     4,    33,    51,    20,     0,
+     0,     0,    12,    34,     4,    35,    52,    20,     0,     0,
+     0,    13,    36,     4,    37,    53,    20,     0,     0,     0,
+    14,    38,     4,    39,    54,    20,     0,     0,     0,    15,
+    40,     4,    41,    55,    20,     0,     0,     0,    16,    42,
+     4,    43,    56,    20,     0,     0,     0,    17,    44,     4,
+    45,    57,    20,     0,     0,     0,     4,    46,    18,    26,
+    47,    19,     0,     0,     1,    48,    20,     0,     5,     0,
+    49,    21,     5,     0,     5,     0,    50,    21,     5,     0,
+     5,     0,    51,    21,     5,     0,     5,     0,    52,    21,
+     5,     0,     5,     0,    53,    21,     5,     0,    60,     0,
+    54,    21,    60,     0,    60,     0,    55,    21,    60,     0,
+    59,     0,    56,    21,    59,     0,    58,     0,    57,    21,
+    58,     0,     4,     0,     7,     0,     7,     0,     4,     0,
+     5,     0,     6,     0,     6,     0,     5,     0,     0,     0,
+     8,     4,    62,     4,    63,    20,     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   311,   312,   315,   321,   322,   329,   330,   331,   334,   336,
-   337,   338,   340,   341,   342,   344,   345,   346,   348,   349,
-   350,   352,   353,   354,   356,   357,   358,   360,   361,   362,
-   364,   365,   366,   368,   369,   370,   372,   393,   401,   401,
-   406,   408,   426,   446,   470,   491,   515,   537,   561,   581,
-   605,   625,   645,   667,   687,   709,   721,   734,   752,   772,
-   772,   775,   775,   775,   775,   778,   778,   781,   786,   816
+   328,   335,   342,   343,   347,   348,   355,   356,   357,   360,
+   362,   363,   364,   366,   367,   368,   370,   371,   372,   374,
+   375,   376,   378,   379,   380,   382,   383,   384,   386,   387,
+   388,   390,   391,   392,   394,   395,   396,   398,   419,   427,
+   427,   432,   434,   452,   472,   496,   517,   541,   563,   587,
+   607,   631,   651,   671,   693,   713,   735,   747,   760,   778,
+   798,   798,   801,   801,   801,   801,   804,   804,   807,   812,
+   842
 };
 #endif
 
@@ -206,58 +210,61 @@ static const short yyrline[] = { 0,
 
 static const char * const yytname[] = {   "$","error","$undefined.","ATTR","ID",
 "INT","FLOAT","STR","ALIAS","BYTE","INT16","UINT16","INT32","UINT32","FLOAT32",
-"FLOAT64","STRING","URL","'{'","'}'","';'","','","attributes","attribute","@1",
-"attr_list","attr_tuple","@2","@3","@4","@5","@6","@7","@8","@9","@10","@11",
-"@12","@13","@14","@15","@16","@17","@18","@19","@20","@21","@22","bytes","int16",
-"uint16","int32","uint32","float32","float64","strs","urls","url","str_or_id",
-"float_or_int","alias","@23","@24", NULL
+"FLOAT64","STRING","URL","'{'","'}'","';'","','","attr_start","@1","attributes",
+"attribute","attr_list","attr_tuple","@2","@3","@4","@5","@6","@7","@8","@9",
+"@10","@11","@12","@13","@14","@15","@16","@17","@18","@19","@20","@21","@22",
+"bytes","int16","uint16","int32","uint32","float32","float64","strs","urls",
+"url","str_or_id","float_or_int","alias","@23","@24", NULL
 };
 #endif
 
 static const short yyr1[] = {     0,
-    22,    22,    24,    23,    23,    25,    25,    25,    26,    27,
-    28,    26,    29,    30,    26,    31,    32,    26,    33,    34,
-    26,    35,    36,    26,    37,    38,    26,    39,    40,    26,
-    41,    42,    26,    43,    44,    26,    45,    46,    26,    47,
-    26,    48,    48,    49,    49,    50,    50,    51,    51,    52,
-    52,    53,    53,    54,    54,    55,    55,    56,    56,    57,
-    57,    58,    58,    58,    58,    59,    59,    61,    62,    60
+    23,    22,    24,    24,    25,    25,    26,    26,    26,    27,
+    28,    29,    27,    30,    31,    27,    32,    33,    27,    34,
+    35,    27,    36,    37,    27,    38,    39,    27,    40,    41,
+    27,    42,    43,    27,    44,    45,    27,    46,    47,    27,
+    48,    27,    49,    49,    50,    50,    51,    51,    52,    52,
+    53,    53,    54,    54,    55,    55,    56,    56,    57,    57,
+    58,    58,    59,    59,    59,    59,    60,    60,    62,    63,
+    61
 };
 
 static const short yyr2[] = {     0,
-     1,     2,     0,     5,     1,     0,     1,     2,     1,     0,
+     0,     2,     1,     2,     4,     1,     0,     1,     2,     1,
+     0,     0,     6,     0,     0,     6,     0,     0,     6,     0,
      0,     6,     0,     0,     6,     0,     0,     6,     0,     0,
      6,     0,     0,     6,     0,     0,     6,     0,     0,     6,
-     0,     0,     6,     0,     0,     6,     0,     0,     6,     0,
-     3,     1,     3,     1,     3,     1,     3,     1,     3,     1,
-     3,     1,     3,     1,     3,     1,     3,     1,     3,     1,
-     1,     1,     1,     1,     1,     1,     1,     0,     0,     6
+     0,     3,     1,     3,     1,     3,     1,     3,     1,     3,
+     1,     3,     1,     3,     1,     3,     1,     3,     1,     3,
+     1,     1,     1,     1,     1,     1,     1,     1,     0,     0,
+     6
 };
 
-static const short yydefact[] = {     0,
-     5,     3,     0,     1,     0,     2,     0,    40,    37,     0,
-    10,    13,    16,    19,    22,    25,    28,    31,    34,     0,
-     7,     9,     0,     0,    68,     0,     0,     0,     0,     0,
-     0,     0,     0,     0,     4,     8,    41,     0,     0,    11,
-    14,    17,    20,    23,    26,    29,    32,    35,     0,    69,
+static const short yydefact[] = {     1,
+     0,     6,     0,     0,     3,     0,     4,    41,    38,     0,
+    11,    14,    17,    20,    23,    26,    29,    32,    35,     0,
+     8,    10,     0,     0,    69,     0,     0,     0,     0,     0,
+     0,     0,     0,     0,     5,     9,    42,     0,     0,    12,
+    15,    18,    21,    24,    27,    30,    33,    36,     0,    70,
      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-     0,    42,     0,    44,     0,    46,     0,    48,     0,    50,
-     0,    67,    66,     0,    52,     0,    54,    63,    64,    65,
-    62,     0,    56,    60,    61,     0,    58,    39,    70,    12,
-     0,    15,     0,    18,     0,    21,     0,    24,     0,    27,
-     0,    30,     0,    33,     0,    36,     0,    43,    45,    47,
-    49,    51,    53,    55,    57,    59,     0,     0
+     0,    43,     0,    45,     0,    47,     0,    49,     0,    51,
+     0,    68,    67,     0,    53,     0,    55,    64,    65,    66,
+    63,     0,    57,    61,    62,     0,    59,    40,    71,    13,
+     0,    16,     0,    19,     0,    22,     0,    25,     0,    28,
+     0,    31,     0,    34,     0,    37,     0,    44,    46,    48,
+    50,    52,    54,    56,    58,    60,     0,     0,     0
 };
 
-static const short yydefgoto[] = {     3,
-     4,     5,    20,    21,    26,    51,    27,    52,    28,    53,
-    29,    54,    30,    55,    31,    56,    32,    57,    33,    58,
-    34,    59,    24,    60,    23,    63,    65,    67,    69,    71,
-    74,    76,    82,    86,    87,    83,    75,    22,    39,    61
+static const short yydefgoto[] = {   117,
+     1,     4,     5,    20,    21,    26,    51,    27,    52,    28,
+    53,    29,    54,    30,    55,    31,    56,    32,    57,    33,
+    58,    34,    59,    24,    60,    23,    63,    65,    67,    69,
+    71,    74,    76,    82,    86,    87,    83,    75,    22,    39,
+    61
 };
 
-static const short yypact[] = {    20,
--32768,-32768,     3,-32768,    25,-32768,     1,-32768,-32768,    37,
+static const short yypact[] = {-32768,
+    20,-32768,    25,     3,-32768,     1,-32768,-32768,-32768,    37,
 -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    23,
 -32768,-32768,    27,    33,-32768,    76,    77,    78,    79,    80,
     81,    82,    83,    84,-32768,-32768,-32768,     1,    85,-32768,
@@ -268,32 +275,33 @@ static const short yypact[] = {    20,
 -32768,    56,-32768,-32768,-32768,    58,-32768,-32768,-32768,-32768,
     91,-32768,    92,-32768,    93,-32768,    94,-32768,    95,-32768,
      2,-32768,     2,-32768,    60,-32768,    15,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,   101,-32768
+-32768,-32768,-32768,-32768,-32768,-32768,   101,   102,-32768
 };
 
 static const short yypgoto[] = {-32768,
-    99,-32768,    65,   -19,-32768,-32768,-32768,-32768,-32768,-32768,
+-32768,-32768,    99,    66,   -19,-32768,-32768,-32768,-32768,-32768,
 -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
 -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,    -3,     0,   -57,-32768,-32768,-32768
+-32768,-32768,-32768,-32768,-32768,    -2,     4,   -57,-32768,-32768,
+-32768
 };
 
 
-#define	YYLAST		105
+#define	YYLAST		109
 
 
 static const short yytable[] = {    77,
-    36,     8,   117,     1,     9,     2,    72,    73,    10,    11,
-    12,    13,    14,    15,    16,    17,    18,    19,    84,    -6,
-     1,    85,     2,     8,    90,    91,     9,    92,    93,    36,
+    36,     8,    -2,     2,     9,     3,    72,    73,    10,    11,
+    12,    13,    14,    15,    16,    17,    18,    19,    84,    -7,
+     2,    85,     3,     8,    90,    91,     9,    92,    93,    36,
     10,    11,    12,    13,    14,    15,    16,    17,    18,    19,
-    25,    35,     7,   113,     8,   114,    37,     9,    94,    95,
+    25,    35,     6,   113,     8,   114,    37,     9,    94,    95,
     38,    10,    11,    12,    13,    14,    15,    16,    17,    18,
-    19,    62,   -38,    78,    79,    80,    81,    96,    97,    98,
+    19,    62,   -39,    78,    79,    80,    81,    96,    97,    98,
     99,   100,   101,   102,   103,   104,   105,   106,   107,    40,
     41,    42,    43,    44,    45,    46,    47,    48,    50,    88,
     64,    66,    68,    70,    89,   108,   109,   110,   111,   112,
-   118,     6,    49,   116,   115
+   118,   119,     7,    49,   116,     0,     0,     0,   115
 };
 
 static const short yycheck[] = {    57,
@@ -307,7 +315,7 @@ static const short yycheck[] = {    57,
     21,    20,    21,    20,    21,    20,    21,    20,    21,     4,
      4,     4,     4,     4,     4,     4,     4,     4,     4,    19,
      5,     5,     5,     5,    20,     5,     5,     5,     5,     5,
-     0,     3,    38,   107,   105
+     0,     0,     4,    38,   107,    -1,    -1,    -1,   105
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/local/share/bison.simple"
@@ -851,94 +859,103 @@ yyreduce:
 
   switch (yyn) {
 
-case 3:
-#line 317 "das.y"
+case 1:
+#line 329 "das.y"
 {
-		    if (!attr_tab_stack)
-			attr_tab_stack = new vector<AttrTable *>;
+		    name = new string();
+		    type = new string();
+		    attr_tab_stack = new vector<AttrTable *>;
 		;
     break;}
-case 5:
-#line 323 "das.y"
+case 2:
+#line 335 "das.y"
+{
+		    delete name;
+		    delete type;
+		    delete attr_tab_stack;
+		;
+    break;}
+case 6:
+#line 349 "das.y"
 {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG);
 		    YYABORT;
 		;
     break;}
-case 10:
-#line 336 "das.y"
-{ type = "Byte"; ;
-    break;}
 case 11:
-#line 337 "das.y"
-{ name = yyvsp[0]; ;
+#line 362 "das.y"
+{ *type = "Byte"; ;
     break;}
-case 13:
-#line 340 "das.y"
-{ save_str(type, "Int16", das_line_num); ;
+case 12:
+#line 363 "das.y"
+{ *name = yyvsp[0]; ;
     break;}
 case 14:
-#line 341 "das.y"
-{ save_str(name, yyvsp[0], das_line_num); ;
+#line 366 "das.y"
+{ save_str(*type, "Int16", das_line_num); ;
     break;}
-case 16:
-#line 344 "das.y"
-{ save_str(type, "UInt16", das_line_num); ;
+case 15:
+#line 367 "das.y"
+{ save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 17:
-#line 345 "das.y"
-{ save_str(name, yyvsp[0], das_line_num); ;
+#line 370 "das.y"
+{ save_str(*type, "UInt16", das_line_num); ;
     break;}
-case 19:
-#line 348 "das.y"
-{ save_str(type, "Int32", das_line_num); ;
+case 18:
+#line 371 "das.y"
+{ save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 20:
-#line 349 "das.y"
-{ save_str(name, yyvsp[0], das_line_num); ;
+#line 374 "das.y"
+{ save_str(*type, "Int32", das_line_num); ;
     break;}
-case 22:
-#line 352 "das.y"
-{ save_str(type, "UInt32", das_line_num); ;
+case 21:
+#line 375 "das.y"
+{ save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 23:
-#line 353 "das.y"
-{ save_str(name, yyvsp[0], das_line_num); ;
+#line 378 "das.y"
+{ save_str(*type, "UInt32", das_line_num); ;
     break;}
-case 25:
-#line 356 "das.y"
-{ save_str(type, "Float32", das_line_num); ;
+case 24:
+#line 379 "das.y"
+{ save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 26:
-#line 357 "das.y"
-{ save_str(name, yyvsp[0], das_line_num); ;
+#line 382 "das.y"
+{ save_str(*type, "Float32", das_line_num); ;
     break;}
-case 28:
-#line 360 "das.y"
-{ save_str(type, "Float64", das_line_num); ;
+case 27:
+#line 383 "das.y"
+{ save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 29:
-#line 361 "das.y"
-{ save_str(name, yyvsp[0], das_line_num); ;
+#line 386 "das.y"
+{ save_str(*type, "Float64", das_line_num); ;
     break;}
-case 31:
-#line 364 "das.y"
-{ type = "String"; ;
+case 30:
+#line 387 "das.y"
+{ save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 32:
-#line 365 "das.y"
-{ name = yyvsp[0]; ;
+#line 390 "das.y"
+{ *type = "String"; ;
     break;}
-case 34:
-#line 368 "das.y"
-{ type = "Url"; ;
+case 33:
+#line 391 "das.y"
+{ *name = yyvsp[0]; ;
     break;}
 case 35:
-#line 369 "das.y"
-{ name = yyvsp[0]; ;
+#line 394 "das.y"
+{ *type = "Url"; ;
     break;}
-case 37:
-#line 373 "das.y"
+case 36:
+#line 395 "das.y"
+{ *name = yyvsp[0]; ;
+    break;}
+case 38:
+#line 399 "das.y"
 {
 		    AttrTable *at;
 		    DBG(cerr << "Processing ID: " << yyvsp[0] << endl);
@@ -960,23 +977,23 @@ case 37:
 		    DBG(cerr << " Pushed attr_tab: " << at << endl);
 		;
     break;}
-case 38:
-#line 394 "das.y"
+case 39:
+#line 420 "das.y"
 {
 		    /* pop top of stack; store in attr_tab */
 		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
 		    POP;
 		;
     break;}
-case 40:
-#line 402 "das.y"
+case 41:
+#line 428 "das.y"
 { 
 		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG);
 		    YYABORT;
 		;
     break;}
-case 42:
-#line 409 "das.y"
+case 43:
+#line 435 "das.y"
 {
 		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    if (!check_byte(yyvsp[0], das_line_num)) {
@@ -986,17 +1003,17 @@ case 42:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 43:
-#line 427 "das.y"
+case 44:
+#line 453 "das.y"
 {
 		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    if (!check_byte(yyvsp[0], das_line_num)) {
@@ -1006,17 +1023,17 @@ case 43:
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 44:
-#line 447 "das.y"
+case 45:
+#line 473 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -1032,17 +1049,17 @@ case 44:
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 45:
-#line 471 "das.y"
+case 46:
+#line 497 "das.y"
 {
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
@@ -1053,17 +1070,17 @@ case 45:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 46:
-#line 492 "das.y"
+case 47:
+#line 518 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -1079,17 +1096,17 @@ case 46:
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 47:
-#line 516 "das.y"
+case 48:
+#line 542 "das.y"
 {
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
@@ -1101,17 +1118,17 @@ case 47:
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 48:
-#line 538 "das.y"
+case 49:
+#line 564 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -1127,17 +1144,17 @@ case 48:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 49:
-#line 562 "das.y"
+case 50:
+#line 588 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    if (!check_int32(yyvsp[0], das_line_num)) {
@@ -1147,17 +1164,17 @@ case 49:
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 50:
-#line 582 "das.y"
+case 51:
+#line 608 "das.y"
 {
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
@@ -1173,17 +1190,17 @@ case 50:
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 51:
-#line 606 "das.y"
+case 52:
+#line 632 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    if (!check_uint32(yyvsp[-2], das_line_num)) {
@@ -1193,17 +1210,17 @@ case 51:
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 52:
-#line 626 "das.y"
+case 53:
+#line 652 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
@@ -1215,17 +1232,17 @@ case 52:
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 53:
-#line 646 "das.y"
+case 54:
+#line 672 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
@@ -1237,17 +1254,17 @@ case 53:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 54:
-#line 668 "das.y"
+case 55:
+#line 694 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
@@ -1259,17 +1276,17 @@ case 54:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 55:
-#line 688 "das.y"
+case 56:
+#line 714 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE(yyvsp[0])\
 			<< endl);
@@ -1281,44 +1298,44 @@ case 55:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 56:
-#line 710 "das.y"
+case 57:
+#line 736 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    /* Assume a string that parses is vaild. */
-		    if (TOP_OF_STACK->append_attr(name, type, yyvsp[0]) == 0) {
+		    if (TOP_OF_STACK->append_attr(*name, *type, yyvsp[0]) == 0) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0); 
 			YYABORT;
 		    }
 		;
     break;}
-case 57:
-#line 722 "das.y"
+case 58:
+#line 748 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
-		    if (TOP_OF_STACK->append_attr(name, type, yyvsp[0]) == 0) {
+		    if (TOP_OF_STACK->append_attr(*name, *type, yyvsp[0]) == 0) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 58:
-#line 735 "das.y"
+case 59:
+#line 761 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    if (!check_url(yyvsp[0], das_line_num)) {
@@ -1328,17 +1345,17 @@ case 58:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 59:
-#line 753 "das.y"
+case 60:
+#line 779 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE(yyvsp[0]) << endl);
 		    if (!check_url(yyvsp[0], das_line_num)) {
@@ -1348,23 +1365,23 @@ case 59:
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, yyvsp[0])) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		;
     break;}
-case 68:
-#line 782 "das.y"
+case 69:
+#line 808 "das.y"
 { 
-		    name = yyvsp[0];
+		    *name = yyvsp[0];
 		;
     break;}
-case 69:
-#line 786 "das.y"
+case 70:
+#line 812 "das.y"
 {
 		    // First try to alias within current lexical scope. If
 		    // that fails then look in the complete environment for
@@ -1379,15 +1396,15 @@ case 69:
 			// is no object on the stack so we must be working at
 			// the outer most level of the attribute object).
 			AttrTable *at = DAS_OBJ(arg)->get_table(yyvsp[0]);
-			DAS_OBJ(arg)->add_table(name.c_str(), at);
+			DAS_OBJ(arg)->add_table(name->c_str(), at);
 		    }
-		    else if (!TOP_OF_STACK->attr_alias(name, yyvsp[0])) {
+		    else if (!TOP_OF_STACK->attr_alias(*name, yyvsp[0])) {
 			AttrTable *table = DAS_OBJ(arg)->get_table(yyvsp[0]);
-			if (!TOP_OF_STACK->attr_alias(name, table, 
+			if (!TOP_OF_STACK->attr_alias(*name, table, 
 						      attr_name(yyvsp[0]))) {
 			    ostrstream msg;
 			    msg << "Could not alias `" << yyvsp[0] << "' and `" 
-				<< name << "'." << ends;
+				<< *name << "'." << ends;
 			    parse_error((parser_arg *)arg, msg.str());
 			    msg.rdbuf()->freeze(0);
 			    YYABORT;
@@ -1617,7 +1634,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 817 "das.y"
+#line 843 "das.y"
 
 
 // This function is required for linking, but DODS uses its own error
