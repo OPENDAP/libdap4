@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII" standalone="no"?>
-<!DOCTYPE ais_database SYSTEM "ais_database.dtd">
+<!DOCTYPE ais SYSTEM "http://dcz.dods.org/ais_database.dtd">
 
-<ais>
+<ais xmlns="http://xml.opendap.org/ais">
 <entry>
 <primary url="http://localhost/dods-test/nph-dods/data/nc/fnoc1.nc"/>
 <ancillary url="http://localhost/ais/fnoc1.nc.das"/>
@@ -9,17 +9,22 @@
 
 <entry>
 <primary url="http://localhost/dods-test/nph-dods/data/nc/fnoc2.nc"/>
-<ancillary rule="fallback" url="http://localhost/ais/fnoc2.nc.das"/>
+<ancillary rule="replace" url="ais_testsuite/fnoc2_replace.das"/>
 </entry>
 
 <entry>
 <primary url="http://localhost/dods-test/nph-dods/data/nc/fnoc3.nc"/>
-<ancillary url="http://localhost/ais/fnoc1.nc.das"/>
-<ancillary rule="fallback" url="http://localhost/ais/fnoc2.nc.das"/>
+<!-- <ancillary url="http://localhost/ais/fnoc1.nc.das"/> -->
+<ancillary rule="fallback" url="http://localhost/ais/fnoc3_fallback.das"/>
 </entry>
 
 <entry>
 <primary url="http://localhost/dods-test/nph-dods/data/nc/bears.nc"/>
-<ancillary url="file://ais_testsuite/bears_1.nc.das">
+<ancillary url="file:///home/jimg/DODS-trunk/src/dap/ais_testsuite/bears_1.nc.das"/>
+</entry>
+
+<entry>
+<primary url="http://localhost/dods-test/nph-dods/data/nc/coads_climatology.nc"/>
+<ancillary url="ais_testsuite/coads.das"/>
 </entry>
 </ais>
