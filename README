@@ -1,7 +1,9 @@
-$Id: README,v 1.4 1995/05/10 13:45:26 jimg Exp $
+
+$Id: README,v 1.5 1995/06/22 21:44:25 jimg Exp $
 
 This directory contains the URI/GSO implementation of the DODS Data Access
-Protocol.
+Protocol. Documentation for this software can be found on the DODS home page
+accessible from http://dods.gso.uri.edu/.
 
 The Data Access Protocol (DAP) is used to provide a uniform way of accessing
 a variety of different types of Earth-science data within DODS.
@@ -21,3 +23,8 @@ specialization of the set of classes.
 
 See the file INSTALL in this directory for information on building the
 library. 
+
+NOTE: If you find a bug in this software or its documentation, please use the
+send-pr script (which is in DODS_ROOT/etc) to report the problem. Using
+send-pr will help us ensure that your report does not get lost once we
+receive it.

@@ -1,4 +1,5 @@
-$Id: INSTALL,v 1.1 1995/05/10 13:45:20 jimg Exp $
+
+$Id: INSTALL,v 1.2 1995/06/22 21:44:23 jimg Exp $
 
 Building the DAP library:
 
@@ -11,10 +12,9 @@ the makefile's check target.
 
 3) Type `make install' to install the DAP library.
 
-It is possible to build the DAP so that various levels of debugging support
-are built in. These options must be chosen at configuration time and are set
-using the `--enable' option with `configure'. Choosing them affects the
-Makefile.
+4) Go to the directory DODS_ROOT/reporitng-problems and install send-pr. Then
+use send-pr to report any problems you find with this software. Using send-pr
+will help ensure that once we receive your report we don't loose it.
 
 1) To build with program instrumentation use `--enable-debug=<level>' where
 <level> is 1 or 2. 
