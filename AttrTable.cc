@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.42 2004/02/19 19:42:52 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.43 2004/03/10 16:29:18 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -320,7 +320,7 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
     Can be used to access \c target from within \c at. References
     dim_end() within \c at if the attribute or container does not exist. */
 void
-AttrTable::find( const string &target, AttrTable **at, Attr_iter &iter )
+AttrTable::find( const string &target, AttrTable **at, Attr_iter *iter )
 {
     string::size_type dotpos = target.rfind('.');
     if (dotpos != string::npos)
@@ -331,14 +331,14 @@ AttrTable::find( const string &target, AttrTable **at, Attr_iter &iter )
 	*at = find_container( container ) ;
 	if(*at)
 	{
-	    iter = (*at)->simple_find(field, true) ;
+	    *iter = (*at)->simple_find(field, true) ;
 	} else {
-	    iter = attr_map.end() ;
+	    *iter = attr_map.end() ;
 	}
     }
     else {
 	*at = this;
-	iter = simple_find(target, true);
+	*iter = simple_find(target, true);
     }
 }
 
@@ -809,7 +809,7 @@ AttrTable::get_attr_iter(int i)
 
 /** Returns the name of the attribute referenced by \e iter. */
 string
-AttrTable::get_name( Attr_iter &iter )
+AttrTable::get_name( Attr_iter iter )
 {
     assert( iter != attr_map.end() ) ;
 
@@ -818,7 +818,7 @@ AttrTable::get_name( Attr_iter &iter )
 
 /** Returns true if the attribute referenced by \e iter is a container. */
 bool
-AttrTable::is_container( Attr_iter &i )
+AttrTable::is_container( Attr_iter i )
 {
     return (*i)->type == Attr_container ;
 }
@@ -829,7 +829,7 @@ AttrTable::is_container( Attr_iter &i )
     @param iter Reference to a table contained by this object.
     @return The child attribute table. */
 AttrTable *
-AttrTable::get_attr_table( Attr_iter &iter )
+AttrTable::get_attr_table( Attr_iter iter )
 {
     assert( iter != attr_map.end() ) ;
     return (*iter)->type == Attr_container ? (*iter)->attributes : 0 ;
@@ -839,7 +839,7 @@ AttrTable::get_attr_table( Attr_iter &iter )
     @param iter Reference to the Attribute.
     @return A string with the name of this attribute datatype. */
 string
-AttrTable::get_type( Attr_iter &iter )
+AttrTable::get_type( Attr_iter iter )
 {
     assert( iter != attr_map.end() ) ;
     return AttrType_to_String( (*iter)->type ) ;
@@ -849,7 +849,7 @@ AttrTable::get_type( Attr_iter &iter )
     @param iter
     @return The datatype of this attribute in an instance of AttrType. */
 AttrType
-AttrTable::get_attr_type( Attr_iter &iter )
+AttrTable::get_attr_type( Attr_iter iter )
 {
     return (*iter)->type ;
 }
@@ -862,7 +862,7 @@ AttrTable::get_attr_type( Attr_iter &iter )
     @param iter Reference to an attribute
     @return The number of elements in the attribute. */
 unsigned int
-AttrTable::get_attr_num( Attr_iter &iter )
+AttrTable::get_attr_num( Attr_iter iter )
 {
     assert( iter != attr_map.end() ) ;
     return ( (*iter)->type == Attr_container )
@@ -887,7 +887,7 @@ AttrTable::get_attr_num( Attr_iter &iter )
     returns the string ``None''. If using a name to refer to the attribute
     and the named attribute does not exist, return the empty string. */
 string
-AttrTable::get_attr(Attr_iter &iter, unsigned int i)
+AttrTable::get_attr(Attr_iter iter, unsigned int i)
 {
     assert(iter != attr_map.end());
     return (*iter)->type == Attr_container ? (string)"None" : (*(*iter)->attr)[i];
@@ -911,7 +911,7 @@ AttrTable::get_attr(const char *name, unsigned int i)
     returns the null pointer.  Otherwise returns a pointer to the
     the attribute vector value. */
 vector<string> *
-AttrTable::get_attr_vector(Attr_iter &iter)
+AttrTable::get_attr_vector(Attr_iter iter)
 {
     assert(iter != attr_map.end());
     return (*iter)->type != Attr_container ? (*iter)->attr : 0;
@@ -1071,10 +1071,10 @@ AttrTable::erase()
     (or may contribute to that) but in some places we've gone ahead and
     replaces iostream with stdio just to keep the code similar. 
 
-    @see simple_print(FILE *out, string pad, Attr_iter &i, bool dereference);
+    @see simple_print(FILE *out, string pad, Attr_iter i, bool dereference);
 */
 void
-AttrTable::simple_print(ostream &os, string pad, Attr_iter &i,
+AttrTable::simple_print(ostream &os, string pad, Attr_iter i,
 			bool dereference)
 {
     switch ((*i)->type) {
@@ -1104,7 +1104,7 @@ AttrTable::simple_print(ostream &os, string pad, Attr_iter &i,
 /** A simple printer that does nothing fancy with aliases. 
     Protected. */
 void
-AttrTable::simple_print(FILE *out, string pad, Attr_iter &i,
+AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
 			bool dereference)
 {
     switch ((*i)->type) {
@@ -1250,6 +1250,12 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.43  2004/03/10 16:29:18  jimg
+// Repairs to the methods which provide access using iterators. These
+// were using '*_iter &' type params and that made newer versions of g++
+// gag. I'm not absolutely sure what the problem was, but making the
+// parameters regular value params and not references fixed it.
+//
 // Revision 1.42  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

@@ -134,6 +134,11 @@ AttrType String_to_AttrType(const string &s);
     AttrTable a child of that class and then make alises a separate class,
     also a child of Attribute. Look at the design of the Java code.
 
+    @todo A problem with this class is that Attr_iter objects cannot be
+    dereferenced to return attributes. Instead they must be passed to methods
+    which require that you have access to the AttrTable object into which
+    they point.03/09/04 jhrg
+
     @brief Contains the attributes for a dataset.
     @see DAS
     @see AttrType */
@@ -233,10 +238,10 @@ private:
 protected:
     void clone(const AttrTable &at);
 
-    void simple_print(ostream &os, string pad, Attr_iter &i,
+    void simple_print(ostream &os, string pad, Attr_iter i,
 		      bool dereference);
 
-    void simple_print(FILE *out, string pad, Attr_iter &i,
+    void simple_print(FILE *out, string pad, Attr_iter i,
 		      bool dereference);
 
 public:
@@ -260,7 +265,7 @@ public:
     AttrTable *append_container(AttrTable *at, const string &name) 
 	throw (Error);
 
-    void find(const string &target, AttrTable **at, Attr_iter &iter);
+    void find(const string &target, AttrTable **at, Attr_iter *iter);
     AttrTable *find_container(const string &target);
 
     AttrTable *get_attr_table(const string &name);
@@ -299,14 +304,14 @@ public:
     Attr_iter attr_begin();
     Attr_iter attr_end();
     Attr_iter get_attr_iter(int i);
-    string get_name(Attr_iter &iter);
-    bool is_container(Attr_iter &iter);
-    AttrTable *get_attr_table(Attr_iter &iter);
-    string get_type(Attr_iter &iter);
-    AttrType get_attr_type(Attr_iter &iter);
-    unsigned int get_attr_num(Attr_iter &iter);
-    string get_attr(Attr_iter &iter, unsigned int i = 0);
-    std::vector<string> *get_attr_vector(Attr_iter &iter);
+    string get_name(Attr_iter iter);
+    bool is_container(Attr_iter iter);
+    AttrTable *get_attr_table(Attr_iter iter);
+    string get_type(Attr_iter iter);
+    AttrType get_attr_type(Attr_iter iter);
+    unsigned int get_attr_num(Attr_iter iter);
+    string get_attr(Attr_iter iter, unsigned int i = 0);
+    std::vector<string> *get_attr_vector(Attr_iter iter);
 
     void add_container_alias(const string &name, AttrTable *src) 
 	throw (Error);
@@ -324,6 +329,12 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.48  2004/03/10 16:29:18  jimg
+ * Repairs to the methods which provide access using iterators. These
+ * were using '*_iter &' type params and that made newer versions of g++
+ * gag. I'm not absolutely sure what the problem was, but making the
+ * parameters regular value params and not references fixed it.
+ *
  * Revision 1.47  2003/12/08 18:02:29  edavis
  * Merge release-3-4 into trunk
  *

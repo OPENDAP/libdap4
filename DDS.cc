@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.69 2004/03/01 22:32:10 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.70 2004/03/10 16:29:18 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -1063,8 +1063,7 @@ DDS::parse(string fname)
 
     try {
 	parse(in);
-	int res = fclose(in);
-	assert(res == 0);
+	fclose(in);
     }
     catch (Error &e) {
 	fclose(in);
@@ -1089,8 +1088,7 @@ DDS::parse(int fd)
 
     try {
 	parse(in);
-	int res = fclose(in);
-	assert(res == 0);
+	fclose(in);
     }
     catch (Error &e) {
 	fclose(in);
@@ -1591,6 +1589,12 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.70  2004/03/10 16:29:18  jimg
+// Repairs to the methods which provide access using iterators. These
+// were using '*_iter &' type params and that made newer versions of g++
+// gag. I'm not absolutely sure what the problem was, but making the
+// parameters regular value params and not references fixed it.
+//
 // Revision 1.69  2004/03/01 22:32:10  jimg
 // Bring the trunk up to date with the code in my working directory...
 //

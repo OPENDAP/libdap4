@@ -277,7 +277,7 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
     @exception Error Thrown if the any of values of start, stop or stride
     cannot be applied to this array. */
 void
-Array::add_constraint(Dim_iter &i, int start, int stride, int stop)
+Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i ;
 
@@ -424,7 +424,7 @@ Array::dimension_size(Pix p, bool constrained)
     @return An integer containing the size of the specified dimension.
 */
 int 
-Array::dimension_size(Dim_iter &i, bool constrained) 
+Array::dimension_size(Dim_iter i, bool constrained) 
 { 
     int size = 0;
 
@@ -489,7 +489,7 @@ Array::dimension_start(Pix p, bool constrained)
     @return The desired start index.
 */
 int 
-Array::dimension_start(Dim_iter &i, bool constrained) 
+Array::dimension_start(Dim_iter i, bool constrained) 
 { 
     int start = 0;
 
@@ -553,7 +553,7 @@ Array::dimension_stop(Pix p, bool constrained)
     @return The desired stop index.
 */
 int 
-Array::dimension_stop(Dim_iter &i, bool constrained) 
+Array::dimension_stop(Dim_iter i, bool constrained) 
 { 
     int stop = 0;
 
@@ -619,7 +619,7 @@ Array::dimension_stride(Pix p, bool constrained)
     is TRUE and the dimension is not selected.
 */
 int 
-Array::dimension_stride(Dim_iter &i, bool constrained) 
+Array::dimension_stride(Dim_iter i, bool constrained) 
 { 
     int stride = 0;
 
@@ -667,7 +667,7 @@ Array::dimension_name(Pix p)
     @return A pointer to a string containing the dimension name.
 */
 string
-Array::dimension_name(Dim_iter &i) 
+Array::dimension_name(Dim_iter i) 
 { 
   // Jose Garcia
   // Since this method is public, it is possible for a user
@@ -998,6 +998,12 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.63  2004/03/10 16:29:18  jimg
+// Repairs to the methods which provide access using iterators. These
+// were using '*_iter &' type params and that made newer versions of g++
+// gag. I'm not absolutely sure what the problem was, but making the
+// parameters regular value params and not references fixed it.
+//
 // Revision 1.62  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

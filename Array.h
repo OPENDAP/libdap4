@@ -160,7 +160,7 @@ public:
 
     void append_dim(int size, string name = "");
 
-    void add_constraint(Dim_iter &i, int start, int stride, int stop);
+    void add_constraint(Dim_iter i, int start, int stride, int stop);
 
     void add_constraint(Pix p, int start, int stride, int stop);
 
@@ -177,23 +177,23 @@ public:
     Dim_iter dim_end() ;
 
     int dimension_size(Pix p, bool constrained = false);
-    int dimension_size(Dim_iter &i, bool constrained = false);
+    int dimension_size(Dim_iter i, bool constrained = false);
 
     int dimension_start(Pix p, bool constrained = false);
 
-    int dimension_start(Dim_iter &i, bool constrained = false);
+    int dimension_start(Dim_iter i, bool constrained = false);
 
     int dimension_stop(Pix p, bool constrained = false);
 
-    int dimension_stop(Dim_iter &i, bool constrained = false);
+    int dimension_stop(Dim_iter i, bool constrained = false);
 
     int dimension_stride(Pix p, bool constrained = false);
 
-    int dimension_stride(Dim_iter &i, bool constrained = false);
+    int dimension_stride(Dim_iter i, bool constrained = false);
 
     string dimension_name(Pix p);
 
-    string dimension_name(Dim_iter &i);
+    string dimension_name(Dim_iter i);
 
     unsigned int dimensions(bool constrained = false);
 
@@ -224,6 +224,12 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.60  2004/03/10 16:29:18  jimg
+ * Repairs to the methods which provide access using iterators. These
+ * were using '*_iter &' type params and that made newer versions of g++
+ * gag. I'm not absolutely sure what the problem was, but making the
+ * parameters regular value params and not references fixed it.
+ *
  * Revision 1.59  2004/02/19 19:42:52  jimg
  * Merged with release-3-4-2FCS and resolved conflicts.
  *
