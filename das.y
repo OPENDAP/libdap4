@@ -22,7 +22,11 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.2  1994/08/02 18:54:15  jimg
+ * Revision 1.3  1994/09/09 16:16:38  jimg
+ * Changed the include name to correspond with the class name changes (Var*
+ * to DAS*).
+ *
+ * Revision 1.2  1994/08/02  18:54:15  jimg
  * Added C++ statements to grammar to generate a table of parsed attributes.
  * Added a single parameter to dasparse - an object of class DAS.
  * Solved strange `string accumulation' bug with $1 %2 ... by copying
@@ -48,11 +52,13 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.2 1994/08/02 18:54:15 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.3 1994/09/09 16:16:38 jimg Exp $"};
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "das.tab.h"
-#include "VarVHMap.h"
+#include "DASVHMap.h"
 
 extern int das_line_num;
 
