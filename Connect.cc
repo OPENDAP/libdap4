@@ -8,6 +8,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.66  1998/06/04 06:29:11  jimg
+// Added two new member functions to set/get the new www_errors_to_stderr
+// property. This controls whether www errors (like host not found) are reported
+// on stderr in addition to the Error object. The default is to NOT report them
+// to stderr.
+// WWW errors are now recorded in the Error object.
+//
 // Revision 1.65  1998/04/07 22:14:31  jimg
 // Added a call to prune_spaces to the default ctor. Removing spaces prevents
 // various crashes. Note that CEs can themselves contain spaces but *leading*
@@ -365,7 +372,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.65 1998/04/07 22:14:31 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.66 1998/06/04 06:29:11 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -715,8 +722,19 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 	    if (!me->gui()->response(command, response))
 		cerr << "GUI Failure in dods_error_print()" << endl;
 	}
-	else
-	    cerr << (char *)HTChunk_data(msg) << endl;
+	else {
+	    // Connect used to route all www errors to stderr. That was a
+	    // mistake; they should go to the Error object. To keep the old
+	    // behavior I've added two mfuncs that set and get a property
+	    // used to control if errors are sent to stderr. 6/3/98 jhrg
+	    if (me->get_www_errors_to_stderr())
+		cerr << (char *)HTChunk_data(msg) << endl;
+	    // Load into the error object here. 
+	    Error &e = me->error();
+	    e.error_code(unknown_error);
+	    String s = (char *)HTChunk_data(msg);
+	    e.error_message(s);
+	}
 
         HTChunk_delete(msg);
     }
@@ -1063,7 +1081,7 @@ Connect::Connect()
 // public mfuncs
 
 Connect::Connect(String name, bool www_verbose_errors = false,
-		 bool accept_deflate = true)
+		 bool accept_deflate = true) : _www_errors_to_stderr(false)
 {
     _gui = new Gui;
     name = prune_spaces(name);
@@ -1146,6 +1164,18 @@ Connect::operator=(const Connect &rhs)
 	clone(rhs);
 	return *this;
     }
+}
+
+void
+Connect::set_www_errors_to_stderr(bool state)
+{
+    _www_errors_to_stderr = state;
+}
+
+bool
+Connect::get_www_errors_to_stderr()
+{
+    return _www_errors_to_stderr;
 }
 
 // Dereference the URL and dump its contents into _OUTPUT. Note that
