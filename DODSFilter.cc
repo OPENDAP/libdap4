@@ -10,6 +10,10 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.15  1999/05/26 17:37:02  jimg
+// Added a bit where, before sending caught Error objects to the client, we
+// write the message to t eh httpd's error_log.
+//
 // Revision 1.14  1999/05/25 21:57:52  dan
 // Added an optional second argument to read_ancillary_dds to support
 // JGOFS usage.
@@ -86,7 +90,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.14 1999/05/25 21:57:52 dan Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.15 1999/05/26 17:37:02 jimg Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__
@@ -338,6 +342,10 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream)
     // (11/6/98) projection functions in CEs. I might add exceptions to other
     // parts of the CE parser and evaluator. Eventually, the C++ classes
     // should switch to exceptions. 11/6/98 jhrg
+    //
+    // I'm not sure we should catch errors from dds.send and its callees
+    // here. I think they should be caught in the outer layer (e.g.,
+    // ff_dods). 5/26/99 jhrg
     try {
 	if (!dds.send(dataset, ce, data_stream, compress, cgi_ver)) {
 	    ErrMsgT((compress) ? "Could not send compressed data" : 
@@ -346,6 +354,8 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream)
 	}
     }
     catch (Error &e) {
+	ErrMsgT((compress) ? "Could not send compressed data" : 
+		"Could not send data");
 	set_mime_text(cout, dods_error, cgi_ver);
 	e.print(cout);
 
