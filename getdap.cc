@@ -10,9 +10,18 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.25  1997/10/04 00:33:06  jimg
+// Release 2.14c fixes
+//
+<<<<<<< geturl.cc
 // Revision 1.24  1997/09/22 22:26:34  jimg
 // Rewrote the handling of received Sequences in `constrained-trans()'.
 //
+=======
+// Revision 1.23.6.1  1997/09/23 15:44:33  jimg
+// Now prints newline at end of data output
+//
+>>>>>>> 1.23.6.1
 // Revision 1.23  1997/06/05 23:08:51  jimg
 // Modified so that data can be read from stdin (similar to writeval).
 //
@@ -100,7 +109,11 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.24 1997/09/22 22:26:34 jimg Exp $"};
+<<<<<<< geturl.cc
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.25 1997/10/04 00:33:06 jimg Exp $"};
+=======
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.25 1997/10/04 00:33:06 jimg Exp $"};
+>>>>>>> 1.23.6.1
 
 #include <stdio.h>
 #include <assert.h>
@@ -110,7 +123,11 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.24 1997/09/22 22:26:34 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.24 $";
+<<<<<<< geturl.cc
+const char *VERSION = "$Revision: 1.25 $";
+=======
+const char *VERSION = "$Revision: 1.25 $";
+>>>>>>> 1.23.6.1
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -204,6 +221,8 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 	    break;
 	}
     }
+    
+    cout << endl;
 }
 
 int

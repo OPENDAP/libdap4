@@ -16,10 +16,27 @@
   jhrg 9/5/95
 */
 
+<<<<<<< expr.y
 /* $Log: expr.y,v $
+/* Revision 1.21  1997/10/04 00:33:05  jimg
+/* Release 2.14c fixes
+/*
 /* Revision 1.20  1997/02/17 20:27:19  jimg
 /* Fixed silly spelling errors.
 /*
+=======
+/*
+ * $Log: expr.y,v $
+ * Revision 1.21  1997/10/04 00:33:05  jimg
+ * Release 2.14c fixes
+ *
+ * Revision 1.20.6.1  1997/09/23 15:45:09  jimg
+ * Fixed nasty comment bug with CVS 1.9
+ *
+ * Revision 1.20  1997/02/17 20:27:19  jimg
+ * Fixed silly spelling errors.
+ *
+>>>>>>> 1.20.6.1
  * Revision 1.19  1997/02/12 19:46:33  jimg
  * Fixed bad asserts in process_array_indices and process_grid_indices.
  *
@@ -110,7 +127,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.20 1997/02/17 20:27:19 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.21 1997/10/04 00:33:05 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>

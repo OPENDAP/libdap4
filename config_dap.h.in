@@ -4,6 +4,12 @@
 
 /* 
  * $Log: config_dap.h.in,v $
+ * Revision 1.25  1997/10/04 00:32:58  jimg
+ * Release 2.14c fixes
+ *
+ * Revision 1.24.2.1  1997/08/20 22:05:49  jimg
+ * Changed dods_byte from char to unsigned char.
+ *
  * Revision 1.24  1997/08/11 18:19:31  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -245,7 +251,7 @@ typedef unsigned short dods_uint16;
 #define XDR_UINT16 xdr_u_short
 
 #if SIZEOF_CHAR == 1
-typedef char dods_byte;
+typedef unsigned char dods_byte;
 #else
 #error "How do I get an 8 bit unsigned integer on this machine?"
 #endif
