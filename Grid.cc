@@ -4,7 +4,13 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.8  1995/03/04 14:34:45  jimg
+// Revision 1.9  1995/03/16 17:29:10  jimg
+// Added include config.h to top of include list.
+// Added TRACE_NEW switched dbnew includes.
+// Fixed bug in read_val() where **val was passed incorrectly to
+// subordinate read_val() calls.
+//
+// Revision 1.8  1995/03/04  14:34:45  jimg
 // Major modifications to the transmission and representation of values:
 // 	Added card() virtual function which is true for classes that
 // 	contain cardinal types (byte, int float, string).
@@ -60,12 +66,18 @@
 // Added sanity checking on the variable list (is it empty?).
 //
 
+#include "config.h"
+
 #include <assert.h>
 
 #include "Grid.h"
 #include "Array.h"		// for downcasts
 #include "util.h"
 #include "errmsg.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 void
 Grid::_duplicate(const Grid &s)
@@ -189,11 +201,12 @@ Grid::read_val(void **val)
     if (!*val)
 	*val = new char[size()];
 
-    unsigned int pos = 0;
-    pos += _array_var->read_val((void **)*val);
+    unsigned int pos = _array_var->read_val(val);
 
-    for(Pix p = _map_vars.first(); p; _map_vars.next(p))
-	pos += _map_vars(p)->read_val((void **)*val + pos);
+    for(Pix p = _map_vars.first(); p; _map_vars.next(p)) {
+        void *tval = *val + pos;
+	pos += _map_vars(p)->read_val(&tval);
+    }
 
     return pos;
 }

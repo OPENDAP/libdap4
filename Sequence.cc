@@ -4,7 +4,13 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.9  1995/03/04 14:34:49  jimg
+// Revision 1.10  1995/03/16 17:29:11  jimg
+// Added include config.h to top of include list.
+// Added TRACE_NEW switched dbnew includes.
+// Fixed bug in read_val() where **val was passed incorrectly to
+// subordinate read_val() calls.
+//
+// Revision 1.9  1995/03/04  14:34:49  jimg
 // Major modifications to the transmission and representation of values:
 // 	Added card() virtual function which is true for classes that
 // 	contain cardinal types (byte, int float, string).
@@ -69,11 +75,17 @@
 #pragma implementation
 #endif
 
+#include "config.h"
+
 #include <assert.h>
 
 #include "debug.h"
 #include "Sequence.h"
 #include "util.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 void
 Sequence::_duplicate(const Sequence &s)
@@ -229,8 +241,12 @@ Sequence::read_val(void **val)
 	*val = new char[size()];
     
     unsigned int pos = 0;
-    for (Pix p = first_var(); p; next_var(p))
-	pos += var(p)->read_val((void **)*val + pos);
+    void *tval;
+
+    for (Pix p = first_var(); p; next_var(p)) {
+	tval = *val + pos;
+	pos += var(p)->read_val(&tval);
+    }
 
     return pos;
 }
