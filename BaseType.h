@@ -8,11 +8,17 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.12  1995/02/10 02:41:58  jimg
-/* Added new mfuncs to access _name and _type.
-/* Made private and protected filed's names start with `_'.
-/* Added store_val() as a abstract virtual mfunc.
+/* Revision 1.13  1995/02/16 22:46:02  jimg
+/* Added _in private member. It is used to keep a copy of the input FILE *
+/* so that when the next chunk of data is read in the previous one can be
+/* closed. Since the netio library unlinks the tmp file before returning
+/* the FILE *, closing it effectively deletes the tmp file.
 /*
+ * Revision 1.12  1995/02/10  02:41:58  jimg
+ * Added new mfuncs to access _name and _type.
+ * Made private and protected filed's names start with `_'.
+ * Added store_val() as a abstract virtual mfunc.
+ *
  * Revision 1.11  1995/01/19  21:59:10  jimg
  * Added read_val from dummy_read.cc to the sample set of sub-class
  * implementations.
@@ -115,6 +121,7 @@ private:
     // _out is used to retain access to the FILE * used by _xdrout. It is
     // used by the mfunc expunge to flush the buffer.
     static FILE *_out;		// output stream for data from server
+    static FILE *_in;		// like _out but for input
 
     void _duplicate(const BaseType &bt);
 

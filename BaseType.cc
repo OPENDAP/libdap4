@@ -4,7 +4,13 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.10  1995/02/10 02:41:56  jimg
+// Revision 1.11  1995/02/16 22:46:00  jimg
+// Added _in private member. It is used to keep a copy of the input FILE *
+// so that when the next chunk of data is read in the previous one can be
+// closed. Since the netio library unlinks the tmp file before returning
+// the FILE *, closing it effectively deletes the tmp file.
+//
+// Revision 1.10  1995/02/10  02:41:56  jimg
 // Added new mfuncs to access _name and _type.
 // Made private and protected filed's names start with `_'.
 // Added store_val() as a abstract virtual mfunc.
@@ -83,6 +89,7 @@ extern void delete_xdrstdio(XDR*);
 XDR * BaseType::_xdrin = new_xdrstdio(stdin, XDR_DECODE);
 XDR * BaseType::_xdrout = new_xdrstdio(stdout, XDR_ENCODE);
 FILE * BaseType::_out = stdout;
+FILE * BaseType::_in = stdin;
 
 // Private copy mfunc
 
@@ -103,7 +110,10 @@ void
 set_xdrin(FILE *in)
 {
     delete_xdrstdio(BaseType::_xdrin);
+    if (BaseType::_in != stdin)
+	fclose(BaseType::_in);
     BaseType::_xdrin = new_xdrstdio(in, XDR_DECODE);
+    BaseType::_in = in;
 }
 
 // Same as above except do it for _xdrout instead of _xdrin and store the
