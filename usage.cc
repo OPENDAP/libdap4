@@ -13,6 +13,9 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.6  1998/10/21 16:56:24  jimg
+// Removed name_in_dds using #if 0 ... #endif
+//
 // Revision 1.5  1998/02/09 20:11:43  jimg
 // Added/fixed doc++ comments.
 //
@@ -39,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.5 1998/02/09 20:11:43 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.6 1998/10/21 16:56:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -248,6 +251,7 @@ name_in_variable(BaseType *btp, const String &name)
 
 // Not used.
 
+#if 0
 static bool
 name_in_dds(DDS &dds, const String &name)
 {
@@ -319,6 +323,7 @@ name_in_dds(DDS &dds, const String &name)
 
     return false;
 }
+#endif
 
 // This code could use a real `kill-file' some day - about the same time that
 // the rest of the server gets a `rc' file... For the present just see if a
