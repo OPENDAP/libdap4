@@ -1,9 +1,11 @@
 
-// (c) COPRIGHT URI/MIT 1995-1996
+// (c) COPYRIGHT URI/MIT 1994-1996
 // Please first read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
-//	jhrg		James Gallagher (jgallagher@gso.uri.edu)
+//	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
+//	dan		Dan Holloway (dan@hollywood.gso.uri.edu)
+//	reza		Reza Nekovei (reza@intcomm.net)
 
 // Implementation for Connect -- a class that manages connections to DODS
 // servers or local files (the later case really isn't a connection, but DODS
@@ -12,6 +14,14 @@
 // jhrg 9/29/94
 
 // $Log: Connect.cc,v $
+// Revision 1.20  1996/05/29 21:47:51  jimg
+// Added Content-Description header parsing.
+// Removed Event loop code (HTEvent_loop()).
+// Fixed bug where a copy of _OUTPUT was created using _OUTPUT's file
+// descriptor. When _OUTPUT was closed the copy no longer referenced a valid
+// data source.
+// Fixed problems with asserts and error messaging.
+//
 // Revision 1.19  1996/05/22 18:05:04  jimg
 // Merged files from the old netio directory into the dap directory.
 // Removed the errmsg library from the software.
@@ -131,7 +141,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.19 1996/05/22 18:05:04 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.20 1996/05/29 21:47:51 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -148,7 +158,7 @@ static char rcsid[]={"$Id: Connect.cc,v 1.19 1996/05/22 18:05:04 jimg Exp $"};
 #include "Connect.h"
 
 const char DODS_PREFIX[]={"dods"};
-const int DEFAULT_TIMEOUT = 10;	/* timeout in seconds */
+const int DEFAULT_TIMEOUT = 100; // timeout in seconds
 
 int Connect::_connects = false;
 String Connect::_logfile = "";
@@ -196,10 +206,10 @@ authentication_handler(HTRequest *request, int status)
 	    HTLog_add(request, status);
 
 	// Start request with new credentials
-	HTLoadAnchor((HTAnchor *) me->_anchor, me->_request);
-    } else {
+	HTLoadAnchor((HTAnchor *) me->_anchor, request);
+    } 
+    else {
 	cerr << "Access denied" << endl;
-	HTEvent_stopLoop();		// added jhrg 5/8/96
     }
 
     //Make sure this is the last callback in the list
@@ -225,10 +235,10 @@ redirection_handler(HTRequest *request, int status)
 
     // Start new request
     if (HTRequest_retry(request)) {
-	result = HTLoadAnchor(new_anchor, me->_request);
-    } else {
+	result = HTLoadAnchor(new_anchor, request);
+    } 
+    else {
 	cerr << "Too many redirections detected" << endl;
-	HTEvent_stopLoop();		// added jhrg 5/8/96
     }
 
     return HT_ERROR;
@@ -248,9 +258,7 @@ terminate_handler(HTRequest *request, int status)
     }
 
     if (HTLog_isOpen()) 
-	HTLog_add(me->_request, status);
-
-    HTEvent_stopLoop();		// added jhrg 5/8/96
+	HTLog_add(request, status);
 
     return HT_OK;
 }
@@ -267,21 +275,147 @@ timeout_handler(HTRequest *request)
 
     HTRequest_kill(request);
 
-    HTEvent_stopLoop();		// added jhrg 5/8/96
-
     return 0;
 }
 
+static ObjectType
+get_type(String &value)
+{
+    if (value == "das")
+	return dods_das;
+    else if (value == "dds")
+	return dods_dds;
+    else if (value == "data")
+	return dods_data;
+    else if (value == "error")
+	return dods_error;
+    else
+	return unknown;
+}
+    
 // This function is registered to handle unknown MIME headers
 
 int 
 header_handler(HTRequest *request, const char *token)
 {
-    if (SHOW_MSG) 
-	cerr << "Parsing unknown header `" << token << "'" << endl;
+    String field, value;
+    istrstream line(token);
+    line >> field; field.downcase();
+    line >> value; value.downcase();
+    
+    if (field == "content-description:") {
+	DBG(cerr << "Found content-description header" << endl);
+	Connect *me = (Connect *)HTRequest_context(request);
+	me->_type = get_type(value);
+    }
+    else {
+	if (SHOW_MSG)
+	    cerr << "Unknown header: " << token << endl;
+    }
+
     return HT_OK;
 }
  
+void
+Connect::www_lib_init()
+{
+    // Starts Mac GUSI socket library
+#ifdef GUSI
+    GUSISetup(GUSIwithSIOUXSockets);
+    GUSISetup(GUSIwithInternetSockets);
+#endif
+
+#ifdef __MWERKS__
+    InitGraf((Ptr) &qd.thePort); 
+    InitFonts(); 
+    InitWindows(); 
+    InitMenus(); TEInit(); 
+    InitDialogs(nil); 
+    InitCursor();
+    SIOUXSettings.asktosaveonclose = false;
+#endif
+
+    // Initiate W3C Reference Library
+    HTLibInit(NAME, VERSION);
+
+    // Initialize the protocol modules
+    HTProtocol_add("http", YES, HTLoadHTTP, NULL);
+    HTProtocol_add("file", YES, HTLoadFile, NULL);
+
+    // Initialize set of converters
+
+    _conv = HTList_new();
+
+    // GENERIC converters
+
+    HTConversion_add(_conv,"multipart/*", "*/*", HTBoundary, 1.0, 0.0, 0.0);
+    HTConversion_add(_conv,"message/rfc822", "*/*", HTMIMEConvert, 
+		     1.0, 0.0, 0.0);
+    HTConversion_add(_conv,"text/x-http", "*/*", HTTPStatus_new,
+		     1.0, 0.0, 0.0);
+
+    HTFormat_setConversion(_conv);
+
+    // Initialize bindings between file suffixes and media types
+    HTFileInit();
+
+    // Get any proxy or gateway environment variables
+    HTProxy_getEnvVar();
+
+#ifdef CATCH_SIG
+    SetSignal();
+#endif
+
+    HTAlert_setInteractive(YES);
+
+    // Register our User Prompts etc in the Alert Manager
+    if (HTAlert_interactive()) {
+	HTAlert_add(HTProgress, HT_A_PROGRESS);
+	HTAlert_add(HTError_print, HT_A_MESSAGE);
+	HTAlert_add(HTPromptUsernameAndPassword, HT_A_USER_PW);
+    }
+
+    // Register a call back function for the Net Manager
+    HTNetCall_addBefore(HTLoadStart, 0);
+    HTNetCall_addAfter(authentication_handler, HT_NO_ACCESS);
+    HTNetCall_addAfter(redirection_handler, HT_PERM_REDIRECT);
+    HTNetCall_addAfter(redirection_handler, HT_TEMP_REDIRECT);
+    HTNetCall_addAfter(terminate_handler, HT_ALL);
+    
+    // Register our own MIME header handler for extra headers
+    HTHeader_addParser("*", NO, header_handler);
+}
+
+// Before calling this mfunc memory for the timeval struct must be allocated.
+
+void
+Connect::clone(const Connect &src)
+{
+    // dup the _request, _anchor, ... members here
+    _local = src._local;
+    
+    if (!_local) {
+	_URL = src._URL;
+	_das = src._das;
+	_dds = src._dds;
+	_error = src._error;
+
+	// Initialize the anchor object.
+	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
+	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
+	HT_FREE(ref);
+
+	// Copy the access method.
+	_method = src._method;
+
+	// Copy the timeout value.
+	_tv->tv_sec = src._tv->tv_sec;
+
+	// Open the file for non-truncating update.
+	_output = fdopen(dup(fileno(src._output)), "r+");
+    }
+}
+
 // Read the DDS from the data stream. Leave the binary information behind. The
 // DDS is moved, without parsing it, into a file and a pointer to that FILE is
 // returned. The argument IN (the input FILE stream) is positioned so that the
@@ -333,27 +467,6 @@ Connect::move_dds(FILE *in)
     return fp;
 }
 
-// read the Content-Description header field from FP
-
-bool
-Connect::parse_content_description(FILE *fp, String &value)
-{
-    char l[256];
-    String field;
-
-    do {
-	if (!fgets(l, 256, fp)) {
-	    cerr << "Could not read content description from document" << endl;
-	    return false;
-	}
-	istrstream line((const char *)&l[0]);
-	line >> field; field.downcase();
-	line >> value; value.downcase();
-    } while (field != "content-description:");
-
-    return true;
-}
-
 // Use the URL designated when the Connect object was created as the
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
@@ -364,11 +477,8 @@ Connect::read_url(String &url)
 
     HTRequest *request = HTRequest_new();
 
-    // So that callbacks can get the request
-    _request = request;
-    HTRequest_setContext (request, this);
+    HTRequest_setContext (request, this); // Bind THIS to request 
 
-    // Bind the Connect object together with the Request
     HTRequest_setOutputFormat(request, WWW_SOURCE);
 
     // Set timeout on sockets
@@ -384,145 +494,9 @@ Connect::read_url(String &url)
 	return false;
     }
 
-    // Go into the event loop... Return when the object is loaded (see
-    // function `terminate_handler' above).
-
-#if 0
-    status = HTEvent_Loop(request) == HT_OK;
-    if (status != YES) {
-	if (SHOW_MSG) cerr << "Event loop failure" << endl;
-	return false;
-    }
-#endif
-	
     HTRequest_delete(request);
-    _request = 0;
 
     return status;
-}
-
-void
-Connect::www_lib_init()
-{
-    DBG(cerr << "Initializing the WWW library." << endl);
-
-    /* Starts Mac GUSI socket library */
-#ifdef GUSI
-    GUSISetup(GUSIwithSIOUXSockets);
-    GUSISetup(GUSIwithInternetSockets);
-#endif
-
-#ifdef __MWERKS__ /* STR */
-    InitGraf((Ptr) &qd.thePort); 
-    InitFonts(); 
-    InitWindows(); 
-    InitMenus(); TEInit(); 
-    InitDialogs(nil); 
-    InitCursor();
-    SIOUXSettings.asktosaveonclose = false;
-#endif
-
-    /* Initiate W3C Reference Library */
-    HTLibInit(NAME, VERSION);
-
-    HTAlert_setInteractive(YES);
-
-    /* Initialize the protocol modules */
-    HTProtocol_add("http", YES, HTLoadHTTP, NULL);
-    HTProtocol_add("file", YES, HTLoadFile, NULL);
-
-    // Initialize set of converters
-
-    _conv = HTList_new();
-
-    // GENERIC converters
-
-    HTConversion_add(_conv,"multipart/*", "*/*", HTBoundary, 1.0, 0.0, 0.0);
-    HTConversion_add(_conv,"message/rfc822", "*/*", HTMIMEConvert, 
-		     1.0, 0.0, 0.0);
-    HTConversion_add(_conv,"text/x-http", "*/*", HTTPStatus_new,
-		     1.0, 0.0, 0.0);
-
-#if 0
-    // Normal converters
-    HTConversion_add(_conv, "*/*", "www/present", HTSaveLocally, 
-		     0.5, 0.0, 0.0);
-#endif
-
-    HTFormat_setConversion(_conv);
-
-    /* Initialize bindings between file suffixes and media types */
-    HTFileInit();
-
-    /* Get any proxy or gateway environment variables */
-    HTProxy_getEnvVar();
-
-#ifdef CATCH_SIG
-    SetSignal();
-#endif
-
-    /* Register our User Prompts etc in the Alert Manager */
-    if (HTAlert_interactive()) {
-	HTAlert_add(HTProgress, HT_A_PROGRESS);
-	HTAlert_add(HTError_print, HT_A_MESSAGE);
-	HTAlert_add(HTPromptUsernameAndPassword, HT_A_USER_PW);
-    }
-
-    /* Register a call back function for the Net Manager */
-    HTNetCall_addBefore(HTLoadStart, 0);
-    HTNetCall_addAfter(authentication_handler, HT_NO_ACCESS);
-    HTNetCall_addAfter(redirection_handler, HT_PERM_REDIRECT);
-    HTNetCall_addAfter(redirection_handler, HT_TEMP_REDIRECT);
-    HTNetCall_addAfter(terminate_handler, HT_ALL);
-    
-    /* Register our own MIME header handler for extra headers */
-    HTHeader_addParser("*", NO, header_handler);
-}
-
-// Before calling this mfunc memory for the timeval struct must be allocated.
-
-void
-Connect::clone(const Connect &src)
-{
-    // dup the _request, _anchor, ... members here
-    _local = src._local;
-    
-    if (!_local) {
-	_URL = src._URL;
-	_das = src._das;
-	_dds = src._dds;
-	_error = src._error;
-
-	// Initialize the anchor object.
-	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
-	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
-	HT_FREE(ref);
-
-	// Copy the access method.
-	_method = src._method;
-
-	// Copy the timeout value.
-	_tv->tv_sec = src._tv->tv_sec;
-
-	// Open the file for non-truncating update.
-	_output = fdopen(fileno(src._output), "r+");
-
-	init();
-    }
-}
-
-// Common initialization of a Connect object. Used by ctors and operator=.
-
-void
-Connect::init()
-{
-    DBG(cerr << "Initializing WWW components of a Connect object" << endl);
-
-    // Set the anchor to be the _URL member. 
-
-    char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
-    _anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
-    HT_FREE(ref);
 }
 
 void
@@ -562,7 +536,9 @@ Connect::Connect(const String &name)
 	_tv->tv_sec = DEFAULT_TIMEOUT;
 	_output = 0;
 
-	init();
+	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
+	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
+	HT_FREE(ref);
     }
     else {
 	_URL = "";
@@ -615,11 +591,15 @@ Connect::operator=(const Connect &rhs)
     }
 }
 
+// Dereference the URL and dump its contents into _OUTPUT. Note that
+// read_url() does the actual dereferencing; this sets up the _OUTPUT sink.
+
 bool
 Connect::fetch_url(String &url, bool async = false)
 {
+    close_output();
+
     if (!async) {
-	close_output();
 	char *c = tempnam(NULL, DODS_PREFIX);
 	_output = fopen(c, "w+"); // Open truncated for update.
 	unlink(c);		// When _OUTPUT is closed file is deleted.
@@ -629,8 +609,7 @@ Connect::fetch_url(String &url, bool async = false)
 	// Now rewind the stream so that we can read from the temp file
 	status = fseek(_output, 0L, 0) == 0;
 	if (!status) {
-	    if (SHOW_MSG) 
-		cerr << "Could not rewind stream" << endl;
+	    cerr << "Could not rewind stream" << endl;
 	}
 
 	return status;
@@ -685,19 +664,27 @@ FILE *
 Connect::output()
 {
     if (_output && _output != stdout) {
-	FILE *ret_val = fdopen(fileno(_output), "r");
-
-#if 0
+	FILE *ret_val = fdopen(dup(fileno(_output)), "r");
+	if (!ret_val) {
+	    cerr << "Could not duplicate the object's output sink." << endl;
+	    return NULL;
+	}
+	
 	// Close the object's stream pointer so that when the user closes the
 	// copy returned here the stream goes away. 
 	close_output();
-#endif
 
 	return ret_val;
     }
     else
 	// NB: Users should make sure they don't close stdout.
 	return _output;		
+}
+
+ObjectType
+Connect::type()
+{
+    return _type;
 }
 
 // Added EXT which defaults to "das". jhrg 3/7/95
@@ -715,12 +702,7 @@ Connect::request_das(const String &ext = "das")
 	goto exit;
     }
 
-    if (!parse_content_description(_output, value)) {
-	status = false;
-	goto exit;
-    }
-
-    if (value == "error") {
+    if (type() == dods_error) {
 	if (!_error.parse(_output)) {
 	    cerr << "Could not parse error object" << endl;
 	    status = false;
@@ -752,13 +734,7 @@ Connect::request_dds(const String &ext = "dds")
     if (!status)
 	return false;
     
-    String value;
-    if (!parse_content_description(_output, value)) {
-	status = false;
-	goto exit;
-    }
-
-    if (value == "error") {
+    if (type() == dods_error) {
 	if (!_error.parse(_output)) {
 	    cerr << "Could not parse error object" << endl;
 	    status = false;
@@ -803,12 +779,7 @@ Connect::request_data(const String expr, bool async = false,
 	exit(1);
     }
 
-    String value;
-    if (!parse_content_description(_output, value)) {
-	exit(1);
-    }
-
-    if (value == "error") {
+    if (type() == dods_error) {
 	if (!_error.parse(_output)) {
 	    cerr << "Could not parse error object" << endl;
 	    exit(1);
@@ -854,19 +825,34 @@ Connect::is_local()
 String
 Connect::URL(bool ce = true)
 {
-    if (_local)
-	cerr << "URL(): A URL is only valid for a remote connection."
+    if (_local) {
+	cerr << "URL(): This call is only valid for a remote connection."
 	     << endl;
+	return "";
+    }
 
-    return _URL;		// if _local returns ""
+    if (ce)
+	return _URL;
+    else 
+	return _URL.before("?");
+}
+
+String 
+Connect::CE()
+{
+    if (_local) {
+	cerr << "CE(): This call is only valid for a remote connection."
+	    << endl;
+	return "";
+    }
+    
+    return _URL.after("?");
 }
 
 DAS &
 Connect::das()
 {
-    if (_local)
-	cerr << "das(): :A das is only vaild for a remote connection."
-	     << endl;
+    assert(!_local);
 
     return _das;
 }
@@ -874,9 +860,7 @@ Connect::das()
 DDS &
 Connect::dds()
 {
-    if (_local)
-	cerr << "dds(): A dds is only vaild for a remote connection."
-	    << endl;
+    assert(!_local);
 
     return _dds;
 }
@@ -917,12 +901,7 @@ Connect::constraint_dds(Pix p)
 DDS &
 Connect::append_constraint(String expr, DDS &dds)
 {
-    constraint c;
-
-    c._expression = expr;
-    c._dds = dds;
-
-    _data.append(c);
+    constraint c(expr, dds);
 
     return _data.rear()._dds;
 }
