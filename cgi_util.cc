@@ -11,6 +11,9 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.28  1997/12/16 01:38:22  jimg
+// Merged release 2.14d changes.
+//
 // Revision 1.27  1997/09/22 22:36:02  jimg
 // Added new function to read ancillary DAS and DDS files.
 //
@@ -133,7 +136,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.27 1997/09/22 22:36:02 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.28 1997/12/16 01:38:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -220,7 +223,7 @@ do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
     }
     else {
 	if (!dds.send(dataset, constraint, data_stream, false)) {
-	    ErrMsgT("Could not send uncompressed data");
+	    ErrMsgT("Could not send data");
 	    return false;
 	}
     }
