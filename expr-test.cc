@@ -10,6 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.18  1998/11/10 00:49:19  jimg
+// Fixed up the online help.
+//
 // Revision 1.17  1998/09/17 17:00:02  jimg
 // Added include files to get rid of compiler messages about missing
 // prototypes.
@@ -90,7 +93,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.17 1998/09/17 17:00:02 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.18 1998/11/10 00:49:19 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -161,7 +164,8 @@ Options:\n\
 	-e: Evaluate the constraint expression. Must be used with -p.\n\
 	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\n\
 	     This prompts for the constraint expression and the optional\n\
-             data file name.\n\
+             data file name. NOTE: The CE parser Error objects do not print\n\
+             with this option.\n\
         -f: A file to use for data. Currently only used by -w for sequences.\n\
 	-k: A constraint expression to use with the data. Works with -p,\n\
 	    -e, -t and -w\n";
