@@ -31,7 +31,8 @@
 
 #include "Regex.h"
 
-// #define DODS_DEBUG
+#define DODS_DEBUG
+
 #include "Array.h"
 #include "Int16.h"
 #include "Str.h"
@@ -75,7 +76,7 @@ public:
         d_str = new Str("Str");
         d_string = new Array("Array_of_String", d_str);
         d_string->append_dim(4, "dimension");
-        string sbuffer[4] = {"0 String", "1 string", "2 string", "3 string"};
+        string sbuffer[4] = {"0 String", "1 String", "2 String", "3 String"};
         d_string->val2buf(sbuffer);
 #ifdef DODS_DEBUG
         for (int i = 0; i < 4; ++i)
@@ -120,7 +121,7 @@ public:
     CPPUNIT_TEST_SUITE( ArrayTest );
 
     CPPUNIT_TEST(duplicate_cardinal_test);
-    // CPPUNIT_TEST(duplicate_string_test);
+    CPPUNIT_TEST(duplicate_string_test);
     CPPUNIT_TEST(duplicate_structure_test);
     
     CPPUNIT_TEST_SUITE_END();
@@ -173,16 +174,19 @@ public:
         }
         
         Array a;
-        a = *d_cardinal;
+        a = *d_string;
         i = a.dim_begin();
         CPPUNIT_ASSERT(a.dimension_size(i) == 4);
         
         string *s2 = new string[4];
-        d_cardinal->buf2val((void**)&s2);
+        d_string->buf2val((void**)&s2);
         for (int i = 0; i < 4; ++i) {
             CPPUNIT_ASSERT(s2[i] == svalues[i]);
             cerr << "s2[" << i << "]: " << s2[i] << endl;
         }
+        
+        delete[] s; s = 0;
+        delete[] s2; s2 = 0;
     }
     
     void duplicate_cardinal_test() {
