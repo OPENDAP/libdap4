@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.16 2004/02/19 19:42:52 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.17 2004/04/12 16:21:56 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -279,7 +279,9 @@ HTTPConnect::www_lib_init() throw(Error, InternalErr)
     curl_easy_setopt(d_curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_ANY);
 
     curl_easy_setopt(d_curl, CURLOPT_NOPROGRESS, 1);
+#if 0
     curl_easy_setopt(d_curl, CURLOPT_MUTE, 1);
+#endif
     curl_easy_setopt(d_curl, CURLOPT_NOSIGNAL, (long)1);
 
     curl_easy_setopt(d_curl, CURLOPT_HEADERFUNCTION, save_raw_http_headers);
@@ -792,6 +794,9 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.17  2004/04/12 16:21:56  jimg
+// Removed obsolete CURLOPT_MUTE.
+//
 // Revision 1.16  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
