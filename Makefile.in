@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.83 1998/09/09 17:33:28 jimg Exp $
+# $Id: Makefile.in,v 1.84 1998/09/10 21:16:26 jehamby Exp $
 
 @SET_MAKE@
 
@@ -83,7 +83,7 @@ EXPR_GRAM_OBJS = lex.expr.o expr.tab.o expr.o
 ERROR_GRAM_OBJS = lex.Error.o Error.tab.o
 
 DASHDRS = AttrTable.h DAS.h 
-DASSRCS = AttrTable.cc DAS.cc
+DASSRCS = AttrTable.cc DAS.cc parser-util.cc
 DASOBJS = AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
 DDSHDRS = DDS.h DataDDS.h
