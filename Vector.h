@@ -130,7 +130,8 @@ public:
 
     void vec_resize(int l);
 
-    virtual BaseType *var(const string &name = "", bool exact = true);
+    virtual BaseType *var(const string &name = "", bool exact_match = true,
+              btp_stack *s = 0);
 
     virtual BaseType *var(const string &name, btp_stack &s);
 
@@ -143,6 +144,10 @@ public:
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.43  2004/11/15 21:47:03  jimg
+ * Added a btp_stack paramter to var() so that it will match the prototype
+ * declared in BaseType. This fixed a problem in the inhertiance hierarchy
+ *
  * Revision 1.42  2004/07/07 21:08:48  jimg
  * Merged with release-3-4-8FCS
  *
