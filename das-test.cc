@@ -13,6 +13,10 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
+// Revision 1.19  1997/05/13 23:37:44  jimg
+// Changed options and command `format' so that das-test is similar to
+// dds-test.
+//
 // Revision 1.18  1996/07/16 17:49:29  jimg
 // Added usage function.
 // Added version option.
@@ -88,7 +92,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das-test.cc,v 1.18 1996/07/16 17:49:29 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das-test.cc,v 1.19 1997/05/13 23:37:44 jimg Exp $"};
 
 #include <iostream.h>
 #include <String.h>
@@ -104,10 +108,10 @@ static char rcsid[] __unused__ = {"$Id: das-test.cc,v 1.18 1996/07/16 17:49:29 j
 #include "trace_new.h"
 #endif
 
-void plain_driver(DAS das);
+void plain_driver(DAS &das);
 void load_attr_table(AttrTable at);
 void load_attr_table_ptr(AttrTable *atp);
-void parser_driver(int argc, char *argv[], int i, bool use_fd, DAS das);
+void parser_driver(DAS &das);
 void test_scanner();
 
 int daslex();
@@ -120,22 +124,20 @@ void
 usage(String name)
 {
     cerr << "usage: " << name 
-	 << " [-v] [-s] [-c] [-p -f {in-file out-file} ...]" << endl
+	 << " [-v] [-s] [-d] [-c] [-p] {< in-file > out-file}" << endl
 	 << " s: Test the DAS scanner." << endl
 	 << " p: Scan and parse from <in-file>; print to <out-file>." << endl
-	 << " `-' for either file is taken to mean stdin/stdout." << endl
-	 << " f: Test the `file descriptor' version of the das parser." << endl
 	 << " c: Test building the DAS from C++ code." << endl
-	 << " v: Print the version of das-test and exit." << endl;
+	 << " v: Print the version of das-test and exit." << endl
+	 << " d: Print parser debugging information." << endl;
 }
 
 int
 main(int argc, char *argv[])
 {
 
-    GetOpt getopt (argc, argv, "scfpv");
+    GetOpt getopt (argc, argv, "scpvd");
     int option_char;
-    bool use_fd = false;	// true to exercise the fd functions
     bool parser_test = false;
     bool scanner_test = false;
     bool code_test = false;
@@ -146,9 +148,6 @@ main(int argc, char *argv[])
 	    case 'p':
 	      parser_test = true;
 	      break;
-	    case 'f':
-	      use_fd = true;
-	      break;
 	    case 's':
 	      scanner_test = true;
 	      break;
@@ -158,6 +157,9 @@ main(int argc, char *argv[])
 	    case 'v':
 	      cerr << argv[0] << ": " << version << endl;
 	      exit(0);
+	    case 'd':
+	      dasdebug = 1;
+	      break;
 	    case '?': 
 	    default:
 	      usage(argv[0]);
@@ -171,16 +173,8 @@ main(int argc, char *argv[])
 	exit(1);
     }
 	
-    if (parser_test) {
-	if (argc >= 2 && !(argc % 2)) {
-	    for (int i = getopt.optind; i < argc; i+=2)
-		parser_driver(argc, argv, i, use_fd, das);
-	}
-	else {
-	    usage(argv[0]);
-	    exit(1);
-	}
-    }
+    if (parser_test)
+	parser_driver(das);
 
     if (scanner_test)
 	test_scanner();
@@ -188,11 +182,11 @@ main(int argc, char *argv[])
     if (code_test)
 	plain_driver(das);
 
-    exit(0);
+    return (0);
 }
 
 void
-test_scanner(void)
+test_scanner()
 {
     int tok;
 
@@ -203,6 +197,9 @@ test_scanner(void)
 	    cout << "ATTR" << endl;
 	    break;
 
+	  case ALIAS:
+	    cout << "ALIAS" << endl;
+	    break;
 	  case ID:
 	    cout << "ID=" << daslval << endl;
 	    break;
@@ -254,44 +251,19 @@ test_scanner(void)
 
 
 void
-parser_driver(int argc, char *argv[], int i, bool use_fd, DAS das)
+parser_driver(DAS &das)
 {
-    // If a file is named "-", assume that the user means stdin or stdout.
-    if (strcmp(argv[i], "none") == 0)
-	return;
-    else if (strcmp(argv[i], "-") == 0) {
-	cout << "Enter attributes:\n";
-	int status = das.parse();
-	if (!status)
-	    cerr << "parse() returned: " << status << endl;
-    }
-    else {
-	cout << "Reading from: " << argv[i] << endl;
-	if (use_fd) {
-	    int fd = open(argv[i], O_RDONLY);
-	    int status = das.parse(fd);
-	    if (!status)
-		cerr << "parse() returned: " << status << endl;
-	    close(fd);
-	}
-	else {
-	    int status = das.parse(argv[i]);
-	    if (!status)
-		cerr << "parse() returned: " << status << endl;
-	}
-    }
+    int status = das.parse();
+    if (!status)
+	cerr << "parse() returned: " << status << endl;
 
-    // filename of "none" means don't print.
-    if (argc > i+1 && strcmp(argv[i+1], "-") == 0)
-	das.print();
-    else
-	return;
+    das.print();
 }
 
 // Given a DAS, add some stuff to it.
 
 void
-plain_driver(DAS das)
+plain_driver(DAS &das)
 {
     AttrTable *atp;
     AttrTable *dummy;
