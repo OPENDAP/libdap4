@@ -1,0 +1,51 @@
+
+/*
+    This is a test of the das scanner and parser software. This file tests
+    comments, attribute lists with missing parts, and multiple attribute
+    lists (they should all coalesce into one attribute table.
+*/
+
+attributes {// weird
+    var1 {//test
+    	name bob;	// bob is the only name allowed
+	type human;	/* for people ... */
+	age 19;
+    }
+    var2 {/*more test*/
+	name /* foolish comment */ joe;
+	type/*bad style*/dog;   
+	age 8;
+    }
+}   
+
+// This is a C++ type comment.
+// The scanner and parser should handle a text file with several
+// attribute-definintion sections.
+
+Attributes {/*hammer those comments*/
+    var3 {
+    	size large;
+	color red;
+	type art;
+    }
+    var4 {
+    }
+}
+
+ATTRIBUTES {
+    var5 {
+    	height 5.0in.;
+    }
+}
+
+attributes {
+}
+
+attributes {
+    var5 {
+	weight 100lbs;
+	color red;
+    }
+}
+
+// EOF must be at the end of this line (not on the line after)
