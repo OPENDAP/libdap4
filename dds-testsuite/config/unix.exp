@@ -1,0 +1,42 @@
+# Tcl/Expect code for the DDS test.
+
+# Make sure the global var DDSTEST is set correctly.
+
+if ![info exists prompt] then {
+    set prompt "dds-test: "
+}
+
+global DDSTEST
+if ![info exists DDSTEST] then {
+    set DDSTEST [transform dds-test]
+}
+
+# The four required proc for dds-test.
+
+proc dds-test_start { options } {
+    global verbose
+    global DDSTEST
+    global prompt
+
+    verbose "Starting $DDSTEST $options...\n"
+
+    spawn $DDSTEST $options
+
+    expect {
+	-re $prompt$ {send_user "Found first prompt (1)\n"}
+	timeout { error "Failed to spawn $CALC (timeout)"; exit 1 }
+    }
+}
+
+proc dds-test_load {} {
+}
+
+proc dds-test_exit {} {
+    send ""
+}
+
+proc dds-test_version {} {
+    send_user "dds-test version 0.1\n"
+}
+
+dds-test_start -s
