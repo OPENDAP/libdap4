@@ -10,6 +10,13 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.14  1997/09/22 22:33:14  jimg
+// Added data file option. Now -f can be used to specify the name of a file
+// from which to read data. This currently only works with Sequences, but
+// in the future all test data could be read from a file.
+// Added use of the DataDDS class (which is required by the new core
+// software).
+//
 // Revision 1.13  1997/06/05 22:51:25  jimg
 // Changed so that compression is not used.
 //
@@ -71,7 +78,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.13 1997/06/05 22:51:25 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.14 1997/09/22 22:33:14 jimg Exp $"};
 
 #include <stdio.h>
 #include <errno.h>
@@ -89,6 +96,7 @@ static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.13 1997/06/05 22:51:25 
 #include <SLList.h>
 
 #include "DDS.h"
+#include "DataDDS.h"
 #include "BaseType.h"
 
 #include "parser.h"
@@ -105,7 +113,8 @@ bool read_table(DDS &table, const String &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
 bool transmit(DDS &write, bool verb);
 bool loopback_pipe(FILE **pout, FILE **pin);
-bool constrained_trans(const String &dds_name, const String &ce);
+bool constrained_trans(const String &dds_name, String dataset,
+		       const String &ce);
 
 int exprlex();			// exprlex() uses the global exprlval
 int exprparse(void *arg);
@@ -115,27 +124,30 @@ extern YYSTYPE exprlval;
 extern int exprdebug;
 const String version = "version 1.12";
 const String prompt = "expr-test: ";
-const String options = "sp:detcw:k:v";
-const String usage = "expr-test [-d -s -p -e -c -t -w -k] [file] [expr]\n\
+const String options = "sdetcvp:w:f:k:";
+const String usage = "expr-test [-s -d -c -t -v [-p dds-file] [-e expr]\
+[-w dds-file] [-f data-file] [-k expr]]\n\
 Test the expression evaluation software.\n\
 Options:\n\
 	-s: Feed the input stream directly into the expression scanner, does\n\
 	    not parse.\n\
-	-p  DDS-file: Read the DDS from `DDS-file' and create a DDS object,\n\
-	    then prompt for an expression and parse that expression, given\n\
-	    the DDS object.\n\
 	-d: Turn on expression parser debugging.\n\
-	-e: Evaluate the constraint expression. Must be used with -p.\n\
 	-c: Print the constrained DDS (the one that will be returned\n\
 	    prepended to a data transmission. Must also supply -p and -e \n\
 	-t: Test transmission of data. This uses the Test*classes.\n\
 	    Transmission is done using a single process that writes and then\n\
 	    reads from a pipe. Must also suppply -p.\n\
+        -v: Print the version of expr-test\n\
+  	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,\n\
+	    then prompt for an expression and parse that expression, given\n\
+	    the DDS object.\n\
+	-e: Evaluate the constraint expression. Must be used with -p.\n\
 	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\n\
-	    This prompts for the constraint expression\n\
+	     This prompts for the constraint expression and the optional\n\
+             data file name.\n\
+        -f: A file to use for data. Currently only used by -w for sequences.\n\
 	-k: A constraint expression to use with the data. Works with -p,\n\
-	    -e, -t and -w\n\
-        -v: Print the version of expr-test\n";
+	    -e, -t and -w\n";
 
 int
 main(int argc, char *argv[])
@@ -146,50 +158,53 @@ main(int argc, char *argv[])
     bool trans_test = false, print_constrained = false;
     bool whole_enchalada = false, constraint_expr = false;
     String dds_file_name;
+    String dataset = "";
     String constraint = "";
     DDS table;
 
     // process options
 
     while ((option_char = getopt()) != EOF)
-	switch (option_char)
-	  {
-	    case 'd': 
-	      exprdebug = true;
-	      break;
-	    case 's':
-	      scanner_test = true;
-	      break;
-	    case 'p':
-	      parser_test = true;
-	      dds_file_name = getopt.optarg;
-	      break;
-	    case 'e':
-	      evaluate_test = true;
-	      break;
-	    case 't':
-	      trans_test = true;
-	      break;
-	    case 'c':
-	      print_constrained = true;
-	      break;
-	    case 'w':
-	      whole_enchalada = true;
-	      dds_file_name = getopt.optarg;
-	      break;
-	    case 'k':
-	      constraint_expr = true;
-	      constraint = getopt.optarg;
-	      break;
-	    case 'v':
-	      cerr << argv[0] << ": " << version << endl;
-	      exit(0);
-	    case '?': 
-	    default:
-	      cerr << usage << endl; 
-	      exit(1);
-	      break;
-	  }
+	switch (option_char) {
+	  case 'd': 
+	    exprdebug = true;
+	    break;
+	  case 's':
+	    scanner_test = true;
+	    break;
+	  case 'p':
+	    parser_test = true;
+	    dds_file_name = getopt.optarg;
+	    break;
+	  case 'e':
+	    evaluate_test = true;
+	    break;
+	  case 't':
+	    trans_test = true;
+	    break;
+	  case 'c':
+	    print_constrained = true;
+	    break;
+	  case 'w':
+	    whole_enchalada = true;
+	    dds_file_name = getopt.optarg;
+	    break;
+	  case 'k':
+	    constraint_expr = true;
+	    constraint = getopt.optarg;
+	    break;
+	  case 'f':
+	    dataset = getopt.optarg;
+	    break;
+	  case 'v':
+	    cerr << argv[0] << ": " << version << endl;
+	    exit(0);
+	  case '?': 
+	  default:
+	    cerr << usage << endl; 
+	    exit(1);
+	    break;
+	}
 
     if (!scanner_test && !parser_test && !evaluate_test && !trans_test 
 	&& !whole_enchalada) {
@@ -217,7 +232,7 @@ main(int argc, char *argv[])
     }
 
     if (whole_enchalada) {
-	constrained_trans(dds_file_name, constraint);
+	constrained_trans(dds_file_name, dataset, constraint);
     }
 }
 
@@ -414,6 +429,7 @@ transmit(DDS &write, bool verb)
     // read the variable values back into the read DDS and print the received
     // values. 
 
+    String dummy = "dummy";
     Pix wp, rp;
     for (wp = write.first_var(), rp = read.first_var(); 
 	 wp && rp; 
@@ -423,7 +439,7 @@ transmit(DDS &write, bool verb)
 	// DDS. It also ignores the read_p() mfunc.
 	if (write.var(wp)->send_p()) { // only works for scalars
 	    int error = 0;
-	    status = write.var(wp)->read("dummy", error);
+	    status = write.var(wp)->read(dummy, error);
 	    if (error != -1)
 		status = false;
 
@@ -434,14 +450,19 @@ transmit(DDS &write, bool verb)
 		cout.flush();
 	    }
 
-	    status = write.var(wp)->serialize("dummy", write, sink, true);
+	    status = write.var(wp)->serialize(dummy, write, sink, true);
 	    if (!status) {
 		cerr << "Could not write";
 		write.var(wp)->print_decl(cerr);
 		exit(1);
 	    }
 
-	    status = read.var(rp)->deserialize(source);
+	    // The following line passes a pointer to a DDS into a mfunc that
+	    // expects a pointer to a DataDDS (which is accessed via a cast
+	    // for now). This works here only because this function -
+	    // transmit() - can only be used with scalar types which don't
+	    // use the DataDDS. jhrg 9/19/97.
+	    status = read.var(rp)->deserialize(source, &read);
 	    if (!status) {
 		cerr << "Could not read";
 		read.var(wp)->print_decl(cerr);
@@ -555,11 +576,13 @@ move_dds(FILE *in)
 // output stream, followed by the binary data.
 
 bool
-constrained_trans(const String &dds_name, const String &constraint) 
+constrained_trans(const String &dds_name, String dataset, 
+		  const String &constraint) 
 {
     bool status;
     FILE *pin, *pout;
-    DDS server;
+    DDS server;			// could use DataDDS, but no need when
+				// sending. 
 
     cout << "The complete DDS:" << endl;
     read_table(server, dds_name, true);
@@ -585,10 +608,21 @@ constrained_trans(const String &dds_name, const String &constraint)
     else
 	ce = constraint;
 
-    // send the variable given the constraint (dataset is ignored by the Test
-    // classes); TRUE flushes the I/O channel.
-    if (!server.send("dummy", ce, pout, false)) {
-	cerr << "Could not send the variable" << endl;
+    if (dataset == "") {
+	cout << "Data file:";
+	char c[256];
+	cin.getline(c, 255);
+	if (!cin) {
+	    cerr << "Could nore read the data file name" << endl;
+	    exit(1);
+	}
+	dataset = c;
+    }
+
+    // send the variable given the constraint; TRUE flushes the I/O channel.
+    // Currently only Sequence uses the `dataset' parameter.
+    if (!server.send(dataset, ce, pout, false)) {
+	cerr << "Could not send the DDS" << endl;
 	return false;
     }
 
@@ -600,7 +634,7 @@ constrained_trans(const String &dds_name, const String &constraint)
     // temporarily - the parser/scanner won't stop reading until an EOF is
     // found, this fixes that problem).
 
-    DDS dds;
+    DataDDS dds("Test_data", "DODS/2.15"); // Must use DataDDS on receving end
     FILE *dds_fp = move_dds(pin);
     DBG(cerr << "Moved the DDS to a temp file" << endl);
     if (!dds.parse(dds_fp)) {
@@ -616,12 +650,24 @@ constrained_trans(const String &dds_name, const String &constraint)
 
     cout << "The data:" << endl;
     for (Pix q = dds.first_var(); q; dds.next_var(q)) {
-	if (!dds.var(q)->deserialize(source))
+	// Currently the return status of deserialize can mean two things;
+	// and error (false) or no data for a variable matched the query
+	// (also false). This should be fixed in an upcomming release. jhrg
+	// 9/22/97. 
+	if (!dds.var(q)->deserialize(source, &dds))
 	    return false;
-
-	dds.var(q)->print_val(cout);
+	switch (dds.var(q)->type()) {
+	    // Sequences present a special case because I let
+	    // their semantics get out of hand... jhrg 9/12/96
+	  case dods_sequence_c:
+	    ((Sequence *)dds.var(q))->print_all_vals(cout, source, &dds);
+	    break;
+	  default:
+	    dds.var(q)->print_val(cout);
+	    break;
+	}
     }
-    
+
     delete_xdrstdio(source);
 
     return true;
