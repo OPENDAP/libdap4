@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.67  1998/09/08 22:27:11  jimg
+// Removed PERF macro.
+//
 // Revision 1.66  1998/06/04 06:29:11  jimg
 // Added two new member functions to set/get the new www_errors_to_stderr
 // property. This controls whether www errors (like host not found) are reported
@@ -372,7 +375,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.66 1998/06/04 06:29:11 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.67 1998/09/08 22:27:11 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -421,6 +424,7 @@ error to the data server maintainer or to support@dods.gso.uri.edu"};
 
 HTList *Connect::_conv = 0;
 
+#undef CATCH_SIG
 #ifdef CATCH_SIG
 #include <signal.h>
 
@@ -447,8 +451,8 @@ SetSignal(void)
 // This function is registered to handle the result of the request
 
 int 
-terminate_handler (HTRequest * request, HTResponse * /*response*/,
-		   void * /*param*/, int status) 
+http_terminate_handler (HTRequest * request, HTResponse * /*response*/,
+			void * /*param*/, int status) 
 {
     if (status != HT_LOADED) {
 	HTAlertCallback *cbf = HTAlert_find(HT_A_MESSAGE);
@@ -914,7 +918,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	HTError_setShow(HT_ERR_SHOW_FATAL);
 	
     // Add our own filter to update the history list.
-    HTNet_addAfter(terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
+    HTNet_addAfter(http_terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
 
     // We add our own parsers for content-description and -encoding so that
     // we can test for these fields and operate on the resulting document
@@ -1020,8 +1024,6 @@ Connect::move_dds(FILE *in)
 bool
 Connect::read_url(String &url, FILE *stream)
 {
-    PERF(cerr << "Entering read_url()" << endl);
-
     assert(stream);
 
     int status = YES;
@@ -1050,8 +1052,6 @@ Connect::read_url(String &url, FILE *stream)
     }
 
     HTRequest_delete(_request);
-
-    PERF(cerr << "Leaving read_url()" << endl);
 
     return status;
 }
