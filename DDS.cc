@@ -9,6 +9,15 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.35  1998/09/17 17:21:27  jimg
+// Changes for the new variable lookup scheme. Fields of ctor types no longer
+// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
+// that if there are two `f1's in a dataset, the first will be silently used;
+// There's no warning about the situation. The new code in the var member
+// function passes a stack of BaseType pointers so that the projection
+// information (send_p field) can be set properly.
+// Added exact_match and leaf_match.
+//
 // Revision 1.34  1998/03/19 23:36:58  jimg
 // Fixed calls to set_mime_*().
 // Removed old code (that was surrounded by #if 0 ... #endif).
@@ -179,7 +188,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.34 1998/03/19 23:36:58 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.35 1998/09/17 17:21:27 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -315,6 +324,30 @@ DDS::del_var(const String &n)
 	    pp = p;
 }
 
+BaseType *
+DDS::var(const String &n, btp_stack &s)
+{
+    for (Pix p = vars.first(); p; vars.next(p)) {
+	BaseType *btp = vars(p);
+	DBG(cerr << "Looking at " << n << " in: " << btp << endl);
+	// Look for the name in the dataset's top-level
+	if (btp->name() == n) {
+	    DBG(cerr << "Found " << n << " in: " << btp << endl);
+	    return btp;
+	}
+	if (btp->is_constructor_type()) {
+	    BaseType *btp2 = btp->var(n, s);
+	    if (btp2) {
+		s.push(btp);
+		return btp2;
+	    }
+	}
+    }
+
+
+    return 0;			// It is not here.
+}    
+
 // Find the variable named N. Accepts both simple names and *fully* qualified
 // aggregate names.
 //
@@ -323,6 +356,40 @@ DDS::del_var(const String &n)
 
 BaseType *
 DDS::var(const String &n)
+{
+    BaseType *v = exact_match(n);
+    if (v)
+	return v;
+
+    v = leaf_match(n);
+    if (v)
+	return v;
+
+    return 0;
+}
+
+BaseType *
+DDS::leaf_match(const String &n) 
+{
+    for (Pix p = vars.first(); p; vars.next(p)) {
+	BaseType *btp = vars(p);
+	DBG(cerr << "Looking at " << n << " in: " << btp << endl);
+	// Look for the name in the dataset's top-level
+	if (btp->name() == n) {
+	    DBG(cerr << "Found " << n << " in: " << btp << endl);
+	    return btp;
+	}
+	if (btp->is_constructor_type() && (btp = btp->var(n, false))) {
+	    return btp;
+	}
+    }
+
+
+    return 0;			// It is not here.
+}
+
+BaseType *
+DDS::exact_match(const String &n)
 {
     if (n.contains(".")) {
 	String name = (String)n; // cast away const
@@ -340,7 +407,7 @@ DDS::var(const String &n)
 	for (Pix p = vars.first(); p; vars.next(p)) {
 	    BaseType *btp = vars(p);
 	    DBG(cerr << "Looking at " << n << " in: " << btp << endl);
-	    // Look for the name in the dataset's top-level
+	    // Look for the name in the current ctor type or the top level
 	    if (btp->name() == n) {
 		DBG(cerr << "Found " << n << " in: " << btp << endl);
 		return btp;
@@ -887,6 +954,7 @@ DDS::mark(const String &n, bool state)
 	}
 	else if (state)
 	    variable->BaseType::set_send_p(state); // set iff state == true
+
 	field = field.after(".");
 
 	while (field.contains(".")) {
@@ -898,6 +966,7 @@ DDS::mark(const String &n, bool state)
 	    }
 	    else if (state)
 		variable->BaseType::set_send_p(state); // set iff state == true
+
 	    field = field.after(".");
 	}
 
@@ -906,12 +975,20 @@ DDS::mark(const String &n, bool state)
 	return true;		// marked field and its parents
     }
     else {
-	BaseType *variable = var(n);
+	btp_stack s;
+	BaseType *variable = var(n, s);
 	if (!variable) {
 	    DBG(cerr << "Could not find variable " << n << endl);
 	    return false;
 	}
 	variable->set_send_p(state);
+	
+	// Now check the btp_stack and run BaseType::set_send_p for every
+	// BaseType pointer on the stack.
+	while (!s.empty()) {
+	    s.top()->BaseType::set_send_p(state);
+	    s.pop();
+	}
 
 	return true;
     }
