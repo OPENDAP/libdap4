@@ -17,9 +17,13 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.13  1996/05/31 23:29:22  jimg
-/* Updated copyright notice.
+/* Revision 1.14  1997/01/13 16:56:21  jimg
+/* Changed the name of the private member `map' to `attr_map' to avoid a name
+/* collision with the STL'd map class.
 /*
+ * Revision 1.13  1996/05/31 23:29:22  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.12  1996/04/05 00:21:20  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
@@ -118,7 +122,7 @@ private:
 	StringXPlex attr;	// a vector of values. jhrg 12/5/94
     };
 
-    DLList<entry> map;
+    DLList<entry> attr_map;
     
     Pix find(const String &target);
 
@@ -141,9 +145,9 @@ public:
     String get_type(const char *name);
 
     unsigned int append_attr(const String &name, const String &type, 
-		     const String &value);
+			     const String &value);
     unsigned int append_attr(const char *name, const char *type, 
-			      const char *value);
+			     const char *value);
     // by default delete the last element of the attribute vector
     void del_attr(const String &name, int i = -1);
 

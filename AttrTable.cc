@@ -9,6 +9,10 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.15  1997/01/13 16:56:03  jimg
+// Changed the name of the private member `map' to `attr_map' to avoid a name
+// collision with the STL'd map class.
+//
 // Revision 1.14  1996/08/13 20:49:30  jimg
 // Added __unused__ to definition of char rcsid[].
 //
@@ -65,7 +69,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.14 1996/08/13 20:49:30 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.15 1997/01/13 16:56:03 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -84,25 +88,25 @@ AttrTable::AttrTable()
 Pix 
 AttrTable::first_attr()
 {
-    return map.first();
+    return attr_map.first();
 }
 
 void
 AttrTable::next_attr(Pix &p)
 {
-    map.next(p);
+    attr_map.next(p);
 }
 
 String
 AttrTable::get_name(Pix p)
 {
-    return map(p).name;
+    return attr_map(p).name;
 }
 
 String
 AttrTable::get_type(Pix p)
 {
-    return map(p).type;
+    return attr_map(p).type;
 }
 
 // Returns: The number of elements in the vector of attribute values.
@@ -113,14 +117,14 @@ AttrTable::get_type(Pix p)
 unsigned int 
 AttrTable::get_attr_num(Pix p)
 {
-    return map(p).attr.length();
+    return attr_map(p).attr.length();
 }
 unsigned int 
 AttrTable::get_attr_num(const String &name)
 {
     Pix p = find(name);
     if (p)
-        return map(p).attr.length();
+        return attr_map(p).attr.length();
     else
         return 0;
 }
@@ -129,7 +133,7 @@ AttrTable::get_attr_num(const char *name)
 {
     Pix p = find((String)name);
     if (p)
-        return map(p).attr.length();
+        return attr_map(p).attr.length();
     else
         return 0;
 }
@@ -142,7 +146,7 @@ AttrTable::get_attr_num(const char *name)
 String
 AttrTable::get_attr(Pix p, unsigned int i)
 {
-    return map(p).attr[i];
+    return attr_map(p).attr[i];
 }
 
 // Private mfunc that finds the entry with name == target. If TARGET is not
@@ -151,8 +155,8 @@ AttrTable::get_attr(Pix p, unsigned int i)
 Pix
 AttrTable::find(const String &target)
 {
-    for (Pix p = map.first(); p; map.next(p))
-	if (target == map(p).name)
+    for (Pix p = attr_map.first(); p; attr_map.next(p))
+	if (target == attr_map(p).name)
 	    return p;
     return 0;
 }
@@ -162,7 +166,7 @@ AttrTable::get_attr(const String &name, unsigned int i)
 {
     Pix p = find(name);
     if (p)
-	return map(p).attr[i];
+	return attr_map(p).attr[i];
     else
 	return (char *)0;
 }
@@ -172,7 +176,7 @@ AttrTable::get_attr(const char *name, unsigned int i)
 {
     Pix p = find((String)name);
     if (p)
-	return map(p).attr[i];
+	return attr_map(p).attr[i];
     else
 	return (char *)0;
 }
@@ -182,7 +186,7 @@ AttrTable::get_type(const String &name)
 {
     Pix p = find(name);
     if (p)
-	return map(p).type;
+	return attr_map(p).type;
     else
 	return (char *)0;
 }
@@ -192,7 +196,7 @@ AttrTable::get_type(const char *name)
 {
     Pix p = find((String)name);
     if (p)
-	return map(p).type;
+	return attr_map(p).type;
     else
 	return (char *)0;
 }
@@ -213,7 +217,7 @@ AttrTable::append_attr(const String &name, const String &type,
     if (p && get_type(p) != type)
 	return 0;		// error:same name but diff type
     else if (p)
-	return map(p).attr.add_high(attr) + 1; // new variable
+	return attr_map(p).attr.add_high(attr) + 1; // new variable
     else {
 	entry e;
 
@@ -221,7 +225,7 @@ AttrTable::append_attr(const String &name, const String &type,
 	e.type = type;
 	unsigned int len = e.attr.add_high(attr) + 1;
 
-	map.append(e);
+	attr_map.append(e);
     
 	return len;		// return the length of the attr XPlex
     }
@@ -247,11 +251,11 @@ AttrTable::del_attr(const String &name, int i)
     Pix p = find(name);
     if (p) {
 	if (i == -1) {		// Delete the whole attribute
-	    map.prev(p);	// p now points to the previous element
-	    map.del_after(p);	// ... delete the following element
+	    attr_map.prev(p);	// p now points to the previous element
+	    attr_map.del_after(p);	// ... delete the following element
 	}
 	else {			// Delete one element from attribute array
-	    StringXPlex &sxp = map(p).attr;
+	    StringXPlex &sxp = attr_map(p).attr;
 		
 	    assert(i >= 0 && i < sxp.fence());
 	    for (int j = i+1; j < sxp.fence(); ++j)
@@ -265,10 +269,10 @@ AttrTable::del_attr(const String &name, int i)
 void
 AttrTable::print(ostream &os, String pad)
 {
-    for(Pix p = map.first(); p; map.next(p)) {
-	os << pad << map(p).type << " " << map(p).name << " " ;
+    for(Pix p = attr_map.first(); p; attr_map.next(p)) {
+	os << pad << attr_map(p).type << " " << attr_map(p).name << " " ;
 
-	StringXPlex &sxp = map(p).attr;
+	StringXPlex &sxp = attr_map(p).attr;
 
 	for (int i = 0; i < sxp.high(); ++i)
 	    os << sxp[i] << ", ";
