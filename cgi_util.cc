@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.40  2000/03/28 16:36:08  jimg
+// Removed code that sent bad dates in the response header. Also removed code
+// that sent a Cache-Control: no-cache header.
+//
 // Revision 1.39  2000/01/27 06:29:58  jimg
 // Resolved conflicts from merge with release-3-1-4
 //
@@ -198,7 +202,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.39 2000/01/27 06:29:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.40 2000/03/28 16:36:08 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -536,7 +540,12 @@ rfc822_date(const time_t *t)
 
     sprintf(d, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday], 
 	    stm->tm_mday, months[stm->tm_mon], 
+#if 0
+	    // On Solaris 2.7 this tm_year is years since 1900. 3/17/2000
+	    // jhrg
 	    stm->tm_year < 100 ? 1900 + stm->tm_year : stm->tm_year, 
+#endif
+	    1900 + stm->tm_year,
 	    stm->tm_hour, stm->tm_min, stm->tm_sec);
     return d;
 }
@@ -600,7 +609,10 @@ set_mime_binary(ostream &os, ObjectType type, const string &ver,
     if (enc != x_plain) {
 	// Until we fix the bug in the cache WRT compressed data, supress
 	// caching for those requests. 11/30/99 jhrg
+#if 0
        	os << "Cache-Control: no-cache" << endl;
+#endif
+	// Fixed the bug in the libwww. 3/17/2000 jhrg
 	os << "Content-Encoding: " << encoding[enc] << endl;
     }
     os << endl;
