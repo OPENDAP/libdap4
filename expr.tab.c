@@ -25,7 +25,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.31 2003/01/27 18:12:55 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.32 2003/02/03 16:47:05 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -317,7 +317,7 @@ static const short yycheck[] =
        9
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 3 "/usr/share/bison/bison.simple"
 
 /* Skeleton output parser for bison,
 
@@ -630,7 +630,7 @@ yystpcpy (yydest, yysrc)
 # endif
 #endif
 
-#line 315 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 315 "/usr/share/bison/bison.simple"
 
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -1321,7 +1321,7 @@ case 32:
     break;}
 }
 
-#line 705 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 705 "/usr/share/bison/bison.simple"
 
 
   yyvsp -= yylen;
@@ -2191,8 +2191,8 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.31  2003/01/27 18:12:55  pwest
- * Updating tests files, including in dap configure. Removed dap_templates.cc
+ * Revision 1.32  2003/02/03 16:47:05  jimg
+ * Darn grammar files... Generated files should not be in CVS!
  *
  * Revision 1.44  2003/01/23 00:22:25  jimg
  * Updated the copyright notice; this implementation of the DAP is

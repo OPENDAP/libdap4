@@ -1,5 +1,5 @@
 
-$Id: README,v 1.13 2003/01/23 00:22:24 jimg Exp $
+$Id: README,v 1.14 2003/02/03 16:47:05 jimg Exp $
 
 WHAT'S IN THIS DIRECTORY?
 
@@ -47,6 +47,4 @@ COPYRIGHT INFORMATION
   file COPYING or contact the Free Software Foundation, Inc., at 59 Temple
   Place, Suite 330, Boston, MA 02111-1307 USA. Older versions of the DAP were
   copyrighted by the University of Rhode Island and Massachusetts Institute
-  of Technology; see the file COPYRIGHT_URI. Finally, two files are
-  derivatives of work done by the World Wide Web Consortium; see
-  COPYRIGHT_W3C.
+  of Technology; see the file COPYRIGHT_URI.

@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.39 2003/01/27 18:12:55 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.40 2003/02/03 16:47:05 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -334,7 +334,7 @@ static const short yycheck[] =
       13,    14,    15,    16,    17,    18
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 3 "/usr/share/bison/bison.simple"
 
 /* Skeleton output parser for bison,
 
@@ -647,7 +647,7 @@ yystpcpy (yydest, yysrc)
 # endif
 #endif
 
-#line 315 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 315 "/usr/share/bison/bison.simple"
 
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
@@ -1367,7 +1367,7 @@ case 58:
     break;}
 }
 
-#line 705 "/twilek/d/pwest/local/share/bison/bison.simple"
+#line 705 "/usr/share/bison/bison.simple"
 
 
   yyvsp -= yylen;
@@ -1666,8 +1666,8 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.39  2003/01/27 18:12:55  pwest
- * Updating tests files, including in dap configure. Removed dap_templates.cc
+ * Revision 1.40  2003/02/03 16:47:05  jimg
+ * Darn grammar files... Generated files should not be in CVS!
  *
  * Revision 1.40  2003/01/23 00:22:24  jimg
  * Updated the copyright notice; this implementation of the DAP is
