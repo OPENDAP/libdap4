@@ -8,6 +8,21 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.41  1996/11/25 03:37:34  jimg
+// Added USE_SEM control macro - since asynchronous connects are massively
+// broken the semaphores are not used.
+// The _connects field is not initialized to -1 and handled so that
+// HTLibTerminate() is never called but so that the web library is initialized
+// before the first use of connect. Apparently calling HTLibInit() more than
+// once (even with an interleaving call to HTLibTerminate()) breaks the 5.0a
+// version of the library.
+// Added the constant web_error the the set of content-descriptions.
+// Removed use of the disk cache. Added it in later; read_url() must be
+// modified.
+// Never use the broken asynchronous code.
+// Fixed processing of content-description so that web-error and dods-error
+// messages are handled correctly.
+//
 // Revision 1.40  1996/11/22 00:14:38  jimg
 // Removed decompress() function.
 // Switched to decompressor function in util.cc
@@ -233,7 +248,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.40 1996/11/22 00:14:38 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.41 1996/11/25 03:37:34 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -257,10 +272,12 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.40 1996/11/22 00:14:38 jim
 #include <strstream.h>
 #include <fstream.h>
 
+#define DODS_PERF 1
 #include "debug.h"
 #include "Connect.h"
 
 #define SHOW_MSG (WWWTRACE || HTAlert_interactive())
+#define DODS_KEEP_TEMP 0
 
 #if defined(__svr4__)
 #define CATCH_SIG
@@ -291,21 +308,13 @@ const int SEM_KEY = 123456L;
 const int SEM_PERMS = 0666;
 #endif /* USE_SEM */
 
-// In cases where the DODS libraries are not linked with g++ this code won't
-// work properly; dods_root may be NULL or (worse) undefined. jhrg 9/19/96.
-
-static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
-    : DODS_ROOT;
-
 // Constants used for temporary files.
 
 static const char DODS_PREFIX[]={"dods"};
 static const int DEFAULT_TIMEOUT = 100; // Timeout in seconds.
 static int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
 
-// Initially, _connects is -1 to indicate that no connection has been made
-// (and thus that the WWW library has not yet been inititalize). Once
-// _connects is > -1 there is no need to initialize the WWW library.
+// Initially, _connects is -1 to indicate that no connection has been made.
 
 int Connect::_connects = -1;
 String Connect::_logfile = "";
@@ -528,8 +537,21 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 
     if (WWWTRACE) cerr << "dods_error_print: Generating message" << endl;
 
+    if (request) {
+	Connect *me = (Connect *)HTRequest_context(request);
+	me->_type = web_error;
+    }
+
+    if (!request)
+	if (WWWTRACE) cerr << "dods_error_print: request NULL" << endl;
+
+    if (!cur)
+	if (WWWTRACE) cerr << "dods_error_print: cur NULL" << endl;
+
+#if 1
     if (!request || !cur) 
 	return NO;
+#endif
 
     while ((pres = (HTError *) HTList_nextObject(cur))) {
         int index = HTError_index(pres);
@@ -621,6 +643,8 @@ get_type(String value)
 	return dods_data;
     else if (value == "dods_error")
 	return dods_error;
+    else if (value == "web_error")
+	return web_error;
     else
 	return unknown_type;
 }
@@ -714,6 +738,9 @@ Connect::www_lib_init()
 
     // Initiate W3C Reference Library with a client profile.
     HTProfile_newPreemptiveClient(CNAME, CVER);
+
+    // Disable the cache.
+    HTCacheTerminate();
 
     // Add progress notification, etc.
     HTAlert_add(dods_progress, HT_A_PROGRESS);
@@ -831,6 +858,8 @@ Connect::move_dds(FILE *in)
 bool
 Connect::read_url(String &url, FILE *stream)
 {
+    PERF(cerr << "Entering read_url()" << endl);
+
     assert(stream);
 
     int status = YES;
@@ -856,6 +885,8 @@ Connect::read_url(String &url, FILE *stream)
     }
 
     HTRequest_delete(_request);
+
+    PERF(cerr << "Leaving read_url()" << endl);
 
     return status;
 }
@@ -890,7 +921,7 @@ Connect::Connect(String name)
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
-       	if (_connects == -1) {
+       	if (_connects < 0) {
 	    www_lib_init();
 	    _connects = 1;
 	}
@@ -963,8 +994,17 @@ Connect::~Connect()
     _connects--;
     
     // If this is the last connect, close the log file.
-    if (_connects == 0 &&_logfile != "") 
-	HTLog_close();
+    if (_connects == 0) {
+	if (_logfile != "") 
+	    HTLog_close();
+
+#if 0
+	// Replace this with code to flush the cache once that is being used.
+	// It *appears* from the code (HTLib.c) that this function is mostly
+	// for PC users. jhrg 11/24/96
+	HTLibTerminate();
+#endif
+    }
 
     close_output();
 
@@ -984,6 +1024,11 @@ Connect::operator=(const Connect &rhs)
 
 // Dereference the URL and dump its contents into _OUTPUT. Note that
 // read_url() does the actual dereferencing; this sets up the _OUTPUT sink.
+//
+// Due to a bug in the asynchorous code which makes it fail when used with
+// compression, I'm forcing all accesses to be synchronous. Note that given
+// the design of Connect, the caller of fetch_url will never know that their
+// async operation was actually synchronous.
 
 bool
 Connect::fetch_url(String &url, bool async = false)
@@ -992,7 +1037,13 @@ Connect::fetch_url(String &url, bool async = false)
     _encoding = unknown_enc;
     _type = unknown_type;
 
+    // HACK, Fix the asynchronous + compression bug and re-enable
+    // asynchronous connects.
+    async = false;
+
     if (!async) {
+	PERF(cerr << "Entering fetch_url() [synchronous]" << endl);
+
 	char *c = tempnam(NULL, DODS_PREFIX);
 	FILE *stream = fopen(c, "w+"); // Open truncated for update.
 	if (!keep_temps)
@@ -1018,9 +1069,13 @@ Connect::fetch_url(String &url, bool async = false)
 	    _output = stream;
 	}
 
+	PERF(cerr << "Leaving fetch_url() [synchronous]" << endl);
+
 	return true;
     }
     else {
+	PERF(cerr << "Entering fetch_url() [async]" << endl);
+
 	int pid, data[2];
 #if USE_SEM
 	int semaphore = semget(SEM_KEY, 1, IPC_CREAT | SEM_PERMS);
@@ -1068,6 +1123,7 @@ Connect::fetch_url(String &url, bool async = false)
 		return false;
 	    }
 #endif
+
 	    if (encoding() == x_gzip) {
 		_output = decompressor(stream);
 		if (!_output)
@@ -1086,14 +1142,22 @@ Connect::fetch_url(String &url, bool async = false)
 		return false;
 	    }
 #endif
+	    PERF(cerr << "Leaving fetch_url() [async, parent]" << endl);
 	    
 	    return true;
 	}
 	else {
 	    close(data[0]);
-	    _output = fdopen(data[1], "w");
-	    if (!_output)  {
+	    FILE *stream = fdopen(data[1], "w");
+	    if (!stream)  {
 		cerr << "Child process could not open IPC channel" << endl;
+		_exit(127);
+	    }
+
+	    bool status = read_url(url, stream);
+	    if (!status) {
+		cerr << "Child process could not read data from the URL"
+		     << endl;
 		_exit(127);
 	    }
 
@@ -1105,13 +1169,6 @@ Connect::fetch_url(String &url, bool async = false)
 		return false;
 	    }
 #endif
-
-	    bool status = read_url(url, _output);
-	    if (!status) {
-		cerr << "Child process could not read data from the URL"
-		     << endl;
-		_exit(127);
-	    }
 
 	    exit(0);		// successful completion
 	}
@@ -1162,24 +1219,30 @@ Connect::request_das(bool gui_p = false, const String &ext = "das")
     String value;
 
     status = fetch_url(das_url);
-
-    if (!status) {
+    if (!status)
 	goto exit;
-    }
 
-    if (type() == dods_error) {
-	if (!_error.parse(_output)) {
-	    cerr << "Could not parse error object" << endl;
-	    status = false;
-	    goto exit;
-	}
-	    
-	String correction = _error.correct_error(gui());
-	// put the test for various error codes here
+    switch (type()) {
+      case dods_error: {
+	  String correction;
+	  if (!_error.parse(_output)) {
+	      cerr << "Could not parse error object" << endl;
+	      status = false;
+	  }
+	  correction = _error.correct_error(gui());
+	  status = false;
+	  break;
+      }
+
+      case web_error:
 	status = false;
-    }
-    else
+	break;
+
+      case dods_das:
+      default:
 	status = _das.parse(_output); // read and parse the das from a file 
+	break;
+    }
 
 exit:
     close_output();
@@ -1197,23 +1260,32 @@ Connect::request_dds(bool gui_p = false, const String &ext = "dds")
     bool status = false;
 
     status = fetch_url(dds_url);
-
     if (!status)
-	return false;
+	goto exit;
     
-    if (type() == dods_error) {
-	if (!_error.parse(_output)) {
-	    cerr << "Could not parse error object" << endl;
-	    status = false;
-	    goto exit;
-	}
-	    
-	String correction = _error.correct_error(gui());
-	// put the test for various error codes here
+    switch (type()) {
+      case dods_error: {
+	  if (!_error.parse(_output)) {
+	      cerr << "Could not parse error object" << endl;
+	      status = false;
+#if 0
+	      goto exit;
+#endif
+	  }
+	  String correction = _error.correct_error(gui());
+	  status = false;
+	  break;
+      }
+	
+      case web_error:
 	status = false;
-    }
-    else
+	break;
+
+      case dods_dds:
+      default:
 	status = _dds.parse(_output); // read and parse the dds from a file 
+	break;
+    }
 
 exit:
     close_output();
