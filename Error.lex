@@ -41,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.lex,v 1.11 2003/04/22 19:40:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.lex,v 1.12 2003/12/08 18:02:29 edavis Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -139,6 +139,9 @@ store_string()
 
 /* 
  * $Log: Error.lex,v $
+ * Revision 1.12  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
  * Revision 1.11  2003/04/22 19:40:27  jimg
  * Merged with 3.3.1.
  *

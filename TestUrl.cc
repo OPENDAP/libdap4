@@ -37,9 +37,21 @@
 #pragma implementation
 #endif
 
+#include "config_dap.h"
+
 #include <string>
 
+#ifndef WIN32
+#include <unistd.h>
+#else
+#include <io.h>
+#include <fcntl.h>
+#include <process.h>
+#endif
+
 #include "TestUrl.h"
+
+extern int test_variable_sleep_interval;
 
 Url *
 NewUrl(const string &n)
@@ -63,6 +75,9 @@ TestUrl::read(const string &)
     if (read_p())
 	return true;
 
+    if (test_variable_sleep_interval > 0)
+	sleep(test_variable_sleep_interval);
+
     string url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
 
     val2buf(&url_test);
@@ -73,6 +88,16 @@ TestUrl::read(const string &)
 }
 
 // $Log: TestUrl.cc,v $
+// Revision 1.21  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.20.2.2  2003/08/17 20:41:05  rmorris
+// include config_dap.h, just like all the other tests.  Now
+// strickly needed under win32 for pickup #define for sleep().
+//
+// Revision 1.20.2.1  2003/07/23 23:56:36  jimg
+// Now supports a simple timeout system.
+//
 // Revision 1.20  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

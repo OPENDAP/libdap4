@@ -35,6 +35,8 @@
 
 #include "TestGrid.h"
 
+extern int test_variable_sleep_interval;
+
 Grid *
 NewGrid(const string &n)
 {
@@ -77,6 +79,12 @@ TestGrid::read(const string &dataset)
 }
 
 // $Log: TestGrid.cc,v $
+// Revision 1.20  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.19.2.1  2003/07/23 23:56:36  jimg
+// Now supports a simple timeout system.
+//
 // Revision 1.19  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

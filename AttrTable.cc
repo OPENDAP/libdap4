@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.40 2003/05/30 16:54:53 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.41 2003/12/08 18:02:29 edavis Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -308,20 +308,19 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
 }
 
 /** Look for an attribute or an attribute container. If used to search
-    for an attribute container, this method returns the container's {\it
-    parent} using the value-result parameter #at# and a reference to the
+    for an attribute container, this method returns the container's \e
+    parent using the value-result parameter \c at and a reference to the
     container using the Pix return value. If used to search for an
-    attribute, the attribute's container is returned using #at#; the
+    attribute, the attribute's container is returned using \c at; the
     attribute itself can be accessed using the Pix return value.
 
     @param target The name (using dot notation) of the attribute or
     container to find.
     @param at A value-result used to return the attribute container in
-    which #target# was found. Null if #target# was not found.
-    @param iter The itereator which will reference the attribute found
-    which can be used to access #target# from within #at#. References
-    dim_end() within #at# if the attribute or container does not exist. */
-
+    which \c target was found. Null if \c target was not found.
+    @param iter The itereator which will reference the attribute found.
+    Can be used to access \c target from within \c at. References
+    dim_end() within \c at if the attribute or container does not exist. */
 void
 AttrTable::find( const string &target, AttrTable **at, Attr_iter &iter )
 {
@@ -346,6 +345,12 @@ AttrTable::find( const string &target, AttrTable **at, Attr_iter &iter )
 }
 
 // Private
+/** Look in this AttrTable for the attribute called \c name. If found return
+    an Attr_iter which references it, otherwise return the end iterator for
+    this AttrTable.
+    
+    @param target The name of the attribute. 
+    @return An Attr_iter which references \c target. */
 AttrTable::Attr_iter
 AttrTable::simple_find( const string &target, bool )
 {
@@ -565,7 +570,7 @@ AttrTable::simple_find(const string &target)
 
 /** @brief Get a reference to the first entry in this attribute table. 
     @return Pix; returns null if there's nothing in the list. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 Pix 
 AttrTable::first_attr()
 {
@@ -578,7 +583,7 @@ AttrTable::first_attr()
     there are no more elements in the list.
     @brief Increment a Pix pointer into the attribute table.
     @param p Pix to advance. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 void
 AttrTable::next_attr(Pix p)
 {
@@ -597,7 +602,7 @@ AttrTable::attr(Pix p)
 }
 
 /** @brief Returns the name of the attribute table. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 string
 AttrTable::get_name(Pix p)
 {
@@ -607,7 +612,7 @@ AttrTable::get_name(Pix p)
 }
 
 /** @brief Returns true if the attribute is a container. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 bool
 AttrTable::is_container(Pix p)
 {
@@ -621,7 +626,7 @@ AttrTable::is_container(Pix p)
     @brief Return an attribute container.
     @param p Reference to a table contained by this object.
     @return The child attribute table. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 AttrTable *
 AttrTable::get_attr_table(Pix p)
 {
@@ -633,7 +638,7 @@ AttrTable::get_attr_table(Pix p)
 /** @brief Get the type name of an attribute.
     @param p
     @return A string with the name of this attribute datatype. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 string
 AttrTable::get_type(Pix p)
 {
@@ -645,7 +650,7 @@ AttrTable::get_type(Pix p)
 /** @brief Get the type of an attribute.
     @param p
     @return The datatype of this attribute in an instance of AttrType. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 AttrType
 AttrTable::get_attr_type(Pix p)
 {
@@ -661,7 +666,7 @@ AttrTable::get_attr_type(Pix p)
     @return The number of elements in the attribute.
     @brief Get the number of attributes in this container.
 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 unsigned int 
 AttrTable::get_attr_num(Pix p)
 {
@@ -688,7 +693,7 @@ AttrTable::get_attr_num(Pix p)
     @return If the indicated attribute is a container, this function
     returns the string ``None''. If using a name to refer to the attribute
     and the named attribute does not exist, return the empty string. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated. */
 string
 AttrTable::get_attr(Pix p, unsigned int i)
 {
@@ -709,7 +714,8 @@ AttrTable::get_attr(Pix p, unsigned int i)
     program. 
     @brief Get the value of an attribute.
 
-    @deprecated */
+    @todo Rewrite this to use the iterator methods.
+    */
 string
 AttrTable::get_attr(const string &name, unsigned int i)
 {
@@ -729,7 +735,7 @@ AttrTable::get_attr(const string &name, unsigned int i)
     @return If the indicated attribute is a container, this function
     returns the null pointer.  Otherwise returns a pointer to the
     the attribute vector value. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated.*/
 vector<string> *
 AttrTable::get_attr_vector(Pix p)
 {
@@ -752,7 +758,7 @@ AttrTable::get_attr_vector(Pix p)
     @return A Pix which can be used to access <tt>target</tt> from
     within <tt>at</tt>. 
     Null if the attribute or container does not exist. 
-    @deprecated */
+    @deprecated All methods which use or return Pix objects are deprecated.*/
 Pix 
 AttrTable::find(const string &target, AttrTable **at)
 {
@@ -803,7 +809,7 @@ AttrTable::get_attr_iter(int i)
     return attr_map.begin() + i;
 }
 
-/** Returns the name of the attribute referenced by #iter#. */
+/** Returns the name of the attribute referenced by \e iter. */
 string
 AttrTable::get_name( Attr_iter &iter )
 {
@@ -812,14 +818,14 @@ AttrTable::get_name( Attr_iter &iter )
     return (*iter)->name ;
 }
 
-/** Returns true if the attribute referenced by #iter# is a container. */
+/** Returns true if the attribute referenced by \e iter is a container. */
 bool
 AttrTable::is_container( Attr_iter &i )
 {
     return (*i)->type == Attr_container ;
 }
 
-/** Get the attribute container referenced by #iter#. If no
+/** Get the attribute container referenced by \e iter. If no
     such container exists, then return a reference to the end of the
     table.
     @param iter Reference to a table contained by this object.
@@ -831,8 +837,8 @@ AttrTable::get_attr_table( Attr_iter &iter )
     return (*iter)->type == Attr_container ? (*iter)->attributes : 0 ;
 }
 
-/** Get the type name of an attribute referenced by #iter#.
-    @param iter
+/** Get the type name of an attribute referenced by \e iter.
+    @param iter Reference to the Attribute.
     @return A string with the name of this attribute datatype. */
 string
 AttrTable::get_type( Attr_iter &iter )
@@ -841,7 +847,7 @@ AttrTable::get_type( Attr_iter &iter )
     return AttrType_to_String( (*iter)->type ) ;
 }
 
-/** Get the type of the attribute referenced by #iter#.
+/** Get the type of the attribute referenced by \e iter.
     @param iter
     @return The datatype of this attribute in an instance of AttrType. */
 AttrType
@@ -850,8 +856,8 @@ AttrTable::get_attr_type( Attr_iter &iter )
     return (*iter)->type ;
 }
 
-/** If the attribute referenced by #iter# is a container attribute, this
-    method returns the number of attributes in {\it its} attribute table.
+/** If the attribute referenced by \e iter is a container attribute, this
+    method returns the number of attributes in its attribute table.
     If the indicated attribute is not a container, the method returns the 
     number of values for the attribute (1 for a scalar attribute, N for a 
     vector attribute value).
@@ -868,9 +874,9 @@ AttrTable::get_attr_num( Attr_iter &iter )
 
 /** Returns the value of an attribute. If the attribute has a vector
     value, you can indicate which is the desired value with the index
-    argument, #i#. If the argument is omitted, the first value is
+    argument, \e i. If the argument is omitted, the first value is
     returned. If the attribute has only a single value, the index
-    argument is ignored. If #i# is greater than the number of
+    argument is ignored. If \e i is greater than the number of
     elements in the attribute, an error is produced.
 
     All values in an attribute table are stored as string data. They may
@@ -896,13 +902,13 @@ AttrTable::get_attr(const char *name, unsigned int i)
 }
 
 /** Returns a pointer to the vector of values associated with the
-    attribute referenced by iterator #iter#. 
+    attribute referenced by iterator \e iter.
 
     Note that all values in an attribute table are stored as string data.
     They may be converted to a more appropriate internal format by the
     calling program.
 
-    @param iter
+    @param iter Reference to the Attribute.
     @return If the indicated attribute is a container, this function
     returns the null pointer.  Otherwise returns a pointer to the
     the attribute vector value. */
@@ -942,9 +948,11 @@ AttrTable::add_container_alias(const string &name, AttrTable *src)
     attr_map.push_back(e);
 }
 
-// Assume #source# names an attribute value in some container. Add an alias
-// #name# for that value in this object.
-/** @brief Add an alias to an attribute held by this attribute table.
+/** Assume \e source names an attribute value in some container. Add an alias
+    \e name for that value in this object.
+
+    @brief Add an alias for an attribute.
+
     @param das 
     @param name The name of the alias. May <i>not</i> use dot notation.
     @param source The name of the attribute to alias. May use dot
@@ -1012,7 +1020,9 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     @brief Adds an alias to the set of attributes.  
     @name attr_alias()
     @see get_attr_table
-    @deprecated 
+    @deprecated The current alias design is flawed. It is impossible to map
+    this onto the XML implementation where the DAS and DDS information are
+    combined in one object.
     @param alias The alias to insert into the attribute table.
     @param name The name of the already-existing attribute to which
     the alias will refer.
@@ -1024,7 +1034,10 @@ AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
     return true;
 }
 
-/** @deprecated
+/** @deprecated The current alias design is flawed. It is impossible to map
+    this onto the XML implementation where the DAS and DDS information are
+    combined in one object.
+
     @param alias The alias to insert into the attribute table.
     @param name The name of the already-existing attribute to which
     the alias will refer. */
@@ -1052,7 +1065,15 @@ AttrTable::erase()
 
 /** A simple printer that does nothing fancy with aliases.
     Protected.
-    @deprecated
+
+    @deprecated Using the C++ iostream class is deprecated in favor of the
+    older C stdio code because of problem with some implementations of
+    iostream and because our software needs to use FILE pointers for binary
+    I/O. Using one I/O system simplifies the implementation. The prohibition
+    against iostream extends only to the I/O which returns response objects
+    (or may contribute to that) but in some places we've gone ahead and
+    replaces iostream with stdio just to keep the code similar. 
+
     @see simple_print(FILE *out, string pad, Attr_iter &i, bool dereference);
 */
 void
@@ -1117,6 +1138,8 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter &i,
 /** Prints an ASCII representation of the attribute table to the
     indicated output stream. The <tt>pad</tt> argument is prefixed to each
     line of the output to provide control of indentation.
+
+    @deprecated Using the C++ iostream class is deprecated.
 
     @brief Prints an attribute table.
     @param os Print to the given output stream.
@@ -1230,6 +1253,12 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.41  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.38.2.1  2003/09/06 22:37:50  jimg
+// Updated the documentation.
+//
 // Revision 1.40  2003/05/30 16:54:53  jimg
 // get_name() is now a const method. Added alias support to the print_xml()
 // method.

@@ -36,9 +36,12 @@
 
 #include "config_dap.h"
 
-#include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #ifdef WIN32
 #define FALSE 0
@@ -74,13 +77,13 @@ static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
     default .dodsrc file. Nominally this will use the defaults for each thing
     that might be read from the configuration file. */
 
-void  
-RCReader::write_rc_file()
+bool
+RCReader::write_rc_file(const string &pathname)
 {
-    DBG(cerr << "Writing the RC file to " << cifp << endl);
-    ofstream fpo(cifp.c_str());
+    DBG(cerr << "Writing the RC file to " << pathname << endl);
+    ofstream fpo(pathname.c_str());
 
-    // If the  couldn't be created.  Nothing needs to be done here,
+    // If the file couldn't be created.  Nothing needs to be done here,
     // the program will simply use the defaults.
 
     if (fpo) {
@@ -92,7 +95,7 @@ RCReader::write_rc_file()
 	fpo << "MAX_CACHE_SIZE=" <<_dods_cache_max  << endl;
 	fpo << "MAX_CACHED_OBJ=" << _dods_cached_obj << endl;
 	fpo << "IGNORE_EXPIRES=" << _dods_ign_expires  << endl;
-	fpo << "CACHE_ROOT=" << cache_root << endl;
+	fpo << "CACHE_ROOT=" << d_cache_root << endl;
 	fpo << "DEFAULT_EXPIRES=" <<_dods_default_expires << endl;
 	fpo << "ALWAYS_VALIDATE=" << _dods_always_validate << endl;
 	fpo << "# Request servers compress responses if possible?" << endl;
@@ -110,15 +113,19 @@ RCReader::write_rc_file()
 	    << _dods_no_proxy_for_proxy_host << endl;
 	fpo << "# AIS_DATABASE=<file or url>" << endl;
 	fpo.close();
+
+	return true;
     }
+    
+    return false;
 }
 
-void 
-RCReader::read_rc_file()
+bool
+RCReader::read_rc_file(const string &pathname)
 {
-    DBG(cerr << "Reading the RC file from " << cifp << endl);
+    DBG(cerr << "Reading the RC file from " << pathname << endl);
 
-    ifstream fpi(cifp.c_str());
+    ifstream fpi(pathname.c_str());
     if (fpi) {
 	// The file exists and we may now begin to parse it.  
 	// Defaults are already stored in the variables, if the correct
@@ -159,9 +166,9 @@ RCReader::read_rc_file()
 		_dods_deflate= atoi(value) ? true : false;
 	    } else if ((strncmp(tempstr, "CACHE_ROOT", 10) == 0)
 		       && tokenlength == 10) {
-		cache_root = value;
-		if (cache_root[cache_root.length() - 1] !=
-		    DIR_SEP_CHAR) cache_root += string(DIR_SEP_STRING);
+		d_cache_root = value;
+		if (d_cache_root[d_cache_root.length() - 1] != DIR_SEP_CHAR) 
+		    d_cache_root += string(DIR_SEP_STRING);
 	    } else if ((strncmp(tempstr, "DEFAULT_EXPIRES", 15) == 0)
 		       && tokenlength == 15) {
 		_dods_default_expires= atoi(value);
@@ -258,14 +265,11 @@ RCReader::read_rc_file()
 	tempstr = 0;
     
 	fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
+	
+	return true;
     }  // End of cache file parsing.
 
-    // I think this is here to clean up if the previous access exited w/o
-    // removing the lock. 6/27/2002 jhrg
-    if (_dods_use_cache) {
-	lockstr = cache_root + string(".lock");
-	remove(lockstr.c_str());
-    }
+    return false;
 }
 
 // This function deletes the object which calls the destructor. In this case
@@ -278,20 +282,72 @@ rcreader_clean()
 	RCReader::_instance = 0;
     }
 }
-  
+
+// Helper for check_env_var(). This is its main logic, separated out for the
+// cases under WIN32 where we don't use an environment variable.  09/19/03
+// jhrg 
+string
+RCReader::check_string(string env_var)
+{
+    struct stat stat_info;
+
+    if (stat(env_var.c_str(), &stat_info) != 0)
+	return "";		// ENV VAR not a file or dir, bail
+
+    if (S_ISREG(stat_info.st_mode))
+	return env_var;		// ENV VAR is a file, use it
+
+    // ENV VAR is a directory, does it contain .dodsrc? Can we create
+    // .dodsrc if it's not there?
+    if (S_ISDIR(stat_info.st_mode)) {
+	if (*env_var.rbegin() != DIR_SEP_CHAR)	// Add trailing / if missing
+	    env_var += DIR_SEP_STRING;
+	// Trick: set d_cache_root here in case we're going to create the
+	// .dodsrc later on. If the .dodsrc file exists, its value will
+	// overwrite this value, if not write_rc_file() will use the correct
+	// value. 09/19/03 jhrg
+	d_cache_root = env_var + string(".dods_cache") + DIR_SEP_STRING;
+	env_var += ".dodsrc";
+	if (stat(env_var.c_str(), &stat_info) == 0 &&
+	    S_ISREG(stat_info.st_mode))
+	    return env_var; // Found .dodsrc in ENV VAR
+
+	// Didn't find .dodsrc in ENV VAR and ENV VAR is a directory; try to
+	// create it. Note write_rc_file uses d_cache_root (set above) when
+	// it creates the RC file's contents.
+	if (write_rc_file(env_var))
+	    return env_var;
+    }
+
+    // If we're here, then we've not found or created the RC file.
+    return "";
+}
+
+/** Examine an environment variable. If the env variable is set, then If
+    this is the name of a file, use that as the name of the RC file. If this
+    is the name of a directory, look in that directory for a file called
+    .dodsrc. If there's no such file, create it using default values for its
+    parameters. In the last case, write the .dodsrc so that the .dods_cache
+    directory is located in the directory named by DODS_CONF.
+
+    @return The pathname to the RC file or "" if another variable/method
+    should be used to find/create the RC file. */
+string 
+RCReader::check_env_var(const string &variable_name) 
+{ 
+    char *ev = getenv(variable_name.c_str());
+    if (!ev || strlen(ev) == 0)
+	return "";
+    
+    return check_string(ev);
+}
+
 RCReader::RCReader()
 {
     atexit(rcreader_clean);
   
-    lockstr = "";	        // Lock file path
-    cifp = "";			// RC file path
-    cache_root = "";		// Location of actual cache.
-    homedir = "";	        // Cache init file path
-    tmpdir = "";		// Fallback position for cache files.
-
-    // Assume it will be able to get a cache file
-    _has_rc_file=true;
-    _can_create_rc_file=true;
+    d_rc_file_path = "";
+    d_cache_root = "";
 
     // ** Set default values **
     // Users must explicitly turn caching on.
@@ -302,7 +358,7 @@ RCReader::RCReader()
     _dods_default_expires= 86400;
     _dods_always_validate=0;
 
-    _dods_deflate=1;
+    _dods_deflate=0;
 
     //flags for PROXY_SERVER=<protocol>,<host url>
     _dods_proxy_server_protocol = "";
@@ -323,85 +379,29 @@ RCReader::RCReader()
     // probably a bug in libwww. 10/23/2000 jhrg
     _dods_no_proxy_for_port=0;
 
-    string cache_name = ".dods_cache";
-    string rc_name = ".dodsrc";
-  
-    // The following code sets up the cache according to the data stored in
-    // the following places, in this order. First the environment variable
-    // DODS_CACHE_INIT is checked for a path to the data file. If this fails,
-    // $HOME/.dodsrc is checked. Failing this, the compiled-in defaults are
-    // used. However, if the path for the file exists and the file does not,
-    // then the compiled-in defaults will be written to a file at the
-    // location given. 8-1-99 cjm
-
-    // Hard-code to C:\Dods to work around the space-in-pathnames problem for
-    // caching under win32.
 #ifdef WIN32
-    homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
-
+    string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
+    d_rc_file_path = check_string(homedir);
     //  Normally, I'd prefer this for WinNT-based systems.
-#if 0
-    if (getenv("APPDATA"))
-	homedir = getenv("APPDATA");
-    else if (getenv("TEMP"))
-	homedir = getenv("TEMP");
-    else if (getenv("TMP"))
-	homedir = getenv("TMP");
-#endif
-
+    if (d_rc_file_path.empty())
+	d_rc_file_path = check_env_var("APPDATA");
+    if (d_rc_file_path.empty())
+	d_rc_file_path = check_env_var("TEMP");
+    if (d_rc_file_path.empty())
+	d_rc_file_path = check_env_var("TMP");
 #else
-    //  Should be ok for Unix
-    if (getenv("HOME"))
-	homedir = getenv("HOME");
-#endif // WIN32
-  
-    // If there is a leading '/' at the end of $HOME, remove it. 
-    if (homedir.length() != 0) {
-	if (homedir[homedir.length() - 1] == DIR_SEP_CHAR)
-	    homedir.erase(homedir.length() - 1);
-    
-	// set default cache root to $HOME/.dods_cache/
-	cache_root = homedir + string(DIR_SEP_STRING) + cache_name
-	    + string(DIR_SEP_STRING);
-    }
-#ifndef WIN32
-    //  Otherwise set the default cache root to a temporary directory
-    else {
-	tmpdir = string(DIR_SEP_STRING) + string("tmp");
-    
-	// Otherwise set the default cache root the <tmpdir>/.dods_cache/
-	cache_root = tmpdir + string(DIR_SEP_STRING) + cache_name
-	    + string(DIR_SEP_STRING);
-    }
+    d_rc_file_path = check_env_var("DODS_CONF");
+    if (d_rc_file_path.empty())
+	d_rc_file_path = check_env_var("HOME");
 #endif
 
-    if (getenv("DODS_CONF"))
-	cifp = getenv("DODS_CONF");
-    else if (getenv("DODS_CACHE_INIT"))
-	cifp = getenv("DODS_CACHE_INIT");
-  
-    // If the HOME environment variable wasn't set, and the users home
-    // directory is indeterminable, we will neither read nor write a data
-    // file and instead just use the compiled in defaults.
+    if (!d_rc_file_path.empty())
+	read_rc_file(d_rc_file_path);
 
-    if (cifp.length() == 0) {
-	if (homedir.length() != 0) {
-	    // Environment variable was set, get data from $HOME/.dodsrc
-	    cifp = homedir + string(DIR_SEP_STRING) + rc_name;
-	    // test to get sure we can access the file
-	    if (access(cifp.c_str(), F_OK)) {
-		// The file does not exist, however we have a directory and a
-		// file name so we can try to create it...
-		_has_rc_file=false;
-		_can_create_rc_file = true; 
-	    }     
-	}
+    if (_dods_use_cache) {
+	string lockstr = d_cache_root + string(".lock");
+	remove(lockstr.c_str());
     }
-  
-    if (_has_rc_file) 
-	read_rc_file();
-    else if (_can_create_rc_file)
-	write_rc_file();
 }
 
 RCReader::~RCReader()
@@ -439,6 +439,36 @@ RCReader::instance()
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.10  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.9.2.6  2003/11/25 18:20:13  jimg
+// Comments..
+//
+// Revision 1.9.2.5  2003/10/04 08:00:08  rmorris
+// Patched a couple of erronous path separators - /.dods_cache/ needs
+// to use \ under win32.  Was breaking caching sometimes.
+//
+// Revision 1.9.2.4  2003/09/23 14:44:26  jimg
+// Fix from Kevin O'Brien: In the ctor _dods_use_cache was set true regardless
+// of the value of USE_CACHE in the .dodsrc file.
+//
+// Revision 1.9.2.3  2003/09/22 21:22:17  jimg
+// Fixed check_env_var(). It was assigning a null to a string when an
+// environment was not defined. The string class crashes in this case!
+//
+// Revision 1.9.2.2  2003/09/19 22:29:52  jimg
+// Fixed the second part of bug #655 where DODS_CONF was not used properly.
+// There was a mass of confusing (and broken) code in the ctor which I hope I've
+// fixed. I added some unit tests (see RCReaderTest). I think it's probably a
+// bad idea to have the code that looks for the RC file create it if it's not
+// found, but the alternative is messier.
+//
+// Revision 1.9.2.1  2003/05/08 00:05:28  jimg
+// Modified so that compression is no longer requested by default. This is
+// probably the best default since users can turn on compression in the
+// .dodsrc file.
+//
 // Revision 1.9  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

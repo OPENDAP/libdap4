@@ -26,8 +26,10 @@
 #ifndef attr_iter_adapter_h
 #define attr_iter_adapter_h
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <vector>
@@ -117,6 +119,14 @@ class AttrIterAdapter : public IteratorAdapter
 } ;
 
 // $Log: AttrIterAdapter.h,v $
+// Revision 1.5  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.4.2.1  2003/06/23 11:49:18  rmorris
+// The #pragma interface directive to GCC makes the dynamic typing functionality
+// go completely haywire under OS X on the PowerPC.  We can't use that directive
+// on that platform and it was ifdef'd out for that case.
+//
 // Revision 1.4  2003/04/02 19:14:19  pwest
 // Added doxygen comments to iterator adapter classes
 //

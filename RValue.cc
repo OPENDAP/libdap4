@@ -36,14 +36,18 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: RValue.cc,v 1.12 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.13 2003/12/08 18:02:29 edavis Exp $"};
 
 #include <assert.h>
+
+#include <iostream>
 
 #include "BaseType.h"
 #include "expr.h"
 #include "RValue.h"
 #include "DDS.h"
+
+using namespace std;
 
 rvalue::rvalue(BaseType *bt): value(bt), func(0), args(0)
 {
@@ -79,27 +83,25 @@ rvalue::value_name()
 // func_rvalue's bvalue() mfunc. 
 
 /** Return the BaseType * that contains a value for a given rvalue. If the
-    rvalue is a BaseType *, ensures that the read mfunc has been
-    called. If the rvalue is a func_rvalue, evaluates the func_rvalue and
-    returns the result.
-      
-    NB: The functions referenced by func_rvalues must encapsulate their
-    return values in BaseType *s. */
+    rvalue is a BaseType *, ensures that the read mfunc has been called. If
+    the rvalue is a func_rvalue, evaluates the func_rvalue and returns the
+    result. The functions referenced by func_rvalues must encapsulate their
+    return values in BaseType *s. 
+
+    @note If the BaseType pointer is a Sequence, calling read loads the first
+    value; because the read_p property is set code that iteratively reads
+    rows of the Sequence will work *if* it first checks read_p. In other
+    words, all code that reads rows of Sequences should check read_p. If that
+    property is true, then the code should assume that one rows worth of data
+    has already been read. 
+*/
 BaseType *
 rvalue::bvalue(const string &dataset, DDS &dds) 
 {
     if (value) {
-	if (!value->read_p()) {
-	    // Huh?! Before reading the variable, set the 'send_p flag. This
-	    // will ensure that all the subvariables in a constructor-type
-	    // variable are read. 04/17/03 jhrg
-	    bool send = value->send_p();
-	    value->set_send_p(true);
-	 
+	if (!value->read_p())
 	    value->read(dataset);
-	 
-	    value->set_send_p(send);
-	}
+
 	return value;
     }
     else if (func) {
@@ -143,11 +145,7 @@ build_btp_args(rvalue_list *args, DDS &dds)
 	argc = args->size();
 
     // Add space for a null terminator
-#ifdef WIN32
-	BaseType **argv = (new (BaseType *)) + argc + 1;
-#else
-    BaseType **argv = new (BaseType *)[argc + 1];
-#endif
+    BaseType **argv = new (BaseType *[argc + 1]);
 
     string dataset = dds.filename();
 		
@@ -164,6 +162,23 @@ build_btp_args(rvalue_list *args, DDS &dds)
 }
 
 // $Log: RValue.cc,v $
+// Revision 1.13  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.12.2.2  2003/09/06 23:10:40  jimg
+// Fixed a bug in rvalue::bvalue() where the send_p property was being set and
+// reset before and after the call to read() inside the if(value) statement.
+// These calls where a fix to a design flaw in BaseType. I fixed the problem in
+// BaseType by adding the in_selection property. This is used to tell read()
+// methods that a variable is in the current selection and should be read even
+// if it is not in the current projection. See bug 657.
+//
+// Revision 1.12.2.1  2003/08/30 09:58:36  rmorris
+// Changed syntax for allocating an array of objects (BaseType)
+// to be something compatible with both VC++ and gnu compilers.
+// See build_btp_args().  Fixes several expr-testsuite failures under
+// win32.
+//
 // Revision 1.12  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

@@ -38,7 +38,7 @@
 
 /** Encapsulate a response. Instead of directly returning the FILE pointer
     from which a response is read, return an instance of this object. */
-class HTTPCacheResponse : public Response {
+class HTTPCacheResponse : public HTTPResponse {
 private:
     HTTPCache *d_cache;		// pointer to singleton instance
 
@@ -53,14 +53,16 @@ protected:
     //@}
 
 public:
-    /** Build a Response object and include the name of the temp file
-	that holds the HTTP response. When instance is deleted, remove this
-	file. */
-    HTTPCacheResponse(FILE *s, HTTPCache *c) 
-	: Response(s), d_cache(c) {}
+    /** Build a Response object. Instances of this class are used to
+	represent responses from a local HTTP/1.1 cache. The stream and
+	headers pointer are passed to the parent (HTTPResponse); there's no
+	temporary file for the parent to manage since the body is read from a
+	file managed by the cache subsystem. This class releases the lock on
+	the cache entry when the destructor is called. */
+    HTTPCacheResponse(FILE *s, vector<string> *headers, HTTPCache *c) 
+	: HTTPResponse(s, headers, ""), d_cache(c) {}
 
-    /** Close the temporary file. When an instance is destroyed, close its
-	assciated temporary file. */
+    /** Free the cache entry lock. Call the parent's destructor. */
     virtual ~HTTPCacheResponse() {
 	DBG(cerr << "Freeing HTTPCache respources... ");
 	d_cache->release_cached_response(get_stream());
@@ -69,6 +71,14 @@ public:
 };
 
 // $Log: HTTPCacheResponse.h,v $
+// Revision 1.2  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.1.2.1  2003/05/06 06:44:15  jimg
+// Modified HTTPConnect so that the response headers are no longer a class
+// member. This cleans up the class interface and paves the way for using
+// the multi interface of libcurl. That'll have to wait for another day...
+//
 // Revision 1.1  2003/03/04 05:57:40  jimg
 // Added.
 //

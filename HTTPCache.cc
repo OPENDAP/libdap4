@@ -37,6 +37,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <iterator>
 #include <set>
 
 #include "Error.h"
@@ -138,6 +139,7 @@ get_hash(const string &url)
 
     A private method.
 
+    @note This assumes that the cache directory structure should be created!
     @param cache_root The fully qualified pathname of the directory which
     will hold the cache data.
     @param force Force access to the persistent store!
@@ -147,7 +149,7 @@ get_hash(const string &url)
 
 HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) : 
     d_locked_open_file(0), 
-    d_cache_enabled(true), 
+    d_cache_enabled(false), 
     d_cache_protected(false),
     d_expire_ignored(false), 
     d_total_size(CACHE_TOTAL_SIZE * MEGA),
@@ -173,12 +175,17 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     // single user lock. However, that results in an invalid object. It's
     // better to have an instance that has default values. If we cannot get
     // the lock, make sure to set the cache as *disabled*. 03/12/03 jhrg
+    //
+    // I fixed this block so that the cache root is set before we try to get
+    // the single user lock. That was the fix for bug #661. To make that
+    // work, I had to move the call to create_cache_root out of
+    // set_cache_root(). 09/08/03 jhrg
+
+    set_cache_root(cache_root);
+
     if (get_single_user_lock(force)) {
-	set_cache_root(cache_root); // indirectly throws Error
 	cache_index_read();
-    }
-    else {
-	d_cache_enabled = false;
+	d_cache_enabled = true;
     }
 
     DBGN(cerr << "exiting" << endl);
@@ -221,7 +228,11 @@ HTTPCache::instance(const string &cache_root, bool force) throw(Error)
 
     try {
 	if (!_instance) {
+	    DBG(cerr << "About to create a new instance, cache root: " 
+		<< cache_root << endl);
 	    _instance = new HTTPCache(cache_root, force);
+	    DBG(cerr << "New instance: " << _instance << ", cache root: " 
+		<< _instance->d_cache_root << endl);
 	    atexit(delete_instance);
 	}
     }
@@ -264,15 +275,13 @@ delete_cache_entry(HTTPCache::CacheEntry *e)
     the in-memory cache table structure. The persistent cache (the response
     headers and bodies and the index file) are not removed. To remove those,
     either erase the directory that contains the cache using a file system
-    command or use the purge_cache method (which leaves the cache directory
-    structure in place but removes all the cached information). 
+    command or use the purge_cache() method (which leaves the cache directory
+    structure in place but removes all the cached information).
 
-    This class uses the singleton pattern. However, it is the client's
-    responsibility to call this method by using 'delete
-    HTTPCache::instance();' or the equivalent. If several threads are using
-    the cache, it is important that only one deletes the cache! If delete is
-    called more than once, the result will likely be an index file that is
-    corrupt. */
+    This class uses the singleton pattern. Clients should \e never call this
+    method. The HTTPCache::instance() method arranges to call the
+    HTTPCache::delete_instance() using \c atexit(). If delete is called more
+    than once, the result will likely be an index file that is corrupt. */
 
 HTTPCache::~HTTPCache()
 {
@@ -291,8 +300,13 @@ HTTPCache::~HTTPCache()
 	DBG(cerr << e.get_error_message() << endl);
     }
 
+#if 0
+    // Since this class is a singleton and since the dtor is called atexit, I
+    // don't think we need to lock the interface. If used correctly, this
+    // will only be run after main() has completed. 09/04/03 jhrg
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);	// Here because cache_index_write locks too
+#endif
 
     try {
 	for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
@@ -319,8 +333,10 @@ HTTPCache::~HTTPCache()
 	throw e;
     }
 
+#if 0
     DBGN(cerr << "Unlocking interface." << endl);
     UNLOCK(&d_cache_mutex);
+#endif
 
     DBG(cerr << "exiting" << endl);
     DESTROY(&d_cache_mutex);
@@ -584,6 +600,10 @@ HTTPCache::perform_garbage_collection()
 #if 0
     // Move this call out of this public method and explicitly call it after
     // performing garbage collection. 05/01/03 jhrg
+    // Why? Because perform_garbage_collection is a private method and
+    // cache_index_write is public. Many public methods lock the public
+    // interface include cache_index_write. So, you have to call this by hand
+    // to avoid adding lots of calls to unlock/lock the interface.
     cache_index_write();
 #endif
 }
@@ -881,8 +901,6 @@ HTTPCache::set_cache_root(const string &root) throw(Error)
     }
 
     d_cache_index = d_cache_root + CACHE_INDEX;
-
-    create_cache_root(d_cache_root); // throws Error
 }
 
 /** Lock the persistent store part of the cache. Return true if the cache lock
@@ -900,6 +918,10 @@ HTTPCache::get_single_user_lock(bool force)
 {
     if (!d_locked_open_file) {
 	FILE * fp = NULL;
+
+	// It's OK to call create_cache_root if the directory already exists.
+	create_cache_root(d_cache_root);
+
 	string lock = d_cache_root + CACHE_LOCK;
 	if ((fp = fopen(lock.c_str(), "r")) != NULL) {
 	    int res = fclose(fp);
@@ -1336,7 +1358,7 @@ HTTPCache::create_hash_directory(int hash) throw(Error)
 	DBG2(cerr << "Cache....... Create dir " << p << endl);
 	if (MKDIR(p.c_str(), 0777) < 0) {
 	    DBG2(cerr << "Cache....... Can't create..." << endl);
-	    throw Error("Could not create cache slot to hold response! Check the write permissions on your disk cache directory.");
+	    throw Error("Could not create cache slot to hold response! Check the write permissions on your disk cache directory. Cache root: " + d_cache_root + ".");
 	}
     } else {
 	DBG2(cerr << "Cache....... Directory " << p << " already exists" 
@@ -1702,7 +1724,7 @@ HTTPCache::open_body(const string &cachename) const throw(InternalErr)
 bool
 HTTPCache::cache_response(const string &url, time_t request_time,
 			  const vector<string> &headers, const FILE *body) 
-    throw(InternalErr)
+    throw(Error, InternalErr)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -1806,7 +1828,7 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 
     @param url Get the CacheEntry for this URL.
     @return A vector of strings, one request header per string.
-    @exception Error Thrown if the \c url is not in the cache. */
+    @exception Error Thrown if the \e url is not in the cache. */
 
 vector<string>
 HTTPCache::get_conditional_request_headers(const string &url) 
@@ -1962,7 +1984,7 @@ HTTPCache::is_url_valid(const string &url) throw(Error)
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
     bool freshness;
-    CacheEntry *entry;
+    CacheEntry *entry = 0;
 
     DBG(cerr << "Is this URL valid? (" << url << ")" << endl);
 
@@ -2080,6 +2102,8 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers)
 	    throw Error("There is no cache entry for the URL: " + url);
 
 	read_metadata(entry->cachename, headers);
+	DBG(cerr << "Headers just read from cache: " << endl);
+	DBGN(copy(headers.begin(), headers.end(), ostream_iterator<string>(cerr, "\n")));
     
 	body = open_body(entry->cachename);
 
@@ -2280,6 +2304,33 @@ HTTPCache::purge_cache() throw(Error)
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.12  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.11.2.4  2003/10/10 23:07:15  jimg
+// Added some instrumentation which helped track down bug 672.
+//
+// Revision 1.11.2.3  2003/09/18 19:27:29  jimg
+// Fixed part of bug #665. When .dods_cache did not exist the code was not able
+// to get the single user lock for the cache. Since the call to _create_ the
+// cache (.dods_cache) was called only if we had the single user lock, ... I
+// fixed this by moving the call to create the cache root directory into the
+// call to get the single user lock. Also, I made the bool d_cache_enabled false
+// by default and true only when the single user lock and cache index have been
+// read.
+//
+// Revision 1.11.2.2  2003/09/08 18:48:29  jimg
+// I fixed bug #661. The cache was trying to grab the single user lock before
+// setting the cache root. This workied OK when the process could write to the
+// CWD (because get_single_user_lock defaults the cache_root to the CWD when
+// the cache_root is not set). However, when the process cannot write to the CWD
+// the cache cannot get the lock. This meant that we were left with a non-null
+// HTTPCache instance which had a bogus cache root.
+//
+// Revision 1.11.2.1  2003/09/06 22:35:38  jimg
+// Updated the documentation. HTTPCache::~HTTPCache() no longer grabs the class'
+// interface lock. That is unnecessary since the dtor is only called by atexit().
+//
 // Revision 1.11  2003/05/02 00:02:38  jimg
 // Modified the code so that perform_garbage_collection() is called only when
 // startGC() is true. This should minimize the time spent scanning the entry

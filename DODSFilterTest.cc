@@ -44,10 +44,23 @@ private:
 
     AttrTable *cont_a;
     DAS *das;
+<<<<<<< DODSFilterTest.cc
     ostringstream oss;
+=======
+    ostringstream oss;
+    time_t now;
+    char now_array[256];
+>>>>>>> 1.9.2.2
 
 public: 
-    DODSFilterTest() {}
+    DODSFilterTest() {
+	now = time(0);
+	ostringstream time_string;
+	time_string << (int)now;
+	strncpy(now_array, time_string.str().c_str(), 255);
+	now_array[255] = '\0';
+    }
+
     ~DODSFilterTest() {}
 
     void setUp() {
@@ -66,12 +79,31 @@ public:
 
 	// This file has an ancillary DAS in the server-testsuite dir.
 	// df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
+<<<<<<< DODSFilterTest.cc
 	char *argv_2[] = {"test_case", "server-testsuite/coads.data", "-l",
 			  "2147483647", "-e", "u,x,z[0]&grid(u,\"lat<10.0\")"};
+=======
+	char *argv_2[8];
+	argv_2[0] = "test_case";
+	argv_2[1] = "server-testsuite/coads.data";
+	argv_2[2] = "-l";
+	argv_2[3] = &now_array[0];
+	argv_2[4] = "-e";
+	argv_2[5] = "u,x,z[0]&grid(u,\"lat<10.0\")";
+	argv_2[6] = "-t";
+	argv_2[7] = "1";
+>>>>>>> 1.9.2.2
 	df3 = new DODSFilter(6, argv_2);
 
 	// Go back to this data source to test w/o an ancillary DAS.
+	argv_2[0] = "test_case";
 	argv_2[1] = "server-testsuite/bears.data";
+	argv_2[2] = "-l";
+	argv_2[3] = &now_array[0];
+	argv_2[4] = "-e";
+	argv_2[5] = "u,x,z[0]&grid(u,\"lat<10.0\")";
+	argv_2[6] = "-t";
+	argv_2[7] = "1";
 	df4 = new DODSFilter(6, argv_2);
 
 	// Test escaping stuff. 5/4/2001 jhrg
@@ -113,13 +145,23 @@ public:
 	oss.str("");
     }	
 
+<<<<<<< DODSFilterTest.cc
     bool re_match(Regex &r, const string &s) {
 	DBG(cerr << "s.length(): " << s.length() << endl);
 
 	int pos = r.match(s.c_str(), s.length());
 	DBG(cerr << "r.match(s): " << pos << endl);
+=======
+    bool re_match(Regex &r, const string &s) {
+	DBG(cerr << "s.length(): " << s.length() << endl);
+	DBG(cerr << "r.match(s): " << r.match(s.c_str(), s.length()) << endl);
+>>>>>>> 1.9.2.2
 
+<<<<<<< DODSFilterTest.cc
 	return pos > 0 && static_cast<unsigned>(pos) == s.length();
+=======
+	return r.match(s.c_str(), s.length()) == (int)s.length();
+>>>>>>> 1.9.2.2
     }
 
     // Tests for methods
@@ -156,16 +198,21 @@ public:
     }
 
     void send_das_test() {
+#if 0
+	// I'm pretty sure I've fixed this... It should always work now. I
+	// set the time in df3 to 'now' so that should always be later than
+	// whenever the das was pulled from cvs. 09/05/03 jhrg
 	cerr << endl
 	     << "Note: the send_das() tests depend, in part, on having data\n\
  sources written on a certain date. These work with my copies of the files,\n\
  but these tests probably will not work with files checked out of CVS."
 	     << endl;
+#endif
 
 	Regex r1("HTTP/1.0 200 OK\n\
 XDODS-Server:.*\n\
 Date: .*\n\
-Last-Modified: Thu, 29 Apr 1999 02:29:40 GMT\n\
+Last-Modified: .*\n\
 Content-type: text/plain\n\
 Content-Description: dods_das\n\
 \n\
@@ -174,8 +221,14 @@ Attributes {\n\
         Int32 size 7;\n\
         String type cars;\n\
     }\n\
+<<<<<<< DODSFilterTest.cc
 }.*\n");
 	df->send_das(oss, *das);
+=======
+}.*\n\
+");
+	df->send_das(oss, *das);
+>>>>>>> 1.9.2.2
 
 	DBG(cerr << "DAS: " << oss.str() << endl);
 
@@ -184,11 +237,17 @@ Attributes {\n\
 
 	Regex r2("HTTP/1.0 304 NOT MODIFIED\n\
 Date: .*\n\
+<<<<<<< DODSFilterTest.cc
 \n");
 	df3->send_das(oss, *das);
 
 	DBG(cerr << "DAS response: " << oss.str() << endl);
 
+=======
+\n\
+");
+	df3->send_das(oss, *das);
+>>>>>>> 1.9.2.2
 	CPPUNIT_ASSERT(re_match(r2, oss.str()));
     }	
 
@@ -199,7 +258,11 @@ Date: .*\n\
 
     void get_request_if_modified_since_test() {
 	CPPUNIT_ASSERT(df->get_request_if_modified_since() == -1);
+<<<<<<< DODSFilterTest.cc
 	CPPUNIT_ASSERT(df3->get_request_if_modified_since() == 2147483647);
+=======
+	CPPUNIT_ASSERT(df3->get_request_if_modified_since() == now);
+>>>>>>> 1.9.2.2
     }
 
     void escape_code_test() {
@@ -227,6 +290,12 @@ Date: .*\n\
 	CPPUNIT_ASSERT(df6->get_ce() == "Grid%20field:u[0],Grid%20field:v");
 	df5->set_ce("Grid%20u%5B0%5D");
 	CPPUNIT_ASSERT(df5->get_ce() == "Grid%20u[0]");
+    }
+
+    // This tests reading the timeout value from argv[].
+    void timeout_test() {
+	CPPUNIT_ASSERT(df3->get_timeout() == 1);
+	CPPUNIT_ASSERT(df1->get_timeout() == 0);
     }
 
     CPPUNIT_TEST_SUITE( DODSFilterTest );

@@ -76,7 +76,7 @@ private:
     HTTPCache *hc;
     HTTPConnect http_conn;
     string index_file_line;
-    string dodsdev_url;
+    string localhost_url;
     string expired;
     int hash_value;
     vector<string> h;
@@ -86,10 +86,11 @@ protected:
 public:
     HTTPCacheTest() : http_conn(RCReader::instance()) {
 	DBG2(cerr << "Entring HTTPCacheTest ctor... ");
-	hash_value = 893;	
-	dodsdev_url = "http://dodsdev.gso.uri.edu/test.html";
-	index_file_line = dodsdev_url + " cache-testsuite/dods_cache/893/file1qr09a @cache@ 930090223 -1 197 0 893 1 172800 1030124259 1 0";
-	expired = "http://dodsdev.gso.uri.edu/cgi-bin/expires.sh";
+	hash_value = 1306;
+	localhost_url = "http://localhost/test-304.html";
+	index_file_line = "http://localhost/test-304.html cache-testsuite/dods_cache/1306/dods4uXJO6 \"13c55e-157-f8105500\" 1062690740 -1 343 0 1306 0 356 1062694308 0 0";
+
+	expired = "http://localhost/cgi-bin/expires.sh";
 
 	h.push_back("ETag: jhrgjhrgjhrg");
 	h.push_back("Last-Modified: Sat, 05 Nov 1994 08:49:37 GMT");
@@ -113,7 +114,6 @@ public:
     void tearDown() {
 	// Called after every test.
 	DBG2(cerr << "Entering HTTPCacheTest::tearDown... " << endl);
-	// Calling delete here fails; don't understand why. 10/03/02 jhrg
 	delete hc;
 	DBG2(cerr << "exiting tearDown" << endl);
     }
@@ -153,26 +153,32 @@ public:
     void constructor_test() {
 	CPPUNIT_ASSERT(hc->d_cache_index=="cache-testsuite/dods_cache/.index");
 	CPPUNIT_ASSERT(hc->d_cache_root == "cache-testsuite/dods_cache/");
-	CPPUNIT_ASSERT(hc->d_current_size == 703);
+	DBG(cerr << "Current size: " << hc->d_current_size << endl);
+	CPPUNIT_ASSERT(hc->d_current_size == 343);
     }
 
     void cache_index_read_test() {
 	CPPUNIT_ASSERT(hc->cache_index_read());
 
-	HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(dodsdev_url);
+	HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(localhost_url);
 
 	CPPUNIT_ASSERT(e);
-	CPPUNIT_ASSERT(e->url == dodsdev_url);
+	CPPUNIT_ASSERT(e->url == localhost_url);
     }
 
     void cache_index_parse_line_test() {
 	HTTPCache::CacheEntry *e = hc->cache_index_parse_line(index_file_line.c_str());
 
-	CPPUNIT_ASSERT(e->url == dodsdev_url);
+	CPPUNIT_ASSERT(e->url == localhost_url);
 	CPPUNIT_ASSERT(e->cachename 
-		       == "cache-testsuite/dods_cache/893/file1qr09a");
-	CPPUNIT_ASSERT(e->etag == "");
-	CPPUNIT_ASSERT(e->lm == 930090223);
+		       == "cache-testsuite/dods_cache/1306/dods4uXJO6");
+#ifdef WIN32
+	char *tmpstr = "\"13c55e-157-f8105500\"";
+	CPPUNIT_ASSERT(e->etag == tmpstr);
+#else
+	CPPUNIT_ASSERT(e->etag == "\"13c55e-157-f8105500\"");
+#endif
+	CPPUNIT_ASSERT(e->lm == 1062690740);
 	// Skip ahead ...
 	CPPUNIT_ASSERT(e->must_revalidate == false);
     }
@@ -186,9 +192,9 @@ public:
 	hc->add_entry_to_cache_table(e);
 
 	HTTPCache::CacheEntry *e2 
-	    = hc->get_entry_from_cache_table(dodsdev_url);
+	    = hc->get_entry_from_cache_table(localhost_url);
 	CPPUNIT_ASSERT(e2);
-	CPPUNIT_ASSERT(e2->url == dodsdev_url);
+	CPPUNIT_ASSERT(e2->url == localhost_url);
 
 	// Now test what happens when two entries collide.
 	HTTPCache::CacheEntry *e3
@@ -222,9 +228,9 @@ public:
 	hc_4->cache_index_read();
 
 	HTTPCache::CacheEntry *e 
-	    = hc_4->get_entry_from_cache_table(dodsdev_url);
+	    = hc_4->get_entry_from_cache_table(localhost_url);
 	CPPUNIT_ASSERT(e);
-	CPPUNIT_ASSERT(e->url == dodsdev_url);
+	CPPUNIT_ASSERT(e->url == localhost_url);
 
 	delete hc_3;
 	delete hc_4;
@@ -316,7 +322,7 @@ public:
     void create_location_test() {
 	hc->set_cache_root("/tmp/dods_test_cache");
 	HTTPCache::CacheEntry *e = new HTTPCache::CacheEntry;
-	e->url = dodsdev_url;
+	e->url = localhost_url;
 	e->hash = hash_value;
 	try {
 	    hc->create_location(e);
@@ -372,19 +378,20 @@ public:
     }
 
     void cache_response_test() {
+	HTTPResponse *rs = http_conn.fetch_url(localhost_url);
 	try {
 	    time_t now = time(0);
-	    Response *rs = http_conn.fetch_url(dodsdev_url);
-	    vector<string> headers = rs->get_headers();
-	    hc->cache_response(dodsdev_url, now, headers, rs->get_stream());
+	    vector<string> *headers = rs->get_headers();
+	    hc->cache_response(localhost_url, now, *headers, rs->get_stream());
 
-	    CPPUNIT_ASSERT(hc->is_url_in_cache(dodsdev_url));
+	    CPPUNIT_ASSERT(hc->is_url_in_cache(localhost_url));
 
-	    HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(dodsdev_url);
-	    CPPUNIT_ASSERT(file_size(e->cachename) == 703);
+	    HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(localhost_url);
+	    CPPUNIT_ASSERT(file_size(e->cachename) == 343);
 	    delete rs;
 	}
 	catch (Error &e) {
+	    delete rs;
 	    cerr << "Error: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught unexpected Error/InternalErr");
 	}
@@ -392,29 +399,29 @@ public:
 
     void is_url_valid_test() {
 	cache_response_test();	// This should get a response into the cache.
-	CPPUNIT_ASSERT(hc->is_url_valid(dodsdev_url));
+	CPPUNIT_ASSERT(hc->is_url_valid(localhost_url));
     }
 
     void get_cached_response_test() {
 	cache_response_test();	// Get a response into the cache.
 	vector<string> cached_headers;
-	FILE *cached_body = hc->get_cached_response(dodsdev_url, 
+	FILE *cached_body = hc->get_cached_response(localhost_url, 
 						    cached_headers);
 
-	Response *rs = http_conn.fetch_url(dodsdev_url);
-	vector<string> headers = rs->get_headers();//http_conn.get_response_headers();
+	HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+	vector<string> *headers = rs->get_headers();
 
 	// headers and cached_headers should match, except for the values.
 	vector<string>::iterator i, j;
-	for (i = cached_headers.begin(), j = headers.begin();
-	     i != cached_headers.end() && j != headers.end();
+	for (i = cached_headers.begin(), j = headers->begin();
+	     i != cached_headers.end() && j != headers->end();
 	     ++i, ++j) {
 	    string ch = (*i).substr(0, (*i).find(": "));
 	    string h = (*j).substr(0, (*j).find(": "));
 	    CPPUNIT_ASSERT(ch == h);
 	}
 
-	CPPUNIT_ASSERT(i == cached_headers.end() && j == headers.end());
+	CPPUNIT_ASSERT(i == cached_headers.end() && j == headers->end());
 
 	// every byte of the cached_body and response body should match.
 	while (!feof(rs->get_stream()) && !feof(cached_body) 
@@ -434,27 +441,25 @@ public:
 
     void perform_garbage_collection_test() {
 	try {	
+	    delete hc; hc = 0;
 	    auto_ptr<HTTPCache> gc(new HTTPCache("cache-testsuite/gc_cache", true));
 
-	    Response *rs = http_conn.fetch_url(dodsdev_url);
-	    gc->cache_response(dodsdev_url, time(0), rs->get_headers(),
+	    HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+	    gc->cache_response(localhost_url, time(0), *(rs->get_headers()),
 			       rs->get_stream());
-	    CPPUNIT_ASSERT(gc->is_url_in_cache(dodsdev_url));
+	    CPPUNIT_ASSERT(gc->is_url_in_cache(localhost_url));
 	    delete rs;
 
 	    rs = http_conn.fetch_url(expired);
-	    gc->cache_response(expired, time(0), rs->get_headers(),
+	    gc->cache_response(expired, time(0), *(rs->get_headers()),
 			       rs->get_stream());
 	    CPPUNIT_ASSERT(gc->is_url_in_cache(expired));
 	    delete rs;
-	
-#ifdef WIN32
-	    Sleep(1000);
-#else
+
 	    sleep(2);
-#endif
 
 	    gc->perform_garbage_collection();
+	    gc->cache_index_write();
 
 	    CPPUNIT_ASSERT(!gc->is_url_in_cache(expired) 
 			   && "This may fail if sleep is not long enough before gc above");
@@ -470,24 +475,24 @@ public:
 	    auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
 
 	    time_t now = time(0);
-	    Response *rs = http_conn.fetch_url(dodsdev_url);
-	    pc->cache_response(dodsdev_url, now, rs->get_headers(),
+	    HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+	    pc->cache_response(localhost_url, now, *(rs->get_headers()),
 			       rs->get_stream());
 
-	    CPPUNIT_ASSERT(pc->is_url_in_cache(dodsdev_url));
+	    CPPUNIT_ASSERT(pc->is_url_in_cache(localhost_url));
 	    delete rs;
 
 	    string expired = "http://dodsdev.gso.uri.edu/cgi-bin/expires.sh";
 	    now = time(0);
 	    rs = http_conn.fetch_url(expired);
-	    pc->cache_response(expired, now, rs->get_headers(), 
+	    pc->cache_response(expired, now, *(rs->get_headers()), 
 			       rs->get_stream());
 
 	    CPPUNIT_ASSERT(pc->is_url_in_cache(expired));
 	    delete rs;
 
 	    HTTPCache::CacheEntry *e1 = pc->get_entry_from_cache_table(expired);
-	    HTTPCache::CacheEntry *e2 = pc->get_entry_from_cache_table(dodsdev_url);
+	    HTTPCache::CacheEntry *e2 = pc->get_entry_from_cache_table(localhost_url);
 	    string e1_file = e1->cachename;
 	    string e2_file = e2->cachename;
 
@@ -506,7 +511,7 @@ public:
 
 	    pc->purge_cache();
 
-	    CPPUNIT_ASSERT(!pc->is_url_in_cache(dodsdev_url));
+	    CPPUNIT_ASSERT(!pc->is_url_in_cache(localhost_url));
 	    CPPUNIT_ASSERT(!pc->is_url_in_cache(expired));
 	    CPPUNIT_ASSERT(access(e1_file.c_str(), F_OK) != 0);
 	    CPPUNIT_ASSERT(access(e2_file.c_str(), F_OK) != 0);
@@ -522,30 +527,30 @@ public:
 	try {
 	    HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache", true);
 
-	    if (!c->is_url_in_cache(dodsdev_url)) {
-		Response *rs = http_conn.fetch_url(dodsdev_url);
-		c->cache_response(dodsdev_url, time(0), 
-				  rs->get_headers(), rs->get_stream());
+	    if (!c->is_url_in_cache(localhost_url)) {
+		HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+		c->cache_response(localhost_url, time(0), 
+				  *(rs->get_headers()), rs->get_stream());
 		delete rs;
 	    }
-	    CPPUNIT_ASSERT(c->is_url_in_cache(dodsdev_url));
+	    CPPUNIT_ASSERT(c->is_url_in_cache(localhost_url));
 
 	    if (!c->is_url_in_cache(expired)) {
-		Response *rs = http_conn.fetch_url(expired);
+		HTTPResponse *rs = http_conn.fetch_url(expired);
 		c->cache_response(expired, time(0), 
-				  rs->get_headers(), rs->get_stream());
+				  *(rs->get_headers()), rs->get_stream());
 		delete rs;
 	    }
 	    CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
 	    HTTPCache::CacheEntry *e1 = c->get_entry_from_cache_table(expired);
-	    HTTPCache::CacheEntry *e2 = c->get_entry_from_cache_table(dodsdev_url);
+	    HTTPCache::CacheEntry *e2 = c->get_entry_from_cache_table(localhost_url);
 	    string e1_file = e1->cachename;
 	    string e2_file = e2->cachename;
 
 	    c->purge_cache();
 
-	    CPPUNIT_ASSERT(!c->is_url_in_cache(dodsdev_url));
+	    CPPUNIT_ASSERT(!c->is_url_in_cache(localhost_url));
 	    CPPUNIT_ASSERT(!c->is_url_in_cache(expired));
 	    CPPUNIT_ASSERT(access(e1_file.c_str(), F_OK) != 0);
 	    CPPUNIT_ASSERT(access(e2_file.c_str(), F_OK) != 0);
@@ -558,31 +563,38 @@ public:
     
     void get_conditional_response_headers_test() {
 	try {
-	    HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache",
+	    delete hc; hc = 0;
+	    HTTPCache *c = HTTPCache::instance("cache-testsuite/header_cache",
 					       true);
-	    if (!c->is_url_in_cache(dodsdev_url)) {
-		Response *rs = http_conn.fetch_url(dodsdev_url);
-		c->cache_response(dodsdev_url, time(0), 
-				  rs->get_headers(), rs->get_stream());
+	    CPPUNIT_ASSERT(c->get_cache_root() 
+			   == "cache-testsuite/header_cache/");
+
+	    if (!c->is_url_in_cache(localhost_url)) {
+		HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+		c->cache_response(localhost_url, time(0), 
+				  *(rs->get_headers()), rs->get_stream());
 		delete rs;
 	    }
-	    CPPUNIT_ASSERT(c->is_url_in_cache(dodsdev_url));
+	    CPPUNIT_ASSERT(c->is_url_in_cache(localhost_url));
 
 	    if (!c->is_url_in_cache(expired)) {
-		Response *rs = http_conn.fetch_url(expired);
+		HTTPResponse *rs = http_conn.fetch_url(expired);
 		c->cache_response(expired, time(0), 
-				  rs->get_headers(), rs->get_stream());
+				  *(rs->get_headers()), rs->get_stream());
 		delete rs;
 	    }
 	    CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
-	    vector<string> h = c->get_conditional_request_headers(dodsdev_url);
+	    vector<string> h = c->get_conditional_request_headers(localhost_url);
 	    DBG(copy(h.begin(), h.end(), 
 		     ostream_iterator<string>(cout, "\n")));
+	    DBG(cerr << "if none match location: " << 
+		h[0].find("If-None-Match: ") << endl);
 	    // I know what the strings should start with...
 	    CPPUNIT_ASSERT(h[0].find("If-None-Match: ") == 0);
 
 	    h = c->get_conditional_request_headers(expired);
+	    DBG(cerr << "Number of headers: " << h.size() << endl);
 	    DBG(copy(h.begin(), h.end(), 
 		     ostream_iterator<string>(cout, "\n")));
 	    CPPUNIT_ASSERT(h[0].find("If-Modified-Since: ") == 0);
@@ -597,26 +609,26 @@ public:
 	try {
 	    HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache",
 					       true);
-	    if (!c->is_url_in_cache(dodsdev_url)) {
-		Response *rs = http_conn.fetch_url(dodsdev_url);
-		c->cache_response(dodsdev_url, time(0), 
-				  rs->get_headers(), rs->get_stream());
+	    if (!c->is_url_in_cache(localhost_url)) {
+		HTTPResponse *rs = http_conn.fetch_url(localhost_url);
+		c->cache_response(localhost_url, time(0), 
+				  *(rs->get_headers()), rs->get_stream());
 		delete rs;
 	    }
 
 	    if (!c->is_url_in_cache(expired)) {
-		Response *rs = http_conn.fetch_url(expired);
+		HTTPResponse *rs = http_conn.fetch_url(expired);
 		c->cache_response(expired, time(0), 
-				  rs->get_headers(), rs->get_stream());
+				  *(rs->get_headers()), rs->get_stream());
 		delete rs;
 	    }
 
 	    // Yes, there's stuff here.
-	    CPPUNIT_ASSERT(c->is_url_in_cache(dodsdev_url));
+	    CPPUNIT_ASSERT(c->is_url_in_cache(localhost_url));
 	    CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
 	    vector<string> orig_h;
-	    FILE *cr = c->get_cached_response(dodsdev_url, orig_h);
+	    FILE *cr = c->get_cached_response(localhost_url, orig_h);
 	    DBG(copy(orig_h.begin(), orig_h.end(), 
 		     ostream_iterator<string>(cerr, "\n")));
 
@@ -634,10 +646,10 @@ public:
 	
 	    c->release_cached_response(cr);
 
-	    c->update_response(dodsdev_url, time(0), new_h);
+	    c->update_response(localhost_url, time(0), new_h);
 	
 	    vector<string> updated_h;
-	    (void) c->get_cached_response(dodsdev_url, updated_h);
+	    (void) c->get_cached_response(localhost_url, updated_h);
 	    DBG(copy(updated_h.begin(), updated_h.end(),
 		     ostream_iterator<string>(cerr, "\n")));
 	
@@ -675,6 +687,27 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPCacheTest.cc,v $
+// Revision 1.10  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.9.2.4  2003/09/29 05:11:40  rmorris
+// Minor win32 port tweek involving string literals in macros.
+//
+// Revision 1.9.2.3  2003/09/06 22:11:02  jimg
+// Modified so that localhost is used instead of remote hosts. This means
+// that the tests don't require Internet access but do require that the
+// local machine runs httpd and has it correctly configured.
+//
+// Revision 1.9.2.2  2003/08/17 20:37:15  rmorris
+// Mod's to more-uniformly and simply account for sleep(secs) vs. Sleep(millisecs)
+// difference between unix/Linux/OSX and win32.  The ifdef to make win32
+// match unixes is now in one single win32-specific place.
+//
+// Revision 1.9.2.1  2003/05/06 06:45:29  jimg
+// Fixed HTTPCacheTest to work with the new HTTPConnect and Response
+// classes. These use local copies of the response headers managed by the
+// Response class.
+//
 // Revision 1.9  2003/05/01 22:52:46  jimg
 // Corrected the get_conditional_response_headers_test() given the latest mods
 // to HTTPCache.cc.

@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.33 2003/05/23 03:24:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.34 2003/12/08 18:02:31 edavis Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +44,17 @@ static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.33 2003/05/23 03:24:58 
 #include <errno.h>
 
 #include <iostream>
+<<<<<<< parser-util.cc
+=======
+#include <sstream>
+
+//  We wrap VC++ 6.x strtod() to account for a short comming
+//  in that function in regards to "NaN".
+#ifdef WIN32
+#include <limits>
+double w32strtod(const char *,char **);
+#endif
+>>>>>>> 1.32.2.3
 
 #include "debug.h"
 #include "parser.h"		// defines constants such as ID_MAX
@@ -253,9 +264,14 @@ int
 check_float32(const char *val)
 {
     char *ptr;
-    errno = 0;			// Clear previous value. Fix for the 64bit
+    errno = 0;	// Clear previous value. Fix for the 64bit
 				// IRIX from Rob Morris. 5/21/2001 jhrg
-    double v = strtod(val, &ptr);
+
+#ifdef WIN32
+	double v = w32strtod(val,&ptr);
+#else
+	double v = strtod(val,&ptr);
+#endif
 
     DBG(cerr << "v: " << v << ", ptr: " << ptr
 	<< ", errno: " << errno << ", val==ptr: " << (val==ptr) << endl);
@@ -276,9 +292,15 @@ int
 check_float64(const char *val)
 {
     DBG(cerr << "val: " << val << endl);
-    char *ptr;
+	char *ptr;
     errno = 0;			// Clear previous value. 5/21/2001 jhrg
-    double v = strtod(val, &ptr);
+
+#ifdef WIN32
+	double v = w32strtod(val,&ptr);
+#else
+	double v = strtod(val,&ptr);
+#endif
+
     DBG(cerr << "v: " << v << ", ptr: " << ptr 
 	<< ", errno: " << errno << ", val==ptr: " << (val==ptr) << endl);
 
@@ -295,6 +317,28 @@ check_float64(const char *val)
     return TRUE;
 }
 
+#ifdef WIN32
+//  VC++ 6.x strtod() doesn't recognize "NaN".  Account for it
+//  by wrapping it around a check for the Nan string.
+double
+w32strtod(const char *val,char **ptr)
+{
+	//  Convert the two char arrays to compare to strings.
+	string *sval = new string(val);
+	string *snan = new string("NaN");
+
+	//  If val doesn't contain "NaN|Nan|nan|etc", use strtod as
+	//  provided.
+	if(stricmp(sval->c_str(),snan->c_str()) != 0)
+		return(strtod(val,ptr));
+
+	//  But if it does, return the bit pattern for Nan and point
+	//  the parsing ptr arg at the trailing '\0'.
+	*ptr = (char *)val + strlen(val);
+	return(std::numeric_limits<double>::quiet_NaN());
+}
+#endif
+
 /*
   Maybe someday we will really check the Urls to see if they are valid...
 */
@@ -306,6 +350,19 @@ check_url(const char *)
 }
 
 // $Log: parser-util.cc,v $
+// Revision 1.34  2003/12/08 18:02:31  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.32.2.3  2003/09/06 23:02:22  jimg
+// Comments.
+//
+// Revision 1.32.2.2  2003/08/16 22:46:45  rmorris
+// Wrapped VC++ version of strtod() to account for how it
+// handles "NaN" differently.
+//
+// Revision 1.32.2.1  2003/06/05 20:15:26  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.33  2003/05/23 03:24:58  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

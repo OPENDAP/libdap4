@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.16 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.17 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <iostream>
 #include <vector>
@@ -128,6 +128,11 @@ parse_gse_expression(gse_arg *arg, BaseType *expr)
 // Assume the following arguments are sent to func_grid_select:
 // Grid name, 0 or more strings which contain relational expressions.
 
+// This function has the type 'proj_func' (it is a projection function). It
+// must be used in the projection part of a CE. However, it performs a mix of
+// operations, some that are really projection (marking variables to be
+// returned) and some that are selection (choosing what to return based on
+// the values of variables, not just their structure).
 void 
 func_grid_select(int argc, BaseType *argv[], DDS &dds)
 {
@@ -220,6 +225,12 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.17  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.15.2.1  2003/09/06 22:58:59  jimg
+// New Comments.
+//
 // Revision 1.16  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

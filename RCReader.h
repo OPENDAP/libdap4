@@ -50,14 +50,8 @@ using std::endl;
     @author Jose Garcia <jgarcia@ucar.edu> */
 class RCReader {
 private:
-    string lockstr;	        // Lock file path
-    string cifp;		// Configuration file name.
-    string cache_root;		// Location of actual cache.
-    string homedir;	        // Cache init file path
-    string tmpdir;		// Fallback position for cache files.
-
-    bool  _has_rc_file;
-    bool  _can_create_rc_file;
+    string d_rc_file_path;
+    string d_cache_root;
 
     bool _dods_use_cache;	// 0- Disabled 1- Enabled
     int _dods_cache_max;	// Max cache size in Mbytes
@@ -107,18 +101,23 @@ private:
     ~RCReader();
   
     // File I/O methods
-    void write_rc_file();
-    void read_rc_file();
+    bool write_rc_file(const string &pathname);
+    bool read_rc_file(const string &pathname);
+
+    // Look for the RC file
+    string check_env_var(const string &variable_name);
+    string check_string(string env_var);
 
     friend void initialize_instance();
-    friend void rcreader_clean(); // This must be a function to be passed to
-				// atexit (which is no longer used...)
-				// 10/08/02 jhrg
+    friend void rcreader_clean();
+
+    friend class RCReaderTest;
+
 public:
     static RCReader* instance();
   
     // GET METHODS
-    const string get_dods_cache_root() {return cache_root;}
+    const string get_dods_cache_root() {return d_cache_root;}
     const bool get_use_cache() throw()      {return _dods_use_cache;}
     const int get_max_cache_size()  throw()  {return _dods_cache_max;}
     const int get_max_cached_obj() throw()   {return _dods_cached_obj;}
@@ -165,6 +164,16 @@ public:
 };
 
 // $Log: RCReader.h,v $
+// Revision 1.9  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.8.2.1  2003/09/19 22:30:14  jimg
+// Fixed the second part of bug #655 where DODS_CONF was not used properly.
+// There was a mass of confusing (and broken) code in the ctor which I hope I've
+// fixed. I added some unit tests (see RCReaderTest). I think it's probably a
+// bad idea to have the code that looks for the RC file create it if it's not
+// found, but the alternative is messier.
+//
 // Revision 1.8  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.13 2003/05/23 03:24:57 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.14 2003/12/08 18:02:29 edavis Exp $"};
 
 #include <iostream>
 #include <sstream>
@@ -110,12 +110,22 @@ void
 GSEClause::set_map_min_max_value(T min, T max)
 {
     DBG(cerr << "Inside set map min max value " << min << ", " << max << endl);
+<<<<<<< GSEClause.cc
     ostringstream oss1;
     oss1 << min;
+=======
+    std::ostringstream oss1;
+    oss1 << min;
+>>>>>>> 1.12.2.1
     d_map_min_value = oss1.str();
 
+<<<<<<< GSEClause.cc
     ostringstream oss2;
     oss2 << max;
+=======
+    std::ostringstream oss2;
+    oss2 << max;
+>>>>>>> 1.12.2.1
     d_map_max_value = oss2.str();
 }
 
@@ -383,6 +393,12 @@ GSEClause::get_map_max_value() const
 }
 
 // $Log: GSEClause.cc,v $
+// Revision 1.14  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.12.2.1  2003/06/05 20:15:26  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.13  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

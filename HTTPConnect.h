@@ -26,8 +26,10 @@
 #ifndef _httpconnect_h
 #define _httpconnect_h
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <stdio.h>
@@ -50,8 +52,8 @@
 #include "HTTPCache.h"
 #endif
 
-#ifndef response_h
-#include "Response.h"
+#ifndef http_response_h
+#include "HTTPResponse.h"
 #endif
 
 #ifndef _util_h
@@ -95,16 +97,15 @@ private:
     string d_password;		// extracted from URL
     string d_upstring;		// used to pass info into curl
 
-    // *** Try to remove this field. 03/03/03 jhrg
-    vector<string> d_headers;	// Response headers
+    vector<string> d_request_headers; // Request headers
 
     void www_lib_init() throw(Error, InternalErr);
-    long read_url(const string &url, FILE *stream,
+    long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
 		  const vector<string> *headers = 0) throw(Error);
     char *get_temp_file(FILE *&stream) throw(InternalErr);
-    Response *plain_fetch_url(const string &url) 
+    HTTPResponse *plain_fetch_url(const string &url) 
 	throw(Error, InternalErr);
-    Response *caching_fetch_url(const string &url) 
+    HTTPResponse *caching_fetch_url(const string &url) 
 	throw(Error, InternalErr);
 
     bool url_uses_proxy_for(const string &url) throw();
@@ -117,7 +118,7 @@ private:
     friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb, 
 				       void *http_connect);
     friend class HTTPConnectTest;
-    friend struct ParseHeader;
+    friend class ParseHeader;
 
 protected:
     /** @name Suppress default methods
@@ -146,16 +147,54 @@ public:
 	program. 
 	@param enabled True to use the cache, False to disable. */
     void set_cache_enabled(bool enabled) { 
-	d_http_cache->set_cache_enabled(enabled);
+	if (d_http_cache)
+	    d_http_cache->set_cache_enabled(enabled);
     }
 
     /** Return the current state of the HTTP cache. */
-    bool is_cache_enabled() { return d_http_cache->is_cache_enabled(); }
+    bool is_cache_enabled() { 
+	return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; 
+    }
 
-    Response *fetch_url(const string &url) throw(Error, InternalErr);
+    HTTPResponse *fetch_url(const string &url) throw(Error, InternalErr);
 };
 
 // $Log: HTTPConnect.h,v $
+// Revision 1.10  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.9.2.6  2003/09/30 16:36:38  jimg
+// I removed some old code and fixed a typo where ParseHeaders was declared
+// as a struct here and a class in the .cc file.
+//
+// Revision 1.9.2.5 2003/09/30 16:29:45 jimg Fixed bug #670. As a result of
+// fixing the bug where DODS_CONF was ignored, I changed the way the HTTP
+// cache was used. HTTPConnect was always initializing the cache, so it was
+// OK to assume that the d_http_cache member was a valid pointer. One result
+// of fixing the DODS_CONF bug was that the HTTPCache instance was not always
+// initialized. The server helper programs asciival and www_int assume that
+// they must disable the cache, so they call Connect::set_cacne_enable(false)
+// which then calls the matching method here. I added a test so that
+// d_http_cache is only used if it's non-null.
+//
+// Revision 1.9.2.4  2003/06/23 11:49:18  rmorris
+// The #pragma interface directive to GCC makes the dynamic typing
+// functionality go completely haywire under OS X on the PowerPC. We can't
+// use that directive on that platform and it was ifdef'd out for that case.
+//
+// Revision 1.9.2.3  2003/06/14 21:59:04  rmorris
+// Change to some interim code (in transition) in regards to parseHeaders
+// defined as both class and struct - to get it to compile under win32.
+// UNIX compiler allows, VC++ does not.
+//
+// Revision 1.9.2.2  2003/05/06 06:44:15  jimg
+// Modified HTTPConnect so that the response headers are no longer a class
+// member. This cleans up the class interface and paves the way for using
+// the multi interface of libcurl. That'll have to wait for another day...
+//
+// Revision 1.9.2.1  2003/05/05 19:46:17  jimg
+// Added d_request_headers. See HTTPConnect.cc for an explanation.
+//
 // Revision 1.9  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

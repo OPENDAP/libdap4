@@ -39,8 +39,10 @@
 #ifndef _structure_h
 #define _structure_h 1
 
+#ifndef __POWERPC__
 #ifdef _GNUG_
 #pragma interface
+#endif
 #endif
 
 #include <vector>
@@ -124,6 +126,7 @@ public:
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
+    virtual void set_in_selection(bool state);
 
     virtual unsigned int width();
 
@@ -137,10 +140,10 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual BaseType *var(const string &name, bool exact_match = true,
+    virtual BaseType *var(const string &n, bool exact = true,
 			  btp_stack *s = 0);
 
-    virtual BaseType *var(const string &name, btp_stack &s);
+    virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
 
@@ -183,7 +186,7 @@ public:
 
     /** Prints the Structure and all elements of any Sequences contained
 	within. 
-	@deprecated
+	@deprecated Using the C++ iostream class is deprecated.
 	@see print_all_vals(FILE *out, XDR *src, DDS *dds, string space, bool print_decl_p);
     */
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
@@ -191,7 +194,13 @@ public:
 
     /** Prints the Structure and all elements of any Sequences contained
 	within. 
-	@deprecated
+
+	@deprecated This method was needed when Sequence::deserialize had
+	different semantics than BaseType::deserialize (which was a really
+	odd design because the Sequence is a descendant of the later...). But
+	Sequence now deserializes in one call in this implementation so
+	print() works as expected. 
+
 	@see Sequence::print_all_vals
     */
     virtual void print_all_vals(FILE *out, XDR *src, DDS *dds,
@@ -202,6 +211,17 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.47  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.45.2.2  2003/09/06 23:04:46  jimg
+ * Added set_in_selection() method. Updated the documentation.
+ *
+ * Revision 1.45.2.1  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
  * Revision 1.46  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

@@ -42,8 +42,10 @@
 #ifndef _basetype_h
 #define _basetype_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #ifdef WIN32
@@ -70,7 +72,18 @@
 #include "InternalErr.h"
 #endif
 
+<<<<<<< BaseType.h
 using namespace std;
+=======
+#ifndef __DODS_DATATYPES_
+#include "dods-datatypes.h"
+#endif
+
+using std::vector;
+using std::stack;
+using std::ostream;
+using std::string;
+>>>>>>> 1.71.2.6
 
 class BaseType;			// Forward declarations
 class DDS;
@@ -175,6 +188,16 @@ enum Type {
     the constraints 
     to be returned. These cautions are outlined where they occur.
 
+    @todo We really need a better way to get values out of these types, esp
+    the Float32, Int16, ..., types. In \e most cases we know the type, so a
+    type specific method (one that requires a downcast to use) is OK. For
+    example, Byte might have a method <tt>dods_byte Byte::value()</tt>. Sure
+    you have to downcast from BaseType to Byte in order to use it, but you
+    have to figure out you have a Byte to use Byte::buf2val() anyway, so
+    what's the big deal? Having a method that returns the \e value would
+    simplify code that reads from data sets to extract meta data (like
+    lat/lon corner points, et c.).
+
     @brief The basic data type for the DODS DAP types.  */
 
 class BaseType {
@@ -188,7 +211,8 @@ private:
     xdrproc_t _xdr_coder;
 
     bool _read_p;		// true if the value has been read
-    bool _send_p;		// true if the variable is to be transmitted
+    bool _send_p;		// Is the variable in the projection?
+    bool d_in_selection;	// Is the variable in the selection?
     bool _synthesized_p;	// true if the variable is synthesized
     
     // d_parent points to the Constructor or Vector which holds a particular
@@ -206,44 +230,140 @@ public:
     BaseType(const string &n = "", const Type &t = dods_null_c,
 	     xdrproc_t xdr = NULL);
 
+<<<<<<< BaseType.h
+    BaseType(const BaseType &copy_from);
+    virtual ~BaseType();
+=======
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 
     virtual string toString();
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
+    virtual string toString();
+=======
     BaseType &operator=(const BaseType &rhs);
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
+    BaseType &operator=(const BaseType &rhs);
+=======
+    /** Clone this instance. Allocate a new instance and copy \c *this into
+	it. This method performs a deep copy.
+>>>>>>> 1.71.2.6
+
+<<<<<<< BaseType.h
     virtual BaseType *ptr_duplicate() = 0; // alloc new instance and dup THIS.
+=======
+	@return A newly allocated copy of \c this. */
+    virtual BaseType *ptr_duplicate() = 0;
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
     string name() const;
     virtual void set_name(const string &n);
+=======
+    string name() const;
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
     Type type() const;
     void set_type(const Type &t);
     string type_name() const;	
+=======
+    virtual void set_name(const string &n);
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
     virtual bool is_simple_type();
     virtual bool is_vector_type();
     virtual bool is_constructor_type();
+=======
+    Type type() const;
+    void set_type(const Type &t);
+    string type_name() const;	
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
     virtual int element_count(bool leaves = false);
+=======
+    virtual bool is_simple_type();
+    virtual bool is_vector_type();
+    virtual bool is_constructor_type();
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
     virtual bool synthesized_p();
     virtual void set_synthesized_p(bool state);
+=======
+    virtual int element_count(bool leaves = false);
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
     virtual bool read_p();
     virtual void set_read_p(bool state);
+=======
+    virtual bool synthesized_p();
+    virtual void set_synthesized_p(bool state);
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
     virtual bool send_p();
     virtual void set_send_p(bool state);
+=======
+    virtual bool read_p();
+    virtual void set_read_p(bool state);
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
     virtual AttrTable &get_attr_table();
     virtual void set_attr_table(const AttrTable &at);
+=======
+    virtual bool send_p();
+    virtual void set_send_p(bool state);
+>>>>>>> 1.71.2.6
 
+<<<<<<< BaseType.h
+=======
+    virtual bool is_in_selection();
+    virtual void set_in_selection(bool state);
+
+>>>>>>> 1.71.2.6
     xdrproc_t xdr_coder();
+<<<<<<< BaseType.h
+=======
 
     virtual void set_parent(BaseType *parent) throw(InternalErr);
+
     virtual BaseType *get_parent();
+
+    virtual BaseType *var(const string &n = "", bool exact = true,
+			  btp_stack *s = 0);
+
+    virtual BaseType *var(const string &n, btp_stack &s);
+
+    virtual void add_var(BaseType *bt, Part part = nil);
+
+    /** Return the number of bytes that are required to hold the instance's
+	value. In the case of simple types such as Int32, this is the size of
+	one Int32 (four bytes). For a String or Url type,
+	<tt>width()</tt> returns 
+	the number of bytes needed for a <tt>String *</tt> variable,
+	not the bytes 
+	needed for all the characters, since that value cannot be determined
+	from type information alone. For Structure, and other constructor
+	types size() returns the number of bytes needed to store pointers to
+	the C++ objects.
+>>>>>>> 1.71.2.6
+
+<<<<<<< BaseType.h
+    virtual void set_parent(BaseType *parent) throw(InternalErr);
+    virtual BaseType *get_parent();
+=======
+	@brief Returns the size of the class instance data. */
+    virtual unsigned int width() = 0;
+>>>>>>> 1.71.2.6
 
     virtual BaseType *var(const string &name = "", bool exact_match = true,
 			  btp_stack *s = 0);
@@ -257,9 +377,126 @@ public:
     // InternalErr. 
     virtual bool read(const string &dataset);
     
+<<<<<<< BaseType.h
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual bool ops(BaseType *b, int op, const string &dataset);
+=======
+    /** Reads the class data into the memory referenced by <i>val</i>. The
+	caller must allocate enough storage to <i>val</i> to hold the class
+	data. If <i>val</i> is NULL, however, memory will be allocated by
+	this function with <tt>new()</tt>. Even if the memory is allocated
+	this way, the caller is responsible for deallocating that memory.
+	Array values for simple types are stored as C would store an array.
+
+	This method should not be used for Sequences or variables that are
+	members of Sequences. Use Sequence::var_value() or
+	Sequence::row_value() instead.
+
+	@brief Reads the class data.  
+
+	@param val A pointer to a pointer to the memory into which the
+	class data will be copied.  If the value pointed to is NULL,
+	memory will be allocated to hold the data, and the pointer value
+	modified accordingly.  The calling program is responsible for
+	deallocating the memory indicated by this pointer.
+
+	@return The size (in bytes) of the information copied to <i>val</i>.  
+    */
+    virtual unsigned int buf2val(void **val) = 0;
+
+    /** Store the value pointed to by <i>val</i> in the object's internal
+	buffer. This function does not perform any checks, so users must
+	be sure that the thing pointed to can actually be stored in the
+	object's buffer.  For example, an array cannot easily be fit
+	into the data buffer for an Int32 object.  
+
+	Only simple objects (Int, Float, Byte, and so on) and arrays and
+	lists of these simple objects may be stored using this function.
+	To put data into more complex constructor functions, use the
+	functions provided by that class.  For example, use the <tt>var()</tt>
+	and <tt>add_var()</tt> members of the Grid class to manipulate data in
+	that class.
+
+	@brief Loads class data.
+
+	@param val A pointer to the data to be inserted into the class
+	data buffer.
+
+	@param reuse A boolean value, indicating whether the class
+	internal data storage can be reused or not.  If this argument is
+	TRUE, the class buffer is assumed to be large enough to hold the
+	incoming data, and it is <i>not</i> reallocated.  If FALSE, new
+	storage is allocated.  If the internal buffer has not been
+	allocated at all, this argument has no effect.
+	This is currently used only in the Vector class.
+
+	@return The size (in bytes) of the information copied from <i>val</i>.
+	@see Grid
+	@see Vector::val2buf */
+    virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
+
+    /** Sends the data from the indicated (local) dataset through the
+	connection identified by the <i>sink</i> parameter.  If the data
+	is not already incorporated into the DDS object, read the data
+	from the dataset.  
+
+	This function is only used on the server side of the client/server
+	connection. For example DODSFilter uses it to send data to a client. It
+	has no BaseType implementation; each datatype child class supplies its
+	own implementation.
+
+	@brief Move data to the net.
+	@param dataset The (local) name of dataset to be read.
+	@param dds The Data Descriptor Structure object corresponding to
+	this dataset.  See <i>The DODS User Manual</i> for information
+	about this structure.
+	@param sink A valid XDR pointer generally created with a call to
+	<tt>new_xdrstdio()</tt>. This typically routes data to a TCP/IP socket.
+	@param ce_eval A boolean value indicating whether to evaluate
+	the DODS constraint expression that may accompany this dataset.
+	The constraint expression is stored in <i>dds</i>.
+	@return This method always returns true. Older versions used the
+	return value to signal success or failure. All errors are signaled with
+	exceptions. 
+	@exception InternalErr.
+	@exception Error.
+	@see DODSFilter */
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true) = 0; 
+
+    /** Receives data from the network connection identified by the 
+	<tt>source</tt> parameter.  The data is put into the class data buffer
+	according to the input <tt>dds</tt>.  
+
+	This function is only used on the client side of the
+	DODS client/server connection.
+
+	@brief Receive data from the net.
+	@param source A valid XDR pointer to the process connection to
+	the net.  This is generally created with a call to
+	<tt>new_xdrstdio()</tt>. 
+	@param dds The Data Descriptor Structure object corresponding to
+	this dataset.  See <i>The DODS User Manual</i> for information
+	about this structure.  This would have been received from the
+	server in an earlier transmission.
+	@param reuse A boolean value, indicating whether the class
+	internal data storage can be reused or not.  If this argument is
+	TRUE, the class buffer is assumed to be large enough to hold the
+	incoming data, and it is <i>not</i> reallocated.  If FALSE, new
+	storage is allocated.  If the internal buffer has not been
+	allocated at all, this argument has no effect.
+	@return Always returns TRUE.
+	@exception Error when a problem reading from the XDR stream is
+	found.
+	@see DDS 
+    */
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false) = 0;
+    
+    /* Write the buffers maintained by XDR to the associated FILE *s. */
+    // This function declaration appears to be a relic of a bygone era.
+    bool expunge();
+>>>>>>> 1.71.2.6
 
     virtual void print_decl(FILE *out, string space = "    ", 
 			    bool print_semi = true, 
@@ -418,11 +655,11 @@ public:
 
 	@memo Prints the value of the variable.
 	@param os The output stream on which to print the value.
-	@param space This value is passed to the #print_decl()#
+	@param space This value is passed to the print_decl()
 	function, and controls the leading spaces of the output.
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value.
-	@deprecated
+	@deprecated Using the C++ iostream class is deprecated.
 	@see print_val(FILE *out, string space, bool print_decl_p) = 0;
     */
     virtual void print_val(ostream &os, string space = "",
@@ -442,18 +679,58 @@ public:
 
 	@memo Prints the value of the variable.
 	@param out The output FILE on which to print the value.
-	@param space This value is passed to the #print_decl()#
+	@param space This value is passed to the print_decl()
 	function, and controls the leading spaces of the output.
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value.
     */
     virtual void print_val(FILE *out, string space = "",
 			   bool print_decl_p = true) = 0;
+<<<<<<< BaseType.h
     //@}
+=======
+
+    virtual bool check_semantics(string &msg, bool all = false);
+
+    virtual bool ops(BaseType *b, int op, const string &dataset);
+>>>>>>> 1.71.2.6
 };
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.73  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.71.2.6  2003/11/25 18:14:22  jimg
+ * Improved the doc comments regarding buf2val() for Sequence.
+ *
+ * Revision 1.71.2.5  2003/11/19 18:53:05  jimg
+ * Added a todo comment about new methods which return values directly without
+ * using the buf2val() method.
+ *
+ * Revision 1.71.2.4  2003/09/28 20:57:22  rmorris
+ * Discontinued use of XDR_PROC typedef, using xdrproc_t instead - a
+ * define from the xdr portion of the rpc library.
+ *
+ * Revision 1.71.2.3  2003/09/06 22:24:19  jimg
+ * Significant changes to the documentation. Added the in_selection property and
+ * accessor/mutator methods for it. Added use of the typedef XDR_PROC which
+ * allowed me to remove some of the #if WIN32 code (see dods-datatypes.h.in).
+ *
+ * Revision 1.71.2.2  2003/07/25 06:04:28  jimg
+ * Refactored the code so that DDS:send() is now incorporated into
+ * DODSFilter::send_data(). The old DDS::send() is still there but is
+ * depracated.
+ * Added 'smart timeouts' to all the variable classes. This means that
+ * the new server timeouts are active only for the data read and CE
+ * evaluation. This went inthe BaseType::serialize() methods because it
+ * needed to time both the read() calls and the dds::eval() calls.
+ *
+ * Revision 1.71.2.1  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
  * Revision 1.72  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

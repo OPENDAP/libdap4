@@ -44,16 +44,31 @@
 #include <sstream>
 #include <string>
 
+// #define DODS_DEBUG
+
 #include "debug.h"
 #include "BaseType.h"
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
 
+<<<<<<< BaseType.cc
 using namespace std;
+=======
+using std::cerr;
+using std::endl;
+using std::ends;
+using std::ostringstream;
+>>>>>>> 1.51.2.3
 
-// Private copy mfunc
+// Protected copy mfunc
 
+/** Perform a deep copy. Copies the values of \e bt into \c *this. Pointers
+    are dereferenced and their values are copied into a newly allocated
+    instance. 
+    
+    @brief Perform a deep copy.
+    @param bt The source object. */
 void
 BaseType::_duplicate(const BaseType &bt)
 {
@@ -61,6 +76,7 @@ BaseType::_duplicate(const BaseType &bt)
     _type = bt._type;
     _read_p = bt._read_p;	// added, reza
     _send_p = bt._send_p;	// added, reza
+    d_in_selection = bt.d_in_selection;
     _synthesized_p = bt._synthesized_p; // 5/11/2001 jhrg
     _xdr_coder = bt._xdr_coder;	// just copy this function pointer
 
@@ -93,7 +109,11 @@ BaseType::_duplicate(const BaseType &bt)
     @see Type */
 BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
     : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
+<<<<<<< BaseType.cc
       _synthesized_p(false), d_parent(0)
+=======
+      d_in_selection(false), _synthesized_p(false), d_parent(0)
+>>>>>>> 1.51.2.3
 {
 } 
 
@@ -134,8 +154,12 @@ BaseType::toString()
 	<< "          _read_p: " << _read_p << endl
 	<< "          _send_p: " << _send_p << endl
 	<< "          _synthesized_p: " << _synthesized_p << endl 
+<<<<<<< BaseType.cc
 	<< "          d_parent: " << d_parent << endl
 	<< "          d_attr: " << hex << &d_attr << dec << endl;
+=======
+	<< "          d_parent: " << d_parent << endl;
+>>>>>>> 1.51.2.3
 
     return oss.str();
 }
@@ -346,25 +370,41 @@ BaseType::set_synthesized_p(bool state)
 // Return the state of _read_p (true if the value of the variable has been
 // read (and is in memory) false otherwise).
 
-/** Returns the value of the <tt>read_p</tt> flag.  This flag is TRUE
-    when the class instance contains a valid value, and FALSE before
-    a valid value has been read.
+/** Returns true if the value(s) for this variable have been read from the
+    data source, oterwise returns false. This method is used to determine
+    when values need to be read using the read() method. When read_p()
+    returns true, this library assumes that buf2val() (and other methods
+    such as get_vec()) can be used to access the value(s) of a variable.
 
-    @brief Returns the value of the #read_p# flag.  */
+    @brief Has this variable been read?
+    @return True if the variable's value(s) have been read, false otherwise. */
 bool
 BaseType::read_p()
 {
     return _read_p;
 }
 
-/** Sets the value of the <tt>read_p</tt> flag.  This flag is TRUE when the
-    class instance contains a valid value, and FALSE before a valid
-    value has been read.  This is meant to be called from the
-    <tt>read()</tt> function. Data is ready to be sent when <i>both</i> the
-    <tt>_send_p</tt> and <tt>_read_p</tt> flags are set to TRUE.
+/** Sets the value of the <tt>read_p</tt> property. This indicates that the
+    value(s) of this variable has/have been read. An implementation of the
+    read() method would typically use this to set the \c read_p property to
+    true.
 
-    @brief Sets the value of the #read_p# flag.  
-    @param state The logical state to set the <tt>read_p</tt> flag.  */
+    @note For synthesized variables, this method does nothing. Thus, if a
+    synthesized variable is added to a Sequence, the Sequence can iteratively
+    reset the \e read_p property without affecting the value of that property
+    for the synthesized variable. That's important since a synthesized
+    variable's value is calculated, not read. 
+
+    @todo Look at making synthesized variables easier to implement and at
+    making them more integrated into the overall CE evaluation process.
+    Maybe the code that computes the synthesized var's value should be in the
+    that variable's read() method? This might provide a way to get rid of the
+    awkward 'projection functions' by replacing them with real children of
+    BaseType. It would also provide a way to clean up the way the
+    \e synthesized_p prop intrudes on the \e read_p prop.
+
+    @brief Sets the value of the \e read_p property.
+    @param state Set the \e read_p property to this state. */
 void
 BaseType::set_read_p(bool state)
 {
@@ -374,17 +414,16 @@ BaseType::set_read_p(bool state)
     }
 }
 
+/** Returns the state of the \c send_p property. If true, this variable
+    should be sent to the client, if false, it should not. If no constraint
+    expression (CE) has been evaluated, this property is true for all
+    variables in a data source (i.e., for all the variables listed in a DDS).
+    If a CE has been evaluated, this property is true only for those
+    variables listed in the <em>projection part</em> of the CE.
 
-// Return the state of _send_p (true if the variable should be sent, false
-// otherwise).
-
-/** Returns the value of the <tt>send_p</tt> flag.  This flag is TRUE if
-    this variable is to be sent to the client.  This is determined
-    by evaluating the constraint expression.  The <tt>_send_p</tt> flag is
-    set to TRUE for all variables in the constraint expression's
-    ``projection'' clause.
-
-    @brief Returns the value of the #send_p# flag. */
+    @brief Should this variable be sent?
+    @return True if the variable should be sent to the client, false
+    otherwise. */
 bool
 BaseType::send_p()
 {
@@ -401,9 +440,12 @@ BaseType::send_p()
 void 
 BaseType::set_send_p(bool state)
 {
+    DBG(cerr << "Calling BaseType::set_send_p() for: " << this->name() 
+	<< endl);
     _send_p = state;
 }
 
+<<<<<<< BaseType.cc
 /** Get this variable's AttrTable. It's generally a bad idea to return a
     reference to a contained object, but in this case it seems that building
     an interface inside BaseType is overkill. 
@@ -423,6 +465,35 @@ BaseType::set_attr_table(const AttrTable &at)
     d_attr = at;
 }
 
+=======
+/** Does this variable appear in either the selection part or as a function
+    argument in the current constrain expression. If this property is set
+    (true) then implementation of the read() method should read this
+    variable.
+
+    @see BaseType::read()
+    @brief Is this variable part of the current selection? */
+bool 
+BaseType::is_in_selection()
+{
+    return d_in_selection;
+}
+
+/** Set the \e in_selection property to \e state. This property indicates
+    that the variable is used as a parameter to a constraint expression
+    function or that it appears as an argument in a selection sub-expression.
+    If set (true), implementations of the BaseType::read() method should read
+    this variable.
+
+    @param state Set the \e in_selection property to this state.
+    @see BaseType::read() */
+void
+BaseType::set_in_selection(bool state)
+{
+    d_in_selection = state;
+}
+
+>>>>>>> 1.51.2.3
 // Protected method.
 /** Set the <tt>parent</tt> property for this variable. Only instances of
     Constructor or Vector should call this method.
@@ -441,6 +512,7 @@ BaseType::set_parent(BaseType *parent) throw(InternalErr)
 }
 
 // Public method.
+
 /** Return a pointer to the Constructor or Vector which holds (contains)
     this variable. If this variable is at the top level, this method
     returns null.
@@ -459,38 +531,36 @@ BaseType::get_parent()
 //
 // Return a pointer to the contained variable in a ctor class.
 
-/** Returns a pointer to the contained variable in a composite
-    class.  The composite classes are those made up of aggregated
-    simple data types.  Array, Grid, and Structure are composite
-    types, while Int and Float are simple types.  This function is
-    only used by composite classes.  The BaseType implementation
-    always returns null.
+/** Returns a pointer to the contained variable in a composite class. The
+    composite classes are those made up of aggregated simple data types.
+    Array, Grid, and Structure are composite types, while Int and Float are
+    simple types. This function is only used by composite classes. The
+    BaseType implementation always returns null.
 
-    Several of the subclasses overload this function with
-    alternate access methods that make sense for that particular
-    data type. For example, the Array class defines a <tt>*var(int
-    i)</tt> method that returns the ith entry in the Array data,
-    and the Structure provides a <tt>*var(Pix p)</tt> function
-    using a pseudo-index to access the different members of the
-    structure.
+    Several of the subclasses overload this function with alternate access
+    methods that make sense for that particular data type. For example, the
+    Array class defines a <tt>*var(int i)</tt> method that returns the ith
+    entry in the Array data, and the Structure provides a <tt>*var(Pix
+    p)</tt> function using a pseudo-index to access the different members of
+    the structure.
 
     @brief Returns a pointer to a member of a constructor class.
-    @param name The name of the class member.  
-    @param exact_match
+    @param n The name of the class member.  
+    @param exact
     True if only interested in variables whose full names match
-    <tt>name</tt> exactly. If false, returns the first variable
-    whose name matches <tt>name</tt>. For example, if
-    <tt>name</tt> is x and point.x is a variable, then var("x",
-    false) would return a <tt>BaseType</tt> pointer to point.x. If
-    <tt>exact_match</tt> was <tt>true</tt> then <tt>name</tt>
-    would need to be "point.x" for <tt>var</tt> to return that
+    \e n exactly. If false, returns the first variable
+    whose name matches \e n. For example, if
+    \e n is \c x and \c point.x is a variable, then var("x",
+    false) would return a BaseType pointer to \c point.x. If
+    \e exact was <tt>true</tt> then \e n
+    would need to be \c "point.x" for var to return that
     pointer. This feature simplifies constraint expressions for
     datasets which have complex, nested, constructor variables.
+    @param s Record the path to \e n.
 
-    @return A pointer to the member named in the <i>name</i>
-    argument.  If no name is given, the function returns the first
-    (only) variable.  For example, an Array has only one variable,
-    while a Structure can have many. */
+    @return A pointer to the member named in the \e n argument. If no name is
+    given, the function returns the first (only) variable.  For example, an
+    Array has only one variable, while a Structure can have many. */
 BaseType *
 BaseType::var(const string &, bool, btp_stack*)
 {
@@ -504,11 +574,13 @@ BaseType::var(const string &, bool, btp_stack*)
     BaseType pointer to each constructor type that ultimately contains
     <i>name</i>.
 
-    \note{The BaseType implementation always returns null. }
+    @note The BaseType implementation always returns null.
 
-    @deprecated
-    @brief Returns a pointer to a member of a constructor class.
-    @param name Find the variable whose name is <i>name</i>.
+    @deprecated This method is deprecated because is tries first to use
+    exact_match and, if that fails, then tries leaf_match. It's better to use
+    the alternate form of var(...) and specify exactly what you'd like to do.
+
+    @param n Find the variable whose name is <i>name</i>.
     @param s Record the path to <i>name</i>.
     @return A pointer to the named variable. */
 BaseType *
@@ -517,8 +589,32 @@ BaseType::var(const string &, btp_stack &)
     return static_cast<BaseType *>(0);
 }
 
-// Defined by constructor types (Array, ...)
+/** Adds a variable to an instance of a constructor class, such as Array,
+    Structure <em>et cetera</em>. This function is only used by those
+    classes. For constructors with more than one variable, the variables
+    appear in the same order in which they were added (i.e., the order in
+    which add_var() was called). Since this method is only for use by Vectors
+    and Constructors, the BaseType implementation does nothing.
 
+    @note Implementation of this method in Structure, Sequence, et c., first
+    copy \e bt and then insert the copy. If \e bt is itself a constructor
+    type you must either use the var() method to get a pointer to the actual
+    instance added to \c *this or you must first add all of <em>bt</em>'s
+    children to it before adding it to \c *this. The implementations use
+    _duplicate() to perform a deep copy of \e bt.
+
+    @brief Add a variable.
+
+    @todo The BaseType implementation of this method should throw an
+    InternalErr.
+
+    @todo We should get rid of the Part parameter and adopt the convention
+    that the first variable is the Array and all subsequent ones are Maps
+    (when dealing with a Grid, the only time Part matters). This would enable
+    several methods to migrate from Structure, Sequence and Grid to
+    Constructor. 
+
+<<<<<<< BaseType.cc
 /** Adds a variable to an instance of a constructor class, such as
     Array, Structure and so on.  This function is only used by those
     classes.  The BaseType implementation simply prints an error
@@ -537,14 +633,21 @@ BaseType::var(const string &, btp_stack &)
     @param bt The data to be added to the constructor type. The caller of
     this method <i>must</i> free memory it allocates for
     <tt>v</tt>. This method 
+=======
+    @param bt The variable to be added to this instance. The caller of this
+    method <i>must</i> free memory it allocates for <tt>v</tt>. This method
+>>>>>>> 1.51.2.3
     will make a deep copy of the object pointed to by <tt>v</tt>.
-    @param part The part of the constructor data to be modified.
+    @param part The part of the constructor data to be modified. Only
+    meaningful for Grid variables.
+    
     @see Part */
 void
 BaseType::add_var(BaseType *, Part)
 {
 }
 
+<<<<<<< BaseType.cc
 /** Put the data into a local buffer so that it may be sent to a client. This
     operation involves reading data from whatever source (often a local
     disk), and filling out the fields in the data type class. This is the
@@ -584,19 +687,59 @@ BaseType::add_var(BaseType *, Part)
     @return void. The bool type is a relic. When implementing this method in
     a sub class, it should always return False. The implementatin in BaseType
     throws InternalErr always.
+=======
+/** This method show be implemented for each of the data type classes (Byte,
+    ..., Grid) when using the DAP class library to build a server. This
+    method is only for DAP servers. The library provides a default
+    definition here which throws an InternalErr exception.
 
+    When implementing a new DAP server, the Byte, ..., Grid data type classes
+    are usually specialized. In each of those specializations read() should
+    be defined to read values from the data source and store them in the
+    object's local buffer. The read() method is called by other methods in
+    this library. When writing read(), follow these rules:
+
+        - read() should throw Error if it encounters an error. The message
+	  should be verbose enough to be understood by someone running a
+	  client on a different machine.
+        - The value(s) should be read iff either send_p() of
+          is_in_selection() return true. If neither of these return true, the
+	  value(s) should not be read. This is important when writing read()
+	  for a Constructor type such as Grid where a client may ask for only
+	  the map vectors (ans thus reading the much larger Array part is not
+	  needed)
+	- The Array::read() and Grid::read() methods should take into account
+	  any restrictions on Array sizes.
+
+    @brief Read data into a local buffer. 
+
+    @return The return value of this method should always be false. This
+    method used to use the return value to indicate that Sequence values
+    remained and still needed to be read. However, all Sequence values are
+    now read in a single call to read(). The return value is retained because
+    it's conceivable that a server might want to implement read() and make
+    use of the return value. Only the specialization would use the return
+    value; it is always ignored by the DAP library.
+
+    @param dataset A string naming the dataset from which the data is to
+    be read. The meaning of this string will vary among different types of
+    data sources.
+>>>>>>> 1.51.2.3
+
+<<<<<<< BaseType.cc
     @param dataset A string naming the dataset from which the data is to
     be read. The meaning of this string will vary among data APIs.
 
     @see BaseType */
+=======
+    @see BaseType */
+>>>>>>> 1.51.2.3
 bool 
 BaseType::read(const string &dataset)
 {
     throw InternalErr("Unimplemented BaseType::read() method called.");
 }
 
-// Using this mfunc, objects that contain a (BaseType *) can get the xdr
-// function used to serialize the object.
 /** The <tt>xdr_coder</tt> function (also "filter primitive") is used to
     encode and decode each element in a multiple element data
     structure.  These functions are used to convert data to and from
@@ -643,6 +786,8 @@ BaseType::xdr_coder()
     \endverbatim
 
     @brief Print an ASCII representation of the variable structure.
+    @deprecated Use the version of this method which takes a FILE pointer. 
+
     @param os The output stream on which to print the
     declaration.
     @param space Each line of the declaration will begin with the
@@ -661,7 +806,6 @@ BaseType::xdr_coder()
 
     @see DDS
     @see DDS::CE
-
 */
 void 
 BaseType::print_decl(ostream &os, string space, bool print_semi, 
@@ -685,6 +829,48 @@ BaseType::print_decl(ostream &os, string space, bool print_semi,
 	os << ";" << endl;
 }
 
+/** Write the variable's declaration in a C-style syntax. This
+    function is used to create textual representation of the Data
+    Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for
+    information about this structure.
+
+    A simple array declaration might look like this:
+    \verbatim
+    Float64 lat[lat = 180];
+    \endverbatim
+    While a more complex declaration (for a Grid, in this case),
+    would look like this:
+    \verbatim
+    Grid {
+    ARRAY:
+    Int32 sst[time = 404][lat = 180][lon = 360];
+    MAPS:
+    Float64 time[time = 404];
+    Float64 lat[lat = 180];
+    Float64 lon[lon = 360];
+    } sst;
+    \endverbatim
+
+    @brief Print an ASCII representation of the variable structure.
+    @param out The output stream on which to print the
+    declaration.
+    @param space Each line of the declaration will begin with the
+    characters in this string.  Usually used for leading spaces.
+    @param print_semi A boolean value indicating whether to print a
+    semicolon at the end of the declaration.
+    @param constraint_info A boolean value indicating whether
+    constraint information is to be printed with the declaration.
+    If the value of this parameter is TRUE, <tt>print_decl()</tt> prints
+    the value of the variable's <tt>send_p()</tt> flag after the
+    declaration. 
+    @param constrained If this boolean value is TRUE, the variable's
+    declaration is only printed if is the <tt>send_p()</tt> flag is TRUE.
+    If a constraint expression is in place, and this variable is not
+    requested, the <tt>send_p()</tt> flag is FALSE.
+
+    @see DDS
+    @see DDS::CE
+*/
 void 
 BaseType::print_decl(FILE *out, string space, bool print_semi, 
 		     bool constraint_info, bool constrained)
@@ -695,7 +881,7 @@ BaseType::print_decl(FILE *out, string space, bool print_semi,
 	return;
 
     fprintf( out, "%s%s %s", space.c_str(), type_name().c_str(),
-			     id2www(_name).c_str() ) ;
+	     id2www(_name).c_str() ) ;
 
     if (constraint_info) {
 	if (send_p())
@@ -785,16 +971,13 @@ BaseType::check_semantics(string &msg, bool)
     return sem;
 }
 
-// Member functions for the relational operators used in evaluating a
-// relational clause in a constraint expression. Each class that wants these
-// to do something interesting must supply their own versions. These print an
-// error message and return False.
-
-/** This function contains the relational operators used by the
-    constraint expression evaluator in the DDS class. Each class
-    that wants to be able to evaluate relational expressions must
-    overload this function. The implementation in BaseType returns
-    false and prints an error message.
+/** This method contains the relational operators used by the constraint
+    expression evaluator in the DDS class. Each class that wants to be able
+    to evaluate relational expressions must overload this function. The
+    implementation in BaseType throws an InternalErr exception. The DAP
+    library classes Byte, ..., Url provide specializations of this method. It
+    is not meaningful for classes such as Array because relational
+    expressions using Array are not supported.
 
     The <i>op</i> argument refers to a table generated by bison from
     the constraint expression parser.  Use statements like the
@@ -802,32 +985,21 @@ BaseType::check_semantics(string &msg, bool)
 
     \verbatim
     switch (op) {
-    case EQUAL:
-    return i1 == i2;
-    case NOT_EQUAL:
-    return i1 != i2;
-    case GREATER:
-    return i1 > i2;
-    case GREATER_EQL:
-    return i1 >= i2;
-    case LESS:
-    return i1 < i2;
-    case LESS_EQL:
-    return i1 <= i2;
-    case REGEXP:
-    cerr << "Regular expressions not valid for integer values" << endl;
-    return false;
-    default:
-    cerr << "Unknown operator" << endl;
-    return false;
+        case EQUAL: return i1 == i2;
+        case NOT_EQUAL: return i1 != i2;
+        case GREATER: return i1 > i2;
+        case GREATER_EQL: return i1 >= i2;
+        case LESS: return i1 < i2;
+        case LESS_EQL: return i1 <= i2;
+        case REGEXP: throw Error("Regular expressions are not supported for integer values");
+        default: throw Error("Unknown operator");
     }
     \endverbatim
 
     This function is used by the constraint expression evaluator.
 
-    @brief The class relational operators.
-    @param b The value with which the instance value is to be
-    compared. 
+    @brief Evaluate relational operators.
+    @param b Comare the value of this instance with \e b.
     @param op An integer index indicating which relational operator
     is implied. Choose one from the following: <tt>EQUAL</tt>,
     <tt>NOT_EQUAL</tt>, <tt>GREATER</tt>, <tt>GREATER_EQL</tt>,
@@ -838,14 +1010,32 @@ BaseType::check_semantics(string &msg, bool)
 bool 
 BaseType::ops(BaseType *, int, const string &)
 {
+<<<<<<< BaseType.cc
     // Even though ops is a public method, it can never be called because
     // they will never have a BaseType object since this class is abstract,
     // however any of the child classes could by mistake call BaseType::ops
     // so this is an internal error. Jose Garcia
+=======
+>>>>>>> 1.51.2.3
     throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.54  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.51.2.3  2003/09/28 20:57:22  rmorris
+// Discontinued use of XDR_PROC typedef, using xdrproc_t instead - a
+// define from the xdr portion of the rpc library.
+//
+// Revision 1.51.2.2  2003/09/06 22:23:24  jimg
+// Significant changes to the documentation. Added the in_selection property and
+// accessor/mutator methods for it. Added use of the typedef XDR_PROC which
+// allowed me to remove some of the #if WIN32 code (see dods-datatypes.h.in).
+//
+// Revision 1.51.2.1  2003/06/05 20:15:25  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.53  2003/05/30 16:52:45  jimg
 // Minor fixes to the comments.
 //

@@ -142,7 +142,7 @@ id2www(string in, const string &allowable)
     the rules so that characters that we've been sending in CEs will be sent
     unencoded. This is needed to keep the newer clients from breaking the old
     servers. The only difference between this function and id2www is that
-    #[]:{}&# have been added to the allowable set of characters.
+    <code>[]:{}&</code> have been added to the allowable set of characters.
 
     @param in The string in which to replace characters.
     @param allowable The set of characters that are allowed in a URI.
@@ -273,7 +273,7 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]")
     that follows it. Note that the ASCII code is in hex.
 
     To escape all non-alphanumeric characters, use "[^A-Za-z0-9_]" for
-    #escape#.
+    \e escape.
 
     @param s The string to transform
     @param escape A regular expression which matches the characters to
@@ -395,6 +395,12 @@ munge_error_message(string msg)
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.28  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.26.2.1  2003/09/06 23:00:24  jimg
+// Updated the documentation.
+//
 // Revision 1.27  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

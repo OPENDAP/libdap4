@@ -70,6 +70,9 @@ string unescattr(string s);
 string munge_error_message(string msg);
 
 // $Log: escaping.h,v $
+// Revision 1.15  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.14  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

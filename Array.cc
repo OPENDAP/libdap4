@@ -64,11 +64,12 @@ Array::_duplicate(const Array &a)
 // in which case that means they want the whole thing. Array projection
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
     
-/** @deprecated Changes the size property of the array.  If the array
+/** @deprecated Calling this method should never be necessary. It is called
+    whenever the size of the Array is changed.
+
+    Changes the size property of the array.  If the array
     exists, it is augmented by a factor of <tt>size</tt>. This does
     not change the actual size of the array.
-
-    @brief Changes the size property of the array.  
 */
 void
 Array::update_length(int size)
@@ -238,6 +239,8 @@ specified do not match the array variable.";
     return value.
 
     @brief Adds a dimension constraint to an Array.
+    @deprecated Methods which use the Pix objects are deprecated in favor of
+    the methods which use iterators.
 
     @param p An index (of type Pix) pointing to the dimension in the
     list of dimensions.
@@ -256,6 +259,25 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
     return ;
 }
 
+/** Once a dimension has been created (see append_dim()), it can
+    be ``constrained''.  This will make the array appear to the rest
+    of the world to be smaller than it is.  This functions sets the
+    projection for a dimension, and marks that dimension as part of the
+    current projection.
+
+    \note A stride value <= 0 or > the array size is an error and causes
+    add_constraint to throw an Error. Similarly, start or stop values >
+    size also cause an Error exception to be thrown.
+
+    @brief Adds a constraint to an Array dimension.  
+
+    @param i An STL iterator pointing to the dimension in the list of 
+    dimensions.
+    @param start The start index of the constraint.
+    @param stride The stride value of the constraint.
+    @param stop The stop index of the constraint.
+    @exception Error Thrown if the any of values of start, stop or stride
+    cannot be applied to this array. */
 void
 Array::add_constraint(Dim_iter &i, int start, int stride, int stop)
 {
@@ -298,12 +320,14 @@ Array::first_dim()
     return i ;
 }
 
+/** Returns an iterator to the first dimension of the Array. */
 Array::Dim_iter
 Array::dim_begin()
 {
     return _shape.begin() ;
 }
 
+/** Returns an iterator past the last dimension of the Array. */
 Array::Dim_iter
 Array::dim_end()
 {
@@ -314,6 +338,9 @@ Array::dim_end()
     dimension.   Use <tt>first_dim()</tt> to return the first dimensions.
 
     @brief Return next array dimension.
+    @deprecated Methods which use the Pix objects are deprecated. Use the
+    methods which use iterators.
+
     @param p A <b>Pix</b> object indicating the array dimension immediately
            before the desired one.
     @return A <b>Pix</b> object indicating the array dimension immediately 
@@ -849,6 +876,12 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.61  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.59.2.1  2003/09/06 22:37:50  jimg
+// Updated the documentation.
+//
 // Revision 1.60  2003/05/23 03:24:56  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

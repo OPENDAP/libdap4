@@ -37,8 +37,10 @@
 #ifndef _array_h
 #define _array_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <string>
@@ -99,6 +101,14 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
 class Array: public Vector {
 public:
+    /** Information about a dimension. Each Array has one or more dimensions.
+	A cooresponding instance of this struct holds the natural size, name,
+	constraint information and constrained size. The boolean \e selected
+	is no longer used. 
+
+        Instead of using this struct's fileds directly, use Array's methods.
+
+        This sturct is public because its type is used in public typedefs. */
     struct dimension {		// each dimension has a size and a name
 	int size;
 	string name;
@@ -135,24 +145,6 @@ public:
 
     void append_dim(int size, string name = "");
 
-    /** Once a dimension has been created (see #append_dim()#), it can
-	be ``constrained''.  This will make the array appear to the rest
-	of the world to be smaller than it is.  This functions sets the
-	projection for a dimension, and marks that dimension as part of the
-	current projection.
-
-	\note{A stride value <= 0 or > the array size is an error and causes
-	#add_constraint# to return FALSE. Similarly, start or stop values >
-	size also cause a FALSE return value.}
-
-	@memo Adds a constraint to an Array dimension.  
-
-	@param i An STL iterator pointing to the dimension in the list of 
-	dimensions.
-	@param start The start index of the constraint.
-	@param stride The stride value of the constraint.
-	@param stop The stop index of the constraint.
-	@return void; in case of failure it throws an exception. */
     void add_constraint(Dim_iter &i, int start, int stride, int stop);
 
     void add_constraint(Pix p, int start, int stride, int stop);
@@ -165,20 +157,9 @@ public:
 
     void next_dim(Pix p);
 
-    /** Returns an iterator to the first dimension of the array.
-     */
     Dim_iter dim_begin() ;
 
-    /** Returns an iterator to the end of the dimension, does not point
-	to the last element of the array
-    */
     Dim_iter dim_end() ;
-
-    /** Given a dimension index, returns the index of the next dimension.
-	@param p The Pix index of the dimension.
-	@deprecated use iterator operator ++ with the iterator returned from
-	dim_begin
-	@see dim_begin() */
 
     int dimension_size(Pix p, bool constrained = false);
     int dimension_size(Dim_iter &i, bool constrained = false);
@@ -228,6 +209,17 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.58  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.56.2.2  2003/09/06 22:37:50  jimg
+ * Updated the documentation.
+ *
+ * Revision 1.56.2.1  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
  * Revision 1.57  2003/05/23 03:24:56  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

@@ -48,17 +48,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.lex,v 1.29 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.lex,v 1.30 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <string.h>
 #include <assert.h>
 
 #include <string>
-#if 0
-#include <SLList.h>
-#endif
 
 #define YY_DECL int exprlex YY_PROTO(( void ))
+#define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
 
 #include "Error.h"
 #include "parser.h"
@@ -67,10 +65,6 @@ static char rcsid[] not_used = {"$Id: expr.lex,v 1.29 2003/04/22 19:40:28 jimg E
 #include "expr.tab.h"
 #include "escaping.h"
 
-#if 0
-static void store_int32();
-static void store_float64();
-#endif
 static void store_id();
 static void store_str();
 static void store_op(int op);
@@ -185,28 +179,6 @@ expr_delete_buffer(void *buf)
     expr_delete_buffer((YY_BUFFER_STATE)buf);
 }
 
-// Note that since atoi() (or strtol()) does not care about signedness, this
-// will dump an unsigned value into a signed variable. However, if the value
-// is used in an unsigned context (i.e., with an operand that is of unsigned
-// type) then the signed value can be cast back to unsigned without losing
-// information.
-
-#if 0
-static void
-store_int32()
-{
-    exprlval.val.type = dods_int32_c;
-    exprlval.val.v.i = atoi(yytext);
-}
-
-static void
-store_float64()
-{
-    exprlval.val.type = dods_float64_c;
-    exprlval.val.v.f = atof(yytext);
-}
-#endif
-
 static void
 store_id()
 {
@@ -237,6 +209,16 @@ store_op(int op)
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.30  2003/12/08 18:02:30  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.29.2.1  2003/10/03 16:25:02  jimg
+ * I changed the way the scanners handle errors. They were calling
+ * YY_FATAL_ERROR and using the default value which prints a msg to stderr
+ * and calls exit(1). I've changed that to a new sniplet that throws an
+ * exception (Error). In addition, some of the scanners would ignore
+ * illegal characters; they now treat those as fatal errors.
+ *
  * Revision 1.29  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

@@ -39,8 +39,19 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.41 2003/09/25 22:37:34 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.42 2003/12/08 18:02:29 edavis Exp $"};
 
+#include <signal.h>
+
+#ifndef WIN32
+#include <unistd.h>
+#include <sys/wait.h>
+#else
+#include <io.h>
+#include <fcntl.h>
+#include <process.h>
+#endif
+ 
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -55,7 +66,12 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.41 2003/09/25 22:37:34 j
 #include "escaping.h"
 #include "DODSFilter.h"
 #include "InternalErr.h"
+#ifndef WIN32
+#include "SignalHandler.h"
+#include "EventHandler.h"
+#endif
 
+<<<<<<< DODSFilter.cc
 using namespace std;
 
 const string usage = 
@@ -72,6 +88,15 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
          -l <time>: Conditional request; if data source is unchanged since\n\
                     <time>, return an HTTP 304 response.\n\
 ";
+=======
+using namespace std;
+
+#ifdef WIN32
+#define WAITPID(pid) while(_cwait(NULL, pid, NULL) > 0)
+#else
+#define WAITPID(pid) while(waitpid(pid, 0, 0) > 0)
+#endif
+>>>>>>> 1.37.2.6
 
 /** Create an instance of DODSFilter using the command line
     arguments passed by the CGI (or other) program.  The default
@@ -121,6 +146,13 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
     handlers support caching and each uses its own rules tailored to a
     specific file or data type.
 
+<<<<<<< DODSFilter.cc
+=======
+    <dt><tt>-t</tt> <i>timeout</i><dd> Specifies a a timeout value in
+    seconds. If the server runs longer than \e timeout seconds, an Error is
+    returned to the client explaining that the request has timed out. 
+
+>>>>>>> 1.37.2.6
     <dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is a
     conditional request; send a complete response if and only if the data has
     changed since <i>time</i>. If it has not changed since <i>time</i>, then
@@ -175,7 +207,13 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
 
     d_program_name = argv[0];
 
+<<<<<<< DODSFilter.cc
     // This should be specialized by a subclass. This may throw Error.
+=======
+    d_timeout = 0;
+
+    // This should be specialized by a subclass.
+>>>>>>> 1.37.2.6
     int next_arg = process_options(argc, argv);
 
     // Look at what's left after processing the command line options. Either
@@ -202,7 +240,11 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     DBG(cerr << "d_cache_dir: " << d_cache_dir << endl);
     DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
     DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
+<<<<<<< DODSFilter.cc
     DBG(cerr << "d_url: " << d_url << endl);
+=======
+    DBG(cerr << "d_timeout: " << d_timeout << endl);
+>>>>>>> 1.37.2.6
 }
 
 /** Processing the command line options passed to the filter is handled by
@@ -229,8 +271,12 @@ DODSFilter::process_options(int argc, char *argv[]) throw(Error)
 	  case 'd': d_anc_dir = getopt.optarg; break;
 	  case 'f': d_anc_file = getopt.optarg; break;
 	  case 'r': d_cache_dir = getopt.optarg; break;
+<<<<<<< DODSFilter.cc
 	  case 'o': set_response(getopt.optarg); break;
 	  case 'u': set_URL(getopt.optarg); break;
+=======
+	  case 't': d_timeout = atoi(getopt.optarg); break;
+>>>>>>> 1.37.2.6
 	  case 'l': 
 	    d_conditional_request = true;
 	    d_if_modified_since 
@@ -494,6 +540,44 @@ DODSFilter::get_cache_dir()
   return d_cache_dir;
 }
 
+/** Set the server's timeout value. A value of zero (the default) means no
+    timeout.
+
+    @param t Server timeout in seconds. Default is zero (no timeout). */
+void 
+DODSFilter::set_timeout(int t)
+{
+    d_timeout = t;
+}
+
+/** Get the server's timeout value. */
+int
+DODSFilter::get_timeout() const
+{
+    return d_timeout;
+}
+
+/** Use values of this instance to establish a timeout alarm for the server.
+    If the timeout value is zero, do nothing. When the alarm handler is
+    called, two CRLF pairs are dumps to the stream and then an Error object
+    is sent. No attempt is made to write the 'correct' MIME headers for an
+    Error object. Instead, a savvy client will know that when an exception is
+    thrown during a deserialize operation, it should scan ahead in the input
+    stream for an Error object. Dumb clients will never get the Error
+    object... */
+void
+DODSFilter::establish_timeout(FILE *stream)
+{
+#ifndef WIN32
+    if (d_timeout > 0) {
+	SignalHandler *sh = SignalHandler::instance();
+	sh->register_handler(SIGALRM, new AlarmHandler(stream));
+	alarm(d_timeout);
+    }
+#endif
+}
+
+
 /** Read the ancillary DAS information and merge it into the input
     DAS object.
 
@@ -703,43 +787,113 @@ DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location)
     send_dds(stdout, dds, constrained, anc_location);
 }
 
-/** Send the data in the DDS object back to the client
-    program.  The data is encoded in XDR format, and enclosed in a
-    MIME document which is all sent to stdout.  This has the effect
-    of sending it back to the client.
+void
+DODSFilter::functional_constraint(BaseType &var, DDS &dds, FILE *out,
+				  time_t lmt) throw(Error)
+{
+    fprintf(out, "Dataset {\n");
+    var.print_decl(out, "    ", true, false, true);
+    fprintf(out, "} function_value;\n");
+    fprintf(out, "Data:\n");
+
+    fflush(out);
+      
+    // Grab a stream encodes using XDR.
+    XDR *xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+
+    try {
+	// In the following call to serialize, suppress CE evaluation.
+	var.serialize(d_dataset, dds, xdr_sink, false);
+	delete_xdrstdio(xdr_sink);
+    }
+    catch (Error &e) {
+	delete_xdrstdio(xdr_sink);
+	throw;
+    }
+}
+
+void
+DODSFilter::dataset_constraint(DDS &dds, FILE *out, time_t lmt) throw(Error)
+{
+    // send constrained DDS	    
+    dds.print_constrained(out);
+    fprintf(out, "Data:\n");
+    fflush(out);
+
+    // Grab a stream that encodes using XDR.
+    XDR *xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+
+    try {
+	// Send all variables in the current projection (send_p())
+	for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+	    if ((*i)->send_p()) {
+		DBG(cerr << "Sending " << (*i)->name() << endl);
+		(*i)->serialize(d_dataset, dds, xdr_sink, true);
+	    }
+
+	delete_xdrstdio(xdr_sink);
+    }
+    catch (Error &e) {
+	delete_xdrstdio(xdr_sink);
+	throw;
+    }
+}
+
+/** Send the data in the DDS object back to the client program. The data is
+    encoded in XDR format, and enclosed in a MIME document which is all sent
+    to \c data_stream. If this is being called from a CGI, \c data_stream is
+    probably \c stdout and writing to it has the effect of sending the
+    response back to the client.
 
     @brief Transmit data.
     @param dds A DDS object containing the data to be sent.
-    @param data_stream A pointer to the XDR sink into which the data
-    is to be put for encoding and transmission.
+    @param data_stream Write the response to this stream.
     @param anc_location A directory to search for ancillary files (in
     addition to the CWD).  This is used in a call to 
     get_data_last_modified_time(). 
-    @return void
-    @see DDS */
+    @return void */
 void
 DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 {
-    bool compress = d_comp && deflate_exists();
-    time_t data_lmt = get_data_last_modified_time(anc_location);
-
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response. 
+    time_t data_lmt = get_data_last_modified_time(anc_location);
     if (is_conditional()
 	&& data_lmt <= get_request_if_modified_since()) {
 	set_mime_not_modified(data_stream);
 	return;
     }
 
-    // Jose Garcia
-    // DDS::send may return false or throw an exception
-    if (!dds.send(d_dataset, d_ce, data_stream, compress, d_cgi_ver,
-		  data_lmt)) {
-	ErrMsgT((compress) ? "Could not send compressed data" : 
-		"Could not send data");
-	throw InternalErr("could not send data");
+    // Set up the alarm.
+    establish_timeout(data_stream);
+    dds.set_timeout(d_timeout);
+
+    dds.parse_constraint(d_ce);	// Throws Error if the ce doesn't parse.
+
+    // Start sending the response... 
+    bool compress = d_comp && deflate_exists();
+    set_mime_binary(data_stream, dods_data, d_cgi_ver,
+		    (compress) ? deflate : x_plain, data_lmt);
+    fflush(data_stream);
+
+    int childpid;
+    if (compress)
+	data_stream = compressor(data_stream, childpid);
+    // Handle *functional* constraint expressions specially 
+    if (dds.functional_expression()) {
+	BaseType *var = dds.eval_function(d_dataset);
+	if (!var)
+	    throw Error(unknown_error, "Error calling the CE function.");
+
+	functional_constraint(*var, dds, data_stream, data_lmt);
     }
+    else
+	dataset_constraint(dds, data_stream, data_lmt);
+    
+    fclose(data_stream);
+    if (compress)
+	WAITPID(childpid);
 }
 
 /** Send the DDX response. The DDX never contains data, instead it holds a
@@ -828,8 +982,37 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.42  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.41  2003/09/25 22:37:34  jimg
 // Misc changes.
+//
+// Revision 1.37.2.6  2003/09/06 22:29:00  jimg
+// Updated the documentation. Added instrumentation to DODSFilter::send().
+//
+// Revision 1.37.2.5  2003/08/17 01:37:54  rmorris
+// Removed "smart timeout" functionality under win32.  alarm() and
+// SIGALRM are not supported under win32 - plus that functionality
+// appears to be server-side only and win32 is client-side only.
+//
+// Revision 1.37.2.4  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
+// Revision 1.37.2.3  2003/07/23 23:56:36  jimg
+// Now supports a simple timeout system.
+//
+// Revision 1.37.2.2  2003/06/14 00:57:39  rmorris
+// Patched in a change lost during move to the 3-4 branch.
+//
+// Revision 1.37.2.1  2003/06/05 20:15:25  jimg
+// Removed many uses of strstream and replaced them with stringstream.
 //
 // Revision 1.40  2003/05/27 21:39:54  jimg
 // Added DDX_Response to the set_response() method.

@@ -172,6 +172,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISDatabaseParserTest.cc,v $
+// Revision 1.8  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.7  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

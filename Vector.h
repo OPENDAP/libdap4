@@ -35,8 +35,10 @@
 #ifndef _vector_h
 #define _vector_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #ifdef WIN32
@@ -130,7 +132,7 @@ public:
 
     void vec_resize(int l);
 
-    virtual BaseType *var(const string &name = "", bool exact_match = true);
+    virtual BaseType *var(const string &name = "", bool exact = true);
 
     virtual BaseType *var(const string &name, btp_stack &s);
 
@@ -143,6 +145,17 @@ public:
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.40  2003/12/08 18:02:30  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.38.2.2  2003/09/06 22:56:43  jimg
+ * Updated the documentation.
+ *
+ * Revision 1.38.2.1  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
  * Revision 1.39  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

@@ -36,7 +36,10 @@
 #include "config_dap.h"
 
 #include <string>
+<<<<<<< Constructor.cc
 #include <algorithm>
+=======
+>>>>>>> 1.8.2.2
 
 #include "Constructor.h"
 #include "BTIterAdapter.h"
@@ -87,6 +90,7 @@ Constructor::operator=(const Constructor &rhs)
     return *this;
 }
 
+<<<<<<< Constructor.cc
 /** @name Pix interface; deprecated */
 //@{
 /** @brief Returns an index to the first variable in a Constructor instance.
@@ -253,6 +257,17 @@ Constructor::print_xml(FILE *out, string space, bool constrained)
     @brief Check to see whether this variable can be printed simply.
     @return True if the instance can be printed as a single table of
     values, false otherwise. */
+=======
+/** True if the instance can be flattened and printed as a single table
+    of values. For Arrays and Grids this is always false. For Structures
+    and Sequences the conditions are more complex. The implementation
+    provided by this class always returns false. Other classes should
+    override this implementation.
+
+    @brief Check to see whether this variable can be printed simply.
+    @return True if the instance can be printed as a single table of
+    values, false otherwise. */
+>>>>>>> 1.8.2.2
 bool
 Constructor::is_linear()
 {
@@ -260,6 +275,15 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.10  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.8.2.2  2003/09/06 22:37:50  jimg
+// Updated the documentation.
+//
+// Revision 1.8.2.1  2003/06/05 20:15:25  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.9  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

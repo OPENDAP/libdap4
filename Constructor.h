@@ -37,7 +37,11 @@
 #include "BaseType.h"
 #endif
 
+<<<<<<< Constructor.h
 
+=======
+/** Common methods for all constructor types. */
+>>>>>>> 1.7.2.1
 class Constructor: public BaseType {
 private:
     Constructor();		// No default ctor.
@@ -58,6 +62,7 @@ public:
 
     Constructor &operator=(const Constructor &rhs);
 
+<<<<<<< Constructor.h
     // Deprecated Pix interface
     virtual Pix first_var();
     virtual void next_var(Pix p);
@@ -81,6 +86,9 @@ public:
 
     virtual void print_xml(FILE *out, string space = "    ", 
 			   bool constrained =false);
+=======
+    virtual bool is_linear();
+>>>>>>> 1.7.2.1
 };
 
 #endif // _constructor_h 

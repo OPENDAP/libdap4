@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: error-test.cc,v 1.13 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: error-test.cc,v 1.14 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <assert.h>
 
@@ -216,6 +216,9 @@ test_object(Error &err)
 #endif
 
 // $Log: error-test.cc,v $
+// Revision 1.14  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.13  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

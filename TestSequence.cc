@@ -42,7 +42,7 @@
 #endif
 
 #if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
+#include <sstream>
 #else
 #include <sstream>
 #endif
@@ -53,7 +53,7 @@
 
 using std::cerr;
 using std::endl;
-using std::istrstream;
+using std::istringstream;
 
 void
 TestSequence::_duplicate(const TestSequence &ts)
@@ -139,7 +139,7 @@ TestSequence::read(const string &dataset)
 	    break;		// Assume valid line.
     }
 
-    istrstream iss(line);
+    istringstream iss(line);
 
     for (Vars_iter iter = var_begin(); iter != var_end(); iter++)
     {
@@ -209,6 +209,12 @@ TestSequence::length()
 }
 
 // $Log: TestSequence.cc,v $
+// Revision 1.32  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.30.2.1  2003/06/05 20:15:26  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.31  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.65 2003/09/25 22:33:39 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.66 2003/12/08 18:02:29 edavis Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -58,6 +58,8 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.65 2003/09/25 22:33:39 jimg Exp
 
 #include "Regex.h"
 
+// #define DODS_DEBUG
+
 #include "expr.h"
 #include "Clause.h"
 #include "DAS.h"
@@ -79,10 +81,16 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.65 2003/09/25 22:33:39 jimg Exp
 #include "trace_new.h"
 #endif
 
+<<<<<<< DDS.cc
 const string default_schema_location = "http://argon.coas.oregonstate.edu/ndp/dods.xsd";
 const string dods_namespace = "http://www.dods.org/ns/DODS";
 
 using namespace std;
+=======
+using std::cerr;
+using std::endl;
+using std::ofstream;
+>>>>>>> 1.62.2.5
 
 void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
 int ddsparse(void *arg);
@@ -117,7 +125,7 @@ DDS::duplicate(const DDS &dds)
 }
 
 /** Creates a DDS with the given string for its name. */
-DDS::DDS(const string &n) : name(n)
+DDS::DDS(const string &n) : name(n), d_timeout(0)
 {
     add_function("length", func_length);
     add_function("grid", func_grid_select);
@@ -653,7 +661,7 @@ DDS::var_end()
     return vars.end() ;
 }
 
-/** Return the iterator for the \i ith variable.
+/** Return the iterator for the \e ith variable.
     @param i the index
     @return The corresponding  Vars_iter */
 DDS::Vars_iter
@@ -686,6 +694,38 @@ int
 DDS::num_var()
 {
     return vars.size();
+}
+
+/////////////////////// Mostly CE evaluator below this point //////////////
+
+void
+DDS::timeout_on()
+{
+#ifndef WIN32
+    alarm(d_timeout);
+#endif
+}
+
+void 
+DDS::timeout_off()
+{
+#ifndef WIN32
+    d_timeout = alarm(0);
+#endif
+}
+
+void
+DDS::set_timeout(int t)
+{
+	//  Has no effect under win32
+    d_timeout = t;
+}
+
+int
+DDS::get_timeout()
+{
+	//  Has to effect under win32
+    return d_timeout;
 }
 
 /** Returns a pointer to the first clause in a parsed constraint
@@ -848,19 +888,8 @@ DDS::append_constant(BaseType *btp)
 
     @name External Function Accessors
 */
-    //@{
-#if 0
-/** Add a function to the list. */
-template<class FUNC_T>
-void 
-DDS::add_function(const string &name, FUNC_T f)
-{
-    function func(name, f);
-    functions.push_back(func);
-}
-#endif
+//@{
 
-#if 1
 /** @brief Add a boolean function to the list. */
 void
 DDS::add_function(const string &name, bool_func f)
@@ -868,6 +897,7 @@ DDS::add_function(const string &name, bool_func f)
     function func(name, f);
     functions.push_back(func);
 }
+
 /** @brief Add a BaseType function to the list. */
 void
 DDS::add_function(const string &name, btp_func f)
@@ -883,7 +913,6 @@ DDS::add_function(const string &name, proj_func f)
     function func(name, f);
     functions.push_back(func);
 }
-#endif
 
 /** @brief Find a Boolean function with a given name in the function list. */
 bool
@@ -893,11 +922,11 @@ DDS::find_function(const string &name, bool_func *f) const
 	return false;
 
     for (Functions_citer i = functions.begin(); i != functions.end(); i++)
-    {
-	if (name == (*i).name && (*f = (*i).b_func)) {
-	    return true;
+	{
+	    if (name == (*i).name && (*f = (*i).b_func)) {
+		return true;
+	    }
 	}
-    }
 
     return false;
 }
@@ -910,11 +939,11 @@ DDS::find_function(const string &name, btp_func *f) const
 	return false;
 
     for (Functions_citer i = functions.begin(); i != functions.end(); i++)
-    {
-	if (name == (*i).name && (*f = (*i).bt_func)) {
-	    return true;
+	{
+	    if (name == (*i).name && (*f = (*i).bt_func)) {
+		return true;
+	    }
 	}
-    }
 
     return false;
 }
@@ -933,8 +962,7 @@ DDS::find_function(const string &name, proj_func *f) const
 
     return false;
 }
-    //@}
-
+//@}
 
 /** @brief Does the current constraint expression return a BaseType
     pointer? */
@@ -1163,6 +1191,7 @@ DDS::print_constrained(FILE *out)
     return;
 }
 
+<<<<<<< DDS.cc
 class VariablePrintXML : public unary_function<BaseType *, void> {
     FILE *d_out;
     bool d_constrained;
@@ -1229,6 +1258,8 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
     return;
 }
 
+=======
+>>>>>>> 1.62.2.5
 /** @brief Check the semantics of each of the variables represented in the
     DDS. 
 
@@ -1266,11 +1297,34 @@ DDS::check_semantics(bool all)
 
 /** @brief Parse the constraint expression given the current DDS. 
 
+    Evaluate the constraint expression; return the value of the expression.
+    As a side effect, mark the DDS so that BaseType's mfuncs can be used to
+    correctly read the variable's value and send it to the client.
+
+    @param constraint A string containing the constraint expression.
+    @exception Throws Error if the constraint does not parse. */
+void
+DDS::parse_constraint(const string &constraint)
+{
+    void *buffer = expr_string(constraint.c_str());
+    expr_switch_to_buffer(buffer);
+
+    parser_arg arg(this);
+
+    // For all errors, exprparse will throw Error. 
+    exprparse((void *)&arg);
+
+    expr_delete_buffer(buffer);
+}
+
+/** @brief Parse the constraint expression given the current DDS. 
+
     Evaluate the constraint expression; return the value of the
     expression. As a side effect, mark the DDS so that BaseType's
     mfuncs can be used to correctly read the variable's value and
     send it to the client. 
 
+    @deprecated Use the single argument version.
     @return void
     @param constraint A string containing the constraint
     expression. 
@@ -1299,6 +1353,9 @@ DDS::parse_constraint(const string &constraint, ostream &os, bool server)
     mfuncs can be used to correctly read the variable's value and
     send it to the client. 
 
+    @deprecated This version requires the second param even though it's never
+    used. Use the single argument version.
+
     @return void
     @param constraint A string containing the constraint
     expression. 
@@ -1321,6 +1378,9 @@ DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 
     return;
 }
+
+// These three functions are defined here because they are used by the
+// deprecated DDS::send method. 07/24/03 jhrg
 
 // We start two sinks, one for regular data and one for XDR encoded data.
 int
@@ -1347,26 +1407,51 @@ clean_sinks(int childpid, bool compressed, XDR *xdr_sink, FILE *comp_sink)
     delete_xdrstdio(xdr_sink);
     
     if (compressed) {
+<<<<<<< DDS.cc
 	int res = fclose(comp_sink);
 	if (res)
 	    DBG(cerr << "clean_sinks - Failed to close " << (void *)comp_sink 
 		<< endl);
+=======
+	if (fclose(comp_sink)) {
+	    DBG(cerr << "clean_sinks - Failed to close " << (void *)comp_sink 
+		<< endl);
+	}
+>>>>>>> 1.62.2.5
 
 	int pid = 0 ;
 #ifdef WIN32
-	while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
+	while ((pid = _cwait(NULL, childpid, NULL)) > 0)
 #else
-	while ((pid = waitpid(childpid, 0, 0)) > 0) {
+	while ((pid = waitpid(childpid, 0, 0)) > 0)
 #endif
-	    DBG(cerr << "pid: " << pid << endl);
-	}
+	    DBG2(cerr << "pid: " << pid << endl);
     }
+}
+
+static void
+print_variable(FILE *out, BaseType *var, bool constrained = false)
+{
+    if(!out)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "Invalid file descriptor, NULL pointer!");
+    if(!var)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "Passing NULL variable to function print_variable.");
+
+    fprintf( out, "Dataset {\n" ) ;
+
+    var->print_decl( out, "    ", true, false, constrained ) ;
+
+    fprintf( out, "} function_value;\n" ) ;
 }
 
 /** This function sends the variables described in the constrained DDS to
     the output described by the FILE pointer. This function calls
     <tt>parse_constraint()</tt>, <tt>BaseType::read()</tt>, and
     <tt>BaseType::serialize()</tt>.
+
+    @deprecated Use method in DODSFilter instead. 07/24/03 jhrg
 
     @return True if successful, false otherwise.
     @param dataset The name of the dataset to send.
@@ -1403,6 +1488,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 
 	set_mime_binary(out, dods_data, cgi_ver,
 			(compressed) ? deflate : x_plain, lmt);
+	fflush(out);
       
 	FILE *comp_sink;
 	XDR *xdr_sink;
@@ -1410,8 +1496,9 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
       
 	print_variable((compressed) ? comp_sink : out, var, true);
 	fprintf((compressed) ? comp_sink : out, "Data:\n");
+	fflush((compressed) ? comp_sink : out);
       
-	    // In the following call to serialize, suppress CE evaluation.
+	// In the following call to serialize, suppress CE evaluation.
 	status = var->serialize(dataset, *this, xdr_sink, false);
       
 	clean_sinks(childpid, compressed, xdr_sink, comp_sink);
@@ -1419,20 +1506,22 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
     else {
 	set_mime_binary(out, dods_data, cgi_ver,
 			(compressed) ? deflate : x_plain, lmt);
-    
+	fflush(out);
+
 	FILE *comp_sink;
 	XDR *xdr_sink;
 	int childpid = get_sinks(out, compressed, &comp_sink, &xdr_sink);
 
 	// send constrained DDS	    
-	print_constrained((compressed) ? comp_sink : out); 
+	print_constrained((compressed) ? comp_sink : out);
 	fprintf((compressed) ? comp_sink : out, "Data:\n");
+	fflush((compressed) ? comp_sink : out);
 
 	for (Vars_iter i = vars.begin(); i != vars.end(); i++)
 	    if ((*i)->send_p()) // only process projected variables
 		status = status && (*i)->serialize(dataset, *this,
 						   xdr_sink, true);
-    
+
 	clean_sinks(childpid, compressed, xdr_sink, comp_sink);
     }
 
@@ -1456,6 +1545,13 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
     @return True if the named variable was found, false otherwise.
 
     @todo This should throw an exception on error!!!
+
+    @todo These methods that use the btp_stack to keep track of the path from
+    the top of a dataset to a particular variable can be rewritten to use the
+    parent field instead. 
+
+    @todo All the methods that use names to identify variables should have
+    counterparts that take BaseType pointers.
 */
 bool
 DDS::mark(const string &n, bool state)
@@ -1498,8 +1594,37 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.66  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.65  2003/09/25 22:33:39  jimg
 // Made local functions static.
+//
+// Revision 1.62.2.5  2003/09/06 22:27:26  jimg
+// Updated the documentation. Removed some old code.
+//
+// Revision 1.62.2.4  2003/08/17 01:37:54  rmorris
+// Removed "smart timeout" functionality under win32.  alarm() and
+// SIGALRM are not supported under win32 - plus that functionality
+// appears to be server-side only and win32 is client-side only.
+//
+// Revision 1.62.2.3  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
+// Revision 1.62.2.2  2003/07/23 23:56:36  jimg
+// Now supports a simple timeout system.
+//
+// Revision 1.62.2.1  2003/07/16 04:22:39  jimg
+// Fixed a bug (part of #635) where compressed data responses needed to have the
+// stream flushed. I added calls to make sure the stream was flushed at two
+// critical spots, one where the headers are written and one where the DDS is
+// written.
 //
 // Revision 1.64  2003/05/30 16:51:45  jimg
 // Modified transfer_attrs() so that aliases are supported. Unfortunately,

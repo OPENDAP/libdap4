@@ -85,6 +85,9 @@ public:
 };
 
 // $Log: AISMerge.h,v $
+// Revision 1.4  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.3  2003/03/14 00:01:25  jimg
 // merge() now throws Error, too.
 //

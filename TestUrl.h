@@ -36,8 +36,10 @@
 #ifndef _testurl_h
 #define _testurl_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include "Url.h"
@@ -54,6 +56,14 @@ public:
 
 /* 
  * $Log: TestUrl.h,v $
+ * Revision 1.17  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.16.2.1  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
  * Revision 1.16  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

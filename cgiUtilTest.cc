@@ -38,33 +38,29 @@
 #include <unistd.h>
 
 #include <string>
-#include <strstream>
+#include <sstream>
 
 #include "Regex.h"
 
 #include "cgi_util.h"
+#include "debug.h"
 
 using namespace CppUnit;
-using std::streampos ;
-using std::ends ;
-
-using std::ostrstream;
-using std::streampos;
-using std::ends;
+using namespace std;
 
 class cgiUtilTest : public TestFixture {
 private:
-    ostrstream oss;
-    streampos start_oss;
+    ostringstream oss;
 
 protected:
     void reset_oss() {
-	oss.freeze(0);
-	oss.seekp(start_oss);
+	oss.str("");
     }	
 
-    bool re_match(Regex &r, const char *s) {
-	return r.match(s, strlen(s)) == (int)strlen(s);
+    bool re_match(Regex &r, const string &s) {
+	int match = r.match(s.c_str(), s.length());
+	DBG(cerr << "RE Match: " << match << endl);
+	return match == (int)s.length();
     }
 
 
@@ -73,9 +69,7 @@ public:
     cgiUtilTest() {}
     ~cgiUtilTest() {}
     
-    void setUp () {
-	start_oss = oss.tellp();
-    }
+    void setUp () {}
 
     void tearDown() {}
 
@@ -130,9 +124,8 @@ Date: \\(.*\\)\n\
 Last-Modified: \\1\n\
 Content-type: text/plain\n\
 Content-Description: dods_das\n\
-\n\
-");
-	set_mime_text(oss, dods_das, "dods-test/0.00");	oss << ends;
+\n");
+	set_mime_text(oss, dods_das, "dods-test/0.00");
 	CPPUNIT_ASSERT(re_match(r1, oss.str()));
 	reset_oss();
 
@@ -142,9 +135,9 @@ Date: \\(.*\\)\n\
 Last-Modified: \\1\n\
 Content-type: text/plain\n\
 Content-Description: dods_dds\n\
-\n\
-");
-	set_mime_text(oss, dods_dds, "dods-test/0.00");	oss << ends;
+\n");
+	set_mime_text(oss, dods_dds, "dods-test/0.00");
+	DBG(cerr << "DODS DDS" << endl << oss.str());
 	CPPUNIT_ASSERT(re_match(r2, oss.str()));
 	reset_oss();
 
@@ -153,13 +146,11 @@ Content-Description: dods_dds\n\
 	Regex r3("HTTP/1.0 200 OK\n\
 XDODS-Server: dods-test/0.00\n\
 Date: \\(.*\\)\n\
-Last-Modified: Sat, 01 Jan 2000 08:00:00 GMT\n\
+Last-Modified: Sat, 01 Jan 2000 ..:00:00 GMT\n\
 Content-type: text/plain\n\
 Content-Description: dods_dds\n\
-\n\
-");
+\n");
 	set_mime_text(oss, dods_dds, "dods-test/0.00", x_plain, t);
-	oss << ends;
 	CPPUNIT_ASSERT(re_match(r3, oss.str()));
 	reset_oss();
     }
@@ -169,7 +160,10 @@ Content-Description: dods_dds\n\
 	CPPUNIT_ASSERT(rfc822_date(t) == "Thu, 01 Jan 1970 00:00:00 GMT");
 	struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0}; // 1 Jan 2000
 	t = mktime(&tm);
-	CPPUNIT_ASSERT(rfc822_date(t) == "Sat, 01 Jan 2000 08:00:00 GMT");
+	// This test may fail for some locations since mktime interprets t as
+	// the local time and returns the corresponding GMT time.
+	Regex r1("Sat, 01 Jan 2000 ..:00:00 GMT");
+	CPPUNIT_ASSERT(re_match(r1, rfc822_date(t)));
     }
 
     void last_modified_time_test() {
@@ -198,6 +192,14 @@ main( int argc, char* argv[] )
 }
 
 // $Log: cgiUtilTest.cc,v $
+// Revision 1.9  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.8.2.1  2003/09/06 22:11:02  jimg
+// Modified so that localhost is used instead of remote hosts. This means
+// that the tests don't require Internet access but do require that the
+// local machine runs httpd and has it correctly configured.
+//
 // Revision 1.8  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

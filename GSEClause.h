@@ -39,6 +39,7 @@
 #endif
 
 #include <string>
+#include <sstream>
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -90,16 +91,15 @@ private:
     GSEClause &operator=(GSEClause &rhs); // Hide
 
 #ifdef WIN32
-  //  MS Visual C++ 6.0 forces us to declare template member functions
-  //  this way and forces us to inline them due to short-comings in their
-  //  implementation.  In addition, the use of the arg is a bug work-around
-  //  that lets it be known what the type of T is.  There exists an non-
-  //  inline version of this function also - if you edit one, you should
-  //  probably edit the other also.
+    //  MS Visual C++ 6.0 forces us to declare template member functions
+    //  this way and forces us to inline them due to short-comings in their
+    //  implementation.  In addition, the use of the arg is a bug work-around
+    //  that lets it be known what the type of T is.  There exists an non-
+    //  inline version of this function also - if you edit one, you should
+    //  probably edit the other also.
     template<class T> 
     T 
-    set_start_stop(T *t=0)
-    {
+    set_start_stop(T *t=0) {
 	// Read the byte array, scan, set start and stop.
 	T *vals = 0;
 	d_map->buf2val((void **)&vals);
@@ -139,28 +139,28 @@ private:
 	}
 
 	return 0;
-    };
+    }
 
-	//  See above comment regarding win32.  That also applies here
-	//  except that we don't have to force in a dummy arg because
-	//  we already use parameterized types in the args for this method.
-	template<class T>
-	T
-	set_map_min_max_value(T min, T max)
-	{
-    DBG(cerr << "Inside set map min max value " << min << ", " << max << endl);
-    std::ostrstream oss1;
-    oss1 << min << std::ends;
-    d_map_min_value = oss1.str();
-    oss1.freeze(0);
+    //  See above comment regarding win32.  That also applies here
+    //  except that we don't have to force in a dummy arg because
+    //  we already use parameterized types in the args for this method.
+    template<class T>
+    T
+    set_map_min_max_value(T min, T max) {
+	DBG(cerr << "Inside set map min max value " << min << ", " << max 
+	    << endl);
 
-    std::ostrstream oss2;
-    oss2 << max << std::ends;
-    d_map_max_value = oss2.str();
-    oss2.freeze(0);
+	std::stringstream oss1;
+	oss1 << min;
+	d_map_min_value = oss1.str();
+
+	std::stringstream oss2;
+	oss2 << max;
+	d_map_max_value = oss2.str();
 
 	return 0;
-	}
+    }
+
 #else
     template<class T> void set_start_stop();
     template<class T> void set_map_min_max_value(T min, T max);
@@ -210,6 +210,15 @@ public:
 };
 
 // $Log: GSEClause.h,v $
+// Revision 1.12  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.11.2.2  2003/09/06 22:32:35  jimg
+// Now uses stringstream instead of strstream.
+//
+// Revision 1.11.2.1  2003/06/14 00:54:30  rmorris
+// Added a header VC++ was looking for - <strstream>.
+//
 // Revision 1.11  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

@@ -28,6 +28,11 @@
 
 #include <stdio.h>
 
+#include <string>
+#include <iostream>
+#include <algorithm>
+#include <iterator>
+
 #ifndef response_h
 #include "Response.h"
 #endif
@@ -36,13 +41,15 @@
 #include "debug.h"
 #endif
 
-int dods_keep_temps = 0;
+extern int dods_keep_temps;	// defined in HTTPConnect.cc
 
-/** Encapsulate a response. Instead of directly returning the FILE pointer
-    from which a response is read, return an instance of this object. */
+/** Encapsulate an http response. Instead of directly returning the FILE
+    pointer from which a response is read and vector of headers, return an
+    instance of this object. */
 class HTTPResponse : public Response {
 private:
-    string d_file;
+    vector<string> *d_headers;	// Response headers
+    string d_file;		// Temp file that holds response body
 
 protected:
     /** @name Suppressed default methods */
@@ -55,24 +62,65 @@ protected:
     //@}
 
 public:
-    /** Build a Response object and include the name of the temp file
-	that holds the HTTP response. When instance is deleted, remove this
-	file. */
-    HTTPResponse(FILE *s, const string &temp_file) 
-	: Response(s), d_file(temp_file) {}
+    /** Build an HTTPResponse object. An instance of this class is used to
+	return an HTTP response (body and headers). If the response is really
+	from a remote server, the current HTTP code stores the body in a
+	temporary file and the headers in a vector<string> object. This class
+	will delete those resources when its destructor is called. If the
+	response does not have a temporary file that needs to be deleted (say
+	it actually comes from a local cache or was read directly into
+	memory), the temp file should be set to "".
 
-    /** Close the temporary file. When an instance is destroyed, close its
-	assciated temporary file. */
+	@param s FILE * to the response. Read the response body from this
+	stream. 
+	@param h Response headers. This class will delete the pointer when
+	the instance that contains it is destroyed.
+	@param temp_file Name a the temporary file that holds the response
+	body; this file is deleted when this instance is deleted. */
+    HTTPResponse(FILE *s, vector<string> *h, const string &temp_file) 
+	: Response(s), d_headers(h), d_file(temp_file) {
+	DBG(cerr << "Headers: " << endl);
+	DBGN(copy(d_headers->begin(), d_headers->end(),
+		  ostream_iterator<string>(cerr, "\n")));
+	DBGN(cerr << "end of headers." << endl);
+    }
+
+    /** When an instance is destroyed, free the temporary resources: the
+	temp_file and headers are deleted. If the tmp file name is "", it is
+	not deleted. */
     virtual ~HTTPResponse() {
 	DBG(cerr << "Freeing HTTPConnect resources (" + d_file + ")... ");
-	// Delete temp file
-	if (!dods_keep_temps)
+
+	if (!dods_keep_temps && !d_file.empty())
 	    unlink(d_file.c_str());
+
+	delete d_headers; d_headers = 0;
+
 	DBGN(cerr << endl);
     }
+    /** @name Accessors */
+    //@{
+    virtual vector<string> *get_headers() const { return d_headers; }
+    //@}
+
+    /** @name Mutators */
+    //@{
+    virtual void set_headers(vector<string> *h) { d_headers = h; }
+    //@}
 };
 
 // $Log: HTTPResponse.h,v $
+// Revision 1.3  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.2.2.2  2003/10/10 23:06:35  jimg
+// Added some instrumentation which helped track down bug 672.
+//
+// Revision 1.2.2.1  2003/05/06 06:44:15  jimg
+// Modified HTTPConnect so that the response headers are no longer a class
+// member. This cleans up the class interface and paves the way for using
+// the multi interface of libcurl. That'll have to wait for another day...
+//
 // Revision 1.2  2003/03/04 21:39:52  jimg
 // Added dods_keep_temps global. This is handy for debugging.
 //

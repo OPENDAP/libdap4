@@ -42,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.48 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.49 2003/12/08 18:02:31 edavis Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -357,8 +357,10 @@ id_or_const:    SCAN_WORD
 			// delete new_val.v.s; // Str::val2buf copies the value.
 			$$ = new rvalue(btp);
 		    }
-		    else
+		    else {
+			btp->set_in_selection(true);
 			$$ = new rvalue(btp);
+		    }
 		}
 		| SCAN_STR
                 { 
@@ -1088,6 +1090,14 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.49  2003/12/08 18:02:31  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.47.2.1  2003/09/06 23:01:46  jimg
+ * Now uses the set_in_selection() method to set the in_selection property to
+ * true for any variable that is either in the CE selection or is used as a
+ * function argument.
+ *
  * Revision 1.48  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

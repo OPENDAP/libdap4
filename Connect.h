@@ -55,8 +55,10 @@
 #ifndef _connect_h
 #define _connect_h
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <stdio.h>
@@ -162,9 +164,13 @@ protected:
     //@}
 
 public:
-    Connect(const string &name, bool www_verbose_errors = false,
-	    bool accept_deflate = true, string uname = "",
+    // This ctor is deprecated. See Connect.cc 
+    Connect(const string &name, bool www_verbose_errors,
+	    bool accept_deflate, string uname = "",
 	    string password = "") throw (Error, InternalErr); 
+
+    Connect(const string &name, string uname = "", string password = "") 
+	throw (Error, InternalErr); 
 
     virtual ~Connect();
 
@@ -184,9 +190,11 @@ public:
 	response. This is a poorly designed method, but it returns
 	information that is useful when used correctly. Before a response is
 	made, this contains the string "unknown." This should ultimately hold
-	the \i protocol version; it currently holds the \i implementation
+	the \i protocol version; it currently holds the \e implementation
 	version. */
     string get_version() { return d_version; }
+
+    virtual string request_version() throw(Error, InternalErr);
 
     virtual void request_das(DAS &das) throw(Error, InternalErr);
 
@@ -200,7 +208,6 @@ public:
     virtual void read_data(DataDDS &data, FILE *data_source) 
 	throw(Error, InternalErr);
 
-    /** @deprecated */
     bool request_dds(bool gui = false, const string &ext = "dds")
 	throw(Error, InternalErr) {
 	request_dds(_dds, "");
@@ -208,7 +215,6 @@ public:
 	return true;
     }
 
-    /** @deprecated */
     DDS *request_data(string expr, bool gui = false, bool async = false, 
 		      const string &ext = "dods") throw(Error, InternalErr) {
 	DataDDS *new_dds = new DataDDS("received_data");
@@ -216,19 +222,18 @@ public:
 	return new_dds;
     }
 
-    /** @deprecated */
     bool request_das(bool gui = false,  const string &ext = "das")
 	throw(Error, InternalErr) {
 	request_das(_das);
 	return true;
     }
 
-    /** @deprecated */
+    /** @deprecated The GUI is no longer supported. This always returns null.
+	*/
     void *gui() {
 	return 0;
     }
 
-    /** @deprecated */
     DDS *read_data(FILE *data_source, bool gui, bool async)
 	throw(Error, InternalErr) {
 	DataDDS *data = new DataDDS;
@@ -244,6 +249,29 @@ public:
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.66  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.65.2.4  2003/11/19 18:47:12  jimg
+ * Added request_version() which is a way to get _just_ the version information
+ * from a server.
+ *
+ * Revision 1.65.2.3  2003/09/06 22:37:50  jimg
+ * Updated the documentation.
+ *
+ * Revision 1.65.2.2  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
+ * Revision 1.65.2.1  2003/05/06 22:06:42  jimg
+ * I added a new constructor to Connect and deprecated the old ctor. The
+ * old ctor was forcing compression to be on, ignoring the value of DEFLATE
+ * in the .dodsrc file. This was left over behavior from before we started
+ * using that file. However, now HTTPConnect (and later other protocol
+ * modules?) look at the value in the .dodsrc (using RCReader) and decide
+ * what action to take.
+ *
  * Revision 1.65  2003/04/22 19:40:27  jimg
  * Merged with 3.3.1.
  *

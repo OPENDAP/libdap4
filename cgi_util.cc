@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.58 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.59 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,7 +82,15 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.58 2003/05/23 03:24:57 jim
 #define FILE_DELIMITER '/'
 #endif
 
+<<<<<<< cgi_util.cc
 using namespace std;
+=======
+using std::cerr;
+using std::endl;
+using std::ostringstream;
+using std::ofstream;
+using std::ifstream;
+>>>>>>> 1.57.2.5
 
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
@@ -125,7 +133,8 @@ do_version(const string &script_ver, const string &dataset_ver)
 
     This function has been superseded by the DODSFilter::send_data() mfunc.
 
-    @deprecated
+    @deprecated Use DODSFilter's methods instead.
+
     @brief Send data. (deprecated)
     @param compression A Boolean value indicating whether the data is
     to be sent in compressed form or not.  A value of TRUE indicates
@@ -361,7 +370,7 @@ ErrMsgT(const string &Msgt)
     }
 
     const char *host_or_addr = getenv("REMOTE_HOST") ? getenv("REMOTE_HOST") :
-	getenv("REMOTE_ADDR");
+	getenv("REMOTE_ADDR") ? getenv("REMOTE_ADDR") : "local (a non-CGI run)"; 
     const char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") : 
 	"DODS server"; 
 
@@ -501,8 +510,18 @@ static const char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
 			"dods_error", "web_error"};
 static const char *encoding[]={"unknown", "deflate", "x-plain"};
 
-/**
-   @param out Write the MIME header to this FILE pointer. */
+/** Generate an HTTP 1.0 response header for a text document. This is used
+    when returning a serialized DAS or DDS object.
+
+    @param out Write the MIME header to this FILE pointer.
+    @param type The type of this this response. Defaults to
+    application/octet-stream.
+    @param ver The version string; denotes the DAP spec and implementation
+    version.
+    @param enc How is this response encoded? Can be plain or deflate or the
+    x_... versions of those. Default is x_plain.
+    @param last_modified The time to use for the Last-Modified header value.
+    Default is zero which means use the current time. */
 void
 set_mime_text(FILE *out, ObjectType type, const string &ver, 
 	      EncodingType enc, const time_t last_modified)
@@ -533,6 +552,8 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
 /** Use this function to create a MIME header for a text message.
 
     @brief Set the MIME type to text.
+    @deprecated Using the C++ iostream class is deprecated.
+
     @param os Write the MIME header to this stream.
     @param type The type of the response (i.e., is it a DAS, DDS, et cetera).
     @param ver The version of the server.
@@ -570,8 +591,19 @@ set_mime_text(ostream &os, ObjectType type, const string &ver,
     os << endl;
 }
 
-/**
-   @param out Write the MIME header to this FILE pointer. */
+/** Write an HTTP 1.0 response header for our binary response document (i.e.,
+    the DataDDS object).
+
+    @param out Write the MIME header to this FILE pointer.
+    @param type The type of this this response. Defaults to
+    application/octet-stream.
+    @param ver The version string; denotes the DAP spec and implementation
+    version.
+    @param enc How is this response encoded? Can be plain or deflate or the
+    x_... versions of those. Default is x_plain.
+    @param last_modified The time to use for the Last-Modified header value.
+    Default is zero which means use the current time.
+ */
 void
 set_mime_binary(FILE *out, ObjectType type, const string &ver, 
 		EncodingType enc, const time_t last_modified)
@@ -587,17 +619,11 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
     else 
 	fprintf( out, "%s\n", rfc822_date(t).c_str() ) ;
 
-    fprintf( out, "Content-type: application/octet-stream\n" ) ;
+    fprintf( out, "Content-Type: application/octet-stream\n" ) ;
     fprintf( out, "Content-Description: %s\n", descrip[type] ) ;
-    if (enc != x_plain) {
-	// Until we fix the bug in the cache WRT compressed data, supress
-	// caching for those requests. 11/30/99 jhrg
-#if 0
-       	fprintf( out, "Cache-Control: no-cache\n" ) ;
-#endif
-	// Fixed the bug in the libwww. 3/17/2000 jhrg
+    if (enc != x_plain)
 	fprintf( out, "Content-Encoding: %s\n", encoding[enc] ) ;
-    }
+
     fprintf( out, "\n" ) ;
 }
 
@@ -605,6 +631,7 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
     data.
 
     @brief Create MIME headers for binary data.
+    @deprecated Using the C++ iostream class is deprecated.
     @param os Write the MIME header to this stream.
     @param type The type of the response (i.e., is it data, et cetera).
     @param ver The version of the server.
@@ -630,17 +657,20 @@ set_mime_binary(ostream &os, ObjectType type, const string &ver,
     else 
 	os << rfc822_date(t) << endl;
 
-    os << "Content-type: application/octet-stream" << endl; 
+    os << "Content-Type: application/octet-stream" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
-    if (enc != x_plain) {
-	// Fixed the bug in the libwww. 3/17/2000 jhrg
+    if (enc != x_plain)
 	os << "Content-Encoding: " << encoding[enc] << endl;
-    }
+
     os << endl;
 }
 
-/**
-   @param out Write the MIME header to this FILE pointer. */
+/** Generate an HTTP 1.0 reponse header for an Error object.
+    @param out Write the MIME header to this FILE pointer.
+    @param code HTTP 1.0 response code. Should be 400, ... 500, ...
+    @param reason Reason string of the HTTP 1.0 reponse header.
+    @param version The version string; denotes the DAP spec and implementation
+    version. */
 void 
 set_mime_error(FILE *out, int code, const string &reason,
 	       const string &version)
@@ -660,9 +690,11 @@ set_mime_error(FILE *out, int code, const string &reason,
     error.
 
     @brief Set the MIME text type to ``error.''
+    @deprecated Using the C++ iostream class is deprecated.
     @param os Write the MIME header to this stream.
     @param code An error code for the given error. 
     @param reason A message to be sent to the client.
+    @param version The DAP spec/implementation version string.
     @see ErrMsgT */
 void
 set_mime_error(ostream &os, int code, const string &reason,
@@ -679,8 +711,13 @@ set_mime_error(ostream &os, int code, const string &reason,
     os << endl;
 }
 
-/**
-   @param out Write the response to this FILE pointer. */
+/** Use this function to create a response signalling that the target of a
+    conditional get has not been modified relative to the condition given in
+    the request. For DODS this will have to be a date until the servers
+    support ETags
+
+    @brief Send a `Not Modified' response.
+    @param out Write the response to this FILE pointer. */
 void 
 set_mime_not_modified(FILE *out)
 {
@@ -695,6 +732,7 @@ set_mime_not_modified(FILE *out)
     the request. For DODS this will have to be a date until the servers
     support ETags
 
+    @deprecated Using the C++ iostream class is deprecated.
     @brief Send a `Not Modified' response.
     @param os Write the MIME header to this stream. */
 void
@@ -732,10 +770,10 @@ found_override(string name, string &doc)
     return true;
 }
 
-/** Read the input stream <tt>in</tt> and discard the MIME header. The MIME header
-    is separated from the body of the document by a single blank line. If no
-    MIME header is found, then the input stream is `emptied' and will contain
-    nothing.
+/** Read the input stream <tt>in</tt> and discard the MIME header. The MIME
+    header is separated from the body of the document by a single blank line.
+    If no MIME header is found, then the input stream is `emptied' and will
+    contain nothing.
 
     @brief Read and discard the MIME header of the stream <tt>in</tt>.
     @return True if a MIME header is found, false otherwise.
@@ -754,31 +792,30 @@ remove_mime_header(FILE *in)
 }    
 
 
-/** Look in the CGI directory (given by <tt>cgi</tt>) for a per-cgi
-    HTML* file. Also look for a dataset-specific HTML*
-    document. Catenate the documents and return them in a single
-    String variable.
+/** Look in the CGI directory (given by \c cgi) for a per-cgi HTML* file.
+    Also look for a dataset-specific HTML* document. Catenate the documents
+    and return them in a single String variable.
 
-    The <tt>cgi</tt> path must include the `API' prefix at the end of
-    the path. For example, for the NetCDF server whose prefix is `nc'
-    and resides in the DODS_ROOT/etc directory of my computer,
-    <tt>cgi</tt> is `/home/dcz/jimg/src/DODS/etc/nc'. This function
-    then looks for the file named <tt>cgi</tt>.html.
+    The \c cgi path must include the `API' prefix at the end of the path. For
+    example, for the OPeNDAP server for version 3.4 on my machine is at
+    \c /home/jimg/DODS-3.4/stc/nph-dods. The \c cgi path is \c
+    .../nph-dods/nc. 
 
-    Similarly, to locate the dataset-specific HTML* file it catenates
-    `.html' to <tt>name</tt>, where <tt>name</tt> is the name of the
-    dataset. If the filename part of <tt>name</tt> is of the form
-    [A-Za-z]+[0-9]*.* then this function also looks for a file whose
-    name is [A-Za-z]+.html For example, if <tt>name</tt> is
-    .../data/fnoc1.nc this function first looks for
-    .../data/fnoc1.nc.html.  However, if that does not exist it will
-    look for .../data/fnoc.html. This allows one `per-dataset' file to
-    be used for a collection of files with the same root name.
+    Similarly, to locate the dataset-specific HTML* file it catenates `.html'
+    to \c name, where \c name is the name of the dataset. If the filename
+    part of \c name is of the form [A-Za-z]+[0-9]*.* then this function also
+    looks for a file whose name is [A-Za-z]+.html For example, if \c name is
+    .../data/fnoc1.nc this function first looks for .../data/fnoc1.nc.html.
+    However, if that does not exist it will look for .../data/fnoc.html. This
+    allows one `per-dataset' file to be used for a collection of files with
+    the same root name.
 
     NB: An HTML* file contains HTML without the <html>, <head> or <body> tags
     (my own notation).
 
-    @brief Look for the user supplied CGI- and dataset-specific HTML* documents.
+    @brief Look for the user supplied CGI- and dataset-specific HTML*
+    documents. 
+
     @return A String which contains these two documents catenated. Documents
     that don't exist are treated as `empty'.  */
 
@@ -882,6 +919,27 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.59  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.57.2.5  2003/11/25 18:19:30  jimg
+// Comments...
+//
+// Revision 1.57.2.4  2003/09/06 22:59:31  jimg
+// Updated the documentation.
+//
+// Revision 1.57.2.3  2003/08/21 18:23:26  edavis
+// Changed how remote host name is found so that it will never be null
+// (which happens when CGI tools are run locally). A null value caused
+// the error message to fail on some platforms which caused several
+// tests to fail on those platforms.
+//
+// Revision 1.57.2.2  2003/07/16 04:23:43  jimg
+// I removed some old code from the set_mime_binary() functions.
+//
+// Revision 1.57.2.1  2003/06/05 20:15:26  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.58  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

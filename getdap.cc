@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.70 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.71 2003/12/08 18:02:31 edavis Exp $"};
 
 #include <stdio.h>
 #ifdef WIN32
@@ -48,16 +48,14 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.70 2003/05/23 03:24:57 jimg 
 
 #include "AISConnect.h"
 
-#ifdef WIN32
-#define MAIN_RETURN void
-#else
-#define MAIN_RETURN int
-#endif
-
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.70 $";
+<<<<<<< geturl.cc
+const char *version = "$Revision: 1.71 $";
+=======
+const char *version = "$Revision: 1.71 $";
+>>>>>>> 1.69.2.6
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 
@@ -65,6 +63,7 @@ void
 usage(string name)
 {
     cerr << "Usage: " << name << endl;
+<<<<<<< geturl.cc
     cerr << " [dDaxAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]\n\
  [Vvk] <file> [<file> ...]\n\
 \n\
@@ -97,6 +96,42 @@ Options:\n\
         m: Request the same URL <num> times.\n\
         z: Don't ask the server to compress data.\n\
         s: Print Sequences using numbered rows.\n";
+=======
+    cerr << " [idDaAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" 
+	 << endl;
+    cerr << " [Vvk] <file> [<file> ...]" << endl;
+    cerr << endl;
+    cerr << "In the first form of the command, dereference the URL and" 
+	 << endl;
+    cerr << "perform the requested operations. This include routing" << endl;
+    cerr << "the returned information through the DAP processing" << endl;
+    cerr << "library (parsing the returned objects, et c.). If none" << endl;
+    cerr << "of a, d, or D are used with a URL, then the DAP library" << endl;
+    cerr << "routines are NOT used and the URLs contents are dumped" << endl;
+    cerr << "to standard output." << endl;
+    cerr << endl;
+    cerr << "In the second form of the command, assume the files are" << endl;
+    cerr << "DODS data objects (stored in files or read from pipes)" << endl;
+    cerr << "and process them as if -D were given. In this case the" << endl;
+    cerr << "information *must* contain valid MIME header in order" << endl;
+    cerr << "to be processed." << endl;
+    cerr << endl;
+    cerr << "Options:" << endl;
+    cerr << "        i: For each URL, get the server version." << endl;
+    cerr << "        d: For each URL, get the DODS DDS." << endl;
+    cerr << "        a: For each URL, get the DODS DAS." << endl;
+    cerr << "        A: Use the AIS for DAS objects." << endl;
+    cerr << "        D: For each URL, get the DODS Data." << endl;
+    cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." <<endl;
+    cerr << "        v: Verbose." << endl;
+    cerr << "        V: Version." << endl;
+    cerr << "        c: <expr> is a contraint expression. Used with -D." << endl;
+    cerr << "           NB: You can use a `?' for the CE also." << endl;
+    cerr << "        k: Keep temporary files created by DODS core\n" << endl;
+    cerr << "        m: Request the same URL <num> times." << endl;
+    cerr << "        z: Ask the server to compress data." << endl;
+    cerr << "        s: Print Sequences using numbered rows." << endl;
+>>>>>>> 1.69.2.6
 }
 
 bool
@@ -134,20 +169,28 @@ print_data(DDS &dds, bool print_rows = false)
     fflush( stdout ) ;
 }
 
-MAIN_RETURN
+int
 main(int argc, char * argv[])
 {
+<<<<<<< geturl.cc
     GetOpt getopt (argc, argv, "daDxAVvkB:c:m:zsh?");
+=======
+    GetOpt getopt (argc, argv, "idaDAVvkB:c:m:zsh?");
+>>>>>>> 1.69.2.6
     int option_char;
 
     bool get_das = false;
     bool get_dds = false;
     bool get_data = false;
+<<<<<<< geturl.cc
     bool get_ddx = false;
+=======
+    bool get_version = false;
+>>>>>>> 1.69.2.6
     bool cexpr = false;
     bool verbose = false;
     bool multi = false;
-    bool accept_deflate = true;
+    bool accept_deflate = false;
     bool print_rows = false;
     bool use_ais = false;
     int times = 1;
@@ -166,12 +209,13 @@ main(int argc, char * argv[])
 	  case 'x': get_ddx = true; break;
 	  case 'A': use_ais = true; break;
 	  case 'V': fprintf( stderr, "geturl version: %s\n", version) ; exit(0);
+	  case 'i': get_version = true; break;
 	  case 'v': verbose = true; break;
 	  case 'k': dods_keep_temps = 1; break; // keep_temp is in Connect.cc
 	  case 'c': cexpr = true; expr = getopt.optarg; break;
 	  case 'm': multi = true; times = atoi(getopt.optarg); break;
 	  case 'B': use_ais = true; ais_db = getopt.optarg; break;
-	  case 'z': accept_deflate = false; break;
+	  case 'z': accept_deflate = true; break;
 	  case 's': print_rows = true; break;
 	  case 'h':
 	  case '?':
@@ -199,7 +243,8 @@ main(int argc, char * argv[])
 	    }
 
 	    // This overrides the value set in the .dodsrc file.
-	    url->set_accept_deflate(accept_deflate);
+	    if (accept_deflate)
+		url->set_accept_deflate(accept_deflate);
 
 	    if (url->is_local()) {
 		if (verbose) {
@@ -241,6 +286,11 @@ main(int argc, char * argv[])
 		}
 		if (source != stdin)
 		    fclose(source);
+	    }
+
+	    else if (get_version) {
+		fprintf( stderr, "Server version: %s\n",
+			 url->request_version().c_str() );
 	    }
 
 	    else if (get_das) {
@@ -307,11 +357,9 @@ main(int argc, char * argv[])
 	    }
 
 	    else if (get_data) {
-		if (expr.empty() && name.find('?') == string::npos) {
-		    fprintf( stderr,
-			 "Must supply a constraint expression with -D.\n" ) ;
-		    continue;
-		}
+		if (expr.empty() && name.find('?') == string::npos)
+		    expr = "";
+
 		for (int j = 0; j < times; ++j) {
 		    DataDDS dds;
 		    try {
@@ -333,14 +381,20 @@ main(int argc, char * argv[])
 	    }
 
 	    else { // if (!get_das && !get_dds && !get_data)
+		// This code uses HTTPConnect::fetch_url which cannot be
+		// accessed using an instance of Connect. So some of the
+		// options supported by other URLs won't work here (e.g., the
+		// verbose option doesn't show the server version number).
 		HTTPConnect http(RCReader::instance());
+
+		// This overrides the value set in the .dodsrc file.
+		if (accept_deflate)
+		    http.set_accept_deflate(accept_deflate);
+
 		string url_string = argv[i];
 		for (int j = 0; j < times; ++j) {
 		    try {
 			Response *r = http.fetch_url(url_string);
-			if (verbose)
-			    fprintf( stderr, "Server version: %s\n",
-				     url->get_version().c_str() ) ; 
 			if (!read_data(r->get_stream()))
 			    continue;
 			delete r;
@@ -358,17 +412,31 @@ main(int argc, char * argv[])
     }
 
     return 0;
-
-    // *** Can we remove this? 03/04/03 jhrg
-#if 0
-    exit(0); //  Running DejaGun/Cygwin based test suites require this.
-#ifdef WIN32
-    return;  //  Visual C++ asks for this.
-#endif
-#endif
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.71  2003/12/08 18:02:31  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.69.2.6  2003/11/19 18:19:47  jimg
+// Added Get Version to the online doc paragraph.
+//
+// Revision 1.69.2.5  2003/11/19 18:16:56  jimg
+// Added a get version feature.
+//
+// Revision 1.69.2.4  2003/07/29 00:53:07  jimg
+// I fixed a bug where -c "" failed because the code wanted a non-null CE. Null
+// CEs should work.
+//
+// Revision 1.69.2.3  2003/07/16 04:25:45  jimg
+// I added a call to set_accept_deflate() when making a straight HTTP request
+// with the -z option. Before this fix, using geturl -z http://... did not sent
+// the ACCEPT_ENCODING: deflate header if DEFLATE was zero in the .dodsrc file.
+//
+// Revision 1.69.2.2  2003/06/14 22:45:16  rmorris
+// Removed #ifdef's in regards to return value differences in main() for
+// VC++ versus other.
+//
 // Revision 1.70  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can
@@ -377,6 +445,12 @@ main(int argc, char * argv[])
 // are not supported yet. I've also removed all traces of strstream in
 // favor of stringstream. This code should no longer generate warnings
 // about the use of deprecated headers.
+//
+// Revision 1.69.2.1  2003/05/06 22:04:16  jimg
+// I changed the sense of the -z option. Before it meant don't compress, now it
+// means do compress. The value of DEFLATE in .dodsrc should determine if
+// compression is on or not, with -z being used to override that value and force
+// compression to be used. That's now the case.
 //
 // Revision 1.69  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.

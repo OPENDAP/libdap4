@@ -38,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.24 2003/05/23 03:24:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.25 2003/12/08 18:02:31 edavis Exp $"};
 
 #include <stdio.h>
 
@@ -64,9 +64,9 @@ using namespace std;
 static void
 usage(char *argv[])
 {
-    cerr << argv[0] << "<options> <filename> <CGI directory>" << endl
+    cerr << argv[0] << " <options> <filename> <CGI directory>" << endl
          << "Takes three required arguments; command options to be" << endl
-	 << "passed to the filter programsm the dataset filename and" << endl
+	 << "passed to the filter programs, the dataset filename and" << endl
 	 << "the directory and api prefix for the filter program." << endl; 
 }
 
@@ -267,7 +267,19 @@ fancy_typename(BaseType *v)
 	      type << "[" << a->dimension_name(p) << " = 0.." 
 		   << a->dimension_size(p, false)-1 << "]";
 	  }
+<<<<<<< usage.cc
 	  return type.str();
+=======
+	  type << ends;
+	  return type.str();
+
+      }
+      case dods_list_c: {
+	  ostringstream type;
+	  List *l = (List *)v;
+	  type << "List of " << fancy_typename(l->var()) <<"s " << ends;
+	  return type.str();
+>>>>>>> 1.23.2.1
       }
 
       case dods_structure_c:
@@ -419,7 +431,7 @@ main(int argc, char *argv[])
     string cgi = argv[3];
 
     DAS das;
-    string command = "./" + cgi + "_das " + options + " '" + name + "'";
+    string command = cgi + "_das " + options + " '" + name + "'";
     DBG(cerr << "DAS Command: " << command << endl);
 
     try {
@@ -437,7 +449,7 @@ main(int argc, char *argv[])
 #endif
 
 	DDS dds;
-	command = "./" + cgi + "_dds '" + name + "'";
+	command = cgi + "_dds '" + name + "'";
 	DBG(cerr << "DDS Command: " << command << endl);
 
 #ifndef WIN32
@@ -506,6 +518,14 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.25  2003/12/08 18:02:31  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.23.2.1  2003/11/25 18:18:43  jimg
+// I changed this so that it uses the stringstream classes and so that the
+// pathnames to the handlers maybe absolute (before the paths were prefixed by
+// "./" which made them always relative).
+//
 // Revision 1.24  2003/05/23 03:24:58  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

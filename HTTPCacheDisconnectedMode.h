@@ -48,6 +48,9 @@ typedef enum {
 } CacheDisconnectedMode;
 
 // $Log: HTTPCacheDisconnectedMode.h,v $
+// Revision 1.6  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.5  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

@@ -1,3 +1,7 @@
+2003-12-08  Yuan Ho  <yuanho@ucar.edu>
+
+        * Merge release-3-4 into trunk.
+
 2003-05-15  James Gallagher  <jimg@dcz.dods.org>
 
 	* Removed the List class/datatype. We've talked about this for
@@ -11,6 +15,98 @@
 	DODS_Dispatch CGI module tells the hander which response to
 	generate. 
 
+=======
+2003-11-10  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added the methods Float32::value() and Float64::value(). I think
+	the DAP should have a suite of methods which return values w/o
+	using the awkward void pointer scheme. These methods (will) require
+	a downcast unlike the void pointer methods. But they wind up being
+	much easier to use in situations where you know the type of the
+	BaseType object (which seems to be most of the time, in practice).
+
+2003-10-03  James Gallagher  <jimg@dcz.dods.org>
+
+	* I changed Connect's request_das, ..., methods so that they now
+	treat a response that lacks a Content-Description header
+	identifying the response as one of ours as a fatal error.
+
+	* I Fixed what seems like, in hindsight, a bug. The scanners were
+	treating illegal characters as non-fatal errors and writing
+	messages on stderr. In reality the scanners should have been
+	flagging those responses as bogus. Also, the scanners were using
+	exit(1) when they found a fatal error; I changed that so they now
+	throw an Error object.
+
+2003-09-19  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed bug #655. Here's how the DAP library looks for the RC
+	file: First it checks the env variable DODS_CONF, then HOME. If
+	neither is set it uses default values and disables the cache.
+	Here's how DODS_CONF is used: If it is the name of a file that
+	exists, use that as the RC file. If DODS_CONF names a directory,
+	look in that directory for a file called '.dodsrc'. If that file
+	exists, it uses it, otherwise try to create it using default
+	values *except* that the value of CACHE_ROOT is the directory part
+	of DODS_CONF with '.dods_cache/' appended. If DODS_CONF is not set
+	to any value, the code looks at HOME and applies the same rules as
+	for DODS_CONF (except that HOME should never be the name of a file
+	so some of the rules don't really apply). We may need to tune this
+	code for WIN32.
+
+	Note that caching is off by default and a .dodsrc created by the
+	library will have USE_CACHE set to zero. Users must actively turn
+	caching on by editing the RC file.
+
+2003-09-08  James Gallagher  <jimg@dcz.dods.org>
+
+	* HTTPConnect.cc (fetch_url): Fixed bug #661.
+
+2003-08-29  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added a new property to BaseType which can be used to
+	differentiate between variables that must be read by a server
+	because they are in the projection and those which must be read
+	because they are used in a selection clause or as a function
+	argument. Previously we were using the send_p property for both
+	these and it was causing problems when CEs contained both
+	projected variables and functions (see bug #657). The new property
+	is called 'in_selection' and is true if the variable is part of
+	the current CE's selection or is used in any type of CE function.
+	Servers should ensure that if their read() method implementation
+	test send_p before reading data they also test in_selection. Data
+	values should be read it *either* property is true. This fixes bug
+	#657.
+
+2003-07-28  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added support for Digest authentication. There's also potential
+	support for NTLM and GSS-Negotiate authentication, but I don't
+	have any way to test those. 
+
+2003-07-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added a new test driver called server_handler. It's much more
+	like a server's handler executable; combine it with geturl reading
+	from stdin to make tests. See also sh-testsuite. Nascent but still
+	useful. 
+
+	* DDS:send() has been incorporated into DODSFilter::send_data() as
+	part of a refactoring of DDS.
+
+	* Timeouts are now smart.
+
+2003-07-23  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added a timeout mechanism to the server and modified the Test*
+	classes so this is easier to test. Right now it's a pretty
+	rudimentary thing. However, the timeout can be set in the newly
+	expanded dods.rc configuration file. In the future when we have
+	reliable Error delivery this code will send an Error object that
+	explains that there was a time out, et cetera. Check out the
+	ChangeLog in DODS/etc for information about the expanded dods.rc file.
+
+>>>>>>> 1.74.2.8
 2003-04-21  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged release-3-3-1.
@@ -1293,4 +1389,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.76 2003/05/15 22:43:33 jimg Exp $
+$Id: ChangeLog,v 1.77 2003/12/08 18:02:29 edavis Exp $

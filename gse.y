@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.y,v 1.10 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.y,v 1.11 2003/12/08 18:02:31 edavis Exp $"};
 
 #include <iostream>
 
@@ -226,6 +226,9 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 }
 
 // $Log: gse.y,v $
+// Revision 1.11  2003/12/08 18:02:31  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.10  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

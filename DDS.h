@@ -38,8 +38,10 @@
 #ifndef _dds_h
 #define _dds_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <stdio.h>
@@ -193,9 +195,16 @@ private:
 
     vector<function> functions; // Known external functions
 
+<<<<<<< DDS.h
     bool is_global_attr(string name);
     void add_global_attribute(AttrTable::entry *entry);
 
+=======
+    int d_timeout;		// alarm time in seconds. If greater than
+				// zero, raise the alarm signal if more than
+				// d_timeout seconds are spent reading data.
+
+>>>>>>> 1.50.2.2
 protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
@@ -256,6 +265,18 @@ public:
 
     void del_var(Vars_iter &i1, Vars_iter &i2);
 
+<<<<<<< DDS.h
+=======
+    void timeout_on();
+    void timeout_off();
+    void set_timeout(int t);
+    int get_timeout();
+
+#if 0
+    template <class FUNC_T> void add_function(const string &name, FUNC_T f);
+#endif
+#if 1
+>>>>>>> 1.50.2.2
     void add_function(const string &name, bool_func f);
     void add_function(const string &name, btp_func f);
     void add_function(const string &name, proj_func f);
@@ -288,7 +309,10 @@ public:
 	expression. */
     bool clause_value(Clause_iter &i, const string &dataset);
 
-    void parse_constraint(const string &constraint, ostream &os = cout,
+    void parse_constraint(const string &constraint);
+
+    // Both of the following are deprecated methods.
+    void parse_constraint(const string &constraint, ostream &os,
 			  bool server = true);
 
     void parse_constraint(const string &constraint, FILE *out,
@@ -317,8 +341,25 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.53  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.52  2003/09/25 22:37:34  jimg
 // Misc changes.
+//
+// Revision 1.50.2.2  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
+// Revision 1.50.2.1  2003/06/23 11:49:18  rmorris
+// The #pragma interface directive to GCC makes the dynamic typing functionality
+// go completely haywire under OS X on the PowerPC.  We can't use that directive
+// on that platform and it was ifdef'd out for that case.
 //
 // Revision 1.51  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan

@@ -139,11 +139,12 @@ public:
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
+    virtual void set_in_selection(bool state);
 
-    virtual BaseType *var(const string &name, bool exact_match = true,
+    virtual BaseType *var(const string &n, bool exact = true,
 			  btp_stack *s = 0);
 
-    virtual BaseType *var(const string &name, btp_stack &s);
+    virtual BaseType *var(const string &n, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part);
 
@@ -199,8 +200,14 @@ public:
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.48  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
  * Revision 1.47  2003/09/25 22:37:34  jimg
  * Misc changes.
+ *
+ * Revision 1.45.2.1  2003/09/06 22:33:50  jimg
+ * Added is_in_selection() method.
  *
  * Revision 1.46  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan

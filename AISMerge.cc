@@ -40,7 +40,7 @@
     be used to read the contents. In the case of a URL, 'the contents' means
     the body of the HTTP response. For a file, it means the entire file.
 
-    @param resource The AIS resource. 
+    @param res The AIS resource. 
     @return Either an open FILE * which points to the resource or null if the
     resource could not be opened. This method does not throw an exception for
     resources that cannot be opened because that can happen for a number of
@@ -63,7 +63,7 @@ AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
 }
 
 /** Access the AIS ancillary resources matched to <code>primary</code> and
-    merge those with the DAS object <c>das</c>.
+    merge those with the DAS object \e das.
 
     This method uses AISResources::has_resource(...) to determine if \c primary
     has an entry in the AIS database. It uses AISResources::get_resource(...)
@@ -74,7 +74,7 @@ AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
 
     @param primary The URL of the primary resource.
     @param das The target of the merge operation. This must already contain
-    the DAS for <c>primary</c>. */
+    the DAS for \e primary. */
 void
 AISMerge::merge(const string &primary, DAS &das) throw(Error, InternalErr)
 {
@@ -108,6 +108,12 @@ AISMerge::merge(const string &primary, DAS &das) throw(Error, InternalErr)
 }
 
 // $Log: AISMerge.cc,v $
+// Revision 1.7  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.6.2.1  2003/09/06 22:17:18  jimg
+// Updated the documentation.
+//
 // Revision 1.6  2003/03/14 00:02:38  jimg
 // merge() throws Error, now. Also, get_ais_resource() throws Error if the ais
 // resource is a file and it cannot be read.

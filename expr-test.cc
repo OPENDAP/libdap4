@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.37 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.38 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +72,9 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.37 2003/05/23 03:24:57 ji
 #include "debug.h"
 
 using std::cin;
+
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing
+				      // timeouts. 
 
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
@@ -608,6 +611,13 @@ constrained_trans(const string &dds_name, string dataset,
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.38  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.36.2.1  2003/07/24 00:45:06  jimg
+// Added test_variable_sleep_interval. This is used to test timeouts by
+// simulating very long read times.
+//
 // Revision 1.37  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

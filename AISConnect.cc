@@ -29,12 +29,12 @@
 
 /** Build an AISConnect. This calls Connect's constructor with \c name and
     accepts its default values for the other parameters. The AIS database to
-    use is read from the configuration file <c>~/.dodsrc</c>.
+    use is read from the configuration file <code>~/.dodsrc</code>.
     
     @param name Create a virtual, AIS-enhanced, connection for this OPeNDAP
     data source.
     @exception AISDatabaseReadFailed Thrown if the AIS database listed in the
-    <c>~/.dodsrc</c> file could not be opened. */
+    <code>~/.dodsrc</code> file could not be opened. */
 AISConnect::AISConnect(const string &name) throw(AISDatabaseReadFailed)
     : Connect(name), d_ais_merge(0)
 {
@@ -51,7 +51,7 @@ AISConnect::AISConnect(const string &name) throw(AISDatabaseReadFailed)
     data source.
     @param ais Read the AIS information from this XML file.
     @exception AISDatabaseReadFailed Thrown if the AIS database listed in the
-    <c>~/.dodsrc</c> file could not be opened. */
+    <code>~/.dodsrc</code> file could not be opened. */
 AISConnect::AISConnect(const string &name, const string &ais) 
     throw(AISDatabaseReadFailed)
     : Connect(name), d_ais_merge(0)
@@ -83,6 +83,12 @@ AISConnect::request_das(DAS &das) throw(Error, InternalErr)
 }
 
 // $Log: AISConnect.cc,v $
+// Revision 1.4  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.3.2.1  2003/09/06 22:16:26  jimg
+// Updated the documentation.
+//
 // Revision 1.3  2003/03/12 01:07:34  jimg
 // Added regular expressions to the AIS subsystem. In an AIS database (XML)
 // it is now possible to list a regular expression in place of an explicit

@@ -38,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das-test.cc,v 1.33 2003/04/02 19:13:12 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: das-test.cc,v 1.34 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <string>
 #include <GetOpt.h>
@@ -65,6 +65,8 @@ extern int dasdebug;
 const char *prompt = "das-test: ";
 const char *version = "version 1.18";
 
+using namespace std;
+
 void
 usage(string name)
 {
@@ -79,12 +81,7 @@ usage(string name)
 		     "r: Print the DAS with aliases deReferenced." ) ;
 }
 
-#ifdef WIN32
-void
-#else
-int
-#endif
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 
     GetOpt getopt (argc, argv, "scpvdr");
@@ -138,14 +135,12 @@ main(int argc, char *argv[])
 	plain_driver(das, deref_alias);
     }
     catch (Error &e) {
-      e.display_message();
+	cerr << "Caught Error object:" << endl;
+	cerr << e.get_error_message() << endl;
+	return 1;
     }
 
-#ifdef WIN32
-	exit(0); //  DejaGnu/Cygwin based test suite requires this.
-	return;  //  Visual C++ requests this.
-#endif
-
+    return 0;
 }
 
 void
@@ -390,6 +385,18 @@ load_attr_table_ptr(AttrTable *at)
 }
 
 // $Log: das-test.cc,v $
+// Revision 1.34  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.33.2.2  2003/10/13 03:02:58  rmorris
+// Minor mod to who main() is declared and the returns are handled
+// from there in a unix/win32 compatible way.
+//
+// Revision 1.33.2.1  2003/10/03 16:26:30  jimg
+// Fixed tests; I changed the text of das-test just a little and so these
+// had to be updated. I wanted to be sure that the error message was from
+// an exception and not just a write to stderr.
+//
 // Revision 1.33  2003/04/02 19:13:12  pwest
 // Fixed bug in parser-util that did not recognize illegal characters when
 // checking float32 and float64 strings, added tests to parserUtilTest to

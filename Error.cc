@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.33 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.34 2003/12/08 18:02:29 edavis Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -276,7 +276,7 @@ Error::print(FILE *out) const
 /** With no argument, returns the Error object's error code. With an
     argument, sets the error code to that value.
 	
-    @deprecated
+    @deprecated Use the set/get methods instead.
     @brief Get or set the error code.
     @return The Error object's error code. 
     @param ec The error code.  If this is not included, the
@@ -322,7 +322,7 @@ Error::set_error_code(ErrorCode ec)
 /** With no argument, return a copy of the objet's error message string.
     With an argument, set the object's error message to that string.
     
-    @deprecated
+    @deprecated Use the set/get methods instead.
     @brief Get or set the error code.
     @param msg The error message string.  If this is omitted, the
     function simply returns a copy of the current message string.
@@ -358,28 +358,11 @@ Error::set_error_message(string msg)
 	assert(OK());
 }
 
-/** Either display the error message in a dialog box and offer the
-    user a single `OK' button or print the message to standard
-    error. If <tt>gui</tt> is not given, then use stderr. In addition, the
-    class Gui provides other means for the user to control how
-    messages are displayed and those may be used to select either
-    graphical or text devices.
+/** Display the error message on stderr.
 
-    Note that the void <tt>* gui</tt> gets cast to a pointer to Gui when
-    Error.cc is compiled with the preprocessor symbol <tt>GUI</tt> defined.
-    When that symbol is not defined, the method ignores the param
-    <tt>gui</tt>. I've hidden the type (GUI *) because when
-    <tt>GUI</tt> is not defined the dap++ library is built without
-    the Gui class. 
-
-    @brief Display the error message in a dialog box or on stderr.
-    @param pgui A pointer to a valid Gui class instance.  This would
-    be attached to a GUI process running on a client machine, and
-    that process will display the message.  If the pointer is not
-    provided, the message will be displayed on the client's stderr.
-
-    @see Gui
-    @see correct_error */
+    This class used to support displaying messages using a GUI dialog box.
+    That feature has been removed; the <code>void *</code> argument is a
+    relict of that era. */
 void
 Error::display_message(void *) const
 {
@@ -394,7 +377,7 @@ Error::display_message(void *) const
 /** With no argument, return the program type of the error object. With
     an argument, set the error object's program type field.
 	
-    @deprecated
+    @deprecated Use the set/get methods instead.
     @brief Get or set the program type.
     @return The program type of the object. 
     @see ProgramType */
@@ -437,7 +420,7 @@ Error::set_program_type(ProgramType pt)
     Note that this is not a pointer to a function, but a character
     string containing the entire tcl, Java, or other program.
 
-    @deprecated
+    @deprecated Use the set/get methods instead.
     @brief  Get or set the error correction program.
     @return the error correction program. */
 char *
@@ -496,6 +479,12 @@ Error::correct_error(void *) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.34  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.32.2.1  2003/09/06 22:37:50  jimg
+// Updated the documentation.
+//
 // Revision 1.33  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

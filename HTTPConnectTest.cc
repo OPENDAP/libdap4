@@ -43,7 +43,7 @@ using namespace std;
 class HTTPConnectTest : public TestFixture {
 private:
     HTTPConnect *http;
-    string dodsdev_url;
+    string localhost_url, localhost_pw_url;
     string etag;
     string lm;
     string dsp_das_url;
@@ -61,11 +61,15 @@ public:
 	putenv("DODS_CACHE_INIT=cache-testsuite/dodsrc");
 	http = new HTTPConnect(RCReader::instance());
 
-	dodsdev_url = "http://dodsdev.gso.uri.edu/test.html";
+	localhost_url = "http://localhost/test-304.html";
+
 	// Two request header values that will generate a 304 response to the
 	// above URL.
-	etag = "\"6c054-2bf-3d9a1d42\"";
-	lm = "Tue, 02 Oct 2002 22:10:10 GMT";
+	etag = "\"13c55e-157-f8105500\"";
+	lm = "Thu, 04 Sep 2003 15:55:53 GMT";
+
+	localhost_pw_url = "http://jimg:dods_test@localhost/secret/page.txt";
+
 	dsp_das_url = "http://eddy.gso.uri.edu/cgi-bin/nph-dods/avhrr/2001/4/d01093165826.pvu.Z.das";
     }
 
@@ -82,43 +86,64 @@ public:
     CPPUNIT_TEST(type_test);
     CPPUNIT_TEST(cache_test);
 
+    CPPUNIT_TEST(set_accept_deflate_test);
+    CPPUNIT_TEST(read_url_password_test);
+
     CPPUNIT_TEST_SUITE_END();
 
     void read_url_test() {
+	vector<string> *resp_h = new vector<string>;;
+
 	try {
 	    FILE *dump = fopen("/dev/null", "w");
-	    long status = http->read_url(dodsdev_url, dump);
+	    long status = http->read_url(localhost_url, dump, resp_h);
 	    CPPUNIT_ASSERT(status == 200); 
 
-	    vector<string> headers;
+	    vector<string> request_h;
 
 	    // First test using a time with if-modified-since
-	    headers.push_back(string("If-Modified-Since: ") + lm);
-	    status = http->read_url(dodsdev_url, dump, &headers);
+	    request_h.push_back(string("If-Modified-Since: ") + lm);
+	    status = http->read_url(localhost_url, dump, resp_h, &request_h);
+	    DBG(cerr << "If modified since test, status: " << status << endl);
+	    DBG(copy(resp_h->begin(), resp_h->end(), 
+		     ostream_iterator<string>(cerr, "\n")));
 	    CPPUNIT_ASSERT(status == 304); 
 
 	    // Now test an etag
-	    headers.clear();
-	    headers.push_back(string("If-None-Match: ") + etag);
-	    status = http->read_url(dodsdev_url, dump, &headers);
+	    resp_h->clear();
+	    request_h.clear();
+	    request_h.push_back(string("If-None-Match: ") + etag);
+	    status = http->read_url(localhost_url, dump, resp_h, &request_h);
+	    DBG(cerr << "If none match test, status: " << status << endl);
+	    DBG(copy(resp_h->begin(), resp_h->end(), 
+		     ostream_iterator<string>(cerr, "\n")));
 	    CPPUNIT_ASSERT(status == 304); 
 
 	    // now test a combined etag and time4
-	    headers.push_back(string("If-Modified-Since: ") + lm);
-	    status = http->read_url(dodsdev_url, dump, &headers);
-	    CPPUNIT_ASSERT(status == 304); 
+	    resp_h->clear();
+	    request_h.clear();
+	    request_h.push_back(string("If-None-Match: ") + etag);
+	    request_h.push_back(string("If-Modified-Since: ") + lm);
+	    status = http->read_url(localhost_url, dump, resp_h, &request_h);
+	    DBG(cerr << "Combined test, status: " << status << endl);
+	    DBG(copy(resp_h->begin(), resp_h->end(), 
+		     ostream_iterator<string>(cerr, "\n")));
+	    CPPUNIT_ASSERT(status == 304);
+	    
+	    delete resp_h;
 
 	}
 	catch(Error &e) {
 	    cerr << e.get_error_message() << endl;
-	    CPPUNIT_ASSERT(false && "Should not get an Error");
+	    delete resp_h;
+	    CPPUNIT_ASSERT(!"Should not get an Error");
 	}
     }
 
     void fetch_url_test() {
-	char c;
+	HTTPResponse *stuff = http->fetch_url(localhost_url);
 	try {
-	    Response *stuff = http->fetch_url("http://dcz.dods.org/");
+	    char c;
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 
 			   && !ferror(stuff->get_stream()) 
 			   && !feof(stuff->get_stream()));
@@ -150,30 +175,33 @@ public:
 	    delete stuff;
 	}
 	catch (InternalErr &e) {
+	    delete stuff;
 	    cerr << "InternalErr: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
 	}
 	catch (Error &e) {
+	    delete stuff;
 	    cerr << "Error: " << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught a DODS exception from fetch_url");
 	}
     }
 
     void get_response_headers_test() {
-	Response *r = http->fetch_url(dsp_das_url);
+	HTTPResponse *r = http->fetch_url(dsp_das_url);
 
 	try {
-	    vector<string> h = r->get_headers();
+	    vector<string> *h = r->get_headers();
 
-	    DBG(copy(h.begin(), h.end(), 
+	    DBG(copy(h->begin(), h->end(), 
 		     ostream_iterator<string>(cerr, "\n")));
-	    delete r;
 
 	    // Should get five headers back.
 	    Regex header("XDODS-Server: DAP/.*");
-	    CPPUNIT_ASSERT(re_match(header, h[0].c_str()));
-	    CPPUNIT_ASSERT(h[4] == "Content-Description: dods_das");
-	    CPPUNIT_ASSERT(h.size() == 5);
+	    CPPUNIT_ASSERT(re_match(header, (*h)[0].c_str()));
+	    CPPUNIT_ASSERT((*h)[4] == "Content-Description: dods_das");
+	    CPPUNIT_ASSERT(h->size() == 5);
+
+	    delete r;
 	}
 	catch (InternalErr &e) {
 	    delete r;
@@ -210,16 +238,17 @@ public:
 
     void set_credentials_test() {
 	http->set_credentials("jimg", "was_quit");
+	Response *stuff = http->fetch_url("http://localhost/secret");
 
 	try {
 	    char c;
-	    Response *stuff = http->fetch_url("http://dcz.dods.org/secret");
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
 			   && !ferror(stuff->get_stream()) 
 			   && !feof(stuff->get_stream()));
 	    delete stuff;
 	}
 	catch (InternalErr &e) {
+	    delete stuff;
 	    CPPUNIT_ASSERT(!"Caught exception from output");
 	}
     }
@@ -236,6 +265,40 @@ public:
 	server_version_test();
 	type_test();
     }
+
+    void set_accept_deflate_test() {
+	http->set_accept_deflate(false);
+	CPPUNIT_ASSERT(count(http->d_request_headers.begin(), 
+			     http->d_request_headers.end(),
+			     "Accept-Encoding: deflate") == 0);
+
+	http->set_accept_deflate(true);
+	CPPUNIT_ASSERT(count(http->d_request_headers.begin(), 
+			     http->d_request_headers.end(),
+			     "Accept-Encoding: deflate") == 1);
+
+	http->set_accept_deflate(true);
+	CPPUNIT_ASSERT(count(http->d_request_headers.begin(), 
+			     http->d_request_headers.end(),
+			     "Accept-Encoding: deflate") == 1);
+
+	http->set_accept_deflate(false);
+	CPPUNIT_ASSERT(count(http->d_request_headers.begin(), 
+			     http->d_request_headers.end(),
+			     "Accept-Encoding: deflate") == 0);
+    }
+
+    void read_url_password_test() {
+	FILE *dump = fopen("/dev/null", "w");
+	vector<string> *resp_h = new vector<string>;
+	long status = http->read_url(localhost_pw_url, dump, resp_h);
+
+	DBG(cerr << endl << http->d_upstring << endl);
+	CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_test");
+	CPPUNIT_ASSERT(status == 200);
+	delete resp_h;
+    }
+	
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPConnectTest);
@@ -246,12 +309,37 @@ main( int argc, char* argv[] )
     CppUnit::TextTestRunner runner;
     runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
+    cerr << "These tests require a working network connection," << endl
+	 << "httpd running on localhost, a configured localhost" << endl
+	 << "site with password protected directories and that" << endl
+	 << "eddy.gso.uri.edu is running the OPeNDAP DSP data" << endl
+	 << "server." << endl;
+
     runner.run();
 
     return 0;
 }
 
 // $Log: HTTPConnectTest.cc,v $
+// Revision 1.9  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.8.2.5  2003/09/06 22:11:02  jimg
+// Modified so that localhost is used instead of remote hosts. This means
+// that the tests don't require Internet access but do require that the
+// local machine runs httpd and has it correctly configured.
+//
+// Revision 1.8.2.4  2003/05/06 06:44:15  jimg
+// Modified HTTPConnect so that the response headers are no longer a class
+// member. This cleans up the class interface and paves the way for using
+// the multi interface of libcurl. That'll have to wait for another day...
+//
+// Revision 1.8.2.3  2003/05/05 21:44:50  jimg
+// Added test for password in url 'feature.'
+//
+// Revision 1.8.2.2  2003/05/05 19:46:40  jimg
+// Added set_accept_deflate test.
+//
 // Revision 1.8  2003/04/23 21:33:53  jimg
 // Changes for the unit tests. This involved merging Rob's VC++ changes
 // and fixing a bug in escaping.cc (a call to string::insert invalidated

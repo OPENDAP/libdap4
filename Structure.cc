@@ -184,6 +184,21 @@ Structure::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
+/** Set the \e in_selection property for this variable and all of its
+    children. 
+    
+    @brief Set the \e in_selection property.
+    @param state Set the property value to \e state. */
+void
+Structure::set_in_selection(bool state)
+{
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+	(*i)->set_in_selection(state);
+    }
+
+    BaseType::set_in_selection(state);
+}
+
 // NB: Part defaults to nil for this class
 
 /** Adds an element to a Structure. 
@@ -230,16 +245,18 @@ bool
 Structure::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		     bool ce_eval)
 {
+    dds.timeout_on();
+
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
-    {
-	if ((*i)->send_p())
-	{
+    dds.timeout_off();
+
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+	if ((*i)->send_p()) {
 	    (*i)->serialize(dataset, dds, sink, false);
 	}
     }
@@ -374,7 +391,7 @@ Structure::exact_match(const string &name, btp_stack *s)
 
 #if 0
 /** Returns the pseudo-index (Pix) of the first structure element. 
-    @deprecated
+    @deprecated All methods which use or return Pix objects are deprecated.
     @see var_begin() */
 Pix
 Structure::first_var()
@@ -401,7 +418,7 @@ Structure::var_end()
     return _vars.end() ;
 }
 
-/** Return the iterator for the \i ith variable.
+/** Return the iterator for the \e ith variable.
     @param i the index
     @return The corresponding  Vars_iter */
 Structure::Vars_iter
@@ -414,8 +431,7 @@ Structure::get_vars_iter(int i)
 #if 0
 /** Increments the input index to point to the next element in the
     structure.
-    @deprecated use iterator operator ++ with the iterator returned from
-    var_begin()
+    @deprecated All methods which use or return Pix objects are deprecated.
     @see var_begin() */
 void
 Structure::next_var(Pix p)
@@ -674,6 +690,21 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.56  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.54.2.2  2003/09/06 22:56:26  jimg
+// Added set_in_selection() method. Updated the documentation.
+//
+// Revision 1.54.2.1  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
 // Revision 1.55  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

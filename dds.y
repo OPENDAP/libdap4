@@ -48,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.43 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.44 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -461,6 +461,9 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.44  2003/12/08 18:02:30  edavis
+ * Merge release-3-4 into trunk
+ *
  * Revision 1.43  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

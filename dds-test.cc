@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.28 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.29 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <GetOpt.h>
 
@@ -296,6 +296,9 @@ test_class(void)
 }
 
 // $Log: dds-test.cc,v $
+// Revision 1.29  2003/12/08 18:02:30  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.28  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

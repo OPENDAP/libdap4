@@ -77,7 +77,14 @@ public:
     /** Build a Resource.
 	@param u The ancillary resource URL.
 	@param r The combination rule. */
+#ifdef WIN32
+	//  VC++ doesn't like using "Resource" before it is exhaustively defined
+	//  so much.  Seems we can get away with it in the absense of the 'const'
+	//  however, like in the no-arg constructor above.  ROM - 6/14/03.
+    Resource(const string &u, const rule &r) :d_url(u), d_rule(r) {}
+#else
     Resource(const string &u, const Resource::rule &r) :d_url(u), d_rule(r) {}
+#endif
 
     /** Build a Resource. 
 
@@ -137,6 +144,14 @@ private:
 };
 
 // $Log: Resource.h,v $
+// Revision 1.5  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.4.2.1  2003/06/14 22:23:55  rmorris
+// Minor patch for VC++ regarding using a 'const' reference to something
+// in the 'Resource' class in a constructor for that class.  VC++ doesn't
+// like because it isn't really completely defined as of that point.
+//
 // Revision 1.4  2003/02/27 22:21:01  pwest
 // Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
 // rule

@@ -39,7 +39,13 @@
 
 #include "config_dap.h"
 
-#include <assert.h>
+#ifndef WIN32
+#include <unistd.h>
+#else
+#include <io.h>
+#include <fcntl.h>
+#include <process.h>
+#endif
 
 #include "TestArray.h"
 
@@ -49,6 +55,8 @@
 
 using std::cerr;
 using std::endl;
+
+extern int test_variable_sleep_interval;
 
 Array *
 NewArray(const string &n, BaseType *v)
@@ -78,6 +86,9 @@ TestArray::read(const string &dataset)
 {
     if (read_p())
 	return true;
+
+    if (test_variable_sleep_interval > 0)
+	sleep(test_variable_sleep_interval);
 
     unsigned i;
 
@@ -153,7 +164,6 @@ TestArray::read(const string &dataset)
       case dods_array_c:
       case dods_null_c:
       default:
-	assert(false);
 	cerr << "__FILE__:__LINE__ Bad DODS data type" << endl;
 	break;
     }
@@ -164,6 +174,12 @@ TestArray::read(const string &dataset)
 }
 
 // $Log: TestArray.cc,v $
+// Revision 1.31  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.29.2.1  2003/07/23 23:56:36  jimg
+// Now supports a simple timeout system.
+//
 // Revision 1.30  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

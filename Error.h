@@ -210,6 +210,9 @@ public:
 };
 
 // $Log: Error.h,v $
+// Revision 1.28  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.27  2003/09/30 22:06:54  jimg
 // Changes from the release-3-4 branch were small (and there was no change
 // here); I copied the file since we're not yet ready to merge the 3.4

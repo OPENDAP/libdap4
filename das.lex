@@ -62,7 +62,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.38 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.39 2003/12/08 18:02:30 edavis Exp $"};
 
 #include <string.h>
 
@@ -72,6 +72,7 @@ static char rcsid[] not_used ={"$Id: das.lex,v 1.38 2003/04/22 19:40:28 jimg Exp
 /* These defines must precede the das.tab.h include. */
 #define YYSTYPE char *
 #define YY_DECL int daslex YY_PROTO(( void ))
+#define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
 
 #include "das.tab.h"
 
@@ -164,16 +165,25 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
                         }
 
 {NEVER}                 {
-                          if (yytext) {	/* suppress msgs about `' chars */
+                          if (yytext) {
                             fprintf(stderr, "Character `%c' is not", *yytext);
-                            fprintf(stderr, " allowed (except within");
-			    fprintf(stderr, " quotes) and has been ignored\n");
+                            fprintf(stderr, " allowed.");
 			  }
 			}
 %%
 
 /*
  * $Log: das.lex,v $
+ * Revision 1.39  2003/12/08 18:02:30  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.38.2.1  2003/10/03 16:25:02  jimg
+ * I changed the way the scanners handle errors. They were calling
+ * YY_FATAL_ERROR and using the default value which prints a msg to stderr
+ * and calls exit(1). I've changed that to a new sniplet that throws an
+ * exception (Error). In addition, some of the scanners would ignore
+ * illegal characters; they now treat those as fatal errors.
+ *
  * Revision 1.38  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

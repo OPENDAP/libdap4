@@ -191,6 +191,9 @@ int check_float64(const char *val);
 int check_url(const char *val);
 
 // $Log: parser.h,v $
+// Revision 1.21  2003/12/08 18:02:31  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.20  2003/04/22 19:40:29  jimg
 // Merged with 3.3.1.
 //

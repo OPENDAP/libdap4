@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.14 2003/05/02 16:22:52 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.15 2003/12/08 18:02:29 edavis Exp $" };
 
 #include <stdio.h>
 
@@ -45,6 +45,7 @@ static char rcsid[] not_used =
 #include <functional>
 #include <algorithm>
 #include <sstream>
+#include <iterator>
 
 #include "debug.h"
 #include "Regex.h"
@@ -54,18 +55,18 @@ static char rcsid[] not_used =
 #include "HTTPResponse.h"
 #include "HTTPCacheResponse.h"
 
-using std::cerr;
-using std::endl;
-using std::string;
-using std::vector;
+using namespace std;
 
-// This global variable is not MT-Safe, but I'm leaving it as is because it
-// is used only for debugging (set them in a debugger like gdb or ddd). They
-// are not static because I *believe* that many debuggers cannot access
+// These global variables are not MT-Safe, but I'm leaving them as is because
+// they are used only for debugging (set them in a debugger like gdb or ddd).
+// They are not static because I *believe* that many debuggers cannot access
 // static variables. 08/07/02 jhrg
 
 // Set this to 1 to turn on libcurl's verbose mode (for debugging).
 int www_trace = 0;
+
+// Keep the temporary files; useful for debugging.
+int dods_keep_temps = 0;
 
 /** Functor to parse the headers in the d_headers field. After the headers
     have been read off the wire and written into the d_headers field, scan
@@ -128,26 +129,49 @@ public:
     @param ptr A pointer to one line of character data; one header.
     @param size Size of each character (nominally one byte).
     @param nmemb Number of bytes.
-    @param http_connect A pointer to the HTTPConnect object that initiated
-    the request.
+    @param resp_hdrs A pointer to a vector<string>. Set in read_url.
     @return The number of bytes processed. Must be equal to size * nmemb or
     libcurl will report an error. */
 
-size_t 
-save_raw_http_header(void *ptr, size_t size, size_t nmemb, void *http_connect)
+static size_t 
+save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
 {
     DBG2(cerr << "Inside the header parser." << endl);
-    HTTPConnect *http = static_cast<HTTPConnect *>(http_connect);
+    vector<string> *hdrs = static_cast<vector<string> *>(resp_hdrs);
 
     // Grab the header, minus the trailing newline.
     string complete_line(static_cast<char *>(ptr), size * nmemb - 1);
+
     // Store all non-empty headers that are not HTTP status codes
     if (complete_line != "" && complete_line.find("HTTP") == string::npos) {
-	DBG2(cerr << "Header line: " << complete_line << endl);
-	http->d_headers.push_back(complete_line);
+	DBG(cerr << "Header line: " << complete_line << endl);
+	hdrs->push_back(complete_line);
     }
 
     return size * nmemb;
+}
+
+/** A libcurl callback for debugging protocol issues. */
+static int
+curl_debug(CURL *curl, curl_infotype info, char *msg, size_t size, void  *data)
+{
+    string message(msg, size);
+
+    switch (info) {
+      case CURLINFO_TEXT:
+	cerr << "Text: " << message; break;
+      case CURLINFO_HEADER_IN:
+	cerr << "Header in: " << message; break;
+      case CURLINFO_HEADER_OUT:
+	cerr << "Header out: " << message; break;
+      case CURLINFO_DATA_IN:
+	cerr << "Data in: " << message; break;
+      case CURLINFO_DATA_OUT:
+	cerr << "Data out: " << message; break;
+      case CURLINFO_END:
+	cerr << "End: " << message; break;
+    }
+    return 0;
 }
 
 /** Initialize libcurl. Create a libcurl handle that can be used for all of
@@ -189,18 +213,28 @@ HTTPConnect::www_lib_init() throw(Error, InternalErr)
     }
 
     curl_easy_setopt(d_curl, CURLOPT_ERRORBUFFER, d_error_buffer);
-    curl_easy_setopt(d_curl, CURLOPT_FAILONERROR, 1);
+    // We have to set FailOnError to false for any of the non-Basic
+    // authentication schemes to work. 07/28/03 jhrg
+    curl_easy_setopt(d_curl, CURLOPT_FAILONERROR, 0);
+
+    // This means libcurl will use Basic, Digest, GSS Negotiate, or NTLM,
+    // choosing the the 'safest' one supported by the server.
+    // This requires curl 7.10.6 which is still in pre-release. 07/25/03 jhrg
+    curl_easy_setopt(d_curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_ANY);
 
     curl_easy_setopt(d_curl, CURLOPT_NOPROGRESS, 1);
     curl_easy_setopt(d_curl, CURLOPT_MUTE, 1);
+    curl_easy_setopt(d_curl, CURLOPT_NOSIGNAL, (long)1);
 
-    curl_easy_setopt(d_curl, CURLOPT_HEADERFUNCTION, save_raw_http_header);
-    // By passing `this' to the writeheader function we can load values read
-    // from the headers into this object.
-    curl_easy_setopt(d_curl, CURLOPT_WRITEHEADER, this);
+    curl_easy_setopt(d_curl, CURLOPT_HEADERFUNCTION, save_raw_http_headers);
+    // In read_url a call to CURLOPT_WRITEHEADER is used to set the fourth
+    // param of save_raw_http_headers to a vector<string> object. 
 
-    if (www_trace)
+    if (www_trace) {
 	curl_easy_setopt(d_curl, CURLOPT_VERBOSE, 1);
+	curl_easy_setopt(d_curl, CURLOPT_DEBUGFUNCTION, curl_debug);
+    }
+	
 }
 
 /** Functor to add a single string to a curl_slist. This is used to transfer
@@ -228,27 +262,35 @@ public:
 
     @param url The URL to dereference.
     @param stream The distination for the data; the caller can assume that
-    the body of the response can be found by reading from this pointer.
+    the body of the response can be found by reading from this pointer. A
+    value/result parameter
+    @param resp_hdrs Value/result parameter for the HTTP Response Headers.
     @param headers A pointer to a vector of HTTP request headers. Default is
-    null.
+    null. These headers will be appended to the list of default headers.
     @return The HTTP status code.
     @exception Error Thrown if libcurl encounters a problem; the libcurl
     error message is stuffed into the Error object. */
 
 long
 HTTPConnect::read_url(const string &url, FILE *stream, 
+		      vector<string> *resp_hdrs,
 		      const vector<string> *headers) throw(Error)
 {
     curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(d_curl, CURLOPT_FILE, stream);
 
-    struct curl_slist *header_list = 0;
-    if (headers) {
-	BuildHeaders curl_hdrs;
-	curl_hdrs = for_each(headers->begin(), headers->end(), curl_hdrs);
-	header_list = curl_hdrs.get_headers(); // save to later delete.
-	curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, header_list);
-    }
+    DBG(copy(d_request_headers.begin(), d_request_headers.end(),
+	     ostream_iterator<string>(cerr, "\n")));
+
+    BuildHeaders req_hdrs;
+    req_hdrs = for_each(d_request_headers.begin(), d_request_headers.end(),
+			 req_hdrs);
+    if (headers)
+	req_hdrs = for_each(headers->begin(), headers->end(), req_hdrs);
+    curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs.get_headers());
+
+    if (d_accept_deflate)
+	curl_easy_setopt(d_curl, CURLOPT_ENCODING, "deflate");
 
     bool temporary_proxy = false;
     if ((temporary_proxy = url_uses_proxy_for(url))) {
@@ -261,14 +303,28 @@ HTTPConnect::read_url(const string &url, FILE *stream,
 	curl_easy_setopt(d_curl, CURLOPT_PROXY, 0);	
     }
 
+    string::size_type at_sign = url.find('@');
+    // Assume username:password present *and assume it's an HTTP URL; it *is*
+    // HTTPConnect, after all). 7 is position after "http://"; the second arg
+    // to substr() is the sub string length.
+    if (at_sign != url.npos)
+	d_upstring = url.substr(7, at_sign-7);
+
+    if (!d_upstring.empty()) {
+	curl_easy_setopt(d_curl, CURLOPT_USERPWD, d_upstring.c_str());
+	curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD, d_upstring.c_str());
+    }
+
+    // Pass save_raw_http_headers() a pointer to the vector<string> where the
+    // response headers may be stored. Callers can use the resp_hdrs
+    // value/result parameter to get the raw response header information .
+    curl_easy_setopt(d_curl, CURLOPT_WRITEHEADER, resp_hdrs);
+
     CURLcode res = curl_easy_perform(d_curl);
 
-    if (header_list) {
-	curl_slist_free_all(header_list);
-	// If we set the header list to some unique value, make sure to reset
-	// it to null after we free said value! 
-	curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, 0);
-    }
+    // Free the header list and null the value in d_curl.
+    curl_slist_free_all(req_hdrs.get_headers());
+    curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, 0);
 
     // Reset the proxy?
     if (temporary_proxy && d_rcr->get_proxy_server_host_url() != "")
@@ -317,7 +373,6 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
 /** Build a virtual connection to a remote data source that will be
     accessed using HTTP. 
 
-    @name The URL to the remote data source.
     @param rcr A pointer to the RCReader object which holds configuration
     file information to be used by this virtual connection. */
 
@@ -327,18 +382,34 @@ HTTPConnect::HTTPConnect(RCReader *rcr) throw(Error, InternalErr)
     d_accept_deflate = rcr->get_deflate();
     d_rcr = rcr;
 
+    // Load in the default headers to send with a request. The empty Pragma
+    // headers overrides libcurl's default Pragma: no-cache header (which
+    // will disable caching by Squid, et c.). The User-Agent header helps
+    // make server logs more readable. 05/05/03 jhrg
+    d_request_headers.push_back(string("Pragma:"));
+    string user_agent = string("User-Agent: ") + string(CNAME)
+	+ string("/") + string(CVER);
+    d_request_headers.push_back(user_agent);
+    if (d_accept_deflate)
+	d_request_headers.push_back(string("Accept-Encoding: deflate"));
+
     // HTTPCache::instance returns a valid ptr or 0.
-    d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(), true);
+    if (d_rcr->get_use_cache())
+	d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),
+					   false);
+    else
+	d_http_cache = 0;
+
     DBG2(cerr << "Cache object created (" << hex << d_http_cache << dec
 	 << ")" << endl);
 
     if (d_http_cache) {
 	d_http_cache->set_cache_enabled(d_rcr->get_use_cache());
-	d_http_cache->set_expire_ignored(d_rcr->get_ignore_expires());
+	d_http_cache->set_expire_ignored(d_rcr->get_ignore_expires() != 0);
 	d_http_cache->set_max_size(d_rcr->get_max_cache_size());
 	d_http_cache->set_max_entry_size(d_rcr->get_max_cached_obj());
 	d_http_cache->set_default_expiration(d_rcr->get_default_expires());
-	d_http_cache->set_always_validate(d_rcr->get_always_validate());
+	d_http_cache->set_always_validate(d_rcr->get_always_validate() != 0);
     }
     
     www_lib_init();		// This may throw either Error or InternalErr
@@ -365,24 +436,23 @@ HTTPConnect::~HTTPConnect()
     @exception InternalErr Thrown if a temporary file to hold the response
     could not be opened. */
 
-Response *
+HTTPResponse *
 HTTPConnect::fetch_url(const string &url) throw(Error, InternalErr)
 {
-    // Clear/Reset values from previous requests.
-    d_headers.clear();
-    Response *stream;
+    HTTPResponse *stream;
 
-    if (d_http_cache->is_cache_enabled())
+    if (d_http_cache && d_http_cache->is_cache_enabled())
 	stream = caching_fetch_url(url);
     else
 	stream = plain_fetch_url(url);
     
     ParseHeader parser;
-    parser = for_each(d_headers.begin(), d_headers.end(), ParseHeader());
+
+    parser = for_each(stream->get_headers()->begin(), 
+		      stream->get_headers()->end(), ParseHeader());
 
     stream->set_type(parser.get_object_type());
     stream->set_version(parser.get_server());
-    stream->set_headers(d_headers);
     
     return stream;
 }
@@ -449,13 +519,14 @@ close_temp(FILE *s, const string &name)
 
     A private method.
 
+    @note This method assumes that d_http_cache is not null!
     @param url The URL to dereference.
     @return A pointer to the open stream.
     @exception Error Thrown if the URL could not be dereferenced.
     @exception InternalErr Thrown if a temporary file to hold the response
     could not be opened. */
 
-Response *
+HTTPResponse *
 HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 {
     DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
@@ -466,14 +537,17 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 	if (d_http_cache->is_url_valid(url)) { // url in cache and valid
 	    DBGN(cerr << "and it's valid; using cached response." << endl);
 
-	    FILE *s = d_http_cache->get_cached_response(url, d_headers);
-	    HTTPCacheResponse *crs = new HTTPCacheResponse(s, d_http_cache);
+	    vector<string> *headers = new vector<string>;;
+	    FILE *s = d_http_cache->get_cached_response(url, *headers);
+	    HTTPCacheResponse *crs = new HTTPCacheResponse(s, headers, d_http_cache);
 	    
 	    return crs;
 	}
 	else {			// url in cache but not valid; validate
 	    DBGN(cerr << "but it's not valid; validating... ");
 
+	    // *** auto_ptr??? resp_hdrs not deleted! 10/10/03 jhrg 
+	    vector<string> *resp_hdrs = new vector<string>;
 	    vector<string> cond_hdrs 
 		= d_http_cache->get_conditional_request_headers(url);
 	    FILE *body = 0;
@@ -482,7 +556,7 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 	    long http_status;
 
 	    try {
-		http_status = read_url(url, body, &cond_hdrs);
+		http_status = read_url(url, body, resp_hdrs, &cond_hdrs);
 		rewind(body);
 	    }
 	    catch(Error &e) {
@@ -494,8 +568,9 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 	      case 200: {		// New headers and new body
 		    DBGN(cerr << "read a new response; caching." << endl);
 
-		    d_http_cache->cache_response(url, now, d_headers, body);
-		    HTTPResponse *rs = new HTTPResponse(body, dods_temp);
+		    d_http_cache->cache_response(url, now, *resp_hdrs, body);
+		    HTTPResponse *rs = new HTTPResponse(body, resp_hdrs,
+							dods_temp);
 
 		    return rs;
 		}
@@ -505,9 +580,22 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 		    DBGN(cerr << "cached response valid; updating." << endl);
 
 		    close_temp(body, dods_temp);
-		    d_http_cache->update_response(url, now, d_headers);
+		    d_http_cache->update_response(url, now, *resp_hdrs);
+
+		    vector<string> *headers = new vector<string>;;
+		    FILE *s = d_http_cache->get_cached_response(url, *headers);
+		    HTTPCacheResponse *crs 
+			= new HTTPCacheResponse(s, headers, d_http_cache);
+#if 0
+		    // Problem: When a 304 comes back it sometimes (?) has
+		    // only a Date header. We need all the headers, so after
+		    // updating the cache with the single Date header, get
+		    // _all_ the headers and return them. See bug 672.
+		    // 10/10/03 jhrg
 		    FILE *s = d_http_cache->get_cached_response_body(url);
-		    HTTPCacheResponse *crs = new HTTPCacheResponse(s, d_http_cache);
+		    HTTPCacheResponse *crs 
+			= new HTTPCacheResponse(s, resp_hdrs, d_http_cache);
+#endif
 		    return crs;
 		}
 		break;
@@ -524,8 +612,9 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
     else {			// url not in cache; get it and cache it
 	DBGN(cerr << "no; getting response and caching." << endl);
 	time_t now = time(0);
-	Response *rs = plain_fetch_url(url);
-	d_http_cache->cache_response(url, now, d_headers, rs->get_stream());
+	HTTPResponse *rs = plain_fetch_url(url);
+	d_http_cache->cache_response(url, now, *(rs->get_headers()), 
+				     rs->get_stream());
 	
 	return rs;
     }
@@ -537,8 +626,6 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
 /** Dereference a URL and load its body into a temporary file. This
     method ignores the HTTP cache.
 
-    @todo make this return a Response or HTTPResponse.
-    
     A private method.
 
     @param url The URL to dereference.
@@ -547,15 +634,16 @@ HTTPConnect::caching_fetch_url(const string &url) throw(Error, InternalErr)
     @exception InternalErr Thrown if a temporary file to hold the response
     could not be opened. */
 
-Response *
+HTTPResponse *
 HTTPConnect::plain_fetch_url(const string &url) throw(Error, InternalErr)
 {
     DBG(cerr << "Getting URL: " << url << endl);
     FILE *stream = 0;
     string dods_temp = get_temp_file(stream);
+    vector<string> *resp_hdrs = new vector<string>;
 
     try {
-	read_url(url, stream);	// Throws Error.
+	read_url(url, stream, resp_hdrs);	// Throws Error.
     }
 
     catch(Error &e) {
@@ -565,29 +653,46 @@ HTTPConnect::plain_fetch_url(const string &url) throw(Error, InternalErr)
 
     rewind(stream);
 
-    return new HTTPResponse(stream, dods_temp);
+    return new HTTPResponse(stream, resp_hdrs, dods_temp);
 }
 
-/** Set the <c>accept deflate</c> property. If true, the DAP client announces
-    to a server that it can accept responses compressed using the \c deflate
-    algorithm. This property is automatically set using a value from the
-    <c>.dodsrc</c> configuration file. This method provides a way to override
-    that behavior. NB: If the configuration file is not present or does not
-    include a value for this property, it is set to \c false.
+/** Set the <em>accept deflate</em> property. If true, the DAP client
+    announces to a server that it can accept responses compressed using the
+    \c deflate algorithm. This property is automatically set using a value
+    from the <code>.dodsrc</code> configuration file. This method provides a
+    way to override that behavior.
 
-    @param deflate True sets the <c>accept deflate</c> property, False clears
+    @note If the configuration file is not present or does not include a
+    value for this property, it is set to \c false.
+
+    @param deflate True sets the <em>accept deflate</em> property, False clears
     it. */
 void
 HTTPConnect::set_accept_deflate(bool deflate)
 {
     d_accept_deflate = deflate;
+
+    if (d_accept_deflate) {
+	if (find(d_request_headers.begin(), d_request_headers.end(), 
+		 "Accept-Encoding: deflate") == d_request_headers.end())
+	    d_request_headers.push_back(string("Accept-Encoding: deflate"));
+	DBG(copy(d_request_headers.begin(), d_request_headers.end(),
+		 ostream_iterator<string>(cerr, "\n")));
+    }
+    else {
+	vector<string>::iterator i;
+	i = remove_if(d_request_headers.begin(), d_request_headers.end(),
+		      bind2nd(equal_to<string>(), 
+			      string("Accept-Encoding: deflate")));
+	d_request_headers.erase(i, d_request_headers.end());
+    }
 }
 
 /** Set the credentials for responding to challenges while dereferencing
     URLs. Alternatively, these can be embedded in the URL. This method
     provides a way for clients of HTTPConnect to get credentials from users
     (say using a pop up dialog) and to not hack the URL to pass that
-    information to libcurl. Note that the 'credentials in the URL' scheme \i
+    information to libcurl. Note that the 'credentials in the URL' scheme \e
     is part of the URL standard.
 
     This method does nothing if \c u, the username, is empty.
@@ -610,13 +715,67 @@ HTTPConnect::set_credentials(const string &u, const string &p)
     d_password = p;
 
     d_upstring = u + ":" + p;
-
-    if (curl_easy_setopt(d_curl, CURLOPT_USERPWD, d_upstring.c_str()) != 0)
-	throw InternalErr(__FILE__, __LINE__, 
-	      "Could not set the username and password string using libcurl.");
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.15  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.14.2.11  2003/10/10 23:13:12  jimg
+// Fix for bug 672: When a cached response needs to be validated and the origin
+// server returns a 304 response (i.e., use what you've got) only the Date
+// header is sent with the 304 response. This code was using the
+// HTTPCache::get_cahced_body() method and the header from the 304 response.
+// This meant that Content-Description and server/DAP-protocol version headers
+// were missing in the Response object returned by caching_fetch_url(). This
+// caused an Error to be thrown in Connect (because we just modified it to
+// require the Content-Description information). I fixed this by using the
+// get_cached_response() method which reads the body _and_ headers from the
+// cache.
+//
+// Revision 1.14.2.10  2003/10/03 16:21:17  jimg
+// Minor changes: save_raw_http_headers is now static and some comments were
+// fixed.
+//
+// Revision 1.14.2.9  2003/09/08 18:54:41  jimg
+// Now we check to see that USE_CACHE is set (1) in .dodsrc before trying to
+// create an instance of HTTPCache. This makes sense since HTTPCache will create
+// teh cache directory structure regardless of the value of USE_CACHE. If
+// USE_CACHE is clear (0), the the pointer to the HTTPCache instance is zero.
+//
+// Revision 1.14.2.8  2003/09/06 22:37:50  jimg
+// Updated the documentation.
+//
+// Revision 1.14.2.7  2003/08/18 00:33:14  rmorris
+// Win32-related cleanup.
+//
+// Revision 1.14.2.6  2003/07/29 01:46:33  jimg
+// Now supports digest authentication.
+//
+// Revision 1.14.2.5  2003/07/26 02:08:18  jimg
+// Added curl options to suppress signals and supply passwords to proxy servers.
+//
+// Revision 1.14.2.4  2003/07/16 04:20:55  jimg
+// Fixed some documentation.
+//
+// Revision 1.14.2.3  2003/05/06 06:44:15  jimg
+// Modified HTTPConnect so that the response headers are no longer a class
+// member. This cleans up the class interface and paves the way for using
+// the multi interface of libcurl. That'll have to wait for another day...
+//
+// Revision 1.14.2.2  2003/05/05 21:45:30  jimg
+// Added support for the http://user:passwd@machine... convention.
+//
+// Revision 1.14.2.1  2003/05/05 19:45:25  jimg
+// Fixed a problem where libcurl sent a Pragma: no-cache request header. This
+// caused third-party caches to not cache requests. I fixed this by forcing
+// libcurl to send an empty Pragma: header (suggested by Benno Blumenthal and
+// the libcurl list). At the same time I repaired the set_accept_deflate method
+// so that it worked (it didn't but nobody noticed...) and changed the class so
+// that *any* headers present in the new filed d_request_headers are sent
+// whenever read_url() is run. I also now set the User-Agent request header to
+// a value that announces who we are.
+//
 // Revision 1.14  2003/05/02 16:22:52  jimg
 // Minor fixes: Fixed a spelling mistake and removed #if 1 ... #endif. Mostly I
 // wanted this code in for the 3.4 branch.

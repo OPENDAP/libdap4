@@ -35,8 +35,11 @@
 
 #include "config_dap.h"
 
+<<<<<<< Grid.cc
 #include <algorithm>
 
+=======
+>>>>>>> 1.57.2.3
 #include "Grid.h"
 #include "DDS.h"
 #include "Array.h"		// for downcasts
@@ -49,7 +52,12 @@
 #include "trace_new.h"
 #endif
 
+<<<<<<< Grid.cc
 using namespace std;
+=======
+using std::cerr;
+using std::endl;
+>>>>>>> 1.57.2.3
 
 void
 Grid::_duplicate(const Grid &s)
@@ -167,6 +175,18 @@ Grid::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
+void
+Grid::set_in_selection(bool state)
+{
+    _array_var->set_in_selection(state);
+
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
+	(*i)->set_in_selection(state);
+    }
+
+    BaseType::set_in_selection(state);
+}
+
 unsigned int
 Grid::width()
 {
@@ -184,19 +204,21 @@ bool
 Grid::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		bool ce_eval)
 {
+    dds.timeout_on();
+
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
+    dds.timeout_off();
+
     if (_array_var->send_p())
 	_array_var->serialize(dataset, dds, sink, false);
 
-    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
-    {
-	if ((*i)->send_p())
-	{
+    for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++) {
+	if ((*i)->send_p()) {
 	    (*i)->serialize(dataset, dds, sink, false);
 	}
     }
@@ -240,9 +262,9 @@ Grid::buf2val(void **)
 }
 
 BaseType *
-Grid::var(const string &name, btp_stack &s)
+Grid::var(const string &n, btp_stack &s)
 {
-    return var(name, true, &s);
+    return var(n, true, &s);
 }
 
   /** Note the parameter <i>exact_match</i> is not used by this
@@ -370,7 +392,7 @@ Grid::map_end()
     return _map_vars.end() ;
 }
 
-/** Return the iterator for the \i ith map.
+/** Return the iterator for the \e ith map.
     @param i the index
     @return The corresponding  Vars_iter */
 Grid::Map_iter
@@ -851,8 +873,26 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.60  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.59  2003/09/25 22:37:34  jimg
 // Misc changes.
+//
+// Revision 1.57.2.3  2003/09/06 22:33:14  jimg
+// Added is_in_selection() method.
+//
+// Revision 1.57.2.2  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
+// Revision 1.57.2.1  2003/06/05 20:15:26  jimg
+// Removed many uses of strstream and replaced them with stringstream.
 //
 // Revision 1.58  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan

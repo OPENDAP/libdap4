@@ -36,8 +36,10 @@
 #ifndef _float64_h
 #define _float64_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #ifndef _dods_datatypes_h
@@ -50,8 +52,8 @@
 
 /** @brief Holds a 64-bit (double precision) floating point value.
 
-    @see BaseType
-    */
+@see BaseType
+*/
 
 class Float64: public BaseType {
     /** This class allows Byte, ..., Float32 access to <tt>_buf</tt> to 
@@ -70,26 +72,28 @@ protected:
     dods_float64 _buf;
 
 public:
-  Float64(const string &n = "");
-  virtual ~Float64() {}
+    Float64(const string &n = "");
+    virtual ~Float64() {}
 
-  Float64(const Float64 &copy_from);
+    Float64(const Float64 &copy_from);
 
-  Float64 &operator=(const Float64 &rhs);
+    Float64 &operator=(const Float64 &rhs);
 
     virtual BaseType *ptr_duplicate();
     
-  virtual unsigned int width();
+    virtual unsigned int width();
 
-  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			 bool ce_eval = true);
-  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-  virtual void print_val(ostream &os, string space = "", 
-			 bool print_decl_p = true);
+    virtual dods_float64 value();
+
+    virtual void print_val(ostream &os, string space = "", 
+			   bool print_decl_p = true);
 
     virtual void print_val(FILE *out, string space = "", 
 			   bool print_decl_p = true);
@@ -99,6 +103,20 @@ public:
 
 /* 
  * $Log: Float64.h,v $
+ * Revision 1.36  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.35.2.3  2003/11/19 18:37:08  jimg
+ * Indentation changes.
+ *
+ * Revision 1.35.2.2  2003/09/06 22:37:50  jimg
+ * Updated the documentation.
+ *
+ * Revision 1.35.2.1  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
  * Revision 1.35  2003/04/22 19:40:27  jimg
  * Merged with 3.3.1.
  *

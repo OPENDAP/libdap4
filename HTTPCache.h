@@ -28,8 +28,10 @@
 
 #include "config_dap.h"		// BAD ***
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <stdio.h>
@@ -184,6 +186,15 @@ public:
 	{}
    };
 
+#ifdef WIN32
+	//  Declared private below for gcc.  There appears to be a
+	//  difference in public vs. private under gcc when objects
+	//  share the same source file (??).
+    void remove_cache_entry(CacheEntry *entry) throw(InternalErr);
+    bool stopGC() const;
+    int d_max_entry_size;	// Max individual entry size.
+#endif
+
 private:
     string d_cache_root;
     string d_cache_index;
@@ -198,7 +209,9 @@ private:
     int d_total_size;		// How much can we store?
     int d_folder_size;		// How much of that is meta data?
     int d_gc_buffer;		// How much memory needed as buffer?
+#ifndef WIN32  //  Declared public above for win32
     int d_max_entry_size;	// Max individual entry size.
+#endif
     int d_current_size;
     int d_default_expiration;
 
@@ -217,7 +230,6 @@ private:
 #ifdef HAVE_PTHREAD_H
     pthread_mutex_t d_cache_mutex;
 #endif
-
 
     // Typedefs for CacheTable. A CacheTable is a vector of vectors of
     // CacheEntries. The outer vector is accessed using the hash value.
@@ -242,11 +254,17 @@ private:
     
     // Functors used with STL algorithms
 
-    friend struct DeleteExpired;
-    friend struct DeleteByHits;
-    friend struct DeleteCacheEntry;
-    friend struct DeleteUnlockedCacheEntry;
-    friend struct WriteOneCacheEntry;
+    //#ifndef WIN32
+	//  Are both a struct and a Class as of 6/14/03.  It appears gcc
+	//  is allowing this.  VC++ does not.  I believe jimg is
+	//  in the middle of something in this regard.  ROM - 6/14/03.
+    // Changed struct to class. 07/10/03 jhrg
+    friend class DeleteExpired;
+    friend class DeleteByHits;
+    friend class DeleteCacheEntry;
+    friend class DeleteUnlockedCacheEntry;
+    friend class WriteOneCacheEntry;
+    //#endif
 
     // Private methods
 
@@ -281,7 +299,9 @@ private:
     void remove_entry_from_cache_table(const string &url) throw(InternalErr);
     void parse_headers(CacheEntry *entry, const vector<string> &headers);
     void calculate_time (CacheEntry *entry, time_t request_time);
+#ifndef WIN32  //  Declared public above for win32
     void remove_cache_entry(CacheEntry *entry) throw(InternalErr);
+#endif
     CacheEntry *get_entry_from_cache_table(const string &url) const;
     CacheEntry *get_entry_from_cache_table(int hash, const string &url) const;
 
@@ -301,7 +321,9 @@ private:
     string create_hash_directory(int hash) throw(Error);
     void create_location(CacheEntry *entry) throw(Error);
 
+#ifndef WIN32  //  Declared public above for win32
     bool stopGC() const;
+#endif
     bool startGC() const;
 
     void perform_garbage_collection();
@@ -346,7 +368,7 @@ public:
 
     bool cache_response(const string &url, time_t request_time,
 			const vector<string> &headers, const FILE *body)
-	throw(InternalErr);
+	throw(Error, InternalErr);
     vector<string> get_conditional_request_headers(const string &url)
 	throw(Error);
     void update_response(const string &url, time_t request_time,
@@ -364,6 +386,34 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.9  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.8.2.4  2003/09/08 18:52:08  jimg
+// The cache_response() method now declares that it may throw an InternalErr. It
+// calls create_location() which, due to bug #661, could not create the location
+// and threw an InternalErr. Since cache_response didn't declare InternalErr,
+// abort() was called.
+//
+// Revision 1.8.2.3  2003/07/11 04:25:22  jimg
+// Changed friend struct ... to friend class ... to match changes in the
+// implementation. I think this will fix a build problem with win32, so
+// one of the #ifdef WIN32 blocks can be removed.
+//
+// Revision 1.8.2.2  2003/06/23 11:49:18  rmorris
+// The #pragma interface directive to GCC makes the dynamic typing functionality
+// go completely haywire under OS X on the PowerPC.  We can't use that directive
+// on that platform and it was ifdef'd out for that case.
+//
+// Revision 1.8.2.1  2003/06/15 01:44:33  rmorris
+// VC++ appears to have access rules different then gcc.  It appears that
+// gcc allows external access to private data members when another object
+// making that access is declared  in the same source file.  Several data members
+// and functions that were private were #ifdef'd to public under win32.  Several
+// other "friend struct" members were also defined elsewhere as classes and
+// gcc permitted it while VC++ does not.  These friends were ifdef'd out as
+// that appears just to be code in transition.
+//
 // Revision 1.8  2003/04/23 21:33:53  jimg
 // Changes for the unit tests. This involved merging Rob's VC++ changes
 // and fixing a bug in escaping.cc (a call to string::insert invalidated

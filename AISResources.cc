@@ -37,6 +37,11 @@ using std::ostream ;
 using std::ofstream ;
 using std::endl ;
 
+#ifdef WIN32  //  Gives us find_if
+using namespace std;
+#endif
+
+
 /** Output the XML fragment for a Resource. This function is a friend of the
     Resource class. 
     @see Resource. */
@@ -65,7 +70,7 @@ operator<<(ostream &os, const AISResources &ais_res)
     os << "<ais xmlns=\"http://xml.opendap.org/ais\">" << endl;
 
     for (AISResources::ResourceRegexpsCIter pos = ais_res.d_re.begin(); 
-	 pos != ais_res.d_re.end(); ++pos) {
+	pos != ais_res.d_re.end(); ++pos) {
 	os << "<entry>" << endl;
 	// write primary
 	os << "<primary regexp=\"" << pos->first << "\"/>" << endl;
@@ -77,7 +82,24 @@ operator<<(ostream &os, const AISResources &ais_res)
 	os << "</entry>" << endl;
     }
 
-    for (AISResources::ResourceMapCIter pos = ais_res.d_db.begin(); 
+	//  Under VC++ 6.x, 'pos' is twice tagged as twice in the
+	//  same scope (this method - not just within for blocks), so
+	//  I gave it another name.  ROM - 6/14/03
+#ifdef WIN32
+    for (AISResources::ResourceMapCIter pos2 = ais_res.d_db.begin();
+	 pos2 != ais_res.d_db.end(); ++pos2) {
+	os << "<entry>" << endl;
+	// write primary
+	os << "<primary url=\"" << pos2->first << "\"/>" << endl;
+	// write the vector of Resource objects
+	for (ResourceVectorCIter i = pos2->second.begin(); 
+	     i != pos2->second.end(); ++i) {
+	    os << *i << endl;
+	}
+	os << "</entry>" << endl;
+    }
+#else
+    for (AISResources::ResourceMapCIter pos = ais_res.d_db.begin();
 	 pos != ais_res.d_db.end(); ++pos) {
 	os << "<entry>" << endl;
 	// write primary
@@ -89,6 +111,7 @@ operator<<(ostream &os, const AISResources &ais_res)
 	}
 	os << "</entry>" << endl;
     }
+#endif
 
     os << "</ais>" << endl;
 
@@ -105,7 +128,7 @@ AISResources::AISResources(const string &database) throw(AISDatabaseReadFailed)
 /** Add the given ancillary resource to the in-memory collection of
     mappings between primary and ancillary data sources. 
     @param url The target of the new mapping.
-    @param Match this ancillary resource to the target (primary). */
+    @param ancillary Match this ancillary resource to the target (primary). */
 void 
 AISResources::add_url_resource(const string &url, const Resource &ancillary)
 {
@@ -116,7 +139,7 @@ AISResources::add_url_resource(const string &url, const Resource &ancillary)
     there is already an entry for the primary, append the new ancillary
     resources to those.
     @param url The target of the new mapping.
-    @param Ancillary resources matched to this primary resource. */
+    @param rv Ancillary resources matched to this primary resource. */
 void 
 AISResources::add_url_resource(const string &url, const ResourceVector &rv)
 {
@@ -134,7 +157,7 @@ AISResources::add_url_resource(const string &url, const ResourceVector &rv)
 /** Add the given ancillary resource to the in-memory collection of
     mappings between regular expressions and ancillary data sources. 
     @param re The target of the new mapping.
-    @param Match this ancillary resource to the target (primary). */
+    @param ancillary  Match this ancillary resource to the target (primary). */
 void 
 AISResources::add_regexp_resource(const string &re, const Resource &ancillary)
 {
@@ -146,7 +169,7 @@ AISResources::add_regexp_resource(const string &re, const Resource &ancillary)
     ancillary resources to those.
 
     @param re The target of the new mapping.
-    @param Ancillary resources matched to this primary resource. */
+    @param rv Ancillary resources matched to this primary resource. */
 void 
 AISResources::add_regexp_resource(const string &re, const ResourceVector &rv)
 {
@@ -178,7 +201,7 @@ AISResources::has_resource(const string &primary) const
 
 /** Return a vector of AIS Resource objects which are bound to the given
     primary resource. If a given \c primary resource has both an explicit
-    entry for itself \i and matches a regular expression, the AIS resources
+    entry for itself \e and matches a regular expression, the AIS resources
     for both will be combined in one ResourceVector and returned.
 
     @todo Make this return an empty ResourceVector is no matching resources
@@ -247,6 +270,15 @@ AISResources::write_database(const string &filename)
 }
 
 // $Log: AISResources.cc,v $
+// Revision 1.8  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.7.2.2  2003/09/06 22:17:38  jimg
+// Updated the documentation.
+//
+// Revision 1.7.2.1  2003/06/15 06:54:31  rmorris
+// Initial port regarding AIS* to win32.
+//
 // Revision 1.7  2003/03/12 01:07:34  jimg
 // Added regular expressions to the AIS subsystem. In an AIS database (XML)
 // it is now possible to list a regular expression in place of an explicit

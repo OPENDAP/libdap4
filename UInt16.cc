@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: UInt16.cc,v 1.22 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: UInt16.cc,v 1.23 2003/12/08 18:02:29 edavis Exp $"};
 
 #include <stdlib.h>
 
@@ -103,11 +103,15 @@ bool
 UInt16::serialize(const string &dataset, DDS &dds, XDR *sink,
 		  bool ce_eval)
 {
+    dds.timeout_on();
+
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
+
+    dds.timeout_off();
 
     if (!XDR_UINT16(sink, &_buf))
 	throw Error(
@@ -235,6 +239,25 @@ UInt16::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: UInt16.cc,v $
+// Revision 1.23  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.22.2.3  2003/09/28 20:57:22  rmorris
+// Discontinued use of XDR_PROC typedef, using xdrproc_t instead - a
+// define from the xdr portion of the rpc library.
+//
+// Revision 1.22.2.2  2003/09/06 22:39:31  jimg
+// Updated to use the XDR_PROC typedef.
+//
+// Revision 1.22.2.1  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
 // Revision 1.22  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

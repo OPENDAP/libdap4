@@ -18,6 +18,16 @@
 #ifndef __DODS_DATATYPES__
 #define __DODS_DATATYPES__
 
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
+
 /* The typedefs are done using a preprocessor symbol so that autoconf's
    `CONFIG_HEADER' can be used. The configure script will then only modify
    the dods-datatypes.h header when its contents change. This saves on

@@ -157,8 +157,12 @@ typedef vector<BaseType *> BaseTypeRow;
 
 class Sequence: public Constructor {
 private:
+<<<<<<< Sequence.h
     // Linked list of templates for the variables in this sequence.
 #if 0
+=======
+    // Vector of templates for the variables in this sequence.
+>>>>>>> 1.53.2.1
     std::vector<BaseType *> _vars;
 #endif
 
@@ -222,6 +226,7 @@ public:
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
+    virtual void set_in_selection(bool state);
 
     virtual unsigned int width();
 
@@ -249,9 +254,9 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual BaseType *var(const string &name, bool exact_match = true,
+    virtual BaseType *var(const string &n, bool exact = true,
 			  btp_stack *s = 0);
-    virtual BaseType *var(const string &name, btp_stack &s);
+    virtual BaseType *var(const string &n, btp_stack &s);
 
     BaseType *var_value(size_t row, const string &name);
 
@@ -327,6 +332,12 @@ public:
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.55  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.53.2.1  2003/09/06 22:55:18  jimg
+ * Added set_in_selection() method. Updated the documentation.
+ *
  * Revision 1.54  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

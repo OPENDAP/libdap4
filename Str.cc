@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.51 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.52 2003/12/08 18:02:29 edavis Exp $"};
 
 #include <stdlib.h>
 
@@ -117,11 +117,15 @@ Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 
     DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
 
+    dds.timeout_on();
+
     if (!read_p())
       read(dataset);
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
+
+    dds.timeout_off();
 
     if (!xdr_str(sink, _buf))
 	throw Error(
@@ -254,6 +258,18 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.52  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.51.2.1  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
 // Revision 1.51  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

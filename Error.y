@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.y,v 1.14 2003/04/22 19:40:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.y,v 1.15 2003/12/08 18:02:29 edavis Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,6 +160,9 @@ Errorerror(char *s)
 
 
 // $Log: Error.y,v $
+// Revision 1.15  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.14  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

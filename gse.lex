@@ -44,16 +44,22 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.lex,v 1.10 2003/04/22 19:40:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.lex,v 1.11 2003/12/08 18:02:31 edavis Exp $"};
+
+#include <string>
+#include <string.h>
+
+#include "Error.h"
 
 #define YY_DECL int gse_lex YY_PROTO(( void ))
 #define ID_MAX 256
 #define YY_NO_UNPUT 1
 #define YY_NO_INPUT 1
-
-#include <string.h>
+#define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
 
 #include "gse.tab.h"
+
+using namespace std;
 
 static void store_int32();
 static void store_float64();
@@ -158,6 +164,16 @@ store_op(int op)
 
 /*
  * $Log: gse.lex,v $
+ * Revision 1.11  2003/12/08 18:02:31  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.10.2.1  2003/10/03 16:25:02  jimg
+ * I changed the way the scanners handle errors. They were calling
+ * YY_FATAL_ERROR and using the default value which prints a msg to stderr
+ * and calls exit(1). I've changed that to a new sniplet that throws an
+ * exception (Error). In addition, some of the scanners would ignore
+ * illegal characters; they now treat those as fatal errors.
+ *
  * Revision 1.10  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

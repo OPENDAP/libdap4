@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Float32.cc,v 1.24 2003/04/22 19:40:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Float32.cc,v 1.25 2003/12/08 18:02:29 edavis Exp $"};
 
 #include <stdlib.h>
 
@@ -106,11 +106,15 @@ bool
 Float32::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		   bool ce_eval)
 {
+    dds.timeout_on();
+
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
+
+    dds.timeout_off();
 
     if (!xdr_float(sink, &_buf))
 	throw Error(
@@ -162,6 +166,17 @@ Float32::buf2val(void **val)
     *(dods_float32 *)*val =_buf;
 
     return width();
+}
+
+/** Return the value of the Float32 held by this instance. This is more
+    convenient than the general interface provided by buf2val, but its use
+    requires a downcase from BaseType to Float32.
+
+    @return The dods_float32 value. */
+dods_float32 
+Float32::value()
+{
+    return _buf;
 }
 
 void 
@@ -242,6 +257,28 @@ Float32::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Float32.cc,v $
+// Revision 1.25  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.24.2.4  2003/11/19 18:44:53  jimg
+// Added a get_value() method. See Float64.cc.
+//
+// Revision 1.24.2.3  2003/09/28 20:57:22  rmorris
+// Discontinued use of XDR_PROC typedef, using xdrproc_t instead - a
+// define from the xdr portion of the rpc library.
+//
+// Revision 1.24.2.2  2003/09/06 22:30:01  jimg
+// Now uses the XDR_PROC typedef.
+//
+// Revision 1.24.2.1  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
 // Revision 1.24  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.40 2003/04/22 19:40:27 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.41 2003/12/08 18:02:29 edavis Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -230,7 +230,7 @@ DAS::parse(string fname)
     FILE *in = fopen(fname.c_str(), "r");
 
     if (!in) {
-	throw Error(can_not_read_file, "Could not open: " + fname);
+      throw Error(can_not_read_file, "Could not open: " + fname);
     }
 
     parse(in);
@@ -313,6 +313,8 @@ DAS::parse(FILE *in)
     characters that cannot be present in a URL (e.g., a space)
     AttrTable::print replaces those characters with WWW
     escape codes. 7/13/2001 jhrg 
+
+    @deprecated Using the C++ iostream class is deprecated.
 */
 
 void
@@ -326,6 +328,18 @@ DAS::print(ostream &os, bool dereference)
 
 }
 
+/** Creates an ASCII representation of a DAS on the given output
+    stream.
+
+    When an identifier contains a character that contains
+    characters that cannot be present in a URL (e.g., a space)
+    AttrTable::print replaces those characters with WWW
+    escape codes. 7/13/2001 jhrg 
+
+    @param out output FILE on which to print the DAS
+    @param dereference If true, follow aliases. Default is false.
+*/
+
 void
 DAS::print(FILE *out, bool dereference)
 {
@@ -337,6 +351,15 @@ DAS::print(FILE *out, bool dereference)
 }
 
 // $Log: DAS.cc,v $
+// Revision 1.41  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.40.2.2  2003/09/06 22:37:50  jimg
+// Updated the documentation.
+//
+// Revision 1.40.2.1  2003/06/06 08:28:28  reza
+// Error code changes in the error object.
+//
 // Revision 1.40  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

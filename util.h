@@ -100,9 +100,16 @@ using std::iostream;
 string prune_spaces(const string &);
 bool unique_names(vector<BaseType *> l, const string &var, const string &type,
 		  string &msg);
+//  These func's moved to xdrutil_ppc.* under the PPC as explained there
+#ifdef __POWERPC__
+extern "C" XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
+extern "C" XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
+extern "C" void delete_xdrstdio(XDR *xdr);
+#else
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
+#endif
 FILE *text_to_temp(string text);
 string systime();
 FILE *compressor(FILE *output, int &childpid);
@@ -118,11 +125,7 @@ bool func_null(int argc, BaseType *argv[], DDS &dds);
 BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
 BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
-#ifdef WIN32
-extern "C" int xdr_str(XDR *xdrs, string &buf);
-#else
 extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
-#endif
 
 Byte *NewByte(const string &n = "");
 Int16 *NewInt16(const string &n = "");
@@ -227,6 +230,22 @@ time_t parse_time(const char * str, bool expand);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.49  2003/12/08 18:02:31  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.47.2.4  2003/08/18 00:33:14  rmorris
+ * Win32-related cleanup.
+ *
+ * Revision 1.47.2.3  2003/06/23 03:45:21  rmorris
+ * Changes related to making use of stock POWERPC OSX librpc's xdr functionality.
+ *
+ * Revision 1.47.2.2  2003/06/23 02:14:11  rmorris
+ * Custom include of select modified functions for powerpc under OS X only.
+ *
+ * Revision 1.47.2.1  2003/06/23 01:31:19  rmorris
+ * Migrated new_xdrstdio, set_xdrstdio and delete_xdrstdio conditionally
+ * out into a separate (C) source file for use in the case of the POWERPC/OSX.
+ *
  * Revision 1.48  2003/05/23 03:24:58  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

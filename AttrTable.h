@@ -34,8 +34,10 @@
 #ifndef _attrtable_h
 #define _attrtable_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <string>
@@ -139,6 +141,10 @@ class AttrTable {
     // entry needs to be made public to make up for issues with this class'
     // design. It should probably be moved to it's own class. 05/22/03 jhrg
 public:
+    /** Each AttrTable has zero or more entries. Instead of access this
+	struct's members directly, use AttrTable methods.
+
+	This struct is public because its type is used in public typedefs. */
     struct entry {
 	string name;
 	AttrType type;
@@ -318,6 +324,17 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.47  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.44.2.2  2003/09/06 22:37:50  jimg
+ * Updated the documentation.
+ *
+ * Revision 1.44.2.1  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
  * Revision 1.46  2003/05/30 16:53:42  jimg
  * Made get_name() a const method.
  *

@@ -29,6 +29,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#ifdef WIN32
+#define vsnprintf _vsnprintf
+#endif
+
 #include "AISDatabaseParser.h"
 #include "util.h"
 #include "debug.h"
@@ -84,7 +88,10 @@ AISDatabaseParser::aisEndDocument(AISParserState *state)
     because libxml2 does not validate those, we do attribute validation here.
     Values pulled from the attributes are recorded in <code>state</code> for
     later use in aisEndElement.
-    @param state The SAX parser state. */
+    @param state The SAX parser state.
+    @param name The name of the element.
+    @param attrs The element's attributes; 0, 2, 4, ... are the attribute
+    names, 1, 3, 5, ... are the values. */
 void 
 AISDatabaseParser::aisStartElement(AISParserState *state, const char *name, 
 				   const char **attrs)
@@ -196,8 +203,9 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
 }
 
 /** Process an end element tag. This is where values are added to the
-    AISResources object that's held by <code>state</code>.
-    @param state The SAX parser state. */
+    AISResources object that's held by \c state.
+    @param state The SAX parser state. 
+    @param name The name of the element; used only for code instrumentation. */
 void 
 AISDatabaseParser::aisEndElement(AISParserState *state, const char *name) 
 {
@@ -399,6 +407,15 @@ AISDatabaseParser::intern(const string &database, AISResources *ais)
 }
 
 // $Log: AISDatabaseParser.cc,v $
+// Revision 1.7  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.6.2.2  2003/09/06 22:16:58  jimg
+// Updated the documentation.
+//
+// Revision 1.6.2.1  2003/06/15 06:54:31  rmorris
+// Initial port regarding AIS* to win32.
+//
 // Revision 1.6  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

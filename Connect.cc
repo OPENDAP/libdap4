@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.129 2003/05/23 03:24:57 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.130 2003/12/08 18:02:29 edavis Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
@@ -83,8 +83,7 @@ Connect::process_data(DataDDS &data, Response *rs)
 	// are processed by the WWW library.
 	return;
 
-      case dods_data:
-      default: {
+      case dods_data: {
 	  // Parse the DDS; throw an exception on error.
 	  data.parse(rs->get_stream());
 	  XDR *xdr_stream = new_xdrstdio(rs->get_stream(), XDR_DECODE);
@@ -102,7 +101,13 @@ Connect::process_data(DataDDS &data, Response *rs)
 	  }
 
 	  delete_xdrstdio(xdr_stream);
+	  return;
       }
+
+      default:
+	throw Error("The site did not return a valid response.\n\
+This may indicate that the server at the site is not correctly configured,\n\
+or that the URL has changed.");
     }
 }
 
@@ -178,13 +183,72 @@ Connect::parse_mime(FILE *data_source, Response *rs)
 /** The Connect constructor requires a <tt>name</tt>, which is the URL to
     which the connection is to be made. 
 
-    @param name The URL for the virtual connection.
+    @param n The URL for the virtual connection.
+    @param uname Use this username for authentication. Null by default.
+    @param password Passwrod to use for authentication. Null by default.
+    @brief Create an instance of Connect. */
+Connect::Connect(const string &n, string uname, string password) 
+    throw (Error, InternalErr)
+    : d_http(0), d_version("unknown")
+{
+    string name = prune_spaces(n);
+    
+    // Figure out if the URL starts with 'http', if so, make sure that we
+    // talk to an instance of HTTPConnect.
+    if (name.find("http") == 0) {
+	DBG(cerr << "Connect: The identifier is an http URL" << endl);
+	d_http = new HTTPConnect(RCReader::instance());
+
+	// Find and store any CE given with the URL.
+	string::size_type dotpos = name.find('?');
+	if (dotpos != name.npos) {
+	    _URL = name.substr(0, dotpos);
+	    string expr = name.substr(dotpos + 1);
+
+	    dotpos = expr.find('&');
+	    if (dotpos != expr.npos) {
+		_proj = expr.substr(0, dotpos);
+		_sel = expr.substr(dotpos);	// XXX includes '&'
+	    } else {
+		_proj = expr;
+		_sel = "";
+	    }
+	} else {
+	    _URL = name;
+	    _proj = "";
+	    _sel = "";
+	}
+
+	_local = false;
+    } 
+    else {
+	DBG(cerr << "Connect: The identifier is a local data source." << endl);
+
+	d_http = 0;
+	_URL = "";
+	_local = true;		// local in this case means non-DODS
+    }
+
+    set_credentials(uname, password);
+}
+
+/** The Connect constructor requires a <tt>name</tt>, which is the URL to
+    which the connection is to be made. 
+
+    This constructor is deprecated because it provide default values for
+    the deflate param which should now be controlled by the user's .dodsrc
+    file. Reading a compressed response is a property of a particular
+    protocol (e.g., http) and should be controlled by the class that
+    implements the interface to that protocol. For example, users might not
+    want HTTP to compress responses...
+
+    @deprecated Use the three-argument constructor instead.
+    @param n The URL for the virtual connection.
     @param www_verbose_errors Ignored
     @param accept_deflate Does this client accept deflated responses? True by
     default. 
     @param uname Use this username for authentication. Null by default.
-    @param password Passwrod to use for authentication. Null by default.
-    @brief Create an instance of Connect. */
+    @param password Passwrod to use for authentication. Null by default. */
 Connect::Connect(const string &n, bool www_verbose_errors, 
 		 bool accept_deflate, string uname, string password) 
     throw (Error, InternalErr)
@@ -244,6 +308,31 @@ Connect::~Connect()
     DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
 
+/** Get version information from the server. This is a new method which will
+    ease the transition to DAP 4.
+
+    @return The DAP version string. */
+string
+Connect::request_version() throw(Error, InternalErr)
+{
+    string version_url = _URL + ".ver";
+    if (_proj.length() + _sel.length())
+	version_url = version_url + "?" + id2www_ce(_proj + _sel);
+
+    Response *rs = 0;
+    try {
+	rs = d_http->fetch_url(version_url);
+    }
+    catch (Error &e) {
+	delete rs;
+	throw e;
+    }
+
+    d_version = rs->get_version();
+    delete rs;
+    return d_version;
+}
+
 /** Reads the DAS corresponding to the dataset in the Connect
     object's URL. Although DODS does not support usig CEs with DAS
     requests, if present in the Connect object's instance, they will be
@@ -286,7 +375,6 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	break;
 
       case dods_das:
-      default:
 	// DAS::parse throws an exception on error.
 	try {
 	    das.parse(rs->get_stream()); // read and parse the das from a file 
@@ -297,6 +385,11 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	}
 	    
 	break;
+
+      default:
+	throw Error("The site did not return a valid response.\n\
+This may indicate that the server at the site is not correctly configured,\n\
+or that the URL has changed.");
     }
 
     delete rs;
@@ -353,7 +446,6 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	break;
 
       case dods_dds:
-      default:
 	// DDS::prase throws an exception on error.
 	try {
 	    dds.parse(rs->get_stream()); // read and parse the dds from a file 
@@ -363,6 +455,11 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	    throw e;
 	}
 	break;
+
+      default:
+	throw Error("The site did not return a valid response.\n\
+This may indicate that the server at the site is not correctly configured,\n\
+or that the URL has changed.");
     }
 
     delete rs;
@@ -502,7 +599,7 @@ Connect::set_credentials(string u, string p)
 	d_http->set_credentials(u, p);
 }
 
-/** Set the <c>accept deflate</c> property. 
+/** Set the \e accept deflate property. 
     @param deflate True if the client can accept compressed responses, Flase
     otherwise. */
 void 
@@ -547,7 +644,8 @@ Connect::is_cache_enabled()
 
     @brief Return a reference to the Connect's DAS object. 
     @return A reference to the DAS object.
-    @deprecated
+    @deprecated Use the method which takes a DAS reference as a value-result
+    parameter. 
     @see DAS 
 */
 DAS & 
@@ -567,7 +665,8 @@ Connect::das()
 
     @brief Return a reference to the Connect's DDS object. 
     @return A reference to the DDS object.
-    @deprecated
+    @deprecated Use the method which takes a DDS references as a value-result
+    parameter. 
     @see DDS 
 */
 DDS & 
@@ -591,7 +690,9 @@ Connect::dds()
     @return The last Error object sent from the server. If no error has
     been sent from the server, returns a reference to an empty error
     object. 
-    @deprecated
+    @deprecated The new methods for getting DAS, DDS, et .c, objects throw
+    Error objects; if you use those methods, and you should, this is never
+    needed. 
     @see Error 
 */
 Error & 
@@ -602,6 +703,24 @@ Connect::error()
 //@}
 
 // $Log: Connect.cc,v $
+// Revision 1.130  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.128.2.5  2003/11/19 18:51:39  jimg
+// Added request_version(). Gets the server's version information without
+// getting anything else.
+//
+// Revision 1.128.2.4  2003/10/03 16:20:24  jimg
+// This class now throws an exception when a response is received that does not
+// contain a Content-Description header indicating the response is from a dods
+// server.
+//
+// Revision 1.128.2.3  2003/09/06 22:37:50  jimg
+// Updated the documentation.
+//
+// Revision 1.128.2.2  2003/06/05 20:15:25  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.129  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can
@@ -610,6 +729,14 @@ Connect::error()
 // are not supported yet. I've also removed all traces of strstream in
 // favor of stringstream. This code should no longer generate warnings
 // about the use of deprecated headers.
+//
+// Revision 1.128.2.1  2003/05/06 22:06:42  jimg
+// I added a new constructor to Connect and deprecated the old ctor. The
+// old ctor was forcing compression to be on, ignoring the value of DEFLATE
+// in the .dodsrc file. This was left over behavior from before we started
+// using that file. However, now HTTPConnect (and later other protocol
+// modules?) look at the value in the .dodsrc (using RCReader) and decide
+// what action to take.
 //
 // Revision 1.128  2003/05/01 23:40:21  jimg
 // Changed catch(...) statements to ones which explicitly declare the types of

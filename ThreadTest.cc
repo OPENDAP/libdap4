@@ -27,65 +27,91 @@
 #include <stdio.h>
 #include <stdio.h>
 #include <assert.h>
+#ifdef WIN32
 #include <io.h>
+#endif
 #include <fcntl.h>
 #include <string>
 
+#define NUM2SPAWN 10
+
 #include "Connect.h"
 
-#define NUM2SPAWN 20
+void *threads_work(void *);
+bool read_data(FILE *);
 
-bool
-read_data(FILE *fp)
+//  Summarily test Threading functionality as deployed by Dods.  This
+//  would be better turned into a unit test perhaps.
+int main(int argc, char **argv)
+{
+	int k;
+	//  Each thread
+	pthread_t threads[NUM2SPAWN];
+	//  Individually valued args to each thread
+	int i[NUM2SPAWN];
+
+	//  Initialize args to each thread
+	for(k=0;k < NUM2SPAWN;k++)
+		i[k] = k;
+
+	//  Run each thread
+	for(k=0;k < NUM2SPAWN;k++)
+		{
+			pthread_create(&threads[k],0,threads_work,&i[k]);
+		}
+
+	//  Give a little time for all to finish up
+	sleep(5);
+
+	//  Have the main thread wait for the last to finish.
+	//  If they finish out of order, all won't finish.
+	pthread_join(threads[k-1],NULL);
+
+	return (0);
+}
+
+bool read_data(FILE *fp)
 {
     char c;
     while (fp && !feof(fp) && fread(&c, 1, 1, fp))
-	printf("%c", c);	// stick with stdio 
+		;
 
     return true;
 }
 
 void *threads_work(void *a)
 {
-	printf("hello world - %d\n", *((int *) a));
+	printf("Thread # %d (thread ID = %ld) starting\n", *((int *) a), pthread_self());
 
 	HTTPConnect http(RCReader::instance());
 	string url_string = "http://dods.gso.uri.edu/cgi-bin/nph-nc/data/fnoc1.nc.das";
 
 	try
 	{
-           FILE *fp = http.fetch_url(url_string);
-           cerr << "Server version: " << http.server_version() << endl;
-           fclose(fp);
+		Response *r = http.fetch_url(url_string);		
+		if(read_data(r->get_stream()))
+			printf("thread %ld pulled data from the url\n",pthread_self());
+		else
+			printf("thread %ld did NOT pull data from the url\n",pthread_self());
+		delete r;
 	}
 	catch (Error &e)
 	{
-           e.display_message();
+		printf("Thread # %d (thread ID = %ld) received a DODS-relevant critical error\n",
+			*((int *) a), pthread_self());
+		//e.display_message();
+		printf("Thread # %d (thread ID %ld) terminating unsuccessfully\n",*((int *) a),pthread_self());
+		pthread_exit(NULL);
 	}
 
-	printf("\nprocess %d exiting\n",*((int *) a));
+	printf("Thread # %d (thread ID %ld) terminating successfully\n",*((int *) a),pthread_self());
+
+	pthread_exit(NULL);
 
 	return((void *)NULL);
 
 }
 
-void main(void)
-{
-	pthread_t threads[NUM2SPAWN];
-	int status;
-	int i = 0;
 
-	threads_work(&i);
-	i++;
-
-	while(i < NUM2SPAWN)
-		{
-			status = pthread_create(&threads[i],0,threads_work,&i);
-			status = pthread_join(threads[i],NULL);
-			i++;
-		}
-
-	pthread_exit(NULL);
-}
 
 

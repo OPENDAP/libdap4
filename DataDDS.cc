@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.18 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.19 2003/12/08 18:02:29 edavis Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -47,13 +47,23 @@ static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.18 2003/05/23 03:24:57 jimg
 #include "DataDDS.h"
 #include "debug.h"
 
+<<<<<<< DataDDS.cc
 using namespace std;
+=======
+using std::cerr;
+using std::istringstream;
+using std::endl;
+>>>>>>> 1.17.2.2
 
 // private
 
+/** Parse the version string. A string that does not parse causes the
+    version to default to 0.0. This is better than throwing an Error since
+    this method is called from a constructor. */
 void
 DataDDS::_version_string_to_numbers()
 {
+<<<<<<< DataDDS.cc
     string num = _server_version.substr(_server_version.find('/')+1);
 
     istringstream iss(num.c_str());
@@ -65,18 +75,43 @@ DataDDS::_version_string_to_numbers()
 
     DBG(cerr << "Server version: " << _server_version_major << "." \
 	<< _server_version_minor << endl);
+=======
+    string num = _server_version.substr(_server_version.find('/')+1);
+ 
+    if (!num.empty() && num.find('.') != string::npos) {
+        istringstream iss(num);
+        char c;
+ 
+        iss >> _server_version_major;
+        iss >> c;               // This reads the `.' in the version string
+        iss >> _server_version_minor;
+ 
+        // Did it parse?
+        if (!(c == '.' && _server_version_major > 0
+              && _server_version_minor > 0)) {
+
+	    _server_version_major = 0;
+	    _server_version_minor = 0;
+        }
+    }
+    else {
+        _server_version_major = 0;
+        _server_version_minor = 0;
+    }
+ 
+    DBG(cerr << "Server version: " << _server_version_major << "." \
+        << _server_version_minor << endl);
+>>>>>>> 1.17.2.2
 }
 
 // public
+
+
 /** The DataDDS constructor needs a name and a version string.  This
-    is generally received from the server.
-*/
+    is generally received from the server. */
 
 DataDDS::DataDDS(const string &n, const string &v)
     :DDS(n), _server_version(v)
-#if 0
-, _sequence_level(0)
-#endif
 {
     _version_string_to_numbers();
 }
@@ -110,38 +145,25 @@ DataDDS::get_version_minor()
     return _server_version_minor;
 }
 
-#if 0
-/** Return the last level of a sequence object that was read. Note
-    that <tt>Sequence::deserialize()</tt> is the main user of this
-    information and it really only matters in cases where the
-    Sequence object contains other Sequence objects. In that case,
-    this information provides state for <tt>Sequence::deserialize()</tt> so
-    that it can return to the level at which it last read.
-
-    @name sequence_level()
-    @brief Returns the level of the last sequence read.  */
-int
-DataDDS::sequence_level()
+/** @brief Get the server version string, unparsed. */
+string
+DataDDS::get_version()
 {
-    return _sequence_level;
+    return _server_version;
 }
-
-/** Set the value for <tt>sequence_level()</tt>. Use this function to store
-    state information about the current sequence. This is used
-    mostly when reading nested sequences so that
-    <tt>Sequence::deserialize()</tt> can return to the correct level when
-    resuming a deserialization from a subsequent call.
-
-    @name set_sequence_level(int level)
-    @brief Sets the level of the sequence being read.  */
-void
-DataDDS::set_sequence_level(int level)
-{
-    _sequence_level = level;
-}
-#endif
 
 // $Log: DataDDS.cc,v $
+// Revision 1.19  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.17.2.2  2003/11/18 22:04:52  jimg
+// I patched the parser for server versions so that the default values are 0.0.
+// This default is assigned to the major and minor versions for any strings that
+// fail to parse. I also removed old code for the Sequence level stuff.
+//
+// Revision 1.17.2.1  2003/06/05 20:15:26  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.18  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

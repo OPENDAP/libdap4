@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.77 2003/05/23 03:24:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.78 2003/12/08 18:02:31 edavis Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,10 +85,13 @@ using namespace std;
 #if 0
 using std::cerr;
 using std::endl;
-using std::ends;
 using std::sort;
+<<<<<<< util.cc
 using std::ostrstream;
 #endif
+=======
+using std::ostringstream;
+>>>>>>> 1.76.2.4
 
 // Remove spaces from the start of a URL and from the start of any constraint
 // expression it contains. 4/7/98 jhrg
@@ -173,7 +176,9 @@ unique_names(vector<BaseType *> l, const string &var_name,
 // NB: STREAM is not one of the C++/libg++ iostream classes; it is a (FILE
 // *).
 
-XDR *
+//  These func's moved to xdrutil_ppc.* under the PPC as explained there
+#ifndef __POWERPC__
+XDR *               
 new_xdrstdio(FILE *stream, enum xdr_op xop)
 {
     XDR *xdr = new XDR;
@@ -201,6 +206,7 @@ delete_xdrstdio(XDR *xdr)
 
     delete xdr; xdr = 0;
 }
+#endif
 
 // This function is used to en/decode Str and Url type variables. It is
 // defined as extern C since it is passed via function pointers to routines
@@ -210,8 +216,8 @@ delete_xdrstdio(XDR *xdr)
 //
 // NB: this function is *not* used for arrays (i.e., it is not the function
 // referenced by BaseType's _xdr_coder field when the object is a Str or Url.
-// Also note that #max_str_len# is an obese number but that really does not
-// matter; #xdr_string# would never actually allocate that much memory unless
+// Also note that \e max_str_len is an obese number but that really does not
+// matter; xdr_string() would never actually allocate that much memory unless
 // a string that size was sent from the server.
 //
 // Returns: XDR's bool_t; TRUE if no errors are detected, FALSE
@@ -382,13 +388,13 @@ compressor(FILE *output, int &childpid)
     // FILE * using fdopen(). The FILE * is used by the calling program to
     // access the read end of the Pipe.
 
-    if (pid > 0) {
+    if (pid > 0) { 		// Parent, pid is that of the child
 	close(data[0]);
 	ret_file = fdopen(data[1], "w");
 	setbuf(ret_file, 0);
 	childpid = pid;
     }
-    else {
+    else {			// Child
 	close(data[1]);
 	dup2(data[0], 0);	// Read from the pipe...
 	dup2(fileno(output), 1); // Write to the FILE *output.
@@ -502,7 +508,10 @@ void append_double_to_string(const double &num, string &str)
     oss.precision(9);
     oss << num;
     str += oss.str();
+<<<<<<< util.cc
 
+=======
+>>>>>>> 1.76.2.4
 #if 0
     char s[80];
     sprintf(s, "%.9f", num);
@@ -611,6 +620,28 @@ file_to_string(FILE *fp)
 }
 
 // $Log: util.cc,v $
+// Revision 1.78  2003/12/08 18:02:31  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.76.2.4  2003/09/06 23:02:50  jimg
+// Updated the documentation.
+//
+// Revision 1.76.2.3  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
+// Revision 1.76.2.2  2003/06/23 01:31:19  rmorris
+// Migrated new_xdrstdio, set_xdrstdio and delete_xdrstdio conditionally
+// out into a separate (C) source file for use in the case of the POWERPC/OSX.
+//
+// Revision 1.76.2.1  2003/06/05 20:15:26  jimg
+// Removed many uses of strstream and replaced them with stringstream.
+//
 // Revision 1.77  2003/05/23 03:24:58  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

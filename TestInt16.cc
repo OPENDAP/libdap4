@@ -38,7 +38,18 @@
 #endif
 
 #include "config_dap.h"
+
+#ifndef WIN32
+#include <unistd.h>
+#else
+#include <io.h>
+#include <fcntl.h>
+#include <process.h>
+#endif
+
 #include "TestInt16.h"
+
+extern int test_variable_sleep_interval;
 
 Int16 *
 NewInt16(const string &n)
@@ -62,6 +73,9 @@ TestInt16::read(const string &)
     if (read_p())
 	return true;
 
+    if (test_variable_sleep_interval > 0)
+	sleep(test_variable_sleep_interval);
+
     _buf = 32000;
 
     set_read_p(true);
@@ -70,6 +84,12 @@ TestInt16::read(const string &)
 }
 
 // $Log: TestInt16.cc,v $
+// Revision 1.9  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.8.2.1  2003/07/23 23:56:36  jimg
+// Now supports a simple timeout system.
+//
 // Revision 1.8  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

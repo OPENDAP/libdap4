@@ -32,8 +32,10 @@
 #ifndef _dodsfilter_h
 #define _dodsfilter_h
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <stdio.h>
@@ -106,6 +108,8 @@ protected:
 
     Response d_response;	// Name of the response to generate
 
+    int d_timeout;		// Server timeout after N seconds
+
     time_t d_anc_das_lmt;	// Last modified time of the anc. DAS.
     time_t d_anc_dds_lmt;	// Last modified time of the anc. DDS.
     time_t d_if_modified_since;	// Time from a conditional request.
@@ -152,6 +156,12 @@ public:
 
     virtual string get_cache_dir();
 
+    void set_timeout(int timeout = 0);
+
+    int get_timeout() const;
+
+    virtual void establish_timeout(FILE *stream);
+
     virtual void read_ancillary_das(DAS &das, string anc_location = "");
 
     virtual void read_ancillary_dds(DDS &dds, string anc_location = "");
@@ -176,6 +186,11 @@ public:
     virtual void send_dds(FILE *out, DDS &dds, bool constrained = false,
 			  const string &anc_location = "");
 
+    virtual void functional_constraint(BaseType &var, DDS &dds, FILE *out, 
+				       time_t lmt) throw(Error);
+    virtual void dataset_constraint(DDS &dds, FILE *out, time_t lmt) 
+	throw(Error);
+
     virtual void send_data(DDS &dds, FILE *data_stream,
 			   const string &anc_location = "");
 
@@ -185,8 +200,28 @@ public:
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.31  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.30  2003/09/25 22:37:34  jimg
 // Misc changes.
+//
+// Revision 1.26.2.3  2003/07/25 06:04:28  jimg
+// Refactored the code so that DDS:send() is now incorporated into
+// DODSFilter::send_data(). The old DDS::send() is still there but is
+// depracated.
+// Added 'smart timeouts' to all the variable classes. This means that
+// the new server timeouts are active only for the data read and CE
+// evaluation. This went inthe BaseType::serialize() methods because it
+// needed to time both the read() calls and the dds::eval() calls.
+//
+// Revision 1.26.2.2  2003/07/23 23:56:36  jimg
+// Now supports a simple timeout system.
+//
+// Revision 1.26.2.1  2003/06/23 11:49:18  rmorris
+// The #pragma interface directive to GCC makes the dynamic typing
+// functionality go completely haywire under OS X on the PowerPC. We can't
+// use that directive on that platform and it was ifdef'd out for that case.
 //
 // Revision 1.29  2003/05/30 16:35:17  jimg
 // Added response enums for DDX and Response. Also added the send_ddx() method.

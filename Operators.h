@@ -149,10 +149,13 @@ template<class T1, class T2> class StrCmp {
     functions (without explicit listing of all the template's arguments). 2)
     we did not have unsigned types.
 
-    @param T1 The type of <tt>a</tt>.
-    @param T2 The type of <tt>b</tt>.
-    @param C A class which implements the policy used for comparing <tt>a</tt> 
-    and    <tt>b</tt>. 
+    T1 The type of <tt>a</tt>.
+    
+    T2 The type of <tt>b</tt>.
+    
+    C A class which implements the policy used for comparing <tt>a</tt> 
+    and <tt>b</tt>. 
+
     @param a The first argument.
     @param b The second argument.
     @param op The relational operator.
@@ -183,6 +186,12 @@ bool rops(T1 a, T2 b, int op)
 }
 
 // $Log: Operators.h,v $
+// Revision 1.14  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.13.2.1  2003/09/06 22:47:13  jimg
+// Updated the documentation.
+//
 // Revision 1.13  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

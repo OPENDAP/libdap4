@@ -29,7 +29,7 @@
                          
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util_mit.cc,v 1.4 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util_mit.cc,v 1.5 2003/12/08 18:02:31 edavis Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -253,8 +253,8 @@ parse_time(const char * str, bool expand)
 
 
     @param calendar Time in seconds
-    @local If true, return the local time, if false return GMT. The default
-    value is false.
+    @param local If true, return the local time, if false return GMT. The
+    default value is false.
     @return A RFC 1123 date string. */
 
 string date_time_str(time_t *calendar, bool local)

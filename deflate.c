@@ -33,9 +33,10 @@
   Modified: Added the -s (silent) option to suppress diagnostic messages.
 */
 
-const char *rcsid={"$Id: deflate.c,v 1.7 2003/04/22 19:40:28 jimg Exp $"};
+const char *rcsid={"$Id: deflate.c,v 1.8 2003/12/08 18:02:30 edavis Exp $"};
 
 #include "stdlib.h"
+#include "string.h"
 #include "stdio.h"
 #include "zlib.h"
 
@@ -160,6 +161,12 @@ int main (int argc, char ** argv)
 
 /* 
    $Log: deflate.c,v $
+   Revision 1.8  2003/12/08 18:02:30  edavis
+   Merge release-3-4 into trunk
+
+   Revision 1.7.2.1  2003/08/17 19:43:52  rmorris
+   Included string.h for strcmp().
+
    Revision 1.7  2003/04/22 19:40:28  jimg
    Merged with 3.3.1.
 

@@ -76,6 +76,9 @@ BTIterAdapter::getIterator( )
 }
 
 // $Log: BTIterAdapter.cc,v $
+// Revision 1.6  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.5  2003/04/02 19:14:19  pwest
 // Added doxygen comments to iterator adapter classes
 //

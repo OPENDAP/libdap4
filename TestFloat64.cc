@@ -38,7 +38,17 @@
 #endif
 
 #include "config_dap.h"
+#ifndef WIN32
+#include <unistd.h>
+#else
+#include <io.h>
+#include <fcntl.h>
+#include <process.h>
+#endif
+
 #include "TestFloat64.h"
+
+extern int test_variable_sleep_interval;
 
 Float64 *
 NewFloat64(const string &n)
@@ -62,6 +72,9 @@ TestFloat64::read(const string &)
     if (read_p())
 	return true;
 
+    if (test_variable_sleep_interval > 0)
+	sleep(test_variable_sleep_interval);
+
     _buf = 99.999;
 
     set_read_p(true);
@@ -70,6 +83,12 @@ TestFloat64::read(const string &)
 }
 
 // $Log: TestFloat64.cc,v $
+// Revision 1.21  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.20.2.1  2003/07/23 23:56:36  jimg
+// Now supports a simple timeout system.
+//
 // Revision 1.20  2003/04/22 19:40:28  jimg
 // Merged with 3.3.1.
 //

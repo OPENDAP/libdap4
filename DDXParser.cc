@@ -913,6 +913,9 @@ DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
 }
 
 // $Log: DDXParser.cc,v $
+// Revision 1.6  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
 // Revision 1.5  2003/06/03 01:43:01  jimg
 // Added support for retrieval of the dodsBLOB url. The intern() method
 // takes a point to a string; on return from the call the referenced string

@@ -36,8 +36,10 @@
 #ifndef _str_h
 #define _str_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #ifdef WIN32
@@ -97,7 +99,7 @@ public:
 			   bool ce_eval = true);
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
     virtual void print_val(ostream &os, string space = "",
@@ -111,6 +113,17 @@ public:
 
 /* 
  * $Log: Str.h,v $
+ * Revision 1.39  2003/12/08 18:02:29  edavis
+ * Merge release-3-4 into trunk
+ *
+ * Revision 1.38.2.2  2003/09/06 22:55:40  jimg
+ * Updated the documentation.
+ *
+ * Revision 1.38.2.1  2003/06/23 11:49:18  rmorris
+ * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * go completely haywire under OS X on the PowerPC.  We can't use that directive
+ * on that platform and it was ifdef'd out for that case.
+ *
  * Revision 1.38  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.
  *

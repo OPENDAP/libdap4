@@ -36,8 +36,10 @@
 #ifndef _float32_h
 #define _float32_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #if 0
@@ -65,7 +67,6 @@
 
     @see BaseType
     */
-
 class Float32: public BaseType {
     /** This class allows Byte, ..., Float64 access to <tt>_buf</tt> to 
 	simplify and
@@ -84,27 +85,29 @@ protected:
     dods_float32 _buf;
 
 public:
-  Float32(const string &n = "");
+    Float32(const string &n = "");
 
-  Float32(const Float32 &copy_from);
+    Float32(const Float32 &copy_from);
 
-  Float32 &operator=(const Float32 &rhs);
+    Float32 &operator=(const Float32 &rhs);
 
-  virtual ~Float32() {}
+    virtual ~Float32() {}
 
     virtual BaseType *ptr_duplicate();
     
-  virtual unsigned int width();
+    virtual unsigned int width();
 
-  virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			 bool ce_eval = true);
-  virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-  virtual void print_val(ostream &os, string space = "", 
-			 bool print_decl_p = true);
+    virtual dods_float32 value();
+
+    virtual void print_val(ostream &os, string space = "", 
+			   bool print_decl_p = true);
 
     virtual void print_val(FILE *out, string space = "", 
 			   bool print_decl_p = true);
@@ -113,6 +116,20 @@ public:
 };
 
 // $Log: Float32.h,v $
+// Revision 1.20  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.19.2.3  2003/11/19 18:40:12  jimg
+// Indentation.
+//
+// Revision 1.19.2.2  2003/09/06 22:37:50  jimg
+// Updated the documentation.
+//
+// Revision 1.19.2.1  2003/06/23 11:49:18  rmorris
+// The #pragma interface directive to GCC makes the dynamic typing functionality
+// go completely haywire under OS X on the PowerPC.  We can't use that directive
+// on that platform and it was ifdef'd out for that case.
+//
 // Revision 1.19  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

@@ -38,8 +38,10 @@
 #ifndef _datadds_h
 #define _datadds_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <iostream>
@@ -65,16 +67,13 @@ private:
 
     void _version_string_to_numbers();
 
-#if 0
-    // The last level read from a sequence. This is used to read nested
-    // sequences. 
-    int _sequence_level;
-#endif
 public:
     DataDDS(const string &n = "", const string &v = "");
     virtual ~DataDDS();
 
     void set_version(const string &v);
+    string get_version();
+
     int get_version_major();
     int get_version_minor();
 
@@ -94,6 +93,17 @@ public:
 // unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
 //
 // $Log: DataDDS.h,v $
+// Revision 1.15  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.14.2.2  2003/11/18 22:05:31  jimg
+// Removed old Sequence level code. Added string get_version() method.
+//
+// Revision 1.14.2.1  2003/06/23 11:49:18  rmorris
+// The #pragma interface directive to GCC makes the dynamic typing functionality
+// go completely haywire under OS X on the PowerPC.  We can't use that directive
+// on that platform and it was ifdef'd out for that case.
+//
 // Revision 1.14  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

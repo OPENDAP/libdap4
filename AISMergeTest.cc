@@ -78,7 +78,9 @@ public:
 	try {
 	    ResourceVector rv = ais_merge->d_ais_db.get_resource(fnoc1);
 	    Response *res = ais_merge->get_ais_resource(rv[0].get_url());
-	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(fnoc1_ais_string) 
+	    string stuff = dump2string(res->get_stream());
+	    DBG(cerr << "AIS Resource: " << stuff << endl);
+	    CPPUNIT_ASSERT(stuff.find(fnoc1_ais_string) 
 			   != string::npos);
 
 	    rv = ais_merge->d_ais_db.get_resource(bears);
@@ -112,6 +114,7 @@ public:
 	    conn->request_das(das);
 	    ais_merge->merge(fnoc1, das);
 	    das.print(oss);
+	    DBG(cerr << "Merged fnoc1 DAS: " << oss.str() << endl);
 	    CPPUNIT_ASSERT(oss.str().find(fnoc1_merge_ais) != string::npos);
 
 	    delete conn; conn = 0;
@@ -234,14 +237,14 @@ string AISMergeTest::fnoc1_merge_ais =
         String long_name \"Vector wind eastward component\";\n\
         String missing_value \"-32767\";\n\
         String scale_factor \"0.005\";\n\
-        String DODS_Name \"UWind\";\n\
+        String DODS_Name \"UWind\", \"UWind\";\n\
     }\n\
     v {\n\
         String units \"meter per second\";\n\
         String long_name \"Vector wind northward component\";\n\
         String missing_value \"-32767\";\n\
         String scale_factor \"0.005\";\n\
-        String DODS_Name \"VWind\";\n\
+        String DODS_Name \"VWind\", \"VWind\";\n\
     }\n\
     lat {\n\
         String units \"degree North\";\n\
@@ -352,6 +355,14 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISMergeTest.cc,v $
+// Revision 1.5  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.4.2.1  2003/09/06 22:11:02  jimg
+// Modified so that localhost is used instead of remote hosts. This means
+// that the tests don't require Internet access but do require that the
+// local machine runs httpd and has it correctly configured.
+//
 // Revision 1.4  2003/04/23 21:33:53  jimg
 // Changes for the unit tests. This involved merging Rob's VC++ changes
 // and fixing a bug in escaping.cc (a call to string::insert invalidated
