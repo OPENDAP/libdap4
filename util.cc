@@ -11,6 +11,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.51  1999/03/24 23:23:44  jimg
+// Removed the *_ops code. Those operations are now done by the template
+// classes and function(s) in Operators.h.
+// Removed old code.
+//
 // Revision 1.50  1999/03/09 00:23:16  jimg
 // Fixed the error messages in compressor().
 //
@@ -246,7 +251,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.50 1999/03/09 00:23:16 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.51 1999/03/24 23:23:44 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -577,17 +582,7 @@ compressor(FILE *output, int &childpid)
 	// at build time. If that fails, try the CWD.
 	String deflate = (String)dods_root() + "/etc/deflate";
 	(void) execl(deflate, "deflate", "-c",  "5", "-s", NULL);
-	// Commented out the two following error messages. They confuse
-	// people and serve no purpose. The `Could not start...' error
-	// message gets the job done. 3/8/99 jhrg
-#if 0
-	cerr << "Could not run " << deflate << endl;
-#endif
 	(void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
-#if 0
-	cerr << "Could not run ./deflate" << endl;
-#endif
-
 	cerr << "Warning: Could not start compressor!" << endl;
 	cerr << "defalte should be in DODS_ROOT/etc or in the CWD!" 
 	     << endl;
@@ -614,197 +609,4 @@ systime()
     }
 
     return &TimStr[0];
-}
-
-// Some of these *_ops functions could probably be rolled into a single
-// template function. 1/15/99 jhrg
-
-bool
-byte_ops(int i1, int i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP:
-	cerr << "Regular expression not valid for byte values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-// There are four versions of int_ops to take into account the four
-// combinations of signed and unsigned types. Note that the 16 bit variables
-// are promoted to 32 bits for the purposes of comparison. 
-
-bool
-int_ops(dods_int32 i1, dods_int32 i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP:
-	cerr << "Regular expression not valid for integer values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-// Some machines define MAX, some don't. 11/1/98 jhrg
-
-#ifndef MAX
-static unsigned
-MAX(int i1, int i2)
-{
-    return (unsigned)((i1 < i2) ? i1 : i2);
-}
-#endif
-
-bool
-int_ops(dods_uint32 i1, dods_int32 i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == MAX(0, i2);
-      case NOT_EQUAL:
-	return i1 != MAX(0, i2);
-      case GREATER:
-	return i1 > MAX(0, i2);
-      case GREATER_EQL:
-	return i1 >= MAX(0, i2);
-      case LESS:
-	return i1 < MAX(0, i2);
-      case LESS_EQL:
-	return i1 <= MAX(0, i2);
-      case REGEXP:
-	cerr << "Regular expression not valid for integer values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-bool
-int_ops(dods_int32 i1, dods_uint32 i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return MAX(0, i1) == i2;
-      case NOT_EQUAL:
-	return MAX(0, i1) != i2;
-      case GREATER:
-	return MAX(0, i1) > i2;
-      case GREATER_EQL:
-	return MAX(0, i1) >= i2;
-      case LESS:
-	return MAX(0, i1) < i2;
-      case LESS_EQL:
-	return MAX(0, i1) <= i2;
-      case REGEXP:
-	cerr << "Regular expression not valid for integer values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-bool
-int_ops(dods_uint32 i1, dods_uint32 i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP:
-	cerr << "Regular expression not valid for integer values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-bool
-double_ops(double i1, double i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP:
-	cerr << "Regular expression not valid for float values" << endl;
-	return false;
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
-}
-
-bool
-string_ops(String &i1, String &i2, int op)
-{
-    switch (op) {
-      case EQUAL:
-	return i1 == i2;
-      case NOT_EQUAL:
-	return i1 != i2;
-      case GREATER:
-	return i1 > i2;
-      case GREATER_EQL:
-	return i1 >= i2;
-      case LESS:
-	return i1 < i2;
-      case LESS_EQL:
-	return i1 <= i2;
-      case REGEXP: {
-	  Regex r((const char *)i2);
-	  return i1.matches(r);
-      }
-      default:
-	cerr << "Unknown operator" << endl;
-	return false;
-    }
 }
