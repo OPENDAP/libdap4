@@ -10,6 +10,11 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.20  1999/03/24 23:32:05  jimg
+// Added a verbose mode.
+// Commented out the old transmit(...) function. Use constrained_trans(...)
+// instead.
+//
 // Revision 1.19  1999/01/21 02:50:08  jimg
 // Added code to test the expr scanner using strings and not files.
 //
@@ -96,7 +101,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.19 1999/01/21 02:50:08 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.20 1999/03/24 23:32:05 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,7 +139,9 @@ void test_scanner(bool show_prompt);
 void test_parser(DDS &table, const String &dds_name, const String &constraint);
 bool read_table(DDS &table, const String &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
+#if 0
 bool transmit(DDS &write, bool verb);
+#endif
 bool loopback_pipe(FILE **pout, FILE **pin);
 bool constrained_trans(const String &dds_name, String dataset,
 		       const String &ce);
@@ -154,9 +161,12 @@ static int keep_temps = 0;
 
 const String version = "version 1.12";
 const String prompt = "expr-test: ";
-const String options = "sS:detcvp:w:f:k:";
-const String usage = "expr-test [-s [-S string] -d -c -t -v [-p dds-file] [-e expr]\
-[-w dds-file] [-f data-file] [-k expr]]\n\
+#if 0
+const String options = "sS:detcvp:w:f:k:v";
+#endif
+const String options = "sS:decvp:w:f:k:v";
+const String usage = "expr-test [-s [-S string] -d -c -v [-p dds-file]\n\
+[-e expr] [-w dds-file] [-f data-file] [-k expr]]\n\
 Test the expression evaluation software.\n\
 Options:\n\
 	-s: Feed the input stream directly into the expression scanner, does\n\
@@ -168,7 +178,8 @@ Options:\n\
 	-t: Test transmission of data. This uses the Test*classes.\n\
 	    Transmission is done using a single process that writes and then\n\
 	    reads from a pipe. Must also suppply -p.\n\
-        -v: Print the version of expr-test\n\
+        -v: Verbose output
+        -V: Print the version of expr-test\n\
   	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,\n\
 	    then prompt for an expression and parse that expression, given\n\
 	    the DDS object.\n\
@@ -187,9 +198,13 @@ main(int argc, char *argv[])
     GetOpt getopt(argc, argv, options);
     int option_char;
     bool scanner_test = false, parser_test = false, evaluate_test = false;
+#if 0
     bool trans_test = false, print_constrained = false;
+#endif
+    bool print_constrained = false;
     bool whole_enchalada = false, constraint_expr = false;
     bool scan_string = false;
+    bool verbose = false;
     String dds_file_name;
     String dataset = "";
     String constraint = "";
@@ -217,9 +232,11 @@ main(int argc, char *argv[])
 	  case 'e':
 	    evaluate_test = true;
 	    break;
+#if 0
 	  case 't':
 	    trans_test = true;
 	    break;
+#endif
 	  case 'c':
 	    print_constrained = true;
 	    break;
@@ -235,6 +252,9 @@ main(int argc, char *argv[])
 	    dataset = getopt.optarg;
 	    break;
 	  case 'v':
+	    verbose = true;
+	    break;
+	  case 'V':
 	    cerr << argv[0] << ": " << version << endl;
 	    exit(0);
 	  case '?': 
@@ -244,8 +264,10 @@ main(int argc, char *argv[])
 	    break;
 	}
 
+#if 0
     if (!scanner_test && !parser_test && !evaluate_test && !trans_test 
-	&& !whole_enchalada) {
+#endif
+    if (!scanner_test && !parser_test && !evaluate_test	&& !whole_enchalada) {
 	cerr << usage << endl;
 	exit(1);
     }
@@ -268,9 +290,11 @@ main(int argc, char *argv[])
 	evaluate_dds(table, print_constrained);
     }
 
+#if 0
     if (trans_test) {
-	transmit(table, exprdebug);
+	transmit(table, exprdebug || verbose);
     }
+#endif
 
     if (whole_enchalada) {
 	constrained_trans(dds_file_name, dataset, constraint);
@@ -458,6 +482,7 @@ evaluate_dds(DDS &table, bool print_constrained)
 // that a constraint expression has been entered, send data from the DDS to a
 // second DDS instance via the serialize/deserialize mfuncs. 
 
+#if 0
 bool
 transmit(DDS &write, bool verb)
 {
@@ -493,7 +518,7 @@ transmit(DDS &write, bool verb)
 	if (write.var(wp)->send_p()) { // only works for scalars
 	    int error = 0;
 	    status = write.var(wp)->read(dummy, error);
-	    if (error != -1)
+	    if (error)
 		status = false;
 
 	    if (verb) {
@@ -539,6 +564,7 @@ transmit(DDS &write, bool verb)
 
     return true;
 }
+#endif
 
 // create a pipe for the caller's process which can be used by the DODS
 // software to write to ad read from itself.
