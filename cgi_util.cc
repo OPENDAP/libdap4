@@ -11,6 +11,11 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.36  1999/05/05 00:49:21  jimg
+// Added version number optional argument. This provides a way for code that
+// uses these functions to pass version information in so that it can be
+// included in the response doc's MIME header.
+//
 // Revision 1.35  1999/05/04 19:47:23  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -171,7 +176,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.35 1999/05/04 19:47:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.36 1999/05/05 00:49:21 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -495,17 +500,18 @@ static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
 static char *encoding[]={"unknown", "deflate", "x-plain"};
 
 void
-set_mime_text(FILE *out, ObjectType type, EncodingType enc)
+set_mime_text(FILE *out, ObjectType type, const string &ver, EncodingType enc)
 {
     ofstream os(fileno(out));
-    set_mime_text(os, type, enc);
+    set_mime_text(os, type, ver, enc);
 }
 
 void
-set_mime_text(ostream &os, ObjectType type, EncodingType enc)
+set_mime_text(ostream &os, ObjectType type, const string &ver, 
+	      EncodingType enc)
 {
     os << "HTTP/1.0 200 OK" << endl;
-    os << "XDODS-Server: " << DVR << endl;
+    os << "XDODS-Server: " << ver << endl;
     os << "Content-type: text/plain" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     // Don't write a Content-Encoding header for x-plain since that breaks
@@ -516,17 +522,19 @@ set_mime_text(ostream &os, ObjectType type, EncodingType enc)
 }
 
 void
-set_mime_binary(FILE *out, ObjectType type, EncodingType enc)
+set_mime_binary(FILE *out, ObjectType type, const string &ver, 
+		EncodingType enc)
 {
     ofstream os(fileno(out));
-    set_mime_binary(os, type, enc);
+    set_mime_binary(os, type, ver, enc);
 }
 
 void
-set_mime_binary(ostream &os, ObjectType type, EncodingType enc)
+set_mime_binary(ostream &os, ObjectType type, const string &ver, 
+		EncodingType enc)
 {
     os << "HTTP/1.0 200 OK" << endl;
-    os << "XDODS-Server: " << DVR << endl;
+    os << "XDODS-Server: " << ver << endl;
     os << "Content-type: application/octet-stream" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     if (enc != x_plain)
@@ -535,17 +543,19 @@ set_mime_binary(ostream &os, ObjectType type, EncodingType enc)
 }
 
 void 
-set_mime_error(FILE *out, int code, const char *reason)
+set_mime_error(FILE *out, int code, const string &reason,
+	       const string &version = DVR)
 {
     ofstream os(fileno(out));
-    set_mime_error(os, code, reason);
+    set_mime_error(os, code, reason, version);
 }
 
 void 
-set_mime_error(ostream &os, int code, const char *reason)
+set_mime_error(ostream &os, int code, const string &reason,
+	       const string &version = DVR)
 {
     os << "HTTP/1.0 " << code << " " << reason << endl;
-    os << "XDODS-Server: " << DVR << endl;
+    os << "XDODS-Server: " << version << endl;
     os << endl;
 }
 
