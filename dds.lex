@@ -30,43 +30,48 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.10  1996/05/31 23:30:55  jimg
-/* Updated copyright notice.
+/* Revision 1.11  1996/08/13 18:51:52  jimg
+/* Added __unused__ to definition of char rcsid[].
 /*
+ * Revision 1.10  1996/05/31 23:30:55  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.9  1996/04/05 00:22:16  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
-# Revision 1.8  1995/10/23  23:00:24  jimg
-# Removed code enclosed in #ifdef NEVER ... #endif
-#
-# Revision 1.7  1995/07/08  20:18:25  jimg
-# Removed declaration of yywrap().
-#
-# Revision 1.6  1995/02/10  02:57:40  jimg
-# Switched to sh style comments. C and C++ style comments are no longer
-# supported.
-#
-# Revision 1.5  1994/12/21  16:54:50  jimg
-# Repaired damage done to NEVER's definition in previous version.
-#
-# Revision 1.4  1994/12/16  22:22:14  jimg
-# Changed NEVER to be anything not caught by the earlier rules.
-# Fixed // style comments so that // ... <eof> works.
-#
-# Revision 1.3  1994/12/09  21:40:44  jimg
-# Added `=' to the set of recognized lexemes.
-# Added `[' and `]' to the set of rejected characters.
-#
-# Revision 1.2  1994/11/10  19:46:49  jimg
-# Added `/' to the set of characters that make up an identifier.
-#
-# Revision 1.1  1994/09/08  21:10:46  jimg
-# DDS Class test driver and parser and scanner.
-#
+ * Revision 1.8  1995/10/23  23:00:24  jimg
+ * Removed code enclosed in #ifdef NEVER ... #endif
+ *
+ * Revision 1.7  1995/07/08  20:18:25  jimg
+ * Removed declaration of yywrap().
+ *
+ * Revision 1.6  1995/02/10  02:57:40  jimg
+ * Switched to sh style comments. C and C++ style comments are no longer
+ * supported.
+ *
+ * Revision 1.5  1994/12/21  16:54:50  jimg
+ * Repaired damage done to NEVER's definition in previous version.
+ *
+ * Revision 1.4  1994/12/16  22:22:14  jimg
+ * Changed NEVER to be anything not caught by the earlier rules.
+ * Fixed // style comments so that // ... <eof> works.
+ *
+ * Revision 1.3  1994/12/09  21:40:44  jimg
+ * Added `=' to the set of recognized lexemes.
+ * Added `[' and `]' to the set of rejected characters.
+ *
+ * Revision 1.2  1994/11/10  19:46:49  jimg
+ * Added `/' to the set of characters that make up an identifier.
+ *
+ * Revision 1.1  1994/09/08  21:10:46  jimg
+ * DDS Class test driver and parser and scanner.
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.10 1996/05/31 23:30:55 jimg Exp $"};
+
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.11 1996/08/13 18:51:52 jimg Exp $"};
 
 #include <string.h>
 

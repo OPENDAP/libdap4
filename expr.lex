@@ -1,10 +1,12 @@
 
-/* 
-   (c) COPYRIGHT URI/MIT 1995-1996
-   Please read the full copyright statement in the file COPYRIGH.  
+/* -*- C++ -*- */
 
-   Authors:
-        jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+/*
+  (c) COPYRIGHT URI/MIT 1994-1996
+  Please read the full copyright statement in the file COPYRIGH.  
+
+  Authors:
+	jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 */
 
 /*
@@ -25,9 +27,12 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.9  1996/05/31 23:31:03  jimg
-/* Updated copyright notice.
+/* Revision 1.10  1996/08/13 18:56:24  jimg
+/* Added __unused__ to definition of char rcsid[].
 /*
+ * Revision 1.9  1996/05/31 23:31:03  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.8  1996/05/14 15:39:01  jimg
  * These changes have already been checked in once before. However, I
  * corrupted the source repository and restored it from a 5/9/96 backup
@@ -64,15 +69,20 @@
  */
 
 %{
-static char rcsid[]={"$Id: expr.lex,v 1.9 1996/05/31 23:31:03 jimg Exp $"};
+
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.10 1996/08/13 18:56:24 jimg Exp $"};
 
 #include <string.h>
+#include <assert.h>
 
 #include <String.h>
 #include <SLList.h>
 
 #define YY_DECL int exprlex YY_PROTO(( void ))
 
+#include "Error.h"
 #include "parser.h"
 #include "expr.h"
 #include "expr.tab.h"
