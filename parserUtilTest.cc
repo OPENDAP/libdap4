@@ -70,18 +70,23 @@ public:
 	CPPUNIT_ASSERT(check_float32("-0.0"));
 	CPPUNIT_ASSERT(check_float32("+0.0"));
 	CPPUNIT_ASSERT(check_float32(".0"));
-	CPPUNIT_ASSERT(check_float32("3.402823466E+38F"));
-	CPPUNIT_ASSERT(check_float32("-3.402823466E+38F"));
-	CPPUNIT_ASSERT(check_float32("1.175494351E-38F"));
-	CPPUNIT_ASSERT(check_float32("-1.175494351E-38F"));
+
+	CPPUNIT_ASSERT(!check_float64("3.0.0"));
+	CPPUNIT_ASSERT(!check_float64("3..0"));
+
+	CPPUNIT_ASSERT(check_float32("3.402823466E+38"));
+	CPPUNIT_ASSERT(check_float32("-3.402823466E+38"));
+	CPPUNIT_ASSERT(check_float32("1.175494351E-38"));
+	CPPUNIT_ASSERT(check_float32("-1.175494351E-38"));
+
 	CPPUNIT_ASSERT(check_float32("NaN"));
 	CPPUNIT_ASSERT(check_float32("nan"));
 	CPPUNIT_ASSERT(check_float32("Nan"));
 
-	CPPUNIT_ASSERT(!check_float32("3.502823466E+38F"));
-	CPPUNIT_ASSERT(!check_float32("-3.502823466E+38F"));
-	CPPUNIT_ASSERT(!check_float32("1.0E-38F"));
-	CPPUNIT_ASSERT(!check_float32("-1.0E-38F"));
+	CPPUNIT_ASSERT(!check_float32("3.502823466E+38"));
+	CPPUNIT_ASSERT(!check_float32("-3.502823466E+38"));
+	CPPUNIT_ASSERT(!check_float32("1.0E-38"));
+	CPPUNIT_ASSERT(!check_float32("-1.0E-38"));
 
 	CPPUNIT_ASSERT(!check_float32("1.7976931348623157E+308"));
 	CPPUNIT_ASSERT(!check_float32("-1.7976931348623157E+308"));
@@ -95,10 +100,14 @@ public:
 	CPPUNIT_ASSERT(check_float64("-0.0"));
 	CPPUNIT_ASSERT(check_float64("+0.0"));
 	CPPUNIT_ASSERT(check_float64(".0"));
-	CPPUNIT_ASSERT(check_float64("3.402823466E+38F"));
-	CPPUNIT_ASSERT(check_float64("-3.402823466E+38F"));
-	CPPUNIT_ASSERT(check_float64("1.175494351E-38F"));
-	CPPUNIT_ASSERT(check_float64("-1.175494351E-38F"));
+
+	CPPUNIT_ASSERT(!check_float64("3.0.0"));
+	CPPUNIT_ASSERT(!check_float64("3..0"));
+
+	CPPUNIT_ASSERT(check_float64("3.402823466E+38"));
+	CPPUNIT_ASSERT(check_float64("-3.402823466E+38"));
+	CPPUNIT_ASSERT(check_float64("1.175494351E-38"));
+	CPPUNIT_ASSERT(check_float64("-1.175494351E-38"));
 
 	CPPUNIT_ASSERT(check_float64("1.7976931348623157E+308"));
 	CPPUNIT_ASSERT(check_float64("-1.7976931348623157E+308"));

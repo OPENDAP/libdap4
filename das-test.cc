@@ -38,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das-test.cc,v 1.32 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das-test.cc,v 1.33 2003/04/02 19:13:12 pwest Exp $"};
 
 #include <string>
 #include <GetOpt.h>
@@ -264,22 +264,23 @@ load_attr_table(AttrTable at)
     at.append_attr("Time", "Float64", "3.1415");
 
     fprintf( stdout, "Using the Pix:\n" ) ;
-    for (Pix p = at.first_attr(); p; at.next_attr(p)) {
-	fprintf( stdout, "%s %s ", at.get_name(p).c_str(),
-				   at.get_type(p).c_str() ) ;
-	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
-	     fprintf( stdout, "%s ", at.get_attr(p, i).c_str() ) ;
-	fprintf( stdout, "\n" ) ;
+    for (Pix p1 = at.first_attr(); p1; at.next_attr(p1))
+	{
+		fprintf( stdout, "%s %s ", at.get_name(p1).c_str(),
+				   at.get_type(p1).c_str() ) ;
+		for (unsigned i = 0; i < at.get_attr_num(p1); ++i)
+				fprintf( stdout, "%s ", at.get_attr(p1, i).c_str() ) ;
+		fprintf( stdout, "\n" ) ;
     }
 
     fprintf( stdout, "Using the iterator:\n" ) ;
-    for (AttrTable::Attr_iter p = at.attr_begin(); p != at.attr_end(); p++)
+    for (AttrTable::Attr_iter p2 = at.attr_begin(); p2 != at.attr_end(); p2++)
     {
-	fprintf( stdout, "%s %s ", at.get_name(p).c_str(),
-				   at.get_type(p).c_str() ) ;
-	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
-	     fprintf( stdout, "%s ", at.get_attr(p, i).c_str() ) ;
-	fprintf( stdout, "\n" ) ;
+		fprintf( stdout, "%s %s ", at.get_name(p2).c_str(),
+			at.get_type(p2).c_str() ) ;
+		for (unsigned i = 0; i < at.get_attr_num(p2); ++i)
+			fprintf( stdout, "%s ", at.get_attr(p2, i).c_str() ) ;
+		fprintf( stdout, "\n" ) ;
     }
 
     string name = "month";
@@ -295,24 +296,24 @@ load_attr_table(AttrTable at)
     at.del_attr("month");
 
     fprintf( stdout, "After deletion:\n" ) ;
-    for (AttrTable::Attr_iter p = at.attr_begin(); p != at.attr_end(); p++)
+    for (AttrTable::Attr_iter p3 = at.attr_begin(); p3 != at.attr_end(); p3++)
     {
-	fprintf( stdout, "%s %s ", at.get_name(p).c_str(),
-				   at.get_type(p).c_str() ) ;
-	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
-	     fprintf( stdout, "%s ", at.get_attr(p, i).c_str() ) ;
-	fprintf( stdout, "\n" ) ;
+		fprintf( stdout, "%s %s ", at.get_name(p3).c_str(),
+			at.get_type(p3).c_str() ) ;
+		for (unsigned i = 0; i < at.get_attr_num(p3); ++i)
+			fprintf( stdout, "%s ", at.get_attr(p3, i).c_str() ) ;
+		fprintf( stdout, "\n" ) ;
     }
 
     at.print(stdout);
 
     fprintf( stdout, "After print:\n" ) ;
-    for (AttrTable::Attr_iter p = at.attr_begin(); p != at.attr_end(); p++)
+    for (AttrTable::Attr_iter p4 = at.attr_begin(); p4 != at.attr_end(); p4++)
     {
-	fprintf( stdout, "%s %s ", at.get_name(p).c_str(),
-				   at.get_type(p).c_str() ) ;
-	for (unsigned i = 0; i < at.get_attr_num(p); ++i)
-	     fprintf( stdout, "%s ", at.get_attr(p, i).c_str() ) ;
+	fprintf( stdout, "%s %s ", at.get_name(p4).c_str(),
+		at.get_type(p4).c_str() ) ;
+	for (unsigned i = 0; i < at.get_attr_num(p4); ++i)
+	     fprintf( stdout, "%s ", at.get_attr(p4, i).c_str() ) ;
 	fprintf( stdout, "\n" ) ;
     }
 }
@@ -334,22 +335,23 @@ load_attr_table_ptr(AttrTable *at)
     at->append_attr("Time", "Float64", "3.1415");
 
     fprintf( stdout, "Using the Pix:\n" ) ;
-    for (Pix p = at->first_attr(); p; at->next_attr(p)) {
-	fprintf( stdout, "%s %s ", at->get_name(p).c_str(),
-				   at->get_type(p).c_str() ) ;
-	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
-	     fprintf( stdout, "%s ", at->get_attr(p, i).c_str() ) ;
+    for (Pix p1 = at->first_attr(); p1; at->next_attr(p1))
+	{
+	fprintf( stdout, "%s %s ", at->get_name(p1).c_str(),
+				   at->get_type(p1).c_str() ) ;
+	for (unsigned i = 0; i < at->get_attr_num(p1); ++i)
+	     fprintf( stdout, "%s ", at->get_attr(p1, i).c_str() ) ;
 	fprintf( stdout, "\n" ) ;
     }
 
     fprintf( stdout, "Using the iterator:\n" ) ;
-    for (AttrTable::Attr_iter p = at->attr_begin(); p != at->attr_end(); p++)
+    for (AttrTable::Attr_iter p2 = at->attr_begin(); p2 != at->attr_end(); p2++)
     {
-	fprintf( stdout, "%s %s ", at->get_name(p).c_str(),
-				   at->get_type(p).c_str() ) ;
-	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
-	     fprintf( stdout, "%s ", at->get_attr(p, i).c_str() ) ;
-	fprintf( stdout, "\n" ) ;
+		fprintf( stdout, "%s %s ", at->get_name(p2).c_str(),
+			at->get_type(p2).c_str() ) ;
+		for (unsigned i = 0; i < at->get_attr_num(p2); ++i)
+			fprintf( stdout, "%s ", at->get_attr(p2, i).c_str() ) ;
+		fprintf( stdout, "\n" ) ;
     }
 
     string name = "month";
@@ -365,31 +367,42 @@ load_attr_table_ptr(AttrTable *at)
     at->del_attr("month");
 
     fprintf( stdout, "After deletion:\n" ) ;
-    for (AttrTable::Attr_iter p = at->attr_begin(); p != at->attr_end(); p++)
+    for (AttrTable::Attr_iter p3 = at->attr_begin(); p3 != at->attr_end(); p3++)
     {
-	fprintf( stdout, "%s %s ", at->get_name(p).c_str(),
-				   at->get_type(p).c_str() ) ;
-	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
-	     fprintf( stdout, "%s ", at->get_attr(p, i).c_str() ) ;
-	fprintf( stdout, "\n" ) ;
+		fprintf( stdout, "%s %s ", at->get_name(p3).c_str(),
+			at->get_type(p3).c_str() ) ;
+		for (unsigned i = 0; i < at->get_attr_num(p3); ++i)
+			fprintf( stdout, "%s ", at->get_attr(p3, i).c_str() ) ;
+		fprintf( stdout, "\n" ) ;
     }
 
     at->print(stdout);
 
     fprintf( stdout, "After print:\n" ) ;
-    for (AttrTable::Attr_iter p = at->attr_begin(); p !=at->attr_end(); p++)
+    for (AttrTable::Attr_iter p4 = at->attr_begin(); p4 !=at->attr_end(); p4++)
     {
-	fprintf( stdout, "%s %s ", at->get_name(p).c_str(), 
-				   at->get_type(p).c_str() ) ;
-	for (unsigned i = 0; i < at->get_attr_num(p); ++i)
-	     fprintf( stdout, "%s ", at->get_attr(p, i).c_str() ) ;
-	fprintf( stdout, "\n" ) ;
+		fprintf( stdout, "%s %s ", at->get_name(p4).c_str(), 
+			at->get_type(p4).c_str() ) ;
+		for (unsigned i = 0; i < at->get_attr_num(p4); ++i)
+			fprintf( stdout, "%s ", at->get_attr(p4, i).c_str() ) ;
+		fprintf( stdout, "\n" ) ;
     }
 }
 
 // $Log: das-test.cc,v $
-// Revision 1.32  2003/02/21 00:14:25  jimg
+// Revision 1.33  2003/04/02 19:13:12  pwest
+// Fixed bug in parser-util that did not recognize illegal characters when
+// checking float32 and float64 strings, added tests to parserUtilTest to
+// test for illegal characters as in das-test, updated das-test as in 3.3
+// version.
+//
+// Revision 1.31.2.2  2003/02/21 00:10:07  jimg
 // Repaired copyright.
+//
+// Revision 1.31.2.1  2003/02/18 00:33:36  rmorris
+// Fixed win32 incompatibility.  for(Pix p;something;something), but
+// scope of Pix is wider under win32 than unix.  Using multiple vars
+// of the same name in the same method is a problem under win32.
 //
 // Revision 1.31  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is

@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.30 2003/03/04 23:19:37 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.31 2003/04/02 19:13:12 pwest Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -262,10 +262,10 @@ check_float32(const char *val)
 				// IRIX from Rob Morris. 5/21/2001 jhrg
     double v = strtod(val, &ptr);
 
-    DBG(cerr << "v: " << v << ", ptr: " << hex << ptr << dec 
+    DBG(cerr << "v: " << v << ", ptr: " << ptr
 	<< ", errno: " << errno << ", val==ptr: " << (val==ptr) << endl);
     if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
-	|| (v == 0.0 && *ptr != '\0')) {
+	|| *ptr != '\0') {
 	return FALSE;
     }
 
@@ -284,10 +284,11 @@ check_float64(const char *val)
     char *ptr;
     errno = 0;			// Clear previous value. 5/21/2001 jhrg
     double v = strtod(val, &ptr);
-    DBG(cerr << "ptr: " << ptr << endl);
+    DBG(cerr << "v: " << v << ", ptr: " << ptr 
+	<< ", errno: " << errno << ", val==ptr: " << (val==ptr) << endl);
 
     if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
-	|| (v == 0.0 && *ptr != '\0')) {
+	|| *ptr != '\0') {
 	return FALSE;
     }
 
@@ -310,6 +311,12 @@ check_url(const char *)
 }
 
 // $Log: parser-util.cc,v $
+// Revision 1.31  2003/04/02 19:13:12  pwest
+// Fixed bug in parser-util that did not recognize illegal characters when
+// checking float32 and float64 strings, added tests to parserUtilTest to
+// test for illegal characters as in das-test, updated das-test as in 3.3
+// version.
+//
 // Revision 1.30  2003/03/04 23:19:37  jimg
 // Fixed some of the unit tests.
 //
