@@ -35,6 +35,7 @@
 
 #include "config_dap.h"
 
+#include <functional>
 #include <algorithm>
 
 #include "Grid.h"
@@ -865,6 +866,9 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.63  2004/06/27 11:30:09  rmorris
+// Get it compiling under win32 again by including <functional>
+//
 // Revision 1.62  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
