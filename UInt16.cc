@@ -9,11 +9,8 @@
 //
 // jhrg 9/7/94
 
-// $Log: UInt32.cc,v $
-// Revision 1.2  1996/08/26 20:17:50  jimg
-// Added.
-//
-// Revision 1.1  1996/08/26 19:45:27  jimg
+// $Log: UInt16.cc,v $
+// Revision 1.1  1996/08/26 20:17:49  jimg
 // Added.
 //
 
@@ -23,34 +20,39 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.2 1996/08/26 20:17:50 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt16.cc,v 1.1 1996/08/26 20:17:49 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
 
-#include "UInt32.h"
+#include "Int32.h"
 #include "DDS.h"
 #include "util.h"
 #include "dods-limits.h"
+#if 0
+#include "parser.h"
+#include "expr.h"
+#include "expr.tab.h"
+#endif
 #include "debug.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-UInt32::UInt32(const String &n) 
-    : BaseType(n, dods_int32_c, (xdrproc_t)XDR_UINT32)
+UInt16::UInt16(const String &n) : BaseType(n, dods_uint16_c, (xdrproc_t)XDR_INT16)
 {
 }
 
 unsigned int
-UInt32::width()
+UInt16::width()
 {
-    return sizeof(dods_uint32);
+    return sizeof(dods_uint16);
 }
 
-UInt32::serialize(const String &dataset, DDS &dds, XDR *sink,
-		  bool ce_eval = true)
+bool
+UInt16::serialize(const String &dataset, DDS &dds, XDR *sink,
+		 bool ce_eval = true)
 {
     int error;
 
@@ -60,39 +62,39 @@ UInt32::serialize(const String &dataset, DDS &dds, XDR *sink,
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (!XDR_UINT32(sink, &_buf))
+    if (!XDR_INT16(sink, &_buf))
 	return false;
 
     return true;
 }
 
 bool
-UInt32::deserialize(XDR *source, bool)
+UInt16::deserialize(XDR *source, bool)
 {
-    unsigned int num = XDR_UINT32(source, &_buf);
+    unsigned int num = XDR_INT16(source, &_buf);
 
     return (num > 0);		/* make the return value a boolean */
 }
 
 unsigned int
-UInt32::val2buf(void *val, bool)
+UInt16::val2buf(void *val, bool)
 {
     assert(val);
 
-    _buf = *(dods_uint32 *)val;
+    _buf = *(dods_uint16 *)val;
 
     return width();
 }
 
 unsigned int
-UInt32::buf2val(void **val)
+UInt16::buf2val(void **val)
 {
     assert(_buf && val);
 
     if (!*val)
-	*val = new dods_uint32;
+	*val = new dods_uint16;
 
-    *(dods_uint32 *)*val =_buf;
+    *(dods_uint16 *)*val =_buf;
 
     return width();
 }
@@ -100,7 +102,7 @@ UInt32::buf2val(void **val)
 // Print BUF to stdout with its declaration. Intended mostly for debugging.
 
 void 
-UInt32::print_val(ostream &os, String space, bool print_decl_p)
+UInt16::print_val(ostream &os, String space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -111,16 +113,16 @@ UInt32::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-UInt32::ops(BaseType &b, int op)
+UInt16::ops(BaseType &b, int op)
 {
-    dods_uint32 a1, a2;
+    dods_uint16 a1, a2;
 
     if (!read_p()) {
 	cerr << "This value not yet read!" << endl;
 	return false;
     }
     else {
-	dods_uint32 *a1p = &a1;
+	dods_uint16 *a1p = &a1;
 	buf2val((void **)&a1p);
     }
 
@@ -130,11 +132,11 @@ UInt32::ops(BaseType &b, int op)
     }
     else switch (b.type()) {
       case dods_byte_c:
-      case dods_int16_c:
-      case dods_uint16_c: {
+      case dods_uint16_c:
+      case dods_uuint16_c: {	// Might loose data here! jhrg 8/25/96
       case dods_int32_c:
-      case dods_uint32_c: {
-	dods_int32 *a2p = &a2;
+      case dods_uint32_c: 
+	dods_uint16 *a2p = &a2;
 	b.buf2val((void **)&a2p);
 	break;
       }
@@ -142,7 +144,7 @@ UInt32::ops(BaseType &b, int op)
 	double d;
 	double *dp = &d;
 	b.buf2val((void **)&dp);
-	a2 = (dods_int32)d;
+	a2 = (dods_uint16)d;
 	break;
       }
       case dods_str_c: {
