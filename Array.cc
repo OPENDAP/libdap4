@@ -10,6 +10,9 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.42  1998/12/15 20:50:23  jimg
+// Added fix for strides <= 0 (which results in division by zero).
+//
 // Revision 1.41  1997/12/15 18:10:19  jimg
 // Changed check_semantics() so that it returns an error message instead of
 // printing one (thus it now works like all the other implementations of
@@ -366,7 +369,7 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
     dimension &d = _shape(p);
 
     // Check for bad constraints.
-    if (start >= d.size || stop >= d.size || stride > d.size)
+    if (start >= d.size || stop >= d.size || stride > d.size || stride <= 0)
 	return false;
     if (((stop - start) / stride + 1) > d.size)
 	return false;
