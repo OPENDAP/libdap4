@@ -8,6 +8,9 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.13  1998/02/05 20:13:53  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.12  1997/08/23 00:22:23  jimg
 // Changed the way that the _error_message member is processed. Now if the
 // message does not have explicit double quotes, print() will add them. The
@@ -70,7 +73,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.12 1997/08/23 00:22:23 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.13 1998/02/05 20:13:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -208,7 +211,7 @@ Error::print(ostream &os = cout)
     // If the error message is wrapped in double quotes, print it, else, add
     // wrapping double quotes.
     if (_error_message.index("\"", 0) == 0
-	&& _error_message.index("\"", -1) == _error_message.length()-1)
+	&& _error_message.index("\"", -1) + 1 == (signed int)_error_message.length())
 	os << "    " << "message = " << _error_message << ";" << endl;
     else
 	os << "    " << "message = " << "\"" << _error_message << "\"" << ";" 

@@ -31,6 +31,9 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.18  1998/02/05 20:14:01  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
  * Revision 1.17  1997/12/16 00:46:29  jimg
  * Added `-' to characters allowed in NAME lexeme.
  *
@@ -93,7 +96,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.17 1997/12/16 00:46:29 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.18 1998/02/05 20:14:01 jimg Exp $"};
 
 #include <string.h>
 
@@ -127,7 +130,7 @@ STRING 		STRING|String|string
 URL 		URL|Url|url
 
 ID  		[a-zA-Z_][-a-zA-Z0-9_/%]*
-NAME            [a-zA-Z_/%.][-a-zA-Z0-9_/%.]*
+NAME            [a-zA-Z0-9_/%.][-a-zA-Z0-9_/%.]*
 INTEGER		[0-9]+
 NEVER		[^][{}:;=a-zA-Z0-9_%]
 
@@ -151,8 +154,8 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 {URL}			ddslval = yytext; return URL;
 
 {ID}  	    	    	ddslval = yytext; return ID;
-{NAME}                  ddslval = yytext; return NAME;
 {INTEGER}		ddslval = yytext; return INTEGER;
+{NAME}                  ddslval = yytext; return NAME;
 
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;

@@ -16,6 +16,9 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.27  1998/02/05 20:13:57  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
  * Revision 1.26  1998/01/12 14:28:00  tom
  * Second pass at class documentation.
  *
@@ -271,7 +274,7 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-    virtual bool check_semantics(String &msg = String(), bool all = false);
+    virtual bool check_semantics(String &msg, bool all = false);
 };
 
 #endif

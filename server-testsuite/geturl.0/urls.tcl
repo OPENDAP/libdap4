@@ -1,5 +1,5 @@
 
-# $Id: urls.tcl,v 1.2 1997/09/22 23:14:46 jimg Exp $
+# $Id: urls.tcl,v 1.3 1998/02/05 20:14:15 jimg Exp $
 
 # Datasets and their expected output (the information that writeval sends to
 # stdout - not the stuff that should be going into the file).
@@ -126,73 +126,73 @@ set nscat_l3_ce2 "Avg_Wind_Vel_U\\\[200:201\\\]\\\[20:119\\\]"
 set nscat_l3_dds "Dataset {
     Grid {
      ARRAY:
-        UInt32 WVC_Count[row = 300][column = 720];
+        UInt32 WVC_Count\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } WVC_Count;
     Grid {
      ARRAY:
-        UInt32 Map_Day_Fraction[row = 300][column = 720];
+        UInt32 Map_Day_Fraction\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } Map_Day_Fraction;
     Grid {
      ARRAY:
-        UInt32 Avg_Sigma0_Count[row = 300][column = 720];
+        UInt32 Avg_Sigma0_Count\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } Avg_Sigma0_Count;
     Grid {
      ARRAY:
-        Int32 Avg_Wind_Vel_U[row = 300][column = 720];
+        Int32 Avg_Wind_Vel_U\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } Avg_Wind_Vel_U;
     Grid {
      ARRAY:
-        Int32 Avg_Wind_Vel_V[row = 300][column = 720];
+        Int32 Avg_Wind_Vel_V\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } Avg_Wind_Vel_V;
     Grid {
      ARRAY:
-        UInt32 Avg_Wind_Speed[row = 300][column = 720];
+        UInt32 Avg_Wind_Speed\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } Avg_Wind_Speed;
     Grid {
      ARRAY:
-        UInt32 RMS_Wind_Speed[row = 300][column = 720];
+        UInt32 RMS_Wind_Speed\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } RMS_Wind_Speed;
     Grid {
      ARRAY:
-        UInt32 Map_Day_Fraction_StdDev[row = 300][column = 720];
+        UInt32 Map_Day_Fraction_StdDev\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } Map_Day_Fraction_StdDev;
     Grid {
      ARRAY:
-        UInt32 Wind_Vel_U_StdDev[row = 300][column = 720];
+        UInt32 Wind_Vel_U_StdDev\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } Wind_Vel_U_StdDev;
     Grid {
      ARRAY:
-        UInt32 Wind_Vel_V_StdDev[row = 300][column = 720];
+        UInt32 Wind_Vel_V_StdDev\[row = 300\]\[column = 720\];
      MAPS:
-        Float64 row[300];
-        Float64 column[720];
+        Float64 row\[300\];
+        Float64 column\[720\];
     } Wind_Vel_V_StdDev;
     Sequence {
         Structure {

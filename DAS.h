@@ -14,6 +14,9 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.17  1998/02/05 20:13:51  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
  * Revision 1.16  1998/01/12 14:27:56  tom
  * Second pass at class documentation.
  *
@@ -166,7 +169,7 @@ public:
       @param dflt A pointer to a valid attribute table.
       @param sz The number of entries in the table.
       */
-    DAS(AttrTablePtr dflt=(void *)NULL, 
+    DAS(AttrTablePtr dflt=(AttrTable *)NULL, 
 	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
     ~DAS();
 

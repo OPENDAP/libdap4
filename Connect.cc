@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.60  1998/02/05 20:13:50  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.59  1997/12/16 00:40:07  jimg
 // Fixed what may have been a lingering problem with version number strings
 // in the server_handler() function.
@@ -335,7 +338,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.59 1997/12/16 00:40:07 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.60 1998/02/05 20:13:50 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -449,9 +452,16 @@ terminate_handler (HTRequest * request, HTResponse * /*response*/,
 	if (cbf) (*cbf)(request, HT_A_MESSAGE, HT_MSG_NULL, NULL,
 			HTRequest_error(request), NULL);
     }
-
+    
+    // Remove all code that deals with the log files. If DODS clients ever
+    // support a log of http accesses this can be resurrected (maybe in its
+    // own object?).
+#if 0
+    // For libwww 5.1d, add our own state variable in place of the isOpen()
+    // call. Replace add() with addLine().
     if (HTLog_isOpen()) 
-	HTLog_add(request, status);
+	HTLog_addLine(request, status);
+#endif
 
     return HT_OK;
 }
@@ -540,7 +550,11 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 
 	  long cl = HTAnchor_length(HTRequest_anchor(request));
 	  if (cl >= 0) {
+#ifdef LIBWWW_5_0
 	      long b_read = HTRequest_bytesRead(request);
+#else
+	      long b_read = HTRequest_bodyRead(request);
+#endif
 	      double pro = (double) b_read/cl*100;
 	      ostrstream cmd_s;
 	      cmd_s << "progress bar " << pro << "\r" << ends;
@@ -1027,7 +1041,10 @@ Connect::read_url(String &url, FILE *stream)
     HTRequest_setOutputFormat(_request, WWW_SOURCE);
 
     // Set timeout on sockets.
+    // For libwww 5.1d this must be changed.
+#ifdef LIBWWW_5_0
     HTEventrg_registerTimeout(_tv, _request, timeout_handler, NO);
+#endif
 
     HTRequest_setAnchor(_request, (HTAnchor *)_anchor);
 

@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.27  1998/02/05 20:14:04  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.26  1997/10/09 22:19:32  jimg
 // Resolved conflicts in merge of 2.14c to trunk.
 //
@@ -109,7 +112,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.26 1997/10/09 22:19:32 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.27 1998/02/05 20:14:04 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -119,7 +122,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.26 1997/10/09 22:19:32 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.26 $";
+const char *VERSION = "$Revision: 1.27 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -137,32 +140,35 @@ usage(String name)
 #if 0
     cerr << "       " << "A: Use Connect's asynchronous mode." << endl;
 #endif
-    cerr << "       " << "d: For each URL, get the DODS DDS." << endl;
-    cerr << "       " << "a: For each URL, get the DODS DAS." << endl;
-    cerr << "       " << "D: For each URL, get the DODS Data." << endl;
-    cerr << "       " << "g: Show the progress GUI." << endl;
-    cerr << "       " << "v: Verbose." << endl;
-    cerr << "       " << "V: Version." << endl;
-    cerr << "       " << "c: <expr> is a contraint expression. Used with -D."
+    cerr << "        d: For each URL, get the DODS DDS." << endl;
+    cerr << "        a: For each URL, get the DODS DAS." << endl;
+    cerr << "        D: For each URL, get the DODS Data." << endl;
+    cerr << "        g: Show the progress GUI." << endl;
+    cerr << "        v: Verbose." << endl;
+    cerr << "        V: Version." << endl;
+    cerr << "        c: <expr> is a contraint expression. Used with -D."
 	 << endl;
-    cerr << "       " << "   NB: You can use a `?' for the CE also." << endl;
-    cerr << "       " << "t: <options> trace output; use -td for default." 
+    cerr << "           NB: You can use a `?' for the CE also." << endl;
+    cerr << "        k: Keep temporary files created by DODS core" << endl;
+#if 0
+    cerr << "        u: Unescape varibale names, etc." << endl;
+#endif
+    cerr << "        m: Request the same URL <num> times." << endl;
+    cerr << "        t: <options> trace output; use -td for default." 
          << endl;
-    cerr << "        k:  Keep temporary files created by DODS core" << endl;
-    cerr << "       " << "   a: show_anchor_trace." << endl;
-    cerr << "       " << "   b: show_bind_trace." << endl;
-    cerr << "       " << "   c: show_cache_trace." << endl;
-    cerr << "       " << "   l: show_sgml_trace." << endl;
-    cerr << "       " << "   m: show_mem_trace." << endl;
-    cerr << "       " << "   p: show_protocol_trace." << endl;
-    cerr << "       " << "   s: show_stream_trace." << endl;
-    cerr << "       " << "   t: show_thread_trace." << endl;
-    cerr << "       " << "   u: show_uri_trace." << endl;
-    cerr << "       " << "m: Request the same URL <num> times." << endl;
+    cerr << "          a: show_anchor_trace." << endl;
+    cerr << "          b: show_bind_trace." << endl;
+    cerr << "          c: show_cache_trace." << endl;
+    cerr << "          l: show_sgml_trace." << endl;
+    cerr << "          m: show_mem_trace." << endl;
+    cerr << "          p: show_protocol_trace." << endl;
+    cerr << "          s: show_stream_trace." << endl;
+    cerr << "          t: show_thread_trace." << endl;
+    cerr << "          u: show_uri_trace." << endl;
 #if 0
     cerr << "       " << "Without A, use the synchronous mode." << endl;
 #endif
-    cerr << "       " << "Without D, d or a, print the URL." << endl;
+    cerr << "       Without D, d or a, print the URL." << endl;
 }
 
 bool

@@ -8,8 +8,15 @@
 // Implementation for the class TestStructure. See TestByte.cc
 //
 // jhrg 1/12/95
+//
+// Note that the test code here to read values from a data file works only
+// for single level sequences - that is, it does *not* work for sequences
+// that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.18  1998/02/05 20:13:57  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.17  1998/01/13 04:16:11  jimg
 // Added a copy ctor since TestSequence has its own private data members. g++
 // 2.7.2.3 (?) running on Linux complained (apparently) about it being missing.
@@ -159,7 +166,7 @@ TestSequence::read(const String &dataset, int &error)
 	}
 
 	String l = line;
-	if (l.matches(RXwhite) || l[0] == '#')	// Blank of comment line
+	if (l.matches(RXwhite) || l[0] == '#')	// Blank or comment line
 	    continue;
 	else
 	    break;		// Assume valid line.

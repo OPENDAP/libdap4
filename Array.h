@@ -14,6 +14,9 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.37  1998/02/05 20:13:49  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
  * Revision 1.36  1998/02/04 14:55:30  tom
  * Another draft of documentation.
  *
@@ -206,7 +209,7 @@
 #include "dods-limits.h"
 #include "Vector.h"
 
-const int DODS_MAX_ARRAY = DODS_UINT_MAX;
+const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
 /** This class is used to hold arrays of other DODS data.  The
     elements of the array can be simple or compound data types.  There
@@ -431,7 +434,7 @@ public:
     virtual void print_val(ostream &os, String space = "", 
 			   bool print_decl_p = true);
 
-    virtual bool check_semantics(String &msg = String(), bool all = false);
+    virtual bool check_semantics(String &msg, bool all = false);
 };
 
 #endif

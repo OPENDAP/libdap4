@@ -19,6 +19,9 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.33  1998/02/05 20:13:56  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
  * Revision 1.32  1998/02/04 14:55:32  tom
  * Another draft of documentation.
  *
@@ -296,6 +299,9 @@ private:
     /// Was there an error reading the sequence?
     bool _seq_read_error;
 
+    /// Was there an error writing the sequence?
+    bool _seq_write_error;
+
     /// Make sure the old deserialize is still around?
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 
@@ -352,7 +358,7 @@ public:
   /** Sets the level number. */
     virtual void set_level(int lvl);
   /** Returns the level number. */
-    virtual unsigned int read_level();
+    virtual int level();
 
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
@@ -445,7 +451,7 @@ public:
     void print_all_vals(ostream& os, XDR *src, DDS *dds, String space = "",
 			bool print_decl_p = true);
 
-    virtual bool check_semantics(String &msg = String(), bool all = false);
+    virtual bool check_semantics(String &msg, bool all = false);
 };
 
 #endif

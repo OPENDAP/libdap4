@@ -13,13 +13,16 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.4  1998/02/05 20:14:07  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.3  1997/05/22 22:32:04  jimg
-// Changed the way global attributes are ferreted out. Previously I had assumed
-// that any attribute group that was not also the name of a variable was a group
-// of `global' attributes. However, the new aliases change this. In response
-// I've changed the way usage looks for global attributes; it looks for
-// attribute groups which contain the strings `global' and/or `dods'. Case is
-// not important.
+// Changed the way global attributes are ferreted out. Previously I had
+// assumed that any attribute group that was not also the name of a variable
+// was a group of `global' attributes. However, the new aliases change this.
+// In response I've changed the way usage looks for global attributes; it
+// looks for attribute groups which contain the strings `global' and/or
+// `dods'. Case is not important.
 //
 // Revision 1.2  1996/12/18 18:41:33  jimg
 // Added massive fixes for the processing of attributes to sort out the `global
@@ -33,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.3 1997/05/22 22:32:04 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.4 1998/02/05 20:14:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>

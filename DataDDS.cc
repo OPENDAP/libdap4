@@ -1,5 +1,5 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
+// (c) COPYRIGHT URI/MIT 1997
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
@@ -9,6 +9,9 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.cc,v $
+// Revision 1.3  1998/02/05 20:13:52  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.2  1997/12/16 00:37:14  jimg
 // Changed _version_string_to_numbers() so that it does something sensible
 // when the version string is hosed.
@@ -19,7 +22,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.2 1997/12/16 00:37:14 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.3 1998/02/05 20:13:52 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -35,7 +38,7 @@ static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.2 1997/12/16 00:37:14 jim
 
 // private
 
-// The Zversion string looks like `DODS/2.14'
+// The version string looks like `DODS/2.14'
 
 void
 DataDDS::_version_string_to_numbers()
@@ -66,7 +69,7 @@ DataDDS::_version_string_to_numbers()
 // public
 
 DataDDS::DataDDS(const String &n = (char *)0, const String &v = (char *)0)
-    :DDS(n), _server_version(v)
+    :DDS(n), _server_version(v), _sequence_level(0)
 {
     _version_string_to_numbers();
 }
@@ -92,4 +95,16 @@ int
 DataDDS::get_version_minor()
 {
     return _server_version_minor;
+}
+
+int
+DataDDS::sequence_level()
+{
+    return _sequence_level;
+}
+
+void
+DataDDS::set_sequence_level(int level)
+{
+    _sequence_level = level;
 }

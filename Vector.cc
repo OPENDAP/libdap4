@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.21  1998/02/05 20:13:58  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.20  1997/12/31 21:48:12  jimg
 // Enclosed print_basetype_pointer() function in #if DODS_DEBUG == 1 #endif
 // to stop compiler warnings about it being unused.
@@ -98,7 +101,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.20 1997/12/31 21:48:12 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.21 1998/02/05 20:13:58 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -217,7 +220,7 @@ Vector::var(unsigned int i)
 	  // efficient ways to get a whole array using buf2val() but this is
 	  // an OK way to get a single value or several non-contiguous values.
 	unsigned int sz = _var->width();
-	_var->val2buf(_buf + (i * sz));
+	_var->val2buf((char *)_buf + (i * sz));
 	return _var;
 	break;
       }
@@ -515,7 +518,7 @@ Vector::val2buf(void *val, bool reuse)
 
  	for (unsigned i = 0; i < len; ++i) {
 	    _vec[i] = _var->ptr_duplicate(); //changed, reza
-	    _vec[i]->val2buf(val + i * elem_wid, reuse);
+	    _vec[i]->val2buf((char *)val + i * elem_wid, reuse);
  	}
 
 	break;
@@ -568,7 +571,7 @@ Vector::buf2val(void **val)
 	    *val = new String [len]; 
 
 	for (unsigned i = 0; i < len; ++i) {
-	    void *val_elem = *val + i * elem_wid;
+	    void *val_elem = (char *)*val + i * elem_wid;
 	    _vec[i]->buf2val(&val_elem);
 	}
 

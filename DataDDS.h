@@ -13,6 +13,9 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.h,v $
+// Revision 1.3  1998/02/05 20:13:52  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.2  1998/01/12 14:27:57  tom
 // Second pass at class documentation.
 //
@@ -56,6 +59,9 @@ private:
 
     void _version_string_to_numbers();
 
+    // The last level read from a sequence. This is used to read nested
+    // sequences. 
+    int _sequence_level;
 public:
   /** The DataDDS constructor needs a name and a version string.  This
       is generally received from the server.
@@ -82,7 +88,7 @@ public:
 
       @name sequence\_level()
       @memo Returns the level of the last sequence read.  */
-  //int sequence_level();
+    int sequence_level();
     
   /** Set the value for #sequence_level()#. Use this function to store
       state information about the current sequence. This is used
@@ -92,8 +98,7 @@ public:
 
       @name set\_sequence\_level(int level)
       @memo Sets the level of the sequence being read.  */
-  //void set_sequence_level(int level);
-
+    void set_sequence_level(int level);
 };
 
 #endif // _DataDDS_h

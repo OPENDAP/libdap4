@@ -12,6 +12,9 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.5  1998/02/05 20:14:02  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.4  1997/02/14 04:18:10  jimg
 // Added allowable and escape parameters to id2dods and dods2id so that the
 // builtin regexs can be overridden if needed.
@@ -122,12 +125,12 @@ String id2dods(String s, const String allowable = (char *)0) {
 
 	int index;
 	while ((index = s.index(badregx2)) >= 0)
-	    s.at(index,1) = ESC + hexstring(toascii(s[index]));
+	    s.at(index,1) = (String)ESC + hexstring(toascii(s[index]));
     }
     else {
 	int index;
 	while ((index = s.index(badregx)) >= 0)
-	    s.at(index,1) = ESC + hexstring(toascii(s[index]));
+	    s.at(index,1) = (String)ESC + hexstring(toascii(s[index]));
     }
 
     if (isdigit(s[0]))
@@ -155,7 +158,7 @@ String dods2id(String s, const String escape = (char *)0) {
 
 // Escape non-printable characters and quotes from an HDF attribute
 String escattr(String s) {
-    static Regex nonprintable = "[^ !-~]";
+    static Regex nonprintable("[^ !-~]");
     const char ESC = '\\';
     const char QUOTE = '\"';
     const String ESCQUOTE = (String)ESC + (String)QUOTE;
@@ -163,7 +166,7 @@ String escattr(String s) {
     // escape non-printing characters with octal escape
     int index = 0;
     while ( (index = s.index(nonprintable)) >= 0)
-	s.at(index,1) = ESC + octstring(toascii(s[index]));
+	s.at(index,1) = (String)ESC + octstring(toascii(s[index]));
 
     // escape " with backslash
     index = 0;
@@ -181,9 +184,9 @@ String escattr(String s) {
 //       because both C++ strings and libg++ regex's also employ \ as
 //       an escape character!
 String unescattr(String s) {
-    static Regex escregx = "\\\\[01][0-7][0-7]";  // matches 4 characters
-    static Regex escquoteregex = "[^\\\\]\\\\\"";  // matches 3 characters
-    static Regex escescregex = "\\\\\\\\";      // matches 2 characters
+    static Regex escregx("\\\\[01][0-7][0-7]");  // matches 4 characters
+    static Regex escquoteregex("[^\\\\]\\\\\"");  // matches 3 characters
+    static Regex escescregex("\\\\\\\\");      // matches 2 characters
     const char ESC = '\\';
     const char QUOTE = '\"';
     const String ESCQUOTE = (String)ESC + (String)QUOTE;

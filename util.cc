@@ -10,6 +10,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.44  1998/02/05 20:14:09  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.43  1997/07/15 21:57:13  jimg
 // Fixed error message text for length function.
 //
@@ -218,7 +221,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.43 1997/07/15 21:57:13 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.44 1998/02/05 20:14:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -267,7 +270,7 @@ char_cmp(const void *a, const void *b)
 
 bool
 unique_names(SLList<BaseTypePtr> l, const char *var_name, 
-	     const char *type_name, String &msg = String())
+	     const char *type_name, String &msg)
 {
     // copy the identifier names to an array of char
     char **names = new char *[l.length()];
@@ -312,7 +315,7 @@ unique_names(SLList<BaseTypePtr> l, const char *var_name,
     return true;
 }
 
-// This function is used to allocate memory for, and initialize, and new XDR
+// This function is used to allocate memory for, and initialize, a new XDR
 // pointer. It sets the stream associated with the (XDR *) to STREAM.
 //
 // NB: STREAM is not one of the C++/libg++ iostream classes; it is a (FILE
@@ -348,14 +351,14 @@ delete_xdrstdio(XDR *xdr)
 
 // This function is used to en/decode Str and Url type variables. It is
 // defined as extern C since it is passed via function pointers to routines
-// in the xdr library where they are executed. This function is defined so
+// in the xdr library where it is executed. This function is defined so
 // that Str and Url have an en/decoder which takes exactly two argumnets: an
 // XDR * and a String reference.
 //
 // NB: this function is *not* used for arrays (i.e., it is not the function
 // referenced by BaseType's _xdr_coder field when the object is a Str or Url.
 // Also note that #max_str_len# is an obese number but that really does not
-// matter; #xdr_string# would never actually allocate taht much memory unless
+// matter; #xdr_string# would never actually allocate that much memory unless
 // a string that size was sent from the server.
 //
 // Returns: XDR's bool_t; TRUE if no errors are detected, FALSE
@@ -891,7 +894,8 @@ string_ops(String &i1, String &i2, int op)
       case LESS_EQL:
 	return i1 <= i2;
       case REGEXP: {
-	  Regex r = (const char *)i2;
+	  //	  Regex r = (const char *)i2;
+	  Regex r((const char *)i2);
 	  return i1.matches(r);
       }
       default:

@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.41  1998/02/05 20:13:50  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
  * Revision 1.40  1998/02/04 14:55:30  tom
  * Another draft of documentation.
  *
@@ -802,7 +805,7 @@ public:
 
       @see DDS::check_semantics 
       */
-    virtual bool check_semantics(String &msg = String(), bool all = false);
+    virtual bool check_semantics(String &msg, bool all = false);
 
   /** This function contains the relational operators used by the
       constraint expression evaluator in the DDS class. Each class

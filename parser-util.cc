@@ -10,6 +10,9 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.11  1998/02/05 20:14:05  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.10  1997/02/28 01:20:51  jimg
 // Removed `parse error' message from parse_error() function.
 //
@@ -49,7 +52,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.10 1997/02/28 01:20:51 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.11 1998/02/05 20:14:05 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -243,6 +246,8 @@ check_uint(const char *val, const int line)
 	return FALSE;
     }
 
+    // The following code makes no sense...
+#if 0
     // Don't use the constant from limits.h, use the on in dods-limits.h
     if (v > DODS_UINT_MAX) { 
 	ostrstream oss;
@@ -253,6 +258,7 @@ check_uint(const char *val, const int line)
 	oss.freeze(0);
 	return FALSE;
     }
+#endif
 
     return TRUE;
 }
@@ -273,6 +279,7 @@ check_uint(parser_arg *arg, const char *val, const int line,
 	return FALSE;
     }
 
+#if 0
     // Don't use the constant from limits.h, use the on in dods-limits.h
     if (v > DODS_UINT_MAX) { 
 	ostrstream oss;
@@ -283,6 +290,7 @@ check_uint(parser_arg *arg, const char *val, const int line,
 	oss.freeze(0);
 	return FALSE;
     }
+#endif
 
     return TRUE;
 }

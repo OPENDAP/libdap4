@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.41  1998/02/05 20:13:55  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.40  1997/12/31 20:55:15  jimg
 // Changed name of read_level() to level() to reduce confusion in child
 // classes. Also changed return type from unsigned int to int. This allows
@@ -210,6 +213,8 @@
 #pragma implementation
 #endif
 
+#define DODS_DEBUG 1
+
 #include "config_dap.h"
 
 #include <assert.h>
@@ -279,9 +284,10 @@ Sequence::is_end_of_sequence(unsigned char marker)
 
 // Public member functions
 
-Sequence::Sequence(const String &n) : BaseType(n, dods_sequence_c) 
+Sequence::Sequence(const String &n) 
+    : BaseType(n, dods_sequence_c), _level(0), _seq_read_error(false),
+      _seq_write_error(false)
 {
-    _seq_read_error = false;
 }
 
 Sequence::Sequence(const Sequence &rhs)
@@ -331,6 +337,9 @@ Sequence::add_var(BaseType *bt, Part)
 {
     assert(bt);
     _vars.append(bt);
+
+    if (bt->type() == dods_sequence_c)
+	((Sequence *)bt)->set_level(level() + 1);
 }
 
 BaseType *
@@ -444,21 +453,26 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
 	    continue;
 	}
 
-	for (Pix p = first_var(); p; next_var(p))
-	    if (var(p)->send_p() 
-		&& !(status = var(p)->serialize(dataset, dds, sink, false))) {
-		DBG(cerr << "status: " << status);
-		break;
+	for (Pix p = first_var(); p; next_var(p)) {
+	    if (var(p)->send_p()) {
+		status = var(p)->serialize(dataset, dds, sink, false);
+		DBG(cerr << "status: " << status << endl);
+		if (!status)
+		    break;
 	    }
+	}
 
-	// send End of Record marker
-	if (status)
+	// Send End of Instance marker
+	if (status) {
+	    DBG(cerr << "Writing End of Instance marker" << endl);
 	    write_end_of_instance(sink);
+	}
 
 	set_read_p(false);
     }
 
-    // Send Eod of Sequence marker
+    // Send End of Sequence marker
+    DBG(cerr << "Writing End of Sequence marker" << endl);
     write_end_of_sequence(sink);
 
     return status;
@@ -488,8 +502,9 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
     bool stat = true;
     _seq_read_error = false;
 
-    // Check for old servers.
     DataDDS *dd = (DataDDS *)dds; // Use a dynamic cast in the future.
+
+    // Check for old servers.
     if (dd->get_version_major() < 2 
 	|| dd->get_version_major() == 2 && dd->get_version_minor() < 15) {
 	DBG(cerr << "Reading from old server: " << dd->get_version_major() \
@@ -500,7 +515,18 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
     DBG(cerr << "Reading from new server: " << dd->get_version_major() \
 	<< "." << dd->get_version_minor() << endl);
 
+    if (level() > dd->sequence_level())
+	dd->set_sequence_level(level()); // remember deepest level
+
     for (Pix p = first_var(); p; next_var(p)) {
+	// When returning to a deserialize in progress, skip to the lowest
+	// level previously visited and resume. That means skip all
+	// variables that are not sequences until the level last read is >=
+	// the level of the current object.
+	if (dd->sequence_level() > level()
+	    && var(p)->type() != dods_sequence_c)
+	    continue;
+
 	stat = var(p)->deserialize(source, dds, reuse);
 	if (!stat) {
 	    // Non-constructor types return false to indicate error, Ctor
@@ -530,11 +556,18 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
 	DBG2(var(p)->print_val(cerr));
     }
 
+    // When backing out of recursive calls, don't try to read the EOI/EOS
+    // markers. 
+    if (dd->sequence_level() != level())
+	return true;
+
     unsigned char marker = read_end_marker(source);
     if (is_end_of_instance(marker))
 	return true;		// Read more sequence elements
-    else if (is_end_of_sequence(marker))
+    else if (is_end_of_sequence(marker)) {
+	dd->set_sequence_level(dd->sequence_level() - 1); // decrement level
 	return false;		// No more sequence elements
+    }
     else {
 	_seq_read_error = true;	// Error, don't read more elements
 	return false;

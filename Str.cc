@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.30  1998/02/05 20:13:56  jimg
+// DODS now compiles with gcc 2.8.x
+//
 // Revision 1.29  1997/09/22 22:45:43  jimg
 // Added DDS * to deserialize parameters.
 //
@@ -167,7 +170,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.29 1997/09/22 22:45:43 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.30 1998/02/05 20:13:56 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -254,10 +257,10 @@ Str::buf2val(void **val)
 {
     assert(val);
 
-    if (!*val) 
-	(String *)*val = new String(_buf);
-    else
-	*(String *)*val = _buf;
+    if (*val)
+	delete *val;
+
+    *val = new String(_buf);
 
     return sizeof(String);
 }

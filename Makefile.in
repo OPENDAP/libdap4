@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.68 1997/12/31 02:14:43 jimg Exp $
+# $Id: Makefile.in,v 1.69 1998/02/05 20:13:55 jimg Exp $
 
 @SET_MAKE@
 
@@ -21,11 +21,11 @@ WWW_ROOT = @WWW_ROOT@
 INCS = -I. -IMap -IStack -IPlex -IVec @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
-CXXFLAGS = @CXXFLAGS@ -Wall
+CXXFLAGS = @CXXFLAGS@ -Wall -fno-rtti -fno-exceptions
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d -v
-LIBS = -ldap++ -lwww @LIBS@
+LIBS = -ldap++ @LIBS@
 TAGS_FLAGS = -b
 
 # Set the instalation directories; prefix can be set on the command line

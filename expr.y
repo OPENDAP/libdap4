@@ -18,6 +18,9 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.23  1998/02/05 20:14:03  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
  * Revision 1.22  1997/10/09 22:19:31  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -120,7 +123,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.22 1997/10/09 22:19:31 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.23 1998/02/05 20:14:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -558,7 +561,7 @@ make_array_index(value &i1, value &i2, value &i3)
     if (i1.type != dods_int32_c
 	|| i2.type != dods_int32_c
 	|| i3.type != dods_int32_c)
-	return (void *)0;
+	return (int_list *)0;
 
     index->append((int)i1.v.i);
     index->append((int)i2.v.i);
