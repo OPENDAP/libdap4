@@ -12,49 +12,46 @@
 
 #include "LongIterAdapter.h"
 
-LongIterAdapter::
-LongIterAdapter( std::vector<long> &vec ) :
+LongIterAdapter::LongIterAdapter( std::vector<long> &vec ) :
     _vec( vec )
 {
 }
 
-LongIterAdapter::
-~LongIterAdapter(void)
+LongIterAdapter::~LongIterAdapter( )
 {
 }
 
-void LongIterAdapter::
-first(void)
+void
+LongIterAdapter::first( )
 {
     _i = _vec.begin() ;
 }
 
-void LongIterAdapter::
-next(void)
+void
+LongIterAdapter::next( )
 {
     _i++ ;
 }
 
-LongIterAdapter::
-operator bool(void)
+LongIterAdapter::operator bool( )
 {
     return ( _i != _vec.end() ) ;
 }
 
-bool LongIterAdapter::
-operator==( const IteratorAdapter &i )
+bool
+LongIterAdapter::operator==( const IteratorAdapter &i )
 { 
     return _i == ((const LongIterAdapter &)i)._i ; 
 }
 
-long LongIterAdapter::
-entry(void)
+long
+LongIterAdapter::entry( )
 {
     return *_i ;
 }
 
-LongIterAdapter::iter &LongIterAdapter::
-getIterator(void)
+LongIterAdapter::iter &
+LongIterAdapter::getIterator( )
 {
     return _i ;
 }
