@@ -61,7 +61,7 @@ public:
 	CPPUNIT_ASSERT( !p ) ;
 
 	AttrTable::Attr_iter iter ;
-	at.find( "dummy_attr", &dummy_at, iter ) ;
+	at.find( "dummy_attr", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter == at.attr_end() ) ;
 
 	string attr_name = "attr1" ;
@@ -93,11 +93,11 @@ public:
 	CPPUNIT_ASSERT( !p ) ;
 
 	iter = at.attr_end() ;
-	at.find( "attr3", &dummy_at, iter ) ;
+	at.find( "attr3", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter != at.attr_end() ) ;
 
 	iter = at.attr_end() ;
-	at.find( "dummy_attr", &dummy_at, iter ) ;
+	at.find( "dummy_attr", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter == at.attr_end() ) ;
 
 	attr_type = at.get_type( "attr3" ) ;
@@ -191,7 +191,7 @@ public:
 	CPPUNIT_ASSERT( p ) ;
 
 	iter = at.attr_end() ;
-	at.find( "attr3", &dummy_at, iter ) ;
+	at.find( "attr3", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter != at.attr_end() ) ;
 
 	attr_name =  at.get_name( p ) ;
@@ -348,7 +348,7 @@ public:
 	CPPUNIT_ASSERT( p ) ;
 
 	iter = at.attr_end() ;
-	at.find( "attr5", &dummy_at, iter ) ;
+	at.find( "attr5", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter != at.attr_end() ) ;
 
 	attr_name =  at.get_name( p ) ;
@@ -392,7 +392,7 @@ public:
 	CPPUNIT_ASSERT( container == dummy_at ) ;
 
 	iter = at.attr_end() ;
-	at.find( "attr5.attr5-3", &dummy_at, iter ) ;
+	at.find( "attr5.attr5-3", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter != at.attr_end() ) ;
 	CPPUNIT_ASSERT( container == dummy_at ) ;
 
