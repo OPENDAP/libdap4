@@ -9,6 +9,9 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.20  1998/08/06 16:06:42  jimg
+// Now prints aliases as such rather than replicating the aliased entry.
+//
 // Revision 1.19  1997/08/09 21:18:41  jimg
 // Changed/fixed the type comparison in attr_append so that code which calls
 // unsigned int `UInt32' won't break (the type is called Uint32, but the das
@@ -83,7 +86,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.19 1997/08/09 21:18:41 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.20 1998/08/06 16:06:42 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -405,6 +408,7 @@ AttrTable::attr_alias(const String &alias, AttrTable *at, const String &name)
     entry e;
     e.name = alias;
     e.is_alias = true;
+    e.aliased_to = name;
     e.type = at->attr_map(p).type;
     if (e.type == Attr_container)
 	e.value.attributes = at->get_attr_table(p);
@@ -459,6 +463,9 @@ void
 AttrTable::print(ostream &os, String pad)
 {
     for(Pix p = attr_map.first(); p; attr_map.next(p)) {
+      if (attr_map(p).is_alias) {
+	os << pad << "Alias " << get_name(p) << " " << attr_map(p).aliased_to << ";" << endl;
+      } else {
 	switch (attr_map(p).type) {
 	  case Attr_container:
 	    os << pad << get_name(p) << " {" << endl;
@@ -480,5 +487,6 @@ AttrTable::print(ostream &os, String pad)
 	    }
 	    break;
 	}
+      }
     }
 }
