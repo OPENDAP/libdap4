@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.56 2005/02/11 00:52:45 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.57 2005/02/14 22:11:27 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -92,6 +92,10 @@ Vector::_duplicate(const Vector &v)
         }
     }
 
+    // copy the strings. This copies the values.
+    d_str = v.d_str;
+    
+    // copy numeric values if there are any.
     _buf = 0;			// init to null
     if (v._buf)			// only copy if data present
     	val2buf(v._buf);	// store v's value in this's _BUF.
@@ -595,8 +599,7 @@ the network connection.");
     memory is simply copied in whole into the Vector buffer.  
     
     For a Vector of Str (OPeNDAP Strings), this assumes \e val points to an
-    array of C++ strings. The method Str::val2buf() is used to copy
-    individual values.
+    array of C++ strings.
     
     This method should not be used for Structure, Sequence or Grid.
     
@@ -654,6 +657,12 @@ Vector::val2buf(void *val, bool reuse)
 
       case dods_str_c:
       case dods_url_c: {
+          // Assume val points to an array of C++ string objects. Copy
+          // them into the vector<string> field of this object.
+          d_str.resize(_length);
+          for (int i = 0; i < _length; ++i)
+              d_str[i] = *(static_cast<string*>(val)+i);
+#if 0              
 	  unsigned elem_wid = _var->width();
 	  unsigned len = length();
 
@@ -663,6 +672,7 @@ Vector::val2buf(void *val, bool reuse)
 	      _vec[i] = _var->ptr_duplicate(); //changed, reza
 	      _vec[i]->val2buf((char *)val + i * elem_wid, reuse);
 	  }
+#endif
 
 	  break;
       }
@@ -677,18 +687,12 @@ Vector::val2buf(void *val, bool reuse)
  
 /** Copies data from the Vector buffer.  This function assumes that
     <i>val</i> points to an array large enough to hold N instances of
-    the `C' representation of the \e numeric element type. 
+    the `C' representation of the \e numeric element type or C++ string
+    objects. Never call this method for constructor types Structure,
+    Sequence or Grid.
 
     In the case of a Vector of Str objects, this method will return an array
-    of pointers to C++ std::string objects.
-
-    @note Use this function only with Vectors containing simple DODS
-    types. See <tt>set_vec()</tt> to access members of Vectors containing
-    compound types.
-
-    @note If using this to read a vector/array of Str objects, make sure to
-    pass in a vector of pointers, each of which is initialized to null.
-    Failure to do this will result in unpredictable behavior!
+    of C++ std::string objects.
 
     @return The number of bytes used to store the array.
     @param val A pointer to a pointer to the memory into which the
@@ -696,6 +700,7 @@ Vector::val2buf(void *val, bool reuse)
     memory will be allocated to hold the data, and the pointer value
     modified accordingly.  The calling program is responsible for
     deallocating the memory indicated by this pointer.  
+    @exception InternalErr Thrown if \e val is null.
     @see Vector::set_vec */
 unsigned int
 Vector::buf2val(void **val)
@@ -724,6 +729,12 @@ Vector::buf2val(void **val)
 
       case dods_str_c:
       case dods_url_c: {
+        if (!*val)
+            *val = new string[_length];
+            
+        for (int i = 0; i < _length; ++i)
+            *(static_cast<string*>(*val) + i) = d_str[i];
+#if 0            
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 
@@ -741,7 +752,7 @@ Vector::buf2val(void **val)
 	    void *val_elem = (char *)*val + i * elem_wid;
 	    _vec[i]->buf2val(&val_elem);
 	}
-
+#endif
 	break;
       }
 
@@ -752,11 +763,6 @@ Vector::buf2val(void **val)
 
     return wid;
 }
-
-// Given an index I into the _vec BaseType * vector, set the Ith element to
-// VAL. 
-//
-// Returns: False if a type mis-match is detected, True otherwise.
 
 /** Sets an element of the vector to a given value.  If the type of
     the input and the type of the Vector do not match, an error
@@ -845,82 +851,6 @@ Vector::add_var(BaseType *v, Part)
     }
 }
 
-#if 0
-void
-Vector::print_decl(ostream &os, string space, bool print_semi,
-		  bool constraint_info, bool constrained)
-{
-    if (constrained && !send_p())
-	return;
-
-    os << space << type_name();
-    var()->print_decl(os, " ", print_semi, constraint_info, constrained);
-}
-
-void
-Vector::print_decl(FILE *out, string space, bool print_semi,
-		  bool constraint_info, bool constrained)
-{
-    if (constrained && !send_p())
-	return;
-
-    fprintf( out, "%s%s", space.c_str(), type_name().c_str() ) ;
-    var()->print_decl(out, " ", print_semi, constraint_info, constrained);
-}
-
-void 
-Vector::print_val(ostream &os, string space, bool print_decl_p)
-{
-    if (print_decl_p) {
-	print_decl(os, space, false);
-	os << " = ";
-    }
-
-    os << "{ ";
-
-    unsigned int i;
-    unsigned int l = length();
-
-    for (i = 0; i < l-1; ++i) {
-	var(i)->print_val(os, "", false);
-	os << ", ";
-    }
-
-    var(i)->print_val(os, "", false);
-
-    if (print_decl_p)
-	os << "};" << endl;
-    else
-	os << "}";
-}
-
-void 
-Vector::print_val(FILE *out, string space, bool print_decl_p)
-{
-    if (print_decl_p) {
-	print_decl(out, space, false);
-	fprintf( out, " = " ) ;
-    }
-
-    fprintf( out, "{ " ) ;
-
-    unsigned int i;
-    unsigned int l = length();
-
-    for (i = 0; i < l-1; ++i) {
-	var(i)->print_val(out, "", false);
-	fprintf( out, ", " ) ;
-    }
-
-    var(i)->print_val(out, "", false);
-
-    if (print_decl_p)
-	fprintf( out, "};\n" ) ;
-    else
-	fprintf( out, "}" ) ;
-}
-#endif
-
 bool
 Vector::check_semantics(string &msg, bool) 
 {
@@ -928,6 +858,9 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.57  2005/02/14 22:11:27  jimg
+// Added code to use the new d_str field; a special field to hold strings.
+//
 // Revision 1.56  2005/02/11 00:52:45  jimg
 // Fixed eclipse/cvs comment.
 //
