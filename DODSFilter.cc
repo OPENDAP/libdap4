@@ -10,6 +10,11 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.5  1998/11/10 01:04:42  jimg
+// Added `ends' to strings made with ostrstream (fixes a bug found with
+// purify).
+// Added catch for throws from within the CE evaluation functions.
+//
 // Revision 1.4  1998/08/06 16:12:30  jimg
 // Added cache dir methods and stuff to ctor (from jeh)
 //
@@ -34,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.4 1998/08/06 16:12:30 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DODSFilter.cc,v 1.5 1998/11/10 01:04:42 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -183,7 +188,7 @@ DODSFilter::print_usage()
     oss << "Usage: " << program_name
 	<< " [-c] [-v <cgi version>] [-e <ce>]"
 	<< " [-d <ancillary file directory>] [-f <ancillary file name>]"
-	<< " <dataset>";
+	<< " <dataset>" << ends;
     ErrMsgT(oss.str());
     oss.freeze(0);
 
@@ -251,11 +256,24 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream)
 {
     bool compress = comp && deflate_exists();
 
-    if (!dds.send(dataset, ce, data_stream, compress)) {
-	ErrMsgT((compress) ? "Could not send compressed data" : "Could not send data");
+    // This catch is a quick & dirty hack for exceptions thrown by the new
+    // (11/6/98) projection functions in CEs. I might add exceptions to other
+    // parts of the CE parser and evaluator. Eventually, the C++ classes
+    // should switch to exceptions. 11/6/98 jhrg
+    try {
+	if (!dds.send(dataset, ce, data_stream, compress)) {
+	    ErrMsgT((compress) ? "Could not send compressed data" : 
+		    "Could not send data");
+	    return false;
+	}
+    }
+    catch (Error &e) {
+	set_mime_text(cout, dods_error);
+	e.print(cout);
+
 	return false;
     }
-
+	
     return true;
 }
 
