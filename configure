@@ -22,7 +22,7 @@
 # 5. Macros used to test things about the computer/OS/hardware
 #
 
-# $Id: configure,v 1.64 1999/11/04 23:52:42 jimg Exp $
+# $Id: configure,v 1.65 1999/12/15 01:15:05 jimg Exp $
 
 # 1. Unidata's macros
 #-------------------------------------------------------------------------

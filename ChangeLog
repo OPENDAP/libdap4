@@ -1,3 +1,17 @@
+1999-12-14  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in Connect where once the Cache was closed it would
+	never be opened again. 
+
+	* Fixes/improvements for the caching code. The code now correctly
+	handles the case where many URLs are opened using Connect objects
+	created both sequentially and in an interleaved fashion. The Cache
+	index is now updated after each URL request. The Cache is now
+	closed only after all connect objects are destroyed.
+
+	* Connect.h: Added static members to track use of Connect objects
+	in conjunction with the new caching code.
+
 1999-11-04  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged: cvs update -j release-3-1-2 -j release-3-1, the next
@@ -591,4 +605,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.44 1999/11/04 23:52:42 jimg Exp $
+$Id: ChangeLog,v 1.45 1999/12/15 01:11:34 jimg Exp $
