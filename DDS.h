@@ -14,13 +14,21 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.16  1996/06/04 21:33:20  jimg
-/* Multiple connections are now possible. It is now possible to open several
-/* URLs at the same time and read from them in a round-robin fashion. To do
-/* this I added data source and sink parameters to the serialize and
-/* deserialize mfuncs. Connect was also modified so that it manages the data
-/* source `object' (which is just an XDR pointer).
+/* Revision 1.17  1996/12/02 23:14:54  jimg
+/* Added `filename' field and access functions. This field is for recording the
+/* filename associated with the dataset from which the DDS is generated. It does
+/* not actually have to be a filename; rather it is intended to be used by
+/* BaseType's read() member function when that code must access some OS
+/* controlled resource to get data for a particular variable. For most systems
+/* it will be a file, while for some systems it may be a RDB or blank.
 /*
+ * Revision 1.16  1996/06/04 21:33:20  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
  * Revision 1.15  1996/05/31 23:29:38  jimg
  * Updated copyright notice.
  *
@@ -140,6 +148,10 @@ private:
     };
 
     String name;		// The dataset name
+
+    String _filename;		// File name (or other OS identifier) for
+				// dataset or part of dataset.
+
     SLList<BaseTypePtr> vars;	// Variables at the top level 
     
     SLList<Clause> expr;	// List of CE Clauses
@@ -159,6 +171,12 @@ public:
 
     String get_dataset_name();
     void set_dataset_name(const String &n);
+
+    /// Get the dataset's filename.
+    String filename();
+
+    /// Set the dataset's filename.
+    void filename(const String &fn);
 
     void add_var(BaseType *bt);
     void del_var(const String &n);
