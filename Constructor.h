@@ -50,6 +50,7 @@ protected:
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
+    typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
 
     Constructor(const string &n, const Type &t);
 
@@ -65,7 +66,10 @@ public:
 
     Vars_iter var_begin();
     Vars_iter var_end();
+    Vars_riter var_rbegin();
+    Vars_riter var_rend();
     Vars_iter get_vars_iter(int i);
+    BaseType *get_var_index(int i);
 
     virtual bool is_linear();
 
