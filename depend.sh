@@ -6,7 +6,7 @@
 # 
 # jhrg 4/28/95
 #
-# $Id: depend.sh,v 1.2 1995/06/12 19:05:11 jimg Exp $
+# $Id: depend.sh,v 1.3 1995/06/16 20:58:31 jimg Exp $
 
 usage="depend [-s][-m <makefile name>] -- <compiler options> -- <files>"
 CFLAGS=-MM
@@ -15,15 +15,30 @@ makefile=Makefile
 
 # read the command options
 
-while getopts sm: c
+x=`getopt sm: "$@"`		# "$@" preserves quotes in the input
+
+if [ $? != 0 ]			# $? is the exit status of 'getopt ...'
+then
+   echo "${usage}"
+   exit 2
+fi
+
+# set -- $x sets the shell positional params $1, $2, ... to the tokens in $x
+# (which were put there by `getopt ...`. The eval preserves any quotes in $x.
+
+eval set -- $x
+
+echo "$@"
+
+for c in "$@"
 do
     case $c in
-	s) CFLAGS=-M;;
-	m) makefile=$OPTARG;;
-        \?) echo $usage; exit 2;;
+	-s) CFLAGS=-M; shift 1;;
+	-m) makefile=$2; shift 2;;
+        -\?) echo $usage; exit 2;;
+	--) shift 1; break;;
     esac
 done
-shift `expr $OPTIND - 1`	# shift past the first options and `--'
 
 # accumulate the C compiler options into CFLAGS
 
