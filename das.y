@@ -17,6 +17,12 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.32  1997/07/01 00:13:23  jimg
+ * Fixed a bug when vectors of UInt32 were used. I changed the way the type
+ * name was passed to AttrTable::append_attr() so that the names were always
+ * the same regardless of form of the name used in the DAS.
+ * Fixed a bug when Urls are used as an attribute type.
+ *
  * Revision 1.31  1997/05/21 00:10:35  jimg
  * Added a fix for aliases between top level groups of attributes.
  *
@@ -157,7 +163,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.31 1997/05/21 00:10:35 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.32 1997/07/01 00:13:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -207,7 +213,7 @@ static SLList<AttrTablePtr> *attr_tab_stack;
 #define STACK_LENGTH (attr_tab_stack->length())
 #define STACK_EMPTY (attr_tab_stack->empty())
 
-#define TYPE_NAME_VALUE << type << " " << name << " " << $1
+#define TYPE_NAME_VALUE(x) type << " " << name << " " << (x)
 
 static char *ATTR_TUPLE_MSG = 
 "Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)\n\
@@ -304,27 +310,27 @@ attr_list:  	/* empty */
 
 attr_tuple:	alias
 
-                | BYTE { save_str(type, $1, das_line_num); } 
+                | BYTE { save_str(type, "Byte", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
 		bytes ';'
 
-		| INT32 { save_str(type, $1, das_line_num); } 
+		| INT32 { save_str(type, "Int32", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
 		ints ';'
 
-		| UINT32 { save_str(type, $1, das_line_num); } 
+		| UINT32 { save_str(type, "Uint32", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
 		ints ';'
 
-		| FLOAT64 { save_str(type, $1, das_line_num); } 
+		| FLOAT64 { save_str(type, "Float64", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
 		floats ';'
 
-		| STRING { save_str(type, $1, das_line_num); } 
+		| STRING { save_str(type, "String", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
 		strs ';'
 
-		| URL { save_str(type, $1, das_line_num); } 
+		| URL { save_str(type, "Url", das_line_num); } 
                 ID { save_str(name, $3, das_line_num); } 
 		urls ';'
 
@@ -366,7 +372,7 @@ attr_tuple:	alias
 
 bytes:		INT
 		{
-		    DBG(cerr << "Adding byte: " TYPE_NAME_VALUE_1 << endl);
+		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($1) << endl);
 		    if (!check_byte($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Byte value." << ends;
@@ -384,7 +390,7 @@ bytes:		INT
 		}
 		| bytes ',' INT
 		{
-		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE_3 << endl);
+		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($3) << endl);
 		    if (!check_byte($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Byte value." << ends;
@@ -409,7 +415,7 @@ ints:		INT
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE_1 << endl);
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
 		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
 		    if (!(check_int($1, das_line_num) 
 			  || check_uint($1, das_line_num))) {
@@ -429,7 +435,7 @@ ints:		INT
 		}
 		| ints ',' INT
 		{
-		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE_3 << endl);
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
 		    if (!(check_int($3, das_line_num)
 			  || check_uint($1, das_line_num))) {
 			ostrstream msg;
@@ -450,7 +456,7 @@ ints:		INT
 
 floats:		float_or_int
 		{
-		    DBG(cerr << "Adding FLOAT: " << TYPE_NAME_VALUE_1 << endl);
+		    DBG(cerr << "Adding FLOAT: " << TYPE_NAME_VALUE($1) << endl);
 		    if (!check_float($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Float64 value." 
@@ -469,7 +475,7 @@ floats:		float_or_int
 		}
 		| floats ',' float_or_int
 		{
-		    DBG(cerr << "Adding FLOAT: " << TYPE_NAME_VALUE_3 << endl);
+		    DBG(cerr << "Adding FLOAT: " << TYPE_NAME_VALUE($3) << endl);
 		    if (!check_float($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Float64 value." 
@@ -490,7 +496,7 @@ floats:		float_or_int
 
 strs:		str_or_id
 		{
-		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE_1 << endl);
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
 		    /* Assume a string that parses is vaild. */
 		    if (TOP_OF_STACK->append_attr(name, type, $1) == 0) {
 			ostrstream msg;
@@ -502,7 +508,7 @@ strs:		str_or_id
 		}
 		| strs ',' str_or_id
 		{
-		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE_3 << endl);
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
 		    if (TOP_OF_STACK->append_attr(name, type, $3) == 0) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
@@ -515,7 +521,7 @@ strs:		str_or_id
 
 urls:		url
 		{
-		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE_1 << endl);
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
 		    if (!check_url($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a String value." << ends;
@@ -531,9 +537,9 @@ urls:		url
 			YYABORT;
 		    }
 		}
-		| strs ',' url
+		| urls ',' url
 		{
-		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE_3 << endl);
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
 		    if (!check_url($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a String value." << ends;
