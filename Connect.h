@@ -32,6 +32,11 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.24  1997/02/13 17:35:39  jimg
+ * Added a field to store information from the MIME header `Server:'. Added
+ * a member function to access the value of the field and a MIME header
+ * `handler' function to store the value there.
+ *
  * Revision 1.23  1997/02/12 21:39:10  jimg
  * Added optional parameter to the ctor for this class; it enables
  * informational error messages from the WWW library layer.
@@ -230,6 +235,7 @@ private:
     
     ObjectType _type;		// What type of object is in the stream?
     EncodingType _encoding;	// What type of encoding is used?
+    String _server;
 
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
@@ -276,6 +282,9 @@ private:
 				   const char *token, const char *val);
 
     friend int encoding_handler(HTRequest *request, HTResponse *response,
+				const char *token, const char *val);
+
+    friend int server_handler(HTRequest *request, HTResponse *response,
 			      const char *token, const char *val);
 
     friend int header_handler(HTRequest *request, HTResponse *response,
@@ -339,6 +348,8 @@ public:
     //* Encoding types are currently limited to x-plain (no special decoding
     //* required) and x-gzip (compressed using GNU's gzip).
     EncodingType encoding();
+
+    String server_version();
 
     /// Return a reference to the Connect's DAS object.
     DAS &das();
