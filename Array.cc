@@ -38,6 +38,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.29  1996/03/05 18:48:24  jimg
+// Fixed bugs in the print_array software.
+// Fixed the ctor and related CE member functions (so that projections work).
+//
 // Revision 1.28  1996/02/01 22:22:42  jimg
 // Merged changes between DODS-1.1 and DODS 2.x.
 //
@@ -238,7 +242,6 @@ Array::update_length(int size)
 
 Array::Array(const String &n, BaseType *v) : Vector(n, v, array_t)
 {
-    _const_length = -1;
 }
 
 Array::Array(const Array &rhs)
@@ -287,16 +290,10 @@ Array::append_dim(int size, String name)
     _shape.append(d); 
 
     update_length(size);
-#ifdef NEVER
-    if (length() == -1)
-	set_length(size);
-    else
-	set_length(length() * size);
-#endif
 }
 
 // Reset the dimension contraint information so that the entire array is
-//`selected'
+// `selected'
 
 void
 Array::reset_constraint()
@@ -351,7 +348,7 @@ Array::add_constraint(Pix &p, int start, int stride, int stop)
 
     d.c_size = (stop - start + 1) / stride;
     
-    cerr << "add_constraint: c_size = " << d.c_size << endl;
+    DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
 
     d.selected = true;
 
@@ -447,7 +444,7 @@ Array::print_decl(ostream &os, String space, bool print_semi,
 	os << ";" << endl;
 }
 
-// Print an array. 
+// Print an array. This is a private memebr function.
 //
 // OS is the stream used for writing
 // INDEX is the index of VEC to start printing
@@ -457,8 +454,8 @@ Array::print_decl(ostream &os, String space, bool print_semi,
 // Returns: the number of elements written.
 
 unsigned int
-Array::print_array(ostream &os, unsigned int index,
-		   unsigned int dims, unsigned int shape[])
+Array::print_array(ostream &os, unsigned int index, unsigned int dims, 
+		   unsigned int shape[])
 {
     if (dims == 1) {
 	os << "{";
