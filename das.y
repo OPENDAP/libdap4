@@ -1,3 +1,38 @@
+
+/*
+  Copyright 1994, 1995 The University of Rhode Island and The Massachusetts
+  Institute of Technology
+
+  Portions of this software were developed by the Graduate School of
+  Oceanography (GSO) at the University of Rhode Island (URI) in collaboration
+  with The Massachusetts Institute of Technology (MIT).
+
+  Access and use of this software shall impose the following obligations and
+  understandings on the user. The user is granted the right, without any fee
+  or cost, to use, copy, modify, alter, enhance and distribute this software,
+  and any derivative works thereof, and its supporting documentation for any
+  purpose whatsoever, provided that this entire notice appears in all copies
+  of the software, derivative works and supporting documentation.  Further,
+  the user agrees to credit URI/MIT in any publications that result from the
+  use of this software or in any product that includes this software. The
+  names URI, MIT and/or GSO, however, may not be used in any advertising or
+  publicity to endorse or promote any products or commercial entity unless
+  specific written permission is obtained from URI/MIT. The user also
+  understands that URI/MIT is not obligated to provide the user with any
+  support, consulting, training or assistance of any kind with regard to the
+  use, operation and performance of this software nor to provide the user
+  with any updates, revisions, new versions or "bug fixes".
+
+  THIS SOFTWARE IS PROVIDED BY URI/MIT "AS IS" AND ANY EXPRESS OR IMPLIED
+  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+  EVENT SHALL URI/MIT BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+  DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+  PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTUOUS
+  ACTION, ARISING OUT OF OR IN CONNECTION WITH THE ACCESS, USE OR PERFORMANCE
+  OF THIS SOFTWARE.
+*/
+
 /*
    Grammar for the DAS. This grammar can be used with the bison parser
    generator to build a parser for the DAS. It assumes that a scanner called
@@ -22,7 +57,11 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.15  1995/07/08 18:32:10  jimg
+ * Revision 1.16  1995/08/23 00:25:54  jimg
+ * Added copyright notice.
+ * Fixed some bogus comments.
+ *
+ * Revision 1.15  1995/07/08  18:32:10  jimg
  * Edited comments.
  * Removed unnecessary declarations.
  *
@@ -112,7 +151,7 @@
 #define FALSE 0
 #endif
 
-static char rcsid[]={"$Id: das.y,v 1.15 1995/07/08 18:32:10 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.16 1995/08/23 00:25:54 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -163,8 +202,16 @@ static int check_url(char *val);
 %%
 
 /*
-  The parser takes a single argument, a reference to an object of class
-  DAS. The reference is called `table'.
+  The parser takes two arguments, a reference to an object of class
+  DAS (formal name: table) and a reference to a boolean (parse_ok). If the
+  parse succeeds, then PARSE_OK will be TRUE, otherwise it will be
+  FALSE. Note that this parser will only return FALSE when it encounters a
+  fatal error - it returns TRUE for either a perfect parse or one with one or
+  more recoverable errors. Thus to find out if the parse had no errors, you
+  *must* check PARSE_OK in addition to the return value of dasparse(). If
+  dasparse() returns TRUE, then TABLE contains a valid DAS. However, because
+  some lines may have caused errors, parts might be missing. If PARSE_OK is
+  TRUE, then the DAS is complete.
 
   Parser algorithm: 
 
@@ -183,7 +230,7 @@ static int check_url(char *val);
   BYTE, INT32, FLOAT64, STRING and URL are tokens for the type keywords.
   The tokens INT, FLOAT, STR and ID are returned by the scanner to indicate
   the type of the value represented by the string contained in the global
-  daslval. These two types of tokens are used to implement type checking for
+  DASLVAL. These two types of tokens are used to implement type checking for
   the atributes. See the rules `bytes', ...
 */
 
