@@ -11,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.29  1996/11/21 23:56:21  jimg
+// Added compressor and decompressor functions.
+//
 // Revision 1.28  1996/11/13 19:23:17  jimg
 // Fixed debugging.
 //
@@ -157,7 +160,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.28 1996/11/13 19:23:17 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.29 1996/11/21 23:56:21 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -165,6 +168,7 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.28 1996/11/13 19:23:17 jimg 
 #include <assert.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 #ifdef DBMALLOC
 #include <dbmalloc.h>
@@ -181,11 +185,15 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.28 1996/11/13 19:23:17 jimg 
 #include "parser.h"
 #include "expr.tab.h"
 #include "util.h"
+
 #include "debug.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
+
+static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
+    : DODS_ROOT;
 
 const char DODS_CE_PRX[]={"dods"};
 
@@ -355,6 +363,130 @@ text_to_temp(String text)
     }
 
     return fp;
+}
+
+FILE *
+compressor(FILE *output)
+{
+    int pid, data[2];
+
+    if (pipe(data) < 0) {
+	cerr << "Could not create IPC channel for compressor process" 
+	     << endl;
+	return NULL;
+    }
+    
+    if ((pid = fork()) < 0) {
+	cerr << "Could not fork to create compressor process" << endl;
+	return NULL;
+    }
+
+    // The parent process closes the write end of the Pipe, and creates a
+    // FILE * using fdopen(). The FILE * is used by the calling program to
+    // access the read end of the Pipe.
+
+    if (pid > 0) {
+	close(data[0]);
+	FILE *input = fdopen(data[1], "w");
+	if (!input) {
+	    cerr << "Parent process could not open channel for compression"
+		 << endl;
+	    return NULL;
+	}
+	return input;
+    }
+    else {
+	close(data[1]);
+	dup2(data[0], 0);	// Read from the pipe...
+	dup2(fileno(output), 1); // Write to the FILE *output.
+
+	DBG2(cerr << "Opening compression stream." << endl);
+
+	// First try to run gzip using DODS_ROOT (the value read from the
+	// DODS_ROOT environment variable takes precedence over the value set
+	// at build time. If that fails, try the users PATH.
+	String gzip = (String)dods_root + "/etc/gzip";
+	(void) execl(gzip, "gzip", "-cf", NULL);
+
+	(void) execlp("gzip", "gzip", "-cf", NULL);
+
+	cerr << "Could not start compressor!" << endl;
+	cerr << "gzip must be in DODS_ROOT/etc or on your PATH" << endl;
+	_exit(127);		// Only get here if an error
+    }
+}
+
+FILE *
+decompressor(FILE *input)
+{
+    int pid, data[2];
+
+    if (pipe(data) < 0) {
+	cerr << "Could not create IPC channel for decompresser process" 
+	     << endl;
+	return NULL;
+    }
+    
+    if ((pid = fork()) < 0) {
+	cerr << "Could not fork to create decompresser process" << endl;
+	return NULL;
+    }
+
+    // The parent process closes the write end of the Pipe, and creates a
+    // FILE * using fdopen(). The FILE * is used by the calling program to
+    // access the read end of the Pipe.
+
+    if (pid > 0) {
+	close(data[1]);
+	FILE *output = fdopen(data[0], "r");
+	if (!output) {
+	    cerr << "Parent process could not open channel for decompression"
+		 << endl;
+	    return NULL;
+	}
+	return output;
+    }
+    else {
+	DBG2(cerr << "Sleep returned: " << sleep(20) << endl);
+
+	close(data[0]);
+	dup2(fileno(input), 0);	// Read from FILE *input 
+	dup2(data[1], 1);	// Write to the pipe
+
+	DBG(cerr << "Opening decompression stream." << endl);
+
+	// First try to run gzip using DODS_ROOT (the value read from the
+	// DODS_ROOT environment variable takes precedence over the value set
+	// at build time. If that fails, try the users PATH.
+	String gzip = (String)dods_root + "/etc/gzip";
+	(void) execl(gzip, "gzip", "-cdf", NULL);
+
+	(void) execlp("gzip", "gzip", "-cdf", NULL);
+
+	cerr << "Could not start decompresser!" << endl;
+	cerr << "gzip must be in DODS_ROOT/etc or on your PATH" << endl;
+	_exit(127);		// Only get here if an error
+    }
+}
+
+// This function prints the system time to the ostream object.
+
+static const int TimLen = 26;	// length of string from asctime()
+
+ostream &
+systime(ostream &os)
+{
+    time_t TimBin;
+    char TimStr[TimLen];
+
+    if (time(&TimBin) == (time_t)-1)
+	strcpy(TimStr, "time() error           ");
+    else {
+	strcpy(TimStr, ctime(&TimBin));
+	TimStr[TimLen - 2] = '\0'; // overwrite the \n 
+    }
+
+    return os << TimStr;
 }
 
 // These functions are used by the CE evaluator
