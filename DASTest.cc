@@ -30,6 +30,7 @@
 #include <string>
 
 #include "DAS.h"
+#include "debug.h"
 
 using namespace CppUnit;
 
@@ -61,15 +62,16 @@ public:
     void error_values_test() {
 	try {
 	    das->parse("das-testsuite/bad_value_test.1");
-	    das->print(stderr);
+	    DBG2(das->print(stderr));
 	}
 	catch (Error &e) {
 	    e.display_message();
+	    CPPUNIT_ASSERT(!"Caught an unexpected Error object.");
 	}
     }
 
     void symbol_name_test() {
-	das->parse("das-testsuite/test.33");
+	das->parse("das-testsuite/test.34");
 	CPPUNIT_ASSERT(das->get_table("var1")->get_attr("y#z", 0) == "15");
 
 	string s = das->get_table("var1.component1.inner component")->get_attr("tag");

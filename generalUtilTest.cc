@@ -29,6 +29,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "debug.h"
 #include "util.h"
 #include "escaping.h"
 
@@ -68,52 +69,52 @@ public:
 
     // Tests for methods
     void path_to_filename_test() {
-	assert(path_to_filename("/this/is/the/end/my.friend") == "my.friend");
-	assert(path_to_filename("this.dat") == "this.dat");
-	assert(path_to_filename("/this.dat") == "this.dat");
-	assert(path_to_filename("/this.dat/") == "");
+	CPPUNIT_ASSERT(path_to_filename("/this/is/the/end/my.friend") == "my.friend");
+	CPPUNIT_ASSERT(path_to_filename("this.dat") == "this.dat");
+	CPPUNIT_ASSERT(path_to_filename("/this.dat") == "this.dat");
+	CPPUNIT_ASSERT(path_to_filename("/this.dat/") == "");
     }
 
     void hexstring_test() {
-	assert(hexstring('[') == "5b");
-	assert(hexstring(']') == "5d");
-	assert(hexstring(' ') == "20");
-	assert(hexstring('%') == "25");
+	CPPUNIT_ASSERT(hexstring('[') == "5b");
+	CPPUNIT_ASSERT(hexstring(']') == "5d");
+	CPPUNIT_ASSERT(hexstring(' ') == "20");
+	CPPUNIT_ASSERT(hexstring('%') == "25");
     }
 
     void unhexstring_test() {
-	assert(unhexstring("5b") == "[");
-	assert(unhexstring("5d") == "]");
-	assert(unhexstring("20") == " ");
-	assert(unhexstring("25") == "%");
-	assert(unhexstring("5B") == "[");
-	assert(unhexstring("5D") == "]");
+	CPPUNIT_ASSERT(unhexstring("5b") == "[");
+	CPPUNIT_ASSERT(unhexstring("5d") == "]");
+	CPPUNIT_ASSERT(unhexstring("20") == " ");
+	CPPUNIT_ASSERT(unhexstring("25") == "%");
+	CPPUNIT_ASSERT(unhexstring("5B") == "[");
+	CPPUNIT_ASSERT(unhexstring("5D") == "]");
     }
 
     void id2www_test() {
-	assert(id2www("this") == "this");
-	assert(id2www("This is a test") == "This%20is%20a%20test");
-	assert(id2www("This.is") == "This.is");
-	assert(id2www("This-is") == "This-is");
-	assert(id2www("This_is") == "This_is");
-	assert(id2www("This/is") == "This%2fis");
-	assert(id2www("This%is") == "This%25is");
+	CPPUNIT_ASSERT(id2www("this") == "this");
+	CPPUNIT_ASSERT(id2www("This is a test") == "This%20is%20a%20test");
+	CPPUNIT_ASSERT(id2www("This.is") == "This.is");
+	CPPUNIT_ASSERT(id2www("This-is") == "This-is");
+	CPPUNIT_ASSERT(id2www("This_is") == "This_is");
+	CPPUNIT_ASSERT(id2www("This/is") == "This%2fis");
+	CPPUNIT_ASSERT(id2www("This%is") == "This%25is");
     }
 
     void www2id_test() {
-	assert(www2id("This_is_a_test") == "This_is_a_test");
-	assert(www2id("This is a test") == "This is a test");
-	assert(www2id("%5b") == "[");
-	assert(www2id("%5d") == "]");
-	assert(www2id("u%5b0%5d") == "u[0]");
-	assert(www2id("WVC%20Lat") == "WVC Lat");
-	assert(www2id("Grid.Data%20Fields[20][20]") 
+	CPPUNIT_ASSERT(www2id("This_is_a_test") == "This_is_a_test");
+	CPPUNIT_ASSERT(www2id("This is a test") == "This is a test");
+	CPPUNIT_ASSERT(www2id("%5b") == "[");
+	CPPUNIT_ASSERT(www2id("%5d") == "]");
+	CPPUNIT_ASSERT(www2id("u%5b0%5d") == "u[0]");
+	CPPUNIT_ASSERT(www2id("WVC%20Lat") == "WVC Lat");
+	CPPUNIT_ASSERT(www2id("Grid.Data%20Fields[20][20]") 
 	       == "Grid.Data Fields[20][20]");
 
-	assert(www2id("Grid.Data%3aFields[20][20]") 
+	CPPUNIT_ASSERT(www2id("Grid.Data%3aFields[20][20]") 
 	       == "Grid.Data:Fields[20][20]");
 
-	assert(www2id("Grid%3aData%20Fields%5b20%5d[20]", "%", "%20") 
+	CPPUNIT_ASSERT(www2id("Grid%3aData%20Fields%5b20%5d[20]", "%", "%20") 
 	       == "Grid:Data%20Fields[20][20]");
     }
 
@@ -132,49 +133,49 @@ public:
     }
 
     void ce_string_parse_test() {
-	assert(*store_str("testing") == "testing");
-	assert(*store_str("\"testing\"") == "testing");
-	assert(*store_str("\"test%20ing\"") == "test ing");
-	assert(*store_str("test%20ing") == "test ing");
+	CPPUNIT_ASSERT(*store_str("testing") == "testing");
+	CPPUNIT_ASSERT(*store_str("\"testing\"") == "testing");
+	CPPUNIT_ASSERT(*store_str("\"test%20ing\"") == "test ing");
+	CPPUNIT_ASSERT(*store_str("test%20ing") == "test ing");
     }
 
     void escattr_test() {
 	// The backslash escapes the double quote; in the returned string the
 	// first two backslashes are a single escaped bs, the third bs
 	// escapes the double quote.
-	assert(escattr("this_contains a double quote (\")")
+	CPPUNIT_ASSERT(escattr("this_contains a double quote (\")")
 	       == "this_contains a double quote (\\\")");
-	assert(escattr("this_contains a backslash (\\)")
+	CPPUNIT_ASSERT(escattr("this_contains a backslash (\\)")
 	       == "this_contains a backslash (\\\\)");
     }
 
     void munge_error_message_test() {
-	assert(munge_error_message("An Error") == "\"An Error\"");
-	assert(munge_error_message("\"An Error\"") == "\"An Error\"");
-	assert(munge_error_message("An \"E\"rror") == "\"An \\\"E\\\"rror\"");
-	assert(munge_error_message("An \\\"E\\\"rror") == "\"An \\\"E\\\"rror\"");
+	CPPUNIT_ASSERT(munge_error_message("An Error") == "\"An Error\"");
+	CPPUNIT_ASSERT(munge_error_message("\"An Error\"") == "\"An Error\"");
+	CPPUNIT_ASSERT(munge_error_message("An \"E\"rror") == "\"An \\\"E\\\"rror\"");
+	CPPUNIT_ASSERT(munge_error_message("An \\\"E\\\"rror") == "\"An \\\"E\\\"rror\"");
     }
 
     void get_tempfile_template_test() {
 	if (putenv("TMPDIR=/tmp") == 0) {
-	    cerr << "TMPDIR: " << getenv("TMPDIR") << endl;
-	    assert(strcmp(get_tempfile_template("DODSXXXXXX"),
+	    DBG2(cerr << "TMPDIR: " << getenv("TMPDIR") << endl);
+	    CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
 			  "/tmp/DODSXXXXXX") == 0);
 	}
 	else
-	    cerr << "Did not test setting TMPDIR" << endl;
+	    cerr << "Did not test setting TMPDIR; no test" << endl;
 
 	if (putenv("TMPDIR=/usr/local/tmp/") == 0)
-	    assert(strcmp(get_tempfile_template("DODSXXXXXX"),
+	    CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
 			  "/usr/local/tmp//DODSXXXXXX") == 0);
 	else
-	    cerr << "Did not test setting TMPDIR" << endl;
+	    cerr << "Did not test setting TMPDIR; no test" << endl;
 
 #if defined(P_tmpdir)
 	string tmplt = P_tmpdir;
 	tmplt.append("/"); tmplt.append("DODSXXXXXX");
 	putenv("TMPDIR=");
-	assert(strcmp(get_tempfile_template("DODSXXXXXX"), tmplt.c_str()) 
+	CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"), tmplt.c_str()) 
 	       == 0);
 #endif
     }

@@ -56,16 +56,22 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void symbol_name_test() {
-	// read a DDS.
-	dds1->parse("dds-testsuite/test.18");
-	assert(dds1->var("oddTemp"));
+	try {
+	    // read a DDS.
+	    dds1->parse("dds-testsuite/test.18");
+	    CPPUNIT_ASSERT(dds1->var("oddTemp"));
 	
-	dds2->parse("dds-testsuite/test.19b");
-	assert(dds2->var("b#c"));
-	assert(!dds2->var("b%23c"));
-	assert(dds2->var("huh.Image#data"));
-	assert(dds2->var("c d"));
-	assert(!dds2->var("c%20d"));
+	    dds2->parse("dds-testsuite/test.19b");
+	    CPPUNIT_ASSERT(dds2->var("b#c"));
+	    CPPUNIT_ASSERT(dds2->var("b%23c"));
+	    CPPUNIT_ASSERT(dds2->var("huh.Image#data"));
+	    CPPUNIT_ASSERT(dds2->var("c d"));
+	    CPPUNIT_ASSERT(dds2->var("c%20d"));
+	}
+	catch (Error &e) {
+	    cerr << e.get_error_message() << endl;
+	    CPPUNIT_ASSERT(!"Caught unexpected Error object");
+	}
     }
 };
 

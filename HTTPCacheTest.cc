@@ -289,7 +289,7 @@ public:
 	hc->set_cache_root("/root/");
 	try {
 	    hc->create_hash_directory(391);
-	    CPPUNIT_ASSERT(false && "Create in bad directory");
+	    CPPUNIT_ASSERT(!"Create in bad directory");
 	}
 	catch (Error &e) {
 	}
@@ -366,13 +366,11 @@ public:
 	    CPPUNIT_ASSERT(hc->is_url_in_cache(dodsdev_url));
 
 	    HTTPCache::CacheEntry *e = hc->get_entry_from_cache_table(dodsdev_url);
-	    int fs = file_size(e->cachename);
-	    cerr << "cache_response_test: " << fs << endl;
 	    CPPUNIT_ASSERT(file_size(e->cachename) == 703);
 	}
 	catch (Error &e) {
 	    cerr << "Error: " << e.get_error_message() << endl;
-	    CPPUNIT_ASSERT(false && "Caught unexpected Error/InternalErr");
+	    CPPUNIT_ASSERT(!"Caught unexpected Error/InternalErr");
 	}
     }
 
@@ -648,6 +646,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPCacheTest.cc,v $
+// Revision 1.6  2003/03/04 23:19:37  jimg
+// Fixed some of the unit tests.
+//
 // Revision 1.5  2003/03/04 17:30:04  jimg
 // Now uses Response objects.
 //

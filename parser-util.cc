@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.29 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.30 2003/03/04 23:19:37 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -167,15 +167,17 @@ check_byte(const char *val)
     if ((v == 0 && val == ptr) || *ptr != '\0') {
 	return FALSE;
     }
-
+    
+    DBG(cerr << "v: " << v << endl);
+    
     // We're very liberal here with values. Anything that can fit into 8 bits
     // is allowed through. Clients will have to deal with the fact that the
     // ASCII representation for the value might need to be tweaked. This is
     // especially the case for Java clients where Byte datatypes are
     // signed. 3/20/2000 jhrg
-    if (static_cast<unsigned long>(v) > DODS_UCHAR_MAX || v < DODS_SCHAR_MIN) {
+    if ((v < 0 && v < DODS_SCHAR_MIN)
+	|| v > 0 && static_cast<unsigned long>(v) > DODS_UCHAR_MAX)
 	return FALSE;
-    }
 
     return TRUE;
 }
@@ -260,8 +262,10 @@ check_float32(const char *val)
 				// IRIX from Rob Morris. 5/21/2001 jhrg
     double v = strtod(val, &ptr);
 
+    DBG(cerr << "v: " << v << ", ptr: " << hex << ptr << dec 
+	<< ", errno: " << errno << ", val==ptr: " << (val==ptr) << endl);
     if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
-	|| *ptr != '\0') {
+	|| (v == 0.0 && *ptr != '\0')) {
 	return FALSE;
     }
 
@@ -283,7 +287,7 @@ check_float64(const char *val)
     DBG(cerr << "ptr: " << ptr << endl);
 
     if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
-	|| *ptr != '\0') {
+	|| (v == 0.0 && *ptr != '\0')) {
 	return FALSE;
     }
 
@@ -306,6 +310,9 @@ check_url(const char *)
 }
 
 // $Log: parser-util.cc,v $
+// Revision 1.30  2003/03/04 23:19:37  jimg
+// Fixed some of the unit tests.
+//
 // Revision 1.29  2003/02/21 00:14:25  jimg
 // Repaired copyright.
 //
