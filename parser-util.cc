@@ -37,11 +37,14 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
-// Revision 1.1  1996/04/04 22:12:19  jimg
-// Created.
+// Revision 1.2  1996/05/04 00:07:33  jimg
+// Fixed a bug where Float attributes with the value 0.0 were considered `bad
+// values'.
 //
+// Revision 1.1  1996/04/04 22:12:19  jimg
+// Added.
 
-static char rcsid[]= {"$Id: parser-util.cc,v 1.1 1996/04/04 22:12:19 jimg Exp $"};
+static char rcsid[]= {"$Id: parser-util.cc,v 1.2 1996/05/04 00:07:33 jimg Exp $"};
 
 #include <stdlib.h>
 #include <string.h>
@@ -97,9 +100,13 @@ check_int(const char *val, const int num)
 int
 check_float(const char *val, const int num)
 {
+    char *ptr;
+    double v = strtod(val, &ptr);
+#ifdef NEVER
     double v = atof(val);
+#endif
 
-    if (v == 0.0) {
+    if (v == 0.0 && val == ptr) {
 	parse_error("Not decodable to a 64-bit float value", num);
 	return FALSE;
     }
