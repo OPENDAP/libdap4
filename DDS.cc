@@ -9,6 +9,9 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.31  1997/03/08 19:03:38  jimg
+// Changed call to `unique()' to `unique_names()' (see util.cc).
+//
 // Revision 1.30  1997/03/05 08:12:18  jimg
 // Added calls to set_mime_binary() in DDS::send().
 //
@@ -160,7 +163,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.30 1997/03/05 08:12:18 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.31 1997/03/08 19:03:38 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -699,7 +702,7 @@ DDS::check_semantics(bool all)
     }
 
     String msg;
-    if (!unique(vars, (const char *)name, (const char *)"Dataset", msg))
+    if (!unique_names(vars, (const char *)name, (const char *)"Dataset", msg))
 	return false;
 
     if (all) 
