@@ -237,6 +237,7 @@ public:
 
     void add_var(BaseType *bt);
 
+    /// Removes a variable from the DDS.
     void del_var(const string &n);
 
     BaseType *var(const string &n, btp_stack &s);
@@ -258,9 +259,11 @@ public:
 
     Vars_iter get_vars_iter(int i);
 
-    void del_var(Vars_iter &i);
+    /// Removes a variable from the DDS.
+    void del_var(Vars_iter i);
 
-    void del_var(Vars_iter &i1, Vars_iter &i2);
+    /// Removes a range of variables from the DDS.
+    void del_var(Vars_iter i1, Vars_iter i2);
 
     void timeout_on();
     void timeout_off();
@@ -331,6 +334,9 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.55  2004/03/01 22:32:10  jimg
+// Bring the trunk up to date with the code in my working directory...
+//
 // Revision 1.54  2003/12/10 21:11:57  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.

@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.68 2004/02/19 19:42:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.69 2004/03/01 22:32:10 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -497,7 +497,12 @@ DDS::add_var(BaseType *bt)
     vars.push_back(btp);
 }
 
-/** @brief Removes a variable from the DDS. */
+/** Remove the named variable from the DDS. This method is not smart about
+    looking up names. The variable must exist at the top level of the DDS and
+    must match \e exactly the name given.
+    
+    @note Invalidates any iterators that reference the contents of the DDS.
+    @param n The name of the variable to remove. */
 void 
 DDS::del_var(const string &n)
 { 
@@ -512,8 +517,12 @@ DDS::del_var(const string &n)
     }
 }
 
+/** Remove the variable referenced by the iterator and free its storage.
+
+    @note Invalidates any iterators that reference the contents of the DDS.
+    @param i The Vars_iter which refers to the variable. */
 void
-DDS::del_var(Vars_iter &i)
+DDS::del_var(Vars_iter i)
 {
     if( i != vars.end() )
     {
@@ -523,8 +532,14 @@ DDS::del_var(Vars_iter &i)
     }
 }
 
+/** Remove the variables referenced by the range of iterators and free their
+    storage. 
+
+    @note Invalidates any iterators that reference the contents of the DDS.
+    @param i1 The start of the range.
+    @param i2 The end of the range. */
 void
-DDS::del_var(Vars_iter &i1, Vars_iter &i2)
+DDS::del_var(Vars_iter i1, Vars_iter i2)
 {
     for( Vars_iter i_tmp = i1; i_tmp != i2; i_tmp++ )
     {
@@ -574,9 +589,9 @@ DDS::var(const char *n, btp_stack *s)
     function searches constructor types in the order in which they appear
     in the DDS, but there is no requirement that it do so. 
 
-    \note{If a dataset contains two constructor types which have field
-    names that are the same (say point.x and pair.x) you should always
-    use fully qualified names to get each of those variables.}
+    @note If a dataset contains two constructor types which have field names
+    that are the same (say point.x and pair.x) you should use fully qualified
+    names to get each of those variables.
 
     @return A BaseType pointer to the variable or null if not found. */
 BaseType *
@@ -1576,6 +1591,9 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.69  2004/03/01 22:32:10  jimg
+// Bring the trunk up to date with the code in my working directory...
+//
 // Revision 1.68  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

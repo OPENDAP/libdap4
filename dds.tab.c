@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.51 2004/02/19 19:42:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.52 2004/03/01 22:32:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1656,7 +1656,10 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.51  2004/02/19 19:42:52  jimg
+ * Revision 1.52  2004/03/01 22:32:10  jimg
+ * Bring the trunk up to date with the code in my working directory...
+ *
+ * Revision 1.45  2004/02/19 19:42:53  jimg
  * Merged with release-3-4-2FCS and resolved conflicts.
  *
  * Revision 1.42.2.2  2004/02/13 18:28:54  jimg

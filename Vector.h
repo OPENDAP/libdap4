@@ -58,33 +58,31 @@
 #include "DDS.h"
 #endif
 
-  /** Holds a one-dimensional array of DODS data types.  This class
-      takes two forms, depending on whether the elements of the vector
-      are themselves simple or compound objects. This class contains
-      common functionality for the List and Array classes, and should
-      rarely be used directly.
+/** Holds a one-dimensional array of DODS data types.  This class
+    takes two forms, depending on whether the elements of the vector
+    are themselves simple or compound objects. This class contains
+    common functionality for the List and Array classes, and should
+    rarely be used directly.
 
-      When each element of the class is a simple data type, the Vector
-      is implemented as a simple array of C types, rather than as an
-      array of BaseType data types.  A single private ``template''
-      BaseType instance (<tt>_var</tt>) is used to hold information in common
-      to all the members of the array.  The template is also used as a
-      container to pass values back and forth to an application
-      program, as in <tt>var()</tt>.
+    When each element of the class is a simple data type, the Vector
+    is implemented as a simple array of C types, rather than as an
+    array of BaseType data types.  A single private ``template''
+    BaseType instance (<tt>_var</tt>) is used to hold information in common
+    to all the members of the array.  The template is also used as a
+    container to pass values back and forth to an application
+    program, as in <tt>var()</tt>.
 
-      If the elements of the vector are themselves compound data
-      types, the array is stored as a vector of BaseType pointers (see
-      the DODS class <b>BaseTypePtrVec</b>). The template is still used to
-      hold information in common to all the members of the array, but
-      is not used to pass information to and from the application
-      program. 
+    If the elements of the vector are themselves compound data
+    types, the array is stored as a vector of BaseType pointers (see
+    the DODS class <b>BaseTypePtrVec</b>). The template is still used to
+    hold information in common to all the members of the array, but
+    is not used to pass information to and from the application
+    program. 
 
-      @brief Holds a one-dimensional collection of DODS data types.  
-      @see BaseType 
-      @see List
-      @see Array
-      */
-
+    @brief Holds a one-dimensional collection of DODS data types.  
+    @see BaseType 
+    @see Array
+*/
 class Vector: public BaseType {
 private:
     int _length;		// number of elements in the vector
@@ -145,6 +143,9 @@ public:
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.41  2004/03/01 22:32:10  jimg
+ * Bring the trunk up to date with the code in my working directory...
+ *
  * Revision 1.40  2003/12/08 18:02:30  edavis
  * Merge release-3-4 into trunk
  *
