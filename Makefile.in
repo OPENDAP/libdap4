@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.14 1995/01/19 20:09:12 jimg Exp $
+# $Id: Makefile.in,v 1.15 1995/03/04 14:41:18 jimg Exp $
 
 @SET_MAKE@
 
@@ -7,13 +7,13 @@
 # or doesn't have.
 
 PROG= das-test dds-test libdas++.a libdds++.a
-CXXFLAGS = -g $(DEFS) -I. -IMap -IStack -IPlex -I$(DODS_ROOT)/include 
-LDFLAGS = @LDFLAGS@ -g -L. -LMAP -LStack -LPlex -L$(DODS_ROOT)/lib
+CXXFLAGS = -g $(DEFS) -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include 
+LDFLAGS = @LDFLAGS@ -g -L. -LMAP -LStack -LPlex -LVec -L$(DODS_ROOT)/lib
 LFLAGS=-8
 YFLAGS=-d
 DODS_ROOT=../..
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
-LIBS = -lg++map -lg++stack -lg++xplex -lerrmsg @LIBS@
+LIBS = -lg++map -lg++stack -lg++xplex -lg++vec -lerrmsg @LIBS@
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
@@ -31,6 +31,7 @@ INSTALLMAN = man
 SHELL = /bin/sh
 srcdir = @srcdir@
 VPATH = @srcdir@
+dir = @dir@
 
 # testsuite specifics
 RUNTEST= runtest
@@ -51,7 +52,7 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
-SUBDIRS=Stack Map Plex
+SUBDIRS=Stack Map Plex Vec
 
 DAS_GRAM_OBJS=lex.das.o das.tab.o
 DDS_GRAM_OBJS=lex.dds.o dds.tab.o
@@ -66,19 +67,22 @@ DDSOBJS=DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS)
 
 TYPEHDRS=BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
          List.h Array.h Structure.h Sequence.h Function.h Grid.h
+
 TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
          List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
 	 util.cc
+
 TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	 List.o Array.o Structure.o Sequence.o Function.o Grid.o \
 	 util.o
 
 TESTSRCS=TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc\
-         TestArray.cc TestList.cc TestStructure.cc TestSequence.cc\
-         TestFunction.cc TestGrid.cc
+         TestArray.cc TestStructure.cc # TestList.cc TestSequence.cc\
+#         TestFunction.cc TestGrid.cc
+
 TESTOBJS=TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
-         TestArray.o TestList.o TestStructure.o TestSequence.o\
-         TestFunction.o TestGrid.o
+         TestArray.o TestStructure.o # TestList.o TestSequence.o\
+#         TestFunction.o TestGrid.o
 
 # Added decent into SUBDIRS since it makes little sense to build these
 # libraries without the Map, Stack and Plex code.
@@ -189,6 +193,8 @@ distclean: clean
 	for d in $(SUBDIRS); do cd $$d; make distclean; cd ..; done
 
 tar:
+	cd ..; tar --exclude $(dir)/old -c -f $(dir).tar $(dir); \
+	       gzip $(dir).tar
 
 tags:
 	$(TAGS) *.{cc,h,lex,y}
