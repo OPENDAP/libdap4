@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.lex,v 1.6 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.lex,v 1.7 2002/06/03 22:21:16 jimg Exp $"};
 
 #define YY_DECL int gse_lex YY_PROTO(( void ))
 #define ID_MAX 256
@@ -49,13 +49,17 @@ static void store_op(int op);
 NAN     [Nn][Aa][Nn]
 INF     [Ii][Nn][Ff]
 
-SCAN_ID		[a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\]*
 SCAN_INT	[-+]?[0-9]+
 
 SCAN_MANTISA	([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
 SCAN_EXPONENT	(E|e)[-+]?[0-9]+
 
 SCAN_FLOAT	([-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?)|({NAN})|({INF})
+
+/* See das.lex for comments about the characters allowed in a WORD.
+   10/31/2001 jhrg */
+
+SCAN_WORD	[-+a-zA-Z0-9_/%.\\][-+a-zA-Z0-9_/%.\\#]*
 
 SCAN_EQUAL	=
 SCAN_NOT_EQUAL	!=
@@ -68,10 +72,10 @@ NEVER		[^a-zA-Z0-9_/%.#:+\-,]
 
 %%
 
-{SCAN_ID}	store_id(); return SCAN_ID;
-
 {SCAN_INT}	store_int32(); return SCAN_INT;
 {SCAN_FLOAT}	store_float64(); return SCAN_FLOAT;
+
+{SCAN_WORD}	store_id(); return SCAN_WORD;
 
 {SCAN_EQUAL}	store_op(SCAN_EQUAL); return SCAN_EQUAL;
 {SCAN_NOT_EQUAL} store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
@@ -136,6 +140,24 @@ store_op(int op)
 
 /*
  * $Log: gse.lex,v $
+ * Revision 1.7  2002/06/03 22:21:16  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.4.4.4  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
+ *
  * Revision 1.6  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.
  *

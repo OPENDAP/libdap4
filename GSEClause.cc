@@ -15,10 +15,10 @@
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.6 2001/09/28 17:50:07 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.7 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <iostream>
-#include <strstream.h>
+#include <strstream>
 
 #include <assert.h>
 #include <Pix.h>
@@ -26,10 +26,10 @@ static char id[] not_used = {"$Id: GSEClause.cc,v 1.6 2001/09/28 17:50:07 jimg E
 #include "dods-datatypes.h"
 #include "Error.h"
 #include "InternalErr.h"
+#include "debug.h"
 #include "GSEClause.h"
 #include "parser.h"
 #include "gse.tab.h"
-#include "debug.h"
 
 int gse_parse(void *arg);
 void gse_restart(FILE *in);
@@ -81,8 +81,7 @@ compare(T elem, relop op, double value)
     }
 }
 
-// I don't know if this needs to have a special version for WIN32. 9/24/2001
-// jhrg
+#ifndef WIN32
 template<class T>
 void
 GSEClause::set_map_min_max_value(T min, T max)
@@ -98,6 +97,7 @@ GSEClause::set_map_min_max_value(T min, T max)
     d_map_max_value = oss2.str();
     oss2.freeze(0);
 }
+#endif
 
 #ifndef WIN32
 template<class T>
@@ -317,6 +317,12 @@ GSEClause::get_map_max_value() const
 }
 
 // $Log: GSEClause.cc,v $
+// Revision 1.7  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.5.4.2  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.6  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

@@ -12,9 +12,11 @@
 #ifndef _escaping_h
 #define _escaping_h
 
+#ifdef WIN32
 #include <string>
 
 using std::string;
+#endif
 
 string hexstring(unsigned char val);
 string unhexstring(string s);
@@ -35,12 +37,23 @@ string www2id(string s, const string &escape = "%",
 #define id2dods id2www
 #define dods2id www2id
 string esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]");
+string char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
 string unescattr(string s);
 
 string munge_error_message(string msg);
 
 // $Log: escaping.h,v $
+// Revision 1.9  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.5.4.8  2002/02/03 23:57:59  rmorris
+// Minor mod.  Someone ifdef'd out "#include <string> and using std::string;
+// These are needed under win32.  I #ifdef'd them back in for win32.
+//
+// Revision 1.5.4.7  2002/01/28 20:34:25  jimg
+// *** empty log message ***
+//
 // Revision 1.8  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

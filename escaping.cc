@@ -34,10 +34,14 @@
 // -Todd
 
 #include <ctype.h>
+
 #include <strstream>
 #include <iomanip>
 #include <string>
+
 #include <Regex.h>
+#include "Error.h"
+#include "InternalErr.h"
 
 using std::string;
 using std::ostrstream;
@@ -181,12 +185,51 @@ www2id(string in, const string &escape, const string &except)
     allows the function to be used to map other patterns to an underscore.
     @return The modified string. */
 string 
-esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]") {
-  Regex escregx(escape.c_str(), 1);
+esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]")
+{
+    Regex escregx(escape.c_str(), 1);
 
     int index=0, matchlen;
     while ((index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
-      s.replace(index, matchlen, "_");
+	s.replace(index, matchlen, "_");
+
+    return s;
+}
+
+/** Given a string, replace any characters that match the regular expression
+    with `_<ASCII code>' where <ASCII code> is the ASCII code for the
+    characters replaced. If the pattern to be replaced is a WWW escape
+    sequence, then replace the % with an _ and keep the two digit ASCII code
+    that follows it.
+
+    To escape all non-alphanumeric characters, use "[^A-Za-z0-9_]" for
+    #escape#.
+
+    @param s The string to transform
+    @param escape A regular expression which matches the characters to
+    replace. Note: Make sure that any expression given matches only a single
+    character at a time (the default regex is handled specially).
+    @return The modified string. */
+string 
+char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]") 
+{
+    Regex escregx(escape.c_str(), 1);
+
+    int i=0, matchlen;
+    while ((i = escregx.search(s.c_str(), s.size(), matchlen, i)) != -1) {
+	if (escape == "%[0-7][0-9a-fA-F]" && matchlen == 3)
+	    s.replace(i, 1, "_");
+	else {
+	    if (matchlen != 1)
+		throw InternalErr(__FILE__, __LINE__, "A caller supplied value for the regular expression in escape should match exactly one character.");
+
+	    unsigned char ascii = *(s.substr(i, 1).data());
+	    ostrstream ostr;
+	    ostr << "_" << hexstring(ascii) << ends;
+	    s.replace(i, matchlen, ostr.str());
+	    ostr.freeze(0);
+	}
+    }
 
     return s;
 }
@@ -197,6 +240,7 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]") {
 string escattr(string s) {
     static Regex nonprintable("[^ !-~]", 1);
     const string ESC = "\\";
+    const string DOUBLE_ESC = ESC + ESC;
     const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
 
@@ -207,6 +251,12 @@ string escattr(string s) {
 
     // escape " with backslash
     string::size_type ind = 0;
+    while ( (ind = s.find(ESC, ind)) != s.npos) {
+	s.replace(ind, 1, DOUBLE_ESC);
+	ind += DOUBLE_ESC.length();
+    }
+
+    ind = 0;
     while ( (ind = s.find(QUOTE, ind)) != s.npos) {
 	s.replace(ind, 1, ESCQUOTE);
 	ind += ESCQUOTE.length();
@@ -215,13 +265,14 @@ string escattr(string s) {
     return s;
 }
 
-/** Un-escape special characters, quotes and backslashes from an HDF attribute.
-    <p>
+/** Un-escape special characters, quotes and backslashes from an HDF
+    attribute.
+
     Note: A regex to match one \ must be defined as: Regex foo = "\\\\";
     because both C++ strings and GNU's Regex also employ \ as an escape
     character! 
-    @param s The escaped attribute.
-    @return The unescaped attribute. */
+
+    @param s The escaped attribute. @return The unescaped attribute. */
 string unescattr(string s) {
     static Regex escregx("\\\\[01][0-7][0-7]", 1);  // matches 4 characters
     static Regex escquoteregex("[^\\\\]\\\\\"", 1);  // matches 3 characters
@@ -273,6 +324,20 @@ munge_error_message(string msg)
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.21  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.16.2.9  2002/02/13 20:29:25  dan
+// Modified char2ASCII so that it returns '_20' rather
+// '_32', the hex representation of escaped characters
+// instead of the decimal ascii representation.
+//
+// Revision 1.16.2.8  2002/01/28 22:52:38  jimg
+// I chagned escattr so that it now escapes single backslashes.
+//
+// Revision 1.16.2.7  2002/01/28 20:34:25  jimg
+// *** empty log message ***
+//
 // Revision 1.20  2001/10/29 21:17:46  jimg
 // Fixed some errors in the comments.
 //

@@ -12,12 +12,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.51 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.52 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <assert.h>
+#include <ctype.h>
 #ifndef WIN32
 #include <unistd.h>
 #endif
@@ -25,11 +25,8 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.51 2001/10/14 01:28:38 jim
 #include <sys/stat.h>
 
 #include <iostream>
-#ifdef WIN32
 #include <strstream>
-#else
 #include <fstream>
-#endif
 #include <string>
 
 #include "cgi_util.h"
@@ -47,7 +44,11 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.51 2001/10/14 01:28:38 jim
 
 using std::cerr;
 using std::endl;
+using std::ends;
 using std::strstream;
+using std::ostrstream;
+using std::ofstream;
+using std::ifstream;
 
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
@@ -106,18 +107,22 @@ do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
 //
 // directory           filename          extension
 //   same                same            `.'given
+//   same                extension
 //   given               same            `.'given
 //   same                given           `.'given
 //   given               given           `.'given
+//   given               extension
 //
 // Where `same' means the ancillary file name matches that part of the data
 // file name. For example, given a data file name of /data/avhrr/k97.pvu,
 // this function will return the first name found by looking for:
-// /data/avhrr/k97.das, <given dir>/k97.das, <given dir>/<given file>.das.
-// This function assumes that directories are separated by `/'s and the
-// filename and extension are separated by `.'s. If the filename contains
-// several `.' characters, the last one is taken as the name.extenstion
-// separator and the `.'s to the left are assumed to be part of the filename.
+// /data/avhrr/k97.das, /data/avhrr/das, <given dir>/k97.das,
+// /data/avhrr/<given_file>.das, <given dir>/<given file>.das.
+// <given_dir>/das. This function assumes that directories are separated by
+// `/'s and the filename and extension are separated by `.'s. If the filename
+// contains several `.' characters, the last one is taken as the
+// name.extenstion separator and the `.'s to the left are assumed to be part
+// of the filename.
 //
 // Returns: A string naming the ancillary file of a null string if no
 // matching file was found.
@@ -129,65 +134,111 @@ find_ancillary_file(string pathname, string ext, string dir, string file)
 {
     string::size_type slash = pathname.rfind('/') + 1;
     string directory = pathname.substr(0, slash);
-    string basename = pathname.substr(slash, pathname.find('.',slash)-slash);
-    
-    ext = "." + ext;
+    string filename = pathname.substr(slash);
+    string basename = pathname.substr(slash, pathname.rfind('.')-slash);
 
-    string name = directory + basename + ext;
+    DBG(cerr << "find ancillary file params: " << pathname << ", " << ext 
+	<< ", " << dir << ", " << file << endl);
+    DBG(cerr << "find ancillary file comp: " << directory << ", " << filename
+	<< ", " << basename << endl);
+
+    string dot_ext = "." + ext;
+
+    string name = directory + basename + dot_ext;
     if (access(name.c_str(), F_OK) == 0)
 	return name;
 
-    name = pathname + ext;
+    name = pathname + dot_ext;
     if (access(name.c_str(), F_OK) == 0)
 	return name;
 
-    name = dir + basename + ext;
+    name = directory + ext;
     if (access(name.c_str(), F_OK) == 0)
 	return name;
 
-    name = directory + file + ext;
+    name = dir + basename + dot_ext;
     if (access(name.c_str(), F_OK) == 0)
 	return name;
 
-    name = dir + file + ext;
+    name = directory + file + dot_ext;
+    if (access(name.c_str(), F_OK) == 0)
+	return name;
+
+    name = dir + file + dot_ext;
+    if (access(name.c_str(), F_OK) == 0)
+	return name;
+
+    name = dir + ext;
     if (access(name.c_str(), F_OK) == 0)
 	return name;
 
     return "";
 }
 
-// If external descriptor file exists, read it... This file must be in the
-// same directory that the netCDF file is located. Its name must be the
-// netCDF file name with the addition of .dds
-
-bool
-read_ancillary_dds(DDS &dds, string dataset, string dir, string file)
+// Given a pathname to a datafile, take that pathname apart and look for an
+// ancillary file that describes a group of datafiles of which this datafile
+// is a member. Assume that groups follow a simple naming convention where
+// files use either leading or trailing digits and a common basename to name
+// group memebrs. For example, 00stuff.hdf, 01stuff.hdf, 02stuff.hdf, ..., is
+// a group and is has `stuff' as its basename. 
+string
+find_group_ancillary_file(string name, string ext)
 {
-    string name = find_ancillary_file(dataset, "dds", dir, file);
-    FILE *in = fopen(name.c_str(), "r");
- 
-    if (in) {
-	dds.parse(in);		// DDS::parse throws on error
-	fclose(in);
+    // Given /usr/local/data/stuff.01.nc
+    // pathname = /usr/local/data, filename = stuff.01.nc and
+    // rootname = stuff.01
+    string::size_type slash = name.find_last_of('/');
+    string dirname = name.substr(0, slash);
+    string filename = name.substr(slash+1);
+    string rootname = filename.substr(0, filename.find_last_of('.'));
+
+    // Instead of using regexs, scan the filename for leading and then
+    // trailing digits.
+    string::iterator rootname_iter = rootname.begin();
+    string::iterator rootname_end_iter = rootname.end();
+    if (isdigit(*rootname_iter)) {
+	while(rootname_iter != rootname_end_iter 
+	      && isdigit(*++rootname_iter))
+	    ;
+
+	// We want: new_name = dirname + "/" + <base> + ext but without
+	// creating a bunch of temp objects.
+	string new_name = dirname;
+	new_name.append("/");
+	new_name.append(rootname_iter, rootname_end_iter);
+	new_name.append(ext);
+	DBG(cerr << "New Name (iter): " << new_name << endl);
+	if (access(new_name.c_str(), F_OK) == 0) {
+	    return new_name;
+	}
     }
 
-    return true;
-}
-    
-bool
-read_ancillary_das(DAS &das, string dataset, string dir, string file)
-{
-    string name = find_ancillary_file(dataset, "das", dir, file);
-    FILE *in = fopen(name.c_str(), "r");
- 
-    if (in) {
-	das.parse(in);		// DAS::parse throws on error.
-	fclose(in);
+    string::reverse_iterator rootname_riter = rootname.rbegin();
+    string::reverse_iterator rootname_end_riter = rootname.rend();
+    if (isdigit(*rootname_riter)) {
+	while(rootname_riter != rootname_end_riter 
+	      && isdigit(*++rootname_riter))
+	    ;
+	string new_name = dirname;
+	new_name.append("/");
+	// I used reverse iters to scan rootname backwards. To avoid
+	// reversing the fragement between end_riter and riter, pass append
+	// regular iters obtained using reverse_iterator::base(). See Meyers
+	// p. 123. 1/22/2002 jhrg
+	new_name.append(rootname_end_riter.base(), rootname_riter.base());
+	new_name.append(ext);
+	DBG(cerr << "New Name (riter): " << new_name << endl);
+	if (access(new_name.c_str(), F_OK) == 0) {
+	    return new_name;
+	}
     }
 
-    return true;
+    // If we're here either the file does not begin with leading digits or a
+    // template made by removing those digits was not found.
+
+    return "";
 }
-    
+
 // An error handling routine to append the error messege from CGI programs, 
 // a time stamp, and the client host name (or address) to HTTPD error-log.
 // Use this instead of the functions in liberrmsg.a in the programs run by
@@ -242,9 +293,6 @@ name_path(const string &path)
         new_path = path.substr(pound + 1);
     else
         new_path = path.substr(delim + 1);
-
-    if ((delim = new_path.find(".")) != string::npos)
-	new_path = new_path.substr(0, delim);
 
     return new_path;
 }
@@ -340,8 +388,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
 	      EncodingType enc, const time_t last_modified)
 {
 #ifdef WIN32
-    // strstream os; This makes no sense. 4/23/2001 jhrg
-    ofstream os(fileno(out));
+    strstream os;
     set_mime_text(os, type, ver, enc, last_modified);	
     flush_stream(os, out);
 #else
@@ -383,8 +430,7 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
 		EncodingType enc, const time_t last_modified)
 {
 #ifdef WIN32
-    // strstream os; See above. 4/23/2001 jhrg
-    ofstream os(fileno(out));
+    strstream os;
     set_mime_binary(os, type, ver, enc, last_modified);
     flush_stream(os, out);
 #else
@@ -413,11 +459,6 @@ set_mime_binary(ostream &os, ObjectType type, const string &ver,
     os << "Content-type: application/octet-stream" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     if (enc != x_plain) {
-	// Until we fix the bug in the cache WRT compressed data, supress
-	// caching for those requests. 11/30/99 jhrg
-#if 0
-       	os << "Cache-Control: no-cache" << endl;
-#endif
 	// Fixed the bug in the libwww. 3/17/2000 jhrg
 	os << "Content-Encoding: " << encoding[enc] << endl;
     }
@@ -477,6 +518,123 @@ set_mime_not_modified(ostream &os)
     os << endl;
 }
 
+/** Look for the override file by taking the dataset name and appending
+    `.ovr' to it. If such a file exists, then read it in and store the
+    contents in #doc#. Note that the file contents are not checked to see if
+    they are valid HTML (which they must be). 
+
+    @return True if the `override file' is present, false otherwise. in the
+    later case #doc#'s contents are undefined.
+*/
+
+bool
+found_override(string name, string &doc)
+{
+    ifstream ifs((name + ".ovr").c_str());
+    if (!ifs)
+	return false;
+
+    char tmp[256];
+    doc = "";
+    while (!ifs.eof()) {
+	ifs.getline(tmp, 255);
+	strcat(tmp, "\n");
+	doc += tmp;
+    }
+
+    return true;
+}
+
+/** Read the input stream #in# and discard the MIME header. The MIME header
+    is separated from the body of the document by a single blank line. If no
+    MIME header is found, then the input stream is `emptied' and will contain
+    nothing.
+
+    @memo Read and discard the MIME header of the stream #in#.
+    @return True if a MIME header is found, false otherwise.
+*/
+
+bool
+remove_mime_header(FILE *in)
+{
+    char tmp[256];
+    while (!feof(in)) {
+	fgets(tmp, 255, in);
+	if (tmp[0] == '\n')
+	    return true;
+    }
+
+    return false;
+}    
+
+/** Look in the CGI directory (given by #cgi#) for a per-cgi HTML* file. Also
+    look for a dataset-specific HTML* document. Catenate the documents and
+    return them in a single String variable.
+
+    The #cgi# path must include the `API' prefix at the end of the path. For
+    example, for the NetCDF server whose prefix is `nc' and resides in the
+    DODS_ROOT/etc directory of my computer, #cgi# is
+    `/home/dcz/jimg/src/DODS/etc/nc'. This function then looks for the file
+    named #cgi#.html.
+
+    Similarly, to locate the dataset-specific HTML* file it catenates `.html'
+    to #name#, where #name# is the name of the dataset. If the filename part
+    of #name# is of the form [A-Za-z]+[0-9]*.* then this function also looks
+    for a file whose name is [A-Za-z]+.html For example, if #name# is
+    .../data/fnoc1.nc this function first looks for .../data/fnoc1.nc.html.
+    However, if that does not exist it will look for .../data/fnoc.html. This
+    allows one `per-dataset' file to be used for a collection of files with
+    the same root name.
+
+    NB: An HTML* file contains HTML without the <html>, <head> or <body> tags
+    (my own notation).
+
+    @memo Look for the user supplied CGI- and dataset-specific HTML* documents.
+    @return A String which contains these two documents catenated. Documents
+    that don't exist are treated as `empty'.
+*/
+
+string
+get_user_supplied_docs(string name, string cgi)
+{
+    char tmp[256];
+    ostrstream oss;
+    ifstream ifs((cgi + ".html").c_str());
+
+    if (ifs) {
+	while (!ifs.eof()) {
+	    ifs.getline(tmp, 255);
+	    oss << tmp << "\n";
+	}
+	ifs.close();
+	
+	oss << "<hr>";
+    }
+
+    ifs.open((name + ".html").c_str());
+
+    // If name.html cannot be opened, look for basename.html
+    if (!ifs) {
+	string new_name = find_group_ancillary_file(name, ".html");
+	if (new_name != "")
+	    ifs.open(new_name.c_str());
+    }
+
+    if (ifs) {
+	while (!ifs.eof()) {
+	    ifs.getline(tmp, 255);
+	    oss << tmp << "\n";
+	}
+	ifs.close();
+    }
+
+    oss << ends;
+    string html = oss.str();
+    oss.rdbuf()->freeze(0);
+
+    return html;
+}
+
 // This test code is pretty much obsolete; look at cgiUtilTest.cc 4/17/2001
 // jhrg.
 
@@ -492,34 +650,6 @@ main(int argc, char *argv[])
     char *cmsg = "char * error";
     ErrMsgT(cmsg);
     ErrMsgT("");
-#if 0
-    ErrMsgT(NULL);
-#endif
-
-#if 0
-    // test fmakeword
-    FILE *in = fopen("./cgi-util-tests/fmakeword.input", "r");
-    char stop = ' ';
-    int content_len = 68;
-    while (content_len) {
-	char *word = fmakeword(in, stop, &content_len);
-	cout << "Word: " << word << endl;
-	delete word; word = 0;
-    }
-    fclose(in);
-
-    // this tests buffer extension in fmakeword, two words are 1111 and 11111
-    // char respectively.
-    in = fopen("./cgi-util-tests/fmakeword2.input", "r");
-    stop = ' ';
-    content_len = 12467;
-    while (content_len) {
-	char *word = fmakeword(in, stop, &content_len);
-	cout << "Word: " << word << endl;
-	delete word; word = 0;
-    }
-    fclose(in);
-#endif
 
     // test name_path
     string name_path_p;
@@ -568,6 +698,45 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.52  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.47.4.17  2002/03/29 18:33:03  jimg
+// Some code that was meant to help with debuggin inadvertantly made it
+// into CVS wihout the DBG macros; I added them.
+//
+// Revision 1.47.4.16  2002/03/26 19:58:10  jimg
+// I changed the way name_path works so that the whole filename is now used as
+// the dataset name. This means that extensions to the filename are not stripped
+// off which also fixes bug 64; that filename that contained dots were chopped
+// up.
+//
+// Revision 1.47.4.15  2002/03/12 19:06:45  jimg
+// Fix for bug 400. Files which end in extensions that indicate they're
+// compressed were breaking the function find_ancillary_file().
+// Added searches for <directory>/<ext> to find_ancillary_file(). This means
+// that a DAS that should be applied to a group of files can be by simply
+// including the DAS in a file called `das' and putting that in the directory
+// that contains the files.
+//
+// Revision 1.47.4.14  2002/02/05 03:23:46  rmorris
+// Added some things VC++ needs in the std namespace after James moved
+// things around a little in this file (ends, ostrstream & ifstream).
+//
+// Revision 1.47.4.13  2002/02/04 17:34:10  jimg
+// I removed a lot of code that was duplicated from src/dap/usage.cc into cgi_util.
+//
+// Revision 1.47.4.12  2002/01/23 20:33:18  jimg
+// The function read_ancillary_das and _dds are no longer here (i've
+// commented them out of the code). Use DODSFilter instead.
+//
+// Revision 1.47.4.11  2002/01/23 03:18:38  jimg
+// I added a new function to find group ancillary files based on simple
+// filename patterns (leading or trailing digits). See find_group_anc_file.
+//
+// Revision 1.47.4.10  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.51  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

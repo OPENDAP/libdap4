@@ -11,13 +11,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.23 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.24 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
 
-#define YYSTYPE char *
-
+#include "parser.h"
 #include "dds.tab.h"
 #include "BaseType.h"
 #include "Int32.h"
@@ -169,14 +168,8 @@ test_scanner(void)
 	  case SCAN_URL:
 	    cout << "Url" << endl;
 	    break;
-	  case SCAN_ID:
-	    cout << "ID: " << ddslval << endl;
-	    break;
-	  case SCAN_NAME:
-	    cout << "NAME: " << ddslval << endl;
-	    break;
-	  case SCAN_INTEGER:
-	    cout << "INTEGER: " << ddslval << endl;
+	  case SCAN_WORD:
+	    cout << "WORD: " << ddslval.word << endl;
 	    break;
 	  case '{':
 	    cout << "Left Brace" << endl;
@@ -281,6 +274,24 @@ test_class(void)
 }
 
 // $Log: dds-test.cc,v $
+// Revision 1.24  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.21.4.4  2001/11/01 00:43:51  jimg
+// Fixes to the scanners and parsers so that dataset variable names may
+// start with digits. I've expanded the set of characters that may appear
+// in a variable name and made it so that all except `#' may appear at
+// the start. Some characters are not allowed in variables that appear in
+// a DDS or CE while they are allowed in the DAS. This makes it possible
+// to define containers with names like `COARDS:long_name.' Putting a colon
+// in a variable name makes the CE parser much more complex. Since the set
+// of characters that people want seems pretty limited (compared to the
+// complete ASCII set) I think this is an OK approach. If we have to open
+// up the expr.lex scanner completely, then we can but not without adding
+// lots of action clauses to teh parser. Note that colon is just an example,
+// there's a host of characters that are used in CEs that are not allowed
+// in IDs.
+//
 // Revision 1.23  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

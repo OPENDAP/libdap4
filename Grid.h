@@ -22,19 +22,6 @@
 #pragma interface
 #endif
 
-#if 0
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif // 0
-
 #include <SLList.h>
 #include <Pix.h>
 
@@ -107,17 +94,16 @@ private:
     void _duplicate(const Grid &s);
 
 public:
-  /** The Grid constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
+    /** The Grid constructor requires only the name of the variable to be
+	created. The name may be omitted, which will create a nameless
+	variable. This may be adequate for some applications.
       
-      @param n A string containing the name of the variable to be
-      created. 
+	@param n A string containing the name of the variable to be created.
 
-      @memo The Grid constructor.
-      */
+	@memo The Grid constructor. */
     Grid(const string &n = "");
-  /** The Grid copy constructor. */
+
+    /** The Grid copy constructor. */
     Grid(const Grid &rhs);
     virtual ~Grid();
     
@@ -132,20 +118,22 @@ public:
     /** Note the paramter #exact_match# is not used by this mfunc.
 
 	@see BaseType.h */
-    virtual BaseType *var(const string &name, bool exact_match = true);
+    virtual BaseType *var(const string &name, bool exact_match = true,
+			  btp_stack *s = 0);
 
+    /// @deprecated
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part);
 
-  /** Returns the Grid Array. */
+    /** Returns the Grid Array. */
     BaseType *array_var();
 
-  /** Returns the index of the first Map vector. */
+    /** Returns the index of the first Map vector. */
     Pix first_map_var();
-  /** Increments the Map vector index. */
+    /** Increments the Map vector index. */
     void next_map_var(Pix &p);
-  /** Given an index, returns the corresponding Map vector. */
+    /** Given an index, returns the corresponding Map vector. */
     BaseType *map_var(Pix p);
 
     virtual unsigned int width();
@@ -224,6 +212,17 @@ public:
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.40  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.38.4.2  2002/03/01 21:03:08  jimg
+ * Significant changes to the var(...) methods. These now take a btp_stack
+ * pointer and are used by DDS::mark(...). The exact_match methods have also
+ * been updated so that leaf variables which contain dots in their names
+ * will be found. Note that constructor variables with dots in their names
+ * will break the lookup routines unless the ctor is the last field in the
+ * constraint expression. These changes were made to fix bug 330.
+ *
  * Revision 1.39  2001/06/15 23:49:02  jimg
  * Merged with release-3-2-4.
  *

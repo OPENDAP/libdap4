@@ -28,6 +28,8 @@
 
 using std::cerr;
 using std::endl;
+using std::ends;
+using std::ostrstream;
 
 // Private copy mfunc
 
@@ -325,15 +327,16 @@ BaseType::get_parent()
 // Return a pointer to the contained variable in a ctor class.
 
 BaseType *
-BaseType::var(const string &, bool)
+BaseType::var(const string &, bool, btp_stack*)
 {
-    return (BaseType *)0;
+    return static_cast<BaseType *>(0);
 }
 
+// Deprecated
 BaseType *
 BaseType::var(const string &, btp_stack &)
 {
-    return (BaseType *)0;
+    return static_cast<BaseType *>(0);
 }
 
 // Defined by constructor types (Array, ...)
@@ -419,6 +422,23 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.45  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.42.4.8  2002/04/03 13:34:29  jimg
+// Added using std::endl and std::ends.
+//
+// Revision 1.42.4.7  2002/03/01 21:03:08  jimg
+// Significant changes to the var(...) methods. These now take a btp_stack
+// pointer and are used by DDS::mark(...). The exact_match methods have also
+// been updated so that leaf variables which contain dots in their names
+// will be found. Note that constructor variables with dots in their names
+// will break the lookup routines unless the ctor is the last field in the
+// constraint expression. These changes were made to fix bug 330.
+//
+// Revision 1.42.4.6  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.44  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

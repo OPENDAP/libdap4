@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.39 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.40 2002/06/03 22:21:15 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -270,6 +270,8 @@ bool
 Vector::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		  bool ce_eval)
 {
+	int i = 0;
+
     if (!read_p())
 	read(dataset);		// read() throws Error and InternalErr
 
@@ -336,7 +338,7 @@ problem with the network connection.");
 "Network I/O Error. This may be due to a bug in DODS or a\n\
 problem with the network connection.");
 
-	for (int i = 0; i < num; ++i)
+	for (i = 0; i < num; ++i)
 	    _vec[i]->serialize(dataset, dds, sink, false);
 
 	break;
@@ -389,8 +391,24 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 "Network I/O error. Could not read the array length.\n\
 This may be due to a bug in DODS or a problem with\n\
 the network connection.");
-	    
+
+	DBG(cerr << "Vector::deserialize: num = " << num << endl);
+	DBG(cerr << "Vector::deserialize: length = " << length() << endl);
+
+	if (length() == -1)
+	    set_length(num);
+	
+	if (num != (unsigned int)length())
+	    throw InternalErr(__FILE__, __LINE__,
+	      "The client sent declarations and data with mismatched sizes.");
+
+#if 0
+	// Why was/is this code here? Length should be set in the declaration
+	// (the DDS that's the preface for a DataDDS object). 1/30/2002 jhrg
+	// I bet it was there because of List, which does not contain a
+	// length in the declaration. 1/30/2002 jhrg
 	set_length(num);	// set the length for this instance.
+#endif
 
 	if (!_buf) {
 	    _buf = new char[width()]; // we always do the allocation!
@@ -430,10 +448,19 @@ the network connection.");
 This may be due to a bug in DODS or a problem with\n\
 the network connection.");
 
-	vec_resize(num);
-	set_length(num);
+	if (length() == -1)
+	    set_length(num);
+	
+	if (num != (unsigned int)length())
+	    throw InternalErr(__FILE__, __LINE__,
+	      "The client sent declarations and data with mismatched sizes.");
 
-	for (i = 0; status && i < num; ++i) {
+	vec_resize(num);
+#if 0
+	// ?? Why ?? 1/30/2002 jhrg
+	set_length(num);
+#endif
+	for (i = 0; i < num; ++i) {
 	    _vec[i] = _var->ptr_duplicate();
 	    _vec[i]->deserialize(source, dds);
 	}
@@ -673,6 +700,18 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.40  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.35.4.8  2002/01/30 18:52:26  jimg
+// Vector now throws an InternalErr object when a DataDDS arrives and the amount
+// of data differs from the declarations. Note that List (a subclass of Vector)
+// does not include any size info, so we assume that the size information in the
+// binary object is correct.
+//
+// Revision 1.35.4.7  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.39  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

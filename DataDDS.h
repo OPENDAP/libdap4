@@ -44,9 +44,11 @@ private:
 
     void _version_string_to_numbers();
 
+#if 0
     // The last level read from a sequence. This is used to read nested
     // sequences. 
     int _sequence_level;
+#endif
 public:
   /** The DataDDS constructor needs a name and a version string.  This
       is generally received from the server.
@@ -64,6 +66,7 @@ public:
   /** Returns the minor version number. */
     int get_version_minor();
 
+#if 0
   /** Return the last level of a sequence object that was read. Note
       that #Sequence::deserialize()# is the main user of this
       information and it really only matters in cases where the
@@ -84,9 +87,13 @@ public:
       @name set\_sequence\_level(int level)
       @memo Sets the level of the sequence being read.  */
     void set_sequence_level(int level);
+#endif
 };
 
 // $Log: DataDDS.h,v $
+// Revision 1.9  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
 // Revision 1.8  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

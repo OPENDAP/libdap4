@@ -651,10 +651,24 @@ public:
 	@param p The password. 
 	@see extract_auth_info() */
     void set_credentials(string u, string p);
+
+    /** Disable any further use of the client-side cache. In a future version
+	of this software, this should be handled so that the www library is
+	not initialized with the cache running by default. */
+    void disable_cache();
+	
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.57  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.49.4.7  2002/01/17 00:42:03  jimg
+ * I added a new method to disable use of the cache. This provides a way
+ * for a client to suppress use of the cache even if the user wants it
+ * (or doesn't say they don't want it).
+ *
  * Revision 1.56  2001/10/14 01:28:38  jimg
  * Merged with release-3-2-8.
  *

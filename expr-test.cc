@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.31 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.32 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +21,7 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.31 2001/09/28 17:50:07 ji
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock.h>
@@ -236,18 +237,20 @@ test_scanner(bool show_prompt)
     int tok;
     while ((tok = exprlex())) {
 	switch (tok) {
-	  case SCAN_ID:
-	    cout << "ID: " << exprlval.id << endl;
+	  case SCAN_WORD:
+	    cout << "WORD: " << exprlval.id << endl;
 	    break;
 	  case SCAN_STR:
 	    cout << "STR: " << *exprlval.val.v.s << endl;
 	    break;
+#if 0
 	  case SCAN_INT:
 	    cout << "INT: " << exprlval.val.v.i << endl;
 	    break;
 	  case SCAN_FLOAT:
 	    cout << "FLOAT: " << exprlval.val.v.f << endl;
 	    break;
+#endif
 	  case SCAN_EQUAL:
 	    cout << "EQUAL: " << exprlval.op << endl;
 	    break;
@@ -586,6 +589,28 @@ constrained_trans(const string &dds_name, string dataset,
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.32  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.29.4.5  2002/02/20 19:16:27  jimg
+// Changed the expression parser so that variable names may contain only
+// digits.
+//
+// Revision 1.29.4.4  2001/11/01 00:43:51  jimg
+// Fixes to the scanners and parsers so that dataset variable names may
+// start with digits. I've expanded the set of characters that may appear
+// in a variable name and made it so that all except `#' may appear at
+// the start. Some characters are not allowed in variables that appear in
+// a DDS or CE while they are allowed in the DAS. This makes it possible
+// to define containers with names like `COARDS:long_name.' Putting a colon
+// in a variable name makes the CE parser much more complex. Since the set
+// of characters that people want seems pretty limited (compared to the
+// complete ASCII set) I think this is an OK approach. If we have to open
+// up the expr.lex scanner completely, then we can but not without adding
+// lots of action clauses to teh parser. Note that colon is just an example,
+// there's a host of characters that are used in CEs that are not allowed
+// in IDs.
+//
 // Revision 1.31  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

@@ -9,7 +9,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.30 2001/08/24 17:46:22 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.31 2002/06/03 22:21:15 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -26,10 +26,11 @@ static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.30 2001/08/24 17:46:22 jimg
 #include "escaping.h"
 
 using std::string;
-#if 0
+#ifdef WIN32
 using std::vector<string>;
-#endif
+#else
 using std::vector;
+#endif
 using std::endl;
 
 // Find the attribute #target#. To reference an arbitrary attribute, a user
@@ -590,6 +591,12 @@ AttrTable::print(ostream &os, string pad, bool dereference)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.31  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.28.4.5  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.30  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

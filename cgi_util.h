@@ -74,9 +74,11 @@ bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
     \begin{verbatim}
     directory           filename          extension
       same                same            `.'given
+      same                extension
       given               same            `.'given
       same                given           `.'given
       given               given           `.'given
+      given               extension
     \end{verbatim}
 
     Where ``same'' refers to the input dataset pathname, and ``given''
@@ -110,53 +112,19 @@ bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
 string find_ancillary_file(string pathname, string ext, string dir, 
 			   string file);
 
-/** This function searches for an ancillary data file (using the
-    #find_ancillary_file# function) containing the DDS for a
-    dataset. If such a file is found, the function reads it with the
-    #parse# method of the given DDS.
+/** Assume that #pathname# refers to a file that is one of a group of files
+    which share a common `base' name and differ only by some prefix or suffix
+    digits (e.g. #00base#, #01base#, ... or #base00#, ... have the base name
+    #base#). This function looks for a file #base#.#ext#.
 
-    A DDS ancillary file ends with #.dds#.
-
-    @memo Read an ancillary DDS.
-    @param dds The DDS of a dataset.  The ancillary DDS, if any, is
-    ``folded'' into the existing DDS information.
-    @param dataset A string containing the name of the dataset whose
-    DDS is to be read.
-    @param dir An optional parameter specifying a secondary directory
-    in which to look for an ancillary DDS file. This is used as an
-    argument to #find_ancillary_file#.
-    @param dir An optional parameter specifying a file name with which
-    to look for an ancillary DDS file. This is used as an
-    argument to #find_ancillary_file#.
-    @return TRUE if the dataset DDS was found and read, FALSE
-    otherwise. 
-    */
-bool read_ancillary_dds(DDS &dds, string dataset, string dir = "", 
-			string file = "");
-
-/** This function searches for an ancillary data file (using the
-    #find_ancillary_file# function) containing the DAS for a
-    dataset. If such a file is found, the function reads it with the
-    #parse# method of the given DAS.
-
-    A DAS ancillary file ends with #.das#.
-
-    @memo Read an ancillary DAS.
-    @param das The DAS of a dataset.  The ancillary DAS, if any, is
-    ``folded'' into the existing DAS information.
-    @param dataset A string containing the name of the dataset whose
-    DAS is to be read.
-    @param dir An optional parameter specifying a secondary directory
-    in which to look for an ancillary DAS file. This is used as an
-    argument to #find_ancillary_file#.
-    @param dir An optional parameter specifying a file name with which
-    to look for an ancillary DAS file. This is used as an
-    argument to #find_ancillary_file#.
-    @return TRUE if the dataset DAS was found and read, FALSE
-    otherwise. 
-    */
-bool read_ancillary_das(DAS &das, string dataset, string dir = "", 
-			string file = "");
+    @param pathname The pathname (full or relative) to one member of a group
+    of files.
+    @param ext The extension of the group's ancillary file. Note that #ext#
+    should include a period (.) if that needs to separate the base name from
+    the extension.
+    @return The pathname to the group's ancillary file if found, otherwise
+    the empty string (""). */
+string find_group_ancillary_file(string pathname, string ext);
 
 /** Prints an error message in the #httpd# system log file, along with
     a time stamp and the client host name (or address).
@@ -285,5 +253,53 @@ void set_mime_not_modified(FILE *out);
 //@}
 
 //@}
+
+/** Look in the CGI directory (given by #cgi#) for a per-cgi HTML* file. Also
+    look for a dataset-specific HTML* document. Catenate the documents and
+    return them in a single String variable.
+
+    The #cgi# path must include the `API' prefix at the end of the path. For
+    example, for the NetCDF server whose prefix is `nc' and resides in the
+    DODS_ROOT/etc directory of my computer, #cgi# is
+    `/home/dcz/jimg/src/DODS/etc/nc'. This function then looks for the file
+    named #cgi#.html.
+
+    Similarly, to locate the dataset-specific HTML* file it catenates `.html'
+    to #name#, where #name# is the name of the dataset. If the filename part
+    of #name# is of the form [A-Za-z]+[0-9]*.* then this function also looks
+    for a file whose name is [A-Za-z]+.html For example, if #name# is
+    .../data/fnoc1.nc this function first looks for .../data/fnoc1.nc.html.
+    However, if that does not exist it will look for .../data/fnoc.html. This
+    allows one `per-dataset' file to be used for a collection of files with
+    the same root name.
+
+    NB: An HTML* file contains HTML without the <html>, <head> or <body> tags
+    (my own notation).
+
+    @memo Look for the user supplied CGI- and dataset-specific HTML* documents.
+    @return A String which contains these two documents catenated. Documents
+    that don't exist are treated as `empty'.
+*/
+string get_user_supplied_docs(string name, string cgi);
+
+/** Read the input stream #in# and discard the MIME header. The MIME header
+    is separated from the body of the document by a single blank line. If no
+    MIME header is found, then the input stream is `emptied' and will contain
+    nothing.
+
+    @memo Read and discard the MIME header of the stream #in#.
+    @return True if a MIME header is found, false otherwise.
+*/
+bool remove_mime_header(FILE *in);
+
+/** Look for the override file by taking the dataset name and appending
+    `.ovr' to it. If such a file exists, then read it in and store the
+    contents in #doc#. Note that the file contents are not checked to see if
+    they are valid HTML (which they must be). 
+
+    @return True if the `override file' is present, false otherwise. in the
+    later case #doc#'s contents are undefined.
+*/
+bool found_override(string name, string &doc);
 
 #endif // _cgi_util_h

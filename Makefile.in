@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.126 2001/10/29 21:18:31 jimg Exp $
+# $Id: Makefile.in,v 1.127 2002/06/03 22:21:15 jimg Exp $
 
 @SET_MAKE@
 
@@ -56,7 +56,8 @@ INSTALLMAN = man
 SHELL = /bin/sh
 srcdir = @srcdir@
 version = @VERSION@
-dir = dap-@VERSION@
+basedir = dap
+dir = $(basedir)-$(version)
 host = @host@
 
 COMPONENT_NAME = DODS Core
@@ -195,7 +196,7 @@ geturl: libdap++-gui.a $(TESTOBJS) geturl.o
 # Text only copy of geturl. For testing non-gui behavior.
 tgeturl: libdap++.a $(TESTOBJS) geturl.o
 	$(CXX) $(LDFLAGS) -o tgeturl geturl.o $(TESTOBJS) \
-		libdap++.a $(LIBS) $(GUILIBS) $(XTRALIBS)
+		libdap++.a $(LIBS) $(XTRALIBS)
 
 # The program named usage is the filter that is run by the CGI dispatch
 # script as the `usage server'. This filter is the same for all different
@@ -435,31 +436,24 @@ grid-func-check: geturl
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool geturl --srcdir grid-func-testsuite
 
-# The two targets unit_tests and unit-check use the CppUnit unit test
-# software. These are not yet ready for prime time. 4/13/2001 jhrg
-# You must modify TestRunner.cc for each new test class and include it here.
-# Note that TestRunner.cc includes the UNIT_TESTS *.cc files and that's why
-# the *.o versions of these files don't appear in the unit_tests target.
-# 5/14/2001 jhrg
-# UNIT_TESTS = cgiUtilTest.cc AttrTableTest.cc DODSFilterTest.cc \
-#	parserUtilTest.cc generalUtilTest.cc SequenceTest.cc ByteTest.cc
-UNIT_TEST_SRC = TestRunner.cc TextTestResult.cc $(UNIT_TESTS)
-UNIT_TEST_SCAFFOLD = TestRunner.o TextTestResult.o
+# Listing the unit test code here gets the depend target to build
+# dependencies for these files.
+UNIT_TEST_SRCS = cgiUtilTest.cc SequenceTest.cc
+UNIT_TEST_PROGS = cgiUtilTest SequenceTest
 
-TestRunner.o: $(UNIT_TESTS)
+# Build the unit tests. Requires CppUnit be installed.
 
-unit_tests: libdap++.a $(UNIT_TEST_SCAFFOLD) $(TESTOBJS)
-	@if [ -z "$(UNIT_TESTS)" -o -z "$(CPP_UNIT)" ]; then \
-	  echo "You must define UNIT_TESTS and CPP_UNIT* in the Makefile."; \
-	  exit 1; \
-	fi
-	$(CXX) -o unit_tests $(LDFLAGS) \
-		$(UNIT_TEST_SCAFFOLD) $(UNIT_TEST_CLASSES) $(TESTOBJS) \
-		$(UNIT_LDFLAGS) -lcppunit -ldap++ $(LIBS)
+cgiUtilTest: libdap++.a $(TESTOBJS) cgiUtilTest.o
+	$(CXX) -o cgiUtilTest $(LDFLAGS) $(TESTOBJS) cgiUtilTest.o \
+		-lcppunit -ldap++ $(LIBS)
 
-unit-check: unit_tests
-	./unit_tests AttrTableTest DODSFilterTest cgiUtilTest parserUtilTest \
-	generalUtilTest SequenceTest ByteTest
+SequenceTest: libdap++.a $(TESTOBJS) SequenceTest.o
+	$(CXX) -o SequenceTest $(LDFLAGS) $(TESTOBJS) SequenceTest.o  \
+		-lcppunit -ldap++ $(LIBS)
+
+unit-check: cgiUtilTest SequenceTest
+	./cgiUtilTest
+	./SequenceTest
 
 # Clean up.
 
@@ -469,6 +463,7 @@ clean:
 	-for d in GNU; do cd $$d && rm *.o *~; cd ..; done
 	-rm -f $(PROG) das-test dds-test expr-test \
 		error-test geturl gse-test unit_tests
+	-rm -f $(UNIT_TEST_PROGS)
 	-cd doc-html; rm *.html; cd ..;
 	-cd doc-latex; rm *.tex; cd ..;
 
@@ -493,9 +488,9 @@ grammarclean: clean
 docs:
 	@echo "Building reference documentation."
 	-mkdir docs-html;
-	$(DOCXX) -H -d docs-html -f -B /dev/null *.h
+	$(DOCXX) -H -d docs-html -f -B /dev/null -u -j *.h
 	-mkdir docs-latex;
-	$(DOCXX) -t -o docs-latex/dap-reference.tex *.h
+	$(DOCXX) -t -o docs-latex/dap-reference.tex -u *.h
 
 # This is a special tar target because it builds not only the tar file for
 # the core software but also the lib, etc, and bin directories. It assumes
@@ -511,6 +506,7 @@ tar:
 	  --exclude 'bin' --exclude 'lib' --exclude 'include' \
 	  --exclude 'man' --exclude 'CVS' --exclude 'old' \
 	  --exclude '.#*' --exclude '.flc' --exclude '.snprj' \
+	  --exclude 'Makefile' \
 	  --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
 
 .PHONY: binary-tar
@@ -525,19 +521,22 @@ binary-tar:
 	    ($(TAR) --gzip --create --dereference \
 		--file DODS-dap-library-$(version)-$(host).tar.gz \
 		--exclude 'CVS' \
-		DODS/readme/README DODS/readme/README-dap-library \
+		DODS/NEWS \
+		DODS/docs/README DODS/docs/README-dap \
 		DODS/lib/libdap++.a \
 		DODS/lib/libdap++-gui.a \
 		DODS/include ; \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-client-tools-$(version)-$(host).tar.gz \
-		DODS/readme/README DODS/readme/README-client-tools \
+		DODS/NEWS \
+		DODS/docs/README DODS/docs/README-client-tools \
 		DODS/etc/INSTALL-clients \
 		DODS/bin/geturl ; \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-server-tools-$(version)-$(host).tar.gz \
 		--exclude 'CVS' \
-		DODS/readme/README DODS/readme/README-server-tools \
+		DODS/NEWS \
+		DODS/docs/README DODS/docs/README-server-tools \
 		DODS/etc/INSTALL-servers \
 		DODS/etc/installServers \
 		DODS/etc/nph-dods \
@@ -553,17 +552,11 @@ binary-tar:
 .PHONY: update-version
 update-version: check-version
 	@echo "Version is: `cat version.h`"
-	if [ ! -d ../$(dir) ]; then \
-	    mv ../dap* ../$(dir);\
-	fi
-	touch $(DODS_ROOT)VERSION; cat $(DODS_ROOT)VERSION | \
-	  $(AWK) ' \
-	    BEGIN { found = 0 } \
-	    { if ( $$0 ~ /^$(COMPONENT_NAME):/) \
-	        { print "$(COMPONENT_NAME): $(version)"; found = 1 } \
-	      else { print $$0 } } \
-	    END { if ( ! found) { print "$(COMPONENT_NAME): $(version)" } \
-	        }' > $(DODS_ROOT)VERSION
+	if test ! -d ../$(dir); then mv ../$(basedir)* ../$(dir); fi
+	if test ! -f $(DODS_ROOT)VERSION; then touch $(DODS_ROOT)VERSION; fi
+	$(etcdir)/update-manifest.pl "$(COMPONENT_NAME)" $(version) \
+		< $(DODS_ROOT)VERSION > tmp.dods.manifest
+	mv tmp.dods.manifest $(DODS_ROOT)VERSION
 
 # Compare the version encoded in this Makefile (set by configure) with the
 # version in version.h. The version make variable is set up near the top of
@@ -587,7 +580,7 @@ tags:
 depend: 
 	@depend@ -m Makefile.in -- $(CPPFLAGS) -- \
 	$(CLIENTSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
-	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS)
+	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS) $(UNIT_TEST_SRCS)
 	$(MAKE) $(MFLAGS) Makefile
 
 # Once the unit tests are working, add this to the sources on which we run
@@ -714,9 +707,9 @@ ce_functions.o: ce_functions.cc config_dap.h BaseType.h InternalErr.h \
  gse.tab.h debug.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h \
  Int32.h UInt32.h Float32.h Float64.h Str.h Url.h Structure.h
 GSEClause.o: GSEClause.cc config_dap.h dods-datatypes.h Error.h \
- InternalErr.h GSEClause.h BaseType.h Array.h dods-limits.h Vector.h \
- DDS.h Clause.h expr.h RValue.h Grid.h Constructor.h parser.h \
- gse.tab.h debug.h
+ InternalErr.h debug.h GSEClause.h BaseType.h Array.h dods-limits.h \
+ Vector.h DDS.h Clause.h expr.h RValue.h Grid.h Constructor.h parser.h \
+ gse.tab.h
 Int16.o: Int16.cc config_dap.h Int16.h dods-datatypes.h BaseType.h \
  InternalErr.h Error.h DDS.h Clause.h expr.h RValue.h util.h Byte.h \
  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
@@ -775,11 +768,11 @@ TestFloat32.o: TestFloat32.cc config_dap.h TestFloat32.h Float32.h \
  dods-datatypes.h BaseType.h InternalErr.h Error.h
 das-test.o: das-test.cc config_dap.h DAS.h AttrTable.h Error.h \
  das.tab.h
-dds-test.o: dds-test.cc config_dap.h dds.tab.h BaseType.h \
- InternalErr.h Error.h Int32.h dods-datatypes.h DDS.h Clause.h expr.h \
- RValue.h util.h Byte.h Int16.h UInt16.h UInt32.h Float32.h Float64.h \
- Str.h dods-limits.h Url.h Array.h Vector.h List.h Structure.h \
- Constructor.h Sequence.h Grid.h
+dds-test.o: dds-test.cc config_dap.h parser.h Error.h GSEClause.h \
+ BaseType.h InternalErr.h Array.h dods-limits.h Vector.h DDS.h \
+ Clause.h expr.h RValue.h Grid.h Constructor.h dds.tab.h Int32.h \
+ dods-datatypes.h util.h Byte.h Int16.h UInt16.h UInt32.h Float32.h \
+ Float64.h Str.h Url.h List.h Structure.h Sequence.h
 expr-test.o: expr-test.cc config_dap.h DDS.h BaseType.h InternalErr.h \
  Error.h Clause.h expr.h RValue.h DataDDS.h parser.h GSEClause.h \
  Array.h dods-limits.h Vector.h Grid.h Constructor.h expr.tab.h util.h \
@@ -798,10 +791,18 @@ cgi_util.o: cgi_util.cc config_dap.h cgi_util.h Connect.h DAS.h \
  RValue.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
  Vector.h List.h Structure.h Constructor.h Sequence.h Grid.h debug.h
-escaping.o: escaping.cc
+escaping.o: escaping.cc Error.h InternalErr.h
 DODSFilter.o: DODSFilter.cc config_dap.h DAS.h AttrTable.h Error.h \
  DDS.h BaseType.h InternalErr.h Clause.h expr.h RValue.h debug.h \
  cgi_util.h Connect.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h \
  Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
  Array.h Vector.h List.h Structure.h Constructor.h Sequence.h Grid.h \
  escaping.h DODSFilter.h
+cgiUtilTest.o: cgiUtilTest.cc cgi_util.h Connect.h DAS.h AttrTable.h \
+ Error.h DDS.h BaseType.h InternalErr.h Clause.h expr.h RValue.h \
+ util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
+ Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
+ Structure.h Constructor.h Sequence.h Grid.h cgiUtilTest.h
+SequenceTest.o: SequenceTest.cc TestSequence.h Sequence.h BaseType.h \
+ InternalErr.h Error.h Constructor.h TestInt32.h Int32.h \
+ dods-datatypes.h TestStr.h dods-limits.h Str.h SequenceTest.h debug.h

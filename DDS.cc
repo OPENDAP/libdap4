@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.55 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.56 2002/06/03 22:21:15 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -48,7 +48,9 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.55 2001/08/24 17:46:22 jimg Exp
 
 using std::cerr;
 using std::endl;
+#ifdef WIN32
 using std::strstream;
+#endif
 
 void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
 int ddsparse(void *arg);
@@ -178,24 +180,7 @@ DDS::del_var(const string &n)
 BaseType *
 DDS::var(const string &n, btp_stack &s)
 {
-    for (Pix p = vars.first(); p; vars.next(p)) {
-	BaseType *btp = vars(p);
-	DBG(cerr << "Looking at " << n << " in: " << btp << endl);
-	// Look for the name in the dataset's top-level
-	if (btp->name() == n) {
-	    DBG(cerr << "Found " << n << " in: " << btp << endl);
-	    return btp;
-	}
-	if (btp->is_constructor_type()) {
-	    BaseType *btp2 = btp->var(n, s);
-	    if (btp2) {
-		s.push(btp);
-		return btp2;
-	    }
-	}
-    }
-
-    return 0;			// It is not here.
+    return var(n, &s);
 }    
 
 // Find the variable named N. Accepts both simple names and *fully* qualified
@@ -205,21 +190,17 @@ DDS::var(const string &n, btp_stack &s)
 // can be found, returns NULL.
 
 BaseType *
-DDS::var(const string &n)
+DDS::var(const string &n, btp_stack *s)
 {
-    BaseType *v = exact_match(n);
+    BaseType *v = exact_match(n, s);
     if (v)
 	return v;
 
-    v = leaf_match(n);
-    if (v)
-	return v;
-
-    return 0;
+    return leaf_match(n, s);
 }
 
 BaseType *
-DDS::leaf_match(const string &n) 
+DDS::leaf_match(const string &n, btp_stack *s) 
 {
     for (Pix p = vars.first(); p; vars.next(p)) {
 	BaseType *btp = vars(p);
@@ -229,39 +210,39 @@ DDS::leaf_match(const string &n)
 	    DBG(cerr << "Found " << n << " in: " << btp << endl);
 	    return btp;
 	}
-	if (btp->is_constructor_type() && (btp = btp->var(n, false))) {
+	if (btp->is_constructor_type() && (btp = btp->var(n, false, s))) {
 	    return btp;
 	}
     }
-
 
     return 0;			// It is not here.
 }
 
 BaseType *
-DDS::exact_match(const string &name)
+DDS::exact_match(const string &name, btp_stack *s)
 {
+    for (Pix p = vars.first(); p; vars.next(p)) {
+	BaseType *btp = vars(p);
+	DBG(cerr << "Looking for " << name << " in: " << btp << endl);
+	// Look for the name in the current ctor type or the top level
+	if (btp->name() == name) {
+	    DBG(cerr << "Found " << name << " in: " << btp << endl);
+	    return btp;
+	}
+    }
+
     string::size_type dot_pos = name.find(".");
     if (dot_pos != string::npos) {
 	string aggregate = name.substr(0, dot_pos);
 	string field = name.substr(dot_pos + 1);
 
-	BaseType *agg_ptr = var(aggregate);
-	if (agg_ptr)
-	    return agg_ptr->var(field);	// recurse
+	BaseType *agg_ptr = var(aggregate, s);
+	if (agg_ptr) {
+	    DBG(cerr << "Descending into " << agg_ptr->name() << endl);
+	    return agg_ptr->var(field, true, s);
+	}
 	else
 	    return 0;		// qualified names must be *fully* qualified
-    }
-    else {
-	for (Pix p = vars.first(); p; vars.next(p)) {
-	    BaseType *btp = vars(p);
-	    DBG(cerr << "Looking at " << name << " in: " << btp << endl);
-	    // Look for the name in the current ctor type or the top level
-	    if (btp->name() == name) {
-		DBG(cerr << "Found " << name << " in: " << btp << endl);
-		return btp;
-	    }
-	}
     }
 
     return 0;			// It is not here.
@@ -272,9 +253,9 @@ DDS::exact_match(const string &name)
 // temporary object (the string).
 
 BaseType *
-DDS::var(const char *n)
+DDS::var(const char *n, btp_stack *s)
 {
-    return var((string)n);
+    return var((string)n, s);
 }
 
 Pix 
@@ -596,13 +577,13 @@ DDS::print(FILE *out)
 {
 #ifdef WIN32
     strstream os;
-    bool retval = print(os);
+    print(os);
     flush_stream(os, out);
-    return retval;
 #else
     ofstream os(fileno(out));
     print(os);
 #endif
+	return;
 }
 
 // Print those parts (variables) of the DDS structure to OS that are marked
@@ -631,14 +612,13 @@ DDS::print_constrained(FILE *out)
 {
 #ifdef WIN32
     strstream os;
-    bool retval = print_constrained(os);
+    print_constrained(os);
     flush_stream(os, out);
-    return retval;
 #else
     ofstream os(fileno(out));
-
     print_constrained(os);
 #endif
+	return;
 }
 
 static void
@@ -727,25 +707,6 @@ DDS::parse_constraint(const string &constraint, ostream &os, bool server)
     exprparse((void *)&arg);
 
     expr_delete_buffer(buffer);
-    
-#if 0
-    bool status = exprparse((void *)&arg) == 0;
-
-    expr_delete_buffer(buffer);
-    
-    //  STATUS is the result of the parser function; if a recoverable error
-    //  was found it will be true but arg.status() will be false.
-    if (!status || !arg.status()) {// Check parse result
-	if (arg.error()) {
-	    if (server) {
-		throw *arg.error();
-	    }
-	    else
-		arg.error()->display_message();
-	}
-	throw Error(malformed_expr ,"parse error.");
-    }
-#endif
 }
 
 void
@@ -753,13 +714,13 @@ DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
 #ifdef WIN32
     strstream os;
-    bool retval = parse_constraint(constraint, os, server);	
+    parse_constraint(constraint, os, server);	
     flush_stream(os, out);
-    return retval;
 #else
     ofstream os(fileno(out));
     parse_constraint(constraint, os, server);
 #endif
+	return;
 }
 
 // We start two sinks, one for regular data and one for XDR encoded data.
@@ -860,7 +821,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 }
 
 // Mark the named variable by setting its SEND_P flag to STATE (true
-// indicates that it is to be sent). Names must be fully qualified.
+// indicates that it is to be sent).
 //
 // NB: For aggregate types this sets each part to STATE when STATE is
 // True. Thus, if State is True and N is `exp1.test', then both `exp1' and
@@ -875,6 +836,30 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 bool
 DDS::mark(const string &n, bool state)
 {
+    btp_stack *s = new btp_stack;
+
+    DBG(cerr << "Looking for " << n << endl);
+
+    BaseType *variable = var(n, s);
+    if (!variable) {
+	DBG(cerr << "Could not find variable " << n << endl);
+	return false;
+    }
+    variable->set_send_p(state);
+    DBG(cerr << "Set variable " << variable->name() << endl);
+
+    // Now check the btp_stack and run BaseType::set_send_p for every
+    // BaseType pointer on the stack.
+    while (!s->empty()) {
+	s->top()->BaseType::set_send_p(state);
+	DBG(cerr << "Set variable " << s->top()->name() << endl);
+	s->pop();
+    }
+
+    return true;
+}
+
+#if 0
     string::size_type dotpos = n.find('.');
     if (dotpos != n.npos) {
 	string aggregate = n.substr(0, dotpos);
@@ -925,7 +910,7 @@ DDS::mark(const string &n, bool state)
 
     return false;		// not found
 }
-
+#endif
 // Set the SEND_P member of every variable in the DDS to STATE.
 //
 // Returns: void
@@ -938,6 +923,27 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.56  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.53.4.8  2002/04/02 19:11:47  jimg
+// Wrapped using std::strstream in #ifdef WIN32 since that's the only time this
+// file includes the strstream header.
+//
+// Revision 1.53.4.7  2002/03/01 21:03:08  jimg
+// Significant changes to the var(...) methods. These now take a btp_stack
+// pointer and are used by DDS::mark(...). The exact_match methods have also
+// been updated so that leaf variables which contain dots in their names
+// will be found. Note that constructor variables with dots in their names
+// will break the lookup routines unless the ctor is the last field in the
+// constraint expression. These changes were made to fix bug 330.
+//
+// Revision 1.53.4.6  2002/01/30 18:53:09  jimg
+// Fixes to the comments.
+//
+// Revision 1.53.4.5  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.55  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

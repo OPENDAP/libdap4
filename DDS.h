@@ -43,12 +43,6 @@
 #include "RValue.h"
 #endif
 
-#if 0
-#ifndef _debug_h
-#include "debug.h"
-#endif
-#endif
-
 using std::cout;
 
 /** The DODS Data Descriptor Object (DDS) is a data structure used by
@@ -171,8 +165,8 @@ private:
 
 protected:
     void duplicate(const DDS &dds);
-    BaseType *leaf_match(const string &name);
-    BaseType *exact_match(const string &name);
+    BaseType *leaf_match(const string &name, btp_stack *s = 0);
+    BaseType *exact_match(const string &name, btp_stack *s = 0);
 
 public:
     /** Creates a DDS with the given string for its name. */
@@ -245,17 +239,18 @@ public:
 	use fully qualified names to get each of those variables.}
 
 	@return A pointer to the variable or null if not found. */
-    BaseType *var(const string &n);
+    BaseType *var(const string &n, btp_stack *s = 0);
 
     /** Returns a pointer to the named variable.
 	@return A pointer to the variable or null if not found. */
-    BaseType *var(const char *n);
+    BaseType *var(const char *n, btp_stack *s = 0);
 
     /** Search for for variable {\it n} as above but record all
 	compound type variables which ultimately contain {\it n} on
 	{\it s}. This stack can then be used to mark the contained
 	compound-type variables as part of the current projection.
 
+	@deprecated
 	@return A BaseType pointer to the variable {\it n} or 0 if {\it n}
 	could not be found. */
     BaseType *var(const string &n, btp_stack &s);
@@ -511,6 +506,17 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.45  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.41.4.4  2002/03/01 21:03:08  jimg
+// Significant changes to the var(...) methods. These now take a btp_stack
+// pointer and are used by DDS::mark(...). The exact_match methods have also
+// been updated so that leaf variables which contain dots in their names
+// will be found. Note that constructor variables with dots in their names
+// will break the lookup routines unless the ctor is the last field in the
+// constraint expression. These changes were made to fix bug 330.
+//
 // Revision 1.44  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

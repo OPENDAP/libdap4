@@ -1,5 +1,5 @@
 
-# $Id: urls.tcl,v 1.6 2001/08/24 17:46:24 jimg Exp $
+# $Id: urls.tcl,v 1.7 2002/06/03 22:21:17 jimg Exp $
 
 # Datasets and their expected output (the information that writeval sends to
 # stdout - not the stuff that should be going into the file).
@@ -61,19 +61,11 @@ set fnoc1_dds "Dataset {
 } fnoc1;"
 
 # URI/DSP:
-set dsp_1 "http://$host/$test_dir/nph-dods/data/dsp/f96243170857.img"
+set dsp_1 "http://$host/$test_dir/nph-dods/data/dsp/east.coast.pvu"
 set dsp_1_ce "dsp_band_1\\\[20:30\\\]\\\[20:30\\\]"
 set dsp_1_dds "Dataset {
-    Grid {
-     ARRAY:
-        Byte dsp_band_1\[lat = 512\]\[lon = 512\];
-     MAPS:
-        Float64 lat\[lat = 512\];
-        Float64 lon\[lon = 512\];
-    } dsp_band_1;
-    Float64 lat\[lat = 512\];
-    Float64 lon\[lon = 512\];
-} f96243170857;"
+    Byte dsp_band_1\\\[line = 512\\\]\\\[pixel = 512\\\];
+} east.coast.pvu;"
 
 # URI/MatLab:
 set nscat_s2 "http://$host/$test_dir/nph-dods/data/mat/NSCAT_S2.mat"
@@ -263,7 +255,8 @@ set ff_test1_dds "Dataset {
         Int32 seconds;
         String DODS_URL;
     } JPL_Pathfinder;
-} jplpath;"
+} jplpath.dat;
+"
 
 set ff_test2 "http://$host/$test_dir/nph-dods/data/ff/jplpath_space.dat"
 set ff_test2_ce1 "year"
@@ -278,4 +271,5 @@ set ff_test2_dds "Dataset {
         Int32 seconds;
         String DODS_URL;
     } JPL%20Pathfinder;
-} jplpath_space;"
+} jplpath_space.dat;
+"

@@ -11,9 +11,8 @@
 // 1/15/99 jhrg
 
 #include "config_dap.h"
-#define DODS_DEBUG 1
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.10 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.11 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <iostream>
 #include <vector>
@@ -31,6 +30,11 @@ static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.10 2001/09/28 17:50:07
 #include "debug.h"
 #include "util.h"
 
+#ifdef WIN32
+using std::vector<GSEClause *>;
+#else
+using std::vector;
+#endif
 using std::cerr;
 using std::endl;
 
@@ -277,6 +281,20 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.11  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.8.4.5  2002/03/01 21:03:08  jimg
+// Significant changes to the var(...) methods. These now take a btp_stack
+// pointer and are used by DDS::mark(...). The exact_match methods have also
+// been updated so that leaf variables which contain dots in their names
+// will be found. Note that constructor variables with dots in their names
+// will break the lookup routines unless the ctor is the last field in the
+// constraint expression. These changes were made to fix bug 330.
+//
+// Revision 1.8.4.4  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.10  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

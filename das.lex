@@ -42,12 +42,14 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.33 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.34 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <string.h>
-#include <assert.h>
+
+#include "debug.h"
 #include "parser.h"
 
+/* These defines must precede the das.tab.h include. */
 #define YYSTYPE char *
 #define YY_DECL int daslex YY_PROTO(( void ))
 
@@ -62,19 +64,6 @@ static int start_line;		/* used in quote and comment error handlers */
 %x quote
 %x comment
 
-NAN     [Nn][Aa][Nn]
-INF     [Ii][Nn][Ff]
-
-ID  	[a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\()]*
-INT	[-+]?[0-9]+
-
-MANTISA ([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
-EXPONENT (E|e)[-+]?[0-9]+
-
-FLOAT	([-+]?{MANTISA}{EXPONENT}?)|({NAN})|({INF})
-
-STR 	[-+a-zA-Z0-9_./:%+\\()]+
-
 ATTR 	attributes|Attributes|ATTRIBUTES
 
 ALIAS   ALIAS|Alias|alias
@@ -88,10 +77,17 @@ FLOAT64 FLOAT64|Float64|float64
 STRING  STRING|String|string
 URL	URL|Url|url
 
-NEVER   [^a-zA-Z0-9_/%.#:+\\()\-{};,[\]]
+/* Comment chars (#) are treated specially. Lets hope nobody wants to start
+   A variable name with one... Note that the DAS allows Identifiers to have 
+   parens and colons while the DDS and expr scanners don't. It's too hard to
+   disambiguate functions when IDs have parens in them and adding colons
+   makes parsing the array projections hard. 10/31/2001 jhrg */
+
+WORD    [-+a-zA-Z0-9_/%.:\\()][-+a-zA-Z0-9_/%.:\\()#]*
+
+NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 
 %%
-
 
 {ATTR}	    	    	daslval = yytext; return SCAN_ATTR;
 
@@ -106,10 +102,11 @@ NEVER   [^a-zA-Z0-9_/%.#:+\\()\-{};,[\]]
 {STRING}                daslval = yytext; return SCAN_STRING;
 {URL}                   daslval = yytext; return SCAN_URL;
 
-{INT}	    	    	daslval = yytext; return SCAN_INT;
-{FLOAT}	    	    	daslval = yytext; return SCAN_FLOAT;
-{ID}  	    	    	daslval = yytext; return SCAN_ID;
-{STR}	    	    	daslval = yytext; return SCAN_STR;
+{WORD}	    	    	{
+			    daslval = yytext; 
+			    DBG(cerr << "WORD: " << yytext << endl); 
+			    return SCAN_WORD;
+			}
 
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;
@@ -136,7 +133,7 @@ NEVER   [^a-zA-Z0-9_/%.#:+\\()\-{};,[\]]
 
 			  daslval = yytext;
 
-			  return SCAN_STR;
+			  return SCAN_WORD;
                         }
 <quote><<EOF>>		{
                           char msg[256];
@@ -157,6 +154,24 @@ NEVER   [^a-zA-Z0-9_/%.#:+\\()\-{};,[\]]
 
 /*
  * $Log: das.lex,v $
+ * Revision 1.34  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.30.4.5  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
+ *
  * Revision 1.33  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.
  *

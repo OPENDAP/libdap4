@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.60 2001/10/29 21:17:06 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.61 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -22,7 +22,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.60 2001/10/29 21:17:06 jimg 
 #include "Connect.h"
 
 #ifdef WIN32
-#define MAIN_RETRUN void
+#define MAIN_RETURN void
 #else
 #define MAIN_RETURN int
 #endif
@@ -30,7 +30,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.60 2001/10/29 21:17:06 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.60 $";
+const char *version = "$Revision: 1.61 $";
 
 extern int keep_temps;		// defined in Connect.cc
 
@@ -223,7 +223,7 @@ main(int argc, char * argv[])
 		break;
 	    }
     
-    delete tcode; tcode = 0;
+    delete[] tcode; tcode = 0;
 
     // If after processing all the command line options there is nothing left
     // (no URL or file) assume that we should read from stdin.
@@ -359,6 +359,15 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.61  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.52.2.11  2002/02/04 19:04:06  jimg
+// Fixed bad use of delete (shouldhave been delete[])
+//
+// Revision 1.52.2.10  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.60  2001/10/29 21:17:06  jimg
 // Fixed bad job of resolving conflict(s) from the last merge.
 //

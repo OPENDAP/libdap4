@@ -35,7 +35,7 @@ public:
 
 	@return True if the instance can be printed as a single table of
 	values, false otherwise. */
-    bool is_linear();
+    virtual bool is_linear();
 };
 
 #endif // _constructor_h 

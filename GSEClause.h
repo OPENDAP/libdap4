@@ -84,7 +84,7 @@ private:
 
 	// Set the map's max and min values for use in error messages (it's a
 	// lot easier to do here, now, than later... 9/20/2001 jhrg)
-	set_map_min_max_value<T>(vals[d_start], vals[d_stop]);
+	set_map_min_max_value(vals[d_start], vals[d_stop]);
 
 	int i = d_start;
 	int end = d_stop;
@@ -118,6 +118,27 @@ private:
 
 	return 0;
     };
+
+	//  See above comment regarding win32.  That also applies here
+	//  except that we don't have to force in a dummy arg because
+	//  we already use parameterized types in the args for this method.
+	template<class T>
+	T
+	set_map_min_max_value(T min, T max)
+	{
+    DBG(cerr << "Inside set map min max value " << min << ", " << max << endl);
+    std::ostrstream oss1;
+    oss1 << min << std::ends;
+    d_map_min_value = oss1.str();
+    oss1.freeze(0);
+
+    std::ostrstream oss2;
+    oss2 << max << std::ends;
+    d_map_max_value = oss2.str();
+    oss2.freeze(0);
+
+	return 0;
+	}
 #else
     template<class T> void set_start_stop();
     template<class T> void set_map_min_max_value(T min, T max);
@@ -194,6 +215,12 @@ public:
 };
 
 // $Log: GSEClause.h,v $
+// Revision 1.7  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.5.4.2  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.6  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

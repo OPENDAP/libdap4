@@ -14,17 +14,15 @@ typedef union {
     rvalue *rval_ptr;
     rvalue_list *r_val_l_ptr;
 } YYSTYPE;
-#define	SCAN_INT	257
-#define	SCAN_FLOAT	258
-#define	SCAN_STR	259
-#define	SCAN_ID	260
-#define	SCAN_EQUAL	261
-#define	SCAN_NOT_EQUAL	262
-#define	SCAN_GREATER	263
-#define	SCAN_GREATER_EQL	264
-#define	SCAN_LESS	265
-#define	SCAN_LESS_EQL	266
-#define	SCAN_REGEXP	267
+#define	SCAN_STR	257
+#define	SCAN_WORD	258
+#define	SCAN_EQUAL	259
+#define	SCAN_NOT_EQUAL	260
+#define	SCAN_GREATER	261
+#define	SCAN_GREATER_EQL	262
+#define	SCAN_LESS	263
+#define	SCAN_LESS_EQL	264
+#define	SCAN_REGEXP	265
 
 
 extern YYSTYPE exprlval;

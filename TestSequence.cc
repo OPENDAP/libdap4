@@ -14,6 +14,12 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.26  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.23.4.3  2002/03/29 18:40:20  jimg
+// Updated comments and/or removed dead code.
+//
 // Revision 1.25  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //
@@ -200,7 +206,7 @@ TestSequence::operator=(const TestSequence &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
+    dynamic_cast<Sequence &>(*this) = rhs; // run Constructor=
 
     _duplicate(rhs);
 

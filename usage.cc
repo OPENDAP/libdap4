@@ -14,7 +14,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.18 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.19 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -48,125 +48,6 @@ usage(char *argv[])
 	 << "      program" << endl; 
 }
 
-/** Look for the override file by taking the dataset name and appending
-    `.ovr' to it. If such a file exists, then read it in and store the
-    contents in #doc#. Note that the file contents are not checked to see if
-    they are valid HTML (which they must be). 
-
-    @return True if the `override file' is present, false otherwise. in the
-    later case #doc#'s contents are undefined.
-*/
-
-bool
-found_override(string name, string &doc)
-{
-    ifstream ifs((name + ".ovr").c_str());
-    if (!ifs)
-	return false;
-
-    char tmp[256];
-    doc = "";
-    while (!ifs.eof()) {
-	ifs.getline(tmp, 255);
-	strcat(tmp, "\n");
-	doc += tmp;
-    }
-
-    return true;
-}
-
-/** Read the input stream #in# and discard the MIME header. The MIME header
-    is separated from the body of the document by a single blank line. If no
-    MIME header is found, then the input stream is `emptied' and will contain
-    nothing.
-
-    @memo Read and discard the MIME header of the stream #in#.
-    @return True if a MIME header is found, false otherwise.
-*/
-
-bool
-remove_mime_header(FILE *in)
-{
-    char tmp[256];
-    while (!feof(in)) {
-	fgets(tmp, 255, in);
-	if (tmp[0] == '\n')
-	    return true;
-    }
-
-    return false;
-}    
-
-/** Look in the CGI directory (given by #cgi#) for a per-cgi HTML* file. Also
-    look for a dataset-specific HTML* document. Catenate the documents and
-    return them in a single String variable.
-
-    The #cgi# path must include the `API' prefix at the end of the path. For
-    example, for the NetCDF server whose prefix is `nc' and resides in the
-    DODS_ROOT/etc directory of my computer, #cgi# is
-    `/home/dcz/jimg/src/DODS/etc/nc'. This function then looks for the file
-    named #cgi#.html.
-
-    Similarly, to locate the dataset-specific HTML* file it catenates `.html'
-    to #name#, where #name# is the name of the dataset. If the filename part
-    of #name# is of the form [A-Za-z]+[0-9]*.* then this function also looks
-    for a file whose name is [A-Za-z]+.html For example, if #name# is
-    .../data/fnoc1.nc this function first looks for .../data/fnoc1.nc.html.
-    However, if that does not exist it will look for .../data/fnoc.html. This
-    allows one `per-dataset' file to be used for a collection of files with
-    the same root name.
-
-    NB: An HTML* file contains HTML without the <html>, <head> or <body> tags
-    (my own notation).
-
-    @memo Look for the user supplied CGI- and dataset-specific HTML* documents.
-    @return A String which contains these two documents catenated. Documents
-    that don't exist are treated as `empty'.
-*/
-
-string
-get_user_supplied_docs(string name, string cgi)
-{
-    char tmp[256];
-    ostrstream oss;
-    ifstream ifs((cgi + ".html").c_str());
-
-    if (ifs) {
-	while (!ifs.eof()) {
-	    ifs.getline(tmp, 255);
-	    oss << tmp << "\n";
-	}
-	ifs.close();
-	
-	oss << "<hr>";
-    }
-
-    ifs.open((name + ".html").c_str());
-
-    // If name.html cannot be opened, look for basename.html
-    if (!ifs) {
-	string::size_type slash = name.find_last_of('/');
-	string pathname = name.substr(0, slash);
-	string filename = name.substr(slash+1);
-	string new_name = pathname + "/" + filename + ".html";
-	ifs.open(new_name.c_str());
-    }
-
-    if (ifs) {
-	while (!ifs.eof()) {
-	    ifs.getline(tmp, 255);
-	    oss << tmp << "\n";
-	}
-	ifs.close();
-    }
-
-    oss << ends;
-    string html = oss.str();
-    oss.rdbuf()->freeze(0);
-
-    return html;
-}
-
 // This code could use a real `kill-file' some day - about the same time that
 // the rest of the server gets a `rc' file... For the present just see if a
 // small collection of regexs match the name.
@@ -187,6 +68,64 @@ name_is_global(string &name)
     return global.match(name.c_str(), name.length()) != -1;
 }
 
+// write_global_attributes and write_attributes are almost the same except
+// that the global attributes use fancier formatting. The formatting could be
+// passed in as params, but that would make the code much harder to
+// understand. So, I'm keeping this as two separate functions even though
+// there's some duplication... 3/27/2002 jhrg
+static void
+write_global_attributes(ostrstream &oss, AttrTable *attr, 
+			const string prefix = "")
+{
+    if (attr) {
+	for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
+	    if (attr->is_container(a))
+		write_global_attributes(oss, attr->get_attr_table(a), 
+				 (prefix == "") ? attr->get_name(a) 
+				 : prefix + string(".") + attr->get_name(a));
+	    else {
+		oss << "\n<tr><td align=right valign=top><b>"; 
+		if (prefix != "")
+		    oss << prefix << "." << attr->get_name(a);
+		else
+		    oss << attr->get_name(a);
+		oss << "</b>:</td>\n";
+
+		int num_attr = attr->get_attr_num(a) - 1;
+		oss << "<td align=left>";
+		for (int i = 0; i < num_attr; ++i)
+		    oss << attr->get_attr(a, i) << ", ";
+		oss << attr->get_attr(a, num_attr) << "<br></td></tr>\n";
+	    }
+	}
+    }
+}
+
+static void
+write_attributes(ostrstream &oss, AttrTable *attr, const string prefix = "")
+{
+    if (attr) {
+	for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
+	    if (attr->is_container(a))
+		write_attributes(oss, attr->get_attr_table(a), 
+				 (prefix == "") ? attr->get_name(a) 
+				 : prefix + string(".") + attr->get_name(a));
+	    else {
+		if (prefix != "")
+		    oss << prefix << "." << attr->get_name(a);
+		else
+		    oss << attr->get_name(a);
+		oss << ": ";
+
+		int num_attr = attr->get_attr_num(a) - 1 ;
+		for (int i = 0; i < num_attr; ++i)
+		    oss << attr->get_attr(a, i) << ", ";
+		oss << attr->get_attr(a, num_attr) << "<br>\n";
+	    }
+	}
+    }
+}
+
 /** Given the DAS and DDS, build the HTML* document which contains all the
     global attributes for this dataset. A global attribute is defined here as
     any attribute not bound to variable in the dataset. Thus the attributes
@@ -199,7 +138,6 @@ name_is_global(string &name)
     @return A string object containing the global attributes in human
     readable form (as an HTML* document).
 */
-
 string
 build_global_attributes(DAS &das, DDS &)
 {
@@ -217,20 +155,8 @@ build_global_attributes(DAS &das, DDS &)
 	// global attributes. jhrg. 5/22/97
 	if (!name_in_kill_file(name) && name_is_global(name)) {
 	    AttrTable *attr = das.get_table(p);
-
-	    if (attr) {
-		for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
-		    int num_attr = attr->get_attr_num(a);
-
-		    found = true;
-		    ga << "\n<tr><td align=right valign=top><b>" 
-		       << attr->get_name(a) << "</b>:</td>\n";
-		    ga << "<td align=left>";
-		    for (int i = 0; i < num_attr; ++i)
-			ga << attr->get_attr(a, i) << "<br>";
-		    ga << "</td></tr>\n";
-		}
-	    }
+	    found = attr->first_attr() != 0; // we have global attrs
+	    write_global_attributes(ga, attr, "");
 	}
     }
 
@@ -311,15 +237,7 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 
     AttrTable *attr = das.get_table(btp->name());
 	    
-    if (attr)			// Not all variables have attributes!
-	for (Pix a = attr->first_attr(); a; attr->next_attr(a)) {
-	    int num = attr->get_attr_num(a);
-	    
-	    vs << attr->get_name(a) << ": ";
-	    for (int i = 0; i < num; ++i, (void)(i<num && vs << ", "))
-		vs << attr->get_attr(a, i);
-	    vs << "<br>\n";
-	}
+    write_attributes(vs, attr, "");
 
     switch (btp->type()) {
       case dods_byte_c:
@@ -517,18 +435,40 @@ main(int argc, char *argv[])
 	     << error_msg
 	     << "<hr>\n";
 
+#ifndef WIN32
 	return 1;
+#endif
     }
-
-    return 0;
 
     //  Needed for VC++
 #ifdef WIN32
     return;
+#else
+    return 0;
 #endif
 }
 
 // $Log: usage.cc,v $
+// Revision 1.19  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.16.2.7  2002/03/27 17:37:49  jimg
+// Fixed printing of nested attributes. I replaced code that wrote out the
+// attributes so that nested attributes are printed using the dot notation
+// (before tehy were ignored). Look at write_attributes and
+// write_global_attributes. Bug 167.
+//
+// Revision 1.16.2.6  2002/02/04 19:05:20  jimg
+// Moved code duplicated in www_int into cgi_util.cc/h
+//
+// Revision 1.16.2.5  2002/01/23 03:17:32  jimg
+// Fixed bug 122. The group ancillary files (01base.hdf, 02base.hdf, ...) ->
+// base.html) was broken. I added a new function to cgi_util.cc and used
+// that to fix this bug.
+//
+// Revision 1.16.2.4  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.18  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

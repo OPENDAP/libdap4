@@ -14,7 +14,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.116 2001/10/29 21:24:39 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.117 2002/06/03 22:21:15 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -55,21 +55,21 @@ using std::ifstream;
 using std::ofstream;
 #ifdef WIN32
 using std::iterator;
+using std::vector<string>;
+#else
+using std::vector;
 #endif
 
-#ifdef WIN32
-#define DIR_SEP_STRING "\\"
-#define DIR_SEP_CHAR   '\\'
-#define NEWLINE "\r\n"
-#else
-#define DIR_SEP_STRING "/"
-#define DIR_SEP_CHAR   '/'
-#define NEWLINE "\n"
-#endif
+/*  Same under UNIX and win32 because libwww with       */
+/*  cache: and file: protocols don't require backslash, */
+/*  even under win32.  In fact, using the backslash     */
+/*  will bust client-side caching because of how '\'    */
+/*  makes .dodsrc get misinterpreted.                   */
+#define DIR_SEP_STRING	"/"
+#define DIR_SEP_CHAR	'/'
 
 // Constants used for temporary files.
 
-static const char DODS_PREFIX[] = { "dods" };
 static const int DEFAULT_TIMEOUT = 100;		// Timeout in seconds.
 int keep_temps = DODS_KEEP_TEMP;	// Non-zero to keep temp files.
 
@@ -468,15 +468,30 @@ server_handler(HTRequest * request, HTResponse *,
     string field = token, value = val;
     downcase(field);
     downcase(value);
+    Connect *me = (Connect *) HTRequest_context(request);
 
     if (field == "xdods-server") {
 	DBG(cerr << "Found dods server header: " << value << endl);
-	Connect *me = (Connect *) HTRequest_context(request);
 	me->_server = value;
-    } else if (field == "server") {
+    } 
+    // The test for `server' is a hold over from the pre-Java days when I
+    // used that field name. It is actually a reserved header in http. We're
+    // testing for it solely for compatibility with older servers (very old
+    // servers, in fact). However, when a server sends both an XDODS-Server
+    // and Server header and the Server header follows the XDODS-Server
+    // header, the latter overwrites the former's value. That breaks
+    // Sequences, which rely on version inforamtion to choose the correct
+    // deserialization routine. FIX: if we only set the value of _server when
+    // XDODS-Server has *not* yet been set we are sure to not overwrite its
+    // value. We can set _server using the value of Server; if an
+    // XDODS-Server follows it will overwrite that value. If not then the
+    // Server header is all we've got. 4/2/2002 jhrg
+    else if (field == "server") {
 	DBG(cerr << "Found server header: " << value << endl);
-	Connect *me = (Connect *) HTRequest_context(request);
-	me->_server = value;
+	if (me->_server == "dods/0.0") {
+	    DBG(cerr << "Setting server header: " << value << endl);
+	    me->_server = value;
+	}
     } else {
 	if (SHOW_MSG)
 	    cerr << "Unknown header: " << token << endl;
@@ -579,7 +594,7 @@ Connect::parse_mime(FILE * data_source)
 	} else if (header == "xdods-server:") {
 	    DBG(cout << header << ": " << value << endl);
 	    _server = value;
-	} else if (header == "server:") {
+	} else if (_server == "dods/0.0" && header == "server:") {
 	    DBG(cout << header << ": " << value << endl);
 	    _server = value;
 	}
@@ -625,20 +640,27 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTEventInit();
 #endif
 
-    _accept_deflate = accept_deflate = RCReader::instance()->get_never_deflate() ? false : true;
+    // Grab a pointer to the reader for the .dodsrc file.
+    RCReader *rcr = RCReader::instance();
 
-    _always_validate = RCReader::instance()->get_always_validate();
+#if 0
+    // I think there's a typo in the line below; the 2nd = should be ==.
+    // However, I think the code can be made simpler... 4/30/2002 jhrg
+    _accept_deflate = accept_deflate = rcr->get_never_deflate() ? false : true;
+#endif
+    _accept_deflate = accept_deflate && !rcr->get_never_deflate();
+    _always_validate = rcr->get_always_validate();
 
-    HTProxy_add(RCReader::instance()->get_proxy_server_protocol().c_str(),
-		RCReader::instance()-> get_proxy_server_host_url().c_str());
+    HTProxy_add(rcr->get_proxy_server_protocol().c_str(),
+		rcr-> get_proxy_server_host_url().c_str());
     
-    HTProxy_addRegex(RCReader::instance()->get_proxy_for_regexp().c_str(),
-		     RCReader::instance()->get_proxy_for_proxy_host_url().c_str(),
-		     RCReader::instance()->get_proxy_for_regexp_flags()); 
+    HTProxy_addRegex(rcr->get_proxy_for_regexp().c_str(),
+		     rcr->get_proxy_for_proxy_host_url().c_str(),
+		     rcr->get_proxy_for_regexp_flags()); 
     
-    HTNoProxy_add(RCReader::instance()->get_no_proxy_for_protocol().c_str(),
-		  RCReader::instance()->get_no_proxy_for_host().c_str(),
-		  RCReader::instance()->get_no_proxy_for_port());
+    HTNoProxy_add(rcr->get_no_proxy_for_protocol().c_str(),
+		  rcr->get_no_proxy_for_host().c_str(),
+		  rcr->get_no_proxy_for_port());
 
 
     HTLibInit(CNAME, CVER);	// These constants are in config_dap.h
@@ -694,7 +716,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 
     HTAlert_add(dods_username_password, HT_A_USER_PW);
 
-    if (!RCReader::instance()->get_use_cache()) {
+    if (!rcr->get_use_cache()) {
 	// Disable the cache. 
 	HTCacheTerminate();
 	_cache_enabled = false;
@@ -703,30 +725,26 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	//  We have to escape spaces.  Utilizing the escape functionality
 	//  forces us, in turn, to use the "file:" convention for URL's.
 #ifdef WIN32
-	string croot = string("file:/") + RCReader::instance()->get_dods_cache_root(); // cache:/ ???
+	string croot = string("file:/") + rcr->get_dods_cache_root(); // cache:/ ???
 	croot = id2www(string(croot));
 #else
 	// Changed to cache: from file:; both work but cache: is closer to
 	// the truth. 9/25/2001 jhrg
-	string croot = string("cache:") +  RCReader::instance()->get_dods_cache_root();
+	string croot = string("cache:") +  rcr->get_dods_cache_root();
 #endif
 	// I removed this line since using it screws up the UNIX code. libwww
 	// will undo the %xx escapes but not the cache: or file: protocol
 	// identifier. It thinks that it's supposed to create a directory
-	// called `file:/...' or `cache:/...' which is not true. But this is
-	// apparently needed by the WIN32 code, so I'll copy the line there.
-	// 9/25/2001 jhrg
-	//	croot = id2www(string(croot));
-
-	_cache_root = new char[strlen(RCReader::instance()->get_dods_cache_root().c_str()) + 1];
-	strcpy(_cache_root,RCReader::instance()->get_dods_cache_root().c_str());
-	if (HTCacheInit(croot.c_str(),RCReader::instance()->get_max_cache_size()) == YES) {
-	    HTCacheMode_setMaxCacheEntrySize(RCReader::instance()->get_max_cached_obj());
-	    if (RCReader::instance()->get_ignore_expires())
+	// called `file:/...' or `cache:/...' which is not true. 
+	_cache_root = new char[strlen(rcr->get_dods_cache_root().c_str()) + 1];
+	strcpy(_cache_root,rcr->get_dods_cache_root().c_str());
+	if (HTCacheInit(croot.c_str(),rcr->get_max_cache_size()) == YES) {
+	    HTCacheMode_setMaxCacheEntrySize(rcr->get_max_cached_obj());
+	    if (rcr->get_ignore_expires())
 		HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
 	    else
 		HTCacheMode_setExpires(HT_EXPIRES_AUTO);
-	    HTCacheMode_setDefaultExpiration(RCReader::instance()->get_default_expires());
+	    HTCacheMode_setDefaultExpiration(rcr->get_default_expires());
 	    _cache_enabled = true;
 	} else {
 	    // Disable the cache. 
@@ -1062,9 +1080,15 @@ Connect::fetch_url(string & url, bool) throw(Error)
     _type = unknown_type;
 
     /* NB: I've completely removed the async stuff for now. 2/18/97 jhrg */
-
-    char *c = tempnam(NULL, DODS_PREFIX);
-    FILE *stream = fopen(c, "wb");	// Open truncated for update.
+    
+    // get_tempfile_template uses new, must call delete
+    char *dods_temp = get_tempfile_template("dodsXXXXXX");
+    // Open truncated for update. NB: mkstemp() returns a file descriptor.
+#ifdef WIN32
+    FILE *stream = fopen(_mktemp(dods_temp),"wb");
+#else
+    FILE *stream = fdopen(mkstemp(dods_temp), "wb");
+#endif
 
     // This is here instead of Connect's ctor because it's possible a client
     // of Connect will call this method with a URL other than the one used to
@@ -1082,13 +1106,13 @@ Connect::fetch_url(string & url, bool) throw(Error)
     // via _output. However, this means figuring that out and getting
     // multi-part MIME docs working in DODS. 8/2/2000 jhrg
     fclose(stream);
-    stream = fopen(c, "rb");
+    stream = fopen(dods_temp, "rb");
     if (!keep_temps)
-	unlink(c);		// When _OUTPUT is closed file is deleted
+	unlink(dods_temp);	// When _OUTPUT is closed file is deleted
     else
-	cerr << "Temporary file for Data document: " << c << endl;
+	cerr << "Temporary file for Data document: " << dods_temp << endl;
 
-    free(c);			//  tempnam uses malloc !
+    delete dods_temp;
 
     _output = stream;
 
@@ -1159,21 +1183,27 @@ Connect::request_das(bool gui_p, const string & ext) throw(Error, InternalErr)
     try {
 	fetch_url(das_url);
     }
-    catch (Error &e) {
+    catch (...) {
 	close_output();
+#ifdef GUI
+	_gui->command("popdown");
+	_gui->progress_visible(false);
+#endif
 	throw;
     }
 
     switch (type()) {
       case dods_error: {
-	  Error e;
-	  if (!e.parse(_output)) {
+#ifdef GUI
+	  _gui->command("popdown");
+	  _gui->progress_visible(false);
+#endif
+	  if (!_error.parse(_output)) {
 	      throw InternalErr(__FILE__, __LINE__, 
 			"Could not parse error returned from server.");
 	      break;
 	  }
-	  _error = e;		// Copy `e' to Connect's Error. 
-	  throw e;
+	  throw _error;
 	  break;
       }
 
@@ -1185,7 +1215,18 @@ Connect::request_das(bool gui_p, const string & ext) throw(Error, InternalErr)
       case dods_das:
       default:
 	// DAS::parse throws an exception on error.
-	_das.parse(_output);	// read and parse the das from a file 
+	try {
+	    _das.parse(_output);	// read and parse the das from a file 
+	}
+	catch (...) {
+	    close_output();
+#ifdef GUI
+	    _gui->command("popdown");
+	    _gui->progress_visible(false);
+#endif
+	    throw;
+	}
+	    
 	break;
     }
 
@@ -1209,7 +1250,7 @@ Connect::request_dds(bool gui_p, const string & ext) throw(Error, InternalErr)
     try {
 	fetch_url(dds_url);
     }
-    catch (Error &e) {
+    catch (...) {
 	close_output();
 #ifdef GUI
 	_gui->command("popdown");
@@ -1241,7 +1282,17 @@ Connect::request_dds(bool gui_p, const string & ext) throw(Error, InternalErr)
       case dods_dds:
       default:
 	// DDS::prase throws an exception on error.
-	_dds.parse(_output);	// read and parse the dds from a file 
+	try {
+	    _dds.parse(_output);	// read and parse the dds from a file 
+	}
+	catch (...) {
+	    close_output();
+#ifdef GUI
+	    _gui->command("popdown");
+	    _gui->progress_visible(false);
+#endif
+	    throw;
+	}
 	break;
     }
 
@@ -1258,6 +1309,10 @@ Connect::process_data(bool async) throw(Error, InternalErr)
 {
     switch (type()) {
       case dods_error:
+#ifdef GUI
+	  _gui->command("popdown");
+	  _gui->progress_visible(false);
+#endif
 	if (!_error.parse(_output))
 	    throw InternalErr(__FILE__, __LINE__,
 	      "Could not parse the Error object returned by the server!");
@@ -1277,6 +1332,11 @@ Connect::process_data(bool async) throw(Error, InternalErr)
 	  dds->parse(_output);
 
 	  for (Pix q = dds->first_var(); q; dds->next_var(q)) {
+	      dds->var(q)->deserialize(source(), dds);
+#if 0
+	      // I think that nesting these makes messages that look goofy.
+	      // If users have to see out mistakes we might as well make the
+	      // messages look professional... 1/30/2002 jhrg
 	      try {
 		  dds->var(q)->deserialize(source(), dds);
 	      }
@@ -1285,6 +1345,7 @@ Connect::process_data(bool async) throw(Error, InternalErr)
 		  msg += NEWLINE + ie.get_error_message();
 		  throw InternalErr(__FILE__, __LINE__, msg);
 	      }
+#endif
 	  }
 
 	  return dds;
@@ -1325,9 +1386,20 @@ Connect::request_data(string expr, bool gui_p, bool async,
     string data_url = _URL + "." + ext + "?" 
 	+ id2www_ce(_proj + proj + _sel + sel);
 
-    fetch_url(data_url, async);
+    // We need to catch Error exceptions to ensure calling close_output.
+    try {
+	fetch_url(data_url);
 
-    return process_data(async);
+	return process_data(async);
+    }
+    catch (...) {
+	close_output();
+#ifdef GUI
+	_gui->command("popdown");
+	_gui->progress_visible(false);
+#endif
+	throw;
+    }
 }
 
 DDS *
@@ -1345,7 +1417,17 @@ Connect::read_data(FILE * data_source, bool gui_p, bool async)
 
     _output = data_source;
 
-    return process_data(async);
+    try {
+	return process_data(async);
+    }
+    catch (...) {
+	close_output();
+#ifdef GUI
+	_gui->command("popdown");
+	_gui->progress_visible(false);
+#endif
+	throw;
+    }
 }
 
 void *
@@ -1420,7 +1502,64 @@ Connect::set_credentials(string u, string p)
     _password = p;
 }
 
+void
+Connect::disable_cache()
+{
+    HTCacheTerminate();
+    _cache_enabled = false;
+}
+
 // $Log: Connect.cc,v $
+// Revision 1.117  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.105.2.23  2002/04/29 04:31:51  rmorris
+// Considerable patching to make win32 client-side caching work.  We need
+// to document that .dodsrc cannot use backslashes in filenames, must use
+// forward slash.  Also need to document that pointing env vars for caching
+// to places with spaces in the directory name is a no-no.
+//
+// Revision 1.105.2.22  2002/04/27 22:51:44  rmorris
+// Change to turn client-side caching on under win32.  This is still a
+// hack around the "spaces in directory names" problem.  For now we are
+// going to hardcode the cache to be in C:\TEMP\DODS, as the user-specific
+// directories are going to have spaces in them.  There is a porential
+// small, subtle problem if more than one dods user was active at the
+// same time on a win32 box (unlikely).
+//
+// Revision 1.105.2.21  2002/04/02 18:36:17  jimg
+// Fixed a bug (#416) in server_handler(). If a server sent a response that
+// included the Server header *after* it included the XDODS-Server header, the
+// value of Server was used in preference to XDODS-Server. This broke reading
+// Sequences since clients thought they were talking to an old server.
+//
+// Revision 1.105.2.20  2002/02/04 00:19:36  rmorris
+// Ported an occurance of "mkstemp" in fetch_url to use something compatible]
+// with VC++.  There is no mkstemp in win32.
+//
+// Revision 1.105.2.19  2002/01/30 18:59:55  jimg
+// I changed request_das, _dds and _data so that they take into account various
+// exceptions that may be thrown by the DAS and DDS parsers as well as
+// fetch_url. Now each of these methods catch *any* exception, close up the
+// output stream if its open and popdown the progress indicator if its up. Then
+// the exception is thrown further up the call chain.
+// I also removed an explicit catch of InternalErr in request_data which was
+// adding some more text (useless and goofy looking) to the exception and re
+// throwing it. Now the text is not added.
+// I also made read_data() (the somewhat broken method for reading from files)
+// catch (...) and close the output stream and progress indicator.
+//
+// Revision 1.105.2.18  2002/01/28 20:34:25  jimg
+// *** empty log message ***
+//
+// Revision 1.105.2.17  2002/01/17 00:42:02  jimg
+// I added a new method to disable use of the cache. This provides a way
+// for a client to suppress use of the cache even if the user wants it
+// (or doesn't say they don't want it).
+//
+// Revision 1.105.2.16  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.116  2001/10/29 21:24:39  jimg
 // Removed catch and display of Error objects thrown/returned when accessing
 // data. These Error objects must now be caught by the code that uses

@@ -20,7 +20,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.41 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.42 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -131,11 +131,9 @@ proj_func get_proj_function(const DDS &table, const char *name);
     rvalue_list *r_val_l_ptr;
 }
 
-%token <val> SCAN_INT
-%token <val> SCAN_FLOAT
 %token <val> SCAN_STR
 
-%token <id> SCAN_ID
+%token <id> SCAN_WORD
 
 %token <op> SCAN_EQUAL
 %token <op> SCAN_NOT_EQUAL
@@ -150,7 +148,7 @@ proj_func get_proj_function(const DDS &table, const char *name);
 %type <op> rel_op
 %type <int_l_ptr> array_index
 %type <int_ll_ptr> array_indices
-%type <rval_ptr> r_value constant identifier
+%type <rval_ptr> r_value id_or_const identifier
 %type <r_val_l_ptr> r_value_list arg_list
 
 %%
@@ -180,11 +178,13 @@ projection:     proj_clause
 		}
 ;
 
-proj_clause:	SCAN_ID 
+proj_clause:	SCAN_WORD 
                 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var($1);
 		    if (var) {
+			DBG(cerr << "Marking " << $1 << endl);
 			$$ = (*DDS_OBJ(arg)).mark($1, true);
+			DBG(cerr << "result: " << $$ << endl);
 		    }
 		    else {
 			no_such_ident(arg, $1, "identifier");
@@ -200,7 +200,7 @@ proj_clause:	SCAN_ID
 		}
 ;
 
-proj_function:  SCAN_ID '(' arg_list ')'
+proj_function:  SCAN_WORD '(' arg_list ')'
 	        {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -253,7 +253,7 @@ clause:		r_value rel_op '{' r_value_list '}'
 		}
 ;
 
-bool_function: SCAN_ID '(' arg_list ')'
+bool_function: SCAN_WORD '(' arg_list ')'
 	       {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
 		   if (!b_func) {
@@ -266,9 +266,8 @@ bool_function: SCAN_ID '(' arg_list ')'
 	       }
 ;
 
-r_value:        identifier
-                | constant
-		| '*' identifier
+r_value:        id_or_const
+		| '*' id_or_const
 		{
 		    $$ = dereference_variable($2, *DDS_OBJ(arg));
 		    if (!$$) {
@@ -276,13 +275,7 @@ r_value:        identifier
 				  ($2)->value_name());
 		    }
 		}
-		| '*' SCAN_STR
-		{
-		    $$ = dereference_url($2);
-		    if (!$$)
-			exprerror("Could not dereference URL", *($2).v.s);
-		}
-		| SCAN_ID '(' arg_list ')'
+		| SCAN_WORD '(' arg_list ')'
 		{
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), $1);
 		    if (func) {
@@ -320,7 +313,7 @@ arg_list:     r_value_list
 	      }
 ;
 
-identifier:	SCAN_ID 
+identifier:	SCAN_WORD 
                 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(www2id(string($1)));
 		    if (!btp) {
@@ -331,15 +324,34 @@ identifier:	SCAN_ID
 		}
 ;
 
-constant:       SCAN_INT
-                {
-		    BaseType *btp = make_variable((*DDS_OBJ(arg)), $1);
-		    $$ = new rvalue(btp);
-		}
-		| SCAN_FLOAT
-                {
-		    BaseType *btp = make_variable((*DDS_OBJ(arg)), $1);
-		    $$ = new rvalue(btp);
+id_or_const:    SCAN_WORD
+		{ 
+		    BaseType *btp = (*DDS_OBJ(arg)).var(www2id(string($1)));
+		    if (!btp) {
+			value new_val;
+			if (check_int32($1)) {
+			    new_val.type = dods_int32_c;
+			    new_val.v.i = atoi($1);
+			}
+			else if (check_uint32($1)) {
+			    new_val.type = dods_uint32_c;
+			    new_val.v.ui = atoi($1);
+			}
+			else if (check_float64($1)) {
+			    new_val.type = dods_float64_c;
+			    new_val.v.f = atof($1);
+			}
+			else {
+			    new_val.type = dods_str_c;
+			    new_val.v.s = new string($1);
+			}
+			BaseType *btp = make_variable((*DDS_OBJ(arg)), new_val); 
+			// *** test for btp == null
+			// delete new_val.v.s; // Str::val2buf copies the value.
+			$$ = new rvalue(btp);
+		    }
+		    else
+			$$ = new rvalue(btp);
 		}
 		| SCAN_STR
                 { 
@@ -348,7 +360,7 @@ constant:       SCAN_INT
 		}
 ;
 
-array_proj:	SCAN_ID array_indices 
+array_proj:	SCAN_WORD array_indices 
                 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), $1, $2))
 		    // no_such_ident throws an exception.
@@ -368,17 +380,59 @@ array_indices:  array_index
 		}
 ;
 
-array_index: 	'[' SCAN_INT ']'
+array_index: 	'[' SCAN_WORD ']'
                 {
-		    $$ = make_array_index($2);
+		    if (!check_uint32($2)) {
+			string msg = "The word `";
+			msg += string($2) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    value i;
+		    i.type = dods_uint32_c;
+		    i.v.i = atoi($2);
+		    $$ = make_array_index(i);
 		}
-		|'[' SCAN_INT ':' SCAN_INT ']'
+		|'[' SCAN_WORD ':' SCAN_WORD ']'
                 {
-		    $$ = make_array_index($2, $4);
+		    if (!check_uint32($2)) {
+			string msg = "The word `";
+			msg += string($2) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    if (!check_uint32($4)) {
+			string msg = "The word `";
+			msg += string($4) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    value i,j;
+		    i.type = j.type = dods_uint32_c;
+		    i.v.i = atoi($2);
+		    j.v.i = atoi($4);
+		    $$ = make_array_index(i, j);
 		}
-		| '[' SCAN_INT ':' SCAN_INT ':' SCAN_INT ']'
+		| '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_WORD ']'
                 {
-		    $$ = make_array_index($2, $4, $6);
+		    if (!check_uint32($2)) {
+			string msg = "The word `";
+			msg += string($2) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    if (!check_uint32($4)) {
+			string msg = "The word `";
+			msg += string($4) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    if (!check_uint32($6)) {
+			string msg = "The word `";
+			msg += string($6) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    value i, j, k;
+		    i.type = j.type = k.type = dods_uint32_c;
+		    i.v.i = atoi($2);
+		    j.v.i = atoi($4);
+		    k.v.i = atoi($6);
+		    $$ = make_array_index(i, j, k);
 		}
 ;
 
@@ -513,9 +567,9 @@ make_array_index(value &i1, value &i2, value &i3)
 {
     int_list *index = new int_list;
 
-    if (i1.type != dods_int32_c
-	|| i2.type != dods_int32_c
-	|| i3.type != dods_int32_c)
+    if (i1.type != dods_uint32_c
+	|| i2.type != dods_uint32_c
+	|| i3.type != dods_uint32_c)
 	return (int_list *)0;
 
     index->append((int)i1.v.i);
@@ -536,7 +590,7 @@ make_array_index(value &i1, value &i2)
 {
     int_list *index = new int_list;
 
-    if (i1.type != dods_int32_c || i2.type != dods_int32_c)
+    if (i1.type != dods_uint32_c || i2.type != dods_uint32_c)
 	return (int_list *)0;
 
     index->append((int)i1.v.i);
@@ -557,7 +611,7 @@ make_array_index(value &i1)
 {
     int_list *index = new int_list;
 
-    if (i1.type != dods_int32_c)
+    if (i1.type != dods_uint32_c)
 	return (int_list *)0;
 
     index->append((int)i1.v.i);
@@ -833,9 +887,6 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
 	}
 
 	s->set_row_number_constraint(start, stop, stride);
-
-	DBG(cerr << "Set Constraint: " \
-	    << a->dimension_size(a->first_dim(), true) << endl);
     }
 
     return status;
@@ -963,7 +1014,6 @@ make_variable(DDS &table, const value &val)
       }
 
       default:
-	cerr << "Unknow type constant value" << endl;
 	var = (BaseType *)0;
 	return var;
     }
@@ -1015,6 +1065,36 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.42  2002/06/03 22:21:16  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.39.4.8  2002/03/01 21:03:08  jimg
+ * Significant changes to the var(...) methods. These now take a btp_stack
+ * pointer and are used by DDS::mark(...). The exact_match methods have also
+ * been updated so that leaf variables which contain dots in their names
+ * will be found. Note that constructor variables with dots in their names
+ * will break the lookup routines unless the ctor is the last field in the
+ * constraint expression. These changes were made to fix bug 330.
+ *
+ * Revision 1.39.4.7  2002/02/20 19:16:27  jimg
+ * Changed the expression parser so that variable names may contain only
+ * digits.
+ *
+ * Revision 1.39.4.6  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
+ *
  * Revision 1.41  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.
  *
@@ -1024,8 +1104,8 @@ get_proj_function(const DDS &table, const char *name)
  *
  * Revision 1.39.4.4  2001/09/19 21:57:26  jimg
  * Changed no_such_ident(void *, const string &, const string &) so that it
- * calls exprerror(...) directly. The call to it's other overloaded version was
- * not working and resulted in an infinite loop.
+ * calls exprerror(...) directly. The call to it's other overloaded version
+ * was not working and resulted in an infinite loop.
  *
  * Revision 1.39.4.3  2001/09/06 22:04:03  jimg
  * Fixed the error message for `No such X in dataset.' I removed an extra

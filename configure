@@ -22,7 +22,7 @@
 # 4. Macros for locating various systems (Matlab, etc.)
 # 5. Macros used to test things about the computer/OS/hardware
 #
-# $Id: configure,v 1.79 2001/10/14 01:28:38 jimg Exp $
+# $Id: configure,v 1.80 2002/06/03 22:21:15 jimg Exp $
 
 # 1. Unidata's macros
 #-------------------------------------------------------------------------
@@ -246,7 +246,7 @@ NULL_PROGRAM="mail() {}"
 # cross-compile problem with test option -d
 
 
-
+    
 # cross-compile problem with test option -d
 
 
@@ -1047,7 +1047,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2

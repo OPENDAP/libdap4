@@ -212,19 +212,51 @@ Structure::buf2val(void **)
     return sizeof(Structure);
 }
 
+// If EXACT is true, then use breadth-first search and assume that NAME is
+// the path to a variable where a dot (.) separates the ctor variable(s) from
+// the variable to be found. If S is not null, push the path to NAME on the
+// statck.
+BaseType *
+Structure::var(const string &name, bool exact, btp_stack *s)
+{
+    if (exact)
+	return exact_match(name, s);
+    else
+	return leaf_match(name, s);
+}
+
+// Get rid of this method ASAP.
+// A depth-first search for leaf nodes matching NAME.
 BaseType *
 Structure::var(const string &name, btp_stack &s)
 {
+    BaseType *btp = exact_match(name, &s);
+    if (btp)
+	return btp;
+
+    return leaf_match(name, &s);
+}
+
+// If S is not null, push the path of the depth-first search for a
+// leaf-node called NAME onto S.
+BaseType *
+Structure::leaf_match(const string &name, btp_stack *s)
+{
     for (Pix p = _vars.first(); p; _vars.next(p)) {
 	if (_vars(p)->name() == name) {
-	    s.push((BaseType *)this);
+	    if (s) {
+		DBG(cerr << "Pushing " << this->name() << endl);
+		s->push(static_cast<BaseType *>(this));
+	    }
 	    return _vars(p);
 	}
-
         if (_vars(p)->is_constructor_type()) {
-	    BaseType *btp = _vars(p)->var(name, s);
+	    BaseType *btp = _vars(p)->var(name, false, s);
 	    if (btp) {
-		s.push((BaseType *)this);
+		if (s) {
+		    DBG(cerr << "Pushing " << this->name() << endl);
+		    s->push(static_cast<BaseType *>(this));
+		}
 		return btp;
 	    }
 	}
@@ -233,50 +265,41 @@ Structure::var(const string &name, btp_stack &s)
     return 0;
 }
 
-BaseType *
-Structure::var(const string &name, bool exact)
-{
-    if (exact)
-	return exact_match(name);
-    else
-	return leaf_match(name);
-}
+// Breadth-first search for NAME. If NAME contains one or more dots (.) ...
 
 BaseType *
-Structure::leaf_match(const string &name)
+Structure::exact_match(const string &name, btp_stack *s)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-	if (_vars(p)->name() == name)
+	DBG(cerr << "Looking at " << _vars(p)->name() << " in: " << _vars(p) 
+	    << endl);
+	if (_vars(p)->name() == name) {
+	    DBG(cerr << "Found " << _vars(p)->name() << " in: " 
+		<< _vars(p) << endl);
+	    if (s) {
+		DBG(cerr << "Pushing " << this->name() << endl);
+		s->push(static_cast<BaseType *>(this));
+	    }
 	    return _vars(p);
-        if (_vars(p)->is_constructor_type()) {
-	    BaseType *btp = _vars(p)->var(name, false);
-	    if (btp)
-		return btp;
 	}
     }
 
-    return 0;
-}
-
-BaseType *
-Structure::exact_match(const string &name)
-{
     string::size_type dot_pos = name.find("."); // zero-based index of `.'
     if (dot_pos != string::npos) {
 	string aggregate = name.substr(0, dot_pos);
 	string field = name.substr(dot_pos + 1);
 
 	BaseType *agg_ptr = var(aggregate);
-	if (agg_ptr)
-	    return agg_ptr->var(field);	// recurse
+	if (agg_ptr) {
+	    DBG(cerr << "Descending into " << agg_ptr->name() << endl);
+	    if (s) {
+		DBG(cerr << "Pushing " << this->name() << endl);
+		s->push(static_cast<BaseType *>(this));
+	    }
+	    return agg_ptr->var(field, true, s); // recurse
+	}
 	else
 	    return 0;		// qualified names must be *fully* qualified
-    }
-    else {
-	for (Pix p = _vars.first(); p; _vars.next(p)) {
-	    if (_vars(p)->name() == name)
-		return _vars(p);
-	}
     }
 
     return 0;
@@ -428,6 +451,17 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.48  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.43.4.8  2002/03/01 21:03:08  jimg
+// Significant changes to the var(...) methods. These now take a btp_stack
+// pointer and are used by DDS::mark(...). The exact_match methods have also
+// been updated so that leaf variables which contain dots in their names
+// will be found. Note that constructor variables with dots in their names
+// will break the lookup routines unless the ctor is the last field in the
+// constraint expression. These changes were made to fix bug 330.
+//
 // Revision 1.47  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

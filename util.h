@@ -187,8 +187,30 @@ string dap_version();
     @return A string containing only the filename given a path. */
 string path_to_filename(string path);
 
+/** Build a template for a temporary file suitable for use with mkstemp.
+    Look around for a reasonable place to put a temporary file. Check first
+    the value of the TMPDIR env var. If that does not yeild a path that's
+    writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
+    defined in stdio.h. If both come up empty, then use `./'.
+
+    This function allocates storage using new. The caller must delete the
+    char array. 
+
+    @param file_template A template suitable for use with mkstemp (so it has
+    to have six extra chars at its end. This is combined with the path to
+    some temporary directory (see above).
+    @return A writable char[] that holds the fully qualified
+    filename/template to use with mkstemp. */
+char *get_tempfile_template(char *file_template);
+
 /* 
  * $Log: util.h,v $
+ * Revision 1.41  2002/06/03 22:21:16  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.38.2.3  2002/01/28 20:34:25  jimg
+ * *** empty log message ***
+ *
  * Revision 1.40  2001/08/24 17:46:23  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *
@@ -358,7 +380,6 @@ string path_to_filename(string path);
  * Added xdr_str and xdr_url functions (C linkage). These provide a way for
  * the Str and Url classes to en/decode strings (Urls are effectively strings)
  * with only two parameters. Thus the Array and List classes might actually
- * work as planned.
- */
+ * work as planned. */
 
 #endif

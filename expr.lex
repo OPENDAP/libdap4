@@ -30,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.lex,v 1.24 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.lex,v 1.25 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -47,8 +47,10 @@ static char rcsid[] not_used = {"$Id: expr.lex,v 1.24 2001/08/24 17:46:22 jimg E
 #include "expr.tab.h"
 #include "escaping.h"
 
+#if 0
 static void store_int32();
 static void store_float64();
+#endif
 static void store_id();
 static void store_str();
 static void store_op(int op);
@@ -58,18 +60,29 @@ static void store_op(int op);
 %option noyywrap
 %x quote
     
-NAN     [Nn][Aa][Nn]
-INF     [Ii][Nn][Ff]
+/* In the DAS and DDS parsers I removed the INT and FLOAT lexemes. However,
+   not having them here complicates parsing since you must check to see if a
+   word is a number (like 2.3) or a variable called `2.3.' I'm assuming that
+   people will always put some characters in variable names (e.g., they'll
+   use `2300.7%20MHz' and not just `2300.7'). If that turns out to be a bad
+   assumption, the we'll have to put more code in the parser to figure out
+   what exactly each word is; is it a constant or a variable name. Time will
+   tell. 10/31/2001 jhrg */
 
-SCAN_ID		[a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\]*
+NAN		[Nn][Aa][Nn]
+INF		[Ii][Nn][Ff]
+/*
 SCAN_INT	[-+]?[0-9]+
-
 SCAN_MANTISA	([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
 SCAN_EXPONENT	(E|e)[-+]?[0-9]+
 
 SCAN_FLOAT	([-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?)|({NAN})|({INF})
+*/
 
-SCAN_STR	[-+a-zA-Z0-9_./%+\\]+
+/* See das.lex for comments about the characters allowed in a WORD.
+   10/31/2001 jhrg */
+
+SCAN_WORD       [-+a-zA-Z0-9_/%.\\][-+a-zA-Z0-9_/%.\\#]*
 
 SCAN_EQUAL	=
 SCAN_NOT_EQUAL	!=
@@ -79,24 +92,9 @@ SCAN_LESS	<
 SCAN_LESS_EQL	<=
 SCAN_REGEXP	=~
 
-NEVER		[^a-zA-Z0-9_/%.#:+\\()\-{};,[\]*&]
+NEVER		[^\-+a-zA-Z0-9_/%.\\#:;,(){}[\]*&<>=~]
 
 %%
-
-{SCAN_ID}	store_id(); return SCAN_ID;
-{SCAN_INT}	store_int32(); return SCAN_INT;
-
-{SCAN_FLOAT}	store_float64(); return SCAN_FLOAT;
-
-{SCAN_STR}	store_str(); return SCAN_STR;
-
-{SCAN_EQUAL}	store_op(SCAN_EQUAL); return SCAN_EQUAL;
-{SCAN_NOT_EQUAL} store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
-{SCAN_GREATER}	store_op(SCAN_GREATER); return SCAN_GREATER;
-{SCAN_GREATER_EQL} store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
-{SCAN_LESS}	store_op(SCAN_LESS); return SCAN_LESS;
-{SCAN_LESS_EQL}	store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
-{SCAN_REGEXP}	store_op(SCAN_REGEXP); return SCAN_REGEXP;
 
 "["    	    	return (int)*yytext;
 "]"    	    	return (int)*yytext;
@@ -108,6 +106,16 @@ NEVER		[^a-zA-Z0-9_/%.#:+\\()\-{};,[\]*&]
 ")"		return (int)*yytext;
 "{"		return (int)*yytext;
 "}"		return (int)*yytext;
+
+{SCAN_WORD}	store_id(); return SCAN_WORD;
+
+{SCAN_EQUAL}	store_op(SCAN_EQUAL); return SCAN_EQUAL;
+{SCAN_NOT_EQUAL} store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
+{SCAN_GREATER}	store_op(SCAN_GREATER); return SCAN_GREATER;
+{SCAN_GREATER_EQL} store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
+{SCAN_LESS}	store_op(SCAN_LESS); return SCAN_LESS;
+{SCAN_LESS_EQL}	store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
+{SCAN_REGEXP}	store_op(SCAN_REGEXP); return SCAN_REGEXP;
 
 [ \t\r\n]+
 <INITIAL><<EOF>> yy_init = 1; yyterminate();
@@ -166,6 +174,7 @@ expr_delete_buffer(void *buf)
 // type) then the signed value can be cast back to unsigned without losing
 // information.
 
+#if 0
 static void
 store_int32()
 {
@@ -179,6 +188,7 @@ store_float64()
     exprlval.val.type = dods_float64_c;
     exprlval.val.v.f = atof(yytext);
 }
+#endif
 
 static void
 store_id()
@@ -210,6 +220,28 @@ store_op(int op)
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.25  2002/06/03 22:21:16  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.23.4.5  2002/02/20 19:16:27  jimg
+ * Changed the expression parser so that variable names may contain only
+ * digits.
+ *
+ * Revision 1.23.4.4  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
+ *
  * Revision 1.24  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *

@@ -2,6 +2,24 @@
 # jhrg
 #
 # $Log: test.17.exp,v $
+# Revision 1.10  2002/06/03 22:21:16  jimg
+# Merged with release-3-2-9
+#
+# Revision 1.9.4.1  2001/11/01 00:43:52  jimg
+# Fixes to the scanners and parsers so that dataset variable names may
+# start with digits. I've expanded the set of characters that may appear
+# in a variable name and made it so that all except `#' may appear at
+# the start. Some characters are not allowed in variables that appear in
+# a DDS or CE while they are allowed in the DAS. This makes it possible
+# to define containers with names like `COARDS:long_name.' Putting a colon
+# in a variable name makes the CE parser much more complex. Since the set
+# of characters that people want seems pretty limited (compared to the
+# complete ASCII set) I think this is an OK approach. If we have to open
+# up the expr.lex scanner completely, then we can but not without adding
+# lots of action clauses to teh parser. Note that colon is just an example,
+# there's a host of characters that are used in CEs that are not allowed
+# in IDs.
+#
 # Revision 1.9  2000/09/22 02:52:59  jimg
 # Fixes to the tests to recognize some of the new error messages. Also,
 # the test drivers were modified to catch the exceptions now thrown by
@@ -47,10 +65,21 @@ set test_name test.17
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Error parsing the text on line 7 at or near: \"this is not a byte\"
-Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,
-Float64, String or Url) followed by a name and value.
-"
+set test_out "Attributes {
+    test {
+        test_dods_errors {
+            Byte b \"this is not a byte\";
+            String b_explanation \"`\"this is not a byte\"' is not a Byte value.\";
+            Byte c -256;
+            String c_explanation \"`-256' is not a Byte value.\";
+            Byte e 2550;
+            String e_explanation \"`2550' is not a Byte value.\";
+            Byte f 2.55;
+            String f_explanation \"`2.55' is not a Byte value.\";
+        }
+        Byte d 255;
+    }
+}"
 
 das-test_start p $srcdir/$test_name
 

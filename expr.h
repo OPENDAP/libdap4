@@ -27,6 +27,7 @@
 typedef struct {
     Type type;			// Type is an enum defined in BaseType.h
     union {
+	unsigned int ui;
 	int i;
 	double f;
 	string *s;
@@ -52,6 +53,13 @@ typedef SLList<int> int_list;
 typedef SLList<int_list *> int_list_list;
 
 // $Log: expr.h,v $
+// Revision 1.14  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.13.4.1  2002/02/20 19:16:27  jimg
+// Changed the expression parser so that variable names may contain only
+// digits.
+//
 // Revision 1.13  2000/09/22 02:17:22  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

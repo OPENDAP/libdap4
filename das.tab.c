@@ -12,20 +12,17 @@
 #define yydebug dasdebug
 #define yynerrs dasnerrs
 #define	SCAN_ATTR	257
-#define	SCAN_ID	258
-#define	SCAN_INT	259
-#define	SCAN_FLOAT	260
-#define	SCAN_STR	261
-#define	SCAN_ALIAS	262
-#define	SCAN_BYTE	263
-#define	SCAN_INT16	264
-#define	SCAN_UINT16	265
-#define	SCAN_INT32	266
-#define	SCAN_UINT32	267
-#define	SCAN_FLOAT32	268
-#define	SCAN_FLOAT64	269
-#define	SCAN_STRING	270
-#define	SCAN_URL	271
+#define	SCAN_WORD	258
+#define	SCAN_ALIAS	259
+#define	SCAN_BYTE	260
+#define	SCAN_INT16	261
+#define	SCAN_UINT16	262
+#define	SCAN_INT32	263
+#define	SCAN_UINT32	264
+#define	SCAN_FLOAT32	265
+#define	SCAN_FLOAT64	266
+#define	SCAN_STRING	267
+#define	SCAN_URL	268
 
 #line 18 "das.y"
 
@@ -34,7 +31,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.26 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.27 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,6 +64,8 @@ using std::ostrstream;
 // pointer to an error object and a pointer to an integer status variable are
 // passed in to the parser within a strucutre (which itself is passed as a
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+// The parser now throws an exception when it encounters an error. 5/23/2002
+// jhrg 
 
 #define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
 
@@ -124,26 +123,26 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 
 
 
-#define	YYFINAL		119
+#define	YYFINAL		125
 #define	YYFLAG		-32768
-#define	YYNTBASE	22
+#define	YYNTBASE	19
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 271 ? yytranslate[x] : 64)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 268 ? yytranslate[x] : 62)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,    21,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,    20,     2,
+     2,     2,     2,    18,     2,     2,     2,     2,     2,     2,
+     2,     2,     2,     2,     2,     2,     2,     2,    17,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,    18,     2,    19,     2,     2,     2,     2,     2,
+     2,     2,    15,     2,    16,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -157,8 +156,7 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
-     7,     8,     9,    10,    11,    12,    13,    14,    15,    16,
-    17
+     7,     8,     9,    10,    11,    12,    13,    14
 };
 
 #if YYDEBUG != 0
@@ -169,31 +167,32 @@ static const short yyprhs[] = {     0,
     80,    87,    88,    89,    96,    97,    98,   105,   106,   107,
    114,   115,   119,   121,   125,   127,   131,   133,   137,   139,
    143,   145,   149,   151,   155,   157,   161,   163,   167,   169,
-   173,   175,   177,   179,   181,   183,   185,   187,   189,   190,
-   191
+   173,   175,   177,   179,   181,   183,   185,   187,   189,   191,
+   193,   195,   197,   199,   201,   202,   203
 };
 
 static const short yyrhs[] = {    -1,
-    23,    24,     0,    25,     0,    24,    25,     0,     3,    18,
-    26,    19,     0,     1,     0,     0,    27,     0,    26,    27,
-     0,    61,     0,     0,     0,     9,    28,     4,    29,    49,
-    20,     0,     0,     0,    10,    30,     4,    31,    50,    20,
-     0,     0,     0,    11,    32,     4,    33,    51,    20,     0,
-     0,     0,    12,    34,     4,    35,    52,    20,     0,     0,
-     0,    13,    36,     4,    37,    53,    20,     0,     0,     0,
-    14,    38,     4,    39,    54,    20,     0,     0,     0,    15,
-    40,     4,    41,    55,    20,     0,     0,     0,    16,    42,
-     4,    43,    56,    20,     0,     0,     0,    17,    44,     4,
-    45,    57,    20,     0,     0,     0,     4,    46,    18,    26,
-    47,    19,     0,     0,     1,    48,    20,     0,     5,     0,
-    49,    21,     5,     0,     5,     0,    50,    21,     5,     0,
-     5,     0,    51,    21,     5,     0,     5,     0,    52,    21,
-     5,     0,     5,     0,    53,    21,     5,     0,    60,     0,
-    54,    21,    60,     0,    60,     0,    55,    21,    60,     0,
-    59,     0,    56,    21,    59,     0,    58,     0,    57,    21,
-    58,     0,     4,     0,     7,     0,     7,     0,     4,     0,
-     5,     0,     6,     0,     6,     0,     5,     0,     0,     0,
-     8,     4,    62,     4,    63,    20,     0
+    20,    21,     0,    22,     0,    21,    22,     0,     3,    15,
+    23,    16,     0,     1,     0,     0,    24,     0,    23,    24,
+     0,    59,     0,     0,     0,     6,    25,    58,    26,    46,
+    17,     0,     0,     0,     7,    27,    58,    28,    47,    17,
+     0,     0,     0,     8,    29,    58,    30,    48,    17,     0,
+     0,     0,     9,    31,    58,    32,    49,    17,     0,     0,
+     0,    10,    33,    58,    34,    50,    17,     0,     0,     0,
+    11,    35,    58,    36,    51,    17,     0,     0,     0,    12,
+    37,    58,    38,    52,    17,     0,     0,     0,    13,    39,
+    58,    40,    53,    17,     0,     0,     0,    14,    41,    58,
+    42,    54,    17,     0,     0,     0,     4,    43,    15,    23,
+    44,    16,     0,     0,     1,    45,    17,     0,     4,     0,
+    46,    18,     4,     0,     4,     0,    47,    18,     4,     0,
+     4,     0,    48,    18,     4,     0,     4,     0,    49,    18,
+     4,     0,     4,     0,    50,    18,     4,     0,    57,     0,
+    51,    18,    57,     0,    57,     0,    52,    18,    57,     0,
+    56,     0,    53,    18,    56,     0,    55,     0,    54,    18,
+    55,     0,     4,     0,     4,     0,     4,     0,     4,     0,
+     5,     0,     6,     0,     7,     0,     8,     0,     9,     0,
+    10,     0,    11,     0,    12,     0,    13,     0,    14,     0,
+     0,     0,     5,     4,    60,     4,    61,    17,     0
 };
 
 #endif
@@ -206,8 +205,8 @@ static const short yyrline[] = { 0,
    225,   227,   228,   229,   231,   232,   233,   235,   255,   263,
    263,   267,   269,   273,   279,   283,   289,   293,   299,   303,
    309,   313,   319,   323,   329,   333,   339,   343,   349,   353,
-   359,   359,   362,   362,   362,   362,   365,   365,   368,   373,
-   377
+   359,   362,   365,   368,   368,   368,   368,   368,   369,   369,
+   369,   369,   370,   370,   373,   378,   382
 };
 #endif
 
@@ -215,25 +214,25 @@ static const short yyrline[] = { 0,
 #if YYDEBUG != 0 || defined (YYERROR_VERBOSE)
 
 static const char * const yytname[] = {   "$","error","$undefined.","SCAN_ATTR",
-"SCAN_ID","SCAN_INT","SCAN_FLOAT","SCAN_STR","SCAN_ALIAS","SCAN_BYTE","SCAN_INT16",
-"SCAN_UINT16","SCAN_INT32","SCAN_UINT32","SCAN_FLOAT32","SCAN_FLOAT64","SCAN_STRING",
-"SCAN_URL","'{'","'}'","';'","','","attr_start","@1","attributes","attribute",
-"attr_list","attr_tuple","@2","@3","@4","@5","@6","@7","@8","@9","@10","@11",
-"@12","@13","@14","@15","@16","@17","@18","@19","@20","@21","@22","bytes","int16",
-"uint16","int32","uint32","float32","float64","strs","urls","url","str_or_id",
-"float_or_int","alias","@23","@24", NULL
+"SCAN_WORD","SCAN_ALIAS","SCAN_BYTE","SCAN_INT16","SCAN_UINT16","SCAN_INT32",
+"SCAN_UINT32","SCAN_FLOAT32","SCAN_FLOAT64","SCAN_STRING","SCAN_URL","'{'","'}'",
+"';'","','","attr_start","@1","attributes","attribute","attr_list","attr_tuple",
+"@2","@3","@4","@5","@6","@7","@8","@9","@10","@11","@12","@13","@14","@15",
+"@16","@17","@18","@19","@20","@21","@22","bytes","int16","uint16","int32","uint32",
+"float32","float64","strs","urls","url","str_or_id","float_or_int","name","alias",
+"@23","@24", NULL
 };
 #endif
 
 static const short yyr1[] = {     0,
-    23,    22,    24,    24,    25,    25,    26,    26,    26,    27,
-    28,    29,    27,    30,    31,    27,    32,    33,    27,    34,
-    35,    27,    36,    37,    27,    38,    39,    27,    40,    41,
-    27,    42,    43,    27,    44,    45,    27,    46,    47,    27,
-    48,    27,    49,    49,    50,    50,    51,    51,    52,    52,
-    53,    53,    54,    54,    55,    55,    56,    56,    57,    57,
-    58,    58,    59,    59,    59,    59,    60,    60,    62,    63,
-    61
+    20,    19,    21,    21,    22,    22,    23,    23,    23,    24,
+    25,    26,    24,    27,    28,    24,    29,    30,    24,    31,
+    32,    24,    33,    34,    24,    35,    36,    24,    37,    38,
+    24,    39,    40,    24,    41,    42,    24,    43,    44,    24,
+    45,    24,    46,    46,    47,    47,    48,    48,    49,    49,
+    50,    50,    51,    51,    52,    52,    53,    53,    54,    54,
+    55,    56,    57,    58,    58,    58,    58,    58,    58,    58,
+    58,    58,    58,    58,    60,    61,    59
 };
 
 static const short yyr2[] = {     0,
@@ -243,86 +242,90 @@ static const short yyr2[] = {     0,
      6,     0,     0,     6,     0,     0,     6,     0,     0,     6,
      0,     3,     1,     3,     1,     3,     1,     3,     1,     3,
      1,     3,     1,     3,     1,     3,     1,     3,     1,     3,
-     1,     1,     1,     1,     1,     1,     1,     1,     0,     0,
-     6
+     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+     1,     1,     1,     1,     0,     0,     6
 };
 
 static const short yydefact[] = {     1,
      0,     6,     0,     0,     3,     0,     4,    41,    38,     0,
     11,    14,    17,    20,    23,    26,    29,    32,    35,     0,
-     8,    10,     0,     0,    69,     0,     0,     0,     0,     0,
-     0,     0,     0,     0,     5,     9,    42,     0,     0,    12,
-    15,    18,    21,    24,    27,    30,    33,    36,     0,    70,
-     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-     0,    43,     0,    45,     0,    47,     0,    49,     0,    51,
-     0,    68,    67,     0,    53,     0,    55,    64,    65,    66,
-    63,     0,    57,    61,    62,     0,    59,    40,    71,    13,
-     0,    16,     0,    19,     0,    22,     0,    25,     0,    28,
-     0,    31,     0,    34,     0,    37,     0,    44,    46,    48,
-    50,    52,    54,    56,    58,    60,     0,     0,     0
+     8,    10,     0,     0,    75,     0,     0,     0,     0,     0,
+     0,     0,     0,     0,     5,     9,    42,     0,     0,    64,
+    65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
+    12,    15,    18,    21,    24,    27,    30,    33,    36,     0,
+    76,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+     0,     0,    43,     0,    45,     0,    47,     0,    49,     0,
+    51,     0,    63,     0,    53,     0,    55,    62,     0,    57,
+    61,     0,    59,    40,    77,    13,     0,    16,     0,    19,
+     0,    22,     0,    25,     0,    28,     0,    31,     0,    34,
+     0,    37,     0,    44,    46,    48,    50,    52,    54,    56,
+    58,    60,     0,     0,     0
 };
 
-static const short yydefgoto[] = {   117,
-     1,     4,     5,    20,    21,    26,    51,    27,    52,    28,
-    53,    29,    54,    30,    55,    31,    56,    32,    57,    33,
-    58,    34,    59,    24,    60,    23,    63,    65,    67,    69,
-    71,    74,    76,    82,    86,    87,    83,    75,    22,    39,
-    61
+static const short yydefgoto[] = {   123,
+     1,     4,     5,    20,    21,    26,    62,    27,    63,    28,
+    64,    29,    65,    30,    66,    31,    67,    32,    68,    33,
+    69,    34,    70,    24,    71,    23,    74,    76,    78,    80,
+    82,    84,    86,    89,    92,    93,    90,    85,    51,    22,
+    39,    72
 };
 
 static const short yypact[] = {-32768,
-    20,-32768,    25,     3,-32768,     1,-32768,-32768,-32768,    37,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    23,
--32768,-32768,    27,    33,-32768,    76,    77,    78,    79,    80,
-    81,    82,    83,    84,-32768,-32768,-32768,     1,    85,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    44,-32768,
-    57,    86,    87,    88,    89,     2,     2,    60,    15,    71,
-    75,-32768,     5,-32768,     8,-32768,    29,-32768,    48,-32768,
-    50,-32768,-32768,    52,-32768,    54,-32768,-32768,-32768,-32768,
--32768,    56,-32768,-32768,-32768,    58,-32768,-32768,-32768,-32768,
-    91,-32768,    92,-32768,    93,-32768,    94,-32768,    95,-32768,
-     2,-32768,     2,-32768,    60,-32768,    15,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,-32768,   101,   102,-32768
+    68,-32768,   -12,    67,-32768,     0,-32768,-32768,-32768,    13,
+-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    14,
+-32768,-32768,    12,    70,-32768,    52,    52,    52,    52,    52,
+    52,    52,    52,    52,-32768,-32768,-32768,     0,    50,-32768,
+-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
+-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    39,
+-32768,    80,    88,    89,    90,    91,    92,    92,    93,    94,
+    83,    84,-32768,    55,-32768,    57,-32768,    59,-32768,    61,
+-32768,    63,-32768,    65,-32768,    69,-32768,-32768,    71,-32768,
+-32768,    73,-32768,-32768,-32768,-32768,    96,-32768,    98,-32768,
+    99,-32768,   100,-32768,   101,-32768,    92,-32768,    92,-32768,
+    93,-32768,    94,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
+-32768,-32768,   106,   107,-32768
 };
 
 static const short yypgoto[] = {-32768,
--32768,-32768,    99,    66,   -19,-32768,-32768,-32768,-32768,-32768,
+-32768,-32768,   104,    72,   -18,-32768,-32768,-32768,-32768,-32768,
 -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
 -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,-32768,-32768,-32768,-32768,    -2,     4,   -57,-32768,-32768,
--32768
+-32768,-32768,-32768,-32768,-32768,    -4,     1,   -68,     4,-32768,
+-32768,-32768
 };
 
 
-#define	YYLAST		109
+#define	YYLAST		112
 
 
-static const short yytable[] = {    77,
-    36,     8,    -2,     2,     9,     3,    72,    73,    10,    11,
-    12,    13,    14,    15,    16,    17,    18,    19,    84,    -7,
-     2,    85,     3,     8,    90,    91,     9,    92,    93,    36,
-    10,    11,    12,    13,    14,    15,    16,    17,    18,    19,
-    25,    35,     6,   113,     8,   114,    37,     9,    94,    95,
-    38,    10,    11,    12,    13,    14,    15,    16,    17,    18,
-    19,    62,   -39,    78,    79,    80,    81,    96,    97,    98,
-    99,   100,   101,   102,   103,   104,   105,   106,   107,    40,
-    41,    42,    43,    44,    45,    46,    47,    48,    50,    88,
-    64,    66,    68,    70,    89,   108,   109,   110,   111,   112,
-   118,   119,     7,    49,   116,     0,     0,     0,   115
+static const short yytable[] = {    87,
+     8,    36,     6,     9,    10,    11,    12,    13,    14,    15,
+    16,    17,    18,    19,     8,    -7,    25,     9,    10,    11,
+    12,    13,    14,    15,    16,    17,    18,    19,    37,    35,
+    52,    53,    54,    55,    56,    57,    58,    59,   119,     8,
+   120,    36,     9,    10,    11,    12,    13,    14,    15,    16,
+    17,    18,    19,    61,   -39,    40,    41,    42,    43,    44,
+    45,    46,    47,    48,    49,    50,    -2,     2,     2,     3,
+     3,    96,    97,    98,    99,   100,   101,   102,   103,   104,
+   105,   106,   107,    73,    38,   108,   109,   110,   111,   112,
+   113,    75,    77,    79,    81,    83,    88,    91,    94,   114,
+    95,   115,   116,   117,   118,   124,   125,     7,   122,    60,
+     0,   121
 };
 
-static const short yycheck[] = {    57,
-    20,     1,     0,     1,     4,     3,     5,     6,     8,     9,
-    10,    11,    12,    13,    14,    15,    16,    17,     4,    19,
-     1,     7,     3,     1,    20,    21,     4,    20,    21,    49,
-     8,     9,    10,    11,    12,    13,    14,    15,    16,    17,
-     4,    19,    18,   101,     1,   103,    20,     4,    20,    21,
-    18,     8,     9,    10,    11,    12,    13,    14,    15,    16,
-    17,     5,    19,     4,     5,     6,     7,    20,    21,    20,
-    21,    20,    21,    20,    21,    20,    21,    20,    21,     4,
-     4,     4,     4,     4,     4,     4,     4,     4,     4,    19,
-     5,     5,     5,     5,    20,     5,     5,     5,     5,     5,
-     0,     0,     4,    38,   107,    -1,    -1,    -1,   105
+static const short yycheck[] = {    68,
+     1,    20,    15,     4,     5,     6,     7,     8,     9,    10,
+    11,    12,    13,    14,     1,    16,     4,     4,     5,     6,
+     7,     8,     9,    10,    11,    12,    13,    14,    17,    16,
+    27,    28,    29,    30,    31,    32,    33,    34,   107,     1,
+   109,    60,     4,     5,     6,     7,     8,     9,    10,    11,
+    12,    13,    14,     4,    16,     4,     5,     6,     7,     8,
+     9,    10,    11,    12,    13,    14,     0,     1,     1,     3,
+     3,    17,    18,    17,    18,    17,    18,    17,    18,    17,
+    18,    17,    18,     4,    15,    17,    18,    17,    18,    17,
+    18,     4,     4,     4,     4,     4,     4,     4,    16,     4,
+    17,     4,     4,     4,     4,     0,     0,     4,   113,    38,
+    -1,   111
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/lib/bison.simple"
@@ -893,11 +896,11 @@ case 6:
     break;}
 case 11:
 #line 199 "das.y"
-{ *type = "Byte"; ;
+{ save_str(*type, "Byte", das_line_num); ;
     break;}
 case 12:
 #line 200 "das.y"
-{ *name = yyvsp[0]; ;
+{ save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 14:
 #line 203 "das.y"
@@ -1107,14 +1110,14 @@ case 60:
 		    add_attribute(*type, *name, yyvsp[0], &check_url);
 		;
     break;}
-case 69:
-#line 369 "das.y"
+case 75:
+#line 374 "das.y"
 { 
 		    *name = yyvsp[0];
 		;
     break;}
-case 70:
-#line 373 "das.y"
+case 76:
+#line 378 "das.y"
 {
 		    add_alias(DAS_OBJ(arg), TOP_OF_STACK, *name, string(yyvsp[0]))
                 ;
@@ -1341,7 +1344,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 378 "das.y"
+#line 384 "das.y"
 
 
 // This function is required for linking, but DODS uses its own error
@@ -1380,9 +1383,6 @@ add_attribute(const string &type, const string &name, const string &value,
 	msg += value + "' is not " + a_or_an(type) + " " + type + " value.";
 	add_bad_attribute(TOP_OF_STACK, type, name, value, msg);
 	return;
-#if 0
-	parse_error(msg.c_str(), das_line_num);	// throws Error.
-#endif
     }
     
     if (STACK_EMPTY) {
@@ -1429,7 +1429,7 @@ static void
 add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 		  const string &value, const string &msg)
 {
-    // First, if this is badd value is already in a *_dods_errors container,
+    // First, if this bad value is already in a *_dods_errors container,
     // then just add it. This can happen when the server side processes a DAS
     // and then hands it off to a client which does the same.
     // Make a new container. Call it <attr's name>_errors. If that container
@@ -1455,9 +1455,31 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.26  2001/10/14 01:28:38  jimg
- * Merged with release-3-2-8.
+ * Revision 1.27  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
  *
+ * Revision 1.40.4.7  2002/03/14 20:03:08  jimg
+ * Changed the parser so that the attriute type names can also be names of
+ * attribbtues. For example String Url "http..."; is now legal. This fixes
+ * Bug 393.
+ *
+ * Revision 1.40.4.6  2002/01/28 20:34:25  jimg
+ * *** empty log message ***
+ *
+ * Revision 1.40.4.5  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
  *
  * Revision 1.42  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.

@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.11 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.12 2002/06/03 22:21:15 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -65,7 +65,10 @@ DataDDS::_version_string_to_numbers()
 // public
 
 DataDDS::DataDDS(const string &n, const string &v)
-    :DDS(n), _server_version(v), _sequence_level(0)
+    :DDS(n), _server_version(v)
+#if 0
+, _sequence_level(0)
+#endif
 {
     _version_string_to_numbers();
 }
@@ -93,6 +96,7 @@ DataDDS::get_version_minor()
     return _server_version_minor;
 }
 
+#if 0
 int
 DataDDS::sequence_level()
 {
@@ -104,8 +108,12 @@ DataDDS::set_sequence_level(int level)
 {
     _sequence_level = level;
 }
+#endif
 
 // $Log: DataDDS.cc,v $
+// Revision 1.12  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
 // Revision 1.11  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

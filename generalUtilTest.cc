@@ -95,11 +95,45 @@ public:
 	assert(*store_str("test%20ing") == "test ing");
     }
 
+    void escattr_test() {
+	// The backslash escapes the double quote; in the returned string the
+	// first two backslashes are a single escaped bs, the third bs
+	// escapes the double quote.
+	assert(escattr("this_contains a double quote (\")")
+	       == "this_contains a double quote (\\\")");
+	assert(escattr("this_contains a backslash (\\)")
+	       == "this_contains a backslash (\\\\)");
+    }
+
     void munge_error_message_test() {
 	assert(munge_error_message("An Error") == "\"An Error\"");
 	assert(munge_error_message("\"An Error\"") == "\"An Error\"");
 	assert(munge_error_message("An \"E\"rror") == "\"An \\\"E\\\"rror\"");
 	assert(munge_error_message("An \\\"E\\\"rror") == "\"An \\\"E\\\"rror\"");
+    }
+
+    void get_tempfile_template_test() {
+	if (setenv("TMPDIR", "/tmp", 1) == 0) {
+	    cerr << "TMPDIR: " << getenv("TMPDIR") << endl;
+	    assert(strcmp(get_tempfile_template("DODSXXXXXX"),
+			  "/tmp/DODSXXXXXX") == 0);
+	}
+	else
+	    cerr << "Did not test setting TMPDIR" << endl;
+
+	if (setenv("TMPDIR", "/usr/local/tmp/", 1) == 0)
+	    assert(strcmp(get_tempfile_template("DODSXXXXXX"),
+			  "/usr/local/tmp//DODSXXXXXX") == 0);
+	else
+	    cerr << "Did not test setting TMPDIR" << endl;
+
+#if defined(P_tmpdir)
+	string tmplt = P_tmpdir;
+	tmplt.append("/"); tmplt.append("DODSXXXXXX");
+	setenv("TMPDIR", "", 1);
+	assert(strcmp(get_tempfile_template("DODSXXXXXX"), tmplt.c_str()) 
+	       == 0);
+#endif
     }
 
     static Test *suite ()  {
@@ -128,6 +162,13 @@ public:
 	s->addTest(new TestCaller<generalUtilTest>
 		   ("munge_error_message_test", 
 		    &generalUtilTest::munge_error_message_test));
+
+	s->addTest(new TestCaller<generalUtilTest>
+		   ("get_tempfile_template_test", 
+		    &generalUtilTest::get_tempfile_template_test));
+
+	s->addTest(new TestCaller<generalUtilTest>
+		   ("escattr_test", &generalUtilTest::escattr_test));
 
 	return s;
     }

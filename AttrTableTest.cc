@@ -65,11 +65,6 @@ public:
     }
 
     bool re_match(Regex &r, const char *s) {
-#if 0
-	cerr << "s: " << s << endl;
-	cerr << "strlen(s): " << (int)strlen(s) << endl;
-	cerr << "r.match(s): " << r.match(s, strlen(s)) << endl;
-#endif
 	return r.match(s, strlen(s)) == (int)strlen(s);
     }
 

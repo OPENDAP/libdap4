@@ -11,24 +11,22 @@
 #define yychar exprchar
 #define yydebug exprdebug
 #define yynerrs exprnerrs
-#define	SCAN_INT	257
-#define	SCAN_FLOAT	258
-#define	SCAN_STR	259
-#define	SCAN_ID	260
-#define	SCAN_EQUAL	261
-#define	SCAN_NOT_EQUAL	262
-#define	SCAN_GREATER	263
-#define	SCAN_GREATER_EQL	264
-#define	SCAN_LESS	265
-#define	SCAN_LESS_EQL	266
-#define	SCAN_REGEXP	267
+#define	SCAN_STR	257
+#define	SCAN_WORD	258
+#define	SCAN_EQUAL	259
+#define	SCAN_NOT_EQUAL	260
+#define	SCAN_GREATER	261
+#define	SCAN_GREATER_EQL	262
+#define	SCAN_LESS	263
+#define	SCAN_LESS_EQL	264
+#define	SCAN_REGEXP	265
 
 #line 19 "expr.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.26 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.27 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,26 +146,26 @@ typedef union {
 
 
 
-#define	YYFINAL		68
+#define	YYFINAL		64
 #define	YYFLAG		-32768
-#define	YYNTBASE	24
+#define	YYNTBASE	22
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 267 ? yytranslate[x] : 41)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 265 ? yytranslate[x] : 38)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,    14,     2,    16,
-    17,    20,     2,    15,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,    23,     2,     2,
+     2,     2,     2,     2,     2,     2,     2,    12,     2,    14,
+    15,    18,     2,    13,     2,     2,     2,     2,     2,     2,
+     2,     2,     2,     2,     2,     2,     2,    21,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-    21,     2,    22,     2,     2,     2,     2,     2,     2,     2,
+    19,     2,    20,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,    18,     2,    19,     2,     2,     2,     2,     2,
+     2,     2,    16,     2,    17,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -181,127 +179,119 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
-     7,     8,     9,    10,    11,    12,    13
+     7,     8,     9,    10,    11
 };
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
      0,     1,     3,     4,     8,    12,    14,    18,    20,    22,
-    24,    29,    31,    35,    41,    45,    47,    52,    54,    56,
-    59,    62,    67,    69,    73,    75,    76,    78,    80,    82,
-    84,    87,    89,    92,    96,   102,   110,   112,   114,   116,
-   118,   120,   122
+    24,    29,    31,    35,    41,    45,    47,    52,    54,    57,
+    62,    64,    68,    70,    71,    73,    75,    77,    80,    82,
+    85,    89,    95,   103,   105,   107,   109,   111,   113,   115
 };
 
 static const short yyrhs[] = {    -1,
-    26,     0,     0,    14,    25,    29,     0,    26,    14,    29,
-     0,    27,     0,    27,    15,    26,     0,     6,     0,    28,
-     0,    37,     0,     6,    16,    34,    17,     0,    30,     0,
-    29,    14,    30,     0,    32,    40,    18,    33,    19,     0,
-    32,    40,    32,     0,    31,     0,     6,    16,    34,    17,
-     0,    35,     0,    36,     0,    20,    35,     0,    20,     5,
-     0,     6,    16,    34,    17,     0,    32,     0,    33,    15,
-    32,     0,    33,     0,     0,     6,     0,     3,     0,     4,
-     0,     5,     0,     6,    38,     0,    39,     0,    38,    39,
-     0,    21,     3,    22,     0,    21,     3,    23,     3,    22,
-     0,    21,     3,    23,     3,    23,     3,    22,     0,     7,
-     0,     8,     0,     9,     0,    10,     0,    11,     0,    12,
-     0,    13,     0
+    24,     0,     0,    12,    23,    27,     0,    24,    12,    27,
+     0,    25,     0,    25,    13,    24,     0,     4,     0,    26,
+     0,    34,     0,     4,    14,    32,    15,     0,    28,     0,
+    27,    12,    28,     0,    30,    37,    16,    31,    17,     0,
+    30,    37,    30,     0,    29,     0,     4,    14,    32,    15,
+     0,    33,     0,    18,    33,     0,     4,    14,    32,    15,
+     0,    30,     0,    31,    13,    30,     0,    31,     0,     0,
+     4,     0,     4,     0,     3,     0,     4,    35,     0,    36,
+     0,    35,    36,     0,    19,     4,    20,     0,    19,     4,
+    21,     4,    20,     0,    19,     4,    21,     4,    21,     4,
+    20,     0,     5,     0,     6,     0,     7,     0,     8,     0,
+     9,     0,    10,     0,    11,     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   158,   164,   166,   167,   170,   176,   177,   183,   193,   197,
-   203,   223,   224,   230,   239,   250,   256,   269,   270,   271,
-   279,   285,   297,   304,   313,   317,   323,   334,   339,   344,
-   351,   361,   365,   371,   375,   379,   385,   386,   387,   388,
-   389,   390,   391
+   156,   162,   164,   165,   168,   174,   175,   181,   193,   197,
+   203,   223,   224,   230,   239,   250,   256,   269,   270,   278,
+   290,   297,   306,   310,   316,   327,   356,   363,   373,   377,
+   383,   395,   413,   439,   440,   441,   442,   443,   444,   445
 };
 #endif
 
 
 #if YYDEBUG != 0 || defined (YYERROR_VERBOSE)
 
-static const char * const yytname[] = {   "$","error","$undefined.","SCAN_INT",
-"SCAN_FLOAT","SCAN_STR","SCAN_ID","SCAN_EQUAL","SCAN_NOT_EQUAL","SCAN_GREATER",
-"SCAN_GREATER_EQL","SCAN_LESS","SCAN_LESS_EQL","SCAN_REGEXP","'&'","','","'('",
-"')'","'{'","'}'","'*'","'['","']'","':'","constraint_expr","@1","projection",
-"proj_clause","proj_function","selection","clause","bool_function","r_value",
-"r_value_list","arg_list","identifier","constant","array_proj","array_indices",
-"array_index","rel_op", NULL
+static const char * const yytname[] = {   "$","error","$undefined.","SCAN_STR",
+"SCAN_WORD","SCAN_EQUAL","SCAN_NOT_EQUAL","SCAN_GREATER","SCAN_GREATER_EQL",
+"SCAN_LESS","SCAN_LESS_EQL","SCAN_REGEXP","'&'","','","'('","')'","'{'","'}'",
+"'*'","'['","']'","':'","constraint_expr","@1","projection","proj_clause","proj_function",
+"selection","clause","bool_function","r_value","r_value_list","arg_list","id_or_const",
+"array_proj","array_indices","array_index","rel_op", NULL
 };
 #endif
 
 static const short yyr1[] = {     0,
-    24,    24,    25,    24,    24,    26,    26,    27,    27,    27,
-    28,    29,    29,    30,    30,    30,    31,    32,    32,    32,
-    32,    32,    33,    33,    34,    34,    35,    36,    36,    36,
-    37,    38,    38,    39,    39,    39,    40,    40,    40,    40,
-    40,    40,    40
+    22,    22,    23,    22,    22,    24,    24,    25,    25,    25,
+    26,    27,    27,    28,    28,    28,    29,    30,    30,    30,
+    31,    31,    32,    32,    -1,    33,    33,    34,    35,    35,
+    36,    36,    36,    37,    37,    37,    37,    37,    37,    37
 };
 
 static const short yyr2[] = {     0,
      0,     1,     0,     3,     3,     1,     3,     1,     1,     1,
-     4,     1,     3,     5,     3,     1,     4,     1,     1,     2,
-     2,     4,     1,     3,     1,     0,     1,     1,     1,     1,
-     2,     1,     2,     3,     5,     7,     1,     1,     1,     1,
-     1,     1,     1
+     4,     1,     3,     5,     3,     1,     4,     1,     2,     4,
+     1,     3,     1,     0,     1,     1,     1,     2,     1,     2,
+     3,     5,     7,     1,     1,     1,     1,     1,     1,     1
 };
 
 static const short yydefact[] = {     1,
-     8,     3,     2,     6,     9,    10,    26,     0,    31,    32,
-     0,     0,     0,    28,    29,    30,    27,     0,    23,    25,
-     0,    18,    19,     0,    33,    27,     4,    12,    16,     0,
-     5,     7,    26,    21,    27,    20,     0,    11,    34,     0,
-    26,     0,    37,    38,    39,    40,    41,    42,    43,     0,
-     0,    24,     0,     0,    13,     0,    15,    22,    35,     0,
-    22,     0,     0,    14,    36,     0,     0,     0
+     8,     3,     2,     6,     9,    10,    24,     0,    28,    29,
+     0,     0,     0,    27,    26,     0,    21,    23,     0,    18,
+     0,    30,    26,     4,    12,    16,     0,     5,     7,    24,
+    26,    19,     0,    11,    31,     0,    24,     0,    34,    35,
+    36,    37,    38,    39,    40,     0,     0,    22,     0,     0,
+    13,     0,    15,    20,    32,     0,    20,     0,     0,    14,
+    33,     0,     0,     0
 };
 
-static const short yydefgoto[] = {    66,
-    11,     3,     4,     5,    27,    28,    29,    19,    20,    21,
-    22,    23,     6,     9,    10,    50
+static const short yydefgoto[] = {    62,
+    11,     3,     4,     5,    24,    25,    26,    17,    18,    19,
+    20,     6,     9,    10,    46
 };
 
-static const short yypact[] = {    10,
-     4,-32768,     1,    15,-32768,-32768,     3,    19,    -3,-32768,
-     7,     7,    34,-32768,-32768,-32768,    28,    37,-32768,    33,
-    35,-32768,-32768,    24,-32768,    38,    39,-32768,-32768,    25,
-    39,-32768,     3,-32768,-32768,-32768,     3,-32768,-32768,    48,
-     3,     7,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    -1,
-    40,-32768,    27,    41,-32768,     3,-32768,-32768,-32768,    52,
-    14,    26,    42,-32768,-32768,    56,    59,-32768
+static const short yypact[] = {     6,
+    22,-32768,     2,    -2,-32768,-32768,     1,    33,     7,-32768,
+     3,     3,    39,-32768,    30,     9,-32768,    10,    31,-32768,
+     4,-32768,    34,    35,-32768,-32768,    23,    35,-32768,     1,
+-32768,-32768,     1,-32768,-32768,    41,     1,     3,-32768,-32768,
+-32768,-32768,-32768,-32768,-32768,    -1,    36,-32768,    19,    37,
+-32768,     1,-32768,-32768,-32768,    45,     8,    25,    38,-32768,
+-32768,    50,    53,-32768
 };
 
 static const short yypgoto[] = {-32768,
--32768,    47,-32768,-32768,    49,    20,-32768,   -11,     9,   -12,
-    45,-32768,-32768,-32768,    57,-32768
+-32768,    42,-32768,-32768,    44,    16,-32768,   -11,     5,   -21,
+    43,-32768,-32768,    51,-32768
 };
 
 
-#define	YYLAST		66
+#define	YYLAST		60
 
 
-static const short yytable[] = {    30,
-    30,    14,    15,    16,    17,    14,    15,    16,    17,    14,
-    15,    16,    26,   -17,    12,     1,    56,     8,    18,     7,
-    51,    24,    18,     2,     8,    52,    18,   -17,    54,    13,
-    30,    43,    44,    45,    46,    47,    48,    49,    57,     1,
-    37,    34,    35,    33,    64,    39,    40,    37,    59,    60,
-    53,    38,    42,    41,    63,    67,    58,    61,    68,    32,
-    31,    55,    36,    65,    62,    25
+static const short yytable[] = {    27,
+    27,    14,    15,    14,    15,    14,    23,   -17,    47,     1,
+    13,    14,    31,    12,    52,    50,    16,     2,    16,   -17,
+    16,    48,    33,    35,    36,     8,    27,    39,    40,    41,
+    42,    43,    44,    45,    53,     7,    21,    33,    55,    56,
+     8,    60,     1,    30,    49,    34,    38,    37,    59,    63,
+    54,    57,    64,    51,    29,    28,    58,    61,    32,    22
 };
 
 static const short yycheck[] = {    11,
-    12,     3,     4,     5,     6,     3,     4,     5,     6,     3,
-     4,     5,     6,     0,    14,     6,    18,    21,    20,    16,
-    33,     3,    20,    14,    21,    37,    20,    14,    41,    15,
-    42,     7,     8,     9,    10,    11,    12,    13,    50,     6,
-    15,     5,     6,    16,    19,    22,    23,    15,    22,    23,
-     3,    17,    14,    16,     3,     0,    17,    17,     0,    13,
-    12,    42,    18,    22,    56,     9
+    12,     3,     4,     3,     4,     3,     4,     0,    30,     4,
+    13,     3,     4,    12,    16,    37,    18,    12,    18,    12,
+    18,    33,    13,    20,    21,    19,    38,     5,     6,     7,
+     8,     9,    10,    11,    46,    14,     4,    13,    20,    21,
+    19,    17,     4,    14,     4,    15,    12,    14,     4,     0,
+    15,    15,     0,    38,    13,    12,    52,    20,    16,     9
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/lib/bison.simple"
@@ -847,40 +837,42 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 159 "expr.y"
+#line 157 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 166 "expr.y"
+#line 164 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 167 "expr.y"
+#line 165 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 171 "expr.y"
+#line 169 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 178 "expr.y"
+#line 176 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 184 "expr.y"
+#line 182 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
+			DBG(cerr << "Marking " << yyvsp[0].id << endl);
 			yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[0].id, true);
+			DBG(cerr << "result: " << yyval.boolean << endl);
 		    }
 		    else {
 			no_such_ident(arg, yyvsp[0].id, "identifier");
@@ -968,8 +960,8 @@ case 17:
 		   }
 	       ;
     break;}
-case 20:
-#line 272 "expr.y"
+case 19:
+#line 271 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
@@ -978,16 +970,8 @@ case 20:
 		    }
 		;
     break;}
-case 21:
-#line 280 "expr.y"
-{
-		    yyval.rval_ptr = dereference_url(yyvsp[0].val);
-		    if (!yyval.rval_ptr)
-			exprerror("Could not dereference URL", *(yyvsp[0].val).v.s);
-		;
-    break;}
-case 22:
-#line 286 "expr.y"
+case 20:
+#line 279 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
@@ -998,8 +982,8 @@ case 22:
 		    }
 		;
     break;}
-case 23:
-#line 298 "expr.y"
+case 21:
+#line 291 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -1007,8 +991,8 @@ case 23:
 			yyval.r_val_l_ptr = 0;
 		;
     break;}
-case 24:
-#line 305 "expr.y"
+case 22:
+#line 298 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -1016,20 +1000,20 @@ case 24:
 			yyval.r_val_l_ptr = 0;
 		;
     break;}
-case 25:
-#line 314 "expr.y"
+case 23:
+#line 307 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
-case 26:
-#line 318 "expr.y"
+case 24:
+#line 311 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
-case 27:
-#line 324 "expr.y"
+case 25:
+#line 317 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(www2id(string(yyvsp[0].id)));
 		    if (!btp) {
@@ -1039,29 +1023,46 @@ case 27:
 			yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
-case 28:
-#line 335 "expr.y"
-{
-		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
-		    yyval.rval_ptr = new rvalue(btp);
+case 26:
+#line 328 "expr.y"
+{ 
+		    BaseType *btp = (*DDS_OBJ(arg)).var(www2id(string(yyvsp[0].id)));
+		    if (!btp) {
+			value new_val;
+			if (check_int32(yyvsp[0].id)) {
+			    new_val.type = dods_int32_c;
+			    new_val.v.i = atoi(yyvsp[0].id);
+			}
+			else if (check_uint32(yyvsp[0].id)) {
+			    new_val.type = dods_uint32_c;
+			    new_val.v.ui = atoi(yyvsp[0].id);
+			}
+			else if (check_float64(yyvsp[0].id)) {
+			    new_val.type = dods_float64_c;
+			    new_val.v.f = atof(yyvsp[0].id);
+			}
+			else {
+			    new_val.type = dods_str_c;
+			    new_val.v.s = new string(yyvsp[0].id);
+			}
+			BaseType *btp = make_variable((*DDS_OBJ(arg)), new_val); 
+			// *** test for btp == null
+			// delete new_val.v.s; // Str::val2buf copies the value.
+			yyval.rval_ptr = new rvalue(btp);
+		    }
+		    else
+			yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
-case 29:
-#line 340 "expr.y"
-{
-		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
-		    yyval.rval_ptr = new rvalue(btp);
-		;
-    break;}
-case 30:
-#line 345 "expr.y"
+case 27:
+#line 357 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
-case 31:
-#line 352 "expr.y"
+case 28:
+#line 364 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
 		    // no_such_ident throws an exception.
@@ -1070,34 +1071,76 @@ case 31:
 		    yyval.boolean = true;
 		;
     break;}
-case 32:
-#line 362 "expr.y"
+case 29:
+#line 374 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
-case 33:
-#line 366 "expr.y"
+case 30:
+#line 378 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
-case 34:
-#line 372 "expr.y"
+case 31:
+#line 384 "expr.y"
 {
-		    yyval.int_l_ptr = make_array_index(yyvsp[-1].val);
+		    if (!check_uint32(yyvsp[-1].id)) {
+			string msg = "The word `";
+			msg += string(yyvsp[-1].id) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    value i;
+		    i.type = dods_uint32_c;
+		    i.v.i = atoi(yyvsp[-1].id);
+		    yyval.int_l_ptr = make_array_index(i);
 		;
     break;}
-case 35:
-#line 376 "expr.y"
+case 32:
+#line 396 "expr.y"
 {
-		    yyval.int_l_ptr = make_array_index(yyvsp[-3].val, yyvsp[-1].val);
+		    if (!check_uint32(yyvsp[-3].id)) {
+			string msg = "The word `";
+			msg += string(yyvsp[-3].id) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    if (!check_uint32(yyvsp[-1].id)) {
+			string msg = "The word `";
+			msg += string(yyvsp[-1].id) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    value i,j;
+		    i.type = j.type = dods_uint32_c;
+		    i.v.i = atoi(yyvsp[-3].id);
+		    j.v.i = atoi(yyvsp[-1].id);
+		    yyval.int_l_ptr = make_array_index(i, j);
 		;
     break;}
-case 36:
-#line 380 "expr.y"
+case 33:
+#line 414 "expr.y"
 {
-		    yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
+		    if (!check_uint32(yyvsp[-5].id)) {
+			string msg = "The word `";
+			msg += string(yyvsp[-5].id) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    if (!check_uint32(yyvsp[-3].id)) {
+			string msg = "The word `";
+			msg += string(yyvsp[-3].id) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    if (!check_uint32(yyvsp[-1].id)) {
+			string msg = "The word `";
+			msg += string(yyvsp[-1].id) + "' is not a valid array index.";
+			throw Error(malformed_expr, msg);
+		    }
+		    value i, j, k;
+		    i.type = j.type = k.type = dods_uint32_c;
+		    i.v.i = atoi(yyvsp[-5].id);
+		    j.v.i = atoi(yyvsp[-3].id);
+		    k.v.i = atoi(yyvsp[-1].id);
+		    yyval.int_l_ptr = make_array_index(i, j, k);
 		;
     break;}
 }
@@ -1322,7 +1365,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 394 "expr.y"
+#line 448 "expr.y"
 
 
 // All these error reporting function now throw instnaces of Error. The expr
@@ -1445,9 +1488,9 @@ make_array_index(value &i1, value &i2, value &i3)
 {
     int_list *index = new int_list;
 
-    if (i1.type != dods_int32_c
-	|| i2.type != dods_int32_c
-	|| i3.type != dods_int32_c)
+    if (i1.type != dods_uint32_c
+	|| i2.type != dods_uint32_c
+	|| i3.type != dods_uint32_c)
 	return (int_list *)0;
 
     index->append((int)i1.v.i);
@@ -1468,7 +1511,7 @@ make_array_index(value &i1, value &i2)
 {
     int_list *index = new int_list;
 
-    if (i1.type != dods_int32_c || i2.type != dods_int32_c)
+    if (i1.type != dods_uint32_c || i2.type != dods_uint32_c)
 	return (int_list *)0;
 
     index->append((int)i1.v.i);
@@ -1489,7 +1532,7 @@ make_array_index(value &i1)
 {
     int_list *index = new int_list;
 
-    if (i1.type != dods_int32_c)
+    if (i1.type != dods_uint32_c)
 	return (int_list *)0;
 
     index->append((int)i1.v.i);
@@ -1765,9 +1808,6 @@ process_sequence_indices(BaseType *variable, int_list_list *indices)
 	}
 
 	s->set_row_number_constraint(start, stop, stride);
-
-	DBG(cerr << "Set Constraint: " \
-	    << a->dimension_size(a->first_dim(), true) << endl);
     }
 
     return status;
@@ -1895,7 +1935,6 @@ make_variable(DDS &table, const value &val)
       }
 
       default:
-	cerr << "Unknow type constant value" << endl;
 	var = (BaseType *)0;
 	return var;
     }
@@ -1947,9 +1986,35 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.26  2001/10/14 01:28:38  jimg
- * Merged with release-3-2-8.
+ * Revision 1.27  2002/06/03 22:21:16  jimg
+ * Merged with release-3-2-9
  *
+ * Revision 1.39.4.8  2002/03/01 21:03:08  jimg
+ * Significant changes to the var(...) methods. These now take a btp_stack
+ * pointer and are used by DDS::mark(...). The exact_match methods have also
+ * been updated so that leaf variables which contain dots in their names
+ * will be found. Note that constructor variables with dots in their names
+ * will break the lookup routines unless the ctor is the last field in the
+ * constraint expression. These changes were made to fix bug 330.
+ *
+ * Revision 1.39.4.7  2002/02/20 19:16:27  jimg
+ * Changed the expression parser so that variable names may contain only
+ * digits.
+ *
+ * Revision 1.39.4.6  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
  *
  * Revision 1.41  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.
@@ -1960,8 +2025,8 @@ get_proj_function(const DDS &table, const char *name)
  *
  * Revision 1.39.4.4  2001/09/19 21:57:26  jimg
  * Changed no_such_ident(void *, const string &, const string &) so that it
- * calls exprerror(...) directly. The call to it's other overloaded version was
- * not working and resulted in an infinite loop.
+ * calls exprerror(...) directly. The call to it's other overloaded version
+ * was not working and resulted in an infinite loop.
  *
  * Revision 1.39.4.3  2001/09/06 22:04:03  jimg
  * Fixed the error message for `No such X in dataset.' I removed an extra

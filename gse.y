@@ -14,7 +14,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.y,v 1.6 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.y,v 1.7 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <iostream>
 
@@ -55,7 +55,7 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 %token <val> SCAN_INT
 %token <val> SCAN_FLOAT
 
-%token <id> SCAN_ID
+%token <id> SCAN_WORD
 %token <id> SCAN_FIELD
 
 %token <op> SCAN_EQUAL
@@ -93,7 +93,7 @@ clause:		identifier relop constant
 		}
 ;
 
-identifier:	SCAN_ID 
+identifier:	SCAN_WORD 
 ;
 
 constant:       SCAN_INT
@@ -201,6 +201,24 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 }
 
 // $Log: gse.y,v $
+// Revision 1.7  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.5.4.2  2001/11/01 00:43:51  jimg
+// Fixes to the scanners and parsers so that dataset variable names may
+// start with digits. I've expanded the set of characters that may appear
+// in a variable name and made it so that all except `#' may appear at
+// the start. Some characters are not allowed in variables that appear in
+// a DDS or CE while they are allowed in the DAS. This makes it possible
+// to define containers with names like `COARDS:long_name.' Putting a colon
+// in a variable name makes the CE parser much more complex. Since the set
+// of characters that people want seems pretty limited (compared to the
+// complete ASCII set) I think this is an OK approach. If we have to open
+// up the expr.lex scanner completely, then we can but not without adding
+// lots of action clauses to teh parser. Note that colon is just an example,
+// there's a host of characters that are used in CEs that are not allowed
+// in IDs.
+//
 // Revision 1.6  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

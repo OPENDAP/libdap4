@@ -89,8 +89,8 @@ private:
     SLList<BaseType *> _vars;
     
     void _duplicate(const Structure &s);
-    BaseType *leaf_match(const string &name);
-    BaseType *exact_match(const string &name);
+    BaseType *leaf_match(const string &name, btp_stack *s = 0);
+    BaseType *exact_match(const string &name, btp_stack *s = 0);
 
 public:
     /** The Structure constructor requires only the name of the variable
@@ -133,7 +133,8 @@ public:
     virtual unsigned int buf2val(void **val);
 
     /** Returns a pointer to the specified Structure element. */
-    virtual BaseType *var(const string &name, bool exact_match = true);
+    virtual BaseType *var(const string &name, bool exact_match = true,
+			  btp_stack *s = 0);
 
     virtual BaseType *var(const string &name, btp_stack &s);
 
@@ -170,6 +171,17 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.40  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.37.4.3  2002/03/01 21:03:08  jimg
+ * Significant changes to the var(...) methods. These now take a btp_stack
+ * pointer and are used by DDS::mark(...). The exact_match methods have also
+ * been updated so that leaf variables which contain dots in their names
+ * will be found. Note that constructor variables with dots in their names
+ * will break the lookup routines unless the ctor is the last field in the
+ * constraint expression. These changes were made to fix bug 330.
+ *
  * Revision 1.39  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.
  *

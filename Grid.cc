@@ -179,29 +179,24 @@ Grid::buf2val(void **)
 BaseType *
 Grid::var(const string &name, btp_stack &s)
 {
+    return var(name, true, &s);
+}
+
+BaseType *
+Grid::var(const string &name, bool, btp_stack *s)
+{
     if (_array_var->name() == name) {
-	s.push((BaseType *)this);
+	if (s)
+	    s->push(static_cast<BaseType *>(this));
 	return _array_var;
     }
 
     for (Pix p = _map_vars.first(); p; _map_vars.next(p))
 	if (_map_vars(p)->name() == name) {
-	    s.push((BaseType *)this);
+	    if (s)
+		s->push(static_cast<BaseType *>(this));
 	    return _map_vars(p);
 	}
-
-    return 0;
-}
-
-BaseType *
-Grid::var(const string &name, bool)
-{
-    if (_array_var->name() == name)
-	return _array_var;
-
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	if (_map_vars(p)->name() == name)
-	    return _map_vars(p);
 
     return 0;
 }    
@@ -448,7 +443,7 @@ Grid::check_semantics(string &msg, bool all)
 	
     // Is it an array?
     if (_array_var->type() != dods_array_c) {
-	msg+=+ "Grid `"+ name()+"'s' member `"+ _array_var->name()+"' must be an array\n";
+	msg+= "Grid `"+ name()+"'s' member `"+ _array_var->name()+"' must be an array\n";
 	return false;
     }
 	    
@@ -519,6 +514,20 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.51  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.46.4.6  2002/03/01 21:03:08  jimg
+// Significant changes to the var(...) methods. These now take a btp_stack
+// pointer and are used by DDS::mark(...). The exact_match methods have also
+// been updated so that leaf variables which contain dots in their names
+// will be found. Note that constructor variables with dots in their names
+// will break the lookup routines unless the ctor is the last field in the
+// constraint expression. These changes were made to fix bug 330.
+//
+// Revision 1.46.4.5  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.50  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

@@ -62,13 +62,13 @@
 
 /* If defined, the DBG() macro defined in debug.h is activated. This macro */
 /* is used for nominal program instrumentation */
-#undef DEBUG
+#undef DODS_DEBUG
 
 /* If defined, the DBG2() macro defined in debug.h is activated. This macro */
 /* is used for detailed program instrumentation. Anything that prints half a */
 /* page or more of stuff every time it is executed should be inside DBG2(), */
 /* not DBG(). */
-#undef DEBUG2
+#undef DODS_DEBUG2
 
 /* The number of bytes in a char.  */
 #undef SIZEOF_CHAR
@@ -129,6 +129,17 @@
 
 /* 
  * $Log: config_dap.h.in,v $
+ * Revision 1.30  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.29.4.1  2002/03/01 21:03:08  jimg
+ * Significant changes to the var(...) methods. These now take a btp_stack
+ * pointer and are used by DDS::mark(...). The exact_match methods have also
+ * been updated so that leaf variables which contain dots in their names
+ * will be found. Note that constructor variables with dots in their names
+ * will break the lookup routines unless the ctor is the last field in the
+ * constraint expression. These changes were made to fix bug 330.
+ *
  * Revision 1.29  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -33,22 +33,25 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.32 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.33 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <string.h>
 
-#define YYSTYPE char *
-#define YY_NO_UNPUT
+// #include "Error.h"
+#include "parser.h"
+#include "dds.tab.h"
+#include "escaping.h"
+
 #define YY_DECL int ddslex YY_PROTO(( void ))
-#define YY_INPUT(buf,result,max_size) \
-{ \
-fgets((buf), (max_size), yyin); \
-result = (feof(yyin) || strcmp(buf, "Data:\n") == 0) ? YY_NULL : strlen(buf); \
+#define YY_INPUT(buf,result,max_size) { \
+    fgets((buf), (max_size), yyin); \
+    result = (feof(yyin) || strcmp(buf, "Data:\n") == 0) \
+             ? YY_NULL : strlen(buf); \
 }
 
-#include "dds.tab.h"
-
 int dds_line_num = 1;
+
+static void store_word();
 
 %}
     
@@ -70,32 +73,14 @@ FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
 
-ID		[a-zA-Z_/%.][-a-zA-Z0-9_/%.#:+\\]*
-NAME            [a-zA-Z_/%.0-9][-a-zA-Z0-9_/%.#:+\\]*
-INTEGER		[-+]?[0-9]+
+/* See das.lex for comments about the characters allowed in a WORD.
+   10/31/2001 jhrg */
 
-NEVER		[^a-zA-Z0-9_/%.#:+\\()\-{};,[\]=]
+WORD            [-+a-zA-Z0-9_/%.\\][-+a-zA-Z0-9_/%.\\#]*
+
+NEVER		[^\-+a-zA-Z0-9_/%.\\#;,(){}[\]]
 
 %%
-
-{DATASET}		ddslval = yytext; return SCAN_DATASET;
-{LIST}			ddslval = yytext; return SCAN_LIST;
-{SEQUENCE}		ddslval = yytext; return SCAN_SEQUENCE;
-{STRUCTURE}		ddslval = yytext; return SCAN_STRUCTURE;
-{GRID}			ddslval = yytext; return SCAN_GRID;
-{BYTE}			ddslval = yytext; return SCAN_BYTE;
-{INT16}			ddslval = yytext; return SCAN_INT16;
-{UINT16}		ddslval = yytext; return SCAN_UINT16;
-{INT32}			ddslval = yytext; return SCAN_INT32;
-{UINT32}		ddslval = yytext; return SCAN_UINT32;
-{FLOAT32}		ddslval = yytext; return SCAN_FLOAT32;
-{FLOAT64}		ddslval = yytext; return SCAN_FLOAT64;
-{STRING}		ddslval = yytext; return SCAN_STRING;
-{URL}			ddslval = yytext; return SCAN_URL;
-
-{ID}  	    	    	ddslval = yytext; return SCAN_ID;
-{INTEGER}		ddslval = yytext; return SCAN_INTEGER;
-{NAME}                  ddslval = yytext; return SCAN_NAME;
 
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;
@@ -104,6 +89,23 @@ NEVER		[^a-zA-Z0-9_/%.#:+\\()\-{};,[\]=]
 ":"			return (int)*yytext;
 ";" 	    	    	return (int)*yytext;
 "="			return (int)*yytext;
+
+{DATASET}		store_word(); return SCAN_DATASET;
+{LIST}			store_word(); return SCAN_LIST;
+{SEQUENCE}		store_word(); return SCAN_SEQUENCE;
+{STRUCTURE}		store_word(); return SCAN_STRUCTURE;
+{GRID}			store_word(); return SCAN_GRID;
+{BYTE}			store_word(); return SCAN_BYTE;
+{INT16}			store_word(); return SCAN_INT16;
+{UINT16}		store_word(); return SCAN_UINT16;
+{INT32}			store_word(); return SCAN_INT32;
+{UINT32}		store_word(); return SCAN_UINT32;
+{FLOAT32}		store_word(); return SCAN_FLOAT32;
+{FLOAT64}		store_word(); return SCAN_FLOAT64;
+{STRING}		store_word(); return SCAN_STRING;
+{URL}			store_word(); return SCAN_URL;
+
+{WORD}                  store_word(); return SCAN_WORD;
 
 [ \t\r]+
 \n	    	    	++dds_line_num;
@@ -125,8 +127,35 @@ NEVER		[^a-zA-Z0-9_/%.#:+\\()\-{};,[\]=]
 			}
 %%
 
+static void
+store_word()
+{
+    // dods2id(string(yytext)).c_str()
+    strncpy(ddslval.word, yytext, ID_MAX-1);
+    ddslval.word[ID_MAX-1] = '\0'; // for the paranoid...
+}
+
+
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.33  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.30.2.4  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
+ *
  * Revision 1.32  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *

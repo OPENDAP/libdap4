@@ -379,7 +379,9 @@ public:
 	argument.  If no name is given, the function returns the first
 	(only) variable.  For example, an Array has only one variable,
 	while a Structure can have many. */
-    virtual BaseType *var(const string &name = "", bool exact_match = true);
+    // virtual BaseType *var(const string &name = "", bool exact_match = true);
+       virtual BaseType *var(const string &name = "", bool exact_match = true,
+			     btp_stack *s = 0);
 
     /** This version of var(...) searches for {\it name} and returns a
 	pointer to the BaseType object if found. It uses the same search
@@ -391,6 +393,7 @@ public:
 	\note{The BaseType implementation always returns null. }
 
 	@memo Returns a pointer to a member of a constructor class.
+	@deprecated
 	@param name Find the variable whose name is {\it name}.
 	@param s Record the path to {\it name}.
 	@return A pointer to the named variable. */
@@ -429,18 +432,12 @@ public:
 	@memo Returns the size of the class instance data. */
     virtual unsigned int width() = 0;
 
-    /** Put the data into a local buffer so that it may be sent to a
-	client.  This operation involves reading data from whatever
-	source (often a local disk), and filling out the fields in the
-	data type class.  This is the heart of the DODS DAP Class
-	operation.  Much of the work of implementing a new DODS server
-	API consists in creating the #read()# functions to read various
-	data types.
-
-	Note that this function is only for DODS servers.  It has no use
-	on the client side of a DODS client/server connection.  The DODS
-	client and server communicate their data with #serialize()# and
-	#deserialize()#.
+    /** Read data from a data source and put it into a local buffer so that
+	it may be sent to a client. This operation involves reading data from
+	whatever source (often a local disk), and filling out the fields in
+	the data type class. Much of the work of implementing a new DODS server
+	consists of creating the #read()# methods to read various data types
+	from a particular data source.
 
 	This method is not implemented for the BaseType class, nor
 	for its children.  However, it should be implemented for the
@@ -449,18 +446,27 @@ public:
 	NCFloat64 class, specialized to read data from local netCDF
 	files. 
  
-	This method should be implemented to throw Error when it encounters a
-	problem. 
+	This method is only for DODS servers. It has no use on the client
+	side of a DODS client/server connection. The DODS client and server
+	communicate their data with #serialize()# and #deserialize()#.
+
+	This method should be implemented to throw Error when it encounters
+	an unrecoverable error.
+
+	Some sub-classes, such as Array, Structure, Sequence and Grid, the
+	#read()# function must explicitly take into account constraint
+	information stored with the class data. For example, the Grid::read
+	method will be called when only one component of the Grid is to be
+	sent. Your implementation of Grid::read should check send_p() for
+	each member of the Grid before reading that member to avoid reading
+	data into memory that won't be sent (and thus is not needed in
+	memory). 
 
 	For an example of use, see the netCDF library classes. The
 	netCDF library is part of the DODS source distribution, and can
-	be found under #$(DODS_ROOT)/src/nc-dods#.
+	be found under #$(DODS_ROOT)/src/nc3-dods#.
 
-	Some sub-classes, such as Array, the #read()# function must
-	explicitly take into account constraint information stored with the
-	class data.
-
-	@memo Reads the data into a local buffer. 
+	@memo Reads data into a local buffer. 
 
 	@return The function returns a boolean value, with TRUE indicating
 	that read() should be called again because there's more data to read,
@@ -737,6 +743,20 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.66  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.61.4.9  2002/03/01 21:03:08  jimg
+ * Significant changes to the var(...) methods. These now take a btp_stack
+ * pointer and are used by DDS::mark(...). The exact_match methods have also
+ * been updated so that leaf variables which contain dots in their names
+ * will be found. Note that constructor variables with dots in their names
+ * will break the lookup routines unless the ctor is the last field in the
+ * constraint expression. These changes were made to fix bug 330.
+ *
+ * Revision 1.61.4.8  2002/01/30 19:05:21  jimg
+ * Fixed some of the doc++ comment about read(). It still needs work.
+ *
  * Revision 1.65  2001/10/14 01:28:38  jimg
  * Merged with release-3-2-8.
  *

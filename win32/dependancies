@@ -1,6 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File for libdap++
 
-..\Array.cpp : \
+..\Array.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -28,7 +28,7 @@
 	"..\Vector.h"\
 	
 
-..\AttrTable.cpp : \
+..\AttrTable.cc : \
 	"..\Array.h"\
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
@@ -57,7 +57,7 @@
 	"..\Vector.h"\
 	
 
-..\BaseType.cpp : \
+..\BaseType.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -85,7 +85,7 @@
 	"..\Vector.h"\
 	
 
-..\Byte.cpp : \
+..\Byte.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -119,7 +119,7 @@
 	"..\Vector.h"\
 	
 
-..\ce_functions.cpp : \
+..\ce_functions.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -152,7 +152,7 @@
 	"..\Vector.h"\
 	
 
-..\cgi_util.cpp : \
+..\cgi_util.cc : \
 	"..\Array.h"\
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
@@ -186,7 +186,7 @@
 	"..\Vector.h"\
 	
 
-..\Clause.cpp : \
+..\Clause.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
 	".\config_dap.h"\
@@ -196,7 +196,7 @@
 	"..\RValue.h"\
 	
 
-..\Connect.cpp : \
+..\Connect.cc : \
 	"..\Array.h"\
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
@@ -230,7 +230,7 @@
 	"..\Vector.h"\
 	
 
-..\Connections.cpp : \
+..\Connections.cc : \
 	"..\Array.h"\
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
@@ -264,7 +264,7 @@
 	"..\Vector.h"\
 	
 
-..\DAS.cpp : \
+..\DAS.cc : \
 	"..\Array.h"\
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
@@ -285,7 +285,7 @@
 	"..\Vector.h"\
 	
 
-..\DataDDS.cpp : \
+..\DataDDS.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
 	".\config_dap.h"\
@@ -296,7 +296,7 @@
 	"..\RValue.h"\
 	
 
-..\DDS.cpp : \
+..\DDS.cc : \
 	"..\Array.h"\
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
@@ -334,11 +334,11 @@
 	
 
 
-..\GNU\DLList.cpp : \
+..\GNU\DLList.cc : \
 	"..\GNU\DLList.h"\
 	
 
-..\DODSFilter.cpp : \
+..\DODSFilter.cc : \
 	"..\Array.h"\
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
@@ -373,7 +373,7 @@
 	"..\Vector.h"\
 	
 
-..\Error.cpp : \
+..\Error.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
@@ -413,7 +413,7 @@
 
 
 
-..\Float32.cpp : \
+..\Float32.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -447,7 +447,7 @@
 	"..\Vector.h"\
 	
 
-..\Float64.cpp : \
+..\Float64.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -481,7 +481,7 @@
 	"..\Vector.h"\
 	
 
-..\Grid.cpp : \
+..\Grid.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -528,7 +528,7 @@
 	"..\Vector.h"\
 	
 
-..\GSEClause.cpp : \
+..\GSEClause.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
@@ -546,41 +546,7 @@
 	"..\Vector.h"\
 	
 
-..\Int16.cpp : \
-	"..\Array.h"\
-	"..\BaseType.h"\
-	"..\Byte.h"\
-	"..\Clause.h"\
-	".\config_dap.h"\
-	"..\DDS.h"\
-	"..\debug.h"\
-	"..\dods-limits.h"\
-	"..\Error.h"\
-	"..\expr.h"\
-	"..\expr.tab.h"\
-	"..\Float32.h"\
-	"..\Float64.h"\
-	"..\Grid.h"\
-	"..\GSEClause.h"\
-	"..\Gui.h"\
-	"..\Int16.h"\
-	"..\Int32.h"\
-	"..\List.h"\
-	"..\Operators.h"\
-	"..\parser.h"\
-	"..\RValue.h"\
-	"..\Sequence.h"\
-	"..\Str.h"\
-	"..\Structure.h"\
-	"..\trace_new.h"\
-	"..\UInt16.h"\
-	"..\UInt32.h"\
-	"..\Url.h"\
-	"..\util.h"\
-	"..\Vector.h"\
-	
-
-..\Int32.cpp : \
+..\Int16.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -614,13 +580,47 @@
 	"..\Vector.h"\
 	
 
-..\InternalErr.cpp : \
+..\Int32.cc : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	".\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\InternalErr.cc : \
 	".\config_dap.h"\
 	"..\Error.h"\
 	"..\Gui.h"\
 	"..\InternalErr.h"\
 
-..\List.cpp : \
+..\List.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -653,7 +653,7 @@
 	"..\Vector.h"\
 	
 
-"..\parser-util.cpp" : \
+"..\parser-util.cc" : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
@@ -672,7 +672,7 @@
 	"..\Vector.h"\
 	
 
-..\RValue.cpp : \
+..\RValue.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
 	".\config_dap.h"\
@@ -682,7 +682,7 @@
 	"..\RValue.h"\
 	
 
-..\Sequence.cpp : \
+..\Sequence.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -711,11 +711,11 @@
 	"..\Vector.h"\
 	
 
-..\GNU\SLList.cpp : \
+..\GNU\SLList.cc : \
 	"..\GNU\SLList.h"\
 	
 
-..\Str.cpp : \
+..\Str.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -749,7 +749,7 @@
 	"..\Vector.h"\
 	
 
-..\Structure.cpp : \
+..\Structure.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -777,7 +777,7 @@
 	"..\Vector.h"\
 	
 
-..\TestArray.cpp : \
+..\TestArray.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
@@ -792,28 +792,28 @@
 	"..\Vector.h"\
 	
 
-..\TestByte.cpp : \
+..\TestByte.cc : \
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	".\config_dap.h"\
 	"..\TestByte.h"\
 	
 
-..\TestFloat32.cpp : \
+..\TestFloat32.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\Float32.h"\
 	"..\TestFloat32.h"\
 	
 
-..\TestFloat64.cpp : \
+..\TestFloat64.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\Float64.h"\
 	"..\TestFloat64.h"\
 	
 
-..\TestGrid.cpp : \
+..\TestGrid.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\Grid.h"\
@@ -821,21 +821,21 @@
 	"..\trace_new.h"\
 	
 
-..\TestInt16.cpp : \
+..\TestInt16.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\Int16.h"\
 	"..\TestInt16.h"\
 	
 
-..\TestInt32.cpp : \
+..\TestInt32.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\Int32.h"\
 	"..\TestInt32.h"\
 	
 
-..\TestList.cpp : \
+..\TestList.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
 	".\config_dap.h"\
@@ -850,7 +850,7 @@
 	"..\Vector.h"\
 	
 
-..\TestSequence.cpp : \
+..\TestSequence.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\debug.h"\
@@ -859,7 +859,7 @@
 	"..\trace_new.h"\
 	
 
-..\TestStr.cpp : \
+..\TestStr.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\dods-limits.h"\
@@ -867,7 +867,7 @@
 	"..\TestStr.h"\
 	
 
-..\TestStructure.cpp : \
+..\TestStructure.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
 	".\config_dap.h"\
@@ -880,21 +880,21 @@
 	"..\trace_new.h"\
 	
 
-..\TestUInt16.cpp : \
+..\TestUInt16.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\TestUInt16.h"\
 	"..\UInt16.h"\
 	
 
-..\TestUInt32.cpp : \
+..\TestUInt32.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\TestUInt32.h"\
 	"..\UInt32.h"\
 	
 
-..\TestUrl.cpp : \
+..\TestUrl.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\dods-limits.h"\
@@ -903,7 +903,7 @@
 	"..\Url.h"\
 	
 
-..\UInt16.cpp : \
+..\UInt16.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -937,7 +937,7 @@
 	"..\Vector.h"\
 	
 
-..\UInt32.cpp : \
+..\UInt32.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -971,7 +971,7 @@
 	"..\Vector.h"\
 	
 
-..\Url.cpp : \
+..\Url.cc : \
 	"..\BaseType.h"\
 	".\config_dap.h"\
 	"..\dods-limits.h"\
@@ -979,7 +979,7 @@
 	"..\Url.h"\
 	
 
-..\util.cpp : \
+..\util.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\
@@ -1012,7 +1012,7 @@
 	"..\Vector.h"\
 	
 
-..\Vector.cpp : \
+..\Vector.cc : \
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Byte.h"\

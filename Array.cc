@@ -50,19 +50,11 @@ Array::_duplicate(const Array &a)
 void
 Array::update_length(int size)
 {
-#if 1
     int length = 1;
     for (Pix p = _shape.first(); p; _shape.next(p))
 	length *= _shape(p).c_size > 0 ? _shape(p).c_size : 1;
 
     set_length(length);
-#endif
-#if 0
-    if (length() == -1)
-	set_length(size);
-    else
-	set_length(length() * size);
-#endif
 }
 
 // Construct an instance of Array. The (BaseType *) is assumed to be
@@ -199,8 +191,10 @@ Array::clear_constraint()
 
 // the start and stop indices are inclusive.
 
+// Note: MS VC++ won't tolerate embedded newlines in strings, hence the \n
+// is explicit.  
 static char *array_sss = \
-"Invalid constraint parameters: At least one of the start, stride or stop 
+"Invalid constraint parameters: At least one of the start, stride or stop \n\
 specified do not match the array variable.";
 
 /** Once a dimension has been created (see <tt>append_dim()</tt>), it can
@@ -621,8 +615,14 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.53  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
 // Revision 1.52  2002/05/23 15:22:39  tom
 // modified for doxygen
+//
+// Revision 1.48.4.4  2001/10/30 06:51:32  rmorris
+// Omit use of unescaped newline in string constant.  MS VC++ won't tolerate.
 //
 // Revision 1.51  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.

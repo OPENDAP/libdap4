@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.70 2001/10/14 01:28:38 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.71 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -579,7 +579,51 @@ path_to_filename(string path)
   return (pos == string::npos) ? path : path.substr(++pos);
 }
 
+// Look around for a reasonable place to put a temporary file. Check first
+// the value of the TMPDIR env var. If that does not yeild a path that's
+// writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
+// defined in stdio.h. If both come up empty, then use `./'.
+//
+// This function allocates storage using new. The caller must delete the char
+// array. 
+char *
+get_tempfile_template(char *file_template)
+{
+    char *c;
+#ifdef WIN32
+    if (getenv("TEMP") && (access(getenv("TEMP"), 6) == 0)) 
+	c = getenv("TEMP");
+#else
+    if (getenv("TMPDIR") && (access(getenv("TMPDIR"), W_OK|R_OK) == 0)) 
+	c = getenv("TMPDIR");
+#ifdef P_tmpdir
+    else if (access(P_tmpdir, W_OK|R_OK) == 0)
+	c = P_tmpdir;
+#endif
+#endif
+    else 
+	c = ".";
+
+    char *temp = new char[strlen(c) + strlen(file_template) + 2];
+    strcpy(temp, c);
+    strcat(temp, "/");
+    strcat(temp, file_template);
+
+    return temp;
+}
+
 // $Log: util.cc,v $
+// Revision 1.71  2002/06/03 22:21:16  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.65.2.10  2002/02/04 00:35:33  rmorris
+// Ported some newer code to win32.  In win32 W_OK, etc are not available -
+// a digit is just used per MSDN.  Also had it look for the TEMP environment
+// var under win32 instead of the TMPDIR env var under unix.
+//
+// Revision 1.65.2.9  2002/01/28 20:34:25  jimg
+// *** empty log message ***
+//
 // Revision 1.70  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

@@ -1,15 +1,21 @@
 
 // Tests for the AttrTable class.
 
-#include "TestCase.h"
-#include "TestCaller.h"
-#include "TestSuite.h"
+#include <cppunit/TextTestRunner.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <Regex.h>
 
 #include "TestSequence.h"
 #include "TestInt32.h"
 #include "TestStr.h"
+#include "SequenceTest.h"
+#define DODS_DEBUG
+#include "debug.h"
+
+CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);
+
+using namespace CppUnit;
 
 const static char *s_as_string = 
 "BaseType (0x.*):
@@ -45,97 +51,76 @@ BaseType (0x.*):
 
 static Regex s_regex(s_as_string);
 
-class SequenceTest:public TestCase {
-private:
-    TestSequence *s;
-    TestSequence *sss;		// Multi-level Sequence
-#if 0
-    TestSequence *gss;		// Tricky... Struct { Seq { Seq { ...
-#endif
+SequenceTest::SequenceTest()
+{
+}
 
-    bool re_match(Regex &r, const char *s) {
-#if 0
-	cerr << "strlen(s): " << (int)strlen(s) << endl;
-	cerr << "r.match(s): " << r.match(s, strlen(s)) << endl;
-#endif
-	return r.match(s, strlen(s)) == (int)strlen(s);
-    }
+SequenceTest::~SequenceTest()
+{
+}
 
-public:
-    SequenceTest(string name):TestCase(name) {
-    } 
+void
+SequenceTest::setUp() 
+{ 
+    // Set up a simple sequence. Used to test ctor, assigment, et cetera.
+    s = new TestSequence("s");
+    s->add_var(new TestInt32("i1"));
+    s->add_var(new TestStr("str1"));
+    s->add_var(new TestInt32("i2"));
 
-    void setUp() { 
-	// Set up a simple sequence. Used to test ctor, assigment, et cetera.
-	s = new TestSequence("s");
-	s->add_var(new TestInt32("i1"));
-	s->add_var(new TestStr("str1"));
-	s->add_var(new TestInt32("i2"));
-
-	// Set up sss, used to test multi-level sequences
-	sss = new TestSequence("sss");
-	sss->add_var(new TestInt32("i1"));
+    // Set up sss, used to test multi-level sequences
+    sss = new TestSequence("sss");
+    sss->add_var(new TestInt32("i1"));
 	
-	TestSequence *ts = new TestSequence("child_of_sss");
-	ts->add_var(new TestStr("str1"));
+    TestSequence *ts = new TestSequence("child_of_sss");
+    ts->add_var(new TestStr("str1"));
 	
-	TestSequence *tts = new TestSequence("child_of_child_of_sss");
-	tts->add_var(new TestInt32("i2"));
-	ts->add_var(tts);
+    TestSequence *tts = new TestSequence("child_of_child_of_sss");
+    tts->add_var(new TestInt32("i2"));
+    ts->add_var(tts);
 
-	sss->add_var(ts);
-    } 
+    sss->add_var(ts);		// This has to be here because add_var adds
+				// copies of its argument.
+} 
 
-    void tearDown() { 
-	delete s; s = 0;
-	delete sss; sss = 0;
-    }
+void
+SequenceTest::tearDown() 
+{ 
+    delete s; s = 0;
+    delete sss; sss = 0;
+}
 
-    // Tests for methods
-    void ctor_test() {
-#if 0
-	cerr << s->toString() << endl;
-	cerr << sss->toString() << endl;
-#endif
-	assert(re_match(s_regex, s->toString().c_str()));
-    }
+// Tests for methods
+void
+SequenceTest::ctor_test() 
+{
+    CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
+}
 
-    void assignment() {
-	TestSequence ts2 = *s;
+void
+SequenceTest::assignment() 
+{
+    TestSequence ts2;
 
-	ts2 = *s;
-	assert(re_match(s_regex, ts2.toString().c_str()));
-    }
+    ts2 = *s;
+    DBG(cerr << "ts2: " << ts2.toString() << endl);
+    CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
+}
 
-    void copy_ctor() {
-	TestSequence s2 = *s;
-	assert(re_match(s_regex, s2.toString().c_str()));
-    }
+void
+SequenceTest::copy_ctor() 
+{
+    TestSequence s2 = *s;
+    CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
+}
 
-#if 0
-    // is_super_sequence() no longer exists. 10/5/2001 jhrg
-    void test_super_sequence() {
-	assert(sss->is_super_sequence());
-	Sequence *ts = dynamic_cast<Sequence *>(sss->var("child_of_sss"));
-	assert(ts->is_super_sequence());
-	ts = dynamic_cast<Sequence *>(ts->var("child_of_child_of_sss"));
-	assert(!ts->is_super_sequence());
-    }
-#endif
+int 
+main( int argc, char* argv[] )
+{
+    CppUnit::TextTestRunner runner;
+    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
-    static Test *suite() { 
-	TestSuite *ts = new TestSuite("SequenceTest");
-	ts->addTest(new TestCaller <SequenceTest> 
-		    ("ctor_test", &SequenceTest::ctor_test));
-	ts->addTest(new TestCaller <SequenceTest> 
-		    ("copy_ctor", &SequenceTest::copy_ctor));
-	ts->addTest(new TestCaller <SequenceTest> 
-		    ("assignment", &SequenceTest::assignment));
-#if 0
-	ts->addTest(new TestCaller<SequenceTest>
-		    ("test_super_sequence",
-		     &SequenceTest::test_super_sequence));
-#endif
-	return ts;
-    }
-};
+    runner.run();
+
+    return 0;
+}

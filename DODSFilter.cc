@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.25 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.26 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <iostream>
 #if defined(__GNUG__) || defined(WIN32)
@@ -214,28 +214,11 @@ DODSFilter::get_accept_types()
 void
 DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 {
-    string msg = "Parse error in external file " + dataset + ".das";
-  
-    if ( anc_location == "" ) anc_location = anc_dir;
+    string name = find_ancillary_file(dataset, "das", 
+			      (anc_location == "") ? anc_dir : anc_location, 
+				      anc_file);
 
-    string name = find_ancillary_file(dataset, "das", anc_location, anc_file);
     FILE *in = fopen(name.c_str(), "r");
-    // Jose Garcia
-    // If while calling DAS::parse we get an exception of type 
-    // InternalErr we proceed to execute the code that logs the error
-    // into the httpd log plus let the client know that
-    // we have failed because of an internal error, at least it is 
-    // a clean shutdown.
-    // If the exception is of type Error, we let the client know that
-    // it is a user error so in this case set_mime_text will 
-    // have ObjectType as dods_error.
-    // No matter the kind of exception we rethrow it so the initial 
-    // caller of DAS::read_ancillary_das should get it and decide how to
-    // terminate. 
-    //
-    // I removed the catch(). Callers are responsible for doing something
-    // sensible with the Error objects (such as writing to system logs and
-    // sending the error message back to the caller). 7/11/2001 jhrg
     if (in)
 	das.parse(in);
 }
@@ -243,14 +226,10 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 void
 DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
 {
-    string msg = "Parse error in external file " + dataset + ".dds";
-    if ( anc_location == "" ) anc_location = anc_dir;
-
-    string name = find_ancillary_file(dataset, "dds", anc_location, anc_file);
+    string name = find_ancillary_file(dataset, "dds", 
+			      (anc_location == "") ? anc_dir : anc_location, 
+				      anc_file);
     FILE *in = fopen(name.c_str(), "r");
-    
-    // Jose Garcia
-    // Same comments for DAS::read_ancillary_das apply here.
     if (in)
 	dds.parse(in);
 }
@@ -366,6 +345,15 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.26  2002/06/03 22:21:15  jimg
+// Merged with release-3-2-9
+//
+// Revision 1.23.2.13  2002/03/29 18:40:20  jimg
+// Updated comments and/or removed dead code.
+//
+// Revision 1.23.2.12  2002/01/28 20:34:25  jimg
+// *** empty log message ***
+//
 // Revision 1.25  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

@@ -387,10 +387,10 @@ public:
 
     /** Adds an attribute to the table. If the given name already refers to
 	an attribute, and the attribute has a value, the given value is
-	appended to the attribute vector. Calling this function repeatedly is
+	appended to the attribute vector. Calling this method repeatedly is
 	the way to append to an attribute vector.
 
-	The function returns an error condition if the attribute is a
+	This method throws an Error object if the attribute is a
 	container, or if the type of the input value does not match the
 	existing attribute's type. Use <tt>append_container()</tt> to
 	add container attributes.
@@ -399,10 +399,20 @@ public:
 	attribute table only; sub-tables are not searched and the dot
 	notation is not recognized.
 
+	Note: String attribute values should have non-printable characters,
+	double quotes (") and backslashes (\\) escaped. The function escattr
+	in escaping.cc/h will do this. It's the responsibility of the client
+	of AttrTable to filter attribute values through this function.
+
+	@name append\_attr() 
 	@return Returns the length of the added attribute value.
 	@param name The name of the attribute to add or modify.
 	@param type The type of the attribute to add or modify.
-	@param value The value to add to the attribute table. */
+	@param value The value to add to the attribute table. 
+	@see escaping:escattr
+	@see append_container */
+    //@{
+    ///
     unsigned int append_attr(const string &name, const string &type, 
 			     const string &value) throw (Error);
     unsigned int append_attr(const char *name, const char *type, 
@@ -501,8 +511,17 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.36  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
  * Revision 1.35  2002/05/23 15:22:39  tom
  * modified for doxygen
+ *
+ * Revision 1.32.4.5  2002/03/29 18:29:00  jimg
+ * Fixed a comment about escaping backslashes.
+ *
+ * Revision 1.32.4.4  2002/01/30 19:06:21  jimg
+ * Fixed some of the doc++ comment about append_attr().
  *
  * Revision 1.34  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6

@@ -21,7 +21,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.42 2001/06/15 23:49:03 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.43 2002/06/03 22:21:15 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +54,8 @@ using std::ostrstream;
 // pointer to an error object and a pointer to an integer status variable are
 // passed in to the parser within a strucutre (which itself is passed as a
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+// The parser now throws an exception when it encounters an error. 5/23/2002
+// jhrg 
 
 #define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
 
@@ -104,10 +106,8 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 
 %token SCAN_ATTR
 
-%token SCAN_ID
-%token SCAN_INT
-%token SCAN_FLOAT
-%token SCAN_STR
+%token SCAN_WORD
+
 %token SCAN_ALIAS
 
 %token SCAN_BYTE
@@ -196,43 +196,43 @@ attr_list:  	/* empty */
 
 attr_tuple:	alias
 
-                | SCAN_BYTE { *type = "Byte"; }
-                SCAN_ID { *name = $3; } 
+                | SCAN_BYTE { save_str(*type, "Byte", das_line_num); }
+                name { save_str(*name, $3, das_line_num); } 
 		bytes ';'
 
 		| SCAN_INT16 { save_str(*type, "Int16", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
+                name { save_str(*name, $3, das_line_num); } 
 		int16 ';'
 
 		| SCAN_UINT16 { save_str(*type, "UInt16", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
+                name { save_str(*name, $3, das_line_num); } 
 		uint16 ';'
 
 		| SCAN_INT32 { save_str(*type, "Int32", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
+                name { save_str(*name, $3, das_line_num); } 
 		int32 ';'
 
 		| SCAN_UINT32 { save_str(*type, "UInt32", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
+                name { save_str(*name, $3, das_line_num); } 
 		uint32 ';'
 
 		| SCAN_FLOAT32 { save_str(*type, "Float32", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
+                name { save_str(*name, $3, das_line_num); } 
 		float32 ';'
 
 		| SCAN_FLOAT64 { save_str(*type, "Float64", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
+                name { save_str(*name, $3, das_line_num); } 
 		float64 ';'
 
 		| SCAN_STRING { *type = "String"; } 
-                SCAN_ID { *name = $3; } 
+                name { *name = $3; } 
 		strs ';'
 
 		| SCAN_URL { *type = "Url"; } 
-                SCAN_ID { *name = $3; } 
+                name { *name = $3; } 
 		urls ';'
 
-		| SCAN_ID 
+		| SCAN_WORD
                 {
 		    DBG(cerr << "Processing ID: " << $1 << endl);
 		    
@@ -266,51 +266,51 @@ attr_tuple:	alias
 		} ';'
 ;
 
-bytes:		SCAN_INT
+bytes:		SCAN_WORD
 		{
 		    add_attribute(*type, *name, $1, &check_byte);
 		}
-		| bytes ',' SCAN_INT
+		| bytes ',' SCAN_WORD
 		{
 		    add_attribute(*type, *name, $3, &check_byte);
 		}
 ;
 
-int16:		SCAN_INT
+int16:		SCAN_WORD
 		{
 		    add_attribute(*type, *name, $1, &check_int16);
 		}
-		| int16 ',' SCAN_INT
+		| int16 ',' SCAN_WORD
 		{
 		    add_attribute(*type, *name, $3, &check_int16);
 		}
 ;
 
-uint16:		SCAN_INT
+uint16:		SCAN_WORD
 		{
 		    add_attribute(*type, *name, $1, &check_uint16);
 		}
-		| uint16 ',' SCAN_INT
+		| uint16 ',' SCAN_WORD
 		{
 		    add_attribute(*type, *name, $3, &check_uint16);
 		}
 ;
 
-int32:		SCAN_INT
+int32:		SCAN_WORD
 		{
 		    add_attribute(*type, *name, $1, &check_int32);
 		}
-		| int32 ',' SCAN_INT
+		| int32 ',' SCAN_WORD
 		{
 		    add_attribute(*type, *name, $3, &check_int32);
 		}
 ;
 
-uint32:		SCAN_INT
+uint32:		SCAN_WORD
 		{
 		    add_attribute(*type, *name, $1, &check_uint32);
 		}
-		| uint32 ',' SCAN_INT
+		| uint32 ',' SCAN_WORD
 		{
 		    add_attribute(*type, *name, $3, &check_uint32);
 		}
@@ -356,25 +356,31 @@ urls:		url
 		}
 ;
 
-url:		SCAN_ID | SCAN_STR
+url:		SCAN_WORD
 ;
 
-str_or_id:	SCAN_STR | SCAN_ID | SCAN_INT | SCAN_FLOAT
+str_or_id:	SCAN_WORD
 ;
 
-float_or_int:   SCAN_FLOAT | SCAN_INT
+float_or_int:   SCAN_WORD
 ;
 
-alias:          SCAN_ALIAS SCAN_ID 
+name:           SCAN_WORD | SCAN_ALIAS | SCAN_BYTE | SCAN_INT16 | SCAN_UINT16
+                | SCAN_INT32 | SCAN_UINT32 | SCAN_FLOAT32 | SCAN_FLOAT64
+                | SCAN_STRING | SCAN_URL
+;
+
+alias:          SCAN_ALIAS SCAN_WORD
                 { 
 		    *name = $2;
 		} 
-                SCAN_ID
+                SCAN_WORD
                 {
 		    add_alias(DAS_OBJ(arg), TOP_OF_STACK, *name, string($4))
                 }
                 ';'
 ;
+
 %%
 
 // This function is required for linking, but DODS uses its own error
@@ -413,9 +419,6 @@ add_attribute(const string &type, const string &name, const string &value,
 	msg += value + "' is not " + a_or_an(type) + " " + type + " value.";
 	add_bad_attribute(TOP_OF_STACK, type, name, value, msg);
 	return;
-#if 0
-	parse_error(msg.c_str(), das_line_num);	// throws Error.
-#endif
     }
     
     if (STACK_EMPTY) {
@@ -462,7 +465,7 @@ static void
 add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 		  const string &value, const string &msg)
 {
-    // First, if this is badd value is already in a *_dods_errors container,
+    // First, if this bad value is already in a *_dods_errors container,
     // then just add it. This can happen when the server side processes a DAS
     // and then hands it off to a client which does the same.
     // Make a new container. Call it <attr's name>_errors. If that container
@@ -488,6 +491,32 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.43  2002/06/03 22:21:15  jimg
+ * Merged with release-3-2-9
+ *
+ * Revision 1.40.4.7  2002/03/14 20:03:08  jimg
+ * Changed the parser so that the attriute type names can also be names of
+ * attribbtues. For example String Url "http..."; is now legal. This fixes
+ * Bug 393.
+ *
+ * Revision 1.40.4.6  2002/01/28 20:34:25  jimg
+ * *** empty log message ***
+ *
+ * Revision 1.40.4.5  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
+ *
  * Revision 1.42  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.
  *

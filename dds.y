@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.37 2002/05/22 21:52:31 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.38 2002/06/03 22:21:16 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,6 +126,9 @@ start:
 		    ctor = new stack<BaseType *>;
                 }
                 datasets
+                {
+		    delete ctor;
+		}
 ;
 
 datasets:	dataset
@@ -458,6 +461,9 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.38  2002/06/03 22:21:16  jimg
+ * Merged with release-3-2-9
+ *
  * Revision 1.37  2002/05/22 21:52:31  jimg
  * I added a new rule called start. This rule is used to initialize objects used
  * by the parser (like the stack of ctors). The logic of the parser have not

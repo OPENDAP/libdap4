@@ -1,24 +1,23 @@
-#ifndef YYSTYPE
-#define YYSTYPE int
-#endif
-#define	SCAN_ID	257
-#define	SCAN_NAME	258
-#define	SCAN_INTEGER	259
-#define	SCAN_DATASET	260
-#define	SCAN_LIST	261
-#define	SCAN_SEQUENCE	262
-#define	SCAN_STRUCTURE	263
-#define	SCAN_FUNCTION	264
-#define	SCAN_GRID	265
-#define	SCAN_BYTE	266
-#define	SCAN_INT16	267
-#define	SCAN_UINT16	268
-#define	SCAN_INT32	269
-#define	SCAN_UINT32	270
-#define	SCAN_FLOAT32	271
-#define	SCAN_FLOAT64	272
-#define	SCAN_STRING	273
-#define	SCAN_URL	274
+typedef union {
+    bool boolean;
+    char word[ID_MAX];
+} YYSTYPE;
+#define	SCAN_WORD	257
+#define	SCAN_DATASET	258
+#define	SCAN_LIST	259
+#define	SCAN_SEQUENCE	260
+#define	SCAN_STRUCTURE	261
+#define	SCAN_FUNCTION	262
+#define	SCAN_GRID	263
+#define	SCAN_BYTE	264
+#define	SCAN_INT16	265
+#define	SCAN_UINT16	266
+#define	SCAN_INT32	267
+#define	SCAN_UINT32	268
+#define	SCAN_FLOAT32	269
+#define	SCAN_FLOAT64	270
+#define	SCAN_STRING	271
+#define	SCAN_URL	272
 
 
 extern YYSTYPE ddslval;
