@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.74 1998/03/27 22:27:13 jimg Exp $
+# $Id: Makefile.in,v 1.75 1998/03/27 22:34:06 jimg Exp $
 
 @SET_MAKE@
 
@@ -309,13 +309,17 @@ check: libdap++.a das-check dds-check expr-check
 test-coverage: clean
 	$(MAKE) $(MFLAGS) CXXFLAGS="$(CXXFLAGS) $(TEST_COV_FLAGS)" check
 
+# Note that the gcov options -f and -b are useful but sometimes make looking
+# at the results of coverage analysis a little taxing. -b reports on all
+# branched and -f reports on all functions. The -l -o options summarize on a
+# per-file basis. 3/27/98 jhrg
 collect-coverage-data:
 	(cd test-coverage; \
          cov_dat="coverage-data-`date +%m.%d.%y`"; \
 	 touch $$cov_dat; \
 	 for f in $(ALLSRCS); do \
 	     echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
-	     gcov -f -l -b -o ../ $$f >> $$cov_dat; \
+	     gcov -l -o ../ $$f >> $$cov_dat; \
          done)
 
 # These tests all fail when linking with -lnew_debug.

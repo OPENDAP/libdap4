@@ -1,5 +1,7 @@
 1998-03-27  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
+	* Added targets for test coverage analysis.
+
 	* Added fixed from Jake Hamby.
 
 	* Makefile.in (GNUHDRS): Added String.h & String.cc to the
@@ -369,4 +371,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.21 1998/03/27 22:28:19 jimg Exp $
+$Id: ChangeLog,v 1.22 1998/03/27 22:34:36 jimg Exp $
