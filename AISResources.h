@@ -61,7 +61,7 @@ public:
     /** Build an empty instance. */
     AISResources() {}
 
-    AISResources(const string &database);
+    AISResources(const string &database) throw(AISDatabaseReadFailed) ;
 
     void add_resource(const string &primary, const Resource &ancillary);
     void add_resource(const string &primary, const ResourceVector &rv);
@@ -87,6 +87,9 @@ private:
 };
 
 // $Log: AISResources.h,v $
+// Revision 1.2  2003/02/20 22:19:02  jimg
+// Added throw() specification to second constructor.
+//
 // Revision 1.1  2003/02/20 22:10:21  jimg
 // Added.
 //
