@@ -29,7 +29,15 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.3  1994/08/02 18:50:03  jimg
+# Revision 1.4  1994/08/29 14:14:51  jimg
+# Fixed a problem with quoted strings - previously quotes were stripped
+# when scanned, but this caused problems when they were printed because
+# the printed string could not be recanned. In addition, escape characters
+# are no longer removed during scanning. The functions that performed these
+# operations are still in the scanner, but their calls have been commented
+# out.
+#
+# Revision 1.3  1994/08/02  18:50:03  jimg
 # Fixed error in illegal character message. Arrgh!
 #
 # Revision 1.2  1994/08/02  18:46:43  jimg
@@ -57,7 +65,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.3 1994/08/02 18:50:03 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.4 1994/08/29 14:14:51 jimg Exp $"};
 
 #include <string.h>
 
@@ -96,14 +104,14 @@ NEVER   [^a-zA-Z0-9_.+-{};]
 \n	    	    	++das_line_num;
 <INITIAL><<EOF>>    	yy_init = 1; das_line_num = 1; yyterminate();
 
-\"			BEGIN(quote); start_line = das_line_num;
+\"			BEGIN(quote); start_line = das_line_num; yymore();
 <quote>[^"\n\\]*	yymore();
 <quote>[^"\n\\]*\n	yymore(); ++das_line_num;
 <quote>\\.		yymore();
 <quote>\"		{ 
     			  BEGIN(INITIAL); 
-			  trunc1(yytext, yyleng); 
-                          rmbslash(yytext); 
+			  /* trunc1(yytext, yyleng); */
+                          /* rmbslash(yytext); */
 			  daslval = yytext;
 			  return VAL;
                         }
