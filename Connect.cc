@@ -8,6 +8,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.49  1997/02/13 17:33:11  jimg
+// Added MIME header `handler' for the server header.
+// Added mfuncs to access the server information (which in DODS is the version
+// number of the core software).
+//
 // Revision 1.48  1997/02/13 05:49:53  reza
 // Fixed concatenation of _proj and _sel members into request_das and
 // request_dds URLs.
@@ -278,7 +283,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.48 1997/02/13 05:49:53 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.49 1997/02/13 17:33:11 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -730,6 +735,27 @@ encoding_handler(HTRequest *request, HTResponse */*response*/,
     return HT_OK;
 }
 
+int 
+server_handler(HTRequest *request, HTResponse */*response*/, 
+	       const char *token, const char *val)
+{
+    String field = token, value = val;
+    field.downcase();
+    value.downcase();
+    
+    if (field == "server") {
+	DBG(cerr << "Found server header" << endl);
+	Connect *me = (Connect *)HTRequest_context(request);
+	me->_server = String(value);
+    }
+    else {
+	if (SHOW_MSG)
+	    cerr << "Unknown header: " << token << endl;
+    }
+
+    return HT_OK;
+}
+
 // Use this for debugging only since various servers seem to add headers
 // (even though the `NPH' mechanism precludes that ...??). This is especially
 // true for error returns.
@@ -791,6 +817,7 @@ Connect::www_lib_init(bool www_verbose_errors)
     // complicated). jhrg 11/20/96
     HTHeader_addParser("content-description", NO, description_handler);
     HTHeader_addParser("content-encoding", NO, encoding_handler);
+    HTHeader_addParser("server", NO, server_handler);
 
     DBG(HTHeader_addRegexParser("*", NO, header_handler));
 }
@@ -1239,6 +1266,12 @@ EncodingType
 Connect::encoding()
 {
     return _encoding;
+}
+
+String
+Connect::server_version()
+{
+    return _server;
 }
 
 // Added EXT which defaults to "das". jhrg 3/7/95
