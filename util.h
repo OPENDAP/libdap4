@@ -12,9 +12,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.14  1996/10/28 23:07:37  jimg
-/* Added include of UInt32.h and prototype of NewUInt32().
+/* Revision 1.15  1996/11/22 00:08:34  jimg
+/* Added compressor and decompresor prototypes.
 /*
+ * Revision 1.14  1996/10/28 23:07:37  jimg
+ * Added include of UInt32.h and prototype of NewUInt32().
+ *
  * Revision 1.13  1996/08/13 20:47:21  jimg
  * Added prototypes for the *_ops() functions.
  *
@@ -90,6 +93,9 @@ XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
 FILE *text_to_temp(String text);
+ostream &systime(ostream &os);
+FILE *compressor(FILE *output);
+FILE *decompressor(FILE *input);
 
 bool func_member(int argc, BaseType *argv[]);
 bool func_null(int argc, BaseType *argv[]);
