@@ -9,9 +9,13 @@
 */
   
 /* $Log: debug.h,v $
-/* Revision 1.3  1996/06/18 23:50:13  jimg
-/* Added file and line number information to the macros.
+/* Revision 1.4  1996/08/09 18:20:46  jimg
+/* Changed DEBUG and DEBUG2 to DODS_DEBUG and DODS_DEBUG2 to avoid conflicts
+/* with the WWW libraries use of that name (which it always defines...).
 /*
+ * Revision 1.3  1996/06/18 23:50:13  jimg
+ * Added file and line number information to the macros.
+ *
  * Revision 1.2  1996/03/05 00:59:47  jimg
  * Added _DEBUG_H to prevent multiple definition messages.
  *
@@ -24,13 +28,13 @@
 #ifndef _DEBUG_H
 #define _DEBUG_H
 
-#ifdef DEBUG
+#ifdef DODS_DEBUG
 #define DBG(x) cerr << __FILE__ << ":" << __LINE__ << ":"; x
 #else
 #define DBG(x) /* x */
 #endif
 
-#ifdef DEBUG2
+#ifdef DODS_DEBUG2
 #define DBG2(x) cerr << __FILE__ << ":" << __LINE__ << ":"; x
 #else
 #define DBG2(x) /* x */
