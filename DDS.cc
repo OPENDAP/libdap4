@@ -1,6 +1,6 @@
 
 /*
-  Copyright 1995 The University of Rhode Island and The Massachusetts
+  Copyright 1994, 1995 The University of Rhode Island and The Massachusetts
   Institute of Technology
 
   Portions of this software were developed by the Graduate School of
@@ -38,7 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.11  1995/07/09 21:28:55  jimg
+// Revision 1.12  1995/08/23 00:06:30  jimg
+// Changed from old mfuncs to new(er) ones.
+//
+// Revision 1.11  1995/07/09  21:28:55  jimg
 // Added copyright notice.
 //
 // Revision 1.10  1995/05/10  13:45:13  jimg
@@ -90,7 +93,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.11 1995/07/09 21:28:55 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.12 1995/08/23 00:06:30 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -177,7 +180,7 @@ DDS::del_var(const String &n)
     Pix pp = 0;			// previous Pix
 
     for (Pix p = vars.first(); p; vars.next(p))
-	if (vars(p)->get_var_name() == n) {
+	if (vars(p)->name() == n) {
 	    vars.del_after(pp);	// pp points to the pos before p
 	    return;
 	}
@@ -189,7 +192,7 @@ BaseType *
 DDS::var(const String &n)
 { 
     for (Pix p = vars.first(); p; vars.next(p))
-	if (vars(p)->get_var_name() == n)
+	if (vars(p)->name() == n)
 	    return vars(p);
 
     return 0;
