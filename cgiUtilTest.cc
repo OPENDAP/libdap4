@@ -45,6 +45,8 @@
 #include "cgi_util.h"
 
 using namespace CppUnit;
+using std::streampos ;
+using std::ends ;
 
 class cgiUtilTest : public TestFixture {
 private:
@@ -192,6 +194,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: cgiUtilTest.cc,v $
+// Revision 1.6  2003/02/03 21:42:36  pwest
+// added tests/Makefile.in and rearranged test files so no duplication
+//
 // Revision 1.5  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.

@@ -34,6 +34,7 @@
 #include "Byte.h"
 
 using namespace CppUnit;
+using std::ends ;
 
 class ByteTest : public TestFixture {
 private:

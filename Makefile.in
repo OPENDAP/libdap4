@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.131 2003/01/31 23:26:44 reza Exp $
+# $Id: Makefile.in,v 1.132 2003/02/03 21:42:36 pwest Exp $
 
 @SET_MAKE@
 
@@ -424,6 +424,7 @@ unit-check: $(UNIT_TEST_PROGS)
 	./DASTest
 	./generalUtilTest
 	./parserUtilTest
+	-(cd tests && $(MAKE) $(MFLAGS) all)
 
 # Clean up.
 
@@ -441,6 +442,10 @@ clean:
 	-if [ -d dox-latex ]; \
 	then \
 	    cd doc-latex; rm -f *.tex; cd ..; \
+	fi
+	-if [ -d tests ]; \
+	then \
+	    cd tests; $(MAKE) $(MFLAGS) clean; cd ..; \
 	fi
 
 distclean: clean
@@ -553,6 +558,7 @@ depend:
 	@depend@ -m Makefile.in -- $(CPPFLAGS) -- \
 	$(CLIENTSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
 	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS) $(UNIT_TEST_SRCS)
+	-(cd tests && $(MAKE) $(MFLAGS) depend)
 	$(MAKE) $(MFLAGS) Makefile
 
 # Once the unit tests are working, add this to the sources on which we run

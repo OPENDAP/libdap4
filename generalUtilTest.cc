@@ -36,6 +36,8 @@ string hexstring(unsigned char val); // originally declared static
 string unhexstring(string s);
 
 using namespace CppUnit;
+using std::cerr ;
+using std::endl ;
 
 class generalUtilTest : public TestFixture {
 private:
@@ -154,7 +156,7 @@ public:
     }
 
     void get_tempfile_template_test() {
-	if (setenv("TMPDIR", "/tmp", 1) == 0) {
+	if (putenv("TMPDIR=/tmp") == 0) {
 	    cerr << "TMPDIR: " << getenv("TMPDIR") << endl;
 	    assert(strcmp(get_tempfile_template("DODSXXXXXX"),
 			  "/tmp/DODSXXXXXX") == 0);
@@ -162,7 +164,7 @@ public:
 	else
 	    cerr << "Did not test setting TMPDIR" << endl;
 
-	if (setenv("TMPDIR", "/usr/local/tmp/", 1) == 0)
+	if (putenv("TMPDIR=/usr/local/tmp/") == 0)
 	    assert(strcmp(get_tempfile_template("DODSXXXXXX"),
 			  "/usr/local/tmp//DODSXXXXXX") == 0);
 	else
@@ -171,7 +173,7 @@ public:
 #if defined(P_tmpdir)
 	string tmplt = P_tmpdir;
 	tmplt.append("/"); tmplt.append("DODSXXXXXX");
-	setenv("TMPDIR", "", 1);
+	putenv("TMPDIR=");
 	assert(strcmp(get_tempfile_template("DODSXXXXXX"), tmplt.c_str()) 
 	       == 0);
 #endif

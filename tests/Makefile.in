@@ -1,0 +1,180 @@
+# $Id: Makefile.in,v 1.1 2003/02/03 21:42:36 pwest Exp $
+
+@SET_MAKE@
+
+# Set makefile variables, some with values supplied by configure 
+# DEFS gets the `-D' defines that describe what a particular system has
+# or doesn't have.
+
+PROGS = arrayT attrTableT structT sequenceT ddsT ddsPT iterT
+
+# dods_relative ends in a slash. 5/14/2001 jhrg
+DODS_ROOT = ../../../
+
+INCS = -I. -I.. -I../GNU -I$(DODS_ROOT)include @INCS@ $(CPP_UNIT_INC)
+DEFS = @DEFS@
+CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
+# Use these options for debugging. 12/24/02 jhrg
+CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-default-inline -fno-defer-pop
+CXXFLAGS = @CXXFLAGS@ -Wall -Wno-deprecated
+LDFLAGS = -L.. -L$(DODS_ROOT)lib @LDFLAGS@ $(CPP_UNIT_LIB)
+TAGS_FLAGS =
+LIBS = @LIBS@
+
+SHELL = /bin/sh
+srcdir = @srcdir@
+version = @VERSION@
+basedir = dap
+dir = $(basedir)-$(version)
+host = @host@
+
+COMPONENT_NAME = DODS Core
+
+# testsuite specifics
+RUNTEST = ./runme
+
+# names of key programs
+
+LN_S = @LN_S@
+CP = cp
+AWK = @AWK@
+TAR = @TAR@
+PERL = @PERL@
+CC = @CC@
+CXX = @CXX@
+PURIFY = purify -chain-length="10"
+YACC = @YACC@
+LEX = @LEX@
+AR = ar
+TAGS = etags
+RANLIB = @RANLIB@
+STRIP = strip
+
+SRCS = LongIterAdapter.cc TestArray.cc TestSequence.cc \
+       Unused.cc arrayT.cc attrTableT.cc ddsPT.cc \
+       ddsT.cc iterT.cc sequenceT.cc structT.cc
+
+OBJS = TestArray.o TestSequence.o Unused.o ../TestInt16.o ../TestStr.o \
+       ../TestStructure.o
+
+AOBJS = TestArray.o TestSequence.o ../TestInt16.o ../TestStr.o \
+	../TestStructure.o ../TestFloat64.o ../TestInt32.o \
+	../TestUInt32.o ../TestByte.o ../TestGrid.o \
+        ../TestList.o ../TestUrl.o ../TestFloat32.o ../TestUInt16.o
+
+all: runtest
+
+runtest: $(PROGS)
+	./runme
+
+# geturl is really a test driver, but it is so useful in other contexts that
+# I have decided to build it as part of the `all' target. jhrg 7/11/96
+
+arrayT : ../libdap++.a arrayT.o $(OBJS)
+	$(CXX) $(LDFLAGS) -o arrayT arrayT.o $(OBJS) -ldap++ $(LIBS)
+
+attrTableT : ../libdap++.a attrTableT.o $(OBJS)
+	$(CXX) $(LDFLAGS) -o attrTableT attrTableT.o $(OBJS) -ldap++ $(LIBS)
+
+structT : ../libdap++.a structT.o $(OBJS)
+	$(CXX) $(LDFLAGS) -o structT structT.o $(OBJS) -ldap++ $(LIBS)
+
+sequenceT : ../libdap++.a sequenceT.o $(OBJS)
+	$(CXX) $(LDFLAGS) -o sequenceT sequenceT.o $(OBJS) -ldap++ $(LIBS)
+
+ddsT : ../libdap++.a ddsT.o $(OBJS)
+	$(CXX) $(LDFLAGS) -o ddsT ddsT.o $(OBJS) -ldap++ $(LIBS)
+
+ddsPT : ../libdap++.a ddsPT.o $(AOBJS)
+	$(CXX) $(LDFLAGS) -o ddsPT ddsPT.o $(AOBJS) -ldap++ $(LIBS)
+
+iterT : ../libdap++.a iterT.o LongIterAdapter.o $(OBJS)
+	$(CXX) $(LDFLAGS) -o iterT iterT.o LongIterAdapter.o $(OBJS) -ldap++ $(LIBS)
+
+# Standard targets
+
+Makefile: Makefile.in
+	if [ -x ../config.status ]; \
+	then \
+	    (cd .. && ${SHELL} ./config.status;) \
+	else \
+	    (cd .. && ./configure;) \
+	fi \
+
+# Clean up.
+
+clean:	
+	-rm -f *.o *.sum *.log *~ core
+	-rm -f *.bb *.bbg *.da *.gcov
+	-rm -f $(PROGS)
+
+distclean: clean
+
+.PHONY: tags
+tags:
+	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
+
+.PHONY: depend
+depend: 
+	../@depend@ -m Makefile.in -- $(CPPFLAGS) -- $(SRCS)
+
+# Once the unit tests are working, add this to the sources on which we run
+# depend. 
+# $(UNIT_TEST_SRC)
+
+.SUFFIXES:      .o .cc .c
+
+.c.o:
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
+
+.cc.o:
+	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
+
+# DO NOT DELETE; depend requires this line
+LongIterAdapter.o: LongIterAdapter.cc LongIterAdapter.h \
+  ../IteratorAdapter.h ../Array.h ../dods-limits.h ../Vector.h \
+  ../BaseType.h ../InternalErr.h ../Error.h ../DDS.h ../GNU/Pix.h \
+  ../Clause.h ../expr.h ../RValue.h
+TestArray.o: TestArray.cc TestArray.h ../Array.h ../dods-limits.h \
+  ../Vector.h ../BaseType.h ../InternalErr.h ../Error.h ../DDS.h \
+  ../GNU/Pix.h ../IteratorAdapter.h ../Clause.h ../expr.h ../RValue.h \
+  ../dods-datatypes.h
+TestSequence.o: TestSequence.cc TestSequence.h ../Sequence.h ../GNU/Pix.h \
+  ../IteratorAdapter.h ../BaseType.h ../InternalErr.h ../Error.h \
+  ../Constructor.h ../debug.h
+Unused.o: Unused.cc Unused.h
+arrayT.o: arrayT.cc TestArray.h ../Array.h ../dods-limits.h ../Vector.h \
+  ../BaseType.h ../InternalErr.h ../Error.h ../DDS.h ../GNU/Pix.h \
+  ../IteratorAdapter.h ../Clause.h ../expr.h ../RValue.h ../TestInt16.h \
+  ../Int16.h ../dods-datatypes.h ../util.h ../Byte.h ../UInt16.h \
+  ../Int32.h ../UInt32.h ../Float32.h ../Float64.h ../Str.h ../Url.h \
+  ../List.h ../Structure.h ../Constructor.h ../Sequence.h ../Grid.h
+attrTableT.o: attrTableT.cc ../AttrTable.h ../GNU/Pix.h \
+  ../IteratorAdapter.h ../Error.h
+ddsPT.o: ddsPT.cc ../DDS.h ../GNU/Pix.h ../IteratorAdapter.h \
+  ../BaseType.h ../InternalErr.h ../Error.h ../Clause.h ../expr.h \
+  ../RValue.h
+ddsT.o: ddsT.cc ../DDS.h ../GNU/Pix.h ../IteratorAdapter.h ../BaseType.h \
+  ../InternalErr.h ../Error.h ../Clause.h ../expr.h ../RValue.h \
+  TestArray.h ../Array.h ../dods-limits.h ../Vector.h ../TestInt16.h \
+  ../Int16.h ../dods-datatypes.h ../TestStr.h ../Str.h ../ce_functions.h \
+  ../util.h ../Byte.h ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h \
+  ../Float64.h ../Url.h ../List.h ../Structure.h ../Constructor.h \
+  ../Sequence.h ../Grid.h
+iterT.o: iterT.cc LongIterAdapter.h ../IteratorAdapter.h ../Array.h \
+  ../dods-limits.h ../Vector.h ../BaseType.h ../InternalErr.h ../Error.h \
+  ../DDS.h ../GNU/Pix.h ../Clause.h ../expr.h ../RValue.h
+sequenceT.o: sequenceT.cc TestSequence.h ../Sequence.h ../GNU/Pix.h \
+  ../IteratorAdapter.h ../BaseType.h ../InternalErr.h ../Error.h \
+  ../Constructor.h ../TestInt16.h ../Int16.h ../dods-datatypes.h \
+  ../TestStr.h ../dods-limits.h ../Str.h ../util.h ../Byte.h ../UInt16.h \
+  ../Int32.h ../UInt32.h ../Float32.h ../Float64.h ../Url.h ../Array.h \
+  ../Vector.h ../DDS.h ../Clause.h ../expr.h ../RValue.h ../List.h \
+  ../Structure.h ../Grid.h
+structT.o: structT.cc ../TestStructure.h ../Structure.h ../GNU/Pix.h \
+  ../IteratorAdapter.h ../BaseType.h ../InternalErr.h ../Error.h \
+  ../Constructor.h ../DDS.h ../Clause.h ../expr.h ../RValue.h TestArray.h \
+  ../Array.h ../dods-limits.h ../Vector.h ../TestInt16.h ../Int16.h \
+  ../dods-datatypes.h ../TestStr.h ../Str.h ../util.h ../Byte.h \
+  ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h ../Float64.h ../Url.h \
+  ../List.h ../Sequence.h ../Grid.h

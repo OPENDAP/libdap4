@@ -35,6 +35,7 @@
 #include "AttrTable.h"
 
 using namespace CppUnit;
+using std::ends ;
 
 class AttrTableTest:public TestFixture {
 private:
