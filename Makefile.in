@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.43 1996/07/11 23:38:19 jimg Exp $
+# $Id: Makefile.in,v 1.44 1996/08/13 18:35:19 jimg Exp $
 
 @SET_MAKE@
 
@@ -17,7 +17,7 @@
 PROG= libdap++.a geturl
 DODS_ROOT = ../..
 
-INCS = -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include/WWW
+INCS = -I. -IMap -IStack -IPlex -IVec @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
@@ -144,14 +144,16 @@ geturl: libdap++.a $(TESTOBJS) geturl.o
 
 # Build the test drivers
 
+test-drivers: das-test dds-test expr-test error-test cgi-util-test www-test
+
 das-test: libdap++.a das-test.o das.tab.h
 	$(CXX) $(LDFLAGS) -o das-test das-test.o $(LIBS)
 
 dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
 	$(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o $(LIBS)
 
-trans-test: libdap++.a $(TESTOBJS) trans-test.o
-	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
+# trans-test: libdap++.a $(TESTOBJS) trans-test.o
+#	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
 
 expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o \
@@ -179,9 +181,9 @@ lex.das.o: lex.das.c
 # Build the DAS parser
 # Note that awk is used to add a param to dasparse().
 
-das.tab.c das.tab.h: das.y DAS.h munge-das.awk
+das.tab.c das.tab.h: das.y DAS.h munge-bison.awk
 	$(YACC) $(YFLAGS) -p das das.y
-	$(AWK) -f munge-das.awk das.tab.c > tmp
+	$(AWK) -f munge-bison.awk das.tab.c > tmp
 	mv tmp das.tab.c
 
 das.tab.o: das.tab.c		# build using C++ compiler
@@ -197,9 +199,9 @@ lex.dds.o: lex.dds.c
 
 # Build the DDS parser
 
-dds.tab.c dds.tab.h: dds.y munge-dds.awk
+dds.tab.c dds.tab.h: dds.y munge-bison.awk
 	$(YACC) $(YFLAGS) -p dds dds.y
-	$(AWK) -f munge-dds.awk dds.tab.c > tmp
+	$(AWK) -f munge-bison.awk dds.tab.c > tmp
 	mv tmp dds.tab.c
 
 dds.tab.o: dds.tab.c		# build using C++ compiler
@@ -215,9 +217,9 @@ lex.expr.o: lex.expr.c
 
 # Build the CE parser
 
-expr.tab.c expr.tab.h: expr.y munge-expr.awk
+expr.tab.c expr.tab.h: expr.y munge-bison.awk
 	$(YACC) $(YFLAGS) -p expr expr.y
-	$(AWK) -f munge-expr.awk expr.tab.c > tmp
+	$(AWK) -f munge-bison.awk expr.tab.c > tmp
 	mv tmp expr.tab.c
 
 expr.tab.o: expr.tab.c		# build using C++ compiler
@@ -233,9 +235,9 @@ lex.Error.o: lex.Error.c
 
 # Build the Error object parser.
 
-Error.tab.c Error.tab.h: Error.y munge-error.awk
+Error.tab.c Error.tab.h: Error.y munge-bison.awk
 	$(YACC) $(YFLAGS) -p Error Error.y
-	$(AWK) -f munge-error.awk Error.tab.c > tmp
+	$(AWK) -f munge-bison.awk Error.tab.c > tmp
 	mv tmp Error.tab.c
 
 Error.tab.o: Error.tab.c	# build using C++ compiler
@@ -258,7 +260,7 @@ install-headers:
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
 
-check: libdap++.a das-check dds-check trans-check
+check: libdap++.a das-check dds-check expr-check
 
 # these tests all fail when das-test is linked with -lnew_debug.
 
@@ -270,9 +272,13 @@ dds-check: dds-test
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool dds-test --srcdir dds-testsuite
 
-trans-check: trans-test
-	-rootme=`pwd`; export rootme; \
-	${RUNTEST} ${RUNTESTFLAGS} --tool trans-test --srcdir trans-testsuite
+expr-check: dds-test
+	-rootme=`pwd` && export rootme && \
+	${RUNTEST} ${RUNTESTFLAGS} --tool expr-test --srcdir expr-testsuite
+
+# trans-check: trans-test
+#	-rootme=`pwd`; export rootme; \
+#	${RUNTEST} ${RUNTESTFLAGS} --tool trans-test --srcdir trans-testsuite
 
 error-check: error-test
 	echo "No tests for the Error object"
