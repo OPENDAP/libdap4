@@ -5,30 +5,33 @@
 //
 // jhrg 7/25/94
 
-// $Log: DAS.h,v $
-// Revision 1.4  1994/09/15 21:08:59  jimg
-// Added many classes to the BaseType hierarchy - the complete set of types
-// described in the DODS API design documet is not represented.
-// The parser can parse DDS files.
-// Fixed many small problems with BaseType.
-// Added CtorType.
-//
-// Revision 1.3  1994/09/09  15:33:40  jimg
-// Changed the base name of this class's parents from `Var' to DAS.
-// Added print() and removed operator<< (see the comments in AttrTable).
-// Added overloaded versions of print() and parse(). They can be called
-// using nothing (which defaults to std{in,out}), with a file descriptor,
-// with a FILE *, or with a String givin a file name.
-//
-// Revision 1.2  1994/08/02  19:17:41  jimg
-// Fixed log comments and rcsid[] variables (syntax errors due to //
-// comments caused compilation failures).
-// das.tab.c and .h are commited now as well.
-//
-// Revision 1.1  1994/08/02  18:39:00  jimg
-// This Class is a container that maps Strings onto AttrTable pointers.
-// It inherits from DASVHMap.
-
+/* $Log: DAS.h,v $
+/* Revision 1.5  1994/09/23 14:38:03  jimg
+/* Fixed broken header. Agian.
+/*
+ * Revision 1.4  1994/09/15  21:08:59  jimg
+ * Added many classes to the BaseType hierarchy - the complete set of types
+ * described in the DODS API design documet is not represented.
+ * The parser can parse DDS files.
+ * Fixed many small problems with BaseType.
+ * Added CtorType.
+ *
+ * Revision 1.3  1994/09/09  15:33:40  jimg
+ * Changed the base name of this class's parents from `Var' to DAS.
+ * Added print() and removed operator<< (see the comments in AttrTable).
+ * Added overloaded versions of print() and parse(). They can be called
+ * using nothing (which defaults to std{in,out}), with a file descriptor,
+ * with a FILE *, or with a String givin a file name.
+ *
+ * Revision 1.2  1994/08/02  19:17:41  jimg
+ * Fixed log comments and rcsid[] variables (syntax errors due to //
+ * comments caused compilation failures).
+ * das.tab.c and .h are commited now as well.
+ *
+ * Revision 1.1  1994/08/02  18:39:00  jimg
+ * This Class is a container that maps Strings onto AttrTable pointers.
+ * It inherits from DASVHMap.
+ */
 
 #ifndef _DAS_h
 #define _DAS_h 1
