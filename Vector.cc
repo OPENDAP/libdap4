@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.55 2005/02/11 00:50:18 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.56 2005/02/11 00:52:45 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -928,15 +928,19 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.56  2005/02/11 00:52:45  jimg
+// Fixed eclipse/cvs comment.
+//
 // Revision 1.55  2005/02/11 00:50:18  jimg
-// _duplicate() now performs a deep copy on the BaseType* instances used to \n\
-// hold values in the field _vec (used when there's a Vector of Structures, et c.). set_vec()\n\
-// now calls ptr_duplicate() on the BaseType* passed in to be used as a value for \n\
-// element i. This might seem odd (and it might hose performance, we may have to \n\
-// add another method to skirt the copy for some people) but it fits with the \n\
-// memory model where anything allocated outside the library can be freed outside the \n\
-// library. Not performing the deep copy and then freeing the objects in _vec in the dtor\n\
-// caused all sorts of problems, as one might imagine. I also fixed up the comments.
+// _duplicate() now performs a deep copy on the BaseType* instances used to
+// hold values in the field _vec (used when there's a Vector of Structures, 
+// et c.). set_vec() now calls ptr_duplicate() on the BaseType* passed in to
+// be used as a value for element i. This might seem odd (and it might hose 
+// performance, we may have to add another method to skirt the copy for some
+// people) but it fits with the memory model where anything allocated outside
+// the library can be freed outside the library. Not performing the deep 
+// copy and then freeing the objects in _vec in the dtor caused all sorts of
+// problems, as one might imagine. I also fixed up the comments.
 //
 // Revision 1.54  2005/02/08 20:43:12  jimg
 // Removed parens around 'string *' at line 735; gcc-3.4 complained.
