@@ -10,11 +10,14 @@
 // jhrg 9/15/94
 
 /* $Log: Grid.h,v $
-/* Revision 1.4  1994/11/22 14:05:57  jimg
-/* Added code for data transmission to parts of the type hierarchy. Not
-/* complete yet.
-/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+/* Revision 1.5  1994/12/15 21:25:45  dan
+/* Added print_val() member function.
 /*
+ * Revision 1.4  1994/11/22  14:05:57  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
  * Revision 1.3  1994/10/17  23:34:55  jimg
  * Added code to print_decl so that variable declarations are pretty
  * printed.
@@ -35,14 +38,14 @@
 #endif
 
 #include <SLList.h>
-#include "CtorType.h"
+#include "BaseType.h"
 
 #include "config.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-class Grid: public CtorType {
+class Grid: public BaseType {
 private:
     BaseType *array_var_;
     SLList<BaseTypePtr> map_vars;
@@ -50,7 +53,7 @@ private:
     void duplicate(const Grid &s);
 
 public:
-    Grid(const String &n = (char *)0, const String &t = "Grid");
+    Grid(const String &n = (char *)0, FILE *in = stdin, FILE *out = stdout);
     Grid(const Grid &rhs);
     virtual ~Grid();
     
@@ -66,8 +69,15 @@ public:
     void next_map_var(Pix &p);
     BaseType *map_var(Pix p);
 
+    virtual unsigned int size();
+    virtual bool read(String dataset, String var_name, String constraint);
+
+    virtual bool serialize(bool flush, unsigned int num = 0);
+    virtual unsigned int deserialize();
+
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true);
+    virtual void print_val(ostream &os, String space = "");
     virtual bool check_semantics(bool all = false);
 };
 
