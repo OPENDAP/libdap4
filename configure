@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.32 1996/11/27 22:38:41 jimg Exp $
+# $Id: configure,v 1.33 1996/12/18 19:22:03 jimg Exp $
 
 # Check for fill value usage.
 
@@ -2619,7 +2619,9 @@ fi
 
        
     tcl_include_paths="$DODS_ROOT/third_party/tcl7.6/generic \
-			/usr/local/src/tcl7.5/generic /usr/local/src/tcl7.4/"
+			/usr/local/src/tcl7.5/generic \
+			/usr/local/src/tcl7.6/generic \
+			/usr/local/src/tcl7.4/"
 
     if test $found -eq 0
     then

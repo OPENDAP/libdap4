@@ -1,3 +1,44 @@
+Wed Dec 18 11:18:05 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Version 2.10 prepared
+
+Wed Dec 11 20:15:10 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Created the Usage server.
+
+	* Fixed bugs in cgi_util.cc - error Content-Description items were
+	not processed.
+
+Tue Dec  3 09:43:02 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added to DDS::parse_constraint() two new variables: ostream os
+	and bool server. These are used to control processing of error
+	messages that are returned from the CE parser. Rather than have
+	the CE parser write all its error messages to stderr, the parser
+	now returns an error object. The new code in parse_constraint()
+	ensures that an `error' header is written to OS and that the error
+	object is serialized if the member function is run from within a
+	server. Since parse_constraint() is called from within
+	DDS::send(), users of the library don't need to do anything
+	different unless they have coded their own versions of send().
+
+	* Added code to ensure that variables can be used in the selection
+	part of a constraint expression without having to be also in the
+	projection part. This means that a CE can be used to request a
+	single variable (e.g., the sequence `s') but select by comparing
+	to other variables in the data set.
+
+Mon Dec  2 11:50:29 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added three new versions of int_ops to process all the possible
+	permutations of signed and unsigned integer operands. Ignore the
+	warnings in util.cc about comparisons between signed and unsigned.
+
+	* Added cases for unsigned integer variables in the Vector, Byte,
+	Int and Float classes. Also added cases in BaseType and some of
+	the Test* classes. This fixes problems with the processing of
+	this type.
+
 Wed Nov 27 11:02:44 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Added DDS as a third argument to the user-defined functions in
@@ -173,4 +214,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.6 1996/11/27 22:49:27 jimg Exp $
+$Id: ChangeLog,v 1.7 1996/12/18 19:18:24 jimg Exp $
