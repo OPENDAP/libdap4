@@ -38,7 +38,17 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.13  1995/10/23 23:20:50  jimg
+// Revision 1.14  1995/12/06 21:11:24  jimg
+// Added print_constrained(): Prints a constrained DDS.
+// Added eval_constraint(): Evaluates a constraint expression in the environment
+// of the current DDS.
+// Added send(): combines reading, serailizing and constraint evaluation.
+// Added mark*(): used to mark variables as part of the current projection.
+// Fixed some of the parse() and print() mfuncs to take uniform parameter types
+// (ostream and FILE *).
+// Fixed the constructors to work with const objects.
+//
+// Revision 1.13  1995/10/23  23:20:50  jimg
 // Added _send_p and _read_p fields (and their accessors) along with the
 // virtual mfuncs set_send_p() and set_read_p().
 //
@@ -97,13 +107,17 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.13 1995/10/23 23:20:50 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.14 1995/12/06 21:11:24 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <unistd.h>
+#include <stdio.h>
+
+#include <iostream.h>
+#include <stdiostream.h>
 
 #include "DDS.h"
 #include "errmsg.h"
@@ -118,6 +132,9 @@ static char rcsid[]="$Id: DDS.cc,v 1.13 1995/10/23 23:20:50 jimg Exp $";
 void ddsrestart(FILE *yyin);
 int ddsparse(DDS &table);	// defined in dds.tab.c
 
+void exprrestart(FILE *yyin);
+int exprparse(DDS & table);
+
 // Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
 // the `result' of the mfunc.
 //
@@ -125,12 +142,15 @@ int ddsparse(DDS &table);	// defined in dds.tab.c
 // (which is what DDS::first_var() calls) does not define THIS to be const.
 
 void
-DDS::duplicate(DDS &dds)
+DDS::duplicate(const DDS &dds)
 {
     name = dds.name;
+
+    DDS &dds_tmp = (DDS &)dds;	// cast away const
+
     // copy the things pointed to by the list, not just the pointers
-    for (Pix src = dds.first_var(); src; dds.next_var(src)) {
-	BaseType *btp = dds.var(src)->ptr_duplicate();
+    for (Pix src = dds_tmp.first_var(); src; dds_tmp.next_var(src)) {
+	BaseType *btp = dds_tmp.var(src)->ptr_duplicate();
 	add_var(btp);
     }
 }
@@ -139,7 +159,7 @@ DDS::DDS(const String &n) : name(n)
 {
 }
 
-DDS::DDS(DDS &rhs)
+DDS::DDS(const DDS &rhs)
 {
     duplicate(rhs);
 }
@@ -151,7 +171,7 @@ DDS::~DDS()
 }
 
 DDS &
-DDS::operator=(DDS &rhs)
+DDS::operator=(const DDS &rhs)
 {
     if (this == &rhs)
 	return *this;
@@ -222,19 +242,34 @@ DDS::var(const String &n)
     }
     else {
 	for (Pix p = vars.first(); p; vars.next(p)) {
+
 	    // Look for the name in the dataset's top-level
 	    if (vars(p)->name() == n) {
 		DBG(cerr << "Found " << n);
-		return var(p);
+		return vars(p);
 	    }
-	    // otherwise, see if it is part of an aggregate
+
 #ifdef NEVER
-	    if (vars(p)->type() == structure_t
-		|| vars(p)->type() == sequence_t
-		|| vars(p)->type() == function_t
-		|| vars(p)->type() == grid_t
-		&& var(n))
-		return var(n);
+	    // otherwise, see if it is part of an aggregate
+	    switch(vars(p)->type()) {
+		BaseType *variable;
+	      case array_t:
+	      case list_t:
+	      case structure_t:
+	      case sequence_t:
+	      case function_t:
+	      case grid_t:
+
+		if ((variable = vars(p)->var(n)))
+		    return variable;
+		else
+		    return 0;	// not found
+		break;
+
+	      default:
+		return 0;
+		break;
+	    }
 #endif
 	}
     }
@@ -280,14 +315,14 @@ DDS::parse(String fname)
     if (!in) {
         cerr << "Could not open: " << fname << endl;
         return false;
-      }
+    }
 
     bool status = parse(in);
 
     fclose(in);
 
     return status;
-  }
+}
 
 
 bool
@@ -298,14 +333,14 @@ DDS::parse(int fd)
     if (!in) {
         cerr << "Could not access file" << endl;
         return false;
-      }
+    }
 
     bool status = parse(in);
 
     fclose(in);
 
     return status;
-  }
+}
 
 // Read structure from IN (which defaults to stdin). If ddsrestart() fails,
 // return false, otherwise return the status of ddsparse().
@@ -320,11 +355,16 @@ DDS::parse(FILE *in)
 
     ddsrestart(in);
 
-    return ddsparse(*this) == 0;
+    bool status = ddsparse(*this) == 0;
+
+    fclose(in);
+
+    return status;
 }
 
-// Write strucutre from tables to OUT (which defaults to stdout). Return
-// true. 
+// Write strucutre from tables to OUT (which defaults to stdout). 
+//
+// Returns true. 
 
 bool
 DDS::print(ostream &os)
@@ -337,6 +377,43 @@ DDS::print(ostream &os)
     os << "} " << name << ";" << endl;
 					   
     return true;
+}
+
+bool 
+DDS::print(FILE *out)
+{
+    ostdiostream os(out);
+    return print(os);
+}
+
+// Print those parts (variables) of the DDS structure to OS that are marked
+// to be sent after evaluating the constraint expression.
+//
+// NB: this function only works for scalars at the top level.
+//
+// Returns true.
+
+bool
+DDS::print_constrained(ostream &os)
+{
+    os << "Dataset {" << endl;
+
+    for (Pix p = vars.first(); p; vars.next(p))
+	// for each variable, indent with four spaces, print a trailing
+	// semi-colon, do not print debugging information, print only
+	// variables in the current projection.
+	vars(p)->print_decl(os, "    ", true, false, true);
+
+    os << "} " << name << ";" << endl;
+					   
+    return true;
+}
+
+bool
+DDS::print_constrained(FILE *out)
+{
+    ostdiostream os(out);
+    return print_constrained(os);
 }
 
 // Check the semantics of the DDS describing a complete dataset. If ALL is
@@ -367,3 +444,119 @@ DDS::check_semantics(bool all)
 
     return true;
 }
+
+// Evaluate the constraint expression; return the value of the expression. As
+// a side effect, mark the DDS so that BaseType's mfuncs can be used to
+// correctly read the variable's value and send it to the client.
+//
+// Returns: true if the constraint expression is true for the current DDS,
+// false otherwise.
+
+bool
+DDS::eval_constraint(String constraint)
+{
+    FILE *in = text_to_temp(constraint);
+
+    exprrestart(in);
+    
+    return exprparse(*this) == 0; // status == 0 indicates success
+}
+
+// Send the named variable. This mfunc combines BaseTypes read() and
+// serialize() mfuncs. It also ensures that the data (binary) is prefixed
+// with a DDS which describes the binary data.
+//
+// NB: FLUSH defaults to false.
+//
+// Returns: true if successful, false otherwise.
+
+bool 
+DDS::send(String dataset, String var_name, String constraint, bool flush,
+	  FILE *out)
+{
+    bool status = true;
+
+    // Evaluate the constraint expression. This changes the DDS so that
+    // BaseType's read() and serialize() mfuncs will do the rgiht thing.
+
+    if ((status = eval_constraint(constraint))) {
+	BaseType *variable = var(var_name);
+
+	if (variable && variable->send_p()) { // only send if necessary
+	    if (!variable->read_p()) // only read if necessary
+		status = variable->read(dataset, var_name);
+
+	    if (status) {
+		// set up output stream
+		ostdiostream os(out);
+
+		// send constrained DDS for this variable
+		print_constrained(os);
+
+		// send `Data:' marker
+		os << "Data:" << endl;
+
+		// send binary data
+		set_xdrout(out);
+		status = variable->serialize(flush);
+	    }
+	}
+    }
+
+    return status;
+}
+
+// Mark the named variable by setting its send_p flag to state (true
+// indicates that it is to be sent). Names must be fully qualified.
+//
+// Returns: True if the named variable was found, false otherwise.
+
+bool
+DDS::mark(const String &n, bool state)
+{
+    if (n.contains(".")) {
+	String field = (String &)n; // cast away const
+
+	String aggregate = field.before(".");
+	BaseType *variable = var(aggregate); // get first variable from DDS
+	if (!variable)
+	    return false;	// no such variable
+	else if (state)
+	    variable->BaseType::set_send_p(state); // set iff state == true
+	field = field.after(".");
+
+	while (field.contains(".")) {
+	    aggregate = field.before(".");
+	    variable = variable->var(aggregate); // get child var using parent
+	    if (!variable)
+		return false;	// no such variable
+	    else if (state)
+		variable->BaseType::set_send_p(state); // set iff state == true
+	    field = field.after(".");
+	}
+
+	variable->var(field)->set_send_p(state); // set last child
+
+	return true;		// marked field and its parents
+    }
+    else {
+	BaseType *variable = var(n);
+	if (!variable) {
+	    DBG(cerr << "Could not find variable " << n << endl);
+	    return false;
+	}
+	variable->set_send_p(state);
+
+	return true;
+    }
+
+    return false;		// not found
+}
+
+bool
+DDS::mark_all(bool state)
+{
+    for (Pix p = first_var(); p; next_var(p))
+	var(p)->set_send_p(state);
+}
+    
