@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.27 2000/08/31 23:44:16 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.28 2000/09/07 16:17:20 jimg Exp $"};
 
 #include <string.h>
 
@@ -80,28 +80,28 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 
 %%
 
-{DATASET}		ddslval = yytext; return DATASET;
-{INDEPENDENT}		ddslval = yytext; return INDEPENDENT;
-{DEPENDENT}		ddslval = yytext; return DEPENDENT;
-{ARRAY}			ddslval = yytext; return ARRAY;
-{MAPS}			ddslval = yytext; return MAPS;
-{LIST}			ddslval = yytext; return LIST;
-{SEQUENCE}		ddslval = yytext; return SEQUENCE;
-{STRUCTURE}		ddslval = yytext; return STRUCTURE;
-{GRID}			ddslval = yytext; return GRID;
-{BYTE}			ddslval = yytext; return BYTE;
-{INT16}			ddslval = yytext; return INT16;
-{UINT16}		ddslval = yytext; return UINT16;
-{INT32}			ddslval = yytext; return INT32;
-{UINT32}		ddslval = yytext; return UINT32;
-{FLOAT32}		ddslval = yytext; return FLOAT32;
-{FLOAT64}		ddslval = yytext; return FLOAT64;
-{STRING}		ddslval = yytext; return STRING;
-{URL}			ddslval = yytext; return URL;
+{DATASET}		ddslval = yytext; return SCAN_DATASET;
+{INDEPENDENT}		ddslval = yytext; return SCAN_INDEPENDENT;
+{DEPENDENT}		ddslval = yytext; return SCAN_DEPENDENT;
+{ARRAY}			ddslval = yytext; return SCAN_ARRAY;
+{MAPS}			ddslval = yytext; return SCAN_MAPS;
+{LIST}			ddslval = yytext; return SCAN_LIST;
+{SEQUENCE}		ddslval = yytext; return SCAN_SEQUENCE;
+{STRUCTURE}		ddslval = yytext; return SCAN_STRUCTURE;
+{GRID}			ddslval = yytext; return SCAN_GRID;
+{BYTE}			ddslval = yytext; return SCAN_BYTE;
+{INT16}			ddslval = yytext; return SCAN_INT16;
+{UINT16}		ddslval = yytext; return SCAN_UINT16;
+{INT32}			ddslval = yytext; return SCAN_INT32;
+{UINT32}		ddslval = yytext; return SCAN_UINT32;
+{FLOAT32}		ddslval = yytext; return SCAN_FLOAT32;
+{FLOAT64}		ddslval = yytext; return SCAN_FLOAT64;
+{STRING}		ddslval = yytext; return SCAN_STRING;
+{URL}			ddslval = yytext; return SCAN_URL;
 
-{ID}  	    	    	ddslval = yytext; return ID;
-{INTEGER}		ddslval = yytext; return INTEGER;
-{NAME}                  ddslval = yytext; return NAME;
+{ID}  	    	    	ddslval = yytext; return SCAN_ID;
+{INTEGER}		ddslval = yytext; return SCAN_INTEGER;
+{NAME}                  ddslval = yytext; return SCAN_NAME;
 
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;
@@ -139,6 +139,10 @@ yywrap(void)
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.28  2000/09/07 16:17:20  jimg
+ * Added SCAN_ prefix to returned constants. The prefix was lost during the
+ * last merge.
+ *
  * Revision 1.27  2000/08/31 23:44:16  jimg
  * Merged with 3.1.10
  *
