@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.53 2001/01/26 19:48:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.54 2001/02/09 22:07:18 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -21,12 +21,10 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.53 2001/01/26 19:48:09 jimg 
 
 #include "Connect.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
-const char *version = "$Revision: 1.53 $";
+const char *version = "$Revision: 1.54 $";
 extern int keep_temps;		// defined in Connect.cc
 
 
@@ -54,7 +52,7 @@ usage(string name)
     cerr << "        T: <list> List of `Accepted Types'. Translating servers use this." << endl;
 	cerr << "        s: Print Sequences using numbered rows." << endl;
 	cerr << endl;
-    cerr << "        t: <options> trace output; use -td for default." << endl;
+    cerr << "        t: <options> trace output; use -tz for default." << endl;
     cerr << "          a: show anchor trace." << endl;
     cerr << "          A: show app trace." << endl;
     cerr << "          b: show bind trace." << endl;
@@ -89,7 +87,7 @@ read_data(FILE *fp)
     // worked fine for transfers of text information, but *not* for binary
     // transfers. fread() will handle both.
 
-    while (fread(&c, 1, 1, fp))
+    while (fp && !feof(fp) && fread(&c, 1, 1, fp))
 	printf("%c", c);	// stick with stdio 
 
     return true;
@@ -361,8 +359,8 @@ main(int argc, char * argv[])
 	  for (int j = 0; j < times; ++j)
 	    {
 	      try
-		{
-		  if (!url.fetch_url(url_string, async))
+	        {
+		  if (!url.fetch_url(url_string))
 		    continue;	
 		  if (verbose)
 		    cerr << "Server version: " << url.server_version() 
@@ -388,6 +386,10 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.54  2001/02/09 22:07:18  jimg
+// Removed some of the #ifdef WIN32 guards since the code works with g++ too.
+// Fixed an error in the usage string.
+//
 // Revision 1.53  2001/01/26 19:48:09  jimg
 // Merged with release-3-2-3.
 //
