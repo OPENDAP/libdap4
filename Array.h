@@ -129,7 +129,9 @@ private:
 			     unsigned int dims, unsigned int shape[]);
     unsigned int print_array(FILE *out, unsigned int index, 
 			     unsigned int dims, unsigned int shape[]);
-			     
+
+    friend class ArrayTest;
+    		     
 protected:
     void _duplicate(const Array &a);
     void print_xml_core(FILE *out, string space, bool constrained, string tag);
@@ -226,6 +228,9 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.63  2005/02/10 23:46:51  jimg
+ * Added ArrayTest as a friend class.
+ *
  * Revision 1.62  2004/11/15 21:53:36  jimg
  * Added a specialization of the add_var() method.
  *
