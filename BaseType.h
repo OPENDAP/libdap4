@@ -17,6 +17,10 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.45  1998/09/17 17:22:47  jimg
+ * Fix documentation.
+ * Added BaseType * stack definition using the STL vector class.
+ *
  * Revision 1.44  1998/08/06 16:08:51  jimg
  * Fixed some of the doc comments.
  *
@@ -261,11 +265,18 @@
 #include <netinet/in.h>
 #include <rpc/xdr.h>
 
+#include <vector>
+#include <stack>
+
 #include <iostream.h>
 #include <String.h>
 
 #include "config_dap.h"
 
+class BaseType;			// Forward declarations
+class DDS;
+
+typedef stack<BaseType *> btp_stack;
 
 /** {\bf Part} names the parts of multi-section constructor types.
     For example, the {\bf Function} class type has two sets of
@@ -345,8 +356,6 @@ enum Type {
     dods_function_c,
     dods_grid_c
 };
-
-class DDS;			// forward declaration; see DDS.h
 
 /** This defines the basic data type features for the DODS data access
     protocol (DAP) data types. All the DAP type classes (Float64, Array,
@@ -537,53 +546,72 @@ public:
   /* Returns the #_xdrout# value */
     XDR *xdrout() const;
 
-  /** Returns a pointer to the contained variable in a composite
-      class.  The composite classes are those made up of aggregated
-      simple data types.  Array, Grid, and Structure are composite
-      types, while Int and Float are simple types.  This function is
-      only used by composite classes.  The BaseType implementation
-      simply prints an error message.
+    /** Returns a pointer to the contained variable in a composite
+	class.  The composite classes are those made up of aggregated
+	simple data types.  Array, Grid, and Structure are composite
+	types, while Int and Float are simple types.  This function is
+	only used by composite classes.  The BaseType implementation
+	always returns null.
 
-      Several of the subclasses overload this function with alternate
-      access methods that make sense for that particular data type.
-      For example, the Array class defines a #*var(int i)# method that
-      returns the ith entry in the Array data, and the Structure
-      provides a #*var(Pix p)# function using a pseudo-index to access
-      the different members of the structure.
+	Several of the subclasses overload this function with alternate
+	access methods that make sense for that particular data type. For
+	example, the Array class defines a #*var(int i)# method that returns
+	the ith entry in the Array data, and the Structure provides a
+	#*var(Pix p)# function using a pseudo-index to access the different
+	members of the structure.
 
-      @memo Returns a pointer to a member of a constructor class.
-      @param name The name of the class member.
-      @return A pointer to the member named in the {\it name}
-      argument.  If no name is given, the function returns the first
-      (only) variable.  For example, an Array has only one variable,
-      while a Structure can have many.
-      */
-    virtual BaseType *var(const String &name = (char *)0);
+	@memo Returns a pointer to a member of a constructor class.
+	@param name The name of the class member.
+	@param exact_match True if only interested in variables whose full
+	names match #name# exactly. If false, returns the first variable whose
+	name matches #name#. For example, if #name# is x and point.x is a
+	variable, then var("x", false) would return a #BaseType# pointer to
+	point.x. If #exact_match" was #true# then #name# would need to be
+	"point.x" for #var# to return that pointer. This feature simplifies
+	constraint expressions for datasets which have complex, nested,
+	constructor variables.
+	@return A pointer to the member named in the {\it name}
+	argument.  If no name is given, the function returns the first
+	(only) variable.  For example, an Array has only one variable,
+	while a Structure can have many. */
+    virtual BaseType *var(const String &name = (char *)0, 
+			  bool exact_match = true);
 
-  /** Adds a variable to an instance of a constructor class, such as
-      Array, Structure and so on.  This function is only used by those
-      classes.  The BaseType implementation simply prints an error
-      message. 
+    /** This version of var(...) searches for {\it name} and returns a
+	pointer to the BaseType object if found. It uses the same search
+	algorithm as above when {\it exact_match} is false. In addition to
+	returning a pointer to the variable, it pushes onto {\it s} a
+	BaseType pointer to each constructor type that ultimately contains
+	{\it name}.
 
-      @memo Adds the input data to the class instance. 
-      @param v The data to be added to the constructor type.
-      @param p The part of the constructor data to be modified.
-      @see Part
-      */
+	NB: The BaseType implementation always returns null. 
 
+	@param name Find the variable whose name is {\it name}.
+	@param s Record the path to {\it name}.
+	@return A pointer to the named variable. */
+    virtual BaseType *var(const String &name, btp_stack &s);
+
+    /** Adds a variable to an instance of a constructor class, such as
+	Array, Structure and so on.  This function is only used by those
+	classes.  The BaseType implementation simply prints an error
+	message. 
+
+	@memo Adds the input data to the class instance. 
+	@param v The data to be added to the constructor type.
+	@param p The part of the constructor data to be modified.
+	@see Part */
     virtual void add_var(BaseType *v, Part p = nil);
 
-  /** Return the number of bytes that are required to hold the
-      instance's value. In the case of simple types such as Int32,
-      this is the size of one Int32 (four bytes). For a String or Url
-      type, #width()# returns the number of bytes needed for a 
-      #String *# variable, not the bytes needed 
-      for all the characters, since
-      that value cannot be determined from type information alone.
-      For Structure, and other constructor types size() returns the
-      number of bytes needed to store pointers to the C++ objects.
+    /** Return the number of bytes that are required to hold the instance's
+	value. In the case of simple types such as Int32, this is the size of
+	one Int32 (four bytes). For a String or Url type, #width()# returns
+	the number of bytes needed for a #String *# variable, not the bytes
+	needed for all the characters, since that value cannot be determined
+	from type information alone. For Structure, and other constructor
+	types size() returns the number of bytes needed to store pointers to
+	the C++ objects.
 
-      @memo Returns the size of the class instance data. */
+	@memo Returns the size of the class instance data. */
     virtual unsigned int width() = 0;
 
   /** Put the data into a local buffer so that it may be sent to a
