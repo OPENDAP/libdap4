@@ -12,6 +12,10 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.10  1999/03/24 23:28:36  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+// Removed some unused versions of the error printing functions.
+//
 // Revision 1.9  1999/01/21 20:42:01  tom
 // Fixed comment formatting problems for doc++
 //
@@ -141,8 +145,6 @@ void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
     */
 
 void save_str(char *dst, const char *src, const int line_num);
-void save_str(char *dst, const char *src, parser_arg *arg, 
-	      const int line_num, const char *context);
 
 /** Check to see if #val# is a valid byte value. If not, generate an error
     message using #parser_error()#. There are two versions of #check_byte()#,
@@ -154,8 +156,6 @@ void save_str(char *dst, const char *src, parser_arg *arg,
     */
 
 int check_byte(const char *val, const int line);
-int check_byte(parser_arg *arg, const char *val, const int line, 
-	       const char *context);
 
 /** Like #check_byte()# but for 32-bit integers (#check_uint()# is for
     unsigned integers). 
@@ -163,29 +163,23 @@ int check_byte(parser_arg *arg, const char *val, const int line,
     @memo Is the value a valid integer?
     */
 
-int check_int(const char *val, const int num);
-int check_int(parser_arg *arg, const char *val, const int num,
-	      const char *context);
-int check_uint(const char *val, const int num);
-int check_uint(parser_arg *arg, const char *val, const int num,
-	      const char *context);
-
+int check_int16(const char *val, const int num);
+int check_uint16(const char *val, const int num);
+int check_int32(const char *val, const int num);
+int check_uint32(const char *val, const int num);
 
 /** Like #check_byte()# but for 64-bit float values.
 
     @memo Is the value a valid float? */
 
-int check_float(const char *val, const int num);
-int check_float(parser_arg *arg, const char *val, const int num,
-		const char *context);
+int check_float32(const char *val, const int num);
+int check_float64(const char *val, const int num);
 
 /** Currently this function always returns true.
 
     @memo Is the value a valid URL? */
 
 int check_url(const char *val, const int num);
-int check_url(parser_arg *arg, const char *val, const int num,
-	      const char *context);
 
 #endif // _parser_h
  
