@@ -10,6 +10,9 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.8  1996/10/28 18:53:13  jimg
+// Added functions to test unsigned integers.
+//
 // Revision 1.7  1996/08/13 20:43:38  jimg
 // Added __unused__ to definition of char rcsid[].
 // Added a new parse_error function that builds an Error object and returns it
@@ -39,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.7 1996/08/13 20:43:38 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.8 1996/10/28 18:53:13 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,6 +208,65 @@ check_int(parser_arg *arg, const char *val, const int line,
 	oss << "`" << val << "' is not a integer value value." << endl
 	    << "It must be between " << DODS_INT_MIN << " and "
 	    << DODS_INT_MAX << "." << ends;
+	parse_error(arg, oss.str(), line, context);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_uint(const char *val, const int line)
+{
+    char *ptr;
+    unsigned long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
+
+    if (v == 0 && val == ptr) {
+	ostrstream oss;
+	oss << "`" << val << "' cannot be decoded as an integer value." 
+	    << ends;
+	parse_error(oss.str(), line);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    // Don't use the constant from limits.h, use the on in dods-limits.h
+    if (v > DODS_UINT_MAX || v < DODS_UINT_MIN) { 
+	ostrstream oss;
+	oss << "`" << val << "' is not a integer value value." << endl
+	    << "It must be between " << DODS_UINT_MIN << " and "
+	    << DODS_UINT_MAX << "." << ends;
+	parse_error(oss.str(), line);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_uint(parser_arg *arg, const char *val, const int line, 
+	   const char *context)
+{
+    char *ptr;
+    unsigned long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
+
+    if (v == 0 && val == ptr) {
+	ostrstream oss;
+	oss << "`" << val << "' cannot be decoded as an integer value." 
+	    << ends;
+	parse_error(arg, oss.str(), line, context);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    // Don't use the constant from limits.h, use the on in dods-limits.h
+    if (v > DODS_UINT_MAX || v < DODS_UINT_MIN) { 
+	ostrstream oss;
+	oss << "`" << val << "' is not a integer value value." << endl
+	    << "It must be between " << DODS_UINT_MIN << " and "
+	    << DODS_UINT_MAX << "." << ends;
 	parse_error(arg, oss.str(), line, context);
 	oss.freeze(0);
 	return FALSE;
