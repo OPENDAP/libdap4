@@ -10,6 +10,11 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.cc,v $
+// Revision 1.3  1996/10/18 16:52:18  jimg
+// Fixed an error in the ctor where dods_int32_c was passed instead of
+// dods_uint32_c.
+// Changed comparisons so that unsigned 32 bit ints are used when appropriate.
+//
 // Revision 1.2  1996/08/26 20:17:50  jimg
 // Added.
 //
@@ -23,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.2 1996/08/26 20:17:50 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.3 1996/10/18 16:52:18 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -39,7 +44,7 @@ static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.2 1996/08/26 20:17:50 jimg
 #endif
 
 UInt32::UInt32(const String &n) 
-    : BaseType(n, dods_int32_c, (xdrproc_t)XDR_UINT32)
+    : BaseType(n, dods_uint32_c, (xdrproc_t)XDR_UINT32)
 {
 }
 
@@ -49,6 +54,7 @@ UInt32::width()
     return sizeof(dods_uint32);
 }
 
+bool
 UInt32::serialize(const String &dataset, DDS &dds, XDR *sink,
 		  bool ce_eval = true)
 {
@@ -113,7 +119,8 @@ UInt32::print_val(ostream &os, String space, bool print_decl_p)
 bool
 UInt32::ops(BaseType &b, int op)
 {
-    dods_uint32 a1, a2;
+    dods_uint32 a1, ua2;
+    dods_int32 a2;
 
     if (!read_p()) {
 	cerr << "This value not yet read!" << endl;
@@ -131,10 +138,14 @@ UInt32::ops(BaseType &b, int op)
     else switch (b.type()) {
       case dods_byte_c:
       case dods_int16_c:
-      case dods_uint16_c: {
-      case dods_int32_c:
-      case dods_uint32_c: {
+      case dods_int32_c: {
 	dods_int32 *a2p = &a2;
+	b.buf2val((void **)&a2p);
+	break;
+      }
+      case dods_uint16_c:
+      case dods_uint32_c: {
+	dods_uint32 *a2p = &ua2;
 	b.buf2val((void **)&a2p);
 	break;
       }
@@ -171,5 +182,8 @@ UInt32::ops(BaseType &b, int op)
 	break;
     }
 
-    return int_ops(a1, a2, op);
+    if (b.type() == dods_uint16 || b.type() == dods_uint32)
+	return int_ops(a1, ua2, op);
+    else
+	return int_ops(a1, a2, op);
 }
