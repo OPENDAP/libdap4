@@ -17,6 +17,10 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.50  1999/03/19 16:45:00  jimg
+ * Added to the documentation for print_val(). Now contains a blurb about
+ * setprecision().
+ *
  * Revision 1.49  1999/01/21 20:42:00  tom
  * Fixed comment formatting problems for doc++
  *
@@ -856,6 +860,15 @@ public:
 
   /** Prints the value of the variable, with its declaration.  This
       function is primarily intended for debugging DODS applications.
+      However, it can be overloaded and used to do some useful things. Take a
+      look at the asciival and writeval clients, both of which overload this
+      to output the values of variables in different ways.
+
+      NB: This function uses C++'s iostream to handle creating the print
+      representations of simple type variables. For floating point numbers
+      this is set to six digits of precision by default. If you want more
+      precision (IEEE 64-bit floats have 15 digits of precision, 32-bit
+      floats have 8), use the setprecision() I/O manipulator. 
 
       @memo Prints the value of the variable.
       @param ostream The output stream on which to print the value.
