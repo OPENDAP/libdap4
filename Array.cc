@@ -38,7 +38,13 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.25  1995/11/22 22:31:02  jimg
+// Revision 1.26  1995/12/06 21:40:58  jimg
+// Added reset_constraint(), clear_constraint() and add_constraint() to manage
+// the new constraint-related members (in struct dimension).
+// Fixed variour member functions to return information about sizes,
+// ... correctly both before and after constraints are set.
+//
+// Revision 1.25  1995/11/22  22:31:02  jimg
 // Modified so that the Vector class is now the parent class.
 //
 // Revision 1.24  1995/10/23  23:20:44  jimg
@@ -196,6 +202,15 @@ Array::_duplicate(const Array &a)
     _shape = a._shape;
 }
 
+void
+Array::update_length(int size)
+{
+    if (length() == -1)
+	set_length(size);
+    else
+	set_length(length() * size);
+}
+
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
@@ -234,14 +249,91 @@ void
 Array::append_dim(int size, String name)
 { 
     dimension d;
+
+    // This is invariant
     d.size = size;
     d.name = name;
+
+    // this information changes with each constraint expression
+    d.start = 0; 
+    d.stop = size -1;
+    d.stride = 1;
+    d.c_size = size;
+    d.selected = true;		// assume all dims selected.
+
     _shape.append(d); 
 
-    if (Vector::length() == -1)
+    update_length(size);
+#ifdef NEVER
+    if (length() == -1)
 	set_length(size);
     else
-	set_length(Vector::length() * size);
+	set_length(length() * size);
+#endif
+}
+
+// Reset the dimension contraint information so that the entire array is
+//`selected'
+
+void
+Array::reset_constraint()
+{
+    set_length(-1);
+
+    for (Pix p = _shape.first(); p; _shape.next(p)) {
+	dimension d = _shape(p);
+	
+	d.start = 0;
+	d.stop = d.size;
+	d.stride = 1;
+	d.c_size = d.size;
+
+	d.selected = true;
+
+	update_length(d.size);
+    }
+}
+
+// Tell the Array object to clear the constraint information about
+// dimensions. Do this *once* before calling add_constraint() for each new 
+// constraint expression. Only the dimensions explicitly selected using
+// Array::add_constraint(...) will be sent.
+
+void
+Array::clear_constraint()
+{
+    for (Pix p = _shape.first(); p; _shape.next(p)) {
+	dimension d = _shape(p);
+	
+	d.start = 0;
+	d.stop = 0;
+	d.stride = 0;
+	d.c_size = 0;
+
+	d.selected = false;
+    }
+
+    set_length(-1);
+}
+
+// the start and stop indeces are inclusive.
+
+void 
+Array::add_constraint(Pix &p, int start, int stride, int stop)
+{
+    dimension &d = _shape(p);
+
+    d.start = start;
+    d.stop = stop;
+    d.stride = stride;
+
+    d.c_size = (stop - start + 1) / stride;
+    
+    cerr << "add_constraint: c_size = " << d.c_size << endl;
+
+    d.selected = true;
+
+    update_length(d.c_size);
 }
 
 Pix 
@@ -257,25 +349,45 @@ Array::next_dim(Pix &p)
 	_shape.next(p); 
 }
 
-// Return the number of dimensions contained in the array.
+// Return the number of dimensions contained in the array. When CONSTRAINED
+// is true, return the number of dimensions given the most recently evaluated
+// constraint expression. By default, constraint is false.
 
 unsigned int
-Array::dimensions()
+Array::dimensions(bool constrained)
 {
   unsigned int dim = 0;
   for(Pix p = first_dim(); p; next_dim(p)) 
-      dim ++;
+      if (constrained) {
+	  if (_shape(p).selected)
+	      dim++;
+      }
+      else
+	  dim++;
 
   return dim;
 }
 
-// Return the size of the array dimension referred to by P.
+// Return the size of the array dimension referred to by P. If CONSTRAINED is
+// true, return the size of this dimension giventhe current
+// constraint. CONSTRAINED is false by default.
 
 int 
-Array::dimension_size(Pix p) 
+Array::dimension_size(Pix p, bool constrained) 
 { 
+    int size = 0;
+
     if (!_shape.empty() && p)
-	return _shape(p).size; 
+	if (constrained) {
+	    if (_shape(p).selected)
+		size = _shape(p).c_size;
+	    else
+		size = 0;
+	}
+	else
+	    size = _shape(p).size; 
+
+    return size;
 }
 
 // Return the name of the array dimension referred to by P.
@@ -289,16 +401,24 @@ Array::dimension_name(Pix p)
 
 void
 Array::print_decl(ostream &os, String space, bool print_semi,
-		  bool constraint_info)
+		  bool constraint_info, bool constrained)
 {
+    if (constrained && !send_p())
+	return;
+
     // print it, but w/o semicolon
-    var()->print_decl(os, space, false, constraint_info); 
+    var()->print_decl(os, space, false, constraint_info, constrained); 
 
     for (Pix p = _shape.first(); p; _shape.next(p)) {
+	if (constrained && !_shape(p).selected)
+	    continue;		// only print selected dimensions
 	os << "[";
 	if (_shape(p).name != "")
 	    os << _shape(p).name << " = ";
-	os << _shape(p).size << "]";
+	if (constrained)
+	    os << _shape(p).c_size << "]";
+	else
+	    os << _shape(p).size << "]";
     }
 
     if (print_semi)
@@ -342,6 +462,8 @@ Array::print_array(ostream &os, unsigned int index,
     }
 }
 
+// print the value given the current constraint.
+
 void 
 Array::print_val(ostream &os, String space, bool print_decl_p)
 {
@@ -352,15 +474,15 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
     // Add the `;'
     
     if (print_decl_p) {
-	print_decl(os, space, false);
+	print_decl(os, space, false, false, true);
 	os << " = ";
     }
 
-    unsigned int dims = dimensions();
+    unsigned int dims = dimensions(true);
     unsigned int shape[dims];
     unsigned int i = 0;
     for (Pix p = first_dim(); p; next_dim(p))
-	shape[i++] = dimension_size(p);
+	shape[i++] = dimension_size(p, true);
 
     print_array(os, 0, dims, shape);
 
