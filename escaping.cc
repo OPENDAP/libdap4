@@ -99,7 +99,7 @@ octstring(unsigned char val)
 {
     ostringstream buf;
     buf << oct << setw(3) << setfill('0') 
-	<< static_cast<unsigned int>(val) << ends;
+	<< static_cast<unsigned int>(val);
 
     return buf.str();
 }
@@ -395,6 +395,10 @@ munge_error_message(string msg)
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.29  2004/02/05 23:46:51  jimg
+// Fix for bug 696; removed an errant 'ends' call in octstring(). Never use ends
+// with the stringstream classes.
+//
 // Revision 1.28  2003/12/08 18:02:30  edavis
 // Merge release-3-4 into trunk
 //
