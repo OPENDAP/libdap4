@@ -25,6 +25,7 @@
 #include "Error.h"
 #endif
 
+using std::vector;
 using std::string;
 using std::ostream;
 using std::vector;
@@ -413,6 +414,9 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.40  2003/01/22 01:05:39  jimg
+ * Added using std::vector.
+ *
  * Revision 1.39  2003/01/15 19:24:39  pwest
  * Removing IteratorAdapterT and replacing with non-templated versions.
  *
