@@ -21,5 +21,7 @@ void set_mime_text(ObjectType type = unknown_type,
 		   EncodingType enc = x_plain);
 void set_mime_binary(ObjectType type = unknown_type, 
 		     EncodingType enc = x_plain);
+void set_mime_error(int code = HTERR_NOT_FOUND, 
+		    const char *reason = "Dataset not found");
 FILE *compress_stdout();
 FILE *decompress_stdin();
