@@ -25,7 +25,7 @@
 
 # Common code for dejaGNU-based automated tests.
 
-# $Id: common_tests.exp,v 1.7 2003/01/23 00:44:34 jimg Exp $
+# $Id: common_tests.exp,v 1.8 2004/01/22 17:29:37 jimg Exp $
 
 # Compare $expected to the global $comp_output. Run `pass' if they match,
 # `fail' otherwise unless `xfailp' is true in which case run `xfail' if they
@@ -100,9 +100,44 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
 
     # Added test for xfailp so that verobse == 1 will show only tests that
     # are not expected to fail. 5/18/2001 jhrg
-    if {$verbose >= 2 || ($verbose == 1 && $result != 1 && $xfailp != 1)} {
+    if {$verbose >= 2} {
 	send_user "Comp output:$comp_output\n"
 	send_user "Expected output:$expected\n"
+    }
+
+    if {$result != 1 && ($verbose >= 2 || ($verbose == 1 && $xfailp != 1))} {
+	set tlen [string length $expected]
+	set clen [string length $comp_output]
+
+	set len $tlen;			# used by for loop below
+
+	if {$clen < $tlen} {
+	    set len $clen;			# set if needed
+
+	    set size [expr $tlen - $clen]
+	    send_user "comp_output is smaller (by $size chars) than expected!\n"
+	    send_user "Here's the excess: '"
+	    send_user [string range $expected [expr $clen -1] end]
+	    send_user "'\n"
+	} elseif {$tlen < $clen} {
+	    set size [expr $clen - $tlen]
+	    send_user "comp_output is larger (by $size chars) than expected!\n"
+	    send_user "Here's the excess: '"
+	    send_user [string range $comp_output [expr $tlen -1] end]
+	    send_user "'\n"
+	}
+
+	# $len is set to the smallest of $tlen or $clen to avoid running off
+	# the end either of the strings.
+	for {set i 0} {$i < $len} {incr i} {
+	    set c [string index $comp_output $i]
+	    set t [string index $expected $i]
+	    if {$t != $c} {
+		send_user "comp_output ($c) and expected ($t) differ at $i.\n"
+	    }
+	}
+	
+	fail "$msg"
     }
 }
 

@@ -225,6 +225,9 @@ EOF
     macppc:NetBSD:*:*)
         echo powerpc-apple-netbsd${UNAME_RELEASE}
         exit 0 ;;
+    Power*:Darwin:*:*)
+        echo powerpc-apple-netbsd${UNAME_RELEASE}
+        exit 0 ;;
     RISC*:Mach:*:*)
 	echo mips-dec-mach_bsd4.3
 	exit 0 ;;

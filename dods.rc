@@ -1,18 +1,46 @@
-# This is the DODS server initialization file. It contains lines with a
-# regular expression and a DODS server handler token.
+# -*- Perl -*-
+# OPeNDAP server configuration file.
 # Blank lines are ignored; comments must start with `#' in the first column.
 
+# Set the server time out. This is different from the httpd time out (which
+# does not apply to an OPeNDAP server). The value is in seconds; a value of
+# zero disables the time out feature.
+timeout 0
+
+# Compressed files are decompressed first before serving. Where should these
+# decompressed files be cached?
+cache_dir /usr/tmp
+
+# How big a cache? If you're serving some large files, make sure this is at
+# least big enough to hold one of them! The size is given in MegaBytes.
+cache_size 50
+
+# Email address of the person in charge of this server. 
+maintainer support@unidata.ucar.edu
+
+# List of handlers whose regular expressions should not be used when building
+# the HTML interface to this server. This includes any overly inclusive
+# regular expression like '.*' which matches anything. This will make README
+# files, et.c, show up as datasets. Typically only the JGOFS server every has
+# these regular expressions. Each handler name should be quoted, separated by
+# whitespace (not a comma).
+#exclude jg
+
+# Match various handlers with pathnames. In *most* cases this means filename
+# extensions, but in fact the entire path is used. For help with the regexs,
+# see a good book on Perl such as one by Larry Wall.
+
 # Look for common file extensions. 
-.*\.(HDF|hdf)(.Z|.gz)*$ hdf
-.*\.(NC|nc|cdf|CDF)$ nc
-.*\.(mat|Mat|MAT)$ mat
-.*\.(dat|bin)$ ff
-.*\.(pvu)(.Z|.gz)*$ dsp
+handler .*\.(HDF|hdf)(.Z|.gz)*$ hdf
+handler .*\.(NC|nc|cdf|CDF)$ nc
+handler .*\.(mat|Mat|MAT)$ mat
+handler .*\.(dat|bin)$ ff
+handler .*\.(pvu)(.Z|.gz)*$ dsp
 
 # For JGOFS datasets, match either the dataset name or the absence of an
 # extension. The later case is sort of risky, but if you have lots of JGOFS
 # datasets might be appealing.
-.*/test$ jg
-#.*/[^/]+$ jg
+handler .*/test$ jg
+# handler .*/[^/]+$ jg
 
 
