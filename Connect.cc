@@ -8,6 +8,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.65  1998/04/07 22:14:31  jimg
+// Added a call to prune_spaces to the default ctor. Removing spaces prevents
+// various crashes. Note that CEs can themselves contain spaces but *leading*
+// spaces caused problems.
+//
 // Revision 1.64  1998/04/03 17:39:07  jimg
 // Fixed a bug in process_data where sequences were not handled properly. Patch
 // from Jake Hamby.
@@ -360,7 +365,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.64 1998/04/03 17:39:07 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.65 1998/04/07 22:14:31 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -796,7 +801,10 @@ header_handler(HTRequest *, HTResponse *, const char *token, const char *val)
     return HT_OK;
 }
  
-// Barely a `parser'... jhrg 5/20/97
+// Barely a parser... This is used when reading from local sources of DODS
+// Data objects. It simulates the important actions of the libwww MIME header
+// parser. Those actions fill in certain fields in the Connect object. jhrg
+// 5/20/97
 
 void
 Connect::parse_mime(FILE *data_source)
@@ -840,7 +848,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // Set up http and cache protocols. Do this instead of
     // HTProtocolPreemtiveInit(). 
     HTProtocol_add("http", "buffered_tcp", HTTP_PORT, YES, HTLoadHTTP, NULL);
-    HTProtocol_add("cache","local",0,YES,HTLoadCache,  NULL);
+    HTProtocol_add("cache", "local", 0, YES, HTLoadCache, NULL);
 
     // Initialize various before and after filters. See HTInit.c.
     HTNetInit();
@@ -1058,6 +1066,7 @@ Connect::Connect(String name, bool www_verbose_errors = false,
 		 bool accept_deflate = true)
 {
     _gui = new Gui;
+    name = prune_spaces(name);
     char *access_ref = HTParse(name, NULL, PARSE_ACCESS);
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
