@@ -41,6 +41,10 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.17  1996/08/13 18:44:16  jimg
+# Added __unused__ to definition of char rcsid[].
+# Added parser.h to included files.
+#
 # Revision 1.16  1996/05/31 23:30:51  jimg
 # Updated copyright notice.
 #
@@ -124,9 +128,13 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.16 1996/05/31 23:30:51 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ ={"$Id: das.lex,v 1.17 1996/08/13 18:44:16 jimg Exp $"};
 
 #include <string.h>
+#include <assert.h>
+#include "parser.h"
 
 #define YYSTYPE char *
 #define YY_DECL int daslex YY_PROTO(( void ))
