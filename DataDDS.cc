@@ -9,6 +9,11 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.cc,v $
+// Revision 1.4  1998/06/05 21:29:54  jimg
+// Changed the version regex used to check for the version string pattern so
+// that it includes a `wildcard' at the end. Thus versions like 2.15.1 and
+// 2.15a can be read (both as major version == 2 and minor version == 15).
+//
 // Revision 1.3  1998/02/05 20:13:52  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -22,7 +27,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.3 1998/02/05 20:13:52 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.4 1998/06/05 21:29:54 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -43,7 +48,7 @@ static char rcsid[] __unused__ = {"$Id: DataDDS.cc,v 1.3 1998/02/05 20:13:52 jim
 void
 DataDDS::_version_string_to_numbers()
 {
-    static Regex version_regex("dods/[0-9]\\.[0-9]+");
+    static Regex version_regex("dods/[0-9]\\.[0-9]+[.0-9a-zA-Z]*");
 
     DBG(cerr << "in version string to numbers" << endl);
 
