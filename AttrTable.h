@@ -217,7 +217,7 @@ private:
 
     Pix simple_find(const string &target);
 
-    Attr_iter simple_find( const string &target, bool unused ) ;
+    Attr_iter simple_find( const string &target, bool unused );
     AttrTable *simple_find_container(const string &target);
 
     void delete_attr_table();
@@ -242,7 +242,7 @@ public:
     void erase();
 
     unsigned int get_size() const;
-    string get_name();
+    string get_name() const;
     void set_name(const string &n);
 
     unsigned int append_attr(const string &name, const string &type, 
@@ -318,6 +318,9 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.46  2003/05/30 16:53:42  jimg
+ * Made get_name() a const method.
+ *
  * Revision 1.45  2003/05/23 03:24:56  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can
