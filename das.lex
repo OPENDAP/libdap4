@@ -1,9 +1,9 @@
 
 /*
    Scanner for the DAS. This file works with gnu's flex scanner generator. It
-   returns either ATTR, ID, VAL or one of the single character tokens `{',
-   `}', `;', or `\n' as integers. In the case of an ID or VAL, the scanner
-   stores a pointer to the lexeme in yylval (whose type is char *).
+   returns either ATTR, ID, VAL, TYPE or one of the single character tokens
+   `{', `}', `;', or `\n' as integers. In the case of an ID or VAL, the
+   scanner stores a pointer to the lexeme in yylval (whose type is char *).
 
    The scanner discards all comment text.
 
@@ -23,13 +23,19 @@
    escapes to work and because we want line counts to work too. In order to
    properly scan a quoted string two C functions are used: one to remove the
    escape characters from escape sequences and one to remove the trailing
-   quote on the end of the string.
+   quote on the end of the string. NB: We don't remove the \'s or ending
+   quotes any more -- that way the printed das can be reparsed. 9/28/94.
    
-   jhrg 7/12/94 */
+   jhrg 7/12/94 
+*/
 
 /*
 # $Log: das.lex,v $
-# Revision 1.4  1994/08/29 14:14:51  jimg
+# Revision 1.5  1994/10/05 16:41:58  jimg
+# Added `TYPE' to the grammar for the DAS.
+# See Also: DAS.{cc,h} which were modified to handle TYPE.
+#
+# Revision 1.4  1994/08/29  14:14:51  jimg
 # Fixed a problem with quoted strings - previously quotes were stripped
 # when scanned, but this caused problems when they were printed because
 # the printed string could not be recanned. In addition, escape characters
@@ -65,7 +71,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.4 1994/08/29 14:14:51 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.5 1994/10/05 16:41:58 jimg Exp $"};
 
 #include <string.h>
 
@@ -89,11 +95,13 @@ int yywrap(void);
 ID  	[a-zA-Z_][a-zA-Z0-9_]*
 VAL 	[a-zA-Z0-9_.+-]+
 ATTR 	attributes|Attributes|ATTRIBUTES
+TYPE    BYTE|Byte|byte|INT32|Int32|int32|FLOAT64|Float64|float64|STRING|String|string|URL|Url|url
 NEVER   [^a-zA-Z0-9_.+-{};]
 
 %%
 
 {ATTR}	    	    	daslval = yytext; return ATTR;
+{TYPE}                  daslval = yytext; return TYPE;
 {ID}  	    	    	daslval = yytext; return ID;
 {VAL}	    	    	daslval = yytext; return VAL;
 "{" 	    	    	return (int)*yytext;
