@@ -1,5 +1,5 @@
 
-$Id: INSTALL,v 1.4 1996/11/13 18:43:35 jimg Exp $
+$Id: INSTALL,v 1.5 1998/03/31 22:40:26 jimg Exp $
 
 Building the DAP library:
 
@@ -18,11 +18,16 @@ the makefile's check target.
 Notes:
 
 1) To build with program instrumentation use `--enable-debug=<level>' where
-<level> is 1 or 2. 
+   <level> is 1 or 2. 
 
 2) To build with memory leak checks use --enable-dbnew. You must have the
-freely available libraries libdbnew.a and libefence.a to make use of this
-option. 
+   freely available libraries libdbnew.a and libefence.a to make use of this
+   option.
+
+3) GCC 2.8.1 contains a bug which causes it to crash when compiling the DODS
+   class String.XPlex with optimization. Compile the file Plex/String.XPlex
+   with optimization off (-O0). Note that the Makefile should take care of
+   this for you. 
 
 The defaults for both debug and dbnew are to *not* include those
 features. Thus, if you want to built a straight version of the libraries (and
