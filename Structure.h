@@ -103,9 +103,11 @@ private:
     std::vector<BaseType *> _vars;
 #endif
     
-    void _duplicate(const Structure &s);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
     BaseType *exact_match(const string &name, btp_stack *s = 0);
+
+protected:
+    void _duplicate(const Structure &s);
 
 public:
     Structure(const string &n = "");
@@ -211,6 +213,9 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.48  2004/06/28 16:58:38  pwest
+ * Passive data model objects
+ *
  * Revision 1.47  2003/12/08 18:02:29  edavis
  * Merge release-3-4 into trunk
  *
