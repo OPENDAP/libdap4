@@ -18,6 +18,9 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.19  1997/10/09 22:19:09  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
  * Revision 1.18  1997/08/11 18:19:11  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -188,7 +191,7 @@ public:
     /** Return a pointer to the attribute table for the attribute referenced
         by Pix #p# or named #name# *if the attribute is a container
 	attribute*. If there is no such attribute table, or it the table is
-	not a container, return False. */  
+	not a container, return null. */  
     AttrTable *get_attr_table(Pix p);
     AttrTable *get_attr_table(const String &name);
     AttrTable *get_attr_table(const char *name);

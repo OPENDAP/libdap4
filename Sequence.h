@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
+// (c) COPYRIGHT URI/MIT 1994-1997
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
@@ -19,6 +19,9 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.29  1997/10/09 22:19:23  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
  * Revision 1.28  1997/08/11 18:19:18  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -182,12 +185,27 @@
 
 class Sequence: public BaseType {
 private:
+    /// Linked list of variables in this sequence.
     SLList<BaseTypePtr> _vars;
 
-    int _level;			// Level number in a multilevel sequence.
+    /// Level number in a multilevel sequence.
+    int _level;			
+
+    /// Was there an error reading the sequence?
+    bool _seq_read_error;
+
+    /// Make sure the old deserialize is still around?
+    bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     void _duplicate(const Sequence &s);
 
+protected:
+    void write_end_of_sequence(XDR *sink);
+    void write_end_of_instance(XDR *sink);
+    unsigned char read_end_marker(XDR *source);
+    bool is_end_of_instance(unsigned char marker);
+    bool is_end_of_sequence(unsigned char marker);
+	
 public:
     Sequence(const String &n = (char *)0);
     Sequence(const Sequence &rhs);
@@ -201,7 +219,6 @@ public:
 
     virtual unsigned int width();
 
-    /// Return the number of elements in a sequence.
     /** #length# returns the number of elements in a Sequence object. Note that
         this is *not* the number of items in a row, but the number of rows in
 	the complete sequence object. To be meaningful, this must be computed
@@ -210,8 +227,8 @@ public:
 	when the Sequence is too large to be transferred from the server to the
 	client in its entirety. 
 
-	By default, this mfunc returns -1. To be useful, it must be
-	specialized for each API/format. */
+	@return@ Returns -1. To be useful, it must be specialized for each
+	API/format. */ 
     virtual int length();
     
     virtual void set_level(int lvl);
@@ -219,7 +236,19 @@ public:
 
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, bool reuse = false);
+
+    /** Deserialize (read from the network) one instance of the current
+      sequence. The information read is sotred in the sequence instance
+      variables. 
+      @return True if more instances remain to be read, false if this is the
+      last instance *or* if there was an error reading the instance. In the
+      later case, check the value of seq_read_error(). */
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+
+    /** Was there an error reading the sequence? This function will reutrn
+      true if either the xdr function returned an error or the end of
+      instance/sequence marker could not be read. */
+    bool seq_read_error();
 
     virtual bool read(const String &dataset, int &error) = 0;
 
@@ -247,7 +276,7 @@ public:
         XDR * as its second argument.
 
         Returns: void */
-    void print_all_vals(ostream& os, XDR *src, String space = "",
+    void print_all_vals(ostream& os, XDR *src, DDS *dds, String space = "",
 			bool print_del_p = true);
 
     virtual bool check_semantics(String &msg = String(), bool all = false);

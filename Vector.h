@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.14  1997/10/09 22:19:26  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
  * Revision 1.13  1997/08/11 18:19:31  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -117,7 +120,7 @@ public:
 
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, bool reuse = false);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     virtual bool read(const String &dataset, int &error) = 0;
 

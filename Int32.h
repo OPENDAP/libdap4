@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Int32.h,v $
+ * Revision 1.22  1997/10/09 22:19:21  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
  * Revision 1.21  1997/08/11 18:19:17  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -159,7 +162,7 @@ public:
 
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, bool reuse = false);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     virtual bool read(const String &dataset, int &error) = 0;
 

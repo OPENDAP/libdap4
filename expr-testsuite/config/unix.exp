@@ -10,7 +10,7 @@ if ![info exists EXPRTEST] then {
 
 # The four required proc for expr-test.
 
-proc expr-test_start { options {ifile ""} {eqn ""} } {
+proc expr-test_start { options {ifile ""} {eqn ""} {file "dummy"}} {
     global verbose
     global EXPRTEST
     global comp_output
@@ -18,12 +18,12 @@ proc expr-test_start { options {ifile ""} {eqn ""} } {
     global spawn_id
 
     if {$verbose >= 1} {
-	verbose "Starting $EXPRTEST $ifile $eqn\n"
+	verbose "Starting $EXPRTEST -w $ifile -k $eqn -f $file \n"
 	exp_internal 1
     }
 
     switch $options {
-	p {catch "exec $EXPRTEST -w $ifile -k $eqn" comp_output}
+	p {catch "exec $EXPRTEST -w $ifile -k $eqn -f $file" comp_output}
 	s {spawn $EXPRTEST -s}
     }
 

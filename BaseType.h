@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.37  1997/10/09 22:19:11  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
  * Revision 1.36  1997/08/11 20:18:29  jimg
  * Really fixed the comment leaders this time...
  *
@@ -349,7 +352,7 @@ public:
     // Store the value pointed to by VAL in the object's internal buffer. This
     // mfunc does not perform any checks, so callers must be sure that the
     // thing pointed to can actually be stored in the object's buffer. Note
-    // that only vardinal objects and arrays/lists of cardinals may be stored
+    // that only cardinal objects and arrays/lists of cardinals may be stored
     // using this mfunc.
     // Return the size (in bytes) of the information copied from VAL.
     virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
@@ -357,7 +360,7 @@ public:
     // Move data to and from the net.
     virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true) = 0; 
-    virtual bool deserialize(XDR *source, bool reuse = false) = 0;
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false) = 0;
     
     // Write the buffers maintained by XDR to the associated FILE *s.
     bool expunge();

@@ -13,6 +13,9 @@
 
 /* 
  * $Log: TestSequence.h,v $
+ * Revision 1.12  1997/10/09 22:19:26  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
  * Revision 1.11  1997/08/11 18:19:27  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -64,7 +67,6 @@
  * Revision 1.1  1995/01/19  20:20:52  jimg
  * Created as an example of subclassing the class hierarchy rooted at
  * BaseType.
- *
  */
 
 #ifndef _TestSequence_h
@@ -74,9 +76,17 @@
 #pragma interface
 #endif
 
+#include <fstream.h>
 #include "Sequence.h"
 
 class TestSequence: public Sequence {
+private:
+    /// Pointer to current input file.
+    ifstream _input;
+
+    /// True if _input has been opened.
+    bool _input_opened;
+
 public:
     TestSequence(const String &n = (char *)0);
     virtual ~TestSequence();

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.65 1997/08/09 04:28:55 jimg Exp $
+# $Id: Makefile.in,v 1.66 1997/10/09 22:19:22 jimg Exp $
 
 @SET_MAKE@
 
@@ -70,9 +70,11 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
 
-NETIOSRCS = Connect.cc Connections.cc cgi_util.cc Gui.cc
-NETIOOBJS = Connect.o Connections.o cgi_util.o escaping.o Gui.o
-NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h Gui.h
+NETIOSRCS = Connect.cc Connections.cc cgi_util.cc escaping.cc Gui.cc \
+	    DODSFilter.cc
+NETIOOBJS = Connect.o Connections.o cgi_util.o escaping.o Gui.o DODSFilter.o
+NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h Gui.h \
+	    DODSFilter.h
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
@@ -83,9 +85,9 @@ DASHDRS = AttrTable.h DAS.h
 DASSRCS = AttrTable.cc DAS.cc
 DASOBJS = AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
-DDSHDRS = DDS.h
-DDSSRCS = DDS.cc
-DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
+DDSHDRS = DDS.h DataDDS.h
+DDSSRCS = DDS.cc DataDDS.cc
+DDSOBJS = DDS.o DataDDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
 
 EXPRHDRS = expr.h Clause.h
 EXPRSRCS = expr.cc Clause.cc

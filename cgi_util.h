@@ -20,8 +20,10 @@ bool do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
 		      const String &datsset, const String &constraint);
 String find_ancillary_file(String pathname, String ext, String dir, 
 			   String file);
-bool read_ancillary_dds(DDS &dds, String dataset, String dir, String file);
-bool read_ancillary_das(DAS &das, String dataset, String dir, String file);
+bool read_ancillary_dds(DDS &dds, String dataset, String dir = "", 
+			String file = "");
+bool read_ancillary_das(DAS &das, String dataset, String dir = "", 
+			String file = "");
 void ErrMsgT(const char *Msgt);
 
 #if 0

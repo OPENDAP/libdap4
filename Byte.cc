@@ -10,14 +10,15 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.31  1997/10/09 22:19:14  jimg
+// Resolved conflicts in merge of 2.14c to trunk.
+//
 // Revision 1.30  1997/10/04 00:32:53  jimg
 // Release 2.14c fixes
 //
-<<<<<<< Byte.cc
 // Revision 1.29  1997/09/22 23:08:54  jimg
 // Added DDS * to deserialize parameters.
 //
-=======
 // Revision 1.28.6.1  1997/08/20 22:10:41  jimg
 // Changed the cast in Byte::print_val from (unsigned int) to (int) so that if
 // dods_byte is signed (i.e., if char is signed or dods_byte gets redefined
@@ -25,7 +26,6 @@
 // happened was that dods_byte was signed on Solaris and the cast to unsigned
 // int made numbers like -100 balloon up to 4 billion+.
 //
->>>>>>> 1.28.6.1
 // Revision 1.28  1996/12/02 23:10:05  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -189,11 +189,7 @@
 
 #include "config_dap.h"
 
-<<<<<<< Byte.cc
-static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.30 1997/10/04 00:32:53 jimg Exp $"};
-=======
-static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.30 1997/10/04 00:32:53 jimg Exp $"};
->>>>>>> 1.28.6.1
+static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.31 1997/10/09 22:19:14 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>

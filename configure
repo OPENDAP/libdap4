@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.42 1997/10/04 00:33:00 jimg Exp $
+# $Id: configure,v 1.43 1997/10/09 22:19:28 jimg Exp $
 
 # Check for fill value usage.
 
@@ -696,10 +696,10 @@ cat >> confdefs.h <<\EOF
 EOF
 
 cat >> confdefs.h <<\EOF
-#define CVER "2.14"
+#define CVER "2.15"
 EOF
 
-DVR="DODS/2.14"
+DVR="DODS/2.15"
 cat >> confdefs.h <<EOF
 #define DVR "$DVR"
 EOF
@@ -2462,10 +2462,10 @@ fi
         echo $ac_n "checking for the WWW library root directory""... $ac_c" 1>&6
 echo "configure:2464: checking for the WWW library root directory" >&5
 
-	for p in /usr/local/src/WWW /usr/local/WWW \
+	for p in ${DODS_ROOT}/packages/src/w3c-libwww \
+	         /usr/local/src/WWW /usr/local/WWW \
 		 /usr/local/src/w3c-libwww /usr/local/w3c-libwww \
-		 /usr/contrib/src/w3c-libwww /usr/contrib/w3c-libwww \
-		 $DODS_ROOT/third-party/w3c-libwww
+		 /usr/contrib/src/w3c-libwww /usr/contrib/w3c-libwww
 	do
 	    if test "$WWW_ROOT"
 	    then
