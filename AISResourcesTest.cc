@@ -242,8 +242,11 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISResourcesTest.cc,v $
+// Revision 1.7  2003/03/04 21:46:22  jimg
+// Fixed some problems with the comments...
+//
 // Revision 1.6  2003/03/04 17:55:33  jimg
-// Now used Response objects.
+// Now uses Response objects.
 //
 // Revision 1.5  2003/02/26 06:40:44  jimg
 // Updated tests for write_database().
