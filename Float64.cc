@@ -38,6 +38,9 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.22  1996/05/06 18:34:35  jimg
+// Replaced calls to atof and atoi with calls to strtol and strtod.
+//
 // Revision 1.21  1996/04/05 00:21:29  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -168,11 +171,12 @@
 
 #include "config_dap.h"
 
-#include <stdlib.h>		// for atoi()
+#include <stdlib.h>
 #include <assert.h>
 
 #include "Float64.h"
 #include "DDS.h"
+#include "dods-limits.h"
 #include "parser.h"
 #include "expr.tab.h"
 
@@ -181,7 +185,7 @@
 #endif
 
 Float64::Float64(const String &n) 
-: BaseType(n, d_float64_t, (xdrproc_t)XDR_FLOAT64)
+: BaseType(n, dods_float64_c, (xdrproc_t)XDR_FLOAT64)
 {
 }
 
@@ -295,24 +299,32 @@ Float64::ops(BaseType &b, int op)
 	return false;
     }
     else switch (b.type()) {
-      case d_byte_t:
-      case d_int32_t: {
-	int32 i;
-	int32 *ip = &i;
+      case dods_byte_c:
+      case dods_int32_c: {
+	dods_int32 i;
+	dods_int32 *ip = &i;
 	b.buf2val((void **)&ip);
 	a2 = i;
 	break;
       }
-      case d_float64_t: {
+      case dods_float64_c: {
 	double *a2p = &a2;
 	b.buf2val((void **)&a2p);
 	break;
       }
-      case d_str_t: {
+      case dods_str_c: {
 	String s;
 	String *sp = &s;
 	b.buf2val((void **)&sp);
-	a2 = atoi((const char *)s);
+
+	char *ptr;
+	a2 = strtod((const char *)s, &ptr);
+
+	if (a2 == 0.0 && val == ptr) {
+	    cerr << "`" << val << "' is not an float value" << endl;
+	    return false;
+	}
+
 	break;
       }
       default:

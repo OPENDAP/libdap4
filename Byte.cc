@@ -38,6 +38,9 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.20  1996/05/06 18:34:07  jimg
+// Replaced calls to atof and atoi with calls to strtol and strtod.
+//
 // Revision 1.19  1996/04/05 00:21:24  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -160,11 +163,12 @@
 
 #include "config_dap.h"
 
-#include <stdlib.h>		// for atoi()
+#include <stdlib.h>
 #include <assert.h>
 
 #include "Byte.h"
 #include "DDS.h"
+#include "dods-limits.h"
 #include "parser.h"
 #include "expr.tab.h"
 
@@ -176,14 +180,14 @@
 // transport Byte arrays over the network. Instead, Byte is a special case
 // handled in Array.
 
-Byte::Byte(const String &n) : BaseType(n, d_byte_t)
+Byte::Byte(const String &n) : BaseType(n, dods_byte_c)
 {
 }
 
 unsigned int
 Byte::width()
 {
-    return sizeof(byte);
+    return sizeof(dods_byte);
 }
 
 // Serialize the contents of member _BUF (the object's internal buffer, used
@@ -236,7 +240,7 @@ Byte::val2buf(void *val, bool)
 {
     assert(val);
 
-    _buf = *(byte *)val;
+    _buf = *(dods_byte *)val;
 
     return width();
 }
@@ -247,9 +251,9 @@ Byte::buf2val(void **val)
     assert(_buf && val);
 
     if (!*val)
-	*val = new byte;
+	*val = new dods_byte;
 
-    *(byte *)*val = _buf;
+    *(dods_byte *)*val = _buf;
 
     return width();
 }
@@ -295,13 +299,14 @@ byte_ops(int i1, int i2, int op)
 bool
 Byte::ops(BaseType &b, int op)
 {
-    int32 a1, a2;
+    dods_int32 a1, a2;
+
     if (!read_p()) {
 	cerr << "This value not yet read!" << endl;
 	return false;
     }
     else {
-	int32 *a1p = &a1;
+	dods_int32 *a1p = &a1;
 	buf2val((void **)&a1p);
     }
 
@@ -310,24 +315,37 @@ Byte::ops(BaseType &b, int op)
 	return false;
     }
     else switch (b.type()) {
-      case d_byte_t:
-      case d_int32_t: {
-	int32 *a2p = &a2;
+      case dods_byte_c:
+      case dods_int32_c: {
+	dods_int32 *a2p = &a2;
 	b.buf2val((void **)&a2p);
 	break;
       }
-      case d_float64_t: {
+      case dods_float64_c: {
 	double d;
 	double *dp = &d;
 	b.buf2val((void **)&dp);
-	a2 = (int32)d;
+	a2 = (dods_int32)d;
 	break;
       }
-      case d_str_t: {
+      case dods_str_c: {
 	String s;
 	String *sp = &s;
 	b.buf2val((void **)&sp);
-	a2 = atoi((const char *)s);
+
+	char *ptr;
+	long v = strtol((const char *)s, &ptr, 0);
+
+	if (v == 0 && val == ptr) {
+	    cerr << "`" << val << "' is not an integer value" << endl;
+	    return false;
+	}
+	if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+	    cerr << "`" << v << "' is not a integer value" << endl;
+	    return false;
+	}
+
+	a2 = v;
 	break;
       }
       default:
