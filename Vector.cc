@@ -11,6 +11,10 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.20  1997/12/31 21:48:12  jimg
+// Enclosed print_basetype_pointer() function in #if DODS_DEBUG == 1 #endif
+// to stop compiler warnings about it being unused.
+//
 // Revision 1.19  1997/12/15 22:33:00  jimg
 // Added type checking set_vec. If the type of the element to include in the
 // vector does not match the vector's type, set_vec() returns false.
@@ -94,7 +98,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.19 1997/12/15 22:33:00 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.20 1997/12/31 21:48:12 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -270,11 +274,13 @@ Vector::set_length(int l)
     _length = l;
 }
 
+#if DODS_DEBUG == 1
 static void
 print_basetype_pointer(BaseType *btp)
 {
     cerr << btp << " ";
 }
+#endif
 
 // #l# is the number of elements the vector can hold (e.g., if l == 20, then
 // the vector can hold elements 0, .., 19).
