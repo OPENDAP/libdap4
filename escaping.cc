@@ -115,7 +115,7 @@ id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
     }
 
     if (isdigit(s[0]))
-	s.insert(0, '_');
+        s = string("_") + s;
 
     return s;
 }
@@ -219,6 +219,11 @@ string unescattr(string s) {
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.16  2000/10/03 05:00:21  rmorris
+// string.insert(), for names that begin with 0-9 was causing an exception
+// in that case.  Observed in the hdf server on modis data.  replaced
+// string.insert with string = string("_") + string to fix - in id2dods().
+//
 // Revision 1.15  2000/08/29 21:22:55  jimg
 // Merged with 3.1.9
 //
