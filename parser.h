@@ -12,6 +12,10 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.12  1999/05/24 20:35:31  jimg
+// Moved GSEClause.h and removed second Error.h (what was that doing?) includes
+// to fix warning about redefinition of TRUE and FALSE (from within rpc/type.h).
+//
 // Revision 1.11  1999/04/29 02:29:37  jimg
 // Merge of no-gnu branch
 //
@@ -60,6 +64,7 @@
 #define _parser_h
 
 #include "Error.h"
+#include "GSEClause.h"
 
 #define YYDEBUG 1
 #undef YYERROR_VERBOSE
@@ -72,8 +77,10 @@
 #define FALSE 0
 #endif
 
+#if 0
 #include "Error.h"
-#include "GSEClause.h"
+#endif
+
 
 /** #parser_arg# is used to pass parameters to the bison parsers and get
     error codes and objects in return. If #status()# is true, then the
