@@ -11,7 +11,7 @@ PKGDIR		= ..\..\..\packages
 # Setup basic compiler flags for all .obj's
 CC		= cl
 CFLAGS		= /nologo /ML /W0 /GR /GX /c
-#CFLAGS		= /nologo /MLd /Zi /W0 /GR /GX /c	# flags for debugger
+#CFLAGS		= /nologo /MLd /Zi /W3 /GR /GX /c	# flags for debugger
 
 # Setup linker flags for libraries and .exe's
 LINK		= link
