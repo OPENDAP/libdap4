@@ -10,27 +10,16 @@
 /*
    Grammar for the DAS. This grammar can be used with the bison parser
    generator to build a parser for the DAS. It assumes that a scanner called
-   `daslex()' exists and returns one of three token types (ID, ATTR, and VAL)
-   in addition to several single character token types. The matched lexeme
-   for an ID or VAL is stored by the scanner in a global char * `daslval'.
-   Because the scanner returns a value via this global and because the parser
-   stores daslval (not the information pointed to), the values of rule
-   components must be stored as they are parsed and used once accumulated at
-   or near the end of a rule. If daslval returned a value (instead of a
-   pointer to a value) this would not be necessary.
-
-   Notes:
-   1) the rule for var_attr has a mid-rule action used to insert a new ID
-   into the symbol table.
-   2) the rule for attr_pair uses two mid-rule actions - one to store the
-   name of an attribute (attr_name) to a temporary char * array and one to
-   insert the resulting name-value pair into the AttrVHMap `var'. 
+   `daslex()' exists and that the objects DAS and AttrTable also exist.
 
    jhrg 7/12/94 
 */
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.30  1997/05/13 23:32:19  jimg
+ * Added changes to handle the new Alias and lexical scoping rules.
+ *
  * Revision 1.29  1997/05/06 22:09:57  jimg
  * Added aliases to the grammar. An alias can appear in place of an attribute
  * and uses the syntax `alias <var1> <var2>'. If var1 exists, var2 becomes an
@@ -165,7 +154,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.29 1997/05/06 22:09:57 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.30 1997/05/13 23:32:19 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -173,6 +162,7 @@ static char rcsid[] __unused__ = {"$Id: das.y,v 1.29 1997/05/06 22:09:57 jimg Ex
 #include <assert.h>
 
 #include <strstream.h>
+#include <SLList.h>
 
 #include "DAS.h"
 #include "Error.h"
@@ -192,6 +182,7 @@ static char rcsid[] __unused__ = {"$Id: das.y,v 1.29 1997/05/06 22:09:57 jimg Ex
 #define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
 #define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
 #define STATUS(arg) ((parser_arg *)(arg))->_status
+
 #if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
 #else
@@ -202,10 +193,19 @@ extern int das_line_num;	/* defined in das.lex */
 
 static char name[ID_MAX];	/* holds name in attr_pair rule */
 static char type[ID_MAX];	/* holds type in attr_pair rule */
-static AttrTablePtr attr_tab;
 
-static char *VAR_ATTR_MSG = 
-"Expected an identifier followed by a list of attributes.";
+static SLList<AttrTablePtr> *attr_tab_stack;
+
+// I use a SLList of AttrTable pointers for a stack
+
+#define TOP_OF_STACK (attr_tab_stack->front())
+#define PUSH(x) (attr_tab_stack->prepend((x)))
+#define POP (attr_tab_stack->remove_front())
+#define STACK_LENGTH (attr_tab_stack->length())
+#define STACK_EMPTY (attr_tab_stack->empty())
+
+#define TYPE_NAME_VALUE << type << " " << name << " " << $1
+
 static char *ATTR_TUPLE_MSG = 
 "Expected an attribute type (Byte, Int32, UInt32, Float64, String or Url)\n\
 followed by a name and value.";
@@ -216,14 +216,13 @@ Check that the URL is correct.";
 void mem_list_report();
 int daslex(void);
 void daserror(char *s);
+String attr_name(String name);
 
 %}
 
-%expect 10
+%expect 18
 
 %token ATTR
-
-%token GLOBAL
 
 %token ID
 %token INT
@@ -243,58 +242,54 @@ void daserror(char *s);
 /*
   Parser algorithm: 
 
-  When a variable is found (rule: var_attr) check the table to see if some
-  attributes for that var have already been parsed - if so the var must have
-  a table entry alread allocated; get that entry and use it. Otherwise,
-  allocate a new table entry.  
+  Look for a `variable' name (this can be any identifier, but by convention
+  it is either the name of a variable in a dataset or the name of a grouping
+  of global attributes). Create a new attribute table for this identifier and
+  push the new attribute table onto a stack. If attribute tuples
+  (type-name-value tuples) are found, intern them in the attribute table
+  found on the top of the stack. If the start attribute table of a new
+  attribute table if found (before the current table is closed), create the
+  new table and push *it* on the stack. As attribute tables are closed, pop
+  them off the stack.
 
-  Store the table entry for the current variable in attr_tab.
+  This algorithm ensures that we can nest attribute tables to an arbitrary
+  depth).
 
-  For every attribute name-value pair (rule: attr_pair) enter the name and
-  value in the table entry for the current variable.
+  Alias are handled using mfuncs of both the DAS and AttrTable objects. This
+  is necessary because the first level of a DAS object can contain only
+  AttrTables, not attribute tuples. Whereas, the subsequent levels can
+  contain both. Thus the compete definition is split into two objects. In
+  part this is also a hold over from an older design which did not
+  have the recursive properties of the current design.
+
+  Alias can be made between attributes within a given lexical level, from one
+  level to the next within a sub-hierarchy or across hierarchies.
 
   Tokens:
 
-  BYTE, INT32, UInt32, FLOAT64, STRING and URL are tokens for the type
+  BYTE, INT32, UINT32, FLOAT64, STRING and URL are tokens for the type
   keywords. The tokens INT, FLOAT, STR and ID are returned by the scanner to
   indicate the type of the value represented by the string contained in the
   global DASLVAL. These two types of tokens are used to implement type
-  checking for the atributes. See the rules `bytes', ... 
+  checking for the attributes. See the rules `bytes', etc. Additional tokens:
+  ATTR (indicates the start of an attribute object) and ALIAS (indicates an
+  alias). 
 */
 
 attributes:    	attribute
     	    	| attributes attribute
 ;
     	    	
-attribute:    	ATTR '{' var_attr_list '}'
+attribute:    	ATTR 
+                /* Create the AttrTable stack if necessary */
+                {
+		    if (!attr_tab_stack)
+			attr_tab_stack = new SLList<AttrTablePtr>;
+		}
+                '{' attr_list '}'
                 | error
                 {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG);
-		    YYABORT;
-		}
-;
-
-var_attr_list: 	/* empty */
-    	    	| var_attr
-    	    	| var_attr_list var_attr
-;
-
-var_attr:   	ID
-		{
-		    DBG2(mem_list_report()); /* mem_list_report is in */
-					     /* libdbnew.a  */
-		    attr_tab = DAS_OBJ(arg)->get_table($1);
-		    DBG2(mem_list_report());
-		    if (!attr_tab) { /* is this a new var? */
-			attr_tab = DAS_OBJ(arg)->add_table($1, new AttrTable);
-			DBG(cerr << "attr_tab: " << attr_tab << endl);
-		    }
-		    DBG2(mem_list_report());
-		} 
-		'{' attr_list '}'
-		| error 
-                { 
-		    parse_error((parser_arg *)arg, VAR_ATTR_MSG);
 		    YYABORT;
 		}
 ;
@@ -330,6 +325,35 @@ attr_tuple:	alias
                 ID { save_str(name, $3, das_line_num); } 
 		urls ';'
 
+		| ID 
+                {
+		    AttrTable *at;
+		    DBG(cerr << "Processing ID: " << $1 << endl);
+		    /* If we are at the outer most level of attributes, make
+		       sure to use the AttrTable in the DAS. */
+		    if (STACK_EMPTY) {
+			at = DAS_OBJ(arg)->get_table($1);
+			if (!at)
+			    at = DAS_OBJ(arg)->add_table((String)$1, 
+							 new AttrTable);
+		    }
+		    else {
+			at = TOP_OF_STACK->get_attr_table((String)$1);
+			if (!at)
+			    at = TOP_OF_STACK->append_container((String)$1);
+		    }
+
+		    PUSH(at);
+		    DBG(cerr << " Pushed attr_tab: " << at << endl);
+		}
+		'{' attr_list 
+                {
+		    /* pop top of stack; store in attr_tab */
+		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
+		    POP;
+		}
+		'}'
+
 		| error 
                 { 
 		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG);
@@ -339,8 +363,7 @@ attr_tuple:	alias
 
 bytes:		INT
 		{
-		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
-			<< $1 << endl);
+		    DBG(cerr << "Adding byte: " TYPE_NAME_VALUE_1 << endl);
 		    if (!check_byte($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Byte value." << ends;
@@ -348,7 +371,7 @@ bytes:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!attr_tab->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -358,8 +381,7 @@ bytes:		INT
 		}
 		| bytes ',' INT
 		{
-		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
-			<< $3 << endl);
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE_3 << endl);
 		    if (!check_byte($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Byte value." << ends;
@@ -367,7 +389,7 @@ bytes:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!attr_tab->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -384,8 +406,8 @@ ints:		INT
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
-			<< $1 << endl);
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE_1 << endl);
+		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
 		    if (!(check_int($1, das_line_num) 
 			  || check_uint($1, das_line_num))) {
 			ostrstream msg;
@@ -394,7 +416,7 @@ ints:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!attr_tab->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -404,8 +426,7 @@ ints:		INT
 		}
 		| ints ',' INT
 		{
-		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
-			<< $3 << endl);
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE_3 << endl);
 		    if (!(check_int($3, das_line_num)
 			  || check_uint($1, das_line_num))) {
 			ostrstream msg;
@@ -414,7 +435,7 @@ ints:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!attr_tab->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -426,8 +447,7 @@ ints:		INT
 
 floats:		float_or_int
 		{
-		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
-			<< $1 << endl);
+		    DBG(cerr << "Adding FLOAT: " << TYPE_NAME_VALUE_1 << endl);
 		    if (!check_float($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Float64 value." 
@@ -436,7 +456,7 @@ floats:		float_or_int
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!attr_tab->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -446,8 +466,7 @@ floats:		float_or_int
 		}
 		| floats ',' float_or_int
 		{
-		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
-			<< $3 << endl);
+		    DBG(cerr << "Adding FLOAT: " << TYPE_NAME_VALUE_3 << endl);
 		    if (!check_float($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a Float64 value." 
@@ -456,7 +475,7 @@ floats:		float_or_int
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!attr_tab->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -468,10 +487,9 @@ floats:		float_or_int
 
 strs:		str_or_id
 		{
-		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
-			<< $1 << endl);
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE_1 << endl);
 		    /* Assume a string that parses is vaild. */
-		    if (attr_tab->append_attr(name, type, $1) == 0) {
+		    if (TOP_OF_STACK->append_attr(name, type, $1) == 0) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -481,9 +499,8 @@ strs:		str_or_id
 		}
 		| strs ',' str_or_id
 		{
-		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
-			<< $3 << endl);
-		    if (attr_tab->append_attr(name, type, $3) == 0) {
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE_3 << endl);
+		    if (TOP_OF_STACK->append_attr(name, type, $3) == 0) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -495,8 +512,7 @@ strs:		str_or_id
 
 urls:		url
 		{
-		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
-			<< $1 << endl);
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE_1 << endl);
 		    if (!check_url($1, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a String value." << ends;
@@ -504,7 +520,7 @@ urls:		url
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!attr_tab->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -514,8 +530,7 @@ urls:		url
 		}
 		| strs ',' url
 		{
-		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
-			<< $3 << endl);
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE_3 << endl);
 		    if (!check_url($3, das_line_num)) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not a String value." << ends;
@@ -523,7 +538,7 @@ urls:		url
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!attr_tab->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
 			ostrstream msg;
 			msg << "`" << name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -548,21 +563,47 @@ alias:          ALIAS ID
 		} 
                 ID
                 {
-		    if (!attr_tab->attr_alias(name, $4)
-			&& !attr_tab->attr_alias($4, name)) {
-			ostrstream msg;
-			msg << "Could not alias `" << $4 << "' and `" << name
-			    << "'." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
+		    // First try to alias within current lexical scope. If
+		    // that fails then look in the complete environment for
+		    // the AttrTable containing the source for the alias. In
+		    // that case be sure to strip off the hierarchy
+		    // information from the source's name (since TABLE is
+		    // the AttrTable that contains the attribute named by the
+		    // rightmost part of the source.
+		    if (!TOP_OF_STACK->attr_alias(name, $4)) {
+			AttrTable *table = DAS_OBJ(arg)->get_table($4);
+			if (!TOP_OF_STACK->attr_alias(name, table, 
+						      attr_name((String)$4))) {
+			    ostrstream msg;
+			    msg << "Could not alias `" << $4 << "' and `" 
+				<< name << "'." << ends;
+			    parse_error((parser_arg *)arg, msg.str());
+			    msg.freeze(0);
+			    YYABORT;
+			}
 		    }
 		}
                 ';'
 ;
 %%
 
+// This function is required for linking, but DODS uses its own error
+// reporting mechanism.
+
 void
 daserror(char *)
 {
+}
+
+// Return the rightmost component of name (where each component is separated
+// by `.'.
+
+String
+attr_name(String name)
+{
+    String n = name.after(".");
+    if (n.contains("."))
+	return attr_name(n);
+    else
+	return n;
 }

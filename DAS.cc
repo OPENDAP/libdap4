@@ -11,6 +11,9 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.20  1997/05/13 23:32:14  jimg
+// Added changes to handle the new Alias and lexical scoping rules.
+//
 // Revision 1.19  1996/08/13 18:00:32  jimg
 // Switched to use of parse_arg object for passing values to and from the
 // bison generated parser.
@@ -108,7 +111,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.19 1996/08/13 18:00:32 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.20 1997/05/13 23:32:14 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -160,7 +163,7 @@ DAS::next_var(Pix &p)
     map.next(p);
 }
 
-String &
+String
 DAS::get_name(Pix p)
 {
     return map.key(p);
@@ -175,7 +178,31 @@ DAS::get_table(Pix p)
 AttrTable *
 DAS::get_table(const String &name)
 {
-    return map[name];
+    // `.' separates hierarchies in the DAS.
+    if (name.contains(".")) {
+	String n = (String)name; // cast away const
+	String container = n.before(".");
+	String field = n.after(".");
+
+	// The following strangeness is due to the weird implmentation of
+	// DAS/AttrTable objects. For a name like cont1.cont2.var1.a1,
+	// look first in the DAS object for `cont1', if found, look in the
+	// attribute table (AttrTable) for `cont1' for `cont2.var1'. Note
+	// that AttrTable::get_attr_table() takes `cont2.var1.a1' as its
+	// argument but *returns the AttrTable for `cont2.var1'* because `a1'
+	// is the name of the actual attribute. In order to access the data
+	// for `a1', you need *both the AttrTable and the name or Pix of the
+	// attribute*. 
+
+	// The DAS is a simple one-level data structure (names and
+	// AttrTables) while AttrTables are recursive.
+
+	AttrTable *at = map[container];
+	AttrTable *at2 = (at) ? at->get_attr_table(field) : 0;
+	return (at) ? ((at2) ? at2 : at) : 0;
+    }
+    else
+	return map[name];
 }
 
 // This function is necessary because (char *) arguments will be converted to
@@ -185,7 +212,7 @@ DAS::get_table(const String &name)
 AttrTable *
 DAS::get_table(const char *name)
 {
-    return map[name];
+    return get_table((String)name);
 }
 
 AttrTable *
@@ -194,12 +221,14 @@ DAS::add_table(const String &name, AttrTable *at)
     return map[name] = at;
 }
 
+#if 0
 AttrTable *
 DAS::add_table(const char *name, AttrTable *at)
 {
 //    DBG2(cerr << "In DAS::add_table(const char *, AttrTable *" << endl);
     return add_table((String)name, at);
 }
+#endif
 
 // Read attributes from a file. Returns false if unable to open the file,
 // otherwise returns the result of the mfunc parse.
@@ -268,9 +297,6 @@ DAS::parse(FILE *in)
     if (!status || !arg.status()) {// Check parse result
 	if (arg.error())
 	    arg.error()->display_message();
-#if 0
-	cerr << "Error parsing DAS object!" << endl;
-#endif
 	return false;
     }
     else

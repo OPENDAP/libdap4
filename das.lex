@@ -41,6 +41,9 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.22  1997/05/13 23:32:18  jimg
+# Added changes to handle the new Alias and lexical scoping rules.
+#
 # Revision 1.21  1997/05/06 18:24:01  jimg
 # Added Alias and Global to the set of known tokens.
 # Added many new characters to set of things that can appear in an
@@ -144,7 +147,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: das.lex,v 1.21 1997/05/06 18:24:01 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: das.lex,v 1.22 1997/05/13 23:32:18 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -175,12 +178,10 @@ STR 	[-+a-zA-Z0-9_./:%+\-()]+
 
 ATTR 	attributes|Attributes|ATTRIBUTES
 
-GLOBAL  GLOBAL|Global|global
-
 ALIAS   ALIAS|Alias|alias
 BYTE	BYTE|Byte|byte
 INT32	INT32|Int32|int32
-UINT32	UINT32|UInt32|uint32
+UINT32	UINT32|UInt32|Uint32|uint32
 FLOAT64 FLOAT64|Float64|float64
 STRING  STRING|String|string
 URL	URL|Url|url
@@ -191,8 +192,6 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 
 
 {ATTR}	    	    	daslval = yytext; return ATTR;
-
-{GLOBAL}                daslval = yytext; return GLOBAL;
 
 {ALIAS}                 daslval = yytext; return ALIAS;
 {BYTE}                  daslval = yytext; return BYTE;

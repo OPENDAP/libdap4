@@ -17,10 +17,13 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.14  1997/01/13 16:56:21  jimg
-/* Changed the name of the private member `map' to `attr_map' to avoid a name
-/* collision with the STL'd map class.
+/* Revision 1.15  1997/05/13 23:32:13  jimg
+/* Added changes to handle the new Alias and lexical scoping rules.
 /*
+ * Revision 1.14  1997/01/13 16:56:21  jimg
+ * Changed the name of the private member `map' to `attr_map' to avoid a name
+ * collision with the STL'd map class.
+ *
  * Revision 1.13  1996/05/31 23:29:22  jimg
  * Updated copyright notice.
  *
@@ -114,43 +117,124 @@
 
 #include "String.XPlex.h"
 
+/// Types which may appear in a Attribute object.
+enum AttrType {
+    Attr_unknown,
+    Attr_container,
+    Attr_byte,
+    Attr_int32,
+    Attr_uint32,
+    Attr_float64,
+    Attr_string,
+    Attr_url
+};
+
+/** An AttrTable stores a set of names and, for each name, a group of
+    attribute type-name-value tuples and/or other AttrTables. Because
+    each AttrTable can contain other AttrTable objects, complex hierarchies
+    of attributes maybe built. */
 class AttrTable {
 private:
     struct entry {
 	String name;
-	String type;
-	StringXPlex attr;	// a vector of values. jhrg 12/5/94
+	AttrType type;
+	
+	bool is_alias;
+
+	// If type == Attr_container, use attributes to read the contained
+	// table, otherwise use attr to read the vector of values.
+	union {
+	    AttrTable *attributes;
+	    StringXPlex *attr;	// a vector of values. jhrg 12/5/94
+	} value;
     };
 
     DLList<entry> attr_map;
     
-    Pix find(const String &target);
+    Pix find(const String &target, bool cont_only = false);
+    Pix simple_find(const String &target);
+    String AttrTypeToString(const AttrType at);
+    AttrType StringToAttrType(const String &s);
 
 public:
     AttrTable();
+    ~AttrTable();
 
+    /// Return the Pix to the first element of this attribute table.
     Pix first_attr();
+
+    /// Advance Pix #p# to the next element of this attribute table.
     void next_attr(Pix &p);
 
+    /// Return the name of the attribute.
     String get_name(Pix p);
-    String get_type(Pix p);
-    unsigned int get_attr_num(Pix p); // returns the length of the attr vec
-    String get_attr(Pix p, unsigned int i = 0);
 
-    unsigned int get_attr_num(const String &name); // ret attr vec len
-    unsigned int get_attr_num(const char *name);
-    String get_attr(const String &name, unsigned int i = 0);
-    String get_attr(const char *name, unsigned int i = 0);
+    /// Is the attribute a container?
+    bool is_container(Pix p);
+
+    /** Return a pointer to the attribute table for the attribute referenced
+        by Pix #p# or named #name# *if the attribute is a container
+	attribute*. If there is no such attribute table, or it the table is
+	not a container, return False. */  
+    AttrTable *get_attr_table(Pix p);
+    AttrTable *get_attr_table(const String &name);
+    AttrTable *get_attr_table(const char *name);
+
+    /// Return the type of the attribute in a String.
+    String get_type(Pix p);
     String get_type(const String &name);
     String get_type(const char *name);
 
+    /// Return the type of an attribute using AttrType.
+    AttrType get_attr_type(Pix p);
+    AttrType get_attr_type(const String &name);
+    AttrType get_attr_type(const char *name);
+
+    /// Returns the number of values for the attribute.
+    unsigned int get_attr_num(Pix p);
+    unsigned int get_attr_num(const String &name);
+    unsigned int get_attr_num(const char *name);
+
+    /** By default, return the first value in the vector of values. If the
+        attribute has only one value you're done. If the value is a vector
+	then use #i# to request the 0 to N-1 values of the N-element
+	value-vector. It is an error to request an element beyond N-1. */
+    String get_attr(Pix p, unsigned int i = 0);
+    String get_attr(const String &name, unsigned int i = 0);
+    String get_attr(const char *name, unsigned int i = 0);
+    
+    /** Return a pointer to the vector of values associated with the
+        attribute referenced by Pix #p# or named #name#. */
+    StringXPlex *get_attr_vector(Pix p);
+    StringXPlex *get_attr_vector(const String &name);
+
+    /** If #name# is not an attribute in the current attribute table, create
+        a new entry in the current table for #name# and bind the type #type#
+	and value #value# to that attribute. If the value of the attribute is
+	a vector, call this mfunc repeatedly, once for each of the vector
+	elements. They will be added in the order of calls made to this
+	function. */
     unsigned int append_attr(const String &name, const String &type, 
 			     const String &value);
-    unsigned int append_attr(const char *name, const char *type, 
-			     const char *value);
-    // by default delete the last element of the attribute vector
+
+    /** Create and append the attribute container #name# to the AttrTable
+        object. Return a pointer to the new AttrTable object. */
+    AttrTable *append_container(const String &name);
+
+    /** Add an alias to the set of attributes. Reading the attributes for
+        #alais#  returns those stored for #name#. NB: Two forms for this call
+	exist; one searches for #name# in the AttrTable referenced by #at#
+	while the other uses #this#. You can use DAS::get_attr_table() to get
+	the attribute table for an arbitrary name. */
+    bool attr_alias(const String &alias, AttrTable *at, const String &name);
+    bool attr_alias(const String &alias, const String &name);
+
+    /** Delete the attribute named #name#. If #i# is given, delete the ith
+        element of the attribute value vector. This mfunc works for container
+	attributes also. */
     void del_attr(const String &name, int i = -1);
 
+    /// Print the DAS object on stdout.
     void print(ostream &os, String pad = "    ");
 };
 

@@ -13,10 +13,13 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.12  1996/08/13 18:04:11  jimg
-/* Removed the system includes - this is part of my drive to eliminate nested
-/* includes from the DODS core software. I'm still waffling on this, though.
+/* Revision 1.13  1997/05/13 23:32:16  jimg
+/* Added changes to handle the new Alias and lexical scoping rules.
 /*
+ * Revision 1.12  1996/08/13 18:04:11  jimg
+ * Removed the system includes - this is part of my drive to eliminate nested
+ * includes from the DODS core software. I'm still waffling on this, though.
+ *
  * Revision 1.11  1996/05/31 23:29:35  jimg
  * Updated copyright notice.
  *
@@ -75,16 +78,16 @@
 #pragma interface
 #endif
 
-#if 0
-#include <stdio.h>
-
-#include <iostream.h>
-#include <String.h>
-#include <Pix.h>
-#endif
-
 #include "DASVHMap.h"
 
+/** The DAS object. A dataset may define sets of name-value pairs. These
+    name-value pairs are called attributes. The values may be of any of the
+    DODS cardinal data types (Byte, Int32, UInt32, Float64, String and URL).
+    The actual values may be either scalar or vector. Each set of attributes
+    has a name that (generally) matches the name of a variable in the
+    dataset. It is possible, however, to give a collection a name that does
+    not correspond to the name of a variable. It is also possible to nest
+    collections (thus creating a hierarchy of name-value pairs. */
 class DAS {
 private:
     DASVHMap map;
@@ -96,13 +99,16 @@ public:
 
     Pix first_var();
     void next_var(Pix &p);
-    String &get_name(Pix p);
+    String get_name(Pix p);
     AttrTable *get_table(Pix p);
 
     AttrTable *get_table(const String &name);
     AttrTable *get_table(const char *name); // avoid converting char * to Pix
+   
     AttrTable *add_table(const String &name, AttrTable *at);
+#if 0
     AttrTable *add_table(const char *name, AttrTable *at);
+#endif
 
     bool parse(String fname);
     bool parse(int fd);
