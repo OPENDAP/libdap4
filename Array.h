@@ -7,9 +7,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.5  1994/12/09 21:36:34  jimg
-/* Added support for named array dimensions.
+/* Revision 1.6  1994/12/12 19:40:30  dan
+/* Modified Array class definition removing inheritance from class CtorType
+/* and to inherit directly from class BaseType.  Removed member function
+/* dimensions().
 /*
+ * Revision 1.5  1994/12/09  21:36:34  jimg
+ * Added support for named array dimensions.
+ *
  * Revision 1.4  1994/11/22  14:05:22  jimg
  * Added code for data transmission to parts of the type hierarchy. Not
  * complete yet.
@@ -37,7 +42,7 @@
 
 #include <limits.h>
 #include <SLList.h>
-#include "CtorType.h"
+#include "BaseType.h"
 
 #include "config.h"
 #ifdef TRACE_NEW
@@ -46,7 +51,7 @@
 
 const int DODS_MAX_ARRAY = UINT_MAX;
 
-class Array: public CtorType {
+class Array: public BaseType {
 private:
     struct {			// each dimension has a size and a name
 	int size;
@@ -57,10 +62,10 @@ private:
     SLList<dimension> shape;	// list of dimensions (i.e., the shape)
 
     void duplicate(const Array &a);
+    void *buf;
 
 public:
-    Array(const String &n = (char *)0, BaseType *v = 0, FILE *in = stdin,
-	  FILE *out = stdout);
+    Array(const String &n = (char *)0, FILE *in = stdin, FILE *out = stdout, BaseType *v = 0);
     Array(const Array &rhs);
     virtual ~Array();
 
@@ -69,9 +74,12 @@ public:
 
     virtual unsigned int size();
 
+    virtual void *alloc_buf(unsigned int n = 0);
+    virtual void free_buf();	// free mem from alloc_buf and deserialize
+
     virtual bool read(String dataset, String var_name, String constraint);
 
-    virtual bool serialize(unsigned int num = 0);
+    virtual bool serialize(bool flush, unsigned int num = 0);
     virtual unsigned int deserialize();
 
     virtual BaseType *var(const String &name = (char *)0);
@@ -85,8 +93,6 @@ public:
     int dimension_size(Pix p);
     String dimension_name(Pix p);
 
-    int dimensions();
-
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true);
     virtual void print_val(ostream &os, String space = "");
@@ -95,3 +101,5 @@ public:
 };
 
 #endif
+
+
