@@ -31,11 +31,15 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.21  1996/11/25 03:39:25  jimg
-/* Added web-error to set of object types.
-/* Added two MIME parsers to set of friend functions.
-/* Removed unused friend functions.
+/* Revision 1.22  1997/02/10 02:31:27  jimg
+/* Changed the return type of request_data() and related functions from DDS & to
+/* DDS *.
 /*
+ * Revision 1.21  1996/11/25 03:39:25  jimg
+ * Added web-error to set of object types.
+ * Added two MIME parsers to set of friend functions.
+ * Removed unused friend functions.
+ *
  * Revision 1.20  1996/11/13 18:57:15  jimg
  * Now uses version 5.0a of the WWW library.
  *
@@ -353,19 +357,19 @@ public:
     Pix first_constraint();
     void next_constraint(Pix &p);
     String constraint_expression(Pix p);
-    DDS &constraint_dds(Pix p);
+    DDS *constraint_dds(Pix p);
 
     // get the DAS, DDS and data from the server/cgi comb using a URL
     bool request_das(bool gui = false,  const String &ext = "das");
     bool request_dds(bool gui = false, const String &ext = "dds");
 
-    DDS &request_data(String expr, bool gui = true, bool async = false, 
+    DDS *request_data(String expr, bool gui = true, bool async = false, 
 		      const String &ext = "dods");
 
     // For every new data read initiated using this connect, there is a DDS
     // and constraint expression. The data itself is stored in the dds in the
     // constraint object.
-    DDS &append_constraint(String expr, DDS &dds);
+    DDS *append_constraint(String expr, DDS &dds);
 };
 
 #endif // _connect_h
