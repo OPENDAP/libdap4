@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.cc,v $
+// Revision 1.5  1996/11/13 19:06:01  jimg
+// Fixed the ops() function so that comparisons between UInt32 and Int32, etc.
+// will work correctly. Untested.
+//
 // Revision 1.4  1996/10/28 23:09:14  jimg
 // Fixed compile-time bug in ops() where the type names dods_* were used where
 // the constants dods_*_c should have been used.
@@ -32,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.4 1996/10/28 23:09:14 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.5 1996/11/13 19:06:01 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -120,11 +124,12 @@ UInt32::print_val(ostream &os, String space, bool print_decl_p)
 	os << _buf;
 }
 
+// Evaluate OP with both operands cast to unsigned.
+
 bool
 UInt32::ops(BaseType &b, int op)
 {
     dods_uint32 a1, ua2;
-    dods_int32 a2;
 
     if (!read_p()) {
 	cerr << "This value not yet read!" << endl;
@@ -141,13 +146,7 @@ UInt32::ops(BaseType &b, int op)
     }
     else switch (b.type()) {
       case dods_byte_c:
-      case dods_int16_c:
-      case dods_int32_c: {
-	dods_int32 *a2p = &a2;
-	b.buf2val((void **)&a2p);
-	break;
-      }
-      case dods_uint16_c:
+      case dods_int32_c: 
       case dods_uint32_c: {
 	dods_uint32 *a2p = &ua2;
 	b.buf2val((void **)&a2p);
@@ -157,7 +156,7 @@ UInt32::ops(BaseType &b, int op)
 	double d;
 	double *dp = &d;
 	b.buf2val((void **)&dp);
-	a2 = (dods_int32)d;
+	ua2 = (dods_uint32)d;
 	break;
       }
       case dods_str_c: {
@@ -167,18 +166,12 @@ UInt32::ops(BaseType &b, int op)
 
 	char *ptr;
 	const char *cp = (const char *)s;
-	long v = strtol(cp, &ptr, 0);
+	ua2 = (unsigned long)strtol(cp, &ptr, 0);
 
-	if (v == 0 && cp == ptr) {
+	if (ua2 == 0 && cp == ptr) {
 	    cerr << "`" << s << "' is not an integer value" << endl;
 	    return false;
 	}
-	if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
-	    cerr << "`" << v << "' is not a integer value" << endl;
-	    return false;
-	}
-
-	a2 = v;
 	break;
       }
       default:
@@ -186,8 +179,5 @@ UInt32::ops(BaseType &b, int op)
 	break;
     }
 
-    if (b.type() == dods_uint32_c)
-	return int_ops(a1, ua2, op);
-    else
-	return int_ops(a1, a2, op);
+    return int_ops(a1, ua2, op);
 }
