@@ -36,6 +36,8 @@
 #include "debug.h"
 #endif
 
+int dods_keep_temps = 0;
+
 /** Encapsulate a response. Instead of directly returning the FILE pointer
     from which a response is read, return an instance of this object. */
 class HTTPResponse : public Response {
@@ -64,12 +66,16 @@ public:
     virtual ~HTTPResponse() {
 	DBG(cerr << "Freeing HTTPConnect resources (" + d_file + ")... ");
 	// Delete temp file
-	unlink(d_file.c_str());
+	if (!dods_keep_temps)
+	    unlink(d_file.c_str());
 	DBGN(cerr << endl);
     }
 };
 
 // $Log: HTTPResponse.h,v $
+// Revision 1.2  2003/03/04 21:39:52  jimg
+// Added dods_keep_temps global. This is handy for debugging.
+//
 // Revision 1.1  2003/03/04 05:57:40  jimg
 // Added.
 //
