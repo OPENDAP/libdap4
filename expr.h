@@ -12,6 +12,11 @@
 // 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.10  1998/10/21 16:43:36  jimg
+// Added typedef for projection functions (proj_func).
+// Removed the structs rvalue and func_rvalue - these have been merged into a
+// single class RValue which is defined in Rvalue.cc/h.
+//
 // Revision 1.9  1996/11/27 22:40:24  jimg
 // Added DDS as third parameter to function in the CE evaluator
 //
@@ -68,55 +73,22 @@ typedef struct {
     } v;
 } value;
 
-// Syntactic sugar for `pointer to function returning boolean'
-// (BOOL_FUNC_PTR) and `pointer to function returning BaseType *'
-// (BTP_FUNC_PTR). Both function types take three arguments, an integer
-// (ARGC), a vector of BaseType *s (ARGV) and the DDS for the dataset for
-// which these function is being evaluated (analogous to the ENVP in UNIX).
-// ARGC is the length of ARGV.
+// Syntactic sugar for `pointer to function returning boolean' (bool_func)
+// and `pointer to function returning BaseType *' (btp_func). Both function
+// types take three arguments, an integer (argc), a vector of BaseType *s
+// (argv) and the DDS for the dataset for which these function is being
+// evaluated (analogous to the ENVP in UNIX). ARGC is the length of ARGV.
+
+// Try to make a single `selection function' type.
 
 typedef bool (*bool_func)(int argc, BaseType *argv[], DDS &dds);
 typedef BaseType *(*btp_func)(int argc, BaseType *argv[], DDS &dds);
+typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds);
 
 // INT_LIST and INT_LIST_LIST are used by the parser to store the array
 // indices.
 
 typedef SLList<int> int_list;
 typedef SLList<int_list *> int_list_list;
-
-struct func_rvalue;		// Forward declaration
-
-struct rvalue {
-    BaseType *value;
-    func_rvalue *func;
-
-    rvalue(BaseType *bt);
-    rvalue(func_rvalue *func);
-    rvalue();
-
-    ~rvalue();
-
-    // Return the BaseType * that contains a value for a given rvalue. If the
-    // rvalue is a BaseType *, ensures that the read mfunc has been
-    // called. If the rvalue is a func_rvalue, evaluates the func_rvalue and
-    // returns the result.
-    // NB: The functions referenced by func_rvalues must encapsulate their
-    // return values in BaseType *s.
-    BaseType *bvalue(const String &dataset, DDS &dds);
-};
-
-typedef SLList<rvalue *> rvalue_list;
-
-struct func_rvalue {
-    btp_func func;		// pointer to a function returning BaseType *
-    rvalue_list *args;		// arguments to the function
-
-    func_rvalue(btp_func f, rvalue_list *a);
-    func_rvalue();
-
-    ~func_rvalue();
-
-    BaseType *bvalue(const String &dataset, DDS &dds);
-};
 
 #endif /* _expr_h */
