@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.14 1996/04/05 21:59:33 jimg Exp $
+# $Id: configure,v 1.15 1996/05/29 21:59:31 jimg Exp $
 
 # Check for fill value usage.
 
@@ -2126,7 +2126,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "Makefile config_dap.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "Makefile config_dap.h config_netio.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -2257,7 +2257,7 @@ ac_eB='$%\1#\2define\3'
 ac_eC=' '
 ac_eD='%g'
 
-CONFIG_HEADERS=${CONFIG_HEADERS-"config_dap.h"}
+CONFIG_HEADERS=${CONFIG_HEADERS-"config_dap.h config_netio.h"}
 for ac_file in .. $CONFIG_HEADERS; do if test "x$ac_file" != x..; then
   # Support "outfile[:infile]", defaulting infile="outfile.in".
   case "$ac_file" in
