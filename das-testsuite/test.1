@@ -1,5 +1,7 @@
 
 /*
+  -*- C++ -*-
+
     This is a test of the das scanner and parser software. This file tests
     comments, attribute lists with missing parts, and multiple attribute
     lists (they should all coalesce into one attribute table.
@@ -7,14 +9,14 @@
 
 attributes {// weird
     var1 {//test
-    	name bob;	// bob is the only name allowed
-	type human;	/* for people ... */
-	age 19;
+    	string name bob;	// bob is the only name allowed
+	string type human;	/* for people ... */
+	int32 age 19;
     }
     var2 {/*more test*/
-	name /* foolish comment */ joe;
-	type/*bad style*/dog;   
-	age 8;
+	string name /* foolish comment */ joe;
+	string type/*bad style*/dog;   
+	int32 age 8;
     }
 }   
 
@@ -24,9 +26,9 @@ attributes {// weird
 
 Attributes {/*hammer those comments*/
     var3 {
-    	size large;
-	color red;
-	type art;
+    	int32 size large;
+	string color red;
+	string type art;
     }
     var4 {
     }
@@ -34,7 +36,9 @@ Attributes {/*hammer those comments*/
 
 ATTRIBUTES {
     var5 {
-    	height 5.0in.;
+    	string height 5.0in.;
+	string units inches;
+	float64 max 5.0;
     }
 }
 
@@ -43,8 +47,8 @@ attributes {
 
 attributes {
     var5 {
-	weight 100lbs;
-	color red;
+	string weight 100lbs;
+	string color red;
     }
 }
 
