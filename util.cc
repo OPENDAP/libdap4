@@ -4,7 +4,13 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.4  1994/11/29 20:21:23  jimg
+// Revision 1.5  1995/01/11 16:10:47  jimg
+// Added to new functions which manage XDR stdio stream pointers. One creates
+// a new xdrstdio pointer associated wit the given FILE * and the other
+// deletes it. The creation function returns the XDR *, so it can be used to
+// initialize a new XDR * (see BaseType.cc).
+//
+// Revision 1.4  1994/11/29  20:21:23  jimg
 // Added xdr_str and xdr_url functions (C linkage). These provide a way for
 // the Str and Url classes to en/decode strings (Urls are effectively strings)
 // with only two parameters. Thus the Array ad List classes might actually
@@ -20,8 +26,9 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.4 1994/11/29 20:21:23 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.5 1995/01/11 16:10:47 jimg Exp $"};
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <rpc/xdr.h>
@@ -94,6 +101,32 @@ unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
     delete [] names;
 
     return true;
+}
+
+// This function is used to allocate memory for, and initialize, and new XDR
+// pointer. It sets the stream associated with the (XDR *) to STREAM.
+//
+// NB: STREAM is not one of the C++/libg++ iostream classes; it is a (FILE
+// *).
+
+XDR *
+new_xdrstdio(FILE *stream, enum xdr_op xop)
+{
+    XDR *xdr = new(XDR);
+    
+    xdrstdio_create(xdr, stream, xop);
+    
+    return xdr;
+}
+
+// Delete an XDR pointer allocated using the above function. Do not close the
+// associated FILE pointer.
+
+void
+delete_xdrstdio(XDR *xdr)
+{
+    xdr_destroy(xdr);
+    delete(xdr);
 }
 
 // These functions are used to en/decode Str and Url type variables. They are
