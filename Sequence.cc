@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.32  1996/10/08 17:07:59  jimg
+// Fixed deserialize so that when called on a null Sequence it will return
+// true.
+//
 // Revision 1.31  1996/09/16 18:09:16  jimg
 // Fixed var(const String name) so that it would correctly descend names of the
 // form <base>.<name> where <name> may itself contain `dots'.
@@ -370,10 +374,12 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
     return status;
 }
 
+// If there are no variables in this sequence, return true.
+
 bool
 Sequence::deserialize(XDR *source, bool reuse = false)
 {
-    bool stat;
+    bool stat = true;
 
     for (Pix p = first_var(); p; next_var(p)) {
 	stat = var(p)->deserialize(source, reuse);
