@@ -11,8 +11,15 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.1  1995/01/10 16:23:03  jimg
-// Created new `common code' library for the net I/O stuff.
+// Revision 1.2  1995/01/18 18:48:22  dan
+// Added member function 'request_data' which makes a data read request
+// to the remote api server and links the object's xdrin file-pointers
+// to the data stream.  This function requires NetConnect which has
+// been defined in the utility function netexec.c
+//
+// Revision 1.1  1995/01/09  16:03:26  dan
+// These files constitute the JGOFS server and client library code
+// for use with the DODS api.
 //
 // Revision 1.6  1994/12/06  01:14:13  reza
 // Fixed a bug in the usage of url_comp.
@@ -36,7 +43,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.1 1995/01/10 16:23:03 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.2 1995/01/18 18:48:22 dan Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -50,6 +57,7 @@ static char rcsid[]={"$Id: Connect.cc,v 1.1 1995/01/10 16:23:03 jimg Exp $"};
 #include "Connect.h"
 
 extern "C" int NetExecute(char *, char *, FILE *); // defined in NetExec.c
+extern "C" FILE *NetConnect(char *, char *);       // defined in NetExec.c
 
 // Private mfunc
 
@@ -111,24 +119,22 @@ Connect::request_das()
     // get the das 
 
     String das_url = make_url(_api_name, "das");
+    bool status;
 
     // NULL means P_tmpdir in stdio or TMPDIR environment variable
-    char *tmp = tempnam(NULL, "das");
-    FILE *fp = fopen(tmp, "w");
+    //char *tmp = tempnam(NULL, "das");
+    FILE *fp = NetConnect(das_url, _path);
 
-    // NetExecute closes fp after writing
-    bool status = NetExecute(das_url, _path, fp);
-
-    if(status)
-      status = _das.parse(tmp);    // read and parse the das from a file
+    if( fp ) 
+      status = _das.parse(fp);    // read and parse the das from a file 
 
 #ifdef NEVER
     cerr << "das url: " << das_url << endl;
     cerr << "tmp: " << tmp << endl;
 #endif
 
-    unlink(tmp);
-    free(tmp);			// malloc'd in tempnam(3)
+    //unlink(tmp);
+    //free(tmp);			// malloc'd in tempnam(3)
 
     return status;
 }
@@ -139,24 +145,39 @@ Connect::request_dds()
     // get the dds 
 
     String dds_url = make_url(_api_name, "dds");
+    bool status;
 
     // NULL means P_tmpdir in stdio or TMPDIR environment variable
-    char *tmp = tempnam(NULL, "dds");
-    FILE *fp = fopen(tmp, "w");
+    //char *tmp = tempnam(NULL, "dds");
+    FILE *fp = NetConnect(dds_url, _path);
 
-    // NetExecute closes fp after writing
-    bool status = NetExecute(dds_url, _path, fp);
-    
-    if(status)
-      status = _dds.parse(tmp);    // read the dds from a file
-
+    if( fp ) 
+      status = _dds.parse(fp);    // read and parse the das from a file 
+   
 #ifdef NEVER
     cerr << "dds url: " << dds_url << endl;
     cerr << "tmp: " << tmp << endl;
 #endif
 
-    unlink(tmp);
-    free(tmp);			// malloc'd in tempnam(3)
+    //unlink(tmp);
+    //free(tmp);			// malloc'd in tempnam(3)
+
+    return status;
+}
+bool
+Connect::request_data()
+{
+    // get the dds 
+
+    String data_url = make_url(_api_name, "server");
+    bool status;
+
+    // NULL means P_tmpdir in stdio or TMPDIR environment variable
+    //char *tmp = tempnam(NULL, "server");
+    FILE *fp = NetConnect(data_url, _path);
+
+    if ( fp ) 
+      set_xdrin(fp);
 
     return status;
 }
