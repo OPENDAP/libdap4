@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.92 1999/03/25 00:04:21 jimg Exp $
+# $Id: Makefile.in,v 1.93 1999/03/30 19:07:54 jimg Exp $
 
 @SET_MAKE@
 
@@ -87,7 +87,7 @@ GSE_GRAM_OBJS = lex.gse.o gse-test.o gse.tab.o
 GRAM_SRCS = lex.das.c das.tab.c lex.dds.c dds.tab.c lex.expr.c expr.tab.c \
 	    RValue.cc lex.Error.c Error.tab.c lex.gse_.c gse.tab.c
 
-DASHDRS = AttrTable.h DAS.h 
+DASHDRS = AttrTable.h DAS.h parser.h
 DASSRCS = AttrTable.cc DAS.cc parser-util.cc
 DASOBJS = AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
