@@ -53,9 +53,9 @@ public:
     rvalue();
 
     virtual ~rvalue();
-  string value_name();
+    string value_name();
 
-  BaseType *bvalue(const string &dataset, DDS &dds);
+    BaseType *bvalue(const string &dataset, DDS &dds);
 };
 
 // This type def must come after the class definition above. It is used in
@@ -67,6 +67,12 @@ typedef std::vector<rvalue *>::iterator rvalue_list_iter ;
 BaseType **build_btp_args(rvalue_list *args, DDS &dds);
 
 // $Log: RValue.h,v $
+// Revision 1.14  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.12.2.1  2004/12/23 21:08:52  jimg
+// Minor fixes.
+//
 // Revision 1.13  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

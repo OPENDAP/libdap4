@@ -30,15 +30,15 @@
     correspond to plain uncompressed data and data compressed with zlib's LZW
     algorithm respectively.
 
-     \begin{verbatim}
+    <code>
      enum EncodingType {
        unknown_enc,
        deflate,
        x_plain
      };
-     \end{verbatim}
+    </code>
 
-    @memo The type of encoding used on the current stream. */
+    @brief The type of encoding used on the current stream. */
 
 enum EncodingType {
     unknown_enc,
@@ -47,6 +47,12 @@ enum EncodingType {
 };
 
 // $Log: EncodingType.h,v $
+// Revision 1.7  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.5.2.1  2005/01/18 23:29:51  jimg
+// Fixed documentation.
+//
 // Revision 1.6  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

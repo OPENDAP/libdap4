@@ -6,6 +6,20 @@ AC_CONFIG_AUX_DIR(../../../etc)
 AC_PROG_CC
 AC_PROG_INSTALL
 
+# Until further notice OS X port doesn't get -gstabs because of an
+# apparent bug in their gcc 3.3 clone (a beta).  If you see this after
+# 1/1/2005, you can probably remove it.
+case "${host_cpu}:${host_vendor}:${host_os}" in
+     powerpc:apple:netbsd* | alphaev56:dec:osf5.*)
+       CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
+       CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
+       break;;
+    *:*:*)
+       CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
+       CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"}
+       break;;
+esac    
+
 dnl I'm not sure if AC_AIX and AC_DYNIX_SEQ are really necessary.  The
 dnl Autoconf documentation isn't specific about which BSD functions they
 dnl provide.

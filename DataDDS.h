@@ -77,9 +77,11 @@ public:
     int get_version_major();
     int get_version_minor();
 
+#if 0
     int sequence_level();
     
     void set_sequence_level(int level);
+#endif
 };
 
 // Revision 1.8.4.1  2002/09/05 22:52:54  pwest
@@ -93,6 +95,12 @@ public:
 // unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
 //
 // $Log: DataDDS.h,v $
+// Revision 1.17  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.14.2.4  2004/12/23 21:11:32  jimg
+// Removed the sequence level method declarations.
+//
 // Revision 1.16  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //

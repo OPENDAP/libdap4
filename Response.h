@@ -64,7 +64,7 @@ protected:
 
 public:
     /** Initialize with a stream. Create an instance initialized to a stream.
-	by default the get_type() and get_version() return default values of
+	by default get_type() and get_version() return default values of
 	unknown_type and "dods/0.0", respectively. Specializations (see
 	HTTPResponse and HTTPConnect) may fill these fields in with other
 	values. */
@@ -74,7 +74,8 @@ public:
     /** Close the stream. */
     virtual ~Response() { 
 	DBG(cerr << "Closing stream... ");
-	fclose(d_stream); 
+        if (d_stream)
+	    fclose(d_stream); 
 	DBGN(cerr << endl);
     }
 
@@ -89,12 +90,25 @@ public:
     /** @name Mutators */
     //@{
     virtual void set_status(int s) { d_status = s; }
+    virtual void set_stream(FILE *s) { d_stream = s; }
     virtual void set_type(ObjectType o) { d_type = o; }
     virtual void set_version(const string &v) { d_version = v; }
     //@}
 };
 
 // $Log: Response.h,v $
+// Revision 1.4  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.1.2.3  2004/08/24 20:03:15  jimg
+// Changed the way HTTPResponse deletes the temporary files created to hold
+// HTTP responses. Before this was done without using HTTPConnect's
+// close_temp() function. Instead, ~HTTPResponse() called unlink() on the
+// filename and then ~Response() called fclose on the FILE *. I think this
+// breaks on win32. THe simplest solution was to make ~HTTPResponse() use
+// the close_temp() function. I also had to edit the ~Response() method to
+// check that d_stream was not null before calling fclose() there.
+//
 // Revision 1.3  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
@@ -103,7 +117,7 @@ public:
 // 'delete[] x' the code also sets 'x' to null. This ensures that if a
 // pointer is deleted more than once (e.g., when an exception is thrown,
 // the method that throws may clean up and then the catching method may
-// also clean up) the second, ..., call to delete gets a null pointer
+// also clean up) the second, ..., call(s) to delete gets a null pointer
 // instead of one that points to already deleted memory.
 //
 // Revision 1.2  2003/12/08 18:02:29  edavis

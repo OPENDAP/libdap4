@@ -13,7 +13,6 @@
 #define STDC_HEADERS 1
 #define CNAME "DODS"
 #define CVER "$VERSION"
-#define DVR "DODS/3.4.3"
 
 #define SIZEOF_CHAR 1
 #define SIZEOF_DOUBLE 8
@@ -34,6 +33,10 @@
 #ifndef DODS_ROOT
 #define DODS_ROOT "C:/DODS"
 #endif
+
+/* For isatty() under MS VC++ */
+#include <io.h>
+#define isatty(n) _isatty(n)
 
 #define DODS_BISON_VER 128
 

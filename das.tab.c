@@ -100,7 +100,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.48 2004/07/09 17:06:40 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.49 2005/01/28 17:25:13 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1785,8 +1785,8 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.48  2004/07/09 17:06:40  jimg
- * Update from merge: regex-0.12 added; Makefiles rebuilt.
+ * Revision 1.49  2005/01/28 17:25:13  jimg
+ * Resolved conflicts from merge with release-3-4-9
  *
  * Revision 1.50  2004/02/19 19:42:52  jimg
  * Merged with release-3-4-2FCS and resolved conflicts.

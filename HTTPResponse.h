@@ -42,6 +42,7 @@
 #endif
 
 extern int dods_keep_temps;	// defined in HTTPConnect.cc
+extern void close_temp(FILE *s, const string &name);
 
 /** Encapsulate an http response. Instead of directly returning the FILE
     pointer from which a response is read and vector of headers, return an
@@ -91,8 +92,10 @@ public:
     virtual ~HTTPResponse() {
 	DBG(cerr << "Freeing HTTPConnect resources (" + d_file + ")... ");
 
-	if (!dods_keep_temps && !d_file.empty())
-	    unlink(d_file.c_str());
+	if (!dods_keep_temps && !d_file.empty()) {
+            close_temp(get_stream(), d_file);
+            set_stream(0);
+        }
 
 	delete d_headers; d_headers = 0;
 
@@ -110,6 +113,18 @@ public:
 };
 
 // $Log: HTTPResponse.h,v $
+// Revision 1.4  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.2.2.3  2004/08/24 20:03:15  jimg
+// Changed the way HTTPResponse deletes the temporary files created to hold
+// HTTP responses. Before this was done without using HTTPConnect's
+// close_temp() function. Instead, ~HTTPResponse() called unlink() on the
+// filename and then ~Response() called fclose on the FILE *. I think this
+// breaks on win32. THe simplest solution was to make ~HTTPResponse() use
+// the close_temp() function. I also had to edit the ~Response() method to
+// check that d_stream was not null before calling fclose() there.
+//
 // Revision 1.3  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

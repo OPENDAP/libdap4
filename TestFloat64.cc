@@ -56,8 +56,33 @@ NewFloat64(const string &n)
     return new TestFloat64(n);
 }
 
-TestFloat64::TestFloat64(const string &n) : Float64(n)
+void
+TestFloat64::_duplicate(const TestFloat64 &ts)
 {
+    d_series_values = ts.d_series_values;
+}
+
+TestFloat64::TestFloat64(const string &n) : Float64(n), d_series_values(false)
+{
+    _buf = 0.0;
+}
+
+TestFloat64::TestFloat64(const TestFloat64 &rhs) : Float64(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestFloat64 &
+TestFloat64::operator=(const TestFloat64 &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Float64 &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
 }
 
 BaseType *
@@ -75,14 +100,29 @@ TestFloat64::read(const string &)
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    _buf = 99.999;
-
+    if (get_series_values()) {
+        _buf = (double) 1000*cos(_buf);;
+        _buf += 0.01;
+    }
+    else {
+        _buf = 99.999;
+    }
+    
     set_read_p(true);
 
     return true;
 }
 
 // $Log: TestFloat64.cc,v $
+// Revision 1.23  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.20.2.4  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.20.2.3  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.22  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

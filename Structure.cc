@@ -199,6 +199,18 @@ Structure::set_in_selection(bool state)
     BaseType::set_in_selection(state);
 }
 
+/** @brief Traverse Structure, set Sequence leaf nodes. */
+void
+Structure::set_leaf_sequence(int level)
+{
+    for (Vars_iter i = var_begin(); i != var_end(); i++) {
+        if ((*i)->type() == dods_sequence_c)
+            dynamic_cast<Sequence&>(**i).set_leaf_sequence(++level);
+        else if ((*i)->type() == dods_structure_c)
+            dynamic_cast<Structure&>(**i).set_leaf_sequence(level);
+    }
+}
+
 // NB: Part defaults to nil for this class
 
 /** Adds an element to a Structure. 
@@ -690,6 +702,13 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.59  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.54.2.5  2005/01/19 17:16:32  jimg
+// Added set_leaf_sequence() to Structure to mirror its use in DDS. This
+// code will now correctly mark Sequences that are parts of Structures.
+//
 // Revision 1.58  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

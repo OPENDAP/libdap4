@@ -38,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.28 2004/07/07 21:08:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.29 2005/01/28 17:25:13 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -67,6 +67,12 @@ using namespace std;
 #include <io.h>
 #include <fcntl.h>
 #endif
+
+#ifdef WIN32
+#define RETURN void
+#else
+#define RETURN int
+#endif 
 
 static void
 usage(char *argv[])
@@ -207,7 +213,7 @@ write_attributes(ostringstream &oss, AttrTable *attr, const string prefix = "")
     with those names the attributes will NOT be considered `global
     attributes'.
 
-    @memo Build the global attribute HTML* document.
+    @brief Build the global attribute HTML* document.
     @return A string object containing the global attributes in human
     readable form (as an HTML* document).
 */
@@ -228,13 +234,6 @@ build_global_attributes(DAS &das, DDS &)
 	// global attributes. jhrg. 5/22/97
 	if (!name_in_kill_file(name) && name_is_global(name)) {
 	    AttrTable *attr = das.get_table(p);
-#if 0
-	    found = attr->first_attr() != (Pix)0; // we have global attrs
-#endif
-	    // The above line is probably broken. But that doesn't really
-	    // matter  in this case because I think we should have the
-	    // section even if it is empty (given that we've found a global
-	    // name).
 	    found = true;
 	    write_global_attributes(ga, attr, "");
 	}
@@ -367,7 +366,7 @@ write_variable(BaseType *btp, DAS &das, ostringstream &vs)
 /** Given the DAS and the DDS build an HTML table which describes each one of
     the variables by listing its name, datatype and all of its attriutes.
 
-    @memo Build the variable summaries.
+    @brief Build the variable summaries.
     @return A string object containing the variable summary information in
     human readable form (as an HTML* document).
 */
@@ -400,11 +399,7 @@ html_header()
     fprintf( stdout, "\n" ) ;	// MIME header ends with a blank line
 }
 
-#ifdef WIN32
-void
-#else
-int
-#endif 
+RETURN
 main(int argc, char *argv[])
 {
     if (argc != 4) {
@@ -429,11 +424,8 @@ main(int argc, char *argv[])
     string cgi = argv[3];
 
     DAS das;
-#ifdef WIN32
-	string command = cgi + "_das " + options + " \"" + name + "\"";
-#else
-    string command = cgi + "_das " + options + " '" + name + "'";
-#endif
+    string command = cgi + "_das " + options + " \"" + name + "\"";
+
     DBG(cerr << "DAS Command: " << command << endl);
 
     try {
@@ -445,11 +437,7 @@ main(int argc, char *argv[])
 	}
 
 	DDS dds;
-#ifdef WIN32
-	command = cgi + "_dds " + " \"" + name + "\"";
-#else
-	command = cgi + "_dds '" + name + "'";
-#endif
+	string command = cgi + "_dds " + options + " \"" + name + "\"";
 	DBG(cerr << "DDS Command: " << command << endl);
 
 	in = popen(command.c_str(), "r");
@@ -512,6 +500,20 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.29  2005/01/28 17:25:13  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.23.2.7  2005/01/18 23:26:02  jimg
+// FIxed documentation.
+//
+// Revision 1.23.2.6  2004/10/08 22:40:07  jimg
+// Bug fixes: see bug 813, et c., from Brandon Casey.
+//
+// Revision 1.23.2.5  2004/10/08 21:19:34  jimg
+// Changed the way the DAS and DDS handlers are called. I added the options to
+// the DDS handler, which fixes an obscure problem with the HDF handler. Also,
+// made the WIN32 and UNIX code the same since there was no real difference...
+//
 // Revision 1.28  2004/07/07 21:08:49  jimg
 // Merged with release-3-4-8FCS
 //

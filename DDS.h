@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -90,7 +89,6 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
     data access API in use, this may involve reading part of the
     dataset and inferring the DDS.  Other APIs may require the server
     simply to read some ancillary data file with the DDS in it.
-    \label{api:dds}
 
     On the server side, in addition to the data declarations, the DDS
     holds the clauses of any constraint expression that may have
@@ -346,9 +344,21 @@ public:
     void mark_all(bool state);
     bool mark(const string &name, bool state);
     bool check_semantics(bool all = false);
+
+    void tag_nested_sequences();
 };
 
 // $Log: DDS.h,v $
+// Revision 1.60  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.50.2.5  2005/01/18 23:03:07  jimg
+// FIxed documentation.
+//
+// Revision 1.50.2.4  2004/12/23 20:53:10  dan
+// Added method tag_nested_sequences() that traverses Sequence
+// members to set the leaf_node for the innermost Sequence.
+//
 // Revision 1.59  2004/11/16 18:37:05  jimg
 // Added reverese iterators.
 //

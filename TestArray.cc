@@ -33,10 +33,6 @@
 //
 // jhrg 1/12/95
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
-
 #include "config_dap.h"
 
 #ifndef WIN32
@@ -48,6 +44,7 @@
 #endif
 
 #include "TestArray.h"
+#include "TestCommon.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -64,18 +61,43 @@ NewArray(const string &n, BaseType *v)
     return new TestArray(n, v);
 }
 
+void
+TestArray::_duplicate(const TestArray &ts)
+{
+    d_series_values = ts.d_series_values;
+}
+
 BaseType *
 TestArray::ptr_duplicate()
 {
     return new TestArray(*this);
 }
 
-TestArray::TestArray(const string &n, BaseType *v) : Array(n, v)
+TestArray::TestArray(const string &n, BaseType *v) : Array(n, v),
+        d_series_values(false)
 {
+}
+
+TestArray::TestArray(const TestArray &rhs) : Array(rhs)
+{
+    _duplicate(rhs);
 }
 
 TestArray::~TestArray()
 {
+}
+
+TestArray &
+TestArray::operator=(const TestArray &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Array &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
 }
 
 // This read mfunc does some strange things to get a value - a real program
@@ -173,7 +195,23 @@ TestArray::read(const string &dataset)
     return true;
 }
 
+void
+TestArray::set_series_values(bool sv)
+{
+    dynamic_cast<TestCommon&>(*var()).set_series_values(sv);    
+    d_series_values = sv;
+}
+
 // $Log: TestArray.cc,v $
+// Revision 1.33  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.29.2.4  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.29.2.3  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.32  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

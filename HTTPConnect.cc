@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.18 2004/07/07 21:08:47 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.19 2005/01/28 17:25:12 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -519,7 +519,7 @@ HTTPConnect::fetch_url(const string &url) throw(Error, InternalErr)
     @exception InternalErr thrown if the FILE* could not be opened. */
 
 string
-HTTPConnect::get_temp_file(FILE *&stream) throw(InternalErr)
+get_temp_file(FILE *&stream) throw(InternalErr)
 {
     // get_tempfile_template() uses new, must call delete
     char *dods_temp = get_tempfile_template("dodsXXXXXX");
@@ -541,7 +541,7 @@ HTTPConnect::get_temp_file(FILE *&stream) throw(InternalErr)
 }
 
 /** Close the temporary file opened for read_url(). */
-inline static void
+void
 close_temp(FILE *s, const string &name)
 {
     int res = fclose(s);
@@ -779,6 +779,18 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.19  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.14.2.17  2004/08/24 20:03:15  jimg
+// Changed the way HTTPResponse deletes the temporary files created to hold
+// HTTP responses. Before this was done without using HTTPConnect's
+// close_temp() function. Instead, ~HTTPResponse() called unlink() on the
+// filename and then ~Response() called fclose on the FILE *. I think this
+// breaks on win32. THe simplest solution was to make ~HTTPResponse() use
+// the close_temp() function. I also had to edit the ~Response() method to
+// check that d_stream was not null before calling fclose() there.
+//
 // Revision 1.18  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //

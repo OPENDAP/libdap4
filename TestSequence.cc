@@ -37,28 +37,17 @@
 // for single level sequences - that is, it does *not* work for sequences
 // that contain other sequences. jhrg 2/2/98 
 
-#ifdef _GNUG_
-// #pragma implementation
-#endif
-
-#if defined(__GNUG__) || defined(WIN32)
-#include <sstream>
-#else
-#include <sstream>
-#endif
-
 #include "TestSequence.h"
+#include "TestCommon.h"
 
 #include "debug.h"
-
-using std::cerr;
-using std::endl;
-using std::istringstream;
 
 void
 TestSequence::_duplicate(const TestSequence &ts)
 {
-    _input_opened = ts._input_opened;
+    d_current = ts.d_current;
+    d_len = ts.d_len;
+    d_series_values = ts.d_series_values;
 }
 
 Sequence *
@@ -73,9 +62,9 @@ TestSequence::ptr_duplicate()
     return new TestSequence(*this);
 }
 
-TestSequence::TestSequence(const string &n) : Sequence(n)
+TestSequence::TestSequence(const string &n) : Sequence(n), d_len(4),
+	d_current(0), d_series_values(false)
 {
-    _input_opened = false;
 }
 
 TestSequence::TestSequence(const TestSequence &rhs) : Sequence(rhs)
@@ -106,109 +95,63 @@ TestSequence::operator=(const TestSequence &rhs)
 bool 
 TestSequence::read(const string &dataset)
 {
-    char line[256];
-
-    if (read_p())
-	return true;
-
-    if (!_input_opened) {
-	_input.open(dataset.c_str());
-	_input_opened = true;
-	// For now, use the DDS to get the variable names/types so read the 
-	// first line and ignore it.
-	_input.getline(line, 255);
-    }
-
-    // If at EOF, return false indicating no more data.
-    if (_input.eof())
-	return false;
-
-    // Read a line at a time and extract the values. Any line without values
-    // is skipped. EOF ends the file.
-    while (true) {
-	_input.getline(line, 256);
-	if (_input.eof())
-	    return false;
-	if (!_input)
-	    throw InternalErr(__FILE__, __LINE__, "TestSequence read error.");
-
-	string l = line;
-	if (l.find_first_not_of(" \t\n\r") != l.npos || l[0] == '#')
-	    continue;
-	else
-	    break;		// Assume valid line.
-    }
-
-    istringstream iss(line);
-
-    for (Vars_iter iter = var_begin(); iter != var_end(); iter++)
-    {
-	// Don't use the read mfuncs since for now within Test* they always
-	// return the same hardcoded values (not much use for testing
-	// sequences).
-	switch ((*iter)->type()) {
-	  case dods_byte_c: {
-	      unsigned int ui;
-	      iss >> ui;
-	      char b = ui;
-	      (*iter)->val2buf((void*)&b);
-	      (*iter)->set_read_p(true);
-	      break;
-	  }
-	  case dods_int32_c: {
-	      int i;
-	      iss >> i;
-	      DBG(cerr << "Int32 value read :" << i << endl);
-	      (*iter)->val2buf((void*)&i);
-	      (*iter)->set_read_p(true);
-	      break;
-	  }
-	  case dods_uint32_c: {
-	      unsigned int ui;
-	      iss >> ui;
-	      (*iter)->val2buf((void*)&ui);
-	      (*iter)->set_read_p(true);
-	      break;
-	  }
-	  case dods_float64_c: {
-	      double d;
-	      iss >> d;
-	      (*iter)->val2buf((void*)&d);
-	      (*iter)->set_read_p(true);
-	      break;
-	  }
-	  case dods_str_c:
-	  case dods_url_c: {
-	      string s;
-	      iss >> s;
-	      (*iter)->val2buf((void*)&s);
-	      (*iter)->set_read_p(true);
-	      break;
-	  }
-
-	  case dods_array_c:
-	  case dods_structure_c:
-	  case dods_sequence_c:
-	  case dods_grid_c:
-	  default:
-	    cerr << "Broken Sequence::read() mfunc! This type not implemented"
-		 << endl;
-	    break;
-	}
-    }
-
-    set_read_p(true);
+    DBG(cerr << "Entering TestSequence::read()" << endl);
     
+    if (read_p())
+        return true;
+        
+    DBG(cerr << "current: " << d_current << ", length: " << d_len << endl);
+    // When we get to the end of a Sequence, reset the row number counter so
+    // that, in case this is an inner sequence, the next instance will be read
+    // and the "Trying to back up in a Sequence" error won't be generated.
+    if (++d_current > d_len) {
+        d_current = 0;                  // reset
+        set_unsent_data(false);
+        reset_row_number();
+        return false;                   // No more values
+    }
+        
+    Vars_iter i = var_begin();
+    while (i != var_end()) {
+        if ((*i)->send_p() || (*i)->is_in_selection()) {
+            DBG(cerr << "Calling " << (*i)->name() << "->read()" << endl);
+            (*i)->read(dataset);
+        }
+        ++i;
+    }
+    
+    set_unsent_data(true);
     return true;
+}
+
+void
+TestSequence::set_series_values(bool sv)
+{
+    Vars_iter i = var_begin();
+    while (i != var_end()) {
+        dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
+        ++i;
+    }
+    
+    d_series_values = sv;
 }
 
 int
 TestSequence::length()
 {
-    return 0;
+    return 5;
 }
 
 // $Log: TestSequence.cc,v $
+// Revision 1.34  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.30.2.4  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.30.2.3  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.33  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

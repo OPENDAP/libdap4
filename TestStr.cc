@@ -50,6 +50,7 @@
 #endif
 
 #include "TestStr.h"
+#include "util.h"
 
 extern int test_variable_sleep_interval;
 
@@ -58,9 +59,33 @@ NewStr(const string &n)
 {
     return new TestStr(n);
 }
-
-TestStr::TestStr(const string &n) : Str(n)
+void
+TestStr::_duplicate(const TestStr &ts)
 {
+    d_series_values = ts.d_series_values;
+}
+
+
+TestStr::TestStr(const string &n) : Str(n), d_series_values(false)
+{
+}
+
+TestStr::TestStr(const TestStr &rhs) : Str(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestStr &
+TestStr::operator=(const TestStr &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Str &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
 }
 
 BaseType *
@@ -72,14 +97,15 @@ TestStr::ptr_duplicate()
 bool
 TestStr::read(const string &)
 {
+    static int count = 0;
+    
     if (read_p())
 	return true;
 
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    string dods_str_test="Silly test string: one, two, ...";
-    
+    string dods_str_test = "Silly test string: " + long_to_string(count);
     (void) val2buf(&dods_str_test);
 
     set_read_p(true);
@@ -88,6 +114,15 @@ TestStr::read(const string &)
 }
 
 // $Log: TestStr.cc,v $
+// Revision 1.23  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.20.2.5  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.20.2.4  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.22  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

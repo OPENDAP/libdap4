@@ -35,6 +35,8 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+// #define DODS_DEBUG 1
+
 #include "HTTPCache.h"
 #include "HTTPConnect.h"	// Used to generate a response to cache.
 #ifndef WIN32				// Signals are exquisitely non-portable.
@@ -127,7 +129,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
-
+#if 1
     CPPUNIT_TEST(constructor_test);
 
     CPPUNIT_TEST(cache_index_read_test);
@@ -145,9 +147,9 @@ public:
     CPPUNIT_TEST(parse_headers_test);
     CPPUNIT_TEST(calculate_time_test);
     CPPUNIT_TEST(write_metadata_test);
-
+#endif
     CPPUNIT_TEST(cache_response_test);
-
+#if 1
     CPPUNIT_TEST(is_url_valid_test);
     CPPUNIT_TEST(get_cached_response_test);
     CPPUNIT_TEST(perform_garbage_collection_test);
@@ -160,13 +162,15 @@ public:
     CPPUNIT_TEST(interrupt_test);
 #endif
 
+    CPPUNIT_TEST(cache_gc_test);
+#endif
     CPPUNIT_TEST_SUITE_END();
 
     void constructor_test() {
 	CPPUNIT_ASSERT(hc->d_cache_index=="cache-testsuite/dods_cache/.index");
 	CPPUNIT_ASSERT(hc->d_cache_root == "cache-testsuite/dods_cache/");
 	DBG(cerr << "Current size: " << hc->d_current_size << endl);
-	CPPUNIT_ASSERT(hc->d_current_size == 343);
+	CPPUNIT_ASSERT(hc->d_current_size == hc->d_block_size);
     }
 
     void cache_index_read_test() {
@@ -727,6 +731,69 @@ public:
 	HTTPCache::delete_instance();
     }
     
+    void cache_gc_test() {
+	string fnoc1 = "http://localhost/dods-3.4/nph-dods/data/nc/fnoc1.nc.dds";
+	string fnoc2 = "http://localhost/dods-3.4/nph-dods/data/nc/fnoc2.nc.dds";
+	string fnoc3 = "http://localhost/dods-3.4/nph-dods/data/nc/fnoc3.nc.dds";
+	try {
+	    auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+
+	    CPPUNIT_ASSERT(pc->d_block_size == 4096);
+
+	    // Change the size parameters so that we can run some tests
+	    pc->d_total_size = 12288; // bytes
+	    pc->d_folder_size = pc->d_total_size/10;
+	    pc->d_gc_buffer = pc->d_total_size/10;
+
+	    // Thie cache should start empty
+	    CPPUNIT_ASSERT(pc->d_current_size == 0);
+
+	    // Get a url
+	    HTTPResponse *rs = http_conn->fetch_url(fnoc1);
+	    pc->cache_response(fnoc1, time(0), *(rs->get_headers()),
+			       rs->get_stream());
+	    CPPUNIT_ASSERT(pc->is_url_in_cache(fnoc1));
+	    delete rs; rs = 0;
+	    // trigger a hit for fnoc1
+	    vector<string> h;
+	    FILE *f = pc->get_cached_response(fnoc1, h);
+	    pc->release_cached_response(f);
+
+	    rs = http_conn->fetch_url(fnoc2);
+	    pc->cache_response(fnoc2, time(0), *(rs->get_headers()),
+			       rs->get_stream());
+	    CPPUNIT_ASSERT(pc->is_url_in_cache(fnoc2));
+	    delete rs; rs = 0;
+	    // trigger two hits for fnoc2
+	    f = pc->get_cached_response(fnoc2, h);
+	    pc->release_cached_response(f);
+	    f = pc->get_cached_response(fnoc2, h);
+	    pc->release_cached_response(f);
+
+	    rs = http_conn->fetch_url(fnoc3);
+	    pc->cache_response(fnoc3, time(0), *(rs->get_headers()),
+			       rs->get_stream());
+	    CPPUNIT_ASSERT(pc->is_url_in_cache(fnoc3));
+	    delete rs; rs = 0;
+	}
+	catch(Error &e) {
+	    cerr << "Exception: " << e.get_error_message() << endl;
+	    CPPUNIT_ASSERT(false);
+	}
+
+	// now that pc is out of scope, its dtor has been run and GC
+	// performed. The fnoc3 URL should have been deleted.
+
+	try {
+	    auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+	    CPPUNIT_ASSERT(!pc->is_url_in_cache(fnoc3));
+	}
+	catch(Error &e) {
+	    cerr << "Exception: " << e.get_error_message() << endl;
+	    CPPUNIT_ASSERT(false);
+	}
+    }
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPCacheTest);
@@ -748,6 +815,18 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPCacheTest.cc,v $
+// Revision 1.13  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.9.2.11  2005/01/25 00:40:12  jimg
+// Fixed a bug where caching small entries broke the GC algorithm.
+// The code used the size of the entry as a measure of the actual disk
+// space used by the entry. For small entries this was a significant
+// error (off by a factor of > 32 for the test.nc dataset). I changed
+// the code to use the block size and assume that each entry occupies
+// n*blocksize bytes where n >= 1. I added a test to check that the
+// purge code works correctly.
+//
 // Revision 1.12  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //

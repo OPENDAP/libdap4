@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.62 2004/06/28 17:00:31 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.63 2005/01/28 17:25:13 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -906,6 +906,11 @@ get_user_supplied_docs(string name, string cgi)
 	oss << "<hr>";
     }
 
+    // Problem: This code is run with the CWD as the CGI-BIN directory but
+    // the data are in DocumentRoot (and we don't have the pathname of the
+    // data relative to DocumentRoot). So the only time this will work is
+    // when the server is in the same directory as the data. See bug 815.
+    // 10/08/04 jhrg
     ifs.open((name + ".html").c_str());
 
     // If name.html cannot be opened, look for basename.html
@@ -989,6 +994,12 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.63  2005/01/28 17:25:13  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.57.2.7  2004/10/08 22:40:07  jimg
+// Bug fixes: see bug 813, et c., from Brandon Casey.
+//
 // Revision 1.62  2004/06/28 17:00:31  pwest
 // html mime header
 //

@@ -624,30 +624,54 @@ BaseType::add_var(BaseType *, Part)
     <li> read() should throw Error if it encounters an error. The message
 	  should be verbose enough to be understood by someone running a
 	  client on a different machine.</li>
-    <li> The value(s) should be read iff either send_p() of
+    <li> The value(s) should be read if and only if either send_p() or
           is_in_selection() return true. If neither of these return true, the
 	  value(s) should not be read. This is important when writing read()
 	  for a Constructor type such as Grid where a client may ask for only
-	  the map vectors (ans thus reading the much larger Array part is not
+	  the map vectors (and thus reading the much larger Array part is not
 	  needed).</li>
-    <li>The Array::read() and Grid::read() methods should take into account
+    <li> For each specialization of read(), the method should first test
+          the value of the \c read_p property (using the read_p() method)
+          and read values only if the value of read_p() is false. Once the 
+          read() method reads data and stores it in the instance, it must
+          set the value of the \c read_p property to true using set_read_p().
+          If your read() methods fail to do this data may not serialize
+          correctly.</li>
+    <li> The Array::read() and Grid::read() methods should take into account
 	  any restrictions on Array sizes.</li>
+    <li> If you are writing Sequence::read(), be sure to check the
+          documentation for Sequence::read_row() and Sequence::serialize()
+          so you understand how Sequence::read() is being called.</li>
+    <li> For Sequence::read(), your specialization must correctly manage the
+          \c unsent_data property and row count in addition to the \c read_p
+          property (handle the \c read_p property as describe above). For a
+          Sequence to serialize correctly, once all data from the Sequence
+          has been read, \c unsent_data property must be set to false (use
+          Sequence::set_unsent_data()). Also, at that time the row number
+          counter must be reset (use Sequence::reset_row_counter()). Typically
+          the correct time to set \c unsent_data to false and reset the row
+          counter is the time when Sequence::read() return false indicating
+          that all the data for the Sequence have been read. Failure to 
+          handle these tasks will break serialization of nested Sequences. Note
+          that when Sequence::read() returns with a result of true (indicting
+          there is more data to send, the value of the \c unsent_data property
+          should be true.</li>
     </ul>
 
     @brief Read data into a local buffer. 
 
-    @return The return value of this method should always be false. This
-    method used to use the return value to indicate that Sequence values
-    remained and still needed to be read. However, all Sequence values are
-    now read in a single call to read(). The return value is retained because
-    it's conceivable that a server might want to implement read() and make
-    use of the return value. Only the specialization would use the return
-    value; it is always ignored by the DAP library.
+    @return The return value of this method for all types except Sequence 
+    should always be false. Sequences should return true to indicate more
+    values remain in the Sequence, false to indicate no more values remain.
+    (see Sequence::serialize() and Sequence::read_row()).
 
     @param dataset A string naming the dataset from which the data is to
-    be read. The meaning of this string will vary among data APIs.
+    be read. The meaning of this string will vary among different types of
+    data sources. It \e may be the name of a data file or an identifier 
+    used to read data from a relational database.
 
-    @see BaseType */
+    @see BaseType
+    @see Sequence  */
 bool 
 BaseType::read(const string &dataset)
 {
@@ -932,6 +956,17 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.61  2005/01/28 17:25:11  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.54  2003/12/08 18:02:29  edavis
+// Merge release-3-4 into trunk
+// Revision 1.51.2.8  2005/01/18 23:10:31  jimg
+// FIxed documentation, especially for read().
+//
+// Revision 1.51.2.7  2005/01/14 21:02:16  jimg
+// Fixes to read() documentation.
+//
 // Revision 1.60  2004/11/30 20:23:20  jimg
 // Updaed comments.
 //
@@ -946,8 +981,6 @@ BaseType::ops(BaseType *, int, const string &)
 // Revision 1.57  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //
-// Revision 1.54  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
 // Revision 1.51.2.6  2004/07/02 20:41:51  jimg
 // Removed (commented) the pragma interface/implementation lines. See
 // the ChangeLog for more details. This fixes a build problem on HP/UX.

@@ -43,7 +43,7 @@
      };
      </pre>
 
-    @memo The type of object in the stream coming from the data
+    @brief The type of object in the stream coming from the data
     server.  */
 
 enum ObjectType {
@@ -56,6 +56,12 @@ enum ObjectType {
 };
 
 // $Log: ObjectType.h,v $
+// Revision 1.8  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.6.2.1  2005/01/18 23:05:37  jimg
+// FIxed documentation.
+//
 // Revision 1.7  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

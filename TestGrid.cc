@@ -34,6 +34,7 @@
 // jhrg 1/13/95
 
 #include "TestGrid.h"
+#include "TestCommon.h"
 
 extern int test_variable_sleep_interval;
 
@@ -43,13 +44,38 @@ NewGrid(const string &n)
     return new TestGrid(n);
 }
 
+void
+TestGrid::_duplicate(const TestGrid &ts)
+{
+    d_series_values = ts.d_series_values;
+}
+
 BaseType *
 TestGrid::ptr_duplicate()
 {
     return new TestGrid(*this);
 }
 
-TestGrid::TestGrid(const string &n) : Grid(n)
+TestGrid::TestGrid(const TestGrid &rhs) : Grid(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestGrid &
+TestGrid::operator=(const TestGrid &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Grid &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
+}
+
+
+TestGrid::TestGrid(const string &n) : Grid(n), d_series_values(false)
 {
 }
 
@@ -78,7 +104,30 @@ TestGrid::read(const string &dataset)
     return true;
 }
 
+void
+TestGrid::set_series_values(bool sv)
+{
+    Map_iter i = map_begin();
+    while (i != map_end()) {
+        dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
+        ++i;
+    }
+    
+    dynamic_cast<TestCommon&>(*array_var()).set_series_values(sv);
+    
+    d_series_values = sv;
+}
+
 // $Log: TestGrid.cc,v $
+// Revision 1.21  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.19.2.3  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.19.2.2  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.20  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

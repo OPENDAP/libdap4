@@ -43,19 +43,38 @@
 #endif
 
 #include "UInt32.h"
+#include "TestCommon.h"
 
-class TestUInt32: public UInt32 {
+class TestUInt32: public UInt32, public TestCommon {
+    bool d_series_values;
+    void _duplicate(const TestUInt32 &ts);
+
 public:
     TestUInt32(const string &n = "");
+    TestUInt32(const TestUInt32 &rhs);
+
     virtual ~TestUInt32() {}
+
+    TestUInt32 &operator=(const TestUInt32 &rhs);
 
     virtual BaseType *ptr_duplicate();
     
     virtual bool read(const string &dataset);
+    void set_series_values(bool sv) { d_series_values = sv; }
+    bool get_series_values() { return d_series_values; }
 };
 
 /* 
  * $Log: TestUInt32.h,v $
+ * Revision 1.11  2005/01/28 17:25:12  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.8.2.4  2005/01/18 23:08:47  jimg
+ * All Test* classes now handle copy and assignment correctly.
+ *
+ * Revision 1.8.2.3  2005/01/14 19:37:38  jimg
+ * Added support for returning cyclic values.
+ *
  * Revision 1.10  2004/07/07 21:08:48  jimg
  * Merged with release-3-4-8FCS
  *

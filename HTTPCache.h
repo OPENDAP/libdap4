@@ -224,6 +224,7 @@ private:
 #endif
     unsigned long d_current_size;
     int d_default_expiration;
+    unsigned int d_block_size;	// File block size.
 
     vector<string> d_cache_control;
     // these are values read from a request-directive Cache-Control header.
@@ -392,6 +393,18 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.12  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.8.2.10  2005/01/25 00:40:12  jimg
+// Fixed a bug where caching small entries broke the GC algorithm.
+// The code used the size of the entry as a measure of the actual disk
+// space used by the entry. For small entries this was a significant
+// error (off by a factor of > 32 for the test.nc dataset). I changed
+// the code to use the block size and assume that each entry occupies
+// n*blocksize bytes where n >= 1. I added a test to check that the
+// purge code works correctly.
+//
 // Revision 1.11  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //

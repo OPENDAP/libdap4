@@ -57,9 +57,36 @@ NewUInt32(const string &n)
     return new TestUInt32(n);
 }
 
-TestUInt32::TestUInt32(const string &n) : UInt32(n)
+void
+TestUInt32::_duplicate(const TestUInt32 &ts)
 {
+    d_series_values = ts.d_series_values;
 }
+
+
+TestUInt32::TestUInt32(const string &n) : UInt32(n), d_series_values(false)
+{
+    _buf = 1;
+}
+
+TestUInt32::TestUInt32(const TestUInt32 &rhs) : UInt32(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestUInt32 &
+TestUInt32::operator=(const TestUInt32 &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<UInt32 &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
+}
+
 
 BaseType *
 TestUInt32::ptr_duplicate()
@@ -76,7 +103,12 @@ TestUInt32::read(const string &)
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    _buf = 0xf0000000;		// about 4 billion
+    if (get_series_values()) {
+        _buf = 32 * _buf;
+    }
+    else {
+        _buf = 0xf0000000;		// about 4 billion
+    }
 
     set_read_p(true);
     
@@ -84,6 +116,15 @@ TestUInt32::read(const string &)
 }
 
 // $Log: TestUInt32.cc,v $
+// Revision 1.11  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.8.2.4  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.8.2.3  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.10  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

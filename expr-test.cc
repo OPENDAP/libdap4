@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.39 2004/07/07 21:08:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.40 2005/01/28 17:25:13 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,6 +64,8 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.39 2004/07/07 21:08:49 ji
 #include "DDS.h"
 #include "DataDDS.h"
 #include "BaseType.h"
+#include "TestSequence.h"
+#include "TestCommon.h"
 
 #include "parser.h"
 #include "expr.h"
@@ -85,8 +87,8 @@ void test_parser(DDS &table, const string &dds_name, const string &constraint);
 bool read_table(DDS &table, const string &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
 bool loopback_pipe(FILE **pout, FILE **pin);
-bool constrained_trans(const string &dds_name, string dataset,
-		       const string &ce);
+bool constrained_trans(const string &dds_name, const bool constraint_expr,
+		       const string &ce, const bool series_values);
 
 int exprlex();			// exprlex() uses the global exprlval
 int exprparse(void *arg);
@@ -103,7 +105,7 @@ static int keep_temps = 0;	// MT-safe; test code.
 
 const string version = "version 1.12";
 const string prompt = "expr-test: ";
-const string options = "sS:decvp:w:f:k:v";
+const string options = "sS:bdecvp:w:f:k:v";
 const string usage = "\
 \nexpr-test [-s [-S string] -d -c -v [-p dds-file]\
 \n[-e expr] [-w dds-file] [-f data-file] [-k expr]]\
@@ -111,13 +113,10 @@ const string usage = "\
 \nOptions:\
 \n	-s: Feed the input stream directly into the expression scanner, does\
 \n	    not parse.\
-\n        -S: <string> Scan the string as if it was standard input.\
+\n      -S: <string> Scan the string as if it was standard input.\
 \n	-d: Turn on expression parser debugging.\
 \n	-c: Print the constrained DDS (the one that will be returned\
 \n	    prepended to a data transmission. Must also supply -p and -e \
-\n	-t: Test transmission of data. This uses the Test*classes.\
-\n	    Transmission is done using a single process that writes and then\
-\n	    reads from a pipe. Must also suppply -p.\
 \n      -v: Verbose output\
 \n      -V: Print the version of expr-test\
 \n  	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
@@ -125,12 +124,13 @@ const string usage = "\
 \n	    the DDS object.\
 \n	-e: Evaluate the constraint expression. Must be used with -p.\
 \n	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\
-\n	     This prompts for the constraint expression and the optional\
-\n             data file name. NOTE: The CE parser Error objects do not print\
-\n             with this option.\
-\n  -f: A file to use for data. Currently only used by -w for sequences.\
-\n  -k: A constraint expression to use with the data. Works with -p,\
-\n      -e, -t and -w";
+\n          This prompts for the constraint expression and the optional\
+\n          data file name. NOTE: The CE parser Error objects do not print\
+\n          with this option.\
+\n      -b: Use periodic/cyclic/chaning values. For testing Sequence CEs.\
+\n      -f: A file to use for data. Currently only used by -w for sequences.\
+\n      -k: A constraint expression to use with the data. Works with -p,\
+\n          -e, -t and -w";
 
 #ifdef WIN32
 void
@@ -146,6 +146,7 @@ main(int argc, char *argv[])
     bool whole_enchalada = false, constraint_expr = false;
     bool scan_string = false;
     bool verbose = false;
+    bool series_values = false;
     string dds_file_name;
     string dataset = "";
     string constraint = "";
@@ -155,6 +156,9 @@ main(int argc, char *argv[])
 
     while ((option_char = getopt()) != EOF)
 	switch (option_char) {
+	  case 'b':
+	    series_values = true;
+	    break;
 	  case 'd': 
 	    exprdebug = true;
 	    break;
@@ -224,7 +228,7 @@ main(int argc, char *argv[])
     }
 
     if (whole_enchalada) {
-	constrained_trans(dds_file_name, dataset, constraint);
+	constrained_trans(dds_file_name, constraint_expr, constraint, series_values);
     }
 
 #ifdef WIN32
@@ -437,17 +441,17 @@ loopback_pipe(FILE **pout, FILE **pin)
 FILE *
 move_dds(FILE *in)
 {
-    char dods[] = "/tmp/dodsXXXXXX";
-    int fd;
-    if ((fd = mkstemp(dods)) == -1) {
-	fprintf( stderr, "Could not create temporary file name %s\n",
-			 strerror(errno) ) ;
-	return NULL;
+    char c[] = {"dodsXXXXXX"};
+    int fd = mkstemp(c);
+    if (fd == -1) {
+        fprintf( stderr, "Could not create temporary file name %s\n",
+                   strerror(errno) ) ;
+        return NULL;
     }
 
     FILE *fp = fdopen(fd, "w+b");
     if (!keep_temps)
-	unlink(dods);
+	unlink(c);
     if (!fp) {
 	fprintf( stderr, "Could not open anonymous temporary file: %s\n",
 			 strerror(errno) ) ;
@@ -472,7 +476,7 @@ move_dds(FILE *in)
 		 strerror(errno) ) ;
 	return NULL;
     }
-    
+
     return fp;
 }
 
@@ -496,6 +500,21 @@ parse_mime(FILE *data_source)
 	fgets(line, 256, data_source);
 }
 
+void
+set_series_values(DDS &dds, bool state)
+{
+    for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
+	dynamic_cast<TestCommon&>(**q).set_series_values(state);
+#if 0
+        TestCommon *tc = dynamic_cast<TestCommon*>(*q);
+        if (tc)
+            tc->set_series_values(state);
+        else
+            cerr << "TC is null" << endl;
+#endif
+    }
+}
+
 // Test the transmission of constrained datasets. Use read_table() to read
 // the DDS from a file. Once done, prompt for the variable name and
 // constraint expression. In a real client-server system the server would
@@ -512,8 +531,8 @@ parse_mime(FILE *data_source)
 // output stream, followed by the binary data.
 
 bool
-constrained_trans(const string &dds_name, string dataset, 
-		  const string &constraint) 
+constrained_trans(const string &dds_name, const bool constraint_expr, 
+		  const string &constraint, const bool series_values) 
 {
     bool status;
     FILE *pin, *pout;
@@ -531,7 +550,7 @@ constrained_trans(const string &dds_name, string dataset,
 
     // If the CE was not passed in, read it from the command line.
     string ce;
-    if (constraint == "") {
+    if (!constraint_expr) {
 	fprintf( stdout, "Constraint:" ) ;
 	char c[256];
 	cin.getline(c, 256);
@@ -544,6 +563,11 @@ constrained_trans(const string &dds_name, string dataset,
     else
 	ce = constraint;
 
+    string dataset = "";
+    
+#if 0
+`   // Don't use this option; it could have been used in place of the
+    // TestCommon class, but wasn't. jhrg 1/17/05
     if (dataset == "") {
 	fprintf( stdout, "Data file:" ) ;
 	char c[256];
@@ -554,6 +578,12 @@ constrained_trans(const string &dds_name, string dataset,
 	}
 	dataset = c;
     }
+#endif
+
+    // by default this is false (to get the old-style values that are
+    // constant; set this to true for testing Sequence constraints. 01/14/05
+    // jhrg
+    set_series_values(server, series_values);
 
     try {
 	// send the variable given the constraint; TRUE flushes the I/O
@@ -611,6 +641,12 @@ constrained_trans(const string &dds_name, string dataset,
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.40  2005/01/28 17:25:13  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.36.2.3  2005/01/18 23:19:51  jimg
+// Fixed the -k option. Added -b.
+//
 // Revision 1.39  2004/07/07 21:08:49  jimg
 // Merged with release-3-4-8FCS
 //

@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.48 2004/07/07 21:08:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.49 2005/01/28 17:25:12 jimg Exp $"};
 
 #include <signal.h>
 
@@ -132,7 +132,7 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
 
     <dt><tt>-d</tt> <i>ancdir</i><dd>
     Specifies that ancillary data be sought in the <i>ancdir</i>
-    directory. 
+    directory. <i>ancdir</i> must end in '/'.
 
     <dt><tt>-f</tt> <i>ancfile</i><dd>
     Specifies that ancillary data may be found in a file called 
@@ -478,7 +478,15 @@ DODSFilter::get_dataset_last_modified_time()
 time_t
 DODSFilter::get_das_last_modified_time(const string &anc_location)
 {
-    string name = find_ancillary_file(d_dataset, "das", anc_location, d_anc_file);
+    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location=" 
+	<< anc_location << "call faf(das) d_dataset=" << d_dataset
+	<< " d_anc_file=" << d_anc_file << endl);
+
+    string name 
+	= find_ancillary_file(d_dataset, "das", 
+			      (anc_location == "") ? d_anc_dir : anc_location, 
+			      d_anc_file);
+
     return max((name != "") ? last_modified_time(name) : 0,
 	       get_dataset_last_modified_time()); 
 }
@@ -493,7 +501,15 @@ DODSFilter::get_das_last_modified_time(const string &anc_location)
 time_t
 DODSFilter::get_dds_last_modified_time(const string &anc_location)
 {
-    string name = find_ancillary_file(d_dataset, "dds", anc_location, d_anc_file);
+    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
+	<< anc_location << "call faf(dds) d_dataset=" << d_dataset 
+	<< " d_anc_file=" << d_anc_file << endl);
+
+    string name 
+	= find_ancillary_file(d_dataset, "dds",
+			      (anc_location == "") ? d_anc_dir : anc_location, 
+			      d_anc_file);
+
     return max((name != "") ? last_modified_time(name) : 0,
 	       get_dataset_last_modified_time()); 
 }
@@ -514,10 +530,19 @@ DODSFilter::get_dds_last_modified_time(const string &anc_location)
 time_t
 DODSFilter::get_data_last_modified_time(const string &anc_location)
 {
-    string dds_name = find_ancillary_file(d_dataset, "dds", anc_location,
-					  d_anc_file);
-    string das_name = find_ancillary_file(d_dataset, "dds", anc_location,
-					  d_anc_file);
+    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
+	<< anc_location << "call faf(both) d_dataset=" << d_dataset 
+	<< " d_anc_file=" << d_anc_file << endl);
+
+    string dds_name 
+	= find_ancillary_file(d_dataset, "dds",
+			      (anc_location == "") ? d_anc_dir : anc_location, 
+			      d_anc_file);
+    string das_name
+	= find_ancillary_file(d_dataset, "das",
+			      (anc_location == "") ? d_anc_dir : anc_location, 
+			      d_anc_file);
+
     time_t m = max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
 		   (dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
     // Note that this is a call to get_dataset_... not get_data_...
@@ -885,6 +910,8 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 
     dds.parse_constraint(d_ce);	// Throws Error if the ce doesn't parse.
 
+    dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
     // Start sending the response... 
     bool compress = d_comp && deflate_exists();
     set_mime_binary(data_stream, dods_data, d_cgi_ver,
@@ -996,6 +1023,23 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.49  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.37.2.13  2004/12/24 17:57:15  dan
+// Added call to dds.tag_nested_sequences() in send_data() method.
+// This is required to tag Sequences so that new Sequence::serialize()
+// logic will work properly.
+//
+// Revision 1.37.2.12  2004/10/22 20:13:30  jimg
+// Another fix from John Alison: The original code did not always use
+// d_anc_dir(from -d cmd line arg) tho it did always use d_anc_file.
+//
+// Revision 1.37.2.11  2004/10/15 15:08:34  jimg
+// Fixed a bug in get_data_last_modified_time() reported by John Alison:
+// The second call to find_ancillary_file() used "dds" when it should have used
+// "das".
+//
 // Revision 1.48  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //

@@ -27,13 +27,21 @@ YACC	= bison
 # when a "\" followed by some char is interpreted as an escape sequence.
 YACCFLAGS	= --no-lines -d -v
 
+# ST = Single-Threaded Model
+# MT = Multi-Threaded Model
+# MD = Multi-Threaded DLL Model
+# STD = Single-Threaded Model, debug version
+# MTD = Multi-Threaded Model, debug version
+# MDD = Multi-Thread DLL Model, debug version
+
+
 # Setup compiler flags
-STCFLAGS	= /ML				# Single-Threaded Model
-MTCFLAGS	= /MT /D HAVE_PTHREAD_H		# Multi-Threaded Model
-MDCFLAGS	= /MD /D HAVE_PTHREAD_H		# Multi-Threaded DLL Model
-STDCFLAGS	= /MLd				# Single-Threaded Model, debug version
-MTDCFLAGS	= /MTd /D HAVE_PTHREAD_H	# Multi-Threaded Model, debug version
-MDDCFLAGS	= /MDd /D HAVE_PTHREAD_H	# Multi-Thread DLL Model, debug version
+STCFLAGS	= /ML
+MTCFLAGS	= /MT /D HAVE_PTHREAD_H
+MDCFLAGS	= /MD /D HAVE_PTHREAD_H
+STDCFLAGS	= /MLd /Zi /Yd
+MTDCFLAGS	= /MTd /D HAVE_PTHREAD_H /Zi /Yd
+MDDCFLAGS	= /MDd /D HAVE_PTHREAD_H /Zi /Yd
 CFLAGS		= /nologo /W0 /GR /GX /c
 
 # Setup linker flags for libdap
@@ -47,32 +55,32 @@ MDDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdap.def /map /debug /fixed:NO
 # Setup link libraries for libdap
 STLIBS		= 
 MTLIBS		=
-MDLIBS		= libxml2MD.lib libcurlMD.lib libzMD.lib libxdrMD.lib pthreadVCE.lib
+MDLIBS		= libxml2MD.lib libcurlMD.lib libzMD.lib libxdrMD.lib pthreadVC.lib
 STDLIBS		= 
 MTDLIBS		=
-MDDLIBS		= libxml2MDD.lib libcurlMDD.lib libzMDD.lib libxdrMDD.lib pthreadVCE.lib
+MDDLIBS		= libxml2MDD.lib libcurlMDD.lib libzMDD.lib libxdrMDD.lib pthreadVC.lib
 
 # Setup linker flags for executables
 ESTLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
 EMTLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
 EMDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
-ESTDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
-EMTDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
-EMDDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
+ESTDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR) /debug
+EMTDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR) /debug
+EMDDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR) /debug
 
 # Setup link libraries for executables
 ESTLLIBS	= libdapST.lib libxml2ST.lib libcurlST.lib libzST.lib libxdrST.lib
-EMTLLIBS	= libdapMT.lib libxml2MT.lib libcurlMT.lib libzMT.lib libxdrMT.lib pthreadVCE.lib
-EMDLLIBS	= libdapMD.lib libxml2MD.lib libcurlMD.lib libzMD.lib libxdrMD.lib pthreadVCE.lib
+EMTLLIBS	= libdapMT.lib libxml2MT.lib libcurlMT.lib libzMT.lib libxdrMT.lib pthreadVC.lib
+EMDLLIBS	= libdapMD.lib libxml2MD.lib libcurlMD.lib libzMD.lib libxdrMD.lib pthreadVC.lib
 ESTDLLIBS	= libdapSTD.lib libxml2STD.lib libcurlSTD.lib libzSTD.lib libxdrSTD.lib
-EMTDLLIBS	= libdapMTD.lib libxml2MTD.lib libcurlMTD.lib libzMTD.lib libxdrMTD.lib pthreadVCE.lib
-EMDDLLIBS	= libdapMDD.lib libxml2MDD.lib libcurlMDD.lib libzMDD.lib libxdrMDD.lib pthreadVCE.lib
+EMTDLLIBS	= libdapMTD.lib libxml2MTD.lib libcurlMTD.lib libzMTD.lib libxdrMTD.lib pthreadVC.lib
+EMDDLLIBS	= libdapMDD.lib libxml2MDD.lib libcurlMDD.lib libzMDD.lib libxdrMDD.lib pthreadVC.lib
 CPPUNITLIBS	= cppunit_dll.lib
 
 # Setup compiler includes and defines
 INCS		= /I . /I .. /I ..\GNU /I ..\regex-0.12 /I $(INCLUDEDIR) /I $(INCLUDEDIR)\pthreads /I $(INCLUDEDIR)\libxml2
 CPPUNITINCS	= $(INCS) /I $(INCLUDEDIR)/cppunit
-DEFS		= /D WIN32 /D WIN32_LEAN_AND_MEAN
+DEFS		= /D WIN32 /D WIN32_LEAN_AND_MEAN /D DVR=\"DODS/3.4.8\"
 CPPFLAGS	= $(DEFS) $(INCS)
 
 default:
@@ -598,15 +606,13 @@ setup:
 	@-echo /*  temp file, feel free to scratch it.                   */ >> unistd.h
 	@-echo #include "io.h" >> unistd.h
 
-# Install
 install: installST installMT installMD installSTD installMTD installMDD
-# We use the Multi-threaded DLL versions of executable by default for
-# the client side executables.  For the server side, we use that static
-# single-threaded ones.
-	copy $(OBJDIR)\MD\geturl.exe $(INSTALLBINDIR)
+# We use the Singly-threaded static versions by default for the
+# executables.
+	copy $(OBJDIR)\ST\geturl.exe $(INSTALLBINDIR)
 
-	copy $(OBJDIR)\MD\usage.exe $(INSTALLETCDIR)
-	copy $(OBJDIR)\MD\deflate.exe $(INSTALLETCDIR)
+	copy $(OBJDIR)\ST\usage.exe $(INSTALLETCDIR)
+	copy $(OBJDIR)\ST\deflate.exe $(INSTALLETCDIR)
 
 	copy config_dap.h $(INSTALLINCDIR)
 	copy dods-datatypes.h $(INSTALLINCDIR)

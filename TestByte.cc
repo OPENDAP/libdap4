@@ -44,10 +44,6 @@
 // build a server, it is still necessary to subclass and define a read()
 // method for each of the data type classes. 01/22/03 jhrg
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
-
 #include "config_dap.h"
 
 #ifndef WIN32
@@ -83,14 +79,39 @@ NewByte(const string &n)
     return new TestByte(n);
 }
 
-TestByte::TestByte(const string &n) : Byte(n)
+void
+TestByte::_duplicate(const TestByte &ts)
 {
+    d_series_values = ts.d_series_values;
+}
+
+TestByte::TestByte(const string &n) : Byte(n), d_series_values(false)
+{
+    _buf = 255;
 }
 
 BaseType *
 TestByte::ptr_duplicate()
 {
     return new TestByte(*this);
+}
+
+TestByte::TestByte(const TestByte &rhs) : Byte(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestByte &
+TestByte::operator=(const TestByte &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Byte &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
 }
 
 bool
@@ -102,7 +123,12 @@ TestByte::read(const string &)
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    _buf = 255;
+    if (get_series_values()) {
+         _buf++;
+    }
+    else {
+        _buf = 255;
+    }
 
     set_read_p(true);
     
@@ -110,6 +136,15 @@ TestByte::read(const string &)
 }
 
 // $Log: TestByte.cc,v $
+// Revision 1.24  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.21.2.4  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.21.2.3  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.23  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

@@ -66,7 +66,6 @@ using std::ostream;
     data types (Byte, Int16, UInt16, Int32, UInt32, Float32, Float64, String
     and URL), and may be scalar or vector. Note that all values are actually
     stored as String data, making the easy to read/check using a web browser.
-    \label{api:das}
 
     A value may also consist of a set of other name-value pairs.  This
     makes it possible to nest collections of attributes, giving rise
@@ -174,6 +173,12 @@ public:
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.40  2005/01/28 17:25:12  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.36.2.4  2005/01/18 23:02:54  jimg
+ * FIxed documentation.
+ *
  * Revision 1.39  2004/07/07 21:08:47  jimg
  * Merged with release-3-4-8FCS
  *

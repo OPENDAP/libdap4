@@ -3,6 +3,12 @@
 # jhrg
 #
 # $Log: test.f.exp,v $
+# Revision 1.8  2005/01/28 17:25:13  jimg
+# Resolved conflicts from merge with release-3-4-9
+#
+# Revision 1.6.10.1  2005/01/18 23:29:51  jimg
+# Fixed documentation.
+#
 # Revision 1.7  2003/05/16 00:18:35  jimg
 # Tests changed because List has been removed from the DAP.
 #
@@ -55,7 +61,7 @@ Dataset {
     Int32 j;
 } test1;
 The data:
-String s = \"Silly test string: one, two, ...\";"
+String s = \"Silly test string: 0\";"
 
 expr-test_start p ${srcdir}/${test_file} ${test_equation}
 

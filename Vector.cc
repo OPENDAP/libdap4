@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.52 2004/11/16 22:50:20 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.53 2005/01/28 17:25:12 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -198,7 +198,7 @@ Vector::set_read_p(bool state)
 
 /** Returns a copy of the template array element. If the Vector contains
     simple data types, the template will contain the value of the last
-    vector element accessed with the {\tt Vector::var(int i)} function,
+    vector element accessed with the <code>Vector::var(int i)</code> function,
     if any. If no such access has been made, or if the Vector contains
     compound data types, the value held by the template instance is
     undefined.
@@ -931,6 +931,12 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.53  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.45.2.9  2005/01/18 23:26:18  jimg
+// FIxed documentation.
+//
 // Revision 1.52  2004/11/16 22:50:20  jimg
 // Fixed tests. Also fixed a bug intorduced in Vector where a template
 // with no name caused some software (any code which depends on the

@@ -190,7 +190,7 @@ public:
 	response. This is a poorly designed method, but it returns
 	information that is useful when used correctly. Before a response is
 	made, this contains the string "unknown." This should ultimately hold
-	the \i protocol version; it currently holds the \e implementation
+	the \e protocol version; it currently holds the \e implementation
 	version. */
     string get_version() { return d_version; }
 
@@ -249,6 +249,12 @@ public:
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.68  2005/01/28 17:25:12  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.65.2.6  2005/01/18 23:02:05  jimg
+ * FIxed documentation.
+ *
  * Revision 1.67  2004/07/07 21:08:47  jimg
  * Merged with release-3-4-8FCS
  *

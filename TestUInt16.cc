@@ -57,9 +57,36 @@ NewUInt16(const string &n)
     return new TestUInt16(n);
 }
 
-TestUInt16::TestUInt16(const string &n) : UInt16(n)
+void
+TestUInt16::_duplicate(const TestUInt16 &ts)
 {
+    d_series_values = ts.d_series_values;
 }
+
+
+TestUInt16::TestUInt16(const string &n) : UInt16(n), d_series_values(false)
+{
+    _buf = 1;
+}
+
+TestUInt16::TestUInt16(const TestUInt16 &rhs) : UInt16(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestUInt16 &
+TestUInt16::operator=(const TestUInt16 &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<UInt16 &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
+}
+
 
 BaseType *
 TestUInt16::ptr_duplicate()
@@ -76,14 +103,28 @@ TestUInt16::read(const string &)
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    _buf = 64000;
-
+    if (get_series_values()) {
+        _buf = (short)(16 * _buf);
+    }
+    else {
+        _buf = 64000;
+    }
+    
     set_read_p(true);
     
     return true;
 }
 
 // $Log: TestUInt16.cc,v $
+// Revision 1.12  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.9.2.4  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.9.2.3  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.11  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

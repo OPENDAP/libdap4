@@ -24,7 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include <stdlib.h>
@@ -35,10 +35,17 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 extern "C" {
 #if defined(WIN32) || defined(__POWERPC__)
-#define __STDC__		/*  Needed for rx.h prototypes.               */
-#include "regex-0.12/regex.h"   /*  Lack of case distinction on win32         */
-#else				/*  Means regex.h and Regex.h are same file.  */
+
+#ifndef __STDC__
+#define __STDC__                /*  Needed for rx.h */
+#endif
+
+#include "regex-0.12/regex.h"   /*  Lack of case distinction on win32 */
+
+#else                           /*  Means regex.h and Regex.h are same file. */
+
 #include "regex.h"
+
 #endif
 }
 

@@ -41,7 +41,7 @@ using std::string;
 
     Note that operator<< is defined for Resource as a function.
 
-    @memo Associate a rule with an ancillary resource.
+    @brief Associate a rule with an ancillary resource.
     @author James Gallagher <jgallagher@opendap.org> */
 class Resource {
 public:
@@ -144,6 +144,12 @@ private:
 };
 
 // $Log: Resource.h,v $
+// Revision 1.6  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.4.2.2  2005/01/18 23:05:53  jimg
+// FIxed documentation.
+//
 // Revision 1.5  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

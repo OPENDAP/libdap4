@@ -102,7 +102,7 @@ private:
     void www_lib_init() throw(Error, InternalErr);
     long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
 		  const vector<string> *headers = 0) throw(Error);
-    string get_temp_file(FILE *&stream) throw(InternalErr);
+    // string get_temp_file(FILE *&stream) throw(InternalErr);
     HTTPResponse *plain_fetch_url(const string &url) 
 	throw(Error, InternalErr);
     HTTPResponse *caching_fetch_url(const string &url) 
@@ -113,7 +113,7 @@ private:
 
     void extract_auth_info(string &url);
 
-    bool cond_fetch_url(const string &url, const vector<string> &headers);
+    // bool cond_fetch_url(const string &url, const vector<string> &headers);
 
     friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb, 
 				       void *http_connect);
@@ -160,6 +160,18 @@ public:
 };
 
 // $Log: HTTPConnect.h,v $
+// Revision 1.13  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.9.2.10  2004/08/24 20:03:15  jimg
+// Changed the way HTTPResponse deletes the temporary files created to hold
+// HTTP responses. Before this was done without using HTTPConnect's
+// close_temp() function. Instead, ~HTTPResponse() called unlink() on the
+// filename and then ~Response() called fclose on the FILE *. I think this
+// breaks on win32. THe simplest solution was to make ~HTTPResponse() use
+// the close_temp() function. I also had to edit the ~Response() method to
+// check that d_stream was not null before calling fclose() there.
+//
 // Revision 1.12  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //

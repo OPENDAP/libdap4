@@ -59,8 +59,32 @@ NewUrl(const string &n)
     return new TestUrl(n);
 }
 
-TestUrl::TestUrl(const string &n) : Url(n)
+void
+TestUrl::_duplicate(const TestUrl &ts)
 {
+    d_series_values = ts.d_series_values;
+}
+
+TestUrl::TestUrl(const string &n) : Url(n), d_series_values(false)
+{
+}
+
+TestUrl::TestUrl(const TestUrl &rhs) : Url(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestUrl &
+TestUrl::operator=(const TestUrl &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Url &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
 }
 
 BaseType *
@@ -88,6 +112,15 @@ TestUrl::read(const string &)
 }
 
 // $Log: TestUrl.cc,v $
+// Revision 1.23  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.20.2.5  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.20.2.4  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.22  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

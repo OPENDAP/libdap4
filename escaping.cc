@@ -164,7 +164,7 @@ id2www_ce(string in, const string &allowable)
     @param except If there is some escape code that should not be removed by
     this call (e.g., you might not want to remove spaces, %20) use this
     parameter to specify that code. The function will then transform all
-    escapes \em{except} that one. default: ""
+    escapes \e except that one. default: ""
     @return The modified string. */
 string 
 www2id(string in, const string &escape, const string &except)
@@ -247,10 +247,11 @@ xml2id(string in)
     return in;
 }
 
-/** Return a string that has all the `%<hex digit><hex digit>' sequences
-    replaced with underscores (`_').
+/** Return a string that has all the \c %&lt;hex digit&gt;&lt;hex digit&gt; 
+    sequences replaced with underscores (`_').
     @param s The string to transform
-    @param escape A regular expression which matches the `%<hd><hd>' pattern.
+    @param escape A regular expression which matches the 
+    \c %&lt;hd&gt;&lt;hd&gt; pattern.
     By default this is the string "%[0-7][0-9a-fA-F]". Replacing the pattern
     allows the function to be used to map other patterns to an underscore.
     @return The modified string. */
@@ -267,7 +268,7 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]")
 }
 
 /** Given a string, replace any characters that match the regular expression
-    with `_<ASCII code>' where <ASCII code> is the ASCII code for the
+    with \c _<ASCII code> where \c <ASCII code> is the ASCII code for the
     characters replaced. If the pattern to be replaced is a WWW escape
     sequence, then replace the % with an _ and keep the two digit ASCII code
     that follows it. Note that the ASCII code is in hex.
@@ -395,6 +396,12 @@ munge_error_message(string msg)
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.30  2005/01/28 17:25:13  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.26.2.2  2005/01/18 23:13:50  jimg
+// FIxed documentation.
+//
 // Revision 1.29  2004/02/05 23:46:51  jimg
 // Fix for bug 696; removed an errant 'ends' call in octstring(). Never use ends
 // with the stringstream classes.

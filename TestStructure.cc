@@ -42,13 +42,38 @@ NewStructure(const string &n)
     return new TestStructure(n);
 }
 
+void
+TestStructure::_duplicate(const TestStructure &ts)
+{
+    d_series_values = ts.d_series_values;
+}
+
 BaseType *
 TestStructure::ptr_duplicate()
 {
     return new TestStructure(*this);
 }
 
-TestStructure::TestStructure(const string &n) : Structure(n)
+TestStructure::TestStructure(const TestStructure &rhs) : Structure(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestStructure &
+TestStructure::operator=(const TestStructure &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Structure &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
+}
+
+TestStructure::TestStructure(const string &n) : Structure(n),
+        d_series_values(false)
 {
 }
 
@@ -78,7 +103,28 @@ TestStructure::read(const string &dataset)
     return true;
 }
 
+void
+TestStructure::set_series_values(bool sv)
+{
+    Vars_iter i = var_begin();
+    while (i != var_end()) {
+        dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
+        ++i;
+    }
+    
+    d_series_values = sv;
+}
+
 // $Log: TestStructure.cc,v $
+// Revision 1.24  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.20.2.3  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.20.2.2  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.23  2004/11/16 22:50:20  jimg
 // Fixed tests. Also fixed a bug intorduced in Vector where a template
 // with no name caused some software (any code which depends on the

@@ -40,6 +40,8 @@
 #include <iterator>
 #include <set>
 
+// #define DODS_DEBUG 1
+
 #include "Error.h"
 #include "InternalErr.h"
 #include "ResponseTooBigErr.h"
@@ -163,6 +165,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     d_max_entry_size(MAX_CACHE_ENTRY_SIZE * MEGA),
     d_current_size(0),
     d_default_expiration(NO_LM_EXPIRATION), 
+    d_block_size(1),
     d_max_age(-1),
     d_max_stale(-1),
     d_min_fresh(-1),
@@ -189,6 +192,11 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     set_cache_root(cache_root);
 
     if (get_single_user_lock(force)) {
+	struct stat s;
+	if (stat(cache_root.c_str(), &s) == 0)
+	    d_block_size = s.st_blksize;
+	else
+	    throw Error("Could not set file system block size.");
 	cache_index_read();
 	d_cache_enabled = true;
     }
@@ -543,6 +551,17 @@ HTTPCache::cache_index_write() throw(Error)
     These private methods manage the garbage collection tasks for the cache. */
 //@{
 
+/** compute real disk space for an entry. */
+static inline int
+entry_disk_space(int size, unsigned int block_size)
+{
+    unsigned int num_of_blocks = (size + block_size) / block_size;
+    DBG(cerr << "size: " << size << ", block_size: " << block_size 
+	<< ", num_of_blocks: " << num_of_blocks << endl);
+
+    return num_of_blocks * block_size;
+}
+
 /** Enough removed from cache? A private method.
     @return True if enough has been removed from the cache. */
 
@@ -561,6 +580,7 @@ HTTPCache::stopGC() const
 bool
 HTTPCache::startGC() const
 {
+    DBG(cerr << "startGC, current_size: " << d_current_size << endl);
     return (d_current_size + d_folder_size > d_total_size);
 }
 
@@ -585,7 +605,11 @@ HTTPCache::remove_cache_entry(CacheEntry *entry) throw(InternalErr)
     REMOVE(entry->cachename.c_str());
     REMOVE(string(entry->cachename + CACHE_META).c_str());
 
-    d_current_size -= entry->size;
+    DBG(cerr << "remove_cache_entry, current_size: " << d_current_size << endl);
+    unsigned int esd = entry_disk_space(entry->size, d_block_size);
+    d_current_size = (esd > d_current_size) ? 0 : d_current_size - esd;
+
+    DBG(cerr << "remove_cache_entry, current_size: " << d_current_size << endl);
     DBG2(cerr << "Current size (after decrement): " << d_current_size << endl);
 
     DBG2(cerr << "Deleting CacheEntry: " << entry << endl);
@@ -764,7 +788,10 @@ HTTPCache::add_entry_to_cache_table(HTTPCache::CacheEntry *entry)
     DBG2(cerr << "Pushing entry: " << entry << " onto d_cache_table[" 
 	<< hash << "]" << endl);
 
-    d_current_size += entry->size;
+    DBG(cerr << "add_entry_to_cache_table, current_size: " << d_current_size 
+	<< ", entry->size: " << entry->size << endl);
+    d_current_size += entry_disk_space(entry->size, d_block_size);
+    DBG(cerr << "add_entry_to_cache_table, current_size: " << d_current_size << endl);
     DBG2(cerr << "Current size (after increment): " << d_current_size << endl);
 }
 
@@ -2339,6 +2366,18 @@ HTTPCache::purge_cache() throw(Error)
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.15  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.11.2.17  2005/01/25 00:40:12  jimg
+// Fixed a bug where caching small entries broke the GC algorithm.
+// The code used the size of the entry as a measure of the actual disk
+// space used by the entry. For small entries this was a significant
+// error (off by a factor of > 32 for the test.nc dataset). I changed
+// the code to use the block size and assume that each entry occupies
+// n*blocksize bytes where n >= 1. I added a test to check that the
+// purge code works correctly.
+//
 // Revision 1.14  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //

@@ -36,24 +36,14 @@
 #ifndef _testsequence_h
 #define _testsequence_h 1
 
-#ifndef __POWERPC__
-#ifdef _GNUG_
-// #pragma interface
-#endif
-#endif
-
 #include "Sequence.h"
-#include <fstream>
+#include "TestCommon.h"
 
-using std::ifstream;
-
-class TestSequence: public Sequence {
+class TestSequence: public Sequence, public TestCommon {
 private:
-    /// Pointer to current input file.
-    ifstream _input;
-
-    /// True if _input has been opened.
-    bool _input_opened;
+    int d_len;
+    int d_current;
+    bool d_series_values;
     
     void _duplicate(const TestSequence &ts);
 
@@ -67,12 +57,23 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual bool read(const string &dataset);
+    void set_series_values(bool);
+    bool get_series_values() { return d_series_values; }
 
     virtual int length();
 };
 
 /* 
  * $Log: TestSequence.h,v $
+ * Revision 1.25  2005/01/28 17:25:12  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.22.2.4  2005/01/18 23:08:48  jimg
+ * All Test* classes now handle copy and assignment correctly.
+ *
+ * Revision 1.22.2.3  2005/01/14 19:37:38  jimg
+ * Added support for returning cyclic values.
+ *
  * Revision 1.24  2004/07/07 21:08:48  jimg
  * Merged with release-3-4-8FCS
  *

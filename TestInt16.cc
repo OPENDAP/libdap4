@@ -57,9 +57,35 @@ NewInt16(const string &n)
     return new TestInt16(n);
 }
 
-TestInt16::TestInt16(const string &n) : Int16(n)
+void
+TestInt16::_duplicate(const TestInt16 &ts)
 {
+    d_series_values = ts.d_series_values;
 }
+
+TestInt16::TestInt16(const string &n) : Int16(n), d_series_values(false)
+{
+    _buf = 1;
+}
+
+TestInt16::TestInt16(const TestInt16 &rhs) : Int16(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestInt16 &
+TestInt16::operator=(const TestInt16 &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Int16 &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
+}
+
 
 BaseType *
 TestInt16::ptr_duplicate()
@@ -76,7 +102,12 @@ TestInt16::read(const string &)
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    _buf = 32000;
+    if (get_series_values()) {
+       _buf = (short)(16 * _buf);
+    }
+    else {
+        _buf = 32000;
+    }
 
     set_read_p(true);
     
@@ -84,6 +115,15 @@ TestInt16::read(const string &)
 }
 
 // $Log: TestInt16.cc,v $
+// Revision 1.11  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.8.2.4  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.8.2.3  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.10  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

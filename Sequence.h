@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -176,6 +175,20 @@ private:
     int d_row_stride;
     int d_ending_row_number;
 
+    // Used to track if data has not already been sent.
+    bool d_unsent_data;
+    
+    // Track if the Start Of Instance marker has been written. Needed to 
+    // properly send EOS for only the outer Sequence when a selection 
+    // returns an empty Sequence.
+    bool d_wrote_soi;
+    
+    // This signals whether the sequence is a leaf or parent.
+    bool d_leaf_sequence;
+
+    // In a hierarchy of sequences, is the the top most?
+    bool d_top_most;
+    
     // Make sure the old deserialize is still around.
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 
@@ -185,12 +198,19 @@ private:
 
     bool is_end_of_rows(int i);
 
+    bool serialize_parent_part_one(const string &dataset, DDS &dds, XDR *sink);
+    void serialize_parent_part_two(const string &dataset, DDS &dds, XDR *sink);
+    bool serialize_leaf(const string &dataset, DDS &dds, XDR *sink, 
+			bool ce_eval);
+// I removed these decls and changed the defs to static fucntions. jhrg 1/9/05
+#if 0
 protected:
     void write_end_of_sequence(XDR *sink);
     void write_start_of_instance(XDR *sink);
     unsigned char read_marker(XDR *source);
     bool is_start_of_instance(unsigned char marker);
     bool is_end_of_sequence(unsigned char marker);
+#endif
 
 public:
 
@@ -214,7 +234,7 @@ public:
     virtual int element_count(bool leaves = false);
 
     virtual bool is_linear();
-
+public:
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
     virtual void set_in_selection(bool state);
@@ -233,7 +253,10 @@ public:
 
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
 
-    virtual int get_starting_row_number();
+    /// Rest the row number counter
+    void reset_row_number();
+    
+    int get_starting_row_number();
 
     virtual int get_row_stride();
 
@@ -241,6 +264,12 @@ public:
 
     virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 
+    /// Get the unsent data property
+    bool get_unsent_data() { return d_unsent_data; }
+    
+    /// Set the unsent data property
+    void set_unsent_data(bool usd) { d_unsent_data = usd; }
+    
     // Move me!
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
@@ -294,10 +323,10 @@ public:
     virtual void print_one_row(ostream &os, int row, string space,
 			       bool print_row_num = false);
 
-     virtual void print_one_row(FILE *out, int row, string space,
+    virtual void print_one_row(FILE *out, int row, string space,
 			       bool print_row_num = false);
 
-   virtual void print_val_by_rows(ostream &os, string space = "",
+    virtual void print_val_by_rows(ostream &os, string space = "",
 				   bool print_decl_p = true,
 				   bool print_row_numners = true);
 
@@ -319,10 +348,38 @@ public:
 
     virtual bool check_semantics(string &msg, bool all = false);
 
+    virtual void set_leaf_p(bool state);
+
+    virtual bool is_leaf_sequence();
+    
+    virtual void set_leaf_sequence(int lvl=1);
 };
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.59  2005/01/28 17:25:12  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.53.2.8  2005/01/18 23:07:07  jimg
+ * Added the d_wrote_soi and d_top_most fields.
+ *
+ * Revision 1.53.2.7  2005/01/14 21:08:22  jimg
+ * Added unsent_data property and reset_row method.
+ *
+ * Revision 1.53.2.6  2005/01/10 23:22:31  jimg
+ * Fixed a comment from the previous commit. Made the lvl param ofset_leaf_sequence() default to one.
+ *
+ * Revision 1.53.2.5  2005/01/10 02:39:34  jimg
+ * I turned several protected methods into static functions since it looks * like they are never subclassed (and they certainly don't need access * to Sequence's state.
+ *
+ * Revision 1.53.2.4  2004/12/24 00:23:56  jimg
+ * Rewrote serailze(). Untested code for nested sequence transmission.
+ *
+ * Revision 1.53.2.3  2004/12/23 20:57:31  dan
+ * Added methods set_leaf_sequence(), is_leaf_sequence() and set_leaf_p()
+ * to provide mechanism to identify the innermost nested Sequence as a leaf
+ * node.
+ *
  * Revision 1.58  2004/11/17 23:31:59  jimg
  * I made the var_value() methods (among others) virtual. This will allow
  * me to subclass them in the netCDF CL.

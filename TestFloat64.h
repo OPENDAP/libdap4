@@ -43,19 +43,38 @@
 #endif
 
 #include "Float64.h"
+#include "TestCommon.h"
 
-class TestFloat64: public Float64 {
+class TestFloat64: public Float64, public TestCommon {
+    bool d_series_values;
+    void _duplicate(const TestFloat64 &ts);
+
 public:
     TestFloat64(const string &n = "");
+    TestFloat64(const TestFloat64 &rhs);
+
     virtual ~TestFloat64() {}
+
+    TestFloat64 &operator=(const TestFloat64 &rhs);
 
     virtual BaseType *ptr_duplicate();
     
     virtual bool read(const string &dataset);
+    void set_series_values(bool sv) { d_series_values = sv; }
+    bool get_series_values() { return d_series_values; }
 };
 
 /* 
  * $Log: TestFloat64.h,v $
+ * Revision 1.19  2005/01/28 17:25:12  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.16.2.4  2005/01/18 23:08:47  jimg
+ * All Test* classes now handle copy and assignment correctly.
+ *
+ * Revision 1.16.2.3  2005/01/14 19:37:38  jimg
+ * Added support for returning cyclic values.
+ *
  * Revision 1.18  2004/07/07 21:08:48  jimg
  * Merged with release-3-4-8FCS
  *

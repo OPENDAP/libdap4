@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: RValue.cc,v 1.14 2004/02/19 19:42:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.15 2005/01/28 17:25:12 jimg Exp $"};
 
 #include <assert.h>
 
@@ -78,6 +78,45 @@ rvalue::value_name()
     return value->name();
 }
 
+#if 0
+
+// This code was added during the fix for nested Sequence serialization. Not
+// sure if it works (not tested) since we don't need it right now. However,
+// it might still be necessary, so I'm leaving it in place. 12/23/04 jhrg
+
+/** @return true if \i target really is a descendant of \i ancestor. */
+static bool
+is_ancestor(BaseType *target, BaseType *ancestor)
+{
+    BaseType *target_parent = target->get_parent();
+    if (target_parent == 0)
+	return false;
+    else if (target_parent == ancestor)
+	return true;
+    else
+	return is_descendant(target_parent, ancestor);
+}
+
+/** @brief Is this value a member of the Sequence?
+    Test the value to determine if it can be accessed using only the Sequence
+    \i seq. This means that either:
+    <ul>
+    <li>The value is a BaseType pointer and the BsaeType is one of the
+    variables in the Sequence or in a parent Sequence.</li>
+    <li> What about functions...?</li>
+    </ul>
+
+    @return True if the value is a member of the Sequence, False otherwise.
+    @param seq The Sequence.*/
+bool
+rvalue::sequence_member(Sequence *seq)
+{
+    if (value)
+	return is_ancestor(value, seq);
+}
+
+#endif
+
 // Return the BaseType * to a value for an rvalue.
 // NB: this must be defined after the struct func_rvalue (since it uses
 // func_rvalue's bvalue() mfunc. 
@@ -105,30 +144,11 @@ rvalue::bvalue(const string &dataset, DDS &dds)
 	return value;
     }
     else if (func) {
-	int argc = args->size();
-	// Add space for null terminator
-#ifdef WIN32
-	BaseType **argv = (new (BaseType*)) + argc + 1;
-#else
-	BaseType **argv = new (BaseType*)[argc + 1];
-#endif
-
-	int index = 0;
-	for (Args_iter i = args->begin(); i != args->end(); i++)
-	{
-	    assert(*i) ;
-	    argv[index++] = (*i)->bvalue(dataset, dds);
-	}
-
-	argv[index] = 0;		// Add null terminator
-	BaseType *ret_val = (*func)(argc, argv, dds);
-
-#ifdef WIN32
-	delete *argv; *argv = 0; // Hmmm... 02/03/04 jhrg 
-#else
-	delete[] argv; argv = 0;
-#endif
-
+	// If func is true, thenargs must be set. See the constructor.
+	// 12/23/04 jhrg
+	BaseType **argv = build_btp_args(args, dds);
+	BaseType *ret_val = (*func)(args->size(), argv, dds);
+	delete[] argv;
 	return ret_val;
     }
     else {
@@ -170,6 +190,14 @@ build_btp_args(rvalue_list *args, DDS &dds)
 }
 
 // $Log: RValue.cc,v $
+// Revision 1.15  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.12.2.5  2004/12/23 21:15:53  jimg
+// Refactored bvalue() so that it uses build_btp_args(). Added code to test the
+// ancestor relation but I've left this inside a #if 0 ... #endif block for the
+// time being.
+//
 // Revision 1.14  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

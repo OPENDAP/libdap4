@@ -37,19 +37,38 @@
 #define _teststructure_h 1
 
 #include "Structure.h"
+#include "TestCommon.h"
 
-class TestStructure: public Structure {
+class TestStructure: public Structure, public TestCommon {
+    bool d_series_values;
+    void _duplicate(const TestStructure &ts);
+
 public:
     TestStructure(const string &n = "");
+    TestStructure(const TestStructure &rhs);
+
     virtual ~TestStructure();
+
+    TestStructure &operator=(const TestStructure &rhs);
 
     virtual BaseType *ptr_duplicate();
 
     virtual bool read(const string &dataset);
+    void set_series_values(bool);
+    bool get_series_values() { return d_series_values; }
 };
 
 /* 
  * $Log: TestStructure.h,v $
+ * Revision 1.21  2005/01/28 17:25:12  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.17.2.4  2005/01/18 23:08:48  jimg
+ * All Test* classes now handle copy and assignment correctly.
+ *
+ * Revision 1.17.2.3  2005/01/14 19:37:38  jimg
+ * Added support for returning cyclic values.
+ *
  * Revision 1.20  2004/11/16 22:50:20  jimg
  * Fixed tests. Also fixed a bug intorduced in Vector where a template
  * with no name caused some software (any code which depends on the

@@ -434,7 +434,7 @@ public:
 	precision (IEEE 64-bit floats have 15 digits of precision, 32-bit
 	floats have 8), use the setprecision() I/O manipulator. 
 
-	@memo Prints the value of the variable.
+	@brief Prints the value of the variable.
 	@param os The output stream on which to print the value.
 	@param space This value is passed to the print_decl()
 	function, and controls the leading spaces of the output.
@@ -458,7 +458,7 @@ public:
 	precision (IEEE 64-bit floats have 15 digits of precision, 32-bit
 	floats have 8), use the setprecision() I/O manipulator. 
 
-	@memo Prints the value of the variable.
+	@brief Prints the value of the variable.
 	@param out The output FILE on which to print the value.
 	@param space This value is passed to the print_decl()
 	function, and controls the leading spaces of the output.
@@ -472,6 +472,12 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.76  2005/01/28 17:25:11  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.71.2.9  2005/01/18 23:01:44  jimg
+ * FIxed documentation.
+ *
  * Revision 1.75  2004/07/07 21:08:47  jimg
  * Merged with release-3-4-8FCS
  *

@@ -13,13 +13,20 @@ INSTALLINCDIR	= ..\..\..\..\include
 CC		= cl
 LINK		= link
 
+# ST = Single-Threaded Model
+# MT = Multi-Threaded Model
+# MD = Multi-Threaded DLL Model
+# STD = Single-Threaded Model, debug version
+# MTD = Multi-Threaded Model, debug version
+# MDD = Multi-Thread DLL Model, debug version
+
 # Setup compiler flags
-STCFLAGS	= /ML		# Single-Threaded Model
-MTCFLAGS	= /MT		# Multi-Threaded Model
-MDCFLAGS	= /MD		# Multi-Threaded DLL Model
-STDCFLAGS	= /MLd		# Single-Threaded Model, debug version
-MTDCFLAGS	= /MTd		# Multi-Threaded Model, debug version
-MDDCFLAGS	= /MDd		# Multi-Thread DLL Model, debug version
+STCFLAGS	= /ML
+MTCFLAGS	= /MT
+MDCFLAGS	= /MD
+STDCFLAGS	= /MLd /Zi /Yd
+MTDCFLAGS	= /MTd /Zi /Yd
+MDDCFLAGS	= /MDd
 CFLAGS		= /nologo /W0 /GR /GX /c
 
 BASELIB		= ws2_32.lib
@@ -30,16 +37,16 @@ MTLFLAGS	= -lib /nologo
 MDLFLAGS	= /DLL /DEF:libxdr.def /FIXED:NO /BASE:0x05000000
 STDLFLAGS	= -lib /nologo
 MTDLFLAGS	= -lib /nologo
-MDDLFLAGS	= /DLL /DEF:libxdr.def /DEBUG /FIXED:NO /BASE:0x05000000
+MDDLFLAGS	= /DLL /DEF:libxdr.def /debug /FIXED:NO /BASE:0x05000000
 LIBLIBS		= $(BASELIB)
 
 # Setup linker flags for executables
 ESTLFLAGS	= /nologo
 EMTLFLAGS	= /nologo
 EMDLFLAGS	= /nologo
-ESTDLFLAGS	= /nologo
-EMTDLFLAGS	= /nologo
-EMDDLFLAGS	= /nologo
+ESTDLFLAGS	= /nologo /debug
+EMTDLFLAGS	= /nologo /debug
+EMDDLFLAGS	= /nologo /debug
 ESTLLIBS	= libxdrST.lib $(BASELIB)
 EMTLLIBS	= libxdrMT.lib $(BASELIB)
 EMDLLIBS	= libxdrMD.lib $(BASELIB)

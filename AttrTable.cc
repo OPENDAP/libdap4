@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.47 2004/10/22 21:47:04 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.48 2005/01/28 17:25:11 jimg Exp $";
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -1035,7 +1035,6 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     get the attribute table for an arbitrary name.
 
     @brief Adds an alias to the set of attributes.  
-    @name attr_alias()
     @see get_attr_table
     @deprecated The current alias design is flawed. It is impossible to map
     this onto the XML implementation where the DAS and DDS information are
@@ -1186,7 +1185,7 @@ AttrTable::print(ostream &os, string pad, bool dereference)
     indicated FILE pointer. The \c pad argument is prefixed to each
     line of the output to provide control of indentation.
 
-    @memo Prints the attribute table.
+    @brief Prints the attribute table.
     @param out Print to the given output FILE.
     @param pad Indent elements of a table using this string of spaces. By
     default this is a string of four spaces
@@ -1269,6 +1268,12 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.48  2005/01/28 17:25:11  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.38.2.5  2005/01/18 23:09:32  jimg
+// FIxed documentation.
+//
 // Revision 1.47  2004/10/22 21:47:04  jimg
 // Modified del_attr_table() so that it returns the Attr_iter following the one
 // that has just been deleted.

@@ -129,7 +129,8 @@ public:
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
     virtual void set_in_selection(bool state);
-
+    virtual void set_leaf_sequence(int level = 1);
+    
     virtual unsigned int width();
 
     virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
@@ -213,6 +214,13 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.50  2005/01/28 17:25:12  jimg
+ * Resolved conflicts from merge with release-3-4-9
+ *
+ * Revision 1.45.2.4  2005/01/19 17:16:32  jimg
+ * Added set_leaf_sequence() to Structure to mirror its use in DDS. This
+ * code will now correctly mark Sequences that are parts of Structures.
+ *
  * Revision 1.49  2004/07/07 21:08:48  jimg
  * Merged with release-3-4-8FCS
  *

@@ -57,8 +57,33 @@ NewFloat32(const string &n)
     return new TestFloat32(n);
 }
 
-TestFloat32::TestFloat32(const string &n) : Float32(n)
+void
+TestFloat32::_duplicate(const TestFloat32 &ts)
 {
+    d_series_values = ts.d_series_values;
+}
+
+TestFloat32::TestFloat32(const string &n) : Float32(n), d_series_values(false)
+{
+    _buf = 0.0;
+}
+
+TestFloat32::TestFloat32(const TestFloat32 &rhs) : Float32(rhs)
+{
+    _duplicate(rhs);
+}
+
+TestFloat32 &
+TestFloat32::operator=(const TestFloat32 &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Float32 &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
 }
 
 BaseType *
@@ -76,14 +101,29 @@ TestFloat32::read(const string &)
     if (test_variable_sleep_interval > 0)
 	sleep(test_variable_sleep_interval);
 
-    _buf = (float)99.999;
-
+    if (get_series_values()) {
+        _buf = (float)(100 * sin(_buf));
+        _buf += 0.01;
+    }
+    else {
+        _buf = (float)99.999;
+    }
+    
     set_read_p(true);
 
     return true;
 }
 
 // $Log: TestFloat32.cc,v $
+// Revision 1.12  2005/01/28 17:25:12  jimg
+// Resolved conflicts from merge with release-3-4-9
+//
+// Revision 1.9.2.4  2005/01/18 23:21:44  jimg
+// All Test* classes now handle copy and assignment correctly.
+//
+// Revision 1.9.2.3  2005/01/14 19:38:37  jimg
+// Added support for returning cyclic values.
+//
 // Revision 1.11  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

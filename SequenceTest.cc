@@ -82,7 +82,7 @@ static Regex s_regex(s_as_string);
 
 class SequenceTest : public TestFixture {
 private:
-    Sequence *s, *sss, *ts, *tts;
+    Sequence *s, *ss, *ps, *sss, *ts, *tts;
 
 public:
     SequenceTest() {}
@@ -95,6 +95,15 @@ public:
 	s->add_var(new Str("str1"));
 	s->add_var(new Int32("i2"));
 
+        // Set ss, a two level sequence
+        ss = new Sequence("ss");
+        ss->add_var(new Int32("i1"));
+        
+        ps = new Sequence("child_of_ss");
+        ps->add_var(new Int32("i2"));
+        
+        ss->add_var(ps);
+        
 	// Set up sss, used to test multi-level sequences
 	sss = new Sequence("sss");
 	sss->add_var(new Int32("i1"));
@@ -112,6 +121,8 @@ public:
 
     void tearDown() { 
 	delete s; s = 0;
+        delete ss; ss = 0;
+        delete ps; ps = 0;
 	delete sss; sss = 0;
 	delete ts; ts = 0;
 	delete tts; tts = 0;
@@ -129,10 +140,79 @@ public:
     CPPUNIT_TEST(ctor_test);
     CPPUNIT_TEST(assignment);
     CPPUNIT_TEST(copy_ctor);
+    CPPUNIT_TEST(test_set_leaf_sequence);
+    CPPUNIT_TEST(test_set_leaf_sequence2);
+    CPPUNIT_TEST(test_set_leaf_sequence3);
 
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
+    void test_set_leaf_sequence3() {
+        // Test for the rejection of a Sequence with two sequences in it.
+        sss->add_var(ss);
+        sss->set_send_p(true);
+        try {
+             sss->set_leaf_sequence(1);
+             CPPUNIT_ASSERT(!"Should have thrown Error");
+        }
+        catch (Error &e) {
+             cerr << e.get_error_message() << endl;
+             CPPUNIT_ASSERT("Caught Error");
+        }
+    }
+
+    void test_set_leaf_sequence2() {
+        // Three level sequence
+        sss->set_send_p(true);          // set send_p for whole seq
+        // Now the lowest sequence is not longer to be sent. The middle sequence
+        // is the lowest with fields to be sent and so should be the leaf.
+        Sequence::Vars_iter i = sss->var_begin();
+        Sequence *inner = dynamic_cast<Sequence*>(*++i);
+        i = inner->var_begin();
+        inner = dynamic_cast<Sequence*>(*++i);
+        inner->set_send_p(false);       // now clear send_p for the inner most seq
+        sss->set_leaf_sequence(1);
+
+        CPPUNIT_ASSERT(!sss->is_leaf_sequence());
+        
+        i = sss->var_begin();
+        inner = dynamic_cast<Sequence*>(*++i);
+        CPPUNIT_ASSERT(inner && inner->is_leaf_sequence());
+
+        i = inner->var_begin();
+        Sequence *inner2 = dynamic_cast<Sequence*>(*++i);
+        CPPUNIT_ASSERT(inner2 && !inner2->is_leaf_sequence());
+    }
+
+    void test_set_leaf_sequence() {
+        // One level sequence
+        s->set_send_p(true);
+        s->set_leaf_sequence(1);
+        CPPUNIT_ASSERT(s->is_leaf_sequence());
+        
+        // Two level sequence
+        ss->set_send_p(true);
+        ss->set_leaf_sequence(1);
+        CPPUNIT_ASSERT(!ss->is_leaf_sequence());
+        // add_var() _copies_ the object, so ps should not be used here.
+        Sequence::Vars_iter i = ss->var_begin();
+        Sequence *inner = dynamic_cast<Sequence*>(*++i);
+        CPPUNIT_ASSERT(inner->type() == dods_sequence_c && inner->is_leaf_sequence());
+        
+        // Three level sequence
+        sss->set_send_p(true);
+        sss->set_leaf_sequence(1);
+        CPPUNIT_ASSERT(!sss->is_leaf_sequence());
+        
+        i = sss->var_begin();
+        inner = dynamic_cast<Sequence*>(*++i);
+        CPPUNIT_ASSERT(inner && !inner->is_leaf_sequence());
+
+        i = inner->var_begin();
+        Sequence *inner2 = dynamic_cast<Sequence*>(*++i);
+        CPPUNIT_ASSERT(inner2 && inner2->is_leaf_sequence());
+    }
+    
     void ctor_test() {
 	DBG(cerr << "s: " << s->toString() << endl);
 	CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
