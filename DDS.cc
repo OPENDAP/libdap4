@@ -9,6 +9,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.39  1999/01/21 02:57:02  jimg
+// Added ce_function.h and call to add the projection function
+// `grid_selection_func' to the set of CE functions all servers know about.
+//
 // Revision 1.38  1999/01/13 16:59:05  jimg
 // Removed call to text_to_temp() (which copied a string to a temp file so that
 // the file could be parsed) with code that feeds the string directly into the
@@ -204,7 +208,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.38 1999/01/13 16:59:05 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.39 1999/01/21 02:57:02 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -225,6 +229,7 @@ static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.38 1999/01/13 16:59:05 jimg E
 #include "parser.h"
 #include "debug.h"
 #include "util.h"
+#include "ce_functions.h"
 #include "cgi_util.h"
 
 #ifdef TRACE_NEW
@@ -268,6 +273,7 @@ DDS::DDS(const String &n) : name(n)
     add_function("null", func_null);
     add_function("nth", func_nth);
     add_function("length", func_length);
+    add_function("grid", func_grid_select);
 }
 
 DDS::DDS(const DDS &rhs)
