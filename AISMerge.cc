@@ -48,12 +48,17 @@
 Response *
 AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
 {
-    if (res.find("http:") == 0 || res.find("file:") == 0 
+    if (res.find("http:") == 0
+	|| res.find("file:") == 0 
 	|| res.find("https:") == 0 ) {
 	return d_http.fetch_url(res);
     }
     else {
-	return new Response(fopen(res.c_str(), "r"));
+	FILE *s = fopen(res.c_str(), "r");
+	if (!s)
+	    throw Error("I could not open local AIS resource '"
+			+ res + "'.");
+	return new Response(s);
     }
 }
 
@@ -71,7 +76,7 @@ AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
     @param das The target of the merge operation. This must already contain
     the DAS for <c>primary</c>. */
 void
-AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
+AISMerge::merge(const string &primary, DAS &das) throw(Error, InternalErr)
 {
     if (!d_ais_db.has_resource(primary))
 	return;
@@ -103,6 +108,10 @@ AISMerge::merge(const string &primary, DAS &das) throw(InternalErr)
 }
 
 // $Log: AISMerge.cc,v $
+// Revision 1.6  2003/03/14 00:02:38  jimg
+// merge() throws Error, now. Also, get_ais_resource() throws Error if the ais
+// resource is a file and it cannot be read.
+//
 // Revision 1.5  2003/03/04 17:57:35  jimg
 // Now uses Response objects.
 //
