@@ -31,6 +31,9 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.27  1997/02/10 02:36:57  jimg
+ * Fixed bug where attribute type of int32 was broken on 64bit machines.
+ *
  * Revision 1.26  1996/10/28 23:04:46  jimg
  * Added unsigned int to set of possible attribute value types.
  *
@@ -153,7 +156,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: das.y,v 1.26 1996/10/28 23:04:46 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: das.y,v 1.27 1997/02/10 02:36:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -366,8 +369,8 @@ ints:		INT
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $1 << endl);
-		    if (!check_int($1, das_line_num) 
-			|| !check_uint($1, das_line_num)) {
+		    if (!(check_int($1, das_line_num) 
+			  || check_uint($1, das_line_num))) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str(), 
@@ -388,8 +391,8 @@ ints:		INT
 		{
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< $3 << endl);
-		    if (!check_int($3, das_line_num)
-			|| !check_uint($1, das_line_num)) {
+		    if (!(check_int($3, das_line_num)
+			  || check_uint($1, das_line_num))) {
 			ostrstream msg;
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str(), 
