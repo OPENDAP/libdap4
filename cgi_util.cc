@@ -11,6 +11,15 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.14  1996/06/08 00:16:42  jimg
+// Fixed a bug in name_path().
+// Added compression functions which create filter processes which automatically
+// compress stdio file streams.
+// Added to set_mime_text() and set_mime_binary() support for compression. These
+// now correctly set the content-encoding field of the mime header.
+// Fixed ErrMsgT so that it says `DODS server' when the name of the server is
+// not known.
+//
 // Revision 1.13  1996/06/04 21:33:53  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -67,7 +76,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.13 1996/06/04 21:33:53 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.14 1996/06/08 00:16:42 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +87,7 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.13 1996/06/04 21:33:53 jimg Exp $"};
 #include <iostream.h>
 #include <String.h>
 
-#include "config_netio.h"
+#include "config_dap.h"
 #include "cgi_util.h"
 
 #ifdef TRACE_NEW
@@ -112,16 +121,13 @@ ErrMsgT(const char *Msgt)
 	TimStr[TimLen - 2] = '\0'; // overwrite the \n 
     }
 
-    if(getenv("REMOTE_HOST"))
-	cerr << "[" << TimStr << "] CGI: " << getenv("SCRIPT_NAME") 
-	     << " faild for " 
-	     << getenv("REMOTE_HOST") 
-	     << " reason: "<< Msgt << endl;
-    else
-	cerr << "[" << TimStr << "] CGI: " << getenv("SCRIPT_NAME") 
-	     << " faild for " 
-	     << getenv("REMOTE_ADDR")
-	     << " reason: "<< Msgt << endl;
+    char *host_or_addr = getenv("REMOTE_HOST") ? getenv("REMOTE_HOST") :
+	getenv("REMOTE_ADDR");
+    char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") : 
+	"DODS server"; 
+
+    cerr << "[" << TimStr << "] CGI: " << script << " faild for " 
+	 << host_or_addr << " reason: "<< Msgt << endl;
 }
 
 // Given an open FILE *IN, a separator character (in STOP) and the number of
@@ -189,15 +195,11 @@ name_path(const char *path)
 
     char *cp = strrchr(path, FILE_DELIMITER);
     if (cp == 0)                // no delimiter
-	strcpy(cp, path);	// used to be: cp = path; jhrg 2/26/96
+	cp = (char *)path;
     else                        // skip delimeter
 	cp++;
 
     char *newp = new char[strlen(cp)+1]; 
-    if (newp == 0) {
-        ErrMsgT("name_path: out of memory.");
-        exit(-1);
-    }
 
     (void) strcpy(newp, cp);	// copy last component of path
     if ((cp = strrchr(newp, '.')) != NULL)
@@ -208,28 +210,72 @@ name_path(const char *path)
 
 // Send string to set the transfer (mime) type and server version
 // Note that the content description filed is used to indicate whether valid
-// information of an error message is contained in the document.
+// information of an error message is contained in the document and the
+// content-encoding field is used to indicate whether the data is compressed.
+// If the data stream is to be compressed, arrange for a compression output
+// filter so that all information sent after the header will be compressed.
+//
+// Returns: false if the compression output filter was to be used but could
+// not be started, true otherwise.
+
+static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
+			"dods_error"};
+static char *encoding[]={"unknown", "x-plain", "x-gzip"};
 
 void
-set_mime_text(String description = "Valid")
+set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-  cout << "Status: 200 " << DVR << endl;  /* send server version */
-  cout << "Content-type: text/plain" << endl; 
-  cout << "Content-Description: " << description << endl;
-
-  cout << endl;			// MIME header ends with a blank line
+    cout << "Status: 200 " << DVR << endl; // Send server version
+    cout << "Content-type: text/plain" << endl; 
+    cout << "Content-Description: " << descrip[type] << endl;
+    cout << "Content-Encoding: " << encoding[enc] << endl;
+    cout << endl;			// MIME header ends with a blank line
 }
 
 void
-set_mime_binary(String description = "Valid")
+set_mime_binary(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-  cout << "Status: 200 " << DVR << endl;
-  cout << "Content-type: application/octet-stream" << endl; 
-  cout << "Content-Description: " << description << endl;
-
-  cout << endl;			// MIME header ends with a blank line
+    cout << "Status: 200 " << DVR << endl;
+    cout << "Content-type: application/octet-stream" << endl; 
+    cout << "Content-Description: " << descrip[type] << endl;
+    cout << "Content-Encoding: " << encoding[enc] << endl;
+    cout << endl;		// MIME header ends with a blank line
 }
 
+// Open a pipe to a filter process which will compress this process' stdout. 
+//
+// NB: You must use pclose to close the FILE *.
+//
+// Returns: false if the pipe or child process could not be created, true
+// otherwise. 
+
+FILE *
+compress_stdout()
+{
+    String cmd = "gzip -cf";	// c: write to stdout, f: ...even if a tty
+
+    FILE *infile = popen((const char *)cmd, "w");
+    if (infile == NULL) {
+	cerr << "Could not open compression output filter." << endl;
+	return NULL;
+    }
+    
+    return infile;
+}
+
+FILE *
+decompress_stdin()
+{
+    String cmd = "gzip -cdf";	// c: read from stdin, f: ...even if a tty
+				// d: decompress
+    FILE *infile = popen((const char *)cmd, "r");
+    if (infile == NULL) {
+	cerr << "Could not open compression output filter." << endl;
+	return NULL;
+    }
+    
+    return infile;
+}
 
 #ifdef TEST_CGI_UTIL
 
@@ -246,7 +292,7 @@ main(int argc, char *argv[])
     ErrMsgT(NULL);
 
     // test fmakeword
-    FILE *in = fopen("./fmakeword.input", "r");
+    FILE *in = fopen("./cgi-util-tests/fmakeword.input", "r");
     char stop = ' ';
     int content_len = 68;
     while (content_len) {
@@ -258,7 +304,7 @@ main(int argc, char *argv[])
 
     // this tests buffer extension in fmakeword, two words are 1111 and 11111
     // char respectively.
-    in = fopen("./fmakeword2.input", "r");
+    in = fopen("./cgi-util-tests/fmakeword2.input", "r");
     stop = ' ';
     content_len = 12467;
     while (content_len) {
@@ -304,6 +350,22 @@ main(int argc, char *argv[])
     name_path_p = name_path(name);
     cout << name << ": " << name_path_p << endl;
     delete name_path_p;
+
+    // Test mime header generators and compressed output
+
+    cout << "MIME text header:" << endl;
+    set_mime_text(dods_das);
+
+    cout << "MIME binary header:" << endl;
+    set_mime_binary(dods_data);
+    cout << "Some data..." << endl;
+
+    cout << "MIME binary header and compressed data:" << endl;
+    set_mime_binary(dods_data, x_gzip);
+    FILE *out = compress_stdout();
+    fprintf(out, "Compresses data...\n");
+    fflush(out);
+    pclose(out);
 }
 
 #endif
