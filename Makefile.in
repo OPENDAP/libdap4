@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.19 1995/05/10 20:03:13 jimg Exp $
+# $Id: Makefile.in,v 1.20 1995/05/11 12:52:25 jimg Exp $
 
 @SET_MAKE@
 
@@ -177,7 +177,7 @@ install:
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
 
-check: libdap++a das-check dds-check trans-check
+check: libdap++.a das-check dds-check trans-check
 
 # these tests all fail when das-test is linked with -lnew_debug.
 
