@@ -9,6 +9,11 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.37  1998/11/10 01:08:06  jimg
+// Changed code; now uses a list of Clause pointers instead of using a list of
+// Clause objects. This makes it simpler for the projection functions to add
+// `invisible' selection clauses.
+//
 // Revision 1.36  1998/10/21 16:38:12  jimg
 // The find_function() member function now checks for the name AND the function
 // type before returning a value. This means that a bool and BaseType * function
@@ -194,7 +199,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.36 1998/10/21 16:38:12 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.37 1998/11/10 01:08:06 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -271,6 +276,10 @@ DDS::~DDS()
     // delete all the constants created by the parser for CE evaluation
     for (p = constants.first(); p; constants.next(p))
 	delete constants(p);
+
+    if (!expr.empty())
+	for (p = first_clause(); p; next_clause(p))
+	    delete expr(p);
 }
 
 DDS &
@@ -483,7 +492,7 @@ DDS::clause(Pix p)
 {
     assert(!expr.empty() && p);
 
-    return expr(p);
+    return *expr(p);
 }
 
 bool
@@ -491,14 +500,14 @@ DDS::clause_value(Pix p, const String &dataset)
 {
     assert(!expr.empty());
 
-    return expr(p).value(dataset, *this);
+    return expr(p)->value(dataset, *this);
 }
 
 
 void
 DDS::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
 {
-    Clause clause(op, arg1, arg2);
+    Clause *clause = new Clause(op, arg1, arg2);
 
     expr.append(clause);
 }
@@ -506,7 +515,7 @@ DDS::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
 void
 DDS::append_clause(bool_func func, rvalue_list *args)
 {
-    Clause clause(func, args);
+    Clause *clause = new Clause(func, args);
 
     expr.append(clause);
 }
@@ -514,7 +523,7 @@ DDS::append_clause(bool_func func, rvalue_list *args)
 void
 DDS::append_clause(btp_func func, rvalue_list *args)
 {
-    Clause clause(func, args);
+    Clause *clause = new Clause(func, args);
 
     expr.append(clause);
 }
@@ -895,35 +904,43 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	// Handle *functional* constraint expressions specially 
 	if (functional_expression()) {
 	    BaseType *var = eval_function(dataset);
-	    set_mime_binary(out, dods_data, (compressed) ? deflate : x_plain);
+	    if (var) {
+		set_mime_binary(out, dods_data, 
+				(compressed) ? deflate : x_plain);
 
-	    // If compressing, start up the sub process.
-	    int childpid;	// Used to wait for compressor sub proc
-	    FILE *comp_sink = 0;
-	    XDR *xdr_sink;
-	    if (compressed) {
-		comp_sink = compressor(out, childpid);
-		xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
+		// If compressing, start up the sub process.
+		int childpid;	// Used to wait for compressor sub proc
+		FILE *comp_sink = 0;
+		XDR *xdr_sink;
+		if (compressed) {
+		    comp_sink = compressor(out, childpid);
+		    xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
+		}
+		else {
+		    xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+		}
+
+		print_variable((compressed) ? comp_sink : out, var, true);
+		fprintf((compressed) ? comp_sink : out, "Data:\n");
+
+		// In the following call to serialize, suppress CE evaluation.
+		status = var->serialize(dataset, *this, xdr_sink, false);
+
+		delete_xdrstdio(xdr_sink);
+
+		// Wait for the compressor sub process to stop
+		if (compressed) {
+		    fclose(comp_sink);
+		    int pid;
+		    while ((pid = waitpid(childpid, 0, 0)) > 0) {
+			DBG(cerr << "pid: " << pid << endl);
+		    }
+		}
 	    }
 	    else {
-		xdr_sink = new_xdrstdio(out, XDR_ENCODE);
-	    }
-
-	    print_variable((compressed) ? comp_sink : out, var, true);
-	    fprintf((compressed) ? comp_sink : out, "Data:\n");
-
-	    // In the following call to serialize, suppress CE evaluation.
-	    status = var->serialize(dataset, *this, xdr_sink, false);
-
-	    delete_xdrstdio(xdr_sink);
-
-	    // Wait for the compressor sub process to stop
-	    if (compressed) {
-		fclose(comp_sink);
-		int pid;
-		while ((pid = waitpid(childpid, 0, 0)) > 0) {
-		    DBG(cerr << "pid: " << pid << endl);
-		}
+		Error e(unknown_error, "Error calling the function.");
+		set_mime_text(out, dods_error);
+		e.print();
 	    }
 	}
 	else {
