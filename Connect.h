@@ -143,6 +143,8 @@ private:
     string _proj;		// Projection part of initial CE.
     string _sel;		// Selection of initial CE
 
+    string d_version;
+
     void process_data(DataDDS &data, Response *rs) 
 	throw(Error, InternalErr);
     
@@ -175,9 +177,16 @@ public:
     void set_credentials(string u, string p);
     void set_accept_deflate(bool deflate);
 
-    // *** Fix this. It does nothing. Add an 'enable_cache' method. 02/27/03
-    // jhrg 
-    void disable_cache();
+    void set_cache_enabled(bool enabled);
+    bool is_cache_enabled();
+
+    /** Return the protocol/implementation version of the most recent
+	response. This is a poorly designed method, but it returns
+	information that is useful when used correctly. Before a response is
+	made, this contains the string "unknown." This should ultimately hold
+	the \i protocol version; it currently holds the \i implementation
+	version. */
+    string get_version() { return d_version; }
 
     virtual void request_das(DAS &das) throw(Error, InternalErr);
 
@@ -227,26 +236,18 @@ public:
 	return data;
     }
 
-    /** @name Remove 
-	These methods no longer make sense given the change from libwww to
-	libcurl. */
-    //@{
+    // These are deprecated.
     DAS &das();
     DDS &dds();
     Error &error();
-#if 0
-    bool get_www_errors_to_stderr();
-    void set_www_errors_to_stderr(bool state);
-    string get_accept_types();
-    void set_accept_types(const string &types);
-    string get_cache_control();
-    void set_cache_control(const string &caching);
-#endif
-    //@}
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.64  2003/03/04 21:44:03  jimg
+ * Removed code in #if 0 ... #endif. Added d_version and a get_version() method.
+ * This is useful for some clients, like geturl.
+ *
  * Revision 1.63  2003/03/04 17:34:48  jimg
  * Modified to use Response objects. Removed many old methods which no longer
  * have any meaning (i.e., they were hold overs from several years ago).
