@@ -10,6 +10,12 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.45  2000/07/21 14:29:17  rmorris
+// Put a temporary fix in that is in lieu of an upcoming small change
+// to the core.  Is in an ifdef with a note to remove it - but the
+// temporary hack will work with or without the change to the core.
+// See TMPHACK ifdef's to remove.
+//
 // Revision 1.44  2000/07/19 22:45:21  rmorris
 // Delete the right type of dds (a DataDDS) so that when it
 // is deleted, the destructors are called in the right sequence.
@@ -198,7 +204,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.44 2000/07/19 22:45:21 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.45 2000/07/21 14:29:17 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -207,7 +213,11 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.44 2000/07/19 22:45:21 rmorr
 #include <string>
 
 #include "Connect.h"
-#ifdef WIN32
+//  Below hack is because of a temporary transient bug in the core.
+//  If you see this after 8/1/2000, remove it - see everthing setup in
+//  between TMPHACK in this file.  Upcomming fix from James will solve.
+#define TMPHACK
+#ifdef TMPHACK
 #include "DataDDS.h"
 #endif
 
@@ -216,7 +226,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.44 $";
+const char *version = "$Revision: 1.45 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -486,11 +496,11 @@ main(int argc, char * argv[])
 			}
 	    for (int j = 0; j < times; ++j)
 			{
-#ifdef WIN32  //  Causes dds to deconstruct appropriately under Visual C++.
-              //  I'm guessing this would be correct under unix's also.
+#ifdef TMPHACK
 			DataDDS *dds = (DataDDS *)url.request_data(expr, gui, async);
 #else
 			DDS *dds = url.request_data(expr, gui, async);
+
 #endif
 			if (!dds)
 				{
