@@ -16,6 +16,11 @@
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.30  1998/09/17 17:07:15  jimg
+ * Fixes to the documentation.
+ * Added leaf_match and exact_match mfuncs (support for the new var member
+ * function).
+ *
  * Revision 1.29  1998/04/03 17:44:27  jimg
  * Patch from Jake Hamby. Added print_all_vals member function.
  *
@@ -218,19 +223,21 @@ private:
     SLList<BaseTypePtr> _vars;
     
     void _duplicate(const Structure &s);
+    BaseType *leaf_match(const String &name);
+    BaseType *exact_match(const String &name);
 
 public:
-  /** The Structure constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
+    /** The Structure constructor requires only the name of the variable
+	to be created.  The name may be omitted, which will create a
+	nameless variable.  This may be adequate for some applications. 
       
-      @param n A String containing the name of the variable to be
-      created. 
+	@param n A String containing the name of the variable to be
+	created. 
 
-      @memo The Structure constructor.
-      */
+	@memo The Structure constructor.
+    */
     Structure(const String &n = (char *)0);
-  /** The Structure copy constructor. */
+    /** The Structure copy constructor. */
     Structure(const Structure &rhs);
     virtual ~Structure();
 
@@ -253,25 +260,27 @@ public:
     // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.
 
-  /** Returns the size of the structure. */
+    /** Returns the size of the structure. */
     virtual unsigned int val2buf(void *val, bool reuse = false);
-  /** Returns the size of the structure. */
+    /** Returns the size of the structure. */
     virtual unsigned int buf2val(void **val);
 
-  /** Returns a pointer to the specified Structure element. */
-    virtual BaseType *var(const String &name);
+    /** Returns a pointer to the specified Structure element. */
+    virtual BaseType *var(const String &name, bool exact_match = true);
 
-  /** Adds an element to a Structure. */
+    virtual BaseType *var(const String &name, btp_stack &s);
+
+    /** Adds an element to a Structure. */
     virtual void add_var(BaseType *bt, Part p = nil);
 
-  /** Returns the pseudo-index (Pix) of the first structure element. */
+    /** Returns the pseudo-index (Pix) of the first structure element. */
     Pix first_var();
 
-  /** Increments the input index to point to the next element in the
-      structure. */
+    /** Increments the input index to point to the next element in the
+	structure. */
     void next_var(Pix &p);
 
-  /** Returns a pointer to the {\it p}th element. */
+    /** Returns a pointer to the {\it p}th element. */
     BaseType *var(Pix p);
 
     virtual void print_decl(ostream &os, String space = "    ",
@@ -282,8 +291,9 @@ public:
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
 
-  /** Prints the Structure and all elements of any Sequences contained within.
-    @see Sequence::print_all_vals
+    /** Prints the Structure and all elements of any Sequences contained
+	within. 
+	@see Sequence::print_all_vals
     */
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
 				String space = "", bool print_decl_p = true);
