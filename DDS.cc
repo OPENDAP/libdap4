@@ -4,7 +4,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.8  1994/12/07 21:23:16  jimg
+// Revision 1.9  1994/12/09 21:37:24  jimg
+// Added <unistd.h> to the include files.
+//
+// Revision 1.8  1994/12/07  21:23:16  jimg
 // Removed config
 //
 // Revision 1.7  1994/11/22  14:05:40  jimg
@@ -44,11 +47,13 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.8 1994/12/07 21:23:16 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.9 1994/12/09 21:37:24 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#include <unistd.h>
 
 #include "DDS.h"
 #include "errmsg.h"
