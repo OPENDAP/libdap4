@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.6 1994/10/13 15:49:54 jimg Exp $
+# $Id: Makefile.in,v 1.7 1994/10/18 00:22:10 jimg Exp $
 
 @SET_MAKE@
 
@@ -13,7 +13,7 @@ LDFLAGS = -g -L$(DODS_ROOT)/lib
 LFLAGS=-8
 YFLAGS=-d
 DODS_ROOT=../..
-DEBUG_LIB=#-ldbnew
+DEBUG_LIB=-ldbnew
 DEFS = @DEFS@# -DTRACE_NEW -DDEBUG
 LIBS = -lg++map -lg++stack -lerrmsg @LIBS@
 
@@ -71,7 +71,6 @@ TYPESRCS=BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 TYPEOBJS=BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	 List.o Array.o Structure.o Sequence.o Function.o Grid.o util.o
 
-
 all: libdas++.a libdds++.a
 
 # build the libraries
@@ -103,7 +102,7 @@ lex.das.o: lex.das.c
 # Build the DAS parser
 # Note that awk is used to add a param to dasparse().
 
-das.tab.c das.tab.h: das.y
+das.tab.c das.tab.h: das.y DAS.h
 	$(YACC) $(YFLAGS) -p das das.y
 	$(AWK) -f munge-das.awk das.tab.c > tmp
 	mv tmp das.tab.c
@@ -122,6 +121,7 @@ lex.dds.o: lex.dds.c
 # Build the DDS parser
 
 dds.tab.c dds.tab.h: dds.y
+
 	$(YACC) $(YFLAGS) -p dds dds.y
 	$(AWK) -f munge-dds.awk dds.tab.c > tmp
 	mv tmp dds.tab.c
@@ -180,12 +180,12 @@ site.exp: ./config.status Makefile
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
-	-rm -f lex.das.c das.tab.c das.tab.h
+	-rm -f lex.das.c das.tab.c das.tab.h lex.dds.c dds.tab.c dds.tab.h
 	-rm -f $(PROG)
 
 distclean: clean
 	-rm -f config.status Makefile
-	-rm -f site.exp
+	-rm -f site.exp site.bak
 
 tar:
 
@@ -195,5 +195,12 @@ tags:
 depend: 
 	makedepend -- $(CXXFLAGS) -I/usr/local/lib/g++-include -- \
 	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) das-test.cc dds-test.cc 
+
+dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
+  Str.h Url.h Array.h CtorType.h List.h Structure.h Sequence.h Function.h \
+  Grid.h Stack/CTXPStack.h Stack/CTXPlex.h Stack/CTPlex.h Stack/CTdefs.h \
+  CtorType.h Stack/CTStack.h 
+
+das.tab.c: DAS.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
