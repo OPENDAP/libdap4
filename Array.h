@@ -7,10 +7,13 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.20  1995/10/23 23:20:46  jimg
-/* Added _send_p and _read_p fields (and their accessors) along with the
-/* virtual mfuncs set_send_p() and set_read_p().
+/* Revision 1.21  1995/11/22 22:31:04  jimg
+/* Modified so that the Vector class is now the parent class.
 /*
+ * Revision 1.20  1995/10/23  23:20:46  jimg
+ * Added _send_p and _read_p fields (and their accessors) along with the
+ * virtual mfuncs set_send_p() and set_read_p().
+ *
  * Revision 1.19  1995/08/26  00:31:23  jimg
  * Removed code enclosed in #ifdef NEVER #endif.
  *
@@ -127,27 +130,23 @@
 
 #include <limits.h>
 #include <SLList.h>
-#include "BaseType.h"
-#include "BaseTypeVec.h"
+
+#include "Vector.h"
 
 const int DODS_MAX_ARRAY = UINT_MAX;
 
-class Array: public BaseType {
+class Array: public Vector {
 private:
     struct dimension {		// each dimension has a size and a name
 	int size;
 	String name;
     };
 
-    BaseType *_var;		// var that is an array. I.E., if this is an
-				// array of Int32, _var -> an instance of Int32
     SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
 
-    long _const_length;		// Length after constraint 
-
-    void *_buf;			// used for arrays of cardinal types
-    BaseTypePtrVec _vec;	// used for arrays of all other types
-
+    unsigned int print_array(ostream &os, unsigned int index,
+			     unsigned int dims, unsigned int shape[]);
+protected:
     void _duplicate(const Array &a);
 
 public:
@@ -158,28 +157,7 @@ public:
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
-
-    virtual unsigned int width(); // bytes in the pointer to the array
-    unsigned int length();	// how many elements are there in the array
-    void const_length(long size);
-
-    virtual bool serialize(bool flush = false);
-    virtual bool deserialize(bool reuse = false);
-
     virtual bool read(String dataset, String var_name, String constraint) = 0;
-
-    virtual unsigned int store_val(void *val, bool reuse = false); // dep.
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int read_val(void **val); // deprecated name
-    virtual unsigned int buf2val(void **val);
-
-    void set_vec(int i, BaseType *val);
-    BaseType *vec(int i);
-
-    virtual BaseType *var(const String &name = (char *)0);
-    virtual void add_var(BaseType *v, Part p = nil);
 
     void append_dim(int size, String name = "");
 

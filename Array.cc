@@ -38,7 +38,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.24  1995/10/23 23:20:44  jimg
+// Revision 1.25  1995/11/22 22:31:02  jimg
+// Modified so that the Vector class is now the parent class.
+//
+// Revision 1.24  1995/10/23  23:20:44  jimg
 // Added _send_p and _read_p fields (and their accessors) along with the
 // virtual mfuncs set_send_p() and set_read_p().
 //
@@ -188,25 +191,15 @@
 void
 Array::_duplicate(const Array &a)
 {
-    BaseType::_duplicate(a);
+    Vector::_duplicate(a);
 
-    _const_length = a._const_length;
     _shape = a._shape;
-    _var = a._var->ptr_duplicate();
-    _vec = a._vec;
-    
-    _buf = 0;    
-    // copy the buffer's contents if there are any
-    if (a._buf) {
-	val2buf(a._buf);
-    }
 }
 
 // Construct an instance of Array. The (BaseType *) is assumed to be
-// allocated using new -- The dtor for Array will delete this object.
+// allocated using new - The dtor for Vector will delete this object.
 
-Array::Array(const String &n, BaseType *v)
-     : BaseType(n, array_t), _var(v), _buf(0), _const_length(-1)
+Array::Array(const String &n, BaseType *v) : Vector(n, v, array_t)
 {
 }
 
@@ -217,10 +210,6 @@ Array::Array(const Array &rhs)
 
 Array::~Array()
 {
-    delete _var;
-
-    if (_buf)
-	delete[] _buf;
 }
 
 const Array &
@@ -234,363 +223,10 @@ Array::operator=(const Array &rhs)
     return *this;
 }
 
-void
-Array::set_send_p(bool state)
-{
-    _var->set_send_p(state);
-    BaseType::set_send_p(state);
-}
-
-void 
-Array::set_read_p(bool state)
-{
-    _var->set_read_p(state);
-    BaseType::set_read_p(state);
-}
-
-// set the length (number of elements) after constraint evaluation
-
-void
-Array::const_length(long const_len)
-{
-    _const_length = const_len;
-}
-
-// Return: The number of bytes required to store the array `in a C
-// program'. For an array of cardinal types this is the same as the storage
-// used by _buf. For anything else, it is the product of length() and the
-// element width(). It turns out that both values can be computed the same
-// way. 
-
-unsigned int
-Array::width()
-{
-    return length() * _var->width();
-}
-
-// Returns: The number of elements in the array.
-
-unsigned int
-Array::length()
-{
-    assert(_var);
-
-    unsigned int sz = 1;
-
-    if(_const_length >= 0) {
-      sz = (unsigned int) _const_length;
-    }
-    else {
-      for (Pix p = first_dim(); p; next_dim(p)) 
-	sz *= dimension_size(p); 
-    }
-
-    return sz;
-}
-
-// Serialize an array. This uses the BaseType member XDR_CODER to encode each
-// element of the array. See Sun's XDR manual. For Arrays of Str and Url
-// types, send the element count over as a prefix to the data so that
-// deserialize will know how many elements to read.
-//
-// NB: The array must already be in BUF (in the local machine's
-// representation) *before* this call is made.
-
-bool
-Array::serialize(bool flush)
-{
-    bool status;
-    unsigned int num = length();
-
-    switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
-
-	assert(_buf);
-	if (_var->type() == byte_t)
-	    status = (bool)xdr_bytes(xdrout(), (char **)&_buf, &num,
-				     DODS_MAX_ARRAY); 
-	else
-	    status = (bool)xdr_array(xdrout(), (char **)&_buf, &num,
-				     DODS_MAX_ARRAY, _var->width(),
-				     _var->xdr_coder()); 
-	break;
-
-      case str_t:
-      case url_t:
-      case array_t:
-      case list_t:
-      case structure_t:
-      case sequence_t:
-      case function_t:
-      case grid_t:
-
-	assert(_vec.capacity());
-	status = (bool)xdr_int(xdrout(), &num); // send length
-
-	for (int i = 0; status && i < num; ++i)	// test status in loop
-	    status = _vec[i]->serialize();
-
-	break;
-
-      default:
-	cerr << "Array::serialize: Unknown type\n";
-	status = false;
-    }
-
-    if (status && flush)
-	status = expunge();
-
-    return status;
-}
-
-// Read an object from the network and internalize it. For an array this is
-// handled differently for an array of a `cardinal' type. Cardinal arrays are
-// stored using the `C' representations because these object often are used
-// to build huge arrays (e.g., an array of 1024 by 1024 bytes). However,
-// arrays of non-cardinal types are stored as Vectors of the C++ objects or
-// DODS objects (Str and Url are vectors of the String class, Structure, ...,
-// Grid are vectors of the DODS Structure, ... classes). 
-
-bool
-Array::deserialize(bool reuse)
-{
-    bool status;
-    unsigned int num;
-
-    switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
-
-	if (_buf && !reuse) {
-	    delete[] _buf;
-	    _buf = 0;
-	}
-
-	if (!_buf) {
-	    _buf = new char[width()]; // we always do the allocation!
-	    DBG(cerr << "List::deserialize: allocating " \
-		<< width() << " bytes for an array of " \
-		<< length() << " " << _var->type_name() << endl);
-	}
-
-	if (_var->type() == byte_t)
-	    status = (bool)xdr_bytes(xdrin(), (char **)&_buf, &num,
-				     DODS_MAX_ARRAY); 
-	else
-	    status = (bool)xdr_array(xdrin(), (char **)&_buf, &num,
-				     DODS_MAX_ARRAY, _var->width(), 
-				     _var->xdr_coder());
-	DBG(cerr << "List::deserialize: read " << num <<  " elements\n");
-
-	break;
-
-      case str_t:
-      case url_t:
-      case array_t:
-      case list_t:
-      case structure_t:
-      case sequence_t:
-      case function_t:
-      case grid_t:
-
-	status = (bool)xdr_int(xdrin(), &num);
-	_vec.resize(num);
-	for (int i = 0; status && i < num; ++i) {
-	    _vec[i] = _var;	// init to empty object of correct class
-	    _vec[i]->deserialize();
-	}
-	
-	break;
-
-      default:
-	cerr << "Array::deserialize: Unknown type\n";
-	status = false;
-    }
-
-    return status;
-}
-
-// copy contents of VAL to the internal buffer (val2buf)
-
-// Assume that VAL points to memory which contains, in row major order,
-// enough elements of the correct type to fill the array. For an array of a
-// cardinal type they are memcpy'd into _buf, otherwise store_val is called
-// length() times on each successive _var->width() piece of VAL.
-
-unsigned int
-Array::store_val(void *val, bool reuse)
-{
-    return val2buf(val, reuse);
-}
-
-unsigned int
-Array::val2buf(void *val, bool reuse)
-{
-    assert(val);
-
-    switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
-
-	unsigned int array_wid = width();
-
-	if (_buf && !reuse) {
-	    delete[] _buf;
-	    _buf = 0;
-	}
-
-	if (!_buf) {		// First time or no reuse (free'd above)
-	    _buf = new char[array_wid];
-	    memcpy(_buf, val, array_wid);
-	}
-	else { 
-	    memcpy(_buf, val, array_wid);
-	}
-
-	break;
-
-      case str_t:
-      case url_t:
-
-	unsigned int elem_wid = _var->width();
-	unsigned int len = length();
-
-	_vec.resize(len);
-
-	for (int i = 0; i < len; ++i) {
-	    _vec[i] = _var;	// init with empty instance of correct class
-	    _vec[i]->val2buf(val + i * elem_wid, reuse);
-	}
-
-	break;
-
-      default:
-	cerr << "Array::val2buf: Can be called for arrays of Byte, Int32, \n"
-	  << "Float64, String and Url only.\n";
-	return 0;
-    }
-
-    return width();
-}
-
-// copy contents of the internal buffer to VAL (buf2val).
-//
-// In the case of a cardinal type, assume that val points to an array large
-// enough to hold N instances of the `C' representation of the element type.
-// In the case of a non-cardinal type, assume that val points to an array
-// loarge enough to hold N instances of the DODS class used to represent that
-// type. 
- 
-unsigned int
-Array::read_val(void **val)
-{
-    return buf2val(val);
-}
-
-unsigned int
-Array::buf2val(void **val)
-{
-    assert(val);
-
-    unsigned int wid = width();
-
-    switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
-
-	if (!*val)
-	    *val = new char[wid];
-
-	(void)memcpy(*val, _buf, wid);
-
-	break;
-
-      case str_t:
-      case url_t:
-
-	unsigned int elem_wid = _var->width();
-	unsigned int len = length();
-
-	for (int i = 0; i < len; ++i) {
-	    void *val_elem = *val + i * elem_wid;
-	    _vec[i]->buf2val(&val_elem);
-	}
-
-	break;
-
-      default:
-	cerr << "Array::buf2val: Can be called for arrays of Byte, Int32, \n"
-	  << "Float64, String and Url only.\n";
-	return 0;
-    }
-
-    return wid;
-}
-
-// Given an index I into the _vec BaseType * vector, set the Ith element to
-// VAL. 
-//
-// Returns: void
-
-void 
-Array::set_vec(int i, BaseType *val)
-{
-    assert(i > -1);
-    assert(val);
-
-    if (i >= _vec.capacity())
-	_vec.resize(i + 10);
-
-    _vec.elem(i) = val;
-}
- 
-// Given the the index I, return the Ith element of the BaseType * vector
-// _vec.
-//
-// Returns: the Ith element of _vec if the index is within range, otherwise
-// causes an error
-
-BaseType *
-Array::vec(int i)
-{
-    return _vec[i];
-}
-
-BaseType *
-Array::var(const String &name)
-{
-    if (_var->name() == name)
-	return _var;
-    else
-	return _var->var(name);
-}
-
-// Add the BaseType pointer to this ctor type instance. Propagate the name of
-// the BaseType instance to this instance. This ensures that variables at any
-// given level of the DDS table have unique names (i.e., that Arrays do not
-// have their default name "").
-// NB: Part p defaults to nil for this class
-
-void
-Array::add_var(BaseType *v, Part p)
-{
-    if (_var)
-	err_quit("Array::add_var: Attempt to overwrite base type of an array");
-
-    _var = v;
-    set_name(v->name());
-
-    DBG(cerr << "Array::add_var: Added variable " << v << " (" \
-	 << v->name() << " " << v->type_name() << ")" << endl);
-}
-
 // Add the dimension DIM to the list of dimensions for this array. If NAME is
 // given, set it to the name of this dimension. NAME defaults to "".
+//
+// Sets Vector's length member as a side effect.
 //
 // Returns: void
 
@@ -601,6 +237,11 @@ Array::append_dim(int size, String name)
     d.size = size;
     d.name = name;
     _shape.append(d); 
+
+    if (Vector::length() == -1)
+	set_length(size);
+    else
+	set_length(Vector::length() * size);
 }
 
 Pix 
@@ -622,7 +263,8 @@ unsigned int
 Array::dimensions()
 {
   unsigned int dim = 0;
-  for( Pix p = first_dim(); p; next_dim(p)) dim ++;
+  for(Pix p = first_dim(); p; next_dim(p)) 
+      dim ++;
 
   return dim;
 }
@@ -650,7 +292,7 @@ Array::print_decl(ostream &os, String space, bool print_semi,
 		  bool constraint_info)
 {
     // print it, but w/o semicolon
-    _var->print_decl(os, space, false, constraint_info); 
+    var()->print_decl(os, space, false, constraint_info); 
 
     for (Pix p = _shape.first(); p; _shape.next(p)) {
 	os << "[";
@@ -663,75 +305,26 @@ Array::print_decl(ostream &os, String space, bool print_semi,
 	os << ";" << endl;
 }
 
-// Print the values of a array to OS. The array must be of a cardinal type
-// (i.e., the card() mfunc returns true). In order to print each element,
-// temporarily store that element's value in the instance _VAR. Then call
-// print_val() on _VAR. This ensures that the proper printed representation
-// will be used without knowing the type of array's elements. Given that
-// there can be an infinite number of types (using Structure, ...) this is
-// important!
-//
-// OS is the C++ stream for writing.
-// VAR is a pointer to an instance of this array's element type (e.g., Int32)
-// ARRAY is a pointer to the array contents (stored as `C' would store them)
-// DIMS is the number of dimentsions
-// SHAPE is an array of the dimension sizes (for a 3-d array SHAPE[0] is the
-// size of the first dimension, ..., SHAPE[2] is the size fo the third dim.
-//
-// Returns: the number of (cardinal) elements written to OS.
-
-static unsigned int
-print_card_array(ostream &os, BaseType *var, void *array, unsigned int dims, 
-		 unsigned int shape[])
-{
-    unsigned int iarray = (unsigned int)array;
-
-    if (dims == 1) {
-	os << "{";
-	for (int i = 0; i < shape[0]-1; ++i) {
-	    array += var->val2buf(array);
-	    var->print_val(os, "", false);
-	    os << ", ";
-	}
-	array += var->val2buf(array);
-	var->print_val(os, "", false);
-	os << "}";
-	return (unsigned int)array - iarray;
-    }
-    else {
-	os << "{";
-	for (int i = 0; i < shape[dims-1]-1; ++i) {
-	    array += print_card_array(os, var, array, dims - 1, shape + 1);
-	    os << "},";
-	}
-	array += print_card_array(os, var, array, dims - 1, shape + 1);
-	os << "}";
-	return (unsigned int)array - iarray;
-    }
-}
-
-// Print an array. The array must be of a non-cardinal type (e.g., String,
-// Structure, ...).
+// Print an array. 
 //
 // OS is the stream used for writing
-// VEC is the vector used to represent the values.
 // INDEX is the index of VEC to start printing
 // DIMS is the number of dimensions in the array
 // SHAPE is the sixe of the dimensions of the array.
 //
 // Returns: the number of elements written.
 
-static unsigned int
-print_vec_array(ostream &os, BaseTypePtrVec &vec, unsigned int index,
-		unsigned int dims, unsigned int shape[])
+unsigned int
+Array::print_array(ostream &os, unsigned int index,
+		   unsigned int dims, unsigned int shape[])
 {
     if (dims == 1) {
 	os << "{";
 	for (int i = 0; i < shape[0]-1; ++i) {
-	    vec[index++]->print_val(os, "", false);
+	    var(index++)->print_val(os, "", false);
 	    os << ", ";
 	}
-	vec[index++]->print_val(os, "", false);
+	var(index++)->print_val(os, "", false);
 	os << "}";
 
 	return index;
@@ -739,10 +332,10 @@ print_vec_array(ostream &os, BaseTypePtrVec &vec, unsigned int index,
     else {
 	os << "{";
 	for (int i = 0; i < shape[dims-1]-1; ++i) {
-	    index += print_vec_array(os, vec, index, dims - 1, shape + 1);
+	    index = print_array(os, index, dims - 1, shape + 1);
 	    os << "},";
 	}
-	index += print_vec_array(os, vec, index, dims - 1, shape + 1);
+	index = print_array(os, index, dims - 1, shape + 1);
 	os << "}";
 
 	return index;
@@ -755,7 +348,7 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
     // print the declaration if print decl is true.
     // for each dimension,
     //   for each element, 
-    //     call store_val and then call print_val with PRINT_DECL false.
+    //     print the array given its shape, number of dimensions.
     // Add the `;'
     
     if (print_decl_p) {
@@ -769,27 +362,7 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
     for (Pix p = first_dim(); p; next_dim(p))
 	shape[i++] = dimension_size(p);
 
-    switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
-	print_card_array(os, _var, _buf, dims, shape);
-	break;
-
-      case str_t:
-      case url_t:
-      case array_t:
-      case list_t:
-      case structure_t:
-      case sequence_t:
-      case function_t:
-      case grid_t:
-	print_vec_array(os, _vec, 0, dims, shape);
-	break;
-
-      default:
-	cerr<< "Array::print_val: Unrecognized type" << endl;
-    }
+    print_array(os, 0, dims, shape);
 
     if (print_decl_p) {
 	os << ";" << endl;
