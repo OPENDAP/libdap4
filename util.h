@@ -170,8 +170,14 @@ void append_long_to_string(long val, int base, string &str_val);
     @return void. */
 void append_double_to_string(const double &num, string &str);
 
+/** Get the version of the DAP library. */
+string dap_version();
+
 /* 
  * $Log: util.h,v $
+ * Revision 1.37  2000/10/03 21:03:22  jimg
+ * Added dap_version() function
+ *
  * Revision 1.36  2000/09/22 02:17:23  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and
