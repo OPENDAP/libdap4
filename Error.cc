@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.26 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.27 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -91,8 +91,10 @@ Error::operator=(const Error &rhs)
 	_program_type = rhs._program_type;
 
 	delete[] _program; _program = 0;
-	_program = new char[strlen(rhs._program) + 1];
-	strcpy(_program, rhs._program);
+	if (rhs._program) {
+	    _program = new char[strlen(rhs._program) + 1];
+	    strcpy(_program, rhs._program);
+	}
 
 	assert(this->OK());
 
@@ -350,6 +352,14 @@ Error::correct_error(void *pgui) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.27  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.24.2.5  2001/10/08 17:14:22  jimg
+// Fixed a bug where an empty _program field was copied in operator=. This
+// caused seg faults because the copy used strlen on _program; when it was null
+// that meant dereferencing the null pointer.
+//
 // Revision 1.26  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

@@ -28,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.25 2001/09/28 23:21:35 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.26 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1947,8 +1947,9 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.25  2001/09/28 23:21:35  jimg
- * Generated file built after merging with 3.2.7.
+ * Revision 1.26  2001/10/14 01:28:38  jimg
+ * Merged with release-3-2-8.
+ *
  *
  * Revision 1.41  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.

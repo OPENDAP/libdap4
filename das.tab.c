@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.25 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.26 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1455,8 +1455,9 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.25  2001/09/28 17:50:07  jimg
- * Merged with 3.2.7.
+ * Revision 1.26  2001/10/14 01:28:38  jimg
+ * Merged with release-3-2-8.
+ *
  *
  * Revision 1.42  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.

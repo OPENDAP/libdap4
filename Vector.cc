@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.38 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.39 2001/10/14 01:28:38 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -270,20 +270,8 @@ bool
 Vector::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		  bool ce_eval)
 {
-    bool status = true;
-
-    try {
-      if (!read_p())
-	read(dataset);
-    }
-    catch (Error &e) {
-      return false;
-    }
-
-#if 0
-    if (!read_p()) 
-	read(dataset);
-#endif
+    if (!read_p())
+	read(dataset);		// read() throws Error and InternalErr
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
@@ -300,20 +288,20 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
       case dods_float32_c:
       case dods_float64_c:
 	// Jose Garcia
-	// If we are trying to serialize the data is because the user "hit"
-	// DDS::send however the internal buffer is unset so that is because
-	// the read method failed to do its job. This is outside the libdap++
-	// and is rather a problem of how read is implemented in the
-	// surrogate library.
+	// If we are trying to serialize data and the internal buffer is
+	// unset, then the read method failed to do its job.
 	if(!_buf)
 	    throw InternalErr(__FILE__, __LINE__, 
 			      "Buffer pointer is not set.");
 
 	if (!(bool)xdr_int(sink, (int *)&num)) // send vector length
-	    return false;
+	    throw Error(
+"Network I/O Error. This may be due to a bug in DODS or a\n\
+problem with the network connection.");
 
 	// Note that xdr_bytes and xdr_array both send the length themselves,
 	// so the length is actually sent twice. 12/31/99 jhrg
+	bool status;
 	if (_var->type() == dods_byte_c)
 	    status = (bool)xdr_bytes(sink, (char **)&_buf, 
 				     (unsigned int *)&num,
@@ -322,12 +310,12 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 	    status = (bool)xdr_array(sink, (char **)&_buf,
 				     (unsigned int *)&num,
 				     DODS_MAX_ARRAY, _var->width(),
-#ifdef WIN32
-				     (xdrproc_t)(_var->xdr_coder())
-#else
-				     _var->xdr_coder()
-#endif 
-				     );
+				     (xdrproc_t)(_var->xdr_coder()));
+	if (!status)
+	    throw Error(
+"Network I/O Error. This may be due to a bug in DODS or a\n\
+problem with the network connection.");
+	
 	break;
 
       case dods_str_c:
@@ -338,28 +326,27 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
       case dods_sequence_c:
       case dods_grid_c:
 	//Jose Garcia
-	// I think not setting the capacity of _vec
-	// must be an internal error, however I am not sure...
+	// Not setting the capacity of _vec is an internal error.
 	if(_vec.capacity() == 0)
 	    throw InternalErr(__FILE__, __LINE__, 
 			      "The capacity of *this* vector is 0.");
 
-	status = (bool)xdr_int(sink, (int *)&num); // send length
-	if (!status)
-	    return status;
+	if (!(bool)xdr_int(sink, (int *)&num))
+	    throw Error(
+"Network I/O Error. This may be due to a bug in DODS or a\n\
+problem with the network connection.");
 
-	for (int i = 0; status && i < num; ++i)	// test status in loop
-	    status = _vec[i]->serialize(dataset, dds, sink, false);
+	for (int i = 0; i < num; ++i)
+	    _vec[i]->serialize(dataset, dds, sink, false);
 
 	break;
 
       default:
-	cerr << "Vector::serialize: Unknow type\n";
-	status = false;
+	throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
 	break;
     }
 
-    return status;
+    return true;
 }
 
 // Read an object from the network and internalize it. For a Vector this is
@@ -394,14 +381,14 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
       case dods_uint32_c:
       case dods_float32_c:
       case dods_float64_c:
-	if (_buf && !reuse) {
+	if (_buf && !reuse)
 	    delete[] _buf; _buf = 0;
-	}
 
-	status = (bool)xdr_int(source, (int *)&num);
-	if (!status)
-	    throw InternalErr(__FILE__, __LINE__, 
-			      "Could not read the array length.");
+	if (!(bool)xdr_int(source, (int *)&num))
+	    throw Error(
+"Network I/O error. Could not read the array length.\n\
+This may be due to a bug in DODS or a problem with\n\
+the network connection.");
 	    
 	set_length(num);	// set the length for this instance.
 
@@ -421,8 +408,10 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 				     (xdrproc_t)(_var->xdr_coder()));
 
 	if (!status)
-	    throw InternalErr(__FILE__, __LINE__,
-			      "Could not read packed array data.");
+	    throw Error(
+"Network I/O error. Could not read packed array data.\n\
+This may be due to a bug in DODS or a problem with\n\
+the network connection.");
 
 	DBG(cerr << "Vector::deserialize: read " << num <<  " elements\n");
 
@@ -435,10 +424,11 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
-	status = (bool)xdr_int(source, (int *)&num);
-	if (!status)
-	    throw InternalErr(__FILE__, __LINE__, 
-			      "Could not read the array length.");
+	if (!(bool)xdr_int(source, (int *)&num))
+	    throw Error(
+"Network I/O error. Could not read the array length.\n\
+This may be due to a bug in DODS or a problem with\n\
+the network connection.");
 
 	vec_resize(num);
 	set_length(num);
@@ -451,8 +441,7 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 	break;
 
       default:
-	throw InternalErr(__FILE__, __LINE__,
-			  "Vector::deserialize: Unknow type!");
+	throw InternalErr(__FILE__, __LINE__, "Unknow type!");
 	break;
     }
 
@@ -628,16 +617,16 @@ Vector::set_vec(unsigned int i, BaseType *val)
 void
 Vector::add_var(BaseType *v, Part)
 {
-  // Jose Garcia
-  // By getting a copy of this object to be assigned to _var
-  // we let the owner of 'v' to deallocate it as necessary.
+    // Jose Garcia
+    // By getting a copy of this object to be assigned to _var
+    // we let the owner of 'v' to deallocate it as necessary.
 
-  _var = v->ptr_duplicate();
-  set_name(v->name());		// Vector name becomes base object's name
-  _var->set_parent(this);	// Vector --> child
+    _var = v->ptr_duplicate();
+    set_name(v->name());	// Vector name becomes base object's name
+    _var->set_parent(this);	// Vector --> child
   
-  DBG(cerr << "Vector::add_var: Added variable " << v << " (" \
-      << v->name() << " " << v->type_name() << ")" << endl);
+    DBG(cerr << "Vector::add_var: Added variable " << v << " (" \
+	<< v->name() << " " << v->type_name() << ")" << endl);
 }
 
 void
@@ -684,6 +673,16 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.39  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.35.4.6  2001/10/02 17:01:52  jimg
+// Made the behavior of serialize and deserialize uniform. Both methods now
+// use Error exceptions to signal problems with network I/O and InternalErr
+// exceptions to signal other problems. The return codes, always true for
+// serialize and always false for deserialize, are now meaningless. However,
+// by always returning a code that means OK, old code should continue to work.
+//
 // Revision 1.38  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

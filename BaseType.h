@@ -538,10 +538,6 @@ public:
 	DDS::send() function.  It has no BaseType implementation; each
 	datatype child class supplies its own implementation.
 
-	NB: I think that this class should signal errors with exceptions and
-	not a return code. This methods calls read(), which uses exceptions
-	to signal errors.
-
 	@memo Move data to the net.
 	@param dataset The (local) name of dataset to be read.
 	@param dds The Data Descriptor Structure object corresponding to
@@ -552,9 +548,10 @@ public:
 	@param ce_eval A boolean value indicating whether to evaluate
 	the DODS constraint expression that may accompany this dataset.
 	The constraint expression is stored in {\it dds}.
-	@return The function returns TRUE if data was sent, and FALSE if
-	an error condition was sent instead. (Or if the whole operation
-	failed and nothing was sent.)
+	@return This method always returns true. Older versions used the
+	return value to signal success or failure. 
+	@exception InternalErr.
+	@exception Error.
 	@see DDS */
     virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true) = 0; 
@@ -581,7 +578,7 @@ public:
 	storage is allocated.  If the internal buffer has not been
 	allocated at all, this argument has no effect.
 	@return Always returns TRUE.
-	@exception InternalErr when a problem reading from the XDR stream is
+	@exception Error when a problem reading from the XDR stream is
 	found.
 	@see DDS 
     */
@@ -740,6 +737,12 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.65  2001/10/14 01:28:38  jimg
+ * Merged with release-3-2-8.
+ *
+ * Revision 1.61.4.7  2001/10/02 16:47:16  jimg
+ * Changed the documentation comments for serialize and deserialize.
+ *
  * Revision 1.64  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.
  *

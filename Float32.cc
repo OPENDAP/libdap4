@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Float32.cc,v 1.18 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Float32.cc,v 1.19 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -69,28 +69,17 @@ bool
 Float32::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		   bool ce_eval)
 {
-    // Jose Garcia
-    // Since the read method is virtual and implemented outside
-    // libdap++ if we can not read the data that is the problem 
-    // of the user or of whoever wrote the surrogate library
-    // implemeting read therefore it is an internal error.
-#if 0
-    if (!read_p() && !read(dataset))
-	throw InternalErr(__FILE__, __LINE__, "Can not read data.");
-#endif
-    try {
-      if (!read_p())
-	read(dataset);
-    }
-    catch (Error &e) {
-      return false;
-    }
+    if (!read_p())
+	read(dataset);		// read() throws Error and InternalErr
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
     if (!xdr_float(sink, &_buf))
-	return false;
+	throw Error(
+"Network I/O Error. Could not send float 32 data.\n\
+This may be due to a bug in DODS, on the server or a\n\
+problem with the network connection.");
 
     return true;
 }
@@ -99,10 +88,11 @@ bool
 Float32::deserialize(XDR *source, DDS *, bool)
 {
     if (!xdr_float(source, &_buf))
-	throw InternalErr(__FILE__, __LINE__,
-			  "Could not read 32-bit float data.");
+	throw Error(
+"Network I/O Error. Could not read float 32 data. This may be due to a\n\
+bug in DODS or a problem with the network connection.");
 
-    return true;
+    return false;
 }
 
 unsigned int
@@ -201,6 +191,16 @@ Float32::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Float32.cc,v $
+// Revision 1.19  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.16.4.4  2001/10/02 17:01:52  jimg
+// Made the behavior of serialize and deserialize uniform. Both methods now
+// use Error exceptions to signal problems with network I/O and InternalErr
+// exceptions to signal other problems. The return codes, always true for
+// serialize and always false for deserialize, are now meaningless. However,
+// by always returning a code that means OK, old code should continue to work.
+//
 // Revision 1.18  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

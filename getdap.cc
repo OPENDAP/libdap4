@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.58 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.59 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -30,7 +30,11 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.58 2001/09/28 17:50:07 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.58 $";
+<<<<<<< geturl.cc
+const char *version = "$Revision: 1.59 $";
+=======
+const char *version = "$Revision: 1.59 $";
+>>>>>>> 1.52.2.9
 
 extern int keep_temps;		// defined in Connect.cc
 
@@ -259,7 +263,7 @@ main(int argc, char * argv[])
 		process_data(url, dds, verbose, print_rows);
 	    }
 	    catch (Error &e) {
-		e.display_message();
+		e.display_message(url.gui());
 		break;
 	    }
 	    if (source != stdin)
@@ -273,7 +277,7 @@ main(int argc, char * argv[])
 			continue;
 		}
 		catch (Error &e) {
-		    e.display_message();
+		    e.display_message(url.gui());
 		    continue;
 		}
 		if (verbose) {
@@ -292,8 +296,8 @@ main(int argc, char * argv[])
 			continue;
 		}
 		catch (Error &e) {
-		    e.display_message();
-		    continue;
+		    e.display_message(url.gui());
+		    continue;	// Goto the next URL or exit the loop.
 		}
 		if (verbose) {
 		    cerr << "Server version: " << url.server_version() 
@@ -322,7 +326,7 @@ main(int argc, char * argv[])
 		    delete dds; dds = 0;
 		}
 		catch (Error &e) {
-		    e.display_message();
+		    e.display_message(url.gui());
 		}
 	    }
 	}
@@ -345,7 +349,7 @@ main(int argc, char * argv[])
 		    url.close_output();
 		}
 		catch (Error &e) {
-		    e.display_message();
+		    e.display_message(url.gui());
 		    continue;
 		}
 	    }
@@ -359,6 +363,14 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.59  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.52.2.9  2001/10/08 16:53:35  jimg
+// Added url.gui() to all calls to Error::display_message(). This prevents a seg
+// fault when display_message is called with nothing (gui == null) but has been
+// ompiled with GUI defined.
+//
 // Revision 1.58  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

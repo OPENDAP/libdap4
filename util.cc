@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.69 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.70 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -529,10 +529,18 @@ long_to_string(long val, int base)
 // Jose Garcia
 void append_double_to_string(const double &num, string &str)
 {
-  // s having 100 characters should be enough for sprintf to do its job.
-  char s[80];
-  sprintf(s, "%.9f", num);
-  str+=s;
+    // s having 100 characters should be enough for sprintf to do its job.
+    // I want to banish all instances of sprintf. 10/5/2001 jhrg
+    ostrstream oss;
+    oss.precision(9);
+    oss << num;
+    str += oss.str();
+    oss.freeze(0);
+#if 0
+    char s[80];
+    sprintf(s, "%.9f", num);
+    str+=s;
+#endif
 }
 
 string
@@ -572,6 +580,14 @@ path_to_filename(string path)
 }
 
 // $Log: util.cc,v $
+// Revision 1.70  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.65.2.8  2001/10/08 16:55:59  jimg
+// I replaced the sprintf-based implementation of append_double_to_string with
+// one based on ostrstreams. sprintf was causing too many problems in other
+// places.
+//
 // Revision 1.69  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

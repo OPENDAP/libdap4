@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.45 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.46 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <assert.h>
 #include <stdlib.h>
@@ -86,7 +86,11 @@ Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 	return true;
 
     if (!xdr_str(sink, _buf))
-	return false;
+	throw Error(
+"Network I/O Error. Could not send string data.\n\
+This may be due to a bug in DODS, on the server or a\n\
+problem with the network connection.");
+
     DBG(cerr << "Exiting: buf = " << _buf << endl);
 
     return true;
@@ -98,9 +102,11 @@ bool
 Str::deserialize(XDR *source, DDS *, bool)
 {
     if (xdr_str(source, _buf) != 1)
-	throw InternalErr(__FILE__, __LINE__, "Could not read string data.");
+	throw Error(
+"Network I/O Error. Could not read string data. This may be due to a\n\
+bug in DODS or a problem with the network connection.");
 
-    return true;
+    return false;
 }
 
 // Copy information in the object's internal buffers into the memory pointed
@@ -199,6 +205,16 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.46  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.43.4.5  2001/10/02 17:01:52  jimg
+// Made the behavior of serialize and deserialize uniform. Both methods now
+// use Error exceptions to signal problems with network I/O and InternalErr
+// exceptions to signal other problems. The return codes, always true for
+// serialize and always false for deserialize, are now meaningless. However,
+// by always returning a code that means OK, old code should continue to work.
+//
 // Revision 1.45  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

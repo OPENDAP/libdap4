@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.50 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.51 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -297,7 +297,7 @@ char *
 rfc822_date(const time_t t)
 {
     struct tm *stm = gmtime(&t);
-    static char d[64];
+    static char d[256];		// parnoid, should use ostrstream.
 
     sprintf(d, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday], 
 	    stm->tm_mday, months[stm->tm_mon], 
@@ -568,6 +568,14 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.51  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.47.4.9  2001/10/08 17:01:30  jimg
+// Got paranoid about sprintf; increased the size of the buffer used by
+// rfc822_date() to 256. It's still not that good; should use an output string
+// stream, et c.
+//
 // Revision 1.50  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

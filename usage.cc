@@ -14,7 +14,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.17 2001/08/24 17:46:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.18 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -110,7 +110,7 @@ remove_mime_header(FILE *in)
     Similarly, to locate the dataset-specific HTML* file it catenates `.html'
     to #name#, where #name# is the name of the dataset. If the filename part
     of #name# is of the form [A-Za-z]+[0-9]*.* then this function also looks
-    for a file whose name is [A-Za-z].html For example, if #name# is
+    for a file whose name is [A-Za-z]+.html For example, if #name# is
     .../data/fnoc1.nc this function first looks for .../data/fnoc1.nc.html.
     However, if that does not exist it will look for .../data/fnoc.html. This
     allows one `per-dataset' file to be used for a collection of files with
@@ -424,94 +424,120 @@ int
 #endif 
 main(int argc, char *argv[])
 {
-  if (argc != 3) {
-    usage(argv);
-    exit(1);
-  }
+    if (argc != 3) {
+	usage(argv);
+	exit(1);
+    }
 
-  string name = argv[1];
-  string doc;
+    string name = argv[1];
+    string doc;
 
-  if (found_override(name, doc)) {
-    html_header();
-    cout << doc;
-    exit(0);
-  }
+    if (found_override(name, doc)) {
+	html_header();
+	cout << doc;
+	exit(0);
+    }
 
-  // The user is not overriding the DAS/DDS generated information, so read
-  // the DAS, DDS and user supplied documents. 
+    // The user is not overriding the DAS/DDS generated information, so read
+    // the DAS, DDS and user supplied documents. 
 
-  string cgi = argv[2];
+    string cgi = argv[2];
 
-  DAS das;
-  string command = cgi + "_das '" + name + "'";
-  DBG(cerr << "DAS Command: " << command << endl);
+    DAS das;
+    string command = cgi + "_das '" + name + "'";
+    DBG(cerr << "DAS Command: " << command << endl);
 
+    try {
 #ifndef WIN32
-  //  Under win32, this has been temporarily removed to get it to compile.
-  //  This code is not relevant for the client side for win32 native port.
-  //  Once one or more of the Dods servers have been ported, this will need
-  //  patched similiar to the popen() fixes for ML loaddods.
-  FILE *in = popen(command.c_str(), "r");
-  if (in && remove_mime_header(in)) {
-    das.parse(in);
-    pclose(in);
-  }
+	//  Under win32, this has been temporarily removed to get it to
+	//  compile. This code is not relevant for the client side for win32
+	//  native port. Once one or more of the Dods servers have been
+	//  ported, this will need patched similiar to the popen() fixes for
+	//  ML loaddods.
+	FILE *in = popen(command.c_str(), "r");
+	if (in && remove_mime_header(in)) {
+	    das.parse(in);
+	    pclose(in);
+	}
 #endif
 
-  DDS dds;
-  command = cgi + "_dds '" + name + "'";
-  DBG(cerr << "DDS Command: " << command << endl);
+	DDS dds;
+	command = cgi + "_dds '" + name + "'";
+	DBG(cerr << "DDS Command: " << command << endl);
 
 #ifndef WIN32
-  //  Under win32, this has been temporarily removed to get it to compile.
-  //  This code is not relevant for the client side for win32 native port.
-  //  Once one or more of the Dods servers have been ported, this will need
-  //  patched similiar to the popen() fixes for ML loaddods.
-  in = popen(command.c_str(), "r");
-  if (in && remove_mime_header(in)) {
-    dds.parse(in);
-    pclose(in);
-  }
+	//  Under win32, this has been temporarily removed to get it to
+	//  compile. This code is not relevant for the client side for win32
+	//  native port. Once one or more of the Dods servers have been
+	//  ported, this will need patched similiar to the popen() fixes for
+	//  ML loaddods.
+	in = popen(command.c_str(), "r");
+	if (in && remove_mime_header(in)) {
+	    dds.parse(in);
+	    pclose(in);
+	}
 #endif
 
-  // Build the HTML* documents.
+	// Build the HTML* documents.
 
-  string user_html = get_user_supplied_docs(name, cgi);
+	string user_html = get_user_supplied_docs(name, cgi);
 
-  string global_attrs = build_global_attributes(das, dds);
+	string global_attrs = build_global_attributes(das, dds);
 
-  string variable_sum = build_variable_summaries(das, dds);
+	string variable_sum = build_variable_summaries(das, dds);
 
-  // Write out the HTML document.
+	// Write out the HTML document.
 
-  html_header();
+	html_header();
 
-  if (global_attrs.length()) {
-    cout << "<html><head><title>Dataset Information</title></head>" 
-	 << endl 
-	 << "<html>" << endl 
-	 << global_attrs << endl 
-	 << "<hr>" << endl;
-  }
+	if (global_attrs.length()) {
+	    cout << "<html><head><title>Dataset Information</title></head>" 
+		 << endl 
+		 << "<html>" << endl 
+		 << global_attrs << endl 
+		 << "<hr>" << endl;
+	}
 
-  cout << variable_sum << endl;
+	cout << variable_sum << endl;
 
-  cout << "<hr>" << endl;
+	cout << "<hr>" << endl;
 
-  cout << user_html << endl;
+	cout << user_html << endl;
 
-  cout << "</html>" << endl;
+	cout << "</html>" << endl;
+    }
+    catch (Error &e) {
+	string error_msg = e.get_error_message();
+	cout << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\"\n"
+	     << "\"http://www.w3.org/TR/REC-html40/loose.dtd\">\n"
+	     << "<html><head><title>DODS Error</title>\n"
+	     << "</head>\n" 
+	     << "<body>\n"
+	     << "<h3>Error building the DODS dataset usage repsonse</h3>:\n"
+	     << error_msg
+	     << "<hr>\n";
 
-  exit(0);
+	return 1;
+    }
 
-  //  Needed for VC++
+    return 0;
+
+    //  Needed for VC++
 #ifdef WIN32
-  return;
+    return;
 #endif
 }
 
 // $Log: usage.cc,v $
+// Revision 1.18  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.16.2.3  2001/10/09 01:18:16  jimg
+// Fixed bug 300. Usage now returns 1 when it encounters an error.
+//
+// Revision 1.16.2.2  2001/10/02 16:57:18  jimg
+// Fixed a documentation bug.
+//
 // Revision 1.17  2001/08/24 17:46:23  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

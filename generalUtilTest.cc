@@ -95,6 +95,13 @@ public:
 	assert(*store_str("test%20ing") == "test ing");
     }
 
+    void munge_error_message_test() {
+	assert(munge_error_message("An Error") == "\"An Error\"");
+	assert(munge_error_message("\"An Error\"") == "\"An Error\"");
+	assert(munge_error_message("An \"E\"rror") == "\"An \\\"E\\\"rror\"");
+	assert(munge_error_message("An \\\"E\\\"rror") == "\"An \\\"E\\\"rror\"");
+    }
+
     static Test *suite ()  {
 	TestSuite *s = new TestSuite("generalUtilTest");
 
@@ -117,6 +124,10 @@ public:
 	s->addTest(new TestCaller<generalUtilTest>
 		   ("ce_string_parse_test", 
 		    &generalUtilTest::ce_string_parse_test));
+
+	s->addTest(new TestCaller<generalUtilTest>
+		   ("munge_error_message_test", 
+		    &generalUtilTest::munge_error_message_test));
 
 	return s;
     }

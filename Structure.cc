@@ -175,45 +175,26 @@ bool
 Structure::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		     bool ce_eval)
 {
-    bool status = true;
-    // Jose Garcia
-    // Since the read method is virtual and implemented outside
-    // libdap++ if we can not read the data that is the problem 
-    // of the user or of whoever wrote the surrogate library
-    // implemeting read therefore it is an internal error.
-#if 0
-    if (!read_p() && !read(dataset))
-	throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
-#endif
-    // Unlike the scalar and vector serialize(), I assign the return value of
-    // read(). I'm not sure this does what's needed, though... 10/5/2000 jhrg
-    try {
-	if (!read_p())
-	    status = read(dataset);
-    }
-    catch (Error &e) {
-	return false;
-    }
+    if (!read_p())
+	read(dataset);		// read() throws Error and InternalErr
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
     for (Pix p = first_var(); p; next_var(p)) 
-	if (var(p)->send_p() 
-	    && !(status = var(p)->serialize(dataset, dds, sink, false))) 
-	    break;
+	if (var(p)->send_p())
+	    var(p)->serialize(dataset, dds, sink, false);
 
-    return status;
+    return true;
 }
 
 bool
 Structure::deserialize(XDR *source, DDS *dds, bool reuse)
 {
-    for (Pix p = first_var(); p; next_var(p)) {
+    for (Pix p = first_var(); p; next_var(p))
 	var(p)->deserialize(source, dds, reuse);
-    }
 
-    return true;
+    return false;
 }
 
 // This mfunc assumes that val contains values for all the elements of the
@@ -447,6 +428,16 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.47  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.43.4.7  2001/10/02 17:01:52  jimg
+// Made the behavior of serialize and deserialize uniform. Both methods now
+// use Error exceptions to signal problems with network I/O and InternalErr
+// exceptions to signal other problems. The return codes, always true for
+// serialize and always false for deserialize, are now meaningless. However,
+// by always returning a code that means OK, old code should continue to work.
+//
 // Revision 1.46  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

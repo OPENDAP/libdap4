@@ -1,27 +1,30 @@
 
-$Id: README,v 1.11 2000/08/02 22:46:49 jimg Exp $
+$Id: README,v 1.12 2001/10/14 01:28:38 jimg Exp $
 
 WHAT'S IN THIS DIRECTORY?
 
-  This directory contains the URI/GSO implementation of the DODS Data Access
-  Protocol.  Documentation for this software can be found on the DODS home
-  page at http://unidata.ucar.edu/packages/dods/
+  This directory contains the URI/GSO C++ implementation of the DODS Data
+  Access Protocol (DAP). Documentation for this software can be found on the
+  DODS home page at http://unidata.ucar.edu/packages/dods/
 
-  The Data Access Protocol (DAP) is used to provide a uniform way of
-  accessing a variety of different types of Earth-science data across the
-  internet. 
+  The DAP is used to provide a uniform way of accessing a variety of
+  different types of Earth-science data across the internet.
 
   The DAP is implemented as a set of C++ classes that can be used to build
-  DODS data servers and client libraries.  The classes may be specialized to
-  mimic the behavior of other data access APIs, such as netCDF or HDF.  In
-  this way, programs originally meant to work with local data in those
-  formats can be re-linked and equipped to work with data stored remotely in
-  many different formats.
+  DODS data servers and clients. The classes may be specialized to mimic the
+  behavior of other data access APIs, such as netCDF. In this way, programs
+  originally meant to work with local data in those formats can be re-linked
+  and equipped to work with data stored remotely in many different formats.
+  The classes can also by specialized to build standalone client programs.
 
   The DODS DAP is contained in a single library: libdap++.a. This library
   uses some parts of the the GNU C++ class library libg++.a; it includes
   those parts in its subdirectory `GNU'. You do not need to get a copy of
-  libg++.
+  libg++. A second library, libdap++-gui.a, is also built. This is
+  essentially the same library except that it uses a client's windowing
+  system to display status and/or error information during network accesses.
+  Only clients should be linked with this library, and only those that will
+  be as interactive programs.
 
 WHAT ELSE IS THERE?
 

@@ -38,7 +38,15 @@ string esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
 string unescattr(string s);
 
+string munge_error_message(string msg);
+
 // $Log: escaping.h,v $
+// Revision 1.8  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.5.4.6  2001/10/08 16:57:09  jimg
+// Added munge_error_message().
+//
 // Revision 1.7  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

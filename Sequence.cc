@@ -579,25 +579,25 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 	else if (is_start_of_instance(marker)) {
 	    d_row_number++;
 	    DBG2(cerr << "Reading row " << d_row_number << " of "
-		<< name() << endl);
+		 << name() << endl);
 	    BaseTypeRow *bt_row_ptr = new BaseTypeRow;
 	    // Read the instance's values, building up the row
-	for (Pix p = first_var(); p; next_var(p)) {
+	    for (Pix p = first_var(); p; next_var(p)) {
 		BaseType *bt_ptr = var(p)->ptr_duplicate();
 		bt_ptr->deserialize(source, dds, reuse);
 		DBG2(cerr << "Deserialized " << bt_ptr->name() << " ("
-		    << bt_ptr << ") = ");
+		     << bt_ptr << ") = ");
 		DBG2(bt_ptr->print_val(cerr, ""));
 		bt_row_ptr->push_back(bt_ptr);
-	}
+	    }
 	    // Append this row to those accumulated.
 	    d_values.push_back(bt_row_ptr);
-    }
+	}
 	else
 	    throw Error("I could not read the expected Sequence data stream marker!");
     };
 
-    return true;
+    return false;
 }
 
 // Return the current row number.
@@ -792,6 +792,16 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.63  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.59.4.10  2001/10/02 17:01:52  jimg
+// Made the behavior of serialize and deserialize uniform. Both methods now
+// use Error exceptions to signal problems with network I/O and InternalErr
+// exceptions to signal other problems. The return codes, always true for
+// serialize and always false for deserialize, are now meaningless. However,
+// by always returning a code that means OK, old code should continue to work.
+//
 // Revision 1.62  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

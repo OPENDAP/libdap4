@@ -137,30 +137,20 @@ bool
 Grid::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		bool ce_eval)
 {
-    bool status = true;
-
-    try {
-	if (!read_p())
-	    read(dataset);
-    }
-    catch (Error &e) {
-	return false;
-    }
+    if (!read_p())
+	read(dataset);		// read() throws Error and InternalErr
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (_array_var->send_p() 
-	&& !(status = _array_var->serialize(dataset, dds, sink, false))) 
-	return false;
+    if (_array_var->send_p())
+	_array_var->serialize(dataset, dds, sink, false);
 
     for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	if  (_map_vars(p)->send_p() 
-	     && !(status = _map_vars(p)->serialize(dataset, dds, sink,
-						   false))) 
-	    break;
+	if (_map_vars(p)->send_p())
+	    _map_vars(p)->serialize(dataset, dds, sink, false);
 
-    return status;
+    return true;
 }
 
 bool
@@ -168,11 +158,10 @@ Grid::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     _array_var->deserialize(source, dds, reuse);
 
-    for(Pix p = _map_vars.first(); p; _map_vars.next(p)) {
+    for(Pix p = _map_vars.first(); p; _map_vars.next(p))
 	_map_vars(p)->deserialize(source, dds, reuse);
-    }
 
-    return true;
+    return false;
 }
 
 unsigned int
@@ -530,6 +519,16 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.50  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.46.4.4  2001/10/02 17:01:52  jimg
+// Made the behavior of serialize and deserialize uniform. Both methods now
+// use Error exceptions to signal problems with network I/O and InternalErr
+// exceptions to signal other problems. The return codes, always true for
+// serialize and always false for deserialize, are now meaningless. However,
+// by always returning a code that means OK, old code should continue to work.
+//
 // Revision 1.49  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

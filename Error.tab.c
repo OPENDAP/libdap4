@@ -24,7 +24,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.20 2001/09/28 17:50:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.21 2001/10/14 01:28:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1029,8 +1029,9 @@ Errorerror(char *s)
 
 
 // $Log: Error.tab.c,v $
-// Revision 1.20  2001/09/28 17:50:07  jimg
-// Merged with 3.2.7.
+// Revision 1.21  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
 //
 //
 // Revision 1.11  2000/10/02 18:49:26  jimg

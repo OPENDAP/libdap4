@@ -14,7 +14,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.113 2001/09/28 17:50:07 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.114 2001/10/14 01:28:38 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -1088,14 +1088,10 @@ Connect::clone(const Connect & src)
 // Use the URL designated when the Connect object was created as the
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
-bool 
-Connect::read_url(string & url, FILE * stream)
+void
+Connect::read_url(string & url, FILE * stream) throw(Error)
 {
     assert(stream);
-
-#if 0
-    url = id2www(url);
-#endif
 
     int status = YES;
 
@@ -1120,11 +1116,9 @@ Connect::read_url(string & url, FILE * stream)
     }
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
-#ifdef GUI
-    try {
-#endif
     HTList *listerr=HTRequest_error(_request);
     if (listerr)
+<<<<<<< Connect.cc
 	process_www_errors(listerr, _request);
 #ifdef GUI
     }
@@ -1133,19 +1127,23 @@ Connect::read_url(string & url, FILE * stream)
 	throw;
     }
 #endif
+=======
+	process_www_errors(listerr, _request); // throws Error
+>>>>>>> 1.105.2.15
 
     if (_cache_enabled)
 	HTCacheIndex_write(_cache_root);
 
     if (status != YES) {
 	if (SHOW_MSG)
-	    cerr << "Can't access resource" << endl;
-	return false;
+	    cerr << "DODS...... Can't access resource" << endl;
+	throw Error("Cannot access resource from web server.");
     }
 
-    HTRequest_delete(_request);
+    if (_cache_enabled)
+	HTCacheIndex_write(_cache_root);
 
-    return (status != 0);
+    HTRequest_delete(_request);
 }
 
 // This ctor is declared private so that it won't ever be called by users,
@@ -1341,7 +1339,7 @@ Connect::get_cache_control()
 // async operation was actually synchronous.
 
 bool 
-Connect::fetch_url(string & url, bool)
+Connect::fetch_url(string & url, bool) throw(Error)
 {
     _encoding = unknown_enc;
     _type = unknown_type;
@@ -1356,8 +1354,7 @@ Connect::fetch_url(string & url, bool)
     // initialize the class. 2/8/2001 jhrg
     extract_auth_info(url); 
 
-    if (!read_url(url, stream))
-	return false;
+    read_url(url, stream);	// Throws Error.
 
     // Workaround for Linux 2.2 (only?). Using fseek() did not work for URLs
     // with between 61 and 64 characters in them. I have no idea why, but it
@@ -1378,7 +1375,7 @@ Connect::fetch_url(string & url, bool)
 
     _output = stream;
 
-    return true;
+    return true;		// Faux status; for compat with old code.
 }
 
 FILE *
@@ -1432,7 +1429,7 @@ Connect::server_version()
 // Added EXT which defaults to "das". jhrg 3/7/95
 
 bool 
-Connect::request_das(bool gui_p, const string & ext)
+Connect::request_das(bool gui_p, const string & ext) throw(Error, InternalErr)
 {
 #ifdef GUI
     (void) _gui->show_gui(gui_p);
@@ -1440,52 +1437,49 @@ Connect::request_das(bool gui_p, const string & ext)
     string das_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
 	das_url = das_url + "?" + id2www_ce(_proj + _sel);
-    bool status = false;
-    string value;
 
-    status = fetch_url(das_url);
-    if (!status)
-	goto exit;
+    // We need to catch Error exceptions to ensure calling close_output.
+    try {
+	fetch_url(das_url);
+    }
+    catch (Error &e) {
+	close_output();
+	throw;
+    }
 
     switch (type()) {
-    case dods_error:
-	{
-	    string correction;
-	    if (!_error.parse(_output)) {
-		cerr << "Could not parse error object" << endl;
-		status = false;
-		break;
-	    }
-#ifdef GUI
-	    correction = _error.correct_error(_gui);
-#else
-	    correction = _error.correct_error(0);
-#endif
-	    status = false;
-	    break;
-	}
+      case dods_error: {
+	  Error e;
+	  if (!e.parse(_output)) {
+	      throw InternalErr(__FILE__, __LINE__, 
+			"Could not parse error returned from server.");
+	      break;
+	  }
+	  _error = e;		// Copy `e' to Connect's Error. 
+	  throw e;
+	  break;
+      }
 
-    case web_error:
-	status = false;
+      case web_error:
+	// We should never get here; a web error should be picked up read_url
+	// (called by fetch_url) and result in a thrown Error object.
 	break;
 
-    case dods_das:
-    default:
+      case dods_das:
+      default:
 	// DAS::parse throws an exception on error.
 	_das.parse(_output);	// read and parse the das from a file 
-	status = true;
 	break;
     }
 
-  exit:
     close_output();
-    return status;
+    return true;
 }
 
 // Added EXT which deafults to "dds". jhrg 3/7/95
 
 bool 
-Connect::request_dds(bool gui_p, const string & ext)
+Connect::request_dds(bool gui_p, const string & ext) throw(Error, InternalErr)
 {
 #ifdef GUI
     (void) _gui->show_gui(gui_p);
@@ -1493,45 +1487,49 @@ Connect::request_dds(bool gui_p, const string & ext)
     string dds_url = _URL + "." + ext;
     if (_proj.length() + _sel.length())
 	dds_url = dds_url + "?" + id2www_ce(_proj + _sel);
-    bool status = false;
 
-    status = fetch_url(dds_url);
-    if (!status)
-	goto exit;
+    // We need to catch Error exceptions to ensure calling close_output.
+    try {
+	fetch_url(dds_url);
+    }
+    catch (Error &e) {
+	close_output();
+#ifdef GUI
+	_gui->command("popdown");
+	_gui->progress_visible(false);
+#endif
+	throw;
+    }
 
     switch (type()) {
-    case dods_error:
-	{
-	    string correction;
-	    if (!_error.parse(_output)) {
-		cerr << "Could not parse error object" << endl;
-		status = false;
-		break;
-	    }
+      case dods_error: {
 #ifdef GUI
-	    correction = _error.correct_error(_gui);
-#else
-	    correction = _error.correct_error(0);
+	  _gui->command("popdown");
+	  _gui->progress_visible(false);
 #endif
-	    status = false;
-	    break;
-	}
+	  if (!_error.parse(_output)) {
+	      throw InternalErr(__FILE__, __LINE__, 
+			"Could not parse error returned from server.");
+	      break;
+	  }
+	  throw _error;
+	  break;
+      }
 
-    case web_error:
-	status = false;
+      case web_error:
+	// We should never get here; a web error should be picked up read_url
+	// (called by fetch_url) and result in a thrown Error object.
 	break;
 
-    case dods_dds:
-    default:
+      case dods_dds:
+      default:
 	// DDS::prase throws an exception on error.
 	_dds.parse(_output);	// read and parse the dds from a file 
-	status = true;
 	break;
     }
 
-  exit:
     close_output();
-    return status;
+    return true;
 }
 
 // Assume that _output points to FILE * from which we can read the data
@@ -1539,13 +1537,14 @@ Connect::request_dds(bool gui_p, const string & ext)
 // This is a private mfunc.
 
 DDS *
-Connect::process_data(bool async)
+Connect::process_data(bool async) throw(Error, InternalErr)
 {
     switch (type()) {
       case dods_error:
 	if (!_error.parse(_output))
 	    throw InternalErr(__FILE__, __LINE__,
 	      "Could not parse the Error object returned by the server!");
+	throw _error;
 	return 0;
 
       case web_error:
@@ -1565,7 +1564,7 @@ Connect::process_data(bool async)
 		  dds->var(q)->deserialize(source(), dds);
 	      }
 	      catch (InternalErr &ie) {
-		  string msg = "I cought the following Internal Error:";
+		  string msg = "I cought the following Internal Error:\n";
 		  msg += NEWLINE + ie.get_error_message();
 		  throw InternalErr(__FILE__, __LINE__, msg);
 	      }
@@ -1590,8 +1589,8 @@ Connect::process_data(bool async)
 // origianl DDS received from the dataset when this connection was made.
 
 DDS *
-Connect::request_data(string expr, bool gui_p,
-		      bool async, const string & ext)
+Connect::request_data(string expr, bool gui_p, bool async, 
+		      const string & ext) throw(Error, InternalErr)
 {
 #ifdef GUI
     (void) _gui->show_gui(gui_p);
@@ -1609,17 +1608,14 @@ Connect::request_data(string expr, bool gui_p,
     string data_url = _URL + "." + ext + "?" 
 	+ id2www_ce(_proj + proj + _sel + sel);
 
-    bool status = fetch_url(data_url, async);
-    if (!status) {
-	cerr << "Could not complete data request operation" << endl;
-	return 0;
-    }
+    fetch_url(data_url, async);
 
     return process_data(async);
 }
 
 DDS *
-Connect::read_data(FILE * data_source, bool gui_p, bool async)
+Connect::read_data(FILE * data_source, bool gui_p, bool async) 
+    throw(Error, InternalErr)
 {
     if (!data_source) 
 	throw InternalErr(__FILE__, __LINE__, "data_source is null.");
@@ -1708,6 +1704,16 @@ Connect::set_credentials(string u, string p)
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.114  2001/10/14 01:28:38  jimg
+// Merged with release-3-2-8.
+//
+// Revision 1.105.2.15  2001/10/08 17:19:31  jimg
+// Changed error handling scheme; this class never catches an Error object to
+// display it. It catches some to add information. It always relies on the
+// caller to handle the display of information about the error. This changes the
+// way the read methods work slightly. Their return code are now bogus; they use
+// exceptions to return error information to the caller.
+//
 // Revision 1.113  2001/09/28 17:50:07  jimg
 // Merged with 3.2.7.
 //

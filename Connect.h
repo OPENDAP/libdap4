@@ -217,9 +217,8 @@ private:
     void www_lib_init(bool www_verbose_errors, bool accept_deflate);
 
     /* Assume that the object's \_OUTPUT stream has been set
-       properly. Returns true if the read operation succeeds, false
-       otherwise. */ 
-    bool read_url(string &url, FILE *stream);
+       properly. Error signals something's wrong. */
+    void read_url(string &url, FILE *stream) throw(Error);
 
     /* Separate the text DDS from the binary data in the data object (which
        is a bastardized multipart MIME document). The returned FILE * points
@@ -232,7 +231,7 @@ private:
     void clone(const Connect &src);
 
     /* Something to do with the DDS. */
-    DDS *process_data(bool async = false);
+    DDS *process_data(bool async = false) throw(Error, InternalErr);
     
     /* Use when you cannot use libwww. */
     void parse_mime(FILE *data_source);
@@ -383,13 +382,14 @@ public:
       parameter. 
 
       @memo Dereference a URL.  
-      @return Returns false if an error is detected, otherwise returns
-      true.  
+      @return Always returns true.
+      @exception Error indicates some problem reading from the web server
+      (not the DODS server, other methods report those errors).
       @param url A string containing the URL to be dereferenced.  The
       data referred to by this URL will wind up available through a
       file pointer retrieved from the #output()# function.
       @see Connect::output */
-    bool fetch_url(string &url, bool async = false);
+    bool fetch_url(string &url, bool async = false) throw(Error);
 
   /** Returns a file pointer which can be used to read the data
       fetched from a URL.
@@ -571,7 +571,8 @@ public:
       future versions of the DODS software.  It currently defaults to
       the only possible working value, ``das''.
       */
-    bool request_das(bool gui = false,  const string &ext = "das");
+    bool request_das(bool gui = false,  const string &ext = "das")
+	throw(Error, InternalErr);
 
   /** Reads the DDS corresponding to the dataset in the Connect
       object's URL. Although CEs are rarely used with this method, if present
@@ -587,7 +588,8 @@ public:
       future versions of the DODS software.  It currently defaults to
       the only possible working value, ``dds''.
       */
-    bool request_dds(bool gui = false, const string &ext = "dds");
+    bool request_dds(bool gui = false, const string &ext = "dds")
+	throw(Error, InternalErr);
 
   /** Reads data from the Connect object's server.  This method sets
       up the BaseType variables in a DDS, and sends a request using
@@ -621,7 +623,7 @@ public:
       @see DataDDS
       @see Gui */
     DDS *request_data(string expr, bool gui = false, bool async = false, 
-		      const string &ext = "dods");
+		      const string &ext = "dods") throw(Error, InternalErr);
 
   /** This function reads cached data from a disk file.
 
@@ -640,7 +642,8 @@ public:
       the only possible working value, ``dods''.
       @see DataDDS
       @see Gui */
-    DDS *read_data(FILE *data_source, bool gui = false, bool async = false);
+    DDS *read_data(FILE *data_source, bool gui = false, bool async = false)
+	throw(Error, InternalErr);
 
     /** Set the credentials for responding to challenges while dereferencing
 	URLs. 
@@ -652,6 +655,12 @@ public:
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.56  2001/10/14 01:28:38  jimg
+ * Merged with release-3-2-8.
+ *
+ * Revision 1.49.4.6  2001/10/08 17:15:30  jimg
+ * Added throw declarations to methods that read data from servers.
+ *
  * Revision 1.55  2001/08/27 16:38:34  jimg
  * Merged with release-3-2-6
  *

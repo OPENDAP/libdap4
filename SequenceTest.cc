@@ -112,6 +112,8 @@ public:
 	assert(re_match(s_regex, s2.toString().c_str()));
     }
 
+#if 0
+    // is_super_sequence() no longer exists. 10/5/2001 jhrg
     void test_super_sequence() {
 	assert(sss->is_super_sequence());
 	Sequence *ts = dynamic_cast<Sequence *>(sss->var("child_of_sss"));
@@ -119,6 +121,7 @@ public:
 	ts = dynamic_cast<Sequence *>(ts->var("child_of_child_of_sss"));
 	assert(!ts->is_super_sequence());
     }
+#endif
 
     static Test *suite() { 
 	TestSuite *ts = new TestSuite("SequenceTest");
@@ -128,9 +131,11 @@ public:
 		    ("copy_ctor", &SequenceTest::copy_ctor));
 	ts->addTest(new TestCaller <SequenceTest> 
 		    ("assignment", &SequenceTest::assignment));
+#if 0
 	ts->addTest(new TestCaller<SequenceTest>
 		    ("test_super_sequence",
 		     &SequenceTest::test_super_sequence));
+#endif
 	return ts;
     }
 };

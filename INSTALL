@@ -1,24 +1,33 @@
 
-$Id: INSTALL,v 1.8 2000/08/02 22:46:49 jimg Exp $
+	$Id: INSTALL,v 1.9 2001/10/14 01:28:38 jimg Exp $
 
+Installing the DAP library software for DODS.
+
+---------------------------------------------------------------------------
+
+BUILDING THE SOFTWARE
+REQUIREMENTS
+NOTES
+
+---------------------------------------------------------------------------
 
 BUILDING THE SOFTWARE
 
   To build the DODS DAP library and the geturl client program, follow these
   steps:  
 
-  0. Skim REQUIREMENTS, SUGGESTIONS, and NOTES sections of this file before
-     reporting problems.  Thanks.
+  0. Please skim REQUIREMENTS, SUGGESTIONS, and NOTES sections of this file
+     before reporting problems. Thanks.
 
   1. Type `./configure' at the system prompt. On some systems you may have
      to type `sh configure'.
 
   2. Type `make' to build the library, `make check' to build the test
      software.  You must have the GNU automated testing software DejaGNU
-     to run `make check'.
+     to run `make check.'
 
   3. Type `make install' to install the DAP library.  DODS is usually
-     installed in its own directory tree.  Most of the DODS software depends
+     installed in its own directory tree.  Some of the DODS software depends
      on an environment variable to point to this tree.  Having just
      installed the software, now is generally a good time to define the
      DODS_ROOT environment variable to point to the directory at the top of
@@ -34,34 +43,40 @@ BUILDING THE SOFTWARE
 REQUIREMENTS
 
   o Before building this software, you must have built and installed the
-    DODS-packages software. The packages software consists of the WWW
-    library and other libraries not universally available that DODS uses. To
-    build that software, see its INSTALL file. To get that software, see the
-    DODS web page http://unidata.ucar.edu/packages/dods/.
+    packages software (in src/packages). The packages software consists of
+    the WWW library and other libraries not universally available that DODS
+    uses. To build that software, see its INSTALL file. To get that software,
+    see the DODS web page http://unidata.ucar.edu/packages/dods/.
 
-  o You must have gcc/g++ 2.8.1 or greater. We do build DODS with egcs on
-    some platforms. You'll also need to get the stdc++ library that matches
-    the compiler (whatever version). NB: gcc 2.7.x *won't* build DODS.
+  o You should have gcc/g++ 2.95.x or greater. You'll also need to get the
+    stdc++ library that matches the compiler (whatever version). NB: gcc
+    2.8.x and earlier *won't* build DODS. We're working on modifying the
+    software so that it will build with a variety of compilers. It's close,
+    but there are one or two outstanding problems.
 
-  o To build from the sources you'll also need bison 1.25 and flex 2.5.4. IF
-    you don't have those you can get the lex.*.c and *.tab.c files from
-    somewhere else. However, both flex and bison are very easy to build.
+  O We now ship the C++ source files generated using bison and flex so these
+    programs are no longer required to build the source code. However, to do
+    a complete build from the sources after running the `grammar-clean'
+    target, you'll need bison 1.25 and flex 2.5.4.
 
-  o You *should* get GNU Make. DODS *may* build with other makes, but we
-    know it won't build with many standard versions.
+  o You may need GNU Make.
 
-SUGGESTIONS
+NOTES
 
-  o If you are building on a new platform (one we don't supply binaries
-    for), please run the tests and tell us about any failures. To do this
-    you'll need to get the GNU test system called DejaGNU. It is very simple
-    to install so don't be shy!
+  o If the build fails because make reports that it does not know how to make
+    a particular file, try runing `make depend' to rebuild the Makefile's
+    dependencies. 
+
+  o If you are building on a new platform (one for which we don't supply
+    binaries), please run the tests and tell us about any failures. To do
+    this you'll need to get the GNU test system called DejaGNU. It is very
+    simple to install so don't be shy! If the tests run, try building a
+    binary tarball using the `binary-tar' target of the Makefile. This will
+    provide a set of binaries others can use and will be greatly appreciated.
 
   o If you are developing code that uses DODS, get autoconf and CVS (both
     from GNU). We maintain a CVS-managed source tree that people outside the
     group may access.
-
-NOTES
 
   o When you unpack the DODS-dap-<version>.tar.gz tar file, it will build a
     directory tree rooted in the directory where you do the unpacking. The
@@ -72,7 +87,7 @@ NOTES
 
   o By default DODS installs into its own tree. That is, it does *not*
     install programs in to /usr/local/bin, libraries into /usr/local/lib,
-    etc.  Instead, programs are installed into $DODS_ROOT/bin, libraries
+    et cetera.  Instead, programs are installed into $DODS_ROOT/bin, libraries
     into $DODS_ROOT/lib, etc.
 
   o Older versions of Linux have an xdr.h include file that won't compile
@@ -86,37 +101,34 @@ NOTES
     no problem installing xdr.h in /usr/include/rpc if that's what you want
     to do.
 
-  o To build with program instrumentation use `--enable-debug=<level>' where
-    <level> is 1 or 2.
+  o DEBUGGING AIDS
 
-  o To build with memory leak checks use --enable-dbnew. You must have the
-    freely available libraries libdbnew.a and libefence.a to make use of
-    this option.
+    - The DODS API includes the following debugging aids that may be of help
+      to you in developing new DODS applications.
 
-  Note: By default, both debug and dbnew are *not* enabled.  Thus, if you
-    want to build a straight version of the libraries and test code, use
-    `./configure'. If you want the extra features, use:
+    - DBG: simple program instrumentation -- see the file debug.h in
+      $DODS_ROOT/include for more information
+
+    - DBG2: more elaborate program instrumentation -- by convention this is
+      used for output that is half a page or more, while DEBUG is used for
+      single line output.
+
+    - dbnew: include -ldbnew and -lefence when linking. libdbnew.a contains
+      overloaded versions of new, new[] delete and delete[]. It also contains
+      code to `walk the malloc chain' and simple checks for out-of-bounds
+      errors.
+
+    - efence: a freely available bounds checker for dynamically allocated
+      memory. When used with dbnew, efence must be set to 8-byte alignment.
+      efence will find all over- or under-writes of dynamically allocated
+      memory, but only works on some machines.
+
+    - To build with program instrumentation use `--enable-debug=<level>'
+      where <level> is 1 or 2.
+
+    - By default, both debug and dbnew are *not* enabled. Thus, if you want
+      to build a straight version of the libraries and test code, use
+      `./configure'. If you want the extra features, use:
 
       ./configure --enable-dbnew --enable-debug=2
 
-DEBUGGING AIDS
-
-  The DODS API includes the following debugging aids that may be of help to
-  you in developing new DODS applications.
-
-  DBG: simple program instrumentation -- see the file debug.h in
-    $DODS_ROOT/include for more information
-
-  DBG2: more elaborate program instrumentation -- by convention this is used
-    for output that is half a page or more, while DEBUG is used for single
-    line output.
-
-  dbnew: include -ldbnew and -lefence when linking. libdbnew.a contains
-    overloaded versions of new, new[] delete and delete[]. It also contains
-    code to `walk the malloc chain' and simple checks for out-of-bounds
-    errors.
-
-  efence: a freely available bounds checker for dynamically allocated
-    memory. When used with dbnew, efence must be set to 8-byte
-    alignment. efence will find all over- or under-writes of dynamically
-    allocated memory, but only works on some machines.
