@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.106 1999/12/31 00:55:11 jimg Exp $
+# $Id: Makefile.in,v 1.107 2000/01/05 22:34:32 jimg Exp $
 
 @SET_MAKE@
 
@@ -14,7 +14,7 @@
 # a url. In addition it can read and process DAS and DDS objects, displaying
 # the print representation on the screen.
 
-PROG = libdap++.a geturl usage deflate
+PROG = libdap++.a libclient++.a geturl usage deflate
 DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
@@ -27,7 +27,7 @@ LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d -v
 TK_LIBS = @TK_LIBS@
-LIBS = -ldap++ @LIBS@ $(TK_LIBS)
+LIBS = -ldap++ -lclient++ @LIBS@ $(TK_LIBS)
 TAGS_FLAGS =
 
 # Set the instalation directories; prefix can be set on the command line
@@ -80,10 +80,13 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
 DOCXX = doc++
 
-NETIOSRCS = Connect.cc Connections.cc cgi_util.cc escaping.cc DODSFilter.cc
-NETIOOBJS = Connect.o Connections.o cgi_util.o escaping.o DODSFilter.o
-NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h DODSFilter.h \
-	    escaping.h
+CLIENTSRCS = Connect.cc Connections.cc 
+CLIENTOBJS = Connect.o Connections.o 
+CLIENTHDRS = Connect.h Connections.h Connections.cc
+
+UTILSRCS = cgi_util.cc escaping.cc DODSFilter.cc
+UTILOBJS = cgi_util.o escaping.o DODSFilter.o
+UTILHDRS = cgi_util.h escaping.h DODSFilter.h
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
@@ -99,12 +102,12 @@ DASOBJS = AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
 DDSHDRS = DDS.h DataDDS.h
 DDSSRCS = DDS.cc DataDDS.cc
-DDSOBJS = DDS.o DataDDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
-
+DDSOBJS = DDS.o DataDDS.o $(DDS_GRAM_OBJS)
+# $(EXPR_GRAM_OBJS) $(TYPEOBJS) 
 EXPRHDRS = expr.h Clause.h RValue.h
 EXPRSRCS = Clause.cc RValue.cc
-EXPROBJS = Clause.o RValue.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
-
+EXPROBJS = Clause.o RValue.o $(EXPR_GRAM_OBJS)
+# $(TYPEOBJS) 
 ERRORHDRS = Error.h InternalErr.h
 ERROROBJS = Error.o InternalErr.o $(ERROR_GRAM_OBJS)
 ERRORSRCS = Error.cc InternalErr.cc
@@ -127,9 +130,6 @@ GUISRCS = Gui.cc dods_gui.c
 
 GUIOBJS = Gui.o dods_gui.o
 
-# These object files are built using source code generated from the GNU
-# libg++ source with `genclass'. They are part of the the DAP library.
-
 GNUOBJS = GNU/SLList.o GNU/DLList.o GNU/GetOpt.o GNU/Regex.o GNU/error.o 
 
 GNUHDRS = GNU/Pix.h \
@@ -146,13 +146,17 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
-ALLSRCS = $(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
-	  $(TESTSRCS) $(TESTPROGSRCS) $(GRAM_SRCS) $(GUISRCS)
+ALLSRCS = $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) $(TESTSRCS) \
+	  $(TESTPROGSRCS) $(GRAM_SRCS) $(GUISRCS) $(CLIENTSRCS) $(UTILSRCS)
 
 all: grammars $(PROG)
 
 libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) \
-	    $(EXPROBJS) $(NETIOOBJS) $(GUIOBJS)
+	    $(EXPROBJS) $(UTILOBJS)
+	    $(AR) cru $@ $?
+	    $(RANLIB) $@
+
+libclient++.a: $(GUIOBJS) $(CLIENTOBJS)
 	    $(AR) cru $@ $?
 	    $(RANLIB) $@
 
@@ -162,7 +166,7 @@ deflate: deflate.o
 # geturl is really a test driver, but it is so useful in other contexts that
 # I have decided to build it as part of the `all' target. jhrg 7/11/96
 
-geturl: libdap++.a $(TESTOBJS) geturl.o
+geturl: libdap++.a libclient++.a $(TESTOBJS) geturl.o
 	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) $(LIBS)
 
 pure-geturl: libdap++.a $(TESTOBJS) geturl.o
@@ -172,36 +176,31 @@ pure-geturl: libdap++.a $(TESTOBJS) geturl.o
 # script as the `usage server'. This filter is the same for all different
 # server types so it does not need to be specialized for each API.
 
-usage: libdap++.a $(TESTOBJS) usage.o
+usage: libdap++.a libclient++.a $(TESTOBJS) usage.o
 	$(CXX) $(LDFLAGS) -o usage usage.o $(TESTOBJS) $(LIBS)
 
 # Build the test drivers
 
 test-drivers: das-test dds-test expr-test error-test cgi-util-test www-test
 
-das-test: libdap++.a $(TESTOBJS) das-test.o das.tab.h
+das-test: libdap++.a libclient++.a $(TESTOBJS) das-test.o das.tab.h
 	$(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o $(LIBS)
 
-pure-das-test: libdap++.a $(TESTOBJS) das-test.o das.tab.h
+pure-das-test: libdap++.a libclient++.a $(TESTOBJS) das-test.o das.tab.h
 	$(PURIFY) $(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o $(LIBS)
 
-dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
+dds-test: libdap++.a libclient++.a $(TESTOBJS) dds-test.o dds.tab.h
 	$(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o $(LIBS)
 
-pure-dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
+pure-dds-test: libdap++.a libclient++.a $(TESTOBJS) dds-test.o dds.tab.h
 	$(PURIFY) $(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o $(LIBS)
 
-# trans-test: libdap++.a $(TESTOBJS) trans-test.o
-#	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
-
-gse-test.o: gse-test.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c gse-test.cc -o gse-test.o
-
-gse-test: libdap++.a $(TESTOBJS) lex.gse.o gse-test.o gse.tab.h gse.tab.o
+gse-test: libdap++.a libclient++.a $(TESTOBJS) lex.gse.o gse-test.o \
+	gse.tab.o
 	$(CXX) $(LDFLAGS) -o gse-test lex.gse.o gse-test.o gse.tab.o \
 		$(TESTOBJS) $(LIBS)
 
-expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
+expr-test: libdap++.a libclient++.a $(TESTOBJS) expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o lex.expr.o \
 	       $(LIBS)
 
@@ -223,15 +222,10 @@ gui-test: util.o dods_gui.c Gui.cc
 	$(CC) $(CPPFLAGS) $(CFLAGS) -DTEST -c -g3 -O0 dods_gui.c
 	$(CXX) $(LDFLAGS) -o gui-test Gui.o util.o dods_gui.o $(LIBS)
 
-# This program is no longer part of the software. 10/27/98 jhrg
-#
-# www-test: www-test.o
-# 	$(CC) $(LDFLAGS) -o www-test www-test.o -lwww
-
 # The grammar targets.
 
 grammars: lex.das.c das.tab.h lex.dds.c dds.tab.h lex.expr.c expr.tab.h \
-		lex.Error.c Error.tab.h
+	lex.Error.c Error.tab.h lex.gse_.c gse.tab.h
 
 # Build the DAS scanner (a C source module compiled with C++)
 
@@ -288,7 +282,7 @@ expr.tab.c expr.tab.h: expr.y munge-bison.awk
 expr.tab.o: expr.tab.c		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c expr.tab.c -o expr.tab.o
 
-# Build the grid selection sub_expression scanner and  parser
+# Build the grid selection sub_expression scanner and parser
 
 lex.gse_.c: gse.lex gse.tab.c gse.tab.h
 	$(LEX) $(LFLAGS) -Pgse_ gse.lex
@@ -298,8 +292,6 @@ lex.gse.o: lex.gse_.c
 
 gse.tab.c gse.tab.h: gse.y munge-bison.awk
 	$(YACC) $(YFLAGS) -p gse_ gse.y
-#	$(AWK) -f munge-bison.awk gse.tab.c > tmp
-#	mv tmp gse.tab.c
 
 gse.tab.o: gse.tab.c		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c gse.tab.c -o gse.tab.o
@@ -340,13 +332,15 @@ dods_gui.c: dods_gui.tcl dods_gui.mta
 install: all install-headers install-geturl install-usage install-deflate
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
+	$(INSTALL_DATA) libclient++.a $(libdir)
+	$(RANLIB) $(libdir)/libclient++.a
 
 install-headers:
 	$(INSTALL_DATA) config_dap.h $(includedir)
 	$(INSTALL_DATA) debug.h $(includedir)
 	$(INSTALL_DATA) dods-limits.h $(includedir)
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
-		 $(GNUHDRS) $(NETIOHDRS); \
+		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS); \
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
 install-geturl: geturl
@@ -441,6 +435,7 @@ grammarclean: clean
 	-rm -f lex.dds.c dds.tab.c dds.tab.h
 	-rm -f lex.expr.c expr.tab.c expr.tab.h 
 	-rm -f lex.Error.c Error.tab.c Error.tab.h
+	-rm -f lex.gse_.c gse.tab.c gse.tab.h
 
 # In order to get the latex docs to work (compile w/latex) you need the
 # docxx.sty file where latex will find it. 9/15/98 jhrg
@@ -479,6 +474,7 @@ binary-tar:
 		--file DODS-$(host)-dap-library-$(version).tar.gz \
 		--exclude '*/CVS' \
 		DODS/lib/libdap++.a \
+		DODS/lib/libclient++.a \
 		DODS/include && \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-$(host)-tools-$(version).tar.gz \
@@ -535,23 +531,9 @@ tags:
 .PHONY: depend
 depend: 
 	@depend@ -m Makefile.in -- $(CPPFLAGS) -- \
-	$(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
-	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS)
+	$(CLIENTSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
+	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS)
 	$(MAKE) $(MFLAGS) Makefile
-
-# These rules seems to always fire bison das.y ... even when it is not
-# needed. I removed them so that source distributions that include the
-# das.tab.c files can be built without bison, flex, ... 11/3/99 jhrg
-#
-# dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
-#   Str.h Url.h Array.h List.h Structure.h Sequence.h Grid.h 
-#
-# das.tab.c: DAS.h
-
-# Force compilation of these files using -O0. This is needed when using
-# -fPIC and may only be necessary on sparc machines. 5/19/99 jhrg
-util.o: util.cc
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
 
 .SUFFIXES:      .o .cc .c
 
