@@ -15,7 +15,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.107 2001/01/26 19:48:09 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.108 2001/02/05 18:57:44 jgarcia Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -1065,6 +1065,39 @@ void Connect::clone(const Connect & src)
     }
 }
 
+BOOL
+set_username_password (HTRequest * request, HTAlertOpcode /* op */,
+		       int /* msgnum */, const char * /* dfault */,
+		       void * /* input */, HTAlertPar * reply)
+{
+  if (!request) {
+    if (WWWTRACE) cerr << "dods_username_password: Bad argument" << endl;
+    return NO;
+  }
+  
+  HTAssocList * al= HTRequest_extraHeader (request);
+  char *u=HTAssocList_findObject(al, "username");
+  char *p=HTAssocList_findObject(al, "password");
+  
+  if(!u || !p)
+    return NO;
+  
+  string user=u;
+  string passwd=p;
+  
+  HTRequest_deleteExtraHeaderAll(request);
+  
+  if ((user.length() == 0) || (passwd.length() == 0))
+    return NO;
+  
+  HTAlert_setReplyMessage(reply, user.c_str());
+  HTAlert_setReplySecret(reply, passwd.c_str());
+  return YES;
+  
+}
+
+
+
 // Use the URL designated when the Connect object was created as the
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
@@ -1085,35 +1118,47 @@ bool Connect::read_url(string & url, FILE * stream)
     HTRequest_setOutputStream(_request,
 			      HTFWriter_new(_request, stream, YES));
 
+    // Jose Garcia BEGIN
+    // Add authentication credentials if they were set for this object.
+    if(_user_name!="" && _password!="")
+      {
+
+        HTAlert_add(set_username_password, HT_A_USER_PW);
+        HTRequest_addExtraHeader(_request,"username", const_cast<char*>(_user_name.c_str()));
+        HTRequest_addExtraHeader(_request,"password", const_cast<char*>(_password.c_str()));
+        
+      }
+    // Jose Garcia END
+
     // Set this request to use the cache if possible. 
     // CJM used HT_CACHE_VALIDATE; HT_CACHE_OK supresses the validation.
     if (_cache_enabled)
 	HTRequest_setReloadMode(_request, HT_CACHE_OK);
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
-
-    //Jose Garcia: better error checking loadin the URL
-
+    
+    // Jose Garcia BEGIN
+    // Better error checking loading the URL
     HTList *listerr=NULL;
     listerr=HTRequest_error(_request);
     if( listerr )
       {
-	//cout<<"There are "<<HTList_count (listerr) <<" errors"<<endl;
-	HTError* the_error= (HTError*) HTList_nextObject(listerr);
-	while(the_error)
-	{
-	  if(HTError_severity(the_error)==ERR_FATAL)
-	    {
-	      if (HTError_index(the_error) == HTERR_UNAUTHORIZED)
-		throw Error(no_authorization, "Unauthorized access, please set the realm for this object");
-	      else
-		throw Error(undefined_error,"Unknown fatal error.");
-	    }
-	  the_error= (HTError*) HTList_nextObject(listerr);
-	}
+        //cout<<"There are "<<HTList_count (listerr) <<" errors"<<endl;
+        HTError* the_error= (HTError*) HTList_nextObject(listerr);
+        while(the_error)
+        {
+          if(HTError_severity(the_error)==ERR_FATAL)
+            {
+              if (HTError_index(the_error) == HTERR_UNAUTHORIZED)
+                throw Error(no_authorization, " Unauthorized access, please set the realm for this object");
+              else
+                throw Error(undefined_error,"Unknown fatal error.");
+            }
+          the_error= (HTError*) HTList_nextObject(listerr);
+        }
       }
-    
-    //Jose Garcia
+    //Jose Garcia END 
+
 
     if (_cache_enabled)
 	HTCacheIndex_write(_cache_root);
@@ -1152,9 +1197,9 @@ Connect::Connect()
 
 // public mfuncs
 
-Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate):
+Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate, string uname="", string password=""):
 _accept_types("All"), _cache_control(""), _www_errors_to_stderr(false),
-_accept_deflate(accept_deflate)
+_accept_deflate(accept_deflate), _user_name(uname), _password(password)
 {
     name = prune_spaces(name);
     char *access_ref = HTParse(name.c_str(), NULL, PARSE_ACCESS);
@@ -1673,6 +1718,11 @@ Error & Connect::error()
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.108  2001/02/05 18:57:44  jgarcia
+// Added support so a Connect object can be created with credentials to be
+// able to resolve challenges issued by web servers (Basic Authentication).
+// Added exception to notify "No Authorization".
+//
 // Revision 1.107  2001/01/26 19:48:09  jimg
 // Merged with release-3-2-3.
 //

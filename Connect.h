@@ -225,6 +225,12 @@ private:
     bool _www_errors_to_stderr; // FALSE for messages to stderr
     bool _accept_deflate;
 
+    // Jose Garcia
+    // User authetication
+    string _user_name;
+    string _password;
+
+
   /* Initialize the W3C WWW Library. This should only be called when a
       Connect object is created and there are no other Connect objects in
       existence.
@@ -314,7 +320,7 @@ public:
 
       @memo Create an instance of Connect. */
     Connect(string name, bool www_verbose_errors = false,
-	    bool accept_deflate = true); 
+	    bool accept_deflate = true, string uname="", string password=""); 
 
   /** The Connect copy construtor. */
     Connect(const Connect &copy_from);
@@ -641,10 +647,26 @@ public:
       @see Gui 
       */
     DDS *read_data(FILE *data_source, bool gui = false, bool async = false);
+    // Jose Garcia
+    // User authetication
+    /**
+       Set the credentials for responding challenges while dereferencing URLs.
+    */
+    void set_credentials(string u, string p)
+    {
+      _user_name=u;
+      _password=p;
+    }
+
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.51  2001/02/05 18:59:31  jgarcia
+ * Added support so a Connect object can be created with credentials to be
+ * able to resolve challenges issued by web servers (Basic Authentication).
+ * Added exception to notify "No Authorization".
+ *
  * Revision 1.50  2001/01/26 19:48:09  jimg
  * Merged with release-3-2-3.
  *
