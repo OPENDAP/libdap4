@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.158 2005/02/08 21:31:23 jimg Exp $
+# $Id: Makefile.in,v 1.159 2005/02/11 00:37:28 jimg Exp $
 
 @SET_MAKE@
 
@@ -436,15 +436,19 @@ UNIT_TEST_SRCS = HTTPCacheTest.cc HTTPConnectTest.cc cgiUtilTest.cc \
 	AttrTableTest.cc DDSTest.cc SequenceTest.cc ByteTest.cc DASTest.cc \
 	generalUtilTest.cc parserUtilTest.cc AISDatabaseParserTest.cc \
 	AISResourcesTest.cc AISMergeTest.cc DODSFilterTest.cc \
-	SignalHandlerTest.cc RCReaderTest.cc DDXParserTest.cc
+	SignalHandlerTest.cc RCReaderTest.cc DDXParserTest.cc ArrayTest.cc
 
 UNIT_TEST_PROGS = HTTPCacheTest HTTPConnectTest cgiUtilTest AttrTableTest \
 	DDSTest SequenceTest ByteTest DASTest generalUtilTest \
 	parserUtilTest AISDatabaseParserTest AISResourcesTest AISMergeTest \
-	DODSFilterTest SignalHandlerTest RCReaderTest DDXParserTest
+	DODSFilterTest SignalHandlerTest RCReaderTest DDXParserTest \
+	ArrayTest
 
 # Build the unit tests. Requires CppUnit be installed.
 
+ArrayTest: ArrayTest.o libdap++.a
+	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
+	
 DDXParserTest: DDXParserTest.o libdap++.a
 	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
 
