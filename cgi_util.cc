@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.19  1996/11/20 01:00:17  jimg
+// Fixed lingering bug in compress_stdout where the user's path was not
+// searched correctly.
+//
 // Revision 1.18  1996/11/13 19:10:03  jimg
 // Added set_mime_error() function. Use this to send MIME headers indicating
 // that an error has occurred. NB: Don't use this when sending back an Error
@@ -95,13 +99,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.18 1996/11/13 19:10:03 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.19 1996/11/20 01:00:17 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <iostream.h>
 #include <String.h>
@@ -292,19 +298,17 @@ compress_stdout()
 {
     String cmd = "gzip -cf";	// c: write to stdout, f: ...even if a tty
     String path = (String)dods_root + "/etc/" + cmd;
+    struct stat buf;
 
     // First try to find gzip at DODS_ROOT/etc. If that fials use the user's
-    // PATH. 
-    FILE *infile = popen((const char *)path, "w");
-    if (!infile) {
-	infile = popen((const char *)cmd, "w");
-	if (infile == NULL) {
-	    cerr << "Could not open compression output filter." << endl;
-	    return NULL;
-	}
-    }
-
-    return infile;
+    // PATH. Note that we have to test for gzip in the DODS_ROOT directory
+    // since popen will barf if it cannot find the named program. However,
+    // since stat() wants an absolute path, *don't* use stat to test if the
+    // command is on the user's path.
+    if (stat((const char *)path, &buf) == 0)
+	return popen((const char *)path, "w");
+    else
+	return popen((const char *)cmd, "w");
 }
 
 // NB: the Connect class does not use this.
@@ -315,19 +319,13 @@ decompress_stdin()
     String cmd = "gzip -cdf";	// c: read from stdin, f: ...even if a tty
 				// d: decompress
     String path = (String)dods_root + "/etc/" + cmd;
+    struct stat buf;
 
-    // First try to find gzip at DODS_ROOT/etc. If that fials use the user's
-    // PATH. 
-    FILE *infile = popen((const char *)path, "r");
-    if (!infile) {
-	infile = popen((const char *)cmd, "r");
-	if (infile == NULL) {
-	    cerr << "Could not open compression input filter." << endl;
-	    return NULL;
-	}
-    }
-    
-    return infile;
+    // See the comment above.
+    if (stat((const char *)path, &buf) == 0)
+	return popen((const char *)path, "r");
+    else 
+	return popen((const char *)cmd, "r");
 }
 
 #ifdef TEST_CGI_UTIL
