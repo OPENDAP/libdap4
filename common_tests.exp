@@ -1,7 +1,7 @@
 
 # Common code for dejaGNU-based automated tests.
 
-# $Id: common_tests.exp,v 1.5 2001/06/15 23:38:36 jimg Exp $
+# $Id: common_tests.exp,v 1.6 2003/01/22 00:12:05 jimg Exp $
 
 # Compare $expected to the global $comp_output. Run `pass' if they match,
 # `fail' otherwise unless `xfailp' is true in which case run `xfail' if they
@@ -20,8 +20,12 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
     # either "compare" or "match" (The Tcl built in string function supports
     # several other methods, but this code DOES NOT!)
     # 5/26/99 ndp
-    if {$str_test != "compare"  &&  $str_test != "match"} {
-	send_user "BAD TEST METHOD: \"$str_test\". YOU MUST USE \"compare\" or \"match\".\n"
+    # If the equal test is the default we don't need the confusing logic
+    # about $result == 0 --> $result == 1 and vice versa. I'll leave the
+    # compare stuff in here for a while, then let's remove it (here and below).
+    # 4/19/2002 jhrg 
+    if {$str_test != "compare"  &&  $str_test != "match" && $str_test != "equal"} {
+	send_user "BAD TEST METHOD: \"$str_test\". You MUST use \"compare\" or \"match\".\n"
 	fail "Improper use of compare_stdout. \"$str_test\" is an unsupported method. Use \"compare\" or \"match\"."
     }
 
@@ -38,7 +42,7 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
 	close $fd
     }
 
-    # Trim is used here to remove trailing `\n's from files of data.
+    # Trim is used here to remove trailing `\n's from files and data.
     set expected [string trim $expected]
     set comp_output [string trim $comp_output]
 
