@@ -124,7 +124,18 @@ public:
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
 			   && !feof(stuff));
 	    fclose(stuff);
+
 	    stuff = http->fetch_url(dsp_das_url);
+	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
+			   && !feof(stuff));
+	    fclose(stuff);
+
+	    stuff = http->fetch_url("file:///etc/passwd");
+	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
+			   && !feof(stuff));
+	    fclose(stuff);
+
+	    stuff = http->fetch_url("file://HTTPConnect.cc");
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff) == 1 && !ferror(stuff) 
 			   && !feof(stuff));
 	    fclose(stuff);
@@ -244,6 +255,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPConnectTest.cc,v $
+// Revision 1.5  2003/02/21 22:49:52  jimg
+// Added fetch_url() tests for "file:" URLs.
+//
 // Revision 1.4  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
