@@ -8,6 +8,15 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.20  2000/03/28 16:32:02  jimg
+// Modified these files so that they can be built either with and without GUI
+// defined. The type signatures are now the same either way. Thus we can build
+// libdap++-gui and libdap++ (without GUI support). When using the later
+// there's no need to link with tcl, tk or X11. This makes the executables
+// smaller. It also keeps the servers from potentially needing sharable
+// libraries (since X11 is often sharable) which can be hard to find unless
+// they are in the standard places. I made the same changes in Connect and Gui.
+//
 // Revision 1.19  1999/08/23 18:57:44  jimg
 // Merged changes from release 3.1.0
 //
@@ -106,7 +115,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.19 1999/08/23 18:57:44 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.20 2000/03/28 16:32:02 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -292,14 +301,11 @@ Error::error_message(string msg)
 }
 
 void
-#ifdef GUI
-Error::display_message(Gui *gui)
-#else
-Error::display_message(void *)
-#endif
+Error::display_message(void *pgui)
 {
     assert(OK());
 #ifdef GUI
+    Gui *gui = (Gui *)pgui;
     if (gui && gui->show_gui()) {
 	gui->simple_error(_error_message);
     }
@@ -347,17 +353,14 @@ Error::program(char *pgm)
 // null Gui pointer then the message text is displayed on stderr.
 
 string
-#ifdef GUI
-Error::correct_error(Gui *gui)
-#else
-Error::correct_error(void *)
-#endif
+Error::correct_error(void *pgui)
 {
     assert(OK());
     if (!OK())
 	return string("");
 
 #ifdef GUI
+    Gui *gui = (Gui *)pgui;
     display_message(gui);
 #else
     display_message(NULL);

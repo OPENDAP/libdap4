@@ -12,6 +12,15 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.13  2000/03/28 16:32:02  jimg
+// Modified these files so that they can be built either with and without GUI
+// defined. The type signatures are now the same either way. Thus we can build
+// libdap++-gui and libdap++ (without GUI support). When using the later
+// there's no need to link with tcl, tk or X11. This makes the executables
+// smaller. It also keeps the servers from potentially needing sharable
+// libraries (since X11 is often sharable) which can be hard to find unless
+// they are in the standard places. I made the same changes in Connect and Gui.
+//
 // Revision 1.12  1999/12/31 00:55:10  jimg
 // Fixed up the progress indicator
 //
@@ -237,18 +246,21 @@ public:
 	messages are displayed and those may be used to select either
 	graphical or text devices.
 
+	Note that the void * #gui# gets cast to a pointer to Gui when
+	Error.cc is compiled with the preprocessor symbol #GUI# defined.
+	When that symbol is not defined, the method ignores the param #gui#.
+	I've hidden the type (GUI *) because when #GUI# is not defined the
+	dap++ library is built without the Gui class.
+
 	@memo Display the error message in a dialog box or on stderr.
 	@param gui A pointer to a valid Gui class instance.  This would
 	be attached to a GUI process running on a client machine, and
 	that process will display the message.  If the pointer is not
 	provided, the message will be displayed on the client's stderr.
 
-	@see Gui */
-#ifdef GUI
-    void display_message(Gui *gui = 0);
-#else
+	@see Gui
+	@see correct_error */
     void display_message(void *gui = 0);
-#endif
 
     /** With no argument, return the program type of the error object. With
 	an argument, set the error object's program type field.
@@ -281,12 +293,9 @@ public:
 	@return A corrected string or "".  
 	@param gui A pointer to a Gui class object handling a GUI
 	process on the client.
-	@see Gui */
-#ifdef GUI
-    string correct_error(Gui *gui);
-#else
+	@see Gui
+	@see display_message */
     string correct_error(void *gui);
-#endif
 };
 
 #endif // _error_h
