@@ -28,6 +28,10 @@
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.18  1998/10/23 00:09:03  jimg
+ * Fixed an array write error where exprlval.id was over-written by writing to
+ * element ID_MAX. The end of the array is ID_MAX-1.
+ *
  * Revision 1.17  1998/10/21 16:45:50  jimg
  * Now includes RValue.h. Needed because expr.tab.h needs it.
  *
@@ -94,7 +98,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.17 1998/10/21 16:45:50 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.18 1998/10/23 00:09:03 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -225,7 +229,7 @@ void
 store_id()
 {
     strncpy(exprlval.id, yytext, ID_MAX-1);
-    exprlval.id[ID_MAX] = '\0';
+    exprlval.id[ID_MAX-1] = '\0';
 }
 
 void
