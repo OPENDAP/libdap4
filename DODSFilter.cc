@@ -10,6 +10,16 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.10  1999/05/05 00:36:36  jimg
+// Added the -V option. -v now is used to pass the version information from the
+// CGI to the C++ software; -V triggers output of the version message. This
+// allows the DODSFilter class to pass information about the server's version to
+// the core software.
+// All set_mime_*() functions are now passes the CGI version information so that
+// all MIME headers contain information about the server's version.
+// Added the get_cgi_version() member function so that clients of DODSFilter can
+// find out the version number.
+//
 // Revision 1.9  1999/05/04 19:47:21  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -60,7 +70,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.9 1999/05/04 19:47:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.10 1999/05/05 00:36:36 jimg Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__
@@ -84,13 +94,14 @@ DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false),
     program_name = argv[0];
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce:v:d:f:r:t:");
+    GetOpt getopt (argc, argv, "ce:v:Vd:f:r:t:");
 
     while ((option_char = getopt()) != EOF)
 	switch (option_char) {
 	  case 'c': comp = true; break;
 	  case 'e': ce = getopt.optarg; break;
-	  case 'v': ver = true; cgi_ver = getopt.optarg; break;
+	  case 'v': cgi_ver = getopt.optarg; break;
+	  case 'V': ver = true; break;
 	  case 'd': anc_dir = getopt.optarg; break;
 	  case 'f': anc_file = getopt.optarg; break;
 	  case 'r': cache_dir = getopt.optarg; break;
@@ -120,6 +131,12 @@ bool
 DODSFilter::version()
 {
     return ver;
+}
+
+string
+DODSFilter::get_cgi_version()
+{
+    return cgi_ver;
 }
 
 string
@@ -169,7 +186,7 @@ DODSFilter::read_ancillary_das(DAS &das)
 	    ErrMsgT(msg);
 
 	    // client error message
-	    set_mime_text(cout, dods_error);
+	    set_mime_text(cout, dods_error, cgi_ver);
 	    Error e(malformed_expr, msg);
 	    e.print(cout);
 
@@ -197,7 +214,7 @@ DODSFilter::read_ancillary_dds(DDS &dds)
 	    ErrMsgT(msg);
 
 	    // client error message
-	    set_mime_text(cout, dods_error);
+	    set_mime_text(cout, dods_error, cgi_ver);
 	    Error e(malformed_expr, msg);
 	    e.print(cout);
 
@@ -226,7 +243,7 @@ DODSFilter::print_usage()
 
     // Build an error object to return to the user.
     Error e(unknown_error, emessage);
-    set_mime_text(cout, dods_error);
+    set_mime_text(cout, dods_error, cgi_ver);
     e.print(cout);
 }
 
@@ -234,11 +251,11 @@ void
 DODSFilter::send_version_info()
 {
     cout << "HTTP/1.0 200 OK" << endl
-	 << "XDODS-Server: " << DVR << endl
+	 << "XDODS-Server: " << cgi_ver << endl
 	 << "Content-Type: text/plain" << endl
 	 << endl;
     
-    cout << "Core software version: " << DVR << endl;
+    cout << "Core version: " << DVR << endl;
 
     if (cgi_ver != "")
 	cout << "Server vision: " << cgi_ver << endl;
@@ -251,7 +268,7 @@ DODSFilter::send_version_info()
 bool
 DODSFilter::send_das(DAS &das)
 {
-    set_mime_text(cout, dods_das);
+    set_mime_text(cout, dods_das, cgi_ver);
     das.print(cout);
 
     return true;
@@ -266,17 +283,17 @@ DODSFilter::send_dds(DDS &dds, bool constrained)
 		+  ce;
 	    ErrMsgT(m);
 	    
-	    set_mime_text(cout, dods_error);
+	    set_mime_text(cout, dods_error, cgi_ver);
 	    Error e(unknown_error, m);
 	    e.print(cout);
 
 	    return false;
 	}
-	set_mime_text(cout, dods_dds);
+	set_mime_text(cout, dods_dds, cgi_ver);
 	dds.print_constrained(cout);  // send constrained DDS    
     }
     else {
-	set_mime_text(cout, dods_dds);
+	set_mime_text(cout, dods_dds, cgi_ver);
 	dds.print(cout);
     }
 
@@ -293,14 +310,14 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream)
     // parts of the CE parser and evaluator. Eventually, the C++ classes
     // should switch to exceptions. 11/6/98 jhrg
     try {
-	if (!dds.send(dataset, ce, data_stream, compress)) {
+	if (!dds.send(dataset, ce, data_stream, compress, cgi_ver)) {
 	    ErrMsgT((compress) ? "Could not send compressed data" : 
 		    "Could not send data");
 	    return false;
 	}
     }
     catch (Error &e) {
-	set_mime_text(cout, dods_error);
+	set_mime_text(cout, dods_error, cgi_ver);
 	e.print(cout);
 
 	return false;
