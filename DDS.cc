@@ -4,7 +4,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.7  1994/11/22 14:05:40  jimg
+// Revision 1.8  1994/12/07 21:23:16  jimg
+// Removed config
+//
+// Revision 1.7  1994/11/22  14:05:40  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
 // complete yet.
 // Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
@@ -41,7 +44,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.7 1994/11/22 14:05:40 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.8 1994/12/07 21:23:16 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -175,7 +178,7 @@ DDS::var(Pix p)
 }
 
 bool
- DDS::parse(String fname)
+DDS::parse(String fname)
 {
     FILE *in = fopen(fname, "r");
 
