@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.135 2003/02/27 23:43:08 jimg Exp $
+# $Id: Makefile.in,v 1.136 2003/03/04 17:21:11 jimg Exp $
 
 @SET_MAKE@
 
@@ -598,7 +598,7 @@ Connections.o: Connections.cc config_dap.h debug.h Connections.h \
  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h List.h \
  Structure.h Constructor.h Sequence.h Grid.h DataDDS.h HTTPConnect.h \
  RCReader.h ObjectType.h HTTPCache.h ResponseTooBigErr.h \
- HTTPCacheDisconnectedMode.h
+ HTTPCacheDisconnectedMode.h Response.h
 RCReader.o: RCReader.cc config_dap.h RCReader.h
 Connect.o: Connect.cc config_dap.h debug.h DataDDS.h DDS.h GNU/Pix.h \
  IteratorAdapter.h BaseType.h InternalErr.h Error.h Clause.h expr.h \
@@ -606,14 +606,16 @@ Connect.o: Connect.cc config_dap.h debug.h DataDDS.h DDS.h GNU/Pix.h \
  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
  dods-limits.h Url.h Array.h Vector.h List.h Structure.h Constructor.h \
  Sequence.h Grid.h HTTPConnect.h RCReader.h ObjectType.h HTTPCache.h \
- ResponseTooBigErr.h HTTPCacheDisconnectedMode.h escaping.h
+ ResponseTooBigErr.h HTTPCacheDisconnectedMode.h Response.h \
+ escaping.h
 HTTPConnect.o: HTTPConnect.cc config_dap.h debug.h GNU/Regex.h \
  HTTPConnect.h RCReader.h ObjectType.h HTTPCache.h Error.h \
- InternalErr.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h util.h \
- BaseType.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
- Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
- GNU/Pix.h IteratorAdapter.h Clause.h expr.h RValue.h List.h \
- Structure.h Constructor.h Sequence.h Grid.h
+ InternalErr.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
+ Response.h util.h BaseType.h Byte.h dods-datatypes.h Int16.h \
+ UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
+ Url.h Array.h Vector.h DDS.h GNU/Pix.h IteratorAdapter.h Clause.h \
+ expr.h RValue.h List.h Structure.h Constructor.h Sequence.h Grid.h \
+ HTTPResponse.h
 HTTPCache.o: HTTPCache.cc Error.h InternalErr.h ResponseTooBigErr.h \
  HTTPCache.h HTTPCacheDisconnectedMode.h util_mit.h debug.h
 AttrTable.o: AttrTable.cc config_dap.h Error.h debug.h util.h \
@@ -809,11 +811,11 @@ AISDatabaseParser.o: AISDatabaseParser.cc config_dap.h \
 AISMerge.o: AISMerge.cc config_dap.h AISMerge.h DAS.h GNU/Pix.h \
  IteratorAdapter.h AttrTable.h Error.h HTTPConnect.h RCReader.h \
  ObjectType.h HTTPCache.h InternalErr.h ResponseTooBigErr.h \
- HTTPCacheDisconnectedMode.h util.h BaseType.h Byte.h dods-datatypes.h \
- Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
- dods-limits.h Url.h Array.h Vector.h DDS.h Clause.h expr.h RValue.h \
- List.h Structure.h Constructor.h Sequence.h Grid.h AISResources.h \
- Resource.h AISExceptions.h
+ HTTPCacheDisconnectedMode.h Response.h debug.h util.h \
+ BaseType.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h \
+ Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
+ Clause.h expr.h RValue.h List.h Structure.h Constructor.h Sequence.h \
+ Grid.h AISResources.h Resource.h AISExceptions.h
 AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
  GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DDS.h BaseType.h \
  InternalErr.h Clause.h expr.h RValue.h util.h Byte.h dods-datatypes.h \
@@ -821,7 +823,8 @@ AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
  dods-limits.h Url.h Array.h Vector.h List.h Structure.h Constructor.h \
  Sequence.h Grid.h DataDDS.h HTTPConnect.h RCReader.h ObjectType.h \
  HTTPCache.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
- AISMerge.h AISResources.h Resource.h AISExceptions.h
+ Response.h debug.h AISMerge.h AISResources.h Resource.h \
+ AISExceptions.h
 TestByte.o: TestByte.cc config_dap.h TestByte.h Byte.h \
  dods-datatypes.h BaseType.h InternalErr.h Error.h
 TestInt32.o: TestInt32.cc config_dap.h TestInt32.h Int32.h \
@@ -879,7 +882,8 @@ geturl.o: geturl.cc config_dap.h AISConnect.h Connect.h DAS.h \
  dods-limits.h Url.h Array.h Vector.h List.h Structure.h Constructor.h \
  Sequence.h Grid.h DataDDS.h HTTPConnect.h RCReader.h ObjectType.h \
  HTTPCache.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
- AISMerge.h AISResources.h Resource.h AISExceptions.h
+ Response.h debug.h AISMerge.h AISResources.h Resource.h \
+ AISExceptions.h
 cgi_util.o: cgi_util.cc config_dap.h cgi_util.h DDS.h GNU/Pix.h \
  IteratorAdapter.h BaseType.h InternalErr.h Error.h Clause.h expr.h \
  RValue.h ObjectType.h EncodingType.h util.h Byte.h dods-datatypes.h \
@@ -896,18 +900,18 @@ DODSFilter.o: DODSFilter.cc config_dap.h DAS.h GNU/Pix.h \
  escaping.h DODSFilter.h
 HTTPCacheTest.o: HTTPCacheTest.cc HTTPCache.h Error.h InternalErr.h \
  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h HTTPConnect.h \
- RCReader.h ObjectType.h util.h BaseType.h Byte.h dods-datatypes.h \
- Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
- dods-limits.h Url.h Array.h Vector.h DDS.h GNU/Pix.h \
- IteratorAdapter.h Clause.h expr.h RValue.h List.h Structure.h \
- Constructor.h Sequence.h Grid.h debug.h
-HTTPConnectTest.o: HTTPConnectTest.cc GNU/Regex.h HTTPConnect.h \
- RCReader.h ObjectType.h HTTPCache.h Error.h InternalErr.h \
- ResponseTooBigErr.h HTTPCacheDisconnectedMode.h util.h BaseType.h \
+ RCReader.h ObjectType.h Response.h debug.h util.h BaseType.h \
  Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h GNU/Pix.h \
  IteratorAdapter.h Clause.h expr.h RValue.h List.h Structure.h \
- Constructor.h Sequence.h Grid.h debug.h
+ Constructor.h Sequence.h Grid.h
+HTTPConnectTest.o: HTTPConnectTest.cc GNU/Regex.h HTTPConnect.h \
+ RCReader.h ObjectType.h HTTPCache.h Error.h InternalErr.h \
+ ResponseTooBigErr.h HTTPCacheDisconnectedMode.h Response.h \
+ debug.h util.h BaseType.h Byte.h dods-datatypes.h Int16.h UInt16.h \
+ Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
+ Array.h Vector.h DDS.h GNU/Pix.h IteratorAdapter.h Clause.h expr.h \
+ RValue.h List.h Structure.h Constructor.h Sequence.h Grid.h
 cgiUtilTest.o: cgiUtilTest.cc GNU/Regex.h cgi_util.h DDS.h GNU/Pix.h \
  IteratorAdapter.h BaseType.h InternalErr.h Error.h Clause.h expr.h \
  RValue.h ObjectType.h EncodingType.h
@@ -942,5 +946,5 @@ AISMergeTest.o: AISMergeTest.cc Connect.h DAS.h GNU/Pix.h \
  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
  Url.h Array.h Vector.h List.h Structure.h Constructor.h Sequence.h \
  Grid.h DataDDS.h HTTPConnect.h RCReader.h ObjectType.h HTTPCache.h \
- ResponseTooBigErr.h HTTPCacheDisconnectedMode.h AISMerge.h \
- AISResources.h Resource.h AISExceptions.h debug.h
+ ResponseTooBigErr.h HTTPCacheDisconnectedMode.h Response.h \
+ debug.h AISMerge.h AISResources.h Resource.h AISExceptions.h
