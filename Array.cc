@@ -4,7 +4,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.7  1994/12/09 21:36:33  jimg
+// Revision 1.8  1994/12/12 19:38:43  dan
+// Modified Array Class to be directly derived from class BaseType
+// removing class CtorType in the process.  Added member functions
+// add_var() and var() to class.
+//
+// Revision 1.7  1994/12/09  21:36:33  jimg
 // Added support for named array dimensions.
 //
 // Revision 1.6  1994/12/08  15:51:41  dan
@@ -64,10 +69,10 @@ Array::ptr_duplicate()
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new -- The dtor for Array will delete this object.
 
-Array::Array(const String &n, BaseType *v, FILE *in, FILE *out) : var_ptr(v) 
+Array::Array(const String &n, FILE *in, FILE *out, BaseType *v)
+     : BaseType( n, "Array", xdr_array, in, out), var_ptr(v)
 {
     set_var_name(n);
-    set_var_type(t);
 }
 
 Array::Array(const Array &rhs)
@@ -91,17 +96,71 @@ Array::operator=(const Array &rhs)
     return *this;
 }
 
+// NAME defaults to NULL. It is present since the definition of this mfunc is
+// inherited from CtorType, which declares it like this since some ctor types
+// have several member variables.
+
+BaseType *
+Array::var(const String &name)
+{
+    return var_ptr;
+}
+
+// Add the BaseType pointer to this ctor type instance. Propagate the name of
+// the BaseType instance to this instance This ensures that variables at any
+// given level of the DDS table have unique names (i.e., that Arrays do not
+// have there default name "").
+// NB: Part p defaults to nil for this class
+
+void
+Array::add_var(BaseType *v, Part p)
+{
+    if (var_ptr)
+	err_quit("Array::add_var:Attempt to overwrite base type of an array");
+
+    var_ptr = v;
+    set_var_name(v->get_var_name());
+
+    DBG(cerr << "Array::add_var: Added variable " << v << " (" \
+	 << v->get_var_name() << " " << v->get_var_type() << ")" << endl);
+}
+
 // When you want to allocate a buffer big enough to hold the entire array,
 // in the local representation, allocate size() bytes.
 
 unsigned int
 Array::size()
 {
+  assert(var_ptr);
+
   unsigned int sz = 1;
   for (Pix p = first_dim(); p; next_dim(p)) 
       sz *= dim(p); 
 
   return (sz * var_ptr->size());
+}
+
+void *
+Array::alloc_buf(unsigned int n)
+{
+    if (n == 0)
+	n = size();
+
+    char *buffer = (char *)malloc(n);
+    
+    if (!buffer)
+	err_quit("Array::alloc_buf:Could not allocate data buffer");
+
+    return (buf = (void *)buffer);
+}
+
+// Use this function to free memory allocated with alloc_buf() or
+// deserialize().
+
+void
+Array::free_buf()
+{
+    free(buf);
 }
 
 // Serialize an array. This uses the BaseType member XDR_CODER to encode each
@@ -113,14 +172,14 @@ Array::size()
 bool
 Array::serialize(bool flush, unsigned int num)
 {
-    assert(dods_buf);
+    assert(buf);
 
     if (num == 0)  
 	num = (size() / var_ptr->size());
 
-    int status = xdr_array(xdrout, (char **)&dods_buf, &num, DODS_MAX_ARRAY, 
+    bool status = (bool)xdr_array(xdrout, (char **)&buf, &num, DODS_MAX_ARRAY, 
 				  var_ptr->size(), var_ptr->xdr_coder());
-    expunge();			// *** Why?
+
     if (status && flush)
 	status = expunge();
 
@@ -140,9 +199,8 @@ Array::deserialize()
 {
     unsigned int num;
 
-    bool status = (bool)xdr_array(xdrin, (char **)&dods_buf, &num,
-				  DODS_MAX_ARRAY, var_ptr->size(),
-				  var_ptr->xdr_coder()); 
+    bool status = (bool)xdr_array(xdrin, (char **)&buf, &num, DODS_MAX_ARRAY,
+			   var_ptr->size(), var_ptr->xdr_coder());
 
     return (status ? (num * var_ptr->size()) : (unsigned int)FALSE);
 }
@@ -167,7 +225,7 @@ void
 Array::add_var(BaseType *v, Part p)
 {
     if (var_ptr)
-	err_quit("Array::add_var:Attempt to overwrite base type of an arry");
+	err_quit("Array::add_var:Attempt to overwrite base type of an array");
 
     var_ptr = v;
     set_var_name(v->get_var_name());
@@ -228,13 +286,6 @@ Array::dimension_name(Pix p)
 	return shape(p).name; 
 }
 
-int 
-Array::dimensions() 
-{ 
-    return shape.length(); 
-}
-
-
 void
 Array::print_decl(ostream &os, String space, bool print_semi)
 {
@@ -254,8 +305,36 @@ Array::print_decl(ostream &os, String space, bool print_semi)
 void 
 Array::print_val(ostream &os, String space)
 {
-    print_decl(os, "", false);
-    //os << " = " << dods_buf << ";" << endl;
+  int i,type;
+
+  if ( strcmp(var_ptr->get_var_type(), "String") == 0 ) type = 1;
+  if ( strcmp(var_ptr->get_var_type(), "Int32") == 0 ) type = 2;
+  if ( strcmp(var_ptr->get_var_type(), "Float64") == 0 ) type = 3;
+  if ( strcmp(var_ptr->get_var_type(), "Byte") == 0 ) type = 4;
+
+  print_decl(os, "", false);
+  switch ( type ) 
+    {
+    case 1 :
+      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
+	os << " = " << *(String *)(buf+(var_ptr->size()*i)) << ";" << endl;
+      break;
+    case 2 :
+      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
+	os << " = " << *(int *)(buf+(var_ptr->size()*i)) << ";" << endl;
+      break;
+    case 3 :
+      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
+	os << " = " << *(double *)(buf+(var_ptr->size()*i)) << ";" << endl;
+      break;
+    case 4 :
+      for( i = 0; i < ( size() / var_ptr->size() ); ++i )
+	os << " = " << *(char *)(buf+(var_ptr->size()*i)) << ";" << endl;
+      break;
+    default :
+      cerr << "Array::put_val( Unsupported data type )" << endl;
+      break;
+    }
 }
 
 bool
@@ -268,3 +347,11 @@ Array::check_semantics(bool all)
 
     return sem;
 }
+
+
+
+
+
+
+
+
