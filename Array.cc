@@ -4,7 +4,11 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.4  1994/11/22 14:05:19  jimg
+// Revision 1.5  1994/11/22 20:47:45  dan
+// 11/22/94 Modified dimension() to return total number of elements.
+//          Modified deserialize to return (bool)status = num | 0.
+//
+// Revision 1.4  1994/11/22  14:05:19  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
 // complete yet.
 // Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
@@ -84,7 +88,9 @@ Array::operator=(const Array &rhs)
 unsigned int
 Array::size()
 {
-    return (dimensions() * var_ptr->size());
+  int tSize = 1;
+  for (Pix p = first_dim(); p; next_dim(p)) tSize *= dim(p); 
+    return (tSize);
 }
 
 // Serialize an array. This uses the BaseType member XDR_CODER to encode each
@@ -116,9 +122,10 @@ unsigned int
 Array::deserialize()
 {
     unsigned int num;
-    return (bool)xdr_array(xdrin, (char **)&buf, &num, DODS_MAX_ARRAY,
+    bool status = (bool)xdr_array(xdrin, (char **)&buf, &num, DODS_MAX_ARRAY,
 			   var_ptr->size(), var_ptr->xdr_coder());
-    return num;
+
+    return status ? num : (unsigned int)FALSE;
 }
 
 // NAME defaults to NULL. It is present since the definition of this mfunc is
