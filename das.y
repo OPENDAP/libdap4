@@ -57,7 +57,10 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.18  1995/10/23 22:54:39  jimg
+ * Revision 1.19  1995/12/06 19:46:29  jimg
+ * Added definition of YYSTYPE.
+ *
+ * Revision 1.18  1995/10/23  22:54:39  jimg
  * Removed code that was NEVER'd.
  * Changed some rules so that they call functions in parser_util.cc .
  *
@@ -148,7 +151,9 @@
 
 %{
 
-static char rcsid[]={"$Id: das.y,v 1.18 1995/10/23 22:54:39 jimg Exp $"};
+#define YYSTYPE char *
+
+static char rcsid[]={"$Id: das.y,v 1.19 1995/12/06 19:46:29 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
