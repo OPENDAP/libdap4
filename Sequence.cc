@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.45  1998/03/26 00:20:04  jimg
+// Removed DODS_DEBUG define.
+//
 // Revision 1.44  1998/03/17 17:39:24  jimg
 // Added an implementation of element_count().
 //
@@ -229,7 +232,6 @@
 #pragma implementation
 #endif
 
-#define DODS_DEBUG 1
 #include "config_dap.h"
 
 #include <assert.h>
