@@ -10,6 +10,11 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
+// Revision 1.17  1998/01/13 04:16:11  jimg
+// Added a copy ctor since TestSequence has its own private data members. g++
+// 2.7.2.3 (?) running on Linux complained (apparently) about it being missing.
+// Also added _duplicate private member function.
+//
 // Revision 1.16  1997/09/22 22:42:16  jimg
 // Added massive amounts of code to read test data from a file.
 //
@@ -86,6 +91,12 @@
 
 #include "debug.h"
 
+void
+TestSequence::_duplicate(const TestSequence &ts)
+{
+    _input_opened = ts._input_opened;
+}
+
 Sequence *
 NewSequence(const String &n)
 {
@@ -101,6 +112,11 @@ TestSequence::ptr_duplicate()
 TestSequence::TestSequence(const String &n) : Sequence(n)
 {
     _input_opened = false;
+}
+
+TestSequence::TestSequence(const TestSequence &rhs) : Sequence(rhs)
+{
+    _duplicate(rhs);
 }
 
 TestSequence::~TestSequence()
