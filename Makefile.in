@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.29 1996/02/02 00:31:10 jimg Exp $
+# $Id: Makefile.in,v 1.30 1996/02/05 19:13:26 jimg Exp $
 
 @SET_MAKE@
 
@@ -8,11 +8,9 @@
 # or doesn't have.
 
 # the programs das-, dds- and trans-test are used to test parts of the
-# library. The libraries libdas++.a and libdds++.a contain the code for the
-# generation of those structures (plus the dds library contains code for data
-# transmission. The libdap++.a contains all the code in libdas++.a,
-# libdds++.a plus the libraries in Map, Stack, Plex and Vec. It is *the* dods
-# library in many senses.
+# library. The library libdap++.a contains the code for the generation of the
+# DAS and DDS structures plus the code for data transmission and the GNU
+# libg++.a classes Map, Stack, Plex and Vec.
 
 PROG= libdap++.a
 DODS_ROOT = ../..
@@ -72,7 +70,7 @@ DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
 EXPR_GRAM_OBJS = lex.expr.o expr.tab.o
 
-DASHDRS = AttrTable.h DAS.h debug.h
+DASHDRS = AttrTable.h DAS.h 
 DASSRCS = AttrTable.cc DAS.cc
 DASOBJS = AttrTable.o DAS.o $(DAS_GRAM_OBJS)
 
@@ -136,7 +134,7 @@ expr-test: libdap++.a $(EXPROBJS) $(TESTOBJS) expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test $(EXPROBJS) $(TESTOBJS) expr-test.o \
 		$(LIBS)
 
-# Build the DAS scanner (a C object module compiled with C++)
+# Build the DAS scanner (a C source module compiled with C++)
 
 lex.das.c: das.lex das.tab.c das.tab.h
 	$(LEX) $(LFLAGS) -Pdas das.lex
@@ -192,9 +190,6 @@ expr.tab.o: expr.tab.c		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c expr.tab.c -o expr.tab.o
 
 # Standard targets with some customization for das-test and dds-test
-#
-# NB: it does not make much sense to install lib{das,dds}.a without the stack
-# map and xplex libraries also installed
 
 install: all install-headers
 	$(INSTALL_DATA) libdap++.a $(libdir)
@@ -203,6 +198,7 @@ install: all install-headers
 install-headers:
 	$(INSTALL_DATA) config_dap.h $(includedir)
 	$(INSTALL_DATA) debug.h $(includedir)
+	$(INSTALL_DATA) dods-limits.h $(includedir)
 	for h in $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) $(GNUHDRS); \
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
@@ -232,7 +228,7 @@ clean:
 distclean: clean
 	-rm -f config.status config.log config.cache
 
-# I added this so tat distclean will not wipe these files out. Thus people
+# I added this so that distclean will not wipe these files out. Thus people
 # without GNU bison/flex (e.g., Dec Alphas which have a scanner generator
 # called `flex' which is definately not a recent GNU flex) can still build
 # the DAP software. Few people should want to hack these grammar files.
@@ -247,9 +243,9 @@ tar:
 tags:
 	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
 
-# I added the install of config_dap.h to the depend target so that the files
-# in DODS_ROOT/include would be correct even without users running `make
-# install'.
+# To get the headers installed in the $(DODS_ROOT)/include directory, you
+# must run `make install-headers'
+
 depend: 
 	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
 	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(TESTSRCS) das-test.cc dds-test.cc 
