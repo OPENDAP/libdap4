@@ -9,6 +9,9 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.21  1998/11/24 06:50:07  jimg
+// Added instrumentation. Used while I was removing DASVHMap.
+//
 // Revision 1.20  1998/08/06 16:06:42  jimg
 // Now prints aliases as such rather than replicating the aliased entry.
 //
@@ -86,7 +89,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.20 1998/08/06 16:06:42 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.21 1998/11/24 06:50:07 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -97,6 +100,7 @@ static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.20 1998/08/06 16:06:42 ji
 #include <ostream.h>
 
 #include "AttrTable.h"
+#include "debug.h"
 
 // Private member functions
 
@@ -181,13 +185,27 @@ AttrTable::AttrTable()
 
 AttrTable::~AttrTable()
 {
+    DBG(cerr << "Entering ~AttrTable" << endl);
+
+    if (attr_map.empty()) {
+	DBG(cerr << "Found empty attr table" << endl);
+	goto exit;
+    }
+
     for (Pix p = attr_map.first(); p; attr_map.next(p))
 	// Don't delete the referenced objects in an alias!
-	if (!attr_map(p).is_alias)
+	if (!attr_map(p).is_alias) {
+	    DBG(cerr << "attr_map(p).type: " << attr_map(p).type << endl);
+	    DBG(cerr << "attr_map(p).name: " << attr_map(p).name << endl);
 	    if (attr_map(p).type == Attr_container)
 		delete attr_map(p).value.attributes;
 	    else
 		delete attr_map(p).value.attr;
+	}
+
+ exit:
+    DBG(cerr << "Leaving ~AttrTable" << endl);
+    return;
 }
 
 Pix 
