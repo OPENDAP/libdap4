@@ -166,14 +166,8 @@ xdrstdio_setpos(xdrs, pos)
 	XDR *xdrs;
 	u_int pos;
 {
-#undef ROBS_TEST
-#ifdef ROBS_TEST
-	return ((fseek((FILE *)(xdrs->x_private), 0, 0) < 0) ?
-		FALSE : TRUE);
-#else
 	return ((fseek((FILE *)xdrs->x_private, (long)pos, 0) < 0) ?
 		FALSE : TRUE);
-#endif
 }
 
 static long *
