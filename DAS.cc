@@ -11,6 +11,12 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.27  2000/01/27 06:29:56  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.26.6.1  2000/01/26 23:56:22  jimg
+// Fixed the return type of string::find.
+//
 // Revision 1.26  1999/04/29 02:29:28  jimg
 // Merge of no-gnu branch
 //
@@ -141,7 +147,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.26 1999/04/29 02:29:28 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.27 2000/01/27 06:29:56 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -233,7 +239,7 @@ AttrTable *
 DAS::get_table(const string &name)
 {
     // `.' separates hierarchies in the DAS.
-    unsigned int dotpos = name.find('.');
+    string::size_type dotpos = name.find('.');
     if (dotpos != name.npos) {
 	string container = name.substr(0, dotpos);
 	string field = name.substr(dotpos+1);

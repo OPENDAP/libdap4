@@ -9,6 +9,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.87  2000/01/27 06:29:55  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.80.2.3  2000/01/26 23:55:50  jimg
+// Fixed the return type of string::find.
+//
 // Revision 1.86  1999/12/31 00:55:10  jimg
 // Fixed up the progress indicator
 //
@@ -53,7 +59,8 @@
 // Merged changes from the release-3-0-2 branch
 //
 // Revision 1.78.4.2  1999/07/29 05:46:17  brent
-// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl files
+// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl
+// files.
 //
 // Revision 1.78.4.1  1999/06/01 15:40:54  jimg
 // Ripped out dead wood in parse_mime(...).
@@ -497,7 +504,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.86 1999/12/31 00:55:10 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.87 2000/01/27 06:29:55 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1422,7 +1429,7 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 	// 12/14/99 jhrg
 
 	// Find and store any CE given with the URL.
-	size_t dotpos = name.find('?');
+	string::size_type dotpos = name.find('?');
 	if (dotpos!=name.npos) {
 	    _URL = name.substr(0, dotpos);
 	    string expr = name.substr(dotpos+1);
@@ -1792,7 +1799,7 @@ Connect::request_data(string expr, bool gui_p,
     (void)gui()->show_gui(gui_p);
 #endif
     string proj, sel;
-    size_t dotpos = expr.find('&');
+    string::size_type dotpos = expr.find('&');
     if (dotpos != expr.npos) {
 	proj = expr.substr(0, dotpos);
 	sel = expr.substr(dotpos);

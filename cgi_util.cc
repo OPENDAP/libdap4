@@ -11,11 +11,21 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.39  2000/01/27 06:29:58  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.36.6.3  2000/01/26 23:58:51  jimg
+// Fixed the return type of string::find.
+// Removed the old name_path() function.
+//
 // Revision 1.38  1999/12/01 21:33:01  jimg
 // Added rfc822_date(...).
 // Added Date headers to all the mime header output functions.
 // Added Cache-Control: no-cache to the binary header with deflate is true.
 // Removed old code.
+//
+// Revision 1.36.6.2  1999/10/19 16:46:33  jimg
+// Removed the usage() function.
 //
 // Revision 1.37  1999/09/03 22:07:45  jimg
 // Merged changes from release-3-1-1
@@ -188,7 +198,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.38 1999/12/01 21:33:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.39 2000/01/27 06:29:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -328,7 +338,7 @@ do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
 string
 find_ancillary_file(string pathname, string ext, string dir, string file)
 {
-    unsigned int slash = pathname.rfind('/') + 1;
+    string::size_type slash = pathname.rfind('/') + 1;
     string directory = pathname.substr(0, slash);
     string basename = pathname.substr(slash, pathname.find('.',slash)-slash);
     
@@ -464,7 +474,7 @@ name_path(const string &path)
     if (path == "")
 	return string("");
 
-    size_t delim = path.find_last_of(FILE_DELIMITER);
+    string::size_type delim = path.find_last_of(FILE_DELIMITER);
 
     string new_path = path.substr(delim + 1);
 

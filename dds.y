@@ -24,6 +24,12 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.28  2000/01/27 06:30:00  jimg
+ * Resolved conflicts from merge with release-3-1-4
+ *
+ * Revision 1.27.2.1  2000/01/24 22:25:10  jimg
+ * Removed static global objects
+ *
  * Revision 1.27  1999/07/22 17:07:47  jimg
  * Fixed a bug found by Peter Fox. Array index names were not handled properly
  * after the String to string conversion.
@@ -147,7 +153,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.27 1999/07/22 17:07:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.28 2000/01/27 06:30:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -184,10 +190,11 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.27 1999/07/22 17:07:47 jimg Exp 
 
 extern int dds_line_num;	/* defined in dds.lex */
 
+// No global static objects in the dap library! 1/24/2000 jhrg
 static stack<BaseType *> *ctor;
 static BaseType *current;
+static string *id;
 static Part part = nil;		/* Part is defined in BaseType */
-static string id;
 
 static char *NO_DDS_MSG =
 "The descriptor object returned from the dataset was null.\n\
@@ -437,19 +444,21 @@ array_decl:	'[' INTEGER ']'
 
 		 | '[' ID 
 		 {
-		     id = string($2);
+		     id = new string($2);
 		 } 
                  '=' INTEGER 
                  { 
 		     if (current->type() == dods_array_c) {
-			 ((Array *)current)->append_dim(atoi($5), id);
+			 ((Array *)current)->append_dim(atoi($5), *id);
 		     }
 		     else {
 			 Array *a = NewArray(); 
 			 a->add_var(current); 
-			 a->append_dim(atoi($5), id);
+			 a->append_dim(atoi($5), *id);
 			 current = a;
 		     }
+
+		     delete id;
 		 }
 		 ']'
 

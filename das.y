@@ -17,6 +17,16 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.36  2000/01/27 06:30:00  jimg
+ * Resolved conflicts from merge with release-3-1-4
+ *
+ * Revision 1.35.6.2  2000/01/24 22:25:10  jimg
+ * Removed static global objects
+ *
+ * Revision 1.35.6.1  1999/10/19 16:45:14  jimg
+ * Fixed a minor bug in the check of int16 attributes. the check_int16 was
+ * called when check_uint16 should have been called.
+ *
  * Revision 1.35  1999/05/04 19:47:23  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -179,7 +189,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.35 1999/05/04 19:47:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.36 2000/01/27 06:30:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -220,8 +230,10 @@ static char rcsid[] not_used = {"$Id: das.y,v 1.35 1999/05/04 19:47:23 jimg Exp 
 
 extern int das_line_num;	/* defined in das.lex */
 
-static string name;	/* holds name in attr_pair rule */
-static string type;	/* holds type in attr_pair rule */
+// No global static objects. We go through this every so often, I guess I
+// should learn... 1/24/2000 jhrg
+static string *name;	/* holds name in attr_pair rule */
+static string *type;	/* holds type in attr_pair rule */
 
 static vector<AttrTable *> *attr_tab_stack;
 
@@ -233,7 +245,7 @@ static vector<AttrTable *> *attr_tab_stack;
 #define STACK_LENGTH (attr_tab_stack->size())
 #define STACK_EMPTY (attr_tab_stack->empty())
 
-#define TYPE_NAME_VALUE(x) type << " " << name << " " << (x)
+#define TYPE_NAME_VALUE(x) *type << " " << *name << " " << (x)
 
 static char *ATTR_TUPLE_MSG = 
 "Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,\n\
@@ -308,17 +320,31 @@ string attr_name(string name);
   alias). 
 */
 
-attributes:    	attribute
+/* This rule makes sure the objects needed by this parser are built. Because
+   the DODS DAP library is often used with linkers that are not C++-aware, we
+   cannot use global objects (because their constructor might never be
+   called). I had thought this was going to go away... 1/24/2000 jhrg */
+
+attr_start:
+                {
+		    name = new string();
+		    type = new string();
+		    attr_tab_stack = new vector<AttrTable *>;
+		}
+                attributes
+                {
+		    delete name;
+		    delete type;
+		    delete attr_tab_stack;
+		}
+;
+
+attributes:     attribute
     	    	| attributes attribute
+
 ;
     	    	
-attribute:    	ATTR 
-                /* Create the AttrTable stack if necessary */
-                {
-		    if (!attr_tab_stack)
-			attr_tab_stack = new vector<AttrTable *>;
-		}
-                '{' attr_list '}'
+attribute:    	ATTR '{' attr_list '}'
                 | error
                 {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG);
@@ -333,40 +359,40 @@ attr_list:  	/* empty */
 
 attr_tuple:	alias
 
-                | BYTE { type = "Byte"; }
-                ID { name = $3; } 
+                | BYTE { *type = "Byte"; }
+                ID { *name = $3; } 
 		bytes ';'
 
-		| INT16 { save_str(type, "Int16", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+		| INT16 { save_str(*type, "Int16", das_line_num); } 
+                ID { save_str(*name, $3, das_line_num); } 
 		int16 ';'
 
-		| UINT16 { save_str(type, "UInt16", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+		| UINT16 { save_str(*type, "UInt16", das_line_num); } 
+                ID { save_str(*name, $3, das_line_num); } 
 		uint16 ';'
 
-		| INT32 { save_str(type, "Int32", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+		| INT32 { save_str(*type, "Int32", das_line_num); } 
+                ID { save_str(*name, $3, das_line_num); } 
 		int32 ';'
 
-		| UINT32 { save_str(type, "UInt32", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+		| UINT32 { save_str(*type, "UInt32", das_line_num); } 
+                ID { save_str(*name, $3, das_line_num); } 
 		uint32 ';'
 
-		| FLOAT32 { save_str(type, "Float32", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+		| FLOAT32 { save_str(*type, "Float32", das_line_num); } 
+                ID { save_str(*name, $3, das_line_num); } 
 		float32 ';'
 
-		| FLOAT64 { save_str(type, "Float64", das_line_num); } 
-                ID { save_str(name, $3, das_line_num); } 
+		| FLOAT64 { save_str(*type, "Float64", das_line_num); } 
+                ID { save_str(*name, $3, das_line_num); } 
 		float64 ';'
 
-		| STRING { type = "String"; } 
-                ID { name = $3; } 
+		| STRING { *type = "String"; } 
+                ID { *name = $3; } 
 		strs ';'
 
-		| URL { type = "Url"; } 
-                ID { name = $3; } 
+		| URL { *type = "Url"; } 
+                ID { *name = $3; } 
 		urls ';'
 
 		| ID 
@@ -415,9 +441,9 @@ bytes:		INT
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -433,9 +459,9 @@ bytes:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
@@ -459,9 +485,9 @@ int16:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
@@ -478,9 +504,9 @@ int16:		INT
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -504,9 +530,9 @@ uint16:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
@@ -524,9 +550,9 @@ uint16:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
@@ -550,9 +576,9 @@ int32:		INT
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -568,9 +594,9 @@ int32:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
@@ -594,9 +620,9 @@ uint32:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
@@ -612,9 +638,9 @@ uint32:		INT
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
@@ -634,9 +660,9 @@ float32:	float_or_int
 			msg.freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
@@ -654,9 +680,9 @@ float32:	float_or_int
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -676,9 +702,9 @@ float64:	float_or_int
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -696,9 +722,9 @@ float64:	float_or_int
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -710,9 +736,9 @@ strs:		str_or_id
 		{
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
 		    /* Assume a string that parses is vaild. */
-		    if (TOP_OF_STACK->append_attr(name, type, $1) == 0) {
+		    if (TOP_OF_STACK->append_attr(*name, *type, $1) == 0) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0); 
 			YYABORT;
@@ -721,9 +747,9 @@ strs:		str_or_id
 		| strs ',' str_or_id
 		{
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
-		    if (TOP_OF_STACK->append_attr(name, type, $3) == 0) {
+		    if (TOP_OF_STACK->append_attr(*name, *type, $3) == 0) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -741,9 +767,9 @@ urls:		url
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $1)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -759,9 +785,9 @@ urls:		url
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
-		    else if (!TOP_OF_STACK->append_attr(name, type, $3)) {
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 			ostrstream msg;
-			msg << "`" << name << "' previously defined." << ends;
+			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -780,7 +806,7 @@ float_or_int:   FLOAT | INT
 
 alias:          ALIAS ID 
                 { 
-		    name = $2;
+		    *name = $2;
 		} 
                 ID
                 {
@@ -797,15 +823,15 @@ alias:          ALIAS ID
 			// is no object on the stack so we must be working at
 			// the outer most level of the attribute object).
 			AttrTable *at = DAS_OBJ(arg)->get_table($4);
-			DAS_OBJ(arg)->add_table(name.c_str(), at);
+			DAS_OBJ(arg)->add_table(name->c_str(), at);
 		    }
-		    else if (!TOP_OF_STACK->attr_alias(name, $4)) {
+		    else if (!TOP_OF_STACK->attr_alias(*name, $4)) {
 			AttrTable *table = DAS_OBJ(arg)->get_table($4);
-			if (!TOP_OF_STACK->attr_alias(name, table, 
+			if (!TOP_OF_STACK->attr_alias(*name, table, 
 						      attr_name($4))) {
 			    ostrstream msg;
 			    msg << "Could not alias `" << $4 << "' and `" 
-				<< name << "'." << ends;
+				<< *name << "'." << ends;
 			    parse_error((parser_arg *)arg, msg.str());
 			    msg.rdbuf()->freeze(0);
 			    YYABORT;

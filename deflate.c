@@ -7,6 +7,12 @@
 
 /* 
    $Log: deflate.c,v $
+   Revision 1.3  2000/01/27 06:30:01  jimg
+   Resolved conflicts from merge with release-3-1-4
+
+   Revision 1.2.28.1  1999/12/07 17:56:35  edavis
+   Fix for RedHat 5.2 to 6.x libc changes (stdin/out/err no longer constant).
+
    Revision 1.2  1998/02/11 02:39:44  jimg
    Added TRUE and FALSE definitions.
 
@@ -14,7 +20,7 @@
    Added to DAP.
 */
 
-const char *rcsid={"$Id: deflate.c,v 1.2 1998/02/11 02:39:44 jimg Exp $"};
+const char *rcsid={"$Id: deflate.c,v 1.3 2000/01/27 06:30:01 jimg Exp $"};
 
 #include "stdlib.h"
 #include "stdio.h"
@@ -37,8 +43,8 @@ char *output_buffer 	= NULL;
 int  buffer_size 	= DEFAULT_BUFFER_SIZE;
 int  compression_rate	= DEFAULT_COMPRESSION;
 
-FILE * fin = stdin;
-FILE * fout = stdout;
+FILE * fin;
+FILE * fout;
 
 void HelpScreen (const char *progname)
 {
@@ -57,6 +63,9 @@ int main (int argc, char ** argv)
     int status;
     int count;
     int silent = FALSE;		/* default is to be verbose 2/10/1998 jhrg */
+
+    fin = stdin;
+    fout = stdout;
 
     /* Scan command line for parameters */
     for (arg=1; arg<argc; arg++) {

@@ -10,6 +10,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.52  2000/01/27 06:29:57  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.49.6.2  2000/01/26 23:57:15  jimg
+// Fixed the return type of string::find.
+//
 // Revision 1.51  1999/12/31 00:55:11  jimg
 // Fixed up the progress indicator
 //
@@ -460,7 +466,7 @@ Sequence::leaf_match(const string &name)
 BaseType *
 Sequence::exact_match(const string &name)
 {
-    unsigned int dot_pos = name.find("."); // zero-based index of `.'
+    string::size_type dot_pos = name.find("."); // zero-based index of `.'
     if (dot_pos != string::npos) {
 	string aggregate = name.substr(0, dot_pos);
 	string field = name.substr(dot_pos + 1);

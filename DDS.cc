@@ -9,6 +9,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.45  2000/01/27 06:29:56  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.44.2.1  2000/01/26 23:56:52  jimg
+// Fixed the return type of string::find.
+//
 // Revision 1.44  1999/07/22 17:11:50  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -240,7 +246,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.44 1999/07/22 17:11:50 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.45 2000/01/27 06:29:56 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -455,7 +461,7 @@ DDS::leaf_match(const string &n)
 BaseType *
 DDS::exact_match(const string &name)
 {
-    unsigned int dot_pos = name.find(".");
+    string::size_type dot_pos = name.find(".");
     if (dot_pos != string::npos) {
 	string aggregate = name.substr(0, dot_pos);
 	string field = name.substr(dot_pos + 1);
@@ -1044,7 +1050,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 bool
 DDS::mark(const string &n, bool state)
 {
-    unsigned int dotpos = n.find('.');
+    string::size_type dotpos = n.find('.');
     if (dotpos != n.npos) {
 	string aggregate = n.substr(0, dotpos);
 	string field = n.substr(dotpos+1);

@@ -12,6 +12,12 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.11  2000/01/27 06:30:01  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.9.6.2  2000/01/27 00:03:05  jimg
+// Fixed the return type of string::find.
+//
 // Revision 1.10  1999/08/23 18:57:46  jimg
 // Merged changes from release 3.1.0
 //
@@ -200,10 +206,10 @@ string escattr(string s) {
 	s.replace(index,1, ESC + octstring(s[index]));
 
     // escape " with backslash
-    index = 0;
-    while ( (index = s.find(QUOTE,index)) != (int)s.npos) {
-	s.replace(index,1, ESCQUOTE);
-	index += ESCQUOTE.length();
+    string::size_type ind = 0;
+    while ( (ind = s.find(QUOTE, ind)) != s.npos) {
+	s.replace(ind, 1, ESCQUOTE);
+	ind += ESCQUOTE.length();
     }
 
     return s;

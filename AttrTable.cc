@@ -9,6 +9,12 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.24  2000/01/27 06:29:55  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.23.6.1  2000/01/26 23:55:02  jimg
+// Fixed the return type of string::find.
+//
 // Revision 1.23  1999/04/29 02:29:26  jimg
 // Merge of no-gnu branch
 //
@@ -102,7 +108,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.23 1999/04/29 02:29:26 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.24 2000/01/27 06:29:55 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -124,14 +130,14 @@ static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.23 1999/04/29 02:29:26 jimg
 Pix 
 AttrTable::find(const string &target, bool cont_only)
 {
-    unsigned int dotpos = target.find('.');
+    string::size_type dotpos = target.find('.');
     if (dotpos != target.npos) {
 	string container = target.substr(0, dotpos);
 	string field = target.substr(dotpos+1);
 	
 	Pix p = simple_find(container);
 	if ((p) && attr_map(p).type == Attr_container) {
-	    if (cont_only && (field.find('.')==field.npos))
+	    if (cont_only && (field.find('.') == field.npos))
 		return p;
 	    else
 		return attr_map(p).value.attributes->find(field, cont_only);

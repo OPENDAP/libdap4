@@ -10,6 +10,12 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.38  2000/01/27 06:29:58  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.37.6.1  2000/01/26 23:57:37  jimg
+// Fixed the return type of string::find.
+//
 // Revision 1.37  1999/04/29 02:29:31  jimg
 // Merge of no-gnu branch
 //
@@ -429,7 +435,7 @@ Structure::leaf_match(const string &name)
 BaseType *
 Structure::exact_match(const string &name)
 {
-    unsigned int dot_pos = name.find("."); // zero-based index of `.'
+    string::size_type dot_pos = name.find("."); // zero-based index of `.'
     if (dot_pos != string::npos) {
 	string aggregate = name.substr(0, dot_pos);
 	string field = name.substr(dot_pos + 1);

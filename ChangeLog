@@ -1,3 +1,29 @@
+2000-01-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release3-1-4. The next merge should use: update -j
+	release-3-1-4 -j release-3-1.
+
+2000-01-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixes for Red hat 6.x (from Ethan).
+
+	* Fixed the use of the stdc++ library's string::find() method. Its
+	return type was assigned to an unsigned int in many places. On 64
+	bit machines this caused problems. The type now used is
+	string::size_type (although size_t also works).
+
+2000-01-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed a bug in the DAS and DDS parsers (das.y, dds.y). These
+	parsers used static global C++ objects which require that their
+	constructors run before main(). However, when the dap library is
+	linked by a linker that is not aware of this (e.g., Sun's ld, when
+	using GNU C++) those constructors are never called and accessing
+	those objects causes a segmentation fault. Fixing this problem
+	might fix undiscovered bugs in netCDF clients and definitely fixes
+	problems with the nascent loaddods rewrite (where loaddods gets
+	rewritten in C++).
+
 1999-12-31  James Gallagher  <jimg@dcz.dods.org>
 
 	* Added Gui (progress indicator) code back into the core. The
@@ -610,4 +636,8 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.46 2000/01/05 22:37:43 jimg Exp $
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.47 2000/01/27 06:29:55 jimg Exp $
+=======
+$Id: ChangeLog,v 1.47 2000/01/27 06:29:55 jimg Exp $
+>>>>>>> 1.42.2.4
