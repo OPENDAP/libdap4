@@ -10,6 +10,12 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.34  1998/10/19 19:32:13  jimg
+// Fixed a bug in ops(): buf2val was used incorrectly and string_ops never
+// got the right strings. since the values were always "" for both arguments,
+// any regex match returned true! Also, removed one call to buf2val in ops()
+// since its OK to pass the member _buf to string_ops().
+//
 // Revision 1.33  1998/09/17 17:16:25  jimg
 // Fixed errant comments.
 //
@@ -180,7 +186,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.33 1998/09/17 17:16:25 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.34 1998/10/19 19:32:13 jimg Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -293,17 +299,13 @@ Str::print_val(ostream &os, String space, bool print_decl_p)
 bool
 Str::ops(BaseType &b, int op, const String &dataset)
 {
-    String a1, a2;
+    String a2;
     int error; 
 
     if (!read_p() && !read(dataset, error)) {
 	assert("This value not read!" && false);
 	cerr << "This value not read!" << endl;
 	return false;
-    }
-    else {
-	String *a1p = &a1;
-	buf2val((void **)&a1p);
     }
 
     if (!b.read_p() && !read(dataset, error)) {
@@ -345,8 +347,9 @@ Str::ops(BaseType &b, int op, const String &dataset)
 	      break;
 	  }
 	  case dods_str_c: {
-	      String *sp = &a2;
+	      String *sp = 0;
 	      b.buf2val((void **)&sp);
+	      a2 = *sp;
 	      break;
 	  }
 	  default:
@@ -354,5 +357,5 @@ Str::ops(BaseType &b, int op, const String &dataset)
 	    break;
 	}
 
-    return string_ops(a1, a2, op);
+    return string_ops(_buf, a2, op);
 }
