@@ -8,6 +8,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.37  1996/11/13 18:53:00  jimg
+// Updated so that this now works with version 5.0a of the WWW library from
+// the W3c.
+// Fixed handling of certain types of http/www errors.
+//
 // Revision 1.36  1996/10/18 16:40:09  jimg
 // Changed request_das() and request_dds() so that they now pass any initial
 // constraint to the DAS and DDS servers.
@@ -208,7 +213,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.36 1996/10/18 16:40:09 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.37 1996/11/13 18:53:00 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -234,11 +239,17 @@ static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.36 1996/10/18 16:40:09 jim
 #include "debug.h"
 #include "Connect.h"
 
+#define SHOW_MSG (WWWTRACE || HTAlert_interactive())
+
+#if defined(__svr4__)
+#define CATCH_SIG
+#endif
+
 // On a sun (4.1.3) these are not prototyped... Maybe other systems too?
 #if (HAVE_SEM_PROTO == 0)
 extern "C" {
     int semget(key_t key, int nsems, int flag);
-    int semctl(int semid, int semnum, int cmd, union semun arg);
+    int semctl(int semid, int semnum, int cmd, ...);
     int semop(int semid, struct sembuf sb[], size_t nops);
 }
 #endif
@@ -291,66 +302,11 @@ SetSignal(void)
 
 // The next five functions (*not* mfuncs) are friends of Connect.
 
-// This function is registered to handle access authentication,
-// for example for HTTP
-
-int
-authentication_handler(HTRequest *request, int status)
-{
-    Connect *me = (Connect *)HTRequest_context(request);
-
-    // Ask the authentication module for getting credentials
-    if (HTAA_authentication(request) && HTAA_retryWithAuth(request)) {
-
-	// Make sure we do a reload from cache
-	HTRequest_setReloadMode(request, HT_FORCE_RELOAD);
-
-	// Log current request
-	if (HTLog_isOpen()) 
-	    HTLog_add(request, status);
-
-	// Start request with new credentials
-	HTLoadAnchor((HTAnchor *) me->_anchor, request);
-    } 
-    else {
-	cerr << "Access denied" << endl;
-    }
-
-    //Make sure this is the last callback in the list
-    return HT_ERROR;		
-}
-
-// This function is registered to handle permanent and temporary
-// redirections. Make sure this is the last callback in the list.
-
-int
-redirection_handler(HTRequest *request, int status)
-{
-    bool result = true;
-    HTAnchor *new_anchor = HTRequest_redirection(request);
-
-    // Make sure we do a reload from cache
-    HTRequest_setReloadMode(request, HT_FORCE_RELOAD);
-
-    // Log current request
-    if (HTLog_isOpen()) 
-	HTLog_add(request, status);
-
-    // Start new request
-    if (HTRequest_retry(request)) {
-	result = HTLoadAnchor(new_anchor, request);
-    } 
-    else {
-	cerr << "Too many redirections detected" << endl;
-    }
-
-    return HT_ERROR;
-}
-
 // This function is registered to handle the result of the request
 
-int
-terminate_handler(HTRequest *request, int status) 
+int 
+terminate_handler (HTRequest * request, HTResponse * /*response*/,
+		   void * /*param*/, int status) 
 {
     if (status != HT_LOADED) {
 	HTAlertCallback *cbf = HTAlert_find(HT_A_MESSAGE);
@@ -402,7 +358,7 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
     String cmd;
 
     if (!request) {
-        if (WWWTRACE) TTYPrint(TDEST, "HTProgress.. Bad argument\n");
+        if (WWWTRACE) cerr << "dods_rogress: Bad argument" << endl;
         return NO;
     }
 
@@ -480,7 +436,7 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
         break;
 
       default:
-        TTYPrint(TDEST, "UNKNOWN PROGRESS STATE\n");
+        cerr << "UNKNOWN PROGRESS STATE" << endl;
         break;
     }
 
@@ -493,7 +449,7 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
 			void * /* input */, HTAlertPar * reply)
 {
     if (!request) {
-        if (WWWTRACE) TTYPrint(TDEST, "HTProgress.. Bad argument\n");
+        if (WWWTRACE) cerr << "dods_username_password: Bad argument" << endl;
         return NO;
     }
 
@@ -523,7 +479,7 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
     return YES;
 }
 
-#include "www-error-msgs.h"
+static HTErrorMessage HTErrors[HTERR_ELEMENTS] = {HTERR_ENGLISH_INITIALIZER};
 
 BOOL 
 dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
@@ -536,29 +492,35 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
     HTChunk *msg = NULL;
     int code;
 
-    if (WWWTRACE) 
-	TTYPrint(TDEST, "HTError..... Generating message\n");
+    if (WWWTRACE) cerr << "dods_error_print: Generating message" << endl;
 
     if (!request || !cur) 
 	return NO;
 
     while ((pres = (HTError *) HTList_nextObject(cur))) {
         int index = HTError_index(pres);
+	// An index of 
         if (HTError_doShow(pres)) {
             if (!msg) {
                 HTSeverity severity = HTError_severity(pres);
                 msg = HTChunk_new(128);
-                if (severity == ERR_WARN)
+		switch (severity) {
+		  case ERR_WARN:
                     HTChunk_puts(msg, "Warning: ");
-                else if (severity == ERR_NON_FATAL)
+		    break;
+		  case ERR_NON_FATAL:
                     HTChunk_puts(msg, "Non Fatal Error: ");
-                else if (severity == ERR_FATAL)
+		    break;
+		  case ERR_FATAL:
                     HTChunk_puts(msg, "Fatal Error: ");
-                else if (severity == ERR_INFO)
+		    break;
+		  case ERR_INFO:
                     HTChunk_puts(msg, "Information: ");
-                else {
+		    break;
+		  default:
                     if (WWWTRACE)
-                        TTYPrint(TDEST, "HTError..... Unknown Classification of Error (%d)...\n", severity);
+                        cerr << "Unknown Classification of Error (" 
+			     << severity << ")" << endl;
                     HTChunk_delete(msg);
                     return NO;
                 }
@@ -569,39 +531,15 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
                     sprintf(buf, "%d ", code);
                     HTChunk_puts(msg, buf);
                 }
-            } else
+
+                HTChunk_putc(msg, '\n');
+	    }
+            else
                 HTChunk_puts(msg, "\nReason: ");
 	    
-	    ostrstream os;
-	    os << endl << "Could not access `" 
-	       << HTAnchor_address((HTAnchor *)HTRequest_anchor(request)) 
-		   << "': " << ends;
-	    
-	    HTChunk_puts(msg, os.str());
-	    os.freeze(0);
+            HTChunk_puts(msg, HTErrors[index].msg); // Error message
 
-            HTChunk_puts(msg, HTErrors[index].msg);         /* Error message */
-
-#if 0
-            if (showmask & HT_ERR_SHOW_PARS) {           /* Error parameters */
-                int length;
-                int cnt;                
-                char *pars = (char *) HTError_parameter(pres, &length);
-                if (length && pars) {
-                    HTChunk_puts(msg, " (");
-                    for (cnt=0; cnt<length; cnt++) {
-                        char ch = *(pars+cnt);
-                        if (ch < 0x20 || ch >= 0x7F)
-                            HTChunk_putc(msg, '#');
-                        else
-                            HTChunk_putc(msg, ch);
-                    }
-                    HTChunk_puts(msg, ") ");
-                }
-            }
-#endif
-
-            if (showmask & HT_ERR_SHOW_LOCATION) {         /* Error Location */
+            if (showmask & HT_ERR_SHOW_LOCATION) { // Error Location
                 HTChunk_puts(msg, "This occured in ");
                 HTChunk_puts(msg, HTError_location(pres));
                 HTChunk_putc(msg, '\n');
@@ -667,7 +605,8 @@ get_encoding(String value)
 // This function is registered to handle unknown MIME headers
 
 int 
-header_handler(HTRequest *request, const char *token)
+header_handler(HTRequest *request, HTResponse */*response*/, const char *token,
+	       const char */*val*/)
 {
     String field, value;
     istrstream line(token);
@@ -679,14 +618,6 @@ header_handler(HTRequest *request, const char *token)
 	Connect *me = (Connect *)HTRequest_context(request);
 	me->_type = get_type(value);
     }
-#if 0
-    // Parsed by HTMIME.c (wwwlib).
-    else if (field == "content-encoding:") {
-	DBG(cerr << "Found content-encoding header" << endl);
-	Connect *me = (Connect *)HTRequest_context(request);
-	me->_encoding = get_encoding(value);
-    }
-#endif
     else {
 	if (SHOW_MSG)
 	    cerr << "Unknown header: " << token << endl;
@@ -715,61 +646,19 @@ Connect::www_lib_init()
     SIOUXSettings.asktosaveonclose = false;
 #endif
 
-    // Initiate W3C Reference Library
-    HTLibInit(CNAME, CVER);
+    /* Initiate W3C Reference Library with a client profile */
+    HTProfile_newPreemptiveClient(CNAME, CVER);
 
-    // Initialize the protocol modules
-    HTProtocol_add("http", YES, HTLoadHTTP, NULL);
-    HTProtocol_add("file", YES, HTLoadFile, NULL);
+    /* Add progress notification */
+    HTAlert_add(dods_progress, HT_A_PROGRESS);
+    HTAlert_add(dods_error_print, HT_A_MESSAGE);
+    HTAlert_add(dods_username_password, HT_A_USER_PW);
 
-    // Initialize set of converters
+    HTError_setShow(HT_ERR_SHOW_FATAL);
 
-    _conv = HTList_new();
+    /* Add our own filter to update the history list */
+    HTNet_addAfter(terminate_handler, NULL, NULL, HT_ALL, HT_FILTER_LAST);
 
-    // GENERIC converters
-
-    HTConversion_add(_conv,"multipart/*", "*/*", HTBoundary, 1.0, 0.0, 0.0);
-    HTConversion_add(_conv,"message/rfc822", "*/*", HTMIMEConvert, 
-		     1.0, 0.0, 0.0);
-    HTConversion_add(_conv,"text/x-http", "*/*", HTTPStatus_new,
-		     1.0, 0.0, 0.0);
-
-    HTFormat_setConversion(_conv);
-
-    // Initialize bindings between file suffixes and media types
-    HTFileInit();
-
-    // Get any proxy or gateway environment variables
-    HTProxy_getEnvVar();
-
-#ifdef CATCH_SIG
-    SetSignal();
-#endif
-
-    HTAlert_setInteractive(YES);
-
-    // Register our User Prompts etc in the Alert Manager
-    if (HTAlert_interactive()) {
-	HTAlert_add(dods_progress, HT_A_PROGRESS);
-	HTAlert_add(dods_error_print, HT_A_MESSAGE);
-	HTAlert_add(dods_username_password, HT_A_USER_PW);
-    }
-
-    // Register a call back function for the Net Manager
-    HTNetCall_addBefore(HTLoadStart, 0);
-#if 0
-    // For version 4.1b1
-    HTAuthCall_add      (const char *           scheme,
-                                 HTAuthParCallback *    parser,
-                                 HTAuthGenCallback *    generator,
-                                 HTAuthGcCallback *     gc);
-#endif
-    HTNetCall_addAfter(authentication_handler, HT_NO_ACCESS);
-    HTNetCall_addAfter(redirection_handler, HT_PERM_REDIRECT);
-    HTNetCall_addAfter(redirection_handler, HT_TEMP_REDIRECT);
-    HTNetCall_addAfter(terminate_handler, HT_ALL);
-    
-    // Register our own MIME header handler for extra headers
     HTHeader_addParser("*", NO, header_handler);
 }
 
@@ -878,8 +767,7 @@ Connect::read_url(String &url, FILE *stream)
     HTRequest_setOutputFormat(_request, WWW_SOURCE);
 
     // Set timeout on sockets.
-    // For 4.1b1 use HTEventrg_registerTimeout(...)
-    HTEvent_registerTimeout(_tv, _request, timeout_handler, NO);
+    HTEventrg_registerTimeout(_tv, _request, timeout_handler, NO);
 
     HTRequest_setAnchor(_request, (HTAnchor *)_anchor);
 
@@ -895,8 +783,12 @@ Connect::read_url(String &url, FILE *stream)
     // LoadRelative uses a different anchor than the one bound to the request
     // in this function. Extract what you need from the anchor used in that
     // call.
+#if 0
     HTEncoding enc = HTAnchor_encoding(HTRequest_anchor(_request));
-    _encoding = get_encoding((char *)HTAtom_name(enc));
+    _encoding = get_encoding((char *)HTAtom_name(HTList_firstObject(enc)));
+#endif
+    HTList *enc = HTAnchor_encoding(HTRequest_anchor(_request));
+    _encoding = get_encoding((char *)HTList_firstObject(enc));
 
     HTRequest_delete(_request);
 
