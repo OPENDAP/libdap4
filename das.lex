@@ -41,6 +41,9 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.24  1998/03/26 00:26:24  jimg
+# Added % to the set of characters that can start and ID
+#
 # Revision 1.23  1997/07/01 00:14:24  jimg
 # Removed some old code (commented out).
 #
@@ -150,7 +153,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: das.lex,v 1.23 1997/07/01 00:14:24 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: das.lex,v 1.24 1998/03/26 00:26:24 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -169,7 +172,7 @@ static int start_line;		/* used in quote and comment error handlers */
 %x quote
 %x comment
 
-ID  	[a-zA-Z_][a-zA-Z0-9_./:%+\-()]*
+ID  	[a-zA-Z_%][a-zA-Z0-9_./:%+\-()]*
 INT	[-+]?[0-9]+
 
 MANTISA ([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)

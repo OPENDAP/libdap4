@@ -28,6 +28,9 @@
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.16  1998/03/26 00:26:23  jimg
+ * Added % to the set of characters that can start and ID
+ *
  * Revision 1.15  1997/08/11 18:19:36  jimg
  * Fixed comment leaders for new CVS version
  *
@@ -88,7 +91,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.15 1997/08/11 18:19:36 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.16 1998/03/26 00:26:23 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -113,7 +116,7 @@ void store_op(int op);
 
 %x quote
     
-ID		[a-zA-Z_][a-zA-Z0-9_/%]*
+ID		[a-zA-Z_%][a-zA-Z0-9_/%]*
 FIELD           {ID}\.{ID}(\.{ID})*
 INT		[-+]?[0-9]+
 

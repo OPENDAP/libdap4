@@ -31,6 +31,9 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.19  1998/03/26 00:26:24  jimg
+ * Added % to the set of characters that can start and ID
+ *
  * Revision 1.18  1998/02/05 20:14:01  jimg
  * DODS now compiles with gcc 2.8.x
  *
@@ -96,7 +99,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.18 1998/02/05 20:14:01 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.19 1998/03/26 00:26:24 jimg Exp $"};
 
 #include <string.h>
 
@@ -129,7 +132,7 @@ FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
 
-ID  		[a-zA-Z_][-a-zA-Z0-9_/%]*
+ID  		[a-zA-Z_%][-a-zA-Z0-9_/%]*
 NAME            [a-zA-Z0-9_/%.][-a-zA-Z0-9_/%.]*
 INTEGER		[0-9]+
 NEVER		[^][{}:;=a-zA-Z0-9_%]
