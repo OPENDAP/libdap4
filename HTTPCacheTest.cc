@@ -44,6 +44,7 @@
 #endif
 
 using namespace CppUnit;
+using namespace std;
 
 #ifdef WIN32
 #define F_OK 0
@@ -576,13 +577,14 @@ public:
 	    CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
 	    vector<string> h = c->get_conditional_request_headers(dodsdev_url);
-	    // copy(h.begin(), h.end(), ostream_iterator<string>(cout, "\n"));
-	    // I know what the strings should start with, the values might vary.
+	    DBG(copy(h.begin(), h.end(), 
+		     ostream_iterator<string>(cout, "\n")));
+	    // I know what the strings should start with...
 	    CPPUNIT_ASSERT(h[0].find("If-None-Match: ") == 0);
-	    CPPUNIT_ASSERT(h[1].find("If-Modified-Since: ") == 0);
 
 	    h = c->get_conditional_request_headers(expired);
-	    //copy(h.begin(), h.end(), ostream_iterator<string>(cout, "\n"));
+	    DBG(copy(h.begin(), h.end(), 
+		     ostream_iterator<string>(cout, "\n")));
 	    CPPUNIT_ASSERT(h[0].find("If-Modified-Since: ") == 0);
 	}
 	catch(Error &e) {
@@ -673,6 +675,10 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPCacheTest.cc,v $
+// Revision 1.9  2003/05/01 22:52:46  jimg
+// Corrected the get_conditional_response_headers_test() given the latest mods
+// to HTTPCache.cc.
+//
 // Revision 1.8  2003/04/23 21:33:53  jimg
 // Changes for the unit tests. This involved merging Rob's VC++ changes
 // and fixing a bug in escaping.cc (a call to string::insert invalidated
