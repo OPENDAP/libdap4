@@ -4,7 +4,11 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.8  1995/01/11 16:06:47  jimg
+// Revision 1.9  1995/01/18 18:33:25  dan
+// Added external declarations for utility functions, new_xdrstdio and
+// delete_xdrstdio.
+//
+// Revision 1.8  1995/01/11  16:06:47  jimg
 // Added static XDR pointers to BaseType class and removed the XDR pointers
 // that were class members - now there is only one xdrin and one xdrout
 // for all children of BaseType.
@@ -62,6 +66,9 @@
 
 #include "BaseType.h"
 #include "util.h"
+
+extern XDR *new_xdrstdio(FILE*, enum xdr_op);
+extern void delete_xdrstdio(XDR*);
 
 // Initial definition of the protected static members _xdrin and
 // _xdrout. By default they use the stdin and stdout streams (resp).
@@ -230,3 +237,9 @@ BaseType::expunge()
 {
     return fflush(_out) == 0;
 }
+
+
+
+
+
+
