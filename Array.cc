@@ -10,9 +10,13 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.36  1996/08/13 16:46:14  jimg
+// Added bounds checking to the add_constraint member function. add_constraint()
+// now returns false when a bogus constraint is used.
+//
 // Revision 1.35  1996/06/11 17:21:31  jimg
-// Fixed a bug in clear_constraint(); the dimension variables in the list _SHAPE
-// were not correctly `cleared', now they are.
+// Fixed a bug in clear_constraint(); the dimension variables in the list
+// _SHAPE were not correctly `cleared', now they are.
 //
 // Revision 1.34  1996/05/31 23:29:17  jimg
 // Updated copyright notice.
@@ -31,8 +35,8 @@
 //
 // Revision 1.31  1996/05/06 21:15:58  jimg
 // Added the member functions dimension_start, _stop and _stride to this class.
-// Changed the first argument of add_constraint from Pix &p to Pix p (the member
-// function does not change its argument).
+// Changed the first argument of add_constraint from Pix &p to Pix p (the
+// member function does not change its argument).
 //
 // Revision 1.30  1996/04/05 00:21:17  jimg
 // Compiled with g++ -Wall and fixed various warnings.
@@ -335,10 +339,16 @@ Array::clear_constraint()
 
 // the start and stop indeces are inclusive.
 
-void 
+bool
 Array::add_constraint(Pix p, int start, int stride, int stop)
 {
     dimension &d = _shape(p);
+
+    // Check for bad constraints.
+    if (start >= d.size || stop >= d.size || stride > d.size)
+	return false;
+    if (((stop - start) / stride + 1) > d.size)
+	return false;
 
     d.start = start;
     d.stop = stop;
@@ -351,6 +361,8 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
     d.selected = true;
 
     update_length(d.c_size);
+
+    return true;
 }
 
 Pix 
@@ -466,8 +478,9 @@ Array::dimension_stride(Pix p, bool constrained = false)
 String
 Array::dimension_name(Pix p) 
 { 
-    if (!_shape.empty() && p)
-	return _shape(p).name; 
+    assert(!_shape.empty() && p);
+
+    return _shape(p).name; 
 }
 
 void
@@ -511,7 +524,7 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
 {
     if (dims == 1) {
 	os << "{";
-	for (int i = 0; i < shape[0]-1; ++i) {
+	for (unsigned i = 0; i < shape[0]-1; ++i) {
 	    var(index++)->print_val(os, "", false);
 	    os << ", ";
 	}
@@ -522,7 +535,7 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
     }
     else {
 	os << "{";
-	for (int i = 0; i < shape[dims-1]-1; ++i) {
+	for (unsigned i = 0; i < shape[dims-1]-1; ++i) {
 	    index = print_array(os, index, dims - 1, shape + 1);
 	    os << "},";
 	}
@@ -563,7 +576,7 @@ Array::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Array::check_semantics(bool all)
+Array::check_semantics(bool)
 {
     bool sem = BaseType::check_semantics() && !_shape.empty();
 
