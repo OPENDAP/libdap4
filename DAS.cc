@@ -1,6 +1,6 @@
 
 /*
-  Copyright 1995 The University of Rhode Island and The Massachusetts
+  Copyright 1994, 1995 The University of Rhode Island and The Massachusetts
   Institute of Technology
 
   Portions of this software were developed by the Graduate School of
@@ -31,42 +31,18 @@
   PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTUOUS
   ACTION, ARISING OUT OF OR IN CONNECTION WITH THE ACCESS, USE OR PERFORMANCE
   OF THIS SOFTWARE.
-*///      The DODS Data Access Protocol (DAP) Library
+*/
 
-//      Copyright (C) 1994, 1995 The University of Rhode Island, Graduate
-//      School of Oceanography. 
-//     
-//      This library is free software; you can redistribute it and/or
-//      modify it under the terms of the GNU Library General Public
-//      License as published by the Free Software Foundation; either
-//      version 2 of the License, or (at your option) any later version.
-//     
-//      This library is distributed in the hope that it will be useful,
-//      but WITHOUT ANY WARRANTY; without even the implied warranty of
-//      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//      Library General Public License for more details.
-//     
-//      You should have received a copy of the GNU Library General Public
-//      License along with this library; if not, write to the
-//      Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
-//      MA 02139, USA.
-//
-//      Authors: James Gallagher (jimg@dcz.gso.uri.edu), 
-//               Dan Holloway (dan@hollywood.gso.uri.edu), 
-//               Reza Nekovei (reza@hadaf.gso.uri.edu)
-//
-//               The University of Rhode Island
-//               South Ferry Rd.
-//               Narragansett, RI. 02882
-//               U.S.A.
-//
 // Methods for the class DAS - a class used to parse the dataset attribute
 // structure.
 //
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.15  1995/07/09 21:28:54  jimg
+// Revision 1.16  1995/08/23 00:05:40  jimg
+// Added copyright notice.
+//
+// Revision 1.15  1995/07/09  21:28:54  jimg
 // Added copyright notice.
 //
 // Revision 1.14  1995/07/08  18:31:11  jimg
@@ -146,7 +122,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.15 1995/07/09 21:28:54 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.16 1995/08/23 00:05:40 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
