@@ -14,3 +14,7 @@ extern "C" {
     FILE *NetExecute(char *AbsAddress, char *PostData);
 }
 
+/* Make *SURE* that any change to VERSION_LENGTH here is also made in HTTP.c */
+
+#define VERSION_LENGTH 		20    /* Number of chars in protocol version */
+extern char DVersion[VERSION_LENGTH]; /* version string from DODS MIME docs */
