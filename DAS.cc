@@ -11,6 +11,9 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.21  1997/06/06 00:44:02  jimg
+// Removed add_table(char *, ...).
+//
 // Revision 1.20  1997/05/13 23:32:14  jimg
 // Added changes to handle the new Alias and lexical scoping rules.
 //
@@ -111,7 +114,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.20 1997/05/13 23:32:14 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.21 1997/06/06 00:44:02 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -221,14 +224,11 @@ DAS::add_table(const String &name, AttrTable *at)
     return map[name] = at;
 }
 
-#if 0
 AttrTable *
 DAS::add_table(const char *name, AttrTable *at)
 {
-//    DBG2(cerr << "In DAS::add_table(const char *, AttrTable *" << endl);
     return add_table((String)name, at);
 }
-#endif
 
 // Read attributes from a file. Returns false if unable to open the file,
 // otherwise returns the result of the mfunc parse.

@@ -13,9 +13,12 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.13  1997/05/13 23:32:16  jimg
-/* Added changes to handle the new Alias and lexical scoping rules.
+/* Revision 1.14  1997/06/06 00:43:34  jimg
+/* Removed add_table(char *, ...).
 /*
+ * Revision 1.13  1997/05/13 23:32:16  jimg
+ * Added changes to handle the new Alias and lexical scoping rules.
+ *
  * Revision 1.12  1996/08/13 18:04:11  jimg
  * Removed the system includes - this is part of my drive to eliminate nested
  * includes from the DODS core software. I'm still waffling on this, though.
@@ -106,9 +109,7 @@ public:
     AttrTable *get_table(const char *name); // avoid converting char * to Pix
    
     AttrTable *add_table(const String &name, AttrTable *at);
-#if 0
     AttrTable *add_table(const char *name, AttrTable *at);
-#endif
 
     bool parse(String fname);
     bool parse(int fd);
