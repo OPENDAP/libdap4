@@ -9,6 +9,9 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.18  1997/07/15 21:58:04  jimg
+// Formatting.
+//
 // Revision 1.17  1997/06/06 03:12:44  jimg
 // Added mfuncs with char * parameters for some of the calls. See AttrTable.h
 //
@@ -75,7 +78,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.17 1997/06/06 03:12:44 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: AttrTable.cc,v 1.18 1997/07/15 21:58:04 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -330,8 +333,7 @@ AttrTable::append_attr(const String &name, const String &type,
     Pix p = find(name);
     // If the types don't match OR this attribute is a container, calling
     // this mfunc is an error!
-    if (p && (get_type(p) != type
-	      || get_type(p) == "Container"))
+    if (p && (get_type(p) != type || get_type(p) == "Container"))
 	return 0;
     else if (p)			// Must be a new attribute value; add it.
 	return attr_map(p).value.attr->add_high(attr) + 1;
