@@ -38,6 +38,9 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.13  1996/04/05 21:59:29  jimg
+// Misc Changes for release 2.0.1 of the core software - for developers.
+//
 // Revision 1.12  1996/04/05 00:21:43  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -148,7 +151,7 @@ TestArray::read(const String &dataset)
       case d_int32_t:
       case d_float64_t:
       case d_str_t:
-      case url_t: {
+      case d_url_t: {
 
 	// String and Url are grouped with byte, ... because val2buf works
 	// for these types.
@@ -174,7 +177,7 @@ TestArray::read(const String &dataset)
 
       case d_list_t:
       case d_structure_t:
-      case sequence_t:
+      case d_sequence_t:
       case d_function_t:
       case d_grid_t:
 	

@@ -41,6 +41,9 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
+// Revision 1.16  1996/04/05 21:59:35  jimg
+// Misc Changes for release 2.0.1 of the core software - for developers.
+//
 // Revision 1.15  1996/04/05 00:22:12  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -101,7 +104,7 @@
 // Test driver for DAS (and AttrTable) classes.
 //
 
-static char rcsid[]= {"$Id: das-test.cc,v 1.15 1996/04/05 00:22:12 jimg Exp $"};
+static char rcsid[]= {"$Id: das-test.cc,v 1.16 1996/04/05 21:59:35 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -304,7 +307,8 @@ load_attr_table(AttrTable at)
     at.append_attr("Time", "Float64", "3.1415");
 
     cout << "Using the Pix:" << endl;
-    for (Pix p = at.first_attr(); p; at.next_attr(p)) {
+    Pix p;
+    for (p = at.first_attr(); p; at.next_attr(p)) {
 	cout << at.get_name(p) << " " << at.get_type(p) << " ";
 	for (int i = 0; i < at.get_attr_num(p); ++i)
 	     cout << at.get_attr(p, i) << " ";
@@ -355,7 +359,8 @@ load_attr_table_ptr(AttrTable *at)
     at->append_attr("Time", "Float64", "3.1415");
 
     cout << "Using the Pix:" << endl;
-    for (Pix p = at->first_attr(); p; at->next_attr(p)) {
+    Pix p;
+    for (p = at->first_attr(); p; at->next_attr(p)) {
 	cout << at->get_name(p) << " " << at->get_type(p) << " ";
 	for (int i = 0; i < at->get_attr_num(p); ++i)
 	     cout << at->get_attr(p, i) << " ";

@@ -1,5 +1,5 @@
 
-/*  A Bison parser, made from dds.y with Bison version GNU Bison version 1.22
+/*  A Bison parser, made from dds.y with Bison version GNU Bison version 1.24
   */
 
 #define YYBISON 1  /* Identify Bison output.  */
@@ -29,18 +29,12 @@
 #define	STRING	273
 #define	URL	274
 
-#line 103 "dds.y"
+#line 112 "dds.y"
 
 
 #define YYSTYPE char *
 
-#ifdef NEVER
-#define YYDEBUG 1
-#define YYERROR_VERBOSE 1
-#define ID_MAX 256
-#endif
-
-static char rcsid[]={"$Id: dds.tab.c,v 1.6 1995/12/09 01:07:36 jimg Exp $"};
+static char rcsid[]={"$Id: dds.tab.c,v 1.7 1996/04/05 21:59:37 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,7 +51,7 @@ static char rcsid[]={"$Id: dds.tab.c,v 1.6 1995/12/09 01:07:36 jimg Exp $"};
 
 extern int dds_line_num;	/* defined in dds.lex */
 
-static BaseTypePtrXPStack ctor;	/* stack for ctor types */
+static BaseTypePtrXPStack *ctor; /* stack for ctor types */
 static BaseType *current;
 static Part part = nil;		/* Part is defined in BaseType */
 static char id[ID_MAX];
@@ -65,7 +59,7 @@ static char id[ID_MAX];
 int ddslex();
 int ddserror(char *s);
 
-void add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, 
+void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, 
 	       Part p);
 
 
@@ -163,13 +157,13 @@ static const short yyrhs[] = {    28,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   171,   172,   175,   178,   179,   180,   183,   187,   194,   198,
-   200,   204,   206,   210,   212,   214,   216,   223,   225,   227,
-   229,   237,   240,   243,   246,   249,   252,   253,   254,   255,
-   256,   259,   260,   263,   275,   279,   292,   294
+   174,   175,   178,   181,   182,   183,   186,   190,   197,   201,
+   203,   207,   209,   213,   215,   217,   219,   226,   228,   230,
+   232,   240,   243,   246,   249,   252,   255,   256,   257,   258,
+   259,   262,   263,   266,   278,   282,   295,   297
 };
 
-static const char * const yytname[] = {   "$","error","$illegal.","ID","INTEGER",
+static const char * const yytname[] = {   "$","error","$undefined.","ID","INTEGER",
 "DATASET","INDEPENDENT","DEPENDENT","ARRAY","MAPS","LIST","SEQUENCE","STRUCTURE",
 "FUNCTION","GRID","BYTE","INT32","FLOAT64","STRING","URL","'{'","'}'","';'",
 "':'","'['","']'","'='","datasets","dataset","declarations","declaration","non_list_decl",
@@ -266,14 +260,14 @@ static const short yycheck[] = {    16,
      4,    23,    23,     0,     2,    25,    19
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/lib/bison.simple"
+#line 3 "/usr/local/share/bison.simple"
 
 /* Skeleton output parser for bison,
-   Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
+   Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 1, or (at your option)
+   the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -285,6 +279,10 @@ static const short yycheck[] = {    16,
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* As a special exception, when this file is copied by Bison into a
+   Bison output file, you may use that output file without restriction.
+   This special exception was added by the Free Software Foundation
+   in version 1.24 of Bison.  */
 
 #ifndef alloca
 #ifdef __GNUC__
@@ -358,10 +356,18 @@ while (0)
 
 #ifdef YYPURE
 #ifdef YYLSP_NEEDED
+#ifdef YYLEX_PARAM
+#define YYLEX		yylex(&yylval, &yylloc, YYLEX_PARAM)
+#else
 #define YYLEX		yylex(&yylval, &yylloc)
+#endif
+#else /* not YYLSP_NEEDED */
+#ifdef YYLEX_PARAM
+#define YYLEX		yylex(&yylval, YYLEX_PARAM)
 #else
 #define YYLEX		yylex(&yylval)
 #endif
+#endif /* not YYLSP_NEEDED */
 #endif
 
 /* If nonreentrant, generate the variables here */
@@ -409,14 +415,14 @@ int yyparse (DDS &table);
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
-#define __yy_bcopy(FROM,TO,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
+#define __yy_memcpy(FROM,TO,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
 #else				/* not GNU C or C++ */
 #ifndef __cplusplus
 
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_bcopy (from, to, count)
+__yy_memcpy (from, to, count)
      char *from;
      char *to;
      int count;
@@ -434,7 +440,7 @@ __yy_bcopy (from, to, count)
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_bcopy (char *from, char *to, int count)
+__yy_memcpy (char *from, char *to, int count)
 {
   register char *f = from;
   register char *t = to;
@@ -447,9 +453,24 @@ __yy_bcopy (char *from, char *to, int count)
 #endif
 #endif
 
-#line 184 "/usr/local/lib/bison.simple"
+#line 192 "/usr/local/share/bison.simple"
+
+/* The user can define YYPARSE_PARAM as the name of an argument to be passed
+   into yyparse.  The argument should have type void *.
+   It should actually point to an object.
+   Grammar actions can access the variable by casting it
+   to the proper pointer type.  */
+
+#ifdef YYPARSE_PARAM
+#define YYPARSE_PARAM_DECL void *YYPARSE_PARAM;
+#else
+#define YYPARSE_PARAM
+#define YYPARSE_PARAM_DECL
+#endif
+
 int
 yyparse(DDS &table)
+     YYPARSE_PARAM_DECL
 {
   register int yystate;
   register int yyn;
@@ -565,12 +586,12 @@ yynewstate:
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
       yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
-      __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
+      __yy_memcpy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
       yyvs = (YYSTYPE *) alloca (yystacksize * sizeof (*yyvsp));
-      __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
+      __yy_memcpy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
 #ifdef YYLSP_NEEDED
       yyls = (YYLTYPE *) alloca (yystacksize * sizeof (*yylsp));
-      __yy_bcopy ((char *)yyls1, (char *)yyls, size * sizeof (*yylsp));
+      __yy_memcpy ((char *)yyls1, (char *)yyls, size * sizeof (*yylsp));
 #endif
 #endif /* no yyoverflow */
 
@@ -731,121 +752,121 @@ yyreduce:
   switch (yyn) {
 
 case 7:
-#line 184 "dds.y"
+#line 187 "dds.y"
 { if (current->check_semantics())
-			add_entry(table, ctor, &current, part); ;
+			add_entry(table, &ctor, &current, part); ;
     break;}
 case 9:
-#line 195 "dds.y"
+#line 198 "dds.y"
 { if (current->check_semantics())
-			add_entry(table, ctor, &current, part); ;
+			add_entry(table, &ctor, &current, part); ;
     break;}
 case 10:
-#line 199 "dds.y"
-{ current = ctor.pop(); ;
+#line 202 "dds.y"
+{ current = ctor->pop(); ;
     break;}
 case 11:
-#line 201 "dds.y"
+#line 204 "dds.y"
 { if (current->check_semantics())
-			add_entry(table, ctor, &current, part); ;
+			add_entry(table, &ctor, &current, part); ;
     break;}
 case 12:
-#line 205 "dds.y"
-{ current = ctor.pop(); ;
+#line 208 "dds.y"
+{ current = ctor->pop(); ;
     break;}
 case 13:
-#line 207 "dds.y"
+#line 210 "dds.y"
 { if (current->check_semantics())
-			add_entry(table, ctor, &current, part); ;
+			add_entry(table, &ctor, &current, part); ;
     break;}
 case 14:
-#line 211 "dds.y"
+#line 214 "dds.y"
 { part = independent; ;
     break;}
 case 15:
-#line 213 "dds.y"
+#line 216 "dds.y"
 { part = dependent;;
     break;}
 case 16:
-#line 215 "dds.y"
-{ current = ctor.pop(); ;
+#line 218 "dds.y"
+{ current = ctor->pop(); ;
     break;}
 case 17:
-#line 217 "dds.y"
+#line 220 "dds.y"
 { if (current->check_semantics()) {
 			part = nil; 
-			add_entry(table, ctor, &current, part); 
+			add_entry(table, &ctor, &current, part); 
 		      }
                     ;
     break;}
 case 18:
-#line 224 "dds.y"
+#line 227 "dds.y"
 { part = array; ;
     break;}
 case 19:
-#line 226 "dds.y"
+#line 229 "dds.y"
 { part = maps; ;
     break;}
 case 20:
-#line 228 "dds.y"
-{ current = ctor.pop(); ;
+#line 231 "dds.y"
+{ current = ctor->pop(); ;
     break;}
 case 21:
-#line 230 "dds.y"
+#line 233 "dds.y"
 { if (current->check_semantics()) {
 			part = nil; 
-			add_entry(table, ctor, &current, part); 
+			add_entry(table, &ctor, &current, part); 
 		      }
                     ;
     break;}
 case 22:
-#line 237 "dds.y"
-{ ctor.push(NewList()); ;
+#line 240 "dds.y"
+{ ctor->push(NewList()); ;
     break;}
 case 23:
-#line 240 "dds.y"
-{ ctor.push(NewStructure()); ;
+#line 243 "dds.y"
+{ ctor->push(NewStructure()); ;
     break;}
 case 24:
-#line 243 "dds.y"
-{ ctor.push(NewSequence()); ;
+#line 246 "dds.y"
+{ ctor->push(NewSequence()); ;
     break;}
 case 25:
-#line 246 "dds.y"
-{ ctor.push(NewFunction()); ;
+#line 249 "dds.y"
+{ ctor->push(NewFunction()); ;
     break;}
 case 26:
-#line 249 "dds.y"
-{ ctor.push(NewGrid()); ;
+#line 252 "dds.y"
+{ ctor->push(NewGrid()); ;
     break;}
 case 27:
-#line 252 "dds.y"
+#line 255 "dds.y"
 { current = NewByte(); ;
     break;}
 case 28:
-#line 253 "dds.y"
+#line 256 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 29:
-#line 254 "dds.y"
+#line 257 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 30:
-#line 255 "dds.y"
+#line 258 "dds.y"
 { current = NewStr(); ;
     break;}
 case 31:
-#line 256 "dds.y"
+#line 259 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 32:
-#line 259 "dds.y"
+#line 262 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 34:
-#line 264 "dds.y"
+#line 267 "dds.y"
 { 
-		     if (current->type() == array_t) {
+		     if (current->type() == d_array_t) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
 		     }
 		     else {
@@ -857,15 +878,15 @@ case 34:
 		 ;
     break;}
 case 35:
-#line 276 "dds.y"
+#line 279 "dds.y"
 {
 		     save_str(id, yyvsp[0], dds_line_num);
 		 ;
     break;}
 case 36:
-#line 280 "dds.y"
+#line 283 "dds.y"
 { 
-		     if (current->type() == array_t) {
+		     if (current->type() == d_array_t) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), id);
 		     }
 		     else {
@@ -877,12 +898,12 @@ case 36:
 		 ;
     break;}
 case 38:
-#line 294 "dds.y"
+#line 297 "dds.y"
 { table.set_dataset_name(yyvsp[0]); ;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 465 "/usr/local/lib/bison.simple"
+#line 487 "/usr/local/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1078,7 +1099,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 297 "dds.y"
+#line 300 "dds.y"
 
 
 int 
@@ -1102,15 +1123,18 @@ ddserror(char *s)
 */
 
 void	
-add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, Part part)
+add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, Part part)
 { 
-    if (!ctor.empty()) { /* must be parsing a ctor type */
-	ctor.top()->add_var(*current, part);
+    if (!*ctor)
+	*ctor = new BaseTypePtrXPStack;
 
- 	const Type &ctor_type = ctor.top()->type();
+    if (!(*ctor)->empty()) { /* must be parsing a ctor type */
+	(*ctor)->top()->add_var(*current, part);
 
-	if (ctor_type == list_t || ctor_type == array_t)
-	    *current = ctor.pop();
+ 	const Type &ctor_type = (*ctor)->top()->type();
+
+	if (ctor_type == d_list_t || ctor_type == d_array_t)
+	    *current = (*ctor)->pop();
 	else
 	    return;
     }

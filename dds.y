@@ -50,6 +50,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.13  1996/04/05 21:59:38  jimg
+ * Misc Changes for release 2.0.1 of the core software - for developers.
+ *
  * Revision 1.12  1996/04/05 00:06:45  jimg
  * Merged changes from version 1.1.1.
  * Eliminated the static global CTOR.
@@ -113,7 +116,7 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: dds.y,v 1.12 1996/04/05 00:06:45 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.13 1996/04/05 21:59:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -265,7 +268,7 @@ var:		ID { current->set_name($1); }
 
 array_decl:	'[' INTEGER ']'
                  { 
-		     if (current->type() == array_t) {
+		     if (current->type() == d_array_t) {
 			 ((Array *)current)->append_dim(atoi($2));
 		     }
 		     else {
@@ -281,7 +284,7 @@ array_decl:	'[' INTEGER ']'
 		 } 
                  '=' INTEGER 
                  { 
-		     if (current->type() == array_t) {
+		     if (current->type() == d_array_t) {
 			 ((Array *)current)->append_dim(atoi($5), id);
 		     }
 		     else {

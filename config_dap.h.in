@@ -3,12 +3,15 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.7  1996/04/05 16:59:24  jimg
-/* Re: XDR_INT and XDR_FLOAT; Moved cast of xdr_int, long, float and double from
-/* here to the places where the functions are passed as parameters. This fixes
-/* the bug that the return values of these functions were being cast to an
-/* incompatible type where they were used.
+/* Revision 1.8  1996/04/05 21:59:32  jimg
+/* Misc Changes for release 2.0.1 of the core software - for developers.
 /*
+ * Revision 1.7  1996/04/05 16:59:24  jimg
+ * Re: XDR_INT and XDR_FLOAT; Moved cast of xdr_int, long, float and double
+ * from here to the places where the functions are passed as parameters. This
+ * fixes the bug that the return values of these functions were being cast to
+ * an incompatible type where they were used.
+ *
  * Revision 1.6  1996/04/04 18:03:55  jimg
  * Fixed comment headers.
  *

@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.17.exp,v $
-# Revision 1.1  1995/02/16 15:34:52  jimg
+# Revision 1.2  1996/04/05 22:00:13  jimg
+# Misc Changes for release 2.0.1 of the core software - for developers.
+#
+# Revision 1.1  1995/02/16  15:34:52  jimg
 # Added these tests. See comments in files in parent directory.
 #
 
@@ -21,11 +24,11 @@ set test_name test.17
 set test_out "Reading from: $srcdir$test_name
 Attributes {
     test {
-        byte d 255;
     }
 }
 parse error, expecting `INT' line: 7
 Not a byte value line: 8
+Not a byte value line: 9
 Not a byte value line: 10
 parse error, expecting `INT' line: 11
 parse() returned: 0"

@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.11.exp,v $
-# Revision 1.1  1995/02/16 15:34:45  jimg
+# Revision 1.2  1996/04/05 22:00:12  jimg
+# Misc Changes for release 2.0.1 of the core software - for developers.
+#
+# Revision 1.1  1995/02/16  15:34:45  jimg
 # Added these tests. See comments in files in parent directory.
 #
 
@@ -22,12 +25,15 @@ set test_out "Reading from: $srcdir$test_name
 Attributes {
     test {
         String names this, is, a, vector, of, strings;
-        Byte b 1, -1, 255, -255;
+        Byte b 1, -1;
         Int32 int_vec 1, 2, 2147483647;
         Float64 float_vec 1.0, -1.0, +1.0, 0.2, -0.2, +0.2, .3, -.3, +.3, -3.1415, -3.1415e-99, -3.1415e+99, +3.1415e-99, -3., +2., 4.;
         Url where http://bozo.place.com/home.html;;
     }
-}"
+}
+Not a byte value line: 8
+Not a byte value line: 8
+parse() returned: 0"
 
 das-test_start p $srcdir$test_name -
 
