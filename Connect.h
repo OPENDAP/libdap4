@@ -32,6 +32,10 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.32  1998/03/19 23:49:28  jimg
+ * Removed code associated with the (bogus) caching scheme.
+ * Removed _connects.
+ *
  * Revision 1.31  1998/02/11 21:28:04  jimg
  * Changed x_gzip/x-gzip to deflate since libwww 5.1 offers internal support
  * for deflate (which uses the same LZW algorithm as gzip without the file
@@ -308,22 +312,10 @@ enum EncodingType {
 
 class Connect {
 private:
-    struct constraint {
-	String _expression;
-	DDS _dds;
-
-	constraint(const String &expr, const DDS &dds)
-	    : _expression(expr), _dds(dds) {}
-	constraint(): _expression(""), _dds() {}
-    };
-
-    int _comp_childpid;
-
     bool _local;		// Is this a local connection
 
     // The following members are valid only if _LOCAL is false.
 
-    static int _connects;	// Are there any remote connect objects?
     static HTList *_conv;	// List of global converters
     
     ObjectType _type;		// What type of object is in the stream?
@@ -345,8 +337,6 @@ private:
     HTMethod _method;		// What method are we envoking 
     FILE *_output;		// Destination; a temporary file
     XDR *_source;		// Data source stream
-
-    SLList<constraint> _data;	// List of expressions & DDSs
 
   /* Initialize the W3C WWW Library. This should only be called when a
       Connect object is created and there are no other Connect objects in
@@ -608,74 +598,6 @@ public:
       */
     Gui *gui();
 
-  /** For each data access there is an associated constraint
-      expression (even if it is null) and a resulting DDS which
-      describes the type(s) of the variables that result from
-      evaluating the CE for some dataset.  
-
-      The constraint expression and DDS returned from a server are
-      stored in the Connect object, in a linked list of #constraint#
-      structures. Use this function to return the first element of
-      that list.
-
-      Note that the constraint expression sent to a server with
-      the #request_data()# function is not necessarily the same as the
-      one used to initialize the Connect object.  This means that the
-      constraint expression returned may not match the one returned by
-      the #CE()# function.
-
-      @memo Returns the first constraint expression
-      @return A pseudo-index (Pix) corresponding to the first element
-      in the list of #constraint# objects.  You can use the
-      #constraint_expression()# and the #constraint_dds()# functions
-      to see the individual elements of the indicated #constraint# object.
-
-      @see Connect::constraint_expression
-      @see Connect::constraint_dds
-      */
-    Pix first_constraint();
-
-  /** Use this function to find the next #constraint# object in the
-      list of such objects.
-
-      See the description of #Connect::first_constraint# for a
-      description of the #constraint# structure.
-
-      @memo Increments the #constraint# object index.
-      @param p A pseudo-index (Pix) to increment.  On return, this
-      will point to the next #constraint# object in the list.
-      @see Connect:first_constraint
-      */
-    void next_constraint(Pix &p);
-
-  /** Return the constraint expression component of the #constraint#
-      object indicated by the input index.
-
-      @memo Returns the constraint expression corresponding to data
-      received from some server.
-      @param p A pseudo-index (Pix) indicating a specific #constraint#
-      object.
-      @return A String containing the constraint expression
-      corresponding to some data received from a DODS server.
-      */
-    String constraint_expression(Pix p);
-
-  /** Returns the constrained DDS (and data) returned by a data
-      request to a DODS server.  This is the DDS component of the
-      #constraint# object indicated by the input index.
-
-      You can also see the DDS of the most recent data request with
-      the #DDS()# function.
-
-      @memo Returns the data and DDS retrieved from a remote site.
-      @param p A pseudo-index (Pix) indicating a specific #constraint#
-      object.
-      @return A pointer to a DDS containing the returned DDS, and the
-      data correpsonding to it.  
-      @see Connect::dds
-      */
-    DDS *constraint_dds(Pix p);
-
   /** Reads the DAS corresponding to the dataset in the Connect
       object's URL. 
 
@@ -758,23 +680,6 @@ public:
       @see Gui 
       */
     DDS *read_data(FILE *data_source, bool gui = true, bool async = false);
-
-  /** For every new data read initiated using this connect, there is a
-      DDS and constraint expression. The data itself is stored in the
-      DDS in the #constraint# object.  Use this function to create a
-      new #constraint# object from an expression and a DDS, and add it
-      to the Connect object's internal list.
-
-      @memo Appends a constraint object to the Connect object's
-      internal list.
-      @param expr A constraint expression to be included in the next
-      #constraint# object.
-      @param dds A DDS object to be included in the next
-      #constraint# object.
-      @return A pointer to the newly created #constraint# object
-      containing the input components.
-      */
-    DDS *append_constraint(String expr, DDS &dds);
 };
 
 #endif // _connect_h
