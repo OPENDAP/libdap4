@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.32  1998/09/10 19:17:58  jehamby
+// Change Str::print_val() to quote Strings when printing them (so geturl can
+// generate less ambiguous output).
+//
 // Revision 1.31  1998/03/19 23:30:49  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
 //
@@ -173,7 +177,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.31 1998/03/19 23:30:49 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.32 1998/09/10 19:17:58 jehamby Exp $"};
 
 #include <assert.h>
 #include <string.h>
@@ -188,6 +192,8 @@ static char rcsid[] __unused__ = {"$Id: Str.cc,v 1.31 1998/03/19 23:30:49 jimg E
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
+
+String escattr(String s);
 
 Str::Str(const String &n) : BaseType(n, dods_str_c), _buf("")
 {
@@ -283,10 +289,10 @@ Str::print_val(ostream &os, String space, bool print_decl_p)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
-	os << " = " << _buf << ";" << endl;
+	os << " = \"" << escattr(_buf) << "\";" << endl;
     }
     else 
-	os << _buf;
+      os << '"' << escattr(_buf) << '"';
 }
 
 bool

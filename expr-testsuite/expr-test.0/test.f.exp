@@ -3,6 +3,10 @@
 # jhrg
 #
 # $Log: test.f.exp,v $
+# Revision 1.3  1998/09/10 19:17:59  jehamby
+# Change Str::print_val() to quote Strings when printing them (so geturl can
+# generate less ambiguous output).
+#
 # Revision 1.2  1998/03/27 04:28:50  jimg
 # Fixed tests for the new DDS::send() mime header stuff
 #
@@ -35,7 +39,7 @@ Dataset {
     List Int32 l;
 } test1;
 The data:
-String s = Silly test string: one, two, ...;"
+String s = \"Silly test string: one, two, ...\";"
 
 expr-test_start p ${srcdir}${test_file} ${test_equation}
 
