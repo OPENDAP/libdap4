@@ -38,6 +38,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.32  1996/05/14 06:41:17  jimg
+// Update for
+//
+// Revision 1.32  1996/05/10 21:18:16  jimg
+// Fixed off-by-one error in add_constraint().
+//
 // Revision 1.31  1996/05/06 21:15:58  jimg
 // Added the member functions dimension_start, _stop and _stride to this class.
 // Changed the first argument of add_constraint from Pix &p to Pix p (the member
@@ -354,7 +360,7 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
     d.stop = stop;
     d.stride = stride;
 
-    d.c_size = (stop - start + 1) / stride;
+    d.c_size = (stop - start) / stride + 1;
     
     DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
 
