@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.33  1998/04/03 17:43:32  jimg
+// Patch from Jake Hamby. Added print_all_vals member function. Fixed print_val
+// so that structures with sequences work properly.
+//
 // Revision 1.32  1998/03/17 17:50:37  jimg
 // Added an implementation of element_count().
 //
@@ -319,7 +323,12 @@ Structure::deserialize(XDR *source, DDS *dds, bool reuse = false)
     bool status = true;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	status = var(p)->deserialize(source, dds, reuse);
+        BaseType *v = var(p);
+	// Because sequences have multiple rows, bail out and let the caller
+	// deserialize as they read the data.
+	if (v->type() == dods_sequence_c)
+	  break;
+	status = v->deserialize(source, dds, reuse);
 	if (!status) 
 	  break;
     }
@@ -440,6 +449,38 @@ Structure::print_val(ostream &os, String space, bool print_decl_p)
 
     if (print_decl_p)
 	os << ";" << endl;
+}
+
+// print the values of the contained variables
+void
+Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, String space, bool print_decl_p)
+{
+  if (print_decl_p) {
+    print_decl(os, space, false);
+    os << " = ";
+  }
+
+  os << "{ ";
+  bool sequence_found = false;
+  for (Pix p = first_var(); p; next_var(p), (void)(p && os << ", ")) {
+    assert(var(p));
+    if (var(p)->type_name() == "Sequence") { // special handling
+      (dynamic_cast<Sequence*>(var(p)))->print_all_vals(os, src, dds, "", false);
+      sequence_found = true;
+    } else if (var(p)->type_name() == "Structure") {
+      (dynamic_cast<Structure*>(var(p)))->print_all_vals(os, src, dds, "", false);
+    } else {
+      // If a sequence was found, we still need to deserialize() remaining vars
+      if(sequence_found)
+	var(p)->deserialize(src, dds);
+      var(p)->print_val(os, "", false);
+    }
+  }
+
+  os << " }";
+
+  if (print_decl_p)
+    os << ";" << endl;
 }
 
 bool
