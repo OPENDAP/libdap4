@@ -4,6 +4,9 @@
 
 /* 
  * $Log: config_dap.h.in,v $
+ * Revision 1.26  1997/12/31 20:07:37  jimg
+ * Removed the old, errant, test for 4 byte doubles.
+ *
  * Revision 1.25  1997/10/04 00:32:58  jimg
  * Release 2.14c fixes
  *
@@ -260,11 +263,6 @@ typedef unsigned char dods_byte;
 typedef double dods_float64;
 typedef float dods_float32;		
 #define XDR_FLOAT64 xdr_double
-#define XDR_FLOAT32 xdr_float
-#elif SIZEOF_FLOAT == 8		/* yea, I never heard of this either... */
-typedef float dods_float64;		
-typedef float dods_float32;		
-#define XDR_FLOAT64 xdr_float
 #define XDR_FLOAT32 xdr_float
 #else
 #error "How do I get a 64 bit floating point type on this machine?"
