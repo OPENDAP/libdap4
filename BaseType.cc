@@ -500,9 +500,6 @@ BaseType::set_parent(BaseType *parent) throw(InternalErr)
     this variable. If this variable is at the top level, this method
     returns null.
 
-    NB: The modifier for this property is protected. It should only be
-    modified by Constructor and Vector.
-
     @return A BaseType pointer to the variable's parent. */
 BaseType *
 BaseType::get_parent()
@@ -935,6 +932,9 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.60  2004/11/30 20:23:20  jimg
+// Updaed comments.
+//
 // Revision 1.59  2004/11/16 18:33:35  jimg
 // Changed the prototype for add_var() so that it takes three arguments. This
 // matches the version used elsewhere in the type hierarchy and fixes some
