@@ -38,7 +38,13 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.16  1995/10/23 23:21:01  jimg
+// Revision 1.17  1995/12/06 21:56:29  jimg
+// Added `constrained' flag to print_decl.
+// Removed third parameter of read.
+// Modified print_decl() to print only those parts of a dataset that are
+// selected when `constrained' is true.
+//
+// Revision 1.16  1995/10/23  23:21:01  jimg
 // Added _send_p and _read_p fields (and their accessors) along with the
 // virtual mfuncs set_send_p() and set_read_p().
 //
@@ -257,7 +263,7 @@ Sequence::serialize(bool flush)
     bool status;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	if ( !(status = var(p)->serialize(false)) ) break;
+	if ( var(p)->send_p() && !(status = var(p)->serialize(false)) ) break;
     }
 
     if (status && flush)
@@ -281,21 +287,9 @@ Sequence::deserialize(bool reuse)
 }
 
 unsigned int
-Sequence::store_val(void *val, bool reuse)
-{
-    return val2buf(val, reuse);
-}
-
-unsigned int
 Sequence::val2buf(void *val, bool reuse)
 {
     return sizeof(Sequence);
-}
-
-unsigned int
-Sequence::read_val(void **val)
-{
-    return buf2val(val);
 }
 
 unsigned int
@@ -306,11 +300,15 @@ Sequence::buf2val(void **val)
 
 void
 Sequence::print_decl(ostream &os, String space, bool print_semi,
-		  bool constraint_info)
+		     bool constraint_info, bool constrained)
 {
+    if (constrained && !send_p())
+	return;
+
     os << space << type_name() << " {" << endl;
     for (Pix p = _vars.first(); p; _vars.next(p))
-	_vars(p)->print_decl(os, space + "    ", true, constraint_info);
+	_vars(p)->print_decl(os, space + "    ", true, constraint_info,
+			     constrained);
     os << space << "} " << name();
 
     if (constraint_info) {

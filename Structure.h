@@ -9,10 +9,16 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.14  1995/10/23 23:21:05  jimg
-/* Added _send_p and _read_p fields (and their accessors) along with the
-/* virtual mfuncs set_send_p() and set_read_p().
+/* Revision 1.15  1995/12/06 21:56:33  jimg
+/* Added `constrained' flag to print_decl.
+/* Removed third parameter of read.
+/* Modified print_decl() to print only those parts of a dataset that are
+/* selected when `constrained' is true.
 /*
+ * Revision 1.14  1995/10/23  23:21:05  jimg
+ * Added _send_p and _read_p fields (and their accessors) along with the
+ * virtual mfuncs set_send_p() and set_read_p().
+ *
  * Revision 1.13  1995/08/26  00:31:50  jimg
  * Removed code enclosed in #ifdef NEVER #endif.
  *
@@ -133,14 +139,11 @@ public:
     virtual bool serialize(bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(String dataset, String var_name, String constraint) = 0;
+    virtual bool read(String dataset, String var_name) = 0;
 
-    // Do not store values in memory as for C; force uses to work with the
+    // Do not store values in memory as for C; force users to work with the
     // C++ objects as defined by the DAP.
-
-    virtual unsigned int store_val(void *val, bool reuse = false); // dep.
     virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int read_val(void **val); // deprecated name
     virtual unsigned int buf2val(void **val);
 
     virtual BaseType *var(const String &name);
@@ -152,9 +155,12 @@ public:
 
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true,
-			    bool constraint_info = false);
+			    bool constraint_info = false,
+			    bool constrained = false);
+
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
+
     virtual bool check_semantics(bool all = false);
 };
 

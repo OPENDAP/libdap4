@@ -38,7 +38,13 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.15  1995/10/23 23:20:55  jimg
+// Revision 1.16  1995/12/06 21:56:24  jimg
+// Added `constrained' flag to print_decl.
+// Removed third parameter of read.
+// Modified print_decl() to print only those parts of a dataset that are
+// selected when `constrained' is true.
+//
+// Revision 1.15  1995/10/23  23:20:55  jimg
 // Added _send_p and _read_p fields (and their accessors) along with the
 // virtual mfuncs set_send_p() and set_read_p().
 //
@@ -216,11 +222,12 @@ Grid::serialize(bool flush)
 {
     bool status = true;
 
-    if (!(status = _array_var->serialize(false))) 
+    if (_array_var->send_p() && !(status = _array_var->serialize(false))) 
 	return false;
 
     for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	if  (!(status = _map_vars(p)->serialize(false)) ) 
+	if  (_map_vars(p)->send_p() 
+	     && !(status = _map_vars(p)->serialize(false)) ) 
 	    break;
 	
     if (status && flush)
@@ -248,21 +255,9 @@ Grid::deserialize(bool reuse)
 }
 
 unsigned int
-Grid::store_val(void *val, bool reuse)
-{
-    return val2buf(val, reuse);
-}
-
-unsigned int
 Grid::val2buf(void *val, bool reuse)
 {
     return sizeof(Grid);
-}
-
-unsigned int
-Grid::read_val(void **val)
-{
-    return buf2val(val);
 }
 
 unsigned int
@@ -328,16 +323,21 @@ Grid::map_var(Pix p)
 
 void 
 Grid::print_decl(ostream &os, String space, bool print_semi,
-		 bool constraint_info)
+		 bool constraint_info, bool constrained)
 {
+    if (constrained && !send_p())
+	return;
+
     os << space << type_name() << " {" << endl;
 
     os << space << " ARRAY:" << endl;
-    _array_var->print_decl(os, space + "    ", true, constraint_info);
+    _array_var->print_decl(os, space + "    ", true, constraint_info,
+			   constrained);
 
     os << space << " MAPS:" << endl;
     for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	_map_vars(p)->print_decl(os, space + "    ", true, constraint_info);
+	_map_vars(p)->print_decl(os, space + "    ", true, constraint_info,
+				 constrained);
 
     os << space << "} " << name();
 

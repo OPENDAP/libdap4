@@ -38,7 +38,13 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.16  1995/10/23 23:21:04  jimg
+// Revision 1.17  1995/12/06 21:56:32  jimg
+// Added `constrained' flag to print_decl.
+// Removed third parameter of read.
+// Modified print_decl() to print only those parts of a dataset that are
+// selected when `constrained' is true.
+//
+// Revision 1.16  1995/10/23  23:21:04  jimg
 // Added _send_p and _read_p fields (and their accessors) along with the
 // virtual mfuncs set_send_p() and set_read_p().
 //
@@ -222,7 +228,7 @@ Structure::serialize(bool flush)
     bool status;
 
     for (Pix p = first_var(); p; next_var(p)) 
-	if ( !(status = var(p)->serialize(false)) ) 
+	if ( var(p)->send_p() && !(status = var(p)->serialize(false)) ) 
 	    break;
 
     if ( status && flush )
@@ -249,21 +255,9 @@ Structure::deserialize(bool reuse)
 // strucuture in the order those elements are declared.
 
 unsigned int
-Structure::store_val(void *val, bool reuse)
-{
-    return val2buf(val, reuse);
-}
-
-unsigned int
 Structure::val2buf(void *val, bool reuse)
 {
     return sizeof(Structure);
-}
-
-unsigned int
-Structure::read_val(void **val)
-{
-    return buf2val(val);
 }
 
 unsigned int
@@ -306,11 +300,15 @@ Structure::var(Pix p)
 
 void
 Structure::print_decl(ostream &os, String space, bool print_semi,
-		      bool constraint_info)
+		      bool constraint_info, bool constrained)
 {
+    if (constrained && !send_p())
+	return;
+
     os << space << type_name() << " {" << endl;
     for (Pix p = _vars.first(); p; _vars.next(p))
-	_vars(p)->print_decl(os, space + "    ", true, constraint_info);
+	_vars(p)->print_decl(os, space + "    ", true, constraint_info,
+			     constrained);
     os << space << "} " << name();
 
     if (constraint_info) {
