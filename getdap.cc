@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.39  1999/08/09 18:27:35  jimg
+// Merged changes from Brent for the Gui code (progress indicator)
+//
 // Revision 1.38  1999/07/22 17:11:52  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -168,7 +171,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.38 1999/07/22 17:11:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.39 1999/08/09 18:27:35 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -178,7 +181,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.38 1999/07/22 17:11:52 jimg 
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.38 $";
+const char *version = "$Revision: 1.39 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -314,11 +317,9 @@ main(int argc, char * argv[])
               case 'd': get_dds = true; break;
 	      case 'a': get_das = true; break;
 	      case 'D': get_data = true; break;
-	      case 'V': cerr << "geturl version: " << VERSION << endl; exit(0);
+	      case 'V': cerr << "geturl version: " << version << endl; exit(0);
 	      case 'v': verbose = true; break;
-	      case 'g': /* gui = true; gui is always false until we fix the
-			   whole `progress indicator feature. 5/26/99 jhrg */
-		break;
+	      case 'g': gui = true; break;
 	      case 'k': keep_temps =1; break; // keep_temp is in Connect.cc
 	      case 'c':
 		cexpr = true; expr = getopt.optarg; break;
@@ -442,7 +443,7 @@ main(int argc, char * argv[])
 	}
 
 	if (!get_das && !get_dds && !get_data) {
-#if 0
+#if 1
 	    url.gui()->show_gui(gui);
 #endif
 	    string url_string = argv[i];

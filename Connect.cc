@@ -1,4 +1,5 @@
 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT.
 //
@@ -8,8 +9,14 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.80  1999/08/09 18:27:33  jimg
+// Merged changes from Brent for the Gui code (progress indicator)
+//
 // Revision 1.79  1999/07/22 17:11:50  jimg
 // Merged changes from the release-3-0-2 branch
+//
+// Revision 1.78.4.2  1999/07/29 05:46:17  brent
+// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl files
 //
 // Revision 1.78.4.1  1999/06/01 15:40:54  jimg
 // Ripped out dead wood in parse_mime(...).
@@ -450,7 +457,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.79 1999/07/22 17:11:50 jimg Exp $"};
+#include "Gui.h"
+#define GUI
+
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.80 1999/08/09 18:27:33 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -462,10 +472,12 @@ static char rcsid[] not_used ={"$Id: Connect.cc,v 1.79 1999/07/22 17:11:50 jimg 
 #include <assert.h>
 #include <errno.h>
 
+#if 0
 #include <sys/types.h>		// Used by the semaphore code in fetch_url()
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/wait.h>
+#endif
 
 #if HAVE_EXPECT
 #include <expect.h>
@@ -550,15 +562,15 @@ timeout_handler(HTRequest *request)
     string cmd;
 
     if (!me->gui()->progress_visible())
-	cmd = (string)"progress popup \"Request timeout...\"\r";
+	cmd = (string)"popup \"Request timeout...\"";
     else
-	cmd = (string)"progress text \"Request timeout...\"\r";
+	cmd = (string)"text \"Request timeout...\"";
 	
     me->gui()->progress_visible(me->gui()->command(cmd));
 
     if (me->gui()->progress_visible()) {
 	sleep(3);
-	cmd = (string)"progress popdown\r";
+	cmd = (string)"popdown";
 	me->gui()->command(cmd);
 	me->gui()->progress_visible(false);
     }
@@ -586,38 +598,36 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
     switch (op) {
       case HT_PROG_DNS:
 	if (!me->gui()->progress_visible())
-	    cmd = (string)"progress popup \"Looking up " + (char *)input 
-	          + "\"\r";
+	    cmd = (string)"popup \"Looking up " + (char *)input + "\"";
 	else
-	    cmd = (string)"progress text \"Looking up " + (char *)input 
-	          + "\"\r";
+	    cmd = (string)"text \"Looking up " + (char *)input + "\"";
 	
 	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       case HT_PROG_CONNECT:
 	if (!me->gui()->progress_visible())
-	    cmd = (string)"progress popup \"Contacting host...\"\r";
+	    cmd = (string)"popup \"Contacting host...\"";
 	else
-	    cmd = (string)"progress text \"Contacting host...\"\r";
+	    cmd = (string)"text \"Contacting host...\"";
 	
 	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       case HT_PROG_ACCEPT:
 	if (!me->gui()->progress_visible())
-	    cmd = (string)"progress popup \"Waiting for connection...\"\r";
+	    cmd = (string)"popup \"Waiting for connection...\"";
 	else
-	    cmd = (string)"progress text \"Waiting for connection...\"\r";
+	    cmd = (string)"text \"Waiting for connection...\"";
 	
 	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       case HT_PROG_READ: {
 	  if (!me->gui()->progress_visible())
-	      cmd = (string)"progress popup \"Reading...\"\r";
+	      cmd = (string)"popup \"Reading...\"";
 	  else
-	      cmd = (string)"progress text \"Reading...\"\r";
+	      cmd = (string)"text \"Reading...\"";
 	  me->gui()->progress_visible(me->gui()->command(cmd));
 	  
 	  if (!me->gui()->progress_visible()) // Bail if window won't popup
@@ -632,12 +642,12 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 #endif
 	      double pro = (double) b_read/cl*100;
 	      ostrstream cmd_s;
-	      cmd_s << "progress bar " << pro << "\r" << ends;
+	      cmd_s << "bar " << pro << "\r" << ends;
 	      (void)me->gui()->command(cmd_s.str());
 	      cmd_s.rdbuf()->freeze(0);
 	  }
 	  else {
-	      cmd = (string)"progress bar -1\r";
+	      cmd = (string)"bar -1";
 	      (void)me->gui()->command(cmd);
 	  }
 	  
@@ -649,16 +659,32 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 	break;
 
       case HT_PROG_DONE:
-	cmd = (string)"progress popdown\r";
+	cmd = (string)"popdown";
 	me->gui()->command(cmd);
 	me->gui()->progress_visible(false);
         break;
 
-      case HT_PROG_WAIT:
+      case HT_PROG_INTERRUPT:
 	if (!me->gui()->progress_visible())
-	    cmd = (string)"progress popup \"Waiting for free socket...\"\r";
+	    cmd = (string)"popup \"Request interrupted.\"";
 	else
-	    cmd = (string)"progress text \"Waiting for free socket...\"\r";
+	    cmd = (string)"text \"Request interrupted.\"";
+	me->gui()->progress_visible(me->gui()->command(cmd));
+        break;
+
+      case HT_PROG_OTHER:
+	if (!me->gui()->progress_visible())
+	    cmd = (string)"popup \"Message: " + (char *)input + ".\"";
+	else
+	    cmd = (string)"text \"Message: " + (char *)input + ".\"";
+	me->gui()->progress_visible(me->gui()->command(cmd));
+        break;
+
+      case HT_PROG_TIMEOUT:
+	if (!me->gui()->progress_visible())
+	    cmd = (string)"popup \"Request timeout.\"";
+	else
+	    cmd = (string)"text \"Request timeout.\"";
 	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
@@ -684,11 +710,14 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
 
     // Put the username in reply using HTAlert_setReplyMessage; use
     // _setReplySecret for the password.
-    string cmd = "password\r";
-    string response;
+    string cmd = "password";
+    string user = "\0";
+    string passwd = "\0";
 
-    if (!me->gui()->response(cmd, response))
+    if (!me->gui()->command(cmd, &user, &passwd))
 	return NO;
+
+/* I think this can all be dumped 
 
     // Extract two words from RESPONSE; #1 is the username and #2 is the
     // password. Either may be missing, in which case return NO.
@@ -703,9 +732,12 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
 	     << endl);
 	return NO;
     }
+*/
+    if ((user.length() == 0) || (passwd.length() == 0))
+	return NO;
 
-    HTAlert_setReplyMessage(reply, words[0].c_str());
-    HTAlert_setReplySecret(reply, words[1].c_str());
+    HTAlert_setReplyMessage(reply, user.c_str());
+    HTAlert_setReplySecret(reply, passwd.c_str());
 
     return YES;
 }
@@ -799,13 +831,10 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
     }
 
     if (msg) {
-	string command = (string)"dialog \"" + (char *)HTChunk_data(msg) 
-	    + "\" error\r";
-	string response;	// Not used
 	Connect *me = (Connect *)HTRequest_context(request);
 
 	if (me->gui()->show_gui()) {
-	    if (!me->gui()->response(command, response))
+	    if (!me->gui()->simple_error((char *)(HTChunk_data(msg))));
 		cerr << "GUI Failure in dods_error_print()" << endl;
 	}
 	else {
@@ -1144,7 +1173,7 @@ Connect::close_output()
     }
 }
 
-// This ctor is decalred private so that it won't ever be called by users,
+// This ctor is declared private so that it won't ever be called by users,
 // thus forcing them to create Connects which point somewhere.
 
 Connect::Connect()

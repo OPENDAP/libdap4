@@ -8,6 +8,12 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.18  1999/08/09 18:27:34  jimg
+// Merged changes from Brent for the Gui code (progress indicator)
+//
+// Revision 1.17.4.1  1999/07/29 05:46:17  brent
+// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl files
+//
 // Revision 1.17  1999/05/26 17:32:01  jimg
 // Added a message for the `unknown_error' constant.
 // Added a test in correct_error for a NULL Gui object. If the Gui object is
@@ -94,13 +100,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.17 1999/05/26 17:32:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.18 1999/08/09 18:27:34 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
 
 #include "Error.h"
 #include "parser.h"
+
+#include "Gui.h"
 
 void Errorrestart(FILE *yyin);	// defined in Error.tab.c
 int Errorparse(void *arg);	
@@ -280,11 +288,7 @@ Error::display_message(Gui *gui)
 {
     assert(OK());
     if (gui && gui->show_gui()) {
-	string cmd = (string)"dialog " + _error_message + "\r";
-	string response;	// not used
-	// You must use response() with dialog so that expect will wait for
-	// the user to hit OK.
-	gui->response(cmd, response);
+	gui->simple_error(_error_message);
     }
     else
 	cerr << _error_message << endl;
@@ -335,16 +339,7 @@ Error::correct_error(Gui *gui)
     if (!OK())
 	return string("");
 
-    if (gui && program()) {
-	string result;
-
-	if (gui && gui->response(program(), result))
-	    return result;
-	else
-	    return string("");
-    }
-    else {
-	display_message(gui);
-	return string("");
-    }
+    display_message(gui);
+    return string("");
+    
 }
