@@ -76,17 +76,17 @@ public:
 	    ResourceVector trv1 = ais->get_resource(fnoc1);
 	    CPPUNIT_ASSERT(trv1.size() == 1);
 	    CPPUNIT_ASSERT(trv1[0].get_url() == fnoc1_ais);
-	    CPPUNIT_ASSERT(trv1[0].get_rule() == overwrite);
+	    CPPUNIT_ASSERT(trv1[0].get_rule() == Resource::overwrite);
 
 	    ResourceVector trv2 = ais->get_resource(fnoc2);
 	    CPPUNIT_ASSERT(trv2.size() == 1);
 	    CPPUNIT_ASSERT(trv2[0].get_url() == fnoc2_ais);
-	    CPPUNIT_ASSERT(trv2[0].get_rule() == replace);
+	    CPPUNIT_ASSERT(trv2[0].get_rule() == Resource::replace);
 
 	    ResourceVector trv3 = ais->get_resource(fnoc3);
 	    CPPUNIT_ASSERT(trv3.size() == 1);
 	    CPPUNIT_ASSERT(trv3[0].get_url() == fnoc3_ais);
-	    CPPUNIT_ASSERT(trv3[0].get_rule() == fallback);
+	    CPPUNIT_ASSERT(trv3[0].get_rule() == Resource::fallback);
 	}
 	catch (AISDatabaseReadFailed &e) {
 	    cerr << endl << "Error: " << e.get_error_message() << endl;
@@ -151,6 +151,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISDatabaseParserTest.cc,v $
+// Revision 1.5  2003/03/04 17:58:32  jimg
+// Fixed Resource::ResourceRule enum usage (fallback, overwrite, replace).
+//
 // Revision 1.4  2003/02/26 01:27:49  jimg
 // Changed the name of the parse() method to intern().
 //
