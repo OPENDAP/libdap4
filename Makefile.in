@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.69 1998/02/05 20:13:55 jimg Exp $
+# $Id: Makefile.in,v 1.70 1998/02/11 22:08:20 jimg Exp $
 
 @SET_MAKE@
 
@@ -14,7 +14,7 @@
 # a url. In addition it can read and process DAS and DDS objects, displaying
 # the print representation on the screen.
 
-PROG = libdap++.a geturl usage
+PROG = libdap++.a geturl usage deflate
 DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
@@ -143,6 +143,9 @@ libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
 	    $(AR) cru $@ $?
 	    $(RANLIB) $@
 
+deflate: deflate.o
+	$(CC) $(LDFLAGS) -o deflate deflate.o -lz
+
 # geturl is really a test driver, but it is so useful in other contexts that
 # I have decided to build it as part of the `all' target. jhrg 7/11/96
 
@@ -265,8 +268,9 @@ Error.tab.o: Error.tab.c	# build using C++ compiler
 
 # Standard targets with some customization for das-test and dds-test
 
-install: all install-headers install-geturl install-gui install-usage
+install: all install-headers install-geturl install-gui install-usage install-deflate
 	$(INSTALL_DATA) DODS_Dispatch.pm $(etcdir)
+	$(INSTALL_DATA) DODS_Cache.pm $(etcdir)
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
 
@@ -285,8 +289,13 @@ install-gui:
 	for tcl_prog in dods_gui.tcl error.tcl progress.tcl; \
 	    do $(INSTALL_PROGRAM) $$tcl_prog $(etcdir); done
 
+# usage and defalte are part of the DODS server. 02/10/98 jhrg
+
 install-usage: usage
 	$(INSTALL_PROGRAM) -s usage $(etcdir)
+
+install-deflate: deflate
+	$(INSTALL_PROGRAM) -s deflate $(etcdir)
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
