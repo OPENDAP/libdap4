@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.73 2004/02/19 19:42:53 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.74 2005/03/30 22:02:21 jimg Exp $"};
 
 #include <stdio.h>
 #ifdef WIN32
@@ -51,7 +51,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.73 2004/02/19 19:42:53 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.73 $";
+const char *version = "$Revision: 1.74 $";
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 
@@ -188,7 +188,7 @@ main(int argc, char * argv[])
 	    string name = argv[i];
 	    Connect *url;
 	    if (use_ais) {
-		if (ais_db != "")
+		if (!ais_db.empty())
 		    url = new AISConnect(name, ais_db);
 		else
 		    url = new AISConnect(name);
@@ -378,6 +378,10 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.74  2005/03/30 22:02:21  jimg
+// Minor mod: ... != "" --> !....empty(). Using string::empty() may be more
+// efficient.
+//
 // Revision 1.73  2004/02/19 19:42:53  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
