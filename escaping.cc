@@ -12,6 +12,12 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.3  1997/02/14 02:24:44  jimg
+// Removed reliance on the dods-hdf code.
+// Introduced a const int MAXSTR with value 256. This matches the length of
+// ID_MAX in the parser.h header (which I did not include since it defines
+// a lot of software that is irrelevant to this module).
+//
 // Revision 1.2  1997/02/14 02:18:16  jimg
 // Added to DODS core
 //
@@ -46,20 +52,26 @@
 // 
 // -Todd
 
+#include <ctype.h>
 #include <strstream.h>
 #include <iomanip.h>
 #include <String.h>
+
+#if 0
 #include <mfhdf.h>
 #include <hdfclass.h>
 #include "HDFStructure.h"
 #include "HDFArray.h"
 #include "hdfutil.h"
 #include "dhdferr.h"
+#endif
+
+const int MAXSTR = 256;
 
 String hexstring(int val) {
-    static char buf[hdfclass::MAXSTR];
+    static char buf[MAXSTR];
 
-    ostrstream(buf,hdfclass::MAXSTR) << hex << setw(2) << setfill('0') <<
+    ostrstream(buf,MAXSTR) << hex << setw(2) << setfill('0') <<
 	val << ends;
 
     return (String)buf;
@@ -67,18 +79,18 @@ String hexstring(int val) {
 
 char unhexstring(String s) {
     int val;
-    static char buf[hdfclass::MAXSTR];
+    static char buf[MAXSTR];
 
     strcpy(buf,(const char *)s);
-    istrstream(buf,hdfclass::MAXSTR) >> hex >> val;
+    istrstream(buf,MAXSTR) >> hex >> val;
 
     return (char)val;
 }
 
 String octstring(int val) {
-    static char buf[hdfclass::MAXSTR];
+    static char buf[MAXSTR];
 
-    ostrstream(buf,hdfclass::MAXSTR) << oct << setw(3) << setfill('0') <<
+    ostrstream(buf,MAXSTR) << oct << setw(3) << setfill('0') <<
 	val << ends;
 
     return (String)buf;
@@ -86,10 +98,10 @@ String octstring(int val) {
 
 char unoctstring(String s) {
     int val;
-    static char buf[hdfclass::MAXSTR];
+    static char buf[MAXSTR];
 
     strcpy(buf,(const char *)s);
-    istrstream(buf,hdfclass::MAXSTR) >> oct >> val;
+    istrstream(buf,MAXSTR) >> oct >> val;
 
     return (char)val;
 }
