@@ -10,6 +10,10 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.17  1998/09/17 17:00:02  jimg
+// Added include files to get rid of compiler messages about missing
+// prototypes.
+//
 // Revision 1.16  1998/03/26 00:15:53  jimg
 // Added keep_temps global for use with debuggers to keep those temp file
 // around.
@@ -86,9 +90,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.16 1998/03/26 00:15:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.17 1998/09/17 17:00:02 jimg Exp $"};
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <errno.h>
 #include <assert.h>
 #include <rpc/types.h>
