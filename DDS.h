@@ -221,6 +221,8 @@ protected:
 public:
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
+    typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
+    
     typedef std::vector<Clause *>::const_iterator Clause_citer ;
     typedef std::vector<Clause *>::iterator Clause_iter ;
     typedef std::vector<BaseType *>::const_iterator Constants_citer ;
@@ -261,18 +263,20 @@ public:
     void next_var(Pix p);
     int num_var();
 
-    /** Returns the first variable in the DDS. */
+    /// Return an iteraor
     Vars_iter var_begin();
-
-    /** Returns the reference to the end of the variable list in the DDS. 
-	This does not point to a variable, but to the end of the list */
+    /// Return a reverse iterator 
+    Vars_riter var_rbegin();
+    /// Return an iterator
     Vars_iter var_end();
-
+    /// Return a reverse iterator
+    Vars_riter var_rend();
+    /// Get an iterator
     Vars_iter get_vars_iter(int i);
-
+    /// Get a variablue
+    BaseType *get_var_index(int i);
     /// Removes a variable from the DDS.
     void del_var(Vars_iter i);
-
     /// Removes a range of variables from the DDS.
     void del_var(Vars_iter i1, Vars_iter i2);
 
@@ -345,6 +349,9 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.59  2004/11/16 18:37:05  jimg
+// Added reverese iterators.
+//
 // Revision 1.58  2004/08/03 23:11:38  jimg
 // I changed the three static functions that are helpers for
 // transfer_attributes() to methods. This makes them easier to test, although I
