@@ -24,6 +24,9 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.19  1996/10/16 22:35:31  jimg
+ * Fixed bad operator in DODS_BISON_VER preprocessor statement.
+ *
  * Revision 1.18  1996/10/08 17:04:42  jimg
  * Added a fix for Bison 1.25 so that PARSE_PARAM will still work
  *
@@ -109,7 +112,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.y,v 1.18 1996/10/08 17:04:42 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.y,v 1.19 1996/10/16 22:35:31 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,7 +137,7 @@ static char rcsid[] __unused__ = {"$Id: dds.y,v 1.18 1996/10/08 17:04:42 jimg Ex
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 #define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
 #define STATUS(arg) ((parser_arg *)(arg))->_status
-#if DODS_BISON_VER >= 125
+#if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
 #else
 #define YYPARSE_PARAM void *arg
