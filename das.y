@@ -15,8 +15,895 @@
    jhrg 7/12/94 
 */
 
+%{
+
+#define YYSTYPE char *
+
+#include "config_dap.h"
+
+static char rcsid[] not_used = {"$Id: das.y,v 1.40 2000/09/22 02:17:22 jimg Exp $"};
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <assert.h>
+
+#if defined(__GNUG__) || defined(WIN32)
+#include <strstream>
+#else
+#include <sstream>
+#endif
+#include <vector>
+
+#include "DAS.h"
+#include "Error.h"
+#include "debug.h"
+#include "parser.h"
+#include "das.tab.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::ends;
+using std::ostrstream;
+#endif
+
+// These macros are used to access the `arguments' passed to the parser. A
+// pointer to an error object and a pointer to an integer status variable are
+// passed in to the parser within a strucutre (which itself is passed as a
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+
+#define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
+// #define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
+//#define STATUS(arg) ((parser_arg *)(arg))->_status
+
+#define YYPARSE_PARAM arg
+
+extern int das_line_num;	/* defined in das.lex */
+
+// No global static objects. We go through this every so often, I guess I
+// should learn... 1/24/2000 jhrg
+static string *name;	/* holds name in attr_pair rule */
+static string *type;	/* holds type in attr_pair rule */
+
+static vector<AttrTable *> *attr_tab_stack;
+
+// I use a vector of AttrTable pointers for a stack
+
+#define TOP_OF_STACK (attr_tab_stack->back())
+#define PUSH(x) (attr_tab_stack->push_back(x))
+#define POP (attr_tab_stack->pop_back())
+#define STACK_LENGTH (attr_tab_stack->size())
+#define STACK_EMPTY (attr_tab_stack->empty())
+
+#define TYPE_NAME_VALUE(x) *type << " " << *name << " " << (x)
+
+static char *ATTR_TUPLE_MSG = 
+"Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,\n\
+Float64, String or Url) followed by a name and value.";
+static char *NO_DAS_MSG =
+"The attribute object returned from the dataset was null\n\
+Check that the URL is correct.";
+
+void mem_list_report();
+int daslex(void);
+void daserror(char *s);
+string attr_name(string name);
+
+%}
+
+%expect 24
+
+%token SCAN_ATTR
+
+%token SCAN_ID
+%token SCAN_INT
+%token SCAN_FLOAT
+%token SCAN_STR
+%token SCAN_ALIAS
+
+%token SCAN_BYTE
+%token SCAN_INT16
+%token SCAN_UINT16
+%token SCAN_INT32
+%token SCAN_UINT32
+%token SCAN_FLOAT32
+%token SCAN_FLOAT64
+%token SCAN_STRING
+%token SCAN_URL
+
+%%
+
+/*
+  Parser algorithm: 
+
+  Look for a `variable' name (this can be any identifier, but by convention
+  it is either the name of a variable in a dataset or the name of a grouping
+  of global attributes). Create a new attribute table for this identifier and
+  push the new attribute table onto a stack. If attribute tuples
+  (type-name-value tuples) are found, intern them in the attribute table
+  found on the top of the stack. If the start attribute table of a new
+  attribute table if found (before the current table is closed), create the
+  new table and push *it* on the stack. As attribute tables are closed, pop
+  them off the stack.
+
+  This algorithm ensures that we can nest attribute tables to an arbitrary
+  depth).
+
+  Alias are handled using mfuncs of both the DAS and AttrTable objects. This
+  is necessary because the first level of a DAS object can contain only
+  AttrTables, not attribute tuples. Whereas, the subsequent levels can
+  contain both. Thus the compete definition is split into two objects. In
+  part this is also a hold over from an older design which did not
+  have the recursive properties of the current design.
+
+  Alias can be made between attributes within a given lexical level, from one
+  level to the next within a sub-hierarchy or across hierarchies.
+
+  Tokens:
+
+  BYTE, INT32, UINT32, FLOAT64, STRING and URL are tokens for the type
+  keywords. The tokens INT, FLOAT, STR and ID are returned by the scanner to
+  indicate the type of the value represented by the string contained in the
+  global DASLVAL. These two types of tokens are used to implement type
+  checking for the attributes. See the rules `bytes', etc. Additional tokens:
+  ATTR (indicates the start of an attribute object) and ALIAS (indicates an
+  alias). 
+*/
+
+/* This rule makes sure the objects needed by this parser are built. Because
+   the DODS DAP library is often used with linkers that are not C++-aware, we
+   cannot use global objects (because their constructor might never be
+   called). I had thought this was going to go away... 1/24/2000 jhrg */
+
+attr_start:
+                {
+		    name = new string();
+		    type = new string();
+		    attr_tab_stack = new vector<AttrTable *>;
+		}
+                attributes
+                {
+		    delete name;
+		    delete type;
+		    delete attr_tab_stack;
+		}
+;
+
+attributes:     attribute
+    	    	| attributes attribute
+
+;
+    	    	
+attribute:    	SCAN_ATTR '{' attr_list '}'
+                | error
+                {
+		    parse_error((parser_arg *)arg, NO_DAS_MSG, das_line_num);
+		    YYABORT;
+		}
+;
+
+attr_list:  	/* empty */
+    	    	| attr_tuple
+    	    	| attr_list attr_tuple
+;
+
+attr_tuple:	alias
+
+                | SCAN_BYTE { *type = "Byte"; }
+                SCAN_ID { *name = $3; } 
+		bytes ';'
+
+		| SCAN_INT16 { save_str(*type, "Int16", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
+		int16 ';'
+
+		| SCAN_UINT16 { save_str(*type, "UInt16", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
+		uint16 ';'
+
+		| SCAN_INT32 { save_str(*type, "Int32", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
+		int32 ';'
+
+		| SCAN_UINT32 { save_str(*type, "UInt32", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
+		uint32 ';'
+
+		| SCAN_FLOAT32 { save_str(*type, "Float32", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
+		float32 ';'
+
+		| SCAN_FLOAT64 { save_str(*type, "Float64", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
+		float64 ';'
+
+		| SCAN_STRING { *type = "String"; } 
+                SCAN_ID { *name = $3; } 
+		strs ';'
+
+		| SCAN_URL { *type = "Url"; } 
+                SCAN_ID { *name = $3; } 
+		urls ';'
+
+		| SCAN_ID 
+                {
+		    AttrTable *at;
+		    DBG(cerr << "Processing ID: " << $1 << endl);
+
+		    /* If we are at the outer most level of attributes, make
+		       sure to use the AttrTable in the DAS. */
+		    if (STACK_EMPTY) {
+			at = DAS_OBJ(arg)->get_table($1);
+			if (!at)
+			    at = DAS_OBJ(arg)->add_table($1, 
+							 new AttrTable);
+		    }
+		    else {
+			at = TOP_OF_STACK->get_attr_table((string)$1);
+			if (!at)
+			    at = TOP_OF_STACK->append_container((string)$1);
+		    }
+
+		    PUSH(at);
+		    DBG(cerr << " Pushed attr_tab: " << at << endl);
+
+		}
+		'{' attr_list 
+                {
+		    /* pop top of stack; store in attr_tab */
+		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
+		    POP;
+		}
+		'}'
+
+		| error 
+                { 
+		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG, 
+				das_line_num, $1);
+		    YYABORT;
+		} ';'
+;
+
+bytes:		SCAN_INT
+		{
+		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($1) << endl);
+		    if (!check_byte($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Byte value." << ends;
+			parse_error((parser_arg *)arg, msg.str(), 
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+		| bytes ',' SCAN_INT
+		{
+		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($3) << endl);
+		    if (!check_byte($3)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Byte value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+int16:		SCAN_INT
+		{
+		    /* NB: On the Sun (SunOS 4) strtol does not check for */
+		    /* overflow. Thus it will never figure out that 4 */
+		    /* billion is way to large to fit in a 32 bit signed */
+		    /* integer. What's worse, long is 64  bits on Alpha and */
+		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
+			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
+		    if (!check_int16($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an Int16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+		| int16 ',' SCAN_INT
+		{
+		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+		    if (!check_int16($3)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an Int16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+uint16:		SCAN_INT
+		{
+		    /* NB: On the Sun (SunOS 4) strtol does not check for */
+		    /* overflow. Thus it will never figure out that 4 */
+		    /* billion is way to large to fit in a 32 bit signed */
+		    /* integer. What's worse, long is 64  bits on Alpha and */
+		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
+			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
+		    if (!check_uint16($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an UInt16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+		| uint16 ',' SCAN_INT
+		{
+		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+		    if (!(check_int16($3)
+			  || check_uint16($1))) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an UInt16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+int32:		SCAN_INT
+		{
+		    /* NB: On the Sun (SunOS 4) strtol does not check for */
+		    /* overflow. Thus it will never figure out that 4 */
+		    /* billion is way to large to fit in a 32 bit signed */
+		    /* integer. What's worse, long is 64  bits on Alpha and */
+		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
+		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
+		    if (!check_int32($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an Int32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+		| int32 ',' SCAN_INT
+		{
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
+		    if (!check_int32($3)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an Int32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+uint32:		SCAN_INT
+		{
+		    /* NB: On the Sun (SunOS 4) strtol does not check for */
+		    /* overflow. Thus it will never figure out that 4 */
+		    /* billion is way to large to fit in a 32 bit signed */
+		    /* integer. What's worse, long is 64  bits on Alpha and */
+		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
+		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
+		    if (!check_uint32($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an UInt32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+		| uint32 ',' SCAN_INT
+		{
+		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
+		    if (!check_uint32($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not an UInt32 value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+float32:	float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($1)\
+			<< endl);
+		    if (!check_float32($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Float32 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.freeze(0);
+			YYABORT;
+		    }
+		}
+		| float32 ',' float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+		    if (!check_float32($3)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Float32 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+float64:	float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($1)\
+			<< " to attr table: " << TOP_OF_STACK << endl);
+		    if (!check_float64($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Float64 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+		| float64 ',' float_or_int
+		{
+		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+		    if (!check_float64($3)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a Float64 value." 
+			    << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+strs:		str_or_id
+		{
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
+		    /* Assume a string that parses is vaild. */
+		    if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (TOP_OF_STACK->append_attr(*name, *type, $1) == 0) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0); 
+			YYABORT;
+		    }
+		}
+		| strs ',' str_or_id
+		{
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
+		    if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (TOP_OF_STACK->append_attr(*name, *type, $3) == 0) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+urls:		url
+		{
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
+		    if (!check_url($1)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+		| urls ',' url
+		{
+		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
+		    if (!check_url($3)) {
+			ostrstream msg;
+			msg << "`" << $1 << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+			ostrstream msg;
+			msg << "`" << *name << "' previously defined." << ends;
+			parse_error((parser_arg *)arg, msg.str(),
+				    das_line_num);
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		}
+;
+
+url:		SCAN_ID | SCAN_STR
+;
+
+str_or_id:	SCAN_STR | SCAN_ID | SCAN_INT | SCAN_FLOAT
+;
+
+float_or_int:   SCAN_FLOAT | SCAN_INT
+;
+
+alias:          SCAN_ALIAS SCAN_ID 
+                { 
+		    *name = $2;
+		} 
+                SCAN_ID
+                {
+		    // First try to alias within current lexical scope. If
+		    // that fails then look in the complete environment for
+		    // the AttrTable containing the source for the alias. In
+		    // that case be sure to strip off the hierarchy
+		    // information from the source's name (since TABLE is
+		    // the AttrTable that contains the attribute named by the
+		    // rightmost part of the source.
+		    if (STACK_EMPTY) {
+			// Look for the $4 in the DAS object, not in the
+			// AttrTable on the top of the stack (because there
+			// is no object on the stack so we must be working at
+			// the outer most level of the attribute object).
+			AttrTable *at = DAS_OBJ(arg)->get_table($4);
+			DAS_OBJ(arg)->add_table(name->c_str(), at);
+		    }
+		    else if (!TOP_OF_STACK->attr_alias(*name, $4)) {
+			AttrTable *table = DAS_OBJ(arg)->get_table($4);
+			if (!TOP_OF_STACK->attr_alias(*name, table, 
+						      attr_name($4))) {
+			    ostrstream msg;
+			    msg << "Could not alias `" << $4 << "' and `" 
+				<< *name << "'." << ends;
+			    parse_error((parser_arg *)arg, msg.str(),
+					das_line_num);
+			    msg.rdbuf()->freeze(0);
+			    YYABORT;
+			}
+		    }
+		}
+                ';'
+;
+%%
+
+// This function is required for linking, but DODS uses its own error
+// reporting mechanism.
+
+void
+daserror(char *)
+{
+}
+
+// Return the rightmost component of name (where each component is separated
+// by `.'.
+
+string
+attr_name(string name)
+{
+    unsigned int i = name.rfind('.');
+    if(i==name.npos)
+      return name;
+    else
+      return name.substr(i+1);
+}
+
 /* 
  * $Log: das.y,v $
+ * Revision 1.40  2000/09/22 02:17:22  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.39  2000/07/09 21:43:29  rmorris
  * Mods to increase portability, minimize ifdef's for win32
  *
@@ -199,833 +1086,3 @@
  * Test files for the DAS/DDS parsers and symbol table software.
  */
 
-%{
-
-#define YYSTYPE char *
-
-#include "config_dap.h"
-
-static char rcsid[] not_used = {"$Id: das.y,v 1.39 2000/07/09 21:43:29 rmorris Exp $"};
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <assert.h>
-
-#if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
-#else
-#include <sstream>
-#endif
-#include <vector>
-
-#include "DAS.h"
-#include "Error.h"
-#include "debug.h"
-#include "parser.h"
-#include "das.tab.h"
-
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
-
-#ifdef WIN32
-using std::ends;
-using std::ostrstream;
-#endif
-
-// These macros are used to access the `arguments' passed to the parser. A
-// pointer to an error object and a pointer to an integer status variable are
-// passed in to the parser within a strucutre (which itself is passed as a
-// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
-
-#define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
-#define ERROR_OBJ(arg) ((parser_arg *)(arg))->_error
-#define STATUS(arg) ((parser_arg *)(arg))->_status
-
-#if DODS_BISON_VER > 124
-#define YYPARSE_PARAM arg
-#else
-#define YYPARSE_PARAM void *arg
-#endif
-
-extern int das_line_num;	/* defined in das.lex */
-
-// No global static objects. We go through this every so often, I guess I
-// should learn... 1/24/2000 jhrg
-static string *name;	/* holds name in attr_pair rule */
-static string *type;	/* holds type in attr_pair rule */
-
-static vector<AttrTable *> *attr_tab_stack;
-
-// I use a vector of AttrTable pointers for a stack
-
-#define TOP_OF_STACK (attr_tab_stack->back())
-#define PUSH(x) (attr_tab_stack->push_back(x))
-#define POP (attr_tab_stack->pop_back())
-#define STACK_LENGTH (attr_tab_stack->size())
-#define STACK_EMPTY (attr_tab_stack->empty())
-
-#define TYPE_NAME_VALUE(x) *type << " " << *name << " " << (x)
-
-static char *ATTR_TUPLE_MSG = 
-"Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,\n\
-Float64, String or Url) followed by a name and value.";
-static char *NO_DAS_MSG =
-"The attribute object returned from the dataset was null\n\
-Check that the URL is correct.";
-
-void mem_list_report();
-int daslex(void);
-void daserror(char *s);
-string attr_name(string name);
-
-%}
-
-%expect 24
-
-%token SCAN_ATTR
-
-%token SCAN_ID
-%token SCAN_INT
-%token SCAN_FLOAT
-%token SCAN_STR
-%token SCAN_ALIAS
-
-%token SCAN_BYTE
-%token SCAN_INT16
-%token SCAN_UINT16
-%token SCAN_INT32
-%token SCAN_UINT32
-%token SCAN_FLOAT32
-%token SCAN_FLOAT64
-%token SCAN_STRING
-%token SCAN_URL
-
-%%
-
-/*
-  Parser algorithm: 
-
-  Look for a `variable' name (this can be any identifier, but by convention
-  it is either the name of a variable in a dataset or the name of a grouping
-  of global attributes). Create a new attribute table for this identifier and
-  push the new attribute table onto a stack. If attribute tuples
-  (type-name-value tuples) are found, intern them in the attribute table
-  found on the top of the stack. If the start attribute table of a new
-  attribute table if found (before the current table is closed), create the
-  new table and push *it* on the stack. As attribute tables are closed, pop
-  them off the stack.
-
-  This algorithm ensures that we can nest attribute tables to an arbitrary
-  depth).
-
-  Alias are handled using mfuncs of both the DAS and AttrTable objects. This
-  is necessary because the first level of a DAS object can contain only
-  AttrTables, not attribute tuples. Whereas, the subsequent levels can
-  contain both. Thus the compete definition is split into two objects. In
-  part this is also a hold over from an older design which did not
-  have the recursive properties of the current design.
-
-  Alias can be made between attributes within a given lexical level, from one
-  level to the next within a sub-hierarchy or across hierarchies.
-
-  Tokens:
-
-  BYTE, INT32, UINT32, FLOAT64, STRING and URL are tokens for the type
-  keywords. The tokens INT, FLOAT, STR and ID are returned by the scanner to
-  indicate the type of the value represented by the string contained in the
-  global DASLVAL. These two types of tokens are used to implement type
-  checking for the attributes. See the rules `bytes', etc. Additional tokens:
-  ATTR (indicates the start of an attribute object) and ALIAS (indicates an
-  alias). 
-*/
-
-/* This rule makes sure the objects needed by this parser are built. Because
-   the DODS DAP library is often used with linkers that are not C++-aware, we
-   cannot use global objects (because their constructor might never be
-   called). I had thought this was going to go away... 1/24/2000 jhrg */
-
-attr_start:
-                {
-		    name = new string();
-		    type = new string();
-		    attr_tab_stack = new vector<AttrTable *>;
-		}
-                attributes
-                {
-		    delete name;
-		    delete type;
-		    delete attr_tab_stack;
-		}
-;
-
-attributes:     attribute
-    	    	| attributes attribute
-
-;
-    	    	
-attribute:    	SCAN_ATTR '{' attr_list '}'
-                | error
-                {
-		    parse_error((parser_arg *)arg, NO_DAS_MSG);
-		    YYABORT;
-		}
-;
-
-attr_list:  	/* empty */
-    	    	| attr_tuple
-    	    	| attr_list attr_tuple
-;
-
-attr_tuple:	alias
-
-                | SCAN_BYTE { *type = "Byte"; }
-                SCAN_ID { *name = $3; } 
-		bytes ';'
-
-		| SCAN_INT16 { save_str(*type, "Int16", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
-		int16 ';'
-
-		| SCAN_UINT16 { save_str(*type, "UInt16", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
-		uint16 ';'
-
-		| SCAN_INT32 { save_str(*type, "Int32", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
-		int32 ';'
-
-		| SCAN_UINT32 { save_str(*type, "UInt32", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
-		uint32 ';'
-
-		| SCAN_FLOAT32 { save_str(*type, "Float32", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
-		float32 ';'
-
-		| SCAN_FLOAT64 { save_str(*type, "Float64", das_line_num); } 
-                SCAN_ID { save_str(*name, $3, das_line_num); } 
-		float64 ';'
-
-		| SCAN_STRING { *type = "String"; } 
-                SCAN_ID { *name = $3; } 
-		strs ';'
-
-		| SCAN_URL { *type = "Url"; } 
-                SCAN_ID { *name = $3; } 
-		urls ';'
-
-		| SCAN_ID 
-                {
-		    AttrTable *at;
-		    DBG(cerr << "Processing ID: " << $1 << endl);
-
-		    /* If we are at the outer most level of attributes, make
-		       sure to use the AttrTable in the DAS. */
-		    if (STACK_EMPTY) {
-			at = DAS_OBJ(arg)->get_table($1);
-			if (!at)
-			    at = DAS_OBJ(arg)->add_table($1, 
-							 new AttrTable);
-		    }
-		    else {
-			at = TOP_OF_STACK->get_attr_table((string)$1);
-			if (!at)
-			    at = TOP_OF_STACK->append_container((string)$1);
-		    }
-
-		    PUSH(at);
-		    DBG(cerr << " Pushed attr_tab: " << at << endl);
-
-		}
-		'{' attr_list 
-                {
-		    /* pop top of stack; store in attr_tab */
-		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
-		    POP;
-		}
-		'}'
-
-		| error 
-                { 
-		    parse_error((parser_arg *)arg, ATTR_TUPLE_MSG);
-		    YYABORT;
-		} ';'
-;
-
-bytes:		SCAN_INT
-		{
-		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($1) << endl);
-		    if (!check_byte($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not a Byte value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-		| bytes ',' SCAN_INT
-		{
-		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($3) << endl);
-		    if (!check_byte($3, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not a Byte value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-int16:		SCAN_INT
-		{
-		    /* NB: On the Sun (SunOS 4) strtol does not check for */
-		    /* overflow. Thus it will never figure out that 4 */
-		    /* billion is way to large to fit in a 32 bit signed */
-		    /* integer. What's worse, long is 64  bits on Alpha and */
-		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
-			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-		    if (!check_int16($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not an Int16 value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		}
-		| int16 ',' SCAN_INT
-		{
-		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
-			<< endl);
-		    if (!check_int16($3, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not an Int16 value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-uint16:		SCAN_INT
-		{
-		    /* NB: On the Sun (SunOS 4) strtol does not check for */
-		    /* overflow. Thus it will never figure out that 4 */
-		    /* billion is way to large to fit in a 32 bit signed */
-		    /* integer. What's worse, long is 64  bits on Alpha and */
-		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
-			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
-		    if (!check_uint16($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not an UInt16 value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		}
-		| uint16 ',' SCAN_INT
-		{
-		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
-			<< endl);
-		    if (!(check_int16($3, das_line_num)
-			  || check_uint16($1, das_line_num))) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not an UInt16 value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-int32:		SCAN_INT
-		{
-		    /* NB: On the Sun (SunOS 4) strtol does not check for */
-		    /* overflow. Thus it will never figure out that 4 */
-		    /* billion is way to large to fit in a 32 bit signed */
-		    /* integer. What's worse, long is 64  bits on Alpha and */
-		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
-		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-		    if (!check_int32($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not an Int32 value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-		| int32 ',' SCAN_INT
-		{
-		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
-		    if (!check_int32($3, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not an Int32 value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-uint32:		SCAN_INT
-		{
-		    /* NB: On the Sun (SunOS 4) strtol does not check for */
-		    /* overflow. Thus it will never figure out that 4 */
-		    /* billion is way to large to fit in a 32 bit signed */
-		    /* integer. What's worse, long is 64  bits on Alpha and */
-		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
-		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
-		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
-		    if (!check_uint32($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not an UInt32 value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		}
-		| uint32 ',' SCAN_INT
-		{
-		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
-		    if (!check_uint32($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not an UInt32 value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-float32:	float_or_int
-		{
-		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($1)\
-			<< endl);
-		    if (!check_float32($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not a Float32 value." 
-			    << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.freeze(0);
-			YYABORT;
-		    }
-		}
-		| float32 ',' float_or_int
-		{
-		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($3)\
-			<< endl);
-		    if (!check_float32($3, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not a Float32 value." 
-			    << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-float64:	float_or_int
-		{
-		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($1)\
-			<< " to attr table: " << TOP_OF_STACK << endl);
-		    if (!check_float64($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not a Float64 value." 
-			    << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-		| float64 ',' float_or_int
-		{
-		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($3)\
-			<< endl);
-		    if (!check_float64($3, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not a Float64 value." 
-			    << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-strs:		str_or_id
-		{
-		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
-		    /* Assume a string that parses is vaild. */
-		    if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (TOP_OF_STACK->append_attr(*name, *type, $1) == 0) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0); 
-			YYABORT;
-		    }
-		}
-		| strs ',' str_or_id
-		{
-		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
-		    if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (TOP_OF_STACK->append_attr(*name, *type, $3) == 0) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-urls:		url
-		{
-		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
-		    if (!check_url($1, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not a String value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-		| urls ',' url
-		{
-		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
-		    if (!check_url($3, das_line_num)) {
-			ostrstream msg;
-			msg << "`" << $1 << "' is not a String value." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (STACK_EMPTY) {
-			ostrstream msg;
-			msg << "Whoa! Stack empty when adding `" 
-			    << *name << "' ." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
-			ostrstream msg;
-			msg << "`" << *name << "' previously defined." << ends;
-			parse_error((parser_arg *)arg, msg.str());
-			msg.rdbuf()->freeze(0);
-			YYABORT;
-		    }
-		}
-;
-
-url:		SCAN_ID | SCAN_STR
-;
-
-str_or_id:	SCAN_STR | SCAN_ID | SCAN_INT | SCAN_FLOAT
-;
-
-float_or_int:   SCAN_FLOAT | SCAN_INT
-;
-
-alias:          SCAN_ALIAS SCAN_ID 
-                { 
-		    *name = $2;
-		} 
-                SCAN_ID
-                {
-		    // First try to alias within current lexical scope. If
-		    // that fails then look in the complete environment for
-		    // the AttrTable containing the source for the alias. In
-		    // that case be sure to strip off the hierarchy
-		    // information from the source's name (since TABLE is
-		    // the AttrTable that contains the attribute named by the
-		    // rightmost part of the source.
-		    if (STACK_EMPTY) {
-			// Look for the $4 in the DAS object, not in the
-			// AttrTable on the top of the stack (because there
-			// is no object on the stack so we must be working at
-			// the outer most level of the attribute object).
-			AttrTable *at = DAS_OBJ(arg)->get_table($4);
-			DAS_OBJ(arg)->add_table(name->c_str(), at);
-		    }
-		    else if (!TOP_OF_STACK->attr_alias(*name, $4)) {
-			AttrTable *table = DAS_OBJ(arg)->get_table($4);
-			if (!TOP_OF_STACK->attr_alias(*name, table, 
-						      attr_name($4))) {
-			    ostrstream msg;
-			    msg << "Could not alias `" << $4 << "' and `" 
-				<< *name << "'." << ends;
-			    parse_error((parser_arg *)arg, msg.str());
-			    msg.rdbuf()->freeze(0);
-			    YYABORT;
-			}
-		    }
-		}
-                ';'
-;
-%%
-
-// This function is required for linking, but DODS uses its own error
-// reporting mechanism.
-
-void
-daserror(char *)
-{
-}
-
-// Return the rightmost component of name (where each component is separated
-// by `.'.
-
-string
-attr_name(string name)
-{
-    unsigned int i = name.rfind('.');
-    if(i==name.npos)
-      return name;
-    else
-      return name.substr(i+1);
-}

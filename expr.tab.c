@@ -24,12 +24,12 @@
 #define	SCAN_LESS_EQL	267
 #define	SCAN_REGEXP	268
 
-#line 199 "expr.y"
+#line 19 "expr.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.16 2000/09/21 16:22:10 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.17 2000/09/22 02:17:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,11 +78,7 @@ using std::ostrstream;
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 
-#if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
-#else
-#define YYPARSE_PARAM void *arg
-#endif
 
 int exprlex(void);		/* the scanner; see expr.lex */
 
@@ -127,7 +123,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 proj_func get_proj_function(const DDS &table, const char *name);
 
 
-#line 302 "expr.y"
+#line 118 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -219,11 +215,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   344,   350,   352,   353,   356,   362,   363,   369,   379,   388,
-   392,   398,   418,   419,   425,   434,   445,   451,   464,   465,
-   466,   474,   480,   492,   499,   508,   512,   518,   527,   538,
-   543,   548,   555,   563,   572,   576,   582,   586,   590,   596,
-   597,   598,   599,   600,   601,   602
+   160,   166,   168,   169,   172,   178,   179,   185,   195,   204,
+   208,   214,   234,   235,   241,   250,   261,   267,   280,   281,
+   282,   290,   296,   308,   315,   324,   328,   334,   343,   354,
+   359,   364,   371,   379,   388,   392,   398,   402,   406,   412,
+   413,   414,   415,   416,   417,   418
 };
 #endif
 
@@ -856,36 +852,36 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 345 "expr.y"
+#line 161 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 352 "expr.y"
+#line 168 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 353 "expr.y"
+#line 169 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 357 "expr.y"
+#line 173 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 364 "expr.y"
+#line 180 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 370 "expr.y"
+#line 186 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
@@ -897,7 +893,7 @@ case 8:
 		;
     break;}
 case 9:
-#line 380 "expr.y"
+#line 196 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var)
@@ -908,19 +904,19 @@ case 9:
 		;
     break;}
 case 10:
-#line 389 "expr.y"
+#line 205 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 11:
-#line 393 "expr.y"
+#line 209 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 12:
-#line 399 "expr.y"
+#line 215 "expr.y"
 {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -940,13 +936,13 @@ case 12:
 		;
     break;}
 case 14:
-#line 420 "expr.y"
+#line 236 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 15:
-#line 426 "expr.y"
+#line 242 "expr.y"
 {
 		    if (yyvsp[-4].rval_ptr) {
 			(*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -957,7 +953,7 @@ case 15:
 		;
     break;}
 case 16:
-#line 435 "expr.y"
+#line 251 "expr.y"
 {
 		    if (yyvsp[-2].rval_ptr) {
 			rvalue_list *rv = new rvalue_list;
@@ -970,13 +966,13 @@ case 16:
 		;
     break;}
 case 17:
-#line 446 "expr.y"
+#line 262 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 18:
-#line 452 "expr.y"
+#line 268 "expr.y"
 {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		   if (!b_func) {
@@ -989,7 +985,7 @@ case 18:
 	       ;
     break;}
 case 21:
-#line 467 "expr.y"
+#line 283 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
@@ -999,7 +995,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 475 "expr.y"
+#line 291 "expr.y"
 {
 		    yyval.rval_ptr = dereference_url(yyvsp[0].val);
 		    if (!yyval.rval_ptr)
@@ -1007,7 +1003,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 481 "expr.y"
+#line 297 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
@@ -1019,7 +1015,7 @@ case 23:
 		;
     break;}
 case 24:
-#line 493 "expr.y"
+#line 309 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -1028,7 +1024,7 @@ case 24:
 		;
     break;}
 case 25:
-#line 500 "expr.y"
+#line 316 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -1037,19 +1033,19 @@ case 25:
 		;
     break;}
 case 26:
-#line 509 "expr.y"
+#line 325 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
 case 27:
-#line 513 "expr.y"
+#line 329 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
 case 28:
-#line 519 "expr.y"
+#line 335 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1060,7 +1056,7 @@ case 28:
 		;
     break;}
 case 29:
-#line 528 "expr.y"
+#line 344 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1071,28 +1067,28 @@ case 29:
 		;
     break;}
 case 30:
-#line 539 "expr.y"
+#line 355 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 31:
-#line 544 "expr.y"
+#line 360 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 32:
-#line 549 "expr.y"
+#line 365 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 33:
-#line 556 "expr.y"
+#line 372 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
 		    // no_such_ident throws an exception.
@@ -1102,7 +1098,7 @@ case 33:
 		;
     break;}
 case 34:
-#line 564 "expr.y"
+#line 380 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
 		    no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
@@ -1111,31 +1107,31 @@ case 34:
 		;
     break;}
 case 35:
-#line 573 "expr.y"
+#line 389 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 36:
-#line 577 "expr.y"
+#line 393 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 37:
-#line 583 "expr.y"
+#line 399 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-1].val);
 		;
     break;}
 case 38:
-#line 587 "expr.y"
+#line 403 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-3].val, yyvsp[-1].val);
 		;
     break;}
 case 39:
-#line 591 "expr.y"
+#line 407 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		;
@@ -1362,7 +1358,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 605 "expr.y"
+#line 421 "expr.y"
 
 
 // All these error reporting function now throw instnaces of Error. The expr
@@ -1985,3 +1981,199 @@ get_proj_function(const DDS &table, const char *name)
     else
 	return 0;
 }
+
+/*
+ * $Log: expr.tab.c,v $
+ * Revision 1.17  2000/09/22 02:17:22  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
+ * Revision 1.38  2000/09/21 16:22:10  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
+ * Revision 1.37  2000/09/14 10:30:20  rmorris
+ * Added usage of ends and ostrstream elements in the std namespace for win32.
+ *
+ * Revision 1.36  2000/09/11 16:17:47  jimg
+ * Added Sequence selection using row numbers. This `selection' operation
+ * uses the brackets a la arrays and grids.
+ *
+ * Revision 1.35  2000/07/09 21:43:30  rmorris
+ * Mods to increase portability, minimize ifdef's for win32
+ *
+ * Revision 1.34  2000/06/07 18:07:00  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.33.14.1  2000/06/02 18:36:39  rmorris
+ * Mod's for port to Win32.
+ *
+ * Revision 1.33.8.1  2000/02/17 05:03:17  jimg
+ * Added file and line number information to calls to InternalErr.
+ * Resolved compile-time problems with read due to a change in its
+ * parameter list given that errors are now reported using exceptions.
+ *
+ * Revision 1.33  1999/07/22 17:11:52  jimg
+ * Merged changes from the release-3-0-2 branch
+ *
+ * Revision 1.32.6.1  1999/06/07 20:03:25  edavis
+ * Changed all string class usage of 'data()' to 'c_str()'.
+ *
+ * Revision 1.32  1999/05/21 17:20:08  jimg
+ * Made the parser error messages a bit easier to decode by adding `Expression'
+ * to them. Still, these are pretty lame messages...
+ *
+ * Revision 1.31  1999/05/04 19:47:24  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
+ * Revision 1.30  1999/04/29 02:29:36  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.29  1999/04/22 22:30:52  jimg
+ * Uses dynamic_cast
+ *
+ * Revision 1.28  1998/11/10 00:48:54  jimg
+ * Changed no_such_id() to no_such_ident() (the former is used in bastring.h).
+ *
+ * Revision 1.27  1998/11/05 23:41:20  jimg
+ * Made error message for errant CEs involving arrays better.
+ * DDS::mark() now used for array variables --- this should fix a potential
+ * problem with structures of arrays.
+ *
+ * Revision 1.26  1998/10/21 16:55:15  jimg
+ * Single array element may now be refd as [<int>]. So element seven of the
+ * array `a' can be referenced as a[7]. The old syntax, a[7:7], will still
+ * work. Projection functions are now supported. Functions listed in the
+ * projection part of a CE are evaluated (executed after parsing) as they are
+ * found (before the parse of the rest of the projections or the start of the
+ * parse of the selections. These functions take the same three arguments as
+ * the boll and BaseType * functions (int argc, BaseType *argv[], DDS &dds)
+ * but they return void. They can do whatever they like, but the use I
+ * foresee is adding new (synthesized - see BaseType.cc/h) variables to the
+ * DDS.
+ *
+ * Revision 1.25  1998/09/17 16:56:50  jimg
+ * Made the error messages more verbose (that is, the text in the Error objects
+ * sent back to the client).
+ * Fixed a bug where non-existent fields could be accessed - with predictably
+ * bad results.
+ *
+ * Revision 1.24.6.2  1999/02/05 09:32:36  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+ * math code. 
+ *
+ * Revision 1.24.6.1  1999/02/02 21:57:07  jimg
+ * String to string version
+ *
+ * Revision 1.24  1998/03/19 23:22:38  jimg
+ * Fixed the error messages so they use `' instead of :
+ * Added Error objects for array index errors.
+ * Removed old code (that was surrounded by #if 0 ... #endif).
+ *
+ * Revision 1.23  1998/02/05 20:14:03  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
+ * Revision 1.22  1997/10/09 22:19:31  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
+ * Revision 1.21  1997/10/04 00:33:05  jimg
+ * Release 2.14c fixes
+ *
+ * Revision 1.20.6.1  1997/09/23 15:45:09  jimg
+ * Fixed nasty comment bug with CVS 1.9
+ *
+ * Revision 1.20  1997/02/17 20:27:19  jimg
+ * Fixed silly spelling errors.
+ *
+ * Revision 1.19  1997/02/12 19:46:33  jimg
+ * Fixed bad asserts in process_array_indices and process_grid_indices.
+ *
+ * Revision 1.18  1997/02/10 02:32:46  jimg
+ * Added assert statements for pointers
+ *
+ * Revision 1.17  1996/12/18 18:47:24  jimg
+ * Modified the parser so that it returns Error objects for certain types of
+ * errors. In order to take advantage of this, callers must examine the
+ * returned object and process it as an Error object if status is false.
+ *
+ * Revision 1.16  1996/11/27 22:40:26  jimg
+ * Added DDS as third parameter to function in the CE evaluator
+ *
+ * Revision 1.15  1996/10/18 16:55:15  jimg
+ * Fixed the fix for bison 1.25...
+ *
+ * Revision 1.14  1996/10/08 17:04:43  jimg
+ * Added a fix for Bison 1.25 so that PARSE_PARAM will still work
+ *
+ * Revision 1.13  1996/08/13 19:00:21  jimg
+ * Added not_used to definition of char rcsid[].
+ * Switched to the parser_arg object for communication with callers. Removed
+ * unused parameters from dereference_{url, variable}, make_rvalue_list and
+ * append_rvalue_list.
+ *
+ * Revision 1.12  1996/06/18 23:54:31  jimg
+ * Fixes for Grid constraints. These include not deleting the array indices
+ * lists after processing the Array component of a grid (but before processing
+ * the Maps...).
+ *
+ * Revision 1.11  1996/06/11 17:27:11  jimg
+ * Moved debug.h in front of all the other DODS includes - this ensures that
+ * the debug.h included in this file is the one in effect (as opposed to a copy
+ * included by some other include file). We should banish nested includes...
+ * Added support for `Grid constraints'. These are like the Array constraints -
+ * projections where the start, stop and stride of each dimension may be
+ * specified. The new feature required a grammar change (so the parser would
+ * accept grids with the array bracket notation) and two new functions:
+ * is_grid_t() and process_grid_indices(). The actual projection information is
+ * stored in the array members of the Grid.
+ *
+ * Revision 1.10  1996/05/31 23:31:04  jimg
+ * Updated copyright notice.
+ *
+ * Revision 1.9  1996/05/29 22:08:57  jimg
+ * Made changes necessary to support CEs that return the value of a function
+ * instead of the value of a variable. This was done so that it would be
+ * possible to translate Sequences into Arrays without first reading the
+ * entire sequence over the network.
+ *
+ * Revision 1.8  1996/05/14 15:39:02  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
+ * Revision 1.7  1996/04/05 00:22:21  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
+ * Revision 1.6  1996/03/02 01:17:09  jimg
+ * Added support for the complete CE spec.
+ *
+ * Revision 1.5  1996/02/01 17:43:18  jimg
+ * Added support for lists as operands in constraint expressions.
+ *
+ * Revision 1.4  1995/12/09  01:07:41  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
+ * Revision 1.3  1995/12/06  18:42:44  jimg
+ * Added array constraints to the parser.
+ * Added functions for the actions of those new rules.
+ * Changed/added rule's return types.
+ * Changed the types in the %union {}.
+ *
+ * Revision 1.2  1995/10/23  23:10:38  jimg
+ * Added includes for various classes.
+ * Aded rules, actions and functions for evaluation of projections.
+ * Changed the value of YYSTYPE so that bison's %union feature is used -
+ * rules now return several different types.
+ *
+ * Revision 1.1  1995/10/13  03:04:08  jimg
+ * First version. Incorporates Glenn's suggestions. 
+ */
+

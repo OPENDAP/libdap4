@@ -28,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.32 2000/09/21 16:22:10 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.33 2000/09/22 02:17:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,11 +62,7 @@ using std::ostrstream;
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 
-#if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
-#else
-#define YYPARSE_PARAM void *arg
-#endif
 
 extern int dds_line_num;	/* defined in dds.lex */
 
@@ -130,7 +126,8 @@ datasets:	dataset
 dataset:	SCAN_DATASET '{' declarations '}' name ';'
                 | error
                 {
-		    parse_error((parser_arg *)arg, NO_DDS_MSG);
+		    parse_error((parser_arg *)arg, NO_DDS_MSG,
+				dds_line_num, $1);
 		    YYABORT;
 		}
 ;
@@ -226,7 +223,8 @@ non_list_decl:  base_type var ';'
                 {
 		    ostrstream msg;
 		    msg << BAD_DECLARATION << ends;
-		    parse_error((parser_arg *)arg, msg.str());
+		    parse_error((parser_arg *)arg, msg.str(),
+				dds_line_num, $1);
 		    msg.freeze(0);
 		    YYABORT;
 		}
@@ -318,7 +316,8 @@ array_decl:	'[' SCAN_INTEGER ']'
 		     ostrstream msg;
 		     msg << "In the dataset descriptor object:" << endl
 			 << "Expected an array subscript." << endl << ends;
-		     parse_error((parser_arg *)arg, msg.str());
+		     parse_error((parser_arg *)arg, msg.str(), 
+				 dds_line_num, $1);
 		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		 }
@@ -331,7 +330,8 @@ name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		  ostrstream msg;
 		  msg << "Error parsing the dataset name." << endl
 		      << "The name may be missing or may contain an illegal character." << endl << ends;
-		     parse_error((parser_arg *)arg, msg.str());
+		     parse_error((parser_arg *)arg, msg.str(),
+				 dds_line_num);
 		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		}
@@ -361,7 +361,7 @@ invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type,
   msg << "In the dataset descriptor object: `" << type << " " << name 
       << "'" << endl << "is not a valid declaration." << endl 
       << semantic_err_msg << ends;
-  parse_error((parser_arg *)arg, msg.str());
+  parse_error((parser_arg *)arg, msg.str(), dds_line_num);
   msg.rdbuf()->freeze(0);
 }
 
@@ -403,6 +403,12 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.33  2000/09/22 02:17:22  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.32  2000/09/21 16:22:10  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are

@@ -9,249 +9,6 @@
 //
 // jhrg 9/15/94
 
-// $Log: Grid.cc,v $
-// Revision 1.44  2000/09/21 16:22:08  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.43  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.42  2000/06/16 18:14:59  jimg
-// Merged with 3.1.7
-//
-// Revision 1.38.6.1  2000/06/07 23:05:31  jimg
-// The first_*() methods return 0 if there are no variables
-//
-// Revision 1.41  2000/06/07 18:06:59  jimg
-// Merged the pc port branch
-//
-// Revision 1.40.4.1  2000/06/02 18:21:27  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.40  2000/04/07 00:16:29  jimg
-// Fixed an error in print_val() where the method worked OK for the
-// server-side but not the client-side because it demoted any Grid whose
-// send_p flag was not set to a Structure. Since the client-side does not have
-// CEs, there are no projections and send_p will never be set.
-//
-// Revision 1.39.2.3  2000/03/08 00:09:04  jgarcia
-// replace ostrstream with string;added functions to convert from double and long to string
-//
-// Revision 1.39.2.2  2000/02/17 05:03:13  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.39.2.1  2000/01/28 22:14:05  jgarcia
-// Added exception handling and modify add_var to get a copy of the object
-//
-// Revision 1.39  1999/12/02 00:24:32  jimg
-// Fixed print_val for Grids that decay to Structures.
-//
-// Revision 1.38  1999/04/29 02:29:30  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.37  1998/09/17 17:20:00  jimg
-// Changes for the new variable lookup scheme. Fields of ctor types no longer
-// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
-// that if there are two `f1's in a dataset, the first will be silently used;
-// There's no warning about the situation. The new code in the var member
-// function passes a stack of BaseType pointers so that the projection
-// information (send_p field) can be set properly.
-//
-// Revision 1.36  1998/08/31 21:46:09  jimg
-// Changed the check_semantics member function so that the array and map
-// vectors must be composed of simple-type elements.
-//
-// Revision 1.35.2.1  1999/02/02 21:56:59  jimg
-// String to string version
-//
-// Revision 1.35  1998/08/06 16:19:54  jimg
-// Fixed misuse of read member function in serialize. Test for a read(...)
-// error by checking the value of the `error' parameter, not the return value
-// of the read(...) member function. (from jeh)
-//
-// Revision 1.34  1998/03/17 17:32:00  jimg
-// Added an implmentation of element_count().
-//
-// Revision 1.33  1997/09/22 23:02:10  jimg
-// Added DDS * to deserialize parameters.
-//
-// Revision 1.32  1997/06/05 22:50:46  jimg
-// Added two mfuncs: components() and projection_yields_grid(). These aid in
-// sending Grids that have been projected in various ways.
-// Fixed print_decl() so that a Grid that has some components projected either
-// by explicitly listing them or by listing only some of the Grids dimensions
-// will be sent properly. This means that some Grid objects `decay' to either
-// Structures of Arrays or simple Arrays depending on the projection.
-//
-// Revision 1.31  1997/03/08 19:02:02  jimg
-// Changed default param to check_semantics() from  to String()
-// and removed the default from the argument list in the mfunc definition
-//
-// Revision 1.30  1997/02/28 01:27:54  jimg
-// Changed check_semantics() so that it now returns error messages in a String
-// object (passed by reference).
-//
-// Revision 1.29  1997/02/10 02:32:40  jimg
-// Added assert statements for pointers
-//
-// Revision 1.28  1996/09/16 18:08:40  jimg
-// Fixed var(const String name) so that it would correctly descend names of the
-// form <base>.<name> where <name> may itself contain `dots'.
-//
-// Revision 1.27  1996/08/12 21:52:41  jimg
-// Fixed a bug in check_semantics where the array name was confused with the
-// dimension names - this may be a bug in the libg++2.7.1 implementation of the
-// class String or a bug in our usage of the same. The problem did not show up
-// on the SunOS 4.1.3 platform.
-//
-// Revision 1.26  1996/06/04 21:33:31  jimg
-// Multiple connections are now possible. It is now possible to open several
-// URLs at the same time and read from them in a round-robin fashion. To do
-// this I added data source and sink parameters to the serialize and
-// deserialize mfuncs. Connect was also modified so that it manages the data
-// source `object' (which is just an XDR pointer).
-//
-// Revision 1.25  1996/05/31 23:29:46  jimg
-// Updated copyright notice.
-//
-// Revision 1.24  1996/05/22 18:05:12  jimg
-// Merged files from the old netio directory into the dap directory.
-// Removed the errmsg library from the software.
-//
-// Revision 1.23  1996/05/16 22:49:47  jimg
-// Dan's changes for version 2.0. Added a parameter to read that returns
-// an error code so that EOF can be distinguished from an actual error when
-// reading sequences. This *may* be replaced by an error member function
-// in the future.
-//
-// Revision 1.22  1996/05/14 15:38:26  jimg
-// These changes have already been checked in once before. However, I
-// corrupted the source repository and restored it from a 5/9/96 backup
-// tape. The previous version's log entry should cover the changes.
-//
-// Revision 1.21  1996/04/05 00:21:33  jimg
-// Compiled with g++ -Wall and fixed various warnings.
-//
-// Revision 1.20  1996/04/04 18:26:50  jimg
-// Merged changes from version 1.1.1.
-//
-// Revision 1.19  1996/03/05 18:10:14  jimg
-// Fixed serialize bug where Maps might not be sent.
-// Added ce_eval to serailize member function.
-//
-// Revision 1.18  1996/02/02 00:31:05  jimg
-// Merge changes for DODS-1.1.0 into DODS-2.x
-//
-// Revision 1.17  1995/12/09  01:06:46  jimg
-// Added changes so that relational operators will work properly for all the
-// datatypes (including Sequences). The relational ops are evaluated in
-// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
-//
-// Revision 1.16  1995/12/06  21:56:24  jimg
-// Added `constrained' flag to print_decl.
-// Removed third parameter of read.
-// Modified print_decl() to print only those parts of a dataset that are
-// selected when `constrained' is true.
-//
-// Revision 1.15  1995/10/23  23:20:55  jimg
-// Added _send_p and _read_p fields (and their accessors) along with the
-// virtual mfuncs set_send_p() and set_read_p().
-//
-// Revision 1.14  1995/08/26  00:31:33  jimg
-// Removed code enclosed in #ifdef NEVER #endif.
-//
-// Revision 1.13  1995/08/23  00:11:12  jimg
-// Changed old, deprecated member functions to new ones.
-// Switched from String representation of type to enum.
-//
-// Revision 1.12.2.2  1996/03/01 00:06:12  jimg
-// Removed bad attempt at multiple connect implementation.
-//
-// Revision 1.12.2.1  1995/09/14  20:58:16  jimg
-// Moved some loop index variables out of the loop statement.
-//
-// Revision 1.12  1995/07/09  21:28:59  jimg
-// Added copyright notice.
-//
-// Revision 1.11  1995/05/10  15:34:00  jimg
-// Failed to change `config.h' to `config_dap.h' in these files.
-//
-// Revision 1.10  1995/05/10  13:45:18  jimg
-// Changed the name of the configuration header file from `config.h' to
-// `config_dap.h' so that other libraries could have header files which were
-// installed in the DODS include directory without overwriting this one. Each
-// config header should follow the convention config_<name>.h.
-//
-// Revision 1.9  1995/03/16  17:29:10  jimg
-// Added include config_dap.h to top of include list.
-// Added TRACE_NEW switched dbnew includes.
-// Fixed bug in read_val() where **val was passed incorrectly to
-// subordinate read_val() calls.
-//
-// Revision 1.8  1995/03/04  14:34:45  jimg
-// Major modifications to the transmission and representation of values:
-// Added card() virtual function which is true for classes that
-// contain cardinal types (byte, int float, string).
-// Changed the representation of Str from the C rep to a C++
-// class represenation.
-// Chnaged read_val and store_val so that they take and return
-// types that are stored by the object (e.g., inthe case of Str
-// an URL, read_val returns a C++ String object).
-// Modified Array representations so that arrays of card()
-// objects are just that - no more storing strings, ... as
-// C would store them.
-// Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-// an array of a structure is represented as an array of Structure
-// objects).
-//
-// Revision 1.7  1995/02/10  02:23:07  jimg
-// Added DBMALLOC includes and switch to code which uses malloc/free.
-// Private and protected symbols now start with `_'.
-// Added new accessors for name and type fields of BaseType; the old ones
-// will be removed in a future release.
-// Added the store_val() mfunc. It stores the given value in the object's
-// internal buffer.
-// Made both List and Str handle their values via pointers to memory.
-// Fixed read_val().
-// Made serialize/deserialize handle all malloc/free calls (even in those
-// cases where xdr initiates the allocation).
-// Fixed print_val().
-//
-// Revision 1.6  1995/01/19  20:05:27  jimg
-// ptr_duplicate() mfunc is now abstract virtual.
-// Array, ... Grid duplicate mfuncs were modified to take pointers, not
-// referenves.
-//
-// Revision 1.5  1995/01/11  15:54:46  jimg
-// Added modifications necessary for BaseType's static XDR pointers. This
-// was mostly a name change from xdrin/out to _xdrin/out.
-// Removed the two FILE pointers from ctors, since those are now set with
-// functions which are friends of BaseType.
-//
-// Revision 1.4  1994/12/14  20:56:57  dan
-// Fixed deserialize() to return correct size count.
-// Fixed check_semantics() to use new Array dimension member functions.
-//
-// Revision 1.3  1994/10/17  23:34:53  jimg
-// Added code to print_decl so that variable declarations are pretty
-// printed.
-// Added private mfunc duplicate().
-// Added ptr_duplicate().
-// Added Copy ctor, dtor and operator=.
-//
-// Revision 1.2  1994/09/23  14:45:28  jimg
-// Added mfunc check_semantics().
-// Added sanity checking on the variable list (is it empty?).
-//
-
 #include "config_dap.h"
 
 #include <assert.h>
@@ -760,4 +517,253 @@ Grid::check_semantics(string &msg, bool all)
 
     return true;
 }
+
+// $Log: Grid.cc,v $
+// Revision 1.45  2000/09/22 02:17:20  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.44  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.43  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.42  2000/06/16 18:14:59  jimg
+// Merged with 3.1.7
+//
+// Revision 1.38.6.1  2000/06/07 23:05:31  jimg
+// The first_*() methods return 0 if there are no variables
+//
+// Revision 1.41  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.40.4.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.40  2000/04/07 00:16:29  jimg
+// Fixed an error in print_val() where the method worked OK for the
+// server-side but not the client-side because it demoted any Grid whose
+// send_p flag was not set to a Structure. Since the client-side does not have
+// CEs, there are no projections and send_p will never be set.
+//
+// Revision 1.39.2.3  2000/03/08 00:09:04  jgarcia
+// replace ostrstream with string;added functions to convert from double and long to string
+//
+// Revision 1.39.2.2  2000/02/17 05:03:13  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.39.2.1  2000/01/28 22:14:05  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
+//
+// Revision 1.39  1999/12/02 00:24:32  jimg
+// Fixed print_val for Grids that decay to Structures.
+//
+// Revision 1.38  1999/04/29 02:29:30  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.37  1998/09/17 17:20:00  jimg
+// Changes for the new variable lookup scheme. Fields of ctor types no longer
+// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
+// that if there are two `f1's in a dataset, the first will be silently used;
+// There's no warning about the situation. The new code in the var member
+// function passes a stack of BaseType pointers so that the projection
+// information (send_p field) can be set properly.
+//
+// Revision 1.36  1998/08/31 21:46:09  jimg
+// Changed the check_semantics member function so that the array and map
+// vectors must be composed of simple-type elements.
+//
+// Revision 1.35.2.1  1999/02/02 21:56:59  jimg
+// String to string version
+//
+// Revision 1.35  1998/08/06 16:19:54  jimg
+// Fixed misuse of read member function in serialize. Test for a read(...)
+// error by checking the value of the `error' parameter, not the return value
+// of the read(...) member function. (from jeh)
+//
+// Revision 1.34  1998/03/17 17:32:00  jimg
+// Added an implmentation of element_count().
+//
+// Revision 1.33  1997/09/22 23:02:10  jimg
+// Added DDS * to deserialize parameters.
+//
+// Revision 1.32  1997/06/05 22:50:46  jimg
+// Added two mfuncs: components() and projection_yields_grid(). These aid in
+// sending Grids that have been projected in various ways.
+// Fixed print_decl() so that a Grid that has some components projected either
+// by explicitly listing them or by listing only some of the Grids dimensions
+// will be sent properly. This means that some Grid objects `decay' to either
+// Structures of Arrays or simple Arrays depending on the projection.
+//
+// Revision 1.31  1997/03/08 19:02:02  jimg
+// Changed default param to check_semantics() from  to String()
+// and removed the default from the argument list in the mfunc definition
+//
+// Revision 1.30  1997/02/28 01:27:54  jimg
+// Changed check_semantics() so that it now returns error messages in a String
+// object (passed by reference).
+//
+// Revision 1.29  1997/02/10 02:32:40  jimg
+// Added assert statements for pointers
+//
+// Revision 1.28  1996/09/16 18:08:40  jimg
+// Fixed var(const String name) so that it would correctly descend names of the
+// form <base>.<name> where <name> may itself contain `dots'.
+//
+// Revision 1.27  1996/08/12 21:52:41  jimg
+// Fixed a bug in check_semantics where the array name was confused with the
+// dimension names - this may be a bug in the libg++2.7.1 implementation of the
+// class String or a bug in our usage of the same. The problem did not show up
+// on the SunOS 4.1.3 platform.
+//
+// Revision 1.26  1996/06/04 21:33:31  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
+// Revision 1.25  1996/05/31 23:29:46  jimg
+// Updated copyright notice.
+//
+// Revision 1.24  1996/05/22 18:05:12  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
+// Revision 1.23  1996/05/16 22:49:47  jimg
+// Dan's changes for version 2.0. Added a parameter to read that returns
+// an error code so that EOF can be distinguished from an actual error when
+// reading sequences. This *may* be replaced by an error member function
+// in the future.
+//
+// Revision 1.22  1996/05/14 15:38:26  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
+// Revision 1.21  1996/04/05 00:21:33  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.20  1996/04/04 18:26:50  jimg
+// Merged changes from version 1.1.1.
+//
+// Revision 1.19  1996/03/05 18:10:14  jimg
+// Fixed serialize bug where Maps might not be sent.
+// Added ce_eval to serailize member function.
+//
+// Revision 1.18  1996/02/02 00:31:05  jimg
+// Merge changes for DODS-1.1.0 into DODS-2.x
+//
+// Revision 1.17  1995/12/09  01:06:46  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.16  1995/12/06  21:56:24  jimg
+// Added `constrained' flag to print_decl.
+// Removed third parameter of read.
+// Modified print_decl() to print only those parts of a dataset that are
+// selected when `constrained' is true.
+//
+// Revision 1.15  1995/10/23  23:20:55  jimg
+// Added _send_p and _read_p fields (and their accessors) along with the
+// virtual mfuncs set_send_p() and set_read_p().
+//
+// Revision 1.14  1995/08/26  00:31:33  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.13  1995/08/23  00:11:12  jimg
+// Changed old, deprecated member functions to new ones.
+// Switched from String representation of type to enum.
+//
+// Revision 1.12.2.2  1996/03/01 00:06:12  jimg
+// Removed bad attempt at multiple connect implementation.
+//
+// Revision 1.12.2.1  1995/09/14  20:58:16  jimg
+// Moved some loop index variables out of the loop statement.
+//
+// Revision 1.12  1995/07/09  21:28:59  jimg
+// Added copyright notice.
+//
+// Revision 1.11  1995/05/10  15:34:00  jimg
+// Failed to change `config.h' to `config_dap.h' in these files.
+//
+// Revision 1.10  1995/05/10  13:45:18  jimg
+// Changed the name of the configuration header file from `config.h' to
+// `config_dap.h' so that other libraries could have header files which were
+// installed in the DODS include directory without overwriting this one. Each
+// config header should follow the convention config_<name>.h.
+//
+// Revision 1.9  1995/03/16  17:29:10  jimg
+// Added include config_dap.h to top of include list.
+// Added TRACE_NEW switched dbnew includes.
+// Fixed bug in read_val() where **val was passed incorrectly to
+// subordinate read_val() calls.
+//
+// Revision 1.8  1995/03/04  14:34:45  jimg
+// Major modifications to the transmission and representation of values:
+// Added card() virtual function which is true for classes that
+// contain cardinal types (byte, int float, string).
+// Changed the representation of Str from the C rep to a C++
+// class represenation.
+// Chnaged read_val and store_val so that they take and return
+// types that are stored by the object (e.g., inthe case of Str
+// an URL, read_val returns a C++ String object).
+// Modified Array representations so that arrays of card()
+// objects are just that - no more storing strings, ... as
+// C would store them.
+// Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// an array of a structure is represented as an array of Structure
+// objects).
+//
+// Revision 1.7  1995/02/10  02:23:07  jimg
+// Added DBMALLOC includes and switch to code which uses malloc/free.
+// Private and protected symbols now start with `_'.
+// Added new accessors for name and type fields of BaseType; the old ones
+// will be removed in a future release.
+// Added the store_val() mfunc. It stores the given value in the object's
+// internal buffer.
+// Made both List and Str handle their values via pointers to memory.
+// Fixed read_val().
+// Made serialize/deserialize handle all malloc/free calls (even in those
+// cases where xdr initiates the allocation).
+// Fixed print_val().
+//
+// Revision 1.6  1995/01/19  20:05:27  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.5  1995/01/11  15:54:46  jimg
+// Added modifications necessary for BaseType's static XDR pointers. This
+// was mostly a name change from xdrin/out to _xdrin/out.
+// Removed the two FILE pointers from ctors, since those are now set with
+// functions which are friends of BaseType.
+//
+// Revision 1.4  1994/12/14  20:56:57  dan
+// Fixed deserialize() to return correct size count.
+// Fixed check_semantics() to use new Array dimension member functions.
+//
+// Revision 1.3  1994/10/17  23:34:53  jimg
+// Added code to print_decl so that variable declarations are pretty
+// printed.
+// Added private mfunc duplicate().
+// Added ptr_duplicate().
+// Added Copy ctor, dtor and operator=.
+//
+// Revision 1.2  1994/09/23  14:45:28  jimg
+// Added mfunc check_semantics().
+// Added sanity checking on the variable list (is it empty?).
+//
 

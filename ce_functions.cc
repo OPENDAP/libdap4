@@ -10,47 +10,9 @@
 //
 // 1/15/99 jhrg
 
-// $Log: ce_functions.cc,v $
-// Revision 1.7  2000/09/21 16:22:09  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.6  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.5  2000/06/07 18:06:59  jimg
-// Merged the pc port branch
-//
-// Revision 1.4.20.1  2000/06/02 18:36:38  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.4.14.1  2000/02/17 05:03:16  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.4  1999/04/29 02:29:34  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.3  1999/04/22 22:30:52  jimg
-// Uses dynamic_cast
-//
-// Revision 1.2  1999/01/21 02:52:52  jimg
-// Added extract_string_argument function.
-// Added grid_selection projection function.
-//
-// Revision 1.1  1999/01/15 22:06:44  jimg
-// Moved code from util.cc
-//
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.7 2000/09/21 16:22:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.8 2000/09/22 02:17:22 jimg Exp $"};
 
 #include <iostream>
 #include <vector>
@@ -291,3 +253,48 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 	map->add_constraint(q, start, 1, stop);	// don't know about stride...
     }
 }
+
+// $Log: ce_functions.cc,v $
+// Revision 1.8  2000/09/22 02:17:22  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.7  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.6  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.5  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.4.20.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.4.14.1  2000/02/17 05:03:16  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.4  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.3  1999/04/22 22:30:52  jimg
+// Uses dynamic_cast
+//
+// Revision 1.2  1999/01/21 02:52:52  jimg
+// Added extract_string_argument function.
+// Added grid_selection projection function.
+//
+// Revision 1.1  1999/01/15 22:06:44  jimg
+// Moved code from util.cc
+//
+

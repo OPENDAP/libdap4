@@ -10,8 +10,95 @@
 //
 // jhrg 9/7/94
 
+#ifndef _byte_h
+#define _byte_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#if 0
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#endif
+
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif // 0
+
+#ifndef _dods_datatypes_h
+#include "dods-datatypes.h"
+#endif
+
+#ifndef _basetype_h
+#include "BaseType.h"
+#endif
+
+/** This class is used to hold eight bits of information.  No sign
+    information is implied in its value.
+
+    @memo Holds a single byte. 
+    @see BaseType
+    */
+class Byte: public BaseType {
+    /** This class allows Int16, ..., Float64 acesss to _buf to simplify and
+	speed up the relational operators. 
+
+	NB: According to Stroustrup it does not matter where (public, private
+	or protected) friend classes are declared. */
+    friend class Int16;
+    friend class UInt16;
+    friend class Int32;
+    friend class UInt32;
+    friend class Float32;
+    friend class Float64;
+
+protected:
+    dods_byte _buf;
+
+public:
+  /** The Byte constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A string containing the name of the variable to be
+      created. 
+
+      @memo The Byte constructor. */
+    Byte(const string &n = "");
+
+    virtual ~Byte() {}
+
+    virtual BaseType *ptr_duplicate() = 0;
+
+    virtual unsigned int width();
+
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+
+    virtual bool read(const string &dataset) = 0;
+
+    virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual unsigned int buf2val(void **val);
+
+    virtual void print_val(ostream &os, string space = "", 
+			   bool print_decl_p = true);
+
+    virtual bool ops(BaseType *b, int op, const string &dataset);
+};
+
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.30  2000/09/22 02:17:19  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.29  2000/09/21 16:22:07  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -183,82 +270,5 @@
  * Added CtorType.
  */
 
-#ifndef _Byte_h
-#define _Byte_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#if 0
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
-#include "dods-datatypes.h"
-#include "BaseType.h"
-
-/** This class is used to hold eight bits of information.  No sign
-    information is implied in its value.
-
-    @memo Holds a single byte. 
-    @see BaseType
-    */
-class Byte: public BaseType {
-    /** This class allows Int16, ..., Float64 acesss to _buf to simplify and
-	speed up the relational operators. 
-
-	NB: According to Stroustrup it does not matter where (public, private
-	or protected) friend classes are declared. */
-    friend class Int16;
-    friend class UInt16;
-    friend class Int32;
-    friend class UInt32;
-    friend class Float32;
-    friend class Float64;
-
-protected:
-    dods_byte _buf;
-
-public:
-  /** The Byte constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
-
-      @memo The Byte constructor. */
-    Byte(const string &n = "");
-
-    virtual ~Byte() {}
-
-    virtual BaseType *ptr_duplicate() = 0;
-
-    virtual unsigned int width();
-
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
-
-    virtual bool read(const string &dataset) = 0;
-
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
-
-    virtual void print_val(ostream &os, string space = "", 
-			   bool print_decl_p = true);
-
-    virtual bool ops(BaseType *b, int op, const string &dataset);
-};
-
-#endif
+#endif // _byte_h
 

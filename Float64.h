@@ -10,8 +10,96 @@
 //
 // jhrg 9/7/94
 
+#ifndef _float64_h
+#define _float64_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#if 0
+
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#endif
+
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif // 0
+
+#ifndef _dods_datatypes_h
+#include "dods-datatypes.h"
+#endif
+
+#ifndef _basetype_h
+#include "BaseType.h"
+#endif
+
+/** Holds a 64-bit (double precision) floating point value.
+
+    @memo Holds a 64-bit floating point number.
+    @see BaseType
+    */
+
+class Float64: public BaseType {
+    /** This class allows Byte, ..., Float32 acesss to _buf to simplify and
+	speed up the relational operators.
+
+	NB: According to Stroustrup it does not matter where (public, private
+	or protected) friend classes are declared. */
+    friend class Byte;
+    friend class Int16;
+    friend class UInt16;
+    friend class Int32;
+    friend class UInt32;
+    friend class Float32;
+
+protected:
+    dods_float64 _buf;
+
+public:
+  /** The Float64 constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A string containing the name of the variable to be
+      created. 
+
+      @memo The Float64 constructor.
+      */
+    Float64(const string &n = "");
+    virtual ~Float64() {}
+
+    virtual BaseType *ptr_duplicate() = 0;
+    
+    virtual unsigned int width();
+
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+
+    virtual bool read(const string &dataset) = 0;
+
+    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int buf2val(void **val);
+
+    virtual void print_val(ostream &os, string space = "", 
+			   bool print_decl_p = true);
+
+    virtual bool ops(BaseType *b, int op, const string &dataset);
+};
+
 /* 
  * $Log: Float64.h,v $
+ * Revision 1.29  2000/09/22 02:17:20  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.28  2000/09/21 16:22:08  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -179,82 +267,5 @@
  * Added CtorType.
  */
 
-#ifndef _Float64_h
-#define _Float64_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#if 0
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
-#include "dods-datatypes.h"
-#include "BaseType.h"
-
-/** Holds a 64-bit (double precision) floating point value.
-
-    @memo Holds a 64-bit floating point number.
-    @see BaseType
-    */
-
-class Float64: public BaseType {
-    /** This class allows Byte, ..., Float32 acesss to _buf to simplify and
-	speed up the relational operators.
-
-	NB: According to Stroustrup it does not matter where (public, private
-	or protected) friend classes are declared. */
-    friend class Byte;
-    friend class Int16;
-    friend class UInt16;
-    friend class Int32;
-    friend class UInt32;
-    friend class Float32;
-
-protected:
-    dods_float64 _buf;
-
-public:
-  /** The Float64 constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
-
-      @memo The Float64 constructor.
-      */
-    Float64(const string &n = "");
-    virtual ~Float64() {}
-
-    virtual BaseType *ptr_duplicate() = 0;
-    
-    virtual unsigned int width();
-
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
-
-    virtual bool read(const string &dataset) = 0;
-
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
-
-    virtual void print_val(ostream &os, string space = "", 
-			   bool print_decl_p = true);
-
-    virtual bool ops(BaseType *b, int op, const string &dataset);
-};
-
-#endif
+#endif // _float64_h
 

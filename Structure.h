@@ -14,8 +14,158 @@
 //
 // jhrg 9/14/94
 
+#ifndef _structure_h
+#define _structure_h 1
+
+#ifdef _GNUG_
+#pragma interface
+#endif
+
+#if 0
+
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#endif
+
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
+
+#include <SLList.h>
+
+#include "BaseType.h"
+#include "DDS.h"
+
+#if 0
+#include "config_dap.h"
+#endif
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
+
+
+/** This data type is used to hold a collection of related data types,
+    in a manner roughly corresponding to a C structure.  The member
+    types can be simple or compound types, and can include other
+    Structures. 
+
+    The DODS structure is defined as a singly-linked list.  This means
+    that Structure elements can be accessed either by name, with the
+    #var()# function, or by their position in the list, either with
+    the overloaded version of #var()#, or the combination of the
+    #first_var()# and #next_var()# functions.
+
+    The #val2buf()# and #buf2val()# functions only return the size of
+    the structure.  To read parts of a DODS Structure into an
+    application program, use the #buf2val()# function of the element
+    of the Structure in question. 
+
+    Note that the predicate-setting functions #set_send_p()# and
+    #set_read_p()# set their flags for the Structure as well as for
+    each of the Structure's member elements.
+
+    Similar to C, you can refer to members of Structure elements
+    with a ``.'' notation.  For example, if the Structure has a member
+    Structure called ``Tom'' and Tom has a member Float32 called
+    ``shoe\_size'', then you can refer to Tom's shoe size as
+    ``Tom.shoe\_size''. 
+    
+    @memo Holds a structure (aggregate) type. */
+
+class Structure: public BaseType {
+private:
+    SLList<BaseType *> _vars;
+    
+    void _duplicate(const Structure &s);
+    BaseType *leaf_match(const string &name);
+    BaseType *exact_match(const string &name);
+
+public:
+    /** The Structure constructor requires only the name of the variable
+	to be created.  The name may be omitted, which will create a
+	nameless variable.  This may be adequate for some applications. 
+      
+	@param n A string containing the name of the variable to be
+	created. 
+
+	@memo The Structure constructor. */
+    Structure(const string &n = "");
+
+    /** The Structure copy constructor. */
+    Structure(const Structure &rhs);
+    virtual ~Structure();
+
+    const Structure &operator=(const Structure &rhs);
+    virtual BaseType *ptr_duplicate() = 0;
+
+    virtual int element_count(bool leaves = false);
+
+    virtual void set_send_p(bool state);
+    virtual void set_read_p(bool state);
+
+    virtual unsigned int width();
+
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+
+    virtual bool read(const string &dataset) = 0;
+
+    // Do not store values in memory as for C; force users to work with the
+    // C++ objects as defined by the DAP.
+
+    /** Returns the size of the structure. */
+    virtual unsigned int val2buf(void *val, bool reuse = false);
+    /** Returns the size of the structure. */
+    virtual unsigned int buf2val(void **val);
+
+    /** Returns a pointer to the specified Structure element. */
+    virtual BaseType *var(const string &name, bool exact_match = true);
+
+    virtual BaseType *var(const string &name, btp_stack &s);
+
+    /** Adds an element to a Structure. */
+    virtual void add_var(BaseType *bt, Part p = nil);
+
+    /** Returns the pseudo-index (Pix) of the first structure element. */
+    Pix first_var();
+
+    /** Increments the input index to point to the next element in the
+	structure. */
+    void next_var(Pix &p);
+
+    /** Returns a pointer to the {\it p}th element. */
+    BaseType *var(Pix p);
+
+    virtual void print_decl(ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
+    virtual void print_val(ostream &os, string space = "",
+			   bool print_decl_p = true);
+
+    /** Prints the Structure and all elements of any Sequences contained
+	within. 
+	@see Sequence::print_all_vals
+    */
+    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
+				string space = "", bool print_decl_p = true);
+
+    virtual bool check_semantics(string &msg, bool all = false);
+};
+
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.37  2000/09/22 02:17:21  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.36  2000/09/21 16:22:08  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -207,148 +357,4 @@
  * Added sanity checking on the variable list (is it empty?).
  */
 
-#ifndef _Structure_h
-#define _Structure_h 1
-
-#ifdef _GNUG_
-#pragma interface
-#endif
-
-#if 0
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
-#include <SLList.h>
-
-#include "BaseType.h"
-#include "DDS.h"
-
-#if 0
-#include "config_dap.h"
-#endif
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
-
-
-/** This data type is used to hold a collection of related data types,
-    in a manner roughly corresponding to a C structure.  The member
-    types can be simple or compound types, and can include other
-    Structures. 
-
-    The DODS structure is defined as a singly-linked list.  This means
-    that Structure elements can be accessed either by name, with the
-    #var()# function, or by their position in the list, either with
-    the overloaded version of #var()#, or the combination of the
-    #first_var()# and #next_var()# functions.
-
-    The #val2buf()# and #buf2val()# functions only return the size of
-    the structure.  To read parts of a DODS Structure into an
-    application program, use the #buf2val()# function of the element
-    of the Structure in question. 
-
-    Note that the predicate-setting functions #set_send_p()# and
-    #set_read_p()# set their flags for the Structure as well as for
-    each of the Structure's member elements.
-
-    Similar to C, you can refer to members of Structure elements
-    with a ``.'' notation.  For example, if the Structure has a member
-    Structure called ``Tom'' and Tom has a member Float32 called
-    ``shoe\_size'', then you can refer to Tom's shoe size as
-    ``Tom.shoe\_size''. 
-    
-    @memo Holds a structure (aggregate) type. */
-
-class Structure: public BaseType {
-private:
-    SLList<BaseType *> _vars;
-    
-    void _duplicate(const Structure &s);
-    BaseType *leaf_match(const string &name);
-    BaseType *exact_match(const string &name);
-
-public:
-    /** The Structure constructor requires only the name of the variable
-	to be created.  The name may be omitted, which will create a
-	nameless variable.  This may be adequate for some applications. 
-      
-	@param n A string containing the name of the variable to be
-	created. 
-
-	@memo The Structure constructor. */
-    Structure(const string &n = "");
-
-    /** The Structure copy constructor. */
-    Structure(const Structure &rhs);
-    virtual ~Structure();
-
-    const Structure &operator=(const Structure &rhs);
-    virtual BaseType *ptr_duplicate() = 0;
-
-    virtual int element_count(bool leaves = false);
-
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
-
-    virtual unsigned int width();
-
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
-
-    virtual bool read(const string &dataset) = 0;
-
-    // Do not store values in memory as for C; force users to work with the
-    // C++ objects as defined by the DAP.
-
-    /** Returns the size of the structure. */
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    /** Returns the size of the structure. */
-    virtual unsigned int buf2val(void **val);
-
-    /** Returns a pointer to the specified Structure element. */
-    virtual BaseType *var(const string &name, bool exact_match = true);
-
-    virtual BaseType *var(const string &name, btp_stack &s);
-
-    /** Adds an element to a Structure. */
-    virtual void add_var(BaseType *bt, Part p = nil);
-
-    /** Returns the pseudo-index (Pix) of the first structure element. */
-    Pix first_var();
-
-    /** Increments the input index to point to the next element in the
-	structure. */
-    void next_var(Pix &p);
-
-    /** Returns a pointer to the {\it p}th element. */
-    BaseType *var(Pix p);
-
-    virtual void print_decl(ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_val(ostream &os, string space = "",
-			   bool print_decl_p = true);
-
-    /** Prints the Structure and all elements of any Sequences contained
-	within. 
-	@see Sequence::print_all_vals
-    */
-    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
-				string space = "", bool print_decl_p = true);
-
-    virtual bool check_semantics(string &msg, bool all = false);
-};
-
-#endif
+#endif // _structure_h

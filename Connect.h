@@ -30,247 +30,6 @@
 //
 // jhrg 9/29/94
 
-/* 
- * $Log: Connect.h,v $
- * Revision 1.48  2000/08/02 22:46:48  jimg
- * Merged 3.1.8
- *
- * Revision 1.38.4.4  2000/08/02 21:10:07  jimg
- * Removed the header config_dap.h. If this file uses the dods typedefs for
- * cardinal datatypes, then it gets those definitions from the header
- * dods-datatypes.h.
- *
- * Revision 1.47  2000/07/26 12:24:01  rmorris
- * Modified intermediate (dod*) file removal under win32 to take into account
- * a 1-to-n correspondence between connect objects and intermediate files.
- * Implemented solution through vector of strings containing the intermediate
- * filenames that are removed when the connect obj's destructor is invoked.
- * Might consider using the same code for unix in the future.  Previous
- * win32 solution incorrectly assumed the correspondence was 1-to-1.
- *
- * Revision 1.46  2000/07/13 07:07:13  rmorris
- * Mod to keep the intermediate file name in the Connect object in the
- * case of win32 (unlink() works differently on win32,  needed another approach).
- *
- * Revision 1.45  2000/07/09 21:57:09  rmorris
- * Mods's to increase portability, minimuze ifdef's in win32 and account
- * for differences between the Standard C++ Library - most notably, the
- * iostream's.
- *
- * Revision 1.44  2000/06/07 18:06:58  jimg
- * Merged the pc port branch
- *
- * Revision 1.43.4.1  2000/06/02 18:16:47  rmorris
- * Mod's for port to Win32.
- *
- * Revision 1.43  2000/04/07 00:19:04  jimg
- * Merged Brent's changes for the progress gui - he added a cancel button.
- * Also repaired the last of the #ifdef Gui bugs so that we can build Gui
- * and non-gui versions of the library that use one set of header files.
- *
- * Revision 1.42  1999/12/15 01:14:37  jimg
- * Added static members to help control the cache.
- *
- * Revision 1.41  1999/12/01 21:37:44  jimg
- * Added members to support caching.
- * Added accessors for cache control. libwww 5.2.9 does not supoort these,
- * however.
- *
- * Revision 1.40  1999/09/03 22:07:44  jimg
- * Merged changes from release-3-1-1
- *
- * Revision 1.39  1999/08/23 18:57:44  jimg
- * Merged changes from release 3.1.0
- *
- * Revision 1.38.4.3  1999/08/28 06:43:03  jimg
- * Fixed the implementation/interface pragmas and misc comments
- *
- * Revision 1.38.4.2  1999/08/10 00:40:04  jimg
- * Changes for the new source code organization
- *
- * Revision 1.38.4.1  1999/08/09 22:57:49  jimg
- * Removed GUI code; reactivate by defining GUI
- *
- * Revision 1.38  1999/05/21 20:41:45  dan
- * Changed default 'gui' flag to 'false' in request_data, and read_data
- * methods.
- *
- * Revision 1.37  1999/04/29 03:04:51  jimg
- * Merged ferret changes
- *
- * Revision 1.36  1999/04/29 02:29:28  jimg
- * Merge of no-gnu branch
- *
- * Revision 1.35.8.1  1999/04/14 22:32:46  jimg
- * Made inclusion of timeval _tv depend on the definition of LIBWWW_5_0. See
- * comments in Connect.cc.
- *
- * Revision 1.35  1999/02/18 19:22:38  jimg
- * Added the field _accept_types and two accessor functions. See Connect.cc and
- * the documentation comments for more information.
- *
- * Revision 1.34  1999/01/21 20:42:01  tom
- * Fixed comment formatting problems for doc++
- *
- * Revision 1.33.4.1  1999/02/02 21:56:56  jimg
- * String to string version
- *
- * Revision 1.33  1998/06/04 06:31:33  jimg
- * Added two new member functions to get/set the www_errors_to_stderr property.
- * Also added a new member _www_errors_to_stderr to hold that property. When
- * true, www errors are printed to stderr in addition to being recorded in the
- * object's Error object. The property is false by default.
- *
- * Revision 1.32  1998/03/19 23:49:28  jimg
- * Removed code associated with the (bogus) caching scheme.
- * Removed _connects.
- *
- * Revision 1.31  1998/02/11 21:28:04  jimg
- * Changed x_gzip/x-gzip to deflate since libwww 5.1 offers internal support
- * for deflate (which uses the same LZW algorithm as gzip without the file
- * processing support of gzip).
- * Added to the arguments accepted by the ctor and www_lib_init so that they
- * can now be called with a flag used to control compression.
- * Fixed up the comments to reflect these changes.
- *
- * Revision 1.30  1998/02/04 14:55:31  tom
- * Another draft of documentation.
- *
- * Revision 1.29  1997/12/18 15:06:10  tom
- * First draft of class documentation, entered in doc++ format,
- * in the comments
- *
- * Revision 1.28  1997/09/22 23:05:45  jimg
- * Added comment info.
- *
- * Revision 1.27  1997/06/06 00:45:15  jimg
- * Added read_data(), parse_mime() and process_data() mfuncs.
- *
- * Revision 1.26  1997/03/23 19:40:20  jimg
- * Added field _comp_childpid. See the note in Connect.cc Re: this field.
- *
- * Revision 1.25  1997/03/05 08:25:28  jimg
- * Removed the static global _logfile. See Connect.cc.
- *
- * Revision 1.24  1997/02/13 17:35:39  jimg
- * Added a field to store information from the MIME header `Server:'. Added
- * a member function to access the value of the field and a MIME header
- * `handler' function to store the value there.
- *
- * Revision 1.23  1997/02/12 21:39:10  jimg
- * Added optional parameter to the ctor for this class; it enables
- * informational error messages from the WWW library layer.
- * * Revision 1.22 1997/02/10 02:31:27 jimg 
- * Changed the return type of request_data() and related functions from DDS &
- * to * DDS *.
- *
- * Revision 1.21  1996/11/25 03:39:25  jimg
- * Added web-error to set of object types.
- * Added two MIME parsers to set of friend functions.
- * Removed unused friend functions.
- *
- * Revision 1.20  1996/11/13 18:57:15  jimg
- * Now uses version 5.0a of the WWW library.
- *
- * Revision 1.19  1996/10/08 17:02:10  jimg
- * Added fields for the projection and selection parts of a CE supplied with
- * the URL passed to the Connect ctor.
- *
- * Revision 1.18  1996/07/10 21:25:34  jimg
- * *** empty log message ***
- *
- * Revision 1.17  1996/06/21 23:14:15  jimg
- * Removed GUI code to a new class - Gui.
- *
- * Revision 1.16  1996/06/18 23:41:01  jimg
- * Added support for a GUI. The GUI is actually contained in a separate program
- * that is run in a subprocess. The core `talks' to the GUI using a pty and a
- * simple command language.
- *
- * Revision 1.15  1996/06/08 00:07:57  jimg
- * Added support for compression. The Content-Encoding header is used to
- * determine if the incoming document is compressed (values: x-plain; no
- * compression, x-gzip; gzip compression). The gzip program is used to
- * decompress the document. The new software uses UNIX IPC and a separate
- * subprocess to perform the decompression.
- *
- * Revision 1.14  1996/06/04 21:33:17  jimg
- * Multiple connections are now possible. It is now possible to open several
- * URLs at the same time and read from them in a round-robin fashion. To do
- * this I added data source and sink parameters to the serialize and
- * deserialize mfuncs. Connect was also modified so that it manages the data
- * source `object' (which is just an XDR pointer).
- *
- * Revision 1.13  1996/05/29 21:51:51  jimg
- * Added the enum ObjectType. This is used when a Content-Description header is
- * found by the WWW library to record the type of the object without first
- * parsing it.
- * Added ctors for the struct constraint.
- * Removed the member _request.
- *
- * Revision 1.12  1996/05/21 23:46:33  jimg
- * Added support for URLs directly to the class. This uses version 4.0D of
- * the WWW library from W3C.
- *
- * Revision 1.11  1996/04/05 01:25:40  jimg
- * Merged changes from version 1.1.1.
- *
- * Revision 1.10  1996/02/01 21:45:33  jimg
- * Added list of DDSs and constraint expressions that produced them.
- * Added mfuncs to manage DDS/CE list.
- *
- * Revision 1.9.2.1  1996/02/23 21:38:37  jimg
- * Updated for new configure.in.
- *
- * Revision 1.9  1995/06/27  19:33:49  jimg
- * The mfuncs request_{das,dds,dods} accept a parameter which is appended to
- * the URL and used by the data server CGI to select which filter program is
- * run to handle a particular request. I changed the parameter name from cgi
- * to ext to better represent what was going on (after getting confused
- * several times myself).
- *
- * Revision 1.8  1995/05/30  18:42:47  jimg
- * Modified the request_data member function so that it accepts the variable
- * in addition to the existing arguments.
- *
- * Revision 1.7  1995/05/22  20:43:12  jimg
- * Removed a paramter from the REQUEST_DATA member function: POST is not
- * needed since we no longer use the post mechanism.
- *
- * Revision 1.6  1995/04/17  03:20:52  jimg
- * Removed the `api' field.
- *
- * Revision 1.5  1995/03/09  20:36:09  jimg
- * Modified so that URLs built by this library no longer supply the
- * base name of the CGI. Instead the base name is stripped off the front
- * of the pathname component of the URL supplied by the user. This class
- * append the suffix _das, _dds or _serv when a Connect object is used to
- * get the DAS, DDS or Data (resp).
- *
- * Revision 1.4  1995/02/10  21:54:52  jimg
- * Modified definition of request_data() so that it takes an additional
- * parameter specifying sync or async behavior.
- *
- * Revision 1.3  1995/02/10  04:43:17  reza
- * Fixed the request_data to pass arguments. The arguments string is added to
- * the file name before being posted by NetConnect. Default arg. is null.
- *
- * Revision 1.2  1995/01/31  20:46:56  jimg
- * Added declaration of request_data() mfunc in Connect.
- *
- * Revision 1.1  1995/01/10  16:23:04  jimg
- * Created new `common code' library for the net I/O stuff.
- *
- * Revision 1.2  1994/10/05  20:23:28  jimg
- * Fixed errors in *.h files comments - CVS bites again.
- * Changed request_{das,dds} so that they use the field `_api_name'
- * instead of requiring callers to pass the api name.
- *
- * Revision 1.1  1994/10/05  18:02:08  jimg
- * First version of the connection management classes.
- * This commit also includes early versions of the test code. 
- */
-
 #ifndef _connect_h
 #define _connect_h
 
@@ -280,11 +39,7 @@
 
 #include <stdio.h>
 
-#ifdef LIBWWW_5_0
-#include <sys/time.h>
-#endif
 #if 0
-
 #ifdef WIN32
 #include <rpc.h>
 #include <winsock.h>
@@ -299,19 +54,28 @@
 #include <string>
 #include <SLList.h>
 
-#include <WWWLib.h>			      /* Global Library Include file */
+#include <WWWLib.h>		/* Global Library Include file */
 #include <WWWApp.h>
 #include <WWWInit.h>
 
+#ifndef _das_h
 #include "DAS.h"
+#endif
+
+#ifndef _dds_h
 #include "DDS.h"
+#endif
+
+#ifndef _error_h
 #include "Error.h"
-#ifdef GUI
+#endif
+
+#if defined(GUI) && !defined(_gui_h)
 #include "Gui.h"
 #endif
+
+#ifndef _util_h
 #include "util.h"
-#if 0
-#include "config_dap.h"
 #endif
 
 #ifdef WIN32
@@ -420,13 +184,14 @@ private:
     static bool _cache_enabled;		// True if the cache is on.
     static char *_cache_root;		// If on, where is the cache?
 #ifdef WIN32
-	// We need to keep the different filenames associated with _output (over time)
-	// around under win32 because an unlink() at time 'now' doesn't delete a file
-	// at some time (now + n) as it does under UNIX.  Unix will delete the file
-	// when the last process using the file closes it - win32 will not.  Under
-	// win32, we count on the Connect destructor using _tfname to remove such
-	// intermediate files..
-	vector<string> _tfname;			
+    // We need to keep the different filenames associated with _output
+    // (over time) around under win32 because an unlink() at time 'now'
+    // doesn't delete a file at some time (now + n) as it does under
+    // UNIX. Unix will delete the file when the last process using the
+    // file closes it - win32 will not. Under win32, we count on the
+    // Connect destructor using _tfname to remove such intermediate
+    // files..
+    vector<string> _tfname;			
 #endif
 
     static HTList *_conv;	// List of global converters
@@ -870,5 +635,252 @@ public:
       */
     DDS *read_data(FILE *data_source, bool gui = false, bool async = false);
 };
+
+/* 
+ * $Log: Connect.h,v $
+ * Revision 1.49  2000/09/22 02:17:19  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
+ * Revision 1.48  2000/08/02 22:46:48  jimg
+ * Merged 3.1.8
+ *
+ * Revision 1.38.4.4  2000/08/02 21:10:07  jimg
+ * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * cardinal datatypes, then it gets those definitions from the header
+ * dods-datatypes.h.
+ *
+ * Revision 1.47  2000/07/26 12:24:01  rmorris
+ * Modified intermediate (dod*) file removal under win32 to take into account
+ * a 1-to-n correspondence between connect objects and intermediate files.
+ * Implemented solution through vector of strings containing the intermediate
+ * filenames that are removed when the connect obj's destructor is invoked.
+ * Might consider using the same code for unix in the future.  Previous
+ * win32 solution incorrectly assumed the correspondence was 1-to-1.
+ *
+ * Revision 1.46  2000/07/13 07:07:13  rmorris
+ * Mod to keep the intermediate file name in the Connect object in the
+ * case of win32 (unlink() works differently on win32,  needed another approach).
+ *
+ * Revision 1.45  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
+ * Revision 1.44  2000/06/07 18:06:58  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.43.4.1  2000/06/02 18:16:47  rmorris
+ * Mod's for port to Win32.
+ *
+ * Revision 1.43  2000/04/07 00:19:04  jimg
+ * Merged Brent's changes for the progress gui - he added a cancel button.
+ * Also repaired the last of the #ifdef Gui bugs so that we can build Gui
+ * and non-gui versions of the library that use one set of header files.
+ *
+ * Revision 1.42  1999/12/15 01:14:37  jimg
+ * Added static members to help control the cache.
+ *
+ * Revision 1.41  1999/12/01 21:37:44  jimg
+ * Added members to support caching.
+ * Added accessors for cache control. libwww 5.2.9 does not supoort these,
+ * however.
+ *
+ * Revision 1.40  1999/09/03 22:07:44  jimg
+ * Merged changes from release-3-1-1
+ *
+ * Revision 1.39  1999/08/23 18:57:44  jimg
+ * Merged changes from release 3.1.0
+ *
+ * Revision 1.38.4.3  1999/08/28 06:43:03  jimg
+ * Fixed the implementation/interface pragmas and misc comments
+ *
+ * Revision 1.38.4.2  1999/08/10 00:40:04  jimg
+ * Changes for the new source code organization
+ *
+ * Revision 1.38.4.1  1999/08/09 22:57:49  jimg
+ * Removed GUI code; reactivate by defining GUI
+ *
+ * Revision 1.38  1999/05/21 20:41:45  dan
+ * Changed default 'gui' flag to 'false' in request_data, and read_data
+ * methods.
+ *
+ * Revision 1.37  1999/04/29 03:04:51  jimg
+ * Merged ferret changes
+ *
+ * Revision 1.36  1999/04/29 02:29:28  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.35.8.1  1999/04/14 22:32:46  jimg
+ * Made inclusion of timeval _tv depend on the definition of LIBWWW_5_0. See
+ * comments in Connect.cc.
+ *
+ * Revision 1.35  1999/02/18 19:22:38  jimg
+ * Added the field _accept_types and two accessor functions. See Connect.cc and
+ * the documentation comments for more information.
+ *
+ * Revision 1.34  1999/01/21 20:42:01  tom
+ * Fixed comment formatting problems for doc++
+ *
+ * Revision 1.33.4.1  1999/02/02 21:56:56  jimg
+ * String to string version
+ *
+ * Revision 1.33  1998/06/04 06:31:33  jimg
+ * Added two new member functions to get/set the www_errors_to_stderr property.
+ * Also added a new member _www_errors_to_stderr to hold that property. When
+ * true, www errors are printed to stderr in addition to being recorded in the
+ * object's Error object. The property is false by default.
+ *
+ * Revision 1.32  1998/03/19 23:49:28  jimg
+ * Removed code associated with the (bogus) caching scheme.
+ * Removed _connects.
+ *
+ * Revision 1.31  1998/02/11 21:28:04  jimg
+ * Changed x_gzip/x-gzip to deflate since libwww 5.1 offers internal support
+ * for deflate (which uses the same LZW algorithm as gzip without the file
+ * processing support of gzip).
+ * Added to the arguments accepted by the ctor and www_lib_init so that they
+ * can now be called with a flag used to control compression.
+ * Fixed up the comments to reflect these changes.
+ *
+ * Revision 1.30  1998/02/04 14:55:31  tom
+ * Another draft of documentation.
+ *
+ * Revision 1.29  1997/12/18 15:06:10  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
+ * Revision 1.28  1997/09/22 23:05:45  jimg
+ * Added comment info.
+ *
+ * Revision 1.27  1997/06/06 00:45:15  jimg
+ * Added read_data(), parse_mime() and process_data() mfuncs.
+ *
+ * Revision 1.26  1997/03/23 19:40:20  jimg
+ * Added field _comp_childpid. See the note in Connect.cc Re: this field.
+ *
+ * Revision 1.25  1997/03/05 08:25:28  jimg
+ * Removed the static global _logfile. See Connect.cc.
+ *
+ * Revision 1.24  1997/02/13 17:35:39  jimg
+ * Added a field to store information from the MIME header `Server:'. Added
+ * a member function to access the value of the field and a MIME header
+ * `handler' function to store the value there.
+ *
+ * Revision 1.23  1997/02/12 21:39:10  jimg
+ * Added optional parameter to the ctor for this class; it enables
+ * informational error messages from the WWW library layer.
+ * * Revision 1.22 1997/02/10 02:31:27 jimg 
+ * Changed the return type of request_data() and related functions from DDS &
+ * to * DDS *.
+ *
+ * Revision 1.21  1996/11/25 03:39:25  jimg
+ * Added web-error to set of object types.
+ * Added two MIME parsers to set of friend functions.
+ * Removed unused friend functions.
+ *
+ * Revision 1.20  1996/11/13 18:57:15  jimg
+ * Now uses version 5.0a of the WWW library.
+ *
+ * Revision 1.19  1996/10/08 17:02:10  jimg
+ * Added fields for the projection and selection parts of a CE supplied with
+ * the URL passed to the Connect ctor.
+ *
+ * Revision 1.18  1996/07/10 21:25:34  jimg
+ * *** empty log message ***
+ *
+ * Revision 1.17  1996/06/21 23:14:15  jimg
+ * Removed GUI code to a new class - Gui.
+ *
+ * Revision 1.16  1996/06/18 23:41:01  jimg
+ * Added support for a GUI. The GUI is actually contained in a separate program
+ * that is run in a subprocess. The core `talks' to the GUI using a pty and a
+ * simple command language.
+ *
+ * Revision 1.15  1996/06/08 00:07:57  jimg
+ * Added support for compression. The Content-Encoding header is used to
+ * determine if the incoming document is compressed (values: x-plain; no
+ * compression, x-gzip; gzip compression). The gzip program is used to
+ * decompress the document. The new software uses UNIX IPC and a separate
+ * subprocess to perform the decompression.
+ *
+ * Revision 1.14  1996/06/04 21:33:17  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
+ * Revision 1.13  1996/05/29 21:51:51  jimg
+ * Added the enum ObjectType. This is used when a Content-Description header is
+ * found by the WWW library to record the type of the object without first
+ * parsing it.
+ * Added ctors for the struct constraint.
+ * Removed the member _request.
+ *
+ * Revision 1.12  1996/05/21 23:46:33  jimg
+ * Added support for URLs directly to the class. This uses version 4.0D of
+ * the WWW library from W3C.
+ *
+ * Revision 1.11  1996/04/05 01:25:40  jimg
+ * Merged changes from version 1.1.1.
+ *
+ * Revision 1.10  1996/02/01 21:45:33  jimg
+ * Added list of DDSs and constraint expressions that produced them.
+ * Added mfuncs to manage DDS/CE list.
+ *
+ * Revision 1.9.2.1  1996/02/23 21:38:37  jimg
+ * Updated for new configure.in.
+ *
+ * Revision 1.9  1995/06/27  19:33:49  jimg
+ * The mfuncs request_{das,dds,dods} accept a parameter which is appended to
+ * the URL and used by the data server CGI to select which filter program is
+ * run to handle a particular request. I changed the parameter name from cgi
+ * to ext to better represent what was going on (after getting confused
+ * several times myself).
+ *
+ * Revision 1.8  1995/05/30  18:42:47  jimg
+ * Modified the request_data member function so that it accepts the variable
+ * in addition to the existing arguments.
+ *
+ * Revision 1.7  1995/05/22  20:43:12  jimg
+ * Removed a paramter from the REQUEST_DATA member function: POST is not
+ * needed since we no longer use the post mechanism.
+ *
+ * Revision 1.6  1995/04/17  03:20:52  jimg
+ * Removed the `api' field.
+ *
+ * Revision 1.5  1995/03/09  20:36:09  jimg
+ * Modified so that URLs built by this library no longer supply the
+ * base name of the CGI. Instead the base name is stripped off the front
+ * of the pathname component of the URL supplied by the user. This class
+ * append the suffix _das, _dds or _serv when a Connect object is used to
+ * get the DAS, DDS or Data (resp).
+ *
+ * Revision 1.4  1995/02/10  21:54:52  jimg
+ * Modified definition of request_data() so that it takes an additional
+ * parameter specifying sync or async behavior.
+ *
+ * Revision 1.3  1995/02/10  04:43:17  reza
+ * Fixed the request_data to pass arguments. The arguments string is added to
+ * the file name before being posted by NetConnect. Default arg. is null.
+ *
+ * Revision 1.2  1995/01/31  20:46:56  jimg
+ * Added declaration of request_data() mfunc in Connect.
+ *
+ * Revision 1.1  1995/01/10  16:23:04  jimg
+ * Created new `common code' library for the net I/O stuff.
+ *
+ * Revision 1.2  1994/10/05  20:23:28  jimg
+ * Fixed errors in *.h files comments - CVS bites again.
+ * Changed request_{das,dds} so that they use the field `_api_name'
+ * instead of requiring callers to pass the api name.
+ *
+ * Revision 1.1  1994/10/05  18:02:08  jimg
+ * First version of the connection management classes.
+ * This commit also includes early versions of the test code. 
+ */
 
 #endif // _connect_h

@@ -8,601 +8,13 @@
 //	dan		Dan Holloway (dan@hollywood.gso.uri.edu)
 //	reza		Reza Nekovei (reza@intcomm.net)
 
-// $Log: Connect.cc,v $
-// Revision 1.103  2000/09/21 16:22:07  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.102  2000/08/29 21:22:54  jimg
-// Merged with 3.1.9
-//
-// Revision 1.80.2.4  2000/08/02 23:18:38  jimg
-// Fixed a bug that shows up on Linux (2.2, maybe others) where URLs with 61
-// 65 characters hang. See fetch_url() for the gory details.
-//
-// Revision 1.101  2000/07/26 12:24:01  rmorris
-// Modified intermediate (dod*) file removal under win32 to take into account
-// a 1-to-n correspondence between connect objects and intermediate files.
-// Implemented solution through vector of strings containing the intermediate
-// filenames that are removed when the connect obj's destructor is invoked.
-// Might consider using the same code for unix in the future.  Previous
-// win32 solution incorrectly assumed the correspondence was 1-to-1.
-//
-// Revision 1.100  2000/07/24 18:49:50  rmorris
-// Just added a notation that indicates what was tried to get around
-// libwww bugs in regards to spaces in pathnames.  Client-side caching
-// disabled until further notice - next version of libwww may help.
-//
-// Revision 1.99  2000/07/21 14:26:24  rmorris
-// Remove client-side caching entired under win32 in lieu of a permanent
-// fix (soon).  Fixed what I broke for client-side caching under unix.
-//
-// Revision 1.98  2000/07/18 12:49:04  rmorris
-// Fixed failure to initialize a structure element appropriately when
-// retrieving the Win32 OS version information for the WIN95_CACHE_HACK.
-//
-// Revision 1.96  2000/07/18 03:56:09  rmorris
-// Changes made in an attempt to debug client-side caching under win95-based
-// systems.  Is currently unsuccessful, but these changes made the code somewhat
-// more generic.
-//
-// Revision 1.95  2000/07/13 07:09:05  rmorris
-// Changed the approach to delete the intermediate file in the case
-// of win32 (unlink() not the same under win32, needed another approach).
-//
-// Revision 1.94  2000/07/09 22:05:35  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.93  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.92.4.2  2000/06/02 22:29:21  rmorris
-// Fixed bug in bug fix that allowed spaces in paths via escape sequences.
-// The bug within a bug was that we were translating a file path into a
-// url by prepending it with "file:/".  This allows libwww to recognize
-// escape sequence.  Under UNIX, "file:" is correct, not "file:/"
-//
-// Revision 1.92.4.1  2000/06/02 18:14:43  rmorris
-// Mod for port to win32.
-//
-// Revision 1.92  2000/04/17 22:13:37  jimg
-// Fixed problems with the _gui member and local connections. The _gui object
-// was not initialized (correct) for local connections but *was* destroyed for
-// them (because the code never checked for local connections in the dtor).
-//
-// Revision 1.91  2000/04/17 21:25:00  jimg
-// Fixed an error where local connections affected the status of the
-// __num_remote_conns field. This caused remote connections, made after one or
-// more local connections were closed, to fail because libwww was not
-// initialized correctly.
-//
-// Revision 1.90  2000/04/07 00:19:04  jimg
-// Merged Brent's changes for the progress gui - he added a cancel button.
-// Also repaired the last of the #ifdef Gui bugs so that we can build Gui
-// and non-gui versions of the library that use one set of header files.
-//
-// Revision 1.89.2.1  2000/04/04 05:00:24  brent
-// put a Cancel button the Tcl/Tk GUI
-//
-// Revision 1.89  2000/03/28 16:18:17  jimg
-// Added a DEFAULT_EXPIRES parameter to the .dodsrc file. The default
-// expiration time is now set by connect, using the value read from .dodsrc,
-// rather than use the value compiled into libwww. To do this I added a new
-// function to HTCache.c,h in libwww.
-//
-// Revision 1.88  2000/03/17 00:11:39  jimg
-// I fixed the bug in libwww which made caching of compressed documents fail.
-// I removed the hacks in this file that prevented data documents from being
-// cached. I also have removed the code that wrote NEVER_DEFLATE to the rc
-// file. The NEVER_DEFLATE option still works; I'm just not including it in
-// the rc file by default.
-//
-// Revision 1.86.2.1  2000/02/17 05:03:12  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.87  2000/01/27 06:29:55  jimg
-// Resolved conflicts from merge with release-3-1-4
-//
-// Revision 1.80.2.3  2000/01/26 23:55:50  jimg
-// Fixed the return type of string::find.
-//
-// Revision 1.86  1999/12/31 00:55:10  jimg
-// Fixed up the progress indicator
-//
-// Revision 1.85  1999/12/15 01:14:10  jimg
-// More fixes for caching. Caching now works correctly for programs that use
-// multiple Connect objects. The Cache index is now updated more frequently.
-//
-// Revision 1.84  1999/12/01 21:27:05  jimg
-// Substantial changes for the caching software. Added a call to `terminate'
-// the cache once we're done with the libwww code. This writes the .index
-// file required by the cache. Additionally, changed the cache mode from
-// validate to OK. The later forces the cache to not validate every request.
-// Instead expiration is used and the libwww code implements a fall back in
-// those cases where servers don't supply a Date header. Finally, compressed
-// responses break the cache (I think this is libwww's bug) and I've disabled
-// caching compressed data responses. So that users can cache data responses,
-// I've added a new flag in the dodsrc file called NEVER_DEFLATE which allows
-// users to override the clients wishes regarding compression (i.e., users
-// can turn it off). Data responses can thus be cached.
-//
-// Revision 1.83  1999/10/22 04:17:25  cjm
-// Added support for caching.  Most of the code is in www_lib_init(), there
-// is also a modification to read_url() to make use of the cache if it is
-// enabled. 
-//
-// Revision 1.82  1999/09/03 22:07:44  jimg
-// Merged changes from release-3-1-1
-//
-// Revision 1.81  1999/08/23 18:57:44  jimg
-// Merged changes from release 3.1.0
-//
-// Revision 1.80.2.2  1999/08/28 06:43:03  jimg
-// Fixed the implementation/interface pragmas and misc comments
-//
-// Revision 1.80.2.1  1999/08/09 22:57:49  jimg
-// Removed GUI code; reactivate by defining GUI
-//
-// Revision 1.80  1999/08/09 18:27:33  jimg
-// Merged changes from Brent for the Gui code (progress indicator)
-//
-// Revision 1.79  1999/07/22 17:11:50  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.78.4.2  1999/07/29 05:46:17  brent
-// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl
-// files.
-//
-// Revision 1.78.4.1  1999/06/01 15:40:54  jimg
-// Ripped out dead wood in parse_mime(...).
-//
-// Revision 1.78  1999/05/26 17:30:24  jimg
-// Added the calls to Error::correct_error(...). These were removed because
-// they use the Gui object. However, they access it through the Connect::Gui()
-// member function which will return NULL until we fix the Gui. Calling the
-// correct_error with a NULL Gui object works in that the error message is
-// displayed on stderr and the Gui stuff is ignored.
-//
-// Revision 1.77  1999/05/21 20:39:23  dan
-// Disabled the Gui interface in the Connect objects.  Primarily
-// this was done in www_libc_init, constructor, destructor, and request_
-// calls using 'ifdef GUI' directives.  To regain use of this code
-// use the '-DGUI' compiler flag.
-//
-// Revision 1.76  1999/05/21 17:22:04  jimg
-// Removed debugging instrumentation left in by accident.
-//
-// Revision 1.75  1999/05/21 00:46:42  jimg
-// Using ifstream in parse_mime(...) confuses the downstream parser since the
-// FILE * is not advanced. I switched back to the fgets(...) code and the some
-// problems with the asciival client went away.
-//
-// Revision 1.74  1999/04/29 03:04:51  jimg
-// Merged ferret changes
-//
-// Revision 1.73  1999/04/29 02:29:27  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.72.8.1  1999/04/14 22:31:36  jimg
-// Removed old code.
-// Fixed the delete of member _tv. timeval _tv was used by libwww 5.0 but is no
-// longer needed. I wrapped all code that touched this in #ifdef LIBWWW_5_0 and
-// removed the member from Connect using the same conditional. This fixes a
-// problem where _tv is deleted without being allocated when local files are
-// accessed.
-//
-// Revision 1.72  1999/02/23 01:32:59  jimg
-// Removed more of the code in process_data. Because of fixes in the scanner,
-// this code no longer needs to rewind after parsing the DDS of a data
-// document. The scanner no longer reads into the binary doc. Note that real
-// MP/MIME code would solve this by giving us two streams to work with. Some
-// day...
-//
-// Revision 1.71  1999/02/18 19:21:40  jimg
-// Added support for the DODS experimental MIME header XDODS-Accept-Types.
-// This will be used to send a lists of `accepted types' from the client to a
-// server. The list tells a server which datatypes the requesting client can
-// understand. This information may be used by both the DDS and DataDDS
-// objects to trigger translations from one type to another.
-//
-// Revision 1.70  1999/01/15 17:07:01  jimg
-// Removed use of the move_dds() member function. The DDS parser now
-// recognizes the `Data:' separator string as marking the end of the DDS part
-// of a data document. This means that Connect no longer needs to copy the
-// DDS part of the data document to a separate (temporary) text file before
-// parsing it.
-//
-// Revision 1.69  1998/12/16 19:10:53  jimg
-// Added support for XDODS-Server MIME header. This fixes a problem where our
-// use of Server clashed with Java
-//
-// Revision 1.68  1998/11/10 01:08:34  jimg
-// Patched memory leaks found with Purify.
-//
-// Revision 1.67  1998/09/08 22:27:11  jimg
-// Removed PERF macro.
-//
-// Revision 1.66.4.2  1999/02/05 09:32:33  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code.
-//
-// Revision 1.66.4.1  1999/02/02 21:56:56  jimg
-// String to string version
-//
-// Revision 1.66  1998/06/04 06:29:11  jimg
-// Added two new member functions to set/get the new www_errors_to_stderr
-// property. This controls whether www errors (like host not found) are
-// reported on stderr in addition to the Error object. The default is to NOT
-// report them to stderr. WWW errors are now recorded in the Error object.
-//
-// Revision 1.65  1998/04/07 22:14:31  jimg
-// Added a call to prune_spaces to the default ctor. Removing spaces prevents
-// various crashes. Note that CEs can themselves contain spaces but *leading*
-// spaces caused problems.
-//
-// Revision 1.64  1998/04/03 17:39:07  jimg
-// Fixed a bug in process_data where sequences were not handled properly. Patch
-// from Jake Hamby.
-//
-// Revision 1.63  1998/03/26 00:19:24  jimg
-// Changed from converters to the _conv member in www_lib_init.
-//
-// Revision 1.62  1998/03/19 23:48:24  jimg
-// Removed old code associated with the (bogus) caching scheme.
-// Removed the _connects field.
-// Used _conv as a flag to ensure the www library is intialized only once.
-//
-// Revision 1.61  1998/02/11 21:56:20  jimg
-// Mayor modifications for libwww 5.1 compression support. I removed lots of
-// old code that was superfluous and changed the way the library is initialized
-// to make that more efficient.
-// Removed the old Semaphore hacks.
-// Removed the content-encoding handler (that is now done by libwww).
-// The Ctor and www_lib_init now take a flag that controls whether the server
-// is told that the client can decompress data. Note that this does not mean
-// data *will* be compressed, just that the client can process it if it is.
-//
-// Revision 1.60  1998/02/05 20:13:50  jimg
-// DODS now compiles with gcc 2.8.x
-//
-// Revision 1.59  1997/12/16 00:40:07  jimg
-// Fixed what may have been a lingering problem with version number strings
-// in the server_handler() function.
-// Added initialization of _server to `dods/0.0' in ctor. Thus _server will
-// have a value even for older servers that don't support server version
-// numbers.
-//
-// Revision 1.58  1997/09/22 23:06:52  jimg
-// Changed code so that the new DataDDS objects are used/created when
-// accessing data.
-//
-// Revision 1.57  1997/06/06 17:52:08  jimg
-// Last minute changes for version 2.14
-//
-// Revision 1.56  1997/06/06 03:09:15  jimg
-// Added parse_mime(); a tiny parser for the fields DODS uses. Not a real MIME
-// parser.
-// Added process_data to facilitate processing data from stdin.
-// Modified request_data() member function so that it works when reading from
-// stdin.
-// Fixed a bug in the destructor where _output and _source were not set to
-// null.
-//
-// Revision 1.55  1997/05/13 23:36:38  jimg
-// Added calls to close_output() in the dtor. This ensures that all files
-// will be closed when an Connect is destroyed.
-//
-// Revision 1.54  1997/05/07 22:10:37  jimg
-// Fixed a bug where the last decompressor process exit was not handled
-// properly. The fix was to make sure that calls for data interleaved
-// with calls for the DAS and/or DDS objects properly wait for the exit
-// status of the last decompression process. In addition, ensure that
-// Connect's dtor waits for the exit status of the very last
-// decompression process.
-//
-// Revision 1.53  1997/03/23 19:39:21  jimg
-// Added temporary fix for decompression bug. When decompressing `zombie'
-// processes were created which would fill the system's process table. The fix
-// explicitly catches the exit of child processes. This code can be removed
-// when/if we switch to version 5.1 of the WWW library.
-//
-// Revision 1.52  1997/03/05 08:24:33  jimg
-// Fixed the logfile bug; when linking with ld or cc static objects are not
-// initialized. The _logfile member was a static global object and caused core
-// dumps when it was not initialized.
-//
-// Revision 1.51  1997/02/19 02:11:34  jimg
-// Fixed ctors (removed lame error object initializers).
-//
-// Revision 1.50  1997/02/17 20:21:44  jimg
-// Fixed a bug in the ctors introduced by making Error's ctor private.
-//
-// Revision 1.49  1997/02/13 17:33:11  jimg
-// Added MIME header `handler' for the server header.
-// Added mfuncs to access the server information (which in DODS is the version
-// number of the core software).
-//
-// Revision 1.48  1997/02/13 05:49:53  reza
-// Fixed concatenation of _proj and _sel members into request_das and
-// request_dds URLs.
-//
-// Revision 1.47  1997/02/12 21:42:29  jimg
-// Fixed handling of non fatal errors reported by the www library. Now an
-// optional parameter to the class ctor enables display of these informational
-// messages. However, they are not registered as `web_errors' in the
-// type field of the Connect object.
-// Fixed a bug which introduced extraneous '?'s into URLs.
-//
-// Revision 1.46  1997/02/10 02:27:10  jimg
-// Fixed processing of error returns.
-// Changed return type of request_data() (and related functions) from DDS & to
-// DDS *. The member function now return NULL if an error is detected.
-//
-// Revision 1.45  1997/02/04 22:44:31  jimg
-// Fixed bugs in URL() and CE() where the _URL, _proj and _sel members were
-// misused.
-//
-// Revision 1.44  1997/01/28 17:15:19  jimg
-// Wrapped the generic header_handler() in DBG() so that it is only used
-// while debugging.
-//
-// Revision 1.43  1996/12/18 19:17:20  jimg
-// Removed the DODS_PERF define.
-//
-// Revision 1.42  1996/12/02 23:10:10  jimg
-// Added dataset as a parameter to the ops member function.
-//
-// Revision 1.41  1996/11/25 03:37:34  jimg
-// Added USE_SEM control macro - since asynchronous connects are massively
-// broken the semaphores are not used.
-// The _connects field is not initialized to -1 and handled so that
-// HTLibTerminate() is never called but so that the web library is initialized
-// before the first use of connect. Apparently calling HTLibInit() more than
-// once (even with an interleaving call to HTLibTerminate()) breaks the 5.0a
-// version of the library.
-// Added the constant web_error the the set of content-descriptions.
-// Removed use of the disk cache. Added it in later; read_url() must be
-// modified.
-// Never use the broken asynchronous code.
-// Fixed processing of content-description so that web-error and dods-error
-// messages are handled correctly.
-//
-// Revision 1.40  1996/11/22 00:14:38  jimg
-// Removed decompress() function.
-// Switched to decompressor function in util.cc
-// Wrapped semaphore code in USE_SEM preprocessor define - the semaphore code
-// may not be necessary...
-//
-// Revision 1.39  1996/11/20 22:29:29  jimg
-// Fixed header parsing. Now I use my own header parsers for the
-// content-description and -encoding headers. Once the values of these headers
-// have been stored in the Connect object it is easy to operate on the data
-// stream. This is simpler than using libwww's stream stack (at least for
-// decompression and error document routing).
-//
-// Revision 1.38  1996/11/20 00:55:29  jimg
-// Fixed a bug with HTLibTerminate() where multiple URLs caused a core dump.
-// Fixed the progress indicator.
-// Ripped out the semaphore stuff used with the asynchronous connects - those
-// connects now work, at least on the Sun.
-//
-// Revision 1.37  1996/11/13 18:53:00  jimg
-// Updated so that this now works with version 5.0a of the WWW library from
-// the W3c.
-// Fixed handling of certain types of http/www errors.
-//
-// Revision 1.36  1996/10/18 16:40:09  jimg
-// Changed request_das() and request_dds() so that they now pass any initial
-// constraint to the DAS and DDS servers.
-//
-// Revision 1.35  1996/10/08 16:27:47  jimg
-// Added code so that a constraint expression appended to a URL is properly
-// handled. The CE is stored in in the Connect object. When a CE is passed to
-// the request_data member function, Connect correctly combines the projection
-// and selection parts of that CE with the matching parts of any initial CE.
-//
-// Revision 1.34  1996/09/18 23:06:28  jimg
-// Fixed a bug in the dtor which caused the _anchor WWW lib object to be
-// deleted twice under some (likely) conditions. The efence library found the
-// error. 
-//
-// Revision 1.33  1996/08/26 21:12:52  jimg
-// Changes for version 2.07
-//
-// Revision 1.32  1996/08/13 17:53:34  jimg
-// Corrected misuse of the istrstream class; added calls to the freeze member
-// function where needed.
-// Fixed test for URL -vs- filename in the object ctor.
-//
-// Revision 1.31  1996/07/17 22:27:20  jimg
-// Removed copy of the _output FILE * and bad logic on output() member
-// function. Added reset of _source to 0 in close_output().
-//
-// Revision 1.30  1996/07/10 21:25:32  jimg
-// *** empty log message ***
-//
-// Revision 1.29  1996/06/22 00:00:23  jimg
-// Added Gui pointer to the Error oject's correct_error mfunc call.
-//
-// Revision 1.28  1996/06/21 23:15:03  jimg
-// Removed GUI code to a new class - Gui.
-//
-// Revision 1.27  1996/06/20 15:59:24  jimg
-// Added conditional definition of union semun {};
-//
-// Revision 1.26  1996/06/18 23:43:42  jimg
-// Added support for a GUI. The GUI is actually contained in a separate program
-// that is run in a subprocess. The core `talks' to the GUI using a pty and a
-// simple command language.
-// Removed GZIP preprocessor define and added DODS_ROOT define. Added checks in
-// the code to use the environment variable DODS_ROOT in preference to the
-// compile-time value (if non-null).
-//
-// Revision 1.25  1996/06/08 00:08:47  jimg
-// Fixed comments.
-//
-// Revision 1.24  1996/06/08 00:07:19  jimg
-// Added support for compression. The Content-Encoding header is used to
-// determine if the incoming document is compressed (values: x-plain; no
-// compression, x-gzip; gzip compression). The gzip program is used to
-// decompress the document. The new software uses UNIX IPC and a separate
-// subprocess to perform the decompression.
-//
-// revision 1.23  1996/06/06 17:07:57  jimg
-// Added support for wwwlib 4.0.
-// Added support for object types.
-//
-// revision 1.22  1996/06/04 21:33:15  jimg
-// Multiple connections are now possible. It is now possible to open several
-// URLs at the same time and read from them in a round-robin fashion. To do
-// this I added data source and sink parameters to the serialize and
-// deserialize mfuncs. Connect was also modified so that it manages the data
-// source `object' (which is just an XDR pointer).
-//
-// revision 1.21  1996/05/31 23:29:30  jimg
-// Updated copyright notice.
-//
-// Revision 1.20  1996/05/29 21:47:51  jimg
-// Added Content-Description header parsing.
-// Removed Event loop code (HTEvent_loop()).
-// Fixed bug where a copy of _OUTPUT was created using _OUTPUT's file
-// descriptor. When _OUTPUT was closed the copy no longer referenced a valid
-// data source.
-// Fixed problems with asserts and error messaging.
-//
-// Revision 1.19  1996/05/22 18:05:04  jimg
-// Merged files from the old netio directory into the dap directory.
-// Removed the errmsg library from the software.
-//
-// Revision 1.18  1996/05/21 23:46:32  jimg
-// Added support for URLs directly to the class. This uses version 4.0D of
-// the WWW library from W3C.
-//
-// Revision 1.17  1996/04/05 01:25:39  jimg
-// Merged changes from version 1.1.1.
-//
-// Revision 1.16  1996/03/05 23:21:27  jimg
-// Added const to char * parameters and function prototypes.
-//
-// Revision 1.15  1996/02/01 21:43:51  jimg
-// Added mfuncs to maintain a list of DDSs and the constraint expressions
-// that produced them.
-// Added code in request_data to strip the incoming DDS from a data
-// document.
-// Fixed up bogus comments.
-//
-// Revision 1.14.2.3  1996/03/01 00:07:57  jimg
-// Removed bad attempt at multiple connect implementation.
-//
-// Revision 1.14.2.2  1996/02/23 22:51:00  jimg
-// Added const in prototype of netio files.
-// Added libraries for solaris 2.x
-//
-// Revision 1.14.2.1  1996/02/23 21:38:35  jimg
-// Updated for new configure.in.
-//
-// Revision 1.14  1995/07/09  21:20:44  jimg
-// Fixed date in copyright (it now reads `Copyright 1995 ...').
-//
-// Revision 1.13  1995/07/09  21:14:45  jimg
-// Added copyright.
-//
-// Revision 1.12  1995/06/27  19:33:47  jimg
-// The mfuncs request_{das,dds,dods} accept a parameter which is appended to
-// the URL and used by the data server CGI to select which filter program is
-// run to handle a particular request. I changed the parameter name from cgi
-// to ext to better represent what was going on (after getting confused
-// several times myself).
-//
-// Revision 1.11  1995/06/01  16:46:35  jimg
-// Removed old code.
-//
-// Revision 1.10  1995/05/30  18:42:45  jimg
-// Modified the request_data member function so that it accepts the variable
-// in addition to the existing arguments.
-//
-// Revision 1.9  1995/05/22  20:41:37  jimg
-// Changed the usage of URLs: we now use straight URLs; no POSTs and no
-// internal parsing of the URL. To select different documents from a DODS
-// server an extension is appended to the URL.
-//
-// Revision 1.8  1995/04/17  03:19:22  jimg
-// Added code which takes the cgi basename from the URL supplied by the
-// user. Still, the cgi must be in `cgi-bin'.
-//
-// Revision 1.7  1995/03/09  20:36:07  jimg
-// Modified so that URLs built by this library no longer supply the
-// base name of the CGI. Instead the base name is stripped off the front
-// of the pathname component of the URL supplied by the user. This class
-// append the suffix _das, _dds or _serv when a Connect object is used to
-// get the DAS, DDS or Data (resp).
-//
-// Revision 1.6  1995/02/22  21:04:00  reza
-// Added version number capability using CGI status_line.
-//
-// Revision 1.5  1995/02/10  21:53:53  jimg
-// Modified request_data() so that it takes an additional (optional)
-// parameter which specifies synchronous (default) of Asynchronous
-// behavior.
-//
-// Revision 1.4  1995/02/10  04:43:15  reza
-// Fixed the request_data to pass arguments. The arguments string is added to
-// the file name before being posted by NetConnect. Default arg. is null.
-//
-// Revision 1.3  1995/01/31  20:46:04  jimg
-// Fixed problems with the return value (status, fp) in request_das,
-// request_dds and request_data.
-// Added declarations for set_xdrin() and set_xdr_out().
-// Now that NetExecute forks and reads from a child, a temp file is no
-// longer used. I removed that code which created and sebsequently deleted
-// that temp file.
-//
-// Revision 1.2  1995/01/18  18:48:22  dan
-// Added member function 'request_data' which makes a data read request
-// to the remote api server and links the object's xdrin file-pointers
-// to the data stream.  This function requires NetConnect which has
-// been defined in the utility function netexec.c
-//
-// Revision 1.1  1995/01/09  16:03:26  dan
-// These files constitute the JGOFS server and client library code
-// for use with the DODS api.
-//
-// Revision 1.6  1994/12/06  01:14:13  reza
-// Fixed a bug in the usage of url_comp.
-//
-// Revision 1.5  1994/11/18  21:22:27  reza
-// Fixed error in an if condition.
-//
-// Revision 1.4  1994/11/03  05:36:09  reza
-// Added the request_dds function and error checking for NetExecute calls.
-//
-// Revision 1.3  1994/10/06  16:14:07  jimg
-// Added hard-coded path to cgi binaries in make_url (set to `cgi-bin').
-//
-// Revision 1.2  1994/10/05  20:23:26  jimg
-// Fixed errors in *.h files comments - CVS bites again.
-// Changed request_{das,dds} so that they use the field `_api_name'
-// instead of requiring callers to pass the api name.
-//
-// Revision 1.1  1994/10/05  18:02:06  jimg
-// First version of the connection management classes.
-// This commit also includes early versions of the test code.
-//
-
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.103 2000/09/21 16:22:07 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.104 2000/09/22 02:17:19 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -2158,7 +1570,597 @@ Connect::error()
     return _error;
 }
 
-
-
-
+// $Log: Connect.cc,v $
+// Revision 1.104  2000/09/22 02:17:19  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.103  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.102  2000/08/29 21:22:54  jimg
+// Merged with 3.1.9
+//
+// Revision 1.80.2.4  2000/08/02 23:18:38  jimg
+// Fixed a bug that shows up on Linux (2.2, maybe others) where URLs with 61
+// 65 characters hang. See fetch_url() for the gory details.
+//
+// Revision 1.101  2000/07/26 12:24:01  rmorris
+// Modified intermediate (dod*) file removal under win32 to take into account
+// a 1-to-n correspondence between connect objects and intermediate files.
+// Implemented solution through vector of strings containing the intermediate
+// filenames that are removed when the connect obj's destructor is invoked.
+// Might consider using the same code for unix in the future.  Previous
+// win32 solution incorrectly assumed the correspondence was 1-to-1.
+//
+// Revision 1.100  2000/07/24 18:49:50  rmorris
+// Just added a notation that indicates what was tried to get around
+// libwww bugs in regards to spaces in pathnames.  Client-side caching
+// disabled until further notice - next version of libwww may help.
+//
+// Revision 1.99  2000/07/21 14:26:24  rmorris
+// Remove client-side caching entired under win32 in lieu of a permanent
+// fix (soon).  Fixed what I broke for client-side caching under unix.
+//
+// Revision 1.98  2000/07/18 12:49:04  rmorris
+// Fixed failure to initialize a structure element appropriately when
+// retrieving the Win32 OS version information for the WIN95_CACHE_HACK.
+//
+// Revision 1.96  2000/07/18 03:56:09  rmorris
+// Changes made in an attempt to debug client-side caching under win95-based
+// systems.  Is currently unsuccessful, but these changes made the code somewhat
+// more generic.
+//
+// Revision 1.95  2000/07/13 07:09:05  rmorris
+// Changed the approach to delete the intermediate file in the case
+// of win32 (unlink() not the same under win32, needed another approach).
+//
+// Revision 1.94  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.93  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.92.4.2  2000/06/02 22:29:21  rmorris
+// Fixed bug in bug fix that allowed spaces in paths via escape sequences.
+// The bug within a bug was that we were translating a file path into a
+// url by prepending it with "file:/".  This allows libwww to recognize
+// escape sequence.  Under UNIX, "file:" is correct, not "file:/"
+//
+// Revision 1.92.4.1  2000/06/02 18:14:43  rmorris
+// Mod for port to win32.
+//
+// Revision 1.92  2000/04/17 22:13:37  jimg
+// Fixed problems with the _gui member and local connections. The _gui object
+// was not initialized (correct) for local connections but *was* destroyed for
+// them (because the code never checked for local connections in the dtor).
+//
+// Revision 1.91  2000/04/17 21:25:00  jimg
+// Fixed an error where local connections affected the status of the
+// __num_remote_conns field. This caused remote connections, made after one or
+// more local connections were closed, to fail because libwww was not
+// initialized correctly.
+//
+// Revision 1.90  2000/04/07 00:19:04  jimg
+// Merged Brent's changes for the progress gui - he added a cancel button.
+// Also repaired the last of the #ifdef Gui bugs so that we can build Gui
+// and non-gui versions of the library that use one set of header files.
+//
+// Revision 1.89.2.1  2000/04/04 05:00:24  brent
+// put a Cancel button the Tcl/Tk GUI
+//
+// Revision 1.89  2000/03/28 16:18:17  jimg
+// Added a DEFAULT_EXPIRES parameter to the .dodsrc file. The default
+// expiration time is now set by connect, using the value read from .dodsrc,
+// rather than use the value compiled into libwww. To do this I added a new
+// function to HTCache.c,h in libwww.
+//
+// Revision 1.88  2000/03/17 00:11:39  jimg
+// I fixed the bug in libwww which made caching of compressed documents fail.
+// I removed the hacks in this file that prevented data documents from being
+// cached. I also have removed the code that wrote NEVER_DEFLATE to the rc
+// file. The NEVER_DEFLATE option still works; I'm just not including it in
+// the rc file by default.
+//
+// Revision 1.86.2.1  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.87  2000/01/27 06:29:55  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.80.2.3  2000/01/26 23:55:50  jimg
+// Fixed the return type of string::find.
+//
+// Revision 1.86  1999/12/31 00:55:10  jimg
+// Fixed up the progress indicator
+//
+// Revision 1.85  1999/12/15 01:14:10  jimg
+// More fixes for caching. Caching now works correctly for programs that use
+// multiple Connect objects. The Cache index is now updated more frequently.
+//
+// Revision 1.84  1999/12/01 21:27:05  jimg
+// Substantial changes for the caching software. Added a call to `terminate'
+// the cache once we're done with the libwww code. This writes the .index
+// file required by the cache. Additionally, changed the cache mode from
+// validate to OK. The later forces the cache to not validate every request.
+// Instead expiration is used and the libwww code implements a fall back in
+// those cases where servers don't supply a Date header. Finally, compressed
+// responses break the cache (I think this is libwww's bug) and I've disabled
+// caching compressed data responses. So that users can cache data responses,
+// I've added a new flag in the dodsrc file called NEVER_DEFLATE which allows
+// users to override the clients wishes regarding compression (i.e., users
+// can turn it off). Data responses can thus be cached.
+//
+// Revision 1.83  1999/10/22 04:17:25  cjm
+// Added support for caching.  Most of the code is in www_lib_init(), there
+// is also a modification to read_url() to make use of the cache if it is
+// enabled. 
+//
+// Revision 1.82  1999/09/03 22:07:44  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.81  1999/08/23 18:57:44  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.80.2.2  1999/08/28 06:43:03  jimg
+// Fixed the implementation/interface pragmas and misc comments
+//
+// Revision 1.80.2.1  1999/08/09 22:57:49  jimg
+// Removed GUI code; reactivate by defining GUI
+//
+// Revision 1.80  1999/08/09 18:27:33  jimg
+// Merged changes from Brent for the Gui code (progress indicator)
+//
+// Revision 1.79  1999/07/22 17:11:50  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.78.4.2  1999/07/29 05:46:17  brent
+// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl
+// files.
+//
+// Revision 1.78.4.1  1999/06/01 15:40:54  jimg
+// Ripped out dead wood in parse_mime(...).
+//
+// Revision 1.78  1999/05/26 17:30:24  jimg
+// Added the calls to Error::correct_error(...). These were removed because
+// they use the Gui object. However, they access it through the Connect::Gui()
+// member function which will return NULL until we fix the Gui. Calling the
+// correct_error with a NULL Gui object works in that the error message is
+// displayed on stderr and the Gui stuff is ignored.
+//
+// Revision 1.77  1999/05/21 20:39:23  dan
+// Disabled the Gui interface in the Connect objects.  Primarily
+// this was done in www_libc_init, constructor, destructor, and request_
+// calls using 'ifdef GUI' directives.  To regain use of this code
+// use the '-DGUI' compiler flag.
+//
+// Revision 1.76  1999/05/21 17:22:04  jimg
+// Removed debugging instrumentation left in by accident.
+//
+// Revision 1.75  1999/05/21 00:46:42  jimg
+// Using ifstream in parse_mime(...) confuses the downstream parser since the
+// FILE * is not advanced. I switched back to the fgets(...) code and the some
+// problems with the asciival client went away.
+//
+// Revision 1.74  1999/04/29 03:04:51  jimg
+// Merged ferret changes
+//
+// Revision 1.73  1999/04/29 02:29:27  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.72.8.1  1999/04/14 22:31:36  jimg
+// Removed old code.
+// Fixed the delete of member _tv. timeval _tv was used by libwww 5.0 but is no
+// longer needed. I wrapped all code that touched this in #ifdef LIBWWW_5_0 and
+// removed the member from Connect using the same conditional. This fixes a
+// problem where _tv is deleted without being allocated when local files are
+// accessed.
+//
+// Revision 1.72  1999/02/23 01:32:59  jimg
+// Removed more of the code in process_data. Because of fixes in the scanner,
+// this code no longer needs to rewind after parsing the DDS of a data
+// document. The scanner no longer reads into the binary doc. Note that real
+// MP/MIME code would solve this by giving us two streams to work with. Some
+// day...
+//
+// Revision 1.71  1999/02/18 19:21:40  jimg
+// Added support for the DODS experimental MIME header XDODS-Accept-Types.
+// This will be used to send a lists of `accepted types' from the client to a
+// server. The list tells a server which datatypes the requesting client can
+// understand. This information may be used by both the DDS and DataDDS
+// objects to trigger translations from one type to another.
+//
+// Revision 1.70  1999/01/15 17:07:01  jimg
+// Removed use of the move_dds() member function. The DDS parser now
+// recognizes the `Data:' separator string as marking the end of the DDS part
+// of a data document. This means that Connect no longer needs to copy the
+// DDS part of the data document to a separate (temporary) text file before
+// parsing it.
+//
+// Revision 1.69  1998/12/16 19:10:53  jimg
+// Added support for XDODS-Server MIME header. This fixes a problem where our
+// use of Server clashed with Java
+//
+// Revision 1.68  1998/11/10 01:08:34  jimg
+// Patched memory leaks found with Purify.
+//
+// Revision 1.67  1998/09/08 22:27:11  jimg
+// Removed PERF macro.
+//
+// Revision 1.66.4.2  1999/02/05 09:32:33  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code.
+//
+// Revision 1.66.4.1  1999/02/02 21:56:56  jimg
+// String to string version
+//
+// Revision 1.66  1998/06/04 06:29:11  jimg
+// Added two new member functions to set/get the new www_errors_to_stderr
+// property. This controls whether www errors (like host not found) are
+// reported on stderr in addition to the Error object. The default is to NOT
+// report them to stderr. WWW errors are now recorded in the Error object.
+//
+// Revision 1.65  1998/04/07 22:14:31  jimg
+// Added a call to prune_spaces to the default ctor. Removing spaces prevents
+// various crashes. Note that CEs can themselves contain spaces but *leading*
+// spaces caused problems.
+//
+// Revision 1.64  1998/04/03 17:39:07  jimg
+// Fixed a bug in process_data where sequences were not handled properly. Patch
+// from Jake Hamby.
+//
+// Revision 1.63  1998/03/26 00:19:24  jimg
+// Changed from converters to the _conv member in www_lib_init.
+//
+// Revision 1.62  1998/03/19 23:48:24  jimg
+// Removed old code associated with the (bogus) caching scheme.
+// Removed the _connects field.
+// Used _conv as a flag to ensure the www library is intialized only once.
+//
+// Revision 1.61  1998/02/11 21:56:20  jimg
+// Mayor modifications for libwww 5.1 compression support. I removed lots of
+// old code that was superfluous and changed the way the library is initialized
+// to make that more efficient.
+// Removed the old Semaphore hacks.
+// Removed the content-encoding handler (that is now done by libwww).
+// The Ctor and www_lib_init now take a flag that controls whether the server
+// is told that the client can decompress data. Note that this does not mean
+// data *will* be compressed, just that the client can process it if it is.
+//
+// Revision 1.60  1998/02/05 20:13:50  jimg
+// DODS now compiles with gcc 2.8.x
+//
+// Revision 1.59  1997/12/16 00:40:07  jimg
+// Fixed what may have been a lingering problem with version number strings
+// in the server_handler() function.
+// Added initialization of _server to `dods/0.0' in ctor. Thus _server will
+// have a value even for older servers that don't support server version
+// numbers.
+//
+// Revision 1.58  1997/09/22 23:06:52  jimg
+// Changed code so that the new DataDDS objects are used/created when
+// accessing data.
+//
+// Revision 1.57  1997/06/06 17:52:08  jimg
+// Last minute changes for version 2.14
+//
+// Revision 1.56  1997/06/06 03:09:15  jimg
+// Added parse_mime(); a tiny parser for the fields DODS uses. Not a real MIME
+// parser.
+// Added process_data to facilitate processing data from stdin.
+// Modified request_data() member function so that it works when reading from
+// stdin.
+// Fixed a bug in the destructor where _output and _source were not set to
+// null.
+//
+// Revision 1.55  1997/05/13 23:36:38  jimg
+// Added calls to close_output() in the dtor. This ensures that all files
+// will be closed when an Connect is destroyed.
+//
+// Revision 1.54  1997/05/07 22:10:37  jimg
+// Fixed a bug where the last decompressor process exit was not handled
+// properly. The fix was to make sure that calls for data interleaved
+// with calls for the DAS and/or DDS objects properly wait for the exit
+// status of the last decompression process. In addition, ensure that
+// Connect's dtor waits for the exit status of the very last
+// decompression process.
+//
+// Revision 1.53  1997/03/23 19:39:21  jimg
+// Added temporary fix for decompression bug. When decompressing `zombie'
+// processes were created which would fill the system's process table. The fix
+// explicitly catches the exit of child processes. This code can be removed
+// when/if we switch to version 5.1 of the WWW library.
+//
+// Revision 1.52  1997/03/05 08:24:33  jimg
+// Fixed the logfile bug; when linking with ld or cc static objects are not
+// initialized. The _logfile member was a static global object and caused core
+// dumps when it was not initialized.
+//
+// Revision 1.51  1997/02/19 02:11:34  jimg
+// Fixed ctors (removed lame error object initializers).
+//
+// Revision 1.50  1997/02/17 20:21:44  jimg
+// Fixed a bug in the ctors introduced by making Error's ctor private.
+//
+// Revision 1.49  1997/02/13 17:33:11  jimg
+// Added MIME header `handler' for the server header.
+// Added mfuncs to access the server information (which in DODS is the version
+// number of the core software).
+//
+// Revision 1.48  1997/02/13 05:49:53  reza
+// Fixed concatenation of _proj and _sel members into request_das and
+// request_dds URLs.
+//
+// Revision 1.47  1997/02/12 21:42:29  jimg
+// Fixed handling of non fatal errors reported by the www library. Now an
+// optional parameter to the class ctor enables display of these informational
+// messages. However, they are not registered as `web_errors' in the
+// type field of the Connect object.
+// Fixed a bug which introduced extraneous '?'s into URLs.
+//
+// Revision 1.46  1997/02/10 02:27:10  jimg
+// Fixed processing of error returns.
+// Changed return type of request_data() (and related functions) from DDS & to
+// DDS *. The member function now return NULL if an error is detected.
+//
+// Revision 1.45  1997/02/04 22:44:31  jimg
+// Fixed bugs in URL() and CE() where the _URL, _proj and _sel members were
+// misused.
+//
+// Revision 1.44  1997/01/28 17:15:19  jimg
+// Wrapped the generic header_handler() in DBG() so that it is only used
+// while debugging.
+//
+// Revision 1.43  1996/12/18 19:17:20  jimg
+// Removed the DODS_PERF define.
+//
+// Revision 1.42  1996/12/02 23:10:10  jimg
+// Added dataset as a parameter to the ops member function.
+//
+// Revision 1.41  1996/11/25 03:37:34  jimg
+// Added USE_SEM control macro - since asynchronous connects are massively
+// broken the semaphores are not used.
+// The _connects field is not initialized to -1 and handled so that
+// HTLibTerminate() is never called but so that the web library is initialized
+// before the first use of connect. Apparently calling HTLibInit() more than
+// once (even with an interleaving call to HTLibTerminate()) breaks the 5.0a
+// version of the library.
+// Added the constant web_error the the set of content-descriptions.
+// Removed use of the disk cache. Added it in later; read_url() must be
+// modified.
+// Never use the broken asynchronous code.
+// Fixed processing of content-description so that web-error and dods-error
+// messages are handled correctly.
+//
+// Revision 1.40  1996/11/22 00:14:38  jimg
+// Removed decompress() function.
+// Switched to decompressor function in util.cc
+// Wrapped semaphore code in USE_SEM preprocessor define - the semaphore code
+// may not be necessary...
+//
+// Revision 1.39  1996/11/20 22:29:29  jimg
+// Fixed header parsing. Now I use my own header parsers for the
+// content-description and -encoding headers. Once the values of these headers
+// have been stored in the Connect object it is easy to operate on the data
+// stream. This is simpler than using libwww's stream stack (at least for
+// decompression and error document routing).
+//
+// Revision 1.38  1996/11/20 00:55:29  jimg
+// Fixed a bug with HTLibTerminate() where multiple URLs caused a core dump.
+// Fixed the progress indicator.
+// Ripped out the semaphore stuff used with the asynchronous connects - those
+// connects now work, at least on the Sun.
+//
+// Revision 1.37  1996/11/13 18:53:00  jimg
+// Updated so that this now works with version 5.0a of the WWW library from
+// the W3c.
+// Fixed handling of certain types of http/www errors.
+//
+// Revision 1.36  1996/10/18 16:40:09  jimg
+// Changed request_das() and request_dds() so that they now pass any initial
+// constraint to the DAS and DDS servers.
+//
+// Revision 1.35  1996/10/08 16:27:47  jimg
+// Added code so that a constraint expression appended to a URL is properly
+// handled. The CE is stored in in the Connect object. When a CE is passed to
+// the request_data member function, Connect correctly combines the projection
+// and selection parts of that CE with the matching parts of any initial CE.
+//
+// Revision 1.34  1996/09/18 23:06:28  jimg
+// Fixed a bug in the dtor which caused the _anchor WWW lib object to be
+// deleted twice under some (likely) conditions. The efence library found the
+// error. 
+//
+// Revision 1.33  1996/08/26 21:12:52  jimg
+// Changes for version 2.07
+//
+// Revision 1.32  1996/08/13 17:53:34  jimg
+// Corrected misuse of the istrstream class; added calls to the freeze member
+// function where needed.
+// Fixed test for URL -vs- filename in the object ctor.
+//
+// Revision 1.31  1996/07/17 22:27:20  jimg
+// Removed copy of the _output FILE * and bad logic on output() member
+// function. Added reset of _source to 0 in close_output().
+//
+// Revision 1.30  1996/07/10 21:25:32  jimg
+// *** empty log message ***
+//
+// Revision 1.29  1996/06/22 00:00:23  jimg
+// Added Gui pointer to the Error oject's correct_error mfunc call.
+//
+// Revision 1.28  1996/06/21 23:15:03  jimg
+// Removed GUI code to a new class - Gui.
+//
+// Revision 1.27  1996/06/20 15:59:24  jimg
+// Added conditional definition of union semun {};
+//
+// Revision 1.26  1996/06/18 23:43:42  jimg
+// Added support for a GUI. The GUI is actually contained in a separate program
+// that is run in a subprocess. The core `talks' to the GUI using a pty and a
+// simple command language.
+// Removed GZIP preprocessor define and added DODS_ROOT define. Added checks in
+// the code to use the environment variable DODS_ROOT in preference to the
+// compile-time value (if non-null).
+//
+// Revision 1.25  1996/06/08 00:08:47  jimg
+// Fixed comments.
+//
+// Revision 1.24  1996/06/08 00:07:19  jimg
+// Added support for compression. The Content-Encoding header is used to
+// determine if the incoming document is compressed (values: x-plain; no
+// compression, x-gzip; gzip compression). The gzip program is used to
+// decompress the document. The new software uses UNIX IPC and a separate
+// subprocess to perform the decompression.
+//
+// revision 1.23  1996/06/06 17:07:57  jimg
+// Added support for wwwlib 4.0.
+// Added support for object types.
+//
+// revision 1.22  1996/06/04 21:33:15  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
+// revision 1.21  1996/05/31 23:29:30  jimg
+// Updated copyright notice.
+//
+// Revision 1.20  1996/05/29 21:47:51  jimg
+// Added Content-Description header parsing.
+// Removed Event loop code (HTEvent_loop()).
+// Fixed bug where a copy of _OUTPUT was created using _OUTPUT's file
+// descriptor. When _OUTPUT was closed the copy no longer referenced a valid
+// data source.
+// Fixed problems with asserts and error messaging.
+//
+// Revision 1.19  1996/05/22 18:05:04  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
+// Revision 1.18  1996/05/21 23:46:32  jimg
+// Added support for URLs directly to the class. This uses version 4.0D of
+// the WWW library from W3C.
+//
+// Revision 1.17  1996/04/05 01:25:39  jimg
+// Merged changes from version 1.1.1.
+//
+// Revision 1.16  1996/03/05 23:21:27  jimg
+// Added const to char * parameters and function prototypes.
+//
+// Revision 1.15  1996/02/01 21:43:51  jimg
+// Added mfuncs to maintain a list of DDSs and the constraint expressions
+// that produced them.
+// Added code in request_data to strip the incoming DDS from a data
+// document.
+// Fixed up bogus comments.
+//
+// Revision 1.14.2.3  1996/03/01 00:07:57  jimg
+// Removed bad attempt at multiple connect implementation.
+//
+// Revision 1.14.2.2  1996/02/23 22:51:00  jimg
+// Added const in prototype of netio files.
+// Added libraries for solaris 2.x
+//
+// Revision 1.14.2.1  1996/02/23 21:38:35  jimg
+// Updated for new configure.in.
+//
+// Revision 1.14  1995/07/09  21:20:44  jimg
+// Fixed date in copyright (it now reads `Copyright 1995 ...').
+//
+// Revision 1.13  1995/07/09  21:14:45  jimg
+// Added copyright.
+//
+// Revision 1.12  1995/06/27  19:33:47  jimg
+// The mfuncs request_{das,dds,dods} accept a parameter which is appended to
+// the URL and used by the data server CGI to select which filter program is
+// run to handle a particular request. I changed the parameter name from cgi
+// to ext to better represent what was going on (after getting confused
+// several times myself).
+//
+// Revision 1.11  1995/06/01  16:46:35  jimg
+// Removed old code.
+//
+// Revision 1.10  1995/05/30  18:42:45  jimg
+// Modified the request_data member function so that it accepts the variable
+// in addition to the existing arguments.
+//
+// Revision 1.9  1995/05/22  20:41:37  jimg
+// Changed the usage of URLs: we now use straight URLs; no POSTs and no
+// internal parsing of the URL. To select different documents from a DODS
+// server an extension is appended to the URL.
+//
+// Revision 1.8  1995/04/17  03:19:22  jimg
+// Added code which takes the cgi basename from the URL supplied by the
+// user. Still, the cgi must be in `cgi-bin'.
+//
+// Revision 1.7  1995/03/09  20:36:07  jimg
+// Modified so that URLs built by this library no longer supply the
+// base name of the CGI. Instead the base name is stripped off the front
+// of the pathname component of the URL supplied by the user. This class
+// append the suffix _das, _dds or _serv when a Connect object is used to
+// get the DAS, DDS or Data (resp).
+//
+// Revision 1.6  1995/02/22  21:04:00  reza
+// Added version number capability using CGI status_line.
+//
+// Revision 1.5  1995/02/10  21:53:53  jimg
+// Modified request_data() so that it takes an additional (optional)
+// parameter which specifies synchronous (default) of Asynchronous
+// behavior.
+//
+// Revision 1.4  1995/02/10  04:43:15  reza
+// Fixed the request_data to pass arguments. The arguments string is added to
+// the file name before being posted by NetConnect. Default arg. is null.
+//
+// Revision 1.3  1995/01/31  20:46:04  jimg
+// Fixed problems with the return value (status, fp) in request_das,
+// request_dds and request_data.
+// Added declarations for set_xdrin() and set_xdr_out().
+// Now that NetExecute forks and reads from a child, a temp file is no
+// longer used. I removed that code which created and sebsequently deleted
+// that temp file.
+//
+// Revision 1.2  1995/01/18  18:48:22  dan
+// Added member function 'request_data' which makes a data read request
+// to the remote api server and links the object's xdrin file-pointers
+// to the data stream.  This function requires NetConnect which has
+// been defined in the utility function netexec.c
+//
+// Revision 1.1  1995/01/09  16:03:26  dan
+// These files constitute the JGOFS server and client library code
+// for use with the DODS api.
+//
+// Revision 1.6  1994/12/06  01:14:13  reza
+// Fixed a bug in the usage of url_comp.
+//
+// Revision 1.5  1994/11/18  21:22:27  reza
+// Fixed error in an if condition.
+//
+// Revision 1.4  1994/11/03  05:36:09  reza
+// Added the request_dds function and error checking for NetExecute calls.
+//
+// Revision 1.3  1994/10/06  16:14:07  jimg
+// Added hard-coded path to cgi binaries in make_url (set to `cgi-bin').
+//
+// Revision 1.2  1994/10/05  20:23:26  jimg
+// Fixed errors in *.h files comments - CVS bites again.
+// Changed request_{das,dds} so that they use the field `_api_name'
+// instead of requiring callers to pass the api name.
+//
+// Revision 1.1  1994/10/05  18:02:06  jimg
+// First version of the connection management classes.
+// This commit also includes early versions of the test code.
+//
 

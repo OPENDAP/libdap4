@@ -10,8 +10,65 @@
 //
 // jhrg 9/7/94
 
+#ifndef _url_h
+#define _url_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include <string>
+
+#ifndef _dods_limits_h
+#include "dods-limits.h"
+#endif
+
+#ifndef _basetype_h
+#include "BaseType.h"
+#endif
+
+#ifndef _str_h
+#include "Str.h"
+#endif
+
+const unsigned int max_url_len = 255;
+
+/** Holds an internet address (URL).
+
+    @see BaseType
+    @see Str */
+class Url: public Str {
+
+protected:
+    string _buf;
+
+    /** This enables instances of Str to access _buf in this class. */
+    friend class Str;
+
+public:
+  /** The URL constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A string containing the name of the variable to be
+      created. 
+
+      @memo The URL constructor.
+      */
+    Url(const string &n = "");
+    virtual ~Url() {}
+
+    virtual BaseType *ptr_duplicate() = 0;
+};
+
 /* 
  * $Log: Url.h,v $
+ * Revision 1.19  2000/09/22 02:17:22  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.18  1999/05/04 19:47:23  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -113,48 +170,5 @@
  * Added CtorType.
  */
 
-#ifndef _Url_h
-#define _Url_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#include <string>
-
-#include "dods-limits.h"
-#include "BaseType.h"
-#include "Str.h"
-
-const unsigned int max_url_len = 255;
-
-/** Holds an internet address (URL).
-
-    @see BaseType
-    @see Str */
-class Url: public Str {
-
-protected:
-    string _buf;
-
-    /** This enables instances of Str to access _buf in this class. */
-    friend class Str;
-
-public:
-  /** The URL constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
-
-      @memo The URL constructor.
-      */
-    Url(const string &n = "");
-    virtual ~Url() {}
-
-    virtual BaseType *ptr_duplicate() = 0;
-};
-
-#endif
+#endif // _url_h
 

@@ -11,8 +11,33 @@
 //
 // 3/22/99 jhrg
 
+#ifndef _testuint16_h
+#define _testuint16_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include "UInt16.h"
+
+class TestUInt16: public UInt16 {
+public:
+    TestUInt16(const string &n = "");
+    virtual ~TestUInt16() {}
+
+    virtual BaseType *ptr_duplicate();
+    
+    virtual bool read(const string &dataset);
+};
+
 /* 
  * $Log: TestUInt16.h,v $
+ * Revision 1.5  2000/09/22 02:17:21  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.4  2000/09/21 16:22:09  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -37,24 +62,5 @@
  *
  */
 
-#ifndef _TestUInt16_h
-#define _TestUInt16_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#include "UInt16.h"
-
-class TestUInt16: public UInt16 {
-public:
-    TestUInt16(const string &n = "");
-    virtual ~TestUInt16() {}
-
-    virtual BaseType *ptr_duplicate();
-    
-    virtual bool read(const string &dataset);
-};
-
-#endif
+#endif // _testuint16_h
 

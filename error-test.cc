@@ -9,46 +9,9 @@
 //
 // jhrg 4/25/96
 
-// $Log: error-test.cc,v $
-// Revision 1.7  2000/07/19 22:51:40  rmorris
-// Call and return from main in a manner Visual C++ likes and
-// exit the program with exit(0) so that DejaGnu/Cygwin based
-// testsuite can succeed for win32.
-//
-// Revision 1.6  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.5  2000/06/07 18:07:00  jimg
-// Merged the pc port branch
-//
-// Revision 1.4.20.1  2000/06/02 18:36:38  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.4  1999/04/29 02:29:36  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.3.14.2  1999/02/05 09:32:36  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.3.14.1  1999/02/02 21:57:07  jimg
-// String to string version
-//
-// Revision 1.3  1997/02/19 04:53:40  jimg
-// Changed (void) to ().
-//
-// Revision 1.2  1996/08/13 18:52:52  jimg
-// Added not_used to definition of char rcsid[].
-// Now tests the Gui.
-//
-// Revision 1.1  1996/05/31 23:28:16  jimg
-// Added.
-//
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: error-test.cc,v 1.7 2000/07/19 22:51:40 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: error-test.cc,v 1.8 2000/09/22 02:17:22 jimg Exp $"};
 
 #include <assert.h>
 
@@ -232,3 +195,47 @@ test_object(Error &err)
     cout << "Response: " << response << endl;
 }
 #endif
+
+// $Log: error-test.cc,v $
+// Revision 1.8  2000/09/22 02:17:22  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.7  2000/07/19 22:51:40  rmorris
+// Call and return from main in a manner Visual C++ likes and
+// exit the program with exit(0) so that DejaGnu/Cygwin based
+// testsuite can succeed for win32.
+//
+// Revision 1.6  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.5  2000/06/07 18:07:00  jimg
+// Merged the pc port branch
+//
+// Revision 1.4.20.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.4  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.3.14.2  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.3.14.1  1999/02/02 21:57:07  jimg
+// String to string version
+//
+// Revision 1.3  1997/02/19 04:53:40  jimg
+// Changed (void) to ().
+//
+// Revision 1.2  1996/08/13 18:52:52  jimg
+// Added not_used to definition of char rcsid[].
+// Now tests the Gui.
+//
+// Revision 1.1  1996/05/31 23:28:16  jimg
+// Added.
+//
+

@@ -10,171 +10,9 @@
 //
 // 11/21/95 jhrg
 
-// $Log: Vector.cc,v $
-// Revision 1.32  2000/09/21 16:22:09  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.31  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.30  2000/06/16 18:15:00  jimg
-// Merged with 3.1.7
-//
-// Revision 1.27.6.2  2000/06/14 16:59:01  jimg
-// Added instrumentation for the dtor.
-//
-// Revision 1.27.6.1  2000/06/07 23:08:31  jimg
-// Added code to explicitly delete BaseType *s in _vec.
-// Also tried recoding using DLList, but that didn't fix the problem I was
-// after---fixed in the client code but decided to leave this is with #if 0
-// just in case.
-//
-// Revision 1.29  2000/06/07 18:06:59  jimg
-// Merged the pc port branch
-//
-// Revision 1.28.8.1  2000/06/02 18:29:32  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.28.2.2  2000/02/17 05:03:16  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.28.2.1  2000/01/28 22:14:07  jgarcia
-// Added exception handling and modify add_var to get a copy of the object
-//
-// Revision 1.28  2000/01/05 22:37:18  jimg
-// Added a comment about the odd `protocol' for sending array/list lengths twice
-// for arrays/lists of simple types.
-// Removed some cruft.
-//
-// Revision 1.27  1999/05/04 19:47:23  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.26  1999/04/29 02:29:34  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.25  1999/03/24 23:34:49  jimg
-// Added support for the new Int16, UInt16 and Float32 types.
-//
-// Revision 1.24  1998/09/17 17:05:46  jimg
-// Changes for the new variable lookup scheme. Fields of ctor types no longer
-// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
-// that if there are two `f1's in a dataset, the first will be silently used;
-// There's no warning about the situation. The new code in the var member
-// function passes a stack of BaseType pointers so that the projection
-// information (send_p field) can be set properly.
-//
-// Revision 1.23.2.2  1999/02/05 09:32:35  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.23.2.1  1999/02/02 21:57:04  jimg
-// String to string version
-//
-// Revision 1.23  1998/08/06 16:22:38  jimg
-// Fixed the misuse of the read(...) member function. See Grid.c (from jeh).
-//
-// Revision 1.22  1998/03/17 17:51:06  jimg
-// Added an implementation of element_count().
-//
-// Revision 1.21  1998/02/05 20:13:58  jimg
-// DODS now compiles with gcc 2.8.x
-//
-// Revision 1.20  1997/12/31 21:48:12  jimg
-// Enclosed print_basetype_pointer() function in #if DODS_DEBUG == 1 #endif
-// to stop compiler warnings about it being unused.
-//
-// Revision 1.19  1997/12/15 22:33:00  jimg
-// Added type checking set_vec. If the type of the element to include in the
-// vector does not match the vector's type, set_vec() returns false.
-//
-// Revision 1.18  1997/09/22 22:37:53  jimg
-// Fixed a bug in vec_resize.
-//
-// Revision 1.17  1997/03/08 19:02:11  jimg
-// Changed default param to check_semantics() from  to String()
-// and removed the default from the argument list in the mfunc definition
-//
-// Revision 1.16  1997/02/28 01:28:03  jimg
-// Changed check_semantics() so that it now returns error messages in a String
-// object (passed by reference).
-//
-// Revision 1.15  1996/12/02 18:22:08  jimg
-// Added cases for uint32 to various parts of Vector.
-//
-// Revision 1.14  1996/11/13 19:23:10  jimg
-// Fixed debugging.
-//
-// Revision 1.13  1996/08/13 18:39:25  jimg
-// Added not_used to definition of char rcsid[].
-// Fixed int -vs- unsigned int discrepancies.
-//
-// Revision 1.12  1996/06/04 21:33:50  jimg
-// Multiple connections are now possible. It is now possible to open several
-// URLs at the same time and read from them in a round-robin fashion. To do
-// this I added data source and sink parameters to the serialize and
-// deserialize mfuncs. Connect was also modified so that it manages the data
-// source `object' (which is just an XDR pointer).
-//
-// Revision 1.11  1996/05/31 23:30:42  jimg
-// Updated copyright notice.
-//
-// Revision 1.10  1996/05/30 17:14:56  jimg
-// Fixed the allocation of vectors of DODS variable objects; use the
-// ptr_duplicate member function instead of the copy ctor in val2buf().
-// Fixed allocation of vector of String in buf2val(). From Reza.
-//
-// Revision 1.9  1996/05/29 22:08:53  jimg
-// Made changes necessary to support CEs that return the value of a function
-// instead of the value of a variable. This was done so that it would be
-// possible to translate Sequences into Arrays without first reading the
-// entire sequence over the network.
-//
-// Revision 1.8  1996/05/16 22:49:53  jimg
-// Dan's changes for version 2.0. Added a parameter to read that returns
-// an error code so that EOF can be distinguished from an actual error when
-// reading sequences. This *may* be replaced by an error member function
-// in the future.
-//
-// Revision 1.7  1996/05/14 15:38:46  jimg
-// These changes have already been checked in once before. However, I
-// corrupted the source repository and restored it from a 5/9/96 backup
-// tape. The previous version's log entry should cover the changes.
-//
-// Revision 1.6  1996/04/05 00:22:09  jimg
-// Compiled with g++ -Wall and fixed various warnings.
-//
-// Revision 1.5  1996/03/05 01:09:09  jimg
-// Added to the Vector dtor (now the BaseType * vector is properly deleted.
-// Created the vec_resize() member function.
-// Modified serialize() member function so that the ce_eval flag is used.
-//
-// Revision 1.4  1996/02/01 17:43:14  jimg
-// Added support for lists as operands in constraint expressions.
-//
-// Revision 1.3  1995/12/09  01:07:33  jimg
-// Added changes so that relational operators will work properly for all the
-// datatypes (including Sequences). The relational ops are evaluated in
-// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
-//
-// Revision 1.2  1995/12/06  19:52:26  jimg
-// Modified print_decl() so that the declaration is printed only if the
-// variable is selected.
-//
-// Revision 1.1  1995/11/22  22:30:18  jimg
-// Created.
-//
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.32 2000/09/21 16:22:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.33 2000/09/22 02:17:22 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -826,3 +664,172 @@ Vector::check_semantics(string &msg, bool)
 {
     return BaseType::check_semantics(msg);
 }
+
+// $Log: Vector.cc,v $
+// Revision 1.33  2000/09/22 02:17:22  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.32  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.31  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.30  2000/06/16 18:15:00  jimg
+// Merged with 3.1.7
+//
+// Revision 1.27.6.2  2000/06/14 16:59:01  jimg
+// Added instrumentation for the dtor.
+//
+// Revision 1.27.6.1  2000/06/07 23:08:31  jimg
+// Added code to explicitly delete BaseType *s in _vec.
+// Also tried recoding using DLList, but that didn't fix the problem I was
+// after---fixed in the client code but decided to leave this is with #if 0
+// just in case.
+//
+// Revision 1.29  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.28.8.1  2000/06/02 18:29:32  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.28.2.2  2000/02/17 05:03:16  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.28.2.1  2000/01/28 22:14:07  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
+//
+// Revision 1.28  2000/01/05 22:37:18  jimg
+// Added a comment about the odd `protocol' for sending array/list lengths twice
+// for arrays/lists of simple types.
+// Removed some cruft.
+//
+// Revision 1.27  1999/05/04 19:47:23  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
+// Revision 1.26  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.25  1999/03/24 23:34:49  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+//
+// Revision 1.24  1998/09/17 17:05:46  jimg
+// Changes for the new variable lookup scheme. Fields of ctor types no longer
+// need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
+// that if there are two `f1's in a dataset, the first will be silently used;
+// There's no warning about the situation. The new code in the var member
+// function passes a stack of BaseType pointers so that the projection
+// information (send_p field) can be set properly.
+//
+// Revision 1.23.2.2  1999/02/05 09:32:35  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.23.2.1  1999/02/02 21:57:04  jimg
+// String to string version
+//
+// Revision 1.23  1998/08/06 16:22:38  jimg
+// Fixed the misuse of the read(...) member function. See Grid.c (from jeh).
+//
+// Revision 1.22  1998/03/17 17:51:06  jimg
+// Added an implementation of element_count().
+//
+// Revision 1.21  1998/02/05 20:13:58  jimg
+// DODS now compiles with gcc 2.8.x
+//
+// Revision 1.20  1997/12/31 21:48:12  jimg
+// Enclosed print_basetype_pointer() function in #if DODS_DEBUG == 1 #endif
+// to stop compiler warnings about it being unused.
+//
+// Revision 1.19  1997/12/15 22:33:00  jimg
+// Added type checking set_vec. If the type of the element to include in the
+// vector does not match the vector's type, set_vec() returns false.
+//
+// Revision 1.18  1997/09/22 22:37:53  jimg
+// Fixed a bug in vec_resize.
+//
+// Revision 1.17  1997/03/08 19:02:11  jimg
+// Changed default param to check_semantics() from  to String()
+// and removed the default from the argument list in the mfunc definition
+//
+// Revision 1.16  1997/02/28 01:28:03  jimg
+// Changed check_semantics() so that it now returns error messages in a String
+// object (passed by reference).
+//
+// Revision 1.15  1996/12/02 18:22:08  jimg
+// Added cases for uint32 to various parts of Vector.
+//
+// Revision 1.14  1996/11/13 19:23:10  jimg
+// Fixed debugging.
+//
+// Revision 1.13  1996/08/13 18:39:25  jimg
+// Added not_used to definition of char rcsid[].
+// Fixed int -vs- unsigned int discrepancies.
+//
+// Revision 1.12  1996/06/04 21:33:50  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
+// Revision 1.11  1996/05/31 23:30:42  jimg
+// Updated copyright notice.
+//
+// Revision 1.10  1996/05/30 17:14:56  jimg
+// Fixed the allocation of vectors of DODS variable objects; use the
+// ptr_duplicate member function instead of the copy ctor in val2buf().
+// Fixed allocation of vector of String in buf2val(). From Reza.
+//
+// Revision 1.9  1996/05/29 22:08:53  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
+// Revision 1.8  1996/05/16 22:49:53  jimg
+// Dan's changes for version 2.0. Added a parameter to read that returns
+// an error code so that EOF can be distinguished from an actual error when
+// reading sequences. This *may* be replaced by an error member function
+// in the future.
+//
+// Revision 1.7  1996/05/14 15:38:46  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
+// Revision 1.6  1996/04/05 00:22:09  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.5  1996/03/05 01:09:09  jimg
+// Added to the Vector dtor (now the BaseType * vector is properly deleted.
+// Created the vec_resize() member function.
+// Modified serialize() member function so that the ce_eval flag is used.
+//
+// Revision 1.4  1996/02/01 17:43:14  jimg
+// Added support for lists as operands in constraint expressions.
+//
+// Revision 1.3  1995/12/09  01:07:33  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.2  1995/12/06  19:52:26  jimg
+// Modified print_decl() so that the declaration is printed only if the
+// variable is selected.
+//
+// Revision 1.1  1995/11/22  22:30:18  jimg
+// Created.
+//
+

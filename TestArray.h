@@ -11,8 +11,33 @@
 //
 // jhrg 1/12/95
 
+#ifndef _testarray_h
+#define _testarray_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include "Array.h"
+
+class TestArray: public Array {
+public:
+    TestArray(const string &n = "", BaseType *v = 0);
+    virtual ~TestArray();
+
+    virtual BaseType *ptr_duplicate();
+
+    virtual bool read(const string &dataset);
+};
+
 /* 
  * $Log: TestArray.h,v $
+ * Revision 1.12  2000/09/22 02:17:21  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.11  2000/09/21 16:22:08  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -77,25 +102,6 @@
  *
  */
 
-#ifndef _TestArray_h
-#define _TestArray_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#include "Array.h"
-
-class TestArray: public Array {
-public:
-    TestArray(const string &n = "", BaseType *v = 0);
-    virtual ~TestArray();
-
-    virtual BaseType *ptr_duplicate();
-
-    virtual bool read(const string &dataset);
-};
-
-#endif
+#endif // _testarray_h
 
 

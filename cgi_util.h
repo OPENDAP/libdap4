@@ -12,11 +12,13 @@
 //
 // 2/22/95 jhrg
 
-#if 0
-#include "config_dap.h"		// For DVR string.
+#ifndef _cgi_util_h
+#define _cgi_util_h
+
+#ifndef _connect_h
+#include "Connect.h"		// For ObjectType and EncodingType defs 
 #endif
 
-#include "Connect.h"		// For ObjectType and EncodingType defs 
 
 /** The CGI utilities include a variety of functions useful to
     programmers developing DODS CGI filter programs. However, before jumping
@@ -306,3 +308,5 @@ void set_mime_error(FILE *out, int code = HTERR_NOT_FOUND,
 
 //@}
 //@}
+
+#endif // _cgi_util_h

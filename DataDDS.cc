@@ -8,54 +8,9 @@
 //
 // jhrg 9/19/97
 
-// $Log: DataDDS.cc,v $
-// Revision 1.9  2000/07/09 22:05:35  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.8  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.7.20.1  2000/06/02 18:21:26  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.7  1999/05/05 00:40:11  jimg
-// Modified the DataDDS class so that a version string may begin with any
-// character sequence, not just `dods'. This means that each server can identify
-// itself in the version string.
-//
-// Revision 1.6  1999/04/29 02:29:29  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.5  1998/11/10 01:01:11  jimg
-// version_regex now fast compiled.
-//
-// Revision 1.4.4.2  1999/02/05 09:32:34  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.4.4.1  1999/02/02 21:56:58  jimg
-// String to string version
-//
-// Revision 1.4  1998/06/05 21:29:54  jimg
-// Changed the version regex used to check for the version string pattern so
-// that it includes a `wildcard' at the end. Thus versions like 2.15.1 and
-// 2.15a can be read (both as major version == 2 and minor version == 15).
-//
-// Revision 1.3  1998/02/05 20:13:52  jimg
-// DODS now compiles with gcc 2.8.x
-//
-// Revision 1.2  1997/12/16 00:37:14  jimg
-// Changed _version_string_to_numbers() so that it does something sensible
-// when the version string is hosed.
-//
-// Revision 1.1  1997/09/22 22:19:27  jimg
-// Created this subclass of DDS to hold version information in the data DDS
-//
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.9 2000/07/09 22:05:35 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.10 2000/09/22 02:17:19 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -151,3 +106,55 @@ DataDDS::set_sequence_level(int level)
 {
     _sequence_level = level;
 }
+
+// $Log: DataDDS.cc,v $
+// Revision 1.10  2000/09/22 02:17:19  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.9  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.8  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.7.20.1  2000/06/02 18:21:26  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.7  1999/05/05 00:40:11  jimg
+// Modified the DataDDS class so that a version string may begin with any
+// character sequence, not just `dods'. This means that each server can identify
+// itself in the version string.
+//
+// Revision 1.6  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.5  1998/11/10 01:01:11  jimg
+// version_regex now fast compiled.
+//
+// Revision 1.4.4.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.4.4.1  1999/02/02 21:56:58  jimg
+// String to string version
+//
+// Revision 1.4  1998/06/05 21:29:54  jimg
+// Changed the version regex used to check for the version string pattern so
+// that it includes a `wildcard' at the end. Thus versions like 2.15.1 and
+// 2.15a can be read (both as major version == 2 and minor version == 15).
+//
+// Revision 1.3  1998/02/05 20:13:52  jimg
+// DODS now compiles with gcc 2.8.x
+//
+// Revision 1.2  1997/12/16 00:37:14  jimg
+// Changed _version_string_to_numbers() so that it does something sensible
+// when the version string is hosed.
+//
+// Revision 1.1  1997/09/22 22:19:27  jimg
+// Created this subclass of DDS to hold version information in the data DDS
+//
+

@@ -11,7 +11,80 @@
 //
 // jhrg 9/7/94
 
+#ifndef _uint16_h
+#define _uint16_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#if 0
+
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#endif
+
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
+
+#ifndef _dods_datatypes_h
+#include "dods-datatypes.h"
+#endif
+
+#ifndef _basetype_h
+#include "BaseType.h"
+#endif
+
+class UInt16: public BaseType {
+    /** This class allows Byte, ..., Float64 acesss to _buf to simplify and
+	speed up the relational operators.
+
+	NB: According to Stroustrup it does not matter where (public, private
+	or protected) friend classes are declared. */
+    friend class Byte;
+    friend class Int16;
+    friend class Int32;
+    friend class UInt32;
+    friend class Float32;
+    friend class Float64;
+
+protected:
+    dods_uint16 _buf;
+
+public:
+    UInt16(const string &n = "");
+    virtual ~UInt16() {}
+
+    virtual BaseType *ptr_duplicate() = 0;
+    
+    virtual unsigned int width();
+
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+
+    virtual bool read(const string &dataset) = 0;
+
+    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int buf2val(void **val);
+
+    virtual void print_val(ostream &os, string space = "",
+			   bool print_decl_p = true);
+
+    virtual bool ops(BaseType *b, int op, const string &dataset);
+};
+
 // $Log: UInt16.h,v $
+// Revision 1.8  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.7  2000/09/21 16:22:09  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -68,67 +141,5 @@
 // Added.
 //
 
-#ifndef _UInt16_h
-#define _UInt16_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#if 0
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
-#include "dods-datatypes.h"
-#include "BaseType.h"
-
-class UInt16: public BaseType {
-    /** This class allows Byte, ..., Float64 acesss to _buf to simplify and
-	speed up the relational operators.
-
-	NB: According to Stroustrup it does not matter where (public, private
-	or protected) friend classes are declared. */
-    friend class Byte;
-    friend class Int16;
-    friend class Int32;
-    friend class UInt32;
-    friend class Float32;
-    friend class Float64;
-
-protected:
-    dods_uint16 _buf;
-
-public:
-    UInt16(const string &n = "");
-    virtual ~UInt16() {}
-
-    virtual BaseType *ptr_duplicate() = 0;
-    
-    virtual unsigned int width();
-
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
-
-    virtual bool read(const string &dataset) = 0;
-
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
-
-    virtual void print_val(ostream &os, string space = "",
-			   bool print_decl_p = true);
-
-    virtual bool ops(BaseType *b, int op, const string &dataset);
-};
-
-#endif
+#endif // _uint16_h
 

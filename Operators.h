@@ -10,32 +10,10 @@
 //
 // jhrg 3/24/99
 
-// $Log: Operators.h,v $
-// Revision 1.5  2000/07/09 21:57:09  rmorris
-// Mods's to increase portability, minimuze ifdef's in win32 and account
-// for differences between the Standard C++ Library - most notably, the
-// iostream's.
-//
-// Revision 1.4  2000/06/07 18:06:59  jimg
-// Merged the pc port branch
-//
-// Revision 1.3.20.1  2000/06/02 18:29:31  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.3  1999/05/04 19:47:21  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.2  1999/04/29 02:29:31  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.1  1999/03/24 23:37:37  jimg
-// Added
-//
+#ifndef _operators_h
+#define _operators_h
 
-#ifndef __operators_h
-#define __operators_h
-
-#include "Regex.h"		// GNU Regex class used for string =~ op.
+#include <Regex.h>		// GNU Regex class used for string =~ op.
 
 static unsigned
 dods_max(int i1, int i2)
@@ -179,4 +157,31 @@ bool rops(T1 a, T2 b, int op)
     }
 }
 
-#endif // __operators_h
+// $Log: Operators.h,v $
+// Revision 1.6  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.5  2000/07/09 21:57:09  rmorris
+// Mods's to increase portability, minimuze ifdef's in win32 and account
+// for differences between the Standard C++ Library - most notably, the
+// iostream's.
+//
+// Revision 1.4  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.3.20.1  2000/06/02 18:29:31  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.3  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
+// Revision 1.2  1999/04/29 02:29:31  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.1  1999/03/24 23:37:37  jimg
+// Added
+
+#endif // _operators_h

@@ -9,7 +9,26 @@
 //
 // jhrg 9/7/94
 
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include <assert.h>
+
+#include "Url.h"
+
+Url::Url(const string &n) : Str(n)
+{
+    set_type(dods_url_c);		// override the type set by Str
+}
+
 // $Log: Url.cc,v $
+// Revision 1.17  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.16  1999/04/29 02:29:34  jimg
 // Merge of no-gnu branch
 //
@@ -103,15 +122,3 @@
 // Added CtorType.
 //
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include <assert.h>
-
-#include "Url.h"
-
-Url::Url(const string &n) : Str(n)
-{
-    set_type(dods_url_c);		// override the type set by Str
-}

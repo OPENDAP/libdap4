@@ -9,144 +9,13 @@
 // filter programs which, along with a CGI program, comprise DODS servers.
 // jhrg 8/26/97
 
-// $Log: DODSFilter.cc,v $
-// Revision 1.21  2000/09/21 16:22:07  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.20  2000/07/09 22:05:35  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.19  2000/06/07 19:33:21  jimg
-// Merged with verson 3.1.6
-//
-// Revision 1.18  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.17.10.1  2000/06/02 18:16:48  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.16.2.3  2000/05/18 20:45:27  jimg
-// added set_ce(). Maybe add more set methods?
-//
-// Revision 1.17.4.3  2000/03/08 00:09:04  jgarcia
-// replace ostrstream with string;added functions to convert from double and
-// long to string
-//
-// Revision 1.17.4.2  2000/02/17 05:03:12  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.17.4.1  2000/02/07 21:11:36  jgarcia
-// modified prototypes and implementations to use exceeption handling
-//
-// Revision 1.16.2.2  1999/09/08 22:36:51  jimg
-// Fixed the spelling of version (was vision) and the usage line (did not
-// include -V).
-//
-// Revision 1.17  1999/09/03 22:07:44  jimg
-// Merged changes from release-3-1-1
-//
-// Revision 1.16.2.1  1999/08/28 06:43:04  jimg
-// Fixed the implementation/interface pragmas and misc comments
-//
-// Revision 1.16  1999/07/22 17:11:51  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.15.4.1  1999/06/01 15:43:51  jimg
-// Made dods/3.0 the default version number. This makes is simpler to debug dods
-// servers since running the server filter programs will generate valid headers
-// now. Before you had to remember to use the -v option and give a version
-// string/number or the MIME header would not be valid. This confused the MIME
-// header parse which hosed the data stream.
-//
-// Revision 1.15  1999/05/26 17:37:02  jimg
-// Added a bit where, before sending caught Error objects to the client, we
-// write the message to t eh httpd's error_log.
-//
-// Revision 1.14  1999/05/25 21:57:52  dan
-// Added an optional second argument to read_ancillary_dds to support
-// JGOFS usage.
-//
-// Revision 1.13  1999/05/25 21:54:19  dan
-// Added an optional argument to read_ancillary_das to support JGOFS
-// data object usage, where the location of the ancillary DAS file isn't
-// readily available through the 'dataset' argument of the command line.
-//
-// Revision 1.12  1999/05/21 17:15:46  jimg
-// Added instrumentation to the ctor. This simplifies debugging the interaction
-// between the filter programs and the perl script.
-//
-// Revision 1.11  1999/05/19 23:56:57  jimg
-// Changed the support address from @dods to @unidata
-//
-// Revision 1.10  1999/05/05 00:36:36  jimg
-// Added the -V option. -v now is used to pass the version information from the
-// CGI to the C++ software; -V triggers output of the version message. This
-// allows the DODSFilter class to pass information about the server's version to
-// the core software.
-// All set_mime_*() functions are now passes the CGI version information so that
-// all MIME headers contain information about the server's version.
-// Added the get_cgi_version() member function so that clients of DODSFilter can
-// find out the version number.
-//
-// Revision 1.9  1999/05/04 19:47:21  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.8  1999/04/29 02:29:28  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.7  1999/02/22 22:59:07  jimg
-// Added the get_accept_types() accessor.
-// Changed the ctor so that the -t option is recognized.
-//
-// Revision 1.6  1998/12/16 19:10:53  jimg
-// Added support for XDODS-Server MIME header. This fixes a problem where our
-// use of Server clashed with Java.
-//
-// Revision 1.5  1998/11/10 01:04:42  jimg
-// Added `ends' to strings made with ostrstream (fixes a bug found with
-// purify).
-// Added catch for throws from within the CE evaluation functions.
-//
-// Revision 1.4.2.2  1999/02/05 09:32:34  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.4.2.1  1999/02/02 21:56:57  jimg
-// String to string version
-//
-// Revision 1.4  1998/08/06 16:12:30  jimg
-// Added cache dir methods and stuff to ctor (from jeh)
-//
-// Revision 1.3  1998/03/19 23:34:21  jimg
-// Fixed calls to set_mime_*().
-// Removed the compression code (it is now in DDS::send().
-// Removed old code (that was surrounded by #if 0 ... #endif).
-//
-// Revision 1.2  1998/02/11 22:00:46  jimg
-// Added call to util.cc:deflate_exists() to send_data(). This means that
-// send_data() will only try to start the compressor if an executable copy of
-// deflate can be found. If, for any reason a copy of deflate cannot be found
-// data is sent without trying to compress it.
-//
-// Revision 1.1  1997/08/28 20:39:02  jimg
-// Created
-//
-
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.21 2000/09/21 16:22:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.22 2000/09/22 02:17:19 jimg Exp $"};
 
 #include <iostream>
 #if defined(__GNUG__) || defined(WIN32)
@@ -470,15 +339,140 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream)
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
+// $Log: DODSFilter.cc,v $
+// Revision 1.22  2000/09/22 02:17:19  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.21  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.20  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.19  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
+//
+// Revision 1.18  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.17.10.1  2000/06/02 18:16:48  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.16.2.3  2000/05/18 20:45:27  jimg
+// added set_ce(). Maybe add more set methods?
+//
+// Revision 1.17.4.3  2000/03/08 00:09:04  jgarcia
+// replace ostrstream with string;added functions to convert from double and
+// long to string
+//
+// Revision 1.17.4.2  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.17.4.1  2000/02/07 21:11:36  jgarcia
+// modified prototypes and implementations to use exceeption handling
+//
+// Revision 1.16.2.2  1999/09/08 22:36:51  jimg
+// Fixed the spelling of version (was vision) and the usage line (did not
+// include -V).
+//
+// Revision 1.17  1999/09/03 22:07:44  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.16.2.1  1999/08/28 06:43:04  jimg
+// Fixed the implementation/interface pragmas and misc comments
+//
+// Revision 1.16  1999/07/22 17:11:51  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.15.4.1  1999/06/01 15:43:51  jimg
+// Made dods/3.0 the default version number. This makes is simpler to debug dods
+// servers since running the server filter programs will generate valid headers
+// now. Before you had to remember to use the -v option and give a version
+// string/number or the MIME header would not be valid. This confused the MIME
+// header parse which hosed the data stream.
+//
+// Revision 1.15  1999/05/26 17:37:02  jimg
+// Added a bit where, before sending caught Error objects to the client, we
+// write the message to t eh httpd's error_log.
+//
+// Revision 1.14  1999/05/25 21:57:52  dan
+// Added an optional second argument to read_ancillary_dds to support
+// JGOFS usage.
+//
+// Revision 1.13  1999/05/25 21:54:19  dan
+// Added an optional argument to read_ancillary_das to support JGOFS
+// data object usage, where the location of the ancillary DAS file isn't
+// readily available through the 'dataset' argument of the command line.
+//
+// Revision 1.12  1999/05/21 17:15:46  jimg
+// Added instrumentation to the ctor. This simplifies debugging the interaction
+// between the filter programs and the perl script.
+//
+// Revision 1.11  1999/05/19 23:56:57  jimg
+// Changed the support address from @dods to @unidata
+//
+// Revision 1.10  1999/05/05 00:36:36  jimg
+// Added the -V option. -v now is used to pass the version information from the
+// CGI to the C++ software; -V triggers output of the version message. This
+// allows the DODSFilter class to pass information about the server's version to
+// the core software.
+// All set_mime_*() functions are now passes the CGI version information so that
+// all MIME headers contain information about the server's version.
+// Added the get_cgi_version() member function so that clients of DODSFilter can
+// find out the version number.
+//
+// Revision 1.9  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
+// Revision 1.8  1999/04/29 02:29:28  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.7  1999/02/22 22:59:07  jimg
+// Added the get_accept_types() accessor.
+// Changed the ctor so that the -t option is recognized.
+//
+// Revision 1.6  1998/12/16 19:10:53  jimg
+// Added support for XDODS-Server MIME header. This fixes a problem where our
+// use of Server clashed with Java.
+//
+// Revision 1.5  1998/11/10 01:04:42  jimg
+// Added `ends' to strings made with ostrstream (fixes a bug found with
+// purify).
+// Added catch for throws from within the CE evaluation functions.
+//
+// Revision 1.4.2.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.4.2.1  1999/02/02 21:56:57  jimg
+// String to string version
+//
+// Revision 1.4  1998/08/06 16:12:30  jimg
+// Added cache dir methods and stuff to ctor (from jeh)
+//
+// Revision 1.3  1998/03/19 23:34:21  jimg
+// Fixed calls to set_mime_*().
+// Removed the compression code (it is now in DDS::send().
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
+// Revision 1.2  1998/02/11 22:00:46  jimg
+// Added call to util.cc:deflate_exists() to send_data(). This means that
+// send_data() will only try to start the compressor if an executable copy of
+// deflate can be found. If, for any reason a copy of deflate cannot be found
+// data is sent without trying to compress it.
+//
+// Revision 1.1  1997/08/28 20:39:02  jimg
+// Created
+//
 

@@ -9,7 +9,33 @@
 
 // Declarations for identifier escaping and un-escaping functions.
 
+#ifndef _escaping_h
+#define _escaping_h
+
+#include <string>
+
+#ifdef WIN32
+using std::string;
+#endif
+
+string hexstring(unsigned char val);
+string unhexstring(string s);
+string octstring(unsigned char val);
+string unoctstring(string s);
+
+string id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]");
+string dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]");
+string esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]");
+string escattr(string s);
+string unescattr(string s);
+
 // $Log: escaping.h,v $
+// Revision 1.5  2000/09/22 02:17:22  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.4  2000/07/09 21:57:10  rmorris
 // Mods's to increase portability, minimuze ifdef's in win32 and account
 // for differences between the Standard C++ Library - most notably, the
@@ -29,23 +55,6 @@
 //
 // Revision 1.1  1999/07/23 21:51:15  jimg
 // Added
-//
 
-#include <string>
-
-#ifdef WIN32
-using std::string;
-#endif
-
-string hexstring(unsigned char val);
-string unhexstring(string s);
-string octstring(unsigned char val);
-string unoctstring(string s);
-
-string id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]");
-string dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]");
-string esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]");
-string escattr(string s);
-string unescattr(string s);
-
+#endif // _escaping_h
 

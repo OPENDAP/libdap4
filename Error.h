@@ -11,89 +11,6 @@
 //
 // jhrg 4/23/96
 
-// $Log: Error.h,v $
-// Revision 1.16  2000/09/21 16:22:07  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.15  2000/07/09 21:57:09  rmorris
-// Mods's to increase portability, minimuze ifdef's in win32 and account
-// for differences between the Standard C++ Library - most notably, the
-// iostream's.
-//
-// Revision 1.14  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.13.4.1  2000/06/02 18:21:26  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.13  2000/03/28 16:32:02  jimg
-// Modified these files so that they can be built either with and without GUI
-// defined. The type signatures are now the same either way. Thus we can
-// build libdap++-gui and libdap++ (without GUI support). When using the
-// later there's no need to link with tcl, tk or X11. This makes the
-// executables smaller. It also keeps the servers from potentially needing
-// sharable libraries (since X11 is often sharable) which can be hard to find
-// unless they are in the standard places. I made the same changes in Connect
-// and Gui.
-//
-// Revision 1.12.2.1  2000/02/17 05:03:12  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.12  1999/12/31 00:55:10  jimg
-// Fixed up the progress indicator
-//
-// Revision 1.11  1999/08/23 18:57:44  jimg
-// Merged changes from release 3.1.0
-//
-// Revision 1.10.6.1  1999/08/09 22:57:50  jimg
-// Removed GUI code; reactivate by defining GUI
-//
-// Revision 1.10  1999/05/04 19:47:21  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.9  1999/04/29 02:29:29  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.8  1999/01/21 02:55:54  jimg
-// Added include of stdio.h for FILE *.
-//
-// Revision 1.7.6.1  1999/02/02 21:56:58  jimg
-// String to string version
-//
-// Revision 1.7  1998/01/14 22:55:03  tom
-// First draft of doc++ class documentation.
-//
-// Revision 1.6  1997/03/05 08:16:25  jimg
-// Added Cannot read file message to list of builtin messages.
-//
-// Revision 1.5  1997/02/18 21:26:52  jimg
-// Moved the default ctor back into the public section...
-//
-// Revision 1.4  1997/02/15 07:11:47  jimg
-// Changed comments for doc++.
-// Moved default ctor into the private part of the object.
-//
-// Revision 1.3  1996/08/13 18:17:02  jimg
-// Removed system includes.
-// Added documentation on new interfaces for display_message() and
-// correct_error().
-//
-// Revision 1.2  1996/06/22 00:02:50  jimg
-// Added Gui pointer to the Error oject's correct_error() and
-// display_message() mfuncs. These mfuncs now used the GUI to display
-// messages.
-//
-// Revision 1.1  1996/05/31 22:39:56  jimg
-// Added.
-//
-
 #ifndef _error_h
 #define _error_h
 
@@ -102,10 +19,11 @@
 #endif
 
 #include <stdio.h>		// For FILE *
-#include <iostream>
 
+#include <iostream>
 #include <string>
-#ifdef GUI
+
+#if defined(GUI) && !defined(_gui_h)
 #include "Gui.h"
 #endif
 
@@ -329,5 +247,94 @@ public:
 	@see display_message */
     string correct_error(void *gui);
 };
+
+// $Log: Error.h,v $
+// Revision 1.17  2000/09/22 02:17:20  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.16  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.15  2000/07/09 21:57:09  rmorris
+// Mods's to increase portability, minimuze ifdef's in win32 and account
+// for differences between the Standard C++ Library - most notably, the
+// iostream's.
+//
+// Revision 1.14  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.13.4.1  2000/06/02 18:21:26  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.13  2000/03/28 16:32:02  jimg
+// Modified these files so that they can be built either with and without GUI
+// defined. The type signatures are now the same either way. Thus we can
+// build libdap++-gui and libdap++ (without GUI support). When using the
+// later there's no need to link with tcl, tk or X11. This makes the
+// executables smaller. It also keeps the servers from potentially needing
+// sharable libraries (since X11 is often sharable) which can be hard to find
+// unless they are in the standard places. I made the same changes in Connect
+// and Gui.
+//
+// Revision 1.12.2.1  2000/02/17 05:03:12  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.12  1999/12/31 00:55:10  jimg
+// Fixed up the progress indicator
+//
+// Revision 1.11  1999/08/23 18:57:44  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.10.6.1  1999/08/09 22:57:50  jimg
+// Removed GUI code; reactivate by defining GUI
+//
+// Revision 1.10  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
+// Revision 1.9  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.8  1999/01/21 02:55:54  jimg
+// Added include of stdio.h for FILE *.
+//
+// Revision 1.7.6.1  1999/02/02 21:56:58  jimg
+// String to string version
+//
+// Revision 1.7  1998/01/14 22:55:03  tom
+// First draft of doc++ class documentation.
+//
+// Revision 1.6  1997/03/05 08:16:25  jimg
+// Added Cannot read file message to list of builtin messages.
+//
+// Revision 1.5  1997/02/18 21:26:52  jimg
+// Moved the default ctor back into the public section...
+//
+// Revision 1.4  1997/02/15 07:11:47  jimg
+// Changed comments for doc++.
+// Moved default ctor into the private part of the object.
+//
+// Revision 1.3  1996/08/13 18:17:02  jimg
+// Removed system includes.
+// Added documentation on new interfaces for display_message() and
+// correct_error().
+//
+// Revision 1.2  1996/06/22 00:02:50  jimg
+// Added Gui pointer to the Error oject's correct_error() and
+// display_message() mfuncs. These mfuncs now used the GUI to display
+// messages.
+//
+// Revision 1.1  1996/05/31 22:39:56  jimg
+// Added.
+//
 
 #endif // _error_h

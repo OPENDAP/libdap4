@@ -19,8 +19,33 @@
 //
 // jhrg 1/12/95
 
+#ifndef _testbyte_h
+#define _testbyte_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include "Byte.h"
+
+class TestByte: public Byte {
+public:
+    TestByte(const string &n = "");
+    virtual ~TestByte() {}
+
+    virtual BaseType *ptr_duplicate();
+
+    virtual bool read(const string &dataset);
+};
+
 /* 
  * $Log: TestByte.h,v $
+ * Revision 1.13  2000/09/22 02:17:21  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.12  2000/09/21 16:22:08  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -88,24 +113,5 @@
  *
  */
 
-#ifndef _TestByte_h
-#define _TestByte_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#include "Byte.h"
-
-class TestByte: public Byte {
-public:
-    TestByte(const string &n = "");
-    virtual ~TestByte() {}
-
-    virtual BaseType *ptr_duplicate();
-
-    virtual bool read(const string &dataset);
-};
-
-#endif
+#endif // _testbyte_h
 

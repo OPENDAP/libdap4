@@ -9,7 +9,55 @@
 //
 // jhrg 1/13/95
 
+#include <Pix.h>
+
+#include "TestGrid.h"
+
+Grid *
+NewGrid(const string &n)
+{
+    return new TestGrid(n);
+}
+
+BaseType *
+TestGrid::ptr_duplicate()
+{
+    return new TestGrid(*this);
+}
+
+TestGrid::TestGrid(const string &n) : Grid(n)
+{
+}
+
+TestGrid::~TestGrid()
+{
+}
+
+bool
+TestGrid::read(const string &dataset)
+{
+    if (read_p())
+	return true;
+
+    array_var()->read(dataset);
+
+    for (Pix p = first_map_var(); p; next_map_var(p)) {
+	if (!map_var(p)->read(dataset))
+	    return false;
+    }
+
+    set_read_p(true);
+
+    return true;
+}
+
 // $Log: TestGrid.cc,v $
+// Revision 1.15  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.14  2000/09/21 16:22:09  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -80,44 +128,3 @@
 // BaseType.
 //
 
-#include <Pix.h>
-
-#include "TestGrid.h"
-
-Grid *
-NewGrid(const string &n)
-{
-    return new TestGrid(n);
-}
-
-BaseType *
-TestGrid::ptr_duplicate()
-{
-    return new TestGrid(*this);
-}
-
-TestGrid::TestGrid(const string &n) : Grid(n)
-{
-}
-
-TestGrid::~TestGrid()
-{
-}
-
-bool
-TestGrid::read(const string &dataset)
-{
-    if (read_p())
-	return true;
-
-    array_var()->read(dataset);
-
-    for (Pix p = first_map_var(); p; next_map_var(p)) {
-	if (!map_var(p)->read(dataset))
-	    return false;
-    }
-
-    set_read_p(true);
-
-    return true;
-}

@@ -11,66 +11,16 @@
 //
 // jhrg 2/3/96
 
-// $Log: parser.h,v $
-// Revision 1.13  2000/08/02 22:46:50  jimg
-// Merged 3.1.8
-//
-// Revision 1.12.4.1  2000/08/01 21:09:36  jimg
-// Destructor is now virtual
-//
-// Revision 1.12  1999/05/24 20:35:31  jimg
-// Moved GSEClause.h and removed second Error.h (what was that doing?) includes
-// to fix warning about redefinition of TRUE and FALSE (from within rpc/type.h).
-//
-// Revision 1.11  1999/04/29 02:29:37  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.10  1999/03/24 23:28:36  jimg
-// Added support for the new Int16, UInt16 and Float32 types.
-// Removed some unused versions of the error printing functions.
-//
-// Revision 1.9  1999/01/21 20:42:01  tom
-// Fixed comment formatting problems for doc++
-//
-// Revision 1.8  1999/01/21 02:14:37  jimg
-// Added a new struct for the GSE (Grid Selection Expression) parser. This
-// parser uses exceptions to signal all errors except parse errors.
-//
-// Revision 1.7  1998/11/10 00:45:15  jimg
-// Fixed a memory leak in the parser_arg dtor. If the Error object is created
-// the dtor must delete it.
-//
-// Revision 1.6.14.1  1999/02/05 09:32:36  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.6  1997/02/28 01:30:53  jimg
-// Tweaked comments.
-//
-// Revision 1.5  1996/10/28 18:54:05  jimg
-// Added prototypes for check_uint(...); functions that test unsigned integers.
-//
-// Revision 1.4  1996/08/13 20:45:44  jimg
-// Extended definition of parser_arg so that it can serve as the interface for
-// all the parsers.
-// Added prototypes for all the new check_* functions.
-//
-// Revision 1.3  1996/05/31 23:31:07  jimg
-// Updated copyright notice.
-//
-// Revision 1.2  1996/05/14 15:39:08  jimg
-// These changes have already been checked in once before. However, I
-// corrupted the source repository and restored it from a 5/9/96 backup
-// tape. The previous version's log entry should cover the changes.
-//
-// Revision 1.1  1996/02/03 07:35:44  jimg
-// Added.
-
 #ifndef _parser_h
 #define _parser_h
 
+#ifndef _error_h
 #include "Error.h"
+#endif
+
+#ifndef _gseclause_h
 #include "GSEClause.h"
+#endif
 
 #define YYDEBUG 1
 #undef YYERROR_VERBOSE
@@ -82,11 +32,6 @@
 #define TRUE 1
 #define FALSE 0
 #endif
-
-#if 0
-#include "Error.h"
-#endif
-
 
 /** #parser_arg# is used to pass parameters to the bison parsers and get
     error codes and objects in return. If #status()# is true, then the
@@ -178,7 +123,7 @@ void save_str(string &dst, const char *src, const int);
     @memo Is the value a valid byte?
     */
 
-int check_byte(const char *val, const int line);
+int check_byte(const char *val);
 
 /** Like #check_byte()# but for 32-bit integers (#check_uint()# is for
     unsigned integers). 
@@ -186,23 +131,84 @@ int check_byte(const char *val, const int line);
     @memo Is the value a valid integer?
     */
 
-int check_int16(const char *val, const int num);
-int check_uint16(const char *val, const int num);
-int check_int32(const char *val, const int num);
-int check_uint32(const char *val, const int num);
+int check_int16(const char *val);
+int check_uint16(const char *val);
+int check_int32(const char *val);
+int check_uint32(const char *val);
 
 /** Like #check_byte()# but for 64-bit float values.
 
     @memo Is the value a valid float? */
 
-int check_float32(const char *val, const int num);
-int check_float64(const char *val, const int num);
+int check_float32(const char *val);
+int check_float64(const char *val);
 
 /** Currently this function always returns true.
 
     @memo Is the value a valid URL? */
 
-int check_url(const char *val, const int num);
+int check_url(const char *val);
+
+// $Log: parser.h,v $
+// Revision 1.14  2000/09/22 02:17:23  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.13  2000/08/02 22:46:50  jimg
+// Merged 3.1.8
+//
+// Revision 1.12.4.1  2000/08/01 21:09:36  jimg
+// Destructor is now virtual
+//
+// Revision 1.12  1999/05/24 20:35:31  jimg
+// Moved GSEClause.h and removed second Error.h (what was that doing?) includes
+// to fix warning about redefinition of TRUE and FALSE (from within rpc/type.h).
+//
+// Revision 1.11  1999/04/29 02:29:37  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.10  1999/03/24 23:28:36  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+// Removed some unused versions of the error printing functions.
+//
+// Revision 1.9  1999/01/21 20:42:01  tom
+// Fixed comment formatting problems for doc++
+//
+// Revision 1.8  1999/01/21 02:14:37  jimg
+// Added a new struct for the GSE (Grid Selection Expression) parser. This
+// parser uses exceptions to signal all errors except parse errors.
+//
+// Revision 1.7  1998/11/10 00:45:15  jimg
+// Fixed a memory leak in the parser_arg dtor. If the Error object is created
+// the dtor must delete it.
+//
+// Revision 1.6.14.1  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.6  1997/02/28 01:30:53  jimg
+// Tweaked comments.
+//
+// Revision 1.5  1996/10/28 18:54:05  jimg
+// Added prototypes for check_uint(...); functions that test unsigned integers.
+//
+// Revision 1.4  1996/08/13 20:45:44  jimg
+// Extended definition of parser_arg so that it can serve as the interface for
+// all the parsers.
+// Added prototypes for all the new check_* functions.
+//
+// Revision 1.3  1996/05/31 23:31:07  jimg
+// Updated copyright notice.
+//
+// Revision 1.2  1996/05/14 15:39:08  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
+// Revision 1.1  1996/02/03 07:35:44  jimg
+// Added.
 
 #endif // _parser_h
  

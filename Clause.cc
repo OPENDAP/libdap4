@@ -7,56 +7,6 @@
 
 // Implementation for the CE Clause class.
 
-// $Log: Clause.cc,v $
-// Revision 1.11  2000/08/02 22:46:48  jimg
-// Merged 3.1.8
-//
-// Revision 1.8.6.1  2000/08/02 20:58:26  jimg
-// Included the header config_dap.h in this file. config_dap.h has been
-// removed from all of the DODS header files.
-//
-// Revision 1.10  2000/07/09 22:05:35  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.9  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.8.20.1  2000/06/02 18:14:42  rmorris
-// Mod for port to win32.
-//
-// Revision 1.8  1999/04/29 02:29:27  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.7  1999/03/24 23:37:14  jimg
-// Added support for the Int16, UInt16 and Float32 types
-//
-// Revision 1.6  1998/11/10 01:09:47  jimg
-// Added to the dtors to make sure the various Clause objects are deleted.
-//
-// Revision 1.5  1998/10/21 16:34:03  jimg
-// Made modifications that allow null argument lists.
-// Replaced repeated code (to build arg lists) with a function call (it's a
-// function call because it needs to be called from inside the expr parser,
-// too).
-//
-// Revision 1.4.14.1  1999/02/02 21:56:56  jimg
-// String to string version
-//
-// Revision 1.4  1996/12/02 23:10:08  jimg
-// Added dataset as a parameter to the ops member function.
-//
-// Revision 1.3  1996/11/27 22:40:16  jimg
-// Added DDS as third parameter to function in the CE evaluator
-//
-// Revision 1.2  1996/08/13 17:49:58  jimg
-// Fixed a bug in the value() member function where non-existent functions
-// were `evaluated' (producing a core dump).
-//
-// Revision 1.1  1996/05/31 23:18:55  jimg
-// Added.
-//
-
 #ifdef __GNUG__
 #pragma implementation
 #endif
@@ -216,3 +166,60 @@ Clause::value(const string &dataset, DDS &dds, BaseType **value)
 	return false;
     }
 }
+
+// $Log: Clause.cc,v $
+// Revision 1.12  2000/09/22 02:17:19  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.11  2000/08/02 22:46:48  jimg
+// Merged 3.1.8
+//
+// Revision 1.8.6.1  2000/08/02 20:58:26  jimg
+// Included the header config_dap.h in this file. config_dap.h has been
+// removed from all of the DODS header files.
+//
+// Revision 1.10  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.9  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.8.20.1  2000/06/02 18:14:42  rmorris
+// Mod for port to win32.
+//
+// Revision 1.8  1999/04/29 02:29:27  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.7  1999/03/24 23:37:14  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
+// Revision 1.6  1998/11/10 01:09:47  jimg
+// Added to the dtors to make sure the various Clause objects are deleted.
+//
+// Revision 1.5  1998/10/21 16:34:03  jimg
+// Made modifications that allow null argument lists.
+// Replaced repeated code (to build arg lists) with a function call (it's a
+// function call because it needs to be called from inside the expr parser,
+// too).
+//
+// Revision 1.4.14.1  1999/02/02 21:56:56  jimg
+// String to string version
+//
+// Revision 1.4  1996/12/02 23:10:08  jimg
+// Added dataset as a parameter to the ops member function.
+//
+// Revision 1.3  1996/11/27 22:40:16  jimg
+// Added DDS as third parameter to function in the CE evaluator
+//
+// Revision 1.2  1996/08/13 17:49:58  jimg
+// Fixed a bug in the value() member function where non-existent functions
+// were `evaluated' (producing a core dump).
+//
+// Revision 1.1  1996/05/31 23:18:55  jimg
+// Added.
+//
+

@@ -9,7 +9,186 @@
 //
 // jhrg 9/7/94
 
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include "config_dap.h"
+
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.42 2000/09/22 02:17:21 jimg Exp $"};
+
+#include <assert.h>
+#include <stdlib.h>
+
+#include "Str.h"
+#include "DDS.h"
+#include "parser.h"
+#include "expr.tab.h"
+#include "Operators.h"
+#include "util.h"
+#include "InternalErr.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+#endif
+
+string escattr(string s);
+
+Str::Str(const string &n) : BaseType(n, dods_str_c), _buf("")
+{
+}
+
+unsigned int
+Str::length()
+{
+    return _buf.length();
+}
+
+unsigned int
+Str::width()
+{
+    return sizeof(string);
+}
+
+bool
+Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
+{
+
+    DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
+
+    // Jose Garcia
+    // Since the read method is virtual and implemented outside
+    // libdap++ if we can not read the data that is the problem 
+    // of the user or of whoever wrote the surrogate library
+    // implemeting read therefore it is an internal error.
+    if (!read_p() && !read(dataset))
+	throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
+
+    if (ce_eval && !dds.eval_selection(dataset))
+	return true;
+
+    if (!xdr_str(sink, _buf))
+	return false;
+    DBG(cerr << "Exiting: buf = " << _buf << endl);
+
+    return true;
+}
+
+// deserialize the string on stdin and put the result in BUF.
+
+bool
+Str::deserialize(XDR *source, DDS *, bool)
+{
+    return (xdr_str(source, _buf) != 0);
+}
+
+// Copy information in the object's internal buffers into the memory pointed
+// to by VAL. If *VAL is null, then allocate memory for the value (a string
+// in this case).
+//
+// NB: return the size of the thing val points to (sizeof val), not the
+// length of the string. Thus if there is an array of of strings (i.e., (char
+// *)s), then the return value of this mfunc can be used to advance to the
+// next char * in that array. This weirdness is needed because C programs
+// which will need to interface to libraries built using this toolkit will
+// not know about C++ strings and will need to use the C representation for
+// strings, but here in the toolkit I use the string class to cut down on
+// memory management problems.
+
+unsigned int
+Str::buf2val(void **val)
+{
+    // Jose Garcia
+    // The same comment justifying throwing an Error in val2buf applies here.
+    if(!val)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "The incoming pointer does not contain any data.");
+
+    if (*val)
+	delete static_cast<string *>(*val);
+
+    *val = new string(_buf);
+
+    return sizeof(string);
+}
+
+// Copy data in VAL to _BUF.
+//
+// Returns the number of bytes needed for _BUF.
+
+unsigned int
+Str::val2buf(void *val, bool)
+{
+    // Jose Garcia
+    // This method is public therefore and I believe it has being designed
+    // to be use by read which must be implemented on the surrogated library,
+    // thus if the pointer val is NULL, is an Internal Error. 
+    if (!val)
+	throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
+
+    _buf = *(string *)val;
+
+    return sizeof(string);
+}
+
+void 
+Str::print_val(ostream &os, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(os, space, false);
+	os << " = \"" << escattr(_buf) << "\";" << endl;
+    }
+    else 
+      os << '"' << escattr(_buf) << '"';
+}
+
+bool
+Str::ops(BaseType *b, int op, const string &dataset)
+{
+    // Extract the Byte arg's value.
+    if (!read_p() && !read(dataset)) {
+      // Jose Garcia
+      // Since the read method is virtual and implemented outside
+      // libdap++ if we can not read the data that is the problem 
+      // of the user or of whoever wrote the surrogate library
+      // implemeting read therefore it is an internal error.
+      throw InternalErr(__FILE__, __LINE__, "This value was not read!");
+    }
+
+    // Extract the second arg's value.
+    if (!b->read_p() && !b->read(dataset)) {
+      // Jose Garcia
+      // Since the read method is virtual and implemented outside
+      // libdap++ if we can not read the data that is the problem 
+      // of the user or of whoever wrote the surrogate library
+      // implemeting read therefore it is an internal error.
+      throw InternalErr(__FILE__, __LINE__, "Argument value was not read!");
+    }
+
+    switch (b->type()) {
+      case dods_str_c:
+	return rops<string, string, StrCmp<string, string> >
+	    (_buf, dynamic_cast<Str *>(b)->_buf, op);
+      case dods_url_c:
+	return rops<string, string, StrCmp<string, string> >
+	    (_buf, dynamic_cast<Url *>(b)->_buf, op);
+      default:
+	return false;
+    }
+}
+
 // $Log: Str.cc,v $
+// Revision 1.42  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.41  2000/09/21 16:22:08  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -224,179 +403,4 @@
 // Child class of BaseType -- used in the future to hold specific serialization
 // information for integers. Should this be a class that uses BaseType?
 //
-
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include "config_dap.h"
-
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.41 2000/09/21 16:22:08 jimg Exp $"};
-
-#include <assert.h>
-#include <stdlib.h>
-
-#include "Str.h"
-#include "DDS.h"
-#include "parser.h"
-#include "expr.tab.h"
-#include "Operators.h"
-#include "util.h"
-#include "InternalErr.h"
-
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
-
-#ifdef WIN32
-using std::cerr;
-using std::endl;
-#endif
-
-string escattr(string s);
-
-Str::Str(const string &n) : BaseType(n, dods_str_c), _buf("")
-{
-}
-
-unsigned int
-Str::length()
-{
-    return _buf.length();
-}
-
-unsigned int
-Str::width()
-{
-    return sizeof(string);
-}
-
-bool
-Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
-{
-
-    DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
-
-    // Jose Garcia
-    // Since the read method is virtual and implemented outside
-    // libdap++ if we can not read the data that is the problem 
-    // of the user or of whoever wrote the surrogate library
-    // implemeting read therefore it is an internal error.
-    if (!read_p() && !read(dataset))
-	throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
-
-    if (ce_eval && !dds.eval_selection(dataset))
-	return true;
-
-    if (!xdr_str(sink, _buf))
-	return false;
-    DBG(cerr << "Exiting: buf = " << _buf << endl);
-
-    return true;
-}
-
-// deserialize the string on stdin and put the result in BUF.
-
-bool
-Str::deserialize(XDR *source, DDS *, bool)
-{
-    return (xdr_str(source, _buf) != 0);
-}
-
-// Copy information in the object's internal buffers into the memory pointed
-// to by VAL. If *VAL is null, then allocate memory for the value (a string
-// in this case).
-//
-// NB: return the size of the thing val points to (sizeof val), not the
-// length of the string. Thus if there is an array of of strings (i.e., (char
-// *)s), then the return value of this mfunc can be used to advance to the
-// next char * in that array. This weirdness is needed because C programs
-// which will need to interface to libraries built using this toolkit will
-// not know about C++ strings and will need to use the C representation for
-// strings, but here in the toolkit I use the string class to cut down on
-// memory management problems.
-
-unsigned int
-Str::buf2val(void **val)
-{
-    // Jose Garcia
-    // The same comment justifying throwing an Error in val2buf applies here.
-    if(!val)
-	throw InternalErr(__FILE__, __LINE__, 
-			  "The incoming pointer does not contain any data.");
-
-    if (*val)
-	delete static_cast<string *>(*val);
-
-    *val = new string(_buf);
-
-    return sizeof(string);
-}
-
-// Copy data in VAL to _BUF.
-//
-// Returns the number of bytes needed for _BUF.
-
-unsigned int
-Str::val2buf(void *val, bool)
-{
-    // Jose Garcia
-    // This method is public therefore and I believe it has being designed
-    // to be use by read which must be implemented on the surrogated library,
-    // thus if the pointer val is NULL, is an Internal Error. 
-    if (!val)
-	throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
-
-    _buf = *(string *)val;
-
-    return sizeof(string);
-}
-
-void 
-Str::print_val(ostream &os, string space, bool print_decl_p)
-{
-    if (print_decl_p) {
-	print_decl(os, space, false);
-	os << " = \"" << escattr(_buf) << "\";" << endl;
-    }
-    else 
-      os << '"' << escattr(_buf) << '"';
-}
-
-bool
-Str::ops(BaseType *b, int op, const string &dataset)
-{
-    // Extract the Byte arg's value.
-    if (!read_p() && !read(dataset)) {
-      // Jose Garcia
-      // Since the read method is virtual and implemented outside
-      // libdap++ if we can not read the data that is the problem 
-      // of the user or of whoever wrote the surrogate library
-      // implemeting read therefore it is an internal error.
-      throw InternalErr(__FILE__, __LINE__, "This value was not read!");
-    }
-
-    // Extract the second arg's value.
-    if (!b->read_p() && !b->read(dataset)) {
-      // Jose Garcia
-      // Since the read method is virtual and implemented outside
-      // libdap++ if we can not read the data that is the problem 
-      // of the user or of whoever wrote the surrogate library
-      // implemeting read therefore it is an internal error.
-      throw InternalErr(__FILE__, __LINE__, "Argument value was not read!");
-    }
-
-    switch (b->type()) {
-      case dods_str_c:
-	return rops<string, string, StrCmp<string, string> >
-	    (_buf, dynamic_cast<Str *>(b)->_buf, op);
-      case dods_url_c:
-	return rops<string, string, StrCmp<string, string> >
-	    (_buf, dynamic_cast<Url *>(b)->_buf, op);
-      default:
-	return false;
-    }
-}
-
-
 

@@ -12,8 +12,251 @@
 //
 // jhrg 9/6/94
 
+#ifndef _array_h
+#define _array_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include <string>
+
+#include <SLList.h>
+
+#ifndef _dods_limits_h
+#include "dods-limits.h"
+#endif
+
+#ifndef _vector_h
+#include "Vector.h"
+#endif
+
+const int DODS_MAX_ARRAY = DODS_INT_MAX;
+
+/** This class is used to hold arrays of other DODS data. The elements of the
+    array can be simple or compound data types. There is no limit on the
+    number of dimensions an array can have, or on the size of each dimension.
+
+    If desired, the user can give each dimension of an array a name. You can,
+    for example, have a 360x180 array of temperatures, covering the whole
+    globe with one-degree squares. In this case, you could name the first
+    dimension ``Longitude'' and the second dimension ``Latitude''. This can
+    help prevent a great deal of confusion.
+
+    The Array is used as part of the Grid class, where the dimension names
+    are crucial to its structure. The dimension names correspond to ``Map''
+    vectors, holding the actual values for that column of the array.
+
+    Each array dimension carries with it its own projection information. The
+    projection inforamtion takes the form of three integers: the start, stop,
+    and stride values. This is clearest with an example. Consider a
+    one-dimensional array 10 elements long. If the start value of the
+    dimension constraint is 3, then the constrained array appears to be seven
+    elements long. If the stop value is changed to 7, then the array appears
+    to be five elements long. If the stride is changed to two, the array will
+    appear to be 3 elements long. Array constraints are written as:
+    #[start:stride:stop]#.
+
+    \begin{verbatim}
+    A = [1 2 3 4 5 6 7 8 9 10]
+
+    A[3::] = [4 5 6 7 8 9 10]
+
+    A[3::7] = [4 5 6 7 8]
+
+    A[3:2:7] = [4 6 8]
+
+    A[0:3:9] = [1 4 7 10]
+    \end{verbatim}
+
+    \note{DODS uses zero-based indexing.}
+
+    @memo Holds multi-dimensional arrays.
+    @see Grid
+    @see List */
+
+class Array: public Vector {
+private:
+    struct dimension {		// each dimension has a size and a name
+	int size;
+	string name;
+	int start, stop, stride;// a constraint determines these values
+	int c_size;		// size of dimension once constrained
+	bool selected;		// true if this dimension is selected
+    };
+
+    SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
+
+    unsigned int print_array(ostream &os, unsigned int index, 
+			     unsigned int dims, unsigned int shape[]);
+			     
+protected:
+    void _duplicate(const Array &a);
+    
+public:
+  /** The Array constructor requires the name of the variable to be
+      created, and the type of data the Array is to hold.  The name
+      may be omitted, which will create a nameless variable.  The
+      template pointer may also be omitted.  Note that if the template
+      pointer is omitted when the Array is created, it {\it must} be
+      added (with #add_var()#) before #read()# or #deserialize()# is
+      called. 
+      
+      @param n A string containing the name of the variable to be
+      created. 
+      @param v A pointer to a variable of the type to be included 
+      in the Array. 
+
+      @memo The Array constructor.  */
+    Array(const string &n = "", BaseType *v = 0);
+  /** The Array copy constructor. */
+    Array(const Array &rhs);
+    virtual ~Array();
+
+    const Array &operator=(const Array &rhs);
+    virtual BaseType *ptr_duplicate() = 0; 
+
+  /** This function should read local data and fill in the data
+      buffer.  When reading the data, the read function should use the
+      constraint and selection information available for each
+      dimension of the array to decide how much of the array to read.
+      Only the values to be transmitted with #serialize()# must be
+      read. 
+
+      The implementation of this function is part of creating a new
+      DODS server, and is left for the user.  For other details, refer
+      to the description of the #read()# function in the BaseType
+      class. 
+
+      @memo Reads an array into the buffer.
+      @see BaseType::read
+      */
+    virtual bool read(const string &dataset) = 0;
+
+
+    /** Changes the size property of the array.  If the array exists, it is
+	augmented by a factor of #size#. This does not change the actual size
+	of the array.
+
+	@deprecated */
+    void update_length(int size);
+
+
+  /** Given a size and a name, this function adds a dimension to the
+      array.  For example, if the Array is already 10 elements long,
+      calling #append_dim# with a size of 5 will transform the array
+      into a 10x5 matrix.  Calling it again with a size of 2 will
+      create a 10x5x2 array, and so on.
+
+      @memo Adds a dimension to an array. 
+      @param size The size of the desired new row.
+      @param name The name of the new dimension.  This defaults to
+      an empty string. 
+      */
+    void append_dim(int size, string name = "");
+
+    /** Once a dimension has been created (see #append_dim()#), it can
+	be ``constrained''.  This will make the array appear to the rest
+	of the world to be smaller than it is.  This functions sets the
+	projection for a dimension, and marks that dimension as part of the
+	current projection.
+
+	\note{A stride value <= 0 or > the array size is an error and causes
+	#add_constraint# to return FALSE. Similarly, start or stop values >
+	size also cause a FALSE return value.}
+
+	@memo Adds a constraint to an Array dimension.  
+
+	@param p An index (of type Pix) pointing to the dimension in the
+	list of dimensions.
+	@param start The start index of the constraint.
+	@param stride The stride value of the constraint.
+	@param stop The stop index of the constraint.
+	@return void; in case of failure it throws an exception. */
+    void add_constraint(Pix p, int start, int stride, int stop);
+
+    /** Resets the projection to select the complete array. */
+    void reset_constraint();
+
+    /** Clears the projection; add each projected dimension explicitly using
+	add\_constraint. */
+    void clear_constraint();
+
+    /** Returns a pointer to the first dimension of the array. */    
+    Pix first_dim();
+
+    /** Given a dimension index, returns the index of the next
+	dimension. */
+    void next_dim(Pix &p);
+
+    /** Returns the size of the dimension.  
+
+	@param p The Pix index of the dimension.
+	@param constrained If this parameter is TRUE, the function
+	returns the constrained size of the array.  If the dimension is
+	not selected, the function returns zero.  If it is FALSE, the
+	function returns the dimension size whether or not the dimension
+	is constrained. */
+    int dimension_size(Pix p, bool constrained = false);
+
+  /** Returns the start index of the constraint.
+
+      @param p The Pix index of the dimension.
+      @param constrained If this parameter is TRUE, the function
+      returns the start index only if the dimension is selected.  If
+      the dimension is not selected, the function returns zero.  If it
+      is FALSE, the function returns the start index whether or not
+      the dimension is constrained.
+      */
+    int dimension_start(Pix p, bool constrained = false);
+
+  /** Returns the stop index of the constraint.
+
+      @param p The Pix index of the dimension.
+      @param constrained If this parameter is TRUE, the function
+      returns the stop index only if the dimension is selected.  If
+      the dimension is not selected, the function returns zero.  If it
+      is FALSE, the function returns the stop index whether or not
+      the dimension is constrained.
+      */
+    int dimension_stop(Pix p, bool constrained = false);
+
+   /** Returns the stride value of the constraint.
+
+      @param p The Pix index of the dimension.
+      @param constrained If this parameter is TRUE, the function
+      returns the stride value only if the dimension is selected.  If
+      the dimension is not selected, the function returns zero.  If it
+      is FALSE, the function returns the stride value whether or not
+      the dimension is constrained.
+      */
+   int dimension_stride(Pix p, bool constrained = false);
+
+  /** Returns the name of the specified dimension. */
+    string dimension_name(Pix p);
+
+  /** Returns the total number of dimensions in the array. */
+    unsigned int dimensions(bool constrained = false);
+
+    virtual void print_decl(ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
+    virtual void print_val(ostream &os, string space = "", 
+			   bool print_decl_p = true);
+
+    virtual bool check_semantics(string &msg, bool all = false);
+};
+
 /* 
  * $Log: Array.h,v $
+ * Revision 1.48  2000/09/22 02:17:18  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.47  2000/09/21 16:22:07  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -242,238 +485,4 @@
  * Added cvs log listing to Array.cc.
  */
 
-#ifndef _Array_h
-#define _Array_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#include <string>
-
-#include <SLList.h>
-
-#include "dods-limits.h"
-#include "Vector.h"
-
-const int DODS_MAX_ARRAY = DODS_INT_MAX;
-
-/** This class is used to hold arrays of other DODS data. The elements of the
-    array can be simple or compound data types. There is no limit on the
-    number of dimensions an array can have, or on the size of each dimension.
-
-    If desired, the user can give each dimension of an array a name. You can,
-    for example, have a 360x180 array of temperatures, covering the whole
-    globe with one-degree squares. In this case, you could name the first
-    dimension ``Longitude'' and the second dimension ``Latitude''. This can
-    help prevent a great deal of confusion.
-
-    The Array is used as part of the Grid class, where the dimension names
-    are crucial to its structure. The dimension names correspond to ``Map''
-    vectors, holding the actual values for that column of the array.
-
-    Each array dimension carries with it its own projection information. The
-    projection inforamtion takes the form of three integers: the start, stop,
-    and stride values. This is clearest with an example. Consider a
-    one-dimensional array 10 elements long. If the start value of the
-    dimension constraint is 3, then the constrained array appears to be seven
-    elements long. If the stop value is changed to 7, then the array appears
-    to be five elements long. If the stride is changed to two, the array will
-    appear to be 3 elements long. Array constraints are written as:
-    #[start:stride:stop]#.
-
-    \begin{verbatim}
-    A = [1 2 3 4 5 6 7 8 9 10]
-
-    A[3::] = [4 5 6 7 8 9 10]
-
-    A[3::7] = [4 5 6 7 8]
-
-    A[3:2:7] = [4 6 8]
-
-    A[0:3:9] = [1 4 7 10]
-    \end{verbatim}
-
-    \note{DODS uses zero-based indexing.}
-
-    @memo Holds multi-dimensional arrays.
-    @see Grid
-    @see List */
-
-class Array: public Vector {
-private:
-    struct dimension {		// each dimension has a size and a name
-	int size;
-	string name;
-	int start, stop, stride;// a constraint determines these values
-	int c_size;		// size of dimension once constrained
-	bool selected;		// true if this dimension is selected
-    };
-
-    SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
-
-    unsigned int print_array(ostream &os, unsigned int index, 
-			     unsigned int dims, unsigned int shape[]);
-			     
-protected:
-    void _duplicate(const Array &a);
-    
-public:
-  /** The Array constructor requires the name of the variable to be
-      created, and the type of data the Array is to hold.  The name
-      may be omitted, which will create a nameless variable.  The
-      template pointer may also be omitted.  Note that if the template
-      pointer is omitted when the Array is created, it {\it must} be
-      added (with #add_var()#) before #read()# or #deserialize()# is
-      called. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
-      @param v A pointer to a variable of the type to be included 
-      in the Array. 
-
-      @memo The Array constructor.  */
-    Array(const string &n = "", BaseType *v = 0);
-  /** The Array copy constructor. */
-    Array(const Array &rhs);
-    virtual ~Array();
-
-    const Array &operator=(const Array &rhs);
-    virtual BaseType *ptr_duplicate() = 0; 
-
-  /** This function should read local data and fill in the data
-      buffer.  When reading the data, the read function should use the
-      constraint and selection information available for each
-      dimension of the array to decide how much of the array to read.
-      Only the values to be transmitted with #serialize()# must be
-      read. 
-
-      The implementation of this function is part of creating a new
-      DODS server, and is left for the user.  For other details, refer
-      to the description of the #read()# function in the BaseType
-      class. 
-
-      @memo Reads an array into the buffer.
-      @see BaseType::read
-      */
-    virtual bool read(const string &dataset) = 0;
-
-
-    /** Changes the size property of the array.  If the array exists, it is
-	augmented by a factor of #size#. This does not change the actual size
-	of the array.
-
-	@deprecated */
-    void update_length(int size);
-
-
-  /** Given a size and a name, this function adds a dimension to the
-      array.  For example, if the Array is already 10 elements long,
-      calling #append_dim# with a size of 5 will transform the array
-      into a 10x5 matrix.  Calling it again with a size of 2 will
-      create a 10x5x2 array, and so on.
-
-      @memo Adds a dimension to an array. 
-      @param size The size of the desired new row.
-      @param name The name of the new dimension.  This defaults to
-      an empty string. 
-      */
-    void append_dim(int size, string name = "");
-
-    /** Once a dimension has been created (see #append_dim()#), it can
-	be ``constrained''.  This will make the array appear to the rest
-	of the world to be smaller than it is.  This functions sets the
-	projection for a dimension, and marks that dimension as part of the
-	current projection.
-
-	\note{A stride value <= 0 or > the array size is an error and causes
-	#add_constraint# to return FALSE. Similarly, start or stop values >
-	size also cause a FALSE return value.}
-
-	@memo Adds a constraint to an Array dimension.  
-
-	@param p An index (of type Pix) pointing to the dimension in the
-	list of dimensions.
-	@param start The start index of the constraint.
-	@param stride The stride value of the constraint.
-	@param stop The stop index of the constraint.
-	@return void; in case of failure it throws an exception. */
-    void add_constraint(Pix p, int start, int stride, int stop);
-
-    /** Resets the projection to select the complete array. */
-    void reset_constraint();
-
-    /** Clears the projection; add each projected dimension explicitly using
-	add\_constraint. */
-    void clear_constraint();
-
-    /** Returns a pointer to the first dimension of the array. */    
-    Pix first_dim();
-
-    /** Given a dimension index, returns the index of the next
-	dimension. */
-    void next_dim(Pix &p);
-
-    /** Returns the size of the dimension.  
-
-	@param p The Pix index of the dimension.
-	@param constrained If this parameter is TRUE, the function
-	returns the constrained size of the array.  If the dimension is
-	not selected, the function returns zero.  If it is FALSE, the
-	function returns the dimension size whether or not the dimension
-	is constrained. */
-    int dimension_size(Pix p, bool constrained = false);
-
-  /** Returns the start index of the constraint.
-
-      @param p The Pix index of the dimension.
-      @param constrained If this parameter is TRUE, the function
-      returns the start index only if the dimension is selected.  If
-      the dimension is not selected, the function returns zero.  If it
-      is FALSE, the function returns the start index whether or not
-      the dimension is constrained.
-      */
-    int dimension_start(Pix p, bool constrained = false);
-
-  /** Returns the stop index of the constraint.
-
-      @param p The Pix index of the dimension.
-      @param constrained If this parameter is TRUE, the function
-      returns the stop index only if the dimension is selected.  If
-      the dimension is not selected, the function returns zero.  If it
-      is FALSE, the function returns the stop index whether or not
-      the dimension is constrained.
-      */
-    int dimension_stop(Pix p, bool constrained = false);
-
-   /** Returns the stride value of the constraint.
-
-      @param p The Pix index of the dimension.
-      @param constrained If this parameter is TRUE, the function
-      returns the stride value only if the dimension is selected.  If
-      the dimension is not selected, the function returns zero.  If it
-      is FALSE, the function returns the stride value whether or not
-      the dimension is constrained.
-      */
-   int dimension_stride(Pix p, bool constrained = false);
-
-  /** Returns the name of the specified dimension. */
-    string dimension_name(Pix p);
-
-  /** Returns the total number of dimensions in the array. */
-    unsigned int dimensions(bool constrained = false);
-
-    virtual void print_decl(ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_val(ostream &os, string space = "", 
-			   bool print_decl_p = true);
-
-    virtual bool check_semantics(string &msg, bool all = false);
-};
-
-#endif
-
-
+#endif // _array_h

@@ -9,81 +9,13 @@
 //
 // jhrg 9/7/94
 
-// $Log: UInt16.cc,v $
-// Revision 1.13  2000/09/21 16:22:09  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.12  2000/08/29 21:22:54  jimg
-// Merged with 3.1.9
-//
-// Revision 1.11  2000/08/22 19:42:28  jimg
-// Fixed the assert() in buf2val(). It tested _buf and when that contained 0
-// it would fail. This was probably copied from other methods where _buf is
-// a pointer.
-//
-// Revision 1.10  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.9  2000/06/07 18:06:59  jimg
-// Merged the pc port branch
-//
-// Revision 1.8.20.1  2000/06/02 18:29:31  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.8.14.2  2000/02/17 05:03:16  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.8.14.1  2000/01/28 22:14:06  jgarcia
-// Added exception handling and modify add_var to get a copy of the object
-//
-// Revision 1.8  1999/04/29 02:29:34  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.7  1999/03/24 23:37:15  jimg
-// Added support for the Int16, UInt16 and Float32 types
-//
-// Revision 1.6.6.2  1999/02/05 09:32:35  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.6.6.1  1999/02/02 21:57:04  jimg
-// String to string version
-//
-// Revision 1.6  1998/03/19 23:30:29  jimg
-// Removed old code (that was surrounded by #if 0 ... #endif).
-//
-// Revision 1.5  1997/09/22 22:40:54  jimg
-// Added DDS * to deserialize parameters.
-//
-// Revision 1.4  1996/12/02 23:10:29  jimg
-// Added dataset as a parameter to the ops member function.
-//
-// Revision 1.3  1996/10/18 16:49:55  jimg
-// Changed variable types used for comparison operations from 16 to 32 bit
-// integers.
-//
-// Revision 1.2  1996/10/01 16:29:16  jimg
-// Changed instances of XDT_INT16 to XDR_UINT16.
-//
-// Revision 1.1  1996/08/26 20:17:49  jimg
-// Added.
-//
-
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: UInt16.cc,v 1.13 2000/09/21 16:22:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: UInt16.cc,v 1.14 2000/09/22 02:17:21 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -242,3 +174,78 @@ UInt16::ops(BaseType *b, int op, const string &dataset)
 	return false;
     }
 }
+
+// $Log: UInt16.cc,v $
+// Revision 1.14  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.13  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.12  2000/08/29 21:22:54  jimg
+// Merged with 3.1.9
+//
+// Revision 1.11  2000/08/22 19:42:28  jimg
+// Fixed the assert() in buf2val(). It tested _buf and when that contained 0
+// it would fail. This was probably copied from other methods where _buf is
+// a pointer.
+//
+// Revision 1.10  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.9  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.8.20.1  2000/06/02 18:29:31  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.8.14.2  2000/02/17 05:03:16  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.8.14.1  2000/01/28 22:14:06  jgarcia
+// Added exception handling and modify add_var to get a copy of the object
+//
+// Revision 1.8  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.7  1999/03/24 23:37:15  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
+// Revision 1.6.6.2  1999/02/05 09:32:35  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.6.6.1  1999/02/02 21:57:04  jimg
+// String to string version
+//
+// Revision 1.6  1998/03/19 23:30:29  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
+// Revision 1.5  1997/09/22 22:40:54  jimg
+// Added DDS * to deserialize parameters.
+//
+// Revision 1.4  1996/12/02 23:10:29  jimg
+// Added dataset as a parameter to the ops member function.
+//
+// Revision 1.3  1996/10/18 16:49:55  jimg
+// Changed variable types used for comparison operations from 16 to 32 bit
+// integers.
+//
+// Revision 1.2  1996/10/01 16:29:16  jimg
+// Changed instances of XDT_INT16 to XDR_UINT16.
+//
+// Revision 1.1  1996/08/26 20:17:49  jimg
+// Added.
+//
+

@@ -11,7 +11,53 @@
 //
 // 11/4/95 jhrg
 
+#ifndef _expr_h
+#define _expr_h
+
+#include <string>
+#include <SLList.h>
+
+#ifndef _basetype_h
+#include "BaseType.h"
+#endif
+
+// VALUE is used to return constant values from the scanner to the parser.
+// Constants are packaged in BaseType *s for evaluation by the parser.
+
+typedef struct {
+    Type type;			// Type is an enum defined in BaseType.h
+    union {
+	int i;
+	double f;
+	string *s;
+    } v;
+} value;
+
+// Syntactic sugar for `pointer to function returning boolean' (bool_func)
+// and `pointer to function returning BaseType *' (btp_func). Both function
+// types take three arguments, an integer (argc), a vector of BaseType *s
+// (argv) and the DDS for the dataset for which these function is being
+// evaluated (analogous to the ENVP in UNIX). ARGC is the length of ARGV.
+
+// Try to make a single `selection function' type.
+
+typedef bool (*bool_func)(int argc, BaseType *argv[], DDS &dds);
+typedef BaseType *(*btp_func)(int argc, BaseType *argv[], DDS &dds);
+typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds);
+
+// INT_LIST and INT_LIST_LIST are used by the parser to store the array
+// indices.
+
+typedef SLList<int> int_list;
+typedef SLList<int_list *> int_list_list;
+
 // $Log: expr.h,v $
+// Revision 1.13  2000/09/22 02:17:22  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.12  2000/08/02 22:46:50  jimg
 // Merged 3.1.8
 //
@@ -64,47 +110,5 @@
 //
 // Revision 1.1  1996/01/31 18:55:15  jimg
 // Added to repository.
-
-#ifndef _expr_h
-#define _expr_h
-
-#include <string>
-#include <SLList.h>
-
-#if 0
-#include "config_dap.h"
-#endif
-
-#include "BaseType.h"
-
-// VALUE is used to return constant values from the scanner to the parser.
-// Constants are packaged in BaseType *s for evaluation by the parser.
-
-typedef struct {
-    Type type;			// Type is an enum defined in BaseType.h
-    union {
-	int i;
-	double f;
-	string *s;
-    } v;
-} value;
-
-// Syntactic sugar for `pointer to function returning boolean' (bool_func)
-// and `pointer to function returning BaseType *' (btp_func). Both function
-// types take three arguments, an integer (argc), a vector of BaseType *s
-// (argv) and the DDS for the dataset for which these function is being
-// evaluated (analogous to the ENVP in UNIX). ARGC is the length of ARGV.
-
-// Try to make a single `selection function' type.
-
-typedef bool (*bool_func)(int argc, BaseType *argv[], DDS &dds);
-typedef BaseType *(*btp_func)(int argc, BaseType *argv[], DDS &dds);
-typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds);
-
-// INT_LIST and INT_LIST_LIST are used by the parser to store the array
-// indices.
-
-typedef SLList<int> int_list;
-typedef SLList<int_list *> int_list_list;
 
 #endif /* _expr_h */

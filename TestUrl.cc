@@ -9,7 +9,52 @@
 //
 // jhrg 1/12/95
 
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include <string>
+
+#include "TestUrl.h"
+
+Url *
+NewUrl(const string &n)
+{
+    return new TestUrl(n);
+}
+
+TestUrl::TestUrl(const string &n) : Url(n)
+{
+}
+
+BaseType *
+TestUrl::ptr_duplicate()
+{
+    return new TestUrl(*this);
+}
+
+bool
+TestUrl::read(const string &)
+{
+    if (read_p())
+	return true;
+
+    string url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
+
+    val2buf(&url_test);
+
+    set_read_p(true);
+
+    return true;
+}
+
 // $Log: TestUrl.cc,v $
+// Revision 1.17  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.16  2000/09/21 16:22:09  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -86,41 +131,3 @@
 // BaseType.
 //
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include <string>
-
-#include "TestUrl.h"
-
-Url *
-NewUrl(const string &n)
-{
-    return new TestUrl(n);
-}
-
-TestUrl::TestUrl(const string &n) : Url(n)
-{
-}
-
-BaseType *
-TestUrl::ptr_duplicate()
-{
-    return new TestUrl(*this);
-}
-
-bool
-TestUrl::read(const string &)
-{
-    if (read_p())
-	return true;
-
-    string url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
-
-    val2buf(&url_test);
-
-    set_read_p(true);
-
-    return true;
-}

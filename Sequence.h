@@ -17,230 +17,8 @@
 //
 // jhrg 9/14/94
 
-/* 
- * $Log: Sequence.h,v $
- * Revision 1.44  2000/09/21 16:22:08  jimg
- * Merged changes from Jose Garcia that add exceptions to the software.
- * Many methods that returned error codes now throw exectptions. There are
- * two classes which are thrown by the software, Error and InternalErr.
- * InternalErr is used to report errors within the library or errors using
- * the library. Error is used to reprot all other errors. Since InternalErr
- * is a subclass of Error, programs need only to catch Error.
- *
- * Revision 1.43  2000/09/11 16:31:33  jimg
- * Added methods to make it simpler to access Sequences by row number. The new
- * methods are: get_row(), get_row_number(), get_starting_row_number(),
- * get_ending_row_number(), get_row_stride(), set_row_number_constraint(). The
- * starting and ending row numbers refer to constraints placed on the sequence,
- * to get the number of rows in the current sequence, use the length() method.
- *
- * Revision 1.42  2000/08/16 00:37:54  jimg
- * Added d_row_number field and getRowNumber method.
- *
- * Revision 1.41  2000/08/02 22:46:49  jimg
- * Merged 3.1.8
- *
- * Revision 1.38.6.1  2000/08/02 21:10:07  jimg
- * Removed the header config_dap.h. If this file uses the dods typedefs for
- * cardinal datatypes, then it gets those definitions from the header
- * dods-datatypes.h.
- *
- * Revision 1.40  2000/07/09 21:57:10  rmorris
- * Mods's to increase portability, minimuze ifdef's in win32 and account
- * for differences between the Standard C++ Library - most notably, the
- * iostream's.
- *
- * Revision 1.39  2000/06/07 18:06:59  jimg
- * Merged the pc port branch
- *
- * Revision 1.38.20.1  2000/06/02 18:29:31  rmorris
- * Mod's for port to Win32.
- *
- * Revision 1.38.14.1  2000/01/28 22:14:06  jgarcia
- * Added exception handling and modify add_var to get a copy of the object
- *
- * Revision 1.38  1999/05/04 19:47:22  jimg
- * Fixed copyright statements. Removed more of the GNU classes.
- *
- * Revision 1.37  1999/04/29 02:29:31  jimg
- * Merge of no-gnu branch
- *
- * Revision 1.36  1998/09/17 17:17:48  jimg
- * Added leaf_match and exact_match.
- * Added two new versions of the var member function.
- *
- * Revision 1.35.6.1  1999/02/02 21:57:01  jimg
- * String to string version
- *
- * Revision 1.35  1998/03/17 17:40:08  jimg
- * Added an implementation of element_count().
- *
- * Revision 1.34  1998/02/19 19:41:49  jimg
- * Changed name of ...end_of_sequence to ...start_of_sequence since that is
- * now how it is used. I hope this will reduce confusion.
- * Changed the name of read_end_marker to read_marker (since they are not
- * always end markers anymore).
- *
- * Revision 1.33  1998/02/05 20:13:56  jimg
- * DODS now compiles with gcc 2.8.x
- *
- * Revision 1.32  1998/02/04 14:55:32  tom
- * Another draft of documentation.
- *
- * Revision 1.31  1998/01/12 14:27:59  tom
- * Second pass at class documentation.
- *
- * Revision 1.30  1997/12/18 15:06:13  tom
- * First draft of class documentation, entered in doc++ format,
- * in the comments
- *
- * Revision 1.29  1997/10/09 22:19:23  jimg
- * Resolved conflicts in merge of 2.14c to trunk.
- *
- * Revision 1.28  1997/08/11 18:19:18  jimg
- * Fixed comment leaders for new CVS version
- *
- * Revision 1.27  1997/07/15 21:54:12  jimg
- * See Sequence.cc for info on changes to the length member function.
- *
- * Revision 1.26  1997/03/08 19:02:07  jimg
- * Changed default param to check_semantics() from  to String()
- * and removed the default from the argument list in the mfunc definition
- *
- * Revision 1.25  1997/02/28 01:29:08  jimg
- * Changed check_semantics() so that it now returns error messages in a String
- * object (passed by reference).
- *
- * Revision 1.24  1996/09/24 19:13:23  jimg
- * Fixed conflict between two version of print_all_vals prototypes.
- *
- * Revision 1.23  1996/09/23 20:16:13  jimg
- * Fixed lame declaration of print_all_vals().
- *
- * Revision 1.22  1996/08/26 21:13:01  jimg
- * Changes for version 2.07
- *
- * Revision 1.21  1996/06/04 21:33:39  jimg
- * Multiple connections are now possible. It is now possible to open several
- * URLs at the same time and read from them in a round-robin fashion. To do
- * this I added data source and sink parameters to the serialize and
- * deserialize mfuncs. Connect was also modified so that it manages the data
- * source `object' (which is just an XDR pointer).
- *
- * Revision 1.20  1996/05/31 23:29:59  jimg
- * Updated copyright notice.
- *
- * Revision 1.19  1996/05/29 22:08:47  jimg
- * Made changes necessary to support CEs that return the value of a function
- * instead of the value of a variable. This was done so that it would be
- * possible to translate Sequences into Arrays without first reading the
- * entire sequence over the network.
- *
- * Revision 1.18  1996/05/16 22:44:53  jimg
- * Dan's changes for 2.0.
- *
- * Revision 1.17  1996/03/05 17:43:49  jimg
- * Added ce_eval to serailize member function.
- *
- * Revision 1.16  1995/12/09  01:06:55  jimg
- * Added changes so that relational operators will work properly for all the
- * datatypes (including Sequences). The relational ops are evaluated in
- * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
- *
- * Revision 1.15  1995/12/06  21:56:30  jimg
- * Added `constrained' flag to print_decl.
- * Removed third parameter of read.
- * Modified print_decl() to print only those parts of a dataset that are
- * selected when `constrained' is true.
- *
- * Revision 1.14  1995/10/23  23:21:03  jimg
- * Added _send_p and _read_p fields (and their accessors) along with the
- * virtual mfuncs set_send_p() and set_read_p().
- *
- * Revision 1.13  1995/08/26  00:31:44  jimg
- * Removed code enclosed in #ifdef NEVER #endif.
- *
- * Revision 1.12  1995/08/22  23:48:23  jimg
- * Removed card() member function.
- * Removed old, deprecated member functions.
- * Changed the names of read_val and store_val to buf2val and val2buf.
- *
- * Revision 1.11  1995/05/10  13:45:28  jimg
- * Changed the name of the configuration header file from `config.h' to
- * `config_dap.h' so that other libraries could have header files which were
- * installed in the DODS include directory without overwriting this one. Each
- * config header should follow the convention config_<name>.h.
- *
- * Revision 1.10  1995/03/04  14:35:04  jimg
- * Major modifications to the transmission and representation of values:
- * Added card() virtual function which is true for classes that
- * contain cardinal types (byte, int float, string).
- * Changed the representation of Str from the C rep to a C++
- * class represenation.
- * Chnaged read_val and store_val so that they take and return
- * types that are stored by the object (e.g., inthe case of Str
- * an URL, read_val returns a C++ String object).
- * Modified Array representations so that arrays of card()
- * objects are just that - no more storing strings, ... as
- * C would store them.
- * Arrays of non cardinal types are arrays of the DODS objects (e.g.,
- * an array of a structure is represented as an array of Structure
- * objects).
- *
- * Revision 1.9  1995/02/10  02:23:01  jimg
- * Added DBMALLOC includes and switch to code which uses malloc/free.
- * Private and protected symbols now start with `_'.
- * Added new accessors for name and type fields of BaseType; the old ones
- * will be removed in a future release.
- * Added the store_val() mfunc. It stores the given value in the object's
- * internal buffer.
- * Made both List and Str handle their values via pointers to memory.
- * Fixed read_val().
- * Made serialize/deserialize handle all malloc/free calls (even in those
- * cases where xdr initiates the allocation).
- * Fixed print_val().
- *
- * Revision 1.8  1995/01/19  21:59:22  jimg
- * Added read_val from dummy_read.cc to the sample set of sub-class
- * implementations.
- * Changed the declaration of readVal in BaseType so that it names the
- * mfunc read_val (to be consistant with the other mfunc names).
- * Removed the unnecessary duplicate declaration of the abstract virtual
- * mfuncs read and (now) read_val from the classes Byte, ... Grid. The
- * declaration in BaseType is sufficient along with the decl and definition
- * in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
- *
- * Revision 1.7  1995/01/18  18:40:25  dan
- * Declared member function 'readVal', defined in dummy_read.cc
- *
- * Revision 1.6  1995/01/11  15:54:54  jimg
- * Added modifications necessary for BaseType's static XDR pointers. This
- * was mostly a name change from xdrin/out to _xdrin/out.
- * Removed the two FILE pointers from ctors, since those are now set with
- * functions which are friends of BaseType.
- *
- * Revision 1.5  1994/12/15  21:21:54  dan
- * Modified class Sequence inheritance hierarchy, now directly inherits
- * from class BaseType.
- *
- * Revision 1.4  1994/11/22  14:06:04  jimg
- * Added code for data transmission to parts of the type hierarchy. Not
- * complete yet.
- * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
- *
- * Revision 1.3  1994/10/17  23:34:50  jimg
- * Added code to print_decl so that variable declarations are pretty
- * printed.
- * Added private mfunc duplicate().
- * Added ptr_duplicate().
- * Added Copy ctor, dtor and operator=.
- *
- * Revision 1.2  1994/09/23  14:48:32  jimg
- * Fixed some errors in comments.
- */
-
-#ifndef _Sequence_h
-#define _Sequence_h 1
+#ifndef _sequence_h
+#define _sequence_h 1
 
 #ifdef _GNUG_
 #pragma interface
@@ -261,11 +39,11 @@
 
 #include <SLList.h>
 
+#ifndef _basetype_h
 #include "BaseType.h"
-#if 0
-#include "config_dap.h"
 #endif
-#ifdef TRACE_NEW
+
+#if defined(TRACE_NEW) && !defined(_trace_new_h)
 #include "trace_new.h"
 #endif
 
@@ -621,4 +399,232 @@ public:
   virtual bool check_semantics(string &msg, bool all = false);
 };
 
-#endif
+/* 
+ * $Log: Sequence.h,v $
+ * Revision 1.45  2000/09/22 02:17:21  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
+ * Revision 1.44  2000/09/21 16:22:08  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
+ * Revision 1.43  2000/09/11 16:31:33  jimg
+ * Added methods to make it simpler to access Sequences by row number. The new
+ * methods are: get_row(), get_row_number(), get_starting_row_number(),
+ * get_ending_row_number(), get_row_stride(), set_row_number_constraint(). The
+ * starting and ending row numbers refer to constraints placed on the sequence,
+ * to get the number of rows in the current sequence, use the length() method.
+ *
+ * Revision 1.42  2000/08/16 00:37:54  jimg
+ * Added d_row_number field and getRowNumber method.
+ *
+ * Revision 1.41  2000/08/02 22:46:49  jimg
+ * Merged 3.1.8
+ *
+ * Revision 1.38.6.1  2000/08/02 21:10:07  jimg
+ * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * cardinal datatypes, then it gets those definitions from the header
+ * dods-datatypes.h.
+ *
+ * Revision 1.40  2000/07/09 21:57:10  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
+ * Revision 1.39  2000/06/07 18:06:59  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.38.20.1  2000/06/02 18:29:31  rmorris
+ * Mod's for port to Win32.
+ *
+ * Revision 1.38.14.1  2000/01/28 22:14:06  jgarcia
+ * Added exception handling and modify add_var to get a copy of the object
+ *
+ * Revision 1.38  1999/05/04 19:47:22  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
+ * Revision 1.37  1999/04/29 02:29:31  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.36  1998/09/17 17:17:48  jimg
+ * Added leaf_match and exact_match.
+ * Added two new versions of the var member function.
+ *
+ * Revision 1.35.6.1  1999/02/02 21:57:01  jimg
+ * String to string version
+ *
+ * Revision 1.35  1998/03/17 17:40:08  jimg
+ * Added an implementation of element_count().
+ *
+ * Revision 1.34  1998/02/19 19:41:49  jimg
+ * Changed name of ...end_of_sequence to ...start_of_sequence since that is
+ * now how it is used. I hope this will reduce confusion.
+ * Changed the name of read_end_marker to read_marker (since they are not
+ * always end markers anymore).
+ *
+ * Revision 1.33  1998/02/05 20:13:56  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
+ * Revision 1.32  1998/02/04 14:55:32  tom
+ * Another draft of documentation.
+ *
+ * Revision 1.31  1998/01/12 14:27:59  tom
+ * Second pass at class documentation.
+ *
+ * Revision 1.30  1997/12/18 15:06:13  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
+ * Revision 1.29  1997/10/09 22:19:23  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
+ * Revision 1.28  1997/08/11 18:19:18  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.27  1997/07/15 21:54:12  jimg
+ * See Sequence.cc for info on changes to the length member function.
+ *
+ * Revision 1.26  1997/03/08 19:02:07  jimg
+ * Changed default param to check_semantics() from  to String()
+ * and removed the default from the argument list in the mfunc definition
+ *
+ * Revision 1.25  1997/02/28 01:29:08  jimg
+ * Changed check_semantics() so that it now returns error messages in a String
+ * object (passed by reference).
+ *
+ * Revision 1.24  1996/09/24 19:13:23  jimg
+ * Fixed conflict between two version of print_all_vals prototypes.
+ *
+ * Revision 1.23  1996/09/23 20:16:13  jimg
+ * Fixed lame declaration of print_all_vals().
+ *
+ * Revision 1.22  1996/08/26 21:13:01  jimg
+ * Changes for version 2.07
+ *
+ * Revision 1.21  1996/06/04 21:33:39  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
+ * Revision 1.20  1996/05/31 23:29:59  jimg
+ * Updated copyright notice.
+ *
+ * Revision 1.19  1996/05/29 22:08:47  jimg
+ * Made changes necessary to support CEs that return the value of a function
+ * instead of the value of a variable. This was done so that it would be
+ * possible to translate Sequences into Arrays without first reading the
+ * entire sequence over the network.
+ *
+ * Revision 1.18  1996/05/16 22:44:53  jimg
+ * Dan's changes for 2.0.
+ *
+ * Revision 1.17  1996/03/05 17:43:49  jimg
+ * Added ce_eval to serailize member function.
+ *
+ * Revision 1.16  1995/12/09  01:06:55  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
+ * Revision 1.15  1995/12/06  21:56:30  jimg
+ * Added `constrained' flag to print_decl.
+ * Removed third parameter of read.
+ * Modified print_decl() to print only those parts of a dataset that are
+ * selected when `constrained' is true.
+ *
+ * Revision 1.14  1995/10/23  23:21:03  jimg
+ * Added _send_p and _read_p fields (and their accessors) along with the
+ * virtual mfuncs set_send_p() and set_read_p().
+ *
+ * Revision 1.13  1995/08/26  00:31:44  jimg
+ * Removed code enclosed in #ifdef NEVER #endif.
+ *
+ * Revision 1.12  1995/08/22  23:48:23  jimg
+ * Removed card() member function.
+ * Removed old, deprecated member functions.
+ * Changed the names of read_val and store_val to buf2val and val2buf.
+ *
+ * Revision 1.11  1995/05/10  13:45:28  jimg
+ * Changed the name of the configuration header file from `config.h' to
+ * `config_dap.h' so that other libraries could have header files which were
+ * installed in the DODS include directory without overwriting this one. Each
+ * config header should follow the convention config_<name>.h.
+ *
+ * Revision 1.10  1995/03/04  14:35:04  jimg
+ * Major modifications to the transmission and representation of values:
+ * Added card() virtual function which is true for classes that
+ * contain cardinal types (byte, int float, string).
+ * Changed the representation of Str from the C rep to a C++
+ * class represenation.
+ * Chnaged read_val and store_val so that they take and return
+ * types that are stored by the object (e.g., inthe case of Str
+ * an URL, read_val returns a C++ String object).
+ * Modified Array representations so that arrays of card()
+ * objects are just that - no more storing strings, ... as
+ * C would store them.
+ * Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * an array of a structure is represented as an array of Structure
+ * objects).
+ *
+ * Revision 1.9  1995/02/10  02:23:01  jimg
+ * Added DBMALLOC includes and switch to code which uses malloc/free.
+ * Private and protected symbols now start with `_'.
+ * Added new accessors for name and type fields of BaseType; the old ones
+ * will be removed in a future release.
+ * Added the store_val() mfunc. It stores the given value in the object's
+ * internal buffer.
+ * Made both List and Str handle their values via pointers to memory.
+ * Fixed read_val().
+ * Made serialize/deserialize handle all malloc/free calls (even in those
+ * cases where xdr initiates the allocation).
+ * Fixed print_val().
+ *
+ * Revision 1.8  1995/01/19  21:59:22  jimg
+ * Added read_val from dummy_read.cc to the sample set of sub-class
+ * implementations.
+ * Changed the declaration of readVal in BaseType so that it names the
+ * mfunc read_val (to be consistant with the other mfunc names).
+ * Removed the unnecessary duplicate declaration of the abstract virtual
+ * mfuncs read and (now) read_val from the classes Byte, ... Grid. The
+ * declaration in BaseType is sufficient along with the decl and definition
+ * in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
+ *
+ * Revision 1.7  1995/01/18  18:40:25  dan
+ * Declared member function 'readVal', defined in dummy_read.cc
+ *
+ * Revision 1.6  1995/01/11  15:54:54  jimg
+ * Added modifications necessary for BaseType's static XDR pointers. This
+ * was mostly a name change from xdrin/out to _xdrin/out.
+ * Removed the two FILE pointers from ctors, since those are now set with
+ * functions which are friends of BaseType.
+ *
+ * Revision 1.5  1994/12/15  21:21:54  dan
+ * Modified class Sequence inheritance hierarchy, now directly inherits
+ * from class BaseType.
+ *
+ * Revision 1.4  1994/11/22  14:06:04  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
+ * Revision 1.3  1994/10/17  23:34:50  jimg
+ * Added code to print_decl so that variable declarations are pretty
+ * printed.
+ * Added private mfunc duplicate().
+ * Added ptr_duplicate().
+ * Added Copy ctor, dtor and operator=.
+ *
+ * Revision 1.2  1994/09/23  14:48:32  jimg
+ * Fixed some errors in comments.
+ */
+
+#endif //_sequence_h

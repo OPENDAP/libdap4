@@ -9,7 +9,329 @@
 // DAS, DDS and constraint expression parsers). 
 // jhrg 9/7/95
 
+#include "config_dap.h"
+
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.21 2000/09/22 02:17:23 jimg Exp $"};
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <math.h>
+
+#include <iostream>
+#if defined(__GNUG__) || defined(WIN32)
+#include <strstream>
+#else
+#include <sstream>
+#endif
+
+#include "parser.h"		// defines constants such as ID_MAX
+#include "dods-limits.h"
+// Jose Garcia: we need to include this to get the prototype for append_long_to_string.
+#include "util.h"
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+using std::ends;
+using std::ostrstream;
+#endif
+
+// I think we should get rid of this function since it is writing to cerr.
+// 9/21/2000 jhrg
+void 
+parse_error(const char *s, const int line_num)
+{
+    // Jose Garcia
+    // This assert(s) is (are) only for developing purposes
+    // For production servers remove it by compiling with NDEBUG 
+    assert(s);
+
+    cerr << "Parse error (line: " << line_num << "):" << endl
+	 << s << endl;
+}
+
+void
+parse_error(parser_arg *arg, const char *msg, const int line_num,
+	    const char *context)
+{ 
+    // Jose Garcia
+    // This assert(s) is (are) only for developing purposes
+    // For production servers remove it by compiling with NDEBUG
+    assert(arg);
+    assert(msg);
+
+    arg->set_status(FALSE);
+
+    string oss="";
+
+    if (line_num != 0)
+      {
+	oss+= "Error parsing the text on line " ;
+	append_long_to_string(line_num,10,oss);
+      }
+    else 
+      {
+	oss+= "Parse error." ;
+      }
+
+    if (context)
+	oss+= (string)" at or near: " + context + (string)"\n" + msg 
+	  + (string)"\n";
+    else
+	oss+= (string)"\n" + msg + (string)"\n";
+
+    arg->set_error(new Error(unknown_error, oss.c_str()));
+}
+
+void
+save_str(char *dst, const char *src, const int line_num)
+{
+    strncpy(dst, src, ID_MAX);
+    dst[ID_MAX-1] = '\0';		/* in case ... */
+    if (strlen(src) >= ID_MAX)
+	cerr << "line: " << line_num << "`" << src << "' truncated to `"
+             << dst << "'" << endl;
+}
+
+void
+save_str(string &dst, const char *src, const int)
+{
+    dst = src;
+}
+
+int
+check_byte(const char *val)
+{
+    char *ptr;
+    long v = strtol(val, &ptr, 0);
+
+    if (v == 0 && val == ptr) {
+#if 0
+	parse_error("Not decodable to an integer value", line);
+#endif
+	return FALSE;
+    }
+
+    // We're very liberal here with values. Anything that can fit into 8 bits
+    // is allowed through. Clients will have to deal with the fact that the
+    // ASCII representation for the value might need to be tweaked. This is
+    // especially the case for Java clients where Byte datatypes are
+    // signed. 3/20/2000 jhrg
+    if (v > DODS_UCHAR_MAX || v < DODS_SCHAR_MIN) {
+#if 0
+	parse_error("Not a byte value", line);
+#endif
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+// This version of check_int will pass base 8, 10 and 16 numbers when they
+// use the ANSI standard for string representation of those number bases.
+
+int
+check_int16(const char *val)
+{
+    char *ptr;
+    long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
+
+    if (v == 0 && val == ptr) {
+#if 0
+	string oss="";
+	oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
+
+	parse_error(oss.c_str(), line);
+#endif
+	return FALSE;
+    }
+
+    // Don't use the constant from limits.h, use the ones in dods-limits.h
+    if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) { 
+#if 0
+	string oss="";
+
+	oss +="`" + (string)val + "' is not a 16-bit integer value value.\nIt must be between ";
+	append_long_to_string(DODS_SHRT_MIN,10,oss);
+	oss+=" and ";
+	append_long_to_string(DODS_SHRT_MAX,10,oss);
+	oss+= ".\n";
+	parse_error(oss.c_str(), line);
+#endif
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_uint16(const char *val)
+{
+    char *ptr;
+    unsigned long v = strtol(val, &ptr, 0); 
+
+    if (v == 0 && val == ptr) {
+#if 0
+        string oss="";
+        oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
+
+	parse_error(oss.c_str(), line);
+#endif
+	return FALSE;
+    }
+
+    if (v > DODS_USHRT_MAX) { 
+#if 0
+        string oss="";
+	oss+="`" + (string)val+ "' is not a 16-bit integer value value.\nIt must be less than or equal to ";
+	append_long_to_string(DODS_USHRT_MAX,10,oss);
+	oss+=".\n";
+
+	parse_error(oss.c_str(), line);
+#endif
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_int32(const char *val)
+{
+    char *ptr;
+    long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
+
+    if (v == 0 && val == ptr) {
+#if 0
+        string oss="";
+        oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
+	
+	parse_error(oss.c_str(), line);
+#endif
+	return FALSE;
+    }
+
+    if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
+#if 0
+	string oss="";
+	oss+= "`" +(string)val+ "' is not a 32-bit integer value value.\nIt must be between ";
+	append_long_to_string(DODS_INT_MIN,10,oss);
+	oss+=" and ";
+	append_long_to_string( DODS_INT_MAX,10,oss);
+	oss+=".\n";
+
+	parse_error(oss.c_str(), line);
+#endif
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_uint32(const char *val)
+{
+    char *ptr;
+    unsigned long v = strtol(val, &ptr, 0);
+
+    if (v == 0 && val == ptr) {
+#if 0
+	string oss="";
+	oss+="`"+(string)val+"' cannot be decoded as an integer value.\n" ;
+	parse_error(oss.c_str(), line);
+#endif
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+// This function does not test for numbers that are smaller than
+// DODS_FLT_MIN. That is hard to do without eliminating valid numbers such as
+// 0.0. Maybe the solution is to test for 0.0 specially? 4/12/99 jhrg 
+
+int
+check_float32(const char *val)
+{
+    char *ptr;
+    double v = strtod(val, &ptr);
+
+    if (v == 0.0 && val == ptr) {
+#if 0
+	parse_error("Not decodable to a 32-bit float value", num);
+#endif
+	return FALSE;
+    }
+
+#if 0
+    static double range = fabs(log10(DODS_FLT_MAX));
+    if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
+        string oss="";
+
+	oss+= "`" +(string)val+"' is not a 32 bit floating point value value.\nIt must be between (+/-)";
+	append_double_to_string(DODS_FLT_MAX,oss);
+	oss+=" and (+/-)";
+	append_double_to_string(DODS_FLT_MIN,oss);
+	oss+= ".\n";
+	parse_error(oss.c_str(), num);
+
+	return FALSE;
+    }
+#endif
+
+    return TRUE;
+}
+
+int
+check_float64(const char *val)
+{
+    char *ptr;
+    double v = strtod(val, &ptr);
+
+    if (v == 0.0 && val == ptr) {
+#if 0
+	parse_error("Not decodable to a 64-bit float value", num);
+#endif
+	return FALSE;
+    }
+
+#if 0
+    static double range = fabs(log10(DODS_DBL_MAX));
+    if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
+	string oss="";
+
+	oss+="`"+(string)val+"' is not a 64 bit floating point value value.\nIt must be between (+/-)";
+	append_double_to_string(DODS_DBL_MAX,oss);
+	oss+= " and (+/-)" ;
+	append_double_to_string(DODS_DBL_MIN,oss);
+	oss+=".\n";
+	parse_error(oss.c_str(), num);
+
+	return FALSE;
+    }
+#endif
+
+    return TRUE;
+}
+
+/*
+  Maybe someday we will really check the Urls to see if they are valid...
+*/
+
+int
+check_url(const char *)
+{
+    return TRUE;
+}
+
 // $Log: parser-util.cc,v $
+// Revision 1.21  2000/09/22 02:17:23  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.20  2000/09/21 16:22:10  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -109,297 +431,3 @@
 //
 // Revision 1.1  1996/04/04 22:12:19  jimg
 // Added.
-
-#include "config_dap.h"
-
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.20 2000/09/21 16:22:10 jimg Exp $"};
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <math.h>
-
-#include <iostream>
-#if defined(__GNUG__) || defined(WIN32)
-#include <strstream>
-#else
-#include <sstream>
-#endif
-
-#include "parser.h"		// defines constants such as ID_MAX
-#include "dods-limits.h"
-// Jose Garcia: we need to include this to get the prototype for append_long_to_string.
-#include "util.h"
-
-#ifdef WIN32
-using std::cerr;
-using std::endl;
-using std::ends;
-using std::ostrstream;
-#endif
-
-void 
-parse_error(const char *s, const int line_num)
-{
-    // Jose Garcia
-    // This assert(s) is (are) only for developing purposes
-    // For production servers remove it by compiling with NDEBUG 
-    assert(s);
-
-    cerr << "Parse error (line: " << line_num << "):" << endl
-	 << s << endl;
-}
-
-void
-parse_error(parser_arg *arg, const char *msg, const int line_num,
-	    const char *context)
-{ 
-    // Jose Garcia
-    // This assert(s) is (are) only for developing purposes
-    // For production servers remove it by compiling with NDEBUG
-    assert(arg);
-    assert(msg);
-
-    arg->set_status(FALSE);
-
-    string oss="";
-
-    if (line_num != 0)
-      {
-	oss+= "Error parsing the text on line " ;
-	append_long_to_string(line_num,10,oss);
-	oss+= ":\n";
-      }
-
-    if (context)
-	oss+= msg+(string)"\n"+context+(string)"\n";
-    else
-	oss+= msg+(string)"\n";
-
-    arg->set_error(new Error(unknown_error, oss.c_str()));
-}
-
-void
-save_str(char *dst, const char *src, const int line_num)
-{
-    strncpy(dst, src, ID_MAX);
-    dst[ID_MAX-1] = '\0';		/* in case ... */
-    if (strlen(src) >= ID_MAX)
-	cerr << "line: " << line_num << "`" << src << "' truncated to `"
-             << dst << "'" << endl;
-}
-
-void
-save_str(string &dst, const char *src, const int)
-{
-    dst = src;
-}
-
-int
-check_byte(const char *val, const int line)
-{
-    char *ptr;
-    long v = strtol(val, &ptr, 0);
-
-    if (v == 0 && val == ptr) {
-	parse_error("Not decodable to an integer value", line);
-	return FALSE;
-    }
-
-    // We're very liberal here with values. Anything that can fit into 8 bits
-    // is allowed through. Clients will have to deal with the fact that the
-    // ASCII representation for the value might need to be tweaked. This is
-    // especially the case for Java clients where Byte datatypes are
-    // signed. 3/20/2000 jhrg
-    if (v > DODS_UCHAR_MAX || v < DODS_SCHAR_MIN) {
-	parse_error("Not a byte value", line);
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-// This version of check_int will pass base 8, 10 and 16 numbers when they
-// use the ANSI standard for string representation of those number bases.
-
-int
-check_int16(const char *val, const int line)
-{
-    char *ptr;
-    long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
-
-    if (v == 0 && val == ptr) {
-	string oss="";
-	oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
-
-	parse_error(oss.c_str(), line);
-
-	return FALSE;
-    }
-
-    // Don't use the constant from limits.h, use the ones in dods-limits.h
-    if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) { 
-	string oss="";
-
-	oss +="`" + (string)val + "' is not a 16-bit integer value value.\nIt must be between ";
-	append_long_to_string(DODS_SHRT_MIN,10,oss);
-	oss+=" and ";
-	append_long_to_string(DODS_SHRT_MAX,10,oss);
-	oss+= ".\n";
-	parse_error(oss.c_str(), line);
-
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-int
-check_uint16(const char *val, const int line)
-{
-    char *ptr;
-    unsigned long v = strtol(val, &ptr, 0); 
-
-    if (v == 0 && val == ptr) {
-        string oss="";
-        oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
-
-	parse_error(oss.c_str(), line);
-
-	return FALSE;
-    }
-
-    if (v > DODS_USHRT_MAX) { 
-        string oss="";
-	oss+="`" + (string)val+ "' is not a 16-bit integer value value.\nIt must be less than or equal to ";
-	append_long_to_string(DODS_USHRT_MAX,10,oss);
-	oss+=".\n";
-
-	parse_error(oss.c_str(), line);
-
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-int
-check_int32(const char *val, const int line)
-{
-    char *ptr;
-    long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
-
-    if (v == 0 && val == ptr) {
-        string oss="";
-        oss+= "`" +(string)val + "' cannot be decoded as an integer value.\n";
-	
-	parse_error(oss.c_str(), line);
-	return FALSE;
-    }
-
-    if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
-	string oss="";
-	oss+= "`" +(string)val+ "' is not a 32-bit integer value value.\nIt must be between ";
-	append_long_to_string(DODS_INT_MIN,10,oss);
-	oss+=" and ";
-	append_long_to_string( DODS_INT_MAX,10,oss);
-	oss+=".\n";
-
-	parse_error(oss.c_str(), line);
-
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-int
-check_uint32(const char *val, const int line)
-{
-    char *ptr;
-    unsigned long v = strtol(val, &ptr, 0);
-
-    if (v == 0 && val == ptr) {
-	string oss="";
-	oss+="`"+(string)val+"' cannot be decoded as an integer value.\n" ;
-	parse_error(oss.c_str(), line);
-
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-// This function does not test for numbers that are smaller than
-// DODS_FLT_MIN. That is hard to do without eliminating valid numbers such as
-// 0.0. Maybe the solution is to test for 0.0 specially? 4/12/99 jhrg 
-
-int
-check_float32(const char *val, const int num)
-{
-    char *ptr;
-    double v = strtod(val, &ptr);
-
-    if (v == 0.0 && val == ptr) {
-	parse_error("Not decodable to a 32-bit float value", num);
-	return FALSE;
-    }
-
-#if 0
-    static double range = fabs(log10(DODS_FLT_MAX));
-    if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
-        string oss="";
-
-	oss+= "`" +(string)val+"' is not a 32 bit floating point value value.\nIt must be between (+/-)";
-	append_double_to_string(DODS_FLT_MAX,oss);
-	oss+=" and (+/-)";
-	append_double_to_string(DODS_FLT_MIN,oss);
-	oss+= ".\n";
-	parse_error(oss.c_str(), num);
-
-	return FALSE;
-    }
-#endif
-
-    return TRUE;
-}
-
-int
-check_float64(const char *val, const int num)
-{
-    char *ptr;
-    double v = strtod(val, &ptr);
-
-    if (v == 0.0 && val == ptr) {
-	parse_error("Not decodable to a 64-bit float value", num);
-	return FALSE;
-    }
-
-#if 0
-    static double range = fabs(log10(DODS_DBL_MAX));
-    if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
-	string oss="";
-
-	oss+="`"+(string)val+"' is not a 64 bit floating point value value.\nIt must be between (+/-)";
-	append_double_to_string(DODS_DBL_MAX,oss);
-	oss+= " and (+/-)" ;
-	append_double_to_string(DODS_DBL_MIN,oss);
-	oss+=".\n";
-	parse_error(oss.c_str(), num);
-
-	return FALSE;
-    }
-#endif
-
-    return TRUE;
-}
-
-/*
-  Maybe someday we will really check the Urls to see if they are valid...
-*/
-
-int
-check_url(const char *, const int)
-{
-    return TRUE;
-}

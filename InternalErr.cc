@@ -7,51 +7,13 @@
 
 // Implementation for the InternalErr class.
 
-// $Log: InternalErr.cc,v $
-// Revision 1.5  2000/09/21 16:22:08  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.4  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.3  2000/06/07 19:33:21  jimg
-// Merged with verson 3.1.6
-//
-// Revision 1.2.2.1  2000/06/02 20:23:45  jimg
-// Added a constructor that takes the file name and line number. This helps in
-// tracking down errors.
-//
-// Revision 1.2.10.2  2000/03/08 00:09:04  jgarcia
-// replace ostrstream with string;added functions to convert from double and
-// long to string
-//
-// Revision 1.2.10.1  2000/02/17 05:03:13  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.2  1999/05/26 17:33:55  jimg
-// Fixed a bad call to Error's ctor. For some reason calling the four arg ctor
-// with the last arg == to 0 caused string to gag. At least that appears to have
-// been the problem...
-//
-// Revision 1.1  1999/05/04 19:43:47  jimg
-// Added
-//
-
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.5 2000/09/21 16:22:08 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.6 2000/09/22 02:17:20 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -122,4 +84,48 @@ InternalErr::OK()
 {
     return Error::OK();
 }
+
+// $Log: InternalErr.cc,v $
+// Revision 1.6  2000/09/22 02:17:20  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.5  2000/09/21 16:22:08  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.4  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.3  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
+//
+// Revision 1.2.2.1  2000/06/02 20:23:45  jimg
+// Added a constructor that takes the file name and line number. This helps in
+// tracking down errors.
+//
+// Revision 1.2.10.2  2000/03/08 00:09:04  jgarcia
+// replace ostrstream with string;added functions to convert from double and
+// long to string
+//
+// Revision 1.2.10.1  2000/02/17 05:03:13  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.2  1999/05/26 17:33:55  jimg
+// Fixed a bad call to Error's ctor. For some reason calling the four arg ctor
+// with the last arg == to 0 caused string to gag. At least that appears to have
+// been the problem...
+//
+// Revision 1.1  1999/05/04 19:43:47  jimg
+// Added
+//
 

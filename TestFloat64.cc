@@ -9,7 +9,49 @@
 //
 // jhrg 1/12/95
 
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include "config_dap.h"
+#include "TestFloat64.h"
+
+Float64 *
+NewFloat64(const string &n)
+{
+    return new TestFloat64(n);
+}
+
+TestFloat64::TestFloat64(const string &n) : Float64(n)
+{
+}
+
+BaseType *
+TestFloat64::ptr_duplicate()
+{
+    return new TestFloat64(*this); // Copy ctor calls duplicate to do the work
+}
+ 
+bool
+TestFloat64::read(const string &)
+{
+    if (read_p())
+	return true;
+
+    _buf = 99.999;
+
+    set_read_p(true);
+
+    return true;
+}
+
 // $Log: TestFloat64.cc,v $
+// Revision 1.17  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.16  2000/09/21 16:22:08  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -90,38 +132,3 @@
 // BaseType.
 //
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include "config_dap.h"
-#include "TestFloat64.h"
-
-Float64 *
-NewFloat64(const string &n)
-{
-    return new TestFloat64(n);
-}
-
-TestFloat64::TestFloat64(const string &n) : Float64(n)
-{
-}
-
-BaseType *
-TestFloat64::ptr_duplicate()
-{
-    return new TestFloat64(*this); // Copy ctor calls duplicate to do the work
-}
- 
-bool
-TestFloat64::read(const string &)
-{
-    if (read_p())
-	return true;
-
-    _buf = 99.999;
-
-    set_read_p(true);
-
-    return true;
-}

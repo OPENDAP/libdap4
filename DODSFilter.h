@@ -7,87 +7,8 @@
 // Authors:
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: DODSFilter.h,v $
-// Revision 1.16  2000/09/21 16:22:07  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.15  2000/07/09 21:57:09  rmorris
-// Mods's to increase portability, minimuze ifdef's in win32 and account
-// for differences between the Standard C++ Library - most notably, the
-// iostream's.
-//
-// Revision 1.14  2000/06/07 19:33:21  jimg
-// Merged with verson 3.1.6
-//
-// Revision 1.13  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.12.10.1  2000/06/02 18:16:48  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.11.2.3  2000/05/18 20:45:27  jimg
-// added set_ce(). Maybe add more set methods?
-//
-// Revision 1.12.4.1  2000/02/07 21:11:36  jgarcia
-// modified prototypes and implementations to use exceeption handling
-//
-// Revision 1.11.2.2  1999/09/08 22:36:03  jimg
-// Fixed the -V comment.
-//
-// Revision 1.12  1999/09/03 22:07:44  jimg
-// Merged changes from release-3-1-1
-//
-// Revision 1.11.2.1  1999/08/28 06:43:04  jimg
-// Fixed the implementation/interface pragmas and misc comments
-//
-// Revision 1.11  1999/05/25 21:57:12  dan
-// Added an optional second argument to read_ancillary_dds to support JGOFS
-// usage.
-//
-// Revision 1.10  1999/05/25 21:54:50  dan
-// Added an optional second argument to read_ancillary_das to support
-// JGOFS usage.
-//
-// Revision 1.9  1999/05/05 00:48:07  jimg
-// Added the get_cgi_version() member function.
-// Added documentation about get_cgi_version() and the -V option (new).
-//
-// Revision 1.8  1999/05/04 19:47:21  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.7  1999/04/29 02:29:28  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.6  1999/02/22 22:58:02  jimg
-// Added the get_accept_types() accessor. Also added to the ctor so that the -t
-// option will be parsed properly and used to set the value of accept_types.
-//
-// Revision 1.5  1999/01/21 20:42:01  tom
-// Fixed comment formatting problems for doc++
-//
-// Revision 1.4.2.1  1999/02/02 21:56:57  jimg
-// String to string version
-//
-// Revision 1.4  1998/08/06 16:11:47  jimg
-// Added cache_dir member (from jeh).
-//
-// Revision 1.3  1998/02/04 14:55:32  tom
-// Another draft of documentation.
-//
-// Revision 1.2  1997/09/22 23:04:59  jimg
-// Added doc++ style comments.
-//
-// Revision 1.1  1997/08/28 20:39:02  jimg
-// Created
-//
-
-#ifndef _DODSFilter_h
-#define _DODSFilter_h
+#ifndef _dodsfilter_h
+#define _dodsfilter_h
 
 #ifdef __GNUG__
 #pragma interface
@@ -97,8 +18,13 @@
 
 #include <string>
 
+#ifndef _das_h
 #include "DAS.h"
+#endif
+
+#ifndef _dds_h
 #include "DDS.h"
+#endif
 
 
 /** When a DODS server receives a request from a DODS client, the
@@ -341,4 +267,89 @@ public:
     void send_data(DDS &dds, FILE *data_stream);
 };
 
-#endif // _DODSFilter_h
+// $Log: DODSFilter.h,v $
+// Revision 1.17  2000/09/22 02:17:19  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.16  2000/09/21 16:22:07  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.15  2000/07/09 21:57:09  rmorris
+// Mods's to increase portability, minimuze ifdef's in win32 and account
+// for differences between the Standard C++ Library - most notably, the
+// iostream's.
+//
+// Revision 1.14  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
+//
+// Revision 1.13  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.12.10.1  2000/06/02 18:16:48  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.11.2.3  2000/05/18 20:45:27  jimg
+// added set_ce(). Maybe add more set methods?
+//
+// Revision 1.12.4.1  2000/02/07 21:11:36  jgarcia
+// modified prototypes and implementations to use exceeption handling
+//
+// Revision 1.11.2.2  1999/09/08 22:36:03  jimg
+// Fixed the -V comment.
+//
+// Revision 1.12  1999/09/03 22:07:44  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.11.2.1  1999/08/28 06:43:04  jimg
+// Fixed the implementation/interface pragmas and misc comments
+//
+// Revision 1.11  1999/05/25 21:57:12  dan
+// Added an optional second argument to read_ancillary_dds to support JGOFS
+// usage.
+//
+// Revision 1.10  1999/05/25 21:54:50  dan
+// Added an optional second argument to read_ancillary_das to support
+// JGOFS usage.
+//
+// Revision 1.9  1999/05/05 00:48:07  jimg
+// Added the get_cgi_version() member function.
+// Added documentation about get_cgi_version() and the -V option (new).
+//
+// Revision 1.8  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
+// Revision 1.7  1999/04/29 02:29:28  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.6  1999/02/22 22:58:02  jimg
+// Added the get_accept_types() accessor. Also added to the ctor so that the -t
+// option will be parsed properly and used to set the value of accept_types.
+//
+// Revision 1.5  1999/01/21 20:42:01  tom
+// Fixed comment formatting problems for doc++
+//
+// Revision 1.4.2.1  1999/02/02 21:56:57  jimg
+// String to string version
+//
+// Revision 1.4  1998/08/06 16:11:47  jimg
+// Added cache_dir member (from jeh).
+//
+// Revision 1.3  1998/02/04 14:55:32  tom
+// Another draft of documentation.
+//
+// Revision 1.2  1997/09/22 23:04:59  jimg
+// Added doc++ style comments.
+//
+// Revision 1.1  1997/08/28 20:39:02  jimg
+// Created
+//
+
+#endif // _dodsfilter_h

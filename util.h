@@ -11,8 +11,173 @@
 //
 // jhrg 9/21/94
 
+#ifndef _util_h
+#define _util_h 1
+
+#include <stdio.h>
+
+#ifndef _basetype_h
+#include "BaseType.h"
+#endif
+
+#ifndef _byte_h
+#include "Byte.h"
+#endif
+
+#ifndef _int16_h
+#include "Int16.h"
+#endif
+
+#ifndef _uint16_h
+#include "UInt16.h"
+#endif
+
+#ifndef _int32_h
+#include "Int32.h"
+#endif
+
+#ifndef _uint32_h
+#include "UInt32.h"
+#endif
+
+#ifndef _float32_h
+#include "Float32.h"
+#endif
+
+#ifndef _float64_h
+#include "Float64.h"
+#endif
+
+#ifndef _str_h
+#include "Str.h"
+#endif
+
+#ifndef _url_h
+#include "Url.h"
+#endif
+
+#ifndef _array_h
+#include "Array.h"
+#endif
+
+#ifndef _list_h
+#include "List.h"
+#endif
+
+#ifndef _structure_h
+#include "Structure.h"
+#endif
+
+#ifndef _sequence_h
+#include "Sequence.h"
+#endif
+
+#ifndef _grid_h
+#include "Grid.h"
+#endif
+
+#ifdef WIN32
+using std::iostream;
+#endif
+
+string prune_spaces(string);
+bool unique_names(SLList<BaseType *> l, const string &var, const string &type,
+		  string &msg);
+bool unique_names(DLList<BaseType *> l, const string &var, const string &type,
+		  string &msg);
+XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
+XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
+void delete_xdrstdio(XDR *xdr);
+FILE *text_to_temp(string text);
+char *systime();
+FILE *compressor(FILE *output, int &childpid);
+bool deflate_exists();
+const char *dods_root();
+const char *dods_progress();
+#ifdef WIN32
+void flush_stream(iostream ios, FILE *out);
+#endif
+
+bool func_member(int argc, BaseType *argv[], DDS &dds);
+bool func_null(int argc, BaseType *argv[], DDS &dds);
+BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
+BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
+
+#ifdef WIN32
+extern "C" int xdr_str(XDR *xdrs, string &buf);
+#else
+extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
+#endif
+
+Byte *NewByte(const string &n = "");
+Int16 *NewInt16(const string &n = "");
+UInt16 *NewUInt16(const string &n = "");
+Int32 *NewInt32(const string &n = "");
+UInt32 *NewUInt32(const string &n = "");
+Float32 *NewFloat32(const string &n = "");
+Float64 *NewFloat64(const string &n = "");
+Str *NewStr(const string &n = "");
+Url *NewUrl(const string &n = "");
+Array *NewArray(const string &n = "", BaseType *v = 0);
+List *NewList(const string &n = "", BaseType *v = 0);
+Structure *NewStructure(const string &n = "");
+Sequence *NewSequence(const string &n = "");
+Grid *NewGrid(const string &n = "");
+
+void downcase(string &s);
+// Jose Garcia
+/** Fast, safe conversions from long to a character representation which gets
+   appended to a string. This method will take a long value 'val' and it will
+   recursively divide it by 'base' in order to "extract" one by one the
+   digits which compose it; these digits will be {\bfappended} to the string
+   'str_val' which will become the textual representation of 'val'. Please
+   notice that the digits "extracted" from 'val' will vary depending on the
+   base chosen for the conversion; for example val=15 converted to base 10
+   will yield the digits {1,5}, converted to base 16 will yield {F} and
+   converted to base 2 will yield {1,1,1,1}.
+
+   @param val The long value we which to convert to string.
+
+   @param base A value in the range [2,36] which is the base to use while
+   transforming the long value 'val' to its textual representation. Typical
+   bases are 2 (binary), 10 (decimal) and 16 (hexadecimal).
+
+   @param str_val This is the string that will hold the textual
+   representation of 'val'. The string str_val should be pre-set to an empty
+   string ("") otherwise the output of this function will just append the
+   textual representation of val to whatever data is there; these feature may
+   be useful if you wish to append a long value to a string s1 (just like
+   operator+ does) without having to create a new string object s2 and then
+   use string::operator+ between s1 and s2.
+
+   @return void. This method returns nothing however be aware that it will
+   throw and exception of type {\bfstd::invalid_argument} if the parameter
+   base is not in the valid range. */
+void append_long_to_string(long val, int base, string &str_val);
+
+// Jose Garcia
+/**
+    Conversions from double to a character representation which gets appended
+    to a string. This function depends on the standard routine sprintf to
+    convert a double to a textual representation which gets appended to the
+    string 'str'.
+
+    @param num The double you wish to append to str.
+
+    @param str The string where the textual representation of num will be
+    appended.
+
+    @return void. */
+void append_double_to_string(const double &num, string &str);
+
 /* 
  * $Log: util.h,v $
+ * Revision 1.36  2000/09/22 02:17:23  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.35  2000/09/21 16:22:10  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -156,111 +321,5 @@
  * with only two parameters. Thus the Array and List classes might actually
  * work as planned.
  */
-
-#ifndef _util_h
-#define _util_h 1
-
-#include <stdio.h>
-
-#include "BaseType.h"
-#include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
-#include "Float32.h"
-#include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "List.h"
-#include "Structure.h"
-#include "Sequence.h"
-#include "Grid.h"
-
-#ifdef WIN32
-using std::iostream;
-#endif
-
-string prune_spaces(string);
-bool unique_names(SLList<BaseType *> l, const string &var, const string &type,
-		  string &msg);
-bool unique_names(DLList<BaseType *> l, const string &var, const string &type,
-		  string &msg);
-XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
-XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop);
-void delete_xdrstdio(XDR *xdr);
-FILE *text_to_temp(string text);
-char *systime();
-FILE *compressor(FILE *output, int &childpid);
-bool deflate_exists();
-const char *dods_root();
-const char *dods_progress();
-#ifdef WIN32
-void flush_stream(iostream ios, FILE *out);
-#endif
-
-bool func_member(int argc, BaseType *argv[], DDS &dds);
-bool func_null(int argc, BaseType *argv[], DDS &dds);
-BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
-BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
-
-#ifdef WIN32
-extern "C" int xdr_str(XDR *xdrs, string &buf);
-#else
-extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
-#endif
-
-Byte *NewByte(const string &n = "");
-Int16 *NewInt16(const string &n = "");
-UInt16 *NewUInt16(const string &n = "");
-Int32 *NewInt32(const string &n = "");
-UInt32 *NewUInt32(const string &n = "");
-Float32 *NewFloat32(const string &n = "");
-Float64 *NewFloat64(const string &n = "");
-Str *NewStr(const string &n = "");
-Url *NewUrl(const string &n = "");
-Array *NewArray(const string &n = "", BaseType *v = 0);
-List *NewList(const string &n = "", BaseType *v = 0);
-Structure *NewStructure(const string &n = "");
-Sequence *NewSequence(const string &n = "");
-Grid *NewGrid(const string &n = "");
-
-void downcase(string &s);
-// Jose Garcia
-/** Fast, safe conversions from long to a character representation which gets appended to a string.
-   This method will take a long value 'val' and it will recursively
-   divide it by 'base' in order to "extract" one by one the digits
-   which compose it; these digits will be {\bfappended} to the string 'str_val'
-   which will become the textual representation of 'val'. Please notice
-   that the digits "extracted" from 'val' will vary depending on the base chosen
-   for the conversion; for example val=15 converted to base 10 will yield the digits
-   {1,5}, converted to base 16 will yield {F} and converted to base 2 will yield {1,1,1,1}.
-   @param val The long value we which to convert to string.
-   @param base A value in the range [2,36] which is the base to use while transforming 
-   the long value 'val' to its textual representation. Typical bases are 2 (binary),
-   10 (decimal) and 16 (hexadecimal).
-   @param str_val This is the string that will hold the textual representation of 'val'. 
-   The string str_val should be pre-set to an empty string ("") otherwise the output of this function will
-   just append the textual representation of val to whatever data is there; these feature
-   may be useful if you wish to append a long value to a string s1 (just like operator+ does)
-   without having to create a new string object s2 and then use string::operator+ between 
-   s1 and s2.
-   @return void. This method returns nothing however be aware that it will throw and 
-   exception of type {\bfstd::invalid_argument} if the parameter base is not in the valid 
-   range.
-*/
-void append_long_to_string(long val, int base, string &str_val);
-// Jose Garcia
-/**
-    Conversions from double to a character representation which gets appended to a string.
-    This function depends on the standard routine sprintf to convert a double to a textual
-    representation which gets appended to the string 'str'.
-    @param num The double you wish to append to str.
-    @param str The string where the textual representation of num will be appended.
-    @return void.
- */
-void append_double_to_string(const double &num, string &str);
-
 
 #endif

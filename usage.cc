@@ -12,75 +12,9 @@
 // the dataset providers want to make available. 
 // jhrg 12/9/96
 
-// $Log: usage.cc,v $
-// Revision 1.14  2000/07/09 22:05:37  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.13  2000/06/07 18:07:01  jimg
-// Merged the pc port branch
-//
-// Revision 1.12.20.1  2000/06/02 18:39:04  rmorris
-// Mod's for port to win32.
-//
-// Revision 1.12  1999/05/04 19:47:24  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.11  1999/04/29 02:29:37  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.10  1999/04/22 22:30:52  jimg
-// Uses dynamic_cast
-//
-// Revision 1.9  1999/04/09 17:17:30  jimg
-// Added support for the new datatypes.
-// Removed old code.
-// Changed header generated to include XDODS-Server.
-//
-// Revision 1.8  1999/03/24 23:27:49  jimg
-// Added support for the new Int16, UInt16 and Float32 types.
-//
-// Revision 1.7  1998/12/16 19:10:53  jimg
-// Added support for XDODS-Server MIME header. This fixes a problem where our
-// use of Server clashed with Java.
-//
-// Revision 1.6  1998/10/21 16:56:24  jimg
-// Removed name_in_dds using #if 0 ... #endif
-//
-// Revision 1.5.6.2  1999/02/05 09:32:37  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.5.6.1  1999/02/02 21:57:08  jimg
-// String to string version
-//
-// Revision 1.5  1998/02/09 20:11:43  jimg
-// Added/fixed doc++ comments.
-//
-// Revision 1.4  1998/02/05 20:14:07  jimg
-// DODS now compiles with gcc 2.8.x
-//
-// Revision 1.3  1997/05/22 22:32:04  jimg
-// Changed the way global attributes are ferreted out. Previously I had
-// assumed that any attribute group that was not also the name of a variable
-// was a group of `global' attributes. However, the new aliases change this.
-// In response I've changed the way usage looks for global attributes; it
-// looks for attribute groups which contain the strings `global' and/or
-// `dods'. Case is not important.
-//
-// Revision 1.2  1996/12/18 18:41:33  jimg
-// Added massive fixes for the processing of attributes to sort out the `global
-// attributes'. Also added changes to the overall layout of the resulting
-// document so that the hierarchy of the data is represented. Added some new
-// utility functions.
-//
-// Revision 1.1  1996/12/11 19:55:18  jimg
-// Created.
-//
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.14 2000/07/09 22:05:37 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.15 2000/09/22 02:17:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -580,4 +514,73 @@ main(int argc, char *argv[])
 #endif
 }
 
-
+// $Log: usage.cc,v $
+// Revision 1.15  2000/09/22 02:17:23  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.14  2000/07/09 22:05:37  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.13  2000/06/07 18:07:01  jimg
+// Merged the pc port branch
+//
+// Revision 1.12.20.1  2000/06/02 18:39:04  rmorris
+// Mod's for port to win32.
+//
+// Revision 1.12  1999/05/04 19:47:24  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
+// Revision 1.11  1999/04/29 02:29:37  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.10  1999/04/22 22:30:52  jimg
+// Uses dynamic_cast
+//
+// Revision 1.9  1999/04/09 17:17:30  jimg
+// Added support for the new datatypes.
+// Removed old code.
+// Changed header generated to include XDODS-Server.
+//
+// Revision 1.8  1999/03/24 23:27:49  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+//
+// Revision 1.7  1998/12/16 19:10:53  jimg
+// Added support for XDODS-Server MIME header. This fixes a problem where our
+// use of Server clashed with Java.
+//
+// Revision 1.6  1998/10/21 16:56:24  jimg
+// Removed name_in_dds using #if 0 ... #endif
+//
+// Revision 1.5.6.2  1999/02/05 09:32:37  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.5.6.1  1999/02/02 21:57:08  jimg
+// String to string version
+//
+// Revision 1.5  1998/02/09 20:11:43  jimg
+// Added/fixed doc++ comments.
+//
+// Revision 1.4  1998/02/05 20:14:07  jimg
+// DODS now compiles with gcc 2.8.x
+//
+// Revision 1.3  1997/05/22 22:32:04  jimg
+// Changed the way global attributes are ferreted out. Previously I had
+// assumed that any attribute group that was not also the name of a variable
+// was a group of `global' attributes. However, the new aliases change this.
+// In response I've changed the way usage looks for global attributes; it
+// looks for attribute groups which contain the strings `global' and/or
+// `dods'. Case is not important.
+//
+// Revision 1.2  1996/12/18 18:41:33  jimg
+// Added massive fixes for the processing of attributes to sort out the `global
+// attributes'. Also added changes to the overall layout of the resulting
+// document so that the hierarchy of the data is represented. Added some new
+// utility functions.
+//
+// Revision 1.1  1996/12/11 19:55:18  jimg
+// Created.

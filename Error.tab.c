@@ -19,12 +19,12 @@
 #define	SCAN_MSG	262
 #define	SCAN_PROGRAM	263
 
-#line 53 "Error.y"
+#line 10 "Error.y"
 
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.12 2000/09/11 16:40:17 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.13 2000/09/22 02:17:20 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +36,7 @@ static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.12 2000/09/11 16:40:17 jim
 
 #include "parser.h"
 #include "debug.h"
+#include "util.h"
 
 #ifdef WIN32
 using std::cerr;
@@ -50,11 +51,7 @@ using std::endl;
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
 #define STATUS(arg) ((parser_arg *)(arg))->_status
 
-#if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
-#else
-#define YYPARSE_PARAM void *arg
-#endif
 
 extern int error_line_num;	// defined in Error.lex
 
@@ -62,7 +59,7 @@ int Errorlex();			// the scanner
 void Errorerror(char *s);	// gotta love automatically generated names...
 
 
-#line 96 "Error.y"
+#line 50 "Error.y"
 typedef union {
 #ifdef __SUNPRO_CC
     int boolean;
@@ -136,8 +133,8 @@ static const short yyrhs[] = {     5,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   127,   130,   131,   134,   135,   138,   141,   148,   154,   156,
-   163,   170
+    81,    84,    85,    88,    89,    92,    95,   102,   108,   110,
+   117,   124
 };
 #endif
 
@@ -741,52 +738,52 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 127 "Error.y"
+#line 81 "Error.y"
 { yyval.boolean = yyvsp[-2].boolean; STATUS(arg) = yyvsp[-2].boolean; ;
     break;}
 case 2:
-#line 130 "Error.y"
+#line 84 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 3:
-#line 131 "Error.y"
+#line 85 "Error.y"
 { yyval.boolean = yyvsp[0].boolean; ;
     break;}
 case 4:
-#line 134 "Error.y"
+#line 88 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 5:
-#line 135 "Error.y"
+#line 89 "Error.y"
 { yyval.boolean = yyvsp[0].boolean; ;
     break;}
 case 6:
-#line 138 "Error.y"
+#line 92 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 7:
-#line 142 "Error.y"
+#line 96 "Error.y"
 { 
 		    ERROR_OBJ(arg)->error_code((ErrorCode)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 8:
-#line 149 "Error.y"
+#line 103 "Error.y"
 { 
 		    ERROR_OBJ(arg)->error_message(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 case 10:
-#line 157 "Error.y"
+#line 111 "Error.y"
 {
 		    ERROR_OBJ(arg)->program_type((ProgramType)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 11:
-#line 164 "Error.y"
+#line 118 "Error.y"
 {
 		    DBG(cerr << "Program: " << yyvsp[0].string << endl);
 		    ERROR_OBJ(arg)->program(yyvsp[0].string);
@@ -1015,11 +1012,66 @@ yyerrhandle:
     }
   return 1;
 }
-#line 172 "Error.y"
+#line 126 "Error.y"
 
 
 void
 Errorerror(char *s)
 {
-    cerr << s << " line: " << error_line_num << endl;
+  string msg = s;
+  msg += " line: ";
+  append_long_to_string(error_line_num, 10, msg);
+  msg += "\n";
+
+  throw Error(unknown_error, msg);
 }
+
+
+// $Log: Error.tab.c,v $
+// Revision 1.13  2000/09/22 02:17:20  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.9  2000/07/09 21:43:29  rmorris
+// Mods to increase portability, minimize ifdef's for win32
+//
+// Revision 1.8  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.7.20.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.7  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.6.4.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code.
+//
+// Revision 1.6.4.1  1999/02/02 21:56:58  jimg
+// String to string version
+//
+// Revision 1.6  1997/08/23 00:17:19  jimg
+// Added to the `description' rule so that Error objects with only a code
+// will parse.
+//
+// Revision 1.5  1997/02/14 23:56:11  jimg
+// Changed grammar to allow Error objects which have no `program' component.
+// That is, the program part is absent. Previously the program part had to be
+// there even if the fields had null values.
+//
+// Revision 1.4  1996/10/16 22:35:56  jimg
+// Fixed bad operator in DODS_BISON_VER preprocessor statement.
+//
+// Revision 1.3  1996/10/08 17:04:39  jimg
+// Added a fix for Bison 1.25 so that PARSE_PARAM will still work
+//
+// Revision 1.2  1996/08/13 18:21:19  jimg
+// Switched to parser_arg object for communication with caller.
+// Fixed bogus declaration of Errorerror() (from int to void).
+//
+// Revision 1.1  1996/05/31 23:18:17  jimg
+// Added.
+

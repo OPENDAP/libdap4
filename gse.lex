@@ -22,27 +22,11 @@
    1/13/99 jhrg
 */
 
-/*
- * $Log: gse.lex,v $
- * Revision 1.3  2000/06/07 18:07:01  jimg
- * Merged the pc port branch
- *
- * Revision 1.2.20.1  2000/06/02 18:39:03  rmorris
- * Mod's for port to win32.
- *
- * Revision 1.2  1999/04/29 02:29:37  jimg
- * Merge of no-gnu branch
- *
- * Revision 1.1  1999/01/21 02:07:44  jimg
- * Created
- *
- */
-
 %{
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.lex,v 1.3 2000/06/07 18:07:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.lex,v 1.4 2000/09/22 02:17:23 jimg Exp $"};
 
 #define YY_DECL int gse_lex YY_PROTO(( void ))
 #define ID_MAX 256
@@ -100,12 +84,10 @@ yywrap(void)
 }
 
 // Three glue routines for string scanning. These are not declared in the
-// header expr.tab.h nor is YY_BUFFER_STATE. Including these here allows them
-// to see the type definitions in lex.expr.c (where YY_BUFFER_STATE is
+// header gse.tab.h nor is YY_BUFFER_STATE. Including these here allows them
+// to see the type definitions in lex.gse.c (where YY_BUFFER_STATE is
 // defined) and allows callers to declare them (since callers outside of this
-// file cannot declare YY_BUFFER_STATE variable). Note that I changed the name
-// of the expr_scan_string function to expr_string because C++ cannot
-// distinguish by return type. 1/12/99 jhrg
+// file cannot declare YY_BUFFER_STATE variable).
 
 void *
 gse_string(const char *str)
@@ -155,3 +137,26 @@ store_op(int op)
 {
     gse_lval.op = op;
 }
+
+/*
+ * $Log: gse.lex,v $
+ * Revision 1.4  2000/09/22 02:17:23  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
+ * Revision 1.3  2000/06/07 18:07:01  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.2.20.1  2000/06/02 18:39:03  rmorris
+ * Mod's for port to win32.
+ *
+ * Revision 1.2  1999/04/29 02:29:37  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.1  1999/01/21 02:07:44  jimg
+ * Created
+ *
+ */
+

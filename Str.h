@@ -10,8 +10,93 @@
 //
 // jhrg 9/7/94
 
+#ifndef _str_h
+#define _str_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+#endif
+
+#include <string>
+
+#include "dods-limits.h"
+#include "BaseType.h"
+
+
+// max_str_len should be large since we always send strings with length bytes
+// as a prefix (so xdr_string will always know how much memory to malloc) but
+// if deserialize gets confused and thinks a ctor (in particular) is a string
+// xdr_string in turn will max_str_len if it cannot get a length byte. A long
+// term solution is to fix DODS, but strings should not routinely be > 32k
+// for the time being... jhrg 4/30/97
+
+const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1; 
+
+/** Holds character string data.
+
+    @see BaseType
+    @see Url
+    */
+    
+class Str: public BaseType {
+
+protected:
+    string _buf;
+
+public:
+  /** The Str constructor requires only the name of the variable
+      to be created.  The name may be omitted, which will create a
+      nameless variable.  This may be adequate for some applications. 
+      
+      @param n A string containing the name of the variable to be
+      created. 
+
+      @memo The Str constructor. */
+    Str(const string &n = "");
+
+    virtual ~Str() {}
+
+    virtual BaseType *ptr_duplicate() = 0;
+    
+    virtual unsigned int width();
+
+    // Return the length of the stored string or zero if no string has been
+    // stored in the instance's internal buffer.
+    unsigned int length();
+
+    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
+
+    virtual bool read(const string &dataset) = 0;
+
+    virtual unsigned int val2buf(void *buf, bool reuse = false);
+    virtual unsigned int buf2val(void **val);
+
+    virtual void print_val(ostream &os, string space = "",
+			   bool print_decl_p = true);
+
+    virtual bool ops(BaseType *b, int op, const string &dataset);
+};
+
 /* 
  * $Log: Str.h,v $
+ * Revision 1.32  2000/09/22 02:17:21  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.31  2000/09/21 16:22:08  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -179,84 +264,5 @@
  * Added CtorType.
  */
 
-#ifndef _Str_h
-#define _Str_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#else
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif
-
-#include <string>
-
-#include "dods-limits.h"
-#include "BaseType.h"
-
-
-// max_str_len should be large since we always send strings with length bytes
-// as a prefix (so xdr_string will always know how much memory to malloc) but
-// if deserialize gets confused and thinks a ctor (in particular) is a string
-// xdr_string in turn will max_str_len if it cannot get a length byte. A long
-// term solution is to fix DODS, but strings should not routinely be > 32k
-// for the time being... jhrg 4/30/97
-
-const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1; 
-
-/** Holds character string data.
-
-    @see BaseType
-    @see Url
-    */
-    
-class Str: public BaseType {
-
-protected:
-    string _buf;
-
-public:
-  /** The Str constructor requires only the name of the variable
-      to be created.  The name may be omitted, which will create a
-      nameless variable.  This may be adequate for some applications. 
-      
-      @param n A string containing the name of the variable to be
-      created. 
-
-      @memo The Str constructor. */
-    Str(const string &n = "");
-
-    virtual ~Str() {}
-
-    virtual BaseType *ptr_duplicate() = 0;
-    
-    virtual unsigned int width();
-
-    // Return the length of the stored string or zero if no string has been
-    // stored in the instance's internal buffer.
-    unsigned int length();
-
-    virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
-			   bool ce_eval = true);
-    virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
-
-    virtual bool read(const string &dataset) = 0;
-
-    virtual unsigned int val2buf(void *buf, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
-
-    virtual void print_val(ostream &os, string space = "",
-			   bool print_decl_p = true);
-
-    virtual bool ops(BaseType *b, int op, const string &dataset);
-};
-
-#endif
+#endif // _str_h
 

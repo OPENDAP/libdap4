@@ -17,41 +17,11 @@
   scanners. It must be processed by GNU's flex scanner generator.
 */
 
-/* 
- * $Log: Error.lex,v $
- * Revision 1.6  2000/06/07 18:06:58  jimg
- * Merged the pc port branch
- *
- * Revision 1.5.20.1  2000/06/02 18:21:27  rmorris
- * Mod's for port to Win32.
- *
- * Revision 1.5  1999/04/29 02:29:29  jimg
- * Merge of no-gnu branch
- *
- * Revision 1.4.2.1  1999/02/05 09:32:34  jimg
- * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined math code
- *
- * Revision 1.4  1998/08/06 16:14:47  jimg
- * Fixed the cvs log. It cannot have the $ Log $ and the comment thing on the
- * same line...
- *
- * Revision 1.3  1996/10/28 23:46:55  jimg
- * Added define of YY_NO_UNPUT to suppress creation of that function.
- *
- * Revision 1.2  1996/08/13 18:18:17  jimg
- * Added not_used to rcsid definition.
- * Added include of assert.h.
- *
- * Revision 1.1  1996/05/31 23:18:16  jimg
- * Added.
- *
- */
-
 %{
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.lex,v 1.6 2000/06/07 18:06:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.lex,v 1.7 2000/09/22 02:17:20 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -151,3 +121,38 @@ store_string()
 {
     Errorlval.string = yytext;
 }
+
+/* 
+ * $Log: Error.lex,v $
+ * Revision 1.7  2000/09/22 02:17:20  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
+ * Revision 1.6  2000/06/07 18:06:58  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.5.20.1  2000/06/02 18:21:27  rmorris
+ * Mod's for port to Win32.
+ *
+ * Revision 1.5  1999/04/29 02:29:29  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.4.2.1  1999/02/05 09:32:34  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined math code
+ *
+ * Revision 1.4  1998/08/06 16:14:47  jimg
+ * Fixed the cvs log. It cannot have the $ Log $ and the comment thing on the
+ * same line...
+ *
+ * Revision 1.3  1996/10/28 23:46:55  jimg
+ * Added define of YY_NO_UNPUT to suppress creation of that function.
+ *
+ * Revision 1.2  1996/08/13 18:18:17  jimg
+ * Added not_used to rcsid definition.
+ * Added include of assert.h.
+ *
+ * Revision 1.1  1996/05/31 23:18:16  jimg
+ * Added.
+ */

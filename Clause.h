@@ -8,47 +8,20 @@
 
 // Interface for the CE Clause class.
 
-// $Log: Clause.h,v $
-// Revision 1.7  2000/08/02 22:46:48  jimg
-// Merged 3.1.8
-//
-// Revision 1.6.6.1  2000/08/01 21:09:35  jimg
-// Destructor is now virtual
-//
-// Revision 1.6  1999/04/29 02:29:27  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.5  1998/10/21 16:35:22  jimg
-// Fixed doc++ comments.
-// Changed member names so they start with an underscore - makes the member
-// functions easier to read.
-//
-// Revision 1.4.6.1  1999/02/02 21:56:56  jimg
-// String to string version
-//
-// Revision 1.4  1998/01/12 14:27:56  tom
-// Second pass at class documentation.
-//
-// Revision 1.3  1997/12/18 15:06:10  tom
-// First draft of class documentation, entered in doc++ format,
-// in the comments
-//
-// Revision 1.2  1996/11/27 22:40:18  jimg
-// Added DDS as third parameter to function in the CE evaluator
-//
-// Revision 1.1  1996/05/31 22:45:03  jimg
-// Added.
-//
-
-#ifndef _clause_h_
-#define _clause_h_
+#ifndef _clause_h
+#define _clause_h
 
 #ifdef __GNUG__
 #pragma interface
 #endif
 
+#ifndef _expr_h
 #include "expr.h"
+#endif
+
+#ifndef _rvalue_h
 #include "RValue.h"
+#endif
 
 /** The selection part of a a DODS constraint expression may contain one or
     more clauses, separated by ampersands (\&). This is modeled in the DDS
@@ -130,4 +103,42 @@ public:
     bool value(const string &dataset, DDS &dds, BaseType **value);
 };
 	
-#endif // clause_h
+// $Log: Clause.h,v $
+// Revision 1.8  2000/09/22 02:17:19  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.7  2000/08/02 22:46:48  jimg
+// Merged 3.1.8
+//
+// Revision 1.6.6.1  2000/08/01 21:09:35  jimg
+// Destructor is now virtual
+//
+// Revision 1.6  1999/04/29 02:29:27  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.5  1998/10/21 16:35:22  jimg
+// Fixed doc++ comments.
+// Changed member names so they start with an underscore - makes the member
+// functions easier to read.
+//
+// Revision 1.4.6.1  1999/02/02 21:56:56  jimg
+// String to string version
+//
+// Revision 1.4  1998/01/12 14:27:56  tom
+// Second pass at class documentation.
+//
+// Revision 1.3  1997/12/18 15:06:10  tom
+// First draft of class documentation, entered in doc++ format,
+// in the comments
+//
+// Revision 1.2  1996/11/27 22:40:18  jimg
+// Added DDS as third parameter to function in the CE evaluator
+//
+// Revision 1.1  1996/05/31 22:45:03  jimg
+// Added.
+//
+
+#endif // _clause_h

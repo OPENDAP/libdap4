@@ -14,7 +14,64 @@
 //
 // jhrg 1/12/95
 
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include "config_dap.h"
+#include "TestByte.h"
+
+// The NewByte `helper function' creates a pointer to the a TestByte and
+// returns that pointer. It takes the same arguments as the class's ctor. If
+// any of the variable classes are subclassed (e.g., to make a new Byte like
+// HDFByte) then the corresponding function here, and in the other class
+// definition files, needs to be changed so that it creates an instnace of
+// the new (sub)class. Continuing the earlier example, that would mean that
+// NewByte() would return a HDFByte, not a Byte.
+//
+// It is important that these function's names and return types do not change
+// - they are called by the parser code (for the dds, at least) so if their
+// names changes, that will break.
+//
+// The declarations for these fuctions (in util.h) should *not* need
+// changing. 
+
+Byte *
+NewByte(const string &n)
+{
+    return new TestByte(n);
+}
+
+TestByte::TestByte(const string &n) : Byte(n)
+{
+}
+
+BaseType *
+TestByte::ptr_duplicate()
+{
+    return new TestByte(*this);
+}
+
+bool
+TestByte::read(const string &)
+{
+    if (read_p())
+	return true;
+
+    _buf = 255;
+
+    set_read_p(true);
+    
+    return true;
+}
+
 // $Log: TestByte.cc,v $
+// Revision 1.18  2000/09/22 02:17:21  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
 // Revision 1.17  2000/09/21 16:22:08  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -102,53 +159,3 @@
 // BaseType.
 //
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include "config_dap.h"
-#include "TestByte.h"
-
-// The NewByte `helper function' creates a pointer to the a TestByte and
-// returns that pointer. It takes the same arguments as the class's ctor. If
-// any of the variable classes are subclassed (e.g., to make a new Byte like
-// HDFByte) then the corresponding function here, and in the other class
-// definition files, needs to be changed so that it creates an instnace of
-// the new (sub)class. Continuing the earlier example, that would mean that
-// NewByte() would return a HDFByte, not a Byte.
-//
-// It is important that these function's names and return types do not change
-// - they are called by the parser code (for the dds, at least) so if their
-// names changes, that will break.
-//
-// The declarations for these fuctions (in util.h) should *not* need
-// changing. 
-
-Byte *
-NewByte(const string &n)
-{
-    return new TestByte(n);
-}
-
-TestByte::TestByte(const string &n) : Byte(n)
-{
-}
-
-BaseType *
-TestByte::ptr_duplicate()
-{
-    return new TestByte(*this);
-}
-
-bool
-TestByte::read(const string &)
-{
-    if (read_p())
-	return true;
-
-    _buf = 255;
-
-    set_read_p(true);
-    
-    return true;
-}

@@ -10,241 +10,9 @@
 //
 // ReZa 9/30/94 
 
-// $Log: cgi_util.cc,v $
-// Revision 1.46  2000/09/21 16:22:09  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.45  2000/08/14 23:54:11  jimg
-// Removed the usage() functions. These should be supplied by cgis that
-// need them. See DODSFilter.
-//
-// Revision 1.44  2000/08/07 21:08:43  rmorris
-// Removed default argument definition.  Under MS VC++ one can't define a
-// default argument in both a method declaration and its's definition -
-// plus that's redundant anyway.  Just setup default args in the declaration
-// (in the .h) only or VC++ will choke.
-//
-// Revision 1.43  2000/08/02 22:46:49  jimg
-// Merged 3.1.8
-//
-// Revision 1.36.6.4  2000/08/02 20:54:08  jimg
-// Changed the definitions of some of the set_mime_*() functions so that they
-// match the changes in declaration in cgi_util.h. These changes removed the
-// symbol DVR from the header so that config_dap.h is no longer needed by
-// cgi_util.h.
-//
-// Revision 1.42  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.41  2000/06/07 18:06:59  jimg
-// Merged the pc port branch
-//
-// Revision 1.40.4.1  2000/06/02 18:36:38  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.40  2000/03/28 16:36:08  jimg
-// Removed code that sent bad dates in the response header. Also removed code
-// that sent a Cache-Control: no-cache header.
-//
-// Revision 1.38.2.1  2000/02/17 05:03:16  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.39  2000/01/27 06:29:58  jimg
-// Resolved conflicts from merge with release-3-1-4
-//
-// Revision 1.36.6.3  2000/01/26 23:58:51  jimg
-// Fixed the return type of string::find.
-// Removed the old name_path() function.
-//
-// Revision 1.38  1999/12/01 21:33:01  jimg
-// Added rfc822_date(...).
-// Added Date headers to all the mime header output functions.
-// Added Cache-Control: no-cache to the binary header with deflate is true.
-// Removed old code.
-//
-// Revision 1.36.6.2  1999/10/19 16:46:33  jimg
-// Removed the usage() function.
-//
-// Revision 1.37  1999/09/03 22:07:45  jimg
-// Merged changes from release-3-1-1
-//
-// Revision 1.36.6.1  1999/08/28 06:43:04  jimg
-// Fixed the implementation/interface pragmas and misc comments
-//
-// Revision 1.36  1999/05/05 00:49:21  jimg
-// Added version number optional argument. This provides a way for code that
-// uses these functions to pass version information in so that it can be
-// included in the response doc's MIME header.
-//
-// Revision 1.35  1999/05/04 19:47:23  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.34  1999/04/29 02:29:34  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.33  1999/03/17 23:05:46  jimg
-// Added to find_ancillary_file() so that <pathname>.ext will also be checked.
-// This ensures that ancillary DAS files such as 1998-6-avhrr.dat.das will be
-// used properly.
-//
-// Revision 1.32  1998/12/16 19:10:53  jimg
-// Added support for XDODS-Server MIME header. This fixes a problem where our
-// use of Server clashed with Java 
-//
-// Revision 1.31.6.3  1999/03/17 23:43:05  jimg
-// Added pathanme.ext patch from the GNU String version.
-//
-// Revision 1.31.6.2  1999/02/05 09:32:35  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code.
-//
-// Revision 1.31.6.1  1999/02/02 21:57:05  jimg
-// String to string version
-//
-// Revision 1.31  1998/03/19 23:30:08  jimg
-// Removed old code (that was surrounded by #if 0 ... #endif).
-//
-// Revision 1.30  1998/02/19 19:42:34  jimg
-// Added do_data_transfer() back in since the jgofs servers use it.
-//
-// Revision 1.29  1998/02/11 22:12:45  jimg
-// Changed x_gzip to deflate. See Connect.cc/.h
-// Removed old code.
-//
-// Revision 1.28  1997/12/16 01:38:22  jimg
-// Merged release 2.14d changes.
-//
-// Revision 1.27  1997/09/22 22:36:02  jimg
-// Added new function to read ancillary DAS and DDS files.
-//
-// Revision 1.26  1997/06/05 17:24:39  jimg
-// Added four function that help with writing the *_dods filter programs:
-// usage(), do_version(), do_data_transfer() and read_ancillary_dds().
-//
-// Revision 1.25  1997/03/27 18:13:27  jimg
-// Fixed a problem in set_mime_*() where Content-Encoding was sent with the
-// value x-plain. This caused Netscape on Windows to barf. I'm not sure that it
-// is a real error, but sending C-E only when its value is x-gzip or
-// x-compressed apparently causes the message to go away.
-//
-// Revision 1.24  1997/03/12 01:07:23  jimg
-// Removed code that set the HTTP protocol version header based on the value
-// of the SERVER_PROTOCOL environment variable. In servers that support
-// HTTP/1.1, the value of this env var was "HTTP/1.1" which broke our clients
-// since the servers (which are `nph') do *not* support HTTP/1.1.
-//
-// Revision 1.23  1997/03/05 08:28:15  jimg
-// Now correctly gets the server protocol (HTTP 0.9, 1.0 or 1.1) from the
-// environment variables and sets the return doc header accordingly.
-//
-// Revision 1.22  1996/12/18 18:48:53  jimg
-// Fixed spelling in ErrMsgT()'s message.
-//
-// Revision 1.21  1996/12/03 17:51:58  jimg
-// Fixed a bug in the char * array DESCRIPT where "dods_error" was catenated
-// with "web_error" (due to a missing comma).
-//
-// Revision 1.20  1996/11/25 03:42:37  jimg
-// Removed compress/decompress functions. Better versions are in util.cc
-// Changed from static global version of dods_root to function version.
-//
-// Revision 1.19  1996/11/20 01:00:17  jimg
-// Fixed lingering bug in compress_stdout where the user's path was not
-// searched correctly.
-//
-// Revision 1.18  1996/11/13 19:10:03  jimg
-// Added set_mime_error() function. Use this to send MIME headers indicating
-// that an error has occurred. NB: Don't use this when sending back an Error
-// object - this is for those cases where an error object won't do and you must
-// signal an error to the WWW/HTTP software on the client side.
-//
-// Revision 1.17  1996/10/18 16:33:14  jimg
-// Changed set_mime_binary() and set_mime_text() so that they produce a full
-// HTTP/MIME header.
-//
-// Revision 1.16  1996/08/13 18:42:01  jimg
-// Added not_used to definition of char rcsid[].
-//
-// Revision 1.15  1996/06/18 23:48:46  jimg
-// Modified so that the compress/decompress functions use the DODS_ROOT
-// enviroment-variable/define or the user's PATH to find gzip.
-//
-// Revision 1.14  1996/06/08 00:16:42  jimg
-// Fixed a bug in name_path().
-// Added compression functions which create filter processes which
-// automatically compress stdio file streams.
-// Added to set_mime_text() and set_mime_binary() support for compression.
-// These now correctly set the content-encoding field of the mime header.
-// Fixed ErrMsgT so that it says `DODS server' when the name of the server is
-// not known.
-//
-// Revision 1.13  1996/06/04 21:33:53  jimg
-// Multiple connections are now possible. It is now possible to open several
-// URLs at the same time and read from them in a round-robin fashion. To do
-// this I added data source and sink parameters to the serialize and
-// deserialize mfuncs. Connect was also modified so that it manages the data
-// source `object' (which is just an XDR pointer).
-//
-// Revision 1.12  1996/05/31 23:30:46  jimg
-// Updated copyright notice.
-//
-// Revision 1.11  1996/05/21 23:52:42  jimg
-// Changed include netio.h to cgi_util.h.
-//
-// Revision 1.10  1996/03/05 23:22:06  jimg
-// Addedconst to the char * function definitions.
-//
-// Revision 1.9  1995/07/09  21:20:42  jimg
-// Fixed date in copyright (it now reads `Copyright 1995 ...').
-//
-// Revision 1.8  1995/07/09  21:14:43  jimg
-// Added copyright.
-//
-// Revision 1.7  1995/06/27  17:38:43  jimg
-// Modified the cgi-util-test code so that it correctly uses name_path(); the
-// pointer returned by that function must be delteted.
-//
-// Revision 1.6  1995/05/30  18:28:59  jimg
-// Added const to ErrMsgT prototype.
-//
-// Revision 1.5  1995/05/22  20:36:10  jimg
-// Added #include "config_netio.h"
-// Removed old code.
-//
-// Revision 1.4  1995/03/16  16:29:24  reza
-// Fixed bugs in ErrMsgT and mime type.
-//
-// Revision 1.3  1995/02/22  21:03:59  reza
-// Added version number capability using CGI status_line.
-//
-// Revision 1.2  1995/02/22  19:53:32  jimg
-// Fixed usage of time functions in ErrMsgT; use ctime instead of localtime
-// and asctime.
-// Fixed TimStr bug in ErrMsgT.
-// Fixed dynamic memory bugs in name_path and fmakeword.
-// Replaced malloc calls with calls to new char[]; C++ code will expect to
-// be able to use delete.
-// Fixed memory overrun error in fmakeword.
-// Fixed potential bug in name_path (when called with null argument).
-// Added assetions.
-//
-// Revision 1.1  1995/01/10  16:23:01  jimg
-// Created new `common code' library for the net I/O stuff.
-//
-// Revision 1.1  1994/10/28  14:34:01  reza
-// First version
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.46 2000/09/21 16:22:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.47 2000/09/22 02:17:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -783,4 +551,242 @@ main(int argc, char *argv[])
 }
 
 #endif
+
+// $Log: cgi_util.cc,v $
+// Revision 1.47  2000/09/22 02:17:22  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.46  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.45  2000/08/14 23:54:11  jimg
+// Removed the usage() functions. These should be supplied by cgis that
+// need them. See DODSFilter.
+//
+// Revision 1.44  2000/08/07 21:08:43  rmorris
+// Removed default argument definition.  Under MS VC++ one can't define a
+// default argument in both a method declaration and its's definition -
+// plus that's redundant anyway.  Just setup default args in the declaration
+// (in the .h) only or VC++ will choke.
+//
+// Revision 1.43  2000/08/02 22:46:49  jimg
+// Merged 3.1.8
+//
+// Revision 1.36.6.4  2000/08/02 20:54:08  jimg
+// Changed the definitions of some of the set_mime_*() functions so that they
+// match the changes in declaration in cgi_util.h. These changes removed the
+// symbol DVR from the header so that config_dap.h is no longer needed by
+// cgi_util.h.
+//
+// Revision 1.42  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.41  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.40.4.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.40  2000/03/28 16:36:08  jimg
+// Removed code that sent bad dates in the response header. Also removed code
+// that sent a Cache-Control: no-cache header.
+//
+// Revision 1.38.2.1  2000/02/17 05:03:16  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.39  2000/01/27 06:29:58  jimg
+// Resolved conflicts from merge with release-3-1-4
+//
+// Revision 1.36.6.3  2000/01/26 23:58:51  jimg
+// Fixed the return type of string::find.
+// Removed the old name_path() function.
+//
+// Revision 1.38  1999/12/01 21:33:01  jimg
+// Added rfc822_date(...).
+// Added Date headers to all the mime header output functions.
+// Added Cache-Control: no-cache to the binary header with deflate is true.
+// Removed old code.
+//
+// Revision 1.36.6.2  1999/10/19 16:46:33  jimg
+// Removed the usage() function.
+//
+// Revision 1.37  1999/09/03 22:07:45  jimg
+// Merged changes from release-3-1-1
+//
+// Revision 1.36.6.1  1999/08/28 06:43:04  jimg
+// Fixed the implementation/interface pragmas and misc comments
+//
+// Revision 1.36  1999/05/05 00:49:21  jimg
+// Added version number optional argument. This provides a way for code that
+// uses these functions to pass version information in so that it can be
+// included in the response doc's MIME header.
+//
+// Revision 1.35  1999/05/04 19:47:23  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
+// Revision 1.34  1999/04/29 02:29:34  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.33  1999/03/17 23:05:46  jimg
+// Added to find_ancillary_file() so that <pathname>.ext will also be checked.
+// This ensures that ancillary DAS files such as 1998-6-avhrr.dat.das will be
+// used properly.
+//
+// Revision 1.32  1998/12/16 19:10:53  jimg
+// Added support for XDODS-Server MIME header. This fixes a problem where our
+// use of Server clashed with Java 
+//
+// Revision 1.31.6.3  1999/03/17 23:43:05  jimg
+// Added pathanme.ext patch from the GNU String version.
+//
+// Revision 1.31.6.2  1999/02/05 09:32:35  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code.
+//
+// Revision 1.31.6.1  1999/02/02 21:57:05  jimg
+// String to string version
+//
+// Revision 1.31  1998/03/19 23:30:08  jimg
+// Removed old code (that was surrounded by #if 0 ... #endif).
+//
+// Revision 1.30  1998/02/19 19:42:34  jimg
+// Added do_data_transfer() back in since the jgofs servers use it.
+//
+// Revision 1.29  1998/02/11 22:12:45  jimg
+// Changed x_gzip to deflate. See Connect.cc/.h
+// Removed old code.
+//
+// Revision 1.28  1997/12/16 01:38:22  jimg
+// Merged release 2.14d changes.
+//
+// Revision 1.27  1997/09/22 22:36:02  jimg
+// Added new function to read ancillary DAS and DDS files.
+//
+// Revision 1.26  1997/06/05 17:24:39  jimg
+// Added four function that help with writing the *_dods filter programs:
+// usage(), do_version(), do_data_transfer() and read_ancillary_dds().
+//
+// Revision 1.25  1997/03/27 18:13:27  jimg
+// Fixed a problem in set_mime_*() where Content-Encoding was sent with the
+// value x-plain. This caused Netscape on Windows to barf. I'm not sure that it
+// is a real error, but sending C-E only when its value is x-gzip or
+// x-compressed apparently causes the message to go away.
+//
+// Revision 1.24  1997/03/12 01:07:23  jimg
+// Removed code that set the HTTP protocol version header based on the value
+// of the SERVER_PROTOCOL environment variable. In servers that support
+// HTTP/1.1, the value of this env var was "HTTP/1.1" which broke our clients
+// since the servers (which are `nph') do *not* support HTTP/1.1.
+//
+// Revision 1.23  1997/03/05 08:28:15  jimg
+// Now correctly gets the server protocol (HTTP 0.9, 1.0 or 1.1) from the
+// environment variables and sets the return doc header accordingly.
+//
+// Revision 1.22  1996/12/18 18:48:53  jimg
+// Fixed spelling in ErrMsgT()'s message.
+//
+// Revision 1.21  1996/12/03 17:51:58  jimg
+// Fixed a bug in the char * array DESCRIPT where "dods_error" was catenated
+// with "web_error" (due to a missing comma).
+//
+// Revision 1.20  1996/11/25 03:42:37  jimg
+// Removed compress/decompress functions. Better versions are in util.cc
+// Changed from static global version of dods_root to function version.
+//
+// Revision 1.19  1996/11/20 01:00:17  jimg
+// Fixed lingering bug in compress_stdout where the user's path was not
+// searched correctly.
+//
+// Revision 1.18  1996/11/13 19:10:03  jimg
+// Added set_mime_error() function. Use this to send MIME headers indicating
+// that an error has occurred. NB: Don't use this when sending back an Error
+// object - this is for those cases where an error object won't do and you must
+// signal an error to the WWW/HTTP software on the client side.
+//
+// Revision 1.17  1996/10/18 16:33:14  jimg
+// Changed set_mime_binary() and set_mime_text() so that they produce a full
+// HTTP/MIME header.
+//
+// Revision 1.16  1996/08/13 18:42:01  jimg
+// Added not_used to definition of char rcsid[].
+//
+// Revision 1.15  1996/06/18 23:48:46  jimg
+// Modified so that the compress/decompress functions use the DODS_ROOT
+// enviroment-variable/define or the user's PATH to find gzip.
+//
+// Revision 1.14  1996/06/08 00:16:42  jimg
+// Fixed a bug in name_path().
+// Added compression functions which create filter processes which
+// automatically compress stdio file streams.
+// Added to set_mime_text() and set_mime_binary() support for compression.
+// These now correctly set the content-encoding field of the mime header.
+// Fixed ErrMsgT so that it says `DODS server' when the name of the server is
+// not known.
+//
+// Revision 1.13  1996/06/04 21:33:53  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
+// Revision 1.12  1996/05/31 23:30:46  jimg
+// Updated copyright notice.
+//
+// Revision 1.11  1996/05/21 23:52:42  jimg
+// Changed include netio.h to cgi_util.h.
+//
+// Revision 1.10  1996/03/05 23:22:06  jimg
+// Addedconst to the char * function definitions.
+//
+// Revision 1.9  1995/07/09  21:20:42  jimg
+// Fixed date in copyright (it now reads `Copyright 1995 ...').
+//
+// Revision 1.8  1995/07/09  21:14:43  jimg
+// Added copyright.
+//
+// Revision 1.7  1995/06/27  17:38:43  jimg
+// Modified the cgi-util-test code so that it correctly uses name_path(); the
+// pointer returned by that function must be delteted.
+//
+// Revision 1.6  1995/05/30  18:28:59  jimg
+// Added const to ErrMsgT prototype.
+//
+// Revision 1.5  1995/05/22  20:36:10  jimg
+// Added #include "config_netio.h"
+// Removed old code.
+//
+// Revision 1.4  1995/03/16  16:29:24  reza
+// Fixed bugs in ErrMsgT and mime type.
+//
+// Revision 1.3  1995/02/22  21:03:59  reza
+// Added version number capability using CGI status_line.
+//
+// Revision 1.2  1995/02/22  19:53:32  jimg
+// Fixed usage of time functions in ErrMsgT; use ctime instead of localtime
+// and asctime.
+// Fixed TimStr bug in ErrMsgT.
+// Fixed dynamic memory bugs in name_path and fmakeword.
+// Replaced malloc calls with calls to new char[]; C++ code will expect to
+// be able to use delete.
+// Fixed memory overrun error in fmakeword.
+// Fixed potential bug in name_path (when called with null argument).
+// Added assetions.
+//
+// Revision 1.1  1995/01/10  16:23:01  jimg
+// Created new `common code' library for the net I/O stuff.
+//
+// Revision 1.1  1994/10/28  14:34:01  reza
+// First version
 

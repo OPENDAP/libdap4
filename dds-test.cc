@@ -9,68 +9,9 @@
 //
 // jhrg 8/29/94
 
-// $Log: dds-test.cc,v $
-// Revision 1.19  2000/09/21 16:22:09  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.18  2000/07/19 22:51:40  rmorris
-// Call and return from main in a manner Visual C++ likes and
-// exit the program with exit(0) so that DejaGnu/Cygwin based
-// testsuite can succeed for win32.
-//
-// Revision 1.17  2000/07/09 22:05:36  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.16  2000/06/07 18:07:00  jimg
-// Merged the pc port branch
-//
-// Revision 1.15.20.1  2000/06/02 18:36:38  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.15.14.1  2000/02/17 05:03:17  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.15  1999/04/29 02:29:35  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.14  1999/03/24 23:33:11  jimg
-// Added support for the new Int16, UInt16 and Float32 types.
-//
-// Revision 1.13.4.2  1999/02/05 09:32:36  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.13.4.1  1999/02/02 21:57:06  jimg
-// String to string version
-//
-// Revision 1.13  1997/12/16 00:45:41  jimg
-// Added code for NAME lexeme.
-//
-// Revision 1.12  1996/08/13 18:49:55  jimg
-// Added on-line help.
-// Now, always returns an exit code.
-//
-// Revision 1.11  1996/05/31 23:30:53  jimg
-// Updated copyright notice.
-//
-// Revision 1.10  1996/04/05 00:22:14  jimg
-// Compiled with g++ -Wall and fixed various warnings.
-//
-// Revision 1.9  1995/10/23  22:56:32  jimg
-// Added Log and RCSID.
-//
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.19 2000/09/21 16:22:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.20 2000/09/22 02:17:22 jimg Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
@@ -346,3 +287,69 @@ test_class(void)
     for (Pix p = table.first_var(); p; table.next_var(p))
 	table.var(p)->print_decl(cout, "", true);	// print them all w/semicolons
 }
+
+// $Log: dds-test.cc,v $
+// Revision 1.20  2000/09/22 02:17:22  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.19  2000/09/21 16:22:09  jimg
+// Merged changes from Jose Garcia that add exceptions to the software.
+// Many methods that returned error codes now throw exectptions. There are
+// two classes which are thrown by the software, Error and InternalErr.
+// InternalErr is used to report errors within the library or errors using
+// the library. Error is used to reprot all other errors. Since InternalErr
+// is a subclass of Error, programs need only to catch Error.
+//
+// Revision 1.18  2000/07/19 22:51:40  rmorris
+// Call and return from main in a manner Visual C++ likes and
+// exit the program with exit(0) so that DejaGnu/Cygwin based
+// testsuite can succeed for win32.
+//
+// Revision 1.17  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.16  2000/06/07 18:07:00  jimg
+// Merged the pc port branch
+//
+// Revision 1.15.20.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.15.14.1  2000/02/17 05:03:17  jimg
+// Added file and line number information to calls to InternalErr.
+// Resolved compile-time problems with read due to a change in its
+// parameter list given that errors are now reported using exceptions.
+//
+// Revision 1.15  1999/04/29 02:29:35  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.14  1999/03/24 23:33:11  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+//
+// Revision 1.13.4.2  1999/02/05 09:32:36  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.13.4.1  1999/02/02 21:57:06  jimg
+// String to string version
+//
+// Revision 1.13  1997/12/16 00:45:41  jimg
+// Added code for NAME lexeme.
+//
+// Revision 1.12  1996/08/13 18:49:55  jimg
+// Added on-line help.
+// Now, always returns an exit code.
+//
+// Revision 1.11  1996/05/31 23:30:53  jimg
+// Updated copyright notice.
+//
+// Revision 1.10  1996/04/05 00:22:14  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.9  1995/10/23  22:56:32  jimg
+// Added Log and RCSID.
+//
+

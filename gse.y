@@ -7,28 +7,14 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: gse.y,v $
-// Revision 1.4  2000/07/09 21:43:30  rmorris
-// Mods to increase portability, minimize ifdef's for win32
-//
-// Revision 1.3  2000/06/07 18:07:01  jimg
-// Merged the pc port branch
-//
-// Revision 1.2.20.1  2000/06/02 18:39:04  rmorris
-// Mod's for port to win32.
-//
-// Revision 1.2  1999/04/29 02:29:37  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.1  1999/01/21 02:07:44  jimg
-// Created
-//
+// Parse a Grid selection expression. This parser is a little different than
+// the other parsers and uses its own argument class. See parser.h.
 
 %{
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.y,v 1.4 2000/07/09 21:43:30 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: gse.y,v 1.5 2000/09/22 02:17:23 jimg Exp $"};
 
 #include <iostream>
 
@@ -41,11 +27,8 @@ using std::cerr;
 using std::endl;
 #endif
 
-// These macros are used to access the `arguments' passed to the parser. A
-// pointer to an error object and a pointer to an integer status variable are
-// passed into the parser within a strucutre (which itself is passed as a
-// pointer). Note that the ERROR macro does not explicitly casts OBJ to an
-// ERROR *.
+// This macro is used to access the instance of a gse_arg class which is
+// passed to the parser through a void *. See parser.h.
 
 #define gse_arg(arg) ((gse_arg *)(arg))
 
@@ -216,3 +199,27 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 
     return new GSEClause(arg->get_grid(), (string)id, val1, rop1, val2, rop2);
 }
+
+// $Log: gse.y,v $
+// Revision 1.5  2000/09/22 02:17:23  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.4  2000/07/09 21:43:30  rmorris
+// Mods to increase portability, minimize ifdef's for win32
+//
+// Revision 1.3  2000/06/07 18:07:01  jimg
+// Merged the pc port branch
+//
+// Revision 1.2.20.1  2000/06/02 18:39:04  rmorris
+// Mod's for port to win32.
+//
+// Revision 1.2  1999/04/29 02:29:37  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.1  1999/01/21 02:07:44  jimg
+// Created
+//
+

@@ -7,125 +7,20 @@
 
 // Implementation for the Error class.
 
-// $Log: Error.cc,v $
-// Revision 1.21  2000/07/09 22:05:35  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.20  2000/03/28 16:32:02  jimg
-// Modified these files so that they can be built either with and without GUI
-// defined. The type signatures are now the same either way. Thus we can build
-// libdap++-gui and libdap++ (without GUI support). When using the later
-// there's no need to link with tcl, tk or X11. This makes the executables
-// smaller. It also keeps the servers from potentially needing sharable
-// libraries (since X11 is often sharable) which can be hard to find unless
-// they are in the standard places. I made the same changes in Connect and Gui.
-//
-// Revision 1.19  1999/08/23 18:57:44  jimg
-// Merged changes from release 3.1.0
-//
-// Revision 1.18.2.1  1999/08/09 22:57:50  jimg
-// Removed GUI code; reactivate by defining GUI
-//
-// Revision 1.18  1999/08/09 18:27:34  jimg
-// Merged changes from Brent for the Gui code (progress indicator)
-//
-// Revision 1.17.4.1  1999/07/29 05:46:17  brent
-// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl files
-//
-// Revision 1.17  1999/05/26 17:32:01  jimg
-// Added a message for the `unknown_error' constant.
-// Added a test in correct_error for a NULL Gui object. If the Gui object is
-// null, display the message text on stderr and ignore the Gui object.
-//
-// Revision 1.16  1999/05/04 19:47:21  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.15  1999/04/29 02:29:29  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.14.6.2  1999/02/05 09:32:34  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.14.6.1  1999/02/02 21:56:58  jimg
-// String to string version
-//
-// Revision 1.14  1998/03/20 00:18:55  jimg
-// Fixed a bug where _program was feed into strlen even when it is NULL.
-//
-// Revision 1.13  1998/02/05 20:13:53  jimg
-// DODS now compiles with gcc 2.8.x
-//
-// Revision 1.12  1997/08/23 00:22:23  jimg
-// Changed the way that the _error_message member is processed. Now if the
-// message does not have explicit double quotes, print() will add them. The
-// mfunc is smart enough to add the quotes only if needed so old code (which
-// provides the quotes) will still work and new code without the quotes works
-// too. This makes for a more convenient use of the Error object.
-//
-// Revision 1.11  1997/03/05 08:15:51  jimg
-// Added Cannot read file message to list of builtin messages.
-//
-// Revision 1.10  1997/03/05 06:53:46  jimg
-// Changed display_message member function so that it uses Gui::response()
-// instead of Gui::command(). The later only works for things like the progress
-// popup for which expect does not need to wait. However, for things like
-// dialogs, expect must wait for the user to `hit OK', hence the use of the
-// response() member function.
-//
-// Revision 1.9  1997/02/27 01:06:47  jimg
-// Fixed problem with consistency check in Error::error_code().
-//
-// Revision 1.8  1997/02/18 21:22:18  jimg
-// Allow empty Error objects.
-//
-// Revision 1.7  1997/02/15 07:10:57  jimg
-// Changed OK() so that empty errors return false.
-// Added assert calls.
-//
-// Revision 1.6  1996/08/13 18:14:28  jimg
-// Switched to the parser_arg object for passing parameters to/from the Error.y
-// parser. NB: if an error object is bad a message is sent to stderr to avoid
-// going round and round with bad error objects!
-// Changed the interface to display_message; Gui is by default NULL so that
-// calling it with an empty parameter list causes the message string to be sent
-// to stderr.
-// Changed the interface to correct_error(); it now returns a string which is
-// the corrected error or "".
-//
-// Revision 1.5  1996/06/22 00:02:46  jimg
-// Added Gui pointer to the Error oject's correct_error() and
-// display_message() mfuncs. These mfuncs now used the GUI to display
-// messages.
-//
-// Revision 1.4  1996/06/04 21:33:22  jimg
-// Multiple connections are now possible. It is now possible to open several
-// URLs at the same time and read from them in a round-robin fashion. To do
-// this I added data source and sink parameters to the serialize and
-// deserialize mfuncs. Connect was also modified so that it manages the data
-// source `object' (which is just an XDR pointer).
-//
-// Revision 1.3  1996/06/03 06:26:51  jimg
-// Added declarations for Errorparse() and Errorrestart().
-//
-// Revision 1.2  1996/06/01 00:03:38  jimg
-// Added.
-//
-
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.21 2000/07/09 22:05:35 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.22 2000/09/22 02:17:19 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
 
 #include "Error.h"
 #include "parser.h"
+#include "InternalErr.h"
 
 #ifdef GUI
 #include "Gui.h"
@@ -233,27 +128,31 @@ Error::OK()
 bool
 Error::parse(FILE *fp)
 {
-    if (!fp) {
-	cerr << "Error::parse: Null input stream" << endl;
-	return false;
-    }
+    if (!fp)
+      throw InternalErr(__FILE__, __LINE__, "Null input stream"); 
 
     Errorrestart(fp);
 
     parser_arg arg(this);
 
-    bool status = Errorparse((void *)&arg) == 0;
+    bool status;
+    try {
+      status = Errorparse((void *)&arg) == 0;
+    }
+    catch (Error &e) {
+      throw InternalErr(__FILE__, __LINE__, e.error_message());
+    }
 
     fclose(fp);
 
-    //  STATUS is the result of the parser function; if a recoverable error
-    //  was found it will be true but arg.status() will be false.
-    if (!status || !arg.status()) {// Check parse result
-	cerr << "Error parsing error object!" << endl;
-	return false;
-    }
+    // STATUS is the result of the parser function; if a recoverable error
+    // was found it will be true but arg.status() will be false.
+    // I'm throwing an InternalErr here since Error objects are generated by
+    // the core; they should always parse! 9/21/2000 jhrg
+    if (!status || !arg.status())
+      throw InternalErr(__FILE__, __LINE__, "Error parsing error object!");
     else
-	return OK();		// Check object consistancy
+      return OK();		// Check object consistancy
 }
     
 void
@@ -376,3 +275,116 @@ Error::correct_error(void *pgui)
 #endif
     return string("");
 }
+
+// $Log: Error.cc,v $
+// Revision 1.22  2000/09/22 02:17:19  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.21  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
+// Revision 1.20  2000/03/28 16:32:02  jimg
+// Modified these files so that they can be built either with and without GUI
+// defined. The type signatures are now the same either way. Thus we can build
+// libdap++-gui and libdap++ (without GUI support). When using the later
+// there's no need to link with tcl, tk or X11. This makes the executables
+// smaller. It also keeps the servers from potentially needing sharable
+// libraries (since X11 is often sharable) which can be hard to find unless
+// they are in the standard places. I made the same changes in Connect and Gui.
+//
+// Revision 1.19  1999/08/23 18:57:44  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.18.2.1  1999/08/09 22:57:50  jimg
+// Removed GUI code; reactivate by defining GUI
+//
+// Revision 1.18  1999/08/09 18:27:34  jimg
+// Merged changes from Brent for the Gui code (progress indicator)
+//
+// Revision 1.17.4.1  1999/07/29 05:46:17  brent
+// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl files
+//
+// Revision 1.17  1999/05/26 17:32:01  jimg
+// Added a message for the `unknown_error' constant.
+// Added a test in correct_error for a NULL Gui object. If the Gui object is
+// null, display the message text on stderr and ignore the Gui object.
+//
+// Revision 1.16  1999/05/04 19:47:21  jimg
+// Fixed copyright statements. Removed more of the GNU classes.
+//
+// Revision 1.15  1999/04/29 02:29:29  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.14.6.2  1999/02/05 09:32:34  jimg
+// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+// math code. 
+//
+// Revision 1.14.6.1  1999/02/02 21:56:58  jimg
+// String to string version
+//
+// Revision 1.14  1998/03/20 00:18:55  jimg
+// Fixed a bug where _program was feed into strlen even when it is NULL.
+//
+// Revision 1.13  1998/02/05 20:13:53  jimg
+// DODS now compiles with gcc 2.8.x
+//
+// Revision 1.12  1997/08/23 00:22:23  jimg
+// Changed the way that the _error_message member is processed. Now if the
+// message does not have explicit double quotes, print() will add them. The
+// mfunc is smart enough to add the quotes only if needed so old code (which
+// provides the quotes) will still work and new code without the quotes works
+// too. This makes for a more convenient use of the Error object.
+//
+// Revision 1.11  1997/03/05 08:15:51  jimg
+// Added Cannot read file message to list of builtin messages.
+//
+// Revision 1.10  1997/03/05 06:53:46  jimg
+// Changed display_message member function so that it uses Gui::response()
+// instead of Gui::command(). The later only works for things like the progress
+// popup for which expect does not need to wait. However, for things like
+// dialogs, expect must wait for the user to `hit OK', hence the use of the
+// response() member function.
+//
+// Revision 1.9  1997/02/27 01:06:47  jimg
+// Fixed problem with consistency check in Error::error_code().
+//
+// Revision 1.8  1997/02/18 21:22:18  jimg
+// Allow empty Error objects.
+//
+// Revision 1.7  1997/02/15 07:10:57  jimg
+// Changed OK() so that empty errors return false.
+// Added assert calls.
+//
+// Revision 1.6  1996/08/13 18:14:28  jimg
+// Switched to the parser_arg object for passing parameters to/from the Error.y
+// parser. NB: if an error object is bad a message is sent to stderr to avoid
+// going round and round with bad error objects!
+// Changed the interface to display_message; Gui is by default NULL so that
+// calling it with an empty parameter list causes the message string to be sent
+// to stderr.
+// Changed the interface to correct_error(); it now returns a string which is
+// the corrected error or "".
+//
+// Revision 1.5  1996/06/22 00:02:46  jimg
+// Added Gui pointer to the Error oject's correct_error() and
+// display_message() mfuncs. These mfuncs now used the GUI to display
+// messages.
+//
+// Revision 1.4  1996/06/04 21:33:22  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
+// Revision 1.3  1996/06/03 06:26:51  jimg
+// Added declarations for Errorparse() and Errorrestart().
+//
+// Revision 1.2  1996/06/01 00:03:38  jimg
+// Added.
+//
+

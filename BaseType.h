@@ -15,311 +15,8 @@
 //
 // jhrg 9/6/94
 
-/* 
- * $Log: BaseType.h,v $
- * Revision 1.58  2000/09/21 16:22:07  jimg
- * Merged changes from Jose Garcia that add exceptions to the software.
- * Many methods that returned error codes now throw exectptions. There are
- * two classes which are thrown by the software, Error and InternalErr.
- * InternalErr is used to report errors within the library or errors using
- * the library. Error is used to reprot all other errors. Since InternalErr
- * is a subclass of Error, programs need only to catch Error.
- *
- * Revision 1.57  2000/09/11 16:33:29  jimg
- * Fixed up the comments/docs.
- *
- * Revision 1.56  2000/08/02 22:46:48  jimg
- * Merged 3.1.8
- *
- * Revision 1.53.6.1  2000/08/02 21:10:07  jimg
- * Removed the header config_dap.h. If this file uses the dods typedefs for
- * cardinal datatypes, then it gets those definitions from the header
- * dods-datatypes.h.
- *
- * Revision 1.55  2000/07/09 21:57:09  rmorris
- * Mods's to increase portability, minimuze ifdef's in win32 and account
- * for differences between the Standard C++ Library - most notably, the
- * iostream's.
- *
- * Revision 1.54  2000/06/07 18:06:58  jimg
- * Merged the pc port branch
- *
- * Revision 1.53.20.1  2000/06/02 18:11:19  rmorris
- * Mod's for Port to Win32.
- *
- * Revision 1.53.14.1  2000/01/28 22:14:04  jgarcia
- * Added exception handling and modify add_var to get a copy of the object
- *
- * Revision 1.53  1999/05/04 19:47:20  jimg
- * Fixed copyright statements. Removed more of the GNU classes.
- *
- * Revision 1.52  1999/04/29 02:29:27  jimg
- * Merge of no-gnu branch
- *
- * Revision 1.51  1999/03/24 23:37:13  jimg
- * Added support for the Int16, UInt16 and Float32 types
- *
- * Revision 1.50  1999/03/19 16:45:00  jimg
- * Added to the documentation for print_val(). Now contains a blurb about
- * setprecision().
- *
- * Revision 1.49  1999/01/21 20:42:00  tom
- * Fixed comment formatting problems for doc++
- *
- * Revision 1.48  1998/11/23 15:05:55  tom
- * late modifications to documentation
- *
- * Revision 1.47  1998/11/10 01:10:25  jimg
- * Changed text of regexp error message.
- *
- * Revision 1.46  1998/10/21 16:19:47  jimg
- * Added the two member functions: synthesized_p() and set_synthesized_p().
- * These are used to test and record (resp) whether a variable has been
- * synthesized by the server or is part of the data set. This feature was
- * added to help support the creation of variables by the new projection
- * functions. Variables that are created by projection function calls are
- * called `synthesized variables'. Some documentation strings were fixed.
- *
- * Revision 1.45  1998/09/17 17:22:47  jimg
- * Fix documentation.
- * Added BaseType * stack definition using the STL vector class.
- *
- * Revision 1.44.2.1  1999/02/02 21:56:55  jimg
- * String to string version
- *
- * Revision 1.44  1998/08/06 16:08:51  jimg
- * Fixed some of the doc comments.
- *
- * Revision 1.43  1998/07/13 20:20:42  jimg
- * Fixes from the final test of the new build process
- *
- * Revision 1.42  1998/03/17 17:18:52  jimg
- * Added mfuncs element_count(), is_simple_type(), is_vector_type() and
- * is_comstructor_type().
- *
- * Revision 1.41  1998/02/05 20:13:50  jimg
- * DODS now compiles with gcc 2.8.x
- *
- * Revision 1.40  1998/02/04 14:55:30  tom
- * Another draft of documentation.
- *
- * Revision 1.39  1998/01/12 14:27:55  tom
- * Second pass at class documentation.
- *
- * Revision 1.38  1997/12/18 15:06:09  tom
- * First draft of class documentation, entered in doc++ format,
- * in the comments
- *
- * Revision 1.37  1997/10/09 22:19:11  jimg
- * Resolved conflicts in merge of 2.14c to trunk.
- *
- * Revision 1.36  1997/08/11 20:18:29  jimg
- * Really fixed the comment leaders this time...
- *
- * Revision 1.35  1997/08/11 18:19:12  jimg
- * Fixed comment leaders for new CVS version
- *
- * Revision 1.34  1997/03/08 19:01:57  jimg
- * Changed default param to check_semantics() from  to String()
- * and removed the default from the argument list in the mfunc definition
- *
- * Revision 1.33  1997/02/28 01:27:52  jimg
- * Changed check_semantics() so that it now returns error messages in a String
- * object (passed by reference).
- *
- * Revision 1.32  1996/12/02 23:10:04  jimg
- * Added dataset as a parameter to the ops member function.
- *
- * Revision 1.31  1996/11/20 00:58:05  jimg
- * Ripped out old code.
- *
- * Revision 1.30  1996/09/19 16:14:26  jimg
- * Fixed syntax errors in the enum `Type'.
- *
- * Revision 1.29  1996/08/26 19:36:41  jimg
- * Added type constants for 32 bit unsigned ints, 16 bit signed and unsigned
- * ints and 32 bit floats.
- *
- * Revision 1.28  1996/06/04 21:33:11  jimg
- * Multiple connections are now possible. It is now possible to open several
- * URLs at the same time and read from them in a round-robin fashion. To do
- * this I added data source and sink parameters to the serialize and
- * deserialize mfuncs. Connect was also modified so that it manages the data
- * source `object' (which is just an XDR pointer).
- *
- * Revision 1.27  1996/05/31 23:29:25  jimg
- * Updated copyright notice.
- *
- * Revision 1.26  1996/05/16 22:49:56  jimg
- * Dan's changes for version 2.0. Added a parameter to read that returns
- * an error code so that EOF can be distinguished from an actual error when
- * reading sequences. This *may* be replaced by an error member function
- * in the future.
- *
- * Revision 1.25  1996/05/14 15:38:16  jimg
- * These changes have already been checked in once before. However, I
- * corrupted the source repository and restored it from a 5/9/96 backup
- * tape. The previous version's log entry should cover the changes.
- *
- * Revision 1.24  1996/04/05 00:21:23  jimg
- * Compiled with g++ -Wall and fixed various warnings.
- *
- * Revision 1.23  1996/04/04 17:29:42  jimg
- * Merged recent changes from version 1.1.1 (including changes for the Type
- * enum which caused a problem on the SGI).
- *
- * Revision 1.22  1996/03/05 18:44:52  jimg
- * Added ce_eval to serailize member function.
- * Added ops member function.
- *
- * Revision 1.21  1996/02/02 00:31:00  jimg
- * Merge changes for DODS-1.1.0 into DODS-2.x
- *
- * Revision 1.20  1995/12/09  01:06:33  jimg
- * Added changes so that relational operators will work properly for all the
- * datatypes (including Sequences). The relational ops are evaluated in
- * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
- *
- * Revision 1.19  1995/12/06  21:45:01  jimg
- * Changed read() from three parameters to two.
- * Added constrained flag to print_decl().
- * Removed store_val() and read_val() (use buf2val() and val2buf() instead).
- *
- * Revision 1.18  1995/10/23  23:20:49  jimg
- * Added _send_p and _read_p fields (and their accessors) along with the
- * virtual mfuncs set_send_p() and set_read_p().
- *
- * Revision 1.17  1995/08/26  00:31:25  jimg
- * Removed code enclosed in #ifdef NEVER #endif.
- *
- * Revision 1.16  1995/08/23  00:04:44  jimg
- * Switched from String representation of data type to Type enum.
- * Added type_name() member function so that it is simple to get the string
- * representation of a variable's type.
- * Changed the name of read_val/store_val to buf2val/val2buf.
- *
- * Revision 1.15.2.5  1996/02/27 23:48:28  jimg
- * Fixed errors introduced in the last checkin.
- *
- * Revision 1.15.2.4  1996/02/23 21:37:23  jimg
- * Updated for new configure.in.
- * Fixed problems on Solaris 2.4.
- *
- * Revision 1.15.2.3  1995/09/29  19:27:59  jimg
- * Fixed problems with xdr.h on an SGI.
- * Fixed conflict of d_int32_t (which was in an enum type defined by
- * BaseType) on the SGI.
- *
- * Revision 1.15.2.2  1995/09/27  19:06:58  jimg
- * Add casts to `cast away' const and unsigned in places where we call various
- * xdr functions (which don't know about, or use, const or unsigned.
- *
- * Revision 1.15.2.1  1995/09/14  16:45:20  jimg
- * Changed _duplicate() member function from private to protected so that the
- * chilren of BaseType can call it in their implementations of _duplicate().
- *
- * Revision 1.15  1995/05/10  13:45:09  jimg
- * Changed the name of the configuration header file from `config.h' to
- * `config_dap.h' so that other libraries could have header files which were
- * installed in the DODS include directory without overwriting this one. Each
- * config header should follow the convention config_<name>.h.
- *
- * Revision 1.14  1995/03/04  14:34:56  jimg
- * Major modifications to the transmission and representation of values:
- * Added card() virtual function which is true for classes that
- * contain cardinal types (byte, int float, string).
- * Changed the representation of Str from the C rep to a C++
- * class represenation.
- * Chnaged read_val and store_val so that they take and return
- * types that are stored by the object (e.g., inthe case of Str
- * an URL, read_val returns a C++ String object).
- * Modified Array representations so that arrays of card()
- * objects are just that - no more storing strings, ... as
- * C would store them.
- * Arrays of non cardinal types are arrays of the DODS objects (e.g.,
- * an array of a structure is represented as an array of Structure
- * objects).
- *
- * Revision 1.13  1995/02/16  22:46:02  jimg
- * Added _in private member. It is used to keep a copy of the input FILE *
- * so that when the next chunk of data is read in the previous one can be
- * closed. Since the netio library unlinks the tmp file before returning
- * the FILE *, closing it effectively deletes the tmp file.
- *
- * Revision 1.12  1995/02/10  02:41:58  jimg
- * Added new mfuncs to access _name and _type.
- * Made private and protected filed's names start with `_'.
- * Added store_val() as a abstract virtual mfunc.
- *
- * Revision 1.11  1995/01/19  21:59:10  jimg
- * Added read_val from dummy_read.cc to the sample set of sub-class
- * implementations.
- * Changed the declaration of readVal in BaseType so that it names the
- * mfunc read_val (to be consistant with the other mfunc names).
- * Removed the unnecessary duplicate declaration of the abstract virtual
- * mfuncs read and (now) read_val from the classes Byte, ... Grid. The
- * declaration in BaseType is sufficient along with the decl and definition
- * in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
- *
- * Revision 1.10  1995/01/18  18:35:28  dan
- * Defined abstract virtual function 'readVal' which provides access
- * to the object's buf for retrieving data subsequent to deserializing.
- *
- * Revision 1.9  1995/01/11  16:06:48  jimg
- * Added static XDR pointers to BaseType class and removed the XDR pointers
- * that were class members - now there is only one xdrin and one xdrout
- * for all children of BaseType.
- * Added friend functions to help in setting the FILE * associated with
- * the XDR *s.
- * Removed FILE *in member (but FILE *out was kept as FILE * _out, mfunc
- * expunge()).
- * Changed ctor so that it no longer takes FILE * params.
- *
- * Revision 1.8  1994/12/16  22:04:21  jimg
- * Added the mfuncs var() and add_var(). These are used by ctor types. They
- * need to be defined here so that access to them via BaseType * will work
- * (actually, so the code will compile). These versions just print error
- * messages. See Array.h, ... for examples of the real mfuncs.
- *
- * Revision 1.7  1994/12/12  20:33:03  jimg
- * Added enum Part - used to be part of CtorType.
- *
- * Revision 1.6  1994/11/29  19:14:15  jimg
- * Added mroe support for data transmission; BaseType now contains enough
- * functionality to support transmission of all the simple datatypes.
- * Added in and out FILE *.
- * Added boolean flag in serialize which will cause the output buffer to
- * be flushed when data is serialized.
- * Added xdr_coder for serialization of arrays and lists.
- *
- * Revision 1.5  1994/11/22  14:05:29  jimg
- * Added code for data transmission to parts of the type hierarchy. Not
- * complete yet.
- * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
- *
- * Revision 1.4  1994/10/17  23:30:47  jimg
- * Added ptr_duplicate virtual mfunc. Child classes can also define this
- * to copy parts that BaseType does not have (and allocate correctly sized
- * pointers.
- * Removed protected mfunc error() -- use errmsg library instead.
- * Added formatted printing of types (works with DDS::print()).
- *
- * Revision 1.3  1994/09/23  14:34:44  jimg
- * Added mfunc check_semantics().
- * Moved definition of dtor to BaseType.cc.
- *
- * Revision 1.2  1994/09/15  21:08:56  jimg
- * Added many classes to the BaseType hierarchy - the complete set of types
- * described in the DODS API design documet is now represented.
- * The parser can parse DDS files.
- * Fixed many small problems with BaseType.
- * Added CtorType.
- *
- * Revision 1.1  1994/09/09  15:28:42  jimg
- * Class for base type variables. Int32, ... inherit from this class. */
-
-#ifndef _Base_Type_h
-#define _Base_Type_h 1
+#ifndef _basetype_h
+#define _basetype_h 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -337,13 +34,8 @@
 
 #include <vector>
 #include <stack>
-
 #include <iostream>
 #include <string>
-
-#if 0
-#include "config_dap.h"
-#endif
 
 #ifdef WIN32
 using std::vector;
@@ -1003,4 +695,314 @@ public:
     virtual bool ops(BaseType *b, int op, const string &dataset);
 };
 
-#endif 
+/* 
+ * $Log: BaseType.h,v $
+ * Revision 1.59  2000/09/22 02:17:18  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
+ * Revision 1.58  2000/09/21 16:22:07  jimg
+ * Merged changes from Jose Garcia that add exceptions to the software.
+ * Many methods that returned error codes now throw exectptions. There are
+ * two classes which are thrown by the software, Error and InternalErr.
+ * InternalErr is used to report errors within the library or errors using
+ * the library. Error is used to reprot all other errors. Since InternalErr
+ * is a subclass of Error, programs need only to catch Error.
+ *
+ * Revision 1.57  2000/09/11 16:33:29  jimg
+ * Fixed up the comments/docs.
+ *
+ * Revision 1.56  2000/08/02 22:46:48  jimg
+ * Merged 3.1.8
+ *
+ * Revision 1.53.6.1  2000/08/02 21:10:07  jimg
+ * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * cardinal datatypes, then it gets those definitions from the header
+ * dods-datatypes.h.
+ *
+ * Revision 1.55  2000/07/09 21:57:09  rmorris
+ * Mods's to increase portability, minimuze ifdef's in win32 and account
+ * for differences between the Standard C++ Library - most notably, the
+ * iostream's.
+ *
+ * Revision 1.54  2000/06/07 18:06:58  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.53.20.1  2000/06/02 18:11:19  rmorris
+ * Mod's for Port to Win32.
+ *
+ * Revision 1.53.14.1  2000/01/28 22:14:04  jgarcia
+ * Added exception handling and modify add_var to get a copy of the object
+ *
+ * Revision 1.53  1999/05/04 19:47:20  jimg
+ * Fixed copyright statements. Removed more of the GNU classes.
+ *
+ * Revision 1.52  1999/04/29 02:29:27  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.51  1999/03/24 23:37:13  jimg
+ * Added support for the Int16, UInt16 and Float32 types
+ *
+ * Revision 1.50  1999/03/19 16:45:00  jimg
+ * Added to the documentation for print_val(). Now contains a blurb about
+ * setprecision().
+ *
+ * Revision 1.49  1999/01/21 20:42:00  tom
+ * Fixed comment formatting problems for doc++
+ *
+ * Revision 1.48  1998/11/23 15:05:55  tom
+ * late modifications to documentation
+ *
+ * Revision 1.47  1998/11/10 01:10:25  jimg
+ * Changed text of regexp error message.
+ *
+ * Revision 1.46  1998/10/21 16:19:47  jimg
+ * Added the two member functions: synthesized_p() and set_synthesized_p().
+ * These are used to test and record (resp) whether a variable has been
+ * synthesized by the server or is part of the data set. This feature was
+ * added to help support the creation of variables by the new projection
+ * functions. Variables that are created by projection function calls are
+ * called `synthesized variables'. Some documentation strings were fixed.
+ *
+ * Revision 1.45  1998/09/17 17:22:47  jimg
+ * Fix documentation.
+ * Added BaseType * stack definition using the STL vector class.
+ *
+ * Revision 1.44.2.1  1999/02/02 21:56:55  jimg
+ * String to string version
+ *
+ * Revision 1.44  1998/08/06 16:08:51  jimg
+ * Fixed some of the doc comments.
+ *
+ * Revision 1.43  1998/07/13 20:20:42  jimg
+ * Fixes from the final test of the new build process
+ *
+ * Revision 1.42  1998/03/17 17:18:52  jimg
+ * Added mfuncs element_count(), is_simple_type(), is_vector_type() and
+ * is_comstructor_type().
+ *
+ * Revision 1.41  1998/02/05 20:13:50  jimg
+ * DODS now compiles with gcc 2.8.x
+ *
+ * Revision 1.40  1998/02/04 14:55:30  tom
+ * Another draft of documentation.
+ *
+ * Revision 1.39  1998/01/12 14:27:55  tom
+ * Second pass at class documentation.
+ *
+ * Revision 1.38  1997/12/18 15:06:09  tom
+ * First draft of class documentation, entered in doc++ format,
+ * in the comments
+ *
+ * Revision 1.37  1997/10/09 22:19:11  jimg
+ * Resolved conflicts in merge of 2.14c to trunk.
+ *
+ * Revision 1.36  1997/08/11 20:18:29  jimg
+ * Really fixed the comment leaders this time...
+ *
+ * Revision 1.35  1997/08/11 18:19:12  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.34  1997/03/08 19:01:57  jimg
+ * Changed default param to check_semantics() from  to String()
+ * and removed the default from the argument list in the mfunc definition
+ *
+ * Revision 1.33  1997/02/28 01:27:52  jimg
+ * Changed check_semantics() so that it now returns error messages in a String
+ * object (passed by reference).
+ *
+ * Revision 1.32  1996/12/02 23:10:04  jimg
+ * Added dataset as a parameter to the ops member function.
+ *
+ * Revision 1.31  1996/11/20 00:58:05  jimg
+ * Ripped out old code.
+ *
+ * Revision 1.30  1996/09/19 16:14:26  jimg
+ * Fixed syntax errors in the enum `Type'.
+ *
+ * Revision 1.29  1996/08/26 19:36:41  jimg
+ * Added type constants for 32 bit unsigned ints, 16 bit signed and unsigned
+ * ints and 32 bit floats.
+ *
+ * Revision 1.28  1996/06/04 21:33:11  jimg
+ * Multiple connections are now possible. It is now possible to open several
+ * URLs at the same time and read from them in a round-robin fashion. To do
+ * this I added data source and sink parameters to the serialize and
+ * deserialize mfuncs. Connect was also modified so that it manages the data
+ * source `object' (which is just an XDR pointer).
+ *
+ * Revision 1.27  1996/05/31 23:29:25  jimg
+ * Updated copyright notice.
+ *
+ * Revision 1.26  1996/05/16 22:49:56  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
+ * Revision 1.25  1996/05/14 15:38:16  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
+ * Revision 1.24  1996/04/05 00:21:23  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
+ * Revision 1.23  1996/04/04 17:29:42  jimg
+ * Merged recent changes from version 1.1.1 (including changes for the Type
+ * enum which caused a problem on the SGI).
+ *
+ * Revision 1.22  1996/03/05 18:44:52  jimg
+ * Added ce_eval to serailize member function.
+ * Added ops member function.
+ *
+ * Revision 1.21  1996/02/02 00:31:00  jimg
+ * Merge changes for DODS-1.1.0 into DODS-2.x
+ *
+ * Revision 1.20  1995/12/09  01:06:33  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
+ * Revision 1.19  1995/12/06  21:45:01  jimg
+ * Changed read() from three parameters to two.
+ * Added constrained flag to print_decl().
+ * Removed store_val() and read_val() (use buf2val() and val2buf() instead).
+ *
+ * Revision 1.18  1995/10/23  23:20:49  jimg
+ * Added _send_p and _read_p fields (and their accessors) along with the
+ * virtual mfuncs set_send_p() and set_read_p().
+ *
+ * Revision 1.17  1995/08/26  00:31:25  jimg
+ * Removed code enclosed in #ifdef NEVER #endif.
+ *
+ * Revision 1.16  1995/08/23  00:04:44  jimg
+ * Switched from String representation of data type to Type enum.
+ * Added type_name() member function so that it is simple to get the string
+ * representation of a variable's type.
+ * Changed the name of read_val/store_val to buf2val/val2buf.
+ *
+ * Revision 1.15.2.5  1996/02/27 23:48:28  jimg
+ * Fixed errors introduced in the last checkin.
+ *
+ * Revision 1.15.2.4  1996/02/23 21:37:23  jimg
+ * Updated for new configure.in.
+ * Fixed problems on Solaris 2.4.
+ *
+ * Revision 1.15.2.3  1995/09/29  19:27:59  jimg
+ * Fixed problems with xdr.h on an SGI.
+ * Fixed conflict of d_int32_t (which was in an enum type defined by
+ * BaseType) on the SGI.
+ *
+ * Revision 1.15.2.2  1995/09/27  19:06:58  jimg
+ * Add casts to `cast away' const and unsigned in places where we call various
+ * xdr functions (which don't know about, or use, const or unsigned.
+ *
+ * Revision 1.15.2.1  1995/09/14  16:45:20  jimg
+ * Changed _duplicate() member function from private to protected so that the
+ * chilren of BaseType can call it in their implementations of _duplicate().
+ *
+ * Revision 1.15  1995/05/10  13:45:09  jimg
+ * Changed the name of the configuration header file from `config.h' to
+ * `config_dap.h' so that other libraries could have header files which were
+ * installed in the DODS include directory without overwriting this one. Each
+ * config header should follow the convention config_<name>.h.
+ *
+ * Revision 1.14  1995/03/04  14:34:56  jimg
+ * Major modifications to the transmission and representation of values:
+ * Added card() virtual function which is true for classes that
+ * contain cardinal types (byte, int float, string).
+ * Changed the representation of Str from the C rep to a C++
+ * class represenation.
+ * Chnaged read_val and store_val so that they take and return
+ * types that are stored by the object (e.g., inthe case of Str
+ * an URL, read_val returns a C++ String object).
+ * Modified Array representations so that arrays of card()
+ * objects are just that - no more storing strings, ... as
+ * C would store them.
+ * Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * an array of a structure is represented as an array of Structure
+ * objects).
+ *
+ * Revision 1.13  1995/02/16  22:46:02  jimg
+ * Added _in private member. It is used to keep a copy of the input FILE *
+ * so that when the next chunk of data is read in the previous one can be
+ * closed. Since the netio library unlinks the tmp file before returning
+ * the FILE *, closing it effectively deletes the tmp file.
+ *
+ * Revision 1.12  1995/02/10  02:41:58  jimg
+ * Added new mfuncs to access _name and _type.
+ * Made private and protected filed's names start with `_'.
+ * Added store_val() as a abstract virtual mfunc.
+ *
+ * Revision 1.11  1995/01/19  21:59:10  jimg
+ * Added read_val from dummy_read.cc to the sample set of sub-class
+ * implementations.
+ * Changed the declaration of readVal in BaseType so that it names the
+ * mfunc read_val (to be consistant with the other mfunc names).
+ * Removed the unnecessary duplicate declaration of the abstract virtual
+ * mfuncs read and (now) read_val from the classes Byte, ... Grid. The
+ * declaration in BaseType is sufficient along with the decl and definition
+ * in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
+ *
+ * Revision 1.10  1995/01/18  18:35:28  dan
+ * Defined abstract virtual function 'readVal' which provides access
+ * to the object's buf for retrieving data subsequent to deserializing.
+ *
+ * Revision 1.9  1995/01/11  16:06:48  jimg
+ * Added static XDR pointers to BaseType class and removed the XDR pointers
+ * that were class members - now there is only one xdrin and one xdrout
+ * for all children of BaseType.
+ * Added friend functions to help in setting the FILE * associated with
+ * the XDR *s.
+ * Removed FILE *in member (but FILE *out was kept as FILE * _out, mfunc
+ * expunge()).
+ * Changed ctor so that it no longer takes FILE * params.
+ *
+ * Revision 1.8  1994/12/16  22:04:21  jimg
+ * Added the mfuncs var() and add_var(). These are used by ctor types. They
+ * need to be defined here so that access to them via BaseType * will work
+ * (actually, so the code will compile). These versions just print error
+ * messages. See Array.h, ... for examples of the real mfuncs.
+ *
+ * Revision 1.7  1994/12/12  20:33:03  jimg
+ * Added enum Part - used to be part of CtorType.
+ *
+ * Revision 1.6  1994/11/29  19:14:15  jimg
+ * Added mroe support for data transmission; BaseType now contains enough
+ * functionality to support transmission of all the simple datatypes.
+ * Added in and out FILE *.
+ * Added boolean flag in serialize which will cause the output buffer to
+ * be flushed when data is serialized.
+ * Added xdr_coder for serialization of arrays and lists.
+ *
+ * Revision 1.5  1994/11/22  14:05:29  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
+ * Revision 1.4  1994/10/17  23:30:47  jimg
+ * Added ptr_duplicate virtual mfunc. Child classes can also define this
+ * to copy parts that BaseType does not have (and allocate correctly sized
+ * pointers.
+ * Removed protected mfunc error() -- use errmsg library instead.
+ * Added formatted printing of types (works with DDS::print()).
+ *
+ * Revision 1.3  1994/09/23  14:34:44  jimg
+ * Added mfunc check_semantics().
+ * Moved definition of dtor to BaseType.cc.
+ *
+ * Revision 1.2  1994/09/15  21:08:56  jimg
+ * Added many classes to the BaseType hierarchy - the complete set of types
+ * described in the DODS API design documet is now represented.
+ * The parser can parse DDS files.
+ * Fixed many small problems with BaseType.
+ * Added CtorType.
+ *
+ * Revision 1.1  1994/09/09  15:28:42  jimg
+ * Class for base type variables. Int32, ... inherit from this class.
+ */
+
+#endif // _basetype_h

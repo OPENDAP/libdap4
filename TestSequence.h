@@ -11,8 +11,51 @@
 //
 // jhrg 1/12/95
 
+#ifndef _testsequence_h
+#define _testsequence_h 1
+
+#ifdef _GNUG_
+#pragma interface
+#endif
+
+#include "Sequence.h"
+#include <fstream>
+
+#ifdef WIN32
+using std::ifstream;
+#endif
+
+class TestSequence: public Sequence {
+private:
+    /// Pointer to current input file.
+    ifstream _input;
+
+    /// True if _input has been opened.
+    bool _input_opened;
+    
+    void _duplicate(const TestSequence &ts);
+
+public:
+    TestSequence(const string &n = "");
+    TestSequence(const TestSequence &rhs);
+
+    virtual ~TestSequence();
+
+    virtual BaseType *ptr_duplicate();
+
+    virtual bool read(const string &dataset);
+
+    virtual int length();
+};
+
 /* 
  * $Log: TestSequence.h,v $
+ * Revision 1.17  2000/09/22 02:17:21  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.16  2000/09/21 16:22:09  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
@@ -97,41 +140,4 @@
  * BaseType.
  */
 
-#ifndef _TestSequence_h
-#define _TestSequence_h 1
-
-#ifdef _GNUG_
-#pragma interface
-#endif
-
-#include "Sequence.h"
-#include <fstream>
-
-#ifdef WIN32
-using std::ifstream;
-#endif
-
-class TestSequence: public Sequence {
-private:
-    /// Pointer to current input file.
-    ifstream _input;
-
-    /// True if _input has been opened.
-    bool _input_opened;
-    
-    void _duplicate(const TestSequence &ts);
-
-public:
-    TestSequence(const string &n = "");
-    TestSequence(const TestSequence &rhs);
-
-    virtual ~TestSequence();
-
-    virtual BaseType *ptr_duplicate();
-
-    virtual bool read(const string &dataset);
-
-    virtual int length();
-};
-
-#endif
+#endif // _testsequence_h

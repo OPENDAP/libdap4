@@ -8,8 +8,39 @@
   jhrg 10/13/94
 */
   
+#ifndef _debug_h
+#define _debug_h
+
+#ifdef __cplusplus
+#define FILE_N_LINE cerr << __FILE__ << ": " << __LINE__ << ":"
+#else
+#define FILE_N_LINE fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);
+#endif /* cplusplus */
+
+#ifdef DODS_DEBUG
+#define DBG(x) FILE_N_LINE; x
+#else
+#define DBG(x) /* x */
+#endif
+
+#ifdef DODS_DEBUG2
+#define DBG2(x) FILE_N_LINE; x
+#else
+#define DBG2(x) /* x */
+#endif
+
+#ifdef DODS_PERF
+#error "Deprecated macro!"
+#endif
+
 /* 
  * $Log: debug.h,v $
+ * Revision 1.8  2000/09/22 02:17:22  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.7  1998/09/08 21:34:41  jimg
  * Fixed up this file for use with C as well as C++.
  * Removed the old PERF macro since it was based on a non-POSIX time function
@@ -37,29 +68,4 @@
  * inlcudes.
  */
 
-#ifndef _DEBUG_H
-#define _DEBUG_H
-
-#ifdef __cplusplus
-#define FILE_N_LINE cerr << __FILE__ << ": " << __LINE__ << ":"
-#else
-#define FILE_N_LINE fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);
-#endif /* cplusplus */
-
-#ifdef DODS_DEBUG
-#define DBG(x) FILE_N_LINE; x
-#else
-#define DBG(x) /* x */
-#endif
-
-#ifdef DODS_DEBUG2
-#define DBG2(x) FILE_N_LINE; x
-#else
-#define DBG2(x) /* x */
-#endif
-
-#ifdef DODS_PERF
-#error "Deprecated macro!"
-#endif
-
-#endif /* _DEBUG_H */
+#endif /* _debug_h */

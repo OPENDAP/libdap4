@@ -9,42 +9,36 @@
 
 // The Grid Selection Expression Clause class.
 
-// $Log: GSEClause.cc,v $
-// Revision 1.4  2000/06/07 18:06:59  jimg
-// Merged the pc port branch
-//
-// Revision 1.3.20.1  2000/06/02 18:21:27  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.3  1999/04/29 02:29:30  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.2  1999/03/24 23:37:14  jimg
-// Added support for the Int16, UInt16 and Float32 types
-//
-// Revision 1.1  1999/01/21 02:07:43  jimg
-// Created
-//
-
 #ifdef _GNUG_
 #pragma implementation
 #endif
 
-#include <assert.h>
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.4 2000/06/07 18:06:59 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.5 2000/09/22 02:17:20 jimg Exp $"};
 
+#include <assert.h>
 #include <Pix.h>
 
 #include "Error.h"
+#include "InternalErr.h"
 #include "GSEClause.h"
 
 // Private methods
 
 GSEClause::GSEClause()
 {
-    assert(false && "Default constructor for GSEClause called");
+  throw InternalErr(__FILE__, __LINE__, "default ctor called for GSEClause");
+}
+
+GSEClause::GSEClause(const GSEClause &param)
+{
+  throw InternalErr(__FILE__, __LINE__, "copy ctor called for GSEClause");
+}
+
+GSEClause &GSEClause::operator=(GSEClause &rhs)
+{
+  throw InternalErr(__FILE__, __LINE__, "assigment called for GSEClause");
 }
 
 template<class T>
@@ -239,3 +233,27 @@ GSEClause::get_stop() const
 {
     return _stop;
 }
+
+// $Log: GSEClause.cc,v $
+// Revision 1.5  2000/09/22 02:17:20  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.4  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.3.20.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
+// Revision 1.3  1999/04/29 02:29:30  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.2  1999/03/24 23:37:14  jimg
+// Added support for the Int16, UInt16 and Float32 types
+//
+// Revision 1.1  1999/01/21 02:07:43  jimg
+// Created
+//
+

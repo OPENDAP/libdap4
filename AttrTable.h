@@ -9,8 +9,8 @@
 
 // An AttrTable is a table of attributes (type-name-value tuples).
 
-#ifndef _AttrTable_h
-#define _AttrTable_h 1
+#ifndef _attrtable_h
+#define _attrtable_h 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -18,15 +18,9 @@
 
 #include <string>
 #include <vector>
+
 #include <Pix.h>
 #include <DLList.h>
-
-#if 0
-#include "config_dap.h"
-#endif
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 #ifdef WIN32
 using std::string;
@@ -398,6 +392,12 @@ public:
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.32  2000/09/22 02:17:18  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
  * Revision 1.31  2000/08/02 22:46:48  jimg
  * Merged 3.1.8
  *
@@ -553,6 +553,6 @@ public:
  * type actually held by the DAS container class).
  */
 
-#endif
+#endif // _attrtable_h
 
 

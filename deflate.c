@@ -5,22 +5,7 @@
   Modified: Added the -s (silent) option to suppress diagnostic messages.
 */
 
-/* 
-   $Log: deflate.c,v $
-   Revision 1.3  2000/01/27 06:30:01  jimg
-   Resolved conflicts from merge with release-3-1-4
-
-   Revision 1.2.28.1  1999/12/07 17:56:35  edavis
-   Fix for RedHat 5.2 to 6.x libc changes (stdin/out/err no longer constant).
-
-   Revision 1.2  1998/02/11 02:39:44  jimg
-   Added TRUE and FALSE definitions.
-
-   Revision 1.1  1998/02/11 02:37:23  jimg
-   Added to DAP.
-*/
-
-const char *rcsid={"$Id: deflate.c,v 1.3 2000/01/27 06:30:01 jimg Exp $"};
+const char *rcsid={"$Id: deflate.c,v 1.4 2000/09/22 02:17:22 jimg Exp $"};
 
 #include "stdlib.h"
 #include "stdio.h"
@@ -144,3 +129,24 @@ int main (int argc, char ** argv)
     if (output_buffer) free(output_buffer);
     return 0;
 }
+
+/* 
+   $Log: deflate.c,v $
+   Revision 1.4  2000/09/22 02:17:22  jimg
+   Rearranged source files so that the CVS logs appear at the end rather than
+   the start. Also made the ifdef guard symbols use the same naming scheme and
+   wrapped headers included in other headers in those guard symbols (to cut
+   down on extraneous file processing - See Lakos).
+
+   Revision 1.3  2000/01/27 06:30:01  jimg
+   Resolved conflicts from merge with release-3-1-4
+
+   Revision 1.2.28.1  1999/12/07 17:56:35  edavis
+   Fix for RedHat 5.2 to 6.x libc changes (stdin/out/err no longer constant).
+
+   Revision 1.2  1998/02/11 02:39:44  jimg
+   Added TRUE and FALSE definitions.
+
+   Revision 1.1  1998/02/11 02:37:23  jimg
+   Added to DAP.
+*/

@@ -41,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.25 2000/09/21 16:22:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.26 2000/09/22 02:17:22 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,11 +75,7 @@ using std::ostrstream;
 
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 
-#if DODS_BISON_VER > 124
 #define YYPARSE_PARAM arg
-#else
-#define YYPARSE_PARAM void *arg
-#endif
 
 extern int dds_line_num;	/* defined in dds.lex */
 
@@ -185,11 +181,11 @@ static const short yyrhs[] = {    33,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   126,   127,   130,   131,   138,   139,   140,   143,   153,   160,
-   171,   176,   187,   192,   203,   205,   207,   212,   225,   236,
-   244,   252,   260,   268,   269,   270,   271,   272,   273,   274,
-   275,   276,   279,   280,   283,   296,   300,   316,   316,   327,
-   328,   329
+   122,   123,   126,   127,   135,   136,   137,   140,   150,   157,
+   168,   173,   184,   189,   200,   202,   204,   209,   222,   234,
+   242,   250,   258,   266,   267,   268,   269,   270,   271,   272,
+   273,   274,   277,   278,   281,   294,   298,   314,   314,   326,
+   327,   328
 };
 #endif
 
@@ -847,14 +843,15 @@ yyreduce:
   switch (yyn) {
 
 case 4:
-#line 132 "dds.y"
+#line 128 "dds.y"
 {
-		    parse_error((parser_arg *)arg, NO_DDS_MSG);
+		    parse_error((parser_arg *)arg, NO_DDS_MSG,
+				dds_line_num, yyvsp[0]);
 		    YYABORT;
 		;
     break;}
 case 8:
-#line 144 "dds.y"
+#line 141 "dds.y"
 { 
 		  string smsg;
 		  if (current->check_semantics(smsg))
@@ -866,7 +863,7 @@ case 8:
 		;
     break;}
 case 10:
-#line 161 "dds.y"
+#line 158 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -878,14 +875,14 @@ case 10:
 		;
     break;}
 case 11:
-#line 172 "dds.y"
+#line 169 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 12:
-#line 177 "dds.y"
+#line 174 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -897,14 +894,14 @@ case 12:
 		;
     break;}
 case 13:
-#line 188 "dds.y"
+#line 185 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 14:
-#line 193 "dds.y"
+#line 190 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
@@ -916,22 +913,22 @@ case 14:
 		;
     break;}
 case 15:
-#line 204 "dds.y"
+#line 201 "dds.y"
 { part = array; ;
     break;}
 case 16:
-#line 206 "dds.y"
+#line 203 "dds.y"
 { part = maps; ;
     break;}
 case 17:
-#line 208 "dds.y"
+#line 205 "dds.y"
 {
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 18:
-#line 213 "dds.y"
+#line 210 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -945,17 +942,18 @@ case 18:
 		;
     break;}
 case 19:
-#line 226 "dds.y"
+#line 223 "dds.y"
 {
 		    ostrstream msg;
 		    msg << BAD_DECLARATION << ends;
-		    parse_error((parser_arg *)arg, msg.str());
+		    parse_error((parser_arg *)arg, msg.str(),
+				dds_line_num, yyvsp[0]);
 		    msg.freeze(0);
 		    YYABORT;
 		;
     break;}
 case 20:
-#line 237 "dds.y"
+#line 235 "dds.y"
 { 
 		    if (!ctor) 
 			ctor = new stack<BaseType *>;
@@ -963,7 +961,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 245 "dds.y"
+#line 243 "dds.y"
 { 
 		    if (!ctor)
 	                ctor = new stack<BaseType *>;
@@ -971,7 +969,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 253 "dds.y"
+#line 251 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -979,7 +977,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 261 "dds.y"
+#line 259 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -987,47 +985,47 @@ case 23:
 		;
     break;}
 case 24:
-#line 268 "dds.y"
+#line 266 "dds.y"
 { current = NewByte(); ;
     break;}
 case 25:
-#line 269 "dds.y"
+#line 267 "dds.y"
 { current = NewInt16(); ;
     break;}
 case 26:
-#line 270 "dds.y"
+#line 268 "dds.y"
 { current = NewUInt16(); ;
     break;}
 case 27:
-#line 271 "dds.y"
+#line 269 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 272 "dds.y"
+#line 270 "dds.y"
 { current = NewUInt32(); ;
     break;}
 case 29:
-#line 273 "dds.y"
+#line 271 "dds.y"
 { current = NewFloat32(); ;
     break;}
 case 30:
-#line 274 "dds.y"
+#line 272 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 31:
-#line 275 "dds.y"
+#line 273 "dds.y"
 { current = NewStr(); ;
     break;}
 case 32:
-#line 276 "dds.y"
+#line 274 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 33:
-#line 279 "dds.y"
+#line 277 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 35:
-#line 284 "dds.y"
+#line 282 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -1041,13 +1039,13 @@ case 35:
 		 ;
     break;}
 case 36:
-#line 297 "dds.y"
+#line 295 "dds.y"
 {
 		     id = new string(yyvsp[0]);
 		 ;
     break;}
 case 37:
-#line 301 "dds.y"
+#line 299 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), *id);
@@ -1063,31 +1061,33 @@ case 37:
 		 ;
     break;}
 case 39:
-#line 317 "dds.y"
+#line 315 "dds.y"
 {
 		     ostrstream msg;
 		     msg << "In the dataset descriptor object:" << endl
 			 << "Expected an array subscript." << endl << ends;
-		     parse_error((parser_arg *)arg, msg.str());
+		     parse_error((parser_arg *)arg, msg.str(), 
+				 dds_line_num, yyvsp[0]);
 		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		 ;
     break;}
 case 40:
-#line 327 "dds.y"
+#line 326 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 41:
-#line 328 "dds.y"
+#line 327 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 42:
-#line 330 "dds.y"
+#line 329 "dds.y"
 {
 		  ostrstream msg;
 		  msg << "Error parsing the dataset name." << endl
 		      << "The name may be missing or may contain an illegal character." << endl << ends;
-		     parse_error((parser_arg *)arg, msg.str());
+		     parse_error((parser_arg *)arg, msg.str(),
+				 dds_line_num);
 		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		;
@@ -1339,7 +1339,7 @@ invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type,
   msg << "In the dataset descriptor object: `" << type << " " << name 
       << "'" << endl << "is not a valid declaration." << endl 
       << semantic_err_msg << ends;
-  parse_error((parser_arg *)arg, msg.str());
+  parse_error((parser_arg *)arg, msg.str(), dds_line_num);
   msg.rdbuf()->freeze(0);
 }
 
@@ -1381,7 +1381,13 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.25  2000/09/21 16:22:09  jimg
+ * Revision 1.26  2000/09/22 02:17:22  jimg
+ * Rearranged source files so that the CVS logs appear at the end rather than
+ * the start. Also made the ifdef guard symbols use the same naming scheme and
+ * wrapped headers included in other headers in those guard symbols (to cut
+ * down on extraneous file processing - See Lakos).
+ *
+ * Revision 1.32  2000/09/21 16:22:10  jimg
  * Merged changes from Jose Garcia that add exceptions to the software.
  * Many methods that returned error codes now throw exectptions. There are
  * two classes which are thrown by the software, Error and InternalErr.

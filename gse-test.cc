@@ -9,20 +9,9 @@
 //
 // 1/17/99 jhrg
 
-// $Log: gse-test.cc,v $
-// Revision 1.3  1999/04/29 02:29:36  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.2  1999/03/24 23:30:07  jimg
-// Added minimal support for the new Int16, UInt16 and Float32 types.
-//
-// Revision 1.1  1999/01/21 02:07:44  jimg
-// Created
-//
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.3 1999/04/29 02:29:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.4 2000/09/22 02:17:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +52,7 @@ void *gse_string(const char *yy_str);
 
 extern int gse_debug;
 
-const string version = "$Revision: 1.3 $";
+const string version = "$Revision: 1.4 $";
 const string prompt = "gse-test: ";
 const string options = "sS:p:dv";
 const string usage = "gse-test [-s [-S string] -d -v [-p dds file]\n\
@@ -290,3 +279,21 @@ test_parser(const string &dds_file)
     else
 	cout << "Input did not parse" << endl;
 }
+
+// $Log: gse-test.cc,v $
+// Revision 1.4  2000/09/22 02:17:23  jimg
+// Rearranged source files so that the CVS logs appear at the end rather than
+// the start. Also made the ifdef guard symbols use the same naming scheme and
+// wrapped headers included in other headers in those guard symbols (to cut
+// down on extraneous file processing - See Lakos).
+//
+// Revision 1.3  1999/04/29 02:29:36  jimg
+// Merge of no-gnu branch
+//
+// Revision 1.2  1999/03/24 23:30:07  jimg
+// Added minimal support for the new Int16, UInt16 and Float32 types.
+//
+// Revision 1.1  1999/01/21 02:07:44  jimg
+// Created
+//
+
