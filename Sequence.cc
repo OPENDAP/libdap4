@@ -661,7 +661,7 @@ Sequence::read_row(int row, const string &dataset, DDS &dds, bool ce_eval)
 inline bool
 Sequence::is_end_of_rows(int i)
 {
-    return ((d_ending_row_number == -1) ? false : (i >= d_ending_row_number));
+    return ((d_ending_row_number == -1) ? false : (i > d_ending_row_number));
 }
 
 bool
@@ -1149,6 +1149,13 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.75  2004/09/09 19:25:55  jimg
+// Fixed a bug in is_end_of_rows(): The d_ending_row_number field was not
+// checked correctly. Constraints for a single row such as [0], [0:0], [1:1:1],
+// et c., did not work properly. If a CE of [0:1] was given, the response which
+// should have been returned from [0:0] was returned. Fixed by replacing >= with
+// > in the test of d_ending_row_number.
+//
 // Revision 1.74  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //
