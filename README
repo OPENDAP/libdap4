@@ -1,9 +1,9 @@
 
-$Id: README,v 1.5 1995/06/22 21:44:25 jimg Exp $
+$Id: README,v 1.6 1996/06/11 17:45:47 jimg Exp $
 
 This directory contains the URI/GSO implementation of the DODS Data Access
 Protocol. Documentation for this software can be found on the DODS home page
-accessible from http://dods.gso.uri.edu/.
+at http://dods.gso.uri.edu/DODS.
 
 The Data Access Protocol (DAP) is used to provide a uniform way of accessing
 a variety of different types of Earth-science data within DODS.
@@ -11,12 +11,11 @@ a variety of different types of Earth-science data within DODS.
 The DAP is implemented as a set of C++ classes that can be used to build DODS
 data servers and client libraries. The DAP is used to build these programs
 and/or libraries by specializing the set of classes it provides so that the
-specific requirements of a given API or format are adequately addressed.
+specific requirements of a given API or format can be adequately addressed.
 
-The DODS DAP is contained in a single library: libdap++.a. This
-library requires the DODS netio library and errmsg library as well as the GNU
-C++ class library libg++.a. The DAP library contains some classes made using
-the GNU class library source code and the GNU tool `genclass'.
+The DODS DAP is contained in a single library: libdap++.a. This library uses
+the GNU C++ class library libg++.a. The DAP library contains some classes
+made using the GNU class library source code and the GNU tool `genclass'.
 
 Test programs for the DAP are also in this directory as is a sample
 specialization of the set of classes.
