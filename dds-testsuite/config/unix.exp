@@ -13,18 +13,34 @@ if ![info exists DDSTEST] then {
 
 # The four required proc for dds-test.
 
-proc dds-test_start { options } {
+proc dds-test_start { options {ifile ""} {ofile ""}} {
     global verbose
     global DDSTEST
     global prompt
+    global comp_output
 
-    verbose "Starting $DDSTEST $options...\n"
+    if {$verbose >= 1} {
+	verbose "Starting $DDSTEST $options $ifile $ofile ...\n"
+    }
 
-    spawn $DDSTEST $options
+    if {$ifile != ""} {
+	set ifile "< $ifile"
+    }
 
-    expect {
-	-re $prompt$ {send_user "Found first prompt (1)\n"}
-	timeout { error "Failed to spawn $CALC (timeout)"; exit 1 }
+    if {$ofile != ""} {
+	set ofile "> $ofile"
+    }
+
+    switch $options {
+	p {catch "exec $DDSTEST -p $ifile $ofile" comp_output}
+	s {spawn $DDSTEST -s}
+    }
+
+    if {$verbose >= 1} {
+	switch $options {
+	    p {send_user "Comp output:\n$comp_output\n"}
+	    s {send_user "Program running: spawn_id=$spawn_id\n"}
+	}
     }
 }
 
@@ -36,7 +52,5 @@ proc dds-test_exit {} {
 }
 
 proc dds-test_version {} {
-    send_user "dds-test version 0.1\n"
+    send_user "dds-test version 1.0\n"
 }
-
-dds-test_start -s
