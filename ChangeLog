@@ -1,3 +1,9 @@
+2000-06-06  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged changes from Rob's PC port. Used cvs update -j
+	pc-port-branch. I have done minimal testing on Linux (dejagnu is
+	not yet installed) and the code seems fine. 
+
 2000-04-17  James Gallagher  <jimg@dcz.dods.org>
 
 	* Fixed two bugs in Connect.cc that caused client sessions which
@@ -691,10 +697,10 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 <<<<<<< ChangeLog
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.51 2000/04/17 23:39:56 jimg Exp $
+$Id: ChangeLog,v 1.52 2000/06/07 00:31:28 jimg Exp $
 =======
-$Id: ChangeLog,v 1.51 2000/04/17 23:39:56 jimg Exp $
+$Id: ChangeLog,v 1.52 2000/06/07 00:31:28 jimg Exp $
 >>>>>>> 1.42.2.4
 =======
-$Id: ChangeLog,v 1.51 2000/04/17 23:39:56 jimg Exp $
+$Id: ChangeLog,v 1.52 2000/06/07 00:31:28 jimg Exp $
 >>>>>>> 1.42.2.7
