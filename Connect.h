@@ -18,13 +18,17 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.9  1995/06/27 19:33:49  jimg
-/* The mfuncs request_{das,dds,dods} accept a parameter which is appended to the
-/* URL and used by the data server CGI to select which filter program is run to
-/* handle a particular request. I changed the parameter name from cgi to ext to
-/* better represent what was going on (after getting confused several times
-/* myself).
+/* Revision 1.10  1996/02/01 21:45:33  jimg
+/* Added list of DDSs and constraint expressions that produced them.
+/* Added mfuncs to manage DDS/CE list.
 /*
+ * Revision 1.9  1995/06/27  19:33:49  jimg
+ * The mfuncs request_{das,dds,dods} accept a parameter which is appended to the
+ * URL and used by the data server CGI to select which filter program is run to
+ * handle a particular request. I changed the parameter name from cgi to ext to
+ * better represent what was going on (after getting confused several times
+ * myself).
+ *
  * Revision 1.8  1995/05/30  18:42:47  jimg
  * Modified the request_data member function so that it accepts the variable
  * in addition to the existing arguments.
@@ -75,16 +79,25 @@
 #endif
 
 #include <String.h>
+#include <SLList.h>
 
 #include "DAS.h"
 #include "DDS.h"
 
 class Connect {
 private:
+    struct constraint {
+	String _expression;
+	DDS _dds;
+    };
+
     bool _local;		// is this a local connection
+
     String _URL;		// URL to remote dataset; --> LOCAL is false
     DAS _das;			// dataset attribute structure --> !LOCAL
     DDS _dds;			// dataset descriptor structure --> ! LOCAL
+
+    SLList<constraint> _data;	// list of expressions & DDSs
 
     void parse_url(const char *name);
 
@@ -96,23 +109,35 @@ protected:
     String _anchor;
 
 public:
-    // child classes can use these ctors
-    Connect(const String &name, const String &api = ""); 
+    Connect(const String &name); 
     virtual ~Connect();		// base classes should have virtual dtors
 
     bool is_local();
+
     const String &URL();
-    const String &api_name();	// deprecated
     DAS &das();
     DDS &dds();
     
-    // get the DAS, DDS and data from the server/cgi comb using the URL
+    // get the DAS, DDS and data from the server/cgi comb using a URL
     bool request_das(const String &ext = "das");
     bool request_dds(const String &ext = "dds");
-    bool request_data(const String expr, bool async = false, 
-		      const String &ext = "dods");
-};
 
-typedef Connect * ConnectPtr;
+    DDS &request_data(const String expr, bool async = false, 
+		      const String &ext = "dods");
+
+    // For each data access there is an associated constraint expression
+    // (even if it is null) and a resulting DDS which describes the type(s)
+    // of the variables that result from evaluating the CE in the environment
+    // of the dataset referred to by a particular instance of Connect.
+    Pix first_constraint();
+    void next_constraint(Pix &p);
+    String constraint_expression(Pix p);
+    DDS &constraint_dds(Pix p);
+
+    // For every new data read initiated using this connect, there is a DDS
+    // and constraint expression. The data itself is stored in the dds in the
+    // constraint object.
+    DDS &append_constraint(String expr, DDS &dds);
+};
 
 #endif // _connect_h
