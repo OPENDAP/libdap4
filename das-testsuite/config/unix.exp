@@ -1,3 +1,4 @@
+
 # Tcl/Expect code for the DAS test.
 
 # Make sure the global var DASTEST is set correctly.
@@ -7,8 +8,7 @@ if ![info exists DASTEST] then {
     set DASTEST [transform das-test]
 }
 
-# The four `required' procs are _start, _load, _exit and _version. Since
-# das-test is non-interactive, these are quite simple.
+# The four `required' procs are _start, _load, _exit and _version.
 
 proc das-test_start { sw {ifile ""} {ofile ""}} {
     global verbose
