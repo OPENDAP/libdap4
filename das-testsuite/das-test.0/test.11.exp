@@ -2,6 +2,10 @@
 # jhrg
 #
 # $Log: test.11.exp,v $
+# Revision 1.5  1997/08/25 18:39:48  jimg
+# Removed errant double semicolon at the end of the Url attribute - replaced
+# it with a single semicolon.
+#
 # Revision 1.4  1997/05/13 23:29:11  jimg
 # *** empty log message ***
 #
@@ -33,7 +37,7 @@ set test_out "Attributes {
         Byte b 1, -1, 127, -127;
         Int32 int_vec 1, 2, 2147483647;
         Float64 float_vec 1.0, -1.0, +1.0, 0.2, -0.2, +0.2, .3, -.3, +.3, -3.1415, -3.1415e-99, -3.1415e+99, +3.1415e-99, -3., +2., 4.;
-        Url where http://bozo.place.com/home.html;;
+        Url where http://bozo.place.com/home.html;
     }
 }"
 
