@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.29  1998/02/19 19:45:00  jimg
+// Changed error messages so that ones from geturl that are not obviously from
+// geturl are prefixed by `geturl: '.
+//
 // Revision 1.28  1998/02/11 22:34:23  jimg
 // Added support for on-the-fly decompression.
 // Added -z flag to suppress requesting data be compressed.
@@ -117,7 +121,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.28 1998/02/11 22:34:23 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.29 1998/02/19 19:45:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -127,7 +131,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.28 1998/02/11 22:34:23 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.28 $";
+const char *VERSION = "$Revision: 1.29 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -181,7 +185,7 @@ read_data(FILE *fp)
     char c;
     
     if (!fp) {
-	cerr <<"Whoa!!! Null stream pointer." << endl;
+	cerr << "geturl: Whoa!!! Null stream pointer." << endl;
 	return false;
     }
 
@@ -368,7 +372,7 @@ main(int argc, char * argv[])
 	    for (int j = 0; j < times; ++j) {
 		DDS *dds = url.request_data(expr, gui, async);
 		if (!dds) {
-		    cerr << "Error reading data" << endl;
+		    cerr << "geturl: Error reading data" << endl;
 		    continue;
 		}
 		process_data(url, dds, verbose, async);
