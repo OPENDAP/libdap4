@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt16.cc,v $
+// Revision 1.2  1996/10/01 16:29:16  jimg
+// Changed instances of XDT_INT16 to XDR_UINT16.
+//
 // Revision 1.1  1996/08/26 20:17:49  jimg
 // Added.
 //
@@ -20,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt16.cc,v 1.1 1996/08/26 20:17:49 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt16.cc,v 1.2 1996/10/01 16:29:16 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -40,7 +43,8 @@ static char rcsid[] __unused__ = {"$Id: UInt16.cc,v 1.1 1996/08/26 20:17:49 jimg
 #include "trace_new.h"
 #endif
 
-UInt16::UInt16(const String &n) : BaseType(n, dods_uint16_c, (xdrproc_t)XDR_INT16)
+UInt16::UInt16(const String &n) 
+    : BaseType(n, dods_uint16_c, (xdrproc_t)XDR_UINT16)
 {
 }
 
@@ -62,7 +66,7 @@ UInt16::serialize(const String &dataset, DDS &dds, XDR *sink,
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (!XDR_INT16(sink, &_buf))
+    if (!XDR_UInt16(sink, &_buf))
 	return false;
 
     return true;
@@ -71,7 +75,7 @@ UInt16::serialize(const String &dataset, DDS &dds, XDR *sink,
 bool
 UInt16::deserialize(XDR *source, bool)
 {
-    unsigned int num = XDR_INT16(source, &_buf);
+    unsigned int num = XDR_UINT16(source, &_buf);
 
     return (num > 0);		/* make the return value a boolean */
 }
