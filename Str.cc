@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.18  1995/12/09 01:06:57  jimg
+// Revision 1.19  1996/03/05 17:43:08  jimg
+// Added ce_eval to serailize member function.
+// Added relational operators (the ops member function and string_ops function).
+//
+// Revision 1.18  1995/12/09  01:06:57  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -72,19 +76,19 @@
 //
 // Revision 1.10  1995/03/04  14:34:50  jimg
 // Major modifications to the transmission and representation of values:
-// 	Added card() virtual function which is true for classes that
-// 	contain cardinal types (byte, int float, string).
-// 	Changed the representation of Str from the C rep to a C++
-// 	class represenation.
-// 	Chnaged read_val and store_val so that they take and return
-// 	types that are stored by the object (e.g., inthe case of Str
-// 	an URL, read_val returns a C++ String object).
-// 	Modified Array representations so that arrays of card()
-// 	objects are just that - no more storing strings, ... as
-// 	C would store them.
-// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-// 	an array of a structure is represented as an array of Structure
-// 	objects).
+// Added card() virtual function which is true for classes that
+// contain cardinal types (byte, int float, string).
+// Changed the representation of Str from the C rep to a C++
+// class represenation.
+// Chnaged read_val and store_val so that they take and return
+// types that are stored by the object (e.g., inthe case of Str
+// an URL, read_val returns a C++ String object).
+// Modified Array representations so that arrays of card()
+// objects are just that - no more storing strings, ... as
+// C would store them.
+// Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// an array of a structure is represented as an array of Structure
+// objects).
 //
 // Revision 1.9  1995/02/10  02:22:49  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
@@ -150,10 +154,13 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "Str.h"
 #include "DDS.h"
 #include "util.h"
+#include "parser.h"
+#include "expr.tab.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -183,23 +190,21 @@ Str::width()
 // allocation and that library will always use malloc/free.
 
 bool
-Str::serialize(const String &dataset, DDS &dds, bool flush)
+Str::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
-    bool stat = true;
+    if (!read_p() && !read(dataset))
+	return false;
 
-    if (!read_p())		// only read if not read already
-	stat = read(dataset);
+    if (ce_eval && !dds.eval_selection(dataset))
+	return true;
 
-    if (stat && !dds.eval_constraint())	// if the constraint is false, return
-	return stat;
+    if (!xdr_str(xdrout(), _buf))
+	return false;
 
-    if (stat)
-	stat = (bool)xdr_str(xdrout(), _buf);
+    if (flush)
+	return expunge();
 
-    if (stat && flush)
-	stat = expunge();
-
-    return stat;
+    return true;
 }
 
 // deserialize the String on stdin and put the result in BUF.
@@ -262,3 +267,79 @@ Str::print_val(ostream &os, String space, bool print_decl_p)
 	os << _buf;
 }
 
+static bool
+string_ops(String &i1, String &i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP: {
+	  Regex r = (const char *)i2;
+	  return i1.matches(r);
+      }
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+Str::ops(BaseType &b, int op)
+{
+    String a1, a2;
+
+    if (!read_p()) {
+	cerr << "This value not yet read!" << endl;
+	return false;
+    }
+    else {
+	String *a1p = &a1;
+	buf2val((void **)&a1p);
+    }
+
+    if (!b.read_p()) {
+	cerr << "Arg value not yet read!" << endl;
+	return false;
+    }
+    else switch (b.type()) {
+      case byte_t:
+      case int32_t: {
+	  int32 i;
+	  int32 *ip = &i;
+	  b.buf2val((void **)&ip);
+	  char *int_str;
+	  sprintf(int_str, "%d", i);
+	  a2 = int_str;
+	  break;
+      }
+      case float64_t: {
+	  double d;
+	  double *dp = &d;
+	  b.buf2val((void **)&dp);
+	  char *flt_str;
+	  sprintf(flt_str, "%lf", d);
+	  a2 = flt_str;
+	  break;
+      }
+      case str_t: {
+	  String *sp = &a2;
+	  b.buf2val((void **)&sp);
+	  break;
+      }
+      default:
+	return false;
+	break;
+    }
+
+    return string_ops(a1, a2, op);
+}
