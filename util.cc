@@ -11,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.35  1997/02/19 02:09:47  jimg
+// Added childpid parameter.
+//
 // Revision 1.34  1997/02/10 02:38:42  jimg
 // Added assert() calls for pointers.
 // Added code to fix warnings about comparisons between int and unsigned
@@ -183,7 +186,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.34 1997/02/10 02:38:42 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.35 1997/02/19 02:09:47 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -208,8 +211,6 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.34 1997/02/10 02:38:42 jimg 
 #include "parser.h"
 #include "expr.tab.h"
 #include "util.h"
-
-#include "debug.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -396,7 +397,7 @@ dods_root()
 }
 
 FILE *
-compressor(FILE *output)
+compressor(FILE *output, int &childpid)
 {
     int pid, data[2];
 
@@ -418,11 +419,8 @@ compressor(FILE *output)
     if (pid > 0) {
 	close(data[0]);
 	FILE *input = fdopen(data[1], "w");
-	if (!input) {
-	    cerr << "Parent process could not open channel for compression"
-		 << endl;
-	    return NULL;
-	}
+	setbuf(input, 0);
+	childpid = pid;
 	return input;
     }
     else {
@@ -430,7 +428,7 @@ compressor(FILE *output)
 	dup2(data[0], 0);	// Read from the pipe...
 	dup2(fileno(output), 1); // Write to the FILE *output.
 
-	DBG2(cerr << "Opening compression stream." << endl);
+	DBG(cerr << "Opening compression stream." << endl);
 
 	// First try to run gzip using DODS_ROOT (the value read from the
 	// DODS_ROOT environment variable takes precedence over the value set
@@ -447,7 +445,7 @@ compressor(FILE *output)
 }
 
 FILE *
-decompressor(FILE *input)
+decompressor(FILE *input, int &childpid)
 {
     int pid, data[2];
 
@@ -467,23 +465,19 @@ decompressor(FILE *input)
     // access the read end of the Pipe.
 
     if (pid > 0) {
+	DBG(cerr << "Decompressor parent." << endl);
+
 	close(data[1]);
 	FILE *output = fdopen(data[0], "r");
-	if (!output) {
-	    cerr << "Parent process could not open channel for decompression"
-		 << endl;
-	    return NULL;
-	}
+	childpid = pid;
 	return output;
     }
     else {
-	DBG2(cerr << "Sleep returned: " << sleep(20) << endl);
-
 	close(data[0]);
 	dup2(fileno(input), 0);	// Read from FILE *input 
 	dup2(data[1], 1);	// Write to the pipe
 
-	DBG(cerr << "Opening decompression stream." << endl);
+	DBG(cerr << "Decompressor child." << endl);
 
 	// First try to run gzip using DODS_ROOT (the value read from the
 	// DODS_ROOT environment variable takes precedence over the value set
