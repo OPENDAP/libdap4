@@ -4,7 +4,10 @@
 // jhrg 1/12/95
 
 // $Log: TestInt32.cc,v $
-// Revision 1.4  1995/03/04 14:38:06  jimg
+// Revision 1.5  1995/05/10 17:35:30  jimg
+// Removed the header file `Test.h' from the Test*.cc implementation files.
+//
+// Revision 1.4  1995/03/04  14:38:06  jimg
 // Modified these so that they fit with the changes in the DAP classes.
 //
 // Revision 1.3  1995/02/10  02:33:44  jimg
@@ -33,9 +36,11 @@
 #endif
 
 #include "TestInt32.h"
+#ifdef NEVER
 #include "Test.h"
 
 String testint32 = "TestInt32";
+#endif
 
 Int32 *
 NewInt32(const String &n)

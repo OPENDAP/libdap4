@@ -4,7 +4,10 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
-// Revision 1.4  1995/03/04 14:38:11  jimg
+// Revision 1.5  1995/05/10 17:35:35  jimg
+// Removed the header file `Test.h' from the Test*.cc implementation files.
+//
+// Revision 1.4  1995/03/04  14:38:11  jimg
 // Modified these so that they fit with the changes in the DAP classes.
 //
 // Revision 1.3  1995/02/10  02:33:49  jimg
@@ -35,9 +38,11 @@
 #include <String.h>
 
 #include "TestUrl.h"
+#ifdef NEVER
 #include "Test.h"
 
 String testurl = "TestUrl";
+#endif
 
 Url *
 NewUrl(const String &n)

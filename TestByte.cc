@@ -9,7 +9,10 @@
 // jhrg 1/12/95
 
 // $Log: TestByte.cc,v $
-// Revision 1.5  1995/03/16 17:42:43  jimg
+// Revision 1.6  1995/05/10 17:35:25  jimg
+// Removed the header file `Test.h' from the Test*.cc implementation files.
+//
+// Revision 1.5  1995/03/16  17:42:43  jimg
 // Minor fixes.
 //
 // Revision 1.4  1995/03/04  14:38:01  jimg
@@ -41,9 +44,11 @@
 #endif
 
 #include "TestByte.h"
+#ifdef NEVER
 #include "Test.h"
 
 String testbyte = "TestByte";
+#endif
 
 // The NewByte `helper function' creates a pointer to the a TestByte and
 // returns that pointer. It takes the same arguments as the class's ctor. If

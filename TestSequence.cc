@@ -4,7 +4,10 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
-// Revision 1.4  1995/03/04 14:38:08  jimg
+// Revision 1.5  1995/05/10 17:35:31  jimg
+// Removed the header file `Test.h' from the Test*.cc implementation files.
+//
+// Revision 1.4  1995/03/04  14:38:08  jimg
 // Modified these so that they fit with the changes in the DAP classes.
 //
 // Revision 1.3  1995/02/10  02:33:46  jimg
@@ -33,9 +36,11 @@
 #endif
 
 #include "TestSequence.h"
+#ifdef NEVER
 #include "Test.h"
 
 String testsequence = "TestSequence";
+#endif
 
 Sequence *
 NewSequence(const String &n)

@@ -4,7 +4,10 @@
 // jhrg 1/12/95
 
 // $Log: TestFloat64.cc,v $
-// Revision 1.4  1995/03/04 14:38:02  jimg
+// Revision 1.5  1995/05/10 17:35:26  jimg
+// Removed the header file `Test.h' from the Test*.cc implementation files.
+//
+// Revision 1.4  1995/03/04  14:38:02  jimg
 // Modified these so that they fit with the changes in the DAP classes.
 //
 // Revision 1.3  1995/02/10  02:33:40  jimg
@@ -33,9 +36,11 @@
 #endif
 
 #include "TestFloat64.h"
+#ifdef NEVER
 #include "Test.h"
 
 String testfloat64 = "TestFloat64";
+#endif
 
 Float64 *
 NewFloat64(const String &n)
