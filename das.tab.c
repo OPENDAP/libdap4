@@ -100,7 +100,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.52 2005/02/08 21:31:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.53 2005/03/02 21:23:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1823,8 +1823,8 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.52  2005/02/08 21:31:57  jimg
- * Merged with release-3-4-10.
+ * Revision 1.53  2005/03/02 21:23:43  jimg
+ * RemovedConnections.cc/h; now in nc3-dods.
  *
  * Revision 1.50  2004/02/19 19:42:52  jimg
  * Merged with release-3-4-2FCS and resolved conflicts.

@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.56 2005/02/14 22:19:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.57 2005/03/02 21:23:43 jimg Exp $"};
 
 #include <stdlib.h>
 
@@ -216,7 +216,7 @@ Str::print_val(ostream &os, string space, bool print_decl_p)
 	os << " = \"" << escattr(_buf) << "\";" << endl;
     }
     else 
-      os << '"' << escattr(_buf) << '"';
+        os << '"' << escattr(_buf) << '"';
 }
 
 void 
@@ -266,6 +266,9 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.57  2005/03/02 21:23:43  jimg
+// RemovedConnections.cc/h; now in nc3-dods.
+//
 // Revision 1.56  2005/02/14 22:19:57  jimg
 // Fixed handling of strings. No longer frees storage quite a capriciously.
 //
