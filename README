@@ -1,11 +1,11 @@
-$Id: README,v 1.1 1994/10/25 15:21:32 jimg Exp $
+$Id: README,v 1.2 1994/12/07 21:12:03 jimg Exp $
 
-This directory contains th URI/GSO implementation of the DODS application
-programmer interface. The DODS API is split into two libraries: libdas++.a
-and libdds++.a. libdas++.a is a C++ library that contains classes which
-provide access to the dataset attribute structure as described in the DODS
-API design paper. libdds++.a provides access to the dataset description
-structure and the data in a DODS-accessible dataset.
+This directory contains th URI/GSO implementation of the DODS Data Access
+Protocol. The DODS DAP is split into two libraries: libdas++.a and
+libdds++.a. libdas++.a is a C++ library that contains classes which provide
+access to the dataset attribute structure as described in the DODS API design
+paper. libdds++.a provides access to the dataset description structure and
+the data in a DODS-accessible dataset.
 
 Test programs for the API are also in this directory
 
@@ -13,8 +13,9 @@ In addition, the C++ classes defined here use some features of the container
 classes defined in the directories Map and Stack. 
 
 It is possible to build the API so that various levels of debugging support
-are built in. These options must be chosen at compile time and affect the
-Makefile. To set them, you use the `--enable' option with `configure'.
+are built in. These options must be chosen at configuration time and are set
+using the `--enable' option with `configure'. Choosing them affects the
+Makefile.
 
 To build with program instrumentation use `--enable-debug=<level>' where
 <level> is 1 or 2. To build with memory leak checks use --enable-dbnew.
