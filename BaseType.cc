@@ -477,7 +477,7 @@ BaseType::var(const string &, bool, btp_stack*)
     @deprecated
     @brief Returns a pointer to a member of a constructor class.
     @param name Find the variable whose name is <i>name</i>.
-    @param s Record the path to </i>name</i>.
+    @param s Record the path to <i>name</i>.
     @return A pointer to the named variable. */
 BaseType *
 BaseType::var(const string &, btp_stack &)
@@ -718,6 +718,9 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.47  2002/06/27 16:26:48  tom
+// typo
+//
 // Revision 1.46  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
