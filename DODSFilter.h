@@ -8,6 +8,10 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.6  1999/02/22 22:58:02  jimg
+// Added the get_accept_types() accessor. Also added to the ctor so that the -t
+// option will be parsed properly and used to set the value of accept_types.
+//
 // Revision 1.5  1999/01/21 20:42:01  tom
 // Fixed comment formatting problems for doc++
 //
@@ -68,6 +72,7 @@ private:
     String anc_dir;		// Look here for ancillary files
     String anc_file;		// Use this for ancillary file name
     String cache_dir;		// Use this for cache files
+    String accept_types;	// List of types the client understands.
 
     DODSFilter() {}		// Private default ctor.
 
@@ -100,6 +105,14 @@ public:
       \item[#-f# {\it ancfile}]
       Specifies that ancillary data may be found in a file called {\it
       ancfile}.
+      \item[#-t# {\it list of types}]
+      Specifies a list of types accepted by the client. This information is
+      passed to a server by a client using the XDODS-Accept-Types header. The
+      comma separated list contains each type the client can understand
+      \emph{or}, each type the client does \emph{not} understand. In the
+      latter case the type names are prefixed by a {\tt !}. If the list
+      contains only the keyword `All', then the client is declaring that it
+      can understand all DODS types.
       \end{description}
 
       @memo DODSFilter constructor.
@@ -167,6 +180,17 @@ public:
       @memo Get the cache directory.
       @return A String object that contains the cache file directory.  */
     virtual String get_cache_dir();
+
+    /** Get the list of accepted datatypes sent by the client. If no list was
+	sent, return the string `All'. 
+
+	NB: The funny spelling `accept types' instead of `accepted types'
+	mirrors the name of the HTTP request header field name which in turn
+	mirrors the common practice of using `accept' over `accepted'.
+
+	@see DODSFilter
+	@return A string containing a list of the accepted types. */
+    String get_accept_types();
 
   /** Read the ancillary DAS information and merge it into the input
       DAS object.
