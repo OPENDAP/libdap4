@@ -106,7 +106,8 @@ protected:
     string d_cache_dir;		// Use this for cache files
     string d_url;		// URL minus CE.
 
-    Response d_response;	// Name of the response to generate
+    Response d_response;	// enum name of the response to generate
+    string d_action;		// string name of the response to generate
 
     int d_timeout;		// Server timeout after N seconds
 
@@ -142,6 +143,7 @@ public:
     virtual string get_dataset_version();
 
     virtual Response get_response();
+    virtual string get_action();
     virtual void set_response(const string &r) throw(Error);
 
     virtual time_t get_dataset_last_modified_time();
@@ -200,6 +202,9 @@ public:
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.32  2004/06/28 17:01:22  pwest
+// saving string representation of response type
+//
 // Revision 1.31  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.46 2004/02/19 19:42:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.47 2004/06/28 17:01:22 pwest Exp $"};
 
 #include <signal.h>
 
@@ -393,23 +393,44 @@ DODSFilter::get_dataset_version()
 void DODSFilter::set_response(const string &r) throw(Error)
 {
     if (r == "DAS" || r == "das")
+    {
 	d_response = DAS_Response;
+	d_action = "das" ;
+    }
     else if (r == "DDS" || r == "dds")
+    {
 	d_response = DDS_Response;
+	d_action = "dds" ;
+    }
     else if (r == "DataDDS" || r == "dods")
+    {
 	d_response = DataDDS_Response;
+	d_action = "dods" ;
+    }
     else if (r == "DDX" || r == "ddx")
+    {
 	d_response = DDX_Response;
+	d_action = "ddx" ;
+    }
     else if (r == "Version")
+    {
 	d_response = Version_Response;
+	d_action = "version" ;
+    }
     else
 	print_usage(); 		// Throws Error
 }
 
-/** Get the name of the response to be returned. */
+/** Get the enum name of the response to be returned. */
 DODSFilter::Response DODSFilter::get_response()
 {
     return d_response;
+}
+
+/** Get the string name of the response to be returned. */
+string DODSFilter::get_action()
+{
+    return d_action;
 }
 
 /** Get the dataset's last modified time. This returns the time at which
@@ -968,6 +989,9 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.47  2004/06/28 17:01:22  pwest
+// saving string representation of response type
+//
 // Revision 1.46  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
