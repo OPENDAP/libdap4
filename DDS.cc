@@ -9,6 +9,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.28  1996/12/03 00:20:18  jimg
+// Added ostream and bool parameters to parse_constraint(). If the bool param is
+// true the the code assumes it is being run in the server. In that case error
+// objects are not evaluated but instead are serialized and set to the client
+// via the ostream.
+//
 // Revision 1.27  1996/12/02 23:15:43  jimg
 // Added `filename' field and access functions.
 //
@@ -147,7 +153,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.27 1996/12/02 23:15:43 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.28 1996/12/03 00:20:18 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -162,11 +168,13 @@ static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.27 1996/12/02 23:15:43 jimg E
 
 #include "expr.h"
 #include "Clause.h"
+#include "Connect.h"
 #include "DDS.h"
 #include "Error.h"
 #include "parser.h"
 #include "debug.h"
 #include "util.h"
+#include "cgi_util.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -702,7 +710,8 @@ DDS::check_semantics(bool all)
 // false otherwise.
 
 bool
-DDS::parse_constraint(const String &constraint)
+DDS::parse_constraint(const String &constraint, ostream &os, 
+		      bool server = true)
 {
     FILE *in = text_to_temp(constraint);
 
@@ -720,11 +729,14 @@ DDS::parse_constraint(const String &constraint)
     //  STATUS is the result of the parser function; if a recoverable error
     //  was found it will be true but arg.status() will be false.
     if (!status || !arg.status()) {// Check parse result
-	if (arg.error())
-	    arg.error()->display_message();
-#if 0
-	cerr << "Error parsing constraint expression!" << endl;
-#endif
+	if (arg.error()) {
+	    if (server) {
+		set_mime_text(dods_error);
+		arg.error()->print(os);
+	    }
+	    else
+		arg.error()->display_message();
+	}
 	return false;
     }
     else
@@ -747,7 +759,7 @@ DDS::send(const String &dataset, const String &constraint, FILE *out)
     XDR *sink = new_xdrstdio(out, XDR_ENCODE);
     ostdiostream os(out);	// set up output stream
 
-    if ((status = parse_constraint(constraint))) {
+    if ((status = parse_constraint(constraint, os))) {
 	// Handle *functional* constraint expressions specially 
 	if (functional_expression()) {
 	    BaseType *var = eval_function(dataset);
