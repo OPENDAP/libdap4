@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.48  1997/02/13 05:49:53  reza
+// Fixed concatenation of _proj and _sel members into request_das and
+// request_dds URLs.
+//
 // Revision 1.47  1997/02/12 21:42:29  jimg
 // Fixed handling of non fatal errors reported by the www library. Now an
 // optional parameter to the class ctor enables display of these informational
@@ -274,7 +278,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.47 1997/02/12 21:42:29 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.48 1997/02/13 05:49:53 reza Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1245,7 +1249,7 @@ Connect::request_das(bool gui_p = false, const String &ext = "das")
     (void)gui()->show_gui(gui_p);
 
     String das_url = _URL + "." + ext;
-    if (_proj[0] || _sel[0])
+    if (_proj.length() + _sel.length())
 	das_url = das_url + "?" + _proj + _sel;
     bool status = false;
     String value;
@@ -1290,7 +1294,7 @@ Connect::request_dds(bool gui_p = false, const String &ext = "dds")
     (void)gui()->show_gui(gui_p);
 
     String dds_url = _URL + "." + ext;
-    if (_proj[0] || _sel[0])
+    if (_proj.length() + _sel.length())
 	dds_url = dds_url + "?" + _proj + _sel;
     bool status = false;
 
