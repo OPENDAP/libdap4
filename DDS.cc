@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.70 2004/03/10 16:29:18 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.71 2004/06/28 16:59:43 pwest Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -1587,8 +1587,11 @@ DDS::mark_all(bool state)
     for (Vars_iter i = vars.begin(); i != vars.end(); i++)
 	(*i)->set_send_p(state);
 }
-    
+
 // $Log: DDS.cc,v $
+// Revision 1.71  2004/06/28 16:59:43  pwest
+// Inherit DDS and DAS from DODSResponseObject
+//
 // Revision 1.70  2004/03/10 16:29:18  jimg
 // Repairs to the methods which provide access using iterators. These
 // were using '*_iter &' type params and that made newer versions of g++

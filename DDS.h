@@ -162,7 +162,7 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
     @see BaseType
     @see DAS */
 
-class DDS {
+class DDS : public DODSResponseObject {
 private:
     // This struct is used to hold all the known `user defined' functions
     // (including those that are `built-in'). 
@@ -334,6 +334,9 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.56  2004/06/28 16:59:43  pwest
+// Inherit DDS and DAS from DODSResponseObject
+//
 // Revision 1.55  2004/03/01 22:32:10  jimg
 // Bring the trunk up to date with the code in my working directory...
 //

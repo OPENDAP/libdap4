@@ -53,6 +53,7 @@
 #ifndef _attrtable_h
 #include "AttrTable.h"
 #endif
+#include "DODSResponseObject.h"
 
 using std::cout;
 using std::ostream;
@@ -125,7 +126,7 @@ using std::ostream;
 
     @see DDS 
     @see AttrTable */
-class DAS : public AttrTable {
+class DAS : public AttrTable, public DODSResponseObject {
 private:
 protected:
     AttrTable *das_find(string name);
@@ -173,6 +174,9 @@ public:
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.38  2004/06/28 16:59:43  pwest
+ * Inherit DDS and DAS from DODSResponseObject
+ *
  * Revision 1.37  2003/12/08 18:02:29  edavis
  * Merge release-3-4 into trunk
  *
