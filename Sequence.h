@@ -19,11 +19,14 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.35  1998/03/17 17:40:08  jimg
+ * Added an implementation of element_count().
+ *
  * Revision 1.34  1998/02/19 19:41:49  jimg
  * Changed name of ...end_of_sequence to ...start_of_sequence since that is
  * now how it is used. I hope this will reduce confusion.
- * Changed the name of read_end_marker to read_marker (since they are not always
- * end markers anymore).
+ * Changed the name of read_end_marker to read_marker (since they are not
+ * always end markers anymore).
  *
  * Revision 1.33  1998/02/05 20:13:56  jimg
  * DODS now compiles with gcc 2.8.x
@@ -339,6 +342,8 @@ public:
     const Sequence &operator=(const Sequence &rhs);
     virtual BaseType *ptr_duplicate() = 0;
 
+    virtual int element_count(bool leaves = false);
+
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
 
@@ -455,8 +460,8 @@ public:
       @param print_del_p If TRUE, prints the declaration of the
       Sequence as well as its data.
       */
-    void print_all_vals(ostream& os, XDR *src, DDS *dds, String space = "",
-			bool print_decl_p = true);
+    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds, 
+				String space = "", bool print_decl_p = true);
 
     virtual bool check_semantics(String &msg, bool all = false);
 };

@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.44  1998/03/17 17:39:24  jimg
+// Added an implementation of element_count().
+//
 // Revision 1.43  1998/02/19 19:41:27  jimg
 // Changed name of ...end_of_sequence to ...start_of_sequence since that is
 // now how it is used. I hope this will reduce confusion.
@@ -326,6 +329,19 @@ Sequence::operator=(const Sequence &rhs)
     return *this;
 }
 
+int
+Sequence::element_count(bool leaves)
+{
+    if (!leaves)
+	return _vars.length();
+    else {
+	int i = 0;
+	for (Pix p = first_var(); p; next_var(p))
+	    i += var(p)->element_count(leaves);
+	return i;
+    }
+}
+
 void
 Sequence::set_send_p(bool state)
 {
@@ -478,8 +494,6 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
     return !error;		// Return true if no error.
 }
 
-// private mfunc. Use this to read from older servers.
-
 bool
 Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
 {
@@ -516,6 +530,8 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
 
     return stat;
 }
+
+// private mfunc. Use this to read from older servers.
 
 bool
 Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse = false)
