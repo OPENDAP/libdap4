@@ -24,7 +24,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.11 2000/08/02 22:46:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.12 2000/09/11 16:40:17 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -29,7 +29,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.13 2000/08/02 22:46:50 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.14 2000/09/11 16:40:17 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,6 +37,7 @@ static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.13 2000/08/02 22:46:50 jimg
 #include <assert.h>
 
 #include <string>
+#include <strstream>
 #include <SLList.h>
 
 #include "debug.h"
@@ -100,12 +101,18 @@ int_list *make_array_index(value &i1, value &i2);
 int_list *make_array_index(value &i1);
 int_list_list *make_array_indices(int_list *index);
 int_list_list *append_array_index(int_list_list *indices, int_list *index);
+
 void delete_array_indices(int_list_list *indices);
+bool bracket_projection(DDS &table, const char *name, 
+			int_list_list *indices);
+
 bool process_array_indices(BaseType *variable, int_list_list *indices); 
 bool process_grid_indices(BaseType *variable, int_list_list *indices); 
+bool process_sequence_indices(BaseType *variable, int_list_list *indices);
 
 bool is_array_t(BaseType *variable);
 bool is_grid_t(BaseType *variable);
+bool is_sequence_t(BaseType *variable);
 
 rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
@@ -120,7 +127,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 proj_func get_proj_function(const DDS &table, const char *name);
 
 
-#line 283 "expr.y"
+#line 290 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -212,11 +219,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   325,   331,   333,   334,   337,   343,   344,   350,   360,   369,
-   373,   379,   399,   400,   406,   415,   426,   432,   445,   446,
-   447,   459,   465,   477,   484,   493,   497,   503,   512,   523,
-   528,   533,   540,   576,   607,   611,   617,   621,   625,   631,
-   632,   633,   634,   635,   636,   637
+   332,   338,   340,   341,   344,   350,   351,   357,   367,   376,
+   380,   386,   406,   407,   413,   422,   433,   439,   452,   453,
+   454,   466,   472,   484,   491,   500,   504,   510,   519,   530,
+   535,   540,   547,   554,   563,   567,   573,   577,   581,   587,
+   588,   589,   590,   591,   592,   593
 };
 #endif
 
@@ -849,36 +856,36 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 326 "expr.y"
+#line 333 "expr.y"
 {
 		     (*DDS_OBJ(arg)).mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 333 "expr.y"
+#line 340 "expr.y"
 { (*DDS_OBJ(arg)).mark_all(true); ;
     break;}
 case 4:
-#line 334 "expr.y"
+#line 341 "expr.y"
 { 
 		     yyval.boolean = yyvsp[0].boolean;
 		 ;
     break;}
 case 5:
-#line 338 "expr.y"
+#line 345 "expr.y"
 {
 		     yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		 ;
     break;}
 case 7:
-#line 345 "expr.y"
+#line 352 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 8:
-#line 351 "expr.y"
+#line 358 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var) {
@@ -890,7 +897,7 @@ case 8:
 		;
     break;}
 case 9:
-#line 361 "expr.y"
+#line 368 "expr.y"
 { 
 		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (var)
@@ -901,19 +908,19 @@ case 9:
 		;
     break;}
 case 10:
-#line 370 "expr.y"
+#line 377 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 11:
-#line 374 "expr.y"
+#line 381 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 12:
-#line 380 "expr.y"
+#line 387 "expr.y"
 {
 		    proj_func p_f = 0;
 		    btp_func f = 0;
@@ -933,13 +940,13 @@ case 12:
 		;
     break;}
 case 14:
-#line 401 "expr.y"
+#line 408 "expr.y"
 {
 		    yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		;
     break;}
 case 15:
-#line 407 "expr.y"
+#line 414 "expr.y"
 {
 		    if (yyvsp[-4].rval_ptr) {
 			(*DDS_OBJ(arg)).append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -950,7 +957,7 @@ case 15:
 		;
     break;}
 case 16:
-#line 416 "expr.y"
+#line 423 "expr.y"
 {
 		    if (yyvsp[-2].rval_ptr) {
 			rvalue_list *rv = new rvalue_list;
@@ -963,13 +970,13 @@ case 16:
 		;
     break;}
 case 17:
-#line 427 "expr.y"
+#line 434 "expr.y"
 {
 		    yyval.boolean = yyvsp[0].boolean;
 		;
     break;}
 case 18:
-#line 433 "expr.y"
+#line 440 "expr.y"
 {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		   if (!b_func) {
@@ -982,7 +989,7 @@ case 18:
 	       ;
     break;}
 case 21:
-#line 448 "expr.y"
+#line 455 "expr.y"
 {
 		    yyval.rval_ptr = dereference_variable(yyvsp[0].rval_ptr, *DDS_OBJ(arg));
 		    if (!yyval.rval_ptr) {
@@ -996,7 +1003,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 460 "expr.y"
+#line 467 "expr.y"
 {
 		    yyval.rval_ptr = dereference_url(yyvsp[0].val);
 		    if (!yyval.rval_ptr)
@@ -1004,7 +1011,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 466 "expr.y"
+#line 473 "expr.y"
 {
 		    btp_func func = get_btp_function((*DDS_OBJ(arg)), yyvsp[-3].id);
 		    if (func) {
@@ -1016,7 +1023,7 @@ case 23:
 		;
     break;}
 case 24:
-#line 478 "expr.y"
+#line 485 "expr.y"
 {
 		    if (yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = make_rvalue_list(yyvsp[0].rval_ptr);
@@ -1025,7 +1032,7 @@ case 24:
 		;
     break;}
 case 25:
-#line 485 "expr.y"
+#line 492 "expr.y"
 {
 		    if (yyvsp[-2].r_val_l_ptr && yyvsp[0].rval_ptr)
 			yyval.r_val_l_ptr = append_rvalue_list(yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
@@ -1034,19 +1041,19 @@ case 25:
 		;
     break;}
 case 26:
-#line 494 "expr.y"
+#line 501 "expr.y"
 {  
 		  yyval.r_val_l_ptr = yyvsp[0].r_val_l_ptr;
 	      ;
     break;}
 case 27:
-#line 498 "expr.y"
+#line 505 "expr.y"
 { 
 		  yyval.r_val_l_ptr = 0; 
 	      ;
     break;}
 case 28:
-#line 504 "expr.y"
+#line 511 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1057,7 +1064,7 @@ case 28:
 		;
     break;}
 case 29:
-#line 513 "expr.y"
+#line 520 "expr.y"
 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var(yyvsp[0].id);
 		    if (!btp) {
@@ -1068,121 +1075,70 @@ case 29:
 		;
     break;}
 case 30:
-#line 524 "expr.y"
+#line 531 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 31:
-#line 529 "expr.y"
+#line 536 "expr.y"
 {
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val);
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 32:
-#line 534 "expr.y"
+#line 541 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 33:
-#line 541 "expr.y"
+#line 548 "expr.y"
 {
-		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
-		    if (var && is_array_t(var)) {
-			/* calls to set_send_p should be replaced with
-			   calls to DDS::mark so that arrays of Structures,
-			   etc. will be processed correctly when individual
-			   elements are projected using short names (Whew!)
-			   9/1/98 jhrg */
-			/* var->set_send_p(true); */
-			(*DDS_OBJ(arg)).mark(yyvsp[-1].id, true);
-			yyval.boolean = process_array_indices(var, yyvsp[0].int_ll_ptr);
-			if (!yyval.boolean) {
-			    string msg = "The indices given for `";
-			    msg += (string)yyvsp[-1].id + (string)"' are out of range.";
-			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			    STATUS(arg) = false;
-			}
-			delete_array_indices(yyvsp[0].int_ll_ptr);
-		    }
-		    else if (var && is_grid_t(var)) {
-			(*DDS_OBJ(arg)).mark(yyvsp[-1].id, true);
-			/* var->set_send_p(true); */
-			yyval.boolean = process_grid_indices(var, yyvsp[0].int_ll_ptr);
-			if (!yyval.boolean) {
-			    string msg = "The indices given for `";
-			    msg += (string)yyvsp[-1].id + (string)"' are out of range.";
-			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			    STATUS(arg) = false;
-			}
-			delete_array_indices(yyvsp[0].int_ll_ptr);
-		    }
-		    else {
-			yyval.boolean = no_such_ident(arg, yyvsp[-1].id, "array or grid");
-		    }
+		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
+		    yyval.boolean = no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
+		  else
+		    yyval.boolean = true;
 		;
     break;}
 case 34:
-#line 577 "expr.y"
+#line 555 "expr.y"
 {
-		    BaseType *var = (*DDS_OBJ(arg)).var(yyvsp[-1].id);
-		    if (var && is_array_t(var)) {
-			yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[-1].id, true) 
-			    && process_array_indices(var, yyvsp[0].int_ll_ptr);
-			if (!yyval.boolean) {
-			    string msg = "The indices given for `";
-			    msg += (string)yyvsp[-1].id + (string)"' are out of range.";
-			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			    STATUS(arg) = false;
-			}
-			delete_array_indices(yyvsp[0].int_ll_ptr);
-		    }
-		    else if (var && is_grid_t(var)) {
-			yyval.boolean = (*DDS_OBJ(arg)).mark(yyvsp[-1].id, true)
-			    && process_grid_indices(var, yyvsp[0].int_ll_ptr);
-			if (!yyval.boolean) {
-			    string msg = "The indices given for `";
-			    msg += (string)yyvsp[-1].id + (string)"' are out of range.";
-			    ERROR_OBJ(arg) = new Error(malformed_expr, msg);
-			    STATUS(arg) = false;
-			}
-			delete_array_indices(yyvsp[0].int_ll_ptr);
-		    }
-		    else {
-			yyval.boolean = no_such_ident(arg, yyvsp[-1].id, "array or grid");
-		    }
+		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
+		    yyval.boolean = no_such_ident(arg, yyvsp[-1].id, "array, grid or sequence");
+		  else
+		    yyval.boolean = true;
 		;
     break;}
 case 35:
-#line 608 "expr.y"
+#line 564 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 36:
-#line 612 "expr.y"
+#line 568 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 37:
-#line 618 "expr.y"
+#line 574 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-1].val);
 		;
     break;}
 case 38:
-#line 622 "expr.y"
+#line 578 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-3].val, yyvsp[-1].val);
 		;
     break;}
 case 39:
-#line 626 "expr.y"
+#line 582 "expr.y"
 {
 		    yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		;
@@ -1409,7 +1365,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 640 "expr.y"
+#line 596 "expr.y"
 
 
 void
@@ -1472,6 +1428,56 @@ no_such_func(void *arg, char *name)
     STATUS(arg) = false;
 
     return false;
+}
+
+bool
+bracket_projection(DDS &table, const char *name, int_list_list *indices)
+{
+  bool status = true;
+  BaseType *var = table.var(name);
+
+  if (var && is_array_t(var)) {
+    /* calls to set_send_p should be replaced with
+       calls to DDS::mark so that arrays of Structures,
+       etc. will be processed correctly when individual
+       elements are projected using short names (Whew!)
+       9/1/98 jhrg */
+    /* var->set_send_p(true); */
+    table.mark(name, true);
+    status = process_array_indices(var, indices);
+    if (!status) {
+      string msg = "The indices given for `";
+      msg += (string)name + (string)"' are out of range.";
+      throw Error(malformed_expr, msg);
+    }
+    delete_array_indices(indices);
+  }
+  else if (var && is_grid_t(var)) {
+    table.mark(name, true);
+    /* var->set_send_p(true); */
+    status = process_grid_indices(var, indices);
+    if (!status) {
+      string msg = "The indices given for `";
+      msg += (string)name + (string)"' are out of range.";
+      throw Error(malformed_expr, msg);
+    }
+    delete_array_indices(indices);
+  }
+  else if (var && is_sequence_t(var)) {
+    table.mark(name, true);
+    status = process_sequence_indices(var, indices);
+    if (!status) {
+      string msg = "The indices given for `";
+      msg += (string)name + (string)"' are out of range.";
+      throw Error(malformed_expr, msg);
+    }
+    delete_array_indices(indices);
+  }
+  else {
+    status = false;
+  }
+  
+  return status;
 }
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
@@ -1605,6 +1611,17 @@ is_grid_t(BaseType *variable)
     assert(variable);
 
     if (variable->type() != dods_grid_c)
+	return false;
+    else
+	return true;
+}
+
+bool
+is_sequence_t(BaseType *variable)
+{
+    assert(variable);
+
+    if (variable->type() != dods_sequence_c)
 	return false;
     else
 	return true;
@@ -1759,6 +1776,53 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	cerr << "Too many indices in constraint for " 
 	     << g->map_var(r)->name() << "." << endl;
 	status= false;
+    }
+
+exit:
+    return status;
+}
+
+bool
+process_sequence_indices(BaseType *variable, int_list_list *indices)
+{
+    bool status = true;
+
+    assert(variable);
+    assert(variable->type() == dods_sequence_c);
+    Sequence *s = dynamic_cast<Sequence *>(variable);
+    if (!s)
+	throw Error(malformed_expr, "Expected a Sequence variable");
+
+    // Add specified maps to the current projection.
+    assert(indices);
+    for (Pix p = indices->first(); p; indices->next(p)) {
+	assert((*indices)(p));
+	int_list *index = (*indices)(p);
+
+	Pix q = index->first(); 
+	assert(q);
+	int start = (*index)(q);
+
+	index->next(q);
+	int stride = (*index)(q);
+	
+	index->next(q);
+	int stop = (*index)(q);
+
+	index->next(q);
+	if (q) {
+	  ostrstream oss;
+	  oss << "Too many values in index list for " << s->name() << "." 
+	      << ends;
+	  string msg = oss.str();
+	  oss.freeze(0);
+	  throw Error(malformed_expr, msg);
+	}
+
+	s->set_row_number_constraint(start, stop, stride);
+
+	DBG(cerr << "Set Constraint: " \
+	    << a->dimension_size(a->first_dim(), true) << endl);
     }
 
 exit:
