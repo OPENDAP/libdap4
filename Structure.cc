@@ -38,6 +38,10 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.20  1996/03/05 17:36:12  jimg
+// Added ce_eval to serailize member function.
+// Added debugging information to _duplicate member function.
+//
 // Revision 1.19  1996/02/02 00:31:13  jimg
 // Merge changes for DODS-1.1.0 into DODS-2.x
 //
@@ -159,6 +163,7 @@
 #include "Structure.h"
 #include "DDS.h"
 #include "util.h"
+#include "debug.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -167,19 +172,16 @@
 void
 Structure::_duplicate(const Structure &s)
 {
-#ifdef NEVER
-    set_name(s.name());
-    set_type(s.type());
-
-    Structure &cs = (Structure &)s; // cast away const
-#endif
-    
     BaseType::_duplicate(s);
 
     Structure &cs = (Structure &)s; // cast away const
 
-    for (Pix p = cs._vars.first(); p; cs._vars.next(p))
+    DBG(cerr << "Copying strucutre: " << name() << endl);
+
+    for (Pix p = cs._vars.first(); p; cs._vars.next(p)) {
+	DBG(cerr << "Copying field: " << cs.name() << endl);
 	_vars.append(cs._vars(p)->ptr_duplicate());
+    }
 }
 
 Structure::Structure(const String &n) : BaseType(n, structure_t)
@@ -240,27 +242,30 @@ Structure::width()
     return sizeof(Structure);
 }
 
+// Returns: false if an error was detected, true otherwise. 
+// NB: this means that serialize() returns true when the CE evaluates to
+// false. This bug might be fixed using exceptions.
+
 bool
-Structure::serialize(const String &dataset, DDS &dds, bool flush)
+Structure::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
     bool status = true;
 
-    if (!read_p())		// only read if not read already
-	status = read(dataset);
-
-    if (status && !dds.eval_constraint()) // if the constraint is false, return
-	return status;
-
-    if (!status)
+    if (!read_p() && !read(dataset))
 	return false;
+
+    if (ce_eval && !dds.eval_selection(dataset))
+	return true;
 
     for (Pix p = first_var(); p; next_var(p)) 
 	if (var(p)->send_p() 
-	    && !(status = var(p)->serialize(dataset, dds, false))) 
+	    && !(status = var(p)->serialize(dataset, dds, false, false))) 
 	    break;
 
-    if (status && flush)
-	status = expunge();
+    // flush the stream *even* if status is false, but preserve the value of
+    // status if it's false.
+    if (flush)
+	status = status && expunge();
 
     return status;
 }
