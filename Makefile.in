@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.115 2000/08/02 22:46:49 jimg Exp $
+# $Id: Makefile.in,v 1.116 2000/09/22 05:34:52 jimg Exp $
 
 @SET_MAKE@
 
@@ -263,10 +263,8 @@ lex.das.o: lex.das.c
 # Build the DAS parser
 # Note that awk is used to add a param to dasparse().
 
-das.tab.c das.tab.h: das.y munge-bison.awk DAS.h
+das.tab.c das.tab.h: das.y DAS.h
 	$(YACC) $(YFLAGS) -p das das.y
-	$(AWK) -f munge-bison.awk das.tab.c > tmp
-	mv tmp das.tab.c
 
 das.tab.o: das.tab.c		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c das.tab.c -o das.tab.o
@@ -281,10 +279,8 @@ lex.dds.o: lex.dds.c
 
 # Build the DDS parser
 
-dds.tab.c dds.tab.h: dds.y munge-bison.awk
+dds.tab.c dds.tab.h: dds.y
 	$(YACC) $(YFLAGS) -p dds dds.y
-	$(AWK) -f munge-bison.awk dds.tab.c > tmp
-	mv tmp dds.tab.c
 
 dds.tab.o: dds.tab.c		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c dds.tab.c -o dds.tab.o
@@ -299,10 +295,8 @@ lex.expr.o: lex.expr.c
 
 # Build the CE parser
 
-expr.tab.c expr.tab.h: expr.y munge-bison.awk
+expr.tab.c expr.tab.h: expr.y
 	$(YACC) $(YFLAGS) -p expr expr.y
-	$(AWK) -f munge-bison.awk expr.tab.c > tmp
-	mv tmp expr.tab.c
 
 expr.tab.o: expr.tab.c		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c expr.tab.c -o expr.tab.o
@@ -331,10 +325,8 @@ lex.Error.o: lex.Error.c
 
 # Build the Error object parser.
 
-Error.tab.c Error.tab.h: Error.y munge-bison.awk
+Error.tab.c Error.tab.h: Error.y
 	$(YACC) $(YFLAGS) -p Error Error.y
-	$(AWK) -f munge-bison.awk Error.tab.c > tmp
-	mv tmp Error.tab.c
 
 Error.tab.o: Error.tab.c	# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c Error.tab.c -o Error.tab.o
