@@ -4,7 +4,12 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.5  1995/01/11 15:54:46  jimg
+// Revision 1.6  1995/01/19 20:05:27  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.5  1995/01/11  15:54:46  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -44,14 +49,6 @@ Grid::duplicate(const Grid &s)
 
     for (Pix p = cs.map_vars.first(); p; cs.map_vars.next(p))
 	map_vars.append(cs.map_vars(p)->ptr_duplicate());
-}
-
-// protected
-
-BaseType *
-Grid::ptr_duplicate()
-{
-    return new Grid(*this);
 }
 
 // public

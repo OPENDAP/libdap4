@@ -4,7 +4,12 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.6  1995/01/11 15:54:31  jimg
+// Revision 1.7  1995/01/19 20:05:18  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.6  1995/01/11  15:54:31  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -53,12 +58,6 @@ Float64::Float64(const String &n) : BaseType(n, "Float64", XDR_FLOAT64)
 {
 }
 
-BaseType *
-Float64::ptr_duplicate()
-{
-    return new Float64(*this);	// Copy ctor calls duplicate to do the work
-}
- 
 unsigned int
 Float64::size()
 {

@@ -4,7 +4,12 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.7  1995/01/11 15:54:33  jimg
+// Revision 1.8  1995/01/19 20:05:19  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.7  1995/01/11  15:54:33  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -49,15 +54,9 @@
 #include "Str.h"
 #include "util.h"
 
-Str::Str(const String &n) : BaseType(n, "String", xdr_str)
+Str::Str(const String &n) : BaseType(n, "String", (xdrproc_t)xdr_str)
 {
     buf = 0;			// read() frees if buf != 0
-}
-
-BaseType *
-Str::ptr_duplicate()
-{
-    return new Str(*this);
 }
 
 // Return: the number of bytes needed to store the string's value or 0 if no

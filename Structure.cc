@@ -4,7 +4,12 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.6  1995/01/11 15:54:49  jimg
+// Revision 1.7  1995/01/19 20:05:24  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.6  1995/01/11  15:54:49  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -54,14 +59,6 @@ Structure::duplicate(const Structure &s)
 
     for (Pix p = cs.vars.first(); p; cs.vars.next(p))
 	vars.append(cs.vars(p)->ptr_duplicate());
-}
-
-// protected
-
-BaseType *
-Structure::ptr_duplicate()
-{
-    return new Structure(*this);
 }
 
 // public

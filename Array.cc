@@ -4,7 +4,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.13  1995/01/11 15:54:39  jimg
+// Revision 1.14  1995/01/19 20:05:21  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.13  1995/01/11  15:54:39  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -75,19 +80,13 @@
 #include "debug.h"
 
 void
-Array::duplicate(const Array &a)
+Array::duplicate(const Array *a)
 {
-    set_var_name(a.get_var_name());
-    set_var_type(a.get_var_type());
+    set_var_name(a->get_var_name());
+    set_var_type(a->get_var_type());
 
-    shape = a.shape;
-    var_ptr = a.var_ptr->ptr_duplicate();
-}
-
-BaseType *
-Array::ptr_duplicate()
-{
-    return new Array(*this);
+    shape = a->shape;
+    var_ptr = a->var_ptr->ptr_duplicate();
 }
 
 // Construct an instance of Array. The (BaseType *) is assumed to be
@@ -101,7 +100,7 @@ Array::Array(const String &n, BaseType *v)
 
 Array::Array(const Array &rhs)
 {
-    duplicate(rhs);
+    duplicate(&rhs);
 }
 
 Array::~Array()
@@ -115,7 +114,7 @@ Array::operator=(const Array &rhs)
     if (this == &rhs)
 	return *this;
     
-    duplicate(rhs);
+    duplicate(&rhs);
 
     return *this;
 }

@@ -4,7 +4,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.6  1995/01/11 15:54:53  jimg
+// Revision 1.7  1995/01/19 20:05:26  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.6  1995/01/11  15:54:53  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -50,14 +55,6 @@ Sequence::duplicate(const Sequence &s)
     
     for (Pix p = cs.first_var(); p; cs.next_var(p))
 	add_var(cs.var(p)->ptr_duplicate());
-}
-
-// protected
-
-BaseType *
-Sequence::ptr_duplicate()
-{
-    return new Sequence(*this);
 }
 
 // public

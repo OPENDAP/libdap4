@@ -4,7 +4,12 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.4  1995/01/11 15:54:26  jimg
+// Revision 1.5  1995/01/19 20:05:16  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.4  1995/01/11  15:54:26  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -45,12 +50,6 @@
 
 Byte::Byte(const String &n) : BaseType(n, "Byte", xdr_bytes)
 {
-}
-
-BaseType *
-Byte::ptr_duplicate()
-{
-    return new Byte(*this);
 }
 
 unsigned int

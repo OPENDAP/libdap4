@@ -4,7 +4,12 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
-// Revision 1.4  1995/01/11 15:54:37  jimg
+// Revision 1.5  1995/01/19 20:05:20  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.4  1995/01/11  15:54:37  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -41,12 +46,6 @@
 Url::Url(const String &n) : BaseType(n, "Url", (xdrproc_t)xdr_url)
 {
     _buf = 0;
-}
-
-BaseType *
-Url::ptr_duplicate()
-{
-    return new Url(*this);
 }
 
 unsigned int

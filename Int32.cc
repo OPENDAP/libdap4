@@ -4,7 +4,12 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.7  1995/01/11 15:54:29  jimg
+// Revision 1.8  1995/01/19 20:05:17  jimg
+// ptr_duplicate() mfunc is now abstract virtual.
+// Array, ... Grid duplicate mfuncs were modified to take pointers, not
+// referenves.
+//
+// Revision 1.7  1995/01/11  15:54:29  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
 // was mostly a name change from xdrin/out to _xdrin/out.
 // Removed the two FILE pointers from ctors, since those are now set with
@@ -48,12 +53,6 @@
 
 Int32::Int32(const String &n) : BaseType(n, "Int32", XDR_INT32)
 {
-}
-
-BaseType *
-Int32::ptr_duplicate()
-{
-    return new Int32(*this);
 }
 
 unsigned int
