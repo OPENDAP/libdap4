@@ -50,7 +50,11 @@
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.10  1995/10/23 22:59:41  jimg
+ * Revision 1.11  1995/12/06 19:45:08  jimg
+ * Changed grammar so that List List ... <type> is no longer possible. This
+ * fixed some hard problems in the serailize/deserailize mfuncs.
+ *
+ * Revision 1.10  1995/10/23  22:59:41  jimg
  * Modified some rules so that they use the functions defined in
  * parser_util.cc instead of local definitions.
  *
@@ -97,14 +101,16 @@
  */
 
 %{
-#ifdef NEVER
+
 #define YYSTYPE char *
+
+#ifdef NEVER
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 #endif
 
-static char rcsid[]={"$Id: dds.y,v 1.10 1995/10/23 22:59:41 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.11 1995/12/06 19:45:08 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -174,11 +180,18 @@ declarations:	/* empty */
 		| declarations declaration
 ;
 
-declaration: 	list declaration 
+declaration: 	list non_list_decl
                     { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); }
 
-                | base_type var ';' 
+                | non_list_decl
+;
+
+/* This non-terminal is here only to keep types like `List List Int32' from
+   parsing. DODS does not allow Lists of Lists. Those types make translation
+   to/from arrays too hard. */
+
+non_list_decl:  base_type var ';' 
                     { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); }
 
