@@ -26,102 +26,11 @@
   jhrg 9/5/95
 */
 
-/* 
- * $Log: expr.lex,v $
- * Revision 1.22  2000/06/07 18:07:00  jimg
- * Merged the pc port branch
- *
- * Revision 1.21.20.1  2000/06/02 18:36:38  rmorris
- * Mod's for port to Win32.
- *
- * Revision 1.21  1999/04/29 02:29:36  jimg
- * Merge of no-gnu branch
- *
- * Revision 1.20  1999/03/24 23:30:55  jimg
- * Fixed some of the comments.
- *
- * Revision 1.19  1999/01/21 02:21:44  jimg
- * Made the store_op(), ... functions static.
- * Added glue routines for scanning strings.
- *
- * Revision 1.18  1998/10/23 00:09:03  jimg
- * Fixed an array write error where exprlval.id was over-written by writing to
- * element ID_MAX. The end of the array is ID_MAX-1.
- *
- * Revision 1.17  1998/10/21 16:45:50  jimg
- * Now includes RValue.h. Needed because expr.tab.h needs it.
- *
- * Revision 1.16.6.2  1999/02/05 09:32:36  jimg
- * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
- * math code. 
- *
- * Revision 1.16.6.1  1999/02/02 21:57:07  jimg
- * String to string version
- *
- * Revision 1.16  1998/03/26 00:26:23  jimg
- * Added % to the set of characters that can start and ID
- *
- * Revision 1.15  1997/08/11 18:19:36  jimg
- * Fixed comment leaders for new CVS version
- *
- * Revision 1.14  1997/02/24 18:18:23  jimg
- * Removed `rule' for "." since it cannot be matched.
- *
- * Revision 1.13  1996/11/13 19:23:15  jimg
- * Fixed debugging.
- *
- * Revision 1.12  1996/10/08 17:10:52  jimg
- * Added % to the set of characters allowable in identifier names
- *
- * Revision 1.11  1996/08/26 21:13:17  jimg
- * Changes for version 2.07
- *
- * Revision 1.10  1996/08/13 18:56:24  jimg
- * Added not_used to definition of char rcsid[].
- *
- * Revision 1.9  1996/05/31 23:31:03  jimg
- * Updated copyright notice.
- *
- * Revision 1.8  1996/05/14 15:39:01  jimg
- * These changes have already been checked in once before. However, I
- * corrupted the source repository and restored it from a 5/9/96 backup
- * tape. The previous version's log entry should cover the changes.
- *
- * Revision 1.7  1996/04/05 00:22:19  jimg
- * Compiled with g++ -Wall and fixed various warnings.
- *
- * Revision 1.6  1996/03/02 01:19:04  jimg
- * Fixed comments.
- * Fixed a bug in store_str(); leading and trailing double quotes are now
- * stripped from strings.
- *
- * Revision 1.5  1996/02/01 17:43:16  jimg
- * Added support for lists as operands in constraint expressions.
- *
- * Revision 1.4  1995/12/09  01:07:39  jimg
- * Added changes so that relational operators will work properly for all the
- * datatypes (including Sequences). The relational ops are evaluated in
- * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
- *
- * Revision 1.3  1995/12/06  18:57:37  jimg
- * Because the %union{} changed, the return types of some of the rules also
- * changed.
- * Returns integer codes for relops.
- * Returns a tagged union for most other values.
- *
- * Revision 1.2  1995/10/23  23:11:31  jimg
- * Fixed scanner to use the new definition of YYSTYPE.
- *
- * Revision 1.1  1995/10/13  03:03:17  jimg
- * Scanner. Incorporates Glenn's suggestions.
- *
- */
-
 %{
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.lex,v 1.22 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.lex,v 1.23 2000/08/31 23:44:16 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -197,7 +106,7 @@ NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 "{"		return (int)*yytext;
 "}"		return (int)*yytext;
 
-[ \t\n]+
+[ \t\r\n]+
 <INITIAL><<EOF>> yy_init = 1; yyterminate();
 
 \"			BEGIN(quote); yymore();
@@ -298,3 +207,96 @@ store_op(int op)
 {
     exprlval.op = op;
 }
+
+/* 
+ * $Log: expr.lex,v $
+ * Revision 1.23  2000/08/31 23:44:16  jimg
+ * Merged with 3.1.10
+ *
+ * Revision 1.21.6.1  2000/08/31 20:45:26  jimg
+ * Added \r to the set of characters that are ignored. This is an untested fix
+ * (?) for UNIX clients that read from servers run on win32 machines (e.g.,
+ * the Java-SQL server can be run on a win32 box).
+ *
+ * Revision 1.21  1999/04/29 02:29:36  jimg
+ * Merge of no-gnu branch
+ *
+ * Revision 1.20  1999/03/24 23:30:55  jimg
+ * Fixed some of the comments.
+ *
+ * Revision 1.19  1999/01/21 02:21:44  jimg
+ * Made the store_op(), ... functions static.
+ * Added glue routines for scanning strings.
+ *
+ * Revision 1.18  1998/10/23 00:09:03  jimg
+ * Fixed an array write error where exprlval.id was over-written by writing to
+ * element ID_MAX. The end of the array is ID_MAX-1.
+ *
+ * Revision 1.17  1998/10/21 16:45:50  jimg
+ * Now includes RValue.h. Needed because expr.tab.h needs it.
+ *
+ * Revision 1.16.6.2  1999/02/05 09:32:36  jimg
+ * Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
+ * math code. 
+ *
+ * Revision 1.16.6.1  1999/02/02 21:57:07  jimg
+ * String to string version
+ *
+ * Revision 1.16  1998/03/26 00:26:23  jimg
+ * Added % to the set of characters that can start and ID
+ *
+ * Revision 1.15  1997/08/11 18:19:36  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.14  1997/02/24 18:18:23  jimg
+ * Removed `rule' for "." since it cannot be matched.
+ *
+ * Revision 1.13  1996/11/13 19:23:15  jimg
+ * Fixed debugging.
+ *
+ * Revision 1.12  1996/10/08 17:10:52  jimg
+ * Added % to the set of characters allowable in identifier names
+ *
+ * Revision 1.11  1996/08/26 21:13:17  jimg
+ * Changes for version 2.07
+ *
+ * Revision 1.10  1996/08/13 18:56:24  jimg
+ * Added not_used to definition of char rcsid[].
+ *
+ * Revision 1.9  1996/05/31 23:31:03  jimg
+ * Updated copyright notice.
+ *
+ * Revision 1.8  1996/05/14 15:39:01  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
+ * Revision 1.7  1996/04/05 00:22:19  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
+ * Revision 1.6  1996/03/02 01:19:04  jimg
+ * Fixed comments.
+ * Fixed a bug in store_str(); leading and trailing double quotes are now
+ * stripped from strings.
+ *
+ * Revision 1.5  1996/02/01 17:43:16  jimg
+ * Added support for lists as operands in constraint expressions.
+ *
+ * Revision 1.4  1995/12/09  01:07:39  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
+ * Revision 1.3  1995/12/06  18:57:37  jimg
+ * Because the %union{} changed, the return types of some of the rules also
+ * changed.
+ * Returns integer codes for relops.
+ * Returns a tagged union for most other values.
+ *
+ * Revision 1.2  1995/10/23  23:11:31  jimg
+ * Fixed scanner to use the new definition of YYSTYPE.
+ *
+ * Revision 1.1  1995/10/13  03:03:17  jimg
+ * Scanner. Incorporates Glenn's suggestions.
+ *
+ */

@@ -39,8 +39,134 @@
    printed das can be reparsed. 9/28/94. 
 */
 
+%{
+#include "config_dap.h"
+
+static char rcsid[] not_used ={"$Id: das.lex,v 1.28 2000/08/31 23:44:16 jimg Exp $"};
+
+#include <string.h>
+#include <assert.h>
+#include "parser.h"
+
+#define YYSTYPE char *
+#define YY_DECL int daslex YY_PROTO(( void ))
+
+#include "das.tab.h"
+
+int das_line_num = 1;
+static int start_line;		/* used in quote and comment error handlers */
+
+%}
+    
+%x quote
+%x comment
+
+ID  	[a-zA-Z_%][a-zA-Z0-9_./:%+\-()]*
+INT	[-+]?[0-9]+
+
+MANTISA ([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
+EXPONENT (E|e)[-+]?[0-9]+
+
+FLOAT	[-+]?{MANTISA}{EXPONENT}?
+
+STR 	[-+a-zA-Z0-9_./:%+\-()]+
+
+ATTR 	attributes|Attributes|ATTRIBUTES
+
+ALIAS   ALIAS|Alias|alias
+BYTE	BYTE|Byte|byte
+INT16	INT16|Int16|int16
+UINT16	UINT16|UInt16|Uint16|uint16
+INT32	INT32|Int32|int32
+UINT32	UINT32|UInt32|Uint32|uint32
+FLOAT32 FLOAT32|Float32|float32
+FLOAT64 FLOAT64|Float64|float64
+STRING  STRING|String|string
+URL	URL|Url|url
+
+NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
+
+%%
+
+
+{ATTR}	    	    	daslval = yytext; return ATTR;
+
+{ALIAS}                 daslval = yytext; return ALIAS;
+{BYTE}                  daslval = yytext; return BYTE;
+{INT16}                 daslval = yytext; return INT16;
+{UINT16}                daslval = yytext; return UINT16;
+{INT32}                 daslval = yytext; return INT32;
+{UINT32}                daslval = yytext; return UINT32;
+{FLOAT32}               daslval = yytext; return FLOAT32;
+{FLOAT64}               daslval = yytext; return FLOAT64;
+{STRING}                daslval = yytext; return STRING;
+{URL}                   daslval = yytext; return URL;
+
+{ID}  	    	    	daslval = yytext; return ID;
+{INT}	    	    	daslval = yytext; return INT;
+{FLOAT}	    	    	daslval = yytext; return FLOAT;
+{STR}	    	    	daslval = yytext; return STR;
+
+"{" 	    	    	return (int)*yytext;
+"}" 	    	    	return (int)*yytext;
+";" 	    	    	return (int)*yytext;
+","                     return (int)*yytext;
+
+[ \t\r]+
+\n	    	    	++das_line_num;
+<INITIAL><<EOF>>    	yy_init = 1; das_line_num = 1; yyterminate();
+
+"#"	    	    	BEGIN(comment);
+<comment>[^\r\n]*
+<comment>\n		++das_line_num; BEGIN(INITIAL);
+<comment>\r\n		++das_line_num; BEGIN(INITIAL);
+<comment><<EOF>>        yy_init = 1; das_line_num = 1; yyterminate();
+
+\"			BEGIN(quote); start_line = das_line_num; yymore();
+<quote>[^"\r\n\\]*	yymore();
+<quote>[^"\r\n\\]*\n	yymore(); ++das_line_num;
+<quote>[^"\r\n\\]*\r\n	yymore(); ++das_line_num;
+<quote>\\.		yymore();
+<quote>\"		{ 
+    			  BEGIN(INITIAL); 
+
+			  daslval = yytext;
+
+			  return STR;
+                        }
+<quote><<EOF>>		{
+                          char msg[256];
+			  sprintf(msg,
+				  "Unterminated quote (starts on line %d)\n",
+				  start_line);
+			  YY_FATAL_ERROR(msg);
+                        }
+
+{NEVER}                 {
+                          if (yytext) {	/* suppress msgs about `' chars */
+                            fprintf(stderr, "Character `%c' is not", *yytext);
+                            fprintf(stderr, " allowed (except within");
+			    fprintf(stderr, " quotes) and has been ignored\n");
+			  }
+			}
+%%
+
+int 
+yywrap(void)
+{
+    return 1;
+}
+
 /*
  * $Log: das.lex,v $
+ * Revision 1.28  2000/08/31 23:44:16  jimg
+ * Merged with 3.1.10
+ *
+ * Revision 1.26.6.1 2000/08/31 20:54:36 jimg Added \r to the set of
+ * characters that are ignored. This is an untested fix (?) for UNIX clients
+ * that read from servers run on win32 machines (e.g., the Java-SQL server
+ * can be run on a win32 box).
+ *
  * Revision 1.27  2000/06/07 18:07:00  jimg
  * Merged the pc port branch
  *
@@ -163,13 +289,13 @@
  * Test files for the DAS/DDS parsers and symbol table software.
  *
  * Revision 1.1  1994/07/21  19:21:32  jimg
- * First version of DAS scanner - works with C.
- */
+ * First version of DAS scanner - works with C. */
+<<<<<<< das.lex
 
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.27 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.28 2000/08/31 23:44:16 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -281,3 +407,5 @@ yywrap(void)
 {
     return 1;
 }
+=======
+>>>>>>> 1.26.6.1

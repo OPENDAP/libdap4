@@ -1,3 +1,13 @@
+2000-08-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with 3.1.10. The next merge should use update -d -j
+	release-3-1-10 -j release-3-1.
+
+	* Fixed a bug in all the scanners (except the GSE scanner) where
+	\r characters in text sent from win32-hosted servers caused the
+	problems. The \r characters are either ignored or treated like
+	newlines when paired with \n (depending on the circumstances).
+
 2000-08-29  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with 3.1.9. The next merge should use update -d -j
@@ -779,5 +789,9 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.57 2000/08/29 21:22:54 jimg Exp $
+$Id: ChangeLog,v 1.58 2000/08/31 23:44:16 jimg Exp $
 
+<<<<<<< ChangeLog
+=======
+$Id: ChangeLog,v 1.58 2000/08/31 23:44:16 jimg Exp $
+>>>>>>> 1.42.2.16
