@@ -19,6 +19,12 @@
 
 /* 
  * $Log: Error.lex,v $
+ * Revision 1.6  2000/06/07 18:06:58  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.5.20.1  2000/06/02 18:21:27  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.5  1999/04/29 02:29:29  jimg
  * Merge of no-gnu branch
  *
@@ -45,7 +51,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.lex,v 1.5 1999/04/29 02:29:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.lex,v 1.6 2000/06/07 18:06:58 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -66,27 +72,27 @@ void store_string();
 %x quote
 %x comment
 
-INT	[0-9]+
+SCAN_INT		[0-9]+
 
-ERROR	error|Error|ERROR
-CODE	code|Code|CODE
-MSG	message|Message|MESSAGE
-PTYPE	program_type|ProgramType|PROGRAM_TYPE|Program_Type
-PROGRAM	program|Program|PROGRAM
+SCAN_ERROR		error|Error|ERROR
+SCAN_CODE		code|Code|CODE
+SCAN_MSG		message|Message|MESSAGE
+SCAN_PTYPE		program_type|ProgramType|PROGRAM_TYPE|Program_Type
+SCAN_PROGRAM	program|Program|PROGRAM
 
 NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
 
 %%
 
 
-{ERROR}	    	    	store_string(); return ERROR;
+{SCAN_ERROR}	store_string(); return SCAN_ERROR;
 
-{CODE}                  store_string(); return CODE;
-{MSG}			store_string(); return MSG;
-{PTYPE}			store_string(); return PTYPE;
-{PROGRAM}		store_string(); return PROGRAM;
+{SCAN_CODE}				store_string(); return SCAN_CODE;
+{SCAN_MSG}				store_string(); return SCAN_MSG;
+{SCAN_PTYPE}			store_string(); return SCAN_PTYPE;
+{SCAN_PROGRAM}			store_string(); return SCAN_PROGRAM;
 
-{INT}			store_integer(); return INT;
+{SCAN_INT}				store_integer(); return SCAN_INT;
 
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;
@@ -109,7 +115,7 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
 <quote>\"		{ 
     			  BEGIN(INITIAL); 
 			  store_string();
-			  return STR;
+			  return SCAN_STR;
                         }
 <quote><<EOF>>		{
                           char msg[256];

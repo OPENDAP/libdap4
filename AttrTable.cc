@@ -9,6 +9,12 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
+// Revision 1.25  2000/06/07 18:06:57  jimg
+// Merged the pc port branch
+//
+// Revision 1.24.6.1  2000/06/02 18:11:19  rmorris
+// Mod's for Port to Win32.
+//
 // Revision 1.24  2000/01/27 06:29:55  jimg
 // Resolved conflicts from merge with release-3-1-4
 //
@@ -108,7 +114,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.24 2000/01/27 06:29:55 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.25 2000/06/07 18:06:57 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -214,6 +220,8 @@ AttrTable::AttrTable()
 
 AttrTable::~AttrTable()
 {
+	Pix p = NULL;
+
     DBG(cerr << "Entering ~AttrTable" << endl);
 
     if (attr_map.empty()) {
@@ -221,7 +229,7 @@ AttrTable::~AttrTable()
 	goto exit;
     }
 
-    for (Pix p = attr_map.first(); p; attr_map.next(p))
+    for (p = attr_map.first(); p; attr_map.next(p))
 	// Don't delete the referenced objects in an alias!
 	if (!attr_map(p).is_alias) {
 	    DBG(cerr << "attr_map(p).type: " << attr_map(p).type << endl);

@@ -12,6 +12,12 @@
 
 /* 
  * $Log: Byte.h,v $
+ * Revision 1.26  2000/06/07 18:06:58  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.25.20.1  2000/06/02 18:14:42  rmorris
+ * Mod for port to win32.
+ *
  * Revision 1.25  1999/04/29 02:29:27  jimg
  * Merge of no-gnu branch
  *
@@ -157,11 +163,21 @@
 #pragma interface
 #endif
 
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+#endif
 
 #include "BaseType.h"
+
+#ifdef _WIN32
+using namespace std;
+#endif
 
 /** This class is used to hold eight bits of information.  No sign
     information is implied in its value.
@@ -211,8 +227,13 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
+#ifdef WIN32
+    virtual void print_val(std::ostream &os, string space = "", 
+			   bool print_decl_p = true);
+#else
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
+#endif
 
     virtual bool ops(BaseType *b, int op, const string &dataset);
 };

@@ -10,6 +10,12 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.38  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.37.20.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.37  1999/04/29 02:29:29  jimg
 // Merge of no-gnu branch
 //
@@ -209,7 +215,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Float64.cc,v 1.37 1999/04/29 02:29:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Float64.cc,v 1.38 2000/06/07 18:06:58 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -226,6 +232,10 @@ static char rcsid[] not_used = {"$Id: Float64.cc,v 1.37 1999/04/29 02:29:29 jimg
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 Float64::Float64(const string &n) 
@@ -262,7 +272,7 @@ Float64::deserialize(XDR *source, DDS *, bool)
 {
     unsigned int num = xdr_double(source, &_buf);
 
-    return num;
+    return (num != 0);
 }
 
 unsigned int
@@ -288,8 +298,12 @@ Float64::buf2val(void **val)
     return width();
 }
 
-void 
+void
+#ifdef WIN32
+Float64::print_val(std::ostream &os, string space, bool print_decl_p)
+#else
 Float64::print_val(ostream &os, string space, bool print_decl_p)
+#endif
 {
     os.precision(DODS_DBL_DIG);
 
@@ -309,14 +323,22 @@ Float64::ops(BaseType *b, int op, const string &dataset)
     // Extract the Byte arg's value.
     if (!read_p() && (!read(dataset, error) || error)) {
 	assert("This value not read!" && false);
+#ifdef WIN32
+	std::cerr << "This value not read!" << endl;
+#else
 	cerr << "This value not read!" << endl;
+#endif
 	return false;
     }
 
     // Extract the second arg's value.
     if (!b->read_p() && (!b->read(dataset, error) || error)) {
 	assert("This value not read!" && false);
+#ifdef WIN32
+	std::cerr << "This value not read!" << endl;
+#else
 	cerr << "This value not read!" << endl;
+#endif
 	return false;
     }
 

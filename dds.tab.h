@@ -1,28 +1,28 @@
 #ifndef YYSTYPE
 #define YYSTYPE int
 #endif
-#define	ID	257
-#define	NAME	258
-#define	INTEGER	259
-#define	DATASET	260
-#define	INDEPENDENT	261
-#define	DEPENDENT	262
-#define	ARRAY	263
-#define	MAPS	264
-#define	LIST	265
-#define	SEQUENCE	266
-#define	STRUCTURE	267
-#define	FUNCTION	268
-#define	GRID	269
-#define	BYTE	270
-#define	INT16	271
-#define	UINT16	272
-#define	INT32	273
-#define	UINT32	274
-#define	FLOAT32	275
-#define	FLOAT64	276
-#define	STRING	277
-#define	URL	278
+#define	SCAN_ID	258
+#define	SCAN_NAME	259
+#define	SCAN_INTEGER	260
+#define	SCAN_DATASET	261
+#define	SCAN_INDEPENDENT	262
+#define	SCAN_DEPENDENT	263
+#define	SCAN_ARRAY	264
+#define	SCAN_MAPS	265
+#define	SCAN_LIST	266
+#define	SCAN_SEQUENCE	267
+#define	SCAN_STRUCTURE	268
+#define	SCAN_FUNCTION	269
+#define	SCAN_GRID	270
+#define	SCAN_BYTE	271
+#define	SCAN_INT16	272
+#define	SCAN_UINT16	273
+#define	SCAN_INT32	274
+#define	SCAN_UINT32	275
+#define	SCAN_FLOAT32	276
+#define	SCAN_FLOAT64	277
+#define	SCAN_STRING	278
+#define	SCAN_URL	279
 
 
 extern YYSTYPE ddslval;

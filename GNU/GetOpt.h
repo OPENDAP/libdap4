@@ -36,7 +36,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #endif
 #define GetOpt_h 1
 
+#ifndef WIN32
 #include <gnu-std.h>
+#endif
 #include <stdio.h>
 
 class GetOpt

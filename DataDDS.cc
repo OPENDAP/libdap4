@@ -9,6 +9,12 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.cc,v $
+// Revision 1.8  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.7.20.1  2000/06/02 18:21:26  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.7  1999/05/05 00:40:11  jimg
 // Modified the DataDDS class so that a version string may begin with any
 // character sequence, not just `dods'. This means that each server can identify
@@ -45,14 +51,14 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.7 1999/05/05 00:40:11 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.8 2000/06/07 18:06:58 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <iostream>
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -64,6 +70,10 @@ static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.7 1999/05/05 00:40:11 jimg 
 #include "DataDDS.h"
 #include "debug.h"
 
+#ifdef WIN32
+using namespace std;
+#endif
+
 // private
 
 // The version string looks like `DODS/2.14'
@@ -73,7 +83,12 @@ DataDDS::_version_string_to_numbers()
 {
     static Regex version_regex("[a-z]+/[0-9]\\.[0-9]+[.0-9a-zA-Z]*", 1);
 
-    DBG(cerr << "in version string to numbers" << endl);
+#ifdef WIN32
+    DBG(std::cerr << "in version string to numbers" << endl);
+#else
+	DBG(cerr << "in version string to numbers" << endl);
+#endif
+
 
     if (version_regex.match(_server_version.c_str(), _server_version.length()) != (int)_server_version.length()) {
 	_server_version_major = 0;
@@ -82,15 +97,26 @@ DataDDS::_version_string_to_numbers()
     else {
 	string num = _server_version.substr(_server_version.find('/')+1);
 
+#ifdef WIN32
+	std::istrstream iss(num.c_str());
+#else
 	istrstream iss(num.c_str());
+#endif
+
 
 	iss >> _server_version_major;
 	char c;
 	iss >> c;		// This reads the `.' in the version string
 	iss >> _server_version_minor;
 
+#ifdef WIN32
+	DBG(std::cerr << "Server version: " << _server_version_major << "." \
+	    << _server_version_minor << endl);
+#else
 	DBG(cerr << "Server version: " << _server_version_major << "." \
 	    << _server_version_minor << endl);
+#endif
+ 
     }
 }
 

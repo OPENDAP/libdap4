@@ -22,7 +22,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #ifdef __GNUG__
 #pragma implementation
 #endif
+#ifndef WIN32
 #include <gnu-std.h>
+#endif
 #include <ctype.h>
 #include <new.h>
 #include <builtin.h>
@@ -31,6 +33,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 extern "C" {
 #if 1
+#ifdef WIN32
+#define __STDC__  /*  Needed for rx.h prototypes  */
+#endif
 #include <rx.h>
 #else
 #include <regex.h>

@@ -32,6 +32,12 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.44  2000/06/07 18:06:58  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.43.4.1  2000/06/02 18:16:47  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.43  2000/04/07 00:19:04  jimg
  * Merged Brent's changes for the progress gui - he added a cancel button.
  * Also repaired the last of the #ifdef Gui bugs so that we can build Gui
@@ -248,9 +254,16 @@
 #endif
 
 #include <stdio.h>
+
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+#endif
 
 #include <string>
 #include <SLList.h>
@@ -267,6 +280,10 @@
 #endif
 #include "util.h"
 #include "config_dap.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 /**
 
@@ -449,11 +466,11 @@ private:
     */
     void parse_mime(FILE *data_source);
 
-    friend char dods_username_password(HTRequest * request, HTAlertOpcode,
+    friend BOOL dods_username_password(HTRequest * request, HTAlertOpcode,
 				       int, const char *, void *, 
 				       HTAlertPar * reply);
 
-    friend char dods_progress(HTRequest * request, HTAlertOpcode op, int, 
+    friend BOOL dods_progress(HTRequest * request, HTAlertOpcode op, int, 
 			      const char *, void * input, HTAlertPar *);
 
     friend int timeout_handler(HTRequest *request);
@@ -470,7 +487,7 @@ private:
     friend int header_handler(HTRequest *request, HTResponse *response,
 			      const char *token, const char *val);
 
-    friend char dods_error_print (HTRequest * request, HTAlertOpcode, int, 
+    friend BOOL dods_error_print (HTRequest * request, HTAlertOpcode, int, 
 				  const char *, void * input, HTAlertPar *);
 
     Connect();			// Never call this.

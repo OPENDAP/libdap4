@@ -11,6 +11,12 @@
 // 1/15/99 jhrg
 
 // $Log: ce_functions.cc,v $
+// Revision 1.5  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.4.20.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.4  1999/04/29 02:29:34  jimg
 // Merge of no-gnu branch
 //
@@ -27,10 +33,14 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.4 1999/04/29 02:29:34 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.5 2000/06/07 18:06:59 jimg Exp $"};
 
 #include <iostream.h>
+#ifdef WIN32
+#include <vector>
+#else
 #include <vector.h>
+#endif
 
 #include "BaseType.h"
 #include "List.h"
@@ -45,8 +55,12 @@ static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.4 1999/04/29 02:29:34 
 #include "debug.h"
 #include "util.h"
 
-int gse_parse(void *arg);
-int gse_restart(FILE *in);
+#ifdef WIN32
+using namespace std;
+#endif
+
+int		gse_parse(void *arg);
+void	gse_restart(FILE *in);
 
 // Glue routines declared in expr.lex
 void gse_switch_to_buffer(void *new_buffer);
@@ -67,7 +81,11 @@ extract_string_argument(BaseType *arg)
     string s = *sp;
     delete sp;
 
+#ifdef WIN32
+    DBG(std::cerr << "s: " << s << endl);
+#else
     DBG(cerr << "s: " << s << endl);
+#endif
 
     return s;
 }
@@ -76,22 +94,30 @@ bool
 func_member(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 2) {
+#ifdef WIN32
+	std::cerr << "Wrong number of arguments." << endl;
+#else
 	cerr << "Wrong number of arguments." << endl;
+#endif
 	return false;
     }
     
     switch(argv[0]->type()) {
       case dods_list_c: {
-	List *var = (List *)argv[0];
-	BaseType *btp = (BaseType *)argv[1];
-	bool result = var->member(btp, dds);
+		List *var = (List *)argv[0];
+		BaseType *btp = (BaseType *)argv[1];
+		bool result = var->member(btp, dds);
     
-	return result;
+		return result;
       }
       
       default:
-	cerr << "Wrong argument type." << endl;
-	return false;
+#ifdef WIN32
+		std::cerr << "Wrong argument type." << endl;
+#else
+		cerr << "Wrong argument type." << endl;
+#endif
+		return false;
     }
 
 }
@@ -100,8 +126,12 @@ bool
 func_null(int argc, BaseType *argv[], DDS &)
 {
     if (argc != 1) {
-	cerr << "Wrong number of arguments." << endl;
-	return false;
+#ifdef WIN32
+		std::cerr << "Wrong number of arguments." << endl;
+#else
+		cerr << "Wrong number of arguments." << endl;
+#endif
+		return false;
     }
     
     switch(argv[0]->type()) {
@@ -113,7 +143,11 @@ func_null(int argc, BaseType *argv[], DDS &)
       }
 
       default:
-	cerr << "Wrong argument type." << endl;
+#ifdef WIN32
+		std::cerr << "Wrong argument type." << endl;
+#else
+		cerr << "Wrong argument type." << endl;
+#endif
 	return false;
     }
 
@@ -123,7 +157,11 @@ BaseType *
 func_length(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 1) {
+#ifdef WIN32
+	std::cerr << "Wrong number of arguments." << endl;
+#else
 	cerr << "Wrong number of arguments." << endl;
+#endif
 	return 0;
     }
     
@@ -157,7 +195,11 @@ func_length(int argc, BaseType *argv[], DDS &dds)
       }
 
       default:
+#ifdef WIN32
+	std::cerr << "Wrong type argument to list operator `length'" << endl;
+#else
 	cerr << "Wrong type argument to list operator `length'" << endl;
+#endif
 	return 0;
     }
 }
@@ -166,14 +208,22 @@ BaseType *
 func_nth(int argc, BaseType *argv[], DDS &)
 {
     if (argc != 2) {
+#ifdef WIN32
+	std::cerr << "Wrong number of arguments." << endl;
+#else
 	cerr << "Wrong number of arguments." << endl;
+#endif
 	return 0;
     }
     
     switch (argv[0]->type()) {
 	case dods_list_c: {
 	    if (argv[1]->type() != dods_int32_c) {
+#ifdef WIN32
+		std::cerr << "Second argument to NTH must be an integer." << endl;
+#else
 		cerr << "Second argument to NTH must be an integer." << endl;
+#endif
 		return 0;
 	    }
 	    List *var = (List *)argv[0];
@@ -185,7 +235,11 @@ func_nth(int argc, BaseType *argv[], DDS &)
 	}
 
       default:
+#ifdef WIN32
+	std::cerr << "Wrong type argument to list operator `nth'" << endl;
+#else
 	cerr << "Wrong type argument to list operator `nth'" << endl;
+#endif
 	return 0;
     }
 }
@@ -196,6 +250,9 @@ func_nth(int argc, BaseType *argv[], DDS &)
 void 
 func_grid_select(int argc, BaseType *argv[], DDS &dds)
 {
+	Pix p = NULL;
+	Pix q = NULL;
+
     if (argc <= 1)
 	throw Error(unknown_error, "Wrong number of arguments to grid()");
 
@@ -209,7 +266,7 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
     // that means this code would depend on the inner workings of GSEClause.
     // Of course, maybe GSEClause should have the DDS and handle these reads
     // itself when the information is really needed. 1/20/99 jhrg
-    for (Pix p = grid->first_map_var(); p; grid->next_map_var(p)) {
+    for (p = grid->first_map_var(); p; grid->next_map_var(p)) {
 	Array *map = dynamic_cast<Array *>(grid->map_var(p));
 	int error = 0;
 	if (!map->read_p()) {
@@ -233,7 +290,7 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 	clauses.push_back(arg->get_gsec());
     }
 
-    for (Pix p = grid->first_map_var(); p; grid->next_map_var(p)) {
+    for (p = grid->first_map_var(); p; grid->next_map_var(p)) {
 	Array *map = dynamic_cast<Array *>(grid->map_var(p));
 	string map_name = map->name();
 	// Init start and stop to the whole vector.
@@ -241,7 +298,7 @@ func_grid_select(int argc, BaseType *argv[], DDS &dds)
 	//     if clause-instance (CI) start >= current map start
 	//     map start = CI start, else error
 	//     Same for stop except use <=
-	Pix q = map->first_dim();// a valid Grid Map is a vector.
+	q = map->first_dim();// a valid Grid Map is a vector.
 	int start = map->dimension_start(q);
 	int stop = map->dimension_stop(q);
 

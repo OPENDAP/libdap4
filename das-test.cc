@@ -13,6 +13,12 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
+// Revision 1.22  2000/06/07 18:07:00  jimg
+// Merged the pc port branch
+//
+// Revision 1.21.20.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.21  1999/04/29 02:29:35  jimg
 // Merge of no-gnu branch
 //
@@ -105,7 +111,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das-test.cc,v 1.21 1999/04/29 02:29:35 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das-test.cc,v 1.22 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <iostream>
 #include <string>
@@ -206,51 +212,51 @@ test_scanner()
     cout << prompt << flush;		// first prompt
     while ((tok = daslex())) {
 	switch (tok) {
-	  case ATTR:
+	  case SCAN_ATTR:
 	    cout << "ATTR" << endl;
 	    break;
 
-	  case ALIAS:
+	  case SCAN_ALIAS:
 	    cout << "ALIAS" << endl;
 	    break;
-	  case ID:
+	  case SCAN_ID:
 	    cout << "ID=" << daslval << endl;
 	    break;
-	  case STR:
+	  case SCAN_STR:
 	    cout << "STR=" << daslval << endl;
 	    break;
-	  case INT:
+	  case SCAN_INT:
 	    cout << "INT=" << daslval << endl;
 	    break;
-	  case FLOAT:
+	  case SCAN_FLOAT:
 	    cout << "FLOAT=" << daslval << endl;
 	    break;
 
-	  case BYTE:
+	  case SCAN_BYTE:
 	    cout << "BYTE" << endl;
 	    break;
-	  case INT16:
+	  case SCAN_INT16:
 	    cout << "INT16" << endl;
 	    break;
-	  case UINT16:
+	  case SCAN_UINT16:
 	    cout << "UINT16" << endl;
 	    break;
-	  case INT32:
+	  case SCAN_INT32:
 	    cout << "INT32" << endl;
 	    break;
-	  case UINT32:
+	  case SCAN_UINT32:
 	    cout << "UINT32" << endl;
 	    break;
-	  case FLOAT32:
+	  case SCAN_FLOAT32:
 	    cout << "FLOAT32" << endl;
 	    break;
-	  case FLOAT64:
+	  case SCAN_FLOAT64:
 	    cout << "FLOAT64" << endl;
 	    break;
-	  case STRING:
+	  case SCAN_STRING:
 	    cout << "STRING" << endl;
 	    break;
-	  case URL:
+	  case SCAN_URL:
 	    cout << "URL" << endl;
 	    break;
 

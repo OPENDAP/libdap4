@@ -8,6 +8,12 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.13  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.12.10.1  2000/06/02 18:16:48  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.12  1999/09/03 22:07:44  jimg
 // Merged changes from release-3-1-1
 //
@@ -68,6 +74,10 @@
 
 #include "DAS.h"
 #include "DDS.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 /** When a DODS server receives a request from a DODS client, the
     server CGI script dispatches the request to one of several

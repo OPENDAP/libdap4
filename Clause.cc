@@ -8,6 +8,12 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.9  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.8.20.1  2000/06/02 18:14:42  rmorris
+// Mod for port to win32.
+//
 // Revision 1.8  1999/04/29 02:29:27  jimg
 // Merge of no-gnu branch
 //
@@ -124,7 +130,7 @@ Clause::value_clause()
 {
     assert(OK());
 
-    return (bool)_bt_func;
+    return (_bt_func != 0);
 }
 
 bool 

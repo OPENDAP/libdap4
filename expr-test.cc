@@ -10,6 +10,12 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.24  2000/06/07 18:07:00  jimg
+// Merged the pc port branch
+//
+// Revision 1.23.4.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.23  2000/04/07 00:19:29  jimg
 // Added exception handling
 //
@@ -117,17 +123,25 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.23 2000/04/07 00:19:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.24 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -160,7 +174,7 @@ bool constrained_trans(const string &dds_name, string dataset,
 
 int exprlex();			// exprlex() uses the global exprlval
 int exprparse(void *arg);
-int exprrestart(FILE *in);
+void exprrestart(FILE *in);
 
 // Glue routines declared in expr.lex
 void expr_switch_to_buffer(void *new_buffer);
@@ -175,34 +189,38 @@ const string version = "version 1.12";
 const string prompt = "expr-test: ";
 const string options = "sS:decvp:w:f:k:v";
 const string usage = "\
-expr-test [-s [-S string] -d -c -v [-p dds-file]
-[-e expr] [-w dds-file] [-f data-file] [-k expr]]
-Test the expression evaluation software.
-Options:
-	-s: Feed the input stream directly into the expression scanner, does
-	    not parse.
-        -S: <string> Scan the string as if it was standard input.
-	-d: Turn on expression parser debugging.
-	-c: Print the constrained DDS (the one that will be returned
-	    prepended to a data transmission. Must also supply -p and -e 
-	-t: Test transmission of data. This uses the Test*classes.
-	    Transmission is done using a single process that writes and then
-	    reads from a pipe. Must also suppply -p.
-        -v: Verbose output
-        -V: Print the version of expr-test
-  	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,
-	    then prompt for an expression and parse that expression, given
-	    the DDS object.
-	-e: Evaluate the constraint expression. Must be used with -p.
-	-w: Do the whole enchilada. You don't need to supply -p, -e, ...
-	     This prompts for the constraint expression and the optional
-             data file name. NOTE: The CE parser Error objects do not print
-             with this option.
-        -f: A file to use for data. Currently only used by -w for sequences.
-	-k: A constraint expression to use with the data. Works with -p,
-	    -e, -t and -w";
+\nexpr-test [-s [-S string] -d -c -v [-p dds-file]\
+\n[-e expr] [-w dds-file] [-f data-file] [-k expr]]\
+\nTest the expression evaluation software.\
+\nOptions:\
+\n	-s: Feed the input stream directly into the expression scanner, does\
+\n	    not parse.\
+\n        -S: <string> Scan the string as if it was standard input.\
+\n	-d: Turn on expression parser debugging.\
+\n	-c: Print the constrained DDS (the one that will be returned\
+\n	    prepended to a data transmission. Must also supply -p and -e \
+\n	-t: Test transmission of data. This uses the Test*classes.\
+\n	    Transmission is done using a single process that writes and then\
+\n	    reads from a pipe. Must also suppply -p.\
+\n      -v: Verbose output\
+\n      -V: Print the version of expr-test\
+\n  	-p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
+\n	    then prompt for an expression and parse that expression, given\
+\n	    the DDS object.\
+\n	-e: Evaluate the constraint expression. Must be used with -p.\
+\n	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\
+\n	     This prompts for the constraint expression and the optional\
+\n             data file name. NOTE: The CE parser Error objects do not print\
+\n             with this option.\
+\n  -f: A file to use for data. Currently only used by -w for sequences.\
+\n  -k: A constraint expression to use with the data. Works with -p,\
+\n      -e, -t and -w";
 
+#ifdef WIN32
+void
+#else
 int
+#endif
 main(int argc, char *argv[])
 {
     GetOpt getopt(argc, argv, options.c_str());
@@ -292,6 +310,10 @@ main(int argc, char *argv[])
     if (whole_enchalada) {
 	constrained_trans(dds_file_name, dataset, constraint);
     }
+
+#ifdef WIN32
+	return;
+#endif
 }
 
 // Instead of reading the tokens from srdin, read them from a string.
@@ -318,40 +340,40 @@ test_scanner(bool show_prompt)
     int tok;
     while ((tok = exprlex())) {
 	switch (tok) {
-	  case ID:
+	  case SCAN_ID:
 	    cout << "ID: " << exprlval.id << endl;
 	    break;
-	  case STR:
+	  case SCAN_STR:
 	    cout << "STR: " << *exprlval.val.v.s << endl;
 	    break;
-	  case FIELD:
+	  case SCAN_FIELD:
 	    cout << "FIELD: " << exprlval.id << endl;
 	    break;
-	  case INT:
+	  case SCAN_INT:
 	    cout << "INT: " << exprlval.val.v.i << endl;
 	    break;
-	  case FLOAT:
+	  case SCAN_FLOAT:
 	    cout << "FLOAT: " << exprlval.val.v.f << endl;
 	    break;
-	  case EQUAL:
+	  case SCAN_EQUAL:
 	    cout << "EQUAL: " << exprlval.op << endl;
 	    break;
-	  case NOT_EQUAL:
+	  case SCAN_NOT_EQUAL:
 	    cout << "NOT_EQUAL: " << exprlval.op << endl;
 	    break;
-	  case GREATER:
+	  case SCAN_GREATER:
 	    cout << "GREATER: " << exprlval.op << endl;
 	    break;
-	  case GREATER_EQL:
+	  case SCAN_GREATER_EQL:
 	    cout << "GREATER_EQL: " << exprlval.op << endl;
 	    break;
-	  case LESS:
+	  case SCAN_LESS:
 	    cout << "LESS: " << exprlval.op << endl;
 	    break;
-	  case LESS_EQL:
+	  case SCAN_LESS_EQL:
 	    cout << "LESS_EQL: " << exprlval.op << endl;
 	    break;
-	  case REGEXP:
+	  case SCAN_REGEXP:
 	    cout << "REGEXP: " << exprlval.op << endl;
 	    break;
 	  case '*':
@@ -472,11 +494,15 @@ evaluate_dds(DDS &table, bool print_constrained)
 }
 
 // create a pipe for the caller's process which can be used by the DODS
-// software to write to ad read from itself.
+// software to write to and read from itself.
 
 bool
 loopback_pipe(FILE **pout, FILE **pin)
 {
+//  expr-test isn't supported under win32.  It will require
+//  a re-write for those platforms due to that lack of "fork()".
+//  This will allow it to build for now.
+#ifndef WIN32
     // make a pipe
 
     int fd[2];
@@ -487,7 +513,7 @@ loopback_pipe(FILE **pout, FILE **pin)
 
     *pout = fdopen(fd[1], "w");
     *pin = fdopen(fd[0], "r");
-
+#endif
     return true;
 }
 
@@ -513,7 +539,7 @@ move_dds(FILE *in)
 	return NULL;
     }
 
-    FILE *fp = fopen(c, "w+");
+    FILE *fp = fopen(c, "w+b");
     if (!keep_temps)
 	unlink(c);
     if (!fp) {

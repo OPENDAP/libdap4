@@ -11,6 +11,12 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.56  2000/06/07 18:07:01  jimg
+// Merged the pc port branch
+//
+// Revision 1.55.18.1  2000/06/02 18:39:04  rmorris
+// Mod's for port to win32.
+//
 // Revision 1.55  1999/05/21 17:21:21  jimg
 // Removed a bogus error message about failure to run deflate.
 //
@@ -275,15 +281,21 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.55 1999/05/21 17:21:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.56 2000/06/07 18:07:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <errno.h>
 #include <time.h>
 #include <ctype.h>
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -292,7 +304,7 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.55 1999/05/21 17:21:21 jimg Ex
 #include <dbmalloc.h>
 #endif
 
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -316,6 +328,10 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.55 1999/05/21 17:21:21 jimg Ex
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 const char DODS_CE_PRX[]={"dods"};
@@ -357,16 +373,26 @@ unique_names(SLList<BaseType *> l, const string &var_name,
     for (Pix p = l.first(); p; l.next(p)) {
 	assert(l(p));
 	names[nelem++] = l(p)->name();
+#ifdef WIN32
+	DBG(std::cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
+#else
 	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
+#endif
     }
     
     // sort the array of names
     sort(names.begin(), names.end());
 	
 #ifdef DODS_DEBUG2
+#ifdef WIN32
+    std::cout << "unique:" << endl;
+    for (int ii = 0; ii < nelem; ++ii)
+	std::cout << "NAMES[" << ii << "]=" << names[ii] << endl;
+#else
     cout << "unique:" << endl;
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
+#endif
 #endif
 
     // look for any instance of consecutive names that are ==
@@ -438,7 +464,11 @@ delete_xdrstdio(XDR *xdr)
 extern "C" bool_t
 xdr_str(XDR *xdrs, string &buf)
 {
+#ifdef WIN32
+    DBG(std::cerr << "In xdr_str, xdrs: " << xdrs << endl);
+#else
     DBG(cerr << "In xdr_str, xdrs: " << xdrs << endl);
+#endif
 
     switch (xdrs->x_op) {
       case XDR_ENCODE: {	// BUF is a pointer to a (string *)
@@ -496,11 +526,19 @@ dods_progress()
 bool
 deflate_exists()
 {
+#ifdef WIN32
+    DBG(std::cerr << "Entering deflate_exists...");
+#else
     DBG(cerr << "Entering deflate_exists...");
+#endif
     int status = false;
     struct stat buf;
 
+#ifdef WIN32
+    string deflate = (string)dods_root() + "\\bin\\deflate";
+#else
     string deflate = (string)dods_root() + "/etc/deflate";
+#endif
 
     // Check that the file exists...
     // First look for deflate using DODS_ROOT (compile-time constant subsumed
@@ -508,12 +546,21 @@ deflate_exists()
     // the program when it is in the same directory as the dispatch script
     // and other server components. 2/11/98 jhrg
     status = (stat(deflate.c_str(), &buf) == 0)
+#ifdef WIN32
+	|| (stat(".\\deflate", &buf) == 0);
+#else
 	|| (stat("./deflate", &buf) == 0);
+#endif
 
     // and that it can be executed.
+#ifdef WIN32
+    status &= (buf.st_mode & _S_IEXEC);
+    DBG(std::cerr << " returning " << (status ? "true." : "false.") << endl);
+#else
     status &= buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH);
     DBG(cerr << " returning " << (status ? "true." : "false.") << endl);
-    return status;
+#endif
+    return (status != 0);
 }
 
 // Note that decompression is handled automatically by libwww 5.1. 2/10/1998
@@ -522,6 +569,10 @@ deflate_exists()
 FILE *
 compressor(FILE *output, int &childpid)
 {
+//  There is no such thing as a "fork" under win32.  Fortunately, this function
+//  should never be called on win32 platforms because we're using the built-in
+//  compression support in libz.  Ifdef'ng this out allows us to build libdap.
+#ifndef WIN32
     int pid, data[2];
 
     if (pipe(data) < 0) {
@@ -564,6 +615,11 @@ compressor(FILE *output, int &childpid)
 	     << endl;
 	_exit(127);		// Only here if an error occurred.
     }
+#endif
+
+	//  Should never get here, but VC++ requires this
+	return ((FILE *)0);
+
 }
 
 // This function returns a pointer to the system time formated for an httpd

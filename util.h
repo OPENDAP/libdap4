@@ -13,6 +13,12 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.32  2000/06/07 18:07:01  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.31.20.1  2000/06/02 18:39:04  rmorris
+ * Mod's for port to win32.
+ *
  * Revision 1.31  1999/05/04 19:47:24  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -150,6 +156,10 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#ifdef WIN32
+using namespace std;
+#endif
+
 string prune_spaces(string);
 bool unique_names(SLList<BaseType *> l, const string &var, const string &type,
 		  string &msg);
@@ -168,7 +178,11 @@ bool func_null(int argc, BaseType *argv[], DDS &dds);
 BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
 BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
 
+#ifdef WIN32
+extern "C" int xdr_str(XDR *xdrs, string &buf);
+#else
 extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
+#endif
 
 Byte *NewByte(const string &n = "");
 Int16 *NewInt16(const string &n = "");

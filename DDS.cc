@@ -9,6 +9,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.46  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.45.6.1  2000/06/02 18:16:48  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.45  2000/01/27 06:29:56  jimg
 // Resolved conflicts from merge with release-3-1-4
 //
@@ -246,13 +252,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.45 2000/01/27 06:29:56 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.46 2000/06/07 18:06:58 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <stdio.h>
 #include <assert.h>
 
@@ -272,6 +280,10 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.45 2000/01/27 06:29:56 jimg Exp
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
@@ -806,7 +818,11 @@ DDS::print(ostream &os)
 bool 
 DDS::print(FILE *out)
 {
+#ifdef WIN32
+    std::ofstream os(out->_tmpfname,ios::app);
+#else
     ofstream os(fileno(out));
+#endif
     return print(os);
 }
 
@@ -836,7 +852,11 @@ DDS::print_constrained(ostream &os)
 bool
 DDS::print_constrained(FILE *out)
 {
+#ifdef WIN32
+    std::ofstream os(out->_tmpfname,ios::app);
+#else
     ofstream os(fileno(out));
+#endif
     return print_constrained(os);
 }
 
@@ -859,7 +879,11 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
     assert(out);
     assert(var);
 
-    ofstream os(fileno(out));
+#ifdef WIN32
+    std::ofstream os(out->_tmpfname,ios::app);
+#else
+	ofstream os(fileno(out));
+#endif
     print_variable(os, var, constrained);
 }
 
@@ -936,7 +960,11 @@ DDS::parse_constraint(const string &constraint, ostream &os, bool server)
 bool
 DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
+#ifdef WIN32
+	std::ofstream os(out->_tmpfname,ios::app);
+#else
     ofstream os(fileno(out));
+#endif
     return parse_constraint(constraint, os, server);
 }
 
@@ -954,6 +982,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 {
     bool status = true;
 
+#ifndef WIN32  /*  Not supported under win32 as yet  */
     if ((status = parse_constraint(constraint, out, true))) {
 	// Handle *functional* constraint expressions specially 
 	if (functional_expression()) {
@@ -1031,6 +1060,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 	}
     }
 
+#endif
     return status;
 }
 

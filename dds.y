@@ -24,6 +24,12 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.29  2000/06/07 18:07:00  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.28.6.1  2000/06/02 18:36:38  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.28  2000/01/27 06:30:00  jimg
  * Resolved conflicts from merge with release-3-1-4
  *
@@ -153,7 +159,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.28 2000/01/27 06:30:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.29 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -161,7 +167,7 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.28 2000/01/27 06:30:00 jimg Exp 
 
 #include <iostream>
 #include <stack>
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -173,6 +179,10 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.28 2000/01/27 06:30:00 jimg Exp 
 #include "parser.h"
 #include "dds.tab.h"
 #include "util.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -210,28 +220,28 @@ void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current,
 
 %expect 56
 
-%token ID
-%token NAME
-%token INTEGER
-%token DATASET
-%token INDEPENDENT
-%token DEPENDENT
-%token ARRAY
-%token MAPS
-%token LIST
-%token SEQUENCE
-%token STRUCTURE
-%token FUNCTION
-%token GRID
-%token BYTE
-%token INT16
-%token UINT16
-%token INT32
-%token UINT32
-%token FLOAT32
-%token FLOAT64
-%token STRING
-%token URL 
+%token SCAN_ID
+%token SCAN_NAME
+%token SCAN_INTEGER
+%token SCAN_DATASET
+%token SCAN_INDEPENDENT
+%token SCAN_DEPENDENT
+%token SCAN_ARRAY
+%token SCAN_MAPS
+%token SCAN_LIST
+%token SCAN_SEQUENCE
+%token SCAN_STRUCTURE
+%token SCAN_FUNCTION
+%token SCAN_GRID
+%token SCAN_BYTE
+%token SCAN_INT16
+%token SCAN_UINT16
+%token SCAN_INT32
+%token SCAN_UINT32
+%token SCAN_FLOAT32
+%token SCAN_FLOAT64
+%token SCAN_STRING
+%token SCAN_URL 
 
 %%
 
@@ -239,7 +249,7 @@ datasets:	dataset
 		| datasets dataset
 ;
 
-dataset:	DATASET '{' declarations '}' name ';'
+dataset:	SCAN_DATASET '{' declarations '}' name ';'
                 | error
                 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG);
@@ -258,7 +268,11 @@ declaration: 	list non_list_decl
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << " " << $2 
 			    << "' is not a valid declaration" << endl 
@@ -281,7 +295,11 @@ non_list_decl:  base_type var ';'
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << " " << $2 
 			    << "' is not a valid declaration" << endl 
@@ -303,7 +321,11 @@ non_list_decl:  base_type var ';'
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << "'" << endl
 			    << "is not a valid declaration." << endl
@@ -325,7 +347,11 @@ non_list_decl:  base_type var ';'
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << "'" << endl
 			    << "is not a valid declaration." << endl 
@@ -336,9 +362,9 @@ non_list_decl:  base_type var ';'
 		    }
 		}
 
-		| grid '{' ARRAY ':' 
+		| grid '{' SCAN_ARRAY ':' 
 		{ part = array; }
-                declaration MAPS ':' 
+                declaration SCAN_MAPS ':' 
 		{ part = maps; }
                 declarations '}' 
 		{
@@ -353,7 +379,11 @@ non_list_decl:  base_type var ';'
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << $1 << "'" << endl
 			    << "is not a valid declaration." << endl 
@@ -366,7 +396,11 @@ non_list_decl:  base_type var ';'
 
                 | error
                 {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 		    ostrstream msg;
+#endif
 		    msg << "In the dataset descriptor object:" << endl
 			<< "Expected a varaible declaration" << endl 
 			<< "(e.g., Int32 i;). Make sure that the" << endl
@@ -382,7 +416,7 @@ non_list_decl:  base_type var ';'
 ;
  
 
-list:		LIST 
+list:		SCAN_LIST 
 		{ 
 		    if (!ctor) 
 			ctor = new stack<BaseType *>;
@@ -390,7 +424,7 @@ list:		LIST
 		}
 ;
 
-structure:	STRUCTURE
+structure:	SCAN_STRUCTURE
 		{ 
 		    if (!ctor)
 	                ctor = new stack<BaseType *>;
@@ -398,7 +432,7 @@ structure:	STRUCTURE
 		}
 ;
 
-sequence:	SEQUENCE 
+sequence:	SCAN_SEQUENCE 
 		{ 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -406,7 +440,7 @@ sequence:	SEQUENCE
 		}
 ;
 
-grid:		GRID 
+grid:		SCAN_GRID 
 		{ 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -414,22 +448,22 @@ grid:		GRID
 		}
 ;
 
-base_type:	BYTE { current = NewByte(); }
-		| INT16 { current = NewInt16(); }
-		| UINT16 { current = NewUInt16(); }
-		| INT32 { current = NewInt32(); }
-		| UINT32 { current = NewUInt32(); }
-		| FLOAT32 { current = NewFloat32(); }
-		| FLOAT64 { current = NewFloat64(); }
-		| STRING { current = NewStr(); }
-		| URL { current = NewUrl(); }
+base_type:	SCAN_BYTE { current = NewByte(); }
+		| SCAN_INT16 { current = NewInt16(); }
+		| SCAN_UINT16 { current = NewUInt16(); }
+		| SCAN_INT32 { current = NewInt32(); }
+		| SCAN_UINT32 { current = NewUInt32(); }
+		| SCAN_FLOAT32 { current = NewFloat32(); }
+		| SCAN_FLOAT64 { current = NewFloat64(); }
+		| SCAN_STRING { current = NewStr(); }
+		| SCAN_URL { current = NewUrl(); }
 ;
 
-var:		ID { current->set_name($1); }
+var:		SCAN_ID { current->set_name($1); }
  		| var array_decl
 ;
 
-array_decl:	'[' INTEGER ']'
+array_decl:	'[' SCAN_INTEGER ']'
                  { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi($2));
@@ -442,11 +476,11 @@ array_decl:	'[' INTEGER ']'
 		     }
 		 }
 
-		 | '[' ID 
+		 | '[' SCAN_ID 
 		 {
 		     id = new string($2);
 		 } 
-                 '=' INTEGER 
+                 '=' SCAN_INTEGER 
                  { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi($5), *id);
@@ -464,7 +498,11 @@ array_decl:	'[' INTEGER ']'
 
 		 | error
                  {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 		     ostrstream msg;
+#endif
 		     msg << "In the dataset descriptor object:" << endl
 			 << "Expected an array subscript." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
@@ -473,11 +511,15 @@ array_decl:	'[' INTEGER ']'
 		 }
 ;
 
-name:		NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
-		| ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
+name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
+		| SCAN_ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
                 | error 
                 {
-		     ostrstream msg;
+#ifdef WIN32
+			std::ostrstream msg;
+#else
+			ostrstream msg;
+#endif
 		     msg << "Error parsing the dataset name." << endl
 			 << "The name may be missing or may contain an illegal character." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());

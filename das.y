@@ -17,6 +17,12 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.37  2000/06/07 18:07:00  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.36.6.1  2000/06/02 18:36:38  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.36  2000/01/27 06:30:00  jimg
  * Resolved conflicts from merge with release-3-1-4
  *
@@ -189,14 +195,14 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.36 2000/01/27 06:30:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.37 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <assert.h>
 
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -211,6 +217,10 @@ static char rcsid[] not_used = {"$Id: das.y,v 1.36 2000/01/27 06:30:00 jimg Exp 
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -263,23 +273,23 @@ string attr_name(string name);
 
 %expect 24
 
-%token ATTR
+%token SCAN_ATTR
 
-%token ID
-%token INT
-%token FLOAT
-%token STR
-%token ALIAS
+%token SCAN_ID
+%token SCAN_INT
+%token SCAN_FLOAT
+%token SCAN_STR
+%token SCAN_ALIAS
 
-%token BYTE
-%token INT16
-%token UINT16
-%token INT32
-%token UINT32
-%token FLOAT32
-%token FLOAT64
-%token STRING
-%token URL
+%token SCAN_BYTE
+%token SCAN_INT16
+%token SCAN_UINT16
+%token SCAN_INT32
+%token SCAN_UINT32
+%token SCAN_FLOAT32
+%token SCAN_FLOAT64
+%token SCAN_STRING
+%token SCAN_URL
 
 %%
 
@@ -344,7 +354,7 @@ attributes:     attribute
 
 ;
     	    	
-attribute:    	ATTR '{' attr_list '}'
+attribute:    	SCAN_ATTR '{' attr_list '}'
                 | error
                 {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG);
@@ -359,46 +369,50 @@ attr_list:  	/* empty */
 
 attr_tuple:	alias
 
-                | BYTE { *type = "Byte"; }
-                ID { *name = $3; } 
+                | SCAN_BYTE { *type = "Byte"; }
+                SCAN_ID { *name = $3; } 
 		bytes ';'
 
-		| INT16 { save_str(*type, "Int16", das_line_num); } 
-                ID { save_str(*name, $3, das_line_num); } 
+		| SCAN_INT16 { save_str(*type, "Int16", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
 		int16 ';'
 
-		| UINT16 { save_str(*type, "UInt16", das_line_num); } 
-                ID { save_str(*name, $3, das_line_num); } 
+		| SCAN_UINT16 { save_str(*type, "UInt16", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
 		uint16 ';'
 
-		| INT32 { save_str(*type, "Int32", das_line_num); } 
-                ID { save_str(*name, $3, das_line_num); } 
+		| SCAN_INT32 { save_str(*type, "Int32", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
 		int32 ';'
 
-		| UINT32 { save_str(*type, "UInt32", das_line_num); } 
-                ID { save_str(*name, $3, das_line_num); } 
+		| SCAN_UINT32 { save_str(*type, "UInt32", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
 		uint32 ';'
 
-		| FLOAT32 { save_str(*type, "Float32", das_line_num); } 
-                ID { save_str(*name, $3, das_line_num); } 
+		| SCAN_FLOAT32 { save_str(*type, "Float32", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
 		float32 ';'
 
-		| FLOAT64 { save_str(*type, "Float64", das_line_num); } 
-                ID { save_str(*name, $3, das_line_num); } 
+		| SCAN_FLOAT64 { save_str(*type, "Float64", das_line_num); } 
+                SCAN_ID { save_str(*name, $3, das_line_num); } 
 		float64 ';'
 
-		| STRING { *type = "String"; } 
-                ID { *name = $3; } 
+		| SCAN_STRING { *type = "String"; } 
+                SCAN_ID { *name = $3; } 
 		strs ';'
 
-		| URL { *type = "Url"; } 
-                ID { *name = $3; } 
+		| SCAN_URL { *type = "Url"; } 
+                SCAN_ID { *name = $3; } 
 		urls ';'
 
-		| ID 
+		| SCAN_ID 
                 {
 		    AttrTable *at;
+#ifdef WIN32
+		    DBG(std::cerr << "Processing ID: " << $1 << endl);
+#else
 		    DBG(cerr << "Processing ID: " << $1 << endl);
+#endif
 		    /* If we are at the outer most level of attributes, make
 		       sure to use the AttrTable in the DAS. */
 		    if (STACK_EMPTY) {
@@ -414,12 +428,20 @@ attr_tuple:	alias
 		    }
 
 		    PUSH(at);
+#ifdef WIN32
+		    DBG(std::cerr << " Pushed attr_tab: " << at << endl);
+#else
 		    DBG(cerr << " Pushed attr_tab: " << at << endl);
+#endif
 		}
 		'{' attr_list 
                 {
 		    /* pop top of stack; store in attr_tab */
+#ifdef WIN32
+		    DBG(std::cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
+#else
 		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
+#endif
 		    POP;
 		}
 		'}'
@@ -431,36 +453,60 @@ attr_tuple:	alias
 		} ';'
 ;
 
-bytes:		INT
+bytes:		SCAN_INT
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding: " << TYPE_NAME_VALUE($1) << endl);
+#else
 		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($1) << endl);
+#endif
 		    if (!check_byte($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not a Byte value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
-		| bytes ',' INT
+		| bytes ',' SCAN_INT
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding: " << TYPE_NAME_VALUE($3) << endl);
+#else
 		    DBG(cerr << "Adding: " << TYPE_NAME_VALUE($3) << endl);
+#endif
 		    if (!check_byte($3, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not a Byte value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -469,43 +515,69 @@ bytes:		INT
 		}
 ;
 
-int16:		INT
+int16:		SCAN_INT
 		{
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+#ifdef WIN32
+		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
+			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
+#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
 			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
+#endif
 		    if (!check_int16($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not an Int16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		}
-		| int16 ',' INT
+		| int16 ',' SCAN_INT
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
 			<< endl);
+#endif
 		    if (!check_int16($3, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not an Int16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -514,44 +586,70 @@ int16:		INT
 		}
 ;
 
-uint16:		INT
+uint16:		SCAN_INT
 		{
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+#ifdef WIN32
+		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
+			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
+#else
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($1)\
 			<< endl << " to AttrTable: " << TOP_OF_STACK << endl);
+#endif
 		    if (!check_uint16($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not an UInt16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		}
-		| uint16 ',' INT
+		| uint16 ',' SCAN_INT
 		{
+#ifdef WIN32
 		    DBG(cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
 			<< endl);
+#else
+		    DBG(std::cerr << "Adding INT (16): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+#endif
 		    if (!(check_int16($3, das_line_num)
 			  || check_uint16($1, das_line_num))) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not an UInt16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -560,42 +658,67 @@ uint16:		INT
 		}
 ;
 
-int32:		INT
+int32:		SCAN_INT
 		{
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+#ifdef WIN32
+		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
+		    DBG(std::cerr << " to AttrTable: " << TOP_OF_STACK << endl);
+#else
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
 		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
+#endif
 		    if (!check_int32($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		}
-		| int32 ',' INT
+		| int32 ',' SCAN_INT
 		{
-		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
+#ifdef WIN32
+		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
+#else
+
+#endif
 		    if (!check_int32($3, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -604,42 +727,67 @@ int32:		INT
 		}
 ;
 
-uint32:		INT
+uint32:		SCAN_INT
 		{
 		    /* NB: On the Sun (SunOS 4) strtol does not check for */
 		    /* overflow. Thus it will never figure out that 4 */
 		    /* billion is way to large to fit in a 32 bit signed */
 		    /* integer. What's worse, long is 64  bits on Alpha and */
 		    /* SGI/IRIX 6.1... jhrg 10/27/96 */
+#ifdef WIN32
+		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
+		    DBG(std::cerr << " to AttrTable: " << TOP_OF_STACK << endl);
+#else
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($1) << endl);
 		    DBG(cerr << " to AttrTable: " << TOP_OF_STACK << endl);
+#endif
 		    if (!check_uint32($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not an UInt32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		}
-		| uint32 ',' INT
+		| uint32 ',' SCAN_INT
 		{
+#ifdef WIN32
 		    DBG(cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
+#else
+		    DBG(std::cerr << "Adding INT: " << TYPE_NAME_VALUE($3) << endl);
+#endif
 		    if (!check_uint32($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not an UInt32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -650,10 +798,19 @@ uint32:		INT
 
 float32:	float_or_int
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($1)\
+			<< endl);
+#else
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($1)\
 			<< endl);
+#endif
 		    if (!check_float32($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not a Float32 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -661,7 +818,11 @@ float32:	float_or_int
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
@@ -670,10 +831,19 @@ float32:	float_or_int
 		}
 		| float32 ',' float_or_int
 		{
+#ifdef WIN32
 		    DBG(cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($3)\
 			<< endl);
+#else
+		    DBG(std::cerr << "Adding FLOAT (32): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+#endif
 		    if (!check_float32($3, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not a Float32 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -681,7 +851,11 @@ float32:	float_or_int
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -692,10 +866,19 @@ float32:	float_or_int
 
 float64:	float_or_int
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($1)\
+			<< endl);
+#else
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($1)\
 			<< endl);
+#endif
 		    if (!check_float64($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -703,7 +886,11 @@ float64:	float_or_int
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -712,10 +899,19 @@ float64:	float_or_int
 		}
 		| float64 ',' float_or_int
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($3)\
+			<< endl);
+#else
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($3)\
 			<< endl);
+#endif
 		    if (!check_float64($3, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
 			parse_error((parser_arg *)arg, msg.str());
@@ -723,7 +919,11 @@ float64:	float_or_int
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -734,10 +934,18 @@ float64:	float_or_int
 
 strs:		str_or_id
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
+#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
+#endif
 		    /* Assume a string that parses is vaild. */
 		    if (TOP_OF_STACK->append_attr(*name, *type, $1) == 0) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0); 
@@ -746,9 +954,17 @@ strs:		str_or_id
 		}
 		| strs ',' str_or_id
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
+#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
+#endif
 		    if (TOP_OF_STACK->append_attr(*name, *type, $3) == 0) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -759,16 +975,28 @@ strs:		str_or_id
 
 urls:		url
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
+#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
+#endif
 		    if (!check_url($1, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not a String value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -777,16 +1005,28 @@ urls:		url
 		}
 		| urls ',' url
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
+#else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
+#endif
 		    if (!check_url($3, das_line_num)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << $1 << "' is not a String value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "`" << *name << "' previously defined." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
@@ -795,20 +1035,20 @@ urls:		url
 		}
 ;
 
-url:		ID | STR
+url:		SCAN_ID | SCAN_STR
 ;
 
-str_or_id:	STR | ID | INT | FLOAT
+str_or_id:	SCAN_STR | SCAN_ID | SCAN_INT | SCAN_FLOAT
 ;
 
-float_or_int:   FLOAT | INT
+float_or_int:   SCAN_FLOAT | SCAN_INT
 ;
 
-alias:          ALIAS ID 
+alias:          SCAN_ALIAS SCAN_ID 
                 { 
 		    *name = $2;
 		} 
-                ID
+                SCAN_ID
                 {
 		    // First try to alias within current lexical scope. If
 		    // that fails then look in the complete environment for
@@ -829,7 +1069,11 @@ alias:          ALIAS ID
 			AttrTable *table = DAS_OBJ(arg)->get_table($4);
 			if (!TOP_OF_STACK->attr_alias(*name, table, 
 						      attr_name($4))) {
+#ifdef WIN32
+				std::ostrstream msg;
+#else
 			    ostrstream msg;
+#endif
 			    msg << "Could not alias `" << $4 << "' and `" 
 				<< *name << "'." << ends;
 			    parse_error((parser_arg *)arg, msg.str());

@@ -14,6 +14,12 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.24  2000/06/07 18:06:58  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.23.20.1  2000/06/02 18:16:48  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.23  1999/05/04 19:47:20  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -123,6 +129,10 @@
 #include "Pix.h"
 
 #include "AttrTable.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 /** The Data Attribute Structure is a set of name-value pairs used to
     describe the data in a particular dataset. The name-value pairs are
@@ -269,7 +279,11 @@ public:
 
     /** Creates an ASCII representation of a DAS on the given output
 	stream. */
+#ifdef WIN32
+    bool print(std::ostream &os = std::cout);
+#else
     bool print(ostream &os = cout);
+#endif
 };
 
 #endif

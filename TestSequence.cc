@@ -14,6 +14,12 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.21  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.20.20.1  2000/06/02 18:29:31  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.20  1999/05/04 19:47:22  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -101,7 +107,7 @@
 #pragma implementation
 #endif
 
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -110,6 +116,10 @@
 #include "TestSequence.h"
 
 #include "debug.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 void
 TestSequence::_duplicate(const TestSequence &ts)

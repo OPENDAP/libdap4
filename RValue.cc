@@ -11,6 +11,12 @@
 // jhrg 3/4/96
 
 // $Log: RValue.cc,v $
+// Revision 1.5  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.4.20.1  2000/06/02 18:29:31  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.4  1999/05/04 19:47:21  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -61,7 +67,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: RValue.cc,v 1.4 1999/05/04 19:47:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: RValue.cc,v 1.5 2000/06/07 18:06:59 jimg Exp $"};
 
 #include <assert.h>
 
@@ -115,7 +121,14 @@ rvalue::bvalue(const string &dataset, DDS &dds)
     }
     else if (func) {
 	int argc = args->length();
-	BaseType *argv[argc + 1]; // Add space for null terminator
+	// Add space for null terminator
+#ifdef WIN32
+	//  MS Visual C++ 6.0 doesn't allow arithmetic expressions in []
+	//  except in the left-most [] with the new operator.
+	BaseType **argv = new BaseType*[argc + 1];
+#else
+	BaseType *argv[argc + 1];
+#endif
 
 	int i = 0;
 	for (Pix p = args->first(); p; args->next(p)) {
@@ -143,7 +156,13 @@ build_btp_args(rvalue_list *args, DDS &dds)
 	argc = args->length();
 
     // Add space for a null terminator
-    BaseType **argv = new (BaseType *)[argc + 1]; 
+#ifdef WIN32
+	//  MS Visual C++ 6.0 doesn't allow arithmetic expressions in []
+	//  except in the left-most [] with the new operator.
+	BaseType **argv = new BaseType*[argc + 1];
+#else
+    BaseType **argv = new (BaseType *)[argc + 1];
+#endif
     string dataset = dds.filename();
 		
     int i = 0;

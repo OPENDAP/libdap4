@@ -10,6 +10,12 @@
 // jhrg 9/7/94
 
 // $Log: Int16.cc,v $
+// Revision 1.7  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.6.20.1  2000/06/02 18:29:31  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.6  1999/04/29 02:29:30  jimg
 // Merge of no-gnu branch
 //
@@ -42,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int16.cc,v 1.6 1999/04/29 02:29:30 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int16.cc,v 1.7 2000/06/07 18:06:59 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -60,6 +66,10 @@ static char rcsid[] not_used = {"$Id: Int16.cc,v 1.6 1999/04/29 02:29:30 jimg Ex
 #include "trace_new.h"
 #endif
 
+#ifdef WIN32
+using namespace std;
+#endif
+
 Int16::Int16(const string &n) : BaseType(n, dods_int16_c, (xdrproc_t)XDR_INT16)
 {
 }
@@ -72,7 +82,7 @@ Int16::width()
 
 bool
 Int16::serialize(const string &dataset, DDS &dds, XDR *sink,
-		 bool ce_eval = true)
+		 bool ce_eval)
 {
     int error;
 

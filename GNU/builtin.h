@@ -29,7 +29,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define _builtin_h 1
 
 #include <stddef.h>
+#ifndef WIN32
 #include <gnu-std.h>
+#endif
 #ifdef __GNUG__
 #include <cmath>
 #else

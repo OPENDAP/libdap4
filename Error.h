@@ -12,6 +12,12 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.14  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.13.4.1  2000/06/02 18:21:26  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.13  2000/03/28 16:32:02  jimg
 // Modified these files so that they can be built either with and without GUI
 // defined. The type signatures are now the same either way. Thus we can build
@@ -77,12 +83,16 @@
 #endif
 
 #include <stdio.h>		// For FILE *
+#include <iostream>
 
 #include <string>
 #ifdef GUI
 #include "Gui.h"
 #endif
 
+#ifdef _WIN32
+using namespace std;
+#endif
 
 /** The most common errors within DODS have special codes so that they
     can be spotted easily by the DODS client software. Any error
@@ -218,7 +228,11 @@ public:
 	@memo Print the Error object on the given output stream.
 	@param os A pointer to the output stream on which the Error
 	object is to be rendered. */
+#ifdef WIN32
+    void print(std::ostream &os = std::cout);
+#else
     void print(ostream &os = cout);
+#endif
 
     /** With no argument, returns the Error object's error code. With an
 	argument, sets the error code to that value.

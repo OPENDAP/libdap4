@@ -10,6 +10,12 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.18  2000/06/07 18:07:01  jimg
+// Merged the pc port branch
+//
+// Revision 1.17.4.1  2000/06/02 18:39:04  rmorris
+// Mod's for port to win32.
+//
 // Revision 1.17  2000/03/31 21:07:04  jimg
 // Merged with release-3-1-5
 //
@@ -91,7 +97,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.17 2000/03/31 21:07:04 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.18 2000/06/07 18:07:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +105,7 @@ static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.17 2000/03/31 21:07:04 
 #include <math.h>
 
 #include <iostream>
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -108,13 +114,22 @@ static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.17 2000/03/31 21:07:04 
 #include "parser.h"		// defines constants such as ID_MAX
 #include "dods-limits.h"
 
+#ifdef WIN32
+using namespace std;
+#endif
+
 void 
 parse_error(const char *s, const int line_num)
 {
     assert(s);
 
+#ifdef WIN32
     cerr << "Parse error (line: " << line_num << "):" << endl
 	 << s << endl;
+#else
+    std::cerr << "Parse error (line: " << line_num << "):" << endl
+	 << s << endl;
+#endif
 }
 
 void
@@ -126,7 +141,11 @@ parse_error(parser_arg *arg, const char *msg, const int line_num,
 
     arg->set_status(FALSE);
 
-    ostrstream oss;
+#ifdef WIN32
+    std::ostrstream oss;
+#else
+	ostrstream oss;
+#endif
 
     if (line_num != 0)
 	oss << "Error parsing the text on line " << line_num << ":" << endl;
@@ -145,9 +164,14 @@ save_str(char *dst, const char *src, const int line_num)
 {
     strncpy(dst, src, ID_MAX);
     dst[ID_MAX-1] = '\0';		/* in case ... */
-    if (strlen(src) >= ID_MAX) 
+    if (strlen(src) >= ID_MAX)
+#ifdef WIN32 
+	std::cerr << "line: " << line_num << "`" << src << "' truncated to `"
+             << dst << "'" << endl;
+#else
 	cerr << "line: " << line_num << "`" << src << "' truncated to `"
              << dst << "'" << endl;
+#endif
 }
 
 void
@@ -190,7 +214,11 @@ check_int16(const char *val, const int line)
     long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
 
     if (v == 0 && val == ptr) {
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
+#endif
 	oss << "`" << val << "' cannot be decoded as an integer value." 
 	    << ends;
 
@@ -201,8 +229,12 @@ check_int16(const char *val, const int line)
     }
 
     // Don't use the constant from limits.h, use the ones in dods-limits.h
-    if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) { 
+    if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) {
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
+#endif
 
 	oss << "`" << val << "' is not a 16-bit integer value value." << endl
 	    << "It must be between " << DODS_SHRT_MIN << " and "
@@ -223,7 +255,11 @@ check_uint16(const char *val, const int line)
     unsigned long v = strtol(val, &ptr, 0); 
 
     if (v == 0 && val == ptr) {
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
+#endif
 	oss << "`" << val << "' cannot be decoded as an integer value." 
 	    << ends;
 	parse_error(oss.str(), line);
@@ -232,7 +268,11 @@ check_uint16(const char *val, const int line)
     }
 
     if (v > DODS_USHRT_MAX) { 
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
+#endif
 	oss << "`" << val << "' is not a 16-bit integer value value." << endl
 	    << "It must be less than or equal to " << DODS_USHRT_MAX << "."
 	    << ends;
@@ -251,7 +291,11 @@ check_int32(const char *val, const int line)
     long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
 
     if (v == 0 && val == ptr) {
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
+#endif
 	oss << "`" << val << "' cannot be decoded as an integer value." 
 	    << ends;
 
@@ -262,7 +306,11 @@ check_int32(const char *val, const int line)
     }
 
     if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
+#endif
 	oss << "`" << val << "' is not a 32-bit integer value value." << endl
 	    << "It must be between " << DODS_INT_MIN << " and "
 	    << DODS_INT_MAX << "." << ends;
@@ -283,7 +331,11 @@ check_uint32(const char *val, const int line)
     unsigned long v = strtol(val, &ptr, 0);
 
     if (v == 0 && val == ptr) {
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
+#endif
 	oss << "`" << val << "' cannot be decoded as an integer value." 
 	    << ends;
 	parse_error(oss.str(), line);
@@ -312,7 +364,11 @@ check_float32(const char *val, const int num)
 #if 0
     static double range = fabs(log10(DODS_FLT_MAX));
     if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
+#endif
 
 	oss << "`" << val << "' is not a 32 bit floating point value value." 
 	    << endl
@@ -342,8 +398,11 @@ check_float64(const char *val, const int num)
 #if 0
     static double range = fabs(log10(DODS_DBL_MAX));
     if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
+#ifdef WIN32
+	std::ostrstream oss;
+#else
 	ostrstream oss;
-
+#endif
 	oss << "`" << val << "' is not a 64 bit floating point value value." 
 	    << endl
 	    << "It must be between (+/-)" << DODS_DBL_MAX << " and (+/-)" 

@@ -11,6 +11,12 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.28  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.27.6.1  2000/06/02 18:16:47  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.27  2000/01/27 06:29:56  jimg
 // Resolved conflicts from merge with release-3-1-4
 //
@@ -147,16 +153,20 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.27 2000/01/27 06:29:56 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.28 2000/06/07 18:06:58 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <stdio.h>
+#ifdef WIN32
+#include <io.h>
+#endif
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <assert.h>
-#include <unistd.h>
 
 #include <iostream>
 #include <Pix.h>
@@ -166,6 +176,10 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.27 2000/01/27 06:29:56 jimg Exp 
 #include "Error.h"
 #include "parser.h"
 #include "debug.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
@@ -322,7 +336,11 @@ DAS::parse(string fname)
 bool
 DAS::parse(int fd)
 {
+#ifdef WIN32
+    FILE *in = fdopen(_dup(fd), "r");
+#else
     FILE *in = fdopen(dup(fd), "r");
+#endif
 
     if (!in) {
 	cerr << "Could not access file" << endl;

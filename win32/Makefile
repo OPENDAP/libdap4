@@ -156,7 +156,7 @@ install:
 	copy $(OBJDIR)\libdap*.lib $(INSTALLLIBDIR)
 	copy $(OBJDIR)\geturl.exe $(INSTALLEXEDIR)
 	copy $(OBJDIR)\usage.exe $(INSTALLEXEDIR)
-	copy ..\config_dap.h $(INCLUDEDIR)
+	copy config_dap.h $(INCLUDEDIR)
 	copy ..\debug.h $(INCLUDEDIR)
 	copy ..\dods-limits.h $(INCLUDEDIR)
 	copy ..\Error.h $(INCLUDEDIR)

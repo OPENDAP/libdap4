@@ -1,6 +1,6 @@
 
 /*  A Bison parser, made from dds.y
- by  GNU Bison version 1.27
+ by  GNU Bison version 1.25
   */
 
 #define YYBISON 1  /* Identify Bison output.  */
@@ -12,37 +12,37 @@
 #define yychar ddschar
 #define yydebug ddsdebug
 #define yynerrs ddsnerrs
-#define	ID	257
-#define	NAME	258
-#define	INTEGER	259
-#define	DATASET	260
-#define	INDEPENDENT	261
-#define	DEPENDENT	262
-#define	ARRAY	263
-#define	MAPS	264
-#define	LIST	265
-#define	SEQUENCE	266
-#define	STRUCTURE	267
-#define	FUNCTION	268
-#define	GRID	269
-#define	BYTE	270
-#define	INT16	271
-#define	UINT16	272
-#define	INT32	273
-#define	UINT32	274
-#define	FLOAT32	275
-#define	FLOAT64	276
-#define	STRING	277
-#define	URL	278
+#define	SCAN_ID	258
+#define	SCAN_NAME	259
+#define	SCAN_INTEGER	260
+#define	SCAN_DATASET	261
+#define	SCAN_INDEPENDENT	262
+#define	SCAN_DEPENDENT	263
+#define	SCAN_ARRAY	264
+#define	SCAN_MAPS	265
+#define	SCAN_LIST	266
+#define	SCAN_SEQUENCE	267
+#define	SCAN_STRUCTURE	268
+#define	SCAN_FUNCTION	269
+#define	SCAN_GRID	270
+#define	SCAN_BYTE	271
+#define	SCAN_INT16	272
+#define	SCAN_UINT16	273
+#define	SCAN_INT32	274
+#define	SCAN_UINT32	275
+#define	SCAN_FLOAT32	276
+#define	SCAN_FLOAT64	277
+#define	SCAN_STRING	278
+#define	SCAN_URL	279
 
-#line 150 "dds.y"
+#line 153 "dds.y"
 
 
 #define YYSTYPE char *
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.17 2000/03/28 17:02:07 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.18 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,7 +50,7 @@ static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.17 2000/03/28 17:02:07 jimg 
 
 #include <iostream>
 #include <stack>
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -62,6 +62,10 @@ static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.17 2000/03/28 17:02:07 jimg 
 #include "parser.h"
 #include "dds.tab.h"
 #include "util.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -112,7 +116,7 @@ void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current,
 #define	YYFLAG		-32768
 #define	YYNTBASE	32
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 278 ? yytranslate[x] : 52)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 279 ? yytranslate[x] : 52)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -140,9 +144,9 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
-     7,     8,     9,    10,    11,    12,    13,    14,    15,    16,
-    17,    18,    19,    20,    21,    22,    23,    24
+     2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
+     6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
+    16,    17,    18,    19,    20,    21,    22,    23,    24
 };
 
 #if YYDEBUG != 0
@@ -173,24 +177,25 @@ static const short yyrhs[] = {    33,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   238,   239,   242,   243,   250,   251,   252,   255,   271,   278,
-   295,   300,   317,   322,   339,   341,   343,   348,   367,   385,
-   393,   401,   409,   417,   418,   419,   420,   421,   422,   423,
-   424,   425,   428,   429,   432,   445,   449,   465,   465,   476,
-   477,   478
+   245,   246,   249,   250,   257,   258,   259,   262,   282,   289,
+   310,   315,   336,   341,   362,   364,   366,   371,   394,   416,
+   424,   432,   440,   448,   449,   450,   451,   452,   453,   454,
+   455,   456,   459,   460,   463,   476,   480,   496,   496,   511,
+   512,   513
 };
 #endif
 
 
 #if YYDEBUG != 0 || defined (YYERROR_VERBOSE)
 
-static const char * const yytname[] = {   "$","error","$undefined.","ID","NAME",
-"INTEGER","DATASET","INDEPENDENT","DEPENDENT","ARRAY","MAPS","LIST","SEQUENCE",
-"STRUCTURE","FUNCTION","GRID","BYTE","INT16","UINT16","INT32","UINT32","FLOAT32",
-"FLOAT64","STRING","URL","'{'","'}'","';'","':'","'['","']'","'='","datasets",
-"dataset","declarations","declaration","non_list_decl","@1","@2","@3","@4","@5",
-"list","structure","sequence","grid","base_type","var","array_decl","@6","@7",
-"name", NULL
+static const char * const yytname[] = {   "$","error","$undefined.","SCAN_ID",
+"SCAN_NAME","SCAN_INTEGER","SCAN_DATASET","SCAN_INDEPENDENT","SCAN_DEPENDENT",
+"SCAN_ARRAY","SCAN_MAPS","SCAN_LIST","SCAN_SEQUENCE","SCAN_STRUCTURE","SCAN_FUNCTION",
+"SCAN_GRID","SCAN_BYTE","SCAN_INT16","SCAN_UINT16","SCAN_INT32","SCAN_UINT32",
+"SCAN_FLOAT32","SCAN_FLOAT64","SCAN_STRING","SCAN_URL","'{'","'}'","';'","':'",
+"'['","']'","'='","datasets","dataset","declarations","declaration","non_list_decl",
+"@1","@2","@3","@4","@5","list","structure","sequence","grid","base_type","var",
+"array_decl","@6","@7","name", NULL
 };
 #endif
 
@@ -292,8 +297,7 @@ static const short yycheck[] = {    21,
     18,    19,    20,    21,    22,    23,    24
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/share/bison.simple"
-/* This file comes from bison-1.27.  */
+#line 3 "bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -310,66 +314,46 @@ static const short yycheck[] = {    21,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
    This special exception was added by the Free Software Foundation
    in version 1.24 of Bison.  */
 
+#ifndef alloca
+#ifdef __GNUC__
+#define alloca __builtin_alloca
+#else /* not GNU C.  */
+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
+#include <alloca.h>
+#else /* not sparc */
+#if defined (MSDOS) && !defined (__TURBOC__)
+#include <malloc.h>
+#else /* not MSDOS, or __TURBOC__ */
+#if defined(_AIX)
+#include <malloc.h>
+ #pragma alloca
+#else /* not MSDOS, __TURBOC__, or _AIX */
+#ifdef __hpux
+#ifdef __cplusplus
+extern "C" {
+void *alloca (unsigned int);
+};
+#else /* not __cplusplus */
+void *alloca ();
+#endif /* not __cplusplus */
+#endif /* __hpux */
+#endif /* not _AIX */
+#endif /* not MSDOS, or __TURBOC__ */
+#endif /* not sparc.  */
+#endif /* not GNU C.  */
+#endif /* alloca not defined.  */
+
 /* This is the parser code that is written into each bison parser
   when the %semantic_parser declaration is not specified in the grammar.
   It was written by Richard Stallman by simplifying the hairy parser
   used when %semantic_parser is specified.  */
-
-#ifndef YYSTACK_USE_ALLOCA
-#ifdef alloca
-#define YYSTACK_USE_ALLOCA
-#else /* alloca not defined */
-#ifdef __GNUC__
-#define YYSTACK_USE_ALLOCA
-#define alloca __builtin_alloca
-#else /* not GNU C.  */
-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
-#define YYSTACK_USE_ALLOCA
-#include <alloca.h>
-#else /* not sparc */
-/* We think this test detects Watcom and Microsoft C.  */
-/* This used to test MSDOS, but that is a bad idea
-   since that symbol is in the user namespace.  */
-#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
-#if 0 /* No need for malloc.h, which pollutes the namespace;
-	 instead, just don't use alloca.  */
-#include <malloc.h>
-#endif
-#else /* not MSDOS, or __TURBOC__ */
-#if defined(_AIX)
-/* I don't know what this was needed for, but it pollutes the namespace.
-   So I turned it off.   rms, 2 May 1997.  */
-/* #include <malloc.h>  */
- #pragma alloca
-#define YYSTACK_USE_ALLOCA
-#else /* not MSDOS, or __TURBOC__, or _AIX */
-#if 0
-#ifdef __hpux /* haible@ilog.fr says this works for HPUX 9.05 and up,
-		 and on HPUX 10.  Eventually we can turn this on.  */
-#define YYSTACK_USE_ALLOCA
-#define alloca __builtin_alloca
-#endif /* __hpux */
-#endif
-#endif /* not _AIX */
-#endif /* not MSDOS, or __TURBOC__ */
-#endif /* not sparc */
-#endif /* not GNU C */
-#endif /* alloca not defined */
-#endif /* YYSTACK_USE_ALLOCA not defined */
-
-#ifdef YYSTACK_USE_ALLOCA
-#define YYSTACK_ALLOC alloca
-#else
-#define YYSTACK_ALLOC malloc
-#endif
 
 /* Note: there must be only one dollar sign in this file.
    It is replaced by the list of actions, each action
@@ -379,8 +363,8 @@ static const short yycheck[] = {    21,
 #define yyclearin	(yychar = YYEMPTY)
 #define YYEMPTY		-2
 #define YYEOF		0
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT 	goto yyabortlab
+#define YYACCEPT	return(0)
+#define YYABORT 	return(1)
 #define YYERROR		goto yyerrlab1
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -461,12 +445,12 @@ int yydebug;			/*  nonzero means print parse trace	*/
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 10000
 #endif
-
-/* Define __yy_memcpy.  Note that the size argument
-   should be passed with type unsigned int, because that is what the non-GCC
-   definitions require.  With GCC, __builtin_memcpy takes an arg
-   of type size_t, but it can handle unsigned int.  */
 
+/* Prevent warning if -Wstrict-prototypes.  */
+#ifdef __GNUC__
+int yyparse (void);
+#endif
+
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
 #define __yy_memcpy(TO,FROM,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
 #else				/* not GNU C or C++ */
@@ -478,7 +462,7 @@ static void
 __yy_memcpy (to, from, count)
      char *to;
      char *from;
-     unsigned int count;
+     int count;
 {
   register char *f = from;
   register char *t = to;
@@ -493,10 +477,10 @@ __yy_memcpy (to, from, count)
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_memcpy (char *to, char *from, unsigned int count)
+__yy_memcpy (char *to, char *from, int count)
 {
-  register char *t = to;
   register char *f = from;
+  register char *t = to;
   register int i = count;
 
   while (i-- > 0)
@@ -506,7 +490,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 216 "/usr/local/share/bison.simple"
+#line 196 "bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -526,15 +510,6 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #define YYPARSE_PARAM_ARG
 #define YYPARSE_PARAM_DECL
 #endif /* not YYPARSE_PARAM */
-
-/* Prevent warning if -Wstrict-prototypes.  */
-#ifdef __GNUC__
-#ifdef YYPARSE_PARAM
-int yyparse (void *);
-#else
-int yyparse (void);
-#endif
-#endif
 
 int
 yyparse(YYPARSE_PARAM_ARG)
@@ -563,7 +538,6 @@ yyparse(YYPARSE_PARAM_ARG)
 #endif
 
   int yystacksize = YYINITDEPTH;
-  int yyfree_stacks = 0;
 
 #ifdef YYPURE
   int yychar;
@@ -648,32 +622,18 @@ yynewstate:
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  yyerror("parser stack overflow");
-	  if (yyfree_stacks)
-	    {
-	      free (yyss);
-	      free (yyvs);
-#ifdef YYLSP_NEEDED
-	      free (yyls);
-#endif
-	    }
 	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-#ifndef YYSTACK_USE_ALLOCA
-      yyfree_stacks = 1;
-#endif
-      yyss = (short *) YYSTACK_ALLOC (yystacksize * sizeof (*yyssp));
-      __yy_memcpy ((char *)yyss, (char *)yyss1,
-		   size * (unsigned int) sizeof (*yyssp));
-      yyvs = (YYSTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yyvsp));
-      __yy_memcpy ((char *)yyvs, (char *)yyvs1,
-		   size * (unsigned int) sizeof (*yyvsp));
+      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
+      __yy_memcpy ((char *)yyss, (char *)yyss1, size * sizeof (*yyssp));
+      yyvs = (YYSTYPE *) alloca (yystacksize * sizeof (*yyvsp));
+      __yy_memcpy ((char *)yyvs, (char *)yyvs1, size * sizeof (*yyvsp));
 #ifdef YYLSP_NEEDED
-      yyls = (YYLTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yylsp));
-      __yy_memcpy ((char *)yyls, (char *)yyls1,
-		   size * (unsigned int) sizeof (*yylsp));
+      yyls = (YYLTYPE *) alloca (yystacksize * sizeof (*yylsp));
+      __yy_memcpy ((char *)yyls, (char *)yyls1, size * sizeof (*yylsp));
 #endif
 #endif /* no yyoverflow */
 
@@ -834,20 +794,24 @@ yyreduce:
   switch (yyn) {
 
 case 4:
-#line 244 "dds.y"
+#line 251 "dds.y"
 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG);
 		    YYABORT;
 		;
     break;}
 case 8:
-#line 256 "dds.y"
+#line 263 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-1] << " " << yyvsp[0] 
 			    << "' is not a valid declaration" << endl 
@@ -859,13 +823,17 @@ case 8:
 		;
     break;}
 case 10:
-#line 279 "dds.y"
+#line 290 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-2] << " " << yyvsp[-1] 
 			    << "' is not a valid declaration" << endl 
@@ -877,20 +845,24 @@ case 10:
 		;
     break;}
 case 11:
-#line 296 "dds.y"
+#line 311 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 12:
-#line 301 "dds.y"
+#line 316 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-6] << "'" << endl
 			    << "is not a valid declaration." << endl
@@ -902,20 +874,24 @@ case 12:
 		;
     break;}
 case 13:
-#line 318 "dds.y"
+#line 337 "dds.y"
 { 
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 14:
-#line 323 "dds.y"
+#line 342 "dds.y"
 { 
 		    string smsg;
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-6] << "'" << endl
 			    << "is not a valid declaration." << endl 
@@ -927,22 +903,22 @@ case 14:
 		;
     break;}
 case 15:
-#line 340 "dds.y"
+#line 363 "dds.y"
 { part = array; ;
     break;}
 case 16:
-#line 342 "dds.y"
+#line 365 "dds.y"
 { part = maps; ;
     break;}
 case 17:
-#line 344 "dds.y"
+#line 367 "dds.y"
 {
 		    current = ctor->top(); 
 		    ctor->pop();
 		;
     break;}
 case 18:
-#line 349 "dds.y"
+#line 372 "dds.y"
 {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
@@ -950,7 +926,11 @@ case 18:
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		    else {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 			ostrstream msg;
+#endif
 			msg << "In the dataset descriptor object:" << endl
 			    << "`" << yyvsp[-13] << "'" << endl
 			    << "is not a valid declaration." << endl 
@@ -962,9 +942,13 @@ case 18:
 		;
     break;}
 case 19:
-#line 368 "dds.y"
+#line 395 "dds.y"
 {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 		    ostrstream msg;
+#endif
 		    msg << "In the dataset descriptor object:" << endl
 			<< "Expected a varaible declaration" << endl 
 			<< "(e.g., Int32 i;). Make sure that the" << endl
@@ -979,7 +963,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 386 "dds.y"
+#line 417 "dds.y"
 { 
 		    if (!ctor) 
 			ctor = new stack<BaseType *>;
@@ -987,7 +971,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 394 "dds.y"
+#line 425 "dds.y"
 { 
 		    if (!ctor)
 	                ctor = new stack<BaseType *>;
@@ -995,7 +979,7 @@ case 21:
 		;
     break;}
 case 22:
-#line 402 "dds.y"
+#line 433 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1003,7 +987,7 @@ case 22:
 		;
     break;}
 case 23:
-#line 410 "dds.y"
+#line 441 "dds.y"
 { 
 		    if (!ctor)
 			ctor = new stack<BaseType *>;
@@ -1011,47 +995,47 @@ case 23:
 		;
     break;}
 case 24:
-#line 417 "dds.y"
+#line 448 "dds.y"
 { current = NewByte(); ;
     break;}
 case 25:
-#line 418 "dds.y"
+#line 449 "dds.y"
 { current = NewInt16(); ;
     break;}
 case 26:
-#line 419 "dds.y"
+#line 450 "dds.y"
 { current = NewUInt16(); ;
     break;}
 case 27:
-#line 420 "dds.y"
+#line 451 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 421 "dds.y"
+#line 452 "dds.y"
 { current = NewUInt32(); ;
     break;}
 case 29:
-#line 422 "dds.y"
+#line 453 "dds.y"
 { current = NewFloat32(); ;
     break;}
 case 30:
-#line 423 "dds.y"
+#line 454 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 31:
-#line 424 "dds.y"
+#line 455 "dds.y"
 { current = NewStr(); ;
     break;}
 case 32:
-#line 425 "dds.y"
+#line 456 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 33:
-#line 428 "dds.y"
+#line 459 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 35:
-#line 433 "dds.y"
+#line 464 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -1065,13 +1049,13 @@ case 35:
 		 ;
     break;}
 case 36:
-#line 446 "dds.y"
+#line 477 "dds.y"
 {
 		     id = new string(yyvsp[0]);
 		 ;
     break;}
 case 37:
-#line 450 "dds.y"
+#line 481 "dds.y"
 { 
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), *id);
@@ -1087,9 +1071,13 @@ case 37:
 		 ;
     break;}
 case 39:
-#line 466 "dds.y"
+#line 497 "dds.y"
 {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
 		     ostrstream msg;
+#endif
 		     msg << "In the dataset descriptor object:" << endl
 			 << "Expected an array subscript." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
@@ -1098,17 +1086,21 @@ case 39:
 		 ;
     break;}
 case 40:
-#line 476 "dds.y"
+#line 511 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 41:
-#line 477 "dds.y"
+#line 512 "dds.y"
 { (*DDS_OBJ(arg)).set_dataset_name(yyvsp[0]); ;
     break;}
 case 42:
-#line 479 "dds.y"
+#line 514 "dds.y"
 {
-		     ostrstream msg;
+#ifdef WIN32
+			std::ostrstream msg;
+#else
+			ostrstream msg;
+#endif
 		     msg << "Error parsing the dataset name." << endl
 			 << "The name may be missing or may contain an illegal character." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
@@ -1118,7 +1110,7 @@ case 42:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 542 "/usr/local/share/bison.simple"
+#line 498 "bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1313,32 +1305,8 @@ yyerrhandle:
 
   yystate = yyn;
   goto yynewstate;
-
- yyacceptlab:
-  /* YYACCEPT comes here.  */
-  if (yyfree_stacks)
-    {
-      free (yyss);
-      free (yyvs);
-#ifdef YYLSP_NEEDED
-      free (yyls);
-#endif
-    }
-  return 0;
-
- yyabortlab:
-  /* YYABORT comes here.  */
-  if (yyfree_stacks)
-    {
-      free (yyss);
-      free (yyvs);
-#ifdef YYLSP_NEEDED
-      free (yyls);
-#endif
-    }
-  return 1;
 }
-#line 489 "dds.y"
+#line 528 "dds.y"
 
 
 /* 

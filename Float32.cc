@@ -10,6 +10,12 @@
 // 3/22/9 jhrg9
 
 // $Log: Float32.cc,v $
+// Revision 1.10  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.9.20.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.9  1999/04/29 02:29:29  jimg
 // Merge of no-gnu branch
 //
@@ -48,7 +54,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Float32.cc,v 1.9 1999/04/29 02:29:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Float32.cc,v 1.10 2000/06/07 18:06:58 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -78,7 +84,7 @@ Float32::width()
 
 bool
 Float32::serialize(const string &dataset, DDS &dds, XDR *sink, 
-		   bool ce_eval = true)
+		   bool ce_eval)
 {
     int error;
 
@@ -99,7 +105,7 @@ Float32::deserialize(XDR *source, DDS *, bool)
 {
     unsigned int num = xdr_float(source, &_buf);
 
-    return num;
+    return (num != 0);
 }
 
 unsigned int

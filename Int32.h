@@ -12,6 +12,12 @@
 
 /* 
  * $Log: Int32.h,v $
+ * Revision 1.27  2000/06/07 18:06:59  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.26.20.1  2000/06/02 18:29:31  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.26  1999/04/29 02:29:30  jimg
  * Merge of no-gnu branch
  *
@@ -158,11 +164,21 @@
 #pragma interface
 #endif
 
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+#endif
 
 #include "BaseType.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 /** Holds a 32-bit signed integer. 
 
@@ -211,8 +227,13 @@ public:
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
+#ifdef WIN32
+    virtual void print_val(std::ostream &os, string space = "",
+			   bool print_decl_p = true);
+#else
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
+#endif
 
     virtual bool ops(BaseType *b, int op, const string &dataset);
 };

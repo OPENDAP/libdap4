@@ -10,6 +10,12 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.37  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.36.20.1  2000/06/02 18:14:42  rmorris
+// Mod for port to win32.
+//
 // Revision 1.36  1999/04/29 02:29:27  jimg
 // Merge of no-gnu branch
 //
@@ -213,7 +219,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Byte.cc,v 1.36 1999/04/29 02:29:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Byte.cc,v 1.37 2000/06/07 18:06:58 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -280,7 +286,7 @@ Byte::deserialize(XDR *source, DDS *, bool)
 {
     unsigned int num = xdr_char(source, (char *)&_buf);
 
-    return num;
+    return (num != 0);
 }
 
 // Store the value referenced by VAL in the object's internal buffer. REUSE

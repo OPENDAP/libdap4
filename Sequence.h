@@ -19,6 +19,12 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.39  2000/06/07 18:06:59  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.38.20.1  2000/06/02 18:29:31  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.38  1999/05/04 19:47:22  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -206,9 +212,15 @@
 #pragma interface
 #endif
 
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+#endif
 
 #include <SLList.h>
 
@@ -216,6 +228,10 @@
 #include "config_dap.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 /** This is the interface for the class Sequence. A sequence contains
@@ -446,19 +462,30 @@ public:
       Sequence. */
     BaseType *var(Pix p);
 
+#ifdef WIN32
+    virtual void print_decl(std::ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
+#endif
 
   /** Prints the first instance of the Sequence. 
 
       @see Sequence::print_all_vals
       */
+#ifdef WIN32
+    virtual void print_val(std::ostream &os, string space = "",
+			   bool print_decl_p = true);
+#else
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
+#endif
 
-    
   /** Prints a formatted version of an entire Sequence (all rows, all
       columns), including nested Sequences.  This is meant to be used
       on the client side of a DODS connection, and the source of the
@@ -476,8 +503,13 @@ public:
       @param print_del_p If TRUE, prints the declaration of the
       Sequence as well as its data.
       */
+#ifdef WIN32
+    virtual void print_all_vals(std::ostream& os, XDR *src, DDS *dds, 
+				string space = "", bool print_decl_p = true);
+#else
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds, 
 				string space = "", bool print_decl_p = true);
+#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 };

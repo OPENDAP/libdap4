@@ -31,6 +31,12 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.25  2000/06/07 18:07:00  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.24.20.1  2000/06/02 18:36:38  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.24  1999/05/04 19:47:23  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -125,7 +131,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.24 1999/05/04 19:47:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.25 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <string.h>
 
@@ -146,54 +152,54 @@ int dds_line_num = 1;
     
 %x comment
 
-DATASET 	DATASET|Dataset|dataset 
-INDEPENDENT 	INDEPENDENT|Independent|independent
-DEPENDENT 	DEPENDENT|Dependent|dependent
-ARRAY		ARRAY|Array|array
-MAPS 		MAPS|Maps|maps
-LIST 		LIST|List|list
-SEQUENCE 	SEQUENCE|Sequence|sequence
-STRUCTURE 	STRUCTURE|Structure|structure
-GRID 		GRID|Grid|grid
-BYTE 		BYTE|Byte|byte
-INT16 		INT16|Int16|int16
-UINT16 		UINT16|UInt16|uint16
-INT32 		INT32|Int32|int32
-UINT32 		UINT32|UInt32|uint32
-FLOAT32 	FLOAT32|Float32|float32
-FLOAT64 	FLOAT64|Float64|float64
-STRING 		STRING|String|string
-URL 		URL|Url|url
+SCAN_DATASET 		DATASET|Dataset|dataset 
+SCAN_INDEPENDENT 	INDEPENDENT|Independent|independent
+SCAN_DEPENDENT 		DEPENDENT|Dependent|dependent
+SCAN_ARRAY			ARRAY|Array|array
+SCAN_MAPS 			MAPS|Maps|maps
+SCAN_LIST 			LIST|List|list
+SCAN_SEQUENCE 		SEQUENCE|Sequence|sequence
+SCAN_STRUCTURE 		STRUCTURE|Structure|structure
+SCAN_GRID 			GRID|Grid|grid
+SCAN_BYTE 			BYTE|Byte|byte
+SCAN_INT16 			INT16|Int16|int16
+SCAN_UINT16 		UINT16|UInt16|uint16
+SCAN_INT32 			INT32|Int32|int32
+SCAN_UINT32 		UINT32|UInt32|uint32
+SCAN_FLOAT32 		FLOAT32|Float32|float32
+SCAN_FLOAT64 		FLOAT64|Float64|float64
+SCAN_STRING 		STRING|String|string
+SCAN_URL 			URL|Url|url
 
-ID  		[a-zA-Z_%][-a-zA-Z0-9_/%]*
-NAME            [a-zA-Z0-9_/%.][-a-zA-Z0-9_/%.]*
-INTEGER		[0-9]+
-NEVER		[^][{}:;=a-zA-Z0-9_%]
+SCAN_ID				[a-zA-Z_%][-a-zA-Z0-9_/%]*
+SCAN_NAME			[a-zA-Z0-9_/%.][:]?[-a-zA-Z0-9\\_/%.]*
+SCAN_INTEGER		[0-9]+
+NEVER				[^][{}:;=a-zA-Z0-9_%]
 
 %%
 
-{DATASET}		ddslval = yytext; return DATASET;
-{INDEPENDENT}		ddslval = yytext; return INDEPENDENT;
-{DEPENDENT}		ddslval = yytext; return DEPENDENT;
-{ARRAY}			ddslval = yytext; return ARRAY;
-{MAPS}			ddslval = yytext; return MAPS;
-{LIST}			ddslval = yytext; return LIST;
-{SEQUENCE}		ddslval = yytext; return SEQUENCE;
-{STRUCTURE}		ddslval = yytext; return STRUCTURE;
-{GRID}			ddslval = yytext; return GRID;
-{BYTE}			ddslval = yytext; return BYTE;
-{INT16}			ddslval = yytext; return INT16;
-{UINT16}		ddslval = yytext; return UINT16;
-{INT32}			ddslval = yytext; return INT32;
-{UINT32}		ddslval = yytext; return UINT32;
-{FLOAT32}		ddslval = yytext; return FLOAT32;
-{FLOAT64}		ddslval = yytext; return FLOAT64;
-{STRING}		ddslval = yytext; return STRING;
-{URL}			ddslval = yytext; return URL;
+{SCAN_DATASET}			ddslval = yytext; return SCAN_DATASET;
+{SCAN_INDEPENDENT}		ddslval = yytext; return SCAN_INDEPENDENT;
+{SCAN_DEPENDENT}		ddslval = yytext; return SCAN_DEPENDENT;
+{SCAN_ARRAY}			ddslval = yytext; return SCAN_ARRAY;
+{SCAN_MAPS}				ddslval = yytext; return SCAN_MAPS;
+{SCAN_LIST}				ddslval = yytext; return SCAN_LIST;
+{SCAN_SEQUENCE}			ddslval = yytext; return SCAN_SEQUENCE;
+{SCAN_STRUCTURE}		ddslval = yytext; return SCAN_STRUCTURE;
+{SCAN_GRID}				ddslval = yytext; return SCAN_GRID;
+{SCAN_BYTE}				ddslval = yytext; return SCAN_BYTE;
+{SCAN_INT16}			ddslval = yytext; return SCAN_INT16;
+{SCAN_UINT16}			ddslval = yytext; return SCAN_UINT16;
+{SCAN_INT32}			ddslval = yytext; return SCAN_INT32;
+{SCAN_UINT32}			ddslval = yytext; return SCAN_UINT32;
+{SCAN_FLOAT32}			ddslval = yytext; return SCAN_FLOAT32;
+{SCAN_FLOAT64}			ddslval = yytext; return SCAN_FLOAT64;
+{SCAN_STRING}			ddslval = yytext; return SCAN_STRING;
+{SCAN_URL}				ddslval = yytext; return SCAN_URL;
 
-{ID}  	    	    	ddslval = yytext; return ID;
-{INTEGER}		ddslval = yytext; return INTEGER;
-{NAME}                  ddslval = yytext; return NAME;
+{SCAN_ID}				ddslval = yytext; return SCAN_ID;
+{SCAN_INTEGER}			ddslval = yytext; return SCAN_INTEGER;
+{SCAN_NAME}				ddslval = yytext; return SCAN_NAME;
 
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;

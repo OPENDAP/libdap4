@@ -13,6 +13,12 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.h,v $
+// Revision 1.5  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.4.20.1  2000/06/02 18:21:26  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.4  1999/04/29 02:29:29  jimg
 // Merge of no-gnu branch
 //
@@ -48,6 +54,10 @@
 #include "expr.h"
 #include "debug.h"
 #include "DDS.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 /** This class adds some useful state information to the DDS
     structure.  It is for use on the client side of the DODS

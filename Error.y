@@ -9,6 +9,12 @@
 
 
 // $Log: Error.y,v $
+// Revision 1.8  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.7.20.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.7  1999/04/29 02:29:29  jimg
 // Merge of no-gnu branch
 //
@@ -45,7 +51,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.y,v 1.7 1999/04/29 02:29:29 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.y,v 1.8 2000/06/07 18:06:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,6 +63,10 @@ static char rcsid[] not_used = {"$Id: Error.y,v 1.7 1999/04/29 02:29:29 jimg Exp
 
 #include "parser.h"
 #include "debug.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -89,14 +99,14 @@ void Errorerror(char *s);	// gotta love automatically generated names...
     char *string;
 }
 
-%token <integer> INT
-%token <string> STR
+%token <integer>	SCAN_INT
+%token <string>		SCAN_STR
 
-%token <integer> ERROR
-%token <integer> CODE
-%token <integer> PTYPE
-%token <string> MSG
-%token <string> PROGRAM
+%token <integer>	SCAN_ERROR
+%token <integer>	SCAN_CODE
+%token <integer>	SCAN_PTYPE
+%token <string>		SCAN_MSG
+%token <string>		SCAN_PROGRAM
 
 %type <boolean> error_object contents description program
 %type <boolean> code program_type message program_code
@@ -110,7 +120,7 @@ void Errorerror(char *s);	// gotta love automatically generated names...
 // pointer to an error object. However, the `error' member of parser_arg is
 // not yet used here.
 
-error_object:	ERROR '{' contents '}' ';' { $$ = $3; STATUS(arg) = $3; }
+error_object:	SCAN_ERROR '{' contents '}' ';' { $$ = $3; STATUS(arg) = $3; }
 ;
 
 contents:	description program { $$ = $1 && $2; }
@@ -124,14 +134,14 @@ description:	code message { $$ = $1 && $2; }
 program:	program_type program_code { $$ = $1 && $2; }
 ;
 
-code:		CODE '=' INT ';' 
+code:		SCAN_CODE '=' SCAN_INT ';' 
 		{ 
 		    ERROR_OBJ(arg)->error_code((ErrorCode)$3);
 		    $$ = true; 
 		}
 ;
 
-message:	MSG '=' STR 
+message:	SCAN_MSG '=' SCAN_STR 
 		{ 
 		    ERROR_OBJ(arg)->error_message($3);
 		    $$ = true; 
@@ -139,16 +149,20 @@ message:	MSG '=' STR
 		';' 
 ;
 
-program_type:	PTYPE '=' INT ';'
+program_type:	SCAN_PTYPE '=' SCAN_INT ';'
 		{
 		    ERROR_OBJ(arg)->program_type((ProgramType)$3);
 		    $$ = true; 
 		}
 ;
 
-program_code:	PROGRAM '=' STR
+program_code:	SCAN_PROGRAM '=' SCAN_STR
 		{
+#ifdef WIN32
+		    DBG(std::cerr << "Program: " << $3 << endl);
+#else
 		    DBG(cerr << "Program: " << $3 << endl);
+#endif
 		    ERROR_OBJ(arg)->program($3);
 		    $$ = true; 
 		}
@@ -160,5 +174,9 @@ program_code:	PROGRAM '=' STR
 void
 Errorerror(char *s)
 {
+#ifdef WIN32
+    std::cerr << s << " line: " << error_line_num << endl;
+#else
     cerr << s << " line: " << error_line_num << endl;
+#endif
 }

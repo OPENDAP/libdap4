@@ -12,6 +12,12 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.27  2000/06/07 18:06:59  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.26.20.1  2000/06/02 18:29:32  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.26  1999/05/04 19:47:23  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -120,9 +126,15 @@
 #pragma interface
 #endif
 
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+using namespace std;
+#else
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+#endif
 
 #include "BaseType.h"
 #include "DDS.h"
@@ -342,6 +354,15 @@ public:
     /** Sets the value of the template variable.  */
     virtual void add_var(BaseType *v, Part p = nil);
 
+#ifdef WIN32
+    virtual void print_decl(std::ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
+    virtual void print_val(std::ostream &os, string space = "", 
+			   bool print_decl_p = true);
+#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -349,6 +370,7 @@ public:
 
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
+#endif
 
     virtual bool check_semantics(string &msg, bool all = false);
 };

@@ -10,6 +10,12 @@
 // The Grid Selection Expression Clause class.
 
 // $Log: GSEClause.cc,v $
+// Revision 1.4  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.3.20.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.3  1999/04/29 02:29:30  jimg
 // Merge of no-gnu branch
 //
@@ -24,9 +30,10 @@
 #pragma implementation
 #endif
 
+#include <assert.h>
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.3 1999/04/29 02:29:30 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.4 2000/06/07 18:06:59 jimg Exp $"};
 
 #include <Pix.h>
 
@@ -60,40 +67,42 @@ compare(T elem, relop op, double value)
     }
 }
 
+#ifndef WIN32
 template<class T>
 void
 GSEClause::set_start_stop()
 {
-    // Read the byte array, scan, set start and stop.
-    T *vals = 0;
-    _map->buf2val((void **)&vals);
+   // Read the byte array, scan, set start and stop.
+   T *vals = 0;
+   _map->buf2val((void **)&vals);
 
-    int i = _start;
-    int end = _stop;
-    while(i <= end && !compare<T>(vals[i], _op1, _value1))
-	i++;
-    _start = i;
+   int i = _start;
+   int end = _stop;
+   while(i <= end && !compare<T>(vals[i], _op1, _value1))
+           i++;
+   _start = i;
 
-    i = end;
-    while(i >= 0 && !compare<T>(vals[i], _op1, _value1))
-	i--;
-    _stop = i;
+   i = end;
+   while(i >= 0 && !compare<T>(vals[i], _op1, _value1))
+   i--;
+   _stop = i;
 
-    // Every clause must have one operator but the second is optional since
-    // the more complex for of a clause is optional.
-    if (_op2 != dods_nop_op) {
-	int i = _start;
-	int end = _stop;
-	while(i <= end && !compare<T>(vals[i], _op2, _value2))
-	    i++;
-	_start = i;
+   // Every clause must have one operator but the second is optional since
+   // the more complex for of a clause is optional.
+   if (_op2 != dods_nop_op) {
+   int i = _start;
+   int end = _stop;
+   while(i <= end && !compare<T>(vals[i], _op2, _value2))
+                  i++;
+   _start = i;
 
-	i = end;
-	while(i >= 0 && !compare<T>(vals[i], _op2, _value2))
-	    i--;
-	_stop = i;
-    }
+   i = end;
+   while(i >= 0 && !compare<T>(vals[i], _op2, _value2))
+           i--;
+   _stop = i;
+   }
 }
+#endif
 
 void
 GSEClause::compute_indices()
@@ -101,6 +110,39 @@ GSEClause::compute_indices()
     Pix p = _map->first_dim();
     assert(p);
 
+#ifdef WIN32
+	//  Allows us to get around short-comming with MS Visual C++ 6.0
+	//  templates
+	char dummy;
+
+    switch (_map->var()->type()) {
+      case dods_byte_c:
+	set_start_stop((char *)(&dummy));
+	break;
+      case dods_int16_c:
+	set_start_stop((char *)(&dummy));
+	break;
+      case dods_uint16_c:
+	set_start_stop((char *)(&dummy));
+	break;
+      case dods_int32_c:
+	set_start_stop((char *)(&dummy));
+	break;
+      case dods_uint32_c:
+	set_start_stop((char *)(&dummy));
+	break;
+      case dods_float32_c:
+	set_start_stop((char *)(&dummy));
+	break;
+      case dods_float64_c:
+	set_start_stop((char *)(&dummy));
+	break;
+    default:
+	throw Error(malformed_expr, 
+"Grid selection using non-numeric map vectors is not supported");
+    }
+
+#else
     switch (_map->var()->type()) {
       case dods_byte_c:
 	set_start_stop<char>();
@@ -127,6 +169,8 @@ GSEClause::compute_indices()
 	throw Error(malformed_expr, 
 "Grid selection using non-numeric map vectors is not supported");
     }
+#endif
+
 }
 
 // Public methods

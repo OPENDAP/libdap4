@@ -10,6 +10,12 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.18  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.17.10.1  2000/06/02 18:16:48  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.17  1999/09/03 22:07:44  jimg
 // Merged changes from release-3-1-1
 //
@@ -106,10 +112,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.17 1999/09/03 22:07:44 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.18 2000/06/07 18:06:58 jimg Exp $"};
 
 #include <iostream>
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>

@@ -10,6 +10,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.44  2000/06/07 18:06:57  jimg
+// Merged the pc port branch
+//
+// Revision 1.43.20.1  2000/06/02 18:11:19  rmorris
+// Mod's for Port to Win32.
+//
 // Revision 1.43  1999/04/29 02:29:26  jimg
 // Merge of no-gnu branch
 //
@@ -250,6 +256,10 @@
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 void

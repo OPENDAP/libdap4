@@ -28,6 +28,12 @@
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.22  2000/06/07 18:07:00  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.21.20.1  2000/06/02 18:36:38  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.21  1999/04/29 02:29:36  jimg
  * Merge of no-gnu branch
  *
@@ -115,7 +121,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.lex,v 1.21 1999/04/29 02:29:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.lex,v 1.22 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -141,44 +147,44 @@ static void store_op(int op);
 
 %x quote
     
-ID		[a-zA-Z_%][a-zA-Z0-9_/%]*
-FIELD           {ID}\.{ID}(\.{ID})*
-INT		[-+]?[0-9]+
+SCAN_ID			[a-zA-Z_%][a-zA-Z0-9_/%]*
+SCAN_FIELD		{SCAN_ID}\.{SCAN_ID}(\.{SCAN_ID})*
+SCAN_INT		[-+]?[0-9]+
 
-MANTISA		([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
-EXPONENT	(E|e)[-+]?[0-9]+
+SCAN_MANTISA	([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
+SCAN_EXPONENT	(E|e)[-+]?[0-9]+
 
-FLOAT		[-+]?{MANTISA}{EXPONENT}?
+SCAN_FLOAT		[-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?
 
-STR		[-+a-zA-Z0-9_/.%]+
+SCAN_STR		[-+a-zA-Z0-9_/.%]+
 
-EQUAL		=
-NOT_EQUAL	!=
-GREATER		>
-GREATER_EQL	>=
-LESS		<
-LESS_EQL	<=
-REGEXP		=~
+SCAN_EQUAL			=
+SCAN_NOT_EQUAL		!=
+SCAN_GREATER		>
+SCAN_GREATER_EQL	>=
+SCAN_LESS			<
+SCAN_LESS_EQL		<=
+SCAN_REGEXP			=~
 
 NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 
 %%
 
-{ID}		store_id(); return ID;
-{FIELD}		store_id(); return FIELD;
-{INT}		store_int32(); return INT;
+{SCAN_ID}				store_id(); return SCAN_ID;
+{SCAN_FIELD}			store_id(); return SCAN_FIELD;
+{SCAN_INT}				store_int32(); return SCAN_INT;
 
-{FLOAT}		store_float64(); return FLOAT;
+{SCAN_FLOAT}			store_float64(); return SCAN_FLOAT;
 
-{STR}		store_str(); return STR;
+{SCAN_STR}				store_str(); return SCAN_STR;
 
-{EQUAL}		store_op(EQUAL); return EQUAL;
-{NOT_EQUAL}	store_op(NOT_EQUAL); return NOT_EQUAL;
-{GREATER}	store_op(GREATER); return GREATER;
-{GREATER_EQL}	store_op(GREATER_EQL); return GREATER_EQL;
-{LESS}		store_op(LESS); return LESS;
-{LESS_EQL}	store_op(LESS_EQL); return LESS_EQL;
-{REGEXP}	store_op(REGEXP); return REGEXP;
+{SCAN_EQUAL}			store_op(SCAN_EQUAL); return SCAN_EQUAL;
+{SCAN_NOT_EQUAL}		store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
+{SCAN_GREATER}			store_op(SCAN_GREATER); return SCAN_GREATER;
+{SCAN_GREATER_EQL}		store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
+{SCAN_LESS}				store_op(SCAN_LESS); return SCAN_LESS;
+{SCAN_LESS_EQL}			store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
+{SCAN_REGEXP}			store_op(SCAN_REGEXP); return SCAN_REGEXP;
 
 "["    	    	return (int)*yytext;
 "]"    	    	return (int)*yytext;
@@ -200,7 +206,7 @@ NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 <quote>\"		{ 
     			  BEGIN(INITIAL); 
                           store_str();
-			  return STR;
+			  return SCAN_STR;
                         }
 <quote><<EOF>>		{
                           char msg[256];

@@ -8,6 +8,12 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: gse.y,v $
+// Revision 1.3  2000/06/07 18:07:01  jimg
+// Merged the pc port branch
+//
+// Revision 1.2.20.1  2000/06/02 18:39:04  rmorris
+// Mod's for port to win32.
+//
 // Revision 1.2  1999/04/29 02:29:37  jimg
 // Merge of no-gnu branch
 //
@@ -19,13 +25,17 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.y,v 1.2 1999/04/29 02:29:37 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.y,v 1.3 2000/06/07 18:07:01 jimg Exp $"};
 
 #include <iostream.h>
 
 #include "Error.h"
 #include "GSEClause.h"
 #include "parser.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
@@ -57,17 +67,17 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
     double val;
 }
 
-%token <val> INT
-%token <val> FLOAT
+%token <val> SCAN_INT
+%token <val> SCAN_FLOAT
 
-%token <id> ID
-%token <id> FIELD
+%token <id> SCAN_ID
+%token <id> SCAN_FIELD
 
-%token <op> GREATER
-%token <op> GREATER_EQL
-%token <op> LESS
-%token <op> LESS_EQL
-%token <op> EQUAL
+%token <op> SCAN_GREATER
+%token <op> SCAN_GREATER_EQL
+%token <op> SCAN_LESS
+%token <op> SCAN_LESS_EQL
+%token <op> SCAN_EQUAL
 
 %type <boolean> clause
 %type <id> identifier
@@ -97,18 +107,18 @@ clause:		identifier relop constant
 		}
 ;
 
-identifier:	ID 
+identifier:	SCAN_ID 
 ;
 
-constant:       INT
-		| FLOAT
+constant:       SCAN_INT
+		| SCAN_FLOAT
 ;
 
-relop:		GREATER
-		| GREATER_EQL
-		| LESS
-		| LESS_EQL
-                | EQUAL
+relop:		SCAN_GREATER
+		| SCAN_GREATER_EQL
+		| SCAN_LESS
+		| SCAN_LESS_EQL
+                | SCAN_EQUAL
 ;
 
 %%
@@ -116,22 +126,26 @@ relop:		GREATER
 void
 gse_error(const char *str)
 {
+#ifdef WIN32
+    std::cerr << "GSE Error: " << str << endl;
+#else
     cerr << "GSE Error: " << str << endl;
+#endif
 }
 
 static relop
 decode_relop(int op)
 {
     switch (op) {
-      case GREATER:
+      case SCAN_GREATER:
 	return dods_greater_op;
-      case GREATER_EQL:
+      case SCAN_GREATER_EQL:
 	return dods_greater_equal_op;
-      case LESS:
+      case SCAN_LESS:
 	return dods_less_op;
-      case LESS_EQL:
+      case SCAN_LESS_EQL:
 	return dods_less_equal_op;
-      case EQUAL:
+      case SCAN_EQUAL:
 	return dods_equal_op;
       default:
 	throw Error(malformed_expr, "Unrecognized relational operator");
@@ -142,15 +156,15 @@ static relop
 decode_inverse_relop(int op)
 {
     switch (op) {
-      case GREATER:
+      case SCAN_GREATER:
 	return dods_less_op;
-      case GREATER_EQL:
+      case SCAN_GREATER_EQL:
 	return dods_less_equal_op;
-      case LESS:
+      case SCAN_LESS:
 	return dods_greater_op;
-      case LESS_EQL:
+      case SCAN_LESS_EQL:
 	return dods_greater_equal_op;
-      case EQUAL:
+      case SCAN_EQUAL:
 	return dods_equal_op;
       default:
 	throw Error(malformed_expr, "Unrecognized relational operator");

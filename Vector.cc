@@ -11,6 +11,12 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.29  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.28.8.1  2000/06/02 18:29:32  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.28  2000/01/05 22:37:18  jimg
 // Added a comment about the odd `protocol' for sending array/list lengths twice
 // for arrays/lists of simple types.
@@ -136,7 +142,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.28 2000/01/05 22:37:18 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.29 2000/06/07 18:06:59 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -372,6 +378,7 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 {
     bool status = true;
     int error = 0;
+	unsigned int i = 0;
 
     if (!read_p()) {
 	read(dataset, error);
@@ -406,7 +413,11 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 	else
 	    status = (bool)xdr_array(sink, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY, _var->width(),
-				     _var->xdr_coder()); 
+#ifdef WIN32
+					(xdrproc_t)(_var->xdr_coder()));
+#else
+				     _var->xdr_coder());
+#endif 
 	break;
 
       case dods_str_c:
@@ -416,21 +427,20 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
-	assert(_vec.capacity());
+		assert(_vec.capacity());
 
-	status = (bool)xdr_int(sink, (int *)&num); // send length
-	if (!status)
-	    return status;
+		status = (bool)xdr_int(sink, (int *)&num); // send length
+		if (!status)
+			return status;
 
-	for (unsigned i = 0; status && i < num; ++i)	// test status in loop
-	    status = _vec[i]->serialize(dataset, dds, sink, false);
+		for (i = 0; status && i < num; ++i)	// test status in loop
+			status = _vec[i]->serialize(dataset, dds, sink, false);
 
-	break;
-
+		break;
       default:
-	cerr << "Vector::serialize: Unknow type\n";
-	status = false;
-	break;
+		cerr << "Vector::serialize: Unknow type\n";
+		status = false;
+		break;
     }
 
     return status;
@@ -458,6 +468,7 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool status;
     unsigned int num;
+	unsigned int i = 0;
 
     switch (_var->type()) {
       case dods_byte_c:
@@ -490,8 +501,13 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 				     DODS_MAX_ARRAY); 
 	else
 	    status = (bool)xdr_array(source, (char **)&_buf, &num,
-				     DODS_MAX_ARRAY, _var->width(), 
+				     DODS_MAX_ARRAY, _var->width(),
+#ifdef WIN32
+					(xdrproc_t)(_var->xdr_coder()));
+#else 
 				     _var->xdr_coder());
+#endif
+
 	DBG(cerr << "Vector::deserialize: read " << num <<  " elements\n");
 
 	break;
@@ -503,24 +519,24 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
-	status = (bool)xdr_int(source, (int *)&num);
-	if (!status)
-	    return status;
+		status = (bool)xdr_int(source, (int *)&num);
+		if (!status)
+			return status;
 
-	vec_resize(num);
-	set_length(num);
+		vec_resize(num);
+		set_length(num);
 
-	for (unsigned i = 0; status && i < num; ++i) {
-	    _vec[i] = _var->ptr_duplicate();
-	    _vec[i]->deserialize(source, dds);
-	}
+		for (i = 0; status && i < num; ++i)
+			{
+			_vec[i] = _var->ptr_duplicate();
+			_vec[i]->deserialize(source, dds);
+			}
 
-	break;
-
+		break;
       default:
-	cerr << "Vector::deserialize: Unknow type\n";
-	status = false;
-	break;
+		cerr << "Vector::deserialize: Unknow type\n";
+		status = false;
+		break;
     }
 
     return status;
@@ -582,9 +598,9 @@ Vector::val2buf(void *val, bool reuse)
       }
 
       default:
-	cerr << \
-"Array::val2buf: Can be called for arrays of Byte, Int16, Uint16, Int32, 
-Uint32, Float32, Float64, String and Url only.\n";
+		cerr <<
+			"Array::val2buf: Can be called for arrays of Byte, Int16, Uint16, Int32," << 
+			"Uint32, Float32, Float64, String and Url only.\n";
 	return 0;
     }
 
@@ -640,9 +656,9 @@ Vector::buf2val(void **val)
       }
 
       default:
-	cerr << \
-"Array::buf2val: Can be called for arrays of Byte, Int16, Uint16, Int32, 
-Uint32, Float32, Float64, String and Url only.\n";
+		cerr <<
+			"Array::buf2val: Can be called for arrays of Byte, Int16, Uint16, Int32," << 
+			"Uint32, Float32, Float64, String and Url only.\n";
 	return 0;
     }
 

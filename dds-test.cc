@@ -10,6 +10,12 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
+// Revision 1.16  2000/06/07 18:07:00  jimg
+// Merged the pc port branch
+//
+// Revision 1.15.20.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.15  1999/04/29 02:29:35  jimg
 // Merge of no-gnu branch
 //
@@ -42,7 +48,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.15 1999/04/29 02:29:35 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.16 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
@@ -138,70 +144,70 @@ test_scanner(void)
     cout << prompt << flush;		// first prompt
     while ((tok = ddslex())) {
 	switch (tok) {
-	  case DATASET:
+	  case SCAN_DATASET:
 	    cout << "DATASET" << endl;
 	    break;
-	  case DEPENDENT:
+	  case SCAN_DEPENDENT:
 	    cout << "DEPENDENT" << endl;
 	    break;
-	  case INDEPENDENT:
+	  case SCAN_INDEPENDENT:
 	    cout << "INDEPENDENT" << endl;
 	    break;
-	  case ARRAY:
+	  case SCAN_ARRAY:
 	    cout << "ARRAY" << endl;
 	    break;
-	  case MAPS:
+	  case SCAN_MAPS:
 	    cout << "MAPS" << endl;
 	    break;
-	  case LIST:
+	  case SCAN_LIST:
 	    cout << "LIST" << endl;
 	    break;
-	  case SEQUENCE:
+	  case SCAN_SEQUENCE:
 	    cout << "SEQUENCE" << endl;
 	    break;
-	  case STRUCTURE:
+	  case SCAN_STRUCTURE:
 	    cout << "STRUCTURE" << endl;
 	    break;
-	  case FUNCTION:
+	  case SCAN_FUNCTION:
 	    cout << "FUNCTION" << endl;
 	    break;
-	  case GRID:
+	  case SCAN_GRID:
 	    cout << "GRID" << endl;
 	    break;
-	  case BYTE:
+	  case SCAN_BYTE:
 	    cout << "BYTE" << endl;
 	    break;
-	  case INT16:
+	  case SCAN_INT16:
 	    cout << "INT16" << endl;
 	    break;
-	  case UINT16:
+	  case SCAN_UINT16:
 	    cout << "UINT16" << endl;
 	    break;
-	  case INT32:
+	  case SCAN_INT32:
 	    cout << "INT32" << endl;
 	    break;
-	  case UINT32:
+	  case SCAN_UINT32:
 	    cout << "UINT32" << endl;
 	    break;
-	  case FLOAT32:
+	  case SCAN_FLOAT32:
 	    cout << "FLOAT32" << endl;
 	    break;
-	  case FLOAT64:
+	  case SCAN_FLOAT64:
 	    cout << "FLOAT64" << endl;
 	    break;
-	  case STRING:
+	  case SCAN_STRING:
 	    cout << "STRING" << endl;
 	    break;
-	  case URL:
+	  case SCAN_URL:
 	    cout << "Url" << endl;
 	    break;
-	  case ID:
+	  case SCAN_ID:
 	    cout << "ID: " << ddslval << endl;
 	    break;
-	  case NAME:
+	  case SCAN_NAME:
 	    cout << "NAME: " << ddslval << endl;
 	    break;
-	  case INTEGER:
+	  case SCAN_INTEGER:
 	    cout << "INTEGER: " << ddslval << endl;
 	    break;
 	  case '{':

@@ -10,6 +10,12 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.36  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.35.20.1  2000/06/02 18:29:31  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.35  1999/04/29 02:29:30  jimg
 // Merge of no-gnu branch
 //
@@ -196,7 +202,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int32.cc,v 1.35 1999/04/29 02:29:30 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int32.cc,v 1.36 2000/06/07 18:06:59 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -212,6 +218,10 @@ static char rcsid[] not_used = {"$Id: Int32.cc,v 1.35 1999/04/29 02:29:30 jimg E
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 Int32::Int32(const string &n) : BaseType(n, dods_int32_c, (xdrproc_t)XDR_INT32)

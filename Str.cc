@@ -10,6 +10,12 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.39  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.38.20.1  2000/06/02 18:29:31  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.38  1999/05/04 19:47:22  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -205,7 +211,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.38 1999/05/04 19:47:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.39 2000/06/07 18:06:59 jimg Exp $"};
 
 #include <assert.h>
 #include <stdlib.h>
@@ -264,7 +270,7 @@ Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 bool
 Str::deserialize(XDR *source, DDS *, bool)
 {
-    return (bool)xdr_str(source, _buf);
+    return (xdr_str(source, _buf) != 0);
 }
 
 // Copy information in the object's internal buffers into the memory pointed

@@ -13,6 +13,12 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.13  2000/06/07 18:07:01  jimg
+// Merged the pc port branch
+//
+// Revision 1.12.20.1  2000/06/02 18:39:04  rmorris
+// Mod's for port to win32.
+//
 // Revision 1.12  1999/05/04 19:47:24  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -70,7 +76,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.12 1999/05/04 19:47:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.13 2000/06/07 18:07:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -79,7 +85,7 @@ static char rcsid[] not_used = {"$Id: usage.cc,v 1.12 1999/05/04 19:47:24 jimg E
 #include <fstream>
 
 #include <string>
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -88,6 +94,10 @@ static char rcsid[] not_used = {"$Id: usage.cc,v 1.12 1999/05/04 19:47:24 jimg E
 
 #include "cgi_util.h"
 #include "debug.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 static void
 usage(char *argv[])
@@ -468,7 +478,11 @@ html_header()
     cout << endl;			// MIME header ends with a blank line
 }
 
-int 
+#ifdef WIN32
+void
+#else
+int
+#endif 
 main(int argc, char *argv[])
 {
     if (argc != 3) {
@@ -494,21 +508,33 @@ main(int argc, char *argv[])
     string command = cgi + "_das '" + name + "'";
     DBG(cerr << "DAS Command: " << command << endl);
 
+#ifndef WIN32
+	//  Under win32, this has been temporarily removed to get it to compile.
+	//  This code is not relevant for the client side for win32 native port.  Once
+	//  one or more of the Dods servers have been ported, this will need patched
+	//  similiar to the popen() fixes for ML loaddods.
     FILE *in = popen(command.c_str(), "r");
     if (in && remove_mime_header(in)) {
 	das.parse(in);
 	pclose(in);
     }
+#endif
 
     DDS dds;
     command = cgi + "_dds '" + name + "'";
     DBG(cerr << "DDS Command: " << command << endl);
 
+#ifndef WIN32
+	//  Under win32, this has been temporarily removed to get it to compile.
+	//  This code is not relevant for the client side for win32 native port.  Once
+	//  one or more of the Dods servers have been ported, this will need patched
+	//  similiar to the popen() fixes for ML loaddods.
     in = popen((cgi + "_dds '" + name + "'").c_str(), "r");
     if (in && remove_mime_header(in)) {
 	dds.parse(in);
 	pclose(in);
     }
+#endif
 
     // Build the HTML* documents.
 
@@ -539,4 +565,11 @@ main(int argc, char *argv[])
     cout << "</html>" << endl;
 
     exit(0);
+
+//  Needed for VC++
+#ifdef WIN32
+	return;
+#endif
 }
+
+

@@ -10,6 +10,12 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.cc,v $
+// Revision 1.11  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.10.20.1  2000/06/02 18:29:32  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.10  1999/04/29 02:29:34  jimg
 // Merge of no-gnu branch
 //
@@ -59,7 +65,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: UInt32.cc,v 1.10 1999/04/29 02:29:34 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: UInt32.cc,v 1.11 2000/06/07 18:06:59 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -75,6 +81,10 @@ static char rcsid[] not_used = {"$Id: UInt32.cc,v 1.10 1999/04/29 02:29:34 jimg 
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 UInt32::UInt32(const string &n) 

@@ -10,6 +10,12 @@
 // jhrg 4/25/96
 
 // $Log: error-test.cc,v $
+// Revision 1.5  2000/06/07 18:07:00  jimg
+// Merged the pc port branch
+//
+// Revision 1.4.20.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.4  1999/04/29 02:29:36  jimg
 // Merge of no-gnu branch
 //
@@ -33,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: error-test.cc,v 1.4 1999/04/29 02:29:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: error-test.cc,v 1.5 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <assert.h>
 
@@ -46,7 +52,9 @@ static char rcsid[] not_used = {"$Id: error-test.cc,v 1.4 1999/04/29 02:29:36 ji
 
 void test_scanner();
 void test_parser(Error &err);
+#ifdef GUI
 void test_object(Error &err);
+#endif
 void usage();
 
 int Errorlex();
@@ -59,7 +67,11 @@ const char *prompt = "error-test: ";
 int
 main(int argc, char *argv[])
 {
+#ifdef WIN32
+	GetOpt getopt (argc, argv, "spd");
+#else
     GetOpt getopt (argc, argv, "spdo");
+#endif
     int option_char;
     bool scanner_test = false, parser_test = false, object_test = false;
 
@@ -77,15 +89,21 @@ main(int argc, char *argv[])
 	    case 'p':
 	      parser_test = true;
 	      break;
+#ifndef WIN32
 	    case 'o':
 	      parser_test = object_test = true;
 	      break;
+#endif
 	    case '?': 
 	    default:
 	      usage();
 	  }
 
+#ifdef WIN32
+	if (!(scanner_test || parser_test))
+#else
     if (!(scanner_test || parser_test || object_test))
+#endif
 	usage();
 
     if (scanner_test)
@@ -95,18 +113,26 @@ main(int argc, char *argv[])
     if (parser_test)
 	test_parser(err);
 
+#ifdef GUI
     if (object_test)
 	test_object(err);
+#endif
 }
 
 void
 usage()
 {
+#ifdef WIN32
+    cerr << "usage: " << "error-test: [d][sp] <  filename ..."  << endl;
+#else
     cerr << "usage: " << "error-test: [d][spo] <  filename ..."  << endl;
+#endif
     cerr << "       " << "d: extra parser debugging information" << endl;
     cerr << "       " << "s: run the scanner" << endl;
     cerr << "       " << "p: run the parser" << endl;
+#ifdef WIN32
     cerr << "       " << "o: evaluate the object, runs the parser" << endl;
+#endif
 }
 
 void
@@ -117,25 +143,25 @@ test_scanner()
     cout << prompt << flush;		// first prompt
     while ((tok = Errorlex())) {
 	switch (tok) {
-	  case ERROR:
+	  case SCAN_ERROR:
 	    cout << "ERROR" << endl;
 	    break;
-	  case CODE:
+	  case SCAN_CODE:
 	    cout << "CODE" << endl;
 	    break;
-	  case PTYPE:
+	  case SCAN_PTYPE:
 	    cout << "PTYPE" << endl;
 	    break;
-	  case MSG:
+	  case SCAN_MSG:
 	    cout << "MSG" << endl;
 	    break;
-	  case PROGRAM:
+	  case SCAN_PROGRAM:
 	    cout << "PROGRAM" << endl;
 	    break;
-	  case STR:
+	  case SCAN_STR:
 	    cout << Errorlval.string << endl;
 	    break;
-	  case INT:
+	  case SCAN_INT:
 	    cout << Errorlval.integer << endl;
 	    break;
 	  case '{':
@@ -171,6 +197,7 @@ test_parser(Error &err)
     err.print();
 }
 
+#ifndef WIN32
 void
 test_object(Error &err)
 {
@@ -180,3 +207,4 @@ test_object(Error &err)
     
     cout << "Response: " << response << endl;
 }
+#endif

@@ -17,6 +17,12 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.54  2000/06/07 18:06:58  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.53.20.1  2000/06/02 18:11:19  rmorris
+ * Mod's for Port to Win32.
+ *
  * Revision 1.53  1999/05/04 19:47:20  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -292,9 +298,15 @@
 #pragma interface
 #endif
 
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+#endif
 
 #include <vector>
 #include <stack>
@@ -303,6 +315,10 @@
 #include <string>
 
 #include "config_dap.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 class BaseType;			// Forward declarations
 class DDS;
@@ -415,7 +431,11 @@ private:
     // xdr_coder is used as an argument to xdr procedures that encode groups
     // of things (e.g., xdr_array()). Each leaf class's constructor must set
     // this.
+#ifdef WIN32
+	int *_xdr_coder;
+#else
     xdrproc_t _xdr_coder;
+#endif
 
     bool _read_p;		// true if the value has been read
     bool _send_p;		// true if the variable is to be transmitted
@@ -569,7 +589,11 @@ public:
 	@memo Returns a function used to encode elements of an array. 
 	@return A C function used to encode data in the XDR format.
     */
+#ifdef WIN32
+	int *xdr_coder();
+#else
     xdrproc_t xdr_coder();
+#endif
 
     /** Returns a pointer to the contained variable in a composite
 	class.  The composite classes are those made up of aggregated
@@ -842,10 +866,17 @@ public:
 	@see DDS::CE
 
     */
+#ifdef WIN32
+    virtual void print_decl(std::ostream &os, string space = "    ",
+			    bool print_semi = true, 
+			    bool constraint_info = false,
+			    bool constrained = false);
+#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true, 
 			    bool constraint_info = false,
 			    bool constrained = false);
+#endif
 
     /** Prints the value of the variable, with its declaration.  This
 	function is primarily intended for debugging DODS applications.
@@ -866,8 +897,13 @@ public:
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value.
     */
+#ifdef WIN32
+    virtual void print_val(std::ostream &os, string space = "",
+			   bool print_decl_p = true) = 0;
+#else
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true) = 0;
+#endif
 
     /** This function checks the class instance for internal
 	consistency.  This is important to check for complex constructor

@@ -18,6 +18,12 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.28  2000/06/07 18:06:57  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.27.20.1  2000/06/02 18:11:19  rmorris
+ * Mod's for Port to Win32.
+ *
  * Revision 1.27  1999/05/04 19:47:20  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -158,6 +164,10 @@
 #include "config_dap.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 /** {\bf AttrType} identifies the data types which may appear in an
@@ -468,7 +478,11 @@ public:
       each line of the output to provide control of indentation.
 
       @memo Prints the attribute table.  */
+#ifdef WIN32
+	void print(std::ostream &os, string pad = "    ");
+#else
     void print(ostream &os, string pad = "    ");
+#endif
 };
 
 #endif

@@ -26,11 +26,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include <alloca.h>
 #elif defined(_AIX)
 #pragma alloca
+#elif defined(WIN32)
+#include <malloc.h>
 #else
 char *alloca ();
 #endif
 
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <string.h>		// Added these. 10/20/98 jhrg
 #include <GetOpt.h>
 #include <stdlib.h>

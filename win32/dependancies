@@ -5,7 +5,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -34,7 +34,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -62,7 +62,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -90,7 +90,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -124,7 +124,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -159,7 +159,7 @@
 	"..\Byte.h"\
 	"..\cgi_util.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Connect.h"\
 	"..\DAS.h"\
 	"..\DDS.h"\
@@ -189,7 +189,7 @@
 ..\Clause.cpp : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\expr.h"\
@@ -202,7 +202,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Connect.h"\
 	"..\DAS.h"\
 	"..\DataDDS.h"\
@@ -236,7 +236,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Connect.h"\
 	"..\Connections.h"\
 	"..\DAS.h"\
@@ -269,7 +269,7 @@
 	"..\AttrTable.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DAS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
@@ -288,7 +288,7 @@
 ..\DataDDS.cpp : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DataDDS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
@@ -304,7 +304,7 @@
 	"..\ce_functions.h"\
 	"..\cgi_util.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Connect.h"\
 	"..\DAS.h"\
 	"..\DDS.h"\
@@ -345,7 +345,7 @@
 	"..\Byte.h"\
 	"..\cgi_util.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Connect.h"\
 	"..\DAS.h"\
 	"..\DDS.h"\
@@ -377,7 +377,7 @@
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -396,7 +396,7 @@
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -418,7 +418,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -452,7 +452,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -486,7 +486,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -513,7 +513,7 @@
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -532,7 +532,7 @@
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -551,7 +551,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -585,7 +585,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -615,7 +615,7 @@
 	
 
 ..\InternalErr.cpp : \
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Error.h"\
 	"..\Gui.h"\
 	"..\InternalErr.h"\
@@ -625,7 +625,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -657,7 +657,7 @@
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -675,7 +675,7 @@
 ..\RValue.cpp : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\expr.h"\
@@ -687,7 +687,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DataDDS.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
@@ -720,7 +720,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -754,7 +754,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -781,7 +781,7 @@
 	"..\Array.h"\
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -795,27 +795,27 @@
 ..\TestByte.cpp : \
 	"..\BaseType.h"\
 	"..\Byte.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\TestByte.h"\
 	
 
 ..\TestFloat32.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Float32.h"\
 	"..\TestFloat32.h"\
 	
 
 ..\TestFloat64.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Float64.h"\
 	"..\TestFloat64.h"\
 	
 
 ..\TestGrid.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Grid.h"\
 	"..\TestGrid.h"\
 	"..\trace_new.h"\
@@ -823,14 +823,14 @@
 
 ..\TestInt16.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Int16.h"\
 	"..\TestInt16.h"\
 	
 
 ..\TestInt32.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\Int32.h"\
 	"..\TestInt32.h"\
 	
@@ -838,7 +838,7 @@
 ..\TestList.cpp : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -852,7 +852,7 @@
 
 ..\TestSequence.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\debug.h"\
 	"..\Sequence.h"\
 	"..\TestSequence.h"\
@@ -861,7 +861,7 @@
 
 ..\TestStr.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\dods-limits.h"\
 	"..\Str.h"\
 	"..\TestStr.h"\
@@ -870,7 +870,7 @@
 ..\TestStructure.cpp : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\expr.h"\
@@ -882,21 +882,21 @@
 
 ..\TestUInt16.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\TestUInt16.h"\
 	"..\UInt16.h"\
 	
 
 ..\TestUInt32.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\TestUInt32.h"\
 	"..\UInt32.h"\
 	
 
 ..\TestUrl.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\dods-limits.h"\
 	"..\Str.h"\
 	"..\TestUrl.h"\
@@ -908,7 +908,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -942,7 +942,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -973,7 +973,7 @@
 
 ..\Url.cpp : \
 	"..\BaseType.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\dods-limits.h"\
 	"..\Str.h"\
 	"..\Url.h"\
@@ -984,7 +984,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\
@@ -1017,7 +1017,7 @@
 	"..\BaseType.h"\
 	"..\Byte.h"\
 	"..\Clause.h"\
-	"..\config_dap.h"\
+	".\config_dap.h"\
 	"..\DDS.h"\
 	"..\debug.h"\
 	"..\dods-limits.h"\

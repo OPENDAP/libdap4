@@ -12,6 +12,12 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.13  2000/06/07 18:07:00  jimg
+// Merged the pc port branch
+//
+// Revision 1.12.4.1  2000/06/02 18:36:38  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.12  2000/03/31 21:02:49  jimg
 // Merged with version 3.1.5.
 //
@@ -96,7 +102,7 @@
 // -Todd
 
 #include <ctype.h>
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -104,6 +110,10 @@
 #include <iomanip>
 #include <string>
 #include <Regex.h>
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 const int MAXSTR = 256;
 
@@ -116,12 +126,12 @@ static string hexstring(unsigned char val) {
     return (string)buf;
 }
 
-static char unhexstring(string s) {
-    int val;
+static string unhexstring(string s) {
+    string val;
 
     istrstream(s.c_str(),MAXSTR) >> hex >> val;
 
-    return (char)val;
+    return val;
 }
 
 static string octstring(unsigned char val) {
@@ -133,12 +143,12 @@ static string octstring(unsigned char val) {
     return (string)buf;
 }
 
-static char unoctstring(string s) {
-    int val;
+static string unoctstring(string s) {
+    string val;
 
     istrstream(s.c_str(),MAXSTR) >> oct >> val;
 
-    return (char)val;
+    return val;
 }
 
 
@@ -212,7 +222,7 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]") {
 string escattr(string s) {
     static Regex nonprintable("[^ !-~]");
     const string ESC = "\\";
-    const char QUOTE = '\"';
+    const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
 
     // escape non-printing characters with octal escape
@@ -242,7 +252,7 @@ string unescattr(string s) {
     static Regex escquoteregex("[^\\\\]\\\\\"");  // matches 3 characters
     static Regex escescregex("\\\\\\\\");      // matches 2 characters
     const string ESC = "\\";
-    const char QUOTE = '\"';
+    const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
 
     // unescape any octal-escaped ASCII characters

@@ -10,6 +10,12 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.41  2000/06/07 18:07:01  jimg
+// Merged the pc port branch
+//
+// Revision 1.40.10.1  2000/06/02 18:39:03  rmorris
+// Mod's for port to win32.
+//
 // Revision 1.40  1999/08/23 18:57:46  jimg
 // Merged changes from release 3.1.0
 //
@@ -177,7 +183,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.40 1999/08/23 18:57:46 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.41 2000/06/07 18:07:01 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -187,7 +193,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.40 1999/08/23 18:57:46 jimg 
 
 #include "Connect.h"
 
-const char *version = "$Revision: 1.40 $";
+const char *version = "$Revision: 1.41 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -295,7 +301,11 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
     cout << endl;
 }
 
+#ifdef WIN32
+void
+#else
 int
+#endif
 main(int argc, char * argv[])
 {
     GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:zT:");
@@ -466,5 +476,8 @@ main(int argc, char * argv[])
 	    }
 	}	    
     }
+#ifdef WIN32
+	return;
+#endif
 }
 

@@ -41,6 +41,12 @@
 
 /*
  * $Log: das.lex,v $
+ * Revision 1.27  2000/06/07 18:07:00  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.26.20.1  2000/06/02 18:36:38  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.26  1999/04/29 02:29:35  jimg
  * Merge of no-gnu branch
  *
@@ -163,7 +169,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.26 1999/04/29 02:29:35 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.27 2000/06/07 18:07:00 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -182,51 +188,51 @@ static int start_line;		/* used in quote and comment error handlers */
 %x quote
 %x comment
 
-ID  	[a-zA-Z_%][a-zA-Z0-9_./:%+\-()]*
-INT	[-+]?[0-9]+
+SCAN_ID  		[a-zA-Z_%][a-zA-Z0-9_./:%+\-()]*
+SCAN_INT		[-+]?[0-9]+
 
-MANTISA ([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
-EXPONENT (E|e)[-+]?[0-9]+
+SCAN_MANTISA	([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
+SCAN_EXPONENT	(E|e)[-+]?[0-9]+
 
-FLOAT	[-+]?{MANTISA}{EXPONENT}?
+SCAN_FLOAT		[-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?
 
-STR 	[-+a-zA-Z0-9_./:%+\-()]+
+SCAN_STR		[-+a-zA-Z0-9_./:%+\-()]+
 
-ATTR 	attributes|Attributes|ATTRIBUTES
+SCAN_ATTR 		attributes|Attributes|ATTRIBUTES
 
-ALIAS   ALIAS|Alias|alias
-BYTE	BYTE|Byte|byte
-INT16	INT16|Int16|int16
-UINT16	UINT16|UInt16|Uint16|uint16
-INT32	INT32|Int32|int32
-UINT32	UINT32|UInt32|Uint32|uint32
-FLOAT32 FLOAT32|Float32|float32
-FLOAT64 FLOAT64|Float64|float64
-STRING  STRING|String|string
-URL	URL|Url|url
+SCAN_ALIAS		ALIAS|Alias|alias
+SCAN_BYTE		BYTE|Byte|byte
+SCAN_INT16		INT16|Int16|int16
+SCAN_UINT16		UINT16|UInt16|Uint16|uint16
+SCAN_INT32		INT32|Int32|int32
+SCAN_UINT32		UINT32|UInt32|Uint32|uint32
+SCAN_FLOAT32	FLOAT32|Float32|float32
+SCAN_FLOAT64	FLOAT64|Float64|float64
+SCAN_STRING		STRING|String|string
+SCAN_URL		URL|Url|url
 
 NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 
 %%
 
 
-{ATTR}	    	    	daslval = yytext; return ATTR;
+{SCAN_ATTR}			daslval = yytext; return SCAN_ATTR;
 
-{ALIAS}                 daslval = yytext; return ALIAS;
-{BYTE}                  daslval = yytext; return BYTE;
-{INT16}                 daslval = yytext; return INT16;
-{UINT16}                daslval = yytext; return UINT16;
-{INT32}                 daslval = yytext; return INT32;
-{UINT32}                daslval = yytext; return UINT32;
-{FLOAT32}               daslval = yytext; return FLOAT32;
-{FLOAT64}               daslval = yytext; return FLOAT64;
-{STRING}                daslval = yytext; return STRING;
-{URL}                   daslval = yytext; return URL;
+{SCAN_ALIAS}		daslval = yytext; return SCAN_ALIAS;
+{SCAN_BYTE}			daslval = yytext; return SCAN_BYTE;
+{SCAN_INT16}		daslval = yytext; return SCAN_INT16;
+{SCAN_UINT16}		daslval = yytext; return SCAN_UINT16;
+{SCAN_INT32}		daslval = yytext; return SCAN_INT32;
+{SCAN_UINT32}		daslval = yytext; return SCAN_UINT32;
+{SCAN_FLOAT32}		daslval = yytext; return SCAN_FLOAT32;
+{SCAN_FLOAT64}		daslval = yytext; return SCAN_FLOAT64;
+{SCAN_STRING}		daslval = yytext; return SCAN_STRING;
+{SCAN_URL}			daslval = yytext; return SCAN_URL;
 
-{ID}  	    	    	daslval = yytext; return ID;
-{INT}	    	    	daslval = yytext; return INT;
-{FLOAT}	    	    	daslval = yytext; return FLOAT;
-{STR}	    	    	daslval = yytext; return STR;
+{SCAN_ID}			daslval = yytext; return SCAN_ID;
+{SCAN_INT}			daslval = yytext; return SCAN_INT;
+{SCAN_FLOAT}		daslval = yytext; return SCAN_FLOAT;
+{SCAN_STR}			daslval = yytext; return SCAN_STR;
 
 "{" 	    	    	return (int)*yytext;
 "}" 	    	    	return (int)*yytext;
@@ -251,7 +257,7 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 
 			  daslval = yytext;
 
-			  return STR;
+			  return SCAN_STR;
                         }
 <quote><<EOF>>		{
                           char msg[256];

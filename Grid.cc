@@ -10,6 +10,12 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.41  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.40.4.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.40  2000/04/07 00:16:29  jimg
 // Fixed an error in print_val() where the method worked OK for the
 // server-side but not the client-side because it demoted any Grid whose
@@ -220,7 +226,7 @@
 #include "config_dap.h"
 
 #include <assert.h>
-#ifdef __GNUG__
+#if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -233,6 +239,10 @@
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 void

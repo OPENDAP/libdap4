@@ -9,6 +9,18 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.93  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.92.4.2  2000/06/02 22:29:21  rmorris
+// Fixed bug in bug fix that allowed spaces in paths via escape sequences.
+// The bug within a bug was that we were translating a file path into a
+// url by prepending it with "file:/".  This allows libwww to recognize
+// escape sequence.  Under UNIX, "file:" is correct, not "file:/"
+//
+// Revision 1.92.4.1  2000/06/02 18:14:43  rmorris
+// Mod for port to win32.
+//
 // Revision 1.92  2000/04/17 22:13:37  jimg
 // Fixed problems with the _gui member and local connections. The _gui object
 // was not initialized (correct) for local connections but *was* destroyed for
@@ -536,19 +548,21 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.92 2000/04/17 22:13:37 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.93 2000/06/07 18:06:58 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
 #endif
 
 #include <stdio.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <signal.h>
 #include <assert.h>
 #include <errno.h>
 
-#ifdef __GNUG__
+#if (__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
 #include <sstream>
@@ -558,6 +572,7 @@ static char rcsid[] not_used ={"$Id: Connect.cc,v 1.92 2000/04/17 22:13:37 jimg 
 #include "debug.h"
 #include "DataDDS.h"
 #include "Connect.h"
+#include "escaping.h"
 
 #define SHOW_MSG (WWWTRACE || HTAlert_interactive())
 #define DODS_KEEP_TEMP 0
@@ -602,6 +617,7 @@ static const int DODS_DEFAULT_EXPIRES = 86400; // 24 hours in seconds
 #undef CATCH_SIG
 #ifdef CATCH_SIG
 #include <signal.h>
+
 
 // This function sets up signal handlers. This might not be necessary to
 // call if the application has its own handlers (lossage on SVR4)
@@ -675,7 +691,7 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
 	       HTAlertPar * /* reply */)
 {
     if (!request) {
-        if (WWWTRACE) cerr << "dods_rogress: NULL Request" << endl;
+        if (WWWTRACE) cerr << "dods_progress: NULL Request" << endl;
         return YES;
     }
 
@@ -954,7 +970,7 @@ get_type(string value)
 // This function is registered to handle unknown MIME headers
 
 int 
-description_handler(HTRequest *request, HTResponse */*response*/, 
+description_handler(HTRequest *request, HTResponse *, 
 		    const char *token, const char *val)
 {
     string field = token, value = val;
@@ -975,7 +991,7 @@ description_handler(HTRequest *request, HTResponse */*response*/,
 }
 
 int 
-server_handler(HTRequest *request, HTResponse */*response*/, 
+server_handler(HTRequest *request, HTResponse *, 
 	       const char *token, const char *val)
 {
     string field = token, value = val;
@@ -1106,11 +1122,18 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 {
     // Initialize various parts of the library. This is in lieu of using one
     // of the profiles in HTProfil.c. 02/09/98 jhrg
-    char * cifp;
-    char * homedir;  // cache init file path and home directory.
-    char * cache_root;  // Location of actual cache. 
-    char * tempstr;
     char * value;
+	char * tempstr;
+	string lockstr		= "";		//  Lock file path
+	string cifp			= "";
+	string cache_root	= "";		//  Location of actual cache.
+	string homedir		= "";		//  Cache init file path
+	string tmpdir		= "";		//  Fallback position for cache files.
+
+#ifdef WIN32
+	HTEventInit();
+#endif
+
     // Defaults to use if cache file doesnt exist. 
     int USE_CACHE = DODS_USE_CACHE;
     int MAX_CACHE_SIZE = DODS_CACHE_MAX;
@@ -1127,45 +1150,81 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // file exists and the file does not, then the compiled-in defaults
     // will be written to a file at the location given. 8-1-99 cjm
     
-    // Store the users home directory.
-    homedir = getenv("HOME");
+    // Store the users home directory or for win32, the user & application
+	// specific directory..
+#ifdef WIN32
+	//  Should be ok for WinNT and versions of Windows that are based upon it -
+	//  such as Windows 2000.  Not appropriate for Win9x-based systems.
+	if(getenv("APPDATA"))
+		{
+		homedir = getenv("APPDATA");
+
+		//  Ditch the backslashes at this point for simplicity.
+		//  More difficult to put it off.
+		int pos = 0;		
+		while((pos = homedir.find('\\',0)) >= 0)
+			homedir[pos] = '/';
+
+		//  Shouldn't happen, but double check
+		if(homedir[homedir.length() - 1] == '/')
+			homedir.erase(homedir.length() - 1);	
+
+		homedir += "/Dods";
+		}
+#else
+	//  Should be ok for Unix
+	if(getenv("HOME"))
+		homedir = getenv("HOME");
+#endif
     // If there is a leading '/' at the end of $HOME, remove it. 
-    if(homedir != NULL) {
-	if(homedir[strlen(homedir)-1] == '/') homedir[(strlen(homedir)-1)] = (char)0;	 
-	// set default cache root to $HOME/.dods_cache/
-	cache_root = new char[strlen(homedir)+14];
-	strcpy(cache_root, homedir);
-	strcpy(cache_root+strlen(homedir), "/.dods_cache/");
-	cache_root[strlen(homedir)+13] = (char)0;
-    }
-    else { 
-	// Otherwise set the default cache root the /tmp/.dods_cache/
-	cache_root = new char[18];
-	strcpy(cache_root, "/tmp/.dods_cache/");
-	cache_root[17] = (char)0;
-    }
+    if(homedir.length() != 0)
+		{
+		if(homedir[homedir.length() - 1] == '/')
+			homedir.erase(homedir.length() - 1);	
+
+		// set default cache root to $HOME/.dods_cache/
+		cache_root = homedir + "/.dods_cache";
+		}
+	//  Otherwise set the default cache root to a temporary directory
+    else
+		{ 
+#ifdef WIN32
+		//  Two competing "standards" to try
+		if(getenv("TEMP"))
+			tmpdir = getenv("TEMP");
+		else if(getenv("TMP"))
+			tmpdir = getenv("TMP");
+#else
+		tmpdir = "/tmp";
+#endif
+		// Otherwise set the default cache root the <tmpdir>/.dods_cache/
+		cache_root = tmpdir + "/.dods_cache";
+		}
     
-    cifp = getenv("DODS_CACHE_INIT");
-    if(!cifp) {
-	if(!homedir) {
-	    // Environment variable wasn't set, and the users home directory
-	    // is indeterminable, so we will neither read nor write a data 
-	    // file and instead just use the compiled in defaults.
-	    use_cache_file = 0;
+	if(getenv("DODS_CACHE_INIT"))
+		cifp = getenv("DODS_CACHE_INIT");
+    if(cifp.length() == 0)
+	{
+		if(homedir.length() == 0)
+			{
+			// Environment variable wasn't set, and the users home directory
+			// is indeterminable, so we will neither read nor write a data 
+			// file and instead just use the compiled in defaults.
+			use_cache_file = 0;
+			}
+		else
+			{
+			// Environment variable wasnt set, get data from $HOME/.dodsrc
+			cifp = homedir + "/.dodsrc";
+			}
 	}
-	else {
-	    // Environment variable wasnt set, get data from $HOME/.dodsrc
-	    cifp = new char[strlen(homedir)+9]; 
-	    strcpy(cifp, homedir);
-	    strcpy(cifp+strlen(homedir), "/.dodsrc");
-	}
-    }
+
     if(use_cache_file) {
 	// Open the file.  If it exists, read the settings from it.  
 	// If it doesnt exist, save the default settings to it.
-	ifstream fpi(cifp);
+	ifstream fpi(cifp.c_str());
 	if(!fpi) {
-	    ofstream fpo(cifp);
+	    ofstream fpo(cifp.c_str());
 	    if(!fpo) {
 		// File couldnt be created.  Nothing needs to be done here,
 		// the program will simply use the defaults.
@@ -1193,7 +1252,12 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	    tempstr = new char[256];
 	    int tokenlength;
 	    while(1) {
-		if (fpi.getline(tempstr, 128) < 0) 
+#ifdef WIN32
+		fpi.getline(tempstr, 128);
+		if (!fpi.good())  //  Ok for unix also ???
+#else
+		if (fpi.getline(tempstr, 128) < 0)
+#endif
 		    break; // Gets a line from the file.
 		value = strchr(tempstr, '=');
 		if(!value) break;
@@ -1217,10 +1281,9 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		    _accept_deflate=accept_deflate = atoi(value) ? false: true;
 		}
 		else if((strncmp(tempstr, "CACHE_ROOT", 10)==0) && tokenlength == 10) {
-		    cache_root = new char[strlen(value)+2];
-		    strcpy(cache_root, value);
-		    if (cache_root[strlen(value)-1] != '/')
-			strcat(cache_root, "/");
+			cache_root = value;
+			if(cache_root[cache_root.length() - 1] != '/')
+				cache_root += "/";
 		}
 		else if((strncmp(tempstr, "DEFAULT_EXPIRES", 15)==0) && tokenlength == 15) {
 		    DEFAULT_EXPIRES = atoi(value);
@@ -1293,14 +1356,19 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	// Instead, set up the cache.
 	// Remove any stale lock file.  This may not be safe if multiple
 	// people are using the same cache directory at once.
-	tempstr = new char[strlen(cache_root)+7];
-	strcpy(tempstr, cache_root);
-	strcpy(tempstr+strlen(cache_root), "/.lock");
-	tempstr[strlen(cache_root)+6] = (char)0;
-	remove(tempstr);
-	_cache_root = new char[strlen(cache_root)+1];
-	strcpy(_cache_root, cache_root);
-	if(HTCacheInit(cache_root, MAX_CACHE_SIZE) == YES) {
+	lockstr = cache_root + "/.lock";
+	remove(lockstr.c_str());
+
+	//  We have to escape spaces.  Utilizing the escape functionality
+	//  forces us, in turn, to use the "file:" convention for URL's.
+#ifdef WIN32
+	string croot = "file:/" + cache_root;
+#else
+	string croot = "file:" + cache_root;
+#endif
+	croot = id2dods(string(croot),string(" "));
+
+	if(HTCacheInit(croot.c_str(), MAX_CACHE_SIZE) == YES) {
 	    HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
 	    if(IGNORE_EXPIRES) HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
 	    else HTCacheMode_setExpires(HT_EXPIRES_AUTO);
@@ -1326,12 +1394,21 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // we can test for these fields and operate on the resulting document
     // without using the stream stack mechanism (which seems to be very
     // complicated). jhrg 11/20/96
+#ifdef WIN32
+	HTHeader_addParser("content-description", NO, (HTParserCallback *)description_handler);
+#else
     HTHeader_addParser("content-description", NO, description_handler);
+#endif
     // Added DODS server header because `Server:' is used by Java. We check
     // first for `XDODS-Server:' and use that if found. Then look for
     // `Server:' and finally default to 0.0. 12/16/98 jhrg
+#ifdef WIN32
+    HTHeader_addParser("xdods-server", NO, (HTParserCallback *)server_handler);
+    HTHeader_addParser("server", NO, (HTParserCallback *)server_handler);
+#else
     HTHeader_addParser("xdods-server", NO, server_handler);
     HTHeader_addParser("server", NO, server_handler);
+#endif
 
     // Add xdods_accept_types header. 2/17/99 jhrg
     HTHeader_addGenerator(xdods_accept_types_header_gen);
@@ -1371,7 +1448,7 @@ Connect::clone(const Connect &src)
 	_method = src._method;
 	// Open the file for non-truncating update.
 	if (_output)
-	    _output = fdopen(dup(fileno(src._output)), "r+");
+	    _output = fdopen(dup(fileno(src._output)), "r+b");
 	if (_source)
 	    _source = new_xdrstdio(_output, XDR_DECODE);
 
@@ -1416,7 +1493,7 @@ Connect::read_url(string &url, FILE *stream)
 
     HTRequest_delete(_request);
 
-    return status;
+    return (status != 0);
 }
 
 void
@@ -1506,7 +1583,8 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 	_encoding = unknown_enc;
     }
 
-    HT_FREE(access_ref);
+	if(access_ref)
+		HT_FREE(access_ref);
 }
 
 Connect::Connect(const Connect &copy_from) : _error(undefined_error, "")
@@ -1547,6 +1625,10 @@ Connect::~Connect()
 	if (_cache_enabled) HTCacheIndex_write(_cache_root);
 
     close_output();
+
+#ifdef _WIN32
+	HTEventTerminate();
+#endif
 
     DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
@@ -1615,7 +1697,7 @@ Connect::fetch_url(string &url, bool)
     /* NB: I've completely removed the async stuff for now. 2/18/97 jhrg */
   
     char *c = tempnam(NULL, DODS_PREFIX);
-    FILE *stream = fopen(c, "w+"); // Open truncated for update.
+    FILE *stream = fopen(c, "w+b"); // Open truncated for update.
     if (!keep_temps)
 	unlink(c);		// When _OUTPUT is closed file is deleted.
     else

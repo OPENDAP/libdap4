@@ -10,6 +10,12 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.38  2000/06/07 18:06:57  jimg
+// Merged the pc port branch
+//
+// Revision 1.37.20.1  2000/06/02 18:11:19  rmorris
+// Mod's for Port to Win32.
+//
 // Revision 1.37  1999/05/04 19:47:20  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -203,6 +209,10 @@
 #include "BaseType.h"
 #include "util.h"
 
+#ifdef WIN32
+using namespace std;
+#endif
+
 // Private copy mfunc
 
 void
@@ -225,7 +235,11 @@ BaseType::_duplicate(const BaseType &bt)
 // greater).
 
 BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
+#ifdef WIN32
+    : _name(n), _type(t), _xdr_coder((int *)xdr), _read_p(false), _send_p(false),
+#else
     : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
+#endif
       _synthesized_p(false)
 {
 } 
@@ -474,8 +488,11 @@ BaseType::add_var(BaseType *, Part)
 
 // Using this mfunc, objects that contain a (BaseType *) can get the xdr
 // function used to serialize the object.
-
+#ifdef WIN32
+int *
+#else
 xdrproc_t
+#endif
 BaseType::xdr_coder()
 {
     return _xdr_coder;

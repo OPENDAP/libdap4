@@ -13,6 +13,12 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.35  2000/06/07 18:06:58  jimg
+// Merged the pc port branch
+//
+// Revision 1.34.14.1  2000/06/02 18:16:48  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.34  1999/07/22 18:47:44  tom
 // fixed doc typo
 //
@@ -197,6 +203,10 @@
 #include "expr.h"
 #include "RValue.h"
 #include "debug.h"
+
+#ifdef WIN32
+using namespace std;
+#endif
 
 /** The DODS Data Descriptor Object (DDS) is a data structure used by
     the DODS software to describe datasets and subsets of those
@@ -554,9 +564,14 @@ public:
 	@param os The output stream on which to write error objects and
 	messages. 
 	@param server If true, send errors back to client instead of
-	displaying errors on the default output stream. */ 
+	displaying errors on the default output stream. */
+#ifdef WIN32
+    bool parse_constraint(const string &constraint, std::ostream &os = std::cout,
+			  bool server = true);
+#else
     bool parse_constraint(const string &constraint, ostream &os = cout,
 			  bool server = true);
+#endif
 
     /** @param out A FILE pointer to which error objects should be wrtten. */
     bool parse_constraint(const string &constraint, FILE *out,
@@ -606,12 +621,20 @@ public:
 
     //@{
     /** Print the entire DDS on the specified output stream. */
+#ifdef WIN32
+	bool print(std::ostream &os = std::cout);
+#else
     bool print(ostream &os = cout);
+#endif
     /** Print the entire DDS to the specified file. */
     bool print(FILE *out);
 
     /** Print the constrained DDS to the specified file. */
+#ifdef WIN32
+    bool print_constrained(std::ostream &os = std::cout);
+#else
     bool print_constrained(ostream &os = cout);
+#endif
     /** Print a constrained DDS to the specified file. */
     bool print_constrained(FILE *out);
     //@}

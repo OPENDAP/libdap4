@@ -17,6 +17,12 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.34  2000/06/07 18:06:59  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.33.20.1  2000/06/02 18:21:27  rmorris
+ * Mod's for port to Win32.
+ *
  * Revision 1.33  1999/05/04 19:47:21  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -187,9 +193,15 @@
 #pragma interface
 #endif
 
+#ifdef WIN32
+#include <rpc.h>
+#include <winsock.h>
+#include <xdr.h>
+#else
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
+#endif
 
 #include <SLList.h>
 #include <Pix.h>
@@ -198,6 +210,10 @@
 #include "config_dap.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using namespace std;
 #endif
 
 /** The Grid data type is a collection of an Array and a set of ``Map''
@@ -358,6 +374,15 @@ public:
       @see Array
       @see Structure
       */
+#ifdef WIN32
+    virtual void print_decl(std::ostream &os, string space = "    ",
+			    bool print_semi = true,
+			    bool constraint_info = false,
+			    bool constrained = false);
+
+    virtual void print_val(std::ostream &os, string space = "",
+			   bool print_decl_p = true);
+#else
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -365,6 +390,7 @@ public:
 
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
+#endif
 
     /** Return true if this Grid is well formed. The array dimensions and
 	number of map vectors must match and both the array and maps must be

@@ -10,6 +10,12 @@
 // The Grid Selection Expression Clause class.
 
 // $Log: GSEClause.h,v $
+// Revision 1.4  2000/06/07 18:06:59  jimg
+// Merged the pc port branch
+//
+// Revision 1.3.20.1  2000/06/02 18:21:27  rmorris
+// Mod's for port to Win32.
+//
 // Revision 1.3  1999/04/29 02:29:30  jimg
 // Merge of no-gnu branch
 //
@@ -65,7 +71,51 @@ private:
 
     GSEClause();		// Hidden default constructor.
 
-    template<class T> void set_start_stop();
+#ifdef WIN32
+//  MS Visual C++ 6.0 forces us to declare templates member functions
+//  this way and forces us to inline them due to short-comings in their
+//  implementation.  In addition, the use of the arg is a bug work-around
+//  that lets it be known what the type of T is.  Theres exists an non-
+//  inline version of this function also - if you edit one, you should
+//  probably edit the other also.
+template<class T> T set_start_stop(T *t=0)
+{
+   // Read the byte array, scan, set start and stop.
+   T *vals = 0;
+   _map->buf2val((void **)&vals);
+
+   int i = _start;
+   int end = _stop;
+   while(i <= end && !compare<T>(vals[i], _op1, _value1))
+      i++;
+   _start = i;
+
+   i = end;
+   while(i >= 0 && !compare<T>(vals[i], _op1, _value1))
+      i--;
+   _stop = i;
+
+   // Every clause must have one operator but the second is optional since
+   // the more complex for of a clause is optional.
+   if (_op2 != dods_nop_op) {
+      int i = _start;
+   int end = _stop;
+   while(i <= end && !compare<T>(vals[i], _op2, _value2))
+      i++;
+   _start = i;
+
+   i = end;
+   while(i >= 0 && !compare<T>(vals[i], _op2, _value2))
+      i--;
+   _stop = i;
+   }
+
+   return 0;
+};
+#else
+template<class T> void set_start_stop();
+#endif
+
     void compute_indices();
 
 public:

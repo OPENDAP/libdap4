@@ -238,8 +238,13 @@ string name_path(const string &path);
     @see EncodingType
     @see Connect
     */
+#ifdef WIN32
+void set_mime_text(std::ostream &os, ObjectType type = unknown_type, 
+		   const string &version = DVR, EncodingType enc = x_plain);
+#else
 void set_mime_text(ostream &os, ObjectType type = unknown_type, 
 		   const string &version = DVR, EncodingType enc = x_plain);
+#endif
 /**
    @param out A FILE pointer to which the MIME header is written. */
 void set_mime_text(FILE *out, ObjectType type = unknown_type, 
@@ -261,8 +266,14 @@ void set_mime_text(FILE *out, ObjectType type = unknown_type,
     @see EncodingType
     @see DDS
     */
+#ifdef WIN32
+void set_mime_binary(std::ostream &os, ObjectType type = unknown_type, 
+		     const string &version = DVR, EncodingType enc = x_plain);
+#else
 void set_mime_binary(ostream &os, ObjectType type = unknown_type, 
 		     const string &version = DVR, EncodingType enc = x_plain);
+#endif
+
 /**
    @param out A FILE pointer to which the MIME header is written. */
 void set_mime_binary(FILE *out, ObjectType type = unknown_type, 
@@ -290,9 +301,15 @@ void set_mime_binary(FILE *out, ObjectType type = unknown_type,
     to the client.
     @see ErrMsgT
     */
+#ifdef WIN32
+void set_mime_error(std::ostream &os, int code = HTERR_NOT_FOUND, 
+		    const string &reason = "Dataset not found",
+		    const string &version = DVR);
+#else
 void set_mime_error(ostream &os, int code = HTERR_NOT_FOUND, 
 		    const string &reason = "Dataset not found",
 		    const string &version = DVR);
+#endif
 /**
    @param out A FILE pointer to which the MIME header is written. */
 void set_mime_error(FILE *out, int code = HTERR_NOT_FOUND, 

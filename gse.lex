@@ -24,6 +24,12 @@
 
 /*
  * $Log: gse.lex,v $
+ * Revision 1.3  2000/06/07 18:07:01  jimg
+ * Merged the pc port branch
+ *
+ * Revision 1.2.20.1  2000/06/02 18:39:03  rmorris
+ * Mod's for port to win32.
+ *
  * Revision 1.2  1999/04/29 02:29:37  jimg
  * Merge of no-gnu branch
  *
@@ -36,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.lex,v 1.2 1999/04/29 02:29:37 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.lex,v 1.3 2000/06/07 18:07:01 jimg Exp $"};
 
 #define YY_DECL int gse_lex YY_PROTO(( void ))
 #define ID_MAX 256
@@ -54,34 +60,34 @@ static void store_op(int op);
 
 %}
 
-ID		[a-zA-Z_%][a-zA-Z0-9_/%]*
-INT		[-+]?[0-9]+
+SCAN_ID				[a-zA-Z_%][a-zA-Z0-9_/%]*
+SCAN_INT			[-+]?[0-9]+
 
-MANTISA		([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
-EXPONENT	(E|e)[-+]?[0-9]+
+SCAN_MANTISA		([0-9]+\.?[0-9]*)|([0-9]*\.?[0-9]+)
+SCAN_EXPONENT		(E|e)[-+]?[0-9]+
 
-FLOAT		[-+]?{MANTISA}{EXPONENT}?
+SCAN_FLOAT			[-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?
 
-EQUAL		=
-GREATER		>
-GREATER_EQL	>=
-LESS		<
-LESS_EQL	<=
+SCAN_EQUAL			=
+SCAN_GREATER		>
+SCAN_GREATER_EQL	>=
+SCAN_LESS			<
+SCAN_LESS_EQL		<=
 
-NEVER		[^a-zA-Z0-9_%.]
+NEVER				[^a-zA-Z0-9_%.]
 
 %%
 
-{ID}		store_id(); return ID;
+{SCAN_ID}			store_id(); return SCAN_ID;
 
-{INT}		store_int32(); return INT;
-{FLOAT}		store_float64(); return FLOAT;
+{SCAN_INT}			store_int32(); return SCAN_INT;
+{SCAN_FLOAT}		store_float64(); return SCAN_FLOAT;
 
-{EQUAL}		store_op(EQUAL); return EQUAL;
-{GREATER}	store_op(GREATER); return GREATER;
-{GREATER_EQL}	store_op(GREATER_EQL); return GREATER_EQL;
-{LESS}		store_op(LESS); return LESS;
-{LESS_EQL}	store_op(LESS_EQL); return LESS_EQL;
+{SCAN_EQUAL}		store_op(SCAN_EQUAL); return SCAN_EQUAL;
+{SCAN_GREATER}		store_op(SCAN_GREATER); return SCAN_GREATER;
+{SCAN_GREATER_EQL}	store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
+{SCAN_LESS}			store_op(SCAN_LESS); return SCAN_LESS;
+{SCAN_LESS_EQL}		store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
 
 %%
 
