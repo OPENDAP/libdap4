@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.125 2003/03/04 21:45:17 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.126 2003/03/14 00:01:00 jimg Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
@@ -198,6 +198,7 @@ Connect::Connect(const string &n, bool www_verbose_errors,
     if (name.find("http") == 0) {
 	DBG(cerr << "Connect: The identifier is an http URL" << endl);
 	d_http = new HTTPConnect(RCReader::instance());
+	DBG2(cerr << "Initialized d_http to: " << hex << d_http << dec << endl);
 
 	// Find and store any CE given with the URL.
 	string::size_type dotpos = name.find('?');
@@ -525,10 +526,15 @@ Connect::set_cache_enabled(bool cache)
 bool
 Connect::is_cache_enabled()
 {
+    bool status;
+    DBG(cerr << "Entering is_cache_enabled (" << hex << d_http << dec 
+	<< ")... ");
     if (d_http)
-	return d_http->is_cache_enabled();
+	status = d_http->is_cache_enabled();
     else
-	return false;
+	status = false;
+    DBGN(cerr << "exiting" << endl);
+    return status;
 }
 
 /** @name Remove these...
@@ -597,6 +603,10 @@ Connect::error()
 //@}
 
 // $Log: Connect.cc,v $
+// Revision 1.126  2003/03/14 00:01:00  jimg
+// Added DBG statements to is_cache_enabled(). This helped find a bug that
+// defied the debugger...
+//
 // Revision 1.125  2003/03/04 21:45:17  jimg
 // Removed code in #if 0 ... #endif. Added get_version(). Fixed constructor
 // documentation.
