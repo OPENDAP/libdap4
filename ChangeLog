@@ -1,3 +1,9 @@
+1998-10-14  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* expr.y: Added parse of single array indeces to the projection
+	list in a CE. i[3] asks for the fourth element of the array i. The
+	old syntax i[3:3] still works.
+
 1998-09-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* The release (version 2.18) is the last that will use String.h.
@@ -393,4 +399,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.26 1998/09/17 17:25:26 jimg Exp $
+$Id: ChangeLog,v 1.27 1998/10/15 03:22:07 jimg Exp $
