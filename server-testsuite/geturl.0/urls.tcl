@@ -1,5 +1,5 @@
 
-# $Id: urls.tcl,v 1.1 1997/08/29 22:02:30 jimg Exp $
+# $Id: urls.tcl,v 1.2 1997/09/22 23:14:46 jimg Exp $
 
 # Datasets and their expected output (the information that writeval sends to
 # stdout - not the stuff that should be going into the file).
@@ -118,6 +118,112 @@ set nscat_hdf_dds "Dataset {
         } High_Wind_Speed_Flag;
     } NSCAT%20L2;
 } S2000415%2eHDF;"
+
+# URI/NSCAT Level 3 - here to test grids with the hdf server.
+set nscat_l3 "http://$host/test/nph-hdf/data/S3097057.HDF"
+set nscat_l3_ce1 "WVC_Count\\\[200:201\\\]\\\[20:119\\\]"
+set nscat_l3_ce2 "Avg_Wind_Vel_U\\\[200:201\\\]\\\[20:119\\\]"
+set nscat_l3_dds "Dataset {
+    Grid {
+     ARRAY:
+        UInt32 WVC_Count[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } WVC_Count;
+    Grid {
+     ARRAY:
+        UInt32 Map_Day_Fraction[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } Map_Day_Fraction;
+    Grid {
+     ARRAY:
+        UInt32 Avg_Sigma0_Count[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } Avg_Sigma0_Count;
+    Grid {
+     ARRAY:
+        Int32 Avg_Wind_Vel_U[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } Avg_Wind_Vel_U;
+    Grid {
+     ARRAY:
+        Int32 Avg_Wind_Vel_V[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } Avg_Wind_Vel_V;
+    Grid {
+     ARRAY:
+        UInt32 Avg_Wind_Speed[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } Avg_Wind_Speed;
+    Grid {
+     ARRAY:
+        UInt32 RMS_Wind_Speed[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } RMS_Wind_Speed;
+    Grid {
+     ARRAY:
+        UInt32 Map_Day_Fraction_StdDev[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } Map_Day_Fraction_StdDev;
+    Grid {
+     ARRAY:
+        UInt32 Wind_Vel_U_StdDev[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } Wind_Vel_U_StdDev;
+    Grid {
+     ARRAY:
+        UInt32 Wind_Vel_V_StdDev[row = 300][column = 720];
+     MAPS:
+        Float64 row[300];
+        Float64 column[720];
+    } Wind_Vel_V_StdDev;
+    Sequence {
+        Structure {
+            String bin_meth__0;
+        } bin_meth;
+        Structure {
+            String grid_origin__0;
+        } grid_origin;
+        Structure {
+            Float64 hsize__0;
+        } hsize;
+        Structure {
+            Int32 max_east__0;
+        } max_east;
+        Structure {
+            Int32 max_north__0;
+        } max_north;
+        Structure {
+            Int32 max_south__0;
+        } max_south;
+        Structure {
+            Int32 max_west__0;
+        } max_west;
+        Structure {
+            String registration__0;
+        } registration;
+        Structure {
+            Float64 vsize__0;
+        } vsize;
+    } Lat%2fLon;
+} S3097057%2eHDF;"
 
 # URI/JGOFS:
 set jg_test "http://$host/test/nph-jg/test"
