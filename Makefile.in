@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.84 1998/09/10 21:16:26 jehamby Exp $
+# $Id: Makefile.in,v 1.85 1998/09/17 17:19:17 jimg Exp $
 
 @SET_MAKE@
 
@@ -70,6 +70,7 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
+DOCXX = doc++
 
 NETIOSRCS = Connect.cc Connections.cc cgi_util.cc escaping.cc Gui.cc \
 	    DODSFilter.cc
@@ -362,6 +363,8 @@ clean:
 	-for d in Plex Vec Stack Map GNU; do cd $$d && rm *.o *~; cd ..; done
 	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
 	       cgi-util-test
+	-cd doc-html; rm *.html; cd ..;
+	-cd doc-latex; rm *.tex; cd ..;
 
 distclean: grammarclean
 	-rm -f config.status config.log config.cache
@@ -377,6 +380,16 @@ grammarclean: clean
 	-rm -f lex.expr.c expr.tab.c expr.tab.h 
 	-rm -f lex.Error.c Error.tab.c Error.tab.h
 
+# In order to get the latex docs to work (compile w/latex) you need the
+# docxx.sty file where latex will find it. 9/15/98 jhrg
+.PHONY: docs
+docs:
+	@echo "Building reference documentation."
+	-mkdir docs-html;
+	# First build the HTML docs, then the tex docs.
+	$(DOCXX) -H -d docs-html -f -B /dev/null *.h
+	-mkdir docs-latex;
+	$(DOCXX) -t -o docs-latex/dap-reference.tex *.h
 
 # This is a special tar target because it builds not only the tar file for
 # the core software but also the lib, etc, and bin directories. It assumes
