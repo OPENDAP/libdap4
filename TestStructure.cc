@@ -33,10 +33,6 @@
 //
 // jhrg 1/12/95
 
-#ifdef _GNUG_
-// #pragma implementation
-#endif
-
 #include "config_dap.h"
 #include "TestStructure.h"
 
@@ -83,6 +79,11 @@ TestStructure::read(const string &dataset)
 }
 
 // $Log: TestStructure.cc,v $
+// Revision 1.23  2004/11/16 22:50:20  jimg
+// Fixed tests. Also fixed a bug intorduced in Vector where a template
+// with no name caused some software (any code which depends on the
+// template having the same name as the array) to fail.
+//
 // Revision 1.22  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

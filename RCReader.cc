@@ -172,7 +172,7 @@ RCReader::read_rc_file(const string &pathname) throw(Error)
 	    value++;
 
 	    if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
-		&& tokenlength == 9) {
+		    && tokenlength == 9) {
 		_dods_use_cache= atoi(value) ? true : false;
 	    } else if ((strncmp(tempstr, "MAX_CACHE_SIZE", 14) == 0)
 		       && tokenlength == 14) {
@@ -504,6 +504,11 @@ RCReader::instance() throw(Error)
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.14  2004/11/16 22:50:20  jimg
+// Fixed tests. Also fixed a bug intorduced in Vector where a template
+// with no name caused some software (any code which depends on the
+// template having the same name as the array) to fail.
+//
 // Revision 1.13  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

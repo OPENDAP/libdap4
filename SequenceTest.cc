@@ -45,7 +45,7 @@ using namespace std;
 static const char *s_as_string = \
 "BaseType (0x.*):\n\
           _name: s\n\
-          _type: 12\n\
+          _type: Sequence\n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
@@ -53,7 +53,7 @@ static const char *s_as_string = \
           d_attr: 0x.*\n\
 BaseType (0x.*):\n\
           _name: i1\n\
-          _type: 4\n\
+          _type: Int32\n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
@@ -61,7 +61,7 @@ BaseType (0x.*):\n\
           d_attr: 0x.*\n\
 BaseType (0x.*):\n\
           _name: str1\n\
-          _type: 8\n\
+          _type: String\n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\
@@ -69,7 +69,7 @@ BaseType (0x.*):\n\
           d_attr: 0x.*\n\
 BaseType (0x.*):\n\
           _name: i2\n\
-          _type: 4\n\
+          _type: Int32\n\
           _read_p: 0\n\
           _send_p: 0\n\
           _synthesized_p: 0\n\

@@ -1,12 +1,6 @@
 #ifndef _testarray_h
 #define _testarray_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
-
 #include "Array.h"
 
 class TestArray: public Array {

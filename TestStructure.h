@@ -36,12 +36,6 @@
 #ifndef _teststructure_h
 #define _teststructure_h 1
 
-#ifndef __POWERPC__
-#ifdef _GNUG_
-// #pragma interface
-#endif
-#endif
-
 #include "Structure.h"
 
 class TestStructure: public Structure {
@@ -56,6 +50,11 @@ public:
 
 /* 
  * $Log: TestStructure.h,v $
+ * Revision 1.20  2004/11/16 22:50:20  jimg
+ * Fixed tests. Also fixed a bug intorduced in Vector where a template
+ * with no name caused some software (any code which depends on the
+ * template having the same name as the array) to fail.
+ *
  * Revision 1.19  2004/07/07 21:08:48  jimg
  * Merged with release-3-4-8FCS
  *

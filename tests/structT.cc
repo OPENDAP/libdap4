@@ -70,14 +70,15 @@ public:
 	vector<string> varnames ;
 	varnames.push_back( "name_int16" ) ;
 	varnames.push_back( "name_str" ) ;
-	varnames.push_back( "name_array" ) ;
+	varnames.push_back( "array_int" ) ;
 	typedef vector<string>::const_iterator niter ;
 
 	Pix p = s.first_var() ;
 	niter n = varnames.begin() ;
 	for( ; p && n != varnames.end(); s.next_var( p ), n++ )
 	{
-	    CPPUNIT_ASSERT( s.var( p )->name() == *n ) ;
+	    // Why is this cast necesssary??? 11/16/04 jhrg.
+	    CPPUNIT_ASSERT( dynamic_cast<Constructor&>(s).var( p )->name() == *n ) ;
 	}
 	CPPUNIT_ASSERT( !p && n == varnames.end() ) ;
 	if( p && n == varnames.end() )

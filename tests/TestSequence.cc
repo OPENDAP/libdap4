@@ -1,11 +1,3 @@
-#ifdef _GNUG_
-#pragma implementation
-#endif
-
-#if 0
-#include <sstream>
-#endif
-
 #include "TestSequence.h"
 
 #include "debug.h"

@@ -32,7 +32,7 @@
 #include "DODSFilter.h"
 #include "DAS.h"
 #include "Regex.h"
-#define DODS_DEBUG
+// #define DODS_DEBUG
 #include "debug.h"
 
 using namespace CppUnit;

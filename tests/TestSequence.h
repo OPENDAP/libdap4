@@ -1,12 +1,6 @@
 #ifndef _testsequence_h
 #define _testsequence_h 1
 
-#ifndef __POWERPC__
-#ifdef _GNUG_
-#pragma interface
-#endif
-#endif
-
 #include "Sequence.h"
 
 class TestSequence: public Sequence {

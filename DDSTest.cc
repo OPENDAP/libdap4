@@ -116,7 +116,7 @@ public:
                 AttrTable::Attr_iter i = at.attr_begin();
                 CPPUNIT_ASSERT(at.get_name(i) == "HDF_GLOBAL");
                 AttrTable &at2 = dds.var("WVC_Lat")->get_attr_table();
-                at2.print(cout);
+                DBG(at2.print(cerr));
                 CPPUNIT_ASSERT(at2.get_name(at2.attr_begin()) == "long_name");
         }
         catch (Error &e) {

@@ -98,15 +98,19 @@ Array::update_length(int size)
     pointer is omitted when the Array is created, it <i>must</i> be
     added (with <tt>add_var()</tt>) before <tt>read()</tt> or
     <tt>deserialize()</tt> is called. 
-      
+
+    @note Force the Array::add_var() method to be used to add \e v.
+    This version of add_var() calls Vector::add_var().
+
     @param n A string containing the name of the variable to be
     created. 
     @param v A pointer to a variable of the type to be included 
     in the Array. 
     @brief Array constructor
 */
-Array::Array(const string &n, BaseType *v) : Vector(n, v, dods_array_c)
+Array::Array(const string &n, BaseType *v) : Vector(n, 0, dods_array_c)
 {
+    add_var(v);
 }
 
 /** @brief The Array copy constructor. */
@@ -1040,6 +1044,11 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.67  2004/11/16 22:50:20  jimg
+// Fixed tests. Also fixed a bug intorduced in Vector where a template
+// with no name caused some software (any code which depends on the
+// template having the same name as the array) to fail.
+//
 // Revision 1.66  2004/11/16 17:53:14  jimg
 // Added subclass version of add_var(). This version looks at the variable
 // being added and, if it's an Array adds the template variable. It calls

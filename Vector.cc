@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.51 2004/11/16 18:04:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.52 2004/11/16 22:50:20 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -832,9 +832,15 @@ Vector::add_var(BaseType *v, Part)
         // By getting a copy of this object to be assigned to _var
         // we let the owner of 'v' to deallocate it as necessary.
         _var = v->ptr_duplicate();
+
+	// If 'v' has a name, use it as the name of the array. If it *is*
+	// empty, then make sure to copy the array's name to the template
+	// so that software which uses the template's name will still work.
         if (!v->name().empty())
-    	   set_name(v->name());	// Vector name becomes base object's name
-        
+	    set_name(v->name());
+        else
+	    _var->set_name(name());
+
         _var->set_parent(this);	// Vector --> child
       
         DBG(cerr << "Vector::add_var: Added variable " << v << " ("
@@ -925,6 +931,11 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.52  2004/11/16 22:50:20  jimg
+// Fixed tests. Also fixed a bug intorduced in Vector where a template
+// with no name caused some software (any code which depends on the
+// template having the same name as the array) to fail.
+//
 // Revision 1.51  2004/11/16 18:04:23  jimg
 // Modified the ctor and add_var() method so that a null variable can be added
 // as a template.  This makes it possible for a client of the library to create an

@@ -1,6 +1,3 @@
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #include "TestArray.h"
 #include "dods-datatypes.h"

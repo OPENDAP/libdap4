@@ -1,6 +1,3 @@
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/TestAssert.h>
@@ -12,6 +9,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
+// #define DODS_DEBUG
 
 #include "DDS.h"
 #include "Pix.h"
@@ -30,7 +29,7 @@ string cprint = "\
 Dataset {\n\
     Int16 var1;\n\
     String var6;\n\
-    Int16 arrayInt;\n\
+    Int16 var7;\n\
     Structure {\n\
         Structure {\n\
             Int16 var10;\n\
@@ -43,7 +42,7 @@ string pprint = "\
 Dataset {\n\
     Int16 var1;\n\
     String var6;\n\
-    Int16 arrayInt;\n\
+    Int16 var7;\n\
 } Test%20Data%20Set;\n\
 " ;
 
@@ -118,7 +117,7 @@ public:
 	    bt = NewStr( "var6" ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
-	    bt = NewArray( "var7", NewInt16( "arrayInt" ) ) ;
+	    bt = NewArray( "var7", NewInt16( "" ) ) ;
 	    dds.add_var( bt ) ;
 	    delete bt ;
 	    bt = NewStructure( "var8" ) ;
@@ -156,6 +155,7 @@ public:
 	vs_citer vsc = vs.begin() ;
 	for( ; p && vsc != vs.end(); dds.next_var( p ), vsc++ )
 	{
+	    DBG(cerr << dds.var(p)->name() << ": " << *vsc << endl);
 	    CPPUNIT_ASSERT( dds.var(p)->name() == *vsc ) ;
 	}
 	CPPUNIT_ASSERT( !p && vsc == vs.end() ) ;
@@ -349,6 +349,7 @@ public:
 	    }
 	}
 
+#if 0
 	dds.add_function( "test_null", func_null ) ;
 	bool_func boolf ;
 	bool found_func = dds.find_function( "test_null", &boolf ) ;
@@ -360,10 +361,11 @@ public:
 	found_func = dds.find_function( "test_nth", &btpf ) ;
 	CPPUNIT_ASSERT( found_func == true ) ;
 	CPPUNIT_ASSERT( btpf ) ;
+#endif
 
 	dds.add_function( "test_grid_select", func_grid_select ) ;
 	proj_func projf ;
-	found_func = dds.find_function( "test_grid_select", &projf ) ;
+	bool found_func = dds.find_function( "test_grid_select", &projf ) ;
 	CPPUNIT_ASSERT( found_func == true ) ;
 	CPPUNIT_ASSERT( projf ) ;
 
@@ -371,12 +373,12 @@ public:
 	    ostringstream strm;
 	    dds.print( strm ) ;
 	    string outstr = strm.str() ;
-	    CPPUNIT_ASSERT( cprint == outstr ) ;
 	    if( cprint != outstr )
 	    {
-		DBG2( cerr << "expected output = " << cprint << endl ) ;
-		DBG2( cerr << "output received = " << outstr << endl ) ;
+		DBG( cerr << "expected output = " << cprint << endl ) ;
+		DBG( cerr << "output received = " << outstr << endl ) ;
 	    }
+	    CPPUNIT_ASSERT( cprint == outstr ) ;
 	}
 
 	{
@@ -390,12 +392,12 @@ public:
 	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
 	    string outstr = strm.str() ;
-	    CPPUNIT_ASSERT( nprint == outstr ) ;
 	    if( nprint != outstr ) ;
 	    {
-		DBG2( cerr << "expected output = " << nprint << endl ) ;
-		DBG2( cerr << "output received = " << outstr << endl ) ;
+		DBG( cerr << "expected output = " << nprint << endl ) ;
+		DBG( cerr << "output received = " << outstr << endl ) ;
 	    }
+	    CPPUNIT_ASSERT( nprint == outstr ) ;
 	}
 
 	{
@@ -411,12 +413,12 @@ public:
 	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
 	    string outstr = strm.str() ;
-	    CPPUNIT_ASSERT( cprint == outstr ) ;
 	    if( cprint != outstr )
 	    {
-		DBG2( cerr << "expected output = " << cprint << endl ) ;
-		DBG2( cerr << "output received = " << outstr << endl ) ;
+		DBG( cerr << "expected output = " << cprint << endl ) ;
+		DBG( cerr << "output received = " << outstr << endl ) ;
 	    }
+	    CPPUNIT_ASSERT( cprint == outstr ) ;
 	}
 
 	{
@@ -433,12 +435,12 @@ public:
 	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
 	    string outstr = strm.str() ;
-	    CPPUNIT_ASSERT( pprint == outstr ) ;
 	    if( pprint != outstr )
 	    {
-		DBG2( cerr << "expected output = " << pprint << endl ) ;
-		DBG2( cerr << "output received = " << outstr << endl ) ;
+		DBG( cerr << "expected output = " << pprint << endl ) ;
+		DBG( cerr << "output received = " << outstr << endl ) ;
 	    }
+	    CPPUNIT_ASSERT( pprint == outstr ) ;
 	}
 
 	{

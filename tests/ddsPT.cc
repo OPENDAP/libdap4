@@ -49,27 +49,27 @@ main( int argc, char **argv )
     cout << endl << __LINE__ << " **** create the DDS" << endl ;
     DDS dds( "TestDDS" ) ;
 
-    for( int i = 1; i < 8; i++ )
+    for( int i = 1; i < 7; i++ )
     {
 	if( i == do_this || do_all == true )
 	{
 	    char testfile[64] ;
 	    sprintf( testfile, "test.%d", i ) ;
-	    cout << endl << __LINE__ << " **** parse " << testfile << endl ;
+	    cout << endl << __LINE__ << " **** parse " << testfile ;
 	    try
 	    {
 		dds.parse( testfile ) ;
-		cout << "parsed successfully - PASS" << endl ;
+		cout << "; parsed successfully - PASS" << endl ;
 		if( expr != "" )
 		{
 		    dds.parse_constraint( expr ) ;
 		    dds.print_constrained( cerr ) ;
 		}
 	    }
-	    catch( InternalErr &e )
+	    catch( Error &e )
 	    {
 		cerr << "failed to parse - FAIL" << endl ;
-		e.print( cerr ) ;
+		cerr << e.get_error_message() << endl ;
 	    }
 	}
     }

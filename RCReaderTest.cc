@@ -35,7 +35,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define DODS_DEBUG
+// #define DODS_DEBUG
 #include "RCReader.h"
 #include "debug.h"
 
@@ -244,6 +244,11 @@ main( int argc, char* argv[] )
 }
 
 // $Log: RCReaderTest.cc,v $
+// Revision 1.5  2004/11/16 22:50:20  jimg
+// Fixed tests. Also fixed a bug intorduced in Vector where a template
+// with no name caused some software (any code which depends on the
+// template having the same name as the array) to fail.
+//
 // Revision 1.4  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

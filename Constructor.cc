@@ -122,7 +122,7 @@ Constructor::next_var(Pix p)
 BaseType *
 Constructor::var(Pix p)
 {
-    BTIterAdapter *i = (BTIterAdapter *)p.getIterator() ;
+    BTIterAdapter *i = static_cast<BTIterAdapter *>(p.getIterator());
     if( i ) {
 	return i->entry() ;
     }
@@ -287,6 +287,11 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.15  2004/11/16 22:50:20  jimg
+// Fixed tests. Also fixed a bug intorduced in Vector where a template
+// with no name caused some software (any code which depends on the
+// template having the same name as the array) to fail.
+//
 // Revision 1.14  2004/11/16 17:56:05  jimg
 // Added accessors for the new reverse iterators. Also added a new method
 // to access variables using an integer index.

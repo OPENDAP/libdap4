@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.8 2004/07/09 17:06:40 jimg Exp $
+# $Id: Makefile.in,v 1.9 2004/11/16 22:50:20 jimg Exp $
 
 @SET_MAKE@
 
@@ -49,6 +49,7 @@ AR = ar
 TAGS = etags
 RANLIB = @RANLIB@
 STRIP = strip
+VALGRIND = @VALGRIND@
 
 SRCS = LongIterAdapter.cc TestArray.cc TestSequence.cc \
        Unused.cc arrayT.cc attrTableT.cc ddsPT.cc \
@@ -60,18 +61,22 @@ OBJS = TestArray.o TestSequence.o Unused.o ../TestInt16.o ../TestStr.o \
 AOBJS = TestArray.o TestSequence.o ../TestInt16.o ../TestStr.o \
 	../TestStructure.o ../TestFloat64.o ../TestInt32.o \
 	../TestUInt32.o ../TestByte.o ../TestGrid.o \
-        ../TestList.o ../TestUrl.o ../TestFloat32.o ../TestUInt16.o
+        ../TestUrl.o ../TestFloat32.o ../TestUInt16.o
 
 all: runtest
 
 runtest: $(PROGS)
-	./arrayT
-	./attrTableT
-	./structT
-	./sequenceT
-	./ddsT
-	./ddsPT
-	./iterT
+	-for t in $(PROGS); do echo $$t; $(VALGRIND) ./$$t; done
+	-rm memcheck
+	-for m in `ls -1 memcheck.pid*`; do cat $$m >> memcheck; rm $$m; done
+
+#	./arrayT
+#	./attrTableT
+#	./structT
+#	./sequenceT
+#	./ddsT
+#	./ddsPT
+#	./iterT
 
 # geturl is really a test driver, but it is so useful in other contexts that
 # I have decided to build it as part of the `all' target. jhrg 7/11/96
