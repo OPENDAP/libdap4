@@ -12,6 +12,12 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.11  1999/08/23 18:57:44  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.10.6.1  1999/08/09 22:57:50  jimg
+// Removed GUI code; reactivate by defining GUI
+//
 // Revision 1.10  1999/05/04 19:47:21  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -59,7 +65,11 @@
 #endif
 
 #include <stdio.h>		// For FILE *
+
+#include <string>
+#ifdef GUI
 #include "Gui.h"
+#endif
 
 
 /** The most common errors within DODS have special codes so that they
@@ -231,7 +241,11 @@ public:
 	provided, the message will be displayed on the client's stderr.
 
 	@see Gui */
+#if 0
     void display_message(Gui *gui = 0);
+#else
+    void display_message(void *gui = 0);
+#endif
 
     /** With no argument, return the program type of the error object. With
 	an argument, set the error object's program type field.
@@ -265,7 +279,11 @@ public:
 	@param gui A pointer to a Gui class object handling a GUI
 	process on the client.
 	@see Gui */
+#ifdef GUI
     string correct_error(Gui *gui);
+#else
+    string correct_error(void *gui);
+#endif
 };
 
 #endif // _error_h

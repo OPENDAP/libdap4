@@ -12,6 +12,12 @@
 // 5/3/99 jhrg
 
 // $Log: InternalErr.h,v $
+// Revision 1.2  1999/08/23 18:57:45  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.1.6.1  1999/08/17 16:14:29  jimg
+// Removed Gui.h header.
+//
 // Revision 1.1  1999/05/04 19:43:47  jimg
 // Added
 //
@@ -27,7 +33,6 @@
 
 #include <string>
 
-#include "Gui.h"
 #include "Error.h"
 
 /** The InternalErr class is used to signal that somewhere inside DODS a

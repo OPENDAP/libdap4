@@ -12,6 +12,12 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.10  1999/08/23 18:57:46  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.9.6.1  1999/08/16 23:32:01  jimg
+// Added esc2underscore
+//
 // Revision 1.9  1999/04/29 02:29:36  jimg
 // Merge of no-gnu branch
 //
@@ -89,7 +95,7 @@
 
 const int MAXSTR = 256;
 
-string hexstring(unsigned char val) {
+static string hexstring(unsigned char val) {
     static char buf[MAXSTR];
 
     ostrstream(buf,MAXSTR) << hex << setw(2) << setfill('0') <<
@@ -98,7 +104,7 @@ string hexstring(unsigned char val) {
     return (string)buf;
 }
 
-char unhexstring(string s) {
+static char unhexstring(string s) {
     int val;
 
     istrstream(s.c_str(),MAXSTR) >> hex >> val;
@@ -106,7 +112,7 @@ char unhexstring(string s) {
     return (char)val;
 }
 
-string octstring(unsigned char val) {
+static string octstring(unsigned char val) {
     static char buf[MAXSTR];
 
     ostrstream(buf,MAXSTR) << oct << setw(3) << setfill('0') <<
@@ -115,7 +121,7 @@ string octstring(unsigned char val) {
     return (string)buf;
 }
 
-char unoctstring(string s) {
+static char unoctstring(string s) {
     int val;
 
     istrstream(s.c_str(),MAXSTR) >> oct >> val;
@@ -124,8 +130,13 @@ char unoctstring(string s) {
 }
 
 
-// replace characters that are not allowed in DODS identifiers
-string id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
+/** Replace characters that are not allowed in DODS identifiers.
+    @param s The string in which to replace characters.
+    @param allowable a regular expression describing the set of characters
+    that are allowable in a DODS identifier.
+    @return The modified identifier. */
+string 
+id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
     static Regex badregx(allowable.c_str(), 1);
     static const string ESC = "%";
 
@@ -139,7 +150,14 @@ string id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
     return s;
 }
 
-string dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]") {
+/** Escape non-printable characters in an identifier using the WWW %<hex
+    code> notation.
+    @param s The DODS identifier to modify.
+    @param escape A regular expression that matches the WWW hex code. By
+    default "%[0-7][0-9a-fA-F]".
+    @return The modified identifier. */
+string 
+dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]") {
     static Regex escregx(escape.c_str(), 1);
 
     int index=0, matchlen;
@@ -149,7 +167,27 @@ string dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]") {
     return s;
 }
 
-// Escape non-printable characters and quotes from an HDF attribute
+/** Return a string that has all the `%<hex digit><hex digit>' sequences
+    replaced with underscores (`_').
+    @param s The string to transform
+    @param escape A regular expression which matches the `%<hd><hd>' pattern.
+    By default this is the string "%[0-7][0-9a-fA-F]". Replacing the pattern
+    allows the function to be used to map other patterns to an underscore.
+    @return The modified string. */
+string 
+esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]") {
+    static Regex escregx(escape.c_str(), 1);
+
+    int index=0, matchlen;
+    while ((index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
+      s.replace(index, matchlen, "_");
+
+    return s;
+}
+
+/** Escape non-printable characters and quotes from an HDF attribute.
+    @param s The attribute to modify.
+    @return The modified attribute. */
 string escattr(string s) {
     static Regex nonprintable("[^ !-~]");
     const string ESC = "\\";
@@ -171,11 +209,13 @@ string escattr(string s) {
     return s;
 }
 
-// Un-escape special characters, quotes and backslashes from an HDF attribute.
-// Note: A regex to match one \ must be defined as
-//          Regex foo = "\\\\";
-//       because both C++ strings and libg++ regex's also employ \ as
-//       an escape character!
+/** Un-escape special characters, quotes and backslashes from an HDF attribute.
+    <p>
+    Note: A regex to match one \ must be defined as: Regex foo = "\\\\";
+    because both C++ strings and GNU's Regex also employ \ as an escape
+    character! 
+    @param s The escaped attribute.
+    @return The unescaped attribute. */
 string unescattr(string s) {
     static Regex escregx("\\\\[01][0-7][0-7]");  // matches 4 characters
     static Regex escquoteregex("[^\\\\]\\\\\"");  // matches 3 characters

@@ -8,6 +8,12 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.19  1999/08/23 18:57:44  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.18.2.1  1999/08/09 22:57:50  jimg
+// Removed GUI code; reactivate by defining GUI
+//
 // Revision 1.18  1999/08/09 18:27:34  jimg
 // Merged changes from Brent for the Gui code (progress indicator)
 //
@@ -100,7 +106,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.18 1999/08/09 18:27:34 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.19 1999/08/23 18:57:44 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -108,7 +114,9 @@ static char rcsid[] not_used = {"$Id: Error.cc,v 1.18 1999/08/09 18:27:34 jimg E
 #include "Error.h"
 #include "parser.h"
 
+#ifdef GUI
 #include "Gui.h"
+#endif
 
 void Errorrestart(FILE *yyin);	// defined in Error.tab.c
 int Errorparse(void *arg);	
@@ -284,13 +292,19 @@ Error::error_message(string msg)
 }
 
 void
+#ifdef GUI
 Error::display_message(Gui *gui)
+#else
+Error::display_message(void *)
+#endif
 {
     assert(OK());
+#ifdef GUI
     if (gui && gui->show_gui()) {
 	gui->simple_error(_error_message);
     }
     else
+#endif
 	cerr << _error_message << endl;
 }
 
@@ -333,13 +347,20 @@ Error::program(char *pgm)
 // null Gui pointer then the message text is displayed on stderr.
 
 string
+#ifdef GUI
 Error::correct_error(Gui *gui)
+#else
+Error::correct_error(void *)
+#endif
 {
     assert(OK());
     if (!OK())
 	return string("");
 
+#ifdef GUI
     display_message(gui);
+#else
+    display_message(NULL);
+#endif
     return string("");
-    
 }

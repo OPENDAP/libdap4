@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.103 1999/07/22 17:11:51 jimg Exp $
+# $Id: Makefile.in,v 1.104 1999/08/23 18:57:45 jimg Exp $
 
 @SET_MAKE@
 
@@ -79,11 +79,10 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
 DOCXX = doc++
 
-NETIOSRCS = Connect.cc Connections.cc cgi_util.cc escaping.cc Gui.cc \
-	    DODSFilter.cc
-NETIOOBJS = Connect.o Connections.o cgi_util.o escaping.o Gui.o DODSFilter.o
-NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h Gui.h \
-	    DODSFilter.h
+NETIOSRCS = Connect.cc Connections.cc cgi_util.cc escaping.cc DODSFilter.cc
+NETIOOBJS = Connect.o Connections.o cgi_util.o escaping.o DODSFilter.o
+NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h DODSFilter.h \
+	    escaping.h
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
@@ -316,9 +315,7 @@ Error.tab.o: Error.tab.c	# build using C++ compiler
 
 # Standard targets with some customization for das-test and dds-test
 
-install: all install-headers install-geturl install-gui install-usage install-deflate
-	$(INSTALL_DATA) DODS_Dispatch.pm $(etcdir)
-	$(INSTALL_DATA) DODS_Cache.pm $(etcdir)
+install: all install-headers install-geturl install-usage install-deflate
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
 
@@ -333,10 +330,6 @@ install-headers:
 install-geturl: geturl
 	$(INSTALL_PROGRAM) -s geturl $(bindir)
 
-install-gui:
-	for tcl_prog in dods_gui.tcl error.tcl progress.tcl; \
-	    do $(INSTALL_PROGRAM) $$tcl_prog $(etcdir); done
-
 # usage and defalte are part of the DODS server. 02/10/98 jhrg
 
 install-usage: usage
@@ -345,8 +338,9 @@ install-usage: usage
 install-deflate: deflate
 	$(INSTALL_PROGRAM) -s deflate $(etcdir)
 
-Makefile: ${srcdir}/Makefile.in
-	${SHELL} ./config.status
+# Makefile: ${srcdir}/Makefile.in
+# 	${SHELL} ./config.status
+include $(DODS_ROOT)/etc/Makefile.common
 
 check: libdap++.a das-check dds-check expr-check
 
@@ -437,12 +431,11 @@ docs:
 tar:
 	-rm -r config.cache config.log config.status
 	cd $(DODS_ROOT)/.. && \
-	$(TAR) --exclude '*/nc-dods*' --exclude '*/jg-dods*' --exclude '*patches*' \
+	$(TAR) --exclude '*/nc*-dods*' --exclude '*/jg-dods*' 
 	    --exclude '*/math-dods*' --exclude '*/dsp-dods*' \
-	    --exclude '*/hdf-dods*' --exclude '*/writeval*' \
-	    --exclude '*/ff-dods*' --exclude '*/matlab-GUI*' \
-	    --exclude '*/jdap*' --exclude '*/doc' --exclude '*/packages*' \
-	    --exclude '*/url-builder*' --exclude '*url-directory*' \
+	    --exclude '*/hdf-dods*' --exclude '*/tools*' \
+	    --exclude '*/ff-dods*' --exclude '*/clients*' \
+	    --exclude '*/doc' --exclude '*/packages*' \
 	    --exclude '*/.#*' --exclude '*/CVS' --exclude '*/old' \
 	    --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
 
@@ -456,8 +449,7 @@ binary-tar:
 	    DODS/include && \
 	$(TAR) --gzip --create --dereference \
 	    --file DODS-$(host)-tools-$(version).tar.gz \
-	    DODS/etc/asciival \
-	    DODS/etc/*.tcl && \
+	    DODS/etc/asciival && \
 	$(TAR) --gzip --create --dereference \
 	    --file DODS-$(host)-client-tools-$(version).tar.gz \
 	    DODS/etc/INSTALL-clients \
@@ -466,9 +458,12 @@ binary-tar:
 	$(TAR) --gzip --create --dereference \
 	    --file DODS-$(host)-server-tools-$(version).tar.gz \
 	    DODS/etc/INSTALL-servers \
+	    DODS/etc/asciival \
+	    DODS/etc/www_interface \
 	    DODS/etc/deflate \
 	    DODS/etc/usage \
-	    DODS/etc/*.pm
+	    DODS/etc/*.pm \
+	    DODS/etc/HTML DODS/etc/LWP DODS/etc/MIME
 
 .PHONY: update-version
 update-version: check-version
@@ -505,8 +500,7 @@ tags:
 
 .PHONY: depend
 depend: 
-	> dependencies
-	@depend@ -m dependencies -- $(CPPFLAGS) -I@GPP_INC@ -- \
+	@depend@ -t -m dependencies -- $(CPPFLAGS) -- \
 	$(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
 	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS)
 

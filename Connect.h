@@ -32,6 +32,15 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.39  1999/08/23 18:57:44  jimg
+ * Merged changes from release 3.1.0
+ *
+ * Revision 1.38.4.2  1999/08/10 00:40:04  jimg
+ * Changes for the new source code organization
+ *
+ * Revision 1.38.4.1  1999/08/09 22:57:49  jimg
+ * Removed GUI code; reactivate by defining GUI
+ *
  * Revision 1.38  1999/05/21 20:41:45  dan
  * Changed default 'gui' flag to 'false' in request_data, and read_data
  * methods.
@@ -237,7 +246,9 @@
 #include "DAS.h"
 #include "DDS.h"
 #include "Error.h"
+#ifdef GUI
 #include "Gui.h"
+#endif
 #include "util.h"
 #include "config_dap.h"
 
@@ -349,7 +360,9 @@ private:
     DDS _dds;			// Dataset descriptor structure
     Error _error;		// Error object
 
+#ifdef GUI
     Gui *_gui;			// Used for progress, error display.
+#endif
 
     string _URL;		// URL to remote dataset (minus CE)
     string _proj;		// Projection part of initial CE.
@@ -666,7 +679,11 @@ public:
       connection. 
       @see Gui 
       */
+#ifdef GUI
     Gui *gui();
+#else
+    void *gui();
+#endif
 
   /** Reads the DAS corresponding to the dataset in the Connect
       object's URL. 

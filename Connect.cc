@@ -9,6 +9,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.81  1999/08/23 18:57:44  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.80.2.1  1999/08/09 22:57:49  jimg
+// Removed GUI code; reactivate by defining GUI
+//
 // Revision 1.80  1999/08/09 18:27:33  jimg
 // Merged changes from Brent for the Gui code (progress indicator)
 //
@@ -457,10 +463,11 @@
 
 #include "config_dap.h"
 
+#ifdef GUI
 #include "Gui.h"
-#define GUI
+#endif
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.80 1999/08/09 18:27:33 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.81 1999/08/23 18:57:44 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -558,6 +565,7 @@ http_terminate_handler(HTRequest * request, HTResponse * /*response*/,
 int 
 timeout_handler(HTRequest *request)
 {
+#ifdef GUI
     Connect *me = (Connect *)HTRequest_context(request);
     string cmd;
 
@@ -574,6 +582,7 @@ timeout_handler(HTRequest *request)
 	me->gui()->command(cmd);
 	me->gui()->progress_visible(false);
     }
+#endif
 
     HTRequest_kill(request);
 
@@ -592,6 +601,7 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
         return YES;
     }
 
+#ifdef GUI
     Connect *me = (Connect *)HTRequest_context(request);
     string cmd;
 
@@ -692,6 +702,7 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int /* msgnum */,
         cerr << "UNKNOWN PROGRESS STATE" << endl;
         break;
     }
+#endif
 
     return YES;
 }
@@ -706,7 +717,9 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
         return NO;
     }
 
+#ifdef GUI
     Connect *me = (Connect *)HTRequest_context(request);
+#endif
 
     // Put the username in reply using HTAlert_setReplyMessage; use
     // _setReplySecret for the password.
@@ -714,11 +727,12 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
     string user = "\0";
     string passwd = "\0";
 
+#ifdef GUI
     if (!me->gui()->command(cmd, &user, &passwd))
 	return NO;
+#endif
 
-/* I think this can all be dumped 
-
+#if 0
     // Extract two words from RESPONSE; #1 is the username and #2 is the
     // password. Either may be missing, in which case return NO.
 
@@ -732,7 +746,8 @@ dods_username_password (HTRequest * request, HTAlertOpcode /* op */,
 	     << endl);
 	return NO;
     }
-*/
+#endif
+
     if ((user.length() == 0) || (passwd.length() == 0))
 	return NO;
 
@@ -833,11 +848,13 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
     if (msg) {
 	Connect *me = (Connect *)HTRequest_context(request);
 
+#ifdef GUI
 	if (me->gui()->show_gui()) {
 	    if (!me->gui()->simple_error((char *)(HTChunk_data(msg))));
 		cerr << "GUI Failure in dods_error_print()" << endl;
 	}
 	else {
+#endif
 	    // Connect used to route all www errors to stderr. That was a
 	    // mistake; they should go to the Error object. To keep the old
 	    // behavior I've added two mfuncs that set and get a property
@@ -849,7 +866,9 @@ dods_error_print (HTRequest * request, HTAlertOpcode /* op */,
 	    e.error_code(unknown_error);
 	    string s = (char *)HTChunk_data(msg);
 	    e.error_message(s);
+#ifdef GUI
 	}
+#endif
 
         HTChunk_delete(msg);
     }
@@ -1596,7 +1615,11 @@ Connect::read_data(FILE *data_source, bool gui_p, bool async)
     return process_data(async);
 }
 
+#ifdef GUI
 Gui *
+#else
+void *
+#endif
 Connect::gui()
 {
 #ifdef GUI

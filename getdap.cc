@@ -10,6 +10,12 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.40  1999/08/23 18:57:46  jimg
+// Merged changes from release 3.1.0
+//
+// Revision 1.39.2.1  1999/08/09 22:57:51  jimg
+// Removed GUI code; reactivate by defining GUI
+//
 // Revision 1.39  1999/08/09 18:27:35  jimg
 // Merged changes from Brent for the Gui code (progress indicator)
 //
@@ -171,7 +177,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.39 1999/08/09 18:27:35 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.40 1999/08/23 18:57:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -181,7 +187,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.39 1999/08/09 18:27:35 jimg 
 
 #include "Connect.h"
 
-const char *version = "$Revision: 1.39 $";
+const char *version = "$Revision: 1.40 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -443,7 +449,7 @@ main(int argc, char * argv[])
 	}
 
 	if (!get_das && !get_dds && !get_data) {
-#if 1
+#ifdef GUI
 	    url.gui()->show_gui(gui);
 #endif
 	    string url_string = argv[i];
