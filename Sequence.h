@@ -19,9 +19,12 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.22  1996/08/26 21:13:01  jimg
-/* Changes for version 2.07
+/* Revision 1.23  1996/09/23 20:16:13  jimg
+/* Fixed lame declaration of print_all_vals().
 /*
+ * Revision 1.22  1996/08/26 21:13:01  jimg
+ * Changes for version 2.07
+ *
  * Revision 1.21  1996/06/04 21:33:39  jimg
  * Multiple connections are now possible. It is now possible to open several
  * URLs at the same time and read from them in a round-robin fashion. To do
@@ -224,7 +227,8 @@ public:
       XDR * as its second argument.
 
       Returns: void */
-    void print_all_vals(ostream& os, XDR *src, bool print_decl_p);
+    void print_all_vals(ostream& os, XDR *src, String space ="", 
+			bool print_decl_p = true);
 
     virtual bool check_semantics(bool all = false);
 };
