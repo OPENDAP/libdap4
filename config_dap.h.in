@@ -3,9 +3,12 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.21  1997/06/12 20:57:09  jimg
-/* *** empty log message ***
+/* Revision 1.22  1997/06/12 22:48:10  jimg
+/* Fixed #ifdef HAVE_EXPECT #endif.
 /*
+ * Revision 1.21  1997/06/12 20:57:09  jimg
+ * *** empty log message ***
+ *
  * Revision 1.20  1997/06/06 17:52:13  jimg
  * Last minute changes for version 2.14
  *
@@ -166,7 +169,7 @@
 /* Define as 1 if you have the expect library (which requries tcl) */
 #ifndef HAVE_EXPECT
 #undef HAVE_EXPECT
-#undef
+#endif
 
 /* Define if you have the strdup function.  */
 #undef HAVE_STRDUP
