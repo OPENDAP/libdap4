@@ -10,6 +10,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.47  1998/09/02 23:59:11  jimg
+// Removed func_date to avoid conflicts with a copy in ff-dods-2.15.
+//
 // Revision 1.46  1998/04/07 22:12:49  jimg
 // Added prune_spaces(String) function. This can be used to remove leading
 // spaces from URLs and their embedded CEs (i.e., spaces between the ? and the
@@ -233,7 +236,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.46 1998/04/07 22:12:49 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.47 1998/09/02 23:59:11 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -708,37 +711,6 @@ func_nth(int argc, BaseType *argv[], DDS &)
 	cerr << "Wrong type argument to list operator `nth'" << endl;
 	return 0;
     }
-}
-
-// The start of a simple function to select elements of an array based on
-// date. Date uses the following notation: yyyyddd or yyyymmdd.
-// This version is basically here to test so features relating to array
-// projections and CE functions.
-//
-// jhrg 4/14//97
-
-BaseType *
-func_date(int argc, BaseType *argv[], DDS &)
-{
-    if (argc < 2 || argc > 3) {
-	cerr << "Wrong number of arguments to func_date" << endl;
-	return 0;
-    }
-
-    if (argv[0]->type() != dods_array_c) {
-	cerr << "Arg1 must be an array" << endl;
-	return 0;
-    }
-
-    Array *a = (Array *)argv[0];
-
-    // The test function ignores the other arguments and sets a simple
-    // constraint on the first dimension.
-
-    a->clear_constraint();
-    a->add_constraint(a->first_dim(), 0, 1, 10);
-
-    return a;
 }
 
 bool
