@@ -8,6 +8,10 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.7  1997/02/15 07:10:57  jimg
+// Changed OK() so that empty errors return false.
+// Added assert calls.
+//
 // Revision 1.6  1996/08/13 18:14:28  jimg
 // Switched to the parser_arg object for passing parameters to/from the Error.y
 // parser. NB: if an error object is bad a message is sent to stderr to avoid
@@ -43,7 +47,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.6 1996/08/13 18:14:28 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.7 1997/02/15 07:10:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -91,6 +95,8 @@ Error::~Error()
 Error &
 Error::operator=(const Error &rhs)
 {
+    assert(OK());
+
     if (&rhs == this)		// are they identical?
 	return *this;
     else {
@@ -101,13 +107,14 @@ Error::operator=(const Error &rhs)
 	_program = new char[strlen(rhs._program) + 1];
 	strcpy(_program, rhs._program);
 
+	assert(this->OK());
+
 	return *this;
     }
 }
 
 // To be a valid, an Error object must either be: 1) empty, 2) contain a
-// message and a program or 3) contain only a message. Since the program is
-// optional, there is no need to test for it here. 
+// message and a program or 3) contain only a message. 
 //
 // NB: This mfunc does not test for malformed messages or programs - ones
 // where the code is defined but not the `data'.
@@ -115,18 +122,30 @@ Error::operator=(const Error &rhs)
 bool
 Error::OK()
 {
+    // Do not return true for empty objects, even though they can exist
+    // within this class. This method should never return true for an object
+    // that users clearly cannot use.
+#if 0
+    // The object is empty - users cannot make these, but this class can!
     bool empty = ((_error_code == undefined_error) 
 		  && (_error_message == "")
 		  && (_program_type == undefined_prog_type) 
 		  && (_program == 0));
+#endif
 
+    // Just a message - the program part is null.
     bool message = ((_error_code != undefined_error) 
-		    && (_error_message != ""));
+		    && (_error_message != "")
+		    && (_program_type == undefined_prog_type) 
+		    && (_program == 0));
 
-    // bool program = ((_program_type != undefined_prog_type) 
-    //                 && (_program != 0))
+    // Message and program parts are in working order.
+    bool program = ((_error_code != undefined_error) 
+		    && (_error_message != "")
+		    && (_program_type != undefined_prog_type) 
+		    && (_program != 0));
 
-    return empty || message;
+    return message || program;
 }
 
 bool
@@ -158,22 +177,17 @@ Error::parse(FILE *fp)
 void
 Error::print(ostream &os = cout)
 {
-    if (!OK()) {
-	cerr << "Bad Error object" << endl;
-	return;
-    }
+    assert(OK());
 
     os << "Error {" << endl;
 
-    if (_error_code != undefined_error) {
-	os << "    " << "code = " << _error_code << ";" << endl;
-	os << "    " << "message = " << _error_message << ";" << endl;
+    os << "    " << "code = " << _error_code << ";" << endl;
+    os << "    " << "message = " << _error_message << ";" << endl;
 
-	if (_program_type != undefined_prog_type) {
-	    os << "    " << "program_type = " << _program_type << ";" << endl;
-	    os << "    " << "program = " << _program << ";" << endl;
-	}
-    }    
+    if (_program_type != undefined_prog_type) {
+	os << "    " << "program_type = " << _program_type << ";" << endl;
+	os << "    " << "program = " << _program << ";" << endl;
+    }
 
     os << "};" << endl;
 }
@@ -181,10 +195,12 @@ Error::print(ostream &os = cout)
 ErrorCode
 Error::error_code(ErrorCode ec = undefined_error)
 {
+    assert(OK());
     if (ec == undefined_error)
 	return _error_code;
     else {
 	_error_code = ec;
+	assert(OK());
 	return _error_code;
     }
 }
@@ -192,10 +208,12 @@ Error::error_code(ErrorCode ec = undefined_error)
 String
 Error::error_message(String msg = "")
 {
+    assert(OK());
     if (msg == "")
 	return String(_error_message);
     else {
 	_error_message = msg;
+	assert(OK());
 	return String (_error_message);
     }
 }
@@ -203,6 +221,7 @@ Error::error_message(String msg = "")
 void
 Error::display_message(Gui *gui = 0)
 {
+    assert(OK());
     if (gui && gui->show_gui()) {
 	String cmd = (String)"dialog " + _error_message + "\r";
 	gui->command(cmd);
@@ -214,6 +233,7 @@ Error::display_message(Gui *gui = 0)
 ProgramType
 Error::program_type(ProgramType pt = undefined_prog_type)
 {
+    assert(OK());
     if (pt == undefined_prog_type)
 	return _program_type;
     else {
@@ -245,6 +265,7 @@ Error::program(char *pgm = 0)
 String
 Error::correct_error(Gui *gui)
 {
+    assert(OK());
     if (!OK())
 	return String("");
 
