@@ -24,7 +24,7 @@ private:
 
 public:
   rvalue(BaseType *bt);
-  rvalue(btp_func f, SLList<rvalue *> *a);
+  rvalue(btp_func f, rvalue_list *a);
   rvalue();
 
   virtual ~rvalue();
@@ -41,6 +41,10 @@ typedef SLList<rvalue *> rvalue_list;
 BaseType **build_btp_args(rvalue_list *args, DDS &dds);
 
 // $Log: RValue.h,v $
+// Revision 1.8  2002/06/18 19:37:03  tom
+// l
+// Removed SLList from constructor call sequence, to match .cc file.
+//
 // Revision 1.7  2002/06/18 15:36:24  tom
 // Moved comments and edited to accommodate doxygen documentation-generator.
 //
