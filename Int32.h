@@ -5,9 +5,19 @@
 // jhrg 9/7/94
 
 /* $Log: Int32.h,v $
-/* Revision 1.7  1995/01/18 18:38:52  dan
-/* Declared member function 'readVal', defined in dummy_read.cc
+/* Revision 1.8  1995/01/19 21:59:19  jimg
+/* Added read_val from dummy_read.cc to the sample set of sub-class
+/* implementations.
+/* Changed the declaration of readVal in BaseType so that it names the
+/* mfunc read_val (to be consistant with the other mfunc names).
+/* Removed the unnecessary duplicate declaration of the abstract virtual
+/* mfuncs read and (now) read_val from the classes Byte, ... Grid. The
+/* declaration in BaseType is sufficient along with the decl and definition
+/* in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
 /*
+ * Revision 1.7  1995/01/18  18:38:52  dan
+ * Declared member function 'readVal', defined in dummy_read.cc
+ *
  * Revision 1.6  1995/01/11  15:54:30  jimg
  * Added modifications necessary for BaseType's static XDR pointers. This
  * was mostly a name change from xdrin/out to _xdrin/out.
@@ -48,28 +58,27 @@
 #include "BaseType.h"
 
 class Int32: public BaseType {
-private:
+protected:
     int32 buf;
 
 public:
     Int32(const String &n = (char *)0);
     virtual ~Int32() {}
 
-    virtual BaseType *ptr_duplicate();
+    virtual BaseType *ptr_duplicate() = 0;
     
     virtual unsigned int size();
 
-    // defined in <API>_read.cc
-    virtual bool read(String dataset, String var_name, String constraint);
+#ifdef NEVER
+    virtual bool read(String dataset, String var_name, String constraint) = 0;
     virtual bool readVal(void *stuff);
+#endif
 
     virtual bool serialize(bool flush = false, unsigned int num = 0);
     virtual unsigned int deserialize();
 
     virtual void print_val(ostream &os, String space = "");
 };
-
-typedef Int32 * Int32Ptr;
 
 #endif
 

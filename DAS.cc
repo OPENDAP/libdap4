@@ -5,7 +5,17 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.10  1994/11/22 14:05:36  jimg
+// Revision 1.11  1995/01/19 21:58:49  jimg
+// Added read_val from dummy_read.cc to the sample set of sub-class
+// implementations.
+// Changed the declaration of readVal in BaseType so that it names the
+// mfunc read_val (to be consistant with the other mfunc names).
+// Removed the unnecessary duplicate declaration of the abstract virtual
+// mfuncs read and (now) read_val from the classes Byte, ... Grid. The
+// declaration in BaseType is sufficient along with the decl and definition
+// in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
+//
+// Revision 1.10  1994/11/22  14:05:36  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
 // complete yet.
 // Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
@@ -57,7 +67,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.10 1994/11/22 14:05:36 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.11 1995/01/19 21:58:49 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -134,8 +144,8 @@ DAS::get_table(const String &name)
 }
 
 // This function is necessary because (char *) arguments will be converted to
-// Pixs (and not Strings). Thus, get_table(name) needs a cast; it seems tough
-// to believe folks will always remember that.
+// Pixs (and not Strings). Without this mfunc get_table(name) needs a cast;
+// it seems tough to believe folks will always remember that.
 
 AttrTable *
 DAS::get_table(const char *name)
@@ -181,7 +191,7 @@ DAS::parse(String fname)
 // 
 // NB: Added call to dup() within fdopen so that once the FILE * is closed the
 // decriptor fd will not also be closed (instead the duplicate descriptor will
-// be closed). Thus futeher information can be read from the descriptor fd.
+// be closed). Thus further information can be read from the descriptor fd.
 
 bool
 DAS::parse(int fd)

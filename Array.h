@@ -7,9 +7,19 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.11  1995/01/18 18:37:54  dan
-/* Declared member function 'readVal', defined in dummy_read.cc
+/* Revision 1.12  1995/01/19 21:59:08  jimg
+/* Added read_val from dummy_read.cc to the sample set of sub-class
+/* implementations.
+/* Changed the declaration of readVal in BaseType so that it names the
+/* mfunc read_val (to be consistant with the other mfunc names).
+/* Removed the unnecessary duplicate declaration of the abstract virtual
+/* mfuncs read and (now) read_val from the classes Byte, ... Grid. The
+/* declaration in BaseType is sufficient along with the decl and definition
+/* in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
 /*
+ * Revision 1.11  1995/01/18  18:37:54  dan
+ * Declared member function 'readVal', defined in dummy_read.cc
+ *
  * Revision 1.10  1995/01/11  15:54:40  jimg
  * Added modifications necessary for BaseType's static XDR pointers. This
  * was mostly a name change from xdrin/out to _xdrin/out.
@@ -72,7 +82,7 @@ const int DODS_MAX_ARRAY = UINT_MAX;
 
 class Array: public BaseType {
 private:
-    struct dimension {			// each dimension has a size and a name
+    struct dimension {		// each dimension has a size and a name
 	int size;
 	String name;
     };
@@ -80,7 +90,9 @@ private:
     BaseType *var_ptr;		// var that is an array
     SLList<dimension> shape;	// list of dimensions (i.e., the shape)
 
-    void duplicate(const Array &a);
+    void duplicate(const Array *a);
+
+protected:
     void *buf;
 
 public:
@@ -89,12 +101,14 @@ public:
     virtual ~Array();
 
     const Array &operator=(const Array &rhs);
-    virtual BaseType *ptr_duplicate(); // alloc new Array and dup THIS to it
+    virtual BaseType *ptr_duplicate() = 0; 
 
     virtual unsigned int size();
 
-    virtual bool read(String dataset, String var_name, String constraint);
+#ifdef NEVER
+    virtual bool read(String dataset, String var_name, String constraint) = 0;
     virtual bool readVal(void *stuff);
+#endif
 
     virtual bool serialize(bool flush, unsigned int num = 0);
     virtual unsigned int deserialize();

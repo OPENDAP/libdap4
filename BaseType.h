@@ -8,10 +8,20 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.10  1995/01/18 18:35:28  dan
-/* Defined abstract virtual function 'readVal' which provides access
-/* to the object's buf for retrieving data subsequent to deserializing.
+/* Revision 1.11  1995/01/19 21:59:10  jimg
+/* Added read_val from dummy_read.cc to the sample set of sub-class
+/* implementations.
+/* Changed the declaration of readVal in BaseType so that it names the
+/* mfunc read_val (to be consistant with the other mfunc names).
+/* Removed the unnecessary duplicate declaration of the abstract virtual
+/* mfuncs read and (now) read_val from the classes Byte, ... Grid. The
+/* declaration in BaseType is sufficient along with the decl and definition
+/* in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
 /*
+ * Revision 1.10  1995/01/18  18:35:28  dan
+ * Defined abstract virtual function 'readVal' which provides access
+ * to the object's buf for retrieving data subsequent to deserializing.
+ *
  * Revision 1.9  1995/01/11  16:06:48  jimg
  * Added static XDR pointers to BaseType class and removed the XDR pointers
  * that were class members - now there is only one xdrin and one xdrout
@@ -150,7 +160,7 @@ public:
     // means read it from the file and into a buffer. The buffer is
     // serialized by the mfunc serialize().
     virtual bool read(String dataset, String var_name, String constraint) = 0;
-    virtual bool readVal(void *stuff) = 0;
+    virtual bool read_val(void *stuff) = 0;
 
     // move data to and from the net.
     virtual bool serialize(bool flush = false, unsigned int num = 0) = 0; 
