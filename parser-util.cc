@@ -10,6 +10,10 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.9  1996/10/28 23:05:54  jimg
+// Fixed tests in check_uint().
+// NB: strtol() does not check for overflow on SunOS.
+//
 // Revision 1.8  1996/10/28 18:53:13  jimg
 // Added functions to test unsigned integers.
 //
@@ -42,7 +46,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.8 1996/10/28 18:53:13 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.9 1996/10/28 23:05:54 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -232,10 +236,10 @@ check_uint(const char *val, const int line)
     }
 
     // Don't use the constant from limits.h, use the on in dods-limits.h
-    if (v > DODS_UINT_MAX || v < DODS_UINT_MIN) { 
+    if (v > DODS_UINT_MAX) { 
 	ostrstream oss;
 	oss << "`" << val << "' is not a integer value value." << endl
-	    << "It must be between " << DODS_UINT_MIN << " and "
+	    << "It must be between zero (0) and "
 	    << DODS_UINT_MAX << "." << ends;
 	parse_error(oss.str(), line);
 	oss.freeze(0);
@@ -262,10 +266,10 @@ check_uint(parser_arg *arg, const char *val, const int line,
     }
 
     // Don't use the constant from limits.h, use the on in dods-limits.h
-    if (v > DODS_UINT_MAX || v < DODS_UINT_MIN) { 
+    if (v > DODS_UINT_MAX) { 
 	ostrstream oss;
 	oss << "`" << val << "' is not a integer value value." << endl
-	    << "It must be between " << DODS_UINT_MIN << " and "
+	    << "It must be between zero (0) and "
 	    << DODS_UINT_MAX << "." << ends;
 	parse_error(arg, oss.str(), line, context);
 	oss.freeze(0);
