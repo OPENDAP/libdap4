@@ -1,0 +1,43 @@
+#
+# expect/tcl code to test the dds parser and scanner
+# jhrg
+#
+# $Id: test.17.exp,v 1.1 2000/08/16 18:30:22 jimg Exp $
+
+global comp_output		# contains output from dds-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+# The variable `test_name' is the name of the das input file for this test.
+
+set test_name test.17
+
+# The variable `test_out' is a string that contains the text that should be
+# stored in comp_output by das-test_start. The two strings should match
+# exactly.
+
+set test_out "Status from parser: 0
+DDS failed semantic check
+DDS failed full semantic check
+Dataset {
+} ;
+In the dataset descriptor object: Expected a variable declaration
+(e.g., Int32 i;). Make sure that the variable name is not the name
+of a datatype and that the Array: and Maps: sections of a Grid are
+labeled properly.
+A dataset must have a name
+A dataset must have a name"
+
+dds-test_start p $srcdir/$test_name
+
+if ![string compare $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    fail "$test_name"
+}
+
+# $Log: test.17.exp,v $
+# Revision 1.1  2000/08/16 18:30:22  jimg
+# Added tests for dots in variable names and fancier error messages
+#
+
