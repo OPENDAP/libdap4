@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.11 1994/12/16 22:28:05 jimg Exp $
+# $Id: Makefile.in,v 1.12 1994/12/21 16:58:10 jimg Exp $
 
 @SET_MAKE@
 
@@ -188,8 +188,8 @@ depend:
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
   Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h \
-  Grid.h Stack/CTXPStack.h Stack/CTXPlex.h Stack/CTPlex.h Stack/CTdefs.h \
-  Stack/CTStack.h 
+  Grid.h Stack/BTXPStack.h Stack/BTXPlex.h Stack/BTPlex.h Stack/BTdefs.h \
+  Stack/BTStack.h 
 
 das.tab.c: DAS.h
 
