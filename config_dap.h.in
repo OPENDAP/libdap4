@@ -3,10 +3,14 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.17  1996/10/01 16:27:38  jimg
-/* Changed XDR_SHORT to XDR_INT16 and XDR_USHORT to XDR_UINT16 (to match the
-/* Int16 and UInt16 classes).
+/* Revision 1.18  1996/10/08 15:22:41  jimg
+/* Added symbol for Bison version; we need to test for 1.22, 1.24 and 1.25. The
+/* symbol is defined to be the version number without the decimal point.
 /*
+ * Revision 1.17  1996/10/01 16:27:38  jimg
+ * Changed XDR_SHORT to XDR_INT16 and XDR_USHORT to XDR_UINT16 (to match the
+ * Int16 and UInt16 classes).
+ *
  * Revision 1.16  1996/08/26 21:13:03  jimg
  * Changes for version 2.07
  *
@@ -174,6 +178,9 @@
 
 /* Does <sys/sem.h> contain the definition of union semun {}? */
 #undef HAVE_SEM_UNION
+
+/* What version of Bison are we using */
+#undef DODS_BISON_VER
 
 #endif /* HAVE_CONFIG_H */
 
