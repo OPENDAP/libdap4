@@ -43,8 +43,6 @@
 #include "HTTPCache.h"
 
 #include "util_mit.h"
-// #define DODS_DEBUG 1
-// #define DODS_DEBUG2 1
 #include "debug.h"
 
 HTTPCache *HTTPCache::_instance = 0;
@@ -471,11 +469,8 @@ HTTPCache::cache_index_write() throw(Error)
 
 //@} End of the cache index methods.
 
-
 /** @name Garbage collection 
-
     These private methods manage the garbage collection tasks for the cache. */
-
 //@{
 
 /** Enough removed from cache? A private method.
@@ -906,7 +901,6 @@ HTTPCache::release_single_user_lock()
 }
 
 /** @name Accessors and Mutators for various properties. */
-
 //@{
 
 /** Get the current cache root directory. 
@@ -1615,6 +1609,11 @@ HTTPCache::cache_response(const string &url, time_t request_time,
 {
     LOCK(&d_cache_mutex);
 
+    // If this is not an http or https URL, don't cache.
+    if (url.find("http:") == string::npos &&
+	url.find("https:") == string::npos)
+	return false;
+
     // This does nothing if url is not already in the cache. It's
     // more efficient to do this than to first check and see if the entry
     // exists. 10/10/02 jhrg
@@ -2016,6 +2015,9 @@ HTTPCache::purge_cache() throw(Error)
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.5  2003/03/04 17:31:17  jimg
+// Modified cache_response() so that only http and https URLs are cached.
+//
 // Revision 1.4  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
