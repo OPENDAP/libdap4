@@ -10,8 +10,8 @@ void set_mime_text();
 void set_mime_binary();
 
 extern "C" {
-    FILE *NetConnect(char *AbsAddress, char *PostData);
-    FILE *NetExecute(char *AbsAddress, char *PostData);
+    FILE *NetConnect(char *AbsAddress);
+    FILE *NetExecute(char *AbsAddress);
 }
 
 /* Make *SURE* that any change to VERSION_LENGTH here is also made in HTTP.c */
