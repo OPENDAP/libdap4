@@ -70,7 +70,6 @@ private:
 	state-machine. */ 
     enum ParseState {
 	parser_start,
-	parser_finish,
 
 	inside_dataset,
 
@@ -88,7 +87,6 @@ private:
 
 	inside_grid,
 	inside_map,
-	inside_grid_array,
 
 	inside_structure,
 	inside_sequence,
@@ -99,75 +97,65 @@ private:
 	parser_error
     };
 
-    /** This holds the state information for the SAX parser that is used to
-	intern the XML DDX response. The parser is designed to ignore unknown
-	tags and attributes, so long as the input is well-formed. Note that a
-	pointer to a DDS object is part of the SAX parser state. As the XML
-	input document is parsed, information is added to that object. Also
-	note that an DDXParserState object holds a pointer to the
-	xmlParserCtxt which, in turn, holds a pointer to DDXParserState (via
-	its \c userData field). This cirular referencing is done because
-	libxml2's SAX parser invokes the callbacks using just the
-	DDXParserState instance but we need the whole xmlParserCtxt for some
-	of the callbacks.
+    /** These stacks hold the state of the parse as it progresses. */
+    stack<ParseState> s;	// Current parse state
+    stack<BaseType*> bt_stack;	// current variable(s)
+    stack<AttrTable*> at_stack; // current attribute table
 
-	NB: Since the callbacks all use static methods, stuff that would
-	nomally be fields of the class wind up here in the 'state' sub
-	object. */
-    struct DDXParserState {
-	stack<ParseState> s;
+    /** These are used for processing errors. */
+    string error_msg;		// Error message(s), if any.
+    xmlParserCtxtPtr ctxt;	// used for error msg line numbers
 
-	string error_msg;	// Error message(s), if any.
-	xmlParserCtxtPtr ctxt;	// used for error msg line numbers
+    /** The results of the parse operation are stored in these fields. */
+    DDS *dds;			// dump DDX here
+    string blob_url;		// put URL to blob here
 
-	DDS *dds;		// dump DDX here
-	string blob_url;	// put URL to blob here
+    /** These hold temporary values read during the parse. */
+    string dods_attr_name;	// DODS attributes, not XML attributes
+    string dods_attr_type;	// ... not XML ...
+    string char_data;		// char data in value elements; null after use
+    map<string,string> attributes; // dump XML attributes here
 
-	stack<BaseType*> bt_stack; // current variable(s)
-	stack<AttrTable*> at_stack; // current attribute table
+    /** These are kind of silly... */
+    void set_state(DDXParser::ParseState state);
+    DDXParser::ParseState get_state();
+    void pop_state();
 
-	string dods_attr_name;	// DODS attributes, not XML attributes
-	string dods_attr_type;	// ... not XML ...
-	string char_data;	// null after use
-	map<string,string> attributes; // dump XML attributes here
-    };
+    void transfer_attrs(const char **attrs);
+    bool check_required_attribute(const string &attr);
 
-    DDXParserState state;
+    void process_attribute_element(const char **attrs);
+    void process_attribute_alias(const char **attrs);
 
-    static void set_state(DDXParserState *state, DDXParser::ParseState s);
-    static DDXParser::ParseState get_state(DDXParserState *state);
-    static void pop_state(DDXParserState *state);
+    void process_simple_type(Type t, const char **attrs);
+    void process_array_type(Type t, const char **attrs);
+    void process_structure_type(Type t, const char **attrs);
+    void process_sequence_type(Type t, const char **attrs);
+    void process_grid_type(Type t, const char **attrs);
+    void process_map_type(Type t, const char **attrs);
 
-    static bool transfer_attrs(DDXParserState *state, const char **attrs);
-    static bool check_required_attribute(DDXParserState *state, 
-					 const string &attr);
-    static void process_attribute_element(DDXParserState *state,
-					  const char **attrs);
-    static void process_attribute_alias(DDXParserState *state,
-					const char **attrs);
-    static void process_simple_type(DDXParserState *state, const char *name,
-				    const char **attrs);
-    static BaseType *factory(DDXParserState *state, Type t);
-    static void process_blob(DDXParserState *state, const char **attrs);
+    void process_dimension(const char **attrs);
+    void process_blob(const char **attrs);
 
 public:
     void intern(const string &document, DDS *dds)
 	throw(DDXParseFailed);
 
-    static void ddx_start_document(DDXParserState *state);
-    static void ddx_end_document(DDXParserState *state);
-    static void ddx_start_element(DDXParserState *state, const char *name, 
+    static void ddx_start_document(DDXParser *parser);
+    static void ddx_end_document(DDXParser *parser);
+    static void ddx_start_element(DDXParser *parser, const char *name, 
 				const char **attrs);
-    static void ddx_end_element(DDXParserState *state, const char *name);
-    static void characters(DDXParserState *state, const xmlChar *ch, int len);
-    static xmlEntityPtr ddx_get_entity(DDXParserState *state,
+    static void ddx_end_element(DDXParser *parser, const char *name);
+    static void characters(DDXParser *parser, const xmlChar *ch, int len);
+    static xmlEntityPtr ddx_get_entity(DDXParser *parser,
 				     const xmlChar *name);
-    static void ddx_warning(DDXParserState *state, const char *msg, ...);
-    static void ddx_error(DDXParserState *state, const char *msg, ...);
-    static void ddx_fatal_error(DDXParserState *state, const char *msg, ...);
+    static void ddx_fatal_error(DDXParser *parser, const char *msg, ...);
 };
 
 // $Log: DDXParser.h,v $
+// Revision 1.3  2003/05/30 21:44:03  jimg
+// Parser now parses all data types correctly.
+//
 // Revision 1.2  2003/05/30 02:01:03  jimg
 // Parses top level attributes and simple variables.
 //
