@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.66 1997/10/09 22:19:22 jimg Exp $
+# $Id: Makefile.in,v 1.67 1997/12/16 00:44:08 jimg Exp $
 
 @SET_MAKE@
 
@@ -279,7 +279,7 @@ install-headers:
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
 install-geturl: geturl
-	$(INSTALL_PROGRAM) -s geturl $(etcdir)
+	$(INSTALL_PROGRAM) -s geturl $(bindir)
 
 install-gui:
 	for tcl_prog in dods_gui.tcl error.tcl progress.tcl; \
