@@ -22,7 +22,7 @@
 # 4. Macros for locating various systems (Matlab, etc.)
 # 5. Macros used to test things about the computer/OS/hardware
 #
-# $Id: configure,v 1.75 2001/01/26 19:48:09 jimg Exp $
+# $Id: configure,v 1.76 2001/02/09 22:10:01 jimg Exp $
 
 # 1. Unidata's macros
 #-------------------------------------------------------------------------
@@ -862,7 +862,7 @@ cat >> confdefs.h <<\EOF
 #define CNAME "DODS"
 EOF
 
-cat >> confdefs.h <<\EOF
+cat >> confdefs.h <<EOF
 #define CVER "$VERSION"
 EOF
 
@@ -1010,8 +1010,8 @@ echo "$ac_t""$host" 1>&6
 
 
 
-CFLAGS="-gstabs -O2 $CFLAGS"
-CXXFLAGS="-gstabs -O2 $CXXFLAGS"
+CFLAGS="-gstabs -O0 $CFLAGS"
+CXXFLAGS="-gstabs -O0 $CXXFLAGS"
 
 echo $ac_n "checking whether ln -s works""... $ac_c" 1>&6
 echo "configure:1018: checking whether ln -s works" >&5

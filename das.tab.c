@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.20 2001/01/26 19:48:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.21 2001/02/09 22:07:36 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1437,11 +1437,11 @@ add_alias(AttrTable *das, AttrTable *current, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.20  2001/01/26 19:48:09  jimg
- * Merged with release-3-2-3.
- *
- * Revision 1.19.4.5  2000/12/13 03:27:15  jimg
+ * Revision 1.21  2001/02/09 22:07:36  jimg
  * *** empty log message ***
+ *
+ * Revision 1.41  2001/01/26 19:48:09  jimg
+ * Merged with release-3-2-3.
  *
  * Revision 1.40.4.2  2000/11/30 05:24:46  jimg
  * Significant changes and improvements to the AttrTable and DAS classes. DAS
