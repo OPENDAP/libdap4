@@ -31,6 +31,14 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.21  1999/02/23 01:30:57  jimg
+ * Added a YYINPUT define that looks for `Data:\n'. When seen it returns
+ * YY_NULL which tells the scanner that EOF has been found. This hack keeps
+ * flex from reading into the data while buffering from the input source. This
+ * means that the calling code does not have to rewind the input to find the
+ * start of the data. Of course, multi-part MIME docs would also solve this.
+ * Replace this hack with MP/MIME code!
+ *
  * Revision 1.20  1999/01/21 02:51:27  jimg
  * The dds scanner now recognizes the token `Data:' as an EOF marker. This means
  * that the data document can be scanned without splitting the DDS and binary
@@ -104,13 +112,18 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.20 1999/01/21 02:51:27 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.21 1999/02/23 01:30:57 jimg Exp $"};
 
 #include <string.h>
 
 #define YYSTYPE char *
 #define YY_NO_UNPUT
 #define YY_DECL int ddslex YY_PROTO(( void ))
+#define YY_INPUT(buf,result,max_size) \
+{ \
+fgets((buf), (max_size), yyin); \
+result = (feof(yyin) || strcmp(buf, "Data:\n") == 0) ? YY_NULL : strlen(buf); \
+}
 
 #include "dds.tab.h"
 
