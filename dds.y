@@ -24,6 +24,12 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.22  1997/11/20 20:14:10  jimg
+ * Added to the name rule so that it recognizes both the ID and NAME lexeme
+ * as valid when parsing the dataset name. NAME (see dds.lex) is just like ID
+ * except that it includes `.'. Thus datasets with names like sst.reynolds.nc
+ * now parse correctly.
+ *
  * Revision 1.21  1997/02/28 01:31:22  jimg
  * Added error messages.
  *
@@ -118,7 +124,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.y,v 1.21 1997/02/28 01:31:22 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.y,v 1.22 1997/11/20 20:14:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -172,6 +178,7 @@ void add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current,
 %expect 66
 
 %token ID
+%token NAME
 %token INTEGER
 %token DATASET
 %token INDEPENDENT
@@ -440,12 +447,13 @@ array_decl:	'[' INTEGER ']'
 		 }
 ;
 
-name:		ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
+name:		NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
+		| ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
                 | error 
                 {
 		     ostrstream msg;
-		     msg << "In the dataset descriptor object:" << endl
-			 << "this data set lacks a name." << endl << ends;
+		     msg << "Error parsing the dataset name." << endl
+			 << "The name may be missing or may contain an illegal character." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str());
 		     msg.freeze(0);
 		     YYABORT;
@@ -454,12 +462,14 @@ name:		ID { (*DDS_OBJ(arg)).set_dataset_name($1); }
 
 %%
 
+/* 
+   This function must be defined. However, use the error reporting code in
+   parser-utils.cc.
+*/
+
 void 
-ddserror(char * /* s */)
+ddserror(char *)
 {
-#if 0
-    fprintf(stderr, "%s line: %d\n", s, dds_line_num);
-#endif
 }
 
 /*
