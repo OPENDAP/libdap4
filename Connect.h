@@ -151,11 +151,6 @@ private:
     // Use when you cannot use libwww/libcurl. Reads HTTP response. 
     void parse_mime(FILE *data_source);
 
-    // These should never be used.
-    Connect() { }
-    Connect(const Connect &rhs) { }
-    Connect &operator=(const Connect &rhs);
-
     // Moved these four here 12/20/02 jhrg
     FILE *output();
     XDR *source();
@@ -163,8 +158,16 @@ private:
     void close_output();
     void close_source();
 
+protected:
+    /** @name Suppress the C++ defaults for these. */
+    //@{
+    Connect() {throw InternalErr(__FILE__, __LINE__, "Unimplemented constructor");}
+    Connect(const Connect &rhs) {throw InternalErr(__FILE__, __LINE__, "Unimplemented copy constructor");}
+    Connect &operator=(const Connect &rhs) {throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment operator");}
+    //@}
+
 public:
-    Connect(string name, bool www_verbose_errors = false,
+    Connect(const string &name, bool www_verbose_errors = false,
 	    bool accept_deflate = true, string uname = "",
 	    string password = "") throw (Error, InternalErr); 
 
@@ -172,39 +175,35 @@ public:
 
     bool is_local();
 
-    string URL(bool CE = true);
-    string CE();
-
+    // *** Add get_* versions of accessors. 02/27/03 jhrg
+    virtual string URL(bool CE = true);
+    virtual string CE();
+    
     ObjectType type();
     void set_type(ObjectType ot);
 
     string server_version();
     void set_server_version(const string &sv);
 
-    DAS &das();
+    void set_credentials(string u, string p);
+    void set_accept_deflate(bool deflate);
 
-    DDS &dds();
+    // *** Fix this. It does nothing. Add an 'enable_cache' method. 02/27/03
+    // jhrg 
+    void disable_cache();
 
-    // remove
-    Error &error();
+    virtual void request_das(DAS &das) throw(Error, InternalErr);
 
-    // deprecated
-    void *gui() {
-	return 0;
-    }
+    virtual void request_dds(DDS &dds, string expr = "") 
+	throw(Error, InternalErr);
 
-    void request_das(DAS &das) throw(Error, InternalErr);
+    virtual void request_data(DataDDS &data, string expr = "") 
+	throw(Error, InternalErr);
 
-    // deprecated 
-    bool request_das(bool gui = false,  const string &ext = "das")
-	throw(Error, InternalErr) {
-	request_das(_das);
-	return true;
-    }
+    virtual void read_data(DataDDS &data, FILE *data_source) 
+	throw(Error, InternalErr);
 
-    void request_dds(DDS &dds, string expr = "") throw(Error, InternalErr);
-
-    // deprecated
+    /** @deprecated */
     bool request_dds(bool gui = false, const string &ext = "dds")
 	throw(Error, InternalErr) {
 	request_dds(_dds, "");
@@ -212,10 +211,7 @@ public:
 	return true;
     }
 
-    void request_data(DataDDS &data, string expr = "") 
-	throw(Error, InternalErr);
-
-    // deprecated
+    /** @deprecated */
     DDS *request_data(string expr, bool gui = false, bool async = false, 
 		      const string &ext = "dods") throw(Error, InternalErr) {
 	DataDDS *new_dds = new DataDDS("received_data");
@@ -223,9 +219,19 @@ public:
 	return new_dds;
     }
 
-    void read_data(DataDDS &data, FILE *data_source) throw(Error, InternalErr);
+    /** @deprecated */
+    bool request_das(bool gui = false,  const string &ext = "das")
+	throw(Error, InternalErr) {
+	request_das(_das);
+	return true;
+    }
 
-    // deprecated
+    /** @deprecated */
+    void *gui() {
+	return 0;
+    }
+
+    /** @deprecated */
     DDS *read_data(FILE *data_source, bool gui, bool async)
 	throw(Error, InternalErr) {
 	DataDDS *data = new DataDDS;
@@ -233,31 +239,30 @@ public:
 	return data;
     }
 
-    // remove
+    /** @name Remove 
+	These methods no longer make sense given the change from libwww to
+	libcurl. */
+    //@{
+    DAS &das();
+    DDS &dds();
+    Error &error();
     bool get_www_errors_to_stderr();
-
-    // remove
     void set_www_errors_to_stderr(bool state);
-
-    // remove
     string get_accept_types();
-
-    // remove
     void set_accept_types(const string &types);
-
-    // remove
     string get_cache_control();
-
-    // remove
     void set_cache_control(const string &caching);
-
-    void set_credentials(string u, string p);
-
-    void disable_cache();
+    //@}
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.62  2003/02/27 23:24:52  jimg
+ * Moved the empty constructor, et c., from private to protected so that
+ * children can define their own empty ctors to suppress the C++ default
+ * versions. Removed some old code and reorganized the declarations. There are a
+ * lot of methods here that should be removed...
+ *
  * Revision 1.61  2003/02/21 00:14:24  jimg
  * Repaired copyright.
  *
