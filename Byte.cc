@@ -10,6 +10,9 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.34  1998/08/06 16:10:39  jimg
+// Added cast in call to abs. I'm not sure why...
+//
 // Revision 1.33  1998/03/11 00:30:35  jimg
 // Fixed a bug in buf2val(...) where the assert failed when the value held by
 // the variable was 0 (which is a perfectly valid value).
@@ -197,7 +200,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.33 1998/03/11 00:30:35 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.34 1998/08/06 16:10:39 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -338,7 +341,7 @@ Byte::ops(BaseType &b, int op, const String &dataset)
 	  case dods_uint32_c: {
 	      dods_int32 *a2p = &a2;
 	      b.buf2val((void **)&a2p);
-	      a2 = abs(a2);
+	      a2 = abs((int)a2);
 	      break;
 	  }
 	  case dods_float64_c: {
