@@ -8,6 +8,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.34  1996/09/18 23:06:28  jimg
+// Fixed a bug in the dtor which caused the _anchor WWW lib object to be deleted
+// twice under some (likely) conditions. The efence library found the error.
+//
 // Revision 1.33  1996/08/26 21:12:52  jimg
 // Changes for version 2.07
 //
@@ -193,7 +197,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.33 1996/08/26 21:12:52 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.34 1996/09/18 23:06:28 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -244,6 +248,7 @@ static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT")
 
 static const char DODS_PREFIX[]={"dods"};
 static const int DEFAULT_TIMEOUT = 100; // timeout in seconds
+static int keep_temps = 0;	// Set to non-zero value to keep temp files
 
 int Connect::_connects = false;
 String Connect::_logfile = "";
@@ -812,7 +817,8 @@ Connect::move_dds(FILE *in)
     }
 
     FILE *fp = fopen(c, "w+");
-    unlink(c);
+    if (!keep_temps)
+	unlink(c);
     if (!fp) {
 	cerr << "Could not open anonymous temporary file: " 
 	     << strerror(errno) << endl;
@@ -958,11 +964,12 @@ Connect::Connect(const Connect &copy_from)
 
 Connect::~Connect()
 {
+    DBG2(cerr << "Entering the Connect dtor" << endl);
+
     // Release resources for this object.
-    HTAnchor_delete(_anchor);
     delete _tv;
 
-    if (_logfile != "") 
+    if (_connects == 0 &&_logfile != "") 
 	HTLog_close();
 
     close_output();
@@ -970,10 +977,22 @@ Connect::~Connect()
     _connects--;
     
     // If this is the last Connect, close WWW Library.
+    // I added the else clause, moving the delete of the Anchor object here,
+    // after finding a bug first in the re-linked mexcdf executable which
+    // caused Matlab to seg-fault when ncclose() was called. It turns out
+    // that HTLibTerminate() appears to also delete the Anchor object. Thus
+    // we only delete it explicitly when there is at least one active
+    // connection and let HTLibTerminate() delete it when there are none.
+    // jhrg 9/18/96
     if (_connects == 0) {
 	HTList_delete(_conv);
-	HTLibTerminate();
+	HTLibTerminate();	// Deletes the _anchor object, among others.
     }
+    else {
+	HTAnchor_delete(_anchor);
+    }
+
+    DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
 
 Connect &
@@ -1051,7 +1070,8 @@ Connect::fetch_url(String &url, bool async = false)
     if (!async) {
 	char *c = tempnam(NULL, DODS_PREFIX);
 	FILE *stream = fopen(c, "w+"); // Open truncated for update.
-	unlink(c);		// When _OUTPUT is closed file is deleted.
+	if (!keep_temps)
+	    unlink(c);		// When _OUTPUT is closed file is deleted.
 	
 	if (!read_url(url, stream))
 	    return false;
@@ -1285,6 +1305,11 @@ exit:
 // guaranteed to be large enough to hold the data, even if the constraint
 // expression changed the type of the variable from that which appeared in the
 // origianl DDS received from the dataset when this connection was made.
+
+// WARNING: If EXPR contains several veraibles and one of the variables is a
+// Sequence and it is not the last variable then the input stream will be
+// corrupted. If you request N variables and M of them are Sequences, all the
+// M sequences must follow the N-M other variables.
 
 DDS &
 Connect::request_data(const String expr, bool gui_p = true, 
