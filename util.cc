@@ -37,6 +37,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.19  1996/04/04 17:52:36  jimg
+// Merged changes from version 1.1.1.
+//
 // Revision 1.18  1996/03/02 01:13:47  jimg
 // Fixed problems with case labels and local variables.
 //
@@ -57,7 +60,11 @@
 // Revision 1.13  1995/08/23  00:41:58  jimg
 // xdr_str() now takes a String & instead of a String ** for arg 2.
 //
-// Revision 1.12.2.6  1995/10/12 17:01:43  jimg
+// Revision 1.12.2.7  1996/02/23 21:37:33  jimg
+// Updated for new configure.in.
+// Fixed problems on Solaris 2.4.
+//
+// Revision 1.12.2.6  1995/10/12  17:01:43  jimg
 // Added {}'s to case statements so that gcc-2.7.0 won't complain about jumping
 // over case statement labels. This only happens when returning values from
 // variable defined within a case label. It is better to use the {}'s than move
@@ -135,8 +142,7 @@
 // Added debugging code.
 //
 
-
-static char rcsid[]={"$Id: util.cc,v 1.18 1996/03/02 01:13:47 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.19 1996/04/04 17:52:36 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -144,12 +150,8 @@ static char rcsid[]={"$Id: util.cc,v 1.18 1996/03/02 01:13:47 jimg Exp $"};
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <unistd.h>
-
-#include <rpc/xdr.h>
 
 #ifdef DBMALLOC
-#include <stdlib.h>
 #include <dbmalloc.h>
 #endif
 
@@ -160,7 +162,6 @@ static char rcsid[]={"$Id: util.cc,v 1.18 1996/03/02 01:13:47 jimg Exp $"};
 #include "Str.h"
 #include "Url.h"
 #include "errmsg.h"
-#include "config_dap.h"
 #include "debug.h"
 
 #ifdef TRACE_NEW
@@ -243,6 +244,14 @@ new_xdrstdio(FILE *stream, enum xdr_op xop)
     return xdr;
 }
 
+XDR *
+set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop)
+{
+    xdrstdio_create(xdr, stream, xop);
+    
+    return xdr;
+}
+
 // Delete an XDR pointer allocated using the above function. Do not close the
 // associated FILE pointer.
 
@@ -269,23 +278,30 @@ extern "C" bool_t
 xdr_str(XDR *xdrs, String &buf)
 {
     switch (xdrs->x_op) {
-      case XDR_ENCODE: {
-	const char *out_tmp = (const char *)buf;
+      case XDR_ENCODE: {	// BUF is a pointer to a (String *)
+	assert(buf && *buf);
+	
+	const char *out_tmp = (const char *)**buf;
 
 	return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
       }
 
-      case XDR_DECODE: {
-	char *in_tmp = NULL;
-	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
-	if (!stat) {
-	    free(in_tmp);
+      case XDR_DECODE: {	// BUF is a pointer to a String * or to NULL
+	assert(buf);
+	char str_tmp[max_str_len];
+	char *in_tmp = str_tmp;
+
+	bool_t stat = xdr_string(xdrs, (char **)&in_tmp, max_str_len);
+	if (!stat)
 	    return stat;
+
+	if (*buf) {
+	    **buf = in_tmp;
 	}
-
-	buf = in_tmp;
-	free(in_tmp);
-
+	else {
+	    *buf = new String(in_tmp);
+	}
+	
 	return stat;
       }
 	
@@ -305,9 +321,7 @@ text_to_temp(String text)
 {
     char *c = tempnam(NULL, DODS_CE_PRX);
     FILE *fp = fopen(c, "w+");
-
     fputs((const char *)text, fp);
-
     fclose(fp);		/* once full, close file */
     
     fp = fopen(c, "r");	/* get file pointer */
