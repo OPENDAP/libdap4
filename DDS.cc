@@ -9,6 +9,13 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.23  1996/06/04 21:33:19  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.22  1996/05/31 23:29:37  jimg
 // Updated copyright notice.
 //
@@ -124,7 +131,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.22 1996/05/31 23:29:37 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.23 1996/06/04 21:33:19 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -665,12 +672,11 @@ DDS::parse_constraint(const String &constraint)
 // Returns: true if successful, false otherwise.
 
 bool 
-DDS::send(const String &dataset, const String &constraint, FILE *out, 
-	  bool flush)
+DDS::send(const String &dataset, const String &constraint, FILE *out)
 {
     bool status = true;
 
-    set_xdrout(out);		// set xdr stream for binary data
+    XDR *sink = new_xdrstdio(out, XDR_ENCODE);
     ostdiostream os(out);	// set up output stream
 
     if ((status = parse_constraint(constraint))) {
@@ -680,7 +686,7 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	    print_variable(os, var);
 	    os << "Data:" << endl;
 	    // In the following call to serialize, suppress CE evaluation.
-	    status = var->serialize(dataset, *this, false, flush);
+	    status = var->serialize(dataset, *this, sink, false);
 	}
 	else {
 	    print_constrained(os); // send constrained DDS
@@ -689,9 +695,11 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	    for (Pix q = first_var(); q; next_var(q)) 
 		if (var(q)->send_p()) // only process projected variables
 		    status = status && var(q)->serialize(dataset, *this,
-							 true, flush);
+							 sink, true);
 	}
     }
+
+    delete_xdrstdio(sink);
 
     return status;
 }

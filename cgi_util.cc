@@ -11,6 +11,13 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.13  1996/06/04 21:33:53  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.12  1996/05/31 23:30:46  jimg
 // Updated copyright notice.
 //
@@ -60,7 +67,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.12 1996/05/31 23:30:46 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.13 1996/06/04 21:33:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,8 +91,6 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.12 1996/05/31 23:30:46 jimg Exp $"};
 
 #define TimLen 26		// length of string from asctime()
 #define CLUMP_SIZE 1024		// size of clumps to new in fmakeword()
-
-
 
 // An error handling routine to append the error messege from CGI programs, 
 // a time stamp, and the client host name (or address) to HTTPD error-log.

@@ -11,6 +11,13 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.12  1996/06/04 21:33:50  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.11  1996/05/31 23:30:42  jimg
 // Updated copyright notice.
 //
@@ -60,7 +67,7 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.11 1996/05/31 23:30:42 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.12 1996/06/04 21:33:50 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -69,7 +76,6 @@ static char rcsid[]= {"$Id: Vector.cc,v 1.11 1996/05/31 23:30:42 jimg Exp $"};
 #include <assert.h>
 
 #include "Vector.h"
-#include "DDS.h"
 #include "util.h"
 #include "debug.h"
 
@@ -259,7 +265,8 @@ Vector::vec_resize(int l)
 // Returns: true if the data was successfully writen, false otherwise.
 
 bool
-Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
+Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
+		  bool ce_eval = true)
 {
     bool status = true;
     int error = 0;
@@ -278,14 +285,14 @@ Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
       case dods_float64_c:
 	assert(_buf);
 
-	if (!(bool)xdr_int(xdrout(), &num)) // send vector length
+	if (!(bool)xdr_int(sink, &num)) // send vector length
 	    return false;
 
 	if (_var->type() == dods_byte_c)
-	    status = (bool)xdr_bytes(xdrout(), (char **)&_buf, &num,
+	    status = (bool)xdr_bytes(sink, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
 	else
-	    status = (bool)xdr_array(xdrout(), (char **)&_buf, &num,
+	    status = (bool)xdr_array(sink, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY, _var->width(),
 				     _var->xdr_coder()); 
 	break;
@@ -300,12 +307,12 @@ Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
       case dods_grid_c:
 	assert(_vec.capacity());
 
-	status = (bool)xdr_int(xdrout(), &num); // send length
+	status = (bool)xdr_int(sink, &num); // send length
 	if (!status)
 	    return status;
 
 	for (unsigned i = 0; status && i < num; ++i)	// test status in loop
-	    status = _vec[i]->serialize(dataset, dds, false, false);
+	    status = _vec[i]->serialize(dataset, dds, sink, false);
 	
 	break;
 
@@ -314,9 +321,6 @@ Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 	status = false;
 	break;
     }
-
-    if (flush)
-	status = status && expunge();
 
     return status;
 }
@@ -339,7 +343,7 @@ Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 // Returns: True is successful, false otherwise.
 
 bool
-Vector::deserialize(bool reuse)
+Vector::deserialize(XDR *source, bool reuse = false)
 {
     bool status;
     unsigned int num;
@@ -353,7 +357,7 @@ Vector::deserialize(bool reuse)
 	    _buf = 0;
 	}
 
-	status = (bool)xdr_int(xdrin(), &num);
+	status = (bool)xdr_int(source, &num);
 	if (!status)
 	    return status;
 	    
@@ -367,10 +371,10 @@ Vector::deserialize(bool reuse)
 	}
 
 	if (_var->type() == dods_byte_c)
-	    status = (bool)xdr_bytes(xdrin(), (char **)&_buf, &num,
+	    status = (bool)xdr_bytes(source, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
 	else
-	    status = (bool)xdr_array(xdrin(), (char **)&_buf, &num,
+	    status = (bool)xdr_array(source, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY, _var->width(), 
 				     _var->xdr_coder());
 	DBG(cerr << "List::deserialize: read " << num <<  " elements\n");
@@ -385,7 +389,7 @@ Vector::deserialize(bool reuse)
       case dods_sequence_c:
       case dods_function_c:
       case dods_grid_c:
-	status = (bool)xdr_int(xdrin(), &num);
+	status = (bool)xdr_int(source, &num);
 	if (!status)
 	    return status;
 
@@ -394,7 +398,7 @@ Vector::deserialize(bool reuse)
 
 	for (unsigned i = 0; status && i < num; ++i) {
 	    _vec[i] = _var->ptr_duplicate();
-	    _vec[i]->deserialize();
+	    _vec[i]->deserialize(source);
 	}
 
 	break;

@@ -19,9 +19,16 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.20  1996/05/31 23:29:59  jimg
-/* Updated copyright notice.
+/* Revision 1.21  1996/06/04 21:33:39  jimg
+/* Multiple connections are now possible. It is now possible to open several
+/* URLs at the same time and read from them in a round-robin fashion. To do
+/* this I added data source and sink parameters to the serialize and
+/* deserialize mfuncs. Connect was also modified so that it manages the data
+/* source `object' (which is just an XDR pointer).
 /*
+ * Revision 1.20  1996/05/31 23:29:59  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.19  1996/05/29 22:08:47  jimg
  * Made changes necessary to support CEs that return the value of a function
  * instead of the value of a variable. This was done so that it would be
@@ -138,9 +145,13 @@
 #pragma interface
 #endif
 
-#include <SLList.h>
-#include "BaseType.h"
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
 
+#include <SLList.h>
+
+#include "BaseType.h"
 #include "config_dap.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -180,9 +191,9 @@ public:
     virtual void set_level(int lvl);
     virtual unsigned int read_level();
 
-    virtual bool serialize(const String &dataset, DDS &dds, 
-			   bool ce_eval = true, bool flush = false);
-    virtual bool deserialize(bool reuse = false);
+    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, bool reuse = false);
 
     virtual bool read(const String &dataset, int &error) = 0;
 

@@ -10,6 +10,13 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.28  1996/06/04 21:33:37  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.27  1996/05/31 23:29:58  jimg
 // Updated copyright notice.
 //
@@ -299,7 +306,8 @@ Sequence::read_level()
 // jhrg 4/12/96
 
 bool
-Sequence::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
+Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
+		    bool ce_eval = true)
 {
     bool status = true;
     int error = 1;
@@ -329,25 +337,22 @@ Sequence::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 
 	for (Pix p = first_var(); p; next_var(p))
 	    if (var(p)->send_p() 
-		&& !(status = var(p)->serialize(dataset, dds, false, false))) 
+		&& !(status = var(p)->serialize(dataset, dds, sink, false))) 
 		break;
 	
 	set_read_p(false);
     }
 
-    if (flush)
-	status = status && expunge();
-
     return status;
 }
 
 bool
-Sequence::deserialize(bool reuse)
+Sequence::deserialize(XDR *source, bool reuse = false)
 {
     unsigned int num, sz = 0;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	sz += num = var(p)->deserialize(reuse);
+	sz += num = var(p)->deserialize(source, reuse);
 	if (num == 0) 
 	    return (unsigned int)false;
     }

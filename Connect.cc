@@ -113,7 +113,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.21 1996/05/31 23:29:30 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.22 1996/06/04 21:33:15 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -384,7 +384,10 @@ Connect::clone(const Connect &src)
 	_tv->tv_sec = src._tv->tv_sec;
 
 	// Open the file for non-truncating update.
-	_output = fdopen(dup(fileno(src._output)), "r+");
+	if (_output)
+	    _output = fdopen(dup(fileno(src._output)), "r+");
+	if (_source)
+	    _source = new_xdrstdio(_output, XDR_DECODE);
     }
 }
 
@@ -478,6 +481,9 @@ Connect::close_output()
 	fclose(_output);
 	_output = 0;
     }
+
+    if (_source)
+	delete_xdrstdio(_source);
 }
 
 // This ctor is decalred private so that it won't ever be called by users,
@@ -507,6 +513,7 @@ Connect::Connect(const String &name)
 
 	_tv->tv_sec = DEFAULT_TIMEOUT;
 	_output = 0;
+	_source = 0;
 
 	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
 	_anchor = (HTParentAnchor *) HTAnchor_findAddress(ref);
@@ -542,6 +549,7 @@ Connect::~Connect()
     if (_logfile != "") 
 	HTLog_close();
 
+    close_output();
 
     _connects--;
     
@@ -652,6 +660,16 @@ Connect::output()
 	// NB: Users should make sure they don't close stdout.
 	return _output;		
 }
+
+XDR *
+Connect::source()
+{
+    if (!_source)
+	_source = new_xdrstdio(_output, XDR_DECODE);
+    	
+    return _source;
+}
+
 
 ObjectType
 Connect::type()
@@ -778,12 +796,15 @@ Connect::request_data(const String expr, bool async = false,
 
     DDS &d = append_constraint(expr, dds);
 
-    // now arrange to read the data via the appropriate variable.  NB:
-    // Since all BaseTypes share I/O, this works. However, it will have
-    // to be changed when BaseType is modified to handle several
-    // simultaneous reads.
-
-    set_xdrin(_output);
+    // If the transmission is synchronous, read all the data into the DDS D.
+    // If asynchronous, just return the DDS and leave the reading to t he
+    // caller. 
+    if (!async) {
+	XDR *s = source();
+	for (Pix q = d.first_var(); q; d.next_var(q))
+	    if (!d.var(q)->deserialize(s))
+		break;
+    }
 
     return d;
 }

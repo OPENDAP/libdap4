@@ -8,6 +8,13 @@
 // Implementation for the CE Clause class.
 
 // $Log: Error.cc,v $
+// Revision 1.4  1996/06/04 21:33:22  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.3  1996/06/03 06:26:51  jimg
 // Added declarations for Errorparse() and Errorrestart().
 //
@@ -19,7 +26,7 @@
 #pragma implementation
 #endif
 
-static char rcsid[]={"$Id: Error.cc,v 1.3 1996/06/03 06:26:51 jimg Exp $"};
+static char rcsid[]={"$Id: Error.cc,v 1.4 1996/06/04 21:33:22 jimg Exp $"};
 
 #include <assert.h>
 
@@ -27,7 +34,7 @@ static char rcsid[]={"$Id: Error.cc,v 1.3 1996/06/03 06:26:51 jimg Exp $"};
 #include "parser.h"
 
 void Errorrestart(FILE *yyin);
-int Errorparse(parser_arg *arg); // defined in dds.tab.c
+int Errorparse(void *arg); // defined in dds.tab.c
 
 Error::Error()
     : _error_code(undefined_error), _error_message(""), 
@@ -116,7 +123,7 @@ Error::parse(FILE *fp)
 
     parser_arg arg(this);
 
-    bool status = Errorparse(&arg) == 0;
+    bool status = Errorparse((void *)&arg) == 0;
 
     fclose(fp);
 

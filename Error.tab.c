@@ -19,10 +19,10 @@
 #define	MSG	263
 #define	PROGRAM	264
 
-#line 40 "Error.y"
+#line 16 "Error.y"
 
 
-static char rcsid[]={"$Id: Error.tab.c,v 1.1 1996/05/31 23:33:36 jimg Exp $"};
+static char rcsid[]={"$Id: Error.tab.c,v 1.2 1996/06/04 21:33:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,7 +49,7 @@ int Errorlex();			// the scanner
 int Errorerror(char *s);	// gotta love automatically generated names...
 
 
-#line 70 "Error.y"
+#line 46 "Error.y"
 typedef union {
     bool boolean;
     int integer;
@@ -134,7 +134,7 @@ static const short yyrhs[] = {     5,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    95,    98,   101,   104,   107,   114,   120,   122,   129,   136
+    71,    74,    77,    80,    83,    90,    96,    98,   105,   112
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","INT","STR",
@@ -681,44 +681,44 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 95 "Error.y"
+#line 71 "Error.y"
 { yyval.boolean = yyvsp[-2].boolean; STATUS(arg) = yyvsp[-2].boolean; ;
     break;}
 case 2:
-#line 98 "Error.y"
+#line 74 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 3:
-#line 101 "Error.y"
+#line 77 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 4:
-#line 104 "Error.y"
+#line 80 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
 case 5:
-#line 108 "Error.y"
+#line 84 "Error.y"
 { 
 		    ERROR_OBJ(arg).error_code((ErrorCode)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 6:
-#line 115 "Error.y"
+#line 91 "Error.y"
 { 
 		    ERROR_OBJ(arg).error_message(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 case 8:
-#line 123 "Error.y"
+#line 99 "Error.y"
 {
 		    ERROR_OBJ(arg).program_type((ProgramType)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 9:
-#line 130 "Error.y"
+#line 106 "Error.y"
 {
 		    DBG(cerr << "Program: " << yyvsp[0].string << endl);
 		    ERROR_OBJ(arg).program(yyvsp[0].string);
@@ -923,7 +923,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 138 "Error.y"
+#line 114 "Error.y"
 
 
 int 

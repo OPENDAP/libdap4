@@ -16,9 +16,16 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.27  1996/05/31 23:29:25  jimg
-/* Updated copyright notice.
+/* Revision 1.28  1996/06/04 21:33:11  jimg
+/* Multiple connections are now possible. It is now possible to open several
+/* URLs at the same time and read from them in a round-robin fashion. To do
+/* this I added data source and sink parameters to the serialize and
+/* deserialize mfuncs. Connect was also modified so that it manages the data
+/* source `object' (which is just an XDR pointer).
 /*
+ * Revision 1.27  1996/05/31 23:29:25  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.26  1996/05/16 22:49:56  jimg
  * Dan's changes for version 2.0. Added a parameter to read that returns
  * an error code so that EOF can be distinguished from an actual error when
@@ -76,8 +83,8 @@
  *
  * Revision 1.15.2.3  1995/09/29  19:27:59  jimg
  * Fixed problems with xdr.h on an SGI.
- * Fixed conflict of d_int32_t (which was in an enum type defined by BaseType) on
- * the SGI.
+ * Fixed conflict of d_int32_t (which was in an enum type defined by
+ * BaseType) on the SGI.
  *
  * Revision 1.15.2.2  1995/09/27  19:06:58  jimg
  * Add casts to `cast away' const and unsigned in places where we call various
@@ -220,7 +227,7 @@ enum Part {
 enum Type {
     dods_null_c,
     dods_byte_c,
-    dods_int32_c,			// Added `dods_' to fix clash with IRIX 5.3.
+    dods_int32_c,		// Added `dods_' to fix clash with IRIX 5.3.
     dods_float64_c,
     dods_str_c,
     dods_url_c,
@@ -239,8 +246,10 @@ private:
     String _name;		// name of the instance
     Type _type;			// instance's type
 
+#if 0
     static FILE *_out;		// output stream for data from server
     static FILE *_in;		// like _out but for input
+#endif
 
     // xdr_coder is used as an argument to xdr procedures that encode groups
     // of things (e.g., xdr_array()). Each leaf class's ctor must set this.
@@ -258,8 +267,10 @@ private:
     // a 4104 byte block. These will not be deallocated even when all the
     // objects are destroyed. However, once created they won't be re
     // allocated again.
+#if 0
     static XDR *_xdrin;		// xdr pointer for input (default: from stdin)
     static XDR *_xdrout;	// xdr pointer for output (default: to stdout)
+#endif
 
     bool _read_p;		// true if the value has been read
     bool _send_p;		// true if the variable is to be transmitted
@@ -296,8 +307,10 @@ public:
     // Access to the XDR * for input and output is limited to serialize and
     // deserialize. These friend functions are used to set the FILE * used by
     // those XDR pointers. They are defined in BaseType.cc
+#if 0
     friend void set_xdrin(FILE *in);
     friend void set_xdrout(FILE *out);
+#endif
 
     // These mfuncs are used to access the _xdrin and _xdrout members.
     XDR *xdrin() const;
@@ -340,9 +353,9 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
 
     // Move data to and from the net.
-    virtual bool serialize(const String &dataset, DDS &dds, 
-			   bool ce_eval = true, bool flush = false) = 0; 
-    virtual bool deserialize(bool reuse = false) = 0;
+    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true) = 0; 
+    virtual bool deserialize(XDR *source, bool reuse = false) = 0;
     
     // Write the buffers maintained by XDR to the associated FILE *s.
     bool expunge();

@@ -10,6 +10,13 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.28  1996/06/04 21:33:34  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.27  1996/05/31 23:29:50  jimg
 // Updated copyright notice.
 //
@@ -182,7 +189,8 @@ Int32::width()
 }
 
 bool
-Int32::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
+Int32::serialize(const String &dataset, DDS &dds, XDR *sink,
+		 bool ce_eval = true)
 {
     int error;
 
@@ -192,19 +200,16 @@ Int32::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (!XDR_INT32(xdrout(), &_buf))
+    if (!XDR_INT32(sink, &_buf))
 	return false;
-
-    if (flush)
-	return expunge();
 
     return true;
 }
 
 bool
-Int32::deserialize(bool)
+Int32::deserialize(XDR *source, bool)
 {
-    unsigned int num = XDR_INT32(xdrin(), &_buf);
+    unsigned int num = XDR_INT32(source, &_buf);
 
     return (num > 0);		/* make the return value a boolean */
 }

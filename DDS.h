@@ -1,3 +1,4 @@
+
 // -*- C++ -*-
 
 // (c) COPYRIGHT URI/MIT 1994-1996
@@ -13,9 +14,16 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.15  1996/05/31 23:29:38  jimg
-/* Updated copyright notice.
+/* Revision 1.16  1996/06/04 21:33:20  jimg
+/* Multiple connections are now possible. It is now possible to open several
+/* URLs at the same time and read from them in a round-robin fashion. To do
+/* this I added data source and sink parameters to the serialize and
+/* deserialize mfuncs. Connect was also modified so that it manages the data
+/* source `object' (which is just an XDR pointer).
 /*
+ * Revision 1.15  1996/05/31 23:29:38  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.14  1996/05/29 22:08:37  jimg
  * Made changes necessary to support CEs that return the value of a function
  * instead of the value of a variable. This was done so that it would be
@@ -225,8 +233,7 @@ public:
     // completion. Use OUT as the output buffer if not null, otherwise use
     // STDOUT. This mfunc uses eval_constraint(), BaseType::read() and
     // BaseType::serailize() as well as other mfuncs.
-    bool send(const String &dataset, const String &constraint, FILE *out, 
-	      bool flush = false);
+    bool send(const String &dataset, const String &constraint, FILE *out);
 };
 
 #endif

@@ -10,6 +10,13 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.27  1996/06/04 21:33:25  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.26  1996/05/31 23:29:40  jimg
 // Updated copyright notice.
 //
@@ -189,7 +196,8 @@ Float64::width()
 }
 
 bool
-Float64::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
+Float64::serialize(const String &dataset, DDS &dds, XDR *sink, 
+		   bool ce_eval = true)
 {
     int error;
 
@@ -199,19 +207,16 @@ Float64::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (!xdr_double(xdrout(), &_buf))
+    if (!xdr_double(sink, &_buf))
 	return false;
-
-    if (flush)
-	return expunge();
 
     return true;
 }
 
 bool
-Float64::deserialize(bool)
+Float64::deserialize(XDR *source, bool)
 {
-    unsigned int num = xdr_double(xdrin(), &_buf);
+    unsigned int num = xdr_double(source, &_buf);
 
     return num;
 }

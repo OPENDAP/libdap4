@@ -27,13 +27,20 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.13  1996/05/29 21:51:51  jimg
-/* Added the enum ObjectType. This is used when a Content-Description header is
-/* found by the WWW library to record the type of the object without first
-/* parsing it.
-/* Added ctors for the struct constraint.
-/* Removed the member _request.
+/* Revision 1.14  1996/06/04 21:33:17  jimg
+/* Multiple connections are now possible. It is now possible to open several
+/* URLs at the same time and read from them in a round-robin fashion. To do
+/* this I added data source and sink parameters to the serialize and
+/* deserialize mfuncs. Connect was also modified so that it manages the data
+/* source `object' (which is just an XDR pointer).
 /*
+ * Revision 1.13  1996/05/29 21:51:51  jimg
+ * Added the enum ObjectType. This is used when a Content-Description header is
+ * found by the WWW library to record the type of the object without first
+ * parsing it.
+ * Added ctors for the struct constraint.
+ * Removed the member _request.
+ *
  * Revision 1.12  1996/05/21 23:46:33  jimg
  * Added support for URLs directly to the class. This uses version 4.0D of
  * the WWW library from W3C.
@@ -94,7 +101,8 @@
  *
  * Revision 1.1  1994/10/05  18:02:08  jimg
  * First version of the connection management classes.
- * This commit also includes early versions of the test code.  */
+ * This commit also includes early versions of the test code.  
+ */
 
 #ifndef _connect_h
 #define _connect_h
@@ -126,6 +134,7 @@
 #include "DAS.h"
 #include "DDS.h"
 #include "Error.h"
+#include "util.h"
 
 #define NAME "DODS"
 #define VERSION	"2.0"
@@ -181,6 +190,7 @@ private:
     struct timeval *_tv;	// Timeout on socket
     HTMethod _method;		// What method are we envoking 
     FILE *_output;		// Destination; a temporary file
+    XDR *_source;		// Data source stream
 
     SLList<constraint> _data;	// List of expressions & DDSs
 
@@ -232,6 +242,11 @@ public:
     /// Access the information contained in this instance.
     //* Returns a FILE * which can be used to read the data from the object.
     FILE *output();
+
+    /// Access the XDR input stream (source) for this connection.
+    //* Returns a XDR * which is tied to the stream STREAM. Default is the
+    //* current output() stream.
+    XDR *source();
 
     /// Does this object refer to a local file?
     //* Return true is the object refers to a local file, otherwise returns

@@ -10,6 +10,13 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.26  1996/06/04 21:33:31  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.25  1996/05/31 23:29:46  jimg
 // Updated copyright notice.
 //
@@ -231,7 +238,8 @@ Grid::width()
 }
 
 bool
-Grid::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
+Grid::serialize(const String &dataset, DDS &dds, XDR *sink,
+		bool ce_eval = true)
 {
     bool status = true;
     int error = 0;
@@ -243,34 +251,29 @@ Grid::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 	return true;
 
     if (_array_var->send_p() 
-	&& !(status = _array_var->serialize(dataset, dds, false, false))) 
+	&& !(status = _array_var->serialize(dataset, dds, sink, false))) 
 	return false;
 
     for (Pix p = _map_vars.first(); p; _map_vars.next(p))
 	if  (_map_vars(p)->send_p() 
-	     && !(status = _map_vars(p)->serialize(dataset, dds, false, 
+	     && !(status = _map_vars(p)->serialize(dataset, dds, sink,
 						   false))) 
 	    break;
-
-    // flush the stream *even* if status is false, but preserve the value of
-    // status if it's false.
-    if (flush)
-	status = status && expunge();
 
     return status;
 }
 
 bool
-Grid::deserialize(bool reuse)
+Grid::deserialize(XDR *source, bool reuse = false)
 {
     bool status;
     
-    status = _array_var->deserialize(reuse);
+    status = _array_var->deserialize(source, reuse);
     if (!status) 
 	return false;
 
     for(Pix p = _map_vars.first(); p; _map_vars.next(p)) {
-	status = _map_vars(p)->deserialize(reuse);
+	status = _map_vars(p)->deserialize(source, reuse);
 	if (!status) 
 	    break;
     }

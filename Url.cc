@@ -10,6 +10,13 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
+// Revision 1.15  1996/06/04 21:33:48  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.14  1996/05/31 23:30:39  jimg
 // Updated copyright notice.
 //
@@ -98,7 +105,6 @@
 #include <string.h>
 
 #include "Url.h"
-#include "util.h"
 
 Url::Url(const String &n) : Str(n)
 {

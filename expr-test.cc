@@ -10,6 +10,13 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.10  1996/06/04 21:34:00  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.9  1996/05/31 23:30:58  jimg
 // Updated copyright notice.
 //
@@ -52,10 +59,13 @@
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.9 1996/05/31 23:30:58 jimg Exp $"};
+static char rcsid[]= {"$Id: expr-test.cc,v 1.10 1996/06/04 21:34:00 jimg Exp $"};
 
 #include <stdio.h>
 #include <errno.h>
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
 
 #include <streambuf.h>
 #include <iostream.h>
@@ -71,6 +81,7 @@ static char rcsid[]= {"$Id: expr-test.cc,v 1.9 1996/05/31 23:30:58 jimg Exp $"};
 #include "expr.h"
 #include "parser.h"
 #include "expr.tab.h"
+#include "util.h"
 #include "debug.h"
 
 #define DODS_DDS_PRX "dods_dds"
@@ -344,8 +355,12 @@ transmit(DDS &write, bool verb)
 	return false;
     }
 
+#if 0
     set_xdrin(pin);
     set_xdrout(pout);
+#endif
+    XDR *sink = new_xdrstdio(pout, XDR_ENCODE);
+    XDR *source = new_xdrstdio(pin, XDR_DECODE);
 
     // duplicate the DDS (create the variables for reading)
 
@@ -376,14 +391,14 @@ transmit(DDS &write, bool verb)
 		cout.flush();
 	    }
 
-	    status = write.var(wp)->serialize("dummy", write, true);
+	    status = write.var(wp)->serialize("dummy", write, sink, true);
 	    if (!status) {
 		cerr << "Could not write";
 		write.var(wp)->print_decl(cerr);
 		exit(1);
 	    }
 
-	    status = read.var(rp)->deserialize();
+	    status = read.var(rp)->deserialize(source);
 	    if (!status) {
 		cerr < "Could not read";
 		read.var(wp)->print_decl(cerr);
@@ -401,6 +416,9 @@ transmit(DDS &write, bool verb)
 
 	cout.flush();
     }
+
+    delete_xdrstdio(sink);
+    delete_xdrstdio(source);
 }
 
 // create a pipe for the caller's process which can be used by the DODS
@@ -532,7 +550,7 @@ constrained_trans(const String &dds_name, const String &constraint)
 
     // send the variable given the constraint (dataset is ignored by the Test
     // classes); TRUE flushes the I/O channel.
-    if (!server.send("dummy", ce, pout, true)) {
+    if (!server.send("dummy", ce, pout)) {
 	cerr << "Could not send the variable" << endl;
 	return false;
     }
@@ -558,20 +576,25 @@ constrained_trans(const String &dds_name, const String &constraint)
     // Since all BaseTypes share I/O, this works. However, it will have
     // to be changed when BaseType is modified to handle several
     // simultaneous reads.
-
+#if 0
     set_xdrin(pin);
-    
+#endif
+
+    XDR *source = new_xdrstdio(pin, XDR_DECODE);
+
     // Back on the client side; deserialize the data *using the newly
     // generated DDS* (the one sent with the data).
 
     cerr << "The data:" << endl;
     for (Pix q = dds.first_var(); q; dds.next_var(q)) {
-	if (!dds.var(q)->deserialize())
+	if (!dds.var(q)->deserialize(source))
 	    return false;
 
 	dds.var(q)->print_val(cout);
     }
     
+    delete_xdrstdio(source);
+
     return true;
 }
 

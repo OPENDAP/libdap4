@@ -10,6 +10,13 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.25  1996/06/04 21:33:12  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.24  1996/05/31 23:29:27  jimg
 // Updated copyright notice.
 //
@@ -195,7 +202,8 @@ Byte::width()
 // otherwise. 
 
 bool
-Byte::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
+Byte::serialize(const String &dataset, DDS &dds, XDR *sink, 
+		bool ce_eval = true)
 {
     int error;
 
@@ -205,11 +213,8 @@ Byte::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (!xdr_char(xdrout(), &_buf))
+    if (!xdr_char(sink, &_buf))
 	return false;
-
-    if (flush)
-	return expunge();
 
     return true;
 }
@@ -217,9 +222,9 @@ Byte::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 // deserialize the char on stdin and put the result in _BUF.
 
 bool
-Byte::deserialize(bool)
+Byte::deserialize(XDR *source, bool)
 {
-    unsigned int num = xdr_char(xdrin(), &_buf);
+    unsigned int num = xdr_char(source, &_buf);
 
     return num;
 }

@@ -10,6 +10,13 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.25  1996/06/04 21:33:42  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.24  1996/05/31 23:30:01  jimg
 // Updated copyright notice.
 //
@@ -188,7 +195,8 @@ Str::width()
 // allocation and that library will always use malloc/free.
 
 bool
-Str::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
+Str::serialize(const String &dataset, DDS &dds, XDR *sink, 
+	       bool ce_eval = true)
 {
     int error;
 
@@ -198,11 +206,8 @@ Str::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
-    if (!xdr_str(xdrout(), _buf))
+    if (!xdr_str(sink, _buf))
 	return false;
-
-    if (flush)
-	return expunge();
 
     return true;
 }
@@ -210,9 +215,9 @@ Str::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 // deserialize the String on stdin and put the result in BUF.
 
 bool
-Str::deserialize(bool)
+Str::deserialize(XDR *source, bool)
 {
-    return (bool)xdr_str(xdrin(), _buf);
+    return (bool)xdr_str(source, _buf);
 }
 
 // Copy information in the object's internal buffers into the memory pointed

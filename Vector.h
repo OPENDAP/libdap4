@@ -11,9 +11,16 @@
 // Vector. Vector is the parent class for List and Array.
 
 /* $Log: Vector.h,v $
-/* Revision 1.8  1996/05/31 23:30:44  jimg
-/* Updated copyright notice.
+/* Revision 1.9  1996/06/04 21:33:51  jimg
+/* Multiple connections are now possible. It is now possible to open several
+/* URLs at the same time and read from them in a round-robin fashion. To do
+/* this I added data source and sink parameters to the serialize and
+/* deserialize mfuncs. Connect was also modified so that it manages the data
+/* source `object' (which is just an XDR pointer).
 /*
+ * Revision 1.8  1996/05/31 23:30:44  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.7  1996/05/16 22:50:27  jimg
  * Dan's changes for version 2.0. Added a parameter to read that returns
  * an error code so that EOF can be distinguished from an actual error when
@@ -54,8 +61,13 @@
 #pragma interface
 #endif
 
+#include <rpc/types.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
+
 #include "BaseType.h"
 #include "BaseTypeVec.h"
+#include "DDS.h"
 
 class Vector: public BaseType {
 private:
@@ -87,9 +99,9 @@ public:
     virtual unsigned int length();
     virtual void set_length(int l);
 
-    virtual bool serialize(const String &dataset, DDS &dds, 
-			   bool ce_eval = true, bool flush = false);
-    virtual bool deserialize(bool reuse = false);
+    virtual bool serialize(const String &dataset, DDS &dds, XDR *sink,
+			   bool ce_eval = true);
+    virtual bool deserialize(XDR *source, bool reuse = false);
 
     virtual bool read(const String &dataset, int &error) = 0;
 

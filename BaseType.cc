@@ -10,6 +10,13 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.26  1996/06/04 21:33:09  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.25  1996/05/31 23:29:24  jimg
 // Updated copyright notice.
 //
@@ -150,10 +157,12 @@
 // Initial definition of the protected static members _xdrin and
 // _xdrout. By default they use the stdin and stdout streams (resp).
 
+#if 0
 XDR * BaseType::_xdrin = new_xdrstdio(stdin, XDR_DECODE);
 XDR * BaseType::_xdrout = new_xdrstdio(stdout, XDR_ENCODE);
 FILE * BaseType::_out = stdout;
 FILE * BaseType::_in = stdin;
+#endif
 
 // Private copy mfunc
 
@@ -172,6 +181,7 @@ BaseType::_duplicate(const BaseType &bt)
 // Delete the current XDR * assigned to _xdrin, free the storage, create a
 // new XDR * and assign it to _xdrin.
 
+#if 0
 void 
 set_xdrin(FILE *in)
 {
@@ -192,6 +202,7 @@ set_xdrout(FILE *out)
     BaseType::_xdrout = new_xdrstdio(out, XDR_ENCODE);
     BaseType::_out = out;
 }
+#endif
 
 // Public mfuncs
 
@@ -344,6 +355,7 @@ BaseType::xdr_coder()
 
 // Use these mfuncs to access the xdrin/out pointers.
 
+#if 0
 XDR *
 BaseType::xdrin() const
 {
@@ -355,6 +367,7 @@ BaseType::xdrout() const
 {
     return _xdrout;
 }
+#endif
 
 // send a printed representation of the variable's declaration to cout. If
 // print_semi is true, append a semicolon and newline.
@@ -406,11 +419,13 @@ BaseType::check_semantics(bool)
 // Flush the output buffer.
 // Returns: false if an error was detected by fflush(), true otherwise.
 
+#if 0
 bool
 BaseType::expunge()
 {
     return fflush(_out) == 0;
 }
+#endif
 
 // Member functions for the relational operators used in evaluating a
 // relational clause in a constraint expression. Each class that wants these

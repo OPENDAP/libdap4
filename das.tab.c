@@ -1,5 +1,5 @@
 
-/*  A Bison parser, made from das.y with Bison version GNU Bison version 1.22
+/*  A Bison parser, made from das.y with Bison version GNU Bison version 1.24
   */
 
 #define YYBISON 1  /* Identify Bison output.  */
@@ -22,20 +22,12 @@
 #define	STRING	266
 #define	URL	267
 
-#line 103 "das.y"
+#line 132 "das.y"
 
 
 #define YYSTYPE char *
-#define YYDEBUG 1
-#define YYERROR_VERBOSE 1
-#define ID_MAX 256
 
-#ifndef TRUE
-#define TRUE 1
-#define FALSE 0
-#endif
-
-static char rcsid[]={"$Id: das.tab.c,v 1.1 1995/11/16 16:48:38 jimg Exp $"};
+static char rcsid[]={"$Id: das.tab.c,v 1.2 1996/06/04 21:33:56 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,6 +35,7 @@ static char rcsid[]={"$Id: das.tab.c,v 1.1 1995/11/16 16:48:38 jimg Exp $"};
 
 #include "config_dap.h"
 #include "debug.h"
+#include "parser.h"
 #include "das.tab.h"
 #include "DAS.h"
 
@@ -50,7 +43,7 @@ static char rcsid[]={"$Id: das.tab.c,v 1.1 1995/11/16 16:48:38 jimg Exp $"};
 #include "trace_new.h"
 #endif
 
-extern int das_line_num;
+extern int das_line_num;	/* defined in das.lex */
 
 static char name[ID_MAX];	/* holds name in attr_pair rule */
 static char type[ID_MAX];	/* holds type in attr_pair rule */
@@ -59,12 +52,14 @@ static AttrTablePtr attr_tab_ptr;
 void mem_list_report();
 int daslex(void);
 int daserror(char *s);
+#ifdef NEVER
 static void not_a_datatype(char *s);
 static void save_str(char *dst, char *src);
 static int check_byte(char *val);
 static int check_int(char *val);
 static int check_float(char *val);
 static int check_url(char *val);
+#endif
 
 
 #ifndef YYLTYPE
@@ -161,14 +156,14 @@ static const short yyrhs[] = {    18,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   190,   191,   194,   194,   197,   198,   199,   202,   214,   215,
-   218,   219,   220,   223,   224,   225,   227,   228,   229,   231,
-   232,   233,   235,   236,   237,   239,   240,   241,   243,   244,
-   246,   258,   272,   284,   298,   310,   324,   334,   345,   357,
-   371,   371,   371,   371,   374,   374
+   222,   223,   226,   226,   229,   230,   231,   234,   246,   247,
+   250,   251,   252,   255,   256,   257,   259,   260,   261,   263,
+   264,   265,   267,   268,   269,   271,   272,   273,   275,   276,
+   278,   290,   304,   316,   330,   342,   356,   366,   377,   389,
+   403,   403,   403,   403,   406,   406
 };
 
-static const char * const yytname[] = {   "$","error","$illegal.","ATTR","ID",
+static const char * const yytname[] = {   "$","error","$undefined.","ATTR","ID",
 "INT","FLOAT","STR","BYTE","INT32","FLOAT64","STRING","URL","'{'","'}'","';'",
 "','","attributes","attribute","@1","var_attr_list","var_attr","@2","attr_list",
 "attr_tuple","@3","@4","@5","@6","@7","@8","@9","@10","@11","@12","@13","bytes",
@@ -250,14 +245,14 @@ static const short yycheck[] = {     1,
      5,     0,     2,    21,    41,     9,    -1,    64
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/lib/bison.simple"
+#line 3 "/usr/local/share/bison.simple"
 
 /* Skeleton output parser for bison,
-   Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
+   Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 1, or (at your option)
+   the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -269,6 +264,10 @@ static const short yycheck[] = {     1,
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* As a special exception, when this file is copied by Bison into a
+   Bison output file, you may use that output file without restriction.
+   This special exception was added by the Free Software Foundation
+   in version 1.24 of Bison.  */
 
 #ifndef alloca
 #ifdef __GNUC__
@@ -342,10 +341,18 @@ while (0)
 
 #ifdef YYPURE
 #ifdef YYLSP_NEEDED
+#ifdef YYLEX_PARAM
+#define YYLEX		yylex(&yylval, &yylloc, YYLEX_PARAM)
+#else
 #define YYLEX		yylex(&yylval, &yylloc)
+#endif
+#else /* not YYLSP_NEEDED */
+#ifdef YYLEX_PARAM
+#define YYLEX		yylex(&yylval, YYLEX_PARAM)
 #else
 #define YYLEX		yylex(&yylval)
 #endif
+#endif /* not YYLSP_NEEDED */
 #endif
 
 /* If nonreentrant, generate the variables here */
@@ -393,14 +400,14 @@ int yyparse (DAS &table, int &parse_ok);
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
-#define __yy_bcopy(FROM,TO,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
+#define __yy_memcpy(FROM,TO,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
 #else				/* not GNU C or C++ */
 #ifndef __cplusplus
 
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_bcopy (from, to, count)
+__yy_memcpy (from, to, count)
      char *from;
      char *to;
      int count;
@@ -418,7 +425,7 @@ __yy_bcopy (from, to, count)
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_bcopy (char *from, char *to, int count)
+__yy_memcpy (char *from, char *to, int count)
 {
   register char *f = from;
   register char *t = to;
@@ -431,9 +438,24 @@ __yy_bcopy (char *from, char *to, int count)
 #endif
 #endif
 
-#line 184 "/usr/local/lib/bison.simple"
+#line 192 "/usr/local/share/bison.simple"
+
+/* The user can define YYPARSE_PARAM as the name of an argument to be passed
+   into yyparse.  The argument should have type void *.
+   It should actually point to an object.
+   Grammar actions can access the variable by casting it
+   to the proper pointer type.  */
+
+#ifdef YYPARSE_PARAM
+#define YYPARSE_PARAM_DECL void *YYPARSE_PARAM;
+#else
+#define YYPARSE_PARAM
+#define YYPARSE_PARAM_DECL
+#endif
+
 int
 yyparse(DAS &table, int &parse_ok)
+     YYPARSE_PARAM_DECL
 {
   register int yystate;
   register int yyn;
@@ -549,12 +571,12 @@ yynewstate:
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
       yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
-      __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
+      __yy_memcpy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
       yyvs = (YYSTYPE *) alloca (yystacksize * sizeof (*yyvsp));
-      __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
+      __yy_memcpy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
 #ifdef YYLSP_NEEDED
       yyls = (YYLTYPE *) alloca (yystacksize * sizeof (*yylsp));
-      __yy_bcopy ((char *)yyls1, (char *)yyls, size * sizeof (*yylsp));
+      __yy_memcpy ((char *)yyls1, (char *)yyls, size * sizeof (*yylsp));
 #endif
 #endif /* no yyoverflow */
 
@@ -715,11 +737,11 @@ yyreduce:
   switch (yyn) {
 
 case 3:
-#line 194 "das.y"
+#line 226 "das.y"
 { parse_ok = TRUE; ;
     break;}
 case 8:
-#line 203 "das.y"
+#line 235 "das.y"
 { 
 		    DBG2(mem_list_report()); /* mem_list_report is in */
 					     /* libdbnew.a  */
@@ -733,191 +755,191 @@ case 8:
 		;
     break;}
 case 10:
-#line 215 "das.y"
+#line 247 "das.y"
 { parse_ok = FALSE; ;
     break;}
 case 14:
-#line 223 "das.y"
-{ save_str(type, yyvsp[0]); ;
+#line 255 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 15:
-#line 224 "das.y"
-{ save_str(name, yyvsp[0]); ;
+#line 256 "das.y"
+{ save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 17:
-#line 227 "das.y"
-{ save_str(type, yyvsp[0]); ;
+#line 259 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 18:
-#line 228 "das.y"
-{ save_str(name, yyvsp[0]); ;
+#line 260 "das.y"
+{ save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 20:
-#line 231 "das.y"
-{ save_str(type, yyvsp[0]); ;
+#line 263 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 21:
-#line 232 "das.y"
-{ save_str(name, yyvsp[0]); ;
+#line 264 "das.y"
+{ save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 23:
-#line 235 "das.y"
-{ save_str(type, yyvsp[0]); ;
+#line 267 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 24:
-#line 236 "das.y"
-{ save_str(name, yyvsp[0]); ;
+#line 268 "das.y"
+{ save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 26:
-#line 239 "das.y"
-{ save_str(type, yyvsp[0]); ;
+#line 271 "das.y"
+{ save_str(type, yyvsp[0], das_line_num); ;
     break;}
 case 27:
-#line 240 "das.y"
-{ save_str(name, yyvsp[0]); ;
+#line 272 "das.y"
+{ save_str(name, yyvsp[0], das_line_num); ;
     break;}
 case 29:
-#line 243 "das.y"
+#line 275 "das.y"
 { parse_ok = FALSE; ;
     break;}
 case 31:
-#line 247 "das.y"
+#line 279 "das.y"
 {
 		    DBG(cerr << "Adding byte: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_byte(yyvsp[0])) {
+		    if (!check_byte(yyvsp[0], das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 32:
-#line 259 "das.y"
+#line 291 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_byte(yyvsp[0])) {
+		    if (!check_byte(yyvsp[0], das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 33:
-#line 273 "das.y"
+#line 305 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_int(yyvsp[0])) {
+		    if (!check_int(yyvsp[0], das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 34:
-#line 285 "das.y"
+#line 317 "das.y"
 {
 		    DBG(cerr << "Adding INT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_int(yyvsp[0])) {
+		    if (!check_int(yyvsp[0], das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 35:
-#line 299 "das.y"
+#line 331 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_float(yyvsp[0])) {
+		    if (!check_float(yyvsp[0], das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 36:
-#line 311 "das.y"
+#line 343 "das.y"
 {
 		    DBG(cerr << "Adding FLOAT: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_float(yyvsp[0])) {
+		    if (!check_float(yyvsp[0], das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 37:
-#line 325 "das.y"
+#line 357 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
 		    /* assume that a string that parsers is a vaild string */
 		    if (attr_tab_ptr->append_attr(name, type, yyvsp[0]) == 0) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 38:
-#line 335 "das.y"
+#line 367 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
 		    if (attr_tab_ptr->append_attr(name, type, yyvsp[0]) == 0) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 39:
-#line 346 "das.y"
+#line 378 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_url(yyvsp[0])) {
+		    if (!check_url(yyvsp[0], das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 case 40:
-#line 358 "das.y"
+#line 390 "das.y"
 {
 		    DBG(cerr << "Adding STR: " << name << " " << type << " "\
 			<< yyvsp[0] << endl);
-		    if (!check_url(yyvsp[0])) {
+		    if (!check_url(yyvsp[0], das_line_num)) {
 			parse_ok = 0;
 		    }
 		    else if (!attr_tab_ptr->append_attr(name, type, yyvsp[0])) {
-			daserror("Variable redefinition");
+			parse_error("Variable redefinition", das_line_num);
 			parse_ok = 0;
 		    }
 		;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 465 "/usr/local/lib/bison.simple"
+#line 487 "/usr/local/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1113,9 +1135,18 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 377 "das.y"
+#line 409 "das.y"
 
 
+int 
+daserror(char *s)
+{
+    fprintf(stderr, "%s line: %d\n", s, das_line_num);
+
+    return 1;
+}
+
+#ifdef NEVER
 static void
 save_str(char *dst, char *src)
 {
@@ -1130,12 +1161,6 @@ static void
 not_a_datatype(char *s)
 {
     fprintf(stderr, "`%s' is not a datatype; line %d\n", s, das_line_num);
-}
-
-int 
-daserror(char *s)
-{
-    fprintf(stderr, "%s line: %d\n", s, das_line_num);
 }
 
 static int
@@ -1169,7 +1194,7 @@ check_float(char *val)
 {
     double v = atof(val);
 
-    if (v = 0.0) {
+    if (v == 0.0) {
 	daserror("Not decodable to a 64-bit float value");
 	return FALSE;
     }
@@ -1186,4 +1211,5 @@ check_url(char *val)
 {
     return TRUE;
 }
+#endif
 

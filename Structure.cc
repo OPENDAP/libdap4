@@ -10,6 +10,13 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.25  1996/06/04 21:33:45  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
 // Revision 1.24  1996/05/31 23:30:05  jimg
 // Updated copyright notice.
 //
@@ -150,7 +157,6 @@
 #include <assert.h>
 
 #include "Structure.h"
-#include "DDS.h"
 #include "util.h"
 #include "debug.h"
 
@@ -236,7 +242,8 @@ Structure::width()
 // false. This bug might be fixed using exceptions.
 
 bool
-Structure::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
+Structure::serialize(const String &dataset, DDS &dds, XDR *sink,
+		     bool ce_eval = true)
 {
     bool status = true;
     int error = 0;
@@ -249,24 +256,19 @@ Structure::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 
     for (Pix p = first_var(); p; next_var(p)) 
 	if (var(p)->send_p() 
-	    && !(status = var(p)->serialize(dataset, dds, false, false))) 
+	    && !(status = var(p)->serialize(dataset, dds, sink, false))) 
 	    break;
-
-    // flush the stream *even* if status is false, but preserve the value of
-    // status if it's false.
-    if (flush)
-	status = status && expunge();
 
     return status;
 }
 
 bool
-Structure::deserialize(bool reuse)
+Structure::deserialize(XDR *source, bool reuse = false)
 {
     bool status = true;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	status = var(p)->deserialize(reuse);
+	status = var(p)->deserialize(source, reuse);
 	if (!status) 
 	  break;
     }
