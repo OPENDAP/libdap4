@@ -17,13 +17,16 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.18  1997/02/10 02:32:46  jimg
-/* Added assert statements for pointers
+/* Revision 1.19  1997/02/12 19:46:33  jimg
+/* Fixed bass asserts in process_array_indices and process_grid_indices.
 /*
+ * Revision 1.18  1997/02/10 02:32:46  jimg
+ * Added assert statements for pointers
+ *
  * Revision 1.17  1996/12/18 18:47:24  jimg
  * Modified the parser so that it returns Error objects for certain types of
- * errors. In order to take advantage of this, callers must examine the returned
- * object and process it as an Error object if status is false.
+ * errors. In order to take advantage of this, callers must examine the
+ * returned object and process it as an Error object if status is false.
  *
  * Revision 1.16  1996/11/27 22:40:26  jimg
  * Added DDS as third parameter to function in the CE evaluator
@@ -104,7 +107,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.18 1997/02/10 02:32:46 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.19 1997/02/12 19:46:33 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -656,14 +659,13 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 	int_list *index = (*indices)(p);
 
 	Pix q = index->first(); 
-	assert((*index)(q));
+	assert(q);
 	int start = (*index)(q);
 
 	index->next(q);
 	int stride = (*index)(q);
 	
 	index->next(q);
-
 	int stop = (*index)(q);
 
 	index->next(q);
@@ -736,14 +738,13 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	int_list *index = (*indices)(p);
 
 	Pix q = index->first(); 
-	assert((*index)(q));
+	assert(q);
 	int start = (*index)(q);
 
 	index->next(q);
 	int stride = (*index)(q);
 	
 	index->next(q);
-
 	int stop = (*index)(q);
 
 	assert(g->map_var(r));
@@ -830,7 +831,9 @@ dereference_string(String &s)
     String url = s.before("?");	// strip off CE
     String ce = s.after("?");	// yes, get the CE
 
-    Connect c = Connect(url);	// make the virtual connection
+    // I don't think that the `false' is really necessary, but g++ seems to
+    // want it. jhrg 2/10/97
+    Connect c = Connect(url, false); // make the virtual connection
 
     // the initial URL must be a complete reference to data; thus no
     // additional CE is needed. 
