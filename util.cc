@@ -4,7 +4,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.5  1995/01/11 16:10:47  jimg
+// Revision 1.6  1995/02/10 03:27:07  jimg
+// Removed xdr_url() since it was just a copy of xdr_str().
+//
+// Revision 1.5  1995/01/11  16:10:47  jimg
 // Added to new functions which manage XDR stdio stream pointers. One creates
 // a new xdrstdio pointer associated wit the given FILE * and the other
 // deletes it. The creation function returns the XDR *, so it can be used to
@@ -26,12 +29,16 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.5 1995/01/11 16:10:47 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.6 1995/02/10 03:27:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <rpc/xdr.h>
+#ifdef DBMALLOC
+#include <stdlib.h>
+#include <dbmalloc.h>
+#endif
 
 #include <SLList.h>
 
@@ -129,18 +136,11 @@ delete_xdrstdio(XDR *xdr)
     delete(xdr);
 }
 
-// These functions are used to en/decode Str and Url type variables. They are
-// defined as extern C since they are passed via function pointers to
-// routines in the xdr library where they are executed. 
-// These functions are defined so that *every* direct descendent of BaseType
-// has an en/decoder which takes exactly two argumnets: an XDR * and a buffer
-// pointer.
-
-extern "C" bool_t
-xdr_url(XDR *xdrs, char **buf)
-{
-    return xdr_string(xdrs, buf, max_url_len);
-}
+// This function is used to en/decode Str and Url type variables. It is
+// defined as extern C since it is passed via function pointers to routines
+// in the xdr library where they are executed. This function is defined so
+// that *every* direct descendent of BaseType has an en/decoder which takes
+// exactly two argumnets: an XDR * and a buffer pointer.
 
 extern "C" bool_t
 xdr_str(XDR *xdrs, char **buf)
