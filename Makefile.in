@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.147 2003/12/11 01:08:37 jimg Exp $
+# $Id: Makefile.in,v 1.148 2004/01/22 16:45:44 jimg Exp $
 
 @SET_MAKE@
 
@@ -484,13 +484,9 @@ clean:
 	-rm -f $(PROG) das-test dds-test expr-test \
 		error-test geturl gse-test unit_tests
 	-rm -f $(UNIT_TEST_PROGS)
-	-if [ -d doc-html ]; \
+	-if [ -d docs ]; \
 	then \
-	    cd doc-html; rm -f *.html; cd ..; \
-	fi
-	-if [ -d dox-latex ]; \
-	then \
-	    cd doc-latex; rm -f *.tex; cd ..; \
+	    rm -rf docs \
 	fi
 	-if [ -d tests ]; \
 	then \
