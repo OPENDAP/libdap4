@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.20  1996/11/25 03:42:37  jimg
+// Removed compress/decompress functions. Better versions are in util.cc
+// Changed from static global version of dods_root to function version.
+//
 // Revision 1.19  1996/11/20 01:00:17  jimg
 // Fixed lingering bug in compress_stdout where the user's path was not
 // searched correctly.
@@ -99,7 +103,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.19 1996/11/20 01:00:17 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.20 1996/11/25 03:42:37 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,10 +116,6 @@ static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.19 1996/11/20 01:00:17 j
 #include <iostream.h>
 #include <String.h>
 
-#if 0
-#include <HTError.h>
-#endif
-
 #include "cgi_util.h"
 
 #ifdef TRACE_NEW
@@ -125,9 +125,6 @@ static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.19 1996/11/20 01:00:17 j
 #ifndef FILE_DELIMITER		// default to unix
 #define FILE_DELIMITER '/'
 #endif
-
-static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
-    : DODS_ROOT;
 
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
@@ -250,7 +247,7 @@ name_path(const char *path)
 // not be started, true otherwise.
 
 static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
-			"dods_error"};
+			"dods_error" "web_error"};
 static char *encoding[]={"unknown", "x-plain", "x-gzip"};
 
 void
@@ -284,48 +281,6 @@ set_mime_error(int code = HTERR_NOT_FOUND,
     cout << "HTTP/1.0 " << code << " " << reason << endl;
     cout << "Server: " << DVR << endl;
     cout << endl;
-}
-
-// Open a pipe to a filter process which will compress this process' stdout. 
-//
-// NB: You must use pclose to close the FILE *.
-//
-// Returns: false if the pipe or child process could not be created, true
-// otherwise. 
-
-FILE *
-compress_stdout()
-{
-    String cmd = "gzip -cf";	// c: write to stdout, f: ...even if a tty
-    String path = (String)dods_root + "/etc/" + cmd;
-    struct stat buf;
-
-    // First try to find gzip at DODS_ROOT/etc. If that fials use the user's
-    // PATH. Note that we have to test for gzip in the DODS_ROOT directory
-    // since popen will barf if it cannot find the named program. However,
-    // since stat() wants an absolute path, *don't* use stat to test if the
-    // command is on the user's path.
-    if (stat((const char *)path, &buf) == 0)
-	return popen((const char *)path, "w");
-    else
-	return popen((const char *)cmd, "w");
-}
-
-// NB: the Connect class does not use this.
-
-FILE *
-decompress_stdin()
-{
-    String cmd = "gzip -cdf";	// c: read from stdin, f: ...even if a tty
-				// d: decompress
-    String path = (String)dods_root + "/etc/" + cmd;
-    struct stat buf;
-
-    // See the comment above.
-    if (stat((const char *)path, &buf) == 0)
-	return popen((const char *)path, "r");
-    else 
-	return popen((const char *)cmd, "r");
 }
 
 #ifdef TEST_CGI_UTIL
