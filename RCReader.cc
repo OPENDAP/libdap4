@@ -59,6 +59,7 @@
 #include <fstream>
 
 #include "RCReader.h"
+#include "debug.h"
 
 RCReader* RCReader::_instance = 0;
 
@@ -76,8 +77,9 @@ static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
 void  
 RCReader::write_rc_file()
 {
+    DBG(cerr << "Writing the RC file to " << cifp << endl);
     ofstream fpo(cifp.c_str());
-  
+
     // If the  couldn't be created.  Nothing needs to be done here,
     // the program will simply use the defaults.
 
@@ -114,6 +116,8 @@ RCReader::write_rc_file()
 void 
 RCReader::read_rc_file()
 {
+    DBG(cerr << "Reading the RC file from " << cifp << endl);
+
     ifstream fpi(cifp.c_str());
     if (fpi) {
 	// The file exists and we may now begin to parse it.  
@@ -431,6 +435,10 @@ RCReader::instance()
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.8  2003/03/13 23:49:32  jimg
+// Added DGB lines to track down a bug. These seem useful when you cannot use a
+// debugger.
+//
 // Revision 1.7  2003/02/27 23:37:15  jimg
 // Added get/set_ais_database() methods along with code to parse an
 // AIS_DATABASE entry in the configuration file.
