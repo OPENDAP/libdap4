@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.41 2005/02/08 21:31:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.42 2005/03/30 21:55:34 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,6 +66,7 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.41 2005/02/08 21:31:57 ji
 #include "BaseType.h"
 #include "TestSequence.h"
 #include "TestCommon.h"
+#include "TestTypeFactory.h"
 
 #include "parser.h"
 #include "expr.h"
@@ -150,7 +151,8 @@ main(int argc, char *argv[])
     string dds_file_name;
     string dataset = "";
     string constraint = "";
-    DDS table;
+    TestTypeFactory *ttf = new TestTypeFactory();
+    DDS table(ttf);
 
     // process options
 
@@ -536,17 +538,11 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 {
     bool status;
     FILE *pin, *pout;
-    DDS server;			// could use DataDDS, but no need when
-				// sending. 
+    TestTypeFactory *ttf = new TestTypeFactory;
+    DDS server(ttf);
 
     fprintf( stdout, "The complete DDS:\n" ) ;
     read_table(server, dds_name, true);
-
-#if 0    
-    DDS::Vars_iter i = server.var_begin();
-    while (i != server.var_end())
-        dynamic_cast<TestCommon&>(*(*i++)).set_series_values(true);
-#endif
 
     status = loopback_pipe(&pout, &pin);
     if (!status) {
@@ -571,21 +567,6 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 
     string dataset = "";
     
-#if 0
-`   // Don't use this option; it could have been used in place of the
-    // TestCommon class, but wasn't. jhrg 1/17/05
-    if (dataset == "") {
-	fprintf( stdout, "Data file:" ) ;
-	char c[256];
-	cin.getline(c, 255);
-	if (!cin) {
-	    fprintf( stderr, "Could nore read the data file name\n" ) ;
-	    exit(1);
-	}
-	dataset = c;
-    }
-#endif
-
     // by default this is false (to get the old-style values that are
     // constant; set this to true for testing Sequence constraints. 01/14/05
     // jhrg
@@ -615,9 +596,11 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     // First read the DDS into a new object (using a file to store the DDS
     // temporarily - the parser/scanner won't stop reading until an EOF is
     // found, this fixes that problem).
-
+    BaseTypeFactory *factory = new BaseTypeFactory;
     try {
-	DataDDS dds("Test_data", "DODS/3.2"); // Must use DataDDS on receving end
+	// I use the default BaseTypeFactory since we're just printing the
+	// values here.
+	DataDDS dds(factory, "Test_data", "DODS/3.2"); // Must use DataDDS on receving end
 	FILE *dds_fp = move_dds(pin);
 	DBG( fprintf( stderr, "Moved the DDS to a temp file\n" ) ) ;
 	parse_mime(dds_fp);
@@ -639,14 +622,19 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	delete_xdrstdio(source);
     }
     catch (Error &e) {
+	delete factory; factory = 0;
 	e.display_message();
 	return false;
     }
 	
+    delete factory; factory = 0;
     return true;
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.42  2005/03/30 21:55:34  jimg
+// Now uses the BaseTypeFactory class.
+//
 // Revision 1.41  2005/02/08 21:31:57  jimg
 // Merged with release-3-4-10.
 //
