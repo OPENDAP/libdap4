@@ -11,6 +11,12 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.19  1996/08/13 18:00:32  jimg
+// Switched to use of parse_arg object for passing values to and from the
+// bison generated parser.
+// Added test for error objects on return from the parser and call the
+// display_message member function when one is detected.
+//
 // Revision 1.18  1996/05/31 23:29:34  jimg
 // Updated copyright notice.
 //
@@ -100,25 +106,28 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.18 1996/05/31 23:29:34 jimg Exp $";
+#include "config_dap.h"
+
+static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.19 1996/08/13 18:00:32 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <stdio.h>
+#include <assert.h>
 
 #include <iostream.h>
 #include <Pix.h>
 #include <String.h>
 
-#include "config_dap.h"
+#include "DAS.h"		// follows pragma since DAS.h is interface
+#include "Error.h"
+#include "parser.h"
 #include "debug.h"
 
-#include "DAS.h"		// follows pragma since DAS.h is interface
-
 extern void dasrestart(FILE *yyin);
-extern int dasparse(DAS &table, int &parse_ok); // defined in das.tab.c
+extern int dasparse(void *arg); // defined in das.tab.c
 
 DAS::DAS(AttrTablePtr dflt, unsigned int sz) : map(dflt, sz)
 {
@@ -243,10 +252,29 @@ DAS::parse(int fd)
 bool
 DAS::parse(FILE *in)
 {
-    int parse_ok;
+    if (!in) {
+	cerr << "DAS::parse: Null input stream" << endl;
+	return false;
+    }
+
     dasrestart(in);
 
-    return dasparse(*this, parse_ok) == 0 && parse_ok;
+    parser_arg arg(this);
+
+    bool status = dasparse((void *)&arg) == 0;
+
+    //  STATUS is the result of the parser function; if a recoverable error
+    //  was found it will be true but arg.status() will be false.
+    if (!status || !arg.status()) {// Check parse result
+	if (arg.error())
+	    arg.error()->display_message();
+#if 0
+	cerr << "Error parsing DAS object!" << endl;
+#endif
+	return false;
+    }
+    else
+	return true;
 }
 
 // Write attributes from tables to `out' (which defaults to stdout). Return
