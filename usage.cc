@@ -13,6 +13,14 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.3  1997/05/22 22:32:04  jimg
+// Changed the way global attributes are ferreted out. Previously I had assumed
+// that any attribute group that was not also the name of a variable was a group
+// of `global' attributes. However, the new aliases change this. In response
+// I've changed the way usage looks for global attributes; it looks for
+// attribute groups which contain the strings `global' and/or `dods'. Case is
+// not important.
+//
 // Revision 1.2  1996/12/18 18:41:33  jimg
 // Added massive fixes for the processing of attributes to sort out the `global
 // attributes'. Also added changes to the overall layout of the resulting
@@ -25,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.2 1996/12/18 18:41:33 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.3 1997/05/22 22:32:04 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -233,6 +241,7 @@ name_in_variable(BaseType *btp, const String &name)
     return false;
 }
 
+// Not used.
 
 static bool
 name_in_dds(DDS &dds, const String &name)
@@ -318,6 +327,14 @@ name_in_kill_file(const String &name)
     return name.matches(dim);
 }
 
+static bool
+name_is_global(String &name)
+{
+    static Regex global("\\(.*global.*\\)\\|\\(.*dods.*\\)", 1);
+    name.downcase();
+    return name.matches(global);
+}
+
 /// Build the global attribute HTML* document.
 /** Given the DAS and DDS, build the HTML* document which contains all the
     global attributes for this dataset. A global attribute is defined here as
@@ -332,7 +349,7 @@ name_in_kill_file(const String &name)
 */
 
 String
-build_global_attributes(DAS &das, DDS &dds)
+build_global_attributes(DAS &das, DDS &)
 {
     bool found = false;
     ostrstream ga;
@@ -342,7 +359,11 @@ build_global_attributes(DAS &das, DDS &dds)
     for (Pix p = das.first_var(); p; das.next_var(p)) {
 	String name = das.get_name(p);
 
-	if (!name_in_kill_file(name) && !name_in_dds(dds, name)) {
+	// I used `name_in_dds' originally, but changed to `name_is_global'
+	// because aliases between groups of attributes can result in
+	// attribute group names which are not in the DDS and are *not*
+	// global attributes. jhrg. 5/22/97
+	if (!name_in_kill_file(name) && name_is_global(name)) {
 	    AttrTable *attr = das.get_table(p);
 
 	    if (attr) {
