@@ -13,6 +13,13 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.33  1999/07/22 17:11:50  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.32.8.1  1999/06/08 17:36:15  dan
+// Replaced template declaration of add_function with 3 separate definitions
+// for the possible instances of this method, bool*, BaseType*, void*.
+//
 // Revision 1.32  1999/05/05 00:51:02  jimg
 // Added cgi_ver parameter to send() member function.
 //
@@ -425,7 +432,17 @@ public:
 
     //@{
     /** Add a function to the list. */
+#if 0
     template <class FUNC_T> void add_function(const string &name, FUNC_T f);
+#endif
+#if 1
+  /** Add a boolean function to the list. */
+    void add_function(const string &name, bool_func f);
+  /** Add a BaseType function to the list. */
+    void add_function(const string &name, btp_func f);
+  /** Add a projection function to the list. */
+    void add_function(const string &name, proj_func f);
+#endif
 
     /** Find a Boolean function with a given name in the function list. */
     bool find_function(const string &name, bool_func *f) const;

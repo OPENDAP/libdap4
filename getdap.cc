@@ -10,6 +10,18 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.38  1999/07/22 17:11:52  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.37.4.2  1999/06/11 10:21:50  rmorris
+// Removed a couple of debugging lines accidentally returned to cvs
+//
+// Revision 1.37.4.1  1999/06/04 22:34:36  rmorris
+// Fixed a line that was causing core dumps during the generation and running
+// of the hdf server test suites.  It looks like there was a simple cut-and-paste
+// error made by someone earlier involving the outputting of Structures - they
+// were being treated like sequences.
+//
 // Revision 1.37  1999/05/26 17:35:01  jimg
 // The Gui option is now disabled; gui is always false.
 // One call to gui()->... has been removed with #if 0 ... #endif.
@@ -156,7 +168,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.37 1999/05/26 17:35:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.38 1999/07/22 17:11:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -166,7 +178,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.37 1999/05/26 17:35:01 jimg 
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.37 $";
+const char *VERSION = "$Revision: 1.38 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -257,7 +269,7 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 	    break;
 	  }
 	  case dods_structure_c: {
-	    Sequence *s = dynamic_cast<Sequence *>(v);
+	    Structure *s = dynamic_cast<Structure *>(v);
 	    s->print_all_vals(cout, url.source(), dds);
 	    break;
 	  }

@@ -10,6 +10,16 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.16  1999/07/22 17:11:51  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.15.4.1  1999/06/01 15:43:51  jimg
+// Made dods/3.0 the default version number. This makes is simpler to debug dods
+// servers since running the server filter programs will generate valid headers
+// now. Before you had to remember to use the -v option and give a version
+// string/number or the MIME header would not be valid. This confused the MIME
+// header parse which hosed the data stream.
+//
 // Revision 1.15  1999/05/26 17:37:02  jimg
 // Added a bit where, before sending caught Error objects to the client, we
 // write the message to t eh httpd's error_log.
@@ -90,7 +100,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.15 1999/05/26 17:37:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.16 1999/07/22 17:11:51 jimg Exp $"};
 
 #include <iostream>
 #ifdef __GNUG__
@@ -108,7 +118,7 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.15 1999/05/26 17:37:02 j
 #include "DODSFilter.h"
 
 DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false), 
-    bad_options(false), dataset(""), ce(""), cgi_ver(""),
+    bad_options(false), dataset(""), ce(""), cgi_ver("dods/3.0"),
     anc_dir(""), anc_file(""), cache_dir(""), accept_types("All")
 {
     program_name = argv[0];

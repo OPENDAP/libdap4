@@ -9,6 +9,14 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.44  1999/07/22 17:11:50  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.43.4.1  1999/06/08 17:37:24  dan
+// Replace template definition of add_function with 3 explicit
+// instances of this method.  Required due to inability of gcc on certain
+// architectures to link properly using template definitions.
+//
 // Revision 1.43  1999/05/26 17:27:48  jimg
 // Replaced a serialization of an Error object with a throw to the outer layer.
 // This should help smooth getting errors to the outer layer of the servers so
@@ -232,7 +240,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.43 1999/05/26 17:27:48 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.44 1999/07/22 17:11:50 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -574,6 +582,7 @@ DDS::append_constant(BaseType *btp)
     constants.append(btp);
 }
 
+#if 0
 template<class FUNC_T>
 void 
 DDS::add_function(const string &name, FUNC_T f)
@@ -581,6 +590,29 @@ DDS::add_function(const string &name, FUNC_T f)
     function func(name, f);
     functions.append(func);
 }
+#endif
+
+#if 1
+void
+DDS::add_function(const string &name, bool_func f)
+{
+    function func(name, f);
+    functions.append(func);
+}
+void
+DDS::add_function(const string &name, btp_func f)
+{
+    function func(name, f);
+    functions.append(func);
+}
+
+void
+DDS::add_function(const string &name, proj_func f)
+{
+    function func(name, f);
+    functions.append(func);
+}
+#endif
 
 bool
 DDS::find_function(const string &name, bool_func *f) const

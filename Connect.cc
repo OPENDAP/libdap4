@@ -8,6 +8,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.79  1999/07/22 17:11:50  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.78.4.1  1999/06/01 15:40:54  jimg
+// Ripped out dead wood in parse_mime(...).
+//
 // Revision 1.78  1999/05/26 17:30:24  jimg
 // Added the calls to Error::correct_error(...). These were removed because
 // they use the Gui object. However, they access it through the Connect::Gui()
@@ -444,7 +450,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.78 1999/05/26 17:30:24 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.79 1999/07/22 17:11:50 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -928,19 +934,19 @@ xdods_accept_types_header_gen(HTRequest *pReq, HTStream *target)
 // Data objects. It simulates the important actions of the libwww MIME header
 // parser. Those actions fill in certain fields in the Connect object. jhrg
 // 5/20/97
+//
+// Make sure that this parser reads from data_source without disturbing the
+// information in data_source tat follows the MIME header. Since the DDS
+// (which follows the MIME header) is parsed by a flex/bison scanner/parser,
+// make sure to use I/O calls that will mesh with ANSI C I/O calls. In the
+// old GNU libg++, the C++ calls were synchronized with the C calls, but that
+// may no longer be the case. 5/31/99 jhrg
 
 void
 Connect::parse_mime(FILE *data_source)
 {    
-#if 0
-    ifstream is(fileno(data_source));
-#endif
-    
     char line[256];
 
-#if 0
-    is.getline(line, 256);
-#endif
     fgets(line, 255, data_source);
     line[strlen(line)-1] = '\0'; // remove the newline
 
@@ -965,9 +971,6 @@ Connect::parse_mime(FILE *data_source)
 	    _server = value;
 	}
 	
-#if 0
-	is.getline(line, 256);
-#endif
 	fgets(line, 255, data_source);
 	line[strlen(line)-1] = '\0';
     }

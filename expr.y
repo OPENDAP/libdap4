@@ -18,6 +18,12 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.33  1999/07/22 17:11:52  jimg
+ * Merged changes from the release-3-0-2 branch
+ *
+ * Revision 1.32.6.1  1999/06/07 20:03:25  edavis
+ * Changed all string class usage of 'data()' to 'c_str()'.
+ *
  * Revision 1.32  1999/05/21 17:20:08  jimg
  * Made the parser error messages a bit easier to decode by adding `Expression'
  * to them. Still, these are pretty lame messages...
@@ -173,7 +179,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.32 1999/05/21 17:20:08 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.33 1999/07/22 17:11:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -653,10 +659,10 @@ int
 no_such_ident(void *arg, char *name, char *word)
 {
     string msg = "No such " + (string)word + " in dataset.";
-    exprerror(msg.data(), name);
+    exprerror(msg.c_str(), name);
 
     msg = "The identifier `" + (string)name + "' is not in the dataset.";
-    ERROR_OBJ(arg) = new Error(malformed_expr, msg.data());
+    ERROR_OBJ(arg) = new Error(malformed_expr, msg.c_str());
     STATUS(arg) = false;
 
     return false;
@@ -675,7 +681,7 @@ no_such_func(void *arg, char *name)
     string msg = "The function `" + (string)name 
 	+ "' is not defined on this server.";
 
-    ERROR_OBJ(arg) = new Error(malformed_expr, msg.data());
+    ERROR_OBJ(arg) = new Error(malformed_expr, msg.c_str());
     STATUS(arg) = false;
 
     return false;

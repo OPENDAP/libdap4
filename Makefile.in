@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.102 1999/05/27 16:53:13 jimg Exp $
+# $Id: Makefile.in,v 1.103 1999/07/22 17:11:51 jimg Exp $
 
 @SET_MAKE@
 
@@ -21,7 +21,7 @@ WWW_ROOT = @WWW_ROOT@
 INCS = -I. -IGNU @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
-CXXFLAGS = @CXXFLAGS@ -Wall -fPIC
+CXXFLAGS = @CXXFLAGS@ -Wall
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
@@ -49,9 +49,12 @@ SHELL = /bin/sh
 srcdir = @srcdir@
 version = @VERSION@
 dir = dap-@VERSION@
+host = @host@
 
 COMPONENT_NAME = DODS Core
 AWK = @AWK@
+TAR = @TAR@
+PERL = @PERL@
 
 # testsuite specifics
 RUNTEST = runtest
@@ -189,7 +192,7 @@ pure-dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
 #	$(CXX) $(LDFLAGS) -o trans-test $(TESTOBJS) trans-test.o $(LIBS)
 
 gse-test.o: gse-test.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -O0 gse-test.cc -o gse-test.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c gse-test.cc -o gse-test.o
 
 gse-test: libdap++.a $(TESTOBJS) lex.gse.o gse-test.o gse.tab.h gse.tab.o
 	$(CXX) $(LDFLAGS) -o gse-test lex.gse.o gse-test.o gse.tab.o \
@@ -239,7 +242,7 @@ das.tab.c das.tab.h: das.y DAS.h munge-bison.awk
 	mv tmp das.tab.c
 
 das.tab.o: das.tab.c		# build using C++ compiler
-	$(CXX) $(CXXFLAGS) -O0 $(CPPFLAGS) -c das.tab.c -o das.tab.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c das.tab.c -o das.tab.o
 
 # Build the DDS Scanner.
 
@@ -257,7 +260,7 @@ dds.tab.c dds.tab.h: dds.y munge-bison.awk
 	mv tmp dds.tab.c
 
 dds.tab.o: dds.tab.c		# build using C++ compiler
-	$(CXX) $(CXXFLAGS) -O0 $(CPPFLAGS) -c dds.tab.c -o dds.tab.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c dds.tab.c -o dds.tab.o
 
 # Build the CE Scanner.
 
@@ -434,7 +437,7 @@ docs:
 tar:
 	-rm -r config.cache config.log config.status
 	cd $(DODS_ROOT)/.. && \
-	tar --exclude '*/nc-dods*' --exclude '*/jg-dods*' --exclude '*patches*' \
+	$(TAR) --exclude '*/nc-dods*' --exclude '*/jg-dods*' --exclude '*patches*' \
 	    --exclude '*/math-dods*' --exclude '*/dsp-dods*' \
 	    --exclude '*/hdf-dods*' --exclude '*/writeval*' \
 	    --exclude '*/ff-dods*' --exclude '*/matlab-GUI*' \
@@ -442,6 +445,30 @@ tar:
 	    --exclude '*/url-builder*' --exclude '*url-directory*' \
 	    --exclude '*/.#*' --exclude '*/CVS' --exclude '*/old' \
 	    --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
+
+.PHONY: binary-tar
+binary-tar:
+	cd $(DODS_ROOT)/.. && \
+	$(TAR) --gzip --create --dereference \
+	    --file DODS-$(host)-dap-library-$(version).tar.gz \
+	    --exclude '*/CVS' \
+	    DODS/lib/libdap++.a \
+	    DODS/include && \
+	$(TAR) --gzip --create --dereference \
+	    --file DODS-$(host)-tools-$(version).tar.gz \
+	    DODS/etc/asciival \
+	    DODS/etc/*.tcl && \
+	$(TAR) --gzip --create --dereference \
+	    --file DODS-$(host)-client-tools-$(version).tar.gz \
+	    DODS/etc/INSTALL-clients \
+	    DODS/bin/geturl \
+	    DODS/bin/urlqueue && \
+	$(TAR) --gzip --create --dereference \
+	    --file DODS-$(host)-server-tools-$(version).tar.gz \
+	    DODS/etc/INSTALL-servers \
+	    DODS/etc/deflate \
+	    DODS/etc/usage \
+	    DODS/etc/*.pm
 
 .PHONY: update-version
 update-version: check-version
@@ -491,7 +518,7 @@ das.tab.c: DAS.h
 # Force compilation of these files using -O0. This is needed when using
 # -fPIC and may only be necessary on sparc machines. 5/19/99 jhrg
 util.o: util.cc
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -O0 -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
 
 .SUFFIXES:      .o .cc .c
 
