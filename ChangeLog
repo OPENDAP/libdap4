@@ -1,3 +1,11 @@
+2000-04-06  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with Brent's gui2 code. This version of the progress
+	popup adds a cancel button. The software was checked in on the
+	gui2 branch and the point at which it was merged was tagged, on
+	that branch, as gui2-0. Future merges should use update -j gui2-0
+	-j gui2. 
+
 2000-03-31  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with release-3-1-5. The next merge should use -j
@@ -678,10 +686,10 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 <<<<<<< ChangeLog
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.49 2000/03/31 21:06:11 jimg Exp $
+$Id: ChangeLog,v 1.50 2000/04/07 00:20:04 jimg Exp $
 =======
-$Id: ChangeLog,v 1.49 2000/03/31 21:06:11 jimg Exp $
+$Id: ChangeLog,v 1.50 2000/04/07 00:20:04 jimg Exp $
 >>>>>>> 1.42.2.4
 =======
-$Id: ChangeLog,v 1.49 2000/03/31 21:06:11 jimg Exp $
+$Id: ChangeLog,v 1.50 2000/04/07 00:20:04 jimg Exp $
 >>>>>>> 1.42.2.7
