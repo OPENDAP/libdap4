@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.15  1997/12/16 00:42:53  jimg
+ * The return type of set_vec() is now bool (was void).
+ *
  * Revision 1.14  1997/10/09 22:19:26  jimg
  * Resolved conflicts in merge of 2.14c to trunk.
  *
@@ -127,7 +130,7 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    void set_vec(int i, BaseType *val);
+    bool set_vec(int i, BaseType *val);
     void vec_resize(int l);
 
     virtual BaseType *var(const String &name = (char *)0);
