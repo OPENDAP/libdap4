@@ -13,7 +13,7 @@
 # Added some of my own macros (don't blame Unidata for them!) starting with
 # DODS_PROG_LEX and down in the file. jhrg 2/11/96
 #
-# $Id: configure,v 1.37 1997/05/13 23:40:51 jimg Exp $
+# $Id: configure,v 1.38 1997/06/06 17:52:15 jimg Exp $
 
 # Check for fill value usage.
 
@@ -690,10 +690,10 @@ cat >> confdefs.h <<\EOF
 EOF
 
 cat >> confdefs.h <<\EOF
-#define CVER "2.13"
+#define CVER "2.14"
 EOF
 
-DVR="DODS/2.13"
+DVR="DODS/2.14"
 cat >> confdefs.h <<EOF
 #define DVR "$DVR"
 EOF
@@ -2728,7 +2728,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "Makefile dods_gui.tcl dods-core-version config_dap.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "Makefile dods_gui.tcl config_dap.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -2790,7 +2790,7 @@ CEOF
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"Makefile dods_gui.tcl dods-core-version"}
+CONFIG_FILES=\${CONFIG_FILES-"Makefile dods_gui.tcl"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then

@@ -10,14 +10,17 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.42  1997/06/06 17:52:20  jimg
+// Last minute changes for version 2.14
+//
 // Revision 1.41  1997/06/05 23:04:33  jimg
-// Fixed the decompresser() function - made int data[2] automatic instead of
+// Fixed the decompressor() function - made int data[2] automatic instead of
 // static.
-// Fixed the spelling mistake in the function names compresser and
-// decompresser.
+// Fixed the spelling mistake in the function names compressor and
+// decompressor.
 //
 // Revision 1.40  1997/05/13 23:40:07  jimg
-// Added instrumentation for function decompresser().
+// Added instrumentation for function decompressor().
 //
 // Revision 1.39  1997/05/01 18:54:35  jimg
 // Fixed an error in date_func where argv[0] was used as a BaseType instead of
@@ -60,11 +63,11 @@
 //
 // Revision 1.30  1996/11/25 03:44:39  jimg
 // Added new dods_root function.
-// Fixed compresser().
+// Fixed compressor().
 // Fixed systime().
 //
 // Revision 1.29  1996/11/21 23:56:21  jimg
-// Added compresser and decompresser functions.
+// Added compressor and decompressor functions.
 //
 // Revision 1.28  1996/11/13 19:23:17  jimg
 // Fixed debugging.
@@ -212,7 +215,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.41 1997/06/05 23:04:33 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.42 1997/06/06 17:52:20 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -438,18 +441,18 @@ dods_progress()
 }
 
 FILE *
-compresser(FILE *output, int &childpid)
+compressor(FILE *output, int &childpid)
 {
     int pid, data[2];
 
     if (pipe(data) < 0) {
-	cerr << "Could not create IPC channel for compresser process" 
+	cerr << "Could not create IPC channel for compressor process" 
 	     << endl;
 	return NULL;
     }
     
     if ((pid = fork()) < 0) {
-	cerr << "Could not fork to create compresser process" << endl;
+	cerr << "Could not fork to create compressor process" << endl;
 	return NULL;
     }
 
@@ -479,26 +482,26 @@ compresser(FILE *output, int &childpid)
 
 	(void) execlp("gzip", "gzip", "-cf", NULL);
 
-	cerr << "Could not start compresser!" << endl;
+	cerr << "Could not start compressor!" << endl;
 	cerr << "gzip must be in DODS_ROOT/etc or on your PATH" << endl;
 	_exit(127);		// Only get here if an error
     }
 }
 
 FILE *
-decompresser(FILE *input, int &childpid)
+decompressor(FILE *input, int &childpid)
 {
     int pid;
     int data[2];
 
     if (pipe(data) < 0) {
-	cerr << "Could not create IPC channel for decompresser process" 
+	cerr << "Could not create IPC channel for decompressor process" 
 	     << endl;
 	return NULL;
     }
     
     if ((pid = fork()) < 0) {
-	cerr << "Could not fork to create decompresser process" << endl;
+	cerr << "Could not fork to create decompressor process" << endl;
 	return NULL;
     }
 
@@ -507,7 +510,7 @@ decompresser(FILE *input, int &childpid)
     // access the read end of the Pipe.
 
     if (pid > 0) {
-	DBG(cerr << "Decompresser parent." << endl);
+	DBG(cerr << "Decompressor parent." << endl);
 	DBG(cerr << "pipe fds: data[0]: " << data[0] << " data[1]: " \
 	    << data[1] << endl);
 
@@ -518,7 +521,7 @@ decompresser(FILE *input, int &childpid)
     }
     else {
 	DBG(sleep(1));
-	DBG(cerr << "Decompresser child." << endl);
+	DBG(cerr << "Decompressor child." << endl);
 	DBG(cerr << "pipe fds: data[0]: " << data[0] << " data[1]: " \
 	    << data[1] << endl);
 
@@ -535,7 +538,7 @@ decompresser(FILE *input, int &childpid)
 
 	(void) execlp("gzip", "gzip", "-cdf", NULL);
 
-	cerr << "Could not start decompresser!" << endl;
+	cerr << "Could not start decompressor!" << endl;
 	cerr << "gzip must be in DODS_ROOT/etc or on your PATH" << endl;
 	_exit(127);		// Only get here if an error
     }

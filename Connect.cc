@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.57  1997/06/06 17:52:08  jimg
+// Last minute changes for version 2.14
+//
 // Revision 1.56  1997/06/06 03:09:15  jimg
 // Added parse_mime(); a tiny parser for the fields DODS uses. Not a real MIME
 // parser.
@@ -22,7 +25,7 @@
 // will be closed when an Connect is destroyed.
 //
 // Revision 1.54  1997/05/07 22:10:37  jimg
-// Fixed a bug where the last decompresser process exit was not handled
+// Fixed a bug where the last decompressor process exit was not handled
 // properly. The fix was to make sure that calls for data interleaved
 // with calls for the DAS and/or DDS objects properly wait for the exit
 // status of the last decompression process. In addition, ensure that
@@ -321,7 +324,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.56 1997/06/06 03:09:15 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.57 1997/06/06 17:52:08 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
