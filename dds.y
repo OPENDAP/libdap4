@@ -15,7 +15,13 @@
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.5  1994/12/09 21:42:41  jimg
+ * Revision 1.6  1994/12/16 22:24:23  jimg
+ * Switched from a CtorType stack to BaseType stack.
+ * Fixed an error in save_str() (see das.y).
+ * Fixed a bug in the use of append_dim - it was called with $4 when it
+ * should have been called with $5.
+ *
+ * Revision 1.5  1994/12/09  21:42:41  jimg
  * Added to array: so that an array decl can contain: an int or an id=int.
  * This is for the named dimensions (see Array.{cc,h}).
  *
@@ -44,7 +50,7 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: dds.y,v 1.5 1994/12/09 21:42:41 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.6 1994/12/16 22:24:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,18 +72,18 @@ static char rcsid[]={"$Id: dds.y,v 1.5 1994/12/09 21:42:41 jimg Exp $"};
 #include "Sequence.h"
 #include "Function.h"
 #include "Grid.h"
-#include "CTXPStack.h"
+#include "BTXPStack.h"
 
 extern int dds_line_num;
 
-static CtorTypePtrXPStack ctor;	/* stack for ctor types */
+static BaseTypePtrXPStack ctor;	/* stack for ctor types */
 static BaseType *current;
-static Part part = nil;		/* Part is defined in CtorType */
+static Part part = nil;		/* Part is defined in BaseType */
 static char id[ID_MAX];
 
 int ddslex();
 int ddserror(char *s);
-void add_entry(DDS &table, CtorTypePtrXPStack &ctor, BaseType **current, 
+void add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, 
 	       Part p);
 void save_str(char *dst, char *src);
 
@@ -217,12 +223,12 @@ array_decl:	'[' INTEGER ']'
                  '=' INTEGER 
                  { 
 		     if (current->get_var_type() == "Array") {
-			 ((Array *)current)->append_dim(atoi($4), id);
+			 ((Array *)current)->append_dim(atoi($5), id);
 		     }
 		     else {
 			 Array *a = new Array; 
 			 a->add_var(current); 
-			 a->append_dim(atoi($4), id);
+			 a->append_dim(atoi($5), id);
 			 current = a;
 		     }
 		 }
@@ -255,7 +261,7 @@ ddserror(char *s)
 */
 
 void	
-add_entry(DDS &table, CtorTypePtrXPStack &ctor, BaseType **current, Part part)
+add_entry(DDS &table, BaseTypePtrXPStack &ctor, BaseType **current, Part part)
 { 
     if (!ctor.empty()) { /* must be parsing a ctor type */
 	ctor.top()->add_var(*current, part);
@@ -282,9 +288,9 @@ void
 save_str(char *dst, char *src)
 {
     strncpy(dst, src, ID_MAX);
-    name[ID_MAX-1] = '\0';		/* in case ... */
+    dst[ID_MAX-1] = '\0';		/* in case ... */
     if (strlen(src) >= ID_MAX) 
-	cerr << "line: " << das_line_num << "`" << src << "' truncated to `"
+	cerr << "line: " << dds_line_num << "`" << src << "' truncated to `"
              << dst << "'" << endl;
 }
 
