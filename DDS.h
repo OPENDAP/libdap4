@@ -203,7 +203,8 @@ private:
     int d_timeout;		// alarm time in seconds. If greater than
 				// zero, raise the alarm signal if more than
 				// d_timeout seconds are spent reading data.
-
+    friend class DDSTest;
+    
 protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
@@ -349,6 +350,9 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.61  2005/03/19 00:39:04  jimg
+// Mods for unit tests; tracking down memory leaks.
+//
 // Revision 1.60  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

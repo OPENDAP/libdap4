@@ -69,8 +69,23 @@ public:
     CPPUNIT_TEST(print_xml_test);
     CPPUNIT_TEST(print_xml_test2);
     CPPUNIT_TEST(transfer_attributes_test);
+    CPPUNIT_TEST(add_global_attribute_test);
 
     CPPUNIT_TEST_SUITE_END();
+
+    // This is here mostly to test for memory leaks using valgrind. Does 
+    // DDS::add_global_attribute() leak memory? Apparently not. jhrg 3/18/05
+    void add_global_attribute_test() {
+        DAS das;
+        das.parse("das-testsuite/test.1.das");
+        AttrTable::Attr_iter i = das.attr_begin();
+        CPPUNIT_ASSERT(i != das.attr_end());
+        
+        dds1->parse("dds-testsuite/test.1");
+        dds1->add_global_attribute(*i);
+        
+        CPPUNIT_ASSERT(dds1->d_attr.get_size() == 1);
+    }
 
     void transfer_attributes_test() {
         try {
