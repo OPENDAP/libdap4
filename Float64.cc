@@ -38,6 +38,12 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.19  1996/03/05 18:24:53  jimg
+// Added ce_eval to serailize member function.
+// Fixed serialize so that expunge() is always called when the member function
+// finishes and FLUSH is true.
+// Added ops member function and double_ops function.
+//
 // Revision 1.18  1996/02/02 00:31:02  jimg
 // Merge changes for DODS-1.1.0 into DODS-2.x
 //
@@ -155,6 +161,7 @@
 
 #include "config_dap.h"
 
+#include <stdlib.h>		// for atoi()
 #include <assert.h>
 #ifdef NEVER
 #include <rpc/types.h>
@@ -164,6 +171,8 @@
 
 #include "Float64.h"
 #include "DDS.h"
+#include "parser.h"
+#include "expr.tab.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -180,23 +189,21 @@ Float64::width()
 }
 
 bool
-Float64::serialize(const String &dataset, DDS &dds, bool flush)
+Float64::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
-    bool stat = true;
+    if (!read_p() && !read(dataset))
+	return false;
 
-    if (!read_p())		// only read if not read already
-	stat = read(dataset);
+    if (ce_eval && !dds.eval_selection(dataset))
+	return true;
 
-    if (stat && !dds.eval_constraint())	// if the constraint is false, return
-	return stat;
+    if (!xdr_double(xdrout(), &_buf))
+	return false;
 
-    if (stat)
-	stat = (bool)xdr_double(xdrout(), &_buf);
+    if (flush)
+	return expunge();
 
-    if (stat && flush)
-	 stat = expunge();
-
-    return stat;
+    return true;
 }
 
 bool
@@ -239,4 +246,76 @@ Float64::print_val(ostream &os, String space, bool print_decl_p)
     }
     else 
 	os << _buf;
+}
+
+static bool
+double_ops(double i1, double i2, int op)
+{
+    switch (op) {
+      case EQUAL:
+	return i1 == i2;
+      case NOT_EQUAL:
+	return i1 != i2;
+      case GREATER:
+	return i1 > i2;
+      case GREATER_EQL:
+	return i1 >= i2;
+      case LESS:
+	return i1 < i2;
+      case LESS_EQL:
+	return i1 <= i2;
+      case REGEXP:
+	cerr << "Regexp not valid for float values" << endl;
+	return false;
+      default:
+	cerr << "Unknown operator" << endl;
+	return false;
+    }
+}
+
+bool
+Float64::ops(BaseType &b, int op)
+{
+    double a1, a2;
+
+    if (!read_p()) {
+	cerr << "This value not yet read!" << endl;
+	return false;
+    }
+    else {
+	double *a1p = &a1;
+	buf2val((void **)&a1p);
+    }
+
+    if (!b.read_p()) {
+	cerr << "Arg value not yet read!" << endl;
+	return false;
+    }
+    else switch (b.type()) {
+      case byte_t:
+      case int32_t: {
+	int32 i;
+	int32 *ip = &i;
+	b.buf2val((void **)&ip);
+	a2 = i;
+	break;
+      }
+      case float64_t: {
+	double *a2p = &a2;
+	b.buf2val((void **)&a2p);
+	break;
+      }
+      case str_t: {
+	String s;
+	String *sp = &s;
+	b.buf2val((void **)&sp);
+	a2 = atoi((const char *)s);
+	break;
+      }
+      default:
+	return false;
+	break;
+    }
+
+    return double_ops(a1, a2, op);
 }
