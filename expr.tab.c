@@ -24,10 +24,10 @@
 #define	LESS_EQL	268
 #define	REGEXP	269
 
-#line 77 "expr.y"
+#line 82 "expr.y"
 
 
-static char rcsid[]={"$Id: expr.tab.c,v 1.3 1996/06/18 23:56:06 jimg Exp $"};
+static char rcsid[]={"$Id: expr.tab.c,v 1.4 1996/06/22 00:12:05 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,7 +94,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 */
 
 
-#line 149 "expr.y"
+#line 154 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -203,11 +203,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   190,   196,   198,   199,   202,   206,   220,   232,   242,   246,
-   259,   269,   275,   276,   282,   288,   297,   311,   312,   313,
-   320,   326,   337,   341,   347,   354,   363,   368,   373,   381,
-   397,   415,   419,   425,   432,   438,   439,   440,   441,   442,
-   443,   444
+   195,   201,   203,   204,   207,   211,   225,   237,   247,   251,
+   264,   274,   280,   281,   287,   293,   302,   316,   317,   318,
+   325,   331,   342,   346,   352,   359,   368,   373,   378,   386,
+   402,   420,   424,   430,   437,   443,   444,   445,   446,   447,
+   448,   449
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","INT","FLOAT",
@@ -782,30 +782,30 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 191 "expr.y"
+#line 196 "expr.y"
 {
 		     table.mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 198 "expr.y"
+#line 203 "expr.y"
 { table.mark_all(true); ;
     break;}
 case 4:
-#line 199 "expr.y"
+#line 204 "expr.y"
 { 
 		       yyval.boolean = yyvsp[0].boolean;
 		   ;
     break;}
 case 5:
-#line 203 "expr.y"
+#line 208 "expr.y"
 {
 		       yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		   ;
     break;}
 case 6:
-#line 207 "expr.y"
+#line 212 "expr.y"
 {
 		       btp_func func = get_btp_function(table, yyvsp[-3].id);
 		       if (!func) {
@@ -819,7 +819,7 @@ case 6:
 		   ;
     break;}
 case 7:
-#line 221 "expr.y"
+#line 226 "expr.y"
 { 
 		      BaseType *var = table.var(yyvsp[0].id);
 		      if (var) {
@@ -833,7 +833,7 @@ case 7:
 		  ;
     break;}
 case 8:
-#line 233 "expr.y"
+#line 238 "expr.y"
 { 
 		      BaseType *var = table.var(yyvsp[0].id);
 		      if (var)
@@ -845,13 +845,13 @@ case 8:
 		  ;
     break;}
 case 9:
-#line 243 "expr.y"
+#line 248 "expr.y"
 {
 		      yyval.boolean = yyvsp[0].boolean;
 		  ;
     break;}
 case 10:
-#line 247 "expr.y"
+#line 252 "expr.y"
 { 
 		      BaseType *var = table.var(yyvsp[0].id);
 		      if (var) {
@@ -866,7 +866,7 @@ case 10:
 		  ;
     break;}
 case 11:
-#line 260 "expr.y"
+#line 265 "expr.y"
 { 
 		      BaseType *var = table.var(yyvsp[0].id);
 		      if (var)
@@ -878,19 +878,19 @@ case 11:
 		  ;
     break;}
 case 12:
-#line 270 "expr.y"
+#line 275 "expr.y"
 {
 		      yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		  ;
     break;}
 case 14:
-#line 277 "expr.y"
+#line 282 "expr.y"
 {
 		      yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		  ;
     break;}
 case 15:
-#line 283 "expr.y"
+#line 288 "expr.y"
 {
 		      assert((yyvsp[-4].rval_ptr));
 		      table.append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -898,7 +898,7 @@ case 15:
 		  ;
     break;}
 case 16:
-#line 289 "expr.y"
+#line 294 "expr.y"
 {
 		      assert((yyvsp[-2].rval_ptr));
 
@@ -909,7 +909,7 @@ case 16:
 		  ;
     break;}
 case 17:
-#line 298 "expr.y"
+#line 303 "expr.y"
 {
 		      bool_func b_func = get_function(table, yyvsp[-3].id);
 		      if (!b_func) {
@@ -923,7 +923,7 @@ case 17:
 		  ;
     break;}
 case 20:
-#line 314 "expr.y"
+#line 319 "expr.y"
 {
 		      yyval.rval_ptr = dereference_variable(table, yyvsp[0].rval_ptr);
 		      if (!yyval.rval_ptr)
@@ -932,7 +932,7 @@ case 20:
 		  ;
     break;}
 case 21:
-#line 321 "expr.y"
+#line 326 "expr.y"
 {
 		      yyval.rval_ptr = dereference_url(table, yyvsp[0].val);
 		      if (!yyval.rval_ptr)
@@ -940,7 +940,7 @@ case 21:
 		  ;
     break;}
 case 22:
-#line 327 "expr.y"
+#line 332 "expr.y"
 {
 		      btp_func bt_func = get_btp_function(table, yyvsp[-3].id);
 		      if (!bt_func) {
@@ -951,19 +951,19 @@ case 22:
 		  ;
     break;}
 case 23:
-#line 338 "expr.y"
+#line 343 "expr.y"
 {
 		    yyval.r_val_l_ptr = make_rvalue_list(table, yyvsp[0].rval_ptr);
 		;
     break;}
 case 24:
-#line 342 "expr.y"
+#line 347 "expr.y"
 {
 		    yyval.r_val_l_ptr = append_rvalue_list(table, yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
 		;
     break;}
 case 25:
-#line 348 "expr.y"
+#line 353 "expr.y"
 { 
 		      BaseType *btp = table.var(yyvsp[0].id);
 		      if (!btp)
@@ -972,7 +972,7 @@ case 25:
 		  ;
     break;}
 case 26:
-#line 355 "expr.y"
+#line 360 "expr.y"
 { 
 		      BaseType *btp = table.var(yyvsp[0].id);
 		      if (!btp)
@@ -981,28 +981,28 @@ case 26:
 		  ;
     break;}
 case 27:
-#line 364 "expr.y"
-{
-		      BaseType *btp = make_variable(table, yyvsp[0].val);
-		      yyval.rval_ptr = new rvalue(btp);
-		  ;
-    break;}
-case 28:
 #line 369 "expr.y"
 {
 		      BaseType *btp = make_variable(table, yyvsp[0].val);
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
-case 29:
+case 28:
 #line 374 "expr.y"
+{
+		      BaseType *btp = make_variable(table, yyvsp[0].val);
+		      yyval.rval_ptr = new rvalue(btp);
+		  ;
+    break;}
+case 29:
+#line 379 "expr.y"
 { 
 		      BaseType *btp = make_variable(table, yyvsp[0].val); 
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 30:
-#line 382 "expr.y"
+#line 387 "expr.y"
 {
 		      BaseType *var = table.var(yyvsp[-1].id);
 		      if (var && is_array_t(var)) {
@@ -1020,7 +1020,7 @@ case 30:
 		  ;
     break;}
 case 31:
-#line 398 "expr.y"
+#line 403 "expr.y"
 {
 		      BaseType *var = table.var(yyvsp[-1].id);
 		      if (var && is_array_t(var)) {
@@ -1038,19 +1038,19 @@ case 31:
 		  ;
     break;}
 case 32:
-#line 416 "expr.y"
+#line 421 "expr.y"
 {
 		      yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		  ;
     break;}
 case 33:
-#line 420 "expr.y"
+#line 425 "expr.y"
 {
 		      yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		  ;
     break;}
 case 34:
-#line 426 "expr.y"
+#line 431 "expr.y"
 {
 		      value val;
 		      val.type = dods_int32_c;
@@ -1059,7 +1059,7 @@ case 34:
 		  ;
     break;}
 case 35:
-#line 433 "expr.y"
+#line 438 "expr.y"
 {
 		      yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		  ;
@@ -1262,7 +1262,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 447 "expr.y"
+#line 452 "expr.y"
 
 
 int 
