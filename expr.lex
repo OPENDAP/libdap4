@@ -28,6 +28,9 @@
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.17  1998/10/21 16:45:50  jimg
+ * Now includes RValue.h. Needed because expr.tab.h needs it.
+ *
  * Revision 1.16  1998/03/26 00:26:23  jimg
  * Added % to the set of characters that can start and ID
  *
@@ -91,7 +94,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.16 1998/03/26 00:26:23 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.17 1998/10/21 16:45:50 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -104,6 +107,7 @@ static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.16 1998/03/26 00:26:23 jimg
 #include "Error.h"
 #include "parser.h"
 #include "expr.h"
+#include "RValue.h"
 #include "expr.tab.h"
 
 void store_int32();
