@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.128 2003/01/10 19:46:40 jimg Exp $
+# $Id: Makefile.in,v 1.129 2003/01/11 00:04:28 jimg Exp $
 
 @SET_MAKE@
 
@@ -79,7 +79,6 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
-DOCXX = doc++
 
 UTILSRCS = cgi_util.cc escaping.cc DODSFilter.cc
 UTILOBJS = cgi_util.o escaping.o DODSFilter.o
@@ -108,9 +107,6 @@ EXPROBJS = Clause.o RValue.o $(EXPR_GRAM_OBJS)
 ERRORHDRS = Error.h InternalErr.h ResponseTooBigErr.h
 ERROROBJS = Error.o InternalErr.o ResponseTooBigErr.o $(ERROR_GRAM_OBJS)
 ERRORSRCS = Error.cc InternalErr.cc ResponseTooBigErr.cc
-
-# GUISRCS = Gui.cc dods_gui.c
-# GUIOBJS = Gui.o Error-gui.o Connect-gui.o dods_gui.o
 
 CLIENTSRCS = Connections.cc  RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc
 CLIENTOBJS = Connections.o RCReader.o Connect.o HTTPConnect.o HTTPCache.o
@@ -164,25 +160,10 @@ ALLSRCS = $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) $(TESTSRCS) \
 
 all: grammars $(PROG)
 
-# Removed $(NONGUIOBJS) from the dependencies below. 
 libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) \
 	    $(EXPROBJS) $(UTILOBJS) $(CLIENTOBJS)
 	    $(AR) cru $@ $?
 	    $(RANLIB) $@
-
-# libdap++-gui.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) \
-# 	    $(EXPROBJS) $(UTILOBJS) $(GUIOBJS) $(CLIENTOBJS)
-# 	    $(AR) cru $@ $?
-# 	    $(RANLIB) $@
-
-# To provide a way for servers to be built without the X11/tk stuff used by
-# the progress indicator, build both GUI and non-GUI vesions of these files.
-# Then assemble GUI and non-GUI versions of libdap++. 3/17/2000 jhrg
-
-# Error-gui.o: Error.cc
-# 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -DGUI -o $@ $<
-# Connect-gui.o: Connect.cc
-# 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -DGUI -o $@ $<
 
 deflate: deflate.o
 	$(CC) $(LDFLAGS) -o deflate deflate.o -lz
@@ -192,43 +173,23 @@ deflate: deflate.o
 
 geturl: libdap++.a geturl.o
 	$(CXX) $(LDFLAGS) -o geturl geturl.o -ldap++ $(LIBS) 
-# $(XTRALIBS)
-
-# geturl: libdap++-gui.a $(TESTOBJS) geturl.o
-# 	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) libdap++-gui.a \
-# 		$(LIBS) $(GUILIBS) $(XTRALIBS)
-
-# Text only copy of geturl. For testing non-gui behavior.
-# tgeturl: libdap++.a $(TESTOBJS) geturl.o
-# 	$(CXX) $(LDFLAGS) -o tgeturl geturl.o $(TESTOBJS) \
-# 		libdap++.a $(LIBS) $(XTRALIBS)
 
 # The program named usage is the filter that is run by the CGI dispatch
 # script as the `usage server'. This filter is the same for all different
 # server types so it does not need to be specialized for each API.
 
-usage: libdap++.a $(TESTOBJS) usage.o
-	$(CXX) $(LDFLAGS) -o usage usage.o $(TESTOBJS) libdap++.a $(LIBS)
+usage: libdap++.a usage.o
+	$(CXX) $(LDFLAGS) -o usage usage.o libdap++.a $(LIBS)
 
 # Build the test drivers
 
-test-drivers: das-test dds-test expr-test error-test www-test
-
-das-test: libdap++.a $(TESTOBJS) das-test.o das.tab.h
+das-test: libdap++.a das-test.o das.tab.h
 	$(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o libdap++.a \
 		$(LIBS)
 
-pure-das-test: libdap++.a $(TESTOBJS) das-test.o das.tab.h
-	$(PURIFY) $(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o \
-		libdap++.a $(LIBS)
-
-dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
+dds-test: libdap++.a dds-test.o dds.tab.h
 	$(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o libdap++.a \
 		$(LIBS)
-
-pure-dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
-	$(PURIFY) $(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o \
-		libdap++.a $(LIBS)
 
 gse-test: libdap++.a $(TESTOBJS) lex.gse.o gse-test.o \
 	gse.tab.o
@@ -239,13 +200,9 @@ expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o lex.expr.o \
 	       libdap++.a $(LIBS)
 
-pure-expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
-	$(PURIFY) $(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o \
-	       libdap++.a $(LIBS)
-
-error-test: error-test.o Error.tab.h $(ERROROBJS) $(TESTOBJS)
+error-test: error-test.o Error.tab.h $(ERROROBJS) 
 	$(CXX) $(LDFLAGS) -o error-test error-test.o $(ERROROBJS) \
-		$(TESTOBJS) libdap++.a $(LIBS)
+		libdap++.a $(LIBS)
 
 # The grammar targets.
 
@@ -331,20 +288,7 @@ Error.tab.c Error.tab.h: Error.y
 Error.tab.o: Error.tab.c	# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c Error.tab.c -o Error.tab.o
 
-# Build the C file from the tcl file. This uses mktclapp which you can get
-# from http://www.hwaci.com/drh/ (or contact drh@acm.org). Note that the .mta
-# file was built using xmktclapp by including the dods_gui.tcl and Gui.cc
-# files, and setting the mode standalone. Once done the mta file should not
-# need to be rebuilt unless the tcl/tk version changes (this file was built
-# for tcl/tk 8.1). 12/30/99 jhrg
-
-# dods_gui.c: dods_gui.tcl dods_gui.mta
-# 	mktclapp -f dods_gui.mta > dods_gui.c
-# 	mktclapp -f dods_gui.mta -header > dods_gui.h
-# 	awk -f munge_dods_gui.awk dods_gui.c > tmp
-# 	mv tmp dods_gui.c
-
-# Standard targets with some customization for das-test and dds-test
+# Standard targets
 
 install: all install-headers install-geturl install-usage install-deflate
 	-mkdir -p $(libdir)
@@ -417,12 +361,7 @@ expr-check: expr-test
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool expr-test --srcdir expr-testsuite
 
-# This tests the servers assuming that DODS has been installed on dcz, dods
-# and rhody. It also assumes that the cgi bin directory `test' points to the
-# place where the new servers are installed. On all of these machines there
-# is a symbolic link `DODS-test' that should be linked to the top-level
-# directory of the version to test *and* each machine's httpd.conf should
-# list as a ScriptAlias .../DODS-test/etc. jhrg 12/30/97.
+# This tests the servers
 
 server-check: geturl
 	-rootme=`pwd` && export rootme && \
