@@ -1,0 +1,99 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+#ifndef _DODS_CONFIG_H_
+#define _DODS_CONFIG_H_
+
+/* Matching #endif in config.h.bot */
+
+/* Define if using alloca.c.  */
+#undef C_ALLOCA
+
+/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
+   This function is required for alloca.c support on those systems.  */
+#undef CRAY_STACKSEG_END
+
+/* Define if you have alloca.h and it should be used (not Ultrix).  */
+#undef HAVE_ALLOCA_H
+
+/* If using the C implementation of alloca, define if you know the
+   direction of stack growth for your system; otherwise it will be
+   automatically deduced at run-time.
+	STACK_DIRECTION > 0 => grows toward higher addresses
+	STACK_DIRECTION < 0 => grows toward lower addresses
+	STACK_DIRECTION = 0 => direction of growth unknown
+ */
+#undef STACK_DIRECTION
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* If defined, enable memory leak detection through libdbnew.a. Make sure to */
+/* link with that library. */
+#undef TRACE_NEW
+
+/* If defined, the DBG() macro defined in debug.h is activated. This macro */
+/* is used for nominal program instrumentation */
+#undef DEBUG
+
+/* If defined, the DBG2() macro defined in debug.h is activated. This macro */
+/* is used for detailed program instrumentation. Anything that prints half a */
+/* page or more of stuff every time it is executed should be inside DBG2(), */
+/* not DBG(). */
+#undef DEBUG2
+
+/* The number of bytes in a char.  */
+#undef SIZEOF_CHAR
+
+/* The number of bytes in a double.  */
+#undef SIZEOF_DOUBLE
+
+/* The number of bytes in a float.  */
+#undef SIZEOF_FLOAT
+
+/* The number of bytes in a int.  */
+#undef SIZEOF_INT
+
+/* The number of bytes in a long.  */
+#undef SIZEOF_LONG
+
+/* Define if you have the fl library (-lfl).  */
+#undef HAVE_LIBFL
+
+/*
+  Determine at compile-time the sizes of various datatypes. This uses symbols
+  defined by configure (See configure.in).
+  jhrg 10/24/94
+*/
+
+/* $Log: config_dap.h.in,v $
+/* Revision 1.1  1994/10/26 18:03:13  jimg
+/* Added
+/* */
+
+#ifndef __DODS_DATATYPES__
+#define __DODS_DATATYPES__
+
+#if SIZEOF_LONG == 4
+typedef long int32;
+#elif SIZEOF_INT == 4
+typedef int int32;
+#else
+#error "How do I get a 32 bit integer on this machine?"
+#endif
+
+#if SIZEOF_CHAR == 1
+typedef unsigned char byte;
+#else
+#error "How do I get an 8 bit unsigned integer on this machine?"
+#endif
+
+#if SIZEOF_DOUBLE == 8
+typedef double float64;
+#elif SIZEOF_FLOAT == 8		/* yea, I never heard of this either... */
+typedef float float64;		
+#else
+#error "How do I get a 64 bit floating point type on this machine?"
+#endif
+
+#endif /* __DODS_DATATYPES__ */
+
+#endif /* _DODS_CONFIG_H_ *defined* in config.h.top */
