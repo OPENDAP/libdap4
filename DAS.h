@@ -5,11 +5,16 @@
 //
 // jhrg 7/25/94
 
-// $Log: DAS.h,v $
-// Revision 1.1  1994/08/02 18:39:00  jimg
-// This Class is a container that maps Strings onto AttrTable pointers.
-// It inherits from VarVHMap.
-//
+/* $Log: DAS.h,v $
+/* Revision 1.2  1994/08/02 19:17:41  jimg
+/* Fixed `$Log$' comments and rcsid[] variables (syntax errors due to //
+/* comments caused compilation failures.
+/* das.tab.c and .h are commited now as well.
+/*
+ * Revision 1.1  1994/08/02  18:39:00  jimg
+ * This Class is a container that maps Strings onto AttrTable pointers.
+ * It inherits from VarVHMap.
+ */
 
 #ifndef _DAS_h
 #define _DAS_h 1
