@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.70 1998/02/11 22:08:20 jimg Exp $
+# $Id: Makefile.in,v 1.71 1998/03/03 17:51:43 jimg Exp $
 
 @SET_MAKE@
 
@@ -334,7 +334,7 @@ server-check: geturl
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
-	-for d in Plex Vec Stack Map; do cd $$d; rm *.o *~; cd ..; done
+	-for d in Plex Vec Stack Map; do cd $$d && rm *.o *~; cd ..; done
 	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
 	       cgi-util-test
 
