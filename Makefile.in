@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.55 1996/11/27 22:13:54 jimg Exp $
+# $Id: Makefile.in,v 1.56 1996/12/12 23:42:51 jimg Exp $
 
 @SET_MAKE@
 
@@ -14,7 +14,7 @@
 # a url. In addition it can read and process DAS and DDS objects, displaying
 # the print representation on the screen.
 
-PROG= libdap++.a geturl
+PROG = libdap++.a geturl usage
 DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
@@ -147,6 +147,13 @@ libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
 geturl: libdap++.a $(TESTOBJS) geturl.o
 	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) $(LIBS)
 
+# The program named usage is the filter that is run by the CGI dispatch
+# script as the `usage server'. This filter is the same for all different
+# server types so it does not need to be specialized for each API.
+
+usage: libdap++.a $(TESTOBJS) usage.o
+	$(CXX) $(LDFLAGS) -o usage usage.o $(TESTOBJS) $(LIBS)
+
 # Build the test drivers
 
 test-drivers: das-test dds-test expr-test error-test cgi-util-test www-test
@@ -255,7 +262,7 @@ Error.tab.o: Error.tab.c	# build using C++ compiler
 
 # Standard targets with some customization for das-test and dds-test
 
-install: all install-headers install-geturl install-gui
+install: all install-headers install-geturl install-gui install-usage
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
 
@@ -273,6 +280,10 @@ install-geturl:
 
 install-gui:
 	$(INSTALL_PROGRAM) dods_gui.tcl error.tcl progress.tcl $(etcdir)
+
+install-usage:
+	$(INSTALL_PROGRAM) usage $(etcdir)
+	$(STRIP) $(etcdir)/usage
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
