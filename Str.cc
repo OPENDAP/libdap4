@@ -4,7 +4,20 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.8  1995/01/19 20:05:19  jimg
+// Revision 1.9  1995/02/10 02:22:49  jimg
+// Added DBMALLOC includes and switch to code which uses malloc/free.
+// Private and protected symbols now start with `_'.
+// Added new accessors for name and type fields of BaseType; the old ones
+// will be removed in a future release.
+// Added the store_val() mfunc. It stores the given value in the object's
+// internal buffer.
+// Made both List and Str handle their values via pointers to memory.
+// Fixed read_val().
+// Made serialize/deserialize handle all malloc/free calls (even in those
+// cases where xdr initiates the allocation).
+// Fixed print_val().
+//
+// Revision 1.8  1995/01/19  20:05:19  jimg
 // ptr_duplicate() mfunc is now abstract virtual.
 // Array, ... Grid duplicate mfuncs were modified to take pointers, not
 // referenves.
@@ -51,12 +64,19 @@
 #pragma implementation
 #endif
 
+#include <assert.h>
+#include <string.h>
+#ifdef DBMALLOC
+#include <stdlib.h>
+#include <dbmalloc.h>
+#endif
+
 #include "Str.h"
 #include "util.h"
 
 Str::Str(const String &n) : BaseType(n, "String", (xdrproc_t)xdr_str)
 {
-    buf = 0;			// read() frees if buf != 0
+    _buf = 0;			// read() frees if buf != 0
 }
 
 // Return: the number of bytes needed to store the string's value or 0 if no
@@ -65,11 +85,13 @@ Str::Str(const String &n) : BaseType(n, "String", (xdrproc_t)xdr_str)
 unsigned int
 Str::len()
 {
-    return buf ? strlen(buf): 0;
+    return _buf ? strlen(_buf): 0;
 }
 
-// Return: The number of bytes needed to store a string (which is represented
-// as a pointer to a char).
+// Return: The number of bytes needed to store a Str (which is represented
+// as a pointer to a char). This is the number of bytes which must be
+// allocated to hold the value of _BUF. The mfunc len() contains the number
+// of bytes needed to store the string pointed to by _BUF.
 
 unsigned int
 Str::size()
@@ -77,10 +99,14 @@ Str::size()
     return sizeof(char *);
 }
 
+// serialize and deserialize manage memory using malloc and free since, in
+// some cases, they must let the xdr library (bundled with the CPU) do the
+// allocation and that library will always use malloc/free.
+
 bool
-Str::serialize(bool flush, unsigned int num)
+Str::serialize(bool flush)
 {
-    bool stat = (bool)xdr_str(_xdrout, &buf);
+    bool stat = (bool)xdr_str(_xdrout, &_buf);
     if (stat && flush)
 	stat = expunge();
 
@@ -90,18 +116,74 @@ Str::serialize(bool flush, unsigned int num)
 // deserialize the double on stdin and put the result in BUF.
 
 unsigned int
-Str::deserialize()
+Str::deserialize(bool reuse)
 {
-    unsigned int num = xdr_str(_xdrin, &buf);
+    if (_buf && !reuse) {
+	free(_buf);
+	_buf = 0;
+    }
+
+    unsigned int num = xdr_str(_xdrin, &_buf);
 
     return num;
 }
 
-// Print BUF to stdout with its declaration. Intended mostly for debugging.
+// Copy information in the object's internal buffers into the memory pointed
+// to by VAL. If *VAL is null, then allocate memory for the value (a string
+// in this case). 
+//
+// NB: return the size of the thing val points to (sizeof val), not the
+// length of the string. Thus if there is an array of of strings (char *)s,
+// then the return value of this mfunc can be used to advance to the next
+// char * in that array.
+
+unsigned int
+Str::read_val(void **val)
+{
+    assert(_buf && val);
+
+    if (!*val) 
+	*val = new char[strlen((char *)_buf) + 1];
+
+    strcpy(*(char **)val, (char *)_buf);
+
+    return size();		// the same as sizeof (char *)
+}
+
+// Copy data in VAL to _BUF.
+//
+// Returns the number of bytes needed for _BUF (which is a pointer in this
+// case). 
+
+unsigned int
+Str::store_val(void *val, bool reuse)
+{
+    assert(val);
+
+    if (_buf && !reuse) {
+	free(_buf);
+	_buf = 0;
+    }
+
+    if (!_buf) {
+	_buf = strdup((char *)val); // allocate new memory
+    }
+    else {
+	unsigned int len = strlen(_buf); // _buf might be bigger...
+	strncpy(_buf, (char *)val, len);
+	*(_buf + len) = '\0';	// strlen won't supply a \0 above
+    }
+
+    return size();
+}
 
 void 
-Str::print_val(ostream &os, String space)
+Str::print_val(ostream &os, String space, bool print_decl_p)
 {
-    print_decl(os, "", false);
-    os << " = " << buf << ";" << endl;
+    if (print_decl_p) {
+	print_decl(os, space, false);
+	os << " = " << _buf << ";" << endl;
+    }
+    else 
+	os << _buf;
 }

@@ -4,7 +4,20 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.7  1995/01/19 20:05:26  jimg
+// Revision 1.8  1995/02/10 02:23:02  jimg
+// Added DBMALLOC includes and switch to code which uses malloc/free.
+// Private and protected symbols now start with `_'.
+// Added new accessors for name and type fields of BaseType; the old ones
+// will be removed in a future release.
+// Added the store_val() mfunc. It stores the given value in the object's
+// internal buffer.
+// Made both List and Str handle their values via pointers to memory.
+// Fixed read_val().
+// Made serialize/deserialize handle all malloc/free calls (even in those
+// cases where xdr initiates the allocation).
+// Fixed print_val().
+//
+// Revision 1.7  1995/01/19  20:05:26  jimg
 // ptr_duplicate() mfunc is now abstract virtual.
 // Array, ... Grid duplicate mfuncs were modified to take pointers, not
 // referenves.
@@ -40,16 +53,16 @@
 #pragma implementation
 #endif
 
+#include <assert.h>
+
 #include "debug.h"
 #include "Sequence.h"
 #include "util.h"
 
-// private
-
 void
-Sequence::duplicate(const Sequence &s)
+Sequence::_duplicate(const Sequence &s)
 {
-    set_var_name(s.get_var_name());
+    set_name(s.name());
 
     Sequence &cs = (Sequence)s; // cast away const
     
@@ -57,28 +70,24 @@ Sequence::duplicate(const Sequence &s)
 	add_var(cs.var(p)->ptr_duplicate());
 }
 
-// public
-
 // This ctor is silly -- in order to add fields to a Structure or Sequence,
 // you must use add_var (a mfunc of Structure).
 
 Sequence::Sequence(const String &n) 
     : BaseType( n, "Sequence", (xdrproc_t)NULL) 
 {
-    set_var_name(n);
+    set_name(n);
 }
 
 Sequence::Sequence(const Sequence &rhs)
 {
-    duplicate(rhs);
+    _duplicate(rhs);
 }
-
-// NB: since Sequence is a child of Structure, Structure's dtor will be
-// called and will delete the pointers in Structure's mvar `var'.
 
 Sequence::~Sequence()
 {
-    DBG(cerr << "Entering Sequence dtor" << endl);
+    for (Pix p = _vars.first(); p; _vars.next(p))
+	delete _vars(p);
 }
 
 const Sequence &
@@ -87,7 +96,7 @@ Sequence::operator=(const Sequence &rhs)
     if (this == &rhs)
 	return *this;
 
-    duplicate(rhs);
+    _duplicate(rhs);
 
     return *this;
 }
@@ -97,15 +106,15 @@ Sequence::operator=(const Sequence &rhs)
 void 
 Sequence::add_var(BaseType *bt, Part p)
 {
-    vars.append(bt);
+    _vars.append(bt);
 }
 
 BaseType *
 Sequence::var(const String &name)
 {
-    for (Pix p = vars.first(); p; vars.next(p))
-	if (vars(p)->get_var_name() == name)
-	    return vars(p);
+    for (Pix p = _vars.first(); p; _vars.next(p))
+	if (_vars(p)->name() == name)
+	    return _vars(p);
 
     return 0;
 }
@@ -113,21 +122,21 @@ Sequence::var(const String &name)
 Pix
 Sequence::first_var()
 {
-    return vars.first();
+    return _vars.first();
 }
 
 void
 Sequence::next_var(Pix &p)
 {
-    if (!vars.empty() && p)
-	vars.next(p);
+    if (!_vars.empty() && p)
+	_vars.next(p);
 }
 
 BaseType *
 Sequence::var(Pix p)
 {
-    if (!vars.empty() && p)
-	return vars(p);
+    if (!_vars.empty() && p)
+	return _vars(p);
     else 
 	return NULL;
 }
@@ -136,6 +145,7 @@ unsigned int
 Sequence::size()
 {
     unsigned int sz = 0;
+
     for( Pix p = first_var(); p; next_var(p))
 	sz += var(p)->size();
 
@@ -143,7 +153,7 @@ Sequence::size()
 }
 
 bool
-Sequence::serialize(bool flush, unsigned int num)
+Sequence::serialize(bool flush)
 {
     bool status;
 
@@ -158,39 +168,73 @@ Sequence::serialize(bool flush, unsigned int num)
 }
 
 unsigned int
-Sequence::deserialize()
+Sequence::deserialize(bool reuse)
 {
     unsigned int num, sz = 0;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	if ( !(num = var(p)->deserialize()) ) break;
-	else sz += num;
+	sz += num = var(p)->deserialize(reuse);
+	if (num == 0) 
+	    return (unsigned int)false;
     }
 
-    return num ? sz : (unsigned int)FALSE;
+    return sz;
 }
 
+unsigned int
+Sequence::store_val(void *val, bool reuse)
+{
+    assert(val);
+    
+    unsigned int pos = 0;
+    for (Pix p = first_var(); p; next_var(p))
+	pos += var(p)->store_val(val + pos, reuse);
+
+    return pos;
+}
+
+unsigned int
+Sequence::read_val(void **val)
+{
+    assert(val);
+
+    if (!*val)
+	*val = new char[size()];
+    
+    unsigned int pos = 0;
+    for (Pix p = first_var(); p; next_var(p))
+	pos += var(p)->read_val((void **)*val + pos);
+
+    return pos;
+}
 
 void
 Sequence::print_decl(ostream &os, String space, bool print_semi)
 {
-    os << space << get_var_type() << " {" << endl;
-    for (Pix p = vars.first(); p; vars.next(p))
-	vars(p)->print_decl(os, space + "    ");
-    os << space << "} " << get_var_name();
+    os << space << type() << " {" << endl;
+    for (Pix p = _vars.first(); p; _vars.next(p))
+	_vars(p)->print_decl(os, space + "    ");
+    os << space << "} " << name();
     if (print_semi)
 	os << ";" << endl;
 }
 
-// To seamantically OK, a structure's members must have unique names.
-//
-// Returns: true if the structure is OK, false if not.
-
 void 
-Sequence::print_val(ostream &os, String space)
+Sequence::print_val(ostream &os, String space, bool print_decl_p)
 {
-    print_decl(os, "", false);
-    //os << " = " << _buf << ";" << endl;
+    if (print_decl_p) {
+	print_decl(os, space, false);
+	os << " = ";
+    }
+
+    os << "{ ";
+    for (Pix p = _vars.first(); p; _vars.next(p), p && os << ", ") {
+	_vars(p)->print_val(os, "", false);
+    }
+    os << " }";
+
+    if (print_decl_p)
+	os << ";";
 }
 
 bool
@@ -199,13 +243,12 @@ Sequence::check_semantics(bool all)
     if (!BaseType::check_semantics())
 	return false;
 
-    if (!unique(vars, (const char *)get_var_name(),
-		(const char *)get_var_type()))
+    if (!unique(_vars, (const char *)name(), (const char *)type()))
 	return false;
 
     if (all) 
-	for (Pix p = vars.first(); p; vars.next(p))
-	    if (!vars(p)->check_semantics(true))
+	for (Pix p = _vars.first(); p; _vars.next(p))
+	    if (!_vars(p)->check_semantics(true))
 		return false;
 
     return true;

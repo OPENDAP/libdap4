@@ -4,7 +4,20 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.8  1995/01/19 20:05:17  jimg
+// Revision 1.9  1995/02/10 02:22:45  jimg
+// Added DBMALLOC includes and switch to code which uses malloc/free.
+// Private and protected symbols now start with `_'.
+// Added new accessors for name and type fields of BaseType; the old ones
+// will be removed in a future release.
+// Added the store_val() mfunc. It stores the given value in the object's
+// internal buffer.
+// Made both List and Str handle their values via pointers to memory.
+// Fixed read_val().
+// Made serialize/deserialize handle all malloc/free calls (even in those
+// cases where xdr initiates the allocation).
+// Fixed print_val().
+//
+// Revision 1.8  1995/01/19  20:05:17  jimg
 // ptr_duplicate() mfunc is now abstract virtual.
 // Array, ... Grid duplicate mfuncs were modified to take pointers, not
 // referenves.
@@ -48,6 +61,8 @@
 #pragma implementation
 #endif
 
+#include <assert.h>
+
 #include "Int32.h"
 #include "config.h"
 
@@ -58,34 +73,59 @@ Int32::Int32(const String &n) : BaseType(n, "Int32", XDR_INT32)
 unsigned int
 Int32::size()
 {
-    return sizeof(buf);
+    return sizeof(int32);
 }
 
 bool
-Int32::serialize(bool flush, unsigned int num)
+Int32::serialize(bool flush)
 {
-    bool stat = (bool)xdr_long(_xdrout, &buf);
+    bool stat = (bool)xdr_long(_xdrout, &_buf);
     if (stat && flush)
 	stat = expunge();
 
     return stat;
 }
 
-// deserialize the double on stdin and put the result in BUF.
-
 unsigned int
-Int32::deserialize()
+Int32::deserialize(bool reuse)
 {
-    unsigned int num = xdr_long(_xdrin, &buf);
+    unsigned int num = xdr_long(_xdrin, &_buf);
 
     return num;
+}
+
+unsigned int
+Int32::store_val(void *val, bool reuse)
+{
+    assert(val);
+
+    _buf = *(int32 *)val;
+
+    return size();
+}
+
+unsigned int
+Int32::read_val(void **val)
+{
+    assert(_buf && val);
+
+    if (!*val)
+	*val = new int32;
+
+    *(int32 *)val =_buf;
+
+    return size();
 }
 
 // Print BUF to stdout with its declaration. Intended mostly for debugging.
 
 void 
-Int32::print_val(ostream &os, String space)
+Int32::print_val(ostream &os, String space, bool print_decl_p)
 {
-    print_decl(os, "", false);
-    os << " = " << buf << ";" << endl;
+    if (print_decl_p) {
+	print_decl(os, space, false);
+	os << " = " << _buf << ";" << endl;
+    }
+    else 
+	os << _buf;
 }

@@ -4,7 +4,20 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.6  1995/01/19 20:05:27  jimg
+// Revision 1.7  1995/02/10 02:23:07  jimg
+// Added DBMALLOC includes and switch to code which uses malloc/free.
+// Private and protected symbols now start with `_'.
+// Added new accessors for name and type fields of BaseType; the old ones
+// will be removed in a future release.
+// Added the store_val() mfunc. It stores the given value in the object's
+// internal buffer.
+// Made both List and Str handle their values via pointers to memory.
+// Fixed read_val().
+// Made serialize/deserialize handle all malloc/free calls (even in those
+// cases where xdr initiates the allocation).
+// Fixed print_val().
+//
+// Revision 1.6  1995/01/19  20:05:27  jimg
 // ptr_duplicate() mfunc is now abstract virtual.
 // Array, ... Grid duplicate mfuncs were modified to take pointers, not
 // referenves.
@@ -31,45 +44,43 @@
 // Added sanity checking on the variable list (is it empty?).
 //
 
+#include <assert.h>
+
 #include "Grid.h"
 #include "Array.h"		// for downcasts
 #include "util.h"
 #include "errmsg.h"
 
-// private
-
 void
-Grid::duplicate(const Grid &s)
+Grid::_duplicate(const Grid &s)
 {
-    set_var_name(s.get_var_name());
+    set_name(s.name());
     
-    array_var_ = s.array_var_->ptr_duplicate();
+    _array_var = s._array_var->ptr_duplicate();
 
     Grid &cs = (Grid)s;		// cast away const;
 
-    for (Pix p = cs.map_vars.first(); p; cs.map_vars.next(p))
-	map_vars.append(cs.map_vars(p)->ptr_duplicate());
+    for (Pix p = cs._map_vars.first(); p; cs._map_vars.next(p))
+	_map_vars.append(cs._map_vars(p)->ptr_duplicate());
 }
-
-// public
 
 Grid::Grid(const String &n)
      : BaseType( n, "Grid", (xdrproc_t)NULL)
 {
-    set_var_name(n);
+    set_name(n);
 }
 
 Grid::Grid(const Grid &rhs)
 {
-    duplicate(rhs);
+    _duplicate(rhs);
 }
 
 Grid::~Grid()
 {
-    delete array_var_;
+    delete _array_var;
 
-    for (Pix p = map_vars.first(); p; map_vars.next(p))
-	delete map_vars(p);
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	delete _map_vars(p);
 }
 
 const Grid &
@@ -78,7 +89,7 @@ Grid::operator=(const Grid &rhs)
     if (this == &rhs)
 	return *this;
 
-    duplicate(rhs);
+    _duplicate(rhs);
 
     return *this;
 }
@@ -86,24 +97,24 @@ Grid::operator=(const Grid &rhs)
 unsigned int
 Grid::size()
 {
-    unsigned int sz = array_var_->size();
+    unsigned int sz = _array_var->size();
   
-    for (Pix p = map_vars.first(); p; map_vars.next(p)) 
-	sz += map_vars(p)->size();
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p)) 
+	sz += _map_vars(p)->size();
   
     return sz;
 }
 
 bool
-Grid::serialize(bool flush, unsigned int num)
+Grid::serialize(bool flush)
 {
     bool status;
 
-    if (!(status = array_var_->serialize(false,0))) 
-	return (bool)FALSE;
+    if (!(status = _array_var->serialize(false))) 
+	return false;
 
-    for (Pix p = map_vars.first(); p; map_vars.next(p))
-	if  (!(status = map_vars(p)->serialize(false)) ) 
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	if  (!(status = _map_vars(p)->serialize(false)) ) 
 	    break;
 	
     if (status && flush)
@@ -113,33 +124,63 @@ Grid::serialize(bool flush, unsigned int num)
 }
 
 unsigned int
-Grid::deserialize()
+Grid::deserialize(bool reuse)
 {
     unsigned int num, sz = 0;
+    
+    sz += num = _array_var->deserialize(reuse);
+    if (num == 0) 
+	return (unsigned int)false;
 
-    if ((num = array_var_->deserialize()) == 0) 
-	return (unsigned int)FALSE;
-
-    sz += num;
-
-    for( Pix p = map_vars.first(); p; map_vars.next(p)) {
-	if ((num = map_vars(p)->deserialize()) == 0) 
-	    break;
-	sz += num;
+    for(Pix p = _map_vars.first(); p; _map_vars.next(p)) {
+	sz += num = _map_vars(p)->deserialize(reuse);
+	if (num == 0) 
+	    return (unsigned int)false;
     }
 
-    return num ? sz : (unsigned int)FALSE;
+    return sz;
+}
+
+unsigned int
+Grid::store_val(void *val, bool reuse)
+{
+    assert(val);
+
+    unsigned int pos = 0;
+    pos += _array_var->store_val(val, reuse);
+
+    for(Pix p = _map_vars.first(); p; _map_vars.next(p))
+	pos += _map_vars(p)->store_val(val + pos, reuse);
+
+    return pos;
+}
+
+unsigned int
+Grid::read_val(void **val)
+{
+    assert(val);
+
+    if (!*val)
+	*val = new char[size()];
+
+    unsigned int pos = 0;
+    pos += _array_var->read_val((void **)*val);
+
+    for(Pix p = _map_vars.first(); p; _map_vars.next(p))
+	pos += _map_vars(p)->read_val((void **)*val + pos);
+
+    return pos;
 }
 
 BaseType *
 Grid::var(const String &name)
 {
-    if (array_var_->get_var_name() == name)
-	return array_var_;
+    if (_array_var->name() == name)
+	return _array_var;
 
-    for (Pix p = map_vars.first(); p; map_vars.next(p))
-	if (map_vars(p)->get_var_name() == name)
-	    return map_vars(p);
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	if (_map_vars(p)->name() == name)
+	    return _map_vars(p);
 
     return 0;
 }    
@@ -149,10 +190,10 @@ Grid::add_var(BaseType *bt, Part part)
 {
     switch (part) {
       case array:
-	array_var_ = bt;
+	_array_var = bt;
 	return;
       case maps:
-	map_vars.append(bt);
+	_map_vars.append(bt);
 	return;
       default:
 	err_quit("Grid::add_var:Unknown grid part (must be array or maps)");
@@ -163,44 +204,63 @@ Grid::add_var(BaseType *bt, Part part)
 BaseType *
 Grid::array_var()
 {
-    return array_var_;
+    return _array_var;
 }
 
 Pix 
 Grid::first_map_var()
 {
-    return map_vars.first();
+    return _map_vars.first();
 }
 
 void 
 Grid::next_map_var(Pix &p)
 {
-    if (!map_vars.empty() && p)
-	map_vars.next(p);
+    if (!_map_vars.empty() && p)
+	_map_vars.next(p);
 }
 
 BaseType *
 Grid::map_var(Pix p)
 {
-    if (!map_vars.empty() && p)
-	return map_vars(p);
+    if (!_map_vars.empty() && p)
+	return _map_vars(p);
 }
 
 void 
 Grid::print_decl(ostream &os, String space, bool print_semi)
 {
-    os << space << get_var_type() << " {" << endl;
+    os << space << type() << " {" << endl;
 
     os << space << " ARRAY:" << endl;
-    array_var_->print_decl(os, space + "    ");
+    _array_var->print_decl(os, space + "    ");
 
     os << space << " MAPS:" << endl;
-    for (Pix p = map_vars.first(); p; map_vars.next(p))
-	map_vars(p)->print_decl(os, space + "    ");
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	_map_vars(p)->print_decl(os, space + "    ");
 
-    os << space << "} " << get_var_name();
+    os << space << "} " << name();
     if (print_semi)
 	os << ";" << endl;
+}
+
+void 
+Grid::print_val(ostream &os, String space, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(os, space, false);
+	os << " = ";
+    }
+
+    os << "{ ARRAY: ";
+    _array_var->print_val(os, "", false);
+    os << " MAPS: ";
+    for (Pix p = _map_vars.first(); p; _map_vars.next(p), p && os << ", ")
+	_map_vars(p)->print_val(os, "", false);
+    os << " }";
+
+    if (print_decl_p)
+	os << ";";
 }
 
 // Grids have ugly semantics.
@@ -211,50 +271,49 @@ Grid::check_semantics(bool all)
     if (!BaseType::check_semantics())
 	return false;
 
-    if (!unique(map_vars, (const char *)get_var_name(),
-		(const char *)get_var_type()))
+    if (!unique(_map_vars, (const char *)name(), (const char *)type()))
 	return false;
 
-    if (!array_var_) {
-	cerr << "Null grid base array in `" << get_var_name() << "'" << endl;
+    if (!_array_var) {
+	cerr << "Null grid base array in `" << name() << "'" << endl;
 	return false;
     }
 	
     // Is it an array?
-    if (array_var_->get_var_type() != "Array") {
-	cerr << "Grid `" << get_var_name() << "'s' member `"
-	    << array_var_->get_var_name() << "' must be an array" << endl;
+    if (_array_var->type() != "Array") {
+	cerr << "Grid `" << name() << "'s' member `"
+	    << _array_var->name() << "' must be an array" << endl;
 	return false;
     }
 	    
-    Array *av = (Array *)array_var_; // past test above, must be an array
+    Array *av = (Array *)_array_var; // past test above, must be an array
 
     // enough maps?
-    if (map_vars.length() != av->dimensions()) {
+    if (_map_vars.length() != av->dimensions()) {
 	cerr << "The number of map variables for grid `"
-	     << this->get_var_name() 
+	     << this->name() 
 	     << "' does not match the number of dimensions of `"
-	    << av->get_var_name() << "'" << endl;
+	    << av->name() << "'" << endl;
 	return false;
     }
 
-    const String &array_var_name = av->get_var_name();
+    const String &array_var_name = av->name();
     Pix p, ap;
-    for (p = map_vars.first(), ap = av->first_dim();
-	 p; map_vars.next(p), av->next_dim(ap)) {
+    for (p = _map_vars.first(), ap = av->first_dim();
+	 p; _map_vars.next(p), av->next_dim(ap)) {
 
-	BaseType *mv = map_vars(p);
+	BaseType *mv = _map_vars(p);
 
 	// check names
-	if (array_var_name == mv->get_var_name()) {
-	    cerr << "Grid map variable `" << mv->get_var_name()
+	if (array_var_name == mv->name()) {
+	    cerr << "Grid map variable `" << mv->name()
 		<< "' conflicts with the grid array name in grid `"
-		<< get_var_name() << "'" << endl;
+		<< name() << "'" << endl;
 	    return false;
 	}
 	// check types
-	if (mv->get_var_type() != "Array") {
-	    cerr << "Grid map variable  `" << mv->get_var_name()
+	if (mv->type() != "Array") {
+	    cerr << "Grid map variable  `" << mv->name()
 		<< "' is not an array" << endl;
 	    return false;
 	}
@@ -263,34 +322,28 @@ Grid::check_semantics(bool all)
 
 	// check shape
 	if (mv_a->dimensions() != 1) {// maps must have one dimension
-	    cerr << "Grid map variable  `" << mv_a->get_var_name()
+	    cerr << "Grid map variable  `" << mv_a->name()
 		<< "' must be only one dimension" << endl;
 	    return false;
 	}
 	// size of map must match corresponding array dimension
 	if (mv_a->dimension_size(mv_a->first_dim()) != av->dimension_size(ap)) {
-	    cerr << "Grid map variable  `" << mv_a->get_var_name()
+	    cerr << "Grid map variable  `" << mv_a->name()
 		<< "'s' size does not match the size of array variable '"
-		<< array_var_->get_var_name() << "'s' cooresponding dimension"
+		<< _array_var->name() << "'s' cooresponding dimension"
 		<< endl;
 	    return false;
 	}
     }
 
     if (all) {
-	if (!array_var_->check_semantics(true))
+	if (!_array_var->check_semantics(true))
 	    return false;
-	for (Pix p = map_vars.first(); p; map_vars.next(p))
-	    if (!map_vars(p)->check_semantics(true))
+	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	    if (!_map_vars(p)->check_semantics(true))
 		return false;
     }
 
     return true;
 }
 
-void 
-Grid::print_val(ostream &os, String space)
-{
-    print_decl(os, "", false);
-    //os << " = " << buf << ";" << endl;
-}

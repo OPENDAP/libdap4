@@ -4,7 +4,20 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.7  1995/01/19 20:05:18  jimg
+// Revision 1.8  1995/02/10 02:22:47  jimg
+// Added DBMALLOC includes and switch to code which uses malloc/free.
+// Private and protected symbols now start with `_'.
+// Added new accessors for name and type fields of BaseType; the old ones
+// will be removed in a future release.
+// Added the store_val() mfunc. It stores the given value in the object's
+// internal buffer.
+// Made both List and Str handle their values via pointers to memory.
+// Fixed read_val().
+// Made serialize/deserialize handle all malloc/free calls (even in those
+// cases where xdr initiates the allocation).
+// Fixed print_val().
+//
+// Revision 1.7  1995/01/19  20:05:18  jimg
 // ptr_duplicate() mfunc is now abstract virtual.
 // Array, ... Grid duplicate mfuncs were modified to take pointers, not
 // referenves.
@@ -50,6 +63,7 @@
 #pragma implementation
 #endif
 
+#include <assert.h>
 #include <rpc/xdr.h>
 
 #include "Float64.h"
@@ -61,43 +75,57 @@ Float64::Float64(const String &n) : BaseType(n, "Float64", XDR_FLOAT64)
 unsigned int
 Float64::size()
 {
-    return sizeof(buf);
+    return sizeof(double);
 }
 
-// Serialize the contents of member BUF and write the result to stdout. NUM
-// defaults to zero -- it is used by descendents of CtorType. If FLUSH is
-// true, write the contents of the output buffer to the kernel. FLUSH is
-// false by default.
-//
-// NB: See the comment in BaseType re: why we don't use XDR_CODER here
-
 bool
-Float64::serialize(bool flush, unsigned int num)
+Float64::serialize(bool flush)
 {
-    bool stat = (bool)xdr_double(_xdrout, &buf);
-
+    bool stat = (bool)xdr_double(_xdrout, &_buf);
     if (stat && flush)
 	 stat = expunge();
 
     return stat;
 }
 
-// deserialize the double on stdin and put the result in BUF.
-
 unsigned int
-Float64::deserialize()
+Float64::deserialize(bool reuse)
 {
-    unsigned int num = xdr_double(_xdrin, &buf);
+    unsigned int num = xdr_double(_xdrin, &_buf);
 
     return num;
 }
 
-// Print BUF to stdout with its declaration. Intended mostly for debugging.
-
-void 
-Float64::print_val(ostream &os, String space)
+unsigned int
+Float64::store_val(void *val, bool reuse)
 {
-    print_decl(os, "", false);
-    os << " = " << buf << ";" << endl;
+    assert(val);
+
+    _buf = *(double *)val;
+
+    return size();
 }
 
+unsigned int
+Float64::read_val(void **val)
+{
+    assert(_buf && val);
+
+    if (!*val)
+	*val = new double;
+
+    *(double *)val =_buf;
+
+    return size();
+}
+
+void 
+Float64::print_val(ostream &os, String space, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(os, space, false);
+	os << " = " << _buf << ";" << endl;
+    }
+    else 
+	os << _buf;
+}

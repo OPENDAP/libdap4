@@ -4,7 +4,20 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
-// Revision 1.5  1995/01/19 20:05:20  jimg
+// Revision 1.6  1995/02/10 02:22:52  jimg
+// Added DBMALLOC includes and switch to code which uses malloc/free.
+// Private and protected symbols now start with `_'.
+// Added new accessors for name and type fields of BaseType; the old ones
+// will be removed in a future release.
+// Added the store_val() mfunc. It stores the given value in the object's
+// internal buffer.
+// Made both List and Str handle their values via pointers to memory.
+// Fixed read_val().
+// Made serialize/deserialize handle all malloc/free calls (even in those
+// cases where xdr initiates the allocation).
+// Fixed print_val().
+//
+// Revision 1.5  1995/01/19  20:05:20  jimg
 // ptr_duplicate() mfunc is now abstract virtual.
 // Array, ... Grid duplicate mfuncs were modified to take pointers, not
 // referenves.
@@ -31,19 +44,18 @@
 // Fixed many small problems with BaseType.
 // Added CtorType.
 //
-// Revision 1.1  1994/09/09  15:38:45  jimg
-// Child class of BaseType -- used in the future to hold specific serialization
-// information for integers. Should this be a class that uses BaseType?
-//
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
+#include <assert.h>
+#include <string.h>
+
 #include "Url.h"
 #include "util.h"
 
-Url::Url(const String &n) : BaseType(n, "Url", (xdrproc_t)xdr_url)
+Url::Url(const String &n) : BaseType(n, "Url", (xdrproc_t)xdr_str)
 {
     _buf = 0;
 }
@@ -51,34 +63,81 @@ Url::Url(const String &n) : BaseType(n, "Url", (xdrproc_t)xdr_url)
 unsigned int
 Url::size()
 {
-    return sizeof(_buf);
+    return sizeof(char *);
+}
+
+unsigned int
+Url::len()
+{
+    return _buf ? strlen(_buf): 0;
 }
 
 bool
-Url::serialize(bool flush, unsigned int num)
+Url::serialize(bool flush)
 {
-    bool stat = (bool)xdr_url(_xdrout, &_buf);
+    bool stat = (bool)xdr_str(_xdrout, &_buf);
     if (stat && flush)
 	stat = expunge();
 
     return stat;
 }
 
-// deserialize the double on stdin and put the result in BUF.
-
 unsigned int
-Url::deserialize()
+Url::deserialize(bool reuse)
 {
-    unsigned int num = xdr_url(_xdrin, &_buf);
+    if (_buf && !reuse) {
+	free(_buf);
+	_buf = 0;
+    }
+
+    unsigned int num = xdr_str(_xdrin, &_buf);
 
     return num;
 }
 
-// Print BUF to stdout with its declaration. Intended mostly for debugging.
-
-void 
-Url::print_val(ostream &os, String space)
+unsigned int
+Url::store_val(void *val, bool reuse)
 {
-    print_decl(os, "", false);
-    os << " = " << _buf << ";" << endl;
+    assert(val);
+
+    if (_buf && !reuse) {
+	free(_buf);
+	_buf = 0;
+    }
+
+    if (!_buf) {
+	_buf = strdup((char *)val); // allocate new memory
+	return strlen(_buf);
+    }
+    else {
+	unsigned int len = strlen(_buf); // _buf might be bigger...
+	strncpy(_buf, (char *)val, len);
+	*(_buf + len) = '\0';	// strlen won't supply a \0 above
+	return len;
+    }
 }
+
+unsigned int 
+Url::read_val(void **val)
+{
+    assert(_buf && val);
+
+    if (!*val)
+	*val = new char[strlen((char *)_buf) + 1];
+
+    strcpy(*(char **)val, _buf); // I'm not sure about this...
+
+    return size();
+}
+
+void
+Url::print_val(ostream &os, String space, bool print_decl_p)
+{
+    if (print_decl_p) {
+	print_decl(os, space, false);
+	os << " = " << _buf << ";" << endl;
+    }
+    else 
+	os << _buf;
+}
+
