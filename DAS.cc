@@ -5,7 +5,13 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.5  1994/09/27 22:46:29  jimg
+// Revision 1.6  1994/10/05 16:34:12  jimg
+// Fixed bug in the parse function(s): the bison generated parser returns
+// 1 on error, 0 on success, but parse() was not checking for this.
+// Instead it returned the value of bison's parser function.
+// Changed types of `status' in print and parser functions from int to bool.
+//
+// Revision 1.5  1994/09/27  22:46:29  jimg
 // Changed the implementation of the class DAS from one which inherited
 // from DASVHMap to one which contains an instance of DASVHMap.
 // Added mfuncs to set/access the new instance variable.
@@ -31,7 +37,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.5 1994/09/27 22:46:29 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.6 1994/10/05 16:34:12 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -112,9 +118,15 @@ DAS::get_table(const char *name)
 }
 
 AttrTable *
-DAS::set_table(const String &name, AttrTable *at)
+DAS::add_table(const String &name, AttrTable *at)
 {
     return map[name] = at;
+}
+
+AttrTable *
+DAS::add_table(const char *name, AttrTable *at)
+{
+    return add_table((String)name, at);
 }
 
 /*
@@ -132,7 +144,7 @@ DAS::parse(String fname)
 	return false;
     }
 
-    int status = parse(in);
+    bool status = parse(in);
 
     fclose(in);
 
@@ -158,7 +170,7 @@ DAS::parse(int fd)
 	return false;
     }
 
-    int status = parse(in);
+    bool status = parse(in);
 
     fclose(in);
 
@@ -179,7 +191,7 @@ DAS::parse(FILE *in)
 	return false;
     }
 
-    return dasparse(*this);
+    return dasparse(*this) == 0;
 }
 
 /*
@@ -198,7 +210,7 @@ DAS::print(String fname)
 	return false;
     }
 
-    int status = print(out);
+    bool status = print(out);
 
     fclose(out);
     
@@ -223,7 +235,7 @@ DAS::print(int fd)
 	return false;
     }
 
-    int status = print(out);
+    bool status = print(out);
 
     fclose(out);
     
@@ -244,8 +256,8 @@ DAS::print(FILE *out)
     os << "Attributes {" << endl;
 
     for(Pix p = map.first(); p; map.next(p)) {
-	os << "    " << map.key(p) << "{" << endl;
-	// this->contents(p) is an (AttrTable *)
+	os << "    " << map.key(p) << " {" << endl;
+	// map.contents(p) is an (AttrTable *)
 	map.contents(p)->print(os, "        "); 
 	os << "    }" << endl;
     }

@@ -4,7 +4,13 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.3  1994/09/23 14:42:22  jimg
+// Revision 1.4  1994/10/05 16:34:14  jimg
+// Fixed bug in the parse function(s): the bison generated parser returns
+// 1 on error, 0 on success, but parse() was not checking for this.
+// Instead it returned the value of bison's parser function.
+// Changed types of `status' in print and parser functions from int to bool.
+//
+// Revision 1.3  1994/09/23  14:42:22  jimg
 // Added mfunc check_semantics().
 // Replaced print mfunc stub with real code.
 // Fixed some errors in comments.
@@ -20,7 +26,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.3 1994/09/23 14:42:22 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.4 1994/10/05 16:34:14 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -128,7 +134,7 @@ DDS::parse(FILE *in)
 	return false;
     }
 
-    return ddsparse(*this);
+    return ddsparse(*this) == 0;
 }
 
 // Write strucutre from tables to OUT (which defaults to stdout). Return
