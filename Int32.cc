@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.14  1995/07/09 21:29:00  jimg
+// Revision 1.15  1995/08/22 23:57:51  jimg
+// Removed deprecated member functions.
+// Changed read_val/Store_val to buf2val/val2buf.
+//
+// Revision 1.14  1995/07/09  21:29:00  jimg
 // Added copyright notice.
 //
 // Revision 1.13  1995/05/10  15:34:02  jimg
@@ -137,16 +141,19 @@
 #include "trace_new.h"
 #endif
 
-Int32::Int32(const String &n) : BaseType(n, "Int32", XDR_INT32)
+Int32::Int32(const String &n) : BaseType(n, int32_t, XDR_INT32)
 {
 }
 
+#ifdef NEVER
 bool
 Int32::card()
 {
     return true;
 }
+#endif
 
+#ifdef NEVER
 // deprecated
 
 unsigned int
@@ -154,6 +161,7 @@ Int32::size()
 {
     return width();
 }
+#endif
 
 unsigned int
 Int32::width()
@@ -182,15 +190,27 @@ Int32::deserialize(bool reuse)
 unsigned int
 Int32::store_val(void *val, bool reuse)
 {
+    return val2buf(val, reuse);
+}
+
+unsigned int
+Int32::val2buf(void *val, bool reuse)
+{
     assert(val);
 
     _buf = *(int32 *)val;
 
-    return size();
+    return width();
 }
 
 unsigned int
 Int32::read_val(void **val)
+{
+    return buf2val(val);
+}
+
+unsigned int
+Int32::buf2val(void **val)
 {
     assert(_buf && val);
 
@@ -199,7 +219,7 @@ Int32::read_val(void **val)
 
     *(int32 *)*val =_buf;
 
-    return size();
+    return width();
 }
 
 // Print BUF to stdout with its declaration. Intended mostly for debugging.

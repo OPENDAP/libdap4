@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.12  1995/07/09 21:28:53  jimg
+// Revision 1.13  1995/08/22 23:57:48  jimg
+// Removed deprecated member functions.
+// Changed read_val/Store_val to buf2val/val2buf.
+//
+// Revision 1.12  1995/07/09  21:28:53  jimg
 // Added copyright notice.
 //
 // Revision 1.11  1995/06/28  17:10:18  dan
@@ -134,21 +138,23 @@
 #include "trace_new.h"
 #endif
 
-// NB: This ctor sets _xdr_coder to xdr_bytes(). That is the function that
-// should be used to en/decode arrays or lists of bytes. However, for a
-// single byte, we *must* use xdr_char() (which puts a single byte in 4 (yes
-// four) bytes). See serialize() and deserialize().
+// NB: Even though Byte is a cardinal type, xdr_char is *not* used to
+// transport Byte arrays over the network. Instead, Byte is a special case
+// handled in Array.
 
-Byte::Byte(const String &n) : BaseType(n, "Byte", (xdrproc_t)xdr_char)
+Byte::Byte(const String &n) : BaseType(n, byte_t)
 {
 }
 
+#ifdef NEVER
 bool
 Byte::card()
 {
     return true;
 }
+#endif
 
+#ifdef NEVER
 //deprecated
 
 unsigned int
@@ -156,6 +162,7 @@ Byte::size()
 {
     return width();
 }
+#endif
 
 unsigned int
 Byte::width()
@@ -198,15 +205,27 @@ Byte::deserialize(bool reuse)
 unsigned int
 Byte::store_val(void *val, bool reuse)
 {
+    return val2buf(val, reuse);
+}
+
+unsigned int
+Byte::val2buf(void *val, bool reuse)
+{
     assert(val);
 
     _buf = *(byte *)val;
 
-    return size();
+    return width();
 }
 
 unsigned int
 Byte::read_val(void **val)
+{
+    return buf2val(val);
+}
+
+unsigned int
+Byte::buf2val(void **val)
 {
     assert(_buf && val);
 
@@ -215,7 +234,7 @@ Byte::read_val(void **val)
 
     *(byte *)*val = _buf;
 
-    return size();
+    return width();
 }
 
 // Print BUF to stdout with its declaration. Intended mostly for debugging.
@@ -230,4 +249,3 @@ Byte::print_val(ostream &os, String space, bool print_decl_p)
     else 
 	os << (unsigned int)_buf;
 }
-

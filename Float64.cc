@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.13  1995/07/09 21:28:56  jimg
+// Revision 1.14  1995/08/22 23:57:50  jimg
+// Removed deprecated member functions.
+// Changed read_val/Store_val to buf2val/val2buf.
+//
+// Revision 1.13  1995/07/09  21:28:56  jimg
 // Added copyright notice.
 //
 // Revision 1.12  1995/05/10  15:33:57  jimg
@@ -140,21 +144,25 @@
 #include "trace_new.h"
 #endif
 
-Float64::Float64(const String &n) : BaseType(n, "Float64", XDR_FLOAT64)
+Float64::Float64(const String &n) : BaseType(n, float64_t, XDR_FLOAT64)
 {
 }
 
+#ifdef NEVER
 bool
 Float64::card()
 {
     return true;
 }
+#endif
 
+#ifdef NEVER
 unsigned int
 Float64::size()
 {
     return width();
 }
+#endif
 
 unsigned int
 Float64::width()
@@ -183,15 +191,27 @@ Float64::deserialize(bool reuse)
 unsigned int
 Float64::store_val(void *val, bool reuse)
 {
+    return val2buf(val, reuse);
+}
+
+unsigned int
+Float64::val2buf(void *val, bool reuse)
+{
     assert(val);
 
     _buf = *(double *)val;
 
-    return size();
+    return width();
 }
 
 unsigned int
 Float64::read_val(void **val)
+{
+    return buf2val(val);
+}
+
+unsigned int
+Float64::buf2val(void **val)
 {
     assert(_buf && val);
 
@@ -200,7 +220,7 @@ Float64::read_val(void **val)
 
     *(double *)*val =_buf;
 
-    return size();
+    return width();
 }
 
 void 
