@@ -1,11 +1,18 @@
 
 // (c) COPYRIGHT URI/MIT 1996
-// Please first read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
+// This is the source to `geturl'; a simple tool to exercise the Connect
+// class. It can be used to get naked URLs as well as the DODS DAS and DDS
+// objects.  jhrg.
+
 // $Log: getdap.cc,v $
+// Revision 1.4  1996/05/29 22:05:57  jimg
+// Fixed up the copyright header.
+//
 // Revision 1.3  1996/05/28 17:35:40  jimg
 // Fixed verbose arguments.
 //
@@ -18,7 +25,7 @@
 // First version. Built to test the new WWW code in the class Connect.
 //
 
-static char rcsid[]={"$Id: getdap.cc,v 1.3 1996/05/28 17:35:40 jimg Exp $"};
+static char rcsid[]={"$Id: getdap.cc,v 1.4 1996/05/29 22:05:57 jimg Exp $"};
 
 #include <stdio.h>
 
