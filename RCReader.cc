@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <unistd.h>
-
+#include <stdio.h>
 
 #include <fstream>
 
@@ -187,7 +187,10 @@ inline void  RCReader::load_cache_status()
     
 	fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
     }  // End of cache file parsing.
-
+    if (_dods_use_cache) {
+	lockstr = cache_root + string(".lock");
+	remove(lockstr.c_str());
+    }
 }
 
 
