@@ -22,10 +22,13 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.6  1995/02/10 02:57:40  jimg
-/* Switched to sh style comments. C and C++ style comments are no longer
-/* supported.
+/* Revision 1.7  1995/07/08 20:18:25  jimg
+/* Removed declaration of yywrap().
 /*
+# Revision 1.6  1995/02/10  02:57:40  jimg
+# Switched to sh style comments. C and C++ style comments are no longer
+# supported.
+#
 # Revision 1.5  1994/12/21  16:54:50  jimg
 # Repaired damage done to NEVER's definition in previous version.
 #
@@ -46,7 +49,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.6 1995/02/10 02:57:40 jimg Exp $"};
+static char rcsid[]={"$Id: dds.lex,v 1.7 1995/07/08 20:18:25 jimg Exp $"};
 
 #include <string.h>
 
@@ -57,7 +60,9 @@ static char rcsid[]={"$Id: dds.lex,v 1.6 1995/02/10 02:57:40 jimg Exp $"};
 
 int dds_line_num = 1;
 static int start_line;		/* used in comment error handlers */
+#ifdef NEVER
 int yywrap(void);
+#endif
 
 %}
     
