@@ -10,6 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.19  1999/01/21 02:50:08  jimg
+// Added code to test the expr scanner using strings and not files.
+//
 // Revision 1.18  1998/11/10 00:49:19  jimg
 // Fixed up the online help.
 //
@@ -93,7 +96,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.18 1998/11/10 00:49:19 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.19 1999/01/21 02:50:08 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,8 +127,10 @@ static char rcsid[] __unused__ = {"$Id: expr-test.cc,v 1.18 1998/11/10 00:49:19 
 #include "debug.h"
 
 #define DODS_DDS_PRX "dods_dds"
+#define YY_BUFFER_STATE (void *)
 
-void test_scanner();
+void test_scanner(const char *str);
+void test_scanner(bool show_prompt);
 void test_parser(DDS &table, const String &dds_name, const String &constraint);
 bool read_table(DDS &table, const String &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
@@ -138,19 +143,25 @@ int exprlex();			// exprlex() uses the global exprlval
 int exprparse(void *arg);
 int exprrestart(FILE *in);
 
-extern YYSTYPE exprlval;
+// Glue routines declared in expr.lex
+void expr_switch_to_buffer(void *new_buffer);
+void expr_delete_buffer(void * buffer);
+void *expr_string(const char *yy_str);
+
 extern int exprdebug;
+
 static int keep_temps = 0;
 
 const String version = "version 1.12";
 const String prompt = "expr-test: ";
-const String options = "sdetcvp:w:f:k:";
-const String usage = "expr-test [-s -d -c -t -v [-p dds-file] [-e expr]\
+const String options = "sS:detcvp:w:f:k:";
+const String usage = "expr-test [-s [-S string] -d -c -t -v [-p dds-file] [-e expr]\
 [-w dds-file] [-f data-file] [-k expr]]\n\
 Test the expression evaluation software.\n\
 Options:\n\
 	-s: Feed the input stream directly into the expression scanner, does\n\
 	    not parse.\n\
+        -S: <string> Scan the string as if it was standard input.\n\
 	-d: Turn on expression parser debugging.\n\
 	-c: Print the constrained DDS (the one that will be returned\n\
 	    prepended to a data transmission. Must also supply -p and -e \n\
@@ -178,6 +189,7 @@ main(int argc, char *argv[])
     bool scanner_test = false, parser_test = false, evaluate_test = false;
     bool trans_test = false, print_constrained = false;
     bool whole_enchalada = false, constraint_expr = false;
+    bool scan_string = false;
     String dds_file_name;
     String dataset = "";
     String constraint = "";
@@ -192,6 +204,11 @@ main(int argc, char *argv[])
 	    break;
 	  case 's':
 	    scanner_test = true;
+	    break;
+	  case 'S':
+	    scanner_test = true;
+	    scan_string = true;
+	    constraint = getopt.optarg;
 	    break;
 	  case 'p':
 	    parser_test = true;
@@ -236,7 +253,10 @@ main(int argc, char *argv[])
     // run selected tests
 
     if (scanner_test) {
-	test_scanner();
+	if (scan_string)
+	    test_scanner(constraint);
+	else
+	    test_scanner(true);
 	exit(0);
     }
 
@@ -257,13 +277,28 @@ main(int argc, char *argv[])
     }
 }
 
+// Instead of reading the tokens from srdin, read them from a string.
+
+
 void
-test_scanner()
+test_scanner(const char *str)
 {
+    exprrestart(0);
+    void *buffer = expr_string(str);
+    expr_switch_to_buffer(buffer);
+
+    test_scanner(false);
+
+    expr_delete_buffer(buffer);
+}
+
+void
+test_scanner(bool show_prompt)
+{
+    if (show_prompt) 
+	cout << prompt;		// first prompt
+
     int tok;
-
-    cout << prompt;		// first prompt
-
     while ((tok = exprlex())) {
 	switch (tok) {
 	  case ID:
