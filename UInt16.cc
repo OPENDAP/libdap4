@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: UInt16.cc,v $
+// Revision 1.3  1996/10/18 16:49:55  jimg
+// Changed variable types used for comparison operations from 16 to 32 bit
+// integers.
+//
 // Revision 1.2  1996/10/01 16:29:16  jimg
 // Changed instances of XDT_INT16 to XDR_UINT16.
 //
@@ -23,7 +27,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt16.cc,v 1.2 1996/10/01 16:29:16 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt16.cc,v 1.3 1996/10/18 16:49:55 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -119,14 +123,15 @@ UInt16::print_val(ostream &os, String space, bool print_decl_p)
 bool
 UInt16::ops(BaseType &b, int op)
 {
-    dods_uint16 a1, a2;
+    dods_uint32 a1, ua2;	// Use 32 bit numbers internally!
+    dods_int32 a2;
 
     if (!read_p()) {
 	cerr << "This value not yet read!" << endl;
 	return false;
     }
     else {
-	dods_uint16 *a1p = &a1;
+	dods_uint32 *a1p = &a1;
 	buf2val((void **)&a1p);
     }
 
@@ -136,11 +141,15 @@ UInt16::ops(BaseType &b, int op)
     }
     else switch (b.type()) {
       case dods_byte_c:
+      case dods_int16_c:
+      case dods_int32_c: {
+	dods_int32 *a2p = &a2;
+	b.buf2val((void **)&a2p);
+	break;
+      }
       case dods_uint16_c:
-      case dods_uuint16_c: {	// Might loose data here! jhrg 8/25/96
-      case dods_int32_c:
-      case dods_uint32_c: 
-	dods_uint16 *a2p = &a2;
+      case dods_uint32_c: {
+	dods_uint32 *a2p = &ua2;
 	b.buf2val((void **)&a2p);
 	break;
       }
@@ -148,7 +157,7 @@ UInt16::ops(BaseType &b, int op)
 	double d;
 	double *dp = &d;
 	b.buf2val((void **)&dp);
-	a2 = (dods_uint16)d;
+	a2 = (dods_int32)d;
 	break;
       }
       case dods_str_c: {
@@ -177,5 +186,8 @@ UInt16::ops(BaseType &b, int op)
 	break;
     }
 
-    return int_ops(a1, a2, op);
+    if (b.type() == dods_uint16 || b.type() == dods_uint32)
+	return int_ops(a1, ua2, op);
+    else
+	return int_ops(a1, a2, op);
 }
