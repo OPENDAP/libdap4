@@ -6,12 +6,15 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.8  1994/10/13 15:46:58  jimg
-/* Added compile-time switched instrumentation.
-/* Removed the three definitions of DAS::print().
-/* Added DAS::print(ostream &os = cout) -- this is the only function for
-/* printing the in-memory DAS.
+/* Revision 1.9  1994/10/17 23:39:50  jimg
+/* Removed unnecessary print functions.
 /*
+ * Revision 1.8  1994/10/13  15:46:58  jimg
+ * Added compile-time switched instrumentation.
+ * Removed the three definitions of DAS::print().
+ * Added DAS::print(ostream &os = cout) -- this is the only function for
+ * printing the in-memory DAS.
+ *
  * Revision 1.7  1994/10/05  16:44:27  jimg
  * Changed from Map to DLList for representation of the attribute table.
  * Added TYPE to the attribute table.
@@ -67,8 +70,6 @@ class DAS {
 private:
     DASVHMap map;
 
-protected:
-
 public:
     DAS(AttrTablePtr dflt=(void *)NULL, 
 	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
@@ -89,11 +90,6 @@ public:
     bool parse(FILE *in=stdin);
 
     bool print(ostream &os = cout);
-#ifdef NEVER
-    bool print(String fname);
-    bool print(int fd);
-    bool print(FILE *out=stdout);
-#endif
 };
 
 #endif

@@ -5,7 +5,10 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.8  1994/10/13 16:42:59  jimg
+// Revision 1.9  1994/10/17 23:39:49  jimg
+// Removed unnecessary print functions.
+//
+// Revision 1.8  1994/10/13  16:42:59  jimg
 // dasrestart was incorrectly declared as void dasrestart(...) in DAS.cc.
 // This caused the alpha to say `Could not read from file' whenever
 // dasrestart was called (which happens whenever a new file is read). Fixed
@@ -49,7 +52,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.8 1994/10/13 16:42:59 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.9 1994/10/17 23:39:49 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -146,10 +149,8 @@ DAS::add_table(const char *name, AttrTable *at)
     return add_table((String)name, at);
 }
 
-/*
-  Read attributes from a file. Returns false if unable to open the file,
-  otherwise returns the result of the mfunc parse.
-*/
+// Read attributes from a file. Returns false if unable to open the file,
+// otherwise returns the result of the mfunc parse.
 
 bool
 DAS::parse(String fname)
@@ -168,14 +169,12 @@ DAS::parse(String fname)
     return status;
 }
 
-/*
-  Read attributes from a file descriptor. If the file descriptor cannot be
-  fdopen'd, return false, otherwise return the status of the mfunc parse.
-
-  NB: Added call to dup() within fdopen so that once the FILE * is closed the
-  decriptor fd will not also be closed (instead the duplicate descriptor will
-  be closed). Thus futeher information can be read from the descriptor fd.
-*/
+// Read attributes from a file descriptor. If the file descriptor cannot be
+// fdopen'd, return false, otherwise return the status of the mfunc parse.
+// 
+// NB: Added call to dup() within fdopen so that once the FILE * is closed the
+// decriptor fd will not also be closed (instead the duplicate descriptor will
+// be closed). Thus futeher information can be read from the descriptor fd.
 
 bool
 DAS::parse(int fd)
@@ -195,10 +194,8 @@ DAS::parse(int fd)
 }
 
     
-/*
-  Read attributes from in (which defaults to stdin). If dasrestart() fails,
-  return false, otherwise return the status of dasparse().
-*/
+// Read attributes from in (which defaults to stdin). If dasrestart() fails,
+// return false, otherwise return the status of dasparse().
 
 bool
 DAS::parse(FILE *in)
@@ -208,66 +205,12 @@ DAS::parse(FILE *in)
     return dasparse(*this) == 0;
 }
 
-#ifdef NEVER
-/*
-  Write attributes from internal tables to a file. If the file cannot be
-  opened for writing, return false, otherwise return the status of mfunc
-  print. 
-*/
-
-bool
-DAS::print(String fname)
-{
-    FILE *out = fopen(fname, "w");
-
-    if (!out) {
-	cerr << "Could not open: " << fname << endl;
-	return false;
-    }
-
-    bool status = print(out);
-
-    fclose(out);
-    
-    return status;
-}
-
-/*
-  Write attributes from internal tables to a file descriptor. If the file
-  descriptor cannot be fdopen'd, return false, otherwise return the status of
-  the mfunc print.
-
-  NB: See note for DAS::parse(int fd) about dup().
-*/
-
-bool
-DAS::print(int fd)
-{
-    FILE *out = fdopen(dup(fd), "w");
-
-    if (!out) {
-	cerr << "Could not access the file descriptor for writing" << endl;
-	return false;
-    }
-
-    bool status = print(out);
-
-    fclose(out);
-    
-    return status;
-}
-#endif
-
-/*
-  Write attributes from tables to `out' (which defaults to stdout). Return
-  true. 
-*/
+// Write attributes from tables to `out' (which defaults to stdout). Return
+// true. 
 
 bool
 DAS::print(ostream &os)
 {
-//    ostdiostream os(out);
-
     os << "Attributes {" << endl;
 
     for(Pix p = map.first(); p; map.next(p)) {
