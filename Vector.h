@@ -4,10 +4,16 @@
 // This is the interface definition file for the abstract class
 // Vector. Vector is the parent class for List and Array.
 
-// $Log: Vector.h,v $
-// Revision 1.1  1995/11/22 22:30:20  jimg
-// Created.
-//
+/* $Log: Vector.h,v $
+/* Revision 1.2  1995/12/06 19:49:35  jimg
+/* Changed the var() and print_decl() mfuncs. var() now takes an index and
+/* returns a pointer to the BaseType object with the correct value. print_decl()
+/* takes a new flag - constrained - which causes only those dimensions selected
+/* by the current constraint expression to be printed
+/*
+ * Revision 1.1  1995/11/22  22:30:20  jimg
+ * Created.
+ */
 
 #ifndef _Vector_h
 #define _Vector_h 1
@@ -47,12 +53,12 @@ public:
 
     virtual unsigned int width();
     virtual unsigned int length();
-    virtual void set_length(unsigned int l);
+    virtual void set_length(int l);
 
     virtual bool serialize(bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(String dataset, String var_name, String constraint) = 0;
+    virtual bool read(String dataset, String var_name) = 0;
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
@@ -64,14 +70,15 @@ public:
     // Return the BaseType pointer for the given Vector element. The value of
     // the element is copied into the BaseType *. See BaseType::var() for a
     // version of this mfunc that does *not* copy the value.
-
     virtual BaseType *var(unsigned int i);
 
     virtual void add_var(BaseType *v, Part p = nil);
 
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true,
-			    bool constraint_info = false);
+			    bool constraint_info = false,
+			    bool constrained = false);
+
     virtual void print_val(ostream &os, String space = "", 
 			   bool print_decl_p = true);
 
