@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
-// Revision 1.6  1995/07/09 21:29:20  jimg
+// Revision 1.7  1995/08/23 00:44:37  jimg
+// Updated to use the newer member functions.
+//
+// Revision 1.6  1995/07/09  21:29:20  jimg
 // Added copyright notice.
 //
 // Revision 1.5  1995/05/10  17:35:34  jimg
@@ -72,6 +75,8 @@
 #pragma implementation
 #endif
 
+#include <new.h>
+
 #include "TestStructure.h"
 #ifdef NEVER
 #include "Test.h"
@@ -90,6 +95,27 @@ TestStructure::ptr_duplicate()
 {
     return new TestStructure(*this);
 }
+
+#ifdef NEVER
+// Use the `placement new' operator to create/init an object in the memory
+// pointed to by PLACE. This is used when working with arrays of Structures,
+// ... These arrays are represented by Array as a sequence of objects. When
+// space for the array is allocated, repeated calls to this mfunc guarantee
+// that the correct object is instanciated for each of the array's elements.
+
+#ifdef TRACE_NEW
+#undef new
+#endif
+//	buf = new((void *)buf)  String(in_tmp); // placement new
+Structure *
+TestStructure::placement_dup(void *place)
+{
+    return new(place) TestStructure(*this);
+}
+#ifdef TRACE_NEW
+#define new NEW_PASTE_(n,ew)( __FILE__, __LINE__ )
+#endif
+#endif
 
 TestStructure::TestStructure(const String &n) : Structure(n)
 {
@@ -113,7 +139,7 @@ bool
 TestStructure::read(String dataset, String var_name, String constraint)
 {
     for (Pix p = first_var(); p; next_var(p)) {
-	if (!var(p)->read(dataset, var(p)->get_var_name(), constraint))
+	if (!var(p)->read(dataset, var(p)->name(), constraint))
 	    return false;
     }
 

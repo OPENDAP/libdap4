@@ -6,12 +6,15 @@
 // jhrg 1/12/95
 
 /* $Log: TestStructure.h,v $
-/* Revision 1.3  1995/02/10 02:34:01  jimg
-/* Modified Test<class>.h and .cc so that they used to new definitions of
-/* read_val().
-/* Modified the classes read() so that they are more in line with the
-/* class library's intended use in a real subclass set.
+/* Revision 1.4  1995/08/23 00:44:38  jimg
+/* Updated to use the newer member functions.
 /*
+ * Revision 1.3  1995/02/10  02:34:01  jimg
+ * Modified Test<class>.h and .cc so that they used to new definitions of
+ * read_val().
+ * Modified the classes read() so that they are more in line with the
+ * class library's intended use in a real subclass set.
+ *
  * Revision 1.2  1995/01/19  21:59:45  jimg
  * Added read_val from dummy_read.cc to the sample set of sub-class
  * implementations.
@@ -43,6 +46,9 @@ public:
     virtual ~TestStructure();
 
     virtual BaseType *ptr_duplicate();
+#ifdef NEVER
+    virtual Structure * placement_dup(void *place);
+#endif
 
     virtual bool read(String dataset, String var_name, String constraint);
 };

@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
-// Revision 1.6  1995/07/09 21:29:22  jimg
+// Revision 1.7  1995/08/23 00:44:40  jimg
+// Updated to use the newer member functions.
+//
+// Revision 1.6  1995/07/09  21:29:22  jimg
 // Added copyright notice.
 //
 // Revision 1.5  1995/05/10  17:35:35  jimg
@@ -102,7 +105,7 @@ TestUrl::read(String dataset, String var_name, String constraint)
 {
     String url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
 
-    store_val(&url_test);
+    val2buf(&url_test);
 
     return true;
 }

@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
-// Revision 1.6  1995/07/09 21:29:19  jimg
+// Revision 1.7  1995/08/23 00:44:35  jimg
+// Updated to use the newer member functions.
+//
+// Revision 1.6  1995/07/09  21:29:19  jimg
 // Added copyright notice.
 //
 // Revision 1.5  1995/05/10  17:35:33  jimg
@@ -104,7 +107,7 @@ TestStr::read(String dataset, String var_name, String constraint)
 {
     String str_test="Silly test string: one, two, ...";
     
-    (void) store_val(&str_test);
+    (void) val2buf(&str_test);
 
     return true;
 }
