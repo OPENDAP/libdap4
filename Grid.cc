@@ -4,7 +4,11 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.3  1994/10/17 23:34:53  jimg
+// Revision 1.4  1994/12/14 20:56:57  dan
+// Fixed deserialize() to return correct size count.
+// Fixed check_semantics() to use new Array dimension member functions.
+//
+// Revision 1.3  1994/10/17  23:34:53  jimg
 // Added code to print_decl so that variable declarations are pretty
 // printed.
 // Added private mfunc duplicate().
@@ -25,7 +29,6 @@ void
 Grid::duplicate(const Grid &s)
 {
     set_var_name(s.get_var_name());
-    set_var_type(s.get_var_type());
     
     array_var_ = s.array_var_->ptr_duplicate();
 
@@ -43,10 +46,10 @@ Grid::ptr_duplicate()
     return new Grid(*this);
 }
 
-Grid::Grid(const String &n, const String &t)
+Grid::Grid(const String &n, FILE *in, FILE *out)
+     : BaseType( n, "Grid", (xdrproc_t)NULL, in, out)
 {
     set_var_name(n);
-    set_var_type(t);
 }
 
 Grid::Grid(const Grid &rhs)
@@ -71,6 +74,50 @@ Grid::operator=(const Grid &rhs)
     duplicate(rhs);
 
     return *this;
+}
+
+unsigned int
+Grid::size()
+{
+    unsigned int sz = array_var_->size();
+  
+    for( Pix p = map_vars.first(); p; map_vars.next(p)) 
+      sz += map_vars(p)->size();
+  
+    return sz;
+}
+
+bool
+Grid::serialize(bool flush, unsigned int num)
+{
+    bool status;
+
+    if( !(status = array_var_->serialize(false,0))) 
+      return (bool)FALSE;
+
+    for( Pix p = map_vars.first(); p; map_vars.next(p))
+      if ( !(status = map_vars(p)->serialize(false)) ) break;
+	
+    if ( status && flush )
+      status = expunge();
+
+    return status;
+}
+
+unsigned int
+Grid::deserialize()
+{
+    unsigned int num, sz = 0;
+
+    if ((num = array_var_->deserialize()) == 0) return (unsigned int)FALSE;
+    sz += num;
+
+    for( Pix p = map_vars.first(); p; map_vars.next(p)) 
+      {
+	if ((num = map_vars(p)->deserialize()) == 0) break;
+	sz += num;
+      }
+    return num ? sz : (unsigned int)FALSE;
 }
 
 BaseType *
@@ -171,7 +218,7 @@ Grid::check_semantics(bool all)
 	    
     Array *av = (Array *)array_var_; // past test above, must be an array
 
-    // engough maps?
+    // enough maps?
     if (map_vars.length() != av->dimensions()) {
 	cerr << "The number of map variables for grid `"
 	     << this->get_var_name() 
@@ -210,7 +257,7 @@ Grid::check_semantics(bool all)
 	    return false;
 	}
 	// size of map must match corresponding array dimension
-	if (mv_a->dim(mv_a->first_dim()) != av->dim(ap)) {
+	if (mv_a->dimension_size(mv_a->first_dim()) != av->dimension_size(ap)) {
 	    cerr << "Grid map variable  `" << mv_a->get_var_name()
 		<< "'s' size does not match the size of array variable '"
 		<< array_var_->get_var_name() << "'s' cooresponding dimension"
@@ -228,4 +275,11 @@ Grid::check_semantics(bool all)
     }
 
     return true;
+}
+
+void 
+Grid::print_val(ostream &os, String space)
+{
+    print_decl(os, "", false);
+    //os << " = " << buf << ";" << endl;
 }
