@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="US-ASCII" standalone="no"?>
-<!DOCTYPE ais SYSTEM "http://dcz.dods.org/ais_database.dtd">
+<!DOCTYPE ais SYSTEM "http://www.opendap.org/ais/ais_database.dtd">
 
 <ais xmlns="http://xml.opendap.org/ais">
 <entry>
