@@ -1,6 +1,6 @@
 
 
-// (c) COPYRIGHT URI/MIT 1994-1999
+// (c) COPYRIGHT URI/MIT 1994-2000
 // Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
@@ -9,12 +9,18 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.89  2000/03/28 16:18:17  jimg
+// Added a DEFAULT_EXPIRES parameter to the .dodsrc file. The default
+// expiration time is now set by connect, using the value read from .dodsrc,
+// rather than use the value compiled into libwww. To do this I added a new
+// function to HTCache.c,h in libwww.
+//
 // Revision 1.88  2000/03/17 00:11:39  jimg
 // I fixed the bug in libwww which made caching of compressed documents fail.
 // I removed the hacks in this file that prevented data documents from being
 // cached. I also have removed the code that wrote NEVER_DEFLATE to the rc
-// file. The NEVER_DEFLATE option still works; I'm just not including it in the
-// rc file by default.
+// file. The NEVER_DEFLATE option still works; I'm just not including it in
+// the rc file by default.
 //
 // Revision 1.87  2000/01/27 06:29:55  jimg
 // Resolved conflicts from merge with release-3-1-4
@@ -511,7 +517,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.88 2000/03/17 00:11:39 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.89 2000/03/28 16:18:17 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -570,6 +576,7 @@ static const int DODS_CACHE_MAX = 20;  // Max cache size in Mbytes
 static const int DODS_CACHED_OBJ = 5;  // Max cache entry size in Mbytes
 static const int DODS_IGN_EXPIRES = 0; // 0- Honor expires 1- Ignore them
 static const int DODS_NEVER_DEFLATE = 0; // 0- allow deflate, 1- disallow
+static const int DODS_DEFAULT_EXPIRES = 86400; // 24 hours in seconds
 
 #undef CATCH_SIG
 #ifdef CATCH_SIG
@@ -1087,6 +1094,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     int MAX_CACHE_SIZE = DODS_CACHE_MAX;
     int MAX_CACHED_OBJ = DODS_CACHED_OBJ;
     int IGNORE_EXPIRES = DODS_IGN_EXPIRES;
+    int DEFAULT_EXPIRES = DODS_DEFAULT_EXPIRES;
     int use_cache_file = 1;
     
     // The following code sets up the cache according to the data stored
@@ -1151,6 +1159,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		fpo << "NEVER_DEFLATE=" << NEVER_DEFLATE << "\n";
 #endif
 		fpo << "CACHE_ROOT=" << cache_root << "\n";
+		fpo << "DEFAULT_EXPIRES=" << DEFAULT_EXPIRES << "\n";
 		fpo.close();
 	    }
 	}
@@ -1190,6 +1199,9 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		    strcpy(cache_root, value);
 		    if (cache_root[strlen(value)-1] != '/')
 			strcat(cache_root, "/");
+		}
+		else if((strncmp(tempstr, "DEFAULT_EXPIRES", 15)==0) && tokenlength == 15) {
+		    DEFAULT_EXPIRES = atoi(value);
 		}
 	    }
 	    delete tempstr;
@@ -1233,6 +1245,8 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	HTList *content_encodings = HTList_new();
 	HTContentEncoderInit(content_encodings);
 #if 0
+	// HTContentEncoderInit adds `deflate' if libwww was built with
+	// HT_ZLIB defined. 3/28/2000 jhrg
 	HTCoding_add(content_encodings, "deflate", NULL, HTZLib_inflate, 1.0);
 #endif
 	HTFormat_setContentCoding(content_encodings);
@@ -1271,6 +1285,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	    HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
 	    if(IGNORE_EXPIRES) HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
 	    else HTCacheMode_setExpires(HT_EXPIRES_AUTO);
+	    HTCacheMode_setDefaultExpiration(DEFAULT_EXPIRES);
 	    _cache_enabled = true;
 	}
 	else {
