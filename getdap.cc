@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.46  2000/08/07 21:41:47  rmorris
+// Reversed hack related to 7/19/00 and 7/21/00 changes to get around
+// a bug in the core (which has been fixed).
+//
 // Revision 1.45  2000/07/21 14:29:17  rmorris
 // Put a temporary fix in that is in lieu of an upcoming small change
 // to the core.  Is in an ifdef with a note to remove it - but the
@@ -204,7 +208,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.45 2000/07/21 14:29:17 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.46 2000/08/07 21:41:47 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -226,7 +230,7 @@ using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.45 $";
+const char *version = "$Revision: 1.46 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -496,12 +500,8 @@ main(int argc, char * argv[])
 			}
 	    for (int j = 0; j < times; ++j)
 			{
-#ifdef TMPHACK
-			DataDDS *dds = (DataDDS *)url.request_data(expr, gui, async);
-#else
 			DDS *dds = url.request_data(expr, gui, async);
 
-#endif
 			if (!dds)
 				{
 				cerr << "Error: " << url.error().error_message() << endl;
