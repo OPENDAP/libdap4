@@ -1,3 +1,22 @@
+2000-08-02  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with 3.1.8. The next merge should use cvs update -j
+	release-3-1-8 -j release-3-1.
+
+	* Fixed a config_dap.h goof. That header was included by some of
+	the DAP headers which might, in turn, be included by other
+	software. The HAVE_CONFIG_H symbol in config_dap.h was confusing
+	other code (e.g., the Cgicc library). I changed config_dap.h and
+	its use; the header is now only included by DAP .cc or .c files.
+	DAP header files which needed config_dap.h for the dods_int32,
+	etc., typedefs now get those from dods-datatypes.h. Headers which
+	used config_dap.h for the DVR symbol (which holds the dap version
+	information) have been rewritten.
+
+	This change means that code which now included config_dap.h should
+	be rewritten to use the dods-datatypes.h header or otherwise
+	changed so that config_dap.h is not used.
+
 2000-06-16  James Gallagher  <jimg@dcz.dods.org>
 
 	* Note: This release was made to patch a bug which shows up in the
@@ -746,4 +765,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.55 2000/06/16 18:14:59 jimg Exp $
+$Id: ChangeLog,v 1.56 2000/08/02 22:21:14 jimg Exp $
