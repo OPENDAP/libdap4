@@ -10,6 +10,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.40  1997/05/13 23:40:07  jimg
+// Added instrumentation for function decompressor().
+//
 // Revision 1.39  1997/05/01 18:54:35  jimg
 // Fixed an error in date_func where argv[0] was used as a BaseType instead of
 // a BaseType *.
@@ -203,7 +206,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.39 1997/05/01 18:54:35 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.40 1997/05/13 23:40:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -479,7 +482,7 @@ compressor(FILE *output, int &childpid)
 FILE *
 decompressor(FILE *input, int &childpid)
 {
-    int pid, data[2];
+    int pid;
 
     if (pipe(data) < 0) {
 	cerr << "Could not create IPC channel for decompresser process" 
@@ -498,6 +501,8 @@ decompressor(FILE *input, int &childpid)
 
     if (pid > 0) {
 	DBG(cerr << "Decompressor parent." << endl);
+	DBG(cerr << "pipe fds: data[0]: " << data[0] << " data[1]: " \
+	    << data[1] << endl);
 
 	close(data[1]);
 	FILE *output = fdopen(data[0], "r");
@@ -505,11 +510,15 @@ decompressor(FILE *input, int &childpid)
 	return output;
     }
     else {
+	DBG(sleep(1));
+	DBG(cerr << "Decompressor child." << endl);
+	DBG(cerr << "pipe fds: data[0]: " << data[0] << " data[1]: " \
+	    << data[1] << endl);
+
 	close(data[0]);
 	dup2(fileno(input), 0);	// Read from FILE *input 
 	dup2(data[1], 1);	// Write to the pipe
-
-	DBG(cerr << "Decompressor child." << endl);
+	// close(data[1]);
 
 	// First try to run gzip using DODS_ROOT (the value read from the
 	// DODS_ROOT environment variable takes precedence over the value set
