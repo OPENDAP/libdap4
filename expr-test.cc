@@ -39,7 +39,12 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
-// Revision 1.4  1995/12/09 01:07:37  jimg
+// Revision 1.5  1996/03/05 00:57:19  jimg
+// Fixed tests of constrained tranmission so CEs with spaces will be read
+// properly.
+// Added new option so that a CE may be given on the command line.
+//
+// Revision 1.4  1995/12/09  01:07:37  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -61,9 +66,10 @@
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.4 1995/12/09 01:07:37 jimg Exp $"};
+static char rcsid[]= {"$Id: expr-test.cc,v 1.5 1996/03/05 00:57:19 jimg Exp $"};
 
 #include <stdio.h>
+#include <streambuf.h>
 #include <iostream.h>
 #include <stdiostream.h>
 #include <GetOpt.h>
@@ -78,16 +84,17 @@ static char rcsid[]= {"$Id: expr-test.cc,v 1.4 1995/12/09 01:07:37 jimg Exp $"};
 #include "expr.h"
 #include "parser.h"
 #include "expr.tab.h"
+#include "debug.h"
 
 #define DODS_DDS_PRX "dods_dds"
 
 void test_scanner();
-void test_parser(DDS &table, String &dds_name);
-bool read_table(DDS &table, String &name, bool print);
+void test_parser(DDS &table, const String &dds_name);
+bool read_table(DDS &table, const String &name, bool print);
 void evaluate_dds(DDS &table, bool print_constrained);
 bool transmit(DDS &write, bool verb);
 bool loopback_pipe(FILE **pout, FILE **pin);
-bool constrained_trans(String dds_name);
+bool constrained_trans(const String &dds_name, const String &ce);
 
 int exprlex();			// exprlex() uses the global exprlval
 int exprparse(DDS &table);
@@ -96,8 +103,27 @@ int exprrestart(FILE *in);
 
 extern YYSTYPE exprlval;
 extern int exprdebug;
-const char *prompt = "expr-test: ";
-const char *options = "sp:detcw";
+const String prompt = "expr-test: ";
+const String options = "sp:detcw:k:";
+const String usage = "expr-test [-d -s -p -e -c -t -w -k] [file] [expr]\n\
+Test the expression evaluation software.\n\
+Options:\n\
+	-s: Feed the input stream directly into the expression scanner, does\n\
+	    not parse.\n\
+	-p  DDS-file: Read the DDS from `DDS-file' and create a DDS object,\n\
+	    then prompt for an expression and parse that expression, given\n\
+	    the DDS object.\n\
+	-d: Turn on expression parser debugging.\n\
+	-e: Evaluate the constraint expression. Must be used with -p.\n\
+	-c: Print the constrained DDS (the one that will be returned\n\
+	    prepended to a data transmission. Must also supply -p and -e \n\
+	-t: Test transmission of data. This uses the Test*classes.\n\
+	    Transmission is done using a single process that writes and then\n\
+	    reads from a pipe. Must also suppply -p.\n\
+	-w: Do the whole enchilada. You don't need to supply -p, -e, ...\n\
+	    This prompts for the constraint expression\n\
+	-k: A constraint expression to use with the data. Works with -p,\n\
+	    -e, -t and -w\n";
 
 int
 main(int argc, char *argv[])
@@ -106,8 +132,9 @@ main(int argc, char *argv[])
     int option_char;
     bool scanner_test = false, parser_test = false, evaluate_test = false;
     bool trans_test = false, print_constrained = false;
-    bool whole_enchalada = false;
+    bool whole_enchalada = false, constraint_expr = false;
     String dds_file_name;
+    String constraint = "";
     DDS table;
 
     // process options
@@ -136,17 +163,23 @@ main(int argc, char *argv[])
 	      break;
 	    case 'w':
 	      whole_enchalada = true;
-	      parser_test = false;
+	      dds_file_name = getopt.optarg;
+	      break;
+	    case 'k':
+	      constraint_expr = true;
+	      constraint = getopt.optarg;
 	      break;
 	    case '?': 
-	      cerr << "usage: " << argv[0] << " " << options 
-		   << " [filename]" << endl; 
+	    default:
+	      cerr << usage << endl; 
+	      break;
 	  }
 
     // run selected tests
 
     if (scanner_test) {
 	test_scanner();
+	exit(0);
     }
 
     if (parser_test) {
@@ -162,7 +195,7 @@ main(int argc, char *argv[])
     }
 
     if (whole_enchalada) {
-	constrained_trans(dds_file_name);
+	constrained_trans(dds_file_name, constraint);
     }
 }
 
@@ -256,7 +289,7 @@ test_scanner()
 // stdin and thus the expr scanner exits immediately.
 
 void
-test_parser(DDS &table, String &dds_name)
+test_parser(DDS &table, const String &dds_name)
 {
     read_table(table, dds_name, true);
 
@@ -278,7 +311,7 @@ test_parser(DDS &table, String &dds_name)
 // false.
 
 bool
-read_table(DDS &table, String &name, bool print)
+read_table(DDS &table, const String &name, bool print)
 {
     int parse = table.parse(name);
     
@@ -308,7 +341,7 @@ evaluate_dds(DDS &table, bool print_constrained)
 	    table.var(p)->print_decl(cout, "", true, true);
 }
 
-// Given that a DDS has been created (nomianlly via read_table() above and
+// Given that a DDS has been created (nominally via read_table() above and
 // that a constraint expression has been entered, send data from the DDS to a
 // second DDS instance via the serialize/deserialize mfuncs. 
 
@@ -320,7 +353,7 @@ transmit(DDS &write, bool verb)
 
     status = loopback_pipe(&pin, &pout);
     if (!status) {
-	cerr << "Could not create the loopback streams" << endl;
+	cerr << "expr-test: Could not create the loopback streams" << endl;
 	return false;
     }
 
@@ -459,7 +492,7 @@ move_dds(FILE *in)
 // output stream, followed by the binary data.
 
 bool
-constrained_trans(String dds_name) 
+constrained_trans(const String &dds_name, const String &constraint) 
 {
     bool status;
     FILE *pin, *pout;
@@ -474,31 +507,41 @@ constrained_trans(String dds_name)
 	return false;
     }
 
-#ifdef NEVER
-    // test code; you have to close pout in order to read from pin. Why?
-    server.print(pout);
-
-    fclose(pout);
-
-    DDS client;
-
-    client.parse(pin);
-
-    client.print();
-#endif
-
     // Simulate Connect::request_dds() at the begining of a virtual connection
     DDS client = server;
 
     // The client gets this information from the API calls the user program
     // makes; it then sends it over to the server using various parameters.
 
-    cout << "Constraint:";
-    String ce;
-    cin >> ce;
+#ifdef NEVER
+    if (constraint == "") {
+	cout << "Constraint:";
+	char c[255];
+	if (!gets(&c[0]))
+	    cerr << "Could nore read the constraint expression" << endl;
+	ce = c;
+    }
+    else
+	ce = constraint;
+#endif
 
+    String ce;
+    if (constraint == "") {
+	cout << "Constraint:";
+	char c[256];
+	cin.getline(c, 256);
+	if (!cin) {
+	    cerr << "Could nore read the constraint expression" << endl;
+	    exit(1);
+	}
+	ce = c;
+    }
+    else
+	ce = constraint;
+
+    
     // send the variable given the constraint (dataset is ignored by the Test
-    // classes; true flushes the I/O channel.
+    // classes); TRUE flushes the I/O channel.
     if (!server.send("dummy", ce, pout, true)) {
 	cerr << "Could not send the variable" << endl;
 	return false;
@@ -513,7 +556,7 @@ constrained_trans(String dds_name)
     // found, this fixes that problem).
     DDS dds;
     FILE *dds_fp = move_dds(pin);
-    cerr << "Moved the DDS to a temp file\n";
+    DBG(cerr << "Moved the DDS to a temp file" << endl);
     if (!dds.parse(dds_fp)) {
 	cerr << "Could not parse return data description" << endl;
 	return false;
