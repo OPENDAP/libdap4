@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.16  1996/12/18 18:43:32  jimg
+// Tried to fix the online help - maybe I succeeded?
+//
 // Revision 1.15  1996/11/27 22:12:33  jimg
 // Expanded help to include all the verbose options.
 // Added PERF macros to code around request_data() call.
@@ -69,7 +72,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.15 1996/11/27 22:12:33 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.16 1996/12/18 18:43:32 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -92,8 +95,7 @@ usage(String name)
     cerr << "       " << "g: Show the progress GUI." << endl;
     cerr << "       " << "c: <expr> is a contraint expression. Used with -D."
 	 << endl;
-         << "       " << "   NB: You can use a `?' for the CE also."
-	 << endl;
+    cerr << "       " << "   NB: You can use a `?' for the CE also." << endl;
     cerr << "       " << "v: <options> Verbose output; use -vd for default." 
          << endl;
     cerr << "       " << "   a: show_anchor_trace." << endl;
