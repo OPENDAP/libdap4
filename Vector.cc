@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.18  1997/09/22 22:37:53  jimg
+// Fixed a bug in vec_resize.
+//
 // Revision 1.17  1997/03/08 19:02:11  jimg
 // Changed default param to check_semantics() from  to String()
 // and removed the default from the argument list in the mfunc definition
@@ -87,13 +90,15 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.17 1997/03/08 19:02:11 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.18 1997/09/22 22:37:53 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <assert.h>
+
+#include <minmax.h>
 
 #include "Vector.h"
 #include "util.h"
@@ -135,6 +140,7 @@ Vector::Vector(const Vector &rhs)
 static void
 delete_base_type(BaseType *bt)
 {
+    DBG(cerr << "Deleting BaseTyep pointer: " << hex << bt << dec << endl);
     if (bt)
 	delete bt;
 }
@@ -147,9 +153,8 @@ Vector::~Vector()
 
     if (_buf)
 	delete[] _buf;
-    else {
+    else	
 	_vec.apply(delete_base_type);
-    }
 }
 
 const Vector &
@@ -261,16 +266,31 @@ Vector::set_length(int l)
     _length = l;
 }
 
+static void
+print_basetype_pointer(BaseType *btp)
+{
+    cerr << btp << " ";
+}
+
+// #l# is the number of elements the vector can hold (e.g., if l == 20, then
+// the vector can hold elements 0, .., 19).
+
 void
 Vector::vec_resize(int l)
 {
     int s = _vec.capacity();
     _vec.resize((l > 0) ? l : 0);
 
-    BaseType **cur = &_vec.elem(s);
-    BaseType **fin = &_vec.elem(l-1);
-    while (cur <= fin)
-	*cur++ = 0;
+    if (l > s) {
+	DBG(cerr << "Filling new elements (" << s-1 << ", " << l-s \
+	    << ") with NULL"  << endl);
+	_vec.fill(0, max(s-1, 0), l-s);
+#if DODS_DEBUG == 1
+	cerr << "Just extended the BaseType pointer vector: ";
+	_vec.apply(print_basetype_pointer);
+	cerr << endl;
+#endif
+    }
 }
 
 // Serialize a Vector. This uses the BaseType member XDR_CODER to encode each
@@ -289,7 +309,7 @@ Vector::vec_resize(int l)
 // Returns: true if the data was successfully writen, false otherwise.
 
 bool
-Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
+Vector::serialize(const String &dataset, DDS &dds, XDR *sink, 
 		  bool ce_eval = true)
 {
     bool status = true;
@@ -301,6 +321,7 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
 
+    // length() is not capacity; it must be set explicitly in read().
     unsigned int num = length();
 
     switch (_var->type()) {
@@ -310,7 +331,7 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
       case dods_float64_c:
 	assert(_buf);
 
-	if (!(bool)xdr_int(sink, &num)) // send vector length
+	if (!(bool)xdr_int(sink, (int *)&num)) // send vector length
 	    return false;
 
 	if (_var->type() == dods_byte_c)
@@ -332,7 +353,7 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
       case dods_grid_c:
 	assert(_vec.capacity());
 
-	status = (bool)xdr_int(sink, &num); // send length
+	status = (bool)xdr_int(sink, (int *)&num); // send length
 	if (!status)
 	    return status;
 
@@ -368,7 +389,7 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
 // Returns: True is successful, false otherwise.
 
 bool
-Vector::deserialize(XDR *source, bool reuse = false)
+Vector::deserialize(XDR *source, DDS *dds, bool reuse = false)
 {
     bool status;
     unsigned int num;
@@ -383,7 +404,7 @@ Vector::deserialize(XDR *source, bool reuse = false)
 	    _buf = 0;
 	}
 
-	status = (bool)xdr_int(source, &num);
+	status = (bool)xdr_int(source, (int *)&num);
 	if (!status)
 	    return status;
 	    
@@ -415,7 +436,7 @@ Vector::deserialize(XDR *source, bool reuse = false)
       case dods_sequence_c:
       case dods_function_c:
       case dods_grid_c:
-	status = (bool)xdr_int(source, &num);
+	status = (bool)xdr_int(source, (int *)&num);
 	if (!status)
 	    return status;
 
@@ -424,7 +445,7 @@ Vector::deserialize(XDR *source, bool reuse = false)
 
 	for (unsigned i = 0; status && i < num; ++i) {
 	    _vec[i] = _var->ptr_duplicate();
-	    _vec[i]->deserialize(source);
+	    _vec[i]->deserialize(source, dds);
 	}
 
 	break;
@@ -514,7 +535,7 @@ Vector::buf2val(void **val)
 {
     assert(val);
 
-    unsigned int wid = width();
+    int wid = width();
 
     switch (_var->type()) {
       case dods_byte_c:
@@ -574,12 +595,6 @@ BaseType *
 Vector::var(const String &)
 {
     return _var;
-#ifdef NEVER
-    if (_var->name() == name)
-	return _var;
-    else
-	return _var->var(name);
-#endif
 }
 
 // Add the BaseType pointer to this ctor type instance. Propagate the name of
