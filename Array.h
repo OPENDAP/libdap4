@@ -7,9 +7,12 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.7  1994/12/12 20:33:34  jimg
-/* Fixed struct dimensions.
+/* Revision 1.8  1994/12/14 17:55:23  dan
+/* Removed dim() member function.
 /*
+ * Revision 1.7  1994/12/12  20:33:34  jimg
+ * Fixed struct dimensions.
+ *
  * Revision 1.6  1994/12/12  19:40:30  dan
  * Modified Array class definition removing inheritance from class CtorType
  * and to inherit directly from class BaseType.  Removed member function
@@ -93,7 +96,6 @@ public:
 
     Pix first_dim();
     void next_dim(Pix &p);
-    int dim(Pix p);		// deprecated
     int dimension_size(Pix p);
     String dimension_name(Pix p);
 
