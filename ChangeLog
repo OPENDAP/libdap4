@@ -1,3 +1,12 @@
+1998-03-18  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed an ugly bug where Error objects were compressed (sometimes
+	they still are) but the return MIME document header didn't say so.
+	Now the return document header says if the Error object is
+	compressed. Note that compressing Error objects is not going to
+	save any (real) space but once the compressing data sink is set up
+	*whatever* gets written to it will be compressed...
+
 1998-03-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Added the ASCII filter to the set of things that comprise a DODS
@@ -341,4 +350,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.17 1998/03/17 17:24:42 jimg Exp $
+$Id: ChangeLog,v 1.18 1998/03/18 22:35:25 jimg Exp $
