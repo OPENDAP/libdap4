@@ -1,0 +1,58 @@
+
+# Common code for dejaGNU-based automated tests.
+
+# $Id: common_tests.exp,v 1.1 1999/05/20 16:31:01 jimg Exp $
+
+# Compare $expected to the global $comp_output. Run `pass' if they match,
+# `fail' otherwise unless `xfailp' is true in which case run `xfail' if they
+# do not match. $msg is the name of the test to print when calling pass, fail
+# or xfail.
+# 
+# NB: $expected may be either a string or a file name. If it is the latter,
+# read the file and compare its contents to $comp_output.
+
+proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
+    global comp_output
+    global verbose
+
+    # If $expected is the name of a file, read that file's contents and store
+    # in $expected, then procede to compare $expected to $comp_output.
+
+    if {[file exists $expected] && [file isfile $expected]} {
+	if {$verbose >= 1} {
+	    send_user "PWD: [pwd]\n"
+	    send_user "Reading file: $expected\n"
+	}
+	set fd [open $expected r]
+	set expected [read $fd]
+	close $fd
+    }
+
+    # Trim is used here to remove trailing `\n's from files of data.
+    set expected [string trim $expected]
+    set comp_output [string trim $comp_output]
+
+    # Set the value returned when a test passes; compare returns 0 when two
+    # strings are equal (i.e., test passed) and match returns 1 when the
+    # pattern matches (i.e., test passed). Arrgh!!! 5/20/99 jhrg
+    if ![string compare $str_test "compare"] {
+	set pass 0
+    } else {
+	set pass 1
+    }
+
+    if {[string $str_test $expected $comp_output] == $pass} {
+	pass "$msg"
+	send_user "PASS: $msg\n"
+    } elseif {$xfailp == 1} {
+	xfail "$msg"
+	send_user "XFAIL: $msg\n"
+    } else {
+	fail "$msg"
+    }
+
+    if {$verbose >= 1} {
+	send_user "Comp output:$comp_output\n"
+	send_user "Expected output:$expected\n"
+    }
+}
