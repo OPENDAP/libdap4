@@ -87,41 +87,16 @@ private:
     RCReader *d_rcr;
     HTTPCache *d_http_cache;
 
-#if 0
-#ifdef WIN32
-    // We need to keep the different filenames associated with d_output
-    // (over time) around under win32 because an unlink() at time 'now'
-    // doesn't delete a file at some time (now + n) as it does under
-    // UNIX. Unix will delete the file when the last process using the
-    // file closes it - win32 will not. Under win32, we count on the
-    // Connect destructor using d_tfname to remove such intermediate
-    // files..
-    vector<string> d_tfname;			
-#endif
-#endif
-
     char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
 
-    // Set these before calling fetch_url();
     bool d_accept_deflate;
 
     string d_username;		// extracted from URL
     string d_password;		// extracted from URL
     string d_upstring;		// used to pass info into curl
 
-#if 0
-    bool d_is_response_present;	// Is there something to look at?
-#endif
-
-    // These four members are valid only after a fetch_url() call.
     // *** Try to remove this field. 03/03/03 jhrg
     vector<string> d_headers;	// Response headers
-#if 0
-    ObjectType d_type;		// What type of object is in the stream?
-    string d_server;		// Server's version string.
-    // *** I think this can be removed.02/28/03 jhrg
-    bool d_cached_response;	// True if response was from cache.
-#endif
 
     void www_lib_init() throw(Error, InternalErr);
     long read_url(const string &url, FILE *stream,
@@ -165,19 +140,25 @@ public:
     void set_credentials(const string &u, const string &p) throw(InternalErr);
     void set_accept_deflate(bool defalte);
 
-    Response *fetch_url(const string &url) throw(Error, InternalErr);
-#if 0
-    bool is_response_present();
+    /** Set the state of the HTTP cache. By default, the HTTP cache is
+	enabled of disabled using the value of the \c USE_CACHE property in
+	the \c .dodsrc file. Use this method to set the state from within a
+	program. 
+	@param enabled True to use the cache, False to disable. */
+    void set_cache_enabled(bool enabled) { 
+	d_http_cache->set_cache_enabled(enabled);
+    }
 
-    vector<string> get_response_headers() throw(InternalErr);
-    // Add methods with get_* names for these properties; deprecate the old
-    // names. 02/27/03 jhrg
-    ObjectType type() throw(InternalErr);
-    string server_version() throw(InternalErr);
-#endif
+    /** Return the current state of the HTTP cache. */
+    bool is_cache_enabled() { return d_http_cache->is_cache_enabled(); }
+
+    Response *fetch_url(const string &url) throw(Error, InternalErr);
 };
 
 // $Log: HTTPConnect.h,v $
+// Revision 1.8  2003/03/04 21:40:40  jimg
+// Removed code in #if 0 ... #endif.
+//
 // Revision 1.7  2003/03/04 17:28:18  jimg
 // Switched to Response objects. Removed unneeded methods. The Response objects
 // now control the release of resources such as deleting temporary files, et c.
