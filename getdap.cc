@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.47  2000/08/08 20:46:17  rmorris
+// Trivial removal of a hack fragment left behind from a earlier fix.
+//
 // Revision 1.46  2000/08/07 21:41:47  rmorris
 // Reversed hack related to 7/19/00 and 7/21/00 changes to get around
 // a bug in the core (which has been fixed).
@@ -208,7 +211,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.46 2000/08/07 21:41:47 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.47 2000/08/08 20:46:17 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -217,20 +220,13 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.46 2000/08/07 21:41:47 rmorr
 #include <string>
 
 #include "Connect.h"
-//  Below hack is because of a temporary transient bug in the core.
-//  If you see this after 8/1/2000, remove it - see everthing setup in
-//  between TMPHACK in this file.  Upcomming fix from James will solve.
-#define TMPHACK
-#ifdef TMPHACK
-#include "DataDDS.h"
-#endif
 
 #ifdef WIN32
 using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.46 $";
+const char *version = "$Revision: 1.47 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
