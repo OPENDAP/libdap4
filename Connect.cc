@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.28  1996/06/21 23:15:03  jimg
+// Removed GUI code to a new class - Gui.
+//
 // Revision 1.27  1996/06/20 15:59:24  jimg
 // Added conditional definition of union semun {};
 //
@@ -170,7 +173,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.27 1996/06/20 15:59:24 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.28 1996/06/21 23:15:03 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -208,18 +211,11 @@ extern "C" {
 // osf-3.0 fails to define this in <sys/sem.h>
 #if (HAVE_SEM_UNION == 0)
 union semun {
-    val;
+    int val;
     struct semid_ds *buf;
     ushort *array;
 };
 #endif
-
-// Constants used to talk to the GUI.
-
-static const int OK = 1;
-static const int ERROR = 2;
-static const char *GUI_PROMPT = "% ";
-static const char *GUI_EXIT_COMMAND = "exit\r";
 
 static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
     : DODS_ROOT;
@@ -340,18 +336,18 @@ timeout_handler(HTRequest *request)
     Connect *me = (Connect *)HTRequest_context(request);
     String cmd;
 
-    if (!me->progress_visible())
+    if (!me->gui()->progress_visible())
 	cmd = (String)"progress popup \"Request timeout...\"\r";
     else
 	cmd = (String)"progress text \"Request timeout...\"\r";
 	
-    me->progress_visible(me->send_gui_command(cmd));
+    me->gui()->progress_visible(me->gui()->command(cmd));
 
-    if (me->progress_visible()) {
+    if (me->gui()->progress_visible()) {
 	sleep(3);
 	cmd = (String)"progress popdown\r";
-	me->send_gui_command(cmd);
-	me->progress_visible(false);
+	me->gui()->command(cmd);
+	me->gui()->progress_visible(false);
     }
 
     HTRequest_kill(request);
@@ -375,40 +371,40 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int msgnum,
 
     switch (op) {
       case HT_PROG_DNS:
-	if (!me->progress_visible())
+	if (!me->gui()->progress_visible())
 	    cmd = (String)"progress popup \"Looking up " + (char *)input + "\"\r";
 	else
 	    cmd = (String)"progress text \"Looking up " + (char *)input + "\"\r";
 	
-	me->progress_visible(me->send_gui_command(cmd));
+	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       case HT_PROG_CONNECT:
-	if (!me->progress_visible())
+	if (!me->gui()->progress_visible())
 	    cmd = (String)"progress popup \"Contacting host...\"\r";
 	else
 	    cmd = (String)"progress text \"Contacting host...\"\r";
 	
-	me->progress_visible(me->send_gui_command(cmd));
+	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       case HT_PROG_ACCEPT:
-	if (!me->progress_visible())
+	if (!me->gui()->progress_visible())
 	    cmd = (String)"progress popup \"Waiting for connection...\"\r";
 	else
 	    cmd = (String)"progress text \"Waiting for connection...\"\r";
 	
-	me->progress_visible(me->send_gui_command(cmd));
+	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       case HT_PROG_READ: {
-	  if (!me->progress_visible())
+	  if (!me->gui()->progress_visible())
 	      cmd = (String)"progress popup \"Reading...\"\r";
 	  else
 	      cmd = (String)"progress text \"Reading...\"\r";
-	  me->progress_visible(me->send_gui_command(cmd));
+	  me->gui()->progress_visible(me->gui()->command(cmd));
 	  
-	  if (!me->progress_visible()) // Bail if window won't popup
+	  if (!me->gui()->progress_visible()) // Bail if window won't popup
 	      break;
 
 	  long cl = HTAnchor_length(HTRequest_anchor(request));
@@ -417,11 +413,11 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int msgnum,
 	      double pro = (double) b_read/cl*100;
 	      ostrstream cmd_s;
 	      cmd_s << "progress bar " << pro << "\r" << ends;
-	      (void)me->send_gui_command(cmd_s.str());
+	      (void)me->gui()->command(cmd_s.str());
 	  }
 	  else {
 	      cmd = (String)"progress bar -1\r";
-	      (void)me->send_gui_command(cmd);
+	      (void)me->gui()->command(cmd);
 	  }
 	  
 	  break;
@@ -433,21 +429,167 @@ dods_progress (HTRequest * request, HTAlertOpcode op, int msgnum,
 
       case HT_PROG_DONE:
 	cmd = (String)"progress popdown\r";
-	me->send_gui_command(cmd);
-	me->progress_visible(false);
+	me->gui()->command(cmd);
+	me->gui()->progress_visible(false);
         break;
 
       case HT_PROG_WAIT:
-	if (!me->progress_visible())
+	if (!me->gui()->progress_visible())
 	    cmd = (String)"progress popup \"Waiting for free socket...\"\r";
 	else
 	    cmd = (String)"progress text \"Waiting for free socket...\"\r";
-	me->progress_visible(me->send_gui_command(cmd));
+	me->gui()->progress_visible(me->gui()->command(cmd));
         break;
 
       default:
         TTYPrint(TDEST, "UNKNOWN PROGRESS STATE\n");
         break;
+    }
+
+    return YES;
+}
+
+BOOL
+dods_username_password (HTRequest * request, HTAlertOpcode op, int msgnum, 
+			const char * dfault, void * input, HTAlertPar * reply)
+{
+    if (!request) {
+        if (WWWTRACE) TTYPrint(TDEST, "HTProgress.. Bad argument\n");
+        return NO;
+    }
+
+    Connect *me = (Connect *)HTRequest_context(request);
+
+    // Put the username in reply using HTAlert_setReplyMessage; use
+    // _setReplySecret for the password.
+    String cmd = "password\r";
+    String response;
+
+    if (!me->gui()->response(cmd, response))
+	return NO;
+
+    // Extract two words from RESPONSE; #1 is the username and #2 is the
+    // password. Either may be missing, in which case return NO.
+
+    String words[2];
+    if (split(response, words, 2, RXwhite) != 2) {
+	DBG2(cerr << "Wrong number of words in response: " << response \
+	     << endl);
+	return NO;
+    }
+
+    HTAlert_setReplyMessage(reply, (const char *)words[0]);
+    HTAlert_setReplySecret(reply, (const char *)words[1]);
+
+    return YES;
+}
+
+#include "www-error-msgs.h"
+
+BOOL 
+dods_error_print (HTRequest * request, HTAlertOpcode op,
+		  int msgnum, CONST char * dfault, void * input,
+		  HTAlertPar * reply)
+{
+    HTList *cur = (HTList *) input;
+    HTError *pres;
+    HTErrorShow showmask = HTError_show();
+    HTChunk *msg = NULL;
+    int code;
+
+    if (WWWTRACE) 
+	TTYPrint(TDEST, "HTError..... Generating message\n");
+
+    if (!request || !cur) 
+	return NO;
+
+    while ((pres = (HTError *) HTList_nextObject(cur))) {
+        int index = HTError_index(pres);
+        if (HTError_doShow(pres)) {
+            if (!msg) {
+                HTSeverity severity = HTError_severity(pres);
+                msg = HTChunk_new(128);
+                if (severity == ERR_WARN)
+                    HTChunk_puts(msg, "Warning: ");
+                else if (severity == ERR_NON_FATAL)
+                    HTChunk_puts(msg, "Non Fatal Error: ");
+                else if (severity == ERR_FATAL)
+                    HTChunk_puts(msg, "Fatal Error: ");
+                else if (severity == ERR_INFO)
+                    HTChunk_puts(msg, "Information: ");
+                else {
+                    if (WWWTRACE)
+                        TTYPrint(TDEST, "HTError..... Unknown Classification of Error (%d)...\n", severity);
+                    HTChunk_delete(msg);
+                    return NO;
+                }
+
+                /* Error number */
+                if ((code = HTErrors[index].code) > 0) {
+                    char buf[10];
+                    sprintf(buf, "%d ", code);
+                    HTChunk_puts(msg, buf);
+                }
+            } else
+                HTChunk_puts(msg, "\nReason: ");
+	    
+	    ostrstream os;
+	    os << endl << "Could not access `" 
+	       << HTAnchor_address((HTAnchor *)HTRequest_anchor(request)) 
+		   << "': " << ends;
+	    
+	    HTChunk_puts(msg, os.str());
+
+            HTChunk_puts(msg, HTErrors[index].msg);         /* Error message */
+
+#if 0
+            if (showmask & HT_ERR_SHOW_PARS) {           /* Error parameters */
+                int length;
+                int cnt;                
+                char *pars = (char *) HTError_parameter(pres, &length);
+                if (length && pars) {
+                    HTChunk_puts(msg, " (");
+                    for (cnt=0; cnt<length; cnt++) {
+                        char ch = *(pars+cnt);
+                        if (ch < 0x20 || ch >= 0x7F)
+                            HTChunk_putc(msg, '#');
+                        else
+                            HTChunk_putc(msg, ch);
+                    }
+                    HTChunk_puts(msg, ") ");
+                }
+            }
+#endif
+
+            if (showmask & HT_ERR_SHOW_LOCATION) {         /* Error Location */
+                HTChunk_puts(msg, "This occured in ");
+                HTChunk_puts(msg, HTError_location(pres));
+                HTChunk_putc(msg, '\n');
+            }
+
+            /*
+            ** Make sure that we don't get this error more than once even
+            ** if we are keeping the error stack from one request to another
+            */
+            HTError_setIgnore(pres);
+            
+            /* If we only are show the most recent entry then break here */
+            if (showmask & HT_ERR_SHOW_FIRST)
+                break;
+        }
+    }
+
+    if (msg) {
+	String command = (String)"dialog \"" + (char *)HTChunk_data(msg) 
+	    + "\" error\r";
+	String response;	// Not used
+	Connect *me = (Connect *)HTRequest_context(request);
+
+	if (!me->gui()->response(command, response)) {
+	    DBG2(cerr << "GUI Failure in dods_error_print()" << endl);
+	}
+
+        HTChunk_delete(msg);
     }
 
     return YES;
@@ -566,8 +708,8 @@ Connect::www_lib_init()
     // Register our User Prompts etc in the Alert Manager
     if (HTAlert_interactive()) {
 	HTAlert_add(dods_progress, HT_A_PROGRESS);
-	HTAlert_add(HTError_print, HT_A_MESSAGE);
-	HTAlert_add(HTPromptUsernameAndPassword, HT_A_USER_PW);
+	HTAlert_add(dods_error_print, HT_A_MESSAGE);
+	HTAlert_add(dods_username_password, HT_A_USER_PW);
     }
 
     // Register a call back function for the Net Manager
@@ -579,108 +721,6 @@ Connect::www_lib_init()
     
     // Register our own MIME header handler for extra headers
     HTHeader_addParser("*", NO, header_handler);
-}
-
-// Start the GUI.
-
-bool
-Connect::start_gui()
-{
-    if (!show_gui())		// Don't start it if it won't be used.
-	return true;
-
-    if (_gui != -1)		// Already running? Don't start if so!
-	return true;
-
-    // As per the rules first try dods_root/etc/GUI then look on the user's
-    // PATH. If both fail, return false.
-    String gui = getenv("DODS_GUI");
-    if (gui == "")
-	gui = "wish";
-
-    String gui_cmd = (String)dods_root + "/etc/" + gui;
-    _gui = exp_spawnl((char *)(const char *)gui_cmd, 
-		      (char *)(const char *)gui, NULL);
-    if (_gui == -1)
-	if ((_gui = exp_spawnl((char *)(const char *)gui, 
-			       (char *)(const char *)gui, NULL)) == -1)
-	    return false;
-    
-    _gui_pid = exp_pid;		// Save the PID so we can clean up later. 
-
-    int status = exp_expectl(_gui, 
-			     exp_exact, GUI_PROMPT, OK, 
-			     exp_end);
-    switch (status) {
-      case OK:
-	DBG2(cerr << "Started the GUI" << endl);
-	break;
-      case ERROR:
-      case EXP_TIMEOUT:
-      case EXP_EOF:
-      case EXP_FULLBUFFER:
-      default:
-	cerr << "Could not start the GUI." << endl;
-	kill(_gui_pid, SIGKILL);
-	waitpid(_gui_pid, NULL, 0);
-	_user_wants_gui = false; // No GUI if we cannot get it working!
-	_gui = -1;
-	return false;
-    }
-
-    // GUI init command either comes from an environment variable or uses the
-    // default (my tcl/tk program).
-    String gui_init = getenv("DODS_GUI_INIT");
-    if (gui_init == "")
-	gui_init = (String)"source " + dods_root + "/etc/dods_gui.tcl\r";
-
-    if (!send_gui_command(gui_init)) {
-	kill(_gui_pid, SIGKILL);
-	waitpid(_gui_pid, NULL, 0);
-	_user_wants_gui = false;
-	_gui = -1;
-	return false;
-    }
-    else
-	return true;
-	
-}
-
-// Stop the GUI.
-
-void
-Connect::stop_gui()
-{
-    if (!show_gui() || _gui < 0) // Don't try to stop what is not running.
-	return;
-    
-    String command = GUI_EXIT_COMMAND;
-    int status = write(_gui, (const char *)command, command.length());
-    if (status != command.length()) {
-	cerr << "Wrong number of chars transferred to GUI!" << endl;
-	return;
-    }
-    
-    status = exp_expectl(_gui, exp_exact, "", OK, exp_end);
-
-    switch (status) {
-      case OK:
-	return;
-      case EXP_TIMEOUT:
-      case EXP_EOF:
-      case EXP_FULLBUFFER:
-      default:
-	DBG2(cerr << "Communication breakdown!" << endl);
-	kill(_gui_pid, SIGKILL);
-	waitpid(_gui_pid, NULL, 0);
-	_user_wants_gui = false;
-	_gui = -1;
-	return;
-    }
-
-    waitpid(_gui_pid, NULL, 0);
-
-    _gui = -1;
 }
 
 // Before calling this mfunc memory for the timeval struct must be allocated.
@@ -696,12 +736,6 @@ Connect::clone(const Connect &src)
 	_das = src._das;
 	_dds = src._dds;
 	_error = src._error;
-
-	if (_gui > -1)
-	    (void)start_gui();
-
-	_show_gui = src._show_gui;
-	_user_wants_gui = src._user_wants_gui;
 
 	// Initialize the anchor object.
 	char *ref = HTParse(_URL, (char *)0, PARSE_ALL);
@@ -841,6 +875,7 @@ Connect::Connect()
 
 Connect::Connect(const String &name)
 {
+    _gui = new Gui;
     char *ref = HTParse(name, NULL, PARSE_ALL);
     if (ref) {
 	// If there are no current connects, initialize the library
@@ -848,25 +883,6 @@ Connect::Connect(const String &name)
 	    www_lib_init();
 
 	_connects++;		// Record the connect.
-
-#if DEBUG2
-	exp_loguser = 1;	// Defined in expect_comm.h (see expect.h).
-#else
-	exp_loguser = 0;
-#endif
-
-	_gui = -1;		// Don't start the GUI until it's needed.
-
-	// _SHOW_GUI is false because it is shown (by default) only in
-	// request_data(). 
-	_show_gui = false;
-
-	String dods_gui = getenv("DODS_GUI");
-	dods_gui.downcase();
-	if (dods_gui == "no")
-	    _user_wants_gui = false; // Users explicitly say "no"...
-	else
-	    _user_wants_gui = true; // Otherwise assume "yes".
 
 	_URL = name;
 	_local = false;
@@ -922,9 +938,6 @@ Connect::~Connect()
 	HTList_delete(_conv);
 	HTLibTerminate();
     }
-
-    if (_gui > -1)
-	stop_gui();
 }
 
 Connect &
@@ -1150,80 +1163,12 @@ Connect::encoding()
     return _encoding;
 }
 
-// When STATE is -1 return the state of the progress indicator (true ==
-// mapped). When State is true or false, set the _progress_indicator flag
-// accordingly. 
-
-bool
-Connect::progress_visible(int state = -1)
-{
-    if (state < 0)
-	return _progress_visible;
-    else
-	return (_progress_visible = state);
-}
-
-bool
-Connect::send_gui_command(String command)
-{
-    if (!show_gui())		// Bail if were not supposed to be here...
-	return true;
-
-    DBG2(cerr << "Sending the GUI: " << command << endl);
-
-    if (_gui < 0) {
-	bool running = start_gui();
-	if (!running)
-	    return false;
-    }
-    
-    int status = write(_gui, (const char *)command, command.length());
-    if (status != command.length()) {
-	cerr << "Wrong number of chars transferred to GUI!" << endl;
-	_user_wants_gui = false;
-	return false;
-    }
-    
-    String response = command + "\nOK\r\n" + GUI_PROMPT;
-    String anything = (String)"*\r\n" + GUI_PROMPT;
-    status = exp_expectl(_gui, 
-			 exp_exact, (const char *)response, OK, 
-			 exp_glob, (const char *)anything, ERROR,
-			 exp_end);
-
-    switch (status) {
-      case OK:
-	return true;
-      case ERROR:
-      case EXP_TIMEOUT:
-      case EXP_EOF:
-      case EXP_FULLBUFFER:
-      default:
-	cerr << "GUI Could not execute command: " << command << endl
-	     << "Shutting down the GUI." << endl;
-	kill(_gui_pid, SIGKILL);
-	waitpid(_gui_pid, NULL, 0);
-	_user_wants_gui = false;
-	_gui = -1;
-	return false;
-    }
-}
-
-bool
-Connect::show_gui(int state = -1)
-{
-    if (state < 0)
-	return _show_gui && _user_wants_gui;
-    else
-	return (_show_gui = (bool)state) && _user_wants_gui;
-}
-
 // Added EXT which defaults to "das". jhrg 3/7/95
 
 bool
-Connect::request_das(bool gui = false, const String &ext = "das")
+Connect::request_das(bool gui_p = false, const String &ext = "das")
 {
-    (void) show_gui(false);
+    (void)gui()->show_gui(gui_p);
 
     String das_url = _URL + "." + ext;
     bool status = false;
@@ -1257,9 +1202,9 @@ exit:
 // Added EXT which deafults to "dds". jhrg 3/7/95
 
 bool
-Connect::request_dds(bool gui = false, const String &ext = "dds")
+Connect::request_dds(bool gui_p = false, const String &ext = "dds")
 {
-    (void)show_gui(gui);
+    (void)gui()->show_gui(gui_p);
 
     String dds_url = _URL + "." + ext;
     bool status = false;
@@ -1302,10 +1247,10 @@ exit:
 // origianl DDS received from the dataset when this connection was made.
 
 DDS &
-Connect::request_data(const String expr, bool gui = true, bool async = false, 
-		      const String &ext = "dods")
+Connect::request_data(const String expr, bool gui_p = true, 
+		      bool async = false, const String &ext = "dods")
 {
-    (void)show_gui(gui);
+    (void)gui()->show_gui(gui_p);
 
     String data_url = _URL + "." + ext + "?" + expr;
     bool status = fetch_url(data_url, async);
@@ -1353,6 +1298,12 @@ Connect::request_data(const String expr, bool gui = true, bool async = false,
     }
 
     return d;
+}
+
+Gui *
+Connect::gui()
+{
+    return _gui;
 }
 
 bool

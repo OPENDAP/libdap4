@@ -31,11 +31,14 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.16  1996/06/18 23:41:01  jimg
-/* Added support for a GUI. The GUI is actually contained in a separate program
-/* that is run in a subprocess. The core `talks' to the GUI using a pty and a
-/* simple command language.
+/* Revision 1.17  1996/06/21 23:14:15  jimg
+/* Removed GUI code to a new class - Gui.
 /*
+ * Revision 1.16  1996/06/18 23:41:01  jimg
+ * Added support for a GUI. The GUI is actually contained in a separate program
+ * that is run in a subprocess. The core `talks' to the GUI using a pty and a
+ * simple command language.
+ *
  * Revision 1.15  1996/06/08 00:07:57  jimg
  * Added support for compression. The Content-Encoding header is used to
  * determine if the incoming document is compressed (values: x-plain; no
@@ -150,6 +153,7 @@
 #include "DAS.h"
 #include "DDS.h"
 #include "Error.h"
+#include "Gui.h"
 #include "util.h"
 #include "config_dap.h"
 
@@ -203,18 +207,14 @@ private:
     static String _logfile;	// If !"", log remote access to the named file
     static HTList *_conv;	// List of global converters
     
-    int _gui;			// Expect file descriptor for GUI.
-    int _gui_pid;		// Process ID of GUI.
-    bool _show_gui;		// True if we should use the GUI.
-    bool _user_wants_gui;	// True if the user wants the GUI.
-    bool _progress_visible;	// True when the PI is mapped.
-
     ObjectType _type;		// What type of object is in the stream?
     EncodingType _encoding;	// What type of encoding is used?
 
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
     Error _error;		// Error object
+
+    Gui *_gui;			// Used for progress, error display.
 
     String _URL;		// URL to remote dataset (incl. CE)
 
@@ -248,19 +248,6 @@ private:
 
     //* Close the objects _output stream if it is not NULL or STDOUT.
     void close_output();
-
-    //* Start the GUI. Currently this is used as a progress indicator only. 
-    //* This sets the _gui and _gui_pid members and runs an initialization
-    //* command in the new process. If either startup *or* initialization
-    //* fails, _gui is set to -1, _gui_pid is undefined and the return value is
-    //* false. If startup and initialization succeed, _gui is the file
-    //* descriptor used to communicate with the process, _gui_pid the the PID
-    //* and START_GUI returns true. The initialization command is currently
-    //* hardwired. 
-    bool start_gui();
-
-    //* Kill the GUI process.
-    void stop_gui();
 
     // These functions are used as callbacks by the WWW library.
     friend int authentication_handler(HTRequest *request, int status);
@@ -325,25 +312,6 @@ public:
     //* required) and x-gzip (compressed using GNU's gzip).
     EncodingType encoding();
 
-    /// Set or test progress indicator visibility.
-    bool progress_visible(int state = -1);
-
-    /// Should the GUI be used? 
-    //* If STATE is -1 (the default) this is the ADD of _suspress_gui and
-    //* _user_wants_gui. If a boolean value for STATE is given, then set the
-    //* member _show_gui to STATE and return the logical AND of that new value
-    //* and _user_wants_gui.
-    bool show_gui(int state = -1);
-
-    /// Send the per Connect GUI process a command.
-    //* It may be that users turn off the GUI (because they are sick of it).
-    //* In that case, ths command with simply return false. It does not harm to
-    //* call the command when no gui is running. Care should br taken to send
-    //* only valid commands - invalid commands may put the GUI in an inoperable
-    //* state.
-    //* Returns: true if the command succeeded, false otherwise.
-    bool send_gui_command(String command);
-
     /// Return a reference to the Connect's DAS object.
     DAS &das();
 
@@ -355,6 +323,9 @@ public:
     //* been sent from the server, returns a reference to an empty error
     //* object. 
     Error &error();
+
+    /// Return a pointer to the GUI object assoicated with this connection.
+    Gui *gui();
 
     // For each data access there is an associated constraint expression
     // (even if it is null) and a resulting DDS which describes the type(s)
