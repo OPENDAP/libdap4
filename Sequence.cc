@@ -3,6 +3,11 @@
 //
 // jhrg 9/14/94
 
+// $Log: Sequence.cc,v $
+// Revision 1.2  1994/09/23 14:48:31  jimg
+// Fixed some errors in comments.
+//
+
 #ifdef _GNUG_
 #pragma implementation
 #endif

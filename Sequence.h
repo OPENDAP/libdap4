@@ -8,10 +8,15 @@
 // elements. Thus, Sequence { String name; Int32 age; } person; means a
 // sequence of N persons which each contain a name and age. The sequence can
 // be arbitraily long (i.e., you don't know N by looking at the sequence
-// declaration. The variables contained in a sequence are stored by instances
-// of this class in a SLList of BaseType pointers.
+// declaration.
 //
 // jhrg 9/14/94
+
+/* $Log: Sequence.h,v $
+/* Revision 1.2  1994/09/23 14:48:32  jimg
+/* Fixed some errors in comments.
+/*
+ */
 
 #ifndef _Sequence_h
 #define _Sequence_h 1
