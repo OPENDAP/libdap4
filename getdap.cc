@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.32  1998/09/08 22:23:51  jimg
+// Removed PERF macro calls.
+//
 // Revision 1.31  1998/04/03 17:46:04  jimg
 // Patch from Jake Hamby; fixed bug where Structures which contained sequences
 // did not print properly.
@@ -128,7 +131,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.31 1998/04/03 17:46:04 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.32 1998/09/08 22:23:51 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -138,7 +141,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.31 1998/04/03 17:46:04 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.31 $";
+const char *VERSION = "$Revision: 1.32 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -229,12 +232,10 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 	    ((Structure *)v)->print_all_vals(cout, url.source(), dds);
 	    break;
 	  default:
-	    PERF(cerr << "Deserializing: " << dds.var(q).name() << endl);
 	    if ((sequence_found || async) && !v->deserialize(url.source(), dds)) {
 		cerr << "Asynchronous read failure." << endl;
 		exit(1);
 	    }
-	    PERF(cerr << "Deserializing complete" << endl);
 	    v->print_val(cout);
 	    break;
 	}
