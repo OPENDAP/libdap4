@@ -4,7 +4,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
-// Revision 1.3  1995/02/22 21:03:59  reza
+// Revision 1.4  1995/03/16 16:29:24  reza
+// Fixed bugs in ErrMsgT and mime type.
+//
+// Revision 1.3  1995/02/22  21:03:59  reza
 // Added version number capability using CGI status_line.
 //
 // Revision 1.2  1995/02/22  19:53:32  jimg
@@ -24,7 +27,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.3 1995/02/22 21:03:59 reza Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.4 1995/03/16 16:29:24 reza Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,7 +59,7 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.3 1995/02/22 21:03:59 reza Exp $"};
 // Returns: void
 
 void 
-ErrMsgT(const char *Msgt)
+ErrMsgT(char *Msgt)
 {
 #ifdef NEVER
     // main() should call setlocale(); don't override its call. jhrg
@@ -173,7 +176,7 @@ void
 set_mime_text()
 {
   cout << "Status: 200 " << DVR << endl;  /* send server version */
-  cout << "Content-type: test/plain\n" << endl; 
+  cout << "Content-type: text/plain\n" << endl; 
 }
 
 void
