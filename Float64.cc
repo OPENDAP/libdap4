@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.15  1995/08/26 00:31:29  jimg
+// Revision 1.16  1995/12/06 21:35:20  jimg
+// Changed read() from three to two parameters.
+// Removed store_val() and read_val() (use buf2val() and val2buf()).
+//
+// Revision 1.15  1995/08/26  00:31:29  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.14  1995/08/22  23:57:50  jimg
@@ -176,12 +180,6 @@ Float64::deserialize(bool reuse)
 }
 
 unsigned int
-Float64::store_val(void *val, bool reuse)
-{
-    return val2buf(val, reuse);
-}
-
-unsigned int
 Float64::val2buf(void *val, bool reuse)
 {
     assert(val);
@@ -189,12 +187,6 @@ Float64::val2buf(void *val, bool reuse)
     _buf = *(double *)val;
 
     return width();
-}
-
-unsigned int
-Float64::read_val(void **val)
-{
-    return buf2val(val);
 }
 
 unsigned int

@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.16  1995/08/26 00:31:46  jimg
+// Revision 1.17  1995/12/06 21:35:23  jimg
+// Changed read() from three to two parameters.
+// Removed store_val() and read_val() (use buf2val() and val2buf()).
+//
+// Revision 1.16  1995/08/26  00:31:46  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.15  1995/08/23  00:18:30  jimg
@@ -153,15 +157,6 @@ Str::Str(const String &n) : BaseType(n, str_t), _buf("")
 {
 }
 
-// Return: the number of bytes needed to store the string's value or 0 if no
-// storage for the string has been allocated.
-
-unsigned int
-Str::len()			// deprecated
-{
-    return length();
-}
-
 unsigned int
 Str::length()
 {
@@ -213,12 +208,6 @@ Str::deserialize(bool reuse)
 // memory management problems.
 
 unsigned int
-Str::read_val(void **val)
-{
-    return buf2val(val);
-}
-
-unsigned int
 Str::buf2val(void **val)
 {
     assert(val);
@@ -235,12 +224,6 @@ Str::buf2val(void **val)
 //
 // Returns the number of bytes needed for _BUF (which is a pointer in this
 // case). 
-
-unsigned int
-Str::store_val(void *val, bool reuse)
-{
-    return val2buf(val, reuse);
-}
 
 unsigned int
 Str::val2buf(void *val, bool reuse)

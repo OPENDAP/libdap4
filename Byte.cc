@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.14  1995/08/26 00:31:27  jimg
+// Revision 1.15  1995/12/06 21:35:13  jimg
+// Changed read() from three to two parameters.
+// Removed store_val() and read_val() (use buf2val() and val2buf()).
+//
+// Revision 1.14  1995/08/26  00:31:27  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.13  1995/08/22  23:57:48  jimg
@@ -188,12 +192,6 @@ Byte::deserialize(bool reuse)
 // Returns: size in bytes of the value's representation.
 
 unsigned int
-Byte::store_val(void *val, bool reuse)
-{
-    return val2buf(val, reuse);
-}
-
-unsigned int
 Byte::val2buf(void *val, bool reuse)
 {
     assert(val);
@@ -201,12 +199,6 @@ Byte::val2buf(void *val, bool reuse)
     _buf = *(byte *)val;
 
     return width();
-}
-
-unsigned int
-Byte::read_val(void **val)
-{
-    return buf2val(val);
 }
 
 unsigned int

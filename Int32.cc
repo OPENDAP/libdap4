@@ -38,7 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.16  1995/08/26 00:31:36  jimg
+// Revision 1.17  1995/12/06 21:35:16  jimg
+// Changed read() from three to two parameters.
+// Removed store_val() and read_val() (use buf2val() and val2buf()).
+//
+// Revision 1.16  1995/08/26  00:31:36  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.15  1995/08/22  23:57:51  jimg
@@ -173,12 +177,6 @@ Int32::deserialize(bool reuse)
 }
 
 unsigned int
-Int32::store_val(void *val, bool reuse)
-{
-    return val2buf(val, reuse);
-}
-
-unsigned int
 Int32::val2buf(void *val, bool reuse)
 {
     assert(val);
@@ -186,12 +184,6 @@ Int32::val2buf(void *val, bool reuse)
     _buf = *(int32 *)val;
 
     return width();
-}
-
-unsigned int
-Int32::read_val(void **val)
-{
-    return buf2val(val);
 }
 
 unsigned int

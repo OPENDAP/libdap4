@@ -5,9 +5,13 @@
 // jhrg 9/7/94
 
 /* $Log: Byte.h,v $
-/* Revision 1.11  1995/08/26 00:31:28  jimg
-/* Removed code enclosed in #ifdef NEVER #endif.
+/* Revision 1.12  1995/12/06 21:35:15  jimg
+/* Changed read() from three to two parameters.
+/* Removed store_val() and read_val() (use buf2val() and val2buf()).
 /*
+ * Revision 1.11  1995/08/26  00:31:28  jimg
+ * Removed code enclosed in #ifdef NEVER #endif.
+ *
  * Revision 1.10  1995/08/22  23:48:13  jimg
  * Removed card() member function.
  * Removed old, deprecated member functions.
@@ -108,10 +112,9 @@ public:
     virtual bool serialize(bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
-    virtual bool read(String dataset, String var_name, String constraint) = 0;
-    virtual unsigned int store_val(void *val, bool reuse = false); // dep.
+    virtual bool read(String dataset, String var_name) = 0;
+
     virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int read_val(void **val); // deprecated name
     virtual unsigned int buf2val(void **val);
 
     virtual void print_val(ostream &os, String space = "", 
