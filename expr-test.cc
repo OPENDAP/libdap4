@@ -39,6 +39,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.8  1996/05/29 22:04:13  jimg
+// Removed old, useless, code.
+//
 // Revision 1.7  1996/05/22 18:05:35  jimg
 // Merged files from the old netio directory into the dap directory.
 // Removed the errmsg library from the software.
@@ -75,7 +78,7 @@
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.7 1996/05/22 18:05:35 jimg Exp $"};
+static char rcsid[]= {"$Id: expr-test.cc,v 1.8 1996/05/29 22:04:13 jimg Exp $"};
 
 #include <stdio.h>
 #include <errno.h>
@@ -472,7 +475,9 @@ move_dds(FILE *in)
     }
 
     FILE *fp = fopen(c, "w+");
+#if 0
     unlink(c);
+#endif
     if (!fp) {
 	cerr << "Could not open anonymous temporary file: " 
 	     << strerror(errno) << endl;
@@ -491,6 +496,7 @@ move_dds(FILE *in)
 	    fputs(s, fp);
     }
 
+    fflush(fp);
     if (fseek(fp, 0L, 0) < 0) {
 	cerr << "Could not rewind data DDS stream: " << strerror(errno)
 	    << endl;
@@ -535,21 +541,7 @@ constrained_trans(const String &dds_name, const String &constraint)
     // Simulate Connect::request_dds() at the begining of a virtual connection
     DDS client = server;
 
-    // The client gets this information from the API calls the user program
-    // makes; it then sends it over to the server using various parameters.
-
-#ifdef NEVER
-    if (constraint == "") {
-	cout << "Constraint:";
-	char c[255];
-	if (!gets(&c[0]))
-	    cerr << "Could nore read the constraint expression" << endl;
-	ce = c;
-    }
-    else
-	ce = constraint;
-#endif
-
+    // If the CE was not passed in, read it from the command line.
     String ce;
     if (constraint == "") {
 	cout << "Constraint:";
@@ -564,7 +556,6 @@ constrained_trans(const String &dds_name, const String &constraint)
     else
 	ce = constraint;
 
-    
     // send the variable given the constraint (dataset is ignored by the Test
     // classes); TRUE flushes the I/O channel.
     if (!server.send("dummy", ce, pout, true)) {
@@ -588,9 +579,6 @@ constrained_trans(const String &dds_name, const String &constraint)
 	return false;
     }
     fclose(dds_fp);
-
-    cerr << "The constrained DDS:" << endl;
-    dds.print();
 
     // now arrange to read the data via the appropriate variable.  NB:
     // Since all BaseTypes share I/O, this works. However, it will have
