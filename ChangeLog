@@ -1,3 +1,14 @@
+Sun Feb  9 18:40:25 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* See TODO for a list of bugs fixed.
+
+Thu Feb  6 16:17:06 1997  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Changed the return type of request_data() from DDS & to DDS *.
+	Also changed the return types of append_constraint() and
+	constraint_dds() from DDS & to DDS *. When request_data()
+	encounters an error it no longer exits; now it returns NULL.
+
 Wed Dec 18 11:18:05 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Version 2.10 prepared
@@ -214,4 +225,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.7 1996/12/18 19:18:24 jimg Exp $
+$Id: ChangeLog,v 1.8 1997/02/10 02:40:51 jimg Exp $
