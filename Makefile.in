@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.80 1998/08/14 23:03:35 jimg Exp $
+# $Id: Makefile.in,v 1.81 1998/09/02 20:31:34 jimg Exp $
 
 @SET_MAKE@
 
@@ -397,7 +397,9 @@ tar:
 .PHONY: update-version
 update-version: check-version
 	@echo "Version is: `cat version.h`"
-	mv ../dap* ../dap-$(version)
+	if [ ! -d ../$(dir) ]; then \
+	    mv ../dap* ../$(dir);\
+	fi
 
 # Compare the version encoded in this Makefile (set by configure) with the
 # version in version.h. The version make variable is set up near the top of
