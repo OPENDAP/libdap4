@@ -10,6 +10,19 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.17  2000/03/31 21:07:04  jimg
+// Merged with release-3-1-5
+//
+// Revision 1.16.6.2  2000/03/31 18:02:43  jimg
+// Removed old code
+//
+// Revision 1.16.6.1  2000/03/20 19:25:46  jimg
+// I changed check_byte to allow bytes to have values between -128 and 255 even
+// though that range is not possible for a single instance. This test now
+// assumes that the client will determine whether the byte is signed or not. I
+// think that this is OK since most clients getting byte data are making
+// assumptions about the organization of those bytes.
+//
 // Revision 1.16  1999/04/29 02:29:37  jimg
 // Merge of no-gnu branch
 //
@@ -78,7 +91,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.16 1999/04/29 02:29:37 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.17 2000/03/31 21:07:04 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -154,7 +167,12 @@ check_byte(const char *val, const int line)
 	return FALSE;
     }
 
-    if (v > DODS_CHAR_MAX || v < DODS_CHAR_MIN) {
+    // We're very liberal here with values. Anything that can fit into 8 bits
+    // is allowed through. Clients will have to deal with the fact that the
+    // ASCII representation for the value might need to be tweaked. This is
+    // especially the case for Java clients where Byte datatypes are
+    // signed. 3/20/2000 jhrg
+    if (v > DODS_UCHAR_MAX || v < DODS_SCHAR_MIN) {
 	parse_error("Not a byte value", line);
 	return FALSE;
     }
@@ -291,6 +309,7 @@ check_float32(const char *val, const int num)
 	return FALSE;
     }
 
+#if 0
     static double range = fabs(log10(DODS_FLT_MAX));
     if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
 	ostrstream oss;
@@ -304,6 +323,7 @@ check_float32(const char *val, const int num)
 
 	return FALSE;
     }
+#endif
 
     return TRUE;
 }
@@ -319,6 +339,7 @@ check_float64(const char *val, const int num)
 	return FALSE;
     }
 
+#if 0
     static double range = fabs(log10(DODS_DBL_MAX));
     if (v != 0.0 && fabs(log10(fabs(v))) > range) { 
 	ostrstream oss;
@@ -332,6 +353,7 @@ check_float64(const char *val, const int num)
 
 	return FALSE;
     }
+#endif
 
     return TRUE;
 }

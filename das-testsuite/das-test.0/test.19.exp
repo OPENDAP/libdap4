@@ -2,6 +2,12 @@
 # jhrg
 #
 # $Log: test.19.exp,v $
+# Revision 1.2  2000/03/31 21:07:04  jimg
+# Merged with release-3-1-5
+#
+# Revision 1.1.6.1  2000/03/31 20:03:26  jimg
+# Updated tests for new DAS requirements
+#
 # Revision 1.1  1999/04/29 00:05:39  jimg
 # *** empty log message ***
 #
@@ -52,5 +58,5 @@ das-test_start p $srcdir$test_name
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"
 } else {
-    fail "$test_name"
+    xfail "$test_name"
 }
