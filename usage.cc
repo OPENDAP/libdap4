@@ -14,7 +14,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.15 2000/09/22 02:17:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.16 2000/10/18 17:24:59 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -147,11 +147,10 @@ get_user_supplied_docs(string name, string cgi)
 
     // If name.html cannot be opened, look for basename.html
     if (!ifs) {
-	unsigned int slash = name.find_last_of('/');
+	string::size_type slash = name.find_last_of('/');
 	string pathname = name.substr(0, slash);
 	string filename = name.substr(slash+1);
-	// filename = filename.at(RXalpha); // XXX can't do this with string
-	string new_name = pathname + "/" + filename; // XXX + ".html"
+	string new_name = pathname + "/" + filename + ".html";
 	ifs.open(new_name.c_str());
     }
 
@@ -427,94 +426,98 @@ int
 #endif 
 main(int argc, char *argv[])
 {
-    if (argc != 3) {
-	usage(argv);
-	exit(1);
-    }
+  if (argc != 3) {
+    usage(argv);
+    exit(1);
+  }
 
-    string name = argv[1];
-    string doc;
+  string name = argv[1];
+  string doc;
 
-    if (found_override(name, doc)) {
-	html_header();
-	cout << doc;
-	exit(0);
-    }
-
-    // The user is not overriding the DAS/DDS generated information, so read
-    // the DAS, DDS and user supplied documents. 
-
-    string cgi = argv[2];
-
-    DAS das;
-    string command = cgi + "_das '" + name + "'";
-    DBG(cerr << "DAS Command: " << command << endl);
-
-#ifndef WIN32
-	//  Under win32, this has been temporarily removed to get it to compile.
-	//  This code is not relevant for the client side for win32 native port.  Once
-	//  one or more of the Dods servers have been ported, this will need patched
-	//  similiar to the popen() fixes for ML loaddods.
-    FILE *in = popen(command.c_str(), "r");
-    if (in && remove_mime_header(in)) {
-	das.parse(in);
-	pclose(in);
-    }
-#endif
-
-    DDS dds;
-    command = cgi + "_dds '" + name + "'";
-    DBG(cerr << "DDS Command: " << command << endl);
-
-#ifndef WIN32
-	//  Under win32, this has been temporarily removed to get it to compile.
-	//  This code is not relevant for the client side for win32 native port.  Once
-	//  one or more of the Dods servers have been ported, this will need patched
-	//  similiar to the popen() fixes for ML loaddods.
-    in = popen((cgi + "_dds '" + name + "'").c_str(), "r");
-    if (in && remove_mime_header(in)) {
-	dds.parse(in);
-	pclose(in);
-    }
-#endif
-
-    // Build the HTML* documents.
-
-    string user_html = get_user_supplied_docs(name, cgi);
-
-    string global_attrs = build_global_attributes(das, dds);
-
-    string variable_sum = build_variable_summaries(das, dds);
-
-    // Write out the HTML document.
-
+  if (found_override(name, doc)) {
     html_header();
-
-    if (global_attrs.length()) {
-	cout << "<html><head><title>Dataset Information</title></head>" 
-	     << endl 
-	     << "<html>" << endl 
-	     << global_attrs << endl 
-	     << "<hr>" << endl;
-    }
-
-    cout << variable_sum << endl;
-
-    cout << "<hr>" << endl;
-
-    cout << user_html << endl;
-
-    cout << "</html>" << endl;
-
+    cout << doc;
     exit(0);
+  }
 
-//  Needed for VC++
+  // The user is not overriding the DAS/DDS generated information, so read
+  // the DAS, DDS and user supplied documents. 
+
+  string cgi = argv[2];
+
+  DAS das;
+  string command = cgi + "_das '" + name + "'";
+  DBG(cerr << "DAS Command: " << command << endl);
+
+#ifndef WIN32
+  //  Under win32, this has been temporarily removed to get it to compile.
+  //  This code is not relevant for the client side for win32 native port.
+  //  Once one or more of the Dods servers have been ported, this will need
+  //  patched similiar to the popen() fixes for ML loaddods.
+  FILE *in = popen(command.c_str(), "r");
+  if (in && remove_mime_header(in)) {
+    das.parse(in);
+    pclose(in);
+  }
+#endif
+
+  DDS dds;
+  command = cgi + "_dds '" + name + "'";
+  DBG(cerr << "DDS Command: " << command << endl);
+
+#ifndef WIN32
+  //  Under win32, this has been temporarily removed to get it to compile.
+  //  This code is not relevant for the client side for win32 native port.
+  //  Once one or more of the Dods servers have been ported, this will need
+  //  patched similiar to the popen() fixes for ML loaddods.
+  in = popen(command.c_str(), "r");
+  if (in && remove_mime_header(in)) {
+    dds.parse(in);
+    pclose(in);
+  }
+#endif
+
+  // Build the HTML* documents.
+
+  string user_html = get_user_supplied_docs(name, cgi);
+
+  string global_attrs = build_global_attributes(das, dds);
+
+  string variable_sum = build_variable_summaries(das, dds);
+
+  // Write out the HTML document.
+
+  html_header();
+
+  if (global_attrs.length()) {
+    cout << "<html><head><title>Dataset Information</title></head>" 
+	 << endl 
+	 << "<html>" << endl 
+	 << global_attrs << endl 
+	 << "<hr>" << endl;
+  }
+
+  cout << variable_sum << endl;
+
+  cout << "<hr>" << endl;
+
+  cout << user_html << endl;
+
+  cout << "</html>" << endl;
+
+  exit(0);
+
+  //  Needed for VC++
 #ifdef WIN32
-	return;
+  return;
 #endif
 }
 
 // $Log: usage.cc,v $
+// Revision 1.16  2000/10/18 17:24:59  jimg
+// Fixed an error in get_user_supplied_docs() which caused the data file to be
+// read instead of a <data file>.html file.
+//
 // Revision 1.15  2000/09/22 02:17:23  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and
