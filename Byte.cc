@@ -1,12 +1,15 @@
 
-// Implementation for Byte. Quite some implementation, huh?
+// Implementation for Byte.
 //
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.1  1994/09/15 21:08:38  jimg
+// Revision 1.2  1994/09/23 14:36:06  jimg
+// Fixed errors in comments.
+//
+// Revision 1.1  1994/09/15  21:08:38  jimg
 // Added many classes to the BaseType hierarchy - the complete set of types
-// described in the DODS API design documet is not represented.
+// described in the DODS API design documet is now represented.
 // The parser can parse DDS files.
 // Fixed many small problems with BaseType.
 // Added CtorType.
