@@ -1,7 +1,7 @@
 
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
+// (c) COPYRIGHT URI/MIT 1996
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
@@ -12,6 +12,11 @@
 // jhrg 4/23/96
 
 // $Log: Error.h,v $
+// Revision 1.3  1996/08/13 18:17:02  jimg
+// Removed system includes.
+// Added documentation on new interfaces for display_message() and
+// correct_error().
+//
 // Revision 1.2  1996/06/22 00:02:50  jimg
 // Added Gui pointer to the Error oject's correct_error() and
 // display_message() mfuncs. These mfuncs now used the GUI to display
@@ -28,8 +33,10 @@
 #pragma interface
 #endif
 
+#if 0
 #include <stdio.h>
 #include <String.h>
+#endif
 
 #include "Gui.h"
 
@@ -126,14 +133,15 @@ public:
     //* Returns: a copy of the Error object's message string.
     String error_message(String msg = "");
     
-    /// Display the error message in a dialog box.
-    //* Either display the error message in a dialog box and offer the user
-    //* a single `OK' button or print the message to standard error. If the
-    //* compile-time switch `TCLTK' is defined to be nonzero  and, at
-    //* run-time, the environment variable DISPLAY is set use the dialog box,
-    //* otherwise use standard error.
-    //* Returns: void.
-    void display_message(Gui *gui);
+    /// Display the error message in a dialog box or on stderr.
+    /** Either display the error message in a dialog box and offer the user
+      a single `OK' button or print the message to standard error. If #gui#
+      is not given, then use stderr. In addition, the class Gui provides
+      other means for the user to control how messages are displayed and
+      those may be used to select either graphical or text devices.
+
+      Returns: void. */
+    void display_message(Gui *gui = 0);
 
     /// Get or set the program type.
     //* With no argument, return the program type of the error object. With
