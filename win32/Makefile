@@ -47,10 +47,10 @@ TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe \
 		  $(OBJDIR)\ThreadTest.exe
 
 # Define the testsuite objects
-TESTTARGETS	= $(OBJDIR)\das-test.exe \
-		  $(OBJDIR)\dds-test.exe \
-		  $(OBJDIR)\error-test.exe \
-		  $(OBJDIR)\expr-test.exe
+#TESTTARGETS	= $(OBJDIR)\das-test.exe \
+#		  $(OBJDIR)\dds-test.exe \
+#		  $(OBJDIR)\error-test.exe \
+#		  $(OBJDIR)\expr-test.exe
 
 # Clear built-in rules and set new ones
 .SUFFIXES :
