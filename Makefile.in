@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.136 2003/03/04 17:21:11 jimg Exp $
+# $Id: Makefile.in,v 1.137 2003/03/06 01:42:04 jimg Exp $
 
 @SET_MAKE@
 
@@ -112,7 +112,8 @@ CLIENTSRCS = Connections.cc  RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc
 CLIENTOBJS = Connections.o RCReader.o Connect.o HTTPConnect.o HTTPCache.o
 CLIENTHDRS = Connections.h Connections.cc RCReader.h Connect.h HTTPConnect.h \
 	     ObjectType.h EncodingType.h HTTPCache.h \
-	     HTTPCacheDisconnectedMode.h
+	     HTTPCacheDisconnectedMode.h Response.h HTTPResponse.h \
+	     HTTPCacheResponse.h
 
 TYPEHDRS = BaseType.h Byte.h Int32.h GSEClause.h Constructor.h \
 	   Float64.h Str.h Url.h Vector.h List.h Array.h Structure.h \
