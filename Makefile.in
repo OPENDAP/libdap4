@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.95 1999/04/29 03:04:52 jimg Exp $
+# $Id: Makefile.in,v 1.96 1999/04/29 18:40:03 jimg Exp $
 
 @SET_MAKE@
 
@@ -18,7 +18,7 @@ PROG = libdap++.a geturl usage deflate
 DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
-INCS = -I. -IMap -IStack -IVec -IGNU @INCS@
+INCS = -I. -IGNU @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
@@ -124,12 +124,7 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 
 GNUOBJS = GNU/SLList.o GNU/DLList.o GNU/GetOpt.o GNU/Regex.o GNU/error.o 
 
-GNUHDRS = Map/AttrMap.h        Stack/BTXPlex.h \
-	  Map/AttrVHMap.h      Stack/BTdefs.h \
-	  Map/Attrdefs.h       Vec/BaseTypeVec.h \
-	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h \
-	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h \
-          Stack/BTXPStack.h    GNU/String.h         GNU/Pix.h \
+GNUHDRS = GNU/Pix.h \
           GNU/SLList.h         GNU/DLList.h 	    GNU/gnu-std.h \
           GNU/GetOpt.h         GNU/Regex.h          GNU/builtin.h
 
@@ -401,7 +396,7 @@ server-check: geturl
 clean:	
 	-rm -f *.o *.sum *.log *~ core
 	-rm -f *.bb *.bbg *.da *.gcov
-	-for d in Plex Vec Stack Map GNU; do cd $$d && rm *.o *~; cd ..; done
+	-for d in GNU; do cd $$d && rm *.o *~; cd ..; done
 	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
 	       cgi-util-test gse-test
 	-cd doc-html; rm *.html; cd ..;
