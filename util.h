@@ -13,6 +13,9 @@
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.26  1998/04/07 22:15:35  jimg
+ * Added declaration of prune_spaces(String)
+ *
  * Revision 1.25  1998/02/11 22:35:18  jimg
  * Added prototype for deflate_exists().
  * Removed prototype for decompressor().
@@ -122,6 +125,7 @@
 #include "Function.h"
 #include "Grid.h"
 
+String prune_spaces(String);
 bool unique_names(SLList<BaseTypePtr> l, const char *var, const char *type,
 		  String &msg);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
