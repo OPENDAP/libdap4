@@ -101,7 +101,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -135,7 +134,6 @@
 	"..\Grid.h"\
 	"..\gse.tab.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -170,7 +168,6 @@
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -214,7 +211,6 @@
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -248,7 +244,6 @@
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -278,7 +273,6 @@
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
@@ -316,7 +310,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -352,7 +345,6 @@
 	"..\Float32.h"\
 	"..\Float64.h"\
 	"..\Grid.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -380,7 +372,6 @@
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
@@ -399,7 +390,6 @@
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
@@ -424,7 +414,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -458,7 +447,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -516,7 +504,6 @@
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
@@ -535,7 +522,6 @@
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
 	"..\Vector.h"\
@@ -553,7 +539,6 @@
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
 	"..\Vector.h"\
@@ -575,7 +560,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -609,7 +593,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -630,7 +613,6 @@
 ..\InternalErr.cc : \
 	".\config_dap.h"\
 	"..\Error.h"\
-	"..\Gui.h"\
 	"..\InternalErr.h"\
 
 ..\IteratorAdapter.cc : \
@@ -655,7 +637,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -684,7 +665,6 @@
 	"..\expr.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\parser.h"\
 	"..\RValue.h"\
 	"..\trace_new.h"\
@@ -746,7 +726,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -934,7 +913,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -968,7 +946,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
@@ -1010,7 +987,6 @@
 	"..\Float64.h"\
 	"..\Grid.h"\
 	"..\GSEClause.h"\
-	"..\Gui.h"\
 	"..\Int16.h"\
 	"..\Int32.h"\
 	"..\List.h"\
