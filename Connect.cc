@@ -15,7 +15,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.105 2000/10/30 17:21:27 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.106 2000/11/25 00:44:47 jgarcia Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -1088,6 +1088,29 @@ bool Connect::read_url(string & url, FILE * stream)
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
 
+    //Jose Garcia: better error checking loadin the URL
+
+    HTList *listerr=NULL;
+    listerr=HTRequest_error(_request);
+    if( listerr )
+      {
+	//cout<<"There are "<<HTList_count (listerr) <<" errors"<<endl;
+	HTError* the_error= (HTError*) HTList_nextObject(listerr);
+	while(the_error)
+	{
+	  if(HTError_severity(the_error)==ERR_FATAL)
+	    {
+	      if (HTError_index(the_error) == HTERR_UNAUTHORIZED)
+		throw Error(no_authorization, "Unauthorized access, please set the realm for this object");
+	      else
+		throw Error(undefined_error,"Unknown fatal error.");
+	    }
+	  the_error= (HTError*) HTList_nextObject(listerr);
+	}
+      }
+    
+    //Jose Garcia
+
     if (_cache_enabled)
 	HTCacheIndex_write(_cache_root);
 
@@ -1624,6 +1647,11 @@ Error & Connect::error()
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.106  2000/11/25 00:44:47  jgarcia
+// In Connect::read_url added exception in case there is a fatal error loading an URL
+// It is specially requiere for supporting Connect objects that support HTTP Authorization
+// challenge.
+//
 // Revision 1.105  2000/10/30 17:21:27  jimg
 // Added support for proxy servers (from cjm).
 //
