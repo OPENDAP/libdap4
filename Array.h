@@ -13,9 +13,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.29  1996/06/22 00:13:34  jimg
-/* Fixed a comment.
+/* Revision 1.30  1996/08/13 16:44:32  jimg
+/* Changed return type of add_constraint from void to bool. Now the member
+/* function returns false when a bogus constraint (e.g.,bad array bounds)
+/* are used.
 /*
+ * Revision 1.29  1996/06/22 00:13:34  jimg
+ * Fixed a comment.
+ *
  * Revision 1.28  1996/05/31 23:29:19  jimg
  * Updated copyright notice.
  *
@@ -216,7 +221,7 @@ public:
 
     // once a dimension has be created, set its constraint. This sets the
     // selected flag and c_size.
-    void add_constraint(Pix p, int start, int stride, int stop);
+    bool add_constraint(Pix p, int start, int stride, int stop);
     void reset_constraint();
     void clear_constraint();
     
