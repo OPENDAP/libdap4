@@ -41,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.27 2000/09/22 02:52:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.28 2000/09/22 21:45:18 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -547,6 +547,7 @@ int yyparse (void);
 
 int
 yyparse(YYPARSE_PARAM_ARG)
+     YYPARSE_PARAM_DECL
 {
   register int yystate;
   register int yyn;
@@ -1381,10 +1382,8 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.27  2000/09/22 02:52:58  jimg
- * Fixes to the tests to recognize some of the new error messages. Also,
- * the test drivers were modified to catch the exceptions now thrown by
- * some of the parsers.
+ * Revision 1.28  2000/09/22 21:45:18  jimg
+ * *** empty log message ***
  *
  * Revision 1.33  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
