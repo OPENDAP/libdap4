@@ -18,6 +18,10 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.32  1999/05/21 17:20:08  jimg
+ * Made the parser error messages a bit easier to decode by adding `Expression'
+ * to them. Still, these are pretty lame messages...
+ *
  * Revision 1.31  1999/05/04 19:47:24  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
  *
@@ -169,7 +173,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.31 1999/05/04 19:47:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.32 1999/05/21 17:20:08 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -624,7 +628,7 @@ exprerror(const string &s)
 void
 exprerror(const char *s)
 {
-    cerr << "Parse error: " << s << endl;
+    cerr << "Expression parse error: " << s << endl;
 }
 
 void
@@ -636,7 +640,7 @@ exprerror(const string &s, const string &s2)
 void
 exprerror(const char *s, const char *s2)
 {
-    cerr << "Parse error: " << s << ": " << s2 << endl;
+    cerr << "Expression parse error: " << s << ": " << s2 << endl;
 }
 
 int
