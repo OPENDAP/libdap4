@@ -12,9 +12,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.13  1996/08/13 20:47:21  jimg
-/* Added prototypes for the *_ops() functions.
+/* Revision 1.14  1996/10/28 23:07:37  jimg
+/* Added include of UInt32.h and prototype of NewUInt32().
 /*
+ * Revision 1.13  1996/08/13 20:47:21  jimg
+ * Added prototypes for the *_ops() functions.
+ *
  * Revision 1.12  1996/05/31 23:31:11  jimg
  * Updated copyright notice.
  *
@@ -71,6 +74,7 @@
 #include "BaseType.h"
 #include "Byte.h"
 #include "Int32.h"
+#include "UInt32.h"
 #include "Float64.h"
 #include "Str.h"
 #include "Url.h"
@@ -103,6 +107,7 @@ extern "C" bool_t xdr_str_array(XDR *xdrs, String *buf);
 
 Byte *NewByte(const String &n = (char *)0);
 Int32 *NewInt32(const String &n = (char *)0);
+UInt32 *NewUInt32(const String &n = (char *)0);
 Float64 *NewFloat64(const String &n = (char *)0);
 Str *NewStr(const String &n = (char *)0);
 Url *NewUrl(const String &n = (char *)0);
