@@ -10,13 +10,16 @@
 // 1/17/99 jhrg
 
 // $Log: gse-test.cc,v $
+// Revision 1.2  1999/03/24 23:30:07  jimg
+// Added minimal support for the new Int16, UInt16 and Float32 types.
+//
 // Revision 1.1  1999/01/21 02:07:44  jimg
 // Created
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: gse-test.cc,v 1.1 1999/01/21 02:07:44 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: gse-test.cc,v 1.2 1999/03/24 23:30:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,7 +60,7 @@ void *gse_string(const char *yy_str);
 
 extern int gse_debug;
 
-const String version = "$Revision: 1.1 $";
+const String version = "$Revision: 1.2 $";
 const String prompt = "gse-test: ";
 const String options = "sS:p:dv";
 const String usage = "gse-test [-s [-S string] -d -v [-p dds file]\n\
@@ -228,13 +231,23 @@ test_parser(const String &dds_file)
 	// Can safely assume that maps are one-dimensional Arrays.
 	int size = map->dimension_size((Pix)map->first_dim());
 	switch(map->var()->type()) {
+	  case dods_int16_c: {
+	    dods_int16 *vec = new_map<dods_int16>(size);
+	    map->val2buf(vec);
+	    break;
+	  }
 	  case dods_int32_c: {
-	    int *vec = new_map<int>(size);
+	    dods_int32 *vec = new_map<dods_int32>(size);
+	    map->val2buf(vec);
+	    break;
+	  }
+	  case dods_float32_c: {
+	    dods_float32 *vec = new_map<dods_float32>(size);
 	    map->val2buf(vec);
 	    break;
 	  }
 	  case dods_float64_c: {
-	    double *vec = new_map<double>(size);
+	    dods_float64 *vec = new_map<dods_float64>(size);
 	    map->val2buf(vec);
 	    break;
 	  }
