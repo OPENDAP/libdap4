@@ -3,7 +3,7 @@
    Scanner for the DDS. This file works with gnu's flex scanner generator. It
    returns either DATASET, INDEPENDENT, DEPENDENT, ARRAY, MAPS, LIST,
    SEQUENCE, STRUCTURE, FUNCTION, GRID, BYTE, INT32, FLOAT64, STRING, URL, ID
-   or one of the single character tokens `{', `}', `;', or `\n' as
+   or one of the single character tokens `{', `}', `;', `=' or `\n' as
    integers. In the case of an ID, the scanner stores a pointer to the lexeme
    in yylval (whose type is char *).
 
@@ -22,16 +22,20 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.2  1994/11/10 19:46:49  jimg
-/* Added `/' to the set of characters that make up an identifier.
+/* Revision 1.3  1994/12/09 21:40:44  jimg
+/* Added `=' to the set of recognized lexemes.
+/* Added `[' and `]' to the set of rejected characters.
 /*
+# Revision 1.2  1994/11/10  19:46:49  jimg
+# Added `/' to the set of characters that make up an identifier.
+#
 # Revision 1.1  1994/09/08  21:10:46  jimg
 # DDS Class test driver and parser and scanner.
 #
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.2 1994/11/10 19:46:49 jimg Exp $"};
+static char rcsid[]={"$Id: dds.lex,v 1.3 1994/12/09 21:40:44 jimg Exp $"};
 
 #include <string.h>
 
@@ -67,7 +71,7 @@ URL 		URL|Url|url
 
 ID  		[a-zA-Z_][a-zA-Z0-9_/]*
 INTEGER		[0-9]+
-NEVER		[^a-zA-Z0-9_{};/]
+NEVER		[^a-zA-Z0-9_{};/=]|\[|\]
 
 %%
 
@@ -96,6 +100,7 @@ NEVER		[^a-zA-Z0-9_{};/]
 "]"			return (int)*yytext;
 ":"			return (int)*yytext;
 ";" 	    	    	return (int)*yytext;
+"="			return (int)*yytext;
 
 [ \t]+
 \n	    	    	++dds_line_num;
