@@ -10,6 +10,13 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.56  2000/09/11 16:31:48  jimg
+// Added methods to make it simpler to access Sequences by row number. The new
+// methods are: get_row(), get_row_number(), get_starting_row_number(),
+// get_ending_row_number(), get_row_stride(), set_row_number_constraint(). The
+// starting and ending row numbers refer to constraints placed on the sequence,
+// to get the number of rows in the current sequence, use the length() method.
+//
 // Revision 1.55  2000/08/16 00:38:22  jimg
 // Added the getRowNumber method.
 //
@@ -286,6 +293,8 @@
 #include <assert.h>
 
 #include "debug.h"
+#include "Error.h"
+#include "InternalErr.h"
 #include "Sequence.h"
 #include "DDS.h"
 #include "DataDDS.h"
@@ -358,7 +367,8 @@ Sequence::is_end_of_sequence(unsigned char marker)
 
 Sequence::Sequence(const string &n) 
     : BaseType(n, dods_sequence_c), _level(0), _seq_read_error(false),
-      _seq_write_error(false), d_row_number(-1)
+      _seq_write_error(false), d_row_number(-1), d_starting_row_number(-1),
+      d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
@@ -562,49 +572,98 @@ Sequence::level()
     return _level;
 }
 
+// Advance the sequence to row number ROW. Note that we can only advance, it
+// is not possible to backup (yet, that could be implemented).
+bool
+Sequence::get_row(int row, const string &dataset, DDS &dds, bool ce_eval)
+{
+  if (row < d_row_number)
+    throw InternalErr("Trying to back up inside a sequence!");
+
+  if (row == d_row_number)
+    return true;
+
+  // Start out assuming EOF is false.
+  int eof = 0;
+  while(!eof && d_row_number < row) {
+    // Assume that read() is implemented so that, when reading data for a
+    // nested sequence, only the outer most level is *actually* read.
+    // This is a consequence of our current (12/7/99) implementation of
+    // the JGOFS server (which is the only server to actually use nested
+    // sequences). 12/7/99 jhrg
+    if (!read_p()) {
+      if (level() != 0)	// Read only the outermost level.
+	return true;
+      // The read() function returns a boolean value, with TRUE indicating
+      // that read() should be called again because there's more data to
+      // read, and FALSE indicating there's no more data to read. Note that
+      // this behavior is necessary to properly handle variables that contain
+      // Sequences. 
+      int error = 0;
+      eof = read(dataset, error) == false;
+      // Despite the comments, as of 3.2 read() should throw Error when it
+      // barfs. Ensure that's the case...
+      if (error)
+	throw Error(unknown_error, "Error reading from the data source!");
+    }
+
+    // If the ce selection evals to false, read the next row. If true, break
+    // out of the loop. Otherwise only advance the row number if ce_eval is
+    // false (we're not supposed to evaluate the selection) or both ce_eval
+    // and the selection are true.
+    if (!ce_eval || ce_eval && dds.eval_selection(dataset))
+      d_row_number++;
+
+    set_read_p(false);	// ...so that the next instance will be read
+  }
+
+  // Once we finish te above loop, set read_p to true so that the caller
+  // knows that data *has* been read. This is how the read() methods of the
+  // elements of the sequence know to not look for data.
+  set_read_p(true);
+
+  // Return true if we have valid data, false if we've read to the EOF.
+  return eof == 0;
+}
+
+// Private
+inline bool
+Sequence::is_end_of_rows(int i)
+{
+  return ((d_ending_row_number != -1) ? (d_ending_row_number >= i):true);
+}
+
 bool
 Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
-    bool status = true;
     int error = 0;
+    int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
+    
+    bool status = get_row(i, dataset, dds, ce_eval);
+    while (status && is_end_of_rows(i)) {
+      i += d_row_stride;
 
-    while (status) {
-	// Assume that read() is implemented so that, when reading data for a
-	// nested sequence, only the outer most level is *actually* read.
-	// This is a consequence of our current (12/7/99) implementation of
-	// the JGOFS server (which is the only server to actually use nested
-	// sequences). 12/7/99 jhrg
-	if (!read_p()) {
-	    if (level() != 0)	// Read only the outermost level.
-		return true;
-	    if (!read(dataset, error))
-		break;		// EOF or error. Exit the loop.
+      if (level() == 0) {
+	DBG(cerr << "Writing Start of Instance marker" << endl);
+	write_start_of_instance(sink);
+      }
+
+      for (Pix p = first_var(); p; next_var(p)) {
+	if (var(p)->send_p() 
+	    && !var(p)->serialize(dataset, dds, sink, false)) {
+	  error = 1;
+	  status = false;	// Exit outer while-loop.
+	  break;		// Exit inner for-loop
 	}
+      }
 
-	if (ce_eval && !dds.eval_selection(dataset)) {
-	    set_read_p(false);	// ...so that the next instance will be read
-	    continue;
-	}
-
-	if (level() == 0) {
-	    DBG(cerr << "Writing Start of Instance marker" << endl);
-	    write_start_of_instance(sink);
-	}
-
-	for (Pix p = first_var(); p; next_var(p))
-	    if (var(p)->send_p() 
-		&& !var(p)->serialize(dataset, dds, sink, false)) {
-		error = 1;
-		status = false;	// Exit outer while-loop.
-		break;		// Exit inner for-loop
-	    }
-	
-	set_read_p(false);	// ...so this will read the next instance
+      set_read_p(false);	// ...so this will read the next instance
+      status = get_row(i, dataset, dds, ce_eval);
     }
 
     if (!error && level() == 0) {
-	DBG(cerr << "Writing End of Sequence marker" << endl);
-	write_end_of_sequence(sink);
+      DBG(cerr << "Writing End of Sequence marker" << endl);
+      write_end_of_sequence(sink);
     }
 
     return !error;		// Return true if no error.
@@ -652,9 +711,39 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 // Return the current row number.
 
 int
-Sequence::getRowNumber()
+Sequence::get_row_number()
 {
   return d_row_number;
+}
+
+int
+Sequence::get_starting_row_number()
+{
+  return d_starting_row_number;
+}
+
+int
+Sequence::get_row_stride()
+{
+  return d_row_stride;
+}
+
+int
+Sequence::get_ending_row_number()
+{
+  return d_ending_row_number;
+}
+
+// stride defaults to 1.
+void
+Sequence::set_row_number_constraint(int start, int stop, int stride)
+{
+  if (stop < start)
+    throw Error(malformed_expr, "Starting row number must precede the ending row number.");
+
+  d_starting_row_number = start;
+  d_row_stride = stride;
+  d_ending_row_number = stop;
 }
 
 // private mfunc. Use this to read from older servers.
