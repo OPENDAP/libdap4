@@ -29,6 +29,12 @@
 #include <stddef.h>
 #endif
 
+#ifdef __POWERPC__
+#define regcomp rgcomp  //  These names conflict with libpthread.dylib.
+#define regexec rgexec
+#define regfree rgfree
+#endif
+
 
 /* The following bits are used to determine the regexp syntax we
    recognize.  The set/not-set meanings are chosen so that Emacs syntax
