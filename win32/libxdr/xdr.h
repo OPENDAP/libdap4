@@ -107,9 +107,11 @@ enum xdr_op {
 typedef int						bool_t;
 typedef int						enum_t;
 typedef char					*caddr_t;
+#ifndef _WINSOCKAPI_  /*  Conflicts with winsock.h  */
 typedef unsigned int			u_int;
 typedef unsigned short			u_short;
 typedef unsigned long			u_long;
+#endif
 #define mem_alloc(bsize)		malloc(bsize)
 #define mem_free(ptr, bsize)	free(ptr)
 
