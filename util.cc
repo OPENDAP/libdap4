@@ -37,7 +37,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.12  1995/07/09 21:29:28  jimg
+// Revision 1.13  1995/08/23 00:41:58  jimg
+// xdr_str() now takes a String & instead of a String ** for arg 2.
+//
+// Revision 1.12  1995/07/09  21:29:28  jimg
 // Added copyright notice.
 //
 // Revision 1.11  1995/05/10  15:34:09  jimg
@@ -88,7 +91,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.12 1995/07/09 21:29:28 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.13 1995/08/23 00:41:58 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -117,6 +120,12 @@ static char rcsid[]={"$Id: util.cc,v 1.12 1995/07/09 21:29:28 jimg Exp $"};
 #include "trace_new.h"
 #endif
 
+static int
+char_cmp(const void *a, const void *b)
+{
+    return strcmp(*(char **)a, *(char **)b);
+}
+
 // Compare elements in a SLList of (BaseType *)s and return true if there are
 // no duplicate elements, otherwise return false. Uses the same number of
 // compares as qsort. (Guess why :-)
@@ -124,12 +133,6 @@ static char rcsid[]={"$Id: util.cc,v 1.12 1995/07/09 21:29:28 jimg Exp $"};
 // NB: The elements of the array to be sorted are pointers to chars; the
 // compare function gets pointers to those elements, thus the cast to (const
 // char **) and the dereference to get (const char *) for strcmp's arguments.
-
-static int
-char_cmp(const void *a, const void *b)
-{
-    return strcmp(*(char **)a, *(char **)b);
-}
 
 bool
 unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
@@ -142,7 +145,7 @@ unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
     int nelem = 0;
     String s;
     for (Pix p = l.first(); p; l.next(p)) {
-	names[nelem++] = strdup((const char *)l(p)->get_var_name());
+	names[nelem++] = strdup((const char *)l(p)->name());
 	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
     }
     
@@ -214,32 +217,46 @@ delete_xdrstdio(XDR *xdr)
 // including possibly having new memory allocated to hold its value.
 
 extern "C" bool_t
-xdr_str(XDR *xdrs, String **buf)
+xdr_str(XDR *xdrs, String &buf)
 {
     switch (xdrs->x_op) {
       case XDR_ENCODE:		// BUF is a pointer to a (String *)
+#ifdef NEVER
 	assert(buf && *buf);
+#endif
 	
+#ifdef NEVER
 	char *out_tmp = (const char *)**buf; // cast away const
+#endif
+	char *out_tmp = (const char *)buf; // cast away const
 
 	return xdr_string(xdrs, &out_tmp, max_str_len);
 
       case XDR_DECODE:		// BUF is a pointer to a String * or to NULL
+#ifdef NEVER
 	assert(buf);
+#endif
 
+#ifdef NEVER
 	char str_tmp[max_str_len];
-	char *in_tmp = str_tmp;
+#endif
+	char *in_tmp = NULL; // = str_tmp;
 	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
 	if (!stat)
 	    return stat;
 
+#ifdef NEVER
 	if (*buf) {
 	    **buf = in_tmp;
 	}
 	else {
 	    *buf = new String(in_tmp);
+	    free(in_tmp);
 	}
-	
+#endif
+	buf = in_tmp;
+	free(in_tmp);
+
 	return stat;
 	
       default:
@@ -248,6 +265,7 @@ xdr_str(XDR *xdrs, String **buf)
     }
 }
     
+#ifdef NEVER
 // This xdr coder is used for arrays. A pointer to this function is stored in
 // Str and Url object's _xdr_coder member. 
 //
@@ -299,4 +317,5 @@ xdr_str_array(XDR *xdrs, String *buf)
 	return 0;
     }
 }
+#endif
     
