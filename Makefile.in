@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.153 2004/07/09 17:06:40 jimg Exp $
+# $Id: Makefile.in,v 1.154 2004/07/19 05:25:56 rmorris Exp $
 
 @SET_MAKE@
 
@@ -132,7 +132,7 @@ TYPEHDRS = BaseType.h Byte.h Int32.h GSEClause.h Constructor.h \
 
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   Vector.cc Array.cc Structure.cc Sequence.cc \
-	   Grid.cc UInt32.cc util.cc ce_functions.cc GSEClause.cc \
+	   Grid.cc UInt32.cc util.cc xdrutil_ppc.c ce_functions.cc GSEClause.cc \
 	   Int16.cc UInt16.cc Float32.cc Constructor.cc \
 	   PassiveByte.cc PassiveInt32.cc PassiveFloat64.cc PassiveStr.cc \
 	   PassiveUrl.cc PassiveUInt32.cc PassiveInt16.cc PassiveUInt16.cc \
@@ -145,7 +145,7 @@ TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   Vector.o Array.o Structure.o Sequence.o Grid.o \
-           UInt32.o util.o ce_functions.o GSEClause.o $(GSE_GRAM_OBJS) \
+           UInt32.o util.o xdrutil_ppc.o ce_functions.o GSEClause.o $(GSE_GRAM_OBJS) \
 	   Int16.o UInt16.o Float32.o Constructor.o \
 	   PassiveByte.o PassiveInt32.o PassiveFloat64.o PassiveStr.o \
 	   PassiveUrl.o PassiveUInt32.o PassiveInt16.o PassiveUInt16.o \
@@ -818,6 +818,7 @@ util.o: util.cc config_dap.h GNU/Regex.h BaseType.h AttrTable.h GNU/Pix.h \
   Array.h Vector.h DDS.h DAS.h DODSResponseObject.h Clause.h expr.h \
   RValue.h Grid.h expr.tab.h util.h Byte.h Int16.h UInt16.h Int32.h \
   UInt32.h Float32.h Float64.h Structure.h debug.h
+xdrutil_ppc.o: xdrutil_ppc.c
 ce_functions.o: ce_functions.cc config_dap.h BaseType.h AttrTable.h \
   GNU/Pix.h IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
   Array.h dods-limits.h Vector.h DDS.h DAS.h DODSResponseObject.h \
