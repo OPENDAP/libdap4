@@ -24,11 +24,9 @@
 
 %{
 
-#define YYSTYPE char *
-
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.36 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.37 2002/05/22 21:52:31 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +34,7 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.36 2001/08/24 17:46:22 jimg Exp 
 
 #include <iostream>
 #include <stack>
+
 #if defined(__GNUG__) || defined(WIN32)
 #include <strstream>
 #else
@@ -46,20 +45,18 @@ static char rcsid[] not_used = {"$Id: dds.y,v 1.36 2001/08/24 17:46:22 jimg Exp 
 #include "Array.h"
 #include "Error.h"
 #include "parser.h"
-#include "dds.tab.h"
 #include "util.h"
 
-#ifdef WIN32
 using std::endl;
 using std::ends;
 using std::ostrstream;
-#endif
 
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
 // passed in to the parser within a structure (which itself is passed as a
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
-
+// ERROR is no longer used. These parsers now signal problems by throwing
+// exceptions. 5/22/2002 jhrg
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 
 #define YYPARSE_PARAM arg
@@ -94,56 +91,81 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 
 %expect 56
 
-%token SCAN_ID
-%token SCAN_NAME
-%token SCAN_INTEGER
-%token SCAN_DATASET
-%token SCAN_LIST
-%token SCAN_SEQUENCE
-%token SCAN_STRUCTURE
-%token SCAN_FUNCTION
-%token SCAN_GRID
-%token SCAN_BYTE
-%token SCAN_INT16
-%token SCAN_UINT16
-%token SCAN_INT32
-%token SCAN_UINT32
-%token SCAN_FLOAT32
-%token SCAN_FLOAT64
-%token SCAN_STRING
-%token SCAN_URL 
+%union {
+    bool boolean;
+    char word[ID_MAX];
+}
+
+%token <word> SCAN_WORD
+%token <word> SCAN_DATASET
+%token <word> SCAN_LIST
+%token <word> SCAN_SEQUENCE
+%token <word> SCAN_STRUCTURE
+%token <word> SCAN_FUNCTION
+%token <word> SCAN_GRID
+%token <word> SCAN_BYTE
+%token <word> SCAN_INT16
+%token <word> SCAN_UINT16
+%token <word> SCAN_INT32
+%token <word> SCAN_UINT32
+%token <word> SCAN_FLOAT32
+%token <word> SCAN_FLOAT64
+%token <word> SCAN_STRING
+%token <word> SCAN_URL 
+
+%type <boolean> datasets dataset declarations declaration array_decl
+
+%type <word> non_list_decl
+%type <word> base_type list structure sequence grid var var_name name
 
 %%
+
+start:
+                {
+		    /* On entry to the parser, make the BaseType stack. */
+		    ctor = new stack<BaseType *>;
+                }
+                datasets
+;
 
 datasets:	dataset
 		| datasets dataset
 ;
 
-dataset:	SCAN_DATASET '{' declarations '}' name ';' 
+dataset:	SCAN_DATASET '{' declarations '}' name ';'
+                {
+		    $$ = $3 && $5;
+		}
                 | error
                 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG,
-				dds_line_num, $1);
+ 				dds_line_num, $<word>1);
 		    YYABORT;
 		}
 ;
 
 declarations:	/* empty */
+                {
+		    $$ = true;
+		}
 		| declaration
 		| declarations declaration
 ;
 
 declaration: 	list non_list_decl
                 { 
-		  string smsg;
-		  if (current->check_semantics(smsg))
-		    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
-		  else {
-		    invalid_declaration((parser_arg *)arg, smsg, $1, $2);
-		    YYABORT;
-		  }
+		    string smsg;
+		    if (current->check_semantics(smsg))
+			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+		    else {
+			invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+			YYABORT;
+		    }
 		}
                 | non_list_decl
+                {
+		    $$ = true;
+		}
 ;
 
 /* This non-terminal is here only to keep types like `List List Int32' from
@@ -159,6 +181,7 @@ non_list_decl:  base_type var ';'
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
 		      YYABORT;
 		    }
+                    strcpy($$,$2);
 		}
 
 		| structure  '{' declarations '}' 
@@ -172,9 +195,10 @@ non_list_decl:  base_type var ';'
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		      invalid_declaration((parser_arg *)arg, smsg, $1, $6);
 		      YYABORT;
 		    }
+                    strcpy($$,$6);
 		}
 
 		| sequence '{' declarations '}' 
@@ -188,33 +212,34 @@ non_list_decl:  base_type var ';'
 		    if (current->check_semantics(smsg))
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    else {
-		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		      invalid_declaration((parser_arg *)arg, smsg, $1, $6);
 		      YYABORT;
 		    }
+                    strcpy($$,$6);
 		}
 
-		| grid '{' SCAN_ID
+		| grid '{' SCAN_WORD ':'
 		{ 
-		    if (is_keyword(string($1), "array:"))
+		    if (is_keyword(string($3), "array"))
 			part = array; 
 		    else {
 			ostrstream msg;
 			msg << BAD_DECLARATION << ends;
 			parse_error((parser_arg *)arg, msg.str(),
-				    dds_line_num, $1);
+				    dds_line_num, $3);
 			msg.freeze(0);
 			YYABORT;
 		    }
                 }
-                declaration SCAN_ID
+                declaration SCAN_WORD ':'
 		{ 
-		    if (is_keyword(string($2), "maps:"))
+		    if (is_keyword(string($7), "maps"))
 			part = maps; 
 		    else {
 			ostrstream msg;
 			msg << BAD_DECLARATION << ends;
 			parse_error((parser_arg *)arg, msg.str(),
-				    dds_line_num, $2);
+				    dds_line_num, $7);
 			msg.freeze(0);
 			YYABORT;
 		    }
@@ -232,9 +257,10 @@ non_list_decl:  base_type var ';'
 			add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
 		    }
 		    else {
-		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
+		      invalid_declaration((parser_arg *)arg, smsg, $1, $13);
 		      YYABORT;
 		    }
+                    strcpy($$,$13);
 		}
 
                 | error 
@@ -242,7 +268,7 @@ non_list_decl:  base_type var ';'
 		    ostrstream msg;
 		    msg << BAD_DECLARATION << ends;
 		    parse_error((parser_arg *)arg, msg.str(),
-				dds_line_num, $1);
+				dds_line_num, $<word>1);
 		    msg.freeze(0);
 		    YYABORT;
 		}
@@ -251,32 +277,24 @@ non_list_decl:  base_type var ';'
 
 list:		SCAN_LIST 
 		{ 
-		    if (!ctor) 
-			ctor = new stack<BaseType *>;
 		    ctor->push(NewList()); 
 		}
 ;
 
 structure:	SCAN_STRUCTURE
 		{ 
-		    if (!ctor)
-	                ctor = new stack<BaseType *>;
 		    ctor->push(NewStructure()); 
 		}
 ;
 
 sequence:	SCAN_SEQUENCE 
 		{ 
-		    if (!ctor)
-			ctor = new stack<BaseType *>;
 		    ctor->push(NewSequence()); 
 		}
 ;
 
 grid:		SCAN_GRID 
 		{ 
-		    if (!ctor)
-			ctor = new stack<BaseType *>;
 		    ctor->push(NewGrid()); 
 		}
 ;
@@ -296,15 +314,22 @@ var:		var_name { current->set_name($1); }
  		| var array_decl
 ;
 
-var_name:       SCAN_ID | SCAN_BYTE | SCAN_INT16 | SCAN_INT32 | SCAN_UINT16
+var_name:       SCAN_WORD | SCAN_BYTE | SCAN_INT16 | SCAN_INT32 | SCAN_UINT16
                 | SCAN_UINT32 | SCAN_FLOAT32 | SCAN_FLOAT64 | SCAN_STRING
                 | SCAN_URL | SCAN_STRUCTURE | SCAN_SEQUENCE | SCAN_GRID
-                | SCAN_LIST 
+                | SCAN_LIST
 ;
 
-array_decl:	'[' SCAN_INTEGER ']'
+array_decl:	'[' SCAN_WORD ']'
                  { 
-		     if (current->type() == dods_array_c) {
+		     if (!check_int32($2)) {
+			 string msg = "In the dataset descriptor object:\n";
+			 msg += "Expected an array subscript.\n";
+			 parse_error((parser_arg *)arg, msg.c_str(), 
+				 dds_line_num, $2);
+		     }
+		     if (current->type() == dods_array_c
+			 && check_int32($2)) {
 			 ((Array *)current)->append_dim(atoi($2));
 		     }
 		     else {
@@ -315,12 +340,18 @@ array_decl:	'[' SCAN_INTEGER ']'
 		     }
 		 }
 
-		 | '[' SCAN_ID 
+		 | '[' SCAN_WORD 
 		 {
 		     id = new string($2);
 		 } 
-                 '=' SCAN_INTEGER 
+                 '=' SCAN_WORD 
                  { 
+		     if (!check_int32($5)) {
+			 string msg = "In the dataset descriptor object:\n";
+			 msg += "Expected an array subscript.\n";
+			 parse_error((parser_arg *)arg, msg.c_str(), 
+				 dds_line_num, $5);
+		     }
 		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi($5), *id);
 		     }
@@ -341,23 +372,21 @@ array_decl:	'[' SCAN_INTEGER ']'
 		     msg << "In the dataset descriptor object:" << endl
 			 << "Expected an array subscript." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str(), 
-				 dds_line_num, $1);
+				 dds_line_num, $<word>1);
 		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		 }
 ;
 
-name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
-		| SCAN_INTEGER { (*DDS_OBJ(arg)).set_dataset_name($1); }
+name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		| SCAN_DATASET { (*DDS_OBJ(arg)).set_dataset_name($1); }
-		| var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
                 | error 
                 {
 		  ostrstream msg;
 		  msg << "Error parsing the dataset name." << endl
 		      << "The name may be missing or may contain an illegal character." << endl << ends;
 		     parse_error((parser_arg *)arg, msg.str(),
-				 dds_line_num);
+				 dds_line_num, $<word>1);
 		     msg.rdbuf()->freeze(0);
 		     YYABORT;
 		}
@@ -429,6 +458,32 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.37  2002/05/22 21:52:31  jimg
+ * I added a new rule called start. This rule is used to initialize objects used
+ * by the parser (like the stack of ctors). The logic of the parser have not
+ * been changed. This just localizes the code to init this object.
+ *
+ * Revision 1.33.4.5  2001/11/03 10:08:07  rmorris
+ * Fixed four lines that were using assignment "=" on addresses of strings.
+ * Assumed a string copy was what was meant.  "$$ = $2" to "strcpy($$,$2)"
+ * where the $$ and $2 generate vars that are string addresses.  Left note
+ * to James to make sure what I assumed he meant was what he actually meant.
+ *
+ * Revision 1.33.4.4  2001/11/01 00:43:51  jimg
+ * Fixes to the scanners and parsers so that dataset variable names may
+ * start with digits. I've expanded the set of characters that may appear
+ * in a variable name and made it so that all except `#' may appear at
+ * the start. Some characters are not allowed in variables that appear in
+ * a DDS or CE while they are allowed in the DAS. This makes it possible
+ * to define containers with names like `COARDS:long_name.' Putting a colon
+ * in a variable name makes the CE parser much more complex. Since the set
+ * of characters that people want seems pretty limited (compared to the
+ * complete ASCII set) I think this is an OK approach. If we have to open
+ * up the expr.lex scanner completely, then we can but not without adding
+ * lots of action clauses to teh parser. Note that colon is just an example,
+ * there's a host of characters that are used in CEs that are not allowed
+ * in IDs.
+ *
  * Revision 1.36  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *
