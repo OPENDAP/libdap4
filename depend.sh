@@ -2,20 +2,26 @@
 #
 # depend is a script replacement for makedepend. It requires gcc.
 # -s causes system includes to be added to the dependencies.
-# -m <makefile name> causes <makefile name> to be used instead of `Makefile'.
-# 
+# -b <extension> causes <extension> to be used instead of `bak' when naming
+#    the backup coy of the Makefile.
+# -m <makefile name> causes depend to use <makefile name> instead of
+#    `Makefile'. 
 # jhrg 4/28/95
 #
-# $Id: depend.sh,v 1.5 1996/02/01 22:10:04 jimg Exp $
+# Added -b option. Added `-E' to CFLAGS.
+# jhrg 3/5/96
+#
+# $Id: depend.sh,v 1.6 1996/03/05 17:57:58 jimg Exp $
 
-usage="depend [-s][-m <makefile name>] -- <compiler options> -- <files>"
-CFLAGS=-MM
+usage="depend [-s][-b <ext>][-m <makefile name>] -- <compiler options> -- <files>"
+CFLAGS="-E -MM"
 tmp=/usr/tmp/depend$$
 makefile=Makefile
+bak=bak
 
 # read the command options
 
-x=`getopt sm: "$@"`		# "$@" preserves quotes in the input
+x=`getopt sb:m: "$@"`		# "$@" preserves quotes in the input
 
 if [ $? != 0 ]			# $? is the exit status of 'getopt ...'
 then
@@ -31,8 +37,9 @@ eval set -- $x
 for c in "$@"
 do
     case $c in
-	-s) CFLAGS=-M; shift 1;;
+	-s) CFLAGS="-E -M"; shift 1;;
 	-m) makefile=$2; shift 2;;
+	-b) bak=$2; shift 2;;
         -\?) echo $usage; exit 2;;
 	--) shift 1; break;;
     esac
@@ -58,7 +65,7 @@ found == 1 {exit}' $makefile > $tmp
 
 gcc $CFLAGS $* >> $tmp
 
-mv $makefile ${makefile}.bak	# backup the current Makefile 
+mv $makefile ${makefile}.${bak}	# backup the current Makefile 
 
 mv $tmp $makefile
 
