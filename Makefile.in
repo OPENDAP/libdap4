@@ -1,9 +1,9 @@
 
-# $Id: Makefile.in,v 1.20 1995/05/11 12:52:25 jimg Exp $
+# $Id: Makefile.in,v 1.21 1995/06/17 19:48:41 jimg Exp $
 
 @SET_MAKE@
 
-# Set makefile variables, some with values supplid by configure 
+# Set makefile variables, some with values supplied by configure 
 # DEFS gets the `-D' defines that describe what a particular system has
 # or doesn't have.
 
@@ -63,8 +63,6 @@ RANLIB = @RANLIB@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
-
-SUBDIRS = Stack Map Plex Vec
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o
@@ -194,7 +192,7 @@ trans-check: trans-test
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
-	-rm -f $(PROG)
+	-rm -f $(PROG) das-test dds-test trans-test
 
 distclean: clean
 	-rm -f lex.das.c das.tab.c das.tab.h lex.dds.c dds.tab.c dds.tab.h
