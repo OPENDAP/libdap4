@@ -18,9 +18,13 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.11  1996/04/05 01:25:40  jimg
-/* Merged changes from version 1.1.1.
+/* Revision 1.12  1996/05/21 23:46:33  jimg
+/* Added support for URLs directory to the class. This uses version 4.0D of
+/* the WWW library from W3C.
 /*
+ * Revision 1.11  1996/04/05 01:25:40  jimg
+ * Merged changes from version 1.1.1.
+ *
  * Revision 1.10  1996/02/01 21:45:33  jimg
  * Added list of DDSs and constraint expressions that produced them.
  * Added mfuncs to manage DDS/CE list.
@@ -84,6 +88,7 @@
 #endif
 
 #include <stdio.h>
+#include <sys/time.h>
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
@@ -91,8 +96,29 @@
 #include <String.h>
 #include <SLList.h>
 
+#include "WWWLib.h"		/* Global Library Include file */
+#include "WWWApp.h"
+#include "WWWHTTP.h"
+#include "WWWHTML.h"
+
+#include "WWWFile.h"
+#include "WWWMIME.h"
+#include "WWWGuess.h"		/* Content type guesser */
+#include "WWWInit.h"
+#include "WWWRules.h"
+
 #include "DAS.h"
 #include "DDS.h"
+#include "Error.h"
+
+#define NAME "DODS"
+#define VERSION	"2.0"
+
+#define SHOW_MSG (WWWTRACE || HTAlert_interactive())
+
+#if defined(__svr4__)
+#define CATCH_SIG
+#endif
 
 class Connect {
 private:
@@ -101,39 +127,107 @@ private:
 	DDS _dds;
     };
 
-    bool _local;		// is this a local connection
+    static int _connects;	// Are there any remote connect objects?
+    static String _logfile;	// If !"", log remote access to the named file
+    static HTList *_conv;	// List of global converters
+    
+    bool _local;		// Is this a local connection
 
-    String _URL;		// URL to remote dataset; --> LOCAL is false
-    DAS _das;			// dataset attribute structure --> !LOCAL
-    DDS _dds;			// dataset descriptor structure --> ! LOCAL
+    // The following members are vaild only if _LOCAL is false.
 
-    SLList<constraint> _data;	// list of expressions & DDSs
+    String _URL;		// URL to remote dataset (incl. CE)
+    DAS _das;			// Dataset attribute structure
+    DDS _dds;			// Dataset descriptor structure
+    Error _error;		// Error object
 
-    void parse_url(const char *name);
 
-protected:
-    String _access;		// broken-out URL components
-    String _host;
-    String _cgi_basename;	// base name of CGI (e.g., def --> def_das)
-    String _path;
-    String _anchor;
+    HTRequest *_request;	// used in event-loop callbacks
+
+    HTParentAnchor *_anchor;
+    struct timeval *_tv;	// Timeout on socket
+    HTMethod _method;		// What method are we envoking 
+    FILE *_output;		// Destination; a temporary file
+
+    SLList<constraint> _data;	// List of expressions & DDSs
+
+    //* Initialize the W3C WWW Library. This should only be called when a
+    //* Connect object is created and there are no other Connect objects in
+    //* existance.
+    void www_lib_init();
+
+    //* Read a url. Assume that the object's _OUTPUT stream has been set
+    //* properly.
+    //* Returns true if the read operation succeeds, false otherwise.
+    bool read_url(String &url);
+
+    //* Separate the text DDS from the binary data in the data object (which
+    //* is a bastardized multipart MIME document). The returned FILE * points
+    //* to a temporary file which contains the DDS object only. The formal
+    //* parameter IN is advanced so that it points to the first byte of the
+    //* binary data.
+    FILE *move_dds(FILE *in);
+
+    //* Read lines from FP and look for the MIME header
+    //* `Constent-Description'. If found return in VALUE the value part of that
+    //* header and true as the function result. If not found, return false as
+    //* the function value (VALUE is undefined).
+    bool parse_content_description(FILE *fp, String &value);
+
+    //* Perform common WWW lib operations required to build new Connect
+    //* objects. 
+    void init();
+
+    //* Copy from one Connect to another. 
+    void clone(const Connect &src);
+
+    //* Close the objects _output stream if it is not NULL or STDOUT.
+    void close_output();
+
+    friend int authentication_handler(HTRequest *request, int status);
+    friend int redirection_handler(HTRequest *request, int status);
+    friend int terminate_handler(HTRequest *request, int status) ;
+
+    Connect();			// Never call this.
 
 public:
     Connect(const String &name); 
-    virtual ~Connect();		// base classes should have virtual dtors
+    Connect(const Connect &copy_from);
+    virtual ~Connect();
 
+    Connect &operator=(const Connect &rhs);
+
+    /// Put the information contained in URL into the Connect object.
+    //* Fetch the named URL and put its contents into the member _OUTPUT.
+    //* If ASYNC is true, then the operation is asynchronous; the mfunc
+    //* returns before the data transfer is complete.
+    //* Returns false if an error is detected, otherwise returns true.
+    bool fetch_url(String &url, bool async = false);
+
+    /// Access the information contained in this instance.
+    //* Returns a FILE * which can be used to read the data from the object.
+    FILE *output();
+
+    /// Does this object refer to a local file?
+    //* Return true is the object refers to a local file, otherwise returns
+    //* false .
     bool is_local();
 
-    const String &URL();
+    /// Get the object's URL.
+    //* Return the object's URL in a Strin. If CE is false, do not include
+    //* the constraint expression part of the URL (the `?' and anything 
+    //* following it). If the object refers to local data, return the null
+    //* string. 
+    String URL(bool CE = true);
+    String CE();
+
     DAS &das();
     DDS &dds();
-    
-    // get the DAS, DDS and data from the server/cgi comb using a URL
-    bool request_das(const String &ext = "das");
-    bool request_dds(const String &ext = "dds");
 
-    DDS &request_data(const String expr, bool async = false, 
-		      const String &ext = "dods");
+    /// Get a reference to the last error.
+    //* Returns: The last error object sent from the server. If no error has
+    //* been sent from the server, returns a reference to an empty error
+    //* object. 
+    Error &error();
 
     // For each data access there is an associated constraint expression
     // (even if it is null) and a resulting DDS which describes the type(s)
@@ -143,6 +237,13 @@ public:
     void next_constraint(Pix &p);
     String constraint_expression(Pix p);
     DDS &constraint_dds(Pix p);
+
+    // get the DAS, DDS and data from the server/cgi comb using a URL
+    bool request_das(const String &ext = "das");
+    bool request_dds(const String &ext = "dds");
+
+    DDS &request_data(const String expr, bool async = false, 
+		      const String &ext = "dods");
 
     // For every new data read initiated using this connect, there is a DDS
     // and constraint expression. The data itself is stored in the dds in the
