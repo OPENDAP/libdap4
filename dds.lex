@@ -31,6 +31,11 @@
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.20  1999/01/21 02:51:27  jimg
+ * The dds scanner now recognizes the token `Data:' as an EOF marker. This means
+ * that the data document can be scanned without splitting the DDS and binary
+ * data parts into two files.
+ *
  * Revision 1.19  1998/03/26 00:26:24  jimg
  * Added % to the set of characters that can start and ID
  *
@@ -99,7 +104,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.19 1998/03/26 00:26:24 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.20 1999/01/21 02:51:27 jimg Exp $"};
 
 #include <string.h>
 
@@ -176,6 +181,8 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 <comment>[^\n]*
 <comment>\n		++dds_line_num; BEGIN(INITIAL);
 <comment><<EOF>>        yy_init = 1; dds_line_num = 1; yyterminate();
+
+"Data:\n"		yyterminate();
 
 {NEVER}                 {
                           if (yytext) {	/* suppress msgs about `' chars */
