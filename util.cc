@@ -11,6 +11,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.33  1996/12/02 23:20:29  jimg
+// func_member now does the right thing with the dds by sending dds.filename()
+// to ops().
+//
 // Revision 1.32  1996/12/02 19:45:58  jimg
 // Added versions of int_ops for various combinations of signed and unsigned
 // operands. Ignore the warnings about comparisons between signed and
@@ -173,7 +177,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.32 1996/12/02 19:45:58 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.33 1996/12/02 23:20:29 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -511,7 +515,7 @@ systime()
 // These functions are used by the CE evaluator
 
 bool
-func_member(int argc, BaseType *argv[], DDS &)
+func_member(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 2) {
 	cerr << "Wrong number of arguments." << endl;
@@ -522,7 +526,7 @@ func_member(int argc, BaseType *argv[], DDS &)
       case dods_list_c: {
 	List *var = (List *)argv[0];
 	BaseType *btp = (BaseType *)argv[1];
-	bool result = var->member(btp);
+	bool result = var->member(btp, dds);
     
 	return result;
       }
