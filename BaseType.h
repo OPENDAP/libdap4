@@ -8,14 +8,17 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.6  1994/11/29 19:14:15  jimg
-/* Added mroe support for data transmission; BaseType now contains enough
-/* functionality to support transmission of all the simple datatypes.
-/* Added in and out FILE *.
-/* Added boolean flag in serialize which will cause the output buffer to
-/* be flushed when data is serialized.
-/* Added xdr_coder for serialization of arrays and lists.
+/* Revision 1.7  1994/12/12 20:33:03  jimg
+/* Added enum Part - used to be part of CtorType.
 /*
+ * Revision 1.6  1994/11/29  19:14:15  jimg
+ * Added mroe support for data transmission; BaseType now contains enough
+ * functionality to support transmission of all the simple datatypes.
+ * Added in and out FILE *.
+ * Added boolean flag in serialize which will cause the output buffer to
+ * be flushed when data is serialized.
+ * Added xdr_coder for serialization of arrays and lists.
+ *
  * Revision 1.5  1994/11/22  14:05:29  jimg
  * Added code for data transmission to parts of the type hierarchy. Not
  * complete yet.
@@ -57,6 +60,17 @@
 #include <String.h>
 
 #include "config.h"
+
+// PART names the parts of multi-section ctor types; e.g., FUNCTION has two
+// sets of variables, the INDEPENDENT variables and the DEPENDENT variables.
+
+enum Part {
+    nil,			// nil is for types that don't have parts...
+    independent,
+    dependent,
+    array,
+    maps
+};
 
 class BaseType {
 private:
