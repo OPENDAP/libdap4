@@ -39,10 +39,9 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.37 2003/04/22 19:40:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.38 2003/05/13 22:10:58 jimg Exp $"};
 
 #include <iostream>
-#include <strstream>
 #include <string>
 #include <algorithm>
 
@@ -57,9 +56,22 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.37 2003/04/22 19:40:27 j
 #include "DODSFilter.h"
 #include "InternalErr.h"
 
-using std::ostrstream;
 using std::max;
 using std::min;
+
+const string usage = 
+"Usage: <handler name> [options ...] [data source name]\n\
+\n\
+options: -o <response>: One of DAS, DDS, DataDDS or Version\n\
+         -c: Compress the response using the deflate algorithm.\n\
+         -e <expr>: When returning a DataDDS, use <expr> as the constraint.\n\
+         -v <version>: Use <version> as the version number\n\
+         -d <dir>: Look for ancillary file in <dir> (deprecated).\n\
+         -f <file>: Look for ancillary data in <file> (deprecated).\n\
+         -r <dir>: Use <dir> as a cache directory\n\
+         -l <time>: Conditional request; if data source is unchanged since\n\
+                    <time>, return an HTTP 304 response.\n\
+";
 
 /** Create an instance of DODSFilter using the command line
     arguments passed by the CGI (or other) program.  The default
@@ -76,10 +88,16 @@ using std::min;
     can be specialized and <i>any meaning</i> can be associated to this
     string. It could be the name of a database, for example.
 
+    <dt><tt>-o</tt> <i>response</i><dd> 
+
+    Specifies the type of response desired. The \i response is a string 
+    and must be one of \t DAS, \t DDS, \t DataDDS or \t Version. Note 
+    that \t Version returns version information in the body of the response
+    and is useful for debugging, et cetera. Each response returns version
+    information in an HTTP header for internal use by a client.
+
     <dt><tt>-c</tt><dd>
     Send compressed data. Data are compressed using the deflate program.
-    The W3C's libwww will recognize this and automatically decompress
-    these data.
 
     <dt><tt>-e</tt> <i>expression</i><dd>
     This option specifies a non-blank constraint expression used to
@@ -89,12 +107,6 @@ using std::min;
     <tt>cgi-version</tt>. This is a way for the caller to set version
     information passed back to the client either as the response to a
     version request of in the response headers.
-
-    <dt><tt>-V</tt><dd> Specifies that this request is just for version
-    information. Servers can check to see if this was given using the
-    <tt>version</tt> mfunc. Note that version information is sent from within
-    DODSFilter so that sophisticated servers can support versioning data
-    sources inaddition to the server software.
 
     <dt><tt>-d</tt> <i>ancdir</i><dd>
     Specifies that ancillary data be sought in the <i>ancdir</i>
@@ -109,15 +121,6 @@ using std::min;
     handlers support caching and each uses its own rules tailored to a
     specific file or data type.
 
-    <dt><tt>-t</tt> <i>list of types</i><dd> Specifies a list of
-    types accepted by 
-    the client. This information is passed to a server by a client using
-    the XDODS-Accept-Types header. The comma separated list contains each
-    type the client can understand <i>or</i>, each type the client does
-    <i>not</i> understand. In the latter case the type names are prefixed
-    by a {\tt !}. If the list contains only the keyword `All', then the
-    client is declaring that it can understand all DODS types.
-
     <dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is a
     conditional request; send a complete response if and only if the data has
     changed since <i>time</i>. If it has not changed since <i>time</i>, then
@@ -128,12 +131,9 @@ using std::min;
 
     </dl>
 
-    @todo Option processing should happen in a method so that it can be
-    specialized. 
-
     @brief DODSFilter constructor. */
 
-DODSFilter::DODSFilter(int argc, char *argv[]) 
+DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
 {
     initialize(argc, argv);
 }
@@ -148,17 +148,17 @@ DODSFilter::~DODSFilter()
     that specialization called by the subclass' constructor. 
 
     This class and any class that specializes it should call this method in
-    its constructor.     
+    its constructor. Note that when this method is called, the object is \i
+    not fully constructed. 
 
     @param argc The argument count
     @param argv The vector of char * argument strings. */
 void
-DODSFilter::initialize(int argc, char *argv[])
+DODSFilter::initialize(int argc, char *argv[]) throw(Error)
 {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
     d_comp = false;
-    d_ver = false; 
     d_bad_options = false; 
     d_conditional_request = false;
     d_dataset = "";
@@ -167,13 +167,14 @@ DODSFilter::initialize(int argc, char *argv[])
     d_anc_dir = "";
     d_anc_file = "";
     d_cache_dir = "";
+    d_response = Unknown_Response;;
     d_anc_das_lmt = 0; 
     d_anc_dds_lmt = 0;
     d_if_modified_since = -1;
 
     d_program_name = argv[0];
 
-    // This should be specialized by a subclass.
+    // This should be specialized by a subclass. This may throw Error.
     int next_arg = process_options(argc, argv);
 
     // Look at what's left after processing the command line options. Either
@@ -181,8 +182,8 @@ DODSFilter::initialize(int argc, char *argv[])
     // information. If neither is true, then the options are bad.
     if(next_arg < argc)
 	d_dataset = argv[next_arg];
-    else if (!d_ver)		
-	d_bad_options = true;
+    else if (get_response() != Version_Response)		
+	print_usage(); 		// Throws Error
 
     // Both dataset and ce could be set at this point (dataset must be, ce
     // might be). If they contain any WWW-style esacpes (%<hex digit>,hex
@@ -194,6 +195,7 @@ DODSFilter::initialize(int argc, char *argv[])
     DBG(cerr << "d_ce: " << d_ce << endl);
     DBG(cerr << "d_cgi_ver: " << d_cgi_ver << endl);
     DBG(cerr << "d_ver: " << d_ver << endl);
+    DBG(cerr << "d_response: " << d_response << endl);
     DBG(cerr << "d_anc_dir: " << d_anc_dir << endl);
     DBG(cerr << "d_anc_file: " << d_anc_file << endl);
     DBG(cerr << "d_cache_dir: " << d_cache_dir << endl);
@@ -210,28 +212,28 @@ DODSFilter::initialize(int argc, char *argv[])
     identifier passed to the filter program that identifies the data source.
     It's often a file name. */
 int
-DODSFilter::process_options(int argc, char *argv[])
+DODSFilter::process_options(int argc, char *argv[]) throw(Error)
 {
     DBG(cerr << "Entering process_options... ");
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce:v:Vd:f:r:t:l:");
+    GetOpt getopt (argc, argv, "ce:v:d:f:r:l:o:");
 
     while ((option_char = getopt()) != EOF) {
 	switch (option_char) {
 	  case 'c': d_comp = true; break;
-	  case 'e': d_ce = getopt.optarg; break;
-	  case 'v': d_cgi_ver = getopt.optarg; break;
-	  case 'V': d_ver = true; break;
+	  case 'e': set_ce(getopt.optarg); break;
+	  case 'v': set_cgi_version(getopt.optarg); break;
 	  case 'd': d_anc_dir = getopt.optarg; break;
 	  case 'f': d_anc_file = getopt.optarg; break;
 	  case 'r': d_cache_dir = getopt.optarg; break;
+	  case 'o': set_response(getopt.optarg); break;
 	  case 'l': 
 	    d_conditional_request = true;
 	    d_if_modified_since 
 		= static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
 	    break;
-	  default: d_bad_options = true; break;
+	  default: print_usage(); // Throws Error
 	}
     }
 
@@ -329,6 +331,31 @@ string
 DODSFilter::get_dataset_version()
 {
     return "";
+}
+
+/** Set the response to be returned. Valid response names are "DAS", "DDS",
+    "DataDDS, "Version". 
+    @param o The name of the object. 
+    @exceptoion InternalErr Thrown if the response is not one of the valid
+    names. */
+void DODSFilter::set_response(const string &r) throw(Error)
+{
+    if (r == "DAS" || r == "das")
+	d_response = DAS_Response;
+    else if (r == "DDS" || r == "dds")
+	d_response = DDS_Response;
+    else if (r == "DataDDS" || r == "dods")
+	d_response = DataDDS_Response;
+    else if (r == "Version")
+	d_response = Version_Response;
+    else
+	print_usage(); 		// Throws Error
+}
+
+/** Get the name of the response to be returned. */
+DODSFilter::Response DODSFilter::get_response()
+{
+    return d_response;
 }
 
 /** Get the dataset's last modified time. This returns the time at which
@@ -505,17 +532,12 @@ maintainer, or to support@unidata.ucar.edu.";
     sent back to the client program telling them that the server is
     broken. 
 
-    @todo Rewrite to use a stringstream and endl for portability.
     @brief Print usage information for a filter program. */
 void 
-DODSFilter::print_usage()
+DODSFilter::print_usage() throw(Error)
 {
     // Write a message to the WWW server error log file.
-    string oss="";
-    oss+= "Usage: " + d_program_name + " -V | [-c] [-v <cgi version>] [-e <ce>]\n";
-    oss+= "       [-d <ancillary file directory>] [-f <ancillary file name>]\n";
-    oss+= "       <dataset>\n";
-    ErrMsgT(oss.c_str());
+    ErrMsgT(usage.c_str());
 
     throw Error(unknown_error, emessage);
 }
@@ -545,18 +567,6 @@ DODSFilter::send_version_info()
     fflush( stdout ) ;
 }
 
-// I've written a few unit tests for this method (see DODSFilterTest.cc) but
-// it's very hard to test well. 5/1/2001 jhrg
-/** This function formats and prints an ASCII representation of a
-    DAS on stdout.  This has the effect of sending the DAS object
-    back to the client program.
-
-    @brief Transmit a DAS.
-    @param os The output stream to which the DAS is to be sent.
-    @param das The DAS object to be sent.
-    @param anc_location The directory in which the external DAS file resides.
-    @return void
-    @see DAS */
 void
 DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location)
 {
@@ -571,6 +581,16 @@ DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location)
     }
 }
 
+/** This function formats and prints an ASCII representation of a
+    DAS on stdout.  This has the effect of sending the DAS object
+    back to the client program.
+
+    @brief Transmit a DAS.
+    @param out The output stream to which the DAS is to be sent.
+    @param das The DAS object to be sent.
+    @param anc_location The directory in which the external DAS file resides.
+    @return void
+    @see DAS */
 void
 DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location)
 {
@@ -592,20 +612,6 @@ DODSFilter::send_das(DAS &das, const string &anc_location)
     send_das(stdout, das, anc_location);
 }
 
-/** This function formats and prints an ASCII representation of a
-    DDS on stdout.  When called by a CGI program, this has the
-    effect of sending a DDS object back to the client
-    program. Either an entire DDS or a constrained DDS may be sent.
-
-    @brief Transmit a DDS.
-    @param os The output stream to which the DAS is to be sent.
-    @param dds The DDS to send back to a client.
-    @param constrained If this argument is true, evaluate the
-    current constraint expression and send the `constrained DDS'
-    back to the client. 
-    @param anc_location The directory in which the external DAS file resides.
-    @return void
-    @see DDS */
 void
 DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
 		     const string &anc_location)
@@ -628,6 +634,20 @@ DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
     }
 }
 
+/** This function formats and prints an ASCII representation of a
+    DDS on stdout.  When called by a CGI program, this has the
+    effect of sending a DDS object back to the client
+    program. Either an entire DDS or a constrained DDS may be sent.
+
+    @brief Transmit a DDS.
+    @param out The output stream to which the DAS is to be sent.
+    @param dds The DDS to send back to a client.
+    @param constrained If this argument is true, evaluate the
+    current constraint expression and send the `constrained DDS'
+    back to the client. 
+    @param anc_location The directory in which the external DAS file resides.
+    @return void
+    @see DDS */
 void
 DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
 		     const string &anc_location)
@@ -698,6 +718,11 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.38  2003/05/13 22:10:58  jimg
+// MOdified DODSFilter so that it takes a -o switch which names the type
+// of response to generate. This can be used to build a single hander
+// which can return all of the responses.
+//
 // Revision 1.37  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //

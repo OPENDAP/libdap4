@@ -27,11 +27,12 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <strstream>
+#include <sstream>
 
 #include "DODSFilter.h"
 #include "DAS.h"
 #include "Regex.h"
+#define DODS_DEBUG
 #include "debug.h"
 
 using namespace CppUnit;
@@ -43,16 +44,13 @@ private:
 
     AttrTable *cont_a;
     DAS *das;
-    ostrstream oss;
-    streampos start_oss;
+    ostringstream oss;
 
 public: 
     DODSFilterTest() {}
     ~DODSFilterTest() {}
 
     void setUp() {
-	start_oss = oss.tellp();
-
 	// Test pathname
 	char *argv_1[] = {"test_case", "server-testsuite/bears.data"};
 	df = new DODSFilter(2, argv_1);
@@ -69,7 +67,7 @@ public:
 	// This file has an ancillary DAS in the server-testsuite dir.
 	// df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
 	char *argv_2[] = {"test_case", "server-testsuite/coads.data", "-l",
-			  "988679294", "-e", "u,x,z[0]&grid(u,\"lat<10.0\")"};
+			  "2147483647", "-e", "u,x,z[0]&grid(u,\"lat<10.0\")"};
 	df3 = new DODSFilter(6, argv_2);
 
 	// Go back to this data source to test w/o an ancillary DAS.
@@ -112,15 +110,16 @@ public:
     }
 
     void reset_oss() {
-	oss.freeze(0);
-	oss.seekp(start_oss);
+	oss.str("");
     }	
 
-    bool re_match(Regex &r, const char *s) {
-	DBG(cerr << "strlen(s): " << (int)strlen(s) << endl);
-	DBG(cerr << "r.match(s): " << r.match(s, strlen(s)) << endl);
+    bool re_match(Regex &r, const string &s) {
+	DBG(cerr << "s.length(): " << s.length() << endl);
 
-	return r.match(s, strlen(s)) == (int)strlen(s);
+	int pos = r.match(s.c_str(), s.length());
+	DBG(cerr << "r.match(s): " << pos << endl);
+
+	return pos > 0 && static_cast<unsigned>(pos) == s.length();
     }
 
     // Tests for methods
@@ -175,9 +174,8 @@ Attributes {\n\
         Int32 size 7;\n\
         String type cars;\n\
     }\n\
-}.*\n\
-");
-	df->send_das(oss, *das); oss << ends;
+}.*\n");
+	df->send_das(oss, *das);
 
 	DBG(cerr << "DAS: " << oss.str() << endl);
 
@@ -186,9 +184,11 @@ Attributes {\n\
 
 	Regex r2("HTTP/1.0 304 NOT MODIFIED\n\
 Date: .*\n\
-\n\
-");
-	df3->send_das(oss, *das); oss << ends;
+\n");
+	df3->send_das(oss, *das);
+
+	DBG(cerr << "DAS response: " << oss.str() << endl);
+
 	CPPUNIT_ASSERT(re_match(r2, oss.str()));
     }	
 
@@ -199,7 +199,7 @@ Date: .*\n\
 
     void get_request_if_modified_since_test() {
 	CPPUNIT_ASSERT(df->get_request_if_modified_since() == -1);
-	CPPUNIT_ASSERT(df3->get_request_if_modified_since() == 988679294);
+	CPPUNIT_ASSERT(df3->get_request_if_modified_since() == 2147483647);
     }
 
     void escape_code_test() {

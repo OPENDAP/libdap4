@@ -74,9 +74,18 @@
     @author jhrg 8/26/97 */
 
 class DODSFilter {
+public:
+    /** Types of responses DODSFilter know about. */
+    enum Response {
+	Unknown_Response,
+	DAS_Response,
+	DDS_Response,
+	DataDDS_Response,
+	Version_Response
+    };
+
 protected:
     bool d_comp;		// True if the output should be compressed.
-    bool d_ver;			// True if the caller wants version info.
     bool d_bad_options;		// True if the options (argc,argv) are bad.
     bool d_conditional_request;
 
@@ -88,58 +97,38 @@ protected:
     string d_anc_file;		// Use this for ancillary file name
     string d_cache_dir;		// Use this for cache files
 
+    Response d_response;	// Name of the response to generate
+
     time_t d_anc_das_lmt;	// Last modified time of the anc. DAS.
     time_t d_anc_dds_lmt;	// Last modified time of the anc. DDS.
     time_t d_if_modified_since;	// Time from a conditional request.
 
     DODSFilter() {}		// Private default ctor.
 
-    void initialize(int argc, char *argv[]);
+    void initialize(int argc, char *argv[]) throw(Error);
 
-    virtual int process_options(int argc, char *argv[]);
+    virtual int process_options(int argc, char *argv[]) throw(Error);
 
 public:
-    DODSFilter(int argc, char *argv[]);
+    DODSFilter(int argc, char *argv[]) throw(Error);
 
     virtual ~DODSFilter();
 
-    /** Use this function to test whether the options passed via argc
-	and argv are valid. 
+    virtual bool is_conditional();
 
-	@brief Check whether the DODSFilter was initialized with valid
-	arguments. 
-	@return True if the class state is OK, false otherwise. */
-    bool OK() { return !d_bad_options; }
+    virtual string get_cgi_version();
+    virtual void set_cgi_version(string version);
 
-    /** Use this function to check whether the client requested version
-	information.  In addition to returning version information about
-	the DODS software, the server can also provide version
-	information about the dataset itself.
+    virtual string get_ce();
+    virtual void set_ce(string _ce);
 
-	@brief Should the filter send version information to the client
-	program?
-
-	@return True if the -V option was given indicating that the filter
-	should send version information back to the client, False
-	otherwise. 
-	@see DODSFilter::send_version_info */
-    bool version() { return d_ver; }
-
-    bool is_conditional();
-
-    string get_cgi_version();
-
-    void set_cgi_version(string version);
-
-    string get_ce();
-
-    void set_ce(string _ce);
-
-    string get_dataset_name();
-
+    virtual string get_dataset_name();
     virtual void set_dataset_name(const string _dataset);
 
     virtual string get_dataset_version();
+
+    virtual Response get_response();
+    virtual void set_response(const string &r) throw(Error);
 
     virtual time_t get_dataset_last_modified_time();
 
@@ -157,20 +146,23 @@ public:
 
     virtual void read_ancillary_dds(DDS &dds, string anc_location = "");
 
-    virtual void print_usage();
+    virtual void print_usage() throw(Error);
 
     virtual void send_version_info();
 
     virtual void send_das(DAS &das, const string &anc_location = "");
+
     virtual void send_das(ostream &os, DAS &das,
 			  const string &anc_location="");
-    virtual void send_das(FILE *out, DAS &das,
-			  const string &anc_location="");
+
+    virtual void send_das(FILE *out, DAS &das, const string &anc_location="");
 
     virtual void send_dds(DDS &dds, bool constrained = false,
 			  const string &anc_location = "");
+
     virtual void send_dds(ostream &os, DDS &dds, bool constrained = false,
 			  const string &anc_location = "");
+
     virtual void send_dds(FILE *out, DDS &dds, bool constrained = false,
 			  const string &anc_location = "");
 
@@ -179,6 +171,11 @@ public:
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.27  2003/05/13 22:10:58  jimg
+// MOdified DODSFilter so that it takes a -o switch which names the type
+// of response to generate. This can be used to build a single hander
+// which can return all of the responses.
+//
 // Revision 1.26  2003/04/22 19:40:27  jimg
 // Merged with 3.3.1.
 //
