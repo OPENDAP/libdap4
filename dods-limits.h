@@ -11,6 +11,9 @@
 // the same values on all machines.
 
 // $Log: dods-limits.h,v $
+// Revision 1.7  1999/03/19 21:42:07  jimg
+// Added constants for floating point values. Changed some formatting.
+//
 // Revision 1.6  1998/09/10 18:49:48  jehamby
 // Correct DODS_INT_MIN and DODS_LONG_MIN values
 //
@@ -33,21 +36,33 @@
 // Added. Built using the SunOS 4.1.3 limits.h file.
 //
 
-#define	DODS_CHAR_BIT		 8
-#define	DODS_SCHAR_MIN		 -127
-#define	DODS_SCHAR_MAX		 127
-#define	DODS_UCHAR_MAX		 (unsigned char)255
-#define	DODS_CHAR_MIN		 0
-#define	DODS_CHAR_MAX		 (unsigned char)255
-#define	DODS_SHRT_MIN		 -32767
-#define	DODS_SHRT_MAX		 32767
-#define	DODS_USHRT_MAX		 (unsigned short)65535
-#define	DODS_INT_MIN		 (-2147483647 - 1)
-#define	DODS_INT_MAX		 2147483647
-#define	DODS_UINT_MAX		 (unsigned int)4294967295
-#define	DODS_LONG_MIN		 (-2147483647 - 1)
-#define	DODS_LONG_MAX		 2147483647
-#define	DODS_ULONG_MAX		 (unsigned long)4294967295
+#define	DODS_CHAR_BIT	8
+#define	DODS_SCHAR_MIN	-127
+#define	DODS_SCHAR_MAX	127
+#define	DODS_UCHAR_MAX	(unsigned char)255
+#define	DODS_CHAR_MIN	0
+#define	DODS_CHAR_MAX	(unsigned char)255
 
-#define	DODS_MB_LEN_MAX		 4
+#define	DODS_SHRT_MIN	-32767
+#define	DODS_SHRT_MAX	32767
+#define	DODS_USHRT_MAX	(unsigned short)65535
+
+#define	DODS_INT_MIN	(-2147483647 - 1)
+#define	DODS_INT_MAX	2147483647
+#define	DODS_UINT_MAX	(unsigned int)4294967295
+
+#define	DODS_LONG_MIN	(-2147483647 - 1)
+#define	DODS_LONG_MAX	2147483647
+#define	DODS_ULONG_MAX	(unsigned long)4294967295
+
+#define	DODS_DBL_DIG	15	/* digits of precision of a "double" */
+#define	DODS_DBL_MAX	1.7976931348623157E+308	/* max decimal value of a */
+						/* "double" */
+#define	DODS_DBL_MIN	2.2250738585072014E-308	/* min decimal value of a */
+						/* "double" */
+#define	DODS_FLT_DIG	6		/* digits of precision of a "float" */
+#define	DODS_FLT_MAX	3.402823466E+38F  /* max decimal value of a "float" */
+#define	DODS_FLT_MIN	1.175494351E-38F  /* min decimal value of a "float" */
+
+#define	DODS_MB_LEN_MAX	4
 
