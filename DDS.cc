@@ -9,6 +9,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.49  2000/07/08 01:28:36  rmorris
+// Changes to DDS:send() method to use _cwait instead of waitpid() under
+// Win32.  As of the time of check back into cvs, the method is untested
+// under win32 but would only be use in the "server side of the core" or
+// during running of the test suite.
+//
 // Revision 1.48  2000/06/16 18:50:18  jimg
 // Fixes leftover from the last merge plus needed for the merge with version
 // 3.1.7.
@@ -263,7 +269,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.48 2000/06/16 18:50:18 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.49 2000/07/08 01:28:36 rmorris Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -969,8 +975,19 @@ bool
 DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
 #ifdef WIN32
+	//  In win32 land where we are using the "new" Standard C++ Library,
+	//  we can't hook a stream to an open FILE *.  No such constructor
+	//  and there is no way around it.  (This is by design of the ANSI
+	//  steering committee).  This essentially opens the files
+	//  again as a stream.  The "old" Standard C++ Library can perform
+	//  this trick - but mixing the "old" and "new" is disallowed.  This
+	//  ofstream should be deconstructed automatically (and hence closed
+	//  and flushed) before the associated FILE * is used again and that
+	//  is why this is believed to work.  This approach may rule out a
+	//  win32 native port of Dods servers.
 	std::ofstream os(out->_tmpfname,ios::app);
 #else
+	//  This breaks with the ANSI draft, but is possible under UNIX.
     ofstream os(fileno(out));
 #endif
     return parse_constraint(constraint, os, server);
@@ -988,9 +1005,10 @@ bool
 DDS::send(const string &dataset, const string &constraint, FILE *out, 
 	  bool compressed, const string &cgi_ver)
 {
+    //  This function has not been shown to work under win32 as
+	//  of 7/2000.
     bool status = true;
 
-#ifndef WIN32  /*  Not supported under win32 as yet  */
     if ((status = parse_constraint(constraint, out, true))) {
 	// Handle *functional* constraint expressions specially 
 	if (functional_expression()) {
@@ -1023,7 +1041,11 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 		if (compressed) {
 		    fclose(comp_sink);
 		    int pid;
+#ifdef WIN32
+			while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
+#else
 		    while ((pid = waitpid(childpid, 0, 0)) > 0) {
+#endif
 			DBG(cerr << "pid: " << pid << endl);
 		    }
 		}
@@ -1061,14 +1083,17 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 	    if (compressed) {
 		fclose(comp_sink);
 		int pid;
+#ifdef WIN32
+		while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
+#else
 		while ((pid = waitpid(childpid, 0, 0)) > 0) {
+#endif
 		    DBG(cerr << "pid: " << pid << endl);
 		}
 	    }
 	}
     }
 
-#endif
     return status;
 }
 
