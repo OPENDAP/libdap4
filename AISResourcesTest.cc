@@ -59,7 +59,7 @@ public:
 	Resource r1(fnoc1_ais);
 	ais->add_resource(fnoc1, r1);
 
-	Resource r2(fnoc2_ais, fallback);
+	Resource r2(fnoc2_ais, Resource::fallback);
 	ais->add_resource(fnoc2, r2);
 
 	ais->add_resource(fnoc3, r1);
@@ -86,19 +86,19 @@ public:
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc1) != ais->d_db.end());
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc1)->second.size() == 1);
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc1)->second[0].get_url() == fnoc1_ais);
-	CPPUNIT_ASSERT(ais->d_db.find(fnoc1)->second[0].get_rule() == overwrite);
+	CPPUNIT_ASSERT(ais->d_db.find(fnoc1)->second[0].get_rule() == Resource::overwrite);
 
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc2) != ais->d_db.end());
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc2)->second.size() == 1);
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc2)->second[0].get_url() == fnoc2_ais);
-	CPPUNIT_ASSERT(ais->d_db.find(fnoc2)->second[0].get_rule() == fallback);
+	CPPUNIT_ASSERT(ais->d_db.find(fnoc2)->second[0].get_rule() == Resource::fallback);
 
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc3) != ais->d_db.end());
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc3)->second.size() == 2);
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc3)->second[0].get_url() == fnoc1_ais);
 	CPPUNIT_ASSERT(ais->d_db.find(fnoc3)->second[1].get_url() == fnoc2_ais);
-	CPPUNIT_ASSERT(ais->d_db.find(fnoc3)->second[0].get_rule() == overwrite);
-	CPPUNIT_ASSERT(ais->d_db.find(fnoc3)->second[1].get_rule() == fallback);
+	CPPUNIT_ASSERT(ais->d_db.find(fnoc3)->second[0].get_rule() == Resource::overwrite);
+	CPPUNIT_ASSERT(ais->d_db.find(fnoc3)->second[1].get_rule() == Resource::fallback);
     }
 
     void add_resource_vector_test() {
@@ -111,9 +111,9 @@ public:
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2) != ais2->d_db.end());
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second.size() == 1);
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[0].get_url() == fnoc1_ais);
-	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[0].get_rule() == overwrite);
+	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[0].get_rule() == Resource::overwrite);
 
-	Resource r2(fnoc2_ais, fallback);
+	Resource r2(fnoc2_ais, Resource::fallback);
 	ResourceVector rv2(1, r2);
 	ais2->add_resource(fnoc2, rv2);
 
@@ -122,8 +122,8 @@ public:
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second.size() == 2);
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[0].get_url() == fnoc1_ais);
 	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[1].get_url() == fnoc2_ais);
-	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[0].get_rule() == overwrite);
-	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[1].get_rule() == fallback);
+	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[0].get_rule() == Resource::overwrite);
+	CPPUNIT_ASSERT(ais2->d_db.find(fnoc2)->second[1].get_rule() == Resource::fallback);
     }
 
     void has_resource_test() {
@@ -136,19 +136,19 @@ public:
 	ResourceVector trv1 = ais->get_resource(fnoc1);
 	CPPUNIT_ASSERT(trv1.size() == 1);
 	CPPUNIT_ASSERT(trv1[0].get_url() == fnoc1_ais);
-	CPPUNIT_ASSERT(trv1[0].get_rule() == overwrite);
+	CPPUNIT_ASSERT(trv1[0].get_rule() == Resource::overwrite);
 
 	ResourceVector trv2 = ais->get_resource(fnoc2);
 	CPPUNIT_ASSERT(trv2.size() == 1);
 	CPPUNIT_ASSERT(trv2[0].get_url() == fnoc2_ais);
-	CPPUNIT_ASSERT(trv2[0].get_rule() == fallback);
+	CPPUNIT_ASSERT(trv2[0].get_rule() == Resource::fallback);
 
 	ResourceVector trv3 = ais->get_resource(fnoc3);
 	CPPUNIT_ASSERT(trv3.size() == 2);
 	CPPUNIT_ASSERT(trv3[0].get_url() == fnoc1_ais);
-	CPPUNIT_ASSERT(trv3[0].get_rule() == overwrite);
+	CPPUNIT_ASSERT(trv3[0].get_rule() == Resource::overwrite);
 	CPPUNIT_ASSERT(trv3[1].get_url() == fnoc2_ais);
-	CPPUNIT_ASSERT(trv3[1].get_rule() == fallback);
+	CPPUNIT_ASSERT(trv3[1].get_rule() == Resource::fallback);
 
 	try {
 	    ResourceVector trv4 = ais->get_resource("http://never");
@@ -167,17 +167,17 @@ public:
 	    ResourceVector trv1 = ais2->get_resource(fnoc1);
 	    CPPUNIT_ASSERT(trv1.size() == 1);
 	    CPPUNIT_ASSERT(trv1[0].get_url() == fnoc1_ais);
-	    CPPUNIT_ASSERT(trv1[0].get_rule() == overwrite);
+	    CPPUNIT_ASSERT(trv1[0].get_rule() == Resource::overwrite);
 
 	    ResourceVector trv2 = ais2->get_resource(fnoc2);
 	    CPPUNIT_ASSERT(trv2.size() == 1);
 	    CPPUNIT_ASSERT(trv2[0].get_url() == fnoc2_ais);
-	    CPPUNIT_ASSERT(trv2[0].get_rule() == replace);
+	    CPPUNIT_ASSERT(trv2[0].get_rule() == Resource::replace);
 
 	    ResourceVector trv3 = ais2->get_resource(fnoc3);
 	    CPPUNIT_ASSERT(trv3.size() == 1);
 	    CPPUNIT_ASSERT(trv3[0].get_url() == fnoc3_ais);
-	    CPPUNIT_ASSERT(trv3[0].get_rule() == fallback);
+	    CPPUNIT_ASSERT(trv3[0].get_rule() == Resource::fallback);
 	}
 	catch (AISDatabaseReadFailed &adrf) {
 	    CPPUNIT_ASSERT(!"Document not well formed and/or valid!");
@@ -194,19 +194,19 @@ public:
 	    ResourceVector trv1 = ais2->get_resource(fnoc1);
 	    CPPUNIT_ASSERT(trv1.size() == 1);
 	    CPPUNIT_ASSERT(trv1[0].get_url() == fnoc1_ais);
-	    CPPUNIT_ASSERT(trv1[0].get_rule() == overwrite);
+	    CPPUNIT_ASSERT(trv1[0].get_rule() == Resource::overwrite);
 
 	    ResourceVector trv2 = ais2->get_resource(fnoc2);
 	    CPPUNIT_ASSERT(trv2.size() == 1);
 	    CPPUNIT_ASSERT(trv2[0].get_url() == fnoc2_ais);
-	    CPPUNIT_ASSERT(trv2[0].get_rule() == fallback);
+	    CPPUNIT_ASSERT(trv2[0].get_rule() == Resource::fallback);
 
 	    ResourceVector trv3 = ais2->get_resource(fnoc3);
 	    CPPUNIT_ASSERT(trv3.size() == 2);
 	    CPPUNIT_ASSERT(trv3[0].get_url() == fnoc1_ais);
-	    CPPUNIT_ASSERT(trv3[0].get_rule() == overwrite);
+	    CPPUNIT_ASSERT(trv3[0].get_rule() == Resource::overwrite);
 	    CPPUNIT_ASSERT(trv3[1].get_url() == fnoc2_ais);
-	    CPPUNIT_ASSERT(trv3[1].get_rule() == fallback);
+	    CPPUNIT_ASSERT(trv3[1].get_rule() == Resource::fallback);
 	}
 	catch (AISDatabaseReadFailed &adrf) {
 	    CPPUNIT_ASSERT(!"Document not well formed and/or valid!");
@@ -242,6 +242,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISResourcesTest.cc,v $
+// Revision 1.6  2003/03/04 17:55:33  jimg
+// Now used Response objects.
+//
 // Revision 1.5  2003/02/26 06:40:44  jimg
 // Updated tests for write_database().
 //
