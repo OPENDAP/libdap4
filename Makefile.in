@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.54 1996/11/20 00:58:58 jimg Exp $
+# $Id: Makefile.in,v 1.55 1996/11/27 22:13:54 jimg Exp $
 
 @SET_MAKE@
 
@@ -151,8 +151,8 @@ geturl: libdap++.a $(TESTOBJS) geturl.o
 
 test-drivers: das-test dds-test expr-test error-test cgi-util-test www-test
 
-das-test: libdap++.a das-test.o das.tab.h
-	$(CXX) $(LDFLAGS) -o das-test das-test.o $(LIBS)
+das-test: libdap++.a $(TESTOBJS) das-test.o das.tab.h
+	$(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o $(LIBS)
 
 dds-test: libdap++.a $(TESTOBJS) dds-test.o dds.tab.h
 	$(CXX) $(LDFLAGS) -o dds-test $(TESTOBJS) dds-test.o $(LIBS)
@@ -174,6 +174,8 @@ cgi-util-test: libdap++.a cgi_util.o $(TESTOBJS)
 
 www-test: www-test.o
 	$(CC) $(LDFLAGS) -o www-test www-test.o -lwww
+
+# The grammar targets.
 
 grammars: lex.das.c das.tab.h lex.dds.c dds.tab.h lex.expr.c expr.tab.h \
 		lex.Error.c Error.tab.h
@@ -277,7 +279,7 @@ Makefile: ${srcdir}/Makefile.in
 
 check: libdap++.a das-check dds-check expr-check
 
-# these tests all fail when das-test is linked with -lnew_debug.
+# These tests all fail when linking with -lnew_debug.
 
 das-check: das-test
 	-rootme=`pwd` && export rootme && \
@@ -291,12 +293,10 @@ expr-check: expr-test
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool expr-test --srcdir expr-testsuite
 
-# trans-check: trans-test
-#	-rootme=`pwd`; export rootme; \
-#	${RUNTEST} ${RUNTESTFLAGS} --tool trans-test --srcdir trans-testsuite
-
 error-check: error-test
 	echo "No tests for the Error object"
+
+# Clean up.
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
