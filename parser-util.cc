@@ -10,6 +10,10 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.13  1999/03/24 23:29:35  jimg
+// Added support for the new Int16, UInt16 and Float32 types.
+// Removed unused error printing functions.
+//
 // Revision 1.12  1998/03/19 23:28:42  jimg
 // Removed old code (that was surrounded by #if 0 ... #endif).
 //
@@ -55,7 +59,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.12 1998/03/19 23:28:42 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.13 1999/03/24 23:29:35 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,20 +114,6 @@ save_str(char *dst, const char *src, const int line_num)
              << dst << "'" << endl;
 }
 
-void
-save_str(char *dst, const char *src, parser_arg *arg, const int line_num,
-	 const char *context)
-{
-    strncpy(dst, src, ID_MAX);
-    dst[ID_MAX-1] = '\0';		/* in case ... */
-    if (strlen(src) >= ID_MAX) {
-	ostrstream oss;
-	oss << "`" << src << "' truncated to `" << dst << "'" << ends;
-	parse_error(arg, oss.str(), line_num, context);
-	oss.freeze(0);
-    }
-}
-
 int
 check_byte(const char *val, const int line)
 {
@@ -143,40 +133,11 @@ check_byte(const char *val, const int line)
     return TRUE;
 }
 
-int
-check_byte(parser_arg *arg, const char *val, const int line, 
-	   const char *context)
-{
-    char *ptr;
-    long v = strtol(val, &ptr, 0);
-
-    if (v == 0 && val == ptr) {
-	ostrstream oss;
-	oss << "`" << val << "' cannot be decoded as an integer value." 
-	    << ends;
-	parse_error(arg, oss.str(), line, context);
-	oss.freeze(0);
-	return FALSE;
-    }
-
-    if (v > DODS_CHAR_MAX || v < DODS_CHAR_MIN) {
-	ostrstream oss;
-	oss << "`" << val << "' is not a byte value value." << endl
-	    << "It must be between " << DODS_CHAR_MIN << " and "
-	    << DODS_CHAR_MAX << "." << ends;
-	parse_error(arg, oss.str(), line, context);
-	oss.freeze(0);
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
 // This version of check_int will pass base 8, 10 and 16 numbers when they
 // use the ANSI standard for string representation of those number bases.
 
 int
-check_int(const char *val, const int line)
+check_int16(const char *val, const int line)
 {
     char *ptr;
     long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
@@ -190,12 +151,12 @@ check_int(const char *val, const int line)
 	return FALSE;
     }
 
-    // Don't use the constant from limits.h, use the on in dods-limits.h
-    if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
+    // Don't use the constant from limits.h, use the ones in dods-limits.h
+    if (v > DODS_SHRT_MAX || v < DODS_SHRT_MIN) { 
 	ostrstream oss;
-	oss << "`" << val << "' is not a integer value value." << endl
-	    << "It must be between " << DODS_INT_MIN << " and "
-	    << DODS_INT_MAX << "." << ends;
+	oss << "`" << val << "' is not a 16-bit integer value value." << endl
+	    << "It must be between " << DODS_SHRT_MIN << " and "
+	    << DODS_SHRT_MAX << "." << ends;
 	parse_error(oss.str(), line);
 	oss.freeze(0);
 	return FALSE;
@@ -205,8 +166,35 @@ check_int(const char *val, const int line)
 }
 
 int
-check_int(parser_arg *arg, const char *val, const int line, 
-	  const char *context)
+check_uint16(const char *val, const int line)
+{
+    char *ptr;
+    unsigned long v = strtol(val, &ptr, 0); 
+
+    if (v == 0 && val == ptr) {
+	ostrstream oss;
+	oss << "`" << val << "' cannot be decoded as an integer value." 
+	    << ends;
+	parse_error(oss.str(), line);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    if (v > DODS_USHRT_MAX) { 
+	ostrstream oss;
+	oss << "`" << val << "' is not a 16-bit integer value value." << endl
+	    << "It must be less than or equal to " << DODS_USHRT_MAX << "."
+	    << ends;
+	parse_error(oss.str(), line);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_int32(const char *val, const int line)
 {
     char *ptr;
     long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
@@ -215,18 +203,17 @@ check_int(parser_arg *arg, const char *val, const int line,
 	ostrstream oss;
 	oss << "`" << val << "' cannot be decoded as an integer value." 
 	    << ends;
-	parse_error(arg, oss.str(), line, context);
+	parse_error(oss.str(), line);
 	oss.freeze(0);
 	return FALSE;
     }
 
-    // Don't use the constant from limits.h, use the on in dods-limits.h
     if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
 	ostrstream oss;
-	oss << "`" << val << "' is not a integer value value." << endl
+	oss << "`" << val << "' is not a 32-bit integer value value." << endl
 	    << "It must be between " << DODS_INT_MIN << " and "
 	    << DODS_INT_MAX << "." << ends;
-	parse_error(arg, oss.str(), line, context);
+	parse_error(oss.str(), line);
 	oss.freeze(0);
 	return FALSE;
     }
@@ -235,10 +222,10 @@ check_int(parser_arg *arg, const char *val, const int line,
 }
 
 int
-check_uint(const char *val, const int line)
+check_uint32(const char *val, const int line)
 {
     char *ptr;
-    unsigned long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
+    unsigned long v = strtol(val, &ptr, 0);
 
     if (v == 0 && val == ptr) {
 	ostrstream oss;
@@ -253,50 +240,49 @@ check_uint(const char *val, const int line)
 }
 
 int
-check_uint(parser_arg *arg, const char *val, const int line, 
-	   const char *context)
-{
-    char *ptr;
-    unsigned long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
-
-    if (v == 0 && val == ptr) {
-	ostrstream oss;
-	oss << "`" << val << "' cannot be decoded as an integer value." 
-	    << ends;
-	parse_error(arg, oss.str(), line, context);
-	oss.freeze(0);
-	return FALSE;
-    }
-
-    return TRUE;
-}
-
-int
-check_float(const char *val, const int num)
+check_float32(const char *val, const int num)
 {
     char *ptr;
     double v = strtod(val, &ptr);
 
-    if (v == 0.0 && val == ptr) {
+    if (fabs(v) == 0.0 && val == ptr) {
+	parse_error("Not decodable to a 32-bit float value", num);
+	return FALSE;
+    }
+
+    if (fabs(v) > DODS_FLT_MAX || fabs(v) < DODS_FLT_MIN) { 
+	ostrstream oss;
+	oss << "`" << val << "' is not a 32 bit floating point value value." 
+	    << endl
+	    << "It must be between (+/-)" << DODS_FLT_MIN << " and (+/-)"
+	    << DODS_FLT_MAX << "." << ends;
+	parse_error(oss.str(), num);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_float64(const char *val, const int num)
+{
+    char *ptr;
+    double v = strtod(val, &ptr);
+
+    if (fabs(v) == 0.0 && val == ptr) {
 	parse_error("Not decodable to a 64-bit float value", num);
 	return FALSE;
     }
 
-    return TRUE;
-}
-
-int
-check_float(parser_arg *arg, const char *val, const int line,
-	    const char *context)
-{
-    char *ptr;
-    double v = strtod(val, &ptr);
-
-    if (v == 0.0 && val == ptr) {
+    // I'm not sure how this would work, so this is a placeholder. 3/19/99 jhrg
+    if (fabs(v) > DODS_DBL_MAX || fabs(v) < DODS_DBL_MIN) { 
 	ostrstream oss;
-	oss << "`" << val << "' cannot be decoded as an 64-bit float value." 
-	    << ends;
-	parse_error(arg, oss.str(), line, context);
+	oss << "`" << val << "' is not a 64 bit floating point value value." 
+	    << endl
+	    << "It must be between (+/-)" << DODS_DBL_MIN << " and (+/-)"
+	    << DODS_DBL_MAX << "." << ends;
+	parse_error(oss.str(), num);
 	oss.freeze(0);
 	return FALSE;
     }
@@ -313,10 +299,3 @@ check_url(const char *, const int)
 {
     return TRUE;
 }
-
-int
-check_url(parser_arg *, const char *, const int, const char *)
-{
-    return TRUE;
-}
-
