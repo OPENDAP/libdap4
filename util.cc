@@ -4,12 +4,17 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.2  1994/10/18 00:25:36  jimg
+// Revision 1.3  1994/11/22 14:06:22  jimg
+// Added code for data transmission to parts of the type hierarchy. Not
+// complete yet.
+// Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+//
+// Revision 1.2  1994/10/18  00:25:36  jimg
 // Fixed error in char * [] allocation.
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.2 1994/10/18 00:25:36 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.3 1994/11/22 14:06:22 jimg Exp $"};
 
 #include <string.h>
 #include <stdlib.h>
@@ -17,6 +22,7 @@ static char rcsid[]={"$Id: util.cc,v 1.2 1994/10/18 00:25:36 jimg Exp $"};
 #include <SLList.h>
 #include "BaseType.h"
 #include "errmsg.h"
+#include "config.h"
 #include "debug.h"
 
 #ifdef TRACE_NEW

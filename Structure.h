@@ -9,17 +9,21 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.3  1994/10/17 23:34:48  jimg
-/* Added code to print_decl so that variable declarations are pretty
-/* printed.
-/* Added private mfunc duplicate().
-/* Added ptr_duplicate().
-/* Added Copy ctor, dtor and operator=.
+/* Revision 1.4  1994/11/22 14:06:13  jimg
+/* Added code for data transmission to parts of the type hierarchy. Not
+/* complete yet.
+/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
 /*
+ * Revision 1.3  1994/10/17  23:34:48  jimg
+ * Added code to print_decl so that variable declarations are pretty
+ * printed.
+ * Added private mfunc duplicate().
+ * Added ptr_duplicate().
+ * Added Copy ctor, dtor and operator=.
+ *
  * Revision 1.2  1994/09/23  14:45:27  jimg
  * Added mfunc check_semantics().
  * Added sanity checking on the variable list (is it empty?).
- *
  */
 
 #ifndef _Structure_h
@@ -32,6 +36,7 @@
 #include <SLList.h>
 #include "CtorType.h"
 
+#include "config.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif

@@ -5,7 +5,12 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.9  1994/10/17 23:39:49  jimg
+// Revision 1.10  1994/11/22 14:05:36  jimg
+// Added code for data transmission to parts of the type hierarchy. Not
+// complete yet.
+// Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+//
+// Revision 1.9  1994/10/17  23:39:49  jimg
 // Removed unnecessary print functions.
 //
 // Revision 1.8  1994/10/13  16:42:59  jimg
@@ -52,24 +57,26 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.9 1994/10/17 23:39:49 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.10 1994/11/22 14:05:36 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <stdio.h>
+#ifdef NEVER
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <unistd.h>
 #include <fcntl.h>
+#include <unistd.h>
+#endif
 
 #include <iostream.h>
-#include <stdiostream.h>
 #include <Pix.h>
 #include <String.h>
 
+#include "config.h"
 #include "debug.h"
 
 #include "DAS.h"		// follows pragma since DAS.h is interface

@@ -4,7 +4,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.3  1994/10/17 23:34:42  jimg
+// Revision 1.4  1994/11/22 14:05:19  jimg
+// Added code for data transmission to parts of the type hierarchy. Not
+// complete yet.
+// Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+//
+// Revision 1.3  1994/10/17  23:34:42  jimg
 // Added code to print_decl so that variable declarations are pretty
 // printed.
 // Added private mfunc duplicate().
@@ -20,6 +25,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#include <assert.h>
 
 #include "Array.h"
 #include "errmsg.h"
@@ -69,6 +76,49 @@ Array::operator=(const Array &rhs)
     duplicate(rhs);
 
     return *this;
+}
+
+// When you want to allocate a buffer big enough to hold the entire array,
+// in the local representation, allocate size() bytes.
+
+unsigned int
+Array::size()
+{
+    return (dimensions() * var_ptr->size());
+}
+
+// Serialize an array. This uses the BaseType member XDR_CODER to encode each
+// element of the array. See Sun's XDR manual. 
+//
+// NB: The array must already be in BUF (in the local machine's
+// representation) *before* this call is made.
+
+bool
+Array::serialize(unsigned int num)
+{
+    assert(buf);
+
+    if (num == 0)		// the default
+	num = size();
+
+    return (bool)xdr_array(xdrout, (char **)&buf, &num, DODS_MAX_ARRAY, 
+			   var_ptr->size(), var_ptr->xdr_coder());
+}
+
+// NB: If you do not allocate any memory to BUF *and* ensure that BUF ==
+// NULL, then deserialize will alloacte the memory for you. However, it will
+// do so using malloc so YOU MUST USE FREE, NOT DELETE, TO RELEASE IT. 
+// You can avoid all this hassle by using the mfunc alloc_buf and free_buf
+// in CtorType. You can use free_buf to free the contents of BUF when they
+// were allocated by alloc_buf *or* deserialize (but *not* new).
+
+unsigned int
+Array::deserialize()
+{
+    unsigned int num;
+    return (bool)xdr_array(xdrin, (char **)&buf, &num, DODS_MAX_ARRAY,
+			   var_ptr->size(), var_ptr->xdr_coder());
+    return num;
 }
 
 // NAME defaults to NULL. It is present since the definition of this mfunc is

@@ -4,7 +4,12 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.4  1994/10/17 23:30:46  jimg
+// Revision 1.5  1994/11/22 14:05:26  jimg
+// Added code for data transmission to parts of the type hierarchy. Not
+// complete yet.
+// Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+//
+// Revision 1.4  1994/10/17  23:30:46  jimg
 // Added ptr_duplicate virtual mfunc. Child classes can also define this
 // to copy parts that BaseType does not have (and allocate correctly sized
 // pointers.
@@ -29,6 +34,8 @@
 #pragma implementation
 #endif
 
+#include <stdio.h>		// for stdin and stdout
+
 #include "BaseType.h"
 
 // Private copy mfunc
@@ -38,25 +45,26 @@ BaseType::duplicate(const BaseType &bt)
 {
     name = bt.name;
     type = bt.type;
-}
+    _xdr_coder = bt._xdr_coder;	// just copy this function pointer
 
-// ptr_duplicate is a protected mfunc that is used to allocate a new instance
-// of BaseType on the heap. Child classes can like Array can override this to
-// add special behavior. Having a mfunc in the `Type Hierarchy' that performs
-// allocation frees the caller from figuring out the type of an object and
-// then using a switch to create the correct pointer type. See the duplicate
-// mfunc of any of the CtorType descendents.
-
-BaseType *
-BaseType::ptr_duplicate()
-{
-    return new BaseType(*this);	// Copy ctor calls duplicate to do the work
+    xdrstdio_create(xdrin, stdin, XDR_DECODE);
+    xdrstdio_create(xdrout, stdout, XDR_ENCODE);
 }
 
 // Public mfuncs
 
-BaseType::BaseType(const String &n, const String &t) : name(n), type(t)
+// Note that the ctor (as well as the copy ctor via duplicate)
+// open/initialize the (XDRS *)s XDRIN and XDROUT to reference sdtin and
+// stdout. This means that writing to std{in,out} must work correctly, and
+// probably means that is must be OK to mix calls to cout/cin with calls that
+// write to std{out,in} (it is for g++ with libg++ at version 2.6 or
+// greater).
+
+BaseType::BaseType(const String &n, const String &t, xdrproc_t xdr) 
+    : name(n), type(t), _xdr_coder(xdr)
 {
+    xdrstdio_create(xdrin, stdin, XDR_DECODE);
+    xdrstdio_create(xdrout, stdout, XDR_ENCODE);
 } 
 
 BaseType::BaseType(const BaseType &copy_from)
@@ -64,6 +72,12 @@ BaseType::BaseType(const BaseType &copy_from)
     duplicate(copy_from);
 }
     
+BaseType::~BaseType()
+{
+    xdr_destroy(xdrin);
+    xdr_destroy(xdrout);
+}
+
 BaseType &
 BaseType::operator=(const BaseType &rhs)
 {
@@ -99,6 +113,15 @@ BaseType::set_var_type(const String &t)
     type = t;
 }
 
+// Using this mfunc, objects that contain a (BaseType *) can get the xdr
+// function used to serialize the object.
+
+xdrproc_t
+BaseType::xdr_coder()
+{
+    return _xdr_coder;
+}
+
 // send a printed representation of the variable's declaration to cout. If
 // print_semi is true, append a semicolon and newline.
 
@@ -131,3 +154,5 @@ BaseType::check_semantics(bool all)
 
     return sem;
 }
+
+

@@ -4,7 +4,12 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.6  1994/11/03 04:58:02  reza
+// Revision 1.7  1994/11/22 14:05:40  jimg
+// Added code for data transmission to parts of the type hierarchy. Not
+// complete yet.
+// Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+//
+// Revision 1.6  1994/11/03  04:58:02  reza
 // Added two overloading for function parse to make it consistent with DAS class.
 //
 // Revision 1.5  1994/10/18  00:20:46  jimg
@@ -36,7 +41,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.6 1994/11/03 04:58:02 reza Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.7 1994/11/22 14:05:40 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -46,6 +51,7 @@ static char rcsid[]="$Id: DDS.cc,v 1.6 1994/11/03 04:58:02 reza Exp $";
 #include "errmsg.h"
 #include "util.h"
 
+#include "config.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
@@ -228,8 +234,7 @@ DDS::print(ostream &os)
     os << "Dataset {" << endl;
 
     for (Pix p = vars.first(); p; vars.next(p))
-	vars(p)->print_decl(os
-);
+	vars(p)->print_decl(os);
 
     os << "} " << name << ";" << endl;
 					   

@@ -6,20 +6,25 @@
 // a structure, it may contain other ctor types...). Unlike a structure, a
 // sequence defines a pattern that is repeated N times for a sequence of N
 // elements. Thus, Sequence { String name; Int32 age; } person; means a
-// sequence of N persons which each contain a name and age. The sequence can
+// sequence of N persons where each contain a name and age. The sequence can
 // be arbitraily long (i.e., you don't know N by looking at the sequence
 // declaration.
 //
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.3  1994/10/17 23:34:50  jimg
-/* Added code to print_decl so that variable declarations are pretty
-/* printed.
-/* Added private mfunc duplicate().
-/* Added ptr_duplicate().
-/* Added Copy ctor, dtor and operator=.
+/* Revision 1.4  1994/11/22 14:06:04  jimg
+/* Added code for data transmission to parts of the type hierarchy. Not
+/* complete yet.
+/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
 /*
+ * Revision 1.3  1994/10/17  23:34:50  jimg
+ * Added code to print_decl so that variable declarations are pretty
+ * printed.
+ * Added private mfunc duplicate().
+ * Added ptr_duplicate().
+ * Added Copy ctor, dtor and operator=.
+ *
  * Revision 1.2  1994/09/23  14:48:32  jimg
  * Fixed some errors in comments.
  */
@@ -34,6 +39,7 @@
 #include <SLList.h>
 #include "Structure.h"
 
+#include "config.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif

@@ -4,7 +4,12 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.3  1994/10/17 23:34:47  jimg
+// Revision 1.4  1994/11/22 14:06:10  jimg
+// Added code for data transmission to parts of the type hierarchy. Not
+// complete yet.
+// Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+//
+// Revision 1.3  1994/10/17  23:34:47  jimg
 // Added code to print_decl so that variable declarations are pretty
 // printed.
 // Added private mfunc duplicate().
@@ -110,8 +115,10 @@ Structure::next_var(Pix &p)
 BaseType *
 Structure::var(Pix p)
 {
-    if (!vars.empty() && !p)
+    if (!vars.empty() && p)
 	return vars(p);
+    else
+	return NULL;
 }
 
 void

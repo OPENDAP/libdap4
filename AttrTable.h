@@ -10,10 +10,15 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.7  1994/10/13 15:44:36  jimg
-/* Added a new version of append_attr (it takes (const char *)s) and
-/* changed the types of the old version to (const String &).
+/* Revision 1.8  1994/11/22 14:05:24  jimg
+/* Added code for data transmission to parts of the type hierarchy. Not
+/* complete yet.
+/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
 /*
+ * Revision 1.7  1994/10/13  15:44:36  jimg
+ * Added a new version of append_attr (it takes (const char *)s) and
+ * changed the types of the old version to (const String &).
+ *
  * Revision 1.6  1994/10/05  16:38:15  jimg
  * Changed internal representation of the attribute table from a Map
  * to a DLList<>.
@@ -60,6 +65,7 @@
 #include <String.h>
 #include <DLList.h>
 
+#include "config.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
