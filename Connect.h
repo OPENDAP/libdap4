@@ -32,6 +32,14 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.31  1998/02/11 21:28:04  jimg
+ * Changed x_gzip/x-gzip to deflate since libwww 5.1 offers internal support
+ * for deflate (which uses the same LZW algorithm as gzip without the file
+ * processing support of gzip).
+ * Added to the arguments accepted by the ctor and www_lib_init so that they
+ * can now be called with a flag used to control compression.
+ * Fixed up the comments to reflect these changes.
+ *
  * Revision 1.30  1998/02/04 14:55:31  tom
  * Another draft of documentation.
  *
@@ -238,15 +246,15 @@ enum ObjectType {
     web_error
 };
 
-/**  DODS understands two types of encoding: x-plain and x-gzip,
+/**  DODS understands two types of encoding: x-plain and deflate,
      which correspond to plain uncompressed data and data compressed
-     with GNU's gzip respectively.  
+     with zlib's LZW algorithm respectively.  
 
      \begin{verbatim}
      enum EncodingType {
        unknown_enc,
-       x_plain,
-       x_gzip
+       deflate,
+       x_plain
      };
      \end{verbatim}
 
@@ -254,8 +262,8 @@ enum ObjectType {
 
 enum EncodingType {
     unknown_enc,
-    x_plain,
-    x_gzip
+    deflate,
+    x_plain
 };
 
 /** Connect objects are used as containers for information pertaining
@@ -272,7 +280,9 @@ enum EncodingType {
     Connect also provides additional services such as automatic
     decompression of compressed data, transmission progress reports
     and error processing.  Refer to the Gui and Error classes for more
-    information about these features.
+    information about these features. See the DODSFilter class for
+    information on servers that compress data.
+
 
     The Connect class must be specialized for each different.
     client-library. Connect is only used on the client-side of a DODS
@@ -290,6 +300,9 @@ enum EncodingType {
     dataset.
     @see DDS
     @see DAS
+    @see DODSFilter
+    @see Error
+    @see Gui
     @author jhrg 
     */
 
@@ -311,9 +324,6 @@ private:
     // The following members are valid only if _LOCAL is false.
 
     static int _connects;	// Are there any remote connect objects?
-#if 0
-    static String _logfile;	// If !"", log remote access to the named file
-#endif
     static HTList *_conv;	// List of global converters
     
     ObjectType _type;		// What type of object is in the stream?
@@ -344,7 +354,7 @@ private:
 
       @memo Initialize the W3C WWW Library.
       */
-    void www_lib_init(bool www_verbose_errors);
+    void www_lib_init(bool www_verbose_errors, bool accept_deflate);
 
   /* Assume that the object's \_OUTPUT stream has been set
       properly.
@@ -365,7 +375,6 @@ private:
     FILE *move_dds(FILE *in);
 
   /* Create a new Connect object.
-
 
       @memo Copy from one Connect to another. 
       */
@@ -408,14 +417,18 @@ private:
     Connect();			// Never call this.
 
 public:
-  /** The Connect constructor requires a ``name,'' which is the URL to
+  /** The Connect constructor requires a #name#, which is the URL to
       which the connection is to be made.  You can specify that you
-      want to see the ``verbose'' form of any WWW library errors.
+      want to see the #verbose# form of any WWW library errors.
       This can be useful for debugging.  The default is to suppress
-      these errors.
+      these errors. Callers can use the #accept_deflate# parameter to
+      request that servers are told the client (caller of Connect
+      ctor) \em{can} process return documents that are compressed with 
+      gzip.
 
       @memo Create an instance of Connect. */
-    Connect(String name, bool www_verbose_errors = false); 
+    Connect(String name, bool www_verbose_errors = false,
+	    bool accept_deflate = true); 
 
   /** The Connect copy construtor. */
     Connect(const Connect &copy_from);
