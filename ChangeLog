@@ -1,3 +1,8 @@
+1998-11-11  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixes for various memory leaks found while working on the FF
+	server.
+
 1998-11-05  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Fixed error messages for CEs involving arrays. When an array
@@ -18,7 +23,8 @@
 1998-09-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* The release (version 2.18) is the last that will use String.h.
-
+	  WRONG! 11/11/98 jhrg
+	
 1998-09-03  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Feature: CEs no longer require fully-qualified names for fileds
@@ -410,4 +416,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.29 1998/11/05 23:42:37 jimg Exp $
+$Id: ChangeLog,v 1.30 1998/11/11 17:20:03 jimg Exp $
