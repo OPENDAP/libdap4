@@ -18,10 +18,13 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.26  1997/03/08 19:02:07  jimg
-/* Changed default param to check_semantics() from  to String()
-/* and removed the default from the argument list in the mfunc definition
+/* Revision 1.27  1997/07/15 21:54:12  jimg
+/* See Sequence.cc for info on changes to the length member function.
 /*
+ * Revision 1.26  1997/03/08 19:02:07  jimg
+ * Changed default param to check_semantics() from  to String()
+ * and removed the default from the argument list in the mfunc definition
+ *
  * Revision 1.25  1997/02/28 01:29:08  jimg
  * Changed check_semantics() so that it now returns error messages in a String
  * object (passed by reference).
@@ -195,14 +198,17 @@ public:
     virtual unsigned int width();
 
     /// Return the number of elements in a sequence.
-    //* LENGTH returns the number of elements in a Sequence object. Note that
-    //* this is *not* the number of items in a row, but the number of rows in
-    //* the complete sequence object. To be meaningful, this must be computed
-    //* after CE evaluation. The purpose of this mfunc is to facilitate
-    //* translations between Sequence objects and Array objects, particularly
-    //* when the Sequence is too large to be transferred from the server to the
-    //* client in its entirety.
-    virtual unsigned int length();
+    /** #length# returns the number of elements in a Sequence object. Note that
+        this is *not* the number of items in a row, but the number of rows in
+	the complete sequence object. To be meaningful, this must be computed
+	after CE evaluation. The purpose of this mfunc is to facilitate
+	translations between Sequence objects and Array objects, particularly
+	when the Sequence is too large to be transferred from the server to the
+	client in its entirety. 
+
+	By default, this mfunc returns -1. To be useful, it must be
+	specialized for each API/format. */
+    virtual int length();
     
     virtual void set_level(int lvl);
     virtual unsigned int read_level();
