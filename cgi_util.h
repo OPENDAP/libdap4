@@ -15,9 +15,12 @@
 #include "Connect.h"		// For ObjectType and EncodingType defs 
 
 /** The CGI utilities include a variety of functions useful to
-    programmers developing DODS CGI filter programs.
+    programmers developing DODS CGI filter programs. However, before jumping
+    in and using these, look at the class DODSFilter. Always choose to use
+    that class over these functions if you can.
 
     @memo CGI Utilities
+    @see DODSFilter
     */
 
 //@{
@@ -179,6 +182,7 @@ void ErrMsgT(const char *Msgt);
     */
 char *name_path(const char *path);
 
+//@{
 /** The reply to a DODS client is in the form of a multi-part MIME
     message.  You can use this function to create a MIME header for a
     text message.
@@ -212,6 +216,7 @@ char *name_path(const char *path);
     #Connect.h#. 
 
     @memo Set the MIME type to text.
+    @param os A Stream object to which the MIME header is written.
     @param type An #ObjectType# enum indicating the DODS type of the
     object. 
     @param enc An #EncodingType# switch indicating whether the data is
@@ -220,7 +225,11 @@ char *name_path(const char *path);
     @see EncodingType
     @see Connect
     */
-void set_mime_text(ObjectType type = unknown_type, 
+void set_mime_text(ostream &os, ObjectType type = unknown_type, 
+		   EncodingType enc = x_plain);
+/**
+   @param out A FILE pointer to which the MIME header is written. */
+void set_mime_text(FILE *out, ObjectType type = unknown_type, 
 		   EncodingType enc = x_plain);
 
 /** The reply to a DODS client is in the form of a multi-part MIME
@@ -230,6 +239,7 @@ void set_mime_text(ObjectType type = unknown_type,
     application program.
 
     @memo Create MIME headers for binary data.
+    @param os A Stream object to which the MIME header is written.
     @param type An #ObjectType# enum indicating the DODS type of the
     object. 
     @param enc An #EncodingType# switch indicating whether the data is
@@ -238,7 +248,11 @@ void set_mime_text(ObjectType type = unknown_type,
     @see EncodingType
     @see DDS
     */
-void set_mime_binary(ObjectType type = unknown_type, 
+void set_mime_binary(ostream &os, ObjectType type = unknown_type, 
+		     EncodingType enc = x_plain);
+/**
+   @param out A FILE pointer to which the MIME header is written. */
+void set_mime_binary(FILE *out, ObjectType type = unknown_type, 
 		     EncodingType enc = x_plain);
 
 /** The reply to a DODS client is in the form of a multi-part MIME
@@ -257,12 +271,17 @@ void set_mime_binary(ObjectType type = unknown_type,
     \end{verbatim}
 
     @memo Set the MIME text type to ``error.''
+    @param os A Stream object to which the MIME header is written.
     @param code An error code for the given error. 
     @param reason A simple character string with a message to be sent
     to the client.
     @see ErrMsgT
     */
-void set_mime_error(int code = HTERR_NOT_FOUND, 
+void set_mime_error(ostream &os, int code = HTERR_NOT_FOUND, 
+		    const char *reason = "Dataset not found");
+/**
+   @param out A FILE pointer to which the MIME header is written. */
+void set_mime_error(FILE *out, int code = HTERR_NOT_FOUND, 
 		    const char *reason = "Dataset not found");
 
 //@}
