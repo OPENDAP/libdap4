@@ -4,7 +4,23 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.15  1995/02/10 02:22:54  jimg
+// Revision 1.16  1995/03/04 14:34:40  jimg
+// Major modifications to the transmission and representation of values:
+// 	Added card() virtual function which is true for classes that
+// 	contain cardinal types (byte, int float, string).
+// 	Changed the representation of Str from the C rep to a C++
+// 	class represenation.
+// 	Chnaged read_val and store_val so that they take and return
+// 	types that are stored by the object (e.g., inthe case of Str
+// 	an URL, read_val returns a C++ String object).
+// 	Modified Array representations so that arrays of card()
+// 	objects are just that - no more storing strings, ... as
+// 	C would store them.
+// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// 	an array of a structure is represented as an array of Structure
+// 	objects).
+//
+// Revision 1.15  1995/02/10  02:22:54  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
 // Private and protected symbols now start with `_'.
 // Added new accessors for name and type fields of BaseType; the old ones
@@ -112,14 +128,15 @@ Array::_duplicate(const Array *a)
 Array::Array(const String &n, BaseType *v)
      : BaseType( n, "Array", xdr_array), _var(v)
 {
-    set_name(n);
 }
 
+// FIXME: add copy stuff for BaseType * Vec
 Array::Array(const Array &rhs)
 {
     _duplicate(&rhs);
 }
 
+// FIXME: add dtor for BaseType * Vec
 Array::~Array()
 {
     delete _var;
@@ -134,6 +151,12 @@ Array::operator=(const Array &rhs)
     _duplicate(&rhs);
 
     return *this;
+}
+
+bool
+Array::card()
+{
+    return false;
 }
 
 // NAME defaults to NULL. It is present since the definition of this mfunc is
@@ -162,17 +185,30 @@ Array::add_var(BaseType *v, Part p)
     set_name(v->name());
 
     DBG(cerr << "Array::add_var: Added variable " << v << " (" \
-	 << v->get_var_name() << " " << v->get_var_type() << ")" << endl);
+	 << v->name() << " " << v->type() << ")" << endl);
 }
+
+// Returns: The number of bytes required to store the array's value.
 
 unsigned int
-Array::size()
+Array::size()			// deprecated
 {
-    return sizeof(void *);
+    return width();
 }
 
-// When you want to allocate a buffer big enough to hold the entire array,
-// in the local representation, allocate (length() * var()->size()) bytes.
+// Return: The number of bytes required to store the array `in a C
+// program'. For an array of cardinal types this is the same as the storage
+// used by _buf. For anything else, it is the product of length() and the
+// element width(). It turns out that both values can be computed the same
+// way. 
+
+unsigned int
+Array::width()
+{
+    return length() * _var->width();
+}
+
+// Returns: The number of elements in the array.
 
 unsigned int
 Array::length()
@@ -187,7 +223,9 @@ Array::length()
 }
 
 // Serialize an array. This uses the BaseType member XDR_CODER to encode each
-// element of the array. See Sun's XDR manual. 
+// element of the array. See Sun's XDR manual. For Arrays of Str and Url
+// types, send the element count over as a prefix to the data so that
+// deserialize will know how many elements to read.
 //
 // NB: The array must already be in BUF (in the local machine's
 // representation) *before* this call is made.
@@ -199,22 +237,20 @@ Array::length()
 bool
 Array::serialize(bool flush)
 {
-    assert(_buf);
+    assert(_buf || _vec.capacity());
 
     bool status;
     unsigned int num = length();
 
-    if ( _var->type() == "Str" || _var->type() == "Url" ) {
-	for (int i = 0; i < num; ++i) {
-	    status = (bool)xdr_str(_xdrout, ((char **)_buf) + i);
-	    if (!status) 
-		break;
-	}
+    if (_var->card()) {
+	status = (bool)xdr_array(_xdrout, (char **)&_buf, &num, DODS_MAX_ARRAY,
+				 _var->width(), _var->xdr_coder());
     }
     else {
-	status = (bool)xdr_array(_xdrout, (char **)&_buf, &num, 
-				 DODS_MAX_ARRAY, _var->size(), 
-				 _var->xdr_coder());
+	status = (bool)xdr_int(_xdrout, &num); // send length
+
+	for (int i = 0; status && i < num; ++i)	// test status in loop
+	    status = _vec[i]->serialize();
     }
 
     if (status && flush)
@@ -223,14 +259,7 @@ Array::serialize(bool flush)
     return status;
 }
 
-// NB: If you do not allocate any memory to BUF *and* ensure that BUF ==
-// NULL, then deserialize will allocate the memory for you. However, it will
-// do so using malloc so YOU MUST USE FREE, NOT DELETE, TO RELEASE IT. 
-// You can avoid all this hassle by using the mfunc alloc_buf and free_buf
-// in CtorType. You can use free_buf to free the contents of BUF when they
-// were allocated by alloc_buf *or* deserialize (but *not* new).
-
-unsigned int
+bool
 Array::deserialize(bool reuse)
 {
     bool status;
@@ -241,24 +270,23 @@ Array::deserialize(bool reuse)
 	_buf = 0;
     }
 
-    if (_var->get_var_type() == "Str" || _var->get_var_type() == "Url") {
-	for (int i = 0; i < num; ++i) {
-	    status = (bool)xdr_str(_xdrin, (char **)_buf + i);
-	    if (!status) 
-		break;
-	}
+    if (_var->card()) {
+	status = (bool)xdr_array(_xdrin, (char **)&_buf, &num, DODS_MAX_ARRAY, 
+				 _var->width(), _var->xdr_coder());
     }
     else {
-	status = (bool)xdr_array(_xdrin, (char **)&_buf, &num, DODS_MAX_ARRAY, 
-				 _var->size(), _var->xdr_coder());
+	status = (bool)xdr_int(_xdrin, &num);
+	for (int i = 0; status && i < num; ++i)
+	    _vec[i]->deserialize();
     }
 
-    return status ? num: status;
+    return status;
 }
 
 // Assume that VAL points to memory which contains, in row major order,
-// enough elements of the correct type to fill the array. They are memcpy'd
-// into _buf.
+// enough elements of the correct type to fill the array. For an array of a
+// cardinal type they are memcpy'd into _buf, otherwise store_val is called
+// length() times on each successive _var->width() piece of VAL.
 
 unsigned int
 Array::store_val(void *val, bool reuse)
@@ -270,33 +298,52 @@ Array::store_val(void *val, bool reuse)
 	_buf = 0;
     }
 
-    unsigned int len = length() * var()->size();
-    if (!_buf) {
-	_buf = malloc(len);
-	memcpy(_buf, val, len);
-    }
-    else { 
-	// here we *assume* the user knows that _buf contains enough
-	// memory... Yeah, right.
+    if (_var->card()) {
+	unsigned int array_wid = width();
 
-	memcpy(_buf, val, len);
+	if (!_buf) {		// First time or no reuse (free'd above)
+	    _buf = new char[array_wid];
+	    memcpy(_buf, val, array_wid);
+	}
+	else { 
+	    memcpy(_buf, val, array_wid);
+	}
+    }
+    else {
+	unsigned int elem_wid = _var->width();
+	unsigned int len = length();
+
+	for (int i = 0; i < len; ++i)
+	    _vec[i]->store_val(val + i * elem_wid, reuse);
     }
 
-    return len;
+    return width();
 }
 
 unsigned int
 Array::read_val(void **val)
 {
-    assert(_buf && val);
+    assert(val);
 
-    unsigned int sz = length() * var()->size();
+    unsigned int wid = width();
+
     if (!*val)
-	*val = new char[sz];
+	*val = new char[wid];
 
-    (void)memcpy(*val, _buf, sz);
+    if (_var->card()) {
+	(void)memcpy(*val, _buf, wid);
+    }
+    else {
+	unsigned int elem_wid = _var->width();
+	unsigned int len = length();
 
-    return sz;
+	for (int i = 0; i < len; ++i) {
+	    void *val_elem = *val + i * elem_wid;
+	    _vec[i]->read_val(&val_elem);
+	}
+    }
+
+    return wid;
 }
 
 // Add the dimension DIM to the list of dimensions for this array. If NAME is
@@ -363,7 +410,7 @@ Array::print_decl(ostream &os, String space, bool print_semi)
     for (Pix p = _shape.first(); p; _shape.next(p)) {
 	os << "[";
 	if (_shape(p).name != "")
-	    os << _shape(p).name << "=";
+	    os << _shape(p).name << " = ";
 	os << _shape(p).size << "]";
     }
 

@@ -8,12 +8,28 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.13  1995/02/16 22:46:02  jimg
-/* Added _in private member. It is used to keep a copy of the input FILE *
-/* so that when the next chunk of data is read in the previous one can be
-/* closed. Since the netio library unlinks the tmp file before returning
-/* the FILE *, closing it effectively deletes the tmp file.
+/* Revision 1.14  1995/03/04 14:34:56  jimg
+/* Major modifications to the transmission and representation of values:
+/* 	Added card() virtual function which is true for classes that
+/* 	contain cardinal types (byte, int float, string).
+/* 	Changed the representation of Str from the C rep to a C++
+/* 	class represenation.
+/* 	Chnaged read_val and store_val so that they take and return
+/* 	types that are stored by the object (e.g., inthe case of Str
+/* 	an URL, read_val returns a C++ String object).
+/* 	Modified Array representations so that arrays of card()
+/* 	objects are just that - no more storing strings, ... as
+/* 	C would store them.
+/* 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+/* 	an array of a structure is represented as an array of Structure
+/* 	objects).
 /*
+ * Revision 1.13  1995/02/16  22:46:02  jimg
+ * Added _in private member. It is used to keep a copy of the input FILE *
+ * so that when the next chunk of data is read in the previous one can be
+ * closed. Since the netio library unlinks the tmp file before returning
+ * the FILE *, closing it effectively deletes the tmp file.
+ *
  * Revision 1.12  1995/02/10  02:41:58  jimg
  * Added new mfuncs to access _name and _type.
  * Made private and protected filed's names start with `_'.
@@ -113,6 +129,20 @@ enum Part {
     maps
 };
 
+enum Type {
+    byte_t,
+    int32_t,
+    float64_t,
+    str_t,
+    url_t,
+    array_t,
+    list_t,
+    structure_t,
+    sequence_t,
+    function_t,
+    grid_t
+};
+
 class BaseType {
 private:
     String _name;		// name of the instance
@@ -122,6 +152,10 @@ private:
     // used by the mfunc expunge to flush the buffer.
     static FILE *_out;		// output stream for data from server
     static FILE *_in;		// like _out but for input
+
+#ifdef NEVER
+    Type _type;
+#endif
 
     void _duplicate(const BaseType &bt);
 
@@ -165,6 +199,12 @@ public:
     String type() const;
     void set_type(const String &t);
 
+    // Return true if the object is one of the cardinal types. Arrays of
+    // these objects are represented specially to improve transmission
+    // efficiency 
+    virtual bool card() = 0;
+
+    // xdr_coder is used to encode arrays of cardinal objects
     xdrproc_t xdr_coder();
 
     // Access to the XDR * for input and output is limited to serialize and
@@ -180,14 +220,15 @@ public:
     virtual void add_var(BaseType *v, Part p = nil);
 
     // Return the number of bytes that are required to hold the instance's
-    // value. In the case of scalar types such as Int32, this is the size of
-    // one Int32 (four bytes). For a Str or Url, size() returns the number of
-    // bytes needed for a char * variable, not the bytes needed for the
-    // characters since that value can not be determined from type
+    // value. In the case of cardinal types such as Int32, this is the size
+    // of one Int32 (four bytes). For a Str or Url, width() returns the
+    // number of bytes needed for a char * variable, not the bytes needed for
+    // the characters since that value can not be determined from type
     // information alone. For Structure, ... types size() returns the number
     // of bytes needed to store each of the fields as C would store them in a
-    // struct. 
-    virtual unsigned int size() = 0; // local representation size in bytes
+    // struct.
+    virtual unsigned int size() = 0;// deprecated
+    virtual unsigned int width() = 0;
 
     // Put the data into a local buffer so that it may be serialized. This
     // mfunc must be specialized for each API/format (it is not defined by
@@ -212,7 +253,7 @@ public:
 
     // Move data to and from the net.
     virtual bool serialize(bool flush = false) = 0; 
-    virtual unsigned int deserialize(bool reuse = false) = 0;
+    virtual bool deserialize(bool reuse = false) = 0;
     
     // Write the buffers maintained by XDR to the associated FILE *s.
     bool expunge();

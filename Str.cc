@@ -4,7 +4,23 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.9  1995/02/10 02:22:49  jimg
+// Revision 1.10  1995/03/04 14:34:50  jimg
+// Major modifications to the transmission and representation of values:
+// 	Added card() virtual function which is true for classes that
+// 	contain cardinal types (byte, int float, string).
+// 	Changed the representation of Str from the C rep to a C++
+// 	class represenation.
+// 	Chnaged read_val and store_val so that they take and return
+// 	types that are stored by the object (e.g., inthe case of Str
+// 	an URL, read_val returns a C++ String object).
+// 	Modified Array representations so that arrays of card()
+// 	objects are just that - no more storing strings, ... as
+// 	C would store them.
+// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// 	an array of a structure is represented as an array of Structure
+// 	objects).
+//
+// Revision 1.9  1995/02/10  02:22:49  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
 // Private and protected symbols now start with `_'.
 // Added new accessors for name and type fields of BaseType; the old ones
@@ -66,6 +82,7 @@
 
 #include <assert.h>
 #include <string.h>
+
 #ifdef DBMALLOC
 #include <stdlib.h>
 #include <dbmalloc.h>
@@ -74,29 +91,45 @@
 #include "Str.h"
 #include "util.h"
 
-Str::Str(const String &n) : BaseType(n, "String", (xdrproc_t)xdr_str)
+Str::Str(const String &n) 
+    : BaseType(n, "String", (xdrproc_t)xdr_str_array), _buf("")
 {
-    _buf = 0;			// read() frees if buf != 0
 }
 
 // Return: the number of bytes needed to store the string's value or 0 if no
 // storage for the string has been allocated.
 
 unsigned int
-Str::len()
+Str::len()			// deprecated
 {
-    return _buf ? strlen(_buf): 0;
+    return length();
 }
 
-// Return: The number of bytes needed to store a Str (which is represented
-// as a pointer to a char). This is the number of bytes which must be
-// allocated to hold the value of _BUF. The mfunc len() contains the number
-// of bytes needed to store the string pointed to by _BUF.
+unsigned int
+Str::length()
+{
+    return _buf.length();
+}
+
+bool
+Str::card()
+{
+    return true;
+}
 
 unsigned int
-Str::size()
+Str::size()			// deprecated
 {
-    return sizeof(char *);
+    return width();
+}
+
+// return the number of bytes that the value of a Str object occupies when
+// that value is accessed using read_val().
+
+unsigned int
+Str::width()
+{
+    return sizeof(String);
 }
 
 // serialize and deserialize manage memory using malloc and free since, in
@@ -106,7 +139,9 @@ Str::size()
 bool
 Str::serialize(bool flush)
 {
-    bool stat = (bool)xdr_str(_xdrout, &_buf);
+    String *tmp = &_buf;	// kluge for xdr_str
+
+    bool stat = (bool)xdr_str(_xdrout, &tmp);
     if (stat && flush)
 	stat = expunge();
 
@@ -115,39 +150,39 @@ Str::serialize(bool flush)
 
 // deserialize the double on stdin and put the result in BUF.
 
-unsigned int
+bool
 Str::deserialize(bool reuse)
 {
-    if (_buf && !reuse) {
-	free(_buf);
-	_buf = 0;
-    }
+    String *tmp = &_buf;
 
-    unsigned int num = xdr_str(_xdrin, &_buf);
-
-    return num;
+    return (bool)xdr_str(_xdrin, &tmp);
 }
 
+// FIXME old comments
 // Copy information in the object's internal buffers into the memory pointed
 // to by VAL. If *VAL is null, then allocate memory for the value (a string
-// in this case). 
+// in this case).
 //
 // NB: return the size of the thing val points to (sizeof val), not the
-// length of the string. Thus if there is an array of of strings (char *)s,
-// then the return value of this mfunc can be used to advance to the next
-// char * in that array.
+// length of the string. Thus if there is an array of of strings (i.e., (char
+// *)s), then the return value of this mfunc can be used to advance to the
+// next char * in that array. This weirdness is needed because C programs
+// which will need to interface to libraries built using this toolkit will
+// not know about g++ Strings and will need to use the C representation for
+// strings, but here in the toolkit I use the String class to cut down on
+// memory management problems.
 
 unsigned int
 Str::read_val(void **val)
 {
-    assert(_buf && val);
+    assert(val);
 
     if (!*val) 
-	*val = new char[strlen((char *)_buf) + 1];
+	(String *)*val = new String(_buf);
+    else
+	*(String *)*val = _buf;
 
-    strcpy(*(char **)val, (char *)_buf);
-
-    return size();		// the same as sizeof (char *)
+    return sizeof(String);
 }
 
 // Copy data in VAL to _BUF.
@@ -160,21 +195,9 @@ Str::store_val(void *val, bool reuse)
 {
     assert(val);
 
-    if (_buf && !reuse) {
-	free(_buf);
-	_buf = 0;
-    }
+    _buf = *(String *)val;
 
-    if (!_buf) {
-	_buf = strdup((char *)val); // allocate new memory
-    }
-    else {
-	unsigned int len = strlen(_buf); // _buf might be bigger...
-	strncpy(_buf, (char *)val, len);
-	*(_buf + len) = '\0';	// strlen won't supply a \0 above
-    }
-
-    return size();
+    return sizeof(String);
 }
 
 void 

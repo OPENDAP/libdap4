@@ -4,7 +4,23 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.8  1995/02/10 02:22:47  jimg
+// Revision 1.9  1995/03/04 14:34:42  jimg
+// Major modifications to the transmission and representation of values:
+// 	Added card() virtual function which is true for classes that
+// 	contain cardinal types (byte, int float, string).
+// 	Changed the representation of Str from the C rep to a C++
+// 	class represenation.
+// 	Chnaged read_val and store_val so that they take and return
+// 	types that are stored by the object (e.g., inthe case of Str
+// 	an URL, read_val returns a C++ String object).
+// 	Modified Array representations so that arrays of card()
+// 	objects are just that - no more storing strings, ... as
+// 	C would store them.
+// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// 	an array of a structure is represented as an array of Structure
+// 	objects).
+//
+// Revision 1.8  1995/02/10  02:22:47  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
 // Private and protected symbols now start with `_'.
 // Added new accessors for name and type fields of BaseType; the old ones
@@ -72,8 +88,20 @@ Float64::Float64(const String &n) : BaseType(n, "Float64", XDR_FLOAT64)
 {
 }
 
+bool
+Float64::card()
+{
+    return true;
+}
+
 unsigned int
 Float64::size()
+{
+    return width();
+}
+
+unsigned int
+Float64::width()
 {
     return sizeof(double);
 }
@@ -88,7 +116,7 @@ Float64::serialize(bool flush)
     return stat;
 }
 
-unsigned int
+bool
 Float64::deserialize(bool reuse)
 {
     unsigned int num = xdr_double(_xdrin, &_buf);
@@ -114,7 +142,7 @@ Float64::read_val(void **val)
     if (!*val)
 	*val = new double;
 
-    *(double *)val =_buf;
+    *(double *)*val =_buf;
 
     return size();
 }

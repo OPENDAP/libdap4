@@ -4,7 +4,23 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.7  1995/02/10 02:23:07  jimg
+// Revision 1.8  1995/03/04 14:34:45  jimg
+// Major modifications to the transmission and representation of values:
+// 	Added card() virtual function which is true for classes that
+// 	contain cardinal types (byte, int float, string).
+// 	Changed the representation of Str from the C rep to a C++
+// 	class represenation.
+// 	Chnaged read_val and store_val so that they take and return
+// 	types that are stored by the object (e.g., inthe case of Str
+// 	an URL, read_val returns a C++ String object).
+// 	Modified Array representations so that arrays of card()
+// 	objects are just that - no more storing strings, ... as
+// 	C would store them.
+// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// 	an array of a structure is represented as an array of Structure
+// 	objects).
+//
+// Revision 1.7  1995/02/10  02:23:07  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
 // Private and protected symbols now start with `_'.
 // Added new accessors for name and type fields of BaseType; the old ones
@@ -67,7 +83,6 @@ Grid::_duplicate(const Grid &s)
 Grid::Grid(const String &n)
      : BaseType( n, "Grid", (xdrproc_t)NULL)
 {
-    set_name(n);
 }
 
 Grid::Grid(const Grid &rhs)
@@ -94,8 +109,19 @@ Grid::operator=(const Grid &rhs)
     return *this;
 }
 
+bool
+Grid::card()
+{
+    return false;
+}
 unsigned int
 Grid::size()
+{
+    return width();
+}
+
+unsigned int
+Grid::width()
 {
     unsigned int sz = _array_var->size();
   
@@ -123,7 +149,7 @@ Grid::serialize(bool flush)
     return status;
 }
 
-unsigned int
+bool
 Grid::deserialize(bool reuse)
 {
     unsigned int num, sz = 0;

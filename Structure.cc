@@ -4,7 +4,23 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.8  1995/02/10 02:22:59  jimg
+// Revision 1.9  1995/03/04 14:34:51  jimg
+// Major modifications to the transmission and representation of values:
+// 	Added card() virtual function which is true for classes that
+// 	contain cardinal types (byte, int float, string).
+// 	Changed the representation of Str from the C rep to a C++
+// 	class represenation.
+// 	Chnaged read_val and store_val so that they take and return
+// 	types that are stored by the object (e.g., inthe case of Str
+// 	an URL, read_val returns a C++ String object).
+// 	Modified Array representations so that arrays of card()
+// 	objects are just that - no more storing strings, ... as
+// 	C would store them.
+// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// 	an array of a structure is represented as an array of Structure
+// 	objects).
+//
+// Revision 1.8  1995/02/10  02:22:59  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
 // Private and protected symbols now start with `_'.
 // Added new accessors for name and type fields of BaseType; the old ones
@@ -108,8 +124,20 @@ Structure::add_var(BaseType *bt, Part p)
     _vars.append(bt);
 }
 
+bool
+Structure::card()
+{
+    return false;
+}
+
 unsigned int
-Structure::size()
+Structure::size()		// deprecated
+{
+    return width();
+}
+
+unsigned int
+Structure::width()
 {
     unsigned int sz = 0;
 
@@ -134,7 +162,7 @@ Structure::serialize(bool flush)
     return status;
 }
 
-unsigned int
+bool
 Structure::deserialize(bool reuse)
 {
     unsigned int num, sz = 0;

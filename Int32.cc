@@ -4,7 +4,23 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.9  1995/02/10 02:22:45  jimg
+// Revision 1.10  1995/03/04 14:34:46  jimg
+// Major modifications to the transmission and representation of values:
+// 	Added card() virtual function which is true for classes that
+// 	contain cardinal types (byte, int float, string).
+// 	Changed the representation of Str from the C rep to a C++
+// 	class represenation.
+// 	Chnaged read_val and store_val so that they take and return
+// 	types that are stored by the object (e.g., inthe case of Str
+// 	an URL, read_val returns a C++ String object).
+// 	Modified Array representations so that arrays of card()
+// 	objects are just that - no more storing strings, ... as
+// 	C would store them.
+// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// 	an array of a structure is represented as an array of Structure
+// 	objects).
+//
+// Revision 1.9  1995/02/10  02:22:45  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
 // Private and protected symbols now start with `_'.
 // Added new accessors for name and type fields of BaseType; the old ones
@@ -70,8 +86,22 @@ Int32::Int32(const String &n) : BaseType(n, "Int32", XDR_INT32)
 {
 }
 
+bool
+Int32::card()
+{
+    return true;
+}
+
+// deprecated
+
 unsigned int
 Int32::size()
+{
+    return width();
+}
+
+unsigned int
+Int32::width()
 {
     return sizeof(int32);
 }
@@ -86,7 +116,7 @@ Int32::serialize(bool flush)
     return stat;
 }
 
-unsigned int
+bool
 Int32::deserialize(bool reuse)
 {
     unsigned int num = xdr_long(_xdrin, &_buf);
@@ -112,7 +142,7 @@ Int32::read_val(void **val)
     if (!*val)
 	*val = new int32;
 
-    *(int32 *)val =_buf;
+    *(int32 *)*val =_buf;
 
     return size();
 }

@@ -7,19 +7,35 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.13  1995/02/10 02:22:53  jimg
-/* Added DBMALLOC includes and switch to code which uses malloc/free.
-/* Private and protected symbols now start with `_'.
-/* Added new accessors for name and type fields of BaseType; the old ones
-/* will be removed in a future release.
-/* Added the store_val() mfunc. It stores the given value in the object's
-/* internal buffer.
-/* Made both List and Str handle their values via pointers to memory.
-/* Fixed read_val().
-/* Made serialize/deserialize handle all malloc/free calls (even in those
-/* cases where xdr initiates the allocation).
-/* Fixed print_val().
+/* Revision 1.14  1995/03/04 14:34:53  jimg
+/* Major modifications to the transmission and representation of values:
+/* 	Added card() virtual function which is true for classes that
+/* 	contain cardinal types (byte, int float, string).
+/* 	Changed the representation of Str from the C rep to a C++
+/* 	class represenation.
+/* 	Chnaged read_val and store_val so that they take and return
+/* 	types that are stored by the object (e.g., inthe case of Str
+/* 	an URL, read_val returns a C++ String object).
+/* 	Modified Array representations so that arrays of card()
+/* 	objects are just that - no more storing strings, ... as
+/* 	C would store them.
+/* 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+/* 	an array of a structure is represented as an array of Structure
+/* 	objects).
 /*
+ * Revision 1.13  1995/02/10  02:22:53  jimg
+ * Added DBMALLOC includes and switch to code which uses malloc/free.
+ * Private and protected symbols now start with `_'.
+ * Added new accessors for name and type fields of BaseType; the old ones
+ * will be removed in a future release.
+ * Added the store_val() mfunc. It stores the given value in the object's
+ * internal buffer.
+ * Made both List and Str handle their values via pointers to memory.
+ * Fixed read_val().
+ * Made serialize/deserialize handle all malloc/free calls (even in those
+ * cases where xdr initiates the allocation).
+ * Fixed print_val().
+ *
  * Revision 1.12  1995/01/19  21:59:08  jimg
  * Added read_val from dummy_read.cc to the sample set of sub-class
  * implementations.
@@ -85,6 +101,7 @@
 #include <limits.h>
 #include <SLList.h>
 #include "BaseType.h"
+#include "BaseTypeVec.h"
 
 #include "config.h"
 #ifdef TRACE_NEW
@@ -106,7 +123,8 @@ private:
     void _duplicate(const Array *a);
 
 protected:
-    void *_buf;
+    void *_buf;			// used for arrays of cardinal types
+    BaseTypePtrVec _vec;	// used for arrays of all other types
 
 public:
     Array(const String &n = (char *)0, BaseType *v = 0);
@@ -116,11 +134,13 @@ public:
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
-    virtual unsigned int size(); // bytes in hte pointer to the array
+    virtual bool card();
+    virtual unsigned int size(); // bytes in the pointer to the array
+    virtual unsigned int width();
     unsigned int length();	// how many elements are there in the array
 
     virtual bool serialize(bool flush = false);
-    virtual unsigned int deserialize(bool reuse = false);
+    virtual bool deserialize(bool reuse = false);
 
     virtual bool read(String dataset, String var_name, String constraint) = 0;
     virtual unsigned int store_val(void *val, bool reuse = false);

@@ -4,7 +4,23 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.6  1995/02/10 02:22:41  jimg
+// Revision 1.7  1995/03/04 14:34:41  jimg
+// Major modifications to the transmission and representation of values:
+// 	Added card() virtual function which is true for classes that
+// 	contain cardinal types (byte, int float, string).
+// 	Changed the representation of Str from the C rep to a C++
+// 	class represenation.
+// 	Chnaged read_val and store_val so that they take and return
+// 	types that are stored by the object (e.g., inthe case of Str
+// 	an URL, read_val returns a C++ String object).
+// 	Modified Array representations so that arrays of card()
+// 	objects are just that - no more storing strings, ... as
+// 	C would store them.
+// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// 	an array of a structure is represented as an array of Structure
+// 	objects).
+//
+// Revision 1.6  1995/02/10  02:22:41  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
 // Private and protected symbols now start with `_'.
 // Added new accessors for name and type fields of BaseType; the old ones
@@ -20,7 +36,7 @@
 // Revision 1.5  1995/01/19  20:05:16  jimg
 // ptr_duplicate() mfunc is now abstract virtual.
 // Array, ... Grid duplicate mfuncs were modified to take pointers, not
-// referenves.
+// references.
 //
 // Revision 1.4  1995/01/11  15:54:26  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This
@@ -63,20 +79,33 @@
 // single byte, we *must* use xdr_char() (which puts a single byte in 4 (yes
 // four) bytes). See serialize() and deserialize().
 
-Byte::Byte(const String &n) : BaseType(n, "Byte", xdr_bytes)
+Byte::Byte(const String &n) : BaseType(n, "Byte", xdr_char)
 {
 }
+
+bool
+Byte::card()
+{
+    return true;
+}
+
+//deprecated
 
 unsigned int
 Byte::size()
 {
+    return width();
+}
+
+unsigned int
+Byte::width()
+{
     return sizeof(byte);
 }
 
-// Serialize the contents of member BUF and write the result to stdout. NUM
-// defaults to zero -- it is used by descendents of CtorType. If FLUSH is
-// true, write the contents of the output buffer to the kernel. FLUSH is
-// false by default.
+// Serialize the contents of member _BUF and write the result to stdout If
+// FLUSH is true, write the contents of the output buffer to the
+// kernel. FLUSH is false by default.
 //
 // NB: See the comment in BaseType re: why we don't use XDR_CODER here
 
@@ -90,9 +119,9 @@ Byte::serialize(bool flush)
     return stat;
 }
 
-// deserialize the char on stdin and put the result in BUF.
+// deserialize the char on stdin and put the result in _BUF.
 
-unsigned int
+bool
 Byte::deserialize(bool reuse)
 {
     unsigned int num = xdr_char(_xdrin, &_buf);
@@ -124,7 +153,7 @@ Byte::read_val(void **val)
     if (!*val)
 	*val = new byte;
 
-    *(byte *)val = _buf;
+    *(byte *)*val = _buf;
 
     return size();
 }
