@@ -13,6 +13,9 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.34  1999/07/22 18:47:44  tom
+// fixed doc typo
+//
 // Revision 1.33  1999/07/22 17:11:50  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -534,6 +537,7 @@ public:
 
     /** Evaluate a boolean-valued constraint expression. */
     bool eval_selection(const string &dataset);
+    //@}   //Is this right? ts.
     
     /** Parse a constraint expression.
 
