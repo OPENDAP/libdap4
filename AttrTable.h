@@ -18,6 +18,9 @@
 
 /* 
  * $Log: AttrTable.h,v $
+ * Revision 1.23  1998/12/28 21:39:39  jimg
+ * Fixed comments for get_attr().
+ *
  * Revision 1.22  1998/08/06 16:07:39  jimg
  * Field added so that aliases may be displayed as such and not by displaying
  * the aliased information.
@@ -328,8 +331,8 @@ public:
 
       @name get\_attr()
       @return If the indicated attribute is a container, this function
-      returns the string ``None''.  Otherwise returns a pointer to the
-      the attribute value.  */
+      returns the string ``None''. If using a name to refer to the attribute
+      and the named attribute does not exist, return the empty string. */
   //@{
   ///
     String get_attr(Pix p, unsigned int i = 0);
