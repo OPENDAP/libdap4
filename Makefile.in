@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.58 1996/12/19 00:40:01 jimg Exp $
+# $Id: Makefile.in,v 1.59 1997/02/10 02:35:29 jimg Exp $
 
 @SET_MAKE@
 
@@ -339,8 +339,8 @@ tags:
 
 .PHONY: depend
 depend: 
-	@depend@ -m dependencies \
-	-- $(CPPFLAGS) -I/usr/local/lib/g++-include -- \
+	> dependencies
+	@depend@ -m dependencies -- $(CPPFLAGS) @GPP_INC@ -- \
 	$(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
 	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS)
 
