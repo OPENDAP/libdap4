@@ -33,7 +33,10 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.10  1994/12/16 22:22:43  jimg
+# Revision 1.11  1994/12/21 15:31:07  jimg
+# Undid 'fix' to NEVER definition - it was wrong.
+#
+# Revision 1.10  1994/12/16  22:22:43  jimg
 # Fixed NEVER so that it is anything not caught by the earlier rules.
 #
 # Revision 1.9  1994/12/09  21:39:29  jimg
@@ -92,7 +95,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.10 1994/12/16 22:22:43 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.11 1994/12/21 15:31:07 jimg Exp $"};
 
 #include <string.h>
 
@@ -117,7 +120,7 @@ ID  	[a-zA-Z_][a-zA-Z0-9_/]*
 VAL 	[a-zA-Z0-9_.+-]+
 ATTR 	attributes|Attributes|ATTRIBUTES
 TYPE    BYTE|Byte|byte|INT32|Int32|int32|FLOAT64|Float64|float64|STRING|String|string|URL|Url|url
-NEVER   .*
+NEVER   [^a-zA-Z0-9_/.+\-{};,]
 
 %%
 
