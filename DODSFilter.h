@@ -85,6 +85,8 @@ public:
 	DAS_Response,
 	DDS_Response,
 	DataDDS_Response,
+	DDX_Response,
+	BLOB_Response,
 	Version_Response
     };
 
@@ -177,11 +179,13 @@ public:
     virtual void send_data(DDS &dds, FILE *data_stream,
 			   const string &anc_location = "");
 
-    virtual void send_ddx(FILE *out, DDS &dds, bool constrained = false,
-			  const string &anc_location = "");
+    virtual void send_ddx(DDS &dds, FILE *out); 
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.29  2003/05/30 16:35:17  jimg
+// Added response enums for DDX and Response. Also added the send_ddx() method.
+//
 // Revision 1.28  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can
