@@ -10,6 +10,10 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.6  1996/06/14 23:30:33  jimg
+// Added `<< ends' to the lines where ostrstream objects are used (without this
+// there is no null added to the end of the streams).
+//
 // Revision 1.5  1996/06/08 00:12:25  jimg
 // Improved error messages in some of the type checking functions.
 //
@@ -26,7 +30,7 @@
 // Revision 1.1  1996/04/04 22:12:19  jimg
 // Added.
 
-static char rcsid[]= {"$Id: parser-util.cc,v 1.5 1996/06/08 00:12:25 jimg Exp $"};
+static char rcsid[]= {"$Id: parser-util.cc,v 1.6 1996/06/14 23:30:33 jimg Exp $"};
 
 #include <stdlib.h>
 #include <string.h>
@@ -83,7 +87,8 @@ check_int(const char *val, const int num)
 
     if (v == 0 && val == ptr) {
 	ostrstream ss;
-	ss << "The string `" << val << "' does not represent an interger";
+	ss << "The string `" << val << "' does not represent an interger" 
+	   << ends;
 	parse_error((const char *)ss.str(), num);
 	return FALSE;
     }
@@ -91,7 +96,7 @@ check_int(const char *val, const int num)
     // Don't use the constant from limits.h, use the on in dods-limits.h
     if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
 	ostrstream ss;
-	ss << "Not a 32-bit integer value (" << v << ")";
+	ss << "Not a 32-bit integer value (" << v << ")" << ends;
 	parse_error((const char *)ss.str(), num);
 	return FALSE;
     }
