@@ -22,7 +22,13 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.8  1994/11/10 19:50:55  jimg
+ * Revision 1.9  1994/12/07 21:19:45  jimg
+ * Added a new rule (var) and modified attr_val to handle attribute vectors.
+ * Each element in the vector is seaprated by a comma.
+ * Replaces some old instrumentation code with newer code using the DGB
+ * macros.
+ *
+ * Revision 1.8  1994/11/10  19:50:55  jimg
  * In the past it was possible to have a null file correctly parse as a
  * DAS or DDS. However, now that is not possible. It is possible to have
  * a file that contains no variables parse, but the keyword `Attribute'
@@ -75,7 +81,7 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.8 1994/11/10 19:50:55 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.9 1994/12/07 21:19:45 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,7 +109,7 @@ void save_str(char *dst, char *src);
 
 %}
 
-%expect 3
+%expect 2
 
 %token ID
 %token ATTR
@@ -118,7 +124,7 @@ void save_str(char *dst, char *src);
 
   Parser algorithm: 
 
-  When a variable is found (rule: var_attr) chech the table to see if some
+  When a variable is found (rule: var_attr) check the table to see if some
   attributes for that var have already been parsed - if so the var must have
   a table entry alread allocated; get that entry and use it. Otherwise,
   allocate a new table entry.  
@@ -168,22 +174,28 @@ attr_pair:	attr_type
 		{ 
 		    save_str(name, $3);
 		} 
-		attr_val 
-                { 
-		    attr_tab_ptr->append_attr(name, type, $5);
-#ifdef DEBUG
-		    cerr << "Added :" << type << " " << name << " " << $5 <<
-			endl; 
-#endif
-		} 
-                ';' 
+		attr_val ';' 
 ;
 
 attr_name:  	ID
 ;
 
-attr_val:   	VAL
-                | ID
+attr_val:   	val
+                | attr_val ',' val
+;
+
+val:		ID
+		{
+		    DBG(cerr << "Adding ID: " << name << " " << type << " "\
+			<< $1 << endl);
+		    attr_tab_ptr->append_attr(name, type, $1);
+		}
+		| VAL
+		{
+		    DBG(cerr << "Adding VAL: " << name << " " << type << " "\
+			<< $1 << endl);
+		    attr_tab_ptr->append_attr(name, type, $1);
+		}
 ;
 
 attr_type:      TYPE
@@ -206,5 +218,3 @@ daserror(char *s)
 {
     fprintf(stderr, "%s line: %d\n", s, das_line_num);
 }
-
-	
