@@ -8,6 +8,13 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.12  1997/08/23 00:22:23  jimg
+// Changed the way that the _error_message member is processed. Now if the
+// message does not have explicit double quotes, print() will add them. The
+// mfunc is smart enough to add the quotes only if needed so old code (which
+// provides the quotes) will still work and new code without the quotes works
+// too. This makes for a more convenient use of the Error object.
+//
 // Revision 1.11  1997/03/05 08:15:51  jimg
 // Added Cannot read file message to list of builtin messages.
 //
@@ -63,7 +70,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.11 1997/03/05 08:15:51 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.12 1997/08/23 00:22:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -74,9 +81,9 @@ static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.11 1997/03/05 08:15:51 jimg
 void Errorrestart(FILE *yyin);	// defined in Error.tab.c
 int Errorparse(void *arg);	
 
-static char *messages[]={"\"Unknown error\"", "\"No such file\"", 
-			 "\"No such variable\"", "\"Malformed expression\"",
-			 "\"No authorization\"", "\"Cannot read file\""};
+static char *messages[]={"Unknown error", "No such file", 
+			 "No such variable", "Malformed expression",
+			 "No authorization", "Cannot read file"};
 
 Error::Error()
     : _error_code(undefined_error), _error_message(""), 
@@ -197,7 +204,15 @@ Error::print(ostream &os = cout)
     os << "Error {" << endl;
 
     os << "    " << "code = " << _error_code << ";" << endl;
-    os << "    " << "message = " << _error_message << ";" << endl;
+    
+    // If the error message is wrapped in double quotes, print it, else, add
+    // wrapping double quotes.
+    if (_error_message.index("\"", 0) == 0
+	&& _error_message.index("\"", -1) == _error_message.length()-1)
+	os << "    " << "message = " << _error_message << ";" << endl;
+    else
+	os << "    " << "message = " << "\"" << _error_message << "\"" << ";" 
+	   << endl;
 
     if (_program_type != undefined_prog_type) {
 	os << "    " << "program_type = " << _program_type << ";" << endl;
@@ -245,9 +260,6 @@ Error::display_message(Gui *gui = 0)
 	// You must use response() with dialog so that expect will wait for
 	// the user to hit OK.
 	gui->response(cmd, response);
-#if 0
-	gui->command(cmd);
-#endif
     }
     else
 	cerr << _error_message << endl;
