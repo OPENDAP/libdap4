@@ -13,12 +13,15 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.6  1995/01/11 15:54:54  jimg
-/* Added modifications necessary for BaseType's static XDR pointers. This
-/* was mostly a name change from xdrin/out to _xdrin/out.
-/* Removed the two FILE pointers from ctors, since those are now set with
-/* functions which are friends of BaseType.
+/* Revision 1.7  1995/01/18 18:40:25  dan
+/* Declared member function 'readVal', defined in dummy_read.cc
 /*
+ * Revision 1.6  1995/01/11  15:54:54  jimg
+ * Added modifications necessary for BaseType's static XDR pointers. This
+ * was mostly a name change from xdrin/out to _xdrin/out.
+ * Removed the two FILE pointers from ctors, since those are now set with
+ * functions which are friends of BaseType.
+ *
  * Revision 1.5  1994/12/15  21:21:54  dan
  * Modified class Sequence inheritance hierarchy, now directly inherits
  * from class BaseType.
@@ -70,6 +73,7 @@ public:
 
     virtual unsigned int size();
     virtual bool read(String dataset, String var_name, String constraint);
+    virtual bool readVal(void *stuff);
 
     virtual bool serialize(bool flush = false, unsigned int num = 0);
     virtual unsigned int deserialize();

@@ -5,12 +5,15 @@
 // jhrg 9/7/94
 
 /* $Log: Str.h,v $
-/* Revision 1.7  1995/01/11 15:54:36  jimg
-/* Added modifications necessary for BaseType's static XDR pointers. This
-/* was mostly a name change from xdrin/out to _xdrin/out.
-/* Removed the two FILE pointers from ctors, since those are now set with
-/* functions which are friends of BaseType.
+/* Revision 1.8  1995/01/18 18:39:09  dan
+/* Declared member function 'readVal', defined in dummy_read.cc
 /*
+ * Revision 1.7  1995/01/11  15:54:36  jimg
+ * Added modifications necessary for BaseType's static XDR pointers. This
+ * was mostly a name change from xdrin/out to _xdrin/out.
+ * Removed the two FILE pointers from ctors, since those are now set with
+ * functions which are friends of BaseType.
+ *
  * Revision 1.6  1994/12/14  19:18:02  jimg
  * Added mfunc len(). Replaced size() with a mfunc that returns the size of
  * a pointer to a string (this simplifies Structure, ...).
@@ -69,7 +72,7 @@ public:
 
     //defined in <API>_read.cc
     virtual bool read(String dataset, String var_name, String constraint);
-
+    virtual bool readVal(void *stuff);
     virtual bool serialize(bool flush = false, unsigned int num = 0);
     virtual unsigned int deserialize();
 
