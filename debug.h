@@ -9,9 +9,12 @@
 */
   
 /* $Log: debug.h,v $
-/* Revision 1.2  1996/03/05 00:59:47  jimg
-/* Added _DEBUG_H to prevent multiple definition messages.
+/* Revision 1.3  1996/06/18 23:50:13  jimg
+/* Added file and line number information to the macros.
 /*
+ * Revision 1.2  1996/03/05 00:59:47  jimg
+ * Added _DEBUG_H to prevent multiple definition messages.
+ *
  * Revision 1.1  1995/09/13 21:58:05  jimg
  * Added to src/dap in keeping with the plan to store all include files in src
  * dirs and `build' the include directory during `make depend' from those
@@ -22,13 +25,13 @@
 #define _DEBUG_H
 
 #ifdef DEBUG
-#define DBG(x) x
+#define DBG(x) cerr << __FILE__ << ":" << __LINE__ << ":"; x
 #else
 #define DBG(x) /* x */
 #endif
 
 #ifdef DEBUG2
-#define DBG2(x) x
+#define DBG2(x) cerr << __FILE__ << ":" << __LINE__ << ":"; x
 #else
 #define DBG2(x) /* x */
 #endif
