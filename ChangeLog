@@ -1,3 +1,18 @@
+1999-05-19  James Gallagher  <jimg@dcz.dods.org>
+
+	* The dap++ library now builds using -fPIC (position independent
+	code) so sharable libraries should be easier to make.
+
+	* In DODS_Dispatch.pm, variables are checked for odd characters
+	that might be used to embed shell commands.
+
+	* Fixed security holes in the DODS_Dispatch.pm code. It now
+	returns the command as elements of an array which can be passed to
+	the exec() thus by passing the shell.
+
+	* Fixed all occurrences of the support email address to be the new
+	address. 
+
 1999-05-04  James Gallagher  <jimg@dcz.dods.org>
 
 	* Added to DODSFilter and DODS_Dispatch.pm so that server version
@@ -521,4 +536,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.39 1999/05/05 01:43:54 jimg Exp $
+$Id: ChangeLog,v 1.40 1999/05/20 21:17:57 jimg Exp $
