@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.23  1997/03/05 08:28:15  jimg
+// Now correctly gets the server protocol (HTTP 0.9, 1.0 or 1.1) from the
+// environment variables and sets the return doc header accordingly.
+//
 // Revision 1.22  1996/12/18 18:48:53  jimg
 // Fixed spelling in ErrMsgT()'s message.
 //
@@ -110,7 +114,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.22 1996/12/18 18:48:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.23 1997/03/05 08:28:15 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -260,7 +264,11 @@ static char *encoding[]={"unknown", "x-plain", "x-gzip"};
 void
 set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-    cout << "HTTP/1.0 200 OK" << endl;
+    char *protocol = getenv("SERVER_PROTOCOL");
+    if (!protocol)
+	protocol = "HTTP/1.0";
+
+    cout << protocol << " 200 OK" << endl;
     cout << "Server: " << DVR << endl;
     //    cout << "Status: 200 " << DVR << endl; // Send server version
     cout << "Content-type: text/plain" << endl; 
@@ -272,7 +280,11 @@ set_mime_text(ObjectType type = unknown_type, EncodingType enc = x_plain)
 void
 set_mime_binary(ObjectType type = unknown_type, EncodingType enc = x_plain)
 {
-    cout << "HTTP/1.0 200 OK" << endl;
+    char *protocol = getenv("SERVER_PROTOCOL");
+    if (!protocol)
+	protocol = "HTTP/1.0";
+
+    cout << protocol << " 200 OK" << endl;
     cout << "Server: " << DVR << endl;
     //    cout << "Status: 200 " << DVR << endl;
     cout << "Content-type: application/octet-stream" << endl; 
@@ -285,7 +297,11 @@ void
 set_mime_error(int code = HTERR_NOT_FOUND, 
 	       const char *reason = "Dataset not found")
 {
-    cout << "HTTP/1.0 " << code << " " << reason << endl;
+    char *protocol = getenv("SERVER_PROTOCOL");
+    if (!protocol)
+	protocol = "HTTP/1.0";
+
+    cout << protocol << " " << code << " " << reason << endl;
     cout << "Server: " << DVR << endl;
     cout << endl;
 }
