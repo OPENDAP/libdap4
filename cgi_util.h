@@ -8,22 +8,18 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 //      reza            Reza Nekovei (reza@intcomm.net)
 
-// External definitions for functions defined in libnetio.a.
+// External definitions for utility functions used by servers.
 //
 // 2/22/95 jhrg
+
+#include "Connect.h"		// For ObjectType and EncodingType defs 
 
 char *name_path(const char *path);
 char *fmakeword(FILE *f, const char stop, int *cl) ;
 void ErrMsgT(const char *Msgt);
-void set_mime_text(String description);
-void set_mime_binary(String description);
-
-extern "C" {
-    FILE *NetConnect(const char *AbsAddress);
-    FILE *NetExecute(const char *AbsAddress);
-}
-
-/* Make *SURE* that any change to VERSION_LENGTH here is also made in HTTP.c */
-
-#define VERSION_LENGTH 		20    /* Number of chars in protocol version */
-extern char DVersion[VERSION_LENGTH]; /* version string from DODS MIME docs */
+void set_mime_text(ObjectType type = unknown_type, 
+		   EncodingType enc = x_plain);
+void set_mime_binary(ObjectType type = unknown_type, 
+		     EncodingType enc = x_plain);
+FILE *compress_stdout();
+FILE *decompress_stdin();
