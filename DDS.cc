@@ -9,6 +9,11 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.32  1997/04/15 18:02:45  jimg
+// Added optional argument to print_variable functions so that the variable can
+// be printed using the current constraint. Changed the call to print_variable()
+// in DDS::send() so that the constrained variable is printed.
+//
 // Revision 1.31  1997/03/08 19:03:38  jimg
 // Changed call to `unique()' to `unique_names()' (see util.cc).
 //
@@ -163,7 +168,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.31 1997/03/08 19:03:38 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.32 1997/04/15 18:02:45 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -661,26 +666,26 @@ DDS::print_constrained(FILE *out)
 }
 
 static void
-print_variable(ostream &os, BaseType *var)
+print_variable(ostream &os, BaseType *var, bool constrained = false)
 {
     assert(os);
     assert(var);
 
     os << "Dataset {" << endl;
 
-    var->print_decl(os, "    ", true, false, false);
+    var->print_decl(os, "    ", true, false, constrained);
 
     os << "} function_value;" << endl;
 }
 
 static void
-print_variable(FILE *out, BaseType *var)
+print_variable(FILE *out, BaseType *var, bool constrained = false)
 {
     assert(out);
     assert(var);
 
     ostdiostream os(out);
-    print_variable(os, var);
+    print_variable(os, var, constrained);
 }
 
 // Check the semantics of the DDS describing a complete dataset. If ALL is
@@ -776,7 +781,7 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	if (functional_expression()) {
 	    BaseType *var = eval_function(dataset);
 	    set_mime_binary(dods_data, (compressed) ? x_gzip : x_plain);
-	    print_variable(os, var);
+	    print_variable(os, var, true);
 	    os << "Data:" << endl;
 	    // In the following call to serialize, suppress CE evaluation.
 	    status = var->serialize(dataset, *this, sink, false);
