@@ -4,7 +4,12 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.4  1994/11/22 14:06:10  jimg
+// Revision 1.5  1994/12/16 15:16:39  dan
+// Modified Structure class removing inheritance from class CtorType
+// and directly inheriting from class BaseType to alloc calling
+// BaseType's constructor directly.
+//
+// Revision 1.4  1994/11/22  14:06:10  jimg
 // Added code for data transmission to parts of the type hierarchy. Not
 // complete yet.
 // Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
@@ -27,6 +32,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "Structure.h"
 #include "util.h"
@@ -37,7 +43,6 @@ void
 Structure::duplicate(const Structure &s)
 {
     set_var_name(s.get_var_name());
-    set_var_type(s.get_var_type());
     
     Structure &cs = (Structure)s; // cast away const
 
@@ -53,10 +58,10 @@ Structure::ptr_duplicate()
     return new Structure(*this);
 }
 
-Structure::Structure(const String &n, const String &t)
+Structure::Structure(const String &n, FILE *in, FILE *out)
+     : BaseType( n, "Structure", (xdrproc_t)NULL, in, out)
 {
     set_var_name(n);
-    set_var_type(t);
 }
 
 Structure::Structure(const Structure &rhs)
@@ -89,6 +94,43 @@ Structure::add_var(BaseType *bt, Part p)
     vars.append(bt);
 }
 
+unsigned int
+Structure::size()
+{
+  unsigned int sz = 0;
+
+  for (Pix p = first_var(); p; next_var(p))
+    sz += var(p)->size();
+
+  return sz;
+}
+
+bool
+Structure::serialize(bool flush, unsigned int num)
+{
+    bool status;
+
+    for (Pix p = first_var(); p; next_var(p)) 
+      if ( !(status = var(p)->serialize(false)) ) break;
+
+    if ( status && flush )
+      status = expunge();
+
+    return status;
+}
+
+unsigned int
+Structure::deserialize()
+{
+    unsigned int num, sz = 0;
+
+    for (Pix p = first_var(); p; next_var(p)) {
+      if ( !(num = var(p)->deserialize()) ) break;
+      else sz += num;
+    }
+    return num ? sz : (unsigned int)FALSE;
+}
+
 BaseType *
 Structure::var(const String &name)
 {
@@ -117,8 +159,8 @@ Structure::var(Pix p)
 {
     if (!vars.empty() && p)
 	return vars(p);
-    else
-	return NULL;
+    else 
+      return NULL;
 }
 
 void
@@ -135,6 +177,13 @@ Structure::print_decl(ostream &os, String space, bool print_semi)
 // To seamantically OK, a structure's members must have unique names.
 //
 // Returns: true if the structure is OK, false if not.
+
+void 
+Structure::print_val(ostream &os, String space)
+{
+    print_decl(os, "", false);
+    //os << " = " << _buf << ";" << endl;
+}
 
 bool
 Structure::check_semantics(bool all)
