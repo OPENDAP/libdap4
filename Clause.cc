@@ -8,6 +8,9 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.6  1998/11/10 01:09:47  jimg
+// Added to the dtors to make sure the various Clause objects are deleted.
+//
 // Revision 1.5  1998/10/21 16:34:03  jimg
 // Made modifications that allow null argument lists.
 // Replaced repeated code (to build arg lists) with a function call (it's a
@@ -72,6 +75,11 @@ Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _arg1(0), _args(0)
 
 Clause::~Clause() 
 {
+    if (_arg1)
+	delete _arg1;
+
+    if (_args)
+	delete _args;
 }
 
 bool
@@ -133,6 +141,7 @@ Clause::value(const String &dataset, DDS &dds)
 	BaseType **argv = build_btp_args(_args, dds);
 
 	bool result = (*_b_func)(_argc, argv, dds);
+	delete[] argv;		// Cache me!
 	return result;
     }
     else {
@@ -154,6 +163,8 @@ Clause::value(const String &dataset, DDS &dds, BaseType **value)
 	BaseType **argv = build_btp_args(_args, dds);
 
 	*value = (*_bt_func)(_argc, argv, dds);
+	delete[] argv;		// Cache me!
+
 	if (*value) {
 	    (*value)->set_read_p(true);
 	    (*value)->set_send_p(true);
