@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.85 1998/09/17 17:19:17 jimg Exp $
+# $Id: Makefile.in,v 1.86 1998/10/21 16:40:41 jimg Exp $
 
 @SET_MAKE@
 
@@ -80,7 +80,7 @@ NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h Gui.h \
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
-EXPR_GRAM_OBJS = lex.expr.o expr.tab.o expr.o
+EXPR_GRAM_OBJS = lex.expr.o expr.tab.o RValue.o
 ERROR_GRAM_OBJS = lex.Error.o Error.tab.o
 
 DASHDRS = AttrTable.h DAS.h 
@@ -91,9 +91,9 @@ DDSHDRS = DDS.h DataDDS.h
 DDSSRCS = DDS.cc DataDDS.cc
 DDSOBJS = DDS.o DataDDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
 
-EXPRHDRS = expr.h Clause.h
-EXPRSRCS = expr.cc Clause.cc
-EXPROBJS = expr.o Clause.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
+EXPRHDRS = expr.h Clause.h RValue.h
+EXPRSRCS = Clause.cc RValue.cc
+EXPROBJS = Clause.o RValue.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
 
 ERRORHDRS = Error.h
 ERROROBJS = Error.o $(ERROR_GRAM_OBJS)
