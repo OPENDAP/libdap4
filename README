@@ -1,5 +1,5 @@
 
-$Id: README,v 1.7 1996/11/13 19:04:50 jimg Exp $
+$Id: README,v 1.8 1997/03/13 23:09:31 jimg Exp $
 
 This directory contains the URI/GSO implementation of the DODS Data Access
 Protocol. Documentation for this software can be found on the DODS home page
@@ -23,4 +23,7 @@ specialization of the set of classes.
 See the file INSTALL in this directory for information on building the
 library. 
 
-
+Note: As of version 2.12 the core now writes the data document's MIME header
+and until I modify the expr-test driver the Makefile's `check' and
+`expr-check' targets will fail. Better tests of DODS include using geturl or
+a real client. The expr-test driver will be fixed time permitting.
