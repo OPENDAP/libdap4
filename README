@@ -1,5 +1,5 @@
 
-$Id: README,v 1.6 1996/06/11 17:45:47 jimg Exp $
+$Id: README,v 1.7 1996/11/13 19:04:50 jimg Exp $
 
 This directory contains the URI/GSO implementation of the DODS Data Access
 Protocol. Documentation for this software can be found on the DODS home page
@@ -23,7 +23,4 @@ specialization of the set of classes.
 See the file INSTALL in this directory for information on building the
 library. 
 
-NOTE: If you find a bug in this software or its documentation, please use the
-send-pr script (which is in DODS_ROOT/etc) to report the problem. Using
-send-pr will help us ensure that your report does not get lost once we
-receive it.
+
