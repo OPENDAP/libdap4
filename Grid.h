@@ -17,6 +17,10 @@
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.31  1998/09/17 17:19:42  jimg
+ * Added leaf_match and exact_match.
+ * Added two new versions of the var member function.
+ *
  * Revision 1.30  1998/08/31 21:47:31  jimg
  * Changed check_semantics so that the array and map vectors must of composed
  * of simple-type elements.
@@ -266,7 +270,13 @@ public:
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
 
-    virtual BaseType *var(const String &name);
+    /** Note the paramter #exact_match# is not used by this mfunc.
+
+	@see BaseType.h */
+    virtual BaseType *var(const String &name, bool exact_match = true);
+
+    virtual BaseType *var(const String &name, btp_stack &s);
+
     virtual void add_var(BaseType *bt, Part part);
 
   /** Returns the Grid Array. */

@@ -19,6 +19,10 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.36  1998/09/17 17:17:48  jimg
+ * Added leaf_match and exact_match.
+ * Added two new versions of the var member function.
+ *
  * Revision 1.35  1998/03/17 17:40:08  jimg
  * Added an implementation of element_count().
  *
@@ -316,6 +320,8 @@ private:
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     void _duplicate(const Sequence &s);
+    BaseType *leaf_match(const String &name);
+    BaseType *exact_match(const String &name);
 
 protected:
     void write_end_of_sequence(XDR *sink);
@@ -410,7 +416,9 @@ public:
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual BaseType *var(const String &name);
+    virtual BaseType *var(const String &name, bool exact_match = true);
+
+    virtual BaseType *var(const String &name, btp_stack &s);
 
   /** Adds a variable to the Sequence.  Remember that if you wish to
       add a member to a nested Sequence, you must use the #add_var()#
