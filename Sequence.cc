@@ -703,8 +703,8 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
     This method used to read a single row at a time. Now the entire
     sequence is read at once. The method used to return True to indicate
     that more data needed to be deserialized and False when the sequence
-    was completely read. Now it simply returns true. This might seem odd,
-    but it is because all of the other implementation of this method
+    was completely read. Now it simply returns false. This might seem odd,
+    but it is because all of the other implementations of this method
     return true when the XDR readers succeed and False otherwise. Making
     this method return true breaks existing software the least.
 
@@ -1149,6 +1149,12 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.76  2005/01/27 23:05:23  jimg
+// Modified the expression processing code in expr.y so that array-style
+// projections on the fields of Sequences work. They should project that
+// field of the Sequence. To test I will merge in new changes on the 3.4
+// branch for the dap only.
+//
 // Revision 1.75  2004/09/09 19:25:55  jimg
 // Fixed a bug in is_end_of_rows(): The d_ending_row_number field was not
 // checked correctly. Constraints for a single row such as [0], [0:0], [1:1:1],

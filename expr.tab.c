@@ -92,7 +92,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.47 2004/07/07 21:08:49 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.48 2005/01/27 23:05:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1733,13 +1733,37 @@ no_such_func(void *arg, char *name)
     exprerror("Not a registered function", name);
 }
 
+/* If we're calling this, assume var is not a Sequence. But assume that the
+   name contains a dot and it's a separator. Look for the rightmost dot and
+   then look to see if the name to the left is a sequence. Return a pointer
+   to the sequence if it is otherwise return null */
+Sequence *
+parent_is_sequence(DDS &table, const char *name)
+{
+    string n = name;
+    string::size_type dotpos = n.find_last_of('.');
+    if (dotpos != string::npos) {
+	string s = n.substr(0, dotpos);
+	// If the thing returned by table.var is not a Sequence, this cast
+	// will yield null.
+	return dynamic_cast<Sequence*>(table.var(s));
+    }
+    else
+	return 0;
+}
+
+
 bool
 bracket_projection(DDS &table, const char *name, int_list_list *indices)
 {
     bool status = true;
     BaseType *var = table.var(name);
+    Sequence *seq;		// used in last else if clause
 
-    if (var && is_array_t(var)) {
+    if (!var)
+	return false;
+	
+    if (is_array_t(var)) {
 	/* calls to set_send_p should be replaced with
 	   calls to DDS::mark so that arrays of Structures,
 	   etc. will be processed correctly when individual
@@ -1755,7 +1779,7 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 	}
 	delete_array_indices(indices);
     }
-    else if (var && is_grid_t(var)) {
+    else if (is_grid_t(var)) {
 	table.mark(name, true);
 	/* var->set_send_p(true); */
 	status = process_grid_indices(var, indices);
@@ -1766,9 +1790,19 @@ bracket_projection(DDS &table, const char *name, int_list_list *indices)
 	}
 	delete_array_indices(indices);
     }
-    else if (var && is_sequence_t(var)) {
+    else if (is_sequence_t(var)) {
 	table.mark(name, true);
 	status = process_sequence_indices(var, indices);
+	if (!status) {
+	    string msg = "The indices given for `";
+	    msg += (string)name + (string)"' are out of range.";
+	    throw Error(malformed_expr, msg);
+	}
+	delete_array_indices(indices);
+    }
+    else if ((seq = parent_is_sequence(table, name))) {
+	table.mark(name, true);
+	status = process_sequence_indices(seq, indices);
 	if (!status) {
 	    string msg = "The indices given for `";
 	    msg += (string)name + (string)"' are out of range.";
@@ -2308,8 +2342,11 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.47  2004/07/07 21:08:49  jimg
- * Merged with release-3-4-8FCS
+ * Revision 1.48  2005/01/27 23:05:23  jimg
+ * Modified the expression processing code in expr.y so that array-style
+ * projections on the fields of Sequences work. They should project that
+ * field of the Sequence. To test I will merge in new changes on the 3.4
+ * branch for the dap only.
  *
  * Revision 1.50  2004/01/21 17:46:03  jimg
  * Removed include of List.h.
