@@ -10,6 +10,13 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.7  1996/08/13 20:43:38  jimg
+// Added __unused__ to definition of char rcsid[].
+// Added a new parse_error function that builds an Error object and returns it
+// instead of printing to stderr.
+// Added versions of check_*() that take parser_arg and a context string. These
+// call the new parse_error() function.
+//
 // Revision 1.6  1996/06/14 23:30:33  jimg
 // Added `<< ends' to the lines where ostrstream objects are used (without this
 // there is no null added to the end of the streams).
@@ -30,10 +37,14 @@
 // Revision 1.1  1996/04/04 22:12:19  jimg
 // Added.
 
-static char rcsid[]= {"$Id: parser-util.cc,v 1.6 1996/06/14 23:30:33 jimg Exp $"};
+#include "config_dap.h"
 
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.7 1996/08/13 20:43:38 jimg Exp $"};
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include <iostream.h>
 #include <strstream.h>
@@ -44,7 +55,28 @@ static char rcsid[]= {"$Id: parser-util.cc,v 1.6 1996/06/14 23:30:33 jimg Exp $"
 void 
 parse_error(const char *s, const int line_num)
 {
+    assert(s);
+
     cerr << s << " line: " << line_num << endl;;
+}
+
+void
+parse_error(parser_arg *arg, const char *msg, const int line_num,
+	    const char *context = 0)
+{ 
+    assert(arg);
+    assert(msg);
+
+    arg->set_status(FALSE);
+
+    ostrstream oss;
+    oss << "Error parsing the text on line " << line_num << ":" << endl;
+    if (context)
+	oss << msg << endl << context << ends;
+    else
+	oss << msg << ends;
+    arg->set_error(new Error(unknown_error, oss.str()));
+    oss.freeze(0);
 }
 
 void
@@ -57,19 +89,62 @@ save_str(char *dst, const char *src, const int line_num)
              << dst << "'" << endl;
 }
 
+void
+save_str(char *dst, const char *src, parser_arg *arg, const int line_num,
+	 const char *context)
+{
+    strncpy(dst, src, ID_MAX);
+    dst[ID_MAX-1] = '\0';		/* in case ... */
+    if (strlen(src) >= ID_MAX) {
+	ostrstream oss;
+	oss << "`" << src << "' truncated to `" << dst << "'" << ends;
+	parse_error(arg, oss.str(), line_num, context);
+	oss.freeze(0);
+    }
+}
+
 int
-check_byte(const char *val, const int num)
+check_byte(const char *val, const int line)
 {
     char *ptr;
     long v = strtol(val, &ptr, 0);
 
     if (v == 0 && val == ptr) {
-	parse_error("Not decodable to an integer value", num);
+	parse_error("Not decodable to an integer value", line);
 	return FALSE;
     }
 
     if (v > DODS_CHAR_MAX || v < DODS_CHAR_MIN) {
-	parse_error("Not a byte value", num);
+	parse_error("Not a byte value", line);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_byte(parser_arg *arg, const char *val, const int line, 
+	   const char *context)
+{
+    char *ptr;
+    long v = strtol(val, &ptr, 0);
+
+    if (v == 0 && val == ptr) {
+	ostrstream oss;
+	oss << "`" << val << "' cannot be decoded as an integer value." 
+	    << ends;
+	parse_error(arg, oss.str(), line, context);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    if (v > DODS_CHAR_MAX || v < DODS_CHAR_MIN) {
+	ostrstream oss;
+	oss << "`" << val << "' is not a byte value value." << endl
+	    << "It must be between " << DODS_CHAR_MIN << " and "
+	    << DODS_CHAR_MAX << "." << ends;
+	parse_error(arg, oss.str(), line, context);
+	oss.freeze(0);
 	return FALSE;
     }
 
@@ -80,24 +155,58 @@ check_byte(const char *val, const int num)
 // use the ANSI standard for string representation of those number bases.
 
 int
-check_int(const char *val, const int num)
+check_int(const char *val, const int line)
 {
     char *ptr;
     long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
 
     if (v == 0 && val == ptr) {
-	ostrstream ss;
-	ss << "The string `" << val << "' does not represent an interger" 
-	   << ends;
-	parse_error((const char *)ss.str(), num);
+	ostrstream oss;
+	oss << "`" << val << "' cannot be decoded as an integer value." 
+	    << ends;
+	parse_error(oss.str(), line);
+	oss.freeze(0);
 	return FALSE;
     }
 
     // Don't use the constant from limits.h, use the on in dods-limits.h
     if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
-	ostrstream ss;
-	ss << "Not a 32-bit integer value (" << v << ")" << ends;
-	parse_error((const char *)ss.str(), num);
+	ostrstream oss;
+	oss << "`" << val << "' is not a integer value value." << endl
+	    << "It must be between " << DODS_INT_MIN << " and "
+	    << DODS_INT_MAX << "." << ends;
+	parse_error(oss.str(), line);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+check_int(parser_arg *arg, const char *val, const int line, 
+	  const char *context)
+{
+    char *ptr;
+    long v = strtol(val, &ptr, 0); // `0' --> use val to determine base
+
+    if (v == 0 && val == ptr) {
+	ostrstream oss;
+	oss << "`" << val << "' cannot be decoded as an integer value." 
+	    << ends;
+	parse_error(arg, oss.str(), line, context);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    // Don't use the constant from limits.h, use the on in dods-limits.h
+    if (v > DODS_INT_MAX || v < DODS_INT_MIN) { 
+	ostrstream oss;
+	oss << "`" << val << "' is not a integer value value." << endl
+	    << "It must be between " << DODS_INT_MIN << " and "
+	    << DODS_INT_MAX << "." << ends;
+	parse_error(arg, oss.str(), line, context);
+	oss.freeze(0);
 	return FALSE;
     }
 
@@ -118,12 +227,37 @@ check_float(const char *val, const int num)
     return TRUE;
 }
 
+int
+check_float(parser_arg *arg, const char *val, const int line,
+	    const char *context)
+{
+    char *ptr;
+    double v = strtod(val, &ptr);
+
+    if (v == 0.0 && val == ptr) {
+	ostrstream oss;
+	oss << "`" << val << "' cannot be decoded as an 64-bit float value." 
+	    << ends;
+	parse_error(arg, oss.str(), line, context);
+	oss.freeze(0);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
 /*
   Maybe someday we will really check the Urls to see if they are valid...
 */
 
 int
 check_url(const char *, const int)
+{
+    return TRUE;
+}
+
+int
+check_url(parser_arg *, const char *, const int, const char *)
 {
     return TRUE;
 }
