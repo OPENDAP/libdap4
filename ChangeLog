@@ -1,3 +1,8 @@
+1999-12-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added Gui (progress indicator) code back into the core. The
+	interpreter is now embedded in DODS. 
+
 1999-12-14  James Gallagher  <jimg@dcz.dods.org>
 
 	* Fixed a bug in Connect where once the Cache was closed it would
@@ -605,4 +610,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.45 1999/12/15 01:11:34 jimg Exp $
+$Id: ChangeLog,v 1.46 2000/01/05 22:37:43 jimg Exp $
