@@ -10,6 +10,12 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.18  1997/02/12 21:45:03  jimg
+// Added use of the optional parameter to Connect's ctor; if -t (trace) is
+// given on the command line, then print www library informational messages.
+// Changed trace option switch from -v (which is now used for verbose - an
+// option that is entirely separate from trace) to -t.
+//
 // Revision 1.17  1997/02/10 02:36:10  jimg
 // Modified usage of request_data() to match new return type.
 //
@@ -75,7 +81,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.17 1997/02/10 02:36:10 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.18 1997/02/12 21:45:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -167,7 +173,7 @@ main(int argc, char * argv[])
 	      case 'g': gui = true; break;
 	      case 'c':
 		cexpr = true; expr = getopt.optarg; break;
-	      case 'v': 
+	      case 't': 
 		trace = true;
 		topts = strlen(getopt.optarg);
 		if (topts) {
@@ -208,7 +214,7 @@ main(int argc, char * argv[])
 	    cerr << "Fetching " << argv[i] << ":" << endl;
 	
 	String name = argv[i];
-	Connect url(name);
+	Connect url(name, trace);
 
 	if (url.is_local()) {
 	    cerr << "Skipping the URL `" << argv[i] 
@@ -288,3 +294,4 @@ main(int argc, char * argv[])
 	}	    
     }
 }
+
