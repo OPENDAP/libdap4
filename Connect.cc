@@ -8,6 +8,9 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.68  1998/11/10 01:08:34  jimg
+// Patched memory leaks found with Purify.
+//
 // Revision 1.67  1998/09/08 22:27:11  jimg
 // Removed PERF macro.
 //
@@ -375,7 +378,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.67 1998/09/08 22:27:11 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.68 1998/11/10 01:08:34 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1132,6 +1135,7 @@ Connect::Connect(String name, bool www_verbose_errors = false,
 	_source = 0;
 	_type = unknown_type;
 	_encoding = unknown_enc;
+	delete _gui;
     }
 
     HT_FREE(access_ref);
@@ -1149,6 +1153,7 @@ Connect::~Connect()
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
     delete _tv;
+    delete _gui;
 
     close_output();
 
@@ -1200,7 +1205,8 @@ Connect::fetch_url(String &url, bool)
 	unlink(c);		// When _OUTPUT is closed file is deleted.
     else
 	cerr << "Temporary file for Data document: " << c << endl;
-  
+    free(c);			// tempnam uses malloc!
+
     if (!read_url(url, stream))
 	return false;
    
