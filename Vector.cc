@@ -11,6 +11,11 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.28  2000/01/05 22:37:18  jimg
+// Added a comment about the odd `protocol' for sending array/list lengths twice
+// for arrays/lists of simple types.
+// Removed some cruft.
+//
 // Revision 1.27  1999/05/04 19:47:23  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -131,7 +136,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.27 1999/05/04 19:47:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.28 2000/01/05 22:37:18 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -393,6 +398,8 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 	if (!(bool)xdr_int(sink, (int *)&num)) // send vector length
 	    return false;
 
+	// Note that xdr_bytes and xdr_array both send the length themselves,
+	// so the length is actually sent twice. 12/31/99 jhrg
 	if (_var->type() == dods_byte_c)
 	    status = (bool)xdr_bytes(sink, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
@@ -415,9 +422,9 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 	if (!status)
 	    return status;
 
-{	for (unsigned i = 0; status && i < num; ++i)	// test status in loop
+	for (unsigned i = 0; status && i < num; ++i)	// test status in loop
 	    status = _vec[i]->serialize(dataset, dds, sink, false);
-}
+
 	break;
 
       default:
@@ -503,11 +510,11 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 	vec_resize(num);
 	set_length(num);
 
-{	for (unsigned i = 0; status && i < num; ++i) {
+	for (unsigned i = 0; status && i < num; ++i) {
 	    _vec[i] = _var->ptr_duplicate();
 	    _vec[i]->deserialize(source, dds);
 	}
-}
+
 	break;
 
       default:
