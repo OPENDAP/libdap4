@@ -32,6 +32,14 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.47  2000/07/26 12:24:01  rmorris
+ * Modified intermediate (dod*) file removal under win32 to take into account
+ * a 1-to-n correspondence between connect objects and intermediate files.
+ * Implemented solution through vector of strings containing the intermediate
+ * filenames that are removed when the connect obj's destructor is invoked.
+ * Might consider using the same code for unix in the future.  Previous
+ * win32 solution incorrectly assumed the correspondence was 1-to-1.
+ *
  * Revision 1.46  2000/07/13 07:07:13  rmorris
  * Mod to keep the intermediate file name in the Connect object in the
  * case of win32 (unlink() works differently on win32,  needed another approach).
@@ -290,6 +298,10 @@
 #include "util.h"
 #include "config_dap.h"
 
+#ifdef WIN32
+using std::vector<string>;
+#endif
+
 /**
 
      When a version 2.x or greater DODS data server sends an
@@ -392,12 +404,13 @@ private:
     static bool _cache_enabled;		// True if the cache is on.
     static char *_cache_root;		// If on, where is the cache?
 #ifdef WIN32
-	// We need to keep the name associated with _output around under win32
-	// because an unlink() at time 'now' doesn't delete a file at some time
-	// (now + n) as it does under UNIX.  Unix will delete the file when the
-	// last process using the file closes it - win32 will not.  Under win32,
-	// we count on the Connect destructor using _tfname to remove the file.
-	string _tfname;			
+	// We need to keep the different filenames associated with _output (over time)
+	// around under win32 because an unlink() at time 'now' doesn't delete a file
+	// at some time (now + n) as it does under UNIX.  Unix will delete the file
+	// when the last process using the file closes it - win32 will not.  Under
+	// win32, we count on the Connect destructor using _tfname to remove such
+	// intermediate files..
+	vector<string> _tfname;			
 #endif
 
     static HTList *_conv;	// List of global converters

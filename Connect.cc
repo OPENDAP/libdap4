@@ -9,6 +9,14 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.101  2000/07/26 12:24:01  rmorris
+// Modified intermediate (dod*) file removal under win32 to take into account
+// a 1-to-n correspondence between connect objects and intermediate files.
+// Implemented solution through vector of strings containing the intermediate
+// filenames that are removed when the connect obj's destructor is invoked.
+// Might consider using the same code for unix in the future.  Previous
+// win32 solution incorrectly assumed the correspondence was 1-to-1.
+//
 // Revision 1.100  2000/07/24 18:49:50  rmorris
 // Just added a notation that indicates what was tried to get around
 // libwww bugs in regards to spaces in pathnames.  Client-side caching
@@ -574,7 +582,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.100 2000/07/24 18:49:50 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.101 2000/07/26 12:24:01 rmorris Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -612,6 +620,7 @@ using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::ofstream;
+using std::iterator;
 #endif
 
 #ifdef WIN32
@@ -1511,6 +1520,10 @@ Connect::clone(const Connect &src)
 	_dds = src._dds;
 	_error = src._error;
 
+#ifdef WIN32
+	_tfname = src._tfname;
+#endif
+
 #ifdef GUI
 	_gui = new Gui();
 #endif 
@@ -1709,13 +1722,10 @@ Connect::~Connect()
 #ifdef WIN32
 	HTEventTerminate();
 
-	//  Get rid of any intermediate file
-	if(_tfname.size() > 0)
-		{
-		remove(_tfname.c_str());
-		_tfname = "";
-		}
-
+	//  Get rid of any intermediate files
+	vector<string>::const_iterator i;
+	for(i = _tfname.begin(); i != _tfname.end(); i++)
+		remove((*i).c_str())
 #endif
 
     DBG2(cerr << "Leaving the Connect dtor" << endl);
@@ -1794,7 +1804,7 @@ Connect::fetch_url(string &url, bool)
 	//  code below isn't appropriate in the win32 case.
 #ifdef WIN32
 	if(!keep_temps)
-		_tfname = c;
+		_tfname.insert(_tfname.end(), string(c));
 #else
     if (!keep_temps)
 		unlink(c);		// When _OUTPUT is closed file is deleted
