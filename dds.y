@@ -15,7 +15,15 @@
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.3  1994/09/23 14:56:19  jimg
+ * Revision 1.4  1994/11/10 19:50:54  jimg
+ * In the past it was possible to have a null file correctly parse as a
+ * DAS or DDS. However, now that is not possible. It is possible to have
+ * a file that contains no variables parse, but the keyword `Attribute'
+ * or `Dataset' *must* be present. This was changed so that errors from
+ * the CGIs could be detected (since they return nothing in the case of
+ * a error).
+ *
+ * Revision 1.3  1994/09/23  14:56:19  jimg
  * Added code to build in-memory DDS during parse.
  *
  * Revision 1.2  1994/09/15  21:11:56  jimg
@@ -31,7 +39,7 @@
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 
-static char rcsid[]={"$Id: dds.y,v 1.3 1994/09/23 14:56:19 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.4 1994/11/10 19:50:54 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,8 +105,7 @@ void add_entry(DDS &table, CtorTypePtrXPStack &ctor, BaseType **current,
    Parser algorithm:
 */   
 
-datasets:	/* empty */
-		| dataset
+datasets:	dataset
 		| datasets dataset
 ;
 
@@ -227,7 +234,9 @@ add_entry(DDS &table, CtorTypePtrXPStack &ctor, BaseType **current, Part part)
 { 
     if (!ctor.empty()) { /* must be parsing a ctor type */
 	ctor.top()->add_var(*current, part);
-	const String &ctor_type = ctor.top()->get_var_type();
+
+ 	const String &ctor_type = ctor.top()->get_var_type();
+
 	if (ctor_type == "List" || ctor_type == "Array")
 	    *current = ctor.pop();
 	else

@@ -22,7 +22,15 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.7  1994/10/18 00:23:18  jimg
+ * Revision 1.8  1994/11/10 19:50:55  jimg
+ * In the past it was possible to have a null file correctly parse as a
+ * DAS or DDS. However, now that is not possible. It is possible to have
+ * a file that contains no variables parse, but the keyword `Attribute'
+ * or `Dataset' *must* be present. This was changed so that errors from
+ * the CGIs could be detected (since they return nothing in the case of
+ * a error).
+ *
+ * Revision 1.7  1994/10/18  00:23:18  jimg
  * Added debugging statements.
  *
  * Revision 1.6  1994/10/05  16:46:51  jimg
@@ -67,12 +75,13 @@
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: das.y,v 1.7 1994/10/18 00:23:18 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.8 1994/11/10 19:50:55 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
 #include "debug.h"
 #include "das.tab.h"
 #include "DAS.h"
@@ -120,8 +129,7 @@ void save_str(char *dst, char *src);
   value in the table entry for the current variable.
 */
 
-attributes: /* empty */
-    	    	| attribute
+attributes:    	attribute
     	    	| attributes attribute
 ;
     	    	
