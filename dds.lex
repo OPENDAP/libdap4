@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.28 2000/09/07 16:17:20 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.29 2000/09/07 23:08:52 jimg Exp $"};
 
 #include <string.h>
 
@@ -73,7 +73,7 @@ FLOAT64 	FLOAT64|Float64|float64
 STRING 		STRING|String|string
 URL 		URL|Url|url
 
-ID  		[a-zA-Z_%][-a-zA-Z0-9_/%]*
+ID  		[a-zA-Z_%.][-a-zA-Z0-9_/%.]*
 NAME            [a-zA-Z0-9_/%.][-a-zA-Z0-9_/%.]*
 INTEGER		[0-9]+
 NEVER		[^][{}:;=a-zA-Z0-9_%]
@@ -139,6 +139,13 @@ yywrap(void)
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.29  2000/09/07 23:08:52  jimg
+ * Fixed another goof from the last merge; I dropped the new feature that
+ * identifiers can have dots i their names. This feature could really screw
+ * things up, but it is needed for translation. It should be the case that the
+ * CE evaluator never sees such a variable name (since the translation software
+ * should get to it first and rearrange things).
+ *
  * Revision 1.28  2000/09/07 16:17:20  jimg
  * Added SCAN_ prefix to returned constants. The prefix was lost during the
  * last merge.
