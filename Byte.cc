@@ -4,7 +4,11 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.10  1995/05/10 15:33:55  jimg
+// Revision 1.11  1995/06/28 17:10:18  dan
+// Modified constructor to explicitly cast return type to xdrproc_t, resolves
+// problem associated with <rpc/xdr.h> under OSF 3.X.
+//
+// Revision 1.10  1995/05/10  15:33:55  jimg
 // Failed to change `config.h' to `config_dap.h' in these files.
 //
 // Revision 1.9  1995/05/10  13:45:10  jimg
@@ -98,7 +102,7 @@
 // single byte, we *must* use xdr_char() (which puts a single byte in 4 (yes
 // four) bytes). See serialize() and deserialize().
 
-Byte::Byte(const String &n) : BaseType(n, "Byte", xdr_char)
+Byte::Byte(const String &n) : BaseType(n, "Byte", (xdrproc_t)xdr_char)
 {
 }
 
