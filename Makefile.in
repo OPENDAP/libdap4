@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.31 1996/03/05 17:45:45 jimg Exp $
+# $Id: Makefile.in,v 1.32 1996/03/05 19:02:09 jimg Exp $
 
 @SET_MAKE@
 
@@ -19,8 +19,7 @@ INCS = -I. -IMap -IStack -IPlex -IVec -I../errmsg -I../netio
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@
-LDFLAGS = @LDFLAGS@ -L. -LMAP -LStack -LPlex -LVec -L../netio \
-	  -L$(DODS_ROOT)/lib
+LDFLAGS = @LDFLAGS@ -L. -L../netio -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d
 LIBS = -ldap++ -lerrmsg @LIBS@
