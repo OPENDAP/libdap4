@@ -3,9 +3,12 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.14  1996/07/08 23:19:49  jimg
-/* Added HAVE_EXPECT compile-time variable.
+/* Revision 1.15  1996/08/13 18:42:48  jimg
+/* Added __unused__ macro.
 /*
+ * Revision 1.14  1996/07/08 23:19:49  jimg
+ * Added HAVE_EXPECT compile-time variable.
+ *
  * Revision 1.13  1996/06/20 15:54:29  jimg
  * Added HAVE_SEM_UNION for hosts that do not define the union semun {} union.
  * Changed SEM_PROTO to HAVE_SEM_PROTO to be more inline with other similar
@@ -159,6 +162,14 @@
 
 /* Does <sys/sem.h> contain the definition of union semun {}? */
 #undef HAVE_SEM_UNION
+
+/* GNU gcc/g++ provides a way to mark variables, etc. as unused */
+
+#if defined(__GNUG__) || defined(__GNUC__)
+#define __unused__ __attribute__ ((unused))
+#else
+#define __unused__ 
+#endif
 
 /*
   Determine at compile-time the sizes of various datatypes. This uses symbols
