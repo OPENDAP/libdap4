@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.i.exp,v $
+# Revision 1.4  1997/06/05 22:52:35  jimg
+# *** empty log message ***
+#
 # Revision 1.3  1997/03/27 18:20:12  jimg
 # Update for version 2.13
 #
@@ -19,7 +22,7 @@ global srcdir
 
 # The variable `test_file' is the name of the das input file for this test.
 
-set test_name test.
+set test_name test.i
 set test_file test.5
 
 # The variable test_equation is the equation to test.
@@ -32,37 +35,36 @@ set test_equation {g\[1:4:9\]\[1:4:9\]\[1:4:9\]}
 
 set test_out "The complete DDS:
 Dataset {
-    Int32 i\[20\];
+    Int32 i\\\[20\\\];
     Int32 j;
     String s;
     Grid {
      ARRAY:
-        Float64 val\[length = 10\]\[width = 10\]\[height = 20\];
+        Float64 val\\\[length = 10\\\]\\\[width = 10\\\]\\\[height = 20\\\];
      MAPS:
-        Float64 length\[10\];
-        Float64 width\[10\];
-        Float64 height\[20\];
+        Float64 length\\\[10\\\];
+        Float64 width\\\[10\\\];
+        Float64 height\\\[20\\\];
     } g;
 } test1;
 HTTP/1.0 200 OK
-Server: DODS/2.12
+Server: DODS/*
 Content-type: application/octet-stream
 Content-Description: dods_data
-Content-Encoding: x-gzip
 
 The data:
 Grid {
  ARRAY:
-    Float64 val\[length = 3\]\[width = 3\]\[height = 3\];
+    Float64 val\\\[length = 3\\\]\\\[width = 3\\\]\\\[height = 3\\\];
  MAPS:
-    Float64 length\[3\];
-    Float64 width\[3\];
-    Float64 height\[3\];
+    Float64 length\\\[3\\\];
+    Float64 width\\\[3\\\];
+    Float64 height\\\[3\\\];
 } g = { ARRAY: {{{99.999, 99.999, 99.999},{99.999, 99.999, 99.999},{99.999, 99.999, 99.999}},{{99.999, 99.999, 99.999},{99.999, 99.999, 99.999},{99.999, 99.999, 99.999}},{{99.999, 99.999, 99.999},{99.999, 99.999, 99.999},{99.999, 99.999, 99.999}}} MAPS: {99.999, 99.999, 99.999}, {99.999, 99.999, 99.999}, {99.999, 99.999, 99.999} };"
 
 expr-test_start p ${srcdir}${test_file} ${test_equation}
 
-if ![string compare $test_out $comp_output] { # check comp_output
+if [string match $test_out $comp_output] { # check comp_output
     pass "$test_name"
 } else {
     fail "$test_name"

@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.g.exp,v $
+# Revision 1.2  1997/06/05 22:52:33  jimg
+# *** empty log message ***
+#
 # Revision 1.1  1996/11/27 21:06:22  jimg
 # Expect this test to fail because of problems passing double quotes through
 # Tcl/Expect.
@@ -26,7 +29,7 @@ set test_equation {s&s=~"Very Silly.*"}
 # exactly.
 
 set test_out "Dataset {
-    Int32 i\[20\];
+    Int32 i\\\[20\\\];
     String s;
     Int32 j;
     List Int32 l;
