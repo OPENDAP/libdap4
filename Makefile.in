@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.94 1999/04/29 02:29:30 jimg Exp $
+# $Id: Makefile.in,v 1.95 1999/04/29 03:04:52 jimg Exp $
 
 @SET_MAKE@
 
@@ -150,7 +150,7 @@ ALLSRCS = $(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
 
 all: grammars $(PROG)
 
-libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
+libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) \
 	    $(EXPROBJS) $(NETIOOBJS)
 	    $(AR) cru $@ $?
 	    $(RANLIB) $@

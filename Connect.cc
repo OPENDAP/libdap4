@@ -8,8 +8,19 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.74  1999/04/29 03:04:51  jimg
+// Merged ferret changes
+//
 // Revision 1.73  1999/04/29 02:29:27  jimg
 // Merge of no-gnu branch
+//
+// Revision 1.72.8.1  1999/04/14 22:31:36  jimg
+// Removed old code.
+// Fixed the delete of member _tv. timeval _tv was used by libwww 5.0 but is no
+// longer needed. I wrapped all code that touched this in #ifdef LIBWWW_5_0 and
+// removed the member from Connect using the same conditional. This fixes a
+// problem where _tv is deleted without being allocated when local files are
+// accessed.
 //
 // Revision 1.72  1999/02/23 01:32:59  jimg
 // Removed more of the code in process_data. Because of fixes in the scanner,
@@ -412,7 +423,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.73 1999/04/29 02:29:27 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.74 1999/04/29 03:04:51 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1033,8 +1044,10 @@ Connect::clone(const Connect &src)
 	// Copy the access method.
 	_method = src._method;
 
+#ifdef LIBWWW_5_0
 	// Copy the timeout value.
 	_tv->tv_sec = src._tv->tv_sec;
+#endif
 
 	// Open the file for non-truncating update.
 	if (_output)
@@ -1042,62 +1055,6 @@ Connect::clone(const Connect &src)
 	if (_source)
 	    _source = new_xdrstdio(_output, XDR_DECODE);
     }
-}
-
-// Read the DDS from the data stream. Leave the binary information behind. The
-// DDS is moved, without parsing it, into a file and a pointer to that FILE is
-// returned. The argument IN (the input FILE stream) is positioned so that the
-// next byte is the binary data.
-//
-// The binary data follows the text `Data:', which itself starts a line.
-//
-// Returns: a FILE * which contains the DDS describing the binary information
-// in IF.
-
-FILE *
-Connect::move_dds(FILE *in)
-{
-#if 0
-    char *c = tempnam(NULL, DODS_PREFIX);
-    if (!c) {
-	cerr << "Could not create temporary file name: " << strerror(errno)
-	    << endl;
-	return NULL;
-    }
-
-    FILE *fp = fopen(c, "w+");
-    if (!keep_temps)
-	unlink(c);
-    else
-	cerr << "Temporary file for Data Document DDS: " << c << endl;
-
-    if (!fp) {
-	cerr << "Could not open anonymous temporary file: " 
-	     << strerror(errno) << endl;
-	return NULL;
-    }
-
-    bool data = false;
-    char s[256];
-    
-    while (!feof(in) && !data) {
-	(void)fgets(s, 255, in);
-	if (strcmp(s, "Data:\n") == 0)
-	    data = true;
-	else
-	    fputs(s, fp);
-    }
-
-    if (fseek(fp, 0L, 0) < 0) {
-	cerr << "Could not rewind data DDS stream: " << strerror(errno)
-	    << endl;
-	return NULL;
-    }
-    
-    free(c);			// tempnam uses malloc
-    return fp;
-#endif
-    return 0;
 }
 
 // Use the URL designated when the Connect object was created as the
@@ -1197,9 +1154,10 @@ Connect::Connect(string name, bool www_verbose_errors,
 	}
 	_local = false;
 
+#ifdef LIBWWW_5_0
 	_tv = new timeval;
-
 	_tv->tv_sec = DEFAULT_TIMEOUT;
+#endif
 	_output = 0;
 	_source = 0;
 	_type = unknown_type;
@@ -1218,6 +1176,9 @@ Connect::Connect(string name, bool www_verbose_errors,
 	_source = 0;
 	_type = unknown_type;
 	_encoding = unknown_enc;
+#ifdef LIBWWW_5_0
+	_tv = 0;
+#endif
 	delete _gui;
     }
 
@@ -1226,7 +1187,12 @@ Connect::Connect(string name, bool www_verbose_errors,
 
 Connect::Connect(const Connect &copy_from) : _error(undefined_error, "")
 {
-    _tv = new timeval;
+#ifdef LIBWWW_5_0
+    if (copy_from._tv)
+	_tv = new timeval;
+    else 
+	_tv = 0;
+#endif
 
     clone(copy_from);
 }
@@ -1235,7 +1201,9 @@ Connect::~Connect()
 {
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
+#ifdef LIBWWW_5_0
     delete _tv;
+#endif
     delete _gui;
 
     close_output();
@@ -1465,45 +1433,16 @@ Connect::process_data(bool async)
 
       case dods_data:
       default: {
-	  // First read the DDS into a new object.
-
 	  DataDDS *dds = new DataDDS("received_data", _server);
-#if 0
-	  FILE *dds_fp = move_dds(_output);
-	  if (!dds_fp || !dds->parse(dds_fp)) {
-	      cerr << "Could not parse data DDS." << endl;
-	      return 0;
-	  }
-	  fclose(dds_fp);
-#else
-	  // First parse the DDS
+
+	  // Parse the DDS
 	  if (!dds->parse(_output)) {
 	      cerr << "Could not parse data DDS." << endl;
 	      return 0;
 	  }
 
-#if 0
-	  // Reset the input source (This will work only if the input source
-	  // is a file!).
-	  if (fseek(_output, 0L, 0) < 0) {
-	      cerr << "Could not rewind data DDS stream: " << strerror(errno)
-		   << endl;
-	      return 0;
-	  }
-
-	  // Move over the DDS in the input source.
-	  char s[255];
-	  while (!feof(_output)) {
-	      (void)fgets(s, 255, _output);
-	      if (strcmp(s, "Data:\n") == 0)
-		  break;
-	  }
-#endif
-
-#endif
-	  
-	  // DDS. If asynchronous, just return the DDS and leave the
-	  // reading to to the caller.
+	  // If !asynchronous, read data for all the variables from the
+	  // document. 
 	  if (!async) {
 	      XDR *s = source();
 	      for (Pix q = dds->first_var(); q; dds->next_var(q)) {

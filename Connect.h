@@ -32,8 +32,15 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.37  1999/04/29 03:04:51  jimg
+ * Merged ferret changes
+ *
  * Revision 1.36  1999/04/29 02:29:28  jimg
  * Merge of no-gnu branch
+ *
+ * Revision 1.35.8.1  1999/04/14 22:32:46  jimg
+ * Made inclusion of timeval _tv depend on the definition of LIBWWW_5_0. See
+ * comments in Connect.cc.
  *
  * Revision 1.35  1999/02/18 19:22:38  jimg
  * Added the field _accept_types and two accessor functions. See Connect.cc and
@@ -209,7 +216,9 @@
 #endif
 
 #include <stdio.h>
+#ifdef LIBWWW_5_0
 #include <sys/time.h>
+#endif
 #include <rpc/types.h>
 #include <netinet/in.h>
 #include <rpc/xdr.h>
@@ -219,12 +228,6 @@
 
 #include <WWWLib.h>			      /* Global Library Include file */
 #include <WWWApp.h>
-#if 0
-#include <WWWMIME.h>				    /* MIME parser/generator */
-#include <WWWHTTP.h>				       /* HTTP access module */
-#include <WWWStream.h>
-#include <WWWTrans.h>
-#endif
 #include <WWWInit.h>
 
 #include "DAS.h"
@@ -350,7 +353,9 @@ private:
     string _accept_types;	// Comma separated list of types understood
 
     HTParentAnchor *_anchor;
+#ifdef LIBWWW_5_0
     struct timeval *_tv;	// Timeout on socket
+#endif
     HTMethod _method;		// What method are we envoking 
     FILE *_output;		// Destination; a temporary file
     XDR *_source;		// Data source stream

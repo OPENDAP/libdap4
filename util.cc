@@ -11,8 +11,16 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.53  1999/04/29 03:04:52  jimg
+// Merged ferret changes
+//
 // Revision 1.52  1999/04/29 02:29:37  jimg
 // Merge of no-gnu branch
+//
+// Revision 1.51.4.1  1999/04/21 21:56:25  jimg
+// Work-around in prune_spaces(). There is a bug in the old code and I
+// patched it be calling the new (string based) version. Since we're
+// switching over to that anyway, it seemed the kludge will be temporary.
 //
 // Revision 1.51  1999/03/24 23:23:44  jimg
 // Removed the *_ops code. Those operations are now done by the template
@@ -261,7 +269,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.52 1999/04/29 02:29:37 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.53 1999/04/29 03:04:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -283,10 +291,11 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.52 1999/04/29 02:29:37 jimg Ex
 #else
 #include <sstream>
 #endif
-#include <SLList.h>
 #include <string>
 #include <vector>
 #include <algorithm>
+
+#include <SLList.h>
 #include <Regex.h>
 
 #include "BaseType.h"
