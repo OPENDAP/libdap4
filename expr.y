@@ -18,6 +18,12 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.25  1998/09/17 16:56:50  jimg
+ * Made the error messages more verbose (that is, the text in the Error objects
+ * sent back to the client).
+ * Fixed a bug where non-existent fields could be accessed - with predictably
+ * bad results.
+ *
  * Revision 1.24  1998/03/19 23:22:38  jimg
  * Fixed the error messages so they use `' instead of :
  * Added Error objects for array index errors.
@@ -128,7 +134,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.24 1998/03/19 23:22:38 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.25 1998/09/17 16:56:50 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -267,12 +273,10 @@ constraint_expr: /* empty constraint --> send all */
 		       btp_func func = get_btp_function(*(DDS_OBJ(arg)), $1);
 		       if (!func) {
 			   exprerror("Not a BaseType pointer function", $1);
-			   
 			   String msg = "The function `";
 			   msg += (String)$1 + "' is not defined on this server.";
 			   ERROR_OBJ(arg) = new Error(malformed_expr, msg);
 			   STATUS(arg) = false;
-				     
 			   $$ = false;
 		       }
 		       else {
@@ -286,8 +290,7 @@ projection:	ID
                   { 
 		      BaseType *var = (*DDS_OBJ(arg)).var($1);
 		      if (var) {
-			  var->set_send_p(true); // add to projection
-			  $$ = true;
+			  $$ = (*DDS_OBJ(arg)).mark($1, true);
 		      }
 		      else {
 			  exprerror("No such identifier in dataset", $1);
@@ -320,8 +323,7 @@ projection:	ID
                   { 
 		      BaseType *var = (*DDS_OBJ(arg)).var($3);
 		      if (var) {
-			  var->set_send_p(true);
-			  $$ = true;
+			  $$ = (*DDS_OBJ(arg)).mark($3, true);
 		      }
 		      else {
 			  exprerror("No such identifier in dataset", $3);
@@ -362,18 +364,23 @@ selection:	clause
 
 clause:		r_value rel_op '{' r_value_list '}'
                   {
-		      assert(($1));
-		      (*DDS_OBJ(arg)).append_clause($2, $1, $4);
-		      $$ = true;
+		      if ($1) {
+			  (*DDS_OBJ(arg)).append_clause($2, $1, $4);
+			  $$ = true;
+		      }
+		      else
+			  $$ = false;
 		  }
 		| r_value rel_op r_value
                   {
-		      assert(($1));
-
-		      rvalue_list *rv = new rvalue_list;
-		      rv->append($3);
-		      (*DDS_OBJ(arg)).append_clause($2, $1, rv);
-		      $$ = true;
+		      if ($1) {
+			  rvalue_list *rv = new rvalue_list;
+			  rv->append($3);
+			  (*DDS_OBJ(arg)).append_clause($2, $1, rv);
+			  $$ = true;
+		      }
+		      else
+			  $$ = false;
 		  }
 		| ID '(' r_value_list ')'
 		  {
@@ -430,27 +437,47 @@ r_value:        identifier
 
 r_value_list:	r_value
 		{
-		    $$ = make_rvalue_list($1);
+		    if ($1)
+			$$ = make_rvalue_list($1);
+		    else
+			$$ = 0;
 		}
 		| r_value_list ',' r_value
                 {
-		    $$ = append_rvalue_list($1, $3);
+		    if ($1 && $3)
+			$$ = append_rvalue_list($1, $3);
+		    else
+			$$ = 0;
 		}
 ;
 
 identifier:	ID 
                   { 
 		      BaseType *btp = (*DDS_OBJ(arg)).var($1);
-		      if (!btp)
+		      if (!btp) {
 			  exprerror("No such identifier in dataset", $1);
-		      $$ = new rvalue(btp);
+			  String msg = "The identifier `";
+			  msg += (String)$1 + "' is not in this dataset.";
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
+			  $$ = 0;
+		      }
+		      else
+			  $$ = new rvalue(btp);
 		  }
 		| FIELD 
                   { 
 		      BaseType *btp = (*DDS_OBJ(arg)).var($1);
-		      if (!btp)
+		      if (!btp) {
 			  exprerror("No such field in dataset", $1);
-		      $$ = new rvalue(btp);
+			  String msg = "The field `";
+			  msg += (String)$1 + "' is not in this dataset.";
+			  ERROR_OBJ(arg) = new Error(malformed_expr, msg);
+			  STATUS(arg) = false;
+			  $$ = 0;
+		      }
+		      else
+			  $$ = new rvalue(btp);
 		  }
 ;
 
@@ -476,6 +503,11 @@ array_sel:	ID array_indices
                   {
 		      BaseType *var = (*DDS_OBJ(arg)).var($1);
 		      if (var && is_array_t(var)) {
+			  /* calls to set_send_p should be replaced with
+			     calls to DDS::mark so that arrays of Structures,
+			     etc. will be processed correctly when individual
+			     elements are projected using short names (Whew!)
+			     9/1/98 jhrg */
 			  var->set_send_p(true);
 			  $$ = process_array_indices(var, $2);
 			  if (!$$) {
