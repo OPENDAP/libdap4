@@ -10,6 +10,13 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.46  1998/04/07 22:12:49  jimg
+// Added prune_spaces(String) function. This can be used to remove leading
+// spaces from URLs and their embedded CEs (i.e., spaces between the ? and the
+// start of the CE). Doing this before passing the URL/CE into the web library
+// prevents various nasty crashes. This function is called by Connect's default
+// ctor. Users of Connect don't have to call it.
+//
 // Revision 1.45  1998/02/11 20:28:17  jimg
 // Added/fixed support for on-the-fly compression of data. The current code
 // uses a subprocess to run a compression filter, deflate, which uses the LZW
@@ -226,7 +233,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.45 1998/02/11 20:28:17 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.46 1998/04/07 22:12:49 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -245,6 +252,8 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.45 1998/02/11 20:28:17 jimg 
 
 #include <strstream.h>
 #include <SLList.h>
+#include <String.h>
+#include <Regex.h>
 
 #include "BaseType.h"
 #include "Str.h"
@@ -261,6 +270,33 @@ static char rcsid[] __unused__ = {"$Id: util.cc,v 1.45 1998/02/11 20:28:17 jimg 
 #endif
 
 const char DODS_CE_PRX[]={"dods"};
+
+// Remove spaces from the start of a URL and fromthe start of any constraint
+// expression it contains. 4/7/98 jhrg
+
+String 
+prune_spaces(String name)
+{
+    // If the URL does not even have white space return.
+    if (!name.contains(RXwhite))
+	return name;
+    else {
+	// Strip leading spaces from http://...
+	int i = 0;
+	while (name.at(i, 1) == " ")
+	    i++;
+	name = name.after(--i);
+	
+	// Strip leading spaces from constraint part (following `?').
+	int j = i = name.index("?") + 1;
+	while (name.at(i, 1) == " ")
+	    i++;
+	--i;
+	name.at(j, name.after(i).length()) = name.after(i);
+
+	return name;
+    }
+}
 
 static int
 char_cmp(const void *a, const void *b)
