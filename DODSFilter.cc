@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.39 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.40 2003/05/27 21:39:54 jimg Exp $"};
 
 #include <iostream>
 #include <string>
@@ -369,6 +369,8 @@ void DODSFilter::set_response(const string &r) throw(Error)
 	d_response = DDS_Response;
     else if (r == "DataDDS" || r == "dods")
 	d_response = DataDDS_Response;
+    else if (r == "DDX" || r == "ddx")
+	d_response = DDX_Response;
     else if (r == "Version")
 	d_response = Version_Response;
     else
@@ -746,15 +748,15 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
     servers. 
 
     @param out Destination
-    @param ddx The dataset's DDS \i with attributes in the variables.
-    @param constrained True if the response is constrained. False by default.
-    @param anc_location Look here for ancillary files. Null by default. */
+    @param ddx The dataset's DDS \i with attributes in the variables. */
 void
-DODSFilter::send_ddx(FILE *out, DDS &dds, bool constrained,
-		     const string &anc_location)
+DODSFilter::send_ddx(DDS &dds, FILE *out)
 {
-    time_t data_lmt = get_data_last_modified_time(!anc_location.empty() ?
-						  anc_location : d_anc_dir);
+    // If constrained, parse the constriant. Throws Error or InternalErr.
+    if (!d_ce.empty())
+	dds.parse_constraint(d_ce, out, true);
+
+    time_t data_lmt = get_data_last_modified_time(d_anc_dir);
 
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
@@ -766,10 +768,13 @@ DODSFilter::send_ddx(FILE *out, DDS &dds, bool constrained,
     }
 
     // Send the DDX.	
-    dds.print_xml(out, constrained, d_url + ".blob?" + d_ce);
+    dds.print_xml(out, !d_ce.empty(), d_url + ".blob?" + d_ce);
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.40  2003/05/27 21:39:54  jimg
+// Added DDX_Response to the set_response() method.
+//
 // Revision 1.39  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can
