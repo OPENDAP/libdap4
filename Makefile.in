@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.60 1997/02/13 17:31:25 jimg Exp $
+# $Id: Makefile.in,v 1.61 1997/02/14 23:53:44 jimg Exp $
 
 @SET_MAKE@
 
@@ -71,7 +71,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
 
 NETIOSRCS = Connect.cc Connections.cc cgi_util.cc Gui.cc
-NETIOOBJS = Connect.o Connections.o cgi_util.o Gui.o
+NETIOOBJS = Connect.o Connections.o cgi_util.o escaping.o Gui.o
 NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h Gui.h
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
@@ -171,8 +171,9 @@ expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test $(TESTOBJS) expr-test.o \
 	       $(LIBS)
 
-error-test: error-test.o Error.tab.h
-	$(CXX) $(LDFLAGS) -o error-test error-test.o 
+error-test: error-test.o Error.tab.h $(ERROROBJS) $(TESTOBJS)
+	$(CXX) $(LDFLAGS) -o error-test error-test.o $(ERROROBJS) $(TESTOBJS) \
+	$(LIBS)
 
 cgi-util-test: libdap++.a cgi_util.o $(TESTOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST_CGI_UTIL -c cgi_util.cc
