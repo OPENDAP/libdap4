@@ -10,6 +10,9 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
+// Revision 1.16  1997/09/22 22:42:16  jimg
+// Added massive amounts of code to read test data from a file.
+//
 // Revision 1.15  1997/07/15 21:54:57  jimg
 // Changed return type of length member function.
 //
@@ -77,7 +80,11 @@
 #pragma implementation
 #endif
 
+#include <strstream.h>
+
 #include "TestSequence.h"
+
+#include "debug.h"
 
 Sequence *
 NewSequence(const String &n)
@@ -93,17 +100,113 @@ TestSequence::ptr_duplicate()
 
 TestSequence::TestSequence(const String &n) : Sequence(n)
 {
+    _input_opened = false;
 }
 
 TestSequence::~TestSequence()
 {
 }
 
+// Read values from text files. Sequence instances are stored on separate
+// lines. Line can be no more than 255 characters long.
+
 bool 
-TestSequence::read(const String &, int &)
+TestSequence::read(const String &dataset, int &error)
 {
+    char line[256];
+
     if (read_p())
 	return true;
+
+    if (!_input_opened) {
+	_input.open(dataset);
+	_input_opened = true;
+	// For now, use the DDS to get the variable names/types so read the 
+	// first line and ignore it.
+	_input.getline(line, 255);
+    }
+
+    // If at EOF, return false indicating no more data. Leave error as it is.
+    if (_input.eof())
+	return false;
+
+    // Read a line at a time and extract the values. Any line without values
+    // is skipped. EOF ends the file.
+    while (true) {
+	_input.getline(line, 256);
+	if (_input.eof())
+	    return false;	// error unchanged, nominally false.
+	if (!_input) {
+	    error = 1;
+	    DBG(cerr << "Input file error" << endl);
+	    return false;
+	}
+
+	String l = line;
+	if (l.matches(RXwhite) || l[0] == '#')	// Blank of comment line
+	    continue;
+	else
+	    break;		// Assume valid line.
+    }
+
+    istrstream iss(line);
+
+    for (Pix p = first_var(); p; next_var(p)) {
+	// Don't use the read mfuncs since for now within Test* they always
+	// return the same hardcoded values (not much use for testing
+	// sequences).
+	switch (var(p)->type()) {
+	  case dods_byte_c: {
+	      unsigned int ui;
+	      iss >> ui;
+	      char b = ui;
+	      var(p)->val2buf((void*)&b);
+	      var(p)->set_read_p(true);
+	      break;
+	  }
+	  case dods_int32_c: {
+	      int i;
+	      iss >> i;
+	      DBG(cerr << "Int32 value read :" << i << endl);
+	      var(p)->val2buf((void*)&i);
+	      var(p)->set_read_p(true);
+	      break;
+	  }
+	  case dods_uint32_c: {
+	      unsigned int ui;
+	      iss >> ui;
+	      var(p)->val2buf((void*)&ui);
+	      var(p)->set_read_p(true);
+	      break;
+	  }
+	  case dods_float64_c: {
+	      double d;
+	      iss >> d;
+	      var(p)->val2buf((void*)&d);
+	      var(p)->set_read_p(true);
+	      break;
+	  }
+	  case dods_str_c:
+	  case dods_url_c: {
+	      String s;
+	      iss >> s;
+	      var(p)->val2buf((void*)&s);
+	      var(p)->set_read_p(true);
+	      break;
+	  }
+
+	  case dods_array_c:
+	  case dods_list_c:
+	  case dods_structure_c:
+	  case dods_sequence_c:
+	  case dods_function_c:
+	  case dods_grid_c:
+	  default:
+	    cerr << "Broken Sequence::read() mfunc! This type not implemented"
+		 << endl;
+	    break;
+	}
+    }
 
     set_read_p(true);
     
