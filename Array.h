@@ -113,13 +113,13 @@ public:
         @note This sturct is public because its type is used in public
         typedefs. */
     struct dimension {
-	int size;		///< The unconstrained dimension size.
-	string name;		///< The name of this dimension.
-	int start;		///< The constriant start index
-	int stop;		///< The constraint end index
-	int stride;		///< The constraint stride
-	int c_size;		///< Size of dimension once constrained
-	bool selected;		///< \c True if a constraint has been applied to this dimension.
+    	int size;		///< The unconstrained dimension size.
+    	string name;    ///< The name of this dimension.
+    	int start;		///< The constriant start index
+    	int stop;		///< The constraint end index
+    	int stride;		///< The constraint stride
+    	int c_size;		///< Size of dimension once constrained
+    	bool selected;	///< \c True if a constraint has been applied to this dimension.
     };
 
 private:
@@ -156,6 +156,8 @@ public:
     Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate();
 
+    void add_var(BaseType *v, Part p = nil);
+    
     void update_length(int size);
 
     void append_dim(int size, string name = "");
@@ -224,6 +226,9 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.62  2004/11/15 21:53:36  jimg
+ * Added a specialization of the add_var() method.
+ *
  * Revision 1.61  2004/07/07 21:08:46  jimg
  * Merged with release-3-4-8FCS
  *
