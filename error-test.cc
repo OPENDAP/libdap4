@@ -10,11 +10,19 @@
 // jhrg 4/25/96
 
 // $Log: error-test.cc,v $
+// Revision 1.2  1996/08/13 18:52:52  jimg
+// Added __unused__ to definition of char rcsid[].
+// Now tests the Gui.
+//
 // Revision 1.1  1996/05/31 23:28:16  jimg
 // Added.
 //
 
-static char rcsid[]= {"$Id: error-test.cc,v 1.1 1996/05/31 23:28:16 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: error-test.cc,v 1.2 1996/08/13 18:52:52 jimg Exp $"};
+
+#include <assert.h>
 
 #include <iostream.h>
 #include <GetOpt.h>
@@ -153,7 +161,9 @@ test_parser(Error &err)
 void
 test_object(Error &err)
 {
-    String response = err.correct_error();
+    Gui g;
+
+    String response = err.correct_error(&g);
     
     cout << "Response: " << response << endl;
 }
