@@ -22,16 +22,20 @@
 #line 16 "Error.y"
 
 
-static char rcsid[]={"$Id: Error.tab.c,v 1.2 1996/06/04 21:33:23 jimg Exp $"};
+#include "config_dap.h"
+
+static char rcsid[] __unused__ = {"$Id: Error.tab.c,v 1.3 1996/08/13 18:18:54 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include <iostream.h>
 
+#include "Error.h"
+
 #include "parser.h"
-#define DEBUG 1
 #include "debug.h"
 
 // These macros are used to access the `arguments' passed to the parser. A
@@ -39,17 +43,17 @@ static char rcsid[]={"$Id: Error.tab.c,v 1.2 1996/06/04 21:33:23 jimg Exp $"};
 // passed in to the parser within a strucutre (which itself is passed as a
 // pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
 
-#define ERROR_OBJ(arg) ((parser_arg *)(arg))->error()
-#define STATUS(arg) ((parser_arg *)(arg))->status()
+#define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
+#define STATUS(arg) ((parser_arg *)(arg))->_status
 #define YYPARSE_PARAM void *arg
 
 extern int error_line_num;	// defined in Error.lex
 
 int Errorlex();			// the scanner
-int Errorerror(char *s);	// gotta love automatically generated names...
+void Errorerror(char *s);	// gotta love automatically generated names...
 
 
-#line 46 "Error.y"
+#line 50 "Error.y"
 typedef union {
     bool boolean;
     int integer;
@@ -134,7 +138,7 @@ static const short yyrhs[] = {     5,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    71,    74,    77,    80,    83,    90,    96,    98,   105,   112
+    77,    80,    83,    86,    89,    96,   102,   104,   111,   118
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","INT","STR",
@@ -681,47 +685,47 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 71 "Error.y"
+#line 77 "Error.y"
 { yyval.boolean = yyvsp[-2].boolean; STATUS(arg) = yyvsp[-2].boolean; ;
     break;}
 case 2:
-#line 74 "Error.y"
-{ yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
-    break;}
-case 3:
-#line 77 "Error.y"
-{ yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
-    break;}
-case 4:
 #line 80 "Error.y"
 { yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
     break;}
+case 3:
+#line 83 "Error.y"
+{ yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
+    break;}
+case 4:
+#line 86 "Error.y"
+{ yyval.boolean = yyvsp[-1].boolean && yyvsp[0].boolean; ;
+    break;}
 case 5:
-#line 84 "Error.y"
+#line 90 "Error.y"
 { 
-		    ERROR_OBJ(arg).error_code((ErrorCode)yyvsp[-1].integer);
+		    ERROR_OBJ(arg)->error_code((ErrorCode)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 6:
-#line 91 "Error.y"
+#line 97 "Error.y"
 { 
-		    ERROR_OBJ(arg).error_message(yyvsp[0].string);
+		    ERROR_OBJ(arg)->error_message(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
 case 8:
-#line 99 "Error.y"
+#line 105 "Error.y"
 {
-		    ERROR_OBJ(arg).program_type((ProgramType)yyvsp[-1].integer);
+		    ERROR_OBJ(arg)->program_type((ProgramType)yyvsp[-1].integer);
 		    yyval.boolean = true; 
 		;
     break;}
 case 9:
-#line 106 "Error.y"
+#line 112 "Error.y"
 {
 		    DBG(cerr << "Program: " << yyvsp[0].string << endl);
-		    ERROR_OBJ(arg).program(yyvsp[0].string);
+		    ERROR_OBJ(arg)->program(yyvsp[0].string);
 		    yyval.boolean = true; 
 		;
     break;}
@@ -923,14 +927,11 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 114 "Error.y"
+#line 120 "Error.y"
 
 
-int 
+void
 Errorerror(char *s)
 {
-#ifdef NEVER
-    fprintf(stderr, "%s line: %d\n", s, dds_line_num);
-#endif
     cerr << s << " line: " << error_line_num << endl;
 }
