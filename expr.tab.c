@@ -24,10 +24,10 @@
 #define	LESS_EQL	268
 #define	REGEXP	269
 
-#line 64 "expr.y"
+#line 66 "expr.y"
 
 
-static char rcsid[]={"$Id: expr.tab.c,v 1.1 1996/06/03 05:34:46 jimg Exp $"};
+static char rcsid[]={"$Id: expr.tab.c,v 1.2 1996/06/11 18:31:54 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +36,8 @@ static char rcsid[]={"$Id: expr.tab.c,v 1.1 1996/06/03 05:34:46 jimg Exp $"};
 
 #include <String.h>
 #include <SLList.h>
+
+#include "debug.h"
 
 #include "DDS.h"
 
@@ -51,7 +53,6 @@ static char rcsid[]={"$Id: expr.tab.c,v 1.1 1996/06/03 05:34:46 jimg Exp $"};
 
 #include "config_dap.h"
 #include "util.h"
-#include "debug.h"
 #include "parser.h"
 #include "expr.h"
 
@@ -68,9 +69,11 @@ int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list_list *make_array_indeces(int_list *index);
 int_list_list *append_array_index(int_list_list *indeces, int_list *index);
 void delete_array_indeces(int_list_list *indeces);
-bool process_array_indeces(BaseType *variable, int_list_list *indeces);
+bool process_array_indeces(BaseType *variable, int_list_list *indeces); 
+bool process_grid_indeces(BaseType *variable, int_list_list *indeces); 
 
 bool is_array_t(BaseType *variable);
+bool is_grid_t(BaseType *variable);
 
 rvalue_list *make_rvalue_list(DDS &table, rvalue *rv);
 rvalue_list *append_rvalue_list(DDS &table, rvalue_list *rvals, rvalue *rv);
@@ -91,7 +94,7 @@ btp_func get_btp_function(const DDS &table, const char *name);
 */
 
 
-#line 133 "expr.y"
+#line 138 "expr.y"
 typedef union {
     bool boolean;
     int op;
@@ -200,11 +203,11 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   174,   180,   182,   183,   186,   190,   204,   216,   226,   230,
-   243,   253,   259,   260,   266,   272,   281,   295,   296,   297,
-   304,   310,   321,   325,   331,   338,   347,   352,   357,   364,
-   374,   385,   389,   395,   402,   408,   409,   410,   411,   412,
-   413,   414
+   179,   185,   187,   188,   191,   195,   209,   221,   231,   235,
+   248,   258,   264,   265,   271,   277,   286,   300,   301,   302,
+   309,   315,   326,   330,   336,   343,   352,   357,   362,   370,
+   386,   404,   408,   414,   421,   427,   428,   429,   430,   431,
+   432,   433
 };
 
 static const char * const yytname[] = {   "$","error","$undefined.","INT","FLOAT",
@@ -779,30 +782,30 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 175 "expr.y"
+#line 180 "expr.y"
 {
 		     table.mark_all(true);
 		     yyval.boolean = true;
 		 ;
     break;}
 case 3:
-#line 182 "expr.y"
+#line 187 "expr.y"
 { table.mark_all(true); ;
     break;}
 case 4:
-#line 183 "expr.y"
+#line 188 "expr.y"
 { 
 		       yyval.boolean = yyvsp[0].boolean;
 		   ;
     break;}
 case 5:
-#line 187 "expr.y"
+#line 192 "expr.y"
 {
 		       yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		   ;
     break;}
 case 6:
-#line 191 "expr.y"
+#line 196 "expr.y"
 {
 		       btp_func func = get_btp_function(table, yyvsp[-3].id);
 		       if (!func) {
@@ -816,7 +819,7 @@ case 6:
 		   ;
     break;}
 case 7:
-#line 205 "expr.y"
+#line 210 "expr.y"
 { 
 		      BaseType *var = table.var(yyvsp[0].id);
 		      if (var) {
@@ -830,7 +833,7 @@ case 7:
 		  ;
     break;}
 case 8:
-#line 217 "expr.y"
+#line 222 "expr.y"
 { 
 		      BaseType *var = table.var(yyvsp[0].id);
 		      if (var)
@@ -842,13 +845,13 @@ case 8:
 		  ;
     break;}
 case 9:
-#line 227 "expr.y"
+#line 232 "expr.y"
 {
 		      yyval.boolean = yyvsp[0].boolean;
 		  ;
     break;}
 case 10:
-#line 231 "expr.y"
+#line 236 "expr.y"
 { 
 		      BaseType *var = table.var(yyvsp[0].id);
 		      if (var) {
@@ -863,7 +866,7 @@ case 10:
 		  ;
     break;}
 case 11:
-#line 244 "expr.y"
+#line 249 "expr.y"
 { 
 		      BaseType *var = table.var(yyvsp[0].id);
 		      if (var)
@@ -875,19 +878,19 @@ case 11:
 		  ;
     break;}
 case 12:
-#line 254 "expr.y"
+#line 259 "expr.y"
 {
 		      yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		  ;
     break;}
 case 14:
-#line 261 "expr.y"
+#line 266 "expr.y"
 {
 		      yyval.boolean = yyvsp[-2].boolean && yyvsp[0].boolean;
 		  ;
     break;}
 case 15:
-#line 267 "expr.y"
+#line 272 "expr.y"
 {
 		      assert((yyvsp[-4].rval_ptr));
 		      table.append_clause(yyvsp[-3].op, yyvsp[-4].rval_ptr, yyvsp[-1].r_val_l_ptr);
@@ -895,7 +898,7 @@ case 15:
 		  ;
     break;}
 case 16:
-#line 273 "expr.y"
+#line 278 "expr.y"
 {
 		      assert((yyvsp[-2].rval_ptr));
 
@@ -906,7 +909,7 @@ case 16:
 		  ;
     break;}
 case 17:
-#line 282 "expr.y"
+#line 287 "expr.y"
 {
 		      bool_func b_func = get_function(table, yyvsp[-3].id);
 		      if (!b_func) {
@@ -920,7 +923,7 @@ case 17:
 		  ;
     break;}
 case 20:
-#line 298 "expr.y"
+#line 303 "expr.y"
 {
 		      yyval.rval_ptr = dereference_variable(table, yyvsp[0].rval_ptr);
 		      if (!yyval.rval_ptr)
@@ -929,7 +932,7 @@ case 20:
 		  ;
     break;}
 case 21:
-#line 305 "expr.y"
+#line 310 "expr.y"
 {
 		      yyval.rval_ptr = dereference_url(table, yyvsp[0].val);
 		      if (!yyval.rval_ptr)
@@ -937,7 +940,7 @@ case 21:
 		  ;
     break;}
 case 22:
-#line 311 "expr.y"
+#line 316 "expr.y"
 {
 		      btp_func bt_func = get_btp_function(table, yyvsp[-3].id);
 		      if (!bt_func) {
@@ -948,19 +951,19 @@ case 22:
 		  ;
     break;}
 case 23:
-#line 322 "expr.y"
+#line 327 "expr.y"
 {
 		    yyval.r_val_l_ptr = make_rvalue_list(table, yyvsp[0].rval_ptr);
 		;
     break;}
 case 24:
-#line 326 "expr.y"
+#line 331 "expr.y"
 {
 		    yyval.r_val_l_ptr = append_rvalue_list(table, yyvsp[-2].r_val_l_ptr, yyvsp[0].rval_ptr);
 		;
     break;}
 case 25:
-#line 332 "expr.y"
+#line 337 "expr.y"
 { 
 		      BaseType *btp = table.var(yyvsp[0].id);
 		      if (!btp)
@@ -969,7 +972,7 @@ case 25:
 		  ;
     break;}
 case 26:
-#line 339 "expr.y"
+#line 344 "expr.y"
 { 
 		      BaseType *btp = table.var(yyvsp[0].id);
 		      if (!btp)
@@ -978,63 +981,76 @@ case 26:
 		  ;
     break;}
 case 27:
-#line 348 "expr.y"
-{
-		      BaseType *btp = make_variable(table, yyvsp[0].val);
-		      yyval.rval_ptr = new rvalue(btp);
-		  ;
-    break;}
-case 28:
 #line 353 "expr.y"
 {
 		      BaseType *btp = make_variable(table, yyvsp[0].val);
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
-case 29:
+case 28:
 #line 358 "expr.y"
+{
+		      BaseType *btp = make_variable(table, yyvsp[0].val);
+		      yyval.rval_ptr = new rvalue(btp);
+		  ;
+    break;}
+case 29:
+#line 363 "expr.y"
 { 
 		      BaseType *btp = make_variable(table, yyvsp[0].val); 
 		      yyval.rval_ptr = new rvalue(btp);
 		  ;
     break;}
 case 30:
-#line 365 "expr.y"
+#line 371 "expr.y"
 {
 		      BaseType *var = table.var(yyvsp[-1].id);
 		      if (var && is_array_t(var)) {
 			  var->set_send_p(true);
 			  yyval.boolean = process_array_indeces(var, yyvsp[0].int_ll_ptr);
+			  delete_array_indeces(yyvsp[0].int_ll_ptr);
+		      }
+		      else if (var && is_grid_t(var)) {
+			  var->set_send_p(true);
+			  yyval.boolean = process_grid_indeces(var, yyvsp[0].int_ll_ptr);
+			  delete_array_indeces(yyvsp[0].int_ll_ptr);
 		      }
 		      else
 			  yyval.boolean = false;
 		  ;
     break;}
 case 31:
-#line 375 "expr.y"
+#line 387 "expr.y"
 {
 		      BaseType *var = table.var(yyvsp[-1].id);
-		      if (var && is_array_t(var))
+		      if (var && is_array_t(var)) {
 			  yyval.boolean = table.mark(yyvsp[-1].id, true) // set all the parents, too
-			  && process_array_indeces(var, yyvsp[0].int_ll_ptr);
+			      && process_array_indeces(var, yyvsp[0].int_ll_ptr);
+			  delete_array_indeces(yyvsp[0].int_ll_ptr);
+		      }
+		      else if (var && is_grid_t(var)) {
+			  yyval.boolean = table.mark(yyvsp[-1].id, true) // set all the parents, too
+			       && process_grid_indeces(var, yyvsp[0].int_ll_ptr);
+			  delete_array_indeces(yyvsp[0].int_ll_ptr);
+		      }
 		      else
 			  yyval.boolean = false;
 		  ;
     break;}
 case 32:
-#line 386 "expr.y"
+#line 405 "expr.y"
 {
 		      yyval.int_ll_ptr = make_array_indeces(yyvsp[0].int_l_ptr);
 		  ;
     break;}
 case 33:
-#line 390 "expr.y"
+#line 409 "expr.y"
 {
 		      yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		  ;
     break;}
 case 34:
-#line 396 "expr.y"
+#line 415 "expr.y"
 {
 		      value val;
 		      val.type = dods_int32_c;
@@ -1043,7 +1059,7 @@ case 34:
 		  ;
     break;}
 case 35:
-#line 403 "expr.y"
+#line 422 "expr.y"
 {
 		      yyval.int_l_ptr = make_array_index(yyvsp[-5].val, yyvsp[-3].val, yyvsp[-1].val);
 		  ;
@@ -1246,7 +1262,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 417 "expr.y"
+#line 436 "expr.y"
 
 
 int 
@@ -1329,7 +1345,22 @@ bool
 is_array_t(BaseType *variable)
 {
     if (variable->type() != dods_array_c) {
+#if 0
 	cerr << "Variable " << variable->name() << " is not an array." << endl;
+#endif
+	return false;
+    }
+    else
+	return true;
+}
+
+bool
+is_grid_t(BaseType *variable)
+{
+    if (variable->type() != dods_grid_c) {
+#if 0
+	cerr << "Variable " << variable->name() << " is not an grid." << endl;
+#endif
 	return false;
     }
     else
@@ -1343,8 +1374,14 @@ process_array_indeces(BaseType *variable, int_list_list *indeces)
 
     Array *a = (Array *)variable; // replace with dynamic cast
 
+    DBG(cerr << "Before clear_costraint:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
     a->clear_constraint();	// each projection erases the previous one
     
+    DBG(cerr << "After clear_costraint:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
     Pix p, r;
     for (p = indeces->first(), r = a->first_dim(); 
 	 p && r; 
@@ -1374,6 +1411,9 @@ process_array_indeces(BaseType *variable, int_list_list *indeces)
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
     }
 
+    DBG(cerr << "After processing loop:" << endl);
+    DBG(a->print_decl(cerr, "", true, false, true));
+
     DBG(Pix dp;\
 	cout << "Array Constraint: ";\
 	for (dp = a->first_dim(); dp; a->next_dim(dp))\
@@ -1387,7 +1427,82 @@ process_array_indeces(BaseType *variable, int_list_list *indeces)
     }
 
 exit:
+#if 0
     delete_array_indeces(indeces);
+#endif
+    return status;
+}
+
+bool
+process_grid_indeces(BaseType *variable, int_list_list *indeces)
+{
+    bool status = true;
+
+    Grid *g = (Grid *)variable; // Replace with dynamic cast.
+
+    // First do the constraints on the ARRAY in the grid.
+    status = process_array_indeces(g->array_var(), indeces);
+    if (!status)
+	goto exit;
+
+    // Now process the maps.
+    Pix p, r;
+
+    // Supress all maps by default.
+    for (r = g->first_map_var(); r; g->next_map_var(r))
+	g->map_var(r)->set_send_p(false);
+
+    // Add specified maps to the current projection.
+    for (p = indeces->first(), r = g->first_map_var(); 
+	 p && r; 
+	 indeces->next(p), g->next_map_var(r)) {
+
+	int_list *index = (*indeces)(p);
+
+	Pix q = index->first(); 
+	int start = (*index)(q);
+
+	index->next(q);
+	int stride = (*index)(q);
+	
+	index->next(q);
+
+	int stop = (*index)(q);
+
+	Array *a = (Array *)g->map_var(r);
+	a->set_send_p(true);
+	a->clear_constraint();
+
+	index->next(q);
+	if (q) {
+	    cerr << "Too many values in index list for " << a->name() << "." 
+		 << endl;
+	    status = false;
+	    goto exit;
+	}
+
+	a->add_constraint(a->first_dim(), start, stride, stop);
+	DBG(cerr << "Set Constraint: " \
+	    << a->dimension_size(a->first_dim(), true) << endl);
+    }
+
+    DBG(Pix dp;\
+	cout << "Grid Constraint: ";\
+	for (dp = ((Array *)g->array_var())->first_dim(); dp; \
+		 ((Array *)g->array_var())->next_dim(dp))\
+	   cout << ((Array *)g->array_var())->dimension_size(dp, true) << " ";\
+	cout << endl);
+    
+    if (p && !r) {
+	cerr << "Too many indeces in constraint for " 
+	     << g->map_var(r)->name() << "." << endl;
+	status= false;
+    }
+
+exit:
+#if 0
+    delete_array_indeces(indeces);
+#endif
     return status;
 }
 
