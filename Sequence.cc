@@ -4,7 +4,11 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.4  1994/12/08 15:55:58  dan
+// Revision 1.5  1994/12/15 21:21:13  dan
+// Modified Sequence class to directly inherit from class BaseType
+// Modified constructors to reflect new inheritance.
+//
+// Revision 1.4  1994/12/08  15:55:58  dan
 // Added data transmission member functions serialize() and deserialize()
 // Modified size() member function to return cumulative size of all members.
 // Fixed the duplicate() member function to correctly access the data members
@@ -27,6 +31,7 @@
 
 #include "debug.h"
 #include "Sequence.h"
+#include "util.h"
 
 // private
 
@@ -34,7 +39,6 @@ void
 Sequence::duplicate(const Sequence &s)
 {
     set_var_name(s.get_var_name());
-    set_var_type(s.get_var_type());
 
     Sequence &cs = (Sequence)s; // cast away const
     
@@ -53,10 +57,10 @@ Sequence::ptr_duplicate()
 // This ctor is silly -- in order to add fields to a Structure or Sequence,
 // you must use add_var (a mfunc of Structure).
 
-Sequence::Sequence(const String &n, const String &t, FILE *in, FILE *out)
+Sequence::Sequence(const String &n, FILE *in, FILE *out) 
+     : BaseType( n, "Sequence", (xdrproc_t)NULL, in, out) 
 {
     set_var_name(n);
-    set_var_type(t);
 }
 
 Sequence::Sequence(const Sequence &rhs)
@@ -83,6 +87,46 @@ Sequence::operator=(const Sequence &rhs)
     return *this;
 }
 
+// NB: Part p defaults to nil for this class
+
+void 
+Sequence::add_var(BaseType *bt, Part p)
+{
+    vars.append(bt);
+}
+
+BaseType *
+Sequence::var(const String &name)
+{
+    for (Pix p = vars.first(); p; vars.next(p))
+	if (vars(p)->get_var_name() == name)
+	    return vars(p);
+
+    return 0;
+}
+
+Pix
+Sequence::first_var()
+{
+    return vars.first();
+}
+
+void
+Sequence::next_var(Pix &p)
+{
+    if (!vars.empty() && p)
+	vars.next(p);
+}
+
+BaseType *
+Sequence::var(Pix p)
+{
+    if (!vars.empty() && p)
+	return vars(p);
+    else 
+      return NULL;
+}
+
 unsigned int
 Sequence::size()
 {
@@ -100,7 +144,7 @@ Sequence::serialize(bool flush, unsigned int num)
 
     for (Pix p = first_var(); p; next_var(p)) 
       {
-	if ( !(status = var(p)->serialize(true)) ) break;
+	if ( !(status = var(p)->serialize(false)) ) break;
       }
     if (status && flush)
 	status = expunge();
@@ -118,4 +162,45 @@ Sequence::deserialize()
       else sz += num;
     }
     return num ? sz : (unsigned int)FALSE;
+}
+
+
+void
+Sequence::print_decl(ostream &os, String space, bool print_semi)
+{
+    os << space << get_var_type() << " {" << endl;
+    for (Pix p = vars.first(); p; vars.next(p))
+	vars(p)->print_decl(os, space + "    ");
+    os << space << "} " << get_var_name();
+    if (print_semi)
+	os << ";" << endl;
+}
+
+// To seamantically OK, a structure's members must have unique names.
+//
+// Returns: true if the structure is OK, false if not.
+
+void 
+Sequence::print_val(ostream &os, String space)
+{
+    print_decl(os, "", false);
+    //os << " = " << _buf << ";" << endl;
+}
+
+bool
+Sequence::check_semantics(bool all)
+{
+    if (!BaseType::check_semantics())
+	return false;
+
+    if (!unique(vars, (const char *)get_var_name(),
+		(const char *)get_var_type()))
+	return false;
+
+    if (all) 
+	for (Pix p = vars.first(); p; vars.next(p))
+	    if (!vars(p)->check_semantics(true))
+		return false;
+
+    return true;
 }
