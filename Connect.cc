@@ -9,6 +9,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.100  2000/07/24 18:49:50  rmorris
+// Just added a notation that indicates what was tried to get around
+// libwww bugs in regards to spaces in pathnames.  Client-side caching
+// disabled until further notice - next version of libwww may help.
+//
 // Revision 1.99  2000/07/21 14:26:24  rmorris
 // Remove client-side caching entired under win32 in lieu of a permanent
 // fix (soon).  Fixed what I broke for client-side caching under unix.
@@ -569,7 +574,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.99 2000/07/21 14:26:24 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.100 2000/07/24 18:49:50 rmorris Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1258,10 +1263,17 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 
 #define WIN32_CACHE_HACK
 #if defined(WIN32) && defined(WIN32_CACHE_HACK)
-	//  Temporary hack in lieu of a fix.  Caching doesn't work under windows
-	//  and why has yet to be determined.  This lets us bypass the problem
-	//  in the short-term by turning of client-side caching for windows
-	//  systems.
+	//  Temporary hack in lieu of a fix.  Caching doesn't work under
+	//  Windows.  This lets us bypass the problem in the short-term
+	//  by turning of client-side caching for windows systems.
+	//  The problem lies with libwww and we expect or hope that
+	//  when we update the Dods distribution with the newest libwww,
+	//  the problem will go away.  The problem lies with the code
+	//  that parses the .index file - it performs improperly on
+	//  filenames containing spaces.  Using windows "short names"
+	//  functionality for _cache_root doesn't solve the problem.
+	//  Using a _cache_root beginning with file:/ with spaces
+	//  escaped is also no help.
 	//  rom - 07/17/2000.
 	use_cache_file	= false;
 	USE_CACHE	= false;
