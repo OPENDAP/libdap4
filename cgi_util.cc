@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.15  1996/06/18 23:48:46  jimg
+// Modified so that the compress/decompress functions use the DODS_ROOT
+// enviroment-variable/define or the user's PATH to find gzip.
+//
 // Revision 1.14  1996/06/08 00:16:42  jimg
 // Fixed a bug in name_path().
 // Added compression functions which create filter processes which automatically
@@ -76,7 +80,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.14 1996/06/08 00:16:42 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.15 1996/06/18 23:48:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,8 +102,11 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.14 1996/06/08 00:16:42 jimg Exp $"};
 #define FILE_DELIMITER '/'
 #endif
 
-#define TimLen 26		// length of string from asctime()
-#define CLUMP_SIZE 1024		// size of clumps to new in fmakeword()
+static const char *dods_root = getenv("DODS_ROOT") ? getenv("DODS_ROOT") 
+    : DODS_ROOT;
+
+static const int TimLen = 26;	// length of string from asctime()
+static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
 
 // An error handling routine to append the error messege from CGI programs, 
 // a time stamp, and the client host name (or address) to HTTPD error-log.
@@ -253,25 +260,40 @@ FILE *
 compress_stdout()
 {
     String cmd = "gzip -cf";	// c: write to stdout, f: ...even if a tty
+    String path = (String)dods_root + "/etc/" + cmd;
 
-    FILE *infile = popen((const char *)cmd, "w");
-    if (infile == NULL) {
-	cerr << "Could not open compression output filter." << endl;
-	return NULL;
+    // First try to find gzip at DODS_ROOT/etc. If that fials use the user's
+    // PATH. 
+    FILE *infile = popen((const char *)path, "w");
+    if (!infile) {
+	infile = popen((const char *)cmd, "w");
+	if (infile == NULL) {
+	    cerr << "Could not open compression output filter." << endl;
+	    return NULL;
+	}
     }
-    
+
     return infile;
 }
+
+// NB: the Connect class does not use this.
 
 FILE *
 decompress_stdin()
 {
     String cmd = "gzip -cdf";	// c: read from stdin, f: ...even if a tty
 				// d: decompress
-    FILE *infile = popen((const char *)cmd, "r");
-    if (infile == NULL) {
-	cerr << "Could not open compression output filter." << endl;
-	return NULL;
+    String path = (String)dods_root + "/etc/" + cmd;
+
+    // First try to find gzip at DODS_ROOT/etc. If that fials use the user's
+    // PATH. 
+    FILE *infile = popen((const char *)path, "r");
+    if (!infile) {
+	infile = popen((const char *)cmd, "r");
+	if (infile == NULL) {
+	    cerr << "Could not open compression input filter." << endl;
+	    return NULL;
+	}
     }
     
     return infile;
