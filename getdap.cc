@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.20  1997/02/13 17:30:17  jimg
+// Added printout of the DODS version number stamp (read from the MIME header).
+// Use the verbose option to enable display.
+//
 // Revision 1.19  1997/02/13 00:21:28  jimg
 // Added version switch. Made compatible with writeval's command line options.
 //
@@ -84,7 +88,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.19 1997/02/13 00:21:28 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.20 1997/02/13 17:30:17 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -94,7 +98,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.19 1997/02/13 00:21:28 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.19 $";
+const char *VERSION = "$Revision: 1.20 $";
 
 void
 usage(String name)
@@ -220,7 +224,7 @@ main(int argc, char * argv[])
 
     for (int i = getopt.optind; i < argc; ++i) {
 	if (verbose)
-	    cerr << "Fetching " << argv[i] << ":" << endl;
+	    cerr << "Fetching " << argv[i] << endl;
 	
 	String name = argv[i];
 	Connect url(name, trace);
@@ -264,6 +268,11 @@ main(int argc, char * argv[])
 		    cerr << "Error reading data" << endl;
 		    continue;
 		}
+
+		if (verbose)
+		    cerr << "Server version: " << url.server_version() 
+			<< endl;
+
 		cout << "The data:" << endl;
 		for (Pix q = dds->first_var(); q; dds->next_var(q)) {
 		    BaseType *v = dds->var(q);
