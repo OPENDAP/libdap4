@@ -4,8 +4,13 @@
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)//
+//	dan		Dan Holloway (dan@hollywood.gso.uri.edu)
+//	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.25  1996/06/08 00:08:47  jimg
+// Fixed comments.
+//
 // Revision 1.24  1996/06/08 00:07:19  jimg
 // Added support for compression. The Content-Encoding header is used to
 // determine if the incoming document is compressed (values: x-plain; no
@@ -154,7 +159,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.24 1996/06/08 00:07:19 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.25 1996/06/08 00:08:47 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
