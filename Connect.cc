@@ -9,6 +9,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.91  2000/04/17 21:25:00  jimg
+// Fixed an error where local connections affected the status of the
+// __num_remote_conns field. This caused remote connections, made after one or
+// more local connections were closed, to fail because libwww was not
+// initialized correctly.
+//
 // Revision 1.90  2000/04/07 00:19:04  jimg
 // Merged Brent's changes for the progress gui - he added a cancel button.
 // Also repaired the last of the #ifdef Gui bugs so that we can build Gui
@@ -525,7 +531,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.90 2000/04/07 00:19:04 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.91 2000/04/17 21:25:00 jimg Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -1499,13 +1505,25 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate)
 Connect::Connect(const Connect &copy_from) : _error(undefined_error, "")
 {
     clone(copy_from);
-    _num_remote_conns++;
+    if (!_local)
+	_num_remote_conns++;
 }
 
 Connect::~Connect()
 {
     DBG2(cerr << "Entering the Connect dtor" << endl);
-    _num_remote_conns--;
+
+    // Don't count local connections as those that affect whether libwww
+    // needs to be shutdown (or initialized, for that matter). This fixes a
+    // bug where several local connections opening and closing would result
+    // in a negative value for _num_remote_conns (since that field is not
+    // *incremented* for local connections. This meant that remote
+    // connections made after one or more local connections were made and
+    // then broken, were done with an uninitialized libwww. Note surprisingly,
+    // this was bad... 4/17/2000 jhrg
+    if (!_local)
+	_num_remote_conns--;
+
     // Calling this ensures that the WWW library Cache gets updated and the
     // .index file is written. 11/22/99 jhrg
     if (_num_remote_conns == 0) {
