@@ -11,11 +11,17 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.29  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
+//
 // Revision 1.28  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
 // Revision 1.27.6.1  2000/06/02 18:16:47  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.26.6.2  2000/05/12 18:46:17  jimg
+// Minor changes in the dtor.
 //
 // Revision 1.27  2000/01/27 06:29:56  jimg
 // Resolved conflicts from merge with release-3-1-4
@@ -153,7 +159,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.28 2000/06/07 18:06:58 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.29 2000/06/07 19:33:21 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -172,7 +178,7 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.28 2000/06/07 18:06:58 jimg Exp 
 #include <Pix.h>
 #include <string>
 
-#include "DAS.h"		// follows pragma since DAS.h is interface
+#include "debug.h"
 #include "Error.h"
 #include "parser.h"
 #include "debug.h"
@@ -180,6 +186,8 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.28 2000/06/07 18:06:58 jimg Exp 
 #ifdef WIN32
 using namespace std;
 #endif
+
+#include "DAS.h"		// follows pragma since DAS.h is interface
 
 extern void dasrestart(FILE *yyin);
 extern int dasparse(void *arg); // defined in das.tab.c
@@ -220,8 +228,7 @@ DAS::~DAS()
     for(Pix p = entries.first(); p; entries.next(p)) {
 	DBG(cerr << "entries(p) = " << entries(p).name << "(" 
 	    << entries(p).attr_table << ")" << endl);
-	if (entries(p).attr_table)
-	    delete entries(p).attr_table;
+	delete entries(p).attr_table;
     }
 }
 

@@ -17,11 +17,18 @@
 
 /* 
  * $Log: das.y,v $
+ * Revision 1.38  2000/06/07 19:33:21  jimg
+ * Merged with verson 3.1.6
+ *
  * Revision 1.37  2000/06/07 18:07:00  jimg
  * Merged the pc port branch
  *
  * Revision 1.36.6.1  2000/06/02 18:36:38  rmorris
  * Mod's for port to Win32.
+ *
+ * Revision 1.35.6.3  2000/05/18 17:47:21  jimg
+ * Fixed a bug in the AttrTable. Container attributes below the top level were
+ * broken in the latest changes to the DAS code.
  *
  * Revision 1.36  2000/01/27 06:30:00  jimg
  * Resolved conflicts from merge with release-3-1-4
@@ -195,7 +202,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.37 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.38 2000/06/07 19:33:21 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -471,6 +478,14 @@ bytes:		SCAN_INT
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -499,6 +514,14 @@ bytes:		SCAN_INT
 			msg << "`" << $1 << "' is not a Byte value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
@@ -540,6 +563,14 @@ int16:		SCAN_INT
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -568,6 +599,14 @@ int16:		SCAN_INT
 			ostrstream msg;
 #endif
 			msg << "`" << $1 << "' is not an Int16 value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -611,6 +650,14 @@ uint16:		SCAN_INT
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -642,6 +689,14 @@ uint16:		SCAN_INT
 			msg << "`" << $1 << "' is not an UInt16 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
@@ -683,6 +738,14 @@ int32:		SCAN_INT
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -711,6 +774,14 @@ int32:		SCAN_INT
 			msg << "`" << $1 << "' is not an Int32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
@@ -752,6 +823,14 @@ uint32:		SCAN_INT
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -780,6 +859,14 @@ uint32:		SCAN_INT
 			msg << "`" << $1 << "' is not an UInt32 value." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
@@ -817,6 +904,14 @@ float32:	float_or_int
 			msg.freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -850,6 +945,14 @@ float32:	float_or_int
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -871,7 +974,7 @@ float64:	float_or_int
 			<< endl);
 #else
 		    DBG(cerr << "Adding FLOAT (64): " << TYPE_NAME_VALUE($1)\
-			<< endl);
+			<< " to attr table: " << TOP_OF_STACK << endl);
 #endif
 		    if (!check_float64($1, das_line_num)) {
 #ifdef WIN32
@@ -881,6 +984,14 @@ float64:	float_or_int
 #endif
 			msg << "`" << $1 << "' is not a Float64 value." 
 			    << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;
@@ -918,6 +1029,14 @@ float64:	float_or_int
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $3)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -940,7 +1059,19 @@ strs:		str_or_id
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($1) << endl);
 #endif
 		    /* Assume a string that parses is vaild. */
-		    if (TOP_OF_STACK->append_attr(*name, *type, $1) == 0) {
+		    if (STACK_EMPTY) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
+			ostrstream msg;
+#endif
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (TOP_OF_STACK->append_attr(*name, *type, $1) == 0) {
 #ifdef WIN32
 			std::ostrstream msg;
 #else
@@ -959,7 +1090,19 @@ strs:		str_or_id
 #else
 		    DBG(cerr << "Adding STR: " << TYPE_NAME_VALUE($3) << endl);
 #endif
-		    if (TOP_OF_STACK->append_attr(*name, *type, $3) == 0) {
+		    if (STACK_EMPTY) {
+#ifdef WIN32
+			std::ostrstream msg;
+#else
+			ostrstream msg;
+#endif
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (TOP_OF_STACK->append_attr(*name, *type, $3) == 0) {
 #ifdef WIN32
 			std::ostrstream msg;
 #else
@@ -991,6 +1134,14 @@ urls:		url
 			msg.rdbuf()->freeze(0);
 			YYABORT;
 		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
 		    else if (!TOP_OF_STACK->append_attr(*name, *type, $1)) {
 #ifdef WIN32
 			std::ostrstream msg;
@@ -1017,6 +1168,14 @@ urls:		url
 			ostrstream msg;
 #endif
 			msg << "`" << $1 << "' is not a String value." << ends;
+			parse_error((parser_arg *)arg, msg.str());
+			msg.rdbuf()->freeze(0);
+			YYABORT;
+		    }
+		    else if (STACK_EMPTY) {
+			ostrstream msg;
+			msg << "Whoa! Stack empty when adding `" 
+			    << *name << "' ." << ends;
 			parse_error((parser_arg *)arg, msg.str());
 			msg.rdbuf()->freeze(0);
 			YYABORT;

@@ -1,3 +1,24 @@
+2000-06-07  James Gallagher  <jimg@dcz.dods.org>
+
+	* DODSFilter now has a set_ce() method. This means that a server
+	can easily rewrite the CE it gets without loosing the other
+	features of DODSFilter.
+
+	* The progress indicator now has a cancel button!
+
+	* Connect.cc: Fixed bugs with local connections and the libwww and
+	Gui initializations. Merged Brent's progress indicator cancel button
+
+	* Fixed a bugs in AttrTable. Container attributes below the top
+	level were broken i the last release. Changed the get_attr_num()
+	method so that it returns a sensible value for both containers and
+	`plain' attributes. Added to struct entry so that it is more a
+	complete class. Added methods so that operator= and the copy-ctor
+	really work. The IFREMER server needs these fixes.
+
+	* Added to InternalErr a new ctor which makes it simpler to report
+	the file name and line number when an error is thrown.
+
 2000-06-06  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged changes from Rob's PC port. Used cvs update -j
@@ -697,10 +718,14 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 <<<<<<< ChangeLog
 <<<<<<< ChangeLog
-$Id: ChangeLog,v 1.52 2000/06/07 00:31:28 jimg Exp $
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.53 2000/06/07 19:33:21 jimg Exp $
 =======
-$Id: ChangeLog,v 1.52 2000/06/07 00:31:28 jimg Exp $
+$Id: ChangeLog,v 1.53 2000/06/07 19:33:21 jimg Exp $
 >>>>>>> 1.42.2.4
 =======
-$Id: ChangeLog,v 1.52 2000/06/07 00:31:28 jimg Exp $
+$Id: ChangeLog,v 1.53 2000/06/07 19:33:21 jimg Exp $
 >>>>>>> 1.42.2.7
+=======
+$Id: ChangeLog,v 1.53 2000/06/07 19:33:21 jimg Exp $
+>>>>>>> 1.42.2.8

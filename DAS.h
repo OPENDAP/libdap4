@@ -14,11 +14,17 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.25  2000/06/07 19:33:21  jimg
+ * Merged with verson 3.1.6
+ *
  * Revision 1.24  2000/06/07 18:06:58  jimg
  * Merged the pc port branch
  *
  * Revision 1.23.20.1  2000/06/02 18:16:48  rmorris
  * Mod's for port to Win32.
+ *
+ * Revision 1.23.6.1  2000/05/12 18:45:24  jimg
+ * Made das_find protected to simplfy future subclassing.
  *
  * Revision 1.23  1999/05/04 19:47:20  jimg
  * Fixed copyright statements. Removed more of the GNU classes.
@@ -203,6 +209,13 @@ using namespace std;
     @see AttrTable */
 class DAS {
 private:
+    /** A toplevel_entry is a kind of simple attribute structure that holds
+	only attribute containers. It is only used internally so the usual
+	ctor/dtor code is missing. Copying is done using the default which
+	copies the attr_table pointer (it does not duplicate the referenced
+	AttrTable object). The AttrTables are deleted using the DAS dtor. 
+
+	NB: various old behavior in the DAS parser depends on this. */
     struct toplevel_entry {
 	string name;
 	AttrTable *attr_table;
@@ -210,6 +223,7 @@ private:
 
     SLList<toplevel_entry> entries;
 
+protected:
     AttrTable *das_find(string name);
 
 public:

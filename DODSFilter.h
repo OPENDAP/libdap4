@@ -8,11 +8,19 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.14  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
+//
 // Revision 1.13  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
 // Revision 1.12.10.1  2000/06/02 18:16:48  rmorris
 // Mod's for port to Win32.
+// Revision 1.11.2.3  2000/05/18 20:45:27  jimg
+// added set_ce(). Maybe add more set methods?
+//
+// Revision 1.11.2.2  1999/09/08 22:36:03  jimg
+// Fixed the -V comment.
 //
 // Revision 1.12  1999/09/03 22:07:44  jimg
 // Merged changes from release-3-1-1
@@ -202,6 +210,8 @@ public:
 	@memo Get the constraint expression. 
 	@return A string object that contains the constraint expression. */
     string get_ce();
+
+    virtual void set_ce(string _ce);
 
     /** The ``dataset name'' is the filename or other string that the
 	filter program will use to access the data. In some cases this

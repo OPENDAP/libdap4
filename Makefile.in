@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.112 2000/03/31 21:04:54 jimg Exp $
+# $Id: Makefile.in,v 1.113 2000/06/07 19:33:21 jimg Exp $
 
 @SET_MAKE@
 
@@ -583,9 +583,9 @@ AttrTable.o: AttrTable.cc config_dap.h AttrTable.h debug.h util.h \
  BaseType.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h Clause.h \
  expr.h RValue.h List.h Structure.h Sequence.h Grid.h
-DAS.o: DAS.cc config_dap.h DAS.h GNU/SLList.h AttrTable.h Error.h \
- parser.h GSEClause.h BaseType.h Array.h dods-limits.h Vector.h DDS.h \
- Clause.h expr.h RValue.h debug.h Grid.h
+DAS.o: DAS.cc config_dap.h debug.h Error.h parser.h GSEClause.h \
+ BaseType.h Array.h dods-limits.h Vector.h DDS.h Clause.h expr.h \
+ RValue.h Grid.h DAS.h AttrTable.h
 parser-util.o: parser-util.cc config_dap.h parser.h Error.h \
  GSEClause.h BaseType.h Array.h dods-limits.h Vector.h DDS.h Clause.h \
  expr.h RValue.h debug.h Grid.h

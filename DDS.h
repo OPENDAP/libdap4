@@ -13,11 +13,18 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.36  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
+//
 // Revision 1.35  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
 // Revision 1.34.14.1  2000/06/02 18:16:48  rmorris
 // Mod's for port to Win32.
+//
+// Revision 1.34.2.1  2000/05/12 18:44:38  jimg
+// Made the duplicate and *_match functions protected to simplfy future
+// subclassing.
 //
 // Revision 1.34  1999/07/22 18:47:44  tom
 // fixed doc typo
@@ -326,6 +333,7 @@ private:
 
     SLList<function> functions; // Known external functions
 
+protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name);
     BaseType *exact_match(const string &name);

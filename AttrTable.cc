@@ -5,18 +5,465 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-//
 // jhrg 7/29/94
 
+#include "config_dap.h"
+
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.26 2000/06/07 19:33:21 jimg Exp $";
+
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include <assert.h>
+
+#include <iostream>
+
+#include "AttrTable.h"
+#include "debug.h"
+#include "util.h"
+
+// Private member functions
+
+// When CON_ONLY is true, stop recurring when at the last container.
+// This ensures that the Pix returned will reference the AttrTable which
+// containes the attribute - not the attribute itself.
+Pix 
+AttrTable::find(const string &target, bool cont_only)
+{
+    string::size_type dotpos = target.find('.');
+    if (dotpos != target.npos) {
+	string container = target.substr(0, dotpos);
+	string field = target.substr(dotpos+1);
+	
+	Pix p = simple_find(container);
+	if ((p) && attr_map(p)->type == Attr_container) {
+	    if (cont_only && (field.find('.') == field.npos))
+		return p;
+	    else
+		return attr_map(p)->attributes->find(field, cont_only);
+	}
+	else
+	    return 0;
+    }
+    else
+	return simple_find(target);
+}
+
+Pix
+AttrTable::simple_find(const string &target)
+{
+    for (Pix p = attr_map.first(); p; attr_map.next(p))
+	if (target == attr_map(p)->name)
+	    return p;
+    return 0;
+}
+
+string 
+AttrTable::AttrType_to_String(const AttrType at)
+{
+    switch (at) {
+      case Attr_container: return "Container";
+      case Attr_byte: return "Byte";
+      case Attr_int16: return "Int16";
+      case Attr_uint16: return "Uint16";
+      case Attr_int32: return "Int32";
+      case Attr_uint32: return "Uint32";
+      case Attr_float32: return "Float32";
+      case Attr_float64: return "Float64";
+      case Attr_string: return "String";
+      case Attr_url: return "Url";
+      default: return "";
+    }
+}
+
+AttrType
+AttrTable::String_to_AttrType(const string &s)
+{
+    string s2 = s;
+    downcase(s2);
+
+    if (s2 == "container")
+	return Attr_container;
+    else if (s2 == "byte")
+	return Attr_byte;
+    else if (s2 == "int16")
+	return Attr_int16;
+    else if (s2 == "uint16")
+	return Attr_uint16;
+    else if (s2 == "int32")
+	return Attr_int32;
+    else if (s2 == "uint32")
+	return Attr_uint32;
+    else if (s2 == "float32")
+	return Attr_float32;
+    else if (s2 == "float64")
+	return Attr_float64;
+    else if (s2 == "string")
+	return Attr_string;
+    else if (s2 == "url")
+	return Attr_url;
+    else 
+	return Attr_unknown;
+}
+
+// Protected member functions
+
+void
+AttrTable::clone(const AttrTable &at)
+{
+    for (Pix p = at.attr_map.first(); p; at.attr_map.next(p)) {
+	entry *e = new entry(*at.attr_map(p));
+	attr_map.append(e);
+    }
+}
+
+// Public member functions
+
+AttrTable::AttrTable()
+{
+}
+
+AttrTable::AttrTable(const AttrTable &rhs)
+{
+    clone(rhs);
+}
+
+AttrTable::~AttrTable()
+{
+    for (Pix p = attr_map.first();p ; attr_map.next(p))
+	delete attr_map(p);
+}
+
+AttrTable &
+AttrTable::operator=(const AttrTable &rhs)
+{
+    if (this != &rhs)
+	clone(rhs);
+
+    return *this;
+}	    
+
+unsigned int
+AttrTable::get_size()
+{
+    return attr_map.length();
+}
+
+Pix 
+AttrTable::first_attr()
+{
+    return attr_map.first();
+}
+
+void
+AttrTable::next_attr(Pix &p)
+{
+    attr_map.next(p);
+}
+
+string
+AttrTable::get_name(Pix p)
+{
+    assert(p);
+    return attr_map(p)->name;
+}
+
+bool
+AttrTable::is_container(Pix p)
+{
+    assert(p);
+    return attr_map(p)->type == Attr_container;
+}
+
+AttrTable *
+AttrTable::get_attr_table(Pix p)
+{
+    assert(p);
+    return attr_map(p)->type == Attr_container ? attr_map(p)->attributes : 0;
+}
+
+AttrTable *
+AttrTable::get_attr_table(const string &name)
+{
+    Pix p = find(name, true);	// Return only Pixes to container attributes
+    return (p) ?  get_attr_table(p) : 0;
+}
+
+AttrTable *
+AttrTable::get_attr_table(const char *name)
+{
+    return get_attr_table((string)name);
+}
+
+string
+AttrTable::get_type(Pix p)
+{
+    assert(p);
+    return AttrType_to_String(attr_map(p)->type);
+}
+
+string
+AttrTable::get_type(const string &name)
+{
+    Pix p = find(name);
+    return (p) ?  get_type(p) : (string)"";
+}
+
+string
+AttrTable::get_type(const char *name)
+{
+    return get_type((string)name);
+}
+
+AttrType
+AttrTable::get_attr_type(Pix p)
+{
+    assert(p);
+    return attr_map(p)->type;
+}
+
+AttrType
+AttrTable::get_attr_type(const string &name)
+{
+    Pix p = find(name);
+    return (p) ?  get_attr_type(p) : Attr_unknown;
+}
+
+AttrType
+AttrTable::get_attr_type(const char *name)
+{
+    return get_attr_type((string)name);
+}
+
+unsigned int 
+AttrTable::get_attr_num(Pix p)
+{
+    assert(p);
+    return (attr_map(p)->type == Attr_container)
+	? attr_map(p)->attributes->get_size() 
+	: attr_map(p)->attr->size();
+}
+
+unsigned int 
+AttrTable::get_attr_num(const string &name)
+{
+    Pix p = find(name);
+    return (p) ?  get_attr_num(p) : 0;
+}
+
+unsigned int 
+AttrTable::get_attr_num(const char *name)
+{
+    return get_attr_num((string)name);
+}
+
+string
+AttrTable::get_attr(Pix p, unsigned int i)
+{
+    assert(p);
+    return attr_map(p)->type == Attr_container ? (string)"None" : (*attr_map(p)->attr)[i];
+}
+
+string
+AttrTable::get_attr(const string &name, unsigned int i)
+{
+    Pix p = find(name);
+    return (p) ? get_attr(p, i) : (string)"";
+}
+
+string
+AttrTable::get_attr(const char *name, unsigned int i)
+{
+    return get_attr((string)name, i);
+}
+
+vector<string> *
+AttrTable::get_attr_vector(Pix p)
+{
+    assert(p);
+    return attr_map(p)->type != Attr_container ? attr_map(p)->attr : 0;
+}
+
+vector<string> *
+AttrTable::get_attr_vector(const string &name)
+{
+    Pix p = find(name);
+    return (p) ?  get_attr_vector(p) : 0;
+}
+
+vector<string> *
+AttrTable::get_attr_vector(const char *name)
+{
+    return get_attr_vector((string)name);
+}
+
+unsigned int
+AttrTable::append_attr(const string &name, const string &type, 
+		       const string &attr)
+{
+    Pix p = find(name);
+    // If the types don't match OR this attribute is a container, calling
+    // this mfunc is an error!
+    if (p && (attr_map(p)->type != String_to_AttrType(type) 
+	      || get_type(p) == "Container"))
+	return 0;
+    else if (p)	{		// Must be a new attribute value; add it.
+        attr_map(p)->attr->push_back(attr);
+	return attr_map(p)->attr->size();
+    } else {			// Must be a completely new attribute; add it
+	entry *e = new entry;
+
+	e->name = name;
+	e->is_alias = false;
+	e->type = String_to_AttrType(type); // Record type using standard names.
+	e->attr = new vector<string>;
+	e->attr->push_back(attr);
+
+	attr_map.append(e);
+    
+	return e->attr->size();	// return the length of the attr vector
+    }
+}
+
+unsigned int
+AttrTable::append_attr(const char *name, const char *type, const char *attr)
+{
+    return append_attr((string)name, (string)type, (string)attr);
+}
+
+AttrTable *
+AttrTable::append_container(const string &name)
+{
+    Pix p = find(name);
+    
+    // Return an error if NAME already exists.
+    if (p)
+	return 0;
+	
+    entry *e = new entry;
+    e->name = name;
+    e->is_alias = false;
+    e->type = Attr_container;
+    e->attributes = new AttrTable();
+
+    attr_map.append(e);
+
+    return e->attributes;
+}
+
+bool
+AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
+{
+    // It is an error for alias to exist already.
+    if (find(alias))
+	return false;
+
+    // Check for null Attrtable for source (information to be aliased).
+    if (!at)
+	return false;
+
+    // Make sure that `name' really exists.
+    Pix p = at->find(name);
+    if (!p)
+	return false;
+
+    entry *e = new entry;
+    e->name = alias;
+    e->is_alias = true;
+    e->aliased_to = name;
+    e->type = at->attr_map(p)->type;
+    if (e->type == Attr_container)
+	e->attributes = at->get_attr_table(p);
+    else {
+	e->attr = at->attr_map(p)->attr;
+    }
+
+    attr_map.append(e);
+    
+    return true;
+}
+
+bool
+AttrTable::attr_alias(const string &alias, const string &name)
+{
+    return attr_alias(alias, this, name);
+}
+
+// Delete the attribute NAME. If NAME is an attribute vector, delete the
+// I(th) element if I is >= 0. If I is -1 (the default), remove the entire
+// attribute even if it is an array of values.
+//
+// Returns: void
+
+void
+AttrTable::del_attr(const string &name, int i)
+{
+    Pix p = find(name);
+    if (p) {
+	if (i == -1) {		// Delete the whole attribute
+	    attr_map.prev(p);	// p now points to the previous element
+	    attr_map.del_after(p);	// ... delete the following element
+	}
+	else {			// Delete one element from attribute array
+	    // Don't try to delete elements from the vector of values if the
+	    // map is a container!
+	    if (attr_map(p)->type == Attr_container) 
+		return;
+
+	    vector<string> *sxp = attr_map(p)->attr;
+		
+	    assert(i >= 0 && i < (int)sxp->size());
+	    sxp->erase(sxp->begin() + i); // rm the element
+	}
+    }
+}
+	
+	    
+void
+AttrTable::print(ostream &os, string pad)
+{
+    for(Pix p = attr_map.first(); p; attr_map.next(p)) {
+	if (attr_map(p)->is_alias) {
+	    os << pad << "Alias " << get_name(p) << " " 
+	       << attr_map(p)->aliased_to << ";" << endl;
+	} else {
+	    switch (attr_map(p)->type) {
+	      case Attr_container:
+		os << pad << get_name(p) << " {" << endl;
+
+		attr_map(p)->attributes->print(os, pad + "    ");
+
+		os << pad << "}" << endl;
+		break;
+
+	      default: {
+		    os << pad << get_type(p) << " " << get_name(p) << " " ;
+
+		    vector<string> *sxp = attr_map(p)->attr;
+
+		    for (vector<string>::const_iterator i = sxp->begin(); 
+			 i < (sxp->end()-1); ++i)
+			os << *i << ", ";
+  
+		    os << *(sxp->end()-1) << ";" << endl;
+		}
+		break;
+	    }
+	}
+    }
+}
+
 // $Log: AttrTable.cc,v $
-// Revision 1.25  2000/06/07 18:06:57  jimg
-// Merged the pc port branch
+// Revision 1.26  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
 //
-// Revision 1.24.6.1  2000/06/02 18:11:19  rmorris
-// Mod's for Port to Win32.
+// Revision 1.23.6.3  2000/05/18 17:47:21  jimg
+// Fixed a bug in the AttrTable. Container attributes below the top level were
+// broken in the latest changes to the DAS code.
 //
-// Revision 1.24  2000/01/27 06:29:55  jimg
-// Resolved conflicts from merge with release-3-1-4
+// Revision 1.23.6.2  2000/05/12 18:55:54  jimg
+// See comments in AttrTable.h.
 //
 // Revision 1.23.6.1  2000/01/26 23:55:02  jimg
 // Fixed the return type of string::find.
@@ -110,439 +557,5 @@
 // Revision 1.1  1994/08/02  18:32:04  jimg
 // The implementation of AttrTable. This file defined ostream &operator<< and
 // a static class variable String empty (it is initialized to "").
-//
 
-#include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.25 2000/06/07 18:06:57 jimg Exp $";
-
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include <assert.h>
-
-#include <iostream>
-
-#include "AttrTable.h"
-#include "debug.h"
-#include "util.h"
-
-// Private member functions
-
-// When CON_ONLY is true, stop recurring when at the last container.
-// This ensures that the Pix returned will reference the AttrTable which
-// containes the attribute - not the attribute itself.
-Pix 
-AttrTable::find(const string &target, bool cont_only)
-{
-    string::size_type dotpos = target.find('.');
-    if (dotpos != target.npos) {
-	string container = target.substr(0, dotpos);
-	string field = target.substr(dotpos+1);
-	
-	Pix p = simple_find(container);
-	if ((p) && attr_map(p).type == Attr_container) {
-	    if (cont_only && (field.find('.') == field.npos))
-		return p;
-	    else
-		return attr_map(p).value.attributes->find(field, cont_only);
-	}
-	else
-	    return 0;
-    }
-    else
-	return simple_find(target);
-}
-
-Pix
-AttrTable::simple_find(const string &target)
-{
-    for (Pix p = attr_map.first(); p; attr_map.next(p))
-	if (target == attr_map(p).name)
-	    return p;
-    return 0;
-}
-
-string 
-AttrTable::AttrType_to_String(const AttrType at)
-{
-    switch (at) {
-      case Attr_container: return "Container";
-      case Attr_byte: return "Byte";
-      case Attr_int16: return "Int16";
-      case Attr_uint16: return "Uint16";
-      case Attr_int32: return "Int32";
-      case Attr_uint32: return "Uint32";
-      case Attr_float32: return "Float32";
-      case Attr_float64: return "Float64";
-      case Attr_string: return "String";
-      case Attr_url: return "Url";
-      default: return "";
-    }
-}
-
-AttrType
-AttrTable::String_to_AttrType(const string &s)
-{
-    string s2 = s;
-    downcase(s2);
-
-    if (s2 == "container")
-	return Attr_container;
-    else if (s2 == "byte")
-	return Attr_byte;
-    else if (s2 == "int16")
-	return Attr_int16;
-    else if (s2 == "uint16")
-	return Attr_uint16;
-    else if (s2 == "int32")
-	return Attr_int32;
-    else if (s2 == "uint32")
-	return Attr_uint32;
-    else if (s2 == "float32")
-	return Attr_float32;
-    else if (s2 == "float64")
-	return Attr_float64;
-    else if (s2 == "string")
-	return Attr_string;
-    else if (s2 == "url")
-	return Attr_url;
-    else 
-	return Attr_unknown;
-}
-
-// Public member functions
-
-AttrTable::AttrTable()
-{
-}
-
-AttrTable::~AttrTable()
-{
-	Pix p = NULL;
-
-    DBG(cerr << "Entering ~AttrTable" << endl);
-
-    if (attr_map.empty()) {
-	DBG(cerr << "Found empty attr table" << endl);
-	goto exit;
-    }
-
-    for (p = attr_map.first(); p; attr_map.next(p))
-	// Don't delete the referenced objects in an alias!
-	if (!attr_map(p).is_alias) {
-	    DBG(cerr << "attr_map(p).type: " << attr_map(p).type << endl);
-	    DBG(cerr << "attr_map(p).name: " << attr_map(p).name << endl);
-	    if (attr_map(p).type == Attr_container)
-		delete attr_map(p).value.attributes;
-	    else
-		delete attr_map(p).value.attr;
-	}
-
- exit:
-    DBG(cerr << "Leaving ~AttrTable" << endl);
-    return;
-}
-
-Pix 
-AttrTable::first_attr()
-{
-    return attr_map.first();
-}
-
-void
-AttrTable::next_attr(Pix &p)
-{
-    attr_map.next(p);
-}
-
-string
-AttrTable::get_name(Pix p)
-{
-    assert(p);
-    return attr_map(p).name;
-}
-
-bool
-AttrTable::is_container(Pix p)
-{
-    assert(p);
-    return attr_map(p).type == Attr_container;
-}
-
-AttrTable *
-AttrTable::get_attr_table(Pix p)
-{
-    assert(p);
-    return attr_map(p).type == Attr_container ? attr_map(p).value.attributes : 0;
-}
-
-AttrTable *
-AttrTable::get_attr_table(const string &name)
-{
-    Pix p = find(name, true);	// Return only Pixes to container attributes
-    return (p) ?  get_attr_table(p) : 0;
-}
-
-AttrTable *
-AttrTable::get_attr_table(const char *name)
-{
-    return get_attr_table((string)name);
-}
-
-string
-AttrTable::get_type(Pix p)
-{
-    assert(p);
-    return AttrType_to_String(attr_map(p).type);
-}
-
-string
-AttrTable::get_type(const string &name)
-{
-    Pix p = find(name);
-    return (p) ?  get_type(p) : (string)"";
-}
-
-string
-AttrTable::get_type(const char *name)
-{
-    return get_type((string)name);
-}
-
-AttrType
-AttrTable::get_attr_type(Pix p)
-{
-    assert(p);
-    return attr_map(p).type;
-}
-
-AttrType
-AttrTable::get_attr_type(const string &name)
-{
-    Pix p = find(name);
-    return (p) ?  get_attr_type(p) : Attr_unknown;
-}
-
-AttrType
-AttrTable::get_attr_type(const char *name)
-{
-    return get_attr_type((string)name);
-}
-
-unsigned int 
-AttrTable::get_attr_num(Pix p)
-{
-    assert(p);
-    return attr_map(p).type == Attr_container ? 0 : attr_map(p).value.attr->size();
-}
-
-unsigned int 
-AttrTable::get_attr_num(const string &name)
-{
-    Pix p = find(name);
-    return (p) ?  get_attr_num(p) : 0;
-}
-
-unsigned int 
-AttrTable::get_attr_num(const char *name)
-{
-    return get_attr_num((string)name);
-}
-
-string
-AttrTable::get_attr(Pix p, unsigned int i)
-{
-    assert(p);
-    return attr_map(p).type == Attr_container ? (string)"None" : (*attr_map(p).value.attr)[i];
-}
-
-string
-AttrTable::get_attr(const string &name, unsigned int i)
-{
-    Pix p = find(name);
-    return (p) ? get_attr(p, i) : (string)"";
-}
-
-string
-AttrTable::get_attr(const char *name, unsigned int i)
-{
-    return get_attr((string)name, i);
-}
-
-vector<string> *
-AttrTable::get_attr_vector(Pix p)
-{
-    assert(p);
-    return attr_map(p).type != Attr_container ? attr_map(p).value.attr : 0;
-}
-
-vector<string> *
-AttrTable::get_attr_vector(const string &name)
-{
-    Pix p = find(name);
-    return (p) ?  get_attr_vector(p) : 0;
-}
-
-vector<string> *
-AttrTable::get_attr_vector(const char *name)
-{
-    return get_attr_vector((string)name);
-}
-
-unsigned int
-AttrTable::append_attr(const string &name, const string &type, 
-		       const string &attr)
-{
-    Pix p = find(name);
-    // If the types don't match OR this attribute is a container, calling
-    // this mfunc is an error!
-    if (p && (attr_map(p).type != String_to_AttrType(type) 
-	      || get_type(p) == "Container"))
-	return 0;
-    else if (p)	{		// Must be a new attribute value; add it.
-        attr_map(p).value.attr->push_back(attr);
-	return attr_map(p).value.attr->size();
-    } else {			// Must be a completely new attribute; add it
-	entry e;
-
-	e.name = name;
-	e.is_alias = false;
-	e.type = String_to_AttrType(type); // Record type using standard names.
-	e.value.attr = new vector<string>;
-	e.value.attr->push_back(attr);
-
-	attr_map.append(e);
-    
-	return e.value.attr->size();	// return the length of the attr vector
-    }
-}
-
-unsigned int
-AttrTable::append_attr(const char *name, const char *type, const char *attr)
-{
-    return append_attr((string)name, (string)type, (string)attr);
-}
-
-AttrTable *
-AttrTable::append_container(const string &name)
-{
-    Pix p = find(name);
-    
-    // Return an error if NAME already exists.
-    if (p)
-	return 0;
-	
-    entry e;
-    e.name = name;
-    e.is_alias = false;
-    e.type = Attr_container;
-    e.value.attributes = new AttrTable();
-
-    attr_map.append(e);
-
-    return e.value.attributes;
-}
-
-bool
-AttrTable::attr_alias(const string &alias, AttrTable *at, const string &name)
-{
-    // It is an error for alias to exist already.
-    if (find(alias))
-	return false;
-
-    // Check for null Attrtable for source (information to be aliased).
-    if (!at)
-	return false;
-
-    // Make sure that `name' really exists.
-    Pix p = at->find(name);
-    if (!p)
-	return false;
-
-    entry e;
-    e.name = alias;
-    e.is_alias = true;
-    e.aliased_to = name;
-    e.type = at->attr_map(p).type;
-    if (e.type == Attr_container)
-	e.value.attributes = at->get_attr_table(p);
-    else {
-	e.value.attr = at->attr_map(p).value.attr;
-    }
-
-    attr_map.append(e);
-    
-    return true;
-}
-
-bool
-AttrTable::attr_alias(const string &alias, const string &name)
-{
-    return attr_alias(alias, this, name);
-}
-
-// Delete the attribute NAME. If NAME is an attribute vector, delete the
-// I(th) element if I is >= 0. If I is -1 (the default), remove the entire
-// attribute even if it is an array of values.
-//
-// Returns: void
-
-void
-AttrTable::del_attr(const string &name, int i)
-{
-    Pix p = find(name);
-    if (p) {
-	if (i == -1) {		// Delete the whole attribute
-	    attr_map.prev(p);	// p now points to the previous element
-	    attr_map.del_after(p);	// ... delete the following element
-	}
-	else {			// Delete one element from attribute array
-	    // Don't try to delete elements from the vector of values if the
-	    // map is a container!
-	    if (attr_map(p).type == Attr_container) 
-		return;
-
-	    vector<string> *sxp = attr_map(p).value.attr;
-		
-	    assert(i >= 0 && i < (int)sxp->size());
-	    sxp->erase(sxp->begin() + i); // rm the element
-	}
-    }
-}
-	
-	    
-void
-AttrTable::print(ostream &os, string pad)
-{
-    for(Pix p = attr_map.first(); p; attr_map.next(p)) {
-	if (attr_map(p).is_alias) {
-	    os << pad << "Alias " << get_name(p) << " " 
-	       << attr_map(p).aliased_to << ";" << endl;
-	} else {
-	    switch (attr_map(p).type) {
-	      case Attr_container:
-		os << pad << get_name(p) << " {" << endl;
-
-		attr_map(p).value.attributes->print(os, pad + "    ");
-
-		os << pad << "}" << endl;
-		break;
-
-	      default: {
-		    os << pad << get_type(p) << " " << get_name(p) << " " ;
-
-		    vector<string> *sxp = attr_map(p).value.attr;
-
-		    for (vector<string>::const_iterator i = sxp->begin(); 
-			 i < (sxp->end()-1); ++i)
-			os << *i << ", ";
-  
-		    os << *(sxp->end()-1) << ";" << endl;
-		}
-		break;
-	    }
-	}
-    }
-}

@@ -12,6 +12,13 @@
 // 5/3/99 jhrg
 
 // $Log: InternalErr.h,v $
+// Revision 1.3  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
+//
+// Revision 1.1.6.2  2000/06/02 20:23:57  jimg
+// Added a constructor that takes the file name and line number. This helps in
+// tracking down errors.
+//
 // Revision 1.2  1999/08/23 18:57:45  jimg
 // Merged changes from release 3.1.0
 //
@@ -59,6 +66,8 @@ public:
     //@{
     /// 
     InternalErr(string msg);
+    ///
+    InternalErr(string msg, string file, int line);
     ///
     InternalErr(string msg, ProgramType pt, char *pgm);
     ///

@@ -8,6 +8,13 @@
 // Implementation for the InternalErr class.
 
 // $Log: InternalErr.cc,v $
+// Revision 1.3  2000/06/07 19:33:21  jimg
+// Merged with verson 3.1.6
+//
+// Revision 1.2.2.1  2000/06/02 20:23:45  jimg
+// Added a constructor that takes the file name and line number. This helps in
+// tracking down errors.
+//
 // Revision 1.2  1999/05/26 17:33:55  jimg
 // Fixed a bad call to Error's ctor. For some reason calling the four arg ctor
 // with the last arg == to 0 caused string to gag. At least that appears to have
@@ -23,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.2 1999/05/26 17:33:55 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.3 2000/06/07 19:33:21 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -42,6 +49,17 @@ InternalErr::InternalErr(string msg)
     ostrstream oss;
     oss << "An internal error was encounterd:" << endl
 	<< msg << endl
+	<< "Please report this to support@unidata.ucar.edu" << ends;
+    _error_message  = oss.str();
+    oss.freeze(0);
+}
+
+InternalErr::InternalErr(string msg, string file, int line)
+    : Error(unknown_error, msg)
+{
+    ostrstream oss;
+    oss << "An internal error was encounterd:" << endl
+	<< msg << " at " << file << ":" << line << endl
 	<< "Please report this to support@unidata.ucar.edu" << ends;
     _error_message  = oss.str();
     oss.freeze(0);
