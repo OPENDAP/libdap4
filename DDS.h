@@ -7,9 +7,12 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.11  1996/04/04 18:41:07  jimg
-/* Merged changes from version 1.1.1.
+/* Revision 1.12  1996/04/05 00:21:28  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+ * Revision 1.11  1996/04/04 18:41:07  jimg
+ * Merged changes from version 1.1.1.
+ *
  * Revision 1.10  1996/03/05 18:32:26  jimg
  * Added the clause and function subclasses. Clause is used to hold a single
  * clause of the current CE. Clause has ctors, a dtor (which is currently
@@ -98,10 +101,9 @@ private:
     // (CE). A CE is made up of N clauses, all of which are &&'d together to
     // get the value of the CE. 
     struct clause {
-	rvalue *arg1;
-	bool_func_ptr f;	// this to choose which to evaluate
-
 	int op;			// operator code from parser; used iff ARG1
+	bool_func_ptr f;	// or boolean function
+	rvalue *arg1;		// only for operator
 	rvalue_list *args;	// vector arg
 
 	clause(const int oper, rvalue *a1, rvalue_list *rv)

@@ -38,6 +38,9 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.21  1996/04/05 00:21:29  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.20  1996/04/04 18:37:02  jimg
 // Merged changes from version 1.1.1.
 // Removed unneeded include files.
@@ -69,7 +72,7 @@
 //
 // Revision 1.13.2.1  1995/09/29 19:28:01  jimg
 // Fixed problems with xdr.h on an SGI.
-// Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
+// Fixed conflict of d_int32_t (which was in an enum type defined by BaseType) on
 // the SGI.
 //
 // Revision 1.13  1995/07/09  21:28:56  jimg
@@ -177,7 +180,8 @@
 #include "trace_new.h"
 #endif
 
-Float64::Float64(const String &n) : BaseType(n, float64_t, XDR_FLOAT64)
+Float64::Float64(const String &n) 
+: BaseType(n, d_float64_t, (xdrproc_t)XDR_FLOAT64)
 {
 }
 
@@ -206,7 +210,7 @@ Float64::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 }
 
 bool
-Float64::deserialize(bool reuse)
+Float64::deserialize(bool)
 {
     unsigned int num = xdr_double(xdrin(), &_buf);
 
@@ -214,7 +218,7 @@ Float64::deserialize(bool reuse)
 }
 
 unsigned int
-Float64::val2buf(void *val, bool reuse)
+Float64::val2buf(void *val, bool)
 {
     assert(val);
 
@@ -291,20 +295,20 @@ Float64::ops(BaseType &b, int op)
 	return false;
     }
     else switch (b.type()) {
-      case byte_t:
-      case int32_t: {
+      case d_byte_t:
+      case d_int32_t: {
 	int32 i;
 	int32 *ip = &i;
 	b.buf2val((void **)&ip);
 	a2 = i;
 	break;
       }
-      case float64_t: {
+      case d_float64_t: {
 	double *a2p = &a2;
 	b.buf2val((void **)&a2p);
 	break;
       }
-      case str_t: {
+      case d_str_t: {
 	String s;
 	String *sp = &s;
 	b.buf2val((void **)&sp);

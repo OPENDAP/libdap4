@@ -38,6 +38,9 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.12  1996/04/05 00:21:43  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.11  1996/03/05 18:57:28  jimg
 // Fixed problems with variable scoping in for and switch statements.
 //
@@ -141,10 +144,10 @@ TestArray::read(const String &dataset)
     unsigned int array_len = length(); // elements in the array
 
     switch (var()->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
-      case str_t:
+      case d_byte_t:
+      case d_int32_t:
+      case d_float64_t:
+      case d_str_t:
       case url_t: {
 
 	// String and Url are grouped with byte, ... because val2buf works
@@ -169,11 +172,11 @@ TestArray::read(const String &dataset)
 	break;
       }
 
-      case list_t:
-      case structure_t:
+      case d_list_t:
+      case d_structure_t:
       case sequence_t:
-      case function_t:
-      case grid_t:
+      case d_function_t:
+      case d_grid_t:
 	
 	// Arrays of Structure, ... must load each element into the array 
 	// manually. Because these are stored as C++/DODS objects, there is

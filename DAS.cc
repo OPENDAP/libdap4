@@ -39,7 +39,10 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.16  1995/08/23 00:05:40  jimg
+// Revision 1.17  1996/04/05 00:21:25  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.16  1995/08/23  00:05:40  jimg
 // Added copyright notice.
 //
 // Revision 1.15  1995/07/09  21:28:54  jimg
@@ -122,7 +125,7 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.16 1995/08/23 00:05:40 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.17 1996/04/05 00:21:25 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation

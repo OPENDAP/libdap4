@@ -38,11 +38,14 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
-// Revision 1.9  1995/10/23 22:56:32  jimg
+// Revision 1.10  1996/04/05 00:22:14  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.9  1995/10/23  22:56:32  jimg
 // Added Log and RCSID.
 //
 
-static char rcsid[]= {"$Id: dds-test.cc,v 1.9 1995/10/23 22:56:32 jimg Exp $"};
+static char rcsid[]= {"$Id: dds-test.cc,v 1.10 1996/04/05 00:22:14 jimg Exp $"};
 
 #include <iostream.h>
 #include <GetOpt.h>

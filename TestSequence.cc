@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
-// Revision 1.9  1995/12/09 01:07:23  jimg
+// Revision 1.10  1996/04/05 00:21:58  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.9  1995/12/09  01:07:23  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().

@@ -37,7 +37,10 @@
 // jhrg 7/29/94
 
 // $Log: AttrTable.cc,v $
-// Revision 1.11  1995/07/09 21:28:50  jimg
+// Revision 1.12  1996/04/05 00:21:18  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.11  1995/07/09  21:28:50  jimg
 // Added copyright notice.
 //
 // Revision 1.10  1995/02/10  02:27:53  jimg
@@ -82,7 +85,7 @@
 // a static class variable String empty (it is initialized to "").
 //
 
-static char rcsid[]="$Id: AttrTable.cc,v 1.11 1995/07/09 21:28:50 jimg Exp $";
+static char rcsid[]="$Id: AttrTable.cc,v 1.12 1996/04/05 00:21:18 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation

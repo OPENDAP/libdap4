@@ -38,6 +38,9 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.19  1996/04/05 00:21:24  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.18  1996/03/05 18:42:55  jimg
 // Fixed serialize so that expunge() is always called when the member function
 // finishes and FLUSH is true.
@@ -173,7 +176,7 @@
 // transport Byte arrays over the network. Instead, Byte is a special case
 // handled in Array.
 
-Byte::Byte(const String &n) : BaseType(n, byte_t)
+Byte::Byte(const String &n) : BaseType(n, d_byte_t)
 {
 }
 
@@ -215,7 +218,7 @@ Byte::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 // deserialize the char on stdin and put the result in _BUF.
 
 bool
-Byte::deserialize(bool reuse)
+Byte::deserialize(bool)
 {
     unsigned int num = xdr_char(xdrin(), &_buf);
 
@@ -229,7 +232,7 @@ Byte::deserialize(bool reuse)
 // Returns: size in bytes of the value's representation.
 
 unsigned int
-Byte::val2buf(void *val, bool reuse)
+Byte::val2buf(void *val, bool)
 {
     assert(val);
 
@@ -307,20 +310,20 @@ Byte::ops(BaseType &b, int op)
 	return false;
     }
     else switch (b.type()) {
-      case byte_t:
-      case int32_t: {
+      case d_byte_t:
+      case d_int32_t: {
 	int32 *a2p = &a2;
 	b.buf2val((void **)&a2p);
 	break;
       }
-      case float64_t: {
+      case d_float64_t: {
 	double d;
 	double *dp = &d;
 	b.buf2val((void **)&dp);
 	a2 = (int32)d;
 	break;
       }
-      case str_t: {
+      case d_str_t: {
 	String s;
 	String *sp = &s;
 	b.buf2val((void **)&sp);

@@ -38,6 +38,9 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.30  1996/04/05 00:21:17  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.29  1996/03/05 18:48:24  jimg
 // Fixed bugs in the print_array software.
 // Fixed the ctor and related CE member functions (so that projections work).
@@ -240,7 +243,7 @@ Array::update_length(int size)
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
-Array::Array(const String &n, BaseType *v) : Vector(n, v, array_t)
+Array::Array(const String &n, BaseType *v) : Vector(n, v, d_array_t)
 {
 }
 

@@ -6,9 +6,12 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.9  1994/10/17 23:39:50  jimg
-/* Removed unnecessary print functions.
+/* Revision 1.10  1996/04/05 00:21:27  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+ * Revision 1.9  1994/10/17  23:39:50  jimg
+ * Removed unnecessary print functions.
+ *
  * Revision 1.8  1994/10/13  15:46:58  jimg
  * Added compile-time switched instrumentation.
  * Removed the three definitions of DAS::print().

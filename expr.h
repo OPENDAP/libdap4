@@ -1,13 +1,14 @@
-// -*- c++ -*-
+// -*- C++ -*-
 
-/*
-  Types for the expr parser.
 
-  11/4/95 jhrg
-*/
-
+// Types for the expr parser.
+//
+// 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.4  1996/04/05 00:22:18  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.3  1996/03/02 01:33:25  jimg
 // Added to the value typedef to support the complete STL syntax.
 // Added support for the rvalue and btp_func_value classes.

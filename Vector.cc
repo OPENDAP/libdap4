@@ -39,6 +39,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.6  1996/04/05 00:22:09  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.5  1996/03/05 01:09:09  jimg
 // Added to the Vector dtor (now the BaseType * vector is properly deleted.
 // Created the vec_resize() member function.
@@ -60,7 +63,7 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.5 1996/03/05 01:09:09 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.6 1996/04/05 00:22:09 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -171,29 +174,31 @@ Vector::var(unsigned int i)
 {
     
     switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t: {
+      case d_byte_t:
+      case d_int32_t:
+      case d_float64_t: {
 	unsigned int sz = _var->width();
 	_var->val2buf(_buf + (i * sz));
 	return _var;
 	break;
       }
 
-      case str_t:
-      case url_t:
-      case array_t:
-      case list_t:
-      case structure_t:
-      case sequence_t:
-      case function_t:
-      case grid_t:
+      case d_str_t:
+      case d_url_t:
+      case d_array_t:
+      case d_list_t:
+      case d_structure_t:
+      case d_sequence_t:
+      case d_function_t:
+      case d_grid_t:
 	return _vec[i];
 	break;
 
       default:
 	cerr << "Vector::var: Unrecognized type" << endl;
     }
+
+    return 0;
 }
 
 // Return: The number of bytes required to store the vector `in a C
@@ -271,15 +276,15 @@ Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
     unsigned int num = length();
 
     switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
+      case d_byte_t:
+      case d_int32_t:
+      case d_float64_t:
 	assert(_buf);
 
 	if (!(bool)xdr_int(xdrout(), &num)) // send vector length
 	    return false;
 
-	if (_var->type() == byte_t)
+	if (_var->type() == d_byte_t)
 	    status = (bool)xdr_bytes(xdrout(), (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
 	else
@@ -288,21 +293,21 @@ Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 				     _var->xdr_coder()); 
 	break;
 
-      case str_t:
-      case url_t:
-      case array_t:
-      case list_t:
-      case structure_t:
-      case sequence_t:
-      case function_t:
-      case grid_t:
+      case d_str_t:
+      case d_url_t:
+      case d_array_t:
+      case d_list_t:
+      case d_structure_t:
+      case d_sequence_t:
+      case d_function_t:
+      case d_grid_t:
 	assert(_vec.capacity());
 
 	status = (bool)xdr_int(xdrout(), &num); // send length
 	if (!status)
 	    return status;
 
-	for (int i = 0; status && i < num; ++i)	// test status in loop
+	for (unsigned i = 0; status && i < num; ++i)	// test status in loop
 	    status = _vec[i]->serialize(dataset, dds, false, false);
 	
 	break;
@@ -343,9 +348,9 @@ Vector::deserialize(bool reuse)
     unsigned int num;
 
     switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
+      case d_byte_t:
+      case d_int32_t:
+      case d_float64_t:
 	if (_buf && !reuse) {
 	    delete[] _buf;
 	    _buf = 0;
@@ -364,7 +369,7 @@ Vector::deserialize(bool reuse)
 		<< length() << " " << _var->type_name() << endl);
 	}
 
-	if (_var->type() == byte_t)
+	if (_var->type() == d_byte_t)
 	    status = (bool)xdr_bytes(xdrin(), (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
 	else
@@ -375,14 +380,14 @@ Vector::deserialize(bool reuse)
 
 	break;
 
-      case str_t:
-      case url_t:
-      case array_t:
-      case list_t:
-      case structure_t:
-      case sequence_t:
-      case function_t:
-      case grid_t:
+      case d_str_t:
+      case d_url_t:
+      case d_array_t:
+      case d_list_t:
+      case d_structure_t:
+      case d_sequence_t:
+      case d_function_t:
+      case d_grid_t:
 	status = (bool)xdr_int(xdrin(), &num);
 	if (!status)
 	    return status;
@@ -390,7 +395,7 @@ Vector::deserialize(bool reuse)
 	vec_resize(num);
 	set_length(num);
 
-	for (int i = 0; status && i < num; ++i) {
+	for (unsigned i = 0; status && i < num; ++i) {
 	    _vec[i] = _var->ptr_duplicate();
 	    _vec[i]->deserialize();
 	}
@@ -421,9 +426,9 @@ Vector::val2buf(void *val, bool reuse)
     assert(val);
 
     switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t: {
+      case d_byte_t:
+      case d_int32_t:
+      case d_float64_t: {
 	unsigned int array_wid = width();
 
 	if (_buf && !reuse) {
@@ -442,14 +447,14 @@ Vector::val2buf(void *val, bool reuse)
 	break;
       }
 
-      case str_t:
-      case url_t: {
+      case d_str_t:
+      case d_url_t: {
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 
 	vec_resize(len);
 
-	for (int i = 0; i < len; ++i) {
+	for (unsigned i = 0; i < len; ++i) {
 	    _vec[i] = _var;	// init with empty instance of correct class
 	    _vec[i]->val2buf(val + i * elem_wid, reuse);
 	}
@@ -484,9 +489,9 @@ Vector::buf2val(void **val)
     unsigned int wid = width();
 
     switch (_var->type()) {
-      case byte_t:
-      case int32_t:
-      case float64_t:
+      case d_byte_t:
+      case d_int32_t:
+      case d_float64_t:
 	if (!*val)
 	    *val = new char[wid];
 
@@ -494,12 +499,12 @@ Vector::buf2val(void **val)
 
 	break;
 
-      case str_t:
-      case url_t: {
+      case d_str_t:
+      case d_url_t: {
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 
-	for (int i = 0; i < len; ++i) {
+	for (unsigned i = 0; i < len; ++i) {
 	    void *val_elem = *val + i * elem_wid;
 	    _vec[i]->buf2val(&val_elem);
 	}
@@ -534,7 +539,7 @@ Vector::set_vec(int i, BaseType *val)
 }
  
 BaseType *
-Vector::var(const String &name)
+Vector::var(const String &)
 {
     return _var;
 #ifdef NEVER
@@ -552,7 +557,7 @@ Vector::var(const String &name)
 // NB: Part p defaults to nil for this class
 
 void
-Vector::add_var(BaseType *v, Part p)
+Vector::add_var(BaseType *v, Part)
 {
     _var = v;
     set_name(v->name());	// Vector name == Base object's name
@@ -599,7 +604,7 @@ Vector::print_val(ostream &os, String space, bool print_decl_p)
 }
 
 bool
-Vector::check_semantics(bool all) 
+Vector::check_semantics(bool) 
 {
     return BaseType::check_semantics();
 }

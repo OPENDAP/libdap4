@@ -45,9 +45,12 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.6  1996/03/02 01:17:09  jimg
-/* Added support for the complete CE spec.
+/* Revision 1.7  1996/04/05 00:22:21  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+ * Revision 1.6  1996/03/02 01:17:09  jimg
+ * Added support for the complete CE spec.
+ *
  * Revision 1.5  1996/02/01 17:43:18  jimg
  * Added support for lists as operands in constraint expressions.
  *
@@ -74,7 +77,7 @@
 
 %{
 
-static char rcsid[]={"$Id: expr.y,v 1.6 1996/03/02 01:17:09 jimg Exp $"};
+static char rcsid[]={"$Id: expr.y,v 1.7 1996/04/05 00:22:21 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -394,7 +397,7 @@ array_indeces:  array_index
 array_index: 	'[' INT ':' INT ']'
                   {
 		      value val;
-		      val.type = int32_t;
+		      val.type = d_int32_t;
 		      val.v.i = 1;
 		      $$ = make_array_index($2, val, $4);
 		  }
@@ -438,9 +441,9 @@ make_array_index(value &i1, value &i2, value &i3)
 {
     IntList *index = new IntList;
 
-    if (i1.type != int32_t
-	|| i2.type != int32_t
-	|| i3.type != int32_t)
+    if (i1.type != d_int32_t
+	|| i2.type != d_int32_t
+	|| i3.type != d_int32_t)
 	return (void *)0;
 
     index->append((int)i1.v.i);
@@ -494,7 +497,7 @@ delete_array_indeces(IntListList *indeces)
 bool
 is_array_t(BaseType *variable)
 {
-    if (variable->type() != array_t) {
+    if (variable->type() != d_array_t) {
 	cerr << "Variable " << variable->name() << " is not an array." << endl;
 	return false;
     }
@@ -618,7 +621,7 @@ dereference_string(DDS &table, String &s)
 rvalue *
 dereference_url(DDS &table, value &val)
 {
-    if (val.type != str_t)
+    if (val.type != d_str_t)
 	return 0;
 
     return dereference_string(table, *val.v.s);
@@ -631,7 +634,7 @@ rvalue *
 dereference_variable(DDS &table, rvalue *rv)
 {
     BaseType *btp = rv->bvalue("dummy"); // the value will be read over the net
-    if (btp->type() != str_t && btp->type() != url_t) {
+    if (btp->type() != d_str_t && btp->type() != d_url_t) {
 	cerr << "Variable: " << btp->name() 
 	    << " must be either a string or a url" 
 	    << endl;
@@ -652,19 +655,19 @@ make_variable(DDS &table, const value &val)
 {
     BaseType *var;
     switch (val.type) {
-      case int32_t: {
+      case d_int32_t: {
 	var = (BaseType *)NewInt32("dummy");
 	var->val2buf((void *)&val.v.i);
 	break;
       }
 
-      case float64_t: {
+      case d_float64_t: {
 	var = (BaseType *)NewFloat64("dummy");
 	var->val2buf((void *)&val.v.f);
 	break;
       }
 
-      case str_t: {
+      case d_str_t: {
 	var = (BaseType *)NewStr("dummy");
 	var->val2buf((void *)val.v.s);
 	break;

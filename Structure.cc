@@ -38,6 +38,9 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.21  1996/04/05 00:21:40  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.20  1996/03/05 17:36:12  jimg
 // Added ce_eval to serailize member function.
 // Added debugging information to _duplicate member function.
@@ -184,7 +187,7 @@ Structure::_duplicate(const Structure &s)
     }
 }
 
-Structure::Structure(const String &n) : BaseType(n, structure_t)
+Structure::Structure(const String &n) : BaseType(n, d_structure_t)
 {
 }
 
@@ -231,7 +234,7 @@ Structure::set_read_p(bool state)
 // NB: Part p defaults to nil for this class
 
 void 
-Structure::add_var(BaseType *bt, Part p)
+Structure::add_var(BaseType *bt, Part)
 {
     _vars.append(bt);
 }
@@ -273,7 +276,7 @@ Structure::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 bool
 Structure::deserialize(bool reuse)
 {
-  bool status;
+    bool status = true;
 
     for (Pix p = first_var(); p; next_var(p)) {
 	status = var(p)->deserialize(reuse);
@@ -288,13 +291,13 @@ Structure::deserialize(bool reuse)
 // strucuture in the order those elements are declared.
 
 unsigned int
-Structure::val2buf(void *val, bool reuse)
+Structure::val2buf(void *, bool)
 {
     return sizeof(Structure);
 }
 
 unsigned int
-Structure::buf2val(void **val)
+Structure::buf2val(void **)
 {
     return sizeof(Structure);
 }
@@ -366,9 +369,9 @@ Structure::print_val(ostream &os, String space, bool print_decl_p)
     }
 
     os << "{ ";
-    for (Pix p = _vars.first(); p; _vars.next(p), p && os << ", ") {
+    for (Pix p = _vars.first(); p; _vars.next(p), p && os << ", ")
 	_vars(p)->print_val(os, "", false);
-    }
+
     os << " }";
 
     if (print_decl_p)

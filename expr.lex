@@ -50,11 +50,14 @@
 */
 
 /* $Log: expr.lex,v $
-/* Revision 1.6  1996/03/02 01:19:04  jimg
-/* Fixed comments.
-/* Fixed a bug in store_str(); leading and trailing double quotes are now
-/* stripped from strings.
+/* Revision 1.7  1996/04/05 00:22:19  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+ * Revision 1.6  1996/03/02 01:19:04  jimg
+ * Fixed comments.
+ * Fixed a bug in store_str(); leading and trailing double quotes are now
+ * stripped from strings.
+ *
  * Revision 1.5  1996/02/01 17:43:16  jimg
  * Added support for lists as operands in constraint expressions.
  *
@@ -78,7 +81,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: expr.lex,v 1.6 1996/03/02 01:19:04 jimg Exp $"};
+static char rcsid[]={"$Id: expr.lex,v 1.7 1996/04/05 00:22:19 jimg Exp $"};
 
 #include <string.h>
 
@@ -186,14 +189,14 @@ yywrap(void)
 void
 store_int32()
 {
-    exprlval.val.type = int32_t;
+    exprlval.val.type = d_int32_t;
     exprlval.val.v.i = atoi(yytext);
 }
 
 void
 store_float64()
 {
-    exprlval.val.type = float64_t;
+    exprlval.val.type = d_float64_t;
     exprlval.val.v.f = atof(yytext);
 }
 
@@ -212,7 +215,7 @@ store_str()
 
     *s = s->at(1, l - 2);	/* strip the \"'s from front and back */
 
-    exprlval.val.type = str_t;
+    exprlval.val.type = d_str_t;
     exprlval.val.v.s = s;
 }
 

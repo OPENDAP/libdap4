@@ -57,7 +57,10 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.19  1995/12/06 19:46:29  jimg
+ * Revision 1.20  1996/04/05 00:22:13  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
+ * Revision 1.19  1995/12/06  19:46:29  jimg
  * Added definition of YYSTYPE.
  *
  * Revision 1.18  1995/10/23  22:54:39  jimg
@@ -153,7 +156,7 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: das.y,v 1.19 1995/12/06 19:46:29 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.20 1996/04/05 00:22:13 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -432,6 +435,8 @@ int
 daserror(char *s)
 {
     fprintf(stderr, "%s line: %d\n", s, das_line_num);
+
+    return 1;
 }
 
 #ifdef NEVER

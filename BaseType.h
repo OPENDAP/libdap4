@@ -8,10 +8,13 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.23  1996/04/04 17:29:42  jimg
-/* Merged recent changes from version 1.1.1 (including changes for the Type
-/* enum which caused a problem on the SGI).
+/* Revision 1.24  1996/04/05 00:21:23  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+ * Revision 1.23  1996/04/04 17:29:42  jimg
+ * Merged recent changes from version 1.1.1 (including changes for the Type
+ * enum which caused a problem on the SGI).
+ *
  * Revision 1.22  1996/03/05 18:44:52  jimg
  * Added ce_eval to serailize member function.
  * Added ops member function.
@@ -51,7 +54,7 @@
  *
  * Revision 1.15.2.3  1995/09/29  19:27:59  jimg
  * Fixed problems with xdr.h on an SGI.
- * Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
+ * Fixed conflict of d_int32_t (which was in an enum type defined by BaseType) on
  * the SGI.
  *
  * Revision 1.15.2.2  1995/09/27  19:06:58  jimg
@@ -243,7 +246,7 @@ protected:
     void _duplicate(const BaseType &bt);
 
 public:
-    BaseType(const String &n = (char *)0, const Type &t = null_t,
+    BaseType(const String &n = (char *)0, const Type &t = d_null_t,
 	     xdrproc_t xdr = NULL);
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();

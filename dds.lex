@@ -22,9 +22,12 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.8  1995/10/23 23:00:24  jimg
-/* Removed code enclosed in #ifdef NEVER ... #endif
+/* Revision 1.9  1996/04/05 00:22:16  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+# Revision 1.8  1995/10/23  23:00:24  jimg
+# Removed code enclosed in #ifdef NEVER ... #endif
+#
 # Revision 1.7  1995/07/08  20:18:25  jimg
 # Removed declaration of yywrap().
 #
@@ -52,7 +55,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.8 1995/10/23 23:00:24 jimg Exp $"};
+static char rcsid[]={"$Id: dds.lex,v 1.9 1996/04/05 00:22:16 jimg Exp $"};
 
 #include <string.h>
 
@@ -62,7 +65,6 @@ static char rcsid[]={"$Id: dds.lex,v 1.8 1995/10/23 23:00:24 jimg Exp $"};
 #include "dds.tab.h"
 
 int dds_line_num = 1;
-static int start_line;		/* used in comment error handlers */
 
 %}
     

@@ -6,11 +6,14 @@
 // jhrg 1/12/95
 
 /* $Log: TestInt32.h,v $
-/* Revision 1.5  1995/12/09 01:07:19  jimg
-/* Added changes so that relational operators will work properly for all the
-/* datatypes (including Sequences). The relational ops are evaluated in
-/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+/* Revision 1.6  1996/04/05 00:21:54  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+ * Revision 1.5  1995/12/09  01:07:19  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
  * Revision 1.4  1995/12/06  19:55:40  jimg
  * Changes read() member function from three arguments to two.
  *

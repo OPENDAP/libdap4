@@ -38,6 +38,9 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.20  1996/04/05 00:21:39  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.19  1996/03/05 17:43:08  jimg
 // Added ce_eval to serailize member function.
 // Added relational operators (the ops member function and string_ops function).
@@ -156,6 +159,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <strstream.h>
+
 #include "Str.h"
 #include "DDS.h"
 #include "util.h"
@@ -166,7 +171,7 @@
 #include "trace_new.h"
 #endif
 
-Str::Str(const String &n) : BaseType(n, str_t), _buf("")
+Str::Str(const String &n) : BaseType(n, d_str_t), _buf("")
 {
 }
 
@@ -210,7 +215,7 @@ Str::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 // deserialize the String on stdin and put the result in BUF.
 
 bool
-Str::deserialize(bool reuse)
+Str::deserialize(bool)
 {
     return (bool)xdr_str(xdrin(), _buf);
 }
@@ -247,7 +252,7 @@ Str::buf2val(void **val)
 // case). 
 
 unsigned int
-Str::val2buf(void *val, bool reuse)
+Str::val2buf(void *val, bool)
 {
     assert(val);
 
@@ -312,26 +317,34 @@ Str::ops(BaseType &b, int op)
 	return false;
     }
     else switch (b.type()) {
-      case byte_t:
-      case int32_t: {
+      case d_byte_t:
+      case d_int32_t: {
 	  int32 i;
 	  int32 *ip = &i;
 	  b.buf2val((void **)&ip);
+	  strstream int_str;
+	  int_str << i;
+#ifdef NEVER
 	  char *int_str;
 	  sprintf(int_str, "%d", i);
-	  a2 = int_str;
+#endif
+	  a2 = int_str.str();
 	  break;
       }
-      case float64_t: {
+      case d_float64_t: {
 	  double d;
 	  double *dp = &d;
 	  b.buf2val((void **)&dp);
+	  strstream flt_str;
+	  flt_str << d;
+#ifdef NEVER
 	  char *flt_str;
 	  sprintf(flt_str, "%lf", d);
-	  a2 = flt_str;
+#endif
+	  a2 = flt_str.str();
 	  break;
       }
-      case str_t: {
+      case d_str_t: {
 	  String *sp = &a2;
 	  b.buf2val((void **)&sp);
 	  break;

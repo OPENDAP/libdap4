@@ -38,6 +38,9 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.22  1996/04/05 00:21:21  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.21  1996/04/04 19:18:32  jimg
 // Merged changes from version 1.1.1.
 //
@@ -332,7 +335,7 @@ BaseType::set_send_p(bool state)
 // Return a pointer to the contained variable in a ctor class.
 
 BaseType *
-BaseType::var(const String &name)
+BaseType::var(const String &)
 {
     return (BaseType *)0;
 }
@@ -340,7 +343,7 @@ BaseType::var(const String &name)
 // Defined by constructor types (Array, ...)
 
 void
-BaseType::add_var(BaseType *v, Part p)
+BaseType::add_var(BaseType *, Part)
 {
 }
 
@@ -404,9 +407,9 @@ BaseType::print_decl(ostream &os, String space, bool print_semi,
 // Returns: true if the object is semantically correct, false otherwise.
 
 bool
-BaseType::check_semantics(bool all)
+BaseType::check_semantics(bool)
 {
-    bool sem = (_type != null_t && (const char *)_name);
+    bool sem = (_type != d_null_t && (const char *)_name);
 
     if (!sem) 
 	cerr << "Every variable must have both a name and a type" << endl;
@@ -429,7 +432,7 @@ BaseType::expunge()
 // error message and return False.
 
 bool 
-BaseType::ops(BaseType &b, int op)
+BaseType::ops(BaseType &, int)
 {
     cerr << "Unimplemented operator" << endl;
 

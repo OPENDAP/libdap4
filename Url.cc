@@ -38,6 +38,9 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
+// Revision 1.12  1996/04/05 00:22:08  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.11  1996/03/05 01:10:12  jimg
 // Fixed comments.
 //
@@ -119,5 +122,5 @@
 
 Url::Url(const String &n) : Str(n)
 {
-    set_type(url_t);		// override the type set by Str
+    set_type(d_url_t);		// override the type set by Str
 }

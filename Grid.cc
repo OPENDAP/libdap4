@@ -38,6 +38,9 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.21  1996/04/05 00:21:33  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.20  1996/04/04 18:26:50  jimg
 // Merged changes from version 1.1.1.
 //
@@ -177,7 +180,7 @@ Grid::_duplicate(const Grid &s)
 	_map_vars.append(cs._map_vars(p)->ptr_duplicate());
 }
 
-Grid::Grid(const String &n) : BaseType(n, grid_t)
+Grid::Grid(const String &n) : BaseType(n, d_grid_t)
 {
 }
 
@@ -286,13 +289,13 @@ Grid::deserialize(bool reuse)
 }
 
 unsigned int
-Grid::val2buf(void *val, bool reuse)
+Grid::val2buf(void *, bool)
 {
     return sizeof(Grid);
 }
 
 unsigned int
-Grid::buf2val(void **val)
+Grid::buf2val(void **)
 {
     return sizeof(Grid);
 }
@@ -350,6 +353,8 @@ Grid::map_var(Pix p)
 {
     if (!_map_vars.empty() && p)
 	return _map_vars(p);
+    else
+	return 0;
 }
 
 void 
@@ -419,7 +424,7 @@ Grid::check_semantics(bool all)
     }
 	
     // Is it an array?
-    if (_array_var->type() != array_t) {
+    if (_array_var->type() != d_array_t) {
 	cerr << "Grid `" << name() << "'s' member `"
 	    << _array_var->name() << "' must be an array" << endl;
 	return false;
@@ -428,7 +433,7 @@ Grid::check_semantics(bool all)
     Array *av = (Array *)_array_var; // past test above, must be an array
 
     // enough maps?
-    if (_map_vars.length() != av->dimensions()) {
+    if ((unsigned)_map_vars.length() != av->dimensions()) {
 	cerr << "The number of map variables for grid `"
 	     << this->name() 
 	     << "' does not match the number of dimensions of `"
@@ -451,7 +456,7 @@ Grid::check_semantics(bool all)
 	    return false;
 	}
 	// check types
-	if (mv->type() != array_t) {
+	if (mv->type() != d_array_t) {
 	    cerr << "Grid map variable  `" << mv->name()
 		<< "' is not an array" << endl;
 	    return false;

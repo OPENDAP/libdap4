@@ -38,6 +38,9 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
+// Revision 1.22  1996/04/05 00:21:35  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.21  1996/04/04 18:25:08  jimg
 // Merged changes from version 1.1.1.
 //
@@ -171,7 +174,7 @@
 #include "trace_new.h"
 #endif
 
-Int32::Int32(const String &n) : BaseType(n, int32_t, XDR_INT32)
+Int32::Int32(const String &n) : BaseType(n, d_int32_t, (xdrproc_t)XDR_INT32)
 {
 }
 
@@ -200,7 +203,7 @@ Int32::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 }
 
 bool
-Int32::deserialize(bool reuse)
+Int32::deserialize(bool)
 {
     unsigned int num = XDR_INT32(xdrin(), &_buf);
 
@@ -208,7 +211,7 @@ Int32::deserialize(bool reuse)
 }
 
 unsigned int
-Int32::val2buf(void *val, bool reuse)
+Int32::val2buf(void *val, bool)
 {
     assert(val);
 
@@ -287,20 +290,20 @@ Int32::ops(BaseType &b, int op)
 	return false;
     }
     else switch (b.type()) {
-      case byte_t:
-      case int32_t: {
+      case d_byte_t:
+      case d_int32_t: {
 	int32 *a2p = &a2;
 	b.buf2val((void **)&a2p);
 	break;
       }
-      case float64_t: {
+      case d_float64_t: {
 	double d;
 	double *dp = &d;
 	b.buf2val((void **)&dp);
 	a2 = (int32)d;
 	break;
       }
-      case str_t: {
+      case d_str_t: {
 	String s;
 	String *sp = &s;
 	b.buf2val((void **)&sp);

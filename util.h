@@ -6,9 +6,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.9  1996/04/04 17:38:35  jimg
-/* Merged changes from version 1.1.1.
+/* Revision 1.10  1996/04/05 00:22:25  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+ * Revision 1.9  1996/04/04 17:38:35  jimg
+ * Merged changes from version 1.1.1.
+ *
  * Revision 1.8  1996/02/02 00:31:25  jimg
  * Merge changes for DODS-1.1.0 into DODS-2.x
  *
@@ -27,7 +30,7 @@
  *
  * Revision 1.4.2.1  1995/09/29  19:28:06  jimg
  * Fixed problems with xdr.h on an SGI.
- * Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
+ * Fixed conflict of d_int32_t (which was in an enum type defined by BaseType) on
  * the SGI.
  *
  * Revision 1.4  1995/03/04  14:36:50  jimg

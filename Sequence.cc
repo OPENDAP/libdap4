@@ -38,6 +38,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.22  1996/04/05 00:21:38  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.21  1996/04/04 18:10:46  jimg
 // Merged changes from version 1.1.1.
 // Fixed a bug in serialize() which caused the sequence serialization to end
@@ -180,7 +183,7 @@ Sequence::_duplicate(const Sequence &s)
 	add_var(cs.var(p)->ptr_duplicate());
 }
 
-Sequence::Sequence(const String &n) : BaseType(n, sequence_t) 
+Sequence::Sequence(const String &n) : BaseType(n, d_sequence_t) 
 {
 }
 
@@ -227,7 +230,7 @@ Sequence::set_read_p(bool state)
 // NB: Part p defaults to nil for this class
 
 void 
-Sequence::add_var(BaseType *bt, Part p)
+Sequence::add_var(BaseType *bt, Part)
 {
     _vars.append(bt);
 }
@@ -317,13 +320,13 @@ Sequence::deserialize(bool reuse)
 }
 
 unsigned int
-Sequence::val2buf(void *val, bool reuse)
+Sequence::val2buf(void *, bool)
 {
     return sizeof(Sequence);
 }
 
 unsigned int
-Sequence::buf2val(void **val)
+Sequence::buf2val(void **)
 {
     return sizeof(Sequence);
 }
@@ -361,9 +364,9 @@ Sequence::print_val(ostream &os, String space, bool print_decl_p)
     }
 
     os << "{ ";
-    for (Pix p = _vars.first(); p; _vars.next(p), p && os << ", ") {
+    for (Pix p = _vars.first(); p; _vars.next(p), p && os << ", ")
 	_vars(p)->print_val(os, "", false);
-    }
+
     os << " }";
 
     if (print_decl_p)

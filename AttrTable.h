@@ -10,12 +10,15 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.11  1995/05/10 13:45:05  jimg
-/* Changed the name of the configuration header file from `config.h' to
-/* `config_dap.h' so that other libraries could have header files which were
-/* installed in the DODS include directory without overwriting this one. Each
-/* config header should follow the convention config_<name>.h.
+/* Revision 1.12  1996/04/05 00:21:20  jimg
+/* Compiled with g++ -Wall and fixed various warnings.
 /*
+ * Revision 1.11  1995/05/10  13:45:05  jimg
+ * Changed the name of the configuration header file from `config.h' to
+ * `config_dap.h' so that other libraries could have header files which were
+ * installed in the DODS include directory without overwriting this one. Each
+ * config header should follow the convention config_<name>.h.
+ *
  * Revision 1.10  1995/03/04  14:34:55  jimg
  * Major modifications to the transmission and representation of values:
  * 	Added card() virtual function which is true for classes that

@@ -37,6 +37,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.20  1996/04/05 00:22:24  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
 // Revision 1.19  1996/04/04 17:52:36  jimg
 // Merged changes from version 1.1.1.
 //
@@ -72,7 +75,7 @@
 //
 // Revision 1.12.2.5  1995/09/29  19:28:04  jimg
 // Fixed problems with xdr.h on an SGI.
-// Fixed conflict of int32_t (which was in an enum type defined by BaseType) on
+// Fixed conflict of d_int32_t (which was in an enum type defined by BaseType) on
 // the SGI.
 //
 // Revision 1.12.2.4  1995/09/27  23:17:20  jimg
@@ -142,7 +145,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.19 1996/04/04 17:52:36 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.20 1996/04/05 00:22:24 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -150,12 +153,12 @@ static char rcsid[]={"$Id: util.cc,v 1.19 1996/04/04 17:52:36 jimg Exp $"};
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <unistd.h>
 
 #ifdef DBMALLOC
 #include <dbmalloc.h>
 #endif
 
-#include <new>			// needed for placement new in xdr_str_array
 #include <SLList.h>
 
 #include "BaseType.h"
@@ -275,32 +278,27 @@ delete_xdrstdio(XDR *xdr)
 // otherwise. The formal parameter BUF is modified as a side effect.
 
 extern "C" bool_t
-xdr_str(XDR *xdrs, String &buf)
+xdr_str(XDR *xdrs, String *buf)
 {
     switch (xdrs->x_op) {
       case XDR_ENCODE: {	// BUF is a pointer to a (String *)
-	assert(buf && *buf);
+	assert(buf);
 	
-	const char *out_tmp = (const char *)**buf;
+	const char *out_tmp = (const char *)*buf;
 
 	return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
       }
 
-      case XDR_DECODE: {	// BUF is a pointer to a String * or to NULL
+      case XDR_DECODE: {
 	assert(buf);
-	char str_tmp[max_str_len];
-	char *in_tmp = str_tmp;
+	char d_str_tmp[max_str_len];
+	char *in_tmp = d_str_tmp;
 
 	bool_t stat = xdr_string(xdrs, (char **)&in_tmp, max_str_len);
 	if (!stat)
 	    return stat;
 
-	if (*buf) {
-	    **buf = in_tmp;
-	}
-	else {
-	    *buf = new String(in_tmp);
-	}
+	*buf = in_tmp;
 	
 	return stat;
       }

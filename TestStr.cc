@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
-// Revision 1.10  1995/12/09 01:07:25  jimg
+// Revision 1.11  1996/04/05 00:22:01  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.10  1995/12/09  01:07:25  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -114,9 +117,9 @@ TestStr::read(const String &dataset)
     if (read_p())
 	return true;
 
-    String str_test="Silly test string: one, two, ...";
+    String d_str_test="Silly test string: one, two, ...";
     
-    (void) val2buf(&str_test);
+    (void) val2buf(&d_str_test);
 
     set_read_p(true);
 

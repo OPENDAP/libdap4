@@ -38,7 +38,10 @@
 // jhrg 1/13/95
 
 // $Log: TestGrid.cc,v $
-// Revision 1.9  1995/12/09 01:07:15  jimg
+// Revision 1.10  1996/04/05 00:21:51  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.9  1995/12/09  01:07:15  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
