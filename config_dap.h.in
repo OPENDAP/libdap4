@@ -3,10 +3,13 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.18  1996/10/08 15:22:41  jimg
-/* Added symbol for Bison version; we need to test for 1.22, 1.24 and 1.25. The
-/* symbol is defined to be the version number without the decimal point.
+/* Revision 1.19  1997/06/06 04:58:22  jimg
+/* Wrapped DODS_ROOT in #ifndef ... #endif.
 /*
+ * Revision 1.18  1996/10/08 15:22:41  jimg
+ * Added symbol for Bison version; we need to test for 1.22, 1.24 and 1.25. The
+ * symbol is defined to be the version number without the decimal point.
+ *
  * Revision 1.17  1996/10/01 16:27:38  jimg
  * Changed XDR_SHORT to XDR_INT16 and XDR_USHORT to XDR_UINT16 (to match the
  * Int16 and UInt16 classes).
@@ -171,7 +174,9 @@
 
 /* Where is DODS_ROOT? This can be changed at runtime by an environment
    variable. */
+#ifndef
 #undef DODS_ROOT
+#endif
 
 /* Does <sys/sem.h> contain prototypes for semctl(), ... ? */
 #undef HAVE_SEM_PROTO
