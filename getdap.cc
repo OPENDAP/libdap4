@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.19  1997/02/13 00:21:28  jimg
+// Added version switch. Made compatible with writeval's command line options.
+//
 // Revision 1.18  1997/02/12 21:45:03  jimg
 // Added use of the optional parameter to Connect's ctor; if -t (trace) is
 // given on the command line, then print www library informational messages.
@@ -81,7 +84,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.18 1997/02/12 21:45:03 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.19 1997/02/13 00:21:28 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -91,17 +94,22 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.18 1997/02/12 21:45:03 jim
 
 #include "Connect.h"
 
+const char *VERSION = "$Revision: 1.19 $";
+
 void
 usage(String name)
 {
     cerr << "Usage: " << name 
-	 << "[AdDagV] [c <expr>] [t <codes>] [m <num>] <url> [<url> ...]" 
+	 << "[dDagVv] [c <expr>] [t <codes>] [m <num>] <url> [<url> ...]" 
 	 << endl;
+#if 0
     cerr << "       " << "A: Use Connect's asynchronous mode." << endl;
+#endif
     cerr << "       " << "d: For each URL, get the DODS DDS." << endl;
     cerr << "       " << "a: For each URL, get the DODS DAS." << endl;
     cerr << "       " << "D: For each URL, get the DODS Data." << endl;
     cerr << "       " << "g: Show the progress GUI." << endl;
+    cerr << "       " << "v: Verbose." << endl;
     cerr << "       " << "V: Version." << endl;
     cerr << "       " << "c: <expr> is a contraint expression. Used with -D."
 	 << endl;
@@ -146,7 +154,7 @@ read_data(FILE *fp)
 int
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "AdaDgVc:t:m:");
+    GetOpt getopt (argc, argv, "AdaDgVvc:t:m:");
     int option_char;
     bool async = false;
     bool get_das = false;
@@ -169,7 +177,8 @@ main(int argc, char * argv[])
               case 'd': get_dds = true; break;
 	      case 'a': get_das = true; break;
 	      case 'D': get_data = true; break;
-	      case 'V': verbose = true; break;
+	      case 'V': cerr << "geturl version: " << VERSION << endl; exit(0);
+	      case 'v': verbose = true; break;
 	      case 'g': gui = true; break;
 	      case 'c':
 		cexpr = true; expr = getopt.optarg; break;
