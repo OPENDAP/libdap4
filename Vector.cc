@@ -11,6 +11,10 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.19  1997/12/15 22:33:00  jimg
+// Added type checking set_vec. If the type of the element to include in the
+// vector does not match the vector's type, set_vec() returns false.
+//
 // Revision 1.18  1997/09/22 22:37:53  jimg
 // Fixed a bug in vec_resize.
 //
@@ -90,7 +94,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.18 1997/09/22 22:37:53 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.19 1997/12/15 22:33:00 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -577,18 +581,23 @@ Vector::buf2val(void **val)
 // Given an index I into the _vec BaseType * vector, set the Ith element to
 // VAL. 
 //
-// Returns: void
+// Returns: False if a type mis-match is detected, True otherwise.
 
-void 
+bool
 Vector::set_vec(int i, BaseType *val)
 {
     assert(i > -1);
     assert(val);
 
+    if (val->type() != _var->type())
+	return false;
+
     if (i >= _vec.capacity())
 	vec_resize(i + 10);
 
     _vec.elem(i) = val;
+
+    return true;
 }
  
 BaseType *
