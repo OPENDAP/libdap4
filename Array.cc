@@ -46,10 +46,8 @@
 #include "escaping.h"
 #include "ArrayIterAdapter.h"
 
-#ifdef WIN32
 #include <algorithm>
 #include <functional>
-#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -1044,6 +1042,9 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.68  2005/03/23 23:11:19  pwest
+// algorithm and functional needed on sun and can be included on Linux, so no need to wrap in ifdef WIN32
+//
 // Revision 1.67  2004/11/16 22:50:20  jimg
 // Fixed tests. Also fixed a bug intorduced in Vector where a template
 // with no name caused some software (any code which depends on the

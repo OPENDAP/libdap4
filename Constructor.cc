@@ -37,9 +37,7 @@
 
 #include <string>
 #include <algorithm>
-#ifdef WIN32
 #include <functional>
-#endif
 
 #include "Constructor.h"
 #include "BTIterAdapter.h"
@@ -287,6 +285,9 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.16  2005/03/23 23:14:41  pwest
+// algorithm and functional needed on sun and can be included on Linux, so no need to wrap in ifdef WIN32
+//
 // Revision 1.15  2004/11/16 22:50:20  jimg
 // Fixed tests. Also fixed a bug intorduced in Vector where a template
 // with no name caused some software (any code which depends on the
