@@ -10,6 +10,11 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.28  1998/02/11 22:34:23  jimg
+// Added support for on-the-fly decompression.
+// Added -z flag to suppress requesting data be compressed.
+// Added new trace options (libwww core, etc.).
+//
 // Revision 1.27  1998/02/05 20:14:04  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -112,7 +117,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.27 1998/02/05 20:14:04 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.28 1998/02/11 22:34:23 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -122,7 +127,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.27 1998/02/05 20:14:04 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.27 $";
+const char *VERSION = "$Revision: 1.28 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -137,9 +142,6 @@ usage(String name)
 	 << "perform the requested operations. In the second, assume" << endl
 	 << "the files are DODS data objects (stored in files or read" << endl
 	 << "from pipes) and process them as if -D were given." <<endl;
-#if 0
-    cerr << "       " << "A: Use Connect's asynchronous mode." << endl;
-#endif
     cerr << "        d: For each URL, get the DODS DDS." << endl;
     cerr << "        a: For each URL, get the DODS DAS." << endl;
     cerr << "        D: For each URL, get the DODS Data." << endl;
@@ -150,24 +152,26 @@ usage(String name)
 	 << endl;
     cerr << "           NB: You can use a `?' for the CE also." << endl;
     cerr << "        k: Keep temporary files created by DODS core" << endl;
-#if 0
-    cerr << "        u: Unescape varibale names, etc." << endl;
-#endif
     cerr << "        m: Request the same URL <num> times." << endl;
+    cerr << "        z: Don't ask the server to compress data." << endl;
     cerr << "        t: <options> trace output; use -td for default." 
          << endl;
-    cerr << "          a: show_anchor_trace." << endl;
-    cerr << "          b: show_bind_trace." << endl;
-    cerr << "          c: show_cache_trace." << endl;
-    cerr << "          l: show_sgml_trace." << endl;
-    cerr << "          m: show_mem_trace." << endl;
-    cerr << "          p: show_protocol_trace." << endl;
-    cerr << "          s: show_stream_trace." << endl;
-    cerr << "          t: show_thread_trace." << endl;
-    cerr << "          u: show_uri_trace." << endl;
-#if 0
-    cerr << "       " << "Without A, use the synchronous mode." << endl;
-#endif
+    cerr << "          a: show anchor trace." << endl;
+    cerr << "          A: show app trace." << endl;
+    cerr << "          b: show bind trace." << endl;
+    cerr << "          c: show cache trace." << endl;
+    cerr << "          h: show auth trace." << endl;
+    cerr << "          i: show pics trace." << endl;
+    cerr << "          k: show core trace." << endl;
+    cerr << "          l: show sgml trace." << endl;
+    cerr << "          m: show mem trace." << endl;
+    cerr << "          p: show protocol trace." << endl;
+    cerr << "          s: show stream trace." << endl;
+    cerr << "          t: show thread trace." << endl;
+    cerr << "          u: show uri trace." << endl;
+    cerr << "          U: show util trace." << endl;
+    cerr << "          x: show mux trace." << endl;
+    cerr << "          z: show all traces." << endl;
     cerr << "       Without D, d or a, print the URL." << endl;
 }
 
@@ -226,7 +230,7 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 int
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:");
+    GetOpt getopt (argc, argv, "AdaDgVvkc:t:m:z");
     int option_char;
     bool async = false;
     bool get_das = false;
@@ -237,6 +241,7 @@ main(int argc, char * argv[])
     bool verbose = false;
     bool trace = false;
     bool multi = false;
+    bool accept_deflate = true;
     int times = 1;
     char *tcode = NULL;
     char *expr = NULL;
@@ -264,6 +269,7 @@ main(int argc, char * argv[])
 		}
 		break;
 	      case 'm': multi = true; times = atoi(getopt.optarg); break;
+	      case 'z': accept_deflate = false; break;
 	      case 'h':
               case '?':
 	      default:
@@ -275,15 +281,21 @@ main(int argc, char * argv[])
 	while ((c = *cc++))
 	    switch (c) {
 	      case 'a': WWWTRACE |= SHOW_ANCHOR_TRACE; break;
+	      case 'A': WWWTRACE |= SHOW_APP_TRACE; break;
 	      case 'b': WWWTRACE |= SHOW_BIND_TRACE; break;
 	      case 'c': WWWTRACE |= SHOW_CACHE_TRACE; break;
+	      case 'h': WWWTRACE |= SHOW_AUTH_TRACE; break;
+	      case 'i': WWWTRACE |= SHOW_PICS_TRACE; break;
+	      case 'k': WWWTRACE |= SHOW_CORE_TRACE; break;
 	      case 'l': WWWTRACE |= SHOW_SGML_TRACE; break;
 	      case 'm': WWWTRACE |= SHOW_MEM_TRACE; break;
 	      case 'p': WWWTRACE |= SHOW_PROTOCOL_TRACE; break;
 	      case 's': WWWTRACE |= SHOW_STREAM_TRACE; break;
 	      case 't': WWWTRACE |= SHOW_THREAD_TRACE; break;
 	      case 'u': WWWTRACE |= SHOW_URI_TRACE; break;
-	      case 'd': break;
+	      case 'U': WWWTRACE |= SHOW_UTIL_TRACE; break;
+	      case 'x': WWWTRACE |= SHOW_MUX_TRACE; break;
+	      case 'z': WWWTRACE = SHOW_ALL_TRACE; break;
 	      default:
 		cerr << "Unrecognized trace option: `" << c << "'" << endl;
 		break;
@@ -297,7 +309,7 @@ main(int argc, char * argv[])
 	if (verbose)
 	    cerr << "Assuming standard input is a DODS data stream." << endl;
 
-	Connect url("stdin", trace);
+	Connect url("stdin", trace, accept_deflate);
 
 	DDS *dds = url.read_data(stdin, gui, async);
 	process_data(url, dds, verbose, async);
@@ -308,7 +320,7 @@ main(int argc, char * argv[])
 	    cerr << "Fetching: " << argv[i] << endl;
 	
 	String name = argv[i];
-	Connect url(name, trace);
+	Connect url(name, trace, accept_deflate);
 
 	if (url.is_local()) {
 	    if (verbose) 
