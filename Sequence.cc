@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.55  2000/08/16 00:38:22  jimg
+// Added the getRowNumber method.
+//
 // Revision 1.54  2000/07/09 22:05:36  rmorris
 // Changes to increase portability, minimize ifdef's for win32 and account
 // for differences in the iostreams implementations.
@@ -355,7 +358,7 @@ Sequence::is_end_of_sequence(unsigned char marker)
 
 Sequence::Sequence(const string &n) 
     : BaseType(n, dods_sequence_c), _level(0), _seq_read_error(false),
-      _seq_write_error(false)
+      _seq_write_error(false), d_row_number(-1)
 {
 }
 
@@ -641,7 +644,17 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 	    return stat;
     }
 
+    d_row_number++;
+
     return stat;
+}
+
+// Return the current row number.
+
+int
+Sequence::getRowNumber()
+{
+  return d_row_number;
 }
 
 // private mfunc. Use this to read from older servers.
@@ -658,6 +671,8 @@ Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse)
 	if (!stat) 
 	    return false;
     }
+
+    d_row_number++;
 
     return stat;
 }
