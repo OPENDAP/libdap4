@@ -14,6 +14,9 @@
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.36  1998/02/04 14:55:30  tom
+ * Another draft of documentation.
+ *
  * Revision 1.35  1998/01/12 14:27:54  tom
  * Second pass at class documentation.
  *
@@ -245,15 +248,24 @@ const int DODS_MAX_ARRAY = DODS_UINT_MAX;
     \end{verbatim}
 
     In addition to the constraint, array dimensions can be
-    ``selected''.  Only selected array dimensions will be sent to the
-    DODS client, and only those parts of the dimension referred to by
-    the constraint will be sent.  The #add_constraint()# function is
-    used to constrain and select a dimension. 
+    ``selected''.  If the selection flag for a particular array
+    dimension is not set to TRUE, that dimension will not be sent to
+    the DODS client.  If the selection flag is set, only those parts
+    of the dimension referred to by the constraint will be sent.  The
+    #add_constraint()# function is used to constrain and select a
+    dimension.
+
+    The words ``selection'' and ``constraint'' can be a little
+    confusing because they seem to refer to a DODS constraint
+    expression.  In the case of an Array, however, they refer to the
+    manner in which the Array is sampled and returned to a client.  A
+    DODS constraint expression can contain a description of how an
+    Array is to be constrained and selected, but it is a much more
+    general structure.
 
     @memo Holds multi-dimensional arrays.
     @see Grid
-    @see List 
-    */
+    @see List */
 
 class Array: public Vector {
 private:

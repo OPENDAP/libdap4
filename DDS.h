@@ -13,6 +13,9 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.23  1998/02/04 14:55:31  tom
+// Another draft of documentation.
+//
 // Revision 1.22  1998/01/12 14:27:56  tom
 // Second pass at class documentation.
 //
@@ -215,10 +218,10 @@
 
     Since the constraint has narrowed the area of interest, the range
     of latitude values has been halved, and there is only one time
-    value in the returned array.  Note that the simple arrays ({\tt
-    lat}, {\tt lon}, and {\tt time}) described in the dataset are also
-    part of the {\tt sst} Grid object.  They can be requested by
-    themselves or as part of that larger object.
+    value in the returned array.  Note that the simple arrays (#lat#,
+    #lon#, and #time#) described in the dataset are also part of the
+    #sst# Grid object.  They can be requested by themselves or as part
+    of that larger object.
 
     See the {\it The DODS User Guide}, or the documentation of the
     BaseType class for descriptions of the DODS data types.

@@ -32,6 +32,9 @@
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.30  1998/02/04 14:55:31  tom
+ * Another draft of documentation.
+ *
  * Revision 1.29  1997/12/18 15:06:10  tom
  * First draft of class documentation, entered in doc++ format,
  * in the comments
@@ -212,9 +215,19 @@
      values so that other mfuncs can tell the type of object without
      parsing the stream themselves.  
 
+     \begin{verbatim}
+     enum ObjectType {
+       unknown_type,
+       dods_das,
+       dods_dds,
+       dods_data,
+       dods_error,
+       web_error
+     };
+     \end{verbatim}
 
-     @memo What type of object is in the stream coming from the data
-     server?  */
+     @memo The type of object in the stream coming from the data
+     server.  */
 
 enum ObjectType {
     unknown_type,
@@ -229,7 +242,15 @@ enum ObjectType {
      which correspond to plain uncompressed data and data compressed
      with GNU's gzip respectively.  
 
-     @memo What type of encoding has been used on the current stream? */
+     \begin{verbatim}
+     enum EncodingType {
+       unknown_enc,
+       x_plain,
+       x_gzip
+     };
+     \end{verbatim}
+
+     @memo The type of encoding used on the current stream. */
 
 enum EncodingType {
     unknown_enc,
@@ -237,17 +258,40 @@ enum EncodingType {
     x_gzip
 };
 
-/** Big description here.  Where does the big description wind up? I
-    don't know, do you?  But if I were it, I'd find myself a good warm
-    little hole and curl up in it and wait for someone to find me I
-    hoper it doesn't take too long, I don't know if I can wait until
-    spring maybe the snow will bury me and they won't find me until
-    next April or maybe May, does it always thaw in May? 
+/** Connect objects are used as containers for information pertaining
+    to the connection a user program makes to a dataset. The
+    dataset may be either local (for example, a file on the user's own
+    computer) or a remote dataset. In the latter case a DODS URL will
+    be used to reference the dataset, instead of a filename.
 
-    @memo This is the Connect class...
-    @author jhrg
-*/
+    Connect contains methods which can be used to read the DODS DAS and
+    DDS objects from the remote dataset as well as reading 
+    data. The class understands in a rudimentary way how DODS
+    constraint expressions are formed and how to manage them.
 
+    Connect also provides additional services such as automatic
+    decompression of compressed data, transmission progress reports
+    and error processing.  Refer to the Gui and Error classes for more
+    information about these features.
+
+    The Connect class must be specialized for each different.
+    client-library. Connect is only used on the client-side of a DODS
+    client-server connection.
+
+    The Connect class contains a linked list of #constraint# objects.
+    These are simple C structures containing a constraint expression
+    and a DDS object.  The DDS object contains data received from the
+    server, and the accompanying constraint expression was a part of
+    the data request.  To support multiple connections to a single
+    DODS server, you can use either one Connect object with many
+    entries in the #constraint# list, or multiple Connect objects.
+
+    @memo Holds information about the link from a DODS client to a
+    dataset.
+    @see DDS
+    @see DAS
+    @author jhrg 
+    */
 
 class Connect {
 private:
@@ -264,7 +308,7 @@ private:
 
     bool _local;		// Is this a local connection
 
-    // The following members are vaild only if _LOCAL is false.
+    // The following members are valid only if _LOCAL is false.
 
     static int _connects;	// Are there any remote connect objects?
 #if 0
@@ -364,165 +408,358 @@ private:
     Connect();			// Never call this.
 
 public:
-  /** This is for creating an instance of Connect.
+  /** The Connect constructor requires a ``name,'' which is the URL to
+      which the connection is to be made.  You can specify that you
+      want to see the ``verbose'' form of any WWW library errors.
+      This can be useful for debugging.  The default is to suppress
+      these errors.
 
-    @memo Create an instance of Connect. */
+      @memo Create an instance of Connect. */
     Connect(String name, bool www_verbose_errors = false); 
+
+  /** The Connect copy construtor. */
     Connect(const Connect &copy_from);
     virtual ~Connect();
 
     Connect &operator=(const Connect &rhs);
 
-  /** Fetch the named URL and put its contents into the member
-      \_OUTPUT.  If ASYNC is true, then the operation is asynchronous;
-      the mfunc returns before the data transfer is complete.  Returns
-      false if an error is detected, otherwise returns true.  
+  /** Fetch the contents of the indicated URL and put its contents
+      into an output file.  A pointer to this file can be retrieved
+      with the #output()# function.  If {\it async} is true, then the
+      operation is asynchronous, and the function returns before the
+      data transfer is complete.
 
-      @memo Dereference a URL.  */
+      Note that the asynchronous transfer feature of DODS is not
+      currently enabled.  All invocations of this function will be
+      synchronous, no matter what the value of the {\it async}
+      parameter. 
+
+      @memo Dereference a URL.  
+      @return Returns false if an error is detected, otherwise returns
+      true.  
+      @param url A String containing the URL to be dereferenced.  The
+      data referred to by this URL will wind up available through a
+      file pointer retrieved from the #output()# function.
+      @param async If true, the read operation will proceed
+      asynchronously.  In other words, the function may return before
+      the read is complete.
+      @see Connect::output */
     bool fetch_url(String &url, bool async = false);
 
-  /** Returns a FILE * which can be used to read the data from
-      the object.  
+  /** Returns a file pointer which can be used to read the data
+      fetched from a URL.
 
-      @memo Access the information contained in this instance.
-      */
+      Note that occasionally this may be directed to #stdout#.  If this
+      is the case, users should avoid closing it.
+
+      @memo Access the information contained in this Connect instance.
+      @see Connect::fetch_url
+      @return A #(FILE *)# indicating a file containing the data
+      received from a dereferenced URL.  */
     FILE *output();
 
-  /** Returns a XDR * which is tied to the current output()
-      stream.  
+  /** The data retrieved from a remote DODS server will be in XDR
+      format.  Use this function to initialize an XDR decoder for that
+      data and to return an XDR pointer to the data.
 
       @memo Access the XDR input stream (source) for this connection.
+
+      @return Returns a XDR pointer tied to the current output
+      stream.  
+      @see Connect::output
       */
     XDR *source();
 
-  /** Return true is the object refers to a local file, otherwise
-      returns false.  
+  /** The Connect class can be used for ``connections'' to local
+      files.  This means that local files can continue to be accessed
+      with a DODS-compliant API.
 
       @memo Does this object refer to a local file?  
-      */
+
+      @return Return TRUE if the Connect object refers to a local
+      file, otherwise returns FALSE.  */
     bool is_local();
 
-  /** Return the object's URL in a String. If CE is false, do not
-      include the constraint expression part of the URL (the `?' and
-      anything following it). If the object refers to local data,
-      return the null string.  
+  /** Return the Connect object's URL in a String.  The URL was set by
+      the class constructor, and may not be reset.  If you want to
+      open another URL, you must create another Connect object.  There
+      is a Connections class created to handle the management of
+      multiple Connect objects.
 
       @memo Get the object's URL.
+      @see Connections
+      @return A String containing the URL of the data to which the
+      Connect object refers.  If the object refers to local data,
+      the function returns the null string.  
+      @param CE If TRUE, the returned URL will include any constraint
+      expression enclosed with the Connect object's URL (including the
+      #?#).  If FALSE, any constraint expression will be removed from
+      the URL.  The default is TRUE.
       */
     String URL(bool CE = true);
 
-  /** Return the constraint expression part of the URL. Note that
-      this CE is supplied as part of the URL passed to the Connect's
-      constructor.  It is not the CE passed into the the
-      request\_data(...) mfunc.  Returns a String which contains the
-      object's base CE.  
+  /** Return the constraint expression (CE) part of the Connect URL. Note
+      that this CE is supplied as part of the URL passed to the
+      Connect's constructor.  It is not the CE passed to the 
+      #request_data()# function.
 
       @memo Get the Connect's constraint expression.
-      */
+      @return A String containing the constraint expression (if any)
+      submitted to the Connect object's constructor.  */
     String CE();
 
-  /** During the parse of the message headers, the object type is
-      set. Use this mfunc to read that type information. This will be
-      valid *before* the return object is completely parsed so it can
-      be used to decide whether to call the das, etc. parser on the
-      data remaining in the input stream.  
+  /** During the parse of the message headers returned from the
+      dereferenced URL, the object type is set. Use this function to
+      read that type information. This will be valid {\it before} the
+      return object is completely parsed so it can be used to decide
+      which parser to call to read the data remaining in
+      the input stream.
 
-      @memo Return the type of the most recent object sent from the
-      server.  
-      */
+      The object types are Data, DAS, DDS, Error, and undefined.
+
+      @memo What type is the most recent object sent from the
+      server?
+      @return The type of the object.
+      @see ObjectType */
     ObjectType type();
 
-  /** Encoding types are currently limited to x-plain (no special
+  /** During the parse of the message headers returned from the
+      dereferenced URL, the encoding type is set. Use this function to
+      read that type information. This will be valid {\it before} the
+      return object is completely parsed so it can be used to decide
+      which decoder to call (if any) to read the data remaining in
+      the input stream.
+
+      The encoding types are currently limited to x-plain (no special
       decoding required) and x-gzip (compressed using GNU's gzip).  
 
-      @memo Return the type of encoding used on the data in the
-      stream.  
+      @memo What type of encoding was used on the data in the stream? 
+      @return The type of the compression.
+      @see EncodingType
       */
     EncodingType encoding();
 
+  /** Returns a String containing the version of DODS used by the
+      server. */
     String server_version();
 
-  /** 
+  /** All DODS datasets define a Data Attribute Structure (DAS), to
+      hold a variety of information about the variables in a
+      dataset. This function returns the DAS for the dataset indicated
+      by this Connect object.
 
       @memo Return a reference to the Connect's DAS object. 
+      @return A reference to the DAS object.
+      @see DAS 
       */
     DAS &das();
 
-  /** 
+  /** All DODS datasets define a Data Descriptor Structure (DDS), to
+      hold the data type of each of the variables in a dataset.  This
+      function returns the DDS for the dataset indicated by this
+      Connect object.
 
       @memo Return a reference to the Connect's DDS object. 
+      @return A reference to the DDS object.
+      @see DDS 
       */
     DDS &dds();
 
-  /** 
+  /** The DODS server uses Error objects to signal error conditions to
+      the client.  If an error condition has occurred while fetching a
+      URL, the Connect object will contain an Error object with
+      information about that error.  The Error object may also contain
+      a program to run to remedy the error.  This function returns the
+      latest Error object received by the Connect object.
 
       @memo Get a reference to the last error.
-      @return The last error object sent from the server. If no error has
+      @return The last Error object sent from the server. If no error has
       been sent from the server, returns a reference to an empty error
       object. 
+      @see Error 
       */
     Error &error();
 
-  /** Recall from time's abysmal chasm...
+  /** The DODS client can display graphic information to a user with
+      the DODS Graphical User Interface (GUI).  Typically used for a
+      progress indicator, the GUI is simply a shell capable of
+      interpreting arbitrary graphical commands (with tcl/tk).  The
+      Gui object is created anew when the Connect object is first
+      created.  This function returns a pointer to the Gui object, so
+      you can modify the GUI as desired.
 
-      @memo Returns a GUI object.
-      @return a pointer to the GUI object associated with this
+      @memo Returns a pointer to a Gui object.
+      @return a pointer to the Gui object associated with this
       connection. 
-      @see GUI 
+      @see Gui 
       */
     Gui *gui();
 
   /** For each data access there is an associated constraint
       expression (even if it is null) and a resulting DDS which
       describes the type(s) of the variables that result from
-      evaluating the CE in the environment of the dataset referred to
-      by a particular instance of Connect. \URL [blah]{blah} \Ref{IOUmanual}
+      evaluating the CE for some dataset.  
+
+      The constraint expression and DDS returned from a server are
+      stored in the Connect object, in a linked list of #constraint#
+      structures. Use this function to return the first element of
+      that list.
+
+      Note that the constraint expression sent to a server with
+      the #request_data()# function is not necessarily the same as the
+      one used to initialize the Connect object.  This means that the
+      constraint expression returned may not match the one returned by
+      the #CE()# function.
 
       @memo Returns the first constraint expression
-      @see DODSFilter
+      @return A pseudo-index (Pix) corresponding to the first element
+      in the list of #constraint# objects.  You can use the
+      #constraint_expression()# and the #constraint_dds()# functions
+      to see the individual elements of the indicated #constraint# object.
+
+      @see Connect::constraint_expression
+      @see Connect::constraint_dds
       */
     Pix first_constraint();
 
-  /** 
+  /** Use this function to find the next #constraint# object in the
+      list of such objects.
 
-      @memo Next constraint. 
+      See the description of #Connect::first_constraint# for a
+      description of the #constraint# structure.
+
+      @memo Increments the #constraint# object index.
+      @param p A pseudo-index (Pix) to increment.  On return, this
+      will point to the next #constraint# object in the list.
+      @see Connect:first_constraint
       */
     void next_constraint(Pix &p);
 
-  /** 
+  /** Return the constraint expression component of the #constraint#
+      object indicated by the input index.
 
-      @memo Constraint Expression.
+      @memo Returns the constraint expression corresponding to data
+      received from some server.
+      @param p A pseudo-index (Pix) indicating a specific #constraint#
+      object.
+      @return A String containing the constraint expression
+      corresponding to some data received from a DODS server.
       */
     String constraint_expression(Pix p);
 
-  /** 
+  /** Returns the constrained DDS (and data) returned by a data
+      request to a DODS server.  This is the DDS component of the
+      #constraint# object indicated by the input index.
 
-      @memo Constrained DDS.
+      You can also see the DDS of the most recent data request with
+      the #DDS()# function.
+
+      @memo Returns the data and DDS retrieved from a remote site.
+      @param p A pseudo-index (Pix) indicating a specific #constraint#
+      object.
+      @return A pointer to a DDS containing the returned DDS, and the
+      data correpsonding to it.  
+      @see Connect::dds
       */
     DDS *constraint_dds(Pix p);
 
-  /** Get the DAS, DDS and data from the server/cgi combination using
-      a URL. 
+  /** Reads the DAS corresponding to the dataset in the Connect
+      object's URL. 
 
-      @memo Get the DAS
+      @memo Get the DAS from a server.
+      @return TRUE if the DAS was successfully received. FALSE
+      otherwise. 
+      @param gui If TRUE, use the client GUI.  Most DAS's are too
+      small to make this worthwhile.
+      @param ext The extension to append to the URL to retrieve the
+      dataset DAS.  This parameter is included for compatibility with
+      future versions of the DODS software.  It currently defaults to
+      the only possible working value, ``das''.
       */
     bool request_das(bool gui = false,  const String &ext = "das");
+
+  /** Reads the DDS corresponding to the dataset in the Connect
+      object's URL. 
+
+      @memo Get the DDS from a server.
+      @return TRUE if the DDS was successfully received. FALSE
+      otherwise. 
+      @param gui If TRUE, use the client GUI.  Most DDS's are too
+      small to make this worthwhile.
+      @param ext The extension to append to the URL to retrieve the
+      dataset DDS.  This parameter is included for compatibility with
+      future versions of the DODS software.  It currently defaults to
+      the only possible working value, ``dds''.
+      */
     bool request_dds(bool gui = false, const String &ext = "dds");
 
-  /** Something.
+  /** Reads data from the Connect object's server.  This function sets
+      up the BaseType variables in a DDS, and sends a request using
+      #fetch_url()#.  Upon return, it caches the data on a disk, then
+      unpacks it into the DDS storage.
 
-      @return The actual return type of request\_data and read\_data
-      is DataDDS. 
-      */
+      @return A reference to the DataDDS object which contains the
+      variables (BaseType pointers) generated from the DDS sent with
+      the data. These variables are guaranteed to be large enough to
+      hold the data, even if the constraint expression changed the
+      type of the variable from that which appeared in the original
+      DDS received from the dataset when this connection was made.
+      @param expr A string containign a constraint expression.  The
+      function adds the clauses of this constraint expression to the
+      Connect object's original CE.  If the constraint expression
+      contains one or more Sequences, these must be the {\it last}
+      objects specified in the projection clause.  If you request N
+      variables and M of them are Sequences, all the M sequences must
+      follow the N-M other variables. 
+      @param gui If this is TRUE, use the DODS client GUI.  See the
+      Gui class for a description of this feature.
+      @param async  If this is TRUE, this function reads data
+      asynchronously, returning before the read completes. Synchronous
+      reads are the default, and the only possible action as of DODS
+      version 2.15.
+      @param ext The extension to append to the URL to retrieve the
+      dataset data.  This parameter is included for compatibility with
+      future versions of the DODS software.  It currently defaults to
+      the only possible working value, ``dods''.
+      @see DataDDS
+      @see Gui */
     DDS *request_data(String expr, bool gui = true, bool async = false, 
 		      const String &ext = "dods");
-    DDS *read_data(FILE *data_source, bool gui_p = true, bool async = false);
+
+  /** This function reads cached data from a disk file.
+
+      @return A reference to the DataDDS object which contains the
+      variables (BaseType pointers) generated from the DDS sent with
+      the data. 
+      @param gui If this is TRUE, use the DODS client GUI.  See the
+      Gui class for a description of this feature.
+      @param async  If this is TRUE, this function reads data
+      asynchronously, returning before the read completes. Synchronous
+      reads are the default, and the only possible action as of DODS
+      version 2.15.
+      @param ext The extension to append to the URL to retrieve the
+      dataset data.  This parameter is included for compatibility with
+      future versions of the DODS software.  It currently defaults to
+      the only possible working value, ``dods''.
+      @see DataDDS
+      @see Gui 
+      */
+    DDS *read_data(FILE *data_source, bool gui = true, bool async = false);
 
   /** For every new data read initiated using this connect, there is a
       DDS and constraint expression. The data itself is stored in the
-      dds in the constraint object.  
+      DDS in the #constraint# object.  Use this function to create a
+      new #constraint# object from an expression and a DDS, and add it
+      to the Connect object's internal list.
 
-      @memo Appends a constraint expression to the URL?
+      @memo Appends a constraint object to the Connect object's
+      internal list.
+      @param expr A constraint expression to be included in the next
+      #constraint# object.
+      @param dds A DDS object to be included in the next
+      #constraint# object.
+      @return A pointer to the newly created #constraint# object
+      containing the input components.
       */
     DDS *append_constraint(String expr, DDS &dds);
 };

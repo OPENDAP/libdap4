@@ -19,6 +19,9 @@
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.32  1998/02/04 14:55:32  tom
+ * Another draft of documentation.
+ *
  * Revision 1.31  1998/01/12 14:27:59  tom
  * Second pass at class documentation.
  *
@@ -340,8 +343,9 @@ public:
       This function, to be useful, must be specialized for the API and
       data format in use.  
 
-      @return The base implentation returns -1.  Sub-classes specific
-      to a particular API will have a more complete implementation.  
+      @return The base implentation returns -1, indicating that the
+      length is not known.  Sub-classes specific to a particular API
+      will have a more complete implementation.
       */
     virtual int length();
     

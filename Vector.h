@@ -12,6 +12,9 @@
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.19  1998/02/04 14:55:33  tom
+ * Another draft of documentation.
+ *
  * Revision 1.18  1998/01/12 14:28:00  tom
  * Second pass at class documentation.
  *
@@ -103,7 +106,9 @@
 
   /** Holds a one-dimensional array of DODS data types.  This class
       takes two forms, depending on whether the elements of the vector
-      are themselves simple of compound objects.
+      are themselves simple or compound objects. This class contains
+      common functionality for the List and Array classes, and should
+      rarely be used directly.
 
       When each element of the class is a simple data type, the Vector
       is implemented as a simple array of C types, rather than as an
@@ -115,13 +120,16 @@
 
       If the elements of the vector are themselves compound data
       types, the array is stored as a vector of BaseType pointers (see
-      the g++ class {\bf BaseTypePtrVec}). The template is still used to
+      the DODS class {\bf BaseTypePtrVec}). The template is still used to
       hold information in common to all the members of the array, but
       is not used to pass information to and from the application
       program. 
 
-      @memo Holds an array of DODS data types.  
-      @see BaseType */
+      @memo Holds a one-dimensional collection of DODS data types.  
+      @see BaseType 
+      @see List
+      @see Array
+      */
 
 class Vector: public BaseType {
 private:
@@ -149,7 +157,7 @@ public:
       @param t The type of the resulting Vector object, from the Type
       enum list.  There is no DODS Vector object, so all uses of this
       method will be from the List or Array classes.  This defaults to
-      {\tt dods_null_c}.
+      #dods_null_c#.
 
       @see Type
       @memo The List constructor.  */
@@ -233,24 +241,38 @@ public:
       {\it val} points to an array large enough to hold N instances of
       the DODS class used to represent that type.
 
+      Use this function only with Vectors containing simple DODS
+      types.  See #set_vec()# to access members of Vectors containing
+      compound types.
+
       @return The number of bytes used to store the array.
       @param val A pointer to a pointer to the memory into which the
       class data will be copied.  If the value pointed to is NULL,
       memory will be allocated to hold the data, and the pointer value
       modified accordingly.  The calling program is responsible for
-      deallocating the memory indicated by this pointer.  */
+      deallocating the memory indicated by this pointer.  
+      @see Vector::set_vec
+      */
     virtual unsigned int buf2val(void **val);
 
   /** Sets an element of the vector to a given value.  If the type of
       the input and the type of the Vector do not match, an error
       condition is returned.
+
+      Use this function only with Vectors containing compound DODS
+      types.  See #buf2val()# to access members of Vectors containing
+      simple types.
+
+
  
       @memo Sets element #i# to value #val#.
       @return TRUE if the values were successfully set. FALSE if there
       was a type mismatch.
       @param i The index of the element to be changed.
       @param val A pointer to the value to be inserted into the
-      array.  */
+      array.  
+      @see Vector::buf2val
+      */
     bool set_vec(int i, BaseType *val);
 
   /** Resizes a Vector.  If the input length is greater than the
