@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.6.exp,v $
-# Revision 1.1  1994/12/21 17:01:37  jimg
+# Revision 1.2  1995/12/06 21:58:50  jimg
+# Removed `List List' variables.
+#
+# Revision 1.1  1994/12/21  17:01:37  jimg
 # Added these to the testsuite.
 #
 
@@ -22,7 +25,7 @@ set test_out "Status from parser: 1
 DDS past semantic check
 DDS past full semantic check
 Dataset {
-    List List Int32 i\[10\]\[20\];
+    List Int32 i\[10\]\[20\];
     Structure {
         Int32 j;
         Int32 i;

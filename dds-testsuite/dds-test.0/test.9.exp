@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.9.exp,v $
-# Revision 1.2  1995/01/19 22:05:25  jimg
+# Revision 1.3  1995/12/06 21:58:55  jimg
+# Removed `List List' variables.
+#
+# Revision 1.2  1995/01/19  22:05:25  jimg
 # Fixed for new class hierarchy.
 #
 # Revision 1.1  1994/12/21  17:01:41  jimg
@@ -25,7 +28,7 @@ set test_out "Status from parser: 1
 DDS past semantic check
 DDS past full semantic check
 Dataset {
-    List List Int32 i\[10\]\[20\];
+    List Int32 i\[10\]\[20\];
     Sequence {
         String name;
         Int32 age;
