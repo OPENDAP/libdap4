@@ -1,0 +1,10 @@
+The data:
+Grid {
+ ARRAY:
+    String bears[i = 1][j = 1][l = 1];
+ MAPS:
+    Int32 i[i = 1];
+    Float32 j[j = 1];
+    Int16 l[l = 1];
+} bears = { ARRAY: {{{"a"}}} MAPS: {20}, {4}, {9} };
+
