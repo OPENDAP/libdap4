@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.109 2000/03/28 16:33:45 jimg Exp $
+# $Id: Makefile.in,v 1.110 2000/03/28 17:01:57 jimg Exp $
 
 @SET_MAKE@
 
@@ -243,8 +243,8 @@ cgi-util-test: libdap++.a cgi_util.o $(TESTOBJS)
 gui-test: util.o dods_gui.c Gui.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST -c -g3 -O0 Gui.cc
 	$(CC) $(CPPFLAGS) $(CFLAGS) -DTEST -c -g3 -O0 dods_gui.c
-	$(CXX) $(LDFLAGS) -o gui-test Gui.o util.o dods_gui.o libdap++.a \
-		$(LIBS) $(XTRALIBS)
+	$(CXX) $(LDFLAGS) -o gui-test Gui.o util.o dods_gui.o libdap++-gui.a \
+		$(LIBS) $(GUILIBS) $(XTRALIBS)
 
 # The grammar targets.
 
@@ -498,6 +498,7 @@ binary-tar:
 		--file DODS-dap-library-$(version)-$(host).tar.gz \
 		--exclude '*/CVS' \
 		DODS/lib/libdap++.a \
+		DODS/lib/libdap++-gui.a \
 		DODS/include && \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-$(host)-tools-$(version).tar.gz \
