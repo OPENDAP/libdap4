@@ -15,10 +15,14 @@
 //
 // jhrg 9/15/94
 
-/* $Log: Grid.h,v $
-/* Revision 1.23  1997/06/05 23:16:13  jimg
-/* Added components() and projection_yields_grid() mfuncs.
-/*
+/* 
+ * $Log: Grid.h,v $
+ * Revision 1.24  1997/08/11 18:19:16  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.23  1997/06/05 23:16:13  jimg
+ * Added components() and projection_yields_grid() mfuncs.
+ *
  * Revision 1.22  1997/03/08 19:02:03  jimg
  * Changed default param to check_semantics() from  to String()
  * and removed the default from the argument list in the mfunc definition

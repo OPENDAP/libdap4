@@ -11,10 +11,13 @@
 //
 // jhrg 10/27/96
 
-/* $Log: TestUInt32.h,v $
-/* Revision 1.1  1996/10/28 23:10:05  jimg
-/* Added.
-/*
+/* 
+ * $Log: TestUInt32.h,v $
+ * Revision 1.2  1997/08/11 18:19:29  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.1  1996/10/28 23:10:05  jimg
+ * Added.
  */
 
 #ifndef _TestUInt32_h

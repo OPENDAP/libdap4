@@ -11,10 +11,14 @@
 //
 // jhrg 1/12/95
 
-/* $Log: TestSequence.h,v $
-/* Revision 1.10  1997/07/15 21:55:30  jimg
-/* Changed return type of the length member function.
-/*
+/* 
+ * $Log: TestSequence.h,v $
+ * Revision 1.11  1997/08/11 18:19:27  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.10  1997/07/15 21:55:30  jimg
+ * Changed return type of the length member function.
+ *
  * Revision 1.9  1996/05/31 23:30:30  jimg
  * Updated copyright notice.
  *

@@ -16,10 +16,14 @@
 // AttrVHMap (or one of its decendents). Using "" as the initialized creates
 // a temporary object according to g++'s warnings.
 
-/* $Log: AttrTable.h,v $
-/* Revision 1.17  1997/08/09 21:20:06  jimg
-/* Changed the names of AttrTable_to_String and String_to_AttrTable.
-/*
+/* 
+ * $Log: AttrTable.h,v $
+ * Revision 1.18  1997/08/11 18:19:11  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.17  1997/08/09 21:20:06  jimg
+ * Changed the names of AttrTable_to_String and String_to_AttrTable.
+ *
  * Revision 1.16  1997/06/06 03:11:34  jimg
  * Added mfuncs which have char * parameters for those mfuncs which accept both
  * Pix and String parameters. This avoids a conflict between promotion of

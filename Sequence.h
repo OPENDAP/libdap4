@@ -17,10 +17,14 @@
 //
 // jhrg 9/14/94
 
-/* $Log: Sequence.h,v $
-/* Revision 1.27  1997/07/15 21:54:12  jimg
-/* See Sequence.cc for info on changes to the length member function.
-/*
+/* 
+ * $Log: Sequence.h,v $
+ * Revision 1.28  1997/08/11 18:19:18  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.27  1997/07/15 21:54:12  jimg
+ * See Sequence.cc for info on changes to the length member function.
+ *
  * Revision 1.26  1997/03/08 19:02:07  jimg
  * Changed default param to check_semantics() from  to String()
  * and removed the default from the argument list in the mfunc definition

@@ -10,10 +10,14 @@
 //
 // jhrg 9/7/94
 
-/* $Log: Float64.h,v $
-/* Revision 1.18  1996/12/02 23:10:17  jimg
-/* Added dataset as a parameter to the ops member function.
-/*
+/* 
+ * $Log: Float64.h,v $
+ * Revision 1.19  1997/08/11 18:19:15  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.18  1996/12/02 23:10:17  jimg
+ * Added dataset as a parameter to the ops member function.
+ *
  * Revision 1.17  1996/06/04 21:33:26  jimg
  * Multiple connections are now possible. It is now possible to open several
  * URLs at the same time and read from them in a round-robin fashion. To do

@@ -10,10 +10,14 @@
 //
 // jhrg 1/12/95
 
-/* $Log: TestStr.h,v $
-/* Revision 1.8  1996/05/31 23:30:32  jimg
-/* Updated copyright notice.
-/*
+/* 
+ * $Log: TestStr.h,v $
+ * Revision 1.9  1997/08/11 18:19:28  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.8  1996/05/31 23:30:32  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.7  1996/05/16 22:50:23  jimg
  * Dan's changes for version 2.0. Added a parameter to read that returns
  * an error code so that EOF can be distinguished from an actual error when

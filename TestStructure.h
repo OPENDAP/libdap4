@@ -11,10 +11,14 @@
 //
 // jhrg 1/12/95
 
-/* $Log: TestStructure.h,v $
-/* Revision 1.10  1996/05/31 23:30:35  jimg
-/* Updated copyright notice.
-/*
+/* 
+ * $Log: TestStructure.h,v $
+ * Revision 1.11  1997/08/11 18:19:28  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.10  1996/05/31 23:30:35  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.9  1996/05/16 22:50:24  jimg
  * Dan's changes for version 2.0. Added a parameter to read that returns
  * an error code so that EOF can be distinguished from an actual error when

@@ -10,10 +10,14 @@
 //
 // jhrg 9/7/94
 
-/* $Log: Str.h,v $
-/* Revision 1.21  1997/05/13 23:34:22  jimg
-/* Changed max_str_len to 32k - a temporary fix for String variables
-/*
+/* 
+ * $Log: Str.h,v $
+ * Revision 1.22  1997/08/11 18:19:19  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.21  1997/05/13 23:34:22  jimg
+ * Changed max_str_len to 32k - a temporary fix for String variables
+ *
  * Revision 1.20  1996/12/02 23:10:27  jimg
  * Added dataset as a parameter to the ops member function.
  *

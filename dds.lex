@@ -29,10 +29,14 @@
    jhrg 8/29/94 
 */
 
-/* $Log: dds.lex,v $
-/* Revision 1.14  1996/10/28 23:43:17  jimg
-/* Added unsigned int to set of possible datatypes.
-/*
+/* 
+ * $Log: dds.lex,v $
+ * Revision 1.15  1997/08/11 18:19:34  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.14  1996/10/28 23:43:17  jimg
+ * Added unsigned int to set of possible datatypes.
+ *
  * Revision 1.13  1996/10/08 17:10:50  jimg
  * Added % to the set of characters allowable in identifier names
  *
@@ -80,7 +84,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.14 1996/10/28 23:43:17 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: dds.lex,v 1.15 1997/08/11 18:19:34 jimg Exp $"};
 
 #include <string.h>
 

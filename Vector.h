@@ -10,11 +10,15 @@
 // This is the interface definition file for the abstract class
 // Vector. Vector is the parent class for List and Array.
 
-/* $Log: Vector.h,v $
-/* Revision 1.12  1997/03/08 19:02:13  jimg
-/* Changed default param to check_semantics() from  to String()
-/* and removed the default from the argument list in the mfunc definition
-/*
+/* 
+ * $Log: Vector.h,v $
+ * Revision 1.13  1997/08/11 18:19:31  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.12  1997/03/08 19:02:13  jimg
+ * Changed default param to check_semantics() from  to String()
+ * and removed the default from the argument list in the mfunc definition
+ *
  * Revision 1.11  1997/02/28 01:29:13  jimg
  * Changed check_semantics() so that it now returns error messages in a String
  * object (passed by reference).

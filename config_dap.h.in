@@ -2,10 +2,14 @@
 #ifndef _DODS_CONFIG_H_
 #define _DODS_CONFIG_H_
 
-/* $Log: config_dap.h.in,v $
-/* Revision 1.23  1997/08/08 00:39:47  jimg
-/* Changed type of dods_byte from unsigned char to char.
-/*
+/* 
+ * $Log: config_dap.h.in,v $
+ * Revision 1.24  1997/08/11 18:19:31  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.23  1997/08/08 00:39:47  jimg
+ * Changed type of dods_byte from unsigned char to char.
+ *
  * Revision 1.22  1997/06/12 22:48:10  jimg
  * Fixed #ifdef HAVE_EXPECT #endif.
  *

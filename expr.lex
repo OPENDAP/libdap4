@@ -26,10 +26,14 @@
   jhrg 9/5/95
 */
 
-/* $Log: expr.lex,v $
-/* Revision 1.14  1997/02/24 18:18:23  jimg
-/* Removed `rule' for "." since it cannot be matched.
-/*
+/* 
+ * $Log: expr.lex,v $
+ * Revision 1.15  1997/08/11 18:19:36  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.14  1997/02/24 18:18:23  jimg
+ * Removed `rule' for "." since it cannot be matched.
+ *
  * Revision 1.13  1996/11/13 19:23:15  jimg
  * Fixed debugging.
  *
@@ -84,7 +88,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.14 1997/02/24 18:18:23 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.15 1997/08/11 18:19:36 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>

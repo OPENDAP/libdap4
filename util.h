@@ -11,10 +11,14 @@
 //
 // jhrg 9/21/94
 
-/* $Log: util.h,v $
-/* Revision 1.23  1997/03/27 18:18:56  jimg
-/* Added dods_progress() prototype. See util.cc.
-/*
+/* 
+ * $Log: util.h,v $
+ * Revision 1.24  1997/08/11 18:18:42  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.23  1997/03/27 18:18:56  jimg
+ * Added dods_progress() prototype. See util.cc.
+ *
  * Revision 1.22  1997/03/08 18:58:57  jimg
  * Changed name of function unique() to unique_names() to avoid a conflict
  * with the STL.

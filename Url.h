@@ -10,10 +10,14 @@
 //
 // jhrg 9/7/94
 
-/* $Log: Url.h,v $
-/* Revision 1.12  1996/05/31 23:30:41  jimg
-/* Updated copyright notice.
-/*
+/* 
+ * $Log: Url.h,v $
+ * Revision 1.13  1997/08/11 18:19:30  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.12  1996/05/31 23:30:41  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.11  1996/03/05 01:10:34  jimg
  * Fixed Comments.
  *

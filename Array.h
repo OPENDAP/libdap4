@@ -12,11 +12,15 @@
 //
 // jhrg 9/6/94
 
-/* $Log: Array.h,v $
-/* Revision 1.32  1997/03/08 19:01:54  jimg
-/* Changed default param to check_semantics() from  to String()
-/* and removed the default from the argument list in the mfunc definition
-/*
+/* 
+ * $Log: Array.h,v $
+ * Revision 1.33  1997/08/11 18:19:10  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.32  1997/03/08 19:01:54  jimg
+ * Changed default param to check_semantics() from  to String()
+ * and removed the default from the argument list in the mfunc definition
+ *
  * Revision 1.31  1997/02/28 01:29:11  jimg
  * Changed check_semantics() so that it now returns error messages in a String
  * object (passed by reference).

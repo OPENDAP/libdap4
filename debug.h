@@ -8,10 +8,14 @@
   jhrg 10/13/94
 */
   
-/* $Log: debug.h,v $
-/* Revision 1.5  1996/11/25 03:43:08  jimg
-/* Added DODS_PERF macro.
-/*
+/* 
+ * $Log: debug.h,v $
+ * Revision 1.6  1997/08/11 18:19:35  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.5  1996/11/25 03:43:08  jimg
+ * Added DODS_PERF macro.
+ *
  * Revision 1.4  1996/08/09 18:20:46  jimg
  * Changed DEBUG and DEBUG2 to DODS_DEBUG and DODS_DEBUG2 to avoid conflicts
  * with the WWW libraries use of that name (which it always defines...).

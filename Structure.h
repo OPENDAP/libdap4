@@ -14,11 +14,15 @@
 //
 // jhrg 9/14/94
 
-/* $Log: Structure.h,v $
-/* Revision 1.22  1997/03/08 19:02:10  jimg
-/* Changed default param to check_semantics() from  to String()
-/* and removed the default from the argument list in the mfunc definition
-/*
+/* 
+ * $Log: Structure.h,v $
+ * Revision 1.23  1997/08/11 18:19:20  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.22  1997/03/08 19:02:10  jimg
+ * Changed default param to check_semantics() from  to String()
+ * and removed the default from the argument list in the mfunc definition
+ *
  * Revision 1.21  1997/02/28 01:29:10  jimg
  * Changed check_semantics() so that it now returns error messages in a String
  * object (passed by reference).

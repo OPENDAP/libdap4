@@ -16,10 +16,13 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.34  1997/03/08 19:01:57  jimg
-/* Changed default param to check_semantics() from  to String()
-/* and removed the default from the argument list in the mfunc definition
+/* Revision 1.35  1997/08/11 18:19:12  jimg
+/* Fixed comment leaders for new CVS version
 /*
+ * Revision 1.34  1997/03/08 19:01:57  jimg
+ * Changed default param to check_semantics() from  to String()
+ * and removed the default from the argument list in the mfunc definition
+ *
  * Revision 1.33  1997/02/28 01:27:52  jimg
  * Changed check_semantics() so that it now returns error messages in a String
  * object (passed by reference).

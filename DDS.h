@@ -12,117 +12,119 @@
 //
 // jhrg 9/8/94
 
-/* $Log: DDS.h,v $
-/* Revision 1.20  1997/03/05 08:35:03  jimg
-/* Added bool parameter `compressed' (defaults to true) to the send member
-/* function. See DDS.cc.
-/*
- * Revision 1.19  1997/03/03 08:17:17  reza
- * Changed default error object's output stream to cout. This will send it
- * to the client side (versus the local server's log file, cerr).
- *
- * Revision 1.18  1996/12/03 00:14:58  jimg
- * Added ostream and bool params to parse_constraint(). The bool parameter is
- * used to tell the member function that it is running in the server of the
- * client. The ostream is the sink for error objects (server side) or messages
- * (client side).
- *
- * Revision 1.17  1996/12/02 23:14:54  jimg
- * Added `filename' field and access functions. This field is for recording
- * the filename associated with the dataset from which the DDS is generated.
- * It does not actually have to be a filename; rather it is intended to be
- * used by BaseType's read() member function when that code must access some
- * OS controlled resource to get data for a particular variable. For most
- * systems it will be a file, while for some systems it may be a RDB or
- * blank.
- *
- * Revision 1.16  1996/06/04 21:33:20  jimg
- * Multiple connections are now possible. It is now possible to open several
- * URLs at the same time and read from them in a round-robin fashion. To do
- * this I added data source and sink parameters to the serialize and
- * deserialize mfuncs. Connect was also modified so that it manages the data
- * source `object' (which is just an XDR pointer).
- *
- * Revision 1.15  1996/05/31 23:29:38  jimg
- * Updated copyright notice.
- *
- * Revision 1.14  1996/05/29 22:08:37  jimg
- * Made changes necessary to support CEs that return the value of a function
- * instead of the value of a variable. This was done so that it would be
- * possible to translate Sequences into Arrays without first reading the
- * entire sequence over the network.
- *
- * Revision 1.13  1996/05/22 18:05:09  jimg
- * Merged files from the old netio directory into the dap directory.
- * Removed the errmsg library from the software.
- *
- * Revision 1.12  1996/04/05 00:21:28  jimg
- * Compiled with g++ -Wall and fixed various warnings.
- *
- * Revision 1.11  1996/04/04 18:41:07  jimg
- * Merged changes from version 1.1.1.
- *
- * Revision 1.10  1996/03/05 18:32:26  jimg
- * Added the clause and function subclasses. Clause is used to hold a single
- * clause of the current CE. Clause has ctors, a dtor (which is currently
- * broken) and member function used to get the boolean value of the clause.
- * Function is used to hold a single pointer to either a function returning a
- * boolean or a BaseType *. The DDS class contains a list of clauses and a list
- * of functions.
- *
- * Revision 1.9  1996/02/01 17:43:10  jimg
- * Added support for lists as operands in constraint expressions.
- *
- * Revision 1.8  1995/12/09  01:06:39  jimg
- * Added changes so that relational operators will work properly for all the
- * datatypes (including Sequences). The relational ops are evaluated in
- * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
- *
- * Revision 1.7  1995/12/06  21:05:08  jimg
- * Added print_constrained(): prints only those parts of the DDS that satisfy
- * the constraint expression (projection + array selection).
- * Added eval_constraint(): given the text of a constraint expression, evaluate
- * it in the environment of the current DDS.
- * Added mark*(): add the named variables to the current projection.
- * Added send(): combines many functions like reading and serializing variables
- * with constraint evaluation.
- *
- * Revision 1.6.2.2  1996/03/01 00:06:11  jimg
- * Removed bad attempt at multiple connect implementation.
- *
- * Revision 1.6.2.1  1996/02/23 21:37:26  jimg
- * Updated for new configure.in.
- * Fixed problems on Solaris 2.4.
- *
- * Revision 1.6  1995/02/10  02:30:49  jimg
- * Misc comment edits.
- *
- * Revision 1.5  1994/11/03  04:58:03  reza
- * Added two overloading for function parse to make it consistent with DAS
- * class. 
- *
- * Revision 1.4  1994/10/18  00:20:47  jimg
- * Added copy ctor, dtor, duplicate, operator=.
- * Added var() for const char * (to avoid confusion between char * and
- * Pix (which is void *)).
- * Switched to errmsg library.
- * Added formatting to print().
- *
- * Revision 1.3  1994/09/23  14:42:23  jimg
- * Added mfunc check_semantics().
- * Replaced print mfunc stub with real code.
- * Fixed some errors in comments.
- *
- * Revision 1.2  1994/09/15  21:09:00  jimg
- * Added many classes to the BaseType hierarchy - the complete set of types
- * described in the DODS API design documet is now represented.
- * The parser can parse DDS files.
- * Fixed many small problems with BaseType.
- * Added CtorType.
- *
- * Revision 1.1  1994/09/08  21:09:42  jimg
- * First version of the Dataset descriptor class. 
- */
+// $Log: DDS.h,v $
+// Revision 1.21  1997/08/11 18:19:14  jimg
+// Fixed comment leaders for new CVS version
+//
+// Revision 1.20  1997/03/05 08:35:03  jimg
+// Added bool parameter `compressed' (defaults to true) to the send member
+// function. See DDS.cc.
+//
+// Revision 1.19  1997/03/03 08:17:17  reza
+// Changed default error object's output stream to cout. This will send it
+// to the client side (versus the local server's log file, cerr).
+//
+// Revision 1.18  1996/12/03 00:14:58  jimg
+// Added ostream and bool params to parse_constraint(). The bool parameter is
+// used to tell the member function that it is running in the server of the
+// client. The ostream is the sink for error objects (server side) or messages
+// (client side).
+//
+// Revision 1.17  1996/12/02 23:14:54  jimg
+// Added `filename' field and access functions. This field is for recording
+// the filename associated with the dataset from which the DDS is generated.
+// It does not actually have to be a filename; rather it is intended to be
+// used by BaseType's read() member function when that code must access some
+// OS controlled resource to get data for a particular variable. For most
+// systems it will be a file, while for some systems it may be a RDB or
+// blank.
+//
+// Revision 1.16  1996/06/04 21:33:20  jimg
+// Multiple connections are now possible. It is now possible to open several
+// URLs at the same time and read from them in a round-robin fashion. To do
+// this I added data source and sink parameters to the serialize and
+// deserialize mfuncs. Connect was also modified so that it manages the data
+// source `object' (which is just an XDR pointer).
+//
+// Revision 1.15  1996/05/31 23:29:38  jimg
+// Updated copyright notice.
+//
+// Revision 1.14  1996/05/29 22:08:37  jimg
+// Made changes necessary to support CEs that return the value of a function
+// instead of the value of a variable. This was done so that it would be
+// possible to translate Sequences into Arrays without first reading the
+// entire sequence over the network.
+//
+// Revision 1.13  1996/05/22 18:05:09  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
+// Revision 1.12  1996/04/05 00:21:28  jimg
+// Compiled with g++ -Wall and fixed various warnings.
+//
+// Revision 1.11  1996/04/04 18:41:07  jimg
+// Merged changes from version 1.1.1.
+//
+// Revision 1.10  1996/03/05 18:32:26  jimg
+// Added the clause and function subclasses. Clause is used to hold a single
+// clause of the current CE. Clause has ctors, a dtor (which is currently
+// broken) and member function used to get the boolean value of the clause.
+// Function is used to hold a single pointer to either a function returning a
+// boolean or a BaseType *. The DDS class contains a list of clauses and a list
+// of functions.
+//
+// Revision 1.9  1996/02/01 17:43:10  jimg
+// Added support for lists as operands in constraint expressions.
+//
+// Revision 1.8  1995/12/09  01:06:39  jimg
+// Added changes so that relational operators will work properly for all the
+// datatypes (including Sequences). The relational ops are evaluated in
+// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+//
+// Revision 1.7  1995/12/06  21:05:08  jimg
+// Added print_constrained(): prints only those parts of the DDS that satisfy
+// the constraint expression (projection + array selection).
+// Added eval_constraint(): given the text of a constraint expression, evaluate
+// it in the environment of the current DDS.
+// Added mark*(): add the named variables to the current projection.
+// Added send(): combines many functions like reading and serializing variables
+// with constraint evaluation.
+//
+// Revision 1.6.2.2  1996/03/01 00:06:11  jimg
+// Removed bad attempt at multiple connect implementation.
+//
+// Revision 1.6.2.1  1996/02/23 21:37:26  jimg
+// Updated for new configure.in.
+// Fixed problems on Solaris 2.4.
+//
+// Revision 1.6  1995/02/10  02:30:49  jimg
+// Misc comment edits.
+//
+// Revision 1.5  1994/11/03  04:58:03  reza
+// Added two overloading for function parse to make it consistent with DAS
+// class. 
+//
+// Revision 1.4  1994/10/18  00:20:47  jimg
+// Added copy ctor, dtor, duplicate, operator=.
+// Added var() for const char * (to avoid confusion between char * and
+// Pix (which is void *)).
+// Switched to errmsg library.
+// Added formatting to print().
+//
+// Revision 1.3  1994/09/23  14:42:23  jimg
+// Added mfunc check_semantics().
+// Replaced print mfunc stub with real code.
+// Fixed some errors in comments.
+//
+// Revision 1.2  1994/09/15  21:09:00  jimg
+// Added many classes to the BaseType hierarchy - the complete set of types
+// described in the DODS API design documet is now represented.
+// The parser can parse DDS files.
+// Fixed many small problems with BaseType.
+// Added CtorType.
+//
+// Revision 1.1  1994/09/08  21:09:42  jimg
+// First version of the Dataset descriptor class. 
 
 #ifndef _DDS_h
 #define _DDS_h 1

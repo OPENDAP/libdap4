@@ -12,10 +12,14 @@
 //
 // jhrg 7/25/94
 
-/* $Log: DAS.h,v $
-/* Revision 1.14  1997/06/06 00:43:34  jimg
-/* Removed add_table(char *, ...).
-/*
+/* 
+ * $Log: DAS.h,v $
+ * Revision 1.15  1997/08/11 18:19:14  jimg
+ * Fixed comment leaders for new CVS version
+ *
+ * Revision 1.14  1997/06/06 00:43:34  jimg
+ * Removed add_table(char *, ...).
+ *
  * Revision 1.13  1997/05/13 23:32:16  jimg
  * Added changes to handle the new Alias and lexical scoping rules.
  *
