@@ -10,6 +10,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.28  1996/09/16 18:08:40  jimg
+// Fixed var(const String name) so that it would correctly descend names of the
+// form <base>.<name> where <name> may itself contain `dots'.
+//
 // Revision 1.27  1996/08/12 21:52:41  jimg
 // Fixed a bug in check_semantics where the array name was confused with the
 // dimension names - this may be a bug in the libg++2.7.1 implementation of the
@@ -302,12 +306,26 @@ Grid::buf2val(void **)
 BaseType *
 Grid::var(const String &name)
 {
-    if (_array_var->name() == name)
-	return _array_var;
+    if (name.contains(".")) {
+	String n = (String)name; // cast away const
+	String aggregate = n.before(".");
+	String field = n.from(".");
+	field = field.after(".");
 
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	if (_map_vars(p)->name() == name)
-	    return _map_vars(p);
+	BaseType *agg_ptr = var(aggregate);
+	if (agg_ptr)
+	    return agg_ptr->var(field);	// recurse
+	else
+	    return 0;		// qualified names must be *fully* qualified
+    }
+    else {
+	if (_array_var->name() == name)
+	    return _array_var;
+
+	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	    if (_map_vars(p)->name() == name)
+		return _map_vars(p);
+    }
 
     return 0;
 }    

@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.27  1996/09/16 18:09:49  jimg
+// Fixed var(const String name) so that it would correctly descend names of the
+// form <base>.<name> where <name> may itself contain `dots'.
+//
 // Revision 1.26  1996/08/13 18:37:49  jimg
 // Added void casts to values computed in print_val() for loops.
 //
@@ -297,9 +301,23 @@ Structure::buf2val(void **)
 BaseType *
 Structure::var(const String &name)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p))
-	if (_vars(p)->name() == name)
-	    return _vars(p);
+    if (name.contains(".")) {
+	String n = (String)name; // cast away const
+	String aggregate = n.before(".");
+	String field = n.from(".");
+	field = field.after(".");
+
+	BaseType *agg_ptr = var(aggregate);
+	if (agg_ptr)
+	    return agg_ptr->var(field);	// recurse
+	else
+	    return 0;		// qualified names must be *fully* qualified
+    }
+    else {
+	for (Pix p = _vars.first(); p; _vars.next(p))
+	    if (_vars(p)->name() == name)
+		return _vars(p);
+    }
 
     return 0;
 }

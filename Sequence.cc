@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.31  1996/09/16 18:09:16  jimg
+// Fixed var(const String name) so that it would correctly descend names of the
+// form <base>.<name> where <name> may itself contain `dots'.
+//
 // Revision 1.30  1996/08/26 21:12:59  jimg
 // Changes for version 2.07
 //
@@ -244,9 +248,23 @@ Sequence::add_var(BaseType *bt, Part)
 BaseType *
 Sequence::var(const String &name)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p))
-	if (_vars(p)->name() == name)
-	    return _vars(p);
+    if (name.contains(".")) {
+	String n = (String)name; // cast away const
+	String aggregate = n.before(".");
+	String field = n.from(".");
+	field = field.after(".");
+
+	BaseType *agg_ptr = var(aggregate);
+	if (agg_ptr)
+	    return agg_ptr->var(field);	// recurse
+	else
+	    return 0;		// qualified names must be *fully* qualified
+    }
+    else {
+	for (Pix p = _vars.first(); p; _vars.next(p))
+	    if (_vars(p)->name() == name)
+		return _vars(p);
+    }
 
     return 0;
 }
@@ -355,15 +373,15 @@ Sequence::serialize(const String &dataset, DDS &dds, XDR *sink,
 bool
 Sequence::deserialize(XDR *source, bool reuse = false)
 {
-    unsigned int num, sz = 0;
+    bool stat;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	sz += num = var(p)->deserialize(source, reuse);
-	if (num == 0) 
-	    return (unsigned int)false;
+	stat = var(p)->deserialize(source, reuse);
+	if (!stat) 
+	    return false;
     }
 
-    return sz;
+    return stat;
 }
 
 unsigned int
@@ -420,20 +438,23 @@ Sequence::print_val(ostream &os, String space, bool print_decl_p)
 	os << ";";
 }
 
-// From Todd Karakasian. 
+// print_all_vals is from Todd Karakasian. 
+// We need to integrate this into print_val somehow, maybe by adding an XDR *
+// to Sequence? This can wait since print_val is mostly used for debugging...
 
 void
-Sequence::print_all_vals(ostream& os, XDR *src, bool print_decl_p)
+Sequence::print_all_vals(ostream& os, XDR *src, String space = "",
+			 bool print_decl_p = true)
 {
     if (print_decl_p) {
 	print_decl(os);
 	os << " = ";
     }
     os << "{ ";
-    print_val(os,"",false);
+    print_val(os, space, false);
     while (deserialize(src)) {
 	os << ", ";
-	print_val(os,"",false);
+	print_val(os, space, false);
     }
     if (print_decl_p)
         os << "};";
