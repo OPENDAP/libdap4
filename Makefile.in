@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.61 1997/02/14 23:53:44 jimg Exp $
+# $Id: Makefile.in,v 1.62 1997/03/27 18:16:28 jimg Exp $
 
 @SET_MAKE@
 
@@ -277,16 +277,14 @@ install-headers:
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
 install-geturl: geturl
-	$(INSTALL_PROGRAM) geturl $(etcdir)
-	$(STRIP) $(etcdir)/geturl
+	$(INSTALL_PROGRAM) -s geturl $(etcdir)
 
 install-gui:
 	for tcl_prog in dods_gui.tcl error.tcl progress.tcl; \
 	    do $(INSTALL_PROGRAM) $$tcl_prog $(etcdir); done
 
 install-usage: usage
-	$(INSTALL_PROGRAM) usage $(etcdir)
-	$(STRIP) $(etcdir)/usage
+	$(INSTALL_PROGRAM) -s usage $(etcdir)
 
 install-version:
 	$(INSTALL_PROGRAM) dods-core-version $(etcdir)
@@ -346,7 +344,7 @@ tags:
 .PHONY: depend
 depend: 
 	> dependencies
-	@depend@ -m dependencies -- $(CPPFLAGS) @GPP_INC@ -- \
+	@depend@ -m dependencies -- $(CPPFLAGS) -I@GPP_INC@ -- \
 	$(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
 	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS)
 
