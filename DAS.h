@@ -6,9 +6,14 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.5  1994/09/23 14:38:03  jimg
-/* Fixed broken header. Agian.
+/* Revision 1.6  1994/09/27 22:46:31  jimg
+/* Changed the implementation of the class DAS from one which inherited
+/* from DASVHMap to one which contains an instance of DASVHMap.
+/* Added mfuncs to set/access the new instance variable.
 /*
+ * Revision 1.5  1994/09/23  14:38:03  jimg
+ * Fixed broken header. Agian.
+ *
  * Revision 1.4  1994/09/15  21:08:59  jimg
  * Added many classes to the BaseType hierarchy - the complete set of types
  * described in the DODS API design documet is not represented.
@@ -47,16 +52,25 @@
 
 #include "DASVHMap.h"
 
-class DAS : public DASVHMap {
+class DAS {
 private:
+    DASVHMap map;
 
 protected:
 
 public:
     DAS(AttrTablePtr dflt=(void *)NULL, 
 	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
-    DAS(DAS& a);
     ~DAS();
+
+    Pix first_var();
+    void next_var(Pix &p);
+    String &get_name(Pix p);
+    AttrTable *get_table(Pix p);
+
+    AttrTable *get_table(const String &name);
+    AttrTable *get_table(const char *name); // avoid converting char * to Pix
+    AttrTable *set_table(const String &name, AttrTable *at);
 
     bool parse(String fname);
     bool parse(int fd);
@@ -66,24 +80,5 @@ public:
     bool print(int fd);
     bool print(FILE *out=stdout);
 };
-
-DAS::DAS(AttrTablePtr dflt, unsigned int sz) : DASVHMap(dflt, sz)
-{
-}
-
-inline DAS::DAS(DAS &das) : DASVHMap(das)
-{
-}
-
-// This deletes the pointers to AttrTables allocated during the parse (and at 
-// other times?). I could step through the protected member `cont[]' and
-// delete all the non empty stuff, but I used the iterator member functions
-// instead. jhrg 7/29/94
-
-DAS::~DAS()
-{
-    for(Pix p = this->first(); p; this->next(p))
-	delete this->contents(p);
-}
 
 #endif

@@ -5,7 +5,12 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.4  1994/09/09 15:33:38  jimg
+// Revision 1.5  1994/09/27 22:46:29  jimg
+// Changed the implementation of the class DAS from one which inherited
+// from DASVHMap to one which contains an instance of DASVHMap.
+// Added mfuncs to set/access the new instance variable.
+//
+// Revision 1.4  1994/09/09  15:33:38  jimg
 // Changed the base name of this class's parents from `Var' to DAS.
 // Added print() and removed operator<< (see the comments in AttrTable).
 // Added overloaded versions of print() and parse(). They can be called
@@ -26,28 +31,91 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.4 1994/09/09 15:33:38 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.5 1994/09/27 22:46:29 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <stdio.h>
-
-#include <iostream.h>
-#include <stdiostream.h>
-#include <String.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <iostream.h>
+#include <stdiostream.h>
+#include <Pix.h>
+#include <String.h>
+
 #include "DAS.h"		// follows pragma since DAS.h is interface
 
 int dasrestart(FILE *yyin);
-int dasparse(DASVHMap &table);	// defined in das.tab.c
+int dasparse(DAS &table);	// defined in das.tab.c
+
+DAS::DAS(AttrTablePtr dflt, unsigned int sz) : map(dflt, sz)
+{
+}
+
+// The class DASVHMap knows that it contains pointers to things and correctly
+// makes copies of those things when its copy ctor is called, so DAS can do a
+// simple member-wise copy. Similarly, we don't need to define our own op=.
+
+// This deletes the pointers to AttrTables allocated during the parse (and at 
+// other times?). jhrg 7/29/94
+
+DAS::~DAS()
+{
+    for(Pix p = map.first(); p; map.next(p))
+	delete map.contents(p);
+}
+
+Pix
+DAS::first_var()
+{
+    return map.first();
+}
+
+void
+DAS::next_var(Pix &p)
+{
+    map.next(p);
+}
+
+String &
+DAS::get_name(Pix p)
+{
+    return map.key(p);
+}
+
+AttrTable *
+DAS::get_table(Pix p)
+{
+    return map.contents(p);
+}
+
+AttrTable *
+DAS::get_table(const String &name)
+{
+    return map[name];
+}
+
+// This function is necessary because (char *) arguments will e converted to
+// Pixs (and not Strings). Thus, get_table(name) needs a cast; it seems tough
+// to believe folks will always remember that.
+
+AttrTable *
+DAS::get_table(const char *name)
+{
+    return map[name];
+}
+
+AttrTable *
+DAS::set_table(const String &name, AttrTable *at)
+{
+    return map[name] = at;
+}
 
 /*
   Read attributes from a file. Returns false if unable to open the file,
@@ -175,10 +243,11 @@ DAS::print(FILE *out)
 
     os << "Attributes {" << endl;
 
-    for(Pix p = this->first(); p; this->next(p)) {
-	os << this->key(p) << "{" << endl;
-	this->contents(p)->print(os); // this->contents(p) is an (AttrTable *)
-	os << "}" << endl;
+    for(Pix p = map.first(); p; map.next(p)) {
+	os << "    " << map.key(p) << "{" << endl;
+	// this->contents(p) is an (AttrTable *)
+	map.contents(p)->print(os, "        "); 
+	os << "    }" << endl;
     }
 
     os << "}" << endl;
