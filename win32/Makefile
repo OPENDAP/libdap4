@@ -44,7 +44,8 @@ LIBOBJFLAGS	= $(CFLAGS) $(CPPLIBFLAGS)
 EXEOBJFLAGS	= $(CFLAGS) $(CPPEXEFLAGS)
 
 # Define the targets
-TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe $(OBJDIR)\usage.exe
+TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe \
+		  $(OBJDIR)\usage.exe $(OBJDIR)\deflate.exe
 
 # Define the testsuite objects
 TESTTARGETS	= $(OBJDIR)\das-test.exe \
@@ -152,10 +153,13 @@ $(OBJDIR)\geturl.exe: $(OBJDIR)\geturl.obj
 
 $(OBJDIR)\usage.exe: $(OBJDIR)\usage.obj
 
+$(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj
+
 install:
 	copy $(OBJDIR)\libdap*.lib $(INSTALLLIBDIR)
 	copy $(OBJDIR)\geturl.exe $(INSTALLEXEDIR)
 	copy $(OBJDIR)\usage.exe $(INSTALLEXEDIR)
+	copy $(OBJDIR)\deflate.exe $(INSTALLEXEDIR)
 	copy config_dap.h $(INCLUDEDIR)
 	copy ..\debug.h $(INCLUDEDIR)
 	copy ..\dods-limits.h $(INCLUDEDIR)
@@ -323,19 +327,22 @@ $(OBJDIR)\hash.obj : ..\GNU\hash.cc
 $(OBJDIR)\gnu_error.obj : ..\GNU\error.cc
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\error.cc
 
-# Command-Line Client in console mode
+# Command-Line Client and select utils in console mode
 $(OBJDIR)\geturl.obj    : ..\geturl.cc
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\geturl.cc
 
 $(OBJDIR)\usage.obj    : ..\usage.cc
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\usage.cc
 
+$(OBJDIR)\deflate.obj    : ..\deflate.c
+	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tc ..\deflate.c
+
 # Test Suite Objects.  Not all supported due to "fork" being
 # fundamentally incompatible with win32.  They will compile
 # however.  They can't run under a win32 environment because
 # dejagnu isn't supported there, but you can copy the .exe's
-# into a cygwin setup and execute them there to get partial
-# results.  All these are console-mode applications.
+# into a cygwin setup and execute them there to get results.
+# All these are console-mode applications.
 $(OBJDIR)\das-test.obj   : ..\das-test.cc
 	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\das-test.cc
 $(OBJDIR)\dds-test.obj   : ..\dds-test.cc
