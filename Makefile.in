@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.12 1994/12/21 16:58:10 jimg Exp $
+# $Id: Makefile.in,v 1.13 1995/01/11 16:11:26 jimg Exp $
 
 @SET_MAKE@
 
@@ -140,6 +140,7 @@ dds.tab.o: dds.tab.c		# build using C++ compiler
 
 install: install-libdas++.a install-libdds++.a
 	for d in $(SUBDIRS); do cd $$d; make install; cd ..; done
+	$(INSTALL_DATA) config.h $(includedir)
 
 install-libdas++.a:
 	$(INSTALL_DATA) libdas++.a $(libdir)
