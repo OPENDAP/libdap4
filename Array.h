@@ -7,9 +7,13 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.8  1994/12/14 17:55:23  dan
-/* Removed dim() member function.
+/* Revision 1.9  1994/12/14 20:36:58  dan
+/* Added dimensions() member function definition.
+/* Removed alloc_buf() and free_buf() definitions.
 /*
+ * Revision 1.8  1994/12/14  17:55:23  dan
+ * Removed dim() member function.
+ *
  * Revision 1.7  1994/12/12  20:33:34  jimg
  * Fixed struct dimensions.
  *
@@ -81,9 +85,6 @@ public:
 
     virtual unsigned int size();
 
-    virtual void *alloc_buf(unsigned int n = 0);
-    virtual void free_buf();	// free mem from alloc_buf and deserialize
-
     virtual bool read(String dataset, String var_name, String constraint);
 
     virtual bool serialize(bool flush, unsigned int num = 0);
@@ -98,6 +99,7 @@ public:
     void next_dim(Pix &p);
     int dimension_size(Pix p);
     String dimension_name(Pix p);
+    unsigned int dimensions();
 
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true);
