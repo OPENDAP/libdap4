@@ -7,20 +7,35 @@
 #ifndef __DODS_DATATYPES__
 #define __DODS_DATATYPES__
 
-typedef long dods_int32;
-typedef unsigned long dods_uint32;
+#include <xdr.h>
+
+#define DINT32 long
+typedef DINT32 dods_int32;
+
+#define DUINT32 unsigned long
+typedef DUINT32 dods_uint32;
+
 #define XDR_INT32 xdr_long
 #define XDR_UINT32 xdr_u_long
 
-typedef short dods_int16;
-typedef unsigned short dods_uint16;
+#define DINT16 short
+typedef DINT16 dods_int16;
+
+#define DUINT16 unsigned short
+typedef DUINT16 dods_uint16;
+
 #define XDR_INT16 xdr_short
 #define XDR_UINT16 xdr_u_short
 
-typedef unsigned char dods_byte;
+#define DBYTE unsigned char
+typedef DBYTE dods_byte;
 
-typedef double dods_float64;
-typedef float dods_float32;		
+#define DFLOAT64 double
+typedef DFLOAT64 dods_float64;
+
+#define DFLOAT32 float
+typedef DFLOAT32 dods_float32;
+
 #define XDR_FLOAT64 xdr_double
 #define XDR_FLOAT32 xdr_float
 

@@ -17,34 +17,33 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 /* 
   Regex class implementation
+
+  NB: I tried to replace the lib_error_handler() calls with STL exceptions,
+  but I can't figure out where/if gcc 3.2.2 defines the children of
+  exception. 06/06/03 jhrg
  */
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
-#ifndef WIN32
-#include <gnu-std.h>
-#endif
+
 #include <ctype.h>
-#if 0
-#include <new.h>
-#endif
 #include <builtin.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <new>
+
 extern "C" {
-#if 1
 #ifdef WIN32
 #define __STDC__  /*  Needed for rx.h prototypes  */
 #endif
 #include <rx.h>
-#else
-#include <regex.h>
-#endif
 }
 
 #include <Regex.h>
+
+using namespace std;
 
 Regex::~Regex()
 {
@@ -81,6 +80,9 @@ Regex::Regex(const char* t, int fast, int bufsize,
   buf->buffer = (char *)malloc(buf->allocated);
   const char* msg = re_compile_pattern((const char*)t, tlen, buf);
   if (msg != 0)
+#if 0
+    throw invalid_argument(string("Regex: ") + string(msg));
+#endif
     (*lib_error_handler)("Regex", msg);
   else if (fast)
     re_compile_fastmap(buf);
@@ -140,6 +142,9 @@ int Regex::OK() const
   int v = buf != 0;             // have a regex buf
   v &= buf->buffer != 0;        // with a pat
   if (!v) (*lib_error_handler)("Regex", "invariant failure");
+#if 0
+  if (!v) throw domain_error(string("Regex") + string("invariant failure"));
+#endif
   return v;
 }
 

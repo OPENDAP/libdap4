@@ -18,6 +18,8 @@ using std::cerr ;
 using std::endl ;
 using std::vector ;
 
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing
+				      // timeouts. 
 
 class attrTableT : public CppUnit::TestFixture {
 

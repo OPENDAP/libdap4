@@ -30,7 +30,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #if 1
-#define DODS_DEBUG
+// #define DODS_DEBUG
 #endif
 #include "DDXParser.h"
 #include "debug.h"
@@ -285,6 +285,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: DDXParserTest.cc,v $
+// Revision 1.4  2003/12/11 01:08:37  jimg
+// More fixes after resolving conflicts. This code still fails some tests.
+//
 // Revision 1.3  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

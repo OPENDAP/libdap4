@@ -1,75 +1,168 @@
-# Setup directories for intermediate files and built components
+# Makefile for libdap
+
+# Setup some preliminary directories
 OBJDIR		= .\objects
+SRCDIR		= ..
 INSTALLLIBDIR	= ..\..\..\lib
+INSTALLDLLDIR	= ..\..\..\bin
 INSTALLEXEDIR	= ..\..\..\bin
 INCLUDEDIR	= ..\..\..\include
 
-# Setup basic compiler flags for all .obj's
+# Compiler, Linker
 CC		= cl
-#CFLAGS		= /nologo /MTd /Zi /W3 /GR /GX /c	# flags for debugger
-CFLAGS		= /nologo /MT /W3 /GR /GX /c
-
-# Setup linker flags for libraries and .exe's
 LINK		= link
-LIBPATH		= /libpath:$(OBJDIR) /libpath:$(INSTALLLIBDIR)
-#LEXEFLAGS	= /DEBUG /subsystem:console $(LIBPATH)	# flags for debugger
-#LLIBFLAGS	= -lib					# flags for debugger
-LEXEFLAGS	= /nologo /subsystem:console $(LIBPATH)
-LLIBFLAGS	= -lib /nologo
-
-DODSLIBS	= libdap++.lib pthreadVCE.lib libcurl.lib librx.lib libz.lib libxdr.lib
-SYSLIBS		= ws2_32.lib advapi32.lib
-LINKLIBS	= $(DODSLIBS) $(SYSLIBS)
-CPPUNITLIBS	= $(LINKLIBS) cppunit_dll.lib
 
 # Setup compiler tools.  BISON_HAIRY and BISON_SIMPLE environment variables
 # must be set to the _full_ path for bison.simple and bison.hairy respectively.
-# These tools can (as of 10/2001) be downloaded and installed from
+# These tools can (as of 12/2003) be downloaded and installed from
 # http://unxutils.sourceforge.net/UnxUtils.zip.  They must also be on
 # the path.
 LEX	= flex
 YACC	= bison
-AWK	= gawk
 
-# Setup compiler includes and defines for libraries and .exe's
-INCS		= /I . /I .. /I ..\GNU /I $(INCLUDEDIR) /I $(INCLUDEDIR)\pthreads
+# We suppress #line directives under win32 to prevent warnings resulting
+# when a "\" followed by some char is interpreted as an escape sequence.
+YACCFLAGS	= --no-lines -d -v
+
+# Setup compiler flags
+STCFLAGS	= /ML				# Single-Threaded Model
+MTCFLAGS	= /MT /D HAVE_PTHREAD_H		# Multi-Threaded Model
+MDCFLAGS	= /MD /D HAVE_PTHREAD_H		# Multi-Threaded DLL Model
+STDCFLAGS	= /MLd				# Single-Threaded Model, debug version
+MTDCFLAGS	= /MTd /D HAVE_PTHREAD_H	# Multi-Threaded Model, debug version
+MDDCFLAGS	= /MDd /D HAVE_PTHREAD_H	# Multi-Thread DLL Model, debug version
+CFLAGS		= /nologo /W3 /GR /GX /c
+
+# Setup linker flags for libraries
+STLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
+MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
+MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdap.def /map /fixed:NO /base:0x06000000
+STDLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
+MTDLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
+MDDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdap.def /map /debug /fixed:NO /base:0x06000000
+
+# Link libraries static libraries and dll's
+STLIBS		= 
+MTLIBS		=
+MDLIBS		= libxml2MD.lib libcurlMD.lib librxMD.lib libzMD.lib libxdrMD.lib pthreadVCE.lib
+STDLIBS		= 
+MTDLIBS		=
+MDDLIBS		= libxml2MDD.lib libcurlMDD.lib librxMDD.lib libzMDD.lib libxdrMDD.lib pthreadVCE.lib
+
+# Setup linker flags for executables
+ESTLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
+EMTLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
+EMDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
+ESTDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
+EMTDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
+EMDDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
+
+# Link libraries for exe's
+ESTLLIBS	= libdapST.lib libxml2ST.lib libcurlST.lib librxST.lib libzST.lib libxdrST.lib
+EMTLLIBS	= libdapMT.lib libxml2MT.lib libcurlMT.lib librxMT.lib libzMT.lib libxdrMT.lib pthreadVCE.lib
+EMDLLIBS	= libdapMD.lib libxml2MD.lib libcurlMD.lib librxMD.lib libzMD.lib libxdrMD.lib pthreadVCE.lib
+ESTDLLIBS	= libdapSTD.lib libxml2STD.lib libcurlSTD.lib librxSTD.lib libzSTD.lib libxdrSTD.lib
+EMTDLLIBS	= libdapMTD.lib libxml2MTD.lib libcurlMTD.lib librxMTD.lib libzMTD.lib libxdrMTD.lib pthreadVCE.lib
+EMDDLLIBS	= libdapMDD.lib libxml2MDD.lib libcurlMDD.lib librxMDD.lib libzMDD.lib libxdrMDD.lib pthreadVCE.lib
+CPPUNITLIBS	= cppunit_dll.lib
+
+# Setup compiler includes and defines
+INCS		= /I . /I .. /I ..\GNU /I $(INCLUDEDIR) /I $(INCLUDEDIR)\pthreads /I $(INCLUDEDIR)\libxml2
 CPPUNITINCS	= $(INCS) /I $(INCLUDEDIR)/cppunit
-DEFSLIB		= /D WIN32 /D _LIB /D _WINDOWS
-DEFSEXE		= /D WIN32 /D _CONSOLE
-CPPLIBFLAGS	= $(DEFSLIB) $(INCS)
-CPPEXEFLAGS	= $(DEFSEXE) $(INCS)
-CPPUNITFLAGS	= $(DEFSEXE) $(CPPUNITINCS)
+DEFS		= /D WIN32
+CPPFLAGS	= $(DEFS) $(INCS)
 
-# Combine compiler flags - for objects going into .obj's, exe's
-LIBOBJFLAGS	= $(CFLAGS) $(CPPLIBFLAGS)
-EXEOBJFLAGS	= $(CFLAGS) $(CPPEXEFLAGS)
-CPPUNITOBJFLAGS	= $(CFLAGS) $(CPPUNITFLAGS)
+default:
+	@echo "usage: nmake all; nmake install"
+	@echo "or"
+	@echo "usage: nmake model<ST|MT|MD|STD|MTD|MDD>; nmake install<ST|MT|MD|STD|MTD|MDD>"
 
-# Define the targets
-TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe \
-		  $(OBJDIR)\usage.exe $(OBJDIR)\deflate.exe \
-		  $(OBJDIR)\ThreadTest.exe
+all:	build_libxdr setup
+	nmake modelST
+	nmake modelMT
+	nmake modelMD
+	nmake modelSTD
+	nmake modelMTD
+	nmake modelMDD
 
-# Define the testsuite objects
-TESTTARGETS	= $(OBJDIR)\das-test.exe \
-		  $(OBJDIR)\dds-test.exe \
-		  $(OBJDIR)\error-test.exe \
-		  $(OBJDIR)\expr-test.exe
+modelST: setup
+	@-md $(OBJDIR)\ST
+	nmake CFLAGS="$(CFLAGS) $(STCFLAGS)" LFLAGS="$(STLFLAGS)" LIBS="$(STLIBS)" OBJDIR=$(OBJDIR)\ST libdapST.lib
+	nmake installST
+	nmake CFLAGS="$(CFLAGS) $(STCFLAGS)" LFLAGS="$(ESTLFLAGS)" LIBS="$(ESTLLIBS)" OBJDIR=$(OBJDIR)\ST geturl
+	nmake CFLAGS="$(CFLAGS) $(STCFLAGS)" LFLAGS="$(ESTLFLAGS)" LIBS="$(ESTLLIBS)" OBJDIR=$(OBJDIR)\ST usage
+	nmake CFLAGS="$(CFLAGS) $(STCFLAGS)" LFLAGS="$(ESTLFLAGS)" LIBS="$(ESTLLIBS)" OBJDIR=$(OBJDIR)\ST deflate
+	nmake CFLAGS="$(CFLAGS) $(STCFLAGS)" LFLAGS="$(ESTLFLAGS)" LIBS="$(ESTLLIBS)" OBJDIR=$(OBJDIR)\ST check
+	nmake CFLAGS="$(CFLAGS) $(STCFLAGS)" LFLAGS="$(ESTLFLAGS)" LIBS="$(ESTLLIBS)" OBJDIR=$(OBJDIR)\ST unit_check
+
+modelMT: setup
+	@-md $(OBJDIR)\MT
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(MTLFLAGS)" LIBS="$(MTLIBS)" OBJDIR=$(OBJDIR)\MT libdapMT.lib
+	nmake installMT
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT geturl
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT usage
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT deflate
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT ThreadTest
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT check
+	nmake CFLAGS="$(CFLAGS) $(MTCFLAGS)" LFLAGS="$(EMTLFLAGS)" LIBS="$(EMTLLIBS)" OBJDIR=$(OBJDIR)\MT unit_check
+
+modelMD: setup
+	@-md $(OBJDIR)\MD
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(MDLFLAGS)" LIBS="$(MDLIBS)" OBJDIR=$(OBJDIR)\MD libdapMD.dll
+	nmake installMD
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD geturl
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD usage
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD deflate
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD ThreadTest
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD check
+	nmake CFLAGS="$(CFLAGS) $(MDCFLAGS)" LFLAGS="$(EMDLFLAGS)" LIBS="$(EMDLLIBS)" OBJDIR=$(OBJDIR)\MD unit_check
+
+modelSTD: setup
+	@-md $(OBJDIR)\STD
+	nmake CFLAGS="$(CFLAGS) $(STDCFLAGS)" LFLAGS="$(STDLFLAGS)" LIBS="$(STDLIBS)" OBJDIR=$(OBJDIR)\STD libdapSTD.lib
+	nmake installSTD
+	nmake CFLAGS="$(CFLAGS) $(STDCFLAGS)" LFLAGS="$(ESTDLFLAGS)" LIBS="$(ESTDLLIBS)" OBJDIR=$(OBJDIR)\STD geturl
+	nmake CFLAGS="$(CFLAGS) $(STDCFLAGS)" LFLAGS="$(ESTDLFLAGS)" LIBS="$(ESTDLLIBS)" OBJDIR=$(OBJDIR)\STD usage
+	nmake CFLAGS="$(CFLAGS) $(STDCFLAGS)" LFLAGS="$(ESTDLFLAGS)" LIBS="$(ESTDLLIBS)" OBJDIR=$(OBJDIR)\STD deflate
+	nmake CFLAGS="$(CFLAGS) $(STDCFLAGS)" LFLAGS="$(ESTDLFLAGS)" LIBS="$(ESTDLLIBS)" OBJDIR=$(OBJDIR)\STD check
+	nmake CFLAGS="$(CFLAGS) $(STDCFLAGS)" LFLAGS="$(ESTDLFLAGS)" LIBS="$(ESTDLLIBS)" OBJDIR=$(OBJDIR)\STD unit_check
+
+modelMTD: setup
+	@-md $(OBJDIR)\MTD
+	nmake CFLAGS="$(CFLAGS) $(MTDCFLAGS)" LFLAGS="$(MTDLFLAGS)" LIBS="$(MTDLIBS)" OBJDIR=$(OBJDIR)\MTD libdapMTD.lib
+	nmake installMTD
+	nmake CFLAGS="$(CFLAGS) $(MTDCFLAGS)" LFLAGS="$(EMTDLFLAGS)" LIBS="$(EMTDLLIBS)" OBJDIR=$(OBJDIR)\MTD geturl
+	nmake CFLAGS="$(CFLAGS) $(MTDCFLAGS)" LFLAGS="$(EMTDLFLAGS)" LIBS="$(EMTDLLIBS)" OBJDIR=$(OBJDIR)\MTD usage
+	nmake CFLAGS="$(CFLAGS) $(MTDCFLAGS)" LFLAGS="$(EMTDLFLAGS)" LIBS="$(EMTDLLIBS)" OBJDIR=$(OBJDIR)\MTD deflate
+	nmake CFLAGS="$(CFLAGS) $(MTDCFLAGS)" LFLAGS="$(EMTDLFLAGS)" LIBS="$(EMTDLLIBS)" OBJDIR=$(OBJDIR)\MTD ThreadTest
+	nmake CFLAGS="$(CFLAGS) $(MTDCFLAGS)" LFLAGS="$(EMTDLFLAGS)" LIBS="$(EMTDLLIBS)" OBJDIR=$(OBJDIR)\MTD check
+	nmake CFLAGS="$(CFLAGS) $(MTDCFLAGS)" LFLAGS="$(EMTDLFLAGS)" LIBS="$(EMTDLLIBS)" OBJDIR=$(OBJDIR)\MTD unit_check
+
+modelMDD: setup
+	@-md $(OBJDIR)\MDD
+	nmake CFLAGS="$(CFLAGS) $(MDDCFLAGS)" LFLAGS="$(MDDLFLAGS)" LIBS="$(MDDLIBS)" OBJDIR=$(OBJDIR)\MDD libdapMDD.dll
+	nmake installMDD
+	nmake CFLAGS="$(CFLAGS) $(MDDCFLAGS)" LFLAGS="$(EMDDLFLAGS)" LIBS="$(EMDDLLIBS)" OBJDIR=$(OBJDIR)\MDD geturl
+	nmake CFLAGS="$(CFLAGS) $(MDDCFLAGS)" LFLAGS="$(EMDDLFLAGS)" LIBS="$(EMDDLLIBS)" OBJDIR=$(OBJDIR)\MDD usage
+	nmake CFLAGS="$(CFLAGS) $(MDDCFLAGS)" LFLAGS="$(EMDDLFLAGS)" LIBS="$(EMDDLLIBS)" OBJDIR=$(OBJDIR)\MDD deflate
+	nmake CFLAGS="$(CFLAGS) $(MDDCFLAGS)" LFLAGS="$(EMDDLFLAGS)" LIBS="$(EMDDLLIBS)" OBJDIR=$(OBJDIR)\MDD ThreadTest
+	nmake CFLAGS="$(CFLAGS) $(MDDCFLAGS)" LFLAGS="$(EMDDLFLAGS)" LIBS="$(EMDDLLIBS)" OBJDIR=$(OBJDIR)\MDD check
+	nmake CFLAGS="$(CFLAGS) $(MDDCFLAGS)" LFLAGS="$(EMDDLFLAGS)" LIBS="$(EMDDLLIBS)" OBJDIR=$(OBJDIR)\MDD unit_check
 
 # Clear built-in rules and set new ones
 .SUFFIXES :
 .SUFFIXES :	.obj .c .cc .exe
 
 # Rules for library objects, both the .c and .cc's are C++
-{..}.c{$(OBJDIR)}.obj:
-	@$(CC) $(LIBOBJFLAGS) /Fo$@ /Tp $<
+{$(SRCDIR)}.c{$(OBJDIR)}.obj:
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $<
 
-{..}.cc{$(OBJDIR)}.obj:
-	@$(CC) $(LIBOBJFLAGS) /Fo$@ /Tp $<
+{$(SRCDIR)}.cc{$(OBJDIR)}.obj:
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $<
 
-# Rule for linking console-mode executables
+# Rule for linking executables
 {$(OBJDIR)}.obj{$(OBJDIR)}.exe:
-	@$(LINK) $(LEXEFLAGS) /out:$@ $< $(LINKLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $< $(LIBS)
 
 UTILOBJS = $(OBJDIR)\cgi_util.obj \
 		$(OBJDIR)\escaping.obj \
@@ -149,15 +242,9 @@ TYPEOBJS = $(OBJDIR)\BaseType.obj \
 		$(OBJDIR)\VirtualCtorGrid.obj \
 		$(OBJDIR)\util_mit.obj
 
-GNUOBJS = $(OBJDIR)\GetOpt.obj \
-		$(OBJDIR)\Regex.obj \
-		$(OBJDIR)\gnu_error.obj \
-		$(OBJDIR)\IteratorAdapter.obj \
-		$(OBJDIR)\ArrayIterAdapter.obj \
-		$(OBJDIR)\AttrIterAdapter.obj \
-		$(OBJDIR)\BTIterAdapter.obj \
-		$(OBJDIR)\ClauseIterAdapter.obj
-
+# As of 8/03, these are only used to link expr-test.  expr-test
+# will link without them, but most of those tests will fail when
+# linked without.
 TESTOBJS = $(OBJDIR)\TestByte.obj \
 		$(OBJDIR)\TestInt32.obj \
 		$(OBJDIR)\TestFloat64.obj \
@@ -173,231 +260,187 @@ TESTOBJS = $(OBJDIR)\TestByte.obj \
 		$(OBJDIR)\TestUInt16.obj \
 		$(OBJDIR)\TestFloat32.obj
 
+GNUOBJS = $(OBJDIR)\GetOpt.obj \
+		$(OBJDIR)\Regex.obj \
+		$(OBJDIR)\gnu_error.obj \
+		$(OBJDIR)\IteratorAdapter.obj \
+		$(OBJDIR)\ArrayIterAdapter.obj \
+		$(OBJDIR)\AttrIterAdapter.obj \
+		$(OBJDIR)\BTIterAdapter.obj \
+		$(OBJDIR)\ClauseIterAdapter.obj
+
+AISOBJS = $(OBJDIR)\AISResources.obj \
+		$(OBJDIR)\AISDatabaseParser.obj \
+		$(OBJDIR)\AISMerge.obj \
+		$(OBJDIR)\AISConnect.obj
+
 LIBOBJS = $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) $(EXPROBJS) \
-		$(UTILOBJS) $(CLIENTOBJS)
+		$(UTILOBJS) $(CLIENTOBJS) $(AISOBJS)
 
-all: build_libxdr setup grammars $(TARGETS) check
-#all: build_libxdr setup grammars $(TARGETS) check unit_check
+# Convenience dependancies
+libdapST.lib:	$(OBJDIR)\libdapST.lib
+libdapMT.lib:	$(OBJDIR)\libdapMT.lib
+libdapMD.dll:	$(OBJDIR)\libdapMD.dll
+libdapSTD.lib:	$(OBJDIR)\libdapSTD.lib
+libdapMTD.lib:	$(OBJDIR)\libdapMTD.lib
+libdapMDD.dll:	$(OBJDIR)\libdapMDD.dll
 
-grammars: ..\lex.das.c ..\das.tab.h ..\lex.dds.c ..\dds.tab.h ..\lex.expr.c \
-		..\expr.tab.h ..\lex.Error.c ..\Error.tab.h ..\lex.gse_.c \
-		..\gse.tab.h
+geturl:		$(OBJDIR)\geturl.exe
+usage:		$(OBJDIR)\usage.exe
+deflate:	$(OBJDIR)\deflate.exe
+ThreadTest:	$(OBJDIR)\ThreadTest.exe
+check: 		$(OBJDIR)\das-test.exe $(OBJDIR)\dds-test.exe $(OBJDIR)\error-test.exe $(OBJDIR)\expr-test.exe
+		@echo Notice:
+		@echo Core Test programs have been built, but they must be
+		@echo executed using DejaGnu in a Cygwin environment.  If
+		@echo validation of the Win32 Dods core is required, install
+		@echo Cygwin w/Dejagnu and move the testsuites there in order
+		@echo to run them.  Optimally, the testsuite should be ran once
+		@echo for each of the 6 library models.
 
-check: $(TESTTARGETS)
-	@echo Notice:
-	@echo Core Test programs have been built, but they must be
-	@echo executed using DejaGnu in a Cygwin environment.  If
-	@echo validation of the Win32 Dods core is required, install
-	@echo Cygwin w/Dejagnu and move the testsuites there in order
-	@echo to run them.
+# Link the library
+$(OBJDIR)\libdapST.lib: $(LIBOBJS)
+	$(LINK) $(LFLAGS) /out:$@ $(LIBOBJS) $(LIBS)
+
+$(OBJDIR)\libdapMT.lib: $(LIBOBJS)
+	$(LINK) $(LFLAGS) /out:$@ $(LIBOBJS) $(LIBS)
+
+$(OBJDIR)\libdapMD.dll: $(LIBOBJS)
+	$(LINK) $(LFLAGS) /out:$@ $(LIBOBJS) $(LIBS)
+
+$(OBJDIR)\libdapSTD.lib: $(LIBOBJS)
+	$(LINK) $(LFLAGS) /out:$@  $(LIBOBJS) $(LIBS)
+
+$(OBJDIR)\libdapMTD.lib: $(LIBOBJS)
+	$(LINK) $(LFLAGS) /out:$@ $(LIBOBJS) $(LIBS)
+
+$(OBJDIR)\libdapMDD.dll: $(LIBOBJS)
+	$(LINK) $(LFLAGS) /out:$@ $(LIBOBJS) $(LIBS)
+
+grammars: $(SRCDIR)\lex.das.c $(SRCDIR)\das.tab.h $(SRCDIR)\lex.dds.c $(SRCDIR)\dds.tab.h \
+		$(SRCDIR)\lex.expr.c $(SRCDIR)\expr.tab.h $(SRCDIR)\lex.Error.c $(SRCDIR)\Error.tab.h \
+		$(SRCDIR)\lex.gse_.c $(SRCDIR)\gse.tab.h
 
 build_libxdr:
 	@cd libxdr
-	@nmake
+	@nmake all
 	@nmake install
 	@cd ..
 
-$(OBJDIR)\libdap++.lib: $(LIBOBJS)
-	$(LINK) $(LLIBFLAGS) /out:$@ $(LIBOBJS)
-
-$(OBJDIR)\geturl.exe: $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.obj
-
-$(OBJDIR)\usage.exe: $(OBJDIR)\libdap++.lib $(OBJDIR)\usage.obj 
-
-$(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj 
-
-$(OBJDIR)\ThreadTest.exe:  $(OBJDIR)\libdap++.lib $(OBJDIR)\ThreadTest.obj
-
-install:
-	copy $(OBJDIR)\libdap*.lib $(INSTALLLIBDIR)
-	copy $(OBJDIR)\geturl.exe $(INSTALLEXEDIR)
-	copy $(OBJDIR)\usage.exe $(INSTALLEXEDIR)
-	copy $(OBJDIR)\deflate.exe $(INSTALLEXEDIR)
-	copy config_dap.h $(INCLUDEDIR)
-	copy dods-datatypes.h $(INCLUDEDIR)
-	copy ..\debug.h $(INCLUDEDIR)
-	copy ..\dods-limits.h $(INCLUDEDIR)
-	copy ..\cgi_util.h $(INCLUDEDIR)
-	copy ..\escaping.h $(INCLUDEDIR)
-	copy ..\DODSFilter.h $(INCLUDEDIR)
-	copy ..\AttrTable.h $(INCLUDEDIR)
-	copy ..\DAS.h $(INCLUDEDIR)
-	copy ..\parser.h $(INCLUDEDIR)
-	copy ..\DDS.h $(INCLUDEDIR)
-	copy ..\DataDDS.h $(INCLUDEDIR)
-	copy ..\expr.h $(INCLUDEDIR)
-	copy ..\Clause.h $(INCLUDEDIR)
-	copy ..\RValue.h $(INCLUDEDIR)
-	copy ..\Error.h $(INCLUDEDIR)
-	copy ..\InternalErr.h $(INCLUDEDIR)
-	copy ..\ResponseTooBigErr.h $(INCLUDEDIR)
-	copy ..\Connections.h $(INCLUDEDIR)
-	copy ..\Connections.cc $(INCLUDEDIR)
-	copy ..\RCReader.h $(INCLUDEDIR)
-	copy ..\Connect.h $(INCLUDEDIR)
-	copy ..\HTTPConnect.h $(INCLUDEDIR)
-	copy ..\ObjectType.h $(INCLUDEDIR)
-	copy ..\EncodingType.h $(INCLUDEDIR)
-	copy ..\HTTPCache.h $(INCLUDEDIR)
-	copy ..\HTTPCacheDisconnectedMode.h $(INCLUDEDIR)
-	copy ..\BaseType.h $(INCLUDEDIR)
-	copy ..\Byte.h $(INCLUDEDIR)
-	copy ..\Int32.h $(INCLUDEDIR)
-	copy ..\GSEClause.h $(INCLUDEDIR)
-	copy ..\Constructor.h $(INCLUDEDIR)
-	copy ..\Float64.h $(INCLUDEDIR)
-	copy ..\Str.h $(INCLUDEDIR)
-	copy ..\Url.h $(INCLUDEDIR)
-	copy ..\Vector.h $(INCLUDEDIR)
-	copy ..\List.h $(INCLUDEDIR)
-	copy ..\Array.h $(INCLUDEDIR)
-	copy ..\Structure.h $(INCLUDEDIR)
-	copy ..\Sequence.h $(INCLUDEDIR)
-	copy ..\Grid.h $(INCLUDEDIR)
-	copy ..\UInt32.h $(INCLUDEDIR)
-	copy ..\util.h $(INCLUDEDIR)
-	copy ..\Int16.h $(INCLUDEDIR)
-	copy ..\UInt16.h $(INCLUDEDIR)
-	copy ..\Float32.h $(INCLUDEDIR)
-	copy ..\util_mit.h $(INCLUDEDIR)
-	copy ..\GNU\Pix.h $(INCLUDEDIR)
-	copy ..\GNU\gnu-std.h $(INCLUDEDIR)
-	copy ..\GNU\GetOpt.h $(INCLUDEDIR)
-	copy ..\GNU\Regex.h $(INCLUDEDIR)
-	copy ..\GNU\builtin.h $(INCLUDEDIR)
-	copy ..\IteratorAdapter.h $(INCLUDEDIR)
-	copy ..\ArrayIterAdapter.h $(INCLUDEDIR)
-	copy ..\AttrIterAdapter.h $(INCLUDEDIR)
-	copy ..\BTIterAdapter.h $(INCLUDEDIR)
-	copy ..\ClauseIterAdapter.h $(INCLUDEDIR)
-
 # The DAP Proper
-$(OBJDIR)\Array.obj : ..\Array.cc
-$(OBJDIR)\DDS.obj : ..\DDS.cc
-$(OBJDIR)\DataDDS.obj : ..\DataDDS.cc
-$(OBJDIR)\BaseType.obj : ..\BaseType.cc
-$(OBJDIR)\Byte.obj : ..\Byte.cc
-$(OBJDIR)\Int32.obj : ..\Int32.cc
-$(OBJDIR)\Float64.obj : ..\Float64.cc
-$(OBJDIR)\Str.obj : ..\Str.cc
-$(OBJDIR)\Url.obj : ..\Url.cc
-$(OBJDIR)\Vector.obj : ..\Vector.cc
-$(OBJDIR)\List.obj : ..\List.cc
-$(OBJDIR)\Array.obj : ..\Array.cc
-$(OBJDIR)\Structure.obj : ..\Structure.cc
-$(OBJDIR)\Sequence.obj : ..\Sequence.cc
-$(OBJDIR)\Grid.obj : ..\Grid.cc
-$(OBJDIR)\UInt32.obj : ..\UInt32.cc
-$(OBJDIR)\util.obj : ..\util.cc
-$(OBJDIR)\ce_functions.obj : ..\ce_functions.cc
-$(OBJDIR)\GSEClause.obj : ..\GSEClause.cc
-$(OBJDIR)\Int16.obj : ..\Int16.cc
-$(OBJDIR)\UInt16.obj : ..\UInt16.cc
-$(OBJDIR)\Float32.obj : ..\Float32.cc
-$(OBJDIR)\Constructor.obj : ..\Constructor.cc
-$(OBJDIR)\VirtualCtorByte.obj : ..\VirtualCtorByte.cc
-$(OBJDIR)\VirtualCtorInt16.obj : ..\VirtualCtorInt16.cc
-$(OBJDIR)\VirtualCtorUInt16.obj : ..\VirtualCtorUInt16.cc
-$(OBJDIR)\VirtualCtorInt32.obj : ..\VirtualCtorInt32.cc
-$(OBJDIR)\VirtualCtorUInt32.obj : ..\VirtualCtorUInt32.cc
-$(OBJDIR)\VirtualCtorFloat32.obj : ..\VirtualCtorFloat32.cc
-$(OBJDIR)\VirtualCtorFloat64.obj : ..\VirtualCtorFloat64.cc
-$(OBJDIR)\VirtualCtorStr.obj : ..\VirtualCtorStr.cc
-$(OBJDIR)\VirtualCtorUrl.obj : ..\VirtualCtorUrl.cc
-$(OBJDIR)\VirtualCtorArray.obj : ..\VirtualCtorArray.cc
-$(OBJDIR)\VirtualCtorList.obj : ..\VirtualCtorList.cc
-$(OBJDIR)\VirtualCtorStructure.obj : ..\VirtualCtorStructure.cc
-$(OBJDIR)\VirtualCtorSequence.obj : ..\VirtualCtorSequence.cc
-$(OBJDIR)\VirtualCtorGrid.obj : ..\VirtualCtorGrid.cc
-$(OBJDIR)\util_mit.obj : ..\util_mit.cc
-$(OBJDIR)\IteratorAdapter.obj : ..\IteratorAdapter.cc
-$(OBJDIR)\ArrayIterAdapter.obj : ..\ArrayIterAdapter.cc
-$(OBJDIR)\AttrIterAdapter.obj : ..\AttrIterAdapter.cc
-$(OBJDIR)\BTIterAdapter.obj : ..\BTIterAdapter.cc
-$(OBJDIR)\ClauseIterAdapter.obj : ..\ClauseIterAdapter.cc
-$(OBJDIR)\Error.obj : ..\Error.cc
-$(OBJDIR)\InternalErr.obj : ..\InternalErr.cc
-$(OBJDIR)\ResponseTooBigErr.obj : ..\ResponseTooBigErr.cc
-$(OBJDIR)\Clause.obj : ..\Clause.cc
-$(OBJDIR)\RValue.obj : ..\RValue.cc
-$(OBJDIR)\cgi_util.obj : ..\cgi_util.cc
-$(OBJDIR)\escaping.obj : ..\escaping.cc
-$(OBJDIR)\DODSFilter.obj : ..\DODSFilter.cc
-$(OBJDIR)\Connections.obj : ..\Connections.cc
-$(OBJDIR)\RCReader.obj : ..\RCReader.cc
-$(OBJDIR)\Connect.obj : ..\Connect.cc
-$(OBJDIR)\HTTPConnect.obj : ..\HTTPConnect.cc
-$(OBJDIR)\HTTPCache.obj : ..\HTTPCache.cc
-
-# Test objects
-$(OBJDIR)\TestArray.obj : ..\TestArray.cc
-$(OBJDIR)\TestByte.obj : ..\TestByte.cc
-$(OBJDIR)\TestFloat32.obj : ..\TestFloat32.cc
-$(OBJDIR)\TestFloat64.obj : ..\TestFloat64.cc
-$(OBJDIR)\TestGrid.obj : ..\TestGrid.cc
-$(OBJDIR)\TestInt16.obj : ..\TestInt16.cc
-$(OBJDIR)\TestInt32.obj : ..\TestInt32.cc
-$(OBJDIR)\TestList.obj : ..\TestList.cc
-$(OBJDIR)\TestSequence.obj : ..\TestSequence.cc
-$(OBJDIR)\TestStr.obj : ..\TestStr.cc
-$(OBJDIR)\TestStructure.obj : ..\TestStructure.cc
-$(OBJDIR)\TestUInt16.obj : ..\TestUInt16.cc
-$(OBJDIR)\TestUInt32.obj : ..\TestUInt32.cc
-$(OBJDIR)\TestUrl.obj : ..\TestUrl.cc
+$(OBJDIR)\AISResources.obj : $(SRCDIR)\AISResources.cc
+$(OBJDIR)\AISDatabaseParser.obj : $(SRCDIR)\AISDatabaseParser.cc
+$(OBJDIR)\AISMerge.obj : $(SRCDIR)\AISMerge.cc
+$(OBJDIR)\AISConnect.obj : $(SRCDIR)\AISConnect.cc
+$(OBJDIR)\Array.obj : $(SRCDIR)\Array.cc
+$(OBJDIR)\DDS.obj : $(SRCDIR)\DDS.cc
+$(OBJDIR)\DataDDS.obj : $(SRCDIR)\DataDDS.cc
+$(OBJDIR)\BaseType.obj : $(SRCDIR)\BaseType.cc
+$(OBJDIR)\Byte.obj : $(SRCDIR)\Byte.cc
+$(OBJDIR)\Int32.obj : $(SRCDIR)\Int32.cc
+$(OBJDIR)\Float64.obj : $(SRCDIR)\Float64.cc
+$(OBJDIR)\Str.obj : $(SRCDIR)\Str.cc
+$(OBJDIR)\Url.obj : $(SRCDIR)\Url.cc
+$(OBJDIR)\Vector.obj : $(SRCDIR)\Vector.cc
+$(OBJDIR)\List.obj : $(SRCDIR)\List.cc
+$(OBJDIR)\Array.obj : $(SRCDIR)\Array.cc
+$(OBJDIR)\Structure.obj : $(SRCDIR)\Structure.cc
+$(OBJDIR)\Sequence.obj : $(SRCDIR)\Sequence.cc
+$(OBJDIR)\Grid.obj : $(SRCDIR)\Grid.cc
+$(OBJDIR)\UInt32.obj : $(SRCDIR)\UInt32.cc
+$(OBJDIR)\util.obj : $(SRCDIR)\util.cc
+$(OBJDIR)\ce_functions.obj : $(SRCDIR)\ce_functions.cc
+$(OBJDIR)\GSEClause.obj : $(SRCDIR)\GSEClause.cc
+$(OBJDIR)\Int16.obj : $(SRCDIR)\Int16.cc
+$(OBJDIR)\UInt16.obj : $(SRCDIR)\UInt16.cc
+$(OBJDIR)\Float32.obj : $(SRCDIR)\Float32.cc
+$(OBJDIR)\Constructor.obj : $(SRCDIR)\Constructor.cc
+$(OBJDIR)\VirtualCtorByte.obj : $(SRCDIR)\VirtualCtorByte.cc
+$(OBJDIR)\VirtualCtorInt16.obj : $(SRCDIR)\VirtualCtorInt16.cc
+$(OBJDIR)\VirtualCtorUInt16.obj : $(SRCDIR)\VirtualCtorUInt16.cc
+$(OBJDIR)\VirtualCtorInt32.obj : $(SRCDIR)\VirtualCtorInt32.cc
+$(OBJDIR)\VirtualCtorUInt32.obj : $(SRCDIR)\VirtualCtorUInt32.cc
+$(OBJDIR)\VirtualCtorFloat32.obj : $(SRCDIR)\VirtualCtorFloat32.cc
+$(OBJDIR)\VirtualCtorFloat64.obj : $(SRCDIR)\VirtualCtorFloat64.cc
+$(OBJDIR)\VirtualCtorStr.obj : $(SRCDIR)\VirtualCtorStr.cc
+$(OBJDIR)\VirtualCtorUrl.obj : $(SRCDIR)\VirtualCtorUrl.cc
+$(OBJDIR)\VirtualCtorArray.obj : $(SRCDIR)\VirtualCtorArray.cc
+$(OBJDIR)\VirtualCtorList.obj : $(SRCDIR)\VirtualCtorList.cc
+$(OBJDIR)\VirtualCtorStructure.obj : $(SRCDIR)\VirtualCtorStructure.cc
+$(OBJDIR)\VirtualCtorSequence.obj : $(SRCDIR)\VirtualCtorSequence.cc
+$(OBJDIR)\VirtualCtorGrid.obj : $(SRCDIR)\VirtualCtorGrid.cc
+$(OBJDIR)\util_mit.obj : $(SRCDIR)\util_mit.cc
+$(OBJDIR)\IteratorAdapter.obj : $(SRCDIR)\IteratorAdapter.cc
+$(OBJDIR)\ArrayIterAdapter.obj : $(SRCDIR)\ArrayIterAdapter.cc
+$(OBJDIR)\AttrIterAdapter.obj : $(SRCDIR)\AttrIterAdapter.cc
+$(OBJDIR)\BTIterAdapter.obj : $(SRCDIR)\BTIterAdapter.cc
+$(OBJDIR)\ClauseIterAdapter.obj : $(SRCDIR)\ClauseIterAdapter.cc
+$(OBJDIR)\Error.obj : $(SRCDIR)\Error.cc
+$(OBJDIR)\InternalErr.obj : $(SRCDIR)\InternalErr.cc
+$(OBJDIR)\ResponseTooBigErr.obj : $(SRCDIR)\ResponseTooBigErr.cc
+$(OBJDIR)\Clause.obj : $(SRCDIR)\Clause.cc
+$(OBJDIR)\RValue.obj : $(SRCDIR)\RValue.cc
+$(OBJDIR)\cgi_util.obj : $(SRCDIR)\cgi_util.cc
+$(OBJDIR)\escaping.obj : $(SRCDIR)\escaping.cc
+$(OBJDIR)\DODSFilter.obj : $(SRCDIR)\DODSFilter.cc
+$(OBJDIR)\Connections.obj : $(SRCDIR)\Connections.cc
+$(OBJDIR)\RCReader.obj : $(SRCDIR)\RCReader.cc
+$(OBJDIR)\Connect.obj : $(SRCDIR)\Connect.cc
+$(OBJDIR)\HTTPConnect.obj : $(SRCDIR)\HTTPConnect.cc
+$(OBJDIR)\HTTPCache.obj : $(SRCDIR)\HTTPCache.cc
 
 # Objects from Bison/Lex generated source
-$(OBJDIR)\das.tab.obj   : ..\das.tab.c
-$(OBJDIR)\dds.tab.obj   : ..\dds.tab.c
-$(OBJDIR)\expr.tab.obj  : ..\expr.tab.c
-$(OBJDIR)\Error.tab.obj : ..\Error.tab.c
-$(OBJDIR)\gse.tab.obj   : ..\gse.tab.c
-$(OBJDIR)\lex.das.obj   : ..\lex.das.c
-$(OBJDIR)\lex.dds.obj   : ..\lex.dds.c
-$(OBJDIR)\lex.Error.obj : ..\lex.Error.c
-$(OBJDIR)\lex.expr.obj  : ..\lex.expr.c
-$(OBJDIR)\lex.gse_.obj  : ..\lex.gse_.c
+$(OBJDIR)\das.tab.obj   : $(SRCDIR)\das.tab.c
+$(OBJDIR)\dds.tab.obj   : $(SRCDIR)\dds.tab.c
+$(OBJDIR)\expr.tab.obj  : $(SRCDIR)\expr.tab.c
+$(OBJDIR)\Error.tab.obj : $(SRCDIR)\Error.tab.c
+$(OBJDIR)\gse.tab.obj   : $(SRCDIR)\gse.tab.c
+$(OBJDIR)\lex.das.obj   : $(SRCDIR)\lex.das.c
+$(OBJDIR)\lex.dds.obj   : $(SRCDIR)\lex.dds.c
+$(OBJDIR)\lex.Error.obj : $(SRCDIR)\lex.Error.c
+$(OBJDIR)\lex.expr.obj  : $(SRCDIR)\lex.expr.c
+$(OBJDIR)\lex.gse_.obj  : $(SRCDIR)\lex.gse_.c
 
 # Source generated by compiler tools
-..\lex.das.c:	..\das.lex ..\das.tab.c ..\das.tab.h
-	$(LEX) -Pdas ..\das.lex
-	copy lex.das.c ..\lex.das.c
+$(SRCDIR)\lex.das.c:	$(SRCDIR)\das.lex $(SRCDIR)\das.tab.c $(SRCDIR)\das.tab.h
+	$(LEX) -Pdas $(SRCDIR)\das.lex
+	copy lex.das.c $(SRCDIR)\lex.das.c
 	del lex.das.c
 
-..\das.tab.c ..\das.tab.h: ..\das.y ..\DAS.h
-	$(YACC) -d -v -p das ..\das.y
+$(SRCDIR)\das.tab.c $(SRCDIR)\das.tab.h: $(SRCDIR)\das.y $(SRCDIR)\DAS.h
+	$(YACC) $(YACCFLAGS) -p das $(SRCDIR)\das.y
 
-..\lex.dds.c:	..\dds.lex ..\dds.tab.c ..\dds.tab.h
-	$(LEX) -Pdds ..\dds.lex
-	copy lex.dds.c ..\lex.dds.c
+$(SRCDIR)\lex.dds.c:	$(SRCDIR)\dds.lex $(SRCDIR)\dds.tab.c $(SRCDIR)\dds.tab.h
+	$(LEX) -Pdds $(SRCDIR)\dds.lex
+	copy lex.dds.c $(SRCDIR)\lex.dds.c
 	del lex.dds.c
 
-..\dds.tab.c ..\dds.tab.h: ..\dds.y
-	$(YACC) -d -v -p dds ..\dds.y
+$(SRCDIR)\dds.tab.c $(SRCDIR)\dds.tab.h: $(SRCDIR)\dds.y
+	$(YACC) $(YACCFLAGS) -p dds $(SRCDIR)\dds.y
 
-..\lex.expr.c:	..\expr.lex ..\expr.tab.c ..\expr.tab.h
-	$(LEX) -Pexpr ..\expr.lex
-	copy lex.expr.c ..\lex.expr.c
+$(SRCDIR)\lex.expr.c:	$(SRCDIR)\expr.lex $(SRCDIR)\expr.tab.c $(SRCDIR)\expr.tab.h
+	$(LEX) -Pexpr $(SRCDIR)\expr.lex
+	copy lex.expr.c $(SRCDIR)\lex.expr.c
 	del lex.expr.c
 
-..\expr.tab.c ..\expr.tab.h: ..\expr.y
-	$(YACC) -d -v -p expr ..\expr.y
+$(SRCDIR)\expr.tab.c $(SRCDIR)\expr.tab.h: $(SRCDIR)\expr.y
+	$(YACC) $(YACCFLAGS) -p expr $(SRCDIR)\expr.y
 
-..\lex.Error.c:	..\Error.lex ..\Error.tab.c ..\Error.tab.h
-	$(LEX) -PError ..\Error.lex
-	copy lex.Error.c ..\lex.Error.c
+$(SRCDIR)\lex.Error.c:	$(SRCDIR)\Error.lex $(SRCDIR)\Error.tab.c $(SRCDIR)\Error.tab.h
+	$(LEX) -PError $(SRCDIR)\Error.lex
+	copy lex.Error.c $(SRCDIR)\lex.Error.c
 	del lex.Error.c
 
-..\Error.tab.c ..\Error.tab.h: ..\Error.y
-	$(YACC) -d -v -p Error ..\Error.y
+$(SRCDIR)\Error.tab.c $(SRCDIR)\Error.tab.h: $(SRCDIR)\Error.y
+	$(YACC) $(YACCFLAGS) -p Error $(SRCDIR)\Error.y
 
-..\lex.gse_.c:	..\gse.lex ..\gse.tab.c ..\gse.tab.h
-	$(LEX) -Pgse_ ..\gse.lex
-	copy lex.gse_.c ..\lex.gse_.c
+$(SRCDIR)\lex.gse_.c:	$(SRCDIR)\gse.lex $(SRCDIR)\gse.tab.c $(SRCDIR)\gse.tab.h
+	$(LEX) -Pgse_ $(SRCDIR)\gse.lex
+	copy lex.gse_.c $(SRCDIR)\lex.gse_.c
 	del lex.gse_.c
 
-..\gse.tab.c ..\gse.tab.h: ..\gse.y
-	$(YACC) -d -v -p gse_ ..\gse.y
-
+$(SRCDIR)\gse.tab.c $(SRCDIR)\gse.tab.h: $(SRCDIR)\gse.y
+	$(YACC) $(YACCFLAGS) -p gse_ $(SRCDIR)\gse.y
 
 # GNU Subdirectory.  There exists an object "Error.obj" that
 # (accounting for lack of case sensitivity in win32) conflicts with
@@ -405,44 +448,52 @@ $(OBJDIR)\lex.gse_.obj  : ..\lex.gse_.c
 # complicated as a result.  This conflict, along with a similar
 # conflict between "Error.cc" and "error.cc" is what makes the
 # following explicit dependancies necessary.
-$(OBJDIR)\GetOpt.obj : ..\GNU\GetOpt.cc
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\GetOpt.cc
-$(OBJDIR)\Regex.obj : ..\GNU\Regex.cc
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\Regex.cc
-$(OBJDIR)\gnu_error.obj : ..\GNU\error.cc
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\GNU\error.cc
+$(OBJDIR)\GetOpt.obj : $(SRCDIR)\GNU\GetOpt.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\GNU\GetOpt.cc
+$(OBJDIR)\Regex.obj : $(SRCDIR)\GNU\Regex.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\GNU\Regex.cc
+$(OBJDIR)\gnu_error.obj : $(SRCDIR)\GNU\error.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\GNU\error.cc
+
+$(OBJDIR)\geturl.exe: $(OBJDIR)\geturl.obj
+
+$(OBJDIR)\usage.exe: $(OBJDIR)\usage.obj 
+
+$(OBJDIR)\deflate.exe: $(OBJDIR)\deflate.obj 
+
+$(OBJDIR)\ThreadTest.exe: $(OBJDIR)\ThreadTest.obj
 
 # Command-Line Client and select utils in console mode
-$(OBJDIR)\geturl.obj    : ..\geturl.cc
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\geturl.cc
+$(OBJDIR)\geturl.obj    : $(SRCDIR)\geturl.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\geturl.cc
 
-$(OBJDIR)\usage.obj    : ..\usage.cc
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\usage.cc
+$(OBJDIR)\usage.obj    : $(SRCDIR)\usage.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\usage.cc
 
-$(OBJDIR)\deflate.obj    : ..\deflate.c
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tc ..\deflate.c
+$(OBJDIR)\deflate.obj    : $(SRCDIR)\deflate.c
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tc $(SRCDIR)\deflate.c
 
 # Test Suite Objects.
-$(OBJDIR)\das-test.obj   : ..\das-test.cc $(OBJDIR)\libdap++.lib
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\das-test.cc
-$(OBJDIR)\dds-test.obj   : ..\dds-test.cc $(OBJDIR)\libdap++.lib
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\dds-test.cc
-$(OBJDIR)\error-test.obj : ..\error-test.cc $(OBJDIR)\libdap++.lib
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\error-test.cc
-$(OBJDIR)\expr-test.obj  : ..\expr-test.cc $(OBJDIR)\libdap++.lib
-	@$(CC) $(EXEOBJFLAGS) /Fo$@ /Tp ..\expr-test.cc
+$(OBJDIR)\das-test.obj   : $(SRCDIR)\das-test.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\das-test.cc
+$(OBJDIR)\dds-test.obj   : $(SRCDIR)\dds-test.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\dds-test.cc
+$(OBJDIR)\error-test.obj : $(SRCDIR)\error-test.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\error-test.cc
+$(OBJDIR)\expr-test.obj  : $(SRCDIR)\expr-test.cc
+	@$(CC) $(CFLAGS) $(CPPFLAGS) /Fo$@ /Tp $(SRCDIR)\expr-test.cc
 
-$(OBJDIR)\das-test.exe		: $(OBJDIR)\das-test.obj $(TESTOBJS)
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\das-test.obj $(TESTOBJS) $(LINKLIBS)
+$(OBJDIR)\das-test.exe		: $(OBJDIR)\das-test.obj
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\das-test.obj $(LIBS)
 
-$(OBJDIR)\dds-test.exe		: $(OBJDIR)\dds-test.obj $(TESTOBJS)
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\dds-test.obj $(TESTOBJS) $(LINKLIBS)
+$(OBJDIR)\dds-test.exe		: $(OBJDIR)\dds-test.obj
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\dds-test.obj $(LIBS)
 
-$(OBJDIR)\error-test.exe	: $(OBJDIR)\error-test.obj $(TESTOBJS)
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\error-test.obj $(TESTOBJS) $(LINKLIBS)
+$(OBJDIR)\error-test.exe	: $(OBJDIR)\error-test.obj
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\error-test.obj $(LIBS)
 
 $(OBJDIR)\expr-test.exe		: $(OBJDIR)\expr-test.obj $(TESTOBJS)
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\expr-test.obj $(TESTOBJS) $(LINKLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\expr-test.obj $(LIBS)
 
 # cppUnit-based Unit test objects
 UNIT_TEST_PROGS = $(OBJDIR)\parserUtilTest.exe \
@@ -457,91 +508,185 @@ UNIT_TEST_PROGS = $(OBJDIR)\parserUtilTest.exe \
 		$(OBJDIR)\HTTPConnectTest.exe
 
 unit_check: $(UNIT_TEST_PROGS)
-	$(OBJDIR)\cgiUtilTest
-#	$(OBJDIR)\HTTPConnectTest
-	$(OBJDIR)\HTTPCacheTest
-	$(OBJDIR)\SequenceTest
-	$(OBJDIR)\AttrTableTest
-	$(OBJDIR)\DDSTest
-	$(OBJDIR)\ByteTest
-	$(OBJDIR)\DASTest
-	$(OBJDIR)\generalUtilTest
-	$(OBJDIR)\parserUtilTest
-
+#	$(OBJDIR)\cgiUtilTest
+##	$(OBJDIR)\HTTPConnectTest
+#	$(OBJDIR)\HTTPCacheTest
+#	$(OBJDIR)\SequenceTest
+#	$(OBJDIR)\AttrTableTest
+#	$(OBJDIR)\DDSTest
+#	$(OBJDIR)\ByteTest
+#	$(OBJDIR)\DASTest
+#	$(OBJDIR)\generalUtilTest
+#	$(OBJDIR)\parserUtilTest
 
 $(OBJDIR)\parserUtilTest.exe	: $(OBJDIR)\parserUtilTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\parserUtilTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\parserUtilTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\generalUtilTest.exe	: $(OBJDIR)\generalUtilTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\generalUtilTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\generalUtilTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\DASTest.exe		: $(OBJDIR)\DASTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\DASTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\DASTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\ByteTest.exe		: $(OBJDIR)\ByteTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\ByteTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\ByteTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\SequenceTest.exe	: $(OBJDIR)\SequenceTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\SequenceTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\SequenceTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\AttrTableTest.exe	: $(OBJDIR)\AttrTableTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\AttrTableTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\AttrTableTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\DDSTest.exe		: $(OBJDIR)\DDSTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\DDSTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\DDSTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\cgiUtilTest.exe	: $(OBJDIR)\cgiUtilTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\cgiUtilTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\cgiUtilTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\HTTPCacheTest.exe	: $(OBJDIR)\HTTPCacheTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\HTTPCacheTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\HTTPCacheTest.obj $(CPPUNITLIBS) $(LIBS)
 $(OBJDIR)\HTTPConnectTest.exe	: $(OBJDIR)\HTTPConnectTest.obj
-	$(LINK) $(LEXEFLAGS) /out:$@ $(OBJDIR)\HTTPConnectTest.obj $(CPPUNITLIBS)
+	$(LINK) $(LFLAGS) /out:$@ $(OBJDIR)\HTTPConnectTest.obj $(CPPUNITLIBS) $(LIBS)
 
 $(OBJDIR)\parserUtilTest.obj	: ..\parserUtilTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\parserUtilTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\parserUtilTest.cc
 $(OBJDIR)\generalUtilTest.obj	: ..\generalUtilTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\generalUtilTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\generalUtilTest.cc
 $(OBJDIR)\DASTest.obj		: ..\DASTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\DASTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\DASTest.cc
 $(OBJDIR)\ByteTest.obj		: ..\ByteTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\ByteTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\ByteTest.cc
 $(OBJDIR)\SequenceTest.obj	: ..\SequenceTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\SequenceTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\SequenceTest.cc
 $(OBJDIR)\AttrTableTest.obj	: ..\AttrTableTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\AttrTableTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\AttrTableTest.cc
 $(OBJDIR)\DDSTest.obj		: ..\DDSTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\DDSTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\DDSTest.cc
 $(OBJDIR)\cgiUtilTest.obj	: ..\cgiUtilTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\cgiUtilTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\cgiUtilTest.cc
 $(OBJDIR)\HTTPCacheTest.obj	: ..\HTTPCacheTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\HTTPCacheTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\HTTPCacheTest.cc
 $(OBJDIR)\HTTPConnectTest.obj	: ..\HTTPConnectTest.cc
-	$(CC) $(CPPUNITOBJFLAGS) /Fo$@ /Tp ..\HTTPConnectTest.cc
+	$(CC) $(CFLAGS) $(CPPUNITINCS) $(CPPFLAGS) /Fo$@ /Tp ..\HTTPConnectTest.cc
 
-# Create the install and intermediate file directories if they
-# don't exist.  We also have to create a temporary unistd.h because
+$(OBJDIR)\xdr.obj : $(SRCDIR)\xdr.c
+$(OBJDIR)\xdr_array.obj : $(SRCDIR)\xdr_array.c
+$(OBJDIR)\xdr_float.obj : $(SRCDIR)\xdr_float.c
+$(OBJDIR)\xdr_mem.obj : $(SRCDIR)\xdr_mem.c
+$(OBJDIR)\xdr_rec.obj : $(SRCDIR)\xdr_rec.c
+$(OBJDIR)\xdr_rec2.obj : $(SRCDIR)\xdr_rec2.c
+$(OBJDIR)\xdr_reference.obj : $(SRCDIR)\xdr_reference.c
+$(OBJDIR)\xdr_stdio.obj : $(SRCDIR)\xdr_stdio.c
+$(OBJDIR)\xdrtest.obj: $(SRCDIR)\xdrtest.c
+
+# Preliminary setup.  Create the install and intermediate file directories
+# if they don't exist.  We also have to create a temporary unistd.h because
 # bison and/or flex create source that includes that - even though
 # there is no such header under win32 and it is unnecessary there
 # (that is, even though these utils can run under win32 - by definition
 # they generate output for the UNIX world).  This stupid pet trick
 # also properly defines isatty() for the generated source under win32.
-
-# We once stuck with using very simple ("non-extended") DOS commands
-# w/o all the fancy flags.  That was in support of building on
-# Win95/98.  We no longer support 95/98 so we can go ahead and use
-# the more robust DOS commands.  The below can be made less repititive
-# as a result - when time permits.
 setup:
 	@-mkdir $(OBJDIR)
 	@-mkdir $(INSTALLLIBDIR)
 	@-mkdir $(INSTALLEXEDIR)
+	@-mkdir $(INSTALLDLLDIR)
 	@-mkdir $(INCLUDEDIR)
 	@-echo /*  Dummy patch header to get win32 flex/bison generated  */ > unistd.h
 	@-echo /*  source code to compile under win32.  If you see this  */ >> unistd.h
 	@-echo /*  temp file, feel free to scratch it.                   */ >> unistd.h
-	@echo #include "io.h" >> unistd.h
+	@-echo #include "io.h" >> unistd.h
+
+# Install
+install: installST installMT installMD installSTD installMTD installMDD
+# We use the Multi-threaded DLL versions of executable by default
+	copy $(OBJDIR)\MD\geturl.exe $(INSTALLEXEDIR)
+	copy $(OBJDIR)\MD\usage.exe $(INSTALLEXEDIR)
+	copy $(OBJDIR)\MD\deflate.exe $(INSTALLEXEDIR)
+
+	copy config_dap.h $(INCLUDEDIR)
+	copy dods-datatypes.h $(INCLUDEDIR)
+	copy $(SRCDIR)\AISConnect.h $(INCLUDEDIR)
+	copy $(SRCDIR)\AISDatabaseParser.h $(INCLUDEDIR)
+	copy $(SRCDIR)\AISExceptions.h $(INCLUDEDIR)
+	copy $(SRCDIR)\AISMerge.h $(INCLUDEDIR)
+	copy $(SRCDIR)\AISResources.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Array.h $(INCLUDEDIR)
+	copy $(SRCDIR)\ArrayIterAdapter.h $(INCLUDEDIR)
+	copy $(SRCDIR)\AttrIterAdapter.h $(INCLUDEDIR)
+	copy $(SRCDIR)\AttrTable.h $(INCLUDEDIR)
+	copy $(SRCDIR)\BaseType.h $(INCLUDEDIR)
+	copy $(SRCDIR)\BTIterAdapter.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Byte.h $(INCLUDEDIR)
+	copy $(SRCDIR)\cgi_util.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Clause.h $(INCLUDEDIR)
+	copy $(SRCDIR)\ClauseIterAdapter.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Connect.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Connections.cc $(INCLUDEDIR)
+	copy $(SRCDIR)\Connections.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Constructor.h $(INCLUDEDIR)
+	copy $(SRCDIR)\DAS.h $(INCLUDEDIR)
+	copy $(SRCDIR)\DataDDS.h $(INCLUDEDIR)
+	copy $(SRCDIR)\DDS.h $(INCLUDEDIR)
+	copy $(SRCDIR)\debug.h $(INCLUDEDIR)
+	copy $(SRCDIR)\DODSFilter.h $(INCLUDEDIR)
+	copy $(SRCDIR)\dods-limits.h $(INCLUDEDIR)
+	copy $(SRCDIR)\EncodingType.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Error.h $(INCLUDEDIR)
+	copy $(SRCDIR)\escaping.h $(INCLUDEDIR)
+	copy $(SRCDIR)\expr.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Float32.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Float64.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Grid.h $(INCLUDEDIR)
+	copy $(SRCDIR)\GSEClause.h $(INCLUDEDIR)
+	copy $(SRCDIR)\HTTPCacheDisconnectedMode.h $(INCLUDEDIR)
+	copy $(SRCDIR)\HTTPCache.h $(INCLUDEDIR)
+	copy $(SRCDIR)\HTTPCacheResponse.h $(INCLUDEDIR)
+	copy $(SRCDIR)\HTTPConnect.h $(INCLUDEDIR)
+	copy $(SRCDIR)\HTTPResponse.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Int16.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Int32.h $(INCLUDEDIR)
+	copy $(SRCDIR)\InternalErr.h $(INCLUDEDIR)
+	copy $(SRCDIR)\IteratorAdapter.h $(INCLUDEDIR)
+	copy $(SRCDIR)\List.h $(INCLUDEDIR)
+	copy $(SRCDIR)\ObjectType.h $(INCLUDEDIR)
+	copy $(SRCDIR)\parser.h $(INCLUDEDIR)
+	copy $(SRCDIR)\RCReader.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Resource.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Response.h $(INCLUDEDIR)
+	copy $(SRCDIR)\ResponseTooBigErr.h $(INCLUDEDIR)
+	copy $(SRCDIR)\RValue.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Sequence.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Str.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Structure.h $(INCLUDEDIR)
+	copy $(SRCDIR)\UInt16.h $(INCLUDEDIR)
+	copy $(SRCDIR)\UInt32.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Url.h $(INCLUDEDIR)
+	copy $(SRCDIR)\util.h $(INCLUDEDIR)
+	copy $(SRCDIR)\util_mit.h $(INCLUDEDIR)
+	copy $(SRCDIR)\Vector.h $(INCLUDEDIR)
+	copy $(SRCDIR)\GNU\Regex.h $(INCLUDEDIR)
+	copy $(SRCDIR)\GNU\GetOpt.h $(INCLUDEDIR)
+	copy $(SRCDIR)\GNU\builtin.h $(INCLUDEDIR)
+	copy $(SRCDIR)\GNU\Pix.h $(INCLUDEDIR)
+
+installST:
+	@-copy $(OBJDIR)\ST\libdapST.lib $(INSTALLLIBDIR)
+
+installMT:
+	@-copy $(OBJDIR)\MT\libdapMT.lib $(INSTALLLIBDIR)
+
+installMD:
+	@-copy $(OBJDIR)\MD\libdapMD.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MD\libdapMD.dll $(INSTALLDLLDIR)
+
+installSTD:
+	@-copy $(OBJDIR)\STD\libdapSTD.lib $(INSTALLLIBDIR)
+
+installMTD:
+	@-copy $(OBJDIR)\MTD\libdapMTD.lib $(INSTALLLIBDIR)
+
+installMDD:
+	@-copy $(OBJDIR)\MDD\libdapMDD.lib $(INSTALLLIBDIR)
+	@-copy $(OBJDIR)\MDD\libdapMDD.dll $(INSTALLDLLDIR)
 
 clean:
 	@cd libxdr
 	@-nmake clean
-	@cd .. 
-	@-del $(OBJDIR)\*.obj
-	@-del $(OBJDIR)\*.lib
-	@-del $(OBJDIR)\*.exe
-	@-rmdir $(OBJDIR)
+	@-cd ..
+	@-rmdir /Q /S $(OBJDIR)
 	@-del *.pdb
 	@-del unistd.h
 

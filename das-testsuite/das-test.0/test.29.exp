@@ -3,6 +3,14 @@
 # jhrg
 #
 # $Log: test.29.exp,v $
+# Revision 1.3  2003/12/11 01:08:38  jimg
+# More fixes after resolving conflicts. This code still fails some tests.
+#
+# Revision 1.2.6.1  2003/10/03 16:26:30  jimg
+# Fixed tests; I changed the text of das-test just a little and so these
+# had to be updated. I wanted to be sure that the error message was from
+# an exception and not just a write to stderr.
+#
 # Revision 1.2  2001/01/26 19:48:10  jimg
 # Merged with release-3-2-3.
 #
@@ -22,7 +30,8 @@ set test_name test.29
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Error parsing the text on line 15
+set test_out "Caught Error object:
+Error parsing the text on line 15
 Could not find the attribute `var1.comp' in the attribute object.
 "
 

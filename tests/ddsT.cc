@@ -26,6 +26,8 @@ using std::endl ;
 using std::ostrstream ;
 using std::ifstream ;
 
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing
+				      // timeouts. 
 string cprint = "\
 Dataset {\n\
     Int16 var1;\n\

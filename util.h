@@ -120,10 +120,12 @@ const char *dods_progress();
 void flush_stream(iostream ios, FILE *out);
 #endif
 
+#if 0
 bool func_member(int argc, BaseType *argv[], DDS &dds);
 bool func_null(int argc, BaseType *argv[], DDS &dds);
 BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
 BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
+#endif
 
 extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
 
@@ -230,6 +232,9 @@ time_t parse_time(const char * str, bool expand);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.50  2003/12/11 01:08:37  jimg
+ * More fixes after resolving conflicts. This code still fails some tests.
+ *
  * Revision 1.49  2003/12/08 18:02:31  edavis
  * Merge release-3-4 into trunk
  *

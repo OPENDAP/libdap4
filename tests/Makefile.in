@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.5 2003/09/25 22:37:35 jimg Exp $
+# $Id: Makefile.in,v 1.6 2003/12/11 01:08:38 jimg Exp $
 
 @SET_MAKE@
 
@@ -140,49 +140,49 @@ depend:
 LongIterAdapter.o: LongIterAdapter.cc LongIterAdapter.h \
   ../IteratorAdapter.h ../Array.h ../dods-limits.h ../Vector.h \
   ../BaseType.h ../AttrTable.h ../GNU/Pix.h ../Error.h ../InternalErr.h \
-  ../DDS.h ../DAS.h ../Clause.h ../expr.h ../RValue.h
+  ../dods-datatypes.h ../DDS.h ../DAS.h ../Clause.h ../expr.h ../RValue.h
 TestArray.o: TestArray.cc TestArray.h ../Array.h ../dods-limits.h \
   ../Vector.h ../BaseType.h ../AttrTable.h ../GNU/Pix.h \
-  ../IteratorAdapter.h ../Error.h ../InternalErr.h ../DDS.h ../DAS.h \
-  ../Clause.h ../expr.h ../RValue.h ../dods-datatypes.h
+  ../IteratorAdapter.h ../Error.h ../InternalErr.h ../dods-datatypes.h \
+  ../DDS.h ../DAS.h ../Clause.h ../expr.h ../RValue.h
 TestSequence.o: TestSequence.cc TestSequence.h ../Sequence.h ../GNU/Pix.h \
   ../IteratorAdapter.h ../BaseType.h ../AttrTable.h ../Error.h \
-  ../InternalErr.h ../Constructor.h ../debug.h
+  ../InternalErr.h ../dods-datatypes.h ../Constructor.h ../debug.h
 Unused.o: Unused.cc Unused.h
 arrayT.o: arrayT.cc TestArray.h ../Array.h ../dods-limits.h ../Vector.h \
   ../BaseType.h ../AttrTable.h ../GNU/Pix.h ../IteratorAdapter.h \
-  ../Error.h ../InternalErr.h ../DDS.h ../DAS.h ../Clause.h ../expr.h \
-  ../RValue.h ../TestInt16.h ../Int16.h ../dods-datatypes.h ../util.h \
+  ../Error.h ../InternalErr.h ../dods-datatypes.h ../DDS.h ../DAS.h \
+  ../Clause.h ../expr.h ../RValue.h ../TestInt16.h ../Int16.h ../util.h \
   ../Byte.h ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h ../Float64.h \
   ../Str.h ../Url.h ../Structure.h ../Constructor.h ../Sequence.h \
   ../Grid.h
 attrTableT.o: attrTableT.cc ../AttrTable.h ../GNU/Pix.h \
   ../IteratorAdapter.h ../Error.h
 ddsPT.o: ddsPT.cc ../DDS.h ../GNU/Pix.h ../IteratorAdapter.h \
-  ../BaseType.h ../AttrTable.h ../Error.h ../InternalErr.h ../DAS.h \
-  ../Clause.h ../expr.h ../RValue.h
+  ../BaseType.h ../AttrTable.h ../Error.h ../InternalErr.h \
+  ../dods-datatypes.h ../DAS.h ../Clause.h ../expr.h ../RValue.h
 ddsT.o: ddsT.cc ../DDS.h ../GNU/Pix.h ../IteratorAdapter.h ../BaseType.h \
-  ../AttrTable.h ../Error.h ../InternalErr.h ../DAS.h ../Clause.h \
-  ../expr.h ../RValue.h TestArray.h ../Array.h ../dods-limits.h \
-  ../Vector.h ../TestInt16.h ../Int16.h ../dods-datatypes.h ../TestStr.h \
+  ../AttrTable.h ../Error.h ../InternalErr.h ../dods-datatypes.h ../DAS.h \
+  ../Clause.h ../expr.h ../RValue.h TestArray.h ../Array.h \
+  ../dods-limits.h ../Vector.h ../TestInt16.h ../Int16.h ../TestStr.h \
   ../Str.h ../ce_functions.h ../util.h ../Byte.h ../UInt16.h ../Int32.h \
   ../UInt32.h ../Float32.h ../Float64.h ../Url.h ../Structure.h \
   ../Constructor.h ../Sequence.h ../Grid.h ../debug.h
 iterT.o: iterT.cc LongIterAdapter.h ../IteratorAdapter.h ../Array.h \
   ../dods-limits.h ../Vector.h ../BaseType.h ../AttrTable.h ../GNU/Pix.h \
-  ../Error.h ../InternalErr.h ../DDS.h ../DAS.h ../Clause.h ../expr.h \
-  ../RValue.h
+  ../Error.h ../InternalErr.h ../dods-datatypes.h ../DDS.h ../DAS.h \
+  ../Clause.h ../expr.h ../RValue.h
 sequenceT.o: sequenceT.cc TestSequence.h ../Sequence.h ../GNU/Pix.h \
   ../IteratorAdapter.h ../BaseType.h ../AttrTable.h ../Error.h \
-  ../InternalErr.h ../Constructor.h ../TestInt16.h ../Int16.h \
-  ../dods-datatypes.h ../TestStr.h ../dods-limits.h ../Str.h ../util.h \
-  ../Byte.h ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h ../Float64.h \
-  ../Url.h ../Array.h ../Vector.h ../DDS.h ../DAS.h ../Clause.h ../expr.h \
+  ../InternalErr.h ../dods-datatypes.h ../Constructor.h ../TestInt16.h \
+  ../Int16.h ../TestStr.h ../dods-limits.h ../Str.h ../util.h ../Byte.h \
+  ../UInt16.h ../Int32.h ../UInt32.h ../Float32.h ../Float64.h ../Url.h \
+  ../Array.h ../Vector.h ../DDS.h ../DAS.h ../Clause.h ../expr.h \
   ../RValue.h ../Structure.h ../Grid.h
 structT.o: structT.cc ../TestStructure.h ../Structure.h ../GNU/Pix.h \
   ../IteratorAdapter.h ../BaseType.h ../AttrTable.h ../Error.h \
-  ../InternalErr.h ../Constructor.h ../DDS.h ../DAS.h ../Clause.h \
-  ../expr.h ../RValue.h TestArray.h ../Array.h ../dods-limits.h \
-  ../Vector.h ../TestInt16.h ../Int16.h ../dods-datatypes.h ../TestStr.h \
+  ../InternalErr.h ../dods-datatypes.h ../Constructor.h ../DDS.h ../DAS.h \
+  ../Clause.h ../expr.h ../RValue.h TestArray.h ../Array.h \
+  ../dods-limits.h ../Vector.h ../TestInt16.h ../Int16.h ../TestStr.h \
   ../Str.h ../util.h ../Byte.h ../UInt16.h ../Int32.h ../UInt32.h \
   ../Float32.h ../Float64.h ../Url.h ../Sequence.h ../Grid.h

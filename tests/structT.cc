@@ -20,6 +20,8 @@
 using std::cerr ;
 using std::endl ;
 
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing
+				      // timeouts. 
 class structT : public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE( structT ) ;

@@ -1,8 +1,10 @@
 #ifndef _Unused_h
 #define _Unused_h 1
 
+#ifndef __POWERPC__
 #ifdef __GNUG__
 #pragma interface
+#endif
 #endif
 
 #include <string>

@@ -2,6 +2,14 @@
 # jhrg
 #
 # $Log: test.7.exp,v $
+# Revision 1.10  2003/12/11 01:08:38  jimg
+# More fixes after resolving conflicts. This code still fails some tests.
+#
+# Revision 1.9.10.1  2003/10/03 16:26:30  jimg
+# Fixed tests; I changed the text of das-test just a little and so these
+# had to be updated. I wanted to be sure that the error message was from
+# an exception and not just a write to stderr.
+#
 # Revision 1.9  2000/09/22 02:52:59  jimg
 # Fixes to the tests to recognize some of the new error messages. Also,
 # the test drivers were modified to catch the exceptions now thrown by
@@ -49,15 +57,49 @@ set test_name test.7
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Error parsing the text on line 10 at or near: my_test
+set test_out "Caught Error object:
+Error parsing the text on line 10 at or near: my_test
 Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,
-Float64, String or Url) followed by a name and value.
-"
+Float64, String or Url) followed by a name and value."
+
 das-test_start p $srcdir/$test_name
+
+set comp_output [string trim $comp_output]
 
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"
 } else {
+    set tlen [string length $test_out]
+    set clen [string length $comp_output]
+
+    set len $tlen;			# used by for loop below
+
+    if {$clen < $tlen} {
+	set len $clen;			# set if needed
+
+	set size [expr $tlen - $clen]
+	send_user "comp_output is smaller (by $size chars) than expected!\n"
+	send_user "Here's the excess: '"
+	send_user [string range $test_out [expr $clen -1] end]
+ 	send_user "'\n"
+    } elseif {$tlen < $clen} {
+	set size [expr $clen - $tlen]
+	send_user "comp_output is larger (by $size chars) than expected!\n"
+	send_user "Here's the excess: '"
+	send_user [string range $comp_output [expr $tlen -1] end]
+	send_user "'\n"
+    }
+
+    # $len is set to the smallest of $tlen or $clen to avoid running off the
+    # end either of the strings.
+    for {set i 0} {$i < $len} {incr i} {
+	set c [string index $comp_output $i]
+	set t [string index $test_out $i]
+	if {$t != $c} {
+	    send_user "comp_output ($c) and test_out ($t) differ at $i.\n"
+	}
+    }
+    
     fail "$test_name"
 }
 

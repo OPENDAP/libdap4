@@ -13,6 +13,9 @@ using std::endl ;
 using std::ostrstream ;
 using std::ifstream ;
 
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing
+				      // timeouts. 
+
 int
 main( int argc, char **argv )
 {

@@ -4,10 +4,10 @@
 
 rm -rf dods_cache
 mkdir dods_cache
-mkdir dods_cache/893
+mkdir dods_cache/1306
 cp dot.index dods_cache/.index
 
 rm -rf gc_cache
 rm -rf purge_cache
-rm -rf singleton_cache
+rm -rf header_cache
  

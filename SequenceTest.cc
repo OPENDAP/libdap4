@@ -31,7 +31,7 @@
 
 #include "Regex.h"
 
-#define DODS_DEBUG
+// #define DODS_DEBUG
 #include "Sequence.h"
 #include "Int32.h"
 #include "Str.h"

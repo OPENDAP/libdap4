@@ -14,7 +14,8 @@ set test_name test.6
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Error *"
+set test_out "Caught Error object:
+Error *"
 
 das-test_start p $srcdir/$test_name
 
@@ -25,6 +26,14 @@ if [string match $test_out $comp_output] { # check comp_output
 }
 
 # $Log: test.6.exp,v $
+# Revision 1.15  2003/12/11 01:08:38  jimg
+# More fixes after resolving conflicts. This code still fails some tests.
+#
+# Revision 1.14.4.1  2003/10/03 16:26:30  jimg
+# Fixed tests; I changed the text of das-test just a little and so these
+# had to be updated. I wanted to be sure that the error message was from
+# an exception and not just a write to stderr.
+#
 # Revision 1.14  2003/01/10 07:15:53  jimg
 # resolved conflicts from the merge with release-3-2-10.
 #

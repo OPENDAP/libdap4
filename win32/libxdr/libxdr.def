@@ -1,0 +1,18 @@
+
+EXPORTS
+	xdr_array
+	xdr_bytes
+	xdr_char
+	xdr_enum
+	xdr_double
+	xdr_float
+	xdr_short
+	xdr_string
+	xdr_u_long
+	xdr_u_short
+	xdr_long
+	xdr_u_int
+	xdr_vector
+	xdr_int
+	xdr_opaque
+	xdrstdio_create

@@ -106,7 +106,9 @@ public:
     CPPUNIT_TEST(containers_with_spaces_test);
     CPPUNIT_TEST(get_attr_iter_test);
 
+#if 0
     CPPUNIT_TEST(print_xml_test);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 

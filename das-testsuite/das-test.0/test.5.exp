@@ -2,6 +2,14 @@
 # jhrg
 #
 # $Log: test.5.exp,v $
+# Revision 1.7  2003/12/11 01:08:38  jimg
+# More fixes after resolving conflicts. This code still fails some tests.
+#
+# Revision 1.6.10.1  2003/10/03 16:26:30  jimg
+# Fixed tests; I changed the text of das-test just a little and so these
+# had to be updated. I wanted to be sure that the error message was from
+# an exception and not just a write to stderr.
+#
 # Revision 1.6  2000/06/16 18:15:01  jimg
 # Merged with 3.1.7
 #
@@ -39,7 +47,8 @@ set test_name test.5
 # stored in comp_output by das-test_start. The two strings should match
 # exactly.
 
-set test_out "Unterminated quote (starts on line 6)
+set test_out "Caught Error object:
+Error scanning DAS object text: Unterminated quote (starts on line 6)
 "
 
 das-test_start p $srcdir/$test_name
