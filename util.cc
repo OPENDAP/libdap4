@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.79 2003/12/10 21:11:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.80 2004/06/28 17:01:48 pwest Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -513,7 +513,7 @@ double_to_string(const double &num)
 string
 dap_version()
 {
-    return (string)DVR;
+    return (string)DVR + ": compiled on " + __DATE__ + ":" + __TIME__ ;
 }
 
 // Given a pathname, return the file at the end of the path. This is used
@@ -600,6 +600,9 @@ file_to_string(FILE *fp)
 }
 
 // $Log: util.cc,v $
+// Revision 1.80  2004/06/28 17:01:48  pwest
+// Adding compile date and time to version
+//
 // Revision 1.79  2003/12/10 21:11:58  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.
