@@ -8,6 +8,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.46  1997/02/10 02:27:10  jimg
+// Fixed processing of error returns.
+// Changed return type of request_data() (and related functions) from DDS & to
+// DDS *. The member function now return NULL if an error is detected.
+//
 // Revision 1.45  1997/02/04 22:44:31  jimg
 // Fixed bugs in URL() and CE() where the _URL, _proj and _sel members were
 // misused.
@@ -262,7 +267,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.45 1997/02/04 22:44:31 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.46 1997/02/10 02:27:10 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1246,6 +1251,7 @@ Connect::request_das(bool gui_p = false, const String &ext = "das")
 	  if (!_error.parse(_output)) {
 	      cerr << "Could not parse error object" << endl;
 	      status = false;
+	      break;
 	  }
 	  correction = _error.correct_error(gui());
 	  status = false;
@@ -1283,14 +1289,13 @@ Connect::request_dds(bool gui_p = false, const String &ext = "dds")
     
     switch (type()) {
       case dods_error: {
+	  String correction;
 	  if (!_error.parse(_output)) {
 	      cerr << "Could not parse error object" << endl;
 	      status = false;
-#if 0
-	      goto exit;
-#endif
+	      break;
 	  }
-	  String correction = _error.correct_error(gui());
+	  correction = _error.correct_error(gui());
 	  status = false;
 	  break;
       }
@@ -1328,7 +1333,7 @@ exit:
 // corrupted. If you request N variables and M of them are Sequences, all the
 // M sequences must follow the N-M other variables.
 
-DDS &
+DDS *
 Connect::request_data(String expr, bool gui_p = true, 
 		      bool async = false, const String &ext = "dods")
 {
@@ -1336,12 +1341,12 @@ Connect::request_data(String expr, bool gui_p = true,
 
     String proj, sel;
     if (expr.contains("&")) {
-      proj = expr.before("&");
-      sel = expr.after(proj);
+	proj = expr.before("&");
+	sel = expr.after(proj);
     }
     else {
-      proj = expr;
-      sel = "";
+	proj = expr;
+	sel = "";
     }
 
     String data_url = _URL + "." + ext + "?" + _proj + proj + _sel + sel;
@@ -1349,47 +1354,69 @@ Connect::request_data(String expr, bool gui_p = true,
 	
     if (!status) {
 	cerr << "Could not complete data request operation" << endl;
-	exit(1);
+	goto error;
     }
 
-    if (type() == dods_error) {
-	if (!_error.parse(_output)) {
-	    cerr << "Could not parse error object" << endl;
-	    exit(1);
-	}
-	    
-	String correction = _error.correct_error(gui());
-	// put the test for various error codes here
-	exit(1);		// improve this!!
+    switch (type()) {
+      case dods_error: {
+	  String correction;
+	  if (!_error.parse(_output)) {
+	      cerr << "Could not parse error object" << endl;
+	      status = false;
+	      break;
+	  }
+	  correction = _error.correct_error(gui());
+	  status = false;
+	  goto error;
+	  break;
+      }
+
+      case web_error:
+	// Web errors (those reported in the return document's MIME header)
+	// are processed by the WWW library.
+	status = false;
+	break;
+
+      case dods_data:
+      default: {
+	  // First read the DDS into a new object.
+
+	  DDS dds;
+	  FILE *dds_fp = move_dds(_output);
+	  if (!dds_fp || !dds.parse(dds_fp)) {
+	      cerr << "Could not parse data DDS." << endl;
+	      status = false;
+	      goto error;
+	  }
+	  fclose(dds_fp);
+
+	  // Save the newly created DDS (which now has a variable (BaseType
+	  // *) that can hold the data) along with the constraint expression
+	  // in a list. Note that append_constraint returns a reference to a
+	  // *copy* of `dds'. That copy exists in a SLList within the
+	  // instance of Connect so we can return a pointer to that DDS. The
+	  // pointer will remain valid for the duration of the Connect
+	  // object. 
+
+	  DDS *d = append_constraint(expr, dds);
+
+	  // If the transmission is synchronous, read all the data into the
+	  // DDS D. If asynchronous, just return the DDS and leave the
+	  // reading to to the caller.
+	  if (!async) {
+	      XDR *s = source();
+	      for (Pix q = d->first_var(); q; d->next_var(q))
+		  if (!d->var(q)->deserialize(s))
+		      goto error;
+	  }
+
+	  return d;
+	  break;
+      }
     }
       
-    // First read the DDS into a new object.
-
-    DDS dds;
-    FILE *dds_fp = move_dds(_output);
-    if (!dds_fp || !dds.parse(dds_fp)) {
-	cerr << "Could not parse data DDS." << endl;
-	exit(1);
-    }
-    fclose(dds_fp);
-
-    // Save the newly created DDS (which now has a variable (BaseType *)
-    // that can hold the data) along with the constraint expression in a
-    // list.
-
-    DDS &d = append_constraint(expr, dds);
-
-    // If the transmission is synchronous, read all the data into the DDS D.
-    // If asynchronous, just return the DDS and leave the reading to to he
-    // caller. 
-    if (!async) {
-	XDR *s = source();
-	for (Pix q = d.first_var(); q; d.next_var(q))
-	    if (!d.var(q)->deserialize(s))
-		break;
-    }
-
-    return d;
+error:
+    return 0;
 }
 
 Gui *
@@ -1474,20 +1501,20 @@ Connect::constraint_expression(Pix p)
     return _data(p)._expression;
 }
 
-DDS &
+DDS *
 Connect::constraint_dds(Pix p)
 {
     assert(!_data.empty() && p);
 
-    return _data(p)._dds;
+    return &_data(p)._dds;
 }
 
-DDS &
+DDS *
 Connect::append_constraint(String expr, DDS &dds)
 {
     constraint c(expr, dds);
 
     _data.append(c);
 
-    return _data.rear()._dds;
+    return &_data.rear()._dds;
 }
