@@ -12,6 +12,9 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.6  1997/02/28 01:30:53  jimg
+// Tweaked comments.
+//
 // Revision 1.5  1996/10/28 18:54:05  jimg
 // Added prototypes for check_uint(...); functions that test unsigned integers.
 //
@@ -49,12 +52,12 @@
 
 /// Pass parameters by reference to a parser.
 /** #parser_arg# is used to pass parameters to the bison parsers and get
-  error codes and objects in return. If #status()# is true, then the
-  #object()# returns a pointer to the object built during the parse process.
-  If #status()# is false, then the #error()# returns a pointer to an Error
-  object.
+    error codes and objects in return. If #status()# is true, then the
+    #object()# returns a pointer to the object built during the parse
+    process. If #status()# is false, then the #error()# returns a pointer to
+    an Error object.
 
-  Note that the #object()# mfunc returns a void pointer. */
+    Note that the #object()# mfunc returns a void pointer. */
 
 struct parser_arg {
     void *_object;		// nominally a pointer to an object
@@ -73,33 +76,33 @@ struct parser_arg {
 };
 
 /// Generate error messages for the various parsers.
-/** #parser_error()# generates error messages for the various parsers used
-  by the DODS core. There are two versions of the function, one which takes a
-  #const char *message# and a #const int line_num# and writes the message and
-  line number too stderr and a second which takes an additional #parser_arg
-  *arg# parameter and writes the error message into an Error object which is
-  returned to the caller via the #arg# parameter. 
+/** #parser_error()# generates error messages for the various parsers used by
+    the DODS core. There are two versions of the function, one which takes a
+    #const char *message# and a #const int line_num# and writes the message
+    and line number too stderr and a second which takes an additional
+    #parser_arg *arg# parameter and writes the error message into an Error
+    object which is returned to the caller via the #arg# parameter.
 
-  NB: The second version of this function also accepts a third parameter
-  (#const char *context#) which can be used to provide an additional line of
-  information  beyond what is in the string #message#.
+    NB: The second version of this function also accepts a third parameter
+    (#const char *context#) which can be used to provide an additional line
+    of information beyond what is in the string #message#.
 
-  Returns: void */
+    Returns: void */
 
 void parse_error(const char *s, const int line_num);
-void parse_error(parser_arg *arg, const char *s, const int line_num,
+void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
 		 const char *context = 0);
 
 /// Save a string to a temporary variable during the parse.
 /** Given a string (#const char *src#), save it to the temporary variable
-  pointed to by #dst#. If the string is longer than #ID_MAX#, generate and
-  error indicating that #src# was truncated to #ID_MAX# characters during the
-  copy operation. There are two versions of this function; one calls the
-  version of #parser_error()# which writes to stderr. The version which
-  accepts the #parser_arg *arg# argument calls the version of
-  #parser_error()# which generates and Error object.
+    pointed to by #dst#. If the string is longer than #ID_MAX#, generate and
+    error indicating that #src# was truncated to #ID_MAX# characters during
+    the copy operation. There are two versions of this function; one calls
+    the version of #parser_error()# which writes to stderr. The version which
+    accepts the #parser_arg *arg# argument calls the version of
+    #parser_error()# which generates and Error object.
 
-  Returns: void */
+    Returns: void */
 
 void save_str(char *dst, const char *src, const int line_num);
 void save_str(char *dst, const char *src, parser_arg *arg, 
@@ -107,11 +110,11 @@ void save_str(char *dst, const char *src, parser_arg *arg,
 
 /// Is the value a valid byte?
 /** Check to see if #val# is a valid byte value. If not, generate an error
-  message using #parser_error()#. There are two versions of #check_byte()#,
-  one which calls #parser_error()# and prints an error message to stderr an
-  one which calls #parser_error()# and generates and Error object.
+    message using #parser_error()#. There are two versions of #check_byte()#,
+    one which calls #parser_error()# and prints an error message to stderr an
+    one which calls #parser_error()# and generates and Error object.
 
-  Returns: True if #val# is a byte value, False otherwise. */
+    Returns: True if #val# is a byte value, False otherwise. */
 
 int check_byte(const char *val, const int line);
 int check_byte(parser_arg *arg, const char *val, const int line, 
@@ -119,7 +122,7 @@ int check_byte(parser_arg *arg, const char *val, const int line,
 
 /// Is the value a valid integer?
 /** Like #check_byte()# but for 32-bit integers (#check_uint()# is for
-  unsigned integers). */
+    unsigned integers). */
 
 int check_int(const char *val, const int num);
 int check_int(parser_arg *arg, const char *val, const int num,
