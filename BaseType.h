@@ -16,10 +16,13 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.29  1996/08/26 19:36:41  jimg
-/* Added type constants for 32 bit unsigned ints, 16 bit signed and unsigned
-/* ints and 32 bit floats.
+/* Revision 1.30  1996/09/19 16:14:26  jimg
+/* Fixed syntax errors in the enum `Type'.
 /*
+ * Revision 1.29  1996/08/26 19:36:41  jimg
+ * Added type constants for 32 bit unsigned ints, 16 bit signed and unsigned
+ * ints and 32 bit floats.
+ *
  * Revision 1.28  1996/06/04 21:33:11  jimg
  * Multiple connections are now possible. It is now possible to open several
  * URLs at the same time and read from them in a round-robin fashion. To do
@@ -231,11 +234,11 @@ enum Part {
 enum Type {
     dods_null_c,
     dods_byte_c,
-    dods_int16_c
+    dods_int16_c,
     dods_uint16_c,
     dods_int32_c,		// Added `dods_' to fix clash with IRIX 5.3.
     dods_uint32_c,
-    dods_float32_c
+    dods_float32_c,
     dods_float64_c,
     dods_str_c,
     dods_url_c,
