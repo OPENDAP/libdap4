@@ -68,12 +68,16 @@ TARGETS		= $(OBJDIR)\libdap++.lib $(OBJDIR)\geturl.exe \
 	$(LINK) $(LEXEFLAGS) /out:$@ $< $(TESTOBJS) $(LINKLIBS)
 
 DAPOBJS = $(OBJDIR)\Array.obj \
+		$(OBJDIR)\ArrayIterAdapter.obj \
+		$(OBJDIR)\AttrIterAdapter.obj \
 		$(OBJDIR)\AttrTable.obj \
 		$(OBJDIR)\BaseType.obj \
+		$(OBJDIR)\BTIterAdapter.obj \
 		$(OBJDIR)\Byte.obj \
 		$(OBJDIR)\ce_functions.obj \
 		$(OBJDIR)\cgi_util.obj \
 		$(OBJDIR)\Clause.obj \
+		$(OBJDIR)\ClauseIterAdapter.obj \
 		$(OBJDIR)\Connect.obj \
 		$(OBJDIR)\HTTPConnect.obj \
 		$(OBJDIR)\Connections.obj \
@@ -178,8 +182,10 @@ install:
 	copy ..\InternalErr.h $(INCLUDEDIR)
 	copy ..\expr.h $(INCLUDEDIR)
 	copy ..\Clause.h $(INCLUDEDIR)
+	copy ..\ClauseIterAdapter.h $(INCLUDEDIR)
 	copy ..\RValue.h $(INCLUDEDIR)
 	copy ..\BaseType.h $(INCLUDEDIR)
+	copy ..\BTIterAdapter.h $(INCLUDEDIR)
 	copy ..\Byte.h $(INCLUDEDIR)
 	copy ..\Int32.h $(INCLUDEDIR)
 	copy ..\GSEClause.h $(INCLUDEDIR)
@@ -189,6 +195,7 @@ install:
 	copy ..\Vector.h $(INCLUDEDIR)
 	copy ..\List.h $(INCLUDEDIR)
 	copy ..\Array.h $(INCLUDEDIR)
+	copy ..\ArrayIterAdapter.h $(INCLUDEDIR)
 	copy ..\Structure.h $(INCLUDEDIR)
 	copy ..\Sequence.h $(INCLUDEDIR)
 	copy ..\Grid.h $(INCLUDEDIR)
@@ -202,6 +209,7 @@ install:
 	copy ..\DDS.h $(INCLUDEDIR)
 	copy ..\DataDDS.h $(INCLUDEDIR)
 	copy ..\AttrTable.h $(INCLUDEDIR)
+	copy ..\AttrIterAdapter.h $(INCLUDEDIR)
 	copy ..\DAS.h $(INCLUDEDIR)
 	copy ..\parser.h $(INCLUDEDIR)
 	copy ..\GNU\Pix.h $(INCLUDEDIR)
@@ -225,12 +233,16 @@ install:
 
 # The DAP Proper
 $(OBJDIR)\Array.obj : ..\Array.cc
+$(OBJDIR)\ArrayIterAdapter.obj : ..\ArrayIterAdapter.cc
 $(OBJDIR)\AttrTable.obj : ..\AttrTable.cc
+$(OBJDIR)\AttrIterAdapter.obj : ..\AttrIterAdapter.cc
 $(OBJDIR)\BaseType.obj : ..\BaseType.cc
 $(OBJDIR)\Byte.obj : ..\Byte.cc
+$(OBJDIR)\BTIterAdapter.obj : ..\BTIterAdapter.cc
 $(OBJDIR)\ce_functions.obj : ..\ce_functions.cc
 $(OBJDIR)\cgi_util.obj : ..\cgi_util.cc
 $(OBJDIR)\Clause.obj : ..\Clause.cc
+$(OBJDIR)\ClauseIterAdapter.obj : ..\ClauseIterAdapter.cc
 $(OBJDIR)\Connect.obj : ..\Connect.cc
 $(OBJDIR)\Connections.obj : ..\Connections.cc
 $(OBJDIR)\Constructor.obj : ..\Constructor.cc

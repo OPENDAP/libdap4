@@ -26,8 +26,10 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
-	
 
+..\ArrayIterAdapter.cc : \
+	"..\ArrayIterAdapter.h"\
+	
 ..\AttrTable.cc : \
 	"..\Array.h"\
 	"..\AttrTable.h"\
@@ -54,8 +56,10 @@
 	"..\UInt32.h"\
 	"..\Url.h"\
 	"..\util.h"\
-	"..\Vector.h"\
-	
+	"..\Vector.h"\	
+
+..\AttrIterAdapter.cc : \
+	"..\AttrIterAdapter.h"\
 
 ..\BaseType.cc : \
 	"..\Array.h"\
@@ -83,7 +87,9 @@
 	"..\Url.h"\
 	"..\util.h"\
 	"..\Vector.h"\
-	
+
+..\BTIterAdapter.cc : \
+	"..\BTIterAdapter.h"\	
 
 ..\Byte.cc : \
 	"..\Array.h"\
@@ -182,7 +188,6 @@
 	"..\util.h"\
 	"..\Vector.h"\
 	
-
 ..\Clause.cc : \
 	"..\BaseType.h"\
 	"..\Clause.h"\
@@ -191,7 +196,9 @@
 	"..\debug.h"\
 	"..\expr.h"\
 	"..\RValue.h"\
-	
+
+..\ClauseIterAdapter.cc : \
+	"..\ClauseIterAdapter.h"\	
 
 ..\Connect.cc : \
 	"..\Array.h"\
