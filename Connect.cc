@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.121 2003/02/21 00:14:24 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.122 2003/02/26 06:39:13 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -169,25 +169,14 @@ Connect::parse_mime(FILE * data_source)
 
 // public mfuncs
 
-/** The Connect constructor requires a <tt>name</tt>, which is the
-    URL to which the connection is to be made.  You can specify that
-    you want to see the <tt>verbose</tt> form of any WWW library
-    errors.  This can be useful for debugging.  The default is to
-    suppress these errors. Callers can use the
-    <tt>accept_deflate</tt> parameter to request that servers are
-    told the client (caller of Connect ctor) <i>can</i> process return
-    documents that are compressed with gzip.
+/** The Connect constructor requires a <tt>name</tt>, which is the URL to
+    which the connection is to be made. 
 
     @param name The URL for the virtual connection.
-    @param www_verbose_errors False: show only WWW Fatal errors, True: show
-    WWW informational messages, too. This affects message display but not
-    exceptions. If Connect is compiled to throw exceptions for certain WWW
-    errors, it will do so regardless of the value of this parameter.
-    @param accept_deflate Provides compile-time control for on-the-fly
-    compression. If True clients will ask servers to compress responses.
-    @param uname If given along woth password, supply this as the Username
-    in all HTTP requests.
-    @param password Use this as the password with <tt>uname</tt> above.
+    @param www_verbose_errors Ignored
+    @param accept_deflate Ignored
+    @param uname Ignored
+    @param password Ignored
     @brief Create an instance of Connect. */
 Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate, 
 		 string uname, string password) throw (Error, InternalErr)
@@ -195,7 +184,7 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate,
 {
     name = prune_spaces(name);
     
-    // Figure out of the URL starts with 'http', if so, make sure that we
+    // Figure out if the URL starts with 'http', if so, make sure that we
     // talk to an instance of HTTPConnect.
     if (name.find("http") == 0) {
 	DBG(cerr << "Connect: The identifier is an http URL" << endl);
@@ -761,6 +750,9 @@ Connect::get_cache_control()
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.122  2003/02/26 06:39:13  jimg
+// Fixed documentation comments.
+//
 // Revision 1.121  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
