@@ -42,7 +42,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.y,v 1.45 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.y,v 1.46 2003/02/27 23:42:32 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -960,9 +960,7 @@ dereference_string(string &s)
     string url = s.substr(0, qpos);	// strip off CE
     string ce = s.substr(qpos+1);	// yes, get the CE
 
-    // I don't think that the `false' is really necessary, but g++ seems to
-    // want it. jhrg 2/10/97
-    Connect c(url, false); // make the virtual connection
+    Connect c(url); // make the virtual connection
 
     // the initial URL must be a complete reference to data; thus no
     // additional CE is needed. 
@@ -1093,6 +1091,9 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.46  2003/02/27 23:42:32  jimg
+ * Fixed a call to connect down in the code that handles the '*' operator.
+ *
  * Revision 1.45  2003/02/21 00:14:25  jimg
  * Repaired copyright.
  *
