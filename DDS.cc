@@ -9,6 +9,11 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.43  1999/05/26 17:27:48  jimg
+// Replaced a serialization of an Error object with a throw to the outer layer.
+// This should help smooth getting errors to the outer layer of the servers so
+// they can be sent back to the clients reliably.
+//
 // Revision 1.42  1999/05/05 01:29:42  jimg
 // The member function parse_constraint() now throws an Error object so that
 // enclosing code will handle serializing the Error object.
@@ -227,7 +232,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.42 1999/05/05 01:29:42 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.43 1999/05/26 17:27:48 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -949,10 +954,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 		}
 	    }
 	    else {
-		Error e(unknown_error, "Error calling the function.");
-		// THROW
-		set_mime_text(out, dods_error, cgi_ver);
-		e.print();
+		throw Error(unknown_error, "Error calling the function.");
 	    }
 	}
 	else {
