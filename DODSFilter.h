@@ -8,6 +8,10 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODSFilter.h,v $
+// Revision 1.9  1999/05/05 00:48:07  jimg
+// Added the get_cgi_version() member function.
+// Added documentation about get_cgi_version() and the -V option (new).
+//
 // Revision 1.8  1999/05/04 19:47:21  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -104,16 +108,19 @@ public:
 	this would be the file whose data has been requested.
 	\item[#-c#]
 	Send compressed data. Data are compressed using the deflate program.
-	The W3C's libwww will recognize this and automatiacally decompress
+	The W3C's libwww will recognize this and automatically decompress
 	these data.
 	\item[#-e# {\it expression}]
 	This option specifies a non-blank constraint expression used to
 	subsample a dataset.
 	\item[#-v# {\it cgi-version}]
 	Specifies that this request is just for version information.
-	The {\it cgi-version} is the version of the dispatch CGI that
-	invoked this command.  This is passed to the filter program so
-	that it can be formatted into the returned message.
+	The {\it cgi-version} is the version of the CGI (i.e., server).
+	\item[#-V#] When given set the #version request# flag to TRUE. Servers
+	should check this flag with the #version()# mfunc and call
+	#send_version_info()# if it is TRUE. Not that -v used to be used for
+	this, but -v is now used to pass into the server from the CGI the
+	server's version number.
 	\item[#-d# {\it ancdir}]
 	Specifies that ancillary data be sought in the {\it ancdir}
 	directory. 
@@ -156,6 +163,13 @@ public:
 	otherwise. 
 	@see DODSFilter::send_version_info */
     bool version();
+
+    /** Return the version information passed to the instance when it was
+	created. This string is passed to the DODSFilter ctor using the -v
+	option.
+
+	@return The version string supplied at initialization. */
+    string get_cgi_version();
 
     /** Return the entire constraint expression in a string.  This
 	includes both the projection and selection clauses, but not the
