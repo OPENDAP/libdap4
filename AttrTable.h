@@ -17,9 +17,15 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.15  1997/05/13 23:32:13  jimg
-/* Added changes to handle the new Alias and lexical scoping rules.
+/* Revision 1.16  1997/06/06 03:11:34  jimg
+/* Added mfuncs which have char * parameters for those mfuncs which accept both
+/* Pix and String parameters. This avoids a conflict between promotion of char *
+/* actuals to Pix instead of String (while the latter makes more sense, the
+/* former actually happens).
 /*
+ * Revision 1.15  1997/05/13 23:32:13  jimg
+ * Added changes to handle the new Alias and lexical scoping rules.
+ *
  * Revision 1.14  1997/01/13 16:56:21  jimg
  * Changed the name of the private member `map' to `attr_map' to avoid a name
  * collision with the STL'd map class.
@@ -207,6 +213,7 @@ public:
         attribute referenced by Pix #p# or named #name#. */
     StringXPlex *get_attr_vector(Pix p);
     StringXPlex *get_attr_vector(const String &name);
+    StringXPlex *get_attr_vector(const char *name);
 
     /** If #name# is not an attribute in the current attribute table, create
         a new entry in the current table for #name# and bind the type #type#
@@ -216,6 +223,8 @@ public:
 	function. */
     unsigned int append_attr(const String &name, const String &type, 
 			     const String &value);
+    unsigned int append_attr(const char *name, const char *type, 
+			     const char *value);
 
     /** Create and append the attribute container #name# to the AttrTable
         object. Return a pointer to the new AttrTable object. */
