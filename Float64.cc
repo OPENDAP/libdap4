@@ -1,10 +1,10 @@
 
-// Implementation for Int32. Quite some implementation, huh?
+// Implementation for Float64. Quite some implementation, huh?
 //
 // jhrg 9/7/94
 
-// $Log: Int32.cc,v $
-// Revision 1.2  1994/09/15 21:08:44  jimg
+// $Log: Float64.cc,v $
+// Revision 1.1  1994/09/15 21:08:40  jimg
 // Added many classes to the BaseType hierarchy - the complete set of types
 // described in the DODS API design documet is not represented.
 // The parser can parse DDS files.
@@ -20,8 +20,8 @@
 #pragma implementation
 #endif
 
-#include "Int32.h"
+#include "Float64.h"
 
-Int32::Int32(const String &n, const String &t) : BaseType(n, t)
+Float64::Float64(const String &n, const String &t) : BaseType(n, t)
 {
 }

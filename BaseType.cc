@@ -4,111 +4,97 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.1  1994/09/09 15:28:41  jimg
-// Class for base type variables. Int32, ... inherit from this class.
+// Revision 1.2  1994/09/15 21:08:36  jimg
+// Added many classes to the BaseType hierarchy - the complete set of types
+// described in the DODS API design documet is not represented.
+// The parser can parse DDS files.
+// Fixed many small problems with BaseType.
+// Added CtorType.
 //
+// Revision 1.1  1994/09/09  15:28:41  jimg
+// Class for base type variables. Int32, ... inherit from this class.
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
+#include <stdlib.h>		// for abort()
+
 #include <String.h>
 
 #include "BaseType.h"
 
-const int shape_clump = 10;	// alloc shape_clump ints at a time for shape
+// Private copy mfunc
 
-// Do not use the int * passed as `s' to directly initialize `shape'. Instead
-// copy the values from s to shape. This ensures that shape is correcly
-// allocated.
-// NB: Space for shape is allocated even if dim == 0, however, values for
-// shape are assigned only if s is non-zero. In that case, it is assumed to
-// have dim values.
-
-BaseType::BaseType(const String &n, const String &t, const unsigned int d, 
-		   const int *s)
-    : name(n), type(t), dimensions(d)
+void
+BaseType::duplicate(const BaseType &bt)
 {
-    // shape_size == d rounded up to the next multiple of shape_clump
-    shape_size = (d + shape_clump) / shape_clump * shape_clump;
-    shape = new int[shape_size];
+    name = bt.name;
+    type = bt.type;
+}
 
-    if (s)
-	for (int i = 0; i < d; ++i)
-	    shape[i] = s[i];
+void
+BaseType::error(const String &msg)
+{
+    cout << msg;
+    abort();
+}
+
+BaseType::BaseType(const String &n, const String &t) : name(n), type(t)
+{
 } 
 
 BaseType::BaseType(const BaseType &copy_from)
 {
-    name = copy_from.name;
-    type = copy_from.type;
-    dimensions = copy_from.dimensions;
-    shape_size = copy_from.shape_size;
-
-    shape = new int[shape_size];
-    for (int i = 0; i < dimensions; ++i)
-	shape[i] = copy_from.shape[i];
+    duplicate(copy_from);
 }
-
+    
 BaseType::~BaseType()
 {
-    delete [] shape;
 }
 
-BaseType &BaseType::operator=(const BaseType &rhs)
+BaseType &
+BaseType::operator=(const BaseType &rhs)
 {
     if (this == &rhs)
 	return *this;
 
-    if (rhs.shape_size > shape_size) {
-	delete [] shape;
-	shape = new int[rhs.shape_size];
-    }
-    for (int i = 0; i < rhs.dimensions; ++i)
-	shape[i] = rhs.shape[i];
-
-    name = rhs.name;
-    type = rhs.type;
-    dimensions = rhs.dimensions;
-    shape_size = rhs.shape_size;
+    duplicate(rhs);
 
     return *this;
 }
 
-// Add another dimension onto shape. Size is the magnitude of the dimension,
-// which must be > 0.
-
-void
-BaseType::add_shape_dim(unsigned int size)
-{
-    if (dimensions < shape_size) {
-	shape[dimensions] = size;
-	dimensions++;
-    }
-    else {
-	shape_size += shape_clump;
-	int *t_shape = new int[shape_size];
-	
-	for (int i = 0; i < dimensions; ++i) 
-	    t_shape[i] = shape[i];
-	t_shape[dimensions] = size;
-	delete [] shape;
-	shape = t_shape;
-	++dimensions;
-    }
+String 
+BaseType::get_var_name() 
+{ 
+    return name; 
 }
 
 void 
-BaseType::print()
+BaseType::set_var_name(const String &n)
+{ 
+    name = n; 
+}
+
+String
+BaseType::get_var_type()
 {
-    cout << "Type: " << type << endl;
-    cout << "Name: " << name << endl;
-    cout << "Dimensions: " << dimensions << endl;
+    return type;
+}
 
-    cout << "Shape Size: " << shape_size << endl;
+void
+BaseType::set_var_type(const String &t)
+{
+    type = t;
+}
 
-    cout << "Shape: ";
-    for (int i = 0; i < dimensions; ++i)
-	cout << shape[i] << " : ";
-    cout << endl;
+// send a printed representation of the variable's declaration to cout. If
+// print_semi is true, append a semicolon and newline.
+
+void 
+BaseType::print_decl(bool print_semi)
+{
+    cout << type << " " << name;
+    if (print_semi)
+	cout << ";" << endl;
 }

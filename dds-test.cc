@@ -21,6 +21,7 @@ int ddslex();
 int ddsparse(DDS &);
 
 extern YYSTYPE ddslval;
+extern int ddsdebug;
 const char *prompt = "dds-test: ";
 
 int
@@ -38,6 +39,7 @@ main(int argc, char *argv[])
 	    case 'd': 
 	      space_debug = 1;	// defined in Space.h
 	      executable_name = "das-test"; // defined in Space.h
+	      ddsdebug = 1;
 	      break;
 	    case 's':
 	      scanner_test = 1;
@@ -115,7 +117,7 @@ test_scanner(void)
 	    cout << "STRING" << endl;
 	    break;
 	  case URL:
-	    cout << "URL" << endl;
+	    cout << "Url" << endl;
 	    break;
 	  case ID:
 	    cout << "ID: " << ddslval << endl;
@@ -141,6 +143,9 @@ test_parser(void)
 {
     DDS table;
     int status = table.parse();
-    
     cout << "Status from parser: " << status << endl;
+
+    for (Pix p = table.first_var(); p; table.next_var(p))
+	table.var(p)->print_decl();
+					   
 }

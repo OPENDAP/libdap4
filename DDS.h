@@ -1,14 +1,20 @@
 // This may look like C code, but it is really -*- C++ -*-
 
-// Using the DDSVHMap class, build a parser for the DDS and add functions
-// that provide access to the variable's type information.
+// Using the DDSVHMap class, build a parser for the DDS.
 //
 // jhrg 9/8/94
 
-// $Log: DDS.h,v $
-// Revision 1.1  1994/09/08 21:09:42  jimg
-// First version of the Dataset descriptor class.
-//
+/* $Log: DDS.h,v $
+/* Revision 1.2  1994/09/15 21:09:00  jimg
+/* Added many classes to the BaseType hierarchy - the complete set of types
+/* described in the DODS API design documet is not represented.
+/* The parser can parse DDS files.
+/* Fixed many small problems with BaseType.
+/* Added CtorType.
+/*
+ * Revision 1.1  1994/09/08  21:09:42  jimg
+ * First version of the Dataset descriptor class.
+ */
 
 #ifndef _DDS_h
 #define _DDS_h 1
@@ -21,47 +27,35 @@
 
 #include <String.h>
 #include <Pix.h>
+#include <SLList.h>
 
-#include "DDSVHMap.h"
+#include "BaseType.h"
 
-class DDS : public DDSVHMap {
+class DDS {
 private:
     String name;		// the dataset name
-
-protected:
+    SLList<BaseTypePtr> vars;	// variables at the top level 
 
 public:
-    DDS(const BaseTypePtr dflt=(BaseType *)NULL, 
-	const unsigned int sz=DEFAULT_INITIAL_CAPACITY,
-	const String &n = (char *)0);
-    DDS(DDS& a);
+    DDS(const String &n = (char *)0);
+    // Use the default copy ctor and op=
     virtual ~DDS();
 
-    String &get_name() { return name; }
+    String get_dataset_name();
+    void set_dataset_name(const String &n);
 
+    void add_var(BaseType *bt);
+    void del_var(const String &n);
+    BaseType *var(const String &n);
+
+    Pix first_var();
+    void next_var(Pix &p);
+    BaseType *var(Pix p);
+
+    // Interface to the parser
     bool parse(FILE *in=stdin);
 
     bool print(FILE *out=stdout);
 };
-
-DDS::DDS(const BaseTypePtr dflt, const unsigned int sz, const String &n) 
-    : DDSVHMap(dflt, sz), name(n)
-{
-}
-
-inline DDS::DDS(DDS &dds) : DDSVHMap(dds)
-{
-}
-
-// This deletes the pointers to BaseType allocated during the parse (and at 
-// other times?). I could step through the protected member `cont[]' and
-// delete all the non empty stuff, but I used the iterator member functions
-// instead. jhrg 7/29/94
-
-DDS::~DDS()
-{
-    for(Pix p = this->first(); p; this->next(p))
-	delete this->contents(p);
-}
 
 #endif

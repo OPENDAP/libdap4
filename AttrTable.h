@@ -1,29 +1,43 @@
 // This may look like C code, but it is really -*- C++ -*-
 
-// An AttrTable is a table of attributes (name-value pairs). The class */
+// An AttrTable is a table of attributes (name-value pairs). The class
 // AttrTable inherits from AttrVHMap. 
 //
-// NB: static String empty was addded tot he AttrTable class so that the
+// NB: static String empty was addded to the AttrTable class so that the
 // AttrVHMap constructors could be passed a reference to a string without
 // having an object of type String be created every time you wanted a new
 // AttrVHMap (or one of its decendents). Using "" as the initialized creates
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.3  1994/09/09 15:26:41  jimg
-/* Removed operator<< and added print() since I have no good way to define
-/* operator>>. It seems best to define all operators from a set (like <<, >>)
-/* or none at all. Since parse() is the input mfunc, it seems that output
-/* should be a mfunc too.
+/* Revision 1.4  1994/09/15 21:08:54  jimg
+/* Added many classes to the BaseType hierarchy - the complete set of types
+/* described in the DODS API design documet is not represented.
+/* The parser can parse DDS files.
+/* Fixed many small problems with BaseType.
+/* Added CtorType.
 /*
+ * Revision 1.3  1994/09/09  15:26:41  jimg
+ * Removed operator<< and added print() since I have no good way to define
+ * operator>>. It seems best to define all operators from a set (like <<, >>)
+ * or none at all. Since parse() is the input mfunc, it seems that output
+ * should be a mfunc too.
+ *
  * Revision 1.2  1994/08/02  19:17:39  jimg
  * Fixed `$Log: AttrTable.h,v $
- * Fixed `Revision 1.3  1994/09/09 15:26:41  jimg
- * Fixed `Removed operator<< and added print() since I have no good way to define
- * Fixed `operator>>. It seems best to define all operators from a set (like <<, >>)
- * Fixed `or none at all. Since parse() is the input mfunc, it seems that output
- * Fixed `should be a mfunc too.
- * Fixed `' comments and rcsid[] variables (syntax errors due to //
+ * Fixed `Revision 1.4  1994/09/15 21:08:54  jimg
+ * Fixed `Added many classes to the BaseType hierarchy - the complete set of types
+ * Fixed `described in the DODS API design documet is not represented.
+ * Fixed `The parser can parse DDS files.
+ * Fixed `Fixed many small problems with BaseType.
+ * Fixed `Added CtorType.
+ * Fixed `
+ * Revision 1.3  1994/09/09  15:26:41  jimg
+ * Removed operator<< and added print() since I have no good way to define
+ * operator>>. It seems best to define all operators from a set (like <<, >>)
+ * or none at all. Since parse() is the input mfunc, it seems that output
+ * should be a mfunc too.
+ *' comments and rcsid[] variables (syntax errors due to //
  * comments caused compilation failures.
  * das.tab.c and .h are commited now as well.
  *

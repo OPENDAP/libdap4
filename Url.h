@@ -1,13 +1,13 @@
 // This may look like C code, but it is really -*- C++ -*-
 
-// Interface for Int32 type. This class may be extended to include code that
-// can transport Int32's over the network (either a scalar or an array of
-// Int32's). 
+// Interface for Url type. This class may be extended to include code that
+// can transport Url's over the network (either a scalar or an array of
+// Url's). 
 //
 // jhrg 9/7/94
 
-/* $Log: Int32.h,v $
-/* Revision 1.2  1994/09/15 21:09:05  jimg
+/* $Log: Url.h,v $
+/* Revision 1.1  1994/09/15 21:09:10  jimg
 /* Added many classes to the BaseType hierarchy - the complete set of types
 /* described in the DODS API design documet is not represented.
 /* The parser can parse DDS files.
@@ -19,8 +19,8 @@
  * information for integers. Should this be a class that uses BaseType?
  */
 
-#ifndef _Int32_h
-#define _Int32_h 1
+#ifndef _Url_h
+#define _Url_h 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -28,14 +28,14 @@
 
 #include "BaseType.h"
 
-class Int32: public BaseType {
+class Url: public BaseType {
 private:
 
 public:
-    Int32(const String &n = (char *)0, const String &t = "Int32");
+    Url(const String &n = (char *)0, const String &t = "Url");
 };
 
-typedef Int32 * Int32Ptr;
+typedef Url * UrlPtr;
 
 #endif
 

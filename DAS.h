@@ -6,7 +6,14 @@
 // jhrg 7/25/94
 
 // $Log: DAS.h,v $
-// Revision 1.3  1994/09/09 15:33:40  jimg
+// Revision 1.4  1994/09/15 21:08:59  jimg
+// Added many classes to the BaseType hierarchy - the complete set of types
+// described in the DODS API design documet is not represented.
+// The parser can parse DDS files.
+// Fixed many small problems with BaseType.
+// Added CtorType.
+//
+// Revision 1.3  1994/09/09  15:33:40  jimg
 // Changed the base name of this class's parents from `Var' to DAS.
 // Added print() and removed operator<< (see the comments in AttrTable).
 // Added overloaded versions of print() and parse(). They can be called
