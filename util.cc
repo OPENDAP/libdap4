@@ -11,6 +11,15 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.27  1996/09/12 00:21:30  jimg
+// Fixed two errors in xdr_str: 1) Use of max_str_len as an array dimension
+// (max_str_len is approx 4e9; a large array by most standards...) and 2) use of
+// storage on the stack for the return string. Now xdr_strings internal
+// allocation mechanism (which uses malloc) is used to create the space needed
+// by the incoming string. After that string is copied to the String object
+// parameter it is freed using free() (Not xdr_free() as the SunOS 4 man page
+// erroneously suggests).
+//
 // Revision 1.26  1996/08/13 20:46:39  jimg
 // Added the *_ops() functions (moved from various class files).
 //
@@ -147,9 +156,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.26 1996/08/13 20:46:39 jimg Exp $"};
-
-#include "config_dap.h"
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.27 1996/09/12 00:21:30 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -279,6 +286,9 @@ delete_xdrstdio(XDR *xdr)
 //
 // NB: this function is *not* used for arrays (i.e., it is not the function
 // referenced by BaseType's _xdr_coder field when the object is a Str or Url.
+// Also note that #max_str_len# is an obese number but that really does not
+// matter; #xdr_string# would never actually allocate taht much memory unless
+// a string that size was sent from the server.
 //
 // Returns: XDR's bool_t; TRUE if no errors are detected, FALSE
 // otherwise. The formal parameter BUF is modified as a side effect.
@@ -297,14 +307,15 @@ xdr_str(XDR *xdrs, String &buf)
 
       case XDR_DECODE: {
 	assert(buf);
-	char dods_str_tmp[max_str_len];
-	char *in_tmp = dods_str_tmp;
+	char *in_tmp = NULL;
 
-	bool_t stat = xdr_string(xdrs, (char **)&in_tmp, max_str_len);
+	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
 	if (!stat)
 	    return stat;
 
-	buf = dods_str_tmp;
+	buf = in_tmp;
+
+	free(in_tmp);
 	
 	return stat;
       }
