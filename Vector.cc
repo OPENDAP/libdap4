@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.58 2005/02/16 17:28:48 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.59 2005/02/24 18:05:17 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -580,7 +580,6 @@ the network connection.");
 
       case dods_str_c:
       case dods_url_c:
-	throw Error( "Don't know how to do this one!" ) ;
 	if ((0 == xdr_int(source, (int *)&num)))
 	    throw Error(
 "Network I/O error. Could not read the array length.\n\
@@ -598,7 +597,7 @@ the network connection.");
 
 	for (i = 0; i < num; ++i) {
 	    string str ;
-	    if (xdr_str(source, str) != 1)
+	    if (!xdr_str(source, str))
 		throw Error(
 "Network I/O Error. Could not read string data. This may be due to a\n\
 bug in DODS or a problem with the network connection.");
@@ -908,6 +907,9 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.59  2005/02/24 18:05:17  jimg
+// A throw Error line was left in deserialize() by mistake; I removed it.
+//
 // Revision 1.58  2005/02/16 17:28:48  pwest
 // d_str changes to ::var, ::serialize and ::deserialize
 //
