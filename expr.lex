@@ -28,6 +28,10 @@
 
 /* 
  * $Log: expr.lex,v $
+ * Revision 1.19  1999/01/21 02:21:44  jimg
+ * Made the store_op(), ... functions static.
+ * Added glue routines for scanning strings.
+ *
  * Revision 1.18  1998/10/23 00:09:03  jimg
  * Fixed an array write error where exprlval.id was over-written by writing to
  * element ID_MAX. The end of the array is ID_MAX-1.
@@ -98,7 +102,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.18 1998/10/23 00:09:03 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.19 1999/01/21 02:21:44 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -114,11 +118,11 @@ static char rcsid[] __unused__ = {"$Id: expr.lex,v 1.18 1998/10/23 00:09:03 jimg
 #include "RValue.h"
 #include "expr.tab.h"
 
-void store_int32();
-void store_float64();
-void store_id();
-void store_str();
-void store_op(int op);
+static void store_int32();
+static void store_float64();
+static void store_id();
+static void store_str();
+static void store_op(int op);
 
 %}
 
@@ -178,7 +182,7 @@ NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 <INITIAL><<EOF>> yy_init = 1; yyterminate();
 
 \"			BEGIN(quote); yymore();
-<quote>[^"\\]*       	yymore();
+<quote>[^"\\]*       	yymore(); /*"*/
 <quote>\\.		yymore();
 <quote>\"		{ 
     			  BEGIN(INITIAL); 
@@ -199,10 +203,36 @@ NEVER		[^][*)(,:.&a-zA-Z0-9_%.]
 			}
 %%
 
-int
+static int
 yywrap(void)
 {
     return 1;
+}
+
+// Three glue routines for string scanning. These are not declared in the
+// header expr.tab.h nor is YY_BUFFER_STATE. Including these here allows them
+// to see the type definitions in lex.expr.c (where YY_BUFFER_STATE is
+// defined) and allows callers to declare them (since callers outside of this
+// file cannot declare YY_BUFFER_STATE variable). Note that I changed the name
+// of the expr_scan_string function to expr_string because C++ cannot
+// distinguish by return type. 1/12/99 jhrg
+
+void *
+expr_string(const char *str)
+{
+    return (void *)expr_scan_string(str);
+}
+
+void
+expr_switch_to_buffer(void *buf)
+{
+    expr_switch_to_buffer((YY_BUFFER_STATE)buf);
+}
+
+void
+expr_delete_buffer(void *buf)
+{
+    expr_delete_buffer((YY_BUFFER_STATE)buf);
 }
 
 // Note that since atoi() (or strtol()) does not care about signedness, this
@@ -211,28 +241,28 @@ yywrap(void)
 // type) then the signed value can be cast back to unsigned without losing
 // information.
 
-void
+static void
 store_int32()
 {
     exprlval.val.type = dods_int32_c;
     exprlval.val.v.i = atoi(yytext);
 }
 
-void
+static void
 store_float64()
 {
     exprlval.val.type = dods_float64_c;
     exprlval.val.v.f = atof(yytext);
 }
 
-void
+static void
 store_id()
 {
     strncpy(exprlval.id, yytext, ID_MAX-1);
     exprlval.id[ID_MAX-1] = '\0';
 }
 
-void
+static void
 store_str()
 {
     String *s = new String(yytext);
@@ -244,7 +274,7 @@ store_str()
     exprlval.val.v.s = s;
 }
 
-void
+static void
 store_op(int op)
 {
     exprlval.op = op;
