@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.67 1997/12/16 00:44:08 jimg Exp $
+# $Id: Makefile.in,v 1.68 1997/12/31 02:14:43 jimg Exp $
 
 @SET_MAKE@
 
@@ -309,6 +309,17 @@ expr-check: expr-test
 
 error-check: error-test
 	echo "No tests for the Error object"
+
+# This tests the servers assuming that DODS has been installed on dcz, dods
+# and rhody. It also assumes that the cgi bin directory `test' points to the
+# place where the new servers are installed. On all of these machines there
+# is a symbolic link `DODS-test' that should be linked to the top-level
+# directory of the version to test *and* each machine's httpd.conf should
+# list as a ScriptAlias .../DODS-test/etc. jhrg 12/30/97.
+
+server-check: geturl
+	-rootme=`pwd` && export rootme && \
+	${RUNTEST} ${RUNTESTFLAGS} --tool geturl --srcdir server-testsuite
 
 # Clean up.
 
