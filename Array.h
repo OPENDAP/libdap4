@@ -7,11 +7,14 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.18  1995/08/22 23:48:12  jimg
-/* Removed card() member function.
-/* Removed old, deprecated member functions.
-/* Changed the names of read_val and store_val to buf2val and val2buf.
+/* Revision 1.19  1995/08/26 00:31:23  jimg
+/* Removed code enclosed in #ifdef NEVER #endif.
 /*
+ * Revision 1.18  1995/08/22  23:48:12  jimg
+ * Removed card() member function.
+ * Removed old, deprecated member functions.
+ * Changed the names of read_val and store_val to buf2val and val2buf.
+ *
  * Revision 1.17  1995/05/10  13:45:03  jimg
  * Changed the name of the configuration header file from `config.h' to
  * `config_dap.h' so that other libraries could have header files which were
@@ -151,12 +154,6 @@ public:
     const Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
-#ifdef NEVER
-    virtual bool card();
-#endif
-#ifdef NEVER
-    virtual unsigned int size(); 
-#endif
     virtual unsigned int width(); // bytes in the pointer to the array
     unsigned int length();	// how many elements are there in the array
     void const_length(long size);

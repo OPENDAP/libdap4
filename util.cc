@@ -37,7 +37,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.13  1995/08/23 00:41:58  jimg
+// Revision 1.14  1995/08/26 00:32:10  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.13  1995/08/23  00:41:58  jimg
 // xdr_str() now takes a String & instead of a String ** for arg 2.
 //
 // Revision 1.12  1995/07/09  21:29:28  jimg
@@ -91,7 +94,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.13 1995/08/23 00:41:58 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.14 1995/08/26 00:32:10 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -221,39 +224,16 @@ xdr_str(XDR *xdrs, String &buf)
 {
     switch (xdrs->x_op) {
       case XDR_ENCODE:		// BUF is a pointer to a (String *)
-#ifdef NEVER
-	assert(buf && *buf);
-#endif
-	
-#ifdef NEVER
-	char *out_tmp = (const char *)**buf; // cast away const
-#endif
 	char *out_tmp = (const char *)buf; // cast away const
 
 	return xdr_string(xdrs, &out_tmp, max_str_len);
 
       case XDR_DECODE:		// BUF is a pointer to a String * or to NULL
-#ifdef NEVER
-	assert(buf);
-#endif
-
-#ifdef NEVER
-	char str_tmp[max_str_len];
-#endif
 	char *in_tmp = NULL; // = str_tmp;
 	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
 	if (!stat)
 	    return stat;
 
-#ifdef NEVER
-	if (*buf) {
-	    **buf = in_tmp;
-	}
-	else {
-	    *buf = new String(in_tmp);
-	    free(in_tmp);
-	}
-#endif
 	buf = in_tmp;
 	free(in_tmp);
 
@@ -264,58 +244,3 @@ xdr_str(XDR *xdrs, String &buf)
 	return 0;
     }
 }
-    
-#ifdef NEVER
-// This xdr coder is used for arrays. A pointer to this function is stored in
-// Str and Url object's _xdr_coder member. 
-//
-// NB: the Array class *must* allocate memory for the array of objects (both
-// Str and Url are cardinal types within DODS). 
-//
-// Returns: XDR's bool_t; TRUE if no errors are detected, FALSE
-// otherwise. The formal parameter BUF is modified as a side effect. However,
-// memory for BUF is never allocated by this function (the use of new in case
-// DECODE is the *placement new*, which does not allocate memory).
-
-extern "C" bool_t
-xdr_str_array(XDR *xdrs, String *buf)
-{
-    switch (xdrs->x_op) {
-      case XDR_ENCODE:		// BUF is a pointer to a (String *)
-	assert(buf);
-	
-	char *out_tmp = (const char *)*buf; // cast away const
-
-	return xdr_string(xdrs, &out_tmp, max_str_len);
-
-      case XDR_DECODE:		// BUF is a pointer to a String * or to NULL
-	assert(buf);
-
-	char str_tmp[max_str_len]; 
-	char *in_tmp = str_tmp;	// this kluge is necessary for g++ 2.6.3
-	bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
-	if (!stat)
-	    return stat;
-	
-	// Assume that Array made sure that memory for each object in the
-	// array *was* allocated. Then use the placement new oper to
-	// initialize that memory so that it contains an object (in this case
-	// a String object).
-
-#ifdef TRACE_NEW
-#undef new
-#endif
-	buf = new((void *)buf)  String(in_tmp); // placement new
-#ifdef TRACE_NEW
-#define new NEW_PASTE_(n,ew)( __FILE__, __LINE__ )
-#endif
-	
-	return stat;
-	
-      default:
-	assert(false);
-	return 0;
-    }
-}
-#endif
-    

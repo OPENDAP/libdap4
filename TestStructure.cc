@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
-// Revision 1.7  1995/08/23 00:44:37  jimg
+// Revision 1.8  1995/08/26 00:32:00  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.7  1995/08/23  00:44:37  jimg
 // Updated to use the newer member functions.
 //
 // Revision 1.6  1995/07/09  21:29:20  jimg
@@ -78,11 +81,6 @@
 #include <new.h>
 
 #include "TestStructure.h"
-#ifdef NEVER
-#include "Test.h"
-
-String teststructure = "TestStructure";
-#endif
 
 Structure *
 NewStructure(const String &n)
@@ -95,27 +93,6 @@ TestStructure::ptr_duplicate()
 {
     return new TestStructure(*this);
 }
-
-#ifdef NEVER
-// Use the `placement new' operator to create/init an object in the memory
-// pointed to by PLACE. This is used when working with arrays of Structures,
-// ... These arrays are represented by Array as a sequence of objects. When
-// space for the array is allocated, repeated calls to this mfunc guarantee
-// that the correct object is instanciated for each of the array's elements.
-
-#ifdef TRACE_NEW
-#undef new
-#endif
-//	buf = new((void *)buf)  String(in_tmp); // placement new
-Structure *
-TestStructure::placement_dup(void *place)
-{
-    return new(place) TestStructure(*this);
-}
-#ifdef TRACE_NEW
-#define new NEW_PASTE_(n,ew)( __FILE__, __LINE__ )
-#endif
-#endif
 
 TestStructure::TestStructure(const String &n) : Structure(n)
 {

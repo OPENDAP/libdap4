@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
-// Revision 1.7  1995/08/23 00:44:40  jimg
+// Revision 1.8  1995/08/26 00:32:03  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.7  1995/08/23  00:44:40  jimg
 // Updated to use the newer member functions.
 //
 // Revision 1.6  1995/07/09  21:29:22  jimg
@@ -78,11 +81,6 @@
 #include <String.h>
 
 #include "TestUrl.h"
-#ifdef NEVER
-#include "Test.h"
-
-String testurl = "TestUrl";
-#endif
 
 Url *
 NewUrl(const String &n)

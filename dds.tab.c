@@ -29,14 +29,14 @@
 #define	STRING	273
 #define	URL	274
 
-#line 90 "dds.y"
+#line 95 "dds.y"
 
 #define YYSTYPE char *
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 #define ID_MAX 256
 
-static char rcsid[]={"$Id: dds.tab.c,v 1.2 1995/08/23 00:50:51 jimg Exp $"};
+static char rcsid[]={"$Id: dds.tab.c,v 1.3 1995/08/26 00:32:06 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -157,10 +157,10 @@ static const short yyrhs[] = {    28,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   153,   154,   157,   160,   161,   162,   165,   169,   173,   175,
-   179,   181,   185,   187,   189,   191,   198,   200,   202,   204,
-   212,   215,   218,   221,   224,   227,   228,   229,   230,   231,
-   234,   235,   238,   250,   254,   267,   269
+   158,   159,   162,   165,   166,   167,   170,   174,   178,   180,
+   184,   186,   190,   192,   194,   196,   203,   205,   207,   209,
+   217,   220,   223,   226,   229,   232,   233,   234,   235,   236,
+   239,   240,   243,   255,   259,   272,   274
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","ID","INTEGER",
@@ -723,47 +723,47 @@ yyreduce:
   switch (yyn) {
 
 case 7:
-#line 166 "dds.y"
+#line 171 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 8:
-#line 170 "dds.y"
+#line 175 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 9:
-#line 174 "dds.y"
+#line 179 "dds.y"
 { current = ctor.pop(); ;
     break;}
 case 10:
-#line 176 "dds.y"
+#line 181 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 11:
-#line 180 "dds.y"
+#line 185 "dds.y"
 { current = ctor.pop(); ;
     break;}
 case 12:
-#line 182 "dds.y"
+#line 187 "dds.y"
 { if (current->check_semantics())
 			add_entry(table, ctor, &current, part); ;
     break;}
 case 13:
-#line 186 "dds.y"
+#line 191 "dds.y"
 { part = independent; ;
     break;}
 case 14:
-#line 188 "dds.y"
+#line 193 "dds.y"
 { part = dependent;;
     break;}
 case 15:
-#line 190 "dds.y"
+#line 195 "dds.y"
 { current = ctor.pop(); ;
     break;}
 case 16:
-#line 192 "dds.y"
+#line 197 "dds.y"
 { if (current->check_semantics()) {
 			part = nil; 
 			add_entry(table, ctor, &current, part); 
@@ -771,19 +771,19 @@ case 16:
                     ;
     break;}
 case 17:
-#line 199 "dds.y"
+#line 204 "dds.y"
 { part = array; ;
     break;}
 case 18:
-#line 201 "dds.y"
+#line 206 "dds.y"
 { part = maps; ;
     break;}
 case 19:
-#line 203 "dds.y"
+#line 208 "dds.y"
 { current = ctor.pop(); ;
     break;}
 case 20:
-#line 205 "dds.y"
+#line 210 "dds.y"
 { if (current->check_semantics()) {
 			part = nil; 
 			add_entry(table, ctor, &current, part); 
@@ -791,51 +791,51 @@ case 20:
                     ;
     break;}
 case 21:
-#line 212 "dds.y"
+#line 217 "dds.y"
 { ctor.push(NewList()); ;
     break;}
 case 22:
-#line 215 "dds.y"
+#line 220 "dds.y"
 { ctor.push(NewStructure()); ;
     break;}
 case 23:
-#line 218 "dds.y"
+#line 223 "dds.y"
 { ctor.push(NewSequence()); ;
     break;}
 case 24:
-#line 221 "dds.y"
+#line 226 "dds.y"
 { ctor.push(NewFunction()); ;
     break;}
 case 25:
-#line 224 "dds.y"
+#line 229 "dds.y"
 { ctor.push(NewGrid()); ;
     break;}
 case 26:
-#line 227 "dds.y"
+#line 232 "dds.y"
 { current = NewByte(); ;
     break;}
 case 27:
-#line 228 "dds.y"
+#line 233 "dds.y"
 { current = NewInt32(); ;
     break;}
 case 28:
-#line 229 "dds.y"
+#line 234 "dds.y"
 { current = NewFloat64(); ;
     break;}
 case 29:
-#line 230 "dds.y"
+#line 235 "dds.y"
 { current = NewStr(); ;
     break;}
 case 30:
-#line 231 "dds.y"
+#line 236 "dds.y"
 { current = NewUrl(); ;
     break;}
 case 31:
-#line 234 "dds.y"
+#line 239 "dds.y"
 { current->set_name(yyvsp[0]); ;
     break;}
 case 33:
-#line 239 "dds.y"
+#line 244 "dds.y"
 { 
 		     if (current->type() == array_t) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[-1]));
@@ -849,13 +849,13 @@ case 33:
 		 ;
     break;}
 case 34:
-#line 251 "dds.y"
+#line 256 "dds.y"
 {
 		     save_str(id, yyvsp[0]);
 		 ;
     break;}
 case 35:
-#line 255 "dds.y"
+#line 260 "dds.y"
 { 
 		     if (current->type() == array_t) {
 			 ((Array *)current)->append_dim(atoi(yyvsp[0]), id);
@@ -869,7 +869,7 @@ case 35:
 		 ;
     break;}
 case 37:
-#line 269 "dds.y"
+#line 274 "dds.y"
 { table.set_dataset_name(yyvsp[0]); ;
     break;}
 }
@@ -1070,7 +1070,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 272 "dds.y"
+#line 277 "dds.y"
 
 
 int 

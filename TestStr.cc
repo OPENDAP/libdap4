@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
-// Revision 1.7  1995/08/23 00:44:35  jimg
+// Revision 1.8  1995/08/26 00:31:59  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.7  1995/08/23  00:44:35  jimg
 // Updated to use the newer member functions.
 //
 // Revision 1.6  1995/07/09  21:29:19  jimg
@@ -80,11 +83,6 @@
 #include <String.h>
 
 #include "TestStr.h"
-#ifdef NEVER
-#include "Test.h"
-
-String teststr = "TestStr";
-#endif
 
 Str *
 NewStr(const String &n)

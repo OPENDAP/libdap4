@@ -38,7 +38,10 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.16  1995/08/23 00:04:45  jimg
+// Revision 1.17  1995/08/26 00:31:24  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.16  1995/08/23  00:04:45  jimg
 // Switched from String representation of data type to Type enum.
 // Added type_name() member function so that it is simple to get the string
 // representation of a variable's type.
@@ -214,39 +217,9 @@ BaseType::operator=(const BaseType &rhs)
     return *this;
 }
 
-#ifdef NEVER
-// deprecated
-
-String 
-BaseType::get_var_name() const
-{ 
-    return _name; 
-}
-
-void 
-BaseType::set_var_name(const String &n)
-{ 
-    _name = n; 
-}
-
-String
-BaseType::get_var_type() const
-{
-    return _type;
-}
-
-void
-BaseType::set_var_type(const String &t)
-{
-    _type = t;
-}
-
-// new names (changed to fit with the new naming scheme)
-#endif
-
 String 
 BaseType::name() const
-{ 
+{
     return _name; 
 }
 
@@ -328,6 +301,20 @@ xdrproc_t
 BaseType::xdr_coder()
 {
     return _xdr_coder;
+}
+
+// Use these mfuncs to access the xdrin/out pointers.
+
+XDR *
+BaseType::xdrin() const
+{
+    return _xdrin;
+}
+
+XDR *
+BaseType::xdrout() const
+{
+    return _xdrout;
 }
 
 // send a printed representation of the variable's declaration to cout. If

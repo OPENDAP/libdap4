@@ -8,12 +8,15 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.16  1995/08/23 00:04:44  jimg
-/* Switched from String representation of data type to Type enum.
-/* Added type_name() member function so that it is simple to get the string
-/* representation of a variable's type.
-/* Changed the name of read_val/store_val to buf2val/val2buf.
+/* Revision 1.17  1995/08/26 00:31:25  jimg
+/* Removed code enclosed in #ifdef NEVER #endif.
 /*
+ * Revision 1.16  1995/08/23  00:04:44  jimg
+ * Switched from String representation of data type to Type enum.
+ * Added type_name() member function so that it is simple to get the string
+ * representation of a variable's type.
+ * Changed the name of read_val/store_val to buf2val/val2buf.
+ *
  * Revision 1.15  1995/05/10  13:45:09  jimg
  * Changed the name of the configuration header file from `config.h' to
  * `config_dap.h' so that other libraries could have header files which were
@@ -159,9 +162,6 @@ enum Type {
 class BaseType {
 private:
     String _name;		// name of the instance
-#ifdef NEVER
-    String _type;		// name of the instance's type
-#endif
     Type _type;			// instance's type
 
     // _out is used to retain access to the FILE * used by _xdrout. It is
@@ -171,14 +171,13 @@ private:
 
     void _duplicate(const BaseType &bt);
 
-protected:
     // xdr_coder is used as an argument to xdr procedures that encode groups
     // of things (e.g., xdr_array()). Each leaf class's ctor must set this.
     xdrproc_t _xdr_coder;
 
-    // These static pointers are (by definition) common to all members of
-    // BaseType. The streams associated with them may be changed using
-    // functions that are friends of this class.
+    // These static pointers are (by definition) common to all instances of
+    // BaseType (and its children). The streams associated with them may be
+    // changed using functions that are friends of this class.
     //
     // NB: It is normal for each of these two static class members to use a
     // small amount of dynamically allocated memory (allocated within the xdr
@@ -199,27 +198,12 @@ public:
     BaseType &operator=(const BaseType &rhs);
     virtual BaseType *ptr_duplicate() = 0; // alloc new instance and dup THIS.
 
-#ifdef NEVER
-    String get_var_name() const; // deprecated
-    void set_var_name(const String &n); // deprecated
-
-    String get_var_type() const; // deprecated
-    void set_var_type(const String &t); // deprecated
-#endif
-
     String name() const;
     void set_name(const String &n);
 
     Type type() const;		// return the Type of this instance
     void set_type(const Type &t); // set the Type
     String type_name() const;	// return the name of this Type as a String
-
-    // Return true if the object is one of the cardinal types. Arrays of
-    // these objects are represented specially to improve transmission
-    // efficiency 
-#ifdef NEVER
-    virtual bool card() = 0;
-#endif
 
     // xdr_coder is used to encode arrays of cardinal objects
     xdrproc_t xdr_coder();
@@ -230,6 +214,10 @@ public:
     friend void set_xdrin(FILE *in);
     friend void set_xdrout(FILE *out);
 
+    // These mfuncs are used to access the _xdrin and _xdrout members.
+    XDR *xdrin() const;
+    XDR *xdrout() const;
+
     // The var() and add_var() mfuncs are only used by ctor classes (Array,
     // Structure, ...). Their BaseType implementations print an error
     // message.
@@ -237,16 +225,13 @@ public:
     virtual void add_var(BaseType *v, Part p = nil);
 
     // Return the number of bytes that are required to hold the instance's
-    // value. In the case of cardinal types such as Int32, this is the size
+    // value. In the case of cardinal types such as Int thi32, this is the size
     // of one Int32 (four bytes). For a Str or Url, width() returns the
     // number of bytes needed for a char * variable, not the bytes needed for
     // the characters since that value can not be determined from type
     // information alone. For Structure, ... types size() returns the number
     // of bytes needed to store each of the fields as C would store them in a
     // struct.
-#ifdef NEVER
-    virtual unsigned int size() = 0;// deprecated
-#endif
     virtual unsigned int width() = 0;
 
     // Put the data into a local buffer so that it may be serialized. This

@@ -38,7 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.15  1995/08/23 00:18:30  jimg
+// Revision 1.16  1995/08/26 00:31:46  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.15  1995/08/23  00:18:30  jimg
 // Now uses newer function names.
 // Uses the new xdr_str() function in util.cc
 //
@@ -165,25 +168,6 @@ Str::length()
     return _buf.length();
 }
 
-#ifdef NEVER
-bool
-Str::card()
-{
-#ifdef NEVER
-    return true;
-#endif
-    return false;
-}
-#endif
-
-#ifdef NEVER
-unsigned int
-Str::size()			// deprecated
-{
-    return width();
-}
-#endif
-
 // return the number of bytes that the value of a Str object occupies when
 // that value is accessed using read_val().
 
@@ -200,11 +184,7 @@ Str::width()
 bool
 Str::serialize(bool flush)
 {
-#ifdef NEVER
-    String *tmp = &_buf;	// kluge for xdr_str
-#endif
-
-    bool stat = (bool)xdr_str(_xdrout, _buf /* &tmp */);
+    bool stat = (bool)xdr_str(xdrout(), _buf);
     if (stat && flush)
 	stat = expunge();
 
@@ -216,11 +196,7 @@ Str::serialize(bool flush)
 bool
 Str::deserialize(bool reuse)
 {
-#ifdef NEVER
-    String *tmp = &_buf;
-#endif
-
-    return (bool)xdr_str(_xdrin, _buf /* &tmp */);
+    return (bool)xdr_str(xdrin(), _buf);
 }
 
 // Copy information in the object's internal buffers into the memory pointed

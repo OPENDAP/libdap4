@@ -9,11 +9,14 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.12  1995/08/22 23:48:22  jimg
-/* Removed card() member function.
-/* Removed old, deprecated member functions.
-/* Changed the names of read_val and store_val to buf2val and val2buf.
+/* Revision 1.13  1995/08/26 00:31:50  jimg
+/* Removed code enclosed in #ifdef NEVER #endif.
 /*
+ * Revision 1.12  1995/08/22  23:48:22  jimg
+ * Removed card() member function.
+ * Removed old, deprecated member functions.
+ * Changed the names of read_val and store_val to buf2val and val2buf.
+ *
  * Revision 1.11  1995/05/10  13:45:32  jimg
  * Changed the name of the configuration header file from `config.h' to
  * `config_dap.h' so that other libraries could have header files which were
@@ -117,16 +120,7 @@ public:
 
     const Structure &operator=(const Structure &rhs);
     virtual BaseType *ptr_duplicate() = 0;
-#ifdef NEVER
-    virtual Structure * placement_dup(void *place) = 0;
-#endif
 
-#ifdef NEVER
-    virtual bool card();
-#endif
-#ifdef NEVER
-    virtual unsigned int size();
-#endif
     virtual unsigned int width();
 
     virtual bool serialize(bool flush = false);

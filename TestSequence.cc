@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
-// Revision 1.6  1995/07/09 21:29:18  jimg
+// Revision 1.7  1995/08/26 00:31:58  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.6  1995/07/09  21:29:18  jimg
 // Added copyright notice.
 //
 // Revision 1.5  1995/05/10  17:35:31  jimg
@@ -73,11 +76,6 @@
 #endif
 
 #include "TestSequence.h"
-#ifdef NEVER
-#include "Test.h"
-
-String testsequence = "TestSequence";
-#endif
 
 Sequence *
 NewSequence(const String &n)
@@ -85,15 +83,11 @@ NewSequence(const String &n)
     return new TestSequence(n);
 }
 
-// protected
-
 BaseType *
 TestSequence::ptr_duplicate()
 {
     return new TestSequence(*this);
 }
-
-// public
 
 TestSequence::TestSequence(const String &n) : Sequence(n)
 {

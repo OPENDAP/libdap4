@@ -38,7 +38,10 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
-// Revision 1.14  1995/08/23 00:11:08  jimg
+// Revision 1.15  1995/08/26 00:31:49  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.14  1995/08/23  00:11:08  jimg
 // Changed old, deprecated member functions to new ones.
 // Switched from String representation of type to enum.
 //
@@ -153,9 +156,6 @@ Structure::_duplicate(const Structure &s)
 
 Structure::Structure(const String &n) : BaseType(n, structure_t)
 {
-#ifdef NEVER
-    set_name(n);
-#endif
 }
 
 Structure::Structure(const Structure &rhs)
@@ -188,34 +188,9 @@ Structure::add_var(BaseType *bt, Part p)
     _vars.append(bt);
 }
 
-#ifdef NEVER
-bool
-Structure::card()
-{
-    return false;
-}
-#endif
-
-#ifdef NEVER
-unsigned int
-Structure::size()		// deprecated
-{
-    return width();
-}
-#endif
-
 unsigned int
 Structure::width()
 {
-#ifdef NEVER
-    unsigned int sz = 0;
-
-    for (Pix p = first_var(); p; next_var(p))
-	sz += var(p)->width();
-
-    return sz;
-#endif
-
     return sizeof(Structure);
 }
 
@@ -237,15 +212,15 @@ Structure::serialize(bool flush)
 bool
 Structure::deserialize(bool reuse)
 {
-    unsigned int num, sz = 0;
+  bool status;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	sz += num = var(p)->deserialize(reuse);
-	if (num == 0) 
-	    return (unsigned int)false;
+	status = var(p)->deserialize(reuse);
+	if (!status) 
+	  break;
     }
 
-    return sz;
+    return status;
 }
 
 // This mfunc assumes that val contains values for all the elements of the
@@ -261,15 +236,6 @@ unsigned int
 Structure::val2buf(void *val, bool reuse)
 {
     return sizeof(Structure);
-#ifdef NEVER
-    assert(val);
-    
-    unsigned int pos = 0;
-    for (Pix p = first_var(); p; next_var(p))
-	pos += var(p)->val2buf(val + pos, reuse);
-
-    return pos;
-#endif
 }
 
 unsigned int
@@ -281,31 +247,7 @@ Structure::read_val(void **val)
 unsigned int
 Structure::buf2val(void **val)
 {
-#ifdef NEVER
-    assert(val);
-
-    if (!*val)
-	*val = ptr_duplicate();
-    else
-	*val = placement_dup(*val);
-#endif
-	
     return sizeof(Structure);
-
-#ifdef NEVER
-    if (!*val)
-	*val = new char[size()];
-
-    unsigned int pos = 0;
-    void *tval;
-
-    for (Pix p = first_var(); p; next_var(p)) {
-	tval = *val + pos;
-	pos += var(p)->buf2val(&tval);
-    }
-
-    return pos;
-#endif
 }
 
 BaseType *

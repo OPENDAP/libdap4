@@ -38,7 +38,10 @@
 // jhrg 1/13/95
 
 // $Log: TestGrid.cc,v $
-// Revision 1.6  1995/07/09 21:29:14  jimg
+// Revision 1.7  1995/08/26 00:31:55  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.6  1995/07/09  21:29:14  jimg
 // Added copyright notice.
 //
 // Revision 1.5  1995/05/10  17:35:29  jimg
@@ -68,12 +71,9 @@
 // BaseType.
 //
 
-#include "TestGrid.h"
-#ifdef NEVER
-#include "Test.h"
+#include <Pix.h>
 
-String testgrid = "TestGrid";
-#endif
+#include "TestGrid.h"
 
 Grid *
 NewGrid(const String &n)
@@ -81,15 +81,11 @@ NewGrid(const String &n)
     return new TestGrid(n);
 }
 
-// protected
-
 BaseType *
 TestGrid::ptr_duplicate()
 {
     return new TestGrid(*this);
 }
-
-// public
 
 TestGrid::TestGrid(const String &n) : Grid(n)
 {
@@ -102,4 +98,10 @@ TestGrid::~TestGrid()
 bool
 TestGrid::read(String dataset, String var_name, String constraint)
 {
+    array_var()->read(dataset, array_var()->name(), constraint);
+
+    for (Pix p = first_map_var(); p; next_map_var(p)) {
+	if (!map_var(p)->read(dataset, map_var(p)->name(), constraint))
+	    return false;
+    }
 }

@@ -6,9 +6,12 @@
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.5  1995/08/23 00:41:57  jimg
-/* xdr_str() now takes a String & instead of a String ** for arg 2.
+/* Revision 1.6  1995/08/26 00:32:12  jimg
+/* Removed code enclosed in #ifdef NEVER #endif.
 /*
+ * Revision 1.5  1995/08/23  00:41:57  jimg
+ * xdr_str() now takes a String & instead of a String ** for arg 2.
+ *
  * Revision 1.4  1995/03/04  14:36:50  jimg
  * Fixed xdr_str so that it works with the new String objects.
  * Added xdr_str_array for use with arrays of String objects.
@@ -46,9 +49,6 @@ bool unique(SLList<BaseTypePtr> l, const char *var, const char *type);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
 void delete_xdrstdio(XDR *xdr);
 
-#ifdef NEVER
-extern "C" bool_t xdr_str(XDR *xdrs, String **buf);
-#endif
 extern "C" bool_t xdr_str(XDR *xdrs, String &buf);
 extern "C" bool_t xdr_str_array(XDR *xdrs, String *buf);
 

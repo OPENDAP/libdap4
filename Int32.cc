@@ -38,7 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.15  1995/08/22 23:57:51  jimg
+// Revision 1.16  1995/08/26 00:31:36  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.15  1995/08/22  23:57:51  jimg
 // Removed deprecated member functions.
 // Changed read_val/Store_val to buf2val/val2buf.
 //
@@ -145,24 +148,6 @@ Int32::Int32(const String &n) : BaseType(n, int32_t, XDR_INT32)
 {
 }
 
-#ifdef NEVER
-bool
-Int32::card()
-{
-    return true;
-}
-#endif
-
-#ifdef NEVER
-// deprecated
-
-unsigned int
-Int32::size()
-{
-    return width();
-}
-#endif
-
 unsigned int
 Int32::width()
 {
@@ -172,7 +157,7 @@ Int32::width()
 bool
 Int32::serialize(bool flush)
 {
-    bool stat = (bool)xdr_long(_xdrout, &_buf);
+    bool stat = (bool)xdr_long(xdrout(), &_buf);
     if (stat && flush)
 	stat = expunge();
 
@@ -182,7 +167,7 @@ Int32::serialize(bool flush)
 bool
 Int32::deserialize(bool reuse)
 {
-    unsigned int num = xdr_long(_xdrin, &_buf);
+    unsigned int num = xdr_long(xdrin(), &_buf);
 
     return num;
 }

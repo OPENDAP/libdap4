@@ -38,7 +38,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.13  1995/08/23 00:11:12  jimg
+// Revision 1.14  1995/08/26 00:31:33  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.13  1995/08/23  00:11:12  jimg
 // Changed old, deprecated member functions to new ones.
 // Switched from String representation of type to enum.
 //
@@ -171,22 +174,6 @@ Grid::operator=(const Grid &rhs)
     return *this;
 }
 
-#ifdef NEVER
-bool
-Grid::card()
-{
-    return false;
-}
-#endif
-
-#ifdef NEVER
-unsigned int
-Grid::size()
-{
-    return width();
-}
-#endif
-
 unsigned int
 Grid::width()
 {
@@ -201,7 +188,7 @@ Grid::width()
 bool
 Grid::serialize(bool flush)
 {
-    bool status;
+    bool status = true;
 
     if (!(status = _array_var->serialize(false))) 
 	return false;
@@ -219,19 +206,19 @@ Grid::serialize(bool flush)
 bool
 Grid::deserialize(bool reuse)
 {
-    unsigned int num, sz = 0;
+    bool status;
     
-    sz += num = _array_var->deserialize(reuse);
-    if (num == 0) 
-	return (unsigned int)false;
+    status = _array_var->deserialize(reuse);
+    if (!status) 
+	return false;
 
     for(Pix p = _map_vars.first(); p; _map_vars.next(p)) {
-	sz += num = _map_vars(p)->deserialize(reuse);
-	if (num == 0) 
-	    return (unsigned int)false;
+	status = _map_vars(p)->deserialize(reuse);
+	if (!status) 
+	    break;
     }
 
-    return sz;
+    return status;
 }
 
 unsigned int
@@ -243,15 +230,7 @@ Grid::store_val(void *val, bool reuse)
 unsigned int
 Grid::val2buf(void *val, bool reuse)
 {
-    assert(val);
-
-    unsigned int pos = 0;
-    pos += _array_var->val2buf(val, reuse);
-
-    for(Pix p = _map_vars.first(); p; _map_vars.next(p))
-	pos += _map_vars(p)->val2buf(val + pos, reuse);
-
-    return pos;
+    return sizeof(Grid);
 }
 
 unsigned int
@@ -263,19 +242,7 @@ Grid::read_val(void **val)
 unsigned int
 Grid::buf2val(void **val)
 {
-    assert(val);
-
-    if (!*val)
-	*val = new char[width()];
-
-    unsigned int pos = _array_var->buf2val(val);
-
-    for(Pix p = _map_vars.first(); p; _map_vars.next(p)) {
-        void *tval = *val + pos;
-	pos += _map_vars(p)->buf2val(&tval);
-    }
-
-    return pos;
+    return sizeof(Grid);
 }
 
 BaseType *
@@ -366,7 +333,7 @@ Grid::print_val(ostream &os, String space, bool print_decl_p)
     os << " }";
 
     if (print_decl_p)
-	os << ";";
+	os << ";" << endl;
 }
 
 // Grids have ugly semantics.

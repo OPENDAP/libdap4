@@ -41,7 +41,10 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.12  1995/07/09 21:29:24  jimg
+// Revision 1.13  1995/08/26 00:32:04  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.12  1995/07/09  21:29:24  jimg
 // Added copyright notice.
 //
 // Revision 1.11  1995/07/08  18:34:31  jimg
@@ -115,9 +118,6 @@ void parser_driver(int argc, char *argv[], int i, bool use_fd, DAS das);
 void test_scanner();
 
 int daslex();
-#ifdef NEVER
-int dasparse(DAS &);
-#endif
 
 extern int dasdebug;
 const char *prompt = "das-test: ";

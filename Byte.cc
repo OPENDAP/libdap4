@@ -38,7 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.13  1995/08/22 23:57:48  jimg
+// Revision 1.14  1995/08/26 00:31:27  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.13  1995/08/22  23:57:48  jimg
 // Removed deprecated member functions.
 // Changed read_val/Store_val to buf2val/val2buf.
 //
@@ -146,24 +149,6 @@ Byte::Byte(const String &n) : BaseType(n, byte_t)
 {
 }
 
-#ifdef NEVER
-bool
-Byte::card()
-{
-    return true;
-}
-#endif
-
-#ifdef NEVER
-//deprecated
-
-unsigned int
-Byte::size()
-{
-    return width();
-}
-#endif
-
 unsigned int
 Byte::width()
 {
@@ -179,7 +164,7 @@ Byte::width()
 bool
 Byte::serialize(bool flush)
 {
-    bool stat = (bool)xdr_char(_xdrout, &_buf);
+    bool stat = (bool)xdr_char(xdrout(), &_buf);
     if (stat && flush)
 	stat = expunge();
 
@@ -191,7 +176,7 @@ Byte::serialize(bool flush)
 bool
 Byte::deserialize(bool reuse)
 {
-    unsigned int num = xdr_char(_xdrin, &_buf);
+    unsigned int num = xdr_char(xdrin(), &_buf);
 
     return num;
 }

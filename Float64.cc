@@ -38,7 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
-// Revision 1.14  1995/08/22 23:57:50  jimg
+// Revision 1.15  1995/08/26 00:31:29  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.14  1995/08/22  23:57:50  jimg
 // Removed deprecated member functions.
 // Changed read_val/Store_val to buf2val/val2buf.
 //
@@ -148,22 +151,6 @@ Float64::Float64(const String &n) : BaseType(n, float64_t, XDR_FLOAT64)
 {
 }
 
-#ifdef NEVER
-bool
-Float64::card()
-{
-    return true;
-}
-#endif
-
-#ifdef NEVER
-unsigned int
-Float64::size()
-{
-    return width();
-}
-#endif
-
 unsigned int
 Float64::width()
 {
@@ -173,7 +160,7 @@ Float64::width()
 bool
 Float64::serialize(bool flush)
 {
-    bool stat = (bool)xdr_double(_xdrout, &_buf);
+    bool stat = (bool)xdr_double(xdrout(), &_buf);
     if (stat && flush)
 	 stat = expunge();
 
@@ -183,7 +170,7 @@ Float64::serialize(bool flush)
 bool
 Float64::deserialize(bool reuse)
 {
-    unsigned int num = xdr_double(_xdrin, &_buf);
+    unsigned int num = xdr_double(xdrin(), &_buf);
 
     return num;
 }

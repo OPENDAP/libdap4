@@ -38,7 +38,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.14  1995/08/23 00:11:06  jimg
+// Revision 1.15  1995/08/26 00:31:43  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.14  1995/08/23  00:11:06  jimg
 // Changed old, deprecated member functions to new ones.
 // Switched from String representation of type to enum.
 //
@@ -215,22 +218,6 @@ Sequence::var(Pix p)
 	return NULL;
 }
 
-#ifdef NEVER
-bool
-Sequence::card()
-{
-    return false;
-}
-#endif
-
-#ifdef NEVER
-unsigned int
-Sequence::size()
-{
-    return width();
-}
-#endif
-
 unsigned int
 Sequence::width()
 {
@@ -280,13 +267,7 @@ Sequence::store_val(void *val, bool reuse)
 unsigned int
 Sequence::val2buf(void *val, bool reuse)
 {
-    assert(val);
-    
-    unsigned int pos = 0;
-    for (Pix p = first_var(); p; next_var(p))
-	pos += var(p)->val2buf(val + pos, reuse);
-
-    return pos;
+    return sizeof(Sequence);
 }
 
 unsigned int
@@ -298,20 +279,7 @@ Sequence::read_val(void **val)
 unsigned int
 Sequence::buf2val(void **val)
 {
-    assert(val);
-
-    if (!*val)
-	*val = new char[width()];
-    
-    unsigned int pos = 0;
-    void *tval;
-
-    for (Pix p = first_var(); p; next_var(p)) {
-	tval = *val + pos;
-	pos += var(p)->buf2val(&tval);
-    }
-
-    return pos;
+    return sizeof(Sequence);
 }
 
 void

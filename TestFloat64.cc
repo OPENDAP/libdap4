@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestFloat64.cc,v $
-// Revision 1.6  1995/07/09 21:29:11  jimg
+// Revision 1.7  1995/08/26 00:31:53  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.6  1995/07/09  21:29:11  jimg
 // Added copyright notice.
 //
 // Revision 1.5  1995/05/10  17:35:26  jimg
@@ -73,11 +76,6 @@
 #endif
 
 #include "TestFloat64.h"
-#ifdef NEVER
-#include "Test.h"
-
-String testfloat64 = "TestFloat64";
-#endif
 
 Float64 *
 NewFloat64(const String &n)

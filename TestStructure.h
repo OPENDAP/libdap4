@@ -6,9 +6,12 @@
 // jhrg 1/12/95
 
 /* $Log: TestStructure.h,v $
-/* Revision 1.4  1995/08/23 00:44:38  jimg
-/* Updated to use the newer member functions.
+/* Revision 1.5  1995/08/26 00:32:02  jimg
+/* Removed code enclosed in #ifdef NEVER #endif.
 /*
+ * Revision 1.4  1995/08/23  00:44:38  jimg
+ * Updated to use the newer member functions.
+ *
  * Revision 1.3  1995/02/10  02:34:01  jimg
  * Modified Test<class>.h and .cc so that they used to new definitions of
  * read_val().
@@ -46,9 +49,6 @@ public:
     virtual ~TestStructure();
 
     virtual BaseType *ptr_duplicate();
-#ifdef NEVER
-    virtual Structure * placement_dup(void *place);
-#endif
 
     virtual bool read(String dataset, String var_name, String constraint);
 };

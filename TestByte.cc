@@ -43,7 +43,10 @@
 // jhrg 1/12/95
 
 // $Log: TestByte.cc,v $
-// Revision 1.7  1995/07/09 21:29:09  jimg
+// Revision 1.8  1995/08/26 00:31:51  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.7  1995/07/09  21:29:09  jimg
 // Added copyright notice.
 //
 // Revision 1.6  1995/05/10  17:35:25  jimg
@@ -81,11 +84,6 @@
 #endif
 
 #include "TestByte.h"
-#ifdef NEVER
-#include "Test.h"
-
-String testbyte = "TestByte";
-#endif
 
 // The NewByte `helper function' creates a pointer to the a TestByte and
 // returns that pointer. It takes the same arguments as the class's ctor. If

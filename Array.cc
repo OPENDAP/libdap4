@@ -38,7 +38,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.22  1995/08/22 23:45:33  jimg
+// Revision 1.23  1995/08/26 00:31:21  jimg
+// Removed code enclosed in #ifdef NEVER #endif.
+//
+// Revision 1.22  1995/08/22  23:45:33  jimg
 // Removed DBMALLOC code.
 // Added set_vec/vec mfuncs so that non-Array software can access the BaseType *
 // vector.
@@ -228,14 +231,6 @@ Array::operator=(const Array &rhs)
     return *this;
 }
 
-#ifdef NEVER
-bool
-Array::card()
-{
-    return false;
-}
-#endif
-
 // set the length (number of elements) after constraint evaluation
 
 void
@@ -243,16 +238,6 @@ Array::const_length(long const_len)
 {
     _const_length = const_len;
 }
-
-#ifdef NEVER
-// Returns: The number of bytes required to store the array's value.
-
-unsigned int
-Array::size()			// deprecated
-{
-    return width();
-}
-#endif
 
 // Return: The number of bytes required to store the array `in a C
 // program'. For an array of cardinal types this is the same as the storage
@@ -307,10 +292,10 @@ Array::serialize(bool flush)
 
 	assert(_buf);
 	if (_var->type() == byte_t)
-	    status = (bool)xdr_bytes(_xdrout, (char **)&_buf, &num,
+	    status = (bool)xdr_bytes(xdrout(), (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
 	else
-	    status = (bool)xdr_array(_xdrout, (char **)&_buf, &num,
+	    status = (bool)xdr_array(xdrout(), (char **)&_buf, &num,
 				     DODS_MAX_ARRAY, _var->width(),
 				     _var->xdr_coder()); 
 	break;
@@ -325,7 +310,7 @@ Array::serialize(bool flush)
       case grid_t:
 
 	assert(_vec.capacity());
-	status = (bool)xdr_int(_xdrout, &num); // send length
+	status = (bool)xdr_int(xdrout(), &num); // send length
 
 	for (int i = 0; status && i < num; ++i)	// test status in loop
 	    status = _vec[i]->serialize();
@@ -375,10 +360,10 @@ Array::deserialize(bool reuse)
 	}
 
 	if (_var->type() == byte_t)
-	    status = (bool)xdr_bytes(_xdrin, (char **)&_buf, &num,
+	    status = (bool)xdr_bytes(xdrin(), (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
 	else
-	    status = (bool)xdr_array(_xdrin, (char **)&_buf, &num,
+	    status = (bool)xdr_array(xdrin(), (char **)&_buf, &num,
 				     DODS_MAX_ARRAY, _var->width(), 
 				     _var->xdr_coder());
 	DBG(cerr << "List::deserialize: read " << num <<  " elements\n");
@@ -394,7 +379,7 @@ Array::deserialize(bool reuse)
       case function_t:
       case grid_t:
 
-	status = (bool)xdr_int(_xdrin, &num);
+	status = (bool)xdr_int(xdrin(), &num);
 	_vec.resize(num);
 	for (int i = 0; status && i < num; ++i) {
 	    _vec[i] = _var;	// init to empty object of correct class

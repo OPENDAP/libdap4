@@ -5,11 +5,14 @@
 // jhrg 9/7/94
 
 /* $Log: Int32.h,v $
-/* Revision 1.11  1995/08/22 23:48:17  jimg
-/* Removed card() member function.
-/* Removed old, deprecated member functions.
-/* Changed the names of read_val and store_val to buf2val and val2buf.
+/* Revision 1.12  1995/08/26 00:31:38  jimg
+/* Removed code enclosed in #ifdef NEVER #endif.
 /*
+ * Revision 1.11  1995/08/22  23:48:17  jimg
+ * Removed card() member function.
+ * Removed old, deprecated member functions.
+ * Changed the names of read_val and store_val to buf2val and val2buf.
+ *
  * Revision 1.10  1995/03/04  14:35:02  jimg
  * Major modifications to the transmission and representation of values:
  * 	Added card() virtual function which is true for classes that
@@ -101,12 +104,6 @@ public:
 
     virtual BaseType *ptr_duplicate() = 0;
     
-#ifdef NEVER
-    virtual bool card();
-#endif
-#ifdef NEVER
-    virtual unsigned int size();
-#endif
     virtual unsigned int width();
 
     virtual bool serialize(bool flush = false);
