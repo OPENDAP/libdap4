@@ -38,7 +38,10 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
-// Revision 1.9  1995/07/09 21:29:23  jimg
+// Revision 1.10  1995/08/23 00:25:05  jimg
+// Uses the new Type enum.
+//
+// Revision 1.9  1995/07/09  21:29:23  jimg
 // Added copyright notice.
 //
 // Revision 1.8  1995/03/16  17:30:45  jimg
@@ -111,7 +114,7 @@
 #include "Url.h"
 #include "util.h"
 
-Url::Url(const String &n) : Str(n) /* , "Url", (xdrproc_t)xdr_str) */
+Url::Url(const String &n) : Str(n)
 {
-    set_type("Url");		// override the type set by Str
+    set_type(url_t);		// override the type set by Str
 }
