@@ -8,16 +8,21 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.11  1995/01/19 21:59:10  jimg
-/* Added read_val from dummy_read.cc to the sample set of sub-class
-/* implementations.
-/* Changed the declaration of readVal in BaseType so that it names the
-/* mfunc read_val (to be consistant with the other mfunc names).
-/* Removed the unnecessary duplicate declaration of the abstract virtual
-/* mfuncs read and (now) read_val from the classes Byte, ... Grid. The
-/* declaration in BaseType is sufficient along with the decl and definition
-/* in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
+/* Revision 1.12  1995/02/10 02:41:58  jimg
+/* Added new mfuncs to access _name and _type.
+/* Made private and protected filed's names start with `_'.
+/* Added store_val() as a abstract virtual mfunc.
 /*
+ * Revision 1.11  1995/01/19  21:59:10  jimg
+ * Added read_val from dummy_read.cc to the sample set of sub-class
+ * implementations.
+ * Changed the declaration of readVal in BaseType so that it names the
+ * mfunc read_val (to be consistant with the other mfunc names).
+ * Removed the unnecessary duplicate declaration of the abstract virtual
+ * mfuncs read and (now) read_val from the classes Byte, ... Grid. The
+ * declaration in BaseType is sufficient along with the decl and definition
+ * in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
+ *
  * Revision 1.10  1995/01/18  18:35:28  dan
  * Defined abstract virtual function 'readVal' which provides access
  * to the object's buf for retrieving data subsequent to deserializing.
@@ -91,7 +96,7 @@
 
 #include "config.h"
 
-// PART names the parts of multi-section ctor types; e.g., FUNCTION has two
+// PART names the parts of multi-section ctor types; e.g., Function has two
 // sets of variables, the INDEPENDENT variables and the DEPENDENT variables.
 
 enum Part {
@@ -104,15 +109,14 @@ enum Part {
 
 class BaseType {
 private:
-    String name;		// name of the variable
-    String type;		// name of the instance's type
+    String _name;		// name of the instance
+    String _type;		// name of the instance's type
 
     // _out is used to retain access to the FILE * used by _xdrout. It is
-    // used by the mfunc expunge to flush the buffer ensuring that all the
-    // data is sent enven before the process exits.
+    // used by the mfunc expunge to flush the buffer.
     static FILE *_out;		// output stream for data from server
 
-    void duplicate(const BaseType &bt);
+    void _duplicate(const BaseType &bt);
 
 protected:
     // xdr_coder is used as an argument to xdr procedures that encode groups
@@ -120,8 +124,16 @@ protected:
     xdrproc_t _xdr_coder;
 
     // These static pointers are (by definition) common to all members of
-    // BaseType. The streams associated with them may be changed using mfuncs
-    // of this class.
+    // BaseType. The streams associated with them may be changed using
+    // functions that are friends of this class.
+    //
+    // NB: It is normal for each of these two static class members to use a
+    // small amount of dynamically allocated memory (allocated within the xdr
+    // library using malloc). The first call to serialize() will malloc a
+    // 4104 and a 136 byte block. The first call to deserialize() will malloc
+    // a 4104 byte block. These will not be deallocated even when all the
+    // objects are destroyed. However, once created they won't be re
+    // allocated again.
     static XDR *_xdrin;		// xdr pointer for input (default: from stdin)
     static XDR *_xdrout;	// xdr pointer for output (default: to stdout)
 
@@ -134,17 +146,23 @@ public:
     BaseType &operator=(const BaseType &rhs);
     virtual BaseType *ptr_duplicate() = 0; // alloc new instance and dup THIS.
 
-    String get_var_name() const;
-    void set_var_name(const String &n);
+    String get_var_name() const; // deprecated
+    void set_var_name(const String &n); // deprecated
 
-    String get_var_type() const;
-    void set_var_type(const String &t);
+    String get_var_type() const; // deprecated
+    void set_var_type(const String &t); // deprecated
+
+    String name() const;
+    void set_name(const String &n);
+
+    String type() const;
+    void set_type(const String &t);
 
     xdrproc_t xdr_coder();
 
     // Access to the XDR * for input and output is limited to serialize and
-    // deserialize. These friend functions can thus access the private and
-    // protected fields of BaseType. They are defined in BaseType.cc
+    // deserialize. These friend functions are used to set the FILE * used by
+    // those XDR pointers. They are defined in BaseType.cc
     friend void set_xdrin(FILE *in);
     friend void set_xdrout(FILE *out);
 
@@ -154,22 +172,48 @@ public:
     virtual BaseType *var(const String &name = (char *)0);
     virtual void add_var(BaseType *v, Part p = nil);
 
+    // Return the number of bytes that are required to hold the instance's
+    // value. In the case of scalar types such as Int32, this is the size of
+    // one Int32 (four bytes). For a Str or Url, size() returns the number of
+    // bytes needed for a char * variable, not the bytes needed for the
+    // characters since that value can not be determined from type
+    // information alone. For Structure, ... types size() returns the number
+    // of bytes needed to store each of the fields as C would store them in a
+    // struct. 
     virtual unsigned int size() = 0; // local representation size in bytes
 
-    // Put the data into a local buffer so that it may be serialized: that
-    // means read it from the file and into a buffer. The buffer is
-    // serialized by the mfunc serialize().
+    // Put the data into a local buffer so that it may be serialized. This
+    // mfunc must be specialized for each API/format (it is not defined by
+    // the classes Int32, ..., Grid - instead look in TestInt32, ... for
+    // samples). 
     virtual bool read(String dataset, String var_name, String constraint) = 0;
-    virtual bool read_val(void *stuff) = 0;
+    
+    // read_val() reads the value of the variable from an internal buffer and
+    // stores it in the memory referenced by *VAL. Either the caller must
+    // allocate enough storage to *VAL or set it to null. In the later case,
+    // new will be used to allocate storage. The caller is then responsible
+    // for deallocating storage. Array and List values are stored as C would
+    // store an array (N values stored sequentially). Structure, ..., Grid
+    // values are stored as C would store a struct.
+    virtual unsigned int read_val(void **val) = 0;
 
-    // move data to and from the net.
-    virtual bool serialize(bool flush = false, unsigned int num = 0) = 0; 
-    virtual unsigned int deserialize() = 0;
+    // Store the value pointed to by VAL in the object's internal buffer. This
+    // mfunc does not perform any checks, so callers must be sure that the
+    // thing pointed to can actually be stored in the object's buffer.
+    // Return the size (in bytes) of the information copied from VAL.
+    virtual unsigned int store_val(void *val, bool reuse = false) = 0;
+
+    // Move data to and from the net.
+    virtual bool serialize(bool flush = false) = 0; 
+    virtual unsigned int deserialize(bool reuse = false) = 0;
+    
+    // Write the buffers maintained by XDR to the associated FILE *s.
     bool expunge();
 
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true);
-    virtual void print_val(ostream &os, String space = "") = 0;
+    virtual void print_val(ostream &os, String space = "",
+			   bool print_decl_p = true) = 0;
 
     virtual bool check_semantics(bool all = false);
 };

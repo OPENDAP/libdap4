@@ -4,7 +4,12 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.9  1995/01/18 18:33:25  dan
+// Revision 1.10  1995/02/10 02:41:56  jimg
+// Added new mfuncs to access _name and _type.
+// Made private and protected filed's names start with `_'.
+// Added store_val() as a abstract virtual mfunc.
+//
+// Revision 1.9  1995/01/18  18:33:25  dan
 // Added external declarations for utility functions, new_xdrstdio and
 // delete_xdrstdio.
 //
@@ -67,8 +72,10 @@
 #include "BaseType.h"
 #include "util.h"
 
+#ifdef NEVER
 extern XDR *new_xdrstdio(FILE*, enum xdr_op);
 extern void delete_xdrstdio(XDR*);
+#endif
 
 // Initial definition of the protected static members _xdrin and
 // _xdrout. By default they use the stdin and stdout streams (resp).
@@ -80,10 +87,10 @@ FILE * BaseType::_out = stdout;
 // Private copy mfunc
 
 void
-BaseType::duplicate(const BaseType &bt)
+BaseType::_duplicate(const BaseType &bt)
 {
-    name = bt.name;
-    type = bt.type;
+    _name = bt._name;
+    _type = bt._type;
     _xdr_coder = bt._xdr_coder;	// just copy this function pointer
 }
 
@@ -120,13 +127,13 @@ set_xdrout(FILE *out)
 // greater).
 
 BaseType::BaseType(const String &n, const String &t, xdrproc_t xdr)
-    : name(n), type(t), _xdr_coder(xdr)
+    : _name(n), _type(t), _xdr_coder(xdr)
 {
 } 
 
 BaseType::BaseType(const BaseType &copy_from)
 {
-    duplicate(copy_from);
+    _duplicate(copy_from);
 }
     
 BaseType::~BaseType()
@@ -139,33 +146,61 @@ BaseType::operator=(const BaseType &rhs)
     if (this == &rhs)
 	return *this;
 
-    duplicate(rhs);
+    _duplicate(rhs);
 
     return *this;
 }
 
+// deprecated
+
 String 
 BaseType::get_var_name() const
 { 
-    return name; 
+    return _name; 
 }
 
 void 
 BaseType::set_var_name(const String &n)
 { 
-    name = n; 
+    _name = n; 
 }
 
 String
 BaseType::get_var_type() const
 {
-    return type;
+    return _type;
 }
 
 void
 BaseType::set_var_type(const String &t)
 {
-    type = t;
+    _type = t;
+}
+
+// new names (changed to fit with the new naming scheme)
+
+String 
+BaseType::name() const
+{ 
+    return _name; 
+}
+
+void 
+BaseType::set_name(const String &n)
+{ 
+    _name = n; 
+}
+
+String
+BaseType::type() const
+{
+    return _type;
+}
+
+void
+BaseType::set_type(const String &t)
+{
+    _type = t;
 }
 
 // Return a pointer to the contained variable in a ctor class. For BaseType
@@ -202,7 +237,7 @@ BaseType::xdr_coder()
 void 
 BaseType::print_decl(ostream &os, String space, bool print_semi)
 {
-    os << space << type << " " << name;
+    os << space << _type << " " << _name;
     if (print_semi)
 	os << ";" << endl;
 }
@@ -221,7 +256,7 @@ BaseType::print_decl(ostream &os, String space, bool print_semi)
 bool
 BaseType::check_semantics(bool all)
 {
-    bool sem = ((const char *)type && (const char *)name);
+    bool sem = ((const char *)_type && (const char *)_name);
 
     if (!sem) 
 	cerr << "Every variable must have both a name and a type" << endl;
@@ -237,9 +272,3 @@ BaseType::expunge()
 {
     return fflush(_out) == 0;
 }
-
-
-
-
-
-
