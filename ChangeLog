@@ -1,8 +1,13 @@
+1998-04-03  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added patches from Jake Hamby which fix various problems with
+	Sequences. 
+
 1998-03-27  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Added targets for test coverage analysis.
 
-	* Added fixed from Jake Hamby.
+	* Added fix from Jake Hamby.
 
 	* Makefile.in (GNUHDRS): Added String.h & String.cc to the
 	distributions. 
@@ -371,4 +376,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.22 1998/03/27 22:34:36 jimg Exp $
+$Id: ChangeLog,v 1.23 1998/04/03 18:10:16 jimg Exp $
