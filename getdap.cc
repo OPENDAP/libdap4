@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.22  1997/03/05 08:29:32  jimg
+// Silly bug where show_gui() was not called in some cases.
+//
 // Revision 1.21  1997/02/17 20:28:15  jimg
 // Changed output of verbose option so it is consistent for DAS, DDS and data
 //
@@ -91,7 +94,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.21 1997/02/17 20:28:15 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.22 1997/03/05 08:29:32 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -101,7 +104,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.21 1997/02/17 20:28:15 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.21 $";
+const char *VERSION = "$Revision: 1.22 $";
 
 void
 usage(String name)
@@ -307,8 +310,7 @@ main(int argc, char * argv[])
 	}
 
 	if (!get_das && !get_dds && !get_data) {
-	    if (gui)
-		url.gui()->show_gui(gui);
+	    url.gui()->show_gui(gui);
 	    String url_string = argv[i];
 	    for (int j = 0; j < times; ++j) {
 		if (!url.fetch_url(url_string, async))
