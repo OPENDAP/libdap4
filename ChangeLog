@@ -1,3 +1,13 @@
+1999-05-27  James Gallagher  <jimg@dcz.dods.org>
+
+	* Misc bug fixes.
+
+	* Error and InternalErr objects now are better behaved and DDS
+	throws them more predictably (although there's still a lot of work
+	to do there).
+
+	* Fixes merged from the alpha-3-0-0 branch.
+
 1999-05-24  James Gallagher  <jimg@dcz.dods.org>
 
 	* The DODS support address is now correct in all the places in the
@@ -546,4 +556,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.41 1999/05/24 23:17:42 jimg Exp $
+$Id: ChangeLog,v 1.42 1999/05/28 05:42:29 jimg Exp $
