@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.54 2005/02/08 20:43:12 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.55 2005/02/11 00:50:18 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -60,9 +60,10 @@ using std::endl;
 void
 Vector::_duplicate(const Vector &v)
 {
-    // BaseType::_duplicate(v);
-
     _length = v._length;
+    
+    // _var holds the type of the elements. That is, it holds a BaseType
+    // which acts as a template for the type of each element.
     if (v._var) {
         _var = v._var->ptr_duplicate(); // use ptr_duplicate() 
         _var->set_parent(this);	// ptr_duplicate does not set d_parent.
@@ -71,16 +72,24 @@ Vector::_duplicate(const Vector &v)
         _var = 0;
     }
     
-    // Note that for vectors of non-numeric stuff we don't maintain a back
-    // pointer for each element, just _var (the template) has a back pointer. 
-    if (v._vec.empty())
-	    _vec = v._vec;
+    // _vec and _buf (futher down) hold the values of the Vector. The field
+    // _vec is used when the Vector holds non-numeric data (including strings
+    // although it used to be that was not the case jhrg 2/10/05) while _buf
+    // holds numeric values.
+    if (v._vec.empty()) {
+	_vec = v._vec;
+    }
     else {
-        _vec = v._vec;
-#if 0
-    	for (unsigned int i = 0; i < _vec.size(); ++i)
-    	    _vec[i] = v._vec[i];
-#endif
+        // Failure to set the size will make the [] operator barf on the LHS
+        // of the assignment inside the loop.
+        _vec.resize(_length);
+        for (int i = 0; i < _length; ++i) {
+            // There's no need to call set_parent() for each element; we
+            // maintain the back pointer using the _var member. These
+            // instances are used to hold _values_ only while the _var
+            // field holds the type of the elements.
+            _vec[i] = v._vec[i]->ptr_duplicate();
+        }
     }
 
     _buf = 0;			// init to null
@@ -131,7 +140,7 @@ Vector::~Vector()
     delete _var; _var = 0;
 
     if (_buf) {
-	   delete[] _buf; _buf = 0;
+        delete[] _buf; _buf = 0;
     }
     else {
     	for (unsigned int i = 0; i < _vec.size(); ++i) {
@@ -579,24 +588,21 @@ the network connection.");
     return false;
 }
 
-// copy contents of VAL to the internal buffer (val to buf)
-//
-// Assume that VAL points to memory which contains, in row major order,
-// enough elements of the correct type to fill the array. For an array of a
-// cardinal type they are memcpy'd into _buf, otherwise val2buf is called
-// length() times on each successive _var->width() piece of VAL.
-//
-// Returns: The number of bytes used by the array
-
 /** Copies data into the class instance buffer.  This function
-    assumes that the input <i>val</i> indicates memory which
+    assumes that the input \e val points to memory which
     contains, in row major order, enough elements of the correct
     type to fill the array. For an array of a cardinal type the
-    memory is simply copied in whole into the Vector buffer.  For
-    compound types, the subsidiary <tt>val2buf</tt> is called
-    <tt>length()</tt> times on each successive piece of <i>val</i>.
-
+    memory is simply copied in whole into the Vector buffer.  
+    
+    For a Vector of Str (OPeNDAP Strings), this assumes \e val points to an
+    array of C++ strings. The method Str::val2buf() is used to copy
+    individual values.
+    
+    This method should not be used for Structure, Sequence or Grid.
+    
     @brief Reads data into the Vector buffer.
+    @exception InternalErr Thrown if called for Structure, Sequence or 
+    Grid.
     @return The number of bytes used by the array.
     @param val A pointer to the input data.
     @param reuse A boolean value, indicating whether the class
@@ -668,16 +674,6 @@ Vector::val2buf(void *val, bool reuse)
 
     return width();
 }
-
-// copy contents of the internal buffer to VAL (buf to val).
-//
-// In the case of a cardinal type, assume that val points to an array large
-// enough to hold N instances of the `C' representation of the element type.
-// In the case of a non-cardinal type, assume that val points to an array
-// loarge enough to hold N instances of the DODS class used to represent that
-// type. 
-//
-// Returns: The number of bytes used to store the array.
  
 /** Copies data from the Vector buffer.  This function assumes that
     <i>val</i> points to an array large enough to hold N instances of
@@ -770,9 +766,9 @@ Vector::buf2val(void **val)
     types.  See <tt>buf2val()</tt> to access members of Vectors containing
     simple types.
 
-    NOTE: The memory allocated by this function should be freed using
-    delete, <i>not</i> delete[]!
-
+    @note This method copies \e val; the caller is responsible for deleting
+    instance passed as the actual parameter.
+    
     @brief Sets element <i>i</i> to value <i>val</i>.
     @return void
     @exception InternalErr Thrown if \e i is out of range, \e val is null or
@@ -789,20 +785,21 @@ Vector::set_vec(unsigned int i, BaseType *val)
     // This is a public method which allows users to set the elements
     // of *this* vector. Passing an invalid index, a NULL pointer or 
     // missmatching the vector type are internal errors.
-    if(i<0)
-	throw InternalErr(__FILE__, __LINE__, "Invalid data: wrong index.");
-    if(!val)
+    if (i<0)
+	throw InternalErr(__FILE__, __LINE__, "Invalid data: negative index.");
+    if (i>=static_cast<unsigned int>(_length))
+        throw InternalErr(__FILE__, __LINE__, "Invalid data: index too large.");
+    if (!val)
 	throw InternalErr(__FILE__, __LINE__, 
 			  "Invalid data: null pointer to BaseType object.");
-
     if (val->type() != _var->type())
 	throw InternalErr(__FILE__, __LINE__, 
   "invalid data: type of incoming object does not match *this* vector type.");
 
     if (i >= _vec.capacity())
 	vec_resize(i + 10);
-    _vec[i] = val;
-
+   
+    _vec[i] = val->ptr_duplicate();
 }
  
 /** @brief Add the BaseType pointer to this constructor type
@@ -931,6 +928,16 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.55  2005/02/11 00:50:18  jimg
+// _duplicate() now performs a deep copy on the BaseType* instances used to \n\
+// hold values in the field _vec (used when there's a Vector of Structures, et c.). set_vec()\n\
+// now calls ptr_duplicate() on the BaseType* passed in to be used as a value for \n\
+// element i. This might seem odd (and it might hose performance, we may have to \n\
+// add another method to skirt the copy for some people) but it fits with the \n\
+// memory model where anything allocated outside the library can be freed outside the \n\
+// library. Not performing the deep copy and then freeing the objects in _vec in the dtor\n\
+// caused all sorts of problems, as one might imagine. I also fixed up the comments.
+//
 // Revision 1.54  2005/02/08 20:43:12  jimg
 // Removed parens around 'string *' at line 735; gcc-3.4 complained.
 //
