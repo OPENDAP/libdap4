@@ -8,8 +8,8 @@
 char *name_path(const char *path);
 char *fmakeword(FILE *f, const char stop, int *cl) ;
 void ErrMsgT(const char *Msgt);
-void set_mime_text();
-void set_mime_binary();
+void set_mime_text(String description);
+void set_mime_binary(String description);
 
 extern "C" {
     FILE *NetConnect(const char *AbsAddress);
