@@ -5,9 +5,19 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// Implementation for the CE Clause class.
+// Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.6  1996/08/13 18:14:28  jimg
+// Switched to the parser_arg object for passing parameters to/from the Error.y
+// parser. NB: if an error object is bad a message is sent to stderr to avoid
+// going round and round with bad error objects!
+// Changed the interface to display_message; Gui is by default NULL so that
+// calling it with an empty parameter list causes the message string to be sent
+// to stderr.
+// Changed the interface to correct_error(); it now returns a string which is
+// the corrected error or "".
+//
 // Revision 1.5  1996/06/22 00:02:46  jimg
 // Added Gui pointer to the Error oject's correct_error() and
 // display_message() mfuncs. These mfuncs now used the GUI to display
@@ -31,15 +41,18 @@
 #pragma implementation
 #endif
 
-static char rcsid[]={"$Id: Error.cc,v 1.5 1996/06/22 00:02:46 jimg Exp $"};
+#include "config_dap.h"
 
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.6 1996/08/13 18:14:28 jimg Exp $"};
+
+#include <stdio.h>
 #include <assert.h>
 
 #include "Error.h"
 #include "parser.h"
 
-void Errorrestart(FILE *yyin);
-int Errorparse(void *arg); // defined in dds.tab.c
+void Errorrestart(FILE *yyin);	// defined in Error.tab.c
+int Errorparse(void *arg);	
 
 Error::Error()
     : _error_code(undefined_error), _error_message(""), 
@@ -132,9 +145,14 @@ Error::parse(FILE *fp)
 
     fclose(fp);
 
-    // need to check the arg status because the parser may have recovered
-    // from an error (and thus returned true).
-    return status && arg.status() && OK();
+    //  STATUS is the result of the parser function; if a recoverable error
+    //  was found it will be true but arg.status() will be false.
+    if (!status || !arg.status()) {// Check parse result
+	cerr << "Error parsing error object!" << endl;
+	return false;
+    }
+    else
+	return OK();		// Check object consistancy
 }
     
 void
@@ -182,14 +200,12 @@ Error::error_message(String msg = "")
     }
 }
 
-// Check the DISPLAY environment variable, if defined, use X11. If not use
-// stderr. 
 void
-Error::display_message(Gui *gui)
+Error::display_message(Gui *gui = 0)
 {
-    if (gui->show_gui()) {
+    if (gui && gui->show_gui()) {
 	String cmd = (String)"dialog " + _error_message + "\r";
-	(void)gui->command(cmd);
+	gui->command(cmd);
     }
     else
 	cerr << _error_message << endl;
@@ -218,11 +234,30 @@ Error::program(char *pgm = 0)
     }
 }
 
+// Assuming the object is OK, if the Error object has only a meesage, dispay
+// it in a dialog box. Once the user dismisses the dialog, return the null
+// string. However, if program() is true, then source the code it returns in
+// the Gui object and return the value of Gui::command(). Note that this
+// means that the code in the program must run itself (i.e., in addition to
+// any procedure definitions, etc. it must also contain the necessary
+// instructions to popup an initial window).
+
 String
 Error::correct_error(Gui *gui)
 {
-    if (OK())
-	display_message(gui);
+    if (!OK())
+	return String("");
 
-    return String("");
+    if (program()) {
+	String result;
+
+	if (gui->response(program(), result))
+	    return result;
+	else
+	    return String("");
+    }
+    else {
+	display_message(gui);
+	return String("");
+    }
 }
