@@ -13,6 +13,11 @@
 // jhrg 9/8/94
 
 // $Log: DDS.h,v $
+// Revision 1.26  1998/09/17 17:20:44  jimg
+// Added leaf_match and exact_match.
+// Added two new versions of the var member function.
+// Fixed documentation.
+//
 // Revision 1.25  1998/07/13 20:20:43  jimg
 // Fixes from the final test of the new build process
 //
@@ -274,33 +279,33 @@ private:
     SLList<function> functions; // Known external functions
 
     void duplicate(const DDS &dds);
+    BaseType *leaf_match(const String &name);
+    BaseType *exact_match(const String &name);
 
 public:
-  /** Creates a DDS with the given string for its name. */
+    /** Creates a DDS with the given string for its name. */
     DDS(const String &n = (char *)0);
-  /** The DDS copy constructor. */
+    /** The DDS copy constructor. */
     DDS(const DDS &dds);
     ~DDS();
 
     DDS & operator=(const DDS &rhs); 
 
-  /** Get and set the dataset's name.  This is the name of the dataset
-      itself, and is not to be confused with the name of the file or
-      disk on which it is stored.
+    /** Get and set the dataset's name.  This is the name of the dataset
+	itself, and is not to be confused with the name of the file or
+	disk on which it is stored.
 
-      @name Dataset Name Accessors
-      */
+	@name Dataset Name Accessors
+    */
 
-  //@{
-      
-  /** Returns the dataset's name. */
+    //@{
+    /** Returns the dataset's name. */
     String get_dataset_name();
-  /** Sets the dataset name. */
+    /** Sets the dataset name. */
     void set_dataset_name(const String &n);
+    //@}
 
-  //@}
-
-  /** Get and set the dataset's filename. This is the physical
+    /** Get and set the dataset's filename. This is the physical
       location on a disk where the dataset exists.  The dataset name
       is simply a title.
 
@@ -308,49 +313,69 @@ public:
       @see Dataset Name Accessors
       */
 
-  //@{ Get and set filename.
-
-  /** Gets the dataset file name. */
+    //@{
+    /** Gets the dataset file name. */
     String filename();
-
-  /** Set the dataset's filename. */
+    /** Set the dataset's filename. */
     void filename(const String &fn);
+    //@}
 
-  //@}
+    /** Methods for manipulating the DDS contents. 
 
-  /** Methods for manipulating the DDS contents. 
+	@memo Methods for manipulating the variables in a DDS.
+	@name Variable Methods
+    */
 
-      @memo Methods for manipulating the variables in a DDS.
-      @name Variable Methods
-      */
+    //@{
 
-  //@{
-  /** Adds a variable to the DDS. */
+    /** Adds a variable to the DDS. */
     void add_var(BaseType *bt);
-  /** Removes a variable from the DDS. */
+    /** Removes a variable from the DDS. */
     void del_var(const String &n);
 
-  /** Returns a pointer to a variable from the DDS. 
+    /** Returns a pointer to a variable from the DDS. 
 
-      @name *var()
-      */
-  //@{
-  /** Returns a pointer to the named variable. */
+	@name var()
+    */
+
+    //@{
+    /** Returns a pointer to the named variable. If the name contains one or
+	more field separators then the function looks for a variable whose
+	name matches exactly. If the name contains no field separators then
+	the mfunc looks first in the top level and then in all subsequent
+	levels and returns the first occurrence found. In general, this
+	function searches constructor types in the order in which they appear
+	in the DDS, but there is no requirement that it do so. 
+
+	NB: If a dataset contains two constructor types which have field
+	names that are the same (say point.x and pair.x) you should always
+	use fully qualified names to get each of those variables! */
     BaseType *var(const String &n);
-  /** Returns a pointer to the named variable. */
-    BaseType *var(const char *n); // to avoid cast of char * to Pix.
-  /** Returns a pointer to the indicated variable. */
-    BaseType *var(Pix p);
-  //@}
 
-  /** Returns the first variable in the DDS. */
+    /** Returns a pointer to the named variable. */
+    BaseType *var(const char *n);
+
+    /** Seach for for variable {\it n} as above but record all ctor type
+	variables which ultimately contain {\it n} on {\it s}. This stack
+	can then be used to mark the contained ctor-type variables as part of
+	the current projection.
+
+	@return A BaseType pointer to the variable {\it n} or 0 if {\it n}
+	could not be found. */
+    BaseType *var(const String &n, btp_stack &s);
+
+    /** Returns a pointer to the indicated variable. */
+    BaseType *var(Pix p);
+    //@}
+
+    /** Returns the first variable in the DDS. */
     Pix first_var();
-  /** Increments the DDS variable counter to point at the next
-      variable. */
+    /** Increments the DDS variable counter to point at the next
+	variable. */
     void next_var(Pix &p);
-  /** Returns the number of variables in the DDS. */
+    /** Returns the number of variables in the DDS. */
     int num_var();
-  //@}
+    //@}
 
   /** Each DDS carries with it a list of external functions it can use
       to evaluate a constraint expression.  If a constraint contains
