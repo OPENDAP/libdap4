@@ -12,6 +12,10 @@
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.7  1998/11/10 00:45:15  jimg
+// Fixed a memory leak in the parser_arg dtor. If the Error object is created
+// the dtor must delete it.
+//
 // Revision 1.6  1997/02/28 01:30:53  jimg
 // Tweaked comments.
 //
@@ -66,6 +70,7 @@ struct parser_arg {
 
     parser_arg() : _object(0), _error(0), _status(1) {}
     parser_arg(void *obj) : _object(obj), _error(0), _status(1) {}
+    ~parser_arg() {if (_error) delete _error;}
 
     void *object() { return _object; }
     void set_object(void *obj) { _object = obj; }
