@@ -4,10 +4,15 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.8  1994/12/12 19:38:43  dan
-// Modified Array Class to be directly derived from class BaseType
-// removing class CtorType in the process.  Added member functions
-// add_var() and var() to class.
+// Revision 1.9  1994/12/14 17:50:34  dan
+// Modified serialize() and deserialize() member functions to special
+// case BaseTypes 'Str' and 'Url'.  These special cases do not call
+// xdr_array, but iterate through the arrays using calls to XDR_STR.
+// Modified print_val() member function to handle arrays of different
+// BaseTypes.
+// Modified append_dim() member function for initializing its dimension
+// components.
+// Removed dim() member function.
 //
 // Revision 1.7  1994/12/09  21:36:33  jimg
 // Added support for named array dimensions.
@@ -47,6 +52,7 @@
 #include <assert.h>
 
 #include "Array.h"
+#include "util.h"
 #include "errmsg.h"
 #include "debug.h"
 
@@ -135,7 +141,7 @@ Array::size()
 
   unsigned int sz = 1;
   for (Pix p = first_dim(); p; next_dim(p)) 
-      sz *= dim(p); 
+      sz *= dimension_size(p); 
 
   return (sz * var_ptr->size());
 }
@@ -144,10 +150,10 @@ void *
 Array::alloc_buf(unsigned int n)
 {
     if (n == 0)
-	n = size();
-
+      n = size();
+	
     char *buffer = (char *)malloc(n);
-    
+	
     if (!buffer)
 	err_quit("Array::alloc_buf:Could not allocate data buffer");
 
@@ -168,17 +174,34 @@ Array::free_buf()
 //
 // NB: The array must already be in BUF (in the local machine's
 // representation) *before* this call is made.
+//
+// NB: For arrays of strings or urls, serialize will interate through the
+// array and call xdr_str for each array element member instead of calling
+// xdr_array with xdr_str function element.  
 
 bool
 Array::serialize(bool flush, unsigned int num)
 {
+    bool status = FALSE;
+    int i;
+
     assert(buf);
 
     if (num == 0)  
-	num = (size() / var_ptr->size());
+      num = (size() / var_ptr->size());
 
-    bool status = (bool)xdr_array(xdrout, (char **)&buf, &num, DODS_MAX_ARRAY, 
+    if ( var_ptr->get_var_type() == "Str" || var_ptr->get_var_type() == "Url" )
+      {
+	for ( i = 0; i < num; ++i )
+	  {
+	    status = (bool)xdr_str(xdrout, (char **)&buf);
+	  }
+      }
+    else
+      {
+	status = (bool)xdr_array(xdrout, (char **)&buf, &num, DODS_MAX_ARRAY, 
 				  var_ptr->size(), var_ptr->xdr_coder());
+      }
 
     if (status && flush)
 	status = expunge();
@@ -197,41 +220,24 @@ Array::serialize(bool flush, unsigned int num)
 unsigned int
 Array::deserialize()
 {
+    bool status = FALSE;
     unsigned int num;
 
-    bool status = (bool)xdr_array(xdrin, (char **)&buf, &num, DODS_MAX_ARRAY,
-			   var_ptr->size(), var_ptr->xdr_coder());
+    if ( var_ptr->get_var_type() == "Str" || var_ptr->get_var_type() == "Url" )
+      {
+	num = size() / var_ptr->size();
+	for ( int i = 0; i < num; ++i )
+	  {
+	    status = (bool)xdr_str(xdrout, (char **)&buf);
+	  }
+      }
+    else
+      {
+	status = (bool)xdr_array(xdrin, (char **)&buf, &num, DODS_MAX_ARRAY, 
+				 var_ptr->size(), var_ptr->xdr_coder());
+      }
 
     return (status ? (num * var_ptr->size()) : (unsigned int)FALSE);
-}
-
-// NAME defaults to NULL. It is present since the definition of this mfunc is
-// inherited from CtorType, which declares it like this since some ctor types
-// have several member variables.
-
-BaseType *
-Array::var(const String &name)
-{
-    return var_ptr;
-}
-
-// Add the BaseType pointer to this ctor type instance. Propagate the name of
-// the BaseType instance to this instance This ensures that variables at any
-// given level of the DDS table have unique names (i.e., that Arrays do not
-// have there default name "").
-// NB: Part p defaults to nil for this class
-
-void
-Array::add_var(BaseType *v, Part p)
-{
-    if (var_ptr)
-	err_quit("Array::add_var:Attempt to overwrite base type of an array");
-
-    var_ptr = v;
-    set_var_name(v->get_var_name());
-
-    DBG(cerr << "Array::add_var: Added variable " << v << " (" \
-	 << v->get_var_name() << " " << v->get_var_type() << ")" << endl);
 }
 
 // Add the dimension DIM to the list of dimensions for this array. If NAME is
@@ -242,7 +248,9 @@ Array::add_var(BaseType *v, Part p)
 void 
 Array::append_dim(int size, String name)
 { 
-    dimension d = {size, name};
+    dimension d;
+    d.size = size;
+    d.name = name;
     shape.append(d); 
 }
 
@@ -257,15 +265,6 @@ Array::next_dim(Pix &p)
 { 
     if (!shape.empty() && p)
 	shape.next(p); 
-}
-
-// deprecated
-
-int 
-Array::dim(Pix p) 
-{ 
-    if (!shape.empty() && p)
-	return shape(p); 
 }
 
 // Return the size of the array dimension referred to by P.
@@ -305,35 +304,28 @@ Array::print_decl(ostream &os, String space, bool print_semi)
 void 
 Array::print_val(ostream &os, String space)
 {
-  int i,type;
+  int i;
 
-  if ( strcmp(var_ptr->get_var_type(), "String") == 0 ) type = 1;
-  if ( strcmp(var_ptr->get_var_type(), "Int32") == 0 ) type = 2;
-  if ( strcmp(var_ptr->get_var_type(), "Float64") == 0 ) type = 3;
-  if ( strcmp(var_ptr->get_var_type(), "Byte") == 0 ) type = 4;
-
-  print_decl(os, "", false);
-  switch ( type ) 
+  if ( var_ptr->get_var_type() == "Str" || var_ptr->get_var_type() == "Url" )
     {
-    case 1 :
+      char **bufptr = (char **)buf;
       for( i = 0; i < ( size() / var_ptr->size() ); ++i )
-	os << " = " << *(String *)(buf+(var_ptr->size()*i)) << ";" << endl;
-      break;
-    case 2 :
+	os << " = " << *(bufptr+(var_ptr->size()*i)) << ";" << endl;
+    }
+  else if ( var_ptr->get_var_type() == "Int32" )
+    {
       for( i = 0; i < ( size() / var_ptr->size() ); ++i )
 	os << " = " << *(int *)(buf+(var_ptr->size()*i)) << ";" << endl;
-      break;
-    case 3 :
+    }
+  else if ( var_ptr->get_var_type() == "Float64" )
+    {
       for( i = 0; i < ( size() / var_ptr->size() ); ++i )
 	os << " = " << *(double *)(buf+(var_ptr->size()*i)) << ";" << endl;
-      break;
-    case 4 :
+    }
+  else if ( var_ptr->get_var_type() == "Byte" )
+    {
       for( i = 0; i < ( size() / var_ptr->size() ); ++i )
 	os << " = " << *(char *)(buf+(var_ptr->size()*i)) << ";" << endl;
-      break;
-    default :
-      cerr << "Array::put_val( Unsupported data type )" << endl;
-      break;
     }
 }
 
