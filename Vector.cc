@@ -11,6 +11,9 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.23  1998/08/06 16:22:38  jimg
+// Fixed the misuse of the read(...) member function. See Grid.c (from jeh).
+//
 // Revision 1.22  1998/03/17 17:51:06  jimg
 // Added an implementation of element_count().
 //
@@ -104,15 +107,16 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.22 1998/03/17 17:51:06 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Vector.cc,v 1.23 1998/08/06 16:22:38 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <assert.h>
+#include <algo.h>
 
-#include <minmax.h>
+// #include <minmax.h>
 
 #include "Vector.h"
 #include "util.h"
@@ -341,8 +345,11 @@ Vector::serialize(const String &dataset, DDS &dds, XDR *sink,
     bool status = true;
     int error = 0;
 
-    if (!read_p() && !read(dataset, error))
-	return false;
+    if (!read_p()) {
+	read(dataset, error);
+	if (error)
+	    return false;
+    }
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;

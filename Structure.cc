@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.34  1998/08/06 16:21:25  jimg
+// Fixed the misuse of the read(...) member function. See Grid.c (from jeh).
+//
 // Revision 1.33  1998/04/03 17:43:32  jimg
 // Patch from Jake Hamby. Added print_all_vals member function. Fixed print_val
 // so that structures with sequences work properly.
@@ -303,8 +306,11 @@ Structure::serialize(const String &dataset, DDS &dds, XDR *sink,
     bool status = true;
     int error = 0;
 
-    if (!read_p() && !read(dataset, error))
-	return false;
+    if (!read_p()) {
+	read(dataset, error);
+	if (error)
+	    return false;
+    }
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
