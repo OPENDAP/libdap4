@@ -41,6 +41,9 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.23  1997/07/01 00:14:24  jimg
+# Removed some old code (commented out).
+#
 # Revision 1.22  1997/05/13 23:32:18  jimg
 # Added changes to handle the new Alias and lexical scoping rules.
 #
@@ -147,7 +150,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: das.lex,v 1.22 1997/05/13 23:32:18 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: das.lex,v 1.23 1997/07/01 00:14:24 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -226,9 +229,9 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,%]
 <quote>\\.		yymore();
 <quote>\"		{ 
     			  BEGIN(INITIAL); 
-			  /* trunc1(yytext, yyleng); */
-                          /* rmbslash(yytext); */
+
 			  daslval = yytext;
+
 			  return STR;
                         }
 <quote><<EOF>>		{
