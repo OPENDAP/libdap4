@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.48  1999/04/22 22:28:26  jimg
+// Uses dynamic_cast
+//
 // Revision 1.47  1998/09/17 17:18:39  jimg
 // Changes for the new variable lookup scheme. Fields of ctor types no longer
 // need to be fully qualified. my.thing.f1 can now be named `f1' in a CE. Note
@@ -382,8 +385,11 @@ Sequence::add_var(BaseType *bt, Part)
     assert(bt);
     _vars.append(bt);
 
-    if (bt->type() == dods_sequence_c)
-	((Sequence *)bt)->set_level(level() + 1);
+    if (bt->type() == dods_sequence_c) {
+	Sequence *s = dynamic_cast<Sequence *>(bt);
+	if (s)
+	    s->set_level(level() + 1);
+    }
 }
 
 BaseType *

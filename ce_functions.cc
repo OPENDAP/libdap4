@@ -11,6 +11,9 @@
 // 1/15/99 jhrg
 
 // $Log: ce_functions.cc,v $
+// Revision 1.3  1999/04/22 22:30:52  jimg
+// Uses dynamic_cast
+//
 // Revision 1.2  1999/01/21 02:52:52  jimg
 // Added extract_string_argument function.
 // Added grid_selection projection function.
@@ -21,7 +24,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: ce_functions.cc,v 1.2 1999/01/21 02:52:52 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: ce_functions.cc,v 1.3 1999/04/22 22:30:52 jimg Exp $"};
 
 #include <iostream.h>
 #include <vector.h>
@@ -136,7 +139,9 @@ func_length(int argc, BaseType *argv[], DDS &dds)
       }
 
       case dods_sequence_c: {
-	  Sequence *var = (Sequence *)argv[0];
+	  Sequence *var = dynamic_cast<Sequence *>(argv[0]);
+	  if (!var)
+	      throw Error(unknown_error, "Expected a Sequence variable");
 	  dods_int32 result = var->length();
     
 	  BaseType *ret = (BaseType *)NewInt32("constant");

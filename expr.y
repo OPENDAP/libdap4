@@ -18,6 +18,9 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.29  1999/04/22 22:30:52  jimg
+ * Uses dynamic_cast
+ *
  * Revision 1.28  1998/11/10 00:48:54  jimg
  * Changed no_such_id() to no_such_ident() (the former is used in bastring.h).
  *
@@ -153,7 +156,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.28 1998/11/10 00:48:54 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.29 1999/04/22 22:30:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -849,7 +852,9 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 
     assert(variable);
     assert(variable->type() == dods_grid_c);
-    Grid *g = (Grid *)variable; // Replace with dynamic cast.
+    Grid *g = dynamic_cast<Grid *>(variable);
+    if (!g)
+	throw Error(unknown_error, "Expected a Grid variable");
 
     // First do the constraints on the ARRAY in the grid.
     status = process_array_indices(g->array_var(), indices);

@@ -13,6 +13,9 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.10  1999/04/22 22:30:52  jimg
+// Uses dynamic_cast
+//
 // Revision 1.9  1999/04/09 17:17:30  jimg
 // Added support for the new datatypes.
 // Removed old code.
@@ -53,7 +56,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.9 1999/04/09 17:17:30 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.10 1999/04/22 22:30:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -368,7 +371,7 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 
       case dods_structure_c: {
 	vs << "<table>\n";
-	Structure *sp = (Structure *)btp;
+	Structure *sp = dynamic_cast<Structure *>(btp);
 	for (Pix p = sp->first_var(); p; sp->next_var(p)) {
 	    vs << "<tr>";
 	    write_variable(sp->var(p), das, vs);
@@ -380,7 +383,7 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 
       case dods_sequence_c: {
 	vs << "<table>\n";
-	Sequence *sp = (Sequence *)btp;
+	Sequence *sp = dynamic_cast<Sequence *>(btp);
 	for (Pix p = sp->first_var(); p; sp->next_var(p)) {
 	    vs << "<tr>";
 	    write_variable(sp->var(p), das, vs);
@@ -391,6 +394,7 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
       }
 
       case dods_function_c: {
+#if 0
 	vs << "<table>\n";
 	Function *fp = (Function *)btp;
 	for (Pix p = fp->first_indep_var(); p; fp->next_indep_var(p)) {
@@ -405,11 +409,12 @@ write_variable(BaseType *btp, DAS &das, ostrstream &vs)
 	}
 	vs << "</table>\n";
 	break;
+#endif
       }
 
       case dods_grid_c: {
 	vs << "<table>\n";
-	Grid *gp = (Grid *)btp;
+	Grid *gp = dynamic_cast<Grid *>(btp);
 	write_variable(gp->array_var(), das, vs);
 	for (Pix p = gp->first_map_var(); p; gp->next_map_var(p)) {
 	    vs << "<tr>";

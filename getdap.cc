@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.35  1999/04/22 22:30:52  jimg
+// Uses dynamic_cast
+//
 // Revision 1.34  1999/02/22 22:45:10  jimg
 // Added -T option: Use this to send a list of accepted types to the server
 // using the new XDODS-Accept-Types request header. The list must not contain
@@ -139,7 +142,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.34 1999/02/22 22:45:10 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.35 1999/04/22 22:30:52 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -149,7 +152,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.34 1999/02/22 22:45:10 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.34 $";
+const char *VERSION = "$Revision: 1.35 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -233,13 +236,17 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 	switch (v->type()) {
 	    // Sequences present a special case because I let
 	    // their semantics get out of hand... jhrg 9/12/96
-	  case dods_sequence_c:
-	    ((Sequence *)v)->print_all_vals(cout, url.source(), dds);
+	  case dods_sequence_c: {
+	    Sequence *s = dynamic_cast<Sequence *>(v);
+	    s->print_all_vals(cout, url.source(), dds);
 	    sequence_found = true;
 	    break;
-	  case dods_structure_c:
-	    ((Structure *)v)->print_all_vals(cout, url.source(), dds);
+	  }
+	  case dods_structure_c: {
+	    Sequence *s = dynamic_cast<Sequence *>(v);
+	    s->print_all_vals(cout, url.source(), dds);
 	    break;
+	  }
 	  default:
 	    if ((sequence_found || async) && !v->deserialize(url.source(), dds)) {
 		cerr << "Asynchronous read failure." << endl;
