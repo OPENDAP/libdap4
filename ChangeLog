@@ -1,3 +1,13 @@
+1999-01-15  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Changed the way the expression and DDS parsers work. Now the
+	expression scanner/parser can process strings directly. This means
+	that expression parsing is cleaner, somewhat faster and more
+	reliable since a temporary file is no longer created as part of
+	the parse process. Similarly, the DDS parser no longer requires
+	that a temporary file be created to parse the DDS bound to a data
+	document. 
+
 1998-11-23  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Fixed a bug in DAS where the destructor would free memory that
@@ -422,4 +432,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.31 1998/11/24 06:42:08 jimg Exp $
+$Id: ChangeLog,v 1.32 1999/01/15 17:09:51 jimg Exp $
