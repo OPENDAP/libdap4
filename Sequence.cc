@@ -38,6 +38,11 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.21  1996/04/04 18:10:46  jimg
+// Merged changes from version 1.1.1.
+// Fixed a bug in serialize() which caused the sequence serialization to end
+// when the current CE first evaluated to false
+//
 // Revision 1.20  1996/03/05 17:44:21  jimg
 // Added ce_eval to serailize member function.
 //
@@ -89,19 +94,19 @@
 //
 // Revision 1.9  1995/03/04  14:34:49  jimg
 // Major modifications to the transmission and representation of values:
-// 	Added card() virtual function which is true for classes that
-// 	contain cardinal types (byte, int float, string).
-// 	Changed the representation of Str from the C rep to a C++
-// 	class represenation.
-// 	Chnaged read_val and store_val so that they take and return
-// 	types that are stored by the object (e.g., inthe case of Str
-// 	an URL, read_val returns a C++ String object).
-// 	Modified Array representations so that arrays of card()
-// 	objects are just that - no more storing strings, ... as
-// 	C would store them.
-// 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-// 	an array of a structure is represented as an array of Structure
-// 	objects).
+// Added card() virtual function which is true for classes that
+// contain cardinal types (byte, int float, string).
+// Changed the representation of Str from the C rep to a C++
+// class represenation.
+// Chnaged read_val and store_val so that they take and return
+// types that are stored by the object (e.g., inthe case of Str
+// an URL, read_val returns a C++ String object).
+// Modified Array representations so that arrays of card()
+// objects are just that - no more storing strings, ... as
+// C would store them.
+// Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+// an array of a structure is represented as an array of Structure
+// objects).
 //
 // Revision 1.8  1995/02/10  02:23:02  jimg
 // Added DBMALLOC includes and switch to code which uses malloc/free.
@@ -146,7 +151,6 @@
 //
 // Revision 1.2  1994/09/23  14:48:31  jimg
 // Fixed some errors in comments.
-//
 
 #ifdef _GNUG_
 #pragma implementation
@@ -168,11 +172,6 @@
 void
 Sequence::_duplicate(const Sequence &s)
 {
-#ifdef NEVER
-    set_name(s.name());
-    set_type(s.type());
-#endif
-
     BaseType::_duplicate(s);
 
     Sequence &cs = (Sequence &)s; // cast away const
@@ -289,7 +288,7 @@ Sequence::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 	// false, then goto the next record in the sequence (don't return as
 	// with the other serialize mfuncs).
 	if (ce_eval && !dds.eval_selection(dataset)) 
-	    break;
+	    continue;
 
 	for (Pix p = first_var(); p; next_var(p))
 	    if (var(p)->send_p() 
