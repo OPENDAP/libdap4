@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.132 2004/07/07 21:08:47 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.133 2005/03/30 21:33:19 jimg Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
@@ -655,6 +655,7 @@ Connect::is_cache_enabled()
     return status;
 }
 
+#ifdef DEFAULT_BASETYPE_FACTORY
 /** @name Remove these...
     All of these are deprecated and will be removed in a future version of
     this code. */
@@ -723,8 +724,13 @@ Connect::error()
     return _error;
 }
 //@}
+#endif
 
 // $Log: Connect.cc,v $
+// Revision 1.133  2005/03/30 21:33:19  jimg
+// Added DEFAULT_BASETYPE_FACTORY define; use this to control whether
+// the DDS objects suppy the BaseTypeFactory by default.
+//
 // Revision 1.132  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //
