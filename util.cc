@@ -1,3 +1,4 @@
+
 // (c) COPYRIGHT URI/MIT 1994-1996
 // Please read the full copyright statement in the file COPYRIGH.  
 //
@@ -10,6 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.49  1999/01/21 02:10:57  jimg
+// Moved various CE functions to the file ce_functions.cc/.h.
+//
 // Revision 1.48  1998/11/10 00:47:01  jimg
 // Fixed a number of memory leaks (found using purify).
 //
@@ -239,7 +243,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: util.cc,v 1.48 1998/11/10 00:47:01 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: util.cc,v 1.49 1999/01/21 02:10:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <string.h>
@@ -454,6 +458,7 @@ xdr_str(XDR *xdrs, String &buf)
 //
 // Returns: A FILE * to the temporary file.
 
+#if 0
 FILE *
 text_to_temp(String text)
 {
@@ -476,6 +481,7 @@ text_to_temp(String text)
 
     return fp;
 }
+#endif
 
 const char *
 dods_root()
@@ -600,123 +606,8 @@ systime()
     return &TimStr[0];
 }
 
-// These functions are used by the CE evaluator
-
-bool
-func_member(int argc, BaseType *argv[], DDS &dds)
-{
-    if (argc != 2) {
-	cerr << "Wrong number of arguments." << endl;
-	return false;
-    }
-    
-    switch(argv[0]->type()) {
-      case dods_list_c: {
-	List *var = (List *)argv[0];
-	BaseType *btp = (BaseType *)argv[1];
-	bool result = var->member(btp, dds);
-    
-	return result;
-      }
-      
-      default:
-	cerr << "Wrong argument type." << endl;
-	return false;
-    }
-
-}
-
-bool
-func_null(int argc, BaseType *argv[], DDS &)
-{
-    if (argc != 1) {
-	cerr << "Wrong number of arguments." << endl;
-	return false;
-    }
-    
-    switch(argv[0]->type()) {
-      case  dods_list_c: {
-	List *var = (List *)argv[0];
-	bool result = var->null();
-    
-	return result;
-      }
-
-      default:
-	cerr << "Wrong argument type." << endl;
-	return false;
-    }
-
-}
-
-BaseType *
-func_length(int argc, BaseType *argv[], DDS &dds)
-{
-    if (argc != 1) {
-	cerr << "Wrong number of arguments." << endl;
-	return 0;
-    }
-    
-    switch (argv[0]->type()) {
-      case dods_list_c: {
-	  List *var = (List *)argv[0];
-	  dods_int32 result = var->length();
-    
-	  BaseType *ret = (BaseType *)NewInt32("constant");
-	  ret->val2buf(&result);
-	  ret->set_read_p(true);
-	  ret->set_send_p(true);
-	  dds.append_constant(ret); // DDS deletes in its dtor
-
-	  return ret;
-      }
-
-      case dods_sequence_c: {
-	  Sequence *var = (Sequence *)argv[0];
-	  dods_int32 result = var->length();
-    
-	  BaseType *ret = (BaseType *)NewInt32("constant");
-	  ret->val2buf(&result);
-	  ret->set_read_p(true);
-	  ret->set_send_p(true);
-	  dds.append_constant(ret); 
-    
-	  return ret;
-      }
-
-      default:
-	cerr << "Wrong type argument to list operator `length'" << endl;
-	return 0;
-    }
-}
-
-BaseType *
-func_nth(int argc, BaseType *argv[], DDS &)
-{
-    if (argc != 2) {
-	cerr << "Wrong number of arguments." << endl;
-	return 0;
-    }
-    
-    switch (argv[0]->type()) {
-	case dods_list_c: {
-	    if (argv[1]->type() != dods_int32_c) {
-		cerr << "Second argument to NTH must be an integer." << endl;
-		return 0;
-	    }
-	    List *var = (List *)argv[0];
-	    dods_int32 n;
-	    dods_int32 *np = &n;
-	    argv[1]->buf2val((void **)&np);
-
-	    return var->var(n);
-	}
-
-      default:
-	cerr << "Wrong type argument to list operator `nth'" << endl;
-	return 0;
-    }
-}
+// Some of these *_ops functions could probably be rolled into a single
+// template function. 1/15/99 jhrg
 
 bool
 byte_ops(int i1, int i2, int op)
