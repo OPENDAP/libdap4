@@ -123,14 +123,29 @@ test_scanner(void)
 	  case ID:
 	    cout << "ID: " << ddslval << endl;
 	    break;
+	  case INTEGER:
+	    cout << "INTEGER: " << ddslval << endl;
+	    break;
 	  case '{':
 	    cout << "Left Brace" << endl;
 	    break;
 	  case '}':
 	    cout << "Right Brace" << endl;
 	    break;
+	  case '[':
+	    cout << "Left Bracket" << endl;
+	    break;
+	  case ']':
+	    cout << "Right Bracket" << endl;
+	    break;
 	  case ';':
 	    cout << "Semicolon" << endl;
+	    break;
+	  case ':':
+	    cout << "Colon" << endl;
+	    break;
+	  case '=':
+	    cout << "Assignment" << endl;
 	    break;
 	  default:
 	    cout << "Error: Unrecognized input" << endl;
