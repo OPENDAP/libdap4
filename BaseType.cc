@@ -38,7 +38,11 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.18  1995/10/23 23:20:47  jimg
+// Revision 1.19  1995/12/06 21:49:53  jimg
+// var(): now returns null for anything that does not define its own version.
+// print_decl(): uses `constrained' flag.
+//
+// Revision 1.18  1995/10/23  23:20:47  jimg
 // Added _send_p and _read_p fields (and their accessors) along with the
 // virtual mfuncs set_send_p() and set_read_p().
 //
@@ -281,6 +285,7 @@ BaseType::type_name() const
 
 // Return the state of _read_p (true if the value of the variable has been
 // read (and is in memory) false otherwise).
+
 bool
 BaseType::read_p()
 {
@@ -296,6 +301,7 @@ BaseType::set_read_p(bool state)
 
 // Return the state of _send_p (true if the variable should be sent, false
 // otherwise).
+
 bool
 BaseType::send_p()
 {
@@ -308,23 +314,21 @@ BaseType::set_send_p(bool state)
     _send_p = state;
 }
 
-// Return a pointer to the contained variable in a ctor class. For BaseType
-// this always prints an error message. It is defined here so that the ctor
-// descendents of BaseType can access it when they are stored in a BaseType
-// pointer.
+// Defined by constructor types (Array, ...)
+//
+// Return a pointer to the contained variable in a ctor class.
 
 BaseType *
 BaseType::var(const String &name)
 {
-    cerr << "var() should only be called for contructor types" << endl;
+    return (BaseType *)0;
 }
 
-// See comment for var().
+// Defined by constructor types (Array, ...)
 
 void
 BaseType::add_var(BaseType *v, Part p)
 {
-    cerr << "add_var() should only be called for constructor types" << endl;
 }
 
 // Using this mfunc, objects that contain a (BaseType *) can get the xdr
@@ -355,8 +359,13 @@ BaseType::xdrout() const
 
 void 
 BaseType::print_decl(ostream &os, String space, bool print_semi, 
-		     bool constraint_info)
+		     bool constraint_info, bool constrained)
 {
+    // if printing the constrained declaration, exit if this variable was not
+    // selected. 
+    if (constrained && !send_p())
+	return;
+
     os << space << type_name() << " " << _name;
 
     if (constraint_info) {
