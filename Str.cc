@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.54 2004/09/16 15:21:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.55 2005/02/10 23:42:55 jimg Exp $"};
 
 #include <stdlib.h>
 
@@ -195,7 +195,7 @@ Str::val2buf(void *val, bool)
     if (!val)
 	throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
-    _buf = *(string *)val;
+    _buf = *static_cast<string*>(val);
 
     return sizeof(string*);
 }
@@ -258,6 +258,9 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.55  2005/02/10 23:42:55  jimg
+// Replaced old style cast with static_cast in val2buf.
+//
 // Revision 1.54  2004/09/16 15:21:47  jimg
 // Fixed the return values of buf2val() and val2buf(). They now return the size
 // of a std::string pointer, std::string.
