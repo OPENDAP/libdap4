@@ -1,5 +1,5 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1996
+// (c) COPYRIGHT URI/MIT 1994-1997
 // Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
@@ -8,6 +8,14 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.54  1997/05/07 22:10:37  jimg
+// Fixed a bug where the last decompresser process exit was not handled
+// properly. The fix was to make sure that calls for data interleaved
+// with calls for the DAS and/or DDS objects properly wait for the exit
+// status of the last decompression process. In addition, ensure that
+// Connect's dtor waits for the exit status of the very last
+// decompression process.
+//
 // Revision 1.53  1997/03/23 19:39:21  jimg
 // Added temporary fix for decompression bug. When decompressing `zombie'
 // processes were created which would fill the system's process table. The fix
@@ -300,7 +308,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.53 1997/03/23 19:39:21 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.54 1997/05/07 22:10:37 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1074,7 +1082,14 @@ Connect::~Connect()
 {
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
-    // Release resources for this object.
+    if (_comp_childpid != 0) { 
+	int pid;
+	while ((pid = waitpid(_comp_childpid, 0, 0)) > 0) {
+	    DBG(cerr << "fetch_url:pid: " << pid << endl);
+	}
+	_comp_childpid = 0;
+    }
+
     delete _tv;
 
     _connects--;
@@ -1141,14 +1156,16 @@ Connect::fetch_url(String &url, bool)
 	return false;
     }
    
+    if (_comp_childpid != 0) { 
+	int pid;
+	while ((pid = waitpid(_comp_childpid, 0, 0)) > 0) {
+	    DBG(cerr << "fetch_url:pid: " << pid << endl);
+	}
+	_comp_childpid = 0;
+    }
+
     if (encoding() == x_gzip) {
 	DBG(cerr << "encoding is gzip!" << endl);
-	if (_comp_childpid != 0) { 
-	    int pid;
-	    while ((pid = waitpid(_comp_childpid, 0, 0)) > 0)
-		DBG(cerr << "fetch_url:pid: " << pid << endl);
-	    _comp_childpid = 0;
-	}
 	_output = decompressor(stream, _comp_childpid);
 	if (!_output) {
 	    DBG(cerr << "decompressor failure!" << endl);
