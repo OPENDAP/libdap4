@@ -9,6 +9,9 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.33  1998/02/11 21:57:12  jimg
+// Changed x_gzip to deflate. See Connect.cc/.h
+//
 // Revision 1.32  1997/04/15 18:02:45  jimg
 // Added optional argument to print_variable functions so that the variable can
 // be printed using the current constraint. Changed the call to print_variable()
@@ -168,7 +171,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.32 1997/04/15 18:02:45 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.33 1998/02/11 21:57:12 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -780,14 +783,14 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	// Handle *functional* constraint expressions specially 
 	if (functional_expression()) {
 	    BaseType *var = eval_function(dataset);
-	    set_mime_binary(dods_data, (compressed) ? x_gzip : x_plain);
+	    set_mime_binary(dods_data, (compressed) ? deflate : x_plain);
 	    print_variable(os, var, true);
 	    os << "Data:" << endl;
 	    // In the following call to serialize, suppress CE evaluation.
 	    status = var->serialize(dataset, *this, sink, false);
 	}
 	else {
-	    set_mime_binary(dods_data, (compressed) ? x_gzip : x_plain);
+	    set_mime_binary(dods_data, (compressed) ? deflate : x_plain);
 	    print_constrained(os); // send constrained DDS
 	    os << "Data:" << endl; // send `Data:' marker
 
