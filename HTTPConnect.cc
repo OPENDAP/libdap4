@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.8 2003/03/04 17:28:37 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.9 2003/03/04 21:41:44 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -63,19 +63,10 @@ using std::string;
 using std::istrstream;
 using std::vector;
 
-#ifdef WIN32
-using std::istringstream;
-#endif
-
-// These two global variables are not MT-Safe, but I'm leaving them as is
-// because they are used only for debugging (set them in a debugger like gdb
-// or ddd). They are not static because I *believe* that debuggers cannot
-// access static variables. 08/07/02 jhrg
-
-// This is a convenience used when running this software under a debugger.
-// Set the global 'keep_temps' to 1 to keep all the temporary files used to
-// store libwww retrieved documents. 6/17/2002 jhrg
-int keep_temps = 0;
+// This global variable is not MT-Safe, but I'm leaving it as is because it
+// is used only for debugging (set them in a debugger like gdb or ddd). They
+// are not static because I *believe* that many debuggers cannot access
+// static variables. 08/07/02 jhrg
 
 // Set this to 1 to turn on libcurl's verbose mode (for debugging).
 int www_trace = 0;
@@ -92,7 +83,7 @@ struct ParseHeader : public unary_function<const string &, void> {
 
     void operator()(const string &header) {
 #ifdef WIN32
-	istringstream line(header);
+	std::istringstream line(header);
 #else
 	istrstream line(header.c_str());
 #endif
@@ -341,15 +332,6 @@ HTTPConnect::~HTTPConnect()
 {
     DBG2(cerr << "Entering the HTTPConnect dtor" << endl);
 
-#if 0
-#if defined(WIN32) || defined(TEST_WIN32_TEMPS)
-    //  Get rid of any intermediate files
-    std::vector < string >::const_iterator i;
-    for (i = d_tfname.begin(); i != d_tfname.end(); i++)
-	remove((*i).c_str());
-#endif
-#endif
-
     curl_easy_cleanup(d_curl);
 
     DBG2(cerr << "Leaving the HTTPConnect dtor" << endl);
@@ -427,7 +409,7 @@ HTTPConnect::get_temp_file(FILE *&stream) throw(InternalErr)
 }
 
 /** Close the temporary file opened for read_url(). */
-inline void
+inline static void
 close_temp(FILE *s, const string &name)
 {
     int res = fclose(s);
@@ -618,6 +600,10 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.9  2003/03/04 21:41:44  jimg
+// Removed code in #if 0 ... #endif. This was mostly WIN32 code that I don't
+// think we need anymore.
+//
 // Revision 1.8  2003/03/04 17:28:37  jimg
 // Switched to Response objects. Removed unneeded methods. The Response objects
 // now control the release of resources such as deleting temporary files, et c.
