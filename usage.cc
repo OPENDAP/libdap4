@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1996, 1999
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -13,6 +13,11 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.9  1999/04/09 17:17:30  jimg
+// Added support for the new datatypes.
+// Removed old code.
+// Changed header generated to include XDODS-Server.
+//
 // Revision 1.8  1999/03/24 23:27:49  jimg
 // Added support for the new Int16, UInt16 and Float32 types.
 //
@@ -48,7 +53,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.8 1999/03/24 23:27:49 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: usage.cc,v 1.9 1999/04/09 17:17:30 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -191,149 +196,6 @@ get_user_supplied_docs(String name, String cgi)
     return html;
 }
 
-static bool
-name_in_variable(BaseType *btp, const String &name)
-{
-    switch (btp->type()) {
-      case dods_byte_c:
-      case dods_int16_c:
-      case dods_uint16_c:
-      case dods_int32_c:
-      case dods_uint32_c:
-      case dods_float32_c:
-      case dods_float64_c:
-      case dods_str_c:
-      case dods_url_c:
-      case dods_array_c:
-      case dods_list_c:
-	return (btp->name() == name);
-
-      case dods_structure_c: {
-	  Structure *sp = (Structure *)btp;
-	  for (Pix p = sp->first_var(); p; sp->next_var(p)) {
-	      if (name_in_variable(sp->var(p), name))
-		  return true;
-	  }
-	  break;
-      }
-
-      case dods_sequence_c: {
-	  Sequence *sp = (Sequence *)btp;
-	  for (Pix p = sp->first_var(); p; sp->next_var(p)) {
-	      if (name_in_variable(sp->var(p), name))
-		  return true;
-	  }
-	  break;
-      }
-
-      case dods_function_c: {
-	  Function *fp = (Function *)btp;
-	  for (Pix p = fp->first_indep_var(); p; fp->next_indep_var(p)) {
-	      if (name_in_variable(fp->indep_var(p), name))
-		  return true;
-	  }
-	  for (Pix p = fp->first_dep_var(); p; fp->next_dep_var(p)) {
-	      if (name_in_variable(fp->dep_var(p), name))
-		  return true;
-	  }
-	  break;
-      }
-
-      case dods_grid_c: {
-	  Grid *gp = (Grid *)btp;
-	  if (gp->array_var()->name() == name)
-	      return true;
-	  for (Pix p = gp->first_map_var(); p; gp->next_map_var(p)) {
-	      if (name_in_variable(gp->map_var(p), name))
-		  return true;
-	  }
-	  break;
-      }
-
-      default:
-	assert("Unknown type" && false);
-	return false;
-    }
-
-    return false;
-}
-
-// Not used.
-
-#if 0
-static bool
-name_in_dds(DDS &dds, const String &name)
-{
-    BaseType *btp = dds.var(name);
-    
-    if (btp)
-	return true;
-    
-    for (Pix q = dds.first_var(); q; dds.next_var(q)) {
-	btp = dds.var(q);
-
-	switch (btp->type()) {
-	  case dods_byte_c:
-	  case dods_int32_c:
-	  case dods_uint32_c:
-	  case dods_float64_c:
-	  case dods_str_c:
-	  case dods_url_c:
-	  case dods_array_c:
-	  case dods_list_c:
-	    break;
-
-	  case dods_structure_c: {
-	      Structure *sp = (Structure *)btp;
-	      for (Pix p = sp->first_var(); p; sp->next_var(p)) {
-		  if (name_in_variable(sp->var(p), name))
-		      return true;
-	      }
-	      break;
-	  }
-
-	  case dods_sequence_c: {
-	      Sequence *sp = (Sequence *)btp;
-	      for (Pix p = sp->first_var(); p; sp->next_var(p)) {
-		  if (name_in_variable(sp->var(p), name))
-		      return true;
-	      }
-	      break;
-	  }
-
-	  case dods_function_c: {
-	      Function *fp = (Function *)btp;
-	      for (Pix p = fp->first_indep_var(); p; fp->next_indep_var(p)) {
-		  if (name_in_variable(fp->indep_var(p), name))
-		      return true;
-	      }
-	      for (Pix p = fp->first_dep_var(); p; fp->next_dep_var(p)) {
-		  if (name_in_variable(fp->dep_var(p), name))
-		      return true;
-	      }
-	      break;
-	  }
-
-	  case dods_grid_c: {
-	      Grid *gp = (Grid *)btp;
-	      if (gp->array_var()->name() == name)
-		  return true;
-	      for (Pix p = gp->first_map_var(); p; gp->next_map_var(p)) {
-		  if (name_in_variable(gp->map_var(p), name))
-		      return true;
-	      }
-	      break;
-	  }
-
-	  default:
-	    assert("Unknown type" && false);
-	}
-    }
-
-    return false;
-}
-#endif
-
 // This code could use a real `kill-file' some day - about the same time that
 // the rest of the server gets a `rc' file... For the present just see if a
 // small collection of regexs match the name.
@@ -423,7 +285,7 @@ fancy_typename(BaseType *v)
       case dods_int16_c:
 	return "16 bit Integer";
       case dods_uint16_c:
-	return "1 bit Unsigned integer";
+	return "16 bit Unsigned integer";
       case dods_int32_c:
 	return "32 bit Integer";
       case dods_uint32_c:
@@ -596,7 +458,7 @@ static void
 html_header()
 {
     cout << "HTTP/1.0 200 OK" << endl;
-    cout << "DODS_Server: " << DVR << endl;
+    cout << "XDODS-Server: " << DVR << endl;
     cout << "Content-type: text/html" << endl; 
     cout << "Content-Description: dods_description" << endl;
     cout << endl;			// MIME header ends with a blank line
