@@ -33,7 +33,11 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.12  1995/02/10 02:44:58  jimg
+# Revision 1.13  1995/07/08 18:32:08  jimg
+# Edited comments.
+# Removed unnecessary declarations.
+#
+# Revision 1.12  1995/02/10  02:44:58  jimg
 # Scanner now returns different lexemes for each of the different scalar
 # data types.
 # Comments are now done as for sh; the C and C++ style comments are no
@@ -101,7 +105,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.12 1995/02/10 02:44:58 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.13 1995/07/08 18:32:08 jimg Exp $"};
 
 #include <string.h>
 
@@ -114,7 +118,9 @@ int das_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */
 void trunc1(char *yytext, int yyleng); /* no longer used */
 void rmbslash(char *yytext);	/* no longer used */
+#ifdef NEVER
 int yywrap(void);
+#endif
 
 %}
     

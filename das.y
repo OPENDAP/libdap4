@@ -22,7 +22,11 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.14  1995/05/10 13:45:43  jimg
+ * Revision 1.15  1995/07/08 18:32:10  jimg
+ * Edited comments.
+ * Removed unnecessary declarations.
+ *
+ * Revision 1.14  1995/05/10  13:45:43  jimg
  * Changed the name of the configuration header file from `config.h' to
  * `config_dap.h' so that other libraries could have header files which were
  * installed in the DODS include directory without overwriting this one. Each
@@ -108,7 +112,7 @@
 #define FALSE 0
 #endif
 
-static char rcsid[]={"$Id: das.y,v 1.14 1995/05/10 13:45:43 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.15 1995/07/08 18:32:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -197,7 +201,8 @@ var_attr_list: 	/* empty */
 
 var_attr:   	ID 
 		{ 
-		    DBG2(mem_list_report());
+		    DBG2(mem_list_report()); /* mem_list_report is in */
+					     /* libdbnew.a  */
 		    attr_tab_ptr = table.get_table($1);
 		    DBG2(mem_list_report());
 		    if (!attr_tab_ptr) { /* is this a new var? */
