@@ -13,9 +13,13 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.11  1996/05/31 23:29:35  jimg
-/* Updated copyright notice.
+/* Revision 1.12  1996/08/13 18:04:11  jimg
+/* Removed the system includes - this is part of my drive to eliminate nested
+/* includes from the DODS core software. I'm still waffling on this, though.
 /*
+ * Revision 1.11  1996/05/31 23:29:35  jimg
+ * Updated copyright notice.
+ *
  * Revision 1.10  1996/04/05 00:21:27  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
@@ -71,11 +75,13 @@
 #pragma interface
 #endif
 
+#if 0
 #include <stdio.h>
 
 #include <iostream.h>
 #include <String.h>
 #include <Pix.h>
+#endif
 
 #include "DASVHMap.h"
 
