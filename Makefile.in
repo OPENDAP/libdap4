@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.72 1998/03/11 00:37:07 jimg Exp $
+# $Id: Makefile.in,v 1.73 1998/03/25 19:29:57 jimg Exp $
 
 @SET_MAKE@
 
@@ -22,6 +22,7 @@ INCS = -I. -IMap -IStack -IPlex -IVec @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
+TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d -v
@@ -135,6 +136,9 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 	   TestFunction.o TestGrid.o TestUInt32.o
 
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
+
+ALLSRCS = $(NETIOSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
+	  $(TESTSRCS) $(TESTPROGSRCS) 
 
 all: grammars $(PROG)
 
@@ -302,6 +306,18 @@ Makefile: ${srcdir}/Makefile.in
 
 check: libdap++.a das-check dds-check expr-check
 
+test-coverage: clean
+	$(MAKE) $(MFLAGS) CXXFLAGS="$(CXXFLAGS) $(TEST_COV_FLAGS)" check
+
+collect-coverage-data:
+	(cd test-coverage; \
+         cov_dat="coverage-data-`date +%m.%d.%y`"; \
+	 touch $$cov_dat; \
+	 for f in $(ALLSRCS); do \
+	     echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
+	     gcov -f -l -b -o ../ $$f >> $$cov_dat; \
+         done)
+
 # These tests all fail when linking with -lnew_debug.
 
 das-check: das-test
@@ -334,6 +350,7 @@ server-check: geturl
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
+	-rm -f *.bb *.bbg *.da *.gcov
 	-for d in Plex Vec Stack Map; do cd $$d && rm *.o *~; cd ..; done
 	-rm -f $(PROG) das-test dds-test expr-test error-test geturl \
 	       cgi-util-test
