@@ -1,4 +1,11 @@
-// This may look like C code, but it is really -*- C++ -*-
+
+// -*- C++ -*-
+
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // Using the DASVHMap class, build a parser for the DAS and add functions
 // that provide access to the variables, their attributes and values.
@@ -6,9 +13,12 @@
 // jhrg 7/25/94
 
 /* $Log: DAS.h,v $
-/* Revision 1.10  1996/04/05 00:21:27  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.11  1996/05/31 23:29:35  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.10  1996/04/05 00:21:27  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
  * Revision 1.9  1994/10/17  23:39:50  jimg
  * Removed unnecessary print functions.
  *

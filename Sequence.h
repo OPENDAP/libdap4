@@ -1,6 +1,12 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Interface for the class Sequence. A sequence contains a single set of
 // variables, all at the same lexical level just like a strucuture (and like
 // a structure, it may contain other ctor types...). Unlike a structure, a
@@ -13,12 +19,15 @@
 // jhrg 9/14/94
 
 /* $Log: Sequence.h,v $
-/* Revision 1.19  1996/05/29 22:08:47  jimg
-/* Made changes necessary to support CEs that return the value of a function
-/* instead of the value of a variable. This was done so that it would be
-/* possible to translate Sequences into Arrays without first reading the
-/* entire sequence over the network.
+/* Revision 1.20  1996/05/31 23:29:59  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.19  1996/05/29 22:08:47  jimg
+ * Made changes necessary to support CEs that return the value of a function
+ * instead of the value of a variable. This was done so that it would be
+ * possible to translate Sequences into Arrays without first reading the
+ * entire sequence over the network.
+ *
  * Revision 1.18  1996/05/16 22:44:53  jimg
  * Dan's changes for 2.0.
  *

@@ -1,6 +1,12 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Interface for the class Structure. A structure contains a single set of
 // variables, all at the same lexical level. Of course, a structure may
 // contain other structures... The variables contained in a structure are
@@ -9,12 +15,15 @@
 // jhrg 9/14/94
 
 /* $Log: Structure.h,v $
-/* Revision 1.18  1996/05/16 22:50:08  jimg
-/* Dan's changes for version 2.0. Added a parameter to read that returns
-/* an error code so that EOF can be distinguished from an actual error when
-/* reading sequences. This *may* be replaced by an error member function
-/* in the future.
+/* Revision 1.19  1996/05/31 23:30:06  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.18  1996/05/16 22:50:08  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
  * Revision 1.17  1996/03/05 17:32:37  jimg
  * Added ce_eval to serailize member function.
  *

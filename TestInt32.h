@@ -1,17 +1,26 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // TestInt32 interface. See TestByte.h for more info.
 //
 // jhrg 1/12/95
 
 /* $Log: TestInt32.h,v $
-/* Revision 1.7  1996/05/16 22:50:18  jimg
-/* Dan's changes for version 2.0. Added a parameter to read that returns
-/* an error code so that EOF can be distinguished from an actual error when
-/* reading sequences. This *may* be replaced by an error member function
-/* in the future.
+/* Revision 1.8  1996/05/31 23:30:24  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.7  1996/05/16 22:50:18  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
  * Revision 1.6  1996/04/05 00:21:54  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *

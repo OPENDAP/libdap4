@@ -1,6 +1,13 @@
 
 // -*- c++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+//      reza            Reza Nekovei (reza@intcomm.net)
+
 // External definitions for functions defined in libnetio.a.
 //
 // 2/22/95 jhrg

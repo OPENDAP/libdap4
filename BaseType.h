@@ -1,6 +1,14 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+//      dan             Dan Holloway (dan@hollywood.gso.uri.edu)
+//      reza            Reza Nekovei (reza@intcomm.net)
+
 // Abstract base class for the variables in a dataset. This is used to store
 // the type-invariant information that describes a variable as given in the
 // DODS API.
@@ -8,12 +16,15 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.26  1996/05/16 22:49:56  jimg
-/* Dan's changes for version 2.0. Added a parameter to read that returns
-/* an error code so that EOF can be distinguished from an actual error when
-/* reading sequences. This *may* be replaced by an error member function
-/* in the future.
+/* Revision 1.27  1996/05/31 23:29:25  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.26  1996/05/16 22:49:56  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
  * Revision 1.25  1996/05/14 15:38:16  jimg
  * These changes have already been checked in once before. However, I
  * corrupted the source repository and restored it from a 5/9/96 backup

@@ -1,13 +1,22 @@
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Interface for Url type.
 //
 // jhrg 9/7/94
 
 /* $Log: Url.h,v $
-/* Revision 1.11  1996/03/05 01:10:34  jimg
-/* Fixed Comments.
+/* Revision 1.12  1996/05/31 23:30:41  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.11  1996/03/05 01:10:34  jimg
+ * Fixed Comments.
+ *
  * Revision 1.10  1995/03/16  17:30:46  jimg
  * This class is now a subclass of Str.
  *

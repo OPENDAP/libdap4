@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.37 1996/05/29 21:57:16 jimg Exp $
+# $Id: Makefile.in,v 1.38 1996/05/31 23:29:56 jimg Exp $
 
 @SET_MAKE@
 
@@ -274,7 +274,8 @@ error-check: error-test
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
-	-rm -f $(PROG) das-test dds-test trans-test expr-test error-test
+	-rm -f $(PROG) das-test dds-test trans-test expr-test error-test \
+		geturl
 
 distclean: clean
 	-rm -f config.status config.log config.cache

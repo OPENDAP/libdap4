@@ -1,4 +1,12 @@
 
+/* 
+   (c) COPYRIGHT URI/MIT 1994-1996
+   Please read the full copyright statement in the file COPYRIGH.  
+
+   Authors:
+        jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+*/
+
 /*
    Scanner for the DAS. This file works with gnu's flex scanner generator. It
    returns either ATTR, ID, VAL, TYPE or one of the single character tokens
@@ -33,6 +41,9 @@
 
 /*
 # $Log: das.lex,v $
+# Revision 1.16  1996/05/31 23:30:51  jimg
+# Updated copyright notice.
+#
 # Revision 1.15  1996/05/14 15:38:50  jimg
 # These changes have already been checked in once before. However, I
 # corrupted the source repository and restored it from a 5/9/96 backup
@@ -113,7 +124,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.15 1996/05/14 15:38:50 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.16 1996/05/31 23:30:51 jimg Exp $"};
 
 #include <string.h>
 

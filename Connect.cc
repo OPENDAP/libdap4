@@ -1,38 +1,10 @@
 
 // (c) COPYRIGHT URI/MIT 1994-1996
-// Please first read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
-//	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
-//	dan		Dan Holloway (dan@hollywood.gso.uri.edu)
-//	reza		Reza Nekovei (reza@intcomm.net)
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// Implementation for Connect -- a class that manages connections to DODS
-// servers or local files (the later case really isn't a connection, but DODS
-// still uses a Connect object to refer to the open file).
-// 
-// jhrg 9/29/94
-
-// $Log: Connect.cc,v $
-// Revision 1.20  1996/05/29 21:47:51  jimg
-// Added Content-Description header parsing.
-// Removed Event loop code (HTEvent_loop()).
-// Fixed bug where a copy of _OUTPUT was created using _OUTPUT's file
-// descriptor. When _OUTPUT was closed the copy no longer referenced a valid
-// data source.
-// Fixed problems with asserts and error messaging.
-//
-// Revision 1.19  1996/05/22 18:05:04  jimg
-// Merged files from the old netio directory into the dap directory.
-// Removed the errmsg library from the software.
-//
-// Revision 1.18  1996/05/21 23:46:32  jimg
-// Added support for URLs directly to the class. This uses version 4.0D of
-// the WWW library from W3C.
-//
-// Revision 1.17  1996/04/05 01:25:39  jimg
-// Merged changes from version 1.1.1.
-//
 // Revision 1.16  1996/03/05 23:21:27  jimg
 // Added const to char * parameters and function prototypes.
 //
@@ -141,7 +113,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.20 1996/05/29 21:47:51 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.21 1996/05/31 23:29:30 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"

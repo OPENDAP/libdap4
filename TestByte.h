@@ -1,6 +1,12 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // TestByte is a demonstration of subclassing a class in the hierarchy of
 // DODS data types. It does not do much of anything - a real subclass would
 // add specifics for a API or format (e.g., a read mfunc for netcdf, HDF,
@@ -14,12 +20,15 @@
 // jhrg 1/12/95
 
 /* $Log: TestByte.h,v $
-/* Revision 1.7  1996/05/16 22:50:12  jimg
-/* Dan's changes for version 2.0. Added a parameter to read that returns
-/* an error code so that EOF can be distinguished from an actual error when
-/* reading sequences. This *may* be replaced by an error member function
-/* in the future.
+/* Revision 1.8  1996/05/31 23:30:12  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.7  1996/05/16 22:50:12  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
  * Revision 1.6  1996/04/05 00:21:46  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *

@@ -1,4 +1,11 @@
+
 // -*- C++ -*-
+
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // An AttrTable is a table of attributes (name-value pairs). The class
 // AttrTable inherits from AttrVHMap. 
@@ -10,9 +17,12 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.12  1996/04/05 00:21:20  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.13  1996/05/31 23:29:22  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.12  1996/04/05 00:21:20  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
  * Revision 1.11  1995/05/10  13:45:05  jimg
  * Changed the name of the configuration header file from `config.h' to
  * `config_dap.h' so that other libraries could have header files which were
@@ -21,19 +31,19 @@
  *
  * Revision 1.10  1995/03/04  14:34:55  jimg
  * Major modifications to the transmission and representation of values:
- * 	Added card() virtual function which is true for classes that
- * 	contain cardinal types (byte, int float, string).
- * 	Changed the representation of Str from the C rep to a C++
- * 	class represenation.
- * 	Chnaged read_val and store_val so that they take and return
- * 	types that are stored by the object (e.g., inthe case of Str
- * 	an URL, read_val returns a C++ String object).
- * 	Modified Array representations so that arrays of card()
- * 	objects are just that - no more storing strings, ... as
- * 	C would store them.
- * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
- * 	an array of a structure is represented as an array of Structure
- * 	objects).
+ * Added card() virtual function which is true for classes that
+ * contain cardinal types (byte, int float, string).
+ * Changed the representation of Str from the C rep to a C++
+ * class represenation.
+ * Chnaged read_val and store_val so that they take and return
+ * types that are stored by the object (e.g., inthe case of Str
+ * an URL, read_val returns a C++ String object).
+ * Modified Array representations so that arrays of card()
+ * objects are just that - no more storing strings, ... as
+ * C would store them.
+ * Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * an array of a structure is represented as an array of Structure
+ * objects).
  *
  * Revision 1.9  1994/12/07  21:09:25  jimg
  * Added support for vectors of attributes (using XPlex from libg++).

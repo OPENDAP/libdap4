@@ -1,11 +1,20 @@
 
 // -*- c++ -*-
 
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Constants, types and function prototypes for use with the DAP parsers. 
 //
 // jhrg 2/3/96
 
 // $Log: parser.h,v $
+// Revision 1.3  1996/05/31 23:31:07  jimg
+// Updated copyright notice.
+//
 // Revision 1.2  1996/05/14 15:39:08  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup

@@ -1,10 +1,19 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Limits for DODS. Use these *instead* of <limits.h> since DODS needs to see
 // the same values on all machines.
 
 // $Log: dods-limits.h,v $
+// Revision 1.2  1996/05/31 23:30:57  jimg
+// Updated copyright notice.
+//
 // Revision 1.1  1996/02/05 19:02:48  jimg
 // Added. Built using the SunOS 4.1.3 limits.h file.
 //

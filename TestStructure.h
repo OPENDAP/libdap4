@@ -1,17 +1,26 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Interface for the class TestStructure. See TestByte.h
 //
 // jhrg 1/12/95
 
 /* $Log: TestStructure.h,v $
-/* Revision 1.9  1996/05/16 22:50:24  jimg
-/* Dan's changes for version 2.0. Added a parameter to read that returns
-/* an error code so that EOF can be distinguished from an actual error when
-/* reading sequences. This *may* be replaced by an error member function
-/* in the future.
+/* Revision 1.10  1996/05/31 23:30:35  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.9  1996/05/16 22:50:24  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
  * Revision 1.8  1996/04/05 00:22:02  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *

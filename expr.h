@@ -1,11 +1,20 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Types for the expr parser.
 //
 // 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.8  1996/05/31 23:31:01  jimg
+// Updated copyright notice.
+//
 // Revision 1.7  1996/05/29 22:08:56  jimg
 // Made changes necessary to support CEs that return the value of a function
 // instead of the value of a variable. This was done so that it would be

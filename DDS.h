@@ -1,5 +1,11 @@
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Provide access to the DDS. This class is used to parse DDS text files, to
 // produce a printed representation of the in-memory variable table, and to
 // update the table on a per-variable basis.
@@ -7,12 +13,15 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.14  1996/05/29 22:08:37  jimg
-/* Made changes necessary to support CEs that return the value of a function
-/* instead of the value of a variable. This was done so that it would be
-/* possible to translate Sequences into Arrays without first reading the
-/* entire sequence over the network.
+/* Revision 1.15  1996/05/31 23:29:38  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.14  1996/05/29 22:08:37  jimg
+ * Made changes necessary to support CEs that return the value of a function
+ * instead of the value of a variable. This was done so that it would be
+ * possible to translate Sequences into Arrays without first reading the
+ * entire sequence over the network.
+ *
  * Revision 1.13  1996/05/22 18:05:09  jimg
  * Merged files from the old netio directory into the dap directory.
  * Removed the errmsg library from the software.

@@ -1,4 +1,12 @@
 
+/* 
+   (c) COPYRIGHT URI/MIT 1994-1996
+   Please read the full copyright statement in the file COPYRIGH.  
+
+   Authors:
+        jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+*/
+
 /*
    Scanner for the DDS. This file works with gnu's flex scanner generator. It
    returns either DATASET, INDEPENDENT, DEPENDENT, ARRAY, MAPS, LIST,
@@ -22,9 +30,12 @@
 */
 
 /* $Log: dds.lex,v $
-/* Revision 1.9  1996/04/05 00:22:16  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.10  1996/05/31 23:30:55  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.9  1996/04/05 00:22:16  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
 # Revision 1.8  1995/10/23  23:00:24  jimg
 # Removed code enclosed in #ifdef NEVER ... #endif
 #
@@ -55,7 +66,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: dds.lex,v 1.9 1996/04/05 00:22:16 jimg Exp $"};
+static char rcsid[]={"$Id: dds.lex,v 1.10 1996/05/31 23:30:55 jimg Exp $"};
 
 #include <string.h>
 

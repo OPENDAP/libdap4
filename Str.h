@@ -1,16 +1,25 @@
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // Interface for Str type.
 //
 // jhrg 9/7/94
 
 /* $Log: Str.h,v $
-/* Revision 1.17  1996/05/16 22:50:07  jimg
-/* Dan's changes for version 2.0. Added a parameter to read that returns
-/* an error code so that EOF can be distinguished from an actual error when
-/* reading sequences. This *may* be replaced by an error member function
-/* in the future.
+/* Revision 1.18  1996/05/31 23:30:03  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.17  1996/05/16 22:50:07  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
  * Revision 1.16  1996/03/05 17:38:49  jimg
  * Added ce_eval to serailize member function.
  * Replaced <limits.h> with "dods-limits.h".

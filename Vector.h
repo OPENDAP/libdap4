@@ -1,16 +1,25 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1995-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // This is the interface definition file for the abstract class
 // Vector. Vector is the parent class for List and Array.
 
 /* $Log: Vector.h,v $
-/* Revision 1.7  1996/05/16 22:50:27  jimg
-/* Dan's changes for version 2.0. Added a parameter to read that returns
-/* an error code so that EOF can be distinguished from an actual error when
-/* reading sequences. This *may* be replaced by an error member function
-/* in the future.
+/* Revision 1.8  1996/05/31 23:30:44  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.7  1996/05/16 22:50:27  jimg
+ * Dan's changes for version 2.0. Added a parameter to read that returns
+ * an error code so that EOF can be distinguished from an actual error when
+ * reading sequences. This *may* be replaced by an error member function
+ * in the future.
+ *
  * Revision 1.6  1996/05/14 15:38:48  jimg
  * These changes have already been checked in once before. However, I
  * corrupted the source repository and restored it from a 5/9/96 backup

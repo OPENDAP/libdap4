@@ -1,17 +1,26 @@
 
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+
 // declarations for utility functions
 //
 // jhrg 9/21/94
 
 /* $Log: util.h,v $
-/* Revision 1.11  1996/05/29 22:09:00  jimg
-/* Made changes necessary to support CEs that return the value of a function
-/* instead of the value of a variable. This was done so that it would be
-/* possible to translate Sequences into Arrays without first reading the
-/* entire sequence over the network.
+/* Revision 1.12  1996/05/31 23:31:11  jimg
+/* Updated copyright notice.
 /*
+ * Revision 1.11  1996/05/29 22:09:00  jimg
+ * Made changes necessary to support CEs that return the value of a function
+ * instead of the value of a variable. This was done so that it would be
+ * possible to translate Sequences into Arrays without first reading the
+ * entire sequence over the network.
+ *
  * Revision 1.10  1996/04/05 00:22:25  jimg
  * Compiled with g++ -Wall and fixed various warnings.
  *
