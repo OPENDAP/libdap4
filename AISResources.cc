@@ -25,6 +25,7 @@
 
 #include "config_dap.h"
 
+#include <iostream>
 #include <fstream>
 
 #include "AISResources.h"
@@ -173,7 +174,9 @@ void
 AISResources::write_database(const string &filename) 
     throw(AISDatabaseWriteFailed)
 {
-    ofstream fos(filename.c_str());
+    ofstream fos;
+    fos.open(filename.c_str());
+
     if (!fos)
 	throw AISDatabaseWriteFailed("Could not open file :" + filename);
 
@@ -184,6 +187,11 @@ AISResources::write_database(const string &filename)
 }
 
 // $Log: AISResources.cc,v $
+// Revision 1.4  2003/02/26 06:35:48  jimg
+// Added iostream header. Moved the file open out of the constructor; this
+// seemed to be throwing an exception when the file did not exist, even though
+// that makes no sense...
+//
 // Revision 1.3  2003/02/26 01:27:04  jimg
 // Fixed call to AISDatabaseParser::intern (changed the name from parse).
 //
