@@ -1,3 +1,7 @@
+1998-09-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* The release (version 2.18) is the last that will use String.h.
+
 1998-09-03  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Feature: CEs no longer require fully-qualified names for fileds
@@ -389,4 +393,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.25 1998/09/03 17:19:26 jimg Exp $
+$Id: ChangeLog,v 1.26 1998/09/17 17:25:26 jimg Exp $
