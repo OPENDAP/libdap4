@@ -10,6 +10,14 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.32  1997/06/05 22:50:46  jimg
+// Added two mfuncs: components() and projection_yields_grid(). These aid in
+// sending Grids that have been projected in various ways.
+// Fixed print_decl() so that a Grid that has some components projected either
+// by explicitly listing them or by listing only some of the Grids dimensions
+// will be sent properly. This means that some Grid objects `decay' to either
+// Structures of Arrays or simple Arrays depending on the projection.
+//
 // Revision 1.31  1997/03/08 19:02:02  jimg
 // Changed default param to check_semantics() from  to String()
 // and removed the default from the argument list in the mfunc definition
@@ -390,6 +398,73 @@ Grid::map_var(Pix p)
 	return 0;
 }
 
+int
+Grid::components(bool constrained = false)
+{
+    int comp;
+
+    if (constrained) {
+	comp = _array_var->send_p() ? 1: 0;
+
+	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	    if (_map_vars(p)->send_p())
+		comp++;
+    }
+    else {
+	comp = 1 + _map_vars.length();
+    }
+
+    return comp;
+}
+
+// When projected (using whatever the current constraint provides in the way
+// of a projection) is the object still a Grid?
+
+bool
+Grid::projection_yields_grid()
+{
+    // For each dimension in the Array part, check the corresponding Map
+    // vector to make sure it is present in the projected Grid. If for each
+    // projected dimension in the Array component, there is a matching Map
+    // vector, then the Grid is valid.
+    bool valid = true;
+    Array *a = (Array *)_array_var;
+
+    // Don't bother checking if the Array component is not included.
+    if (!a->send_p())
+	return false;
+
+    for (Pix p = a->first_dim(), m = first_map_var(); 
+	 valid && p && m;
+	 a->next_dim(p), next_map_var(m)) {
+	if (a->dimension_size(p, true)) {
+	    // Check the matching Map vector; the Map projection must equal
+	    // the Array dimension projection
+	    Array *map = (Array *)map_var(m);
+	    Pix fd = map->first_dim(); // Maps have only one dimension!
+	    valid = map->dimension_start(fd, true) 
+		    == a->dimension_start(p, true)
+		&& map->dimension_stop(fd, true) 
+                   == a->dimension_stop(p, true)
+		&& map->dimension_stride(fd, true) 
+                   == a->dimension_stride(p, true);
+	}
+	else {
+	    // Corresponding Map vector must be excluded from the projection.
+	    Array *map = (Array *)map_var(m);
+	    valid = !map->send_p();
+	}
+    }
+
+    return valid;
+}
+
+// This mfunc has been modified so that if the user projects a Grid such that
+// the number of components in the Grid no longer match up properly (the
+// Array dimension no longer matches the number of Map vectors) whatever is
+// in the projection is sent not as a Grid but as a simple array or Structure
+// of Arrays, whichever is appropriate. 
+
 void 
 Grid::print_decl(ostream &os, String space, bool print_semi,
 		 bool constraint_info, bool constrained)
@@ -397,18 +472,50 @@ Grid::print_decl(ostream &os, String space, bool print_semi,
     if (constrained && !send_p())
 	return;
 
-    os << space << type_name() << " {" << endl;
+    // If we are printing the declaration of a constrained Grid then check for
+    // the case where the projection removes all but one component; the
+    // resulting object is a simple array.
+    int projection = components(true);
+    if (constrained && projection == 1) {
+	_array_var->print_decl(os, space, true, constraint_info,
+			       constrained);
+	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	    _map_vars(p)->print_decl(os, space, true, constraint_info,
+				     constrained);
+	goto exit;		// Skip end material.
+    }
+    // If there are M (< N) componets (Array and Maps combined) in a N
+    // component Grid, send the M components as elements of a Struture.
+    // This will repserve the grouping without violating the rules for a
+    // Grid. 
+    else if (constrained && !projection_yields_grid()) {
+	os << space << "Structure {" << endl;
 
-    os << space << " ARRAY:" << endl;
-    _array_var->print_decl(os, space + "    ", true, constraint_info,
-			   constrained);
+	_array_var->print_decl(os, space + "    ", true, constraint_info,
+			       constrained);
 
-    os << space << " MAPS:" << endl;
-    for (Pix p = _map_vars.first(); p; _map_vars.next(p))
-	_map_vars(p)->print_decl(os, space + "    ", true, constraint_info,
-				 constrained);
+	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	    _map_vars(p)->print_decl(os, space + "    ", true, 
+				     constraint_info, constrained);
 
-    os << space << "} " << name();
+	os << space << "} " << name();
+    }
+    else {
+	// The number of elements in the (projected) Grid must be such that
+	// we have a valid Grid object; send it as such.
+	os << space << type_name() << " {" << endl;
+
+	os << space << " ARRAY:" << endl;
+	_array_var->print_decl(os, space + "    ", true, constraint_info,
+			       constrained);
+
+	os << space << " MAPS:" << endl;
+	for (Pix p = _map_vars.first(); p; _map_vars.next(p))
+	    _map_vars(p)->print_decl(os, space + "    ", true, constraint_info,
+				     constrained);
+
+	os << space << "} " << name();
+    }
 
     if (constraint_info) {
 	if (send_p())
@@ -419,6 +526,10 @@ Grid::print_decl(ostream &os, String space, bool print_semi,
 
     if (print_semi)
 	os << ";" << endl;
+
+    // If sending just one comp, skip sending the terminal semicolon, etc.
+exit:
+    return;
 }
 
 void 
