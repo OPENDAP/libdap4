@@ -196,6 +196,12 @@ is_simple_type(const char *name)
     }
 }
 
+static bool
+is_not(const char *name, const char *tag)
+{
+    return strcmp(name, tag) != 0;
+}
+
 /** @name Helper methods */
 //@{
 
@@ -217,24 +223,28 @@ DDXParser::pop_state()
     s.pop();
 }
 
-/** Dump the attrs array into a map<string,string>. Attribute names are
-    always lower case.  */
+/** Dump XML attributes to local store so they can be easily manipulated.
+    Attribute names are always folded to lower case. 
+    @param attrs The XML attribtue array */
 void
 DDXParser::transfer_attrs(const char **attrs)
 {
     attributes.clear();		// erase old attributes
 
-    if (!attrs || !attrs[0])
+    if (!attrs)
 	return;
 
-    for (int i = 0; attrs && attrs[i] != 0; i = i + 2) {
+    for (int i = 0; attrs[i] != 0; i += 2) {
 	string attr_i = attrs[i];
 	downcase(attr_i);
 	attributes[attr_i] = string(attrs[i+1]);
     }
 }
 
-/** Is an attribute present. Attribute names are always lowercase. */
+/** Is an attribute present? Attribute names are always lowercase. 
+    To use this method, first call transfer_attrs.
+    @param attr The XML attribute
+    @return True if the XML attribtue was present in the last tag */
 bool
 DDXParser::check_required_attribute(const string &attr)
 {
@@ -251,6 +261,11 @@ DDXParser::check_required_attribute(const string &attr)
     return found;
 }
 
+/** Given that an \t Attribute tag has just been read, determine whether the
+    element is a container or a simple type, set the state and, for a sumple
+    type record the type and name for use when \t value elements are found.
+
+    @param attrs The array of XML attribute values */
 void
 DDXParser::process_attribute_element(const char **attrs)
 {
@@ -279,6 +294,9 @@ DDXParser::process_attribute_element(const char **attrs)
     }
 }
 
+/** Given that an \t Alias tag has just been read, set the state and process
+    the alias.
+    @param attrs The XML attribute array */
 void
 DDXParser::process_attribute_alias(const char **attrs)
 {
@@ -291,13 +309,19 @@ DDXParser::process_attribute_alias(const char **attrs)
     }
 }
 
-// create a byte, load its name, push onto stack
+/** Given that a tag which opens a variable declarationhas just been read,
+    create the variable. Once created, push the variable onto the stack of
+    variables, puch that variables attribute table onto the attribtue table
+    stack and update the state of the parser.
+    @param t The type of variable to create.
+    @param s The next state of the parser.
+    @param attrs the attributes read with the tag */
 void
-DDXParser::process_simple_type(Type t, const char **attrs)
+DDXParser::process_variable(Type t, ParseState s, const char **attrs)
 {
     transfer_attrs(attrs);
 
-    set_state(inside_simple_type);
+    set_state(s);
     BaseType *btp = factory(t, attributes["name"]);
     if (!btp)
 	ddx_fatal_error(this, "Internal parser error; could not instantiate the variable '%s'.", attributes["name"].c_str());
@@ -310,96 +334,9 @@ DDXParser::process_simple_type(Type t, const char **attrs)
     at_stack.push(&btp->get_attr_table());
 }
 
-void
-DDXParser::process_array_type(Type t, const char **attrs)
-{
-    transfer_attrs(attrs);
-
-    set_state(inside_array);
-    BaseType *btp = factory(t, attributes["name"]);
-    if (!btp)
-	ddx_fatal_error(this, "Internal parser error; could not instantiate the array '%s'.", attributes["name"].c_str());
-
-    // Once we make the new variable, we not only load it on to the
-    // BaseType stack, we also load its AttrTable on the AttrTable stack.
-    // The attribute processing software always operates on the AttrTable
-    // at the top of the AttrTable stack (at_stack).
-    bt_stack.push(btp);
-    at_stack.push(&btp->get_attr_table());
-}
-
-void
-DDXParser::process_structure_type(Type t, const char **attrs)
-{
-    transfer_attrs(attrs);
-
-    set_state(inside_structure);
-    BaseType *btp = factory(t, attributes["name"]);
-    if (!btp)
-	ddx_fatal_error(this, "Internal parser error; could not instantiate the structure '%s'.", attributes["name"].c_str());
-
-    // Once we make the new variable, we not only load it on to the
-    // BaseType stack, we also load its AttrTable on the AttrTable stack.
-    // The attribute processing software always operates on the AttrTable
-    // at the top of the AttrTable stack (at_stack).
-    bt_stack.push(btp);
-    at_stack.push(&btp->get_attr_table());
-}
-
-void
-DDXParser::process_sequence_type(Type t, const char **attrs)
-{
-    transfer_attrs(attrs);
-
-    set_state(inside_sequence);
-    BaseType *btp = factory(t, attributes["name"]);
-    if (!btp)
-	ddx_fatal_error(this, "Internal parser error; could not instantiate the sequence '%s'.", attributes["name"].c_str());
-
-    // Once we make the new variable, we not only load it on to the
-    // BaseType stack, we also load its AttrTable on the AttrTable stack.
-    // The attribute processing software always operates on the AttrTable
-    // at the top of the AttrTable stack (at_stack).
-    bt_stack.push(btp);
-    at_stack.push(&btp->get_attr_table());
-}
-
-void
-DDXParser::process_grid_type(Type t, const char **attrs)
-{
-    transfer_attrs(attrs);
-
-    set_state(inside_grid);
-    BaseType *btp = factory(t, attributes["name"]);
-    if (!btp)
-	ddx_fatal_error(this, "Internal parser error; could not instantiate the grid '%s'.", attributes["name"].c_str());
-
-    // Once we make the new variable, we not only load it on to the
-    // BaseType stack, we also load its AttrTable on the AttrTable stack.
-    // The attribute processing software always operates on the AttrTable
-    // at the top of the AttrTable stack (at_stack).
-    bt_stack.push(btp);
-    at_stack.push(&btp->get_attr_table());
-}
-
-void
-DDXParser::process_map_type(Type t, const char **attrs)
-{
-    transfer_attrs(attrs);
-
-    set_state(inside_map);
-    BaseType *btp = factory(t, attributes["name"]);
-    if (!btp)
-	ddx_fatal_error(this, "Internal parser error; could not instantiate the grid map '%s'.", attributes["name"].c_str());
-
-    // Once we make the new variable, we not only load it on to the
-    // BaseType stack, we also load its AttrTable on the AttrTable stack.
-    // The attribute processing software always operates on the AttrTable
-    // at the top of the AttrTable stack (at_stack).
-    bt_stack.push(btp);
-    at_stack.push(&btp->get_attr_table());
-}
-
+/** Given that a \t dimension tag has just been read, add that information to
+    the array on the top of the BaseType stack.
+    @param attrs The XML attributes included in the \t dimension tag */
 void
 DDXParser::process_dimension(const char **attrs)
 {
@@ -412,6 +349,10 @@ DDXParser::process_dimension(const char **attrs)
     }
 }
 
+/** Given that a \t dodsBLOB tag has just been read, extract and save the URL
+    included in the element. This URL can be read using the get_blob_url
+    method of this class.
+    @param attrs The XML attributes */
 void
 DDXParser::process_blob(const char **attrs)
 {
@@ -420,6 +361,99 @@ DDXParser::process_blob(const char **attrs)
        set_state(inside_blob_url);
        blob_url = attributes["url"];
    }
+}
+
+/** Check to see if the current tag is either an \t Attribute or an \t Alias
+    start tag. This method is a glorified macro...
+
+    @param name The start tag name
+    @param attrs The tag's XML attributes
+    @return True if the tag was an \t Attribute or \t Alias tag */
+inline bool
+DDXParser::is_attribute_or_alias(const char *name, const char **attrs)
+{
+    if (strcmp(name, "Attribute") == 0) {
+	process_attribute_element(attrs);
+	// next state: inside_attribtue or inside_attribute_container
+	return true;
+    }
+    else if (strcmp(name, "Alias") == 0) {
+	process_attribute_alias(attrs);
+	// next state: inside_alias
+	return true;
+    }
+
+    return false;
+}
+
+/** Check to see if the current tag is the start of a variable declaration.
+    If so, process it. A glorified macro...
+    @param name The start tag name
+    @param attrs The tag's XML attributes
+    @return True if the tag was a variable tag */
+inline bool
+DDXParser::is_variable(const char *name, const char **attrs)
+{
+    Type t;
+    if ((t = is_simple_type(name)) != dods_null_c) {
+	process_variable(t, inside_simple_type, attrs);
+	return true;
+    }
+    else if (strcmp(name, "Array") == 0) {
+	process_variable(dods_array_c, inside_array, attrs);
+	return true;
+    }
+    else if (strcmp(name, "Structure") == 0) {
+	process_variable(dods_structure_c, inside_structure, attrs);
+	return true;
+    }
+    else if (strcmp(name, "Sequence") == 0) {
+	process_variable(dods_sequence_c, inside_sequence, attrs);
+	return true;
+    }
+    else if (strcmp(name, "Grid") == 0) {
+	process_variable(dods_grid_c, inside_grid, attrs);
+	return true;
+    }
+
+    return false;
+}
+
+void
+DDXParser::finish_variable(const char *tag, Type t, const char *expected)
+{
+    if (strcmp(tag, expected) != 0) {
+	DDXParser::ddx_fatal_error(this, "Expected an end tag for a %s; found '%s' instead.", expected, tag);
+	return;
+    }
+
+    pop_state();
+
+    BaseType *btp = bt_stack.top();
+
+    bt_stack.pop();
+    at_stack.pop();
+
+    if (btp->type() != t) {
+	DDXParser::ddx_fatal_error(this, "Internal error: Expected a %s variable.", expected);
+	return;
+    }
+
+    // Once libxml2 validates, this can go away. 05/30/03 jhrg
+    if (t == dods_array_c
+	&& dynamic_cast<Array*>(btp)->dimensions() == 0) {
+	DDXParser::ddx_fatal_error(this, "No dimension element included in the Array '%s'.", btp->name().c_str());
+	return;
+    }
+
+    BaseType *parent = bt_stack.top();
+
+    if (!(parent->is_vector_type() || parent->is_constructor_type())) {
+	DDXParser::ddx_fatal_error(this, "Tried to add the array variable '%s' to a non-constructor type (%s %s).", tag, bt_stack.top()->type_name().c_str(), bt_stack.top()->name().c_str());
+	return;
+    }
+
+    parent->add_var(btp);
 }
 
 //@}
@@ -444,9 +478,9 @@ DDXParser::ddx_start_document(DDXParser *parser)
     // init attr table stack.
     parser->at_stack.push(&parser->dds->get_attr_table());
 
-    // trick; dds *should* be a child of Structure. To simplify parsing,
+    // Trick; DDS *should* be a child of Structure. To simplify parsing,
     // stuff a Structure on the bt_stack and dump the top level variables
-    // there temporarily. Once we're done, transfer the variables to the DDS. 
+    // there. Once we're done, transfer the variables to the DDS.
     parser->bt_stack.push(new Structure("dummy_dds"));
 
     parser->set_state(parser_start);
@@ -482,7 +516,6 @@ DDXParser::ddx_end_document(DDXParser *parser)
 /** Process a start element tag. Because the DDX schema uses attributes and
     because libxml2 does not validate those, we do attribute validation here.
 
-    Values held in attributes are recorded 
     @param state The SAX parser  */
 void 
 DDXParser::ddx_start_element(DDXParser *parser, const char *name, 
@@ -504,36 +537,11 @@ DDXParser::ddx_start_element(DDXParser *parser, const char *name,
 	    DDXParser::ddx_fatal_error(parser, "Expected response to start with a Dataset element; found '%s' instead.", name);
 	break;
 
-      case inside_dataset: {
-	  Type t;
-	if (strcmp(name, "Attribute") == 0) {
-	    parser->process_attribute_element(attrs);
-	    // next state: inside_attribtue or inside_attribute_container
-	}
-	else if (strcmp(name, "Alias") == 0) {
-	    parser->process_attribute_alias(attrs);
-	    // next state: inside_alias
-	}
-	else if ((t = is_simple_type(name)) != dods_null_c) {
-	    parser->process_simple_type(t, attrs);
-	    // next state: inside_ismple_type
-	}
-	else if (strcmp(name, "Array") == 0) {
-	    parser->process_array_type(dods_array_c, attrs);
-	    // next state: inside_array
-	}
-	else if (strcmp(name, "Structure") == 0) {
-	    parser->process_structure_type(dods_structure_c, attrs);
-	    // next state: inside_structure
-	}
-	else if (strcmp(name, "Sequence") == 0) {
-	    parser->process_sequence_type(dods_sequence_c, attrs);
-	    // next state: inside_sequence
-	}
-	else if (strcmp(name, "Grid") == 0) {
-	    parser->process_grid_type(dods_grid_c, attrs);
-	    // next state: inside_grid
-	}
+      case inside_dataset:
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
+	else if (parser->is_variable(name, attrs))
+	    break;
 	else if (strcmp(name, "dodsBLOB") == 0) {
 	    parser->process_blob(attrs);
 	    // next state: inside_dods_blob
@@ -541,30 +549,17 @@ DDXParser::ddx_start_element(DDXParser *parser, const char *name,
 	else
 	    DDXParser::ddx_fatal_error(parser, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
 	break;
-      }
 
       case inside_attribute_container:
-	if (strcmp(name, "Attribute") == 0) {
-	    parser->process_attribute_element(attrs);
-	    // next state: inside_attribtue or inside_attribute_container
-	}
-	else if (strcmp(name, "Alias") == 0) {
-	    parser->process_attribute_alias(attrs);
-	    // next state: inside_alias
-	}
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
 	else
 	    DDXParser::ddx_fatal_error(parser, "Expected an Attribute or Alias element; found '%s' instead.", name);
 	break;
 
       case inside_attribute:
-	if (strcmp(name, "Attribute") == 0) {
-	    parser->process_attribute_element(attrs);
-	    // next state: inside_attribtue or inside_attribute_container
-	}
-	else if (strcmp(name, "Alias") == 0) {
-	    parser->process_attribute_alias(attrs);
-	    // next state: inside_alias
-	}
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
 	else if (strcmp(name, "value") == 0)
 	    parser->set_state(inside_attribute_value);
 	else
@@ -580,174 +575,71 @@ DDXParser::ddx_start_element(DDXParser *parser, const char *name,
 	break;
 
       case inside_simple_type:
-	if (strcmp(name, "Attribute") == 0) {
-	    parser->process_attribute_element(attrs);
-	    // next state: inside_attribtue or inside_attribute_container
-	}
-	else if (strcmp(name, "Alias") == 0) {
-	    parser->process_attribute_alias(attrs);
-	    // next state: inside_alias
-	}
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
 	else
 	    ddx_fatal_error(parser, "Expected an 'Attribute' or 'Alias' element; found '%s' instead.", name);
 	break;
 	
-      case inside_array: {
-	  Type t;
-	  if (strcmp(name, "Attribute") == 0) {
-	      parser->process_attribute_element(attrs);
-	      // next state: inside_attribtue or inside_attribute_container
-	  }
-	  else if (strcmp(name, "Alias") == 0) {
-	      parser->process_attribute_alias(attrs);
-	      // next state: inside_alias
-	  }
-	  else if ((t = is_simple_type(name)) != dods_null_c) {
-	      parser->process_simple_type(t, attrs);
-	      // next state: inside_ismple_type
-	  }
-	  else if (strcmp(name, "Structure") == 0) {
-	      parser->process_structure_type(dods_structure_c, attrs);
-	      // next state: inside_structure
-	  }
-	else if (strcmp(name, "Sequence") == 0) {
-	    parser->process_sequence_type(dods_sequence_c, attrs);
-	    // next state: inside_sequence
+      case inside_array:
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
+	else if (is_not(name, "Array") && parser->is_variable(name, attrs))
+	    break;
+	else if (strcmp(name, "dimension") == 0) {
+	    parser->process_dimension(attrs);
+	    // next state: inside_dimension
 	}
-	else if (strcmp(name, "Grid") == 0) {
-	    parser->process_grid_type(dods_grid_c, attrs);
-	    // next state: inside_grid
-	}
-	  else if (strcmp(name, "dimension") == 0) {
-	      parser->process_dimension(attrs);
-	      // next state: inside_dimension
-	  }
-	  else
-	      ddx_fatal_error(parser, "Expected an 'Attribute' or 'Alias' element; found '%s' instead.", name);
-	  break;
-      }
+	else
+	    ddx_fatal_error(parser, "Expected an 'Attribute' or 'Alias' element; found '%s' instead.", name);
+	break;
 
       case inside_dimension:
 	ddx_fatal_error(parser, "Internal parser error; unexpected state, inside dimension while processing element '%s'.", name);
 	break;
 
-      case inside_structure:{
-	  Type t;
-	  if (strcmp(name, "Attribute") == 0) {
-	      parser->process_attribute_element(attrs);
-	      // next state: inside_attribtue or inside_attribute_container
-	  }
-	  else if (strcmp(name, "Alias") == 0) {
-	      parser->process_attribute_alias(attrs);
-	      // next state: inside_alias
-	  }
-	  else if ((t = is_simple_type(name)) != dods_null_c) {
-	      parser->process_simple_type(t, attrs);
-	      // next state: inside_ismple_type
-	  }
-	  else if (strcmp(name, "Array") == 0) {
-	      parser->process_array_type(dods_array_c, attrs);
-	      // next state: inside_array
-	  }
-	  else if (strcmp(name, "Structure") == 0) {
-	      parser->process_structure_type(dods_structure_c, attrs);
-	      // next state: inside_structure
-	  }
-	else if (strcmp(name, "Sequence") == 0) {
-	    parser->process_sequence_type(dods_sequence_c, attrs);
-	    // next state: inside_sequence
-	}
-	else if (strcmp(name, "Grid") == 0) {
-	    parser->process_grid_type(dods_grid_c, attrs);
-	    // next state: inside_grid
-	}
-	  else
-	      DDXParser::ddx_fatal_error(parser, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
-	  break;
-      }
+      case inside_structure:
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
+	else if (parser->is_variable(name, attrs))
+	    break;
+	else
+	    DDXParser::ddx_fatal_error(parser, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
+	break;
 
-      case inside_sequence:{
-	  Type t;
-	  if (strcmp(name, "Attribute") == 0) {
-	      parser->process_attribute_element(attrs);
-	      // next state: inside_attribtue or inside_attribute_container
-	  }
-	  else if (strcmp(name, "Alias") == 0) {
-	      parser->process_attribute_alias(attrs);
-	      // next state: inside_alias
-	  }
-	  else if ((t = is_simple_type(name)) != dods_null_c) {
-	      parser->process_simple_type(t, attrs);
-	      // next state: inside_ismple_type
-	  }
-	  else if (strcmp(name, "Array") == 0) {
-	      parser->process_array_type(dods_array_c, attrs);
-	      // next state: inside_array
-	  }
-	  else if (strcmp(name, "Structure") == 0) {
-	      parser->process_structure_type(dods_structure_c, attrs);
-	      // next state: inside_structure
-	  }
-	else if (strcmp(name, "Sequence") == 0) {
-	    parser->process_sequence_type(dods_sequence_c, attrs);
-	    // next state: inside_sequence
-	}
-	else if (strcmp(name, "Grid") == 0) {
-	    parser->process_grid_type(dods_grid_c, attrs);
-	    // next state: inside_grid
-	}
-	  else
-	      DDXParser::ddx_fatal_error(parser, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
-	  break;
-      }
+      case inside_sequence:
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
+	else if (parser->is_variable(name, attrs))
+	    break;
+	else
+	    DDXParser::ddx_fatal_error(parser, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
+	break;
 
       case inside_grid:
-	  if (strcmp(name, "Attribute") == 0) {
-	      parser->process_attribute_element(attrs);
-	      // next state: inside_attribtue or inside_attribute_container
-	  }
-	  else if (strcmp(name, "Alias") == 0) {
-	      parser->process_attribute_alias(attrs);
-	      // next state: inside_alias
-	  }
-	  else if (strcmp(name, "Array") == 0) {
-	      parser->process_array_type(dods_array_c, attrs);
-	      // next state: inside_array
-	  }
-	  else if (strcmp(name, "Map") == 0) {
-	      parser->process_map_type(dods_array_c, attrs);
-	      // next state: inside_map
-	  }
-	  else
-	      DDXParser::ddx_fatal_error(parser, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
-	  break;
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
+	else if (strcmp(name, "Array") == 0)
+	    parser->process_variable(dods_array_c, inside_array, attrs);
+	else if (strcmp(name, "Map") == 0)
+	    parser->process_variable(dods_array_c, inside_map, attrs);
+	else
+	    DDXParser::ddx_fatal_error(parser, "Expected an Attribute, Alias or variable element; found '%s' instead.", name);
+	break;
 
-      case inside_map: {
-	  Type t;
-	  if (strcmp(name, "Attribute") == 0) {
-	      parser->process_attribute_element(attrs);
-	      // next state: inside_attribtue or inside_attribute_container
-	  }
-	  else if (strcmp(name, "Alias") == 0) {
-	      parser->process_attribute_alias(attrs);
-	      // next state: inside_alias
-	  }
-	  else if ((t = is_simple_type(name)) != dods_null_c) {
-	      parser->process_simple_type(t, attrs);
-	      // next state: inside_ismple_type
-	  }
-	  else if (strcmp(name, "Structure") == 0) {
-	      parser->process_structure_type(dods_structure_c, attrs);
-	      // next state: inside_structure
-	  }
-	  else if (strcmp(name, "dimension") == 0) {
-	      parser->process_dimension(attrs);
-	      // next state: inside_dimension
-	  }
-	  else
-	      ddx_fatal_error(parser, "Expected an 'Attribute', 'Alias', variable or 'dimension' element; found '%s' instead.", name);
-	  break;
-      }
+      case inside_map:
+	if (parser->is_attribute_or_alias(name, attrs))
+	    break;
+	else if (is_not(name, "Array") && is_not(name, "Sequence")
+		 && is_not(name, "Grid") && parser->is_variable(name, attrs))
+	    break;
+	else if (strcmp(name, "dimension") == 0) {
+	    parser->process_dimension(attrs);
+	    // next state: inside_dimension
+	}
+	else
+	    ddx_fatal_error(parser, "Expected an 'Attribute', 'Alias', variable or 'dimension' element; found '%s' instead.", name);
+	break;
 
       case inside_blob_url:
 	ddx_fatal_error(parser, "Internal parser error; unexpected state, inside blob url while processing element '%s'.", name);
@@ -787,9 +679,8 @@ DDXParser::ddx_end_element(DDXParser *parser, const char *name)
 
       case inside_attribute_container:
 	if (strcmp(name, "Attribute") == 0) {
-	parser->pop_state();
-	parser->at_stack.pop();	// pop when leaving a container.
-	DBG2(cerr << "Popping at stack" << endl);
+	    parser->pop_state();
+	    parser->at_stack.pop();	// pop when leaving a container.
 	}
 	else
 	    DDXParser::ddx_fatal_error(parser, "Expected an end Attribute tag; found '%s' instead.", name);
@@ -797,31 +688,30 @@ DDXParser::ddx_end_element(DDXParser *parser, const char *name)
 	
       case inside_attribute:
 	if (strcmp(name, "Attribute") == 0)
-	parser->pop_state();
+	    parser->pop_state();
 	else
 	    DDXParser::ddx_fatal_error(parser, "Expected an end Attribute tag; found '%s' instead.", name);
 	break;
 	
-      case inside_attribute_value: {
-	if (strcmp(name, "value") == 0) {
-	parser->pop_state();
-	AttrTable *atp = parser->at_stack.top();
-	atp->append_attr(parser->dods_attr_name, parser->dods_attr_type,
-		    parser->char_data);
-	parser->char_data = "";	// Null this after use.
-	}
-	else
-	    DDXParser::ddx_fatal_error(parser, "Expected an end value tag; found '%s' instead.", name);
+      case inside_attribute_value:
+	  if (strcmp(name, "value") == 0) {
+	      parser->pop_state();
+	      AttrTable *atp = parser->at_stack.top();
+	      atp->append_attr(parser->dods_attr_name, parser->dods_attr_type,
+			       parser->char_data);
+	      parser->char_data = "";	// Null this after use.
+	  }
+	  else
+	      DDXParser::ddx_fatal_error(parser, "Expected an end value tag; found '%s' instead.", name);
 
-	break;    
-      }
+	  break;    
 
 	// Alias is busted in C++ 05/29/03 jhrg
       case inside_alias:
 	  parser->pop_state();
 	  break;
 
-      case inside_simple_type: {
+      case inside_simple_type:
 	  if (is_simple_type(name) != dods_null_c) {
 	      parser->pop_state();
 	      BaseType *btp = parser->bt_stack.top();
@@ -838,40 +728,10 @@ DDXParser::ddx_end_element(DDXParser *parser, const char *name)
 	  else
 	      DDXParser::ddx_fatal_error(parser, "Expected an end tag for a simple type; found '%s' instead.", name);
 	  break;
-      }
 
-      case inside_array: {
-	  if (get_type(name) != dods_array_c) {
-	      DDXParser::ddx_fatal_error(parser, "Expected an end tag for an array; found '%s' instead.", name);
-	      break;
-	  }
-
-	  parser->pop_state();
-	  Array *ap = dynamic_cast<Array*>(parser->bt_stack.top());
-	  parser->bt_stack.pop();
-	  parser->at_stack.pop();
-
-	  if (!ap) {
-	      DDXParser::ddx_fatal_error(parser, "Internal error: Expected an Array variable.");
-	      break;
-	  }
-
-	  // Once libxml2 validates, this can go away. 05/30/03 jhrg
-	  if (ap->dimensions() == 0) {
-	      DDXParser::ddx_fatal_error(parser, "No dimension element included in the Array '%s'.", ap->name().c_str());
-	      break;
-	  }
-
-	  BaseType *parent = parser->bt_stack.top();
-
-	  if (!(parent->is_vector_type() || parent->is_constructor_type())) {
-	      DDXParser::ddx_fatal_error(parser, "Tried to add the array variable '%s' to a non-constructor type (%s %s).", name, parser->bt_stack.top()->type_name().c_str(), parser->bt_stack.top()->name().c_str());
-	      break;
-	  }
-
-	  parent->add_var(ap);
-	  break;
-      }
+      case inside_array: 
+	parser->finish_variable(name, dods_array_c, "Array");
+	break;
 
       case inside_dimension:
 	if (strcmp(name, "dimension") == 0)
@@ -880,119 +740,21 @@ DDXParser::ddx_end_element(DDXParser *parser, const char *name)
 	    DDXParser::ddx_fatal_error(parser, "Expected an end dimension tag; found '%s' instead.", name);
 	break;
 
-      case inside_structure: {
-	  if (get_type(name) != dods_structure_c) {
-	      DDXParser::ddx_fatal_error(parser, "Expected an end tag for a structure; found '%s' instead.", name);
-	      break;
-	  }
+      case inside_structure: 
+	parser->finish_variable(name, dods_structure_c, "Structure");
+	break;
 
-	  parser->pop_state();
-	  Structure *sp = dynamic_cast<Structure*>(parser->bt_stack.top());
-	  parser->bt_stack.pop();
-	  parser->at_stack.pop();
+      case inside_sequence: 
+	parser->finish_variable(name, dods_sequence_c, "Sequence");
+	break;
 
-	  if (!sp) {
-	      DDXParser::ddx_fatal_error(parser, "Internal error: Expected a Structure variable.");
-	      break;
-	  }
+      case inside_grid: 
+	parser->finish_variable(name, dods_grid_c, "Grid");
+	break;
 
-	  BaseType *parent = parser->bt_stack.top();
-
-	  if (!(parent->is_vector_type() || parent->is_constructor_type())) {
-	      DDXParser::ddx_fatal_error(parser, "Tried to add the array variable '%s' to a non-constructor type (%s %s).", name, parser->bt_stack.top()->type_name().c_str(), parser->bt_stack.top()->name().c_str());
-	      break;
-	  }
-
-	  parent->add_var(sp);
-	  break;
-      }
-
-      case inside_sequence: {
-	  if (get_type(name) != dods_sequence_c) {
-	      DDXParser::ddx_fatal_error(parser, "Expected an end tag for a sequence; found '%s' instead.", name);
-	      break;
-	  }
-
-	  parser->pop_state();
-	  Sequence *sp = dynamic_cast<Sequence*>(parser->bt_stack.top());
-	  parser->bt_stack.pop();
-	  parser->at_stack.pop();
-
-	  if (!sp) {
-	      DDXParser::ddx_fatal_error(parser, "Internal error: Expected a Sequence variable.");
-	      break;
-	  }
-
-	  BaseType *parent = parser->bt_stack.top();
-
-	  if (!(parent->is_vector_type() || parent->is_constructor_type())) {
-	      DDXParser::ddx_fatal_error(parser, "Tried to add the array variable '%s' to a non-constructor type (%s %s).", name, parser->bt_stack.top()->type_name().c_str(), parser->bt_stack.top()->name().c_str());
-	      break;
-	  }
-
-	  parent->add_var(sp);
-	  break;
-      }
-
-      case inside_grid: {
-	  if (get_type(name) != dods_grid_c) {
-	      DDXParser::ddx_fatal_error(parser, "Expected an end tag for a grid; found '%s' instead.", name);
-	      break;
-	  }
-
-	  parser->pop_state();
-	  Grid *gp = dynamic_cast<Grid*>(parser->bt_stack.top());
-	  parser->bt_stack.pop();
-	  parser->at_stack.pop();
-
-	  if (!gp) {
-	      DDXParser::ddx_fatal_error(parser, "Internal error: Expected a Grid variable.");
-	      break;
-	  }
-
-	  BaseType *parent = parser->bt_stack.top();
-
-	  if (!(parent->is_vector_type() || parent->is_constructor_type())) {
-	      DDXParser::ddx_fatal_error(parser, "Tried to add the array variable '%s' to a non-constructor type (%s %s).", name, parser->bt_stack.top()->type_name().c_str(), parser->bt_stack.top()->name().c_str());
-	      break;
-	  }
-
-	  parent->add_var(gp);
-	  break;
-      }
-
-      case inside_map: {
-	  if (strcmp(name, "Map") != 0) {
-	      DDXParser::ddx_fatal_error(parser, "Expected an end tag for a Map; found '%s' instead.", name);
-	      break;
-	  }
-
-	  parser->pop_state();
-	  Array *ap = dynamic_cast<Array*>(parser->bt_stack.top());
-	  parser->bt_stack.pop();
-	  parser->at_stack.pop();
-
-	  if (!ap) {
-	      DDXParser::ddx_fatal_error(parser, "Internal error: Expected an Array variable.");
-	      break;
-	  }
-
-	  // Once libxml2 validates, this can go away. 05/30/03 jhrg
-	  if (ap->dimensions() == 0) {
-	      DDXParser::ddx_fatal_error(parser, "No dimension element included in the Array '%s'.", ap->name().c_str());
-	      break;
-	  }
-
-	  BaseType *parent = parser->bt_stack.top();
-
-	  if (!(parent->is_vector_type() || parent->is_constructor_type())) {
-	      DDXParser::ddx_fatal_error(parser, "Tried to add the array variable '%s' to a non-constructor type (%s %s).", name, parser->bt_stack.top()->type_name().c_str(), parser->bt_stack.top()->name().c_str());
-	      break;
-	  }
-
-	  parent->add_var(ap);
-	  break;
-      }
+      case inside_map: 
+	parser->finish_variable(name, dods_array_c, "Map");
+	break;
 
       case inside_blob_url:
 	if (strcmp(name, "dodsBLOB") == 0)
@@ -1138,6 +900,9 @@ DDXParser::intern(const string &document, DDS *destination_dds)
 }
 
 // $Log: DDXParser.cc,v $
+// Revision 1.4  2003/05/30 23:55:41  jimg
+// Refactor, first pass, complete.
+//
 // Revision 1.3  2003/05/30 21:43:44  jimg
 // Parser now parses all data types correctly. Needs to be refactored so common
 // code can be combined.

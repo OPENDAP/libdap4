@@ -127,15 +127,14 @@ private:
     void process_attribute_element(const char **attrs);
     void process_attribute_alias(const char **attrs);
 
-    void process_simple_type(Type t, const char **attrs);
-    void process_array_type(Type t, const char **attrs);
-    void process_structure_type(Type t, const char **attrs);
-    void process_sequence_type(Type t, const char **attrs);
-    void process_grid_type(Type t, const char **attrs);
-    void process_map_type(Type t, const char **attrs);
+    void process_variable(Type t, ParseState s, const char **attrs);
 
     void process_dimension(const char **attrs);
     void process_blob(const char **attrs);
+
+    bool is_attribute_or_alias(const char *name, const char **attrs);
+    bool is_variable(const char *name, const char **attrs);
+    void finish_variable(const char *tag, Type t, const char *expected);
 
 public:
     void intern(const string &document, DDS *dds)
@@ -153,6 +152,9 @@ public:
 };
 
 // $Log: DDXParser.h,v $
+// Revision 1.4  2003/05/30 23:55:59  jimg
+// Refactor, first pass, complete.
+//
 // Revision 1.3  2003/05/30 21:44:03  jimg
 // Parser now parses all data types correctly.
 //
