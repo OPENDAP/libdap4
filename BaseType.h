@@ -8,11 +8,19 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.5  1994/11/22 14:05:29  jimg
-/* Added code for data transmission to parts of the type hierarchy. Not
-/* complete yet.
-/* Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+/* Revision 1.6  1994/11/29 19:14:15  jimg
+/* Added mroe support for data transmission; BaseType now contains enough
+/* functionality to support transmission of all the simple datatypes.
+/* Added in and out FILE *.
+/* Added boolean flag in serialize which will cause the output buffer to
+/* be flushed when data is serialized.
+/* Added xdr_coder for serialization of arrays and lists.
 /*
+ * Revision 1.5  1994/11/22  14:05:29  jimg
+ * Added code for data transmission to parts of the type hierarchy. Not
+ * complete yet.
+ * Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
+ *
  * Revision 1.4  1994/10/17  23:30:47  jimg
  * Added ptr_duplicate virtual mfunc. Child classes can also define this
  * to copy parts that BaseType does not have (and allocate correctly sized
@@ -42,14 +50,20 @@
 #pragma interface
 #endif
 
+#include <stdio.h>
 #include <rpc/xdr.h>
+
 #include <iostream.h>
 #include <String.h>
+
+#include "config.h"
 
 class BaseType {
 private:
     String name;		// name of the variable
-    String type;		// Name of the instance's type
+    String type;		// name of the instance's type
+    FILE *_in;			// input for data from server
+    FILE *_out;			// output for data from client
 
     void duplicate(const BaseType &bt);
 
@@ -63,7 +77,7 @@ protected:
 
 public:
     BaseType(const String &n = (char *)0, const String &t = (char *)0,
-	     xdrproc_t xdr = NULL);
+	     xdrproc_t xdr = NULL, FILE *in = stdin, FILE *out = stdout);
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 
@@ -86,8 +100,9 @@ public:
     virtual bool read(String dataset, String var_name, String constraint) = 0;
 
     // move data to and from the net.
-    virtual bool serialize(unsigned int num = 0) = 0; 
+    virtual bool serialize(bool flush = false, unsigned int num = 0) = 0; 
     virtual unsigned int deserialize() = 0;
+    bool expunge();
 
     virtual void print_decl(ostream &os, String space = "    ",
 			    bool print_semi = true);
