@@ -10,6 +10,9 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.29  1997/02/10 02:32:40  jimg
+// Added assert statements for pointers
+//
 // Revision 1.28  1996/09/16 18:08:40  jimg
 // Fixed var(const String name) so that it would correctly descend names of the
 // form <base>.<name> where <name> may itself contain `dots'.
@@ -333,6 +336,8 @@ Grid::var(const String &name)
 void 
 Grid::add_var(BaseType *bt, Part part)
 {
+    assert(bt);
+
     switch (part) {
       case array:
 	_array_var = bt;

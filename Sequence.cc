@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.33  1997/02/10 02:32:42  jimg
+// Added assert statements for pointers
+//
 // Revision 1.32  1996/10/08 17:07:59  jimg
 // Fixed deserialize so that when called on a null Sequence it will return
 // true.
@@ -246,6 +249,7 @@ Sequence::set_read_p(bool state)
 void 
 Sequence::add_var(BaseType *bt, Part)
 {
+    assert(bt);
     _vars.append(bt);
 }
 

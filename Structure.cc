@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.28  1997/02/10 02:32:43  jimg
+// Added assert statements for pointers
+//
 // Revision 1.27  1996/09/16 18:09:49  jimg
 // Fixed var(const String name) so that it would correctly descend names of the
 // form <base>.<name> where <name> may itself contain `dots'.
@@ -182,6 +185,7 @@ Structure::_duplicate(const Structure &s)
 
     for (Pix p = cs._vars.first(); p; cs._vars.next(p)) {
 	DBG(cerr << "Copying field: " << cs.name() << endl);
+	assert(cs._vars(p));
 	_vars.append(cs._vars(p)->ptr_duplicate());
     }
 }
@@ -197,8 +201,10 @@ Structure::Structure(const Structure &rhs)
 
 Structure::~Structure()
 {
-    for (Pix p = _vars.first(); p; _vars.next(p))
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	assert(_vars(p));
 	delete _vars(p);
+    }
 }
 
 const Structure &
@@ -215,8 +221,10 @@ Structure::operator=(const Structure &rhs)
 void
 Structure::set_send_p(bool state)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p))
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	assert(_vars(p));
 	_vars(p)->set_send_p(state);
+    }
 
     BaseType::set_send_p(state);
 }
@@ -224,8 +232,10 @@ Structure::set_send_p(bool state)
 void
 Structure::set_read_p(bool state)
 {
-    for (Pix p = _vars.first(); p; _vars.next(p))
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	assert(_vars(p));
 	_vars(p)->set_read_p(state);
+    }
 
     BaseType::set_read_p(state);
 }
@@ -235,6 +245,8 @@ Structure::set_read_p(bool state)
 void 
 Structure::add_var(BaseType *bt, Part)
 {
+    assert(bt);
+
     _vars.append(bt);
 }
 
@@ -314,9 +326,11 @@ Structure::var(const String &name)
 	    return 0;		// qualified names must be *fully* qualified
     }
     else {
-	for (Pix p = _vars.first(); p; _vars.next(p))
+	for (Pix p = _vars.first(); p; _vars.next(p)) {
+	    assert(_vars(p));
 	    if (_vars(p)->name() == name)
 		return _vars(p);
+	}
     }
 
     return 0;
@@ -325,21 +339,25 @@ Structure::var(const String &name)
 Pix
 Structure::first_var()
 {
+    assert(_vars.first());
     return _vars.first();
 }
 
 void
 Structure::next_var(Pix &p)
 {
-    if (!_vars.empty() && p)
+    if (!_vars.empty() && p) {
 	_vars.next(p);
+    }
 }
 
 BaseType *
 Structure::var(Pix p)
 {
-    if (!_vars.empty() && p)
+    if (!_vars.empty() && p) {
+	assert(_vars(p));
 	return _vars(p);
+    }
     else 
       return NULL;
 }
@@ -352,9 +370,11 @@ Structure::print_decl(ostream &os, String space, bool print_semi,
 	return;
 
     os << space << type_name() << " {" << endl;
-    for (Pix p = _vars.first(); p; _vars.next(p))
+    for (Pix p = _vars.first(); p; _vars.next(p)) {
+	assert(_vars(p));
 	_vars(p)->print_decl(os, space + "    ", true, constraint_info,
 			     constrained);
+    }
     os << space << "} " << name();
 
     if (constraint_info) {
@@ -380,6 +400,7 @@ Structure::print_val(ostream &os, String space, bool print_decl_p)
 
     os << "{ ";
     for (Pix p = _vars.first(); p; _vars.next(p), (void)(p && os << ", ")) {
+	assert(_vars(p));
 	_vars(p)->print_val(os, "", false);
     }
 
@@ -399,9 +420,11 @@ Structure::check_semantics(bool all)
 	return false;
 
     if (all) 
-	for (Pix p = _vars.first(); p; _vars.next(p))
+	for (Pix p = _vars.first(); p; _vars.next(p)) {
+	    assert(_vars(p));
 	    if (!_vars(p)->check_semantics(true))
 		return false;
+	}
 
     return true;
 }

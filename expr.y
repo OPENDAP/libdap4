@@ -17,11 +17,14 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.17  1996/12/18 18:47:24  jimg
-/* Modified the parser so that it returns Error objects for certain types of
-/* errors. In order to take advantage of this, callers must examine the returned
-/* object and process it as an Error object if status is false.
+/* Revision 1.18  1997/02/10 02:32:46  jimg
+/* Added assert statements for pointers
 /*
+ * Revision 1.17  1996/12/18 18:47:24  jimg
+ * Modified the parser so that it returns Error objects for certain types of
+ * errors. In order to take advantage of this, callers must examine the returned
+ * object and process it as an Error object if status is false.
+ *
  * Revision 1.16  1996/11/27 22:40:26  jimg
  * Added DDS as third parameter to function in the CE evaluator
  *
@@ -101,7 +104,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.17 1996/12/18 18:47:24 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.18 1997/02/10 02:32:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -565,6 +568,7 @@ make_array_indices(int_list *index)
 	cout << (*index)(dp) << " ";\
 	cout << endl);
 
+    assert(index);
     indices->append(index);
 
     return indices;
@@ -573,6 +577,9 @@ make_array_indices(int_list *index)
 int_list_list *
 append_array_index(int_list_list *indices, int_list *index)
 {
+    assert(indices);
+    assert(index);
+
     indices->append(index);
 
     return indices;
@@ -583,8 +590,12 @@ append_array_index(int_list_list *indices, int_list *index)
 void
 delete_array_indices(int_list_list *indices)
 {
-    for (Pix p = indices->first(); p; indices->next(p))
+    assert(indices);
+
+    for (Pix p = indices->first(); p; indices->next(p)) {
+	assert((*indices)(p));
 	delete (*indices)(p);
+    }
 
     delete indices;
 }
@@ -592,6 +603,8 @@ delete_array_indices(int_list_list *indices)
 bool
 is_array_t(BaseType *variable)
 {
+    assert(variable);
+
     if (variable->type() != dods_array_c) {
 #if 0
 	cerr << "Variable " << variable->name() << " is not an array." << endl;
@@ -605,6 +618,8 @@ is_array_t(BaseType *variable)
 bool
 is_grid_t(BaseType *variable)
 {
+    assert(variable);
+
     if (variable->type() != dods_grid_c) {
 #if 0
 	cerr << "Variable " << variable->name() << " is not an grid." << endl;
@@ -620,6 +635,8 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 {
     bool status = true;
 
+    assert(variable);
+    assert(variable->type() == dods_array_c);
     Array *a = (Array *)variable; // replace with dynamic cast
 
     DBG(cerr << "Before clear_costraint:" << endl);
@@ -631,13 +648,15 @@ process_array_indices(BaseType *variable, int_list_list *indices)
     DBG(a->print_decl(cerr, "", true, false, true));
 
     Pix p, r;
+    assert(indices);
     for (p = indices->first(), r = a->first_dim(); 
 	 p && r; 
 	 indices->next(p), a->next_dim(r)) {
-
+	assert((*indices)(p));
 	int_list *index = (*indices)(p);
 
 	Pix q = index->first(); 
+	assert((*index)(q));
 	int start = (*index)(q);
 
 	index->next(q);
@@ -692,6 +711,8 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 {
     bool status = true;
 
+    assert(variable);
+    assert(variable->type() == dods_grid_c);
     Grid *g = (Grid *)variable; // Replace with dynamic cast.
 
     // First do the constraints on the ARRAY in the grid.
@@ -707,13 +728,15 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 	g->map_var(r)->set_send_p(false);
 
     // Add specified maps to the current projection.
+    assert(indices);
     for (p = indices->first(), r = g->first_map_var(); 
 	 p && r; 
 	 indices->next(p), g->next_map_var(r)) {
-
+	assert((*indices)(p));
 	int_list *index = (*indices)(p);
 
 	Pix q = index->first(); 
+	assert((*index)(q));
 	int start = (*index)(q);
 
 	index->next(q);
@@ -723,6 +746,8 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 
 	int stop = (*index)(q);
 
+	assert(g->map_var(r));
+	assert(g->map_var(r)->type() == dods_array_c);
 	Array *a = (Array *)g->map_var(r);
 	a->set_send_p(true);
 	a->clear_constraint();
@@ -773,6 +798,8 @@ exit:
 rvalue_list *
 make_rvalue_list(rvalue *rv)
 {
+    assert(rv);
+
     rvalue_list *rvals = new rvalue_list;
 
     return append_rvalue_list(rvals, rv);
@@ -786,6 +813,9 @@ make_rvalue_list(rvalue *rv)
 rvalue_list *
 append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 {
+    assert(rvals);
+    assert(rv);
+
     rvals->append(rv);
 
     return rvals;
@@ -804,11 +834,11 @@ dereference_string(String &s)
 
     // the initial URL must be a complete reference to data; thus no
     // additional CE is needed. 
-    DDS d = c.request_data(ce, false, false); 
+    DDS *d = c.request_data(ce, false, false); 
 
     // By definition, the DDS `D' can have only one variable, so make sure
     // that is true.
-    if (d.num_var() != 1) {
+    if (d->num_var() != 1) {
 	cerr << 
 	    "Too many variables in URL; use only single variable projections"
 	     << endl;
@@ -818,8 +848,10 @@ dereference_string(String &s)
     // OK, we're here. The first_var() must be the only var, return it bound
     // up in an rvalue struct. NB: the *object* must be copied since the one
     // within DDS `D' will be deleted by D's dtor.
-    BaseType *btp = d.var(d.first_var())->ptr_duplicate();
+    BaseType *btp = d->var(d->first_var())->ptr_duplicate();
     rvalue *rv = new rvalue(btp);
+
+    delete d;
 
     return rv;
 }
@@ -839,6 +871,7 @@ dereference_url(value &val)
 rvalue *
 dereference_variable(rvalue *rv, DDS &dds)
 {
+    assert(rv);
     // the value will be read over the net
     BaseType *btp = rv->bvalue("dummy", dds); 
     if (btp->type() != dods_str_c && btp->type() != dods_url_c) {
