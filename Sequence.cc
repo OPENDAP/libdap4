@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.38  1997/12/16 00:41:22  jimg
+// Added debugging code to help finder problems reading sequences from older
+// servers.
+//
 // Revision 1.37  1997/09/22 22:48:17  jimg
 // Added DDS * to deserialize parameters.
 // Added End of instance and end of sequence marker constants.
@@ -484,6 +488,9 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse = false)
 	    << "." << dd->get_version_minor() << endl);
 	return old_deserialize(source, dds, reuse);
     }
+
+    DBG(cerr << "Reading from new server: " << dd->get_version_major() \
+	<< "." << dd->get_version_minor() << endl);
 
     for (Pix p = first_var(); p; next_var(p)) {
 	stat = var(p)->deserialize(source, dds, reuse);
