@@ -80,7 +80,7 @@ default:
 	@echo "or"
 	@echo "usage: nmake model<ST|MT|MD|STD|MTD|MDD>; nmake install<ST|MT|MD|STD|MTD|MDD>"
 
-all:	build_libxdr setup
+all:	grammars build_libxdr setup
 	nmake modelST
 	nmake modelMT
 	nmake modelMD
@@ -208,14 +208,14 @@ CLIENTOBJS = $(OBJDIR)\Connections.obj \
 		$(OBJDIR)\HTTPConnect.obj \
 		$(OBJDIR)\HTTPCache.obj
 
-TYPEOBJS = $(OBJDIR)\BaseType.obj \
+TYPEOBJS = $(GSE_GRAM_OBJS) \
+		$(OBJDIR)\BaseType.obj \
 		$(OBJDIR)\Byte.obj \
 		$(OBJDIR)\Int32.obj \
 		$(OBJDIR)\Float64.obj \
 		$(OBJDIR)\Str.obj \
 		$(OBJDIR)\Url.obj \
 		$(OBJDIR)\Vector.obj \
-		$(OBJDIR)\List.obj \
 		$(OBJDIR)\Array.obj \
 		$(OBJDIR)\Structure.obj \
 		$(OBJDIR)\Sequence.obj \
@@ -224,7 +224,6 @@ TYPEOBJS = $(OBJDIR)\BaseType.obj \
 		$(OBJDIR)\util.obj \
 		$(OBJDIR)\ce_functions.obj \
 		$(OBJDIR)\GSEClause.obj \
-		$(GSE_GRAM_OBJS) \
 		$(OBJDIR)\Int16.obj \
 		$(OBJDIR)\UInt16.obj \
 		$(OBJDIR)\Float32.obj \
@@ -239,7 +238,6 @@ TYPEOBJS = $(OBJDIR)\BaseType.obj \
 		$(OBJDIR)\VirtualCtorStr.obj \
 		$(OBJDIR)\VirtualCtorUrl.obj \
 		$(OBJDIR)\VirtualCtorArray.obj \
-		$(OBJDIR)\VirtualCtorList.obj \
 		$(OBJDIR)\VirtualCtorStructure.obj \
 		$(OBJDIR)\VirtualCtorSequence.obj \
 		$(OBJDIR)\VirtualCtorGrid.obj \
@@ -346,7 +344,6 @@ $(OBJDIR)\Float64.obj : $(SRCDIR)\Float64.cc
 $(OBJDIR)\Str.obj : $(SRCDIR)\Str.cc
 $(OBJDIR)\Url.obj : $(SRCDIR)\Url.cc
 $(OBJDIR)\Vector.obj : $(SRCDIR)\Vector.cc
-$(OBJDIR)\List.obj : $(SRCDIR)\List.cc
 $(OBJDIR)\Array.obj : $(SRCDIR)\Array.cc
 $(OBJDIR)\Structure.obj : $(SRCDIR)\Structure.cc
 $(OBJDIR)\Sequence.obj : $(SRCDIR)\Sequence.cc
@@ -369,7 +366,6 @@ $(OBJDIR)\VirtualCtorFloat64.obj : $(SRCDIR)\VirtualCtorFloat64.cc
 $(OBJDIR)\VirtualCtorStr.obj : $(SRCDIR)\VirtualCtorStr.cc
 $(OBJDIR)\VirtualCtorUrl.obj : $(SRCDIR)\VirtualCtorUrl.cc
 $(OBJDIR)\VirtualCtorArray.obj : $(SRCDIR)\VirtualCtorArray.cc
-$(OBJDIR)\VirtualCtorList.obj : $(SRCDIR)\VirtualCtorList.cc
 $(OBJDIR)\VirtualCtorStructure.obj : $(SRCDIR)\VirtualCtorStructure.cc
 $(OBJDIR)\VirtualCtorSequence.obj : $(SRCDIR)\VirtualCtorSequence.cc
 $(OBJDIR)\VirtualCtorGrid.obj : $(SRCDIR)\VirtualCtorGrid.cc
