@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.50 2004/09/16 15:19:42 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.51 2004/11/16 18:04:23 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -63,21 +63,29 @@ Vector::_duplicate(const Vector &v)
     // BaseType::_duplicate(v);
 
     _length = v._length;
-    _var = v._var->ptr_duplicate(); // use ptr_duplicate() 
-    _var->set_parent(this);	// ptr_duplicate does not set d_parent.
-
+    if (v._var) {
+        _var = v._var->ptr_duplicate(); // use ptr_duplicate() 
+        _var->set_parent(this);	// ptr_duplicate does not set d_parent.
+    }
+    else {
+        _var = 0;
+    }
+    
     // Note that for vectors of non-numeric stuff we don't maintain a back
     // pointer for each element, just _var (the template) has a back pointer. 
-    if (v._vec.size() == 0)
-	_vec = v._vec;
+    if (v._vec.empty())
+	    _vec = v._vec;
     else {
-	for (unsigned int i = 0; i < _vec.size(); ++i)
-	    _vec[i] = v._vec[i];
+        _vec = v._vec;
+#if 0
+    	for (unsigned int i = 0; i < _vec.size(); ++i)
+    	    _vec[i] = v._vec[i];
+#endif
     }
 
     _buf = 0;			// init to null
     if (v._buf)			// only copy if data present
-	val2buf(v._buf);	// store this's value in v's _BUF.
+    	val2buf(v._buf);	// store v's value in this's _BUF.
 }
 
 /** The Vector constructor requires the name of the variable to be
@@ -97,11 +105,14 @@ Vector::_duplicate(const Vector &v)
     @see Type
     @brief The Vector constructor.  */
 Vector::Vector(const string &n, BaseType *v, const Type &t) 
-    :BaseType(n, t), _length(-1), _var(v), _buf(0), _vec(0)
+    :BaseType(n, t), _length(-1), _var(0), _buf(0), _vec(0)
 {
+    if (v)
+        add_var(v);
+        
     DBG(cerr << "Entering Vector ctor for object: " << this << endl);
     if (_var)
-	_var->set_parent(this);
+        _var->set_parent(this);
 }
 
 /** The Vector copy constructor. */
@@ -120,12 +131,12 @@ Vector::~Vector()
     delete _var; _var = 0;
 
     if (_buf) {
-	delete[] _buf; _buf = 0;
+	   delete[] _buf; _buf = 0;
     }
     else {
-	for (unsigned int i = 0; i < _vec.size(); ++i) {
-	    delete _vec[i]; _vec[i] = 0;
-	}
+    	for (unsigned int i = 0; i < _vec.size(); ++i) {
+    	    delete _vec[i]; _vec[i] = 0;
+    	}
     }
 
     DBG(cerr << "Exiting ~Vector" << endl);
@@ -148,10 +159,10 @@ int
 Vector::element_count(bool leaves)
 {
     if (!leaves)
-	return 1;
+	   return 1;
     else
-	// var() only works for simple types! 
-	return var(0)->element_count(leaves);
+	   // var() only works for simple types! 
+	   return var(0)->element_count(leaves);
 }
 
 // These mfuncs set the _send_p and _read_p fields of BaseType. They differ
@@ -199,20 +210,20 @@ Vector::set_read_p(bool state)
     @return A pointer to the BaseType if found, otherwise null.
     @see Vector::var */
 BaseType *
-Vector::var(const string &n, bool exact)
+Vector::var(const string &n, bool exact, btp_stack *s)
 {
     string name = www2id(n);
 
     // Make sure to check for the case where name is the default (the empty
     // string). 9/1/98 jhrg
     if (_var->is_constructor_type()) {
-	if (name == "" || _var->name() == name)
-	    return _var;
-	else
-	    return _var->var(name, exact);
+    	if (name == "" || _var->name() == name)
+    	    return _var;
+    	else
+    	    return _var->var(name, exact, s);
     }
     else
-	return _var;
+	   return _var;
 }
 
 /** This version of var(...) searches for <i>name</i> and returns a
@@ -231,10 +242,10 @@ Vector::var(const string &n, btp_stack &s)
     string name = www2id(n);
 
     if (_var->is_constructor_type())
-	return _var->var(name, s);
+	   return _var->var(name, s);
     else {
-	s.push((BaseType *)this);
-	return _var;
+	   s.push((BaseType *)this);
+	   return _var;
     }
 }
 
@@ -809,17 +820,26 @@ Vector::set_vec(unsigned int i, BaseType *val)
 void
 Vector::add_var(BaseType *v, Part)
 {
-    // Jose Garcia
-    // By getting a copy of this object to be assigned to _var
-    // we let the owner of 'v' to deallocate it as necessary.
-
-    _var = v->ptr_duplicate();
-    if (!v->name().empty())
-	set_name(v->name());	// Vector name becomes base object's name
-    _var->set_parent(this);	// Vector --> child
-  
-    DBG(cerr << "Vector::add_var: Added variable " << v << " (" \
-	<< v->name() << " " << v->type_name() << ")" << endl);
+    // Delete the current template variable
+    delete _var;
+    
+    // if 'v' is null, just set _var to null and exit.
+    if (!v) {
+        _var = 0;
+    }
+    else {
+        // Jose Garcia
+        // By getting a copy of this object to be assigned to _var
+        // we let the owner of 'v' to deallocate it as necessary.
+        _var = v->ptr_duplicate();
+        if (!v->name().empty())
+    	   set_name(v->name());	// Vector name becomes base object's name
+        
+        _var->set_parent(this);	// Vector --> child
+      
+        DBG(cerr << "Vector::add_var: Added variable " << v << " ("
+            << v->name() << " " << v->type_name() << ")" << endl);
+    }
 }
 
 #if 0
@@ -905,6 +925,14 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.51  2004/11/16 18:04:23  jimg
+// Modified the ctor and add_var() method so that a null variable can be added
+// as a template.  This makes it possible for a client of the library to create an
+// Array without allocating its template. This is used by the netCDF CL's
+// translation software when it needs to create a set of arrays that have the
+// same dimensions. The 'master' array object is created and then duplicated
+// when each of the different template variables are created/added.
+//
 // Revision 1.50  2004/09/16 15:19:42  jimg
 // Corrected the commets for set_vec() and buf2val().
 //
