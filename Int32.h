@@ -5,11 +5,15 @@
 // jhrg 9/7/94
 
 /* $Log: Int32.h,v $
-/* Revision 1.14  1995/12/09 01:06:50  jimg
-/* Added changes so that relational operators will work properly for all the
-/* datatypes (including Sequences). The relational ops are evaluated in
-/* DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+/* Revision 1.15  1996/03/05 18:07:21  jimg
+/* Added ce_eval to serailize member function.
+/* Added the ops member function.
 /*
+ * Revision 1.14  1995/12/09  01:06:50  jimg
+ * Added changes so that relational operators will work properly for all the
+ * datatypes (including Sequences). The relational ops are evaluated in
+ * DDS::eval_constraint() after being parsed by DDS::parse_constraint().
+ *
  * Revision 1.13  1995/12/06  21:35:18  jimg
  * Changed read() from three to two parameters.
  * Removed store_val() and read_val() (use buf2val() and val2buf()).
@@ -24,19 +28,19 @@
  *
  * Revision 1.10  1995/03/04  14:35:02  jimg
  * Major modifications to the transmission and representation of values:
- * 	Added card() virtual function which is true for classes that
- * 	contain cardinal types (byte, int float, string).
- * 	Changed the representation of Str from the C rep to a C++
- * 	class represenation.
- * 	Chnaged read_val and store_val so that they take and return
- * 	types that are stored by the object (e.g., inthe case of Str
- * 	an URL, read_val returns a C++ String object).
- * 	Modified Array representations so that arrays of card()
- * 	objects are just that - no more storing strings, ... as
- * 	C would store them.
- * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
- * 	an array of a structure is represented as an array of Structure
- * 	objects).
+ * Added card() virtual function which is true for classes that
+ * contain cardinal types (byte, int float, string).
+ * Changed the representation of Str from the C rep to a C++
+ * class represenation.
+ * Chnaged read_val and store_val so that they take and return
+ * types that are stored by the object (e.g., inthe case of Str
+ * an URL, read_val returns a C++ String object).
+ * Modified Array representations so that arrays of card()
+ * objects are just that - no more storing strings, ... as
+ * C would store them.
+ * Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * an array of a structure is represented as an array of Structure
+ * objects).
  *
  * Revision 1.9  1995/02/10  02:22:42  jimg
  * Added DBMALLOC includes and switch to code which uses malloc/free.
@@ -116,7 +120,7 @@ public:
     virtual unsigned int width();
 
     virtual bool serialize(const String &dataset, DDS &dds, 
-			   bool flush = false);
+			   bool ce_eval = true, bool flush = false);
     virtual bool deserialize(bool reuse = false);
 
     virtual bool read(const String &dataset) = 0;
@@ -126,6 +130,8 @@ public:
 
     virtual void print_val(ostream &os, String space = "",
 			   bool print_decl_p = true);
+
+    virtual bool ops(BaseType &b, int op);
 };
 
 #endif
