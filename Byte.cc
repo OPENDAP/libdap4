@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.33  1998/03/11 00:30:35  jimg
+// Fixed a bug in buf2val(...) where the assert failed when the value held by
+// the variable was 0 (which is a perfectly valid value).
+//
 // Revision 1.32  1997/12/31 21:46:50  jimg
 // Added casts in serialize and deserialize to get rid of warnings about
 // signed-ness of buffers passed to XDR functions.
@@ -193,7 +197,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.32 1997/12/31 21:46:50 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Byte.cc,v 1.33 1998/03/11 00:30:35 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -279,7 +283,7 @@ Byte::val2buf(void *val, bool)
 unsigned int
 Byte::buf2val(void **val)
 {
-    assert(_buf && val);
+    assert(val);
 
     if (!*val)
 	*val = new dods_byte;

@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.cc,v $
+// Revision 1.8  1998/03/11 00:30:11  jimg
+// Fixed a bug in buf2val(...) where the assert failed when the value held by
+// the variable was 0 (which is a perfectly valid value).
+//
 // Revision 1.7  1997/09/22 22:40:20  jimg
 // Added DDS * to deserialize parameters.
 //
@@ -42,7 +46,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.7 1997/09/22 22:40:20 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: UInt32.cc,v 1.8 1998/03/11 00:30:11 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -107,7 +111,7 @@ UInt32::val2buf(void *val, bool)
 unsigned int
 UInt32::buf2val(void **val)
 {
-    assert(_buf && val);
+    assert(val);
 
     if (!*val)
 	*val = new dods_uint32;

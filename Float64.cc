@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.32  1998/03/11 00:31:00  jimg
+// Fixed a bug in buf2val(...) where the assert failed when the value held by
+// the variable was 0 (which is a perfectly valid value).
+//
 // Revision 1.31  1997/09/22 23:03:12  jimg
 // Added DDS * to deserialize parameters.
 //
@@ -182,7 +186,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.31 1997/09/22 23:03:12 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Float64.cc,v 1.32 1998/03/11 00:31:00 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -251,7 +255,7 @@ Float64::val2buf(void *val, bool)
 unsigned int
 Float64::buf2val(void **val)
 {
-    assert(_buf && val);
+    assert(val);
 
     if (!*val)
 	*val = new double;
