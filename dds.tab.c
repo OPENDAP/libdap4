@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.41 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.42 2003/02/26 06:46:32 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1666,6 +1666,9 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
+ * Revision 1.42  2003/02/26 06:46:32  jimg
+ * Updated grammars.
+ *
  * Revision 1.41  2003/02/21 00:14:25  jimg
  * Repaired copyright.
  *
