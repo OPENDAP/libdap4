@@ -8,6 +8,13 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.10  1997/03/05 06:53:46  jimg
+// Changed display_message member function so that it uses Gui::response()
+// instead of Gui::command(). The later only works for things like the progress
+// popup for which expect does not need to wait. However, for things like
+// dialogs, expect must wait for the user to `hit OK', hence the use of the
+// response() member function.
+//
 // Revision 1.9  1997/02/27 01:06:47  jimg
 // Fixed problem with consistency check in Error::error_code().
 //
@@ -53,7 +60,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.9 1997/02/27 01:06:47 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.cc,v 1.10 1997/03/05 06:53:46 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -231,7 +238,13 @@ Error::display_message(Gui *gui = 0)
     assert(OK());
     if (gui && gui->show_gui()) {
 	String cmd = (String)"dialog " + _error_message + "\r";
+	String response;	// not used
+	// You must use response() with dialog so that expect will wait for
+	// the user to hit OK.
+	gui->response(cmd, response);
+#if 0
 	gui->command(cmd);
+#endif
     }
     else
 	cerr << _error_message << endl;
