@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.40 2003/05/27 21:39:54 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.41 2003/09/25 22:37:34 jimg Exp $"};
 
 #include <iostream>
 #include <string>
@@ -61,7 +61,7 @@ using namespace std;
 const string usage = 
 "Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
 \n\
-options: -o <response>: One of DAS, DDS, DataDDS or Version (Required)\n\
+options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
          -u <url>: The complete URL minus the CE (required for DDX)\n\
          -c: Compress the response using the deflate algorithm.\n\
          -e <expr>: When returning a DataDDS, use <expr> as the constraint.\n\
@@ -771,7 +771,66 @@ DODSFilter::send_ddx(DDS &dds, FILE *out)
     dds.print_xml(out, !d_ce.empty(), d_url + ".blob?" + d_ce);
 }
 
+/** Write the BLOB response to the client.
+    @param dds Use the variables in this DDS to generate the BLOB response.
+    @param out Dump the response to this FILE pointer. */
+void
+DODSFilter::send_blob(DDS &dds, FILE *out)
+{
+    bool compress = d_comp && deflate_exists();
+    time_t data_lmt = get_data_last_modified_time(d_anc_dir);
+
+    // If this is a conditional request and the server should send a 304
+    // response, do that and exit. Otherwise, continue on and send the full
+    // response. 
+    if (is_conditional() && data_lmt <= get_request_if_modified_since()) {
+	set_mime_not_modified(out);
+	return;
+    }
+
+    dds.parse_constraint(d_ce, out, true);
+  
+    // Handle *functional* constraint expressions specially 
+    if (dds.functional_expression()) {
+	BaseType *var = dds.eval_function(d_dataset);
+	if (!var)
+	    throw Error("Error calling the CE function.");
+
+	set_mime_binary(out, dods_data, d_cgi_ver,
+			(compress) ? deflate : x_plain, data_lmt);
+      
+	FILE *comp_sink;
+	XDR *xdr_sink;
+	int childpid = get_sinks(out, compress, &comp_sink, &xdr_sink);
+      
+	// In the following call to serialize, suppress CE evaluation.
+	if (!var->serialize(d_dataset, dds, xdr_sink, false))
+	    throw Error("Could not send the function result.");
+      
+	clean_sinks(childpid, compress, xdr_sink, comp_sink);
+    }
+    else {
+	set_mime_binary(out, dods_data, d_cgi_ver,
+			(compress) ? deflate : x_plain, data_lmt);
+    
+	FILE *comp_sink;
+	XDR *xdr_sink;
+	int childpid = get_sinks(out, compress, &comp_sink, &xdr_sink);
+
+	for (DDS::Vars_iter i = dds.var_begin(); i != dds.var_end(); i++)
+	    if ((*i)->send_p()) // only process projected variables
+		if (!(*i)->serialize(d_dataset, dds, xdr_sink, true))
+		    throw Error(string("Could not serialize variable '")
+				+ (*i)->name() + string("'."));
+    
+	clean_sinks(childpid, compress, xdr_sink, comp_sink);
+    }
+}
+
 // $Log: DODSFilter.cc,v $
+// Revision 1.41  2003/09/25 22:37:34  jimg
+// Misc changes.
+//
 // Revision 1.40  2003/05/27 21:39:54  jimg
 // Added DDX_Response to the set_response() method.
 //

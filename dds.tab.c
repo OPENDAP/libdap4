@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.45 2003/05/23 03:24:57 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.46 2003/09/25 22:37:34 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1630,7 +1630,10 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.45  2003/05/23 03:24:57  jimg
+ * Revision 1.46  2003/09/25 22:37:34  jimg
+ * Misc changes.
+ *
+ * Revision 1.43  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can
  * produce a DDX from a DDS and it can merge attributes from a DAS into a

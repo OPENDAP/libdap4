@@ -72,6 +72,9 @@
 
 using std::cout;
 
+int get_sinks(FILE *out, bool compress, FILE **comp_sink, XDR **xdr_sink);
+void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
+
 /** The DODS Data Descriptor Object (DDS) is a data structure used by
     the DODS software to describe datasets and subsets of those
     datasets.  The DDS may be thought of as the declarations for the
@@ -314,6 +317,9 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.52  2003/09/25 22:37:34  jimg
+// Misc changes.
+//
 // Revision 1.51  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

@@ -107,6 +107,9 @@
 
     @todo Move, in some sense, the _map_vars up to Constructor. Look at using
     Constructor's _var field for these.
+    @todo Along the same lines as the previous item, consider removing the
+    Part enum and adopting the convention that the first variable added is
+    the array and any subsequenct variables are maps.
 
     @brief Holds the Grid data type.
     @see Array
@@ -196,6 +199,9 @@ public:
 
 /* 
  * $Log: Grid.h,v $
+ * Revision 1.47  2003/09/25 22:37:34  jimg
+ * Misc changes.
+ *
  * Revision 1.46  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
  * Potter's work in the Java DAP software. At this point the code can

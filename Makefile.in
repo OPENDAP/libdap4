@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.143 2003/05/25 03:27:14 jimg Exp $
+# $Id: Makefile.in,v 1.144 2003/09/25 22:37:34 jimg Exp $
 
 @SET_MAKE@
 
@@ -100,6 +100,10 @@ DDSHDRS = DDS.h DataDDS.h
 DDSSRCS = DDS.cc DataDDS.cc
 DDSOBJS = DDS.o DataDDS.o $(DDS_GRAM_OBJS)
 
+DDXHDRS = DDXParser.h DDXExceptions.h
+DDXSRCS = DDXParser.cc
+DDXOBJS = DDXParser.o
+
 EXPRHDRS = expr.h Clause.h RValue.h
 EXPRSRCS = Clause.cc RValue.cc
 EXPROBJS = Clause.o RValue.o $(EXPR_GRAM_OBJS)
@@ -165,12 +169,13 @@ AISHDRS = AISConnect.h AISMerge.h AISExceptions.h AISDatabaseParser.h \
 AISOBJS = AISResources.o AISDatabaseParser.o AISMerge.o AISConnect.o
 
 ALLSRCS = $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) $(TESTSRCS) \
-	  $(TESTPROGSRCS) $(GRAM_SRCS) $(CLIENTSRCS) $(UTILSRCS) $(AISSRCS)
+	  $(TESTPROGSRCS) $(GRAM_SRCS) $(CLIENTSRCS) $(UTILSRCS) $(AISSRCS) \
+	  $(DDXSRCS)
 
 all: grammars $(PROG)
 
 libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS) \
-	    $(EXPROBJS) $(UTILOBJS) $(CLIENTOBJS) $(AISOBJS)
+	    $(EXPROBJS) $(UTILOBJS) $(CLIENTOBJS) $(AISOBJS) $(DDXOBJS)
 	    $(AR) cru $@ $?
 	    $(RANLIB) $@
 
@@ -316,7 +321,7 @@ install-headers:
 	$(INSTALL_DATA) debug.h $(includedir)
 	$(INSTALL_DATA) dods-limits.h $(includedir)
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
-		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS); \
+		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS); \
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
 install-geturl: geturl
@@ -391,14 +396,17 @@ grid-func-check: geturl
 UNIT_TEST_SRCS = HTTPCacheTest.cc HTTPConnectTest.cc cgiUtilTest.cc \
 	AttrTableTest.cc DDSTest.cc SequenceTest.cc ByteTest.cc DASTest.cc \
 	generalUtilTest.cc parserUtilTest.cc AISDatabaseParserTest.cc \
-	AISResourcesTest.cc AISMergeTest.cc DODSFilterTest.cc
+	AISResourcesTest.cc AISMergeTest.cc DODSFilterTest.cc DDXParserTest.cc
 
 UNIT_TEST_PROGS = HTTPCacheTest HTTPConnectTest cgiUtilTest AttrTableTest \
 	DDSTest SequenceTest ByteTest DASTest generalUtilTest \
 	parserUtilTest AISDatabaseParserTest AISResourcesTest AISMergeTest \
-	DODSFilterTest
+	DODSFilterTest DDXParserTest
 
 # Build the unit tests. Requires CppUnit be installed.
+
+DDXParserTest: DDXParserTest.o libdap++.a
+	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
 
 DODSFilterTest: DODSFilterTest.o libdap++.a
 	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
@@ -443,16 +451,7 @@ HTTPConnectTest: HTTPConnectTest.o libdap++.a
 	$(CXX) -o $@ $(LDFLAGS) $< -lcppunit -ldap++ $(LIBS)
 
 unit-check: $(UNIT_TEST_PROGS)
-	./cgiUtilTest
-	./HTTPConnectTest
-	./HTTPCacheTest
-	./SequenceTest
-	./AttrTableTest
-	./DDSTest
-	./ByteTest
-	./DASTest
-	./generalUtilTest
-	./parserUtilTest
+	for t in $^; do echo $$t; ./$$t; done
 	-(cd tests && $(MAKE) $(MFLAGS) all)
 
 # Clean up.
@@ -587,7 +586,7 @@ depend:
 	@depend@ -m Makefile.in -- $(CPPFLAGS) -- \
 	$(CLIENTSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
 	$(ERRORSRCS) $(AISSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS) \
-	$(UNIT_TEST_SRCS)
+	$(UNIT_TEST_SRCS) $(AISSRCS) $(DDXSRCS)
 	-(cd tests && $(MAKE) $(MFLAGS) depend)
 	$(MAKE) $(MFLAGS) Makefile
 
@@ -1039,3 +1038,24 @@ AISMergeTest.o: AISMergeTest.cc Connect.h DAS.h GNU/Pix.h \
 DODSFilterTest.o: DODSFilterTest.cc DODSFilter.h DAS.h GNU/Pix.h \
   IteratorAdapter.h AttrTable.h Error.h DDS.h BaseType.h InternalErr.h \
   Clause.h expr.h RValue.h GNU/Regex.h debug.h
+DDXParserTest.o: DDXParserTest.cc DDXParser.h \
+  /usr/local/include/libxml2/libxml/parserInternals.h \
+  /usr/local/include/libxml2/libxml/parser.h \
+  /usr/local/include/libxml2/libxml/tree.h \
+  /usr/local/include/libxml2/libxml/xmlversion.h \
+  /usr/local/include/libxml2/libxml/xmlregexp.h \
+  /usr/local/include/libxml2/libxml/valid.h \
+  /usr/local/include/libxml2/libxml/list.h \
+  /usr/local/include/libxml2/libxml/xmlautomata.h \
+  /usr/local/include/libxml2/libxml/entities.h \
+  /usr/local/include/libxml2/libxml/encoding.h \
+  /usr/local/include/libxml2/libxml/xmlIO.h \
+  /usr/local/include/libxml2/libxml/globals.h \
+  /usr/local/include/libxml2/libxml/xmlerror.h \
+  /usr/local/include/libxml2/libxml/SAX.h \
+  /usr/local/include/libxml2/libxml/xlink.h \
+  /usr/local/include/libxml2/libxml/xmlmemory.h \
+  /usr/local/include/libxml2/libxml/threads.h \
+  /usr/local/include/libxml2/libxml/HTMLparser.h DDXExceptions.h Error.h \
+  DDS.h GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h InternalErr.h \
+  DAS.h Clause.h expr.h RValue.h debug.h

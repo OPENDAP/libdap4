@@ -76,7 +76,7 @@ Grid::_duplicate(const Grid &s)
 
     @brief The Grid constructor.
 */
-Grid::Grid(const string &n) : Constructor(n, dods_grid_c)
+Grid::Grid(const string &n) : Constructor(n, dods_grid_c), _array_var(0)
 {
 }
 
@@ -291,6 +291,18 @@ Grid::var(const string &name, bool)
 }    
 #endif
 
+/** Add an array or map to the Grid. 
+
+    The original version of this method required that the \t part parameter
+    be present. However, this complicates using the class from a parser
+    (e.g., the schema-based XML parser). I have modified the method so that
+    if \t part is nil (the default), then the first variable added is the
+    array and subsequent variables are maps. This matches the behavior in the
+    Java DAP implementation. 
+
+    @param bt Array or Map variable
+    @param part is this an array or a map. If not present, first \t bt is the
+    array and subsequent <tt>bt</tt>s are maps. */
 void 
 Grid::add_var(BaseType *bt, Part part)
 {
@@ -308,14 +320,21 @@ Grid::add_var(BaseType *bt, Part part)
 	_array_var->set_parent(this);
 	return;
       case maps: {
-	BaseType *btp = bt->ptr_duplicate();
-	btp->set_parent(this);
-	_map_vars.push_back(btp);
-	return;
+	  BaseType *btp = bt->ptr_duplicate();
+	  btp->set_parent(this);
+	  _map_vars.push_back(btp);
+	  return;
       }
       default:
-	throw InternalErr(__FILE__, __LINE__, 
-			  "Unknown grid part (must be Array or Maps).");
+	if (!_array_var) {
+	    _array_var = bt->ptr_duplicate();
+	    _array_var->set_parent(this);
+	}
+	else {
+	    BaseType *btp = bt->ptr_duplicate();
+	    btp->set_parent(this);
+	    _map_vars.push_back(btp);
+	}
 	return;
     }
 }    
@@ -832,6 +851,9 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.59  2003/09/25 22:37:34  jimg
+// Misc changes.
+//
 // Revision 1.58  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

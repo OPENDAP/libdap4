@@ -179,10 +179,15 @@ public:
     virtual void send_data(DDS &dds, FILE *data_stream,
 			   const string &anc_location = "");
 
-    virtual void send_ddx(DDS &dds, FILE *out); 
+    virtual void send_ddx(DDS &dds, FILE *out);
+    
+    virtual void send_blob(DDS &dds, FILE *out);
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.30  2003/09/25 22:37:34  jimg
+// Misc changes.
+//
 // Revision 1.29  2003/05/30 16:35:17  jimg
 // Added response enums for DDX and Response. Also added the send_ddx() method.
 //
