@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.31  1998/04/03 17:46:04  jimg
+// Patch from Jake Hamby; fixed bug where Structures which contained sequences
+// did not print properly.
+//
 // Revision 1.30  1998/03/20 00:23:25  jimg
 // Improved the error message reporting.
 //
@@ -124,7 +128,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.30 1998/03/20 00:23:25 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.31 1998/04/03 17:46:04 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -134,7 +138,7 @@ static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.30 1998/03/20 00:23:25 jim
 
 #include "Connect.h"
 
-const char *VERSION = "$Revision: 1.30 $";
+const char *VERSION = "$Revision: 1.31 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -211,6 +215,7 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 
     cout << "The data:" << endl;
 
+    bool sequence_found = false;
     for (Pix q = dds->first_var(); q; dds->next_var(q)) {
 	BaseType *v = dds->var(q);
 	switch (v->type()) {
@@ -218,10 +223,14 @@ process_data(Connect &url, DDS *dds, bool verbose = false, bool async = false)
 	    // their semantics get out of hand... jhrg 9/12/96
 	  case dods_sequence_c:
 	    ((Sequence *)v)->print_all_vals(cout, url.source(), dds);
+	    sequence_found = true;
+	    break;
+	  case dods_structure_c:
+	    ((Structure *)v)->print_all_vals(cout, url.source(), dds);
 	    break;
 	  default:
 	    PERF(cerr << "Deserializing: " << dds.var(q).name() << endl);
-	    if (async && !v->deserialize(url.source(), dds)) {
+	    if ((sequence_found || async) && !v->deserialize(url.source(), dds)) {
 		cerr << "Asynchronous read failure." << endl;
 		exit(1);
 	    }
