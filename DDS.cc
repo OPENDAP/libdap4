@@ -9,15 +9,18 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.30  1997/03/05 08:12:18  jimg
+// Added calls to set_mime_binary() in DDS::send().
+//
 // Revision 1.29  1997/02/28 01:30:17  jimg
 // Corrected call to unique() in check_semantics() (added new String &msg
 // parameter).
 //
 // Revision 1.28  1996/12/03 00:20:18  jimg
-// Added ostream and bool parameters to parse_constraint(). If the bool param is
-// true the the code assumes it is being run in the server. In that case error
-// objects are not evaluated but instead are serialized and set to the client
-// via the ostream.
+// Added ostream and bool parameters to parse_constraint(). If the bool param
+// is true the the code assumes it is being run in the server. In that case
+// error objects are not evaluated but instead are serialized and set to the
+// client via the ostream.
 //
 // Revision 1.27  1996/12/02 23:15:43  jimg
 // Added `filename' field and access functions.
@@ -157,7 +160,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.29 1997/02/28 01:30:17 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: DDS.cc,v 1.30 1997/03/05 08:12:18 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -757,7 +760,8 @@ DDS::parse_constraint(const String &constraint, ostream &os,
 // Returns: true if successful, false otherwise.
 
 bool 
-DDS::send(const String &dataset, const String &constraint, FILE *out)
+DDS::send(const String &dataset, const String &constraint, FILE *out, 
+	  bool compressed = true)
 {
     bool status = true;
 
@@ -768,12 +772,14 @@ DDS::send(const String &dataset, const String &constraint, FILE *out)
 	// Handle *functional* constraint expressions specially 
 	if (functional_expression()) {
 	    BaseType *var = eval_function(dataset);
+	    set_mime_binary(dods_data, (compressed) ? x_gzip : x_plain);
 	    print_variable(os, var);
 	    os << "Data:" << endl;
 	    // In the following call to serialize, suppress CE evaluation.
 	    status = var->serialize(dataset, *this, sink, false);
 	}
 	else {
+	    set_mime_binary(dods_data, (compressed) ? x_gzip : x_plain);
 	    print_constrained(os); // send constrained DDS
 	    os << "Data:" << endl; // send `Data:' marker
 
