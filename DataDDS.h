@@ -38,12 +38,6 @@
 #ifndef _datadds_h
 #define _datadds_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
-
 #include <iostream>
 #include <string>
 
@@ -55,6 +49,17 @@
     structure.  It is for use on the client side of the DODS
     connection. 
     
+    @note The compile-time symbol DEFAULT_BASETYPE_FACTORY controls whether
+    the old (3.4 and earlier) DDS and DataDDS constructors are supported.
+    These constructors now use a default factory class (BaseTypeFactory,
+    implemented by this library) to instantiate Byte, ..., Grid variables. To
+    use the default ctor in your code you must also define this symbol. If
+    you \e do choose to define this and fail to provide a specialization of
+    BaseTypeFactory when your software needs one, you code may not link or
+    may fail at run time. In addition to the older ctors for DDS and DataDDS,
+    defining the symbol also makes some of the older methods in Connect
+    available (because those methods require the older DDS and DataDDS ctors.
+
     @brief Holds a DODS DDS.
     @see Connect
     */
@@ -68,7 +73,11 @@ private:
     void _version_string_to_numbers();
 
 public:
+    DataDDS(BaseTypeFactory *factory, const string &n = "",
+	    const string &v = "");
+#ifdef DEFAULT_BASETYPE_FACTORY
     DataDDS(const string &n = "", const string &v = "");
+#endif
     virtual ~DataDDS();
 
     void set_version(const string &v);
@@ -76,12 +85,6 @@ public:
 
     int get_version_major();
     int get_version_minor();
-
-#if 0
-    int sequence_level();
-    
-    void set_sequence_level(int level);
-#endif
 };
 
 // Revision 1.8.4.1  2002/09/05 22:52:54  pwest
@@ -95,6 +98,10 @@ public:
 // unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
 //
 // $Log: DataDDS.h,v $
+// Revision 1.18  2005/03/30 21:25:43  jimg
+// Added DEFAULT_BASETYPE_FACTORY define; use this to control whether
+// the DDS objects suppy the BaseTypeFactory by default.
+//
 // Revision 1.17  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

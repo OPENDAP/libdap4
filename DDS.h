@@ -59,6 +59,10 @@
 #include "Constructor.h"
 #endif
 
+#ifndef base_type_factory_h
+#include "BaseTypeFactory.h"
+#endif
+
 #ifndef _das_h
 #include "DAS.h"
 #endif
@@ -160,6 +164,16 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
     See the <i>The DODS User Guide</i>, or the documentation of the
     BaseType class for descriptions of the DODS data types.
 
+    @note The compile-time symbol DEFAULT_BASETYPE_FACTORY controls whether
+    the old (3.4 and earlier) DDS and DataDDS constructors are supported.
+    These constructors now use a default factory class (BaseTypeFactory,
+    implemented by this library) to instantiate Byte, ..., Grid variables. To
+    use the default ctor in your code you must also define this symbol. If
+    you \e do choose to define this and fail to provide a specialization of
+    BaseTypeFactory when your software needs one, you code may not link or
+    may fail at run time. In addition to the older ctors for DDS and DataDDS,
+    defining the symbol also makes some of the older methods in Connect
+    available (because those methods require the older DDS and DataDDS ctors.
 
     @see BaseType
     @see DAS */
@@ -183,6 +197,9 @@ private:
 	function(): name(""), b_func(0), bt_func(0), p_func(0) {}
     };
 
+    BaseTypeFactory *d_factory;
+    bool d_local_basetype_factory; // should the dtor free d_factory?
+
     string name;		// The dataset name
 
     string _filename;		// File name (or other OS identifier) for
@@ -196,7 +213,7 @@ private:
     vector<BaseType *> constants;// List of temporary objects
 
     vector<function> functions; // Known external functions
-
+    
     bool is_global_attr(string name);
     void add_global_attribute(AttrTable::entry *entry);
 
@@ -229,7 +246,10 @@ public:
     typedef std::vector<function>::const_iterator Functions_citer ;
     typedef std::vector<function>::iterator Functions_iter ;
 
+    DDS(BaseTypeFactory *factory, const string &n = "");
+#ifdef DEFAULT_BASETYPE_FACTORY
     DDS(const string &n = "");
+#endif
 
     DDS(const DDS &dds);
 
@@ -242,6 +262,24 @@ public:
     string get_dataset_name();
     void set_dataset_name(const string &n);
 
+    /** Return the factory which makes instances of the Byte, ..., Grid
+        type classes. Specialize BaseTypeFactory so that a DDS will be 
+        populated with your client or server's specialized types.
+        @return An instance of BaseTypeFactory. */
+    BaseTypeFactory *get_factory() { return d_factory; }
+    
+    /** Set the factory class used to instantiate variables during the
+        parse of a DDS. 
+        @param factory The factory this DDS should use. Caller must free
+        factory when done with this DDS.
+        @see BaseTypeFactory */
+    void set_factory(BaseTypeFactory *factory) {
+        if (d_local_basetype_factory)
+            delete d_factory;
+	d_factory = factory;
+	d_local_basetype_factory = false; 
+    }
+    
     virtual AttrTable &get_attr_table();
 
     string filename();
@@ -350,6 +388,10 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.62  2005/03/30 21:27:35  jimg
+// Added DEFAULT_BASETYPE_FACTORY define; use this to control whether
+// the DDS objects suppy the BaseTypeFactory by default.
+//
 // Revision 1.61  2005/03/19 00:39:04  jimg
 // Mods for unit tests; tracking down memory leaks.
 //

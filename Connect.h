@@ -112,15 +112,16 @@ using std::string;
     information about these features. See the DODSFilter class for
     information on servers that compress data.
 
-    @note This file may be built two different ways. If the
-    compile-time symbol <tt>GUI</tt> is defined, a version of Connect
-    is built which will use a simple graphical window to display
-    transmission status information. The graphical display is useful
-    for interactive clients, but won't work for non-interactive
-    programs. For those clients, build the DAP library with
-    <tt>GUI</tt> <i>undefined</i>. Without <tt>GUI</tt> defined,
-    errors will result in Connect throwing an Error object. Clients
-    can catch these objects and try to correct the error.
+    @note The compile-time symbol DEFAULT_BASETYPE_FACTORY controls whether
+    the old (3.4 and earlier) DDS and DataDDS constructors are supported.
+    These constructors now use a default factory class (BaseTypeFactory,
+    implemented by this library) to instantiate Byte, ..., Grid variables. To
+    use the default ctor in your code you must also define this symbol. If
+    you \e do choose to define this and fail to provide a specialization of
+    BaseTypeFactory when your software needs one, you code may not link or
+    may fail at run time. In addition to the older ctors for DDS and DataDDS,
+    defining the symbol also makes some of the older methods in Connect
+    available (because those methods require the older DDS and DataDDS ctors.
 
     @brief Holds information about the link from a DODS client to a
     dataset.
@@ -136,9 +137,12 @@ private:
 
     HTTPConnect *d_http;
 
+#ifdef DEFAULT_BASETYPE_FACTORY
     // *** These are used by deprecated methods only!
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
+#endif
+
     Error _error;		// Error object
 
     string _URL;		// URL to remote dataset (minus CE)
@@ -208,6 +212,13 @@ public:
     virtual void read_data(DataDDS &data, FILE *data_source) 
 	throw(Error, InternalErr);
 
+    /** @deprecated The GUI is no longer supported. This always returns null.
+	*/
+    void *gui() {
+	return 0;
+    }
+
+#ifdef DEFAULT_BASETYPE_FACTORY
     bool request_dds(bool gui = false, const string &ext = "dds")
 	throw(Error, InternalErr) {
 	request_dds(_dds, "");
@@ -228,12 +239,6 @@ public:
 	return true;
     }
 
-    /** @deprecated The GUI is no longer supported. This always returns null.
-	*/
-    void *gui() {
-	return 0;
-    }
-
     DDS *read_data(FILE *data_source, bool gui, bool async)
 	throw(Error, InternalErr) {
 	DataDDS *data = new DataDDS;
@@ -245,10 +250,15 @@ public:
     DAS &das();
     DDS &dds();
     Error &error();
+#endif
 };
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.69  2005/03/30 21:24:40  jimg
+ * Added DEFAULT_BASETYPE_FACTORY define; use this to control whether
+ * the DDS objects suppy the BaseTypeFactory by default.
+ *
  * Revision 1.68  2005/01/28 17:25:12  jimg
  * Resolved conflicts from merge with release-3-4-9
  *
