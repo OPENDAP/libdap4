@@ -37,6 +37,11 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.19  1996/05/14 15:38:20  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.18  1996/04/04 19:15:14  jimg
 // Merged changes from version 1.1.1.
 // Fixed bug in send() - wrong number of arguments to serialize.
@@ -134,7 +139,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.18 1996/04/04 19:15:14 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.19 1996/05/14 15:38:20 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -628,7 +633,7 @@ DDS::send(const String &dataset, const String &constraint, FILE *out,
 	DBG(cerr << "The constrained DDS (about to be sent):\n");
 	DBG(print_constrained(cerr));
 
-	os << "Data:" << endl;	// send `Data:' marker
+       	os << "Data:" << endl;	// send `Data:' marker
 
 	for (Pix q = first_var(); q; next_var(q)) {
 	    if (var(q)->send_p()) { // only process projected variables

@@ -6,6 +6,11 @@
 // 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.5  1996/05/14 15:38:58  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.4  1996/04/05 00:22:18  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -35,8 +40,8 @@
 typedef struct {
     Type type;			// Type is an enum defined in BaseType.h
     union {
-	int32 i;
-	float64 f;
+	dods_int32 i;
+	dods_float64 f;
 	String *s;
     } v;
 } value;

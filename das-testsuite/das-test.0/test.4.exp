@@ -2,7 +2,12 @@
 # jhrg
 #
 # $Log: test.4.exp,v $
-# Revision 1.6  1994/12/09 21:45:48  jimg
+# Revision 1.7  1996/05/14 15:40:51  jimg
+# These changes have already been checked in once before. However, I
+# corrupted the source repository and restored it from a 5/9/96 backup
+# tape. The previous version's log entry should cover the changes.
+#
+# Revision 1.6  1994/12/09  21:45:48  jimg
 # Modified for new unix.exp.
 #
 # Revision 1.5  1994/10/13  16:04:12  jimg

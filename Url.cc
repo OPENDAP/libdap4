@@ -38,6 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
+// Revision 1.13  1996/05/14 15:38:45  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.12  1996/04/05 00:22:08  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -122,5 +127,5 @@
 
 Url::Url(const String &n) : Str(n)
 {
-    set_type(d_url_t);		// override the type set by Str
+    set_type(dods_url_c);		// override the type set by Str
 }

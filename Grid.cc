@@ -38,6 +38,11 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.22  1996/05/14 15:38:26  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.21  1996/04/05 00:21:33  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -180,7 +185,7 @@ Grid::_duplicate(const Grid &s)
 	_map_vars.append(cs._map_vars(p)->ptr_duplicate());
 }
 
-Grid::Grid(const String &n) : BaseType(n, d_grid_t)
+Grid::Grid(const String &n) : BaseType(n, dods_grid_c)
 {
 }
 
@@ -424,7 +429,7 @@ Grid::check_semantics(bool all)
     }
 	
     // Is it an array?
-    if (_array_var->type() != d_array_t) {
+    if (_array_var->type() != dods_array_c) {
 	cerr << "Grid `" << name() << "'s' member `"
 	    << _array_var->name() << "' must be an array" << endl;
 	return false;
@@ -456,7 +461,7 @@ Grid::check_semantics(bool all)
 	    return false;
 	}
 	// check types
-	if (mv->type() != d_array_t) {
+	if (mv->type() != dods_array_c) {
 	    cerr << "Grid map variable  `" << mv->name()
 		<< "' is not an array" << endl;
 	    return false;

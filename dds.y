@@ -50,6 +50,11 @@
 
 /* 
  * $Log: dds.y,v $
+ * Revision 1.14  1996/05/14 15:38:54  jimg
+ * These changes have already been checked in once before. However, I
+ * corrupted the source repository and restored it from a 5/9/96 backup
+ * tape. The previous version's log entry should cover the changes.
+ *
  * Revision 1.13  1996/04/05 21:59:38  jimg
  * Misc Changes for release 2.0.1 of the core software - for developers.
  *
@@ -116,7 +121,7 @@
 
 #define YYSTYPE char *
 
-static char rcsid[]={"$Id: dds.y,v 1.13 1996/04/05 21:59:38 jimg Exp $"};
+static char rcsid[]={"$Id: dds.y,v 1.14 1996/05/14 15:38:54 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -187,9 +192,10 @@ declarations:	/* empty */
 ;
 
 declaration: 	list non_list_decl
-                    { if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); }
-
+                { 
+		    if (current->check_semantics())
+			add_entry(table, &ctor, &current, part); 
+		}
                 | non_list_decl
 ;
 
@@ -198,61 +204,102 @@ declaration: 	list non_list_decl
    to/from arrays too hard. */
 
 non_list_decl:  base_type var ';' 
-                    { if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); }
+                { 
+		    if (current->check_semantics())
+			add_entry(table, &ctor, &current, part); 
+		}
 
 		| structure  '{' declarations '}' 
-		    { current = ctor->pop(); } 
-                  var ';' 
-                    { if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); }
+		{ 
+		    current = ctor->pop(); 
+		} 
+                var ';' 
+                { 
+		    if (current->check_semantics())
+			add_entry(table, &ctor, &current, part); 
+		}
 
 		| sequence '{' declarations '}' 
-                    { current = ctor->pop(); } 
-                  var ';' 
-                    { if (current->check_semantics())
-			add_entry(table, &ctor, &current, part); }
+                { 
+		    current = ctor->pop(); 
+		} 
+                var ';' 
+                { 
+		    if (current->check_semantics())
+			add_entry(table, &ctor, &current, part); 
+		}
 
 		| function '{' INDEPENDENT ':'
-		    { part = independent; }
-                  declarations DEPENDENT ':' 
-		    { part = dependent;} 
-                  declarations '}' 
-                    { current = ctor->pop(); }
-                  var ';'
-                    { if (current->check_semantics()) {
+		{ part = independent; }
+                declarations DEPENDENT ':' 
+		{ part = dependent;} 
+                declarations '}' 
+                { 
+		    current = ctor->pop(); 
+		}
+                var ';'
+                { 
+		    if (current->check_semantics()) {
 			part = nil; 
 			add_entry(table, &ctor, &current, part); 
-		      }
-                    }
+		    }
+		}
 
 		| grid '{' ARRAY ':' 
-		    { part = array; }
-                  declaration MAPS ':' 
-		    { part = maps; }
-                  declarations '}' 
-		    { current = ctor->pop(); }
-                  var ';' 
-                    { if (current->check_semantics()) {
+		{ part = array; }
+                declaration MAPS ':' 
+		{ part = maps; }
+                declarations '}' 
+		{
+		    current = ctor->pop(); 
+		}
+                var ';' 
+                {
+		    if (current->check_semantics()) {
 			part = nil; 
 			add_entry(table, &ctor, &current, part); 
-		      }
-                    }
+		    }
+		}
 ;
 
-list:		LIST { ctor->push(NewList()); }
+list:		LIST 
+		{ 
+		    if (!ctor) 
+			ctor = new BaseTypePtrXPStack;
+		    ctor->push(NewList()); 
+		}
 ;
 
-structure:	STRUCTURE { ctor->push(NewStructure()); }
+structure:	STRUCTURE
+		{ 
+		    if (!ctor)
+	                ctor = new BaseTypePtrXPStack;
+		    ctor->push(NewStructure()); 
+		}
 ;
 
-sequence:	SEQUENCE { ctor->push(NewSequence()); }
+sequence:	SEQUENCE 
+		{ 
+		    if (!ctor)
+			ctor = new BaseTypePtrXPStack;
+		    ctor->push(NewSequence()); 
+		}
 ;
 
-function:	FUNCTION { ctor->push(NewFunction()); }
+function:	FUNCTION 
+		{ 
+		    if (!ctor)
+			ctor = new BaseTypePtrXPStack;
+		    ctor->push(NewFunction()); 
+		}
 ;
 
-grid:		GRID { ctor->push(NewGrid()); }
+grid:		GRID 
+		{ 
+		    if (!ctor)
+			ctor = new BaseTypePtrXPStack;
+		    ctor->push(NewGrid()); 
+		}
 ;
 
 base_type:	BYTE { current = NewByte(); }
@@ -268,7 +315,7 @@ var:		ID { current->set_name($1); }
 
 array_decl:	'[' INTEGER ']'
                  { 
-		     if (current->type() == d_array_t) {
+		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi($2));
 		     }
 		     else {
@@ -284,7 +331,7 @@ array_decl:	'[' INTEGER ']'
 		 } 
                  '=' INTEGER 
                  { 
-		     if (current->type() == d_array_t) {
+		     if (current->type() == dods_array_c) {
 			 ((Array *)current)->append_dim(atoi($5), id);
 		     }
 		     else {
@@ -333,7 +380,7 @@ add_entry(DDS &table, BaseTypePtrXPStack **ctor, BaseType **current, Part part)
 
  	const Type &ctor_type = (*ctor)->top()->type();
 
-	if (ctor_type == d_list_t || ctor_type == d_array_t)
+	if (ctor_type == dods_list_c || ctor_type == dods_array_c)
 	    *current = (*ctor)->pop();
 	else
 	    return;

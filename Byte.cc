@@ -38,6 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.21  1996/05/14 15:38:18  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.20  1996/05/06 18:34:07  jimg
 // Replaced calls to atof and atoi with calls to strtol and strtod.
 //
@@ -334,10 +339,11 @@ Byte::ops(BaseType &b, int op)
 	b.buf2val((void **)&sp);
 
 	char *ptr;
-	long v = strtol((const char *)s, &ptr, 0);
+	const char *cp = (char *)(const char *)s;
+	long v = strtol(cp, &ptr, 0);
 
-	if (v == 0 && val == ptr) {
-	    cerr << "`" << val << "' is not an integer value" << endl;
+	if (v == 0 && cp == ptr) {
+	    cerr << "`" << s << "' is not an integer value" << endl;
 	    return false;
 	}
 	if (v > DODS_INT_MAX || v < DODS_INT_MIN) {

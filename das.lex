@@ -33,7 +33,12 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.14  1995/10/23 22:52:34  jimg
+# Revision 1.15  1996/05/14 15:38:50  jimg
+# These changes have already been checked in once before. However, I
+# corrupted the source repository and restored it from a 5/9/96 backup
+# tape. The previous version's log entry should cover the changes.
+#
+# Revision 1.14  1995/10/23  22:52:34  jimg
 # Removed code that was NEVER'd or simply not used.
 #
 # Revision 1.13  1995/07/08  18:32:08  jimg
@@ -108,7 +113,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.14 1995/10/23 22:52:34 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.15 1996/05/14 15:38:50 jimg Exp $"};
 
 #include <string.h>
 

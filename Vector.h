@@ -5,9 +5,14 @@
 // Vector. Vector is the parent class for List and Array.
 
 /* $Log: Vector.h,v $
-/* Revision 1.5  1996/04/05 00:22:10  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.6  1996/05/14 15:38:48  jimg
+/* These changes have already been checked in once before. However, I
+/* corrupted the source repository and restored it from a 5/9/96 backup
+/* tape. The previous version's log entry should cover the changes.
 /*
+ * Revision 1.5  1996/04/05 00:22:10  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
  * Revision 1.4  1996/03/05 01:03:04  jimg
  * Added ce_eval parameter to serialize() member function.
  * Added vec_resize() member function to class.
@@ -52,7 +57,7 @@ protected:
 
 public:
     Vector(const String &n = (char *)0, BaseType *v = 0, 
-	   const Type &t = d_null_t);
+	   const Type &t = dods_null_c);
     Vector(const Vector &rhs);
 
     virtual ~Vector();

@@ -2,7 +2,12 @@
 # jhrg
 #
 # $Log: test.1.exp,v $
-# Revision 1.6  1995/02/10 03:31:11  jimg
+# Revision 1.7  1996/05/14 15:40:40  jimg
+# These changes have already been checked in once before. However, I
+# corrupted the source repository and restored it from a 5/9/96 backup
+# tape. The previous version's log entry should cover the changes.
+#
+# Revision 1.6  1995/02/10  03:31:11  jimg
 # Modified test cases for type checking.
 #
 # Revision 1.5  1994/12/09  21:45:45  jimg

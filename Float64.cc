@@ -38,6 +38,11 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.23  1996/05/14 15:38:22  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.22  1996/05/06 18:34:35  jimg
 // Replaced calls to atof and atoi with calls to strtol and strtod.
 //
@@ -318,10 +323,11 @@ Float64::ops(BaseType &b, int op)
 	b.buf2val((void **)&sp);
 
 	char *ptr;
-	a2 = strtod((const char *)s, &ptr);
+	const char *cp = (const char *)s;
+	a2 = strtod(cp, &ptr);
 
-	if (a2 == 0.0 && val == ptr) {
-	    cerr << "`" << val << "' is not an float value" << endl;
+	if (a2 == 0.0 && cp == ptr) {
+	    cerr << "`" << s << "' is not an float value" << endl;
 	    return false;
 	}
 

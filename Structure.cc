@@ -38,6 +38,11 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.22  1996/05/14 15:38:38  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.21  1996/04/05 00:21:40  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -187,7 +192,7 @@ Structure::_duplicate(const Structure &s)
     }
 }
 
-Structure::Structure(const String &n) : BaseType(n, d_structure_t)
+Structure::Structure(const String &n) : BaseType(n, dods_structure_c)
 {
 }
 

@@ -3,9 +3,14 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.8  1996/04/05 21:59:32  jimg
-/* Misc Changes for release 2.0.1 of the core software - for developers.
+/* Revision 1.9  1996/05/14 15:38:49  jimg
+/* These changes have already been checked in once before. However, I
+/* corrupted the source repository and restored it from a 5/9/96 backup
+/* tape. The previous version's log entry should cover the changes.
 /*
+ * Revision 1.8  1996/04/05 21:59:32  jimg
+ * Misc Changes for release 2.0.1 of the core software - for developers.
+ *
  * Revision 1.7  1996/04/05 16:59:24  jimg
  * Re: XDR_INT and XDR_FLOAT; Moved cast of xdr_int, long, float and double
  * from here to the places where the functions are passed as parameters. This
@@ -120,26 +125,26 @@
 #define __DODS_DATATYPES__
 
 #if SIZEOF_LONG == 4
-typedef long int32;
+typedef long dods_int32;
 #define XDR_INT32 xdr_long
 #elif SIZEOF_INT == 4
-typedef int int32;
+typedef int dods_int32;
 #define XDR_INT32 xdr_int
 #else
 #error "How do I get a 32 bit integer on this machine?"
 #endif
 
 #if SIZEOF_CHAR == 1
-typedef unsigned char byte;
+typedef unsigned char dods_byte;
 #else
 #error "How do I get an 8 bit unsigned integer on this machine?"
 #endif
 
 #if SIZEOF_DOUBLE == 8
-typedef double float64;
+typedef double dods_float64;
 #define XDR_FLOAT64 xdr_double
 #elif SIZEOF_FLOAT == 8		/* yea, I never heard of this either... */
-typedef float float64;		
+typedef float dods_float64;		
 #define XDR_FLOAT64 xdr_float
 #else
 #error "How do I get a 64 bit floating point type on this machine?"

@@ -38,6 +38,11 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.23  1996/05/14 15:38:35  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.22  1996/04/05 00:21:38  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -183,7 +188,7 @@ Sequence::_duplicate(const Sequence &s)
 	add_var(cs.var(p)->ptr_duplicate());
 }
 
-Sequence::Sequence(const String &n) : BaseType(n, d_sequence_t) 
+Sequence::Sequence(const String &n) : BaseType(n, dods_sequence_c) 
 {
 }
 
@@ -278,6 +283,12 @@ Sequence::width()
     return sz;
 }
 
+// Note that in Sequence's serialize() mfunc I assume that it is best to read
+// the entire instance of the sequence in at once. However, each
+// specialization of Sequence::read() will determine exactly what that means.
+// 
+// jhrg 4/12/96
+
 bool
 Sequence::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 {
@@ -290,13 +301,17 @@ Sequence::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 	// if we are supposed to eval the selection, then do so. If it's
 	// false, then goto the next record in the sequence (don't return as
 	// with the other serialize mfuncs).
-	if (ce_eval && !dds.eval_selection(dataset)) 
+	if (ce_eval && !dds.eval_selection(dataset)) {
+	    set_read_p(false);	// so that the next instance will be read
 	    continue;
+	}
 
 	for (Pix p = first_var(); p; next_var(p))
 	    if (var(p)->send_p() 
 		&& !(status = var(p)->serialize(dataset, dds, false, false))) 
 		break;
+	
+	set_read_p(false);
     }
 
     if (flush)

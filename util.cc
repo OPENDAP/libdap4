@@ -37,6 +37,11 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.21  1996/05/14 15:39:09  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.20  1996/04/05 00:22:24  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -145,7 +150,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.20 1996/04/05 00:22:24 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.21 1996/05/14 15:39:09 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -291,8 +296,8 @@ xdr_str(XDR *xdrs, String *buf)
 
       case XDR_DECODE: {
 	assert(buf);
-	char d_str_tmp[max_str_len];
-	char *in_tmp = d_str_tmp;
+	char dods_str_tmp[max_str_len];
+	char *in_tmp = dods_str_tmp;
 
 	bool_t stat = xdr_string(xdrs, (char **)&in_tmp, max_str_len);
 	if (!stat)

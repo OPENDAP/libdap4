@@ -5,10 +5,15 @@
 // jhrg 9/7/94
 
 /* $Log: Int32.h,v $
-/* Revision 1.15  1996/03/05 18:07:21  jimg
-/* Added ce_eval to serailize member function.
-/* Added the ops member function.
+/* Revision 1.16  1996/05/14 15:38:30  jimg
+/* These changes have already been checked in once before. However, I
+/* corrupted the source repository and restored it from a 5/9/96 backup
+/* tape. The previous version's log entry should cover the changes.
 /*
+ * Revision 1.15  1996/03/05 18:07:21  jimg
+ * Added ce_eval to serailize member function.
+ * Added the ops member function.
+ *
  * Revision 1.14  1995/12/09  01:06:50  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -109,7 +114,7 @@
 
 class Int32: public BaseType {
 protected:
-    int32 _buf;
+    dods_int32 _buf;
 
 public:
     Int32(const String &n = (char *)0);

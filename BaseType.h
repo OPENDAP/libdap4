@@ -8,9 +8,14 @@
 // jhrg 9/6/94
 
 /* $Log: BaseType.h,v $
-/* Revision 1.24  1996/04/05 00:21:23  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.25  1996/05/14 15:38:16  jimg
+/* These changes have already been checked in once before. However, I
+/* corrupted the source repository and restored it from a 5/9/96 backup
+/* tape. The previous version's log entry should cover the changes.
 /*
+ * Revision 1.24  1996/04/05 00:21:23  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
  * Revision 1.23  1996/04/04 17:29:42  jimg
  * Merged recent changes from version 1.1.1 (including changes for the Type
  * enum which caused a problem on the SGI).
@@ -196,18 +201,18 @@ enum Part {
 };
 
 enum Type {
-    d_null_t,
-    d_byte_t,
-    d_int32_t,			// Added `d_' to fix clash with IRIX 5.3.
-    d_float64_t,
-    d_str_t,
-    d_url_t,
-    d_array_t,
-    d_list_t,
-    d_structure_t,
-    d_sequence_t,
-    d_function_t,
-    d_grid_t
+    dods_null_c,
+    dods_byte_c,
+    dods_int32_c,			// Added `dods_' to fix clash with IRIX 5.3.
+    dods_float64_c,
+    dods_str_c,
+    dods_url_c,
+    dods_array_c,
+    dods_list_c,
+    dods_structure_c,
+    dods_sequence_c,
+    dods_function_c,
+    dods_grid_c
 };
 
 class DDS;			// forward declaration; see DDS.h
@@ -246,7 +251,7 @@ protected:
     void _duplicate(const BaseType &bt);
 
 public:
-    BaseType(const String &n = (char *)0, const Type &t = d_null_t,
+    BaseType(const String &n = (char *)0, const Type &t = dods_null_c,
 	     xdrproc_t xdr = NULL);
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();

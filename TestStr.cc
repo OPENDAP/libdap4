@@ -38,6 +38,11 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
+// Revision 1.12  1996/05/14 15:38:44  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.11  1996/04/05 00:22:01  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -117,9 +122,9 @@ TestStr::read(const String &dataset)
     if (read_p())
 	return true;
 
-    String d_str_test="Silly test string: one, two, ...";
+    String dods_str_test="Silly test string: one, two, ...";
     
-    (void) val2buf(&d_str_test);
+    (void) val2buf(&dods_str_test);
 
     set_read_p(true);
 

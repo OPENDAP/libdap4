@@ -2,7 +2,12 @@
 # jhrg
 #
 # $Log: test.9.exp,v $
-# Revision 1.3  1995/12/06 21:58:55  jimg
+# Revision 1.4  1996/05/14 15:41:50  jimg
+# These changes have already been checked in once before. However, I
+# corrupted the source repository and restored it from a 5/9/96 backup
+# tape. The previous version's log entry should cover the changes.
+#
+# Revision 1.3  1995/12/06  21:58:55  jimg
 # Removed `List List' variables.
 #
 # Revision 1.2  1995/01/19  22:05:25  jimg

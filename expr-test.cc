@@ -39,6 +39,11 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.6  1996/05/14 15:38:57  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.5  1996/03/05 00:57:19  jimg
 // Fixed tests of constrained tranmission so CEs with spaces will be read
 // properly.
@@ -66,7 +71,7 @@
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.5 1996/03/05 00:57:19 jimg Exp $"};
+static char rcsid[]= {"$Id: expr-test.cc,v 1.6 1996/05/14 15:38:57 jimg Exp $"};
 
 #include <stdio.h>
 #include <streambuf.h>
@@ -554,6 +559,7 @@ constrained_trans(const String &dds_name, const String &constraint)
     // First read the DDS into a new object (using a file to store the DDS
     // temporarily - the parser/scanner won't stop reading until an EOF is
     // found, this fixes that problem).
+
     DDS dds;
     FILE *dds_fp = move_dds(pin);
     DBG(cerr << "Moved the DDS to a temp file" << endl);

@@ -38,6 +38,11 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.23  1996/05/14 15:38:14  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.22  1996/04/05 00:21:21  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -269,29 +274,29 @@ String
 BaseType::type_name() const
 {
     switch(_type) {
-      case d_null_t:
+      case dods_null_c:
 	return String("Null");
-      case d_byte_t:
+      case dods_byte_c:
 	return String("Byte");
-      case d_int32_t:
+      case dods_int32_c:
 	return String("Int32");
-      case d_float64_t:
+      case dods_float64_c:
 	return String("Float64");
-      case d_str_t:
+      case dods_str_c:
 	return String("String");
-      case d_url_t:
+      case dods_url_c:
 	return String("Url");
-      case d_array_t:
+      case dods_array_c:
 	return String("Array");
-      case d_list_t:
+      case dods_list_c:
 	return String("List");
-      case d_structure_t:
+      case dods_structure_c:
 	return String("Structure");
-      case d_sequence_t:
+      case dods_sequence_c:
 	return String("Sequence");
-      case d_function_t:
+      case dods_function_c:
 	return String("Function");
-      case d_grid_t:
+      case dods_grid_c:
 	return String("Grid");
       default:
 	cerr << "BaseType::type_name: Undefined type" << endl;
@@ -409,7 +414,7 @@ BaseType::print_decl(ostream &os, String space, bool print_semi,
 bool
 BaseType::check_semantics(bool)
 {
-    bool sem = (_type != d_null_t && (const char *)_name);
+    bool sem = (_type != dods_null_c && (const char *)_name);
 
     if (!sem) 
 	cerr << "Every variable must have both a name and a type" << endl;

@@ -38,6 +38,11 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.14  1996/05/14 15:38:41  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.13  1996/04/05 21:59:29  jimg
 // Misc Changes for release 2.0.1 of the core software - for developers.
 //
@@ -147,13 +152,13 @@ TestArray::read(const String &dataset)
     unsigned int array_len = length(); // elements in the array
 
     switch (var()->type()) {
-      case d_byte_t:
-      case d_int32_t:
-      case d_float64_t:
-      case d_str_t:
-      case d_url_t: {
+      case dods_byte_c:
+      case dods_int32_c:
+      case dods_float64_c:
+      case dods_str_c:
+      case dods_url_c: {
 
-	// String and Url are grouped with byte, ... because val2buf works
+	// String and Url are grouped with dods_byte, ... because val2buf works
 	// for these types.
 
 	unsigned int elem_wid = var()->width(); // size of an element
@@ -175,11 +180,11 @@ TestArray::read(const String &dataset)
 	break;
       }
 
-      case d_list_t:
-      case d_structure_t:
-      case d_sequence_t:
-      case d_function_t:
-      case d_grid_t:
+      case dods_list_c:
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_function_c:
+      case dods_grid_c:
 	
 	// Arrays of Structure, ... must load each element into the array 
 	// manually. Because these are stored as C++/DODS objects, there is

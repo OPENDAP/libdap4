@@ -2,7 +2,12 @@
 # jhrg
 #
 # $Log: test.12.exp,v $
-# Revision 1.1  1995/02/16 15:34:47  jimg
+# Revision 1.2  1996/05/14 15:40:42  jimg
+# These changes have already been checked in once before. However, I
+# corrupted the source repository and restored it from a 5/9/96 backup
+# tape. The previous version's log entry should cover the changes.
+#
+# Revision 1.1  1995/02/16  15:34:47  jimg
 # Added these tests. See comments in files in parent directory.
 #
 

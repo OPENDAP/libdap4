@@ -5,10 +5,15 @@
 // jhrg 9/7/94
 
 /* $Log: Byte.h,v $
-/* Revision 1.14  1996/03/05 18:42:06  jimg
-/* Added ce_eval to serailize member function.
-/* Added ops member function and byte_ops interface function.
+/* Revision 1.15  1996/05/14 15:38:19  jimg
+/* These changes have already been checked in once before. However, I
+/* corrupted the source repository and restored it from a 5/9/96 backup
+/* tape. The previous version's log entry should cover the changes.
 /*
+ * Revision 1.14  1996/03/05 18:42:06  jimg
+ * Added ce_eval to serailize member function.
+ * Added ops member function and byte_ops interface function.
+ *
  * Revision 1.13  1995/12/09  01:06:36  jimg
  * Added changes so that relational operators will work properly for all the
  * datatypes (including Sequences). The relational ops are evaluated in
@@ -108,7 +113,7 @@
 
 class Byte: public BaseType {
 protected:
-    byte _buf;
+    dods_byte _buf;
 
 public:
     Byte(const String &n = (char *)0);

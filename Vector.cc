@@ -39,6 +39,11 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.7  1996/05/14 15:38:46  jimg
+// These changes have already been checked in once before. However, I
+// corrupted the source repository and restored it from a 5/9/96 backup
+// tape. The previous version's log entry should cover the changes.
+//
 // Revision 1.6  1996/04/05 00:22:09  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -63,7 +68,7 @@
 // Created.
 //
 
-static char rcsid[]= {"$Id: Vector.cc,v 1.6 1996/04/05 00:22:09 jimg Exp $"};
+static char rcsid[]= {"$Id: Vector.cc,v 1.7 1996/05/14 15:38:46 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -174,23 +179,23 @@ Vector::var(unsigned int i)
 {
     
     switch (_var->type()) {
-      case d_byte_t:
-      case d_int32_t:
-      case d_float64_t: {
+      case dods_byte_c:
+      case dods_int32_c:
+      case dods_float64_c: {
 	unsigned int sz = _var->width();
 	_var->val2buf(_buf + (i * sz));
 	return _var;
 	break;
       }
 
-      case d_str_t:
-      case d_url_t:
-      case d_array_t:
-      case d_list_t:
-      case d_structure_t:
-      case d_sequence_t:
-      case d_function_t:
-      case d_grid_t:
+      case dods_str_c:
+      case dods_url_c:
+      case dods_array_c:
+      case dods_list_c:
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_function_c:
+      case dods_grid_c:
 	return _vec[i];
 	break;
 
@@ -276,15 +281,15 @@ Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
     unsigned int num = length();
 
     switch (_var->type()) {
-      case d_byte_t:
-      case d_int32_t:
-      case d_float64_t:
+      case dods_byte_c:
+      case dods_int32_c:
+      case dods_float64_c:
 	assert(_buf);
 
 	if (!(bool)xdr_int(xdrout(), &num)) // send vector length
 	    return false;
 
-	if (_var->type() == d_byte_t)
+	if (_var->type() == dods_byte_c)
 	    status = (bool)xdr_bytes(xdrout(), (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
 	else
@@ -293,14 +298,14 @@ Vector::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 				     _var->xdr_coder()); 
 	break;
 
-      case d_str_t:
-      case d_url_t:
-      case d_array_t:
-      case d_list_t:
-      case d_structure_t:
-      case d_sequence_t:
-      case d_function_t:
-      case d_grid_t:
+      case dods_str_c:
+      case dods_url_c:
+      case dods_array_c:
+      case dods_list_c:
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_function_c:
+      case dods_grid_c:
 	assert(_vec.capacity());
 
 	status = (bool)xdr_int(xdrout(), &num); // send length
@@ -348,9 +353,9 @@ Vector::deserialize(bool reuse)
     unsigned int num;
 
     switch (_var->type()) {
-      case d_byte_t:
-      case d_int32_t:
-      case d_float64_t:
+      case dods_byte_c:
+      case dods_int32_c:
+      case dods_float64_c:
 	if (_buf && !reuse) {
 	    delete[] _buf;
 	    _buf = 0;
@@ -369,7 +374,7 @@ Vector::deserialize(bool reuse)
 		<< length() << " " << _var->type_name() << endl);
 	}
 
-	if (_var->type() == d_byte_t)
+	if (_var->type() == dods_byte_c)
 	    status = (bool)xdr_bytes(xdrin(), (char **)&_buf, &num,
 				     DODS_MAX_ARRAY); 
 	else
@@ -380,14 +385,14 @@ Vector::deserialize(bool reuse)
 
 	break;
 
-      case d_str_t:
-      case d_url_t:
-      case d_array_t:
-      case d_list_t:
-      case d_structure_t:
-      case d_sequence_t:
-      case d_function_t:
-      case d_grid_t:
+      case dods_str_c:
+      case dods_url_c:
+      case dods_array_c:
+      case dods_list_c:
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_function_c:
+      case dods_grid_c:
 	status = (bool)xdr_int(xdrin(), &num);
 	if (!status)
 	    return status;
@@ -426,9 +431,9 @@ Vector::val2buf(void *val, bool reuse)
     assert(val);
 
     switch (_var->type()) {
-      case d_byte_t:
-      case d_int32_t:
-      case d_float64_t: {
+      case dods_byte_c:
+      case dods_int32_c:
+      case dods_float64_c: {
 	unsigned int array_wid = width();
 
 	if (_buf && !reuse) {
@@ -447,8 +452,8 @@ Vector::val2buf(void *val, bool reuse)
 	break;
       }
 
-      case d_str_t:
-      case d_url_t: {
+      case dods_str_c:
+      case dods_url_c: {
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 
@@ -489,9 +494,9 @@ Vector::buf2val(void **val)
     unsigned int wid = width();
 
     switch (_var->type()) {
-      case d_byte_t:
-      case d_int32_t:
-      case d_float64_t:
+      case dods_byte_c:
+      case dods_int32_c:
+      case dods_float64_c:
 	if (!*val)
 	    *val = new char[wid];
 
@@ -499,8 +504,8 @@ Vector::buf2val(void **val)
 
 	break;
 
-      case d_str_t:
-      case d_url_t: {
+      case dods_str_c:
+      case dods_url_c: {
 	unsigned int elem_wid = _var->width();
 	unsigned int len = length();
 

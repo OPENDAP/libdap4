@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.34 1996/04/05 21:59:27 jimg Exp $
+# $Id: Makefile.in,v 1.35 1996/05/14 15:38:33 jimg Exp $
 
 @SET_MAKE@
 
@@ -69,6 +69,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
 EXPR_GRAM_OBJS = lex.expr.o expr.tab.o expr.o
+ERROR_GRAM_OBJS = lex.Error.o Error.tab.o
 
 DASHDRS = AttrTable.h DAS.h 
 DASSRCS = AttrTable.cc DAS.cc
@@ -81,6 +82,10 @@ DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
 EXPRHDRS = expr.h
 EXPRSRCS = expr.cc
 EXPROBJS = DDS.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
+
+ERRORHDRS = Error.h
+ERROROBJS = Error.o $(ERROR_GRAM_OBJS)
+ERRORSRCS = Error.cc
 
 TYPEHDRS = BaseType.h Byte.h Int32.h Float64.h Str.h Url.h \
 	   Vector.h List.h Array.h Structure.h Sequence.h Function.h Grid.h
@@ -134,6 +139,9 @@ trans-test: libdap++.a $(TESTOBJS) trans-test.o
 expr-test: libdap++.a $(EXPROBJS) $(TESTOBJS) expr-test.o expr.tab.h
 	$(CXX) $(LDFLAGS) -o expr-test $(EXPROBJS) $(TESTOBJS) expr-test.o \
 	       $(LIBS)
+
+error-test: $(ERROROBJS) error-test.o Error.tab.h
+	$(CXX) $(LDFLAGS) -o error-test $(ERROROBJS) error-test.o 
 
 # Build the DAS scanner (a C source module compiled with C++)
 
@@ -190,6 +198,24 @@ expr.tab.c expr.tab.h: expr.y munge-expr.awk
 expr.tab.o: expr.tab.c		# build using C++ compiler
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c expr.tab.c -o expr.tab.o
 
+# Build the Error object scanner.
+
+lex.Error.c: Error.lex Error.tab.c Error.tab.h
+	$(LEX) $(LFLAGS) -PError Error.lex
+
+lex.Error.o: lex.Error.c
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.Error.c -o lex.Error.o
+
+# Build the Error object parser.
+
+Error.tab.c Error.tab.h: Error.y munge-error.awk
+	$(YACC) $(YFLAGS) -p Error Error.y
+	$(AWK) -f munge-error.awk Error.tab.c > tmp
+	mv tmp Error.tab.c
+
+Error.tab.o: Error.tab.c	# build using C++ compiler
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c Error.tab.c -o Error.tab.o
+
 # Standard targets with some customization for das-test and dds-test
 
 install: all install-headers
@@ -200,8 +226,8 @@ install-headers:
 	$(INSTALL_DATA) config_dap.h $(includedir)
 	$(INSTALL_DATA) debug.h $(includedir)
 	$(INSTALL_DATA) dods-limits.h $(includedir)
-	for h in $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) $(GNUHDRS); \
-	    do $(INSTALL_DATA) $$h $(includedir); done
+	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
+		$(GNUHDRS); do $(INSTALL_DATA) $$h $(includedir); done
 
 Makefile: ${srcdir}/Makefile.in
 	cd .. && ${SHELL} ./config.status && cd $(dir)
@@ -222,9 +248,12 @@ trans-check: trans-test
 	-rootme=`pwd`; export rootme; \
 	${RUNTEST} ${RUNTESTFLAGS} --tool trans-test --srcdir trans-testsuite
 
+error-check: error-test
+	echo "No tests for the Error object"
+
 clean:	
 	-rm -f *.o *.sum *.log *~ core
-	-rm -f $(PROG) das-test dds-test trans-test
+	-rm -f $(PROG) das-test dds-test trans-test expr-test error-test
 
 distclean: clean
 	-rm -f config.status config.log config.cache
@@ -235,7 +264,10 @@ distclean: clean
 # the DAP software. Few people should want to hack these grammar files.
 
 grammarclean: clean
-	-rm -f lex.das.c das.tab.c das.tab.h lex.dds.c dds.tab.c dds.tab.h
+	-rm -f lex.das.c das.tab.c das.tab.h 
+	-rm -f lex.dds.c dds.tab.c dds.tab.h
+	-rm -f lex.expr.c expr.tab.c expr.tab.h 
+	-rm -f lex.Error.c Error.tab.c Error.tab.h
 
 tar:
 	cd .. && tar --exclude $(dir)/old --gzip -c -f $(dir).tar.gz $(dir) &&\
@@ -253,7 +285,8 @@ tags:
 depend: 
 	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
 	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(EXPRSRCS) $(TESTSRCS) \
-	das-test.cc dds-test.cc  
+	$(ERRORSRCS) das-test.cc dds-test.cc expr-test.cc trans-test.cc \
+	error-test.cc
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
   Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h \
