@@ -10,6 +10,12 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.36  1997/07/15 21:53:25  jimg
+// Changed length member function to return -1 instead of 0. Thus the default,
+// when a subclass does not define its own version of this member function, is
+// to return -1. This value will be easy to differentiate from 0, which could
+// mean that the sequence has zero elements.
+//
 // Revision 1.35  1997/03/08 19:02:05  jimg
 // Changed default param to check_semantics() from  to String()
 // and removed the default from the argument list in the mfunc definition
@@ -321,10 +327,10 @@ Sequence::width()
 // This version returns zero. Each API-specific subclass should define a more
 // reasonable version. jhrg 5/24/96
 
-unsigned int
+int
 Sequence::length()
 {
-    return 0;
+    return -1;
 }
 
 void
