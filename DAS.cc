@@ -1,11 +1,44 @@
-
+//      The DODS Data Access Protocol (DAP) Library
+//      Copyright (C) 1994, 1995 The University of Rhode Island, Graduate
+//      School of Oceanography. 
+//     
+//      This library is free software; you can redistribute it and/or
+//      modify it under the terms of the GNU Library General Public
+//      License as published by the Free Software Foundation; either
+//      version 2 of the License, or (at your option) any later version.
+//     
+//      This library is distributed in the hope that it will be useful,
+//      but WITHOUT ANY WARRANTY; without even the implied warranty of
+//      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//      Library General Public License for more details.
+//     
+//      You should have received a copy of the GNU Library General Public
+//      License along with this library; if not, write to the
+//      Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
+//      MA 02139, USA.
+//
+//      Authors: James Gallagher (jimg@dcz.gso.uri.edu), 
+//               Dan Holloway (dan@hollywood.gso.uri.edu), 
+//               Reza Nekovei (reza@hadaf.gso.uri.edu)
+//
+//               The University of Rhode Island
+//               South Ferry Rd.
+//               Narragansett, RI. 02882
+//               U.S.A.
+//
 // Methods for the class DAS - a class used to parse the dataset attribute
 // structure.
 //
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
-// Revision 1.12  1995/02/10 02:29:37  jimg
+// Revision 1.13  1995/05/10 13:45:11  jimg
+// Changed the name of the configuration header file from `config.h' to
+// `config_dap.h' so that other libraries could have header files which were
+// installed in the DODS include directory without overwriting this one. Each
+// config header should follow the convention config_<name>.h.
+//
+// Revision 1.12  1995/02/10  02:29:37  jimg
 // Added second parameter to dasparse. It is a switch that indicates that
 // the parse went OK. Now the parser will return true even if erros were
 // detected so long as they were recoverable errors.
@@ -72,26 +105,19 @@
 // String objects which name variables to AttrTablePtr objects.
 //
 
-static char rcsid[]="$Id: DAS.cc,v 1.12 1995/02/10 02:29:37 jimg Exp $";
+static char rcsid[]="$Id: DAS.cc,v 1.13 1995/05/10 13:45:11 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <stdio.h>
-#ifdef NEVER
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <fcntl.h>
-#include <unistd.h>
-#endif
 
 #include <iostream.h>
 #include <Pix.h>
 #include <String.h>
 
-#include "config.h"
+#include "config_dap.h"
 #include "debug.h"
 
 #include "DAS.h"		// follows pragma since DAS.h is interface

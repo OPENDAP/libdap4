@@ -4,7 +4,13 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
-// Revision 1.5  1995/03/16 17:32:27  jimg
+// Revision 1.6  1995/05/10 13:45:34  jimg
+// Changed the name of the configuration header file from `config.h' to
+// `config_dap.h' so that other libraries could have header files which were
+// installed in the DODS include directory without overwriting this one. Each
+// config header should follow the convention config_<name>.h.
+//
+// Revision 1.5  1995/03/16  17:32:27  jimg
 // Fixed bugs with read()s new & delete calls.
 //
 // Revision 1.4  1995/03/04  14:38:00  jimg
@@ -35,7 +41,7 @@
 #pragma implementation
 #endif
 
-#include "config.h"
+#include "config_dap.h"
 
 #include <assert.h>
 

@@ -4,12 +4,18 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.18  1995/04/28 19:53:46  reza
+// Revision 1.19  1995/05/10 13:45:01  jimg
+// Changed the name of the configuration header file from `config.h' to
+// `config_dap.h' so that other libraries could have header files which were
+// installed in the DODS include directory without overwriting this one. Each
+// config header should follow the convention config_<name>.h.
+//
+// Revision 1.18  1995/04/28  19:53:46  reza
 // First try at adding constraints capability.
 // Enforce a new size calculated from constraint expression.
 //
 // Revision 1.17  1995/03/16  17:22:58  jimg
-// Added include of config.h before all other includes.
+// Added include of config_dap.h before all other includes.
 // Fixed deletes of buffers in read_val().
 // Added initialization of _buf in ctor.
 //

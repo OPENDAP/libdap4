@@ -1,0 +1,45 @@
+$Id: INSTALL,v 1.1 1995/05/10 13:45:20 jimg Exp $
+
+Building the DAP library:
+
+1) Type `./configure' at the system prompt. On some systems you may have to
+type `sh configure'.
+
+2) Type `make' to build the library, `make check' to build the test
+software. NB: you must have the GNU automated testing software DejaGNU to run
+the makefile's check target.
+
+3) Type `make install' to install the DAP library.
+
+It is possible to build the DAP so that various levels of debugging support
+are built in. These options must be chosen at configuration time and are set
+using the `--enable' option with `configure'. Choosing them affects the
+Makefile.
+
+1) To build with program instrumentation use `--enable-debug=<level>' where
+<level> is 1 or 2. 
+
+2) To build with memory leak checks use --enable-dbnew. You must have the
+freely available libraries libdbnew.a and libefence.a to make use of this
+option. 
+
+The defaults for both debug and dbnew are to *not* include those
+features. Thus, if you want to built a straight version of the libraries (and
+test code), use `./configure'. If you want the extra features, use
+`./configure --enable-dbnew --enable-debug=2'
+
+Debugging aids in the DODS API:
+
+debug: simple program instrumentation -- see the file debug.h in
+$(DODS_ROOT)/include for more information
+
+debug2: more elaborate program instrumentation -- by convention this is used
+for output that is half a page or more, while DEBUG is used for single line
+output.
+
+dbnew: include -ldbnew and -lefence when linking. libdbnew.a contains
+overloaded versions of new, new[] delete and delete[]. It also contains code
+to `walk the malloc chain' and simple checks for out-of-bounds errors.
+
+efence: a freely available bounds checker for dynamically allocated
+memory. When used with dbnew, efence must be set to 8-byte alignment.

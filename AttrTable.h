@@ -10,22 +10,28 @@
 // a temporary object according to g++'s warnings.
 
 /* $Log: AttrTable.h,v $
-/* Revision 1.10  1995/03/04 14:34:55  jimg
-/* Major modifications to the transmission and representation of values:
-/* 	Added card() virtual function which is true for classes that
-/* 	contain cardinal types (byte, int float, string).
-/* 	Changed the representation of Str from the C rep to a C++
-/* 	class represenation.
-/* 	Chnaged read_val and store_val so that they take and return
-/* 	types that are stored by the object (e.g., inthe case of Str
-/* 	an URL, read_val returns a C++ String object).
-/* 	Modified Array representations so that arrays of card()
-/* 	objects are just that - no more storing strings, ... as
-/* 	C would store them.
-/* 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-/* 	an array of a structure is represented as an array of Structure
-/* 	objects).
+/* Revision 1.11  1995/05/10 13:45:05  jimg
+/* Changed the name of the configuration header file from `config.h' to
+/* `config_dap.h' so that other libraries could have header files which were
+/* installed in the DODS include directory without overwriting this one. Each
+/* config header should follow the convention config_<name>.h.
 /*
+ * Revision 1.10  1995/03/04  14:34:55  jimg
+ * Major modifications to the transmission and representation of values:
+ * 	Added card() virtual function which is true for classes that
+ * 	contain cardinal types (byte, int float, string).
+ * 	Changed the representation of Str from the C rep to a C++
+ * 	class represenation.
+ * 	Chnaged read_val and store_val so that they take and return
+ * 	types that are stored by the object (e.g., inthe case of Str
+ * 	an URL, read_val returns a C++ String object).
+ * 	Modified Array representations so that arrays of card()
+ * 	objects are just that - no more storing strings, ... as
+ * 	C would store them.
+ * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * 	an array of a structure is represented as an array of Structure
+ * 	objects).
+ *
  * Revision 1.9  1994/12/07  21:09:25  jimg
  * Added support for vectors of attributes (using XPlex from libg++).
  *
@@ -84,7 +90,7 @@
 #include <String.h>
 #include <DLList.h>
 
-#include "config.h"
+#include "config_dap.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif

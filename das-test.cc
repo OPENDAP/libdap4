@@ -7,8 +7,14 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
-// Revision 1.8  1995/03/16 17:36:15  jimg
-// Added include config.h to top of includes.
+// Revision 1.9  1995/05/10 13:45:42  jimg
+// Changed the name of the configuration header file from `config.h' to
+// `config_dap.h' so that other libraries could have header files which were
+// installed in the DODS include directory without overwriting this one. Each
+// config header should follow the convention config_<name>.h.
+//
+// Revision 1.8  1995/03/16  17:36:15  jimg
+// Added include config_dap.h to top of includes.
 // Added TRACE_NEW switch dbnew debugging.
 //
 // Revision 1.7  1995/02/10  03:28:55  jimg

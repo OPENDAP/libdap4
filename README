@@ -1,52 +1,23 @@
-$Id: README,v 1.3 1995/03/04 14:43:52 jimg Exp $
+$Id: README,v 1.4 1995/05/10 13:45:26 jimg Exp $
 
 This directory contains the URI/GSO implementation of the DODS Data Access
-Protocol. The DODS DAP is split into two c++ libraries: libdas++.a and
-libdds++.a. libdas++.a contains classes which provide access to the dataset
-attribute structure as described in the DODS API design paper. libdds++.a
-provides access to the dataset description structure and the data in a
-DODS-accessible dataset.
+Protocol.
 
-Test programs for the DAP are also in this directory.
+The Data Access Protocol (DAP) is used to provide a uniform way of accessing
+a variety of different types of Earth-science data within DODS.
 
-In addition, the C++ classes defined here use some features of the container
-classes defined in the directories Map, Stack, Xplex and Vec so you must link
-with those libraries as well. Those classes are part of the g++ library, but
-are built as part of the build in this directory since the source code is
-specialized for use with the DODS classes (via the GNU genclass utility).
+The DAP is implemented as a set of C++ classes that can be used to build DODS
+data servers and client libraries. The DAP is used to build these programs
+and/or libraries by specializing the set of classes it provides so that the
+specific requirements of a given API or format are adequately addressed.
 
-It is possible to build the DAP so that various levels of debugging support
-are built in. These options must be chosen at configuration time and are set
-using the `--enable' option with `configure'. Choosing them affects the
-Makefile.
+The DODS DAP is contained in a single library: libdap++.a. This
+library requires the DODS netio library and errmsg library as well as the GNU
+C++ class library libg++.a. The DAP library contains some classes made using
+the GNU class library source code and the GNU tool `genclass'.
 
-To build with program instrumentation use `--enable-debug=<level>' where
-<level> is 1 or 2. To build with memory leak checks use --enable-dbnew.
-The defaults for both debug and dbnew are to *not* include those
-features. Thus, if you want to built a straight version of the libraries (and
-test code), use `./configure'. If you want the extra features, use
-`./configure --enable-dbnew --enable-debug=2'
+Test programs for the DAP are also in this directory as is a sample
+specialization of the set of classes.
 
-Specializing the DODS DAP for a particular API:
-
-This directory contains a set of `sample specializations' of the classes that
-comprise the DAP. These can be modified to include special behavior for an
-API or format. For examples of this, look in the directories ../http/jg-dods
-and ../http/nc-dods.
-
-Debugging aids in the DODS API:
-
-debug: simple program instrumentation -- see the file debug.h in
-$(DODS_ROOT)/include for more information
-
-debug2: more elaborate program instrumentation -- by convention this is used
-for output that is half a page or more, while DEBUG is used for single line
-output.
-
-dbnew: include -ldbnew and -ldbmalloc when linking. libdbnew.a contains
-overloaded versions of new, new[] delete and delete[]. It also contains code
-to `walk the malloc chain' and simple checks for out-of-bounds
-errors. libg++-dbnew.a is a small set of classes from libg++.a that have been
-hacked to include libdbnew.a's trace_new.h header and thus can be used to
-trace memory leaks within some classes of libg++.a. NB: libbdmalloc.a may not
-work on paltforms other than a Sun Sparc.
+See the file INSTALL in this directory for information on building the
+library. 

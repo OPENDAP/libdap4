@@ -4,7 +4,13 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.9  1995/03/16 17:39:19  jimg
+// Revision 1.10  1995/05/10 13:45:46  jimg
+// Changed the name of the configuration header file from `config.h' to
+// `config_dap.h' so that other libraries could have header files which were
+// installed in the DODS include directory without overwriting this one. Each
+// config header should follow the convention config_<name>.h.
+//
+// Revision 1.9  1995/03/16  17:39:19  jimg
 // Added TRACE_NEW/dbnew checks. This includes a special kluge for the
 // placement new operator.
 //
@@ -43,9 +49,9 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.9 1995/03/16 17:39:19 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.10 1995/05/10 13:45:46 jimg Exp $"};
 
-#include "config.h"
+#include "config_dap.h"
 
 #include <stdio.h>
 #include <string.h>

@@ -1,4 +1,5 @@
-# $Id: Makefile.in,v 1.17 1995/03/16 17:42:10 jimg Exp $
+
+# $Id: Makefile.in,v 1.18 1995/05/10 13:45:24 jimg Exp $
 
 @SET_MAKE@
 
@@ -13,19 +14,22 @@
 # libdds++.a plus the libraries in Map, Stack, Plex and Vec. It is *the* dods
 # library in many senses.
 
-PROG= das-test dds-test trans-test libdap++.a
-CXXFLAGS = -g $(DEFS) -Wno-cast-qual -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include 
-LDFLAGS = @LDFLAGS@ -g -L. -LMAP -LStack -LPlex -LVec -L$(DODS_ROOT)/lib
+PROG= libdap++.a
+DODS_ROOT = ../..
+
+INCS = -I. -IMap -IStack -IPlex -IVec -I$(DODS_ROOT)/include 
+DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
+CPPFLAGS = $(DEFS) $(INCS) @CPPFLAGS@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@ -L. -LMAP -LStack -LPlex -LVec -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d
-DODS_ROOT = ../..
-DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 LIBS = -ldap++ -lerrmsg @LIBS@
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
 
-prefix = ../..
+prefix = $(DODS_ROOT)
 exec_prefix = $(prefix)
 bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
@@ -37,7 +41,7 @@ INSTALLMAN = man
 
 SHELL = /bin/sh
 srcdir = @srcdir@
-VPATH = @srcdir@
+VPATH = @srcdir@:Map:Stack:Plex:Vec
 dir = @dir@
 
 # testsuite specifics
@@ -60,10 +64,7 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
-SUBDIRS=Stack Map Plex Vec
-
-# DAP_LIBS=libdas++.a libdds++.a Map/libg++map.a Stack/libg++stack.a \
-#	   Plex/libg++plex.a Vec/libg++vec.a
+SUBDIRS = Stack Map Plex Vec
 
 DAS_GRAM_OBJS = lex.das.o das.tab.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o
@@ -83,6 +84,20 @@ TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   List.cc Array.cc Structure.cc Sequence.cc Function.cc Grid.cc \
 	   util.cc
 
+# These object files are built using source code generated from the GNU
+# libg++ source with `genclass'. They are part of the the DAP library.
+
+GNUOBJS = BaseTypeVec.o String.Plex.o String.XPlex.o BTPlex.o BTStack.o \
+	  BTXPStack.o BTXPlex.o AttrMap.o AttrVHMap.o DASMap.o DASVHMap.o
+
+GNUHDRS = Map/AttrMap.h        Plex/String.Plex.h   Stack/BTXPlex.h	\
+	  Map/AttrVHMap.h      Plex/String.XPlex.h  Stack/BTdefs.h	\
+	  Map/Attrdefs.h       Plex/String.defs.h   Vec/BaseTypeVec.h	\
+	  Map/DASMap.h         Stack/BTPlex.h       Vec/BaseTypedefs.h	\
+	  Map/DASVHMap.h       Stack/BTStack.h	    Map/DASdefs.h       \
+	  Stack/BTXPStack.h
+
+
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   List.o Array.o Structure.o Sequence.o Function.o Grid.o \
 	   util.o
@@ -95,17 +110,10 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
 	   TestArray.o TestStructure.o TestList.o TestSequence.o\
 	   TestFunction.o TestGrid.o
 
-# Added decent into SUBDIRS since it makes little sense to build these
-# libraries without the Map, Stack and Plex code.
-
 all: $(PROG)
 
-# FIXME: This target won't catch objects in the subdirs that need to updated
-# in the library... jhrg 3/12/95
-
-libdap++.a: libdap++.a($(DASOBJS) $(DDSOBJS) $(TYPEOBJS))
-	for d in $(SUBDIRS); do cd $$d; make; cd ..; done
-	for d in $(SUBDIRS); do $(AR) $(ARFLAGS) libdap++.a $${d}/*.o; done
+libdap++.a: libdap++.a($(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS))
+	$(RANLIB) libdap++.a
 	
 # Build the test drivers
 
@@ -124,7 +132,7 @@ lex.das.c: das.lex das.tab.c das.tab.h
 	$(LEX) $(LFLAGS) -Pdas das.lex
 
 lex.das.o: lex.das.c
-	$(CXX) $(CXXFLAGS) -c lex.das.c -o lex.das.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.das.c -o lex.das.o
 
 # Build the DAS parser
 # Note that awk is used to add a param to dasparse().
@@ -135,7 +143,7 @@ das.tab.c das.tab.h: das.y DAS.h
 	mv tmp das.tab.c
 
 das.tab.o: das.tab.c		# build using C++ compiler
-	$(CXX) $(CXXFLAGS) -c das.tab.c -o das.tab.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c das.tab.c -o das.tab.o
 
 # Build the DDS Scanner.
 
@@ -143,42 +151,28 @@ lex.dds.c: dds.lex dds.tab.c dds.tab.h
 	$(LEX) $(LFLAGS) -Pdds dds.lex
 
 lex.dds.o: lex.dds.c
-	$(CXX) $(CXXFLAGS) -c lex.dds.c -o lex.dds.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c lex.dds.c -o lex.dds.o
 
 # Build the DDS parser
 
 dds.tab.c dds.tab.h: dds.y
-
 	$(YACC) $(YFLAGS) -p dds dds.y
 	$(AWK) -f munge-dds.awk dds.tab.c > tmp
 	mv tmp dds.tab.c
 
 dds.tab.o: dds.tab.c		# build using C++ compiler
-	$(CXX) $(CXXFLAGS) -c dds.tab.c -o dds.tab.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c dds.tab.c -o dds.tab.o
 
 # Standard targets with some customization for das-test and dds-test
 #
 # NB: it does not make much sense to install lib{das,dds}.a without the stack
 # map and xplex libraries also installed
 
-install: install-libdas++.a install-libdds++.a install-libdap++.a
-	for d in $(SUBDIRS); do cd $$d; make install; cd ..; done
-	$(INSTALL_DATA) config.h $(includedir)
-
-install-libdas++.a:
-#	$(INSTALL_DATA) libdas++.a $(libdir)
-#	$(RANLIB) $(libdir)/libdas++.a
-	for h in $(DASHDRS); do $(INSTALL_DATA) $$h $(includedir); done
-	
-install-libdds++.a:
-#	$(INSTALL_DATA) libdds++.a $(libdir)
-#	$(RANLIB) $(libdir)/libdds++.a
-	for h in $(TYPEHDRS) $(DDSHDRS); \
-	    do $(INSTALL_DATA) $$h $(includedir); done
-
-install-libdap++.a:
+install: 
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
+	for h in config_dap.h $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) $(GNUHDRS); \
+	    do $(INSTALL_DATA) $$h $(includedir); done
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
@@ -186,6 +180,7 @@ Makefile: ${srcdir}/Makefile.in
 check: das-check dds-check trans-check
 
 # these tests all fail when das-test is linked with -lnew_debug.
+
 das-check: das-test
 	-rootme=`pwd`; export rootme; \
 	${RUNTEST} ${RUNTESTFLAGS} --tool das-test --srcdir das-testsuite
@@ -200,24 +195,21 @@ trans-check: trans-test
 clean:	
 	-rm -f *.o *.sum *.log *~ core
 	-rm -f $(PROG)
-	for d in $(SUBDIRS); do cd $$d; make clean; cd ..; done
 	
 distclean: clean
 	-rm -f lex.das.c das.tab.c das.tab.h lex.dds.c dds.tab.c dds.tab.h
 	-rm -f config.status config.log config.cache Makefile
-	for d in $(SUBDIRS); do cd $$d; make distclean; cd ..; done
 
 tar:
 	cd ..; tar --exclude $(dir)/old -c -f $(dir).tar $(dir); \
 	       gzip $(dir).tar
 
 tags:
-	$(TAGS) *.{cc,h,lex,y}
+	$(TAGS) *.cc *.h *.lex *.y
 
 depend: 
-	makedepend -- $(CXXFLAGS) -I/usr/local/lib/g++-include -- \
+	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
 	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(TESTSRCS) das-test.cc dds-test.cc 
-	for d in $(SUBDIRS); do cd $$d; make depend; cd ..; done
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
   Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h \

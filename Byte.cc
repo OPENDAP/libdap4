@@ -4,8 +4,14 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
-// Revision 1.8  1995/03/16 17:26:37  jimg
-// Moved include of config.h to top of includes.
+// Revision 1.9  1995/05/10 13:45:10  jimg
+// Changed the name of the configuration header file from `config.h' to
+// `config_dap.h' so that other libraries could have header files which were
+// installed in the DODS include directory without overwriting this one. Each
+// config header should follow the convention config_<name>.h.
+//
+// Revision 1.8  1995/03/16  17:26:37  jimg
+// Moved include of config_dap.h to top of includes.
 // Added TRACE_NEW switched dbnew debugging includes.
 //
 // Revision 1.7  1995/03/04  14:34:41  jimg

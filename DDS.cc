@@ -4,7 +4,13 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.9  1994/12/09 21:37:24  jimg
+// Revision 1.10  1995/05/10 13:45:13  jimg
+// Changed the name of the configuration header file from `config.h' to
+// `config_dap.h' so that other libraries could have header files which were
+// installed in the DODS include directory without overwriting this one. Each
+// config header should follow the convention config_<name>.h.
+//
+// Revision 1.9  1994/12/09  21:37:24  jimg
 // Added <unistd.h> to the include files.
 //
 // Revision 1.8  1994/12/07  21:23:16  jimg
@@ -47,7 +53,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.9 1994/12/09 21:37:24 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.10 1995/05/10 13:45:13 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -59,7 +65,7 @@ static char rcsid[]="$Id: DDS.cc,v 1.9 1994/12/09 21:37:24 jimg Exp $";
 #include "errmsg.h"
 #include "util.h"
 
-#include "config.h"
+#include "config_dap.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif

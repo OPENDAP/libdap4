@@ -10,22 +10,28 @@
 // jhrg 9/15/94
 
 /* $Log: Grid.h,v $
-/* Revision 1.10  1995/03/04 14:35:01  jimg
-/* Major modifications to the transmission and representation of values:
-/* 	Added card() virtual function which is true for classes that
-/* 	contain cardinal types (byte, int float, string).
-/* 	Changed the representation of Str from the C rep to a C++
-/* 	class represenation.
-/* 	Chnaged read_val and store_val so that they take and return
-/* 	types that are stored by the object (e.g., inthe case of Str
-/* 	an URL, read_val returns a C++ String object).
-/* 	Modified Array representations so that arrays of card()
-/* 	objects are just that - no more storing strings, ... as
-/* 	C would store them.
-/* 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-/* 	an array of a structure is represented as an array of Structure
-/* 	objects).
+/* Revision 1.11  1995/05/10 13:45:19  jimg
+/* Changed the name of the configuration header file from `config.h' to
+/* `config_dap.h' so that other libraries could have header files which were
+/* installed in the DODS include directory without overwriting this one. Each
+/* config header should follow the convention config_<name>.h.
 /*
+ * Revision 1.10  1995/03/04  14:35:01  jimg
+ * Major modifications to the transmission and representation of values:
+ * 	Added card() virtual function which is true for classes that
+ * 	contain cardinal types (byte, int float, string).
+ * 	Changed the representation of Str from the C rep to a C++
+ * 	class represenation.
+ * 	Chnaged read_val and store_val so that they take and return
+ * 	types that are stored by the object (e.g., inthe case of Str
+ * 	an URL, read_val returns a C++ String object).
+ * 	Modified Array representations so that arrays of card()
+ * 	objects are just that - no more storing strings, ... as
+ * 	C would store them.
+ * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * 	an array of a structure is represented as an array of Structure
+ * 	objects).
+ *
  * Revision 1.9  1995/02/10  02:23:06  jimg
  * Added DBMALLOC includes and switch to code which uses malloc/free.
  * Private and protected symbols now start with `_'.
@@ -89,7 +95,7 @@
 #include <Pix.h>
 #include "BaseType.h"
 
-#include "config.h"
+#include "config_dap.h"
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif

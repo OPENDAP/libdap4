@@ -22,7 +22,13 @@
 
 /* 
  * $Log: das.y,v $
- * Revision 1.13  1995/02/16 15:30:46  jimg
+ * Revision 1.14  1995/05/10 13:45:43  jimg
+ * Changed the name of the configuration header file from `config.h' to
+ * `config_dap.h' so that other libraries could have header files which were
+ * installed in the DODS include directory without overwriting this one. Each
+ * config header should follow the convention config_<name>.h.
+ *
+ * Revision 1.13  1995/02/16  15:30:46  jimg
  * Fixed bug which caused Byte, ... values which were out of range to be
  * added to the attribute table anyway.
  * Corrected the number of expected shift-reduce conflicts.
@@ -102,13 +108,13 @@
 #define FALSE 0
 #endif
 
-static char rcsid[]={"$Id: das.y,v 1.13 1995/02/16 15:30:46 jimg Exp $"};
+static char rcsid[]={"$Id: das.y,v 1.14 1995/05/10 13:45:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
+#include "config_dap.h"
 #include "debug.h"
 #include "das.tab.h"
 #include "DAS.h"
