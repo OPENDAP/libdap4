@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.74 2003/02/21 00:14:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.75 2003/02/27 23:17:56 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,22 +91,22 @@ using std::ostrstream;
 // expression it contains. 4/7/98 jhrg
 
 string 
-prune_spaces(string name)
+prune_spaces(const string &name)
 {
     // If the URL does not even have white space return.
-    if (name.find_first_of(' ')==name.npos)
+    if (name.find_first_of(' ') == name.npos)
 	return name;
     else {
 	// Strip leading spaces from http://...
 	unsigned int i = name.find_first_not_of(' ');
-	name = name.substr(i);
+	string tmp_name = name.substr(i);
 	
 	// Strip leading spaces from constraint part (following `?').
-	unsigned int j = name.find('?') + 1;
-	i = name.find_first_not_of(' ', j);
-	name.erase(j, i-j);
+	unsigned int j = tmp_name.find('?') + 1;
+	i = tmp_name.find_first_not_of(' ', j);
+	tmp_name.erase(j, i-j);
 
-	return name;
+	return tmp_name;
     }
 }
 
@@ -578,6 +578,9 @@ get_tempfile_template(char *file_template)
 }
 
 // $Log: util.cc,v $
+// Revision 1.75  2003/02/27 23:17:56  jimg
+// Changed prune_spaces() so taht it takes a const string &.
+//
 // Revision 1.74  2003/02/21 00:14:25  jimg
 // Repaired copyright.
 //

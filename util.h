@@ -101,7 +101,7 @@
 
 using std::iostream;
 
-string prune_spaces(string);
+string prune_spaces(const string &);
 bool unique_names(vector<BaseType *> l, const string &var, const string &type,
 		  string &msg);
 XDR *new_xdrstdio(FILE *stream, enum xdr_op xop);
@@ -229,6 +229,9 @@ time_t parse_time(const char * str, bool expand);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.46  2003/02/27 23:17:56  jimg
+ * Changed prune_spaces() so taht it takes a const string &.
+ *
  * Revision 1.45  2003/02/21 00:14:25  jimg
  * Repaired copyright.
  *
