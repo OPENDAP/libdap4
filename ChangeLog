@@ -1,5 +1,14 @@
 1999-05-04  James Gallagher  <jimg@dcz.dods.org>
 
+	* Added to DODSFilter and DODS_Dispatch.pm so that server version
+	number information can be passed from the CGI script to the core
+	software. Now when you ask for the version of a server, you will
+	get the server's version information in addition to the core's. In
+	addition, the XDODS-Server header that is returned with every
+	response will now contain the server's version number. This
+	assumes that the server's dispatch script initializes
+	DODS_Dispatch correctly.
+
 	* Added InternalErr class. This class should be thrown by any code
 	that finds an internal error (i.e., the sort of thing that might
 	otherwise be trapped by an assert).
@@ -512,4 +521,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.38 1999/05/04 19:51:57 jimg Exp $
+$Id: ChangeLog,v 1.39 1999/05/05 01:43:54 jimg Exp $
