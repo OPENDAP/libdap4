@@ -38,6 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
+// Revision 1.12  1996/05/22 18:05:30  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.11  1996/03/05 18:49:23  jimg
 // Fixed Errors in comments.
 //
@@ -117,13 +121,13 @@ TestStructure::~TestStructure()
 // comprise the structure. 
 
 bool
-TestStructure::read(const String &dataset)
+TestStructure::read(const String &dataset, int &error)
 {
     if (read_p())
 	return true;
 
     for (Pix p = first_var(); p; next_var(p)) {
-	if (!var(p)->read(dataset))
+	if (!var(p)->read(dataset, error))
 	    return false;
     }
 

@@ -38,6 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestFloat64.cc,v $
+// Revision 1.11  1996/05/22 18:05:20  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.10  1996/04/05 00:21:47  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -105,7 +109,7 @@ TestFloat64::ptr_duplicate()
 }
  
 bool
-TestFloat64::read(const String &dataset)
+TestFloat64::read(const String &dataset, int &error)
 {
     if (read_p())
 	return true;

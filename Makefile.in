@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.35 1996/05/14 15:38:33 jimg Exp $
+# $Id: Makefile.in,v 1.36 1996/05/22 18:05:14 jimg Exp $
 
 @SET_MAKE@
 
@@ -15,14 +15,15 @@
 PROG= libdap++.a
 DODS_ROOT = ../..
 
-INCS = -I. -IMap -IStack -IPlex -IVec -I../errmsg -I../netio
+WWW_ROOT = /usr/local/src/WWW/Library/Implementation
+INCS = -I. -IMap -IStack -IPlex -IVec -I$(WWW_ROOT)
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@
-LDFLAGS = @LDFLAGS@ -L. -L../netio -L$(DODS_ROOT)/lib
+LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib
 LFLAGS = -8
 YFLAGS = -d
-LIBS = -lnetio -ldap++ -lnetio -ldap++ -lerrmsg @LIBS@
+LIBS = -ldap++ -lwww @LIBS@
 TAGS_FLAGS = -b
 
 # Set the instalation directories; prefix can be set on the command line
@@ -66,6 +67,10 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 
+NETIOSRCS = Connect.cc Connections.cc cgi_util.cc
+NETIOOBJS = Connect.o Connections.o cgi_util.o
+NETIOHDRS = Connect.h Connections.h Connections.cc cgi_util.h config_netio.h
+
 DAS_GRAM_OBJS = lex.das.o das.tab.o parser-util.o
 DDS_GRAM_OBJS = lex.dds.o dds.tab.o parser-util.o
 EXPR_GRAM_OBJS = lex.expr.o expr.tab.o expr.o
@@ -79,9 +84,9 @@ DDSHDRS = DDS.h
 DDSSRCS = DDS.cc
 DDSOBJS = DDS.o $(TYPEOBJS) $(DDS_GRAM_OBJS) $(EXPR_GRAM_OBJS)
 
-EXPRHDRS = expr.h
-EXPRSRCS = expr.cc
-EXPROBJS = DDS.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
+EXPRHDRS = expr.h Clause.h
+EXPRSRCS = expr.cc Clause.cc
+EXPROBJS = DDS.o Clause.o $(TYPEOBJS) $(EXPR_GRAM_OBJS)
 
 ERRORHDRS = Error.h
 ERROROBJS = Error.o $(ERROR_GRAM_OBJS)
@@ -121,7 +126,8 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o\
 
 all: $(PROG)
 
-libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS)
+libdap++.a: $(DASOBJS) $(DDSOBJS) $(TYPEOBJS) $(GNUOBJS) $(ERROROBJS)\
+	    $(NETIOOBJS)
 	$(AR) -cru $@ $?
 	$(RANLIB) $@
 
@@ -142,6 +148,17 @@ expr-test: libdap++.a $(EXPROBJS) $(TESTOBJS) expr-test.o expr.tab.h
 
 error-test: $(ERROROBJS) error-test.o Error.tab.h
 	$(CXX) $(LDFLAGS) -o error-test $(ERROROBJS) error-test.o 
+
+geturl: libdap.a $(TESTCLASSOBJS)
+	$(CXX) $(LDFLAGS) -o geturl $(TESTCLASSOBJS) $(LIBS)
+
+cgi-util-test: cgi_util.o libdap.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST_CGI_UTIL -c cgi_util.cc
+	$(CXX) $(LDFLAGS) -o cgi-util-test cgi_util.o $(LIBS)
+	-rm -f cgi_util.o
+
+www-test: www-test.o
+	$(CC) $(LDFLAGS) -o www-test www-test.o -lwww
 
 # Build the DAS scanner (a C source module compiled with C++)
 
@@ -227,10 +244,11 @@ install-headers:
 	$(INSTALL_DATA) debug.h $(includedir)
 	$(INSTALL_DATA) dods-limits.h $(includedir)
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
-		$(GNUHDRS); do $(INSTALL_DATA) $$h $(includedir); done
+		 $(GNUHDRS) $(NETIOHDRS); \
+	    do $(INSTALL_DATA) $$h $(includedir); done
 
 Makefile: ${srcdir}/Makefile.in
-	cd .. && ${SHELL} ./config.status && cd $(dir)
+	${SHELL} ./config.status
 
 check: libdap++.a das-check dds-check trans-check
 
@@ -285,8 +303,9 @@ tags:
 depend: 
 	@depend@ -- $(INCS) -I/usr/local/lib/g++-include -- \
 	$(DASSRCS) $(DDSSRCS) $(TYPESRCS) $(EXPRSRCS) $(TESTSRCS) \
-	$(ERRORSRCS) das-test.cc dds-test.cc expr-test.cc trans-test.cc \
-	error-test.cc
+	$(ERRORSRCS) $(NETIOSRC) \
+	das-test.cc dds-test.cc expr-test.cc trans-test.cc error-test.cc \
+	geturl.cc
 
 dds.tab.o: dds.tab.c dds.tab.h DDS.h BaseType.h Byte.h Int32.h Float64.h \
   Str.h Url.h Array.h List.h Structure.h Sequence.h Function.h \
@@ -304,8 +323,5 @@ das.tab.c: DAS.h
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
-
-
 
 

@@ -38,6 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
+// Revision 1.12  1996/05/22 18:05:31  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.11  1996/04/05 00:22:04  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -110,7 +114,7 @@ TestUrl::ptr_duplicate()
 }
 
 bool
-TestUrl::read(const String &dataset)
+TestUrl::read(const String &dataset, int &error)
 {
     if (read_p())
 	return true;

@@ -12,8 +12,12 @@
 // jhrg 9/29/94
 
 // $Log: Connect.cc,v $
+// Revision 1.19  1996/05/22 18:05:04  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.18  1996/05/21 23:46:32  jimg
-// Added support for URLs directory to the class. This uses version 4.0D of
+// Added support for URLs directly to the class. This uses version 4.0D of
 // the WWW library from W3C.
 //
 // Revision 1.17  1996/04/05 01:25:39  jimg
@@ -127,7 +131,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.18 1996/05/21 23:46:32 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.19 1996/05/22 18:05:04 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -144,7 +148,7 @@ static char rcsid[]={"$Id: Connect.cc,v 1.18 1996/05/21 23:46:32 jimg Exp $"};
 #include "Connect.h"
 
 const char DODS_PREFIX[]={"dods"};
-int DEFAULT_TIMEOUT = 10;	/* timeout in seconds */
+const int DEFAULT_TIMEOUT = 10;	/* timeout in seconds */
 
 int Connect::_connects = false;
 String Connect::_logfile = "";
@@ -293,8 +297,19 @@ Connect::move_dds(FILE *in)
 {
 
     char *c = tempnam(NULL, DODS_PREFIX);
+    if (!c) {
+	cerr << "Could not create temporary file name: " << strerror(errno)
+	    << endl;
+	return NULL;
+    }
+
     FILE *fp = fopen(c, "w+");
     unlink(c);
+    if (!fp) {
+	cerr << "Could not open anonymous temporary file: " 
+	     << strerror(errno) << endl;
+	return NULL;
+    }
 
     int data = FALSE;
     char s[256], *sp;
@@ -309,14 +324,17 @@ Connect::move_dds(FILE *in)
     }
 
     if (fseek(fp, 0L, 0) < 0) {
-	cerr << "Could not rewind data DDS stream." << endl;
+	cerr << "Could not rewind data DDS stream: " << strerror(errno)
+	    << endl;
 	return NULL;
     }
     
+    free(c);			// tempnam uses malloc
     return fp;
 }
 
 // read the Content-Description header field from FP
+
 bool
 Connect::parse_content_description(FILE *fp, String &value)
 {
@@ -717,9 +735,7 @@ Connect::request_das(const String &ext = "das")
 	status = _das.parse(_output); // read and parse the das from a file 
 
 exit:
-
     close_output();
-
     return status;
 }
 
@@ -757,9 +773,7 @@ Connect::request_dds(const String &ext = "dds")
 	status = _dds.parse(_output); // read and parse the dds from a file 
 
 exit:
-      
     close_output();
-
     return status;
 }
 
@@ -912,4 +926,3 @@ Connect::append_constraint(String expr, DDS &dds)
 
     return _data.rear()._dds;
 }
-     

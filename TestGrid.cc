@@ -38,6 +38,10 @@
 // jhrg 1/13/95
 
 // $Log: TestGrid.cc,v $
+// Revision 1.11  1996/05/22 18:05:23  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.10  1996/04/05 00:21:51  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -107,15 +111,15 @@ TestGrid::~TestGrid()
 }
 
 bool
-TestGrid::read(const String &dataset)
+TestGrid::read(const String &dataset, int &error)
 {
     if (read_p())
 	return true;
 
-    array_var()->read(dataset);
+    array_var()->read(dataset, error);
 
     for (Pix p = first_map_var(); p; next_map_var(p)) {
-	if (!map_var(p)->read(dataset))
+	if (!map_var(p)->read(dataset, error))
 	    return false;
     }
 

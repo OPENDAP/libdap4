@@ -38,6 +38,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.24  1996/05/22 18:05:12  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.23  1996/05/16 22:49:47  jimg
 // Dan's changes for version 2.0. Added a parameter to read that returns
 // an error code so that EOF can be distinguished from an actual error when
@@ -172,7 +176,6 @@
 #include "DDS.h"
 #include "Array.h"		// for downcasts
 #include "util.h"
-#include "errmsg.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -336,7 +339,9 @@ Grid::add_var(BaseType *bt, Part part)
 	_map_vars.append(bt);
 	return;
       default:
-	err_quit("Grid::add_var:Unknown grid part (must be array or maps)");
+	assert(false);
+	cerr << "Grid::add_var:Unknown grid part (must be array or maps)" 
+	     << endl;
 	return;
     }
 }    

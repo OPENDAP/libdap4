@@ -38,6 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
+// Revision 1.13  1996/05/22 18:05:29  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.12  1996/05/14 15:38:44  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -117,7 +121,7 @@ TestStr::ptr_duplicate()
 }
 
 bool
-TestStr::read(const String &dataset)
+TestStr::read(const String &dataset, int &error)
 {
     if (read_p())
 	return true;

@@ -6,6 +6,10 @@
 // 11/4/95 jhrg
 
 // $Log: expr.h,v $
+// Revision 1.6  1996/05/22 18:05:37  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.5  1996/05/14 15:38:58  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -60,9 +64,9 @@ struct rvalue {
     BaseType *btp;
     btp_func_rvalue *btp_f_rvp;
 
-    rvalue(BaseType *bt): btp(bt), btp_f_rvp(0) {}
-    rvalue(btp_func_rvalue *f): btp(0), btp_f_rvp(f) {}
-    rvalue(): btp(0), btp_f_rvp(0) {}
+    rvalue(BaseType *bt);
+    rvalue(btp_func_rvalue *f);
+    rvalue();
 
     ~rvalue();
 
@@ -80,23 +84,12 @@ struct btp_func_rvalue {
     btp_func_ptr btp_f_ptr;	// pointer to a function returning BaseType *
     rvalue_list *args;		// arguments to the function
 
-    btp_func_rvalue(btp_func_ptr f, rvalue_list *a): btp_f_ptr(f), args(a) {}
-    btp_func_rvalue(): btp_f_ptr(0) {}
+    btp_func_rvalue(btp_func_ptr f, rvalue_list *a);
+    btp_func_rvalue();
 
-    ~btp_func_rvalue() {
-	delete args;
-    }
+    ~btp_func_rvalue();
 
-    BaseType *bvalue(const String &dataset) {
-	int argc = args->length();
-	BaseType *argv[argc];
-
-	int i = 0;
-	for (Pix p = args->first(); p; args->next(p))
-	    argv[i++] = (*args)(p)->bvalue(dataset);
-
-	return (*btp_f_ptr)(argc, argv);
-    }
+    BaseType *bvalue(const String &dataset);
 };
 
 typedef SLList<int> IntList;

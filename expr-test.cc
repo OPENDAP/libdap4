@@ -39,6 +39,10 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
+// Revision 1.7  1996/05/22 18:05:35  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.6  1996/05/14 15:38:57  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -71,9 +75,11 @@
 // First version. Runs scanner and parser.
 //
 
-static char rcsid[]= {"$Id: expr-test.cc,v 1.6 1996/05/14 15:38:57 jimg Exp $"};
+static char rcsid[]= {"$Id: expr-test.cc,v 1.7 1996/05/22 18:05:35 jimg Exp $"};
 
 #include <stdio.h>
+#include <errno.h>
+
 #include <streambuf.h>
 #include <iostream.h>
 #include <stdiostream.h>
@@ -82,7 +88,6 @@ static char rcsid[]= {"$Id: expr-test.cc,v 1.6 1996/05/14 15:38:57 jimg Exp $"};
 #include <String.h>
 #include <SLList.h>
 
-#include "errmsg.h"
 #include "DDS.h"
 #include "BaseType.h"
 
@@ -382,7 +387,10 @@ transmit(DDS &write, bool verb)
 	// This code only works for scalar variables at the top level of the
 	// DDS. It also ignores the read_p() mfunc.
 	if (write.var(wp)->send_p()) { // only works for scalars
-	    status = write.var(wp)->read("dummy");
+	    int error = 0;
+	    status = write.var(wp)->read("dummy", error);
+	    if (error != -1)
+		status = false;
 
 	    if (verb) {
 		cout << "Variable to be written:" << endl;
@@ -456,10 +464,21 @@ loopback_pipe(FILE **pout, FILE **pin)
 FILE *
 move_dds(FILE *in)
 {
+    char *c = tempnam(NULL, "dods");
+    if (!c) {
+	cerr << "Could not create temporary file name" << strerror(errno)
+	    << endl;
+	return NULL;
+    }
 
-    char *c = tempnam(NULL, DODS_DDS_PRX);
     FILE *fp = fopen(c, "w+");
-
+    unlink(c);
+    if (!fp) {
+	cerr << "Could not open anonymous temporary file: " 
+	     << strerror(errno) << endl;
+	return NULL;
+    }
+	    
     int data = FALSE;
     char s[256], *sp;
     
@@ -472,12 +491,13 @@ move_dds(FILE *in)
 	    fputs(s, fp);
     }
 
-    fclose(fp);		/* once full, close file */
+    if (fseek(fp, 0L, 0) < 0) {
+	cerr << "Could not rewind data DDS stream: " << strerror(errno)
+	    << endl;
+	return NULL;
+    }
     
-    fp = fopen(c, "r");	/* get file pointer */
-    if (unlink(c) < 0)	/* now when fp is closed, file is rm'd */
-	err_sys("Could not unlink tmp file %s", c);
-
+    free(c);			// tempnam uses malloc
     return fp;
 }
     

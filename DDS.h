@@ -7,9 +7,13 @@
 // jhrg 9/8/94
 
 /* $Log: DDS.h,v $
-/* Revision 1.12  1996/04/05 00:21:28  jimg
-/* Compiled with g++ -Wall and fixed various warnings.
+/* Revision 1.13  1996/05/22 18:05:09  jimg
+/* Merged files from the old netio directory into the dap directory.
+/* Removed the errmsg library from the software.
 /*
+ * Revision 1.12  1996/04/05 00:21:28  jimg
+ * Compiled with g++ -Wall and fixed various warnings.
+ *
  * Revision 1.11  1996/04/04 18:41:07  jimg
  * Merged changes from version 1.1.1.
  *
@@ -92,63 +96,12 @@
 #include <SLList.h>
 
 #include "BaseType.h"
+#include "Clause.h"
 #include "expr.h"
 #include "debug.h"
 
 class DDS {
 private:
-    // This struct is used to hold a clause in the constraint expression
-    // (CE). A CE is made up of N clauses, all of which are &&'d together to
-    // get the value of the CE. 
-    struct clause {
-	int op;			// operator code from parser; used iff ARG1
-	bool_func_ptr f;	// or boolean function
-	rvalue *arg1;		// only for operator
-	rvalue_list *args;	// vector arg
-
-	clause(const int oper, rvalue *a1, rvalue_list *rv)
-	    : op(oper), f(0), arg1(a1), args(rv) {}
-	clause(bool_func_ptr func, rvalue_list *rv)
-	    : op(0), f(func), arg1(0), args(rv) {}
-	clause() : op(0), f(0), arg1(0), args(0) {}
-
-	~clause() {
-#ifdef NEVER
-	    if (arg1)
-		delete arg1;
-
-	    delete args;
-#endif
-	}
-
-	bool value(const String &dataset) {
-	    if (arg1) {		// is it an rvalue?
-		// rvalue::bvalue(...) returns the rvalue encapsulated in a
-		// BaseType *.
-		BaseType *btp = arg1->bvalue(dataset);
-		// The list of rvalues is an implicit logical OR, so assume
-		// FALSE and return TRUE for the first TRUE subclause.
-		bool result = false;
-		for (Pix p = args->first(); p && !result; args->next(p))
-		    result = result || btp->ops(*(*args)(p)->bvalue(dataset), 
-						op);
-
-		return result;
-	    }
-	    else {		// otherwise it must a bool function
-		int argc = args->length();
-		BaseType *argv[argc];
-		
-		int i = 0;
-		for (Pix p = args->first(); p; args->next(p))
-		    argv[i++] = (*args)(p)->bvalue(dataset);
-
-		bool result = (*f)(argc, argv);
-		return result;
-	    }
-	}
-    };
-	
     // This struct is used to hold all the known `user defined' functions
     // (including those that are `built-in'). 
     struct function {

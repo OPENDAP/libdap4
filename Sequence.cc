@@ -38,6 +38,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.25  1996/05/22 18:05:15  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.24  1996/05/16 22:44:52  jimg
 // Dan's changes for 2.0.
 //
@@ -315,15 +319,14 @@ Sequence::serialize(const String &dataset, DDS &dds, bool ce_eval, bool flush)
 	// Check to see if the variable needs to be read. Only read when at
 	// the `top level' of a Sequence (i.e. only issue a read at the
 	// outermost Sequence when dealing with nested Sequences).
-	if (!read_p() && read_level() == 0) {
-	    if (!read(dataset, error)) { // error is a value-result parameter
-		if (error != -1) 
-		    return false;
-		else 
-		    return true;        // EOF condition (!read() && !error)
+	if (!read_p()) {
+	    if (read_level() == 0) {
+		if (!read(dataset,error)) {
+		    if (error != -1) return false;
+		    else return true; // EOF condition
+		}
 	    }
-	    else 
-		return true;
+	    else return true;	
 	}
 
 	// if we are supposed to eval the selection, then do so. If it's

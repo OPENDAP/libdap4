@@ -38,6 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
+// Revision 1.11  1996/05/22 18:05:27  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.10  1996/04/05 00:21:58  jimg
 // Compiled with g++ -Wall and fixed various warnings.
 //
@@ -109,7 +113,7 @@ TestSequence::~TestSequence()
 }
 
 bool 
-TestSequence::read(const String &dataset)
+TestSequence::read(const String &dataset, int &error)
 {
     if (read_p())
 	return true;

@@ -37,6 +37,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
+// Revision 1.22  1996/05/22 18:05:45  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.21  1996/05/14 15:39:09  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -150,7 +154,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.21 1996/05/14 15:39:09 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.22 1996/05/22 18:05:45 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -159,6 +163,7 @@ static char rcsid[]={"$Id: util.cc,v 1.21 1996/05/14 15:39:09 jimg Exp $"};
 #include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
+#include <errno.h>
 
 #ifdef DBMALLOC
 #include <dbmalloc.h>
@@ -169,14 +174,13 @@ static char rcsid[]={"$Id: util.cc,v 1.21 1996/05/14 15:39:09 jimg Exp $"};
 #include "BaseType.h"
 #include "Str.h"
 #include "Url.h"
-#include "errmsg.h"
 #include "debug.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
-#define DODS_CE_PRX "dods-ce"
+const char DODS_CE_PRX[]={"dods"};
 
 static int
 char_cmp(const void *a, const void *b)
@@ -197,8 +201,6 @@ unique(SLList<BaseTypePtr> l, const char *var_name, const char *type_name)
 {
     // copy the identifier names to an array of char
     char **names = new char *[l.length()];
-    if (!names)
-	err_quit("util.cc:unique - Could not allocate array NAMES.");
 
     int nelem = 0;
     String s;
@@ -323,13 +325,21 @@ FILE *
 text_to_temp(String text)
 {
     char *c = tempnam(NULL, DODS_CE_PRX);
-    FILE *fp = fopen(c, "w+");
-    fputs((const char *)text, fp);
-    fclose(fp);		/* once full, close file */
-    
-    fp = fopen(c, "r");	/* get file pointer */
-    if (unlink(c) < 0)	/* now when fp is closed, file is rm'd */
-	err_sys("Could not unlink tmp file %s", c);
+    FILE *fp = fopen(c, "w+");	// create temp
+    unlink(c);			// make anonymous
+    if (!fp) {
+	cerr << "Could not create anonymous temporary file: "
+	    << strerror(errno) << endl;
+	return NULL;
+    }
+
+    fputs((const char *)text, fp); // dump information
+
+    if (fseek(fp, 0L, 0 == -1)) { // rewind in preparation for reading
+	cerr << "Could not rewind anonymous temporary file: "
+	    << strerror(errno) << endl;
+	return NULL;
+    }
 
     return fp;
 }

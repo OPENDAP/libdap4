@@ -37,6 +37,10 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
+// Revision 1.20  1996/05/22 18:05:08  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.19  1996/05/14 15:38:20  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -139,7 +143,7 @@
 // First version of the Dataset descriptor class.
 // 
 
-static char rcsid[]="$Id: DDS.cc,v 1.19 1996/05/14 15:38:20 jimg Exp $";
+static char rcsid[]="$Id: DDS.cc,v 1.20 1996/05/22 18:05:08 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -153,7 +157,6 @@ static char rcsid[]="$Id: DDS.cc,v 1.19 1996/05/14 15:38:20 jimg Exp $";
 #include <stdiostream.h>
 
 #include "DDS.h"
-#include "errmsg.h"
 #include "debug.h"
 #include "util.h"
 
@@ -218,12 +221,6 @@ DDS::~DDS()
     // delete all the constants created by the parser for CE evaluation
     for (p = constants.first(); p; constants.next(p))
 	delete constants(p);
-
-    // delete all the rvalue list objects created by the parser
-#ifdef NEVER
-    for (p = expr.first(); p; expr.next(p))
-	delete expr(p);
-#endif
 }
 
 DDS &
@@ -495,10 +492,7 @@ DDS::parse(int fd)
 bool
 DDS::parse(FILE *in)
 {
-    if (!in) {
-	err_print("DDS::parse: NULL file pointer");
-	return false;
-    }
+    assert(in);
 
     ddsrestart(in);
 

@@ -38,6 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.15  1996/05/22 18:05:16  jimg
+// Merged files from the old netio directory into the dap directory.
+// Removed the errmsg library from the software.
+//
 // Revision 1.14  1996/05/14 15:38:41  jimg
 // These changes have already been checked in once before. However, I
 // corrupted the source repository and restored it from a 5/9/96 backup
@@ -138,7 +142,7 @@ TestArray::~TestArray()
 // would never get values this way. For testing this is OK.
 
 bool
-TestArray::read(const String &dataset)
+TestArray::read(const String &dataset, int &error)
 {
     if (read_p())
 	return true;
@@ -147,7 +151,7 @@ TestArray::read(const String &dataset)
 
     // run read() on the contained variable to get, via the read() mfuncs
     // defined in the other Test classes, a value in the *contained* object.
-    var()->read(dataset);
+    var()->read(dataset, error);
 
     unsigned int array_len = length(); // elements in the array
 
@@ -204,7 +208,7 @@ TestArray::read(const String &dataset)
 
 	    // read values into the new instance.
 	    
-	    elem->read(dataset);
+	    elem->read(dataset, error);
 
 	    // now load the new instance in the array.
 
