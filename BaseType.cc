@@ -10,6 +10,9 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.27  1996/10/28 23:43:55  jimg
+// Added UInt32 to type names returned by type_name() member function.
+//
 // Revision 1.26  1996/06/04 21:33:09  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -272,6 +275,8 @@ BaseType::type_name() const
 	return String("Byte");
       case dods_int32_c:
 	return String("Int32");
+      case dods_uint32_c:
+	return String("UInt32");
       case dods_float64_c:
 	return String("Float64");
       case dods_str_c:
