@@ -11,6 +11,9 @@
 // jhrg 9/7/94
 
 // $Log: UInt32.h,v $
+// Revision 1.2  1996/10/18 16:53:36  jimg
+// Fixed definition of dtor (was Int32 instead of UInt32).
+//
 // Revision 1.1  1996/08/26 19:40:40  jimg
 // Added.
 //
@@ -34,7 +37,7 @@ protected:
 
 public:
     UInt32(const String &n = (char *)0);
-    virtual ~Int32() {}
+    virtual ~UInt32() {}
 
     virtual BaseType *ptr_duplicate() = 0;
     
