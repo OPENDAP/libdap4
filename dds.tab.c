@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.40 2003/02/03 16:47:05 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.41 2003/02/21 00:14:25 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1666,8 +1666,8 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.40  2003/02/03 16:47:05  jimg
- * Darn grammar files... Generated files should not be in CVS!
+ * Revision 1.41  2003/02/21 00:14:25  jimg
+ * Repaired copyright.
  *
  * Revision 1.40  2003/01/23 00:22:24  jimg
  * Updated the copyright notice; this implementation of the DAP is

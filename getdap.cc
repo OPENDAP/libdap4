@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.63 2003/01/23 00:22:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.64 2003/02/21 00:14:25 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -58,7 +58,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.63 2003/01/23 00:22:25 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.63 $";
+const char *version = "$Revision: 1.64 $";
 
 extern int keep_temps;		// defined in Connect.cc
 
@@ -350,6 +350,9 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.64  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
 // Revision 1.63  2003/01/23 00:22:25  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.

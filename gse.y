@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.y,v 1.8 2003/01/23 00:22:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.y,v 1.9 2003/02/21 00:14:25 jimg Exp $"};
 
 #include <iostream>
 
@@ -223,6 +223,9 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 }
 
 // $Log: gse.y,v $
+// Revision 1.9  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
 // Revision 1.8  2003/01/23 00:22:25  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.

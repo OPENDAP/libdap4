@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.35 2003/01/23 00:22:23 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.36 2003/02/21 00:14:24 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -1043,6 +1043,9 @@ AttrTable::print(FILE *out, string pad, bool dereference)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.36  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
 // Revision 1.35  2003/01/23 00:22:23  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.

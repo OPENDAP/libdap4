@@ -30,6 +30,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "AISResources.h"
+#include "debug.h"
 
 using namespace CppUnit;
 
@@ -171,8 +172,6 @@ public:
 
 	    ResourceVector trv2 = ais2->get_resource(fnoc2);
 	    CPPUNIT_ASSERT(trv2.size() == 1);
-	    cerr << "fnoc2 url[0]: " << trv2[0].get_url() << endl;
-	    cerr << "fnoc2 rule[0]: " << trv2[0].get_rule() << endl;
 	    CPPUNIT_ASSERT(trv2[0].get_url() == fnoc2_ais);
 	    CPPUNIT_ASSERT(trv2[0].get_rule() == fallback);
 
@@ -202,8 +201,6 @@ public:
 
 	    ResourceVector trv2 = ais2->get_resource(fnoc2);
 	    CPPUNIT_ASSERT(trv2.size() == 1);
-	    cerr << "fnoc2 url[0]: " << trv2[0].get_url() << endl;
-	    cerr << "fnoc2 rule[0]: " << trv2[0].get_rule() << endl;
 	    CPPUNIT_ASSERT(trv2[0].get_url() == fnoc2_ais);
 	    CPPUNIT_ASSERT(trv2[0].get_rule() == fallback);
 
@@ -246,6 +243,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISResourcesTest.cc,v $
+// Revision 1.2  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
 // Revision 1.1  2003/02/20 23:05:57  jimg
 // Added.
 //

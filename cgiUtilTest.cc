@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -194,6 +194,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: cgiUtilTest.cc,v $
+// Revision 1.7  2003/02/21 00:14:25  jimg
+// Repaired copyright.
+//
 // Revision 1.6  2003/02/03 21:42:36  pwest
 // added tests/Makefile.in and rearranged test files so no duplication
 //

@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.120 2003/01/23 00:22:23 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.121 2003/02/21 00:14:24 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -761,6 +761,9 @@ Connect::get_cache_control()
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.121  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
 // Revision 1.120  2003/01/23 00:22:23  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.

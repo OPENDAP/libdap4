@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.tab.c,v 1.3 2003/02/20 23:15:20 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.tab.c,v 1.4 2003/02/21 00:14:25 jimg Exp $"};
 
 #include <iostream>
 
@@ -1265,8 +1265,8 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 }
 
 // $Log: gse.tab.c,v $
-// Revision 1.3  2003/02/20 23:15:20  jimg
-// Added generated flex/bison files.
+// Revision 1.4  2003/02/21 00:14:25  jimg
+// Repaired copyright.
 //
 // Revision 1.8  2003/01/23 00:22:25  jimg
 // Updated the copyright notice; this implementation of the DAP is

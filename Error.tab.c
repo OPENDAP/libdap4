@@ -23,7 +23,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.27 2003/02/03 16:47:05 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.tab.c,v 1.28 2003/02/21 00:14:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1225,8 +1225,8 @@ Errorerror(char *s)
 
 
 // $Log: Error.tab.c,v $
-// Revision 1.27  2003/02/03 16:47:05  jimg
-// Darn grammar files... Generated files should not be in CVS!
+// Revision 1.28  2003/02/21 00:14:24  jimg
+// Repaired copyright.
 //
 // Revision 1.12  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is

@@ -30,6 +30,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "AISDatabaseParser.h"
+#include "debug.h"
 
 using namespace CppUnit;
 
@@ -60,12 +61,6 @@ public:
 	delete ais;
     }
 
-#if 0
-    bool re_match(Regex &r, const char *s) {
-	return r.match(s, strlen(s)) == (int)strlen(s);
-    }
-#endif
-
     CPPUNIT_TEST_SUITE( AISDatabaseParserTest );
 
     CPPUNIT_TEST(parse_test);
@@ -84,8 +79,6 @@ public:
 
 	    ResourceVector trv2 = ais->get_resource(fnoc2);
 	    CPPUNIT_ASSERT(trv2.size() == 1);
-	    cerr << "fnoc2 url[0]: " << trv2[0].get_url() << endl;
-	    cerr << "fnoc2 rule[0]: " << trv2[0].get_rule() << endl;
 	    CPPUNIT_ASSERT(trv2[0].get_url() == fnoc2_ais);
 	    CPPUNIT_ASSERT(trv2[0].get_rule() == fallback);
 
@@ -107,7 +100,7 @@ public:
 	    CPPUNIT_ASSERT(!"ais_error_1.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
-	    cerr << "Error: " << e.get_error_message() << endl;
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
 	}
 
 	try {
@@ -115,7 +108,7 @@ public:
 	    CPPUNIT_ASSERT(!"ais_error_2.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
-	    cerr << "Error: " << e.get_error_message() << endl;
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
 	}
 
 	try {
@@ -123,7 +116,7 @@ public:
 	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
-	    cerr << "Error: " << e.get_error_message() << endl;
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
 	}
 
 	try {
@@ -131,7 +124,7 @@ public:
 	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
-	    cerr << "Error: " << e.get_error_message() << endl;
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
 	}
 
 	try {
@@ -139,7 +132,7 @@ public:
 	    CPPUNIT_ASSERT(!"ais_error_3.xml should fail!");
 	}
 	catch (AISDatabaseReadFailed &e) {
-	    cerr << "Error: " << e.get_error_message() << endl;
+	    DBG(cerr << "Error: " << e.get_error_message() << endl);
 	}
     }
 };
@@ -156,3 +149,8 @@ main( int argc, char* argv[] )
 
     return 0;
 }
+
+// $Log: AISDatabaseParserTest.cc,v $
+// Revision 1.2  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//

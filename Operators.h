@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -183,6 +183,9 @@ bool rops(T1 a, T2 b, int op)
 }
 
 // $Log: Operators.h,v $
+// Revision 1.12  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
 // Revision 1.11  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.

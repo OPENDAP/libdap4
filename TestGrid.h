@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -54,6 +54,9 @@ public:
 
 /* 
  * $Log: TestGrid.h,v $
+ * Revision 1.14  2003/02/21 00:14:25  jimg
+ * Repaired copyright.
+ *
  * Revision 1.13  2003/01/23 00:22:24  jimg
  * Updated the copyright notice; this implementation of the DAP is
  * copyrighted by OPeNDAP, Inc.

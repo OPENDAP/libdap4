@@ -31,7 +31,7 @@
 #include "AISDatabaseParser.h"
 #include "debug.h"
 
-static const char *states[] = {
+static const not_used char *states[] = {
     "START",
     "FINISH",
     "AIS",
@@ -355,6 +355,9 @@ AISDatabaseParser::parse(const string &database, AISResources *ais)
 }
 
 // $Log: AISDatabaseParser.cc,v $
+// Revision 1.2  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
 // Revision 1.1  2003/02/20 22:16:04  jimg
 // Added.
 //

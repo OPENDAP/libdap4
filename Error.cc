@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.30 2003/01/23 00:22:24 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.31 2003/02/21 00:14:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -501,6 +501,9 @@ Error::correct_error(void *) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.31  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
 // Revision 1.30  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.

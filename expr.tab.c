@@ -25,7 +25,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.32 2003/02/03 16:47:05 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.33 2003/02/21 00:14:25 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2191,8 +2191,8 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.32  2003/02/03 16:47:05  jimg
- * Darn grammar files... Generated files should not be in CVS!
+ * Revision 1.33  2003/02/21 00:14:25  jimg
+ * Repaired copyright.
  *
  * Revision 1.44  2003/01/23 00:22:25  jimg
  * Updated the copyright notice; this implementation of the DAP is

@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -791,6 +791,9 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.56  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
 // Revision 1.55  2003/01/23 00:22:24  jimg
 // Updated the copyright notice; this implementation of the DAP is
 // copyrighted by OPeNDAP, Inc.
@@ -1001,7 +1004,7 @@ Grid::check_semantics(string &msg, bool all)
 // of the read(...) member function. (from jeh)
 //
 // Revision 1.34  1998/03/17 17:32:00  jimg
-// Added an implmentation of element_count().
+// Added an implementation of element_count().
 //
 // Revision 1.33  1997/09/22 23:02:10  jimg
 // Added DDS * to deserialize parameters.

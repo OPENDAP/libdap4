@@ -1,7 +1,7 @@
 
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of libdap, A C++ implmentation of the OPeNDAP Data
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.34 2003/02/09 12:18:31 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.35 2003/02/21 00:14:24 jimg Exp $"};
 
 #include <iostream>
 #include <strstream>
@@ -690,6 +690,9 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.35  2003/02/21 00:14:24  jimg
+// Repaired copyright.
+//
 // Revision 1.34  2003/02/09 12:18:31  rmorris
 // Fix to compile under win32.  Problem with min/max diffs under win32 and unix.
 //
