@@ -4,7 +4,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
-// Revision 1.5  1995/05/22 20:36:10  jimg
+// Revision 1.6  1995/05/30 18:28:59  jimg
+// Added const to ErrMsgT prototype.
+//
+// Revision 1.5  1995/05/22  20:36:10  jimg
 // Added #include "config_netio.h"
 // Removed old code.
 //
@@ -31,7 +34,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.5 1995/05/22 20:36:10 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.6 1995/05/30 18:28:59 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +68,7 @@ static char rcsid[]={"$Id: cgi_util.cc,v 1.5 1995/05/22 20:36:10 jimg Exp $"};
 // Returns: void
 
 void 
-ErrMsgT(char *Msgt)
+ErrMsgT(const char *Msgt)
 {
     time_t TimBin;
     char TimStr[TimLen];
