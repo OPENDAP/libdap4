@@ -1,7 +1,7 @@
 
 # Common code for dejaGNU-based automated tests.
 
-# $Id: common_tests.exp,v 1.1 1999/05/20 16:31:01 jimg Exp $
+# $Id: common_tests.exp,v 1.2 1999/05/25 15:19:06 jimg Exp $
 
 # Compare $expected to the global $comp_output. Run `pass' if they match,
 # `fail' otherwise unless `xfailp' is true in which case run `xfail' if they
@@ -32,16 +32,21 @@ proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
     set expected [string trim $expected]
     set comp_output [string trim $comp_output]
 
-    # Set the value returned when a test passes; compare returns 0 when two
-    # strings are equal (i.e., test passed) and match returns 1 when the
-    # pattern matches (i.e., test passed). Arrgh!!! 5/20/99 jhrg
-    if ![string compare $str_test "compare"] {
-	set pass 0
-    } else {
-	set pass 1
+    set result [string $str_test $expected $comp_output]
+
+    if {$verbose >= 1} {
+	send_user "Result of $str_test: $result\n"
     }
 
-    if {[string $str_test $expected $comp_output] == $pass} {
+    # Munge value returned when a test passes; compare returns 0 when two
+    # strings are equal (i.e., test passed) and match returns 1 when the
+    # pattern matches (i.e., test passed). Arrgh!!! This is Nathan's patch.
+    # 5/25/99 jhrg
+    if {$str_test == "compare"} {
+	set result !$result
+    }
+
+    if $result {
 	pass "$msg"
 	send_user "PASS: $msg\n"
     } elseif {$xfailp == 1} {
