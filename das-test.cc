@@ -13,6 +13,10 @@
 // jhrg 7/25/94
 
 // $Log: das-test.cc,v $
+// Revision 1.23  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.22  2000/06/07 18:07:00  jimg
 // Merged the pc port branch
 //
@@ -111,7 +115,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das-test.cc,v 1.22 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das-test.cc,v 1.23 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <iostream>
 #include <string>
@@ -125,6 +129,12 @@ static char rcsid[] not_used = {"$Id: das-test.cc,v 1.22 2000/06/07 18:07:00 jim
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+using std::flush;
 #endif
 
 void plain_driver(DAS &das);

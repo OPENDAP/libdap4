@@ -9,7 +9,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.27 2000/06/16 18:14:59 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.28 2000/07/09 22:05:35 rmorris Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -22,6 +22,12 @@ static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.27 2000/06/16 18:14:59 jimg
 #include "AttrTable.h"
 #include "debug.h"
 #include "util.h"
+
+#ifdef WIN32
+using std::string;
+using std::vector<string>;
+using std::endl;
+#endif
 
 // Private member functions
 
@@ -457,6 +463,10 @@ AttrTable::print(ostream &os, string pad)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.28  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.27  2000/06/16 18:14:59  jimg
 // Merged with 3.1.7
 //

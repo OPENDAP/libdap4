@@ -10,6 +10,10 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
+// Revision 1.46  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.45  2000/06/16 18:14:59  jimg
 // Merged with 3.1.7
 //
@@ -265,7 +269,7 @@
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::endl;
 #endif
 
 void

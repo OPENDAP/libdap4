@@ -10,6 +10,10 @@
 // jhrg 8/26/97
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.20  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.19  2000/06/07 19:33:21  jimg
 // Merged with verson 3.1.6
 //
@@ -122,7 +126,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.19 2000/06/07 19:33:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.20 2000/07/09 22:05:35 rmorris Exp $"};
 
 #include <iostream>
 #if defined(__GNUG__) || defined(WIN32)
@@ -138,6 +142,12 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.19 2000/06/07 19:33:21 j
 #include "debug.h"
 #include "cgi_util.h"
 #include "DODSFilter.h"
+
+#ifdef WIN32
+using std::endl;
+using std::ends;
+using std::ostrstream;
+#endif
 
 DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false), 
     bad_options(false), dataset(""), ce(""), cgi_ver("dods/3.0"),

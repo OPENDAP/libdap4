@@ -14,6 +14,10 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.22  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.21  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -118,7 +122,9 @@
 #include "debug.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::istrstream;
 #endif
 
 void

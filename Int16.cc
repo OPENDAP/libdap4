@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Int16.cc,v $
+// Revision 1.8  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.7  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -48,7 +52,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int16.cc,v 1.7 2000/06/07 18:06:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int16.cc,v 1.8 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -67,7 +71,8 @@ static char rcsid[] not_used = {"$Id: Int16.cc,v 1.7 2000/06/07 18:06:59 jimg Ex
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 Int16::Int16(const string &n) : BaseType(n, dods_int16_c, (xdrproc_t)XDR_INT16)

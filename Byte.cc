@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Byte.cc,v $
+// Revision 1.38  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.37  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -219,7 +223,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Byte.cc,v 1.37 2000/06/07 18:06:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Byte.cc,v 1.38 2000/07/09 22:05:35 rmorris Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -235,6 +239,11 @@ static char rcsid[] not_used = {"$Id: Byte.cc,v 1.37 2000/06/07 18:06:58 jimg Ex
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
 #endif
 
 // NB: Even though Byte is a cardinal type, xdr_char is *not* used to

@@ -9,11 +9,9 @@
 // jhrg 9/7/94
 
 // $Log: DDS.cc,v $
-// Revision 1.49  2000/07/08 01:28:36  rmorris
-// Changes to DDS:send() method to use _cwait instead of waitpid() under
-// Win32.  As of the time of check back into cvs, the method is untested
-// under win32 but would only be use in the "server side of the core" or
-// during running of the test suite.
+// Revision 1.50  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
 //
 // Revision 1.48  2000/06/16 18:50:18  jimg
 // Fixes leftover from the last merge plus needed for the merge with version
@@ -269,7 +267,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.49 2000/07/08 01:28:36 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.50 2000/07/09 22:05:35 rmorris Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -282,7 +280,11 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.49 2000/07/08 01:28:36 rmorris 
 #include <assert.h>
 
 #include <iostream>
+#ifdef WIN32
+#include <strstream>
+#else
 #include <fstream>
+#endif
 
 #include "expr.h"
 #include "Clause.h"
@@ -300,7 +302,9 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.49 2000/07/08 01:28:36 rmorris 
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::strstream;
 #endif
 
 void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
@@ -833,11 +837,14 @@ bool
 DDS::print(FILE *out)
 {
 #ifdef WIN32
-    std::ofstream os(out->_tmpfname,ios::app);
+ 	strstream os;
+    bool retval = print(os);
+	flush_stream(os, out);
+	return retval;
 #else
     ofstream os(fileno(out));
+	return print(os);
 #endif
-    return print(os);
 }
 
 // Print those parts (variables) of the DDS structure to OS that are marked
@@ -867,11 +874,15 @@ bool
 DDS::print_constrained(FILE *out)
 {
 #ifdef WIN32
-    std::ofstream os(out->_tmpfname,ios::app);
+	strstream os;
+    bool retval = print_constrained(os);
+	flush_stream(os, out);
+	return retval;
 #else
     ofstream os(fileno(out));
-#endif
     return print_constrained(os);
+#endif
+
 }
 
 static void
@@ -894,11 +905,14 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
     assert(var);
 
 #ifdef WIN32
-    std::ofstream os(out->_tmpfname,ios::app);
+	strstream os;
+	print_variable(os, var, constrained);
+	flush_stream(os, out);
 #else
 	ofstream os(fileno(out));
-#endif
     print_variable(os, var, constrained);
+#endif
+	return;
 }
 
 // Check the semantics of the DDS describing a complete dataset. If ALL is
@@ -975,22 +989,15 @@ bool
 DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 {
 #ifdef WIN32
-	//  In win32 land where we are using the "new" Standard C++ Library,
-	//  we can't hook a stream to an open FILE *.  No such constructor
-	//  and there is no way around it.  (This is by design of the ANSI
-	//  steering committee).  This essentially opens the files
-	//  again as a stream.  The "old" Standard C++ Library can perform
-	//  this trick - but mixing the "old" and "new" is disallowed.  This
-	//  ofstream should be deconstructed automatically (and hence closed
-	//  and flushed) before the associated FILE * is used again and that
-	//  is why this is believed to work.  This approach may rule out a
-	//  win32 native port of Dods servers.
-	std::ofstream os(out->_tmpfname,ios::app);
+	strstream os;
+	bool retval = parse_constraint(constraint, os, server);	
+	flush_stream(os, out);
+	return retval;
 #else
-	//  This breaks with the ANSI draft, but is possible under UNIX.
     ofstream os(fileno(out));
-#endif
     return parse_constraint(constraint, os, server);
+#endif
+
 }
 
 // Send the named variable. This mfunc combines BaseTypes read() and

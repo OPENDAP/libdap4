@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
+// Revision 1.40  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.39  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -211,7 +215,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.39 2000/06/07 18:06:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.40 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <assert.h>
 #include <stdlib.h>
@@ -225,6 +229,11 @@ static char rcsid[] not_used = {"$Id: Str.cc,v 1.39 2000/06/07 18:06:59 jimg Exp
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
 #endif
 
 string escattr(string s);

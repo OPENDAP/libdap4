@@ -10,6 +10,10 @@
 // jhrg 4/25/96
 
 // $Log: error-test.cc,v $
+// Revision 1.6  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.5  2000/06/07 18:07:00  jimg
 // Merged the pc port branch
 //
@@ -39,7 +43,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: error-test.cc,v 1.5 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: error-test.cc,v 1.6 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <assert.h>
 
@@ -49,6 +53,12 @@ static char rcsid[] not_used = {"$Id: error-test.cc,v 1.5 2000/06/07 18:07:00 ji
 #include "Error.h"
 #include "parser.h"
 #include "Error.tab.h"
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+using std::flush;
+#endif
 
 void test_scanner();
 void test_parser(Error &err);

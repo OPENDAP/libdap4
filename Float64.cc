@@ -10,6 +10,10 @@
 // jhrg 9/7/94
 
 // $Log: Float64.cc,v $
+// Revision 1.39  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.38  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -215,12 +219,12 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Float64.cc,v 1.38 2000/06/07 18:06:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Float64.cc,v 1.39 2000/07/09 22:05:35 rmorris Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
 
-#include <iomanip.h>
+#include <iomanip>
 
 #include "Float64.h"
 #include "DDS.h"
@@ -235,7 +239,8 @@ static char rcsid[] not_used = {"$Id: Float64.cc,v 1.38 2000/06/07 18:06:58 jimg
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 Float64::Float64(const string &n) 
@@ -299,11 +304,7 @@ Float64::buf2val(void **val)
 }
 
 void
-#ifdef WIN32
-Float64::print_val(std::ostream &os, string space, bool print_decl_p)
-#else
 Float64::print_val(ostream &os, string space, bool print_decl_p)
-#endif
 {
     os.precision(DODS_DBL_DIG);
 
@@ -323,22 +324,14 @@ Float64::ops(BaseType *b, int op, const string &dataset)
     // Extract the Byte arg's value.
     if (!read_p() && (!read(dataset, error) || error)) {
 	assert("This value not read!" && false);
-#ifdef WIN32
-	std::cerr << "This value not read!" << endl;
-#else
 	cerr << "This value not read!" << endl;
-#endif
 	return false;
     }
 
     // Extract the second arg's value.
     if (!b->read_p() && (!b->read(dataset, error) || error)) {
 	assert("This value not read!" && false);
-#ifdef WIN32
-	std::cerr << "This value not read!" << endl;
-#else
 	cerr << "This value not read!" << endl;
-#endif
 	return false;
     }
 

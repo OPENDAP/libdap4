@@ -10,6 +10,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
+// Revision 1.43  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.42  2000/06/16 18:14:59  jimg
 // Merged with 3.1.7
 //
@@ -248,7 +252,10 @@
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::ends;
+using std::ostrstream;
 #endif
 
 void

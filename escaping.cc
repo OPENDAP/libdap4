@@ -12,6 +12,10 @@
 // $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
 //
 // $Log: escaping.cc,v $
+// Revision 1.14  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.13  2000/06/07 18:07:00  jimg
 // Merged the pc port branch
 //
@@ -112,7 +116,14 @@
 #include <Regex.h>
 
 #ifdef WIN32
-using namespace std;
+using std::string;
+using std::ostrstream;
+using std::istrstream;
+using std::setfill;
+using std::hex;
+using std::setw;
+using std::oct;
+using std::ends;
 #endif
 
 const int MAXSTR = 256;

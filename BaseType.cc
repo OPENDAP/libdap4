@@ -10,6 +10,10 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
+// Revision 1.40  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.39  2000/06/16 18:14:59  jimg
 // Merged with 3.1.7
 //
@@ -216,7 +220,8 @@
 #include "util.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 // Private copy mfunc

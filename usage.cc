@@ -13,6 +13,10 @@
 // jhrg 12/9/96
 
 // $Log: usage.cc,v $
+// Revision 1.14  2000/07/09 22:05:37  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.13  2000/06/07 18:07:01  jimg
 // Merged the pc port branch
 //
@@ -76,7 +80,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.13 2000/06/07 18:07:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.14 2000/07/09 22:05:37 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -96,7 +100,11 @@ static char rcsid[] not_used = {"$Id: usage.cc,v 1.13 2000/06/07 18:07:01 jimg E
 #include "debug.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::ends;
+using std::ifstream;
+using std::ostrstream;
 #endif
 
 static void

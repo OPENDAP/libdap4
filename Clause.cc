@@ -8,6 +8,10 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.10  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.9  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -55,6 +59,11 @@
 #include "expr.h"
 #include "DDS.h"
 #include "Clause.h"
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+#endif
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
     : _op(oper), _b_func(0), _bt_func(0), _arg1(a1), _args(rv) 

@@ -11,10 +11,9 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.59  2000/07/08 01:25:41  rmorris
-// Changes for "server side of core" (in compressor()) for win32.  As of the
-// time of check-in to cvs the changes are untested, but would only be used
-// on the server side or in the case of the core test suite.
+// Revision 1.60  2000/07/09 22:05:37  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
 //
 // Revision 1.58  2000/06/16 18:50:19  jimg
 // Fixes leftover from the last merge plus needed for the merge with version
@@ -296,7 +295,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.59 2000/07/08 01:25:41 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.60 2000/07/09 22:05:37 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -348,7 +347,11 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.59 2000/07/08 01:25:41 rmorris
 #endif
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
+using std::ends;
+using std::sort;
+using std::ostrstream;
 #endif
 
 const char DODS_CE_PRX[]={"dods"};
@@ -390,41 +393,25 @@ unique_names(SLList<BaseType *> l, const string &var_name,
     for (Pix p = l.first(); p; l.next(p)) {
 	assert(l(p));
 	names[nelem++] = l(p)->name();
-#ifdef WIN32
-	DBG(std::cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
-#else
 	DBG(cerr << "NAMES[" << nelem-1 << "]=" << names[nelem-1] << endl);
-#endif
     }
     
     // sort the array of names
     sort(names.begin(), names.end());
 	
 #ifdef DODS_DEBUG2
-#ifdef WIN32
-    std::cout << "unique:" << endl;
-    for (int ii = 0; ii < nelem; ++ii)
-	std::cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#else
     cout << "unique:" << endl;
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#endif
 #endif
     
     // sort the array of names
     sort(names.begin(), names.end());
 	
 #ifdef DODS_DEBUG2
-#ifdef WIN32
-    std::cout << "unique:" << endl;
-    for (int ii = 0; ii < nelem; ++ii)
-	std::cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#else
     cout << "unique:" << endl;
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#endif
 #endif
     
     // look for any instance of consecutive names that are ==
@@ -461,15 +448,9 @@ unique_names(DLList<BaseType *> l, const string &var_name,
     sort(names.begin(), names.end());
 	
 #ifdef DODS_DEBUG2
-#ifdef WIN32
-    std::cout << "unique:" << endl;
-    for (int ii = 0; ii < nelem; ++ii)
-	std::cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#else
     cout << "unique:" << endl;
     for (int ii = 0; ii < nelem; ++ii)
 	cout << "NAMES[" << ii << "]=" << names[ii] << endl;
-#endif
 #endif
     
     // look for any instance of consecutive names that are ==
@@ -541,11 +522,7 @@ delete_xdrstdio(XDR *xdr)
 extern "C" bool_t
 xdr_str(XDR *xdrs, string &buf)
 {
-#ifdef WIN32
-    DBG(std::cerr << "In xdr_str, xdrs: " << xdrs << endl);
-#else
     DBG(cerr << "In xdr_str, xdrs: " << xdrs << endl);
-#endif
 
     switch (xdrs->x_op) {
       case XDR_ENCODE: {	// BUF is a pointer to a (string *)
@@ -603,11 +580,8 @@ dods_progress()
 bool
 deflate_exists()
 {
-#ifdef WIN32
-    DBG(std::cerr << "Entering deflate_exists...");
-#else
     DBG(cerr << "Entering deflate_exists...");
-#endif
+
     int status = false;
     struct stat buf;
 
@@ -632,11 +606,10 @@ deflate_exists()
     // and that it can be executed.
 #ifdef WIN32
     status &= (buf.st_mode & _S_IEXEC);
-    DBG(std::cerr << " returning " << (status ? "true." : "false.") << endl);
 #else
     status &= buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH);
-    DBG(cerr << " returning " << (status ? "true." : "false.") << endl);
 #endif
+    DBG(cerr << " returning " << (status ? "true." : "false.") << endl);
     return (status != 0);
 }
 
@@ -774,4 +747,25 @@ void downcase(string &s) {
   for(unsigned int i=0; i<s.length(); i++)
     s[i] = tolower(s[i]);
 }
+
+#ifdef WIN32
+//  Sometime need to buffer within an iostream under win32 when
+//  we want the output to go to a FILE *.  This is because
+//  it's not possible to associate an ofstream with a FILE *
+//  under the Standard ANSI C++ Library spec.  Unix systems
+//  don't follow the spec in this regard.
+void flush_stream(std::iostream ios, FILE *out)
+{
+	int nbytes;
+	char buffer[512];
+
+	ios.get(buffer,512,NULL);
+	while((nbytes = ios.gcount()) > 0)
+		{
+		fwrite(buffer, 1, nbytes, out);
+		ios.get(buffer,512,NULL);
+		}
+	return;	
+}
+#endif
 

@@ -10,6 +10,10 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.42  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.41  2000/06/07 18:07:01  jimg
 // Merged the pc port branch
 //
@@ -183,7 +187,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.41 2000/06/07 18:07:01 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.42 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -193,7 +197,12 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.41 2000/06/07 18:07:01 jimg 
 
 #include "Connect.h"
 
-const char *version = "$Revision: 1.41 $";
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+#endif
+
+const char *version = "$Revision: 1.42 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void

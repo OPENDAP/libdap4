@@ -11,6 +11,10 @@
 // 11/21/95 jhrg
 
 // $Log: Vector.cc,v $
+// Revision 1.31  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.30  2000/06/16 18:15:00  jimg
 // Merged with 3.1.7
 //
@@ -154,7 +158,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.30 2000/06/16 18:15:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.31 2000/07/09 22:05:36 rmorris Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -169,6 +173,11 @@ static char rcsid[] not_used = {"$Id: Vector.cc,v 1.30 2000/06/16 18:15:00 jimg 
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
 #endif
 
 void

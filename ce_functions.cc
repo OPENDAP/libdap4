@@ -11,6 +11,10 @@
 // 1/15/99 jhrg
 
 // $Log: ce_functions.cc,v $
+// Revision 1.6  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.5  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -33,14 +37,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.5 2000/06/07 18:06:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.6 2000/07/09 22:05:36 rmorris Exp $"};
 
-#include <iostream.h>
-#ifdef WIN32
+#include <iostream>
 #include <vector>
-#else
-#include <vector.h>
-#endif
 
 #include "BaseType.h"
 #include "List.h"
@@ -56,7 +56,8 @@ static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.5 2000/06/07 18:06:59 
 #include "util.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 int		gse_parse(void *arg);
@@ -81,11 +82,7 @@ extract_string_argument(BaseType *arg)
     string s = *sp;
     delete sp;
 
-#ifdef WIN32
-    DBG(std::cerr << "s: " << s << endl);
-#else
     DBG(cerr << "s: " << s << endl);
-#endif
 
     return s;
 }
@@ -94,11 +91,7 @@ bool
 func_member(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 2) {
-#ifdef WIN32
-	std::cerr << "Wrong number of arguments." << endl;
-#else
 	cerr << "Wrong number of arguments." << endl;
-#endif
 	return false;
     }
     
@@ -112,11 +105,7 @@ func_member(int argc, BaseType *argv[], DDS &dds)
       }
       
       default:
-#ifdef WIN32
-		std::cerr << "Wrong argument type." << endl;
-#else
 		cerr << "Wrong argument type." << endl;
-#endif
 		return false;
     }
 
@@ -126,11 +115,7 @@ bool
 func_null(int argc, BaseType *argv[], DDS &)
 {
     if (argc != 1) {
-#ifdef WIN32
-		std::cerr << "Wrong number of arguments." << endl;
-#else
 		cerr << "Wrong number of arguments." << endl;
-#endif
 		return false;
     }
     
@@ -143,11 +128,7 @@ func_null(int argc, BaseType *argv[], DDS &)
       }
 
       default:
-#ifdef WIN32
-		std::cerr << "Wrong argument type." << endl;
-#else
 		cerr << "Wrong argument type." << endl;
-#endif
 	return false;
     }
 
@@ -157,11 +138,7 @@ BaseType *
 func_length(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 1) {
-#ifdef WIN32
-	std::cerr << "Wrong number of arguments." << endl;
-#else
 	cerr << "Wrong number of arguments." << endl;
-#endif
 	return 0;
     }
     
@@ -195,11 +172,7 @@ func_length(int argc, BaseType *argv[], DDS &dds)
       }
 
       default:
-#ifdef WIN32
-	std::cerr << "Wrong type argument to list operator `length'" << endl;
-#else
 	cerr << "Wrong type argument to list operator `length'" << endl;
-#endif
 	return 0;
     }
 }
@@ -208,22 +181,14 @@ BaseType *
 func_nth(int argc, BaseType *argv[], DDS &)
 {
     if (argc != 2) {
-#ifdef WIN32
-	std::cerr << "Wrong number of arguments." << endl;
-#else
 	cerr << "Wrong number of arguments." << endl;
-#endif
 	return 0;
     }
     
     switch (argv[0]->type()) {
 	case dods_list_c: {
 	    if (argv[1]->type() != dods_int32_c) {
-#ifdef WIN32
-		std::cerr << "Second argument to NTH must be an integer." << endl;
-#else
 		cerr << "Second argument to NTH must be an integer." << endl;
-#endif
 		return 0;
 	    }
 	    List *var = (List *)argv[0];
@@ -235,11 +200,7 @@ func_nth(int argc, BaseType *argv[], DDS &)
 	}
 
       default:
-#ifdef WIN32
-	std::cerr << "Wrong type argument to list operator `nth'" << endl;
-#else
 	cerr << "Wrong type argument to list operator `nth'" << endl;
-#endif
 	return 0;
     }
 }

@@ -10,6 +10,10 @@
 // jhrg 8/29/94
 
 // $Log: dds-test.cc,v $
+// Revision 1.17  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.16  2000/06/07 18:07:00  jimg
 // Merged the pc port branch
 //
@@ -48,7 +52,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.16 2000/06/07 18:07:00 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.17 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
@@ -60,6 +64,12 @@ static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.16 2000/06/07 18:07:00 jim
 #include "Int32.h"
 #include "DDS.h"
 #include "util.h"
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+using std::flush;
+#endif
 
 void test_scanner();
 void test_parser();

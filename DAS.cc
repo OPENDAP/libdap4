@@ -11,6 +11,10 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.30  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.29  2000/06/07 19:33:21  jimg
 // Merged with verson 3.1.6
 //
@@ -159,7 +163,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.29 2000/06/07 19:33:21 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.30 2000/07/09 22:05:35 rmorris Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -168,8 +172,7 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.29 2000/06/07 19:33:21 jimg Exp 
 #include <stdio.h>
 #ifdef WIN32
 #include <io.h>
-#endif
-#ifndef WIN32
+#else
 #include <unistd.h>
 #endif
 #include <assert.h>
@@ -184,7 +187,8 @@ static char rcsid[] not_used ={"$Id: DAS.cc,v 1.29 2000/06/07 19:33:21 jimg Exp 
 #include "debug.h"
 
 #ifdef WIN32
-using namespace std;
+using std::cerr;
+using std::endl;
 #endif
 
 #include "DAS.h"		// follows pragma since DAS.h is interface

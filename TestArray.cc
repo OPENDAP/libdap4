@@ -10,6 +10,10 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
+// Revision 1.22  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.21  1999/05/04 19:47:22  jimg
 // Fixed copyright statements. Removed more of the GNU classes.
 //
@@ -109,6 +113,11 @@
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
 #endif
 
 Array *

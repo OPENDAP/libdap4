@@ -9,6 +9,10 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.94  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.93  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -548,7 +552,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.93 2000/06/07 18:06:58 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.94 2000/07/09 22:05:35 rmorris Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -579,6 +583,13 @@ static char rcsid[] not_used ={"$Id: Connect.cc,v 1.93 2000/06/07 18:06:58 jimg 
 
 #if defined(__svr4__)
 #define CATCH_SIG
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+using std::ifstream;
+using std::ofstream;
 #endif
 
 // Constants used for temporary files.
@@ -1626,7 +1637,7 @@ Connect::~Connect()
 
     close_output();
 
-#ifdef _WIN32
+#ifdef WIN32
 	HTEventTerminate();
 #endif
 

@@ -11,6 +11,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.42  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.41  2000/06/07 18:06:59  jimg
 // Merged the pc port branch
 //
@@ -208,7 +212,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.41 2000/06/07 18:06:59 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.42 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -221,7 +225,11 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.41 2000/06/07 18:06:59 jim
 #include <sys/stat.h>
 
 #include <iostream>
+#ifdef WIN32
+#include <strstream>
+#else
 #include <fstream>
+#endif
 #include <string>
 
 #include "cgi_util.h"
@@ -231,12 +239,15 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.41 2000/06/07 18:06:59 jim
 #endif
 
 #ifdef WIN32
-using namespace std;
 #define FILE_DELIMITER	'\\'
+#else  //  default to unix
+#define FILE_DELIMITER '/'
 #endif
 
-#ifndef FILE_DELIMITER		// default to unix
-#define FILE_DELIMITER '/'
+#ifdef WIN32
+using std::cerr;
+using std::endl;
+using std::strstream;
 #endif
 
 static const int TimLen = 26;	// length of string from asctime()
@@ -258,13 +269,8 @@ usage(const string &name)
     // Build an error object to return to the user.
     Error *ErrorObj = new Error(no_such_file, 
 			(string)"\"DODS internal error; missing parameter.\"");
-#ifdef WIN32
-    set_mime_text(std::cout, dods_error);
-    ErrorObj->print(std::cout);
-#else
     set_mime_text(cout, dods_error);
     ErrorObj->print(cout);
-#endif
 }    
 
 void
@@ -280,13 +286,8 @@ usage(const char *name)
     // Build an error object to return to the user.
     Error *ErrorObj = new Error(no_such_file, 
 			(string)"\"DODS internal error; missing parameter.\"");
-#ifdef WIN32
-    set_mime_text(std::cout, dods_error);
-    ErrorObj->print(std::cout);
-#else
     set_mime_text(cout, dods_error);
     ErrorObj->print(cout);
-#endif
 }
 
 // Note that the filter program must define `find_dataset_version()' for this
@@ -295,20 +296,6 @@ usage(const char *name)
 bool
 do_version(const string &script_ver, const string &dataset_ver)
 {
-#ifdef WIN32
-    std::cout << "HTTP/1.0 200 OK" << endl
-	 << "XDODS-Server: " << DVR << endl
-	 << "Content-Type: text/plain" << endl
-	 << endl;
-    
-    std::cout << "Core software version: " << DVR << endl;
-
-    if (script_ver != "")
-	std::cout << "Server Script Revision: " << script_ver << endl;
-
-    if (dataset_ver != "")
-	std::cout << "Dataset version: " << dataset_ver << endl;
-#else
     cout << "HTTP/1.0 200 OK" << endl
 	 << "XDODS-Server: " << DVR << endl
 	 << "Content-Type: text/plain" << endl
@@ -321,7 +308,6 @@ do_version(const string &script_ver, const string &dataset_ver)
 
     if (dataset_ver != "")
 	cout << "Dataset version: " << dataset_ver << endl;
-#endif
 
     return true;
 }
@@ -432,18 +418,10 @@ read_ancillary_dds(DDS &dds, string dataset, string dir, string file)
 	    ErrMsgT(msg);
 
 	    // client error message
-#ifdef WIN32
-	    set_mime_text(std::cout, dods_error);
-#else
 	    set_mime_text(cout, dods_error);
-#endif
 
 	    Error *ErrorObj = new Error(malformed_expr, msg);
-#ifdef WIN32
-	    ErrorObj->print(std::cout);
-#else
 	    ErrorObj->print(cout);
-#endif
 
 	    return false;
 	}
@@ -469,18 +447,10 @@ read_ancillary_das(DAS &das, string dataset, string dir, string file)
 	    ErrMsgT(msg);
 
 	    // client error message
-#ifdef WIN32
-	    set_mime_text(std::cout, dods_error);
-#else
 	    set_mime_text(cout, dods_error);
-#endif
 
 	    Error *ErrorObj = new Error(malformed_expr, msg);
-#ifdef WIN32
-	    ErrorObj->print(std::cout);
-#else
 	    ErrorObj->print(cout);
-#endif
 
 	    return false;
 	}
@@ -514,13 +484,8 @@ ErrMsgT(const string &Msgt)
     const char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") : 
 	"DODS server"; 
 
-#ifdef WIN32
-    std::cerr << "[" << TimStr << "] CGI: " << script << " failed for " 
-	 << host_or_addr << ": "<< Msgt << endl;
-#else
     cerr << "[" << TimStr << "] CGI: " << script << " failed for " 
 	 << host_or_addr << ": "<< Msgt << endl;
-#endif
 }
 
 // Given a pathname, return just the filename component with any extension
@@ -629,21 +594,19 @@ void
 set_mime_text(FILE *out, ObjectType type, const string &ver, EncodingType enc)
 {
 #ifdef WIN32
-	std::ofstream os(out->_tmpfname,ios::app);
+	strstream os;
+	set_mime_text(os, type, ver, enc);	
+	flush_stream(os, out);
 #else
     ofstream os(fileno(out));
+	set_mime_text(os, type, ver, enc);
 #endif
-    set_mime_text(os, type, ver, enc);
+	return;
 }
 
 void
-#ifdef WIN32
-set_mime_text(std::ostream &os, ObjectType type, const string &ver, 
-	      EncodingType enc)
-#else
 set_mime_text(ostream &os, ObjectType type, const string &ver, 
 	      EncodingType enc)
-#endif
 {
     os << "HTTP/1.0 200 OK" << endl;
     os << "XDODS-Server: " << ver << endl;
@@ -663,21 +626,20 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
 		EncodingType enc)
 {
 #ifdef WIN32
-	std::ofstream os(out->_tmpfname,ios::app);
+	strstream os;
+	set_mime_binary(os, type, ver, enc);
+	flush_stream(os, out);
 #else
     ofstream os(fileno(out));
-#endif
     set_mime_binary(os, type, ver, enc);
+#endif
+
+	return;
 }
 
 void
-#ifdef WIN32
-set_mime_binary(std::ostream &os, ObjectType type, const string &ver, 
-		EncodingType enc)
-#else
 set_mime_binary(ostream &os, ObjectType type, const string &ver, 
 		EncodingType enc)
-#endif
 {
     os << "HTTP/1.0 200 OK" << endl;
     os << "XDODS-Server: " << ver << endl;
@@ -702,21 +664,19 @@ set_mime_error(FILE *out, int code, const string &reason,
 	       const string &version)
 {
 #ifdef WIN32
-	std::ofstream os(out->_tmpfname,ios::app);
+	strstream os;
+	set_mime_error(os, code, reason, version);	
+	flush_stream(os, out);
 #else
     ofstream os(fileno(out));
+	set_mime_error(os, code, reason, version);
 #endif
-    set_mime_error(os, code, reason, version);
+	return;
 }
 
 void
-#ifdef WIN32
-set_mime_error(std::ostream &os, int code, const string &reason,
-	       const string &version)
-#else 
 set_mime_error(ostream &os, int code, const string &reason,
-	       const string &version = DVR)
-#endif
+	       const string &version)
 {
     os << "HTTP/1.0 " << code << " " << reason << endl;
     os << "XDODS-Server: " << version << endl;
@@ -745,11 +705,7 @@ main(int argc, char *argv[])
     int content_len = 68;
     while (content_len) {
 	char *word = fmakeword(in, stop, &content_len);
-#ifdef WIN32
-	std::cout << "Word: " << word << endl;
-#else
 	cout << "Word: " << word << endl;
-#endif
 	delete word;
     }
     fclose(in);
@@ -761,11 +717,7 @@ main(int argc, char *argv[])
     content_len = 12467;
     while (content_len) {
 	char *word = fmakeword(in, stop, &content_len);
-#ifdef WIN32
-	std::cout << "Word: " << word << endl;
-#else
 	cout << "Word: " << word << endl;
-#endif
 	delete word;
     }
     fclose(in);
@@ -774,93 +726,48 @@ main(int argc, char *argv[])
     char *name_path_p;
     char *name = "stuff";
     name_path_p = name_path(name);
-#ifdef WIN32
-    std::cout << name << ": " << name_path_p << endl;
-#else
     cout << name << ": " << name_path_p << endl;
-#endif
     delete name_path_p;
 
     name = "stuff.Z";
     name_path_p = name_path(name);
-#ifdef WIN32
-    std::cout << name << ": " << name_path_p << endl;
-#else
     cout << name << ": " << name_path_p << endl;
-#endif
     delete name_path_p;
 
     name = "/usr/local/src/stuff.Z";
     name_path_p = name_path(name);
-#ifdef WIN32
-    std::cout << name << ": " << name_path_p << endl;
-#else
     cout << name << ": " << name_path_p << endl;
-#endif
     delete name_path_p;
 
     name = "/usr/local/src/stuff.tar.Z";
     name_path_p = name_path(name);
-#ifdef WIN32
-    std::cout << name << ": " << name_path_p << endl;
-#else
     cout << name << ": " << name_path_p << endl;
-#endif
     delete name_path_p;
 
     name = "/usr/local/src/stuff";
     name_path_p = name_path(name);
-#ifdef WIN32
-    std::cout << name << ": " << name_path_p << endl;
-#else
     cout << name << ": " << name_path_p << endl;
-#endif
     delete name_path_p;
 
     name = "";
     name_path_p = name_path(name);
-#ifdef WIN32
-    std::cout << name << ": " << name_path_p << endl;
-#else
     cout << name << ": " << name_path_p << endl;
-#endif
     delete name_path_p;
 
     name = 0;
     name_path_p = name_path(name);
-#ifdef WIN32
-    std::cout << name << ": " << name_path_p << endl;
-#else
     cout << name << ": " << name_path_p << endl;
-#endif
     delete name_path_p;
 
     // Test mime header generators and compressed output
-#ifdef WIN32
-    std::cout << "MIME text header:" << endl;
-#else
     cout << "MIME text header:" << endl;
-#endif
     set_mime_text(dods_das);
-
-#ifdef WIN32
-    std::cout << "MIME binary header:" << endl;
-#else
     cout << "MIME binary header:" << endl;
-#endif
     set_mime_binary(dods_data);
 
-#ifdef WIN32
-    std::cout << "Some data..." << endl;
-#else
     cout << "Some data..." << endl;
-#endif
 
-#ifdef WIN32
-    std::cout << "MIME binary header and compressed data:" << endl;
-#else
 	cout << "MIME binary header and compressed data:" << endl;
-#endif
     set_mime_binary(dods_data, x_gzip);
     FILE *out = compress_stdout();
     fprintf(out, "Compresses data...\n");

@@ -10,6 +10,10 @@
 // 3/22/9 jhrg9
 
 // $Log: Float32.cc,v $
+// Revision 1.11  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.10  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -54,7 +58,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Float32.cc,v 1.10 2000/06/07 18:06:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Float32.cc,v 1.11 2000/07/09 22:05:35 rmorris Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -69,6 +73,11 @@ static char rcsid[] not_used = {"$Id: Float32.cc,v 1.10 2000/06/07 18:06:58 jimg
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
 #endif
 
 Float32::Float32(const string &n) 

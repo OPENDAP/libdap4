@@ -8,6 +8,10 @@
 // Implementation for the Error class.
 
 // $Log: Error.cc,v $
+// Revision 1.21  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.20  2000/03/28 16:32:02  jimg
 // Modified these files so that they can be built either with and without GUI
 // defined. The type signatures are now the same either way. Thus we can build
@@ -115,7 +119,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.20 2000/03/28 16:32:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.21 2000/07/09 22:05:35 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -125,6 +129,11 @@ static char rcsid[] not_used = {"$Id: Error.cc,v 1.20 2000/03/28 16:32:02 jimg E
 
 #ifdef GUI
 #include "Gui.h"
+#endif
+
+#ifdef WIN32
+using std::cerr;
+using std::endl;
 #endif
 
 void Errorrestart(FILE *yyin);	// defined in Error.tab.c

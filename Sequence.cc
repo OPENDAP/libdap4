@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.54  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.53  2000/06/16 18:15:00  jimg
 // Merged with 3.1.7
 //
@@ -286,6 +290,10 @@
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::endl;
 #endif
 
 static unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101

@@ -10,12 +10,9 @@
 // jhrg 9/12/95
 
 // $Log: expr-test.cc,v $
-// Revision 1.25  2000/07/08 01:32:16  rmorris
-// Changes to loopback_pipe method under win32.  A difference between the
-// iostream implementation under win32 (versus unix) means that the loopback
-// pipe can't be a pipe at all.  See win32 code for parse_constraint()
-// for specifics.  As of 7/2000, this code is untested but only gets used
-// on the "server side of the core" or in the core test suite.
+// Revision 1.26  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
 //
 // Revision 1.24  2000/06/07 18:07:00  jimg
 // Merged the pc port branch
@@ -130,7 +127,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.25 2000/07/08 01:32:16 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.26 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -168,6 +165,13 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.25 2000/07/08 01:32:16 rm
 #include "expr.tab.h"
 #include "util.h"
 #include "debug.h"
+
+#ifdef WIN32
+using std::cin;
+using std::cerr;
+using std::endl;
+using std::flush;
+#endif
 
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
@@ -320,12 +324,14 @@ main(int argc, char *argv[])
 	constrained_trans(dds_file_name, dataset, constraint);
     }
 
+	exit(0);
+
 #ifdef WIN32
 	return;
 #endif
 }
 
-// Instead of reading the tokens from srdin, read them from a string.
+// Instead of reading the tokens from stdin, read them from a string.
 
 
 void
@@ -508,48 +514,17 @@ evaluate_dds(DDS &table, bool print_constrained)
 bool
 loopback_pipe(FILE **pout, FILE **pin)
 {
+// make a pipe
 #ifdef WIN32
-#if 0
-	//  This code has been left here in the vain hope that we will
-	//  somehow be able to open an ostream given a FILE * under
-	//  win32 at some point - w/o actually openning the file twice.
 	int fd[2];
 	if (_pipe(fd, 1024, _O_BINARY) < 0) {
 	cerr << "Could not open pipe" << endl;
 	return false;
 	}
 
-    *pout = fdopen(fd[1], "w");
-    *pin = fdopen(fd[0], "r");
+    *pout = fdopen(fd[1], "w+b");
+    *pin = fdopen(fd[0], "r+b");
 #else
-	//  We can't go through a pipe in win32 land because that
-	//  would cause the pipe to be used in the constructor
-	//  for ofstream.  (see the version of DDS::parse_constraint
-	//  that uses a FILE *).  That constructor requires that
-	//  the name of the file is stored in the FILE structure and
-	//  that isn't the case with a pipe.
-
-	//  This is code that has never been show to work as of 7/2000.
-	int tfd;
-
-	//  Create unique temporary file for i/o
-	char *tmp = _tempnam(NULL,"tmp");
-
-	if((*pout = fopen(tmp,"w+b")) == NULL)
-		{
-		cerr << "Could not open loopback file " << tmp << " for writing." << endl;
-		return false;
-		}
-	if((*pin = fopen(tmp,"r+b")) == NULL)
-		{
-		cerr << "Could not open loopback file " << tmp << " for reading." << endl;
-		return false;
-		}
-	free(tmp);
-#endif
-#else
-    // make a pipe
-
     int fd[2];
     if (pipe(fd) < 0) {
 	cerr << "Could not open pipe" << endl;

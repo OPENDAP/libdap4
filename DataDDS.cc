@@ -9,6 +9,10 @@
 // jhrg 9/19/97
 
 // $Log: DataDDS.cc,v $
+// Revision 1.9  2000/07/09 22:05:35  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.8  2000/06/07 18:06:58  jimg
 // Merged the pc port branch
 //
@@ -51,7 +55,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.8 2000/06/07 18:06:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.9 2000/07/09 22:05:35 rmorris Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -71,7 +75,7 @@ static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.8 2000/06/07 18:06:58 jimg 
 #include "debug.h"
 
 #ifdef WIN32
-using namespace std;
+using std::istrstream;
 #endif
 
 // private
@@ -83,12 +87,7 @@ DataDDS::_version_string_to_numbers()
 {
     static Regex version_regex("[a-z]+/[0-9]\\.[0-9]+[.0-9a-zA-Z]*", 1);
 
-#ifdef WIN32
-    DBG(std::cerr << "in version string to numbers" << endl);
-#else
 	DBG(cerr << "in version string to numbers" << endl);
-#endif
-
 
     if (version_regex.match(_server_version.c_str(), _server_version.length()) != (int)_server_version.length()) {
 	_server_version_major = 0;
@@ -97,25 +96,15 @@ DataDDS::_version_string_to_numbers()
     else {
 	string num = _server_version.substr(_server_version.find('/')+1);
 
-#ifdef WIN32
-	std::istrstream iss(num.c_str());
-#else
 	istrstream iss(num.c_str());
-#endif
-
 
 	iss >> _server_version_major;
 	char c;
 	iss >> c;		// This reads the `.' in the version string
 	iss >> _server_version_minor;
 
-#ifdef WIN32
-	DBG(std::cerr << "Server version: " << _server_version_major << "." \
-	    << _server_version_minor << endl);
-#else
 	DBG(cerr << "Server version: " << _server_version_major << "." \
 	    << _server_version_minor << endl);
-#endif
  
     }
 }

@@ -10,6 +10,10 @@
 // jhrg 9/14/94
 
 // $Log: Structure.cc,v $
+// Revision 1.40  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.39  2000/06/16 18:15:00  jimg
 // Merged with 3.1.7
 //
@@ -224,6 +228,10 @@
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
+#endif
+
+#ifdef WIN32
+using std::endl;
 #endif
 
 void

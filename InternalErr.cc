@@ -8,6 +8,10 @@
 // Implementation for the InternalErr class.
 
 // $Log: InternalErr.cc,v $
+// Revision 1.4  2000/07/09 22:05:36  rmorris
+// Changes to increase portability, minimize ifdef's for win32 and account
+// for differences in the iostreams implementations.
+//
 // Revision 1.3  2000/06/07 19:33:21  jimg
 // Merged with verson 3.1.6
 //
@@ -30,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.3 2000/06/07 19:33:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.4 2000/07/09 22:05:36 rmorris Exp $"};
 
 #include <stdio.h>
 
@@ -38,6 +42,12 @@ static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.3 2000/06/07 19:33:21 j
 #include <strstream>
 
 #include "InternalErr.h"
+
+#ifdef WIN32
+using std::endl;
+using std::ends;
+using std::ostrstream;
+#endif
 
 InternalErr::InternalErr() : Error()
 {
