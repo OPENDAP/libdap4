@@ -28,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.22 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.23 2001/08/27 16:49:11 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1939,11 +1939,11 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.22  2001/08/24 17:46:22  jimg
- * Resolved conflicts from the merge of release 3.2.6
+ * Revision 1.23  2001/08/27 16:49:11  jimg
+ * Updated files generated from bison and flex.
  *
- * Revision 1.19.4.5  2001/08/18 00:02:24  jimg
- * Resolved conflicts.
+ * Revision 1.40  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
  *
  * Revision 1.39.4.2  2001/07/28 01:10:42  jimg
  * Some of the numeric type classes did not have copy ctors or operator=.
@@ -1965,9 +1965,6 @@ get_proj_function(const DDS &table, const char *name)
  * in an ID while dds.lex, expr.lex and gse.lex don't) but the definitions
  * are essentially the same across the board.
  * Added `#' to the set of characeters allowed in an ID (bug 179).
- *
- * Revision 1.21  2001/06/15 23:49:04  jimg
- * Merged with release-3-2-4.
  *
  * Revision 1.39  2000/09/22 02:17:23  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than

@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.32 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.33 2001/08/27 16:49:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1420,11 +1420,11 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.32  2001/08/24 17:46:22  jimg
- * Resolved conflicts from the merge of release 3.2.6
+ * Revision 1.33  2001/08/27 16:49:03  jimg
+ * Updated files generated from bison and flex.
  *
- * Revision 1.28.4.7  2001/07/11 05:35:05  jimg
- * Updated scanners and parsers
+ * Revision 1.36  2001/08/24 17:46:22  jimg
+ * Resolved conflicts from the merge of release 3.2.6
  *
  * Revision 1.33.4.3  2001/06/23 00:52:08  jimg
  * Normalized the definitions of ID (SCAN_ID), INT, FLOAT and NEVER so
@@ -1434,7 +1434,7 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
  * are essentially the same across the board.
  * Added `#' to the set of characeters allowed in an ID (bug 179).
  *
- * Revision 1.31  2001/06/15 23:49:03  jimg
+ * Revision 1.35  2001/06/15 23:49:03  jimg
  * Merged with release-3-2-4.
  *
  * Revision 1.33.4.2  2001/05/08 19:10:47  jimg
