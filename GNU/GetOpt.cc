@@ -30,6 +30,9 @@ extern "C" void *__builtin_alloca(...);
 #else
 char *alloca ();
 #endif
+
+#include <unistd.h>
+#include <string.h>		// Added these. 10/20/98 jhrg
 #include <GetOpt.h>
 
 char* GetOpt::nextchar = 0;

@@ -22,7 +22,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #ifdef __GNUG__
 #pragma implementation
 #endif
-#include <std.h>
+#include <gnu-std.h>
 #include <ctype.h>
 #include <new.h>
 #include <builtin.h>
@@ -140,7 +140,9 @@ int Regex::OK() const
 
 const Regex RXwhite("[ \n\t\r\v\f]+", 1);
 const Regex RXint("-?[0-9]+", 1);
+#if 0
 const Regex RXdouble("-?\\(\\([0-9]+\\.[0-9]*\\)\\|\\([0-9]+\\)\\|\\(\\.[0-9]+\\)\\)\\([eE][---+]?[0-9]+\\)?", 1, 200);
+#endif
 const Regex RXalpha("[A-Za-z]+", 1);
 const Regex RXlowercase("[a-z]+", 1);
 const Regex RXuppercase("[A-Z]+", 1);
