@@ -9,6 +9,11 @@
 
 
 // $Log: Error.y,v $
+// Revision 1.5  1997/02/14 23:56:11  jimg
+// Changed grammar to allow Error objects which have no `program' component.
+// That is, the program part is absent. Previously the program part had to be
+// there even if the fields had null values.
+//
 // Revision 1.4  1996/10/16 22:35:56  jimg
 // Fixed bad operator in DODS_BISON_VER preprocessor statement.
 //
@@ -26,7 +31,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: Error.y,v 1.4 1996/10/16 22:35:56 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: Error.y,v 1.5 1997/02/14 23:56:11 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,6 +96,7 @@ error_object:	ERROR '{' contents '}' ';' { $$ = $3; STATUS(arg) = $3; }
 ;
 
 contents:	description program { $$ = $1 && $2; }
+                | description { $$ = $1; }
 ;
 
 description:	code message { $$ = $1 && $2; }
