@@ -1,8 +1,5 @@
-
 #!/bin/sh
-# From configure.in Id
-
-
+# From configure.in Id: configure.in
 
 #!/bin/sh
 # Guess values for system-dependent variables and create Makefiles.
@@ -322,6 +319,7 @@ ac_compile='${CC-cc} $CFLAGS $LDFLAGS conftest.${ac_ext} -o conftest $LIBS >/dev
 
 
 
+
 test -n "$silent" || echo "checking for ln -s"
 rm -f conftestdata
 if ln -s X conftestdata 2>/dev/null
@@ -385,40 +383,113 @@ fi
 rm -f conftest*
 
 
-for ac_prog in $CCC c++ g++ gcc CC cxx
-do
-if test -z "$CXX"; then
-  # Extract the first word of `$ac_prog', so it can be a program name with args.
-  set ac_dummy $ac_prog; ac_word=$2
+
+CXX=${CXX-g++}
+test -n "$verbose" && echo "	Setting CXX to g++"
+
+
+if test -z "$LEX"; then
+  # Extract the first word of `flex', so it can be a program name with args.
+  set ac_dummy flex; ac_word=$2
   test -n "$silent" || echo "checking for $ac_word"
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
   for ac_dir in $PATH; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      CXX="$ac_prog"
+      LEX="flex"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+fi
+test -z "$LEX" && LEX="lex"
+test -n "$LEX" && test -n "$verbose" && echo "	setting LEX to $LEX"
+
+if test -z "$LEXLIB"
+then
+  case "$LEX" in
+  flex*) ac_save_LIBS="${LIBS}"
+LIBS="${LIBS} -lfl"
+ac_have_lib=""
+test -n "$silent" || echo "checking for -lfl"
+cat > conftest.${ac_ext} <<EOF
+#include "confdefs.h"
+
+int main() { return 0; }
+int t() { main();; return 0; }
+EOF
+if eval $ac_compile; then
+  rm -rf conftest*
+  ac_have_lib="1"
+
+fi
+rm -f conftest*
+LIBS="${ac_save_LIBS}"
+if test -n "${ac_have_lib}"; then
+   :; LEXLIB="-lfl"
+else
+   :; 
+fi
+ ;;
+  *) LEXLIB="-ll" ;;
+  esac
+fi
+test -n "$verbose" && echo "	setting LEXLIB to $LEXLIB"
+
+case "$LEX" in
+flex)
+  echo "NOTE:  I found flex, but didn't check the version number."
+  ;;
+lex)
+  echo "NOTE:  Sorry, flex is required, and I couldn't find it."
+  exit 1
+  ;;
+esac
+
+
+if test -z "$YACC"; then
+  # Extract the first word of `bison', so it can be a program name with args.
+  set ac_dummy bison; ac_word=$2
+  test -n "$silent" || echo "checking for $ac_word"
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  for ac_dir in $PATH; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      YACC="bison"
       break
     fi
   done
   IFS="$ac_save_ifs"
 fi
 
-test -n "$CXX" && test -n "$verbose" && echo "	setting CXX to $CXX"
+test -n "$YACC" && test -n "$verbose" && echo "	setting YACC to $YACC"
 
-test -n "$CXX" && break
-done
-test -n "$CXX" || CXX="gcc"
+case "$YACC" in
+bison)
+  echo "Note: I found bison, but didn't check the version number."
+  ;;
+*)
+  echo "NOTE: Sorry, bison is required and I couldn't find it."
+  exit 1
+  ;;
+esac
 
-# Find out if we are using GNU C++, under whatever name.
-cat > conftest.C <<EOF
-#ifdef __GNUC__
-  yes
-#endif
-EOF
-${CXX-gcc} -E conftest.C > conftest.out 2>&1
-if egrep yes conftest.out >/dev/null 2>&1; then
-  GXX=1 # For later tests.
+if test -z "$RANLIB"; then
+  # Extract the first word of `ranlib', so it can be a program name with args.
+  set ac_dummy ranlib; ac_word=$2
+  test -n "$silent" || echo "checking for $ac_word"
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  for ac_dir in $PATH; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      RANLIB="ranlib"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
 fi
-rm -f conftest*
+test -z "$RANLIB" && RANLIB=":"
+test -n "$RANLIB" && test -n "$verbose" && echo "	setting RANLIB to $RANLIB"
 
 # Make sure to not get the incompatible SysV /etc/install and
 # /usr/sbin/install, which might be in PATH before a BSD-like install,
@@ -483,23 +554,6 @@ test -n "$verbose" && echo "	setting INSTALL_PROGRAM to $INSTALL_PROGRAM"
 
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 test -n "$verbose" && echo "	setting INSTALL_DATA to $INSTALL_DATA"
-
-if test -z "$RANLIB"; then
-  # Extract the first word of `ranlib', so it can be a program name with args.
-  set ac_dummy ranlib; ac_word=$2
-  test -n "$silent" || echo "checking for $ac_word"
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-  for ac_dir in $PATH; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      RANLIB="ranlib"
-      break
-    fi
-  done
-  IFS="$ac_save_ifs"
-fi
-test -z "$RANLIB" && RANLIB=":"
-test -n "$RANLIB" && test -n "$verbose" && echo "	setting RANLIB to $RANLIB"
 
 cat > conftestmake <<'EOF'
 all:
@@ -596,6 +650,10 @@ test -n "$verbose" && \
 echo "	defining STDC_HEADERS"
 echo "#define" STDC_HEADERS "1" >> confdefs.h
 DEFS="$DEFS -DSTDC_HEADERS=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}STDC_HEADERS\${ac_dB}STDC_HEADERS\${ac_dC}1\${ac_dD}
+\${ac_uA}STDC_HEADERS\${ac_uB}STDC_HEADERS\${ac_uC}1\${ac_uD}
+\${ac_eA}STDC_HEADERS\${ac_eB}STDC_HEADERS\${ac_eC}1\${ac_eD}
+"
 }
 
 
@@ -614,66 +672,256 @@ fi
 rm -f conftest*
 
 
-ac_prog='/* Ultrix mips cc rejects this.  */
-typedef int charset[2]; const charset x;
-/* SunOS 4.1.1 cc rejects this.  */
-char const *const *ccp;
-char **p;
-/* AIX XL C 1.02.0.0 rejects this.
-   It does not let you subtract one const X* pointer from another in an arm
-   of an if-expression whose if-part is not a constant expression */
-const char *g = "string";
-ccp = &g + (g ? g-g : 0);
-/* HPUX 7.0 cc rejects these. */
-++ccp;
-p = (char**) ccp;
-ccp = (char const *const *) p;
-{ /* SCO 3.2v4 cc rejects this.  */
-  char *t;
-  char const *s = 0 ? (char *) 0 : (char const *) 0;
 
-  *t++ = 0;
-}
-{ /* Someone thinks the Sun supposedly-ANSI compiler will reject this.  */
-  int x[] = {25,17};
-  const int *foo = &x[0];
-  ++foo;
-}
-{ /* Sun SC1.0 ANSI compiler rejects this -- but not the above. */
-  typedef const int *iptr;
-  iptr p = 0;
-  ++p;
-}
-{ /* AIX XL C 1.02.0.0 rejects this saying
-     "k.c", line 2.27: 1506-025 (S) Operand must be a modifiable lvalue. */
-  struct s { int j; const int *ap[3]; };
-  struct s *b; b->j = 5;
-}
-{ /* ULTRIX-32 V3.1 (Rev 9) vcc rejects this */
-  const int foo = 10;
-}'
-test -n "$silent" || echo "checking for lack of working const"
+test -n "$silent" || echo "checking size of int"
 cat > conftest.${ac_ext} <<EOF
 #include "confdefs.h"
-
-int main() { return 0; }
-int t() { $ac_prog; return 0; }
+#include <stdio.h>
+main()
+{
+  FILE *f=fopen("conftestval", "w");
+  if (!f) exit(1);
+  fprintf(f, "%d\n", sizeof(int));
+  exit(0);
+}
 EOF
-if eval $ac_compile; then
-  :
+eval $ac_compile
+if test -s conftest && (./conftest; exit) 2>/dev/null; then
+  ac_size=`cat conftestval`
+
 else
-  rm -rf conftest*
+  echo "configure: can not determine size of int" >&2; exit 1
+fi
+rm -fr conftest*
+
+{
+test -n "$verbose" && \
+echo "	defining" SIZEOF_INT to be "$ac_size"
+echo "#define" SIZEOF_INT "$ac_size" >> confdefs.h
+DEFS="$DEFS -DSIZEOF_INT=$ac_size"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}SIZEOF_INT\${ac_dB}SIZEOF_INT\${ac_dC}$ac_size\${ac_dD}
+\${ac_uA}SIZEOF_INT\${ac_uB}SIZEOF_INT\${ac_uC}$ac_size\${ac_uD}
+\${ac_eA}SIZEOF_INT\${ac_eB}SIZEOF_INT\${ac_eC}$ac_size\${ac_eD}
+"
+}
+
+test -n "$silent" || echo "checking size of long"
+cat > conftest.${ac_ext} <<EOF
+#include "confdefs.h"
+#include <stdio.h>
+main()
+{
+  FILE *f=fopen("conftestval", "w");
+  if (!f) exit(1);
+  fprintf(f, "%d\n", sizeof(long));
+  exit(0);
+}
+EOF
+eval $ac_compile
+if test -s conftest && (./conftest; exit) 2>/dev/null; then
+  ac_size=`cat conftestval`
+
+else
+  echo "configure: can not determine size of long" >&2; exit 1
+fi
+rm -fr conftest*
+
+{
+test -n "$verbose" && \
+echo "	defining" SIZEOF_LONG to be "$ac_size"
+echo "#define" SIZEOF_LONG "$ac_size" >> confdefs.h
+DEFS="$DEFS -DSIZEOF_LONG=$ac_size"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}SIZEOF_LONG\${ac_dB}SIZEOF_LONG\${ac_dC}$ac_size\${ac_dD}
+\${ac_uA}SIZEOF_LONG\${ac_uB}SIZEOF_LONG\${ac_uC}$ac_size\${ac_uD}
+\${ac_eA}SIZEOF_LONG\${ac_eB}SIZEOF_LONG\${ac_eC}$ac_size\${ac_eD}
+"
+}
+
+test -n "$silent" || echo "checking size of char"
+cat > conftest.${ac_ext} <<EOF
+#include "confdefs.h"
+#include <stdio.h>
+main()
+{
+  FILE *f=fopen("conftestval", "w");
+  if (!f) exit(1);
+  fprintf(f, "%d\n", sizeof(char));
+  exit(0);
+}
+EOF
+eval $ac_compile
+if test -s conftest && (./conftest; exit) 2>/dev/null; then
+  ac_size=`cat conftestval`
+
+else
+  echo "configure: can not determine size of char" >&2; exit 1
+fi
+rm -fr conftest*
+
+{
+test -n "$verbose" && \
+echo "	defining" SIZEOF_CHAR to be "$ac_size"
+echo "#define" SIZEOF_CHAR "$ac_size" >> confdefs.h
+DEFS="$DEFS -DSIZEOF_CHAR=$ac_size"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}SIZEOF_CHAR\${ac_dB}SIZEOF_CHAR\${ac_dC}$ac_size\${ac_dD}
+\${ac_uA}SIZEOF_CHAR\${ac_uB}SIZEOF_CHAR\${ac_uC}$ac_size\${ac_uD}
+\${ac_eA}SIZEOF_CHAR\${ac_eB}SIZEOF_CHAR\${ac_eC}$ac_size\${ac_eD}
+"
+}
+
+test -n "$silent" || echo "checking size of double"
+cat > conftest.${ac_ext} <<EOF
+#include "confdefs.h"
+#include <stdio.h>
+main()
+{
+  FILE *f=fopen("conftestval", "w");
+  if (!f) exit(1);
+  fprintf(f, "%d\n", sizeof(double));
+  exit(0);
+}
+EOF
+eval $ac_compile
+if test -s conftest && (./conftest; exit) 2>/dev/null; then
+  ac_size=`cat conftestval`
+
+else
+  echo "configure: can not determine size of double" >&2; exit 1
+fi
+rm -fr conftest*
+
+{
+test -n "$verbose" && \
+echo "	defining" SIZEOF_DOUBLE to be "$ac_size"
+echo "#define" SIZEOF_DOUBLE "$ac_size" >> confdefs.h
+DEFS="$DEFS -DSIZEOF_DOUBLE=$ac_size"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}SIZEOF_DOUBLE\${ac_dB}SIZEOF_DOUBLE\${ac_dC}$ac_size\${ac_dD}
+\${ac_uA}SIZEOF_DOUBLE\${ac_uB}SIZEOF_DOUBLE\${ac_uC}$ac_size\${ac_uD}
+\${ac_eA}SIZEOF_DOUBLE\${ac_eB}SIZEOF_DOUBLE\${ac_eC}$ac_size\${ac_eD}
+"
+}
+
+test -n "$silent" || echo "checking size of float"
+cat > conftest.${ac_ext} <<EOF
+#include "confdefs.h"
+#include <stdio.h>
+main()
+{
+  FILE *f=fopen("conftestval", "w");
+  if (!f) exit(1);
+  fprintf(f, "%d\n", sizeof(float));
+  exit(0);
+}
+EOF
+eval $ac_compile
+if test -s conftest && (./conftest; exit) 2>/dev/null; then
+  ac_size=`cat conftestval`
+
+else
+  echo "configure: can not determine size of float" >&2; exit 1
+fi
+rm -fr conftest*
+
+{
+test -n "$verbose" && \
+echo "	defining" SIZEOF_FLOAT to be "$ac_size"
+echo "#define" SIZEOF_FLOAT "$ac_size" >> confdefs.h
+DEFS="$DEFS -DSIZEOF_FLOAT=$ac_size"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}SIZEOF_FLOAT\${ac_dB}SIZEOF_FLOAT\${ac_dC}$ac_size\${ac_dD}
+\${ac_uA}SIZEOF_FLOAT\${ac_uB}SIZEOF_FLOAT\${ac_uC}$ac_size\${ac_uD}
+\${ac_eA}SIZEOF_FLOAT\${ac_eB}SIZEOF_FLOAT\${ac_eC}$ac_size\${ac_eD}
+"
+}
+
+
+# check whether --enable-dbnew was given
+enableval="$enable_dbnew"
+if test -n "$enableval"; then
+  DBNEW=yes
+else
+  DBNEW=no
+fi
+
+
+case "$DBNEW" in
+yes)
+  echo "Configuring dynamic memory checks"
   
 {
 test -n "$verbose" && \
-echo "	defining" const to be empty
-echo "#define" const "" >> confdefs.h
-DEFS="$DEFS -Dconst="
+echo "	defining TRACE_NEW"
+echo "#define" TRACE_NEW "1" >> confdefs.h
+DEFS="$DEFS -DTRACE_NEW=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}TRACE_NEW\${ac_dB}TRACE_NEW\${ac_dC}1\${ac_dD}
+\${ac_uA}TRACE_NEW\${ac_uB}TRACE_NEW\${ac_uC}1\${ac_uD}
+\${ac_eA}TRACE_NEW\${ac_eB}TRACE_NEW\${ac_eC}1\${ac_eD}
+"
 }
 
-fi
-rm -f conftest*
+  LIBS="$LIBS -ldbnew -lg++dbnew"
+  ;;
+*)
+  ;;
+esac
 
+# check whether --enable-debug was given
+enableval="$enable_debug"
+if test -n "$enableval"; then
+  DEBUG=$enableval
+else
+  DEBUG=no
+fi
+
+
+case "$DEBUG" in
+no) 
+  ;;
+1)
+  echo "Setting debugging to level 1"
+  
+{
+test -n "$verbose" && \
+echo "	defining DEBUG"
+echo "#define" DEBUG "1" >> confdefs.h
+DEFS="$DEFS -DDEBUG=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}DEBUG\${ac_dB}DEBUG\${ac_dC}1\${ac_dD}
+\${ac_uA}DEBUG\${ac_uB}DEBUG\${ac_uC}1\${ac_uD}
+\${ac_eA}DEBUG\${ac_eB}DEBUG\${ac_eC}1\${ac_eD}
+"
+}
+
+  ;;
+2) 
+  echo "Setting debugging to level 2"
+  
+{
+test -n "$verbose" && \
+echo "	defining DEBUG"
+echo "#define" DEBUG "1" >> confdefs.h
+DEFS="$DEFS -DDEBUG=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}DEBUG\${ac_dB}DEBUG\${ac_dC}1\${ac_dD}
+\${ac_uA}DEBUG\${ac_uB}DEBUG\${ac_uC}1\${ac_uD}
+\${ac_eA}DEBUG\${ac_eB}DEBUG\${ac_eC}1\${ac_eD}
+"
+}
+
+  
+{
+test -n "$verbose" && \
+echo "	defining DEBUG2"
+echo "#define" DEBUG2 "1" >> confdefs.h
+DEFS="$DEFS -DDEBUG2=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}DEBUG2\${ac_dB}DEBUG2\${ac_dC}1\${ac_dD}
+\${ac_uA}DEBUG2\${ac_uB}DEBUG2\${ac_uC}1\${ac_uD}
+\${ac_eA}DEBUG2\${ac_eB}DEBUG2\${ac_eC}1\${ac_eD}
+"
+}
+
+  ;;
+*)
+  echo "Debug value must be no (default), 1 or 2"
+  ;;
+esac
 
 case "$YACC" in
 *bison*)
@@ -694,6 +942,10 @@ test -n "$verbose" && \
 echo "	defining HAVE_ALLOCA_H"
 echo "#define" HAVE_ALLOCA_H "1" >> confdefs.h
 DEFS="$DEFS -DHAVE_ALLOCA_H=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}HAVE_ALLOCA_H\${ac_dB}HAVE_ALLOCA_H\${ac_dC}1\${ac_dD}
+\${ac_uA}HAVE_ALLOCA_H\${ac_uB}HAVE_ALLOCA_H\${ac_uC}1\${ac_uD}
+\${ac_eA}HAVE_ALLOCA_H\${ac_eB}HAVE_ALLOCA_H\${ac_eC}1\${ac_eD}
+"
 }
 
 
@@ -729,6 +981,10 @@ test -n "$verbose" && \
 echo "	defining HAVE_ALLOCA"
 echo "#define" HAVE_ALLOCA "1" >> confdefs.h
 DEFS="$DEFS -DHAVE_ALLOCA=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}HAVE_ALLOCA\${ac_dB}HAVE_ALLOCA\${ac_dC}1\${ac_dD}
+\${ac_uA}HAVE_ALLOCA\${ac_uB}HAVE_ALLOCA\${ac_uC}1\${ac_uD}
+\${ac_eA}HAVE_ALLOCA\${ac_eB}HAVE_ALLOCA\${ac_eC}1\${ac_eD}
+"
 }
 
 
@@ -772,6 +1028,10 @@ test -n "$verbose" && \
 echo "	defining" CRAY_STACKSEG_END to be "_getb67"
 echo "#define" CRAY_STACKSEG_END "_getb67" >> confdefs.h
 DEFS="$DEFS -DCRAY_STACKSEG_END=_getb67"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}CRAY_STACKSEG_END\${ac_dB}CRAY_STACKSEG_END\${ac_dC}_getb67\${ac_dD}
+\${ac_uA}CRAY_STACKSEG_END\${ac_uB}CRAY_STACKSEG_END\${ac_uC}_getb67\${ac_uD}
+\${ac_eA}CRAY_STACKSEG_END\${ac_eB}CRAY_STACKSEG_END\${ac_eC}_getb67\${ac_eD}
+"
 }
 
 
@@ -801,6 +1061,10 @@ test -n "$verbose" && \
 echo "	defining" CRAY_STACKSEG_END to be "GETB67"
 echo "#define" CRAY_STACKSEG_END "GETB67" >> confdefs.h
 DEFS="$DEFS -DCRAY_STACKSEG_END=GETB67"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}CRAY_STACKSEG_END\${ac_dB}CRAY_STACKSEG_END\${ac_dC}GETB67\${ac_dD}
+\${ac_uA}CRAY_STACKSEG_END\${ac_uB}CRAY_STACKSEG_END\${ac_uC}GETB67\${ac_uD}
+\${ac_eA}CRAY_STACKSEG_END\${ac_eB}CRAY_STACKSEG_END\${ac_eC}GETB67\${ac_eD}
+"
 }
 
 
@@ -830,6 +1094,10 @@ test -n "$verbose" && \
 echo "	defining" CRAY_STACKSEG_END to be "getb67"
 echo "#define" CRAY_STACKSEG_END "getb67" >> confdefs.h
 DEFS="$DEFS -DCRAY_STACKSEG_END=getb67"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}CRAY_STACKSEG_END\${ac_dB}CRAY_STACKSEG_END\${ac_dC}getb67\${ac_dD}
+\${ac_uA}CRAY_STACKSEG_END\${ac_uB}CRAY_STACKSEG_END\${ac_uC}getb67\${ac_uD}
+\${ac_eA}CRAY_STACKSEG_END\${ac_eB}CRAY_STACKSEG_END\${ac_eC}getb67\${ac_eD}
+"
 }
 
 
@@ -862,6 +1130,10 @@ test -n "$verbose" && \
 echo "	defining C_ALLOCA"
 echo "#define" C_ALLOCA "1" >> confdefs.h
 DEFS="$DEFS -DC_ALLOCA=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}C_ALLOCA\${ac_dB}C_ALLOCA\${ac_dC}1\${ac_dD}
+\${ac_uA}C_ALLOCA\${ac_uB}C_ALLOCA\${ac_uC}1\${ac_uD}
+\${ac_eA}C_ALLOCA\${ac_eB}C_ALLOCA\${ac_eC}1\${ac_eD}
+"
 }
 
 
@@ -888,6 +1160,10 @@ test -n "$verbose" && \
 echo "	defining" STACK_DIRECTION to be "0"
 echo "#define" STACK_DIRECTION "0" >> confdefs.h
 DEFS="$DEFS -DSTACK_DIRECTION=0"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}STACK_DIRECTION\${ac_dB}STACK_DIRECTION\${ac_dC}0\${ac_dD}
+\${ac_uA}STACK_DIRECTION\${ac_uB}STACK_DIRECTION\${ac_uC}0\${ac_uD}
+\${ac_eA}STACK_DIRECTION\${ac_eB}STACK_DIRECTION\${ac_eC}0\${ac_eD}
+"
 }
 
 else
@@ -918,6 +1194,10 @@ test -n "$verbose" && \
 echo "	defining" STACK_DIRECTION to be "1"
 echo "#define" STACK_DIRECTION "1" >> confdefs.h
 DEFS="$DEFS -DSTACK_DIRECTION=1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}STACK_DIRECTION\${ac_dB}STACK_DIRECTION\${ac_dC}1\${ac_dD}
+\${ac_uA}STACK_DIRECTION\${ac_uB}STACK_DIRECTION\${ac_uC}1\${ac_uD}
+\${ac_eA}STACK_DIRECTION\${ac_eB}STACK_DIRECTION\${ac_eC}1\${ac_eD}
+"
 }
 
 
@@ -928,6 +1208,10 @@ test -n "$verbose" && \
 echo "	defining" STACK_DIRECTION to be "-1"
 echo "#define" STACK_DIRECTION "-1" >> confdefs.h
 DEFS="$DEFS -DSTACK_DIRECTION=-1"
+ac_sed_defs="${ac_sed_defs}\${ac_dA}STACK_DIRECTION\${ac_dB}STACK_DIRECTION\${ac_dC}-1\${ac_dD}
+\${ac_uA}STACK_DIRECTION\${ac_uB}STACK_DIRECTION\${ac_uC}-1\${ac_uD}
+\${ac_eA}STACK_DIRECTION\${ac_eB}STACK_DIRECTION\${ac_eC}-1\${ac_eD}
+"
 }
 
 fi
@@ -996,15 +1280,18 @@ do
   esac
 done
 
-trap 'rm -f Makefile; exit 1' 1 2 15
+trap 'rm -fr Makefile Map/Makefile Stack/Makefile config.h conftest*; exit 1' 1 2 15
 LN_S='$LN_S'
 AWK='$AWK'
 CC='$CC'
 CXX='$CXX'
+LEX='$LEX'
+LEXLIB='$LEXLIB'
+YACC='$YACC'
+RANLIB='$RANLIB'
 INSTALL='$INSTALL'
 INSTALL_PROGRAM='$INSTALL_PROGRAM'
 INSTALL_DATA='$INSTALL_DATA'
-RANLIB='$RANLIB'
 SET_MAKE='$SET_MAKE'
 CPP='$CPP'
 ALLOCA='$ALLOCA'
@@ -1013,7 +1300,6 @@ srcdir='$srcdir'
 top_srcdir='$top_srcdir'
 prefix='$prefix'
 exec_prefix='$exec_prefix'
-DEFS='$DEFS'
 ac_prsub='$ac_prsub'
 ac_vpsub='$ac_vpsub'
 extrasub='$extrasub'
@@ -1022,7 +1308,7 @@ cat >> config.status <<\EOF
 
 ac_given_srcdir=$srcdir
 
-CONFIG_FILES=${CONFIG_FILES-"Makefile"}
+CONFIG_FILES=${CONFIG_FILES-"Makefile Map/Makefile Stack/Makefile"}
 for ac_file in .. ${CONFIG_FILES}; do if test "x$ac_file" != x..; then
   # Remove last slash and all that follows it.  Not all systems have dirname.
   ac_dir=`echo $ac_file|sed 's%/[^/][^/]*$%%'`
@@ -1061,10 +1347,13 @@ s%@LN_S@%$LN_S%g
 s%@AWK@%$AWK%g
 s%@CC@%$CC%g
 s%@CXX@%$CXX%g
+s%@LEX@%$LEX%g
+s%@LEXLIB@%$LEXLIB%g
+s%@YACC@%$YACC%g
+s%@RANLIB@%$RANLIB%g
 s%@INSTALL@%$INSTALL%g
 s%@INSTALL_PROGRAM@%$INSTALL_PROGRAM%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
-s%@RANLIB@%$RANLIB%g
 s%@SET_MAKE@%$SET_MAKE%g
 s%@CPP@%$CPP%g
 s%@ALLOCA@%$ALLOCA%g
@@ -1073,14 +1362,115 @@ s%@srcdir@%$srcdir%g
 s%@top_srcdir@%$top_srcdir%g
 s%@prefix@%$prefix%g
 s%@exec_prefix@%$exec_prefix%g
-s%@DEFS@%$DEFS%
-" $ac_given_srcdir/${ac_file}.in >> $ac_file
+s%@DEFS@%-DHAVE_CONFIG_H%" $ac_given_srcdir/${ac_file}.in >> $ac_file
 fi; done
 
+# These sed commands are put into ac_sed_defs when defining a macro.
+# They are broken into pieces to make the sed script easier to manage.
+# They are passed to sed as "A NAME B NAME C VALUE D", where NAME
+# is the cpp macro being defined and VALUE is the value it is being given.
+# Each defining turns into a single global substitution command.
+# Hopefully no one uses "!" as a variable value.
+# Other candidates for the sed separators, like , and @, do get used.
+#
+# ac_d sets the value in "#define NAME VALUE" lines.
+ac_dA='s!^\([ 	]*\)#\([ 	]*define[ 	][ 	]*\)'
+ac_dB='\([ 	][ 	]*\)[^ 	]*!\1#\2'
+ac_dC='\3'
+ac_dD='!g'
+# ac_u turns "#undef NAME" with trailing blanks into "#define NAME VALUE".
+ac_uA='s!^\([ 	]*\)#\([ 	]*\)undef\([ 	][ 	]*\)'
+ac_uB='\([ 	]\)!\1#\2define\3'
+ac_uC=' '
+ac_uD='\4!g'
+# ac_e turns "#undef NAME" without trailing blanks into "#define NAME VALUE".
+ac_eA='s!^\([ 	]*\)#\([ 	]*\)undef\([ 	][ 	]*\)'
+ac_eB='$!\1#\2define\3'
+ac_eC=' '
+ac_eD='!g'
+rm -f conftest.sed
+EOF
+# Turn off quoting long enough to insert the sed commands.
+rm -f conftest.sh
+cat > conftest.sh <<EOF
+$ac_sed_defs
+EOF
 
+# Break up $ac_sed_defs (now in conftest.sh) because some shells have a limit
+# on the size of here documents.
+
+# Maximum number of lines to put in a single here document.
+ac_max_sh_lines=9
+
+while :
+do
+  # wc gives bogus results for an empty file on some AIX systems.
+  ac_lines=`grep -c . conftest.sh`
+  if test -z "$ac_lines" || test "$ac_lines" -eq 0; then break; fi
+  rm -f conftest.s1 conftest.s2
+  sed ${ac_max_sh_lines}q conftest.sh > conftest.s1 # Like head -9.
+  sed 1,${ac_max_sh_lines}d conftest.sh > conftest.s2 # Like tail +10.
+  # Write a limited-size here document to append to conftest.sed.
+  echo 'cat >> conftest.sed <<CONFEOF' >> config.status
+  cat conftest.s1 >> config.status
+  echo 'CONFEOF' >> config.status
+  rm -f conftest.s1 conftest.sh
+  mv conftest.s2 conftest.sh
+done
+rm -f conftest.sh
+
+# Now back to your regularly scheduled config.status.
+cat >> config.status <<\EOF
+# This sed command replaces #undef's with comments.  This is necessary, for
+# example, in the case of _POSIX_SOURCE, which is predefined and required
+# on some systems where configure will not decide to define it in
+# config.h.
+cat >> conftest.sed <<\CONFEOF
+s,^[ 	]*#[ 	]*undef[ 	][ 	]*[a-zA-Z_][a-zA-Z_0-9]*,/* & */,
+CONFEOF
+rm -f conftest.h
+# Break up the sed commands because old seds have small limits.
+ac_max_sed_lines=20
+
+CONFIG_HEADERS=${CONFIG_HEADERS-"config.h"}
+for ac_file in .. ${CONFIG_HEADERS}; do if test "x$ac_file" != x..; then
+  echo creating $ac_file
+
+  cp $ac_given_srcdir/$ac_file.in conftest.h1
+  cp conftest.sed conftest.stm
+  while :
+  do
+    ac_lines=`grep -c . conftest.stm`
+    if test -z "$ac_lines" || test "$ac_lines" -eq 0; then break; fi
+    rm -f conftest.s1 conftest.s2 conftest.h2
+    sed ${ac_max_sed_lines}q conftest.stm > conftest.s1 # Like head -20.
+    sed 1,${ac_max_sed_lines}d conftest.stm > conftest.s2 # Like tail +21.
+    sed -f conftest.s1 < conftest.h1 > conftest.h2
+    rm -f conftest.s1 conftest.h1 conftest.stm
+    mv conftest.h2 conftest.h1
+    mv conftest.s2 conftest.stm
+  done
+  rm -f conftest.stm conftest.h
+  echo "/* $ac_file.  Generated automatically by configure.  */" > conftest.h
+  cat conftest.h1 >> conftest.h
+  rm -f conftest.h1
+  if cmp -s $ac_file conftest.h 2>/dev/null; then
+    # The file exists and we would not be changing it.
+    echo "$ac_file is unchanged"
+    rm -f conftest.h
+  else
+    rm -f $ac_file
+    mv conftest.h $ac_file
+  fi
+fi; done
+rm -f conftest.sed
+
+
+make depend
 exit 0
 EOF
 chmod +x config.status
 # Some shells look in PATH for config.status without the "./".
 test -n "$no_create" || ${CONFIG_SHELL-/bin/sh} ./config.status
+
 
