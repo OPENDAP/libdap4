@@ -10,6 +10,9 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
+// Revision 1.29  1996/08/13 18:36:12  jimg
+// Added void casts to values computed in print_val() for loops.
+//
 // Revision 1.28  1996/06/04 21:33:37  jimg
 // Multiple connections are now possible. It is now possible to open several
 // URLs at the same time and read from them in a round-robin fashion. To do
@@ -405,7 +408,7 @@ Sequence::print_val(ostream &os, String space, bool print_decl_p)
     }
 
     os << "{ ";
-    for (Pix p = _vars.first(); p; _vars.next(p), p && os << ", ")
+    for (Pix p = _vars.first(); p; _vars.next(p), (void)(p && os << ", "))
 	_vars(p)->print_val(os, "", false);
 
     os << " }";
