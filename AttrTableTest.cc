@@ -101,6 +101,7 @@ public:
     CPPUNIT_TEST(find_test);
     CPPUNIT_TEST(copy_ctor);
     CPPUNIT_TEST(assignment);
+    CPPUNIT_TEST(erase_test);
     CPPUNIT_TEST(names_with_spaces_test);
     CPPUNIT_TEST(containers_with_spaces_test);
 
@@ -178,6 +179,27 @@ public:
 	CPPUNIT_ASSERT(at2.is_container(piter));
     }
 
+    void erase_test() {
+	// Copy at1 to at2 and verify that at2 is full of stuff...
+	AttrTable at2 = *at1;
+	AttrTable::Attr_iter piter = at2.attr_begin(); 
+	CPPUNIT_ASSERT(at2.get_name(piter) == "a");
+	CPPUNIT_ASSERT(at2.is_container(piter));
+	AttrTable *tmp = at2.get_attr_table(piter);
+	AttrTable::Attr_iter qiter = tmp->attr_begin();
+	CPPUNIT_ASSERT(tmp->get_name(qiter) == "size");
+	piter++ ;
+	CPPUNIT_ASSERT(at2.get_name(piter) == "b");
+	CPPUNIT_ASSERT(at2.is_container(piter));
+	piter++ ;
+	CPPUNIT_ASSERT(at2.get_name(piter) == "c");
+	CPPUNIT_ASSERT(at2.is_container(piter));
+
+	at2.erase();
+	CPPUNIT_ASSERT(at2.attr_map.size() == 0);
+	CPPUNIT_ASSERT(at2.d_name == "");
+    }
+	
     void names_with_spaces_test() {
 	// Create an AttrTable where some names have spaces. The spaces
 	// should be replaced by %20 escapes.
@@ -186,6 +208,7 @@ public:
 	t->append_attr("longer name", "String", "\"second test\"");
 	ostrstream oss;
 	t->print(oss, ""); oss << ends;
+	cerr << "oss: " << oss.str() << endl;
 	Regex r("String long%20name first;
 String longer%20name \"second test\";");
 	CPPUNIT_ASSERT(re_match(r, oss.str()));
