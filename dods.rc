@@ -1,0 +1,18 @@
+# This is the DODS server initialization file. It contains lines with a
+# regular expression and a DODS server handler token.
+# Blank lines are ignored; comments must start with `#' in the first column.
+
+# Look for common file extensions. 
+.*\.(HDF|hdf)(.Z|.gz)*$ hdf
+.*\.(NC|nc|cdf|CDF)$ nc
+.*\.(mat|Mat|MAT)$ mat
+.*\.(dat|bin)$ ff
+.*\.(pvu)(.Z|.gz)*$ dsp
+
+# For JGOFS datasets, match either the dataset name or the absence of an
+# extension. The later case is sort of risky, but if you have lots of JGOFS
+# datasets might be appealing.
+.*/test$ jg
+#.*/[^/]+$ jg
+
+
