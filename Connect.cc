@@ -14,7 +14,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.114 2001/10/14 01:28:38 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.115 2001/10/25 21:23:23 jgarcia Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -40,6 +40,7 @@ static char rcsid[] not_used =
 #include "DataDDS.h"
 #include "Connect.h"
 #include "escaping.h"
+#include "RCReader.h"
 
 #define SHOW_MSG (WWWTRACE || HTAlert_interactive())
 #define DODS_KEEP_TEMP 0	// set to 1 for debugging
@@ -619,294 +620,26 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 {
     // Initialize various parts of the library. This is in lieu of using one
     // of the profiles in HTProfil.c. 02/09/98 jhrg
-    char *value;
-    char *tempstr;
-    char *tempstr2;
-    char *tempstr3;
-    char *tempstr4;
-
-    string lockstr = "";	//  Lock file path
-    string cifp = "";
-    string cache_root = "";	//  Location of actual cache.
-    string homedir = "";	//  Cache init file path
-    string tmpdir = "";		//  Fallback position for cache files.
-
-    string cache_name = ".dods_cache";
-    string src_name = ".dodsrc";
-
+   
 #ifdef WIN32
     HTEventInit();
 #endif
 
-    // Defaults to use if cache file doesnt exist. 
-    int USE_CACHE = DODS_USE_CACHE;
-    int MAX_CACHE_SIZE = DODS_CACHE_MAX;
-    int MAX_CACHED_OBJ = DODS_CACHED_OBJ;
-    int IGNORE_EXPIRES = DODS_IGN_EXPIRES;
-    int DEFAULT_EXPIRES = DODS_DEFAULT_EXPIRES;
-    int use_cache_file = 1;
-    // 8.25.2000 cjm 
-    int proxy_regex_flags, noproxy_host_port;
+    _accept_deflate = accept_deflate = RCReader::instance()->get_never_deflate() ? false : true;
 
-    // The following code sets up the cache according to the data stored
-    // in the following places, in this order.  First the environment 
-    // variable DODS_CACHE_INIT is checked for a path to the data file. 
-    // If this fails, $HOME/.dodsrc is checked.  Failing this, the 
-    // compiled-in defaults are used.    However, if the path for the 
-    // file exists and the file does not, then the compiled-in defaults
-    // will be written to a file at the location given. 8-1-99 cjm
+    _always_validate = RCReader::instance()->get_always_validate();
 
-    // Store the users home directory or for win-NT based systems, the user &
-    // & application-specific directory.  Punt for win9x-based systems.
-#ifdef WIN32
-    //  Should be ok for WinNT and versions of Windows that are based upon it
-    //  - such as Windows 2000. APPDATA not appropriate for Win9x-based
-    //  systems, we'll have to default to using the temporary directory in
-    //  that case because there is no user specific directory denoted by an
-    //  env var.
-    if (getenv("APPDATA"))
-	homedir = getenv("APPDATA");
-    else if (getenv("TEMP"))
-	homedir = getenv("TEMP");
-    else if (getenv("TMP"))
-	homedir = getenv("TMP");
-    //  One of the above _must_ have held true under win32 in the very
-    //  unlikely situation where that wasn't the case - punt hard.
-    else
-	homedir = "C:" + string(DIR_SEP_STRING);
+    HTProxy_add(RCReader::instance()->get_proxy_server_protocol().c_str(),
+		RCReader::instance()-> get_proxy_server_host_url().c_str());
+    
+    HTProxy_addRegex(RCReader::instance()->get_proxy_for_regexp().c_str(),
+		     RCReader::instance()->get_proxy_for_proxy_host_url().c_str(),
+		     RCReader::instance()->get_proxy_for_regexp_flags()); 
+    
+    HTNoProxy_add(RCReader::instance()->get_no_proxy_for_protocol().c_str(),
+		  RCReader::instance()->get_no_proxy_for_host().c_str(),
+		  RCReader::instance()->get_no_proxy_for_port());
 
-    //  Shouldn't happen, but double check
-    if (homedir[homedir.length() - 1] == DIR_SEP_CHAR)
-	homedir.erase(homedir.length() - 1);
-    homedir += string(DIR_SEP_STRING) + string("Dods");
-#else
-    //  Should be ok for Unix
-    if (getenv("HOME"))
-	homedir = getenv("HOME");
-#endif
-
-    // If there is a leading '/' at the end of $HOME, remove it. 
-    if (homedir.length() != 0) {
-	if (homedir[homedir.length() - 1] == DIR_SEP_CHAR)
-	    homedir.erase(homedir.length() - 1);
-
-	// set default cache root to $HOME/.dods_cache/
-	cache_root =
-	    homedir + string(DIR_SEP_STRING) + cache_name +
-	    string(DIR_SEP_STRING);
-    }
-#ifndef WIN32
-    //  Otherwise set the default cache root to a temporary directory
-    else {
-	tmpdir = string(DIR_SEP_STRING) + string("tmp");
-
-	// Otherwise set the default cache root the <tmpdir>/.dods_cache/
-	cache_root =
-	    tmpdir + string(DIR_SEP_STRING) + cache_name +
-	    string(DIR_SEP_STRING);
-    }
-#endif
-
-    if (getenv("DODS_CACHE_INIT"))
-	cifp = getenv("DODS_CACHE_INIT");
-
-    if (cifp.length() == 0) {
-	if (homedir.length() == 0) {
-	    // Environment variable wasn't set, and the users home directory
-	    // is indeterminable, so we will neither read nor write a data 
-	    // file and instead just use the compiled in defaults.
-	    use_cache_file = 0;
-	} else {
-	    // Environment variable wasnt set, get data from $HOME/.dodsrc
-	    cifp = homedir + string(DIR_SEP_STRING) + src_name;
-	}
-    }
-#define WIN32_CACHE_HACK
-#if defined(WIN32) && defined(WIN32_CACHE_HACK)
-    //  Temporary hack in lieu of a fix.  Caching doesn't work under
-    //  Windows.  This lets us bypass the problem in the short-term
-    //  by turning of client-side caching for windows systems.
-    //  The problem lies with libwww and we expect or hope that
-    //  when we update the Dods distribution with the newest libwww,
-    //  the problem will go away.  The problem lies with the code
-    //  that parses the .index file - it performs improperly on
-    //  filenames containing spaces.  Using windows "short names"
-    //  functionality for _cache_root doesn't solve the problem.
-    //  Using a _cache_root beginning with file:/ with spaces
-    //  escaped is also no help.
-    //  rom - 07/17/2000.
-    use_cache_file = false;
-    USE_CACHE = false;
-#endif
-
-    if (use_cache_file) {
-	// Open the file.  If it exists, read the settings from it.  
-	// If it doesnt exist, save the default settings to it.
-	ifstream fpi(cifp.c_str());
-	if (!fpi) {
-	    ofstream fpo(cifp.c_str());
-	    if (!fpo) {
-		// File couldnt be created.  Nothing needs to be done here,
-		// the program will simply use the defaults.
-	    } else {
-		// This means we just created the file.  We will now save
-		// the defaults in it for future use.       
-	      fpo << "# DODS client configuation file. See the DODS" << endl;
-	      fpo << "# users guide for information." << endl;
-		fpo << "USE_CACHE=" << USE_CACHE << endl;
-		fpo << "MAX_CACHE_SIZE=" << MAX_CACHE_SIZE << endl;
-		fpo << "MAX_CACHED_OBJ=" << MAX_CACHED_OBJ << endl;
-		fpo << "IGNORE_EXPIRES=" << IGNORE_EXPIRES << endl;
-#if 0
-		fpo << "NEVER_DEFLATE=" << NEVER_DEFLATE << endl;
-#endif
-		fpo << "CACHE_ROOT=" << cache_root << endl;
-		fpo << "DEFAULT_EXPIRES=" << DEFAULT_EXPIRES << endl;
-		fpo << "ALWAYS_VALIDATE=" << _always_validate << endl;
-		fpo << "# PROXY_SERVER=<protocol>,<host url>" << endl;
-		fpo << "# PROXY_FOR=<regex>,<proxy host url>,<flags>" << endl;
-		fpo << "# NO_PROXY_FOR=<protocol>,<host>" << endl;
-		fpo.close();
-	    }
-	} else {
-	    // The file exists and we may now begin to parse it.  
-	    // Defaults are already stored in the variables, if the correct
-	    // tokens are found in the file then those defaults will be 
-	    // overwritten. 
-	    tempstr = new char[256];
-	    int tokenlength;
-	    while (1) {
-		fpi.getline(tempstr, 128);
-		if (!fpi.good())	//  Ok for unix also ??? Yes.
-		    break;	// Gets a line from the file.
-		value = strchr(tempstr, '=');
-		if (!value)
-		    continue;
-		tokenlength = (int) value - (int) tempstr;
-		value++;
-		if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
-		    && tokenlength == 9) {
-		    USE_CACHE = atoi(value);
-		} else if ((strncmp(tempstr, "MAX_CACHE_SIZE", 14) == 0)
-			   && tokenlength == 14) {
-		    MAX_CACHE_SIZE = atoi(value);
-		} else if ((strncmp(tempstr, "MAX_CACHED_OBJ", 14) == 0)
-			   && tokenlength == 14) {
-		    MAX_CACHED_OBJ = atoi(value);
-		} else if ((strncmp(tempstr, "IGNORE_EXPIRES", 14) == 0)
-			   && tokenlength == 14) {
-		    IGNORE_EXPIRES = atoi(value);
-		} else if ((strncmp(tempstr, "NEVER_DEFLATE", 13) == 0)
-			   && tokenlength == 13) {
-		    // (re)Set the member value iff the dodsrc file changes
-		    // te default. 12/1/99 jhrg
-		    _accept_deflate = accept_deflate =
-			atoi(value) ? false : true;
-		} else if ((strncmp(tempstr, "CACHE_ROOT", 10) == 0)
-			   && tokenlength == 10) {
-		    cache_root = value;
-		    if (cache_root[cache_root.length() - 1] !=
-			DIR_SEP_CHAR) cache_root += string(DIR_SEP_STRING);
-		} else if ((strncmp(tempstr, "DEFAULT_EXPIRES", 15) == 0)
-			   && tokenlength == 15) {
-		    DEFAULT_EXPIRES = atoi(value);
-		} else if ((strncmp(tempstr, "ALWAYS_VALIDATE", 15) == 0)
-			   && tokenlength == 15) {
-		    _always_validate = atoi(value);
-		}
-		// Check for tags relating to the proxy server
-		// 8.20.2000 cjm
-		else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
-			 && tokenlength == 12) {
-		    // Setup a proxy server for all requests.
-		    tempstr2 = value;
-		    if (tempstr2 != NULL) {
-			tempstr3 = strchr(tempstr2, ',');
-			if (tempstr3 != NULL) {
-			    tempstr3[0] = (char) 0;	//terminate access
-			    // method string.
-			    tempstr3++;	//advance pointer.
-			    // Setup the proxy server.  tempstr2 is
-			    // the access method (ftp, http, etc)
-			    // and tempstr3 is a fully qualified 
-			    // name which includes the access method.
-			    HTProxy_add(tempstr2, tempstr3);
-			}
-
-		    }
-		} 
-		else if ((strncmp(tempstr, "PROXY_FOR", 9) == 0)
-			   && tokenlength == 9) {
-		    // Setup a proxy server for any requests
-		    // matching the given regular expression.
-		    tempstr2 = value;
-		    if (tempstr2 != NULL) {
-			tempstr3 = strchr(tempstr2, ',');
-			if (tempstr3 != NULL) {
-			    tempstr3[0] = (char) 0;	//terminate
-			    //tempstr2
-			    tempstr3++;	// point to proxy server;
-			    tempstr4 = strchr(tempstr3, ',');
-			    // tempstr4 will be !NULL only if the regex flags
-			    // are given. But we're not going to support
-			    // those unless requested. So handle the case
-			    // where they are not given, too. 10/25/2000 jhrg
-			    if (tempstr4 != NULL) {
-				tempstr4[0] = (char) 0;	//terminate
-				//tempstr3
-				tempstr4++;
-				proxy_regex_flags = atoi(tempstr4);
-				HTProxy_addRegex(tempstr2, tempstr3,
-						 proxy_regex_flags);
-			    }
-			    else {
-			      HTProxy_addRegex(tempstr2, tempstr3, 0);
-			    }
-			}
-		    }
-		} else if ((strncmp(tempstr, "NO_PROXY_FOR", 12) == 0)
-			   && tokenlength == 12) {
-		    // Dont use a proxy server for the host
-		    // specified.  Multiple NO_PROXY_FOR entries
-		    // can be in the .dodsrc.  cjm
-		    tempstr2 = value;
-		    if (tempstr2 != NULL) {
-			tempstr3 = strchr(tempstr2, ',');
-			if (tempstr3 != NULL) {
-			    tempstr3[0] = (char) 0;	//terminate
-			    //tempstr2
-			    tempstr3++;	// point to access method.
-			    tempstr4 = strchr(tempstr3, ',');
-			    if (tempstr4 != NULL) {
-				tempstr4[0] = (char) 0;	//terminate
-				//tempstr3
-				tempstr4++;
-				noproxy_host_port = atoi(tempstr4);
-			    }
-			    // default to port 0 if not specified. This means
-			    // all ports. Using 80 will fail when the URL
-			    // does not contain the port number. That's
-			    // probably a bug in libwww. 10/23/2000 jhrg
-			    else
-				noproxy_host_port = 0;
-			    // add proxy server for host 
-			    // 'tempstr2' w/ access method 
-			    // 'tempstr3' and port 'noproxy_host_port'.
-			    // NB: Params reversed from above. 10/23/2000 jhrg
-			    HTNoProxy_add(tempstr3, tempstr2,
-					  noproxy_host_port);
-			}
-		    }
-		}
-	    }
-
-	    delete tempstr;
-	    tempstr = 0;
-
-	    fpi.close();	// Close the .dodsrc file. 12/14/99 jhrg
-	}
-    }
-    // End of cache file parsing.
 
     HTLibInit(CNAME, CVER);	// These constants are in config_dap.h
 
@@ -940,7 +673,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTFormat_setTransferCoding(transfer_encodings);
 
     // Register the default set of content encoders and decoders
-    if (accept_deflate) {
+    if (_accept_deflate) {
 #ifdef HT_ZLIB
 	HTList *content_encodings = HTList_new();
 	HTContentEncoderInit(content_encodings);
@@ -961,26 +694,21 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 
     HTAlert_add(dods_username_password, HT_A_USER_PW);
 
-    if (!USE_CACHE) {
+    if (!RCReader::instance()->get_use_cache()) {
 	// Disable the cache. 
 	HTCacheTerminate();
 	_cache_enabled = false;
     } else {
-	// Instead, set up the cache.
-	// Remove any stale lock file.  This may not be safe if multiple
-	// people are using the same cache directory at once.
-	lockstr = cache_root + string(".lock");
-	remove(lockstr.c_str());
 
 	//  We have to escape spaces.  Utilizing the escape functionality
 	//  forces us, in turn, to use the "file:" convention for URL's.
 #ifdef WIN32
-	string croot = string("file:/") + cache_root; // cache:/ ???
+	string croot = string("file:/") + RCReader::instance()->get_dods_cache_root(); // cache:/ ???
 	croot = id2www(string(croot));
 #else
 	// Changed to cache: from file:; both work but cache: is closer to
 	// the truth. 9/25/2001 jhrg
-	string croot = string("cache:") + cache_root;
+	string croot = string("cache:") +  RCReader::instance()->get_dods_cache_root();
 #endif
 	// I removed this line since using it screws up the UNIX code. libwww
 	// will undo the %xx escapes but not the cache: or file: protocol
@@ -990,15 +718,15 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	// 9/25/2001 jhrg
 	//	croot = id2www(string(croot));
 
-	_cache_root = new char[strlen(cache_root.c_str()) + 1];
-	strcpy(_cache_root, cache_root.c_str());
-	if (HTCacheInit(croot.c_str(), MAX_CACHE_SIZE) == YES) {
-	    HTCacheMode_setMaxCacheEntrySize(MAX_CACHED_OBJ);
-	    if (IGNORE_EXPIRES)
+	_cache_root = new char[strlen(RCReader::instance()->get_dods_cache_root().c_str()) + 1];
+	strcpy(_cache_root,RCReader::instance()->get_dods_cache_root().c_str());
+	if (HTCacheInit(croot.c_str(),RCReader::instance()->get_max_cache_size()) == YES) {
+	    HTCacheMode_setMaxCacheEntrySize(RCReader::instance()->get_max_cached_obj());
+	    if (RCReader::instance()->get_ignore_expires())
 		HTCacheMode_setExpires(HT_EXPIRES_IGNORE);
 	    else
 		HTCacheMode_setExpires(HT_EXPIRES_AUTO);
-	    HTCacheMode_setDefaultExpiration(DEFAULT_EXPIRES);
+	    HTCacheMode_setDefaultExpiration(RCReader::instance()->get_default_expires());
 	    _cache_enabled = true;
 	} else {
 	    // Disable the cache. 
@@ -1704,6 +1432,9 @@ Connect::set_credentials(string u, string p)
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.115  2001/10/25 21:23:23  jgarcia
+// Modified the www_lib_init method so now it uses the class RCReader. This simplifies a lot the implementation of this class.
+//
 // Revision 1.114  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //
