@@ -3,11 +3,14 @@
 #define _DODS_CONFIG_H_
 
 /* $Log: config_dap.h.in,v $
-/* Revision 1.13  1996/06/20 15:54:29  jimg
-/* Added HAVE_SEM_UNION for hosts that do not define the union semun {} union.
-/* Changed SEM_PROTO to HAVE_SEM_PROTO to be more inline with other similar
-/* defines.
+/* Revision 1.14  1996/07/08 23:19:49  jimg
+/* Added HAVE_EXPECT compile-time variable.
 /*
+ * Revision 1.13  1996/06/20 15:54:29  jimg
+ * Added HAVE_SEM_UNION for hosts that do not define the union semun {} union.
+ * Changed SEM_PROTO to HAVE_SEM_PROTO to be more inline with other similar
+ * defines.
+ *
  * Revision 1.12  1996/06/18 21:33:01  jimg
  * Added define SEM_PROTO which is used to control inclusion of the semaphore
  * prototypes in Connect.cc.
@@ -131,6 +134,9 @@
 
 /* The number of bytes in a long.  */
 #undef SIZEOF_LONG
+
+/* Define as 1 if you have the expect library (which requries tcl) */
+#undef HAVE_EXPECT
 
 /* Define if you have the strdup function.  */
 #undef HAVE_STRDUP
