@@ -14,6 +14,24 @@
 // that contain other sequences. jhrg 2/2/98 
 
 // $Log: TestSequence.cc,v $
+// Revision 1.24  2001/06/15 23:49:03  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.23.4.1  2001/06/05 06:49:19  jimg
+// Added the Constructor class which is to Structures, Sequences and Grids
+// what Vector is to Arrays and Lists. This should be used in future
+// refactorings (I thought it was going to be used for the back pointers).
+// Introduced back pointers so children can refer to their parents in
+// hierarchies of variables.
+// Added to Sequence methods to tell if a child sequence is done
+// deserializing its data.
+// Fixed the operator=() and copy ctors; removed redundency from
+// _duplicate().
+// Changed the way serialize and deserialize work for sequences. Now SOI and
+// EOS markers are written for every `level' of a nested Sequence. This
+// should fixed nested Sequences. There is still considerable work to do
+// for these to work in all cases.
+//
 // Revision 1.23  2000/09/21 16:22:09  jimg
 // Merged changes from Jose Garcia that add exceptions to the software.
 // Many methods that returned error codes now throw exectptions. There are
@@ -172,6 +190,19 @@ TestSequence::~TestSequence()
 {
 }
 
+TestSequence &
+TestSequence::operator=(const TestSequence &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
+
+    _duplicate(rhs);
+
+    return *this;
+}
+
 // Read values from text files. Sequence instances are stored on separate
 // lines. Line can be no more than 255 characters long.
 
@@ -191,7 +222,7 @@ TestSequence::read(const string &dataset)
 	_input.getline(line, 255);
     }
 
-    // If at EOF, return false indicating no more data. Leave error as it is.
+    // If at EOF, return false indicating no more data.
     if (_input.eof())
 	return false;
 
@@ -200,14 +231,12 @@ TestSequence::read(const string &dataset)
     while (true) {
 	_input.getline(line, 256);
 	if (_input.eof())
-	    return false;	// error unchanged, nominally false.
-	if (!_input) {
-	    DBG(cerr << "Input file error" << endl);
 	    return false;
-	}
+	if (!_input)
+	    throw InternalErr(__FILE__, __LINE__, "TestSequence read error.");
 
 	string l = line;
-	if (l.find_first_not_of(" \t\n\r") != l.npos || l[0] == '#')	// Blank or comment line
+	if (l.find_first_not_of(" \t\n\r") != l.npos || l[0] == '#')
 	    continue;
 	else
 	    break;		// Assume valid line.

@@ -21,7 +21,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.y,v 1.41 2001/01/26 19:48:09 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.y,v 1.42 2001/06/15 23:49:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,18 +88,15 @@ Check that the URL is correct.";
 
 typedef int checker(const char *);
 
-#if 0
-void mem_list_report();
-#endif
 int daslex(void);
 static void daserror(char *s);
-#if 0
-static string attr_name(string name);
-#endif
 static void add_attribute(const string &type, const string &name, 
 			  const string &value, checker *chk) throw (Error);
 static void add_alias(AttrTable *das, AttrTable *current, const string &name, 
 		      const string &src) throw (Error);
+static void add_bad_attribute(AttrTable *attr, const string &type,
+			      const string &name, const string &value,
+			      const string &msg);
 
 %}
 
@@ -388,21 +385,6 @@ daserror(char *)
 {
 }
 
-// Return the rightmost component of name (where each component is separated
-// by `.'.
-
-#if 0
-static string
-attr_name(string name)
-{
-    string::size_type i = name.rfind('.');
-    if(i == string::npos)
-      return name;
-    else
-      return name.substr(i+1);
-}
-#endif
-
 static string
 a_or_an(const string &subject)
 {
@@ -415,6 +397,10 @@ a_or_an(const string &subject)
 	return "an";
 }
 
+// This code used to throw an exception when a bad attribute value came
+// along; now it dumps the errant value(s) into a sub container called *_DODS
+// and stores the parser's error message in a string attribute named
+// `explanation.' 
 static void
 add_attribute(const string &type, const string &name, const string &value,
 	      checker *chk) throw (Error)
@@ -425,12 +411,16 @@ add_attribute(const string &type, const string &name, const string &value,
     if (chk && !(*chk)(value.c_str())) {
 	string msg = "`";
 	msg += value + "' is not " + a_or_an(type) + " " + type + " value.";
+	add_bad_attribute(TOP_OF_STACK, type, name, value, msg);
+	return;
+#if 0
 	parse_error(msg.c_str(), das_line_num);	// throws Error.
+#endif
     }
     
     if (STACK_EMPTY) {
 	string msg = "Whoa! Attribute table stack empty when adding `" ;
-	msg += name + "' .";
+	msg += name + ".' ";
 	parse_error(msg.c_str(), das_line_num);
     }
     
@@ -468,8 +458,55 @@ add_alias(AttrTable *das, AttrTable *current, const string &name,
     }
 }
 
+static void
+add_bad_attribute(AttrTable *attr, const string &type, const string &name,
+		  const string &value, const string &msg)
+{
+    // First, if this is badd value is already in a *_dods_errors container,
+    // then just add it. This can happen when the server side processes a DAS
+    // and then hands it off to a client which does the same.
+    // Make a new container. Call it <attr's name>_errors. If that container
+    // already exists, use it.
+    // Add the attribute.
+    // Add the error string to an attribute in the container called
+    // `<name_explanation.'. 
+    
+    if (attr->get_name().find("_dods_errors") != string::npos) {
+	attr->append_attr(name, type, value);
+    }
+    else {
+	string error_cont_name = attr->get_name() + "_dods_errors";
+	AttrTable *error_cont = attr->get_attr_table(error_cont_name);
+	if (!error_cont)
+	    error_cont = attr->append_container(error_cont_name);
+
+	error_cont->append_attr(name, type, value);
+	error_cont->append_attr(name + "_explanation", "String",
+				"\"" + msg + "\"");
+    }
+}
+
 /* 
  * $Log: das.y,v $
+ * Revision 1.42  2001/06/15 23:49:03  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.40.4.4  2001/06/06 06:34:46  jimg
+ * Added double quotes around the explanation's when recording errors in the
+ * DAS.
+ * Added code that checks to see if a bad value is inside the special
+ * _dods_errors attribute container. If so, it leaves it alone. This allows the
+ * errors to be processed by the dap without themselves being errors.
+ * Changed the name of the error container to *_dods_errors.
+ *
+ * Revision 1.40.4.3  2001/06/06 04:08:07  jimg
+ * Changed the way errors are handled. Many errors still cause exceptions to
+ * be thrown. However, if an attribtue's value is wrong (e.g., a floating
+ * point value that is out of range), rather than throw an exception a note
+ * in the form of a container and explanation are added to the attribute
+ * table where the error occurred. This is particularly important for
+ * attributes like numerical values since they are often machine-dependent.
+ *
  * Revision 1.41  2001/01/26 19:48:09  jimg
  * Merged with release-3-2-3.
  *

@@ -18,21 +18,40 @@
 #ifndef __DODS_DATATYPES__
 #define __DODS_DATATYPES__
 
-typedef @DODS_INT32@ dods_int32;
-typedef @DODS_UINT32@ dods_uint32;
-#define XDR_INT32 @XDR_INT32@
-#define XDR_UINT32 @XDR_UINT32@
+/* The typedefs are done using a preprocessor symbol so that autoconf's
+   `CONFIG_HEADER' can be used. The configure script will then only modify
+   the dods-datatypes.h header when its contents change. This saves on
+   compilation since that header is used by many files in the dap++ library.
+   The downside is that the typedefs are so ugly... 2/14/2001 jhrg */
 
-typedef @DODS_INT16@ dods_int16;
-typedef @DODS_UINT16@ dods_uint16;
-#define XDR_INT16 @XDR_INT16@
-#define XDR_UINT16 @XDR_UINT16@
+#undef DINT32
+typedef DINT32 dods_int32;
 
-typedef @DODS_BYTE@ dods_byte;
+#undef DUINT32
+typedef DUINT32 dods_uint32;
 
-typedef @DODS_FLOAT64@ dods_float64;
-typedef @DODS_FLOAT32@ dods_float32;		
-#define XDR_FLOAT64 @XDR_FLOAT64@
-#define XDR_FLOAT32 @XDR_FLOAT32@
+#undef XDR_INT32
+#undef XDR_UINT32
+
+#undef DINT16
+typedef DINT16 dods_int16;
+
+#undef DUINT16
+typedef DUINT16 dods_uint16;
+
+#undef XDR_INT16
+#undef XDR_UINT16
+
+#undef DBYTE
+typedef DBYTE dods_byte;
+
+#undef DFLOAT64
+typedef DFLOAT64 dods_float64;
+
+#undef DFLOAT32
+typedef DFLOAT32 dods_float32;		
+
+#undef XDR_FLOAT64
+#undef XDR_FLOAT32
 
 #endif /* __DODS_DATATYPES__ */

@@ -32,21 +32,6 @@
 
 //@{
 
-#if 0
-/** This function prints a usage message for the filter program in the
-    server log file.  This is meant to report errors in a filter
-    program's configuration.  These are errors made by the server
-    administrator, not by a user.
-
-    The function also returns a DODS error object to the user.
-
-    @memo Send a usage message to the server log.
-    @param name The name of the filter program.
-    */
-void usage(const char *name);
-void usage(const string &name);
-#endif
-
 /** This sends a formatted block of text to the client, containing
     version information about various aspects of the server.  The
     arguments allow you to enclose version information about the
@@ -190,123 +175,115 @@ void ErrMsgT(const string &Msgt);
     @return A C-style simple string containing the filename component
     of the given pathname.
     */
-char *name_path(const char *path);
 string name_path(const string &path);
 
-/** These functions are used to create the MIME header for a message
-    from a server to a client.  They can, of course, be used for any
-    other suitable purpose.
+/** Given a constant pointer to a time_t, return a RFC 822/1123 style date.
+    This function returns the RFC 822 date with the exception that the RFC
+    1123 modification for four-digit years is implemented. The date is
+    returned in a statically allocated char array so it must be copied before
+    being used.
 
-    @memo Use these functions to create a MIME header.
+    @return The RFC 822/1123 style date in a statically allocated char [].
+    @param t A const time_t pointer. */
+char *rfc822_date(const time_t t);
+
+/** Get the last modified time. Assume #name# is a file and find its last
+    modified time. If #name# is not a file, then return now as the last
+    modified time. 
+    @param name The name of a file.
+    @return The last modified time or the current time. */
+time_t last_modified_time(string name);
+
+/** These functions are used to create the MIME header for a message
+    from a server to a client. They are public but should not be called
+    directly unless necessary. Use DODSFilter instead.
+
+    NB: These functions actually write both the response status line
+    \emph{and} the header.
+
+    @memo Functions to create a MIME header.
     @name MIME utility functions
-    */
+    @see DODSFilter
+*/
 
 //@{
-/** The reply to a DODS client is in the form of a multi-part MIME
-    message.  You can use this function to create a MIME header for a
-    text message.
-
-    Here is an example of its use.  This is the DAS filter program
-    from the Matlab server.  (Simplified to show off its structure.) 
-
-    \begin{verbatim}
-
-    extern DAS *read_attributes(const char *filename);
-
-    int 
-    main(int argc, char * argv[])
-    {
-
-      set_mime_text(dods_das);
-
-      string dataset = argv[1];
-
-      // Read the matlab string variables for attributes
-      DAS *das_table = read_attributes(dataset);
-
-      // Forward the DAS class over the network
-      das_table->print();
-
-      return 0;                        
-    }
-    \end{verbatim}
-
-    The #ObjectType# and #EncodingType# enums are defined in
-    #Connect.h#. 
+/** Use this function to create a MIME header for a text message.
 
     @memo Set the MIME type to text.
-    @param os A Stream object to which the MIME header is written.
-    @param type An #ObjectType# enum indicating the DODS type of the
-    object. 
-    @param enc An #EncodingType# switch indicating whether the data is
-    to be compressed or not.
+    @param os Write the MIME header to this stream.
+    @param type The type of the response (i.e., is it a DAS, DDS, et cetera).
+    @param version The version of the server.
+    @param enc Indicates an encoding was applied to the response payload.
+    Used primarily to tell clients they need to decompress the payload.
+    @param last_modified A RFC 822 date which gives the time the information
+    in the repsonse payload was last changed.
     @see ObjectType
     @see EncodingType
-    @see Connect
-    */
+    @see Connect */
 void set_mime_text(ostream &os, ObjectType type = unknown_type, 
-		   const string &version = "", EncodingType enc = x_plain);
+		   const string &version = "", EncodingType enc = x_plain,
+		   const time_t last_modified = 0);
 /**
-   @param out A FILE pointer to which the MIME header is written. */
+   @param out Write the MIME header to this FILE pointer. */
 void set_mime_text(FILE *out, ObjectType type = unknown_type, 
-		   const string &version = "", EncodingType enc = x_plain);
+		   const string &version = "", EncodingType enc = x_plain,
+		   const time_t last_modified = 0);
 
-/** The reply to a DODS client is in the form of a multi-part MIME
-    message.  You can use this function to create a MIME header for a
-    message containing binary data.  This function is called from
-    within the #DDS::send# function, so it is rarely necessary in an
-    application program.
+/** Use this function to create a MIME header for a message containing binary
+    data.
 
     @memo Create MIME headers for binary data.
-    @param os A Stream object to which the MIME header is written.
-    @param type An #ObjectType# enum indicating the DODS type of the
-    object. 
-    @param enc An #EncodingType# switch indicating whether the data is
-    to be compressed or not.
+    @param os Write the MIME header to this stream.
+    @param type The type of the response (i.e., is it data, et cetera).
+    @param version The version of the server.
+    @param enc Indicates an encoding was applied to the response payload.
+    Used primarily to tell clients they need to decompress the payload.
+    @param last_modified A RFC 822 date which gives the time the information
+    in the repsonse payload was last changed.
     @see ObjectType
     @see EncodingType
-    @see DDS
-    */
+    @see DDS */
 
 void set_mime_binary(ostream &os, ObjectType type = unknown_type, 
-		     const string &version = "", EncodingType enc = x_plain);
+		     const string &version = "", EncodingType enc = x_plain,
+		     const time_t last_modified = 0);
 /**
-   @param out A FILE pointer to which the MIME header is written. */
+   @param out Write the MIME header to this FILE pointer. */
 void set_mime_binary(FILE *out, ObjectType type = unknown_type, 
-		     const string &version = "", EncodingType enc = x_plain);
+		     const string &version = "", EncodingType enc = x_plain,
+		     const time_t last_modified = 0);
 
-/** The reply to a DODS client is in the form of a multi-part MIME
-    message.  You can use this function to create a MIME header for a
-    message signaling an error.
-
-    Here is an example of use from the JGOFS DDS filter program:
-
-    \begin{verbatim}
-    if(argc < 2) {
-      ErrMsgT("One parameter, filename, must be sent (jg_dds)");
-      set_mime_error(HTERR_NO_CONTENT, 
-                     "Internal error in DODS attribute server");
-      exit(1);
-    }
-    \end{verbatim}
+/** Use this function to create a MIME header for a message signaling an
+    error.
 
     @memo Set the MIME text type to ``error.''
-    @param os A Stream object to which the MIME header is written.
+    @param os Write the MIME header to this stream.
     @param code An error code for the given error. 
-    @param reason A simple character string with a message to be sent
-    to the client.
-    @see ErrMsgT
-    */
+    @param reason A message to be sent to the client.
+    @see ErrMsgT */
 void set_mime_error(ostream &os, int code = HTERR_NOT_FOUND, 
 		    const string &reason = "Dataset not found",
 		    const string &version = "");
 /**
-   @param out A FILE pointer to which the MIME header is written. */
+   @param out Write the MIME header to this FILE pointer. */
 void set_mime_error(FILE *out, int code = HTERR_NOT_FOUND, 
 		    const string &reason = "Dataset not found",
 		    const string &version = "");
 
+/** Use this function to create a response signalling that the target of a
+    conditional get has not been modified relative to the condition given in
+    the request. For DODS this will have to be a date until the servers
+    support ETags
+
+    @memo Send a `Not Modified' response.
+    @param os Write the MIME header to this stream. */
+void set_mime_not_modified(ostream &os);
+/**
+   @param out Write the response to this FILE pointer. */
+void set_mime_not_modified(FILE *out);
+
 //@}
+
 //@}
 
 #endif // _cgi_util_h

@@ -28,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.y,v 1.34 2001/05/04 00:09:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.y,v 1.35 2001/06/15 23:49:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,8 +98,6 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 %token SCAN_NAME
 %token SCAN_INTEGER
 %token SCAN_DATASET
-%token SCAN_INDEPENDENT
-%token SCAN_DEPENDENT
 %token SCAN_ARRAY
 %token SCAN_MAPS
 %token SCAN_LIST
@@ -123,7 +121,7 @@ datasets:	dataset
 		| datasets dataset
 ;
 
-dataset:	SCAN_DATASET '{' declarations '}' name ';'
+dataset:	SCAN_DATASET '{' declarations '}' name ';' 
                 | error
                 {
 		    parse_error((parser_arg *)arg, NO_DDS_MSG,
@@ -281,6 +279,7 @@ var:		var_name { current->set_name($1); }
 var_name:       SCAN_ID | SCAN_BYTE | SCAN_INT16 | SCAN_INT32 | SCAN_UINT16
                 | SCAN_UINT32 | SCAN_FLOAT32 | SCAN_FLOAT64 | SCAN_STRING
                 | SCAN_URL | SCAN_STRUCTURE | SCAN_SEQUENCE | SCAN_GRID
+                | SCAN_LIST 
 ;
 
 array_decl:	'[' SCAN_INTEGER ']'
@@ -329,6 +328,10 @@ array_decl:	'[' SCAN_INTEGER ']'
 ;
 
 name:		SCAN_NAME { (*DDS_OBJ(arg)).set_dataset_name($1); }
+		| SCAN_INTEGER { (*DDS_OBJ(arg)).set_dataset_name($1); }
+		| SCAN_DATASET { (*DDS_OBJ(arg)).set_dataset_name($1); }
+		| SCAN_ARRAY { (*DDS_OBJ(arg)).set_dataset_name($1); }
+		| SCAN_MAPS { (*DDS_OBJ(arg)).set_dataset_name($1); }
 		| var_name { (*DDS_OBJ(arg)).set_dataset_name($1); }
                 | error 
                 {
@@ -408,8 +411,18 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.y,v $
- * Revision 1.34  2001/05/04 00:09:23  jimg
- * Added a rule that allows varaible names to be the names of datatypes.
+ * Revision 1.35  2001/06/15 23:49:03  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.33.4.2  2001/05/08 19:10:47  jimg
+ * Expanded the set of names that the dds.y parser will recognize to
+ * include integers (for files named like 990412.nc). Also removed the
+ * unused keywords Dependent and Independent from both the DDS scanner
+ * and parser.
+ * Added other reserved words to the set of possible Dataset names.
+ *
+ * Revision 1.33.4.1  2001/05/04 00:12:10  jimg
+ * Added a rule that allows variable names to be the names of datatypes.
  *
  * Revision 1.33  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than

@@ -1,4 +1,5 @@
 
+
 // -*- C++ -*-
 
 // (c) COPYRIGHT URI/MIT 1997-1999
@@ -15,6 +16,8 @@
 #endif
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <string>
 
@@ -54,6 +57,7 @@ private:
     bool comp;			// True if the output should be compressed.
     bool ver;			// True if the caller wants version info.
     bool bad_options;		// True if the options (argc,argv) are bad.
+    bool d_conditional_request;
 
     string program_name;	// Name of the filter program
     string dataset;		// Name of the dataset/database 
@@ -64,13 +68,17 @@ private:
     string cache_dir;		// Use this for cache files
     string accept_types;	// List of types the client understands.
 
+    time_t d_anc_das_lmt;	// Last modified time of the anc. DAS.
+    time_t d_anc_dds_lmt;	// Last modified time of the anc. DDS.
+    time_t d_if_modified_since;	// Time from a conditional request.
+
     DODSFilter() {}		// Private default ctor.
 
 public:
     /** Create an instance of DODSFilter using the command line
 	arguments passed by the CGI (or other) program.  The default
 	constructor is private; this and the copy constructor (which is
-	just the default constructor) are the only way to create an
+	just the default copy constructor) are the only way to create an
 	instance of DODSFilter.
 
 	These are the valid options:
@@ -78,39 +86,56 @@ public:
 	\item[{\it filename}]
 	The name of the file on which the filter is to operate.  Usually
 	this would be the file whose data has been requested.
+
 	\item[#-c#]
 	Send compressed data. Data are compressed using the deflate program.
 	The W3C's libwww will recognize this and automatically decompress
 	these data.
+
 	\item[#-e# {\it expression}]
 	This option specifies a non-blank constraint expression used to
 	subsample a dataset.
-	\item[#-v# {\it cgi-version}]
-	Specifies that this request is just for version information.
-	The {\it cgi-version} is the version of the CGI (i.e., server).
-	\item[#-V#] When given set the #version request# flag to TRUE. Servers
-	should check this flag with the #version()# mfunc and call
-	#send_version_info()# if it is TRUE. Not that -v used to be used for
-	this, but -v is now used to pass into the server from the CGI the
-	server's version number.
+
+	\item[#-v# {\it cgi-version}] Set the CGI/Server version to
+	#cgi-version#. This is a way for the caller to set version
+	information passed back to the client either as the response to a
+	version request of in the response headers.
+
+	\item[#-V#] Specifies that this request is just for version
+	information. Servers can check to see if this was given using the
+	#version# mfunc. Note that version information is sent from within
+	DODSFilter so that sophisticated servers can support versioning data
+	sources inaddition to the server software.
+
 	\item[#-d# {\it ancdir}]
 	Specifies that ancillary data be sought in the {\it ancdir}
 	directory. 
+
 	\item[#-f# {\it ancfile}]
 	Specifies that ancillary data may be found in a file called {\it
 	ancfile}.
+
 	\item[#-r# {\it cache directory}]
 	Specify a directory to use if/when files are to be cached. Not all
 	handlers support caching and each uses its own rules tailored to a
 	specific file or data type.
-	\item[#-t# {\it list of types}]
-	Specifies a list of types accepted by the client. This information is
-	passed to a server by a client using the XDODS-Accept-Types header. The
-	comma separated list contains each type the client can understand
-	\emph{or}, each type the client does \emph{not} understand. In the
-	latter case the type names are prefixed by a {\tt !}. If the list
-	contains only the keyword `All', then the client is declaring that it
-	can understand all DODS types.
+
+	\item[#-t# {\it list of types}] Specifies a list of types accepted by
+	the client. This information is passed to a server by a client using
+	the XDODS-Accept-Types header. The comma separated list contains each
+	type the client can understand \emph{or}, each type the client does
+	\emph{not} understand. In the latter case the type names are prefixed
+	by a {\tt !}. If the list contains only the keyword `All', then the
+	client is declaring that it can understand all DODS types.
+
+	\item[#-l# {\it time}] Indicates that the request is a conditional
+	request; send a complete response if and only if the data has changed
+	since {\it time}. If it has not changed since {\it time}, then send a
+	304 (Not Modified) response. The {\it time} parameter is the
+	#Last-Modified# time from an If-Modified-Since condition GET request.
+	It is given in seconds since the start of the Unix epoch (Midnight, 1
+	Jan 1970). 
+
 	\end{description}
 
 	@memo DODSFilter constructor. */
@@ -140,12 +165,32 @@ public:
 	@see DODSFilter::send_version_info */
     bool version();
 
+    /** Is this request conditional? 
+
+	@return True if the request is conditional.
+	@see get_request_if_modified_since(). */
+    virtual bool is_conditional();
+
     /** Return the version information passed to the instance when it was
 	created. This string is passed to the DODSFilter ctor using the -v
 	option.
 
 	@return The version string supplied at initialization. */
     string get_cgi_version();
+
+    /** Set the CGI/Server version number. Servers use this when answering
+	requests for version information. The vesion `number' should include
+	both the name of the server (e.g., ff_dods) as well as the version
+	number. Since this information is typically divined by configure,
+	it's up to the executable to poke the correct value in using this
+	method.
+
+	Note that the -v switch that this class understands is deprecated
+	since it is usually called by Perl code. It makes more sense to have
+	the actual C++ software set the version string. 
+
+	@param version A version string for this server. */
+    void set_cgi_version(string version);
 
     /** Return the entire constraint expression in a string.  This
 	includes both the projection and selection clauses, but not the
@@ -176,6 +221,71 @@ public:
 	information.  */ 
     virtual string get_dataset_version();
 
+    /** Get the dataset's last modified time. This returns the time at which
+	the dataset was last modified as defined by UNIX's notion of
+	modification. This does not take into account the modification of an
+	ancillary DAS or DDS. Time is given in seconds since the epoch (1 Jan
+	1970 00:00:00 GMT).
+
+	This method perform a simple check on the file named by the dataset
+	given when the DODSFilter instance was created. If the dataset is not
+	a filter, this method returns the current time. Servers which provide
+	access to non-file-based data should subclass DODSFilter and supply a
+	more suitable version of this method.
+
+	From the stat(2) man page: ``Traditionally, st_mtime is changed by
+	mknod(2), utime(2), and write(2). The st_mtime is not changed for
+	changes in owner, group, hard link count, or mode.''
+	
+	@return Time of the last modification in seconds since the epoch.
+	@see get_das_last_modified_time()
+	@see get_dds_last_modified_time() */
+    virtual time_t get_dataset_last_modified_time();
+
+    /** Get the last modified time for the dataset's DAS. This time, given in
+	seconds since the epoch (1 Jan 1970 00:00:00 GMT), is the greater of
+	the datasets's and any ancillary DAS' last modified time.
+
+	@param anc_location A directory to search for ancillary files (in
+	addition to the CWD).
+	@return Time of last modification of the DAS.
+	@see get_dataset_last_modified_time()
+	@see get_dds_last_modified_time() */
+    virtual time_t get_das_last_modified_time(const string &anc_location="");
+
+    /** Get the last modified time for the dataset's DDS. This time, given in
+	seconds since the epoch (1 Jan 1970 00:00:00 GMT), is the greater of
+	the datasets's and any ancillary DDS' last modified time.
+
+	@return Time of last modification of the DDS.
+	@see get_dataset_last_modified_time()
+	@see get_dds_last_modified_time() */
+    virtual time_t get_dds_last_modified_time(const string &anc_location="");
+
+    /** Get the last modified time to be used for a particular data request.
+	This method should look at both the contraint expression and any
+	ancillary files for this dataset. The implementation provided here
+	returns the latest time returned by the get_dataset...(),
+	get_das...() and get_dds...() methods and does not currently check
+	the CE.
+
+	@param anc_location A directory to search for ancillary files (in
+	addition to the CWD).
+	@return Time of last modification of the data.
+	@see get_dataset_last_modified_time()
+	@see get_das_last_modified_time()
+	@see get_dds_last_modified_time() */
+    virtual time_t get_data_last_modified_time(const string &anc_location="");
+
+    /** Get the value of a conditional request's If-Modified-Since header.
+	This value is used to determine if the request should get a full
+	response or a Not Modified (304) response. The time is given in
+	seconds since the Unix epoch (midnight, 1 Jan 1970). If no time was
+	given with the request, this methods returns -1.
+
+	@return If-Modified-Since time from a condition GET request. */
+    virtual time_t get_request_if_modified_since();
+
     /** The #cache_dir# is used to hold the cached .dds and .das files.
 	By default, this returns an empty string (store cache files in
 	current directory.
@@ -203,7 +313,7 @@ public:
 	ancillary data attributes.
 	@return void
 	@see DAS */
-    void read_ancillary_das(DAS &das, string anc_location = "");
+    void virtual read_ancillary_das(DAS &das, string anc_location = "");
 
     /** Read the ancillary DDS information and merge it into the input
 	DDS object. 
@@ -213,7 +323,7 @@ public:
 	ancillary data properties.
 	@return void
 	@see DDS */
-    void read_ancillary_dds(DDS &dds, string anc_location = "");
+    void virtual read_ancillary_dds(DDS &dds, string anc_location = "");
 
     /** This message is printed when the filter program is incorrectly
 	invoked by the dispatch CGI.  This is an error in the server
@@ -241,7 +351,9 @@ public:
 	@param das The DAS object to be sent.
 	@return void
 	@see DAS */
-    void send_das(DAS &das);
+    void virtual send_das(DAS &das, const string &anc_location = "");
+    void virtual send_das(ostream &os, DAS &das,
+			  const string &anc_location="");
 
     /** This function formats and prints an ASCII representation of a
 	DDS on stdout.  When called by a CGI program, this has the
@@ -255,7 +367,10 @@ public:
 	back to the client. 
 	@return void
 	@see DDS */
-    void send_dds(DDS &dds, bool constrained = false);
+    void virtual send_dds(DDS &dds, bool constrained = false,
+			  const string &anc_location = "");
+    void virtual send_dds(ostream &os, DDS &dds, bool constrained = false,
+			  const string &anc_location = "");
 
     /** Send the data in the DDS object back to the client
 	program.  The data is encoded in XDR format, and enclosed in a
@@ -268,10 +383,30 @@ public:
 	is to be put for encoding and transmission.
 	@return void
 	@see DDS */
-    void send_data(DDS &dds, FILE *data_stream);
+    void virtual send_data(DDS &dds, FILE *data_stream,
+			   const string &anc_location = "");
 };
 
 // $Log: DODSFilter.h,v $
+// Revision 1.19  2001/06/15 23:49:02  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.18.2.3  2001/06/14 21:32:04  jimg
+// Added a method to set the cgi_version property without relying on the ctor.
+//
+// Revision 1.18.2.2  2001/05/03 19:10:35  jimg
+// Added the d_conditional_request and d_if_modified_since fields. These are
+// used to indicate that the request from the client is a conditional GET
+// request. DODS currently only supports conditional requests based on the Last
+// Modified time included by a server in a response. The ctor takes a -l switch
+// which expects the time given with the If-Modified-Since header. This provides
+// an easy way for servers to handle the conditional request since they can
+// simply pass the switches and parameters they receive directly to DODSFilter
+// (as if they were opaque objects).
+//
+// Revision 1.18.2.1  2001/04/23 22:34:46  jimg
+// Added support for the Last-Modified MIME header in server responses.`
+//
 // Revision 1.18  2000/10/30 17:21:27  jimg
 // Added support for proxy servers (from cjm).
 //

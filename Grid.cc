@@ -38,21 +38,23 @@ using std::ostrstream;
 void
 Grid::_duplicate(const Grid &s)
 {
-    BaseType::_duplicate(s);
-
     _array_var = s._array_var->ptr_duplicate();
+    _array_var->set_parent(this);
 
-    Grid &cs = (Grid &)s;		// cast away const;
+    Grid &cs = const_cast<Grid &>(s);
 
-    for (Pix p = cs._map_vars.first(); p; cs._map_vars.next(p))
-	_map_vars.append(cs._map_vars(p)->ptr_duplicate());
+    for (Pix p = cs._map_vars.first(); p; cs._map_vars.next(p)) {
+	BaseType *btp = cs._map_vars(p)->ptr_duplicate();
+	btp->set_parent(this);
+	_map_vars.append(btp);
+    }
 }
 
-Grid::Grid(const string &n) : BaseType(n, dods_grid_c)
+Grid::Grid(const string &n) : Constructor(n, dods_grid_c)
 {
 }
 
-Grid::Grid(const Grid &rhs)
+Grid::Grid(const Grid &rhs) : Constructor(rhs)
 {
     _duplicate(rhs);
 }
@@ -65,11 +67,13 @@ Grid::~Grid()
 	delete _map_vars(p);
 }
 
-const Grid &
+Grid &
 Grid::operator=(const Grid &rhs)
 {
     if (this == &rhs)
 	return *this;
+
+    dynamic_cast<Constructor &>(*this) = rhs;
 
     _duplicate(rhs);
 
@@ -232,10 +236,14 @@ Grid::add_var(BaseType *bt, Part part)
     switch (part) {
       case array:
 	_array_var = bt->ptr_duplicate();
+	_array_var->set_parent(this);
 	return;
-      case maps:
-	_map_vars.append(bt->ptr_duplicate());
+      case maps: {
+	BaseType *btp = bt->ptr_duplicate();
+	btp->set_parent(this);
+	_map_vars.append(btp);
 	return;
+      }
       default:
 	cerr <<"Grid::add_var:Unknown grid part (must be array or maps)"<< endl;
 	throw InternalErr(__FILE__, __LINE__, 
@@ -528,6 +536,24 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.47  2001/06/15 23:49:02  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.46.4.1  2001/06/05 06:49:19  jimg
+// Added the Constructor class which is to Structures, Sequences and Grids
+// what Vector is to Arrays and Lists. This should be used in future
+// refactorings (I thought it was going to be used for the back pointers).
+// Introduced back pointers so children can refer to their parents in
+// hierarchies of variables.
+// Added to Sequence methods to tell if a child sequence is done
+// deserializing its data.
+// Fixed the operator=() and copy ctors; removed redundency from
+// _duplicate().
+// Changed the way serialize and deserialize work for sequences. Now SOI and
+// EOS markers are written for every `level' of a nested Sequence. This
+// should fixed nested Sequences. There is still considerable work to do
+// for these to work in all cases.
+//
 // Revision 1.46  2000/10/06 01:26:05  jimg
 // Changed the way serialize() calls read(). The status from read() is
 // returned by the Structure and Sequence serialize() methods; ignored by

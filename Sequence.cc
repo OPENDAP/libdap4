@@ -15,7 +15,8 @@
 
 #include "config_dap.h"
 
-#include <assert.h>
+#include <string>
+#include <strstream>
 
 #include "debug.h"
 #include "Error.h"
@@ -49,16 +50,26 @@ static unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 void
 Sequence::_duplicate(const Sequence &s)
 {
-    BaseType::_duplicate(s);
+    Constructor::_duplicate(s);
 
-    Sequence &cs = (Sequence &)s; // cast away const
+#if 0
+    _level = s._level;
+    _seq_read_error = s._seq_read_error;
+    _seq_write_error = s._seq_write_error;
+#endif
+    d_row_number = s.d_row_number;
+    d_starting_row_number = s.d_starting_row_number;
+    d_ending_row_number = s.d_ending_row_number;
+    d_row_stride = s.d_row_stride;
+    d_super_sequence = s.d_super_sequence;
+
+    Sequence &cs = const_cast<Sequence &>(s);
     
-    cs._seq_read_error = s._seq_read_error;
-    cs._seq_write_error = s._seq_write_error;
-    cs._level = s._level;
-
-    for (Pix p = cs.first_var(); p; cs.next_var(p))
-	add_var(cs.var(p)->ptr_duplicate());
+    for (Pix p = cs.first_var(); p; cs.next_var(p)) {
+	BaseType *btp = cs.var(p)->ptr_duplicate();
+	btp->set_parent(this);
+	add_var(btp);
+    }
 }
 
 // Protected member functions
@@ -96,16 +107,21 @@ Sequence::is_end_of_sequence(unsigned char marker)
     return (marker == end_of_sequence);
 }
 
+bool
+Sequence::is_super_sequence()
+{
+    return d_super_sequence;
+}
+
 // Public member functions
 
-Sequence::Sequence(const string &n) 
-    : BaseType(n, dods_sequence_c), _level(0), _seq_read_error(false),
-      _seq_write_error(false), d_row_number(-1), d_starting_row_number(-1),
-      d_row_stride(1), d_ending_row_number(-1)
+Sequence::Sequence(const string &n) : Constructor(n, dods_sequence_c), 
+    d_row_number(-1), d_starting_row_number(-1),
+    d_row_stride(1), d_ending_row_number(-1), d_super_sequence(false)
 {
 }
 
-Sequence::Sequence(const Sequence &rhs)
+Sequence::Sequence(const Sequence &rhs) : Constructor(rhs)
 {
     _duplicate(rhs);
 }
@@ -116,15 +132,33 @@ Sequence::~Sequence()
 	delete _vars(p);
 }
 
-const Sequence &
+Sequence &
 Sequence::operator=(const Sequence &rhs)
 {
     if (this == &rhs)
 	return *this;
 
+    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
+
     _duplicate(rhs);
 
     return *this;
+}
+
+string
+Sequence::toString()
+{
+    ostrstream oss;
+
+    oss << BaseType::toString();
+
+    for (Pix p = _vars.first(); p; _vars.next(p))
+	oss << _vars(p)->toString();
+
+    oss << endl << ends;
+    string s = oss.str();
+    oss.freeze(0);
+    return s;
 }
 
 int
@@ -158,8 +192,54 @@ Sequence::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
-// NB: Part p defaults to nil for this class
+// Private method; #state# defaults to true.
+void
+Sequence::set_super_sequence(bool state)
+{
+    d_super_sequence = state;
+    
+    BaseType *parent = get_parent();
+    if (!parent)
+	return;
+    if (parent->type() != dods_sequence_c)
+	return;
+    
+    Sequence *parent_seq = dynamic_cast<Sequence *>(parent);
+    if (!parent_seq)
+	throw InternalErr(__FILE__, __LINE__, "Variable was not a Sequence.");
 
+    parent_seq->set_super_sequence(state);
+}
+
+// Private; #state# default is true.
+void
+Sequence::set_eos_found(bool state)
+{
+    d_eos_found = state;
+}
+
+bool
+Sequence::is_eos_found()
+{
+    return d_eos_found;
+}
+
+// Might be able to use the back pointers instead of looking at each sequence
+// variable for every read. 6/4/2001 jhrg
+bool
+Sequence::is_child_eos_found()
+{
+    bool status = is_eos_found();
+
+    for (Pix p = first_var(); p; next_var(p))
+	if (var(p)->type() == dods_sequence_c)
+	    status = status 
+		&& dynamic_cast<Sequence *>(var(p))->is_child_eos_found();
+
+    return status;
+}
+
+// NB: Part p defaults to nil for this class
 void 
 Sequence::add_var(BaseType *bt, Part)
 {
@@ -169,13 +249,21 @@ Sequence::add_var(BaseType *bt, Part)
    // Jose Garcia
    // We append a copy of bt so the owner
    // of bt is free to deallocate as he wishes.
-    _vars.append(bt->ptr_duplicate());
+   DBG(cerr << "In Sequence::add_var(), bt: " << bt <<endl);
+   DBG(cerr << bt->toString() << endl);
 
-    if (bt->type() == dods_sequence_c) {
-	Sequence *s = dynamic_cast<Sequence *>(bt);
-	if (s)
-	    s->set_level(level() + 1);
-    }
+   BaseType *bt_copy = bt->ptr_duplicate();
+   bt_copy->set_parent(this);
+   _vars.append(bt_copy);
+
+   DBG(cerr << "In Sequence::add_var(), bt_copy: " << bt_copy <<endl);
+   DBG(cerr << bt_copy->toString() << endl);
+
+   // If we are adding a Sequence as a child of another sequence then #this#
+   // is a `super_sequence.' Mark it as such. 6/4/2001 jhrg
+   if (bt->type() == dods_sequence_c) {
+       set_super_sequence(true);
+   }
 }
 
 BaseType *
@@ -301,131 +389,130 @@ Sequence::length()
 void
 Sequence::set_level(int lvl)
 {
+#if 0
     _level = lvl;
+#endif
 }
 
 int
 Sequence::level()
 {
+#if 0
     return _level;
+#endif
+    return -1;
 }
 
 // Advance the sequence to row number ROW. Note that we can only advance, it
 // is not possible to backup (yet, that could be implemented).
+
+// Notes:
+// Assume that read() is implemented so that, when reading data for a nested
+// sequence, only the outer most level is *actually* read.
+// This is a consequence of our current (12/7/99) implementation of
+// the JGOFS server (which is the only server to actually use nested
+// sequences). 12/7/99 jhrg
+//
+// Stop assuming this. This logic is being moved into the JGOFS server
+// itself. 6/1/2001 jhrg
+
+// The read() function returns a boolean value, with TRUE
+// indicating that read() should be called again because there's
+// more data to read, and FALSE indicating there's no more data
+// to read. Note that this behavior is necessary to properly
+// handle variables that contain Sequences. Jose Garcia If an
+// error exists while reading, the implementers of the surrogate
+// library SHOULD throw an Error object which will propagate
+// beyond this point to to the original caller.
+// Jose Garcia
+
 bool
 Sequence::get_row(int row, const string &dataset, DDS &dds, bool ce_eval)
 {
-  if (row < d_row_number)
-    throw InternalErr("Trying to back up inside a sequence!");
+    if (row < d_row_number)
+	throw InternalErr("Trying to back up inside a sequence!");
 
-  if (row == d_row_number)
-    return true;
-
-  // Start out assuming EOF is false.
-  int eof = 0;
-  while(!eof && d_row_number < row) {
-    // Assume that read() is implemented so that, when reading data for a
-    // nested sequence, only the outer most level is *actually* read.
-    // This is a consequence of our current (12/7/99) implementation of
-    // the JGOFS server (which is the only server to actually use nested
-    // sequences). 12/7/99 jhrg
-    if (!read_p()) {
-      if (level() != 0)	// Read only the outermost level.
+    if (row == d_row_number)
 	return true;
-      // The read() function returns a boolean value, with TRUE indicating
-      // that read() should be called again because there's more data to
-      // read, and FALSE indicating there's no more data to read. Note that
-      // this behavior is necessary to properly handle variables that contain
-      // Sequences. 
-      // Jose Garcia
-      // If an error exists while reading, the implementers of
-      // the surrogate library SHOULD throw an Error object 
-      // which will propagate beyond this point to to the original 
-      // caller. 
-      eof = read(dataset) == false;
-      // Jose Garcia
-      // Now false is returned only to indicate EOF, for errors an
-      // Error object should be throw as an exception!!! I know I said
-      // the same this 3 times in this method, it is just that this is
-      // critical.
+
+    int eof = 0;		// Start out assuming EOF is false.
+    while(!eof && d_row_number < row) {
+	if (!read_p()) {
+	    eof = (read(dataset) == false);
+	}
+
+	// Advance the row number if ce_eval is false (we're not supposed to
+	// evaluate the selection) or both ce_eval and the selection are
+	// true.
+	if (!ce_eval || (ce_eval && dds.eval_selection(dataset)))
+	    d_row_number++;
+
+	set_read_p(false);	// ...so that the next instance will be read
     }
 
-    // If the ce selection evals to false, read the next row. If true, break
-    // out of the loop. Otherwise only advance the row number if ce_eval is
-    // false (we're not supposed to evaluate the selection) or both ce_eval
-    // and the selection are true.
-    if (!ce_eval || ce_eval && dds.eval_selection(dataset))
-      d_row_number++;
+    // Once we finish te above loop, set read_p to true so that the caller
+    // knows that data *has* been read. This is how the read() methods of the
+    // elements of the sequence know to not look for data.
+    set_read_p(true);
 
-    set_read_p(false);	// ...so that the next instance will be read
-  }
-
-  // Once we finish te above loop, set read_p to true so that the caller
-  // knows that data *has* been read. This is how the read() methods of the
-  // elements of the sequence know to not look for data.
-  set_read_p(true);
-
-  // Return true if we have valid data, false if we've read to the EOF.
-  return eof == 0;
+    // Return true if we have valid data, false if we've read to the EOF.
+    return eof == 0;
 }
 
-// Private
+// Private. This is used to process constraints on the rows of a sequence.
+// Starting with 3.2 we support constraints like Sequence[10:2:20]. This
+// odd-looking logic first checks if d_ending_row_number is the sentinel
+// value of -1. If so, the sequence was not constrained by row number and
+// this method should never return true (which indicates that we're at the
+// end of a row-number constraint). If d_ending_row_number is not -1, then is
+// #i# at the end point? 6/1/2001 jhrg
 inline bool
 Sequence::is_end_of_rows(int i)
 {
-  return ((d_ending_row_number != -1) ? (d_ending_row_number >= i):true);
+    return ((d_ending_row_number == -1) ? false : (i >= d_ending_row_number));
 }
 
 bool
 Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
-    int error = 0;
     int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
-    
-    bool status;
-    // This should go away once serialize() uses exceptions to signal errors.
-    // 10/5/2000 jhrg
-    try {
-      status = get_row(i, dataset, dds, ce_eval);
-    }
-    catch (Error &e) {
-      return false;
-    }
 
-    while (status && is_end_of_rows(i)) {
-      i += d_row_stride;
+    // get_row returns true if valid data was read, false if the EOF was
+    // found. 6/1/2001 jhrg
+    bool status = get_row(i, dataset, dds, ce_eval);
 
-      if (level() == 0) {
+    while (status && !is_end_of_rows(i)) {
+	i += d_row_stride;
+
 	DBG(cerr << "Writing Start of Instance marker" << endl);
 	write_start_of_instance(sink);
-      }
 
-      for (Pix p = first_var(); p; next_var(p)) {
-	if (var(p)->send_p() 
-	    && !var(p)->serialize(dataset, dds, sink, false)) {
-	  error = 1;
-	  status = false;	// Exit outer while-loop.
-	  break;		// Exit inner for-loop
+	// In this loop serialize will signal an error with an exception.
+	for (Pix p = first_var(); p; next_var(p)) {
+	    if (var(p)->send_p())
+		var(p)->serialize(dataset, dds, sink, false);
 	}
-      }
 
-      set_read_p(false);	// ...so this will read the next instance
-      status = get_row(i, dataset, dds, ce_eval);
+	set_read_p(false);	// ...so this will read the next instance
+
+	status = get_row(i, dataset, dds, ce_eval);
     }
 
-    if (!error && level() == 0) {
-      DBG(cerr << "Writing End of Sequence marker" << endl);
-      write_end_of_sequence(sink);
-    }
+    DBG(cerr << "Writing End of Sequence marker" << endl);
+    write_end_of_sequence(sink);
 
-    return !error;		// Return true if no error.
+    return true;		// Signal errors with exceptions.
 }
 
+// A return value of false indicates that an EOS marker was found, while a
+// value of true indicates that there are more rows to be read.
 bool
 Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool stat = true;
-    DataDDS *dd = (DataDDS *)dds; // Use a dynamic cast in the future.
+    DataDDS *dd = dynamic_cast<DataDDS *>(dds);
+    if (!dd)
+	throw InternalErr("Expected argument 'dds' to be a DataDDS!");
 
     DBG2(cerr << "Reading from server version: " << dd->get_version_major() \
 	 << "." << dd->get_version_minor() << endl);
@@ -436,28 +523,40 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 	return old_deserialize(source, dd, reuse);
     }
 
-    if (level() == 0) {
+    // If this sequence holds other sequences and there EOSs that have not
+    // been read, descend to the deepest sequence with unread rows and read.
+    if (is_super_sequence() && !is_child_eos_found()) {
+	for (Pix p = first_var(); p; next_var(p)) {
+	    if (var(p)->type() == dods_sequence_c) {
+		if (!var(p)->deserialize(source, dds, reuse))
+		    return false;
+	    }
+	}
+    }
+    else {
 	unsigned char marker = read_marker(source);
 
 	if (is_start_of_instance(marker))
 	    ;			// Read more sequence elements
 	else if (is_end_of_sequence(marker))
 	    return false;	// No more sequence elements
-	else {
-	    _seq_read_error = true; // Error, don't read more elements
-	    return false;
-	}
-    }
+	else
+	    throw InternalErr("Expected to find either a SOI or EOS marker.");
 
-    for (Pix p = first_var(); p; next_var(p)) {
-	stat = var(p)->deserialize(source, dds, reuse);
-	if (!stat) 
-	    return stat;
+	for (Pix p = first_var(); p; next_var(p)) {
+	    stat = var(p)->deserialize(source, dds, reuse);
+	    if (!stat) 
+		return stat;
+	}
     }
 
     d_row_number++;
 
-    return stat;
+    // This method is designed to be called in a loop until the <end of
+    // sequence> marker for *this sequence* is found. The true here indicates
+    // to a caller that more data should be read. The false above indicates
+    // that the <eos> was found.
+    return true;
 }
 
 // Return the current row number.
@@ -521,7 +620,10 @@ Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse)
 bool
 Sequence::seq_read_error()
 {
+#if 0
     return _seq_read_error;
+#endif
+    return false;
 }
 
 unsigned int
@@ -591,14 +693,23 @@ Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, string space,
 	os << " = ";
     }
     os << "{ ";
-    deserialize(src, dds);
-    print_val(os, space, false);
-    while (deserialize(src, dds)) {
-	os << ", ";
+
+    // Added the if below to account for a response that's empty. 6/7/2001
+    // jhrg 
+    if (deserialize(src, dds)) {
 	print_val(os, space, false);
+	while (deserialize(src, dds)) {
+	    os << ", ";
+	    print_val(os, space, false);
+	}
     }
+
+    // Moved printing the closing brace out of the print_decl_p if stmt below
+    // to match what happens in Structure::print_all_vals(). 6/7/2001 jhrg
+    os << " }";
+
     if (print_decl_p)
-        os << "};" << endl;
+        os << ";" << endl;
 }
 
 bool
@@ -619,6 +730,42 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.60  2001/06/15 23:49:02  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.59.4.4  2001/06/07 16:55:53  jimg
+// Changed the logic of print_all_vals() so that it work when a sequence is
+// returned that contains no values. This can happen if a Sequence is
+// constrained to values that don't appear (e.g., date ranges).
+// Changed the printing of the closing brace to match what happens in
+// Structure::print_all_vals(). Braces will be balanced for Sequences held
+// within Structures, et cetera.
+//
+// Revision 1.59.4.3  2001/06/05 06:49:19  jimg
+// Added the Constructor class which is to Structures, Sequences and Grids
+// what Vector is to Arrays and Lists. This should be used in future
+// refactorings (I thought it was going to be used for the back pointers).
+// Introduced back pointers so children can refer to their parents in
+// hierarchies of variables.
+// Added to Sequence methods to tell if a child sequence is done
+// deserializing its data.
+// Fixed the operator=() and copy ctors; removed redundency from
+// _duplicate().
+// Changed the way serialize and deserialize work for sequences. Now SOI and
+// EOS markers are written for every `level' of a nested Sequence. This
+// should fixed nested Sequences. There is still considerable work to do
+// for these to work in all cases.
+//
+// Revision 1.59.4.2  2001/05/16 18:58:26  dan
+// Modified serialize method to break out of while loop after
+// serializing member elements if the current sequence is not
+// at level 0.
+//
+// Revision 1.59.4.1  2001/05/12 00:05:07  jimg
+// Fixed bugs in _duplicate(). The new fields associated with access by row
+// number were not being copied.
+// Added a toString() implementation.
+//
 // Revision 1.59  2000/10/06 01:26:05  jimg
 // Changed the way serialize() calls read(). The status from read() is
 // returned by the Structure and Sequence serialize() methods; ignored by

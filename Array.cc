@@ -33,7 +33,7 @@ using std::endl;
 void
 Array::_duplicate(const Array &a)
 {
-    Vector::_duplicate(a);
+    //    Vector::_duplicate(a);
 
     _shape = a._shape;
 }
@@ -54,7 +54,7 @@ Array::Array(const string &n, BaseType *v) : Vector(n, v, dods_array_c)
 {
 }
 
-Array::Array(const Array &rhs)
+Array::Array(const Array &rhs) : Vector(rhs)
 {
     _duplicate(rhs);
 }
@@ -65,12 +65,14 @@ Array::~Array()
     DBG(cerr << "Exiting ~Array" << endl);
 }
 
-const Array &
+Array &
 Array::operator=(const Array &rhs)
 {
     if (this == &rhs)
 	return *this;
-    
+
+    dynamic_cast<Vector &>(*this) = rhs;
+
     _duplicate(rhs);
 
     return *this;
@@ -423,6 +425,24 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.49  2001/06/15 23:49:01  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.48.4.1  2001/06/05 06:49:19  jimg
+// Added the Constructor class which is to Structures, Sequences and Grids
+// what Vector is to Arrays and Lists. This should be used in future
+// refactorings (I thought it was going to be used for the back pointers).
+// Introduced back pointers so children can refer to their parents in
+// hierarchies of variables.
+// Added to Sequence methods to tell if a child sequence is done
+// deserializing its data.
+// Fixed the operator=() and copy ctors; removed redundency from
+// _duplicate().
+// Changed the way serialize and deserialize work for sequences. Now SOI and
+// EOS markers are written for every `level' of a nested Sequence. This
+// should fixed nested Sequences. There is still considerable work to do
+// for these to work in all cases.
+//
 // Revision 1.48  2000/09/22 02:17:18  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -24,12 +24,19 @@ string octstring(unsigned char val);
 string unoctstring(string s);
 
 string id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]");
-string dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]");
+string dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]",
+	       const string except = "");
 string esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
 string unescattr(string s);
 
 // $Log: escaping.h,v $
+// Revision 1.6  2001/06/15 23:49:04  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.5.4.1  2001/05/16 21:09:49  jimg
+// Modified dods2id() so that it takes a third argument, except.
+//
 // Revision 1.5  2000/09/22 02:17:22  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

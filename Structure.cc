@@ -41,9 +41,7 @@ using std::endl;
 void
 Structure::_duplicate(const Structure &s)
 {
-    BaseType::_duplicate(s);
-
-    Structure &cs = (Structure &)s; // cast away const
+    Structure &cs = const_cast<Structure &>(s);
 
     DBG(cerr << "Copying strucutre: " << name() << endl);
 
@@ -54,15 +52,17 @@ Structure::_duplicate(const Structure &s)
 	// process since it is going along with a DBG call
 	// I leave it here since it can be remove by defining NDEBUG.
 	// assert(cs._vars(p));
-	_vars.append(cs._vars(p)->ptr_duplicate());
+	BaseType *btp = cs._vars(p)->ptr_duplicate();
+	btp->set_parent(this);
+	_vars.append(btp);
     }
 }
 
-Structure::Structure(const string &n) : BaseType(n, dods_structure_c)
+Structure::Structure(const string &n) :Constructor(n, dods_structure_c)
 {
 }
 
-Structure::Structure(const Structure &rhs)
+Structure::Structure(const Structure &rhs) :Constructor(rhs)
 {
     _duplicate(rhs);
 }
@@ -85,11 +85,13 @@ Structure::~Structure()
     }
 }
 
-const Structure &
+Structure &
 Structure::operator=(const Structure &rhs)
 {
     if (this == &rhs)
 	return *this;
+
+    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
 
     _duplicate(rhs);
 
@@ -136,17 +138,20 @@ Structure::set_read_p(bool state)
 void 
 Structure::add_var(BaseType *bt, Part)
 {
-  // Jose Garcia
-  // Passing and invalid pointer to an object is a developer's error.
-  if (!bt)
-      throw InternalErr(__FILE__, __LINE__, 
-			"Passing null pointer, add_var expects a valid object to be added to the structure");
-  // Jose Garcia
-  // Now we add a copy of bt so the external user is 
-  // able to destroy bt as he/she whishes. The policy is:
-  // "If it is allocated outside, it is deallocated outside,
-  // if it is allocated inside, it is deallocated inside"
-  _vars.append(bt->ptr_duplicate());
+    // Jose Garcia
+    // Passing and invalid pointer to an object is a developer's error.
+    if (!bt)
+	throw InternalErr(__FILE__, __LINE__, 
+			  "The BaseType parameter cannot be null.");
+
+    // Jose Garcia
+    // Now we add a copy of bt so the external user is able to destroy bt as
+    // he/she whishes. The policy is: "If it is allocated outside, it is
+    // deallocated outside, if it is allocated inside, it is deallocated
+    // inside"
+    BaseType *btp = bt->ptr_duplicate();
+    btp->set_parent(this);
+    _vars.append(btp);
 }
 
 unsigned int
@@ -181,13 +186,12 @@ Structure::serialize(const string &dataset, DDS &dds, XDR *sink,
     // Unlike the scalar and vector serialize(), I assign the return value of
     // read(). I'm not sure this does what's needed, though... 10/5/2000 jhrg
     try {
-      if (!read_p())
-	status = read(dataset);
+	if (!read_p())
+	    status = read(dataset);
     }
     catch (Error &e) {
-      return false;
+	return false;
     }
-
 
     if (ce_eval && !dds.eval_selection(dataset))
 	return true;
@@ -399,9 +403,9 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool pr
     }
 
     os << "{ ";
+
     bool sequence_found = false;
     for (Pix p = first_var(); p; next_var(p), (void)(p && os << ", ")) {
-      //assert(var(p));
 	switch (var(p)->type()) {
 	  case dods_sequence_c:
 	    (dynamic_cast<Sequence*>(var(p)))->print_all_vals(os, src, dds, 
@@ -455,6 +459,27 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.44  2001/06/15 23:49:02  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.43.4.2  2001/06/07 20:42:02  jimg
+// Removed an extraneous assert.
+//
+// Revision 1.43.4.1  2001/06/05 06:49:19  jimg
+// Added the Constructor class which is to Structures, Sequences and Grids
+// what Vector is to Arrays and Lists. This should be used in future
+// refactorings (I thought it was going to be used for the back pointers).
+// Introduced back pointers so children can refer to their parents in
+// hierarchies of variables.
+// Added to Sequence methods to tell if a child sequence is done
+// deserializing its data.
+// Fixed the operator=() and copy ctors; removed redundency from
+// _duplicate().
+// Changed the way serialize and deserialize work for sequences. Now SOI and
+// EOS markers are written for every `level' of a nested Sequence. This
+// should fixed nested Sequences. There is still considerable work to do
+// for these to work in all cases.
+//
 // Revision 1.43  2000/10/06 01:26:05  jimg
 // Changed the way serialize() calls read(). The status from read() is
 // returned by the Structure and Sequence serialize() methods; ignored by

@@ -15,10 +15,14 @@
 
 #include <Regex.h>		// GNU Regex class used for string =~ op.
 
+#ifndef _debug_h
+#include "debug.h"
+#endif
+
 static unsigned
 dods_max(int i1, int i2)
 {
-    return (unsigned)((i1 < i2) ? i1 : i2);
+    return (unsigned)((i1 > i2) ? i1 : i2);
 }
 
 /** Compare two numerical types, both of which are either signed or unsigned.
@@ -56,7 +60,10 @@ template<class UT1, class T2> class USCmp {
     static bool ne(UT1 v1, T2 v2) {return v1 != dods_max(0, v2);}
     static bool gr(UT1 v1, T2 v2) {return v1 > dods_max(0, v2);}
     static bool ge(UT1 v1, T2 v2) {return v1 >= dods_max(0, v2);}
-    static bool lt(UT1 v1, T2 v2) {return v1 < dods_max(0, v2);}
+    static bool lt(UT1 v1, T2 v2) {
+	DBG(cerr << "v1: " << v1 << " v2: " << v2 << endl);
+	return v1 < dods_max(0, v2);
+    }
     static bool le(UT1 v1, T2 v2) {return v1 <= dods_max(0, v2);}
     static bool re(UT1 v1, T2 v2) {
 	cerr << "Illegal operation" << endl;
@@ -136,6 +143,8 @@ template<class T1, class T2> class StrCmp {
 template<class T1, class T2, class C>
 bool rops(T1 a, T2 b, int op)
 {
+    DBG(cerr << "a: " << a << " b: " << b << endl);
+
     switch (op) {
       case SCAN_EQUAL:
 	return C::eq(a, b);
@@ -158,6 +167,13 @@ bool rops(T1 a, T2 b, int op)
 }
 
 // $Log: Operators.h,v $
+// Revision 1.7  2001/06/15 23:49:02  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.6.4.1  2001/06/07 20:32:34  jimg
+// Fixed a simple (but costly) error in dods_max().
+// Added some instrumentation (which lead to fixing the error).
+//
 // Revision 1.6  2000/09/22 02:17:21  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

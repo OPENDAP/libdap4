@@ -15,7 +15,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.110 2001/05/04 00:08:43 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.111 2001/06/15 23:49:01 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -34,6 +34,7 @@ static char rcsid[] not_used =
 #else
 #include <sstream>
 #endif
+
 #include <fstream>
 
 #include "debug.h"
@@ -52,7 +53,9 @@ using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::ofstream;
+#ifdef WIN32
 using std::iterator;
+#endif
 
 #ifdef WIN32
 #define DIR_SEP_STRING "\\"
@@ -101,6 +104,7 @@ static const int
  DODS_NEVER_DEFLATE = 0;	// 0- allow deflate, 1- disallow
 static const int
  DODS_DEFAULT_EXPIRES = 86400;	// 24 hours in seconds
+static const int DODS_ALWAYS_VALIDATE = 0; // Let libwww decide by default.
 
 // This function is registered to handle the result of the request
 
@@ -123,7 +127,8 @@ http_terminate_handler(HTRequest * request, HTResponse * /*response */ ,
 
 // This function is registered to handle timeout in select eventloop
 
-int timeout_handler(HTRequest * request)
+int 
+timeout_handler(HTRequest * request)
 {
     if (WWWTRACE)
 	HTTrace("DODS........ Timeout handler.\n");
@@ -154,10 +159,11 @@ int timeout_handler(HTRequest * request)
 
 // Use the GUI to report progress to the user.
 
-BOOL dods_progress(HTRequest * request, HTAlertOpcode op,
-		   int /* msgnum */ ,
-		   const char * /* dfault */ , void *input,
-		   HTAlertPar * /* reply */ )
+BOOL 
+dods_progress(HTRequest * request, HTAlertOpcode op,
+	      int /* msgnum */ ,
+	      const char * /* dfault */ , void *input,
+	      HTAlertPar * /* reply */ )
 {
     if (WWWTRACE)
 	HTTrace("DODS........ Progress display handler.\n");
@@ -281,9 +287,10 @@ BOOL dods_progress(HTRequest * request, HTAlertOpcode op,
 // when the stuff is given with a URL) does not result in an infinite loop.
 // 2/8/2001 jhrg
 
-BOOL dods_username_password(HTRequest * request, HTAlertOpcode /* op */ ,
-			    int /* msgnum */ , const char * /* dfault */ ,
-			    void * /* input */ , HTAlertPar * reply)
+BOOL 
+dods_username_password(HTRequest * request, HTAlertOpcode /* op */ ,
+		       int /* msgnum */ , const char * /* dfault */ ,
+		       void * /* input */ , HTAlertPar * reply)
 {
     if (WWWTRACE)
 	HTTrace("DODS........ Entering username/password callback.\n");
@@ -345,7 +352,8 @@ static HTErrorMessage
 // library must support both interactive and noninteractive use. 2/8/2001
 // jhrg
 
-void process_www_errors(HTList *listerr, HTRequest *request) throw(Error)
+void 
+process_www_errors(HTList *listerr, HTRequest *request) throw(Error)
 {
     HTError *the_error;
     HTErrorShow showmask = HTError_show();
@@ -501,7 +509,8 @@ struct _HTStream {
     /* ... */
 };
 
-int xdods_accept_types_header_gen(HTRequest * pReq, HTStream * target)
+int 
+xdods_accept_types_header_gen(HTRequest * pReq, HTStream * target)
 {
     Connect *me = (Connect *) HTRequest_context(pReq);
 
@@ -514,8 +523,8 @@ int xdods_accept_types_header_gen(HTRequest * pReq, HTStream * target)
     return HT_OK;
 }
 
-// Cache control is broken in libwww, I think. 2/28/2001 jhrg
-int cache_control_header_gen(HTRequest * pReq, HTStream * target)
+int 
+cache_control_header_gen(HTRequest * pReq, HTStream * target)
 {
     Connect *me = (Connect *) HTRequest_context(pReq);
 
@@ -545,7 +554,8 @@ int cache_control_header_gen(HTRequest * pReq, HTStream * target)
 // old GNU libg++, the C++ calls were synchronized with the C calls, but that
 // may no longer be the case. 5/31/99 jhrg
 
-void Connect::parse_mime(FILE * data_source)
+void 
+Connect::parse_mime(FILE * data_source)
 {
     char line[256];
 
@@ -579,7 +589,8 @@ void Connect::parse_mime(FILE * data_source)
 // I moved this code from fetch_url() because at some point I think it should
 // go in Connect's ctor. I cannot get that to work right now; don't know why.
 // 2/8/2001 jhrg
-void Connect::extract_auth_info(string &url)
+void 
+Connect::extract_auth_info(string &url)
 {
     string::size_type start_pos = 0, end_pos, colon_pos;
 
@@ -601,7 +612,8 @@ void Connect::extract_auth_info(string &url)
     }
 }
 
-void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
+void 
+Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 {
     // Initialize various parts of the library. This is in lieu of using one
     // of the profiles in HTProfil.c. 02/09/98 jhrg
@@ -748,6 +760,7 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 #endif
 		fpo << "CACHE_ROOT=" << cache_root << endl;
 		fpo << "DEFAULT_EXPIRES=" << DEFAULT_EXPIRES << endl;
+		fpo << "ALWAYS_VALIDATE=" << _always_validate << endl;
 		fpo << "# PROXY_SERVER=<protocol>,<host url>" << endl;
 		fpo << "# PROXY_FOR=<regex>,<proxy host url>,<flags>" << endl;
 		fpo << "# NO_PROXY_FOR=<protocol>,<host>" << endl;
@@ -795,6 +808,9 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		} else if ((strncmp(tempstr, "DEFAULT_EXPIRES", 15) == 0)
 			   && tokenlength == 15) {
 		    DEFAULT_EXPIRES = atoi(value);
+		} else if ((strncmp(tempstr, "ALWAYS_VALIDATE", 15) == 0)
+			   && tokenlength == 15) {
+		    _always_validate = atoi(value);
 		}
 		// Check for tags relating to the proxy server
 		// 8.20.2000 cjm
@@ -1012,7 +1028,8 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     HTHeader_addGenerator(cache_control_header_gen);
 }
 
-void Connect::clone(const Connect & src)
+void 
+Connect::clone(const Connect & src)
 {
     _local = src._local;
 
@@ -1058,7 +1075,8 @@ void Connect::clone(const Connect & src)
 // Use the URL designated when the Connect object was created as the
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
-bool Connect::read_url(string & url, FILE * stream)
+bool 
+Connect::read_url(string & url, FILE * stream)
 {
     assert(stream);
 
@@ -1076,9 +1094,13 @@ bool Connect::read_url(string & url, FILE * stream)
 			      HTFWriter_new(_request, stream, YES));
 
     // Set this request to use the cache if possible. 
-    // CJM used HT_CACHE_VALIDATE; HT_CACHE_OK supresses the validation.
-    if (_cache_enabled)
-	HTRequest_setReloadMode(_request, HT_CACHE_OK);
+    // CJM used HT_CACHE_VALIDATE which forces validation; HT_CACHE_OK uses a
+    // more complex algorithm (See HTCache.c:HTCache_isFresh and
+    // :HTCacheFilter) for the complete scoop. 5/2/2001 jhrg
+    if (_cache_enabled) {
+	HTRequest_setReloadMode(_request, 
+		   _always_validate ? HT_CACHE_VALIDATE : HT_CACHE_OK);
+    }
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
 #ifdef GUI
@@ -1120,13 +1142,19 @@ Connect::Connect()
 // public mfuncs
 
 Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate, 
-		 string uname, string password):
+		 string uname, string password) :
     _accept_types("All"), _cache_control(""), _username(uname),
-    _password(password), _www_errors_to_stderr(false), 
-    _accept_deflate(accept_deflate)
+    _password(password), _always_validate(DODS_ALWAYS_VALIDATE), 
+    _www_errors_to_stderr(false), _accept_deflate(accept_deflate)
 {
     name = prune_spaces(name);
     char *access_ref = HTParse(name.c_str(), NULL, PARSE_ACCESS);
+    // Instantiate Gui here so that both local and remote connects have a
+    // valid object. This was done for remote connects only which caused
+    // local accessed to crash sometimes. 5/22/2001 jhrg
+#ifdef GUI
+    _gui = new Gui;
+#endif
 
     if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
@@ -1137,9 +1165,6 @@ Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate,
 	// NB: _cache_enabled and _cache_root are set in www_lib_init.
 	// 12/14/99 jhrg
 
-#ifdef GUI
-	_gui = new Gui;
-#endif
 	// Find and store any CE given with the URL.
 	string::size_type dotpos = name.find('?');
 	if (dotpos != name.npos) {
@@ -1241,7 +1266,9 @@ Connect::~Connect()
     DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
 
-Connect & Connect::operator = (const Connect & rhs) {
+Connect & 
+Connect::operator = (const Connect & rhs) 
+{
     if (&rhs == this)
 	return *this;
     else {
@@ -1250,32 +1277,38 @@ Connect & Connect::operator = (const Connect & rhs) {
     }
 }
 
-void Connect::set_www_errors_to_stderr(bool state)
+void 
+Connect::set_www_errors_to_stderr(bool state)
 {
     _www_errors_to_stderr = state;
 }
 
-bool Connect::get_www_errors_to_stderr()
+bool 
+Connect::get_www_errors_to_stderr()
 {
     return _www_errors_to_stderr;
 }
 
-void Connect::set_accept_types(const string & types)
+void 
+Connect::set_accept_types(const string & types)
 {
     _accept_types = types;
 }
 
-string Connect::get_accept_types()
+string 
+Connect::get_accept_types()
 {
     return _accept_types;
 }
 
-void Connect::set_cache_control(const string & caching)
+void 
+Connect::set_cache_control(const string & caching)
 {
     _cache_control = caching;
 }
 
-string Connect::get_cache_control()
+string 
+Connect::get_cache_control()
 {
     return _cache_control;
 }
@@ -1288,7 +1321,8 @@ string Connect::get_cache_control()
 // the design of Connect, the caller of fetch_url will never know that their
 // async operation was actually synchronous.
 
-bool Connect::fetch_url(string & url, bool)
+bool 
+Connect::fetch_url(string & url, bool)
 {
     _encoding = unknown_enc;
     _type = unknown_type;
@@ -1328,13 +1362,15 @@ bool Connect::fetch_url(string & url, bool)
     return true;
 }
 
-FILE *Connect::output()
+FILE *
+Connect::output()
 {
     // NB: Users should make sure they don't close stdout.
     return _output;
 }
 
-XDR *Connect::source()
+XDR *
+Connect::source()
 {
     if (!_source)
 	_source = new_xdrstdio(_output, XDR_DECODE);
@@ -1342,7 +1378,8 @@ XDR *Connect::source()
     return _source;
 }
 
-void Connect::close_output()
+void 
+Connect::close_output()
 {
     if (_output && _output != stdout) {
 	fclose(_output);
@@ -1355,24 +1392,28 @@ void Connect::close_output()
     }
 }
 
-ObjectType Connect::type()
+ObjectType 
+Connect::type()
 {
     return _type;
 }
 
-EncodingType Connect::encoding()
+EncodingType 
+Connect::encoding()
 {
     return _encoding;
 }
 
-string Connect::server_version()
+string 
+Connect::server_version()
 {
     return _server;
 }
 
 // Added EXT which defaults to "das". jhrg 3/7/95
 
-bool Connect::request_das(bool gui_p, const string & ext)
+bool 
+Connect::request_das(bool gui_p, const string & ext)
 {
 #ifdef GUI
     (void) _gui->show_gui(gui_p);
@@ -1424,7 +1465,8 @@ bool Connect::request_das(bool gui_p, const string & ext)
 
 // Added EXT which deafults to "dds". jhrg 3/7/95
 
-bool Connect::request_dds(bool gui_p, const string & ext)
+bool 
+Connect::request_dds(bool gui_p, const string & ext)
 {
 #ifdef GUI
     (void) _gui->show_gui(gui_p);
@@ -1477,7 +1519,8 @@ bool Connect::request_dds(bool gui_p, const string & ext)
 // object. 
 // This is a private mfunc.
 
-DDS *Connect::process_data(bool async)
+DDS *
+Connect::process_data(bool async)
 {
     switch (type()) {
     case dods_error:
@@ -1537,7 +1580,8 @@ DDS *Connect::process_data(bool async)
 // expression changed the type of the variable from that which appeared in the
 // origianl DDS received from the dataset when this connection was made.
 
-DDS *Connect::request_data(string expr, bool gui_p,
+DDS *
+Connect::request_data(string expr, bool gui_p,
 			   bool async, const string & ext)
 {
 #ifdef GUI
@@ -1564,7 +1608,8 @@ DDS *Connect::request_data(string expr, bool gui_p,
     return process_data(async);
 }
 
-DDS *Connect::read_data(FILE * data_source, bool gui_p, bool async)
+DDS *
+Connect::read_data(FILE * data_source, bool gui_p, bool async)
 {
 #ifdef GUI
     _gui->show_gui(gui_p);
@@ -1577,8 +1622,8 @@ DDS *Connect::read_data(FILE * data_source, bool gui_p, bool async)
     return process_data(async);
 }
 
-// Never use this. Why not? 2/9/2001 jhrg
-void *Connect::gui()
+void *
+Connect::gui()
 {
 #ifdef GUI
     return _gui;
@@ -1587,12 +1632,14 @@ void *Connect::gui()
 #endif
 }
 
-bool Connect::is_local()
+bool 
+Connect::is_local()
 {
     return _local;
 }
 
-string Connect::URL(bool ce)
+string 
+Connect::URL(bool ce)
 {
     if (_local) {
 	cerr << "URL(): This call is only valid for a remote connection."
@@ -1606,7 +1653,8 @@ string Connect::URL(bool ce)
 	return _URL;
 }
 
-string Connect::CE()
+string 
+Connect::CE()
 {
     if (_local) {
 	cerr << "CE(): This call is only valid for a remote connection."
@@ -1617,35 +1665,76 @@ string Connect::CE()
     return _proj + _sel;
 }
 
-DAS & Connect::das()
+DAS & 
+Connect::das()
 {
     assert(!_local);
 
     return _das;
 }
 
-DDS & Connect::dds()
+DDS & 
+Connect::dds()
 {
     assert(!_local);
 
     return _dds;
 }
 
-Error & Connect::error()
+Error & 
+Connect::error()
 {
     return _error;
 }
 
-void Connect::set_credentials(string u, string p)
+void 
+Connect::set_credentials(string u, string p)
 {
     _username = u;
     _password = p;
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.111  2001/06/15 23:49:01  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.105.2.7  2001/05/23 16:47:56  jimg
+// Changed the initialization of _gui (an instance of Gui) so that it takes
+// place for Connect instances that access both local and remote data
+// sources. It was being set up for remote accesses only. This meant that a
+// libdap++ compiled with GUI defined that was used to access a local data
+// source (e.g., piped output from a server filter program) would crash when
+// it tried to use the Gui instance to display something. I changed the
+// function definitions so that the return types are on one line and the name
+// and arguments are on the following line. Tags are easier to use with this
+// style.
+//
 // Revision 1.110  2001/05/04 00:08:43  jimg
 // Fixed a bug where an Error object was created with an error code of
 // undefined_error (which make OK() throw and exception).
+//
+// Revision 1.105.2.6  2001/05/03 19:04:16  jimg
+// Added use of the _always_validate field. This configuration file is read
+// and this filed is set if a value is given for ALWAYS_VALIDATE. The default
+// value for the filed is zero (don't force validation). The _always_validate
+// field value is used to tell libwww to always validate cache entries (value
+// of 1) or to use either the expires header value or a heuristic value
+// derived from the current time and the last modified time sent from the
+// origin server. If no LM time was sent from the origin server, then the
+// value of DEFAULT_EXPIRES (from the configuration file) is used.
+//
+// Revision 1.105.2.5  2001/04/16 17:06:21  jimg
+// Changed the call to Error's ctor on 390 so that it uses unknown_error as
+// the error constant. It was using undefined_error and this caused Error's
+// invariant to barf.
+//
+// Revision 1.105.2.4  2001/02/16 21:18:42  jimg
+// Removed some excess variables in fetch_url().
+//
+// Revision 1.105.2.3  2001/02/14 00:10:04  jimg
+// Merged code from the trunk's HEAD revision for this/these files onto
+// the release-3-2 branch. This moves the authentication software onto the
+// release-3-2 branch so that it will be easier to get it in the 3.2 release.
 //
 // Revision 1.109  2001/02/09 22:49:47  jimg
 // Merged Jose's and Brent's authentication code, modifying it in the process.
@@ -1654,19 +1743,18 @@ void Connect::set_credentials(string u, string p)
 // fetch_url:
 //
 // dods_username_password() can now be used by both a popup and non-popup
-// version of the class. The function knows how to provide humans with several
-// chances to get it right but only allows statically supplied credentials one
-// shot (thus avoiding an infinite loop).
+// version of the class. The function knows how to provide humans with
+// several chances to get it right but only allows statically supplied
+// credentials one shot (thus avoiding an infinite loop).
 // process_www_errors() is new: it reads libwww errors and throws Error if it
-// finds a fatal error in the list. If it finds an authentication error, it sets
-// the Error object's error_code to no_authorization. It does nothing if the
-// errors are not fatal.
-// extract_auth_info() is Brent's code moved to its own home.
-// read_url() now calls process_www_errors. This is necessary because
-// process_www_errors throws exceptions and those don't (seem to) work from
-// within libwww callbacks. Understandable since libwww is C code...
-// fetch_url() now calls extract_auth_info. I'd like to move this Connect's
-// ctor, but this will have to do for now.
+// finds a fatal error in the list. If it finds an authentication error, it
+// sets the Error object's error_code to no_authorization. It does nothing if
+// the errors are not fatal. extract_auth_info() is Brent's code moved to its
+// own home. read_url() now calls process_www_errors. This is necessary
+// because process_www_errors throws exceptions and those don't (seem to)
+// work from within libwww callbacks. Understandable since libwww is C
+// code... fetch_url() now calls extract_auth_info. I'd like to move this
+// Connect's ctor, but this will have to do for now.
 //
 // Other changes:
 // SetSignal() removed; libwww handles this now.
@@ -1674,8 +1762,8 @@ void Connect::set_credentials(string u, string p)
 // I added calls to HTLibInit and HTLibTerminate in www_lib_init() and
 // ~Connect(). The LibInit call sets the client name and version number. That
 // information will appear in httpd access logs.
-// I've added comments about how Connect works in places where it seemed pretty
-// obscure.
+// I've added comments about how Connect works in places where it seemed
+// pretty obscure.
 //
 // Revision 1.108  2001/02/05 18:57:44  jgarcia
 // Added support so a Connect object can be created with credentials to be

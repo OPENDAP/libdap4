@@ -37,6 +37,10 @@
 #include <iostream>
 #include <string>
 
+#ifndef _internalerr_h
+#include "InternalErr.h"
+#endif
+
 #ifdef WIN32
 using std::vector;
 using std::stack;
@@ -156,7 +160,7 @@ private:
     // of things (e.g., xdr_array()). Each leaf class's constructor must set
     // this.
 #ifdef WIN32
-	int *_xdr_coder;
+    int *_xdr_coder;
 #else
     xdrproc_t _xdr_coder;
 #endif
@@ -164,6 +168,11 @@ private:
     bool _read_p;		// true if the value has been read
     bool _send_p;		// true if the variable is to be transmitted
     bool _synthesized_p;	// true if the variable is synthesized
+    
+    // d_parent points to the Constructor or Vector which holds a particular
+    // variable. It is null for top-level variables. The Vector and
+    // Constructor classes must maintain this variable. 
+    BaseType *d_parent;
 
 protected:
     void _duplicate(const BaseType &bt);
@@ -189,6 +198,12 @@ public:
     BaseType(const BaseType &copy_from);
     virtual ~BaseType();
 
+    /** Write out the object's internal fields in a string. To be used for
+	debugging when regular inspection w/ddd or gdb isn't enough.
+
+	@return A string which shows the object's internal stuff. */
+    virtual string toString();
+
     BaseType &operator=(const BaseType &rhs);
 
 
@@ -207,7 +222,7 @@ public:
 	\begin{vcode}{ib}
 	BaseType *NCFloat64::ptr_duplicate()
 	{
-	return new NCFloat64(*this); 
+	    return new NCFloat64(*this); 
 	}
 	\end{vcode}      
 
@@ -314,10 +329,28 @@ public:
 	@return A C function used to encode data in the XDR format.
     */
 #ifdef WIN32
-	int *xdr_coder();
+    int *xdr_coder();
 #else
     xdrproc_t xdr_coder();
 #endif
+
+    /** Set the #parent# property for this variable. Only instnaces of
+	Constructor or Vector should call this method.
+
+	@param parent Pointer to the Constructor of Vector parent variable.
+	@exception InternalErr thrown if called with anything other than a
+	Constructor or Vector. */
+    virtual void set_parent(BaseType *parent) throw(InternalErr);
+
+    /** Return a pointer to the Constructor or Vector which holds (contains)
+	this variable. If this variable is at the top level, this method
+	returns null.
+
+	NB: The modifier for this property is protected. It should only be
+	modified by Constructor and Vector.
+
+	@return A BaseType pointer to the variable's parent. */
+    virtual BaseType *get_parent();
 
     /** Returns a pointer to the contained variable in a composite
 	class.  The composite classes are those made up of aggregated
@@ -370,8 +403,18 @@ public:
 	classes.  The BaseType implementation simply prints an error
 	message. 
 
+	NB: When adding a variable to a constructor or an array (this is only
+	important for a constructor), if that variable is itself a
+	constructor you \emph{must} add its children \emph{before} you add
+	call this method to add the variable to its parent. This method
+	copies the variable allocating a new object. One way around this is
+	to add the constructor, then get a BaseType pointer to it using
+	#var()". 
+
 	@memo Adds the input data to the class instance. 
-	@param v The data to be added to the constructor type.
+	@param v The data to be added to the constructor type. The caller of
+	this method \emph{must} free memory it allocates for #v#. This method
+	will make a deep copy of the object pointed to by #v#.
 	@param p The part of the constructor data to be modified.
 	@see Part */
     virtual void add_var(BaseType *v, Part p = nil);
@@ -494,7 +537,7 @@ public:
 	This function is only used on the server side of the
 	client/server connection, and is generally only called from the
 	DDS::send() function.  It has no BaseType implementation; each
-	child class supplies its own implementation.
+	datatype child class supplies its own implementation.
 
 	NB: I think that this class should signal errors with exceptions and
 	not a return code. This methods calls read(), which uses exceptions
@@ -505,8 +548,8 @@ public:
 	@param dds The Data Descriptor Structure object corresponding to
 	this dataset.  See {\it The DODS User Manual} for information
 	about this structure.
-	@param sink A valid XDR pointer to the process connection to the
-	net.  This is generally created with a call to #new_xdrstdio()#. 
+	@param sink A valid XDR pointer generally created with a call to
+	#new_xdrstdio()#. This typically routes data to a TCP/IP socket.
 	@param ce_eval A boolean value indicating whether to evaluate
 	the DODS constraint expression that may accompany this dataset.
 	The constraint expression is stored in {\it dds}.
@@ -698,6 +741,30 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.62  2001/06/15 23:49:01  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.61.4.3  2001/06/07 16:58:50  jimg
+ * Comment/doc fixes.
+ *
+ * Revision 1.61.4.2  2001/06/05 06:49:19  jimg
+ * Added the Constructor class which is to Structures, Sequences and Grids
+ * what Vector is to Arrays and Lists. This should be used in future
+ * refactorings (I thought it was going to be used for the back pointers).
+ * Introduced back pointers so children can refer to their parents in
+ * hierarchies of variables.
+ * Added to Sequence methods to tell if a child sequence is done
+ * deserializing its data.
+ * Fixed the operator=() and copy ctors; removed redundency from
+ * _duplicate().
+ * Changed the way serialize and deserialize work for sequences. Now SOI and
+ * EOS markers are written for every `level' of a nested Sequence. This
+ * should fixed nested Sequences. There is still considerable work to do
+ * for these to work in all cases.
+ *
+ * Revision 1.61.4.1  2001/05/12 00:01:07  jimg
+ * Added the method toString(). Used for debugging
+ *
  * Revision 1.61  2000/10/06 01:26:04  jimg
  * Changed the way serialize() calls read(). The status from read() is
  * returned by the Structure and Sequence serialize() methods; ignored by

@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.35 2000/10/06 01:26:05 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.36 2001/06/15 23:49:03 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -38,11 +38,14 @@ using std::endl;
 void
 Vector::_duplicate(const Vector &v)
 {
-    BaseType::_duplicate(v);
+    // BaseType::_duplicate(v);
 
     _length = v._length;
     _var = v._var->ptr_duplicate(); // use ptr_duplicate() 
+    _var->set_parent(this);	// ptr_duplicate does not set d_parent.
 
+    // Note that for vectors of non-numeric stuff we don't maintain a back
+    // pointer for each element, just _var (the template) has a back pointer. 
     if (v._vec.size() == 0)
 	_vec = v._vec;
     else {
@@ -59,9 +62,11 @@ Vector::Vector(const string &n, BaseType *v, const Type &t)
     :BaseType(n, t), _length(-1), _var(v), _buf(0), _vec(0)
 {
     DBG(cerr << "Entering Vector ctor for object: " << this << endl);
+    if (_var)
+	_var->set_parent(this);
 }
 
-Vector::Vector(const Vector &rhs)
+Vector::Vector(const Vector &rhs) : BaseType(rhs)
 {
     DBG(cerr << "Entering Vector const ctor for object: " << this << endl);
     DBG(cerr << "RHS: " << &rhs << endl);
@@ -84,12 +89,14 @@ Vector::~Vector()
     DBG(cerr << "Exiting ~Vector" << endl);
 }
 
-const Vector &
+Vector &
 Vector::operator=(const Vector &rhs)
 {
     if (this == &rhs)
 	return *this;
-    
+
+    dynamic_cast<BaseType &>(*this) = rhs;
+
     _duplicate(rhs);
 
     return *this;
@@ -376,7 +383,7 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 {
     bool status;
     unsigned int num;
-unsigned int i = 0;
+    unsigned int i = 0;
 
     switch (_var->type()) {
       case dods_byte_c:
@@ -395,7 +402,7 @@ unsigned int i = 0;
 	if (!status)
 	    return status;
 	    
-	set_length(num);	// set the length for this instance of the list
+	set_length(num);	// set the length for this instance.
 
 	if (!_buf) {
 	    _buf = new char[width()]; // we always do the allocation!
@@ -410,11 +417,7 @@ unsigned int i = 0;
 	else
 	    status = (bool)xdr_array(source, (char **)&_buf, &num,
 				     DODS_MAX_ARRAY, _var->width(),
-#ifdef WIN32
-					(xdrproc_t)(_var->xdr_coder()));
-#else 
-				     _var->xdr_coder());
-#endif
+				     (xdrproc_t)(_var->xdr_coder()));
 
 	DBG(cerr << "Vector::deserialize: read " << num <<  " elements\n");
 
@@ -441,10 +444,10 @@ unsigned int i = 0;
 	    }
 
 	break;
-  default:
-    cerr << "Vector::deserialize: Unknow type\n";
-    status = false;
-    break;
+      default:
+	cerr << "Vector::deserialize: Unknow type\n";
+	status = false;
+	break;
     }
 
     return status;
@@ -483,43 +486,41 @@ Vector::val2buf(void *val, bool reuse)
       case dods_uint32_c:
       case dods_float32_c:
       case dods_float64_c: {
-	unsigned int array_wid = width();
+	  unsigned int array_wid = width();
 
-	if (_buf && !reuse) {
-	    delete[] _buf;
-	    _buf = 0;
-	}
+	  if (_buf && !reuse) {
+	      delete[] _buf;
+	      _buf = 0;
+	  }
 
-	if (!_buf) {		// First time or no reuse (free'd above)
-	    _buf = new char[array_wid];
-	    memcpy(_buf, val, array_wid);
-	}
-	else { 
-	    memcpy(_buf, val, array_wid);
-	}
+	  if (!_buf) {		// First time or no reuse (free'd above)
+	      _buf = new char[array_wid];
+	      memcpy(_buf, val, array_wid);
+	  }
+	  else { 
+	      memcpy(_buf, val, array_wid);
+	  }
 
-	break;
+	  break;
       }
 
       case dods_str_c:
       case dods_url_c: {
-	unsigned elem_wid = _var->width();
-	unsigned len = length();
+	  unsigned elem_wid = _var->width();
+	  unsigned len = length();
 
-	vec_resize(len);
+	  vec_resize(len);
 
- 	for (unsigned i = 0; i < len; ++i) {
-	    _vec[i] = _var->ptr_duplicate(); //changed, reza
-	    _vec[i]->val2buf((char *)val + i * elem_wid, reuse);
- 	}
+	  for (unsigned i = 0; i < len; ++i) {
+	      _vec[i] = _var->ptr_duplicate(); //changed, reza
+	      _vec[i]->val2buf((char *)val + i * elem_wid, reuse);
+	  }
 
-	break;
+	  break;
       }
 
       default:
-		cerr <<
-			"Array::val2buf: Can be called for arrays of Byte, Int16, Uint16, Int32," << 
-			"Uint32, Float32, Float64, String and Url only.\n";
+	throw InternalErr(__FILE__, __LINE__, "Vector::val2buf: bad type");
 	return 0;
     }
 
@@ -578,9 +579,7 @@ Vector::buf2val(void **val)
       }
 
       default:
-		cerr <<
-			"Array::buf2val: Can be called for arrays of Byte, Int16, Uint16, Int32," << 
-			"Uint32, Float32, Float64, String and Url only.\n";
+	throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: bad type");
 	return 0;
     }
 
@@ -627,8 +626,10 @@ Vector::add_var(BaseType *v, Part)
   // Jose Garcia
   // By getting a copy of this object to be assigned to _var
   // we let the owner of 'v' to deallocate it as necessary.
+
   _var = v->ptr_duplicate();
-  set_name(v->name());	// Vector name == Base object's name
+  set_name(v->name());		// Vector name becoms base object's name
+  _var->set_parent(this);	// Vector --> child
   
   DBG(cerr << "Vector::add_var: Added variable " << v << " (" \
       << v->name() << " " << v->type_name() << ")" << endl);
@@ -678,6 +679,29 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.36  2001/06/15 23:49:03  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.35.4.2  2001/06/05 06:49:19  jimg
+// Added the Constructor class which is to Structures, Sequences and Grids
+// what Vector is to Arrays and Lists. This should be used in future
+// refactorings (I thought it was going to be used for the back pointers).
+// Introduced back pointers so children can refer to their parents in
+// hierarchies of variables.
+// Added to Sequence methods to tell if a child sequence is done
+// deserializing its data.
+// Fixed the operator=() and copy ctors; removed redundency from
+// _duplicate().
+// Changed the way serialize and deserialize work for sequences. Now SOI and
+// EOS markers are written for every `level' of a nested Sequence. This
+// should fixed nested Sequences. There is still considerable work to do
+// for these to work in all cases.
+//
+// Revision 1.35.4.1  2001/05/23 16:23:17  jimg
+// Replaced errors written to cerr with Error exceptions.
+// Removed some WIN32 specific code that could be generalized for both Win32 and
+// Unix.
+//
 // Revision 1.35  2000/10/06 01:26:05  jimg
 // Changed the way serialize() calls read(). The status from read() is
 // returned by the Structure and Sequence serialize() methods; ignored by

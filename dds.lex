@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.lex,v 1.30 2000/10/30 17:21:28 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.lex,v 1.31 2001/06/15 23:49:03 jimg Exp $"};
 
 #include <string.h>
 
@@ -55,8 +55,6 @@ int dds_line_num = 1;
 %x comment
 
 DATASET 	DATASET|Dataset|dataset 
-INDEPENDENT 	INDEPENDENT|Independent|independent
-DEPENDENT 	DEPENDENT|Dependent|dependent
 ARRAY		ARRAY|Array|array
 MAPS 		MAPS|Maps|maps
 LIST 		LIST|List|list
@@ -81,8 +79,6 @@ NEVER		[^][{}:;=a-zA-Z0-9_%]
 %%
 
 {DATASET}		ddslval = yytext; return SCAN_DATASET;
-{INDEPENDENT}		ddslval = yytext; return SCAN_INDEPENDENT;
-{DEPENDENT}		ddslval = yytext; return SCAN_DEPENDENT;
 {ARRAY}			ddslval = yytext; return SCAN_ARRAY;
 {MAPS}			ddslval = yytext; return SCAN_MAPS;
 {LIST}			ddslval = yytext; return SCAN_LIST;
@@ -139,6 +135,16 @@ yywrap(void)
 
 /* 
  * $Log: dds.lex,v $
+ * Revision 1.31  2001/06/15 23:49:03  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.30.2.1  2001/05/08 19:10:47  jimg
+ * Expanded the set of names that the dds.y parser will recognize to
+ * include integers (for files named like 990412.nc). Also removed the
+ * unused keywords Dependent and Independent from both the DDS scanner
+ * and parser.
+ * Added other reserved words to the set of possible Dataset names.
+ *
  * Revision 1.30  2000/10/30 17:21:28  jimg
  * Added support for proxy servers (from cjm).
  *

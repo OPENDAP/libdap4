@@ -70,7 +70,11 @@ public:
       @memo The Int32 constructor. */
     Int32(const string &n = "");
 
-    virtual ~Int32() {}
+    Int32(const Int32 &copy_from);
+
+    Int32 &operator=(const Int32 &rhs);
+
+    virtual ~Int32();
 
     virtual BaseType *ptr_duplicate() = 0;
     
@@ -93,6 +97,12 @@ public:
 
 /* 
  * $Log: Int32.h,v $
+ * Revision 1.32  2001/06/15 23:49:02  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.31.4.1  2001/06/07 20:31:13  jimg
+ * Added copy constructor and operator=(). The _buf field is copied.
+ *
  * Revision 1.31  2000/09/22 02:17:20  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

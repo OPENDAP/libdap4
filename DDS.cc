@@ -10,7 +10,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.53 2000/10/03 22:16:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.54 2001/06/15 23:49:01 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -156,7 +156,9 @@ DDS::add_var(BaseType *bt)
 	throw InternalErr(__FILE__, __LINE__, 
 		  "Trying to add a BaseType object with a NULL pointer.");
 
-    vars.append(bt); 
+    DBG(cerr << "In DDS::add_var(), bt's addres is: " << bt << endl);
+    
+    vars.append(bt->ptr_duplicate());
 }
 
 void 
@@ -760,57 +762,31 @@ DDS::parse_constraint(const string &constraint, FILE *out, bool server)
 #endif
 }
 
-// Send the named variable. This mfunc combines BaseTypes read() and
-// serialize() mfuncs. It also ensures that the data (binary) is prefixed
-// with a DDS which describes the binary data.
-//
-// NB: FLUSH defaults to false.
-//
-// Returns: true if successful, false otherwise.
-
-bool 
-DDS::send(const string &dataset, const string &constraint, FILE *out, 
-	  bool compressed, const string &cgi_ver)
+// We start two sinks, one for regular data and one for XDR encoded data.
+static int
+get_sinks(FILE *out, bool compressed, FILE **comp_sink, XDR **xdr_sink)
 {
-  // Jose Garcia
-  // If there is a parse error the method parse_constraint will throw 
-  // an exception that will terminate the method send.
-  // If parse_constraint executes with no exception
-  // we will proceed with the algorithm to send the data.
+    // If compressing, start up the sub process.
+    int childpid;	// Used to wait for compressor sub proc
+    if (compressed) {
+	*comp_sink = compressor(out, childpid);
+	*xdr_sink = new_xdrstdio(*comp_sink, XDR_ENCODE);
+    }
+    else {
+	*xdr_sink = new_xdrstdio(out, XDR_ENCODE);
+    }
+    
+    return childpid;
+}
 
-  parse_constraint(constraint, out, true);
-  
-  bool status = true;
-  
-  // Handle *functional* constraint expressions specially 
-  if (functional_expression()) {
-    BaseType *var = eval_function(dataset);
-    if (var) {
-      set_mime_binary(out, dods_data, cgi_ver,
-		      (compressed) ? deflate : x_plain);
-      
-      // If compressing, start up the sub process.
-      int childpid;	// Used to wait for compressor sub proc
-      FILE *comp_sink = 0;
-      XDR *xdr_sink;
-      if (compressed) {
-	comp_sink = compressor(out, childpid);
-	xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
-      }
-      else {
-	xdr_sink = new_xdrstdio(out, XDR_ENCODE);
-      }
-      
-      print_variable((compressed) ? comp_sink : out, var, true);
-      fprintf((compressed) ? comp_sink : out, "Data:\n");
-      
-      // In the following call to serialize, suppress CE evaluation.
-      status = var->serialize(dataset, *this, xdr_sink, false);
-      
-      delete_xdrstdio(xdr_sink);
-      
-      // Wait for the compressor sub process to stop
-      if (compressed) {
+// Clean up after sinks; might have to wait for the compressor process to
+// stop. 
+static void
+clean_sinks(int childpid, bool compressed, XDR *xdr_sink, FILE *comp_sink)
+{
+    delete_xdrstdio(xdr_sink);
+    
+    if (compressed) {
 	fclose(comp_sink);
 	int pid;
 #ifdef WIN32
@@ -818,53 +794,69 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
 #else
 	while ((pid = waitpid(childpid, 0, 0)) > 0) {
 #endif
-	  DBG(cerr << "pid: " << pid << endl);
+	    DBG(cerr << "pid: " << pid << endl);
 	}
-      }
+    }
+}
+
+// Returns: true if successful, false otherwise.
+
+bool 
+DDS::send(const string &dataset, const string &constraint, FILE *out, 
+	  bool compressed, const string &cgi_ver, time_t lmt)
+{
+    // Jose Garcia
+    // If there is a parse error the method parse_constraint will throw 
+    // an exception that will terminate the method send.
+    // If parse_constraint executes with no exception
+    // we will proceed with the algorithm to send the data.
+
+    parse_constraint(constraint, out, true);
+  
+    bool status = true;
+  
+    // Handle *functional* constraint expressions specially 
+    if (functional_expression()) {
+	BaseType *var = eval_function(dataset);
+	if (!var)
+	    throw Error(unknown_error, "Error calling the CE function.");
+
+	set_mime_binary(out, dods_data, cgi_ver,
+			(compressed) ? deflate : x_plain, lmt);
+      
+	FILE *comp_sink;
+	XDR *xdr_sink;
+	int childpid = get_sinks(out, compressed, &comp_sink, &xdr_sink);
+      
+	print_variable((compressed) ? comp_sink : out, var, true);
+	fprintf((compressed) ? comp_sink : out, "Data:\n");
+      
+	    // In the following call to serialize, suppress CE evaluation.
+	status = var->serialize(dataset, *this, xdr_sink, false);
+      
+	clean_sinks(childpid, compressed, xdr_sink, comp_sink);
     }
     else {
-      throw Error(unknown_error, "Error calling the CE function.");
+	set_mime_binary(out, dods_data, cgi_ver,
+			(compressed) ? deflate : x_plain, lmt);
+    
+	FILE *comp_sink;
+	XDR *xdr_sink;
+	int childpid = get_sinks(out, compressed, &comp_sink, &xdr_sink);
+
+	// send constrained DDS	    
+	print_constrained((compressed) ? comp_sink : out); 
+	fprintf((compressed) ? comp_sink : out, "Data:\n");
+
+	for (Pix q = first_var(); q; next_var(q)) 
+	    if (var(q)->send_p()) // only process projected variables
+		status = status && var(q)->serialize(dataset, *this,
+						     xdr_sink, true);
+    
+	clean_sinks(childpid, compressed, xdr_sink, comp_sink);
     }
-  }
-  else {
-    set_mime_binary(out, dods_data, cgi_ver,
-		    (compressed) ? deflate : x_plain);
-    
-    int childpid;	// Used to wait for compressor sub proc
-    FILE *comp_sink = 0;
-    XDR *xdr_sink;
-    if (compressed) {
-      comp_sink = compressor(out, childpid);
-      xdr_sink = new_xdrstdio(comp_sink, XDR_ENCODE);
-    }
-    else {
-      xdr_sink = new_xdrstdio(out, XDR_ENCODE);
-    }
-    
-    // send constrained DDS	    
-    print_constrained((compressed) ? comp_sink : out); 
-    fprintf((compressed) ? comp_sink : out, "Data:\n");
-    
-    for (Pix q = first_var(); q; next_var(q)) 
-      if (var(q)->send_p()) // only process projected variables
-	status = status && var(q)->serialize(dataset, *this,
-					     xdr_sink, true);
-    
-    delete_xdrstdio(xdr_sink);
-    
-    if (compressed) {
-      fclose(comp_sink);
-      int pid;
-#ifdef WIN32
-      while ((pid = _cwait(NULL, childpid, NULL)) > 0) {
-#else
-      while ((pid = waitpid(childpid, 0, 0)) > 0) {
-#endif
-	DBG(cerr << "pid: " << pid << endl);
-      }
-    }
-  }
-  return status;
+
+    return status;
 }
 
 // Mark the named variable by setting its SEND_P flag to STATE (true
@@ -946,6 +938,20 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.54  2001/06/15 23:49:01  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.53.4.3  2001/05/12 00:03:13  jimg
+// Changed add_var() so that it adds copies of the BaseType*s to mimic the
+// behavior of Structure, ..., Grid.
+// Factored two (static) functions out of send().
+//
+// Revision 1.53.4.2  2001/05/03 18:53:07  jimg
+// Changed a comment; it was about five years out of date.
+//
+// Revision 1.53.4.1  2001/04/23 22:34:46  jimg
+// Added support for the Last-Modified MIME header in server responses.`
+//
 // Revision 1.53  2000/10/03 22:16:22  jimg
 // Put debgging output in parse() method inside DBG().
 //

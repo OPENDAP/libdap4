@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.66 2001/01/26 19:48:10 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.67 2001/06/15 23:49:04 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -271,12 +271,21 @@ dods_root()
     return dods_root;
 }
 
+// Changed from the old DODS_SHOW_PROGRESS to the current value of
+// DODS_USE_GUI. 5/25/2001 jhrg
 const char *
 dods_progress()
 {
-    static const char *dods_progress = (getenv("SHOW_DODS_PROGRESS") 
-					? getenv("SHOW_DODS_PROGRESS") 
-					: "yes");
+    static const char *dods_progress = NULL;
+    if (!dods_progress && getenv("DODS_USE_GUI")) {
+	string t1 = getenv("DODS_USE_GUI");
+	downcase(t1);		// All this because downcase modifiies its
+				// argument... 5/30/2001 jhrg
+	dods_progress = t1.c_str();
+    }
+    else {
+	dods_progress = "yes";
+    }
 
     return dods_progress;
 }
@@ -563,23 +572,21 @@ path_to_filename(string path)
   return (pos == string::npos) ? path : path.substr(++pos);
 }
 
-#ifdef TEST
-
-#include <assert.h>
-
-int
-main(int argc, char *argv[])
-{
-  assert(path_to_filename("/this/is/the/end/my.friend") == "my.friend");
-  assert(path_to_filename("this.dat") == "this.dat");
-  assert(path_to_filename("/this.dat") == "this.dat");
-  assert(path_to_filename("/this.dat/") == "");
-  cerr << "All path_to_filename() tests PASSED" << endl;
-}
-
-#endif
-
 // $Log: util.cc,v $
+// Revision 1.67  2001/06/15 23:49:04  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.65.2.4  2001/05/31 17:12:36  jimg
+// Fixed dods_progress().
+//
+// Revision 1.65.2.3  2001/05/25 20:53:18  jimg
+// Changed the environment variable read by dods_progress(). I doubt anyone
+// uses this function, but just in case...
+//
+// Revision 1.65.2.2  2001/05/04 21:59:58  jimg
+// Ripped out the (lame) tests and moved them to the (less lame)
+// generalUtilTest.cc unit tests.
+//
 // Revision 1.66  2001/01/26 19:48:10  jimg
 // Merged with release-3-2-3.
 //

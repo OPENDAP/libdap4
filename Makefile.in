@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.120 2001/02/09 22:12:17 jimg Exp $
+# $Id: Makefile.in,v 1.121 2001/06/15 23:49:02 jimg Exp $
 
 @SET_MAKE@
 
@@ -15,17 +15,21 @@
 # the print representation on the screen.
 
 PROG = libdap++.a libdap++-gui.a geturl usage deflate
-DODS_ROOT = ../..
+# dods_relative ends in a slash. 5/14/2001 jhrg
+DODS_ROOT = @dods_relative@
 
 # Unit tests. Experimental. 11/27/2000 jhrg
-CPP_UNIT=/home/jimg/src/CppUnit/test/framework
-WWW_ROOT = @WWW_ROOT@
-INCS = -I. -IGNU -I$(CPP_UNIT) @INCS@
+# See the targets unit_tests and unit-check farther down.
+# CPP_UNIT=$(DODS_ROOT)../../CppUnit/test/framework
+# CPP_UNIT_INC=-I$(CPP_UNIT) 
+# CPP_UNIT_LIB=-L$(CPP_UNIT) 
+
+INCS = -I. -IGNU @INCS@ $(CPP_UNIT_INC)
 DEFS = @DEFS@
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
-LDFLAGS = -L. -L$(CPP_UNIT) @LDFLAGS@
+LDFLAGS = -L. @LDFLAGS@ $(CPP_UNIT_LIB)
 LFLAGS = -8
 YFLAGS = -d -v
 TAGS_FLAGS =
@@ -38,14 +42,14 @@ XTRALIBS = @XTRALIBS@
 
 prefix = @prefix@
 exec_prefix = $(prefix)
-bindir = $(exec_prefix)/bin
-libdir = $(exec_prefix)/lib
-includedir = $(prefix)/include
+bindir = $(exec_prefix)bin
+libdir = $(exec_prefix)lib
+includedir = $(prefix)include
 manext = 1
-mandir = $(prefix)/man/man$(manext)
+mandir = $(prefix)man/man$(manext)
 
-src = $(DODS_ROOT)/src
-etcdir = $(DODS_ROOT)/etc
+src = $(DODS_ROOT)src
+etcdir = $(DODS_ROOT)etc
 
 INSTALLMAN = man
 
@@ -123,7 +127,7 @@ CLIENTSRCS = Connect.cc Connections.cc
 CLIENTOBJS = Connections.o 
 CLIENTHDRS = Connect.h Connections.h Connections.cc
 
-TYPEHDRS = BaseType.h Byte.h Int32.h GSEClause.h \
+TYPEHDRS = BaseType.h Byte.h Int32.h GSEClause.h Constructor.h \
 	   Float64.h Str.h Url.h Vector.h List.h Array.h Structure.h \
 	   Sequence.h Grid.h UInt32.h util.h Int16.h UInt16.h Float32.h \
 	   dods-datatypes.h
@@ -131,12 +135,12 @@ TYPEHDRS = BaseType.h Byte.h Int32.h GSEClause.h \
 TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   Vector.cc List.cc Array.cc Structure.cc Sequence.cc \
 	   Grid.cc UInt32.cc util.cc ce_functions.cc GSEClause.cc \
-	   Int16.cc UInt16.cc Float32.cc 
+	   Int16.cc UInt16.cc Float32.cc Constructor.cc
 
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   Vector.o List.o Array.o Structure.o Sequence.o Grid.o \
            UInt32.o util.o ce_functions.o GSEClause.o $(GSE_GRAM_OBJS) \
-	   Int16.o UInt16.o Float32.o 
+	   Int16.o UInt16.o Float32.o Constructor.o
 
 GNUOBJS = GNU/SLList.o GNU/DLList.o GNU/GetOpt.o GNU/Regex.o GNU/error.o 
 
@@ -203,7 +207,7 @@ usage: libdap++.a $(TESTOBJS) usage.o
 
 # Build the test drivers
 
-test-drivers: das-test dds-test expr-test error-test cgi-util-test www-test
+test-drivers: das-test dds-test expr-test error-test www-test
 
 das-test: libdap++.a $(TESTOBJS) das-test.o das.tab.h
 	$(CXX) $(LDFLAGS) -o das-test $(TESTOBJS) das-test.o libdap++.a \
@@ -237,12 +241,6 @@ pure-expr-test: libdap++.a $(TESTOBJS) expr-test.o expr.tab.h
 error-test: error-test.o Error.tab.h $(ERROROBJS) $(TESTOBJS)
 	$(CXX) $(LDFLAGS) -o error-test error-test.o $(ERROROBJS) \
 		$(TESTOBJS) libdap++.a $(LIBS) $(XTRALIBS)
-
-cgi-util-test: libdap++.a cgi_util.o $(TESTOBJS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST_CGI_UTIL -c cgi_util.cc
-	$(CXX) $(LDFLAGS) -o cgi-util-test cgi_util.o $(TESTOBJS) \
-		libdap++.a $(LIBS) $(XTRALIBS)
-	-rm -f cgi_util.o
 
 gui-test: util.o dods_gui.c Gui.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST -c -g3 -O0 Gui.cc
@@ -375,7 +373,7 @@ install-deflate: deflate
 	$(INSTALL_PROGRAM) -s deflate $(etcdir)
 
 configure: configure.in
-	autoconf --localdir=$(DODS_ROOT)/etc
+	autoconf --localdir=$(DODS_ROOT)etc
 
 Makefile: Makefile.in
 	if [ -x ./config.status ]; \
@@ -385,7 +383,7 @@ Makefile: Makefile.in
 	    ./configure; \
 	fi
 
-check: libdap++.a das-check dds-check expr-check util-check
+check: libdap++.a das-check dds-check expr-check
 
 test-coverage: clean
 	$(MAKE) $(MFLAGS) CXXFLAGS="$(CXXFLAGS) $(TEST_COV_FLAGS)" check
@@ -417,19 +415,6 @@ expr-check: expr-test
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool expr-test --srcdir expr-testsuite
 
-error-check: error-test
-	echo "No tests for the Error object"
-
-util-check: util-test
-	./util-test
-
-util-test: util-test.o libdap++.a
-	$(CXX) $(LDFLAGS) -o util-test util-test.o libdap++.a \
-		$(LIBS) $(XTRALIBS)
-
-util-test.o: util.cc
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -DTEST -o $@ $<
-
 # This tests the servers assuming that DODS has been installed on dcz, dods
 # and rhody. It also assumes that the cgi bin directory `test' points to the
 # place where the new servers are installed. On all of these machines there
@@ -441,27 +426,40 @@ server-check: geturl
 	-rootme=`pwd` && export rootme && \
 	${RUNTEST} ${RUNTESTFLAGS} --tool geturl --srcdir server-testsuite
 
-# You must modify TestRunner.cc for each new test class.
-UNIT_TEST_SRC = TestRunner.cc TextTestResult.cc 
-# AttrTableTest.cc DODSFilterTest.cc cgiUtilTest.cc parserUtilTest.cc
-UNIT_TEST_CLASSES = AttrTableTest.o DODSFilterTest.o cgiUnitTest.o \
-	parserUtilTest.o
+# The two targets unit_tests and unit-check use the CppUnit unit test
+# software. These are not yet ready for prime time. 4/13/2001 jhrg
+# You must modify TestRunner.cc for each new test class and include it here.
+# Note that TestRunner.cc includes the UNIT_TESTS *.cc files and that's why
+# the *.o versions of these files don't appear in the unit_tests target.
+# 5/14/2001 jhrg
+# UNIT_TESTS = cgiUtilTest.cc AttrTableTest.cc DODSFilterTest.cc \
+#	parserUtilTest.cc generalUtilTest.cc SequenceTest.cc \
+#	DASTest.cc
+UNIT_TEST_SRC = TestRunner.cc TextTestResult.cc $(UNIT_TESTS)
 UNIT_TEST_SCAFFOLD = TestRunner.o TextTestResult.o
 
-# This target is broken. 2/9/2001 jhrg
-unit_tests: libdap++.a $(UNIT_TEST_SCAFFOLD) $(UNIT_TEST_CLASSES)
+TestRunner.o: $(UNIT_TESTS)
+
+unit_tests: libdap++.a $(UNIT_TEST_SCAFFOLD) $(TESTOBJS)
+	@if [ -z "$(UNIT_TESTS)" -o -z "$(CPP_UNIT)" ]; then \
+	  echo "You must define UNIT_TESTS and CPP_UNIT* in the Makefile."; \
+	  exit 1; \
+	fi
 	$(CXX) -o unit_tests $(LDFLAGS) \
 		$(UNIT_TEST_SCAFFOLD) $(UNIT_TEST_CLASSES) $(TESTOBJS) \
 		$(UNIT_LDFLAGS) -lcppunit -ldap++ $(LIBS)
 
+unit-check: unit_tests
+	./unit_tests AttrTableTest DODSFilterTest cgiUtilTest parserUtilTest \
+		generalUtilTest
 # Clean up.
 
 clean:	
 	-rm -f *.o *.sum *.log *~ core
 	-rm -f *.bb *.bbg *.da *.gcov
 	-for d in GNU; do cd $$d && rm *.o *~; cd ..; done
-	-rm -f $(PROG) das-test dds-test expr-test util-test \
-		error-test geturl cgi-util-test gse-test unit_tests
+	-rm -f $(PROG) das-test dds-test expr-test \
+		error-test geturl gse-test unit_tests
 	-cd doc-html; rm *.html; cd ..;
 	-cd doc-latex; rm *.tex; cd ..;
 
@@ -496,7 +494,7 @@ docs:
 .PHONY: tar
 tar:
 	-rm -r config.cache config.log config.status
-	cd $(DODS_ROOT)/.. && \
+	cd $(DODS_ROOT).. && \
 	$(TAR) --exclude 'nc3-dods*' --exclude 'jg-dods*' \
 	  --exclude 'dsp-dods*' --exclude 'math-dods*' --exclude 'hdf-dods*' \
 	  --exclude 'ff-dods*' --exclude 'tools' --exclude 'clients' \
@@ -508,11 +506,11 @@ tar:
 
 .PHONY: binary-tar
 binary-tar:
-	if [ ! -x $(DODS_ROOT)/etc/asciival \
-	    -o ! -x $(DODS_ROOT)/etc/www_int ]; then \
+	if [ ! -x $(DODS_ROOT)etc/asciival \
+	    -o ! -x $(DODS_ROOT)etc/www_int ]; then \
 	    echo "You must install asciival and www_interface first"; \
 	else \
-	    cd $(DODS_ROOT)/.. && \
+	    cd $(DODS_ROOT).. && \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-dap-library-$(version)-$(host).tar.gz \
 		--exclude 'CVS' \
@@ -520,18 +518,16 @@ binary-tar:
 		DODS/lib/libdap++-gui.a \
 		DODS/include && \
 	    $(TAR) --gzip --create --dereference \
-		--file DODS-tools-$(version)-$(host).tar.gz \
-		DODS/etc/asciival && \
-	    $(TAR) --gzip --create --dereference \
 		--file DODS-client-tools-$(version)-$(host).tar.gz \
 		DODS/etc/INSTALL-clients \
-		DODS/bin/geturl \
-		DODS/bin/urlqueue && \
+		DODS/bin/geturl && \
 	    $(TAR) --gzip --create --dereference \
 		--file DODS-server-tools-$(version)-$(host).tar.gz \
 		--exclude 'CVS' \
 		DODS/etc/INSTALL-servers \
 		DODS/etc/installServers \
+		DODS/etc/nph-dods \
+		DODS/etc/dods.ini \
 		DODS/etc/asciival \
 		DODS/etc/www_int \
 		DODS/etc/deflate \
@@ -546,14 +542,14 @@ update-version: check-version
 	if [ ! -d ../$(dir) ]; then \
 	    mv ../dap* ../$(dir);\
 	fi
-	touch $(DODS_ROOT)/VERSION; cat $(DODS_ROOT)/VERSION | \
+	touch $(DODS_ROOT)VERSION; cat $(DODS_ROOT)VERSION | \
 	  $(AWK) ' \
 	    BEGIN { found = 0 } \
 	    { if ( $$0 ~ /^$(COMPONENT_NAME):/) \
 	        { print "$(COMPONENT_NAME): $(version)"; found = 1 } \
 	      else { print $$0 } } \
 	    END { if ( ! found) { print "$(COMPONENT_NAME): $(version)" } \
-	        }' > $(DODS_ROOT)/VERSION
+	        }' > $(DODS_ROOT)VERSION
 
 # Compare the version encoded in this Makefile (set by configure) with the
 # version in version.h. The version make variable is set up near the top of
@@ -577,9 +573,12 @@ tags:
 depend: 
 	@depend@ -m Makefile.in -- $(CPPFLAGS) -- \
 	$(CLIENTSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
-	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS) \
-	$(UNIT_TEST_SRC)
+	$(ERRORSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS)
 	$(MAKE) $(MFLAGS) Makefile
+
+# Once the unit tests are working, add this to the sources on which we run
+# depend. 
+# $(UNIT_TEST_SRC)
 
 .SUFFIXES:      .o .cc .c
 
@@ -777,22 +776,5 @@ DODSFilter.o: DODSFilter.cc config_dap.h DAS.h AttrTable.h Error.h \
  DDS.h BaseType.h Clause.h expr.h RValue.h debug.h cgi_util.h \
  Connect.h util.h Byte.h dods-datatypes.h Int16.h UInt16.h Int32.h \
  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
- Vector.h List.h Structure.h Sequence.h Grid.h DODSFilter.h \
+ Vector.h List.h Structure.h Sequence.h Grid.h escaping.h DODSFilter.h \
  InternalErr.h
-TestRunner.o: TestRunner.cc TextTestResult.h \
- /home/jimg/src/CppUnit/test/framework/TestResult.h \
- /home/jimg/src/CppUnit/test/framework/Guards.h \
- /home/jimg/src/CppUnit/test/framework/TestFailure.h \
- /home/jimg/src/CppUnit/test/framework/CppUnitException.h \
- DODSFilterTest.cc /home/jimg/src/CppUnit/test/framework/TestCase.h \
- /home/jimg/src/CppUnit/test/framework/Test.h \
- /home/jimg/src/CppUnit/test/framework/TestCaller.h \
- /home/jimg/src/CppUnit/test/framework/TestSuite.h DODSFilter.h DAS.h \
- AttrTable.h Error.h DDS.h BaseType.h Clause.h expr.h RValue.h debug.h \
- cgiUnitTest.cc
-TextTestResult.o: TextTestResult.cc TextTestResult.h \
- /home/jimg/src/CppUnit/test/framework/TestResult.h \
- /home/jimg/src/CppUnit/test/framework/Guards.h \
- /home/jimg/src/CppUnit/test/framework/TestFailure.h \
- /home/jimg/src/CppUnit/test/framework/CppUnitException.h \
- /home/jimg/src/CppUnit/test/framework/estring.h

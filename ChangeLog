@@ -1,3 +1,95 @@
+
+2001-06-05  James Gallagher  <jimg@dcz.dods.org>
+
+	* das.y: Changed the way errors are handled. Many errors still
+	cause exceptions to be thrown. However, if an attribtue's value is
+	wrong (e.g., a floating point value that is out of range), rather
+	than throw an exception a note in the form of a container and
+	explanation are added to the attribute table where the error
+	occurred. This is particularly important for attributes like
+	numerical values since they are often machine-dependent. Here's an
+	example of a DAS which contains an error:
+	
+	Attributes {
+	    a {
+	        Byte size 7, 700;
+		Float64 type 6.02e400, 3.4;
+		Float64 type 6.02e400, 2.7, 10e-400;
+	    }
+        }
+
+	And here is how the DAS looks once it is processed by the
+	client-side software:
+
+	Attributes {
+	    a {
+		Byte size 7;
+		a_errors {
+		    Byte size 700;
+		    String size_explanation `700' is not a Byte value.;
+		    Float64 type 6.02e400, 6.02e400, 10e-400;
+		    String type_explanation `6.02e400' is not a Float64 value., `6.02e400' is not a Float64 value., `10e-400' is not a Float64 value.;
+		}
+		Float64 type 3.4, 2.7;
+	    }
+	}
+
+	* Makefile.in: Added a short script to the Makefile.in so that
+	when CppUnit stuff is not defined a message is printed. This is
+	only triggered for the unit_tests targets, so it's really a
+	reminder for the folks that are doing development.
+
+	* configure.in: Changed so that if CFLGAS/CXXFLAGS are defined
+	those values are used instead of the defaults. This simplifies
+	development and debugging because it is easier to get builds
+	without optimization and with optimal debugging without hand
+	editing the Makefile every time configure is run.
+
+2001-05-03  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added Cache-Control: no-cache header for error responses. This
+	will prevent internal server error responses (which look like
+	valid responses to the cache) from getting cached.
+
+	* Added support for conditional requests to the DODSFilter class,
+	the cgi_util functions and the DODS_Dispatch.pm Perl module.
+	Servers can now see conditional requests as such and respond
+	sensibly. If a server cannot use the modification time of a file,
+	then it should subclass DODSFilter and supply different versions
+	of the last modified time methods.
+
+2001-04-23  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed the unit test targets and variables. These are now
+	included in the Makefile.in but are commented out. You must
+	remove the comments to use the target. Also needed is the CppUnit
+	software which is in CVS in the CppUnit module.
+
+	* Added support for the Last-Modified MIME header. All DODS
+	servers which use the functions in cgi_util.cc and/or the class
+	DODSFilter can now easily include the Last-Modified header in
+	their responses. The only change that servers should make is to
+	pass the ancillary files location directory to
+	DODSFilter::send_data(). Use of the send_das() and send_dds()
+	methods should require no change. In addition, calling the
+	send_data() method without giving the ancillary files location
+	will work OK with the exception that ancillary files won't
+	contribute to the LM computation (as they will for the DAS and DDS
+	responses).
+
+	Currently the LM computation works only for file-based datasets.
+	Servers that provide access to other types of data should subclass
+	DODSFilter and provide alternate implementations of the relevant
+	methods. 
+	
+	* Fixed some warnings in Error.cc from g++.
+
+2001-02-13  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged authentication changes from the trunk (where that feature
+	was added) here so that it can be included in 3.2 without too much
+	confusion. 
+
 2001-02-09  James Gallagher  <jimg@dcz.dods.org>
 
 	* Substantial changes to Connect to support HTTP authentication.
@@ -867,9 +959,25 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.62 2001/02/09 22:58:46 jimg Exp $
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+=======
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+=======
+$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+>>>>>>> 1.62
+>>>>>>> 1.60.4.11
 
 <<<<<<< ChangeLog
 =======
-$Id: ChangeLog,v 1.62 2001/02/09 22:58:46 jimg Exp $
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+=======
+<<<<<<< ChangeLog
+$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+=======
+$Id: ChangeLog,v 1.63 2001/06/15 23:49:01 jimg Exp $
+>>>>>>> 1.62
+>>>>>>> 1.60.4.11
 >>>>>>> 1.42.2.16

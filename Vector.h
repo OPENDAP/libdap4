@@ -66,14 +66,10 @@ private:
     int _length;		// number of elements in the vector
     BaseType *_var;		// base type of the Vector
 
-    void *_buf;			// array which holds cardinal data
+    // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
+    char *_buf;			// array which holds cardinal data
 
-#if 1
-    vector<BaseType *> _vec;
-#endif
-#if 0
-    DLList<BaseType *> _vec;
-#endif
+    vector<BaseType *> _vec;	// array for other data
 
 protected:
     // This function copies the private members of Vector.
@@ -103,7 +99,7 @@ public:
 
     virtual ~Vector();
 
-    const Vector &operator=(const Vector &rhs);
+    Vector &operator=(const Vector &rhs);
     virtual BaseType *ptr_duplicate() = 0; 
 
     virtual int element_count(bool leaves);
@@ -267,6 +263,24 @@ public:
 
 /* 
  * $Log: Vector.h,v $
+ * Revision 1.32  2001/06/15 23:49:03  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.31.4.1  2001/06/05 06:49:19  jimg
+ * Added the Constructor class which is to Structures, Sequences and Grids
+ * what Vector is to Arrays and Lists. This should be used in future
+ * refactorings (I thought it was going to be used for the back pointers).
+ * Introduced back pointers so children can refer to their parents in
+ * hierarchies of variables.
+ * Added to Sequence methods to tell if a child sequence is done
+ * deserializing its data.
+ * Fixed the operator=() and copy ctors; removed redundency from
+ * _duplicate().
+ * Changed the way serialize and deserialize work for sequences. Now SOI and
+ * EOS markers are written for every `level' of a nested Sequence. This
+ * should fixed nested Sequences. There is still considerable work to do
+ * for these to work in all cases.
+ *
  * Revision 1.31  2000/09/22 02:17:22  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

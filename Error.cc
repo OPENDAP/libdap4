@@ -13,7 +13,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.24 2000/10/30 17:21:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.25 2001/06/15 23:49:02 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -150,7 +150,9 @@ Error::parse(FILE *fp)
       throw InternalErr(__FILE__, __LINE__, e.error_message());
     }
 
+#if 0
     fclose(fp);
+#endif
 
     // STATUS is the result of the parser function; if a recoverable error
     // was found it will be true but arg.status() will be false.
@@ -169,7 +171,7 @@ Error::print(ostream &os) const
 
     os << "Error {" << endl;
 
-    os << "    " << "code = " << _error_code << ";" << endl;
+    os << "    " << "code = " << static_cast<int>(_error_code) << ";" << endl;
     
     // If the error message is wrapped in double quotes, print it, else, add
     // wrapping double quotes.
@@ -180,7 +182,8 @@ Error::print(ostream &os) const
 	   << endl;
 
     if (_program_type != undefined_prog_type) {
-	os << "    " << "program_type = " << _program_type << ";" << endl;
+	os << "    " << "program_type = " << static_cast<int>(_program_type)
+	   << ";" << endl;
 	os << "    " << "program = " << _program << ";" << endl;
     }
 
@@ -321,7 +324,7 @@ Error::set_program(char *pgm)
   strcpy(_program, pgm);
 }
 
-// Assuming the object is OK, if the Error object has only a meesage, dispay
+// Assuming the object is OK, if the Error object has only a meesage, display
 // it in a dialog box. Once the user dismisses the dialog, return the null
 // string. However, if program() is true, then source the code it returns in
 // the Gui object and return the value of Gui::command(). Note that this
@@ -349,6 +352,18 @@ Error::correct_error(void *pgui) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.25  2001/06/15 23:49:02  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.24.2.2  2001/05/03 21:42:59  jimg
+// Fixed a bug in parse(...) where the FILE * passed to the method was closed.
+// This FILE * should be closed by the caller. When used with a Connect object,
+// Connect's dtor tries to close the FILE *. If parse(...) has already closed
+// it...boom.
+//
+// Revision 1.24.2.1  2001/04/23 22:18:15  jimg
+// Added two static casts to Error::print(). This fixes a warning from g++.
+//
 // Revision 1.24  2000/10/30 17:21:27  jimg
 // Added support for proxy servers (from cjm).
 //

@@ -1,10 +1,10 @@
 
-// (c) COPYRIGHT URI/MIT 1994-1999
+// (c) COPYRIGHT URI/MIT 1994-2001
 // Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
-//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
-//      reza            Reza Nekovei (reza@intcomm.net)
+//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
+//      reza            Reza Nekovei <rnekovei@intcomm.net>
 
 // A few useful routines which are used in CGI programs.
 //
@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.47 2000/09/22 02:17:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.48 2001/06/15 23:49:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,45 +52,6 @@ using std::strstream;
 
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
-
-#if 0
-// The next two functions are helpers used to simplify creating the *_dods
-// filter programs.
-
-void
-usage(const string &name)
-{
-    // Write a message to the WWW server error log file.
-    const string msg = " [-c] <dataset> [constraint]";
-    const string msg2 = " -v [<script_version> <dataset>]";
-    string usage = "Usage: " + name + msg + "\n" + name + msg2;
-
-    ErrMsgT(usage);
-
-    // Build an error object to return to the user.
-    Error *ErrorObj = new Error(no_such_file, 
-			(string)"\"DODS internal error; missing parameter.\"");
-    set_mime_text(cout, dods_error);
-    ErrorObj->print(cout);
-}    
-
-void
-usage(const char *name)
-{
-    // Write a message to the WWW server error log file.
-    const char *msg = "[-c] <dataset> [constraint]";
-    const char *msg2 = "-v [<script_version> <dataset>]";
-    char usage[256];
-    sprintf(usage, "Usage: %s %s\n%s %s", name, msg, name, msg2);
-    ErrMsgT(usage);
-
-    // Build an error object to return to the user.
-    Error *ErrorObj = new Error(no_such_file, 
-			(string)"\"DODS internal error; missing parameter.\"");
-    set_mime_text(cout, dods_error);
-    ErrorObj->print(cout);
-}
-#endif
 
 // Note that the filter program must define `find_dataset_version()' for this
 // function to work.
@@ -266,7 +227,8 @@ ErrMsgT(const string &Msgt)
 // Originally from the netcdf distribution (ver 2.3.2).
 // 
 // *** Change to string class argument and return type. jhrg
-//
+// *** Changed so it also removes the#path#of#the#file# from decompressed
+//     files.  rph.
 // Returns: A filename, with path and extension information removed. If
 // memory for the new name cannot be allocated, does not return!
 
@@ -277,8 +239,13 @@ name_path(const string &path)
 	return string("");
 
     string::size_type delim = path.find_last_of(FILE_DELIMITER);
-
-    string new_path = path.substr(delim + 1);
+    string::size_type pound = path.find_last_of("#");
+    string new_path;
+    
+    if(pound != string::npos)
+        new_path = path.substr(pound + 1);
+    else
+        new_path = path.substr(delim + 1);
 
     if ((delim = new_path.find(".")) != string::npos)
 	new_path = new_path.substr(0, delim);
@@ -322,18 +289,18 @@ static char *days[]={"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 static char *months[]={"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", 
 			"Aug", "Sep", "Oct", "Nov", "Dec"};
 
-/** Given a constant pointer to a time_t, return a RFC 822 style date. This
-    function returns the RFC 822 date with the exception that the RFC 1123
-    modification for four-digit years is implemented. The date is returned in
-    a statically allocated char array so it must be copied before being
-    used. 
+/** Given a constant pointer to a time_t, return a RFC 822/1123 style date.
+    This function returns the RFC 822 date with the exception that the RFC
+    1123 modification for four-digit years is implemented. The date is
+    returned in a statically allocated char array so it must be copied before
+    being used.
 
-    @return The RFC 822 style date in a statically allocated char [].
+    @return The RFC 822/1123 style date in a statically allocated char [].
     @param t A const time_t pointer. */
 char *
-rfc822_date(const time_t *t)
+rfc822_date(const time_t t)
 {
-    struct tm *stm = gmtime(t);
+    struct tm *stm = gmtime(&t);
     static char d[64];
 
     sprintf(d, "%s, %02d %s %4d %02d:%02d:%02d GMT", days[stm->tm_wday], 
@@ -346,6 +313,16 @@ rfc822_date(const time_t *t)
 	    1900 + stm->tm_year,
 	    stm->tm_hour, stm->tm_min, stm->tm_sec);
     return d;
+}
+
+time_t
+last_modified_time(string name)
+{
+    struct stat m;
+    if (stat(name.c_str(), &m) == 0 && S_ISREG(m.st_mode))
+	return m.st_mtime;
+    else
+	return time(0);
 }
 
 // Send string to set the transfer (mime) type and server version
@@ -363,29 +340,41 @@ static char *descrip[]={"unknown", "dods_das", "dods_dds", "dods_data",
 static char *encoding[]={"unknown", "deflate", "x-plain"};
 
 void
-set_mime_text(FILE *out, ObjectType type, const string &ver, EncodingType enc)
+set_mime_text(FILE *out, ObjectType type, const string &ver, 
+	      EncodingType enc, const time_t last_modified)
 {
 #ifdef WIN32
-	strstream os;
-	set_mime_text(os, type, ver, enc);	
-	flush_stream(os, out);
+    // strstream os; This makes no sense. 4/23/2001 jhrg
+    ofstream os(fileno(out));
+    set_mime_text(os, type, ver, enc, last_modified);	
+    flush_stream(os, out);
 #else
     ofstream os(fileno(out));
-	set_mime_text(os, type, ver, enc);
+    set_mime_text(os, type, ver, enc, last_modified);
 #endif
-	return;
+    return;
 }
 
 void
 set_mime_text(ostream &os, ObjectType type, const string &ver, 
-	      EncodingType enc)
+	      EncodingType enc, const time_t last_modified)
 {
     os << "HTTP/1.0 200 OK" << endl;
     os << "XDODS-Server: " << ver << endl;
+
     const time_t t = time(0);
-    os << "Date: " << rfc822_date(&t) << endl;
+    os << "Date: " << rfc822_date(t) << endl;
+
+    os << "Last-Modified: ";
+    if (last_modified > 0)
+	os << rfc822_date(last_modified) << endl;
+    else 
+	os << rfc822_date(t) << endl;
+
     os << "Content-type: text/plain" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
+    if (type == dods_error)	// don't cache our error responses.
+	os << "Cache-Control: no-cache" << endl;
     // Don't write a Content-Encoding header for x-plain since that breaks
     // Netscape on NT. jhrg 3/23/97
     if (enc != x_plain)
@@ -395,28 +384,36 @@ set_mime_text(ostream &os, ObjectType type, const string &ver,
 
 void
 set_mime_binary(FILE *out, ObjectType type, const string &ver, 
-		EncodingType enc)
+		EncodingType enc, const time_t last_modified)
 {
 #ifdef WIN32
-	strstream os;
-	set_mime_binary(os, type, ver, enc);
-	flush_stream(os, out);
+    // strstream os; See above. 4/23/2001 jhrg
+    ofstream os(fileno(out));
+    set_mime_binary(os, type, ver, enc, last_modified);
+    flush_stream(os, out);
 #else
     ofstream os(fileno(out));
-    set_mime_binary(os, type, ver, enc);
+    set_mime_binary(os, type, ver, enc, last_modified);
 #endif
 
-	return;
+    return;
 }
 
 void
 set_mime_binary(ostream &os, ObjectType type, const string &ver, 
-		EncodingType enc)
+		EncodingType enc, const time_t last_modified)
 {
     os << "HTTP/1.0 200 OK" << endl;
     os << "XDODS-Server: " << ver << endl;
     const time_t t = time(0);
-    os << "Date: " << rfc822_date(&t) << endl;
+    os << "Date: " << rfc822_date(t) << endl;
+
+    os << "Last-Modified: ";
+    if (last_modified > 0)
+	os << rfc822_date(last_modified) << endl;
+    else 
+	os << rfc822_date(t) << endl;
+
     os << "Content-type: application/octet-stream" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     if (enc != x_plain) {
@@ -436,14 +433,14 @@ set_mime_error(FILE *out, int code, const string &reason,
 	       const string &version)
 {
 #ifdef WIN32
-	strstream os;
-	set_mime_error(os, code, reason, version);	
-	flush_stream(os, out);
+    strstream os;
+    set_mime_error(os, code, reason, version);	
+    flush_stream(os, out);
 #else
     ofstream os(fileno(out));
-	set_mime_error(os, code, reason, version);
+    set_mime_error(os, code, reason, version);
 #endif
-	return;
+    return;
 }
 
 void
@@ -456,9 +453,36 @@ set_mime_error(ostream &os, int code, const string &reason,
     else
       os << "XDODS-Server: " << version << endl;
     const time_t t = time(0);
-    os << "Date: " << rfc822_date(&t) << endl;
+    os << "Date: " << rfc822_date(t) << endl;
+    os << "Cache-Control: no-cache" << endl;
     os << endl;
 }
+
+void 
+set_mime_not_modified(FILE *out)
+{
+#ifdef WIN32
+    strstream os;
+    set_mime_not_modified(os);
+    flush_stream(os, out);
+#else
+    ofstream os(fileno(out));
+    set_mime_not_modified(os);
+#endif
+    return;
+}
+
+void
+set_mime_not_modified(ostream &os)
+{
+    os << "HTTP/1.0 304 NOT MODIFIED" << endl;
+    const time_t t = time(0);
+    os << "Date: " << rfc822_date(t) << endl;
+    os << endl;
+}
+
+// This test code is pretty much obsolete; look at cgiUtilTest.cc 4/17/2001
+// jhrg.
 
 #ifdef TEST_CGI_UTIL
 
@@ -472,8 +496,11 @@ main(int argc, char *argv[])
     char *cmsg = "char * error";
     ErrMsgT(cmsg);
     ErrMsgT("");
+#if 0
     ErrMsgT(NULL);
+#endif
 
+#if 0
     // test fmakeword
     FILE *in = fopen("./cgi-util-tests/fmakeword.input", "r");
     char stop = ' ';
@@ -496,63 +523,79 @@ main(int argc, char *argv[])
 	delete word;
     }
     fclose(in);
+#endif
 
     // test name_path
-    char *name_path_p;
-    char *name = "stuff";
+    string name_path_p;
+    string name = "stuff";
     name_path_p = name_path(name);
     cout << name << ": " << name_path_p << endl;
-    delete name_path_p;
 
     name = "stuff.Z";
     name_path_p = name_path(name);
     cout << name << ": " << name_path_p << endl;
-    delete name_path_p;
 
     name = "/usr/local/src/stuff.Z";
     name_path_p = name_path(name);
     cout << name << ": " << name_path_p << endl;
-    delete name_path_p;
 
     name = "/usr/local/src/stuff.tar.Z";
     name_path_p = name_path(name);
     cout << name << ": " << name_path_p << endl;
-    delete name_path_p;
 
     name = "/usr/local/src/stuff";
     name_path_p = name_path(name);
     cout << name << ": " << name_path_p << endl;
-    delete name_path_p;
 
     name = "";
     name_path_p = name_path(name);
     cout << name << ": " << name_path_p << endl;
-    delete name_path_p;
-
-    name = 0;
-    name_path_p = name_path(name);
-    cout << name << ": " << name_path_p << endl;
-    delete name_path_p;
 
     // Test mime header generators and compressed output
     cout << "MIME text header:" << endl;
-    set_mime_text(dods_das);
+    set_mime_text(cout, dods_das, "dods-test/0.00");
     cout << "MIME binary header:" << endl;
-    set_mime_binary(dods_data);
+    set_mime_binary(cout, dods_data, "dods-test/0.00");
 
+#if 0
     cout << "Some data..." << endl;
 
-	cout << "MIME binary header and compressed data:" << endl;
+    cout << "MIME binary header and compressed data:" << endl;
     set_mime_binary(dods_data, x_gzip);
     FILE *out = compress_stdout();
     fprintf(out, "Compresses data...\n");
     fflush(out);
     pclose(out);
+#endif
 }
 
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.48  2001/06/15 23:49:03  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.47.4.5  2001/06/14 17:33:38  rich
+// Modified name_path() so it also removes the path of the uncompressed file from
+// the beginning of decompressed files.
+//
+// Revision 1.47.4.4  2001/05/03 21:49:03  jimg
+// Added Cache-Control: no-cache header to the output of set_mime_text when that
+// function is used to generate a response for an Error object. This will
+// prevent the caches from caching out server's errors.
+//
+// Revision 1.47.4.3  2001/05/03 20:25:45  jimg
+// Added the set_mime_not_modified() functions. These send 304 (not modified)
+// responses.
+//
+// Revision 1.47.4.2  2001/04/23 22:34:46  jimg
+// Added support for the Last-Modified MIME header in server responses.`
+//
+// Revision 1.47.4.1  2001/04/17 21:43:38  jimg
+// Added Last-Modified support to set_mime_text and set_mime_binary. Added tests
+// for set_mime_text to cgiUtilTest (I didn't both with tests for
+// set_mime_binary since it is so similar to the text routine).
+//
 // Revision 1.47  2000/09/22 02:17:22  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

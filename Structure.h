@@ -36,8 +36,17 @@
 
 #include <SLList.h>
 
+#ifndef _basetype_h
 #include "BaseType.h"
+#endif
+
+#ifndef _constructor_h
+#include "Constructor.h"
+#endif
+
+#ifndef _dds_h
 #include "DDS.h"
+#endif
 
 #if 0
 #include "config_dap.h"
@@ -75,7 +84,7 @@
     
     @memo Holds a structure (aggregate) type. */
 
-class Structure: public BaseType {
+class Structure: public Constructor {
 private:
     SLList<BaseType *> _vars;
     
@@ -98,7 +107,7 @@ public:
     Structure(const Structure &rhs);
     virtual ~Structure();
 
-    const Structure &operator=(const Structure &rhs);
+    Structure &operator=(const Structure &rhs);
     virtual BaseType *ptr_duplicate() = 0;
 
     virtual int element_count(bool leaves = false);
@@ -160,6 +169,24 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.38  2001/06/15 23:49:02  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.37.4.1  2001/06/05 06:49:19  jimg
+ * Added the Constructor class which is to Structures, Sequences and Grids
+ * what Vector is to Arrays and Lists. This should be used in future
+ * refactorings (I thought it was going to be used for the back pointers).
+ * Introduced back pointers so children can refer to their parents in
+ * hierarchies of variables.
+ * Added to Sequence methods to tell if a child sequence is done
+ * deserializing its data.
+ * Fixed the operator=() and copy ctors; removed redundency from
+ * _duplicate().
+ * Changed the way serialize and deserialize work for sequences. Now SOI and
+ * EOS markers are written for every `level' of a nested Sequence. This
+ * should fixed nested Sequences. There is still considerable work to do
+ * for these to work in all cases.
+ *
  * Revision 1.37  2000/09/22 02:17:21  jimg
  * Rearranged source files so that the CVS logs appear at the end rather than
  * the start. Also made the ifdef guard symbols use the same naming scheme and

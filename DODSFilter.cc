@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.23 2000/10/30 17:21:27 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.24 2001/06/15 23:49:02 jimg Exp $"};
 
 #include <iostream>
 #if defined(__GNUG__) || defined(WIN32)
@@ -30,6 +30,7 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.23 2000/10/30 17:21:27 j
 #include "DDS.h"
 #include "debug.h"
 #include "cgi_util.h"
+#include "escaping.h"
 #include "DODSFilter.h"
 #include "InternalErr.h"
 
@@ -40,13 +41,15 @@ using std::ostrstream;
 #endif
 
 DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false), 
-    bad_options(false), dataset(""), ce(""), cgi_ver("dods/3.2"),
-    anc_dir(""), anc_file(""), cache_dir(""), accept_types("All")
+    bad_options(false), d_conditional_request(false), dataset(""), ce(""),
+    cgi_ver(""), anc_dir(""), anc_file(""), cache_dir(""),
+    accept_types("All"), d_anc_das_lmt(0), d_anc_dds_lmt(0),
+    d_if_modified_since(-1)
 {
     program_name = argv[0];
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce:v:Vd:f:r:t:");
+    GetOpt getopt (argc, argv, "ce:v:Vd:f:r:t:l:");
 
     while ((option_char = getopt()) != EOF)
 	switch (option_char) {
@@ -58,6 +61,11 @@ DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false),
 	  case 'f': anc_file = getopt.optarg; break;
 	  case 'r': cache_dir = getopt.optarg; break;
 	  case 't': accept_types = getopt.optarg; break;
+	  case 'l': 
+	    d_conditional_request = true;
+	    d_if_modified_since 
+		= static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
+	    break;
 	  default: bad_options = true; break;
 	}
 
@@ -67,6 +75,12 @@ DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false),
     else
 	bad_options = true;
 
+    // Both dataset and ce could be set at this point (dataset must be, ce
+    // might be). If they contain any WWW-style esacpes (%<hex digit>,hex
+    // digit>) then undo that escaping.
+    dataset = dods2id(dataset, "%[0-7][0-9a-fA-F]", "%20");
+    ce = dods2id(ce, "%[0-7][0-9a-fA-F]", "%20");
+
     DBG(cerr << "comp: " << comp << endl);
     DBG(cerr << "ce: " << ce << endl);
     DBG(cerr << "cgi_ver: " << cgi_ver << endl);
@@ -75,6 +89,8 @@ DODSFilter::DODSFilter(int argc, char *argv[]) : comp(false), ver(false),
     DBG(cerr << "anc_file: " << anc_file << endl);
     DBG(cerr << "cache_dir: " << cache_dir << endl);
     DBG(cerr << "accept_types: " << accept_types << endl);
+    DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
+    DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
 }
 
 DODSFilter::~DODSFilter()
@@ -94,6 +110,18 @@ DODSFilter::version()
     return ver;
 }
 
+bool
+DODSFilter::is_conditional()
+{
+    return d_conditional_request;
+}
+
+void
+DODSFilter::set_cgi_version(string version)
+{
+    cgi_ver = version;
+}
+
 string
 DODSFilter::get_cgi_version()
 {
@@ -109,7 +137,7 @@ DODSFilter::get_ce()
 void
 DODSFilter::set_ce(string _ce)
 {
-  ce = _ce;
+  ce = dods2id(_ce, "%[0-7][0-9a-fA-F]", "%20");
 }
 
 string
@@ -122,6 +150,47 @@ string
 DODSFilter::get_dataset_version()
 {
     return "";
+}
+
+time_t
+DODSFilter::get_dataset_last_modified_time()
+{
+    return last_modified_time(dataset);
+}
+
+time_t
+DODSFilter::get_das_last_modified_time(const string &anc_location)
+{
+    string name = find_ancillary_file(dataset, "das", anc_location, anc_file);
+    return max((name != "") ? last_modified_time(name) : 0,
+	       get_dataset_last_modified_time()); 
+}
+
+time_t
+DODSFilter::get_dds_last_modified_time(const string &anc_location)
+{
+    string name = find_ancillary_file(dataset, "dds", anc_location, anc_file);
+    return max((name != "") ? last_modified_time(name) : 0,
+	       get_dataset_last_modified_time()); 
+}
+
+time_t
+DODSFilter::get_data_last_modified_time(const string &anc_location)
+{
+    string dds_name = find_ancillary_file(dataset, "dds", anc_location,
+					  anc_file);
+    string das_name = find_ancillary_file(dataset, "dds", anc_location,
+					  anc_file);
+    long int m = max((das_name != "") ? last_modified_time(das_name) : 0,
+		     (dds_name != "") ? last_modified_time(dds_name) : 0);
+    // g++ did not compile `max(max(x,y),z)' 4/23/2001 jhrg
+    return max(m, get_dataset_last_modified_time()); 
+}
+
+time_t
+DODSFilter::get_request_if_modified_since()
+{
+    return d_if_modified_since;
 }
 
 string
@@ -152,11 +221,15 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
     // we have failed because of an internal error, at least it is 
     // a clean shutdown.
     // If the exception is of type Error, we let the client know that
-    // it is an user's error so in this case set_mime_text will 
+    // it is a user error so in this case set_mime_text will 
     // have ObjectType as dods_error.
     // No matter the kind of exception we rethrow it so the initial 
     // caller of DAS::read_ancillary_das should get it and decide how to
     // terminate. 
+    if (in)
+	das.parse(in);
+
+#if 0
     if (in) {
 	try{
 	    das.parse(in);
@@ -181,6 +254,7 @@ DODSFilter::read_ancillary_das(DAS &das, string anc_location)
 	    throw; // re throw exception...
 	}
     }
+#endif
 }
 
 void
@@ -194,7 +268,10 @@ DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
     
     // Jose Garcia
     // Same comments for DAS::read_ancillary_das apply here.
+    if (in)
+	dds.parse(in);
     
+#if 0
     if (in) {
 	try{
 	    dds.parse(in);
@@ -218,24 +295,24 @@ DODSFilter::read_ancillary_dds(DDS &dds, string anc_location)
 	    throw; // re throw exception...
 	}
     }
+#endif
 }
 
 static const char *emessage = \
-"DODS internal server error. Please report this to the dataset maintainer, \
-or to support@unidata.ucar.edu.";
+"DODS internal server error; usage error. Please report this to the dataset \
+maintainer, or to support@unidata.ucar.edu.";
 
 void 
 DODSFilter::print_usage()
 {
     // Write a message to the WWW server error log file.
     string oss="";
-    oss+= "Usage: " +program_name+ " [-c] [-v <cgi version>] [-e <ce>] [-d <ancillary file directory>] [-f <ancillary file name>]";
-    oss+= " <dataset>\n";
+    oss+= "Usage: " +program_name+ " -V | [-c] [-v <cgi version>] [-e <ce>]";
+    oss+= "       [-d <ancillary file directory>] [-f <ancillary file name>]";
+    oss+= "       <dataset>\n";
     ErrMsgT(oss.c_str());
-    // Build an error object to return to the user.
-    Error e(unknown_error, emessage);
-    set_mime_text(cout, dods_error, cgi_ver);
-    e.print(cout);
+
+    throw Error(unknown_error, emessage);
 }
 
 void 
@@ -245,8 +322,8 @@ DODSFilter::send_version_info()
 	 << "XDODS-Server: " << cgi_ver << endl
 	 << "Content-Type: text/plain" << endl
 	 << endl;
-    
-    cout << "Core version: " << DVR << endl;
+
+    cout << "DODS server core software: " << DVR << endl;
 
     if (cgi_ver != "")
 	cout << "Server vision: " << cgi_ver << endl;
@@ -256,52 +333,93 @@ DODSFilter::send_version_info()
 	cout << "Dataset version: " << v << endl;
 }
 
+// I've written a few unit tests for this method (see DODSFilterTest.cc) but
+// it's very hard to test well. 5/1/2001 jhrg
 void
-DODSFilter::send_das(DAS &das)
+DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location)
 {
-    set_mime_text(cout, dods_das, cgi_ver);
-    das.print(cout);
-
+    time_t das_lmt = get_das_last_modified_time(anc_location);
+    if (is_conditional()
+	&& das_lmt <= get_request_if_modified_since()) {
+	set_mime_not_modified(os);
+    }
+    else {
+	set_mime_text(os, dods_das, cgi_ver, x_plain, das_lmt);
+	das.print(os);
+    }
 }
 
 void
-DODSFilter::send_dds(DDS &dds, bool constrained)
+DODSFilter::send_das(DAS &das, const string &anc_location)
 {
-    if (constrained) {
+    send_das(cout, das, anc_location);
+}
+
+void
+DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
+		     const string &anc_location)
+{
+    // If constrained, parse the constriant. Throws Error or InternalErr.
+    if (constrained)
+	dds.parse_constraint(ce, os, true);
+#if 0
 	try{
-	    dds.parse_constraint(ce, cout, true);
+	    dds.parse_constraint(ce, os, true);
 	}
 	catch(InternalErr &ie) {
 	    // write the problem in the server log
 	    ErrMsgT(ie.error_message());
 	    // let the client know that we failed
-	    set_mime_text(cout, dods_error, cgi_ver);
-	    cout << ie.error_message() << endl;
+	    set_mime_text(os, dods_error, cgi_ver);
+	    os << ie.error_message() << endl;
 	    // re throw the exception so the outer layer finish however it
 	    // wants.
 	    throw;
 	}
 	catch(Error &err) {
 	    string m = program_name + ": parse error in constraint: " +  ce;
-	    set_mime_text(cout, dods_error, cgi_ver);
+	    set_mime_text(os, dods_error, cgi_ver);
 	    Error e(malformed_expr, m);
-	    e.print(cout);
+	    e.print(os);
 	    throw;
 	}
-	set_mime_text(cout, dods_dds, cgi_ver);
-	dds.print_constrained(cout);  // send constrained DDS    
+    }
+#endif
+
+    time_t dds_lmt = get_dds_last_modified_time(anc_location);
+    if (is_conditional() 
+	&& dds_lmt <= get_request_if_modified_since()) {
+	set_mime_not_modified(os);
     }
     else {
-	set_mime_text(cout, dods_dds, cgi_ver);
-	dds.print(cout);
+	set_mime_text(os, dods_dds, cgi_ver, x_plain, dds_lmt);
+	if (constrained)
+	    dds.print_constrained(os);
+	else
+	    dds.print(os);
     }
-
 }
 
 void
-DODSFilter::send_data(DDS &dds, FILE *data_stream)
+DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location)
+{
+    send_dds(cout, dds, constrained, anc_location);
+}
+
+void
+DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 {
     bool compress = comp && deflate_exists();
+    time_t data_lmt = get_data_last_modified_time(anc_location);
+
+    // If this is a conditional request and the server should send a 304
+    // response, do that and exit. Otherwise, continue on ans send the full
+    // response. 
+    if (is_conditional()
+	&& data_lmt <= get_request_if_modified_since()) {
+	set_mime_not_modified(data_stream);
+	return;
+    }
 
     // This catch is a quick & dirty hack for exceptions thrown by the new
     // (11/6/98) projection functions in CEs. I might add exceptions to other
@@ -311,35 +429,90 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream)
     // I'm not sure we should catch errors from dds.send and its callees
     // here. I think they should be caught in the outer layer (e.g.,
     // ff_dods). 5/26/99 jhrg
-    try {
-      // Jose Garcia
-      // DDS::send may return false or throw an exception
-      if (!dds.send(dataset, ce, data_stream, compress, cgi_ver)) {
+
+    // Jose Garcia
+    // DDS::send may return false or throw an exception
+    if (!dds.send(dataset, ce, data_stream, compress, cgi_ver,
+		  data_lmt)) {
 	ErrMsgT((compress) ? "Could not send compressed data" : 
 		"Could not send data");
 	throw InternalErr("could not send data");
-      }
+    }
+#if 0
+    try {
+	// Jose Garcia
+	// DDS::send may return false or throw an exception
+	if (!dds.send(dataset, ce, data_stream, compress, cgi_ver,
+		      data_lmt)) {
+	    ErrMsgT((compress) ? "Could not send compressed data" : 
+		    "Could not send data");
+	    throw InternalErr("could not send data");
+	}
     }
     catch (Error &e) {
-      ErrMsgT((compress) ? "Could not send compressed data" : 
-	      "Could not send data");
-      // Jose Garcia
-      set_mime_text(cout, dods_error, cgi_ver);
-      e.print(cout);
+	ErrMsgT((compress) ? "Could not send compressed data" : 
+		"Could not send data");
+	// Jose Garcia
+	set_mime_text(cout, dods_error, cgi_ver);
+	e.print(cout);
       
-      throw ;
+	throw ;
     }
     catch(InternalErr &ie){
-      ErrMsgT((compress) ? "Could not send compressed data" : 
-	      "Could not send data");
-      set_mime_text(cout, dods_error, cgi_ver);
-      cout<<"Internal DODS server error."<<endl;;
+	ErrMsgT((compress) ? "Could not send compressed data" : 
+		"Could not send data");
+	set_mime_text(cout, dods_error, cgi_ver);
+	cout<<"Internal DODS server error."<<endl;;
       
-      throw ;
+	throw ;
     }
+#endif
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.24  2001/06/15 23:49:02  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.23.2.8  2001/06/14 21:31:15  jimg
+// Modified the handling of version requests as signaled by this class'
+// client. The version number printed from this class is for the core software.
+// The cgi_version property should be set by the client so that the
+// send_version() method will write both the core and server (CGI) version
+// numbers.
+//
+// Revision 1.23.2.7  2001/06/08 21:57:49  jimg
+// Really fixed the usage message this time...
+//
+// Revision 1.23.2.6  2001/06/08 21:37:02  jimg
+// Corrected the usage message. Added to text in the Error thrown as well.
+//
+// Revision 1.23.2.5  2001/05/16 21:12:26  jimg
+// Modified the ctor and set_ce() so that dods2id() does not replace %20s
+// in either the dataset name or the CE. This keeps the parsers from gaging
+// on spaces (which they think are word separators).
+//
+// Revision 1.23.2.4  2001/05/07 17:19:08  jimg
+// The dataset name and CE are now passed through dods2id() which removes WWW
+// escape sequences (those %<hex digit><hex digit> things) and replaces them
+// with the correct ASCII characters.
+// Fixed a bug where DAS::parse(FILE *) and DDS::parse(FILE *) were often called
+// with a null FILE *.
+//
+// Revision 1.23.2.3  2001/05/03 23:36:31  jimg
+// Removed all the catch clauses for Error and InternalErr. Code that uses
+// DODSFilter should catch (and probably serialize) Error and its children. All
+// of the current URI servers do this.
+//
+// Revision 1.23.2.2  2001/05/03 20:23:47  jimg
+// Added the methods is_conditional() and get_request_if_modified_since(). These
+// are used to determine if the request was conditional and, if so, to get the
+// value of the If-Modified-Since header.
+// Modified the send_das(), send_dds() and send_data() methods so that a 304
+// (not modified) response is sent if appropriate.
+//
+// Revision 1.23.2.1  2001/04/23 22:34:46  jimg
+// Added support for the Last-Modified MIME header in server responses.`
+//
 // Revision 1.23  2000/10/30 17:21:27  jimg
 // Added support for proxy servers (from cjm).
 //

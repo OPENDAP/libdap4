@@ -1,11 +1,11 @@
 
-# $Id: urls.tcl,v 1.4 1999/04/29 02:29:40 jimg Exp $
+# $Id: urls.tcl,v 1.5 2001/06/15 23:49:06 jimg Exp $
 
 # Datasets and their expected output (the information that writeval sends to
 # stdout - not the stuff that should be going into the file).
 
 # URI/BEARS:
-set bears "http://$host/test/nph-nc/data/nc/bears.nc"
+set bears "http://$host/$test_dir/nph-dods/data/nc/bears.nc"
 set bears_ce "bears"
 set bears_dds "Dataset {
     Grid {
@@ -50,7 +50,7 @@ set bears_dds "Dataset {
 } bears;"
 
 # URI/FNOC
-set fnoc1 "http://$host/test/nph-nc/data/nc/fnoc1.nc"
+set fnoc1 "http://$host/$test_dir/nph-dods/data/nc/fnoc1.nc"
 set fnoc1_ce "u\\\[0:0\\\]\\\[0:9\\\]\\\[0:9\\\]"
 set fnoc1_dds "Dataset {
     Int32 u\[time_a = 16\]\[lat = 17\]\[lon = 21\];
@@ -61,7 +61,7 @@ set fnoc1_dds "Dataset {
 } fnoc1;"
 
 # URI/DSP:
-set dsp_1 "http://$host/test/nph-dsp/data/dsp/f96243170857.img"
+set dsp_1 "http://$host/$test_dir/nph-dods/data/dsp/f96243170857.img"
 set dsp_1_ce "dsp_band_1\\\[20:30\\\]\\\[20:30\\\]"
 set dsp_1_dds "Dataset {
     Grid {
@@ -76,14 +76,14 @@ set dsp_1_dds "Dataset {
 } f96243170857;"
 
 # URI/MatLab:
-set nscat_s2 "http://$host/test/nph-mat/data/mat/NSCAT_S2.mat"
+set nscat_s2 "http://$host/$test_dir/nph-dods/data/mat/NSCAT_S2.mat"
 set nscat_s2_ce "NSCAT_S2\\\[75:75\\\]\\\[0:5\\\]"
 set nscat_s2_dds "Dataset {
     Float64 NSCAT_S2\[NSCAT_S2_row = 153\]\[NSCAT_S2_column = 843\];
 } NSCAT_S2;"
 
 # URI/NSCAT:
-set nscat_hdf "http://$host/test/nph-hdf/data/hdf/S2000415.HDF"
+set nscat_hdf "http://$host/$test_dir/nph-dods/data/hdf/S2000415.HDF"
 set nscat_hdf_ce "WVC_Lat\\\[200:201\\\]\\\[20:21\\\]"
 set nscat_hdf_dds "Dataset {
     Int32 WVC_Lat\[row = 458\]\[WVC = 24\];
@@ -120,7 +120,7 @@ set nscat_hdf_dds "Dataset {
 } S2000415%2eHDF;"
 
 # URI/NSCAT Level 3 - here to test grids with the hdf server.
-set nscat_l3 "http://$host/test/nph-hdf/data/hdf/S3097057.HDF"
+set nscat_l3 "http://$host/$test_dir/nph-dods/data/hdf/S3097057.HDF"
 set nscat_l3_ce1 "WVC_Count\\\[200:201\\\]\\\[20:119\\\]"
 set nscat_l3_ce2 "Avg_Wind_Vel_U\\\[200:201\\\]\\\[20:119\\\]"
 set nscat_l3_dds "Dataset {
@@ -226,7 +226,7 @@ set nscat_l3_dds "Dataset {
 } S3097057%2eHDF;"
 
 # URI/JGOFS:
-set jg_test "http://$host/test/nph-jg/test"
+set jg_test "http://$host/$test_dir/nph-dods/test"
 set jg_test_ce "year,month,lat,lon,sal&lat>37.5&lat<38.0"
 set jg_test_dds "Dataset {
     Sequence {

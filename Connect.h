@@ -186,6 +186,11 @@ private:
 
 #ifdef GUI
     Gui *_gui;			// Used for progress, error display.
+#else
+    void *_gui;			// Place holder. Makes this header work for
+				// Connect with and w/o -DGUI. Assumes
+				// sizeof(Gui*) == sizeof(void*). 4/16/2001
+				// jhrg
 #endif
 
     string _URL;		// URL to remote dataset (minus CE)
@@ -196,6 +201,7 @@ private:
     string _username;           // extracted from URL, or GUI
     string _password;		// extracted from URL, or GUI
     int _password_attempt;	// number of tries with the user/password
+    int _always_validate;
     
     HTParentAnchor *_anchor;
     HTMethod _method;		// What method are we envoking 
@@ -639,6 +645,26 @@ public:
 
 /* 
  * $Log: Connect.h,v $
+ * Revision 1.54  2001/06/15 23:49:01  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.49.4.4  2001/05/03 19:00:15  jimg
+ * Added the _always_validate field.
+ *
+ * Revision 1.49.4.3  2001/04/16 17:10:00  jimg
+ * Added a companion field void *_gui for the field Gui *_gui. The former is
+ * used when `GUI' is not defined. This makes sure (assuming that the size of
+ * the two pointers is identical) that code which uses libdap++-gui.a gets the
+ * correct definition of Connect if it does not define GUI itself. Note that the
+ * whole `defining GUI' thing is a hack which should go away during some future
+ * refactoring of Connect so I'd rather patch around the problem like this than
+ * say every client must define GUI or create two include files.
+ *
+ * Revision 1.49.4.2  2001/02/14 00:10:05  jimg
+ * Merged code from the trunk's HEAD revision for this/these files onto
+ * the release-3-2 branch. This moves the authentication software onto the
+ * release-3-2 branch so that it will be easier to get it in the 3.2 release.
+ *
  * Revision 1.53  2001/02/12 23:16:32  jimg
  * Fixed an error with the using statements. `using std::vector<string>;' makes
  * g++ barf, but it like using std::string; and using std::vector;.

@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.21 2001/02/09 22:07:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.22 2001/06/15 23:49:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -101,18 +101,15 @@ Check that the URL is correct.";
 
 typedef int checker(const char *);
 
-#if 0
-void mem_list_report();
-#endif
 int daslex(void);
 static void daserror(char *s);
-#if 0
-static string attr_name(string name);
-#endif
 static void add_attribute(const string &type, const string &name, 
 			  const string &value, checker *chk) throw (Error);
 static void add_alias(AttrTable *das, AttrTable *current, const string &name, 
 		      const string &src) throw (Error);
+static void add_bad_attribute(AttrTable *attr, const string &type,
+			      const string &name, const string &value,
+			      const string &msg);
 
 #ifndef YYSTYPE
 #define YYSTYPE int
@@ -203,14 +200,14 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   167,   175,   183,   184,   188,   189,   195,   196,   197,   200,
-   202,   203,   204,   206,   207,   208,   210,   211,   212,   214,
-   215,   216,   218,   219,   220,   222,   223,   224,   226,   227,
-   228,   230,   231,   232,   234,   235,   236,   238,   258,   266,
-   266,   270,   272,   276,   282,   286,   292,   296,   302,   306,
-   312,   316,   322,   326,   332,   336,   342,   346,   352,   356,
-   362,   362,   365,   365,   365,   365,   368,   368,   371,   376,
-   380
+   164,   172,   180,   181,   185,   186,   192,   193,   194,   197,
+   199,   200,   201,   203,   204,   205,   207,   208,   209,   211,
+   212,   213,   215,   216,   217,   219,   220,   221,   223,   224,
+   225,   227,   228,   229,   231,   232,   233,   235,   255,   263,
+   263,   267,   269,   273,   279,   283,   289,   293,   299,   303,
+   309,   313,   319,   323,   329,   333,   339,   343,   349,   353,
+   359,   359,   362,   362,   362,   362,   365,   365,   368,   373,
+   377
 };
 #endif
 
@@ -871,7 +868,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 168 "das.y"
+#line 165 "das.y"
 {
 		    name = new string();
 		    type = new string();
@@ -880,7 +877,7 @@ case 1:
 		;
     break;}
 case 2:
-#line 175 "das.y"
+#line 172 "das.y"
 {
 		    POP;	// pop the DAS/AttrTable before stack's dtor
 		    delete name;
@@ -889,85 +886,85 @@ case 2:
 		;
     break;}
 case 6:
-#line 190 "das.y"
+#line 187 "das.y"
 {
 		    parse_error((parser_arg *)arg, NO_DAS_MSG, das_line_num);
 		;
     break;}
 case 11:
-#line 202 "das.y"
+#line 199 "das.y"
 { *type = "Byte"; ;
     break;}
 case 12:
-#line 203 "das.y"
+#line 200 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 14:
-#line 206 "das.y"
+#line 203 "das.y"
 { save_str(*type, "Int16", das_line_num); ;
     break;}
 case 15:
-#line 207 "das.y"
+#line 204 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 17:
-#line 210 "das.y"
+#line 207 "das.y"
 { save_str(*type, "UInt16", das_line_num); ;
     break;}
 case 18:
-#line 211 "das.y"
+#line 208 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 20:
-#line 214 "das.y"
+#line 211 "das.y"
 { save_str(*type, "Int32", das_line_num); ;
     break;}
 case 21:
-#line 215 "das.y"
+#line 212 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 23:
-#line 218 "das.y"
+#line 215 "das.y"
 { save_str(*type, "UInt32", das_line_num); ;
     break;}
 case 24:
-#line 219 "das.y"
+#line 216 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 26:
-#line 222 "das.y"
+#line 219 "das.y"
 { save_str(*type, "Float32", das_line_num); ;
     break;}
 case 27:
-#line 223 "das.y"
+#line 220 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 29:
-#line 226 "das.y"
+#line 223 "das.y"
 { save_str(*type, "Float64", das_line_num); ;
     break;}
 case 30:
-#line 227 "das.y"
+#line 224 "das.y"
 { save_str(*name, yyvsp[0], das_line_num); ;
     break;}
 case 32:
-#line 230 "das.y"
+#line 227 "das.y"
 { *type = "String"; ;
     break;}
 case 33:
-#line 231 "das.y"
+#line 228 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 35:
-#line 234 "das.y"
+#line 231 "das.y"
 { *type = "Url"; ;
     break;}
 case 36:
-#line 235 "das.y"
+#line 232 "das.y"
 { *name = yyvsp[0]; ;
     break;}
 case 38:
-#line 239 "das.y"
+#line 236 "das.y"
 {
 		    DBG(cerr << "Processing ID: " << yyvsp[0] << endl);
 		    
@@ -989,7 +986,7 @@ case 38:
 		;
     break;}
 case 39:
-#line 259 "das.y"
+#line 256 "das.y"
 {
 		    /* pop top of stack; store in attr_tab */
 		    DBG(cerr << " Poped attr_tab: " << TOP_OF_STACK << endl);
@@ -997,127 +994,127 @@ case 39:
 		;
     break;}
 case 41:
-#line 267 "das.y"
+#line 264 "das.y"
 { 
 		    parse_error(ATTR_TUPLE_MSG, das_line_num, yyvsp[0]);
 		;
     break;}
 case 43:
-#line 273 "das.y"
+#line 270 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_byte);
 		;
     break;}
 case 44:
-#line 277 "das.y"
+#line 274 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_byte);
 		;
     break;}
 case 45:
-#line 283 "das.y"
+#line 280 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_int16);
 		;
     break;}
 case 46:
-#line 287 "das.y"
+#line 284 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_int16);
 		;
     break;}
 case 47:
-#line 293 "das.y"
+#line 290 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_uint16);
 		;
     break;}
 case 48:
-#line 297 "das.y"
+#line 294 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_uint16);
 		;
     break;}
 case 49:
-#line 303 "das.y"
+#line 300 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_int32);
 		;
     break;}
 case 50:
-#line 307 "das.y"
+#line 304 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_int32);
 		;
     break;}
 case 51:
-#line 313 "das.y"
+#line 310 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_uint32);
 		;
     break;}
 case 52:
-#line 317 "das.y"
+#line 314 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_uint32);
 		;
     break;}
 case 53:
-#line 323 "das.y"
+#line 320 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_float32);
 		;
     break;}
 case 54:
-#line 327 "das.y"
+#line 324 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_float32);
 		;
     break;}
 case 55:
-#line 333 "das.y"
+#line 330 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_float64);
 		;
     break;}
 case 56:
-#line 337 "das.y"
+#line 334 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_float64);
 		;
     break;}
 case 57:
-#line 343 "das.y"
+#line 340 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], 0);
 		;
     break;}
 case 58:
-#line 347 "das.y"
+#line 344 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], 0);
 		;
     break;}
 case 59:
-#line 353 "das.y"
+#line 350 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_url);
 		;
     break;}
 case 60:
-#line 357 "das.y"
+#line 354 "das.y"
 {
 		    add_attribute(*type, *name, yyvsp[0], &check_url);
 		;
     break;}
 case 69:
-#line 372 "das.y"
+#line 369 "das.y"
 { 
 		    *name = yyvsp[0];
 		;
     break;}
 case 70:
-#line 376 "das.y"
+#line 373 "das.y"
 {
 		    add_alias(DAS_OBJ(arg), TOP_OF_STACK, *name, string(yyvsp[0]))
                 ;
@@ -1344,7 +1341,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 381 "das.y"
+#line 378 "das.y"
 
 
 // This function is required for linking, but DODS uses its own error
@@ -1354,21 +1351,6 @@ static void
 daserror(char *)
 {
 }
-
-// Return the rightmost component of name (where each component is separated
-// by `.'.
-
-#if 0
-static string
-attr_name(string name)
-{
-    string::size_type i = name.rfind('.');
-    if(i == string::npos)
-      return name;
-    else
-      return name.substr(i+1);
-}
-#endif
 
 static string
 a_or_an(const string &subject)
@@ -1382,6 +1364,10 @@ a_or_an(const string &subject)
 	return "an";
 }
 
+// This code used to throw an exception when a bad attribute value came
+// along; now it dumps the errant value(s) into a sub container called *_DODS
+// and stores the parser's error message in a string attribute named
+// `explanation.' 
 static void
 add_attribute(const string &type, const string &name, const string &value,
 	      checker *chk) throw (Error)
@@ -1392,12 +1378,16 @@ add_attribute(const string &type, const string &name, const string &value,
     if (chk && !(*chk)(value.c_str())) {
 	string msg = "`";
 	msg += value + "' is not " + a_or_an(type) + " " + type + " value.";
+	add_bad_attribute(TOP_OF_STACK, type, name, value, msg);
+	return;
+#if 0
 	parse_error(msg.c_str(), das_line_num);	// throws Error.
+#endif
     }
     
     if (STACK_EMPTY) {
 	string msg = "Whoa! Attribute table stack empty when adding `" ;
-	msg += name + "' .";
+	msg += name + ".' ";
 	parse_error(msg.c_str(), das_line_num);
     }
     
@@ -1435,10 +1425,54 @@ add_alias(AttrTable *das, AttrTable *current, const string &name,
     }
 }
 
+static void
+add_bad_attribute(AttrTable *attr, const string &type, const string &name,
+		  const string &value, const string &msg)
+{
+    // First, if this is badd value is already in a *_dods_errors container,
+    // then just add it. This can happen when the server side processes a DAS
+    // and then hands it off to a client which does the same.
+    // Make a new container. Call it <attr's name>_errors. If that container
+    // already exists, use it.
+    // Add the attribute.
+    // Add the error string to an attribute in the container called
+    // `<name_explanation.'. 
+    
+    if (attr->get_name().find("_dods_errors") != string::npos) {
+	attr->append_attr(name, type, value);
+    }
+    else {
+	string error_cont_name = attr->get_name() + "_dods_errors";
+	AttrTable *error_cont = attr->get_attr_table(error_cont_name);
+	if (!error_cont)
+	    error_cont = attr->append_container(error_cont_name);
+
+	error_cont->append_attr(name, type, value);
+	error_cont->append_attr(name + "_explanation", "String",
+				"\"" + msg + "\"");
+    }
+}
+
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.21  2001/02/09 22:07:36  jimg
- * *** empty log message ***
+ * Revision 1.22  2001/06/15 23:49:03  jimg
+ * Merged with release-3-2-4.
+ *
+ * Revision 1.40.4.4  2001/06/06 06:34:46  jimg
+ * Added double quotes around the explanation's when recording errors in the
+ * DAS.
+ * Added code that checks to see if a bad value is inside the special
+ * _dods_errors attribute container. If so, it leaves it alone. This allows the
+ * errors to be processed by the dap without themselves being errors.
+ * Changed the name of the error container to *_dods_errors.
+ *
+ * Revision 1.40.4.3  2001/06/06 04:08:07  jimg
+ * Changed the way errors are handled. Many errors still cause exceptions to
+ * be thrown. However, if an attribtue's value is wrong (e.g., a floating
+ * point value that is out of range), rather than throw an exception a note
+ * in the form of a container and explanation are added to the attribute
+ * table where the error occurred. This is particularly important for
+ * attributes like numerical values since they are often machine-dependent.
  *
  * Revision 1.41  2001/01/26 19:48:09  jimg
  * Merged with release-3-2-3.

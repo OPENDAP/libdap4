@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.21 2000/09/22 02:52:58 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds-test.cc,v 1.22 2001/06/15 23:49:03 jimg Exp $"};
 
 #include <iostream>
 #include <GetOpt.h>
@@ -128,12 +128,6 @@ test_scanner(void)
 	switch (tok) {
 	  case SCAN_DATASET:
 	    cout << "DATASET" << endl;
-	    break;
-	  case SCAN_DEPENDENT:
-	    cout << "DEPENDENT" << endl;
-	    break;
-	  case SCAN_INDEPENDENT:
-	    cout << "INDEPENDENT" << endl;
 	    break;
 	  case SCAN_ARRAY:
 	    cout << "ARRAY" << endl;
@@ -295,6 +289,16 @@ test_class(void)
 }
 
 // $Log: dds-test.cc,v $
+// Revision 1.22  2001/06/15 23:49:03  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.21.4.1  2001/05/08 19:10:47  jimg
+// Expanded the set of names that the dds.y parser will recognize to
+// include integers (for files named like 990412.nc). Also removed the
+// unused keywords Dependent and Independent from both the DDS scanner
+// and parser.
+// Added other reserved words to the set of possible Dataset names.
+//
 // Revision 1.21  2000/09/22 02:52:58  jimg
 // Fixes to the tests to recognize some of the new error messages. Also,
 // the test drivers were modified to catch the exceptions now thrown by

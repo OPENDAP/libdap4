@@ -490,7 +490,8 @@ public:
 	@see BaseType::read
 	@see BaseType::serialize */
     bool send(const string &dataset, const string &constraint, FILE *out, 
-	      bool compressed = true, const string &cgi_ver = "");
+	      bool compressed = true, const string &cgi_ver = "",
+	      time_t lmt = 0);
 
     /** Mark the member variable #send_p# flags to {\it state}. */
     void mark_all(bool state);
@@ -510,6 +511,12 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.42  2001/06/15 23:49:01  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.41.4.1  2001/04/23 22:34:46  jimg
+// Added support for the Last-Modified MIME header in server responses.`
+//
 // Revision 1.41  2000/09/22 02:17:19  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

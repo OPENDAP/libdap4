@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.22 2001/01/26 19:48:10 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.23 2001/06/15 23:49:04 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -224,6 +224,8 @@ int
 check_float32(const char *val)
 {
     char *ptr;
+    errno = 0;			// Clear previous value. Fix for the 64bit
+				// IRIX from Rob Morris. 5/21/2001 jhrg
     double v = strtod(val, &ptr);
 
     if (v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE)) {
@@ -242,6 +244,7 @@ int
 check_float64(const char *val)
 {
     char *ptr;
+    errno = 0;			// Clear previous value. 5/21/2001 jhrg
     double v = strtod(val, &ptr);
 
     if (v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE)) {
@@ -267,6 +270,14 @@ check_url(const char *)
 }
 
 // $Log: parser-util.cc,v $
+// Revision 1.23  2001/06/15 23:49:04  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.21.4.2  2001/05/21 18:08:51  jimg
+// Set errno to zero before the calls to strtod in check_float32 and
+// check_float64. This fixes a bug that shows up n the 64bit IRIX (reported by
+// Rob Morris).
+//
 // Revision 1.22  2001/01/26 19:48:10  jimg
 // Merged with release-3-2-3.
 //

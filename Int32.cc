@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int32.cc,v 1.40 2000/10/06 01:26:05 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int32.cc,v 1.41 2001/06/15 23:49:02 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -39,8 +39,32 @@ using std::cerr;
 using std::endl;
 #endif
 
-Int32::Int32(const string &n) : BaseType(n, dods_int32_c, (xdrproc_t)XDR_INT32)
+Int32::Int32(const string &n) 
+    : BaseType(n, dods_int32_c, (xdrproc_t)XDR_INT32)
 {
+}
+
+Int32::Int32(const Int32 &copy_from) : BaseType(copy_from)
+{
+    _buf = copy_from._buf;
+}
+    
+Int32::~Int32()
+{
+    DBG(cerr << "~Int32" << endl);
+}
+
+Int32 &
+Int32::operator=(const Int32 &rhs)
+{
+    if (this == &rhs)
+	return *this;
+
+    dynamic_cast<BaseType &>(*this) = rhs;
+
+    _buf = rhs._buf;
+
+    return *this;
 }
 
 unsigned int
@@ -184,6 +208,12 @@ Int32::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Int32.cc,v $
+// Revision 1.41  2001/06/15 23:49:02  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.40.4.1  2001/06/07 20:31:13  jimg
+// Added copy constructor and operator=(). The _buf field is copied.
+//
 // Revision 1.40  2000/10/06 01:26:05  jimg
 // Changed the way serialize() calls read(). The status from read() is
 // returned by the Structure and Sequence serialize() methods; ignored by

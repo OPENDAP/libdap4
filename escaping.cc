@@ -56,7 +56,11 @@ using std::ends;
 
 const int MAXSTR = 256;
 
-static string hexstring(unsigned char val) {
+// The next four functions were originally defined static, but I removed that
+// to make testing them (see generalUtilTest.cc) easier to write. 5/7/2001
+// jhrg
+
+string hexstring(unsigned char val) {
     static char buf[MAXSTR];
 
     ostrstream(buf,MAXSTR) << hex << setw(2) << setfill('0') <<
@@ -65,15 +69,24 @@ static string hexstring(unsigned char val) {
     return (string)buf;
 }
 
-static string unhexstring(string s) {
+string unhexstring(string s) 
+{
+#if 0
+    // Originally this code returned val, the string declared below. This
+    // does not work with g++ 2.95.2 (and I'm not sure that it ever did
+    // work...). Note the hoops you must jump through to convert a single
+    // char into a string object. 5/4/2001 jhrg 
     string val;
-
+#endif
+    int val;
     istrstream(s.c_str(),MAXSTR) >> hex >> val;
-
-    return val;
+    static char tmp_str[2];
+    tmp_str[0] = static_cast<char>(val);
+    tmp_str[1] = '\0';
+    return string(tmp_str);
 }
 
-static string octstring(unsigned char val) {
+string octstring(unsigned char val) {
     static char buf[MAXSTR];
 
     ostrstream(buf,MAXSTR) << oct << setw(3) << setfill('0') <<
@@ -82,12 +95,15 @@ static string octstring(unsigned char val) {
     return (string)buf;
 }
 
-static string unoctstring(string s) {
-    string val;
+string unoctstring(string s) {
+    int val;
 
     istrstream(s.c_str(),MAXSTR) >> oct >> val;
 
-    return val;
+    static char tmp_str[2];
+    tmp_str[0] = static_cast<char>(val);
+    tmp_str[1] = '\0';
+    return string(tmp_str);
 }
 
 
@@ -120,19 +136,30 @@ id2dods(string s, const string allowable = "[^0-9a-zA-Z_%]") {
     return s;
 }
 
-/** Escape non-printable characters in an identifier using the WWW %<hex
-    code> notation.
-    @param s The DODS identifier to modify.
+/** Given a string that contains WWW escape sequences, translate those escape
+    sequences back into ASCII characters. Return the modified string. 
+
+    @param s The string to modify.
     @param escape A regular expression that matches the WWW hex code. By
     default "%[0-7][0-9a-fA-F]".
-    @return The modified identifier. */
+    @param except If there is some escape code that should not be removed by
+    this call (e.g., you might not want to remove spaces, %20) use this
+    parameter to specify that code. The function will then transform all
+    escapes \em{except} that one.
+    @return The modified string. */
 string 
-dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]") {
+dods2id(string s, const string escape = "%[0-7][0-9a-fA-F]",
+	const string except = "") {
     Regex escregx(escape.c_str(), 1);
 
-    int index=0, matchlen;
-    while ((index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
-      s.replace(index, 3, unhexstring(s.substr(index+1,2)));
+    int i=0, matchlen;
+    while ((i = escregx.search(s.c_str(), s.size(), matchlen, i)) != -1) {
+	if (s.substr(i, 3) == except) {
+	    i += 3;
+	    continue;
+	}
+	s.replace(i, 3, unhexstring(s.substr(i + 1,2)));
+    }
 
     return s;
 }
@@ -219,6 +246,23 @@ string unescattr(string s) {
 }
 
 // $Log: escaping.cc,v $
+// Revision 1.17  2001/06/15 23:49:04  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.16.2.3  2001/05/16 21:09:19  jimg
+// Modified dods2id so that one escape code can be considered exceptional
+// and not transformed back into its ASCII equivalent. This is used by
+// DODSFilter to suppress turning %20 into a space before the CE is feed
+// into its parser. This means that somewhere further down the line the
+// strings need to be scanned again for escapes (which should then be only
+// %20s).
+//
+// Revision 1.16.2.2  2001/05/07 23:01:47  jimg
+// Fixed the same bug in unoctstring as was fixed in unhexstring.
+//
+// Revision 1.16.2.1  2001/05/07 17:16:18  jimg
+// Fixes to the unhexstring function.
+//
 // Revision 1.16  2000/10/03 05:00:21  rmorris
 // string.insert(), for names that begin with 0-9 was causing an exception
 // in that case.  Observed in the hdf server on modis data.  replaced

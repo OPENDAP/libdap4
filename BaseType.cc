@@ -16,8 +16,11 @@
 #include "config_dap.h"
 
 #include <stdio.h>		// for stdin and stdout
-#include <assert.h>
 
+#include <strstream>
+#include <string>
+
+#include "debug.h"
 #include "BaseType.h"
 #include "util.h"
 #include "InternalErr.h"
@@ -36,7 +39,10 @@ BaseType::_duplicate(const BaseType &bt)
     _type = bt._type;
     _read_p = bt._read_p;	// added, reza
     _send_p = bt._send_p;	// added, reza
+    _synthesized_p = bt._synthesized_p; // 5/11/2001 jhrg
     _xdr_coder = bt._xdr_coder;	// just copy this function pointer
+
+    d_parent = bt.d_parent;	// copy pointers 6/4/2001 jhrg
 }
 
 // Public mfuncs
@@ -54,7 +60,7 @@ BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
 #else
     : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
 #endif
-      _synthesized_p(false)
+      _synthesized_p(false), d_parent(0)
 {
 } 
 
@@ -78,6 +84,23 @@ BaseType::operator=(const BaseType &rhs)
     _duplicate(rhs);
 
     return *this;
+}
+
+string
+BaseType::toString()
+{
+    ostrstream oss;
+    oss << "BaseType (" << this << "):" << endl
+	<< "          _name: " << _name << endl
+	<< "          _type: " << _type << endl
+	<< "          _read_p: " << _read_p << endl
+	<< "          _send_p: " << _send_p << endl
+	<< "          _synthesized_p: " << _synthesized_p << endl 
+	<< "          d_parent: " << d_parent << endl << ends;
+
+    string s = oss.str();
+    oss.freeze(0);
+    return s;
 }
 
 string 
@@ -279,6 +302,24 @@ BaseType::set_send_p(bool state)
     _send_p = state;
 }
 
+// Protected method.
+void
+BaseType::set_parent(BaseType *parent) throw(InternalErr)
+{
+    if (!dynamic_cast<Constructor *>(parent)
+	&& !dynamic_cast<Vector *>(parent))
+	throw InternalErr("Call to set_parent with incorrect variable type.");
+
+    d_parent = parent;
+}
+
+// Public method.
+BaseType *
+BaseType::get_parent()
+{
+    return d_parent;
+}
+
 // Defined by constructor types (Array, ...)
 //
 // Return a pointer to the contained variable in a ctor class.
@@ -378,6 +419,31 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.43  2001/06/15 23:49:01  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.42.4.3  2001/06/07 16:58:06  jimg
+// Added explicit include of debug.h.
+//
+// Revision 1.42.4.2  2001/06/05 06:49:19  jimg
+// Added the Constructor class which is to Structures, Sequences and Grids
+// what Vector is to Arrays and Lists. This should be used in future
+// refactorings (I thought it was going to be used for the back pointers).
+// Introduced back pointers so children can refer to their parents in
+// hierarchies of variables.
+// Added to Sequence methods to tell if a child sequence is done
+// deserializing its data.
+// Fixed the operator=() and copy ctors; removed redundency from
+// _duplicate().
+// Changed the way serialize and deserialize work for sequences. Now SOI and
+// EOS markers are written for every `level' of a nested Sequence. This
+// should fixed nested Sequences. There is still considerable work to do
+// for these to work in all cases.
+//
+// Revision 1.42.4.1  2001/05/12 00:00:26  jimg
+// Fixed a bug where the field _synthesized_p was not copied in _duplicate.
+// Added an implementation of toString(). Used for debugging.
+//
 // Revision 1.42  2000/09/22 02:17:18  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and
