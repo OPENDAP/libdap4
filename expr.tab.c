@@ -25,7 +25,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.34 2003/02/26 06:46:32 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.35 2003/02/27 23:43:08 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2058,9 +2058,7 @@ dereference_string(string &s)
     string url = s.substr(0, qpos);	// strip off CE
     string ce = s.substr(qpos+1);	// yes, get the CE
 
-    // I don't think that the `false' is really necessary, but g++ seems to
-    // want it. jhrg 2/10/97
-    Connect c(url, false); // make the virtual connection
+    Connect c(url); // make the virtual connection
 
     // the initial URL must be a complete reference to data; thus no
     // additional CE is needed. 
@@ -2191,8 +2189,8 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.34  2003/02/26 06:46:32  jimg
- * Updated grammars.
+ * Revision 1.35  2003/02/27 23:43:08  jimg
+ * grammar updates plus added IASConnect to the Makefile.in.
  *
  * Revision 1.45  2003/02/21 00:14:25  jimg
  * Repaired copyright.

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.134 2003/02/26 06:42:41 jimg Exp $
+# $Id: Makefile.in,v 1.135 2003/02/27 23:43:08 jimg Exp $
 
 @SET_MAKE@
 
@@ -157,9 +157,9 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc
 
-AISSRCS = AISResources.cc AISDatabaseParser.cc AISMerge.cc
+AISSRCS = AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc
 
-AISOBJS = AISResources.o AISDatabaseParser.o AISMerge.o
+AISOBJS = AISResources.o AISDatabaseParser.o AISMerge.o AISConnect.o
 
 ALLSRCS = $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) $(TESTSRCS) \
 	  $(TESTPROGSRCS) $(GRAM_SRCS) $(CLIENTSRCS) $(UTILSRCS) $(AISSRCS)
@@ -797,14 +797,13 @@ InternalErr.o: InternalErr.cc config_dap.h InternalErr.h Error.h \
  List.h Structure.h Constructor.h Sequence.h Grid.h
 ResponseTooBigErr.o: ResponseTooBigErr.cc config_dap.h \
  ResponseTooBigErr.h Error.h
-AISResources.o: AISResources.cc config_dap.h AISResources.h \
- ResourceRule.h Resource.h Error.h AISExceptions.h AISDatabaseParser.h \
- InternalErr.h
+AISResources.o: AISResources.cc config_dap.h AISResources.h Resource.h \
+ Error.h AISExceptions.h AISDatabaseParser.h InternalErr.h
 AISDatabaseParser.o: AISDatabaseParser.cc config_dap.h \
  AISDatabaseParser.h InternalErr.h Error.h AISExceptions.h \
- AISResources.h ResourceRule.h Resource.h util.h BaseType.h Byte.h \
- dods-datatypes.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
- Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h GNU/Pix.h \
+ AISResources.h Resource.h util.h BaseType.h Byte.h dods-datatypes.h \
+ Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+ dods-limits.h Url.h Array.h Vector.h DDS.h GNU/Pix.h \
  IteratorAdapter.h Clause.h expr.h RValue.h List.h Structure.h \
  Constructor.h Sequence.h Grid.h debug.h
 AISMerge.o: AISMerge.cc config_dap.h AISMerge.h DAS.h GNU/Pix.h \
@@ -814,7 +813,15 @@ AISMerge.o: AISMerge.cc config_dap.h AISMerge.h DAS.h GNU/Pix.h \
  Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
  dods-limits.h Url.h Array.h Vector.h DDS.h Clause.h expr.h RValue.h \
  List.h Structure.h Constructor.h Sequence.h Grid.h AISResources.h \
- ResourceRule.h Resource.h AISExceptions.h
+ Resource.h AISExceptions.h
+AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
+ GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DDS.h BaseType.h \
+ InternalErr.h Clause.h expr.h RValue.h util.h Byte.h dods-datatypes.h \
+ Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+ dods-limits.h Url.h Array.h Vector.h List.h Structure.h Constructor.h \
+ Sequence.h Grid.h DataDDS.h HTTPConnect.h RCReader.h ObjectType.h \
+ HTTPCache.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
+ AISMerge.h AISResources.h Resource.h AISExceptions.h
 TestByte.o: TestByte.cc config_dap.h TestByte.h Byte.h \
  dods-datatypes.h BaseType.h InternalErr.h Error.h
 TestInt32.o: TestInt32.cc config_dap.h TestInt32.h Int32.h \
@@ -865,13 +872,14 @@ error-test.o: error-test.cc config_dap.h Error.h parser.h GSEClause.h \
  BaseType.h InternalErr.h Array.h dods-limits.h Vector.h DDS.h \
  GNU/Pix.h IteratorAdapter.h Clause.h expr.h RValue.h Grid.h \
  Constructor.h Error.tab.h
-geturl.o: geturl.cc config_dap.h Connect.h DAS.h GNU/Pix.h \
- IteratorAdapter.h AttrTable.h Error.h DDS.h BaseType.h InternalErr.h \
- Clause.h expr.h RValue.h util.h Byte.h dods-datatypes.h Int16.h \
- UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h \
- Url.h Array.h Vector.h List.h Structure.h Constructor.h Sequence.h \
- Grid.h DataDDS.h HTTPConnect.h RCReader.h ObjectType.h HTTPCache.h \
- ResponseTooBigErr.h HTTPCacheDisconnectedMode.h
+geturl.o: geturl.cc config_dap.h AISConnect.h Connect.h DAS.h \
+ GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DDS.h BaseType.h \
+ InternalErr.h Clause.h expr.h RValue.h util.h Byte.h dods-datatypes.h \
+ Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+ dods-limits.h Url.h Array.h Vector.h List.h Structure.h Constructor.h \
+ Sequence.h Grid.h DataDDS.h HTTPConnect.h RCReader.h ObjectType.h \
+ HTTPCache.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
+ AISMerge.h AISResources.h Resource.h AISExceptions.h
 cgi_util.o: cgi_util.cc config_dap.h cgi_util.h DDS.h GNU/Pix.h \
  IteratorAdapter.h BaseType.h InternalErr.h Error.h Clause.h expr.h \
  RValue.h ObjectType.h EncodingType.h util.h Byte.h dods-datatypes.h \
@@ -924,10 +932,10 @@ parserUtilTest.o: parserUtilTest.cc parser.h Error.h GSEClause.h \
  GNU/Pix.h IteratorAdapter.h Clause.h expr.h RValue.h Grid.h \
  Constructor.h
 AISDatabaseParserTest.o: AISDatabaseParserTest.cc AISDatabaseParser.h \
- InternalErr.h Error.h AISExceptions.h AISResources.h ResourceRule.h \
- Resource.h debug.h
-AISResourcesTest.o: AISResourcesTest.cc AISResources.h ResourceRule.h \
- Resource.h Error.h AISExceptions.h debug.h
+ InternalErr.h Error.h AISExceptions.h AISResources.h Resource.h \
+ debug.h
+AISResourcesTest.o: AISResourcesTest.cc AISResources.h Resource.h \
+ Error.h AISExceptions.h debug.h
 AISMergeTest.o: AISMergeTest.cc Connect.h DAS.h GNU/Pix.h \
  IteratorAdapter.h AttrTable.h Error.h DDS.h BaseType.h InternalErr.h \
  Clause.h expr.h RValue.h util.h Byte.h dods-datatypes.h Int16.h \
@@ -935,4 +943,4 @@ AISMergeTest.o: AISMergeTest.cc Connect.h DAS.h GNU/Pix.h \
  Url.h Array.h Vector.h List.h Structure.h Constructor.h Sequence.h \
  Grid.h DataDDS.h HTTPConnect.h RCReader.h ObjectType.h HTTPCache.h \
  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h AISMerge.h \
- AISResources.h ResourceRule.h Resource.h AISExceptions.h debug.h
+ AISResources.h Resource.h AISExceptions.h debug.h
