@@ -10,6 +10,12 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.44  2000/07/19 22:45:21  rmorris
+// Delete the right type of dds (a DataDDS) so that when it
+// is deleted, the destructors are called in the right sequence.
+// This might be the case under win32 only (??), but I would think
+// this change is applicable to unix also.
+//
 // Revision 1.43  2000/07/18 03:43:42  rmorris
 // Change to set stdout to binary mode under win32 so that the output of geturl
 // yields the exact same thing as it does Unix - i.e., no cr-nl translation
@@ -192,7 +198,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.43 2000/07/18 03:43:42 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.44 2000/07/19 22:45:21 rmorris Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -201,13 +207,16 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.43 2000/07/18 03:43:42 rmorr
 #include <string>
 
 #include "Connect.h"
+#ifdef WIN32
+#include "DataDDS.h"
+#endif
 
 #ifdef WIN32
 using std::cerr;
 using std::endl;
 #endif
 
-const char *version = "$Revision: 1.43 $";
+const char *version = "$Revision: 1.44 $";
 extern int keep_temps;		// defined in Connect.cc
 
 void
@@ -414,7 +423,8 @@ main(int argc, char * argv[])
 	process_data(url, dds, verbose, async);
     }
 
-    for (int i = getopt.optind; i < argc; ++i) {
+    for (int i = getopt.optind; i < argc; ++i)
+	{
 	if (verbose)
 	    cerr << "Fetching: " << argv[i] << endl;
 	
@@ -422,7 +432,8 @@ main(int argc, char * argv[])
 	Connect url(name, trace, accept_deflate);
 	url.set_accept_types(accept_types);
 
-	if (url.is_local()) {
+	if (url.is_local())
+		{
 	    if (verbose) 
 		cerr << "Assuming that the argument " << argv[i] 
 		     << " is a file" << endl 
@@ -431,71 +442,90 @@ main(int argc, char * argv[])
 	    DDS *dds = url.read_data(fopen(argv[i], "r"), gui, async);
 	    process_data(url, dds, verbose, async);
 	    continue;		// Do not run the following IF stmt.
-	}
-
-	if (get_das) {
-	    for (int j = 0; j < times; ++j) {
-		if (!url.request_das(gui))
-		    continue;
-		if (verbose) {
-		    cerr << "Server version: " << url.server_version() 
-			<< endl;
-		    cerr << "DAS:" << endl;
 		}
+
+	if (get_das)
+		{
+	    for (int j = 0; j < times; ++j)
+			{
+			if (!url.request_das(gui))
+				continue;
+			if (verbose)
+				{
+				cerr << "Server version: " << url.server_version() 
+				<< endl;
+				cerr << "DAS:" << endl;
+				}
 		url.das().print();
-	    }
-	}
-
-	if (get_dds) {
-	    for (int j = 0; j < times; ++j) {
-		if (!url.request_dds(gui))
-		    continue;
-		if (verbose) {
-		    cerr << "Server version: " << url.server_version() 
-			<< endl;
-		    cerr << "DDS:" << endl;
+			}
 		}
-		url.dds().print();
-	    }
-	}
 
-	if (get_data) {
-	    if (!(expr || name.find('?') != name.npos)) {
-		cerr << "Must supply a constraint expression with -D."
-		     << endl;
-		continue;
-	    }
-	    for (int j = 0; j < times; ++j) {
-		DDS *dds = url.request_data(expr, gui, async);
-		if (!dds) {
-		    cerr << "Error: " << url.error().error_message() << endl;
-		    continue;
+	if (get_dds)
+		{
+	    for (int j = 0; j < times; ++j)
+			{
+			if (!url.request_dds(gui))
+				continue;
+			if (verbose)
+				{
+				cerr << "Server version: " << url.server_version() 
+				<< endl;
+				cerr << "DDS:" << endl;
+				}
+			url.dds().print();
+			}
 		}
-		process_data(url, dds, verbose, async);
-		delete dds;
-	    }
-	}
 
-	if (!get_das && !get_dds && !get_data) {
+	if (get_data)
+		{
+	    if (!(expr || name.find('?') != name.npos))
+			{
+			cerr << "Must supply a constraint expression with -D."
+				<< endl;
+			continue;
+			}
+	    for (int j = 0; j < times; ++j)
+			{
+#ifdef WIN32  //  Causes dds to deconstruct appropriately under Visual C++.
+              //  I'm guessing this would be correct under unix's also.
+			DataDDS *dds = (DataDDS *)url.request_data(expr, gui, async);
+#else
+			DDS *dds = url.request_data(expr, gui, async);
+#endif
+			if (!dds)
+				{
+				cerr << "Error: " << url.error().error_message() << endl;
+				continue;
+				}
+			process_data(url, dds, verbose, async);
+			delete dds;
+			}
+		}
+
+	if (!get_das && !get_dds && !get_data)
+		{
 #ifdef GUI
 	    url.gui()->show_gui(gui);
 #endif
 	    string url_string = argv[i];
-	    for (int j = 0; j < times; ++j) {
-		if (!url.fetch_url(url_string, async))
-		    continue;
-		if (verbose)
-		    cerr << "Server version: " << url.server_version() 
-			<< endl;
-		FILE *fp = url.output();
-		if (!read_data(fp))
-		    continue;
-		fclose(fp);
-	    }
-	}	    
+	    for (int j = 0; j < times; ++j)
+			{
+			if (!url.fetch_url(url_string, async))
+				continue;
+			if (verbose)
+				cerr << "Server version: " << url.server_version() 
+				<< endl;
+			FILE *fp = url.output();
+			if (!read_data(fp))
+				continue;
+			fclose(fp);
+			}
+		}	    
     }
+
 #ifdef WIN32
-	return;
+	exit(0); //  Running DejaGun/Cygwin based test suites require this.
+	return;  //  Visual C++ asks for this.
 #endif
 }
 
