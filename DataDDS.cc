@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.19 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.20 2003/12/10 21:11:57 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -47,13 +47,7 @@ static char rcsid[] not_used = {"$Id: DataDDS.cc,v 1.19 2003/12/08 18:02:29 edav
 #include "DataDDS.h"
 #include "debug.h"
 
-<<<<<<< DataDDS.cc
 using namespace std;
-=======
-using std::cerr;
-using std::istringstream;
-using std::endl;
->>>>>>> 1.17.2.2
 
 // private
 
@@ -63,19 +57,6 @@ using std::endl;
 void
 DataDDS::_version_string_to_numbers()
 {
-<<<<<<< DataDDS.cc
-    string num = _server_version.substr(_server_version.find('/')+1);
-
-    istringstream iss(num.c_str());
-
-    iss >> _server_version_major;
-    char c;
-    iss >> c;		// This reads the `.' in the version string
-    iss >> _server_version_minor;
-
-    DBG(cerr << "Server version: " << _server_version_major << "." \
-	<< _server_version_minor << endl);
-=======
     string num = _server_version.substr(_server_version.find('/')+1);
  
     if (!num.empty() && num.find('.') != string::npos) {
@@ -101,7 +82,6 @@ DataDDS::_version_string_to_numbers()
  
     DBG(cerr << "Server version: " << _server_version_major << "." \
         << _server_version_minor << endl);
->>>>>>> 1.17.2.2
 }
 
 // public
@@ -153,6 +133,10 @@ DataDDS::get_version()
 }
 
 // $Log: DataDDS.cc,v $
+// Revision 1.20  2003/12/10 21:11:57  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.19  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

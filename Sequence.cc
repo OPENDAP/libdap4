@@ -52,28 +52,12 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
-#if 0
-#include "BTIterAdapter.h"
-#endif
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
 #endif
 
 using namespace std;
-
-#if 0
-using std::cerr;
-using std::endl;
-using std::ends;
-using std::ostrstream;
-using std::for_each;
-#ifdef WIN32
-using std::vector<BaseTypeRow *>;
-#else
-using std::vector;
-#endif
-#endif
 
 static const unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
 static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
@@ -306,6 +290,16 @@ Sequence::set_read_p(bool state)
     }
 
     BaseType::set_read_p(state);
+}
+
+void
+Sequence::set_in_selection(bool state)
+{
+    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++) {
+	(*i)->set_in_selection(state);
+    }
+
+    BaseType::set_in_selection(state);
 }
 
 /** @brief Adds a variable to the Sequence.  
@@ -1150,6 +1144,10 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.72  2003/12/10 21:11:58  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.71  2003/05/23 03:24:57  jimg
 // Changes that add support for the DDX response. I've based this on Nathan
 // Potter's work in the Java DAP software. At this point the code can

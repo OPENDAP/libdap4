@@ -25,7 +25,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.41 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.42 2003/12/10 21:11:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -210,17 +210,10 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-<<<<<<< expr.tab.c
        0,   174,   180,   182,   182,   186,   192,   193,   199,   211,
      215,   221,   241,   242,   248,   257,   268,   274,   287,   288,
-     296,   308,   315,   324,   328,   334,   363,   370,   380,   384,
-     390,   402,   420,   446,   447,   448,   449,   450,   451,   452
-=======
-       0,   177,   183,   185,   185,   189,   195,   196,   202,   214,
-     218,   224,   244,   245,   251,   260,   271,   277,   290,   291,
-     299,   311,   318,   327,   331,   337,   368,   375,   385,   389,
-     395,   407,   425,   451,   452,   453,   454,   455,   456,   457
->>>>>>> 1.38.2.4
+     296,   308,   315,   324,   328,   334,   365,   372,   382,   386,
+     392,   404,   422,   448,   449,   450,   451,   452,   453,   454
 };
 #endif
 
@@ -1237,22 +1230,14 @@ case 25:
 		;
     break;}
 case 26:
-<<<<<<< expr.tab.c
-#line 364 "expr.y"
-=======
-#line 369 "expr.y"
->>>>>>> 1.38.2.4
+#line 366 "expr.y"
 { 
 		    BaseType *btp = make_variable((*DDS_OBJ(arg)), yyvsp[0].val); 
 		    yyval.rval_ptr = new rvalue(btp);
 		;
     break;}
 case 27:
-<<<<<<< expr.tab.c
-#line 371 "expr.y"
-=======
-#line 376 "expr.y"
->>>>>>> 1.38.2.4
+#line 373 "expr.y"
 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), yyvsp[-1].id, yyvsp[0].int_ll_ptr))
 		    // no_such_ident throws an exception.
@@ -1262,31 +1247,19 @@ case 27:
 		;
     break;}
 case 28:
-<<<<<<< expr.tab.c
-#line 381 "expr.y"
-=======
-#line 386 "expr.y"
->>>>>>> 1.38.2.4
+#line 383 "expr.y"
 {
 		    yyval.int_ll_ptr = make_array_indices(yyvsp[0].int_l_ptr);
 		;
     break;}
 case 29:
-<<<<<<< expr.tab.c
-#line 385 "expr.y"
-=======
-#line 390 "expr.y"
->>>>>>> 1.38.2.4
+#line 387 "expr.y"
 {
 		    yyval.int_ll_ptr = append_array_index(yyvsp[-1].int_ll_ptr, yyvsp[0].int_l_ptr);
 		;
     break;}
 case 30:
-<<<<<<< expr.tab.c
-#line 391 "expr.y"
-=======
-#line 396 "expr.y"
->>>>>>> 1.38.2.4
+#line 393 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-1].id)) {
 			string msg = "The word `";
@@ -1300,11 +1273,7 @@ case 30:
 		;
     break;}
 case 31:
-<<<<<<< expr.tab.c
-#line 403 "expr.y"
-=======
-#line 408 "expr.y"
->>>>>>> 1.38.2.4
+#line 405 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-3].id)) {
 			string msg = "The word `";
@@ -1324,11 +1293,7 @@ case 31:
 		;
     break;}
 case 32:
-<<<<<<< expr.tab.c
-#line 421 "expr.y"
-=======
-#line 426 "expr.y"
->>>>>>> 1.38.2.4
+#line 423 "expr.y"
 {
 		    if (!check_uint32(yyvsp[-5].id)) {
 			string msg = "The word `";
@@ -1586,11 +1551,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-<<<<<<< expr.tab.c
-#line 455 "expr.y"
-=======
-#line 460 "expr.y"
->>>>>>> 1.38.2.4
+#line 457 "expr.y"
 
 
 // All these error reporting function now throw instnaces of Error. The expr
@@ -2227,11 +2188,17 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.41  2003/12/08 18:02:30  edavis
+ * Revision 1.42  2003/12/10 21:11:58  jimg
+ * Merge with 3.4. Some of the files contains erros (some tests fail). See
+ * the ChangeLog for information about fixes.
+ *
+ * Revision 1.49  2003/12/08 18:02:31  edavis
  * Merge release-3-4 into trunk
  *
- * Revision 1.40  2003/09/25 22:37:34  jimg
- * Misc changes.
+ * Revision 1.47.2.1  2003/09/06 23:01:46  jimg
+ * Now uses the set_in_selection() method to set the in_selection property to
+ * true for any variable that is either in the CE selection or is used as a
+ * function argument.
  *
  * Revision 1.48  2003/05/23 03:24:57  jimg
  * Changes that add support for the DDX response. I've based this on Nathan
@@ -2241,9 +2208,6 @@ get_proj_function(const DDS &table, const char *name)
  * are not supported yet. I've also removed all traces of strstream in
  * favor of stringstream. This code should no longer generate warnings
  * about the use of deprecated headers.
- * Revision 1.38.2.4  2003/09/08 19:04:05  jimg
- * Rebuild of generaed grammar files.
- *
  *
  * Revision 1.47  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.

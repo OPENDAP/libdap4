@@ -157,15 +157,6 @@ typedef vector<BaseType *> BaseTypeRow;
 
 class Sequence: public Constructor {
 private:
-<<<<<<< Sequence.h
-    // Linked list of templates for the variables in this sequence.
-#if 0
-=======
-    // Vector of templates for the variables in this sequence.
->>>>>>> 1.53.2.1
-    std::vector<BaseType *> _vars;
-#endif
-
     // This holds the values read off the wire. Values are stored in
     // instances of BaseType objects.
     std::vector<BaseTypeRow *> d_values;
@@ -332,6 +323,10 @@ public:
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.56  2003/12/10 21:11:58  jimg
+ * Merge with 3.4. Some of the files contains erros (some tests fail). See
+ * the ChangeLog for information about fixes.
+ *
  * Revision 1.55  2003/12/08 18:02:29  edavis
  * Merge release-3-4 into trunk
  *

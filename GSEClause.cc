@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.14 2003/12/08 18:02:29 edavis Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.15 2003/12/10 21:11:57 jimg Exp $"};
 
 #include <iostream>
 #include <sstream>
@@ -110,22 +110,12 @@ void
 GSEClause::set_map_min_max_value(T min, T max)
 {
     DBG(cerr << "Inside set map min max value " << min << ", " << max << endl);
-<<<<<<< GSEClause.cc
-    ostringstream oss1;
-    oss1 << min;
-=======
     std::ostringstream oss1;
     oss1 << min;
->>>>>>> 1.12.2.1
     d_map_min_value = oss1.str();
 
-<<<<<<< GSEClause.cc
-    ostringstream oss2;
-    oss2 << max;
-=======
     std::ostringstream oss2;
     oss2 << max;
->>>>>>> 1.12.2.1
     d_map_max_value = oss2.str();
 }
 
@@ -393,6 +383,10 @@ GSEClause::get_map_max_value() const
 }
 
 // $Log: GSEClause.cc,v $
+// Revision 1.15  2003/12/10 21:11:57  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.14  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

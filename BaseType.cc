@@ -52,14 +52,7 @@
 #include "InternalErr.h"
 #include "escaping.h"
 
-<<<<<<< BaseType.cc
 using namespace std;
-=======
-using std::cerr;
-using std::endl;
-using std::ends;
-using std::ostringstream;
->>>>>>> 1.51.2.3
 
 // Protected copy mfunc
 
@@ -109,11 +102,7 @@ BaseType::_duplicate(const BaseType &bt)
     @see Type */
 BaseType::BaseType(const string &n, const Type &t, xdrproc_t xdr)
     : _name(n), _type(t), _xdr_coder(xdr), _read_p(false), _send_p(false),
-<<<<<<< BaseType.cc
-      _synthesized_p(false), d_parent(0)
-=======
       d_in_selection(false), _synthesized_p(false), d_parent(0)
->>>>>>> 1.51.2.3
 {
 } 
 
@@ -154,12 +143,8 @@ BaseType::toString()
 	<< "          _read_p: " << _read_p << endl
 	<< "          _send_p: " << _send_p << endl
 	<< "          _synthesized_p: " << _synthesized_p << endl 
-<<<<<<< BaseType.cc
 	<< "          d_parent: " << d_parent << endl
 	<< "          d_attr: " << hex << &d_attr << dec << endl;
-=======
-	<< "          d_parent: " << d_parent << endl;
->>>>>>> 1.51.2.3
 
     return oss.str();
 }
@@ -445,7 +430,7 @@ BaseType::set_send_p(bool state)
     _send_p = state;
 }
 
-<<<<<<< BaseType.cc
+
 /** Get this variable's AttrTable. It's generally a bad idea to return a
     reference to a contained object, but in this case it seems that building
     an interface inside BaseType is overkill. 
@@ -465,7 +450,6 @@ BaseType::set_attr_table(const AttrTable &at)
     d_attr = at;
 }
 
-=======
 /** Does this variable appear in either the selection part or as a function
     argument in the current constrain expression. If this property is set
     (true) then implementation of the read() method should read this
@@ -493,7 +477,6 @@ BaseType::set_in_selection(bool state)
     d_in_selection = state;
 }
 
->>>>>>> 1.51.2.3
 // Protected method.
 /** Set the <tt>parent</tt> property for this variable. Only instances of
     Constructor or Vector should call this method.
@@ -614,29 +597,8 @@ BaseType::var(const string &, btp_stack &)
     several methods to migrate from Structure, Sequence and Grid to
     Constructor. 
 
-<<<<<<< BaseType.cc
-/** Adds a variable to an instance of a constructor class, such as
-    Array, Structure and so on.  This function is only used by those
-    classes.  The BaseType implementation simply prints an error
-    message. 
-
-    NB: When adding a variable to a constructor or an array (this is only
-    important for a constructor), if that variable is itself a
-    constructor you <i>must</i> add its children <i>before</i> you
-    call this method to add the variable to its parent. This method
-    copies the variable allocating a new object. One way around this is
-    to add the constructor, then get a BaseType pointer to it using
-    <tt>var()</tt>. 
-
-    @todo This implementation should probably throw an InternalErr.
-    @brief Adds the input data to the class instance. 
-    @param bt The data to be added to the constructor type. The caller of
-    this method <i>must</i> free memory it allocates for
-    <tt>v</tt>. This method 
-=======
     @param bt The variable to be added to this instance. The caller of this
     method <i>must</i> free memory it allocates for <tt>v</tt>. This method
->>>>>>> 1.51.2.3
     will make a deep copy of the object pointed to by <tt>v</tt>.
     @param part The part of the constructor data to be modified. Only
     meaningful for Grid variables.
@@ -647,7 +609,6 @@ BaseType::add_var(BaseType *, Part)
 {
 }
 
-<<<<<<< BaseType.cc
 /** Put the data into a local buffer so that it may be sent to a client. This
     operation involves reading data from whatever source (often a local
     disk), and filling out the fields in the data type class. This is the
@@ -687,53 +648,10 @@ BaseType::add_var(BaseType *, Part)
     @return void. The bool type is a relic. When implementing this method in
     a sub class, it should always return False. The implementatin in BaseType
     throws InternalErr always.
-=======
-/** This method show be implemented for each of the data type classes (Byte,
-    ..., Grid) when using the DAP class library to build a server. This
-    method is only for DAP servers. The library provides a default
-    definition here which throws an InternalErr exception.
-
-    When implementing a new DAP server, the Byte, ..., Grid data type classes
-    are usually specialized. In each of those specializations read() should
-    be defined to read values from the data source and store them in the
-    object's local buffer. The read() method is called by other methods in
-    this library. When writing read(), follow these rules:
-
-        - read() should throw Error if it encounters an error. The message
-	  should be verbose enough to be understood by someone running a
-	  client on a different machine.
-        - The value(s) should be read iff either send_p() of
-          is_in_selection() return true. If neither of these return true, the
-	  value(s) should not be read. This is important when writing read()
-	  for a Constructor type such as Grid where a client may ask for only
-	  the map vectors (ans thus reading the much larger Array part is not
-	  needed)
-	- The Array::read() and Grid::read() methods should take into account
-	  any restrictions on Array sizes.
-
-    @brief Read data into a local buffer. 
-
-    @return The return value of this method should always be false. This
-    method used to use the return value to indicate that Sequence values
-    remained and still needed to be read. However, all Sequence values are
-    now read in a single call to read(). The return value is retained because
-    it's conceivable that a server might want to implement read() and make
-    use of the return value. Only the specialization would use the return
-    value; it is always ignored by the DAP library.
-
-    @param dataset A string naming the dataset from which the data is to
-    be read. The meaning of this string will vary among different types of
-    data sources.
->>>>>>> 1.51.2.3
-
-<<<<<<< BaseType.cc
     @param dataset A string naming the dataset from which the data is to
     be read. The meaning of this string will vary among data APIs.
 
     @see BaseType */
-=======
-    @see BaseType */
->>>>>>> 1.51.2.3
 bool 
 BaseType::read(const string &dataset)
 {
@@ -1010,17 +928,18 @@ BaseType::check_semantics(string &msg, bool)
 bool 
 BaseType::ops(BaseType *, int, const string &)
 {
-<<<<<<< BaseType.cc
     // Even though ops is a public method, it can never be called because
     // they will never have a BaseType object since this class is abstract,
     // however any of the child classes could by mistake call BaseType::ops
     // so this is an internal error. Jose Garcia
-=======
->>>>>>> 1.51.2.3
     throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.55  2003/12/10 21:11:57  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.54  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -38,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.25 2003/12/08 18:02:31 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.26 2003/12/10 21:11:58 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -267,19 +267,7 @@ fancy_typename(BaseType *v)
 	      type << "[" << a->dimension_name(p) << " = 0.." 
 		   << a->dimension_size(p, false)-1 << "]";
 	  }
-<<<<<<< usage.cc
 	  return type.str();
-=======
-	  type << ends;
-	  return type.str();
-
-      }
-      case dods_list_c: {
-	  ostringstream type;
-	  List *l = (List *)v;
-	  type << "List of " << fancy_typename(l->var()) <<"s " << ends;
-	  return type.str();
->>>>>>> 1.23.2.1
       }
 
       case dods_structure_c:
@@ -518,6 +506,10 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.26  2003/12/10 21:11:58  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.25  2003/12/08 18:02:31  edavis
 // Merge release-3-4 into trunk
 //

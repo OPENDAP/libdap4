@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.34 2003/12/08 18:02:31 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.35 2003/12/10 21:11:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,8 +44,6 @@ static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.34 2003/12/08 18:02:31 
 #include <errno.h>
 
 #include <iostream>
-<<<<<<< parser-util.cc
-=======
 #include <sstream>
 
 //  We wrap VC++ 6.x strtod() to account for a short comming
@@ -54,7 +52,6 @@ static char rcsid[] not_used = {"$Id: parser-util.cc,v 1.34 2003/12/08 18:02:31 
 #include <limits>
 double w32strtod(const char *,char **);
 #endif
->>>>>>> 1.32.2.3
 
 #include "debug.h"
 #include "parser.h"		// defines constants such as ID_MAX
@@ -350,6 +347,10 @@ check_url(const char *)
 }
 
 // $Log: parser-util.cc,v $
+// Revision 1.35  2003/12/10 21:11:58  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.34  2003/12/08 18:02:31  edavis
 // Merge release-3-4 into trunk
 //

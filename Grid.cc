@@ -35,11 +35,8 @@
 
 #include "config_dap.h"
 
-<<<<<<< Grid.cc
 #include <algorithm>
 
-=======
->>>>>>> 1.57.2.3
 #include "Grid.h"
 #include "DDS.h"
 #include "Array.h"		// for downcasts
@@ -52,12 +49,7 @@
 #include "trace_new.h"
 #endif
 
-<<<<<<< Grid.cc
 using namespace std;
-=======
-using std::cerr;
-using std::endl;
->>>>>>> 1.57.2.3
 
 void
 Grid::_duplicate(const Grid &s)
@@ -873,6 +865,10 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.61  2003/12/10 21:11:57  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.60  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.71 2003/12/08 18:02:31 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.72 2003/12/10 21:11:58 jimg Exp $"};
 
 #include <stdio.h>
 #ifdef WIN32
@@ -51,11 +51,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.71 2003/12/08 18:02:31 edavi
 using std::cerr;
 using std::endl;
 
-<<<<<<< geturl.cc
-const char *version = "$Revision: 1.71 $";
-=======
-const char *version = "$Revision: 1.71 $";
->>>>>>> 1.69.2.6
+const char *version = "$Revision: 1.72 $";
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 
@@ -63,41 +59,7 @@ void
 usage(string name)
 {
     cerr << "Usage: " << name << endl;
-<<<<<<< geturl.cc
-    cerr << " [dDaxAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]\n\
- [Vvk] <file> [<file> ...]\n\
-\n\
-In the first form of the command, dereference the URL and\n\
-perform the requested operations. This include routing\n\
-the returned information through the DAP processing\n\
-library (parsing the returned objects, et c.). If none\n\
-of a, d, or D are used with a URL, then the DAP library\n\
-routines are NOT used and the URLs contents are dumped\n\
-to standard outpu\n\
-\n\
-In the second form of the command, assume the files are\n\
-DODS data objects (stored in files or read from pipes)\n\
-and process them as if -D were given. In this case the\n\
-information *must* contain valid MIME header in order\n\
-to be processed.\n\
-\n\
-Options:\n\
-        d: For each URL, get the DODS DDS.\n\
-        a: For each URL, get the DODS DAS.\n\
-        A: Use the AIS for DAS objects.\n\
-        D: For each URL, get the DODS Data.\n\
-        x: For each URL, get the DDX object. Does not get data.\n\
-        B: <AIS xml dataBase>. Overrides .dodsrc\n\
-        v: Verbose.\n\
-        V: Version.\n\
-        c: <expr> is a contraint expression. Used with -D.\n\
-           NB: You can use a `?' for the CE also.\n\
-        k: Keep temporary files created by DODS core\n\n\
-        m: Request the same URL <num> times.\n\
-        z: Don't ask the server to compress data.\n\
-        s: Print Sequences using numbered rows.\n";
-=======
-    cerr << " [idDaAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" 
+    cerr << " [idDaxAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" 
 	 << endl;
     cerr << " [Vvk] <file> [<file> ...]" << endl;
     cerr << endl;
@@ -122,6 +84,7 @@ Options:\n\
     cerr << "        a: For each URL, get the DODS DAS." << endl;
     cerr << "        A: Use the AIS for DAS objects." << endl;
     cerr << "        D: For each URL, get the DODS Data." << endl;
+    cerr << "        x: For each URL, get the DDX object. Does not get data." << endl;
     cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." <<endl;
     cerr << "        v: Verbose." << endl;
     cerr << "        V: Version." << endl;
@@ -131,7 +94,6 @@ Options:\n\
     cerr << "        m: Request the same URL <num> times." << endl;
     cerr << "        z: Ask the server to compress data." << endl;
     cerr << "        s: Print Sequences using numbered rows." << endl;
->>>>>>> 1.69.2.6
 }
 
 bool
@@ -172,21 +134,14 @@ print_data(DDS &dds, bool print_rows = false)
 int
 main(int argc, char * argv[])
 {
-<<<<<<< geturl.cc
-    GetOpt getopt (argc, argv, "daDxAVvkB:c:m:zsh?");
-=======
-    GetOpt getopt (argc, argv, "idaDAVvkB:c:m:zsh?");
->>>>>>> 1.69.2.6
+    GetOpt getopt (argc, argv, "idaDxAVvkB:c:m:zsh?");
     int option_char;
 
     bool get_das = false;
     bool get_dds = false;
     bool get_data = false;
-<<<<<<< geturl.cc
     bool get_ddx = false;
-=======
     bool get_version = false;
->>>>>>> 1.69.2.6
     bool cexpr = false;
     bool verbose = false;
     bool multi = false;
@@ -415,6 +370,10 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.72  2003/12/10 21:11:58  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.71  2003/12/08 18:02:31  edavis
 // Merge release-3-4 into trunk
 //

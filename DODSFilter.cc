@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.42 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.43 2003/12/10 21:11:57 jimg Exp $"};
 
 #include <signal.h>
 
@@ -71,7 +71,6 @@ static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.42 2003/12/08 18:02:29 e
 #include "EventHandler.h"
 #endif
 
-<<<<<<< DODSFilter.cc
 using namespace std;
 
 const string usage = 
@@ -88,15 +87,12 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
          -l <time>: Conditional request; if data source is unchanged since\n\
                     <time>, return an HTTP 304 response.\n\
 ";
-=======
-using namespace std;
 
 #ifdef WIN32
 #define WAITPID(pid) while(_cwait(NULL, pid, NULL) > 0)
 #else
 #define WAITPID(pid) while(waitpid(pid, 0, 0) > 0)
 #endif
->>>>>>> 1.37.2.6
 
 /** Create an instance of DODSFilter using the command line
     arguments passed by the CGI (or other) program.  The default
@@ -146,13 +142,10 @@ using namespace std;
     handlers support caching and each uses its own rules tailored to a
     specific file or data type.
 
-<<<<<<< DODSFilter.cc
-=======
     <dt><tt>-t</tt> <i>timeout</i><dd> Specifies a a timeout value in
     seconds. If the server runs longer than \e timeout seconds, an Error is
     returned to the client explaining that the request has timed out. 
 
->>>>>>> 1.37.2.6
     <dt><tt>-l</tt> <i>time</i><dd> Indicates that the request is a
     conditional request; send a complete response if and only if the data has
     changed since <i>time</i>. If it has not changed since <i>time</i>, then
@@ -207,13 +200,9 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
 
     d_program_name = argv[0];
 
-<<<<<<< DODSFilter.cc
-    // This should be specialized by a subclass. This may throw Error.
-=======
     d_timeout = 0;
 
-    // This should be specialized by a subclass.
->>>>>>> 1.37.2.6
+    // This should be specialized by a subclass. This may throw Error.
     int next_arg = process_options(argc, argv);
 
     // Look at what's left after processing the command line options. Either
@@ -240,11 +229,8 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     DBG(cerr << "d_cache_dir: " << d_cache_dir << endl);
     DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
     DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
-<<<<<<< DODSFilter.cc
     DBG(cerr << "d_url: " << d_url << endl);
-=======
     DBG(cerr << "d_timeout: " << d_timeout << endl);
->>>>>>> 1.37.2.6
 }
 
 /** Processing the command line options passed to the filter is handled by
@@ -271,12 +257,9 @@ DODSFilter::process_options(int argc, char *argv[]) throw(Error)
 	  case 'd': d_anc_dir = getopt.optarg; break;
 	  case 'f': d_anc_file = getopt.optarg; break;
 	  case 'r': d_cache_dir = getopt.optarg; break;
-<<<<<<< DODSFilter.cc
 	  case 'o': set_response(getopt.optarg); break;
 	  case 'u': set_URL(getopt.optarg); break;
-=======
 	  case 't': d_timeout = atoi(getopt.optarg); break;
->>>>>>> 1.37.2.6
 	  case 'l': 
 	    d_conditional_request = true;
 	    d_if_modified_since 
@@ -982,6 +965,10 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.43  2003/12/10 21:11:57  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.42  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

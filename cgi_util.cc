@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.59 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.60 2003/12/10 21:11:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,15 +82,7 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.59 2003/12/08 18:02:30 eda
 #define FILE_DELIMITER '/'
 #endif
 
-<<<<<<< cgi_util.cc
 using namespace std;
-=======
-using std::cerr;
-using std::endl;
-using std::ostringstream;
-using std::ofstream;
-using std::ifstream;
->>>>>>> 1.57.2.5
 
 static const int TimLen = 26;	// length of string from asctime()
 static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
@@ -919,6 +911,10 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.60  2003/12/10 21:11:58  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.59  2003/12/08 18:02:30  edavis
 // Merge release-3-4 into trunk
 //

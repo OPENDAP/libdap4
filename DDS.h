@@ -195,16 +195,13 @@ private:
 
     vector<function> functions; // Known external functions
 
-<<<<<<< DDS.h
     bool is_global_attr(string name);
     void add_global_attribute(AttrTable::entry *entry);
 
-=======
     int d_timeout;		// alarm time in seconds. If greater than
 				// zero, raise the alarm signal if more than
 				// d_timeout seconds are spent reading data.
 
->>>>>>> 1.50.2.2
 protected:
     void duplicate(const DDS &dds);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
@@ -265,18 +262,11 @@ public:
 
     void del_var(Vars_iter &i1, Vars_iter &i2);
 
-<<<<<<< DDS.h
-=======
     void timeout_on();
     void timeout_off();
     void set_timeout(int t);
     int get_timeout();
 
-#if 0
-    template <class FUNC_T> void add_function(const string &name, FUNC_T f);
-#endif
-#if 1
->>>>>>> 1.50.2.2
     void add_function(const string &name, bool_func f);
     void add_function(const string &name, btp_func f);
     void add_function(const string &name, proj_func f);
@@ -341,6 +331,10 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.54  2003/12/10 21:11:57  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.53  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

@@ -36,10 +36,7 @@
 #include "config_dap.h"
 
 #include <string>
-<<<<<<< Constructor.cc
 #include <algorithm>
-=======
->>>>>>> 1.8.2.2
 
 #include "Constructor.h"
 #include "BTIterAdapter.h"
@@ -90,7 +87,6 @@ Constructor::operator=(const Constructor &rhs)
     return *this;
 }
 
-<<<<<<< Constructor.cc
 /** @name Pix interface; deprecated */
 //@{
 /** @brief Returns an index to the first variable in a Constructor instance.
@@ -257,17 +253,6 @@ Constructor::print_xml(FILE *out, string space, bool constrained)
     @brief Check to see whether this variable can be printed simply.
     @return True if the instance can be printed as a single table of
     values, false otherwise. */
-=======
-/** True if the instance can be flattened and printed as a single table
-    of values. For Arrays and Grids this is always false. For Structures
-    and Sequences the conditions are more complex. The implementation
-    provided by this class always returns false. Other classes should
-    override this implementation.
-
-    @brief Check to see whether this variable can be printed simply.
-    @return True if the instance can be printed as a single table of
-    values, false otherwise. */
->>>>>>> 1.8.2.2
 bool
 Constructor::is_linear()
 {
@@ -275,6 +260,10 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.11  2003/12/10 21:11:57  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.10  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

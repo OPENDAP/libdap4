@@ -30,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: das.tab.c,v 1.40 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: das.tab.c,v 1.41 2003/12/10 21:11:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1640,12 +1640,21 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 
 /* 
  * $Log: das.tab.c,v $
- * Revision 1.40  2003/12/08 18:02:30  edavis
+ * Revision 1.41  2003/12/10 21:11:58  jimg
+ * Merge with 3.4. Some of the files contains erros (some tests fail). See
+ * the ChangeLog for information about fixes.
+ *
+ * Revision 1.49  2003/12/08 18:02:30  edavis
  * Merge release-3-4 into trunk
  *
- * Revision 1.39  2003/09/25 22:37:34  jimg
- * Misc changes.
- *
+ * Revision 1.48  2003/05/23 03:24:57  jimg
+ * Changes that add support for the DDX response. I've based this on Nathan
+ * Potter's work in the Java DAP software. At this point the code can
+ * produce a DDX from a DDS and it can merge attributes from a DAS into a
+ * DDS to produce a DDX fully loaded with attributes. Attribute aliases
+ * are not supported yet. I've also removed all traces of strstream in
+ * favor of stringstream. This code should no longer generate warnings
+ * about the use of deprecated headers.
  *
  * Revision 1.47  2003/04/22 19:40:28  jimg
  * Merged with 3.3.1.

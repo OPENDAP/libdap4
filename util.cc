@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.78 2003/12/08 18:02:31 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.79 2003/12/10 21:11:58 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,17 +81,6 @@ static char rcsid[] not_used = {"$Id: util.cc,v 1.78 2003/12/08 18:02:31 edavis 
 #endif
 
 using namespace std;
-
-#if 0
-using std::cerr;
-using std::endl;
-using std::sort;
-<<<<<<< util.cc
-using std::ostrstream;
-#endif
-=======
-using std::ostringstream;
->>>>>>> 1.76.2.4
 
 // Remove spaces from the start of a URL and from the start of any constraint
 // expression it contains. 4/7/98 jhrg
@@ -508,15 +497,6 @@ void append_double_to_string(const double &num, string &str)
     oss.precision(9);
     oss << num;
     str += oss.str();
-<<<<<<< util.cc
-
-=======
->>>>>>> 1.76.2.4
-#if 0
-    char s[80];
-    sprintf(s, "%.9f", num);
-    str+=s;
-#endif
 }
 
 string
@@ -620,6 +600,10 @@ file_to_string(FILE *fp)
 }
 
 // $Log: util.cc,v $
+// Revision 1.79  2003/12/10 21:11:58  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.78  2003/12/08 18:02:31  edavis
 // Merge release-3-4 into trunk
 //

@@ -34,7 +34,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.66 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.67 2003/12/10 21:11:57 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -81,16 +81,10 @@ static char rcsid[] not_used = {"$Id: DDS.cc,v 1.66 2003/12/08 18:02:29 edavis E
 #include "trace_new.h"
 #endif
 
-<<<<<<< DDS.cc
 const string default_schema_location = "http://argon.coas.oregonstate.edu/ndp/dods.xsd";
 const string dods_namespace = "http://www.dods.org/ns/DODS";
 
 using namespace std;
-=======
-using std::cerr;
-using std::endl;
-using std::ofstream;
->>>>>>> 1.62.2.5
 
 void ddsrestart(FILE *yyin);	// Defined in dds.tab.c
 int ddsparse(void *arg);
@@ -1191,7 +1185,6 @@ DDS::print_constrained(FILE *out)
     return;
 }
 
-<<<<<<< DDS.cc
 class VariablePrintXML : public unary_function<BaseType *, void> {
     FILE *d_out;
     bool d_constrained;
@@ -1239,27 +1232,6 @@ DDS::print_xml(FILE *out, bool constrained, const string &blob)
 }
 
 // Used by DDS::send() when returning data from a function call.
-static void
-print_variable(FILE *out, BaseType *var, bool constrained = false)
-{
-    if(!out)
-	throw InternalErr(__FILE__, __LINE__, 
-			  "Invalid file descriptor, NULL pointer!");
-    if(!var)
-	throw InternalErr(__FILE__, __LINE__, 
-     "Passing NULL variable to method DDS::print_variable in *this* object.");
-
-    fprintf( out, "Dataset {\n" ) ;
-
-    var->print_decl( out, "    ", true, false, constrained ) ;
-
-    fprintf( out, "} function_value;\n" ) ;
-
-    return;
-}
-
-=======
->>>>>>> 1.62.2.5
 /** @brief Check the semantics of each of the variables represented in the
     DDS. 
 
@@ -1407,17 +1379,10 @@ clean_sinks(int childpid, bool compressed, XDR *xdr_sink, FILE *comp_sink)
     delete_xdrstdio(xdr_sink);
     
     if (compressed) {
-<<<<<<< DDS.cc
-	int res = fclose(comp_sink);
-	if (res)
-	    DBG(cerr << "clean_sinks - Failed to close " << (void *)comp_sink 
-		<< endl);
-=======
 	if (fclose(comp_sink)) {
 	    DBG(cerr << "clean_sinks - Failed to close " << (void *)comp_sink 
 		<< endl);
 	}
->>>>>>> 1.62.2.5
 
 	int pid = 0 ;
 #ifdef WIN32
@@ -1437,13 +1402,15 @@ print_variable(FILE *out, BaseType *var, bool constrained = false)
 			  "Invalid file descriptor, NULL pointer!");
     if(!var)
 	throw InternalErr(__FILE__, __LINE__, 
-			  "Passing NULL variable to function print_variable.");
+     "Passing NULL variable to method DDS::print_variable in *this* object.");
 
     fprintf( out, "Dataset {\n" ) ;
 
     var->print_decl( out, "    ", true, false, constrained ) ;
 
     fprintf( out, "} function_value;\n" ) ;
+
+    return;
 }
 
 /** This function sends the variables described in the constrained DDS to
@@ -1594,6 +1561,10 @@ DDS::mark_all(bool state)
 }
     
 // $Log: DDS.cc,v $
+// Revision 1.67  2003/12/10 21:11:57  jimg
+// Merge with 3.4. Some of the files contains erros (some tests fail). See
+// the ChangeLog for information about fixes.
+//
 // Revision 1.66  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //
