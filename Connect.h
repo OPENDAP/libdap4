@@ -1,4 +1,13 @@
+
 // -*- C++ -*-
+
+// (c) COPYRIGHT URI/MIT 1994-1996
+// Please first read the full copyright statement in the file COPYRIGH.  
+//
+// Authors:
+//	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
+//	dan		Dan Holloway (dan@hollywood.gso.uri.edu)
+//	reza		Reza Nekovei (reza@intcomm.net)
 
 // This class contains information about a connection made to a netcdf data
 // file through the dods-nc library. Each dataset accessed must be assigned a
@@ -18,10 +27,17 @@
 // jhrg 9/29/94
 
 /* $Log: Connect.h,v $
-/* Revision 1.12  1996/05/21 23:46:33  jimg
-/* Added support for URLs directory to the class. This uses version 4.0D of
-/* the WWW library from W3C.
+/* Revision 1.13  1996/05/29 21:51:51  jimg
+/* Added the enum ObjectType. This is used when a Content-Description header is
+/* found by the WWW library to record the type of the object without first
+/* parsing it.
+/* Added ctors for the struct constraint.
+/* Removed the member _request.
 /*
+ * Revision 1.12  1996/05/21 23:46:33  jimg
+ * Added support for URLs directly to the class. This uses version 4.0D of
+ * the WWW library from W3C.
+ *
  * Revision 1.11  1996/04/05 01:25:40  jimg
  * Merged changes from version 1.1.1.
  *
@@ -120,11 +136,29 @@
 #define CATCH_SIG
 #endif
 
+/// What type of object is in the stream coming from the data server?
+//* When a version 2.x or greater DODS data server sends an object, it uses
+//* the Content-Description header of the response to indicate the type of
+//* object contained in the response. During the parse of the header a member
+//* of Connect is set to one of these values so that other mfuncs can tell the
+//* type of object without parsing the stream themselves. 
+
+enum ObjectType {
+    unknown,
+    dods_das,
+    dods_dds,
+    dods_data,
+    dods_error
+};
+
 class Connect {
 private:
     struct constraint {
 	String _expression;
 	DDS _dds;
+
+	constraint(String expr, DDS dds): _expression(expr), _dds(dds) {}
+	constraint(): _expression(""), _dds() {}
     };
 
     static int _connects;	// Are there any remote connect objects?
@@ -135,13 +169,13 @@ private:
 
     // The following members are vaild only if _LOCAL is false.
 
-    String _URL;		// URL to remote dataset (incl. CE)
+    ObjectType _type;		// What type of object is in the stream?
+
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
     Error _error;		// Error object
 
-
-    HTRequest *_request;	// used in event-loop callbacks
+    String _URL;		// URL to remote dataset (incl. CE)
 
     HTParentAnchor *_anchor;
     struct timeval *_tv;	// Timeout on socket
@@ -167,25 +201,17 @@ private:
     //* binary data.
     FILE *move_dds(FILE *in);
 
-    //* Read lines from FP and look for the MIME header
-    //* `Constent-Description'. If found return in VALUE the value part of that
-    //* header and true as the function result. If not found, return false as
-    //* the function value (VALUE is undefined).
-    bool parse_content_description(FILE *fp, String &value);
-
-    //* Perform common WWW lib operations required to build new Connect
-    //* objects. 
-    void init();
-
     //* Copy from one Connect to another. 
     void clone(const Connect &src);
 
     //* Close the objects _output stream if it is not NULL or STDOUT.
     void close_output();
 
+    // These functions are used as callbacks by the WWW library.
     friend int authentication_handler(HTRequest *request, int status);
     friend int redirection_handler(HTRequest *request, int status);
-    friend int terminate_handler(HTRequest *request, int status) ;
+    friend int terminate_handler(HTRequest *request, int status);
+    friend int header_handler(HTRequest *request, const char *token);
 
     Connect();			// Never call this.
 
@@ -196,7 +222,7 @@ public:
 
     Connect &operator=(const Connect &rhs);
 
-    /// Put the information contained in URL into the Connect object.
+    /// Dereference a URL.
     //* Fetch the named URL and put its contents into the member _OUTPUT.
     //* If ASYNC is true, then the operation is asynchronous; the mfunc
     //* returns before the data transfer is complete.
@@ -213,12 +239,26 @@ public:
     bool is_local();
 
     /// Get the object's URL.
-    //* Return the object's URL in a Strin. If CE is false, do not include
+    //* Return the object's URL in a String. If CE is false, do not include
     //* the constraint expression part of the URL (the `?' and anything 
     //* following it). If the object refers to local data, return the null
     //* string. 
     String URL(bool CE = true);
+
+    /// Get the Connect's constraint expression.
+    //* Return the constraint expression part of the URL. Note that this CE
+    //* is supplied as part of the URL passed to the Connect's constructor.
+    //* It is not the CE passed into the the request_data(...) mfunc.
+    //* Returns a String which contains the object's base CE.
     String CE();
+
+    /// Return the type of the most recent object sent from the server.
+    //* During the parse of the message headers, the object type is set. Use
+    //* this mfunc to read that type information. This will be valid *before*
+    //* the return object is completely parsed so it can be used to decide
+    //* whether to call the das, etc. parser on the data remaining in the input
+    //* stream. 
+    ObjectType type();
 
     DAS &das();
     DDS &dds();
