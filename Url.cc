@@ -4,7 +4,10 @@
 // jhrg 9/7/94
 
 // $Log: Url.cc,v $
-// Revision 1.7  1995/03/04 14:34:52  jimg
+// Revision 1.8  1995/03/16 17:30:45  jimg
+// This class is now a subclass of Str.
+//
+// Revision 1.7  1995/03/04  14:34:52  jimg
 // Major modifications to the transmission and representation of values:
 // 	Added card() virtual function which is true for classes that
 // 	contain cardinal types (byte, int float, string).
@@ -74,117 +77,4 @@
 Url::Url(const String &n) : Str(n) /* , "Url", (xdrproc_t)xdr_str) */
 {
     set_type("Url");		// override the type set by Str
-#ifdef NEVER
-    _buf = "";
-#endif
 }
-
-#ifdef NEVER
-bool
-Url::card()
-{
-    return true;
-}
-
-unsigned int
-Url::size()
-{
-    return width();
-}
-
-unsigned int
-Url::width()
-{
-    return sizeof(char *);
-}
-
-unsigned int
-Url::len()
-{
-#ifdef NEVER
-    return _buf ? strlen(_buf): 0;
-#endif
-    return length();
-}
-
-unsigned int
-Url::length()
-{
-#ifdef NEVER
-    return _buf ? strlen(_buf): 0;
-#endif
-    reutrn _buf.length();
-}
-
-bool
-Url::serialize(bool flush)
-{
-    char *tmp = (const char *)_buf; // OK
-
-    bool stat = (bool)xdr_str(_xdrout, &tmp);
-    if (stat && flush)
-	stat = expunge();
-
-    return stat;
-}
-
-unsigned int
-Url::deserialize(bool reuse)
-{
-    if (_buf && !reuse) {
-	free(_buf);
-	_buf = 0;
-    }
-
-    unsigned int num = xdr_str(_xdrin, &_buf);
-
-    return num;
-}
-
-unsigned int
-Url::store_val(void *val, bool reuse)
-{
-    assert(val);
-
-    if (_buf && !reuse) {
-	free(_buf);
-	_buf = 0;
-    }
-
-    if (!_buf) {
-	_buf = strdup((char *)val); // allocate new memory
-	return strlen(_buf);
-    }
-    else {
-	unsigned int len = strlen(_buf); // _buf might be bigger...
-	strncpy(_buf, (char *)val, len);
-	*(_buf + len) = '\0';	// strlen won't supply a \0 above
-	return len;
-    }
-}
-
-unsigned int 
-Url::read_val(void **val)
-{
-    assert(_buf && val);
-
-    if (!*val)
-	*val = new char[strlen((char *)_buf) + 1];
-
-    strcpy(*(char **)val, _buf); // I'm not sure about this...
-
-    return size();
-}
-
-void
-Url::print_val(ostream &os, String space, bool print_decl_p)
-{
-    if (print_decl_p) {
-	print_decl(os, space, false);
-	os << " = " << _buf << ";" << endl;
-    }
-    else 
-	os << _buf;
-}
-#endif
-

@@ -5,22 +5,25 @@
 // jhrg 9/7/94
 
 /* $Log: Url.h,v $
-/* Revision 1.9  1995/03/04 14:35:09  jimg
-/* Major modifications to the transmission and representation of values:
-/* 	Added card() virtual function which is true for classes that
-/* 	contain cardinal types (byte, int float, string).
-/* 	Changed the representation of Str from the C rep to a C++
-/* 	class represenation.
-/* 	Chnaged read_val and store_val so that they take and return
-/* 	types that are stored by the object (e.g., inthe case of Str
-/* 	an URL, read_val returns a C++ String object).
-/* 	Modified Array representations so that arrays of card()
-/* 	objects are just that - no more storing strings, ... as
-/* 	C would store them.
-/* 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-/* 	an array of a structure is represented as an array of Structure
-/* 	objects).
+/* Revision 1.10  1995/03/16 17:30:46  jimg
+/* This class is now a subclass of Str.
 /*
+ * Revision 1.9  1995/03/04  14:35:09  jimg
+ * Major modifications to the transmission and representation of values:
+ * 	Added card() virtual function which is true for classes that
+ * 	contain cardinal types (byte, int float, string).
+ * 	Changed the representation of Str from the C rep to a C++
+ * 	class represenation.
+ * 	Chnaged read_val and store_val so that they take and return
+ * 	types that are stored by the object (e.g., inthe case of Str
+ * 	an URL, read_val returns a C++ String object).
+ * 	Modified Array representations so that arrays of card()
+ * 	objects are just that - no more storing strings, ... as
+ * 	C would store them.
+ * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * 	an array of a structure is represented as an array of Structure
+ * 	objects).
+ *
  * Revision 1.8  1995/02/10  02:22:51  jimg
  * Added DBMALLOC includes and switch to code which uses malloc/free.
  * Private and protected symbols now start with `_'.
@@ -89,17 +92,10 @@
 #include "BaseType.h"
 #include "Str.h"
 
-const unsigned int max_url_len = UCHAR_MAX-1;
+const unsigned int max_url_len = 255;
 
-#ifdef NEVER
-class Url: public BaseType {
-#endif
-    
 class Url: public Str {
 private:
-#ifdef NEVER
-    char *_buf;
-#endif
     String _buf;
 
 public:
@@ -107,25 +103,6 @@ public:
     virtual ~Url() {}
 
     virtual BaseType *ptr_duplicate() = 0;
-    
-#ifdef NEVER
-    virtual bool card();
-    virtual unsigned int size();
-    virtual unsigned int width();
-
-    unsigned int len();
-    unsigned int length();
-
-    virtual bool serialize(bool flush = false);
-    virtual unsigned int deserialize(bool reuse = false);
-
-    virtual bool read(String dataset, String var_name, String constraint) = 0;
-    virtual unsigned int store_val(void *val, bool reuse = false);
-    virtual unsigned int read_val(void **val);
-
-    virtual void print_val(ostream &os, String space = "",
-			   bool print_decl_p = true);
-#endif
 };
 
 typedef Url * UrlPtr;
