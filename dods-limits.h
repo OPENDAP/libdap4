@@ -11,6 +11,9 @@
 // the same values on all machines.
 
 // $Log: dods-limits.h,v $
+// Revision 1.5  1998/08/13 21:18:04  jimg
+// Changed DODS_CHAR_MAX to 255. Bytes are supposed to be unsigned in DODS.
+//
 // Revision 1.4  1998/02/05 20:14:02  jimg
 // DODS now compiles with gcc 2.8.x
 //
@@ -31,8 +34,8 @@
 #define	DODS_SCHAR_MIN		 -127
 #define	DODS_SCHAR_MAX		 127
 #define	DODS_UCHAR_MAX		 (unsigned char)255
-#define	DODS_CHAR_MIN		 -127
-#define	DODS_CHAR_MAX		 127
+#define	DODS_CHAR_MIN		 0
+#define	DODS_CHAR_MAX		 (unsigned char)255
 #define	DODS_SHRT_MIN		 -32767
 #define	DODS_SHRT_MAX		 32767
 #define	DODS_USHRT_MAX		 (unsigned short)65535
