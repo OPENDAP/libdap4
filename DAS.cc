@@ -11,6 +11,9 @@
 // jhrg 7/25/94
 
 // $Log: DAS.cc,v $
+// Revision 1.22  1998/08/13 22:11:24  jimg
+// Added include of unistd.h for dup(2).
+//
 // Revision 1.21  1997/06/06 00:44:02  jimg
 // Removed add_table(char *, ...).
 //
@@ -114,13 +117,14 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.21 1997/06/06 00:44:02 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: DAS.cc,v 1.22 1998/08/13 22:11:24 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <stdio.h>
+#include <unistd.h>
 #include <assert.h>
 
 #include <iostream.h>
