@@ -17,9 +17,12 @@
 */
 
 /* $Log: expr.y,v $
-/* Revision 1.19  1997/02/12 19:46:33  jimg
-/* Fixed bass asserts in process_array_indices and process_grid_indices.
+/* Revision 1.20  1997/02/17 20:27:19  jimg
+/* Fixed silly spelling errors.
 /*
+ * Revision 1.19  1997/02/12 19:46:33  jimg
+ * Fixed bad asserts in process_array_indices and process_grid_indices.
+ *
  * Revision 1.18  1997/02/10 02:32:46  jimg
  * Added assert statements for pointers
  *
@@ -107,7 +110,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.19 1997/02/12 19:46:33 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.20 1997/02/17 20:27:19 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
