@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
-// Revision 1.10  1995/12/09 01:07:28  jimg
+// Revision 1.11  1996/03/05 18:49:23  jimg
+// Fixed Errors in comments.
+//
+// Revision 1.10  1995/12/09  01:07:28  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -112,13 +115,6 @@ TestStructure::~TestStructure()
 
 // For this `Test' class, run the read mfunc for each of variables which
 // comprise the structure. 
-//
-// To use this mfunc you must make sure that the instnace of TestStructure
-// actually has fields defined (using add_var()).
-//
-// NB: In general it won't work to just pass the constraint expression down
-// to the variable's read mfunc; you will have to parse that c expr and send
-// only the relavent parts.
 
 bool
 TestStructure::read(const String &dataset)
