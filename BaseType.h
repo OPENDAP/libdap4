@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.57  2000/09/11 16:33:29  jimg
+ * Fixed up the comments/docs.
+ *
  * Revision 1.56  2000/08/02 22:46:48  jimg
  * Merged 3.1.8
  *
@@ -712,13 +715,14 @@ public:
 
 	@memo Reads the data into a local buffer. 
 
-	@return The function returns a boolean value, with TRUE indicating that
-	read() should be called again because there's more data to read, and
-	FALSE indicating there's no more data to read. Note that this behavior
-	is necessary to properly handle variables that contain Sequences.
+	@return The function returns a boolean value, with TRUE indicating
+	that read() should be called again because there's more data to read,
+	and FALSE indicating there's no more data to read. Note that this
+	behavior is necessary to properly handle variables that contain
+	Sequences.
 
-	@param dataset A string naming the dataset from which the data is to be
-	read. The meaning of this string will vary among data APIs.
+	@param dataset A string naming the dataset from which the data is to
+	be read. The meaning of this string will vary among data APIs.
 
 	@param error An integer indicating a returned error condition. The
 	exact meaning of this integer will vary among data APIs. However, for
