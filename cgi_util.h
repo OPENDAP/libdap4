@@ -12,6 +12,8 @@
 //
 // 2/22/95 jhrg
 
+#include "config_dap.h"		// For DVR string.
+
 #include "Connect.h"		// For ObjectType and EncodingType defs 
 
 /** The CGI utilities include a variety of functions useful to
@@ -237,11 +239,11 @@ string name_path(const string &path);
     @see Connect
     */
 void set_mime_text(ostream &os, ObjectType type = unknown_type, 
-		   EncodingType enc = x_plain);
+		   const string &version = DVR, EncodingType enc = x_plain);
 /**
    @param out A FILE pointer to which the MIME header is written. */
 void set_mime_text(FILE *out, ObjectType type = unknown_type, 
-		   EncodingType enc = x_plain);
+		   const string &version = DVR, EncodingType enc = x_plain);
 
 /** The reply to a DODS client is in the form of a multi-part MIME
     message.  You can use this function to create a MIME header for a
@@ -260,11 +262,11 @@ void set_mime_text(FILE *out, ObjectType type = unknown_type,
     @see DDS
     */
 void set_mime_binary(ostream &os, ObjectType type = unknown_type, 
-		     EncodingType enc = x_plain);
+		     const string &version = DVR, EncodingType enc = x_plain);
 /**
    @param out A FILE pointer to which the MIME header is written. */
 void set_mime_binary(FILE *out, ObjectType type = unknown_type, 
-		     EncodingType enc = x_plain);
+		     const string &version = DVR, EncodingType enc = x_plain);
 
 /** The reply to a DODS client is in the form of a multi-part MIME
     message.  You can use this function to create a MIME header for a
@@ -289,11 +291,13 @@ void set_mime_binary(FILE *out, ObjectType type = unknown_type,
     @see ErrMsgT
     */
 void set_mime_error(ostream &os, int code = HTERR_NOT_FOUND, 
-		    const char *reason = "Dataset not found");
+		    const string &reason = "Dataset not found",
+		    const string &version = DVR);
 /**
    @param out A FILE pointer to which the MIME header is written. */
 void set_mime_error(FILE *out, int code = HTERR_NOT_FOUND, 
-		    const char *reason = "Dataset not found");
+		    const string &reason = "Dataset not found",
+		    const string &version = DVR);
 
 //@}
 //@}
