@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
-// Revision 1.10  1995/12/09 01:07:04  jimg
+// Revision 1.11  1996/03/05 18:57:28  jimg
+// Fixed problems with variable scoping in for and switch statements.
+//
+// Revision 1.10  1995/12/09  01:07:04  jimg
 // Added changes so that relational operators will work properly for all the
 // datatypes (including Sequences). The relational ops are evaluated in
 // DDS::eval_constraint() after being parsed by DDS::parse_constraint().
@@ -142,7 +145,7 @@ TestArray::read(const String &dataset)
       case int32_t:
       case float64_t:
       case str_t:
-      case url_t:
+      case url_t: {
 
 	// String and Url are grouped with byte, ... because val2buf works
 	// for these types.
@@ -164,6 +167,7 @@ TestArray::read(const String &dataset)
 	delete[] tmp;		// alloced above
 
 	break;
+      }
 
       case list_t:
       case structure_t:
@@ -186,6 +190,10 @@ TestArray::read(const String &dataset)
 	    // executed before this switch stmt.
 
 	    BaseType *elem = var()->ptr_duplicate(); 
+
+	    // read values into the new instance.
+	    
+	    elem->read(dataset);
 
 	    // now load the new instance in the array.
 
