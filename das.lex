@@ -29,7 +29,10 @@
 
 /*
 # $Log: das.lex,v $
-# Revision 1.2  1994/08/02 18:46:43  jimg
+# Revision 1.3  1994/08/02 18:50:03  jimg
+# Fixed error in illegal character message. Arrgh!
+#
+# Revision 1.2  1994/08/02  18:46:43  jimg
 # Changed communication mechanism from C++ class back to daslval.
 # Auxiliary functions now pass yytext,... instead of using globals.
 # Fixed scanning errors.
@@ -54,7 +57,7 @@
  */
 
 %{
-static char rcsid[]={"$Id: das.lex,v 1.2 1994/08/02 18:46:43 jimg Exp $"};
+static char rcsid[]={"$Id: das.lex,v 1.3 1994/08/02 18:50:03 jimg Exp $"};
 
 #include <string.h>
 
@@ -131,7 +134,7 @@ NEVER   [^a-zA-Z0-9_.+-{};]
 
 {NEVER}                 {
                           if (yytext) {	/* suppress msgs about `' chars */
-                            fprintf(stderr, "Character `%c' is not", yytext);
+                            fprintf(stderr, "Character `%c' is not", *yytext);
                             fprintf(stderr, " allowed (except within");
 			    fprintf(stderr, " quotes) and has been ignored\n");
 			  }
