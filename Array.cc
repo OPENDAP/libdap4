@@ -141,6 +141,43 @@ Array::operator=(const Array &rhs)
     return *this;
 }
 
+/** @brief Add the BaseType pointer to this constructor type
+    instance. 
+
+    Propagate the name of the BaseType instance to this instance. This
+    ensures that variables at any given level of the DDS table have
+    unique names (i.e., that Arrays do not have their default name ""). If
+    <tt>v</tt>'s name is null, then assume that the array \i is named and
+    don't overwrite it with <tt>v</tt>'s null name.
+    
+    @note This version checks to see if \e v is an array. If so, it calls
+    Vector::add_var() using the template variable of \e v and then appends
+    the dimensions of \e v to this array. This somewhat obscure behavior
+    simplifies 'translating' Sequences to arrays when the actual variable
+    being translated is not a regular Sequence but an array of Sequences.
+
+    @param v The template variable for the array
+    @param p The Part parameter defaults to nil and is ignored by this method.
+*/
+
+void
+Array::add_var(BaseType *v, Part)
+{
+    if (v && v->type() == dods_array_c) {
+        Array &a = dynamic_cast<Array&>(*v);
+        Vector::add_var(a.var());
+        Dim_iter i =a.dim_begin();
+        Dim_iter i_end = a.dim_end();
+        while (i != i_end) {
+            append_dim(a.dimension_size(i), a.dimension_name(i));
+            ++i;
+        }
+    }
+    else {
+        Vector::add_var(v);
+    }
+}
+
 /** Given a size and a name, this function adds a dimension to the
     array.  For example, if the Array is already 10 elements long,
     calling <tt>append_dim</tt> with a size of 5 will transform the array
@@ -1003,6 +1040,11 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.66  2004/11/16 17:53:14  jimg
+// Added subclass version of add_var(). This version looks at the variable
+// being added and, if it's an Array adds the template variable. It calls
+// Vector::add_var() to actually add the variable.
+//
 // Revision 1.65  2004/07/07 21:08:46  jimg
 // Merged with release-3-4-8FCS
 //
