@@ -4,7 +4,10 @@
 // jhrg 9/7/94
 
 // $Log: Str.cc,v $
-// Revision 1.5  1994/12/14 19:18:00  jimg
+// Revision 1.6  1994/12/22 04:32:23  reza
+// Changed the default type to String (from Str) to match DDS parser.
+//
+// Revision 1.5  1994/12/14  19:18:00  jimg
 // Added mfunc len(). Replaced size() with a mfunc that returns the size of
 // a pointer to a string (this simplifies Structure, ...).
 //
@@ -41,7 +44,7 @@
 #include "util.h"
 
 Str::Str(const String &n, FILE *in, FILE *out)
-    : BaseType(n, "Str", xdr_str, in, out)
+    : BaseType(n, "String", xdr_str, in, out)
 {
     buf = 0;			// read() frees if buf != 0
 }
