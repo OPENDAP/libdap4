@@ -4,7 +4,12 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.16  1995/03/04 14:34:40  jimg
+// Revision 1.17  1995/03/16 17:22:58  jimg
+// Added include of config.h before all other includes.
+// Fixed deletes of buffers in read_val().
+// Added initialization of _buf in ctor.
+//
+// Revision 1.16  1995/03/04  14:34:40  jimg
 // Major modifications to the transmission and representation of values:
 // 	Added card() virtual function which is true for classes that
 // 	contain cardinal types (byte, int float, string).
@@ -101,16 +106,23 @@
 #pragma implementation
 #endif
 
+#include "config.h"
+
+#include <assert.h>
+
 #ifdef DBMALLOC
 #include <stdlib.h>
 #include <dbmalloc.h>
 #endif
-#include <assert.h>
 
 #include "Array.h"
 #include "util.h"
 #include "errmsg.h"
 #include "debug.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 void
 Array::_duplicate(const Array *a)
@@ -126,7 +138,7 @@ Array::_duplicate(const Array *a)
 // allocated using new -- The dtor for Array will delete this object.
 
 Array::Array(const String &n, BaseType *v)
-     : BaseType( n, "Array", xdr_array), _var(v)
+     : BaseType( n, "Array", xdr_array), _var(v), _buf(0)
 {
 }
 
@@ -140,6 +152,9 @@ Array::Array(const Array &rhs)
 Array::~Array()
 {
     delete _var;
+
+    if (_buf)
+	delete[] _buf;
 }
 
 const Array &
@@ -237,16 +252,16 @@ Array::length()
 bool
 Array::serialize(bool flush)
 {
-    assert(_buf || _vec.capacity());
-
     bool status;
     unsigned int num = length();
 
     if (_var->card()) {
+	assert(_buf);
 	status = (bool)xdr_array(_xdrout, (char **)&_buf, &num, DODS_MAX_ARRAY,
 				 _var->width(), _var->xdr_coder());
     }
     else {
+	assert(_vec.capacity());
 	status = (bool)xdr_int(_xdrout, &num); // send length
 
 	for (int i = 0; status && i < num; ++i)	// test status in loop
@@ -265,12 +280,14 @@ Array::deserialize(bool reuse)
     bool status;
     unsigned int num;
 
-    if (_buf && !reuse) {
-	free(_buf);
-	_buf = 0;
-    }
-
     if (_var->card()) {
+	if (_buf && !reuse) {
+	    delete[] _buf;
+	    _buf = 0;
+	}
+	if (!_buf)
+	    _buf = new char[width()]; // we always do the allocation!
+
 	status = (bool)xdr_array(_xdrin, (char **)&_buf, &num, DODS_MAX_ARRAY, 
 				 _var->width(), _var->xdr_coder());
     }
@@ -294,7 +311,7 @@ Array::store_val(void *val, bool reuse)
     assert(val);
 
     if (_buf && !reuse) {
-	free(_buf);
+	delete[] _buf;
 	_buf = 0;
     }
 

@@ -7,22 +7,27 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.14  1995/03/04 14:34:53  jimg
-/* Major modifications to the transmission and representation of values:
-/* 	Added card() virtual function which is true for classes that
-/* 	contain cardinal types (byte, int float, string).
-/* 	Changed the representation of Str from the C rep to a C++
-/* 	class represenation.
-/* 	Chnaged read_val and store_val so that they take and return
-/* 	types that are stored by the object (e.g., inthe case of Str
-/* 	an URL, read_val returns a C++ String object).
-/* 	Modified Array representations so that arrays of card()
-/* 	objects are just that - no more storing strings, ... as
-/* 	C would store them.
-/* 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
-/* 	an array of a structure is represented as an array of Structure
-/* 	objects).
+/* Revision 1.15  1995/03/16 17:23:00  jimg
+/* Added include of config.h before all other includes.
+/* Fixed deletes of buffers in read_val().
+/* Added initialization of _buf in ctor.
 /*
+ * Revision 1.14  1995/03/04  14:34:53  jimg
+ * Major modifications to the transmission and representation of values:
+ * 	Added card() virtual function which is true for classes that
+ * 	contain cardinal types (byte, int float, string).
+ * 	Changed the representation of Str from the C rep to a C++
+ * 	class represenation.
+ * 	Chnaged read_val and store_val so that they take and return
+ * 	types that are stored by the object (e.g., inthe case of Str
+ * 	an URL, read_val returns a C++ String object).
+ * 	Modified Array representations so that arrays of card()
+ * 	objects are just that - no more storing strings, ... as
+ * 	C would store them.
+ * 	Arrays of non cardinal types are arrays of the DODS objects (e.g.,
+ * 	an array of a structure is represented as an array of Structure
+ * 	objects).
+ *
  * Revision 1.13  1995/02/10  02:22:53  jimg
  * Added DBMALLOC includes and switch to code which uses malloc/free.
  * Private and protected symbols now start with `_'.
@@ -103,11 +108,6 @@
 #include "BaseType.h"
 #include "BaseTypeVec.h"
 
-#include "config.h"
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
-
 const int DODS_MAX_ARRAY = UINT_MAX;
 
 class Array: public BaseType {
@@ -122,7 +122,9 @@ private:
 
     void _duplicate(const Array *a);
 
+#ifdef NEVER
 protected:
+#endif
     void *_buf;			// used for arrays of cardinal types
     BaseTypePtrVec _vec;	// used for arrays of all other types
 
