@@ -90,6 +90,10 @@ private:
     string _dods_no_proxy_for_proxy_host;
     int _dods_no_proxy_for_port; // not used w/libcurl. 6/27/2002 jhrg
 
+    // Make this a vector of strings or support a PATH-style list. 02/26/03
+    // jhrg 
+    string d_ais_database;
+    
     static RCReader* _instance;
 
     RCReader();
@@ -103,7 +107,6 @@ private:
     friend void rcreader_clean(); // This must be a function to be passed to
 				// atexit (which is no longer used...)
 				// 10/08/02 jhrg
-
 public:
     static RCReader* instance();
   
@@ -129,7 +132,9 @@ public:
     const string get_no_proxy_for_protocol() throw() {return _dods_no_proxy_for_protocol;}
     const string get_no_proxy_for_host() throw() {return _dods_no_proxy_for_proxy_host;}
     const int    get_no_proxy_for_port() throw() {return _dods_no_proxy_for_port;}
-  
+
+    string get_ais_database() const throw() {return d_ais_database;}
+
     // SET METHODS
     void set_use_cache(bool b) throw() {_dods_use_cache=b;}
     void set_max_cache_size(int i) throw() {_dods_cache_max=i;}
@@ -149,9 +154,14 @@ public:
     void set_no_proxy_for_host(const string &s) throw() {_dods_no_proxy_for_proxy_host=s;}
     void set_no_proxy_for_port(int i) throw() {_dods_no_proxy_for_port=i;}
 
+    void set_ais_database(const string &db) throw() {d_ais_database = db;}
 };
 
 // $Log: RCReader.h,v $
+// Revision 1.7  2003/02/27 23:37:16  jimg
+// Added get/set_ais_database() methods along with code to parse an
+// AIS_DATABASE entry in the configuration file.
+//
 // Revision 1.6  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //

@@ -78,7 +78,7 @@ RCReader::write_rc_file()
 {
     ofstream fpo(cifp.c_str());
   
-    // If the  couldnt be created.  Nothing needs to be done here,
+    // If the  couldn't be created.  Nothing needs to be done here,
     // the program will simply use the defaults.
 
     if (fpo) {
@@ -106,6 +106,7 @@ RCReader::write_rc_file()
 	fpo << "# NO_PROXY_FOR=<protocol>,<host|domain>" << endl;
 	fpo << "# NO_PROXY_FOR=" << _dods_no_proxy_for_protocol << ","
 	    << _dods_no_proxy_for_proxy_host << endl;
+	fpo << "# AIS_DATABASE=<file or url>" << endl;
 	fpo.close();
     }
 }
@@ -120,21 +121,23 @@ RCReader::read_rc_file()
 	// tokens are found in the file then those defaults will be 
 	// overwritten. 
 	char *value;
-	char *tempstr;
+	char *tempstr = new char[256];;
 	char *tempstr2;
 	char *tempstr3;
 	char *tempstr4;
-	tempstr = new char[256];
+
 	int tokenlength;
-	while (1) {
+	while (true) {
 	    fpi.getline(tempstr, 128);
-	    if (!fpi.good())	//  Ok for unix also ??? Yes.
-		break;	// Gets a line from the file.
+	    if (!fpi.good())
+		break;
+
 	    value = strchr(tempstr, '=');
 	    if (!value)
 		continue;
 	    tokenlength = (int) value - (int) tempstr;
 	    value++;
+
 	    if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
 		&& tokenlength == 9) {
 		_dods_use_cache= atoi(value) ? true : false;
@@ -161,6 +164,9 @@ RCReader::read_rc_file()
 	    } else if ((strncmp(tempstr, "ALWAYS_VALIDATE", 15) == 0)
 		       && tokenlength == 15) {
 		_dods_always_validate = atoi(value);
+	    } else if (strncmp(tempstr, "AIS_DATABASE", 12) == 0 
+		     && tokenlength == 12) {
+		d_ais_database = value;
 	    }
 	    // Check for tags relating to the proxy server
 	    // 8.20.2000 cjm
@@ -313,7 +319,7 @@ RCReader::RCReader()
     // probably a bug in libwww. 10/23/2000 jhrg
     _dods_no_proxy_for_port=0;
 
-	string cache_name = ".dods_cache";
+    string cache_name = ".dods_cache";
     string rc_name = ".dodsrc";
   
     // The following code sets up the cache according to the data stored in
@@ -324,18 +330,18 @@ RCReader::RCReader()
     // then the compiled-in defaults will be written to a file at the
     // location given. 8-1-99 cjm
 
-//  Hard-code to C:\Dods to work around the space-in-pathnames problem for caching
-//  under win32.
+    // Hard-code to C:\Dods to work around the space-in-pathnames problem for
+    // caching under win32.
 #ifdef WIN32
-	homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
+    homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
 
-	//  Normally, I'd prefer this for WinNT-based systems.
+    //  Normally, I'd prefer this for WinNT-based systems.
     //  if (getenv("APPDATA"))
-	//  homedir = getenv("APPDATA");
+    //  homedir = getenv("APPDATA");
     //  else if (getenv("TEMP"))
-	//  homedir = getenv("TEMP");
+    //  homedir = getenv("TEMP");
     //  else if (getenv("TMP"))
-	//  homedir = getenv("TMP");
+    //  homedir = getenv("TMP");
 
 #else
     //  Should be ok for Unix
@@ -344,25 +350,23 @@ RCReader::RCReader()
 #endif // WIN32
   
     // If there is a leading '/' at the end of $HOME, remove it. 
-    if (homedir.length() != 0)
-		{
-		if (homedir[homedir.length() - 1] == DIR_SEP_CHAR)
-			homedir.erase(homedir.length() - 1);
+    if (homedir.length() != 0) {
+	if (homedir[homedir.length() - 1] == DIR_SEP_CHAR)
+	    homedir.erase(homedir.length() - 1);
     
-		// set default cache root to $HOME/.dods_cache/
-		cache_root = homedir + string(DIR_SEP_STRING) + cache_name
-			+ string(DIR_SEP_STRING);
-		}
+	// set default cache root to $HOME/.dods_cache/
+	cache_root = homedir + string(DIR_SEP_STRING) + cache_name
+	    + string(DIR_SEP_STRING);
+    }
 #ifndef WIN32
     //  Otherwise set the default cache root to a temporary directory
-    else
-		{
-		tmpdir = string(DIR_SEP_STRING) + string("tmp");
+    else {
+	tmpdir = string(DIR_SEP_STRING) + string("tmp");
     
-		// Otherwise set the default cache root the <tmpdir>/.dods_cache/
-		cache_root = tmpdir + string(DIR_SEP_STRING) + cache_name
-			+ string(DIR_SEP_STRING);
-		}
+	// Otherwise set the default cache root the <tmpdir>/.dods_cache/
+	cache_root = tmpdir + string(DIR_SEP_STRING) + cache_name
+	    + string(DIR_SEP_STRING);
+    }
 #endif
   
     if (getenv("DODS_CACHE_INIT"))
@@ -372,27 +376,24 @@ RCReader::RCReader()
     // directory is indeterminable, we will neither read nor write a data
     // file and instead just use the compiled in defaults.
 
-    if (cifp.length() == 0)
-		{
-		if (homedir.length() != 0)
-			{
-			// Environment variable was set, get data from $HOME/.dodsrc
-			cifp = homedir + string(DIR_SEP_STRING) + rc_name;
-			// test to get sure we can access the file
-			if (access(cifp.c_str(), F_OK))
-				{
-				// The file does not exist, however we have a directory and a
-				// file name so we can try to create it...
-				_has_rc_file=false;
-				_can_create_rc_file = true; 
-				}     
-			}
-		}
+    if (cifp.length() == 0) {
+	if (homedir.length() != 0) {
+	    // Environment variable was set, get data from $HOME/.dodsrc
+	    cifp = homedir + string(DIR_SEP_STRING) + rc_name;
+	    // test to get sure we can access the file
+	    if (access(cifp.c_str(), F_OK)) {
+		// The file does not exist, however we have a directory and a
+		// file name so we can try to create it...
+		_has_rc_file=false;
+		_can_create_rc_file = true; 
+	    }     
+	}
+    }
   
     if (_has_rc_file) 
-		read_rc_file();
+	read_rc_file();
     else if (_can_create_rc_file)
-		write_rc_file();
+	write_rc_file();
 }
 
 RCReader::~RCReader()
@@ -430,6 +431,10 @@ RCReader::instance()
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.7  2003/02/27 23:37:15  jimg
+// Added get/set_ais_database() methods along with code to parse an
+// AIS_DATABASE entry in the configuration file.
+//
 // Revision 1.6  2003/02/21 00:14:24  jimg
 // Repaired copyright.
 //
@@ -456,7 +461,9 @@ RCReader::instance()
 // make depend will include the header in the list of dependencies.
 //
 // Revision 1.3.4.6  2002/10/18 22:56:15  jimg
-// The ctor now arranges to call clean() using atexit() (as did the original). I made clean a function although I see that a static method is effectively a function... The class is a little cleaner WRT Win32 #ifdefs.
+// The ctor now arranges to call clean() using atexit() (as did the
+// original). I made clean a function although I see that a static method is
+// effectively a function... The class is a little cleaner WRT Win32 #ifdefs.
 //
 // Revision 1.3.4.5  2002/09/08 23:51:12  rmorris
 // Minor tweeks to get it to complile for the 1st time in regards to
