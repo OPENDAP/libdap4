@@ -14,6 +14,11 @@
 
 /* 
  * $Log: DAS.h,v $
+ * Revision 1.19  1998/11/24 06:49:08  jimg
+ * Replaced the DASVHMap object with an SLList of toplevel_entry structs. The
+ * DASVHMap software is not being maintained by the FSF and had bugs. There are
+ * no changes to the DAS class interface.
+ *
  * Revision 1.18  1998/07/13 20:20:42  jimg
  * Fixes from the final test of the new build process
  *
@@ -94,7 +99,14 @@
 #pragma interface
 #endif
 
+#if 0
 #include "DASVHMap.h"
+#endif
+
+#include <String.h>
+
+#include "SLList.h"
+#include "AttrTable.h"
 
 /** The Data Attribute Structure is a set of name-value pairs used to
     describe the data in a particular dataset.  The name-value pairs
@@ -164,16 +176,46 @@
     @see AttrTable */
 class DAS {
 private:
+#if 0
     DASVHMap map;
+#endif
+    struct toplevel_entry {
+	String name;
+	AttrTable *attr_table;
+    };
+
+    SLList<toplevel_entry> entries;
+
+    AttrTable *das_find(String name);
 
 public:
   /** Create a DAS from a single attribute table.  
 
+      NB: In an older version of this class, #dflt# and #sz# initialized a
+      hash table. That is no longer used ant these params should no longer
+      matter. Note that this ctor is effectively the empty ctor. 11/23/98
+      jhrg
+
       @param dflt A pointer to a valid attribute table.
-      @param sz The number of entries in the table.
-      */
-    DAS(AttrTablePtr dflt=(AttrTable *)NULL, 
+      @param sz The number of entries in the table. */
+    DAS(AttrTable *dflt=(AttrTable *)NULL, 
 	unsigned int sz=DEFAULT_INITIAL_CAPACITY);
+
+#if 0
+    /** Create an empty DAS object. Use append_attr() to add attribute tables
+	to it. 
+
+	@see append_attr(). */
+    DAS();
+#endif
+
+    /** Create a DAS object with one attribute table. Use append_attr()
+	to add additional attributes.
+
+	@see append_attr()
+	@param attr_table The initial AttrTable. */
+    DAS(AttrTable *attr_table, String name);
+
     ~DAS();
 
   /** Returns a pointer to the first attribute table. */
