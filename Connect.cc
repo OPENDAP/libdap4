@@ -8,6 +8,13 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.72  1999/02/23 01:32:59  jimg
+// Removed more of the code in process_data. Because of fixes in the scanner,
+// this code no longer needs to rewind after parsing the DDS of a data
+// document. The scanner no longer reads into the binary doc. Note that real
+// MP/MIME code would solve this by giving us two streams to work with. Some
+// day...
+//
 // Revision 1.71  1999/02/18 19:21:40  jimg
 // Added support for the DODS experimental MIME header XDODS-Accept-Types. This
 // will be used to send a lists of `accepted types' from the client to a server.
@@ -394,7 +401,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.71 1999/02/18 19:21:40 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.72 1999/02/23 01:32:59 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -1456,6 +1463,7 @@ Connect::process_data(bool async = false)
 	      return 0;
 	  }
 
+#if 0
 	  // Reset the input source (This will work only if the input source
 	  // is a file!).
 	  if (fseek(_output, 0L, 0) < 0) {
@@ -1471,6 +1479,7 @@ Connect::process_data(bool async = false)
 	      if (strcmp(s, "Data:\n") == 0)
 		  break;
 	  }
+#endif
 
 #endif
 	  
