@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.4.exp,v $
-# Revision 1.1  1994/12/21 17:01:34  jimg
+# Revision 1.2  1995/01/19 22:05:21  jimg
+# Fixed for new class hierarchy.
+#
+# Revision 1.1  1994/12/21  17:01:34  jimg
 # Added these to the testsuite.
 #
 
@@ -25,7 +28,7 @@ Dataset {
     Int32 i;
     List Float64 fl;
     Byte b;
-    Str s;
+    String s;
     Url u;
 } data4;"
 

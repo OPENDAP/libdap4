@@ -2,7 +2,10 @@
 # jhrg
 #
 # $Log: test.10.exp,v $
-# Revision 1.1  1994/12/21 17:01:26  jimg
+# Revision 1.2  1995/01/19 22:05:20  jimg
+# Fixed for new class hierarchy.
+#
+# Revision 1.1  1994/12/21  17:01:26  jimg
 # Added these to the testsuite.
 #
 
@@ -24,7 +27,7 @@ DDS past full semantic check
 Dataset {
     List List Int32 i\[10\]\[20\];
     Sequence {
-        Str name;
+        String name;
         Int32 age;
     } person;
     Structure {
@@ -34,7 +37,7 @@ Dataset {
             Int32 i;
             Float64 f\[10\];
         } data;
-        List Str folks;
+        List String folks;
     } exp;
     Function {
      INDEPENDENT:
