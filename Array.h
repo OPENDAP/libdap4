@@ -1,10 +1,18 @@
 
-// This may look like C code, but it is really -*- C++ -*-
+// -*- C++ -*-
 
 // Class for array variables. The dimensions of the array are stored in the
 // list SHAPE. 
 //
 // jhrg 9/6/94
+
+/* $Log: Array.h,v $
+/* Revision 1.2  1994/09/23 14:31:37  jimg
+/* Added check_semantics mfunc.
+/* Added sanity checking for access to shape list (is it empty?).
+/* Added cvs log listing to Array.cc.
+/*
+ */
 
 #ifndef _Array_h
 #define _Array_h 1
@@ -39,6 +47,7 @@ public:
     int dimensions();
 
     virtual void print_decl(bool print_semi);
+    virtual bool check_semantics(bool all = false);
 };
 
 #endif
