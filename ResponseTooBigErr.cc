@@ -24,12 +24,12 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id"};
+static char rcsid[] not_used = {"$Id: ResponseTooBigErr.cc,v 1.7 2004/07/07 21:08:48 jimg Exp $"};
 
 #include <string>
 
@@ -50,6 +50,12 @@ ResponseTooBigErr::ResponseTooBigErr(const string &msg) : Error()
 
 
 // $Log: ResponseTooBigErr.cc,v $
+// Revision 1.7  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.5.2.1  2004/03/04 19:53:03  jimg
+// Fixed $Id --> $Id: ResponseTooBigErr.cc,v 1.7 2004/07/07 21:08:48 jimg Exp $
+//
 // Revision 1.6  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

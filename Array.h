@@ -39,7 +39,7 @@
 
 #ifndef __POWERPC__
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 #endif
 
@@ -224,6 +224,13 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.61  2004/07/07 21:08:46  jimg
+ * Merged with release-3-4-8FCS
+ *
+ * Revision 1.56.2.4  2004/07/02 20:41:51  jimg
+ * Removed (commented) the pragma interface/implementation lines. See
+ * the ChangeLog for more details. This fixes a build problem on HP/UX.
+ *
  * Revision 1.60  2004/03/10 16:29:18  jimg
  * Repairs to the methods which provide access using iterators. These
  * were using '*_iter &' type params and that made newer versions of g++
@@ -243,7 +250,7 @@ public:
  * Updated the documentation.
  *
  * Revision 1.56.2.1  2003/06/23 11:49:18  rmorris
- * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * The // #pragma interface directive to GCC makes the dynamic typing functionality
  * go completely haywire under OS X on the PowerPC.  We can't use that directive
  * on that platform and it was ifdef'd out for that case.
  *

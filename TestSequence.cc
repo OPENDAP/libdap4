@@ -38,7 +38,7 @@
 // that contain other sequences. jhrg 2/2/98 
 
 #ifdef _GNUG_
-#pragma implementation
+// #pragma implementation
 #endif
 
 #if defined(__GNUG__) || defined(WIN32)
@@ -209,6 +209,13 @@ TestSequence::length()
 }
 
 // $Log: TestSequence.cc,v $
+// Revision 1.33  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.30.2.2  2004/07/02 20:41:53  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.32  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

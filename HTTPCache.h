@@ -30,7 +30,7 @@
 
 #ifndef __POWERPC__
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 #endif
 
@@ -71,6 +71,10 @@
 
 #ifndef _http_cache_disconnected_mode_h
 #include "HTTPCacheDisconnectedMode.h"
+#endif
+
+#ifndef _signal_handler_registered_err_h
+#include "SignalHandlerRegisteredErr.h"
 #endif
 
 const int CACHE_TABLE_SIZE = 1499;
@@ -336,7 +340,7 @@ private:
 
 public:
     static HTTPCache *instance(const string &cache_root, bool force = false)
-	throw(Error);
+	throw(SignalHandlerRegisteredErr);
     virtual ~HTTPCache();
 
     string get_cache_root() const;
@@ -388,6 +392,16 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.11  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.8.2.9  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
+// Revision 1.8.2.8  2004/03/11 18:25:21  jimg
+// Added SignalHandlerRegisteredError.
+//
 // Revision 1.10  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
@@ -422,7 +436,7 @@ public:
 // one of the #ifdef WIN32 blocks can be removed.
 //
 // Revision 1.8.2.2  2003/06/23 11:49:18  rmorris
-// The #pragma interface directive to GCC makes the dynamic typing functionality
+// The // #pragma interface directive to GCC makes the dynamic typing functionality
 // go completely haywire under OS X on the PowerPC.  We can't use that directive
 // on that platform and it was ifdef'd out for that case.
 //

@@ -44,7 +44,7 @@
 #define _sequence_h 1
 
 #ifdef _GNUG_
-#pragma interface
+// #pragma interface
 #endif
 
 #include <vector>
@@ -323,6 +323,13 @@ public:
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.57  2004/07/07 21:08:48  jimg
+ * Merged with release-3-4-8FCS
+ *
+ * Revision 1.53.2.2  2004/07/02 20:41:52  jimg
+ * Removed (commented) the pragma interface/implementation lines. See
+ * the ChangeLog for more details. This fixes a build problem on HP/UX.
+ *
  * Revision 1.56  2003/12/10 21:11:58  jimg
  * Merge with 3.4. Some of the files contains erros (some tests fail). See
  * the ChangeLog for information about fixes.

@@ -36,10 +36,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.48 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.49 2004/07/07 21:08:48 jimg Exp $"};
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include <algorithm>
@@ -505,11 +505,11 @@ the network connection.");
 	
 	if (num != (unsigned int)length())
 	    throw InternalErr(__FILE__, __LINE__,
-	      "The client sent declarations and data with mismatched sizes.");
+	      "The server sent declarations and data with mismatched sizes.");
 
 	if (!_buf) {
 	    _buf = new char[width()]; // we always do the allocation!
-	    DBG(cerr << "List::deserialize: allocating " \
+	    DBG(cerr << "Vector::deserialize: allocating " \
 		<< width() << " bytes for an array of " \
 		<< length() << " " << _var->type_name() << endl);
 	}
@@ -892,6 +892,16 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.49  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.45.2.8  2004/07/02 20:41:53  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
+// Revision 1.45.2.7  2004/05/18 20:26:59  jimg
+// Fixed some errors in the debug messages that made them hard(er) to decipher.
+//
 // Revision 1.48  2003/12/08 18:02:30  edavis
 // Merge release-3-4 into trunk
 //

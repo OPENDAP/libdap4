@@ -40,7 +40,7 @@
 
 #ifndef __POWERPC__
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 #endif
 
@@ -334,6 +334,13 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.57  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.50.2.3  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.56  2004/06/28 16:59:43  pwest
 // Inherit DDS and DAS from DODSResponseObject
 //
@@ -360,7 +367,7 @@ public:
 // needed to time both the read() calls and the dds::eval() calls.
 //
 // Revision 1.50.2.1  2003/06/23 11:49:18  rmorris
-// The #pragma interface directive to GCC makes the dynamic typing functionality
+// The // #pragma interface directive to GCC makes the dynamic typing functionality
 // go completely haywire under OS X on the PowerPC.  We can't use that directive
 // on that platform and it was ifdef'd out for that case.
 //

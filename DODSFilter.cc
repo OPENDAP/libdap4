@@ -34,12 +34,12 @@
 // jhrg 8/26/97
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.47 2004/06/28 17:01:22 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.48 2004/07/07 21:08:47 jimg Exp $"};
 
 #include <signal.h>
 
@@ -198,6 +198,13 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     d_anc_dds_lmt = 0;
     d_if_modified_since = -1;
     d_url = "";
+
+#ifdef WIN32
+    	//  We want serving from win32 to behave in a manner
+	//  similiar to the UNIX way - no CR->NL terminated lines
+	//  in files. Hence stdout goes to binary mode.
+	_setmode(_fileno(stdout), _O_BINARY);
+#endif
 
     d_program_name = argv[0];
 
@@ -674,7 +681,7 @@ DODSFilter::send_version_info()
     fprintf( stdout, "DODS server core software: %s\n", DVR ) ;
 
     if (d_cgi_ver != "")
-	fprintf( stdout, "Server vision: %s\n", d_cgi_ver.c_str() ) ;
+	fprintf( stdout, "Server version: %s\n", d_cgi_ver.c_str() ) ;
 
     string v = get_dataset_version();
     if (v != "")
@@ -989,8 +996,20 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.48  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.37.2.10  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.47  2004/06/28 17:01:22  pwest
 // saving string representation of response type
+//
+// Revision 1.37.2.9  2004/04/19 01:42:29  rmorris
+// Output filter response in binary mode under win32 to omit
+// mapping NL to  CR->NL on that platform.  win32 and unix need
+// to serve in an identical manner.
 //
 // Revision 1.46  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.

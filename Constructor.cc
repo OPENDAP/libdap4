@@ -30,7 +30,7 @@
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 #ifdef _GNUG_
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
@@ -260,6 +260,13 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.12  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.8.2.3  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.11  2003/12/10 21:11:57  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.

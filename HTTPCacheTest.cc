@@ -623,15 +623,17 @@ public:
 	}
 
 	HTTPCache::delete_instance();
+#if 0
 #ifndef WIN32
 	SignalHandler::delete_instance();
+#endif
 #endif
     }
 
     void update_response_test() {
 	try {
-	    HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache",
-					       true);
+	    HTTPCache *c = new HTTPCache("cache-testsuite/singleton_cache", true);
+
 	    if (!c->is_url_in_cache(localhost_url)) {
 		HTTPResponse *rs = http_conn->fetch_url(localhost_url);
 		c->cache_response(localhost_url, time(0), 
@@ -691,8 +693,10 @@ public:
 	}
 
 	HTTPCache::delete_instance();
+#if 0
 #ifndef WIN32
 	SignalHandler::delete_instance();
+#endif
 #endif
     }
 
@@ -700,7 +704,7 @@ public:
     // SIGINT while the cache is doing its thing. 02/10/04 jhrg
     void interrupt_test() {
 	try {
-	    HTTPCache *c = HTTPCache::instance("cache-testsuite/interrupt_cache", true);
+	    HTTPCache *c = new HTTPCache("cache-testsuite/singleton_cache", true);
 	    string coads = "http://localhost/data/nc/coads_climatology.nc";
 	    if (!c->is_url_in_cache(coads)) {
 		HTTPResponse *rs = http_conn->fetch_url(coads);
@@ -744,6 +748,13 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPCacheTest.cc,v $
+// Revision 1.12  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.9.2.10  2004/03/11 18:26:31  jimg
+// Fixed the tests so that we no longer need to fiddle with the pthread_once_t
+// mutex. That just broke too many things...
+//
 // Revision 1.11  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

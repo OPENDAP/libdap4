@@ -61,8 +61,9 @@
 
 #include <fstream>
 
-#include "RCReader.h"
 #include "debug.h"
+#include "RCReader.h"
+#include "Error.h"
 
 using namespace std;
 
@@ -105,16 +106,31 @@ RCReader::write_rc_file(const string &pathname)
 	fpo << "# Request servers compress responses if possible?" << endl;
 	fpo << "# 1 (yes) or 0 (false)." << endl;
 	fpo << "DEFLATE=" << _dods_deflate << endl;
+
 	fpo << "# Proxy configuration:" << endl;
-	fpo << "# PROXY_SERVER=<protocol>,<host[:port]>" << endl;
-	fpo << "# PROXY_SERVER=" <<  _dods_proxy_server_protocol << ","
-	    << _dods_proxy_server_host_url << endl;
-	fpo << "# PROXY_FOR=<regex>,<host[:port]>" << endl;
-	fpo << "# PROXY_FOR=" << _dods_proxy_for_regexp << ","
+	fpo << "# PROXY_SERVER=<protocol>,<[username:password@]host[:port]>"
+	    << endl;
+	if (!d_dods_proxy_server_host.empty()) {
+	    fpo << "PROXY_SERVER=" <<  d_dods_proxy_server_protocol << ","
+		<< (d_dods_proxy_server_userpw.empty()
+		    ? "" 
+		    : d_dods_proxy_server_userpw + "@")
+		+ d_dods_proxy_server_host 
+		+ ":" + long_to_string(d_dods_proxy_server_port) << endl;
+	}
+#if 0
+	// Removed. See note in RCReader.h. 06/17/04 jhrg
+	fpo << "# PROXY_FOR=<regex>,<[user:password@]host[:port]>" << endl;
+	fpo << "# PROXY_FOR" << _dods_proxy_for_regexp << ","
 	    << _dods_proxy_for_proxy_host_url << endl;
+#endif
+
 	fpo << "# NO_PROXY_FOR=<protocol>,<host|domain>" << endl;
-	fpo << "# NO_PROXY_FOR=" << _dods_no_proxy_for_protocol << ","
-	    << _dods_no_proxy_for_proxy_host << endl;
+	if (!d_dods_no_proxy_for_host.empty()) {
+	    fpo << "NO_PROXY_FOR=" << d_dods_no_proxy_for_protocol << ","
+		<< d_dods_no_proxy_for_host << endl;
+	}
+
 	fpo << "# AIS_DATABASE=<file or url>" << endl;
 	fpo.close();
 
@@ -125,7 +141,7 @@ RCReader::write_rc_file(const string &pathname)
 }
 
 bool
-RCReader::read_rc_file(const string &pathname)
+RCReader::read_rc_file(const string &pathname) throw(Error)
 {
     DBG(cerr << "Reading the RC file from " << pathname << endl);
 
@@ -136,14 +152,16 @@ RCReader::read_rc_file(const string &pathname)
 	// tokens are found in the file then those defaults will be 
 	// overwritten. 
 	char *value;
-	char *tempstr = new char[256];;
+	char *tempstr = new char[1024];;
+#if 0
 	char *tempstr2;
 	char *tempstr3;
 	char *tempstr4;
+#endif
 
 	int tokenlength;
 	while (true) {
-	    fpi.getline(tempstr, 128);
+	    fpi.getline(tempstr, 1023);
 	    if (!fpi.good())
 		break;
 
@@ -182,29 +200,92 @@ RCReader::read_rc_file(const string &pathname)
 	    } else if (strncmp(tempstr, "AIS_DATABASE", 12) == 0 
 		     && tokenlength == 12) {
 		d_ais_database = value;
-	    }
-	    // Check for tags relating to the proxy server
-	    // 8.20.2000 cjm
-	    else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
+	    } else if ((strncmp(tempstr, "PROXY_SERVER", 12) == 0)
 		     && tokenlength == 12) {
 		// Setup a proxy server for all requests.
+		string proxy = value;
+		string::size_type comma = proxy.find(',');
+
+		// Since the protocol is required, the comma *must* be
+		// present. We could throw an Error on the malformed line...
+		if (comma == string::npos)
+		    continue;
+		d_dods_proxy_server_protocol = proxy.substr(0, comma);
+		proxy = proxy.substr(comma + 1);
+
+		// Break apart into userpw, host and port.
+		string::size_type at_sign = proxy.find('@');
+		if (at_sign != string::npos) { // has userpw
+		    d_dods_proxy_server_userpw = proxy.substr(0, at_sign);
+		    proxy = proxy.substr(at_sign + 1);
+		}
+		else
+		    d_dods_proxy_server_userpw = "";
+
+		// Get host and look for a port number
+		string::size_type colon = proxy.find(':');
+		if (colon != string::npos) {
+		    d_dods_proxy_server_host = proxy.substr(0, colon);
+		    d_dods_proxy_server_port 
+			= strtol(proxy.substr(colon + 1).c_str(), 0, 0);
+		}
+		else {
+		    d_dods_proxy_server_host = proxy;
+		    // No port given, look at protocol or throw
+		    if (d_dods_proxy_server_protocol == "http")
+			d_dods_proxy_server_port = 80;
+		    else if (d_dods_proxy_server_protocol == "https")
+			d_dods_proxy_server_port = 443;
+		    else if (d_dods_proxy_server_protocol == "ftp")
+			d_dods_proxy_server_port = 21;
+		    else throw Error("Could not determine the port to use for proxy '"
+				     + d_dods_proxy_server_host 
+				     + ".' Please check your .dodsrc file.");
+		}
+	    } else if ((strncmp(tempstr, "NO_PROXY_FOR", 12) == 0)
+		       && tokenlength == 12) {
+		// Setup a proxy server for all requests.
+		string no_proxy = value;
+		string::size_type comma = no_proxy.find(',');
+
+		// Since the protocol is required, the comma *must* be
+		// present. We could throw an Error on the malformed line...
+		if (comma == string::npos)
+		    continue;
+		d_dods_no_proxy_for_protocol = no_proxy.substr(0, comma);
+		d_dods_no_proxy_for_host = no_proxy.substr(comma + 1);
+		d_dods_no_proxy_for = true;
+#if 0
+		// Dont use a proxy server for the host
+		// specified.  
 		tempstr2 = value;
 		if (tempstr2 != NULL) {
 		    tempstr3 = strchr(tempstr2, ',');
 		    if (tempstr3 != NULL) {
-			tempstr3[0] = (char) 0;	//terminate access
-			// method string.
-			tempstr3++;	//advance pointer.
-			// Setup the proxy server.  tempstr2 is
-			// the access method (ftp, http, etc)
-			// and tempstr3 is a fully qualified 
-			// name which includes the access method.
-			_dods_proxy_server_protocol=string(tempstr2);
-			_dods_proxy_server_host_url=string(tempstr3);
+			tempstr3[0] = (char) 0;	//terminate
+			//tempstr2
+			tempstr3++;	// point to access method.
+			tempstr4 = strchr(tempstr3, ',');
+			if (tempstr4 != NULL) {
+			    tempstr4[0] = (char) 0;	//terminate
+				//tempstr3
+			    tempstr4++;
+			    _dods_no_proxy_for_port = atoi(tempstr4);
+			}
+	    
+			// add proxy server for host 
+			// 'tempstr2' w/ access method 
+			// 'tempstr3' and port 'noproxy_host_port'.
+			// NB: Params reversed from above. 10/23/2000 jhrg
+			_dods_no_proxy_for_protocol=string(tempstr2);
+			_dods_no_proxy_for_proxy_host=string(tempstr3);
+			_dods_no_proxy_for = true;
 		    }
-	  
 		}
-	    } 
+#endif
+	    }
+#if 0
+	    // Ignore this option. See comment in RCReader.h 06/17/04 jhrg
 	    else if ((strncmp(tempstr, "PROXY_FOR", 9) == 0)
 		     && tokenlength == 9) {
 		// Setup a proxy server for any requests
@@ -233,36 +314,8 @@ RCReader::read_rc_file(const string &pathname)
 			_dods_proxy_for = true;
 		    }
 		}
-	    } else if ((strncmp(tempstr, "NO_PROXY_FOR", 12) == 0)
-		       && tokenlength == 12) {
-		// Dont use a proxy server for the host
-		// specified.  Multiple NO_PROXY_FOR entries
-		// can be in the .dodsrc.  cjm
-		tempstr2 = value;
-		if (tempstr2 != NULL) {
-		    tempstr3 = strchr(tempstr2, ',');
-		    if (tempstr3 != NULL) {
-			tempstr3[0] = (char) 0;	//terminate
-			//tempstr2
-			tempstr3++;	// point to access method.
-			tempstr4 = strchr(tempstr3, ',');
-			if (tempstr4 != NULL) {
-			    tempstr4[0] = (char) 0;	//terminate
-				//tempstr3
-			    tempstr4++;
-			    _dods_no_proxy_for_port = atoi(tempstr4);
-			}
-	    
-			// add proxy server for host 
-			// 'tempstr2' w/ access method 
-			// 'tempstr3' and port 'noproxy_host_port'.
-			// NB: Params reversed from above. 10/23/2000 jhrg
-			_dods_no_proxy_for_protocol=string(tempstr2);
-			_dods_no_proxy_for_proxy_host=string(tempstr3);
-			_dods_no_proxy_for = true;
-		    }
-		}
 	    }
+#endif
 	}
     
 	delete [] tempstr; tempstr = 0;
@@ -334,7 +387,7 @@ RCReader::check_env_var(const string &variable_name)
     return check_string(ev);
 }
 
-RCReader::RCReader()
+RCReader::RCReader() throw(Error)
 {
     d_rc_file_path = "";
     d_cache_root = "";
@@ -351,8 +404,12 @@ RCReader::RCReader()
     _dods_deflate=0;
 
     //flags for PROXY_SERVER=<protocol>,<host url>
-    _dods_proxy_server_protocol = "";
-    _dods_proxy_server_host_url = "";
+    d_dods_proxy_server_protocol = "";
+    d_dods_proxy_server_host = "";
+    d_dods_proxy_server_port = 0;
+    d_dods_proxy_server_userpw = "";
+
+    _dods_proxy_server_host_url = ""; // deprecated
 
     // flags for PROXY_FOR=<regex>,<proxy host url>,<flags>
     _dods_proxy_for = false;	// true if proxy_for is used.
@@ -361,9 +418,9 @@ RCReader::RCReader()
     _dods_proxy_for_regexp_flags = 0;
 
     //flags for NO_PROXY_FOR=<protocol>,<host>,<port>
-    _dods_no_proxy_for = false;
-    _dods_no_proxy_for_protocol = "";
-    _dods_no_proxy_for_proxy_host = "";
+    d_dods_no_proxy_for = false;
+    d_dods_no_proxy_for_protocol = "";
+    d_dods_no_proxy_for_host = "";
     // default to port 0 if not specified. This means all ports. Using 80
     // will fail when the URL does not contain the port number. That's
     // probably a bug in libwww. 10/23/2000 jhrg
@@ -413,31 +470,15 @@ RCReader::~RCReader()
 void  
 RCReader::delete_instance()
 {
-	//  Under Linux PTHREAD_ONCE_INIT is 0 in pthread.h.  Under win32, it's a 2
-	//  element structure { FALSE, -1 }.  One can't be sure, but perhaps using
-	//  the pthread library in the following way is peering under the hood to
-	//  much and causing a portability issues.
-
-    if (RCReader::_instance)
-	{
-#if HAVE_PTHREAD_H
-	//  Under Linux PTHREAD_ONCE_INIT is 0 in pthread.h.  Under win32, it's a 2
-	//  element structure { FALSE, -1 }.  ROM - 02/15/04.
-#ifndef WIN32
-	instance_control = (pthread_once_t)PTHREAD_ONCE_INIT;
-#else
-	//  Therefore, I must try something else under win32.
-	instance_control.done = FALSE;
-	instance_control.started = -1;
-#endif
-#endif
-	delete RCReader::_instance; RCReader::_instance = 0;
+    if (RCReader::_instance) {
+	delete RCReader::_instance; 
+	RCReader::_instance = 0;
     }
 }
 
 /** Static void private method. */
 void
-RCReader::initialize_instance()
+RCReader::initialize_instance() throw(Error)
 {
     DBG(cerr << "RCReader::initialize_instance() ... ");
 
@@ -448,7 +489,7 @@ RCReader::initialize_instance()
 }
 
 RCReader* 
-RCReader::instance()
+RCReader::instance() throw(Error)
 {
 #if HAVE_PTHREAD_H
     // The instance_control variable is defined at the top of this file.
@@ -463,8 +504,45 @@ RCReader::instance()
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.13  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
+//
 // Revision 1.12  2004/06/28 16:57:53  pwest
 // unix compiler issues
+//
+// Revision 1.9.2.20  2004/06/21 20:50:43  jimg
+// Changes to the proxy options parsing: I added new methods that parse the
+// information in the PROXY_SERVER parameter and removed parsing of the
+// PROXY_FOR parameter. Also, I've changed the text written to a default
+// .dodsrc file so that a PROXY_SERVER line is output only if a proxy server
+// is configured (the same/documentation comment line is always output). The
+// PROXY_FOR lines are never written.
+//
+// Revision 1.9.2.19  2004/03/11 18:12:35  jimg
+// Ripped out the code in delete_instance that (tries to) reset(s) the
+// pthread_once_t mutex. We cannot do this in a portable way and it's needed
+// only for the unit tests, which I claim to have fixed so they don't require
+// it anymore.
+//
+// Revision 1.9.2.18  2004/03/07 22:27:47  rmorris
+// Make PTHREAD_ONCE_INIT static initialization compatible across platforms.
+//
+// Revision 1.9.2.17  2004/02/27 17:25:20  edavis
+//  adding { } for PTHREAD_ONCE_INIT parm
+//
+// Revision 1.9.2.16  2004/02/26 22:43:02  edavis
+// remove the platform dependent parm PTHREAD_ONCE_INIT
+//
+// Revision 1.9.2.15  2004/02/22 23:35:03  rmorris
+// Solved some problems regarding the differences in the pthread
+// implementation across OSX, Win32 and non-OSX unixes. Either we are using
+// pthreads in a manner that was not intended by the pthread 'standard' (??)
+// or pthread implementations vary across platform or (finally) perhaps we
+// are encountering different implementations of pthreads as a result of its
+// development over time. Regardless our pthread code is starting to become
+// less portable. See how pthread_once_t varies across the above-mentioned
+// platforms. These changes get it to compile. I'm crossing my fingers that
+// it will run correctly everywhere.
 //
 // Revision 1.11  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.

@@ -36,10 +36,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.42 2004/02/19 19:42:52 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: DAS.cc,v 1.43 2004/07/07 21:08:47 jimg Exp $"};
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include <stdio.h>
@@ -362,6 +362,13 @@ DAS::print(FILE *out, bool dereference)
 }
 
 // $Log: DAS.cc,v $
+// Revision 1.43  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.40.2.4  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.42  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

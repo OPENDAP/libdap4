@@ -33,10 +33,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.43 2004/03/10 16:29:18 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.44 2004/07/07 21:08:46 jimg Exp $";
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include <assert.h>
@@ -1250,6 +1250,13 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.44  2004/07/07 21:08:46  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.38.2.4  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.43  2004/03/10 16:29:18  jimg
 // Repairs to the methods which provide access using iterators. These
 // were using '*_iter &' type params and that made newer versions of g++

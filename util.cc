@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.80 2004/06/28 17:01:48 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.81 2004/07/07 21:08:49 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -548,8 +548,10 @@ get_tempfile_template(char *file_template)
 {
     char *c;
 #ifdef WIN32
-    if (getenv("TEMP") && (access(getenv("TEMP"), 6) == 0)) 
+    if (getenv("TEMP") && (access(getenv("TEMP"), 6) == 0))
 	c = getenv("TEMP");
+    else if (getenv("TMP"))
+	c = getenv("TMP");
 #else
     if (getenv("TMPDIR") && (access(getenv("TMPDIR"), W_OK|R_OK) == 0)) 
 	c = getenv("TMPDIR");
@@ -564,6 +566,7 @@ get_tempfile_template(char *file_template)
     char *temp = new char[strlen(c) + strlen(file_template) + 2];
     strcpy(temp, c);
     strcat(temp, "/");
+
     strcat(temp, file_template);
 
     return temp;
@@ -600,6 +603,16 @@ file_to_string(FILE *fp)
 }
 
 // $Log: util.cc,v $
+// Revision 1.81  2004/07/07 21:08:49  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.76.2.5  2004/07/06 11:18:33  rmorris
+// Have temp names under win32 go under TEMP or TMP. Note that under Apache
+// there are no such env vars under win32 as apache doesn't get them from the
+// environment (system or user). As a result we use TMP or TEMP user env vars
+// on the client side and TMP or TEMP as setup via hard code in perl on the
+// server side.
+//
 // Revision 1.80  2004/06/28 17:01:48  pwest
 // Adding compile date and time to version
 //

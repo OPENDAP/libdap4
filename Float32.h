@@ -38,22 +38,9 @@
 
 #ifndef __POWERPC__
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 #endif
-
-#if 0
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-#endif // 0
 
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
@@ -116,6 +103,16 @@ public:
 };
 
 // $Log: Float32.h,v $
+// Revision 1.21  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.19.2.5  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
+// Revision 1.19.2.4  2004/05/02 00:07:20  rmorris
+// Mod's to move to winsock2 under win32.  Necessary because of newer libcurl.
+//
 // Revision 1.20  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //
@@ -126,7 +123,7 @@ public:
 // Updated the documentation.
 //
 // Revision 1.19.2.1  2003/06/23 11:49:18  rmorris
-// The #pragma interface directive to GCC makes the dynamic typing functionality
+// The // #pragma interface directive to GCC makes the dynamic typing functionality
 // go completely haywire under OS X on the PowerPC.  We can't use that directive
 // on that platform and it was ifdef'd out for that case.
 //

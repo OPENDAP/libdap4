@@ -27,7 +27,7 @@
 #define _constructor_h 1
 
 #ifdef _GNUG_
-#pragma interface
+// #pragma interface
 #endif
 
 #include <vector>

@@ -34,13 +34,13 @@
 //      reza            Reza Nekovei <reza@intcomm.net>
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.131 2004/02/19 19:42:52 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.132 2004/07/07 21:08:47 jimg Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
@@ -84,7 +84,8 @@ Connect::process_data(DataDDS &data, Response *rs)
 	throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 	return;
 
-      case dods_data: {
+      case dods_data:
+      default: {
 	  // Parse the DDS; throw an exception on error.
 	  data.parse(rs->get_stream());
 	  XDR *xdr_stream = new_xdrstdio(rs->get_stream(), XDR_DECODE);
@@ -105,12 +106,18 @@ Connect::process_data(DataDDS &data, Response *rs)
 	  return;
       }
 
+#if 0
+	// According to the spec (DAP 2), servers MUST return the dods_data
+	// Content-Type. But, many older servers do not do this, so the
+	// default case is not to throw an error, but to treat the response
+	// as data... See bug 706. 03/22/04 jhrg
       default:
 	throw Error(
 "The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dods_data').\n\
 This may indicate that the server at the site is not correctly\n\
 configured, or that the URL has changed.");
+#endif
     }
 }
 
@@ -378,6 +385,7 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	break;
 
       case dods_das:
+      default:
 	// DAS::parse throws an exception on error.
 	try {
 	    das.parse(rs->get_stream()); // read and parse the das from a file 
@@ -389,12 +397,15 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	    
 	break;
 
+#if 0
+	// See the comment in process_data() and bug 706. 03/22/04 jhrg
       default:
 	throw Error(
 "The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dods_das').\n\
 This may indicate that the server at the site is not correctly\n\
 configured, or that the URL has changed.");
+#endif
     }
 
     delete rs; rs = 0;
@@ -451,6 +462,7 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	break;
 
       case dods_dds:
+      default:
 	// DDS::prase throws an exception on error.
 	try {
 	    dds.parse(rs->get_stream()); // read and parse the dds from a file 
@@ -461,12 +473,15 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	}
 	break;
 
+#if 0
+	// See the comment in process_data() and bug 706. 03/22/04 jhrg
       default:
 	throw Error(
 "The site did not return a valid response (it lacked the\n\
 expected content description header value of 'dods_dds').\n\
 This may indicate that the server at the site is not correctly\n\
 configured, or that the URL has changed.");
+#endif
     }
 
     delete rs; rs = 0;
@@ -641,7 +656,7 @@ Connect::is_cache_enabled()
 }
 
 /** @name Remove these...
-    All of these are deprecated and will be removed in a futire version of
+    All of these are deprecated and will be removed in a future version of
     this code. */
 //@{
 /** All DODS datasets define a Data Attribute Structure (DAS), to
@@ -710,6 +725,20 @@ Connect::error()
 //@}
 
 // $Log: Connect.cc,v $
+// Revision 1.132  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.128.2.9  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
+// Revision 1.128.2.8  2004/03/22 19:28:02  jimg
+// Fixed bug 706. Older servers (e.g., the aggregation server) do not always
+// return the dods_das, dods_dds, ..., Content-Type headers. I'd modified the
+// code to throw an exception when this condition was found, but that breaks too
+// many important data sources (at least right now). I've backed that changed
+// out of the code (see process_data(), request_das() and request_dds()).
+//
 // Revision 1.131  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

@@ -34,7 +34,7 @@
 // jhrg 9/14/94
 
 #ifdef _GNUG_
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
@@ -1149,12 +1149,19 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
-// Revision 1.73  2004/02/19 19:42:52  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
+// Revision 1.74  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
 //
 // Revision 1.72  2003/12/10 21:11:58  jimg
 // Merge with 3.4. Some of the files contains erros (some tests fail). See
 // the ChangeLog for information about fixes.
+// Revision 1.70.2.9  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
+// Revision 1.73  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
 // Revision 1.70.2.8  2004/02/11 22:26:46  jimg
 // Changed all calls to delete so that whenever we use 'delete x' or
 // 'delete[] x' the code also sets 'x' to null. This ensures that if a

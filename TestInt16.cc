@@ -34,7 +34,7 @@
 // 3/22/99 jhrg
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
@@ -84,6 +84,13 @@ TestInt16::read(const string &)
 }
 
 // $Log: TestInt16.cc,v $
+// Revision 1.10  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.8.2.2  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.9  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

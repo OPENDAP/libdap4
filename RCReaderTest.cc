@@ -35,6 +35,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#define DODS_DEBUG
 #include "RCReader.h"
 #include "debug.h"
 
@@ -63,6 +64,9 @@ public:
     CPPUNIT_TEST(check_env_var_test5);
     CPPUNIT_TEST(instance_test1);
     CPPUNIT_TEST(instance_test2);
+    CPPUNIT_TEST(proxy_test1);
+    CPPUNIT_TEST(proxy_test2);
+    CPPUNIT_TEST(proxy_test3);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -160,6 +164,70 @@ public:
 		       == string(cwd) + string("/.dods_cache/"));
 	
     }
+
+    // Read the proxy info from rcreader-testsuite/test1.rc
+    void proxy_test1() {
+	char rc[] = { "DODS_CONF=rcreader-testsuite/test1.rc" };
+	DBG(cerr << "rc: " << rc << endl);
+	putenv(rc);
+
+	RCReader::delete_instance();
+	RCReader::initialize_instance();
+	RCReader *reader = RCReader::instance();
+	DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
+	CPPUNIT_ASSERT(reader->d_rc_file_path 
+		       == "rcreader-testsuite/test1.rc");
+	CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
+
+	string proxy = reader->get_proxy_server_host_url();
+	CPPUNIT_ASSERT(proxy == "jimg:mypass@proxy.local.org:8080");
+
+	CPPUNIT_ASSERT(reader->get_proxy_server_host() == "proxy.local.org");
+	CPPUNIT_ASSERT(reader->get_proxy_server_port() == 8080);
+	CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "jimg:mypass");
+
+	CPPUNIT_ASSERT(reader->is_no_proxy_for_used());
+	CPPUNIT_ASSERT(reader->get_no_proxy_for_protocol() == "http");
+	CPPUNIT_ASSERT(reader->get_no_proxy_for_host() == "local.org");
+    }
+
+    void proxy_test2() {
+	char rc[] = { "DODS_CONF=rcreader-testsuite/test2.rc" };
+	DBG(cerr << "rc: " << rc << endl);
+	putenv(rc);
+
+	RCReader::delete_instance();
+	RCReader::initialize_instance();
+	RCReader *reader = RCReader::instance();
+	DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
+	CPPUNIT_ASSERT(reader->d_rc_file_path 
+		       == "rcreader-testsuite/test2.rc");
+	CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
+
+	string proxy = reader->get_proxy_server_host_url();
+	DBG(cerr << "get_proxy_server_host_url(): " << proxy << endl);
+	CPPUNIT_ASSERT(proxy == "proxy.local.org:80");
+
+	CPPUNIT_ASSERT(reader->get_proxy_server_host() == "proxy.local.org");
+	CPPUNIT_ASSERT(reader->get_proxy_server_port() == 80);
+	CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "");
+    }
+
+    void proxy_test3() {
+	char rc[] = { "DODS_CONF=rcreader-testsuite/test3.rc" };
+	DBG(cerr << "rc: " << rc << endl);
+	putenv(rc);
+
+	try {
+	    RCReader::delete_instance();
+	    RCReader::initialize_instance();
+	    CPPUNIT_ASSERT(!"initialize_instance() should throw Error.");
+	}
+	catch(Error &e) {
+	    DBG(cerr << e.get_error_message() << endl);
+	    CPPUNIT_ASSERT(e.get_error_message() != "");
+	}
+    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RCReaderTest);
@@ -176,6 +244,12 @@ main( int argc, char* argv[] )
 }
 
 // $Log: RCReaderTest.cc,v $
+// Revision 1.4  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.1.2.4  2004/06/21 20:52:18  jimg
+// Added tests for th new proxy server methods.
+//
 // Revision 1.3  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

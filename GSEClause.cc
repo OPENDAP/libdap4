@@ -32,12 +32,12 @@
 // The Grid Selection Expression Clause class.
 
 #ifdef _GNUG_
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.16 2004/02/19 19:42:52 jimg Exp $"};
+static char id[] not_used = {"$Id: GSEClause.cc,v 1.17 2004/07/07 21:08:47 jimg Exp $"};
 
 #include <iostream>
 #include <sstream>
@@ -382,6 +382,13 @@ GSEClause::get_map_max_value() const
 }
 
 // $Log: GSEClause.cc,v $
+// Revision 1.17  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.12.2.3  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.16  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

@@ -34,7 +34,7 @@
 // jhrg 1/12/95
 
 #ifdef _GNUG_
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
@@ -83,6 +83,13 @@ TestStructure::read(const string &dataset)
 }
 
 // $Log: TestStructure.cc,v $
+// Revision 1.22  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.20.2.1  2004/07/02 20:41:53  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.21  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

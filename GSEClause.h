@@ -35,7 +35,7 @@
 #define _gseclause_h 1
 
 #ifdef _GNUG_
-#pragma interface
+// #pragma interface
 #endif
 
 #include <string>
@@ -210,6 +210,13 @@ public:
 };
 
 // $Log: GSEClause.h,v $
+// Revision 1.13  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.11.2.3  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.12  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

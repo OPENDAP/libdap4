@@ -32,7 +32,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: SignalHandler.cc,v 1.4 2004/06/28 16:57:53 pwest Exp $" };
+    { "$Id: SignalHandler.cc,v 1.5 2004/07/07 21:08:48 jimg Exp $" };
 
 #include <signal.h>
 
@@ -71,9 +71,6 @@ void
 SignalHandler::delete_instance()
 {
     if (SignalHandler::d_instance) {
-#if HAVE_PTHREAD_H
-	instance_control = (pthread_once_t)PTHREAD_ONCE_INIT;
-#endif
 	for (int i = 0; i < NSIG; ++i) {
 	    d_signal_handlers[i] = 0;
 	    d_old_handlers[i] = 0;
@@ -129,7 +126,7 @@ SignalHandler::instance()
     pthread_once(&instance_control, initialize_instance);
 #else
     if (!d_instance)
-	initialize_signal_handler();
+	initialize_instance();
 #endif
 
     return d_instance;
@@ -224,8 +221,45 @@ SignalHandler::remove_handler(int signum)
 }
 
 // $Log: SignalHandler.cc,v $
+// Revision 1.5  2004/07/07 21:08:48  jimg
+// Merged with release-3-4-8FCS
+//
 // Revision 1.4  2004/06/28 16:57:53  pwest
 // unix compiler issues
+//
+// Revision 1.1.2.12  2004/04/02 16:46:36  dan
+// Fixed aproblem with the Alpha build. Code didn't compile when HAVE_PTHREAD
+// was not defined.
+//
+// Revision 1.1.2.11  2004/03/11 18:21:59  jimg
+// Removed unneeded extra pthread_once_t mutex (was used for
+// re-initialization).
+//
+// Revision 1.1.2.10  2004/03/11 18:11:36  jimg
+// Ripped out the code in delete_instance that (tries to) reset(s) the
+// pthread_once_t mutex. We cannot do this in a portable way and it's needed
+// only for the unit tests, which I claim to have fixed so they don't require
+// it anymore.
+//
+// Revision 1.1.2.9  2004/03/07 23:17:44  rmorris
+// Make static initialization of PTHREAD_ONCE_INIT compatible cross platform.
+//
+// Revision 1.1.2.8  2004/02/27 17:25:12  edavis
+//  adding { } for PTHREAD_ONCE_INIT parm
+//
+// Revision 1.1.2.7  2004/02/26 22:44:50  edavis
+// remove the platform dependent parm PTHREAD_ONCE_INIT
+//
+// Revision 1.1.2.6  2004/02/22 23:35:03  rmorris
+// Solved some problems regarding the differences in the pthread
+// implementation across OSX, Win32 and non-OSX unixes. Either we are using
+// pthreads in a manner that was not intended by the pthread 'standard' (??)
+// or pthread implementations vary across platform or (finally) perhaps we
+// are encountering different implementations of pthreads as a result of its
+// development over time. Regardless our pthread code is starting to become
+// less portable. See how pthread_once_t varies across the above-mentioned
+// platforms. These changes get it to compile. I'm crossing my fingers that
+// it will run correctly everywhere.
 //
 // Revision 1.3  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.

@@ -34,7 +34,7 @@
 // jhrg 9/13/94
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
@@ -1003,6 +1003,13 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.65  2004/07/07 21:08:46  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.59.2.4  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.64  2004/06/27 11:28:01  rmorris
 // Get it to compile under win32 by including <functional> and <algorithm>
 //

@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS dods_root dods_relative dir fullpath INCS DODS_PACKAGES_DIR VERSION DVR PERL TAR depend build build_cpu build_vendor build_os host host_cpu host_vendor host_os CXX LN_S AWK CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXXFLAGS ac_ct_CXX RANLIB ac_ct_RANLIB SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LEX LEXLIB LEX_OUTPUT_ROOT YACC GCC_ROOT VALGRIND CPP EGREP ALLOCA packages LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS dods_root dods_relative dir fullpath INCS DODS_PACKAGES_DIR VERSION DVR PERL TAR depend build build_cpu build_vendor build_os host host_cpu host_vendor host_os CXX LN_S AWK CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXXFLAGS ac_ct_CXX RANLIB ac_ct_RANLIB SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LEX LEXLIB LEX_OUTPUT_ROOT YACC GCC_ROOT VALGRIND CPP EGREP ALLOCA packages REGEX_C REGEX_O LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -6594,6 +6594,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+
     # Find a good C compiler (hopefully gcc).
 
     # Where does DODS live?
@@ -6602,68 +6603,6 @@ _ACEOF
 
     # Initialize $packages to null.
     packages=""
-
-
-    echo "$as_me:$LINENO: checking for rx_version_string in -lrx" >&5
-echo $ECHO_N "checking for rx_version_string in -lrx... $ECHO_C" >&6
-if test "${ac_cv_lib_rx_rx_version_string+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lrx  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char rx_version_string ();
-int
-main ()
-{
-rx_version_string ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_rx_rx_version_string=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_lib_rx_rx_version_string=no
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_rx_rx_version_string" >&5
-echo "${ECHO_T}$ac_cv_lib_rx_rx_version_string" >&6
-if test $ac_cv_lib_rx_rx_version_string = yes; then
-  HAVE_RX=1; LIBS="$LIBS -lrx"
-else
-  packages="$packages librx"; HAVE_RX=1; LIBS="$LIBS -lrx"
-fi
-
 
 
 
@@ -6777,6 +6716,13 @@ echo "$as_me: error: Could not find xml2-config!" >&2;}
    { (exit 1); exit 1; }; }
     fi
 
+INCS="-Iregex-0.12 $INCS"
+REGEX_C=regex-0.12/regex.c
+
+echo "Setting $REGEX_C"
+REGEX_O=regex-0.12/regex.o
+
+
     # Check whether --enable-efence or --disable-efence was given.
 if test "${enable_efence+set}" = set; then
   enableval="$enable_efence"
@@ -6863,7 +6809,7 @@ echo "$as_me: error: Bad debug value" >&2;}
 
 
 
-                    ac_config_files="$ac_config_files Makefile tests/Makefile"
+                              ac_config_files="$ac_config_files Makefile tests/Makefile opendap-config"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -7390,6 +7336,7 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "tests/Makefile" ) CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
+  "opendap-config" ) CONFIG_FILES="$CONFIG_FILES opendap-config" ;;
   "config_dap.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config_dap.h" ;;
   "dods-datatypes.h" ) CONFIG_HEADERS="$CONFIG_HEADERS dods-datatypes.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
@@ -7523,6 +7470,8 @@ s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@ALLOCA@,$ALLOCA,;t t
 s,@packages@,$packages,;t t
+s,@REGEX_C@,$REGEX_C,;t t
+s,@REGEX_O@,$REGEX_O,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

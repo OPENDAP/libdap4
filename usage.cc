@@ -38,7 +38,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.27 2004/02/19 19:42:53 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.28 2004/07/07 21:08:49 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -60,6 +60,13 @@ static char rcsid[] not_used = {"$Id: usage.cc,v 1.27 2004/02/19 19:42:53 jimg E
 #include "debug.h"
 
 using namespace std;
+
+#ifdef WIN32
+#define popen _popen
+#define pclose _pclose
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 static void
 usage(char *argv[])
@@ -422,39 +429,35 @@ main(int argc, char *argv[])
     string cgi = argv[3];
 
     DAS das;
+#ifdef WIN32
+	string command = cgi + "_das " + options + " \"" + name + "\"";
+#else
     string command = cgi + "_das " + options + " '" + name + "'";
+#endif
     DBG(cerr << "DAS Command: " << command << endl);
 
     try {
-#ifndef WIN32
-	//  Under win32, this has been temporarily removed to get it to
-	//  compile. This code is not relevant for the client side for win32
-	//  native port. Once one or more of the Dods servers have been
-	//  ported, this will need patched similiar to the popen() fixes for
-	//  ML loaddods.
 	FILE *in = popen(command.c_str(), "r");
+
 	if (in && remove_mime_header(in)) {
 	    das.parse(in);
-	    pclose(in);
+		pclose(in);
 	}
-#endif
 
 	DDS dds;
+#ifdef WIN32
+	command = cgi + "_dds " + " \"" + name + "\"";
+#else
 	command = cgi + "_dds '" + name + "'";
+#endif
 	DBG(cerr << "DDS Command: " << command << endl);
 
-#ifndef WIN32
-	//  Under win32, this has been temporarily removed to get it to
-	//  compile. This code is not relevant for the client side for win32
-	//  native port. Once one or more of the Dods servers have been
-	//  ported, this will need patched similiar to the popen() fixes for
-	//  ML loaddods.
 	in = popen(command.c_str(), "r");
+
 	if (in && remove_mime_header(in)) {
 	    dds.parse(in);
-	    pclose(in);
+		pclose(in);
 	}
-#endif
 
 	// Build the HTML* documents.
 
@@ -509,6 +512,12 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.28  2004/07/07 21:08:49  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.23.2.4  2004/04/25 00:33:06  rmorris
+// Mod's to get the usage functionality of Dods serving to run under win32.
+//
 // Revision 1.27  2004/02/19 19:42:53  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

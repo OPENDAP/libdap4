@@ -43,7 +43,7 @@ using namespace std;
 class HTTPConnectTest : public TestFixture {
 private:
     HTTPConnect *http;
-    string localhost_url, localhost_pw_url;
+    string localhost_url, localhost_pw_url, localhost_digest_pw_url;
     string etag;
     string lm;
     string dsp_das_url;
@@ -69,6 +69,7 @@ public:
 	lm = "Thu, 04 Sep 2003 15:55:53 GMT";
 
 	localhost_pw_url = "http://jimg:dods_test@localhost/secret/page.txt";
+	localhost_digest_pw_url = "http://jimg:dods_digest@localhost/sdata/digest.txt";
 
 	dsp_das_url = "http://eddy.gso.uri.edu/cgi-bin/nph-dods/avhrr/2001/4/d01093165826.pvu.Z.das";
     }
@@ -85,9 +86,10 @@ public:
     CPPUNIT_TEST(server_version_test);
     CPPUNIT_TEST(type_test);
     CPPUNIT_TEST(cache_test);
-
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(read_url_password_test);
+    CPPUNIT_TEST(read_url_password_test2);
+    CPPUNIT_TEST(read_url_password_proxy_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -257,7 +259,12 @@ public:
 	DBG(cerr << endl << "Entering Caching tests." << endl);
 
 	// The cache-testsuite/dodsrc file turns this off; all the other
-	// params are set up. 
+	// params are set up. It used to be that HTTPConnect had an option to
+	// turn caching on, but that no longer is present. This hack enables
+	// caching for this test. 06/18/04 jhrg
+	http->d_http_cache 
+	    = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), false);
+	CPPUNIT_ASSERT(http->d_http_cache != 0);
 	http->d_http_cache->set_cache_enabled(true);
 
 	fetch_url_test();
@@ -295,8 +302,45 @@ public:
 
 	DBG(cerr << endl << http->d_upstring << endl);
 	CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_test");
+	DBG(cerr << "Status: " << status << endl);
 	CPPUNIT_ASSERT(status == 200);
 	delete resp_h; resp_h = 0;
+    }
+	
+    void read_url_password_test2() {
+	FILE *dump = fopen("/dev/null", "w");
+	vector<string> *resp_h = new vector<string>;
+	long status = http->read_url(localhost_digest_pw_url, dump, resp_h);
+
+	DBG(cerr << endl << http->d_upstring << endl);
+	CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_digest");
+	DBG(cerr << "Status: " << status << endl);
+	CPPUNIT_ASSERT(status == 200);
+	delete resp_h; resp_h = 0;
+    }
+	
+    void read_url_password_proxy_test() {
+	cerr << endl <<
+"This test will fail if localhost is not configured as a proxy server\n\
+with authentication. The username must be jimg and the password must be\n\
+dods_test." << endl;
+
+	delete http; http = 0;	// get rid of the default object; build a
+				// special one. 
+	RCReader::delete_instance();
+	// this dodsrc directs all access through a proxy server. The
+	// localhost must be configured as such.
+	putenv("DODS_CONF=cache-testsuite/dodsrc_proxy");
+	try {
+	    RCReader::initialize_instance(); // work-around pthreads for tests
+	    http = new HTTPConnect(RCReader::instance());
+
+	    fetch_url_test();
+	}
+	catch(Error &e) {
+	    cerr << "Error: " << e.get_error_message() << endl;
+	    CPPUNIT_ASSERT(!"Error");
+	}
     }
 	
 };
@@ -321,6 +365,14 @@ main( int argc, char* argv[] )
 }
 
 // $Log: HTTPConnectTest.cc,v $
+// Revision 1.11  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.8.2.7  2004/06/21 20:46:38  jimg
+// Added a test for proxy use, including proxy authentication with a username
+// and password. A proxy server running on localhost must be configured for the
+// test to run.
+//
 // Revision 1.10  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

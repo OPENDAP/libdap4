@@ -27,18 +27,19 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #pragma implementation
 #endif
 
-#include <ctype.h>
-#include <builtin.h>
 #include <stdlib.h>
 #include <string.h>
+#include <builtin.h>
 
 #include <new>
 
 extern "C" {
 #ifdef WIN32
-#define __STDC__  /*  Needed for rx.h prototypes  */
+#define __STDC__		/*  Needed for rx.h prototypes.               */
+#include "regex-0.12/regex.h"   /*  Lack of case distinction on win32         */
+#else				/*  Means regex.h and Regex.h are same file.  */
+#include "regex.h"
 #endif
-#include <rx.h>
 }
 
 #include <Regex.h>
@@ -73,11 +74,17 @@ Regex::Regex(const char* t, int fast, int bufsize,
     buf->fastmap = (char*)malloc(256);
   else
     buf->fastmap = 0;
+#if 0
   buf->translate = (unsigned char*)transtable;
+#endif
+  buf->translate = (char*)transtable;
   if (tlen > bufsize)
     bufsize = tlen;
   buf->allocated = bufsize;
+  buf->buffer = (unsigned char *)malloc(buf->allocated);
+#if 0
   buf->buffer = (char *)malloc(buf->allocated);
+#endif
   const char* msg = re_compile_pattern((const char*)t, tlen, buf);
   if (msg != 0)
 #if 0

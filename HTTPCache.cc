@@ -24,7 +24,7 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
@@ -225,7 +225,8 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     @exception Error thrown if the cache root cannot set. */
 
 HTTPCache *
-HTTPCache::instance(const string &cache_root, bool force) throw(Error)
+HTTPCache::instance(const string &cache_root, bool force)
+    throw(SignalHandlerRegisteredErr)
 {
     LOCK(&instance_mutex);
     DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")"
@@ -252,25 +253,25 @@ HTTPCache::instance(const string &cache_root, bool force) throw(Error)
 	    EventHandler *old_eh = SignalHandler::instance()->register_handler
 		                       (SIGINT, new HTTPCacheInterruptHandler);
 	    if (old_eh) {
-		throw Error(
-"Could not register event handler for SIGINT without superseding an existing one.");
 		SignalHandler::instance()->register_handler(SIGINT, old_eh);
+		throw SignalHandlerRegisteredErr(
+"Could not register event handler for SIGINT without superseding an existing one.");
 	    }
 
 	    old_eh = SignalHandler::instance()->register_handler
 		                     (SIGPIPE, new HTTPCacheInterruptHandler);
 	    if (old_eh) {
-		throw Error(
-"Could not register event handler for SIGPIPE without superseding an existing one.");
 		SignalHandler::instance()->register_handler(SIGPIPE, old_eh);
+		throw SignalHandlerRegisteredErr(
+"Could not register event handler for SIGPIPE without superseding an existing one.");
 	    }
 
 	    old_eh = SignalHandler::instance()->register_handler
 		                     (SIGTERM, new HTTPCacheInterruptHandler);
 	    if (old_eh) {
-		throw Error(
-"Could not register event handler for SIGTERM without superseding an existing one.");
 		SignalHandler::instance()->register_handler(SIGTERM, old_eh);
+		throw SignalHandlerRegisteredErr(
+"Could not register event handler for SIGTERM without superseding an existing one.");
 	    }
 #endif
 	}
@@ -1589,7 +1590,6 @@ HTTPCache::write_metadata(const string &cachename,
 
     FILE *dest = fopen(fname.c_str(), "w");
     if (!dest) {
-	fclose(dest);
 	throw InternalErr(__FILE__, __LINE__, 
 			  "Could not open named cache entry file.");
     }
@@ -1627,7 +1627,6 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers)
 {
     FILE *md = fopen(string(cachename + CACHE_META).c_str(), "r");
     if (!md) {
-	fclose( md ) ;
 	throw InternalErr(__FILE__, __LINE__,
 			  "Could not open named cache entry meta data file.");
     }
@@ -1731,7 +1730,6 @@ HTTPCache::open_body(const string &cachename) const throw(InternalErr)
 {
     FILE *src = fopen(cachename.c_str(), "r+b");
     if (!src) {
-	fclose(src);
 	throw InternalErr(__FILE__, __LINE__,
 			  "Could not open named cache entry file.");
     }
@@ -2341,6 +2339,23 @@ HTTPCache::purge_cache() throw(Error)
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.14  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.11.2.16  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
+// Revision 1.11.2.15  2004/06/15 18:18:53  jimg
+// Removed calls to fclose() when the FILE pointer returned from fopen() was
+// null. Yikes! I checked all the lines that had 'open(' for this same bug, but
+// it appears only in this file. See bug 736.
+//
+// Revision 1.11.2.14  2004/03/11 18:24:07  jimg
+// Added SignalHandlerRegisteredError exception to instance(). This lets clients
+// see that there was already a handler registered and look at sorting the mess
+// out.
+//
 // Revision 1.13  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //

@@ -1,3 +1,34 @@
+2004-07-07  James Gallagher  <jimg@comet.dods.org>
+
+	* Merged with release-3-4-8FCS.
+
+2004-07-06  James Gallagher  <jimg@comet.dods.org>
+
+	* Bumped the version to 3.4.8.
+
+2004-07-02  James Gallagher  <jimg@comet.dods.org>
+
+	* I removed (commented) the pragma interface/implementation lines.
+	This increases the size of the library by ~1MB, which seems pretty
+	insignificant at this point. The change means that the code will
+	compile on HP/UX with gcc 3.2. It _may_ be that gcc 3.4 fixes this
+	problem, but it seems that the pragmas cause more headaches than
+	they are worth. It should be easy to 'add them back in' if we
+	decide to do that, since they are just commented out. 
+
+2004-03-11  James Gallagher  <jimg@comet.dods.org>
+
+	* Bumped the version to 3.4.7.
+
+	* I fixed a problem in SignalHandler and RCReader. Both od=f these
+	class had code that re-initialized a pthread_once_t mutex in their
+	delete_instance() method. This was used by some unit tests to make
+	a delete instances of these two singleton classes. The problem is
+	that while this runs (sort of, we had some reports of
+	crash-on-exit behavior) on Linux, it fails outright on Solaris. As
+	Rob M points out, it's a non-standard use of pthreads. I removed
+	the re-init and changed the unit tests. 
+
 2004-02-18  James Gallagher  <jimg@comet.dods.org>
 
 	* Merge release-3-4-2FCS.
@@ -1425,4 +1456,4 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.79 2004/02/19 19:42:52 jimg Exp $
+$Id: ChangeLog,v 1.80 2004/07/07 21:08:47 jimg Exp $

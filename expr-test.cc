@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.38 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.39 2004/07/07 21:08:49 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@ static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.38 2003/12/08 18:02:30 ed
 
 #ifdef WIN32
 #include <rpc.h>
-#include <winsock.h>
+#include <winsock2.h>
 #include <xdr.h>
 #include <io.h>
 #include <fcntl.h>
@@ -611,6 +611,12 @@ constrained_trans(const string &dds_name, string dataset,
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.39  2004/07/07 21:08:49  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.36.2.2  2004/05/02 00:07:20  rmorris
+// Mod's to move to winsock2 under win32.  Necessary because of newer libcurl.
+//
 // Revision 1.38  2003/12/08 18:02:30  edavis
 // Merge release-3-4 into trunk
 //

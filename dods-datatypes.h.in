@@ -20,7 +20,7 @@
 
 #ifdef WIN32
 #include <rpc.h>
-#include <winsock.h>
+#include <winsock2.h>
 #include <xdr.h>
 #else
 #include <rpc/types.h>

@@ -24,13 +24,13 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.17 2004/04/12 16:21:56 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.18 2004/07/07 21:08:47 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -243,29 +243,23 @@ HTTPConnect::www_lib_init() throw(Error, InternalErr)
     // Now set options that will remain constant for the duration of this
     // CURL object.
 
-    // We must set the proxy host (it's really a host, if a URL is given, the
-    // protocol part is ignored by libcurl).
-    if (d_rcr->get_proxy_server_host_url() != "") {
-	string proxy = d_rcr->get_proxy_server_host_url();
-	curl_easy_setopt(d_curl, CURLOPT_PROXY, proxy.c_str());
-	// If the port number is not part of the proxy server host, then use
-	// the protocol to divine a default port number. Support http, https
-	// and ftp for now. If protocol is not one of those, throw Error.
-	Regex find_port("^.*:[0-9]+$");
-	int index=0, matchlen;
-	if (find_port.search(proxy.c_str(), proxy.length(), matchlen, index)
-	    == -1) {
-	    string protocol = d_rcr->get_proxy_server_protocol();
-	    if (protocol == "http")
-		curl_easy_setopt(d_curl, CURLOPT_PROXYPORT, (long)80);
-	    else if (protocol == "https")
-		curl_easy_setopt(d_curl, CURLOPT_PROXYPORT, (long)443);
-	    else if (protocol == "ftp")
-		curl_easy_setopt(d_curl, CURLOPT_PROXYPORT, (long)21);
-	    else 
-		throw Error("Proxies for the protocol '" + protocol 
-			    + "' are not supported.");
-	}
+    // Set the proxy host.
+    if (!d_rcr->get_proxy_server_host().empty()) {
+	DBG(cerr << "Setting up a proxy server." << endl);
+	DBG(cerr << "Proxy host: " << d_rcr->get_proxy_server_host()
+	    << endl);
+	DBG(cerr << "Proxy port: " << d_rcr->get_proxy_server_port()
+	    << endl);
+	DBG(cerr << "Proxy pwd : " << d_rcr->get_proxy_server_userpw()
+	    << endl);
+	curl_easy_setopt(d_curl, CURLOPT_PROXY, 
+			 d_rcr->get_proxy_server_host().c_str());
+	curl_easy_setopt(d_curl, CURLOPT_PROXYPORT,
+			 d_rcr->get_proxy_server_port());
+	// Password might not be required. 06/21/04 jhrg
+	if (!d_rcr->get_proxy_server_userpw().empty())
+	    curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD, 
+			     d_rcr->get_proxy_server_userpw().c_str());
     }
 
     curl_easy_setopt(d_curl, CURLOPT_ERRORBUFFER, d_error_buffer);
@@ -279,16 +273,13 @@ HTTPConnect::www_lib_init() throw(Error, InternalErr)
     curl_easy_setopt(d_curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_ANY);
 
     curl_easy_setopt(d_curl, CURLOPT_NOPROGRESS, 1);
-#if 0
-    curl_easy_setopt(d_curl, CURLOPT_MUTE, 1);
-#endif
-    curl_easy_setopt(d_curl, CURLOPT_NOSIGNAL, (long)1);
-
+    curl_easy_setopt(d_curl, CURLOPT_NOSIGNAL, 1);
     curl_easy_setopt(d_curl, CURLOPT_HEADERFUNCTION, save_raw_http_headers);
     // In read_url a call to CURLOPT_WRITEHEADER is used to set the fourth
     // param of save_raw_http_headers to a vector<string> object. 
 
     if (www_trace) {
+	cerr << "Curl version: " << curl_version() << endl;
 	curl_easy_setopt(d_curl, CURLOPT_VERBOSE, 1);
 	curl_easy_setopt(d_curl, CURLOPT_DEBUGFUNCTION, curl_debug);
     }
@@ -350,28 +341,22 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     if (d_accept_deflate)
 	curl_easy_setopt(d_curl, CURLOPT_ENCODING, "deflate");
 
+    // Turn off the proxy for this URL?
     bool temporary_proxy = false;
-    if ((temporary_proxy = url_uses_proxy_for(url))) {
-	// Set the new proxy.
-	curl_easy_setopt(d_curl, CURLOPT_PROXY,
-			 d_rcr->get_proxy_for_proxy_host_url().c_str());
-    }
-    else if ((temporary_proxy = url_uses_no_proxy_for(url))) {
-	// Turn off the proxy for this URL.
-	curl_easy_setopt(d_curl, CURLOPT_PROXY, 0);	
+    if ((temporary_proxy = url_uses_no_proxy_for(url))) {
+	DBG(cerr << "Suppress proxy for url: " << url << endl);
+	curl_easy_setopt(d_curl, CURLOPT_PROXY, 0);
     }
 
     string::size_type at_sign = url.find('@');
-    // Assume username:password present *and assume it's an HTTP URL; it *is*
-    // HTTPConnect, after all). 7 is position after "http://"; the second arg
+    // Assume username:password present *and* assume it's an HTTP URL; it *is*
+    // HTTPConnect, after all. 7 is position after "http://"; the second arg
     // to substr() is the sub string length.
     if (at_sign != url.npos)
 	d_upstring = url.substr(7, at_sign-7);
 
-    if (!d_upstring.empty()) {
+    if (!d_upstring.empty())
 	curl_easy_setopt(d_curl, CURLOPT_USERPWD, d_upstring.c_str());
-	curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD, d_upstring.c_str());
-    }
 
     // Pass save_raw_http_headers() a pointer to the vector<string> where the
     // response headers may be stored. Callers can use the resp_hdrs
@@ -385,9 +370,9 @@ HTTPConnect::read_url(const string &url, FILE *stream,
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, 0);
 
     // Reset the proxy?
-    if (temporary_proxy && d_rcr->get_proxy_server_host_url() != "")
+    if (temporary_proxy && !d_rcr->get_proxy_server_host().empty())
 	curl_easy_setopt(d_curl, CURLOPT_PROXY,
-			 d_rcr->get_proxy_server_host_url().c_str());
+			 d_rcr->get_proxy_server_host().c_str());
 	
     if (res != 0)
 	throw Error(d_error_buffer);
@@ -794,8 +779,26 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.18  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.14.2.16  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
+// Revision 1.14.2.15  2004/06/21 20:45:16  jimg
+// Changes for proxy use: Proxy passwords are now supported. The proxy_for
+// feature has been disabled.
+//
 // Revision 1.17  2004/04/12 16:21:56  jimg
 // Removed obsolete CURLOPT_MUTE.
+//
+// Revision 1.14.2.14  2004/04/08 23:46:12  jimg
+// Fixes for the build on the Alpha/Tru64 platform. I removed the call to
+// curl's MUTE option since it's deprecated by the latest rev of that
+// library. I added regex-0.12 to the code and modified configure.in,
+// Makefile.in and GNU/Regex.cc to use it in place of librx (which won't
+// build on this plaform). Doing this gets rid of a library dependency, too.
 //
 // Revision 1.16  2004/02/19 19:42:52  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.

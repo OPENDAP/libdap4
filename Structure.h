@@ -41,7 +41,7 @@
 
 #ifndef __POWERPC__
 #ifdef _GNUG_
-#pragma interface
+// #pragma interface
 #endif
 #endif
 
@@ -213,6 +213,13 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.49  2004/07/07 21:08:48  jimg
+ * Merged with release-3-4-8FCS
+ *
+ * Revision 1.45.2.3  2004/07/02 20:41:52  jimg
+ * Removed (commented) the pragma interface/implementation lines. See
+ * the ChangeLog for more details. This fixes a build problem on HP/UX.
+ *
  * Revision 1.48  2004/06/28 16:58:38  pwest
  * Passive data model objects
  *
@@ -223,7 +230,7 @@ public:
  * Added set_in_selection() method. Updated the documentation.
  *
  * Revision 1.45.2.1  2003/06/23 11:49:18  rmorris
- * The #pragma interface directive to GCC makes the dynamic typing functionality
+ * The // #pragma interface directive to GCC makes the dynamic typing functionality
  * go completely haywire under OS X on the PowerPC.  We can't use that directive
  * on that platform and it was ifdef'd out for that case.
  *

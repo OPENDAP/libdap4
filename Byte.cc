@@ -34,12 +34,12 @@
 // jhrg 9/7/94
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Byte.cc,v 1.50 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: Byte.cc,v 1.51 2004/07/07 21:08:47 jimg Exp $"};
 
 #include <stdlib.h>
 
@@ -271,6 +271,13 @@ Byte::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Byte.cc,v $
+// Revision 1.51  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.49.2.2  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.50  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

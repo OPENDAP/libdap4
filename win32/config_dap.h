@@ -13,7 +13,7 @@
 #define STDC_HEADERS 1
 #define CNAME "DODS"
 #define CVER "$VERSION"
-#define DVR "DODS/3.4"
+#define DVR "DODS/3.4.3"
 
 #define SIZEOF_CHAR 1
 #define SIZEOF_DOUBLE 8
@@ -32,10 +32,11 @@
 #define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
 
 #ifndef DODS_ROOT
-#define DODS_ROOT "C:\\DODS"
+#define DODS_ROOT "C:/DODS"
 #endif
 
 #define DODS_BISON_VER 128
+
 #define not_used 
 
 #endif

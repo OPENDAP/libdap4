@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.151 2004/06/28 17:02:36 pwest Exp $
+# $Id: Makefile.in,v 1.152 2004/07/07 21:08:47 jimg Exp $
 
 @SET_MAKE@
 
@@ -69,7 +69,6 @@ CP = cp
 AWK = @AWK@
 CC = @CC@
 CXX = @CXX@
-PURIFY = purify -chain-length="10"
 YACC = @YACC@
 LEX = @LEX@
 AR = ar
@@ -109,7 +108,8 @@ EXPRHDRS = expr.h Clause.h RValue.h
 EXPRSRCS = Clause.cc RValue.cc
 EXPROBJS = Clause.o RValue.o $(EXPR_GRAM_OBJS)
 
-ERRORHDRS = Error.h InternalErr.h ResponseTooBigErr.h
+ERRORHDRS = Error.h InternalErr.h ResponseTooBigErr.h \
+	SignalHandlerRegisteredErr.h
 ERROROBJS = Error.o InternalErr.o ResponseTooBigErr.o $(ERROR_GRAM_OBJS)
 ERRORSRCS = Error.cc InternalErr.cc ResponseTooBigErr.cc
 
@@ -156,11 +156,11 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   VirtualCtorArray.o VirtualCtorStructure.o \
 	   VirtualCtorSequence.o VirtualCtorGrid.o util_mit.o
 
-GNUSRCS = GNU/GetOpt.cc GNU/Regex.cc GNU/error.cc \
+GNUSRCS = GNU/GetOpt.cc GNU/Regex.cc GNU/error.cc @REGEX_C@ \
 	   IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc \
 	   BTIterAdapter.cc ClauseIterAdapter.cc
 
-GNUOBJS = GNU/GetOpt.o GNU/Regex.o GNU/error.o \
+GNUOBJS = GNU/GetOpt.o GNU/Regex.o GNU/error.o @REGEX_O@ \
 	   IteratorAdapter.o ArrayIterAdapter.o AttrIterAdapter.o \
 	   BTIterAdapter.o ClauseIterAdapter.o
 
@@ -331,7 +331,7 @@ Error.tab.o: Error.tab.c Error.y	# build using C++ compiler
 
 # Standard targets
 
-install: all install-headers install-geturl install-usage install-deflate
+install: all install-headers install-geturl install-opendap-config install-usage install-deflate
 	-mkdir -p $(libdir)
 	$(INSTALL_DATA) libdap++.a $(libdir)
 	$(RANLIB) $(libdir)/libdap++.a
@@ -348,6 +348,10 @@ install-headers:
 install-geturl: geturl
 	-mkdir -p $(bindir)
 	$(INSTALL_PROGRAM) -s geturl $(bindir)
+
+install-opendap-config: 
+	-mkdir -p $(bindir)
+	$(INSTALL_PROGRAM) opendap-config $(bindir)
 
 # usage and deflate are part of the DODS server. 02/10/98 jhrg
 
@@ -574,6 +578,7 @@ binary-tar:
 		--exclude 'CVS' \
 		DODS/NEWS \
 		DODS/docs/README DODS/docs/README-dap \
+		DODS/bin/opendap-config \
 		DODS/lib/libdap++.a \
 		DODS/include ; \
 	    $(TAR) --gzip --create --dereference \
@@ -640,6 +645,19 @@ depend:
 # depend. 
 # $(UNIT_TEST_SRC)
 
+# Build GNU regex 0.12 if we need the object file. The Regex class
+# (GNU/Regex.cc) uses the regex 0.12 library, which is just a single object
+# file. I've included the library in this source directory; if we need the
+# code (some version of Linux include it in libc) then regex.o will be
+# included in dependencies above (See GNUOBJS). 04/09/04 jhrg
+# 
+# I modified this so that only regex.o is built. This avoids potential
+# problems with the docs not building because TeX is not present or
+# configured correctly. 04/12/04 jhrg
+
+@REGEX_O@ : @REGEX_C@
+	cd regex-0.12 && ./configure && make regex.o
+
 .SUFFIXES:      .o .cc .c
 
 .c.o:
@@ -658,8 +676,14 @@ Connections.o: Connections.cc config_dap.h debug.h Connections.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
   ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
   ObjectType.h HTTPCache.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h HTTPResponse.h Response.h
-RCReader.o: RCReader.cc config_dap.h RCReader.h debug.h
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h
+RCReader.o: RCReader.cc config_dap.h debug.h RCReader.h Error.h util.h \
+  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h \
+  dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h Structure.h Constructor.h \
+  Sequence.h Grid.h
 Connect.o: Connect.cc config_dap.h debug.h DataDDS.h DDS.h GNU/Pix.h \
   IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
   dods-datatypes.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
@@ -668,24 +692,25 @@ Connect.o: Connect.cc config_dap.h debug.h DataDDS.h DDS.h GNU/Pix.h \
   Constructor.h Sequence.h Grid.h HTTPConnect.h ../../include/curl/curl.h \
   ../../include/curl/types.h ../../include/curl/easy.h \
   ../../include/curl/multi.h RCReader.h ObjectType.h HTTPCache.h \
-  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h HTTPResponse.h \
-  Response.h escaping.h
+  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
+  SignalHandlerRegisteredErr.h HTTPResponse.h Response.h escaping.h
 HTTPConnect.o: HTTPConnect.cc config_dap.h debug.h GNU/Regex.h \
   HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
-  ObjectType.h HTTPCache.h Error.h InternalErr.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h HTTPResponse.h Response.h util.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h dods-datatypes.h Byte.h Int16.h \
-  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
-  Array.h Vector.h DDS.h DAS.h DODSResponseObject.h Clause.h expr.h \
-  RValue.h Structure.h Constructor.h Sequence.h Grid.h \
-  HTTPCacheResponse.h
+  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h Error.h \
+  util.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h \
+  dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h Structure.h Constructor.h \
+  Sequence.h Grid.h ObjectType.h HTTPCache.h ResponseTooBigErr.h \
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h HTTPCacheResponse.h
 HTTPCache.o: HTTPCache.cc config_dap.h Error.h InternalErr.h \
   ResponseTooBigErr.h SignalHandler.h EventHandler.h cgi_util.h DDS.h \
   GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h dods-datatypes.h \
   DAS.h DODSResponseObject.h Clause.h expr.h RValue.h ObjectType.h \
   EncodingType.h HTTPCacheInterruptHandler.h HTTPCache.h \
-  HTTPCacheDisconnectedMode.h debug.h util_mit.h
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h debug.h \
+  util_mit.h
 AttrTable.o: AttrTable.cc config_dap.h Error.h debug.h util.h BaseType.h \
   AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h dods-datatypes.h \
   Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
@@ -825,41 +850,6 @@ Float32.o: Float32.cc config_dap.h Float32.h dods-datatypes.h BaseType.h \
 Constructor.o: Constructor.cc config_dap.h Constructor.h GNU/Pix.h \
   IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
   dods-datatypes.h BTIterAdapter.h debug.h escaping.h
-PassiveByte.o: PassiveByte.cc config_dap.h PassiveByte.h Byte.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
-  Error.h InternalErr.h debug.h
-PassiveInt32.o: PassiveInt32.cc config_dap.h PassiveInt32.h Int32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
-  Error.h InternalErr.h debug.h
-PassiveFloat64.o: PassiveFloat64.cc config_dap.h PassiveFloat64.h \
-  Float64.h dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h debug.h
-PassiveStr.o: PassiveStr.cc config_dap.h PassiveStr.h Str.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
-  InternalErr.h dods-datatypes.h debug.h
-PassiveUrl.o: PassiveUrl.cc PassiveUrl.h PassiveStr.h Str.h dods-limits.h \
-  BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
-  InternalErr.h dods-datatypes.h debug.h
-PassiveUInt32.o: PassiveUInt32.cc config_dap.h PassiveUInt32.h UInt32.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
-  Error.h InternalErr.h debug.h
-PassiveInt16.o: PassiveInt16.cc config_dap.h PassiveInt16.h Int16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
-  Error.h InternalErr.h debug.h
-PassiveUInt16.o: PassiveUInt16.cc config_dap.h PassiveUInt16.h UInt16.h \
-  dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
-  Error.h InternalErr.h debug.h
-PassiveFloat32.o: PassiveFloat32.cc config_dap.h PassiveFloat32.h \
-  Float32.h dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h debug.h
-PassiveArray.o: PassiveArray.cc config_dap.h PassiveArray.h Array.h \
-  dods-limits.h Vector.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h DDS.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h debug.h
-PassiveStructure.o: PassiveStructure.cc config_dap.h PassiveStructure.h \
-  Structure.h GNU/Pix.h IteratorAdapter.h BaseType.h AttrTable.h Error.h \
-  InternalErr.h dods-datatypes.h Constructor.h DDS.h DAS.h \
-  DODSResponseObject.h Clause.h expr.h RValue.h debug.h
 VirtualCtorByte.o: VirtualCtorByte.cc config_dap.h Byte.h \
   dods-datatypes.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h \
   Error.h InternalErr.h
@@ -958,13 +948,14 @@ AISDatabaseParser.o: AISDatabaseParser.cc config_dap.h \
 AISMerge.o: AISMerge.cc config_dap.h AISMerge.h DAS.h GNU/Pix.h \
   IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
   HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
-  ObjectType.h HTTPCache.h InternalErr.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h HTTPResponse.h Response.h debug.h util.h \
-  BaseType.h dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h \
-  Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
-  Clause.h expr.h RValue.h Structure.h Constructor.h Sequence.h Grid.h \
-  AISResources.h GNU/Regex.h Resource.h AISExceptions.h
+  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h util.h \
+  BaseType.h InternalErr.h dods-datatypes.h Byte.h Int16.h UInt16.h \
+  Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+  Vector.h DDS.h Clause.h expr.h RValue.h Structure.h Constructor.h \
+  Sequence.h Grid.h ObjectType.h HTTPCache.h ResponseTooBigErr.h \
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h debug.h AISResources.h GNU/Regex.h Resource.h \
+  AISExceptions.h
 AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
   GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
   DDS.h BaseType.h InternalErr.h dods-datatypes.h Clause.h expr.h \
@@ -974,8 +965,9 @@ AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
   ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
   ObjectType.h HTTPCache.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h HTTPResponse.h Response.h debug.h \
-  AISMerge.h AISResources.h GNU/Regex.h Resource.h AISExceptions.h
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h debug.h AISMerge.h AISResources.h GNU/Regex.h Resource.h \
+  AISExceptions.h
 TestByte.o: TestByte.cc config_dap.h TestByte.h Byte.h dods-datatypes.h \
   BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h Error.h \
   InternalErr.h
@@ -1045,8 +1037,9 @@ geturl.o: geturl.cc config_dap.h GNU/GetOpt.h AISConnect.h Connect.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
   ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
   ObjectType.h HTTPCache.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h HTTPResponse.h Response.h debug.h \
-  AISMerge.h AISResources.h GNU/Regex.h Resource.h AISExceptions.h
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h debug.h AISMerge.h AISResources.h GNU/Regex.h Resource.h \
+  AISExceptions.h
 ThreadTest.o: ThreadTest.cc Connect.h DAS.h GNU/Pix.h IteratorAdapter.h \
   AttrTable.h Error.h DODSResponseObject.h DDS.h BaseType.h InternalErr.h \
   dods-datatypes.h Clause.h expr.h RValue.h util.h Byte.h Int16.h \
@@ -1055,7 +1048,8 @@ ThreadTest.o: ThreadTest.cc Connect.h DAS.h GNU/Pix.h IteratorAdapter.h \
   HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
   ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
   ObjectType.h HTTPCache.h config_dap.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h HTTPResponse.h Response.h debug.h
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h debug.h
 server_handler.o: server_handler.cc config_dap.h DODSFilter.h DAS.h \
   GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
   DDS.h BaseType.h InternalErr.h dods-datatypes.h Clause.h expr.h \
@@ -1083,24 +1077,25 @@ SignalHandler.o: SignalHandler.cc config_dap.h SignalHandler.h \
   Structure.h Constructor.h Sequence.h Grid.h
 HTTPCacheTest.o: HTTPCacheTest.cc HTTPCache.h config_dap.h Error.h \
   InternalErr.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
-  HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
-  ObjectType.h HTTPResponse.h Response.h debug.h util.h BaseType.h \
-  AttrTable.h GNU/Pix.h IteratorAdapter.h dods-datatypes.h Byte.h Int16.h \
-  UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
-  Array.h Vector.h DDS.h DAS.h DODSResponseObject.h Clause.h expr.h \
-  RValue.h Structure.h Constructor.h Sequence.h Grid.h SignalHandler.h \
-  EventHandler.h cgi_util.h EncodingType.h
+  SignalHandlerRegisteredErr.h HTTPConnect.h ../../include/curl/curl.h \
+  ../../include/curl/types.h ../../include/curl/easy.h \
+  ../../include/curl/multi.h RCReader.h util.h BaseType.h AttrTable.h \
+  GNU/Pix.h IteratorAdapter.h dods-datatypes.h Byte.h Int16.h UInt16.h \
+  Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+  Vector.h DDS.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  Structure.h Constructor.h Sequence.h Grid.h ObjectType.h HTTPResponse.h \
+  Response.h debug.h SignalHandler.h EventHandler.h cgi_util.h \
+  EncodingType.h
 HTTPConnectTest.o: HTTPConnectTest.cc GNU/Regex.h HTTPConnect.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
-  ObjectType.h HTTPCache.h config_dap.h Error.h InternalErr.h \
-  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h HTTPResponse.h \
-  Response.h debug.h util.h BaseType.h AttrTable.h GNU/Pix.h \
-  IteratorAdapter.h dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h \
-  UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h \
-  DDS.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h Structure.h \
-  Constructor.h Sequence.h Grid.h
+  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h Error.h \
+  util.h BaseType.h AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h \
+  dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
+  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h Structure.h Constructor.h \
+  Sequence.h Grid.h ObjectType.h HTTPCache.h config_dap.h \
+  ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
+  SignalHandlerRegisteredErr.h HTTPResponse.h Response.h debug.h
 cgiUtilTest.o: cgiUtilTest.cc GNU/Regex.h cgi_util.h DDS.h GNU/Pix.h \
   IteratorAdapter.h BaseType.h AttrTable.h Error.h InternalErr.h \
   dods-datatypes.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
@@ -1160,8 +1155,8 @@ AISMergeTest.o: AISMergeTest.cc Connect.h DAS.h GNU/Pix.h \
   ../../include/curl/types.h ../../include/curl/easy.h \
   ../../include/curl/multi.h RCReader.h ObjectType.h HTTPCache.h \
   config_dap.h ResponseTooBigErr.h HTTPCacheDisconnectedMode.h \
-  HTTPResponse.h Response.h debug.h AISMerge.h AISResources.h GNU/Regex.h \
-  Resource.h AISExceptions.h
+  SignalHandlerRegisteredErr.h HTTPResponse.h Response.h debug.h \
+  AISMerge.h AISResources.h GNU/Regex.h Resource.h AISExceptions.h
 DODSFilterTest.o: DODSFilterTest.cc DODSFilter.h DAS.h GNU/Pix.h \
   IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h DDS.h \
   BaseType.h InternalErr.h dods-datatypes.h Clause.h expr.h RValue.h \
@@ -1170,7 +1165,12 @@ SignalHandlerTest.o: SignalHandlerTest.cc SignalHandler.h EventHandler.h \
   Error.h cgi_util.h DDS.h GNU/Pix.h IteratorAdapter.h BaseType.h \
   AttrTable.h InternalErr.h dods-datatypes.h DAS.h DODSResponseObject.h \
   Clause.h expr.h RValue.h ObjectType.h EncodingType.h debug.h
-RCReaderTest.o: RCReaderTest.cc RCReader.h debug.h
+RCReaderTest.o: RCReaderTest.cc RCReader.h Error.h util.h BaseType.h \
+  AttrTable.h GNU/Pix.h IteratorAdapter.h InternalErr.h dods-datatypes.h \
+  Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
+  dods-limits.h Url.h Array.h Vector.h DDS.h DAS.h DODSResponseObject.h \
+  Clause.h expr.h RValue.h Structure.h Constructor.h Sequence.h Grid.h \
+  debug.h
 DDXParserTest.o: DDXParserTest.cc DDXParser.h \
   ../../include/libxml2/libxml/parserInternals.h \
   ../../include/libxml2/libxml/parser.h \
@@ -1237,13 +1237,14 @@ AISDatabaseParser.o: AISDatabaseParser.cc config_dap.h \
 AISMerge.o: AISMerge.cc config_dap.h AISMerge.h DAS.h GNU/Pix.h \
   IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
   HTTPConnect.h ../../include/curl/curl.h ../../include/curl/types.h \
-  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
-  ObjectType.h HTTPCache.h InternalErr.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h HTTPResponse.h Response.h debug.h util.h \
-  BaseType.h dods-datatypes.h Byte.h Int16.h UInt16.h Int32.h UInt32.h \
-  Float32.h Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
-  Clause.h expr.h RValue.h Structure.h Constructor.h Sequence.h Grid.h \
-  AISResources.h GNU/Regex.h Resource.h AISExceptions.h
+  ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h util.h \
+  BaseType.h InternalErr.h dods-datatypes.h Byte.h Int16.h UInt16.h \
+  Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h Array.h \
+  Vector.h DDS.h Clause.h expr.h RValue.h Structure.h Constructor.h \
+  Sequence.h Grid.h ObjectType.h HTTPCache.h ResponseTooBigErr.h \
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h debug.h AISResources.h GNU/Regex.h Resource.h \
+  AISExceptions.h
 AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
   GNU/Pix.h IteratorAdapter.h AttrTable.h Error.h DODSResponseObject.h \
   DDS.h BaseType.h InternalErr.h dods-datatypes.h Clause.h expr.h \
@@ -1253,8 +1254,9 @@ AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
   ../../include/curl/curl.h ../../include/curl/types.h \
   ../../include/curl/easy.h ../../include/curl/multi.h RCReader.h \
   ObjectType.h HTTPCache.h ResponseTooBigErr.h \
-  HTTPCacheDisconnectedMode.h HTTPResponse.h Response.h debug.h \
-  AISMerge.h AISResources.h GNU/Regex.h Resource.h AISExceptions.h
+  HTTPCacheDisconnectedMode.h SignalHandlerRegisteredErr.h HTTPResponse.h \
+  Response.h debug.h AISMerge.h AISResources.h GNU/Regex.h Resource.h \
+  AISExceptions.h
 DDXParser.o: DDXParser.cc config_dap.h BaseType.h AttrTable.h GNU/Pix.h \
   IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h Constructor.h \
   DDXParser.h ../../include/libxml2/libxml/parserInternals.h \
@@ -1278,7 +1280,7 @@ DDXParser.o: DDXParser.cc config_dap.h BaseType.h AttrTable.h GNU/Pix.h \
   UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h dods-limits.h Url.h \
   Array.h Vector.h Structure.h Sequence.h Grid.h debug.h
 GetOpt.o: GNU/GetOpt.cc GNU/GetOpt.h
-Regex.o: GNU/Regex.cc GNU/builtin.h ../../include/rx.h GNU/Regex.h
+Regex.o: GNU/Regex.cc GNU/builtin.h GNU/Regex.h
 error.o: GNU/error.cc GNU/builtin.h
 IteratorAdapter.o: IteratorAdapter.cc IteratorAdapter.h
 ArrayIterAdapter.o: ArrayIterAdapter.cc ArrayIterAdapter.h \

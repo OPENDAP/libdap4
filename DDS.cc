@@ -34,10 +34,10 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.71 2004/06/28 16:59:43 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.72 2004/07/07 21:08:47 jimg Exp $"};
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include <stdio.h>
@@ -1589,8 +1589,20 @@ DDS::mark_all(bool state)
 }
 
 // $Log: DDS.cc,v $
+// Revision 1.72  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.62.2.12  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.71  2004/06/28 16:59:43  pwest
 // Inherit DDS and DAS from DODSResponseObject
+//
+// Revision 1.62.2.11  2004/04/09 15:48:37  jimg
+// I had some assert()s in the code that tested otherwise unused variables. When
+// NDEBUG was defined this generated warnings. I decided the assert()s we less
+// useful than the warnings were annoying.
 //
 // Revision 1.70  2004/03/10 16:29:18  jimg
 // Repairs to the methods which provide access using iterators. These

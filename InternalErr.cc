@@ -32,12 +32,12 @@
 // Implementation for the InternalErr class.
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.14 2003/12/08 18:02:29 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: InternalErr.cc,v 1.15 2004/07/07 21:08:47 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -109,6 +109,13 @@ InternalErr::OK()
 }
 
 // $Log: InternalErr.cc,v $
+// Revision 1.15  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
+//
+// Revision 1.12.2.2  2004/07/02 20:41:52  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
 // Revision 1.14  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
 //

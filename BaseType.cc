@@ -34,7 +34,7 @@
 // jhrg 9/6/94
 
 #ifdef __GNUG__
-#pragma implementation
+// #pragma implementation
 #endif
 
 #include "config_dap.h"
@@ -932,11 +932,18 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
-// Revision 1.56  2004/02/19 19:42:52  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
+// Revision 1.57  2004/07/07 21:08:47  jimg
+// Merged with release-3-4-8FCS
 //
 // Revision 1.54  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk
+// Revision 1.51.2.6  2004/07/02 20:41:51  jimg
+// Removed (commented) the pragma interface/implementation lines. See
+// the ChangeLog for more details. This fixes a build problem on HP/UX.
+//
+// Revision 1.56  2004/02/19 19:42:52  jimg
+// Merged with release-3-4-2FCS and resolved conflicts.
+//
 // Revision 1.51.2.5  2004/01/22 17:09:52  jimg
 // Added std namespace declarations since the DBG() macro uses cerr.
 //

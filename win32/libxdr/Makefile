@@ -3,9 +3,11 @@
 # Setup some preliminary directories
 OBJDIR		= .\objects
 SRCDIR		= .
+INSTALLBINDIR	= ..\..\..\..\bin
+INSTALLETCDIR	= ..\..\..\..\etc
 INSTALLLIBDIR	= ..\..\..\..\lib
-INSTALLDLLDIR	= ..\..\..\..\bin
-INCLUDEDIR	= ..\..\..\..\include
+INSTALLDLLDIR	= ..\..\..\..\dll
+INSTALLINCDIR	= ..\..\..\..\include
 
 # Compiler, Linker
 CC		= cl
@@ -155,12 +157,15 @@ $(OBJDIR)\xdrtest.obj: $(SRCDIR)\xdrtest.c
 # Preliminary setup
 setup:
 	@-mkdir $(OBJDIR)
+	@-mkdir $(INSTALLBINDIR)
+	@-mkdir $(INSTALLETCDIR)
 	@-mkdir $(INSTALLLIBDIR)
 	@-mkdir $(INSTALLDLLDIR)
+	@-mkdir $(INSTALLINCDIR)
 
 # Install
 install: installST installMT installMD installSTD installMTD installMDD
-	@copy $(SRCDIR)\xdr.h $(INCLUDEDIR)
+	@copy $(SRCDIR)\xdr.h $(INSTALLINCDIR)
 
 installST:
 	@copy $(OBJDIR)\ST\libxdrST.lib $(INSTALLLIBDIR)
