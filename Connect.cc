@@ -1,5 +1,5 @@
 /*
-  Copyright 1994-1995 The University of Rhode Island and The Massachusetts
+  Copyright 1995 The University of Rhode Island and The Massachusetts
   Institute of Technology
 
   Portions of this software were developed by the Graduate School of
@@ -45,7 +45,10 @@
 // jhrg 9/30/94
 
 // $Log: Connect.cc,v $
-// Revision 1.13  1995/07/09 21:14:45  jimg
+// Revision 1.14  1995/07/09 21:20:44  jimg
+// Fixed date in copyright (it now reads `Copyright 1995 ...').
+//
+// Revision 1.13  1995/07/09  21:14:45  jimg
 // Added copyright.
 //
 // Revision 1.12  1995/06/27  19:33:47  jimg
@@ -130,7 +133,7 @@
 // This commit also includes early versions of the test code.
 //
 
-static char rcsid[]={"$Id: Connect.cc,v 1.13 1995/07/09 21:14:45 jimg Exp $"};
+static char rcsid[]={"$Id: Connect.cc,v 1.14 1995/07/09 21:20:44 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"

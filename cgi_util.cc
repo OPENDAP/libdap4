@@ -1,5 +1,5 @@
 /*
-  Copyright 1994-1995 The University of Rhode Island and The Massachusetts
+  Copyright 1995 The University of Rhode Island and The Massachusetts
   Institute of Technology
 
   Portions of this software were developed by the Graduate School of
@@ -37,7 +37,10 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
-// Revision 1.8  1995/07/09 21:14:43  jimg
+// Revision 1.9  1995/07/09 21:20:42  jimg
+// Fixed date in copyright (it now reads `Copyright 1995 ...').
+//
+// Revision 1.8  1995/07/09  21:14:43  jimg
 // Added copyright.
 //
 // Revision 1.7  1995/06/27  17:38:43  jimg
@@ -74,7 +77,7 @@
 // Revision 1.1  1994/10/28  14:34:01  reza
 // First version
 
-static char rcsid[]={"$Id: cgi_util.cc,v 1.8 1995/07/09 21:14:43 jimg Exp $"};
+static char rcsid[]={"$Id: cgi_util.cc,v 1.9 1995/07/09 21:20:42 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
