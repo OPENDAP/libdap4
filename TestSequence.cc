@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
-// Revision 1.7  1995/08/26 00:31:58  jimg
+// Revision 1.8  1995/12/06 19:55:26  jimg
+// Changes read() member function from three arguments to two.
+//
+// Revision 1.7  1995/08/26  00:31:58  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.6  1995/07/09  21:29:18  jimg
@@ -98,6 +101,6 @@ TestSequence::~TestSequence()
 }
 
 bool 
-TestSequence::read(String dataset, String var_name, String constraint)
+TestSequence::read(String dataset, String var_name)
 {
 }

@@ -38,7 +38,10 @@
 // jhrg 1/13/95
 
 // $Log: TestGrid.cc,v $
-// Revision 1.7  1995/08/26 00:31:55  jimg
+// Revision 1.8  1995/12/06 19:55:22  jimg
+// Changes read() member function from three arguments to two.
+//
+// Revision 1.7  1995/08/26  00:31:55  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.6  1995/07/09  21:29:14  jimg
@@ -96,12 +99,12 @@ TestGrid::~TestGrid()
 }
 
 bool
-TestGrid::read(String dataset, String var_name, String constraint)
+TestGrid::read(String dataset, String var_name)
 {
-    array_var()->read(dataset, array_var()->name(), constraint);
+    array_var()->read(dataset, array_var()->name());
 
     for (Pix p = first_map_var(); p; next_map_var(p)) {
-	if (!map_var(p)->read(dataset, map_var(p)->name(), constraint))
+	if (!map_var(p)->read(dataset, map_var(p)->name()))
 	    return false;
     }
 }

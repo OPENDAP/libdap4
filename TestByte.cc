@@ -43,7 +43,10 @@
 // jhrg 1/12/95
 
 // $Log: TestByte.cc,v $
-// Revision 1.8  1995/08/26 00:31:51  jimg
+// Revision 1.9  1995/12/06 19:55:17  jimg
+// Changes read() member function from three arguments to two.
+//
+// Revision 1.8  1995/08/26  00:31:51  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.7  1995/07/09  21:29:09  jimg
@@ -117,7 +120,7 @@ TestByte::ptr_duplicate()
 }
 
 bool
-TestByte::read(String dataset, String var_name, String constraint)
+TestByte::read(String dataset, String var_name)
 {
     _buf = 255;
     

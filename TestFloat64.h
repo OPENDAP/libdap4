@@ -5,12 +5,15 @@
 // jhrg 1/12/95
 
 /* $Log: TestFloat64.h,v $
-/* Revision 1.3  1995/02/10 02:33:53  jimg
-/* Modified Test<class>.h and .cc so that they used to new definitions of
-/* read_val().
-/* Modified the classes read() so that they are more in line with the
-/* class library's intended use in a real subclass set.
+/* Revision 1.4  1995/12/06 19:55:36  jimg
+/* Changes read() member function from three arguments to two.
 /*
+ * Revision 1.3  1995/02/10  02:33:53  jimg
+ * Modified Test<class>.h and .cc so that they used to new definitions of
+ * read_val().
+ * Modified the classes read() so that they are more in line with the
+ * class library's intended use in a real subclass set.
+ *
  * Revision 1.2  1995/01/19  21:59:31  jimg
  * Added read_val from dummy_read.cc to the sample set of sub-class
  * implementations.
@@ -43,7 +46,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(String dataset, String var_name, String constraint);
+    virtual bool read(String dataset, String var_name);
 };
 
 typedef TestFloat64 * TestFloat64Ptr;

@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestFloat64.cc,v $
-// Revision 1.7  1995/08/26 00:31:53  jimg
+// Revision 1.8  1995/12/06 19:55:18  jimg
+// Changes read() member function from three arguments to two.
+//
+// Revision 1.7  1995/08/26  00:31:53  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.6  1995/07/09  21:29:11  jimg
@@ -94,7 +97,7 @@ TestFloat64::ptr_duplicate()
 }
  
 bool
-TestFloat64::read(String dataset, String var_name, String constraint)
+TestFloat64::read(String dataset, String var_name)
 {
     _buf = 99.999;
 

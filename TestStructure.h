@@ -6,9 +6,12 @@
 // jhrg 1/12/95
 
 /* $Log: TestStructure.h,v $
-/* Revision 1.5  1995/08/26 00:32:02  jimg
-/* Removed code enclosed in #ifdef NEVER #endif.
+/* Revision 1.6  1995/12/06 19:55:46  jimg
+/* Changes read() member function from three arguments to two.
 /*
+ * Revision 1.5  1995/08/26  00:32:02  jimg
+ * Removed code enclosed in #ifdef NEVER #endif.
+ *
  * Revision 1.4  1995/08/23  00:44:38  jimg
  * Updated to use the newer member functions.
  *
@@ -50,7 +53,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(String dataset, String var_name, String constraint);
+    virtual bool read(String dataset, String var_name);
 };
 
 #endif

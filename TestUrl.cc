@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestUrl.cc,v $
-// Revision 1.8  1995/08/26 00:32:03  jimg
+// Revision 1.9  1995/12/06 19:55:31  jimg
+// Changes read() member function from three arguments to two.
+//
+// Revision 1.8  1995/08/26  00:32:03  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.7  1995/08/23  00:44:40  jimg
@@ -99,7 +102,7 @@ TestUrl::ptr_duplicate()
 }
 
 bool
-TestUrl::read(String dataset, String var_name, String constraint)
+TestUrl::read(String dataset, String var_name)
 {
     String url_test="http://dcz.gso.uri.edu/avhrr-archive/archive.html";
 

@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
-// Revision 1.8  1995/08/26 00:32:00  jimg
+// Revision 1.9  1995/12/06 19:55:29  jimg
+// Changes read() member function from three arguments to two.
+//
+// Revision 1.8  1995/08/26  00:32:00  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.7  1995/08/23  00:44:37  jimg
@@ -113,10 +116,10 @@ TestStructure::~TestStructure()
 // only the relavent parts.
 
 bool
-TestStructure::read(String dataset, String var_name, String constraint)
+TestStructure::read(String dataset, String var_name)
 {
     for (Pix p = first_var(); p; next_var(p)) {
-	if (!var(p)->read(dataset, var(p)->name(), constraint))
+	if (!var(p)->read(dataset, var(p)->name()))
 	    return false;
     }
 

@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
-// Revision 1.8  1995/08/26 00:31:59  jimg
+// Revision 1.9  1995/12/06 19:55:28  jimg
+// Changes read() member function from three arguments to two.
+//
+// Revision 1.8  1995/08/26  00:31:59  jimg
 // Removed code enclosed in #ifdef NEVER #endif.
 //
 // Revision 1.7  1995/08/23  00:44:35  jimg
@@ -101,7 +104,7 @@ TestStr::ptr_duplicate()
 }
 
 bool
-TestStr::read(String dataset, String var_name, String constraint)
+TestStr::read(String dataset, String var_name)
 {
     String str_test="Silly test string: one, two, ...";
     

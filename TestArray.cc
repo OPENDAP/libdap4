@@ -38,7 +38,10 @@
 // jhrg 1/12/95
 
 // $Log: TestArray.cc,v $
-// Revision 1.8  1995/08/23 00:50:01  jimg
+// Revision 1.9  1995/12/06 19:55:15  jimg
+// Changes read() member function from three arguments to two.
+//
+// Revision 1.8  1995/08/23  00:50:01  jimg
 // Fixed the read() member function so that it works correctly for arrays/lists
 // of Structure, ... types.
 //
@@ -116,13 +119,13 @@ TestArray::~TestArray()
 // would never get values this way. For testing this is OK.
 
 bool
-TestArray::read(String dataset, String var_name, String constraint)
+TestArray::read(String dataset, String var_name)
 {
     int i;
 
     // run read() on the contained variable to get, via the read() mfuncs
     // defined in the other Test classes, a value in the *contained* object.
-    var()->read(dataset, var_name, constraint);
+    var()->read(dataset, var_name);
 
     unsigned int array_len = length(); // elements in the array
 
@@ -171,7 +174,7 @@ TestArray::read(String dataset, String var_name, String constraint)
 	for (i = 0; i < array_len; ++i) {
 
 	    // Create a new object that is a copy of `var()' (whatever that
-	    // is. The copy will have the value rad in by the read() mfunc
+	    // is). The copy will have the value read in by the read() mfunc
 	    // executed before this switch stmt.
 
 	    BaseType *elem = var()->ptr_duplicate(); 
