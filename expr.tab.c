@@ -25,7 +25,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.35 2003/02/27 23:43:08 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.36 2003/03/04 17:14:06 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2189,8 +2189,11 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.35  2003/02/27 23:43:08  jimg
- * grammar updates plus added IASConnect to the Makefile.in.
+ * Revision 1.36  2003/03/04 17:14:06  jimg
+ * Updated grammar files.
+ *
+ * Revision 1.46  2003/02/27 23:42:32  jimg
+ * Fixed a call to connect down in the code that handles the '*' operator.
  *
  * Revision 1.45  2003/02/21 00:14:25  jimg
  * Repaired copyright.
