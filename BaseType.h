@@ -17,6 +17,9 @@
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.44  1998/08/06 16:08:51  jimg
+ * Fixed some of the doc comments.
+ *
  * Revision 1.43  1998/07/13 20:20:42  jimg
  * Fixes from the final test of the new build process
  *
@@ -611,21 +614,23 @@ public:
       function must explicitly take into account constraint
       information stored with the class data.
 
-      @memo Reads the data into a local buffer.  
-      @return The function returns a boolean value, with TRUE
-      indicating a successful read, and FALSE indicating an error
-      condition.  The error (or EOF) condition may be specified by the
-      #error# argument, depending on the API implementation.
-      @param dataset A string naming the dataset from which the data
-      is to be read.  The meaning of this string will vary among data
-      APIs.
-      @param error An integer indicating a returned error condition.
-      The exact meaning of this integer will vary among data APIs.
-      However, for all APIs, a return of 0 means no error was found 
-      (although there may have been an EOF).  An {\it error} returned
-      greater than zero means some other error was found. ::serialize 
-      @see BaseType
-      */
+      @memo Reads the data into a local buffer. 
+
+      @return The function returns a boolean value, with TRUE indicating that
+      read() should be called again because there's more data to read, and
+      FALSE indicating there's no more data to read. Note that this behavior
+      is necessary to properly handle variables that contain Sequences.
+
+      @param dataset A string naming the dataset from which the data is to be
+      read. The meaning of this string will vary among data APIs.
+
+      @param error An integer indicating a returned error condition. The
+      exact meaning of this integer will vary among data APIs. However, for
+      all APIs, a return of 0 means no error was found (although there may
+      have been an EOF). An {\it error} returned greater than zero means an
+      error occurred.
+
+      @see BaseType */
     virtual bool read(const String &dataset, int &error) = 0;
     
   /** Reads the class data into the memory referenced by {\it val}.
