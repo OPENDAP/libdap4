@@ -9,6 +9,11 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.96  2000/07/18 03:56:09  rmorris
+// Changes made in an attempt to debug client-side caching under win95-based
+// systems.  Is currently unsuccessful, but these changes made the code somewhat
+// more generic.
+//
 // Revision 1.95  2000/07/13 07:09:05  rmorris
 // Changed the approach to delete the intermediate file in the case
 // of win32 (unlink() not the same under win32, needed another approach).
@@ -556,7 +561,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: Connect.cc,v 1.95 2000/07/13 07:09:05 rmorris Exp $"};
+static char rcsid[] not_used ={"$Id: Connect.cc,v 1.96 2000/07/18 03:56:09 rmorris Exp $"};
 
 #ifdef GUI
 #include "Gui.h"
@@ -594,6 +599,14 @@ using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::ofstream;
+#endif
+
+#ifdef WIN32
+#define DIR_SEP_STRING "\\"
+#define DIR_SEP_CHAR   '\\'
+#else
+#define DIR_SEP_STRING "/"
+#define DIR_SEP_CHAR   '/'
 #endif
 
 // Constants used for temporary files.
@@ -1137,13 +1150,16 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 {
     // Initialize various parts of the library. This is in lieu of using one
     // of the profiles in HTProfil.c. 02/09/98 jhrg
-    char * value;
+    	char * value;
 	char * tempstr;
 	string lockstr		= "";		//  Lock file path
 	string cifp			= "";
 	string cache_root	= "";		//  Location of actual cache.
 	string homedir		= "";		//  Cache init file path
 	string tmpdir		= "";		//  Fallback position for cache files.
+
+	string cache_name	= ".dods_cache";
+	string src_name		= ".dodsrc";
 
 #ifdef WIN32
 	HTEventInit();
@@ -1165,56 +1181,53 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // file exists and the file does not, then the compiled-in defaults
     // will be written to a file at the location given. 8-1-99 cjm
     
-    // Store the users home directory or for win32, the user & application
-	// specific directory..
+    // Store the users home directory or for win-NT based systems, the user &
+	// & application-specific directory.  Punt for win9x-based systems.
 #ifdef WIN32
 	//  Should be ok for WinNT and versions of Windows that are based upon it -
-	//  such as Windows 2000.  Not appropriate for Win9x-based systems.
+	//  such as Windows 2000.  APPDATA not appropriate for Win9x-based systems,
+	//  we'll have to default to using the temporary directory in that case
+	//  because there is no user specific directory denoted by an env var.
 	if(getenv("APPDATA"))
-		{
 		homedir = getenv("APPDATA");
+	else if(getenv("TEMP"))
+		homedir = getenv("TEMP");
+	else if(getenv("TMP"))
+		homedir = getenv("TMP");
+	//  One of the above _must_ have held true under win32 in the very unlikely
+	//  situation where that wasn't the case - punt hard.
+	else
+		homedir = "C:" + string(DIR_SEP_STRING);
 
-		//  Ditch the backslashes at this point for simplicity.
-		//  More difficult to put it off.
-		int pos = 0;		
-		while((pos = homedir.find('\\',0)) >= 0)
-			homedir[pos] = '/';
-
-		//  Shouldn't happen, but double check
-		if(homedir[homedir.length() - 1] == '/')
-			homedir.erase(homedir.length() - 1);	
-
-		homedir += "/Dods";
-		}
+	//  Shouldn't happen, but double check
+	if(homedir[homedir.length() - 1] == DIR_SEP_CHAR)
+		homedir.erase(homedir.length() - 1);
+	homedir += string(DIR_SEP_STRING) + string("Dods");
 #else
 	//  Should be ok for Unix
 	if(getenv("HOME"))
 		homedir = getenv("HOME");
 #endif
+
     // If there is a leading '/' at the end of $HOME, remove it. 
     if(homedir.length() != 0)
 		{
-		if(homedir[homedir.length() - 1] == '/')
+		if(homedir[homedir.length() - 1] == DIR_SEP_CHAR)
 			homedir.erase(homedir.length() - 1);	
 
 		// set default cache root to $HOME/.dods_cache/
-		cache_root = homedir + "/.dods_cache";
+		cache_root = homedir + string(DIR_SEP_STRING) + cache_name + string(DIR_SEP_STRING);
 		}
+#ifndef WIN32
 	//  Otherwise set the default cache root to a temporary directory
     else
 		{ 
-#ifdef WIN32
-		//  Two competing "standards" to try
-		if(getenv("TEMP"))
-			tmpdir = getenv("TEMP");
-		else if(getenv("TMP"))
-			tmpdir = getenv("TMP");
-#else
-		tmpdir = "/tmp";
-#endif
+		tmpdir = string(DIR_SEP_STRING) + string("tmp");
+
 		// Otherwise set the default cache root the <tmpdir>/.dods_cache/
-		cache_root = tmpdir + "/.dods_cache";
+		cache_root = tmpdir + string(DIR_SEP_STRING) + cache_name + string(DIR_SEP_STRING);
 		}
+#endif
     
 	if(getenv("DODS_CACHE_INIT"))
 		cifp = getenv("DODS_CACHE_INIT");
@@ -1230,7 +1243,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		else
 			{
 			// Environment variable wasnt set, get data from $HOME/.dodsrc
-			cifp = homedir + "/.dodsrc";
+			cifp = homedir + string(DIR_SEP_STRING) + src_name;
 			}
 	}
 
@@ -1264,7 +1277,7 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	    // Defaults are already stored in the variables, if the correct
 	    // tokens are found in the file then those defaults will be 
 	    // overwritten. 
-	    tempstr = new char[256];
+    	    tempstr = new char[256];
 	    int tokenlength;
 	    while(1) {
 #ifdef WIN32
@@ -1297,8 +1310,8 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 		}
 		else if((strncmp(tempstr, "CACHE_ROOT", 10)==0) && tokenlength == 10) {
 			cache_root = value;
-			if(cache_root[cache_root.length() - 1] != '/')
-				cache_root += "/";
+			if(cache_root[cache_root.length() - 1] != DIR_SEP_CHAR)
+				cache_root += string(DIR_SEP_STRING);
 		}
 		else if((strncmp(tempstr, "DEFAULT_EXPIRES", 15)==0) && tokenlength == 15) {
 		    DEFAULT_EXPIRES = atoi(value);
@@ -1371,15 +1384,15 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	// Instead, set up the cache.
 	// Remove any stale lock file.  This may not be safe if multiple
 	// people are using the same cache directory at once.
-	lockstr = cache_root + "/.lock";
+	lockstr = cache_root + string(".lock");
 	remove(lockstr.c_str());
 
 	//  We have to escape spaces.  Utilizing the escape functionality
 	//  forces us, in turn, to use the "file:" convention for URL's.
 #ifdef WIN32
-	string croot = "file:/" + cache_root;
+	string croot = string("file:/") + cache_root;
 #else
-	string croot = "file:" + cache_root;
+	string croot = string("file:") + cache_root;
 #endif
 	croot = id2dods(string(croot),string(" "));
 
