@@ -8,6 +8,12 @@
 //	reza		Reza Nekovei (reza@intcomm.net)
 
 // $Log: Connect.cc,v $
+// Revision 1.70  1999/01/15 17:07:01  jimg
+// Removed use of the move_dds() member function. The DDS parser now recognizes
+// the `Data:' separator string as marking the end of the DDS part of a data
+// document. This means that Connect no longer needs to copy the DDS part of the
+// data document to a separate (temporary) text file before parsing it.
+//
 // Revision 1.69  1998/12/16 19:10:53  jimg
 // Added support for XDODS-Server MIME header. This fixes a problem where our use of Server clashed with Java
 //
@@ -381,7 +387,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.69 1998/12/16 19:10:53 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: Connect.cc,v 1.70 1999/01/15 17:07:01 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma "implemenation"
@@ -996,7 +1002,7 @@ Connect::clone(const Connect &src)
 FILE *
 Connect::move_dds(FILE *in)
 {
-
+#if 0
     char *c = tempnam(NULL, DODS_PREFIX);
     if (!c) {
 	cerr << "Could not create temporary file name: " << strerror(errno)
@@ -1035,6 +1041,8 @@ Connect::move_dds(FILE *in)
     
     free(c);			// tempnam uses malloc
     return fp;
+#endif
+    return 0;
 }
 
 // Use the URL designated when the Connect object was created as the
@@ -1389,12 +1397,37 @@ Connect::process_data(bool async = false)
 	  // First read the DDS into a new object.
 
 	  DataDDS *dds = new DataDDS("received_data", _server);
+#if 0
 	  FILE *dds_fp = move_dds(_output);
 	  if (!dds_fp || !dds->parse(dds_fp)) {
 	      cerr << "Could not parse data DDS." << endl;
 	      return 0;
 	  }
 	  fclose(dds_fp);
+#else
+	  // First parse the DDS
+	  if (!dds->parse(_output)) {
+	      cerr << "Could not parse data DDS." << endl;
+	      return 0;
+	  }
+
+	  // Reset the input source (This will work only if the input source
+	  // is a file!).
+	  if (fseek(_output, 0L, 0) < 0) {
+	      cerr << "Could not rewind data DDS stream: " << strerror(errno)
+		   << endl;
+	      return 0;
+	  }
+
+	  // Move over the DDS in the input source.
+	  char s[255];
+	  while (!feof(_output)) {
+	      (void)fgets(s, 255, _output);
+	      if (strcmp(s, "Data:\n") == 0)
+		  break;
+	  }
+
+#endif
 	  
 	  // DDS. If asynchronous, just return the DDS and leave the
 	  // reading to to the caller.
@@ -1405,7 +1438,7 @@ Connect::process_data(bool async = false)
 		  // Because sequences have multiple rows, bail out and let
 		  // the caller deserialize as they read the data.
 		  if (v->type() == dods_sequence_c)
-		    break;
+		      break;
 		  if (!v->deserialize(s, dds))
 		      return 0;
 	      }
