@@ -10,6 +10,9 @@
 // objects.  jhrg.
 
 // $Log: getdap.cc,v $
+// Revision 1.17  1997/02/10 02:36:10  jimg
+// Modified usage of request_data() to match new return type.
+//
 // Revision 1.16  1996/12/18 18:43:32  jimg
 // Tried to fix the online help - maybe I succeeded?
 //
@@ -72,7 +75,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.16 1996/12/18 18:43:32 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: getdap.cc,v 1.17 1997/02/10 02:36:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -86,17 +89,18 @@ void
 usage(String name)
 {
     cerr << "Usage: " << name 
-	 << "[AdDa] [c <expr>] [v <codes>] [m <num>] <url> [<url> ...]" 
+	 << "[AdDagV] [c <expr>] [t <codes>] [m <num>] <url> [<url> ...]" 
 	 << endl;
     cerr << "       " << "A: Use Connect's asynchronous mode." << endl;
     cerr << "       " << "d: For each URL, get the DODS DDS." << endl;
     cerr << "       " << "a: For each URL, get the DODS DAS." << endl;
     cerr << "       " << "D: For each URL, get the DODS Data." << endl;
     cerr << "       " << "g: Show the progress GUI." << endl;
+    cerr << "       " << "V: Version." << endl;
     cerr << "       " << "c: <expr> is a contraint expression. Used with -D."
 	 << endl;
     cerr << "       " << "   NB: You can use a `?' for the CE also." << endl;
-    cerr << "       " << "v: <options> Verbose output; use -vd for default." 
+    cerr << "       " << "t: <options> trace output; use -td for default." 
          << endl;
     cerr << "       " << "   a: show_anchor_trace." << endl;
     cerr << "       " << "   b: show_bind_trace." << endl;
@@ -136,7 +140,7 @@ read_data(FILE *fp)
 int
 main(int argc, char * argv[])
 {
-    GetOpt getopt (argc, argv, "AdaDgc:v:m:");
+    GetOpt getopt (argc, argv, "AdaDgVc:t:m:");
     int option_char;
     bool async = false;
     bool get_das = false;
@@ -145,11 +149,12 @@ main(int argc, char * argv[])
     bool gui = false;
     bool cexpr = false;
     bool verbose = false;
+    bool trace = false;
     bool multi = false;
     int times = 1;
-    char *vcode = NULL;
+    char *tcode = NULL;
     char *expr = NULL;
-    int vopts = 0;
+    int topts = 0;
 
     while ((option_char = getopt()) != EOF)
 	switch (option_char)
@@ -158,15 +163,16 @@ main(int argc, char * argv[])
               case 'd': get_dds = true; break;
 	      case 'a': get_das = true; break;
 	      case 'D': get_data = true; break;
+	      case 'V': verbose = true; break;
 	      case 'g': gui = true; break;
 	      case 'c':
 		cexpr = true; expr = getopt.optarg; break;
 	      case 'v': 
-		verbose = true;
-		vopts = strlen(getopt.optarg);
-		if (vopts) {
-		    vcode = new char[vopts + 1];
-		    strcpy(vcode, getopt.optarg); 
+		trace = true;
+		topts = strlen(getopt.optarg);
+		if (topts) {
+		    tcode = new char[topts + 1];
+		    strcpy(tcode, getopt.optarg); 
 		}
 		break;
 	      case 'm': multi = true; times = atoi(getopt.optarg); break;
@@ -176,8 +182,8 @@ main(int argc, char * argv[])
 		usage(argv[0]); exit(1); break;
 	    }
 
-    char c, *cc = vcode;
-    if (verbose && vopts > 0)
+    char c, *cc = tcode;
+    if (trace && topts > 0)
 	while ((c = *cc++))
 	    switch (c) {
 	      case 'a': WWWTRACE |= SHOW_ANCHOR_TRACE; break;
@@ -191,11 +197,11 @@ main(int argc, char * argv[])
 	      case 'u': WWWTRACE |= SHOW_URI_TRACE; break;
 	      case 'd': break;
 	      default:
-		cerr << "Unrecognized verbose option: `" << c << "'" << endl;
+		cerr << "Unrecognized trace option: `" << c << "'" << endl;
 		break;
 	    }
     
-    delete vcode;
+    delete tcode;
 
     for (int i = getopt.optind; i < argc; ++i) {
 	if (verbose)
@@ -214,7 +220,7 @@ main(int argc, char * argv[])
 	if (get_das) {
 	    for (int j = 0; j < times; ++j) {
 		if (!url.request_das(gui))
-		    exit(1);
+		    continue;
 		if (verbose)
 		    cerr << "DAS:" << endl;
 		url.das().print();
@@ -224,7 +230,7 @@ main(int argc, char * argv[])
 	if (get_dds) {
 	    for (int j = 0; j < times; ++j) {
 		if (!url.request_dds(gui))
-		    exit(1);
+		    continue;
 		if (verbose)
 		    cerr << "DDS:" << endl;
 		url.dds().print();
@@ -235,14 +241,17 @@ main(int argc, char * argv[])
 	    if (!(expr || name.contains("?"))) {
 		cerr << "Must supply a constraint expression with -D."
 		     << endl;
-		exit(1);
+		continue;
 	    }
 	    for (int j = 0; j < times; ++j) {
-		DDS &dds = url.request_data(expr, gui, async);
-
+		DDS *dds = url.request_data(expr, gui, async);
+		if (!dds) {
+		    cerr << "Error reading data" << endl;
+		    continue;
+		}
 		cout << "The data:" << endl;
-		for (Pix q = dds.first_var(); q; dds.next_var(q)) {
-		    BaseType *v = dds.var(q);
+		for (Pix q = dds->first_var(); q; dds->next_var(q)) {
+		    BaseType *v = dds->var(q);
 		    switch (v->type()) {
 			// Sequences present a special case because I let
 			// their semantics get out of hand... jhrg 9/12/96
@@ -252,12 +261,12 @@ main(int argc, char * argv[])
 		      default:
 			PERF(cerr << "Deserializing: " << dds.var(q).name() \
 			     << endl);
-			if (async && !dds.var(q)->deserialize(url.source())) {
+			if (async && !dds->var(q)->deserialize(url.source())) {
 			    cerr << "Asynchronous read failure." << endl;
 			    exit(1);
 			}
 			PERF(cerr << "Deserializing complete" << endl);
-			dds.var(q)->print_val(cout);
+			dds->var(q)->print_val(cout);
 			break;
 		    }
 		}
@@ -270,10 +279,10 @@ main(int argc, char * argv[])
 	    String url_string = argv[i];
 	    for (int j = 0; j < times; ++j) {
 		if (!url.fetch_url(url_string, async))
-		    exit(1);
+		    continue;
 		FILE *fp = url.output();
 		if (!read_data(fp))
-		    exit(1);
+		    continue;
 		fclose(fp);
 	    }
 	}	    
