@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.13.exp,v $
+# Revision 1.3  1996/08/12 22:22:15  jimg
+# Changed for the new error message text from the parser.
+#
 # Revision 1.2  1996/05/14 15:40:44  jimg
 # These changes have already been checked in once before. However, I
 # corrupted the source repository and restored it from a 5/9/96 backup
@@ -28,7 +31,9 @@ Attributes {
     var1 {
     }
 }
-parse error, expecting `INT' or `FLOAT' line: 6
+Error parsing the text on line 6:
+Expected an attribute type (Byte, Int32, 
+Float64, String or Url) followed by a name and value.
 parse() returned: 0"
 
 das-test_start p $srcdir$test_name -

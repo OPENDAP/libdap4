@@ -2,6 +2,9 @@
 # jhrg
 #
 # $Log: test.6.exp,v $
+# Revision 1.6  1996/08/12 22:22:20  jimg
+# Changed for the new error message text from the parser.
+#
 # Revision 1.5  1996/05/14 15:40:53  jimg
 # These changes have already been checked in once before. However, I
 # corrupted the source repository and restored it from a 5/9/96 backup
@@ -40,8 +43,9 @@ Attributes {
         string slotb val2;
     }
 }
-parse error line: 7
-Character `*' is not allowed (except within quotes) and has been ignored
+Error parsing the text on line 7:
+Expected an attribute type (Byte, Int32, 
+Float64, String or Url) followed by a name and value.
 parse() returned: 0"
 
 das-test_start p $srcdir$test_name -
