@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.38 1996/05/31 23:29:56 jimg Exp $
+# $Id: Makefile.in,v 1.39 1996/06/08 00:24:02 jimg Exp $
 
 @SET_MAKE@
 
@@ -155,9 +155,9 @@ error-test: error-test.o Error.tab.h
 geturl: libdap++.a $(TESTOBJS) geturl.o
 	$(CXX) $(LDFLAGS) -o geturl geturl.o $(TESTOBJS) $(LIBS)
 
-cgi-util-test: libdap++.a cgi_util.o
+cgi-util-test: libdap++.a cgi_util.o $(TESTOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DTEST_CGI_UTIL -c cgi_util.cc
-	$(CXX) $(LDFLAGS) -o cgi-util-test cgi_util.o $(LIBS)
+	$(CXX) $(LDFLAGS) -o cgi-util-test cgi_util.o $(TESTOBJS) $(LIBS)
 	-rm -f cgi_util.o
 
 www-test: www-test.o
