@@ -58,8 +58,10 @@ public:
 
 	Resource r1(fnoc1_ais);
 	ais->add_resource(fnoc1, r1);
+
 	Resource r2(fnoc2_ais, fallback);
 	ais->add_resource(fnoc2, r2);
+
 	ais->add_resource(fnoc3, r1);
 	ais->add_resource(fnoc3, r2);
     } 
@@ -67,12 +69,6 @@ public:
     void tearDown() { 
 	delete ais;
     }
-
-#if 0
-    bool re_match(Regex &r, const char *s) {
-	return r.match(s, strlen(s)) == (int)strlen(s);
-    }
-#endif
 
     CPPUNIT_TEST_SUITE( AISResourcesTest );
 
@@ -193,7 +189,7 @@ public:
 	    ais->write_database("dummy.xml");
 	    AISResources *ais2 = new AISResources;
 
-	    ais2->read_database("ais_testsuite/ais_database.xml");
+	    ais2->read_database("dummy.xml");
 
 	    ResourceVector trv1 = ais2->get_resource(fnoc1);
 	    CPPUNIT_ASSERT(trv1.size() == 1);
@@ -203,12 +199,14 @@ public:
 	    ResourceVector trv2 = ais2->get_resource(fnoc2);
 	    CPPUNIT_ASSERT(trv2.size() == 1);
 	    CPPUNIT_ASSERT(trv2[0].get_url() == fnoc2_ais);
-	    CPPUNIT_ASSERT(trv2[0].get_rule() == replace);
+	    CPPUNIT_ASSERT(trv2[0].get_rule() == fallback);
 
 	    ResourceVector trv3 = ais2->get_resource(fnoc3);
-	    CPPUNIT_ASSERT(trv3.size() == 1);
-	    CPPUNIT_ASSERT(trv3[0].get_url() == fnoc3_ais);
-	    CPPUNIT_ASSERT(trv3[0].get_rule() == fallback);
+	    CPPUNIT_ASSERT(trv3.size() == 2);
+	    CPPUNIT_ASSERT(trv3[0].get_url() == fnoc1_ais);
+	    CPPUNIT_ASSERT(trv3[0].get_rule() == overwrite);
+	    CPPUNIT_ASSERT(trv3[1].get_url() == fnoc2_ais);
+	    CPPUNIT_ASSERT(trv3[1].get_rule() == fallback);
 	}
 	catch (AISDatabaseReadFailed &adrf) {
 	    CPPUNIT_ASSERT(!"Document not well formed and/or valid!");
@@ -244,6 +242,9 @@ main( int argc, char* argv[] )
 }
 
 // $Log: AISResourcesTest.cc,v $
+// Revision 1.5  2003/02/26 06:40:44  jimg
+// Updated tests for write_database().
+//
 // Revision 1.4  2003/02/26 00:38:57  jimg
 // Changed is/has_resource_test to match the new name of the method:
 // has_resource.
