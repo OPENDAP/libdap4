@@ -34,6 +34,14 @@
 #endif
 
 using std::endl;
+using std::ends;
+using std::ostrstream;
+using std::for_each;
+#ifdef WIN32
+using std::vector<BaseTypeRow *>;
+#else
+using std::vector;
+#endif
 
 static unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
 static unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
@@ -43,14 +51,6 @@ static unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 void
 Sequence::_duplicate(const Sequence &s)
 {
-    Constructor::_duplicate(s);
-
-    _level = s._level;
-#if 0
-    _seq_read_error = s._seq_read_error;
-    _seq_write_error = s._seq_write_error;
-#endif
-
     d_row_number = s.d_row_number;
     d_starting_row_number = s.d_starting_row_number;
     d_ending_row_number = s.d_ending_row_number;
@@ -133,7 +133,7 @@ Sequence::Sequence(const Sequence &rhs) : Constructor(rhs)
     _duplicate(rhs);
 }
 
-static void
+static inline void
 delete_bt(BaseType *bt_ptr)
 {
     DBG(cerr << "In delete_bt: " << bt_ptr << endl);
@@ -141,7 +141,7 @@ delete_bt(BaseType *bt_ptr)
     bt_ptr = 0;
 }
 
-static void
+static inline void
 delete_rows(BaseTypeRow *bt_row_ptr)
 {
     DBG(cerr << "In delete_rows: " << bt_row_ptr << endl);
@@ -203,10 +203,6 @@ Sequence::element_count(bool leaves)
     }
 }
 
-// A linear sequence is any sequence that holds only simple types and/or
-// a single linear sequence. So they can be nested sequences, but they cannot
-// contain Arrays, Structures, or Grids and they cannot contain more than one
-// linear sequence at any given level.
 bool
 Sequence::is_linear()
 {
@@ -222,14 +218,14 @@ Sequence::is_linear()
 		break;
 	    }
 	    seq_found = true;
-	    linear = linear && dynamic_cast<Sequence *>(var(p))->is_linear();
+	    linear = dynamic_cast<Sequence *>(var(p))->is_linear();
 	}
 	else if (var(p)->type() == dods_structure_c) {
-	    linear = linear && dynamic_cast<Structure*>(var(p))->is_linear();
+	    linear = dynamic_cast<Structure*>(var(p))->is_linear();
 	}
 	else {
-	    // A linear sequence cannot have Arrays, Lists of Grids.
-	    linear = linear && var(p)->is_simple_type();
+	    // A linear sequence cannot have Arrays, Lists or Grids.
+	    linear = var(p)->is_simple_type();
 	}
     }
 
@@ -276,19 +272,40 @@ Sequence::add_var(BaseType *bt, Part)
    DBG2(cerr << bt_copy->toString() << endl);
 }
 
+// Deprecated
 BaseType *
 Sequence::var(const string &name, btp_stack &s)
 {
+    BaseType *btp = exact_match(name, &s);
+    if (btp)
+	return btp;
+
+    return leaf_match(name, &s);
+}
+
+BaseType *
+Sequence::var(const string &name, bool exact, btp_stack *s)
+{
+    if (exact)
+	return exact_match(name, s);
+    else
+	return leaf_match(name, s);
+}
+
+BaseType *
+Sequence::leaf_match(const string &name, btp_stack *s)
+{
     for (Pix p = _vars.first(); p; _vars.next(p)) {
 	if (_vars(p)->name() == name) {
-	    s.push((BaseType *)this);
+	    if (s)
+		s->push(static_cast<BaseType *>(this));
 	    return _vars(p);
 	}
-
         if (_vars(p)->is_constructor_type()) {
-	    BaseType *btp = _vars(p)->var(name, s);
+	    BaseType *btp = _vars(p)->var(name, false, s);
 	    if (btp) {
-		s.push((BaseType *)this);
+		if (s)
+		    s->push(static_cast<BaseType *>(this));
 		return btp;
 	    }
 	}
@@ -298,51 +315,29 @@ Sequence::var(const string &name, btp_stack &s)
 }
 
 BaseType *
-Sequence::var(const string &name, bool exact)
-{
-    if (exact)
-	return exact_match(name);
-    else
-	return leaf_match(name);
-}
-
-BaseType *
-Sequence::leaf_match(const string &name)
+Sequence::exact_match(const string &name, btp_stack *s)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-      //assert(_vars(p));
-	
-	if (_vars(p)->name() == name)
+	if (_vars(p)->name() == name) {
+	    if (s)
+		s->push(static_cast<BaseType *>(this));
 	    return _vars(p);
-        if (_vars(p)->is_constructor_type()) {
-	    BaseType *btp = _vars(p)->var(name, false);
-	    if (btp)
-		return btp;
 	}
     }
 
-    return 0;
-}
-
-BaseType *
-Sequence::exact_match(const string &name)
-{
     string::size_type dot_pos = name.find("."); // zero-based index of `.'
     if (dot_pos != string::npos) {
 	string aggregate = name.substr(0, dot_pos);
 	string field = name.substr(dot_pos + 1);
 
 	BaseType *agg_ptr = var(aggregate);
-	if (agg_ptr)
-	    return agg_ptr->var(field);	// recurse
+	if (agg_ptr) {
+	    if (s)
+		s->push(static_cast<BaseType *>(this));
+	    return agg_ptr->var(field, true, s); // recurse
+	}
 	else
 	    return 0;		// qualified names must be *fully* qualified
-    }
-    else {
-	for (Pix p = _vars.first(); p; _vars.next(p)) {
-	    if (_vars(p)->name() == name)
-		return _vars(p);
-	}
     }
 
     return 0;
@@ -432,18 +427,6 @@ Sequence::length()
     return -1;
 }
 
-void
-Sequence::set_level(int lvl)
-{
-    _level = lvl;
-}
-
-int
-Sequence::level()
-{
-    return _level;
-}
-
 int
 Sequence::number_of_rows()
 {
@@ -499,7 +482,8 @@ Sequence::read_row(int row, const string &dataset, DDS &dds, bool ce_eval)
 
     // Once we finish te above loop, set read_p to true so that the caller
     // knows that data *has* been read. This is how the read() methods of the
-    // elements of the sequence know to not look for data.
+    // elements of the sequence know to not call read() themselves but
+    // instead look for data values inside the object.
     set_read_p(true);
 
     // Return true if we have valid data, false if we've read to the EOF.
@@ -768,9 +752,6 @@ void
 Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, string space,
 			 bool print_decl_p)
 {
-#if 0
-    deserialize(src, dds);
-#endif
     print_val(os, space, print_decl_p);
 }
 
@@ -792,6 +773,30 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.64  2002/06/03 21:53:59  jimg
+// Removed level stuff. The level() and set_level() methods were not being used
+// anymore, so I removed them.
+//
+// Revision 1.59.4.15  2002/03/29 18:36:40  jimg
+// _duplicate() no longer calls Constructor::_duplicate.
+//
+// Revision 1.59.4.14  2002/03/01 21:03:08  jimg
+// Significant changes to the var(...) methods. These now take a btp_stack
+// pointer and are used by DDS::mark(...). The exact_match methods have also
+// been updated so that leaf variables which contain dots in their names
+// will be found. Note that constructor variables with dots in their names
+// will break the lookup routines unless the ctor is the last field in the
+// constraint expression. These changes were made to fix bug 330.
+//
+// Revision 1.59.4.13  2002/02/20 19:01:25  jimg
+// Changed some comments
+//
+// Revision 1.59.4.12  2001/11/09 15:11:09  rmorris
+// *** empty log message ***
+//
+// Revision 1.59.4.11  2001/10/30 06:55:45  rmorris
+// Win32 porting changes.  Brings core win32 port up-to-date.
+//
 // Revision 1.63  2001/10/14 01:28:38  jimg
 // Merged with release-3-2-8.
 //

@@ -24,20 +24,6 @@
 #pragma interface
 #endif
 
-#if 0
-
-#ifdef WIN32
-#include <rpc.h>
-#include <winsock.h>
-#include <xdr.h>
-#endif
-
-#include <rpc/types.h>
-#include <netinet/in.h>
-#include <rpc/xdr.h>
-
-#endif
-
 #include <vector>
 #include <SLList.h>
 
@@ -153,17 +139,6 @@ private:
     // instances of BaseType objects.
     vector<BaseTypeRow *> d_values;
 
-    // Level number in a multilevel sequence.
-    int _level;			
-
-#if 0
-    // Was there an error reading the sequence?
-    bool _seq_read_error;
-
-    // Was there an error writing the sequence?
-    bool _seq_write_error;
-#endif
-
     // The number of the row that has just been deserialized. Before
     // deserialized has been called, this member is -1. 
     int d_row_number;
@@ -182,8 +157,8 @@ private:
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 
     void _duplicate(const Sequence &s);
-    BaseType *leaf_match(const string &name);
-    BaseType *exact_match(const string &name);
+    BaseType *leaf_match(const string &name, btp_stack *s = 0);
+    BaseType *exact_match(const string &name, btp_stack *s = 0);
 
     bool is_end_of_rows(int i);
 
@@ -210,6 +185,8 @@ public:
 
     virtual ~Sequence();
 
+    /** Assigment. When overloading, make absolutely sure to call this
+	version (use: #dynamic_cast<Sequence &>(*this) = rhs;#). */
     Sequence &operator=(const Sequence &rhs);
 
     virtual BaseType *ptr_duplicate() = 0;
@@ -217,6 +194,17 @@ public:
     virtual string toString();
 
     virtual int element_count(bool leaves = false);
+
+    /** A linear sequence is any sequence that holds only simple types and/or
+	a single linear sequence. So they can be nested sequences, but they
+	cannot contain Arrays or Grids and they cannot contain more than one
+	linear sequence at any given level. Structures are allowed since they
+	can be flattened within the Sequence that holds them.
+
+	A better name for this would be is_flat or is_flatenable. 2/18/2002
+	jhrg 
+
+	@return True if the Sequence can be flattened, False otherwise. */
     virtual bool is_linear();
 
     virtual void set_send_p(bool state);
@@ -241,27 +229,38 @@ public:
 	will have a more complete implementation. */
     virtual int length();
     
-    /** Sets the level number. 
-	@deprecated */
-    virtual void set_level(int lvl);
-    /** Returns the level number. 
-	@deprecated */
-    virtual int level();
     /** The number of rows in a sequence that has just been deserialized.
-	This method can be used along with row\_value(...) to read sucessive
-	rows from the Sequence object.
+	This method can be used along with row\_value(...) to read successive
+	rows from the Sequence object. Note that embedded Sequences will be
+	held in a single instance. Look at the following example:
+	\begin{verbatim}
+	s1 -->
+	       d1 d2 s2 -->
+                            d3 d4
+                            d3 d4
+			    d3 d4
+               d1 d2 s2 -->
+                            d3 d4
+        \end{verbatim}
+	The number of rows in #s1# is two. The first instance of #s2" has
+	three rows, while the second has only one.
 
-	NB: Used on the client side.
+	Used on the client side.
 
 	@return The number of rows in the sequence, once read.*/
     int number_of_rows();
 
-    /** Read row number {\it row} into the Sequence. The values of the row are
-	obtained using the members of the sequence. This method calls the
-	overloaded Sequence::read() method to read each row. The rows are
-	counted by the object (see get\_row\_number()). If a selection
-	expression has been supplied, rows are counted only if they satisfy
-	that expression.
+    /** Read row number {\it row} of the sequence. The values of the row are
+	obtained using the members of the sequence (this includes reading any
+	embedded sequences). This method calls the overloaded
+	Sequence::read() method to read each row. The rows are counted by the
+	object (see get\_row\_number()). If a selection expression has been
+	supplied, rows are counted only if they satisfy that expression.
+	Embedded sequence elements count as one `value' and thus occupy one
+	row in their parent sequence. This means that asking for the first
+	three rows of a sequence #S# which has a sequence as one of its
+	members (i.e. it has an embedded sequence) may return something that
+	has more than three rows when `flattened.'
 
 	Used on the server side.
 
@@ -356,7 +355,8 @@ public:
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual BaseType *var(const string &name, bool exact_match = true);
+    virtual BaseType *var(const string &name, bool exact_match = true,
+			  btp_stack *s = 0);
     virtual BaseType *var(const string &name, btp_stack &s);
 
     /** Get the BaseType pointer to the named variable of a given row. 
@@ -409,7 +409,7 @@ public:
     virtual void print_one_row(ostream &os, int row, string space,
 			       bool print_row_num = false);
 
-    /** Special output method for sequences. Prints each row on its pwn line
+    /** Special output method for sequences. Prints each row on its own line
 	with a row number. Uses print\_one\_row with #print_row_num# True. */
     virtual void print_val_by_rows(ostream &os, string space = "",
 				   bool print_decl_p = true,
@@ -449,6 +449,24 @@ public:
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.48  2002/06/03 21:53:38  jimg
+ * Removed level stuff. The level() and set_level() methods were not being used
+ * anymore, so I removed them.
+ *
+ * Revision 1.45.4.8  2002/03/29 18:40:20  jimg
+ * Updated comments and/or removed dead code.
+ *
+ * Revision 1.45.4.7  2002/03/01 21:03:08  jimg
+ * Significant changes to the var(...) methods. These now take a btp_stack
+ * pointer and are used by DDS::mark(...). The exact_match methods have also
+ * been updated so that leaf variables which contain dots in their names
+ * will be found. Note that constructor variables with dots in their names
+ * will break the lookup routines unless the ctor is the last field in the
+ * constraint expression. These changes were made to fix bug 330.
+ *
+ * Revision 1.45.4.6  2002/01/17 00:42:38  jimg
+ * Fixed spelling errors in the doc++ comments.
+ *
  * Revision 1.47  2001/09/28 17:50:07  jimg
  * Merged with 3.2.7.
  *
