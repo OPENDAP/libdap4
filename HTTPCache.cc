@@ -117,7 +117,7 @@ static pthread_mutex_t instance_mutex = PTHREAD_MUTEX_INITIALIZER;
     @param url
     @return An integer hash code between 0 and CACHE_TABLE_SIZE. */
 
-static inline int
+inline static int
 get_hash(const string &url)
 {
     int hash = 0;
@@ -2015,6 +2015,10 @@ HTTPCache::purge_cache() throw(Error)
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.6  2003/03/04 21:43:11  jimg
+// Minor change; changed the order of inline and static for the get_hash()
+// function.
+//
 // Revision 1.5  2003/03/04 17:31:17  jimg
 // Modified cache_response() so that only http and https URLs are cached.
 //
