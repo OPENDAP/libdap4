@@ -6,7 +6,7 @@
 # 
 # jhrg 4/28/95
 #
-# $Id: depend.sh,v 1.4 1995/06/17 21:29:45 jimg Exp $
+# $Id: depend.sh,v 1.5 1996/02/01 22:10:04 jimg Exp $
 
 usage="depend [-s][-m <makefile name>] -- <compiler options> -- <files>"
 CFLAGS=-MM
@@ -58,7 +58,7 @@ found == 1 {exit}' $makefile > $tmp
 
 gcc $CFLAGS $* >> $tmp
 
-mv $makefile makefile.bak	# backup the current Makefile 
+mv $makefile ${makefile}.bak	# backup the current Makefile 
 
 mv $tmp $makefile
 
