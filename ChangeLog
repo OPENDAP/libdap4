@@ -1,0 +1,45 @@
+Tue Aug 13 10:54:02 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed bugs in Grid: bad constraint expressions would cause core
+	dumps and a bug on the SGI (maybe others) where valid Grids would
+	not parse.
+
+	* Added to the Error class so that its methods are more useful
+	for correcting errors and displaying messages (see Error.cc).
+
+	* Switched to parser_arg object on all the parsers. parser_arg is
+	a simple object used to pass values to and from the bison gnerated
+	parsers. You need bison 1.24 or newer.
+
+	* Added _unused_ to config_dap.h; this macro expands to gcc's
+	__attribute__((__unused__)) thing. I then tacked `__unused__' on the
+	char rcsid[] arrays to suppress warnings from gcc -Wall (and
+	highlite the warnings that should be fixed!)
+
+	* Fixed a bug in Clause where non-existent functions were
+	evaluated - this caused a core dump.
+
+Fri Aug  9 10:21:06 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed bug in Connect where local accesses were not correctly
+	detected. Also modified geturl to print a diagnostic when supplied
+	with a local file name (or, more to the point, a name without
+	`http'). 
+
+Wed Jul 17 15:04:01 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Added expr-check target in Makefile.
+
+	* Added new tests for das, dds objects. Added tests for expr-test
+	driver. 
+
+Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Gui.cc: Added compile-time switch HAVE_EXPECT which is used to
+	control use/requirement of expect and tcl. When defined as 1 Expect
+	and Tcl are used to communicate with a GUI subprocess. When 0,
+	Expect and Tcl are not used (thus the libraries are not required).
+	Note that without Expect the GUI used for the transmission
+	progress indicator and error reporting is not available.
+
+$Id: ChangeLog,v 1.1 1996/08/13 20:59:58 jimg Exp $
