@@ -1,12 +1,12 @@
 
 
-// (c) COPYRIGHT URI/MIT 1994-2000
+// (c) COPYRIGHT URI/MIT 1994-2001
 // Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
-//      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
-//      dan             Dan Holloway (dan@hollywood.gso.uri.edu)
-//      reza            Reza Nekovei (reza@intcomm.net)
+//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
+//      dan             Dan Holloway <dholloway@gso.uri.edu>
+//      reza            Reza Nekovei <reza@intcomm.net>
 
 #ifdef __GNUG__
 #pragma implementation
@@ -15,7 +15,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.108 2001/02/05 18:57:44 jgarcia Exp $" };
+    { "$Id: Connect.cc,v 1.109 2001/02/09 22:49:47 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -42,19 +42,17 @@ static char rcsid[] not_used =
 #include "escaping.h"
 
 #define SHOW_MSG (WWWTRACE || HTAlert_interactive())
-#define DODS_KEEP_TEMP 0
+#define DODS_KEEP_TEMP 0	// set to 1 for debugging
 
 #if defined(__svr4__)
 #define CATCH_SIG
 #endif
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::ofstream;
 using std::iterator;
-#endif
 
 #ifdef WIN32
 #define DIR_SEP_STRING "\\"
@@ -104,38 +102,15 @@ static const int
 static const int
  DODS_DEFAULT_EXPIRES = 86400;	// 24 hours in seconds
 
-#undef CATCH_SIG
-#ifdef CATCH_SIG
-#include <signal.h>
-
-
-// This function sets up signal handlers. This might not be necessary to
-// call if the application has its own handlers (lossage on SVR4)
-
-static void SetSignal(void)
-{
-    // On some systems (SYSV) it is necessary to catch the SIGPIPE signal
-    // when attemting to connect to a remote host where you normally should
-    // get `connection refused' back
-
-    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
-	if (PROT_TRACE)
-	    cerr << "HTSignal.... Can't catch SIGPIPE" << endl;
-    } else {
-	if (PROT_TRACE)
-	    cerr << "HTSignal.... Ignoring SIGPIPE" << endl;
-    }
-}
-#endif				/* CATCH_SIG */
-
-// The next five functions (*not* mfuncs) are friends of Connect.
-
 // This function is registered to handle the result of the request
 
 int
 http_terminate_handler(HTRequest * request, HTResponse * /*response */ ,
 		       void * /*param */ , int status)
 {
+    if (WWWTRACE)
+	HTTrace("DODS........ HTTP Terminate handler.\n");
+
     if (status != HT_LOADED) {
 	HTAlertCallback *cbf = HTAlert_find(HT_A_MESSAGE);
 	if (cbf)
@@ -150,6 +125,9 @@ http_terminate_handler(HTRequest * request, HTResponse * /*response */ ,
 
 int timeout_handler(HTRequest * request)
 {
+    if (WWWTRACE)
+	HTTrace("DODS........ Timeout handler.\n");
+
 #ifdef GUI
     Connect *me = (Connect *) HTRequest_context(request);
     string cmd;
@@ -181,11 +159,15 @@ BOOL dods_progress(HTRequest * request, HTAlertOpcode op,
 		   const char * /* dfault */ , void *input,
 		   HTAlertPar * /* reply */ )
 {
+    if (WWWTRACE)
+	HTTrace("DODS........ Progress display handler.\n");
+
     if (!request) {
 	if (WWWTRACE)
-	    cerr << "dods_progress: NULL Request" << endl;
+	    HTTrace("DODS........ dods_progress: NULL Request.\n");
 	return YES;
     }
+
 #ifdef GUI
     Connect *me = (Connect *) HTRequest_context(request);
     string cmd;
@@ -281,7 +263,6 @@ BOOL dods_progress(HTRequest * request, HTAlertOpcode op,
 	break;
 
     default:
-	cerr << "UNKNOWN PROGRESS STATE" << endl;
 	break;
     }
 #endif
@@ -289,38 +270,66 @@ BOOL dods_progress(HTRequest * request, HTAlertOpcode op,
     return YES;
 }
 
+// See HTAABrow.c in libwww for calls that generate the authentication
+// information. It seems easier to have the callback handle inserting that
+// info even when the username and password are given with the URL (or with
+// Connect's ctor). This is especially so since it *looks* as if servers will
+// ask for Basic authentication but accept digest (this appears to be the
+// case for Apache; run geturl with -t and look at w3chttp.out). However,
+// there's one slight complication. If this callback is used to add the
+// authentication information, we must ensure that static auth info (that is,
+// when the stuff is given with a URL) does not result in an infinite loop.
+// 2/8/2001 jhrg
+
 BOOL dods_username_password(HTRequest * request, HTAlertOpcode /* op */ ,
 			    int /* msgnum */ , const char * /* dfault */ ,
 			    void * /* input */ , HTAlertPar * reply)
 {
+    if (WWWTRACE)
+	HTTrace("DODS........ Entering username/password callback.\n");
+
     if (!request) {
 	if (WWWTRACE)
-	    cerr << "dods_username_password: Bad argument" << endl;
+	    HTTrace("dods_username_password: Bad argument.\n");
 	return NO;
     }
 
     Connect *me = (Connect *) HTRequest_context(request);
 
-    // Put the username in reply using HTAlert_setReplyMessage; use
-    // _setReplySecret for the password.
-
-    if (me->_passwd_attempt >= 1)  // already tried this username/password pair
-	return NO;
-
-    if ((me->_username.length() <= 0) || (me->_passwd.length() <= 0)) {
+    // Already tried this username/password pair? If we're using the popup,
+    // let this cycle 10 times. That should be enough for most folks but will
+    // still prevent infinite loops. If we're not using the popup, one shot
+    // is all you get. 2/8/2001 jhrg
 #ifdef GUI
-    if (!me->_gui->password(me->_username, me->_passwd))
+    if (((!me->_gui->show_gui() && me->_password_attempt >= 1)
+	 || (me->_gui->show_gui() && me->_password_attempt >= 10)))
 	return NO;
-#endif
+#else
+    if (me->_password_attempt >= 1) 
+	return NO;
+#endif    
+
+    // This is inside an ifdef so that it is possible to build the library
+    // without the _gui symbol and thus not link in all the X11 code.
+#ifdef GUI
+    if ((me->_username.length() == 0) || (me->_password.length() == 0)) {
+	if (!me->_gui->password(me->_username, me->_password))
+	    return NO;
     }
+#endif
 
-    if ((me->_username.length() == 0) || (me->_passwd.length() == 0))
+    if ((me->_username.length() == 0) || (me->_password.length() == 0))
 	return NO;
 
+    // Put the username in reply using HTAlert_setReplyMessage; use
+    // _setReplySecret for the password. This callback is triggered by a
+    // an After filter; the caller knows to take the stuff in the HTAlert_Par
+    // and add it to the request header. This is all part of libwww's
+    // operation. 2/9/2001 jhrg
     HTAlert_setReplyMessage(reply, me->_username.c_str());
-    HTAlert_setReplySecret(reply, me->_passwd.c_str());
+    HTAlert_setReplySecret(reply, me->_password.c_str());
 
-    ++(me->_passwd_attempt);
+    ++(me->_password_attempt);
 
     return YES;
 }
@@ -328,125 +337,72 @@ BOOL dods_username_password(HTRequest * request, HTAlertOpcode /* op */ ,
 static HTErrorMessage
     HTErrors[HTERR_ELEMENTS] = { HTERR_ENGLISH_INITIALIZER };
 
-BOOL dods_error_print(HTRequest * request, HTAlertOpcode /* op */ ,
-		      int /* msgnum */ , const char * /* dfault */ ,
-		      void *input, HTAlertPar * /* reply */ )
+// To process errors reported by the remote httpd, I use a function called
+// from read_url() instead of a callback because throwing an exception from
+// within a callback always results in a core dump. At least that's the case
+// with libwww callbacks... In a more normal use of libwww these errors would
+// be displayed to a user who would then do something with them. The dap++
+// library must support both interactive and noninteractive use. 2/8/2001
+// jhrg
+
+void process_www_errors(HTList *listerr, HTRequest *request) throw(Error)
 {
-    HTList *cur = (HTList *) input;
-    HTError *pres;
+    HTError *the_error;
     HTErrorShow showmask = HTError_show();
-    HTChunk *msg = NULL;
-    int
-     code;
 
     if (WWWTRACE)
-	cerr << "dods_error_print: Generating message" << endl;
+	HTTrace("DODS........ Generating error message.\n");
 
-    if (!request)
-	if (WWWTRACE)
-	    cerr << "dods_error_print: Null request." << endl;
+    while ((the_error = (HTError *) HTList_nextObject(listerr))) {
+	int index = HTError_index(the_error);
+	HTSeverity severity = HTError_severity(the_error);
+	switch (severity) {
+	  case ERR_INFO:
+	  case ERR_WARN:
+	  case ERR_NON_FATAL:
+	    // Ignore Informational messages.
+	    break;
 
-    if (!cur)
-	if (WWWTRACE)
-	    cerr << "dods_error_print: Null error list." << endl;
-
-    if (!request || !cur)
-	return NO;
-
-    while ((pres = (HTError *) HTList_nextObject(cur))) {
-	int
-	 index = HTError_index(pres);
-	// An index of 
-	if (HTError_doShow(pres)) {
-	    if (!msg) {
-		HTSeverity severity = HTError_severity(pres);
-		switch (severity) {
-		case ERR_INFO:
-		    // Ignore Informational messages.
-		    break;
-		case ERR_WARN:
-		    msg = HTChunk_new(128);
-		    HTChunk_puts(msg, "Warning: ");
-		    break;
-		case ERR_NON_FATAL:
-		    msg = HTChunk_new(128);
-		    HTChunk_puts(msg, "Non Fatal Error: ");
-		    break;
-		case ERR_FATAL:
-		    if (request) {
-			Connect *me =
-			    (Connect *) HTRequest_context(request);
-			me->_type = web_error;
-		    }
-		    msg = HTChunk_new(128);
-		    HTChunk_puts(msg, "Fatal Error: ");
-		    break;
-		default:
-		    if (WWWTRACE)
-			cerr << "Unknown Classification of Error ("
-			    << severity << ")" << endl;
-		    HTChunk_delete(msg);
-		    return NO;
-		}
-
-		/* Error number */
-		if ((code = HTErrors[index].code) > 0) {
-		    char
-		     buf[10];
-		    sprintf(buf, "%d ", code);
-		    HTChunk_puts(msg, buf);
-		}
-	    } else
-		HTChunk_puts(msg, "\nReason: ");
-
-	    HTChunk_puts(msg, HTErrors[index].msg);	// Error message
-
-	    if (showmask & HT_ERR_SHOW_LOCATION) {	// Error Location
-		HTChunk_puts(msg, "This occured in ");
-		HTChunk_puts(msg, HTError_location(pres));
-		HTChunk_putc(msg, '\n');
+	  case ERR_FATAL: {
+	      // I think this `if' will go away once Connect is refactored.
+	      // It is left over from when this code was called in a
+	      // callback. Exceptions are a much better way to send fatal
+	      // error reports than the embedded Error object we were using.
+	      // So, I'll make this function a friend rather than a method in
+	      // hopes that the architecture of the whole class will change
+	      // soon enough. 2/8/2001 jhrg
+	    if (request) {
+		Connect *me = (Connect *)HTRequest_context(request);
+		me->_type = web_error;
 	    }
-
-	    /*
-	       ** Make sure that we don't get this error more than once even
-	       ** if we are keeping the error stack from one request to another
-	     */
-	    HTError_setIgnore(pres);
-
-	    /* If we only are showing the most recent entry then break here */
-	    if (showmask & HT_ERR_SHOW_FIRST)
+	    string msg = "Fatal Error: ";
+	    msg += (string)HTErrors[index].msg + (string)" (";
+	    msg += long_to_string(HTErrors[index].code, 10);
+	    msg += (string)")";
+	    switch (HTError_index(the_error)) {
+	      case HTERR_UNAUTHORIZED:
+		throw Error(no_authorization, msg);
 		break;
-	}
+	      default:
+		throw Error(undefined_error, msg);
+		break;
+	    }
+	    break;
+	  }
+	  default:
+	    if (WWWTRACE)
+		HTTrace("DODS........ Unknown Classification of Error (%d)\n",
+			severity);
+	  }
+
+	// Make sure that we don't get this error more than once even
+	// if we are keeping the error stack from one request to another.
+	HTError_setIgnore(the_error);
+
+	// If we only are showing the most recent entry then break here.
+	if (showmask & HT_ERR_SHOW_FIRST)
+	    break;
     }
-
-    if (msg) {
-	Connect *me = (Connect *) HTRequest_context(request);
-
-#ifdef GUI
-	if (me->_gui->show_gui()) {
-	    if (!me->_gui->simple_error((char *) (HTChunk_data(msg))));
-	    cerr << "GUI Failure in dods_error_print()" << endl;
-	} else {
-#endif
-	    // Connect used to route all www errors to stderr. That was a
-	    // mistake; they should go to the Error object. To keep the old
-	    // behavior I've added two mfuncs that set and get a property
-	    // used to control if errors are sent to stderr. 6/3/98 jhrg
-	    if (me->get_www_errors_to_stderr())
-		cerr << (char *) HTChunk_data(msg) << endl;
-	    // Load into the error object here. 
-	    Error & e = me->error();
-	    e.error_code(unknown_error);
-	    string s = (char *) HTChunk_data(msg);
-	    e.error_message(s);
-#ifdef GUI
-	}
-#endif
-
-	HTChunk_delete(msg);
-    }
-
-    return YES;
 }
 
 static
@@ -472,6 +428,9 @@ int
 description_handler(HTRequest * request, HTResponse *,
 		    const char *token, const char *val)
 {
+    if (WWWTRACE)
+	HTTrace("DODS........ Description header handler.\n");
+
     string field = token, value = val;
     downcase(field);
     downcase(field);
@@ -492,6 +451,9 @@ int
 server_handler(HTRequest * request, HTResponse *,
 	       const char *token, const char *val)
 {
+    if (WWWTRACE)
+	HTTrace("DODS........ Server header handler.\n");
+
     string field = token, value = val;
     downcase(field);
     downcase(value);
@@ -520,11 +482,15 @@ int
 header_handler(HTRequest *, HTResponse *, const char *token,
 	       const char *val)
 {
+    if (WWWTRACE)
+	HTTrace("DODS........ Header handler.\n");
+
     string field = token, value = val;
     downcase(field);
     downcase(value);
 
-    cerr << "Unknown header: " << token << ": " << value << endl;
+    if (SHOW_MSG)
+	cerr << "Unknown header: " << token << ": " << value << endl;
 
     return HT_OK;
 }
@@ -539,8 +505,7 @@ int xdods_accept_types_header_gen(HTRequest * pReq, HTStream * target)
 {
     Connect *me = (Connect *) HTRequest_context(pReq);
 
-    string
-	types = "XDODS-Accept-Types: " + me->get_accept_types() + "\r\n";
+    string types = "XDODS-Accept-Types: " + me->get_accept_types() + "\r\n";
     if (WWWTRACE)
 	HTTrace("DODS........ %s", types.c_str());
 
@@ -573,7 +538,7 @@ int cache_control_header_gen(HTRequest * pReq, HTStream * target)
 // 5/20/97
 //
 // Make sure that this parser reads from data_source without disturbing the
-// information in data_source tat follows the MIME header. Since the DDS
+// information in data_source that follows the MIME header. Since the DDS
 // (which follows the MIME header) is parsed by a flex/bison scanner/parser,
 // make sure to use I/O calls that will mesh with ANSI C I/O calls. In the
 // old GNU libg++, the C++ calls were synchronized with the C calls, but that
@@ -607,6 +572,31 @@ void Connect::parse_mime(FILE * data_source)
 
 	fgets(line, 255, data_source);
 	line[strlen(line) - 1] = '\0';
+    }
+}
+
+// I moved this code from fetch_url() because at some point I think it should
+// go in Connect's ctor. I cannot get that to work right now; don't know why.
+// 2/8/2001 jhrg
+void Connect::extract_auth_info(string &url)
+{
+    string::size_type start_pos = 0, end_pos, colon_pos;
+
+    // look for a user / password pair which may [or may not] be in the url --
+    // look for a '@', If present there are two cases: http:// or file:/
+    // get the user and password substr after these and if neither is 0
+    // length, put them in the Connect object. Rebuild the URL without them.
+    if ((end_pos = url.find('@')) != url.npos) {
+        if (url.find("http://") == 0)
+            start_pos = 7;
+        else if (url.find("file:/") == 0)
+            start_pos = 6;
+        colon_pos = url.find(":", start_pos);
+        if (end_pos > colon_pos) {
+            _username = url.substr(start_pos, colon_pos - start_pos);
+            _password = url.substr(colon_pos + 1, end_pos - (colon_pos+1));
+            url.erase(start_pos, end_pos - start_pos + 1);
+        }
     }
 }
 
@@ -654,18 +644,19 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // Store the users home directory or for win-NT based systems, the user &
     // & application-specific directory.  Punt for win9x-based systems.
 #ifdef WIN32
-    //  Should be ok for WinNT and versions of Windows that are based upon it -
-    //  such as Windows 2000.  APPDATA not appropriate for Win9x-based systems,
-    //  we'll have to default to using the temporary directory in that case
-    //  because there is no user specific directory denoted by an env var.
+    //  Should be ok for WinNT and versions of Windows that are based upon it
+    //  - such as Windows 2000. APPDATA not appropriate for Win9x-based
+    //  systems, we'll have to default to using the temporary directory in
+    //  that case because there is no user specific directory denoted by an
+    //  env var.
     if (getenv("APPDATA"))
 	homedir = getenv("APPDATA");
     else if (getenv("TEMP"))
 	homedir = getenv("TEMP");
     else if (getenv("TMP"))
 	homedir = getenv("TMP");
-    //  One of the above _must_ have held true under win32 in the very unlikely
-    //  situation where that wasn't the case - punt hard.
+    //  One of the above _must_ have held true under win32 in the very
+    //  unlikely situation where that wasn't the case - punt hard.
     else
 	homedir = "C:" + string(DIR_SEP_STRING);
 
@@ -896,6 +887,8 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     }
     // End of cache file parsing.
 
+    HTLibInit(CNAME, CVER);	// These constants are in config_dap.h
+
     // Initialize tcp and buffered_tcp transports
     HTTransportInit();
 
@@ -935,18 +928,18 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	HTFormat_setContentCoding(content_encodings);
 #endif				/* HT_ZLIB */
     }
+
     // Register MIME headers for HTTP 1.1
     HTMIMEInit();
-    HTBeforeInit();
-    HTAfterInit();
 
 #ifdef GUI
-    // Add progress notification, etc.
+    // Add progress notification for popup.
     HTAlert_add(dods_progress, HT_A_PROGRESS);
-    HTAlert_add(dods_error_print, HT_A_MESSAGE);
-    HTAlert_add(dods_username_password, HT_A_USER_PW);
     HTAlert_setInteractive(YES);
 #endif
+
+    HTAlert_add(dods_username_password, HT_A_USER_PW);
+
     if (!USE_CACHE) {
 	// Disable the cache. 
 	HTCacheTerminate();
@@ -984,6 +977,10 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	}
     }
 
+    // I think this is pretty much broken. I'm not sure how it would be used
+    // except for debugging and even then, I think tracing is more practicle.
+    // The bottom line is that this code should only deal with Fatal errors.
+    // 2/8/2001 jhrg
     if (www_verbose_errors)
 	HTError_setShow(HT_ERR_SHOW_INFO);
     else
@@ -997,23 +994,15 @@ void Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
     // we can test for these fields and operate on the resulting document
     // without using the stream stack mechanism (which seems to be very
     // complicated). jhrg 11/20/96
-#ifdef WIN32
     HTHeader_addParser("content-description", NO,
 		       (HTParserCallback *) description_handler);
-#else
-    HTHeader_addParser("content-description", NO, description_handler);
-#endif
+
     // Added DODS server header because `Server:' is used by Java. We check
     // first for `XDODS-Server:' and use that if found. Then look for
     // `Server:' and finally default to 0.0. 12/16/98 jhrg
-#ifdef WIN32
     HTHeader_addParser("xdods-server", NO,
 		       (HTParserCallback *) server_handler);
     HTHeader_addParser("server", NO, (HTParserCallback *) server_handler);
-#else
-    HTHeader_addParser("xdods-server", NO, server_handler);
-    HTHeader_addParser("server", NO, server_handler);
-#endif
 
     // Add xdods_accept_types header. 2/17/99 jhrg
     HTHeader_addGenerator(xdods_accept_types_header_gen);
@@ -1065,39 +1054,6 @@ void Connect::clone(const Connect & src)
     }
 }
 
-BOOL
-set_username_password (HTRequest * request, HTAlertOpcode /* op */,
-		       int /* msgnum */, const char * /* dfault */,
-		       void * /* input */, HTAlertPar * reply)
-{
-  if (!request) {
-    if (WWWTRACE) cerr << "dods_username_password: Bad argument" << endl;
-    return NO;
-  }
-  
-  HTAssocList * al= HTRequest_extraHeader (request);
-  char *u=HTAssocList_findObject(al, "username");
-  char *p=HTAssocList_findObject(al, "password");
-  
-  if(!u || !p)
-    return NO;
-  
-  string user=u;
-  string passwd=p;
-  
-  HTRequest_deleteExtraHeaderAll(request);
-  
-  if ((user.length() == 0) || (passwd.length() == 0))
-    return NO;
-  
-  HTAlert_setReplyMessage(reply, user.c_str());
-  HTAlert_setReplySecret(reply, passwd.c_str());
-  return YES;
-  
-}
-
-
-
 // Use the URL designated when the Connect object was created as the
 // `base' URL so that the formal parameter to this mfunc can be relative.
 
@@ -1118,47 +1074,25 @@ bool Connect::read_url(string & url, FILE * stream)
     HTRequest_setOutputStream(_request,
 			      HTFWriter_new(_request, stream, YES));
 
-    // Jose Garcia BEGIN
-    // Add authentication credentials if they were set for this object.
-    if(_user_name!="" && _password!="")
-      {
-
-        HTAlert_add(set_username_password, HT_A_USER_PW);
-        HTRequest_addExtraHeader(_request,"username", const_cast<char*>(_user_name.c_str()));
-        HTRequest_addExtraHeader(_request,"password", const_cast<char*>(_password.c_str()));
-        
-      }
-    // Jose Garcia END
-
     // Set this request to use the cache if possible. 
     // CJM used HT_CACHE_VALIDATE; HT_CACHE_OK supresses the validation.
     if (_cache_enabled)
 	HTRequest_setReloadMode(_request, HT_CACHE_OK);
 
     status = HTLoadRelative(url.c_str(), _anchor, _request);
-    
-    // Jose Garcia BEGIN
-    // Better error checking loading the URL
-    HTList *listerr=NULL;
-    listerr=HTRequest_error(_request);
-    if( listerr )
-      {
-        //cout<<"There are "<<HTList_count (listerr) <<" errors"<<endl;
-        HTError* the_error= (HTError*) HTList_nextObject(listerr);
-        while(the_error)
-        {
-          if(HTError_severity(the_error)==ERR_FATAL)
-            {
-              if (HTError_index(the_error) == HTERR_UNAUTHORIZED)
-                throw Error(no_authorization, " Unauthorized access, please set the realm for this object");
-              else
-                throw Error(undefined_error,"Unknown fatal error.");
-            }
-          the_error= (HTError*) HTList_nextObject(listerr);
-        }
-      }
-    //Jose Garcia END 
-
+#ifdef GUI
+    try {
+#endif
+    HTList *listerr=HTRequest_error(_request);
+    if (listerr)
+	process_www_errors(listerr, _request);
+#ifdef GUI
+    }
+    catch (Error &e) {
+	e.display_message(_gui);
+	throw;
+    }
+#endif
 
     if (_cache_enabled)
 	HTCacheIndex_write(_cache_root);
@@ -1174,19 +1108,6 @@ bool Connect::read_url(string & url, FILE * stream)
     return (status != 0);
 }
 
-void Connect::close_output()
-{
-    if (_output && _output != stdout) {
-	fclose(_output);
-	_output = 0;
-    }
-
-    if (_source) {
-	delete_xdrstdio(_source);
-	_source = 0;
-    }
-}
-
 // This ctor is declared private so that it won't ever be called by users,
 // thus forcing them to create Connects which point somewhere.
 
@@ -1197,14 +1118,16 @@ Connect::Connect()
 
 // public mfuncs
 
-Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate, string uname="", string password=""):
-_accept_types("All"), _cache_control(""), _www_errors_to_stderr(false),
-_accept_deflate(accept_deflate), _user_name(uname), _password(password)
+Connect::Connect(string name, bool www_verbose_errors, bool accept_deflate, 
+		 string uname, string password):
+    _accept_types("All"), _cache_control(""), _username(uname),
+    _password(password), _www_errors_to_stderr(false), 
+    _accept_deflate(accept_deflate)
 {
     name = prune_spaces(name);
     char *access_ref = HTParse(name.c_str(), NULL, PARSE_ACCESS);
 
-    if (strcmp(access_ref, "http") == 0) {	// access == http --> remote access
+    if (strcmp(access_ref, "http") == 0) { // access == http --> remote access
 	// If there are no current connects, initialize the library
 	if (_num_remote_conns == 0) {
 	    www_lib_init(www_verbose_errors, accept_deflate);
@@ -1216,7 +1139,6 @@ _accept_deflate(accept_deflate), _user_name(uname), _password(password)
 #ifdef GUI
 	_gui = new Gui;
 #endif
-
 	// Find and store any CE given with the URL.
 	string::size_type dotpos = name.find('?');
 	if (dotpos != name.npos) {
@@ -1257,8 +1179,8 @@ _accept_deflate(accept_deflate), _user_name(uname), _password(password)
 	_encoding = unknown_enc;
     }
     _username = "";
-    _passwd = "";
-    _passwd_attempt = 0;
+    _password = "";
+    _password_attempt = 0;
 
 
     if (access_ref)
@@ -1290,18 +1212,6 @@ Connect::~Connect()
 #endif
 	_num_remote_conns--;
     }
-    // Calling this ensures that the WWW library Cache gets updated and the
-    // .index file is written. 11/22/99 jhrg
-    if (_num_remote_conns == 0) {
-	if (_cache_enabled)
-	    HTCacheTerminate();
-	HTList_delete(_conv);
-	_conv = 0;
-	delete[]_cache_root;
-    } else if (_cache_enabled)
-	HTCacheIndex_write(_cache_root);
-
-    close_output();
 
 #ifdef WIN32
     HTEventTerminate();
@@ -1309,9 +1219,25 @@ Connect::~Connect()
     //  Get rid of any intermediate files
     vector < string >::const_iterator i;
     for (i = _tfname.begin(); i != _tfname.end(); i++)
-	remove((*i).c_str())
+	remove((*i).c_str());
 #endif
-	    DBG2(cerr << "Leaving the Connect dtor" << endl);
+
+    // Calling this ensures that the WWW library Cache gets updated and the
+    // .index file is written. 11/22/99 jhrg
+    if (_num_remote_conns == 0) {
+	if (_cache_enabled)
+	    HTCacheTerminate();
+	HTList_delete(_conv);
+	if (HTLib_isInitialized())
+	    HTLibTerminate();
+	_conv = 0;
+	delete[] _cache_root;
+    } else if (_cache_enabled)
+	HTCacheIndex_write(_cache_root);
+
+    close_output();
+
+    DBG2(cerr << "Leaving the Connect dtor" << endl);
 }
 
 Connect & Connect::operator = (const Connect & rhs) {
@@ -1323,8 +1249,7 @@ Connect & Connect::operator = (const Connect & rhs) {
     }
 }
 
-void
- Connect::set_www_errors_to_stderr(bool state)
+void Connect::set_www_errors_to_stderr(bool state)
 {
     _www_errors_to_stderr = state;
 }
@@ -1366,29 +1291,17 @@ bool Connect::fetch_url(string & url, bool)
 {
     _encoding = unknown_enc;
     _type = unknown_type;
-    int start_pos = 0, end_pos, colon_pos;
 
     /* NB: I've completely removed the async stuff for now. 2/18/97 jhrg */
 
     char *c = tempnam(NULL, DODS_PREFIX);
     FILE *stream = fopen(c, "wb");	// Open truncated for update.
 
-    // look for a user / password pair which may [or may not] be in the url --
-    // look for a '@', If present there are two cases: http:// or file:/
-    // get the user and password substr after these and if neither is 0
-    // length, put them in the Connect object. Rebuild the URL without them.
-    if ((end_pos = url.find('@')) != (int)url.npos) {
-        if (url.find("http://") == 0)
-            start_pos = 7;
-        else if (url.find("file:/") == 0)
-            start_pos = 6;
-        colon_pos = url.find(":", start_pos);
-        if (end_pos > colon_pos) {
-            _username = url.substr(start_pos, colon_pos - start_pos);
-            _passwd = url.substr(colon_pos + 1, end_pos - (colon_pos+1));
-            url.erase(start_pos, end_pos - start_pos + 1);
-        }
-    }
+    // This is here instead of Connect's ctor because it's possible a client
+    // of Connect will call this method with a URL other than the one used to
+    // initialize the class. 2/8/2001 jhrg
+    extract_auth_info(url); 
+
     if (!read_url(url, stream))
 	return false;
 
@@ -1430,6 +1343,18 @@ XDR *Connect::source()
     return _source;
 }
 
+void Connect::close_output()
+{
+    if (_output && _output != stdout) {
+	fclose(_output);
+	_output = 0;
+    }
+
+    if (_source) {
+	delete_xdrstdio(_source);
+	_source = 0;
+    }
+}
 
 ObjectType Connect::type()
 {
@@ -1613,11 +1538,6 @@ DDS *Connect::process_data(bool async)
 // expression changed the type of the variable from that which appeared in the
 // origianl DDS received from the dataset when this connection was made.
 
-// WARNING: If EXPR contains several veraibles and one of the variables is a
-// Sequence and it is not the last variable then the input stream will be
-// corrupted. If you request N variables and M of them are Sequences, all the
-// M sequences must follow the N-M other variables.
-
 DDS *Connect::request_data(string expr, bool gui_p,
 			   bool async, const string & ext)
 {
@@ -1658,7 +1578,7 @@ DDS *Connect::read_data(FILE * data_source, bool gui_p, bool async)
     return process_data(async);
 }
 
-// Never use this.
+// Never use this. Why not? 2/9/2001 jhrg
 void *Connect::gui()
 {
 #ifdef GUI
@@ -1717,7 +1637,43 @@ Error & Connect::error()
     return _error;
 }
 
+void Connect::set_credentials(string u, string p)
+{
+    _username = u;
+    _password = p;
+}
+
 // $Log: Connect.cc,v $
+// Revision 1.109  2001/02/09 22:49:47  jimg
+// Merged Jose's and Brent's authentication code, modifying it in the process.
+// There are some significant changes in the functions/methods:
+// dods_username_password, process_www_errors, extract_auth_info, read_url,
+// fetch_url:
+//
+// dods_username_password() can now be used by both a popup and non-popup
+// version of the class. The function knows how to provide humans with several
+// chances to get it right but only allows statically supplied credentials one
+// shot (thus avoiding an infinite loop).
+// process_www_errors() is new: it reads libwww errors and throws Error if it
+// finds a fatal error in the list. If it finds an authentication error, it sets
+// the Error object's error_code to no_authorization. It does nothing if the
+// errors are not fatal.
+// extract_auth_info() is Brent's code moved to its own home.
+// read_url() now calls process_www_errors. This is necessary because
+// process_www_errors throws exceptions and those don't (seem to) work from
+// within libwww callbacks. Understandable since libwww is C code...
+// fetch_url() now calls extract_auth_info. I'd like to move this Connect's
+// ctor, but this will have to do for now.
+//
+// Other changes:
+// SetSignal() removed; libwww handles this now.
+// I removed redundant initialization of libwww Before and After filters.
+// I added calls to HTLibInit and HTLibTerminate in www_lib_init() and
+// ~Connect(). The LibInit call sets the client name and version number. That
+// information will appear in httpd access logs.
+// I've added comments about how Connect works in places where it seemed pretty
+// obscure.
+//
 // Revision 1.108  2001/02/05 18:57:44  jgarcia
 // Added support so a Connect object can be created with credentials to be
 // able to resolve challenges issued by web servers (Basic Authentication).
