@@ -4,14 +4,10 @@
 
 #include <iostream>
 #include <fstream>
-#include <strstream>
+
 #include "DDS.h"
 
-using std::cout ;
-using std::cerr ;
-using std::endl ;
-using std::ostrstream ;
-using std::ifstream ;
+using namespace std;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 				      // timeouts. 
