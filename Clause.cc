@@ -8,6 +8,12 @@
 // Implementation for the CE Clause class.
 
 // $Log: Clause.cc,v $
+// Revision 1.5  1998/10/21 16:34:03  jimg
+// Made modifications that allow null argument lists.
+// Replaced repeated code (to build arg lists) with a function call (it's a
+// function call because it needs to be called from inside the expr parser,
+// too).
+//
 // Revision 1.4  1996/12/02 23:10:08  jimg
 // Added dataset as a parameter to the ops member function.
 //
@@ -33,21 +39,34 @@
 #include "Clause.h"
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
-    : op(oper), b_func(0), bt_func(0), arg1(a1), args(rv) 
+    : _op(oper), _b_func(0), _bt_func(0), _arg1(a1), _args(rv) 
 {
+    assert(OK());
 }
 
 Clause::Clause(bool_func func, rvalue_list *rv)
-    : op(0), b_func(func), bt_func(0), arg1(0), args(rv)
+    : _op(0), _b_func(func), _bt_func(0), _arg1(0), _args(rv)
 {
+    assert(OK());
+
+    if (_args)			// account for null arg list
+	_argc = _args->length();
+    else
+	_argc = 0;
 }
 
 Clause::Clause(btp_func func, rvalue_list *rv)
-    : op(0), b_func(0), bt_func(func), arg1(0), args(rv)
+    : _op(0), _b_func(0), _bt_func(func), _arg1(0), _args(rv)
 {
+    assert(OK());
+
+    if (_args)
+	_argc = _args->length();
+    else
+	_argc = 0;
 }
 
-Clause::Clause() : op(0), b_func(0), bt_func(0), arg1(0), args(0)
+Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _arg1(0), _args(0)
 {
 }
 
@@ -61,11 +80,18 @@ Clause::OK()
     // Each clause object can contain one of: a relational clause, a boolean
     // function clause or a BaseType pointer function clause. It must have a
     // valid argument list.
-    bool relational = (op && !b_func && !bt_func);
-    bool boolean = (!op && b_func && !bt_func);
-    bool basetype = (!op && !b_func && bt_func);
+    //
+    // But, a valid arg list might contain zero arguments! 10/16/98 jhrg
+    bool relational = (_op && !_b_func && !_bt_func);
+    bool boolean = (!_op && _b_func && !_bt_func);
+    bool basetype = (!_op && !_b_func && _bt_func);
 
-    return (relational || boolean || basetype) && args;
+    if (relational)
+	return _arg1 && _args;
+    else if (boolean || basetype)
+	return true;		// Until we check arguments...10/16/98 jhrg
+    else 
+	return false;
 }
 
 bool 
@@ -73,7 +99,7 @@ Clause::boolean_clause()
 {
     assert(OK());
 
-    return op || b_func;
+    return _op || _b_func;
 }
 
 bool
@@ -81,38 +107,32 @@ Clause::value_clause()
 {
     assert(OK());
 
-    return (bool)bt_func;
+    return (bool)_bt_func;
 }
 
 bool 
 Clause::value(const String &dataset, DDS &dds) 
 {
     assert(OK());
-    assert(op || b_func);
+    assert(_op || _b_func);
 
-    if (op) {			// Is it a relational clause?
+    if (_op) {			// Is it a relational clause?
 	// rvalue::bvalue(...) returns the rvalue encapsulated in a
 	// BaseType *.
-	BaseType *btp = arg1->bvalue(dataset, dds);
+	BaseType *btp = _arg1->bvalue(dataset, dds);
 	// The list of rvalues is an implicit logical OR, so assume
 	// FALSE and return TRUE for the first TRUE subclause.
 	bool result = false;
-	for (Pix p = args->first(); p && !result; args->next(p))
-	    result = result || btp->ops(*(*args)(p)->bvalue(dataset, dds),
-					op, dataset);
+	for (Pix p = _args->first(); p && !result; _args->next(p))
+	    result = result || btp->ops(*(*_args)(p)->bvalue(dataset, dds),
+					_op, dataset);
 
 	return result;
     }
-    else if (b_func) {		// ...A bool function?
-	int argc = args->length();
-	BaseType *argv[argc];
-		
-	int i = 0;
-	for (Pix p = args->first(); p; args->next(p)) {
-	    argv[i++] = (*args)(p)->bvalue(dataset, dds);
-	}
+    else if (_b_func) {		// ...A bool function?
+	BaseType **argv = build_btp_args(_args, dds);
 
-	bool result = (*b_func)(argc, argv, dds);
+	bool result = (*_b_func)(_argc, argv, dds);
 	return result;
     }
     else {
@@ -128,18 +148,12 @@ bool
 Clause::value(const String &dataset, DDS &dds, BaseType **value) 
 {
     assert(OK());
-    assert(bt_func);
+    assert(_bt_func);
 
-    if (bt_func) {
-	int argc = args->length();
-	BaseType *argv[argc];
-		
-	int i = 0;
-	for (Pix p = args->first(); p; args->next(p)) {
-	    argv[i++] = (*args)(p)->bvalue(dataset, dds);
-	}
+    if (_bt_func) {
+	BaseType **argv = build_btp_args(_args, dds);
 
-	*value = (*bt_func)(argc, argv, dds);
+	*value = (*_bt_func)(_argc, argv, dds);
 	if (*value) {
 	    (*value)->set_read_p(true);
 	    (*value)->set_send_p(true);
