@@ -1,0 +1,1041 @@
+# Microsoft Developer Studio Generated Dependency File for libdap++
+
+..\Array.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\AttrTable.cpp : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\BaseType.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Byte.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\ce_functions.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\gse.tab.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\cgi_util.cpp : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\cgi_util.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\Connect.h"\
+	"..\DAS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Clause.cpp : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\expr.h"\
+	"..\RValue.h"\
+	
+
+..\Connect.cpp : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\Connect.h"\
+	"..\DAS.h"\
+	"..\DataDDS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Connections.cpp : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\Connect.h"\
+	"..\Connections.h"\
+	"..\DAS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\DAS.cpp : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DAS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\DataDDS.cpp : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DataDDS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\expr.h"\
+	"..\RValue.h"\
+	
+
+..\DDS.cpp : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\ce_functions.h"\
+	"..\cgi_util.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\Connect.h"\
+	"..\DAS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+
+..\GNU\DLList.cpp : \
+	"..\GNU\DLList.h"\
+	
+
+..\DODSFilter.cpp : \
+	"..\Array.h"\
+	"..\AttrTable.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\cgi_util.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\Connect.h"\
+	"..\DAS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\DODSFilter.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Error.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\Error.tab.c : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+
+
+..\Float32.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Float64.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Grid.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\gse.tab.c : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\GSEClause.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\Int16.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Int32.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\InternalErr.cpp : \
+	"..\config_dap.h"\
+	"..\Error.h"\
+	"..\Gui.h"\
+	"..\InternalErr.h"\
+
+..\List.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+"..\parser-util.cpp" : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\RValue.cpp : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\expr.h"\
+	"..\RValue.h"\
+	
+
+..\Sequence.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DataDDS.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\GNU\SLList.cpp : \
+	"..\GNU\SLList.h"\
+	
+
+..\Str.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Structure.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\TestArray.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\RValue.h"\
+	"..\TestArray.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\TestByte.cpp : \
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\config_dap.h"\
+	"..\TestByte.h"\
+	
+
+..\TestFloat32.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\Float32.h"\
+	"..\TestFloat32.h"\
+	
+
+..\TestFloat64.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\Float64.h"\
+	"..\TestFloat64.h"\
+	
+
+..\TestGrid.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\Grid.h"\
+	"..\TestGrid.h"\
+	"..\trace_new.h"\
+	
+
+..\TestInt16.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\Int16.h"\
+	"..\TestInt16.h"\
+	
+
+..\TestInt32.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\Int32.h"\
+	"..\TestInt32.h"\
+	
+
+..\TestList.cpp : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\TestList.h"\
+	"..\trace_new.h"\
+	"..\Vector.h"\
+	
+
+..\TestSequence.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\debug.h"\
+	"..\Sequence.h"\
+	"..\TestSequence.h"\
+	"..\trace_new.h"\
+	
+
+..\TestStr.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\dods-limits.h"\
+	"..\Str.h"\
+	"..\TestStr.h"\
+	
+
+..\TestStructure.cpp : \
+	"..\BaseType.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\expr.h"\
+	"..\RValue.h"\
+	"..\Structure.h"\
+	"..\TestStructure.h"\
+	"..\trace_new.h"\
+	
+
+..\TestUInt16.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\TestUInt16.h"\
+	"..\UInt16.h"\
+	
+
+..\TestUInt32.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\TestUInt32.h"\
+	"..\UInt32.h"\
+	
+
+..\TestUrl.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\dods-limits.h"\
+	"..\Str.h"\
+	"..\TestUrl.h"\
+	"..\Url.h"\
+	
+
+..\UInt16.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\UInt32.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\Operators.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Url.cpp : \
+	"..\BaseType.h"\
+	"..\config_dap.h"\
+	"..\dods-limits.h"\
+	"..\Str.h"\
+	"..\Url.h"\
+	
+
+..\util.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\Error.h"\
+	"..\expr.h"\
+	"..\expr.tab.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\GSEClause.h"\
+	"..\Gui.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\parser.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
+
+..\Vector.cpp : \
+	"..\Array.h"\
+	"..\BaseType.h"\
+	"..\Byte.h"\
+	"..\Clause.h"\
+	"..\config_dap.h"\
+	"..\DDS.h"\
+	"..\debug.h"\
+	"..\dods-limits.h"\
+	"..\expr.h"\
+	"..\Float32.h"\
+	"..\Float64.h"\
+	"..\Grid.h"\
+	"..\Int16.h"\
+	"..\Int32.h"\
+	"..\List.h"\
+	"..\RValue.h"\
+	"..\Sequence.h"\
+	"..\Str.h"\
+	"..\Structure.h"\
+	"..\trace_new.h"\
+	"..\UInt16.h"\
+	"..\UInt32.h"\
+	"..\Url.h"\
+	"..\util.h"\
+	"..\Vector.h"\
+	
