@@ -10,6 +10,9 @@
 // jhrg 9/7/95
 
 // $Log: parser-util.cc,v $
+// Revision 1.15  1999/04/22 22:31:11  jimg
+// Comments
+//
 // Revision 1.14  1999/03/29 17:35:50  jimg
 // Fixed (I hope) a bug in check_float{32,64} where 0.0 did not check out as a
 // valid floating point number. Note that the DODS_{FLT,DBL}_{MIN,MAX} constants
@@ -65,7 +68,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.14 1999/03/29 17:35:50 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: parser-util.cc,v 1.15 1999/04/22 22:31:11 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -245,12 +248,15 @@ check_uint32(const char *val, const int line)
     return TRUE;
 }
 
+// This function does not test for numbers that are smaller than
+// DODS_FLT_MIN. That is hard to do without eliminating valid numbers such as
+// 0.0. Maybe the solution is to test for 0.0 specially? 4/12/99 jhrg 
+
 int
 check_float32(const char *val, const int num)
 {
     char *ptr;
     double v = strtod(val, &ptr);
-
     if (fabs(v) == 0.0 && val == ptr) {
 	parse_error("Not decodable to a 32-bit float value", num);
 	return FALSE;
