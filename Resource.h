@@ -4,7 +4,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2003 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -120,6 +120,9 @@ private:
 };
 
 // $Log: Resource.h,v $
+// Revision 1.2  2003/02/20 23:10:19  jimg
+// Fixed copyright date.
+//
 // Revision 1.1  2003/02/20 21:53:19  jimg
 // Added.
 //
