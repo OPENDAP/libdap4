@@ -34,7 +34,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include <new>
 
 extern "C" {
-#ifdef WIN32
+#if defined(WIN32) || defined(__POWERPC__)
 #define __STDC__		/*  Needed for rx.h prototypes.               */
 #include "regex-0.12/regex.h"   /*  Lack of case distinction on win32         */
 #else				/*  Means regex.h and Regex.h are same file.  */
