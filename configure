@@ -13,9 +13,9 @@ ac_help=
 ac_default_prefix=/usr/local
 # Any additions from configure.in:
 ac_help="$ac_help
-dynamic memory debugging"
+  --enable-dbnew          Runtime dynamic memory checks"
 ac_help="$ac_help
-program instrumentation"
+  --enable-debug=ARG      Program instrumentation (1,2)"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -1326,11 +1326,7 @@ yes)
 #define TRACE_NEW 1
 EOF
 
-  cat >> confdefs.h <<\EOF
-#define DBMALLOC 1
-EOF
-
-  LIBS="$LIBS -ldbnew -ldbmalloc"
+  LIBS="$LIBS -ldbnew"
   ;;
 *)
   ;;
@@ -1380,7 +1376,7 @@ if eval "test \"`echo '${'ac_cv_header_alloca_h'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&4
 else
   cat > conftest.$ac_ext <<EOF
-#line 1384 "configure"
+#line 1380 "configure"
 #include "confdefs.h"
 #include <alloca.h>
 int main() { return 0; }
@@ -1411,7 +1407,7 @@ if eval "test \"`echo '${'ac_cv_func_alloca'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&4
 else
   cat > conftest.$ac_ext <<EOF
-#line 1415 "configure"
+#line 1411 "configure"
 #include "confdefs.h"
 
 #ifdef __GNUC__
@@ -1469,7 +1465,7 @@ if eval "test \"`echo '${'ac_cv_os_cray'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&4
 else
   cat > conftest.$ac_ext <<EOF
-#line 1473 "configure"
+#line 1469 "configure"
 #include "confdefs.h"
 #if defined(CRAY) && ! defined(CRAY2)
 webecray
@@ -1496,7 +1492,7 @@ if eval "test \"`echo '${'ac_cv_func__getb67'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&4
 else
   cat > conftest.$ac_ext <<EOF
-#line 1500 "configure"
+#line 1496 "configure"
 #include "confdefs.h"
 #include <ctype.h> /* Arbitrary system header to define __stub macros. */
 /* Override any gcc2 internal prototype to avoid an error.  */
@@ -1539,7 +1535,7 @@ if eval "test \"`echo '${'ac_cv_func_GETB67'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&4
 else
   cat > conftest.$ac_ext <<EOF
-#line 1543 "configure"
+#line 1539 "configure"
 #include "confdefs.h"
 #include <ctype.h> /* Arbitrary system header to define __stub macros. */
 /* Override any gcc2 internal prototype to avoid an error.  */
@@ -1582,7 +1578,7 @@ if eval "test \"`echo '${'ac_cv_func_getb67'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&4
 else
   cat > conftest.$ac_ext <<EOF
-#line 1586 "configure"
+#line 1582 "configure"
 #include "confdefs.h"
 #include <ctype.h> /* Arbitrary system header to define __stub macros. */
 /* Override any gcc2 internal prototype to avoid an error.  */
@@ -1636,7 +1632,7 @@ else
   ac_cv_c_stack_direction=0
 else
 cat > conftest.$ac_ext <<EOF
-#line 1640 "configure"
+#line 1636 "configure"
 #include "confdefs.h"
 find_stack_direction ()
 {
@@ -1948,5 +1944,6 @@ EOF
 chmod +x $CONFIG_STATUS
 rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS
+
 
 
