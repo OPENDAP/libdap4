@@ -4,7 +4,10 @@
 // jhrg 9/21/94
 
 // $Log: util.cc,v $
-// Revision 1.10  1995/05/10 13:45:46  jimg
+// Revision 1.11  1995/05/10 15:34:09  jimg
+// Failed to change `config.h' to `config_dap.h' in these files.
+//
+// Revision 1.10  1995/05/10  13:45:46  jimg
 // Changed the name of the configuration header file from `config.h' to
 // `config_dap.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
@@ -49,7 +52,7 @@
 // Added debugging code.
 //
 
-static char rcsid[]={"$Id: util.cc,v 1.10 1995/05/10 13:45:46 jimg Exp $"};
+static char rcsid[]={"$Id: util.cc,v 1.11 1995/05/10 15:34:09 jimg Exp $"};
 
 #include "config_dap.h"
 
@@ -71,7 +74,7 @@ static char rcsid[]={"$Id: util.cc,v 1.10 1995/05/10 13:45:46 jimg Exp $"};
 #include "Str.h"
 #include "Url.h"
 #include "errmsg.h"
-#include "config.h"
+#include "config_dap.h"
 #include "debug.h"
 
 #ifdef TRACE_NEW

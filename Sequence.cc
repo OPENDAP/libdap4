@@ -4,7 +4,10 @@
 // jhrg 9/14/94
 
 // $Log: Sequence.cc,v $
-// Revision 1.11  1995/05/10 13:45:27  jimg
+// Revision 1.12  1995/05/10 15:34:03  jimg
+// Failed to change `config.h' to `config_dap.h' in these files.
+//
+// Revision 1.11  1995/05/10  13:45:27  jimg
 // Changed the name of the configuration header file from `config.h' to
 // `config_dap.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
@@ -81,7 +84,7 @@
 #pragma implementation
 #endif
 
-#include "config.h"
+#include "config_dap.h"
 
 #include <assert.h>
 

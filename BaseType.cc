@@ -4,7 +4,10 @@
 // jhrg 9/6/94
 
 // $Log: BaseType.cc,v $
-// Revision 1.13  1995/05/10 13:45:06  jimg
+// Revision 1.14  1995/05/10 15:33:54  jimg
+// Failed to change `config.h' to `config_dap.h' in these files.
+//
+// Revision 1.13  1995/05/10  13:45:06  jimg
 // Changed the name of the configuration header file from `config.h' to
 // `config_dap.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
@@ -83,7 +86,7 @@
 #pragma implementation
 #endif
 
-#include "config.h"
+#include "config_dap.h"
 
 #include <stdio.h>		// for stdin and stdout
 

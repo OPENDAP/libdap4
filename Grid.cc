@@ -4,7 +4,10 @@
 // jhrg 9/15/94
 
 // $Log: Grid.cc,v $
-// Revision 1.10  1995/05/10 13:45:18  jimg
+// Revision 1.11  1995/05/10 15:34:00  jimg
+// Failed to change `config.h' to `config_dap.h' in these files.
+//
+// Revision 1.10  1995/05/10  13:45:18  jimg
 // Changed the name of the configuration header file from `config.h' to
 // `config_dap.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
@@ -72,7 +75,7 @@
 // Added sanity checking on the variable list (is it empty?).
 //
 
-#include "config.h"
+#include "config_dap.h"
 
 #include <assert.h>
 

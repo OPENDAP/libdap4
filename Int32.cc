@@ -4,7 +4,10 @@
 // jhrg 9/7/94
 
 // $Log: Int32.cc,v $
-// Revision 1.12  1995/05/10 13:45:21  jimg
+// Revision 1.13  1995/05/10 15:34:02  jimg
+// Failed to change `config.h' to `config_dap.h' in these files.
+//
+// Revision 1.12  1995/05/10  13:45:21  jimg
 // Changed the name of the configuration header file from `config.h' to
 // `config_dap.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
@@ -87,7 +90,7 @@
 #pragma implementation
 #endif
 
-#include "config.h"
+#include "config_dap.h"
 
 #include <assert.h>
 
