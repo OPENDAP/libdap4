@@ -6,11 +6,16 @@
 //	jhrg,jimg	James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: getdap.cc,v $
+// Revision 1.2  1996/05/28 15:49:55  jimg
+// Removed code that read from the stream after the das/dds parser built the
+// internal object (since there was nothing in that stream after the parse
+// geturl would always crash).
+//
 // Revision 1.1  1996/05/22 23:34:21  jimg
 // First version. Built to test the new WWW code in the class Connect.
 //
 
-static char rcsid[]={"$Id: getdap.cc,v 1.1 1996/05/22 23:34:21 jimg Exp $"};
+static char rcsid[]={"$Id: getdap.cc,v 1.2 1996/05/28 15:49:55 jimg Exp $"};
 
 #include <stdio.h>
 
@@ -121,10 +126,7 @@ main(int argc, char * argv[])
 		    exit(1);
 		if (verbose)
 		    cerr << "DAS:" << endl;
-		FILE *fp = url.output();
-		if (!read_data(fp))
-		    exit(1);
-		fclose(fp);
+		url.das().print();
 	    }
 	}
 
@@ -134,10 +136,7 @@ main(int argc, char * argv[])
 		    exit(1);
 		if (verbose)
 		    cerr << "DDS:" << endl;
-		FILE *fp = url.output();
-		if (!read_data(fp))
-		    exit(1);
-		fclose(fp);
+		url.dds().print();
 	    }
 	}
 
@@ -154,6 +153,3 @@ main(int argc, char * argv[])
 	}	    
     }
 }
-
-#ifdef NEVER
-#endif
