@@ -4,7 +4,11 @@
 // jhrg 9/13/94
 
 // $Log: Array.cc,v $
-// Revision 1.17  1995/03/16 17:22:58  jimg
+// Revision 1.18  1995/04/28 19:53:46  reza
+// First try at adding constraints capability.
+// Enforce a new size calculated from constraint expression.
+//
+// Revision 1.17  1995/03/16  17:22:58  jimg
 // Added include of config.h before all other includes.
 // Fixed deletes of buffers in read_val().
 // Added initialization of _buf in ctor.
@@ -140,6 +144,7 @@ Array::_duplicate(const Array *a)
 Array::Array(const String &n, BaseType *v)
      : BaseType( n, "Array", xdr_array), _var(v), _buf(0)
 {
+_const_length = -1;
 }
 
 // FIXME: add copy stuff for BaseType * Vec
@@ -203,6 +208,14 @@ Array::add_var(BaseType *v, Part p)
 	 << v->name() << " " << v->type() << ")" << endl);
 }
 
+// set the length (number of elements)after constraint evaluation
+
+void
+Array::const_length(long const_len)
+{
+  _const_length = const_len;
+}
+
 // Returns: The number of bytes required to store the array's value.
 
 unsigned int
@@ -231,9 +244,13 @@ Array::length()
     assert(_var);
 
     unsigned int sz = 1;
-    for (Pix p = first_dim(); p; next_dim(p)) 
+    if(_const_length >= 0) {
+      sz = (unsigned int) _const_length;
+    }
+    else {
+      for (Pix p = first_dim(); p; next_dim(p)) 
 	sz *= dimension_size(p); 
-
+    }
     return sz;
 }
 

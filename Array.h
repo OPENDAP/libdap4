@@ -7,11 +7,15 @@
 // jhrg 9/6/94
 
 /* $Log: Array.h,v $
-/* Revision 1.15  1995/03/16 17:23:00  jimg
-/* Added include of config.h before all other includes.
-/* Fixed deletes of buffers in read_val().
-/* Added initialization of _buf in ctor.
+/* Revision 1.16  1995/04/28 19:53:45  reza
+/* First try at adding constraints capability.
+/* Enforce a new size calculated from constraint expression.
 /*
+ * Revision 1.15  1995/03/16  17:23:00  jimg
+ * Added include of config.h before all other includes.
+ * Fixed deletes of buffers in read_val().
+ * Added initialization of _buf in ctor.
+ *
  * Revision 1.14  1995/03/04  14:34:53  jimg
  * Major modifications to the transmission and representation of values:
  * 	Added card() virtual function which is true for classes that
@@ -121,6 +125,7 @@ private:
     SLList<dimension> _shape;	// list of dimensions (i.e., the shape)
 
     void _duplicate(const Array *a);
+    long _const_length; // Length after constraint 
 
 #ifdef NEVER
 protected:
@@ -140,6 +145,7 @@ public:
     virtual unsigned int size(); // bytes in the pointer to the array
     virtual unsigned int width();
     unsigned int length();	// how many elements are there in the array
+    void const_length(long size);
 
     virtual bool serialize(bool flush = false);
     virtual bool deserialize(bool reuse = false);
