@@ -4,7 +4,13 @@
 // jhrg 1/12/95
 
 // $Log: TestInt32.cc,v $
-// Revision 1.2  1995/01/19 21:58:57  jimg
+// Revision 1.3  1995/02/10 02:33:44  jimg
+// Modified Test<class>.h and .cc so that they used to new definitions of
+// read_val().
+// Modified the classes read() so that they are more in line with the
+// class library's intended use in a real subclass set.
+//
+// Revision 1.2  1995/01/19  21:58:57  jimg
 // Added read_val from dummy_read.cc to the sample set of sub-class
 // implementations.
 // Changed the declaration of readVal in BaseType so that it names the
@@ -44,14 +50,7 @@ TestInt32::ptr_duplicate()
 bool
 TestInt32::read(String dataset, String var_name, String constraint)
 {
-    buf = 123456789;
+    _buf = 123456789;
     
     return true;
 }
-
-bool
-TestInt32::read_val(void *stuff)
-{
-    return true;
-}
-

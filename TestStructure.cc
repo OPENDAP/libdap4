@@ -4,7 +4,13 @@
 // jhrg 1/12/95
 
 // $Log: TestStructure.cc,v $
-// Revision 1.2  1995/01/19 21:59:05  jimg
+// Revision 1.3  1995/02/10 02:33:48  jimg
+// Modified Test<class>.h and .cc so that they used to new definitions of
+// read_val().
+// Modified the classes read() so that they are more in line with the
+// class library's intended use in a real subclass set.
+//
+// Revision 1.2  1995/01/19  21:59:05  jimg
 // Added read_val from dummy_read.cc to the sample set of sub-class
 // implementations.
 // Changed the declaration of readVal in BaseType so that it names the
@@ -45,14 +51,23 @@ TestStructure::~TestStructure()
 {
 }
 
+// For this `Test' class, run the read mfunc for each of variables which
+// comprise the structure. 
+//
+// To use this mfunc you must make sure that the instnace of TestStructure
+// actually has fields defined (using add_var()).
+//
+// NB: In general it won't work to just pass the constraint expression down
+// to the variable's read mfunc; you will have to parse that c expr and send
+// only the relavent parts.
+
 bool
 TestStructure::read(String dataset, String var_name, String constraint)
 {
-}
+    for (Pix p = first_var(); p; next_var(p)) {
+	if (!var(p)->read(dataset, var(p)->get_var_name(), constraint))
+	    return false;
+    }
 
-bool
-TestStructure::read_val(void *stuff)
-{
     return true;
 }
-

@@ -4,7 +4,13 @@
 // jhrg 1/12/95
 
 // $Log: TestSequence.cc,v $
-// Revision 1.2  1995/01/19 21:59:00  jimg
+// Revision 1.3  1995/02/10 02:33:46  jimg
+// Modified Test<class>.h and .cc so that they used to new definitions of
+// read_val().
+// Modified the classes read() so that they are more in line with the
+// class library's intended use in a real subclass set.
+//
+// Revision 1.2  1995/01/19  21:59:00  jimg
 // Added read_val from dummy_read.cc to the sample set of sub-class
 // implementations.
 // Changed the declaration of readVal in BaseType so that it names the
@@ -53,10 +59,3 @@ bool
 TestSequence::read(String dataset, String var_name, String constraint)
 {
 }
-
-bool
-TestSequence::read_val(void *stuff)
-{
-    return true;
-}
-

@@ -4,7 +4,13 @@
 // jhrg 1/12/95
 
 // $Log: TestStr.cc,v $
-// Revision 1.2  1995/01/19 21:59:03  jimg
+// Revision 1.3  1995/02/10 02:33:47  jimg
+// Modified Test<class>.h and .cc so that they used to new definitions of
+// read_val().
+// Modified the classes read() so that they are more in line with the
+// class library's intended use in a real subclass set.
+//
+// Revision 1.2  1995/01/19  21:59:03  jimg
 // Added read_val from dummy_read.cc to the sample set of sub-class
 // implementations.
 // Changed the declaration of readVal in BaseType so that it names the
@@ -22,6 +28,8 @@
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#include <string.h>
 
 #include "TestStr.h"
 
@@ -46,20 +54,7 @@ TestStr::read(String dataset, String var_name, String constraint)
 {
     const char str_test[]={"Silly test string: one, two, ..."};
 
-    if (buf) {			// ctor sets BUF to 0
-	free(buf);
-	buf = 0;
-    }
-
-    buf = (char *)malloc(strlen(str_test)+1);
-    strcpy(buf, str_test);
+    (void) store_val(str_test);
 
     return true;
 }
-
-bool
-TestStr::read_val(void *stuff)
-{
-    return true;
-}
-
