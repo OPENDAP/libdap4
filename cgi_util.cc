@@ -11,6 +11,9 @@
 // ReZa 9/30/94 
 
 // $Log: cgi_util.cc,v $
+// Revision 1.30  1998/02/19 19:42:34  jimg
+// Added do_data_transfer() back in since the jgofs servers use it.
+//
 // Revision 1.29  1998/02/11 22:12:45  jimg
 // Changed x_gzip to deflate. See Connect.cc/.h
 // Removed old code.
@@ -140,7 +143,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.29 1998/02/11 22:12:45 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: cgi_util.cc,v 1.30 1998/02/19 19:42:34 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -204,6 +207,35 @@ do_version(const String &script_ver, const String &dataset_ver)
 
     if (dataset_ver != "")
 	cout << "Dataset version: " << dataset_ver << endl;
+
+    return true;
+}
+
+// This function has been superseded by the DODSFilter::send_data() mfunc.
+// 02/13/98 jhrg
+bool
+do_data_transfer(bool compression, FILE *data_stream, DDS &dds,
+		 const String &dataset, const String &constraint)
+{
+    if (compression) {
+	int childpid;
+	FILE *data_sink = compressor(data_stream, childpid);
+	if (!dds.send(dataset, constraint, data_sink, true)) {
+	    ErrMsgT("Could not send compressed data");
+	    return false;
+	}
+	fclose(data_sink);
+	int pid;
+	while ((pid = waitpid(childpid, 0, 0)) > 0) {
+	    DBG(cerr << "pid: " << pid << endl);
+	}
+    }
+    else {
+	if (!dds.send(dataset, constraint, data_stream, false)) {
+	    ErrMsgT("Could not send data");
+	    return false;
+	}
+    }
 
     return true;
 }
