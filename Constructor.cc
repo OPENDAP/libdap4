@@ -55,7 +55,19 @@ Constructor::operator=(const Constructor &rhs)
     return *this;
 }
 
+bool
+Constructor::is_linear()
+{
+    return false;
+}
+
 // $Log: Constructor.cc,v $
+// Revision 1.3  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.1.2.2  2001/09/25 20:35:28  jimg
+// Added a default definition for is_linear().
+//
 // Revision 1.2  2001/06/15 23:49:01  jimg
 // Merged with release-3-2-4.
 //

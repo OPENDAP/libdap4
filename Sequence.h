@@ -38,6 +38,7 @@
 
 #endif
 
+#include <vector>
 #include <SLList.h>
 
 #ifndef _basetype_h
@@ -52,6 +53,9 @@
 #include "trace_new.h"
 #endif
 
+/** The type BaseTypeRow is used to store single rows of values in an
+    instance of Sequence. Values are stored in instances of BaseType. */
+typedef vector<BaseType *> BaseTypeRow;
 
 /** This is the interface for the class Sequence. A sequence contains
     a single set of variables, all at the same lexical level just like
@@ -116,27 +120,21 @@
     ...        ..     ...
     \end{verbatim}
 
-    Internally, the Sequence is represented by a singly-linked list.
-    The members of this list are the members of a single Sequence
-    instance: one element in the series.  This includes the nested
-    Sequences, as in the above example.  The list does {\it not}
-    contain all the elements of the Sequence.  You can think of it as
-    containing a single row.
+    Internally, the Sequence is represented by a vector of vectors. The
+    members of the outer vector are the members of the Sequence. This
+    includes the nested Sequences, as in the above example.
 
-    Each Sequence also carries a ``level'' number.  This can be used
-    to good effect with some data access APIs (such as JGOFS) to
-    record the level of nested Sequences.  The top-level Sequence is
-    Level 0, and any Sequences it contains would be Level 1.  Any
-    Sequences contained by those Level 1 Sequences would be at Level
-    2, and so on.  The class contains read and set functions for this
-    datum. 
+    NB: Note that in the past this class had a different behavior. It held
+    only one row at a time and the deserialize(...) method had to be called
+    from within a loop. This is \emph{no longer true}. Now the
+    deserailize(...) method should be called once and will read the entire
+    sequence's values frm the server. All the values are now stored in an
+    instance of Sequence, not just a single row's.
 
     Because the length of a Sequence is indeterminate, there are
     changes to the behavior of the functions to read this class of
-    data.  The #read()# function for a Sequence is designed to be
-    called repeatedly, each time returning the next item in the
-    Sequence. Similarly, the #deserialize()# function is here meant to
-    be called repeatedly until the end of the Sequence is reached.
+    data.  The #read()# function for Sequence must be written so that
+    successive calls return values for successive rows of the Sequence.
 
     Similar to a C structure, you refer to members of Sequence
     elements with a ``.'' notation.  For example, if the Sequence has
@@ -148,13 +146,17 @@
 
 class Sequence: public Constructor {
 private:
-    // Linked list of variables in this sequence.
+    // Linked list of templates for the variables in this sequence.
     SLList<BaseType *> _vars;
 
-#if 0
+    // This holds the values read off the wire. Values are stored in
+    // instances of BaseType objects.
+    vector<BaseTypeRow *> d_values;
+
     // Level number in a multilevel sequence.
     int _level;			
 
+#if 0
     // Was there an error reading the sequence?
     bool _seq_read_error;
 
@@ -167,11 +169,11 @@ private:
     int d_row_number;
 
     // If a client asks for certain rows of a sequence using the bracket
-    // notation (#[<start>:<stride>:<stop>]#) primarily intended for arrays and
-    // grids, record that information in the next three members. This
+    // notation (#[<start>:<stride>:<stop>]#) primarily intended for arrays
+    // and grids, record that information in the next three members. This
     // information can be used by the translation software. s.a. the accessor
-    // and mutator methods for these members. Values of -1 indicate that these
-    // have not yet been set.
+    // and mutator methods for these members. Values of -1 indicate that
+    // these have not yet been set.
     int d_starting_row_number;
     int d_row_stride;
     int d_ending_row_number;
@@ -184,13 +186,6 @@ private:
     BaseType *exact_match(const string &name);
 
     bool is_end_of_rows(int i);
-
-    // True if this sequence has another sequence as a child.
-    bool d_super_sequence;
-    void set_super_sequence(bool state = true);
-
-    bool d_eos_found;		// True if the end of sequence was found.
-    void set_eos_found(bool state = true);
 
 protected:
     void write_end_of_sequence(XDR *sink);
@@ -207,38 +202,25 @@ public:
 	@param n A string containing the name of the variable to be
 	created. 
 
-	@memo The Sequence constructor.
-    */
+	@memo The Sequence constructor. */
     Sequence(const string &n = "");
+
     /** The Sequence copy constructor. */
     Sequence(const Sequence &rhs);
+
     virtual ~Sequence();
 
     Sequence &operator=(const Sequence &rhs);
+
     virtual BaseType *ptr_duplicate() = 0;
 
     virtual string toString();
 
     virtual int element_count(bool leaves = false);
+    virtual bool is_linear();
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
-
-    /** Does this squence contain other sequences?
-
-	@return True if a descendent of this variable is a Sequence. */
-    bool is_super_sequence();
-
-    /** Has the EOS for this sequence been read?
-
-	@return True if the EOS for this sequence has been read. */
-    bool is_eos_found();
-
-    /** Have the EOS markers for all child sequences been read?
-
-	@return True if all the child sequence's EOS markers have been read.
-    */ 
-    bool is_child_eos_found();
 
     virtual unsigned int width();
 
@@ -265,13 +247,23 @@ public:
     /** Returns the level number. 
 	@deprecated */
     virtual int level();
+    /** The number of rows in a sequence that has just been deserialized.
+	This method can be used along with row\_value(...) to read sucessive
+	rows from the Sequence object.
 
-    /** Read row number #row# into the Sequence. The values of the row are
+	NB: Used on the client side.
+
+	@return The number of rows in the sequence, once read.*/
+    int number_of_rows();
+
+    /** Read row number {\it row} into the Sequence. The values of the row are
 	obtained using the members of the sequence. This method calls the
 	overloaded Sequence::read() method to read each row. The rows are
-	counted using by the object (see get_row_number()). If a selection
+	counted by the object (see get\_row\_number()). If a selection
 	expression has been supplied, rows are counted only if they satisfy
 	that expression.
+
+	Used on the server side.
 
 	NB: The first row is row number zero. A Sequence with 100 rows will
 	have row numbers 0 to 99.
@@ -283,34 +275,30 @@ public:
 	@param ce_eval If True, evaluate any CE, otherwise do not.
 	@return True if there are more rows to read, False if the EOF was
 	found. */
-    virtual bool get_row(int row, const string &dataset, DDS &dds, 
+    virtual bool read_row(int row, const string &dataset, DDS &dds, 
 			 bool ce_eval = true);
 
     virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true);
 
-    /** Deserialize (read from the network) one instance of the current
-	sequence. The information read is stored in the sequence instance
-	variables. 
+    /** Deserialize (read from the network) the entire Sequence.
 
-	Throws an InternalErr to indicate that data could not be read; Error in
-	the case of a user error.
+	This method used to read a single row at a time. Now the entire
+	sequence is read at once. The method used to return True to indicate
+	that more data needed to be deserialized and False when the sequence
+	was completely read. Now it simply returns true. This might seem odd,
+	but it is because all of the other implementation of this method
+	return true when the XDR readers succeed and False otherwise. Making
+	this method return true breaks existing software the least.
 
-	@memo Read one Sequence instance from the network. 
-
-	@return TRUE if more instances remain to be read, FALSE if this
-	is the last instance. Note that this method signals errors with an
-	exceptio. */
+	@param source An XDR stream.
+	@param dds A DataDDS from which to read.
+	@param reuse. Passed to child objects when they are deserialized.
+	@exception Error if a sequence stream marker cannot be read.
+	@exception InternalErr if the #dds# param is not a DataDDS.
+	@return True. This method returns True always. The return value
+	used to have meaning. */
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false);
-
-    /** Rows in a Sequence are numbered 0 to N for a Sequence with N+1 rows.
-	This method returns the number of the current row (the row that has
-	just been deserialized). If deserialize() has not yet been called, this
-	method returns -1.
-
-	@memo Get the current row number of the Sequence.
-	@return The current row number f the Sequence. */
-    int get_row_number();
 
     /** Return the starting row number if the sequence was constrained using
 	row numbers (instead of, or in addition to, a relational constraint).
@@ -327,8 +315,8 @@ public:
 
     /** Return the row stride number if the sequence was constrained using
 	row numbers (instead of, or in addition to, a relational constraint).
-	If a relational constraint was also given, the row stride is applied to
-	the sequence \emph{after} applying the relational constraint.
+	If a relational constraint was also given, the row stride is applied
+	to the sequence \emph{after} applying the relational constraint.
 
 	If the bracket notation was not used to constrain this sequence, this
 	method returns -1.
@@ -337,11 +325,11 @@ public:
 	@return The row stride. */
     int get_row_stride();
 
-    /** Return the ending row number if the sequence was constrained using row
-	numbers (instead of, or in addition to, a relational constraint). If a
-	relational constraint was also given, the row number corresponds to the
-	row number of the sequence \emph{after} applying the relational
-	constraint.
+    /** Return the ending row number if the sequence was constrained using
+	row numbers (instead of, or in addition to, a relational constraint).
+	If a relational constraint was also given, the row number corresponds
+	to the row number of the sequence \emph{after} applying the
+	relational constraint.
 
 	If the bracket notation was not used to constrain this sequence, this
 	method returns -1.
@@ -359,28 +347,36 @@ public:
 	@param stride The stride. A stride of two skips every other row. */
     void set_row_number_constraint(int start, int stop, int stride = 1);
 
-    /** Was there an error reading the sequence?  This function is
-	called after a call to #deserialize()# returns FALSE, implying
-	{\it either} an error condition or the end of the Sequence.  The
-	return from this function clears up the difference. 
-
-	@memo Check for error or end of Sequence.
-	@return This function will return TRUE if either the xdr
-	function returned an error or the end of instance/sequence
-	marker could not be read. If FALSE, the read error indicates the
-	end of the sequence. */
-    bool seq_read_error();
-
     /** Reads a single instance of a Sequence.
 	@return TRUE on success, FALSE on failure, {\it or} the end of
 	the Sequence. */
     virtual bool read(const string &dataset) = 0;
 
+    // Move me!
     virtual unsigned int val2buf(void *buf, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
     virtual BaseType *var(const string &name, bool exact_match = true);
     virtual BaseType *var(const string &name, btp_stack &s);
+
+    /** Get the BaseType pointer to the named variable of a given row. 
+	@param row Read from {\it row} in the sequence.
+	@param name Return {\it name} from {\it row}.
+	@return A BaseType which holds the variable and its value. 
+	@see number_of_rows */
+    BaseType *var_value(size_t row, const string &name);
+
+    /** Get the BaseType pointer to the $i^{th}$ variable of {\it row}.
+	@param row Read from {\it row} in the sequence.
+	@param i Return the $i^{th}$ variable from {\it row}.
+	@return A BaseType which holds the variable and its value.
+	@see number_of_rows */
+    BaseType *var_value(size_t row, size_t i);
+
+    /** Get a whole row from the sequence. 
+	@param row Get {\it row} from the sequence.
+	@return A BaseTypeRow object (vector<BaseType *>). */
+    BaseTypeRow *row_value(size_t row);
 
     /** Adds a variable to the Sequence.  Remember that if you wish to
 	add a member to a nested Sequence, you must use the #add_var()#
@@ -393,9 +389,11 @@ public:
 	the Sequence represents.  It is not the first row of the table. 
     */
     Pix first_var();
+
     /** Increments the Sequence instance.  This returns a pointer to the
 	next ``column'' in the Sequence, not the next row. */
     void next_var(Pix &p);
+
     /** Returns a pointer to a Sequence member.  This may be another
 	Sequence. */
     BaseType *var(Pix p);
@@ -405,10 +403,23 @@ public:
 			    bool constraint_info = false,
 			    bool constrained = false);
 
-    /** Prints the first instance of the Sequence. 
+    /** Print the $i^{th}$ row of the sequence. This hopes in writing
+	code that spits out sequences for testing. Sequences are now read all
+	at once, this method does not change that. */
+    virtual void print_one_row(ostream &os, int row, string space,
+			       bool print_row_num = false);
 
-	@see Sequence::print_all_vals
-    */
+    /** Special output method for sequences. Prints each row on its pwn line
+	with a row number. Uses print\_one\_row with #print_row_num# True. */
+    virtual void print_val_by_rows(ostream &os, string space = "",
+				   bool print_decl_p = true,
+				   bool print_row_numners = true);
+
+    /** Print the values held by the sequence. This is used mostly for
+	debugging.
+	@param os Where should the text go?
+	@param space Leading spaces, used by formatting code.
+	@param print_decl_p If True, print the variable's declaration. */
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
 
@@ -417,6 +428,7 @@ public:
 	on the client side of a DODS connection, and the source of the
 	Sequence data to be printed is specified with an XDR pointer. 
 
+	@deprecated
 	@memo Print the entire sequence.
 	@param os The output stream on which to print the Sequence.
 	@param src The external source from which the data is to come.
@@ -437,6 +449,26 @@ public:
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.47  2001/09/28 17:50:07  jimg
+ * Merged with 3.2.7.
+ *
+ * Revision 1.45.4.5  2001/09/26 23:25:42  jimg
+ * Returned the set_level() and level() methods to the class.
+ *
+ * Revision 1.45.4.4  2001/09/25 20:29:44  jimg
+ * Added is_linear().
+ *
+ * Revision 1.45.4.3  2001/09/07 00:38:35  jimg
+ * Sequence::deserialize(...) now reads all the sequence values at once.
+ * Its call semantics are the same as the other classes' versions. Values
+ * are stored in the Sequence object using a vector<BaseType *> for each
+ * row (those are themselves held in a vector). Three new accessor methods
+ * have been added to Sequence (row_value() and two versions of var_value()).
+ * BaseType::deserialize(...) now always returns true. This matches with the
+ * expectations of most client code (the seqeunce version returned false
+ * when it was done reading, but all the calls for sequences must be changed
+ * anyway). If an XDR error is found, deserialize throws InternalErr.
+ *
  * Revision 1.46  2001/06/15 23:49:02  jimg
  * Merged with release-3-2-4.
  *

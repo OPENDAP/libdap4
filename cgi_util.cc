@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.49 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.50 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,6 +33,7 @@ static char rcsid[] not_used = {"$Id: cgi_util.cc,v 1.49 2001/08/24 17:46:22 jim
 #include <string>
 
 #include "cgi_util.h"
+#include "debug.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -567,6 +568,12 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: cgi_util.cc,v $
+// Revision 1.50  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.47.4.8  2001/09/25 20:25:20  jimg
+// Added include of debug.h
+//
 // Revision 1.49  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

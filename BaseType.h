@@ -466,7 +466,8 @@ public:
 	that read() should be called again because there's more data to read,
 	and FALSE indicating there's no more data to read. Note that this
 	behavior is necessary to properly handle variables that contain
-	Sequences.
+	Sequences. WRONG! (9/5/2001 jhrg) Sequences now are read in one shot.
+	The return value of this method should always be false.
 
 	@param dataset A string naming the dataset from which the data is to
 	be read. The meaning of this string will vary among data APIs.
@@ -558,9 +559,9 @@ public:
     virtual bool serialize(const string &dataset, DDS &dds, XDR *sink,
 			   bool ce_eval = true) = 0; 
 
-    /** Receives data from the network connection identified by the {\it
-	source} parameter.  The data is put into the class data buffer
-	according to the input {\it dds}.  
+    /** Receives data from the network connection identified by the 
+	#source# parameter.  The data is put into the class data buffer
+	according to the input #dds#.  
 
 	This function is only used on the client side of the
 	DODS client/server connection.
@@ -579,9 +580,9 @@ public:
 	incoming data, and it is {\it not} reallocated.  If FALSE, new
 	storage is allocated.  If the internal buffer has not been
 	allocated at all, this argument has no effect.
-
-	@return The function returns TRUE for success, and FALSE
-	otherwise. 
+	@return Always returns TRUE.
+	@exception InternalErr when a problem reading from the XDR stream is
+	found.
 	@see DDS 
     */
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false) = 0;
@@ -739,6 +740,20 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.64  2001/09/28 17:50:07  jimg
+ * Merged with 3.2.7.
+ *
+ * Revision 1.61.4.6  2001/09/07 00:38:34  jimg
+ * Sequence::deserialize(...) now reads all the sequence values at once.
+ * Its call semantics are the same as the other classes' versions. Values
+ * are stored in the Sequence object using a vector<BaseType *> for each
+ * row (those are themselves held in a vector). Three new accessor methods
+ * have been added to Sequence (row_value() and two versions of var_value()).
+ * BaseType::deserialize(...) now always returns true. This matches with the
+ * expectations of most client code (the seqeunce version returned false
+ * when it was done reading, but all the calls for sequences must be changed
+ * anyway). If an XDR error is found, deserialize throws InternalErr.
+ *
  * Revision 1.63  2001/08/27 16:38:34  jimg
  * Merged with release-3-2-6
  *

@@ -11,8 +11,9 @@
 // 1/15/99 jhrg
 
 #include "config_dap.h"
+#define DODS_DEBUG 1
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.9 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.10 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <iostream>
 #include <vector>
@@ -36,7 +37,7 @@ using std::endl;
 int gse_parse(void *arg);
 void gse_restart(FILE *in);
 
-// Glue routines declared in expr.lex
+// Glue routines declared in gse.lex
 void gse_switch_to_buffer(void *new_buffer);
 void gse_delete_buffer(void * buffer);
 void *gse_string(const char *yy_str);
@@ -46,10 +47,8 @@ extract_string_argument(BaseType *arg)
 {
     if (arg->type() != dods_str_c)
 	throw Error(malformed_expr, 
-	      "The Projection function requires a DODS string-type argument.");
+		    "The function requires a DODS string-type argument.");
     
-    // Use String until conversion of String to string is complete. 9/3/98
-    // jhrg
     string *sp = 0;
     arg->buf2val((void **)&sp);
     string s = *sp;
@@ -178,81 +177,112 @@ func_nth(int argc, BaseType *argv[], DDS &)
     }
 }
 
+void
+parse_gse_expression(gse_arg *arg, BaseType *expr)
+{
+    gse_restart(0);		// Restart the scanner.
+    void *cls = gse_string(extract_string_argument(expr).c_str());
+    // gse_switch_to_buffer(cls); // Get set to scan the string.
+    bool status = gse_parse((void *)arg) == 0;
+    gse_delete_buffer(cls);
+    if (!status)
+	throw Error(malformed_expr, "Error parsing grid selection.");
+}
+
 // Assume the following arguments are sent to func_grid_select:
-// Grid name, 1 or more strings which contain relational expressions.
+// Grid name, 0 or more strings which contain relational expressions.
 
 void 
 func_grid_select(int argc, BaseType *argv[], DDS &dds)
 {
-	Pix p = NULL;
-	Pix q = NULL;
-
-    if (argc <= 1)
+    if (argc < 1)
 	throw Error(unknown_error, "Wrong number of arguments to grid()");
 
     Grid *grid = dynamic_cast<Grid*>(argv[0]);
+    if (!grid)
+	throw Error("The first argument to grid() must be a Grid variable!");
 
     // Mark this grid as part of the current projection.
     dds.mark(grid->name(), true);
 
-    // Now read the map vectors. In theory we could do this after the parse
-    // if the GSEClause used lazy evaluation (which should be the case) but
-    // that means this code would depend on the inner workings of GSEClause.
-    // Of course, maybe GSEClause should have the DDS and handle these reads
-    // itself when the information is really needed. 1/20/99 jhrg
-    for (p = grid->first_map_var(); p; grid->next_map_var(p)) {
-	Array *map = dynamic_cast<Array *>(grid->map_var(p));
-	if (!map->read_p()) {
-	    map->read(dds.filename());
-	}
-    }
-
+    // argv[1..n] holds strings; each are little expressions to be parsed.
     vector<GSEClause *> clauses;
+    gse_arg *arg = new gse_arg(grid);
     for (int i = 1; i < argc; ++i) {
-	gse_restart(0);
-	void *cls = gse_string(extract_string_argument(argv[i]).c_str());
-	gse_switch_to_buffer(cls);
-	gse_arg *arg = new gse_arg(grid);
-	bool status = gse_parse((void *)arg) == 0;
-	gse_delete_buffer(cls);
-	if (!status)
-	    throw Error(malformed_expr, "Error parsing grid selection.");
-
+	parse_gse_expression(arg, argv[i]);
 	clauses.push_back(arg->get_gsec());
     }
+    delete arg;
 
-    for (p = grid->first_map_var(); p; grid->next_map_var(p)) {
+    // In this loop we have to iterate over the map vectors and the grid
+    // dimensions at the same time and set the grid's array's constraint to
+    // match that of the map vectors. Maybe we need an interface in Grid to
+    // do this? 9/21/2001 jhrg
+    Pix p, grid_dim;
+    Array *grid_array = dynamic_cast<Array *>(grid->array_var());
+
+    for (p = grid->first_map_var(), grid_dim = grid_array->first_dim();
+	 p; 
+	 grid->next_map_var(p), grid_array->next_dim(grid_dim)) {
+	     
 	Array *map = dynamic_cast<Array *>(grid->map_var(p));
 	string map_name = map->name();
-	// Init start and stop to the whole vector.
-	// For each instance of map_name in the vector<GSEClause>
-	//     if clause-instance (CI) start >= current map start
-	//     map start = CI start, else error
-	//     Same for stop except use <=
-	q = map->first_dim();// a valid Grid Map is a vector.
+
+	Pix q = map->first_dim();// a valid Grid Map is a vector.
 	int start = map->dimension_start(q);
 	int stop = map->dimension_stop(q);
 
-	for (unsigned int i = 0; i < clauses.size(); ++i) {
-	    if (clauses[i]->get_map_name() == map_name) {
-		if (clauses[i]->get_start() >= start)
-		    start = clauses[i]->get_start();
+	vector<GSEClause*>::iterator cs_iter;
+	for (cs_iter = clauses.begin(); cs_iter != clauses.end(); cs_iter++) {
+	    GSEClause *gsec = *cs_iter;
+	    if (gsec->get_map_name() == map_name) {
+		if (gsec->get_start() >= start)
+		    start = gsec->get_start();
 		else
-		    throw Error(unknown_error,
-"Improper starting Grid selection value.");
-		if (clauses[i]->get_stop() >= stop)
-		    stop = clauses[i]->get_stop();
+		    throw InternalErr(__FILE__, __LINE__,
+			      "Improper starting Grid selection value; the value preceeds the starting index of the map vector.");
+
+		if (gsec->get_stop() <= stop)
+		    stop = gsec->get_stop();
 		else
-		    throw Error(unknown_error,
-"Improper ending Grid selection value.");
+		    throw InternalErr(__FILE__, __LINE__,
+			       "Improper ending Grid selection value; the index overran the end of the map vector");
+
+		if (start > stop) {
+		    string msg = "The selection range given does not correspond to any values of ";
+		    msg += gsec->get_map_name()
+			+ (string)".\nThe vector's values range from "
+			+ gsec->get_map_min_value()
+			+ (string)" to "
+			+ gsec->get_map_max_value()
+			+ (string)".";
+		    throw Error(unknown_error, msg);
+		}
+		// This map is constrained, set read_p so that during
+		// serialization new values will be read according to the
+		// constraint set here. 9/21/2001 jhrg
+		map->set_read_p(false);
 	    }
 	}		
-	
-	map->add_constraint(q, start, 1, stop);	// don't know about stride...
+	DBG(cerr << "Setting constraint on " << map->name() \
+	    << "[" << start << ":" << stop << "]" << endl);
+
+	// Stride is always one.
+	map->add_constraint(map->first_dim(), start, 1, stop);
+	grid_array->add_constraint(grid_dim, start, 1, stop);
     }
+    
+    // Make sure we reread the grid's array, too. 9/24/2001 jhrg
+    grid_array->set_read_p(false);
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.10  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.8.4.3  2001/09/25 20:26:53  jimg
+// Massive fixes to the grid() server side function.
+//
 // Revision 1.9  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

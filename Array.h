@@ -206,7 +206,8 @@ public:
       returns the start index only if the dimension is selected.  If
       the dimension is not selected, the function returns zero.  If it
       is FALSE, the function returns the start index whether or not
-      the dimension is constrained.
+      the dimension is constrained. **This is wrong! It makes no sense for a
+      dimension to `not be selected.' 9/20/2001 jhrg
       */
     int dimension_start(Pix p, bool constrained = false);
 
@@ -217,7 +218,7 @@ public:
       returns the stop index only if the dimension is selected.  If
       the dimension is not selected, the function returns zero.  If it
       is FALSE, the function returns the stop index whether or not
-      the dimension is constrained.
+      the dimension is constrained. See dimension_start! 9/20/2001 jhrg
       */
     int dimension_stop(Pix p, bool constrained = false);
 
@@ -251,6 +252,12 @@ public:
 
 /* 
  * $Log: Array.h,v $
+ * Revision 1.50  2001/09/28 17:50:07  jimg
+ * Merged with 3.2.7.
+ *
+ * Revision 1.48.4.2  2001/09/25 20:37:16  jimg
+ * Added to documentation strings.
+ *
  * Revision 1.49  2001/06/15 23:49:01  jimg
  * Merged with release-3-2-4.
  *

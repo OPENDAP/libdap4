@@ -68,20 +68,7 @@ Structure::Structure(const Structure &rhs) :Constructor(rhs)
 
 Structure::~Structure()
 {
-    // Jose Garcia
-    // It is not a good idea to throw exceptions from destructors.
-    // I am not sure why to check for _vars(p) being NULL at this 
-    // point in the game, in fact I believe that _vars should never
-    // be allowed to hold a NULL pointer in the first place, this 
-    // can be achieved by initializing correctly the list and then 
-    // the modifier methods such as add_var should get sure NEVER
-    // a NULL pointer becomes part of the list. For all the exposed
-    // above I rather leave the assert to get a core dump and see
-    // how a NULL pointer got the list in the first place!
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-#if 0
-	assert(_vars(p));
-#endif
 	delete _vars(p); _vars(p) = 0;
     }
 }
@@ -110,6 +97,20 @@ Structure::element_count(bool leaves)
 	    i += var(p)->element_count(leaves);
 	return i;
     }
+}
+
+bool 
+Structure::is_linear()
+{
+    bool linear = true;
+    for (Pix p = first_var(); linear && p; next_var(p)) {
+	if (var(p)->type() == dods_structure_c)
+	    linear = linear && dynamic_cast<Structure*>(var(p))->is_linear();
+	else 
+	    linear = linear && var(p)->is_simple_type();
+    }
+
+    return linear;
 }
 
 void
@@ -208,20 +209,11 @@ Structure::serialize(const string &dataset, DDS &dds, XDR *sink,
 bool
 Structure::deserialize(XDR *source, DDS *dds, bool reuse)
 {
-    bool status = true;
-
     for (Pix p = first_var(); p; next_var(p)) {
-        BaseType *v = var(p);
-	// Because sequences have multiple rows, bail out and let the caller
-	// deserialize as they read the data.
-	if (v->type() == dods_sequence_c)
-	  break;
-	status = v->deserialize(source, dds, reuse);
-	if (!status) 
-	  break;
+	var(p)->deserialize(source, dds, reuse);
     }
 
-    return status;
+    return true;
 }
 
 // This mfunc assumes that val contains values for all the elements of the
@@ -389,6 +381,9 @@ Structure::print_val(ostream &os, string space, bool print_decl_p)
 void
 Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool print_decl_p)
 {
+    print_val(os, space, print_decl_p);
+
+#if 0
     if (print_decl_p) {
 	print_decl(os, space, false);
 	os << " = ";
@@ -424,6 +419,7 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool pr
 
     if (print_decl_p)
 	os << ";" << endl;
+#endif
 }
 
 bool
@@ -451,6 +447,23 @@ Structure::check_semantics(string &msg, bool all)
 }
 
 // $Log: Structure.cc,v $
+// Revision 1.46  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.43.4.6  2001/09/25 20:28:54  jimg
+// Added is_linear().
+//
+// Revision 1.43.4.5  2001/09/07 00:38:35  jimg
+// Sequence::deserialize(...) now reads all the sequence values at once.
+// Its call semantics are the same as the other classes' versions. Values
+// are stored in the Sequence object using a vector<BaseType *> for each
+// row (those are themselves held in a vector). Three new accessor methods
+// have been added to Sequence (row_value() and two versions of var_value()).
+// BaseType::deserialize(...) now always returns true. This matches with the
+// expectations of most client code (the seqeunce version returned false
+// when it was done reading, but all the calls for sequences must be changed
+// anyway). If an XDR error is found, deserialize throws InternalErr.
+//
 // Revision 1.45  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

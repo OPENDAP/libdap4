@@ -12,7 +12,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.37 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.38 2001/09/28 17:50:07 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -400,7 +400,8 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 
 	status = (bool)xdr_int(source, (int *)&num);
 	if (!status)
-	    return status;
+	    throw InternalErr(__FILE__, __LINE__, 
+			      "Could not read the array length.");
 	    
 	set_length(num);	// set the length for this instance.
 
@@ -419,6 +420,10 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 				     DODS_MAX_ARRAY, _var->width(),
 				     (xdrproc_t)(_var->xdr_coder()));
 
+	if (!status)
+	    throw InternalErr(__FILE__, __LINE__,
+			      "Could not read packed array data.");
+
 	DBG(cerr << "Vector::deserialize: read " << num <<  " elements\n");
 
 	break;
@@ -432,25 +437,26 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
       case dods_grid_c:
 	status = (bool)xdr_int(source, (int *)&num);
 	if (!status)
-	    return status;
+	    throw InternalErr(__FILE__, __LINE__, 
+			      "Could not read the array length.");
 
 	vec_resize(num);
 	set_length(num);
 
-	for (i = 0; status && i < num; ++i)
-	    {
-		_vec[i] = _var->ptr_duplicate();
-		_vec[i]->deserialize(source, dds);
-	    }
+	for (i = 0; status && i < num; ++i) {
+	    _vec[i] = _var->ptr_duplicate();
+	    _vec[i]->deserialize(source, dds);
+	}
 
 	break;
+
       default:
-	cerr << "Vector::deserialize: Unknow type\n";
-	status = false;
+	throw InternalErr(__FILE__, __LINE__,
+			  "Vector::deserialize: Unknow type!");
 	break;
     }
 
-    return status;
+    return false;
 }
 
 // copy contents of VAL to the internal buffer (val to buf)
@@ -678,6 +684,20 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.38  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.35.4.5  2001/09/07 00:38:35  jimg
+// Sequence::deserialize(...) now reads all the sequence values at once.
+// Its call semantics are the same as the other classes' versions. Values
+// are stored in the Sequence object using a vector<BaseType *> for each
+// row (those are themselves held in a vector). Three new accessor methods
+// have been added to Sequence (row_value() and two versions of var_value()).
+// BaseType::deserialize(...) now always returns true. This matches with the
+// expectations of most client code (the seqeunce version returned false
+// when it was done reading, but all the calls for sequences must be changed
+// anyway). If an XDR error is found, deserialize throws InternalErr.
+//
 // Revision 1.37  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

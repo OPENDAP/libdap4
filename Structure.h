@@ -111,6 +111,7 @@ public:
     virtual BaseType *ptr_duplicate() = 0;
 
     virtual int element_count(bool leaves = false);
+    virtual bool is_linear();
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);
@@ -169,6 +170,12 @@ public:
 
 /* 
  * $Log: Structure.h,v $
+ * Revision 1.39  2001/09/28 17:50:07  jimg
+ * Merged with 3.2.7.
+ *
+ * Revision 1.37.4.2  2001/09/25 20:27:31  jimg
+ * Added is_linear().
+ *
  * Revision 1.38  2001/06/15 23:49:02  jimg
  * Merged with release-3-2-4.
  *

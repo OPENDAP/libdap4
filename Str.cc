@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.44 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.45 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <assert.h>
 #include <stdlib.h>
@@ -27,6 +27,7 @@ static char rcsid[] not_used = {"$Id: Str.cc,v 1.44 2001/08/24 17:46:22 jimg Exp
 #include "Operators.h"
 #include "util.h"
 #include "InternalErr.h"
+#include "debug.h"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -78,15 +79,6 @@ Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 
     DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
 
-    // Jose Garcia
-    // Since the read method is virtual and implemented outside
-    // libdap++ if we can not read the data that is the problem 
-    // of the user or of whoever wrote the surrogate library
-    // implemeting read therefore it is an internal error.
-#if 0
-    if (!read_p() && !read(dataset))
-	throw InternalErr(__FILE__, __LINE__, "Cannot read data.");
-#endif
     if (!read_p())
       read(dataset);
 
@@ -105,7 +97,10 @@ Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 bool
 Str::deserialize(XDR *source, DDS *, bool)
 {
-    return (xdr_str(source, _buf) != 0);
+    if (xdr_str(source, _buf) != 1)
+	throw InternalErr(__FILE__, __LINE__, "Could not read string data.");
+
+    return true;
 }
 
 // Copy information in the object's internal buffers into the memory pointed
@@ -204,6 +199,23 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.45  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.43.4.4  2001/09/25 20:29:17  jimg
+// Added include debug.h
+//
+// Revision 1.43.4.3  2001/09/07 00:38:35  jimg
+// Sequence::deserialize(...) now reads all the sequence values at once.
+// Its call semantics are the same as the other classes' versions. Values
+// are stored in the Sequence object using a vector<BaseType *> for each
+// row (those are themselves held in a vector). Three new accessor methods
+// have been added to Sequence (row_value() and two versions of var_value()).
+// BaseType::deserialize(...) now always returns true. This matches with the
+// expectations of most client code (the seqeunce version returned false
+// when it was done reading, but all the calls for sequences must be changed
+// anyway). If an XDR error is found, deserialize throws InternalErr.
+//
 // Revision 1.44  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

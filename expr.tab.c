@@ -28,7 +28,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.23 2001/08/27 16:49:11 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr.tab.c,v 1.24 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1360,13 +1360,15 @@ exprerror(const char *s, const char *s2)
 void
 no_such_ident(void *arg, const string &name, const string &word)
 {
-    no_such_ident(arg, name.c_str(), word.c_str());
+    string msg = "No such " + word + " in dataset";
+    exprerror(msg.c_str(), name);
+    //    no_such_ident(arg, name.c_str(), word.c_str());
 }
 
 void
 no_such_ident(void *arg, char *name, char *word)
 {
-    string msg = "No such " + (string)word + " in dataset:";
+    string msg = "No such " + (string)word + " in dataset";
     exprerror(msg.c_str(), name);
 }
 
@@ -1624,7 +1626,10 @@ process_array_indices(BaseType *variable, int_list_list *indices)
 			string("Too many values in index list for ")
 			+ a->name() + ".");
 	}
-	
+
+	DBG(cerr << "process_array_indices: Setting constraint on "\
+	    << a->name() << "[" << start << ":" << stop << "]" << endl);
+
 	a->add_constraint(r, start, stride, stop);
 
 	DBG(cerr << "Set Constraint: " << a->dimension_size(r, true) << endl);
@@ -1699,6 +1704,9 @@ process_grid_indices(BaseType *variable, int_list_list *indices)
 			string("Too many values in index list for ")
 			+ a->name() + ".");
 	}
+
+	DBG(cerr << "process_grid_indices: Setting constraint on "\
+	    << a->name() << "[" << start << ":" << stop << "]" << endl);
 
 	a->add_constraint(a->first_dim(), start, stride, stop);
 
@@ -1939,8 +1947,21 @@ get_proj_function(const DDS &table, const char *name)
 
 /*
  * $Log: expr.tab.c,v $
- * Revision 1.23  2001/08/27 16:49:11  jimg
- * Updated files generated from bison and flex.
+ * Revision 1.24  2001/09/28 17:50:07  jimg
+ * Merged with 3.2.7.
+ *
+ * Revision 1.39.4.5  2001/09/25 20:24:28  jimg
+ * Added some debugging stuff to process_array_indices (and _grid_) to help
+ * debug the grid() server function.
+ *
+ * Revision 1.39.4.4  2001/09/19 21:57:26  jimg
+ * Changed no_such_ident(void *, const string &, const string &) so that it
+ * calls exprerror(...) directly. The call to it's other overloaded version was
+ * not working and resulted in an infinite loop.
+ *
+ * Revision 1.39.4.3  2001/09/06 22:04:03  jimg
+ * Fixed the error message for `No such X in dataset.' I removed an extra
+ * colon (Ouch...).
  *
  * Revision 1.40  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6

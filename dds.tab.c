@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.33 2001/08/27 16:49:03 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: dds.tab.c,v 1.34 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1420,8 +1420,9 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 
 /* 
  * $Log: dds.tab.c,v $
- * Revision 1.33  2001/08/27 16:49:03  jimg
- * Updated files generated from bison and flex.
+ * Revision 1.34  2001/09/28 17:50:07  jimg
+ * Merged with 3.2.7.
+ *
  *
  * Revision 1.36  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6

@@ -15,7 +15,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Int32.cc,v 1.42 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Int32.cc,v 1.43 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <stdlib.h>
 #include <assert.h>
@@ -104,9 +104,10 @@ Int32::serialize(const string &dataset, DDS &dds, XDR *sink,
 bool
 Int32::deserialize(XDR *source, DDS *, bool)
 {
-    unsigned int num = XDR_INT32(source, &_buf);
-
-    return (num > 0);		/* make the return value a boolean */
+    if (!XDR_INT32(source, &_buf))
+	throw InternalErr(__FILE__, __LINE__,
+			  "Could not read 32-bit int data.");
+    return true;
 }
 
 unsigned int
@@ -206,6 +207,20 @@ Int32::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Int32.cc,v $
+// Revision 1.43  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.40.4.3  2001/09/07 00:38:35  jimg
+// Sequence::deserialize(...) now reads all the sequence values at once.
+// Its call semantics are the same as the other classes' versions. Values
+// are stored in the Sequence object using a vector<BaseType *> for each
+// row (those are themselves held in a vector). Three new accessor methods
+// have been added to Sequence (row_value() and two versions of var_value()).
+// BaseType::deserialize(...) now always returns true. This matches with the
+// expectations of most client code (the seqeunce version returned false
+// when it was done reading, but all the calls for sequences must be changed
+// anyway). If an XDR error is found, deserialize throws InternalErr.
+//
 // Revision 1.42  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

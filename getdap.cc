@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.57 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: getdap.cc,v 1.58 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -30,7 +30,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.57 2001/08/24 17:46:22 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.57 $";
+const char *version = "$Revision: 1.58 $";
 
 extern int keep_temps;		// defined in Connect.cc
 
@@ -124,58 +124,20 @@ process_data(Connect &url, DDS *dds, bool verbose = false,
 
       case dods_data: 
       default: {
-	  
 	  if (verbose)
 	      cerr << "Server version: " << url.server_version() << endl;
 
 	  cout << "The data:" << endl;
 
-	  bool sequence_found = false;
 	  for (Pix q = dds->first_var(); q; dds->next_var(q)) {
 	      BaseType *v = dds->var(q);
-	      switch (v->type()) {
-		  // Sequences present a special case because I let
-		  // their semantics get out of hand... jhrg 9/12/96
-		case dods_sequence_c: {
-		    Sequence *s = dynamic_cast<Sequence *>(v);
-		    // print_rows and the code here was added to test the row
-		    // number feature in Sequence. 8/15/2000 jhrg
-		    if (print_rows) {
-			s->print_decl(cout);
-			cout << " = {" << endl;
-
-			s->deserialize(url.source(), dds);
-			cout << s->get_row_number() << ": ";
-			s->print_val(cout, "", false);
-			cout << endl;
-			while (s->deserialize(url.source(), dds)) {
-			    cout << s->get_row_number() << ": ";
-			    s->print_val(cout, "", false);
-			    cout << endl;
-			}
-			cout << "};" << endl;
-		    }
-		    else
-			s->print_all_vals(cout, url.source(), dds);
-		    sequence_found = true;
-		    break;
-		}
-		case dods_structure_c: {
-		    Structure *s = dynamic_cast<Structure *>(v);
-		    s->print_all_vals(cout, url.source(), dds);
-		    break;
-		}
-		default:
-		  if (sequence_found && !v->deserialize(url.source(), dds)) {
-		      cerr << "Read failure." << endl;
-		      exit(1);
-		  }
+	      if (print_rows && v->type() == dods_sequence_c)
+		  dynamic_cast<Sequence*>(v)->print_val_by_rows(cout);
+	      else
 		  v->print_val(cout);
-		  break;
-	      }
 	  }
       }
-    
+
       cout << endl;
     }
 }
@@ -397,6 +359,20 @@ main(int argc, char * argv[])
 }
 
 // $Log: getdap.cc,v $
+// Revision 1.58  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.52.2.8  2001/09/07 00:38:35  jimg
+// Sequence::deserialize(...) now reads all the sequence values at once.
+// Its call semantics are the same as the other classes' versions. Values
+// are stored in the Sequence object using a vector<BaseType *> for each
+// row (those are themselves held in a vector). Three new accessor methods
+// have been added to Sequence (row_value() and two versions of var_value()).
+// BaseType::deserialize(...) now always returns true. This matches with the
+// expectations of most client code (the seqeunce version returned false
+// when it was done reading, but all the calls for sequences must be changed
+// anyway). If an XDR error is found, deserialize throws InternalErr.
+//
 // Revision 1.57  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

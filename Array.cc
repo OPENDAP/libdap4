@@ -35,13 +35,27 @@ Array::_duplicate(const Array &a)
     _shape = a._shape;
 }
 
+// The first method of calculating length works when only one dimension is
+// constrained and you want the others to appear in total. This is important
+// when selecting from grids since users may not select from all dimensions
+// in which case that means they want the whole thing. Array projection
+// should probably work this way too, but it doesn't. 9/21/2001 jhrg
 void
 Array::update_length(int size)
 {
+#if 1
+    int length = 1;
+    for (Pix p = _shape.first(); p; _shape.next(p))
+	length *= _shape(p).c_size > 0 ? _shape(p).c_size : 1;
+
+    set_length(length);
+#endif
+#if 0
     if (length() == -1)
 	set_length(size);
     else
 	set_length(length() * size);
+#endif
 }
 
 // Construct an instance of Array. The (BaseType *) is assumed to be
@@ -115,7 +129,7 @@ Array::reset_constraint()
 	dimension d = _shape(p);
 	
 	d.start = 0;
-	d.stop = d.size;
+	d.stop = d.size - 1;
 	d.stride = 1;
 	d.c_size = d.size;
 
@@ -423,6 +437,13 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.51  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.48.4.3  2001/09/25 20:39:15  jimg
+// Changed update_length() so that it's no longer necessary to call
+// clear_constraint before setting dimension constraints.
+//
 // Revision 1.50  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

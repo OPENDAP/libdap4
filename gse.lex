@@ -26,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.lex,v 1.5 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.lex,v 1.6 2001/09/28 17:50:07 jimg Exp $"};
 
 #define YY_DECL int gse_lex YY_PROTO(( void ))
 #define ID_MAX 256
@@ -58,6 +58,7 @@ SCAN_EXPONENT	(E|e)[-+]?[0-9]+
 SCAN_FLOAT	([-+]?{SCAN_MANTISA}{SCAN_EXPONENT}?)|({NAN})|({INF})
 
 SCAN_EQUAL	=
+SCAN_NOT_EQUAL	!=
 SCAN_GREATER	>
 SCAN_GREATER_EQL >=
 SCAN_LESS	<
@@ -73,6 +74,7 @@ NEVER		[^a-zA-Z0-9_/%.#:+\-,]
 {SCAN_FLOAT}	store_float64(); return SCAN_FLOAT;
 
 {SCAN_EQUAL}	store_op(SCAN_EQUAL); return SCAN_EQUAL;
+{SCAN_NOT_EQUAL} store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
 {SCAN_GREATER}	store_op(SCAN_GREATER); return SCAN_GREATER;
 {SCAN_GREATER_EQL} store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
 {SCAN_LESS}	store_op(SCAN_LESS); return SCAN_LESS;
@@ -104,11 +106,8 @@ gse_delete_buffer(void *buf)
     gse__delete_buffer((YY_BUFFER_STATE)buf);
 }
 
-// Note that since atoi() (or strtol()) does not care about signedness, this
-// will dump an unsigned value into a signed variable. However, if the value
-// is used in an unsigned context (i.e., with an operand that  is of unsigned
-// type) then the signed value can be cast back to unsigned without losing
-// information.
+// Note that the grid() CE funxtion only deals with numeric maps (8/28/2001
+// jhrg) and that all comparisons are done using doubles. 
 
 static void
 store_int32()
@@ -137,6 +136,12 @@ store_op(int op)
 
 /*
  * $Log: gse.lex,v $
+ * Revision 1.6  2001/09/28 17:50:07  jimg
+ * Merged with 3.2.7.
+ *
+ * Revision 1.4.4.3  2001/09/25 20:21:05  jimg
+ * Fixed EQUAL token. Added NOT EQUAL.
+ *
  * Revision 1.5  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *

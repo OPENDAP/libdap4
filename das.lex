@@ -42,7 +42,7 @@
 %{
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: das.lex,v 1.32 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: das.lex,v 1.33 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <string.h>
 #include <assert.h>
@@ -73,7 +73,7 @@ EXPONENT (E|e)[-+]?[0-9]+
 
 FLOAT	([-+]?{MANTISA}{EXPONENT}?)|({NAN})|({INF})
 
-STR 	[-+a-zA-Z0-9_./:%+\-()]+
+STR 	[-+a-zA-Z0-9_./:%+\\()]+
 
 ATTR 	attributes|Attributes|ATTRIBUTES
 
@@ -157,6 +157,12 @@ NEVER   [^a-zA-Z0-9_/%.#:+\\()\-{};,[\]]
 
 /*
  * $Log: das.lex,v $
+ * Revision 1.33  2001/09/28 17:50:07  jimg
+ * Merged with 3.2.7.
+ *
+ * Revision 1.30.4.4  2001/09/11 03:57:08  jimg
+ * Fixed STR regex.
+ *
  * Revision 1.32  2001/08/24 17:46:22  jimg
  * Resolved conflicts from the merge of release 3.2.6
  *

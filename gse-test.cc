@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.4 2000/09/22 02:17:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.5 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +27,7 @@ static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.4 2000/09/22 02:17:23 jimg
 
 #include <GetOpt.h>
 
+#include "dods-datatypes.h"
 #include "BaseType.h"
 #include "Grid.h"
 #include "DDS.h"
@@ -52,7 +53,7 @@ void *gse_string(const char *yy_str);
 
 extern int gse_debug;
 
-const string version = "$Revision: 1.4 $";
+const string version = "$Revision: 1.5 $";
 const string prompt = "gse-test: ";
 const string options = "sS:p:dv";
 const string usage = "gse-test [-s [-S string] -d -v [-p dds file]\n\
@@ -124,7 +125,7 @@ main(int argc, char *argv[])
     }
 }
 
-// Instead of reading the tokens from srdin, read them from a string.
+// Instead of reading the tokens from stdin, read them from a string.
 
 void
 test_gse_scanner(const char *str)
@@ -147,25 +148,31 @@ test_gse_scanner(bool show_prompt)
     int tok;
     while ((tok = gse_lex())) {
 	switch (tok) {
-	  case ID:
+	  case SCAN_ID:
 	    cout << "ID: " << gse_lval.id << endl;
 	    break;
-	  case INT:
+	  case SCAN_INT:
 	    cout << "INT: " << gse_lval.val << endl;
 	    break;
-	  case FLOAT:
+	  case SCAN_FLOAT:
 	    cout << "FLOAT: " << gse_lval.val << endl;
 	    break;
-	  case GREATER:
+	  case SCAN_EQUAL:
+	    cout << "EQUAL: " << gse_lval.op << endl;
+	    break;
+	  case SCAN_NOT_EQUAL:
+	    cout << "NOT_EQUAL: " << gse_lval.op << endl;
+	    break;
+	  case SCAN_GREATER:
 	    cout << "GREATER: " << gse_lval.op << endl;
 	    break;
-	  case GREATER_EQL:
+	  case SCAN_GREATER_EQL:
 	    cout << "GREATER_EQL: " << gse_lval.op << endl;
 	    break;
-	  case LESS:
+	  case SCAN_LESS:
 	    cout << "LESS: " << gse_lval.op << endl;
 	    break;
-	  case LESS_EQL:
+	  case SCAN_LESS_EQL:
 	    cout << "LESS_EQL: " << gse_lval.op << endl;
 	    break;
 	  default:
@@ -281,6 +288,12 @@ test_parser(const string &dds_file)
 }
 
 // $Log: gse-test.cc,v $
+// Revision 1.5  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.4.4.1  2001/09/25 20:21:47  jimg
+// Added scanner cases for EQUAL and BOT EQUAL.
+//
 // Revision 1.4  2000/09/22 02:17:23  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

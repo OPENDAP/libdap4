@@ -43,8 +43,10 @@
 #include "RValue.h"
 #endif
 
+#if 0
 #ifndef _debug_h
 #include "debug.h"
+#endif
 #endif
 
 using std::cout;
@@ -509,6 +511,12 @@ public:
 };
 
 // $Log: DDS.h,v $
+// Revision 1.44  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.41.4.3  2001/09/25 20:33:26  jimg
+// Removed debug.h
+//
 // Revision 1.43  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

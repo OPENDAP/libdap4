@@ -11,7 +11,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.30 2001/08/24 17:46:22 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: expr-test.cc,v 1.31 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -316,41 +316,24 @@ test_scanner(bool show_prompt)
 void
 test_parser(DDS &table, const string &dds_name, const string &constraint)
 {
-    int status = true;
+    try {
+	read_table(table, dds_name, true);
 
-    read_table(table, dds_name, true);
-
-    if (constraint != "") {
-      try {
-	table.parse_constraint(constraint);
-      }
-      catch (Error &e) {
-	status = false;
-	e.display_message();
-      }
-    }
-    else {
-	exprrestart(stdin);
-
-	cout << prompt;
-
-	parser_arg arg(&table);
-
-	exprparse((void *)&arg);
-
-	if (!arg.status()) {// Check parse result
-	    if (arg.error())
-		arg.error()->display_message();
-	    status = false;
+	if (constraint != "") {
+	    table.parse_constraint(constraint);
 	}
-	else
-	    status = true;
-    }
+	else {
+	    exprrestart(stdin);
+	    cout << prompt;
+	    parser_arg arg(&table);
+	    exprparse((void *)&arg);
+	}
 
-    if (status)
-	cout << "Input parsed" << endl;
-    else
-	cout << "Input did not parse" << endl;
+	cout << "Input parsed" << endl;	// Parser throws on failure.
+    }
+    catch (Error &e) {
+	e.display_message();
+    }
 }
 
 // Read a DDS from stdin and build the cooresponding DDS. IF PRINT is true,
@@ -392,13 +375,12 @@ evaluate_dds(DDS &table, bool print_constrained)
 bool
 loopback_pipe(FILE **pout, FILE **pin)
 {
-// make a pipe
 #ifdef WIN32
-	int fd[2];
-	if (_pipe(fd, 1024, _O_BINARY) < 0) {
+    int fd[2];
+    if (_pipe(fd, 1024, _O_BINARY) < 0) {
 	cerr << "Could not open pipe" << endl;
 	return false;
-	}
+    }
 
     *pout = fdopen(fd[1], "w+b");
     *pin = fdopen(fd[0], "r+b");
@@ -574,44 +556,50 @@ constrained_trans(const string &dds_name, string dataset,
     // temporarily - the parser/scanner won't stop reading until an EOF is
     // found, this fixes that problem).
 
-    DataDDS dds("Test_data", "DODS/2.15"); // Must use DataDDS on receving end
-    FILE *dds_fp = move_dds(pin);
-    DBG(cerr << "Moved the DDS to a temp file" << endl);
-    parse_mime(dds_fp);
-    dds.parse(dds_fp);
-    fclose(dds_fp);
+    try {
+	DataDDS dds("Test_data", "DODS/3.2"); // Must use DataDDS on receving end
+	FILE *dds_fp = move_dds(pin);
+	DBG(cerr << "Moved the DDS to a temp file" << endl);
+	parse_mime(dds_fp);
+	dds.parse(dds_fp);
+	fclose(dds_fp);
 
-    XDR *source = new_xdrstdio(pin, XDR_DECODE);
+	XDR *source = new_xdrstdio(pin, XDR_DECODE);
 
-    // Back on the client side; deserialize the data *using the newly
-    // generated DDS* (the one sent with the data).
+	// Back on the client side; deserialize the data *using the newly
+	// generated DDS* (the one sent with the data).
 
-    cout << "The data:" << endl;
-    for (Pix q = dds.first_var(); q; dds.next_var(q)) {
-	// Currently the return status of deserialize can mean two things;
-	// and error (false) or no data for a variable matched the query
-	// (also false). This should be fixed in an upcomming release. jhrg
-	// 9/22/97. 
-	if (!dds.var(q)->deserialize(source, &dds))
-	    return false;
-	switch (dds.var(q)->type()) {
-	    // Sequences present a special case because I let
-	    // their semantics get out of hand... jhrg 9/12/96
-	  case dods_sequence_c:
-	    ((Sequence *)dds.var(q))->print_all_vals(cout, source, &dds);
-	    break;
-	  default:
+	cout << "The data:" << endl;
+	for (Pix q = dds.first_var(); q; dds.next_var(q)) {
+	    dds.var(q)->deserialize(source, &dds);
 	    dds.var(q)->print_val(cout);
-	    break;
 	}
+
+	delete_xdrstdio(source);
     }
-
-    delete_xdrstdio(source);
-
+    catch (Error &e) {
+	e.display_message();
+	return false;
+    }
+	
     return true;
 }
 
 // $Log: expr-test.cc,v $
+// Revision 1.31  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.29.4.3  2001/09/07 00:38:35  jimg
+// Sequence::deserialize(...) now reads all the sequence values at once.
+// Its call semantics are the same as the other classes' versions. Values
+// are stored in the Sequence object using a vector<BaseType *> for each
+// row (those are themselves held in a vector). Three new accessor methods
+// have been added to Sequence (row_value() and two versions of var_value()).
+// BaseType::deserialize(...) now always returns true. This matches with the
+// expectations of most client code (the seqeunce version returned false
+// when it was done reading, but all the calls for sequences must be changed
+// anyway). If an XDR error is found, deserialize throws InternalErr.
+//
 // Revision 1.30  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

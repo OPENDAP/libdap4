@@ -36,7 +36,8 @@ enum relop {
     dods_greater_equal_op,
     dods_less_op,
     dods_less_equal_op,
-    dods_equal_op
+    dods_equal_op,
+    dods_not_equal_op
 };
 
 /** Holds the results of parsing one of the Grid Selection Expression
@@ -49,21 +50,22 @@ enum relop {
 
 class GSEClause {
 private:
-    Array *_map;
+    Array *d_map;
     // _value1, 2 and _op1, 2 hold the first and second operators and
     // operands. For a clause like `var op value' only _op1 and _value1 have
     // valid information. For a clause like `value op var op value' the
     // second operator and operand are on _op2 and _value2. 1/19/99 jhrg
-    double _value1, _value2;
-    relop _op1, _op2;
-    int _start;
-    int _stop;
-    string _expression;		// Original expression before parsing
+    double d_value1, d_value2;
+    relop d_op1, d_op2;
+    int d_start;
+    int d_stop;
+
+    string d_map_min_value, d_map_max_value;
 
     GSEClause();		// Hidden default constructor.
 
-  GSEClause(const GSEClause &param); // Hide
-  GSEClause &operator=(GSEClause &rhs); // Hide
+    GSEClause(const GSEClause &param); // Hide
+    GSEClause &operator=(GSEClause &rhs); // Hide
 
 #ifdef WIN32
   //  MS Visual C++ 6.0 forces us to declare template member functions
@@ -72,43 +74,54 @@ private:
   //  that lets it be known what the type of T is.  There exists an non-
   //  inline version of this function also - if you edit one, you should
   //  probably edit the other also.
-  template<class T> T set_start_stop(T *t=0)
-  {
-    // Read the byte array, scan, set start and stop.
-    T *vals = 0;
-    _map->buf2val((void **)&vals);
+    template<class T> 
+    T 
+    set_start_stop(T *t=0)
+    {
+	// Read the byte array, scan, set start and stop.
+	T *vals = 0;
+	d_map->buf2val((void **)&vals);
 
-    int i = _start;
-    int end = _stop;
-    while(i <= end && !compare<T>(vals[i], _op1, _value1))
-      i++;
-    _start = i;
+	// Set the map's max and min values for use in error messages (it's a
+	// lot easier to do here, now, than later... 9/20/2001 jhrg)
+	set_map_min_max_value<T>(vals[d_start], vals[d_stop]);
 
-    i = end;
-    while(i >= 0 && !compare<T>(vals[i], _op1, _value1))
-      i--;
-    _stop = i;
+	int i = d_start;
+	int end = d_stop;
+	while(i <= end && !compare<T>(vals[i], d_op1, d_value1))
+	    i++;
 
-    // Every clause must have one operator but the second is optional since
-    // the more complex for of a clause is optional.
-    if (_op2 != dods_nop_op) {
-      int i = _start;
-      int end = _stop;
-      while(i <= end && !compare<T>(vals[i], _op2, _value2))
-	i++;
-      _start = i;
+	d_start = i;
 
-      i = end;
-      while(i >= 0 && !compare<T>(vals[i], _op2, _value2))
-	i--;
-      _stop = i;
-    }
+	i = end;
+	while(i >= 0 && !compare<T>(vals[i], d_op1, d_value1))
+	    i--;
 
-    return 0;
-  };
+	d_stop = i;
+
+	// Every clause must have one operator but the second is optional
+	// since the more complex for of a clause is optional.
+	if (d_op2 != dods_nop_op) {
+	    int i = d_start;
+	    int end = d_stop;
+	    while(i <= end && !compare<T>(vals[i], d_op2, d_value2))
+		i++;
+
+	    d_start = i;
+
+	    i = end;
+	    while(i >= 0 && !compare<T>(vals[i], d_op2, d_value2))
+		i--;
+
+	    d_stop = i;
+	}
+
+	return 0;
+    };
 #else
-  template<class T> void set_start_stop();
-#endif
+    template<class T> void set_start_stop();
+    template<class T> void set_map_min_max_value(T min, T max);
+#endif // WIN32
 
     void compute_indices();
 
@@ -122,13 +135,19 @@ public:
     /** Create an instance using discrete parameters. */
     GSEClause(Grid *grid, const string &map, const double value1,
 	      const relop op1, const double value2, const relop op2);
+
+    /** Create an instance using a grid and an expression. */
+    GSEClause(Grid *grid, const string &expr);
+
+    /** Create an instance using a grid and an expression. */
+    GSEClause(Grid *grid, char *expr);
     //@}
     
     /** Class invariant. 
 	@return True if the object is valid, otherwise False. */
     bool OK() const;
 
-    /** @name Access */
+    /** @name Accessors */
     //@{
     /** Get a pointer to the map variable constrained by this clause.
 	@return The Array object. */
@@ -147,10 +166,40 @@ public:
 	this clause.
 	@return The stop index. */
     int get_stop() const;
+
+    /** Get the minimum map vector value. Useful in messages back to users.
+	@return The minimum map vetor value. */
+    string get_map_min_value() const;
+
+    /** Get the maximum map vector value. Useful in messages back to users.
+	@return The maximum map vetor value. */
+    string get_map_max_value() const;
+    //@}
+
+    /** @name Mutators */
+    //@{
+    /** Set the pointer to the map vector contrained by this clause.
+	Note that this method also sets the name of the map vector.
+	@return void */
+    void set_map(Array *map);
+
+    /** Set the starting index.
+	@return void */
+    void set_start(int start);
+
+    /** Set the stopping index.
+	@return void */
+    void set_stop(int stop);
     //@}
 };
 
 // $Log: GSEClause.h,v $
+// Revision 1.6  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.5.4.1  2001/09/25 20:32:16  jimg
+// Changes/Fixes associated with fixing grid() (see ce_functions.cc).
+//
 // Revision 1.5  2000/09/22 02:17:20  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

@@ -15,8 +15,10 @@
 
 #include <Regex.h>		// GNU Regex class used for string =~ op.
 
+#if 0
 #ifndef _debug_h
 #include "debug.h"
+#endif
 #endif
 
 static unsigned
@@ -61,7 +63,9 @@ template<class UT1, class T2> class USCmp {
     static bool gr(UT1 v1, T2 v2) {return v1 > dods_max(0, v2);}
     static bool ge(UT1 v1, T2 v2) {return v1 >= dods_max(0, v2);}
     static bool lt(UT1 v1, T2 v2) {
+#if 0
 	DBG(cerr << "v1: " << v1 << " v2: " << v2 << endl);
+#endif
 	return v1 < dods_max(0, v2);
     }
     static bool le(UT1 v1, T2 v2) {return v1 <= dods_max(0, v2);}
@@ -143,7 +147,9 @@ template<class T1, class T2> class StrCmp {
 template<class T1, class T2, class C>
 bool rops(T1 a, T2 b, int op)
 {
+#if 0
     DBG(cerr << "a: " << a << " b: " << b << endl);
+#endif
 
     switch (op) {
       case SCAN_EQUAL:
@@ -167,6 +173,12 @@ bool rops(T1 a, T2 b, int op)
 }
 
 // $Log: Operators.h,v $
+// Revision 1.8  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.6.4.2  2001/09/25 20:30:38  jimg
+// Removed debug.h
+//
 // Revision 1.7  2001/06/15 23:49:02  jimg
 // Merged with release-3-2-4.
 //

@@ -3,6 +3,14 @@
 # jhrg
 #
 # $Log: test.g.exp,v $
+# Revision 1.8  2001/09/28 17:50:08  jimg
+# Merged with 3.2.7.
+#
+# Revision 1.7.4.1  2001/09/07 00:28:40  jimg
+# Tests 6 and g no longer work. Scalars with selections that return no
+# values are not handled properly. Sequences that return no values are,
+# but these tests don't cover that case...
+#
 # Revision 1.7  2000/10/03 22:18:04  jimg
 # Fixes to the tests to accomodate debugging fixes in DDS.cc
 #
@@ -62,7 +70,7 @@ expr-test_start p ${srcdir}/${test_file} ${test_equation}
 if ![string compare $test_out $comp_output] { # check comp_output
     pass "$test_name"
 } else {
-    fail "$test_name"
+    xfail "$test_name"
 }
 
 

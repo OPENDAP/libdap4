@@ -1,5 +1,4 @@
 
-
 // (c) COPYRIGHT URI/MIT 1994-2001
 // Please read the full copyright statement in the file COPYRIGHT.
 //
@@ -15,7 +14,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.112 2001/08/24 17:46:22 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.113 2001/09/28 17:50:07 jimg Exp $" };
 
 #ifdef GUI
 #include "Gui.h"
@@ -60,9 +59,11 @@ using std::iterator;
 #ifdef WIN32
 #define DIR_SEP_STRING "\\"
 #define DIR_SEP_CHAR   '\\'
+#define NEWLINE "\r\n"
 #else
 #define DIR_SEP_STRING "/"
 #define DIR_SEP_CHAR   '/'
+#define NEWLINE "\n"
 #endif
 
 // Constants used for temporary files.
@@ -219,15 +220,16 @@ dods_progress(HTRequest * request, HTAlertOpcode op,
 		break;
 
 	    long cl = HTAnchor_length(HTRequest_anchor(request));
+	    double pro = -1.0;
 	    if (cl >= 0) {
 		long b_read = HTRequest_bodyRead(request);
-		double pro = (double) b_read / cl * 100;
-		(void) me->_gui->percent_bar(pro, &usr_cancel);
-		if (usr_cancel == 1)	// the usr wants to bail
-		    HTRequest_kill(request);
-	    } else {
-		(void) me->_gui->percent_bar(-1.0, &usr_cancel);
-		if (usr_cancel == 1)	// the usr wants to bail
+		pro = (double) b_read / cl * 100;
+	    }
+	    (void) me->_gui->percent_bar(pro, &usr_cancel);
+	    if (usr_cancel == 1) {	// the usr wants to bail
+		if (WWWTRACE)
+		    HTTrace("DODS........ Killing the request.\n");
+		if (request)
 		    HTRequest_kill(request);
 	    }
 
@@ -973,11 +975,20 @@ Connect::www_lib_init(bool www_verbose_errors, bool accept_deflate)
 	//  We have to escape spaces.  Utilizing the escape functionality
 	//  forces us, in turn, to use the "file:" convention for URL's.
 #ifdef WIN32
-	string croot = string("file:/") + cache_root;
-#else
-	string croot = string("file:") + cache_root;
-#endif
+	string croot = string("file:/") + cache_root; // cache:/ ???
 	croot = id2www(string(croot));
+#else
+	// Changed to cache: from file:; both work but cache: is closer to
+	// the truth. 9/25/2001 jhrg
+	string croot = string("cache:") + cache_root;
+#endif
+	// I removed this line since using it screws up the UNIX code. libwww
+	// will undo the %xx escapes but not the cache: or file: protocol
+	// identifier. It thinks that it's supposed to create a directory
+	// called `file:/...' or `cache:/...' which is not true. But this is
+	// apparently needed by the WIN32 code, so I'll copy the line there.
+	// 9/25/2001 jhrg
+	//	croot = id2www(string(croot));
 
 	_cache_root = new char[strlen(cache_root.c_str()) + 1];
 	strcpy(_cache_root, cache_root.c_str());
@@ -1531,48 +1542,38 @@ DDS *
 Connect::process_data(bool async)
 {
     switch (type()) {
-    case dods_error:
-	{
-	    if (!_error.parse(_output)) {
-		cerr << "Could not parse error object" << endl;
-		break;
-	    }
-	    return 0;
-	}
+      case dods_error:
+	if (!_error.parse(_output))
+	    throw InternalErr(__FILE__, __LINE__,
+	      "Could not parse the Error object returned by the server!");
+	return 0;
 
-    case web_error:
+      case web_error:
 	// Web errors (those reported in the return document's MIME header)
 	// are processed by the WWW library.
 	return 0;
 
-    case dods_data:
-    default:
-	{
-	    DataDDS *dds = new DataDDS("received_data", _server);
+      case dods_data:
+      default: {
+	  DataDDS *dds = new DataDDS("received_data", _server);
 
-	    // Parse the DDS; throw an exception on error.
-	    dds->parse(_output);
+	  // Parse the DDS; throw an exception on error.
+	  dds->parse(_output);
 
-	    // If !asynchronous, read data for all the variables from the
-	    // document. 
-	    if (!async) {
-		XDR *s = source();
-		for (Pix q = dds->first_var(); q; dds->next_var(q)) {
-		    BaseType *v = dds->var(q);
-		    // Because sequences have multiple rows, bail out and let
-		    // the caller deserialize as they read the data.
-		    if (v->type() == dods_sequence_c)
-			break;
-		    if (!v->deserialize(s, dds))
-			return 0;
-		}
-	    }
+	  for (Pix q = dds->first_var(); q; dds->next_var(q)) {
+	      try {
+		  dds->var(q)->deserialize(source(), dds);
+	      }
+	      catch (InternalErr &ie) {
+		  string msg = "I cought the following Internal Error:";
+		  msg += NEWLINE + ie.get_error_message();
+		  throw InternalErr(__FILE__, __LINE__, msg);
+	      }
+	  }
 
-	    return dds;
-	}
+	  return dds;
+      }
     }
-
-    return 0;
 }
 
 // Read data from the server at _URL. If ASYNC is true, read asynchronously
@@ -1707,6 +1708,36 @@ Connect::set_credentials(string u, string p)
 }
 
 // $Log: Connect.cc,v $
+// Revision 1.113  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.105.2.14  2001/09/26 00:45:46  jimg
+// Minor change to www_lib_init while trying to fix the seg fault on cancel bug.
+// The actual fix is in libwww (HTReader.c). However, I removed a line of
+// unnecessary code in the process of tracking down the bug.
+//
+// Revision 1.105.2.13  2001/09/25 21:45:35  jimg
+// Fixed a bug in the cache directory pathname code. Using the id2www function
+// on the pathname breaks libwww; it correctly escapes the %xx sequences but
+// does not then correctly simplify the pathname (which means, in this case,
+// removing the `file:' or `cache:' prefix). Apparently the WIN32 code needs
+// this so I moved the call to id2www into the WIN32 section of the www_lib_init
+// method.
+//
+// Revision 1.105.2.12  2001/09/25 20:36:42  jimg
+// Added debugging code for cancel button seg fault.
+//
+// Revision 1.105.2.11  2001/09/07 00:38:34  jimg
+// Sequence::deserialize(...) now reads all the sequence values at once.
+// Its call semantics are the same as the other classes' versions. Values
+// are stored in the Sequence object using a vector<BaseType *> for each
+// row (those are themselves held in a vector). Three new accessor methods
+// have been added to Sequence (row_value() and two versions of var_value()).
+// BaseType::deserialize(...) now always returns true. This matches with the
+// expectations of most client code (the seqeunce version returned false
+// when it was done reading, but all the calls for sequences must be changed
+// anyway). If an XDR error is found, deserialize throws InternalErr.
+//
 // Revision 1.112  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //

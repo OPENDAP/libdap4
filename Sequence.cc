@@ -15,6 +15,7 @@
 
 #include "config_dap.h"
 
+#include <algorithm>
 #include <string>
 #include <strstream>
 
@@ -34,13 +35,6 @@
 
 using std::endl;
 
-// Jose Garcia 1/28/2000
-// Note: all asserts of nature
-// for (Pix p = _vars.first(); p; _vars.next(p)) {
-//      assert(_vars(p));
-// had been commented out, later when we get sure
-// we do not need then we can remove them all.
-
 static unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
 static unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 
@@ -51,23 +45,43 @@ Sequence::_duplicate(const Sequence &s)
 {
     Constructor::_duplicate(s);
 
-#if 0
     _level = s._level;
+#if 0
     _seq_read_error = s._seq_read_error;
     _seq_write_error = s._seq_write_error;
 #endif
+
     d_row_number = s.d_row_number;
     d_starting_row_number = s.d_starting_row_number;
     d_ending_row_number = s.d_ending_row_number;
     d_row_stride = s.d_row_stride;
-    d_super_sequence = s.d_super_sequence;
 
     Sequence &cs = const_cast<Sequence &>(s);
     
+    // Copy the template BaseType objects.
     for (Pix p = cs.first_var(); p; cs.next_var(p)) {
-	BaseType *btp = cs.var(p)->ptr_duplicate();
-	btp->set_parent(this);
-	add_var(btp);
+	add_var(cs.var(p));
+    }
+
+    // Copy the BaseType objects used to hold values.
+    for (vector<BaseTypeRow *>::iterator rows_iter = cs.d_values.begin();
+	 rows_iter != cs.d_values.end();
+	 rows_iter++) {
+	// Get the current BaseType Row
+	BaseTypeRow *src_bt_row_ptr = *rows_iter;
+	// Create a new row.
+	BaseTypeRow *dest_bt_row_ptr = new BaseTypeRow;
+	// Copy the BaseType objects from a row to new BaseType objects.
+	// Push new BaseType objects onto new row.
+	for (BaseTypeRow::iterator bt_row_iter = src_bt_row_ptr->begin();
+	     bt_row_iter != src_bt_row_ptr->end();
+	     bt_row_iter++) {
+	    BaseType *src_bt_ptr = *bt_row_iter;
+	    BaseType *dest_bt_ptr = src_bt_ptr->ptr_duplicate();
+	    dest_bt_row_ptr->push_back(dest_bt_ptr);
+	}
+	// Push new row onto d_values.
+	d_values.push_back(dest_bt_row_ptr);
     }
 }
 
@@ -106,17 +120,11 @@ Sequence::is_end_of_sequence(unsigned char marker)
     return (marker == end_of_sequence);
 }
 
-bool
-Sequence::is_super_sequence()
-{
-    return d_super_sequence;
-}
-
 // Public member functions
 
 Sequence::Sequence(const string &n) : Constructor(n, dods_sequence_c), 
     d_row_number(-1), d_starting_row_number(-1),
-    d_row_stride(1), d_ending_row_number(-1), d_super_sequence(false)
+    d_row_stride(1), d_ending_row_number(-1)
 {
 }
 
@@ -125,11 +133,32 @@ Sequence::Sequence(const Sequence &rhs) : Constructor(rhs)
     _duplicate(rhs);
 }
 
+static void
+delete_bt(BaseType *bt_ptr)
+{
+    DBG(cerr << "In delete_bt: " << bt_ptr << endl);
+    delete bt_ptr;
+    bt_ptr = 0;
+}
+
+static void
+delete_rows(BaseTypeRow *bt_row_ptr)
+{
+    DBG(cerr << "In delete_rows: " << bt_row_ptr << endl);
+
+    for_each(bt_row_ptr->begin(), bt_row_ptr->end(), delete_bt);
+
+    delete bt_row_ptr;
+    bt_row_ptr = 0;
+}
+
 Sequence::~Sequence()
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
 	delete _vars(p); _vars(p) = 0;
     }
+
+    for_each(d_values.begin(), d_values.end(), delete_rows);
 }
 
 Sequence &
@@ -169,9 +198,42 @@ Sequence::element_count(bool leaves)
     else {
 	int i = 0;
 	for (Pix p = first_var(); p; next_var(p))
-	    i += var(p)->element_count(leaves);
+	    i += var(p)->element_count(true);
 	return i;
     }
+}
+
+// A linear sequence is any sequence that holds only simple types and/or
+// a single linear sequence. So they can be nested sequences, but they cannot
+// contain Arrays, Structures, or Grids and they cannot contain more than one
+// linear sequence at any given level.
+bool
+Sequence::is_linear()
+{
+    bool linear = true;
+    bool seq_found = false;
+    for (Pix p = first_var(); linear && p; next_var(p)) {
+	if (var(p)->type() == dods_sequence_c) {
+	    // A linear sequence cannot have more than one child seq. at any
+	    // one level. If we've already found a seq at this level, return
+	    // false. 
+	    if (seq_found) {
+		linear = false;
+		break;
+	    }
+	    seq_found = true;
+	    linear = linear && dynamic_cast<Sequence *>(var(p))->is_linear();
+	}
+	else if (var(p)->type() == dods_structure_c) {
+	    linear = linear && dynamic_cast<Structure*>(var(p))->is_linear();
+	}
+	else {
+	    // A linear sequence cannot have Arrays, Lists of Grids.
+	    linear = linear && var(p)->is_simple_type();
+	}
+    }
+
+    return linear;
 }
 
 void
@@ -192,54 +254,8 @@ Sequence::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
-// Private method; #state# defaults to true.
-void
-Sequence::set_super_sequence(bool state)
-{
-    d_super_sequence = state;
-    
-    BaseType *parent = get_parent();
-    if (!parent)
-	return;
-    if (parent->type() != dods_sequence_c)
-	return;
-    
-    Sequence *parent_seq = dynamic_cast<Sequence *>(parent);
-    if (!parent_seq)
-	throw InternalErr(__FILE__, __LINE__, "Variable was not a Sequence.");
-
-    parent_seq->set_super_sequence(state);
-}
-
-// Private; #state# default is true.
-void
-Sequence::set_eos_found(bool state)
-{
-    d_eos_found = state;
-}
-
-bool
-Sequence::is_eos_found()
-{
-    return d_eos_found;
-}
-
-// Might be able to use the back pointers instead of looking at each sequence
-// variable for every read. 6/4/2001 jhrg
-bool
-Sequence::is_child_eos_found()
-{
-    bool status = is_eos_found();
-
-    for (Pix p = first_var(); p; next_var(p))
-	if (var(p)->type() == dods_sequence_c)
-	    status = status 
-		&& dynamic_cast<Sequence *>(var(p))->is_child_eos_found();
-
-    return status;
-}
-
 // NB: Part p defaults to nil for this class
+
 void 
 Sequence::add_var(BaseType *bt, Part)
 {
@@ -250,28 +266,20 @@ Sequence::add_var(BaseType *bt, Part)
    // We append a copy of bt so the owner
    // of bt is free to deallocate as he wishes.
    DBG(cerr << "In Sequence::add_var(), bt: " << bt <<endl);
-   DBG(cerr << bt->toString() << endl);
+   DBG2(cerr << bt->toString() << endl);
 
    BaseType *bt_copy = bt->ptr_duplicate();
    bt_copy->set_parent(this);
    _vars.append(bt_copy);
 
    DBG(cerr << "In Sequence::add_var(), bt_copy: " << bt_copy <<endl);
-   DBG(cerr << bt_copy->toString() << endl);
-
-   // If we are adding a Sequence as a child of another sequence then #this#
-   // is a `super_sequence.' Mark it as such. 6/4/2001 jhrg
-   if (bt->type() == dods_sequence_c) {
-       set_super_sequence(true);
-   }
+   DBG2(cerr << bt_copy->toString() << endl);
 }
 
 BaseType *
 Sequence::var(const string &name, btp_stack &s)
 {
     for (Pix p = _vars.first(); p; _vars.next(p)) {
-      //assert(_vars(p));
-	
 	if (_vars(p)->name() == name) {
 	    s.push((BaseType *)this);
 	    return _vars(p);
@@ -332,13 +340,51 @@ Sequence::exact_match(const string &name)
     }
     else {
 	for (Pix p = _vars.first(); p; _vars.next(p)) {
-	  //assert(_vars(p));
 	    if (_vars(p)->name() == name)
 		return _vars(p);
 	}
     }
 
     return 0;
+}
+
+BaseTypeRow *
+Sequence::row_value(size_t row)
+{
+    if (row >= d_values.size())
+	return 0;
+    return d_values[row];
+}
+
+BaseType *
+Sequence::var_value(size_t row, const string &name)
+{
+    BaseTypeRow *bt_row_ptr = row_value(row);
+    if (!bt_row_ptr)
+	return 0;
+
+    BaseTypeRow::iterator bt_row_iter = bt_row_ptr->begin();
+    BaseTypeRow::iterator bt_row_end = bt_row_ptr->end();    
+    while (bt_row_iter != bt_row_end && (*bt_row_iter)->name() != name)
+	++bt_row_iter;
+    
+    if (bt_row_iter == bt_row_end)
+	return 0;
+    else
+	return *bt_row_iter;
+}
+
+BaseType *
+Sequence::var_value(size_t row, size_t i)
+{
+    BaseTypeRow *bt_row_ptr = row_value(row);
+    if (!bt_row_ptr)
+	return 0;
+
+    if (i >= bt_row_ptr->size())
+	return 0;
+
+    return (*bt_row_ptr)[i];
 }
 
 Pix
@@ -389,18 +435,19 @@ Sequence::length()
 void
 Sequence::set_level(int lvl)
 {
-#if 0
     _level = lvl;
-#endif
 }
 
 int
 Sequence::level()
 {
-#if 0
     return _level;
-#endif
-    return -1;
+}
+
+int
+Sequence::number_of_rows()
+{
+    return d_values.size();
 }
 
 // Advance the sequence to row number ROW. Note that we can only advance, it
@@ -427,7 +474,7 @@ Sequence::level()
 // Jose Garcia
 
 bool
-Sequence::get_row(int row, const string &dataset, DDS &dds, bool ce_eval)
+Sequence::read_row(int row, const string &dataset, DDS &dds, bool ce_eval)
 {
     if (row < d_row_number)
 	throw InternalErr("Trying to back up inside a sequence!");
@@ -477,9 +524,9 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 {
     int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
 
-    // get_row returns true if valid data was read, false if the EOF was
+    // read_row returns true if valid data was read, false if the EOF was
     // found. 6/1/2001 jhrg
-    bool status = get_row(i, dataset, dds, ce_eval);
+    bool status = read_row(i, dataset, dds, ce_eval);
 
     while (status && !is_end_of_rows(i)) {
 	i += d_row_stride;
@@ -495,7 +542,7 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
 
 	set_read_p(false);	// ...so this will read the next instance
 
-	status = get_row(i, dataset, dds, ce_eval);
+	status = read_row(i, dataset, dds, ce_eval);
     }
 
     DBG(cerr << "Writing End of Sequence marker" << endl);
@@ -504,12 +551,13 @@ Sequence::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
     return true;		// Signal errors with exceptions.
 }
 
+
+
 // A return value of false indicates that an EOS marker was found, while a
 // value of true indicates that there are more rows to be read.
 bool
 Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 {
-    bool stat = true;
     DataDDS *dd = dynamic_cast<DataDDS *>(dds);
     if (!dd)
 	throw InternalErr("Expected argument 'dds' to be a DataDDS!");
@@ -523,49 +571,36 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
 	return old_deserialize(source, dd, reuse);
     }
 
-    // If this sequence holds other sequences and there EOSs that have not
-    // been read, descend to the deepest sequence with unread rows and read.
-    if (is_super_sequence() && !is_child_eos_found()) {
-	for (Pix p = first_var(); p; next_var(p)) {
-	    if (var(p)->type() == dods_sequence_c) {
-		if (!var(p)->deserialize(source, dds, reuse))
-		    return false;
-	    }
-	}
-    }
-    else {
+    while (true) {
+	// Grab the sequence stream's marker. 
 	unsigned char marker = read_marker(source);
-
-	if (is_start_of_instance(marker))
-	    ;			// Read more sequence elements
-	else if (is_end_of_sequence(marker))
-	    return false;	// No more sequence elements
-	else
-	    throw InternalErr("Expected to find either a SOI or EOS marker.");
-
+	if (is_end_of_sequence(marker))
+	    break;		// EXIT the while loop here!!!
+	else if (is_start_of_instance(marker)) {
+	    d_row_number++;
+	    DBG2(cerr << "Reading row " << d_row_number << " of "
+		<< name() << endl);
+	    BaseTypeRow *bt_row_ptr = new BaseTypeRow;
+	    // Read the instance's values, building up the row
 	for (Pix p = first_var(); p; next_var(p)) {
-	    stat = var(p)->deserialize(source, dds, reuse);
-	    if (!stat) 
-		return stat;
+		BaseType *bt_ptr = var(p)->ptr_duplicate();
+		bt_ptr->deserialize(source, dds, reuse);
+		DBG2(cerr << "Deserialized " << bt_ptr->name() << " ("
+		    << bt_ptr << ") = ");
+		DBG2(bt_ptr->print_val(cerr, ""));
+		bt_row_ptr->push_back(bt_ptr);
 	}
+	    // Append this row to those accumulated.
+	    d_values.push_back(bt_row_ptr);
     }
+	else
+	    throw Error("I could not read the expected Sequence data stream marker!");
+    };
 
-    d_row_number++;
-
-    // This method is designed to be called in a loop until the <end of
-    // sequence> marker for *this sequence* is found. The true here indicates
-    // to a caller that more data should be read. The false above indicates
-    // that the <eos> was found.
     return true;
 }
 
 // Return the current row number.
-
-int
-Sequence::get_row_number()
-{
-  return d_row_number;
-}
 
 int
 Sequence::get_starting_row_number()
@@ -617,15 +652,6 @@ Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse)
     return stat;
 }
 
-bool
-Sequence::seq_read_error()
-{
-#if 0
-    return _seq_read_error;
-#endif
-    return false;
-}
-
 unsigned int
 Sequence::val2buf(void *, bool)
 {
@@ -651,7 +677,7 @@ Sequence::print_decl(ostream &os, string space, bool print_semi,
 			     constrained);
     os << space << "} " << id2www(name());
 
-    if (constraint_info) {
+    if (constraint_info) {	// Used by test drivers only.
 	if (send_p())
 	    cout << ": Send True";
 	else
@@ -663,7 +689,47 @@ Sequence::print_decl(ostream &os, string space, bool print_semi,
 }
 
 void 
-Sequence::print_val(ostream &os, string space, bool print_decl_p)
+Sequence::print_one_row(ostream &os, int row, string space, 
+			bool print_row_num)
+{
+    if (print_row_num)
+	os << endl << row << ": ";
+
+    os << "{ ";
+
+    int elements = element_count() - 1;
+    int j;
+    BaseType *bt_ptr;
+    // Print first N-1 elements of the row.
+    for (j = 0; j < elements; ++j) {
+	bt_ptr = var_value(row, j);
+	if (bt_ptr) {		// data
+	    if (bt_ptr->type() == dods_sequence_c)
+		dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+		    (os, space, false, print_row_num);
+	    else
+		bt_ptr->print_val(os, space, false);
+	    os << ", ";
+	}
+    }
+
+    // Print Nth element; end with a `}.'
+    bt_ptr = var_value(row, j);
+    if (bt_ptr) {		// data
+	if (bt_ptr->type() == dods_sequence_c)
+	    dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
+		(os, space, false, print_row_num);
+	else
+	    bt_ptr->print_val(os, space, false);
+    }
+
+    os << " }";
+}
+
+
+void
+Sequence::print_val_by_rows(ostream &os, string space, bool print_decl_p,
+			    bool print_row_numbers)
 {
     if (print_decl_p) {
 	print_decl(os, space, false);
@@ -671,45 +737,41 @@ Sequence::print_val(ostream &os, string space, bool print_decl_p)
     }
 
     os << "{ ";
-    for (Pix p = _vars.first(); p; _vars.next(p), (void)(p && os << ", "))
-	_vars(p)->print_val(os, "", false);
+
+    int rows = number_of_rows() - 1;
+    int i;
+    for (i = 0; i < rows; ++i) {
+	print_one_row(os, i, space, print_row_numbers);
+	    os << ", ";
+    }
+    print_one_row(os, i, space, print_row_numbers);
 
     os << " }";
 
     if (print_decl_p)
-	os << ";" << endl;
+        os << ";" << endl;
+}
+
+void 
+Sequence::print_val(ostream &os, string space, bool print_decl_p)
+{
+    print_val_by_rows(os, space, print_decl_p, false);
 }
 
 // print_all_vals is from Todd Karakasian. 
 // We need to integrate this into print_val somehow, maybe by adding an XDR *
 // to Sequence? This can wait since print_val is mostly used for debugging...
+//
+// Deprecated. No longer needed since print_vals does its job.
 
 void
 Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, string space,
 			 bool print_decl_p)
 {
-    if (print_decl_p) {
-	print_decl(os);
-	os << " = ";
-    }
-    os << "{ ";
-
-    // Added the if below to account for a response that's empty. 6/7/2001
-    // jhrg 
-    if (deserialize(src, dds)) {
-	print_val(os, space, false);
-	while (deserialize(src, dds)) {
-	    os << ", ";
-	    print_val(os, space, false);
-	}
-    }
-
-    // Moved printing the closing brace out of the print_decl_p if stmt below
-    // to match what happens in Structure::print_all_vals(). 6/7/2001 jhrg
-    os << " }";
-
-    if (print_decl_p)
-        os << ";" << endl;
+#if 0
+    deserialize(src, dds);
+#endif
+    print_val(os, space, print_decl_p);
 }
 
 bool
@@ -730,6 +792,26 @@ Sequence::check_semantics(string &msg, bool all)
 }
 
 // $Log: Sequence.cc,v $
+// Revision 1.62  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.59.4.9  2001/09/26 23:25:42  jimg
+// Returned the set_level() and level() methods to the class.
+//
+// Revision 1.59.4.8  2001/09/25 20:30:15  jimg
+// Added is_linear().
+//
+// Revision 1.59.4.7  2001/09/07 00:38:35  jimg
+// Sequence::deserialize(...) now reads all the sequence values at once.
+// Its call semantics are the same as the other classes' versions. Values
+// are stored in the Sequence object using a vector<BaseType *> for each
+// row (those are themselves held in a vector). Three new accessor methods
+// have been added to Sequence (row_value() and two versions of var_value()).
+// BaseType::deserialize(...) now always returns true. This matches with the
+// expectations of most client code (the seqeunce version returned false
+// when it was done reading, but all the calls for sequences must be changed
+// anyway). If an XDR error is found, deserialize throws InternalErr.
+//
 // Revision 1.61  2001/08/24 17:46:22  jimg
 // Resolved conflicts from the merge of release 3.2.6
 //
@@ -1060,7 +1142,7 @@ Sequence::check_semantics(string &msg, bool all)
 // Revision 1.7  1995/01/19  20:05:26  jimg
 // ptr_duplicate() mfunc is now abstract virtual.
 // Array, ... Grid duplicate mfuncs were modified to take pointers, not
-// referenves.
+// references.
 //
 // Revision 1.6  1995/01/11  15:54:53  jimg
 // Added modifications necessary for BaseType's static XDR pointers. This

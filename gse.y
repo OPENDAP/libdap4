@@ -14,7 +14,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse.y,v 1.5 2000/09/22 02:17:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: gse.y,v 1.6 2001/09/28 17:50:07 jimg Exp $"};
 
 #include <iostream>
 
@@ -22,10 +22,8 @@ static char rcsid[] not_used = {"$Id: gse.y,v 1.5 2000/09/22 02:17:23 jimg Exp $
 #include "GSEClause.h"
 #include "parser.h"
 
-#ifdef WIN32
 using std::cerr;
 using std::endl;
-#endif
 
 // This macro is used to access the instance of a gse_arg class which is
 // passed to the parser through a void *. See parser.h.
@@ -60,11 +58,12 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 %token <id> SCAN_ID
 %token <id> SCAN_FIELD
 
+%token <op> SCAN_EQUAL
+%token <op> SCAN_NOT_EQUAL
 %token <op> SCAN_GREATER
 %token <op> SCAN_GREATER_EQL
 %token <op> SCAN_LESS
 %token <op> SCAN_LESS_EQL
-%token <op> SCAN_EQUAL
 
 %type <boolean> clause
 %type <id> identifier
@@ -101,11 +100,12 @@ constant:       SCAN_INT
 		| SCAN_FLOAT
 ;
 
-relop:		SCAN_GREATER
+relop:		SCAN_EQUAL
+		| SCAN_NOT_EQUAL
+		| SCAN_GREATER
 		| SCAN_GREATER_EQL
 		| SCAN_LESS
 		| SCAN_LESS_EQL
-                | SCAN_EQUAL
 ;
 
 %%
@@ -113,7 +113,7 @@ relop:		SCAN_GREATER
 void
 gse_error(const char *str)
 {
-    cerr << "GSE Error: " << str << endl;
+    throw InternalErr(__FILE__, __LINE__, "gse_error() called.");
 }
 
 static relop
@@ -201,6 +201,12 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 }
 
 // $Log: gse.y,v $
+// Revision 1.6  2001/09/28 17:50:07  jimg
+// Merged with 3.2.7.
+//
+// Revision 1.5.4.1  2001/09/25 20:16:40  jimg
+// Fixed the EQUAL token. Added NOT_EQUAL.
+//
 // Revision 1.5  2000/09/22 02:17:23  jimg
 // Rearranged source files so that the CVS logs appear at the end rather than
 // the start. Also made the ifdef guard symbols use the same naming scheme and

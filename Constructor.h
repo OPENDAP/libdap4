@@ -15,7 +15,7 @@
 class Constructor: public BaseType {
 private:
     Constructor();		// No default ctor.
-    BaseType *d_parent;		// Parent of this 
+
 protected:
     void _duplicate(const Constructor &s);
 
@@ -26,6 +26,16 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
+
+    /** True if the instance can be flattened and printed as a single table
+	of values. For Arrays and Grids this is always false. For Structures
+	and Sequences the conditions are more complex. The implementation
+	provided by this class always returns false. Other classes should
+	override this implementation.
+
+	@return True if the instance can be printed as a single table of
+	values, false otherwise. */
+    bool is_linear();
 };
 
 #endif // _constructor_h 
