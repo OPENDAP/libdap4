@@ -18,6 +18,9 @@
 
 /*
  * $Log: expr.y,v $
+ * Revision 1.28  1998/11/10 00:48:54  jimg
+ * Changed no_such_id() to no_such_ident() (the former is used in bastring.h).
+ *
  * Revision 1.27  1998/11/05 23:41:20  jimg
  * Made error message for errant CEs involving arrays better.
  * DDS::mark() now used for array variables --- this should fix a potential
@@ -150,7 +153,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ = {"$Id: expr.y,v 1.27 1998/11/05 23:41:20 jimg Exp $"};
+static char rcsid[] __unused__ = {"$Id: expr.y,v 1.28 1998/11/10 00:48:54 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -206,7 +209,7 @@ int exprlex(void);		/* the scanner; see expr.lex */
 void exprerror(const char *s);	/* easier to overload than to use stdarg... */
 void exprerror(const char *s, const char *s2);
 int no_such_func(void *arg, char *name);
-int no_such_id(void *arg, char *name, char *word);
+int no_such_ident(void *arg, char *name, char *word);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
@@ -308,7 +311,7 @@ proj_clause:	ID
 			$$ = (*DDS_OBJ(arg)).mark($1, true);
 		    }
 		    else {
-			$$ = no_such_id(arg, $1, "identifier");
+			$$ = no_such_ident(arg, $1, "identifier");
 		    }
 		}
                 | FIELD
@@ -317,7 +320,7 @@ proj_clause:	ID
 		    if (var)
 			$$ = (*DDS_OBJ(arg)).mark($1, true);
 		    else {
-			$$ = no_such_id(arg, $1, "field");
+			$$ = no_such_ident(arg, $1, "field");
 		    }
 		}
                 | proj_function
@@ -458,7 +461,7 @@ identifier:	ID
                 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
 		    if (!btp) {
-			$$ = (rvalue *)no_such_id(arg, $1, "identifier");
+			$$ = (rvalue *)no_such_ident(arg, $1, "identifier");
 		    }
 		    else
 			$$ = new rvalue(btp);
@@ -467,7 +470,7 @@ identifier:	ID
                 { 
 		    BaseType *btp = (*DDS_OBJ(arg)).var($1);
 		    if (!btp) {
-			$$ = (rvalue *)no_such_id(arg, $1, "field");
+			$$ = (rvalue *)no_such_ident(arg, $1, "field");
 		    }
 		    else
 			$$ = new rvalue(btp);
@@ -524,7 +527,7 @@ array_proj:	ID array_indices
 			delete_array_indices($2);
 		    }
 		    else {
-			$$ = no_such_id(arg, $1, "array or grid");
+			$$ = no_such_ident(arg, $1, "array or grid");
 		    }
 		}
 	        | FIELD array_indices 
@@ -553,7 +556,7 @@ array_proj:	ID array_indices
 			delete_array_indices($2);
 		    }
 		    else {
-			$$ = no_such_id(arg, $1, "array or grid");
+			$$ = no_such_ident(arg, $1, "array or grid");
 		    }
 		}
 ;
@@ -606,7 +609,7 @@ exprerror(const char *s, const char *s2)
 }
 
 int
-no_such_id(void *arg, char *name, char *word)
+no_such_ident(void *arg, char *name, char *word)
 {
     string msg = "No such " + (string)word + " in dataset.";
     exprerror(msg.data(), name);
