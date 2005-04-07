@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Vector.cc,v 1.59 2005/02/24 18:05:17 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Vector.cc,v 1.60 2005/04/07 22:32:47 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -220,6 +220,10 @@ Vector::set_read_p(bool state)
 
     @param n The name of the variabe to find.
     @param exact Unused.
+    @param s Pointer to a BaseType Pointer Stack. Use this stack to record 
+    the path to the variable. By default this pointer is null, in which case
+    it is not used.
+
     @return A pointer to the BaseType if found, otherwise null.
     @see Vector::var */
 BaseType *
@@ -863,7 +867,7 @@ Vector::set_vec(unsigned int i, BaseType *val)
     Propagate the name of the BaseType instance to this instance. This
     ensures that variables at any given level of the DDS table have
     unique names (i.e., that Arrays do not have their default name ""). If
-    <tt>v</tt>'s name is null, then assume that the array \i is named and
+    <tt>v</tt>'s name is null, then assume that the array \e is named and
     don't overwrite it with <tt>v</tt>'s null name.
 
     @param v The template variable for the array
@@ -907,6 +911,11 @@ Vector::check_semantics(string &msg, bool)
 }
 
 // $Log: Vector.cc,v $
+// Revision 1.60  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.59  2005/02/24 18:05:17  jimg
 // A throw Error line was left in deserialize() by mistake; I removed it.
 //

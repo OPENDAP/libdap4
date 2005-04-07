@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.49 2005/01/28 17:25:12 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.50 2005/04/07 22:32:47 jimg Exp $"};
 
 #include <signal.h>
 
@@ -112,9 +112,9 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
 
     <dt><tt>-o</tt> <i>response</i><dd> 
 
-    Specifies the type of response desired. The \i response is a string 
-    and must be one of \t DAS, \t DDS, \t DataDDS or \t Version. Note 
-    that \t Version returns version information in the body of the response
+    Specifies the type of response desired. The \e response is a string 
+    and must be one of \c DAS, \c DDS, \c DataDDS or \c Version. Note 
+    that \c Version returns version information in the body of the response
     and is useful for debugging, et cetera. Each response returns version
     information in an HTTP header for internal use by a client.
 
@@ -174,7 +174,7 @@ DODSFilter::~DODSFilter()
     that specialization called by the subclass' constructor. 
 
     This class and any class that specializes it should call this method in
-    its constructor. Note that when this method is called, the object is \i
+    its constructor. Note that when this method is called, the object is \e
     not fully constructed. 
 
     @param argc The argument count
@@ -393,11 +393,13 @@ DODSFilter::get_dataset_version()
 }
 
 /** Set the response to be returned. Valid response names are "DAS", "DDS",
-    "DataDDS, "Version". 
-    @param o The name of the object. 
-    @exceptoion InternalErr Thrown if the response is not one of the valid
+    "DataDDS, "Version".
+ 
+    @param r The name of the object. 
+    @exception InternalErr Thrown if the response is not one of the valid
     names. */
-void DODSFilter::set_response(const string &r) throw(Error)
+void 
+DODSFilter::set_response(const string &r) throw(Error)
 {
     if (r == "DAS" || r == "das")
     {
@@ -943,7 +945,7 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
     servers. 
 
     @param out Destination
-    @param ddx The dataset's DDS \i with attributes in the variables. */
+    @param dds The dataset's DDS \e with attributes in the variables. */
 void
 DODSFilter::send_ddx(DDS &dds, FILE *out)
 {
@@ -1023,6 +1025,11 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 }
 
 // $Log: DODSFilter.cc,v $
+// Revision 1.50  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.49  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

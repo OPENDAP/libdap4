@@ -51,21 +51,21 @@
 /** Parse the XML text which encodes the network/persistent representation of
     the DDX object. In the current implementation, the DDX is held by an
     instance of the class DDS which in turn holds variables which include
-    attributes. That is, the binary \i implementation of a DDX uses the old
+    attributes. That is, the binary \e implementation of a DDX uses the old
     DDS, BseType and AttrTable classes, albeit arranged in a slightly new
     way.
 
-    This parser for the DDX \i document uses the SAX interface of \t libxml2.
+    This parser for the DDX \e document uses the SAX interface of \c libxml2.
     Static methods are used as callbacks for the SAX parser. These static
     methods are public because making them private complicates compilation.
-    They should not be called by anything other than the \i intern method.
+    They should not be called by anything other than the \e intern method.
     They do not throw exceptions because exceptions from within callbacks are
     not reliable or portable. To signal errors, the methods record
     information in the DDXParser object. Once the error handler is called,
     construction of an DDX/DDS object ends even though the SAX parser still
-    calls the various callback functions. The parser treats \i warnings, \i
-    errors and \i fatal_errors the same way; when any are found parsing
-    stops. The \i intern method throws an DDXParseFailed exception if an
+    calls the various callback functions. The parser treats \e warnings, \e
+    errors and \e fatal_errors the same way; when any are found parsing
+    stops. The \e intern method throws an DDXParseFailed exception if an
     error was found.
 
     Note that this class uses the C++-supplied default definitions for the
@@ -179,6 +179,11 @@ public:
 };
 
 // $Log: DDXParser.h,v $
+// Revision 1.8  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.7  2005/03/30 21:29:05  jimg
 // Now uses the BaseTypeFactory class.
 //

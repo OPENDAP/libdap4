@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Str.cc,v 1.57 2005/03/02 21:23:43 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Str.cc,v 1.58 2005/04/07 22:32:47 jimg Exp $"};
 
 #include <stdlib.h>
 
@@ -191,6 +191,7 @@ Str::buf2val(void **val)
     the actual parameter once this call has returned.
     
     @param val A pointer to a C++ string object.
+    @param reuse Not used by this version of the method.
     @exception IntenalErr if \e val is null.
     @return The width of the pointer. */
 unsigned int
@@ -266,6 +267,11 @@ Str::ops(BaseType *b, int op, const string &dataset)
 }
 
 // $Log: Str.cc,v $
+// Revision 1.58  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.57  2005/03/02 21:23:43  jimg
 // RemovedConnections.cc/h; now in nc3-dods.
 //

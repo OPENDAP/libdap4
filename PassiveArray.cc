@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: PassiveArray.cc,v 1.1 2004/07/09 16:34:38 pwest Exp $"};
+static char rcsid[] not_used = {"$Id: PassiveArray.cc,v 1.2 2005/04/07 22:32:47 jimg Exp $"};
 
 #include <stdlib.h>
 
@@ -58,9 +58,10 @@ using std::endl;
     to be created.  The name may be omitted, which will create a
     nameless variable.  This may be adequate for some applications. 
       
-    @param n A string containing the name of the variable to be
-    created. 
-*/
+    @param n A string containing the name of the variable to be created.
+    @param v The template variable instance. This is used to determine the
+    type of the array. For example, for an Array of Float64, pass a pointer
+    to a Float64. */
 PassiveArray::PassiveArray(const string &n, BaseType *v)
     : Array(n, v),
       _byte_val( 0 ),
@@ -340,6 +341,11 @@ PassiveArray::set_value( string *val, int sz )
 }
 
 // $Log: PassiveArray.cc,v $
+// Revision 1.2  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.1  2004/07/09 16:34:38  pwest
 // Adding Passive Data Model objects
 //

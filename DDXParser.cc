@@ -199,9 +199,6 @@ is_not(const char *name, const char *tag)
     return strcmp(name, tag) != 0;
 }
 
-/** @name Helper methods */
-//@{
-
 void
 DDXParser::set_state(DDXParser::ParseState state)
 {
@@ -453,8 +450,6 @@ DDXParser::finish_variable(const char *tag, Type t, const char *expected)
     parent->add_var(btp);
 }
 
-//@}
-
 /** @name SAX Parser Callbacks
 
     These methods are declared static in the class header. This gives them C
@@ -465,7 +460,7 @@ DDXParser::finish_variable(const char *tag, Type t, const char *expected)
 /** Initialize the SAX parser state object. This object is passed to each
     callback as a void pointer. The initial state is parser_start.
 
-    @param state The SAX parser  */
+    @param parser The SAX parser  */
 void 
 DDXParser::ddx_start_document(DDXParser *parser) 
 {
@@ -486,7 +481,7 @@ DDXParser::ddx_start_document(DDXParser *parser)
 }
 
 /** Clean up after finishing a parse.
-    @param state The SAX parser  */
+    @param parser The SAX parser  */
 void 
 DDXParser::ddx_end_document(DDXParser *parser) 
 {
@@ -513,7 +508,9 @@ DDXParser::ddx_end_document(DDXParser *parser)
 /** Process a start element tag. Because the DDX schema uses attributes and
     because libxml2 does not validate those, we do attribute validation here.
 
-    @param state The SAX parser  */
+    @param parser The SAX parser
+    @param name The element
+    @param attrs character array of attribute names. */
 void 
 DDXParser::ddx_start_element(DDXParser *parser, const char *name, 
 				   const char **attrs)
@@ -655,7 +652,9 @@ DDXParser::ddx_start_element(DDXParser *parser, const char *name,
 
 /** Process an end element tag. This is where values are added to the
     DDS/DDX or their parent BaseType.
-    @param state The SAX parser state */
+
+    @param parser The SAX parser state
+    @param name The element name. */
 void 
 DDXParser::ddx_end_element(DDXParser *parser, const char *name) 
 {
@@ -787,7 +786,8 @@ DDXParser::characters(DDXParser *parser, const xmlChar *ch, int len)
 }
 
 /** Handle the standard XML entities.
-    @param state The SAX parser  
+
+    @param parser The SAX parser  
     @param name The XML entity. */
 xmlEntityPtr
 DDXParser::ddx_get_entity(DDXParser *parser, const xmlChar *name) 
@@ -800,7 +800,7 @@ DDXParser::ddx_get_entity(DDXParser *parser, const xmlChar *name)
     typically no way to tell a user about the error since there's often no
     user interface for this software.
 
-    @param state The SAX parser  
+    @param parser The SAX parser  
     @param msg A printf-style format string. */
 void 
 DDXParser::ddx_fatal_error(DDXParser *parser, const char *msg, ...)
@@ -855,9 +855,9 @@ static xmlSAXHandler ddx_sax_parser = {
     object where each instance of BaseType can hold an AttrTable object.
 
     @param document Read the DDX from this file.
-    @param dds Value/result parameter; dump the inforamtion to this DDS
+    @param dest_dds Value/result parameter; dump the inforamtion to this DDS
     instance.  
-    @param blob Value/result parameter; put the URL which references the \t
+    @param blob Value/result parameter; put the URL which references the \c
     dodsBLOBL document here. 
     @exception DDXParseFailed Thrown if the XML document could not be
     read or parsed. */
@@ -910,6 +910,11 @@ DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
 }
 
 // $Log: DDXParser.cc,v $
+// Revision 1.8  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.7  2005/03/30 21:40:10  jimg
 // Now uses the BaseTypeFactory class.
 //

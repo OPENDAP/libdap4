@@ -150,7 +150,10 @@ typedef vector<BaseType *> BaseTypeRow;
     called ``shoe_size'', you can refer to Tom's shoe size as
     ``Tom.shoe_size''.
     
-    @todo Refactor along with Structure movinf methods up into Constructor.
+    @todo Refactor along with Structure moving methods up into Constructor.
+    
+    @todo Add an isEmpty() method which returns true if the Sequence is
+    empty. This should work before and after calling deserialize().
 
     @brief Holds a sequence. */
 
@@ -357,6 +360,11 @@ public:
 
 /* 
  * $Log: Sequence.h,v $
+ * Revision 1.60  2005/04/07 22:32:47  jimg
+ * Updated doxygen comments: fixed errors; updated comments about set_read_p.
+ * Removed the VirtualCtor classes. Added a README about the factory
+ * classes.
+ *
  * Revision 1.59  2005/01/28 17:25:12  jimg
  * Resolved conflicts from merge with release-3-4-9
  *

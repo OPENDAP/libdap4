@@ -158,7 +158,7 @@ Constructor::var_rend()
     return _vars.rend();
 }
 
-/** Return the iterator for the \i ith variable.
+/** Return the iterator for the \e ith variable.
     @param i the index
     @return The corresponding  Vars_iter */
 Constructor::Vars_iter
@@ -285,6 +285,11 @@ Constructor::is_linear()
 }
 
 // $Log: Constructor.cc,v $
+// Revision 1.17  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.16  2005/03/23 23:14:41  pwest
 // algorithm and functional needed on sun and can be included on Linux, so no need to wrap in ifdef WIN32
 //

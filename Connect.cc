@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.133 2005/03/30 21:33:19 jimg Exp $" };
+    { "$Id: Connect.cc,v 1.134 2005/04/07 22:32:47 jimg Exp $" };
 
 #include <stdio.h>
 #ifndef WIN32
@@ -415,6 +415,12 @@ configured, or that the URL has changed.");
     If present in the Connect object's instance, a CE will be escaped,
     combined with \c expr and passed as the query string of the request.
 
+    @note If you need the DDS to hold specializations of the type classes,
+    be sure to include the factory class which will instantiate those
+    specializations in the DDS. Either pass a pointer to the factory to
+    DDS constructor or use the DDS::set_factory() method after the 
+    object is built.
+
     @brief Get the DDS from a server.
     @param dds Result.
     @param expr Send this constraint expression to the server. */
@@ -493,6 +499,12 @@ configured, or that the URL has changed.");
     request. The result is a DataDDS which contains the data values bound to
     variables.
 
+    @note If you need the DataDDS to hold specializations of the type classes,
+    be sure to include the factory class which will instantiate those
+    specializations in the DataDDS. Either pass a pointer to the factory to
+    DataDDS constructor or use the DDS::set_factory() method after the 
+    object is built.
+    
     @brief Get the DAS from a server.
     @param data Result.
     @param expr Send this constraint expression to the server. */
@@ -530,6 +542,12 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
 /** This is a place holder. A better implementation for reading objects from
     the local file store is to write FileConnect and have it support the same
     interface as HTTPConnect.
+
+    @note If you need the DataDDS to hold specializations of the type classes,
+    be sure to include the factory class which will instantiate those
+    specializations in the DataDDS. Either pass a pointer to the factory to
+    DataDDS constructor or use the DDS::set_factory() method after the 
+    object is built.
 
     @param data Result.
     @param data_source Read from this open file/stream. */
@@ -727,6 +745,11 @@ Connect::error()
 #endif
 
 // $Log: Connect.cc,v $
+// Revision 1.134  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.133  2005/03/30 21:33:19  jimg
 // Added DEFAULT_BASETYPE_FACTORY define; use this to control whether
 // the DDS objects suppy the BaseTypeFactory by default.

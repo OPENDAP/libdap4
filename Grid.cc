@@ -308,15 +308,15 @@ Grid::var(const string &name, bool)
 
 /** Add an array or map to the Grid. 
 
-    The original version of this method required that the \t part parameter
+    The original version of this method required that the \c part parameter
     be present. However, this complicates using the class from a parser
     (e.g., the schema-based XML parser). I have modified the method so that
-    if \t part is nil (the default), then the first variable added is the
+    if \c part is nil (the default), then the first variable added is the
     array and subsequent variables are maps. This matches the behavior in the
     Java DAP implementation. 
 
     @param bt Array or Map variable
-    @param part is this an array or a map. If not present, first \t bt is the
+    @param part is this an array or a map. If not present, first \c bt is the
     array and subsequent <tt>bt</tt>s are maps. */
 void 
 Grid::add_var(BaseType *bt, Part part)
@@ -866,6 +866,11 @@ Grid::check_semantics(string &msg, bool all)
 }
 
 // $Log: Grid.cc,v $
+// Revision 1.64  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.63  2004/06/27 11:30:09  rmorris
 // Get it compiling under win32 again by including <functional>
 //

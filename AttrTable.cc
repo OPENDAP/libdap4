@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.50 2005/03/22 21:35:59 jimg Exp $";
+static char rcsid[] not_used ="$Id: AttrTable.cc,v 1.51 2005/04/07 22:32:47 jimg Exp $";
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -1223,9 +1223,7 @@ AttrTable::print(FILE *out, string pad, bool dereference)
     @param out Destination
     @param pad Indent lines of text/xml this much. Default is four spaces.
     @param constrained The DDX contains attribute inforamtion; is this DDX
-    'constrained?' 
-    @param print_container According to the dods.xsd, top-level containers
-    don't include the surrounding <Attribute name=... type=Container> tag. */
+    'constrained?' */
 void
 AttrTable::print_xml(FILE *out, string pad, bool constrained)
 {
@@ -1274,6 +1272,11 @@ AttrTable::print_xml(FILE *out, string pad, bool constrained)
 }
 
 // $Log: AttrTable.cc,v $
+// Revision 1.51  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.50  2005/03/22 21:35:59  jimg
 // Added to doc/comments.
 //

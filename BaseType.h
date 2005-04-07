@@ -231,7 +231,7 @@ public:
     BaseType &operator=(const BaseType &rhs);
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
-	it. This method performs a deep copy.
+	it. This method must perform a deep copy.
 
 	@return A newly allocated copy of \c this. */
     virtual BaseType *ptr_duplicate() = 0; // alloc new instance and dup THIS.
@@ -276,7 +276,7 @@ public:
     virtual void add_var(BaseType *bt, Part part = nil);
 
     // This used to be virutal, but unlike the other virtual methods, it has
-    // no sinsible definition for the classes here *and* some uses of the DAP
+    // no sensible definition for the classes here *and* some uses of the DAP
     // don't need this. I provide a default implementation that throws
     // InternalErr. 
     virtual bool read(const string &dataset);
@@ -472,6 +472,11 @@ public:
 
 /* 
  * $Log: BaseType.h,v $
+ * Revision 1.77  2005/04/07 22:32:47  jimg
+ * Updated doxygen comments: fixed errors; updated comments about set_read_p.
+ * Removed the VirtualCtor classes. Added a README about the factory
+ * classes.
+ *
  * Revision 1.76  2005/01/28 17:25:11  jimg
  * Resolved conflicts from merge with release-3-4-9
  *

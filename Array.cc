@@ -149,7 +149,7 @@ Array::operator=(const Array &rhs)
     Propagate the name of the BaseType instance to this instance. This
     ensures that variables at any given level of the DDS table have
     unique names (i.e., that Arrays do not have their default name ""). If
-    <tt>v</tt>'s name is null, then assume that the array \i is named and
+    <tt>v</tt>'s name is null, then assume that the array \e is named and
     don't overwrite it with <tt>v</tt>'s null name.
     
     @note This version checks to see if \e v is an array. If so, it calls
@@ -1042,6 +1042,11 @@ Array::check_semantics(string &msg, bool)
 }
 
 // $Log: Array.cc,v $
+// Revision 1.69  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.68  2005/03/23 23:11:19  pwest
 // algorithm and functional needed on sun and can be included on Linux, so no need to wrap in ifdef WIN32
 //

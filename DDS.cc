@@ -33,7 +33,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DDS.cc,v 1.77 2005/03/30 21:35:54 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: DDS.cc,v 1.78 2005/04/07 22:32:47 jimg Exp $"};
 
 #ifdef __GNUG__
 // #pragma implementation
@@ -201,8 +201,10 @@ DDS::operator=(const DDS &rhs)
 /** Transfer a single attribute to the table held by a BaseType. If the
     attribute turns out to be a container, call transfer_attr_table. If not
     load the discrete attributes into the BaseType. Both this function and
-    transfer_attr_table \i assume that you know that the attributes are
+    transfer_attr_table \e assume that you know that the attributes are
     destined for the particular BaseType.
+
+    @param das Pointer to the DAS instance which holds the attribute \e ep.
     @param ep The attribute
     @param btp The destination 
     @param suffix When adding attributes, append \e suffix to their names. 
@@ -241,8 +243,13 @@ DDS::transfer_attr(DAS *das, const AttrTable::entry *ep, BaseType *btp,
     as the BaseType's, then copy the individual attributes from the container
     into the BaseType's container. If the names are different, install the
     container itself inside the BaseType's.
+
+    @param das Pointer to the DAS instance which holds the attribtue table \e
+    at. 
     @param at The attribute container
-    @param btp The destination */
+    @param btp The destination 
+    @param suffix Append \e suffix to the attribute name when transferring.
+    Defaults tot eh empty string. Useful when collapsing nested attributes. */
 void
 DDS::transfer_attr_table(DAS *das, AttrTable *at, BaseType *btp, 
                          const string &suffix)
@@ -378,13 +385,13 @@ DDS::add_global_attribute(AttrTable::entry *entry)
     regular expressions to weed out attributes created by some servers that
     don't fit into the DDS/Variable scheme of things. 
 
-    @note This method is technically \i unnecessary because a server (or
+    @note This method is technically \e unnecessary because a server (or
     client) can easily add attributes directly using the DDS::get_attr_table
-    or BaseType::get_attr_table methods and then poking values in using any
+    or BaseType::get_attr_table methods and then poke values in using any
     of the methods AttrTable provides. This method exists to ease the
     transition to DDS objects which contain attribute information for the
     existing servers (Since they all make DAS objects separately from the
-    DDS). They could be modified to <i>use the same AttrTable methods<\i> but
+    DDS). They could be modified to use the same AttrTable methods but
     operate on the AttrTable instances in a DDS/BaseType instead of those in
     a DAS.
 
@@ -1277,9 +1284,9 @@ public:
 };
 
 /** Print an XML represnetation of this DDS. This method is used to generate
-    the part of the DDX response. The \t Dataset tag is \i not written by
+    the part of the DDX response. The \c Dataset tag is \e not written by
     this code. The caller of this method must handle writing that and
-    including the \t dodsBLOB tag.
+    including the \c dodsBLOB tag.
 
     @param out Destination.
     @param constrained True if the output should be limited to just those
@@ -1643,6 +1650,11 @@ DDS::mark_all(bool state)
 }
 
 // $Log: DDS.cc,v $
+// Revision 1.78  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.77  2005/03/30 21:35:54  jimg
 // Now uses the BaseTypeFactory class.
 //

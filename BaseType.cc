@@ -373,6 +373,17 @@ BaseType::read_p()
     value(s) of this variable has/have been read. An implementation of the
     read() method would typically use this to set the \c read_p property to
     true.
+    
+    @note For most of the types the default implementation of this method is
+    fine. However, if you're building a server which must handle data 
+    represented using nested sequences, then you may need to provide a
+    specialization of Sequence::set_read_p(). By default Sequence::set_read_()
+    recursively sets the \e read_p property for all child variables to
+    \e state. For servers where one Sequence reads an outer set of values
+    and another reads an inner set, this is cumbersome. In such a case, it is
+    easier to specialize Sequence::set_read_p() so that it does \e not 
+    recursively set the \e read_p property for the inner Sequence. Be sure
+    to see the documentation for the read() method!
 
     @note For synthesized variables, this method does nothing. Thus, if a
     synthesized variable is added to a Sequence, the Sequence can iteratively
@@ -388,6 +399,7 @@ BaseType::read_p()
     BaseType. It would also provide a way to clean up the way the
     \e synthesized_p prop intrudes on the \e read_p prop.
 
+    @see BaseType::read()
     @brief Sets the value of the \e read_p property.
     @param state Set the \e read_p property to this state. */
 void
@@ -537,7 +549,8 @@ BaseType::get_parent()
     pointer. This feature simplifies constraint expressions for
     datasets which have complex, nested, constructor variables.
     Defaults to true.
-    @param s Record the path to \e n. Defaults to null
+    @param s Record the path to \e n. Defaults to null, in which case it is
+    not used.
 
     @return A pointer to the member named in the \e n argument. If no name is
     given, the function returns the first (only) variable.  For example, an
@@ -559,12 +572,10 @@ BaseType::var(const string &n, bool exact, btp_stack *s)
     values for the parameters. If var() is called w/o any params, the three
     parameter version will be used.
 
-    @deprecated This method is deprecated because is tries first to use
+    @deprecated This method is deprecated because it tries first to use
     exact_match and, if that fails, then tries leaf_match. It's better to use
     the alternate form of var(...) and specify exactly what you'd like to do.
 
-    @param n Find the variable whose name is <i>name</i>.
-    @param s Record the path to <i>name</i>.
     @return A pointer to the named variable. */
 BaseType *
 BaseType::var(const string &, btp_stack &)
@@ -655,7 +666,10 @@ BaseType::add_var(BaseType *, Part)
           handle these tasks will break serialization of nested Sequences. Note
           that when Sequence::read() returns with a result of true (indicting
           there is more data to send, the value of the \c unsent_data property
-          should be true.</li>
+          should be true.
+
+          Also, if you server must handle nested sequences, be sure to read
+          about subclassing set_read_p().</li>
     </ul>
 
     @brief Read data into a local buffer. 
@@ -956,6 +970,11 @@ BaseType::ops(BaseType *, int, const string &)
 }
 
 // $Log: BaseType.cc,v $
+// Revision 1.62  2005/04/07 22:32:47  jimg
+// Updated doxygen comments: fixed errors; updated comments about set_read_p.
+// Removed the VirtualCtor classes. Added a README about the factory
+// classes.
+//
 // Revision 1.61  2005/01/28 17:25:11  jimg
 // Resolved conflicts from merge with release-3-4-9
 //
