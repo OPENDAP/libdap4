@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.19 2005/01/28 17:25:12 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.20 2005/04/15 21:17:23 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -49,8 +49,8 @@ static char rcsid[] not_used =
 
 #include "debug.h"
 #include "Regex.h"
-#include "HTTPConnect.h"
 #include "HTTPCache.h"
+#include "HTTPConnect.h"
 #include "RCReader.h"
 #include "HTTPResponse.h"
 #include "HTTPCacheResponse.h"
@@ -779,6 +779,9 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.20  2005/04/15 21:17:23  jimg
+// Remove include of config_dap.h from HTTPCache.h.
+//
 // Revision 1.19  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //
