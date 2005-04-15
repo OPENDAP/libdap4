@@ -26,8 +26,6 @@
 #ifndef _http_cache_h
 #define _http_cache_h
 
-#include "config_dap.h"		// BAD ***
-
 #ifndef __POWERPC__
 #ifdef __GNUG__
 // #pragma interface
@@ -393,6 +391,10 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.13  2005/04/15 21:16:29  jimg
+// Removed include of config_dap.h; builders must use opendap-config --cflags
+// when they compile code which using the headers.
+//
 // Revision 1.12  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //
