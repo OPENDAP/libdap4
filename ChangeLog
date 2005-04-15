@@ -1,3 +1,15 @@
+2005-04-15  James Gallagher  <jimg@comet.opendap.org>
+
+	* Removed include of config_dap.h from HTTPCache.h. This is the
+	only header file in the library that includes the config header.
+	Removing the include means that users of the library never see the
+	library's internal configuration. There's a potential problem with
+	this, however, in that users of the library must now use
+	opendap-config --cflags when building _or_ define HAVE_PTHREADS_H
+	themselves. I can make this last requirement go away if pthreads
+	becomes required for libdap++ (then the code won't need the
+	compile time symbol).
+
 2005-02-08  James Gallagher  <jimg@comet.dods.org>
 
 	* Merged with release-3-4-10
@@ -1483,5 +1495,5 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.82 2005/02/08 21:31:57 jimg Exp $
+$Id: ChangeLog,v 1.83 2005/04/15 21:22:31 jimg Exp $
 
