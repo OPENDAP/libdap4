@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: Error.cc,v 1.36 2004/07/07 21:08:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: Error.cc,v 1.37 2005/04/18 17:05:44 pwest Exp $"};
 
 #include <stdio.h>
 #include <assert.h>
@@ -154,23 +154,13 @@ Error::OK() const
 {
     // The object is empty - users cannot make these, but this class can!
     bool empty = ((_error_code == undefined_error) 
-		  && (_error_message == "")
-		  && (_program_type == undefined_prog_type) 
-		  && (_program == 0));
+		  && (_error_message == ""));
 
     // Just a message - the program part is null.
     bool message = ((_error_code != undefined_error) 
-		    && (_error_message != "")
-		    && (_program_type == undefined_prog_type) 
-		    && (_program == 0));
+		    && (_error_message != ""));
 
-    // Message and program parts are in working order.
-    bool program = ((_error_code != undefined_error) 
-		    && (_error_message != "")
-		    && (_program_type != undefined_prog_type) 
-		    && (_program != 0));
-
-    return empty || message || program;
+    return empty || message;
 }
 
 /** Given an input stream (FILE *) <tt>fp</tt>, parse an Error object from
@@ -429,6 +419,9 @@ Error::correct_error(void *) const
 }
 
 // $Log: Error.cc,v $
+// Revision 1.37  2005/04/18 17:05:44  pwest
+// Remove dependence on _program_type and _program in OK method
+//
 // Revision 1.36  2004/07/07 21:08:47  jimg
 // Merged with release-3-4-8FCS
 //
