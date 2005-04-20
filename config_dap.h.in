@@ -1,4 +1,4 @@
-/* config_dap.h.in.  Generated from configure.in by autoheader.  */
+/* config_dap.h.in.  Generated from configure.ac by autoheader.  */
 
 #ifndef _config_dap_h
 #define _config_dap_h
@@ -17,17 +17,26 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
+/* dbyte */
+#undef DBYTE
+
+/* dfloat32 */
+#undef DFLOAT32
+
+/* dfloat64 */
+#undef DFLOAT64
+
+/* dint16 */
+#undef DINT16
+
+/* int32 */
+#undef DINT32
+
 /* Set instrumentation to level 1 (see debug.h) */
 #undef DODS_DEBUG
 
 /* Set instrumentation to level 2 */
 #undef DODS_DEBUG2
-
-/* The relative path to the root of the DODS source tree */
-#undef DODS_RELATIVE
-
-/* The full path to the root of the DODS source tree */
-#undef DODS_ROOT
 
 /* uint16 */
 #undef DUINT16
@@ -126,16 +135,13 @@
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
    automatically deduced at run-time.
-        STACK_DIRECTION > 0 => grows toward higher addresses
-        STACK_DIRECTION < 0 => grows toward lower addresses
-        STACK_DIRECTION = 0 => direction of growth unknown */
+	STACK_DIRECTION > 0 => grows toward higher addresses
+	STACK_DIRECTION < 0 => grows toward lower addresses
+	STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
-
-/* Use the dbnew library to trace bew/delete calls */
-#undef TRACE_NEW
 
 /* xdr float32 */
 #undef XDR_FLOAT32
@@ -159,18 +165,14 @@
    `char[]'. */
 #undef YYTEXT_POINTER
 
-/* Is this code reentrant (pthreads was found)? Protect this since for FC3
-this symbol is defined in a system header (gthr-default.h) 02/08/05 jhrg */
-#ifndef _REENTRANT
-#undef _REENTRANT
-#endif
-
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
 #undef inline
+#endif
 
 /* Define to `unsigned' if <sys/types.h> does not define. */
 #undef size_t
