@@ -6595,6 +6595,7 @@ echo "$as_me:$LINENO: result: $ac_cv_lib_curl_curl_version" >&5
 echo "${ECHO_T}$ac_cv_lib_curl_curl_version" >&6
 if test $ac_cv_lib_curl_curl_version = yes; then
   LIBS="$LIBS `curl-config --libs`"
+	 INCS="$INCS `curl-config --cflags`"
 else
   { { echo "$as_me:$LINENO: error: I could not find libcurl" >&5
 echo "$as_me: error: I could not find libcurl" >&2;}
@@ -6668,6 +6669,7 @@ echo "$as_me:$LINENO: result: $ac_cv_lib_xml2_xmlInitGlobals" >&5
 echo "${ECHO_T}$ac_cv_lib_xml2_xmlInitGlobals" >&6
 if test $ac_cv_lib_xml2_xmlInitGlobals = yes; then
   LIBS="$LIBS `xml2-config --libs`"
+	 INCS="$INCS `xml2-config --cflags`"
 else
   { { echo "$as_me:$LINENO: error: I could not find libxml2" >&5
 echo "$as_me: error: I could not find libxml2" >&2;}

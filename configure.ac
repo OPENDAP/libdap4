@@ -77,12 +77,12 @@ DODS_CHECK_SIZES
 dnl Checks for specific libraries
 AC_CHECK_LIB([curl], [curl_version], 
 	[LIBS="$LIBS `curl-config --libs`"
-	 INCS="$INCS `curl-config --cflags"],
+	 INCS="$INCS `curl-config --cflags`"],
 	[AC_MSG_ERROR([I could not find libcurl])])
 
 AC_CHECK_LIB([xml2], [xmlInitGlobals],
 	[LIBS="$LIBS `xml2-config --libs`"
-	 INCS="$INCS `xml2-config --cflags"],
+	 INCS="$INCS `xml2-config --cflags`"],
 	[AC_MSG_ERROR([I could not find libxml2])])
 
 AC_CHECK_LIB([pthread], [pthread_testcancel], 

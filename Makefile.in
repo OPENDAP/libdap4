@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.164 2005/04/21 17:48:59 jimg Exp $
+# $Id: Makefile.in,v 1.165 2005/04/21 17:51:34 jimg Exp $
 
 @SET_MAKE@
 
@@ -917,9 +917,47 @@ ResponseTooBigErr.o: ResponseTooBigErr.cc config_dap.h \
   ResponseTooBigErr.h Error.h
 AISResources.o: AISResources.cc config_dap.h AISResources.h GNU/Regex.h \
   Resource.h Error.h AISExceptions.h AISDatabaseParser.h \
-  libxml/parserInternals.h InternalErr.h
+  /usr/include/libxml2/libxml/parserInternals.h \
+  /usr/include/libxml2/libxml/xmlversion.h \
+  /usr/include/libxml2/libxml/xmlexports.h \
+  /usr/include/libxml2/libxml/parser.h /usr/include/libxml2/libxml/tree.h \
+  /usr/include/libxml2/libxml/xmlstring.h \
+  /usr/include/libxml2/libxml/xmlregexp.h \
+  /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+  /usr/include/libxml2/libxml/valid.h \
+  /usr/include/libxml2/libxml/xmlerror.h \
+  /usr/include/libxml2/libxml/list.h \
+  /usr/include/libxml2/libxml/xmlautomata.h \
+  /usr/include/libxml2/libxml/entities.h \
+  /usr/include/libxml2/libxml/encoding.h \
+  /usr/include/libxml2/libxml/xmlIO.h \
+  /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX.h \
+  /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
+  /usr/include/libxml2/libxml/xmlmemory.h \
+  /usr/include/libxml2/libxml/threads.h \
+  /usr/include/libxml2/libxml/HTMLparser.h \
+  /usr/include/libxml2/libxml/chvalid.h InternalErr.h
 AISDatabaseParser.o: AISDatabaseParser.cc config_dap.h \
-  AISDatabaseParser.h libxml/parserInternals.h InternalErr.h Error.h \
+  AISDatabaseParser.h /usr/include/libxml2/libxml/parserInternals.h \
+  /usr/include/libxml2/libxml/xmlversion.h \
+  /usr/include/libxml2/libxml/xmlexports.h \
+  /usr/include/libxml2/libxml/parser.h /usr/include/libxml2/libxml/tree.h \
+  /usr/include/libxml2/libxml/xmlstring.h \
+  /usr/include/libxml2/libxml/xmlregexp.h \
+  /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+  /usr/include/libxml2/libxml/valid.h \
+  /usr/include/libxml2/libxml/xmlerror.h \
+  /usr/include/libxml2/libxml/list.h \
+  /usr/include/libxml2/libxml/xmlautomata.h \
+  /usr/include/libxml2/libxml/entities.h \
+  /usr/include/libxml2/libxml/encoding.h \
+  /usr/include/libxml2/libxml/xmlIO.h \
+  /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX.h \
+  /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
+  /usr/include/libxml2/libxml/xmlmemory.h \
+  /usr/include/libxml2/libxml/threads.h \
+  /usr/include/libxml2/libxml/HTMLparser.h \
+  /usr/include/libxml2/libxml/chvalid.h InternalErr.h Error.h \
   AISExceptions.h AISResources.h GNU/Regex.h Resource.h util.h BaseType.h \
   AttrTable.h GNU/Pix.h ./IteratorAdapter.h dods-datatypes.h Byte.h \
   Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
@@ -1119,8 +1157,27 @@ parserUtilTest.o: parserUtilTest.cc parser.h Error.h GSEClause.h \
   BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
   Grid.h
 AISDatabaseParserTest.o: AISDatabaseParserTest.cc AISDatabaseParser.h \
-  libxml/parserInternals.h InternalErr.h Error.h AISExceptions.h \
-  AISResources.h GNU/Regex.h Resource.h debug.h
+  /usr/include/libxml2/libxml/parserInternals.h \
+  /usr/include/libxml2/libxml/xmlversion.h \
+  /usr/include/libxml2/libxml/xmlexports.h \
+  /usr/include/libxml2/libxml/parser.h /usr/include/libxml2/libxml/tree.h \
+  /usr/include/libxml2/libxml/xmlstring.h \
+  /usr/include/libxml2/libxml/xmlregexp.h \
+  /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+  /usr/include/libxml2/libxml/valid.h \
+  /usr/include/libxml2/libxml/xmlerror.h \
+  /usr/include/libxml2/libxml/list.h \
+  /usr/include/libxml2/libxml/xmlautomata.h \
+  /usr/include/libxml2/libxml/entities.h \
+  /usr/include/libxml2/libxml/encoding.h \
+  /usr/include/libxml2/libxml/xmlIO.h \
+  /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX.h \
+  /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
+  /usr/include/libxml2/libxml/xmlmemory.h \
+  /usr/include/libxml2/libxml/threads.h \
+  /usr/include/libxml2/libxml/HTMLparser.h \
+  /usr/include/libxml2/libxml/chvalid.h InternalErr.h Error.h \
+  AISExceptions.h AISResources.h GNU/Regex.h Resource.h debug.h
 AISResourcesTest.o: AISResourcesTest.cc AISResources.h GNU/Regex.h \
   Resource.h Error.h AISExceptions.h debug.h
 AISMergeTest.o: AISMergeTest.cc Connect.h DAS.h GNU/Pix.h \
@@ -1148,11 +1205,30 @@ RCReaderTest.o: RCReaderTest.cc RCReader.h Error.h util.h BaseType.h \
   Float64.h Str.h dods-limits.h Url.h Array.h Vector.h DDS.h \
   Constructor.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h \
   expr.h RValue.h Structure.h Sequence.h Grid.h debug.h
-DDXParserTest.o: DDXParserTest.cc DDXParser.h libxml/parserInternals.h \
-  DDXExceptions.h Error.h DDS.h GNU/Pix.h ./IteratorAdapter.h BaseType.h \
-  AttrTable.h InternalErr.h dods-datatypes.h Constructor.h \
-  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
-  debug.h
+DDXParserTest.o: DDXParserTest.cc DDXParser.h \
+  /usr/include/libxml2/libxml/parserInternals.h \
+  /usr/include/libxml2/libxml/xmlversion.h \
+  /usr/include/libxml2/libxml/xmlexports.h \
+  /usr/include/libxml2/libxml/parser.h /usr/include/libxml2/libxml/tree.h \
+  /usr/include/libxml2/libxml/xmlstring.h \
+  /usr/include/libxml2/libxml/xmlregexp.h \
+  /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+  /usr/include/libxml2/libxml/valid.h \
+  /usr/include/libxml2/libxml/xmlerror.h \
+  /usr/include/libxml2/libxml/list.h \
+  /usr/include/libxml2/libxml/xmlautomata.h \
+  /usr/include/libxml2/libxml/entities.h \
+  /usr/include/libxml2/libxml/encoding.h \
+  /usr/include/libxml2/libxml/xmlIO.h \
+  /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX.h \
+  /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
+  /usr/include/libxml2/libxml/xmlmemory.h \
+  /usr/include/libxml2/libxml/threads.h \
+  /usr/include/libxml2/libxml/HTMLparser.h \
+  /usr/include/libxml2/libxml/chvalid.h DDXExceptions.h Error.h DDS.h \
+  GNU/Pix.h ./IteratorAdapter.h BaseType.h AttrTable.h InternalErr.h \
+  dods-datatypes.h Constructor.h BaseTypeFactory.h DAS.h \
+  DODSResponseObject.h Clause.h expr.h RValue.h debug.h
 ArrayTest.o: ArrayTest.cc GNU/Regex.h Array.h dods-limits.h Vector.h \
   BaseType.h AttrTable.h GNU/Pix.h ./IteratorAdapter.h Error.h \
   InternalErr.h dods-datatypes.h DDS.h Constructor.h BaseTypeFactory.h \
@@ -1160,9 +1236,47 @@ ArrayTest.o: ArrayTest.cc GNU/Regex.h Array.h dods-limits.h Vector.h \
   Structure.h debug.h
 AISResources.o: AISResources.cc config_dap.h AISResources.h GNU/Regex.h \
   Resource.h Error.h AISExceptions.h AISDatabaseParser.h \
-  libxml/parserInternals.h InternalErr.h
+  /usr/include/libxml2/libxml/parserInternals.h \
+  /usr/include/libxml2/libxml/xmlversion.h \
+  /usr/include/libxml2/libxml/xmlexports.h \
+  /usr/include/libxml2/libxml/parser.h /usr/include/libxml2/libxml/tree.h \
+  /usr/include/libxml2/libxml/xmlstring.h \
+  /usr/include/libxml2/libxml/xmlregexp.h \
+  /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+  /usr/include/libxml2/libxml/valid.h \
+  /usr/include/libxml2/libxml/xmlerror.h \
+  /usr/include/libxml2/libxml/list.h \
+  /usr/include/libxml2/libxml/xmlautomata.h \
+  /usr/include/libxml2/libxml/entities.h \
+  /usr/include/libxml2/libxml/encoding.h \
+  /usr/include/libxml2/libxml/xmlIO.h \
+  /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX.h \
+  /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
+  /usr/include/libxml2/libxml/xmlmemory.h \
+  /usr/include/libxml2/libxml/threads.h \
+  /usr/include/libxml2/libxml/HTMLparser.h \
+  /usr/include/libxml2/libxml/chvalid.h InternalErr.h
 AISDatabaseParser.o: AISDatabaseParser.cc config_dap.h \
-  AISDatabaseParser.h libxml/parserInternals.h InternalErr.h Error.h \
+  AISDatabaseParser.h /usr/include/libxml2/libxml/parserInternals.h \
+  /usr/include/libxml2/libxml/xmlversion.h \
+  /usr/include/libxml2/libxml/xmlexports.h \
+  /usr/include/libxml2/libxml/parser.h /usr/include/libxml2/libxml/tree.h \
+  /usr/include/libxml2/libxml/xmlstring.h \
+  /usr/include/libxml2/libxml/xmlregexp.h \
+  /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+  /usr/include/libxml2/libxml/valid.h \
+  /usr/include/libxml2/libxml/xmlerror.h \
+  /usr/include/libxml2/libxml/list.h \
+  /usr/include/libxml2/libxml/xmlautomata.h \
+  /usr/include/libxml2/libxml/entities.h \
+  /usr/include/libxml2/libxml/encoding.h \
+  /usr/include/libxml2/libxml/xmlIO.h \
+  /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX.h \
+  /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
+  /usr/include/libxml2/libxml/xmlmemory.h \
+  /usr/include/libxml2/libxml/threads.h \
+  /usr/include/libxml2/libxml/HTMLparser.h \
+  /usr/include/libxml2/libxml/chvalid.h InternalErr.h Error.h \
   AISExceptions.h AISResources.h GNU/Regex.h Resource.h util.h BaseType.h \
   AttrTable.h GNU/Pix.h ./IteratorAdapter.h dods-datatypes.h Byte.h \
   Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h Str.h \
@@ -1191,11 +1305,30 @@ AISConnect.o: AISConnect.cc config_dap.h AISConnect.h Connect.h DAS.h \
   AISExceptions.h
 DDXParser.o: DDXParser.cc config_dap.h BaseType.h AttrTable.h GNU/Pix.h \
   ./IteratorAdapter.h Error.h InternalErr.h dods-datatypes.h \
-  Constructor.h DDXParser.h libxml/parserInternals.h DDXExceptions.h \
-  DDS.h BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h \
-  RValue.h util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h \
-  Float64.h Str.h dods-limits.h Url.h Array.h Vector.h Structure.h \
-  Sequence.h Grid.h debug.h
+  Constructor.h DDXParser.h /usr/include/libxml2/libxml/parserInternals.h \
+  /usr/include/libxml2/libxml/xmlversion.h \
+  /usr/include/libxml2/libxml/xmlexports.h \
+  /usr/include/libxml2/libxml/parser.h /usr/include/libxml2/libxml/tree.h \
+  /usr/include/libxml2/libxml/xmlstring.h \
+  /usr/include/libxml2/libxml/xmlregexp.h \
+  /usr/include/libxml2/libxml/dict.h /usr/include/libxml2/libxml/hash.h \
+  /usr/include/libxml2/libxml/valid.h \
+  /usr/include/libxml2/libxml/xmlerror.h \
+  /usr/include/libxml2/libxml/list.h \
+  /usr/include/libxml2/libxml/xmlautomata.h \
+  /usr/include/libxml2/libxml/entities.h \
+  /usr/include/libxml2/libxml/encoding.h \
+  /usr/include/libxml2/libxml/xmlIO.h \
+  /usr/include/libxml2/libxml/globals.h /usr/include/libxml2/libxml/SAX.h \
+  /usr/include/libxml2/libxml/xlink.h /usr/include/libxml2/libxml/SAX2.h \
+  /usr/include/libxml2/libxml/xmlmemory.h \
+  /usr/include/libxml2/libxml/threads.h \
+  /usr/include/libxml2/libxml/HTMLparser.h \
+  /usr/include/libxml2/libxml/chvalid.h DDXExceptions.h DDS.h \
+  BaseTypeFactory.h DAS.h DODSResponseObject.h Clause.h expr.h RValue.h \
+  util.h Byte.h Int16.h UInt16.h Int32.h UInt32.h Float32.h Float64.h \
+  Str.h dods-limits.h Url.h Array.h Vector.h Structure.h Sequence.h \
+  Grid.h debug.h
 GetOpt.o: GNU/GetOpt.cc GNU/GetOpt.h
 Regex.o: GNU/Regex.cc GNU/builtin.h regex-0.12/regex.h GNU/Regex.h
 error.o: GNU/error.cc GNU/builtin.h

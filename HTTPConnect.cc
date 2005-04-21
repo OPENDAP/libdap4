@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.21 2005/04/21 17:48:59 jimg Exp $" };
+    { "$Id: HTTPConnect.cc,v 1.22 2005/04/21 17:51:34 jimg Exp $" };
 
 #include <stdio.h>
 
@@ -235,7 +235,7 @@ curl_debug(CURL *curl, curl_infotype info, char *msg, size_t size, void  *data)
 	cerr << "SSL Data out: " << message; break;
 #endif
       default:
-	cerr << "Curl info: " << message; break
+	cerr << "Curl info: " << message; break;
     }
     return 0;
 }
@@ -789,6 +789,9 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 }
 
 // $Log: HTTPConnect.cc,v $
+// Revision 1.22  2005/04/21 17:51:34  jimg
+// Checkpoint: Build works
+//
 // Revision 1.21  2005/04/21 17:48:59  jimg
 // Removed PTHREADS compile-time switch. Also, checkpoint for the build
 // work.
