@@ -32,7 +32,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: SignalHandler.cc,v 1.5 2004/07/07 21:08:48 jimg Exp $" };
+    { "$Id: SignalHandler.cc,v 1.6 2005/04/21 17:48:59 jimg Exp $" };
 
 #include <signal.h>
 
@@ -40,9 +40,7 @@ static char rcsid[] not_used =
 #include <unistd.h>
 #endif
 
-#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#endif
 
 #include "SignalHandler.h"
 #include "util.h"
@@ -53,9 +51,7 @@ SignalHandler *SignalHandler::d_instance = 0;
 
 // instance_control is used to ensure that in a MT environment d_instance is
 // correctly initialized.
-#if HAVE_PTHREAD_H
 static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
-#endif
 
 /// Private static void method.
 void
@@ -122,12 +118,7 @@ SignalHandler::dispatcher(int signum)
 SignalHandler* 
 SignalHandler::instance()
 {
-#if HAVE_PTHREAD_H
     pthread_once(&instance_control, initialize_instance);
-#else
-    if (!d_instance)
-	initialize_instance();
-#endif
 
     return d_instance;
 }
@@ -221,6 +212,10 @@ SignalHandler::remove_handler(int signum)
 }
 
 // $Log: SignalHandler.cc,v $
+// Revision 1.6  2005/04/21 17:48:59  jimg
+// Removed PTHREADS compile-time switch. Also, checkpoint for the build
+// work.
+//
 // Revision 1.5  2004/07/07 21:08:48  jimg
 // Merged with release-3-4-8FCS
 //

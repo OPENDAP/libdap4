@@ -1,5 +1,5 @@
 
-dnl -*- m4 -*-
+dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
@@ -58,7 +58,7 @@ dnl Find where GNU tar lives on the user's system
 DODS_PROG_GTAR
 
 dnl The command to use to generate dependencies for Makefiles
-depend=depend.sh
+depend=./depend.sh
 AC_SUBST(depend)
 
 
@@ -76,11 +76,13 @@ DODS_CHECK_SIZES
 
 dnl Checks for specific libraries
 AC_CHECK_LIB([curl], [curl_version], 
-	[LIBS="$LIBS `curl-config --libs`"],
+	[LIBS="$LIBS `curl-config --libs`"
+	 INCS="$INCS `curl-config --cflags"],
 	[AC_MSG_ERROR([I could not find libcurl])])
 
 AC_CHECK_LIB([xml2], [xmlInitGlobals],
-	[LIBS="$LIBS `xml2-config --libs`"],
+	[LIBS="$LIBS `xml2-config --libs`"
+	 INCS="$INCS `xml2-config --cflags"],
 	[AC_MSG_ERROR([I could not find libxml2])])
 
 AC_CHECK_LIB([pthread], [pthread_testcancel], 
@@ -125,5 +127,17 @@ AH_BOTTOM([/* Shorthand for gcc's unused attribute feature */
 #endif /* __GNUG__ || __GNUC__ */
 
 #endif /* _config_dap_h */])
+
+dnl Temporary hack; find a home for the deflate program; set it to
+dnl prefix/etc/deflate. Seeutil.cc:dods_root()
+if test "$prefix" = "NONE"
+then
+AC_DEFINE(DODS_ROOT, "/usr/local", [Set to the prefix directory])
+else
+AC_DEFINE_UNQUOTED(DODS_ROOT, "$prefix", [Set to the prefix directory])
+fi
+
+dnl INCS is non-standard...
+AC_SUBST(INCS)
 
 AC_OUTPUT(Makefile tests/Makefile opendap-config)

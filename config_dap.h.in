@@ -38,6 +38,9 @@
 /* Set instrumentation to level 2 */
 #undef DODS_DEBUG2
 
+/* Set the value to the prefix dir */
+#undef DODS_ROOT
+
 /* uint16 */
 #undef DUINT16
 

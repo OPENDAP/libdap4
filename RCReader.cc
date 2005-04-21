@@ -55,9 +55,7 @@
 #define DIR_SEP_CHAR   '/'
 #endif
 
-#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#endif
 
 #include <fstream>
 
@@ -72,9 +70,7 @@ RCReader* RCReader::_instance = 0;
 // This variable (instance_control) is used to ensure that in a MT
 // environment _instance is correctly initialized. See the get_instance
 // method. 08/07/02 jhrg
-#if HAVE_PTHREAD_H
 static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
-#endif
 
 /** Using values from this instance of RCReader, write out values for a
     default .dodsrc file. Nominally this will use the defaults for each thing
@@ -491,19 +487,18 @@ RCReader::initialize_instance() throw(Error)
 RCReader* 
 RCReader::instance() throw(Error)
 {
-#if HAVE_PTHREAD_H
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg
     pthread_once(&instance_control, initialize_instance);
-#else
-    if (!_instance)
-	initialize_instance();
-#endif
 
     return _instance;
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.15  2005/04/21 17:48:59  jimg
+// Removed PTHREADS compile-time switch. Also, checkpoint for the build
+// work.
+//
 // Revision 1.14  2004/11/16 22:50:20  jimg
 // Fixed tests. Also fixed a bug intorduced in Vector where a template
 // with no name caused some software (any code which depends on the

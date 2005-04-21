@@ -38,13 +38,11 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: usage.cc,v 1.29 2005/01/28 17:25:13 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: usage.cc,v 1.30 2005/04/21 17:48:59 jimg Exp $"};
 
 #include <stdio.h>
 
-#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#endif
 
 #include <iostream>
 #include <fstream>
@@ -93,9 +91,7 @@ usage(char *argv[])
 // code is *not* MT-Safe.
 
 static Regex *dim_ptr;
-#if HAVE_PTHREAD_H
 static pthread_once_t dim_once_control = PTHREAD_ONCE_INIT;
-#endif
 
 static void
 init_dim_regex()
@@ -108,20 +104,13 @@ init_dim_regex()
 static bool
 name_in_kill_file(const string &name)
 {
-#if HAVE_PTHREAD_H
     pthread_once(&dim_once_control, init_dim_regex);
-#else
-    if (!dim_ptr)
-	init_dim_regex();
-#endif
 
     return dim_ptr->match(name.c_str(), name.length()) != -1;
 }
 
 static Regex *global_ptr;
-#if HAVE_PTHREAD_H
 static pthread_once_t global_once_control = PTHREAD_ONCE_INIT;
-#endif
 
 static void
 init_global_regex()
@@ -134,12 +123,7 @@ init_global_regex()
 static bool
 name_is_global(string &name)
 {
-#if HAVE_PTHREAD_H
     pthread_once(&global_once_control, init_global_regex);
-#else
-    if (!global_ptr)
-	init_global_regex();
-#endif
 
     downcase(name);
     return global_ptr->match(name.c_str(), name.length()) != -1;
@@ -500,6 +484,10 @@ main(int argc, char *argv[])
 }
 
 // $Log: usage.cc,v $
+// Revision 1.30  2005/04/21 17:48:59  jimg
+// Removed PTHREADS compile-time switch. Also, checkpoint for the build
+// work.
+//
 // Revision 1.29  2005/01/28 17:25:13  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

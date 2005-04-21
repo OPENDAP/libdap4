@@ -30,9 +30,7 @@
 #include "config_dap.h"
 
 #include <stdio.h>
-#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#endif
 
 #include <iostream>
 #include <sstream>
@@ -58,7 +56,6 @@ HTTPCache *HTTPCache::_instance = 0;
 
 using namespace std;
 
-#if HAVE_PTHREAD_H
 // instance_mutex is used to ensure that only one instance is created. The
 // other mutexes used by this class are fields. 10/09/02 jhrg
 static pthread_mutex_t instance_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -67,13 +64,6 @@ static pthread_mutex_t instance_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UNLOCK(m) pthread_mutex_unlock((m))
 #define INIT(m) pthread_mutex_init((m), 0)
 #define DESTROY(m) pthread_mutex_destroy((m))
-#else
-#define LOCK(m)
-#define TRYLOCK(m)
-#define UNLOCK(m)
-#define INIT(m)
-#define DESTROY(m)
-#endif
 
 #ifdef WIN32
 #include <direct.h>
@@ -2366,6 +2356,10 @@ HTTPCache::purge_cache() throw(Error)
 }
 
 // $Log: HTTPCache.cc,v $
+// Revision 1.16  2005/04/21 17:48:59  jimg
+// Removed PTHREADS compile-time switch. Also, checkpoint for the build
+// work.
+//
 // Revision 1.15  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9
 //

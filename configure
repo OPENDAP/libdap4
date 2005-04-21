@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS VERSION DVR build build_cpu build_vendor build_os host host_cpu host_vendor host_os CXX LN_S AWK CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXXFLAGS ac_ct_CXX RANLIB ac_ct_RANLIB SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LEX LEXLIB LEX_OUTPUT_ROOT YACC PERL TAR depend VALGRIND CPP EGREP ALLOCA REGEX_C REGEX_O LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS VERSION DVR build build_cpu build_vendor build_os host host_cpu host_vendor host_os CXX LN_S AWK CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXXFLAGS ac_ct_CXX RANLIB ac_ct_RANLIB SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LEX LEXLIB LEX_OUTPUT_ROOT YACC PERL TAR depend VALGRIND CPP EGREP ALLOCA REGEX_C REGEX_O INCS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1329,7 +1329,7 @@ echo "${ECHO_T}$VERSION" >&6
 
 
 cat >>confdefs.h <<\_ACEOF
-#define CNAME "DODS DAP++"
+#define CNAME "OPeNDAP DAP++"
 _ACEOF
 
 
@@ -3406,7 +3406,7 @@ echo "$as_me: WARNING: GNU tar is required for some Makefile targets." >&2;}
 
 
 
-depend=depend.sh
+depend=./depend.sh
 
 
 
@@ -7282,6 +7282,23 @@ echo "$as_me: error: Bad debug value" >&2;}
 
 
 
+if test "$prefix" = "NONE"
+then
+
+cat >>confdefs.h <<\_ACEOF
+#define DODS_ROOT "/usr/local"
+_ACEOF
+
+else
+
+cat >>confdefs.h <<_ACEOF
+#define DODS_ROOT "$prefix"
+_ACEOF
+
+fi
+
+
+
                               ac_config_files="$ac_config_files Makefile tests/Makefile opendap-config"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7938,6 +7955,7 @@ s,@EGREP@,$EGREP,;t t
 s,@ALLOCA@,$ALLOCA,;t t
 s,@REGEX_C@,$REGEX_C,;t t
 s,@REGEX_O@,$REGEX_O,;t t
+s,@INCS@,$INCS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

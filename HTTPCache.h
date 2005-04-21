@@ -33,9 +33,7 @@
 #endif
 
 #include <stdio.h>
-#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -175,9 +173,8 @@ public:
 	bool no_cache;		// This field is not saved in the index.
 	
 	int locked;
-#ifdef HAVE_PTHREAD_H
 	pthread_mutex_t lock;
-#endif
+
 	CacheEntry() : url(""), hash(-1), hits(0), cachename(""), 
 		       etag(""), lm(-1),
 		       expires(-1), date(-1), age(-1), max_age(-1), size(0),
@@ -236,9 +233,7 @@ private:
     int d_new_entries;		// How many entries since index write?
 
     // Lock non-const methods (also ones that use the STL).
-#ifdef HAVE_PTHREAD_H
     pthread_mutex_t d_cache_mutex;
-#endif
 
     // Typedefs for CacheTable. A CacheTable is a vector of vectors of
     // CacheEntries. The outer vector is accessed using the hash value.
@@ -391,6 +386,10 @@ public:
 };
 
 // $Log: HTTPCache.h,v $
+// Revision 1.14  2005/04/21 17:48:59  jimg
+// Removed PTHREADS compile-time switch. Also, checkpoint for the build
+// work.
+//
 // Revision 1.13  2005/04/15 21:16:29  jimg
 // Removed include of config_dap.h; builders must use opendap-config --cflags
 // when they compile code which using the headers.
