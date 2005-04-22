@@ -18,7 +18,7 @@
 # 4. Macros for locating various systems (Matlab, etc.)
 # 5. Macros used to test things about the computer/OS/hardware
 #
-# $Id: acinclude.m4,v 1.1 2005/04/20 21:08:08 jimg Exp $
+# $Id: acinclude.m4,v 1.2 2005/04/22 04:50:54 jimg Exp $
 
 # 1. Unidata's macros
 #-------------------------------------------------------------------------
@@ -70,7 +70,6 @@ AC_DEFUN([DODS_HDF_LIBRARY], [dnl
     AC_ARG_WITH(hdf,
         [  --with-hdf=ARG          Where is the HDF library (directory)],
         HDF_PATH=${withval}, HDF_PATH="$HDF_PATH")
-    dnl AC_REQUIRE([DODS_XTRALIBS])
     if test ! -d "$HDF_PATH"
     then
         HDF_PATH="/usr/local/hdf"
