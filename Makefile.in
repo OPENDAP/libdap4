@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.166 2005/04/22 04:50:54 jimg Exp $
+# $Id: Makefile.in,v 1.167 2005/04/22 20:51:53 jimg Exp $
 
 @SET_MAKE@
 
@@ -344,29 +344,28 @@ install: all install-headers install-geturl install-opendap-config install-usage
 
 install-headers:
 	-mkdir -p $(includedir)
-	$(INSTALL_DATA) debug.h $(includedir)
-	$(INSTALL_DATA) dods-limits.h $(includedir)
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
-		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS); \
+		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS) \
+		 debug.h dods-limits.h ; \
 	    do $(INSTALL_DATA) $$h $(includedir); done
 
 install-geturl: geturl
 	-mkdir -p $(bindir)
 	$(INSTALL_PROGRAM) -s geturl $(bindir)
 
-install-opendap-config: 
+install-libdap-config:
 	-mkdir -p $(bindir)
-	$(INSTALL_PROGRAM) opendap-config $(bindir)
+	$(INSTALL_PROGRAM) libdap-config $(bindir)
 
 # usage and deflate are part of the DODS server. 02/10/98 jhrg
 
 install-usage: usage
 	-mkdir -p $(etcdir)
-	$(INSTALL_PROGRAM) -s usage $(etcdir)
+	$(INSTALL_PROGRAM) -s usage $(sbindir)
 
 install-deflate: deflate
 	-mkdir -p $(etcdir)
-	$(INSTALL_PROGRAM) -s deflate $(etcdir)
+	$(INSTALL_PROGRAM) -s deflate $(sbindir)
 
 aclocal.m4: acinclude.m4
 	aclocal
