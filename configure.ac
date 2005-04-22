@@ -7,12 +7,9 @@ AC_INIT(libdap, 3.5.0, dods-tech@unidata.ucar.edu)
 AC_CONFIG_SRCDIR([AISConnect.cc])
 AC_CONFIG_HEADER([config_dap.h dods-datatypes.h regex-0.12/config.h])
 
-DODS_DIRECTORY_VERSION
-
-AC_DEFINE(CNAME, "OPeNDAP DAP++", [What sort of HTTP client is this?])
-AC_DEFINE_UNQUOTED(CVER, "$VERSION", [Client version number])
-DVR="DODS DAP++/$VERSION"
-AC_DEFINE_UNQUOTED(DVR, "$DVR", [Client name and vesion combined])
+AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
+AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
+AC_DEFINE_UNQUOTED(DVR, "${CNAME}/${CVER}", [Client name and vesion combined])
 AC_SUBST(DVR)
 
 dnl flags for the compilers and linkers - set these before locating the
@@ -98,7 +95,8 @@ AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv re_comp regcomp setenv strchr strerror strstr strtol strtoul])
-
+# Added 04/22/05 jhrg
+AC_CHECK_FUNCS([timegm mktime])
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
 dnl the AC_CHECK_LIB macro is not needed.
@@ -142,18 +140,18 @@ dnl 	 INCS="$INCS `xml2-config --cflags`"],
 dnl 	[AC_MSG_ERROR([I could not find libxml2])]
 dnl 	[`xml2-config --libs`])
 
-dnl AC_CHECK_LIB([pthread], [pthread_kill], 
-dnl 	[LIBS="$LIBS -lpthread"],
-dnl 	[AC_MSG_ERROR([I could not find pthreads])])
-LIBS="$LIBS -lpthread"
+AC_CHECK_LIB([pthread], [pthread_kill], 
+	[LIBS="$LIBS -lpthread"],
+	[AC_MSG_ERROR([I could not find pthreads])])
+dnl LIBS="$LIBS -lpthread"
 
 dnl temporary hack for the librx/regex code. 04/08/04 jhrg.
-INCS="-Iregex-0.12 $INCS"
-REGEX_C=regex-0.12/regex.c
-AC_SUBST(REGEX_C)
-echo "Setting $REGEX_C"
-REGEX_O=regex-0.12/regex.o
-AC_SUBST(REGEX_O)
+dnl INCS="-Iregex-0.12 $INCS"
+dnl REGEX_C=regex-0.12/regex.c
+dnl AC_SUBST(REGEX_C)
+dnl echo "Setting $REGEX_C"
+dnl REGEX_O=regex-0.12/regex.o
+dnl AC_SUBST(REGEX_O)
 
 DODS_DEBUG_OPTION
 
@@ -175,9 +173,9 @@ dnl Temporary hack; find a home for the deflate program; set it to
 dnl prefix/etc/deflate. Seeutil.cc:dods_root()
 if test "$prefix" = "NONE"
 then
-AC_DEFINE(DODS_ROOT, "/usr/local", [Set to the prefix directory])
+AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])
 else
-AC_DEFINE_UNQUOTED(DODS_ROOT, "$prefix", [Set to the prefix directory])
+AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
 fi
 
 dnl INCS is non-standard...

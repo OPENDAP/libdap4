@@ -114,7 +114,12 @@ FILE *text_to_temp(string text);
 string systime();
 FILE *compressor(FILE *output, int &childpid);
 bool deflate_exists();
-const char *dods_root();
+const char *libdap_root();
+/** Return the version string for this package.
+    @note This function has C linkage so that it can be found using autoconf
+    tests.
+    @return The version string. */
+extern "C" const char *libdap_version();
 const char *dods_progress();
 #ifdef WIN32
 void flush_stream(iostream ios, FILE *out);
@@ -234,6 +239,9 @@ time_t parse_time(const char * str, bool expand);
 
 /* 
  * $Log: util.h,v $
+ * Revision 1.52  2005/04/22 23:31:40  jimg
+ * Version 3.5.0 builds; passes most tests
+ *
  * Revision 1.51  2005/03/30 23:12:02  jimg
  * Modified to use the new factory class.
  *

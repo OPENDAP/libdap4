@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.167 2005/04/22 20:51:53 jimg Exp $
+# $Id: Makefile.in,v 1.168 2005/04/22 23:31:40 jimg Exp $
 
 @SET_MAKE@
 
@@ -10,13 +10,13 @@
 # The library libdap++.a contains the code for the generation of the DAS and
 # DDS structures plus the code for data transmission and the GNU libg++.a
 # classes Map, Stack and Vec.
-# geturl is a simple program that uses the dap++ library plus others to fetch
+# getdap is a simple program that uses the dap++ library plus others to fetch
 # a url. In addition it can read and process DAS and DDS objects, displaying
 # the print representation on the screen.
 
-PROG = libdap++.a libtest-types++.a geturl usage deflate
+PROG = libdap++.a libtest-types++.a getdap usage deflate
 
-INCS = -I. -IGNU @INCS@ $(CPP_UNIT_INC)
+INCS = -I. -IGNU -Iregex-0.12 @INCS@
 DEFS = @DEFS@ -DDEFAULT_BASETYPE_FACTORY
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 # Use these options for debugging. 12/24/02 jhrg
@@ -24,7 +24,7 @@ CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-defer-pop
 CXXFLAGS = $(CXXFLAGS_DEBUG) 
 # CXXFLAGS = @CXXFLAGS@ -Wall -Wno-deprecated -DNDEBUG
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
-LDFLAGS = -L. @LDFLAGS@ $(CPP_UNIT_LIB)
+LDFLAGS = -L. @LDFLAGS@
 LFLAGS = -8
 YFLAGS = -d -v
 TAGS_FLAGS =
@@ -49,9 +49,6 @@ INSTALLMAN = man
 
 SHELL = /bin/sh
 srcdir = @srcdir@
-version = @VERSION@
-basedir = dap
-dir = $(basedir)-$(version)
 host = @host@
 
 AWK = @AWK@
@@ -141,12 +138,6 @@ TYPESRCS = BaseType.cc Byte.cc Int32.cc Float64.cc Str.cc Url.cc \
 	   PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc \
 	   util_mit.cc BaseTypeFactory.cc
 
-# 	   VirtualCtorByte.cc VirtualCtorInt16.cc VirtualCtorUInt16.cc \
-# 	   VirtualCtorInt32.cc VirtualCtorUInt32.cc VirtualCtorFloat32.cc \
-# 	   VirtualCtorFloat64.cc VirtualCtorStr.cc VirtualCtorUrl.cc \
-# 	   VirtualCtorArray.cc VirtualCtorStructure.cc \
-# 	   VirtualCtorSequence.cc VirtualCtorGrid.cc 
-
 TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   Vector.o Array.o Structure.o Sequence.o Grid.o \
            UInt32.o util.o xdrutil_ppc.o ce_functions.o GSEClause.o \
@@ -156,17 +147,11 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 	   PassiveFloat32.o PassiveArray.o PassiveStructure.o \
 	   util_mit.o BaseTypeFactory.o $(GSE_GRAM_OBJS) 
 
-# 	   VirtualCtorByte.o VirtualCtorInt16.o VirtualCtorUInt16.o \
-# 	   VirtualCtorInt32.o VirtualCtorUInt32.o VirtualCtorFloat32.o \
-# 	   VirtualCtorFloat64.o VirtualCtorStr.o VirtualCtorUrl.o \
-# 	   VirtualCtorArray.o VirtualCtorStructure.o \
-# 	   VirtualCtorSequence.o VirtualCtorGrid.o 
-
-GNUSRCS = GNU/GetOpt.cc GNU/Regex.cc GNU/error.cc @REGEX_C@ \
+GNUSRCS = GNU/GetOpt.cc GNU/Regex.cc GNU/error.cc \
 	   IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc \
 	   BTIterAdapter.cc ClauseIterAdapter.cc  regex-0.12/regex.c
 
-GNUOBJS = GNU/GetOpt.o GNU/Regex.o GNU/error.o @REGEX_O@ \
+GNUOBJS = GNU/GetOpt.o GNU/Regex.o GNU/error.o \
 	   IteratorAdapter.o ArrayIterAdapter.o AttrIterAdapter.o \
 	   BTIterAdapter.o ClauseIterAdapter.o regex-0.12/regex.o
 
@@ -184,7 +169,7 @@ TESTOBJS = TestByte.o TestInt32.o TestFloat64.o TestStr.o TestUrl.o \
 	   TestGrid.o TestUInt32.o TestInt16.o TestUInt16.o TestFloat32.o \
 	   TestCommon.o TestTypeFactory.o
 
-TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc geturl.cc \
+TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc getdap.cc \
 	   ThreadTest.cc server_handler.cc
 
 AISSRCS = AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc
@@ -210,11 +195,11 @@ libtest-types++.a: $(TESTOBJS)
 deflate: deflate.o
 	$(CC) $(LDFLAGS) -o deflate deflate.o -lz
 
-# geturl is really a test driver, but it is so useful in other contexts that
+# getdap is really a test driver, but it is so useful in other contexts that
 # I have decided to build it as part of the `all' target. jhrg 7/11/96
 
-geturl: libdap++.a geturl.o
-	$(CXX) $(LDFLAGS) -o geturl geturl.o -ldap++ $(LIBS) 
+getdap: libdap++.a getdap.o
+	$(CXX) $(LDFLAGS) -o getdap getdap.o -ldap++ $(LIBS) 
 
 # The program named usage is the filter that is run by the CGI dispatch
 # script as the `usage server'. This filter is the same for all different
@@ -337,21 +322,23 @@ Error.tab.o: Error.tab.c Error.y	# build using C++ compiler
 
 # Standard targets
 
-install: all install-headers install-geturl install-opendap-config install-usage install-deflate
+install: all install-headers install-getdap install-libdap-config install-usage install-deflate
 	-mkdir -p $(libdir)
-	$(INSTALL_DATA) libdap++.a $(libdir)
-	$(RANLIB) $(libdir)/libdap++.a
+	$(INSTALL_DATA) libdap++.a $(libdir)/libdap++.a.@PACKAGE_VERSION@
+	$(RANLIB) $(libdir)/libdap++.a.@PACKAGE_VERSION@
+	$(LN_S) $(libdir)/libdap++.a.@PACKAGE_VERSION@ $(libdir)/libdap++.a
 
 install-headers:
-	-mkdir -p $(includedir)
+	-mkdir -p $(includedir).@PACKAGE_VERSION@
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
 		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS) \
 		 debug.h dods-limits.h ; \
-	    do $(INSTALL_DATA) $$h $(includedir); done
+	    do $(INSTALL_DATA) $$h $(includedir).@PACKAGE_VERSION@; done
+	$(LN_S) $(includedir).@PACKAGE_VERSION@ $(includedir)
 
-install-geturl: geturl
+install-getdap: getdap
 	-mkdir -p $(bindir)
-	$(INSTALL_PROGRAM) -s geturl $(bindir)
+	$(INSTALL_PROGRAM) -s getdap $(bindir)
 
 install-libdap-config:
 	-mkdir -p $(bindir)
@@ -360,11 +347,11 @@ install-libdap-config:
 # usage and deflate are part of the DODS server. 02/10/98 jhrg
 
 install-usage: usage
-	-mkdir -p $(etcdir)
+	-mkdir -p $(sbindir)
 	$(INSTALL_PROGRAM) -s usage $(sbindir)
 
 install-deflate: deflate
-	-mkdir -p $(etcdir)
+	-mkdir -p $(sbindir)
 	$(INSTALL_PROGRAM) -s deflate $(sbindir)
 
 aclocal.m4: acinclude.m4
@@ -426,13 +413,13 @@ thread-check: ThreadTest
 
 # This tests the servers
 
-# GETURL
-server-check: geturl
-	${RUNTEST} ${RUNTESTFLAGS} --tool geturl --srcdir server-testsuite
+# GETDAP
+server-check: getdap
+	${RUNTEST} ${RUNTESTFLAGS} --tool getdap --srcdir server-testsuite
 
-# GETURL
-grid-func-check: geturl
-	${RUNTEST} ${RUNTESTFLAGS} --tool geturl --srcdir grid-func-testsuite
+# GETDAP
+grid-func-check: getdap
+	${RUNTEST} ${RUNTESTFLAGS} --tool getdap --srcdir grid-func-testsuite
 
 # Listing the unit test code here gets the depend target to build
 # dependencies for these files.
@@ -519,8 +506,7 @@ clean:
 	-rm -f *.bb *.bbg *.da *.gcov
 	-for d in GNU; do cd $$d && rm -f *.o *~; cd ..; done
 	-for d in regex-*; do cd $$d && rm -f *.o *~; cd ..; done
-	-rm -f $(PROG) das-test dds-test expr-test \
-		error-test geturl gse-test
+	-rm -f $(PROG) das-test dds-test expr-test error-test gse-test
 	-rm -f $(UNIT_TEST_PROGS)
 	-rm -rf docs unit_tests
 	-(cd tests; $(MAKE) $(MFLAGS) clean)
@@ -553,86 +539,17 @@ private_docs:
 	@echo "Building reference documentation."
 	doxygen doxy_private.conf
 
-# This is a special tar target because it builds not only the tar file for
-# the core software but also the lib, etc, and bin directories. It assumes
-# that the root directory for DODS is called `DODS' (no version number).
 .PHONY: tar
-tar:
-	-rm -r config.cache config.log config.status
-	cd $(DODS_ROOT).. && \
-	$(TAR) --exclude 'nc3-dods*' --exclude 'jg-dods*' \
-	  --exclude 'dsp-dods*' --exclude 'math-dods*' --exclude 'hdf-dods*' \
-	  --exclude 'ff-dods*' --exclude 'tools' --exclude 'clients' \
-	  --exclude 'packages*' \
-	  --exclude 'bin' --exclude 'lib' --exclude 'include' \
-	  --exclude 'man' --exclude 'CVS' --exclude 'old' \
-	  --exclude '.#*' --exclude '.flc' --exclude '.snprj' \
-	  --exclude 'Makefile' \
-	  --gzip --create --dereference --file DODS-$(dir).tar.gz DODS 
+tar: distclean
+	cd .. && \
+	$(TAR) --exclude 'CVS' --exclude 'old' --exclude '.#*' \
+		--exclude '.flc' --exclude 'tmp' --exclude 'Makefile' \
+	  	--gzip --create --file \
+		@PACKAGE_TARNAME@-@PACKAGE_VERSION@.tar.gz @PACKAGE_NAME@
 
 .PHONY: binary-tar
 binary-tar:
-	if [ ! -x $(DODS_ROOT)etc/asciival \
-	    -o ! -x $(DODS_ROOT)etc/www_int \
-	    -o ! -x $(DODS_ROOT)etc/nph-dods \
-	    -o ! $(DODS_ROOT)etc/check_perl.sh ]; then \
-	    echo "Install asciival, www_int and nph-dods; remove perl debugging!"; \
-	else \
-	    cd $(DODS_ROOT).. && \
-	    ($(TAR) --gzip --create --dereference \
-		--file DODS-dap-library-$(version)-$(host).tar.gz \
-		--exclude 'CVS' \
-		DODS/NEWS \
-		DODS/docs/README DODS/docs/README-dap \
-		DODS/bin/opendap-config \
-		DODS/lib/libdap++.a \
-		DODS/include ; \
-	    $(TAR) --gzip --create --dereference \
-		--file DODS-client-tools-$(version)-$(host).tar.gz \
-		DODS/NEWS \
-		DODS/docs/README DODS/docs/README-client-tools \
-		DODS/etc/INSTALL-clients \
-		DODS/bin/geturl ; \
-	    $(TAR) --gzip --create --dereference \
-		--file DODS-server-tools-$(version)-$(host).tar.gz \
-		--exclude 'CVS' \
-		DODS/NEWS \
-		DODS/docs/README DODS/docs/README-server-tools \
-		DODS/etc/curl \
-		DODS/etc/INSTALL-servers \
-		DODS/etc/installServers \
-		DODS/etc/nph-dods \
-		DODS/etc/dods.rc \
-		DODS/etc/asciival \
-		DODS/etc/www_int \
-		DODS/etc/deflate \
-		DODS/etc/usage \
-		DODS/etc/*.pm \
-		DODS/etc/HTML); \
-	fi
-
-.PHONY: update-version
-update-version: check-version
-	@echo "Version is: `cat version.h`"
-	if test ! -d ../$(dir); then mv ../$(basedir)* ../$(dir); fi
-	if test ! -f $(DODS_ROOT)VERSION; then touch $(DODS_ROOT)VERSION; fi
-	$(etcdir)/update-manifest.pl "$(COMPONENT_NAME)" $(version) \
-		< $(DODS_ROOT)VERSION > tmp.dods.manifest
-	mv tmp.dods.manifest $(DODS_ROOT)VERSION
-
-# Compare the version encoded in this Makefile (set by configure) with the
-# version in version.h. The version make variable is set up near the top of
-# the Makefile.
-.PHONY: check-version
-check-version:
-	@echo "Checking for version.h and Makefile version match-up"
-	@if [ "$(version)" != "`cat version.h`" ]; \
-	then \
-		echo "You must manually re-run configure!"; \
-		exit 1; \
-	else \
-		echo "Yes, they match."; \
-	fi
+	@echo "Not implemented!"
 
 .PHONY: tags
 tags:
@@ -646,23 +563,6 @@ depend:
 	$(UNIT_TEST_SRCS) $(AISSRCS) $(DDXSRCS) $(GNUSRCS)
 	-(cd tests && $(MAKE) $(MFLAGS) depend)
 	$(MAKE) $(MFLAGS) Makefile
-
-# Once the unit tests are working, add this to the sources on which we run
-# depend. 
-# $(UNIT_TEST_SRC)
-
-# Build GNU regex 0.12 if we need the object file. The Regex class
-# (GNU/Regex.cc) uses the regex 0.12 library, which is just a single object
-# file. I've included the library in this source directory; if we need the
-# code (some versions of Linux include it in libc) then regex.o will be
-# included in dependencies above (See GNUOBJS). 04/09/04 jhrg
-# 
-# I modified this so that only regex.o is built. This avoids potential
-# problems with the docs not building because TeX is not present or
-# configured correctly. 04/12/04 jhrg
-
-@REGEX_O@ : @REGEX_C@
-	cd regex-0.12 && make regex.o
 
 .SUFFIXES:      .o .cc .c
 

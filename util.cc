@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.82 2004/07/19 07:23:23 rmorris Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.83 2005/04/22 23:31:40 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -245,10 +245,17 @@ xdr_str(XDR *xdrs, string &buf)
 }
 
 const char *
-dods_root()
+libdap_root()
 {
-    char *dods_root = 0;
-    return ((dods_root = getenv("DODS_ROOT")) ? dods_root : DODS_ROOT);
+    char *libdap_root = 0;
+    return ((libdap_root = getenv("LIBDAP_ROOT")) ? libdap_root : LIBDAP_ROOT);
+}
+
+extern "C"
+const char *
+libdap_version()
+{
+    return PACKAGE_VERSION;
 }
 
 // Return true if the program deflate exists and is executable by user, group
@@ -267,9 +274,9 @@ deflate_exists()
     struct stat buf;
 
 #ifdef WIN32
-    string deflate = (string)dods_root() + "\\bin\\deflate";
+    string deflate = (string)libdap_root() + "\\bin\\deflate";
 #else
-    string deflate = (string)dods_root() + "/etc/deflate";
+    string deflate = (string)libdap_root() + "/sbin/deflate";
 #endif
 
     // Check that the file exists...
@@ -393,7 +400,7 @@ compressor(FILE *output, int &childpid)
 	// First try to run deflate using DODS_ROOT (the value read from the
 	// DODS_ROOT environment variable takes precedence over the value set
 	// at build time. If that fails, try the CWD.
-	string deflate = (string)dods_root() + "/etc/deflate";
+	string deflate = (string)libdap_root() + "/sbin/deflate";
 	(void) execl(deflate.c_str(), "deflate", "-c",  "5", "-s", NULL);
 	(void) execl("./deflate", "deflate", "-c",  "5", "-s", NULL);
 	cerr << "Warning: Could not start compressor!" << endl;
@@ -605,6 +612,9 @@ file_to_string(FILE *fp)
 }
 
 // $Log: util.cc,v $
+// Revision 1.83  2005/04/22 23:31:40  jimg
+// Version 3.5.0 builds; passes most tests
+//
 // Revision 1.82  2004/07/19 07:23:23  rmorris
 // Remove use of function under win32 via #ifdef.  It uses mkstemp.
 //
