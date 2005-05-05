@@ -1,40 +1,46 @@
 
-$Id: README,v 1.15 2003/12/08 18:02:29 edavis Exp $
+$Id: README,v 1.16 2005/05/05 20:59:42 jimg Exp $
 
 WHAT'S IN THIS DIRECTORY?
 
   This directory contains the OPeNDAP C++ implementation of the Data Access
-  Protocol (DAP). Documentation for this software can be found on the OPeNDAP
-  home page at http://www.opendap.org/ and at the DODS project home page at
-  http://unidata.ucar.edu/packages/dods/.
+  Protocol version 2 (DAP2) with some extensions that will be part of DAP3.
+  Documentation for this software can be found on the OPeNDAP home page at
+  http://www.opendap.org/. The NASA/ESE RFC which describes DAP2, implemented
+  by the library, can be found at http://spg.gsfc.nasa.gov/rfc/004/.
 
-  The DAP is used to provide a uniform way of accessing a variety of
+  The DAP2 is used to provide a uniform way of accessing a variety of
   different types of data across the Internet. It was originally part of the
   DODS and then NVODS projects. The focus of those projects was access to
-  Earth-Science data, so much of the software developed using the DAP to date
-  has centered on that discipline.
+  Earth-Science data, so much of the software developed using the DAP2 to
+  date has centered on that discipline.
 
-  The DAP is implemented as a set of C++ classes that can be used to build
+  The DAP2 is implemented as a set of C++ classes that can be used to build
   data servers and clients. The classes may be specialized to mimic the
   behavior of other data access APIs, such as netCDF. In this way, programs
   originally meant to work with local data in those formats can be re-linked
   and equipped to work with data stored remotely in many different formats.
   The classes can also by specialized to build standalone client programs.
 
-  The DAP is contained in a single library: libdap++.a. Also included in the
+  The DAP2 is contained in a single library: libdap++.a. Also included in the
   library are classes and utility functions which simplify building clients
   and servers which use the DAP.
 
 WHAT ELSE IS THERE?
 
-  This directory also contains test programs for the DAP, a sample
-  specialization of the set of classes, and geturl, a useful command-line
-  web client created with the DAP.
+  This directory also contains test programs for the DAP2, a sample
+  specialization of the set of classes, getdap, a useful command-line
+  web client created with DAP2 and libdap-config, a utility script to
+  simplify linking with libdap++.a
 
-  We also have a Java version of this class library which interoperates at
+  We also have Java and C versions of the DAP2 library which interoperate at
   the network level with software which uses this library. In other words,
-  client programs built with the Java DAP implementation can communicate
-  with servers built with this (C++) implementation of the DAP.
+  client programs built with the Java DAP2 implementation can communicate
+  with servers built with this (C++) implementation of the DAP2. The C DAP2
+  library, called the Ocapi, only implements the client-side part of the
+  protocol. Client written using the Ocapi are interoperable with both the
+  Java and C++ DAP2 libraries. Note that the Ocapi is in early beta and
+  available only from CVS at this time (5 May 2005).
 
 INSTALLATION INSTRUCTIONS
 
