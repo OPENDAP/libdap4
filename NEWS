@@ -1,0 +1,21 @@
+Release 3.5.0
+
+This is a beta release of libdap, version 3.5. 
+
+New or changed things in this release:
+
+First, the old 'DODS' CVS module is being broken up to facilitate more
+frequent releases of software. libdap++ has a new CVS module named 'libdap.'
+To access the software using CVS, use 'cvs co libdap' (where in the past you
+used 'cvs co DODS/src/dap' or 'cvs co DODS' and then changed into the
+DODS/src/dap directory.
+
+The autoconf scripts have been updated; still no libtool or Makefile.am, but
+the scripts are much more robust.
+
+The third-party packages are not bundled with the library. In a sense they
+never were, but they _were_ a part of the DODS CVS module. Now it's up to you
+to get and install the required packages. Look on the web site (or Google)
+for libxml2 and curl. We build using curl version 7.12.3 and libxml
+version 2.6.16; curl 7.12.0 should work and older versions of libxml2 should
+also work.
