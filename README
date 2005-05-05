@@ -1,5 +1,5 @@
 
-$Id: README,v 1.16 2005/05/05 20:59:42 jimg Exp $
+$Id: README,v 1.17 2005/05/05 22:06:24 jimg Exp $
 
 WHAT'S IN THIS DIRECTORY?
 
@@ -27,6 +27,18 @@ WHAT'S IN THIS DIRECTORY?
   and servers which use the DAP.
 
 WHAT ELSE IS THERE?
+
+  The file README.dodsrc describes the client-side behavior which can be
+  controlled using the .dodsrc file. This includes client-side caching, proxy
+  servers, et c., and is described in a separate file so it's easy to include
+  in your clients.
+
+  The file README.AIS describes the prototype Ancillary Information Service
+  (AIS) included in this version of the library. The AIS is (currntly) a
+  client-side capability included in libdap++ which provides a way to augment
+  DAP attributes. This is a very useful feature because it can be used to add
+  missing metadata to a data source. The AIS is accessed by using AISConnect
+  in place of Connect in your client.
 
   This directory also contains test programs for the DAP2, a sample
   specialization of the set of classes, getdap, a useful command-line

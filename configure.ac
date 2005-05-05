@@ -127,6 +127,15 @@ dnl 	[`curl-config --libs`])
 AC_MSG_CHECKING([for libxml2])
 if xml2-config --version > /dev/null 2>&1
 then
+	version_libxml2=`xml2-config --version`
+	version_M=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
+	version_m=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
+	version_m_m=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+	if test $version_M -lt 2 || test $version_m -lt 5 || test $version_m_m -lt 7
+	then
+		AC_MSG_ERROR([must have libxml2 2.5.7 or greater, found $version_libxml2])
+	fi
+
 	LIBS="$LIBS `xml2-config --libs`"
 	INCS="$INCS `xml2-config --cflags`"
 	AC_MSG_RESULT([yes])
@@ -143,15 +152,6 @@ dnl 	[`xml2-config --libs`])
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[LIBS="$LIBS -lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
-dnl LIBS="$LIBS -lpthread"
-
-dnl temporary hack for the librx/regex code. 04/08/04 jhrg.
-dnl INCS="-Iregex-0.12 $INCS"
-dnl REGEX_C=regex-0.12/regex.c
-dnl AC_SUBST(REGEX_C)
-dnl echo "Setting $REGEX_C"
-dnl REGEX_O=regex-0.12/regex.o
-dnl AC_SUBST(REGEX_O)
 
 DODS_DEBUG_OPTION
 

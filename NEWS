@@ -1,59 +1,77 @@
 
-$Id: NEWS,v 1.8 2005/05/05 19:21:49 jimg Exp $
+$Id: NEWS,v 1.9 2005/05/05 22:06:24 jimg Exp $
 
-Release 3.5.0
+News for Release 3.5.0
 
-This is a beta release of libdap, version 3.5. 
+This is a beta release of libdap++, version 3.5. 
 
-New or changed things in this release:
+Changes in the way the software is organized:
 
-First, the old 'DODS' CVS module is being broken up to facilitate more
-frequent releases of software. libdap++ has a new CVS module named 'libdap.'
-To access the software using CVS, use 'cvs co libdap' (where in the past you
-used 'cvs co DODS/src/dap' or 'cvs co DODS' and then changed into the
-DODS/src/dap directory.
+* First, the old 'DODS' CVS module is being broken up to facilitate more
+  frequent releases of software. libdap++ has a new CVS module named
+  'libdap.' To access the software using CVS, use 'cvs co libdap' (where in
+  the past you used 'cvs co DODS/src/dap' or 'cvs co DODS' and then changed
+  into the DODS/src/dap directory).
 
-The autoconf scripts have been updated; still no libtool or Makefile.am, but
-the scripts are much more robust.
+* The autoconf scripts have been updated; still no libtool or Makefile.am,
+  but the scripts are much more robust.
 
-The third-party packages are not bundled with the library. In a sense they
-never were, but they _were_ a part of the DODS CVS module. Now it's up to you
-to get and install the required packages. Look on the web site (or Google)
-for libxml2 and curl. We build using curl version 7.12.3 and libxml
-version 2.6.16; curl 7.12.0 should work and older versions of libxml2 should
-also work.
+* The third-party packages are no longer bundled with the library. In a sense
+  they never were, but they _were_ a part of the DODS CVS module. Now it's up
+  to you to get and install the required packages. Look on the web site (or
+  Google) for libxml2 and curl. We build using curl version 7.12.3 and libxml
+  version 2.6.16; curl 7.12.0 and libxml2 2.5.7 should work.
 
-Along with that change is that libdap++.a now installs in
-/usr/local/{lib,include,bin} instead of inside the DODS tree. The
-library itself installs in /usr/local/lib as libdap++.a.3.5; libdap++.a is
-symbolically linked to that file. The header files now install in
-/usr/local/include/libdap-3.5; /usr/local/include/lidap is symbolically
-linked to that directory. The utilities geturl and opendap-config have been
-renamed getdap and libdap-config, respectively (the name geturl corresponds to
-another utility and I want *-config scripts for all the libraries we have so
-the name opendap-config will be ambiguous). The getdap utility is, except for
-the name change, exactly the same as geturl. The libdap-config script
-provides a way to determine which libraries should be included when linking
-with a particular build of libdap. It also provides information about the
-version of the library linked to /usr/local/lib/libdap++.a and some other
-stuff. Use libdap-config --help for a listing of all the options.
+* The libdap software now installs in $prefix/{lib,include,bin} instead of
+  inside the 'DODS tree.' By default $prefix is /usr/local; use the --prefix
+  option of configure to specify a different directory than /usr/local. The
+  library itself installs in $prefix/lib as libdap++.a.3.5; libdap++.a is
+  symbolically linked to that file. The header files now install in
+  $prefix/include/libdap-3.5; $prefix/include/libdap is symbolically linked
+  to that directory. The utilities geturl and opendap-config have been
+  renamed getdap and libdap-config, respectively (the name geturl corresponds
+  to another utility). The getdap utility is, except for the name change,
+  exactly the same as geturl. The libdap-config script provides a way to
+  determine which libraries should be included when linking with a particular
+  build of libdap++. It also provides information about the version of the
+  library linked to $prefix/lib/libdap++.a and some other stuff. Use
+  libdap-config --help for a listing of all the options.
 
 Other changes to libdap++:
 
-The library now uses a factory class to determine how to instantiate
-specializations of Byte, et cetera. If you code relies on subclassing those
-you'll need to switch from the 'virtual constructors' method of instantiation
-to the factory class. Look at BaseTypeFactory and the example specialization
-TestTypeFactory. It's very straightforward to make the change.
+* The library now uses a factory class to determine how to instantiate
+  specializations of Byte, et cetera. The class BaseTypeFactory defines the
+  interface for the factory and provides a default implementation of the
+  class. This implementation instantiates Byte, ..., Grid. Also supplied with
+  the library is TestTypeFactory which instantiates the Test type classes
+  (TestByte, ..., TestGrid). If your use of the library requires that the
+  type classes be specialized, then you must modify your software so that it
+  includes a factory class that specializes BaseTypeFactory. Then, when you
+  create a DDS (or DataDDS or DDX) pass a pointer to an instance of your
+  factory to the DDS constructor (or use the new DDS::set_factory() method).
+  Look at BaseTypeFactory and the example specialization TestTypeFactory.
+  It's very straightforward to make the change.
 
-The library contains support for the DDX object. The DDX will become the
-foundation of the DAP3 protocol and it bundles the attributes along with the
-variables they describe. This will simplify many processing tasks for
-clients. The software provided simplifies generating these by building them
-from existing DAS and DDS objects. Note that this is the library only; none
-of our servers use the code yet, at least not 'officially.'
+  For applications which don't specialize the type classes, the default
+  factory should be fine. To avoid using the new DDS constructor (which
+  requies that a pointer to an instance of BaseType Factory be suppiled),
+  your code must define the symbol DEFAULT_BASETYPE_FACTORY. If this symbol
+  is not defined (at compile time) then various compile-time errors will
+  ocurr (the idea being this will prevent software from building and silently
+  ignoring specializations of the type classes). If defined, this use the
+  default factory class.
 
-There have also been some significant refactoring in DDS and DAS: The
-DDS:send() method has been copied over to DODSFilter and the version in DDS
-will be deprecated and removed. The library uses STL iterators almost
-exclusively and the next version will eliminate the ancient Pix class.
+  The documentation for the DDS constructor has some more information.
+
+* The library contains support for the DDX object. The DDX will become the
+  foundation of the DAP3 protocol and it bundles the attributes along with
+  the variables they describe. This will simplify many processing tasks for
+  clients. The software provided simplifies generating these by building them
+  from existing DAS and DDS objects. Note that this is the library only; none
+  of our servers use the code yet.
+
+* There has also been some significant refactoring in DDS and DAS: The
+  DDS:send() method has been copied over to DODSFilter and the version in DDS
+  will be deprecated and removed. The library uses STL iterators almost
+  exclusively and the next version will eliminate the ancient Pix class.
+
