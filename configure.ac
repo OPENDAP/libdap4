@@ -186,7 +186,7 @@ AC_CONFIG_FILES([Makefile
                  regex-0.12/doc/Makefile
                  regex-0.12/test/Makefile
                  tests/Makefile
-		 libdap-config])
+		 libdap-config] , [chmod +x libdap-config])
 AC_OUTPUT
 
 
