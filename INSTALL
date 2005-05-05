@@ -1,5 +1,5 @@
 
-	$Id: INSTALL,v 1.13 2005/05/05 20:59:09 jimg Exp $
+	$Id: INSTALL,v 1.14 2005/05/05 22:39:44 jimg Exp $
 
 Updated for version 3.4 of the DODS/NVODS/OPeNDAP software.
 
@@ -70,7 +70,9 @@ REQUIREMENTS
 
   o You may need GNU Make. You will need the GNU auto tools (autoconf 2.57
     and its associated programs) if your building from CVS or need/want to
-    hack he configure.ac, acinclude.m4, et c., files.
+    hack the configure.ac, acinclude.m4, et c., files. Use autoreconf to
+    rebuild configure; if you call autoconf directly the aclocal.m4 file
+    won't get built from acinclude.m4 correctly. 
 
 NOTES
 
