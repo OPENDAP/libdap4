@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.168 2005/04/22 23:31:40 jimg Exp $
+# $Id: Makefile.in,v 1.169 2005/05/05 22:26:05 jimg Exp $
 
 @SET_MAKE@
 
@@ -322,7 +322,7 @@ Error.tab.o: Error.tab.c Error.y	# build using C++ compiler
 
 # Standard targets
 
-install: all install-headers install-getdap install-libdap-config install-usage install-deflate
+install: all install-headers install-getdap install-libdap-config install-deflate
 	-mkdir -p $(libdir)
 	$(INSTALL_DATA) libdap++.a $(libdir)/libdap++.a.@PACKAGE_VERSION@
 	$(RANLIB) $(libdir)/libdap++.a.@PACKAGE_VERSION@

@@ -1,5 +1,5 @@
 
-$Id: NEWS,v 1.9 2005/05/05 22:06:24 jimg Exp $
+$Id: NEWS,v 1.10 2005/05/05 22:26:05 jimg Exp $
 
 News for Release 3.5.0
 
@@ -35,7 +35,13 @@ Changes in the way the software is organized:
   determine which libraries should be included when linking with a particular
   build of libdap++. It also provides information about the version of the
   library linked to $prefix/lib/libdap++.a and some other stuff. Use
-  libdap-config --help for a listing of all the options.
+  libdap-config --help for a listing of all the options. Finally, the deflate
+  program, which is used by some servers to provide compressed responses and
+  is called by the library is not stored in $prefix/sbin (excpet on win32
+  where it's stored in $prefix/bin).
+
+  The usage program is not currently installed; once we complete the
+  reorganization process it will find a good home.
 
 Other changes to libdap++:
 
@@ -74,4 +80,12 @@ Other changes to libdap++:
   DDS:send() method has been copied over to DODSFilter and the version in DDS
   will be deprecated and removed. The library uses STL iterators almost
   exclusively and the next version will eliminate the ancient Pix class.
+
+* The function dods_root() is now called libdap_root() and tests the
+  environment variable LIBDAP_ROOT. If that variable is not set,
+  libdap_root() returns the value passed to the --prefix option of configure
+  or /usr/local if the option was not used. Added to libdap++ is a function
+  libdap_version() which returns the version number of the library. Note that
+  libdap_version() is declared as extern "C" so that it can be used in
+  configure tests to check for the library.
 
