@@ -1,4 +1,4 @@
-$Id: README.dodsrc,v 1.4 2003/12/08 18:02:29 edavis Exp $
+$Id: README.dodsrc,v 1.5 2005/05/06 18:33:54 jimg Exp $
 
 The DODS client-side configuration file (.dodsrc) is used to configure how
 clients cache responses and how they interact with proxy servers. By default
@@ -25,6 +25,7 @@ file; they've been added to make the description clearer):
 7	PROXY_SERVER=http,http://dcz.dods.org/
 8	PROXY_FOR=http://dax.po.gso.uri.edu/.*,http://dods.gso.uri.edu/
 9	NO_PROXY_FOR=http,dcz.dods.org
+10	AIS_DATABASE=.ais_sst_database
     
 COMMENTS 
 Starting a line with a `#' makes that line a comment. 
@@ -125,3 +126,6 @@ regular expression syntax. The syntax of NO_PROXY is:
 where <protocol> is as for PROXY_SERVER
 <hostname> is the name of the host, not a url.
 
+The Ancillary Information Service
+
+See README.AIS for more information about the AIS.
