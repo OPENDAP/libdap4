@@ -1,7 +1,7 @@
 
-$Id: NEWS,v 1.10 2005/05/05 22:26:05 jimg Exp $
+$Id: NEWS,v 1.11 2005/05/06 19:15:15 jimg Exp $
 
-News for Release 3.5.0
+News for Release 3.5.0 beta
 
 This is a beta release of libdap++, version 3.5. 
 
@@ -46,40 +46,41 @@ Changes in the way the software is organized:
 Other changes to libdap++:
 
 * The library now uses a factory class to determine how to instantiate
-  specializations of Byte, et cetera. The class BaseTypeFactory defines the
-  interface for the factory and provides a default implementation of the
-  class. This implementation instantiates Byte, ..., Grid. Also supplied with
-  the library is TestTypeFactory which instantiates the Test type classes
-  (TestByte, ..., TestGrid). If your use of the library requires that the
-  type classes be specialized, then you must modify your software so that it
-  includes a factory class that specializes BaseTypeFactory. Then, when you
-  create a DDS (or DataDDS or DDX) pass a pointer to an instance of your
+  specializations of Byte, Int32, et cetera. The class BaseTypeFactory
+  defines the interface for the factory and provides a default implementation
+  of the class. This implementation instantiates Byte, ..., Grid. Also
+  supplied with the library is TestTypeFactory which instantiates the Test
+  type classes (TestByte, ..., TestGrid). If your use of the library requires
+  that the type classes be specialized, then you must modify your software so
+  that it includes a factory class that specializes BaseTypeFactory. Then,
+  when you create a DDS (or DataDDS) pass a pointer to an instance of your
   factory to the DDS constructor (or use the new DDS::set_factory() method).
   Look at BaseTypeFactory and the example specialization TestTypeFactory.
   It's very straightforward to make the change.
 
   For applications which don't specialize the type classes, the default
   factory should be fine. To avoid using the new DDS constructor (which
-  requies that a pointer to an instance of BaseType Factory be suppiled),
-  your code must define the symbol DEFAULT_BASETYPE_FACTORY. If this symbol
-  is not defined (at compile time) then various compile-time errors will
-  ocurr (the idea being this will prevent software from building and silently
+  requies that a pointer to an instance of BaseTypeFactory be suppiled), your
+  code must #define the symbol DEFAULT_BASETYPE_FACTORY. If this symbol is
+  not defined (at compile time) then various compile-time errors will ocurr
+  (the idea being this will prevent software from building and silently
   ignoring specializations of the type classes). If defined, this use the
   default factory class.
 
   The documentation for the DDS constructor has some more information.
 
 * The library contains support for the DDX object. The DDX will become the
-  foundation of the DAP3 protocol and it bundles the attributes along with
-  the variables they describe. This will simplify many processing tasks for
-  clients. The software provided simplifies generating these by building them
-  from existing DAS and DDS objects. Note that this is the library only; none
-  of our servers use the code yet.
+  foundation of the DAP3 protocol. It uses XML to describe the information
+  currently represented using our 'curly-breace' notation and also bundles
+  the attributes along with the variables they describe. This will simplify
+  many processing tasks for clients. The software provided simplifies
+  generating the DDX by building it from existing DAS and DDS objects.
 
 * There has also been some significant refactoring in DDS and DAS: The
   DDS:send() method has been copied over to DODSFilter and the version in DDS
-  will be deprecated and removed. The library uses STL iterators almost
-  exclusively and the next version will eliminate the ancient Pix class.
+  has been deprecated and will be removed in afuture version of the library.
+  The library uses STL iterators almost exclusively and the next version will
+  eliminate the ancient Pix class.
 
 * The function dods_root() is now called libdap_root() and tests the
   environment variable LIBDAP_ROOT. If that variable is not set,
