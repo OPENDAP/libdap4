@@ -1,7 +1,7 @@
 
-	$Id: INSTALL,v 1.15 2005/05/06 19:15:15 jimg Exp $
+	$Id: INSTALL,v 1.16 2005/05/06 20:00:09 jimg Exp $
 
-Updated for version 3.5.o beta of the OPeNDAP DAP2 library software.
+Updated for version 3.5.0 beta of the OPeNDAP DAP2 library software.
 
 Installing the DAP2 library
 

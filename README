@@ -1,7 +1,10 @@
 
-$Id: README,v 1.19 2005/05/06 19:15:15 jimg Exp $
+$Id: README,v 1.20 2005/05/06 20:00:09 jimg Exp $
 
 Updated for 3.5.0 beta
+
+NOTE: This version of libdap++ is not compatible with the 3.4.x clients and
+servers. 
 
 WHAT'S IN THIS DIRECTORY?
 

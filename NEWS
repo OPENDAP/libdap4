@@ -1,9 +1,12 @@
 
-$Id: NEWS,v 1.11 2005/05/06 19:15:15 jimg Exp $
+$Id: NEWS,v 1.12 2005/05/06 20:00:09 jimg Exp $
 
 News for Release 3.5.0 beta
 
 This is a beta release of libdap++, version 3.5. 
+
+NOTE: This version of libdap++ is not compatible with the 3.4.x clients and
+servers. 
 
 Changes in the way the software is organized:
 
@@ -90,3 +93,8 @@ Other changes to libdap++:
   libdap_version() is declared as extern "C" so that it can be used in
   configure tests to check for the library.
 
+* The servers no longer provide three programs to handle the das, dds and
+  data requests. Instead one *_handler is provided. This reduces the size of
+  the servers by a factor of three and paves the way toward integration of
+  the HTML and ASCII code into the server binary, which will improve the
+  performance and security of those features.
