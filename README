@@ -1,5 +1,5 @@
 
-$Id: README,v 1.17 2005/05/05 22:06:24 jimg Exp $
+$Id: README,v 1.18 2005/05/06 18:55:29 jimg Exp $
 
 WHAT'S IN THIS DIRECTORY?
 
@@ -13,7 +13,9 @@ WHAT'S IN THIS DIRECTORY?
   different types of data across the Internet. It was originally part of the
   DODS and then NVODS projects. The focus of those projects was access to
   Earth-Science data, so much of the software developed using the DAP2 to
-  date has centered on that discipline.
+  date has centered on that discipline. However, the DAP2 data model is very
+  general (and similar to a modern structured programming language) so it can
+  be applied to a wide variety of fields.
 
   The DAP2 is implemented as a set of C++ classes that can be used to build
   data servers and clients. The classes may be specialized to mimic the
@@ -24,7 +26,7 @@ WHAT'S IN THIS DIRECTORY?
 
   The DAP2 is contained in a single library: libdap++.a. Also included in the
   library are classes and utility functions which simplify building clients
-  and servers which use the DAP.
+  and servers.
 
 WHAT ELSE IS THERE?
 
@@ -34,25 +36,25 @@ WHAT ELSE IS THERE?
   in your clients.
 
   The file README.AIS describes the prototype Ancillary Information Service
-  (AIS) included in this version of the library. The AIS is (currntly) a
-  client-side capability included in libdap++ which provides a way to augment
-  DAP attributes. This is a very useful feature because it can be used to add
-  missing metadata to a data source. The AIS is accessed by using AISConnect
-  in place of Connect in your client.
+  (AIS) included in this version of the library. The AIS is (currently) a
+  client-side capability which provides a way to augment DAP attributes. This
+  is a very useful feature because it can be used to add missing metadata to
+  a data source. The AIS is accessed by using the AISConnect class in place
+  of Connect in your client.
 
   This directory also contains test programs for the DAP2, a sample
-  specialization of the set of classes, getdap, a useful command-line
-  web client created with DAP2 and libdap-config, a utility script to
-  simplify linking with libdap++.a
+  specialization of the classes, getdap (a useful command-line web client
+  created with DAP2) and libdap-config (a utility script to simplify linking
+  with libdap++.a).
 
-  We also have Java and C versions of the DAP2 library which interoperate at
-  the network level with software which uses this library. In other words,
-  client programs built with the Java DAP2 implementation can communicate
-  with servers built with this (C++) implementation of the DAP2. The C DAP2
-  library, called the Ocapi, only implements the client-side part of the
-  protocol. Client written using the Ocapi are interoperable with both the
-  Java and C++ DAP2 libraries. Note that the Ocapi is in early beta and
-  available only from CVS at this time (5 May 2005).
+  We also have Java and C versions of the DAP2 library which interoperate
+  with software which uses this library. In other words, client programs
+  built with the Java DAP2 implementation can communicate with servers built
+  with this (C++) implementation of the DAP2. The C DAP2 library, called the
+  Ocapi, only implements the client-side part of the protocol. Clients written
+  using the Ocapi are interoperable with both the Java and C++ DAP2
+  libraries. Note that the Ocapi is in early beta and available only from CVS
+  at this time (5 May 2005).
 
 INSTALLATION INSTRUCTIONS
 
