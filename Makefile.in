@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.169 2005/05/05 22:26:05 jimg Exp $
+# $Id: Makefile.in,v 1.170 2005/05/10 22:38:48 jimg Exp $
 
 @SET_MAKE@
 
@@ -38,7 +38,7 @@ exec_prefix = $(prefix)
 bindir = $(exec_prefix)/bin
 sbindir = $(exec_prefix)/sbin
 libdir = $(exec_prefix)/lib
-includedir = $(prefix)/include/libdap
+includedir = $(prefix)/include
 etcdir = $(prefix)/etc
 manext = 1
 mandir = $(prefix)/man/man$(manext)
@@ -329,12 +329,12 @@ install: all install-headers install-getdap install-libdap-config install-deflat
 	$(LN_S) $(libdir)/libdap++.a.@PACKAGE_VERSION@ $(libdir)/libdap++.a
 
 install-headers:
-	-mkdir -p $(includedir).@PACKAGE_VERSION@
+	-mkdir -p $(includedir)/@PACKAGE_NAME@.@PACKAGE_VERSION@
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
 		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS) \
 		 debug.h dods-limits.h ; \
-	    do $(INSTALL_DATA) $$h $(includedir).@PACKAGE_VERSION@; done
-	$(LN_S) $(includedir).@PACKAGE_VERSION@ $(includedir)
+	    do $(INSTALL_DATA) $$h $(includedir)/@PACKAGE_NAME@.@PACKAGE_VERSION@; done
+	$(LN_S) $(includedir)/@PACKAGE_NAME@.@PACKAGE_VERSION@ $(includedir)/@PACKAGE_NAME@
 
 install-getdap: getdap
 	-mkdir -p $(bindir)
@@ -545,7 +545,7 @@ tar: distclean
 	$(TAR) --exclude 'CVS' --exclude 'old' --exclude '.#*' \
 		--exclude '.flc' --exclude 'tmp' --exclude 'Makefile' \
 	  	--gzip --create --file \
-		@PACKAGE_TARNAME@-@PACKAGE_VERSION@.tar.gz @PACKAGE_NAME@
+		@PACKAGE_TARNAME@-@PACKAGE_VERSION@.tar.gz @PACKAGE_NAME@-@PACKAGE_VERSION@
 
 .PHONY: binary-tar
 binary-tar:
