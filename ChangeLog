@@ -1,3 +1,10 @@
+2005-05-10  James Gallagher  <jimg@zoey.opendap.org>
+
+	* libdap.spec (Prefix): Built spec file; tested. Some problems
+	remain, mostly that the curl and xml2 packages are not part of
+	the RHEL3 dist! I'll have to sort that out before this dist
+	mechanism becomes a reality.
+
 2005-04-15  James Gallagher  <jimg@comet.opendap.org>
 
 	* Removed include of config_dap.h from HTTPCache.h. This is the
@@ -1495,5 +1502,5 @@ Mon Jul  8 16:25:11 1996  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 	Note that without Expect the GUI used for the transmission
 	progress indicator and error reporting is not available.
 
-$Id: ChangeLog,v 1.83 2005/04/15 21:22:31 jimg Exp $
+$Id: ChangeLog,v 1.84 2005/05/10 22:24:49 jimg Exp $
 
