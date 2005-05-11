@@ -44,27 +44,27 @@ else
     echo "RPM_BUILD_ROOT not set!"
 fi
 
-%post 
-ln -s %{_libdir}/libdap++.a.%{version} %{_libdir}/libdap++.a
-ln -s %{_includedir}/%{name}.%{version}%{_includedir}/%{name}
-
 %files
-%{_libdir}/libdap++.a.%{version}
+%{_libdir}/libdap++.a
 %{_bindir}/libdap-config
 %{_bindir}/getdap
 %{_sbindir}/deflate
 %dir 
-%{_includedir}/%{name}.%{version}
+%{_includedir}/%{name}
 
 %defattr(-,root,root,0755)
 
 %doc README NEWS
 
 %changelog
+* Wed May 11 2005 James Gallagher <jimg@zoey.opendap.org> 3.5.0-1
+- Removed version numbers from .a and includes directory.
+
 * Tues May 10 2005 James Gallagher <jimg@zoey.opendap.org> 
 - Mostly works. Problems: Not sure if the %post script stuff works.
 - Must also address the RHEL3 package deps issue (curl 7.12.0 isn't available;
   not sure about xml2 2.5.7). At least the deps fail when they are not present!
+
 * Fri May  6 2005 James Gallagher <jimg@zoey.opendap.org> 
 - Initial build.
 
