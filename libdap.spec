@@ -11,7 +11,7 @@ Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 License: LGPL
 Requires: curl >= 7.12.0
-Requires: xml2 >= 2.5.7
+Requires: libxml2 >= 2.5.7
 
 Prefix: /usr/local
 
