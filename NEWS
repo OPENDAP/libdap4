@@ -1,5 +1,5 @@
 
-$Id: NEWS,v 1.12 2005/05/06 20:00:09 jimg Exp $
+$Id: NEWS,v 1.13 2005/05/12 21:08:03 jimg Exp $
 
 News for Release 3.5.0 beta
 
@@ -32,13 +32,13 @@ Changes in the way the software is organized:
   symbolically linked to that file. The header files now install in
   $prefix/include/libdap-3.5; $prefix/include/libdap is symbolically linked
   to that directory. The utilities geturl and opendap-config have been
-  renamed getdap and libdap-config, respectively (the name geturl corresponds
-  to another utility). The getdap utility is, except for the name change,
-  exactly the same as geturl. The libdap-config script provides a way to
+  renamed getdap and dap-config, respectively (the name geturl corresponds to
+  another utility). The getdap utility is, except for the name change,
+  exactly the same as geturl. The dap-config script provides a way to
   determine which libraries should be included when linking with a particular
   build of libdap++. It also provides information about the version of the
   library linked to $prefix/lib/libdap++.a and some other stuff. Use
-  libdap-config --help for a listing of all the options. Finally, the deflate
+  dap-config --help for a listing of all the options. Finally, the deflate
   program, which is used by some servers to provide compressed responses and
   is called by the library is not stored in $prefix/sbin (excpet on win32
   where it's stored in $prefix/bin).

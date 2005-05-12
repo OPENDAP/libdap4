@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.171 2005/05/12 20:48:59 jimg Exp $
+# $Id: Makefile.in,v 1.172 2005/05/12 21:08:03 jimg Exp $
 
 @SET_MAKE@
 
@@ -322,7 +322,7 @@ Error.tab.o: Error.tab.c Error.y	# build using C++ compiler
 
 # Standard targets
 
-install: all install-headers install-getdap install-libdap-config install-deflate
+install: all install-headers install-getdap install-dap-config install-deflate
 	-mkdir -p $(libdir)
 	$(INSTALL_DATA) libdap++.a $(libdir)/libdap++.a
 	$(RANLIB) $(libdir)/libdap++.a
@@ -338,9 +338,9 @@ install-getdap: getdap
 	-mkdir -p $(bindir)
 	$(INSTALL_PROGRAM) -s getdap $(bindir)
 
-install-libdap-config:
+install-dap-config:
 	-mkdir -p $(bindir)
-	$(INSTALL_PROGRAM) libdap-config $(bindir)
+	$(INSTALL_PROGRAM) dap-config $(bindir)
 
 # usage and deflate are part of the DODS server. 02/10/98 jhrg
 

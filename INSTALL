@@ -1,5 +1,5 @@
 
-	$Id: INSTALL,v 1.16 2005/05/06 20:00:09 jimg Exp $
+	$Id: INSTALL,v 1.17 2005/05/12 21:08:03 jimg Exp $
 
 Updated for version 3.5.0 beta of the OPeNDAP DAP2 library software.
 
@@ -30,12 +30,12 @@ BUILDING THE SOFTWARE
      'make unit-check' should build and run the unit tests.
 
   3. Type `make install' to install the DAP2 library. The library
-     (libdap++.a), its header files and the getdap and libdap-config
-     utilities install under /usr/local/ in lib, include/libdap and bin by
-     default. The deflate utility is installed in /usr/local/sbin by default.
-     Use the --prefix option to specify a different root directory. For
-     example, './configure --prefix=/opt/opendap' would set the build so that
-     the library was installed in /opt/opendap/lib, ...
+     (libdap++.a), its header files and the getdap and dap-config utilities
+     install under /usr/local/ in lib, include/libdap and bin by default. The
+     deflate utility is installed in /usr/local/sbin by default. Use the
+     --prefix option to specify a different root directory. For example,
+     './configure --prefix=/opt/opendap' would set the build so that the
+     library was installed in /opt/opendap/lib, ...
 
 
 REQUIREMENTS

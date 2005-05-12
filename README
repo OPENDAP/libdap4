@@ -1,5 +1,5 @@
 
-$Id: README,v 1.20 2005/05/06 20:00:09 jimg Exp $
+$Id: README,v 1.21 2005/05/12 21:08:03 jimg Exp $
 
 Updated for 3.5.0 beta
 
@@ -49,7 +49,7 @@ WHAT ELSE IS THERE?
 
   This directory also contains test programs for the DAP2, a sample
   specialization of the classes, getdap (a useful command-line web client
-  created with DAP2) and libdap-config (a utility script to simplify linking
+  created with DAP2) and dap-config (a utility script to simplify linking
   with libdap++.a).
 
   We also have Java and C versions of the DAP2 library which interoperate

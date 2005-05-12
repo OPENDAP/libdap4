@@ -46,7 +46,7 @@ fi
 
 %files
 %{_libdir}/libdap++.a
-%{_bindir}/libdap-config
+%{_bindir}/dap-config
 %{_bindir}/getdap
 %{_sbindir}/deflate
 %dir 
@@ -57,6 +57,9 @@ fi
 %doc README NEWS
 
 %changelog
+* Thu May 12 2005 James Gallagher <jimg@comet.opendap.org> - 3.5.0-1
+- Changed Requires xml2 to libxml2
+
 * Wed May 11 2005 James Gallagher <jimg@zoey.opendap.org> 3.5.0-1
 - Removed version numbers from .a and includes directory.
 
