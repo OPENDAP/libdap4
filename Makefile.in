@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.170 2005/05/10 22:38:48 jimg Exp $
+# $Id: Makefile.in,v 1.171 2005/05/12 20:48:59 jimg Exp $
 
 @SET_MAKE@
 
@@ -324,17 +324,15 @@ Error.tab.o: Error.tab.c Error.y	# build using C++ compiler
 
 install: all install-headers install-getdap install-libdap-config install-deflate
 	-mkdir -p $(libdir)
-	$(INSTALL_DATA) libdap++.a $(libdir)/libdap++.a.@PACKAGE_VERSION@
-	$(RANLIB) $(libdir)/libdap++.a.@PACKAGE_VERSION@
-	$(LN_S) $(libdir)/libdap++.a.@PACKAGE_VERSION@ $(libdir)/libdap++.a
+	$(INSTALL_DATA) libdap++.a $(libdir)/libdap++.a
+	$(RANLIB) $(libdir)/libdap++.a
 
 install-headers:
-	-mkdir -p $(includedir)/@PACKAGE_NAME@.@PACKAGE_VERSION@
+	-mkdir -p $(includedir)/@PACKAGE_NAME@
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
 		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS) \
 		 debug.h dods-limits.h ; \
-	    do $(INSTALL_DATA) $$h $(includedir)/@PACKAGE_NAME@.@PACKAGE_VERSION@; done
-	$(LN_S) $(includedir)/@PACKAGE_NAME@.@PACKAGE_VERSION@ $(includedir)/@PACKAGE_NAME@
+	    do $(INSTALL_DATA) $$h $(includedir)/@PACKAGE_NAME@; done
 
 install-getdap: getdap
 	-mkdir -p $(bindir)
@@ -354,11 +352,8 @@ install-deflate: deflate
 	-mkdir -p $(sbindir)
 	$(INSTALL_PROGRAM) -s deflate $(sbindir)
 
-aclocal.m4: acinclude.m4
-	aclocal
-
 configure: configure.ac aclocal.m4
-	autoconf
+	autoreconf
 
 Makefile: Makefile.in
 	if [ -x ./config.status ]; \
@@ -543,9 +538,9 @@ private_docs:
 tar: distclean
 	cd .. && \
 	$(TAR) --exclude 'CVS' --exclude 'old' --exclude '.#*' \
-		--exclude '.flc' --exclude 'tmp' --exclude 'Makefile' \
-	  	--gzip --create --file \
-		@PACKAGE_TARNAME@-@PACKAGE_VERSION@.tar.gz @PACKAGE_NAME@-@PACKAGE_VERSION@
+	--exclude '.flc' --exclude 'tmp' --exclude 'Makefile' \
+	--gzip --create --file @PACKAGE_TARNAME@-@PACKAGE_VERSION@.tar.gz \
+	@PACKAGE_NAME@-@PACKAGE_VERSION@
 
 .PHONY: binary-tar
 binary-tar:
@@ -557,7 +552,7 @@ tags:
 
 .PHONY: depend
 depend: 
-	@depend@ -m Makefile.in -- $(CPPFLAGS) -- \
+	./depend.sh -m Makefile.in -- $(CPPFLAGS) -- \
 	$(CLIENTSRCS) $(DASSRCS) $(DDSSRCS) $(EXPRSRCS) $(TYPESRCS) \
 	$(ERRORSRCS) $(AISSRCS) $(TESTSRCS) $(TESTPROGSRCS) $(UTILSRCS) \
 	$(UNIT_TEST_SRCS) $(AISSRCS) $(DDXSRCS) $(GNUSRCS)
