@@ -1,12 +1,23 @@
 
-$Id: NEWS,v 1.13 2005/05/12 21:08:03 jimg Exp $
+$Id: NEWS,v 1.14 2005/05/13 20:18:58 jimg Exp $
 
-News for Release 3.5.0 beta
+News for Release 3.5.1 beta
 
 This is a beta release of libdap++, version 3.5. 
 
 NOTE: This version of libdap++ is not compatible with the 3.4.x clients and
 servers. 
+
+News for Release 3.5.1 beta
+
+I changed some of the build parameters; the utility script is now named
+dap-config, the headers now install into $prefix/include/dap and the static
+library no longer has a version number appended. I've also written a rpm spec
+file which can be used to build a rpm file of/for a binary distribution. At
+this stage you'll need to be pretty savvy with RPM to get it to work; I'll
+write up instructions soon.
+
+News for Release 3.5.0 beta
 
 Changes in the way the software is organized:
 

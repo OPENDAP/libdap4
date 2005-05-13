@@ -1,7 +1,7 @@
 
-$Id: README,v 1.21 2005/05/12 21:08:03 jimg Exp $
+$Id: README,v 1.22 2005/05/13 20:18:58 jimg Exp $
 
-Updated for 3.5.0 beta
+Updated for 3.5.1 beta
 
 NOTE: This version of libdap++ is not compatible with the 3.4.x clients and
 servers. 

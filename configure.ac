@@ -3,7 +3,7 @@ dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(libdap, 3.5.0, dods-tech@unidata.ucar.edu)
+AC_INIT(libdap, 3.5.1, dods-tech@unidata.ucar.edu)
 AC_CONFIG_SRCDIR([AISConnect.cc])
 AC_CONFIG_HEADER([config_dap.h dods-datatypes.h regex-0.12/config.h])
 
@@ -181,13 +181,10 @@ fi
 dnl INCS is non-standard...
 AC_SUBST(INCS)
 
-AC_CONFIG_FILES([Makefile
+AC_CONFIG_FILES([dap-config
+		 Makefile
                  regex-0.12/Makefile
                  regex-0.12/doc/Makefile
                  regex-0.12/test/Makefile
-                 tests/Makefile
-		 dap-config] , [chmod +x dap-config])
+                 tests/Makefile] , [chmod +x dap-config])
 AC_OUTPUT
-
-
-dnl AC_OUTPUT(Makefile tests/Makefile opendap-config)

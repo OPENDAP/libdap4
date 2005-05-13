@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.173 2005/05/13 13:49:53 jimg Exp $
+# $Id: Makefile.in,v 1.174 2005/05/13 20:18:58 jimg Exp $
 
 @SET_MAKE@
 
@@ -332,7 +332,7 @@ install-headers:
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
 		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS) \
 		 debug.h dods-limits.h ; \
-	    do $(INSTALL_DATA) $$h $(includedir)/@PACKAGE_NAME@; done
+	    do $(INSTALL_DATA) $$h $(includedir)/dap; done
 
 install-getdap: getdap
 	-mkdir -p $(bindir)
@@ -503,7 +503,8 @@ clean:
 	-(cd tests; $(MAKE) $(MFLAGS) clean)
 
 distclean: clean
-	-rm -f config.status config.log config.cache
+	-rm -f config.status config.log config.cache dap-config \
+	config_dap.h dods-datatypes.h regex-0.12/config.h
 
 # I added this so that distclean will not wipe these files out. Thus people
 # without GNU bison/flex (e.g., Dec Alphas which have a scanner generator
