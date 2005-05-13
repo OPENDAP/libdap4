@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.174 2005/05/13 20:18:58 jimg Exp $
+# $Id: Makefile.in,v 1.175 2005/05/13 20:25:31 jimg Exp $
 
 @SET_MAKE@
 
@@ -328,7 +328,7 @@ install: all install-headers install-getdap install-dap-config install-deflate
 	$(RANLIB) $(libdir)/libdap++.a
 
 install-headers:
-	-mkdir -p $(includedir)/@PACKAGE_NAME@
+	-mkdir -p $(includedir)/dap
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
 		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS) \
 		 debug.h dods-limits.h ; \
