@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: util.cc,v 1.83 2005/04/22 23:31:40 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: util.cc,v 1.84 2005/05/17 17:37:55 pwest Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -520,7 +520,7 @@ double_to_string(const double &num)
 string
 dap_version()
 {
-    return (string)DVR + ": compiled on " + __DATE__ + ":" + __TIME__ ;
+    return (string)"OPeNDAP DAP/" + libdap_version() + ": compiled on " + __DATE__ + ":" + __TIME__ ;
 }
 
 // Given a pathname, return the file at the end of the path. This is used
@@ -612,6 +612,9 @@ file_to_string(FILE *fp)
 }
 
 // $Log: util.cc,v $
+// Revision 1.84  2005/05/17 17:37:55  pwest
+// updated dap_version using libdap_version
+//
 // Revision 1.83  2005/04/22 23:31:40  jimg
 // Version 3.5.0 builds; passes most tests
 //
