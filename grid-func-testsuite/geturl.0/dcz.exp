@@ -3,6 +3,9 @@
 # servers on other hosts or other versions of the servers.
 
 # $Log: dcz.exp,v $
+# Revision 1.3  2005/05/23 16:06:14  jimg
+# Now uses local common-tests.exp and test.opendap.org.
+#
 # Revision 1.2  2003/01/22 01:07:08  jimg
 # Updated the grid-finc-testsuite.
 #
@@ -27,10 +30,10 @@ global verbose			# this and srcdir are set by runtest.exp
 global srcdir
 global host
 
-source ../../etc/common_tests.exp
+source common_tests.exp
 
 # Server machine name
-set host "dcz.dods.org"
+set host "test.opendap.org"
 # CGI directory on $host
 set test_dir "dods-3.2"
 

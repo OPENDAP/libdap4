@@ -3,6 +3,9 @@
 # servers on other hosts or other versions of the servers.
 
 # $Log: dodsdev.exp,v $
+# Revision 1.6  2005/05/23 16:07:06  jimg
+# Now uses local common-tests.exp and test.opendap.org.
+#
 # Revision 1.5  2005/03/30 23:12:02  jimg
 # Modified to use the new factory class.
 #
@@ -45,11 +48,11 @@ global verbose			# this and srcdir are set by runtest.exp
 global srcdir
 global host
 
-source ../../etc/common_tests.exp
+source common_tests.exp
 
 # Server machine name
-# set host "dodsdev.gso.uri.edu"
-set host "localhost"
+set host "test.opendap.org"
+# set host "localhost"
 # CGI directory on $host
 set test_dir "dods-3.4"
 
