@@ -24,7 +24,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include "config_dap.h"
 
 #include <stdio.h>
@@ -45,15 +45,13 @@
     resource could not be opened. This method does not throw an exception for
     resources that cannot be opened because that can happen for a number of
     reasons which are hardly 'exceptional.' */
-Response *
-AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
+Response *AISMerge::get_ais_resource(const string & res) throw(Error,
+							       InternalErr)
 {
     if (res.find("http:") == 0
-	|| res.find("file:") == 0 
-	|| res.find("https:") == 0 ) {
+	|| res.find("file:") == 0 || res.find("https:") == 0) {
 	return d_http.fetch_url(res);
-    }
-    else {
+    } else {
 	FILE *s = fopen(res.c_str(), "r");
 	if (!s)
 	    throw Error("I could not open local AIS resource '"
@@ -75,39 +73,46 @@ AISMerge::get_ais_resource(const string &res) throw(Error, InternalErr)
     @param primary The URL of the primary resource.
     @param das The target of the merge operation. This must already contain
     the DAS for \e primary. */
-void
-AISMerge::merge(const string &primary, DAS &das) throw(Error, InternalErr)
+void AISMerge::merge(const string & primary, DAS & das) 
+        throw(Error, InternalErr)
 {
     if (!d_ais_db.has_resource(primary))
 	return;
 
     try {
 	ResourceVector rv = d_ais_db.get_resource(primary);
-	
+
 	for (ResourceVectorIter i = rv.begin(); i != rv.end(); ++i) {
 	    Response *ais_resource = get_ais_resource(i->get_url());
 	    switch (i->get_rule()) {
-	      case Resource::overwrite:
+	    case Resource::overwrite:
 		das.parse(ais_resource->get_stream());
 		break;
-	      case Resource::replace:
+	    case Resource::replace:
 		das.erase();
 		das.parse(ais_resource->get_stream());
 		break;
-	      case Resource::fallback:
+	    case Resource::fallback:
 		if (das.get_size() == 0)
 		    das.parse(ais_resource->get_stream());
 		break;
 	    }
-	    delete ais_resource; ais_resource = 0;
+	    delete ais_resource;
+	    ais_resource = 0;
 	}
     }
-    catch (NoSuchPrimaryResource &e) {
-	throw InternalErr(string("I caught a 'NoSuchPrimaryResource' exception, it said:\n") + e.get_error_message() + string("\n"));
+    catch(NoSuchPrimaryResource & e) {
+	throw
+	    InternalErr(string
+			("I caught a 'NoSuchPrimaryResource' exception, it said:\n")
+			+ e.get_error_message() + string("\n"));
     }
 }
 
 // $Log: AISMerge.cc,v $
+// Revision 1.9  2005/05/23 16:01:44  jimg
+// Reformat using indent and indent-eclipse plugin.
+//
 // Revision 1.8  2004/02/19 19:42:51  jimg
 // Merged with release-3-4-2FCS and resolved conflicts.
 //
