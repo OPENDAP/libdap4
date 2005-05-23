@@ -3,6 +3,9 @@
 # jhrg
 #
 # $Log: test.s.exp,v $
+# Revision 1.3  2005/05/23 16:03:04  jimg
+# Tests now use the local copy of common-tests.exp.
+#
 # Revision 1.2  2001/08/24 17:46:24  jimg
 # Resolved conflicts from the merge of release 3.2.6
 #
@@ -19,7 +22,7 @@
 # Added tests for `#' in IDs.
 #
 
-source ../../etc/common_tests.exp
+source common_tests.exp
 
 global verbose			# this and srcdir are set by runtest.exp
 global srcdir
