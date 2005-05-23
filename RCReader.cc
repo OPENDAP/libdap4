@@ -164,7 +164,7 @@ RCReader::read_rc_file(const string &pathname) throw(Error)
 	    value = strchr(tempstr, '=');
 	    if (!value)
 		continue;
-	    tokenlength = (int) value - (int) tempstr;
+	    tokenlength = value - tempstr;
 	    value++;
 
 	    if ((strncmp(tempstr, "USE_CACHE", 9) == 0)
@@ -495,6 +495,10 @@ RCReader::instance() throw(Error)
 }
 
 // $Log: RCReader.cc,v $
+// Revision 1.16  2005/05/23 16:32:06  jimg
+// Removed cast to int at tokenlength = ... to avoid a warning about differring
+// pointer and int sizes on x86 64-bit CPUs.
+//
 // Revision 1.15  2005/04/21 17:48:59  jimg
 // Removed PTHREADS compile-time switch. Also, checkpoint for the build
 // work.
