@@ -41,7 +41,6 @@ AC_SUBST(CXX)
 
 # Checks for programs.
 AC_PROG_AWK
-AC_PROG_YACC
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_LEX
@@ -50,8 +49,10 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-dnl DODS_PROG_BISON
-dnl AC_CHECK_PROG(YACC,bison,bison)
+dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
+dnl Makfile will call bison -y which doesn't know how to make the parsers 
+dnl we require. jhrg 6/15/05
+AC_CHECK_PROG(YACC,[bison],[bison])
 
 dnl Find where perl lives on the user's system
 DODS_PROG_PERL
