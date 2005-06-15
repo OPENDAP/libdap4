@@ -23,7 +23,7 @@ AC_SUBST(host)
 # apparent bug in their gcc 3.3 clone (a beta).  If you see this after
 # 1/1/2005, you can probably remove it.
 case "${host_cpu}:${host_vendor}:${host_os}" in
-     powerpc:apple:netbsd* | alphaev56:dec:osf5.*)
+     powerpc:apple:netbsd* | alphaev56:dec:osf5.* | powerpc:apple:darwin*)
        CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
        CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
        break;;
