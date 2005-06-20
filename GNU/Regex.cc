@@ -34,18 +34,19 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include <new>
 
 extern "C" {
-#if defined(WIN32) || defined(__POWERPC__)
+#if !defined(HAVE_REGEX_H) || !defined(HAVE_RE_COMPILE_FASTMAP) \
+    || !defined(HAVE_RE_MATCH_2) 
+# if defined(WIN32) || defined(__POWERPC__)
 
-#ifndef __STDC__
-#define __STDC__                /*  Needed for rx.h */
-#endif
+# include "regex-0.12/regex.h"   /*  Lack of case distinction on win32 */
 
-#include "regex-0.12/regex.h"   /*  Lack of case distinction on win32 */
+# else                           /*  Means regex.h and Regex.h are same file. */
 
-#else                           /*  Means regex.h and Regex.h are same file. */
+# include "regex.h"
 
-#include "regex.h"
-
+# endif
+#else
+# include <regex.h>
 #endif
 }
 

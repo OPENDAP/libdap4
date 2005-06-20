@@ -36,7 +36,7 @@ char *alloca ();
 #include <unistd.h>
 #endif
 #include <string.h>		// Added these. 10/20/98 jhrg
-#include <GetOpt.h>
+#include "GetOpt.h"
 #include <stdlib.h>
 #include <string.h>
 

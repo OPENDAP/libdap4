@@ -95,9 +95,26 @@ AC_FUNC_REALLOC
 AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv re_comp regcomp setenv strchr strerror strstr strtol strtoul])
+AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strstr strtol strtoul])
 # Added 04/22/05 jhrg
 AC_CHECK_FUNCS([timegm mktime])
+
+AC_CHECK_HEADERS([regex.h],[openndap_regex_H=yes],[openndap_regex_H=no])
+AC_CHECK_FUNCS([re_match_2 re_compile_fastmap],[openndap_regex_funcs=yes],
+  [openndap_regex_funcs=no])
+if test "z$openndap_regex_funcs" = "zyes" \
+   -a "z$openndap_regex_H" = "zyes"; then
+    AC_MSG_NOTICE([Using system regex library])  
+else
+    INCS="$INCS -Iregex-0.12"
+    AC_MSG_NOTICE([Using package regex library])  
+    DODS_REGEX_CLEAN=regex-0.12/config.h
+    DODS_REGEX_SRCS=regex-0.12/regex.c
+    DODS_REGEX_OBJS=regex-0.12/regex.o
+fi
+AC_SUBST(DODS_REGEX_CLEAN)
+AC_SUBST(DODS_REGEX_SRCS)
+AC_SUBST(DODS_REGEX_OBJS)
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
 dnl the AC_CHECK_LIB macro is not needed.
@@ -171,7 +188,7 @@ AH_BOTTOM([/* Shorthand for gcc's unused attribute feature */
 #endif /* _config_dap_h */])
 
 dnl Temporary hack; find a home for the deflate program; set it to
-dnl prefix/etc/deflate. Seeutil.cc:dods_root()
+dnl prefix/etc/deflate. See util.cc:dods_root()
 if test "$prefix" = "NONE"
 then
 AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])
@@ -184,8 +201,5 @@ AC_SUBST(INCS)
 
 AC_CONFIG_FILES([dap-config
 		 Makefile
-                 regex-0.12/Makefile
-                 regex-0.12/doc/Makefile
-                 regex-0.12/test/Makefile
                  tests/Makefile] , [chmod +x dap-config])
 AC_OUTPUT

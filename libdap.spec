@@ -2,18 +2,19 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP.
 Version: 3.5.1
-Release: 1
+Release: 2
 
 Source0: http://www.opendap.org/pub/%{name}-%{version}.tar.gz
 URL: http://www.opendap.org/
 
 Group: Development/Libraries
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 License: LGPL
-Requires: curl >= 7.12.0
-Requires: libxml2 >= 2.5.7
-
-Prefix: /usr/local
+# Mandrake
+#BuildRequires: libcurl3-devel >= 7.12.0 libxml2-devel >= 2.5.7
+# fedora
+BuildRequires: curl-devel >= 7.12.0 libxml2-devel >= 2.5.7
+Patch: libdap-Makefile.in-DESTDIR.diff
 
 %description
 The libdap++ library contains an implementation of DAP2. This package
@@ -25,45 +26,41 @@ the library when it returns compressed responses.
 
 %prep
 %setup -q
+%patch
 
 %build
 %configure
+make %{?_smp_mflags}
 
 %install
-if echo $RPM_BUILD_ROOT | grep '/tmp/.*-buildroot'; then
-    rm -rf $RPM_BUILD_ROOT
-else
-    echo "RPM_BUILD_ROOT not set!"
-fi
-%makeinstall
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
 
 %clean
-if echo $RPM_BUILD_ROOT | grep '/tmp/.*-buildroot'; then
-    rm -rf $RPM_BUILD_ROOT
-else
-    echo "RPM_BUILD_ROOT not set!"
-fi
+rm -rf $RPM_BUILD_ROOT
 
 %files
 %{_libdir}/libdap++.a
 %{_bindir}/dap-config
 %{_bindir}/getdap
 %{_sbindir}/deflate
-%dir 
 %{_includedir}/dap
 
-%defattr(-,root,root,0755)
+%defattr(-,root,root,-)
 
 %doc README NEWS
 
 %changelog
+* Sun Jun 19 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.0-2
+- Update with fedora template
+
 * Thu May 12 2005 James Gallagher <jimg@comet.opendap.org> - 3.5.0-1
-- Changed Requires xml2 to libxml2
+- Changed: Requires xml2 to libxml2
 
 * Wed May 11 2005 James Gallagher <jimg@zoey.opendap.org> 3.5.0-1
 - Removed version numbers from .a and includes directory.
 
-* Tues May 10 2005 James Gallagher <jimg@zoey.opendap.org> 
+* Tue May 10 2005 James Gallagher <jimg@zoey.opendap.org> 
 - Mostly works. Problems: Not sure if the %post script stuff works.
 - Must also address the RHEL3 package deps issue (curl 7.12.0 isn't available;
   not sure about xml2 2.5.7). At least the deps fail when they are not present!

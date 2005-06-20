@@ -16,7 +16,7 @@
 
 PROG = libdap++.a libtest-types++.a getdap usage deflate
 
-INCS = -I. -IGNU -Iregex-0.12 @INCS@
+INCS = -I. -IGNU @INCS@
 DEFS = @DEFS@ -DDEFAULT_BASETYPE_FACTORY
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 # Use these options for debugging. 12/24/02 jhrg
@@ -149,11 +149,11 @@ TYPEOBJS = BaseType.o Byte.o Int32.o Float64.o Str.o Url.o \
 
 GNUSRCS = GNU/GetOpt.cc GNU/Regex.cc GNU/error.cc \
 	   IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc \
-	   BTIterAdapter.cc ClauseIterAdapter.cc  regex-0.12/regex.c
+	   BTIterAdapter.cc ClauseIterAdapter.cc @DODS_REGEX_SRCS@
 
 GNUOBJS = GNU/GetOpt.o GNU/Regex.o GNU/error.o \
 	   IteratorAdapter.o ArrayIterAdapter.o AttrIterAdapter.o \
-	   BTIterAdapter.o ClauseIterAdapter.o regex-0.12/regex.o
+	   BTIterAdapter.o ClauseIterAdapter.o @DODS_REGEX_OBJS@
 
 GNUHDRS = GNU/builtin.h GNU/Pix.h GNU/GetOpt.h GNU/Regex.h \
 	   IteratorAdapter.h ArrayIterAdapter.h AttrIterAdapter.h \
@@ -323,34 +323,34 @@ Error.tab.o: Error.tab.c Error.y	# build using C++ compiler
 # Standard targets
 
 install: all install-headers install-getdap install-dap-config install-deflate
-	-mkdir -p $(libdir)
-	$(INSTALL_DATA) libdap++.a $(libdir)/libdap++.a
-	$(RANLIB) $(libdir)/libdap++.a
+	-mkdir -p $(DESTDIR)$(libdir)
+	$(INSTALL_DATA) libdap++.a $(DESTDIR)$(libdir)/libdap++.a
+	$(RANLIB) $(DESTDIR)$(libdir)/libdap++.a
 
 install-headers:
-	-mkdir -p $(includedir)/dap
+	-mkdir -p $(DESTDIR)$(includedir)/dap
 	for h in $(ERRORHDRS) $(EXPRHDRS) $(TYPEHDRS) $(DDSHDRS) $(DASHDRS) \
 		 $(GNUHDRS) $(CLIENTHDRS) $(UTILHDRS) $(AISHDRS) $(DDXHDRS) \
 		 debug.h dods-limits.h ; \
-	    do $(INSTALL_DATA) $$h $(includedir)/dap; done
+	    do $(INSTALL_DATA) $$h $(DESTDIR)$(includedir)/dap; done
 
 install-getdap: getdap
-	-mkdir -p $(bindir)
-	$(INSTALL_PROGRAM) -s getdap $(bindir)
+	-mkdir -p $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) -s getdap $(DESTDIR)$(bindir)
 
 install-dap-config:
-	-mkdir -p $(bindir)
-	$(INSTALL_PROGRAM) dap-config $(bindir)
+	-mkdir -p $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) dap-config $(DESTDIR)$(bindir)
 
 # usage and deflate are part of the DODS server. 02/10/98 jhrg
 
 install-usage: usage
-	-mkdir -p $(sbindir)
-	$(INSTALL_PROGRAM) -s usage $(sbindir)
+	-mkdir -p $(DESTDIR)$(sbindir)
+	$(INSTALL_PROGRAM) -s usage $(DESTDIR)$(sbindir)
 
 install-deflate: deflate
-	-mkdir -p $(sbindir)
-	$(INSTALL_PROGRAM) -s deflate $(sbindir)
+	-mkdir -p $(DESTDIR)$(sbindir)
+	$(INSTALL_PROGRAM) -s deflate $(DESTDIR)$(sbindir)
 
 configure: configure.ac acinclude.m4
 	rm -rf autom4te.cache
@@ -500,11 +500,11 @@ clean:
 	-rm -f $(PROG) das-test dds-test expr-test error-test gse-test
 	-rm -f $(UNIT_TEST_PROGS)
 	-rm -rf docs unit_tests
-	-(cd tests; $(MAKE) $(MFLAGS) clean)
+	-(cd tests && $(MAKE) $(MFLAGS) clean)
 
 distclean: clean
 	-rm -f config.status config.log config.cache dap-config \
-	config_dap.h dods-datatypes.h regex-0.12/config.h
+	config_dap.h dods-datatypes.h @DODS_REGEX_CLEAN@
 
 # I added this so that distclean will not wipe these files out. Thus people
 # without GNU bison/flex (e.g., Dec Alphas which have a scanner generator
