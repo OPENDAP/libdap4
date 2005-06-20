@@ -14,7 +14,8 @@ License: LGPL
 #BuildRequires: libcurl3-devel >= 7.12.0 libxml2-devel >= 2.5.7
 # fedora
 BuildRequires: curl-devel >= 7.12.0 libxml2-devel >= 2.5.7
-Patch: libdap-Makefile.in-DESTDIR.diff
+# Applied and the result checked into subversion, 6/20/05 jhrg
+# Patch: libdap-Makefile.in-DESTDIR.diff
 
 %description
 The libdap++ library contains an implementation of DAP2. This package
@@ -26,7 +27,7 @@ the library when it returns compressed responses.
 
 %prep
 %setup -q
-%patch
+# %patch
 
 %build
 %configure
