@@ -4,7 +4,7 @@ Summary: The C++ DAP2 library from OPeNDAP.
 Version: 3.5.1
 Release: 2
 
-Source0: http://www.opendap.org/pub/%{name}-%{version}.tar.gz
+Source0: http://www.opendap.org/pub/3.5/source/%{name}-%{version}.tar.gz
 URL: http://www.opendap.org/
 
 Group: Development/Libraries
@@ -68,5 +68,3 @@ rm -rf $RPM_BUILD_ROOT
 
 * Fri May  6 2005 James Gallagher <jimg@zoey.opendap.org> 
 - Initial build.
-
-
