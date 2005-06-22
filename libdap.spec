@@ -2,7 +2,7 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP.
 Version: 3.5.1
-Release: 2
+Release: 3
 
 Source0: http://www.opendap.org/pub/3.5/source/%{name}-%{version}.tar.gz
 URL: http://www.opendap.org/
@@ -14,8 +14,10 @@ License: LGPL
 #BuildRequires: libcurl3-devel >= 7.12.0 libxml2-devel >= 2.5.7
 # fedora
 BuildRequires: curl-devel >= 7.12.0 libxml2-devel >= 2.5.7
-# Applied and the result checked into subversion, 6/20/05 jhrg
-# Patch: libdap-Makefile.in-DESTDIR.diff
+
+# This package could be relocatable. In that case uncomment the following
+# line
+# Prefix: %{_prefix}
 
 %description
 The libdap++ library contains an implementation of DAP2. This package
@@ -27,7 +29,6 @@ the library when it returns compressed responses.
 
 %prep
 %setup -q
-# %patch
 
 %build
 %configure
@@ -49,9 +50,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %defattr(-,root,root,-)
 
-%doc README NEWS
+%doc README NEWS COPYING COPYRIGHT.URI README.AIS README.dodsrc
 
 %changelog
+* Tue Jun 21 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.0-3
+- Add COPYING
+
 * Sun Jun 19 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.0-2
 - Update with fedora template
 
