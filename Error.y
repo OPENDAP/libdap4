@@ -121,9 +121,11 @@ code:		SCAN_CODE '=' SCAN_INT ';'
 message:	SCAN_MSG '=' SCAN_STR 
 		{ 
 		    ERROR_OBJ(arg)->set_error_message($3);
-		    $$ = true; 
 		} 
 		';' 
+                {
+		    $$ = true;
+		}
 ;
 
 program_type:	SCAN_PTYPE '=' SCAN_INT ';'
@@ -137,9 +139,11 @@ program_code:	SCAN_PROGRAM '=' SCAN_STR
 		{
 		    DBG(cerr << "Program: " << $3 << endl);
 		    ERROR_OBJ(arg)->set_program($3);
-		    $$ = true; 
 		}
-		';' 
+		';'
+                {
+		    $$ = true;
+		}
 ;
 
 %%

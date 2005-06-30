@@ -23,9 +23,9 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
-// The server_handler is a dummy server which currently assumes a data
-// request. An executable is built using the Test* classes so this will
-// return data values. All output is dumped to stdout except for
+// This is a dummy server which currently assumes a data request (as opposed
+// to a das or dds request). An executable is built using the Test* classes
+// so this will return data values. All output is dumped to stdout except for
 // instrumentation, which is sent to stderr. This is new in 3.4. When we move
 // on to 3.5, this should be edited so that it is a 'real' handler, using the
 // response information in DODSFilter. 07/21/03 jhrg

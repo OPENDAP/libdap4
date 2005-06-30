@@ -5,7 +5,8 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.57)
 AC_INIT(libdap, 3.5.1, dods-tech@unidata.ucar.edu)
 AC_CONFIG_SRCDIR([AISConnect.cc])
-AC_CONFIG_HEADER([config_dap.h dods-datatypes.h regex-0.12/config.h])
+AM_CONFIG_HEADER([config_dap.h dods-datatypes.h regex-0.12/config.h])
+AM_INIT_AUTOMAKE
 
 AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
@@ -43,7 +44,8 @@ AC_SUBST(CXX)
 AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
-AC_PROG_LEX
+AM_PROG_LEX
+dnl AC_PROG_YACC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -102,19 +104,23 @@ AC_CHECK_FUNCS([timegm mktime])
 AC_CHECK_HEADERS([regex.h],[openndap_regex_H=yes],[openndap_regex_H=no])
 AC_CHECK_FUNCS([re_match_2 re_compile_fastmap],[openndap_regex_funcs=yes],
   [openndap_regex_funcs=no])
-if test "z$openndap_regex_funcs" = "zyes" \
-   -a "z$openndap_regex_H" = "zyes"; then
-    AC_MSG_NOTICE([Using system regex library])  
-else
-    INCS="$INCS -Iregex-0.12"
-    AC_MSG_NOTICE([Using package regex library])  
-    DODS_REGEX_CLEAN=regex-0.12/config.h
-    DODS_REGEX_SRCS=regex-0.12/regex.c
-    DODS_REGEX_OBJS=regex-0.12/regex.o
-fi
-AC_SUBST(DODS_REGEX_CLEAN)
-AC_SUBST(DODS_REGEX_SRCS)
-AC_SUBST(DODS_REGEX_OBJS)
+AM_CONDITIONAL([USE_GNU_REGEX_FUNCS],
+	       [test "z$openndap_regex_funcs" != "zyes" \
+		     -o "z$openndap_regex_H" != "zyes"])
+
+dnl if test "z$openndap_regex_funcs" = "zyes" \
+dnl    -a "z$openndap_regex_H" = "zyes"; then
+dnl     AC_MSG_NOTICE([Using system regex library])  
+dnl else
+dnl     CPPFLAGS="$CPPFLAGS -I\$(srcdir)/regex-0.12"
+dnl     AC_MSG_NOTICE([Using package regex library])  
+dnl     DODS_REGEX_CLEAN=regex-0.12/config.h
+dnl     DODS_REGEX_SRCS=regex-0.12/regex.c
+dnl     DODS_REGEX_OBJS=regex-0.12/regex.o
+dnl fi
+dnl AC_SUBST(DODS_REGEX_CLEAN)
+dnl AC_SUBST(DODS_REGEX_SRCS)
+dnl AC_SUBST(DODS_REGEX_OBJS)
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
 dnl the AC_CHECK_LIB macro is not needed.
@@ -130,7 +136,7 @@ then
 	fi
 
 	LIBS="$LIBS `curl-config --libs`"
-	INCS="$INCS `curl-config --cflags`"
+	CPPFLAGS="$CPPFLAGS `curl-config --cflags`"
 	AC_MSG_RESULT([yes])
 else
 	AC_MSG_ERROR([I could not find libcurl])
@@ -138,7 +144,7 @@ fi
 
 dnl AC_CHECK_LIB([curl], [curl_version], 
 dnl 	[LIBS="$LIBS `curl-config --libs`"
-dnl 	 INCS="$INCS `curl-config --cflags`"],
+dnl 	 CPPFLAGS="$CPPFLAGS `curl-config --cflags`"],
 dnl 	[AC_MSG_ERROR([I could not find libcurl])]
 dnl 	[`curl-config --libs`])
 
@@ -155,7 +161,7 @@ then
 	fi
 
 	LIBS="$LIBS `xml2-config --libs`"
-	INCS="$INCS `xml2-config --cflags`"
+	CPPFLAGS="$CPPFLAGS `xml2-config --cflags`"
 	AC_MSG_RESULT([yes])
 else
 	AC_MSG_ERROR([I could not find libxml2])
@@ -163,7 +169,7 @@ fi
 
 dnl AC_CHECK_LIB([xml2], [xmlInitGlobals],
 dnl 	[LIBS="$LIBS `xml2-config --libs`"
-dnl 	 INCS="$INCS `xml2-config --cflags`"],
+dnl 	 CPPFLAGS="$CPPFLAGS `xml2-config --cflags`"],
 dnl 	[AC_MSG_ERROR([I could not find libxml2])]
 dnl 	[`xml2-config --libs`])
 
@@ -195,9 +201,6 @@ AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])
 else
 AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
 fi
-
-dnl INCS is non-standard...
-AC_SUBST(INCS)
 
 AC_CONFIG_FILES([dap-config
 		 Makefile
