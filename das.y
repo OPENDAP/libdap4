@@ -62,6 +62,9 @@ static char rcsid[] not_used = {"$Id: das.y,v 1.50 2004/02/19 19:42:52 jimg Exp 
 #include "trace_new.h"
 #endif
 
+#define yylex daslex
+#define yyerror daserror 
+
 using namespace std;
 
 // These macros are used to access the `arguments' passed to the parser. A

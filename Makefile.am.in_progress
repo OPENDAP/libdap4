@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS = foreign check-news
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY
-AM_CXXFLAGS = -IGNU
+AM_CXXFLAGS = -I$(srcdir)/GNU
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
@@ -26,7 +26,7 @@ lib_LIBRARIES = libdap.a
 
 GNU_SRC = GNU/GetOpt.cc GNU/Regex.cc GNU/error.cc			\
 	IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc	\
-	BTIterAdapter.cc ClauseIterAdapter.cc 
+	BTIterAdapter.cc ClauseIterAdapter.cc
 
 # @DODS_REGEX_SRCS@
 
@@ -40,8 +40,9 @@ GNU_HDR = GNU/builtin.h GNU/Pix.h GNU/GetOpt.h GNU/Regex.h	\
 # GRAM_SRC = das.yy dds.yy expr.yy gse.yy error_parser.yy das_scanner.ll \
 #	dds_scanner.ll expr_scanner.ll gse_escanner.ll error_scanner.ll 
 
+
 GRAM_SRC = lex.das.c das.tab.c lex.dds.c dds.tab.c lex.expr.c expr.tab.c \
-	lex.Error.c Error.tab.c lex.gse_.cc gse.tab.cc
+	lex.Error.c Error.tab.c lex.gse_.cc gse.tab.cc 
 
 DAP_SRC = $(GRAM_SRC) AttrTable.cc DAS.cc parser-util.cc escaping.cc	\
 	DDS.cc DataDDS.cc DDXParser.cc Clause.cc RValue.cc Error.cc	\
@@ -60,7 +61,9 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 SERVER_SRC = SignalHandler.cc OPeNDAPFile.cc OPeNDAPDir.cc cgi_util.cc	\
 	DODSFilter.cc ResponseTooBigErr.cc  
 
-DAP_HDR = escaping.h AttrTable.h DAS.h parser.h DDS.h DataDDS.h \
+DAP_HDR = escaping.h AttrTable.h DAS.h parser.h debug.h \
+	dods-limits.h ce_functions.h Operators.h EventHandler.h \
+	trace_new.h DDS.h DataDDS.h \
 	DDXParser.h DDXExceptions.h expr.h Clause.h RValue.h Error.h	      \
 	InternalErr.h BaseType.h Byte.h Int32.h GSEClause.h	      \
 	Constructor.h Float64.h Str.h Url.h Vector.h Array.h Structure.h      \
@@ -74,24 +77,48 @@ CLIENT_HDR = ResponseTooBigErr.h RCReader.h Connect.h HTTPConnect.h	    \
 	ObjectType.h EncodingType.h HTTPCache.h HTTPCacheDisconnectedMode.h \
 	Response.h HTTPResponse.h HTTPCacheResponse.h AISConnect.h	    \
 	AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h	    \
-	Resource.h 
+	Resource.h HTTPCacheInterruptHandler.h
 
 SERVER_HDR = cgi_util.h DODSFilter.h SignalHandler.h OPeNDAPFile.h	\
-	OPeNDAPDir.h SignalHandlerRegisteredErr.h
+	OPeNDAPDir.h SignalHandlerRegisteredErr.h AlarmHandler.h
 
 libdap_a_SOURCES = $(DAP_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(GNU_SRC)
 
 pkginclude_HEADERS = $(DAP_HDR) $(CLIENT_HDR) $(SERVER_HDR) $(GNU_HDR)
 
-DIST_EXTRA = ChangeLog COPYRIGHT README.translation win32
+DIST_EXTRA = ChangeLog COPYING win32 README.AIS \
+	README.dodsrc COPYRIGHT_URI
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc \
 	   TestGrid.cc TestUInt32.cc TestInt16.cc TestUInt16.cc \
 	   TestFloat32.cc TestCommon.cc TestTypeFactory.cc
 
+TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h \
+	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h \
+	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h
+
+
 TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc getdap.cc \
 	   ThreadTest.cc server_handler.cc
+
+OTHER_SRCS =  AISDatabaseParserTest.cc AISMergeTest.cc AISResourcesTest.cc \
+       ArrayTest.cc AttrTableTest.cc BaseTypeTest.cc ByteTest.cc \
+       cgiUtilTest.cc DASTest.cc DataDDSTest.cc \
+       DDSTest.cc DDXParserTest.cc deflate.c DODSFilterTest.cc \
+       generalUtilTest.cc gse-test.cc HTTPCacheTest.cc HTTPConnectTest.cc \
+       LongIterAdapter.cc parserUtilTest.cc RCReaderTest.cc SequenceTest.cc \
+       SignalHandlerTest.cc usage.cc
+
+LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
+	Error.lex Error.y
+
+EXTRA_DIST = $(DIST_EXTRA) $(TESTSRCS) $(TESTPROGSRCS) \
+   $(LEX_YACC_EXTRA) $(TEST_HDR) $(OTHER_SRCS) regex-0.12 cache-testsuite \
+   cgi-util-tests tests ais_testsuite das-testsuite dds-testsuite \
+   expr-testsuite grid-func-testsuite rcreader-testsuite server-testsuite \
+   GNU/README depend.sh common_tests.exp \
+   dods.rc doxy.conf doxy_private.conf libdap.spec cvsdate
 
 ############################################################################
 #
@@ -103,63 +130,67 @@ TESTPROGSRCS = das-test.cc dds-test.cc expr-test.cc error-test.cc getdap.cc \
 # Build the DAS scanner (a C source module compiled with C++)
 
 lex.das.c: das.lex das.tab.c das.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdas das.lex
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdas $<
+
+DODS_LEX_INCLUDES = -I.  -I$(srcdir) -I$(srcdir)/GNU
 
 lex.das.o: lex.das.c
-	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS) -Wno-unused -c lex.das.c -o lex.das.o
+	$(CXX) $(DODS_LEX_INCLUDES) $(CXXFLAGS) $(CPPFLAGS) -Wno-unused -c $< -o lex.das.o
 
 # Build the DAS parser
 # Note that awk is used to add a param to dasparse().
 
 das.tab.c das.tab.h: das.y DAS.h
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das das.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das $<
 
-das.tab.o: das.tab.c das.y DAS.h # build using C++ compiler
-	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS)  -c das.tab.c -o das.tab.o
+# build using C++ compiler
+das.tab.o: das.tab.c das.y DAS.h 
+	$(CXX) $(DODS_LEX_INCLUDES) $(CXXFLAGS) $(CPPFLAGS)  -c $< -o das.tab.o
 
 # Build the DDS Scanner.
 
 lex.dds.c: dds.lex dds.tab.c dds.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdds dds.lex
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdds $<
 
 lex.dds.o: lex.dds.c
-	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c lex.dds.c -o lex.dds.o
+	$(CXX) $(DODS_LEX_INCLUDES) $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c $< -o lex.dds.o
 
 # Build the DDS parser
 
 dds.tab.c dds.tab.h: dds.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds dds.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds $<
 
-dds.tab.o: dds.tab.c dds.y      # build using C++ compiler
-	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS) -c dds.tab.c -o dds.tab.o
+# build using C++ compiler
+dds.tab.o: dds.tab.c dds.y      
+	$(CXX) $(DODS_LEX_INCLUDES) $(CXXFLAGS) $(CPPFLAGS) -c $< -o dds.tab.o
 
 # Build the CE Scanner.
 
 lex.expr.c: expr.lex expr.tab.c expr.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pexpr expr.lex
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pexpr $<
 
 lex.expr.o: lex.expr.c
-	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c lex.expr.c -o lex.expr.o
+	$(CXX) $(DODS_LEX_INCLUDES) $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c $< -o lex.expr.o
 
 # Build the CE parser
 
 expr.tab.c expr.tab.h: expr.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p expr expr.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p expr $<
 
 expr.tab.o: expr.tab.c expr.y		# build using C++ compiler
-	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS)  -c expr.tab.c -o expr.tab.o
+	$(CXX) $(DODS_LEX_INCLUDES) $(CXXFLAGS) $(CPPFLAGS)  -c $< -o expr.tab.o
 
 # Build the grid selection sub_expression scanner and parser
 
 lex.gse_.cc: gse.lex gse.tab.cc gse.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pgse_ gse.lex
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pgse_ $<
 	mv lex.gse_.c lex.gse_.cc
 
 # lex.gse.o: lex.gse_.c
 #	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c lex.gse_.c -o lex.gse.o
 
 gse.tab.cc gse.tab.h: gse.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ gse.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ $<
 	mv gse.tab.c gse.tab.cc
 
 #gse.tab.o: gse.tab.c gse.y 		# build using C++ compiler
@@ -168,16 +199,17 @@ gse.tab.cc gse.tab.h: gse.y
 # Build the Error object scanner.
 
 lex.Error.c: Error.lex Error.tab.c Error.tab.h
-	$(LEX) $(LFLAGS) $(AM_LFLAGS) -PError Error.lex
+	$(LEX) $(LFLAGS) $(AM_LFLAGS) -PError $<
 
 lex.Error.o: lex.Error.c
-	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c lex.Error.c -o lex.Error.o
+	$(CXX) $(DODS_LEX_INCLUDES) $(CXXFLAGS) $(CPPFLAGS)  -Wno-unused -c $< -o lex.Error.o
 
 # Build the Error object parser.
 
 Error.tab.c Error.tab.h: Error.y
-	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error Error.y
+	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error $<
 
-Error.tab.o: Error.tab.c Error.y	# build using C++ compiler
-	$(CXX) -I. -IGNU $(CXXFLAGS) $(CPPFLAGS) -c Error.tab.c -o Error.tab.o
+# build using C++ compiler
+Error.tab.o: Error.tab.c Error.y	
+	$(CXX) $(DODS_LEX_INCLUDES) $(CXXFLAGS) $(CPPFLAGS) -c $< -o Error.tab.o
 

@@ -108,7 +108,7 @@ if test "z$openndap_regex_funcs" = "zyes" \
    -a "z$openndap_regex_H" = "zyes"; then
     AC_MSG_NOTICE([Using system regex library])  
 else
-    CPPFLAGS="$CPPFLAGS -Iregex-0.12"
+    CPPFLAGS="$CPPFLAGS -I\$(srcdir)/regex-0.12"
     AC_MSG_NOTICE([Using package regex library])  
     DODS_REGEX_CLEAN=regex-0.12/config.h
     DODS_REGEX_SRCS=regex-0.12/regex.c
