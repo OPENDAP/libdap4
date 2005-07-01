@@ -20,6 +20,17 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
+dnl library versionning
+LIB_CURRENT=0
+LIB_REVISION=0
+LIB_AGE=0
+AC_SUBST(LIB_CURRENT)
+AC_SUBST(LIB_REVISION)
+AC_SUBST(LIB_AGE)
+
+LIBDAP_VERSION="$LIB_CURRENT:$LIB_REVISION:$LIB_AGE"
+AC_SUBST(LIBDAP_VERSION)
+
 # Until further notice OS X port doesn't get -gstabs because of an
 # apparent bug in their gcc 3.3 clone (a beta).  If you see this after
 # 1/1/2005, you can probably remove it.
@@ -48,7 +59,8 @@ AM_PROG_LEX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
+AC_PROG_LIBTOOL
+dnl AC_PROG_RANLIB
 
 dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
 dnl Makfile will call bison -y which doesn't know how to make the parsers 

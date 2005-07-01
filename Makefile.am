@@ -16,13 +16,15 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 SUBDIRS = . tests
 
-lib_LIBRARIES = libdap.a 
+lib_LTLIBRARIES = libdap.la 
 
 bin_PROGRAMS = getdap
 
 sbin_PROGRAMS = deflate usage
 
-libdap_a_SOURCES = $(DAP_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(GNU_SRC)
+libdap_la_SOURCES = $(DAP_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(GNU_SRC)
+
+libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 
 pkginclude_HEADERS = $(DAP_HDR) $(CLIENT_HDR) $(SERVER_HDR) $(GNU_HDR)
 
@@ -40,8 +42,7 @@ TESTS = $(UNIT_TESTS) dejagnu_driver.sh
 # Build the dejagnu test drivers as noinst programs; when automake fixes
 # support for dejagnu so it can handle multiple drivers, switch to its 
 # targets, et cetera. See the section on dejagnu tests below. jhrg 7/1/05
-noinst_PROGRAMS = $(DEJAGNU_TESTS)
-check_PROGRAMS = $(UNIT_TESTS)
+check_PROGRAMS = $(UNIT_TESTS) $(DEJAGNU_TESTS)
 check_SCRIPTS = dejagnu_driver.sh
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
@@ -53,7 +54,7 @@ DIRS_EXTRA = win32 regex-0.12 cache-testsuite cgi-util-tests ais_testsuite \
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	\
 	GNU/README common_tests.exp dods.rc doxy.conf doxy_private.conf	\
-	libdap.spec $(LEX_YACC_EXTRA) $(DIRS_EXTRA)
+	libdap.spec $(LEX_YACC_EXTRA) $(DIRS_EXTRA) $(check_SCRIPTS)
 
 #############################################################################
 # Library sources
@@ -88,7 +89,7 @@ DAP_SRC = $(GRAM_SRC) AttrTable.cc DAS.cc parser-util.cc escaping.cc	\
 	PassiveByte.cc PassiveInt32.cc PassiveFloat64.cc PassiveStr.cc	\
 	PassiveUrl.cc PassiveUInt32.cc PassiveInt16.cc PassiveUInt16.cc	\
 	PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc		\
-	util_mit.cc BaseTypeFactory.cc RValue.cc
+	util_mit.cc BaseTypeFactory.cc
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc
@@ -229,7 +230,7 @@ lex.das.cc: das.lex das.tab.cc das.tab.h
 
 das.tab.cc das.tab.h: das.y DAS.h
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das $<
-	mv das.tab.c $@
+	mv das.tab.c das.tab.cc
 
 # DDS
 
@@ -239,7 +240,7 @@ lex.dds.cc: dds.lex dds.tab.cc dds.tab.h
 
 dds.tab.cc dds.tab.h: dds.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds $<
-	mv dds.tab.c $@
+	mv dds.tab.c dds.tab.cc
 
 # CE 
 
@@ -249,7 +250,7 @@ lex.expr.cc: expr.lex expr.tab.cc expr.tab.h
 
 expr.tab.cc expr.tab.h: expr.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p expr $<
-	mv expr.tab.c $@
+	mv expr.tab.c expr.tab.cc
 
 # Build the grid selection sub_expression scanner and parser
 
@@ -259,7 +260,7 @@ lex.gse_.cc: gse.lex gse.tab.cc gse.tab.h
 
 gse.tab.cc gse.tab.h: gse.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ $<
-	mv gse.tab.c $@
+	mv gse.tab.c gse.tab.cc
 
 # Errors
 
@@ -269,5 +270,5 @@ lex.Error.cc: Error.lex Error.tab.cc Error.tab.h
 
 Error.tab.cc Error.tab.h: Error.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error $<
-	mv Error.tab.c $@
+	mv Error.tab.c Error.tab.cc
 
