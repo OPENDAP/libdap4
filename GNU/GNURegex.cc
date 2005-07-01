@@ -50,7 +50,7 @@ extern "C" {
 #endif
 }
 
-#include <Regex.h>
+#include <GNURegex.h>
 
 using namespace std;
 

@@ -31,7 +31,7 @@
 
 #include "DODSFilter.h"
 #include "DAS.h"
-#include "Regex.h"
+#include "GNURegex.h"
 // #define DODS_DEBUG
 #include "debug.h"
 

@@ -49,7 +49,7 @@ static char rcsid[] not_used = {"$Id: usage.cc,v 1.30 2005/04/21 17:48:59 jimg E
 #include <string>
 #include <sstream>
 
-#include "Regex.h"
+#include "GNURegex.h"
 
 #include "cgi_util.h"
 #include "util.h"

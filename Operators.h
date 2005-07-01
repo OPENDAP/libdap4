@@ -36,7 +36,7 @@
 #ifndef _operators_h
 #define _operators_h
 
-#include <Regex.h>		// GNU Regex class used for string =~ op.
+#include "GNURegex.h"		// GNU Regex class used for string =~ op.
 
 using namespace std;
 

@@ -48,7 +48,7 @@ static char rcsid[] not_used =
 #include <iterator>
 
 #include "debug.h"
-#include "Regex.h"
+#include "GNURegex.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
 #include "RCReader.h"

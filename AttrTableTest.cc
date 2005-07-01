@@ -30,7 +30,7 @@
 #include <string>
 #include <sstream>
 
-#include "Regex.h"
+#include "GNURegex.h"
 
 #include "AttrTable.h"
 

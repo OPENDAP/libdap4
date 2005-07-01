@@ -62,7 +62,7 @@
 #include <string>
 #include <sstream>
 
-#include "Regex.h"
+#include "GNURegex.h"
 #include "Error.h"
 #include "InternalErr.h"
 

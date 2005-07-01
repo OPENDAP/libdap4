@@ -40,7 +40,7 @@
 #include <string>
 #include <sstream>
 
-#include "Regex.h"
+#include "GNURegex.h"
 
 #include "cgi_util.h"
 #include "debug.h"

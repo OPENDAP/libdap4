@@ -14,7 +14,7 @@ AM_LFLAGS = -8
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-defer-pop
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-# SUBDIRS = . tests
+SUBDIRS = . tests
 
 lib_LIBRARIES = libdap.a 
 
@@ -33,7 +33,7 @@ deflate_SOURCES = deflate.c
 usage_SOURCES = usage.cc
 usage_LDADD = -L. -ldap
 
-check_PROGRAMS = $(UNIT_TESTS) $(DEJAGNU_TESTS)
+check_PROGRAMS = $(UNIT_TESTS) $(DEJAGNU_TESTS) dejagnu_driver.sh
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
 	Error.lex Error.y
@@ -56,11 +56,11 @@ else
 REGEX_SRC =
 endif
 
-GNU_SRC = GNU/GetOpt.cc GNU/Regex.cc GNU/error.cc			\
+GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc GNU/GNUerror.cc			\
 	IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc	\
 	BTIterAdapter.cc ClauseIterAdapter.cc $(REGEX_SRC)
 
-GNU_HDR = GNU/builtin.h GNU/Pix.h GNU/GetOpt.h GNU/Regex.h	\
+GNU_HDR = GNU/builtin.h GNU/Pix.h GNU/GetOpt.h GNU/GNURegex.h	\
 	IteratorAdapter.h ArrayIterAdapter.h AttrIterAdapter.h	\
 	BTIterAdapter.h ClauseIterAdapter.h
 
@@ -87,17 +87,17 @@ CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 SERVER_SRC = SignalHandler.cc OPeNDAPFile.cc OPeNDAPDir.cc cgi_util.cc	\
 	DODSFilter.cc ResponseTooBigErr.cc  
 
-DAP_HDR = escaping.h AttrTable.h DAS.h parser.h debug.h \
-	dods-limits.h ce_functions.h Operators.h EventHandler.h \
-	trace_new.h DDS.h DataDDS.h \
-	DDXParser.h DDXExceptions.h expr.h Clause.h RValue.h Error.h	      \
-	InternalErr.h BaseType.h Byte.h Int32.h GSEClause.h	      \
-	Constructor.h Float64.h Str.h Url.h Vector.h Array.h Structure.h      \
-	Sequence.h Grid.h UInt32.h util.h Int16.h UInt16.h Float32.h	      \
-	dods-datatypes.h util_mit.h PassiveByte.h PassiveInt32.h	      \
-	PassiveFloat64.h PassiveStr.h PassiveUrl.h PassiveUInt32.h	      \
-	PassiveInt16.h PassiveUInt16.h PassiveFloat32.h PassiveArray.h	      \
-	PassiveStructure.h DODSResponseObject.h BaseTypeFactory.h
+DAP_HDR = escaping.h AttrTable.h DAS.h parser.h debug.h dods-limits.h	\
+	ce_functions.h Operators.h EventHandler.h trace_new.h DDS.h	\
+	DataDDS.h DDXParser.h DDXExceptions.h expr.h Clause.h RValue.h	\
+	Error.h InternalErr.h BaseType.h Byte.h Int32.h GSEClause.h	\
+	Constructor.h Float64.h Str.h Url.h Vector.h Array.h		\
+	Structure.h Sequence.h Grid.h UInt32.h util.h Int16.h UInt16.h	\
+	Float32.h dods-datatypes.h util_mit.h PassiveByte.h		\
+	PassiveInt32.h PassiveFloat64.h PassiveStr.h PassiveUrl.h	\
+	PassiveUInt32.h PassiveInt16.h PassiveUInt16.h			\
+	PassiveFloat32.h PassiveArray.h PassiveStructure.h		\
+	DODSResponseObject.h BaseTypeFactory.h
 
 CLIENT_HDR = ResponseTooBigErr.h RCReader.h Connect.h HTTPConnect.h	    \
 	ObjectType.h EncodingType.h HTTPCache.h HTTPCacheDisconnectedMode.h \
@@ -183,21 +183,22 @@ noinst_LIBRARIES = libtest-types.a
 libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
 
 # check_PROGRAMS above uses this variable.
-DEJAGNU_TESTS = das-test dds-test expr-test
+DEJAGNU_TESTS = das-test dds-test expr-test 
 
 # Use this when automake adds support for multiple dejagnu test drivers. jhrg
 # 6/30/05. 
 # DEJATOOL = das-test dds-test expr-test
 # RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $${tool}suite
+noinst_PROGRAMS = $(DEJAGNU_TESTS)
 
 das_test_SOURCES = das-test.cc
-das_test_LDAADD = -L. -ldap -ltest-types
+das_test_LDADD = -L. -ldap -ltest-types
 
 dds_test_SOURCES = dds-test.cc
-dds_test_LDAADD = -L. -ldap -ltest-types
+dds_test_LDADD = -L. -ldap -ltest-types
 
 expr_test_SOURCES = expr-test.cc
-expr_test_LDAADD = -L. -ldap -ltest-types
+expr_test_LDADD = -L. -ldap -ltest-types
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \

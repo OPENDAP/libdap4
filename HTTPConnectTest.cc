@@ -31,7 +31,7 @@
 #include <string>
 #include <algorithm>
 
-#include "Regex.h"
+#include "GNURegex.h"
 
 #include "HTTPConnect.h"
 #include "RCReader.h"

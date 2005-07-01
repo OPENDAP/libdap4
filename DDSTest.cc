@@ -31,7 +31,7 @@
 
 #include "DDS.h"
 
-#include "Regex.h"
+#include "GNURegex.h"
 #include "util.h"
 #include "debug.h"
 

@@ -29,7 +29,7 @@
 
 #include <string>
 
-#include "Regex.h"
+#include "GNURegex.h"
 
 // #define DODS_DEBUG
 #include "Sequence.h"

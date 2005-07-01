@@ -30,7 +30,7 @@
 #include <vector>
 #include <map>
 
-#include "Regex.h"
+#include "GNURegex.h"
 
 #ifndef resource_h
 #include "Resource.h"

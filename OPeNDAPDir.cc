@@ -10,7 +10,7 @@ using std::cout ;
 using std::endl ;
 
 #include "OPeNDAPDir.h"
-#include "Regex.h"
+#include "GNURegex.h"
 
 OPeNDAPDir::OPeNDAPDir( const string &dirName )
     : _dirName( dirName ),
