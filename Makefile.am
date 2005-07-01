@@ -1,7 +1,7 @@
 
 # Build libdap++, libtest-types++.a, getdap and deflate
 
-AUTOMAKE_OPTIONS = foreign check-news dejagnu
+AUTOMAKE_OPTIONS = foreign check-news
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY
@@ -33,7 +33,16 @@ deflate_SOURCES = deflate.c
 usage_SOURCES = usage.cc
 usage_LDADD = -L. -ldap
 
-check_PROGRAMS = $(UNIT_TESTS) $(DEJAGNU_TESTS) dejagnu_driver.sh
+# This determines what gets run by 'make check.' The dejagnu_driver.sh 
+# runs all the dejagnu test drivers by calling runtest 'by hand.'
+TESTS = $(UNIT_TESTS) dejagnu_driver.sh
+
+# Build the dejagnu test drivers as noinst programs; when automake fixes
+# support for dejagnu so it can handle multiple drivers, switch to its 
+# targets, et cetera. See the section on dejagnu tests below. jhrg 7/1/05
+noinst_PROGRAMS = $(DEJAGNU_TESTS)
+check_PROGRAMS = $(UNIT_TESTS)
+check_SCRIPTS = dejagnu_driver.sh
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
 	Error.lex Error.y
@@ -118,8 +127,6 @@ UNIT_TESTS = AISDatabaseParserTest AISMergeTest AISResourcesTest	\
 	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest	\
 	SequenceTest SignalHandlerTest
 
-TESTS = $(UNIT_TESTS)
-
 AISDatabaseParserTest_SOURCES = AISDatabaseParserTest.cc
 AISDatabaseParserTest_LDADD = -lcppunit -L. -ldap
 
@@ -182,14 +189,13 @@ noinst_LIBRARIES = libtest-types.a
 
 libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
 
-# check_PROGRAMS above uses this variable.
+# noinst_PROGRAMS above uses this variable.
 DEJAGNU_TESTS = das-test dds-test expr-test 
 
 # Use this when automake adds support for multiple dejagnu test drivers. jhrg
 # 6/30/05. 
-# DEJATOOL = das-test dds-test expr-test
+# DEJATOOL = $(DEJAGNU_TESTS)
 # RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $${tool}suite
-noinst_PROGRAMS = $(DEJAGNU_TESTS)
 
 das_test_SOURCES = das-test.cc
 das_test_LDADD = -L. -ldap -ltest-types
