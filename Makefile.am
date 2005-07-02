@@ -37,12 +37,12 @@ usage_LDADD = -L. -ldap
 
 # This determines what gets run by 'make check.' The dejagnu_driver.sh 
 # runs all the dejagnu test drivers by calling runtest 'by hand.'
-TESTS = $(UNIT_TESTS) dejagnu_driver.sh
+TESTS = dejagnu_driver.sh
 
 # Build the dejagnu test drivers as noinst programs; when automake fixes
 # support for dejagnu so it can handle multiple drivers, switch to its 
 # targets, et cetera. See the section on dejagnu tests below. jhrg 7/1/05
-check_PROGRAMS = $(UNIT_TESTS) $(DEJAGNU_TESTS)
+check_PROGRAMS = $(DEJAGNU_TESTS)
 check_SCRIPTS = dejagnu_driver.sh
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
@@ -119,70 +119,6 @@ SERVER_HDR = cgi_util.h DODSFilter.h SignalHandler.h OPeNDAPFile.h	\
 	OPeNDAPDir.h SignalHandlerRegisteredErr.h AlarmHandler.h
 
 ############################################################################
-# Unit Tests
-#
-
-UNIT_TESTS = AISDatabaseParserTest AISMergeTest AISResourcesTest	\
-	ArrayTest AttrTableTest ByteTest cgiUtilTest DASTest		\
-        DDSTest DDXParserTest DODSFilterTest generalUtilTest		\
-	HTTPCacheTest HTTPConnectTest parserUtilTest RCReaderTest	\
-	SequenceTest SignalHandlerTest
-
-AISDatabaseParserTest_SOURCES = AISDatabaseParserTest.cc
-AISDatabaseParserTest_LDADD = -lcppunit -L. -ldap
-
-AISMergeTest_SOURCES = AISMergeTest.cc
-AISMergeTest_LDADD = -lcppunit -L. -ldap
-
-AISResourcesTest_SOURCES = AISResourcesTest.cc
-AISResourcesTest_LDADD = -lcppunit -L. -ldap
-
-ArrayTest_SOURCES = ArrayTest.cc
-ArrayTest_LDADD = -lcppunit -L. -ldap
-
-AttrTableTest_SOURCES = AttrTableTest.cc
-AttrTableTest_LDADD = -lcppunit -L. -ldap
-
-ByteTest_SOURCES = ByteTest.cc
-ByteTest_LDADD = -lcppunit -L. -ldap
-
-cgiUtilTest_SOURCES = cgiUtilTest.cc
-cgiUtilTest_LDADD = -lcppunit -L. -ldap
-
-DASTest_SOURCES = DASTest.cc
-DASTest_LDADD = -lcppunit -L. -ldap
-
-DDSTest_SOURCES = DDSTest.cc
-DDSTest_LDADD = -lcppunit -L. -ldap
-
-DDXParserTest_SOURCES = DDXParserTest.cc
-DDXParserTest_LDADD = -lcppunit -L. -ldap
-
-DODSFilterTest_SOURCES = DODSFilterTest.cc
-DODSFilterTest_LDADD = -lcppunit -L. -ldap
-
-generalUtilTest_SOURCES = generalUtilTest.cc
-generalUtilTest_LDADD = -lcppunit -L. -ldap
-
-HTTPCacheTest_SOURCES = HTTPCacheTest.cc
-HTTPCacheTest_LDADD = -lcppunit -L. -ldap
-
-HTTPConnectTest_SOURCES = HTTPConnectTest.cc
-HTTPConnectTest_LDADD = -lcppunit -L. -ldap
-
-parserUtilTest_SOURCES = parserUtilTest.cc
-parserUtilTest_LDADD = -lcppunit -L. -ldap
-
-RCReaderTest_SOURCES = RCReaderTest.cc
-RCReaderTest_LDADD = -lcppunit -L. -ldap
-
-SequenceTest_SOURCES = SequenceTest.cc
-SequenceTest_LDADD = -lcppunit -L. -ldap
-
-SignalHandlerTest_SOURCES = SignalHandlerTest.cc
-SignalHandlerTest_LDADD = -lcppunit -L. -ldap
-
-############################################################################
 # These tests use dejagnu. The drivers (passed to --tool) all use the
 # subclassed types in Test*.cc and the TestTypesFactory.
 
@@ -226,7 +162,7 @@ TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 
 lex.das.cc: das.lex das.tab.cc das.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdas $<
-	mv lex.das.c $@ 
+	mv lex.das.c lex.das.cc
 
 das.tab.cc das.tab.h: das.y DAS.h
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p das $<
@@ -236,7 +172,7 @@ das.tab.cc das.tab.h: das.y DAS.h
 
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pdds $<
-	mv lex.dds.c $@
+	mv lex.dds.c lex.dds.cc
 
 dds.tab.cc dds.tab.h: dds.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p dds $<
@@ -246,7 +182,7 @@ dds.tab.cc dds.tab.h: dds.y
 
 lex.expr.cc: expr.lex expr.tab.cc expr.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pexpr $<
-	mv lex.expr.c $@
+	mv lex.expr.c lex.expr.cc
 
 expr.tab.cc expr.tab.h: expr.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p expr $<
@@ -256,7 +192,7 @@ expr.tab.cc expr.tab.h: expr.y
 
 lex.gse_.cc: gse.lex gse.tab.cc gse.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -Pgse_ $<
-	mv lex.gse_.c $@
+	mv lex.gse_.c lex.gse_.cc
 
 gse.tab.cc gse.tab.h: gse.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p gse_ $<
@@ -266,7 +202,7 @@ gse.tab.cc gse.tab.h: gse.y
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.h
 	$(LEX) $(LFLAGS) $(AM_LFLAGS) -PError $<
-	mv lex.Error.c $@
+	mv lex.Error.c lex.Error.cc
 
 Error.tab.cc Error.tab.h: Error.y
 	$(YACC) $(YFLAGS) $(AM_YFLAGS) -p Error $<

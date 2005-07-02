@@ -3,6 +3,7 @@ dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
+dnl Update versio here and below at LIB_CURRENT, ...
 AC_INIT(libdap, 3.5.1, dods-tech@unidata.ucar.edu)
 AC_CONFIG_SRCDIR([AISConnect.cc])
 AM_CONFIG_HEADER([config_dap.h dods-datatypes.h regex-0.12/config.h])
@@ -21,9 +22,9 @@ AC_CANONICAL_HOST
 AC_SUBST(host)
 
 dnl library versionning
-LIB_CURRENT=0
-LIB_REVISION=0
-LIB_AGE=0
+LIB_CURRENT=3
+LIB_REVISION=5
+LIB_AGE=1
 AC_SUBST(LIB_CURRENT)
 AC_SUBST(LIB_REVISION)
 AC_SUBST(LIB_AGE)
