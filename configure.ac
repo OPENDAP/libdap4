@@ -24,11 +24,11 @@ AC_SUBST(host)
 dnl library versionning: Update these when the interface changes. Generally,
 dnl assume that the interface tracks the major and minor release numbers.
 LIB_CURRENT=3
-LIB_REVISION=5
-LIB_AGE=0
+LIB_AGE=5
+LIB_REVISION=0
 AC_SUBST(LIB_CURRENT)
-AC_SUBST(LIB_REVISION)
 AC_SUBST(LIB_AGE)
+AC_SUBST(LIB_REVISION)
 
 LIBDAP_VERSION="$LIB_CURRENT:$LIB_REVISION:$LIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
