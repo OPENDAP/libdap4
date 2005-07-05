@@ -53,11 +53,11 @@ while test $# -gt 0; do
 	;;
 
     --cflags)
-	echo "-I${includedir}/dap"
+	echo "-I${includedir}/libdap"
 	;;
 
     --libs)
-       	echo "-L${libdir} -ldap++ @LIBS@"
+       	echo "-L${libdir} -ldap @LIBS@"
        	;;
 
     --prefix)

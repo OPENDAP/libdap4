@@ -2,14 +2,14 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP.
 Version: 3.5.1
-Release: 3
+Release: 4
 
 Source0: http://www.opendap.org/pub/3.5/source/%{name}-%{version}.tar.gz
 URL: http://www.opendap.org/
 
 Group: Development/Libraries
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-License: LGPL
+License: LGPL/W3C
 # Mandrake
 #BuildRequires: libcurl3-devel >= 7.12.0 libxml2-devel >= 2.5.7
 # fedora
@@ -37,26 +37,35 @@ make %{?_smp_mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
+rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%{_libdir}/libdap++.a
-%{_bindir}/dap-config
+%defattr(-,root,root,-)
 %{_bindir}/getdap
 %{_sbindir}/deflate
-%{_includedir}/dap
-
+%{_sbindir}/usage
+%{_libdir}/libdap.so.*
+%{_libdir}/libdap.a
+%{_libdir}/libdap.so
+%{_bindir}/dap-config
+%{_includedir}/libdap
+ 
 %defattr(-,root,root,-)
 
-%doc README NEWS COPYING COPYRIGHT.URI README.AIS README.dodsrc
+%doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
+%doc COPYRIGHT_W3C
 
 %changelog
-* Tue Jun 21 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.0-3
+* Sat Jul  2 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-4
+- Support for shared libraries
+
+* Tue Jun 21 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-3
 - Add COPYING
 
-* Sun Jun 19 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.0-2
+* Sun Jun 19 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-2
 - Update with fedora template
 
 * Thu May 12 2005 James Gallagher <jimg@comet.opendap.org> - 3.5.0-1

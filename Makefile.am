@@ -18,6 +18,8 @@ SUBDIRS = . tests
 
 lib_LTLIBRARIES = libdap.la 
 
+bin_SCRIPTS = dap-config
+
 bin_PROGRAMS = getdap
 
 sbin_PROGRAMS = deflate usage
@@ -29,11 +31,11 @@ libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 pkginclude_HEADERS = $(DAP_HDR) $(CLIENT_HDR) $(SERVER_HDR) $(GNU_HDR)
 
 getdap_SOURCES = getdap.cc
-getdap_LDADD = -L. -ldap
+getdap_LDADD = libdap.la
 
 deflate_SOURCES = deflate.c
 usage_SOURCES = usage.cc
-usage_LDADD = -L. -ldap
+usage_LDADD = libdap.la
 
 # This determines what gets run by 'make check.' The dejagnu_driver.sh 
 # runs all the dejagnu test drivers by calling runtest 'by hand.'
@@ -53,6 +55,7 @@ DIRS_EXTRA = win32 regex-0.12 cache-testsuite cgi-util-tests ais_testsuite \
 	rcreader-testsuite server-testsuite
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	\
+	COPYRIGHT_W3C \
 	GNU/README common_tests.exp dods.rc doxy.conf doxy_private.conf	\
 	libdap.spec $(LEX_YACC_EXTRA) $(DIRS_EXTRA) $(check_SCRIPTS)
 
