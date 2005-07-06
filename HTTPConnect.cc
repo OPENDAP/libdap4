@@ -495,9 +495,13 @@ HTTPConnect::fetch_url(const string &url) throw(Error, InternalErr)
     HTTPResponse *stream;
 
     if (d_http_cache && d_http_cache->is_cache_enabled())
+    {
 	stream = caching_fetch_url(url);
+    }
     else
+    {
 	stream = plain_fetch_url(url);
+    }
     
     ParseHeader parser;
 

@@ -87,6 +87,25 @@ Connect::process_data(DataDDS &data, Response *rs)
       case dods_data:
       default: {
 	  // Parse the DDS; throw an exception on error.
+	  // KLUDGE ... FIX ... MUDGE ... THINGY
+	  bool newline = false ;
+	  bool done = false ;
+	  int goforward = 0 ;
+	  while( !done )
+	  {
+	    int c = fgetc( rs->get_stream() ) ;
+	    if( c == 10 )
+	    {
+		if( newline )
+		    done = true ;
+		else
+		    newline = true ;
+	    }
+	    else
+		newline = false ;
+	    goforward++ ;
+	  }
+	  fseek( rs->get_stream(), goforward, SEEK_SET ) ;
 	  data.parse(rs->get_stream());
 	  XDR *xdr_stream = new_xdrstdio(rs->get_stream(), XDR_DECODE);
 
@@ -411,6 +430,64 @@ configured, or that the URL has changed.");
     delete rs; rs = 0;
 }
 
+/** Reads the DAS corresponding to the dataset in the Connect
+    object's URL. Although DODS does not support usig CEs with DAS
+    requests, if present in the Connect object's instance, they will be
+    escaped and passed as the query string of the request.
+
+    Different from request_das method in that this method uses the URL as
+    given without attaching .das or projections or selections.
+
+    @brief Get the DAS from a server.
+    @param das Result. */
+void
+Connect::request_das_url(DAS &das) throw(Error, InternalErr)
+{
+    string use_url = _URL + "?" + _proj + _sel ;
+    Response *rs = 0;
+    try {
+	rs = d_http->fetch_url(use_url);
+    }
+    catch (Error &e) {
+	delete rs; rs = 0;
+	throw e;
+    }
+
+    d_version = rs->get_version(); // Improve this design!
+
+    switch (rs->get_type()) {
+      case dods_error: {
+	  if (!_error.parse(rs->get_stream())) {
+	      throw InternalErr(__FILE__, __LINE__, 
+			"Could not parse error returned from server.");
+	      break;
+	  }
+	  throw _error;
+	  break;
+      }
+
+      case web_error:
+	// We should never get here; a web error should be picked up read_url
+	// (called by fetch_url) and result in a thrown Error object.
+	break;
+
+      case dods_das:
+      default:
+	// DAS::parse throws an exception on error.
+	try {
+	    das.parse(rs->get_stream()); // read and parse the das from a file 
+	}
+	catch (Error &e) {
+	    delete rs; rs = 0;
+	    throw e;
+	}
+	    
+	break;
+    }
+
+    delete rs; rs = 0;
+}
+
 /** Reads the DDS corresponding to the dataset in the Connect object's URL.
     If present in the Connect object's instance, a CE will be escaped,
     combined with \c expr and passed as the query string of the request.
@@ -493,6 +570,70 @@ configured, or that the URL has changed.");
     delete rs; rs = 0;
 }
 
+/** Reads the DDS corresponding to the dataset in the Connect object's URL.
+    If present in the Connect object's instance, a CE will be escaped,
+    combined with \c expr and passed as the query string of the request.
+
+    Different from request_dds method above in that this method assumes
+    URL is complete and does not add anything to the command, such as .dds
+    or projections or selections.
+
+    @note If you need the DDS to hold specializations of the type classes,
+    be sure to include the factory class which will instantiate those
+    specializations in the DDS. Either pass a pointer to the factory to
+    DDS constructor or use the DDS::set_factory() method after the 
+    object is built.
+
+    @brief Get the DDS from a server.
+    @param dds Result.
+    @param expr Send this constraint expression to the server. */
+void
+Connect::request_dds_url(DDS &dds) throw(Error, InternalErr)
+{
+    string use_url = _URL + "?" + _proj + _sel ;
+    Response *rs = 0;
+    try {
+	rs = d_http->fetch_url(use_url);
+    }
+    catch (Error &e) {
+	delete rs; rs = 0;
+	throw e;
+    }
+
+    d_version = rs->get_version(); // Improve this design!
+
+    switch (rs->get_type()) {
+      case dods_error: {
+	  if (!_error.parse(rs->get_stream())) {
+	      throw InternalErr(__FILE__, __LINE__, 
+			"Could not parse error returned from server.");
+	      break;
+	  }
+	  throw _error;
+	  break;
+      }
+
+      case web_error:
+	// We should never get here; a web error should be picked up read_url
+	// (called by fetch_url) and result in a thrown Error object.
+	break;
+
+      case dods_dds:
+      default:
+	// DDS::prase throws an exception on error.
+	try {
+	    dds.parse(rs->get_stream()); // read and parse the dds from a file 
+	}
+	catch (Error &e) {
+	    delete rs; rs = 0;
+	    throw e;
+	}
+	break;
+    }
+
+    delete rs; rs = 0;
+}
+
 /** Reads the DataDDS object corresponding to the dataset in the Connect
     object's URL. If present in the Connect object's instance, a CE will be
     escaped, combined with \c expr and passed as the query string of the
@@ -530,6 +671,42 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
 	rs = d_http->fetch_url(data_url);
 	d_version = rs->get_version(); // Improve this design!
 
+	process_data(data, rs);
+	delete rs; rs = 0;
+    }
+    catch (Error &e) {
+	delete rs; rs = 0;
+	throw e;
+    }
+}
+
+/** Reads the DataDDS object corresponding to the dataset in the Connect
+    object's URL. If present in the Connect object's instance, a CE will be
+    escaped, combined with \c expr and passed as the query string of the
+    request. The result is a DataDDS which contains the data values bound to
+    variables.
+
+    Different from request_data in that this method uses the syntax of the
+    new OPeNDAP server commands using dispatch
+
+    @note If you need the DataDDS to hold specializations of the type classes,
+    be sure to include the factory class which will instantiate those
+    specializations in the DataDDS. Either pass a pointer to the factory to
+    DataDDS constructor or use the DDS::set_factory() method after the 
+    object is built.
+    
+    @brief Get the DAS from a server.
+    @param data Result.
+    @param expr Send this constraint expression to the server. */
+void
+Connect::request_data_url(DataDDS &data) throw(Error, InternalErr)
+{
+    string use_url = _URL + "?" + _proj + _sel ;
+    Response *rs = 0;
+    // We need to catch Error exceptions to ensure calling close_output.
+    try {
+	rs = d_http->fetch_url(use_url);
+	d_version = rs->get_version(); // Improve this design!
 	process_data(data, rs);
 	delete rs; rs = 0;
     }
