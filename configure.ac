@@ -6,7 +6,7 @@ AC_PREREQ(2.57)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
 AC_INIT(libdap, 3.5.1, dods-tech@unidata.ucar.edu)
 AC_CONFIG_SRCDIR([AISConnect.cc])
-AM_CONFIG_HEADER([config_dap.h dods-datatypes.h regex-0.12/config.h])
+AM_CONFIG_HEADER([config.h dods-datatypes.h])
 AM_INIT_AUTOMAKE
 
 AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
@@ -24,7 +24,7 @@ AC_SUBST(host)
 dnl library versionning: Update these when the interface changes. Generally,
 dnl assume that the interface tracks the major and minor release numbers.
 LIB_CURRENT=3
-LIB_AGE=5
+LIB_AGE=0
 LIB_REVISION=0
 AC_SUBST(LIB_CURRENT)
 AC_SUBST(LIB_AGE)
@@ -57,6 +57,9 @@ AC_SUBST(CXX)
 AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
+
+gl_EARLY
+
 AM_PROG_LEX
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -77,14 +80,16 @@ DODS_PROG_GTAR
 AC_CHECK_PROG(VALGRIND, valgrind, [valgrind --logfile=memcheck --tool=memcheck --leak-check=yes])
 
 # Checks for header files.
-AC_FUNC_ALLOCA
+dnl in gnulib
+dnl AC_FUNC_ALLOCA
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h malloc.h memory.h netinet/in.h stddef.h stdlib.h string.h strings.h sys/param.h sys/time.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_STDBOOL
+dnl in gnulib
+dnl AC_HEADER_STDBOOL
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -96,39 +101,30 @@ DODS_CHECK_SIZES
 
 # Checks for library functions.
 AC_FUNC_CLOSEDIR_VOID
-AC_FUNC_ERROR_AT_LINE
+dnl in gnulib
+dnl AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
-AC_FUNC_MALLOC
-AC_FUNC_MEMCMP
-AC_FUNC_MKTIME
-AC_FUNC_REALLOC
-AC_FUNC_STAT
+dnl in gnulib
+dnl AC_FUNC_MALLOC
+dnl in gnulib
+dnl AC_FUNC_MEMCMP
+dnl in gnulib
+dnl AC_FUNC_MKTIME
+dnl in gnulib
+dnl AC_FUNC_REALLOC
+dnl needs a file
+dnl AC_FUNC_STAT
 AC_FUNC_STRFTIME
-AC_FUNC_STRTOD
-AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strstr strtol strtoul])
+dnl in gnulib
+dnl AC_FUNC_STRTOD
+dnl AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strstr strtol strtoul])
+AC_CHECK_FUNCS([alarm bzero getcwd localtime_r pow strchr])
 # Added 04/22/05 jhrg
-AC_CHECK_FUNCS([timegm mktime])
+dnl AC_CHECK_FUNCS([timegm mktime])
 
-AC_CHECK_HEADERS([regex.h],[openndap_regex_H=yes],[openndap_regex_H=no])
-AC_CHECK_FUNCS([re_match_2 re_compile_fastmap],[openndap_regex_funcs=yes],
-  [openndap_regex_funcs=no])
-AM_CONDITIONAL([USE_GNU_REGEX_FUNCS],
-	       [test "z$openndap_regex_funcs" != "zyes" \
-		     -o "z$openndap_regex_H" != "zyes"])
-
-dnl if test "z$openndap_regex_funcs" = "zyes" \
-dnl    -a "z$openndap_regex_H" = "zyes"; then
-dnl     AC_MSG_NOTICE([Using system regex library])  
-dnl else
-dnl     CPPFLAGS="$CPPFLAGS -I\$(srcdir)/regex-0.12"
-dnl     AC_MSG_NOTICE([Using package regex library])  
-dnl     DODS_REGEX_CLEAN=regex-0.12/config.h
-dnl     DODS_REGEX_SRCS=regex-0.12/regex.c
-dnl     DODS_REGEX_OBJS=regex-0.12/regex.o
-dnl fi
-dnl AC_SUBST(DODS_REGEX_CLEAN)
-dnl AC_SUBST(DODS_REGEX_SRCS)
-dnl AC_SUBST(DODS_REGEX_OBJS)
+gl_MODULES(alloca stdbool malloc memcmp realloc strftime strtod atexit dup2 getpagesize memmove memset putenv setenv strerror strstr strtol strtoul timegm mktime regex error)
+dnl gl_MODULES(regex)
+gl_INIT
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
 dnl the AC_CHECK_LIB macro is not needed.
@@ -189,8 +185,8 @@ DODS_DEBUG_OPTION
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 
-AH_TOP([#ifndef _config_dap_h
-#define _config_dap_h])
+AH_TOP([#ifndef _config_h
+#define _config_h])
 
 AH_BOTTOM([/* Shorthand for gcc's unused attribute feature */
 #if defined(__GNUG__) || defined(__GNUC__)
@@ -199,7 +195,7 @@ AH_BOTTOM([/* Shorthand for gcc's unused attribute feature */
 #define not_used 
 #endif /* __GNUG__ || __GNUC__ */
 
-#endif /* _config_dap_h */])
+#endif /* _config_h */])
 
 dnl Temporary hack; find a home for the deflate program; set it to
 dnl prefix/etc/deflate. See util.cc:dods_root()
@@ -212,5 +208,6 @@ fi
 
 AC_CONFIG_FILES([dap-config
 		 Makefile
-                 tests/Makefile] , [chmod +x dap-config])
+                 tests/Makefile
+                 lib/Makefile] , [chmod +x dap-config])
 AC_OUTPUT

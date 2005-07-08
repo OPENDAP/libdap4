@@ -215,14 +215,6 @@ parse_time(const char * str, bool expand)
     /* Let mktime decide whether we have DST or not */
     tm.tm_isdst = -1;
 
-#ifdef HAVE_TIMEGM
-
-    t = timegm(&tm);
-
-#else
-
-#ifdef HAVE_MKTIME
-
     // Compute offset between localtime and GMT.
     time_t offset;
     time_t now = time(0);
@@ -234,13 +226,6 @@ parse_time(const char * str, bool expand)
 #endif
 
     t = mktime(&tm) + offset;
-
-#else
-
-#error "Neither mktime nor timegm defined"
-
-#endif /* HAVE_TIMEGM */
-#endif /* HAVE_MKTIME */
 
     DBG(cerr << "Time string. " << str << " parsed to " << t 
 	<< " calendar time or \"" << ctime(&t) << "\" in local time" << endl);

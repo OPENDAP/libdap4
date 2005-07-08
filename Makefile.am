@@ -2,19 +2,20 @@
 # Build libdap++, libtest-types++.a, getdap and deflate
 
 AUTOMAKE_OPTIONS = foreign check-news
+ACLOCAL_AMFLAGS = -I m4
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY
-AM_CXXFLAGS = -I$(srcdir)/GNU
+AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY -I$(top_srcdir)/lib
+AM_CXXFLAGS = -I$(top_srcdir)/GNU
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
-# These are not used by automak but are often useful for certain types of
+# These are not used by automake but are often useful for certain types of
 # debugging. 
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-defer-pop
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-SUBDIRS = . tests
+SUBDIRS = lib . tests
 
 lib_LTLIBRARIES = libdap.la 
 
@@ -27,6 +28,7 @@ sbin_PROGRAMS = deflate usage
 libdap_la_SOURCES = $(DAP_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(GNU_SRC)
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
+libdap_la_LIBADD = lib/libgnu.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(CLIENT_HDR) $(SERVER_HDR) $(GNU_HDR)
 
@@ -41,16 +43,17 @@ usage_LDADD = libdap.la
 # runs all the dejagnu test drivers by calling runtest 'by hand.'
 TESTS = dejagnu_driver.sh
 
-# Build the dejagnu test drivers as noinst programs; when automake fixes
-# support for dejagnu so it can handle multiple drivers, switch to its 
-# targets, et cetera. See the section on dejagnu tests below. jhrg 7/1/05
+# Build the dejagnu test drivers as check programs; when automake fixes
+# support for dejagnu so it can handle multiple drivers, add 'dejagnu to
+# the automake options at the top of this file. See the section on dejagnu
+# tests below. jhrg 7/6/05
 check_PROGRAMS = $(DEJAGNU_TESTS)
 check_SCRIPTS = dejagnu_driver.sh
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
 	Error.lex Error.y
 
-DIRS_EXTRA = win32 regex-0.12 cache-testsuite cgi-util-tests ais_testsuite \
+DIRS_EXTRA = win32 cache-testsuite cgi-util-tests ais_testsuite \
 	das-testsuite dds-testsuite expr-testsuite grid-func-testsuite	   \
 	rcreader-testsuite server-testsuite
 
@@ -59,19 +62,15 @@ EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	\
 	GNU/README common_tests.exp dods.rc doxy.conf doxy_private.conf	\
 	libdap.spec $(LEX_YACC_EXTRA) $(DIRS_EXTRA) $(check_SCRIPTS)
 
+CLEANFILES = *.log
+
 #############################################################################
 # Library sources
 # 
 
-if USE_GNU_REGEX_FUNCS
-REGEX_SRC = regex-0.12/regex.c
-else
-REGEX_SRC =
-endif
-
 GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc GNU/GNUerror.cc			\
 	IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc	\
-	BTIterAdapter.cc ClauseIterAdapter.cc $(REGEX_SRC)
+	BTIterAdapter.cc ClauseIterAdapter.cc 
 
 GNU_HDR = GNU/builtin.h GNU/Pix.h GNU/GetOpt.h GNU/GNURegex.h	\
 	IteratorAdapter.h ArrayIterAdapter.h AttrIterAdapter.h	\
@@ -92,7 +91,7 @@ DAP_SRC = $(GRAM_SRC) AttrTable.cc DAS.cc parser-util.cc escaping.cc	\
 	PassiveByte.cc PassiveInt32.cc PassiveFloat64.cc PassiveStr.cc	\
 	PassiveUrl.cc PassiveUInt32.cc PassiveInt16.cc PassiveUInt16.cc	\
 	PassiveFloat32.cc PassiveArray.cc PassiveStructure.cc		\
-	util_mit.cc BaseTypeFactory.cc
+	util_mit.cc BaseTypeFactory.cc 
 
 CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc		\
 	AISResources.cc AISDatabaseParser.cc AISMerge.cc AISConnect.cc
@@ -138,13 +137,13 @@ DEJAGNU_TESTS = das-test dds-test expr-test
 # RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $${tool}suite
 
 das_test_SOURCES = das-test.cc
-das_test_LDADD = -L. -ldap -ltest-types
+das_test_LDADD =  libdap.la libtest-types.a
 
 dds_test_SOURCES = dds-test.cc
-dds_test_LDADD = -L. -ldap -ltest-types
+dds_test_LDADD = libdap.la libtest-types.a
 
 expr_test_SOURCES = expr-test.cc
-expr_test_LDADD = -L. -ldap -ltest-types
+expr_test_LDADD = libdap.la libtest-types.a
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \
@@ -153,7 +152,8 @@ TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 
 TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
-	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h
+	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h \
+	config_dap.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support
