@@ -74,6 +74,7 @@ public:
 	alarm(1);
 	sleep(10);
 	CPPUNIT_ASSERT(th->flag == 1);
+	cerr << "Worked." << endl;
 	//	CPPUNIT_ASSERT(!"Should not be here!");
     }
 

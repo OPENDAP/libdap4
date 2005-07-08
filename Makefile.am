@@ -39,28 +39,12 @@ deflate_SOURCES = deflate.c
 usage_SOURCES = usage.cc
 usage_LDADD = libdap.la
 
-# This determines what gets run by 'make check.' The dejagnu_driver.sh 
-# runs all the dejagnu test drivers by calling runtest 'by hand.'
-TESTS = dejagnu_driver.sh
-
-# Build the dejagnu test drivers as check programs; when automake fixes
-# support for dejagnu so it can handle multiple drivers, add 'dejagnu to
-# the automake options at the top of this file. See the section on dejagnu
-# tests below. jhrg 7/6/05
-check_PROGRAMS = $(DEJAGNU_TESTS)
-check_SCRIPTS = dejagnu_driver.sh
-
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
 	Error.lex Error.y
 
-DIRS_EXTRA = win32 cache-testsuite cgi-util-tests ais_testsuite \
-	das-testsuite dds-testsuite expr-testsuite grid-func-testsuite	   \
-	rcreader-testsuite server-testsuite
-
-EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	\
-	COPYRIGHT_W3C \
-	GNU/README common_tests.exp dods.rc doxy.conf doxy_private.conf	\
-	libdap.spec $(LEX_YACC_EXTRA) $(DIRS_EXTRA) $(check_SCRIPTS)
+EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
+	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
+	win32 $(LEX_YACC_EXTRA)
 
 CLEANFILES = *.log
 
@@ -119,41 +103,6 @@ CLIENT_HDR = ResponseTooBigErr.h RCReader.h Connect.h HTTPConnect.h	    \
 
 SERVER_HDR = cgi_util.h DODSFilter.h SignalHandler.h OPeNDAPFile.h	\
 	OPeNDAPDir.h SignalHandlerRegisteredErr.h AlarmHandler.h
-
-############################################################################
-# These tests use dejagnu. The drivers (passed to --tool) all use the
-# subclassed types in Test*.cc and the TestTypesFactory.
-
-noinst_LIBRARIES = libtest-types.a
-
-libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
-
-# noinst_PROGRAMS above uses this variable.
-DEJAGNU_TESTS = das-test dds-test expr-test 
-
-# Use this when automake adds support for multiple dejagnu test drivers. jhrg
-# 6/30/05. 
-# DEJATOOL = $(DEJAGNU_TESTS)
-# RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $${tool}suite
-
-das_test_SOURCES = das-test.cc
-das_test_LDADD =  libdap.la libtest-types.a
-
-dds_test_SOURCES = dds-test.cc
-dds_test_LDADD = libdap.la libtest-types.a
-
-expr_test_SOURCES = expr-test.cc
-expr_test_LDADD = libdap.la libtest-types.a
-
-TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
-	   TestArray.cc TestStructure.cc TestSequence.cc		 \
-	   TestGrid.cc TestUInt32.cc TestInt16.cc TestUInt16.cc		 \
-	   TestFloat32.cc TestCommon.cc TestTypeFactory.cc
-
-TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
-	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
-	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h \
-	config_dap.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

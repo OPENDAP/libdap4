@@ -31,8 +31,6 @@
 
 #include "GNURegex.h"
 
-#define DODS_DEBUG
-
 #include "Array.h"
 #include "Int16.h"
 #include "Str.h"
@@ -170,7 +168,7 @@ public:
         d_string->buf2val((void**)&s);
         for (int i = 0; i < 4; ++i) {
             CPPUNIT_ASSERT(s[i] == svalues[i] );
-            cerr << "s[" << i << "]: " << s[i] << endl;
+            DBG(cerr << "s[" << i << "]: " << s[i] << endl);
         }
         
         Array a;
@@ -182,7 +180,7 @@ public:
         d_string->buf2val((void**)&s2);
         for (int i = 0; i < 4; ++i) {
             CPPUNIT_ASSERT(s2[i] == svalues[i]);
-            cerr << "s2[" << i << "]: " << s2[i] << endl;
+            DBG(cerr << "s2[" << i << "]: " << s2[i] << endl);
         }
         
         delete[] s; s = 0;

@@ -100,7 +100,10 @@ public:
 	}
 	catch (Error &e) {
 	    cerr << "Error: " << e.get_error_message() << endl;
-	    CPPUNIT_ASSERT(!"Error");
+	    // If the exception is Not Found then this is not an error; there
+	    // are many reasons why the resource might not be found... 
+	    if (e.get_error_message().find("Not Found:") == string::npos)
+		CPPUNIT_ASSERT(!"Error");
 	}
     }
 
@@ -151,7 +154,8 @@ public:
 	}
 	catch (Error &e) {
 	    cerr << "Error: " << e.get_error_message() << endl;
-	    CPPUNIT_ASSERT(!"Error");
+	    if (e.get_error_message().find("Not Found:") == string::npos)
+		CPPUNIT_ASSERT(!"Error");
 	}
     }
 };

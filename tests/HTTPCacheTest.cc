@@ -129,7 +129,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
-#if 1
+
     CPPUNIT_TEST(constructor_test);
 
     CPPUNIT_TEST(cache_index_read_test);
@@ -147,9 +147,7 @@ public:
     CPPUNIT_TEST(parse_headers_test);
     CPPUNIT_TEST(calculate_time_test);
     CPPUNIT_TEST(write_metadata_test);
-#endif
     CPPUNIT_TEST(cache_response_test);
-#if 1
     CPPUNIT_TEST(is_url_valid_test);
     CPPUNIT_TEST(get_cached_response_test);
     CPPUNIT_TEST(perform_garbage_collection_test);
@@ -163,7 +161,6 @@ public:
 #endif
 
     CPPUNIT_TEST(cache_gc_test);
-#endif
     CPPUNIT_TEST_SUITE_END();
 
     void constructor_test() {
@@ -627,11 +624,6 @@ public:
 	}
 
 	HTTPCache::delete_instance();
-#if 0
-#ifndef WIN32
-	SignalHandler::delete_instance();
-#endif
-#endif
     }
 
     void update_response_test() {
@@ -697,11 +689,6 @@ public:
 	}
 
 	HTTPCache::delete_instance();
-#if 0
-#ifndef WIN32
-	SignalHandler::delete_instance();
-#endif
-#endif
     }
 
     // Only run this interactively since you need to hit Ctrl-c to generate

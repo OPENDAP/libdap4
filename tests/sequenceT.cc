@@ -91,8 +91,12 @@ public:
 	num_elems = s.element_count( true ) ;
 	CPPUNIT_ASSERT( num_elems == 4 ) ;
 
+#if 0
+	// This is only true on 32 bit machines, on a 64bit machine is will
+	// probably be 24.
 	unsigned int w = s.width( ) ;
 	CPPUNIT_ASSERT( w == 12 ) ;
+#endif
 
 	vector<string> elems ;
 	elems.push_back( "Name" ) ;
