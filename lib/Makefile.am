@@ -94,13 +94,13 @@ LIBS = $(POW_LIB)
 
 ## begin gnulib module timegm
 
-libgnu_la_SOURCES += timegm.h
+## libgnu_la_SOURCES += timegm.h
 
 ## end   gnulib module timegm
 
 ## begin gnulib module time_r
 
-libgnu_la_SOURCES += time_r.h
+## libgnu_la_SOURCES += time_r.h
 
 ## end   gnulib module time_r
 

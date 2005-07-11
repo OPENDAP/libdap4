@@ -129,7 +129,7 @@ AUTOMAKE_OPTIONS = 1.5 gnits no-dependencies
 
 noinst_LTLIBRARIES = libgnu.la
 
-libgnu_la_SOURCES = allocsa.h allocsa.c gettext.h setenv.h strstr.h timegm.h time_r.h
+libgnu_la_SOURCES = allocsa.h allocsa.c gettext.h setenv.h strstr.h
 
 libgnu_la_LIBADD = @LTLIBOBJS@ @LTALLOCA@
 EXTRA_DIST = alloca_.h allocsa.valgrind stdbool_.h
@@ -172,8 +172,7 @@ DIST_SOURCES = $(libgnu_la_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in alloca.c atexit.c dup2.c error.c \
 	error.h getpagesize.h memcmp.c memmove.c memset.c mktime.c \
 	putenv.c regex.c setenv.c strerror.c strftime.c strftime.h \
-	strstr.c strtod.c strtol.c strtoul.c time_r.c timegm.c \
-	unsetenv.c
+	strstr.c strtod.c strtol.c strtoul.c unsetenv.c
 SOURCES = $(libgnu_la_SOURCES)
 
 all: $(BUILT_SOURCES)

@@ -80,16 +80,12 @@ DODS_PROG_GTAR
 AC_CHECK_PROG(VALGRIND, valgrind, [valgrind --logfile=memcheck --tool=memcheck --leak-check=yes])
 
 # Checks for header files.
-dnl in gnulib
-dnl AC_FUNC_ALLOCA
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h malloc.h memory.h netinet/in.h stddef.h stdlib.h string.h strings.h sys/param.h sys/time.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-dnl in gnulib
-dnl AC_HEADER_STDBOOL
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -101,29 +97,26 @@ DODS_CHECK_SIZES
 
 # Checks for library functions.
 AC_FUNC_CLOSEDIR_VOID
-dnl in gnulib
-dnl AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
-dnl in gnulib
-dnl AC_FUNC_MALLOC
-dnl in gnulib
-dnl AC_FUNC_MEMCMP
-dnl in gnulib
-dnl AC_FUNC_MKTIME
-dnl in gnulib
-dnl AC_FUNC_REALLOC
-dnl needs a file
-dnl AC_FUNC_STAT
+AC_FUNC_MKTIME
 AC_FUNC_STRFTIME
-dnl in gnulib
-dnl AC_FUNC_STRTOD
-dnl AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strstr strtol strtoul])
 AC_CHECK_FUNCS([alarm bzero getcwd localtime_r pow strchr])
 # Added 04/22/05 jhrg
-dnl AC_CHECK_FUNCS([timegm mktime])
+AC_CHECK_FUNCS([timegm mktime])
 
-gl_MODULES(alloca stdbool malloc memcmp realloc strftime strtod atexit dup2 getpagesize memmove memset putenv setenv strerror strstr strtol strtoul timegm mktime regex error)
-dnl gl_MODULES(regex)
+dnl in gnulib
+dnl AC_HEADER_STDBOOL
+dnl AC_FUNC_ALLOCA
+dnl AC_FUNC_ERROR_AT_LINE
+dnl AC_FUNC_MALLOC
+dnl AC_FUNC_MEMCMP
+dnl AC_FUNC_REALLOC
+dnl AC_FUNC_STAT
+dnl AC_FUNC_STRTOD
+dnl AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strstr strtol strtoul])
+
+dnl Removed "timegm mktime" jhrg 7/11/05
+gl_MODULES(alloca stdbool malloc memcmp realloc strftime strtod atexit dup2 getpagesize memmove memset putenv setenv strerror strstr strtol strtoul regex error)
 gl_INIT
 
 dnl I wrote these checks because we need the *-config scripts to build, so 

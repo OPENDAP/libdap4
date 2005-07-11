@@ -503,7 +503,7 @@ static time_t localtime_offset;
 
 /* Convert *TP to a time_t value.  */
 time_t
-mktime (struct tm *tp)
+rpl_mktime (struct tm *tp)
 {
 #ifdef _LIBC
   /* POSIX.1 8.1.1 requires that whenever mktime() is called, the

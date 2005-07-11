@@ -33,7 +33,7 @@ AC_SUBST(LTALLOCA)
   gl_FUNC_MEMCMP
   gl_FUNC_MEMMOVE
   gl_FUNC_MEMSET
-  gl_FUNC_MKTIME
+  dnl gl_FUNC_MKTIME
   gl_FUNC_PUTENV
   AC_FUNC_REALLOC
   gl_REGEX
@@ -46,8 +46,8 @@ AC_SUBST(LTALLOCA)
   gl_FUNC_STRTOD
   gl_FUNC_STRTOL
   gl_FUNC_STRTOUL
-  gl_FUNC_TIMEGM
-  gl_TIME_R
+  dnl gl_FUNC_TIMEGM
+  dnl gl_TIME_R
 ])
 
 dnl Usage: gl_MODULES(module1 module2 ...)

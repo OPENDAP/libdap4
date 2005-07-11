@@ -35,6 +35,7 @@ static char rcsid[] not_used = {"$Id: util_mit.cc,v 1.5 2003/12/08 18:02:31 edav
 #include <stdlib.h>
 #include <string>
 #include <ctype.h>
+
 #ifndef TM_IN_SYS_TIME
 #include <time.h>
 #else
@@ -45,7 +46,8 @@ static char rcsid[] not_used = {"$Id: util_mit.cc,v 1.5 2003/12/08 18:02:31 edav
 #include <sys/stat.h>
 
 #include <iostream>
-#include <util_mit.h>
+
+#include "util_mit.h"
 
 using std::cerr;
 using std::endl;
@@ -215,6 +217,14 @@ parse_time(const char * str, bool expand)
     /* Let mktime decide whether we have DST or not */
     tm.tm_isdst = -1;
 
+#ifdef HAVE_TIMEGM
+
+    t = timegm(&tm);
+
+#else
+
+#ifdef HAVE_MKTIME
+
     // Compute offset between localtime and GMT.
     time_t offset;
     time_t now = time(0);
@@ -226,6 +236,13 @@ parse_time(const char * str, bool expand)
 #endif
 
     t = mktime(&tm) + offset;
+
+#else
+
+#error "Neither mktime nor timegm defined"
+
+#endif /* HAVE_TIMEGM */
+#endif /* HAVE_MKTIME */
 
     DBG(cerr << "Time string. " << str << " parsed to " << t 
 	<< " calendar time or \"" << ctime(&t) << "\" in local time" << endl);

@@ -64,7 +64,7 @@ TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 # Unit Tests
 #
 
-UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT ddsPT iterT	\
+UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT iterT	\
 	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
 	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
 	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
@@ -139,9 +139,6 @@ sequenceT_LDADD = -lcppunit ../libdap.la libtest-types.a
 
 ddsT_SOURCES = ddsT.cc
 ddsT_LDADD = -lcppunit ../libdap.la libtest-types.a
-
-ddsPT_SOURCES = ddsPT.cc
-ddsPT_LDADD = -lcppunit ../libdap.la libtest-types.a
 
 iterT_SOURCES = iterT.cc LongIterAdapter.cc
 iterT_LDADD = -lcppunit ../libdap.la libtest-types.a
