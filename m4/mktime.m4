@@ -196,6 +196,8 @@ AC_DEFUN([gl_FUNC_MKTIME],
     dnl jhrg 7/8/05
     dnl AC_DEFINE(mktime, rpl_mktime,
     dnl  [Define to rpl_mktime if the replacement function should be used.])
+    AC_DEFINE(HAVE_BROKEN_MKTIME, 1,
+	      [Define as 1 if the mktime replacement should be used.])
     gl_PREREQ_MKTIME
   fi
 ])
