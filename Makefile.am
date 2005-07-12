@@ -2,10 +2,10 @@
 # Build libdap++, libtest-types++.a, getdap and deflate
 
 AUTOMAKE_OPTIONS = foreign check-news
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I gl/m4
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY -I$(top_srcdir)/lib
+AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY -I$(top_srcdir)/gl
 AM_CXXFLAGS = -I$(top_srcdir)/GNU
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
@@ -15,7 +15,7 @@ AM_LFLAGS = -8
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-defer-pop
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-SUBDIRS = lib . tests
+SUBDIRS = gl . tests
 
 lib_LTLIBRARIES = libdap.la 
 
@@ -28,7 +28,7 @@ sbin_PROGRAMS = deflate usage
 libdap_la_SOURCES = $(DAP_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(GNU_SRC)
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
-libdap_la_LIBADD = lib/libgnu.la
+libdap_la_LIBADD = gl/libgnu.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(CLIENT_HDR) $(SERVER_HDR) $(GNU_HDR)
 

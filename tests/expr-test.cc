@@ -506,8 +506,9 @@ void
 set_series_values(DDS &dds, bool state)
 {
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
-	dynamic_cast<TestCommon&>(**q).set_series_values(state);
 #if 0
+	dynamic_cast<TestCommon&>(**q).set_series_values(state);
+#else
         TestCommon *tc = dynamic_cast<TestCommon*>(*q);
         if (tc)
             tc->set_series_values(state);

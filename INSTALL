@@ -90,6 +90,12 @@ NOTES
     from GNU). We maintain a CVS-managed source tree that people outside the
     group may access.
 
+  o The gnulib project software is used to provide replacement functions when
+    autoconf detects that is necessary. To update the gnulib, check it out
+    from CVS and run '$gnulib_home/gnulib-tool --lgpl --import' in this
+    directory. Macros in configure.ac supply gnulib-tool with all the
+    information it needs.
+
   o Older versions of Linux have an xdr.h include file that won't compile
     properly with g++. The error shows up when building software that calls
     xdr_destroy and the compiler complains that it's being called with too
