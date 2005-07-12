@@ -67,8 +67,8 @@ public:
 
     CPPUNIT_TEST(symbol_name_test);
     CPPUNIT_TEST(print_xml_test);
-    // CPPUNIT_TEST(print_xml_test2);
-    // CPPUNIT_TEST(transfer_attributes_test);
+    CPPUNIT_TEST(print_xml_test2);
+    CPPUNIT_TEST(transfer_attributes_test);
     CPPUNIT_TEST(add_global_attribute_test);
 
     CPPUNIT_TEST_SUITE_END();
