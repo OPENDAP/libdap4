@@ -33,8 +33,6 @@
 
 #include "GNURegex.h"
 
-#define DODS_DEBUG
-
 #include "HTTPConnect.h"
 #include "RCReader.h"
 #include "debug.h"
@@ -48,7 +46,7 @@ private:
     string localhost_url, localhost_pw_url, localhost_digest_pw_url;
     string etag;
     string lm;
-    string dsp_das_url;
+    string netcdf_das_url;
 
 protected:
     bool re_match(Regex &r, const char *s) {
@@ -72,10 +70,10 @@ public:
 	etag = "\"3f62c-157-139c2680\"";
 	lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
-	localhost_pw_url = "http://jimg:dods_test@localhost/secret/page.txt";
-	localhost_digest_pw_url = "http://jimg:dods_digest@localhost/sdata/digest.txt";
+	localhost_pw_url = "http://jimg:dods_test@test.opendap.org/basic/page.txt";
+	localhost_digest_pw_url = "http://jimg:dods_digest@test.opendap.org/digest/page.txt";
+        netcdf_das_url = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc.das";
 
-	dsp_das_url = "http://eddy.gso.uri.edu/cgi-bin/nph-dods/avhrr/2001/4/d01093165826.pvu.Z.das";
     }
 
     void tearDown() {
@@ -93,7 +91,9 @@ public:
     CPPUNIT_TEST(set_accept_deflate_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
+#if 0
     CPPUNIT_TEST(read_url_password_proxy_test);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -155,7 +155,7 @@ public:
 			   && !feof(stuff->get_stream()));
 	    delete stuff; stuff = 0;
 
-	    stuff = http->fetch_url(dsp_das_url);
+	    stuff = http->fetch_url(netcdf_das_url);
 	    DBG2(char ln[1024];
 		 while (!feof(stuff->get_stream())) {
 		     fgets(ln, 1024, stuff->get_stream());
@@ -174,7 +174,7 @@ public:
 			   && !feof(stuff->get_stream()));
 	    delete stuff; stuff = 0;
 
-	    stuff = http->fetch_url("file://HTTPConnect.cc");
+	    stuff = http->fetch_url("file://HTTPConnectTest.cc");
 	    CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 
 			   && !ferror(stuff->get_stream()) 
 			   && !feof(stuff->get_stream()));
@@ -193,7 +193,7 @@ public:
     }
 
     void get_response_headers_test() {
-	HTTPResponse *r = http->fetch_url(dsp_das_url);
+	HTTPResponse *r = http->fetch_url(netcdf_das_url);
 
 	try {
 	    vector<string> *h = r->get_headers();
@@ -216,7 +216,7 @@ public:
     }
 
     void server_version_test() {
-	Response *r = http->fetch_url(dsp_das_url);
+	Response *r = http->fetch_url(netcdf_das_url);
 	Regex version("dap/[0-9]+\\.[0-9]+\\.[0-9]+");
 	try {
 	    CPPUNIT_ASSERT(re_match(version, r->get_version().c_str()));
@@ -230,7 +230,7 @@ public:
     }
 
     void type_test() {
-	Response *r = http->fetch_url(dsp_das_url);
+	Response *r = http->fetch_url(netcdf_das_url);
 	try {
 	    CPPUNIT_ASSERT(r->get_type() == dods_das);
 	    delete r; r = 0;
@@ -323,6 +323,8 @@ public:
 	delete resp_h; resp_h = 0;
     }
 	
+    // I'm going to remove this test. All of the other tests now work off of
+    // test.opendap.org. jhrg 7/13/05
     void read_url_password_proxy_test() {
 	cerr << endl <<
 "This test will fail if localhost is not configured as a proxy server\n\
@@ -357,11 +359,7 @@ main( int argc, char* argv[] )
     CppUnit::TextTestRunner runner;
     runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
-    cerr << "These tests require a working network connection," << endl
-	 << "httpd running on localhost, a configured localhost" << endl
-	 << "site with password protected directories and that" << endl
-	 << "eddy.gso.uri.edu is running the OPeNDAP DSP data" << endl
-	 << "server." << endl;
+    cerr << "These tests require a working network connection." << endl;
 
     runner.run();
 
