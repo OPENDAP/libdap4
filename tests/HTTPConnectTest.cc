@@ -33,6 +33,8 @@
 
 #include "GNURegex.h"
 
+#define DODS_DEBUG
+
 #include "HTTPConnect.h"
 #include "RCReader.h"
 #include "debug.h"
@@ -61,12 +63,14 @@ public:
 	putenv("DODS_CACHE_INIT=cache-testsuite/dodsrc");
 	http = new HTTPConnect(RCReader::instance());
 
-	localhost_url = "http://localhost/test-304.html";
+	localhost_url = "http://test.opendap.org/test-304.html";
 
 	// Two request header values that will generate a 304 response to the
-	// above URL.
-	etag = "\"13c55e-157-f8105500\"";
-	lm = "Thu, 04 Sep 2003 15:55:53 GMT";
+	// above URL. The values below much match the etag and last-modified
+	// time returned by the server. Run this test with DODS_DEBUG defined
+	// to see the values it's returning.
+	etag = "\"3f62c-157-139c2680\"";
+	lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
 	localhost_pw_url = "http://jimg:dods_test@localhost/secret/page.txt";
 	localhost_digest_pw_url = "http://jimg:dods_digest@localhost/sdata/digest.txt";
