@@ -2,7 +2,7 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP.
 Version: 3.5.1
-Release: 4
+Release: 5
 
 Source0: http://www.opendap.org/pub/3.5/source/%{name}-%{version}.tar.gz
 URL: http://www.opendap.org/
@@ -27,6 +27,15 @@ simple command-line tool to read from DAP2 servers. It is built using the
 library and demonstrates simple uses of it. The deflate utility is used by
 the library when it returns compressed responses.
 
+#%package devel
+#Summary: Static libraries and header files from libdap
+#Group: Development/Libraries
+#Requires: %{name} = %{version}-%{release}
+#
+#%description devel
+#This package contains all the files needed to develop applications that
+#will use libdap.
+
 %prep
 %setup -q
 
@@ -42,21 +51,25 @@ rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
 %files
 %defattr(-,root,root,-)
 %{_bindir}/getdap
 %{_sbindir}/deflate
 %{_sbindir}/usage
 %{_libdir}/libdap.so.*
+%doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
+%doc COPYRIGHT_W3C
+
+#%files devel
+#%defattr(-,root,root,-)
 %{_libdir}/libdap.a
 %{_libdir}/libdap.so
 %{_bindir}/dap-config
 %{_includedir}/libdap
- 
-%defattr(-,root,root,-)
-
-%doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
-%doc COPYRIGHT_W3C
 
 %changelog
 * Sat Jul  2 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-4
