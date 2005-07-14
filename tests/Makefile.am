@@ -4,8 +4,8 @@
 AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY
-AM_CXXFLAGS = -I../$(srcdir)/GNU
+AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY -I$(top_srcdir)
+AM_CXXFLAGS = -I$(top_srcdir)/GNU
 
 check_PROGRAMS = $(UNIT_TESTS) $(DEJAGNU_TESTS)
 
@@ -17,13 +17,13 @@ TESTS = $(UNIT_TESTS) dejagnu_driver.sh
 # support for dejagnu so it can handle multiple drivers, add 'dejagnu to
 # the automake options at the top of this file. See the section on dejagnu
 # tests below. jhrg 7/6/05
-check_SCRIPTS = dejagnu_driver.sh
+dist_check_SCRIPTS = dejagnu_driver.sh
 
 DIRS_EXTRA = 	das-testsuite dds-testsuite expr-testsuite	\
 	grid-func-testsuite cache-testsuite ais_testsuite	\
 	rcreader-testsuite server-testsuite cgi-util-tests
 
-EXTRA_DIST = $(check_SCRIPTS) $(DIRS_EXTRA) common-tests.exp 
+EXTRA_DIST = $(DIRS_EXTRA) common_tests.exp
 
 ############################################################################
 # These tests use dejagnu. The drivers (passed to --tool) all use the
@@ -58,7 +58,7 @@ TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
 	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h \
-	config_dap.h
+	LongIterAdapter.h 
 
 ############################################################################
 # Unit Tests

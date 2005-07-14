@@ -31,6 +31,7 @@ libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_LIBADD = gl/libgnu.la
 
 pkginclude_HEADERS = $(DAP_HDR) $(CLIENT_HDR) $(SERVER_HDR) $(GNU_HDR)
+noinst_HEADERS = config_dap.h
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdap.la
@@ -44,7 +45,7 @@ LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	win32 $(LEX_YACC_EXTRA)
+	win32 config_dap.h $(LEX_YACC_EXTRA)
 
 CLEANFILES = *.log
 
