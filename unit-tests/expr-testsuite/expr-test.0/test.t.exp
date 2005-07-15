@@ -1,0 +1,70 @@
+
+# expect/tcl code to test the expression parser and scanner
+# jhrg
+#
+# $Log: test.t.exp,v $
+# Revision 1.4  2005/05/23 16:03:04  jimg
+# Tests now use the local copy of common-tests.exp.
+#
+# Revision 1.3  2002/06/03 22:21:16  jimg
+# Merged with release-3-2-9
+#
+# Revision 1.1.2.3  2002/02/20 19:10:03  jimg
+# Fixed some tests
+#
+# Revision 1.2  2001/08/24 17:46:24  jimg
+# Resolved conflicts from the merge of release 3.2.6
+#
+# Revision 1.1.2.2  2001/07/28 01:12:28  jimg
+# Updated to work with the new escaping code. Some of our tests assumed
+# that dashes (-) were not OK in symbol names. However, changes in the
+# DAP parsers along with changes in the escaping functions now make this
+# possible.
+#
+# Revision 1.1.2.1  2001/07/11 05:36:24  jimg
+# *** empty log message ***
+#
+# Revision 1.1.2.1  2001/06/23 00:52:32  jimg
+# Added tests for `#' in IDs.
+#
+
+source common_tests.exp
+
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+# The variable `test_file' is the name of the das input file for this test.
+
+set test_name test.t
+set test_file test.9
+
+# The variable test_equation is the equation to test.
+
+set test_equation {"Data-Set-2.fakeDim0\[0:3\],Data-Set-2.fakeDim1\[0:3\]"}
+
+# The variable `test_out' is a string that contains the text that should be
+# stored in comp_output by das-test_start. The two strings should match
+# exactly.
+
+set test_out "The complete DDS:
+Dataset {
+    Grid {
+     ARRAY:
+        Float64 Data-Set-2\[fakeDim0 = 72\]\[fakeDim1 = 144\];
+     MAPS:
+        Float64 fakeDim0\[72\];
+        Float64 fakeDim1\[144\];
+    } Data-Set-2;
+} ftp%23data%23lim93%23msup%23L93rain.90daygrd_msu.hdf;
+The data:
+Structure {
+    Float64 fakeDim0\[4\];
+    Float64 fakeDim1\[4\];
+} Data-Set-2 = { {99.999, 99.999, 99.999, 99.999}, {99.999, 99.999, 99.999, 99.999} };
+"
+
+expr-test_start p ${srcdir}/${test_file} ${test_equation} 
+
+compare_stdout $test_out "projection with `%2d' in id name." 1
+
+

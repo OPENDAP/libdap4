@@ -1,0 +1,13 @@
+# -*- perl -*-
+#
+# Test aliases
+
+Attributes {
+    var1 {
+        Int32 x 14;
+	Int32 y 15, 16, 17;
+    }
+    
+    # Alias `var2' to the existing `var1'.
+    Alias var2 var1;
+}

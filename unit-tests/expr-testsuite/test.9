@@ -1,0 +1,15 @@
+
+# -*- C++ -*-
+#
+# Test problems reported with an HDF-EOS dataset. Should be able to access
+# Data%2dSet%2d2. 
+
+Dataset {
+   Grid {
+     ARRAY:
+       Float64 Data%2dSet%2d2[fakeDim0 = 72][fakeDim1 = 144];
+     MAPS:
+       Float64 fakeDim0[72];
+       Float64 fakeDim1[144];
+   } Data%2dSet%2d2;
+} ftp#data#lim93#msup#L93rain.90daygrd_msu.hdf;

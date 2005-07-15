@@ -1,0 +1,51 @@
+
+# Tcl/Expect code for the geturl test. This really is designed to test the
+# various servers (hdf, dsp, netcdf, matlab, ...) on serveral different
+# platforms. 
+# 
+# $Id: unix.exp,v 1.3 2004/02/19 19:42:54 jimg Exp $
+
+# Make sure the global var GETURL is set correctly.
+
+global GETURL
+if ![info exists GETURL] then {
+    set GETURL [transform ./geturl]
+}
+
+# The four `required' procs are _start, _load, _exit and _version.
+
+proc geturl_start { {switches ""} {urls ""} {file ""}} {
+    global verbose
+    global GETURL
+    global comp_output
+    global spawn_id
+
+    if ![string compare $file ""] {
+	if {$verbose >= 1} {
+	    send_user "Testing geturl $switches $urls ...\n"
+	    exp_internal 1
+	}
+	catch "exec $GETURL $switches $urls" comp_output
+    } else {
+	if {$verbose >= 1} {
+	    send_user "Testing geturl $switches $urls >& $file ...\n"
+	    exp_internal 1
+	}
+	catch "exec $GETURL $switches $urls > $file" comp_output
+    }
+}
+
+proc geturl_load {} {
+}
+
+proc geturl_exit {} {
+    send -raw ""
+}
+
+proc geturl_version {} {
+    send_user "geturl test suite 1.0\n"
+}
+
+
+
+

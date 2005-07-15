@@ -1,0 +1,91 @@
+
+# expect/tcl code to test the expression parser and scanner
+# jhrg
+#
+# $Log: test.i.exp,v $
+# Revision 1.9  2003/04/22 19:40:30  jimg
+# Merged with 3.3.1.
+#
+# Revision 1.8.8.1  2003/04/18 04:11:53  jimg
+# Updated for the new version of test.5.
+#
+# Revision 1.8  2000/10/03 22:18:04  jimg
+# Fixes to the tests to accomodate debugging fixes in DDS.cc
+#
+# Revision 1.7  2000/09/22 02:53:00  jimg
+# Fixes to the tests to recognize some of the new error messages. Also,
+# the test drivers were modified to catch the exceptions now thrown by
+# some of the parsers.
+#
+# Revision 1.6  2000/06/16 18:15:02  jimg
+# Merged with 3.1.7
+#
+# Revision 1.5.28.1  2000/06/15 02:24:58  jimg
+# Fixed the tests: problems with PATH, etc. broke the tests on my new machine
+#
+# Revision 1.5  1998/03/27 04:28:51  jimg
+# Fixed tests for the new DDS::send() mime header stuff
+#
+# Revision 1.4  1997/06/05 22:52:35  jimg
+# *** empty log message ***
+#
+# Revision 1.3  1997/03/27 18:20:12  jimg
+# Update for version 2.13
+#
+# Revision 1.2  1996/11/27 22:53:01  jimg
+# *** empty log message ***
+#
+# Revision 1.1  1996/11/27 20:25:46  jimg
+# *** empty log message ***
+#
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+# The variable `test_file' is the name of the das input file for this test.
+
+set test_name test.i
+set test_file test.5
+
+# The variable test_equation is the equation to test.
+
+set test_equation {g\[0:2:4\]\[0:2:4\]\[0:2:4\]}
+
+# The variable `test_out' is a string that contains the text that should be
+# stored in comp_output by das-test_start. The two strings should match
+# exactly.
+
+set test_out "The complete DDS:
+Dataset {
+    Int32 i\\\[20\\\];
+    Int32 j;
+    String s;
+    Grid {
+     ARRAY:
+        Float64 val\\\[length = 5\\\]\\\[width = 6\\\]\\\[height = 7\\\];
+     MAPS:
+        Float64 length\\\[5\\\];
+        Float64 width\\\[6\\\];
+        Float64 height\\\[7\\\];
+    } g;
+} test1;
+The data:
+Grid {
+ ARRAY:
+    Float64 val\\\[length = 3\\\]\\\[width = 3\\\]\\\[height = 3\\\];
+ MAPS:
+    Float64 length\\\[3\\\];
+    Float64 width\\\[3\\\];
+    Float64 height\\\[3\\\];
+} g = { ARRAY: {{{99.999, 99.999, 99.999},{99.999, 99.999, 99.999},{99.999, 99.999, 99.999}},{{99.999, 99.999, 99.999},{99.999, 99.999, 99.999},{99.999, 99.999, 99.999}},{{99.999, 99.999, 99.999},{99.999, 99.999, 99.999},{99.999, 99.999, 99.999}}} MAPS: {99.999, 99.999, 99.999}, {99.999, 99.999, 99.999}, {99.999, 99.999, 99.999} };"
+
+expr-test_start p ${srcdir}/${test_file} ${test_equation}
+
+if [string match $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    fail "$test_name"
+}
+
+

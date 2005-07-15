@@ -1,0 +1,9 @@
+# Test unterminated quote
+
+attributes {
+    var10 {
+	string attr woof;
+	string quote "this quote has no end;
+    }
+}
+

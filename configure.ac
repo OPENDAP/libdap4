@@ -202,8 +202,9 @@ AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
 fi
 
 AC_CONFIG_FILES([Makefile
+                 gl/Makefile
                  tests/Makefile
-                 gl/Makefile])
+                 unit-tests/Makefile])
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
 		 
 AC_OUTPUT

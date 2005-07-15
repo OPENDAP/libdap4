@@ -1,0 +1,56 @@
+
+# expect/tcl code to test the expression parser and scanner. This test checks
+# to see that the expr parser correctly rejects arrays that are partially
+# constrained. 6/11/2002 jhrg
+
+global comp_output		# contains output from das-test_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+# The variable `test_file' is the name of the das input file for this test.
+
+set test_name test.xa
+set test_file test.b
+
+# The variable test_equation is the equation to test.
+
+set test_equation {"i,f" -b}
+
+# The variable `test_out' is a string that contains the text that should be
+# stored in comp_output by das-test_start. The two strings should match
+# exactly.
+
+set test_out "The complete DDS:
+Dataset {
+    Sequence {
+        Int32 i;
+        Int32 j;
+        Sequence {
+            Float32 f;
+            Float32 g;
+        } child;
+    } parent;
+} testb;
+The data:
+Sequence {
+    Int32 i;
+    Sequence {
+        Float32 f;
+    } child;
+} parent = { { 32, { { 0.01 }, { 1.00998 }, { 84.6923 }, { 13.0431 } } }, { 1024, { { 45.897 }, { 94.1542 }, { -9.33074 }, { -9.37994 } } }, { 32768, { { -4.47181 }, { 97.1301 }, { 25.6459 }, { 49.0991 } } }, { 1048576, { { -91.9246 }, { 73.0156 }, { -68.8086 }, { 30.1734 } } } };"
+
+expr-test_start p ${srcdir}/${test_file} ${test_equation}
+
+if [string match $test_out $comp_output] { # check comp_output
+    pass "$test_name"
+} else {
+    xfail "$test_name"
+}
+
+# $Log: test.xa.exp,v $
+# Revision 1.2  2005/01/28 17:25:13  jimg
+# Resolved conflicts from merge with release-3-4-9
+#
+# Revision 1.1.2.1  2005/01/19 18:26:31  jimg
+# Added
+#
