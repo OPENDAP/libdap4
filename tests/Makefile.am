@@ -24,7 +24,7 @@ TESTS = dejagnu_driver.sh
 # tests below. jhrg 7/6/05
 dist_check_SCRIPTS = dejagnu_driver.sh
 
-DIRS_EXTRA = 	das-testsuite dds-testsuite expr-testsuite ddx-stestsuite    \
+DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite ddx-testsuite	     \
 	grid-func-testsuite cache-testsuite ais_testsuite rcreader-testsuite \
 	server-testsuite cgi-util-tests
 

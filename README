@@ -3,8 +3,9 @@ $Id: README,v 1.22 2005/05/13 20:18:58 jimg Exp $
 
 Updated for 3.5.1 beta
 
-NOTE: This version of libdap++ is not compatible with the 3.4.x clients and
-servers. 
+NOTE: This version of libdap++ cannot be used to build the 3.4.x and previous
+clients and/or servers. However, client and servers built using this code
+_will_ work with the older clients and servers.
 
 WHAT'S IN THIS DIRECTORY?
 

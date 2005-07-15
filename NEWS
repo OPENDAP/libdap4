@@ -1,14 +1,33 @@
 
 $Id: NEWS,v 1.14 2005/05/13 20:18:58 jimg Exp $
 
-News for Release 3.5.1 beta
+News for Release 3.5.2 beta
 
 This is a beta release of libdap++, version 3.5. 
 
-NOTE: This version of libdap++ is not compatible with the 3.4.x clients and
-servers. 
+NOTE: This version of libdap++ cannot be used to build the 3.4.x and previous
+clients and/or servers. However, client and servers built using this code
+_will_ work with the older clients and servers.
 
-News for Release 3.5.1 beta
+News for Release 3.5.2 beta 2005/07/14
+
+Revamped the build to use automake. 
+
+Regression tests and the test classes are now in the subdir 'tests.'
+
+The unit tests are now in the subdir 'unit-tests' and are not built or run by
+default. Some of these tests require access to the internet to work and I
+decided to make then not run using the make check target from the top level
+(the regression tests in 'tests' do run using the top-level check target) so
+that the build would work w/o access to the net.
+
+The rpm spec file has been updated. See INSTALL for information aboutl
+building rpm distributions.
+
+Thanks to Patrice Dumas for help on the autoconf/make, with gnulib and the
+rpm spec file.
+
+News for Release 3.5.1 beta 2005/05/13
 
 I changed some of the build parameters; the utility script is now named
 dap-config, the headers now install into $prefix/include/dap and the static
@@ -17,7 +36,7 @@ file which can be used to build a rpm file of/for a binary distribution. At
 this stage you'll need to be pretty savvy with RPM to get it to work; I'll
 write up instructions soon.
 
-News for Release 3.5.0 beta
+News for Release 3.5.0 beta 2005/05/05
 
 Changes in the way the software is organized:
 

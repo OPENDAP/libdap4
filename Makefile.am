@@ -47,7 +47,7 @@ LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	win32 config_dap.h $(LEX_YACC_EXTRA)
+	win32 unit-tests config_dap.h gl/m4 $(LEX_YACC_EXTRA)
 
 CLEANFILES = *.log
 
