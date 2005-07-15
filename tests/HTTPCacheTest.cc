@@ -95,11 +95,11 @@ public:
 	http_conn = new HTTPConnect(RCReader::instance());
 
 	DBG2(cerr << "Entring HTTPCacheTest ctor... ");
-	hash_value = 1306;
-	localhost_url = "http://localhost/test-304.html";
-	index_file_line = "http://localhost/test-304.html cache-testsuite/dods_cache/1306/dods4uXJO6 \"13c55e-157-f8105500\" 1062690740 -1 343 0 1306 0 356 1062694308 0 0";
+	hash_value = 656;
+	localhost_url = "http://test.opendap.org/test-304.html";
+	index_file_line = "http://test.opendap.org/test-304.html cache-testsuite/dods_cache/656/dodsKbcD0h \"3f62c-157-139c2680\" 1121283146 -1 343 0 656 1 7351 1121360379 3723 0";
 
-	expired = "http://localhost/cgi-bin/expires.sh";
+	expired = "http://test.opendap.org/cgi-bin/expires.sh";
 
 	h.push_back("ETag: jhrgjhrgjhrg");
 	h.push_back("Last-Modified: Sat, 05 Nov 1994 08:49:37 GMT");
@@ -112,6 +112,16 @@ public:
 	delete http_conn; http_conn = 0;
 	DBG2(cerr << "Entering the HTTPCacheTest dtor... ");
 	DBG2(cerr << "exiting." << endl);
+    }
+     
+    static inline bool
+    is_hop_by_hop_header(const string &header) {
+	return header.find("Connection") != string::npos
+	    || header.find("Keep-Alive") != string::npos
+	    || header.find("Proxy-Authenticate") != string::npos
+	    || header.find("Proxy-Authorization") != string::npos
+	    || header.find("Transfer-Encoding") != string::npos
+	    || header.find("Upgrade") != string::npos;
     }
     
     void setUp () {
@@ -161,12 +171,14 @@ public:
 #endif
 
     CPPUNIT_TEST(cache_gc_test);
+
     CPPUNIT_TEST_SUITE_END();
 
     void constructor_test() {
 	CPPUNIT_ASSERT(hc->d_cache_index=="cache-testsuite/dods_cache/.index");
 	CPPUNIT_ASSERT(hc->d_cache_root == "cache-testsuite/dods_cache/");
 	DBG(cerr << "Current size: " << hc->d_current_size << endl);
+	DBG(cerr << "Block size: " << hc->d_block_size << endl);
 	CPPUNIT_ASSERT(hc->d_current_size == hc->d_block_size);
     }
 
@@ -184,14 +196,14 @@ public:
 
 	CPPUNIT_ASSERT(e->url == localhost_url);
 	CPPUNIT_ASSERT(e->cachename 
-		       == "cache-testsuite/dods_cache/1306/dods4uXJO6");
+		       == "cache-testsuite/dods_cache/656/dodsKbcD0h");
 #ifdef WIN32
-	char *tmpstr = "\"13c55e-157-f8105500\"";
+	char *tmpstr = "\"3f62c-157-139c2680\"";
 	CPPUNIT_ASSERT(e->etag == tmpstr);
 #else
-	CPPUNIT_ASSERT(e->etag == "\"13c55e-157-f8105500\"");
+	CPPUNIT_ASSERT(e->etag == "\"3f62c-157-139c2680\"");
 #endif
-	CPPUNIT_ASSERT(e->lm == 1062690740);
+	CPPUNIT_ASSERT(e->lm == 1121283146);
 	// Skip ahead ...
 	CPPUNIT_ASSERT(e->must_revalidate == false);
 
@@ -429,7 +441,10 @@ public:
 	     i != cached_headers.end() && j != headers->end();
 	     ++i, ++j) {
 	    string ch = (*i).substr(0, (*i).find(": "));
+	    // Skip over headers that won't be cached. jhrg 7/4/05
+	    while (is_hop_by_hop_header(*j)) ++j;
 	    string h = (*j).substr(0, (*j).find(": "));
+	    DBG(cerr << "cached: " << ch << ", header: " << h << endl);
 	    CPPUNIT_ASSERT(ch == h);
 	}
 
@@ -696,7 +711,7 @@ public:
     void interrupt_test() {
 	try {
 	    HTTPCache *c = new HTTPCache("cache-testsuite/singleton_cache", true);
-	    string coads = "http://localhost/data/nc/coads_climatology.nc";
+	    string coads = "http://test.opendap.org/data/nc/coads_climatology.nc";
 	    if (!c->is_url_in_cache(coads)) {
 		HTTPResponse *rs = http_conn->fetch_url(coads);
 		cerr << "In interrupt test, hit ctrl-c now... ";
@@ -719,9 +734,9 @@ public:
     }
     
     void cache_gc_test() {
-	string fnoc1 = "http://localhost/dods-3.4/nph-dods/data/nc/fnoc1.nc.dds";
-	string fnoc2 = "http://localhost/dods-3.4/nph-dods/data/nc/fnoc2.nc.dds";
-	string fnoc3 = "http://localhost/dods-3.4/nph-dods/data/nc/fnoc3.nc.dds";
+	string fnoc1 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc.dds";
+	string fnoc2 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc.dds";
+	string fnoc3 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc.dds";
 	try {
 	    auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
 

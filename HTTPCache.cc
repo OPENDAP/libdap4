@@ -1573,6 +1573,9 @@ HTTPCache::is_url_in_cache(const string &url)
 /** Is the header a hop by hop header? If so, we're not supposed to store it
     in the cache. See RFC 2616, Section 13.5.1.
 
+    @todo Export this function so that HTTPCacheTest can use it and won't
+    maintain its own copy.
+
     @return True if the header is, otherwise False. */
 
 static inline bool

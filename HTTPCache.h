@@ -285,7 +285,7 @@ private:
     }
 
     static void delete_instance(); // Run by atexit (hence static)
-	
+
     CacheEntry *cache_index_parse_line(const char *line);
     bool cache_index_read();
     bool cache_index_delete();

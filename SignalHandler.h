@@ -47,13 +47,12 @@ typedef void Sigfunc(int);	// Plauger, 1992
     sigaction() system interfaces. If the register_handler() method is called
     and an instance of EventHandler is already bound to \e signum, then the
     old EventHandler is returned. However, if there's an exisitng handler
-    that was set up with \c sigaction(), ..., it won't be returned. Instead it
-    will either be run after the newly registered EventHandler or ignored,
-    depending on register_handler()'s \e override parameter.
-
-    This may be used only for POSIX.1 signals which cause process
-    termination. They are: SIGHUP, SIGINT, SIGKILL, SIGPIPE, SIGALRM,
-    SIGTERM, SIGUSR1, and SIGUSR2.
+    that was set up with \c sigaction(), ..., it won't be returned. Instead
+    it will either be run after the newly registered EventHandler or ignored,
+    depending on register_handler()'s \e override parameter. This feature may
+    be used only for POSIX.1 signals which cause process termination. They
+    are: SIGHUP, SIGINT, SIGKILL, SIGPIPE, SIGALRM, SIGTERM, SIGUSR1, and
+    SIGUSR2.
 
     @note Based on "Applying Design Patterns to Simplify Signal Handling",
     Douglas C. Schmidt, 1998,

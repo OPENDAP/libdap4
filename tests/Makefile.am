@@ -7,6 +7,11 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY -I$(top_srcdir)
 AM_CXXFLAGS = -I$(top_srcdir)/GNU
 
+# These are not used by automake but are often useful for certain types of
+# debugging. 
+CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-defer-pop
+TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+
 check_PROGRAMS = $(UNIT_TESTS) $(DEJAGNU_TESTS)
 
 # This determines what gets run by 'make check.' The dejagnu_driver.sh 
@@ -19,9 +24,9 @@ TESTS = $(UNIT_TESTS) dejagnu_driver.sh
 # tests below. jhrg 7/6/05
 dist_check_SCRIPTS = dejagnu_driver.sh
 
-DIRS_EXTRA = 	das-testsuite dds-testsuite expr-testsuite	\
-	grid-func-testsuite cache-testsuite ais_testsuite	\
-	rcreader-testsuite server-testsuite cgi-util-tests
+DIRS_EXTRA = 	das-testsuite dds-testsuite expr-testsuite ddx-stestsuite    \
+	grid-func-testsuite cache-testsuite ais_testsuite rcreader-testsuite \
+	server-testsuite cgi-util-tests
 
 EXTRA_DIST = $(DIRS_EXTRA) common_tests.exp
 
