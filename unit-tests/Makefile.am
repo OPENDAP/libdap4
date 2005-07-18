@@ -1,4 +1,6 @@
 
+SUBDIRS = cache-testsuite
+
 # Tests
 
 AUTOMAKE_OPTIONS = foreign
@@ -19,10 +21,12 @@ check_PROGRAMS = $(UNIT_TESTS)
 TESTS = $(UNIT_TESTS)
 
 DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite ddx-testsuite	     \
-	grid-func-testsuite cache-testsuite ais_testsuite rcreader-testsuite \
+	grid-func-testsuite ais_testsuite rcreader-testsuite \
 	server-testsuite cgi-util-tests
 
-EXTRA_DIST = $(DIRS_EXTRA)
+EXTRA_DIST = $(DIRS_EXTRA) 
+
+CLEANFILES = testout .dodsrc
 
 ############################################################################
 # Unit Tests

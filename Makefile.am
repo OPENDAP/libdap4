@@ -17,7 +17,8 @@ AM_LFLAGS = -8
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-defer-pop
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-SUBDIRS = gl . tests
+SUBDIRS = gl . tests 
+DIST_SUBDIRS = unit-tests gl tests
 
 lib_LTLIBRARIES = libdap.la 
 
@@ -45,11 +46,17 @@ usage_LDADD = libdap.la
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
 	Error.lex Error.y
 
+LEX_YACC_FILES = das.tab.h das.tab.cc lex.das.cc dds.tab.h dds.tab.cc \
+	lex.dds.cc expr.tab.h expr.tab.cc lex.expr.cc Error.tab.h Error.tab.cc \
+	lex.Error.cc gse.tab.h gse.tab.cc lex.gse_.cc
+
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	win32 unit-tests config_dap.h gl/m4 $(LEX_YACC_EXTRA)
+	win32 $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
 
-CLEANFILES = *.log
+CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
+
+# MAINTAINERCLEANFILES = $(LEX_YACC_FILES)
 
 #############################################################################
 # Library sources

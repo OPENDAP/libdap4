@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.5.1, dods-tech@unidata.ucar.edu)
+AC_INIT(libdap, 3.5.2, dods-tech@unidata.ucar.edu)
 AC_CONFIG_SRCDIR([AISConnect.cc])
 AM_CONFIG_HEADER([config.h dods-datatypes.h])
 AM_INIT_AUTOMAKE
@@ -204,7 +204,8 @@ fi
 AC_CONFIG_FILES([Makefile
                  gl/Makefile
                  tests/Makefile
-                 unit-tests/Makefile])
+                 unit-tests/Makefile
+                 unit-tests/cache-testsuite/Makefile])
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config]) 
 		 
 AC_OUTPUT
