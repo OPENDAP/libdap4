@@ -2,7 +2,7 @@
 # Build libdap++, libtest-types++.a, getdap and deflate
 
 AUTOMAKE_OPTIONS = foreign check-news
-ACLOCAL_AMFLAGS = -I gl/m4
+ACLOCAL_AMFLAGS = -I $(top_srcdir)/gl/m4
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY -I$(top_srcdir)/gl
