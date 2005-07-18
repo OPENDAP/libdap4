@@ -37,6 +37,12 @@ BUILDING THE SOFTWARE
      './configure --prefix=/opt/opendap' would set the build so that the
      library was installed in /opt/opendap/lib, ...
 
+Building from Our SVN Repository
+
+  If you are building from a SVN checkout, run 'autoreconf --verbose' before
+  './configure; make'. If you try to run autoconf, et c., by hand and wind up
+  with build files that don't work, use 'autoreconf --force --verbose' and
+  then './configure;make'.
 
 REQUIREMENTS
 
