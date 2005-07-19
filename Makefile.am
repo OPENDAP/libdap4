@@ -52,7 +52,7 @@ LEX_YACC_FILES = das.tab.h das.tab.cc lex.das.cc dds.tab.h dds.tab.cc \
 
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
-	win32 $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
+	win32 $(LEX_YACC_EXTRA) $(LEX_YACC_FILES) gl/m4
 
 CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
 
