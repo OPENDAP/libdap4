@@ -61,6 +61,7 @@ public:
 
     CPPUNIT_TEST_SUITE(generalUtilTest);
 
+    CPPUNIT_TEST(prune_spaces_test);
     CPPUNIT_TEST(path_to_filename_test);
     CPPUNIT_TEST(hexstring_test);
     CPPUNIT_TEST(unhexstring_test);
@@ -77,6 +78,25 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
+    void prune_spaces_test() {
+	string test_server = "http://test.opendap.org";
+	CPPUNIT_ASSERT(prune_spaces(test_server) == test_server);
+
+	string test_server_spaces = "   http://test.opendap.org";
+	CPPUNIT_ASSERT(prune_spaces(test_server_spaces) == test_server);
+
+	string test_server_ce = "http://test.opendap.org/file.txt?u,v";
+	CPPUNIT_ASSERT(prune_spaces(test_server_ce) == test_server_ce);
+
+	string test_server_ce_spaces = "http://test.opendap.org/file.txt? u,v";
+	DBG(cerr << "Test Server CE Spaces: "
+	    << prune_spaces(test_server_ce_spaces) << endl);
+	CPPUNIT_ASSERT(prune_spaces(test_server_ce_spaces) == test_server_ce);
+
+	string hdf_two_var = "http://test.opendap.org/opendap/nph-dods/data/hdf/S3096277.HDF.Z?Avg_Wind_Speed[0:5][0],RMS_Wind_Speed[0:5][0]";
+	CPPUNIT_ASSERT(prune_spaces(hdf_two_var) == hdf_two_var);
+    }
+
     void path_to_filename_test() {
 	CPPUNIT_ASSERT(path_to_filename("/this/is/the/end/my.friend") == "my.friend");
 	CPPUNIT_ASSERT(path_to_filename("this.dat") == "this.dat");

@@ -51,9 +51,15 @@ class Grid;
     instances of those specializations. Make sure to pass a reference to the 
     new factory to DDS's constructor since by default it uses this factory.
     
+    To define and use your own factory, first make sure that you are not 
+    using the compile time constant 'DEFAULT_BASETYPE_FACTORY.' Then pass a
+    pointer to an instance of your factory to the DDS/DataDDS constructors.
+    When the parser is used to build a DDS from a DAP response, the factory
+    will be used to instantiate the different variable-type classes.  
+    
     @note The easiest way to subclass this is to follow the pattern of using
-    a separate class declaration and implementation (See BaseTypeFactory.h
-    and BaseTypeFactory.cc, resp.). It's possible to use one file to hold
+    a separate class declaration and implementation. It's possible to use one 
+    file to hold
     both, but that is complicated somewhat because DDS.h, which includes this
     class, also includes many of the type classes (Array.h, ..., Grid.h) and
     the order of their inclusion can create compilation problems where the
