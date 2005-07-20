@@ -101,7 +101,7 @@ DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v)
     _version_string_to_numbers();
 }
 
-#ifdef DEFAULT_BASETYPE_FACTORY
+// #ifdef DEFAULT_BASETYPE_FACTORY
 /** @brief Make an instance of DataDDS
     A DataDDS instance is a DDS with aditional information about the version
     of the server from which the data came. This version of the constructor
@@ -115,7 +115,7 @@ DataDDS::DataDDS(const string &n, const string &v)
 {
     _version_string_to_numbers();
 }
-#endif
+// #endif
 
 DataDDS::~DataDDS()
 {

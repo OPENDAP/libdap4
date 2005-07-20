@@ -164,6 +164,9 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
     See the <i>The DODS User Guide</i>, or the documentation of the
     BaseType class for descriptions of the DODS data types.
 
+    @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
+    caused more confusion than it avoided. See Trac #130.
+
     @note The compile-time symbol DEFAULT_BASETYPE_FACTORY controls whether
     the old (3.4 and earlier) DDS and DataDDS constructors are supported.
     These constructors now use a default factory class (BaseTypeFactory,
@@ -247,9 +250,9 @@ public:
     typedef std::vector<function>::iterator Functions_iter ;
 
     DDS(BaseTypeFactory *factory, const string &n = "");
-#ifdef DEFAULT_BASETYPE_FACTORY
+    // #ifdef DEFAULT_BASETYPE_FACTORY
     DDS(const string &n = "");
-#endif
+    // #endif
 
     DDS(const DDS &dds);
 

@@ -138,7 +138,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &n)
     add_function("grid", func_grid_select);
 }
 
-#ifdef DEFAULT_BASETYPE_FACTORY
+// #ifdef DEFAULT_BASETYPE_FACTORY
 /** Creates a DDS with the given string for its name. Uses the defaut
     BaseType Factory (which instantiates the Byte, ..., Grid classes defined
     here. 
@@ -151,7 +151,7 @@ DDS::DDS(const string &n) : d_factory(new BaseTypeFactory),
     add_function("length", func_length);
     add_function("grid", func_grid_select);
 }
-#endif
+// #endif
 
 /** The DDS copy constructor. */
 DDS::DDS(const DDS &rhs)

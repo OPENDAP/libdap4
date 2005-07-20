@@ -852,7 +852,7 @@ Connect::is_cache_enabled()
     return status;
 }
 
-#ifdef DEFAULT_BASETYPE_FACTORY
+// #ifdef DEFAULT_BASETYPE_FACTORY
 /** @name Remove these...
     All of these are deprecated and will be removed in a future version of
     this code. */
@@ -921,7 +921,7 @@ Connect::error()
     return _error;
 }
 //@}
-#endif
+// #endif
 
 // $Log: Connect.cc,v $
 // Revision 1.134  2005/04/07 22:32:47  jimg

@@ -49,6 +49,9 @@
     structure.  It is for use on the client side of the DODS
     connection. 
     
+    @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
+    caused more confusion than it avoided. See Trac #130.
+
     @note The compile-time symbol DEFAULT_BASETYPE_FACTORY controls whether
     the old (3.4 and earlier) DDS and DataDDS constructors are supported.
     These constructors now use a default factory class (BaseTypeFactory,
@@ -75,9 +78,9 @@ private:
 public:
     DataDDS(BaseTypeFactory *factory, const string &n = "",
 	    const string &v = "");
-#ifdef DEFAULT_BASETYPE_FACTORY
+    // #ifdef DEFAULT_BASETYPE_FACTORY
     DataDDS(const string &n = "", const string &v = "");
-#endif
+    // #endif
     virtual ~DataDDS();
 
     void set_version(const string &v);

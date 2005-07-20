@@ -112,6 +112,9 @@ using std::string;
     information about these features. See the DODSFilter class for
     information on servers that compress data.
 
+    @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
+    caused more confusion than it avoided. See Trac #130.
+
     @note The compile-time symbol DEFAULT_BASETYPE_FACTORY controls whether
     the old (3.4 and earlier) DDS and DataDDS constructors are supported.
     These constructors now use a default factory class (BaseTypeFactory,
@@ -137,11 +140,11 @@ private:
 
     HTTPConnect *d_http;
 
-#ifdef DEFAULT_BASETYPE_FACTORY
+    // #ifdef DEFAULT_BASETYPE_FACTORY
     // *** These are used by deprecated methods only!
     DAS _das;			// Dataset attribute structure
     DDS _dds;			// Dataset descriptor structure
-#endif
+    // #endif
 
     Error _error;		// Error object
 
@@ -223,7 +226,7 @@ public:
 	return 0;
     }
 
-#ifdef DEFAULT_BASETYPE_FACTORY
+    // #ifdef DEFAULT_BASETYPE_FACTORY
     bool request_dds(bool gui = false, const string &ext = "dds")
 	throw(Error, InternalErr) {
 	request_dds(_dds, "");
@@ -255,7 +258,7 @@ public:
     DAS &das();
     DDS &dds();
     Error &error();
-#endif
+    // #endif
 };
 
 /* 
