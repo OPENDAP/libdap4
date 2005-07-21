@@ -45,6 +45,7 @@ static char rcsid[] not_used = {"$Id: Error.cc,v 1.37 2005/04/18 17:05:44 pwest 
 #include "Error.h"
 #include "parser.h"
 #include "InternalErr.h"
+#include "debug.h"
 
 using namespace std;
 
@@ -153,13 +154,14 @@ bool
 Error::OK() const
 {
     // The object is empty - users cannot make these, but this class can!
-    bool empty = ((_error_code == undefined_error) 
-		  && (_error_message == ""));
+    bool empty = ((_error_code == undefined_error)
+		  && (_error_message.empty()));
 
     // Just a message - the program part is null.
     bool message = ((_error_code != undefined_error) 
-		    && (_error_message != ""));
+		    && (!_error_message.empty()));
 
+    DBG(cerr << "empty: " << empty << ", message: " << message << endl);
     return empty || message;
 }
 
@@ -279,7 +281,9 @@ Error::error_code(ErrorCode ec)
 	    && ec > undefined_error && ec <= cannot_read_file)
 	    _error_message = err_messages[ec - undefined_error - 1];
 
+#if 0
 	assert(OK());
+#endif
 	return _error_code;
     }
 }
@@ -304,22 +308,28 @@ Error::set_error_code(ErrorCode ec)
     _error_code = ec;
     // Added check to make sure that messages is not accessed beyond its
     // bounds. 02/02/04 jhrg
-    if (_error_message == ""
+    if (_error_message.empty()
 	&& ec > undefined_error && ec <= cannot_read_file)
 	_error_message = err_messages[ec - undefined_error - 1];
+#if 0
     assert(OK());
+#endif
 }
 
 /** @deprecated Use the set/get methods instead. */
 string
 Error::error_message(string msg)
 {
+#if 0
     assert(OK());
+#endif
     if (msg == "")
 	return string(_error_message);
     else {
 	_error_message = msg;
+#if 0
 	assert(OK());
+#endif
 	return string (_error_message);
     }
 }
@@ -338,7 +348,9 @@ void
 Error::set_error_message(string msg)
 {
     _error_message = msg;
+#if 0
     assert(OK());
+#endif
 }
 
 /** @deprecated Use get_error_message() instead. */
