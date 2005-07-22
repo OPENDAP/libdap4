@@ -4,7 +4,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -DDEFAULT_BASETYPE_FACTORY -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 AM_CXXFLAGS = -I$(top_srcdir)/GNU
 
 # These are not used by automake but are often useful for certain types of
