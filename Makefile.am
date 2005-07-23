@@ -4,6 +4,8 @@
 AUTOMAKE_OPTIONS = foreign check-news
 ACLOCAL_AMFLAGS = -I gl/m4
 
+aclocaldir=$(datadir)/aclocal
+
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl
 AM_CXXFLAGS = -I$(top_srcdir)/GNU
@@ -53,6 +55,8 @@ LEX_YACC_FILES = das.tab.h das.tab.cc lex.das.cc dds.tab.h dds.tab.cc \
 EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
 	win32 $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
+
+dist_aclocal_DATA = libdap.m4
 
 CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
 

@@ -1,8 +1,8 @@
 
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP.
-Version: 3.5.1
-Release: 5
+Version: 3.5.2
+Release: 2
 
 Source0: http://www.opendap.org/pub/3.5/source/%{name}-%{version}.tar.gz
 URL: http://www.opendap.org/
@@ -70,6 +70,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libdap.so
 %{_bindir}/dap-config
 %{_includedir}/libdap
+%{_datadir}/aclocal/*
 
 %changelog
 * Sat Jul  2 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-4
