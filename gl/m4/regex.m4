@@ -36,7 +36,7 @@ AC_DEFUN([gl_INCLUDED_REGEX],
     # test #75' in grep-2.3.
     AC_CACHE_CHECK([for working re_compile_pattern],
 		   [gl_cv_func_working_re_compile_pattern],
-      [AC_TRY_RUN(
+      [AC_RUN_IFELSE(AC_LANG_SOURCE(
 	 [[
 #include <stdio.h>
 #include <string.h>
@@ -100,19 +100,17 @@ AC_DEFUN([gl_INCLUDED_REGEX],
 
 	    exit (0);
 	  }
-	 ]],
+	 ]]),
 	 [gl_cv_func_working_re_compile_pattern=yes],
 	 [gl_cv_func_working_re_compile_pattern=no],
 	 dnl When crosscompiling, assume it is broken.
 	 [gl_cv_func_working_re_compile_pattern=no])])
+
     if test $gl_cv_func_working_re_compile_pattern = yes; then
       ac_use_included_regex=no
     fi
 
-    test -n "$1" || AC_MSG_ERROR([missing argument])
-    m4_syscmd([test -f '$1'])
-    ifelse(m4_sysval, 0,
-      [
+    if test -n "$1" || AC_MSG_ERROR([missing argument]); then
 	AC_ARG_WITH([included-regex],
 	  [  --without-included-regex don't compile regex; this is the default on
                           systems with recent-enough versions of the GNU C
@@ -123,8 +121,9 @@ AC_DEFUN([gl_INCLUDED_REGEX],
 	  AC_LIBOBJ([regex])
 	  gl_PREREQ_REGEX
 	fi
-      ],
-    )
+
+    fi
+
   ]
 )
 
