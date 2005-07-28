@@ -45,13 +45,18 @@
 # endif
 #endif
 
-#ifdef _LIBC
+/* Added '|| defined(__APPLE_CC__)' since Mac OS/X seems to define these in
+   libld.dylib. Removed, breaks regfree. jhrg 7/26/05 */
+#if defined(_LIBC) || defined(__APPLE_CC__)
 /* We have to keep the namespace clean.  */
 # define regfree(preg) __regfree (preg)
 # define regexec(pr, st, nm, pm, ef) __regexec (pr, st, nm, pm, ef)
 # define regcomp(preg, pattern, cflags) __regcomp (preg, pattern, cflags)
 # define regerror(errcode, preg, errbuf, errbuf_size) \
 	__regerror(errcode, preg, errbuf, errbuf_size)
+
+#if !defined(__APPLE_CC__)
+
 # define re_set_registers(bu, re, nu, st, en) \
 	__re_set_registers (bu, re, nu, st, en)
 # define re_match_2(bufp, string1, size1, string2, size2, pos, regs, stop) \
@@ -68,7 +73,10 @@
 # define re_compile_fastmap(bufp) __re_compile_fastmap (bufp)
 
 # include "../locale/localeinfo.h"
-#endif
+
+#endif /* !__APPLE_CC__ */
+
+#endif /* _LIBC || __APPLE_CC__ */
 
 /* POSIX says that <sys/types.h> must be included (by the caller) before
    <regex.h>.  */

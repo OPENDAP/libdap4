@@ -660,7 +660,7 @@ regfree (preg)
   re_free (preg->translate);
   preg->translate = NULL;
 }
-#ifdef _LIBC
+#if defined(_LIBC) /* || defined(__APPLE_CC__) jhrg 7/26/05*/
 weak_alias (__regfree, regfree)
 #endif
 

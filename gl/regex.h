@@ -553,8 +553,9 @@ extern int re_exec _RE_ARGS ((const char *));
 # endif
 #endif
 /* gcc 3.1 and up support the [restrict] syntax.  */
+/* __restrict_arr: Removed for osx build; fails on gcc 3.3; jhrg 7/24/05 */
 #ifndef __restrict_arr
-# if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
+# if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)) && !defined(__APPLE_CC__)
 #  define __restrict_arr __restrict
 # else
 #  define __restrict_arr
@@ -565,7 +566,6 @@ extern int re_exec _RE_ARGS ((const char *));
 extern int regcomp _RE_ARGS ((regex_t *__restrict __preg,
 			      const char *__restrict __pattern,
 			      int __cflags));
-
 extern int regexec _RE_ARGS ((const regex_t *__restrict __preg,
 			      const char *__restrict __string, size_t __nmatch,
 			      regmatch_t __pmatch[__restrict_arr],

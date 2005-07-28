@@ -117,8 +117,8 @@ dnl AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmo
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
 
-dnl Removed "timegm mktime" jhrg 7/11/05
-gl_MODULES(alloca stdbool malloc memcmp realloc strftime strtod atexit dup2 getpagesize memmove memset putenv setenv strerror strstr strtol strtoul regex error)
+dnl Removed "timegm mktime" jhrg 7/11/05 And "error" jhrg 7/28/05
+gl_MODULES(alloca stdbool malloc memcmp realloc strftime strtod atexit dup2 getpagesize memmove memset putenv setenv strerror strstr strtol strtoul regex)
 gl_INIT
 
 dnl I wrote these checks because we need the *-config scripts to build, so 

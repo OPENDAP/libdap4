@@ -110,7 +110,10 @@
 #  define __mempcpy mempcpy
 # endif
 # define __wcrtomb wcrtomb
+/* MAC OS/X 10.3 defines regfree in libdl.dylib. jhrg 7/28/05 */
+# ifndef __APPLE_CC__
 # define __regfree regfree
+# endif /* not __APPLE_CC__ */
 # define attribute_hidden
 #endif /* not _LIBC */
 
