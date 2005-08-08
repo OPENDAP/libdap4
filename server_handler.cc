@@ -32,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char not_used rcsid[]={"$Id: server_handler.cc,v 1.2 2003/12/08 18:02:31 edavis Exp $"};
+static char not_used rcsid[]={"$Id$"};
 
 #include <iostream>
 #include <string>

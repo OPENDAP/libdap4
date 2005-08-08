@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ={"$Id: DAS.cc,v 1.43 2004/07/07 21:08:47 jimg Exp $"};
+static char rcsid[] not_used ={"$Id$"};
 
 #ifdef __GNUG__
 // #pragma implementation

@@ -3,7 +3,7 @@
 # various servers (hdf, dsp, netcdf, matlab, ...) on serveral different
 # platforms. 
 # 
-# $Id: unix.exp,v 1.4 2004/02/19 19:42:54 jimg Exp $
+# $Id$
 
 # Make sure the global var GETURL is set correctly.
 

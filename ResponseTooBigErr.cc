@@ -29,7 +29,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ResponseTooBigErr.cc,v 1.7 2004/07/07 21:08:48 jimg Exp $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include <string>
 
@@ -54,7 +54,7 @@ ResponseTooBigErr::ResponseTooBigErr(const string &msg) : Error()
 // Merged with release-3-4-8FCS
 //
 // Revision 1.5.2.1  2004/03/04 19:53:03  jimg
-// Fixed $Id --> $Id: ResponseTooBigErr.cc,v 1.7 2004/07/07 21:08:48 jimg Exp $
+// Fixed $Id --> $Id$
 //
 // Revision 1.6  2003/12/08 18:02:29  edavis
 // Merge release-3-4 into trunk

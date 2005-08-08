@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: gse-test.cc,v 1.10 2003/12/08 18:02:31 edavis Exp $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,7 +75,7 @@ void *gse_string(const char *yy_str);
 extern int gse_debug;
 
 
-const string version = "$Revision: 1.10 $";
+const string version = "$Revision$";
 const string prompt = "gse-test: ";
 const string options = "sS:p:dv";
 const string usage = "gse-test [-s [-S string] -d -v [-p dds file]\n\

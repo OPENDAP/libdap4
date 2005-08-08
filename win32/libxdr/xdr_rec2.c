@@ -40,7 +40,7 @@
  *
   */
 
-static char rcsid[]={"$Id: xdr_rec2.c,v 1.2 2003/01/10 19:46:44 jimg Exp $"};
+static char rcsid[]={"$Id$"};
 
 #include <stdio.h>
 #include <xdr.h>

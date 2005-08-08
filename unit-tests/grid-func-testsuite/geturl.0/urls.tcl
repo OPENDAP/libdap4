@@ -1,5 +1,5 @@
 
-# $Id: urls.tcl,v 1.2 2003/01/22 01:07:08 jimg Exp $
+# $Id$
 
 # Datasets and their expected output (the information that writeval sends to
 # stdout - not the stuff that should be going into the file).

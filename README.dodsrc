@@ -1,4 +1,4 @@
-$Id: README.dodsrc,v 1.5 2005/05/06 18:33:54 jimg Exp $
+$Id$
 
 The DODS client-side configuration file (.dodsrc) is used to configure how
 clients cache responses and how they interact with proxy servers. By default

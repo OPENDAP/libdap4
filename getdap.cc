@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: getdap.cc,v 1.74 2005/03/30 22:02:21 jimg Exp $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include <stdio.h>
 #ifdef WIN32
@@ -51,7 +51,7 @@ static char rcsid[] not_used = {"$Id: getdap.cc,v 1.74 2005/03/30 22:02:21 jimg 
 using std::cerr;
 using std::endl;
 
-const char *version = "$Revision: 1.74 $";
+const char *version = "$Revision$";
 
 extern int dods_keep_temps;	// defined in HTTPResponse.h
 

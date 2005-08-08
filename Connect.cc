@@ -40,7 +40,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: Connect.cc,v 1.134 2005/04/07 22:32:47 jimg Exp $" };
+    { "$Id$" };
 
 #include <stdio.h>
 #ifndef WIN32

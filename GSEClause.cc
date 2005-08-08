@@ -37,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char id[] not_used = {"$Id: GSEClause.cc,v 1.17 2004/07/07 21:08:47 jimg Exp $"};
+static char id[] not_used = {"$Id$"};
 
 #include <iostream>
 #include <sstream>

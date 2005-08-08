@@ -32,7 +32,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: SignalHandler.cc,v 1.6 2005/04/21 17:48:59 jimg Exp $" };
+    { "$Id$" };
 
 #include <signal.h>
 

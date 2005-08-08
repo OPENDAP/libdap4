@@ -18,7 +18,7 @@
 # 4. Macros for locating various systems (Matlab, etc.)
 # 5. Macros used to test things about the computer/OS/hardware
 #
-# $Id: acinclude.m4,v 1.3 2005/04/22 23:31:40 jimg Exp $
+# $Id$
 
 # 1. Unidata's macros
 #-------------------------------------------------------------------------

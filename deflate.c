@@ -17,7 +17,7 @@
   Modified: Added the -s (silent) option to suppress diagnostic messages.
 */
 
-const char *rcsid={"$Id: deflate.c,v 1.8 2003/12/08 18:02:30 edavis Exp $"};
+const char *rcsid={"$Id$"};
 
 #include "stdlib.h"
 #include "string.h"

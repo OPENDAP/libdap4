@@ -35,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: error-test.cc,v 1.14 2003/12/08 18:02:30 edavis Exp $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include <assert.h>
 

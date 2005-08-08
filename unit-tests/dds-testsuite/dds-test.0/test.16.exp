@@ -2,7 +2,7 @@
 # expect/tcl code to test the dds parser and scanner
 # jhrg
 #
-# $Id: test.16.exp,v 1.2 2000/10/03 22:18:04 jimg Exp $
+# $Id$
 
 global comp_output		# contains output from dds-test_start
 global verbose			# this and srcdir are set by runtest.exp

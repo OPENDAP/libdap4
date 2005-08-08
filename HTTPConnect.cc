@@ -30,7 +30,7 @@
 #include "config_dap.h"
 
 static char rcsid[] not_used =
-    { "$Id: HTTPConnect.cc,v 1.22 2005/04/21 17:51:34 jimg Exp $" };
+    { "$Id$" };
 
 #include <stdio.h>
 

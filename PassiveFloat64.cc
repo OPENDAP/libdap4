@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: PassiveFloat64.cc,v 1.1 2004/07/09 16:34:38 pwest Exp $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include "PassiveFloat64.h"
 #include "debug.h"

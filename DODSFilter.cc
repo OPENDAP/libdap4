@@ -39,7 +39,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: DODSFilter.cc,v 1.50 2005/04/07 22:32:47 jimg Exp $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include <signal.h>
 

@@ -36,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used = {"$Id: ce_functions.cc,v 1.19 2005/03/30 21:32:25 jimg Exp $"};
+static char rcsid[] not_used = {"$Id$"};
 
 #include <iostream>
 #include <vector>
