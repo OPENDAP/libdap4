@@ -208,6 +208,7 @@ main(int argc, char *argv[])
 
     if (!scanner_test && !parser_test && !evaluate_test	&& !whole_enchalada) {
 	fprintf( stderr, "%s\n", usage.c_str() ) ;
+	delete ttf; ttf = 0;
 	exit(1);
     }
 
@@ -218,6 +219,8 @@ main(int argc, char *argv[])
 	    test_scanner(constraint);
 	else
 	    test_scanner(true);
+
+	delete ttf; ttf = 0;
 	exit(0);
     }
 
@@ -233,6 +236,8 @@ main(int argc, char *argv[])
 	constrained_trans(dds_file_name, constraint_expr, constraint, series_values);
     }
 
+    delete ttf; ttf = 0;
+    
 #ifdef WIN32
 	exit(0); //  DejaGnu/Cygwin based test suite requires this.
 	return;  //  Visual C++ requests this.
@@ -548,6 +553,7 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     status = loopback_pipe(&pout, &pin);
     if (!status) {
 	fprintf( stderr, "Could not create the loopback streams\n" ) ;
+	delete ttf; ttf = 0;
 	return false;
     }
 
@@ -559,6 +565,7 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	cin.getline(c, 256);
 	if (!cin) {
 	    fprintf( stderr, "Could nore read the constraint expression\n" ) ;
+	    delete ttf; ttf = 0;
 	    exit(1);
 	}
 	ce = c;
@@ -581,12 +588,14 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	// techniques. 4/6/2000 jhrg
 	if (!server.send(dataset, ce, pout, false)) {
 	    fprintf( stderr, "Could not send the DDS\n" ) ;
+	    delete ttf; ttf = 0;
 	    return false;
 	}
     }
     catch(Error &e) {
 	e.display_message();
 	fclose(pout);
+	delete ttf; ttf = 0;
 	return false;
     }
 
@@ -624,10 +633,12 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     }
     catch (Error &e) {
 	delete factory; factory = 0;
+	delete ttf; ttf = 0;
 	e.display_message();
 	return false;
     }
 	
+    delete ttf; ttf = 0;
     delete factory; factory = 0;
     return true;
 }
