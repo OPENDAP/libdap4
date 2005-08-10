@@ -1160,7 +1160,11 @@ HTTPCache::set_max_size(unsigned long size)
     try {
 	unsigned long new_size = size < MIN_CACHE_TOTAL_SIZE ?
 	    MIN_CACHE_TOTAL_SIZE*MEGA : 
-	    (size > UINT_MAX || size < 0 ? UINT_MAX : size * MEGA);
+            (size > ULONG_MAX ? ULONG_MAX : size * MEGA);
+#if 0
+            // original code. UINT --> ULONG; Removed size < 0
+            (size > UINT_MAX || size < 0 ? UINT_MAX : size * MEGA);
+#endif
 	unsigned long old_size = d_total_size;
 	d_total_size = new_size;
 	d_folder_size = d_total_size/CACHE_FOLDER_PCT;
