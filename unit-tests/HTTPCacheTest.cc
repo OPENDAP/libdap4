@@ -35,7 +35,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#define DODS_DEBUG 1
+// #define DODS_DEBUG 1
 
 #include "HTTPCache.h"
 #include "HTTPConnect.h"	// Used to generate a response to cache.
