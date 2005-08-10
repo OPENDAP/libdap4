@@ -5,11 +5,11 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)
-AM_CXXFLAGS = -I$(top_srcdir)/GNU -Wall -W -Wcast-align
+AM_CXXFLAGS = -I$(top_srcdir)/GNU 
 
 # These are not used by automake but are often useful for certain types of
 # debugging. 
-CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-defer-pop
+CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 check_PROGRAMS = $(DEJAGNU_TESTS)

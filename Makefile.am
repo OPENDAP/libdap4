@@ -8,7 +8,7 @@ aclocaldir=$(datadir)/aclocal
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl
-AM_CXXFLAGS = -I$(top_srcdir)/GNU -Wall -W -Wcast-align $(CXXDEBUG_FLAGS)
+AM_CXXFLAGS = -I$(top_srcdir)/GNU
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 
@@ -16,7 +16,7 @@ AM_LFLAGS = -8
 # debugging. The best way to use these is to run configure as:
 #     export CXXFLAGS='...'; ./configure --disable-shared
 # the --disable-shared is not required, but it seems to help with debuggers.
-CXXFLAGS_DEBUG = -g3 -O0 -Wall -fno-defer-pop
+CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 SUBDIRS = gl . tests 
