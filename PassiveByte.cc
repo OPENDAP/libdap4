@@ -101,7 +101,7 @@ PassiveByte::operator=(const PassiveByte &rhs)
 }
 
 bool
-PassiveByte::read( const string &dataset )
+PassiveByte::read( const string & )
 {
     if( !read_p() )
     {

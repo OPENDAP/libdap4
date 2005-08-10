@@ -75,7 +75,7 @@ Array::_duplicate(const Array &a)
     not change the actual size of the array.
 */
 void
-Array::update_length(int size)
+Array::update_length(int)
 {
     int length = 1;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++)

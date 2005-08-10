@@ -69,7 +69,10 @@ static char rcsid[] not_used = {"$Id$"};
     result = (feof(yyin) || strcmp(buf, "Data:\n") == 0) \
              ? YY_NULL : strlen(buf); \
 }
-#define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
+#define YY_FATAL_ERROR(msg) {\
+    throw(Error(string("Error scanning DDS object text: ") + string(msg))); \
+    yy_fatal_error(msg); /* 'Used' here to suppres warning */ \
+}
 
 int dds_line_num = 1;
 

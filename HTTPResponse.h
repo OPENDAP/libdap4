@@ -56,7 +56,7 @@ protected:
     /** @name Suppressed default methods */
     //@{
     HTTPResponse() {}
-    HTTPResponse(const HTTPResponse &rs) {}
+    HTTPResponse(const HTTPResponse &rs) : Response(rs) {}
     HTTPResponse &operator=(const HTTPResponse &rhs) {
 	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }

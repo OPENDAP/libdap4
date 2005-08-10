@@ -476,20 +476,19 @@ public:
 
     void operator()(HTTPCache::CacheEntry *e) {
 	if (e && fprintf(d_fp, 
-			 "%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n",
+			 "%s %s %s %ld %ld %ud %c %d %d %ld %ld %ld %c\r\n",
 			 e->url.c_str(),
 			 e->cachename.c_str(),
-			 e->etag == "" ? CACHE_EMPTY_ETAG 
-			 : e->etag.c_str(),
-			 (long) (e->lm),
-			 (long) (e->expires),
+			 e->etag == "" ? CACHE_EMPTY_ETAG : e->etag.c_str(),
+			 e->lm,
+			 e->expires,
 			 e->size,
 			 e->range ? '1' : '0', // not used. 10/02/02 jhrg 
 			 e->hash,
 			 e->hits,
-			 (long) (e->freshness_lifetime),
-			 (long) (e->response_time),
-			 (long) (e->corrected_initial_age),
+			 e->freshness_lifetime,
+			 e->response_time,
+			 e->corrected_initial_age,
 			 e->must_revalidate ? '1' : '0') < 0)
 	    throw Error("Cache Index. Error writing cache index\n");
     }
@@ -1153,10 +1152,12 @@ HTTPCache::is_expire_ignored() const
 
     This method locks the class' interface. 
 
+    @todo size is compared to UINT_MAX; should be ULONG_MAX.
+
     @param size The maximum size of the cache in megabytes. */
 
 void
-HTTPCache::set_max_size(unsigned long size)
+HTTPCache::set_max_size(unsigned int size)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -1164,7 +1165,7 @@ HTTPCache::set_max_size(unsigned long size)
     try {
 	unsigned long new_size = size < MIN_CACHE_TOTAL_SIZE ?
 	    MIN_CACHE_TOTAL_SIZE*MEGA : 
-	    (size > UINT_MAX || size < 0 ? UINT_MAX : size * MEGA);
+	    (size > UINT_MAX /* || size < 0 */ ? UINT_MAX : size * MEGA);
 	unsigned long old_size = d_total_size;
 	d_total_size = new_size;
 	d_folder_size = d_total_size/CACHE_FOLDER_PCT;
@@ -1192,7 +1193,7 @@ HTTPCache::set_max_size(unsigned long size)
 
 /** How big is the cache? The value returned is the size in megabytes. */
 
-unsigned long
+unsigned int
 HTTPCache::get_max_size() const
 {
     return d_total_size / MEGA;
@@ -1207,7 +1208,7 @@ HTTPCache::get_max_size() const
     @param size The size in megabytes. */
 
 void
-HTTPCache::set_max_entry_size(unsigned long size)
+HTTPCache::set_max_entry_size(unsigned int size)
 {
     DBG(cerr << "Locking interface... ");
     LOCK(&d_cache_mutex);
@@ -1240,7 +1241,7 @@ HTTPCache::set_max_entry_size(unsigned long size)
 
     @return The maximum size in megabytes. */
 
-unsigned long
+unsigned int
 HTTPCache::get_max_entry_size() const
 {
     return d_max_entry_size / MEGA;

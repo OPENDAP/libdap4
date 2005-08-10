@@ -209,7 +209,7 @@ save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
 
 /** A libcurl callback for debugging protocol issues. */
 static int
-curl_debug(CURL *curl, curl_infotype info, char *msg, size_t size, void  *data)
+curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
 {
     string message(msg, size);
 

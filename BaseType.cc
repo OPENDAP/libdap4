@@ -556,7 +556,7 @@ BaseType::get_parent()
     given, the function returns the first (only) variable.  For example, an
     Array has only one variable, while a Structure can have many. */
 BaseType *
-BaseType::var(const string &n, bool exact, btp_stack *s)
+BaseType::var(const string &, bool, btp_stack *)
 {
     return static_cast<BaseType *>(0);
 }
@@ -687,7 +687,7 @@ BaseType::add_var(BaseType *, Part)
     @see BaseType
     @see Sequence  */
 bool 
-BaseType::read(const string &dataset)
+BaseType::read(const string &)
 {
     throw InternalErr("Unimplemented BaseType::read() method called.");
 }

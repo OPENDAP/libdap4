@@ -55,7 +55,10 @@ static char rcsid[] not_used = {"$Id$"};
 #define ID_MAX 256
 #define YY_NO_UNPUT 1
 #define YY_NO_INPUT 1
-#define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
+#define YY_FATAL_ERROR(msg) {\
+    throw(Error(string("Error scanning grid constraint expression text: ") + string(msg))); \
+    yy_fatal_error(msg); /* 'Used' here to suppres warning */ \
+}
 
 #include "gse.tab.h"
 

@@ -54,8 +54,8 @@ private:
     string d_cache_root;
 
     bool _dods_use_cache;	// 0- Disabled 1- Enabled
-    unsigned long _dods_cache_max; // Max cache size in Mbytes
-    unsigned long _dods_cached_obj; // Max cache entry size in Mbytes
+    unsigned int _dods_cache_max; // Max cache size in Mbytes
+    unsigned int _dods_cached_obj; // Max cache entry size in Mbytes
     int _dods_ign_expires;	// 0- Honor expires 1- Ignore them
   
     // NB: NEVER_DEFLATE: I added this (12/1/99 jhrg) because libwww 5.2.9
@@ -78,7 +78,7 @@ private:
     // flags for PROXY_SERVER=<protocol>,<host url>
     string d_dods_proxy_server_protocol;
     string d_dods_proxy_server_host;
-    long d_dods_proxy_server_port;
+    int d_dods_proxy_server_port;
     string d_dods_proxy_server_userpw;
 
     string _dods_proxy_server_host_url;	// deprecated
@@ -126,7 +126,7 @@ public:
     const string get_dods_cache_root() {return d_cache_root;}
     const bool get_use_cache() throw()      {return _dods_use_cache;}
     const int get_max_cache_size()  throw()  {return _dods_cache_max;}
-    const unsigned long get_max_cached_obj() throw()   {return _dods_cached_obj;}
+    const unsigned int get_max_cached_obj() throw() {return _dods_cached_obj;}
     const int get_ignore_expires() throw()  {return _dods_ign_expires;}
     const int get_default_expires() throw() {return _dods_default_expires;}
     const int get_always_validate() throw() {return _dods_always_validate;}
@@ -138,7 +138,7 @@ public:
     /// Get the proxy host
     const string get_proxy_server_host() throw() {return d_dods_proxy_server_host;}
     /// Get the proxy port
-    const long get_proxy_server_port() throw() {return d_dods_proxy_server_port;}
+    const int get_proxy_server_port() throw() {return d_dods_proxy_server_port;}
     /// Get the proxy username and password
     const string get_proxy_server_userpw() throw() {return d_dods_proxy_server_userpw;}
     /// @deprecated
@@ -190,7 +190,7 @@ public:
 
     void set_proxy_server_protocol(const string &s) throw() {d_dods_proxy_server_protocol=s;}
     void set_proxy_server_host(const string &s) throw() {d_dods_proxy_server_host=s;}
-    void set_proxy_server_port(long l) throw() {d_dods_proxy_server_port=l;}
+    void set_proxy_server_port(int l) throw() {d_dods_proxy_server_port=l;}
     void set_proxy_server_userpw(const string &s) throw() {d_dods_proxy_server_userpw=s;}
 
     /// @deprecated

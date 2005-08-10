@@ -163,13 +163,6 @@ typedef union YYSTYPE {
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
-# ifndef YYFREE
-#  define YYFREE free
-# endif
-# ifndef YYMALLOC
-#  define YYMALLOC malloc
-# endif
-
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
 # ifdef YYSTACK_USE_ALLOCA
@@ -194,8 +187,8 @@ typedef union YYSTYPE {
 #   include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
 #   define YYSIZE_T size_t
 #  endif
-#  define YYSTACK_ALLOC YYMALLOC
-#  define YYSTACK_FREE YYFREE
+#  define YYSTACK_ALLOC malloc
+#  define YYSTACK_FREE free
 # endif
 #endif /* ! defined (yyoverflow) || YYERROR_VERBOSE */
 
@@ -1070,8 +1063,8 @@ yyreduce:
 
     }
 
-/* Line 1000 of yacc.c.  */
-#line 1075 "gse.tab.c"
+/* Line 993 of yacc.c.  */
+#line 1068 "gse.tab.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1300,7 +1293,7 @@ yyreturn:
 
 
 void
-gse_error(const char *str)
+gse_error(const char *)
 {
     throw Error(
 "An expression passed to the grid() function could not be parsed.\n\

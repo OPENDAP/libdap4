@@ -68,12 +68,12 @@ GSEClause::GSEClause()
   throw InternalErr(__FILE__, __LINE__, "default ctor called for GSEClause");
 }
 
-GSEClause::GSEClause(const GSEClause &param)
+GSEClause::GSEClause(const GSEClause &)
 {
   throw InternalErr(__FILE__, __LINE__, "copy ctor called for GSEClause");
 }
 
-GSEClause &GSEClause::operator=(GSEClause &rhs)
+GSEClause &GSEClause::operator=(GSEClause &)
 {
   throw InternalErr(__FILE__, __LINE__, "assigment called for GSEClause");
 }
@@ -278,12 +278,12 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
 }
 
 /** @brief Create an instance using a grid and an expression. */
-GSEClause::GSEClause(Grid *grid, const string &expr)
+GSEClause::GSEClause(Grid *, const string &)
 {
 }
 
 /** @brief Create an instance using a grid and an expression. */
-GSEClause::GSEClause(Grid *grid, char *expr)
+GSEClause::GSEClause(Grid *, char *)
 {
 }
 

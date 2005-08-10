@@ -56,7 +56,7 @@ using namespace std;
 // Private member functions
 
 void
-Constructor::_duplicate(const Constructor &s)
+Constructor::_duplicate(const Constructor &)
 {
 }
 

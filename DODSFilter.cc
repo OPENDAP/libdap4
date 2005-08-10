@@ -828,9 +828,11 @@ DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location)
     send_dds(stdout, dds, constrained, anc_location);
 }
 
+// 'lmt' unused. Should it be used to supply a LMT or removed from the
+// method? jhrg 8/9/05
 void
 DODSFilter::functional_constraint(BaseType &var, DDS &dds, FILE *out,
-				  time_t lmt) throw(Error)
+				  time_t /* lmt */) throw(Error)
 {
     fprintf(out, "Dataset {\n");
     var.print_decl(out, "    ", true, false, true);
@@ -854,7 +856,8 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds, FILE *out,
 }
 
 void
-DODSFilter::dataset_constraint(DDS &dds, FILE *out, time_t lmt) throw(Error)
+DODSFilter::dataset_constraint(DDS &dds, FILE *out, time_t /* lmt */) 
+    throw(Error)
 {
     // send constrained DDS	    
     dds.print_constrained(out);

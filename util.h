@@ -155,12 +155,12 @@ void downcase(string &s);
 /** Fast, safe conversions from long to a character representation which gets
    appended to a string. This method will take a long value 'val' and it will
    recursively divide it by 'base' in order to "extract" one by one the
-   digits which compose it; these digits will be <i>appended</i> to the string
-   <tt>str_val</tt> which will become the textual representation of 'val'. Please
-   notice that the digits ``extracted'' from `val' will vary depending on the
-   base chosen for the conversion; for example val=15 converted to base 10
-   will yield the digits (1,5), converted to base 16 will yield (F) and
-   converted to base 2 will yield (1,1,1,1).
+   digits which compose it; these digits will be <i>appended</i> to the
+   string <tt>str_val</tt> which will become the textual representation of
+   'val'. Please notice that the digits ``extracted'' from `val' will vary
+   depending on the base chosen for the conversion; for example val=15
+   converted to base 10 will yield the digits (1,5), converted to base 16
+   will yield (F) and converted to base 2 will yield (1,1,1,1).
 
    @param val The long value we which to convert to string.
 

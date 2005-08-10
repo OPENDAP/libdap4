@@ -790,7 +790,7 @@ DDXParser::characters(DDXParser *parser, const xmlChar *ch, int len)
     @param parser The SAX parser  
     @param name The XML entity. */
 xmlEntityPtr
-DDXParser::ddx_get_entity(DDXParser *parser, const xmlChar *name) 
+DDXParser::ddx_get_entity(DDXParser *, const xmlChar *name) 
 {
     return xmlGetPredefinedEntity(name);
 }
@@ -847,7 +847,11 @@ static xmlSAXHandler ddx_sax_parser = {
     0, // (commentSAXFunc)gladeComment,  comment 
     (warningSAXFunc)DDXParser::ddx_fatal_error, // warning 
     (errorSAXFunc)DDXParser::ddx_fatal_error, // error 
-    (fatalErrorSAXFunc)DDXParser::ddx_fatal_error // fatalError 
+    (fatalErrorSAXFunc)DDXParser::ddx_fatal_error, // fatalError
+    0, // getParameterEntity
+    0, // cdataBlock
+    0, // externalSubset
+    0 // initialized
 };
 
 /** Parse a DDX document stored in a file. The XML in the doucument is parsed

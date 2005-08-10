@@ -8,7 +8,7 @@ aclocaldir=$(datadir)/aclocal
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)/gl
-AM_CXXFLAGS = -I$(top_srcdir)/GNU
+AM_CXXFLAGS = -I$(top_srcdir)/GNU -Wall -W -Wcast-align $(CXXDEBUG_FLAGS)
 AM_YFLAGS = -d -v
 AM_LFLAGS = -8
 

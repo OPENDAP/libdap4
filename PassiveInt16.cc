@@ -94,7 +94,7 @@ PassiveInt16::operator=(const PassiveInt16 &rhs)
 }
 
 bool
-PassiveInt16::read( const string &dataset )
+PassiveInt16::read( const string & )
 {
     if( !read_p() )
     {

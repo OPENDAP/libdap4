@@ -280,7 +280,7 @@ Connect::Connect(const string &n, string uname, string password)
     default. 
     @param uname Use this username for authentication. Null by default.
     @param password Passwrod to use for authentication. Null by default. */
-Connect::Connect(const string &n, bool www_verbose_errors, 
+Connect::Connect(const string &n, bool /* www_verbose_errors; unused */, 
 		 bool accept_deflate, string uname, string password) 
     throw (Error, InternalErr)
     : d_http(0), d_version("unknown")

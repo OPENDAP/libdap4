@@ -111,7 +111,7 @@ PassiveArray::operator=(const PassiveArray &rhs)
 }
 
 bool
-PassiveArray::read( const string &dataset )
+PassiveArray::read( const string & )
 {
     if( !read_p() )
     {

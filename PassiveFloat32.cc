@@ -92,7 +92,7 @@ PassiveFloat32::operator=(const PassiveFloat32 &rhs)
 }
 
 bool
-PassiveFloat32::read( const string &dataset )
+PassiveFloat32::read( const string & )
 {
     if( !read_p() )
     {

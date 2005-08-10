@@ -64,7 +64,7 @@ typedef union YYSTYPE {
     char id[ID_MAX];
     double val;
 } YYSTYPE;
-/* Line 1275 of yacc.c.  */
+/* Line 1268 of yacc.c.  */
 #line 69 "gse.tab.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

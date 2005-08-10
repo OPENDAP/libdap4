@@ -56,7 +56,10 @@ static char rcsid[] not_used = {"$Id$"};
 #include <string>
 
 #define YY_DECL int exprlex YY_PROTO(( void ))
-#define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
+#define YY_FATAL_ERROR(msg) {\
+    throw(Error(string("Error scanning constraint expression text: ") + string(msg))); \
+    yy_fatal_error(msg); /* 'Used' here to suppres warning */ \
+}
 
 #include "Error.h"
 #include "parser.h"

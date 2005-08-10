@@ -133,7 +133,7 @@ relop:		SCAN_EQUAL
 %%
 
 void
-gse_error(const char *str)
+gse_error(const char *)
 {
     throw Error(
 "An expression passed to the grid() function could not be parsed.\n\

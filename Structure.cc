@@ -574,7 +574,7 @@ Structure::print_val(FILE *out, string space, bool print_decl_p)
     @see Sequence::print_all_vals
 */
 void
-Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool print_decl_p)
+Structure::print_all_vals(ostream &os, XDR *, DDS *, string space, bool print_decl_p)
 {
     print_val(os, space, print_decl_p);
 
@@ -628,7 +628,7 @@ Structure::print_all_vals(ostream &os, XDR *src, DDS *dds, string space, bool pr
 // No longer a problem as Sequences are now read in full. 05/16/03 jhrg
 
 void
-Structure::print_all_vals(FILE *out, XDR *src, DDS *dds, string space, bool print_decl_p)
+Structure::print_all_vals(FILE *out, XDR *, DDS *, string space, bool print_decl_p)
 {
     print_val(out, space, print_decl_p);
 

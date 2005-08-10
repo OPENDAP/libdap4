@@ -61,7 +61,7 @@ template<class T1, class T2> class Cmp {
     static bool ge(T1 v1, T2 v2) {return v1 >= v2;}
     static bool lt(T1 v1, T2 v2) {return v1 < v2;}
     static bool le(T1 v1, T2 v2) {return v1 <= v2;}
-    static bool re(T1 v1, T2 v2) {
+    static bool re(T1, T2) {
 	cerr << "Illegal operation" << endl;
 	return false;
     }
@@ -85,7 +85,7 @@ template<class UT1, class T2> class USCmp {
 	return v1 < dods_max(0, v2);
     }
     static bool le(UT1 v1, T2 v2) {return v1 <= dods_max(0, v2);}
-    static bool re(UT1 v1, T2 v2) {
+    static bool re(UT1, T2) {
 	cerr << "Illegal operation" << endl;
 	return false;
     }
@@ -111,7 +111,7 @@ template<class T1, class UT2> class SUCmp {
     static bool ge(T1 v1, UT2 v2) {return dods_max(0, v1) >= v2;}
     static bool lt(T1 v1, UT2 v2) {return dods_max(0, v1) < v2;}
     static bool le(T1 v1, UT2 v2) {return dods_max(0, v1) <= v2;}
-    static bool re(T1 v1, UT2 v2) {
+    static bool re(T1, UT2) {
 	cerr << "Illegal operation" << endl;
 	return false;
     }

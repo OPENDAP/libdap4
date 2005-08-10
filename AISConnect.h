@@ -47,7 +47,7 @@ protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
     AISConnect() {}
-    AISConnect(const AISConnect &ac) {}
+    AISConnect(const AISConnect &ac) : Connect(ac) {}
     //@}
 
 public:

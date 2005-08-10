@@ -46,7 +46,7 @@ protected:
     /** @name Suppressed default methods */
     //@{
     HTTPCacheResponse() {}
-    HTTPCacheResponse(const HTTPCacheResponse &rs) {}
+    HTTPCacheResponse(const HTTPCacheResponse &rs) : HTTPResponse(rs) {}
     HTTPCacheResponse &operator=(const HTTPCacheResponse &rhs) {
 	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }

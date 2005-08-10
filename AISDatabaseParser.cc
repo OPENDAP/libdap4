@@ -209,7 +209,7 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
     @param state The SAX parser state. 
     @param name The name of the element; used only for code instrumentation. */
 void 
-AISDatabaseParser::aisEndElement(AISParserState *state, const char *name) 
+AISDatabaseParser::aisEndElement(AISParserState *state, const char *) 
 {
     DBG2(cerr << "End element " << name << " (state " << states[state->state] 
 	 << ")" << endl);
@@ -261,7 +261,7 @@ AISDatabaseParser::aisEndElement(AISParserState *state, const char *name)
     @param state The SAX parser state. 
     @param name The XML entity. */
 xmlEntityPtr
-AISDatabaseParser::aisGetEntity(AISParserState *state, const xmlChar *name) 
+AISDatabaseParser::aisGetEntity(AISParserState *, const xmlChar *name) 
 {
     return xmlGetPredefinedEntity(name);
 }
@@ -356,7 +356,11 @@ static xmlSAXHandler aisSAXParser = {
     0, // (commentSAXFunc)gladeComment,  comment 
     (warningSAXFunc)AISDatabaseParser::aisWarning, // warning 
     (errorSAXFunc)AISDatabaseParser::aisError, // error 
-    (fatalErrorSAXFunc)AISDatabaseParser::aisFatalError // fatalError 
+    (fatalErrorSAXFunc)AISDatabaseParser::aisFatalError, // fatalError
+    0, // getParameterEntity
+    0, // cdataBlock
+    0, // externalSubset
+    0 // initialized
 };
 
 /** Parse an AIS database encoded in XML. The information in the XML document

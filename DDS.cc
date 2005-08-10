@@ -154,7 +154,7 @@ DDS::DDS(const string &n) : d_factory(new BaseTypeFactory),
 // #endif
 
 /** The DDS copy constructor. */
-DDS::DDS(const DDS &rhs)
+DDS::DDS(const DDS &rhs) : DODSResponseObject(rhs)
 {
     duplicate(rhs);
 }
@@ -1392,7 +1392,7 @@ DDS::parse_constraint(const string &constraint)
     @param server If true, send errors back to client instead of
     displaying errors on the default output stream. */ 
 void
-DDS::parse_constraint(const string &constraint, ostream &os, bool server)
+DDS::parse_constraint(const string &constraint, ostream &, bool)
 {
     void *buffer = expr_string(constraint.c_str());
     expr_switch_to_buffer(buffer);
@@ -1423,7 +1423,7 @@ DDS::parse_constraint(const string &constraint, ostream &os, bool server)
     displaying errors on the default output stream. 
 */
 void
-DDS::parse_constraint(const string &constraint, FILE *out, bool server)
+DDS::parse_constraint(const string &constraint, FILE *, bool)
 {
     void *buffer = expr_string( constraint.c_str( ) ) ;
     expr_switch_to_buffer( buffer ) ;

@@ -72,7 +72,10 @@ static char rcsid[] not_used ={"$Id$"};
 /* These defines must precede the das.tab.h include. */
 #define YYSTYPE char *
 #define YY_DECL int daslex YY_PROTO(( void ))
-#define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
+#define YY_FATAL_ERROR(msg) {\
+    throw(Error(string("Error scanning DAS object text: ") + string(msg))); \
+    yy_fatal_error(msg); /* 'Used' here to suppres warning */ \
+}
 
 #include "das.tab.h"
 

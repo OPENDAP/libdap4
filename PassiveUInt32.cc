@@ -94,7 +94,7 @@ PassiveUInt32::operator=(const PassiveUInt32 &rhs)
 }
 
 bool
-PassiveUInt32::read( const string &dataset )
+PassiveUInt32::read( const string & )
 {
     if( !read_p() )
     {

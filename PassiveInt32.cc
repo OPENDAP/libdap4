@@ -94,7 +94,7 @@ PassiveInt32::operator=(const PassiveInt32 &rhs)
 }
 
 bool
-PassiveInt32::read( const string &dataset )
+PassiveInt32::read( const string & )
 {
     if( !read_p() )
     {

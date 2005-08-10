@@ -91,13 +91,13 @@ int exprlex(void);		/* the scanner; see expr.lex */
 
 void exprerror(const char *s);	/* easier to overload than to use stdarg... */
 void exprerror(const char *s, const char *s2);
-void no_such_func(void *arg, char *name);
-void no_such_ident(void *arg, char *name, char *word);
+void no_such_func(char *name);
+void no_such_ident(char *name, char *word);
 
 void exprerror(const string &s); 
 void exprerror(const string &s, const string &s2);
-void no_such_func(void *arg, const string &name);
-void no_such_ident(void *arg, const string &name, const string &word);
+void no_such_func(const string &name);
+void no_such_ident(const string &name, const string &word);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
@@ -204,7 +204,7 @@ proj_clause:	SCAN_WORD
 			DBG(cerr << "result: " << $$ << endl);
 		    }
 		    else {
-			no_such_ident(arg, $1, "identifier");
+			no_such_ident($1, "identifier");
 		    }
 		}
                 | proj_function
@@ -232,7 +232,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
 			$$ = true;
 		    }
 		    else {
-			no_such_func(arg, $1);
+			no_such_func($1);
 		    }
 		}
 ;
@@ -274,7 +274,7 @@ bool_function: SCAN_WORD '(' arg_list ')'
 	       {
 		   bool_func b_func = get_function((*DDS_OBJ(arg)), $1);
 		   if (!b_func) {
-		       no_such_func(arg, $1);
+		       no_such_func($1);
 		   }
 		   else {
 		       (*DDS_OBJ(arg)).append_clause(b_func, $3);
@@ -299,7 +299,7 @@ r_value:        id_or_const
 			$$ = new rvalue(func, $3);
 		    } 
 		    else {  		
-			no_such_func(arg, $1);
+			no_such_func($1);
 		    }
 		}
 ;
@@ -372,7 +372,7 @@ array_proj:	SCAN_WORD array_indices
                 {
 		  if (!bracket_projection((*DDS_OBJ(arg)), $1, $2))
 		    // no_such_ident throws an exception.
-		    no_such_ident(arg, $1, "array, grid or sequence");
+		    no_such_ident($1, "array, grid or sequence");
 		  else
 		    $$ = true;
 		}
@@ -488,28 +488,27 @@ exprerror(const char *s, const char *s2)
 }
 
 void
-no_such_ident(void *arg, const string &name, const string &word)
+no_such_ident(const string &name, const string &word)
 {
     string msg = "No such " + word + " in dataset";
     exprerror(msg.c_str(), name);
-    //    no_such_ident(arg, name.c_str(), word.c_str());
 }
 
 void
-no_such_ident(void *arg, char *name, char *word)
+no_such_ident(char *name, char *word)
 {
     string msg = "No such " + (string)word + " in dataset";
     exprerror(msg.c_str(), name);
 }
 
 void
-no_such_func(void *arg, const string &name)
+no_such_func(const string &name)
 {
-    no_such_func(arg, name.c_str());
+    no_such_func(name.c_str());
 }
 
 void
-no_such_func(void *arg, char *name)
+no_such_func(char *name)
 {
     exprerror("Not a registered function", name);
 }

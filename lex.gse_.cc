@@ -453,7 +453,10 @@ static char rcsid[] not_used = {"$Id$"};
 #define ID_MAX 256
 #define YY_NO_UNPUT 1
 #define YY_NO_INPUT 1
-#define YY_FATAL_ERROR(msg) throw(Error(string("Error scanning DAS object text: ") + string(msg)))
+#define YY_FATAL_ERROR(msg) {\
+    throw(Error(string("Error scanning grid constraint expression text: ") + string(msg))); \
+    yy_fatal_error(msg); /* 'Used' here to suppres warning */ \
+}
 
 #include "gse.tab.h"
 
@@ -466,7 +469,7 @@ static void store_op(int op);
 
 /* See das.lex for comments about the characters allowed in a WORD.
    10/31/2001 jhrg */
-#line 470 "lex.gse_.c"
+#line 473 "lex.gse_.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -617,10 +620,10 @@ YY_DECL
 	register char *yy_cp = NULL, *yy_bp = NULL;
 	register int yy_act;
 
-#line 97 "gse.lex"
+#line 100 "gse.lex"
 
 
-#line 624 "lex.gse_.c"
+#line 627 "lex.gse_.c"
 
 	if ( yy_init )
 		{
@@ -705,55 +708,55 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 99 "gse.lex"
+#line 102 "gse.lex"
 store_int32(); return SCAN_INT;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 100 "gse.lex"
+#line 103 "gse.lex"
 store_float64(); return SCAN_FLOAT;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 102 "gse.lex"
+#line 105 "gse.lex"
 store_id(); return SCAN_WORD;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 104 "gse.lex"
+#line 107 "gse.lex"
 store_op(SCAN_EQUAL); return SCAN_EQUAL;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 105 "gse.lex"
+#line 108 "gse.lex"
 store_op(SCAN_NOT_EQUAL); return SCAN_NOT_EQUAL;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 106 "gse.lex"
+#line 109 "gse.lex"
 store_op(SCAN_GREATER); return SCAN_GREATER;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 107 "gse.lex"
+#line 110 "gse.lex"
 store_op(SCAN_GREATER_EQL); return SCAN_GREATER_EQL;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 108 "gse.lex"
+#line 111 "gse.lex"
 store_op(SCAN_LESS); return SCAN_LESS;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 109 "gse.lex"
+#line 112 "gse.lex"
 store_op(SCAN_LESS_EQL); return SCAN_LESS_EQL;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 111 "gse.lex"
+#line 114 "gse.lex"
 ECHO;
 	YY_BREAK
-#line 757 "lex.gse_.c"
+#line 760 "lex.gse_.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1635,7 +1638,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 111 "gse.lex"
+#line 114 "gse.lex"
 
 
 // Three glue routines for string scanning. These are not declared in the

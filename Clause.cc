@@ -186,7 +186,7 @@ Clause::value(const string &dataset, DDS &dds)
 
 /** @brief Evaluate a clause that returns a value via a BaseType pointer. */
 bool 
-Clause::value(const string &dataset, DDS &dds, BaseType **value) 
+Clause::value(const string &, DDS &dds, BaseType **value) 
 {
     assert(OK());
     assert(_bt_func);

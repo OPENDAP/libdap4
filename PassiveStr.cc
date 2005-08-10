@@ -93,7 +93,7 @@ PassiveStr::operator=(const PassiveStr &rhs)
 }
 
 bool
-PassiveStr::read( const string &dataset )
+PassiveStr::read( const string & )
 {
     if( !read_p() )
     {

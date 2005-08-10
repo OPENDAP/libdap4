@@ -404,7 +404,7 @@ bool
 Vector::serialize(const string &dataset, DDS &dds, XDR *sink, 
 		  bool ce_eval)
 {
-	int i = 0;
+    int i = 0;
 
     dds.timeout_on();
 
@@ -844,8 +844,11 @@ Vector::set_vec(unsigned int i, BaseType *val)
     // This is a public method which allows users to set the elements
     // of *this* vector. Passing an invalid index, a NULL pointer or 
     // missmatching the vector type are internal errors.
+#if 0
+    // 'i' is unsigned. jhrg 8/9/05
     if (i<0)
 	throw InternalErr(__FILE__, __LINE__, "Invalid data: negative index.");
+#endif
     if (i>=static_cast<unsigned int>(_length))
         throw InternalErr(__FILE__, __LINE__, "Invalid data: index too large.");
     if (!val)

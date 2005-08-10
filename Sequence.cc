@@ -1343,7 +1343,7 @@ Sequence::print_val(FILE *out, string space, bool print_decl_p)
     Sequence as well as its data.
 */
 void
-Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, string space,
+Sequence::print_all_vals(ostream& os, XDR *, DDS *, string space,
 			 bool print_decl_p)
 {
     print_val(os, space, print_decl_p);
@@ -1356,7 +1356,7 @@ Sequence::print_all_vals(ostream& os, XDR *src, DDS *dds, string space,
 // Deprecated. No longer needed since print_vals does its job.
 
 void
-Sequence::print_all_vals(FILE *out, XDR *src, DDS *dds, string space,
+Sequence::print_all_vals(FILE *out, XDR *, DDS *, string space,
 			 bool print_decl_p)
 {
     print_val(out, space, print_decl_p);
