@@ -18,9 +18,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
 #ifndef _Regex_h
-#ifdef __GNUG__
-#pragma interface
-#endif
 #define _Regex_h 1
 
 #undef OK
@@ -59,29 +56,5 @@ public:
 
     int OK() const;  // representation invariant
 };
-
-// some built in regular expressions
-
-#if 0
-// These global objects break some programs because the dtors appear to be
-// called several times for the each object. I think that's a bug in the use,
-// but since we don't use these, I'm going to remove them until the real
-// problem is fixed. 11/05/02 jhrg
-//
-// Update: These global objects are not a problem per se, but if we're trying
-// to remove global objects as a general rule. Since these are not used, I'm
-// going to leave them out of the code. 11/06/02 jhrg
-extern const Regex RXwhite;          // = "[ \n\t\r\v\f]+"
-extern const Regex RXint;            // = "-?[0-9]+"
-extern const Regex RXdouble;         // = "-?\\(\\([0-9]+\\.[0-9]*\\)\\|
-                                     //    \\([0-9]+\\)\\|\\(\\.[0-9]+\\)\\)
-                                     //    \\([eE][---+]?[0-9]+\\)?"
-extern const Regex RXalpha;          // = "[A-Za-z]+"
-extern const Regex RXlowercase;      // = "[a-z]+"
-extern const Regex RXuppercase;      // = "[A-Z]+"
-extern const Regex RXalphanum;       // = "[0-9A-Za-z]+"
-extern const Regex RXidentifier;     // = "[A-Za-z_][A-Za-z0-9_]*"
-#endif
-
 
 #endif

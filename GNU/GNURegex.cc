@@ -23,16 +23,20 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   exception. 06/06/03 jhrg
  */
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
+#define USE_EXCEPTIONS 1
 
 #include <stdlib.h>
 #include <string.h>
-#include <builtin.h>
 #include <regex.h>
 
 #include <new>
+
+#ifdef USE_EXCEPTIONS
+#include <string>
+#include <stdexcept>
+#else
+#include <builtin.h>
+#endif
 
 #include <GNURegex.h>
 
@@ -78,11 +82,13 @@ Regex::Regex(const char* t, int fast, int bufsize,
   buf->buffer = (char *)malloc(buf->allocated);
 #endif
   const char* msg = re_compile_pattern((const char*)t, tlen, buf);
-  if (msg != 0)
-#if 0
-    throw invalid_argument(string("Regex: ") + string(msg));
-#endif
+  if (msg != 0) {
+#if defined(USE_EXCEPTIONS)
+    throw std::invalid_argument(string("Regex: ") + string(msg));
+#else
     (*lib_error_handler)("Regex", msg);
+#endif
+  }
   else if (fast)
     re_compile_fastmap(buf);
 }
@@ -140,28 +146,10 @@ int Regex::OK() const
 // can't verify much, since we've lost the original string
   int v = buf != 0;             // have a regex buf
   v &= buf->buffer != 0;        // with a pat
+#if defined(USE_EXCEPTIONS)
+  if (!v) throw std::domain_error(string("Regex: ") + string("invariant failure"));
+#else
   if (!v) (*lib_error_handler)("Regex", "invariant failure");
-#if 0
-  if (!v) throw domain_error(string("Regex") + string("invariant failure"));
 #endif
   return v;
 }
-
-/*
- some built-in Regular expressions
-*/
-
-#if 0
-// See my comment about these in Regex.h. 11/05/02 jhrg
-const Regex RXwhite("[ \n\t\r\v\f]+", 1);
-const Regex RXint("-?[0-9]+", 1);
-#if 0
-const Regex RXdouble("-?\\(\\([0-9]+\\.[0-9]*\\)\\|\\([0-9]+\\)\\|\\(\\.[0-9]+\\)\\)\\([eE][---+]?[0-9]+\\)?", 1, 200);
-#endif
-const Regex RXalpha("[A-Za-z]+", 1);
-const Regex RXlowercase("[a-z]+", 1);
-const Regex RXuppercase("[A-Z]+", 1);
-const Regex RXalphanum("[0-9A-Za-z]+", 1);
-const Regex RXidentifier("[A-Za-z_][A-Za-z0-9_]*", 1);
-#endif
-
