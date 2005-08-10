@@ -26,12 +26,6 @@
 #ifndef _http_cache_h
 #define _http_cache_h
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
-
 #include <stdio.h>
 #include <pthread.h>
 #include <sys/types.h>
@@ -161,7 +155,7 @@ public:
 	time_t age;
 	time_t max_age;		// From Cache-Control
 
-	unsigned int size;	// Size of cached entity body
+	unsigned long size;	// Size of cached entity body
 	bool range;		// Range is not currently supported. 10/02/02
 				// jhrg 
 
@@ -194,7 +188,7 @@ public:
     // they can access private stuff). We should not need this any longer,
     // but I'm hesitant to remove it since I cannot easily test with VC++.
     // 01/23/04 jhrg
-    unsigned int d_max_entry_size;	// Max individual entry size.
+    unsigned long d_max_entry_size;	// Max individual entry size.
 
     void remove_cache_entry(CacheEntry *entry) throw(InternalErr);
     bool stopGC() const;
@@ -211,13 +205,13 @@ private:
     bool d_expire_ignored;
     bool d_always_validate;
 
-    unsigned int d_total_size;	// How much can we store?
-    unsigned int d_folder_size; // How much of that is meta data?
-    unsigned int d_gc_buffer;	// How much memory needed as buffer?
+    unsigned long d_total_size;	// How much can we store?
+    unsigned long d_folder_size; // How much of that is meta data?
+    unsigned long d_gc_buffer;	// How much memory needed as buffer?
 #ifndef WIN32  //  Declared public above for win32
-    unsigned int d_max_entry_size;	// Max individual entry size.
+    unsigned long d_max_entry_size;	// Max individual entry size.
 #endif
-    unsigned int d_current_size;
+    unsigned long d_current_size;
     int d_default_expiration;
     unsigned int d_block_size;	// File block size.
 
@@ -351,11 +345,11 @@ public:
     void set_expire_ignored(bool mode);
     bool is_expire_ignored() const;
 
-    void set_max_size(unsigned int size);
-    unsigned int get_max_size() const;
+    void set_max_size(unsigned long size);
+    unsigned long get_max_size() const;
 
-    void set_max_entry_size(unsigned int size);
-    unsigned int get_max_entry_size() const;
+    void set_max_entry_size(unsigned long size);
+    unsigned long get_max_entry_size() const;
 
     void set_default_expiration(int exp_time);
     int get_default_expiration() const;
