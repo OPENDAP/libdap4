@@ -280,14 +280,14 @@ xsi:schemaLocation=\"http://www.dods.org/ns/DODS  http://argon.coas.oregonstate.
 CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
 
 int 
-main( int argc, char* argv[] )
+main( int, char** )
 {
     CppUnit::TextTestRunner runner;
     runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
-    runner.run();
+    bool wasSuccessful = runner.run( "", false ) ;
 
-    return 0;
+    return wasSuccessful ? 0 : 1;
 }
 
 

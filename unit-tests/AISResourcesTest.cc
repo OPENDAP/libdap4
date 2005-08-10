@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <stdexcept>
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -49,19 +50,19 @@ public:
     ~AISResourcesTest() {} 
 
     void setUp() {
-	fnoc1 = "http://localhost/dods-test/nph-dods/data/nc/fnoc1.nc";
-	fnoc2 = "http://localhost/dods-test/nph-dods/data/nc/fnoc2.nc";
-	fnoc3 = "http://localhost/dods-test/nph-dods/data/nc/fnoc3.nc";
+	fnoc1 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc1.nc";
+	fnoc2 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc2.nc";
+	fnoc3 = "http://test.opendap.org/opendap/nph-dods/data/nc/fnoc3.nc";
 
-	regexp = "http://localhost/dods-test/nph-dods/data/nc/[0-9]+.*\\.nc";
-	bears = "http://localhost/dods-test/nph-dods/data/nc/123bears.nc";
-	three_fnoc = "http://localhost/dods-test/nph-dods/data/nc/3fnoc.nc";
-	one_2_3 = "http://localhost/dods-test/nph-dods/data/nc/123.nc";
+	regexp = "http://test.opendap.org/opendap/nph-dods/data/nc/[0-9]+.*\\.nc";
+	bears = "http://test.opendap.org/opendap/nph-dods/data/nc/123bears.nc";
+	three_fnoc = "http://test.opendap.org/opendap/nph-dods/data/nc/3fnoc.nc";
+	one_2_3 = "http://test.opendap.org/opendap/nph-dods/data/nc/123.nc";
 
 
-	fnoc1_ais = "http://localhost/ais/fnoc1.nc.das";
+	fnoc1_ais = "http://test.opendap.org/ais/fnoc1.nc.das";
 	fnoc2_ais = "ais_testsuite/fnoc2_replace.das";
-	fnoc3_ais = "http://localhost/ais/fnoc3_fallback.das";
+	fnoc3_ais = "http://test.opendap.org/ais/fnoc3_fallback.das";
 	digit_ais = "ais_testsuite/starts_with_number.das";
 	one_2_3_ais = "ais_testsuite/123.das";
 
@@ -240,6 +241,14 @@ public:
 	catch (AISDatabaseReadFailed &adrf) {
 	    CPPUNIT_ASSERT(!"Document not well formed and/or valid!");
 	}
+	catch (Error &e) {
+	    cerr << "Error: " << e.get_error_message() << endl;
+	    CPPUNIT_ASSERT(!"Caught Error");
+	}
+	catch (std::exception &e) {
+	    cerr << "std::exception: " << e.what() << endl;
+	    CPPUNIT_ASSERT(!"Caught exception");
+	}
     }
 
     void write_database_test() {
@@ -296,16 +305,16 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION(AISResourcesTest);
 
 int 
-main( int argc, char* argv[] )
+main( int, char** )
 {
     CppUnit::TextTestRunner runner;
     runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
-    runner.run();
+    bool wasSuccessful = runner.run( "", false ) ;
 
     unlink("dummy.xml");
 
-    return 0;
+    return wasSuccessful ? 0 : 1;
 }
 
 // $Log: AISResourcesTest.cc,v $

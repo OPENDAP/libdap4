@@ -141,7 +141,7 @@ Content-Description: dods_dds\n\
 	CPPUNIT_ASSERT(re_match(r2, oss.str()));
 	reset_oss();
 
-	struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0}; // 1 Jan 2000
+	struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0}; // 1 Jan 2000
 	time_t t = mktime(&tm);
 	Regex r3("HTTP/1.0 200 OK\n\
 XDODS-Server: dods-test/0.00\n\
@@ -158,7 +158,7 @@ Content-Description: dods_dds\n\
     void rfc822_date_test() {
 	time_t t = 0;
 	CPPUNIT_ASSERT(rfc822_date(t) == "Thu, 01 Jan 1970 00:00:00 GMT");
-	struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0}; // 1 Jan 2000
+	struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0}; // 1 Jan 2000
 	t = mktime(&tm);
 	// This test may fail for some locations since mktime interprets t as
 	// the local time and returns the corresponding GMT time.
@@ -181,14 +181,14 @@ Content-Description: dods_dds\n\
 CPPUNIT_TEST_SUITE_REGISTRATION(cgiUtilTest);
 
 int 
-main( int argc, char* argv[] )
+main( int, char** )
 {
     CppUnit::TextTestRunner runner;
     runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
-    runner.run();
+    bool wasSuccessful = runner.run( "", false ) ;
 
-    return 0;
+    return wasSuccessful ? 0 : 1;
 }
 
 // $Log: cgiUtilTest.cc,v $

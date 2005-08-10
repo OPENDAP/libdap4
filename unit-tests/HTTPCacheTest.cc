@@ -35,11 +35,11 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-// #define DODS_DEBUG 1
+#define DODS_DEBUG 1
 
 #include "HTTPCache.h"
 #include "HTTPConnect.h"	// Used to generate a response to cache.
-#ifndef WIN32				// Signals are exquisitely non-portable.
+#ifndef WIN32			// Signals are exquisitely non-portable.
 #include "SignalHandler.h"	// Needed to clean up this singleton.
 #endif
 #include "RCReader.h"		// ditto
@@ -141,7 +141,6 @@ public:
     CPPUNIT_TEST_SUITE(HTTPCacheTest);
 
     CPPUNIT_TEST(constructor_test);
-
     CPPUNIT_TEST(cache_index_read_test);
     CPPUNIT_TEST(cache_index_parse_line_test);
     CPPUNIT_TEST(get_entry_from_cache_table_test);
@@ -175,6 +174,7 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void constructor_test() {
+        DBG(cerr << "hc->cache_index: " << hc->d_cache_index << endl);
 	CPPUNIT_ASSERT(hc->d_cache_index=="cache-testsuite/dods_cache/.index");
 	CPPUNIT_ASSERT(hc->d_cache_root == "cache-testsuite/dods_cache/");
 	DBG(cerr << "Current size: " << hc->d_current_size << endl);
@@ -801,19 +801,19 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPCacheTest);
 
 int 
-main( int argc, char* argv[] )
+main( int, char** )
 {
     CppUnit::TextTestRunner runner;
     runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
-    runner.run();
+    bool wasSuccessful = runner.run( "", false ) ;
 
     cerr.flush();
 
     // now clean up the directories
     system("cd cache-testsuite && ./cleanup.sh");
 
-    return 0;
+    return wasSuccessful ? 0 : 1;
 }
 
 // $Log: HTTPCacheTest.cc,v $

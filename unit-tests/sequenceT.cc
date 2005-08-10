@@ -145,7 +145,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( sequenceT ) ;
 
 /* NOTHING NEEDS TO BE CHANGED BELOW HERE */
 
-int main( int argc, char **argv )
+int main( int, char ** )
 {
     CppUnit::TextUi::TestRunner runner ;
     CppUnit::TestFactoryRegistry &registry =

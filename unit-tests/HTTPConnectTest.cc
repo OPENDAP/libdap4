@@ -354,16 +354,16 @@ dods_test." << endl;
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPConnectTest);
 
 int 
-main( int argc, char* argv[] )
+main( int, char** )
 {
     CppUnit::TextTestRunner runner;
     runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
     cerr << "These tests require a working network connection." << endl;
 
-    runner.run();
+    bool wasSuccessful = runner.run( "", false ) ;
 
-    return 0;
+    return wasSuccessful ? 0 : 1;
 }
 
 // $Log: HTTPConnectTest.cc,v $
