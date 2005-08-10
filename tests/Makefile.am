@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir)
-AM_CXXFLAGS = -I$(top_srcdir)/GNU
+AM_CXXFLAGS = -I$(top_srcdir)/GNU -Wall -W -Wcast-align
 
 # These are not used by automake but are often useful for certain types of
 # debugging. 

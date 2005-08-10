@@ -71,7 +71,7 @@ TestUInt32::TestUInt32(const string &n) : UInt32(n), d_series_values(false)
     _buf = 1;
 }
 
-TestUInt32::TestUInt32(const TestUInt32 &rhs) : UInt32(rhs)
+TestUInt32::TestUInt32(const TestUInt32 &rhs) : UInt32(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

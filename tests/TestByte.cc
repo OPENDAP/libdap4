@@ -98,7 +98,7 @@ TestByte::ptr_duplicate()
     return new TestByte(*this);
 }
 
-TestByte::TestByte(const TestByte &rhs) : Byte(rhs)
+TestByte::TestByte(const TestByte &rhs) : Byte(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

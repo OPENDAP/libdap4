@@ -69,7 +69,7 @@ TestSequence::TestSequence(const string &n) : Sequence(n), d_len(4),
 {
 }
 
-TestSequence::TestSequence(const TestSequence &rhs) : Sequence(rhs)
+TestSequence::TestSequence(const TestSequence &rhs) : Sequence(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

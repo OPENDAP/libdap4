@@ -69,7 +69,7 @@ TestInt32::TestInt32(const string &n) : Int32(n), d_series_values(false)
     _buf = 1;
 }
 
-TestInt32::TestInt32(const TestInt32 &rhs) : Int32(rhs)
+TestInt32::TestInt32(const TestInt32 &rhs) : Int32(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

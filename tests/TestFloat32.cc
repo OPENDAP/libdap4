@@ -72,7 +72,7 @@ TestFloat32::TestFloat32(const string &n) : Float32(n), d_series_values(false)
     _buf = 0.0;
 }
 
-TestFloat32::TestFloat32(const TestFloat32 &rhs) : Float32(rhs)
+TestFloat32::TestFloat32(const TestFloat32 &rhs) : Float32(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

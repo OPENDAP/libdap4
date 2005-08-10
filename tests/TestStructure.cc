@@ -56,7 +56,7 @@ TestStructure::ptr_duplicate()
     return new TestStructure(*this);
 }
 
-TestStructure::TestStructure(const TestStructure &rhs) : Structure(rhs)
+TestStructure::TestStructure(const TestStructure &rhs) : Structure(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

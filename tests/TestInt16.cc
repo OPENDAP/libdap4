@@ -70,7 +70,7 @@ TestInt16::TestInt16(const string &n) : Int16(n), d_series_values(false)
     _buf = 1;
 }
 
-TestInt16::TestInt16(const TestInt16 &rhs) : Int16(rhs)
+TestInt16::TestInt16(const TestInt16 &rhs) : Int16(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

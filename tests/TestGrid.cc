@@ -58,7 +58,7 @@ TestGrid::ptr_duplicate()
     return new TestGrid(*this);
 }
 
-TestGrid::TestGrid(const TestGrid &rhs) : Grid(rhs)
+TestGrid::TestGrid(const TestGrid &rhs) : Grid(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

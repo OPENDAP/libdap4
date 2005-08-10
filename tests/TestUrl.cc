@@ -71,7 +71,7 @@ TestUrl::TestUrl(const string &n) : Url(n), d_series_values(false)
 {
 }
 
-TestUrl::TestUrl(const TestUrl &rhs) : Url(rhs)
+TestUrl::TestUrl(const TestUrl &rhs) : Url(rhs), TestCommon(rhs)
 {
     _duplicate(rhs);
 }

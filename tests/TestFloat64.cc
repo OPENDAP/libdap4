@@ -72,7 +72,7 @@ TestFloat64::TestFloat64(const string &n) : Float64(n), d_series_values(false)
     _buf = 0.0;
 }
 
-TestFloat64::TestFloat64(const TestFloat64 &rhs) : Float64(rhs)
+TestFloat64::TestFloat64(const TestFloat64 &rhs) : Float64(rhs) , TestCommon(rhs)
 {
     _duplicate(rhs);
 }
