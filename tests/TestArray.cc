@@ -132,66 +132,66 @@ TestArray::read(const string &dataset)
       case dods_str_c:
       case dods_url_c: {
 
-		// String and Url are grouped with dods_byte, ... because val2buf works
-		// for these types.
-	
-		unsigned int elem_wid = var()->width(); // size of an element
-	
-		char *tmp = new char[width()];
-		// elem_val was a void pointer; delete complained. 6/4/2001 jhrg
-		char *elem_val = 0;	// NULL init gets read_val() to alloc space
-	
-		// Added cast as temporary fix. 6/4/2001 jhrg
-		var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
-	
-		for (i = 0; i < array_len; ++i)
-		    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
-	
-	
-		val2buf(tmp);
-	
-		delete elem_val; elem_val = 0; // alloced in buf2val()
-		delete[] tmp; tmp = 0;	// alloced above
-	
-		break;
+	// String and Url are grouped with dods_byte, ... because val2buf works
+	// for these types.
+
+	unsigned int elem_wid = var()->width(); // size of an element
+
+	char *tmp = new char[width()];
+	// elem_val was a void pointer; delete complained. 6/4/2001 jhrg
+	char *elem_val = 0;	// NULL init gets read_val() to alloc space
+
+	// Added cast as temporary fix. 6/4/2001 jhrg
+	var()->buf2val((void **)&elem_val); // internal buffer to ELEM_VAL
+
+	for (i = 0; i < array_len; ++i)
+	    memcpy(tmp + i * elem_wid, elem_val, elem_wid);
+
+
+	val2buf(tmp);
+
+	delete elem_val; elem_val = 0; // alloced in buf2val()
+	delete[] tmp; tmp = 0;	// alloced above
+
+	break;
       }
 
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
 	
-		// Arrays of Structure, ... must load each element into the array 
-		// manually. Because these are stored as C++/DODS objects, there is
-		// no need to manipulate blocks of memory by hand as in the above
-		// case. 
-	        // NB: Strings are handled like Byte, etc. because, even though they
-		// are represented using C++ objects they are *not* represented using
-		// objects defined by DODS, while Structure, etc. are.
-	
-		for (i = 0; i < array_len; ++i) {
-	
-		    // Create a new object that is a copy of `var()' (whatever that
-		    // is). The copy will have the value read in by the read() mfunc
-		    // executed before this switch stmt.
-	
-		    BaseType *elem = var()->ptr_duplicate(); 
-	
-		    // read values into the new instance.
-		    
-		    elem->read(dataset);
-	
-		    // now load the new instance in the array.
-	
-		    set_vec(i, elem);
-		}
-	
-		break;
+	// Arrays of Structure, ... must load each element into the array 
+	// manually. Because these are stored as C++/DODS objects, there is
+	// no need to manipulate blocks of memory by hand as in the above
+	// case. 
+        // NB: Strings are handled like Byte, etc. because, even though they
+	// are represented using C++ objects they are *not* represented using
+	// objects defined by DODS, while Structure, etc. are.
+
+	for (i = 0; i < array_len; ++i) {
+
+	    // Create a new object that is a copy of `var()' (whatever that
+	    // is). The copy will have the value read in by the read() mfunc
+	    // executed before this switch stmt.
+
+	    BaseType *elem = var()->ptr_duplicate(); 
+
+	    // read values into the new instance.
+	    
+	    elem->read(dataset);
+
+	    // now load the new instance in the array.
+
+	    set_vec(i, elem);
+	}
+
+	break;
 	
       case dods_array_c:
       case dods_null_c:
       default:
-		throw InternalErr(__FILE__, __LINE__, "Bad DODS data type");
-		break;
+	throw InternalErr(__FILE__, __LINE__, "Bad DODS data type");
+	break;
     }
 
     set_read_p(true);

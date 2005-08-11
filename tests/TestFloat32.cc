@@ -106,8 +106,8 @@ TestFloat32::read(const string &)
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-        _buf = (float)(100 * sin(_buf));
-        _buf += 0.01;
+        _buf += 10.0;
+        _buf = (float)(trunc(10000 * sin(trunc(_buf))) / 100);
     }
     else {
         _buf = (float)99.999;

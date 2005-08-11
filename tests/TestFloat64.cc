@@ -106,8 +106,12 @@ TestFloat64::read(const string &)
 	sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
+        _buf += 10.0;
+        _buf = (float)(trunc(10000 * cos(trunc(_buf))) / 100);
+#if 0
         _buf = (double) 1000*cos(_buf);;
         _buf += 0.01;
+#endif
     }
     else {
         _buf = 99.999;
