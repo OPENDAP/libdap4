@@ -164,8 +164,8 @@ protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
     Connect() { }
-    Connect(const Connect &rhs) { }
-    Connect &operator=(const Connect &rhs) {
+    Connect(const Connect &) { }
+    Connect &operator=(const Connect &) {
 	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }
     //@}
@@ -227,28 +227,24 @@ public:
     }
 
     // #ifdef DEFAULT_BASETYPE_FACTORY
-    bool request_dds(bool gui = false, const string &ext = "dds")
-	throw(Error, InternalErr) {
+    bool request_dds(bool, const string &) throw(Error, InternalErr) {
 	request_dds(_dds, "");
-
 	return true;
     }
 
-    DDS *request_data(string expr, bool gui = false, bool async = false, 
-		      const string &ext = "dods") throw(Error, InternalErr) {
+    DDS *request_data(string expr, bool, bool, const string &) 
+        throw(Error, InternalErr) {
 	DataDDS *new_dds = new DataDDS("received_data");
 	request_data(*new_dds, expr);
 	return new_dds;
     }
 
-    bool request_das(bool gui = false,  const string &ext = "das")
-	throw(Error, InternalErr) {
+    bool request_das(bool,  const string &) throw(Error, InternalErr) {
 	request_das(_das);
 	return true;
     }
 
-    DDS *read_data(FILE *data_source, bool gui, bool async)
-	throw(Error, InternalErr) {
+    DDS *read_data(FILE *data_source, bool, bool) throw(Error, InternalErr) {
 	DataDDS *data = new DataDDS;
 	read_data(*data, data_source);
 	return data;
