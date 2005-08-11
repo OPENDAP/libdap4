@@ -576,8 +576,8 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     string dataset = "";
     
     // by default this is false (to get the old-style values that are
-    // constant; set this to true for testing Sequence constraints. 01/14/05
-    // jhrg
+    // constant); set series_values to true for testing Sequence constraints.
+    // 01/14/05 jhrg
     set_series_values(server, series_values);
 
     try {
@@ -586,6 +586,7 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	//
 	// We're at that awkward stage between two different error processing
 	// techniques. 4/6/2000 jhrg
+	// I think we've passed that stage... 08/08/05 jhrg
 	if (!server.send(dataset, ce, pout, false)) {
 	    fprintf( stderr, "Could not send the DDS\n" ) ;
 	    delete ttf; ttf = 0;
@@ -634,12 +635,14 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
     catch (Error &e) {
 	delete factory; factory = 0;
 	delete ttf; ttf = 0;
+
 	e.display_message();
 	return false;
     }
 	
     delete ttf; ttf = 0;
     delete factory; factory = 0;
+
     return true;
 }
 
