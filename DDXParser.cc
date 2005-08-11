@@ -848,10 +848,18 @@ static xmlSAXHandler ddx_sax_parser = {
     (warningSAXFunc)DDXParser::ddx_fatal_error, // warning 
     (errorSAXFunc)DDXParser::ddx_fatal_error, // error 
     (fatalErrorSAXFunc)DDXParser::ddx_fatal_error, // fatalError
+#ifdef LIBXML2_5_10
     0, // getParameterEntity
     0, // cdataBlock
     0, // externalSubset
-    0 // initialized
+    0, // initialized
+#endif
+#ifdef LIBXML2_6_16
+    0, // _private
+    0, // endElementNs
+    0, // serror
+    0 // startElementNs
+#endif
 };
 
 /** Parse a DDX document stored in a file. The XML in the doucument is parsed

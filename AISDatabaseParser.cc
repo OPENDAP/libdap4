@@ -357,10 +357,18 @@ static xmlSAXHandler aisSAXParser = {
     (warningSAXFunc)AISDatabaseParser::aisWarning, // warning 
     (errorSAXFunc)AISDatabaseParser::aisError, // error 
     (fatalErrorSAXFunc)AISDatabaseParser::aisFatalError, // fatalError
+#ifdef LIBXML2_5_10
     0, // getParameterEntity
     0, // cdataBlock
     0, // externalSubset
-    0 // initialized
+    0, // initialized
+#endif
+#ifdef LIBXML2_6_16
+    0, // _private
+    0, // endElementNs
+    0, // serror
+    0 // startElementNs
+#endif
 };
 
 /** Parse an AIS database encoded in XML. The information in the XML document
