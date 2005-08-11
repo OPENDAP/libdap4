@@ -31,7 +31,7 @@
 //
 // jhrg 9/7/94
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -2169,7 +2169,7 @@ DDS::mark_all(bool state)
 //
 // Revision 1.10  1995/05/10  13:45:13  jimg
 // Changed the name of the configuration header file from `config.h' to
-// `config_dap.h' so that other libraries could have header files which were
+// `config.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
 // config header should follow the convention config_<name>.h.
 //

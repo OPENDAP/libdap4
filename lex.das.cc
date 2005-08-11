@@ -556,7 +556,7 @@ char *yytext;
    printed das can be reparsed. 9/28/94. 
 */
 #line 63 "das.lex"
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used ={"$Id$"};
 

@@ -452,7 +452,7 @@ char *yytext;
 */
 #line 48 "expr.lex"
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 

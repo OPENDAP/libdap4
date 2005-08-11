@@ -28,7 +28,7 @@ bin_SCRIPTS = dap-config
 
 bin_PROGRAMS = getdap
 
-sbin_PROGRAMS = deflate usage
+sbin_PROGRAMS = deflate
 
 libdap_la_SOURCES = $(DAP_SRC) $(CLIENT_SRC) $(SERVER_SRC) $(GNU_SRC)
 
@@ -42,8 +42,6 @@ getdap_SOURCES = getdap.cc
 getdap_LDADD = libdap.la
 
 deflate_SOURCES = deflate.c
-usage_SOURCES = usage.cc
-usage_LDADD = libdap.la
 
 LEX_YACC_EXTRA = das.lex das.y dds.lex dds.y expr.lex expr.y gse.lex gse.y \
 	Error.lex Error.y

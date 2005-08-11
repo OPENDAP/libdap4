@@ -23,7 +23,7 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
-#include "config_dap.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <pthread.h>
@@ -2487,7 +2487,7 @@ HTTPCache::purge_cache() throw(Error)
 //
 // Revision 1.7  2003/03/13 23:55:57  jimg
 // Significant changes regarding the mutex code. I found out that since
-// config_dap.h was not being included, the mutex code was never built! Once
+// config.h was not being included, the mutex code was never built! Once
 // built, I found a bunch of deadlocks. Many of the methods had to be modified
 // to fix this/these problem(s).
 //

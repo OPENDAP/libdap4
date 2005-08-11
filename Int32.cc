@@ -34,7 +34,7 @@
 // jhrg 9/7/94
 
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -482,16 +482,16 @@ Int32::ops(BaseType *b, int op, const string &dataset)
 // Added copyright notice.
 //
 // Revision 1.13  1995/05/10  15:34:02  jimg
-// Failed to change `config.h' to `config_dap.h' in these files.
+// Failed to change `config.h' to `config.h' in these files.
 //
 // Revision 1.12  1995/05/10  13:45:21  jimg
 // Changed the name of the configuration header file from `config.h' to
-// `config_dap.h' so that other libraries could have header files which were
+// `config.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
 // config header should follow the convention config_<name>.h.
 //
 // Revision 1.11  1995/03/16  17:26:40  jimg
-// Moved include of config_dap.h to top of includes.
+// Moved include of config.h to top of includes.
 // Added TRACE_NEW switched dbnew debugging includes.
 //
 // Revision 1.10  1995/03/04  14:34:46  jimg

@@ -34,7 +34,7 @@
 // definitions must follow *both* rvalue's and func_rvalue's declarations.
 // jhrg 3/4/96
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 

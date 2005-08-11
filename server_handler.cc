@@ -30,7 +30,7 @@
 // on to 3.5, this should be edited so that it is a 'real' handler, using the
 // response information in DODSFilter. 07/21/03 jhrg
 
-#include "config_dap.h"
+#include "config.h"
 
 static char not_used rcsid[]={"$Id$"};
 

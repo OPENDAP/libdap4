@@ -59,7 +59,6 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/getdap
 %{_sbindir}/deflate
-%{_sbindir}/usage
 %{_libdir}/libdap.so.*
 %doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
 %doc COPYRIGHT_W3C

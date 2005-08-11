@@ -29,7 +29,7 @@
 // Authors:
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used =
     { "$Id$" };

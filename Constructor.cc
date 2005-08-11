@@ -30,7 +30,7 @@
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 
-#include "config_dap.h"
+#include "config.h"
 
 #include <string>
 #include <algorithm>

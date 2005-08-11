@@ -104,7 +104,7 @@
 #line 47 "dds.y"
 
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 

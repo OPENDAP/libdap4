@@ -34,7 +34,7 @@
 // jhrg 9/13/94
 
 
-#include "config_dap.h"
+#include "config.h"
 
 #include "Array.h"
 #include "util.h"
@@ -1375,11 +1375,11 @@ Array::check_semantics(string &msg, bool)
 // Added copyright notice.
 //
 // Revision 1.20  1995/05/10  15:33:52  jimg
-// Failed to change `config.h' to `config_dap.h' in these files.
+// Failed to change `config.h' to `config.h' in these files.
 //
 // Revision 1.19  1995/05/10  13:45:01  jimg
 // Changed the name of the configuration header file from `config.h' to
-// `config_dap.h' so that other libraries could have header files which were
+// `config.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
 // config header should follow the convention config_<name>.h.
 //
@@ -1388,7 +1388,7 @@ Array::check_semantics(string &msg, bool)
 // Enforce a new size calculated from constraint expression.
 //
 // Revision 1.17  1995/03/16  17:22:58  jimg
-// Added include of config_dap.h before all other includes.
+// Added include of config.h before all other includes.
 // Fixed deletes of buffers in read_val().
 // Added initialization of _buf in ctor.
 //

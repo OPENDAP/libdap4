@@ -33,7 +33,7 @@
 //
 // jhrg 9/21/94
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -520,7 +520,7 @@ double_to_string(const double &num)
 }
 
 // Get the version number of the core software. Defining this means that
-// clients of the DAP don't have to rely on config_dap.h for the version
+// clients of the DAP don't have to rely on config.h for the version
 // number. 
 string
 dap_version()
@@ -1073,11 +1073,11 @@ file_to_string(FILE *fp)
 // Added copyright notice.
 //
 // Revision 1.11  1995/05/10  15:34:09  jimg
-// Failed to change `config.h' to `config_dap.h' in these files.
+// Failed to change `config.h' to `config.h' in these files.
 //
 // Revision 1.10  1995/05/10  13:45:46  jimg
 // Changed the name of the configuration header file from `config.h' to
-// `config_dap.h' so that other libraries could have header files which were
+// `config.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
 // config header should follow the convention config_<name>.h.
 //

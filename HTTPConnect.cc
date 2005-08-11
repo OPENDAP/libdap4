@@ -24,7 +24,7 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
  
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used =
     { "$Id$" };
@@ -798,7 +798,7 @@ HTTPConnect::set_credentials(const string &u, const string &p)
 // work.
 //
 // Revision 1.20  2005/04/15 21:17:23  jimg
-// Remove include of config_dap.h from HTTPCache.h.
+// Remove include of config.h from HTTPCache.h.
 //
 // Revision 1.19  2005/01/28 17:25:12  jimg
 // Resolved conflicts from merge with release-3-4-9

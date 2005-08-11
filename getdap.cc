@@ -33,7 +33,7 @@
 // class. It can be used to get naked URLs as well as the DODS DAS and DDS
 // objects.  jhrg.
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 

@@ -35,7 +35,7 @@
 //
 // ReZa 9/30/94 
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -1210,7 +1210,7 @@ main(int argc, char *argv[])
 // Revision 1.36.6.4  2000/08/02 20:54:08  jimg
 // Changed the definitions of some of the set_mime_*() functions so that they
 // match the changes in declaration in cgi_util.h. These changes removed the
-// symbol DVR from the header so that config_dap.h is no longer needed by
+// symbol DVR from the header so that config.h is no longer needed by
 // cgi_util.h.
 //
 // Revision 1.42  2000/07/09 22:05:36  rmorris

@@ -34,7 +34,7 @@
 // jhrg 9/14/94
 
 
-#include "config_dap.h"
+#include "config.h"
 
 #include <stdlib.h>
 
@@ -1061,16 +1061,16 @@ Structure::check_semantics(string &msg, bool all)
 // Added copyright notice.
 //
 // Revision 1.12  1995/05/10  15:34:06  jimg
-// Failed to change `config.h' to `config_dap.h' in these files.
+// Failed to change `config.h' to `config.h' in these files.
 //
 // Revision 1.11  1995/05/10  13:45:31  jimg
 // Changed the name of the configuration header file from `config.h' to
-// `config_dap.h' so that other libraries could have header files which were
+// `config.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
 // config header should follow the convention config_<name>.h.
 //
 // Revision 1.10  1995/03/16  17:29:12  jimg
-// Added include config_dap.h to top of include list.
+// Added include config.h to top of include list.
 // Added TRACE_NEW switched dbnew includes.
 // Fixed bug in read_val() where **val was passed incorrectly to
 // subordinate read_val() calls.

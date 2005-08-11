@@ -32,7 +32,7 @@
 // Implementation for the CE Clause class.
 
 
-#include "config_dap.h"
+#include "config.h"
 
 #include <assert.h>
 
@@ -311,7 +311,7 @@ Clause::value(const string &, DDS &dds, BaseType **value)
 // Merged 3.1.8
 //
 // Revision 1.8.6.1  2000/08/02 20:58:26  jimg
-// Included the header config_dap.h in this file. config_dap.h has been
+// Included the header config.h in this file. config.h has been
 // removed from all of the DODS header files.
 //
 // Revision 1.10  2000/07/09 22:05:35  rmorris

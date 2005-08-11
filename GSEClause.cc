@@ -32,7 +32,7 @@
 // The Grid Selection Expression Clause class.
 
 
-#include "config_dap.h"
+#include "config.h"
 
 static char id[] not_used = {"$Id$"};
 
