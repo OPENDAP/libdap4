@@ -32,11 +32,6 @@
 #ifndef _dodsfilter_h
 #define _dodsfilter_h
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <stdio.h>
 #include <sys/types.h>

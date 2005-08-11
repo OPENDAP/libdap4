@@ -34,11 +34,6 @@
 #ifndef _clause_h
 #define _clause_h
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #ifndef _expr_h
 #include "expr.h"

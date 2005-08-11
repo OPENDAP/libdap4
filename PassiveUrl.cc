@@ -33,9 +33,6 @@
 //
 // pwest 11/04/03
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #include "PassiveUrl.h"
 #include "debug.h"

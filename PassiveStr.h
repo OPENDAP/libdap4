@@ -36,11 +36,6 @@
 #ifndef _passivestr_h
 #define _passivestr_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
 
 #include "Str.h"
 

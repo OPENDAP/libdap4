@@ -36,11 +36,6 @@
 #ifndef _internalerr_h
 #define _internalerr_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <stdio.h>		// For FILE *
 

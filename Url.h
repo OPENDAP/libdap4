@@ -36,11 +36,6 @@
 #ifndef _url_h
 #define _url_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <string>
 

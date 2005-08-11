@@ -31,9 +31,6 @@
 
 // Implementation for the Error class.
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 

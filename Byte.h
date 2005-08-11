@@ -36,11 +36,6 @@
 #ifndef _byte_h
 #define _byte_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"

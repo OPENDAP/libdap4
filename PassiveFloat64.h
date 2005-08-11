@@ -36,11 +36,6 @@
 #ifndef _passivefloat64_h
 #define _passivefloat64_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
 
 #include "Float64.h"
 #include "dods-datatypes.h"

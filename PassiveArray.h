@@ -36,11 +36,6 @@
 #ifndef _passivearray_h
 #define _passivearray_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
 
 #include "Array.h"
 #include "dods-datatypes.h"

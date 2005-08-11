@@ -26,11 +26,6 @@
 #ifndef _response_too_big_err_h
 #define _response_too_big_err_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <string>
 

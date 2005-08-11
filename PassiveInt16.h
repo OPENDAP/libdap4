@@ -36,11 +36,6 @@
 #ifndef _passiveint16_h
 #define _passiveint16_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
 
 #include "Int16.h"
 #include "dods-datatypes.h"

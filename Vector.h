@@ -35,11 +35,6 @@
 #ifndef _vector_h
 #define _vector_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #ifdef WIN32
 #include <rpc.h>

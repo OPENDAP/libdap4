@@ -33,9 +33,6 @@
 // filter programs which, along with a CGI program, comprise DODS servers.
 // jhrg 8/26/97
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 

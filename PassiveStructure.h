@@ -36,11 +36,6 @@
 #ifndef _passivestructure_h
 #define _passivestructure_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
 
 #include "Structure.h"
 #include "dods-datatypes.h"

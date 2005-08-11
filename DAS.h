@@ -37,11 +37,6 @@
 #ifndef _das_h
 #define _das_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <stdio.h>
 

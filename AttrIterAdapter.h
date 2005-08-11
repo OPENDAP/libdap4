@@ -26,11 +26,6 @@
 #ifndef attr_iter_adapter_h
 #define attr_iter_adapter_h
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <vector>
 #include <stdio.h>

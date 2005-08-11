@@ -36,11 +36,6 @@
 #ifndef _passiveurl_h
 #define _passiveurl_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
 
 #include "PassiveStr.h"
 #include "dods-limits.h"

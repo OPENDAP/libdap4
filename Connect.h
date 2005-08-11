@@ -55,11 +55,6 @@
 #ifndef _connect_h
 #define _connect_h
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <stdio.h>
 

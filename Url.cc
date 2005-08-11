@@ -33,9 +33,6 @@
 //
 // jhrg 9/7/94
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 #include "Url.h"
 /** The URL constructor requires only the name of the variable

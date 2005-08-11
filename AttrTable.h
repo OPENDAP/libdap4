@@ -34,11 +34,6 @@
 #ifndef _attrtable_h
 #define _attrtable_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <string>
 #include <vector>

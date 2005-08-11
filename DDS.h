@@ -37,11 +37,6 @@
 #ifndef _dds_h
 #define _dds_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <stdio.h>
 

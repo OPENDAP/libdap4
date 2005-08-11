@@ -26,11 +26,6 @@
 #ifndef _iterator_adapter_h
 #define _iterator_adapter_h
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <stdio.h>
 

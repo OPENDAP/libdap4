@@ -31,9 +31,6 @@
 
 // Implementation for the InternalErr class.
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 

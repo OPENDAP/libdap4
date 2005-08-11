@@ -36,11 +36,6 @@
 #ifndef _str_h
 #define _str_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #ifdef WIN32
 #include <rpc.h>

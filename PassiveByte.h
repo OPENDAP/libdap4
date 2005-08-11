@@ -36,11 +36,6 @@
 #ifndef _passivebyte_h
 #define _passivebyte_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
 
 #include "Byte.h"
 #include "dods-datatypes.h"

@@ -36,11 +36,6 @@
 #ifndef _uint32_h
 #define _uint32_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"

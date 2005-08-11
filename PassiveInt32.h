@@ -36,11 +36,6 @@
 #ifndef _passiveint32_h
 #define _passiveint32_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-#pragma interface
-#endif
-#endif
 
 #include "Int32.h"
 #include "dods-datatypes.h"

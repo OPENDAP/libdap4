@@ -37,11 +37,6 @@
 #ifndef _array_h
 #define _array_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <string>
 

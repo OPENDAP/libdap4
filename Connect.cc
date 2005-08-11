@@ -33,9 +33,6 @@
 //      dan             Dan Holloway <dholloway@gso.uri.edu>
 //      reza            Reza Nekovei <reza@intcomm.net>
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 

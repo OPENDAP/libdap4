@@ -35,9 +35,6 @@
 
 static char rcsid[] not_used ="$Id$";
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 #include <assert.h>
 
