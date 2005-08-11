@@ -33,9 +33,6 @@
 //
 // jhrg 9/14/94
 
-#ifdef _GNUG_
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 
@@ -50,9 +47,6 @@
 #include "BTIterAdapter.h"
 #endif
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 using std::cerr;
 using std::endl;

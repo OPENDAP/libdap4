@@ -33,9 +33,6 @@
 //
 // jhrg 1/12/95
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 #ifndef WIN32

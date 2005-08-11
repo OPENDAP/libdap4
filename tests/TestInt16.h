@@ -36,11 +36,6 @@
 #ifndef _testint16_h
 #define _testint16_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include "Int16.h"
 #include "TestCommon.h"

@@ -46,9 +46,6 @@
 #include "escaping.h"
 #include "BTIterAdapter.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 using namespace std;
 

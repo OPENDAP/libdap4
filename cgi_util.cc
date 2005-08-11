@@ -72,9 +72,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "util.h"		// This supplies flush_stream for WIN32.
 #include "debug.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 #ifdef WIN32
 #define FILE_DELIMITER	'\\'

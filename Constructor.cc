@@ -29,9 +29,6 @@
 // Authors:
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
-#ifdef _GNUG_
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 
@@ -47,9 +44,6 @@
 #include "Error.h"
 #include "InternalErr.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 using namespace std;
 

@@ -32,9 +32,6 @@
 //
 // jhrg 9/14/94
 
-#ifdef _GNUG_
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 
@@ -52,9 +49,6 @@
 #include "InternalErr.h"
 #include "escaping.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 
 using namespace std;

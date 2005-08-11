@@ -6,9 +6,6 @@
 
 // pwest 12/02/2002
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #include "LongIterAdapter.h"
 

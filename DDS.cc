@@ -72,9 +72,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "ce_functions.h"
 #include "cgi_util.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 const string default_schema_location = "http://argon.coas.oregonstate.edu/ndp/dods.xsd";
 const string dods_namespace = "http://www.dods.org/ns/DODS";

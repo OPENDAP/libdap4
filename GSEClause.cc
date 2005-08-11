@@ -31,9 +31,6 @@
 
 // The Grid Selection Expression Clause class.
 
-#ifdef _GNUG_
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 

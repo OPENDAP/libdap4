@@ -46,9 +46,6 @@
 #include "TestArray.h"
 #include "TestCommon.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 using std::cerr;
 using std::endl;

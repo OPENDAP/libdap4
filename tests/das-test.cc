@@ -49,9 +49,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "das.tab.h"
 #include "Error.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 void plain_driver(DAS &das, bool deref_alias);
 void load_attr_table(AttrTable at);

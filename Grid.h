@@ -40,10 +40,6 @@
 #ifndef _grid_h
 #define _grid_h 1
 
-#ifdef _GNUG_
-// #pragma interface
-#endif
-
 #include <vector>
 
 #include "Pix.h"
@@ -54,10 +50,6 @@
 
 #ifndef _constructor_h
 #include "Constructor.h"
-#endif
-
-#if defined(TRACE_NEW) && !defined(_trace_new_h)
-#include "trace_new.h"
 #endif
 
 /** The Grid data type is a collection of an Array and a set of ``Map''

@@ -40,9 +40,6 @@
 #define _structure_h 1
 
 #ifndef __POWERPC__
-#ifdef _GNUG_
-// #pragma interface
-#endif
 #endif
 
 #include <vector>
@@ -60,9 +57,6 @@
 #include "DDS.h"
 #endif
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 
 /** This data type is used to hold a collection of related data types,

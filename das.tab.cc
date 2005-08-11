@@ -115,9 +115,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "parser.h"
 #include "das.tab.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 #define yylex daslex
 #define yyerror daserror 

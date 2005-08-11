@@ -34,9 +34,6 @@
 #ifndef _gseclause_h
 #define _gseclause_h 1
 
-#ifdef _GNUG_
-// #pragma interface
-#endif
 
 #include <string>
 #include <sstream>

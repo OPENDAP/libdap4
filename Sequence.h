@@ -42,9 +42,6 @@
 #ifndef _sequence_h
 #define _sequence_h 1
 
-#ifdef _GNUG_
-// #pragma interface
-#endif
 
 #include <vector>
 #include "Pix.h"
@@ -55,10 +52,6 @@
 
 #ifndef _constructor_h
 #include "Constructor.h"
-#endif
-
-#if defined(TRACE_NEW) && !defined(_trace_new_h)
-#include "trace_new.h"
 #endif
 
 /** The type BaseTypeRow is used to store single rows of values in an

@@ -76,9 +76,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "util.h"
 #include "debug.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 using namespace std;
 

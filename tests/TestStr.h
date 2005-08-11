@@ -36,11 +36,6 @@
 #ifndef _teststr_h
 #define _teststr_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include <string>
 

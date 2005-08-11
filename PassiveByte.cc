@@ -44,9 +44,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "InternalErr.h"
 #include "debug.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 using std::cerr;
 using std::endl;

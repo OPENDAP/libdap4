@@ -1,6 +1,3 @@
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/TestAssert.h>

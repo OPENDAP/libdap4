@@ -36,11 +36,6 @@
 #ifndef _testgrid_h
 #define _testgrid_h 1
 
-#ifndef __POWERPC__
-#ifdef _GNUG_
-// #pragma interface
-#endif
-#endif
 
 #include "Grid.h"
 #include "TestCommon.h"

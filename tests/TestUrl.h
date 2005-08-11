@@ -36,11 +36,6 @@
 #ifndef _testurl_h
 #define _testurl_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include "Url.h"
 #include "TestCommon.h"

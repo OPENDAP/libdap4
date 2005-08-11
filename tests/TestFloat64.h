@@ -36,11 +36,6 @@
 #ifndef _testfloat64_h
 #define _testfloat64_h 1
 
-#ifndef __POWERPC__
-#ifdef __GNUG__
-// #pragma interface
-#endif
-#endif
 
 #include "Float64.h"
 #include "TestCommon.h"

@@ -98,7 +98,7 @@ SERVER_SRC = SignalHandler.cc OPeNDAPFile.cc OPeNDAPDir.cc cgi_util.cc	\
 	DODSFilter.cc ResponseTooBigErr.cc  
 
 DAP_HDR = escaping.h AttrTable.h DAS.h parser.h debug.h dods-limits.h	\
-	ce_functions.h Operators.h EventHandler.h trace_new.h DDS.h	\
+	ce_functions.h Operators.h EventHandler.h DDS.h			\
 	DataDDS.h DDXParser.h DDXExceptions.h expr.h Clause.h RValue.h	\
 	Error.h InternalErr.h BaseType.h Byte.h Int32.h GSEClause.h	\
 	Constructor.h Float64.h Str.h Url.h Vector.h Array.h		\

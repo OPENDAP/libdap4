@@ -49,9 +49,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "dods-limits.h"
 #include "InternalErr.h"
 
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 using std::cerr;
 using std::endl;

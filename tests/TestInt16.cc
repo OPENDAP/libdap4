@@ -33,9 +33,6 @@
 //
 // 3/22/99 jhrg
 
-#ifdef __GNUG__
-// #pragma implementation
-#endif
 
 #include "config_dap.h"
 
