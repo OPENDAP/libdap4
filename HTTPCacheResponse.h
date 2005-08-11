@@ -47,7 +47,7 @@ protected:
     //@{
     HTTPCacheResponse() {}
     HTTPCacheResponse(const HTTPCacheResponse &rs) : HTTPResponse(rs) {}
-    HTTPCacheResponse &operator=(const HTTPCacheResponse &rhs) {
+    HTTPCacheResponse &operator=(const HTTPCacheResponse &) {
 	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }
     //@}

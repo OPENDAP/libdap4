@@ -262,7 +262,7 @@ private:
 
     // Private methods
 
-    void clone(const HTTPCache &cache) {}
+    void clone(const HTTPCache &) {}
 
     HTTPCache(const HTTPCache &cache) { 
 	clone(cache); 

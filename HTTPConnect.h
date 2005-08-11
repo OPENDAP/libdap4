@@ -127,8 +127,8 @@ protected:
 	break this object). */
     //@{
     HTTPConnect() { }
-    HTTPConnect(const HTTPConnect &copy_from) { }
-    HTTPConnect &operator=(const HTTPConnect &rhs) { 
+    HTTPConnect(const HTTPConnect &) { }
+    HTTPConnect &operator=(const HTTPConnect &) { 
 	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }
     //@}

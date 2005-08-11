@@ -56,8 +56,8 @@ protected:
     /** @name Suppressed default methods */
     //@{
     Response() {}
-    Response(const Response &rs) {}
-    Response &operator=(const Response &rhs) {
+    Response(const Response &) {}
+    Response &operator=(const Response &) {
 	throw InternalErr(__FILE__, __LINE__, "Unimplemented assignment");
     }
     //@}
