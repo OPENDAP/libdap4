@@ -73,7 +73,7 @@ typedef union YYSTYPE {
     bool boolean;
     char word[ID_MAX];
 } YYSTYPE;
-/* Line 1268 of yacc.c.  */
+/* Line 1275 of yacc.c.  */
 #line 78 "dds.tab.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

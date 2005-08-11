@@ -71,7 +71,7 @@ typedef union YYSTYPE {
     rvalue *rval_ptr;
     rvalue_list *r_val_l_ptr;
 } YYSTYPE;
-/* Line 1268 of yacc.c.  */
+/* Line 1275 of yacc.c.  */
 #line 76 "expr.tab.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

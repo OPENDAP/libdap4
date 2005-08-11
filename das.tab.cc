@@ -206,6 +206,13 @@ typedef int YYSTYPE;
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
+# ifndef YYFREE
+#  define YYFREE free
+# endif
+# ifndef YYMALLOC
+#  define YYMALLOC malloc
+# endif
+
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
 # ifdef YYSTACK_USE_ALLOCA
@@ -230,8 +237,8 @@ typedef int YYSTYPE;
 #   include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
 #   define YYSIZE_T size_t
 #  endif
-#  define YYSTACK_ALLOC malloc
-#  define YYSTACK_FREE free
+#  define YYSTACK_ALLOC YYMALLOC
+#  define YYSTACK_FREE YYFREE
 # endif
 #endif /* ! defined (yyoverflow) || YYERROR_VERBOSE */
 
@@ -1482,8 +1489,8 @@ yyreduce:
 
     }
 
-/* Line 993 of yacc.c.  */
-#line 1487 "das.tab.c"
+/* Line 1000 of yacc.c.  */
+#line 1494 "das.tab.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
