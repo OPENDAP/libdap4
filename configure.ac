@@ -73,11 +73,11 @@ dnl we require. jhrg 6/15/05
 AC_CHECK_PROG(YACC,[bison],[bison])
 
 dnl Find where perl lives on the user's system
-DODS_PROG_PERL
+dnl DODS_PROG_PERL
 dnl Find where GNU tar lives on the user's system
-DODS_PROG_GTAR
+dnl DODS_PROG_GTAR
 
-AC_CHECK_PROG(VALGRIND, valgrind, [valgrind --logfile=memcheck --tool=memcheck --leak-check=yes])
+dnl AC_CHECK_PROG(VALGRIND, valgrind, [valgrind --leak-check=yes])
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -141,12 +141,6 @@ else
 	AC_MSG_ERROR([I could not find libcurl])
 fi
 
-dnl AC_CHECK_LIB([curl], [curl_version], 
-dnl 	[LIBS="$LIBS `curl-config --libs`"
-dnl 	 CPPFLAGS="$CPPFLAGS `curl-config --cflags`"],
-dnl 	[AC_MSG_ERROR([I could not find libcurl])]
-dnl 	[`curl-config --libs`])
-
 AC_MSG_CHECKING([for libxml2])
 if xml2-config --version > /dev/null 2>&1
 then
@@ -154,9 +148,26 @@ then
 	version_M=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
 	version_m=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
 	version_m_m=`echo $version_libxml2 | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+	
+	dnl Test for several different versions of libxml2. We can use 2.5.7 
+	dnl or newer, but part of the SAX interface changes depending on the
+	dnl version.
+	
+	dnl First test the minimum
 	if test $version_M -lt 2 || test $version_m -lt 5 || test $version_m_m -lt 7
 	then
 		AC_MSG_ERROR([must have libxml2 2.5.7 or greater, found $version_libxml2])
+	fi
+	
+	dnl Sort out the particular variant
+	if test $version_M -eq 2 && test $version_m -eq 5 && test $version_m_m -ge 10
+	then
+		AC_DEFINE(LIBXML2_5_10, [1], [define if you have xml2 2.5.10 or greater])
+	fi
+	if test $version_M -eq 2 && test $version_m -eq 6 && test $version_m_m -ge 16
+	then
+		AC_DEFINE(LIBXML2_5_10, [1], [define if you have xml2 2.5.10 or greater])
+		AC_DEFINE(LIBXML2_6_16, [1], [define if you have xml2 2.6.16 or greater])
 	fi
 
 	LIBS="$LIBS `xml2-config --libs`"
@@ -166,17 +177,20 @@ else
 	AC_MSG_ERROR([I could not find libxml2])
 fi
 
-dnl AC_CHECK_LIB([xml2], [xmlInitGlobals],
-dnl 	[LIBS="$LIBS `xml2-config --libs`"
-dnl 	 CPPFLAGS="$CPPFLAGS `xml2-config --cflags`"],
-dnl 	[AC_MSG_ERROR([I could not find libxml2])]
-dnl 	[`xml2-config --libs`])
-
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[LIBS="$LIBS -lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
 
 DODS_DEBUG_OPTION
+
+dnl Temporary hack; find a home for the deflate program; set it to
+dnl prefix/etc/deflate. See util.cc:dods_root()
+if test "$prefix" = "NONE"
+then
+AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])
+else
+AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
+fi
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 
@@ -191,15 +205,6 @@ AH_BOTTOM([/* Shorthand for gcc's unused attribute feature */
 #endif /* __GNUG__ || __GNUC__ */
 
 #endif /* _config_h */])
-
-dnl Temporary hack; find a home for the deflate program; set it to
-dnl prefix/etc/deflate. See util.cc:dods_root()
-if test "$prefix" = "NONE"
-then
-AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])
-else
-AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])
-fi
 
 AC_CONFIG_FILES([Makefile
                  gl/Makefile
