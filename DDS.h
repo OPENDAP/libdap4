@@ -165,7 +165,7 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
     BaseType class for descriptions of the DODS data types.
 
     @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
-    caused more confusion than it avoided. See Trac #130.
+    caused more confusion than it avoided. See Trac #130. jhrg
 
     @note The compile-time symbol DEFAULT_BASETYPE_FACTORY controls whether
     the old (3.4 and earlier) DDS and DataDDS constructors are supported.

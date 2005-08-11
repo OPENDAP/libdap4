@@ -1380,7 +1380,8 @@ HTTPCache::get_cache_control()
 
     A private method.
 
-    @param hash The hash value (i.e., directory name).
+    @param hash The hash value (i.e., directory name). An integer between 0
+    and CACHE_TABLE_SIZE (See HTTPCache.h).
     @return The pathname to the directory (even if it already existed).
     @exception Error Thrown if the directory cannot be created.*/
 

@@ -101,12 +101,6 @@ void dds_switch_to_buffer(void *new_buffer);
 void dds_delete_buffer(void * buffer);
 void *dds_buffer(FILE *fp);
 
-// Copy the stuff in DDS to THIS. The mfunc returns void because THIS gets
-// the `result' of the mfunc.
-//
-// NB: This can't define the formal param to be const since SLList<>first()
-// (which is what DDS::first_var() calls) does not define THIS to be const.
-
 void
 DDS::duplicate(const DDS &dds)
 {
