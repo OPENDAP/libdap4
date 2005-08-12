@@ -1,0 +1,130 @@
+
+$Id$
+
+News for Release 3.5.2 beta
+
+This is a beta release of libdap++, version 3.5. 
+
+NOTE: This version of libdap++ cannot be used to build the 3.4.x and previous
+clients and/or servers. However, client and servers built using this code
+_will_ work with the older clients and servers.
+
+News for Release 3.5.2 beta 2005/07/14
+
+Revamped the build to use automake. 
+
+Regression tests and the test classes are now in the subdir 'tests.'
+
+The unit tests are now in the subdir 'unit-tests' and are not built or run by
+default. Some of these tests require access to the internet to work and I
+decided to make then not run using the make check target from the top level
+(the regression tests in 'tests' do run using the top-level check target) so
+that the build would work w/o access to the net.
+
+The rpm spec file has been updated. See INSTALL for information aboutl
+building rpm distributions.
+
+Thanks to Patrice Dumas for help on the autoconf/make, with gnulib and the
+rpm spec file.
+
+News for Release 3.5.1 beta 2005/05/13
+
+I changed some of the build parameters; the utility script is now named
+dap-config, the headers now install into $prefix/include/dap and the static
+library no longer has a version number appended. I've also written a rpm spec
+file which can be used to build a rpm file of/for a binary distribution. At
+this stage you'll need to be pretty savvy with RPM to get it to work; I'll
+write up instructions soon.
+
+News for Release 3.5.0 beta 2005/05/05
+
+Changes in the way the software is organized:
+
+* First, the old 'DODS' CVS module is being broken up to facilitate more
+  frequent releases of software. libdap++ has a new CVS module named
+  'libdap.' To access the software using CVS, use 'cvs co libdap' (where in
+  the past you used 'cvs co DODS/src/dap' or 'cvs co DODS' and then changed
+  into the DODS/src/dap directory).
+
+* The autoconf scripts have been updated; still no libtool or Makefile.am,
+  but the scripts are much more robust.
+
+* The third-party packages are no longer bundled with the library. In a sense
+  they never were, but they _were_ a part of the DODS CVS module. Now it's up
+  to you to get and install the required packages. Look on the web site (or
+  Google) for libxml2 and curl. We build using curl version 7.12.3 and libxml
+  version 2.6.16; curl 7.12.0 and libxml2 2.5.7 should work.
+
+* The libdap software now installs in $prefix/{lib,include,bin} instead of
+  inside the 'DODS tree.' By default $prefix is /usr/local; use the --prefix
+  option of configure to specify a different directory than /usr/local. The
+  library itself installs in $prefix/lib as libdap++.a.3.5; libdap++.a is
+  symbolically linked to that file. The header files now install in
+  $prefix/include/libdap-3.5; $prefix/include/libdap is symbolically linked
+  to that directory. The utilities geturl and opendap-config have been
+  renamed getdap and dap-config, respectively (the name geturl corresponds to
+  another utility). The getdap utility is, except for the name change,
+  exactly the same as geturl. The dap-config script provides a way to
+  determine which libraries should be included when linking with a particular
+  build of libdap++. It also provides information about the version of the
+  library linked to $prefix/lib/libdap++.a and some other stuff. Use
+  dap-config --help for a listing of all the options. Finally, the deflate
+  program, which is used by some servers to provide compressed responses and
+  is called by the library is not stored in $prefix/sbin (excpet on win32
+  where it's stored in $prefix/bin).
+
+  The usage program is not currently installed; once we complete the
+  reorganization process it will find a good home.
+
+Other changes to libdap++:
+
+* The library now uses a factory class to determine how to instantiate
+  specializations of Byte, Int32, et cetera. The class BaseTypeFactory
+  defines the interface for the factory and provides a default implementation
+  of the class. This implementation instantiates Byte, ..., Grid. Also
+  supplied with the library is TestTypeFactory which instantiates the Test
+  type classes (TestByte, ..., TestGrid). If your use of the library requires
+  that the type classes be specialized, then you must modify your software so
+  that it includes a factory class that specializes BaseTypeFactory. Then,
+  when you create a DDS (or DataDDS) pass a pointer to an instance of your
+  factory to the DDS constructor (or use the new DDS::set_factory() method).
+  Look at BaseTypeFactory and the example specialization TestTypeFactory.
+  It's very straightforward to make the change.
+
+  For applications which don't specialize the type classes, the default
+  factory should be fine. To avoid using the new DDS constructor (which
+  requies that a pointer to an instance of BaseTypeFactory be suppiled), your
+  code must #define the symbol DEFAULT_BASETYPE_FACTORY. If this symbol is
+  not defined (at compile time) then various compile-time errors will ocurr
+  (the idea being this will prevent software from building and silently
+  ignoring specializations of the type classes). If defined, this use the
+  default factory class.
+
+  The documentation for the DDS constructor has some more information.
+
+* The library contains support for the DDX object. The DDX will become the
+  foundation of the DAP3 protocol. It uses XML to describe the information
+  currently represented using our 'curly-breace' notation and also bundles
+  the attributes along with the variables they describe. This will simplify
+  many processing tasks for clients. The software provided simplifies
+  generating the DDX by building it from existing DAS and DDS objects.
+
+* There has also been some significant refactoring in DDS and DAS: The
+  DDS:send() method has been copied over to DODSFilter and the version in DDS
+  has been deprecated and will be removed in afuture version of the library.
+  The library uses STL iterators almost exclusively and the next version will
+  eliminate the ancient Pix class.
+
+* The function dods_root() is now called libdap_root() and tests the
+  environment variable LIBDAP_ROOT. If that variable is not set,
+  libdap_root() returns the value passed to the --prefix option of configure
+  or /usr/local if the option was not used. Added to libdap++ is a function
+  libdap_version() which returns the version number of the library. Note that
+  libdap_version() is declared as extern "C" so that it can be used in
+  configure tests to check for the library.
+
+* The servers no longer provide three programs to handle the das, dds and
+  data requests. Instead one *_handler is provided. This reduces the size of
+  the servers by a factor of three and paves the way toward integration of
+  the HTML and ASCII code into the server binary, which will improve the
+  performance and security of those features.
