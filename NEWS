@@ -1,7 +1,7 @@
 
 $Id$
 
-News for Release 3.5.2 beta
+News for Release 3.5.2
 
 This is a beta release of libdap++, version 3.5. 
 
@@ -9,7 +9,21 @@ NOTE: This version of libdap++ cannot be used to build the 3.4.x and previous
 clients and/or servers. However, client and servers built using this code
 _will_ work with the older clients and servers.
 
-News for Release 3.5.2 beta 2005/07/14
+News for Release 3.5.2
+
+Fixed a bug where malformed Error objects from servers caused an exception.
+This caused the original error messageto be lost, not very helpful.
+
+The libray used a compile-time switch to control use of the factory class for
+creation of objects at runtime. This was causing more trouble than it was
+preventing, so I removed it. Code should switch from the 'virtual
+constructors' to the factory class now.
+
+The Test classes in the subdir 'test' should now produce the same values on
+64- and 32-bit machines.
+
+Unit tests should all work (although one of the tests for util.cc is known to
+fail on FC4).
 
 Revamped the build to use automake. 
 

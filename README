@@ -1,7 +1,7 @@
 
 $Id$
 
-Updated for 3.5.1 beta
+Updated for 3.5.2
 
 NOTE: This version of libdap++ cannot be used to build the 3.4.x and previous
 clients and/or servers. However, client and servers built using this code
