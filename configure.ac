@@ -36,16 +36,16 @@ AC_SUBST(LIBDAP_VERSION)
 # Until further notice OS X port doesn't get -gstabs because of an
 # apparent bug in their gcc 3.3 clone (a beta).  If you see this after
 # 1/1/2005, you can probably remove it.
-case "${host_cpu}:${host_vendor}:${host_os}" in
-     powerpc:apple:netbsd* | alphaev56:dec:osf5.* | powerpc:apple:darwin*)
-       CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
-       CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
-       break;;
-    *:*:*)
-       CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
-       CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"}
-       break;;
-esac    
+# case "${host_cpu}:${host_vendor}:${host_os}" in
+#     powerpc:apple:netbsd* | alphaev56:dec:osf5.* | powerpc:apple:darwin*)
+#       CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
+#       CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
+#       break;;
+#    *:*:*)
+#       CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
+#       CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"}
+#       break;;
+# esac    
 
 dnl Default to g++
 
