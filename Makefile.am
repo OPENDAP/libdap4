@@ -1,8 +1,8 @@
 
-# Build libdap++, libtest-types++.a, getdap and deflate
+# Build libdap, libtest-types.a, getdap and deflate
 
 AUTOMAKE_OPTIONS = foreign check-news
-ACLOCAL_AMFLAGS = -I gl/m4
+ACLOCAL_AMFLAGS = -I gl/m4 -I $(datadir)/aclocal
 
 aclocaldir=$(datadir)/aclocal
 

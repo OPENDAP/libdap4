@@ -1,6 +1,6 @@
 
 Name: libdap
-Summary: The C++ DAP2 library from OPeNDAP.
+Summary: The C++ DAP2 library from OPeNDAP
 Version: 3.5.2
 Release: 2
 
@@ -17,7 +17,7 @@ BuildRequires: curl-devel >= 7.12.0 libxml2-devel >= 2.5.7
 
 # This package could be relocatable. In that case uncomment the following
 # line
-# Prefix: %{_prefix}
+Prefix: %{_prefix}
 
 %description
 The libdap++ library contains an implementation of DAP2. This package
@@ -27,14 +27,14 @@ simple command-line tool to read from DAP2 servers. It is built using the
 library and demonstrates simple uses of it. The deflate utility is used by
 the library when it returns compressed responses.
 
-#%package devel
-#Summary: Static libraries and header files from libdap
-#Group: Development/Libraries
-#Requires: %{name} = %{version}-%{release}
+%package devel
+Summary: Static libraries and header files from libdap
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release}
 #
-#%description devel
-#This package contains all the files needed to develop applications that
-#will use libdap.
+%description devel
+This package contains all the files needed to develop applications that
+will use libdap.
 
 %prep
 %setup -q
@@ -63,22 +63,18 @@ rm -rf $RPM_BUILD_ROOT
 %doc README NEWS COPYING COPYRIGHT_URI README.AIS README.dodsrc
 %doc COPYRIGHT_W3C
 
-#%files devel
-#%defattr(-,root,root,-)
+%files devel
+%defattr(-,root,root,-)
 %{_libdir}/libdap.a
 %{_libdir}/libdap.so
 %{_bindir}/dap-config
-%{_includedir}/libdap
+%{_includedir}/libdap/
 %{_datadir}/aclocal/*
 
 %changelog
-* Sat Jul  2 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-4
+* Sat Jul  2 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-2
 - Support for shared libraries
-
-* Tue Jun 21 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-3
 - Add COPYING
-
-* Sun Jun 19 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-2
 - Update with fedora template
 
 * Thu May 12 2005 James Gallagher <jimg@comet.opendap.org> - 3.5.0-1

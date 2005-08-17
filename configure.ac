@@ -33,25 +33,25 @@ AC_SUBST(LIB_REVISION)
 LIBDAP_VERSION="$LIB_CURRENT:$LIB_REVISION:$LIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
 
-# Until further notice OS X port doesn't get -gstabs because of an
-# apparent bug in their gcc 3.3 clone (a beta).  If you see this after
-# 1/1/2005, you can probably remove it.
-# case "${host_cpu}:${host_vendor}:${host_os}" in
-#     powerpc:apple:netbsd* | alphaev56:dec:osf5.* | powerpc:apple:darwin*)
-#       CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
-#       CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
-#       break;;
-#    *:*:*)
-#       CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
-#       CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"}
-#       break;;
-# esac    
+dnl Until further notice OS X port doesn't get -gstabs because of an
+dnl apparent bug in their gcc 3.3 clone (a beta).  If you see this after
+dnl 1/1/2005, you can probably remove it.
+dnl case "${host_cpu}:${host_vendor}:${host_os}" in
+dnl     powerpc:apple:netbsd* | alphaev56:dec:osf5.* | powerpc:apple:darwin*)
+dnl       CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
+dnl       CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
+dnl       break;;
+dnl    *:*:*)
+dnl       CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
+dnl       CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"}
+dnl       break;;
+dnl esac    
 
 dnl Default to g++
 
-CXX=${CXX-g++}
-AC_MSG_RESULT(Setting CXX to $CXX)
-AC_SUBST(CXX)
+dnl CXX=${CXX-g++}
+dnl AC_MSG_RESULT(Setting CXX to $CXX)
+dnl AC_SUBST(CXX)
 
 # Checks for programs.
 AC_PROG_AWK
