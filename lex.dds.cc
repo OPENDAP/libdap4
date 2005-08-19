@@ -556,7 +556,7 @@ char *yytext;
 */
 #line 54 "dds.lex"
 
-#include "config.h"
+#include "config_dap.h"
 
 static char rcsid[] not_used = {"$Id$"};
 

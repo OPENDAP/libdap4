@@ -231,20 +231,12 @@ public:
 	    cerr << "Did not test setting TMPDIR; no test" << endl;
 #endif
 
-#ifndef WIN32
-	if (setenv("TMPDIR", "/usr/local/tmp/", 1) == 0)
-	    CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
-			  "/usr/local/tmp//DODSXXXXXX") == 0);
-	else
-	    cerr << "Did not test setting TMPDIR; no test" << endl;
-
-#if defined(P_tmpdir)
+#if !defined(WIN32) && defined(P_tmpdir)
 	string tmplt = P_tmpdir;
 	tmplt.append("/"); tmplt.append("DODSXXXXXX");
 	putenv("TMPDIR=");
 	CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"), 
 			      tmplt.c_str()) == 0);
-#endif
 #endif
     }
 

@@ -440,7 +440,7 @@ char *yytext;
 */
 #line 44 "gse.lex"
 
-#include "config.h"
+#include "config_dap.h"
 
 static char rcsid[] not_used = {"$Id$"};
 

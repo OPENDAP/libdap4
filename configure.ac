@@ -129,9 +129,9 @@ then
 	version_libcurl=`curl-config --version`
 	version_major=`echo $version_libcurl | sed 's@^libcurl \([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
 	version_minor=`echo $version_libcurl | sed 's@^libcurl \([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
-	if test $version_major -lt 7 || test $version_minor -lt 12
+	if test $version_major -lt 7 || test $version_minor -lt 10 || test $version_minor -lt 6
 	then
-		AC_MSG_ERROR([must have libcurl 7.12.0 or greater, found $version_libcurl])
+		AC_MSG_ERROR([must have libcurl 7.10.6 or greater, found $version_libcurl])
 	fi
 
 	LIBS="$LIBS `curl-config --libs`"
