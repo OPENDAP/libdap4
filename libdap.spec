@@ -11,9 +11,9 @@ Group: Development/Libraries
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 License: LGPL/W3C
 # Mandrake
-#BuildRequires: libcurl3-devel >= 7.12.0 libxml2-devel >= 2.5.7
+#BuildRequires: libcurl3-devel >= 7.10.6 libxml2-devel >= 2.5.7
 # fedora
-BuildRequires: curl-devel >= 7.12.0 libxml2-devel >= 2.5.7
+BuildRequires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 
 # This package could be relocatable. In that case uncomment the following
 # line

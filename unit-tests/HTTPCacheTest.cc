@@ -803,15 +803,16 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HTTPCacheTest);
 int 
 main( int, char** )
 {
+    // Run cleanup here, so that the first run works (since this code now
+    // sets up the tests).
+    system("cd cache-testsuite && ./cleanup.sh");
+
     CppUnit::TextTestRunner runner;
     runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
 
     bool wasSuccessful = runner.run( "", false ) ;
 
     cerr.flush();
-
-    // now clean up the directories
-    system("cd cache-testsuite && ./cleanup.sh");
 
     return wasSuccessful ? 0 : 1;
 }
