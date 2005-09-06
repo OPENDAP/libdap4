@@ -2,7 +2,7 @@
 Name: libdap
 Summary: The C++ DAP2 library from OPeNDAP
 Version: 3.5.2
-Release: 2
+Release: 3
 
 Source0: http://www.opendap.org/pub/3.5/source/%{name}-%{version}.tar.gz
 URL: http://www.opendap.org/
@@ -31,6 +31,7 @@ the library when it returns compressed responses.
 Summary: Static libraries and header files from libdap
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
+Requires: curl-devel >= 7.10.6 libxml2-devel >= 2.5.7
 #
 %description devel
 This package contains all the files needed to develop applications that
@@ -72,6 +73,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/aclocal/*
 
 %changelog
+* Tue Aug 30 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.2-3
+- Add missing Requires
+
 * Sat Jul  2 2005 Patrice Dumas <dumas@centre-cired.fr> - 3.5.1-2
 - Support for shared libraries
 - Add COPYING

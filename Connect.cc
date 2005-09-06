@@ -84,27 +84,6 @@ Connect::process_data(DataDDS &data, Response *rs)
       case dods_data:
       default: {
 	  // Parse the DDS; throw an exception on error.
-#if 0
-	  // KLUDGE ... FIX ... MUDGE ... THINGY
-	  bool newline = false ;
-	  bool done = false ;
-	  int goforward = 0 ;
-	  while( !done )
-	  {
-	    int c = fgetc( rs->get_stream() ) ;
-	    if( c == 10 )
-	    {
-		if( newline )
-		    done = true ;
-		else
-		    newline = true ;
-	    }
-	    else
-		newline = false ;
-	    goforward++ ;
-	  }
-	  fseek( rs->get_stream(), goforward, SEEK_SET ) ;
-#endif
 	  data.parse(rs->get_stream());
 	  XDR *xdr_stream = new_xdrstdio(rs->get_stream(), XDR_DECODE);
 

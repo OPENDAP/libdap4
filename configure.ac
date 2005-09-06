@@ -58,6 +58,7 @@ AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
 
+dnl Call this gnulib macro right after a working C Compiler is found
 gl_EARLY
 
 AM_PROG_LEX
@@ -96,14 +97,19 @@ AC_C_VOLATILE
 DODS_CHECK_SIZES
 
 # Checks for library functions.
-AC_FUNC_CLOSEDIR_VOID
-AC_FUNC_FORK
-AC_FUNC_STRFTIME
-AC_CHECK_FUNCS([alarm bzero getcwd localtime_r pow strchr])
-# Added 04/22/05 jhrg
-AC_CHECK_FUNCS([timegm mktime])
 
-dnl in gnulib
+# These, at least some of them, cannot be used along with gnulib without
+# breaking stuff. Since we are not bothering to handle the cases where these
+# function break, there's not much point in testing for them. However, it
+# might be a good thing to use the gnulib versions since those fix various
+# common problems found in many distributions.
+
+dnl AC_FUNC_CLOSEDIR_VOID
+dnl AC_FUNC_FORK
+dnl AC_FUNC_STRFTIME
+
+dnl in gnulib, but we're not using them due to build problems on Solaris (and
+dnl OS/X). 8/26/05 jhrg
 dnl AC_HEADER_STDBOOL
 dnl AC_FUNC_ALLOCA
 dnl AC_FUNC_ERROR_AT_LINE
@@ -112,14 +118,25 @@ dnl AC_FUNC_MEMCMP
 dnl AC_FUNC_REALLOC
 dnl AC_FUNC_STAT
 dnl AC_FUNC_STRTOD
-dnl AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strstr strtol strtoul])
+
+AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strtol strtoul timegm mktime])
 
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
+gl_MODULES(regex)
 
-dnl Removed "timegm mktime" jhrg 7/11/05 And "error" jhrg 7/28/05
-gl_MODULES(alloca stdbool malloc memcmp realloc strftime strtod atexit dup2 getpagesize memmove memset putenv setenv strerror strstr strtol strtoul regex)
 gl_INIT
+
+dnl 8/26/05 jhrg:
+dnl
+dnl Removed all modules except regex (which we need on a fair number of 
+dnl machines)  due to problems with the Solaris build. Modules orig. used:
+dnl "alloca stdbool malloc memcmp realloc strftime strtod atexit dup2 
+dnl getpagesize memmove memset putenv setenv strerror strstr strtol strtoul
+dnl timegm mktime error"
+
+
+dnl gl_REGEX
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
 dnl the AC_CHECK_LIB macro is not needed.
