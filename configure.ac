@@ -33,27 +33,7 @@ AC_SUBST(LIB_REVISION)
 LIBDAP_VERSION="$LIB_CURRENT:$LIB_REVISION:$LIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
 
-dnl Until further notice OS X port doesn't get -gstabs because of an
-dnl apparent bug in their gcc 3.3 clone (a beta).  If you see this after
-dnl 1/1/2005, you can probably remove it.
-dnl case "${host_cpu}:${host_vendor}:${host_os}" in
-dnl     powerpc:apple:netbsd* | alphaev56:dec:osf5.* | powerpc:apple:darwin*)
-dnl       CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
-dnl       CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"}
-dnl       break;;
-dnl    *:*:*)
-dnl       CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
-dnl       CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"}
-dnl       break;;
-dnl esac    
-
-dnl Default to g++
-
-dnl CXX=${CXX-g++}
-dnl AC_MSG_RESULT(Setting CXX to $CXX)
-dnl AC_SUBST(CXX)
-
-# Checks for programs.
+dnl Checks for programs.
 AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
@@ -66,27 +46,19 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
-dnl AC_PROG_RANLIB
 
 dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
 dnl Makfile will call bison -y which doesn't know how to make the parsers 
 dnl we require. jhrg 6/15/05
 AC_CHECK_PROG(YACC,[bison],[bison])
 
-dnl Find where perl lives on the user's system
-dnl DODS_PROG_PERL
-dnl Find where GNU tar lives on the user's system
-dnl DODS_PROG_GTAR
-
-dnl AC_CHECK_PROG(VALGRIND, valgrind, [valgrind --leak-check=yes])
-
-# Checks for header files.
+dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h malloc.h memory.h netinet/in.h stddef.h stdlib.h string.h strings.h sys/param.h sys/time.h unistd.h])
 
-# Checks for typedefs, structures, and compiler characteristics.
+dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -100,16 +72,13 @@ DODS_CHECK_SIZES
 
 # These, at least some of them, cannot be used along with gnulib without
 # breaking stuff. Since we are not bothering to handle the cases where these
-# function break, there's not much point in testing for them. However, it
+# functions break, there's not much point in testing for them. However, it
 # might be a good thing to use the gnulib versions since those fix various
 # common problems found in many distributions.
 
 dnl AC_FUNC_CLOSEDIR_VOID
 dnl AC_FUNC_FORK
 dnl AC_FUNC_STRFTIME
-
-dnl in gnulib, but we're not using them due to build problems on Solaris (and
-dnl OS/X). 8/26/05 jhrg
 dnl AC_HEADER_STDBOOL
 dnl AC_FUNC_ALLOCA
 dnl AC_FUNC_ERROR_AT_LINE
@@ -119,24 +88,25 @@ dnl AC_FUNC_REALLOC
 dnl AC_FUNC_STAT
 dnl AC_FUNC_STRTOD
 
+dnl using AC_CHECK_FUNCS does not run macros from gnulib.
 AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strtol strtoul timegm mktime])
 
+dnl Run 'gnulib-tool --import' if there's a configure script already built
+dnl that has the SOURCE_BASE, ..., directives in it. Otherwise, look in 
+dnl gl/Makefile for the gnulib-tool command to use. Here's what gnulib-tool
+dnl said on given only 'regex' as the file list argument:
+dnl
+dnl You may need to add #include directives for the following .h files.
+dnl  #include "gettext.h"
+dnl  #include "regex.h"
+dnl  #include <alloca.h>
+dnl  #include <stdlib.h>
+ 
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
 gl_MODULES(regex)
 
 gl_INIT
-
-dnl 8/26/05 jhrg:
-dnl
-dnl Removed all modules except regex (which we need on a fair number of 
-dnl machines)  due to problems with the Solaris build. Modules orig. used:
-dnl "alloca stdbool malloc memcmp realloc strftime strtod atexit dup2 
-dnl getpagesize memmove memset putenv setenv strerror strstr strtol strtoul
-dnl timegm mktime error"
-
-
-dnl gl_REGEX
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
 dnl the AC_CHECK_LIB macro is not needed.
