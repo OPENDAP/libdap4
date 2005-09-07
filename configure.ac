@@ -104,7 +104,7 @@ dnl  #include <stdlib.h>
  
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
-gl_MODULES(regex)
+gl_MODULES(regex alloca)
 
 gl_INIT
 
