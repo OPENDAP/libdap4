@@ -287,14 +287,23 @@ string date_time_str(time_t *calendar, bool local)
     	strftime(buf, 40, "%a, %d %b %Y %H:%M:%S GMT", gmt);
 #endif /* SOLARIS || _REENTRANT */
     }
-#else
+
+#else  /* !HAVE_STRFTIME */
+
     if (local) {
 #if defined(_REENTRANT)
 	struct tm loctime;
 	localtime_r(calendar, &loctime);
+	sprintf(buf,"%s, %02d %s %04d %02d:%02d:%02d",
+		wkdays[loctime.tm_wday],
+		loctime.tm_mday,
+		months[loctime.tm_mon],
+		loctime.tm_year + 1900,
+		loctime.tm_hour,
+		loctime.tm_min,
+		loctime.tm_sec);
 #else
 	struct tm *loctime = localtime(calendar);
-#endif /* _REENTRANT */
 	sprintf(buf,"%s, %02d %s %04d %02d:%02d:%02d",
 		wkdays[loctime->tm_wday],
 		loctime->tm_mday,
@@ -303,13 +312,21 @@ string date_time_str(time_t *calendar, bool local)
 		loctime->tm_hour,
 		loctime->tm_min,
 		loctime->tm_sec);
+#endif /* _REENTRANT */
     } else {
 #if defined(_REENTRANT) || defined(SOLARIS)
 	struct tm gmt;
 	gmtime_r(calendar, &gmt);
+	sprintf(buf,"%s, %02d %s %04d %02d:%02d:%02d GMT",
+		wkdays[gmt.tm_wday],
+		gmt.tm_mday,
+		months[gmt.tm_mon],
+		gmt.tm_year + 1900,
+		gmt.tm_hour,
+		gmt.tm_min,
+		gmt.tm_sec);
 #else
 	struct tm *gmt = gmtime(calendar);
-#endif
 	sprintf(buf,"%s, %02d %s %04d %02d:%02d:%02d GMT",
 		wkdays[gmt->tm_wday],
 		gmt->tm_mday,
@@ -318,6 +335,7 @@ string date_time_str(time_t *calendar, bool local)
 		gmt->tm_hour,
 		gmt->tm_min,
 		gmt->tm_sec);
+#endif
     }
 #endif
     return string(buf);
