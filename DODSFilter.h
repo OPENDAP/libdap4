@@ -110,13 +110,29 @@ protected:
     time_t d_anc_dds_lmt;	// Last modified time of the anc. DDS.
     time_t d_if_modified_since;	// Time from a conditional request.
 
+#if 0
+    // This is now public so that DODSFilter can be used in the BES code,
+    // which does not get command line switches like the 3.x server 'handler'
+    // programs. Instead, the BES will use the set_*() methods to transfer
+    // values from the DODSDataHandlerInterface object to an instance of this
+    // class.
     DODSFilter() {}		// Private default ctor.
+#endif
 
+    void initialize();
     void initialize(int argc, char *argv[]) throw(Error);
 
     virtual int process_options(int argc, char *argv[]) throw(Error);
 
 public:
+    /** Make an empty instance. Use the set_*() methods to load with needed
+        values. You must call at least set_dataset_name() or be requesting
+        version information. 
+
+        @todo Add methods to provide a way to set all of the parameters
+        this class contains. They can currently only be set using the 
+        argc/argv command line parameters. */
+    DODSFilter() { initialize(); }
     DODSFilter(int argc, char *argv[]) throw(Error);
 
     virtual ~DODSFilter();
@@ -167,21 +183,27 @@ public:
 
     virtual void send_version_info();
 
-    virtual void send_das(DAS &das, const string &anc_location = "");
+    virtual void send_das(DAS &das, const string &anc_location = "",
+                          bool with_mime_headers = true);
 
     virtual void send_das(ostream &os, DAS &das,
-			  const string &anc_location="");
+			  const string &anc_location="",
+                          bool with_mime_headers = true);
 
-    virtual void send_das(FILE *out, DAS &das, const string &anc_location="");
+    virtual void send_das(FILE *out, DAS &das, const string &anc_location="",
+                          bool with_mime_headers = true);
 
     virtual void send_dds(DDS &dds, bool constrained = false,
-			  const string &anc_location = "");
+			  const string &anc_location = "",
+                          bool with_mime_headers = true);
 
     virtual void send_dds(ostream &os, DDS &dds, bool constrained = false,
-			  const string &anc_location = "");
+			  const string &anc_location = "",
+                          bool with_mime_headers = true);
 
     virtual void send_dds(FILE *out, DDS &dds, bool constrained = false,
-			  const string &anc_location = "");
+			  const string &anc_location = "",
+                          bool with_mime_headers = true);
 
     virtual void functional_constraint(BaseType &var, DDS &dds, FILE *out, 
 				       time_t lmt) throw(Error);
@@ -189,11 +211,12 @@ public:
 	throw(Error);
 
     virtual void send_data(DDS &dds, FILE *data_stream,
-			   const string &anc_location = "");
+			   const string &anc_location = "",
+                           bool with_mime_headers = true);
 
-    virtual void send_ddx(DDS &dds, FILE *out);
+    virtual void send_ddx(DDS &dds, FILE *out, bool with_mime_headers = true);
     
-    virtual void send_blob(DDS &dds, FILE *out);
+    virtual void send_blob(DDS &dds, FILE *out, bool with_mime_headers = true);
 };
 
 // $Log: DODSFilter.h,v $

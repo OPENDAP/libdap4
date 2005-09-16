@@ -29,6 +29,8 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+// #define DODS_DEBUG
+
 #include "debug.h"
 #include "util.h"
 #include "escaping.h"
@@ -61,6 +63,7 @@ public:
 
     CPPUNIT_TEST_SUITE(generalUtilTest);
 
+#if 1
     CPPUNIT_TEST(prune_spaces_test);
     CPPUNIT_TEST(path_to_filename_test);
     CPPUNIT_TEST(hexstring_test);
@@ -68,13 +71,14 @@ public:
     CPPUNIT_TEST(id2www_test);
     CPPUNIT_TEST(www2id_test);
     CPPUNIT_TEST(ce_string_parse_test);
+#endif
     CPPUNIT_TEST(escattr_test);
+#if 1
     CPPUNIT_TEST(munge_error_message_test);
     CPPUNIT_TEST(get_tempfile_template_test);
-
     CPPUNIT_TEST(id2xml_test);
     CPPUNIT_TEST(xml2id_test);
-
+#endif
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods

@@ -60,6 +60,9 @@ CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
 
 # MAINTAINERCLEANFILES = $(LEX_YACC_FILES)
 
+docs:
+	doxygen doxy.conf
+
 #############################################################################
 # Library sources
 # 

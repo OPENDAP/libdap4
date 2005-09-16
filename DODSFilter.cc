@@ -159,25 +159,28 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
 DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
 {
     initialize(argc, argv);
+
+    DBG(cerr << "d_comp: " << d_comp << endl);
+    DBG(cerr << "d_ce: " << d_ce << endl);
+    DBG(cerr << "d_cgi_ver: " << d_cgi_ver << endl);
+    DBG(cerr << "d_response: " << d_response << endl);
+    DBG(cerr << "d_anc_dir: " << d_anc_dir << endl);
+    DBG(cerr << "d_anc_file: " << d_anc_file << endl);
+    DBG(cerr << "d_cache_dir: " << d_cache_dir << endl);
+    DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
+    DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
+    DBG(cerr << "d_url: " << d_url << endl);
+    DBG(cerr << "d_timeout: " << d_timeout << endl);
 }
 
 DODSFilter::~DODSFilter()
 {
 }
 
-/** Initialialize. Specializations can call this once an empty DODSFilter has
-    been created using the default constructor. Using a method such as this
-    provides a way to specialize the process_options() method and then have
-    that specialization called by the subclass' constructor. 
-
-    This class and any class that specializes it should call this method in
-    its constructor. Note that when this method is called, the object is \e
-    not fully constructed. 
-
-    @param argc The argument count
-    @param argv The vector of char * argument strings. */
+/** Called when initializing a DODSFilter that's not going to be passed a
+    command line arguments. */
 void
-DODSFilter::initialize(int argc, char *argv[]) throw(Error)
+DODSFilter::initialize()
 {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
@@ -195,17 +198,34 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     d_anc_dds_lmt = 0;
     d_if_modified_since = -1;
     d_url = "";
+    d_program_name = "Unknown";
+    d_timeout = 0;
 
 #ifdef WIN32
-    	//  We want serving from win32 to behave in a manner
-	//  similiar to the UNIX way - no CR->NL terminated lines
-	//  in files. Hence stdout goes to binary mode.
-	_setmode(_fileno(stdout), _O_BINARY);
+        //  We want serving from win32 to behave in a manner
+        //  similiar to the UNIX way - no CR->NL terminated lines
+        //  in files. Hence stdout goes to binary mode.
+        _setmode(_fileno(stdout), _O_BINARY);
 #endif
+}
+
+/** Initialialize. Specializations can call this once an empty DODSFilter has
+    been created using the default constructor. Using a method such as this
+    provides a way to specialize the process_options() method and then have
+    that specialization called by the subclass' constructor. 
+
+    This class and any class that specializes it should call this method in
+    its constructor. Note that when this method is called, the object is \e
+    not fully constructed. 
+
+    @param argc The argument count
+    @param argv The vector of char * argument strings. */
+void
+DODSFilter::initialize(int argc, char *argv[]) throw(Error)
+{
+    initialize();
 
     d_program_name = argv[0];
-
-    d_timeout = 0;
 
     // This should be specialized by a subclass. This may throw Error.
     int next_arg = process_options(argc, argv);
@@ -213,28 +233,12 @@ DODSFilter::initialize(int argc, char *argv[]) throw(Error)
     // Look at what's left after processing the command line options. Either
     // there MUST be a dataset name OR the caller is asking for version
     // information. If neither is true, then the options are bad.
-    if(next_arg < argc)
+    if (next_arg < argc) {
 	d_dataset = argv[next_arg];
+        d_dataset = www2id(d_dataset, "%", "%20");
+    }
     else if (get_response() != Version_Response)		
 	print_usage(); 		// Throws Error
-
-    // Both dataset and ce could be set at this point (dataset must be, ce
-    // might be). If they contain any WWW-style esacpes (%<hex digit>,hex
-    // digit>) then undo that escaping.
-    d_dataset = www2id(d_dataset, "%", "%20");
-    d_ce = www2id(d_ce, "%", "%20");
-
-    DBG(cerr << "d_comp: " << d_comp << endl);
-    DBG(cerr << "d_ce: " << d_ce << endl);
-    DBG(cerr << "d_cgi_ver: " << d_cgi_ver << endl);
-    DBG(cerr << "d_response: " << d_response << endl);
-    DBG(cerr << "d_anc_dir: " << d_anc_dir << endl);
-    DBG(cerr << "d_anc_file: " << d_anc_file << endl);
-    DBG(cerr << "d_cache_dir: " << d_cache_dir << endl);
-    DBG(cerr << "d_conditional_request: " << d_conditional_request << endl);
-    DBG(cerr << "d_if_modified_since: " << d_if_modified_since << endl);
-    DBG(cerr << "d_url: " << d_url << endl);
-    DBG(cerr << "d_timeout: " << d_timeout << endl);
 }
 
 /** Processing the command line options passed to the filter is handled by
@@ -353,7 +357,7 @@ DODSFilter::get_dataset_name()
 void
 DODSFilter::set_dataset_name(const string ds)
 {
-  d_dataset = ds;
+  d_dataset = www2id(ds, "%", "%20");
 }
 
 /** Get the URL. This returns the URL, minus the constraint originally sent
@@ -428,7 +432,8 @@ DODSFilter::set_response(const string &r) throw(Error)
 }
 
 /** Get the enum name of the response to be returned. */
-DODSFilter::Response DODSFilter::get_response()
+DODSFilter::Response 
+DODSFilter::get_response()
 {
     return d_response;
 }
@@ -714,16 +719,21 @@ DODSFilter::send_version_info()
     fflush( stdout ) ;
 }
 
+/**
+    @param with_mime_headers If true (the default) send MIME headers. */
 void
-DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location)
+DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location,
+                     bool with_mime_headers)
 {
     time_t das_lmt = get_das_last_modified_time(anc_location);
     if (is_conditional()
-	&& das_lmt <= get_request_if_modified_since()) {
+	&& das_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
 	set_mime_not_modified(os);
     }
     else {
-	set_mime_text(os, dods_das, d_cgi_ver, x_plain, das_lmt);
+        if (with_mime_headers)
+	    set_mime_text(os, dods_das, d_cgi_ver, x_plain, das_lmt);
 	das.print(os);
     }
 }
@@ -736,32 +746,38 @@ DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location)
     @param out The output stream to which the DAS is to be sent.
     @param das The DAS object to be sent.
     @param anc_location The directory in which the external DAS file resides.
+    @param with_mime_headers If true (the default) send MIME headers. 
     @return void
     @see DAS */
 void
-DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location)
+DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
+                     bool with_mime_headers)
 {
     time_t das_lmt = get_das_last_modified_time(anc_location);
     if (is_conditional()
-	&& das_lmt <= get_request_if_modified_since()) {
+	&& das_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
 	set_mime_not_modified(out);
     }
     else {
-	set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
+        if (with_mime_headers)
+	    set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
 	das.print(out);
     }
     fflush( stdout ) ;
 }
 
 void
-DODSFilter::send_das(DAS &das, const string &anc_location)
+DODSFilter::send_das(DAS &das, const string &anc_location,
+                     bool with_mime_headers)
 {
-    send_das(stdout, das, anc_location);
+    send_das(stdout, das, anc_location, with_mime_headers);
 }
 
 void
 DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
-		     const string &anc_location)
+		     const string &anc_location,
+                     bool with_mime_headers)
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
@@ -769,11 +785,13 @@ DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional() 
-	&& dds_lmt <= get_request_if_modified_since()) {
+	&& dds_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
 	set_mime_not_modified(os);
     }
     else {
-	set_mime_text(os, dods_dds, d_cgi_ver, x_plain, dds_lmt);
+        if (with_mime_headers)
+	    set_mime_text(os, dods_dds, d_cgi_ver, x_plain, dds_lmt);
 	if (constrained)
 	    dds.print_constrained(os);
 	else
@@ -793,11 +811,13 @@ DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
     current constraint expression and send the `constrained DDS'
     back to the client. 
     @param anc_location The directory in which the external DAS file resides.
+    @param with_mime_headers If true (the default) send MIME headers. 
     @return void
     @see DDS */
 void
 DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
-		     const string &anc_location)
+		     const string &anc_location,
+                     bool with_mime_headers)
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
@@ -805,11 +825,13 @@ DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional() 
-	&& dds_lmt <= get_request_if_modified_since()) {
+	&& dds_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
 	set_mime_not_modified(out);
     }
     else {
-	set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
+        if (with_mime_headers)
+	    set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
 	if (constrained)
 	    dds.print_constrained(out);
 	else
@@ -820,9 +842,10 @@ DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
 }
 
 void
-DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location)
+DODSFilter::send_dds(DDS &dds, bool constrained, const string &anc_location,
+                     bool with_mime_headers)
 {
-    send_dds(stdout, dds, constrained, anc_location);
+    send_dds(stdout, dds, constrained, anc_location, with_mime_headers);
 }
 
 // 'lmt' unused. Should it be used to supply a LMT or removed from the
@@ -894,14 +917,16 @@ DODSFilter::dataset_constraint(DDS &dds, FILE *out, time_t /* lmt */)
     get_data_last_modified_time(). 
     @return void */
 void
-DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
+DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
+                      bool with_mime_headers)
 {
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response. 
     time_t data_lmt = get_data_last_modified_time(anc_location);
     if (is_conditional()
-	&& data_lmt <= get_request_if_modified_since()) {
+	&& data_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
 	set_mime_not_modified(data_stream);
 	return;
     }
@@ -916,8 +941,9 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
 
     // Start sending the response... 
     bool compress = d_comp && deflate_exists();
-    set_mime_binary(data_stream, dods_data, d_cgi_ver,
-		    (compress) ? deflate : x_plain, data_lmt);
+    if (with_mime_headers)
+        set_mime_binary(data_stream, dods_data, d_cgi_ver,
+		        (compress) ? deflate : x_plain, data_lmt);
     fflush(data_stream);
 
     int childpid;
@@ -947,7 +973,7 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location)
     @param out Destination
     @param dds The dataset's DDS \e with attributes in the variables. */
 void
-DODSFilter::send_ddx(DDS &dds, FILE *out)
+DODSFilter::send_ddx(DDS &dds, FILE *out, bool with_mime_headers)
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (!d_ce.empty())
@@ -959,7 +985,8 @@ DODSFilter::send_ddx(DDS &dds, FILE *out)
     // response, do that and exit. Otherwise, continue on and send the full
     // response. 
     if (is_conditional()
-	&& data_lmt <= get_request_if_modified_since()) {
+	&& data_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
 	set_mime_not_modified(out);
 	return;
     }
@@ -970,9 +997,10 @@ DODSFilter::send_ddx(DDS &dds, FILE *out)
 
 /** Write the BLOB response to the client.
     @param dds Use the variables in this DDS to generate the BLOB response.
-    @param out Dump the response to this FILE pointer. */
+    @param out Dump the response to this FILE pointer.
+    @param with_mime_headers If true (the default) send MIME headers. */
 void
-DODSFilter::send_blob(DDS &dds, FILE *out)
+DODSFilter::send_blob(DDS &dds, FILE *out, bool with_mime_headers)
 {
     bool compress = d_comp && deflate_exists();
     time_t data_lmt = get_data_last_modified_time(d_anc_dir);
@@ -980,7 +1008,8 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response. 
-    if (is_conditional() && data_lmt <= get_request_if_modified_since()) {
+    if (is_conditional() && data_lmt <= get_request_if_modified_since()
+        && with_mime_headers) {
 	set_mime_not_modified(out);
 	return;
     }
@@ -993,8 +1022,9 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 	if (!var)
 	    throw Error("Error calling the CE function.");
 
-	set_mime_binary(out, dods_data, d_cgi_ver,
-			(compress) ? deflate : x_plain, data_lmt);
+        if (with_mime_headers)
+	    set_mime_binary(out, dods_data, d_cgi_ver,
+			    (compress) ? deflate : x_plain, data_lmt);
       
 	FILE *comp_sink;
 	XDR *xdr_sink;
@@ -1007,8 +1037,9 @@ DODSFilter::send_blob(DDS &dds, FILE *out)
 	clean_sinks(childpid, compress, xdr_sink, comp_sink);
     }
     else {
-	set_mime_binary(out, dods_data, d_cgi_ver,
-			(compress) ? deflate : x_plain, data_lmt);
+        if (with_mime_headers)
+	    set_mime_binary(out, dods_data, d_cgi_ver,
+			    (compress) ? deflate : x_plain, data_lmt);
     
 	FILE *comp_sink;
 	XDR *xdr_sink;
