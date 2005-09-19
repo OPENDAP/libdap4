@@ -44,6 +44,7 @@ class Array;
 class Structure;
 class Sequence;
 class Grid;
+class BaseType;
 
 /** A factory to create instances of the leaf nodes of BaseType (Byte, ...
     Grid). Clients of libdap++ which require special behavior for the types
