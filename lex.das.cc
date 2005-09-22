@@ -556,7 +556,7 @@ char *yytext;
    printed das can be reparsed. 9/28/94. 
 */
 #line 63 "das.lex"
-#include "config.h"
+#include "config_dap.h"
 
 static char rcsid[] not_used ={"$Id$"};
 
@@ -1005,17 +1005,18 @@ YY_RULE_SETUP
 #line 172 "das.lex"
 {
                           if (yytext) {
-                            fprintf(stderr, "Character `%c' is not", *yytext);
+                            fprintf(stderr, "Character '%c' (%d) is not",
+                            	    *yytext, *yytext);
                             fprintf(stderr, " allowed.");
 			  }
 			}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 178 "das.lex"
+#line 179 "das.lex"
 ECHO;
 	YY_BREAK
-#line 1019 "lex.das.c"
+#line 1020 "lex.das.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1895,7 +1896,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 178 "das.lex"
+#line 179 "das.lex"
 
 
 // These three glue routines enable DDS to reclaim the memory used to parse a

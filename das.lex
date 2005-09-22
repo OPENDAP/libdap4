@@ -171,7 +171,8 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 
 {NEVER}                 {
                           if (yytext) {
-                            fprintf(stderr, "Character `%c' is not", *yytext);
+                            fprintf(stderr, "Character '%c' (%d) is not",
+                            	    *yytext, *yytext);
                             fprintf(stderr, " allowed.");
 			  }
 			}
