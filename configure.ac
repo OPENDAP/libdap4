@@ -6,7 +6,9 @@ AC_PREREQ(2.57)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
 AC_INIT(libdap, 3.5.2, dods-tech@unidata.ucar.edu)
 AC_CONFIG_SRCDIR([AISConnect.cc])
+AC_CONFIG_AUX_DIR(conf)
 AM_CONFIG_HEADER([config.h dods-datatypes.h])
+
 AM_INIT_AUTOMAKE
 
 AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])

@@ -2,7 +2,7 @@
 # Build libdap, libtest-types.a, getdap and deflate
 
 AUTOMAKE_OPTIONS = foreign check-news
-ACLOCAL_AMFLAGS = -I m4 -I gl/m4
+ACLOCAL_AMFLAGS = -I conf -I gl/m4
 
 aclocaldir=$(datadir)/aclocal
 
@@ -54,7 +54,7 @@ EXTRA_DIST = ChangeLog COPYING README.AIS README.dodsrc COPYRIGHT_URI	 \
 	COPYRIGHT_W3C GNU/README doxy.conf doxy_private.conf libdap.spec \
 	win32 $(LEX_YACC_EXTRA) $(LEX_YACC_FILES)
 
-dist_aclocal_DATA = m4/libdap.m4
+dist_aclocal_DATA = conf/libdap.m4
 
 CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
 
