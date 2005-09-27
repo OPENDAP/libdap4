@@ -1,0 +1,174 @@
+#!/bin/sh
+
+top_builddir="."
+SHELL=/bin/sh
+LIBTOOL="${SHELL} ${top_builddir}/libtool"
+EXEEXT=""
+exec_prefix="tmpbin"
+bindir="bin"
+libdir="lib"
+sharedir="share/aclocal"
+sbindir="sbin"
+bin_PROGRAMS="dap-config"
+bin_PROGRAMS1="getdap"
+lib_PROGRAMS="libdap.la"
+share_PROGRAMS="conf/libdap.m4"
+sbin_PROGRAMS="deflate"
+mkdir_p="mkdir -p --"
+binPROGRAMS_INSTALL="install -c"
+sbinPROGRAMS_INSTALL="install -c"
+libPROGRAMS_INSTALL="install -c -s"
+datPROGRAMS_INSTALL="install -c -m 644"
+#install-binPROGRAMS: $(bin_PROGRAMS)
+
+if test "$1" = "-u"
+   then 
+   if test -n "$2"
+   then 
+      DESTDIR="$2"
+   else
+        echo "Do you want to uninstall libdap? y/n"
+        read et
+        if test $et == "y" || test $et == "Y"
+        then 
+            echo "Please enter the prefix of installation directory for the uninstallation"
+            read DESTDIR;
+        else
+            exit 1
+        fi
+   fi
+   if test -z "$DESTDIR"
+   then
+       exit 1
+   fi
+   ## start unstalling process
+   echo "UNINSTALLING bin directory"
+   `unalias rm`
+      for p in $bin_PROGRAMS
+      do
+         if test -f $p
+          then
+          echo " removing '$p' at '${DESTDIR}/${bindir}'"
+          rm -f "${DESTDIR}/${bindir}/$p" || exit 1
+         fi
+      done
+      for p in $bin_PROGRAMS1
+      do
+         if test -f $p
+          then
+          echo " removing '$p' at '${DESTDIR}/${bindir}'"
+          rm -f "${DESTDIR}/${bindir}/$p" || exit 1
+         fi
+      done
+
+      echo "UNINSTALLING lib directory"
+      lib_PROGRAMS="libdap*"
+      for p in `ls ${DESTDIR}/${libdir}/$lib_PROGRAMS`
+      do
+         if test -f $p
+          then
+          echo " removing '$p' at '${DESTDIR}/${libdir}'"
+         rm -f "$p" || exit 1
+         fi
+      done
+      echo "UNINSTALLING share directory"
+      for p in $share_PROGRAMS
+      do
+         if test -f $p
+          then
+          f=`echo $p | sed 's|^.*/||'`
+          echo " removing '$f' at '${DESTDIR}/${sharedir}'"
+          rm -f "${DESTDIR}/${sharedir}/$f" || exit 1
+         fi
+      done
+
+      echo "UNINSTALLING sbin directory"
+      for p in $sbin_PROGRAMS
+      do
+         if test -f $p
+          then
+          echo " removing '$p' at '${DESTDIR}/${sbindir}'"
+          rm -f "${DESTDIR}/${sbindir}/$p" || exit 1
+         fi
+      done
+## finish unstalling
+
+elif test "$1" = "-i"
+   then 
+   if test -n "$2"
+   then 
+        DESTDIR="$2"
+   else
+        echo "Please enter the prefix of installation directory, for example, entering /usr/local if the installation directory is /usr/local/bin"
+        read DESTDIR;
+   fi
+   if test -z "$DESTDIR"
+   then
+       echo "invalid or no directory entered"
+       exit 1
+   fi
+   echo "Installing bin directory"
+   test -z "${DESTDIR}/${bindir}" || ${mkdir_p} "${DESTDIR}/${bindir}"
+   for p in $bin_PROGRAMS
+   do
+      if test -f $p
+       then 
+       sed 's@^prefix=.*$@prefix='${DESTDIR}'/bin@' < $p > ${p}.tmp
+       echo " INSTALLIGN '$p' at '${bindir}'"
+      ${INSTALL_PROGRAM_ENV} ${LIBTOOL} --mode=install ${binPROGRAMS_INSTALL} "$p.tmp" "${DESTDIR}/${bindir}/$p" || exit 1
+      fi
+   done
+   for p in $bin_PROGRAMS1
+   do
+      if test -f $p
+       then 
+       echo " INSTALLING '$p' at '${bindir}'"
+       ${binPROGRAMS_INSTALL} "$p" "${DESTDIR}/${bindir}/$p" || exit 1
+      fi
+   done
+
+   echo "Installing lib directory"
+   test -z "${DESTDIR}/${libdir}" || ${mkdir_p} "${DESTDIR}/${libdir}"
+   for p in $lib_PROGRAMS
+   do
+      if test -f $p
+       then 
+       echo " INSTALLING '$p' at '${libdir}'"
+      ${INSTALL_PROGRAM_ENV} ${LIBTOOL} --mode=install ${libPROGRAMS_INSTALL} "$p" "${DESTDIR}/${libdir}/$p" || exit 1
+      fi
+   done
+
+   echo "Installing share directory"
+   test -z "${DESTDIR}/${sharedir}" || ${mkdir_p} "${DESTDIR}/${sharedir}"
+   for p in $share_PROGRAMS
+   do
+      if test -f $p
+       then 
+       f=`echo $p | sed 's|^.*/||'`
+       echo " INSTALLING '$f' at '${sharedir}'"
+       ${datPROGRAMS_INSTALL} "$p" "${DESTDIR}/${sharedir}/$f" || exit 1
+      fi
+   done
+
+   echo "Installing sbin directory"
+   test -z "${DESTDIR}/${sbindir}" || ${mkdir_p} "${DESTDIR}/${sbindir}"
+   for p in $sbin_PROGRAMS
+   do
+      if test -f $p
+       then 
+       echo " INSTALLING '$p' at '${sbindir}'"
+      ${INSTALL_PROGRAM_ENV} ${LIBTOOL} --mode=install ${sbinPROGRAMS_INSTALL} "$p" "${DESTDIR}/${sbindir}/$p" || exit 1
+      fi
+   done
+##finish installing
+else
+   echo "USAGE:"
+   usage="installdap [OPTION] DIRECTORY"
+   echo ${usage}
+   echo "OR"
+   usage="installdap [OPTION]"
+   echo ${usage}
+   echo "Options:"
+      echo " -i   install dap library"
+      echo " -u   uninstall dap library"
+fi
