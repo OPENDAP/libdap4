@@ -124,18 +124,18 @@ AC_DEFUN([gl_REGEX],
       [Define to rpl_re_syntax_options if the replacement should be used.])
     AC_DEFINE([re_set_syntax], [rpl_re_set_syntax],
       [Define to rpl_re_set_syntax if the replacement should be used.])
-    AC_DEFINE([re_compile_pattern], [rpl_re_compile_pattern],
-      [Define to rpl_re_compile_pattern if the replacement should be used.])
-    AC_DEFINE([re_compile_fastmap], [rpl_re_compile_fastmap],
-      [Define to rpl_re_compile_fastmap if the replacement should be used.])
+dnl    AC_DEFINE([re_compile_pattern], [rpl_re_compile_pattern],
+dnl      [Define to rpl_re_compile_pattern if the replacement should be used.])
+dnl    AC_DEFINE([re_compile_fastmap], [rpl_re_compile_fastmap],
+dnl      [Define to rpl_re_compile_fastmap if the replacement should be used.])
     AC_DEFINE([re_search], [rpl_re_search],
       [Define to rpl_re_search if the replacement should be used.])
-    AC_DEFINE([re_search_2], [rpl_re_search_2],
-      [Define to rpl_re_search_2 if the replacement should be used.])
+dnl    AC_DEFINE([re_search_2], [rpl_re_search_2],
+dnl      [Define to rpl_re_search_2 if the replacement should be used.])
     AC_DEFINE([re_match], [rpl_re_match],
       [Define to rpl_re_match if the replacement should be used.])
-    AC_DEFINE([re_match_2], [rpl_re_match_2],
-      [Define to rpl_re_match_2 if the replacement should be used.])
+dnl    AC_DEFINE([re_match_2], [rpl_re_match_2],
+dnl      [Define to rpl_re_match_2 if the replacement should be used.])
     AC_DEFINE([re_set_registers], [rpl_re_set_registers],
       [Define to rpl_re_set_registers if the replacement should be used.])
     AC_DEFINE([re_comp], [rpl_re_comp],
