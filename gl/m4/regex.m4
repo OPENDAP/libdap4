@@ -119,6 +119,9 @@ AC_DEFUN([gl_REGEX],
     ;;
   esac
 
+dnl I hacked this code because on Mac OS/X these four symbols can up as 
+dnl undefined. This hack doesn't break the linux build. jhrg 9/27/05
+
   if test $ac_use_included_regex = yes; then
     AC_DEFINE([re_syntax_options], [rpl_re_syntax_options],
       [Define to rpl_re_syntax_options if the replacement should be used.])
