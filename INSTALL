@@ -44,6 +44,10 @@ Building from Our SVN Repository
   with build files that don't work, use 'autoreconf --force --verbose' and
   then './configure;make'.
 
+  To get new functions from gnulib, run:
+  ../gnulib/gnulib-tool --import --lgpl --source-base=gl --m4-base=gl/m4 \
+  --aux-dir=conf --libtool --no-changelog regex
+
 REQUIREMENTS
 
   o To build from a fresh SVN checkout, you'll need automake 1.9.2, autoconf

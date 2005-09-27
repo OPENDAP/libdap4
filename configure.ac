@@ -93,20 +93,9 @@ dnl AC_FUNC_STRTOD
 dnl using AC_CHECK_FUNCS does not run macros from gnulib.
 AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strtol strtoul timegm mktime])
 
-dnl Run 'gnulib-tool --import' if there's a configure script already built
-dnl that has the SOURCE_BASE, ..., directives in it. Otherwise, look in 
-dnl gl/Makefile for the gnulib-tool command to use. Here's what gnulib-tool
-dnl said on given only 'regex' as the file list argument:
-dnl
-dnl You may need to add #include directives for the following .h files.
-dnl  #include "gettext.h"
-dnl  #include "regex.h"
-dnl  #include <alloca.h>
-dnl  #include <stdlib.h>
- 
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
-gl_MODULES(regex alloca)
+gl_MODULES(regex)
 
 gl_INIT
 
