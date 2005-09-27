@@ -318,7 +318,8 @@ escattr(string s) {
     const string ESCQUOTE = ESC + QUOTE;
 
     // escape non-printing characters with octal escape
-    int index = 0, matchlen;
+    unsigned int index = 0;
+    int matchlen;
     // See trac item 210. With the change to gnulib's regex functions, the
     // original version of this broke. 9/16/05 jhrg
     index = nonprintable.search(s.c_str(), s.size(), matchlen, index);

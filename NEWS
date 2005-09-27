@@ -1,13 +1,10 @@
 
 $Id$
 
-News for Release 3.5.2
+News for Release 3.5.3
 
-This is a beta release of libdap++, version 3.5. 
-
-NOTE: This version of libdap++ cannot be used to build the 3.4.x and previous
-clients and/or servers. However, client and servers built using this code
-_will_ work with the older clients and servers.
+Fixed a bug in the gnulib regular expression software which caused a
+segmentation fault in some cases. 
 
 News for Release 3.5.2
 
