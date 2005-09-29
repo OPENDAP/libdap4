@@ -62,7 +62,10 @@ string www2id(string s, const string &escape = "%",
 string id2xml(string in, const string &not_allowed = "><&'\"");
 string xml2id(string in);
 
+#if 0
 string esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]");
+#endif
+string esc2underscore(string s);
 string char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
 string unescattr(string s);
