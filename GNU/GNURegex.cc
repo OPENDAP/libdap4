@@ -23,13 +23,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   exception. 06/06/03 jhrg
  */
 
-#if 0
-#include <string.h>
-#endif
-
-#if 0
-#include "gettext.h"
-#endif
 #include "regex.h"
 #include <alloca.h>
 #include <stdlib.h>

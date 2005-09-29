@@ -263,8 +263,11 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]")
     Regex escregx(escape.c_str(), 1);
 
     int index=0, matchlen;
-    while ((index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1)
+    index = escregx.search(s.c_str(), s.size(), matchlen, index);
+    while (index < s.length()) {
 	s.replace(index, matchlen, "_");
+	index = escregx.search(s.c_str(), s.size(), matchlen, ++index);
+    }
 
     return s;
 }
@@ -289,7 +292,8 @@ char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]")
     Regex escregx(escape.c_str(), 1);
 
     int i=0, matchlen;
-    while ((i = escregx.search(s.c_str(), s.size(), matchlen, i)) != -1) {
+    i = escregx.search(s.c_str(), s.size(), matchlen, i);
+    while (i < s.length()) {
 	if (escape == "%[0-7][0-9a-fA-F]" && matchlen == 3)
 	    s.replace(i, 1, "_");
 	else {
@@ -300,6 +304,7 @@ char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]")
 	    ostringstream ostr;
 	    ostr << "_" << hexstring(ascii);
 	    s.replace(i, matchlen, ostr.str());
+	    ++i;
 	}
     }
 
@@ -366,23 +371,27 @@ unescattr(string s) {
 
     // unescape any octal-escaped ASCII characters
     int index = 0, matchlen;
-    while ( (index = escregx.search(s.c_str(), s.size(), matchlen, index)) != -1) {
+    index = escregx.search(s.c_str(), s.size(), matchlen, index);
+    while (index < s.length()) {
 	s.replace(index,4, unoctstring(s.substr(index+1,3)));
-	index++;
+	index += 3;
+	index = escregx.search(s.c_str(), s.size(), matchlen, index);
     }
 
     // unescape any escaped quotes
     index = 0;
-    while ( (index = escquoteregex.search(s.c_str(), s.size(), matchlen, index)) != -1) {
-	s.replace(index+1,2, QUOTE);
-	index++;
+    index = escquoteregex.search(s.c_str(), s.size(), matchlen, index);
+    while (index < s.length()) {
+	s.replace(index+1, 2, QUOTE);
+	index = escquoteregex.search(s.c_str(), s.size(), matchlen, ++index);
     }
 
     // unescape any escaped backslashes
     index = 0;
-    while ( (index = escescregex.search(s.c_str(), s.size(), matchlen, index)) != -1) {
-	s.replace(index,2, ESC);
-	index++;
+    index = escescregex.search(s.c_str(), s.size(), matchlen, index);
+    while (index < s.length()) {
+	s.replace(index, 2, ESC);
+	index = escescregex.search(s.c_str(), s.size(), matchlen, ++index);
     }
 
     return s;
