@@ -258,6 +258,20 @@ xml2id(string in)
     allows the function to be used to map other patterns to an underscore.
     @return The modified string. */
 string 
+esc2underscore(string s)
+{
+    string::size_type pos = s.find('%');
+    while (pos != string::npos) {
+        s.replace(pos, 3, "_");
+        pos = s.find('%');
+    }
+    
+    return s;
+}
+
+#if 0
+// Original version
+string 
 esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]")
 {
     Regex escregx(escape.c_str(), 1);
@@ -265,12 +279,13 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]")
     int index=0, matchlen;
     index = escregx.search(s.c_str(), s.size(), matchlen, index);
     while (index < s.length()) {
-	s.replace(index, matchlen, "_");
-	index = escregx.search(s.c_str(), s.size(), matchlen, ++index);
+        s.replace(index, matchlen, "_");
+        index = escregx.search(s.c_str(), s.size(), matchlen, ++index);
     }
 
     return s;
 }
+#endif
 
 /** Given a string, replace any characters that match the regular expression
     with \c _<ASCII code> where \c <ASCII code> is the ASCII code for the
@@ -291,21 +306,23 @@ char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]")
 {
     Regex escregx(escape.c_str(), 1);
 
-    int i=0, matchlen;
+    unsigned int i=0;
+    int matchlen;
     i = escregx.search(s.c_str(), s.size(), matchlen, i);
     while (i < s.length()) {
-	if (escape == "%[0-7][0-9a-fA-F]" && matchlen == 3)
-	    s.replace(i, 1, "_");
-	else {
-	    if (matchlen != 1)
-		throw InternalErr(__FILE__, __LINE__, "A caller supplied value for the regular expression in escape should match exactly one character.");
+        if (escape == "%[0-7][0-9a-fA-F]" && matchlen == 3)
+            s.replace(i, 1, "_");
+        else {
+            if (matchlen != 1)
+                throw InternalErr(__FILE__, __LINE__, "A caller supplied value for the regular expression in escape should match exactly one character.");
 
-	    unsigned char ascii = *(s.substr(i, 1).data());
-	    ostringstream ostr;
-	    ostr << "_" << hexstring(ascii);
-	    s.replace(i, matchlen, ostr.str());
-	    ++i;
-	}
+            unsigned char ascii = *(s.substr(i, 1).data());
+            ostringstream ostr;
+            ostr << "_" << hexstring(ascii);
+            s.replace(i, matchlen, ostr.str());
+            i += 3;
+            i = escregx.search(s.c_str(), s.size(), matchlen, i);
+        }
     }
 
     return s;
@@ -370,7 +387,8 @@ unescattr(string s) {
     const string ESCQUOTE = ESC + QUOTE;
 
     // unescape any octal-escaped ASCII characters
-    int index = 0, matchlen;
+    int matchlen;
+    unsigned int index = 0;
     index = escregx.search(s.c_str(), s.size(), matchlen, index);
     while (index < s.length()) {
 	s.replace(index,4, unoctstring(s.substr(index+1,3)));
