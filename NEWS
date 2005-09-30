@@ -3,9 +3,20 @@ $Id$
 
 News for Release 3.5.3
 
-Fixed a bug in the gnulib regular expression software which caused a
-segmentation fault in some cases. 
+Changes to the Regex software. I've reimplemented the GNURegex code to 
+use the only the POSIX functions. Because of this there are some subtle
+changes in the way the class Regex works. 
 
+1) Meta characters like '{' now have to be escaped like '\\{'
+2) See the docs for the Regex::match and Regex::serach methods. Regex:match 
+   returns the number of characters that match or -1 if there's no match.
+   Regex::serach returns the position of the _first_ match (not the longest
+   as with POSIX) and the length of that first match in the value-result
+   parameter 'matchlen'.
+3) The Regex constructor now takes only one argument, the regular expression
+   to compile. There's a second ctor that takes a second parameter (an int)
+   but it is a dummy.
+   
 News for Release 3.5.2
 
 Fixed a bug where malformed Error objects from servers caused an exception.
