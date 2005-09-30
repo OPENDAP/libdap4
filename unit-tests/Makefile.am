@@ -32,12 +32,15 @@ CLEANFILES = testout .dodsrc
 # Unit Tests
 #
 
-UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT iterT	\
+UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT iterT RegexTest	\
 	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
 	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
 	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
 	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
 	SignalHandlerTest
+
+RegexTest_SOURCES = RegexTest.cc
+RegexTest_LDADD = -lcppunit ../libdap.la
 
 AISDatabaseParserTest_SOURCES = AISDatabaseParserTest.cc
 AISDatabaseParserTest_LDADD = -lcppunit ../libdap.la

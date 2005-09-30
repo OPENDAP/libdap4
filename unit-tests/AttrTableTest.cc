@@ -230,15 +230,20 @@ String longer%20name \"second test\";";
 	    e.display_message();
 	    CPPUNIT_ASSERT("Caught Error exception!" && false);
 	}
-
-	ostringstream oss;
-	top->print(oss, "");
-	Regex r("Data%20Field {\n\
+        try {
+	    ostringstream oss;
+	    top->print(oss, "");
+	    Regex r("Data%20Field \\{\n\
 .*String long%20name first;\n\
 .*Alias an%20alias long%20name;\n\
-}\n");
-	CPPUNIT_ASSERT(re_match(r, oss.str().c_str()));
-	delete top; top = 0;
+\\}\n");
+	    CPPUNIT_ASSERT(re_match(r, oss.str().c_str()));
+	    delete top; top = 0;
+        }
+        catch (Error &e) {
+            e.display_message();
+            CPPUNIT_ASSERT("Caught Error exception!" && false);
+        }
     }
 
     void get_attr_iter_test() {

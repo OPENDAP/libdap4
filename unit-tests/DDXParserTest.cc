@@ -130,9 +130,13 @@ public:
 	    DBG(dds->print_xml(stdout, false, "    "));
 	}
 	catch (DDXParseFailed &e) {
-	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+	    DBG(cerr << endl << "DDXParseFailed: " << e.get_error_message() << endl);
 	    CPPUNIT_ASSERT(!"test.04.ddx failed.");
 	}
+        catch (Error &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_ASSERT(!"test.04.ddx failed.");
+        }
     }
 
     void top_level_simple_types_with_attributes_test() {
@@ -282,7 +286,7 @@ main( int, char** )
 
     bool wasSuccessful = runner.run( "", false ) ;
 
-    return 0;
+    return (wasSuccessful) ? 0 : 1;
 }
 
 // $Log: DDXParserTest.cc,v $

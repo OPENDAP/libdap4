@@ -64,8 +64,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include <algorithm>
 #include <stdexcept>
 
-#include "GNURegex.h"
-
 #include "BaseType.h"
 #include "Str.h"
 #include "Url.h"

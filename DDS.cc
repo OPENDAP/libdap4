@@ -53,7 +53,9 @@ static char rcsid[] not_used = {"$Id$"};
 #include <algorithm>
 #include <functional>
 
+#if 1
 #include "GNURegex.h"
+#endif
 
 #include "expr.h"
 #include "Clause.h"
@@ -326,10 +328,10 @@ DDS::is_global_attr(string name)
     @param name The name of the attribute.
     @return True if the name fits a pattern of attributes known to not mesh
     well with DDS objects. */
-static bool
+static inline bool
 is_in_kill_file(const string &name)
 {
-    static Regex dim(".*_dim_[0-9]*", 1); // HDF `dimension' attributes.
+    static Regex dim(".*_dim_[0-9]*"); // HDF `dimension' attributes.
 
     return dim.match(name.c_str(), name.length()) != -1;
 }

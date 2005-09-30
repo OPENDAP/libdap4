@@ -251,20 +251,15 @@ xml2id(string in)
 
 /** Return a string that has all the \c %&lt;hex digit&gt;&lt;hex digit&gt; 
     sequences replaced with underscores (`_').
+
     @param s The string to transform
-    @param escape A regular expression which matches the 
-    \c %&lt;hd&gt;&lt;hd&gt; pattern.
-    By default this is the string "%[0-7][0-9a-fA-F]". Replacing the pattern
-    allows the function to be used to map other patterns to an underscore.
     @return The modified string. */
 string 
 esc2underscore(string s)
 {
-    string::size_type pos = s.find('%');
-    while (pos != string::npos) {
+    string::size_type pos;
+    while ((pos = s.find('%')) != string::npos)
         s.replace(pos, 3, "_");
-        pos = s.find('%');
-    }
     
     return s;
 }
@@ -301,6 +296,7 @@ esc2underscore(string s, const string escape = "%[0-7][0-9a-fA-F]")
     replace. Note: Make sure that any expression given matches only a single
     character at a time (the default regex is handled specially).
     @return The modified string. */
+#if 0
 string 
 char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]") 
 {
@@ -327,19 +323,31 @@ char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]")
 
     return s;
 }
+#endif
 
 /** Escape non-printable characters and quotes from an HDF attribute.
     @param s The attribute to modify.
     @return The modified attribute. */
 string 
 escattr(string s) {
-    Regex nonprintable("[^ !-~]", 1);
+#if 1
+    Regex nonprintable("[^ !-~]");
+#endif
+#if 0
+    const string printable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"";
+#endif
     const string ESC = "\\";
     const string DOUBLE_ESC = ESC + ESC;
     const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
 
     // escape non-printing characters with octal escape
+#if 0
+    string::size_type ind = 0;
+    while ( (ind = s.find_first_not_of(printable, ind)) != s.npos)
+        s.replace(ind, 1, ESC + octstring(s[ind]));
+#endif
+#if 1
     unsigned int index = 0;
     int matchlen;
     // See trac item 210. With the change to gnulib's regex functions, the
@@ -352,6 +360,7 @@ escattr(string s) {
         index = nonprintable.search(s.c_str(), s.size(), matchlen, index+4);
         DBG(cerr << "s: " << s << ", matchlen: " << matchlen << ", index: " << index << endl);
     }
+#endif
 
     // escape " with backslash
     string::size_type ind = 0;
@@ -379,9 +388,9 @@ escattr(string s) {
     @param s The escaped attribute. @return The unescaped attribute. */
 string 
 unescattr(string s) {
-    Regex escregx("\\\\[01][0-7][0-7]", 1);  // matches 4 characters
-    Regex escquoteregex("[^\\\\]\\\\\"", 1);  // matches 3 characters
-    Regex escescregex("\\\\\\\\",1);      // matches 2 characters
+    Regex escregx("\\\\[01][0-7][0-7]");  // matches 4 characters
+    Regex escquoteregex("[^\\\\]\\\\\"");  // matches 3 characters
+    Regex escescregex("\\\\\\\\");      // matches 2 characters
     const string ESC = "\\";
     const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;

@@ -120,7 +120,7 @@ public:
     void set_mime_text_test() {
 	Regex r1("HTTP/1.0 200 OK\n\
 XDODS-Server: dods-test/0.00\n\
-Date: \\(.*\\)\n\
+Date: (.*)\n\
 Last-Modified: \\1\n\
 Content-type: text/plain\n\
 Content-Description: dods_das\n\
@@ -131,7 +131,7 @@ Content-Description: dods_das\n\
 
 	Regex r2("HTTP/1.0 200 OK\n\
 XDODS-Server: dods-test/0.00\n\
-Date: \\(.*\\)\n\
+Date: (.*)\n\
 Last-Modified: \\1\n\
 Content-type: text/plain\n\
 Content-Description: dods_dds\n\
@@ -145,7 +145,7 @@ Content-Description: dods_dds\n\
 	time_t t = mktime(&tm);
 	Regex r3("HTTP/1.0 200 OK\n\
 XDODS-Server: dods-test/0.00\n\
-Date: \\(.*\\)\n\
+Date: .*\n\
 Last-Modified: Sat, 01 Jan 2000 ..:00:00 GMT\n\
 Content-type: text/plain\n\
 Content-Description: dods_dds\n\

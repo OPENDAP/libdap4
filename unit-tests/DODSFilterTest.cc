@@ -32,7 +32,6 @@
 #include "DODSFilter.h"
 #include "DAS.h"
 #include "GNURegex.h"
-#define DODS_DEBUG
 #include "debug.h"
 
 using namespace CppUnit;
@@ -195,13 +194,12 @@ Last-Modified: .*\n\
 Content-type: text/plain\n\
 Content-Description: dods_das\n\
 \n\
-Attributes {\n\
-    a {\n\
+Attributes \\{\n\
+    a \\{\n\
         Int32 size 7;\n\
         String type cars;\n\
-    }\n\
-}.*\n\
-");
+    \\}\n\
+\\}.*\n");
 	df->send_das(oss, *das);
 
 	DBG(cerr << "DAS: " << oss.str() << endl);

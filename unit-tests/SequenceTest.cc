@@ -43,7 +43,7 @@ using namespace std;
 //  Note: MS VC++ won't tolerate the embedded newlines in strings, hence the \n
 //  is explicit.
 static const char *s_as_string = \
-"BaseType (0x.*):\n\
+"BaseType \\(0x.*\\):\n\
           _name: s\n\
           _type: Sequence\n\
           _read_p: 0\n\
@@ -51,7 +51,7 @@ static const char *s_as_string = \
           _synthesized_p: 0\n\
           d_parent: 0\n\
           d_attr: 0x.*\n\
-BaseType (0x.*):\n\
+BaseType \\(0x.*\\):\n\
           _name: i1\n\
           _type: Int32\n\
           _read_p: 0\n\
@@ -59,7 +59,7 @@ BaseType (0x.*):\n\
           _synthesized_p: 0\n\
           d_parent: 0x.*\n\
           d_attr: 0x.*\n\
-BaseType (0x.*):\n\
+BaseType \\(0x.*\\):\n\
           _name: str1\n\
           _type: String\n\
           _read_p: 0\n\
@@ -67,7 +67,7 @@ BaseType (0x.*):\n\
           _synthesized_p: 0\n\
           d_parent: 0x.*\n\
           d_attr: 0x.*\n\
-BaseType (0x.*):\n\
+BaseType \\(0x.*\\):\n\
           _name: i2\n\
           _type: Int32\n\
           _read_p: 0\n\
@@ -75,8 +75,7 @@ BaseType (0x.*):\n\
           _synthesized_p: 0\n\
           d_parent: 0x.*\n\
           d_attr: 0x.*\n\
-\n\
-";
+\n";
 
 static Regex s_regex(s_as_string);
 

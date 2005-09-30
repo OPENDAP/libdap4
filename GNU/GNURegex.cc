@@ -1,145 +1,123 @@
-/* 
-Copyright (C) 1988 Free Software Foundation
-    written by Doug Lea (dl@rocky.oswego.edu)
 
-This file is part of the GNU C++ Library.  This library is free
-software; you can redistribute it and/or modify it under the terms of
-the GNU Library General Public License as published by the Free
-Software Foundation; either version 2 of the License, or (at your
-option) any later version.  This library is distributed in the hope
-that it will be useful, but WITHOUT ANY WARRANTY; without even the
-implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the GNU Library General Public License for more details.
-You should have received a copy of the GNU Library General Public
-License along with this library; if not, write to the Free Software
-Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/
+// -*- mode: c++; c-basic-offset:4 -*-
 
-/* 
-  Regex class implementation
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
 
-  NB: I tried to replace the lib_error_handler() calls with STL exceptions,
-  but I can't figure out where/if gcc 3.2.2 defines the children of
-  exception. 06/06/03 jhrg
- */
+// Copyright (c) 2005 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#include "regex.h"
-#include <alloca.h>
-#include <stdlib.h>
- 
 #include <new>
 #include <string>
 #include <stdexcept>
 
 #include <GNURegex.h>
+#include <Error.h>
 
 using namespace std;
 
+void
+Regex::init(const char *t) throw(Error)
+{
+    int result = regcomp(&d_preg, t, REG_EXTENDED);
+
+    if  (result != 0) {
+        size_t msg_len = regerror(result, &d_preg, (char *)NULL, (size_t)0);
+        char *msg = new char[msg_len+1];
+        regerror(result, &d_preg, msg, msg_len);
+        Error e(string("Regex error: ") + string(msg));
+        delete[] msg;
+        throw e;
+    }
+}
+
 Regex::~Regex()
 {
-    if (buf->buffer) free(buf->buffer);
-    if (buf->fastmap) free(buf->fastmap);
-    if (buf->translate) free (buf->translate);
-
-    if (reg->start)
-	free (reg->start);
-    if (reg->end)
-	free (reg->end);
-
-    delete(buf);
-    delete(reg);
+    regfree(&d_preg);
 }
 
-Regex::Regex(const char* t, int fast, int bufsize, 
-	     const char* transtable)
+/** Initialize a POSIX regular expression (using the 'extended' features).
+
+    @param t The regular expression pattern. */
+Regex::Regex(const char* t) throw(Error)
 {
-    int tlen = (t == 0)? 0 : strlen(t);
-    buf = new re_pattern_buffer;
-    memset (buf, 0, sizeof(re_pattern_buffer));
-    reg = new re_registers;
-    reg->start = 0;
-    reg->end = 0;
-
-    if (fast)
-	buf->fastmap = (char*)malloc(256);
-    else
-	buf->fastmap = 0;
-
-#if 0
-    buf->translate = (unsigned char*)transtable;
-#endif
-    buf->translate = (char*)transtable;
-    if (tlen > bufsize)
-	bufsize = tlen;
-    buf->allocated = bufsize;
-    buf->buffer = (unsigned char *)malloc(buf->allocated);
-#if 0
-    buf->buffer = (char *)malloc(buf->allocated);
-#endif
-
-    const char* msg = re_compile_pattern((const char*)t, tlen, buf);
-    if (msg != 0) {
-	throw std::invalid_argument(string("Regex: ") + string(msg));
-    }
-    else if (fast)
-	re_compile_fastmap(buf);
+    init(t);
 }
 
+/** Compatability ctor.
+    @see Regex::Regex(const char* t) */
+Regex::Regex(const char* t, int) throw(Error)
+{
+    init(t);
+}
+
+/** Does the regular expression match the string? 
+    @param s The string
+    @param len The length of string to consider
+    @param pos Start looking at this position in the string
+    @return The number of characters that match, -1 if there's no match. */
 int 
-Regex::match_info(int& start, int& length, int nth) const
+Regex::match(const char*s, int len, int pos) const
 {
-    if ((unsigned)(nth) >= RE_NREGS)
-	return 0;
-    else {
-	start = reg->start[nth];
-	length = reg->end[nth] - start;
-	return start >= 0 && length >= 0;
-    }
+    regmatch_t pmatch[1];
+    string ss = s;
+    
+    int result = regexec(&d_preg, ss.substr(pos, len).c_str(), 1, pmatch, 0);
+    if (result == REG_NOMATCH)
+        return -1;
+
+    
+    return pmatch[0].rm_eo - pmatch[0].rm_so;
 }
 
+/** Does the regular expression match the string? 
+    @param s The string
+    @param len The length of string to consider
+    @param matchlen Return the length of the matched portion in this 
+    value-result parameter.
+    @param pos Start looking at this position in the string
+    @return The start position of the first match. This is different from 
+    POSIX regular expressions, whcih return the start position of the 
+    longest match. */
 int 
-Regex::search(const char* s, int len, int& matchlen, int startpos) const
+Regex::search(const char* s, int len, int& matchlen, int pos) const
 {
-    int matchpos, pos, range;
-    if (startpos >= 0) {
-	pos = startpos;
-	range = len - startpos;
+    // alloc space for len matches, which is theoretical max.
+    regmatch_t *pmatch = new regmatch_t[len];
+    string ss = s;
+     
+    int result = regexec(&d_preg, ss.substr(pos, len).c_str(), len, pmatch, 0);
+    if (result == REG_NOMATCH) {
+        delete[] pmatch; pmatch = 0;
+        return -1;
     }
-    else {
-	pos = len + startpos;
-	range = -pos;
-    }
-    matchpos = re_search_2(buf, 0, 0, (char*)s, len, pos, range, reg, len);
-    if (matchpos >= 0)
-	matchlen = reg->end[0] - reg->start[0];
-    else
-	matchlen = 0;
+
+    // Match found, find the first one (pmatch lists the longest first)
+    int m = 0;
+    for (int i = 1; i < len; ++i)
+        if (pmatch[i].rm_so != -1 && pmatch[i].rm_so < pmatch[m].rm_so)
+            m = i;
+            
+    matchlen = pmatch[m].rm_eo - pmatch[m].rm_so;
+    int matchpos = pmatch[m].rm_so;
+    
+    delete[] pmatch; pmatch = 0;
     return matchpos;
 }
 
-int 
-Regex::match(const char*s, int len, int p) const
-{
-    if (p < 0) {
-	p += len;
-	if (p > len)
-	    return -1;
-	return re_match_2(buf, 0, 0, (char*)s, p, 0, reg, p);
-    }
-    else if (p > len)
-	return -1;
-    else
-	return re_match_2(buf, 0, 0, (char*)s, len, p, reg, len);
-}
-
-int 
-Regex::OK() const
-{
-    // can't verify much, since we've lost the original string
-    int v = buf != 0;             // have a regex buf
-    v &= buf->buffer != 0;        // with a pat
-    if (!v)
-	throw std::domain_error(string("Regex: ")
-				+ string("invariant failure"));
-    return v;
-}

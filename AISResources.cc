@@ -33,14 +33,7 @@
 #include "AISResources.h"
 #include "AISDatabaseParser.h"
 
-using std::ostream ;
-using std::ofstream ;
-using std::endl ;
-
-#ifdef WIN32  //  Gives us find_if
 using namespace std;
-#endif
-
 
 /** Output the XML fragment for a Resource. This function is a friend of the
     Resource class. 
