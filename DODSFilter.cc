@@ -960,7 +960,8 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
     else
 	dataset_constraint(dds, data_stream, data_lmt);
     
-    fclose(data_stream);
+    //fclose(data_stream);
+    fflush(data_stream);
     if (compress)
 	WAITPID(childpid);
 }
