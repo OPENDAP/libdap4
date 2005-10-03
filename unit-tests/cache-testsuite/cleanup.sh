@@ -4,6 +4,7 @@
 
 rm -rf dods_cache
 cp -r dods_cache_init dods_cache
+rm -rf `find dods_cache -name .svn`
 #svn up dods_cache
 
 rm -rf gc_cache
