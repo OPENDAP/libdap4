@@ -5,7 +5,8 @@ News for Release 3.5.3
 
 Changes to the Regex software. I've reimplemented the GNURegex code to 
 use the only the POSIX functions. Because of this there are some subtle
-changes in the way the class Regex works. 
+changes in the way the class Regex works. These changes address bugs that
+show up on Mac OS/X 10.4 (Tiger).
 
 1) Meta characters like '{' now have to be escaped like '\\{'
 2) See the docs for the Regex::match and Regex::serach methods. Regex:match 
@@ -17,6 +18,11 @@ changes in the way the class Regex works.
    to compile. There's a second ctor that takes a second parameter (an int)
    but it is a dummy.
    
+Build improvements from Patrice Dumas.
+
+Added a Mac OS/X package and RedHat rpm/srpm targets. There's also a pmsp
+file for use with Mac's PackageMaker.
+
 News for Release 3.5.2
 
 Fixed a bug where malformed Error objects from servers caused an exception.

@@ -63,6 +63,26 @@ CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
 docs:
 	doxygen doxy.conf
 
+###########################################################################
+
+# Build linux RPMs
+
+srpm: dist
+	rpmbuild -ts @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+
+rpm: dist
+	rpmbuild -tb @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+
+###########################################################################
+
+# Build OS/X Packages
+
+pkg:
+	./configure --prefix=`pwd`/mac_osx
+	make clean install
+	
+# LocalWords:  mex Mathworks automake loaddap jhrg
+
 #############################################################################
 # Library sources
 # 
