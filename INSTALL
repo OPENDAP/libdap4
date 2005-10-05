@@ -104,16 +104,20 @@ NOTES
     information it needs. Only developers working on libdap should ever have
     to do this.
 
-  o To build a rpm file for a source or binary distribution: 1) Use 'make
-    dist' to build a libdap-*.tar.gz file; 2) Copy that to ~/rpm/SOURCES,
-    and; 3) Run 'rpmbuild -ts ~/rpm/SOURCES/libdap-3.5.1.tar.gz' to make the
-    source package. Use '-tb' to make the binary package. I use a
-    ~/.rpmmacros file that contains:
-
-	%_topdir		/home/jimg/rpm
-	%_tmppath               /home/jimg/rpm/tmp
-
+  o To build a rpm file for a source or binary distribution use 'make rpm' or 
+    'make srpm'. These targets should run 'make dist' to build the required
+    tar.gz file first. You may need root privleges for these targets to work.
     
+  o To build a Mac OS/X package, use the 'pkg' target of the Makfile
+    and then start PackageMaker and open libdap_osx_package.pmsp.
+    Make sure to update Welcome.html, ReadMe.txt and License.txt. Note
+    that those files can be edited fairly easily in emacs using
+    set-fill-column 55. If they are wider than 55 columns they look
+    awful. Since a .pkg file is really a directory (aka bundle) you'll
+    need to put the in either a tar.gz file or a disk image. To make a
+    disk image use DiskUtility and choose 'New Image.' Make the disk
+    image 300k bigger then the size of the package. Once created, copy
+    the package to the image.
 
   o DEBUGGING AIDS
 

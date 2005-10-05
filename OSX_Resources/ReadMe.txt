@@ -8,9 +8,9 @@ the 3.4.x and previous clients and/or servers. However,
 client and servers built using this code _will_ work
 with the older clients and servers.
 
-WHAT'S IN THIS DIRECTORY?
+WHAT'S IN THIS PACKAGE?
 
-This directory contains the OPeNDAP C++ implementation
+This package contains the OPeNDAP C++ implementation
 of the Data Access Protocol version 2 (DAP2) with some
 extensions that will be part of DAP3. Documentation for
 this software can be found on the OPeNDAP home page at
@@ -45,13 +45,13 @@ functions which simplify building clients and servers.
 
 WHAT ELSE IS THERE?
 
-The file README.dodsrc describes the client-side
+The README:dodsrc section describes the client-side
 behavior which can be controlled using the .dodsrc
 file. This includes client-side caching, proxy servers,
 et c., and is described in a separate file so it's easy
 to include in your clients.
 
-The file README.AIS describes the prototype Ancillary
+The README:AIS section describes the prototype Ancillary
 Information Service (AIS) included in this version of
 the library. The AIS is (currently) a client-side
 capability which provides a way to augment DAP
@@ -95,7 +95,7 @@ COPYRIGHT_W3C.
 
 -----------------------------------------------------
 
-README.dodsrc
+README: dodsrc
 
 The DODS client-side configuration file (.dodsrc) is
 used to configure how clients cache responses and how
@@ -255,7 +255,7 @@ where <protocol> is as for PROXY_SERVER
 
 ---------------------------------------------------
 
-README.AIS
+README: AIS
 
 Notes for the prototype AIS implementation:
 
@@ -322,7 +322,7 @@ use the AIS subsystem I've built. The AIS itself is
 contained in the classes AISMerge, AISDatabaseParser
 and AISResources.
 
-*****************************************************************************
+****************************************************
 
 Here are some notes I made while I wrote the code:
 
