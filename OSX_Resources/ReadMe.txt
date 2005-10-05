@@ -1,5 +1,5 @@
 
-$Id: README 11951 2005-08-16 20:39:45Z jimg $
+$Id$
 
 Updated for 3.5.2
 
