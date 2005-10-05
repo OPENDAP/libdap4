@@ -23,9 +23,9 @@ Dataset {
     Int32 b%23c\[10\];
     Float64 c%23d;
     Grid {
-     ARRAY:
+      Array:
         Byte Image%23data\[512\];
-     MAPS:
+      Maps:
         String colors\[512\];
     } huh;
 } test.19;"

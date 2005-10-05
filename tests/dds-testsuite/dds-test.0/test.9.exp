@@ -60,9 +60,9 @@ Dataset {
         } data;
     } exp;
     Grid {
-     ARRAY:
+      Array:
         Float64 g\[10\]\[10\]\[10\];
-     MAPS:
+      Maps:
         Float64 lat\[10\];
         Float64 lon\[10\];
         Float64 weirdness\[10\];

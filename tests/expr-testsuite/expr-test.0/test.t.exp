@@ -49,9 +49,9 @@ set test_equation {"Data-Set-2.fakeDim0\[0:3\],Data-Set-2.fakeDim1\[0:3\]"}
 set test_out "The complete DDS:
 Dataset {
     Grid {
-     ARRAY:
+      Array:
         Float64 Data-Set-2\[fakeDim0 = 72\]\[fakeDim1 = 144\];
-     MAPS:
+      Maps:
         Float64 fakeDim0\[72\];
         Float64 fakeDim1\[144\];
     } Data-Set-2;

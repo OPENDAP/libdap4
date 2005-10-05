@@ -20,9 +20,9 @@ set test_out "DDS past semantic check
 DDS past full semantic check
 Dataset {
     Grid {
-     ARRAY:
+      Array:
         Byte temp\[100\]\[7\];
-     MAPS:
+      Maps:
         Float64 steps\[100\];
         String colors\[7\];
     } oddTemp;

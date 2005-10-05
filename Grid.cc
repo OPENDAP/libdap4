@@ -563,11 +563,11 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
 	// we have a valid Grid object; send it as such.
 	os << space << type_name() << " {" << endl;
 
-	os << space << " ARRAY:" << endl;
+	os << space << "  Array:" << endl;
 	_array_var->print_decl(os, space + "    ", true, constraint_info,
 			       constrained);
 
-	os << space << " MAPS:" << endl;
+	os << space << "  Maps:" << endl;
 	for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); i++)
 	{
 	    (*i)->print_decl(os, space + "    ", true,
@@ -635,11 +635,11 @@ Grid::print_decl(FILE *out, string space, bool print_semi,
 	// we have a valid Grid object; send it as such.
 	fprintf( out, "%s%s {\n", space.c_str(), type_name().c_str() ) ;
 
-	fprintf( out, "%s ARRAY:\n", space.c_str() ) ;
+	fprintf( out, "%s  Array:\n", space.c_str() ) ;
 	_array_var->print_decl(out, space + "    ", true, constraint_info,
 			       constrained);
 
-	fprintf( out, "%s MAPS:\n", space.c_str() ) ;
+	fprintf( out, "%s  Maps:\n", space.c_str() ) ;
 	for (Map_citer i = _map_vars.begin(); i != _map_vars.end(); i++)
 	{
 	    (*i)->print_decl(out, space + "    ", true,
@@ -713,12 +713,12 @@ Grid::print_val(ostream &os, string space, bool print_decl_p)
     // the value of this function should be ignored. 4/6/2000 jhrg
     bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
     if (pyg || !send_p())
-	os << "{ ARRAY: ";
+	os << "{  Array: ";
     else
 	os << "{";
     _array_var->print_val(os, "", false);
     if (pyg || !send_p())
-	os << " MAPS: ";
+	os << "  Maps: ";
     for (Map_iter i = _map_vars.begin(); i != _map_vars.end(); 
 	 i++, (void)(i != _map_vars.end() && os << ", "))
     {
@@ -744,12 +744,12 @@ Grid::print_val(FILE *out, string space, bool print_decl_p)
     // the value of this function should be ignored. 4/6/2000 jhrg
     bool pyg = projection_yields_grid(); // hack 12/1/99 jhrg
     if (pyg || !send_p())
-	fprintf( out, "{ ARRAY: " ) ;
+	fprintf( out, "{  Array: " ) ;
     else
 	fprintf( out, "{" ) ;
     _array_var->print_val(out, "", false);
     if (pyg || !send_p())
-	fprintf( out, " MAPS: " ) ;
+	fprintf( out, "  Maps: " ) ;
     for( Map_citer i = _map_vars.begin(); i != _map_vars.end(); 
 	 i++, (void)(i != _map_vars.end() && fprintf( out, ", " ) ) )
     {
