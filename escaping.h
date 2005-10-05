@@ -44,13 +44,17 @@ string octstring(unsigned char val);
 string unoctstring(string s);
 
 // The original set of allowed characeters was: [0-9a-zA-Z_%]
-// The characters accepted in DODS ids: [^-a-zA-Z0-9_/%.#:+\\()]
+// The characters accepted in DODS ids: [-+a-zA-Z0-9_/%.\\#*]; everything
+// else must be escaped.  Note that for some inscrutable reason, we've been
+// escaping '*'.
+
 // The characters allowable in an id in a URI (see RFC 2396): 
 // [-A-Za-z0-9_.!~*'()].
 
-string id2www(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.!~*'()-");
+string id2www(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\*");
 
-string id2www_ce(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.!~*'()-[]:{}&=<>,");
+// This is what DAP2 allows in a ce: [-+a-zA-Z0-9_/%.\\#] 
+string id2www_ce(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\");
 
 string www2id(string s, const string &escape = "%",
 	      const string &except = "");
