@@ -330,40 +330,19 @@ char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]")
     @return The modified attribute. */
 string 
 escattr(string s) {
-#if 1
-    Regex nonprintable("[^ !-~]");
-#endif
-#if 0
-    const string printable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"";
-#endif
+    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"";
     const string ESC = "\\";
     const string DOUBLE_ESC = ESC + ESC;
     const string QUOTE = "\"";
     const string ESCQUOTE = ESC + QUOTE;
 
     // escape non-printing characters with octal escape
-#if 0
     string::size_type ind = 0;
     while ( (ind = s.find_first_not_of(printable, ind)) != s.npos)
         s.replace(ind, 1, ESC + octstring(s[ind]));
-#endif
-#if 1
-    unsigned int index = 0;
-    int matchlen;
-    // See trac item 210. With the change to gnulib's regex functions, the
-    // original version of this broke. 9/16/05 jhrg
-    index = nonprintable.search(s.c_str(), s.size(), matchlen, index);
-    DBG(cerr << "s: " << s << ", matchlen: " << matchlen << ", index: " << index << endl);
-    while (index < s.length()) {
-	s.replace(index, 1, ESC + octstring(s[index]));
-        // increment by 4 since each octstring looks like '\ddd'.
-        index = nonprintable.search(s.c_str(), s.size(), matchlen, index+4);
-        DBG(cerr << "s: " << s << ", matchlen: " << matchlen << ", index: " << index << endl);
-    }
-#endif
 
     // escape " with backslash
-    string::size_type ind = 0;
+    ind = 0;
     while ( (ind = s.find(ESC, ind)) != s.npos) {
 	s.replace(ind, 1, DOUBLE_ESC);
 	ind += DOUBLE_ESC.length();
