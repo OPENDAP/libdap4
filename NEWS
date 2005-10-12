@@ -18,6 +18,9 @@ show up on Mac OS/X 10.4 (Tiger).
    to compile. There's a second ctor that takes a second parameter (an int)
    but it is a dummy.
    
+As a result of these changes, a small portion of the interface for libdap
+has changed.
+   
 Build improvements from Patrice Dumas.
 
 Added a Mac OS/X package and RedHat rpm/srpm targets. There's also a pmsp

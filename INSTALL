@@ -1,7 +1,7 @@
 
 	$Id$
 
-Updated for version 3.5.1 beta of the OPeNDAP DAP2 library software.
+Updated for version 3.5.3 of the OPeNDAP DAP2 library software.
 
 Installing the DAP2 library
 
@@ -51,15 +51,14 @@ Building from Our SVN Repository
 REQUIREMENTS
 
   o To build from a fresh SVN checkout, you'll need automake 1.9.2, autoconf
-    2.59 (2.57 will probably work and that's what's listed in the configure.ac
-    file) and libtool 1.5.6. Earlier versions may work, but may cause
+    2.59 and libtool 1.5.6. Earlier versions may work, but may cause
     problems, particularly with the 'distcheck' target for make. Given those
     requirements, use 'autoreconf --force --verbose' and then build as
     described above.
 
   o The library uses libcurl and libxml2. You will need these libraries
     installed on your system to successfully run configure and build the
-    library. You must have libcurl version 7.12.0 or newer and libxml2 2.5.7
+    library. You must have libcurl version 7.10.6 or newer and libxml2 2.5.7
     or newer. We provide source versions of the packages on the web site; the
     web pages for these projects are: http://curl.haxx.se/ and
     http://xmlsoft.org/.
