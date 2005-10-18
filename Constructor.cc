@@ -253,7 +253,7 @@ Constructor::print_xml(FILE *out, string space, bool constrained)
 	for_each(var_begin(), var_end(),
 		 PrintField(out, space + "    ", constrained));
 	
-	fprintf(out, "%s<%s/>\n", space.c_str(), type_name().c_str());
+	fprintf(out, "%s</%s>\n", space.c_str(), type_name().c_str());
     }
     else {
 	fprintf(out, "/>\n");

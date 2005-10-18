@@ -696,7 +696,7 @@ Grid::print_xml(FILE *out, string space, bool constrained)
     for_each(map_begin(), map_end(),
 	     PrintMapField(out, space + "    ", constrained));
 	
-    fprintf(out, "%s<Grid/>\n", space.c_str());
+    fprintf(out, "%s</Grid>\n", space.c_str());
 }
 
 void 

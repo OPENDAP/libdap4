@@ -188,7 +188,7 @@ xsi:schemaLocation=\"http://www..*.org/ns/DODS  .*\">\n\
             <String/>\n\
             <dimension size=\"512\"/>\n\
         </Map>\n\
-    <Grid/>\n\
+    </Grid>\n\
 \n\
     <dodsBLOB URL=\"http://localhost/dods/test.xyz\"/>\n\
 </Dataset>\n");
@@ -267,7 +267,7 @@ xsi:schemaLocation=\"http://www.dods.org/ns/DODS  http://argon.coas.oregonstate.
             <String/>\n\
             <dimension size=\"512\"/>\n\
         </Map>\n\
-    <Grid/>\n\
+    </Grid>\n\
 \n\
     <dodsBLOB URL=\"http://localhost/dods/test.xyz\"/>\n\
 </Dataset>\n");

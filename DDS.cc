@@ -53,9 +53,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include <algorithm>
 #include <functional>
 
-#if 1
 #include "GNURegex.h"
-#endif
 
 #include "expr.h"
 #include "Clause.h"
@@ -75,8 +73,8 @@ static char rcsid[] not_used = {"$Id$"};
 #include "cgi_util.h"
 
 
-const string default_schema_location = "http://argon.coas.oregonstate.edu/ndp/dods.xsd";
-const string dods_namespace = "http://www.dods.org/ns/DODS";
+const string default_schema_location = "http://xml.opendap.org/dap/dap2.xsd";
+const string dods_namespace = "http://xml.opendap.org/ns/DAP2";
 
 using namespace std;
 
