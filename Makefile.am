@@ -80,7 +80,7 @@ rpm: dist
 pkg:
 	./configure --prefix=`pwd`/mac_osx
 	make clean install
-	
+
 # LocalWords:  mex Mathworks automake loaddap jhrg
 
 #############################################################################
