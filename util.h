@@ -120,6 +120,7 @@ const char *libdap_root();
     tests.
     @return The version string. */
 extern "C" const char *libdap_version();
+extern "C" const char *libdap_name();
 const char *dods_progress();
 #ifdef WIN32
 void flush_stream(iostream ios, FILE *out);

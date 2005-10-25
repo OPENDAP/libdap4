@@ -261,6 +261,13 @@ libdap_version()
     return PACKAGE_VERSION;
 }
 
+extern "C"
+const char *
+libdap_name()
+{
+    return PACKAGE_NAME;
+}
+
 // Return true if the program deflate exists and is executable by user, group
 // and world. If this returns false the caller should assume that server
 // filter programs won't be able to find the deflate program and thus won't
