@@ -75,13 +75,16 @@ rpm: dist
 
 ###########################################################################
 
-# Build OS/X Packages
+# Build OS/X Packages. The strange operations with configure and dap-config
+# are there so that the values built into dap-config will match the mac
+# osx install dirs and not the temp directory used to build the packages
 
 pkg:
+	./configure --prefix=/usr
+	cp dap-config dap-config.macosx
 	./configure --prefix=`pwd`/mac_osx
 	make clean install
-
-# LocalWords:  mex Mathworks automake loaddap jhrg
+	mv dap-config.macosx mac_osx/bin/dap-config
 
 #############################################################################
 # Library sources
