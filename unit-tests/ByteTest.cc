@@ -86,7 +86,7 @@ public:
 
 	ostringstream oss3;
 	tb3->print_decl(oss3, "", false);
-	CPPUNIT_ASSERT(string(oss3.str()) == "Byte tb3%20%25");
+	CPPUNIT_ASSERT(string(oss3.str()) == "Byte tb3%20%");
 
 	ostringstream oss4;
 	tb4->print_decl(oss4, "", false);
