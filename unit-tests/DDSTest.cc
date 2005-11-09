@@ -165,15 +165,10 @@ public:
 	char DDSTemp[] = {"/var/tmp/DDSTestXXXXXX"};
 	FILE *tmp = get_temp_file(DDSTemp);
 	dds2->print_xml(tmp, false, "http://localhost/dods/test.xyz");
-
 	Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19\"\n\
-xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\
-xmlns=\"http://www..*.org/ns/DODS\"\n\
-xsi:schemaLocation=\"http://www..*.org/ns/DODS  .*\">\n\
-\n\
-\n\
-    <Int32 name=\"a\"/>\n\
+.*\
+   <Int32 name=\"a\"/>\n\
     <Array name=\"b#c\">\n\
         <Int32/>\n\
         <dimension size=\"10\"/>\n\
@@ -214,10 +209,7 @@ xsi:schemaLocation=\"http://www..*.org/ns/DODS  .*\">\n\
 
 	Regex r("<.xml version=\"1.0\" encoding=\"UTF-8\".>\n\
 <Dataset name=\"test.19\"\n\
-xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\
-xmlns=\"http://www.dods.org/ns/DODS\"\n\
-xsi:schemaLocation=\"http://www.dods.org/ns/DODS  http://argon.coas.oregonstate.edu/ndp/dods.xsd\">\n\
-\n\
+.*\
     <Attribute name=\"NC_GLOBAL\" type=\"Container\">\n\
         <Attribute name=\"long_name\" type=\"String\">\n\
             <value>&quot;Attribute merge test&quot;</value>\n\
