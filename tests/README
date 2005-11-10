@@ -1,0 +1,6 @@
+
+On some systems 'make check' will report that the script config.guess' could
+not be found. If that happens, create a symbolic link from ../conf/config.guess
+to either this directory or the libdap-* directory (one level up). The check 
+target should now work.
+
