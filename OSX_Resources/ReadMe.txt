@@ -64,7 +64,7 @@ This directory also contains test programs for the
 DAP2, a sample specialization of the classes, getdap (a
 useful command-line web client created with DAP2) and
 dap-config (a utility script to simplify linking with
-libdap.a). Also included as of version 3.5.2 is
+libdap.a). Also included as of version 3.5.3 is
 libdap.m4, an autoconf macro which developers can use
 along with autoconf to test for libdap. This macro will
 be installed in ${prefix}/share/aclocal and can be by
