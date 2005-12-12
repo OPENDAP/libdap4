@@ -65,8 +65,6 @@ static pthread_mutex_t instance_mutex = PTHREAD_MUTEX_INITIALIZER;
 #include <direct.h>
 #include <time.h>
 #include <fcntl.h>
-#define	min(a,b) _MIN(a,b)
-#define max(a,b) _MAX(a,b)
 #define MKDIR(a,b) _mkdir((a))
 #define REMOVE(a) remove((a))
 #define MKSTEMP(a) _open(_mktemp((a)),_O_CREAT,_S_IREAD|_S_IWRITE)
@@ -178,11 +176,19 @@ HTTPCache::HTTPCache(string cache_root, bool force) throw(Error) :
     set_cache_root(cache_root);
 
     if (get_single_user_lock(force)) {
+#ifdef WIN32
+	//  Windows is unable to provide us this information.  4096 appears
+	//  a best guess.  It is likely to be in the range [2048, 8192] on
+	//  windows, but will the level of truth of that statement vary over
+	//  time ?
+	d_block_size = 4096;
+#else
 	struct stat s;
 	if (stat(cache_root.c_str(), &s) == 0)
 	    d_block_size = s.st_blksize;
 	else
 	    throw Error("Could not set file system block size.");
+#endif
 	cache_index_read();
 	d_cache_enabled = true;
     }
