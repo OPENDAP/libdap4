@@ -100,7 +100,6 @@ compare(T elem, relop op, double value)
 }
 
 
-#ifndef WIN32
 template<class T>
 void
 GSEClause::set_map_min_max_value(T min, T max)
@@ -115,9 +114,7 @@ GSEClause::set_map_min_max_value(T min, T max)
     d_map_max_value = oss2.str();
 }
 
-#endif
 
-#ifndef WIN32
 template<class T>
 void
 GSEClause::set_start_stop()
@@ -159,43 +156,10 @@ GSEClause::set_start_stop()
 	d_stop = i;
     }
 }
-#endif
 
 void
 GSEClause::compute_indices()
 {
-#ifdef WIN32
-    //  Allows us to get around short-comming with MS Visual C++ 6.0
-    //  templates
-    char dummy;
-
-    switch (d_map->var()->type()) {
-      case dods_byte_c:
-	set_start_stop((char *)(&dummy));
-	break;
-      case dods_int16_c:
-	set_start_stop((char *)(&dummy));
-	break;
-      case dods_uint16_c:
-	set_start_stop((char *)(&dummy));
-	break;
-      case dods_int32_c:
-	set_start_stop((char *)(&dummy));
-	break;
-      case dods_uint32_c:
-	set_start_stop((char *)(&dummy));
-	break;
-      case dods_float32_c:
-	set_start_stop((char *)(&dummy));
-	break;
-      case dods_float64_c:
-	set_start_stop((char *)(&dummy));
-	break;
-    default:
-	throw Error(malformed_expr, 
-             "Grid selection using non-numeric map vectors is not supported");
-    }
-#else
     switch (d_map->var()->type()) {
       case dods_byte_c:
 	set_start_stop<dods_byte>();
@@ -222,7 +186,6 @@ GSEClause::compute_indices()
 	throw Error(malformed_expr, 
              "Grid selection using non-numeric map vectors is not supported");
     }
-#endif // WIN32
 
 }
 
