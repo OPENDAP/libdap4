@@ -147,7 +147,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
       case SIGHUP:
       case SIGKILL:
       case SIGUSR1:
-      case SIGUSR2
+      case SIGUSR2:
       case SIGPIPE:
       case SIGALRM:
 #endif
