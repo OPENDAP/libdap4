@@ -96,14 +96,16 @@ SignalHandler::dispatcher(int signum)
 	return;
     else if (old_handler == SIG_DFL) {
 	switch (signum) {
+#ifndef WIN32
 	  case SIGHUP:
-	  case SIGINT:
 	  case SIGKILL:
+	  case SIGUSR1:
+	  case SIGUSR2:
 	  case SIGPIPE:
 	  case SIGALRM:
-	  case SIGTERM:
-	  case SIGUSR1:
-	  case SIGUSR2: _exit(EXIT_FAILURE);
+#endif
+	  case SIGINT:
+	  case SIGTERM: _exit(EXIT_FAILURE);
 
 	    // register_handler() should never allow any fiddling with
 	    // signals other than those listed above.
@@ -141,14 +143,16 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
 {
     // Check first for improper use.
     switch (signum) {
+#ifndef WIN32
       case SIGHUP:
-      case SIGINT:
       case SIGKILL:
+      case SIGUSR1:
+      case SIGUSR2
       case SIGPIPE:
       case SIGALRM:
-      case SIGTERM:
-      case SIGUSR1:
-      case SIGUSR2: break;
+#endif
+      case SIGINT:
+      case SIGTERM: break;
 
       default: throw InternalErr(__FILE__, __LINE__,
 		  string("Call to register_handler with unsupported signal (")
@@ -162,6 +166,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
  
     // Register the dispatcher to handle this signal. See Stevens, Advanced
     // Programming in the UNIX Environment, p.298.
+#ifndef WIN32
     struct sigaction sa;
     sa.sa_handler = dispatcher;
     sigemptyset(&sa.sa_mask);
@@ -194,6 +199,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
 	SignalHandler::d_old_handlers[signum] = SIG_IGN;
     else if (osa.sa_handler != dispatcher)
 	SignalHandler::d_old_handlers[signum] = osa.sa_handler;
+#endif
 
     return old_eh;
 }
