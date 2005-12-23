@@ -702,6 +702,10 @@ DODSFilter::print_usage() throw(Error)
 void 
 DODSFilter::send_version_info()
 {
+    // Use the version in cgi_util.cc. jhrg 12/23/05
+    
+    do_version(d_cgi_ver, get_dataset_version());
+#if 0    
     fprintf( stdout, "HTTP/1.0 200 OK\n" ) ;
     fprintf( stdout, "XDODS-Server: %s\n", d_cgi_ver.c_str() ) ;
     fprintf( stdout, "Content-Type: text/plain\n" ) ;
@@ -717,6 +721,7 @@ DODSFilter::send_version_info()
 	fprintf( stdout, "Dataset version: %s\n", v.c_str() ) ;
     
     fflush( stdout ) ;
+#endif
 }
 
 /**
