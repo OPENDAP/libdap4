@@ -42,7 +42,7 @@ class Regex
 {
 private:
     regex_t d_preg;
-    void Regex::init(const char *t) throw(Error);
+    void init(const char *t) throw(Error);
     
 public:
     Regex(const char *t)  throw(Error);
