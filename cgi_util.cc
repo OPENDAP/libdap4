@@ -79,6 +79,9 @@ static char rcsid[] not_used = {"$Id$"};
 #define FILE_DELIMITER '/'
 #endif
 
+// ...not using a const string here to avoid global objects. jhrg 12/23/05
+#define CRLF "\r\n"
+
 using namespace std;
 
 static const int TimLen = 26;	// length of string from asctime()
@@ -95,24 +98,26 @@ static const int CLUMP_SIZE = 1024; // size of clumps to new in fmakeword()
     @param script_ver The version of the filter script executing this
     function. 
     @param dataset_ver The version of the dataset.
-    @return TRUE for success.
+    @return TRUE for success. Always returns true.
 */
 bool
 do_version(const string &script_ver, const string &dataset_ver)
 {
-    fprintf( stdout, "HTTP/1.0 200 OK\n" ) ;
-    fprintf( stdout, "XDODS-Server: %s\n", DVR ) ;
-    fprintf( stdout, "Content-Type: text/plain\n" ) ;
-    fprintf( stdout, "\n" ) ;
+    fprintf( stdout, "HTTP/1.0 200 OK%s", CRLF ) ;
+    fprintf( stdout, "XDODS-Server: %s%s", DVR, CRLF ) ;
+    fprintf( stdout, "Content-Type: text/plain%s", CRLF ) ;
+    fprintf( stdout, CRLF ) ;
     
-    fprintf( stdout, "Core software version: %s\n", DVR ) ;
+    fprintf( stdout, "Core software version: %s%s", DVR, CRLF ) ;
 
     if (script_ver != "")
-	fprintf( stdout, "Server Script Revision: %s\n", script_ver.c_str() ) ;
+	fprintf( stdout, "Server Script Revision: %s%s", script_ver.c_str(), CRLF ) ;
 
     if (dataset_ver != "")
-	fprintf( stdout,  "Dataset version: %s\n", dataset_ver.c_str() ) ;
+	fprintf( stdout,  "Dataset version: %s%s", dataset_ver.c_str(), CRLF ) ;
 
+    fflush( stdout ) ;          // Not sure this is needed. jhrg 12/23/05
+    
     return true;
 }
 
@@ -515,27 +520,29 @@ void
 set_mime_text(FILE *out, ObjectType type, const string &ver, 
 	      EncodingType enc, const time_t last_modified)
 {
-    fprintf( out, "HTTP/1.0 200 OK\n" ) ;
-    fprintf( out, "XDODS-Server: %s\n", ver.c_str() ) ;
+    fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
+    fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
 
     const time_t t = time(0);
-    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
+    fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
 
     fprintf( out, "Last-Modified: " ) ;
     if (last_modified > 0)
-	fprintf( out, "%s\n", rfc822_date(last_modified).c_str() ) ;
+	fprintf( out, "%s%s", rfc822_date(last_modified).c_str(), CRLF ) ;
     else 
-	fprintf( out, "%s\n", rfc822_date(t).c_str() ) ;
+	fprintf( out, "%s%s", rfc822_date(t).c_str(), CRLF ) ;
 
-    fprintf( out, "Content-type: text/plain\n" ) ;
-    fprintf( out, "Content-Description: %s\n", descrip[type] ) ;
+    fprintf( out, "Content-Type: text/plain%s", CRLF ) ;
+    // Note that Content-Description is from RFC 2045 (MIME, pt 1), not 2616.
+    // jhrg 12/23/05
+    fprintf( out, "Content-Description: %s%s", descrip[type], CRLF ) ;
     if (type == dods_error)	// don't cache our error responses.
-	fprintf( out, "Cache-Control: no-cache\n" ) ;
+	fprintf( out, "Cache-Control: no-cache%s", CRLF ) ;
     // Don't write a Content-Encoding header for x-plain since that breaks
     // Netscape on NT. jhrg 3/23/97
     if (enc != x_plain)
-	fprintf( out, "Content-Encoding: %s\n", encoding[enc] ) ;
-    fprintf( out, "\n" ) ;
+	fprintf( out, "Content-Encoding: %s%s", encoding[enc], CRLF ) ;
+    fprintf( out, CRLF ) ;
 }
 
 /** Use this function to create a MIME header for a text message.
@@ -543,6 +550,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
     @brief Set the MIME type to text.
     @deprecated Using the C++ iostream class is deprecated.
 
+    @deprecated Do not use this as it does not correctly terminate lines
     @param os Write the MIME header to this stream.
     @param type The type of the response (i.e., is it a DAS, DDS, et cetera).
     @param ver The version of the server.
@@ -569,7 +577,7 @@ set_mime_text(ostream &os, ObjectType type, const string &ver,
     else 
 	os << rfc822_date(t) << endl;
 
-    os << "Content-type: text/plain" << endl; 
+    os << "Content-Type: text/plain" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     if (type == dods_error)	// don't cache our error responses.
 	os << "Cache-Control: no-cache" << endl;
@@ -594,33 +602,35 @@ void
 set_mime_html(FILE *out, ObjectType type, const string &ver, 
 	      EncodingType enc, const time_t last_modified)
 {
-    fprintf( out, "HTTP/1.0 200 OK\n" ) ;
-    fprintf( out, "XDODS-Server: %s\n", ver.c_str() ) ;
+    fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
+    fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
 
     const time_t t = time(0);
-    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
+    fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
 
     fprintf( out, "Last-Modified: " ) ;
     if (last_modified > 0)
-	fprintf( out, "%s\n", rfc822_date(last_modified).c_str() ) ;
+	fprintf( out, "%s%s", rfc822_date(last_modified).c_str(), CRLF ) ;
     else 
-	fprintf( out, "%s\n", rfc822_date(t).c_str() ) ;
+	fprintf( out, "%s%s", rfc822_date(t).c_str(), CRLF ) ;
 
-    fprintf( out, "Content-type: text/html\n" ) ;
-    fprintf( out, "Content-Description: %s\n", descrip[type] ) ;
+    fprintf( out, "Content-type: text/html%s", CRLF ) ;
+    // See note above about Content-Description header. jhrg 12/23/05
+    fprintf( out, "Content-Description: %s%s", descrip[type], CRLF ) ;
     if (type == dods_error)	// don't cache our error responses.
-	fprintf( out, "Cache-Control: no-cache\n" ) ;
+	fprintf( out, "Cache-Control: no-cache%s", CRLF ) ;
     // Don't write a Content-Encoding header for x-plain since that breaks
     // Netscape on NT. jhrg 3/23/97
     if (enc != x_plain)
-	fprintf( out, "Content-Encoding: %s\n", encoding[enc] ) ;
-    fprintf( out, "\n" ) ;
+	fprintf( out, "Content-Encoding: %s%s", encoding[enc], CRLF ) ;
+    fprintf( out, CRLF ) ;
 }
 
 /** Use this function to create a MIME header for a html message.
 
     @brief Set the MIME type to html.
-    @deprecated Using the C++ iostream class is deprecated.
+    @deprecated Using the C++ iostream class is deprecated. This also fails
+    to terminate lines according to RFC 2616 (which requires a crlf pair).
 
     @param os Write the MIME header to this stream.
     @param type The type of the response (i.e., is it a DAS, DDS, et cetera).
@@ -648,7 +658,7 @@ set_mime_html(ostream &os, ObjectType type, const string &ver,
     else 
 	os << rfc822_date(t) << endl;
 
-    os << "Content-type: text/html" << endl; 
+    os << "Content-Type: text/html" << endl; 
     os << "Content-Description: " << descrip[type] << endl;
     if (type == dods_error)	// don't cache our error responses.
 	os << "Cache-Control: no-cache" << endl;
@@ -675,30 +685,31 @@ void
 set_mime_binary(FILE *out, ObjectType type, const string &ver, 
 		EncodingType enc, const time_t last_modified)
 {
-    fprintf( out, "HTTP/1.0 200 OK\n" ) ;
-    fprintf( out, "XDODS-Server: %s\n", ver.c_str() ) ;
+    fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
+    fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
     const time_t t = time(0);
-    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
+    fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
 
     fprintf( out, "Last-Modified: " ) ;
     if (last_modified > 0)
-	fprintf( out, "%s\n", rfc822_date(last_modified).c_str() ) ;
+	fprintf( out, "%s%s", rfc822_date(last_modified).c_str(), CRLF ) ;
     else 
-	fprintf( out, "%s\n", rfc822_date(t).c_str() ) ;
+	fprintf( out, "%s%s", rfc822_date(t).c_str(), CRLF ) ;
 
-    fprintf( out, "Content-Type: application/octet-stream\n" ) ;
-    fprintf( out, "Content-Description: %s\n", descrip[type] ) ;
+    fprintf( out, "Content-Type: application/octet-stream%s", CRLF ) ;
+    fprintf( out, "Content-Description: %s%s", descrip[type], CRLF ) ;
     if (enc != x_plain)
-	fprintf( out, "Content-Encoding: %s\n", encoding[enc] ) ;
+	fprintf( out, "Content-Encoding: %s%s", encoding[enc], CRLF ) ;
 
-    fprintf( out, "\n" ) ;
+    fprintf( out, CRLF ) ;
 }
 
 /** Use this function to create a MIME header for a message containing binary
     data.
 
     @brief Create MIME headers for binary data.
-    @deprecated Using the C++ iostream class is deprecated.
+    @deprecated Using the C++ iostream class is deprecated. This also does
+    not terminate lines correctly.
     @param os Write the MIME header to this stream.
     @param type The type of the response (i.e., is it data, et cetera).
     @param ver The version of the server.
@@ -742,22 +753,23 @@ void
 set_mime_error(FILE *out, int code, const string &reason,
 	       const string &version)
 {
-    fprintf( out, "HTTP/1.0 %d %s\n", code, reason.c_str() ) ;
+    fprintf( out, "HTTP/1.0 %d %s%s", code, reason.c_str(), CRLF ) ;
     if (version == "")
-      fprintf( out, "XDODS-Server: %s\n", DVR ) ;
+      fprintf( out, "XDODS-Server: %s%s", DVR, CRLF ) ;
     else
-      fprintf( out, "XDODS-Server: %s\n", version.c_str() ) ;
+      fprintf( out, "XDODS-Server: %s%s", version.c_str(), CRLF ) ;
     const time_t t = time(0);
-    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
-    fprintf( out, "Cache-Control: no-cache\n" ) ;
-    fprintf( out, "\n" ) ;
+    fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
+    fprintf( out, "Cache-Control: no-cache%s", CRLF ) ;
+    fprintf( out, CRLF ) ;
 }
 
 /** Use this function to create a MIME header for a message signaling an
     error.
 
     @brief Set the MIME text type to ``error.''
-    @deprecated Using the C++ iostream class is deprecated.
+    @deprecated Using the C++ iostream class is deprecated. This does not 
+    termninate lines correctly.
     @param os Write the MIME header to this stream.
     @param code An error code for the given error. 
     @param reason A message to be sent to the client.
@@ -788,10 +800,10 @@ set_mime_error(ostream &os, int code, const string &reason,
 void 
 set_mime_not_modified(FILE *out)
 {
-    fprintf( out, "HTTP/1.0 304 NOT MODIFIED\n" ) ;
+    fprintf( out, "HTTP/1.0 304 NOT MODIFIED%s", CRLF ) ;
     const time_t t = time(0);
-    fprintf( out, "Date: %s\n", rfc822_date(t).c_str() ) ;
-    fprintf( out, "\n" ) ;
+    fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
+    fprintf( out, CRLF ) ;
 }
 
 /** Use this function to create a response signalling that the target of a
@@ -799,7 +811,8 @@ set_mime_not_modified(FILE *out)
     the request. For DODS this will have to be a date until the servers
     support ETags
 
-    @deprecated Using the C++ iostream class is deprecated.
+    @deprecated Using the C++ iostream class is deprecated. This also does not
+    terminate lines correctly.
     @brief Send a `Not Modified' response.
     @param os Write the MIME header to this stream. */
 void
@@ -927,68 +940,6 @@ get_user_supplied_docs(string name, string cgi)
 
     return oss.str();
 }
-
-// This test code is pretty much obsolete; look at cgiUtilTest.cc 4/17/2001
-// jhrg.
-
-#ifdef TEST_CGI_UTIL
-
-int
-main(int argc, char *argv[])
-{
-    // test ErrMsgT
-    ErrMsgT("Error");
-    string smsg = "String Error";
-    ErrMsgT(smsg);
-    char *cmsg = "char * error";
-    ErrMsgT(cmsg);
-    ErrMsgT("");
-
-    // test name_path
-    string name_path_p;
-    string name = "stuff";
-    name_path_p = name_path(name);
-    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
-
-    name = "stuff.Z";
-    name_path_p = name_path(name);
-    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
-
-    name = "/usr/local/src/stuff.Z";
-    name_path_p = name_path(name);
-    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
-
-    name = "/usr/local/src/stuff.tar.Z";
-    name_path_p = name_path(name);
-    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
-
-    name = "/usr/local/src/stuff";
-    name_path_p = name_path(name);
-    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
-
-    name = "";
-    name_path_p = name_path(name);
-    fprintf( stdout, "%s: %s\n", name.c_str(), name_path_p.c_str() ) ;
-
-    // Test mime header generators and compressed output
-    fprintf( stdout, "MIME text header:\n" ) ;
-    set_mime_text(stdout, dods_das, "dods-test/0.00");
-    fprintf( stdout, "MIME binary header:\n" ) ;
-    set_mime_binary(stdout, dods_data, "dods-test/0.00");
-
-#if 0
-    fprintf( stdout, "Some data...\n" ) ;
-
-    fprintf( stdout, "MIME binary header and compressed data:\n" ) ;
-    set_mime_binary(dods_data, x_gzip);
-    FILE *out = compress_stdout();
-    fprintf(out, "Compresses data...\n");
-    fflush(out);
-    pclose(out);
-#endif
-}
-
-#endif
 
 // $Log: cgi_util.cc,v $
 // Revision 1.63  2005/01/28 17:25:13  jimg
