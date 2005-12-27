@@ -79,6 +79,7 @@ using std::cin;
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 				      // timeouts. 
 
+#define CRLF "\r\n"                   // Change this here and in cgi_util.cc
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
 
@@ -503,7 +504,7 @@ parse_mime(FILE *data_source)
 
     fgets(line, 256, data_source);
     
-    while (line[0] != '\n')
+    while (strncmp(line, CRLF, 2) != 0)
 	fgets(line, 256, data_source);
 }
 
@@ -511,7 +512,7 @@ void
 set_series_values(DDS &dds, bool state)
 {
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
-#if 0
+#if 1
 	dynamic_cast<TestCommon&>(**q).set_series_values(state);
 #else
         TestCommon *tc = dynamic_cast<TestCommon*>(*q);

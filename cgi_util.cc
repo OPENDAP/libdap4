@@ -80,7 +80,7 @@ static char rcsid[] not_used = {"$Id$"};
 #endif
 
 // ...not using a const string here to avoid global objects. jhrg 12/23/05
-#define CRLF "\r\n"
+#define CRLF "\r\n"             // Change here and in expr-test.cc. 
 
 using namespace std;
 
