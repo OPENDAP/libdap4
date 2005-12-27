@@ -74,7 +74,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "util.h"
 #include "debug.h"
 
-using std::cin;
+using namespace std;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 				      // timeouts. 
@@ -158,90 +158,101 @@ main(int argc, char *argv[])
     // process options
 
     while ((option_char = getopt()) != EOF)
-	switch (option_char) {
-	  case 'b':
-	    series_values = true;
-	    break;
-	  case 'd': 
-	    exprdebug = true;
-	    break;
-	  case 's':
-	    scanner_test = true;
-	    break;
-	  case 'S':
-	    scanner_test = true;
-	    scan_string = true;
-	    constraint = getopt.optarg;
-	    break;
-	  case 'p':
-	    parser_test = true;
-	    dds_file_name = getopt.optarg;
-	    break;
-	  case 'e':
-	    evaluate_test = true;
-	    break;
-	  case 'c':
-	    print_constrained = true;
-	    break;
-	  case 'w':
-	    whole_enchalada = true;
-	    dds_file_name = getopt.optarg;
-	    break;
-	  case 'k':
-	    constraint_expr = true;
-	    constraint = getopt.optarg;
-	    break;
-	  case 'f':
-	    dataset = getopt.optarg;
-	    break;
-	  case 'v':
-	    verbose = true;
-	    break;
-	  case 'V':
-	    fprintf( stderr, "%s: %s\n", argv[0], version.c_str() ) ;
-	    exit(0);
-	  case '?': 
-	  default:
-	    fprintf( stderr, "%s\n", usage.c_str() ) ;
-	    exit(1);
-	    break;
-	}
+        switch (option_char) {
+        case 'b':
+            series_values = true;
+            break;
+        case 'd':
+            exprdebug = true;
+            break;
+        case 's':
+            scanner_test = true;
+            break;
+        case 'S':
+            scanner_test = true;
+            scan_string = true;
+            constraint = getopt.optarg;
+            break;
+        case 'p':
+            parser_test = true;
+            dds_file_name = getopt.optarg;
+            break;
+        case 'e':
+            evaluate_test = true;
+            break;
+        case 'c':
+            print_constrained = true;
+            break;
+        case 'w':
+            whole_enchalada = true;
+            dds_file_name = getopt.optarg;
+            break;
+        case 'k':
+            constraint_expr = true;
+            constraint = getopt.optarg;
+            break;
+        case 'f':
+            dataset = getopt.optarg;
+            break;
+        case 'v':
+            verbose = true;
+            break;
+        case 'V':
+            fprintf(stderr, "%s: %s\n", argv[0], version.c_str());
+            exit(0);
+        case '?':
+        default:
+            fprintf(stderr, "%s\n", usage.c_str());
+            exit(1);
+            break;
+        }
 
-    if (!scanner_test && !parser_test && !evaluate_test	&& !whole_enchalada) {
-	fprintf( stderr, "%s\n", usage.c_str() ) ;
-	delete ttf; ttf = 0;
-	exit(1);
+    try {
+        if (!scanner_test && !parser_test && !evaluate_test
+            && !whole_enchalada) {
+            fprintf(stderr, "%s\n", usage.c_str());
+            delete ttf;
+            ttf = 0;
+            exit(1);
+        }
+        // run selected tests
+
+        if (scanner_test) {
+            if (scan_string)
+                test_scanner(constraint);
+            else
+                test_scanner(true);
+
+            delete ttf;
+            ttf = 0;
+            exit(0);
+        }
+
+        if (parser_test) {
+            test_parser(table, dds_file_name, constraint);
+        }
+
+        if (evaluate_test) {
+            evaluate_dds(table, print_constrained);
+        }
+
+        if (whole_enchalada) {
+            constrained_trans(dds_file_name, constraint_expr, constraint,
+                              series_values);
+        }
+
+    }
+    catch(exception & e) {
+        cerr << "Caught exception: " << e.what << endl;
     }
 
-    // run selected tests
+    delete ttf;
+    ttf = 0;
 
-    if (scanner_test) {
-	if (scan_string)
-	    test_scanner(constraint);
-	else
-	    test_scanner(true);
+    exit(0);
 
-	delete ttf; ttf = 0;
-	exit(0);
-    }
-
-    if (parser_test) {
-	test_parser(table, dds_file_name, constraint);
-    }
-
-    if (evaluate_test) {
-	evaluate_dds(table, print_constrained);
-    }
-
-    if (whole_enchalada) {
-	constrained_trans(dds_file_name, constraint_expr, constraint, series_values);
-    }
-
-    delete ttf; ttf = 0;
-    
 #ifdef WIN32
-	exit(0); //  DejaGnu/Cygwin based test suite requires this.
-	return;  //  Visual C++ requests this.
+    return;                     //  Visual C++ requests this.
 #endif
 }
 
