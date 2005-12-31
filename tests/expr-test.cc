@@ -134,11 +134,7 @@ const string usage = "\
 \n      -k: A constraint expression to use with the data. Works with -p,\
 \n          -e, -t and -w";
 
-#ifdef WIN32
-void
-#else
 int
-#endif
 main(int argc, char *argv[])
 {
     GetOpt getopt(argc, argv, options.c_str());
@@ -250,10 +246,6 @@ main(int argc, char *argv[])
     ttf = 0;
 
     exit(0);
-
-#ifdef WIN32
-    return;                     //  Visual C++ requests this.
-#endif
 }
 
 // Instead of reading the tokens from stdin, read them from a string.
@@ -456,11 +448,19 @@ loopback_pipe(FILE **pout, FILE **pin)
 //
 // Returns: a FILE * which contains the DDS describing the binary information
 // in IF.
-
 FILE *
 move_dds(FILE *in)
 {
     char c[] = {"dodsXXXXXX"};
+#ifdef WIN32
+    char *result = _mktemp(c);
+
+    if (result == NULL) {
+        fprintf( stderr, "Could not create unique tempoary file name\n");
+        return NULL;
+        }
+        FILE *fp = fopen(_mktemp(c), "w+b");
+#else
     int fd = mkstemp(c);
     if (fd == -1) {
         fprintf( stderr, "Could not create temporary file name %s\n",
@@ -469,6 +469,7 @@ move_dds(FILE *in)
     }
 
     FILE *fp = fdopen(fd, "w+b");
+#endif
     if (!keep_temps)
 	unlink(c);
     if (!fp) {
@@ -498,6 +499,7 @@ move_dds(FILE *in)
 
     return fp;
 }
+
 
 // Gobble up the mime header. At one time the MIME Headers were output from
 // the server filter programs (not the core software) so we could call

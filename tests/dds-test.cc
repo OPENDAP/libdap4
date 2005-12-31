@@ -73,11 +73,7 @@ usage(string name)
 		     "   to stdout." ) ;
 }
 
-#ifdef WIN32
-void
-#else
 int
-#endif
 main(int argc, char *argv[])
 {
     GetOpt getopt (argc, argv, "spdc");
@@ -128,11 +124,6 @@ main(int argc, char *argv[])
     catch (Error &e) {
       e.display_message();
     }
-
-#ifdef WIN32
-    exit(0); //  DejaGnu/Cygwin based test suite requires this.
-    return;  //  Visual C++ requests this.
-#endif
 }
 
 void
