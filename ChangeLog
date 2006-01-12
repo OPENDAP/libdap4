@@ -1,3 +1,920 @@
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: transfer_attributes used odd logic and an unneeded variable. Fixed.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc: changed new exception code to use fprintf() (it was using cerr).
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	GSEClause: Removed the old, unimplemented, methods that were supposed to take
+	the grid() function subexpressions. Fixed up some comments in the class as well.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc: In remove_mime_header() \n was used as the MIME header
+	separator when CRLF should have been used. Since the rest of the code
+	was fixed for 3.5.3, remove_mime_header() didn't find the separator.
+	This broke the HTML form response.
+
+2005-12-30  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Work toward accomodating gcc under mingw
+
+2005-12-27  James Gallagher <jgallagher@opendap.org>
+
+	Installed GNU indent code formatter to eclipse and used it on expr-test.cc
+
+2005-12-27  James Gallagher <jgallagher@opendap.org>
+
+	In expr-test, the function parse_mime() did not test for the new CRLF
+	line terminator. This caused an infinite loop. Fixed. I also added a
+	comment to cgi-util.cc noting that if the CRLF constant is changed, then
+	the one in expr-test.cc should be changed too. Since the test code is, well,
+	test code, it doesn't seem like the constant should be moved out into one
+	of the header files. The CRLF constant is really used only by the cgi-util
+	code.
+
+2005-12-27  James Gallagher <jgallagher@opendap.org>
+
+	Removed regex.loT
+
+2005-12-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed extra qualtification on the private method Regex::init in GNURegex.h.
+
+2005-12-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed the send version method body and replaced it with a call to do_version()
+	in cgi_util.cc. This consolodates the code that writes HTTP headers to one file.
+
+2005-12-23  James Gallagher <jgallagher@opendap.org>
+
+	Changed all calls to fprintf that write parts of the HTTP resonse header
+	so that they terminate lines using CRLF pairs and not just LF (\n or 0x0a).
+	I also fixed the spelling of Content-Type (the 'T' in 'Type' was not
+	capitalized).
+
+2005-12-12  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Missing colon in switch from recent porting tweeks.
+
+2005-12-11  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	ifdef profoundly-non-portable signal handling code.  Windows has few signals.
+
+2005-12-11  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Hardcode blocksize on win32
+
+2005-12-11  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Reverse ancient VC++ 6.0 template hacks.  Microsoft has come toward the standard.
+
+2005-12-05  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2005-11-22  James Gallagher <jgallagher@opendap.org>
+
+	Made docs a PHONY target
+
+2005-11-22  James Gallagher <jgallagher@opendap.org>
+
+	Fixed source0 using Patrice's patch
+
+2005-11-16  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-11-15  James Gallagher <jgallagher@opendap.org>
+
+	Added commentary
+
+2005-11-15  James Gallagher <jgallagher@opendap.org>
+
+	Added/Hacked
+
+2005-11-11  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-11-10  James Gallagher <jgallagher@opendap.org>
+
+	Added note about dejagnu not working on some systems unless config.guess is
+	linked here or at the top.
+
+2005-11-09  James Gallagher <jgallagher@opendap.org>
+
+	The XML schema site has chamged to xml.opendap.org. I stopped testing these values because
+	that's not really what the DDS class unit tests should be looking at.
+
+2005-11-09  James Gallagher <jgallagher@opendap.org>
+
+	The set of chars allowed in an identifier was enlarged to include %. The secind test was
+	altered to fit that.
+
+2005-10-31  James Gallagher <jgallagher@opendap.org>
+
+	Hacked up the pkg target so that the dap-config script has the correct values
+	for the places where the osx package will be installed, not where the build
+	dumps it prior to packaging.
+
+2005-10-25  Patrick West <pwest@ucar.edu>
+
+	added function to access the libdap name from PACKAGE_NAME
+
+2005-10-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Update from build after failed attempt to remove Pix.h
+
+2005-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Fixed som grammatical problems with the DDX response.
+
+2005-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Updates to the documentation files.
+
+2005-10-07  James Gallagher <jgallagher@opendap.org>
+
+	escattr() no longer uses Regex.
+
+2005-10-07  James Gallagher <jgallagher@opendap.org>
+
+	Updated to match the new libdap behavior for escaping.
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	I made the standard print representation of a Grid use Array and Maps instead of ARRAY and
+	MAPS. So I fixed the tests too.
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Don't have these in svn.
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Don't have these in svn.
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Fix for ticket #44 (which was filed under the hdf4 handler). I made the set of characters
+	not escaped by id2www and id2www_ce the same as those that dds.les and expr.lex expect in
+	an id. Actually the asterisk is escaped even though dds.lex will parse it,
+
+2005-10-05  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the background one last time
+
+2005-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Added a background image to the osx installer
+
+2005-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-10-04  James Gallagher <jgallagher@opendap.org>
+
+	Updates for the OS/X packages stuff.
+
+2005-10-03  James Gallagher <jgallagher@opendap.org>
+
+	Nodified cleanup to not copy the svn parts of dods_cahce_init when it makes dods_cache. This
+	will help keep Eclipse's svn module from being confused.
+
+2005-10-03  James Gallagher <jgallagher@opendap.org>
+
+	Build improvements from Patrice Dumas.
+
+2005-10-03  Patrick West <pwest@ucar.edu>
+
+	calling fflush rather that fclose in send_data
+
+2005-10-01  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-09-30  James Gallagher <jgallagher@opendap.org>
+
+	Updated NEWS with info about regex.
+
+2005-09-30  James Gallagher <jgallagher@opendap.org>
+
+	Updated for the changes to Regex.
+
+2005-09-30  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Removed regex from esc2undescore.
+
+2005-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an error in char2ASCII.
+
+2005-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Grammar update
+
+2005-09-29  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for gnulib regex code.
+
+2005-09-28  Yuan Ho <yuanho@ucar.edu>
+
+	adding install include dir
+
+2005-09-28  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-09-27  Yuan Ho <yuanho@ucar.edu>
+
+	adding install script
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	New libtool
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Comment about the hack...
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	New grammar generated files and some temporary fixes in gl/m4/regex.m4
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an error where a signed and unsigned were compared.
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Added new copy.
+
+2005-09-27  James Gallagher <jgallagher@opendap.org>
+
+	New gnulib changes; first half, removing the old gl code. I don't think this
+	was necessary, but it's hard to tell.
+
+2005-09-23  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Fixed install-sh; it was left out of the earlier mv
+
+2005-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Moved the configuration files into 'conf.'
+
+2005-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Changed the das lexer error message to include a character code.
+
+2005-09-19  Patrick West <pwest@ucar.edu>
+
+	missing declaration of BaseType
+
+2005-09-16  James Gallagher <jgallagher@opendap.org>
+
+	Added code to DODSFilter so support its use in something other than a Unix
+	command line filter program. In the process I found a bug in
+	escaping.cc:escattr() (ticket 210) which I fixed.
+
+2005-09-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a bug where _REENTRANT is defined and HAVE_STRFTIME is not. This shows
+	up on FC3/4 but not RHEL3 or OS/X.
+
+2005-09-08  James Gallagher <jgallagher@opendap.org>
+
+	Removed
+
+2005-09-08  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-09-07  James Gallagher <jgallagher@opendap.org>
+
+	Build update
+
+2005-09-07  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-09-06  James Gallagher <jgallagher@opendap.org>
+
+	Added alloc to gl_MODULES; for the os/x build.
+
+2005-09-06  James Gallagher <jgallagher@opendap.org>
+
+	Added the new gl directory.
+
+2005-09-06  James Gallagher <jgallagher@opendap.org>
+
+	Clean up.
+
+2005-09-06  James Gallagher <jgallagher@opendap.org>
+
+	Midway through resetting gl to only use the regex code.
+
+2005-09-03  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-08-19  James Gallagher <jgallagher@opendap.org>
+
+	Updated libdap.spec so that it now requires libcurl 7.10.6 (a downgrade from
+	7.12.0 so that we can build RPMs on RHEL3). This seems to work just fine.
+	Also fixed up the HTPPCacheTest unit test so that it works the first time
+	with a new check out.
+
+2005-08-19  James Gallagher <jgallagher@opendap.org>
+
+	downgrade to libcurl-7.10.6. This seems to work but needs more testing
+
+2005-08-17  James Gallagher <jgallagher@opendap.org>
+
+	Another shot at getting the build to work...
+
+2005-08-17  James Gallagher <jgallagher@opendap.org>
+
+	Build fixes; rpms now split into plain and -devel; fix for libdap.m4 macro
+
+2005-08-16  James Gallagher <jgallagher@opendap.org>
+
+	Patched libdap.m4 (from Patrice) and added text the README describing the macro.
+
+2005-08-16  James Gallagher <jgallagher@opendap.org>
+
+	Commented out the set of CFLAGS/CXXFLAGS (which was a left-over from the non-automake build).
+
+2005-08-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated for the release of 3.5.2.
+
+2005-08-12  James Gallagher <jgallagher@opendap.org>
+
+	Added back.
+
+2005-08-12  James Gallagher <jgallagher@opendap.org>
+
+	Test delete
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	config_dap.h --> config.h; also removed TRACE_NEW, #pragma interface/impl. in
+	test and unit-tests.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed trace_new.h; use valgrind instead.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed #pragma interface/implementation
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	So, I added IteratorAdapter.cc back in again.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Hmmm... Eclipse still doesn't seem to get the deletes quite right.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Tests updated for new float32 and 64 value computation.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Changed how sequential values are generated. The values should be the same on 32 and 64-bit machines.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Updated...
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	I removed the DODS_GTAR and DODS_PERL calls; Added AC_DEFINE for two version sof libxml2
+	and stripped away some code that was commented out months ago.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Resolved conflicts & added some comments about the state of the test driver.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Clarified commentary.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Added conditional compilation of the XML SAX callback struct. The code now uses
+	the library version number to determine which fields should be included since later
+	version have additional fields.
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed unused params in methods as reported by gcc 3.4. This may
+	break gcc 3.2, we will see...
+
+2005-08-11  James Gallagher <jgallagher@opendap.org>
+
+	Removed unused params in methods as reported by gcc 3.4. This may
+	break gcc 3.2, we will see...
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Changed comparison in set_max_size() so that it uses ULONG_MAX (since
+	the method uses a long) and does not test for negative sizes (since size
+	is unsigned).
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Moved debug options from AM_CXXFLAGS. Set the CXXFLAGS environment
+	variable (sample values are assigned to CXXFLAGS_DEBUG).
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	commented out #define DODS_DEBUG 1
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Reverted to previous version (which uses long instead of int). The change
+	breaks the unit tests (which otherwise work on both 32- and 64-bit machines.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Latest and greatest eclipse/cdt settings...
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Addressed various warnings from gcc (compiled using -Wall -W -Wcast-align)
+	as part of making the code 64-bit clean.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Added default init of TestCommon in the copy ctors for the TestByte, ...
+	classes.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Added proper error return to all unit tests.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Now GNURegex uses exceptions (std::invalid_argument and domain_error)
+	to signal problems. Controlled using USE_EXCEPTIONS. If this passes
+	on the nightly builds, then remove GNUerror.cc and builtin.h.
+
+2005-08-10  James Gallagher <jgallagher@opendap.org>
+
+	Fixed read() method: It did not include the 16-bit int types int he switch
+	statement.
+
+2005-08-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a leak where a specialization of BaseTypeFactory was used but not
+	deleted.
+
+2005-08-08  root
+
+	Auto reset of Subversion properties
+
+2005-07-28  James Gallagher <jgallagher@opendap.org>
+
+	Changes for the OS/X build. Particularly for the regex code in gl.
+
+2005-07-25  James Gallagher <jgallagher@opendap.org>
+
+	Fixed; the macro was using ifelse and m4_syscmd/m4_sysval but these didn't
+	seem to be working. Also replaced obsolete AC_TRY_TUN with AC_RUN_IFELSE().
+
+2005-07-23  James Gallagher <jgallagher@opendap.org>
+
+	Added libdap.m4: A macro that other packages can use to check for the library. From Patrice Dumas.
+
+2005-07-22  James Gallagher <jgallagher@opendap.org>
+
+	Updated requirements for automake, et cetera.
+
+2005-07-22  James Gallagher <jgallagher@opendap.org>
+
+	Updated for automake 1.9.6.
+
+2005-07-21  James Gallagher <jgallagher@opendap.org>
+
+	Removed calls to OK() in the set_error_code() and set_error_message() methods
+	since these are called by the parser on partially built objects.
+
+2005-07-20  James Gallagher <jgallagher@opendap.org>
+
+	Improved the documentation of BaseTypeFactory; removed
+	DEFAULT_BASETYPE_FACTORY from Makefile.am; added a note to
+	util.cc:prune_spaces questioning if that function is still needed; added a
+	test of prune_spaces to generalUtilTest.
+
+2005-07-20  James Gallagher <jgallagher@opendap.org>
+
+	Removed DEFAULT_BASETYPE_FACTORY switch. Updated build files using autoreconf
+	--install --force (using automake 1.9.2 from FC3).
+
+2005-07-19  James Gallagher <jgallagher@opendap.org>
+
+	Updated cdtproject file. Should this be in SVN?
+
+2005-07-19  James Gallagher <jgallagher@opendap.org>
+
+	Added gl/m4 to EXTRA_DIST; needed to get the distcheck target workig
+	with automake 1.6.3. Newer versions of automake set this correctly
+	given that ACLOCAL_AMFLAGS is used.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Removed $(top_srcdir) from ACLOCAL_AMFLAGS since this breaks autoreconf.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Changed ACLOCAL_AMFLAGS from '-I gl/m4' to '-I $(top_srcdir)/gl/m4' to
+	fix one last problem with distcheck.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Applied Patrice's patch for unit-tests; make distcheck should now work.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Changed the cache dirs with initial values to <cache>_init and use the
+	cleanup.sh script to cp -r <*>_init <*> to restore them. This way the tests
+	work w/o svn.
+
+2005-07-18  James Gallagher <jgallagher@opendap.org>
+
+	Added blurb about using autoreconf to (re)build the autotools stuff.
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated Makefile.am and the README/INSTALL/NEWS files. The 'dist' target now
+	works for make (although 'distcheck' fails for an odd reason).
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Copied/added
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Removed
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Moved/Added
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	Moved the unit tests from 'tests' to 'unit-tests.' The unit tests are now
+	only run when you cd into unit-tests and use make check. This change was made
+	because those tests use network services which might not be present on some
+	hosts used to build the package.
+
+2005-07-15  James Gallagher <jgallagher@opendap.org>
+
+	More fixes for the tests
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Fixed again...
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Removed extra line. This hosed the test since it causes the HTTPCache class
+	to think there's a second zero-size entry.
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	Changed URL; chages cache directory number
+
+2005-07-14  James Gallagher <jgallagher@opendap.org>
+
+	AISMergeTest now works (required files are now installed on
+	test.opendap.org). Also, applied Patrice Dumas' patch for the Makefile.am.
+
+2005-07-13  James Gallagher <jgallagher@opendap.org>
+
+	Fixed HTTPConnectTest
+
+2005-07-13  James Gallagher <jgallagher@opendap.org>
+
+	Spec file now includes support for a separate devel package (commented out).
+	From Patrice Dumas.
+
+2005-07-13  James Gallagher <jgallagher@opendap.org>
+
+	expr-test tests x, xa, xc, y, ya, and yc now expect to fail (and do on 64bit
+	hosts).
+
+2005-07-13  James Gallagher <jgallagher@opendap.org>
+
+	The last fix for this file? I hope so...
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Added data files for tests in DDSTest. Bug 112.
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	mistakenly removed alloca_.h from svn. Fixed tests/cache_testsuite.
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Test updates: expr-test now works except that 6 tests fail on 64bit machines.
+	Also, I updated the gnulib replacement functions so that gnulib-tool can be
+	used in the future to update. I moved the gnulib functions into the 'gl' subdir
+	and put the m4 macros in there inside the subdir 'gl/m4.' There's a note about
+	the procedure to use to update the functions in INSTALL.
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Added again...
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	removed
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Removed
+
+2005-07-12  James Gallagher <jgallagher@opendap.org>
+
+	Removed.
+
+2005-07-11  James Gallagher <jgallagher@opendap.org>
+
+	My previous fix for the gnulib mktime bug was bogus since it left a
+	replacement copy of mktime in the library using that name (which is
+	reserved). I've stopped using the gnulib mktime for now since it doesn't
+	seems absolutely necessary.
+
+2005-07-11  James Gallagher <jgallagher@opendap.org>
+
+	Modification from Patrice, et al. These were part of an attempt to work
+	around a bug with using mktime but they did not work.
+
+2005-07-08  James Gallagher <jgallagher@opendap.org>
+
+	Moved all tests to the 'tests' subdirectory. There are some tests that are
+	broken; only expr-test seems broken now but was not before. Most of the
+	broken tests require a localhost web daemon and specific test files for it
+	to serve; configure test.opendap.org for these instead.
+
+2005-07-08  James Gallagher <jgallagher@opendap.org>
+
+	Removed use of the GPL regex-0.12 code and switched to gnulib (which provides
+	regex and other functions which are covered by LGPL). These turned out to be
+	fairly massive changes. The work was done by Patrice Dumas (Thanks!). I
+	removed a AC_DEFINE macro in m4/mktime.m4 to work around a compilation
+	problem when using gnulib's mktime.c replacement function.
+
+2005-07-06  Patrick West <pwest@ucar.edu>
+
+	Added methods to Connect class to connect with the given URL instead of
+	building the URL to connect with, such as adding .das, .dds, etc...
+
+2005-07-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Set eol-style to native on all text file in the trunk
+
+2005-07-05  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the library version numbers. The order was backwards for the last two
+	digits.
+
+2005-07-04  James Gallagher <jgallagher@opendap.org>
+
+	Added Patrice Dumas' patches for libtool, et cetera.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	Moved the unit tests into the tests subdirectory.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	After adding libtool support, I ran autoreconf --force --install which in
+	turn ran libtoolize. this updated a number of the support code for the build.
+	Added ltmain.sh.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	Added. These generated files should be in svn.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	Added support for libtool using a patch from Patrice Dumas.
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	Set exec
+
+2005-07-01  James Gallagher <jgallagher@opendap.org>
+
+	ModifiedMakefile.am so that the dejagnu_driver.sh script now works.
+
+2005-06-30  James Gallagher <jgallagher@opendap.org>
+
+	Automake changes; these work and build the tests. the DejaGNU test support
+	has not been tested yet but the unit tests all run and the dejagnu drivers
+	all build.
+
+2005-06-30  James Gallagher <jgallagher@opendap.org>
+
+	Switched to automake. Not complete but functional.
+
+2005-06-30  James Gallagher <jgallagher@opendap.org>
+
+	Applied patch from Patrice Dumas for the automake build.
+
+2005-06-22  James Gallagher <jgallagher@opendap.org>
+
+	Added for automake build
+
+2005-06-22  James Gallagher <jgallagher@opendap.org>
+
+	Started work on an automake file for this code; only partly done. The
+	library builds but nothing else is in place. The grammars are in progress.
+	They build but the way gse is handled is the the way they all should be
+	unless I can get automake's lex/yacc rules to work. See
+	Makefile.am.in_progress and configure.ac.for_am.
+	Also included in this check in is a patch to libdap.spec from Patrice
+	Dumas.
+
+2005-06-22  James Gallagher <jgallagher@opendap.org>
+
+	Remove the attempts to utilize automake's support for bison/flex introduced
+	in the past 9 revisions.
+
+2005-06-21  James Gallagher <jgallagher@opendap.org>
+
+	moved...
+
+2005-06-21  James Gallagher <jgallagher@opendap.org>
+
+	checkpoint
+
+2005-06-21  James Gallagher <jgallagher@opendap.org>
+
+	moved from *.lex files for automake
+
+2005-06-21  James Gallagher <jgallagher@opendap.org>
+
+	Moved from gse.lex for automake
+
+2005-06-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the source path.
+
+2005-06-20  James Gallagher <jgallagher@opendap.org>
+
+	Commented out the Patch: and %patch lines since the patched code is
+	now in svn.
+
+2005-06-20  James Gallagher <jgallagher@opendap.org>
+
+	Accepted patches from Patrice Dumas <pertusus@free.fr> which improve the
+	build by using the system's regex library if found. Also included in the
+	patches were improvements to the rpm spec file; the file now uses the
+	fedora template and includes a fix for Mandrake ('Tue' --> 'Tues' in the
+	change log.
+
+2005-06-15  James Gallagher <jgallagher@opendap.org>
+
+	Fixed configure so that it does not include -gstabs on OS/X.
+
+2005-06-15  James Gallagher <jgallagher@opendap.org>
+
+	Changed eol-style, mime-type, other properties.
+	Removed generated files from svn.
+	Modified configure.ac so that it tests for bison and does not use bison -y.
+
+2005-06-15  James Gallagher <jgallagher@opendap.org>
+
+	Generated... Should these even be in SCM?
+
+2005-05-23  James Gallagher <jgallagher@opendap.org>
+
+	Removed cast to int at tokenlength = ... to avoid a warning about differring
+	pointer and int sizes on x86 64-bit CPUs.
+
+2005-05-23  James Gallagher <jgallagher@opendap.org>
+
+	Now uses local common-tests.exp and test.opendap.org.
+
+2005-05-23  James Gallagher <jgallagher@opendap.org>
+
+	Tests now use the local copy of common-tests.exp.
+
+2005-05-23  James Gallagher <jgallagher@opendap.org>
+
+	Reformat using indent and indent-eclipse plugin.
+
+2005-05-17  Patrick West <pwest@ucar.edu>
+
+	updated dap_version using libdap_version
+
+2005-05-13  James Gallagher <jgallagher@opendap.org>
+
+	3.5.1
+
+2005-05-13  James Gallagher <jgallagher@opendap.org>
+
+	3.5.1
+
+2005-05-13  James Gallagher <jgallagher@opendap.org>
+
+	checkpoint
+
+2005-05-12  James Gallagher <jgallagher@opendap.org>
+
+	moved
+
+2005-05-12  James Gallagher <jgallagher@opendap.org>
+
+	Renamed libdap-config to dap-config to fall in line more with what
+	other projects are doing.
+
+2005-05-12  James Gallagher <jgallagher@opendap.org>
+
+	05/12/05 jhrg
+
+2005-05-12  James Gallagher <jgallagher@opendap.org>
+
+	Modified install so that it no longer appends a version number to the
+	static library or includes. When we build a dynamic lib, look into the
+	version number thing then.
+
+2005-05-11  James Gallagher <jgallagher@opendap.org>
+
+	5/11/05
+
+2005-05-10  James Gallagher <jgallagher@opendap.org>
+
+	Changed to work with rpm. Don't alter the values of variables like
+	$includedir because values for these are passed into make by rpmbuild,
+	overriding the values set by the here. This was happening with $includedir
+	which had the string '/libdap' appended early on in the Makefile and then
+	@PACKAGE_VERSION@ appended in the install-header target. When 'make' was run
+	from the command line, this worked OK, but not when rpmbuild passed in a new
+	value for $includedir.
+
+2005-05-10  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-05-10  James Gallagher <jgallagher@opendap.org>
+
+	5/10/2005
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2005-05-10  James Gallagher  <jimg@zoey.opendap.org>
 
 	* libdap.spec (Prefix): Built spec file; tested. Some problems
