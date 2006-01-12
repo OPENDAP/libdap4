@@ -100,10 +100,11 @@ public:
 
   GSEClause(Grid *grid, const string &map, const double value1,
 	    const relop op1, const double value2, const relop op2);
-
+#if 0
   GSEClause(Grid *grid, const string &expr);
 
   GSEClause(Grid *grid, char *expr);
+#endif
   //@}
     
   bool OK() const;

@@ -75,6 +75,8 @@ GSEClause &GSEClause::operator=(GSEClause &)
   throw InternalErr(__FILE__, __LINE__, "assigment called for GSEClause");
 }
 
+// For the comparisions here, we should use an epsilon to catch issues
+// with floating point values. jhrg 01/12/06
 template<class T>
 static bool
 compare(T elem, relop op, double value)
@@ -119,7 +121,7 @@ template<class T>
 void
 GSEClause::set_start_stop()
 {
-    // Read the byte array, scan, set start and stop.
+    // Read the map array, scan, set start and stop.
     T *vals = 0;
     d_map->buf2val((void **)&vals);
 
@@ -127,6 +129,11 @@ GSEClause::set_start_stop()
     // easier to do here, now, than later... 9/20/2001 jhrg)
     set_map_min_max_value<T>(vals[d_start], vals[d_stop]);
 
+    // Starting at the current start point in the map (initially index position
+    // zero), scan forward until the comparison is true. Set the new value
+    // of d_start to that location. Note that each clause applies to exactly
+    // one map. The 'i <= end' test keeps us from setting start _past_ the 
+    // end ;-)
     int i = d_start;
     int end = d_stop;
     while(i <= end && !compare<T>(vals[i], d_op1, d_value1))
@@ -134,13 +141,17 @@ GSEClause::set_start_stop()
 
     d_start = i;
 
+    // Now scan backward from the end. We scan all the way to the actual start
+    // although it would probably work to stop at 'i >= d_start'. 
     i = end;
     while(i >= 0 && !compare<T>(vals[i], d_op1, d_value1))
 	i--;
     d_stop = i;
 
     // Every clause must have one operator but the second is optional since
-    // the more complex for of a clause is optional.
+    // the more complex form of a clause is optional. That is, the above two
+    // loops took care of constraints like 'x < 7' but we need the following
+    // for ones like '3 < x < 7'. 
     if (d_op2 != dods_nop_op) {
 	int i = d_start;
 	int end = d_stop;
@@ -237,6 +248,7 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
     compute_indices();
 }
 
+#if 0
 /** @brief Create an instance using a grid and an expression. */
 GSEClause::GSEClause(Grid *, const string &)
 {
@@ -246,6 +258,7 @@ GSEClause::GSEClause(Grid *, const string &)
 GSEClause::GSEClause(Grid *, char *)
 {
 }
+#endif
 
 /** Class invariant. 
     @return True if the object is valid, otherwise False. */
