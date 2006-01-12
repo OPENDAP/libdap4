@@ -239,7 +239,7 @@ main(int argc, char *argv[])
 
     }
     catch(exception & e) {
-        cerr << "Caught exception: " << e.what << endl;
+        fprintf(stderr, "Caught exception: %s\n", e.what());
     }
 
     delete ttf;
