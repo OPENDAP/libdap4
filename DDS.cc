@@ -389,8 +389,9 @@ DDS::transfer_attributes(DAS *das)
 {
     for (AttrTable::Attr_iter i = das->attr_begin(); i!=das->attr_end(); ++i) {
 	AttrTable::entry *ep = *i;
+#if 0
 	bool found = false;
-
+#endif
         // Look for attribute tables with <name>_dim_0, dim_1, et cetera. 
         // If found, seach for just the <name> since these tables are
         // created by the HDF4 server to hold information HDF4 binds to 
@@ -416,14 +417,21 @@ DDS::transfer_attributes(DAS *das)
         // match variables within Structures, et c., without correctly 
         // nesting the attributes. So, use DDS::var() which will recurrsively
         // search nested constructor types using only a leaf name.
+#if 0
         BaseType *btp = var(ep->name);
         if (btp) {
-            found = true;
+            found = true;               // Remove this, rpl w/if else???
             transfer_attr(das, ep, btp, suffix);
         }
         
 	if (!found)
 	    add_global_attribute(*i);
+#endif
+        BaseType *btp = var(ep->name);
+        if (btp)
+            transfer_attr(das, ep, btp, suffix);
+        else
+            add_global_attribute(*i);
 
     }
 }
