@@ -185,22 +185,22 @@ public:
 
     virtual void send_das(DAS &das, const string &anc_location = "",
                           bool with_mime_headers = true);
-
+#if 0
     virtual void send_das(ostream &os, DAS &das,
 			  const string &anc_location="",
                           bool with_mime_headers = true);
-
+#endif
     virtual void send_das(FILE *out, DAS &das, const string &anc_location="",
                           bool with_mime_headers = true);
 
     virtual void send_dds(DDS &dds, bool constrained = false,
 			  const string &anc_location = "",
                           bool with_mime_headers = true);
-
+#if 0
     virtual void send_dds(ostream &os, DDS &dds, bool constrained = false,
 			  const string &anc_location = "",
                           bool with_mime_headers = true);
-
+#endif
     virtual void send_dds(FILE *out, DDS &dds, bool constrained = false,
 			  const string &anc_location = "",
                           bool with_mime_headers = true);

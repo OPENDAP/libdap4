@@ -74,7 +74,6 @@ string rfc822_date(const time_t t);
 
 time_t last_modified_time(string name);
 //@}
-#if 0
 
 /** These functions are used to create the MIME headers for a message
     from a server to a client. They are public but should not be called
@@ -83,42 +82,45 @@ time_t last_modified_time(string name);
     NB: These functions actually write both the response status line
     <i>and</i> the header.
 
-    @brief Functions to create a MIME header.
     @name MIME utility functions
     @see DODSFilter
 */
-#endif
-/** @name Functions to write MIME headers */
 //@{
+#if 0
 void set_mime_text(ostream &os, ObjectType type = unknown_type, 
 		   const string &version = "", EncodingType enc = x_plain,
 		   const time_t last_modified = 0);
+#endif
 void set_mime_text(FILE *out, ObjectType type = unknown_type, 
 		   const string &version = "", EncodingType enc = x_plain,
 		   const time_t last_modified = 0);
-
+#if 0
 void set_mime_html(ostream &os, ObjectType type = unknown_type, 
 		   const string &version = "", EncodingType enc = x_plain,
 		   const time_t last_modified = 0);
+#endif
 void set_mime_html(FILE *out, ObjectType type = unknown_type, 
 		   const string &version = "", EncodingType enc = x_plain,
 		   const time_t last_modified = 0);
-
+#if 0
 void set_mime_binary(ostream &os, ObjectType type = unknown_type, 
 		     const string &version = "", EncodingType enc = x_plain,
 		     const time_t last_modified = 0);
+#endif
 void set_mime_binary(FILE *out, ObjectType type = unknown_type, 
 		     const string &version = "", EncodingType enc = x_plain,
 		     const time_t last_modified = 0);
-
+#if 0
 void set_mime_error(ostream &os, int code = 404, 
 		    const string &reason = "Dataset not found",
 		    const string &version = "");
+#endif
 void set_mime_error(FILE *out, int code = 404, 
 		    const string &reason = "Dataset not found",
 		    const string &version = "");
-
+#if 0
 void set_mime_not_modified(ostream &os);
+#endif
 void set_mime_not_modified(FILE *out);
 
 //@}

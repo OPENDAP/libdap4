@@ -67,7 +67,7 @@ public:
 	// above URL. The values below much match the etag and last-modified
 	// time returned by the server. Run this test with DODS_DEBUG defined
 	// to see the values it's returning.
-	etag = "\"3f62c-157-139c2680\"";
+	etag = "\"928ec-157-139c2680\"";
 	lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
 	localhost_pw_url = "http://jimg:dods_test@test.opendap.org/basic/page.txt";
@@ -201,11 +201,17 @@ public:
 	    DBG(copy(h->begin(), h->end(), 
 		     ostream_iterator<string>(cerr, "\n")));
 
-	    // Should get five headers back.
+	    // Should get five or six headers back.
 	    Regex header("XDODS-Server: DAP/.*");
 	    CPPUNIT_ASSERT(re_match(header, (*h)[0].c_str()));
+            Regex protocol_header("XDAP-Protocol: .*");
+            int num_headers;
+            if (re_match(protocol_header, (*h)[1].c_str()))
+                num_headers = 6;
+            else
+                num_headers = 5;
 	    CPPUNIT_ASSERT((*h)[4] == "Content-Description: dods_das");
-	    CPPUNIT_ASSERT(h->size() == 5);
+	    CPPUNIT_ASSERT(h->size() == num_headers);
 
 	    delete r; r = 0;
 	}

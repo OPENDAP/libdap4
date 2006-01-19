@@ -78,7 +78,11 @@ public:
     CPPUNIT_TEST(find_ancillary_file_test);
     CPPUNIT_TEST(find_group_ancillary_file_test);
     CPPUNIT_TEST(name_path_test);
+    // Removed set_mime_text_test when I removed the ostream methods 
+    // jhrg 1/18/06
+#if 0
     CPPUNIT_TEST(set_mime_text_test);
+#endif
     CPPUNIT_TEST(rfc822_date_test);
     CPPUNIT_TEST(last_modified_time_test);
 
@@ -117,24 +121,28 @@ public:
 	CPPUNIT_ASSERT(name_path(string("")) == "");
     }
 
+    // See note above. jhrg 1/18/06
+#if 0
     void set_mime_text_test() {
-	Regex r1("HTTP/1.0 200 OK\n\
-XDODS-Server: dods-test/0.00\n\
-Date: (.*)\n\
-Last-Modified: \\1\n\
-Content-type: text/plain\n\
-Content-Description: dods_das\n\
+	Regex r1("HTTP/1.0 200 OK\r\n\
+XDODS-Server: dods-test/0.00\r\n\
+XDAP-Protocol: .*\r\n\
+Date: (.*)\r\n\
+Last-Modified: \\1\r\n\
+Content-type: text/plain\r\n\
+Content-Description: dods_das\r\n\
 \n");
 	set_mime_text(oss, dods_das, "dods-test/0.00");
 	CPPUNIT_ASSERT(re_match(r1, oss.str()));
 	reset_oss();
 
-	Regex r2("HTTP/1.0 200 OK\n\
-XDODS-Server: dods-test/0.00\n\
-Date: (.*)\n\
-Last-Modified: \\1\n\
-Content-type: text/plain\n\
-Content-Description: dods_dds\n\
+	Regex r2("HTTP/1.0 200 OK\r\n\
+XDODS-Server: dods-test/0.00\r\n\
+XDAP-Protocol: .*\r\n\
+Date: (.*)\r\n\
+Last-Modified: \\1\r\n\
+Content-type: text/plain\r\n\
+Content-Description: dods_dds\r\n\
 \n");
 	set_mime_text(oss, dods_dds, "dods-test/0.00");
 	DBG(cerr << "DODS DDS" << endl << oss.str());
@@ -143,17 +151,19 @@ Content-Description: dods_dds\n\
 
 	struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0}; // 1 Jan 2000
 	time_t t = mktime(&tm);
-	Regex r3("HTTP/1.0 200 OK\n\
-XDODS-Server: dods-test/0.00\n\
-Date: .*\n\
-Last-Modified: Sat, 01 Jan 2000 ..:00:00 GMT\n\
-Content-type: text/plain\n\
-Content-Description: dods_dds\n\
+	Regex r3("HTTP/1.0 200 OK\r\n\
+XDODS-Server: dods-test/0.00\r\n\
+XDAP-Protocol: .*\r\n\
+Date: .*\r\n\
+Last-Modified: Sat, 01 Jan 2000 ..:00:00 GMT\r\n\
+Content-type: text/plain\r\n\
+Content-Description: dods_dds\r\n\
 \n");
 	set_mime_text(oss, dods_dds, "dods-test/0.00", x_plain, t);
 	CPPUNIT_ASSERT(re_match(r3, oss.str()));
 	reset_oss();
     }
+#endif
  
     void rfc822_date_test() {
 	time_t t = 0;

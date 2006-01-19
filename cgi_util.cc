@@ -105,6 +105,7 @@ do_version(const string &script_ver, const string &dataset_ver)
 {
     fprintf( stdout, "HTTP/1.0 200 OK%s", CRLF ) ;
     fprintf( stdout, "XDODS-Server: %s%s", DVR, CRLF ) ;
+    fprintf( stdout, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
     fprintf( stdout, "Content-Type: text/plain%s", CRLF ) ;
     fprintf( stdout, CRLF ) ;
     
@@ -522,6 +523,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
     fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
+    fprintf( out, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
 
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
@@ -545,6 +547,7 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
     fprintf( out, CRLF ) ;
 }
 
+#if 0
 /** Use this function to create a MIME header for a text message.
 
     @brief Set the MIME type to text.
@@ -587,6 +590,7 @@ set_mime_text(ostream &os, ObjectType type, const string &ver,
 	os << "Content-Encoding: " << encoding[enc] << endl;
     os << endl;
 }
+#endif
 
 /** Generate an HTTP 1.0 response header for a html document.
 
@@ -604,6 +608,7 @@ set_mime_html(FILE *out, ObjectType type, const string &ver,
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
     fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
+    fprintf( out, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
 
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
@@ -626,6 +631,7 @@ set_mime_html(FILE *out, ObjectType type, const string &ver,
     fprintf( out, CRLF ) ;
 }
 
+#if 0
 /** Use this function to create a MIME header for a html message.
 
     @brief Set the MIME type to html.
@@ -668,6 +674,8 @@ set_mime_html(ostream &os, ObjectType type, const string &ver,
 	os << "Content-Encoding: " << encoding[enc] << endl;
     os << endl;
 }
+#endif
+
 /** Write an HTTP 1.0 response header for our binary response document (i.e.,
     the DataDDS object).
 
@@ -687,6 +695,8 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
     fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
+    fprintf( out, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+    
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
 
@@ -704,6 +714,7 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
     fprintf( out, CRLF ) ;
 }
 
+#if 0
 /** Use this function to create a MIME header for a message containing binary
     data.
 
@@ -742,6 +753,7 @@ set_mime_binary(ostream &os, ObjectType type, const string &ver,
 
     os << endl;
 }
+#endif
 
 /** Generate an HTTP 1.0 reponse header for an Error object.
     @param out Write the MIME header to this FILE pointer.
@@ -758,12 +770,15 @@ set_mime_error(FILE *out, int code, const string &reason,
       fprintf( out, "XDODS-Server: %s%s", DVR, CRLF ) ;
     else
       fprintf( out, "XDODS-Server: %s%s", version.c_str(), CRLF ) ;
+    fprintf( out, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
     fprintf( out, "Cache-Control: no-cache%s", CRLF ) ;
     fprintf( out, CRLF ) ;
 }
 
+#if 0
 /** Use this function to create a MIME header for a message signaling an
     error.
 
@@ -789,6 +804,7 @@ set_mime_error(ostream &os, int code, const string &reason,
     os << "Cache-Control: no-cache" << endl;
     os << endl;
 }
+#endif
 
 /** Use this function to create a response signalling that the target of a
     conditional get has not been modified relative to the condition given in
@@ -806,6 +822,7 @@ set_mime_not_modified(FILE *out)
     fprintf( out, CRLF ) ;
 }
 
+#if 0
 /** Use this function to create a response signalling that the target of a
     conditional get has not been modified relative to the condition given in
     the request. For DODS this will have to be a date until the servers
@@ -823,6 +840,7 @@ set_mime_not_modified(ostream &os)
     os << "Date: " << rfc822_date(t) << endl;
     os << endl;
 }
+#endif
 
 /** Look for the override file by taking the dataset name and
     appending `.ovr' to it. If such a file exists, then read it in and

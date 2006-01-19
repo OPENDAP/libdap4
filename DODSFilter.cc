@@ -702,28 +702,10 @@ DODSFilter::print_usage() throw(Error)
 void 
 DODSFilter::send_version_info()
 {
-    // Use the version in cgi_util.cc. jhrg 12/23/05
-    
     do_version(d_cgi_ver, get_dataset_version());
-#if 0    
-    fprintf( stdout, "HTTP/1.0 200 OK\n" ) ;
-    fprintf( stdout, "XDODS-Server: %s\n", d_cgi_ver.c_str() ) ;
-    fprintf( stdout, "Content-Type: text/plain\n" ) ;
-    fprintf( stdout, "\n" ) ;
-
-    fprintf( stdout, "DODS server core software: %s\n", DVR ) ;
-
-    if (d_cgi_ver != "")
-	fprintf( stdout, "Server version: %s\n", d_cgi_ver.c_str() ) ;
-
-    string v = get_dataset_version();
-    if (v != "")
-	fprintf( stdout, "Dataset version: %s\n", v.c_str() ) ;
-    
-    fflush( stdout ) ;
-#endif
 }
 
+#if 0
 /**
     @param with_mime_headers If true (the default) send MIME headers. */
 void
@@ -742,6 +724,7 @@ DODSFilter::send_das(ostream &os, DAS &das, const string &anc_location,
 	das.print(os);
     }
 }
+#endif
 
 /** This function formats and prints an ASCII representation of a
     DAS on stdout.  This has the effect of sending the DAS object
@@ -779,6 +762,7 @@ DODSFilter::send_das(DAS &das, const string &anc_location,
     send_das(stdout, das, anc_location, with_mime_headers);
 }
 
+#if 0
 void
 DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
 		     const string &anc_location,
@@ -803,6 +787,7 @@ DODSFilter::send_dds(ostream &os, DDS &dds, bool constrained,
 	    dds.print(os);
     }
 }
+#endif
 
 /** This function formats and prints an ASCII representation of a
     DDS on stdout.  When called by a CGI program, this has the
