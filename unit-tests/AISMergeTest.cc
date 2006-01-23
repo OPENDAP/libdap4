@@ -33,6 +33,8 @@
 #include "AISMerge.h"
 #include "debug.h"
 
+#include "testFile.cc"
+
 using namespace CppUnit;
 
 class AISMergeTest:public TestFixture {
@@ -113,45 +115,43 @@ public:
 	try {
 	    Connect *conn;
 	    DAS das;
-	    ostringstream oss;
-
+            string sof;
+            
 	    conn = new Connect(fnoc1); // test overwrite (default)
 	    conn->request_das(das);
 	    ais_merge->merge(fnoc1, das);
-	    das.print(oss);
-	    DBG(cerr << "Merged fnoc1 DAS: " << oss.str() << endl);
-	    CPPUNIT_ASSERT(oss.str().find(fnoc1_merge_ais) != string::npos);
+	    FILE2string(sof, of, das.print(of));
+	    DBG(cerr << "Merged fnoc1 DAS: " << sof << endl);
+	    CPPUNIT_ASSERT(sof.find(fnoc1_merge_ais) != string::npos);
 
 	    delete conn; conn = 0;
 	    das.erase();
-	    oss.str("");
 
 	    conn = new Connect(fnoc2); // test replace
 	    conn->request_das(das);
 	    ais_merge->merge(fnoc2, das);
-	    das.print(oss);
-	    CPPUNIT_ASSERT(oss.str().find(fnoc2_merge_ais) != string::npos);
+	    FILE2string(sof, of, das.print(of));
+	    CPPUNIT_ASSERT(sof.find(fnoc2_merge_ais) != string::npos);
 
 	    delete conn; conn = 0;
 	    das.erase();
-	    oss.str("");
 	    
 	    conn = new Connect(fnoc3); // test fallback
 	    conn->request_das(das); // with a non-empty das, nothing happens
 	    ais_merge->merge(fnoc3, das);
-	    das.print(oss);
-	    CPPUNIT_ASSERT(oss.str().find(fnoc3_das) != string::npos);
+	    FILE2string(sof, of, das.print(of));
+	    CPPUNIT_ASSERT(sof.find(fnoc3_das) != string::npos);
 
-	    oss.str(""); das.erase(); // empty das, should add attributes
+	    das.erase(); // empty das, should add attributes
 	    ais_merge->merge(fnoc3, das);
-	    das.print(oss);
-	    CPPUNIT_ASSERT(oss.str().find(fnoc3_merge_ais) != string::npos);
+	    FILE2string(sof, of, das.print(of));
+	    CPPUNIT_ASSERT(sof.find(fnoc3_merge_ais) != string::npos);
 
 	    conn = new Connect(three_fnoc); // test regexp
 	    conn->request_das(das); // with a non-empty das, nothing happens
 	    ais_merge->merge(three_fnoc, das);
-	    das.print(oss);
-	    CPPUNIT_ASSERT(oss.str().find(three_fnoc_merge_ais) 
+	    FILE2string(sof, of, das.print(of));
+	    CPPUNIT_ASSERT(sof.find(three_fnoc_merge_ais) 
 			   != string::npos);
 	}
 	catch (Error &e) {

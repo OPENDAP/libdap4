@@ -22,6 +22,8 @@
 #include "util.h"
 #include "debug.h"
 
+#include "testFile.cc"
+
 using namespace std;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
@@ -373,6 +375,7 @@ public:
 	CPPUNIT_ASSERT( found_func == true ) ;
 	CPPUNIT_ASSERT( projf ) ;
 
+#if 0
 	{
 	    ostringstream strm;
 	    dds.print( strm ) ;
@@ -384,14 +387,15 @@ public:
 	    }
 	    CPPUNIT_ASSERT( cprint == outstr ) ;
 	}
+#endif
 
 	{
-	    FILE *of = fopen( "testout", "w" ) ;
-	    dds.print( of ) ;
-	    fclose( of ) ;
-	    testFile( "testout", cprint ) ;
+            string sof;
+            FILE2string(sof, of, dds.print( of ));
+            CPPUNIT_ASSERT(sof.find(cprint) != string::npos);
 	}
 
+#if 0
 	{
 	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
@@ -403,16 +407,16 @@ public:
 	    }
 	    CPPUNIT_ASSERT( nprint == outstr ) ;
 	}
+#endif
 
 	{
-	    FILE *of = fopen( "testout", "w" ) ;
-	    dds.print_constrained( of ) ;
-	    fclose( of ) ;
-	    testFile( "testout", nprint ) ;
+            string sof;
+            FILE2string(sof, of, dds.print_constrained( of ));
+            CPPUNIT_ASSERT(sof.find(nprint) != string::npos);
 	}
 
 	dds.mark_all( true ) ;
-
+#if 0
 	{
 	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
@@ -424,17 +428,16 @@ public:
 	    }
 	    CPPUNIT_ASSERT( cprint == outstr ) ;
 	}
-
+#endif
 	{
-	    FILE *of = fopen( "testout", "w" ) ;
-	    dds.print_constrained( of ) ;
-	    fclose( of ) ;
-	    testFile( "testout", cprint ) ;
+            string sof;
+            FILE2string(sof, of, dds.print_constrained( of ));
+            CPPUNIT_ASSERT(sof.find(cprint) != string::npos);
 	}
 
 	bool mark_ret = dds.mark( "var8", false ) ;
 	CPPUNIT_ASSERT( mark_ret == true ) ;
-
+#if 0
 	{
 	    ostringstream strm;
 	    dds.print_constrained( strm ) ;
@@ -446,33 +449,11 @@ public:
 	    }
 	    CPPUNIT_ASSERT( pprint == outstr ) ;
 	}
-
+#endif
 	{
-	    FILE *of = fopen( "testout", "w" ) ;
-	    dds.print_constrained( of ) ;
-	    fclose( of ) ;
-	    testFile( "testout", pprint ) ;
-	}
-    }
-
-    void testFile( char *fn, const string &expstr )
-    {
-	ifstream ifs( fn ) ;
-	ostringstream strm;
-	char line[80];
-	while( !ifs.eof( ) )
-	{
-	    ifs.getline( line, 80 ) ;
-	    if( !ifs.eof() )
-		strm << line << endl ;
-	}
-	ifs.close();
-	string outstr = strm.str() ;
-	CPPUNIT_ASSERT( expstr == outstr ) ;
-	if( expstr != outstr )
-	{
-	    DBG2( cerr << "expected output = " << expstr << endl ) ;
-	    DBG2( cerr << "output received = " << outstr << endl ) ;
+            string sof;
+            FILE2string(sof, of, dds.print_constrained( of ));
+            CPPUNIT_ASSERT(sof.find(pprint) != string::npos);
 	}
     }
 };

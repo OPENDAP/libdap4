@@ -22,7 +22,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -33,35 +33,42 @@
 
 #include "Byte.h"
 
+#include "testFile.cc"
+
 using namespace CppUnit;
 using namespace std;
 
-class ByteTest : public TestFixture {
-private:
-    Byte *tb1;
+class ByteTest:public TestFixture {
+  private:
+    Byte * tb1;
     Byte *tb2;
     Byte *tb3;
     Byte *tb4;
 
-public: 
-    ByteTest() {}
-    ~ByteTest() {}
+  public:
+     ByteTest() {
+    } ~ByteTest() {
+    }
 
     void setUp() {
-	tb1 = new Byte("tb1");
-	tb2 = new Byte("tb2 name with spaces");
-	tb3 = new Byte("tb3 %");
-	tb4 = new Byte("tb4 #");
+        tb1 = new Byte("tb1");
+        tb2 = new Byte("tb2 name with spaces");
+        tb3 = new Byte("tb3 %");
+        tb4 = new Byte("tb4 #");
     }
 
     void tearDown() {
-	delete tb1; tb1 = 0;
-	delete tb2; tb2 = 0;
-	delete tb3; tb3 = 0;
-	delete tb4; tb4 = 0;
+        delete tb1;
+        tb1 = 0;
+        delete tb2;
+        tb2 = 0;
+        delete tb3;
+        tb3 = 0;
+        delete tb4;
+        tb4 = 0;
     }
 
-    CPPUNIT_TEST_SUITE( ByteTest );
+    CPPUNIT_TEST_SUITE(ByteTest);
 
     CPPUNIT_TEST(name_mangling_test);
     CPPUNIT_TEST(decl_mangling_test);
@@ -69,44 +76,37 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void name_mangling_test() {
-	CPPUNIT_ASSERT(tb1->name() == "tb1");
-	CPPUNIT_ASSERT(tb2->name() == "tb2 name with spaces");
-	CPPUNIT_ASSERT(tb3->name() == "tb3 %");
-	CPPUNIT_ASSERT(tb4->name() == "tb4 #");
+        CPPUNIT_ASSERT(tb1->name() == "tb1");
+        CPPUNIT_ASSERT(tb2->name() == "tb2 name with spaces");
+        CPPUNIT_ASSERT(tb3->name() == "tb3 %");
+        CPPUNIT_ASSERT(tb4->name() == "tb4 #");
     }
 
     void decl_mangling_test() {
-	ostringstream oss;
-	tb1->print_decl(oss, "", false);
-	CPPUNIT_ASSERT(string(oss.str()) == "Byte tb1");
+        string sof;
+        FILE2string(sof, of, tb1->print_decl(of, "", false));
+        CPPUNIT_ASSERT(sof.find("Byte tb1") != string::npos);
 
-	ostringstream oss2;
-	tb2->print_decl(oss2, "", false);
-	CPPUNIT_ASSERT(string(oss2.str()) == "Byte tb2%20name%20with%20spaces");
+        FILE2string(sof, of, tb2->print_decl(of, "", false));
+        CPPUNIT_ASSERT(sof.find("Byte tb2%20name%20with%20spaces") != string::npos);
 
-	ostringstream oss3;
-	tb3->print_decl(oss3, "", false);
-	CPPUNIT_ASSERT(string(oss3.str()) == "Byte tb3%20%");
+        FILE2string(sof, of, tb3->print_decl(of, "", false));
+        CPPUNIT_ASSERT(sof.find("Byte tb3%20%") != string::npos);
 
-	ostringstream oss4;
-	tb4->print_decl(oss4, "", false);
-	CPPUNIT_ASSERT(string(oss4.str()) == "Byte tb4%20%23");
+        FILE2string(sof, of, tb4->print_decl(of, "", false));
+        CPPUNIT_ASSERT(sof.find("Byte tb4%20%23") != string::npos);
     }
 
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ByteTest);
 
-int 
-main( int, char** )
+int main(int, char **)
 {
     CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    bool wasSuccessful = runner.run("", false);
 
     return wasSuccessful ? 0 : 1;
 }
-
-
-

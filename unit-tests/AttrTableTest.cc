@@ -34,6 +34,8 @@
 
 #include "AttrTable.h"
 
+#include "testFile.cc"
+
 using namespace CppUnit;
 using namespace std;
 
@@ -211,11 +213,11 @@ public:
 	AttrTable *t = new AttrTable;
 	t->append_attr("long name", "String", "first");
 	t->append_attr("longer name", "String", "\"second test\"");
-	ostringstream oss;
-	t->print(oss, "");
+        string sof;
+        FILE2string(sof, of, t->print(of, ""));
 	string attrs = "String long%20name first;\n\
 String longer%20name \"second test\";";
-	CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
+	CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
 	delete t; t = 0;
     }
 
@@ -231,13 +233,13 @@ String longer%20name \"second test\";";
 	    CPPUNIT_ASSERT("Caught Error exception!" && false);
 	}
         try {
-	    ostringstream oss;
-	    top->print(oss, "");
+            string sof;
+            FILE2string(sof, of, top->print(of, ""));
 	    Regex r("Data%20Field \\{\n\
 .*String long%20name first;\n\
 .*Alias an%20alias long%20name;\n\
-\\}\n");
-	    CPPUNIT_ASSERT(re_match(r, oss.str().c_str()));
+\\}\n\n");
+	    CPPUNIT_ASSERT(re_match(r, sof.c_str()));
 	    delete top; top = 0;
         }
         catch (Error &e) {
