@@ -515,7 +515,7 @@ Structure::print_decl(FILE *out, string space, bool print_semi,
 #endif
 
 // print the values of the contained variables
-
+#if 0
 void 
 Structure::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -536,7 +536,7 @@ Structure::print_val(ostream &os, string space, bool print_decl_p)
     if (print_decl_p)
 	os << ";" << endl;
 }
-
+#endif
 void 
 Structure::print_val(FILE *out, string space, bool print_decl_p)
 {
@@ -558,6 +558,7 @@ Structure::print_val(FILE *out, string space, bool print_decl_p)
 	fprintf( out, ";\n" ) ;
 }
 
+#if 0
 // Print the values of the contained variables.
 //
 // Potential bug: This works only for structures that have sequences at their
@@ -613,6 +614,7 @@ Structure::print_all_vals(ostream &os, XDR *, DDS *, string space, bool print_de
 	os << ";" << endl;
 #endif
 }
+#endif
 
 // Print the values of the contained variables.
 //

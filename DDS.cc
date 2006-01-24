@@ -48,7 +48,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include <sys/wait.h>
 #endif
 
-#include <assert.h>
+//#include <assert.h>
 #include <iostream>
 #include <algorithm>
 #include <functional>
@@ -1189,6 +1189,7 @@ DDS::parse(FILE *in)
 
     @return TRUE
 */
+#if 0
 void
 DDS::print(ostream &os)
 {
@@ -1199,7 +1200,7 @@ DDS::print(ostream &os)
 
     os << "} " << id2www(name) << ";" << endl;
 }
-
+#endif
 /** @brief Print the entire DDS to the specified file. */
 void
 DDS::print(FILE *out)
@@ -1227,6 +1228,7 @@ DDS::print(FILE *out)
 
     @returns true.
 */
+#if 0
 void
 DDS::print_constrained(ostream &os)
 {
@@ -1240,6 +1242,8 @@ DDS::print_constrained(ostream &os)
 
     os << "} " << id2www(name) << ";" << endl;
 }
+#endif
+
 /** @brief Print a constrained DDS to the specified file. 
 
     Print those parts (variables) of the DDS structure to OS that
@@ -1372,6 +1376,7 @@ DDS::parse_constraint(const string &constraint)
     expr_delete_buffer(buffer);
 }
 
+#if 0
 /** @brief Parse the constraint expression given the current DDS. 
 
     Evaluate the constraint expression; return the value of the
@@ -1400,7 +1405,8 @@ DDS::parse_constraint(const string &constraint, ostream &, bool)
 
     expr_delete_buffer(buffer);
 }
-
+#endif
+#if 0
 /** @brief Parse the constraint expression given the current DDS. 
 
     Evaluate the constraint expression; return the value of the
@@ -1433,6 +1439,7 @@ DDS::parse_constraint(const string &constraint, FILE *, bool)
 
     return;
 }
+#endif
 
 // These three functions are defined here because they are used by the
 // deprecated DDS::send method. 07/24/03 jhrg
@@ -1526,7 +1533,7 @@ DDS::send(const string &dataset, const string &constraint, FILE *out,
     // If parse_constraint executes with no exception
     // we will proceed with the algorithm to send the data.
 
-    parse_constraint(constraint, out, true);
+    parse_constraint(constraint);
   
     tag_nested_sequences();             // Must call this after CE parse.
     

@@ -49,6 +49,8 @@ private:
     ObjectType d_type;
     /// Server version
     string d_version;
+    /// The DAP server's protocol
+    string d_protocol;
     /// The HTTP response code
     int d_status;
 
@@ -69,7 +71,8 @@ public:
 	HTTPResponse and HTTPConnect) may fill these fields in with other
 	values. */
     Response(FILE *s) : d_stream(s), d_type(unknown_type), 
-			d_version("dods/0.0"), d_status(0) { }
+			d_version("dods/0.0"), d_protocol("2.0"), 
+                        d_status(0) { }
 
     /** Close the stream. */
     virtual ~Response() { 
@@ -85,6 +88,7 @@ public:
     virtual FILE *get_stream() const { return d_stream; }
     virtual ObjectType get_type() const { return d_type; }
     virtual string get_version() const { return d_version; }
+    virtual string get_protocol() const { return d_protocol; }
     //@}
 
     /** @name Mutators */
@@ -93,6 +97,7 @@ public:
     virtual void set_stream(FILE *s) { d_stream = s; }
     virtual void set_type(ObjectType o) { d_type = o; }
     virtual void set_version(const string &v) { d_version = v; }
+    virtual void set_protocol(const string &p) { d_protocol = p; }
     //@}
 };
 

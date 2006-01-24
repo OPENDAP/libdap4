@@ -52,33 +52,64 @@ using namespace std;
     version to default to 0.0. This is better than throwing an Error since
     this method is called from a constructor. */
 void
-DataDDS::_version_string_to_numbers()
+DataDDS::m_version_string_to_numbers()
 {
-    string num = _server_version.substr(_server_version.find('/')+1);
+    string num = d_server_version.substr(d_server_version.find('/')+1);
  
     if (!num.empty() && num.find('.') != string::npos) {
         istringstream iss(num);
         char c;
  
-        iss >> _server_version_major;
+        iss >> d_server_version_major;
         iss >> c;               // This reads the `.' in the version string
-        iss >> _server_version_minor;
+        iss >> d_server_version_minor;
  
         // Did it parse?
-        if (!(c == '.' && _server_version_major > 0
-              && _server_version_minor > 0)) {
+        if (!(c == '.' && d_server_version_major > 0
+              && d_server_version_minor > 0)) {
 
-	    _server_version_major = 0;
-	    _server_version_minor = 0;
+	    d_server_version_major = 0;
+	    d_server_version_minor = 0;
         }
     }
     else {
-        _server_version_major = 0;
-        _server_version_minor = 0;
+        d_server_version_major = 0;
+        d_server_version_minor = 0;
     }
  
-    DBG(cerr << "Server version: " << _server_version_major << "." \
-        << _server_version_minor << endl);
+    DBG(cerr << "Server version: " << d_server_version_major << "." \
+        << d_server_version_minor << endl);
+}
+
+/** Parse the protocol string. A string that does not parse causes the
+    version to default to 2.0. This is better than throwing an Error since
+    this method is called from a constructor. */
+void
+DataDDS::m_protocol_string_to_numbers()
+{
+ 
+    if (!d_protocol_version.empty() && d_protocol_version.find('.') 
+        != string::npos) {
+        istringstream iss(d_protocol_version);
+        char c;
+ 
+        iss >> d_server_protocol_major;
+        iss >> c;               // This reads the `.' in the version string
+        iss >> d_server_protocol_minor;
+ 
+        // Did it parse?
+        if (!(c == '.' && d_server_protocol_major > 0)) {
+            d_server_protocol_major = 2;
+            d_server_protocol_minor = 0;
+        }
+    }
+    else {
+        d_server_protocol_major = 2;
+        d_server_protocol_minor = 0;
+    }
+ 
+    DBG(cerr << "Server version: " << d_server_version_major << "." \
+        << d_server_version_minor << endl);
 }
 
 // public
@@ -90,12 +121,14 @@ DataDDS::_version_string_to_numbers()
     Caller must free; can also be set using the set_factory() method.
     @param n The name of the dataset. Can also be set using the
     set_dataset_name() method.
-    @param v The version ctraing read from the server's response headers. */
+    @param v The server version.
+    @param p The protocol version. */
 
-DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v)
-    : DDS(factory, n), _server_version(v)
+DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v,
+        const string &p)
+    : DDS(factory, n), d_server_version(v), d_protocol_version(p)
 {
-    _version_string_to_numbers();
+    m_version_string_to_numbers();
 }
 
 // #ifdef DEFAULT_BASETYPE_FACTORY
@@ -108,47 +141,11 @@ DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v)
     set_dataset_name() method.
     @param v The version ctraing read from the server's response headers. */
 DataDDS::DataDDS(const string &n, const string &v)
-    : DDS(n), _server_version(v)
+    : DDS(n), d_server_version(v)
 {
-    _version_string_to_numbers();
+    m_version_string_to_numbers();
 }
 // #endif
-
-DataDDS::~DataDDS()
-{
-}
-
-/** Sets the version string.  This typically looks something like:
-    <tt>DODS/2.15</tt>, where ``2'' is the major version number, and ``15''
-    the minor number.
-*/
-void
-DataDDS::set_version(const string &v)
-{
-    _server_version = v;
-    _version_string_to_numbers();
-}
-
-/** @brief Returns the major version number. */
-int
-DataDDS::get_version_major()
-{
-    return _server_version_major;
-}
-
-/** @brief Returns the minor version number. */
-int
-DataDDS::get_version_minor()
-{
-    return _server_version_minor;
-}
-
-/** @brief Get the server version string, unparsed. */
-string
-DataDDS::get_version()
-{
-    return _server_version;
-}
 
 // $Log: DataDDS.cc,v $
 // Revision 1.22  2005/03/30 21:34:32  jimg

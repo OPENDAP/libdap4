@@ -38,7 +38,7 @@ static char rcsid[] not_used ="$Id$";
 
 #include <assert.h>
 
-#include <iostream>
+// #include <iostream>
 
 #include "Error.h"
 #include "debug.h"
@@ -1081,6 +1081,7 @@ AttrTable::erase()
     d_name = "";
 }
 
+#if 0
 /** A simple printer that does nothing fancy with aliases.
     Protected.
 
@@ -1121,6 +1122,7 @@ AttrTable::simple_print(ostream &os, string pad, Attr_iter i,
 	break;
     }
 }
+#endif
 
 /** A simple printer that does nothing fancy with aliases. 
     Protected. */
@@ -1152,7 +1154,7 @@ AttrTable::simple_print(FILE *out, string pad, Attr_iter i,
 	break;
     }
 }
-
+#if 0
 /** Prints an ASCII representation of the attribute table to the
     indicated output stream. The <tt>pad</tt> argument is prefixed to each
     line of the output to provide control of indentation.
@@ -1183,6 +1185,7 @@ AttrTable::print(ostream &os, string pad, bool dereference)
 	}
     }
 }
+#endif
 
 /** Prints an ASCII representation of the attribute table to the
     indicated FILE pointer. The \c pad argument is prefixed to each

@@ -1,6 +1,19 @@
 
 $Id$
 
+Added protocol versio number header to responses which use the set_mime...()
+functions. The new header is called "XDAP-Protocol" and its value is the 
+two digit DAP protocol version number. This is now used by the client-side
+deserialize() methods; I assume that a server that does not announce its
+protocol version is a 2.0 server.
+
+Removed the set_mime...() functions which take an iostream; use the ones 
+which take the FILE* instead. We replaced the iostream versions with FILE*
+versions a long time ago because the parsers all use FILE* I/O functions
+and mixing the C++ and C I/O is not predictable. The old functions were
+deprecated. To fix your code, just change the iostream variable to a FILE*.
+In most cases this will mean changing 'cout' to 'stdout.' 
+
 News for Release 3.5.3
 
 Changes to the Regex software. I've reimplemented the GNURegex code to 

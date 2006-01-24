@@ -27,12 +27,13 @@
 #define resource_h
 
 #include <string>
+#include <iostream>
 
 #ifndef _error_h
 #include "Error.h"
 #endif
 
-using std::string;
+using namespace std;
 
 /** Bind an ancillary resource with the rule that should be used when
     combining it with a primary resource. Ancillary resources are always

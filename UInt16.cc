@@ -159,7 +159,7 @@ UInt16::buf2val(void **val)
 }
 
 // Print BUF to stdout with its declaration. Intended mostly for debugging.
-
+#if 0
 void 
 UInt16::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -170,7 +170,7 @@ UInt16::print_val(ostream &os, string space, bool print_decl_p)
     else 
 	os << _buf;
 }
-
+#endif
 void 
 UInt16::print_val(FILE *out, string space, bool print_decl_p)
 {

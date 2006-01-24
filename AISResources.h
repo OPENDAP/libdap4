@@ -27,6 +27,7 @@
 #define ais_resources_h
 
 #include <string>
+#include <iostream>
 #include <vector>
 #include <map>
 
@@ -40,11 +41,7 @@
 #include "AISExceptions.h"
 #endif
 
-using std::string;
-using std::vector;
-using std::map;
-using std::pair;
-using std::binary_function;
+using namespace std;
 
 typedef vector<Resource> ResourceVector;
 typedef ResourceVector::iterator ResourceVectorIter;

@@ -285,10 +285,12 @@ public:
 			    bool constraint_info = false, 
 			    bool constrained = false);
 
+#if 0
     virtual void print_decl(ostream &os, string space = "    ", 
 			    bool print_semi = true, 
 			    bool constraint_info = false, 
 			    bool constrained = false);
+#endif
 
     virtual void print_xml(FILE *out, string space = "    ", 
 			   bool constrained =false);
@@ -416,7 +418,8 @@ public:
 	@see DDS 
     */
     virtual bool deserialize(XDR *source, DDS *dds, bool reuse = false) = 0;
-    
+
+#if 0
     /** Prints the value of the variable, with its declaration.  This
 	function is primarily intended for debugging DODS applications.
 	However, it can be overloaded and used to do some useful things. Take a
@@ -440,6 +443,7 @@ public:
     */
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true) = 0;
+#endif
 
     /** Prints the value of the variable, with its declaration.  This
 	function is primarily intended for debugging DODS applications.

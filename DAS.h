@@ -51,7 +51,7 @@
 #include "DODSResponseObject.h"
 
 using std::cout;
-using std::ostream;
+//using std::ostream;
 
 /** @brief Hold attribute data for a DODS dataset.
 
@@ -160,9 +160,9 @@ public:
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in=stdin);
-
+#if 0
     void print(ostream &os = cout, bool dereference = false);
-
+#endif
     void print(FILE *out, bool dereference = false);
 };
 

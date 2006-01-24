@@ -173,6 +173,7 @@ Float32::value()
     return _buf;
 }
 
+#if 0
 void 
 Float32::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -185,7 +186,7 @@ Float32::print_val(ostream &os, string space, bool print_decl_p)
     else 
 	os << _buf;
 }
-
+#endif
 void 
 Float32::print_val(FILE *out, string space, bool print_decl_p)
 {

@@ -119,9 +119,10 @@ public:
 
 private:
     std::vector<dimension> _shape;	// list of dimensions (i.e., the shape)
-
+#if 0
     unsigned int print_array(ostream &os, unsigned int index, 
 			     unsigned int dims, unsigned int shape[]);
+#endif
     unsigned int print_array(FILE *out, unsigned int index, 
 			     unsigned int dims, unsigned int shape[]);
 
@@ -196,11 +197,12 @@ public:
 
     unsigned int dimensions(bool constrained = false);
 
+#if 0
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
-
+#endif
     virtual void print_decl(FILE *out, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
@@ -212,8 +214,10 @@ public:
     virtual void print_as_map_xml(FILE *out, string space = "    ",
 				  bool constrained = false);
 
+#if 0
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
+#endif
 
     virtual void print_val(FILE *out, string space = "", 
 			   bool print_decl_p = true);

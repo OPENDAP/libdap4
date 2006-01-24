@@ -202,7 +202,7 @@ Str::val2buf(void *val, bool)
 
     return sizeof(string*);
 }
-
+#if 0
 void 
 Str::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -213,7 +213,7 @@ Str::print_val(ostream &os, string space, bool print_decl_p)
     else 
         os << '"' << escattr(_buf) << '"';
 }
-
+#endif
 void 
 Str::print_val(FILE *out, string space, bool print_decl_p)
 {

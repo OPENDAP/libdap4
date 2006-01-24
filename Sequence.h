@@ -186,8 +186,9 @@ private:
     bool d_top_most;
     
     // Make sure the old deserialize is still around.
+#if 0
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
-
+#endif
     void _duplicate(const Sequence &s);
     BaseType *leaf_match(const string &name, btp_stack *s = 0);
     BaseType *exact_match(const string &name, btp_stack *s = 0);
@@ -315,30 +316,30 @@ public:
 			    bool constraint_info = false,
 			    bool constrained = false);
 #endif
-
+#if 0
     virtual void print_one_row(ostream &os, int row, string space,
 			       bool print_row_num = false);
-
+#endif
     virtual void print_one_row(FILE *out, int row, string space,
 			       bool print_row_num = false);
-
+#if 0
     virtual void print_val_by_rows(ostream &os, string space = "",
 				   bool print_decl_p = true,
 				   bool print_row_numners = true);
-
+#endif
     virtual void print_val_by_rows(FILE *out, string space = "",
 				   bool print_decl_p = true,
 				   bool print_row_numbers = true);
-
+#if 0
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
-
+#endif
     virtual void print_val(FILE *out, string space = "",
 			   bool print_decl_p = true);
-
+#if 0
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds, 
 				string space = "", bool print_decl_p = true);
-
+#endif
     virtual void print_all_vals(FILE *out, XDR *src, DDS *dds, 
 				string space = "", bool print_decl_p = true);
 

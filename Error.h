@@ -44,7 +44,7 @@
 
 using std::cout;
 using std::string;
-using std::ostream;
+//using std::ostream;
 
 /** The most common errors within DODS have special codes so that they
     can be spotted easily by the DODS client software. Any error
@@ -122,7 +122,9 @@ public:
     /// Deserailze object from the wire.
     bool parse(FILE *fp);
     /// Deprecated
+#if 0
     void print(ostream &os = cout) const;
+#endif
     /// Print the Error object on the given output stream.
     void print(FILE *out) const;
     /// Get the error code.

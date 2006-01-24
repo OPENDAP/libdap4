@@ -942,19 +942,16 @@ Sequence::deserialize(XDR *source, DDS *dds, bool reuse)
     if (!dd)
 	throw InternalErr("Expected argument 'dds' to be a DataDDS!");
 
-    DBG2(cerr << "Reading from server version: " << dd->get_version_major() \
-	 << "." << dd->get_version_minor() << endl);
+    DBG2(cerr << "Reading from server/protocol version: " 
+         << dd->get_protocol_major() << "." << dd->get_protocol_minor() 
+         << endl);
 
-    // Check for old servers.
-    if (dd->get_version_major() < 2 
-	|| dd->get_version_major() == 2 && dd->get_version_minor() < 15) {
-	throw Error(
-string("The server version (") + dd->get_version() + ") indicates that this\n\
+   // Check for old servers.
+    if (dd->get_protocol_major() < 2) {
+        throw Error(
+string("The protocl version (") + dd->get_protocol() + ") indicates that this\n\
 is an old server which may not correctly transmit Sequence variables.\n\
 Contact the server administrator.");
-#if 0
-	return old_deserialize(source, dd, reuse);
-#endif
     }
 
     while (true) {
@@ -1058,6 +1055,7 @@ Sequence::set_row_number_constraint(int start, int stop, int stride)
   d_ending_row_number = stop;
 }
 
+#if 0
 // private mfunc. Use this to read from older servers.
 
 bool
@@ -1078,6 +1076,7 @@ Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse)
 
     return stat;
 }
+#endif
 
 /** Never use this interface for Sequence! To add data to the members of a
     Sequence, use BaseTypeRow variables and operate on them individually. */
@@ -1152,7 +1151,7 @@ Sequence::print_decl(FILE *out, string space, bool print_semi,
 	fprintf( out, ";\n" ) ;
 }
 #endif
-
+#if 0
 /** Print the $i^{th}$ row of the sequence. This hopes in writing
     code that spits out sequences for testing. Sequences are now read all
     at once, this method does not change that. */
@@ -1193,7 +1192,7 @@ Sequence::print_one_row(ostream &os, int row, string space,
 
     os << " }";
 }
-
+#endif
 void 
 Sequence::print_one_row(FILE *out, int row, string space, 
 			bool print_row_num)
@@ -1231,6 +1230,8 @@ Sequence::print_one_row(FILE *out, int row, string space,
 
     fprintf( out, " }" ) ;
 }
+
+#if 0
 /** @brief Prints each row on its own line with a row number. 
 
     This is a special output method for sequences. Uses
@@ -1267,6 +1268,7 @@ Sequence::print_val_by_rows(ostream &os, string space, bool print_decl_p,
     if (print_decl_p)
         os << ";" << endl;
 }
+#endif
 
 void
 Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
@@ -1293,6 +1295,7 @@ Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
         fprintf( out, ";\n" ) ;
 }
 
+#if 0
 /** Print the values held by the sequence. This is used mostly for
     debugging.
     @param os Where should the text go?
@@ -1303,6 +1306,7 @@ Sequence::print_val(ostream &os, string space, bool print_decl_p)
 {
     print_val_by_rows(os, space, print_decl_p, false);
 }
+#endif
 
 void 
 Sequence::print_val(FILE *out, string space, bool print_decl_p)
@@ -1316,6 +1320,7 @@ Sequence::print_val(FILE *out, string space, bool print_decl_p)
 //
 // Deprecated. 
 
+#if 0
 /** Prints a formatted version of an entire Sequence (all rows, all
     columns), including nested Sequences.  This is meant to be used
     on the client side of a DODS connection, and the source of the
@@ -1342,7 +1347,7 @@ Sequence::print_all_vals(ostream& os, XDR *, DDS *, string space,
 {
     print_val(os, space, print_decl_p);
 }
-
+#endif
 // print_all_vals is from Todd Karakasian. 
 // We need to integrate this into print_val somehow, maybe by adding an XDR *
 // to Sequence? This can wait since print_val is mostly used for debugging...

@@ -70,11 +70,12 @@ public:
 
     virtual bool is_linear();
 
+#if 0
     virtual void print_decl(ostream &os, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,
 			    bool constrained = false);
-
+#endif
     virtual void print_decl(FILE *out, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,

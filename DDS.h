@@ -202,6 +202,9 @@ private:
 
     string _filename;		// File name (or other OS identifier) for
 				// dataset or part of dataset.
+    int d_protocol_major;       // The protocol major version number
+    int d_protocol_minor;       // ... and minor version number
+    
     AttrTable d_attr;           // Global attributes.
 
     vector<BaseType *> vars;	// Variables at the top level 
@@ -282,7 +285,7 @@ public:
 
     string filename();
     void filename(const string &fn);
-
+    
     void add_var(BaseType *bt);
 
     /// Removes a variable from the DDS.
@@ -353,23 +356,28 @@ public:
     bool clause_value(Clause_iter &i, const string &dataset);
 
     void parse_constraint(const string &constraint);
-
+#if 0
     // Both of the following are deprecated methods.
     void parse_constraint(const string &constraint, ostream &os,
 			  bool server = true);
-
+#endif
+#if 0
     void parse_constraint(const string &constraint, FILE *out,
 			  bool server = true);
-
+#endif
     void append_constant(BaseType *btp);
 
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in=stdin);
 
+#if 0
     void print(ostream &os = cout);
+#endif
     void print(FILE *out);
+#if 0
     void print_constrained(ostream &os = cout);
+#endif
     void print_constrained(FILE *out);
 
     void print_xml(FILE *out, bool constrained, const string &blob);

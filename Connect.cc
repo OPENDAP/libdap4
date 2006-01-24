@@ -65,8 +65,14 @@ void
 Connect::process_data(DataDDS &data, Response *rs) 
     throw(Error, InternalErr)
 {
+    // Use the implementation and protocol versions from teh Response object
+    // since the copies in Connect might go away. Regardless, we must keep the
+    // Response object alive until we no longer need the stream, since
+    // destroying it will close the stream. So, might as well use it for the
+    // version info too...
     data.set_version(rs->get_version());
-
+    data.set_protocol(rs->get_protocol());
+    
     DBG(cerr << "Entring process_data: d_stream = " << rs << endl);
     switch (rs->get_type()) {
       case dods_error:
@@ -175,6 +181,9 @@ Connect::parse_mime(FILE *data_source, Response *rs)
 	} else if (header == "xdods-server:") {
 	    DBG(cout << header << ": " << value << endl);
 	    rs->set_version(value);
+        } else if (header == "xdap-protcol:") {
+            DBG(cout << header << ": " << value << endl);
+            rs->set_protocol(value);
 	} else if (rs->get_version() == "dods/0.0" && header == "server:") {
 	    DBG(cout << header << ": " << value << endl);
 	    rs->set_version(value);
@@ -196,7 +205,7 @@ Connect::parse_mime(FILE *data_source, Response *rs)
     @brief Create an instance of Connect. */
 Connect::Connect(const string &n, string uname, string password) 
     throw (Error, InternalErr)
-    : d_http(0), d_version("unknown")
+    : d_http(0), d_version("unknown"), d_protocol("2.0")
 {
     string name = prune_spaces(n);
     
@@ -259,7 +268,7 @@ Connect::Connect(const string &n, string uname, string password)
 Connect::Connect(const string &n, bool /* www_verbose_errors; unused */, 
 		 bool accept_deflate, string uname, string password) 
     throw (Error, InternalErr)
-    : d_http(0), d_version("unknown")
+    : d_http(0), d_version("unknown"), d_protocol("2.0")
 {
     string name = prune_spaces(n);
     
@@ -317,8 +326,11 @@ Connect::~Connect()
 
 /** Get version information from the server. This is a new method which will
     ease the transition to DAP 4.
+    
+    @note Use request_protocol() to get the DAP protocol version.
 
-    @return The DAP version string. */
+    @return The DAP version string.
+    @see request_protocol() */
 string
 Connect::request_version() throw(Error, InternalErr)
 {
@@ -336,8 +348,40 @@ Connect::request_version() throw(Error, InternalErr)
     }
 
     d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
     delete rs; rs = 0;
+
     return d_version;
+}
+
+/** Get protocol version  information from the server. This is a new method 
+    which will ease the transition to DAP 4. Note that this method returns
+    the version of the DAP protocol implemented by the server. The 
+    request_version() method returns the \e server's version number, not 
+    the DAP protocol version.
+
+    @return The DAP protocol version string. */
+string
+Connect::request_protocol() throw(Error, InternalErr)
+{
+    string version_url = _URL + ".ver";
+    if (_proj.length() + _sel.length())
+        version_url = version_url + "?" + id2www_ce(_proj + _sel);
+
+    Response *rs = 0;
+    try {
+        rs = d_http->fetch_url(version_url);
+    }
+    catch (Error &e) {
+        delete rs; rs = 0;
+        throw e;
+    }
+
+    d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
+    delete rs; rs = 0;
+
+    return d_protocol;
 }
 
 /** Reads the DAS corresponding to the dataset in the Connect
@@ -363,7 +407,8 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 	throw e;
     }
 
-    d_version = rs->get_version(); // Improve this design!
+    d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
       case dods_error: {
@@ -431,7 +476,8 @@ Connect::request_das_url(DAS &das) throw(Error, InternalErr)
 	throw e;
     }
 
-    d_version = rs->get_version(); // Improve this design!
+    d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
       case dods_error: {
@@ -504,8 +550,9 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
 	throw e;
     }
 
-    d_version = rs->get_version(); // Improve this design!
-
+    d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
+    
     switch (rs->get_type()) {
       case dods_error: {
 	  if (!_error.parse(rs->get_stream())) {
@@ -578,8 +625,9 @@ Connect::request_dds_url(DDS &dds) throw(Error, InternalErr)
 	throw e;
     }
 
-    d_version = rs->get_version(); // Improve this design!
-
+    d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
+    
     switch (rs->get_type()) {
       case dods_error: {
 	  if (!_error.parse(rs->get_stream())) {
@@ -647,7 +695,8 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
     // We need to catch Error exceptions to ensure calling close_output.
     try {
 	rs = d_http->fetch_url(data_url);
-	d_version = rs->get_version(); // Improve this design!
+	d_version = rs->get_version();
+        d_protocol = rs->get_protocol();
 
 	process_data(data, rs);
 	delete rs; rs = 0;
@@ -684,7 +733,9 @@ Connect::request_data_url(DataDDS &data) throw(Error, InternalErr)
     // We need to catch Error exceptions to ensure calling close_output.
     try {
 	rs = d_http->fetch_url(use_url);
-	d_version = rs->get_version(); // Improve this design!
+	d_version = rs->get_version();
+        d_protocol = rs->get_protocol();
+
 	process_data(data, rs);
 	delete rs; rs = 0;
     }
@@ -719,6 +770,9 @@ Connect::read_data(DataDDS &data, FILE *data_source) throw(Error, InternalErr)
 	// Read from data_source and parse the MIME headers specific to DODS.
 	parse_mime(data_source, rs);
     
+        d_version = rs->get_version();
+        d_protocol = rs->get_protocol();
+
 	process_data(data, rs);
 
 	delete rs; rs = 0;

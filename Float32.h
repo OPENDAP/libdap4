@@ -87,10 +87,10 @@ public:
     virtual unsigned int buf2val(void **val);
 
     virtual dods_float32 value();
-
+#if 0
     virtual void print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
-
+#endif
     virtual void print_val(FILE *out, string space = "", 
 			   bool print_decl_p = true);
 

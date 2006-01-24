@@ -712,6 +712,7 @@ BaseType::xdr_coder()
 // send a printed representation of the variable's declaration to cout. If
 // print_semi is true, append a semicolon and newline.
 
+#if 0
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data
     Descriptor Structure (DDS).  See <i>The DODS User Manual</i> for
@@ -777,6 +778,7 @@ BaseType::print_decl(ostream &os, string space, bool print_semi,
     if (print_semi)
 	os << ";" << endl;
 }
+#endif
 
 /** Write the variable's declaration in a C-style syntax. This
     function is used to create textual representation of the Data

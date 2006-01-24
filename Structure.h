@@ -174,13 +174,13 @@ public:
 			    bool constraint_info = false,
 			    bool constrained = false);
 #endif
-
+#if 0
     virtual void print_val(ostream &os, string space = "",
 			   bool print_decl_p = true);
-
+#endif
     virtual void print_val(FILE *out, string space = "",
 			   bool print_decl_p = true);
-
+#if 0
     /** Prints the Structure and all elements of any Sequences contained
 	within. 
 	@deprecated Using the C++ iostream class is deprecated.
@@ -188,7 +188,7 @@ public:
     */
     virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
 				string space = "", bool print_decl_p = true);
-
+#endif
     /** Prints the Structure and all elements of any Sequences contained
 	within. 
 

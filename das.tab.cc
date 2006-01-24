@@ -1,7 +1,7 @@
-/* A Bison parser, made by GNU Bison 1.875c.  */
+/* A Bison parser, made by GNU Bison 2.0.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,8 +45,7 @@
 /* Using locations.  */
 #define YYLSP_NEEDED 0
 
-/* If NAME_PREFIX is specified substitute the variables and functions
-   names.  */
+/* Substitute the variable and function names.  */
 #define yyparse dasparse
 #define yylex   daslex
 #define yyerror daserror
@@ -98,7 +97,7 @@
 
 #define YYSTYPE char *
 
-#include "config.h"
+#include "config_dap.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -115,6 +114,9 @@ static char rcsid[] not_used = {"$Id$"};
 #include "parser.h"
 #include "das.tab.h"
 
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 #define yylex daslex
 #define yyerror daserror 
@@ -198,8 +200,8 @@ typedef int YYSTYPE;
 /* Copy the second part of user declarations.  */
 
 
-/* Line 214 of yacc.c.  */
-#line 206 "das.tab.c"
+/* Line 213 of yacc.c.  */
+#line 205 "das.tab.c"
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
@@ -214,14 +216,10 @@ typedef int YYSTYPE;
 
 # ifdef YYSTACK_USE_ALLOCA
 #  if YYSTACK_USE_ALLOCA
-#   define YYSTACK_ALLOC alloca
-#  endif
-# else
-#  if defined (alloca) || defined (_ALLOCA_H)
-#   define YYSTACK_ALLOC alloca
-#  else
 #   ifdef __GNUC__
 #    define YYSTACK_ALLOC __builtin_alloca
+#   else
+#    define YYSTACK_ALLOC alloca
 #   endif
 #  endif
 # endif
@@ -247,7 +245,7 @@ typedef int YYSTYPE;
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  short yyss;
+  short int yyss;
   YYSTYPE yyvs;
   };
 
@@ -257,7 +255,7 @@ union yyalloc
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (short) + sizeof (YYSTYPE))				\
+     ((N) * (sizeof (short int) + sizeof (YYSTYPE))			\
       + YYSTACK_GAP_MAXIMUM)
 
 /* Copy COUNT objects from FROM to TO.  The source and destination do
@@ -299,7 +297,7 @@ union yyalloc
 #if defined (__STDC__) || defined (__cplusplus)
    typedef signed char yysigned_char;
 #else
-   typedef short yysigned_char;
+   typedef short int yysigned_char;
 #endif
 
 /* YYFINAL -- State number of the termination state. */
@@ -398,7 +396,7 @@ static const yysigned_char yyrhs[] =
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
-static const unsigned short yyrline[] =
+static const unsigned short int yyrline[] =
 {
        0,   182,   182,   182,   197,   198,   202,   203,   209,   210,
      211,   214,   216,   217,   216,   220,   221,   220,   224,   225,
@@ -431,7 +429,7 @@ static const char *const yytname[] =
 # ifdef YYPRINT
 /* YYTOKNUM[YYLEX-NUM] -- Internal token number corresponding to
    token YYLEX-NUM.  */
-static const unsigned short yytoknum[] =
+static const unsigned short int yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   123,   125,    59,    44
@@ -631,19 +629,52 @@ do								\
     }								\
 while (0)
 
+
 #define YYTERROR	1
 #define YYERRCODE	256
 
-/* YYLLOC_DEFAULT -- Compute the default location (before the actions
-   are run).  */
 
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
 #ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)		\
-   ((Current).first_line   = (Rhs)[1].first_line,	\
-    (Current).first_column = (Rhs)[1].first_column,	\
-    (Current).last_line    = (Rhs)[N].last_line,	\
-    (Current).last_column  = (Rhs)[N].last_column)
+# define YYLLOC_DEFAULT(Current, Rhs, N)				\
+    do									\
+      if (N)								\
+	{								\
+	  (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;	\
+	  (Current).first_column = YYRHSLOC (Rhs, 1).first_column;	\
+	  (Current).last_line    = YYRHSLOC (Rhs, N).last_line;		\
+	  (Current).last_column  = YYRHSLOC (Rhs, N).last_column;	\
+	}								\
+      else								\
+	{								\
+	  (Current).first_line   = (Current).last_line   =		\
+	    YYRHSLOC (Rhs, 0).last_line;				\
+	  (Current).first_column = (Current).last_column =		\
+	    YYRHSLOC (Rhs, 0).last_column;				\
+	}								\
+    while (0)
 #endif
+
+
+/* YY_LOCATION_PRINT -- Print the location on the stream.
+   This macro was not mandated originally: define only if we know
+   we won't break user code: when these are the locations we know.  */
+
+#ifndef YY_LOCATION_PRINT
+# if YYLTYPE_IS_TRIVIAL
+#  define YY_LOCATION_PRINT(File, Loc)			\
+     fprintf (File, "%d.%d-%d.%d",			\
+              (Loc).first_line, (Loc).first_column,	\
+              (Loc).last_line,  (Loc).last_column)
+# else
+#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
+# endif
+#endif
+
 
 /* YYLEX -- calling `yylex' with the right arguments.  */
 
@@ -667,19 +698,13 @@ do {						\
     YYFPRINTF Args;				\
 } while (0)
 
-# define YYDSYMPRINT(Args)			\
-do {						\
-  if (yydebug)					\
-    yysymprint Args;				\
-} while (0)
-
-# define YYDSYMPRINTF(Title, Token, Value, Location)		\
+# define YY_SYMBOL_PRINT(Title, Type, Value, Location)		\
 do {								\
   if (yydebug)							\
     {								\
       YYFPRINTF (stderr, "%s ", Title);				\
       yysymprint (stderr, 					\
-                  Token, Value);	\
+                  Type, Value);	\
       YYFPRINTF (stderr, "\n");					\
     }								\
 } while (0)
@@ -691,12 +716,12 @@ do {								\
 
 #if defined (__STDC__) || defined (__cplusplus)
 static void
-yy_stack_print (short *bottom, short *top)
+yy_stack_print (short int *bottom, short int *top)
 #else
 static void
 yy_stack_print (bottom, top)
-    short *bottom;
-    short *top;
+    short int *bottom;
+    short int *top;
 #endif
 {
   YYFPRINTF (stderr, "Stack now");
@@ -746,8 +771,7 @@ do {					\
 int yydebug;
 #else /* !YYDEBUG */
 # define YYDPRINTF(Args)
-# define YYDSYMPRINT(Args)
-# define YYDSYMPRINTF(Title, Token, Value, Location)
+# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
 # define YY_STACK_PRINT(Bottom, Top)
 # define YY_REDUCE_PRINT(Rule)
 #endif /* !YYDEBUG */
@@ -764,10 +788,6 @@ int yydebug;
    Do not make this value too large; the results are undefined if
    SIZE_MAX < YYSTACK_BYTES (YYMAXDEPTH)
    evaluated with infinite-precision integer arithmetic.  */
-
-#if defined (YYMAXDEPTH) && YYMAXDEPTH == 0
-# undef YYMAXDEPTH
-#endif
 
 #ifndef YYMAXDEPTH
 # define YYMAXDEPTH 10000
@@ -850,15 +870,15 @@ yysymprint (yyoutput, yytype, yyvaluep)
   (void) yyvaluep;
 
   if (yytype < YYNTOKENS)
-    {
-      YYFPRINTF (yyoutput, "token %s (", yytname[yytype]);
-# ifdef YYPRINT
-      YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
-# endif
-    }
+    YYFPRINTF (yyoutput, "token %s (", yytname[yytype]);
   else
     YYFPRINTF (yyoutput, "nterm %s (", yytname[yytype]);
 
+
+# ifdef YYPRINT
+  if (yytype < YYNTOKENS)
+    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
+# endif
   switch (yytype)
     {
       default:
@@ -874,16 +894,21 @@ yysymprint (yyoutput, yytype, yyvaluep)
 
 #if defined (__STDC__) || defined (__cplusplus)
 static void
-yydestruct (int yytype, YYSTYPE *yyvaluep)
+yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)
 #else
 static void
-yydestruct (yytype, yyvaluep)
+yydestruct (yymsg, yytype, yyvaluep)
+    const char *yymsg;
     int yytype;
     YYSTYPE *yyvaluep;
 #endif
 {
   /* Pacify ``unused variable'' warnings.  */
   (void) yyvaluep;
+
+  if (!yymsg)
+    yymsg = "Deleting";
+  YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
 
   switch (yytype)
     {
@@ -912,10 +937,10 @@ int yyparse ();
 
 
 
-/* The lookahead symbol.  */
+/* The look-ahead symbol.  */
 int yychar;
 
-/* The semantic value of the lookahead symbol.  */
+/* The semantic value of the look-ahead symbol.  */
 YYSTYPE yylval;
 
 /* Number of syntax errors so far.  */
@@ -951,7 +976,7 @@ yyparse ()
   int yyresult;
   /* Number of tokens to shift before error messages enabled.  */
   int yyerrstatus;
-  /* Lookahead token as an internal (translated) token number.  */
+  /* Look-ahead token as an internal (translated) token number.  */
   int yytoken = 0;
 
   /* Three stacks and their tools:
@@ -963,9 +988,9 @@ yyparse ()
      to reallocate them elsewhere.  */
 
   /* The state stack.  */
-  short	yyssa[YYINITDEPTH];
-  short *yyss = yyssa;
-  register short *yyssp;
+  short int yyssa[YYINITDEPTH];
+  short int *yyss = yyssa;
+  register short int *yyssp;
 
   /* The semantic value stack.  */
   YYSTYPE yyvsa[YYINITDEPTH];
@@ -1002,6 +1027,9 @@ yyparse ()
   yyssp = yyss;
   yyvsp = yyvs;
 
+
+  yyvsp[0] = yylval;
+
   goto yysetstate;
 
 /*------------------------------------------------------------.
@@ -1027,7 +1055,7 @@ yyparse ()
 	   these so that the &'s don't force the real ones into
 	   memory.  */
 	YYSTYPE *yyvs1 = yyvs;
-	short *yyss1 = yyss;
+	short int *yyss1 = yyss;
 
 
 	/* Each stack pointer address is followed by the size of the
@@ -1055,7 +1083,7 @@ yyparse ()
 	yystacksize = YYMAXDEPTH;
 
       {
-	short *yyss1 = yyss;
+	short int *yyss1 = yyss;
 	union yyalloc *yyptr =
 	  (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
 	if (! yyptr)
@@ -1091,18 +1119,18 @@ yyparse ()
 yybackup:
 
 /* Do appropriate processing given the current state.  */
-/* Read a lookahead token if we need one and don't already have one.  */
+/* Read a look-ahead token if we need one and don't already have one.  */
 /* yyresume: */
 
-  /* First try to decide what to do without reference to lookahead token.  */
+  /* First try to decide what to do without reference to look-ahead token.  */
 
   yyn = yypact[yystate];
   if (yyn == YYPACT_NINF)
     goto yydefault;
 
-  /* Not known => get a lookahead token if don't already have one.  */
+  /* Not known => get a look-ahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
+  /* YYCHAR is either YYEMPTY or YYEOF or a valid look-ahead symbol.  */
   if (yychar == YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token: "));
@@ -1117,7 +1145,7 @@ yybackup:
   else
     {
       yytoken = YYTRANSLATE (yychar);
-      YYDSYMPRINTF ("Next token is", yytoken, &yylval, &yylloc);
+      YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
     }
 
   /* If the proper action on seeing token YYTOKEN is to reduce or to
@@ -1137,8 +1165,8 @@ yybackup:
   if (yyn == YYFINAL)
     YYACCEPT;
 
-  /* Shift the lookahead token.  */
-  YYDPRINTF ((stderr, "Shifting token %s, ", yytname[yytoken]));
+  /* Shift the look-ahead token.  */
+  YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
   /* Discard the token being shifted unless it is eof.  */
   if (yychar != YYEOF)
@@ -1221,7 +1249,7 @@ yyreduce:
 
   case 13:
 #line 217 "das.y"
-    { save_str(*name, yyvsp[0], das_line_num); ;}
+    { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 15:
@@ -1231,7 +1259,7 @@ yyreduce:
 
   case 16:
 #line 221 "das.y"
-    { save_str(*name, yyvsp[0], das_line_num); ;}
+    { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 18:
@@ -1241,7 +1269,7 @@ yyreduce:
 
   case 19:
 #line 225 "das.y"
-    { save_str(*name, yyvsp[0], das_line_num); ;}
+    { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 21:
@@ -1251,7 +1279,7 @@ yyreduce:
 
   case 22:
 #line 229 "das.y"
-    { save_str(*name, yyvsp[0], das_line_num); ;}
+    { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 24:
@@ -1261,7 +1289,7 @@ yyreduce:
 
   case 25:
 #line 233 "das.y"
-    { save_str(*name, yyvsp[0], das_line_num); ;}
+    { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 27:
@@ -1271,7 +1299,7 @@ yyreduce:
 
   case 28:
 #line 237 "das.y"
-    { save_str(*name, yyvsp[0], das_line_num); ;}
+    { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 30:
@@ -1281,7 +1309,7 @@ yyreduce:
 
   case 31:
 #line 241 "das.y"
-    { save_str(*name, yyvsp[0], das_line_num); ;}
+    { save_str(*name, (yyvsp[0]), das_line_num); ;}
     break;
 
   case 33:
@@ -1291,7 +1319,7 @@ yyreduce:
 
   case 34:
 #line 245 "das.y"
-    { *name = yyvsp[0]; ;}
+    { *name = (yyvsp[0]); ;}
     break;
 
   case 36:
@@ -1301,18 +1329,18 @@ yyreduce:
 
   case 37:
 #line 249 "das.y"
-    { *name = yyvsp[0]; ;}
+    { *name = (yyvsp[0]); ;}
     break;
 
   case 39:
 #line 253 "das.y"
     {
-		    DBG(cerr << "Processing ID: " << yyvsp[0] << endl);
+		    DBG(cerr << "Processing ID: " << (yyvsp[0]) << endl);
 		    
-		    AttrTable *at = TOP_OF_STACK->get_attr_table(yyvsp[0]);
+		    AttrTable *at = TOP_OF_STACK->get_attr_table((yyvsp[0]));
 		    if (!at) {
 			try {
-			    at = TOP_OF_STACK->append_container(yyvsp[0]);
+			    at = TOP_OF_STACK->append_container((yyvsp[0]));
 			}
 			catch (Error &e) {
 			    // rethrow with line number info
@@ -1339,155 +1367,155 @@ yyreduce:
   case 42:
 #line 281 "das.y"
     { 
-		    parse_error(ATTR_TUPLE_MSG, das_line_num, yyvsp[0]);
+		    parse_error(ATTR_TUPLE_MSG, das_line_num, (yyvsp[0]));
 		;}
     break;
 
   case 44:
 #line 287 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_byte);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_byte);
 		;}
     break;
 
   case 45:
 #line 291 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_byte);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_byte);
 		;}
     break;
 
   case 46:
 #line 297 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_int16);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_int16);
 		;}
     break;
 
   case 47:
 #line 301 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_int16);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_int16);
 		;}
     break;
 
   case 48:
 #line 307 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_uint16);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_uint16);
 		;}
     break;
 
   case 49:
 #line 311 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_uint16);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_uint16);
 		;}
     break;
 
   case 50:
 #line 317 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_int32);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_int32);
 		;}
     break;
 
   case 51:
 #line 321 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_int32);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_int32);
 		;}
     break;
 
   case 52:
 #line 327 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_uint32);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_uint32);
 		;}
     break;
 
   case 53:
 #line 331 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_uint32);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_uint32);
 		;}
     break;
 
   case 54:
 #line 337 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_float32);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_float32);
 		;}
     break;
 
   case 55:
 #line 341 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_float32);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_float32);
 		;}
     break;
 
   case 56:
 #line 347 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_float64);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_float64);
 		;}
     break;
 
   case 57:
 #line 351 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_float64);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_float64);
 		;}
     break;
 
   case 58:
 #line 357 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], 0);
+		    add_attribute(*type, *name, (yyvsp[0]), 0);
 		;}
     break;
 
   case 59:
 #line 361 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], 0);
+		    add_attribute(*type, *name, (yyvsp[0]), 0);
 		;}
     break;
 
   case 60:
 #line 367 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_url);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_url);
 		;}
     break;
 
   case 61:
 #line 371 "das.y"
     {
-		    add_attribute(*type, *name, yyvsp[0], &check_url);
+		    add_attribute(*type, *name, (yyvsp[0]), &check_url);
 		;}
     break;
 
   case 77:
 #line 391 "das.y"
     { 
-		    *name = yyvsp[0];
+		    *name = (yyvsp[0]);
 		;}
     break;
 
   case 78:
 #line 395 "das.y"
     {
-		    add_alias(DAS_OBJ(arg), TOP_OF_STACK, *name, string(yyvsp[0]))
+		    add_alias(DAS_OBJ(arg), TOP_OF_STACK, *name, string((yyvsp[0])))
                 ;}
     break;
 
 
     }
 
-/* Line 1000 of yacc.c.  */
-#line 1494 "das.tab.c"
+/* Line 1037 of yacc.c.  */
+#line 1519 "das.tab.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1587,7 +1615,7 @@ yyerrlab:
 
   if (yyerrstatus == 3)
     {
-      /* If just tried and failed to reuse lookahead token after an
+      /* If just tried and failed to reuse look-ahead token after an
 	 error, discard it.  */
 
       if (yychar <= YYEOF)
@@ -1597,23 +1625,22 @@ yyerrlab:
 	  if (yychar == YYEOF)
 	     for (;;)
 	       {
+
 		 YYPOPSTACK;
 		 if (yyssp == yyss)
 		   YYABORT;
-		 YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
-		 yydestruct (yystos[*yyssp], yyvsp);
+		 yydestruct ("Error: popping",
+                             yystos[*yyssp], yyvsp);
 	       }
         }
       else
 	{
-	  YYDSYMPRINTF ("Error: discarding", yytoken, &yylval, &yylloc);
-	  yydestruct (yytoken, &yylval);
+	  yydestruct ("Error: discarding", yytoken, &yylval);
 	  yychar = YYEMPTY;
-
 	}
     }
 
-  /* Else will try to reuse lookahead token after shifting the error
+  /* Else will try to reuse look-ahead token after shifting the error
      token.  */
   goto yyerrlab1;
 
@@ -1630,7 +1657,7 @@ yyerrorlab:
      goto yyerrorlab;
 #endif
 
-  yyvsp -= yylen;
+yyvsp -= yylen;
   yyssp -= yylen;
   yystate = *yyssp;
   goto yyerrlab1;
@@ -1660,8 +1687,8 @@ yyerrlab1:
       if (yyssp == yyss)
 	YYABORT;
 
-      YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
-      yydestruct (yystos[yystate], yyvsp);
+
+      yydestruct ("Error: popping", yystos[yystate], yyvsp);
       YYPOPSTACK;
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -1670,10 +1697,11 @@ yyerrlab1:
   if (yyn == YYFINAL)
     YYACCEPT;
 
-  YYDPRINTF ((stderr, "Shifting error token, "));
-
   *++yyvsp = yylval;
 
+
+  /* Shift the error token. */
+  YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
 
   yystate = yyn;
   goto yynewstate;
@@ -1690,6 +1718,9 @@ yyacceptlab:
 | yyabortlab -- YYABORT comes here.  |
 `-----------------------------------*/
 yyabortlab:
+  yydestruct ("Error: discarding lookahead",
+              yytoken, &yylval);
+  yychar = YYEMPTY;
   yyresult = 1;
   goto yyreturn;
 
@@ -2036,7 +2067,7 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
  *
  * Revision 1.14  1995/05/10  13:45:43  jimg
  * Changed the name of the configuration header file from `config.h' to
- * `config.h' so that other libraries could have header files which were
+ * `config_dap.h' so that other libraries could have header files which were
  * installed in the DODS include directory without overwriting this one. Each
  * config header should follow the convention config_<name>.h.
  *

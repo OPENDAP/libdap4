@@ -69,25 +69,46 @@
 
 class DataDDS : public DDS {
 private:
-    string _server_version;
-    int _server_version_major;
-    int _server_version_minor;
+    string d_server_version;
+    int d_server_version_major;
+    int d_server_version_minor;
 
-    void _version_string_to_numbers();
+    string d_protocol_version;
+    int d_server_protocol_major;
+    int d_server_protocol_minor;
+
+    void m_version_string_to_numbers();
+    void m_protocol_string_to_numbers();
 
 public:
     DataDDS(BaseTypeFactory *factory, const string &n = "",
-	    const string &v = "");
+	    const string &v = "", const string &p = "");
     // #ifdef DEFAULT_BASETYPE_FACTORY
     DataDDS(const string &n = "", const string &v = "");
     // #endif
-    virtual ~DataDDS();
+    virtual ~DataDDS() {}
 
-    void set_version(const string &v);
-    string get_version();
+    /** Sets the version string.  This typically looks something like:
+    <tt>DODS/2.15</tt>, where ``2'' is the major version number, and ``15''
+    the minor number. */
+    void set_version(const string &v) {
+        d_server_version = v;
+        m_version_string_to_numbers();
+    }
+    /** @brief Get the server version string, unparsed. */
+    string get_version() const { return d_server_version; }
+    /** @brief Returns the major version number. */
+    int get_version_major() const { return d_server_version_major; }
+    /** @brief Returns the minor version number. */
+    int get_version_minor() const { return d_server_version_minor; }
 
-    int get_version_major();
-    int get_version_minor();
+    void set_protocol(const string &p) {
+        d_protocol_version = p;
+        m_protocol_string_to_numbers();
+    }
+    string get_protocol() const { return d_protocol_version; }
+    int get_protocol_major() const { return d_server_protocol_major; }
+    int get_protocol_minor() const { return d_server_protocol_minor; }
 };
 
 // Revision 1.8.4.1  2002/09/05 22:52:54  pwest

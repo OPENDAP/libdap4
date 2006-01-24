@@ -46,7 +46,7 @@
 
 using std::vector;
 using std::string;
-using std::ostream;
+// using std::ostream;
 using std::vector;
 
 /** <b>AttrType</b> identifies the data types which may appear in an
@@ -233,8 +233,10 @@ private:
 protected:
     void clone(const AttrTable &at);
 
+#if 0
     void simple_print(ostream &os, string pad, Attr_iter i,
 		      bool dereference);
+#endif
 
     void simple_print(FILE *out, string pad, Attr_iter i,
 		      bool dereference);
@@ -316,7 +318,9 @@ public:
     bool attr_alias(const string &alias, AttrTable *at, const string &name);
     bool attr_alias(const string &alias, const string &name);
 
+#if 0
     void print(ostream &os, string pad = "    ", bool dereference = false);
+#endif
 
     void print(FILE *out, string pad = "    ", bool dereference = false);
 

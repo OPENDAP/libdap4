@@ -811,7 +811,7 @@ DODSFilter::send_dds(FILE *out, DDS &dds, bool constrained,
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (constrained)
-	dds.parse_constraint(d_ce, out, true);
+	dds.parse_constraint(d_ce);
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
     if (is_conditional() 
@@ -968,7 +968,7 @@ DODSFilter::send_ddx(DDS &dds, FILE *out, bool with_mime_headers)
 {
     // If constrained, parse the constriant. Throws Error or InternalErr.
     if (!d_ce.empty())
-	dds.parse_constraint(d_ce, out, true);
+	dds.parse_constraint(d_ce);
 
     time_t data_lmt = get_data_last_modified_time(d_anc_dir);
 
@@ -1005,7 +1005,7 @@ DODSFilter::send_blob(DDS &dds, FILE *out, bool with_mime_headers)
 	return;
     }
 
-    dds.parse_constraint(d_ce, out, true);
+    dds.parse_constraint(d_ce);
   
     // Handle *functional* constraint expressions specially 
     if (dds.functional_expression()) {

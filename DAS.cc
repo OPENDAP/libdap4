@@ -325,6 +325,7 @@ DAS::parse(FILE *in)
     @deprecated Using the C++ iostream class is deprecated.
 */
 
+#if 0
 void
 DAS::print(ostream &os, bool dereference)
 {
@@ -335,7 +336,7 @@ DAS::print(ostream &os, bool dereference)
     os << "}" << endl;
 
 }
-
+#endif
 /** Creates an ASCII representation of a DAS on the given output
     stream.
 

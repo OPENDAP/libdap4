@@ -188,7 +188,7 @@ Byte::buf2val(void **val)
 }
 
 // Print BUF to stdout with its declaration. Intended mostly for debugging.
-
+#if 0
 void 
 Byte::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -199,6 +199,7 @@ Byte::print_val(ostream &os, string space, bool print_decl_p)
     else 
 	os << (int)_buf;
 }
+#endif
 
 void 
 Byte::print_val(FILE *out, string space, bool print_decl_p)

@@ -519,7 +519,7 @@ Grid::projection_yields_grid()
     @brief Prints the Grid declaration only if a valid Grid.
     @see Array
     @see Structure */
-
+#if 0
 void 
 Grid::print_decl(ostream &os, string space, bool print_semi,
 		 bool constraint_info, bool constrained)
@@ -591,7 +591,7 @@ Grid::print_decl(ostream &os, string space, bool print_semi,
 exit:
     return;
 }
-
+#endif
 void 
 Grid::print_decl(FILE *out, string space, bool print_semi,
 		 bool constraint_info, bool constrained)
@@ -699,6 +699,7 @@ Grid::print_xml(FILE *out, string space, bool constrained)
     fprintf(out, "%s</Grid>\n", space.c_str());
 }
 
+#if 0
 void 
 Grid::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -729,7 +730,7 @@ Grid::print_val(ostream &os, string space, bool print_decl_p)
     if (print_decl_p)
 	os << ";" << endl;
 }
-
+#endif
 void 
 Grid::print_val(FILE *out, string space, bool print_decl_p)
 {

@@ -200,7 +200,8 @@ Error::parse(FILE *fp)
     else
 	return OK();		// Check object consistency
 }
-    
+
+#if 0 
 /** @deprecated Use the FILE * version instead. */
 void
 Error::print(ostream &os) const
@@ -227,7 +228,7 @@ Error::print(ostream &os) const
 
     os << "};" << endl;
 }
-
+#endif
 /** Creates a printable representation of the Error object. It is suitable
     for framing, and also for printing and sending over a network.
 

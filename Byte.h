@@ -86,9 +86,10 @@ public:
   virtual unsigned int val2buf(void *val, bool reuse = false);
   virtual unsigned int buf2val(void **val);
   
+#if 0
   virtual void print_val(ostream &os, string space = "", 
 			 bool print_decl_p = true);
-
+#endif
     virtual void print_val(FILE *out, string space = "", 
 			   bool print_decl_p = true);
 

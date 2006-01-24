@@ -718,6 +718,7 @@ Array::dimension_name(Dim_iter i)
   return (*i).name; 
 }
 
+#if 0
 /** Prints a declaration for the Array.  This is what appears in a
     DDS.  If the Array is constrained, the declaration will allocate
     only enough space for the constrained values.
@@ -761,6 +762,7 @@ Array::print_decl(ostream &os, string space, bool print_semi,
     if (print_semi)
 	os << ";" << endl;
 }
+#endif
 
 /** Prints a declaration for the Array.  This is what appears in a
     DDS.  If the Array is constrained, the declaration will reflect
@@ -869,7 +871,7 @@ Array::print_xml_core(FILE *out, string space, bool constrained, string tag)
 
     fprintf(out, "%s</%s>\n", space.c_str(), tag.c_str());
 }
-
+#if 0
 /** Prints the value of the entire (constrained) array.
 
     @deprecated Use the FILE * interface.
@@ -912,6 +914,7 @@ Array::print_array(ostream &os, unsigned int index, unsigned int dims,
 	return index;
     }
 }
+#endif
 
 /** Prints the values in ASCII of the entire (constrained) array. This method
     Attempts to make an aesthetically pleasing display. However, it is
@@ -958,7 +961,7 @@ Array::print_array(FILE *out, unsigned int index, unsigned int dims,
 }
 
 // print the value given the current constraint.
-
+#if 0
 void 
 Array::print_val(ostream &os, string space, bool print_decl_p)
 {
@@ -986,6 +989,7 @@ Array::print_val(ostream &os, string space, bool print_decl_p)
 	os << ";" << endl;
     }
 }
+#endif
 
 void 
 Array::print_val(FILE *out, string space, bool print_decl_p)

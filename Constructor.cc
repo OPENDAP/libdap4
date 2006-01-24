@@ -170,6 +170,7 @@ Constructor::get_var_index(int i)
     return *(_vars.begin() + i);
 }
 
+#if 0
 void
 Constructor::print_decl(ostream &os, string space, bool print_semi,
 			bool constraint_info, bool constrained)
@@ -195,6 +196,7 @@ Constructor::print_decl(ostream &os, string space, bool print_semi,
     if (print_semi)
 	os << ";" << endl;
 }
+#endif
 
 void
 Constructor::print_decl(FILE *out, string space, bool print_semi,

@@ -147,7 +147,8 @@ private:
     string _proj;		// Projection part of initial CE.
     string _sel;		// Selection of initial CE
 
-    string d_version;
+    string d_version;           // Server implementation information
+    string d_protocol;          // DAP protocol from the server
 
     void process_data(DataDDS &data, Response *rs) 
 	throw(Error, InternalErr);
@@ -193,10 +194,20 @@ public:
 	information that is useful when used correctly. Before a response is
 	made, this contains the string "unknown." This should ultimately hold
 	the \e protocol version; it currently holds the \e implementation
-	version. */
+	version. 
+        
+        @see get_protocol()
+        @deprecated */
     string get_version() { return d_version; }
 
+    /** Return the DAP protocol version of the most recent
+        response. Before a response is made, this contains the string "2.0."
+        */
+    string get_protocol() { return d_protocol; }
+
+    
     virtual string request_version() throw(Error, InternalErr);
+    virtual string request_protocol() throw(Error, InternalErr);
 
     virtual void request_das(DAS &das) throw(Error, InternalErr);
     virtual void request_das_url(DAS &das) throw(Error, InternalErr);

@@ -123,9 +123,10 @@ Please report this to support@unidata.ucar.edu.");
 class ParseHeader : public unary_function<const string &, void> {
     ObjectType type;		// What type of object is in the stream?
     string server;		// Server's version string.
+    string protocol;            // Server's protocol version.
 
 public:
-    ParseHeader() :type(unknown_type), server("dods/0.0") { }
+    ParseHeader() :type(unknown_type), server("dods/0.0"), protocol("2.0") { }
 
     void operator()(const string &header) {
 	std::istringstream line(header);
@@ -147,6 +148,13 @@ public:
 	    DBG2(cout << name << ": " << value << endl);
 	    server = value;
 	}
+        else if (name == "xdap-protocol:") {
+            string value; 
+            line >> value;
+            downcase(value);
+            DBG2(cout << name << ": " << value << endl);
+            protocol = value;
+        }
 	else if (server == "dods/0.0" && name == "server:") {
 	    string value; 
 	    line >> value;
@@ -167,6 +175,10 @@ public:
     
     string get_server() {
 	return server;
+    }
+
+    string get_protocol() {
+        return protocol;
     }
 };
 
@@ -507,6 +519,7 @@ HTTPConnect::fetch_url(const string &url) throw(Error, InternalErr)
 
     stream->set_type(parser.get_object_type());
     stream->set_version(parser.get_server());
+    stream->set_protocol(parser.get_protocol());
     
     return stream;
 }
