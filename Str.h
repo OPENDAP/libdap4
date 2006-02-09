@@ -57,7 +57,7 @@
 // as a prefix (so xdr_string will always know how much memory to malloc) but
 // if deserialize gets confused and thinks a ctor (in particular) is a string
 // xdr_string in turn will max_str_len if it cannot get a length byte. A long
-// term solution is to fix DODS, but strings should not routinely be > 32k
+// term solution is to fix libdap, but strings should not routinely be > 32k
 // for the time being... jhrg 4/30/97
 
 const unsigned int max_str_len = 32767; // DODS_UINT_MAX-1; 

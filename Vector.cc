@@ -30,7 +30,7 @@
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 // Implementation for class Vector. This class is the basis for all the
-// vector-type classes in DODS <Array, List>. 
+// vector-type classes in libdap's <Array, List>. 
 //
 // 11/21/95 jhrg
 
@@ -105,7 +105,7 @@ Vector::_duplicate(const Vector &v)
     @param v A pointer to a variable of the type to be included 
     in the Vector. 
     @param t The type of the resulting Vector object, from the Type
-    enum list.  There is no DODS Vector object, so all uses of this
+    enum list.  There is no DAP2 Vector object, so all uses of this
     method will be from the List or Array classes.  This defaults to
     <tt>dods_null_c</tt>.
 
@@ -430,7 +430,7 @@ Vector::serialize(const string &dataset, DDS &dds, XDR *sink,
 
 	if ((0 == xdr_int(sink, (int *)&num))) // send vector length
 	    throw Error(
-"Network I/O Error. This may be due to a bug in DODS or a\n\
+"Network I/O Error. This may be due to a bug in libdap or a\n\
 problem with the network connection.");
 
 	// Note that xdr_bytes and xdr_array both send the length themselves,
@@ -447,7 +447,7 @@ problem with the network connection.");
 				     (xdrproc_t)(_var->xdr_coder())));
 	if (!status)
 	    throw Error(
-"Network I/O Error. This may be due to a bug in DODS or a\n\
+"Network I/O Error. This may be due to a bug in libdap or a\n\
 problem with the network connection.");
 	
 	break;
@@ -460,14 +460,14 @@ problem with the network connection.");
 
 	if ((0 == xdr_int(sink, (int *)&num)))
 	    throw Error(
-"Network I/O Error. This may be due to a bug in DODS or a\n\
+"Network I/O Error. This may be due to a bug in libdap or a\n\
 problem with the network connection.");
 
 	for (i = 0; i < num; ++i)
 	    if (!xdr_str(sink, d_str[i]))
 		throw Error(
 "Network I/O Error. Could not send string data.\n\
-This may be due to a bug in DODS, on the server or a\n\
+This may be due to a bug in libdap, on the server or a\n\
 problem with the network connection.");
 
 	break ;
@@ -484,7 +484,7 @@ problem with the network connection.");
 
 	if ((0 == xdr_int(sink, (int *)&num)))
 	    throw Error(
-"Network I/O Error. This may be due to a bug in DODS or a\n\
+"Network I/O Error. This may be due to a bug in libdap or a\n\
 problem with the network connection.");
 
 	for (i = 0; i < num; ++i)
@@ -505,8 +505,8 @@ problem with the network connection.");
 // stored using the `C' representations because these objects often are used
 // to build huge arrays (e.g., an array of 1024 by 1024 bytes). However,
 // arrays of non-cardinal types are stored as Vectors of the C++ objects or
-// DODS objects (Str and Url are vectors of the string class, Structure, ...,
-// Grid are vectors of the DODS Structure, ... classes). 
+// DAP2 objects (Str and Url are vectors of the string class, Structure, ...,
+// Grid are vectors of the libdap Structure, ... classes). 
 //
 // The boolean parameter REUSE determines whether internal storage is reused
 // or not. If true, the _buf member is assumed to be large enough to hold the
@@ -538,7 +538,7 @@ Vector::deserialize(XDR *source, DDS *dds, bool reuse)
 	if ((0 == xdr_int(source, (int *)&num)))
 	    throw Error(
 "Network I/O error. Could not read the array length.\n\
-This may be due to a bug in DODS or a problem with\n\
+This may be due to a bug in libdap or a problem with\n\
 the network connection.");
 
 	DBG(cerr << "Vector::deserialize: num = " << num << endl);
@@ -569,7 +569,7 @@ the network connection.");
 	if (!status)
 	    throw Error(
 "Network I/O error. Could not read packed array data.\n\
-This may be due to a bug in DODS or a problem with\n\
+This may be due to a bug in libdap or a problem with\n\
 the network connection.");
 
 	DBG(cerr << "Vector::deserialize: read " << num <<  " elements\n");
@@ -581,7 +581,7 @@ the network connection.");
 	if ((0 == xdr_int(source, (int *)&num)))
 	    throw Error(
 "Network I/O error. Could not read the array length.\n\
-This may be due to a bug in DODS or a problem with\n\
+This may be due to a bug in libdap or a problem with\n\
 the network connection.");
 
 	if (length() == -1)
@@ -598,7 +598,7 @@ the network connection.");
 	    if (!xdr_str(source, str))
 		throw Error(
 "Network I/O Error. Could not read string data. This may be due to a\n\
-bug in DODS or a problem with the network connection.");
+bug in libdap or a problem with the network connection.");
 	    d_str[i] = str ;
 
 	}
@@ -612,7 +612,7 @@ bug in DODS or a problem with the network connection.");
 	if ((0 == xdr_int(source, (int *)&num)))
 	    throw Error(
 "Network I/O error. Could not read the array length.\n\
-This may be due to a bug in DODS or a problem with\n\
+This may be due to a bug in libdap or a problem with\n\
 the network connection.");
 
 	if (length() == -1)
@@ -815,7 +815,7 @@ Vector::buf2val(void **val)
     the input and the type of the Vector do not match, an error
     condition is returned.
 
-    Use this function only with Vectors containing compound DODS
+    Use this function only with Vectors containing compound DAP2
     types.  See <tt>buf2val()</tt> to access members of Vectors containing
     simple types.
 

@@ -385,7 +385,7 @@ public:
 // work.
 //
 // Revision 1.13  2005/04/15 21:16:29  jimg
-// Removed include of config_dap.h; builders must use opendap-config --cflags
+// Removed include of config.h; builders must use opendap-config --cflags
 // when they compile code which using the headers.
 //
 // Revision 1.12  2005/01/28 17:25:12  jimg
@@ -466,7 +466,7 @@ public:
 // Merged with 3.3.1.
 //
 // Revision 1.6  2003/03/13 23:53:55  jimg
-// Fixed documentation. Added #include "config_dap.h" which will have to be
+// Fixed documentation. Added #include "config.h" which will have to be
 // removed somehow, after hacking up the configure script. removed the const
 // qualifier from some methods because they lock a mutex. These could be marked
 // const volatile, but I bet there are a lot of compilers that don't support

@@ -63,7 +63,11 @@ CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
 .PHONY: docs
 docs:
 	doxygen doxy.conf
+	(cd docs && tar -czf html.tar.z html)
 
+grammarclean: clean
+	-rm *.tab.cc *.tab.h lex.*.cc
+	
 ###########################################################################
 
 # Build linux RPMs
@@ -91,13 +95,17 @@ pkg:
 # Library sources
 # 
 
-GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc GNU/GNUerror.cc			\
-	IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc	\
-	BTIterAdapter.cc ClauseIterAdapter.cc 
+GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc GNU/GNUerror.cc
 
-GNU_HDR = GNU/builtin.h GNU/Pix.h GNU/GetOpt.h GNU/GNURegex.h	\
-	IteratorAdapter.h ArrayIterAdapter.h AttrIterAdapter.h	\
-	BTIterAdapter.h ClauseIterAdapter.h
+#	IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc	\
+#	BTIterAdapter.cc ClauseIterAdapter.cc 
+
+GNU_HDR = GNU/builtin.h GNU/GetOpt.h GNU/GNURegex.h
+
+#	IteratorAdapter.h ArrayIterAdapter.h AttrIterAdapter.h	\
+#	BTIterAdapter.h ClauseIterAdapter.h
+
+# GNU/Pix.h - Removed 1/25/06 jhrg
 
 # Roughly divide the source into DAP, Client and Server groups. In the
 # future, make three different libraries. jhrg 

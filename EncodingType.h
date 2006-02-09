@@ -26,7 +26,7 @@
 #ifndef _encodingtype_h
 #define _encodingtype_h
 
-/** DODS understands two types of encoding: x-plain and deflate, which
+/** libdap understands two types of encoding: x-plain and deflate, which
     correspond to plain uncompressed data and data compressed with zlib's LZW
     algorithm respectively.
 

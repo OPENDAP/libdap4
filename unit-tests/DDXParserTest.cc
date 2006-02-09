@@ -50,7 +50,7 @@ public:
     void setUp() {
 	factory = new BaseTypeFactory;
 	ddx_parser = new DDXParser(factory);
-	dds = new DDS;
+	dds = new DDS(factory);
     } 
 
     void tearDown() {

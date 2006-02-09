@@ -41,7 +41,7 @@
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
-#include "ArrayIterAdapter.h"
+//#include "ArrayIterAdapter.h"
 
 #include <algorithm>
 #include <functional>
@@ -285,7 +285,7 @@ specified do not match the array variable.";
     @param stop The stop index of the constraint.
     @return void; in case of failure it throws an exception. 
 */
-
+#if 0
 void
 Array::add_constraint(Pix p, int start, int stride, int stop)
 {
@@ -294,7 +294,7 @@ Array::add_constraint(Pix p, int start, int stride, int stop)
     add_constraint( i, start, stride, stop ) ;
     return ;
 }
-
+#endif
 /** Once a dimension has been created (see append_dim()), it can
     be constrained.  This will make the array appear to the rest
     of the world to be smaller than it is.  This functions sets the
@@ -341,7 +341,7 @@ Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 
     update_length(d.c_size);
 }
-
+#if 0
 /** Returns a pointer to the first dimension of the array.  Use 
     <tt>next_dim()</tt> to return successive dimensions.
 
@@ -358,6 +358,7 @@ Array::first_dim()
     i->first() ;
     return i ;
 }
+#endif
 
 /** Returns an iterator to the first dimension of the Array. */
 Array::Dim_iter
@@ -372,7 +373,7 @@ Array::dim_end()
 {
     return _shape.end() ;
 }
-
+#if 0
 /** Given a dimension index, increments it to point to the next
     dimension.   Use <tt>first_dim()</tt> to return the first dimensions.
 
@@ -390,7 +391,7 @@ Array::next_dim(Pix p)
 { 
     p.next() ;
 }
-
+#endif
 /** Return the total number of dimensions contained in the array.
     When <i>constrained</i> is TRUE, return the number of dimensions
     given the most recently evaluated constraint expression. 
@@ -435,7 +436,7 @@ Array::dimensions(bool constrained)
     is constrained.  The default value is FALSE.
     @return An integer containing the size of the specified dimension.
 */
-
+#if 0
 int 
 Array::dimension_size(Pix p, bool constrained) 
 { 
@@ -443,7 +444,7 @@ Array::dimension_size(Pix p, bool constrained)
     Dim_iter i = iter->getIterator() ;
     return dimension_size( i, constrained ) ;
 }
-
+#endif
 /** Return the size of the array dimension referred to by <i>i</i>. 
     If the dimension is constrained the constrained size is returned if 
     <i>constrained</i> is \c true. 
@@ -499,7 +500,7 @@ Array::dimension_size(Dim_iter i, bool constrained)
     the dimension is constrained. 
     @return The desired start index.
 */
-
+#if 0
 int 
 Array::dimension_start(Pix p, bool constrained) 
 { 
@@ -507,7 +508,7 @@ Array::dimension_start(Pix p, bool constrained)
     Dim_iter i = iter->getIterator() ;
     return dimension_start( i, constrained ) ;
 }
-
+#endif
 /** Use this function to return the start index of an array
     dimension.  If the array is constrained (indicated with the
     <i>constrained</i> argument), the start index of the constrained
@@ -564,6 +565,7 @@ Array::dimension_start(Dim_iter i, bool constrained)
     the dimension is constrained. 
     @return The desired stop index.
 */
+#if 0
 int 
 Array::dimension_stop(Pix p, bool constrained) 
 { 
@@ -571,7 +573,7 @@ Array::dimension_stop(Pix p, bool constrained)
     Dim_iter i = iter->getIterator() ;
     return dimension_stop( i, constrained ) ;
 }
-
+#endif
 /** Use this function to return the stop index of an array
     dimension.  If the array is constrained (indicated with the
     <i>constrained</i> argument), the stop index of the constrained
@@ -629,6 +631,7 @@ Array::dimension_stop(Dim_iter i, bool constrained)
     @return The stride value requested, or zero, if <i>constrained</i>
     is TRUE and the dimension is not selected.
 */
+#if 0
 int 
 Array::dimension_stride(Pix p, bool constrained) 
 { 
@@ -636,7 +639,7 @@ Array::dimension_stride(Pix p, bool constrained)
     Dim_iter i = iter->getIterator() ;
     return dimension_stride( i, constrained ) ;
 }
-
+#endif
 /** Use this function to return the stride value of an array
     dimension.  If the array is constrained (indicated with the
     <i>constrained</i> argument), the stride value of the constrained
@@ -686,6 +689,7 @@ Array::dimension_stride(Dim_iter i, bool constrained)
     @param p The Pix index of the dimension.
     @return A pointer to a string containing the dimension name.
 */
+#if 0
 string
 Array::dimension_name(Pix p) 
 { 
@@ -693,7 +697,7 @@ Array::dimension_name(Pix p)
     Dim_iter i = iter->getIterator() ;
     return dimension_name( i ) ;
 }
-
+#endif
 /** This function returns the name of the dimension indicated with
     <i>p</i>.  Since this method is public, it is possible to call it
     before the Array object has been properly initialized.  This will

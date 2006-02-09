@@ -141,14 +141,24 @@ public:
 	    DBG2(cout << name << ": " << value << endl);
 	    type = get_type(value);
 	}
-	else if (name == "xdods-server:") {
+        // The second test (== "dods/0.0") tests if xopendap-server has already
+        // been seen. If so, use that header in preference to the old
+        // XDODS-Server header. jhrg 2/7/06
+	else if (name == "xdods-server:" && server == "dods/0.0") {
 	    string value; 
 	    line >> value;
 	    downcase(value);
 	    DBG2(cout << name << ": " << value << endl);
 	    server = value;
 	}
-        else if (name == "xdap-protocol:") {
+        else if (name == "xopendap-server:") {
+            string value; 
+            line >> value;
+            downcase(value);
+            DBG2(cout << name << ": " << value << endl);
+            server = value;
+        }
+        else if (name == "xdap:") {
             string value; 
             line >> value;
             downcase(value);

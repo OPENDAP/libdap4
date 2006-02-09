@@ -11,7 +11,7 @@
 #include "TestInt16.h"
 #include "TestTypeFactory.h"
 #include "util.h"
-#include "Pix.h"
+//#include "Pix.h"
 
 using std::cerr ;
 using std::endl ;
@@ -122,6 +122,7 @@ public:
 
 	citer i = dims.begin() ;
 	dsiter d = dimsize.begin() ;
+#if 0
 	Pix p ;
 	p = ar.first_dim() ;
 	for( ; p && i != dims.end(); ar.next_dim( p ), i++, d++ )
@@ -143,7 +144,7 @@ public:
 	{
 	    CPPUNIT_FAIL( "not enough dimensions" ) ;
 	}
-
+#endif
 	Array::Dim_iter diter = ar.dim_begin() ;
 	i = dims.begin() ;
 	d = dimsize.begin() ;
@@ -170,8 +171,8 @@ public:
 	unsigned int numdims = ar.dimensions( ) ;
 	CPPUNIT_ASSERT( numdims == 3 ) ;
 
-	p = ar.first_dim() ;
-	ar.add_constraint( p, 0, 2, 3 ) ;
+	diter = ar.dim_begin() ;
+	ar.add_constraint( diter, 0, 2, 3 ) ;
 
 	l = ar.length() ;
 	CPPUNIT_ASSERT( l == 12 ) ;

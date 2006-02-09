@@ -53,7 +53,7 @@
 #include "DDS.h"
 #endif
 
-/** Holds a one-dimensional array of DODS data types.  This class
+/** Holds a one-dimensional array of DAP2 data types.  This class
     takes two forms, depending on whether the elements of the vector
     are themselves simple or compound objects. This class contains
     common functionality for the List and Array classes, and should
@@ -69,12 +69,12 @@
 
     If the elements of the vector are themselves compound data
     types, the array is stored as a vector of BaseType pointers (see
-    the DODS class <b>BaseTypePtrVec</b>). The template is still used to
+    the libdap class <b>BaseTypePtrVec</b>). The template is still used to
     hold information in common to all the members of the array, but
     is not used to pass information to and from the application
     program. 
 
-    @brief Holds a one-dimensional collection of DODS data types.  
+    @brief Holds a one-dimensional collection of DAP2 data types.  
     @see BaseType 
     @see Array
 */

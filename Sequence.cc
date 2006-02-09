@@ -313,7 +313,7 @@ Sequence::set_in_selection(bool state)
     Sequence.  This means that variable names need not be unique
     among a set of nested Sequences. 
 
-    @param bt A pointer to the DODS type variable to add to this Sequence.
+    @param bt A pointer to the DAP2 type variable to add to this Sequence.
     @param part defaults to nil */
 void 
 Sequence::add_var(BaseType *bt, Part)
@@ -341,26 +341,26 @@ Sequence::var(const string &n, btp_stack &s)
 {
     string name = www2id(n);
 
-    BaseType *btp = exact_match(name, &s);
+    BaseType *btp = m_exact_match(name, &s);
     if (btp)
 	return btp;
 
-    return leaf_match(name, &s);
+    return m_leaf_match(name, &s);
 }
 
 BaseType *
-Sequence::var(const string &n, bool exact, btp_stack *s)
+Sequence::var(const string &name, bool exact_match, btp_stack *s)
 {
-    string name = www2id(n);
+    string n = www2id(name);
 
-    if (exact)
-	return exact_match(name, s);
+    if (exact_match)
+	return m_exact_match(n, s);
     else
-	return leaf_match(name, s);
+	return m_leaf_match(n, s);
 }
 
 BaseType *
-Sequence::leaf_match(const string &name, btp_stack *s)
+Sequence::m_leaf_match(const string &name, btp_stack *s)
 {
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
     {
@@ -383,7 +383,7 @@ Sequence::leaf_match(const string &name, btp_stack *s)
 }
 
 BaseType *
-Sequence::exact_match(const string &name, btp_stack *s)
+Sequence::m_exact_match(const string &name, btp_stack *s)
 {
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
     {

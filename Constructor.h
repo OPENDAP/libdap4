@@ -28,7 +28,7 @@
 
 
 #include <vector>
-#include "Pix.h"
+//#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -55,12 +55,12 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
-
+#if 0
     // Deprecated Pix interface
     virtual Pix first_var();
     virtual void next_var(Pix p);
     virtual BaseType *var(Pix p);
-
+#endif
     Vars_iter var_begin();
     Vars_iter var_end();
     Vars_riter var_rbegin();

@@ -254,7 +254,7 @@ check_uint32(const char *val)
 }
 
 // Check first for system errors (like numbers so small they convert
-// (erroneously) to zero. Then make sure that the value is within DODS'
+// (erroneously) to zero. Then make sure that the value is within
 // limits. 
 
 int

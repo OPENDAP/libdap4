@@ -30,7 +30,7 @@
 //	jhrg,jimg	James Gallagher <jgallagher@gso.uri.edu>
 
 // This is the source to `geturl'; a simple tool to exercise the Connect
-// class. It can be used to get naked URLs as well as the DODS DAS and DDS
+// class. It can be used to get naked URLs as well as the DAP2 DAS and DDS
 // objects.  jhrg.
 
 #include "config.h"
@@ -59,13 +59,13 @@ void
 usage(string name)
 {
     cerr << "Usage: " << name << endl;
-    cerr << " [idDaxAVvk] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" 
+    cerr << " [idDaxAVvks] [-B <db>][-c <expr>][-m <num>] <url> [<url> ...]" 
 	 << endl;
-    cerr << " [Vvk] <file> [<file> ...]" << endl;
+    cerr << " [Vvks] <file> [<file> ...]" << endl;
     cerr << endl;
     cerr << "In the first form of the command, dereference the URL and" 
 	 << endl;
-    cerr << "perform the requested operations. This include routing" << endl;
+    cerr << "perform the requested operations. This includes routing" << endl;
     cerr << "the returned information through the DAP processing" << endl;
     cerr << "library (parsing the returned objects, et c.). If none" << endl;
     cerr << "of a, d, or D are used with a URL, then the DAP library" << endl;
@@ -73,24 +73,24 @@ usage(string name)
     cerr << "to standard output." << endl;
     cerr << endl;
     cerr << "In the second form of the command, assume the files are" << endl;
-    cerr << "DODS data objects (stored in files or read from pipes)" << endl;
+    cerr << "DataDDS objects (stored in files or read from pipes)" << endl;
     cerr << "and process them as if -D were given. In this case the" << endl;
     cerr << "information *must* contain valid MIME header in order" << endl;
     cerr << "to be processed." << endl;
     cerr << endl;
     cerr << "Options:" << endl;
     cerr << "        i: For each URL, get the server version." << endl;
-    cerr << "        d: For each URL, get the DODS DDS." << endl;
-    cerr << "        a: For each URL, get the DODS DAS." << endl;
+    cerr << "        d: For each URL, get the the DDS." << endl;
+    cerr << "        a: For each URL, get the the DAS." << endl;
     cerr << "        A: Use the AIS for DAS objects." << endl;
-    cerr << "        D: For each URL, get the DODS Data." << endl;
+    cerr << "        D: For each URL, get the the DataDDS." << endl;
     cerr << "        x: For each URL, get the DDX object. Does not get data." << endl;
     cerr << "        B: <AIS xml dataBase>. Overrides .dodsrc." <<endl;
     cerr << "        v: Verbose." << endl;
     cerr << "        V: Version." << endl;
     cerr << "        c: <expr> is a contraint expression. Used with -D." << endl;
     cerr << "           NB: You can use a `?' for the CE also." << endl;
-    cerr << "        k: Keep temporary files created by DODS core\n" << endl;
+    cerr << "        k: Keep temporary files created by libdap core\n" << endl;
     cerr << "        m: Request the same URL <num> times." << endl;
     cerr << "        z: Ask the server to compress data." << endl;
     cerr << "        s: Print Sequences using numbered rows." << endl;
@@ -208,7 +208,7 @@ main(int argc, char * argv[])
 			    argv[i]) ;
 
 		    fprintf(stderr,
-			    "that contains a DODS data object; decoding.\n" );
+			    "that contains a DAP2 data object; decoding.\n" );
 		}
 
 		FILE *source;
@@ -225,9 +225,9 @@ main(int argc, char * argv[])
 		    break;
 		}
 
-		// NB: local access should never use the popup gui.
 		try {
-		    DataDDS dds;
+                    BaseTypeFactory factory;
+		    DataDDS dds(&factory);
 		    url->read_data(dds, source);
 
 		    if (verbose)
@@ -241,8 +241,11 @@ main(int argc, char * argv[])
 		    delete url; url = 0;
 		    break;
 		}
+#if 0
+                // The stream is now closed by Response
 		if (source != stdin)
 		    fclose(source);
+#endif
 	    }
 
 	    else if (get_version) {
@@ -274,7 +277,8 @@ main(int argc, char * argv[])
 
 	    else if (get_dds) {
 		for (int j = 0; j < times; ++j) {
-		    DDS dds;
+                    BaseTypeFactory factory;
+		    DDS dds(&factory);
 		    try {
 			url->request_dds(dds);
 		    }
@@ -296,7 +300,8 @@ main(int argc, char * argv[])
 
 	    else if (get_ddx) {
 		for (int j = 0; j < times; ++j) {
-		    DDS dds;
+                    BaseTypeFactory factory;
+                    DDS dds(&factory);
 		    try {
 			url->request_dds(dds);
 		    }
@@ -320,7 +325,8 @@ main(int argc, char * argv[])
 		    expr = "";
 
 		for (int j = 0; j < times; ++j) {
-		    DataDDS dds;
+                    BaseTypeFactory factory;
+                    DataDDS dds(&factory);
 		    try {
 			DBG(cerr << "URL: " << url->URL(false) << endl);
 			DBG(cerr << "CE: " << expr << endl);

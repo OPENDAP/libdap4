@@ -130,7 +130,7 @@ DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v,
 {
     m_version_string_to_numbers();
 }
-
+#if 0
 // #ifdef DEFAULT_BASETYPE_FACTORY
 /** @brief Make an instance of DataDDS
     A DataDDS instance is a DDS with aditional information about the version
@@ -146,7 +146,7 @@ DataDDS::DataDDS(const string &n, const string &v)
     m_version_string_to_numbers();
 }
 // #endif
-
+#endif
 // $Log: DataDDS.cc,v $
 // Revision 1.22  2005/03/30 21:34:32  jimg
 // Now uses the BaseTypeFactory class.

@@ -43,7 +43,7 @@
 #include "RValue.h"
 #endif
 
-/** The selection part of a a DODS constraint expression may contain one or
+/** The selection part of a a DAP constraint expression may contain one or
     more clauses, separated by ampersands (\&). This is modeled in the DDS
     class structure as a singly-linked list of Clause objects. In addition, a
     constraint expression may be a single function call, also represented in
@@ -64,7 +64,7 @@
     return TRUE if A is a member of L (if the <tt>find()</tt> function is
     defined). 
 
-    <li> A clause that returns a pointer to a DODS BaseType value.
+    <li> A clause that returns a pointer to a DAP BaseType value.
     This is a clause that evaluates to some data value (be it scalar
     or vector).  For example, <tt>sig0()</tt> might be included in the
     constraint expression parser to calculate density from pressure,

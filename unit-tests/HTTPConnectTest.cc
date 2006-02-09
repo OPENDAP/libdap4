@@ -204,10 +204,10 @@ public:
 	    // Should get five or six headers back.
 	    Regex header("XDODS-Server: DAP/.*");
 	    CPPUNIT_ASSERT(re_match(header, (*h)[0].c_str()));
-            Regex protocol_header("XDAP-Protocol: .*");
+            Regex protocol_header("XDAP: .*");
             int num_headers;
             if (re_match(protocol_header, (*h)[1].c_str()))
-                num_headers = 6;
+                num_headers = 7;
             else
                 num_headers = 5;
 	    CPPUNIT_ASSERT((*h)[4] == "Content-Description: dods_das");

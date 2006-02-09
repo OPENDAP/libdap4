@@ -44,7 +44,7 @@
 #include "util.h"
 #include "InternalErr.h"
 #include "escaping.h"
-#include "BTIterAdapter.h"
+//#include "BTIterAdapter.h"
 
 
 using namespace std;
@@ -359,6 +359,7 @@ Grid::array_var()
 }
 
 /** @brief Returns the index of the first Map vector. */
+#if 0
 Pix 
 Grid::first_map_var()
 {
@@ -369,6 +370,7 @@ Grid::first_map_var()
     i->first() ;
     return i ;
 }
+#endif
 
 Grid::Map_iter
 Grid::map_begin()
@@ -392,6 +394,7 @@ Grid::get_map_iter(int i)
 }
 
 /** @brief Increments the Map vector index. */
+#if 0
 void 
 Grid::next_map_var(Pix p)
 {
@@ -408,7 +411,7 @@ Grid::map_var(Pix p)
 
     return i->entry() ;
 }
-
+#endif
 /** Returns the number of components in the Grid object.  This is
     equal to one plus the number of Map vectors.  If there is a
     constraint expression in effect, the number of dimensions needed

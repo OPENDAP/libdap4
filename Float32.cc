@@ -113,7 +113,7 @@ Float32::serialize(const string &dataset, DDS &dds, XDR *sink,
     if (!xdr_float(sink, &_buf))
 	throw Error(
 "Network I/O Error. Could not send float 32 data.\n\
-This may be due to a bug in DODS, on the server or a\n\
+This may be due to a bug in libdap, on the server or a\n\
 problem with the network connection.");
 
     return true;
@@ -125,7 +125,7 @@ Float32::deserialize(XDR *source, DDS *, bool)
     if (!xdr_float(source, &_buf))
 	throw Error(
 "Network I/O Error. Could not read float 32 data. This may be due to a\n\
-bug in DODS or a problem with the network connection.");
+bug in libdap or a problem with the network connection.");
 
     return false;
 }

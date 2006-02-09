@@ -1,6 +1,28 @@
 
 $Id$
 
+News for version 3.6.0
+
+Added a new method get_parent() to AttrTable. This returns the parent 
+container for this AttrTable.
+
+I removed the old iostream methods from the library. These methods should not
+be used because in many cases since other parts of the library use the C/stdio 
+functions for I/O. In older versions of gcc, it was possible to mix the
+two types of I/O systems, but not now (and not in otehr compielrs). To change
+your code, look in the file Removed_functions.txt to see the functions/methods
+that have been removed. In all cases there is a version that takes a FILE *
+in place of the ostream &. Use the FILE* version. If you're performing I/O
+that relies on operator<<() to do type conversions, use an ostringstream 
+in your code and then write the string to stdout (or whereever) using fprintf
+like: fprintf(stdout, "%s", oss.str().c_str()). Ugly, but easier in some
+cases than replacing lots of tested C++ I/O with fprintf calls.
+
+I removed old methods in Connect that have been deprecated for more than
+a year. See Removed_functions.txt
+
+I removed the old Pix methods. See removed_functions.txt.
+
 Added protocol versio number header to responses which use the set_mime...()
 functions. The new header is called "XDAP-Protocol" and its value is the 
 two digit DAP protocol version number. This is now used by the client-side

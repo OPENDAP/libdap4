@@ -113,14 +113,14 @@ DAS::DAS(AttrTable *attr, string name)
 DAS::~DAS()
 {
 }
-
+#if 0
 /** @brief Returns a pointer to the first attribute table. */
 Pix
 DAS::first_var()
 {
     return AttrTable::first_attr();
 }
-
+#endif
 AttrTable::Attr_iter
 DAS::var_begin()
 {
@@ -132,7 +132,7 @@ DAS::var_end()
 {
     return AttrTable::attr_end() ;
 }
-
+#if 0
 /** @brief Increments an attribute table pointer to indicate the next table
     in the series. */
 void
@@ -147,7 +147,7 @@ DAS::get_name(Pix p)
 {
     return AttrTable::get_name(p);
 }
-
+#endif
 string
 DAS::get_name(Attr_iter &i)
 {
@@ -157,15 +157,15 @@ DAS::get_name(Attr_iter &i)
 /** @brief Returns the attribute table with the given name. 
     @name get_table()
 */
-  
-  //@{
+#if 0
+//@{
 /** @brief Returns the indicated attribute table. */
 AttrTable *
 DAS::get_table(Pix p)
 {
     return AttrTable::get_attr_table(p);
 }
-
+#endif
 /** @brief Returns the attribute table with the given name string. */
 AttrTable *
 DAS::get_table(Attr_iter &i)

@@ -43,7 +43,7 @@
 #include <string>
 #include <iostream>
 
-#include "Pix.h"
+//#include "Pix.h"
 
 #ifndef _attrtable_h
 #include "AttrTable.h"
@@ -51,20 +51,19 @@
 #include "DODSResponseObject.h"
 
 using std::cout;
-//using std::ostream;
 
-/** @brief Hold attribute data for a DODS dataset.
+/** @brief Hold attribute data for a DAP2 dataset.
 
     The Data Attribute Structure is a set of name-value pairs used to
     describe the data in a particular dataset. The name-value pairs are
-    called the ``attributes''. The values may be of any of the DODS simple
+    called the ``attributes''. The values may be of any of the DAP2 simple
     data types (Byte, Int16, UInt16, Int32, UInt32, Float32, Float64, String
     and URL), and may be scalar or vector. Note that all values are actually
     stored as String data, making the easy to read/check using a web browser.
 
     A value may also consist of a set of other name-value pairs.  This
     makes it possible to nest collections of attributes, giving rise
-    to a hierarchy of attributes.  DODS uses this structure to provide
+    to a hierarchy of attributes.  DAP2 uses this structure to provide
     information about variables in a dataset.  For example, consider
     the dataset used in the DDS example earlier.
 
@@ -112,7 +111,7 @@ using std::cout;
     information about the entire dataset.
 
     Data attribute information is an important part of the the data
-    provided to a DODS client by a server, and the DAS is how this
+    provided to a DAP2 client by a server, and the DAS is how this
     data is packaged for sending (and how it is received). 
 
     The DAS class is simply a sequence of attribute tables and names.
@@ -131,12 +130,12 @@ public:
     DAS(AttrTable *attr_table, string name);
 
     virtual ~DAS();
-
+#if 0
     Pix first_var();
     void next_var(Pix p);
     string get_name(Pix p);
     AttrTable *get_table(Pix p);
-
+#endif
     /** Returns a reference to the first attribute table. */
     AttrTable::Attr_iter var_begin() ;
 

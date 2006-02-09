@@ -44,7 +44,7 @@
 
 
 #include <vector>
-#include "Pix.h"
+//#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -190,8 +190,8 @@ private:
     bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
 #endif
     void _duplicate(const Sequence &s);
-    BaseType *leaf_match(const string &name, btp_stack *s = 0);
-    BaseType *exact_match(const string &name, btp_stack *s = 0);
+    BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
+    BaseType *m_exact_match(const string &name, btp_stack *s = 0);
 
     bool is_end_of_rows(int i);
 
@@ -271,7 +271,7 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual BaseType *var(const string &n, bool exact = true,
+    virtual BaseType *var(const string &name, bool exact_match = true,
 			  btp_stack *s = 0);
     virtual BaseType *var(const string &n, btp_stack &s);
 
@@ -564,7 +564,7 @@ public:
  * Merged 3.1.8
  *
  * Revision 1.38.6.1  2000/08/02 21:10:07  jimg
- * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * Removed the header config.h. If this file uses the dods typedefs for
  * cardinal datatypes, then it gets those definitions from the header
  * dods-datatypes.h.
  *
@@ -690,7 +690,7 @@ public:
  *
  * Revision 1.11  1995/05/10  13:45:28  jimg
  * Changed the name of the configuration header file from `config.h' to
- * `config_dap.h' so that other libraries could have header files which were
+ * `config.h' so that other libraries could have header files which were
  * installed in the DODS include directory without overwriting this one. Each
  * config header should follow the convention config_<name>.h.
  *

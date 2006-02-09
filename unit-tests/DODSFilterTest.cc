@@ -190,7 +190,8 @@ public:
 
 	Regex r1("HTTP/1.0 200 OK\r\n\
 XDODS-Server:.*\r\n\
-XDAP-Protocol: .*\r\n\
+XOPeNDAP-Server: dods-test/0.00\r\n\
+XDAP: .*\r\n\
 Date: .*\r\n\
 Last-Modified: .*\r\n\
 Content-type: text/plain\r\n\

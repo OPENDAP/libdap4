@@ -12,7 +12,7 @@
 #include "TestStr.h"
 #include "TestTypeFactory.h"
 #include "util.h"
-#include "Pix.h"
+//#include "Pix.h"
 
 using std::cerr ;
 using std::endl ;
@@ -100,6 +100,7 @@ public:
 	elems.push_back( "Age" ) ;
 	elems.push_back( "Friends" ) ;
 	typedef vector<string>::const_iterator elems_iter ;
+#if 0
 	Pix p = s.first_var() ;
 	elems_iter e = elems.begin() ;
 	for( ; p && e != elems.end(); s.next_var( p ), e++ )
@@ -116,9 +117,9 @@ public:
 	{
 	    CPPUNIT_FAIL( "Too few elements" ) ;
 	}
-
+#endif
 	Sequence::Vars_iter v = s.var_begin() ;
-	e = elems.begin() ;
+	elems_iter e = elems.begin() ;
 	for( ; v != s.var_end() && e != elems.end(); v++, e++ )
 	{
 	    CPPUNIT_ASSERT( (*v)->name() == (*e) ) ;

@@ -76,10 +76,8 @@ public:
 
     /** Close the stream. */
     virtual ~Response() { 
-	DBG(cerr << "Closing stream... ");
         if (d_stream)
 	    fclose(d_stream); 
-	DBGN(cerr << endl);
     }
 
     /** @name Accessors */

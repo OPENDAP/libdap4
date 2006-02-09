@@ -48,7 +48,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include <sys/wait.h>
 #endif
 
-//#include <assert.h>
 #include <iostream>
 #include <algorithm>
 #include <functional>
@@ -62,8 +61,8 @@ static char rcsid[] not_used = {"$Id$"};
 #include "DDS.h"
 #include "Error.h"
 #include "InternalErr.h"
-#include "BTIterAdapter.h"
-#include "ClauseIterAdapter.h"
+//#include "BTIterAdapter.h"
+//#include "ClauseIterAdapter.h"
 
 #include "parser.h"
 #include "debug.h"
@@ -119,13 +118,13 @@ DDS::duplicate(const DDS &dds)
     @param n The name of the data set. Can also be set using
     set_dataset_name(). */
 DDS::DDS(BaseTypeFactory *factory, const string &n)
-    : d_factory(factory), d_local_basetype_factory(false), 
+    : d_factory(factory), //d_local_basetype_factory(false), 
       name(n), d_timeout(0)
 {
     add_function("length", func_length);
     add_function("grid", func_grid_select);
 }
-
+#if 0
 // #ifdef DEFAULT_BASETYPE_FACTORY
 /** Creates a DDS with the given string for its name. Uses the defaut
     BaseType Factory (which instantiates the Byte, ..., Grid classes defined
@@ -140,7 +139,7 @@ DDS::DDS(const string &n) : d_factory(new BaseTypeFactory),
     add_function("grid", func_grid_select);
 }
 // #endif
-
+#endif
 /** The DDS copy constructor. */
 DDS::DDS(const DDS &rhs) : DODSResponseObject(rhs)
 {
@@ -170,10 +169,11 @@ DDS::~DDS()
 	    delete cp ; cp = 0;
 	}
     }
-
+#if 0
     if (d_local_basetype_factory) {
 	delete d_factory; d_factory = 0;
     }
+#endif
 }
 
 DDS &
@@ -669,6 +669,7 @@ DDS::exact_match(const string &name, btp_stack *s)
 
 
 /** @brief Returns the first variable in the DDS. */
+#if 0
 Pix 
 DDS::first_var()
 {
@@ -676,6 +677,7 @@ DDS::first_var()
     i->first();
     return i;
 }
+#endif
 
 DDS::Vars_iter
 DDS::var_begin()
@@ -721,6 +723,7 @@ DDS::get_var_index(int i)
 
 /** @brief Increments the DDS variable counter to point at the next
     variable. */
+#if 0
 void 
 DDS::next_var(Pix p)
 { 
@@ -737,6 +740,7 @@ DDS::var(Pix p)
     }
     return 0 ;
 }
+#endif
 
 /** @brief Returns the number of variables in the DDS. */
 int
@@ -779,6 +783,7 @@ DDS::get_timeout()
 
 /** Returns a pointer to the first clause in a parsed constraint
     expression. */
+#if 0
 Pix
 DDS::first_clause()
 {
@@ -791,6 +796,7 @@ DDS::first_clause()
     i->first() ;
     return i ;
 }
+#endif
 
 DDS::Clause_iter
 DDS::clause_begin()
@@ -806,6 +812,7 @@ DDS::clause_end()
 
 /** Increments a pointer to indicate the next clause in a parsed
     constraint expression. */
+#if 0
 void
 DDS::next_clause(Pix p)
 {
@@ -848,6 +855,7 @@ DDS::clause_value(Pix p, const string &dataset)
 
     return i->entry()->value(dataset, *this);
 }
+#endif
 
 bool
 DDS::clause_value(Clause_iter &iter, const string &dataset)

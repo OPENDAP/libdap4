@@ -186,7 +186,7 @@ public:
  * Merged 3.1.8
  *
  * Revision 1.25.6.2  2000/08/02 21:10:07  jimg
- * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * Removed the header config.h. If this file uses the dods typedefs for
  * cardinal datatypes, then it gets those definitions from the header
  * dods-datatypes.h.
  *

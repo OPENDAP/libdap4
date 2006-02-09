@@ -35,7 +35,6 @@
 
 static char rcsid[] not_used ="$Id$";
 
-
 #include <assert.h>
 
 // #include <iostream>
@@ -45,7 +44,7 @@ static char rcsid[] not_used ="$Id$";
 #include "util.h"
 #include "AttrTable.h"
 #include "escaping.h"
-#include "AttrIterAdapter.h"
+//#include "AttrIterAdapter.h"
 
 using std::cerr;
 using std::string;
@@ -122,12 +121,14 @@ AttrTable::clone(const AttrTable &at)
 	entry *e = new entry( *(*i) ) ;
 	attr_map.push_back( e ) ;
     }
+    
+    d_parent = at.d_parent;
 }
 
 /** @name Instance management functions */
 
 //@{
-AttrTable::AttrTable()
+AttrTable::AttrTable() : d_name(""), d_parent(0)
 {
 }
 
@@ -214,7 +215,7 @@ AttrTable::append_attr(const string &name, const string &type,
 {
     string lname = www2id(name);
 
-    Attr_iter iter = simple_find( lname, true ) ;
+    Attr_iter iter = simple_find(lname) ;
 
     // If the types don't match OR this attribute is a container, calling
     // this mfunc is an error!
@@ -293,7 +294,7 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
 {
     string lname = www2id(name);
 
-    if (simple_find(name))
+    if (simple_find(name) != attr_end())
 	throw Error(string("There already exists a container called `")
 		    + name + string("' in this attribute table."));
     DBG(cerr << "Setting appended attribute container name to: "
@@ -307,6 +308,8 @@ AttrTable::append_container(AttrTable *at, const string &name) throw (Error)
     e->attributes = at;
 
     attr_map.push_back(e);
+    
+    at->d_parent = this;
 
     return e->attributes;
 }
@@ -337,15 +340,53 @@ AttrTable::find( const string &target, AttrTable **at, Attr_iter *iter )
 	*at = find_container( container ) ;
 	if(*at)
 	{
-	    *iter = (*at)->simple_find(field, true) ;
+	    *iter = (*at)->simple_find(field) ;
 	} else {
 	    *iter = attr_map.end() ;
 	}
     }
     else {
+#if 0
+        // Replaced this call to simple_find with the call to recurrsive_find
+        // so that older code that assumes that attribute names will not need
+        // to be FQNs works. jhrg 2/9/06
 	*at = this;
-	*iter = simple_find(target, true);
+	*iter = simple_find(target);
+#endif
+        *at = recurrsive_find(target, iter);
     }
+}
+
+/** This method scans for attributes using recurrsion to look inside containers
+    even when the name of the attribute is not fully qualified. It starts 
+    looking in itself and descends into its children depth first. It will find
+    attributes and attribute containers.
+    
+    @param target Look for the attribute with this name.
+    @param location A value-result parameter. This returns an iterator to the
+    attribute within the returned AttrTable object
+    @return Returns a pointer to the AttrTable which holds \e target, or null
+    if \e target is not found. In the latter case, the value of \e location is
+    undefined. */
+AttrTable *
+AttrTable::recurrsive_find(const string &target, Attr_iter *location)
+{
+    Attr_iter i = attr_begin();
+    while (i != attr_end()) {
+        if (target == (*i)->name) {
+            *location = i;
+            return this;
+        } 
+        else if ((*i)->type == Attr_container) {
+            AttrTable *at = (*i)->attributes->recurrsive_find(target, location);
+            if (at)
+                return at;
+        }
+        
+        ++i;
+    }
+    
+    return 0;
 }
 
 // Private
@@ -356,7 +397,7 @@ AttrTable::find( const string &target, AttrTable **at, Attr_iter *iter )
     @param target The name of the attribute. 
     @return An Attr_iter which references \c target. */
 AttrTable::Attr_iter
-AttrTable::simple_find( const string &target, bool )
+AttrTable::simple_find(const string &target)
 {
     Attr_iter i ;
     for( i = attr_map.begin(); i != attr_map.end(); i++ )
@@ -441,8 +482,8 @@ AttrTable::get_attr_table(const char *name)
 string
 AttrTable::get_type(const string &name)
 {
-    Pix p = simple_find(name);
-    return (p) ?  get_type(p) : (string)"";
+    Attr_iter p = simple_find(name);
+    return (p != attr_map.end()) ? get_type(p) : (string)"";
 }
 
 string
@@ -456,8 +497,8 @@ AttrTable::get_type(const char *name)
 AttrType
 AttrTable::get_attr_type(const string &name)
 {
-    Pix p = simple_find(name);
-    return (p) ?  get_attr_type(p) : Attr_unknown;
+    Attr_iter p = simple_find(name);
+    return (p != attr_map.end()) ? get_attr_type(p) : Attr_unknown;
 }
 
 AttrType
@@ -476,7 +517,7 @@ AttrTable::get_attr_type(const char *name)
 unsigned int 
 AttrTable::get_attr_num(const string &name)
 {
-    Attr_iter iter = simple_find(name, true);
+    Attr_iter iter = simple_find(name);
     return (iter != attr_map.end()) ?  get_attr_num(iter) : 0;
 }
 
@@ -485,6 +526,7 @@ AttrTable::get_attr_num(const char *name)
 {
     return get_attr_num((string)name);
 }
+
 
 /** Get a pointer to the vector of values associated with the attribute
     referenced by Pix <tt>p</tt> or named <tt>name</tt>.
@@ -501,8 +543,8 @@ AttrTable::get_attr_num(const char *name)
 vector<string> *
 AttrTable::get_attr_vector(const string &name)
 {
-    Pix p = simple_find(name);
-    return (p) ?  get_attr_vector(p) : 0;
+    Attr_iter p = simple_find(name);
+    return (p != attr_map.end()) ? get_attr_vector(p) : 0;
 }
 
 vector<string> *
@@ -532,7 +574,7 @@ AttrTable::del_attr(const string &name, int i)
 {
     string lname = www2id(name);
 
-    Attr_iter iter = simple_find( lname, true ) ;
+    Attr_iter iter = simple_find(lname) ;
     if ( iter != attr_map.end() ) {
 	if (i == -1) {		// Delete the whole attribute
 	    entry *e = *iter ;
@@ -554,7 +596,7 @@ AttrTable::del_attr(const string &name, int i)
 }
 
 //@} Accessors using an attribute name
-
+#if 0
 /** @name Deprecated Pix accessors */
 //@{
 
@@ -779,6 +821,7 @@ AttrTable::find(const string &target, AttrTable **at)
 	return simple_find(target);
     }
 }
+#endif
 
 /** @name get information using an iterator */
 //@{
@@ -822,7 +865,7 @@ AttrTable::get_name( Attr_iter iter )
     return (*iter)->name ;
 }
 
-/** Returns true if the attribute referenced by \e iter is a container. */
+/** Returns true if the attribute referenced by \e i is a container. */
 bool
 AttrTable::is_container( Attr_iter i )
 {
@@ -921,6 +964,13 @@ AttrTable::get_attr(const char *name, unsigned int i)
     return get_attr((string)name, i);
 }
 
+string
+AttrTable::get_attr(const string &name, unsigned int i)
+{
+    Attr_iter p = simple_find(name);
+    return (p != attr_map.end()) ? get_attr(p, i) : (string)"";
+}
+
 /** Returns a pointer to the vector of values associated with the
     attribute referenced by iterator \e iter.
 
@@ -953,7 +1003,7 @@ AttrTable::add_container_alias(const string &name, AttrTable *src)
 {
     string lname = www2id(name);
 
-    if (simple_find(lname))
+    if (simple_find(lname) != attr_end())
 	throw Error(string("There already exists a container called `")
 		    + name + string("in this attribute table."));
 
@@ -987,30 +1037,31 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     string lname = www2id(name);
     string lsource = www2id(source);
 
-    // find the container that holds #source# and then find #source#'s Pix
+    // find the container that holds source and its (sources's) iterator
     // within that container. Search at the uppermost level of the attribtue
     // object to find values defined `above' the current container.
     AttrTable *at;
-    Pix p = das->find(lsource, &at);
+    Attr_iter iter;
+    das->find(lsource, &at, &iter);
 
-    // If #source# is not found by looking at the topmost level, look in the
+    // If source is not found by looking at the topmost level, look in the
     // current table (i.e., alias z x where x is in the current container
     // won't be found by looking for `x' at the top level). See test case 26
     // in das-testsuite.
-    if (!(at && p)) {
-	p = find(lsource, &at);
-	if (!(at && p))
+    if (!at || (iter == attr_end()) || !*iter) {
+	find(lsource, &at, &iter);
+	if (!at || (iter == attr_end()) || !*iter)
 	    throw Error(string("Could not find the attribute `")
 			+ source + string("' in the attribute object."));
     }
-
+    
     // If we've got a value to alias and it's being added at the top level of
     // the DAS, that's an error.
-    if (!at->is_container(p) && this == das)
+    if (!at->is_container(iter) && this == das)
 	throw Error(string("A value cannot be aliased to the top level of the\
  DAS;\nOnly containers may be present at that level of the DAS."));
 
-    if (simple_find(lname))
+    if (simple_find(lname) != attr_end())
 	throw Error(string("There already exists a container called `")
 		    + name + string("in this attribute table."));
 
@@ -1018,11 +1069,11 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     e->name = lname;
     e->is_alias = true;
     e->aliased_to = lsource;
-    e->type = at->attr(p)->type;
+    e->type = get_attr_type(iter);
     if (e->type == Attr_container)
-	e->attributes = at->get_attr_table(p);
+	e->attributes = at->get_attr_table(iter);
     else
-	e->attr = at->attr(p)->attr;
+	e->attr = (*iter)->attr;
 
     attr_map.push_back(e);
 }

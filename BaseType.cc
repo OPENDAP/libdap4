@@ -534,26 +534,26 @@ BaseType::get_parent()
     different members of the structure.
 
     @brief Returns a pointer to a member of a constructor class.
-    @param n The name of the class member.  Defaults to ""
-    @param exact
+    @param name The name of the class member.  Defaults to ""
+    @param exact_match
     True if only interested in variables whose full names match
     \e n exactly. If false, returns the first variable
-    whose name matches \e n. For example, if
-    \e n is \c x and \c point.x is a variable, then var("x",
+    whose name matches \e name. For example, if
+    \e name is \c x and \c point.x is a variable, then var("x",
     false) would return a BaseType pointer to \c point.x. If
-    \e exact was <tt>true</tt> then \e n
+    \e exact_match was <tt>true</tt> then \e name
     would need to be \c "point.x" for var to return that
     pointer. This feature simplifies constraint expressions for
     datasets which have complex, nested, constructor variables.
     Defaults to true.
-    @param s Record the path to \e n. Defaults to null, in which case it is
+    @param s Record the path to \e name. Defaults to null, in which case it is
     not used.
 
     @return A pointer to the member named in the \e n argument. If no name is
     given, the function returns the first (only) variable.  For example, an
     Array has only one variable, while a Structure can have many. */
 BaseType *
-BaseType::var(const string &, bool, btp_stack *)
+BaseType::var(const string &name, bool exact_match, btp_stack *s)
 {
     return static_cast<BaseType *>(0);
 }

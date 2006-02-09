@@ -20,7 +20,7 @@ check_PROGRAMS = $(UNIT_TESTS)
 # runs all the dejagnu test drivers by calling runtest 'by hand.'
 TESTS = $(UNIT_TESTS)
 
-DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite ddx-testsuite	     \
+DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite ddx-testsuite \
 	grid-func-testsuite ais_testsuite rcreader-testsuite \
 	server-testsuite cgi-util-tests
 
@@ -32,12 +32,14 @@ CLEANFILES = testout .dodsrc
 # Unit Tests
 #
 
-UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT iterT RegexTest	\
+UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT RegexTest	\
 	AISDatabaseParserTest AISMergeTest AISResourcesTest ArrayTest	\
 	AttrTableTest ByteTest cgiUtilTest DASTest DDSTest		\
 	DDXParserTest DODSFilterTest generalUtilTest HTTPCacheTest	\
 	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
 	SignalHandlerTest
+
+# iterT 
 
 RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = -lcppunit ../libdap.la
@@ -111,5 +113,5 @@ sequenceT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
 ddsT_SOURCES = ddsT.cc
 ddsT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
 
-iterT_SOURCES = iterT.cc LongIterAdapter.cc
-iterT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
+# iterT_SOURCES = iterT.cc LongIterAdapter.cc
+# iterT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a

@@ -153,7 +153,8 @@ Grid *NewGrid(const string &n = "");
 
 void downcase(string &s);
 // Jose Garcia
-/** Fast, safe conversions from long to a character representation which gets
+/** @name Interger to string conversion functions
+   Fast, safe conversions from long to a character representation which gets
    appended to a string. This method will take a long value 'val' and it will
    recursively divide it by 'base' in order to "extract" one by one the
    digits which compose it; these digits will be <i>appended</i> to the
@@ -187,7 +188,7 @@ string long_to_string(long val, int base = 10);
 //@}
 
 // Jose Garcia
-/**
+/** @name Double to string conversion functions
     Conversions from double to a character representation which gets appended
     to a string. This function depends on the standard routine sprintf to
     convert a double to a textual representation which gets appended to the

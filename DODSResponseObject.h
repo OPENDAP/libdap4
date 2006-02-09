@@ -6,7 +6,7 @@
 using std::string ;
 
 /** @brief Abstract base class representing a specific set of information
-    for a DODS dataset (currently DAS and DDS).
+    for a DAP2 dataset (currently DAS and DDS).
     
     This class' sole purpose is to serve as a base class for DAS and DDS.
     Code in the OPeNDAP/HOA Back End Server (BES) uses this to pass pointers

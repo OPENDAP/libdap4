@@ -170,9 +170,9 @@ PassiveArray::read( const string & )
 	    default:
 	    {
 		cerr << __FILE__ << ":"
-		     << __LINE__ << "Unsupported DODS/DAP data type"
+		     << __LINE__ << "Unsupported DAP2 data type"
 		     << endl;
-		throw InternalErr( "Unsupported DODS/DAP data type" );
+		throw InternalErr( "Unsupported DAP2 data type" );
 	    }
 	    break;
 	}

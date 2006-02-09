@@ -39,7 +39,7 @@ proc expr-test_load {} {
 }
 
 proc expr-test_exit {} {
-    send -raw ""
+#    send -raw ""
 }
 
 proc expr-test_version {} {

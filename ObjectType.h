@@ -26,7 +26,7 @@
 #ifndef _object_type_h
 #define _object_type_h
 
-/** When a version 2.x or greater DODS data server sends an object, it uses
+/** When a version 2.x or greater DAP data server sends an object, it uses
     the Content-Description header of the response to indicate the type of
     object contained in the response. During the parse of the header a member
     of Connect is set to one of these values so that other mfuncs can tell

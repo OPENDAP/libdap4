@@ -161,38 +161,29 @@ public:
     void append_dim(int size, string name = "");
 
     void add_constraint(Dim_iter i, int start, int stride, int stop);
-
+#if 0
     void add_constraint(Pix p, int start, int stride, int stop);
-
+#endif
     void reset_constraint();
 
     void clear_constraint();
-
+#if 0
     Pix first_dim();
 
     void next_dim(Pix p);
+    int dimension_size(Pix p, bool constrained = false);
+    int dimension_start(Pix p, bool constrained = false);
+    int dimension_stop(Pix p, bool constrained = false);
+    int dimension_stride(Pix p, bool constrained = false);
+#endif
 
     Dim_iter dim_begin() ;
-
     Dim_iter dim_end() ;
 
-    int dimension_size(Pix p, bool constrained = false);
     int dimension_size(Dim_iter i, bool constrained = false);
-
-    int dimension_start(Pix p, bool constrained = false);
-
     int dimension_start(Dim_iter i, bool constrained = false);
-
-    int dimension_stop(Pix p, bool constrained = false);
-
     int dimension_stop(Dim_iter i, bool constrained = false);
-
-    int dimension_stride(Pix p, bool constrained = false);
-
     int dimension_stride(Dim_iter i, bool constrained = false);
-
-    string dimension_name(Pix p);
-
     string dimension_name(Dim_iter i);
 
     unsigned int dimensions(bool constrained = false);
@@ -495,7 +486,7 @@ public:
  *
  * Revision 1.17  1995/05/10  13:45:03  jimg
  * Changed the name of the configuration header file from `config.h' to
- * `config_dap.h' so that other libraries could have header files which were
+ * `config.h' so that other libraries could have header files which were
  * installed in the DODS include directory without overwriting this one. Each
  * config header should follow the convention config_<name>.h.
  *
@@ -504,7 +495,7 @@ public:
  * Enforce a new size calculated from constraint expression.
  *
  * Revision 1.15  1995/03/16  17:23:00  jimg
- * Added include of config_dap.h before all other includes.
+ * Added include of config.h before all other includes.
  * Fixed deletes of buffers in read_val().
  * Added initialization of _buf in ctor.
  *

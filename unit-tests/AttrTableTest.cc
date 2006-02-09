@@ -39,6 +39,17 @@
 using namespace CppUnit;
 using namespace std;
 
+static string
+build_fqn(AttrTable *at, string fqn)
+{
+    // The strange behavior at the top level is because the top level of an
+    // AttrTable (i.e. the DAS) is anonymous. Another bad design... jhrg 2/8/06
+    if (!at || !at->get_parent() || at->get_name().empty())
+        return fqn;
+    else
+        return build_fqn(at->get_parent(), at->get_name() + string(".") + fqn);
+}
+
 class AttrTableTest:public TestFixture {
 private:
     AttrTable *at1;
@@ -99,6 +110,8 @@ public:
     CPPUNIT_TEST_SUITE( AttrTableTest );
 
     CPPUNIT_TEST(find_container_test);
+    CPPUNIT_TEST(get_parent_test);
+    CPPUNIT_TEST(recurrsive_find_test);
     CPPUNIT_TEST(find_test);
     CPPUNIT_TEST(copy_ctor);
     CPPUNIT_TEST(assignment);
@@ -115,6 +128,27 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
+    void recurrsive_find_test() {
+        AttrTable::Attr_iter *location;
+        AttrTable *a = at1->recurrsive_find("color", location);
+        CPPUNIT_ASSERT(a && a == cont_caa && a->get_name(*location) == "color");
+        
+        a = cont_caa->recurrsive_find("color", location);
+        CPPUNIT_ASSERT(a && a == cont_caa && a->get_name(*location) == "color");
+        
+        a = at1->recurrsive_find("ba", location);
+        CPPUNIT_ASSERT(a && a == cont_b && a->get_name(*location) == "ba");
+    }
+    
+    void get_parent_test() {
+        CPPUNIT_ASSERT(cont_caa->get_parent() == cont_ca);
+        CPPUNIT_ASSERT(cont_ca->get_parent() == cont_c);
+        CPPUNIT_ASSERT(cont_c->get_parent() == at1);
+        CPPUNIT_ASSERT(at1->get_parent() == 0);
+        CPPUNIT_ASSERT(build_fqn(cont_caa, "color") == "c.ca.caa.color");
+    }
+    
+    
     void find_container_test() {
 	AttrTable *tmp = at1->find_container("a");
 	CPPUNIT_ASSERT(tmp != 0);

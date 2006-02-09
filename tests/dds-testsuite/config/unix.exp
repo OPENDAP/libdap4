@@ -47,7 +47,7 @@ proc dds-test_load {} {
 }
 
 proc dds-test_exit {} {
-    send -raw ""
+#    send -raw ""
 }
 
 proc dds-test_version {} {

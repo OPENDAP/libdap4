@@ -108,7 +108,7 @@ struct gse_arg {
 
 
 /** <tt>parser_error()</tt> generates error messages for the various
-    parsers used by the DODS core. There are two versions of the
+    parsers used by libdap. There are two versions of the
     function, one which takes a <tt>const char *message</tt> and a
     <tt>const int line_num</tt> and writes the message and line number
     too stderr and a second which takes an additional <tt>parser_arg
@@ -121,6 +121,7 @@ struct gse_arg {
     additional line of information beyond what is in the string
     <tt>message</tt>.} 
 
+    @name parse_error
     @return void 
     @brief Generate error messages for the various parsers.
     */

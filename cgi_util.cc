@@ -105,7 +105,8 @@ do_version(const string &script_ver, const string &dataset_ver)
 {
     fprintf( stdout, "HTTP/1.0 200 OK%s", CRLF ) ;
     fprintf( stdout, "XDODS-Server: %s%s", DVR, CRLF ) ;
-    fprintf( stdout, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+    fprintf( stdout, "XOPeNDAP-Server: %s%s", DVR, CRLF ) ;
+    fprintf( stdout, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
     fprintf( stdout, "Content-Type: text/plain%s", CRLF ) ;
     fprintf( stdout, CRLF ) ;
     
@@ -367,7 +368,7 @@ ErrMsgT(const string &Msgt)
     const char *host_or_addr = getenv("REMOTE_HOST") ? getenv("REMOTE_HOST") :
 	getenv("REMOTE_ADDR") ? getenv("REMOTE_ADDR") : "local (a non-CGI run)"; 
     const char *script = getenv("SCRIPT_NAME") ? getenv("SCRIPT_NAME") : 
-	"DODS server"; 
+	"OPeNDAP server"; 
 
     cerr << "[" << TimStr << "] CGI: " << script << " failed for " 
 	 << host_or_addr << ": "<< Msgt << endl;
@@ -523,7 +524,8 @@ set_mime_text(FILE *out, ObjectType type, const string &ver,
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
     fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
-    fprintf( out, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+    fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
+    fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
 
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
@@ -608,7 +610,8 @@ set_mime_html(FILE *out, ObjectType type, const string &ver,
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
     fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
-    fprintf( out, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+    fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
+    fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
 
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
@@ -695,8 +698,9 @@ set_mime_binary(FILE *out, ObjectType type, const string &ver,
 {
     fprintf( out, "HTTP/1.0 200 OK%s", CRLF ) ;
     fprintf( out, "XDODS-Server: %s%s", ver.c_str(), CRLF ) ;
-    fprintf( out, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
-    
+    fprintf( out, "XOPeNDAP-Server: %s%s", ver.c_str(), CRLF ) ;
+    fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+   
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
 
@@ -766,11 +770,15 @@ set_mime_error(FILE *out, int code, const string &reason,
 	       const string &version)
 {
     fprintf( out, "HTTP/1.0 %d %s%s", code, reason.c_str(), CRLF ) ;
-    if (version == "")
+    if (version == "") {
       fprintf( out, "XDODS-Server: %s%s", DVR, CRLF ) ;
-    else
+      fprintf( out, "XOPeNDAP-Server: %s%s", DVR, CRLF ) ;
+    }
+    else {
       fprintf( out, "XDODS-Server: %s%s", version.c_str(), CRLF ) ;
-    fprintf( out, "XDAP-Protocol: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
+      fprintf( out, "XOPeNDAP-Server: %s%s", version.c_str(), CRLF ) ;
+    }
+    fprintf( out, "XDAP: %s%s", DAP_PROTOCOL_VERSION, CRLF ) ;
 
     const time_t t = time(0);
     fprintf( out, "Date: %s%s", rfc822_date(t).c_str(), CRLF ) ;
@@ -808,8 +816,7 @@ set_mime_error(ostream &os, int code, const string &reason,
 
 /** Use this function to create a response signalling that the target of a
     conditional get has not been modified relative to the condition given in
-    the request. For DODS this will have to be a date until the servers
-    support ETags
+    the request. This will have to be a date until the servers support ETags.
 
     @brief Send a `Not Modified' response.
     @param out Write the response to this FILE pointer. */
@@ -825,8 +832,7 @@ set_mime_not_modified(FILE *out)
 #if 0
 /** Use this function to create a response signalling that the target of a
     conditional get has not been modified relative to the condition given in
-    the request. For DODS this will have to be a date until the servers
-    support ETags
+    the request. This will have to be a date until the servers support ETags.
 
     @deprecated Using the C++ iostream class is deprecated. This also does not
     terminate lines correctly.
@@ -893,11 +899,6 @@ remove_mime_header(FILE *in)
 /** Look in the CGI directory (given by \c cgi) for a per-cgi HTML* file.
     Also look for a dataset-specific HTML* document. Catenate the documents
     and return them in a single String variable.
-
-    The \c cgi path must include the `API' prefix at the end of the path. For
-    example, for the OPeNDAP server for version 3.4 on my machine is at
-    \c /home/jimg/DODS-3.4/stc/nph-dods. The \c cgi path is \c
-    .../nph-dods/nc. 
 
     Similarly, to locate the dataset-specific HTML* file it catenates `.html'
     to \c name, where \c name is the name of the dataset. If the filename

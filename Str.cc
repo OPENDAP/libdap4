@@ -124,7 +124,7 @@ Str::serialize(const string &dataset, DDS &dds, XDR *sink, bool ce_eval)
     if (!xdr_str(sink, _buf))
 	throw Error(
 "Network I/O Error. Could not send string data.\n\
-This may be due to a bug in DODS, on the server or a\n\
+This may be due to a bug in libdap, on the server or a\n\
 problem with the network connection.");
 
     DBG(cerr << "Exiting: buf = " << _buf << endl);
@@ -140,7 +140,7 @@ Str::deserialize(XDR *source, DDS *, bool)
     if (xdr_str(source, _buf) != 1)
 	throw Error(
 "Network I/O Error. Could not read string data. This may be due to a\n\
-bug in DODS or a problem with the network connection.");
+bug in libdap or a problem with the network connection.");
 
     return false;
 }

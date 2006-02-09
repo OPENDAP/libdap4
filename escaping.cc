@@ -32,19 +32,19 @@
 // Author: Todd Karakashian, NASA/Jet Propulsion Laboratory
 //         Todd.K.Karakashian@jpl.nasa.gov
 //
-// $RCSfile: escaping.cc,v $ - Miscellaneous routines for DODS HDF server
+// $RCSfile: escaping.cc,v $ - Miscellaneous routines for OPeNDAP HDF server
 //
 // These two routines are for escaping/unescaping strings that are identifiers
-// in DODS
+// in DAP2
 // id2www() -- escape (using WWW hex codes) non-allowable characters in a
-// DODS identifier
+// DAP2 identifier
 // www2id() -- given an WWW hexcode escaped identifier, restore it
 // 
 // These two routines are for escaping/unescaping strings storing attribute
 // values.  They use traditional octal escapes (\nnn) because they are
 // intended to be viewed by a user
 // escattr() -- escape (using traditional octal backslash) non-allowable
-// characters in the value of a DODS attribute
+// characters in the value of a DAP2 attribute
 // unescattr() -- given an octally escaped string, restore it
 // 
 // These are routines used by the above, not intended to be called directly:
@@ -120,7 +120,7 @@ unoctstring(string s)
     return string(tmp_str);
 }
 
-/** Replace characters that are not allowed in DODS identifiers.
+/** Replace characters that are not allowed in DAP2 identifiers.
 
     @param in The string in which to replace characters.
     @param allowable The set of characters that are allowed in a URI.

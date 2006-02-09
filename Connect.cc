@@ -75,17 +75,18 @@ Connect::process_data(DataDDS &data, Response *rs)
     
     DBG(cerr << "Entring process_data: d_stream = " << rs << endl);
     switch (rs->get_type()) {
-      case dods_error:
-	if (!_error.parse(rs->get_stream()))
+      case dods_error: {
+        Error e;
+	if (!e.parse(rs->get_stream()))
 	    throw InternalErr(__FILE__, __LINE__,
 	      "Could not parse the Error object returned by the server!");
-	throw _error;
-
+	throw e;
+      }
+      
       case web_error:
 	// Web errors (those reported in the return document's MIME header)
 	// are processed by the WWW library.
 	throw InternalErr(__FILE__, __LINE__, "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
-	return;
 
       case dods_data:
       default: {
@@ -155,6 +156,11 @@ get_type(const string &value)
 // may no longer be the case. 5/31/99 jhrg
 
 /** Use when you cannot use libcurl.
+ * 
+    @note This method tests for MIME headers with lines terminated by CRLF
+    (\r\n) and Newlines (\n). In either case, the line terminators are removed
+    before each header is processed.
+    
     @param data_source Read from this stream.
     @param rs Value/Result parameter. Dump version and type information here.
     */ 
@@ -162,11 +168,19 @@ void
 Connect::parse_mime(FILE *data_source, Response *rs)
 {
     rs->set_version("dods/0.0"); // initial value; for backward compat.
+    rs->set_protocol("2.0");
+    
+    // If the first line does not start with HTTP, XDODS or XDAP, assume 
+    // there's no MIME header here and return without reading anymore
 
     char line[256];
     fgets(line, 255, data_source);
-    line[strlen(line) - 1] = '\0';	// remove the newline
 
+    int slen = strlen(line);
+    line[slen - 1] = '\0';	// remove the newline
+    if (line[slen - 2] == '\r') // ...and the preceding carriage retrurn
+        line[slen - 2] = '\0';
+        
     while (line[0] != '\0') {
 	char h[256], v[256];
 	sscanf(line, "%s %s\n", h, v);
@@ -178,10 +192,14 @@ Connect::parse_mime(FILE *data_source, Response *rs)
 	if (header == "content-description:") {
 	    DBG(cout << header << ": " << value << endl);
 	    rs->set_type(get_type(value));
-	} else if (header == "xdods-server:") {
+	} else if (header == "xdods-server:"
+                   && rs->get_version() == "dods/0.0") {
 	    DBG(cout << header << ": " << value << endl);
 	    rs->set_version(value);
-        } else if (header == "xdap-protcol:") {
+        } else if (header == "xopendap-server:") {
+            DBG(cout << header << ": " << value << endl);
+            rs->set_version(value);
+        } else if (header == "xdap:") {
             DBG(cout << header << ": " << value << endl);
             rs->set_protocol(value);
 	} else if (rs->get_version() == "dods/0.0" && header == "server:") {
@@ -190,7 +208,10 @@ Connect::parse_mime(FILE *data_source, Response *rs)
 	}
 
 	fgets(line, 255, data_source);
-	line[strlen(line) - 1] = '\0';
+        slen = strlen(line);
+	line[slen - 1] = '\0';
+        if (line[slen - 2] == '\r')
+            line[slen - 2] = '\0';
     }
 }
 
@@ -242,12 +263,12 @@ Connect::Connect(const string &n, string uname, string password)
 
 	d_http = 0;
 	_URL = "";
-	_local = true;		// local in this case means non-DODS
+	_local = true;		// local in this case means non-DAP
     }
 
     set_credentials(uname, password);
 }
-
+#if 0
 /** The Connect constructor requires a <tt>name</tt>, which is the URL to
     which the connection is to be made. 
 
@@ -306,13 +327,14 @@ Connect::Connect(const string &n, bool /* www_verbose_errors; unused */,
 
 	d_http = 0;
 	_URL = "";
-	_local = true;		// local in this case means non-DODS
+	_local = true;		// local in this case means non-DAP
     }
 
     set_accept_deflate(accept_deflate);
 
     set_credentials(uname, password);
 }
+#endif
 
 Connect::~Connect()
 {
@@ -385,7 +407,7 @@ Connect::request_protocol() throw(Error, InternalErr)
 }
 
 /** Reads the DAS corresponding to the dataset in the Connect
-    object's URL. Although DODS does not support usig CEs with DAS
+    object's URL. Although DAP does not support usig CEs with DAS
     requests, if present in the Connect object's instance, they will be
     escaped and passed as the query string of the request.
 
@@ -412,12 +434,13 @@ Connect::request_das(DAS &das) throw(Error, InternalErr)
 
     switch (rs->get_type()) {
       case dods_error: {
-	  if (!_error.parse(rs->get_stream())) {
+          Error e;
+	  if (!e.parse(rs->get_stream())) {
 	      throw InternalErr(__FILE__, __LINE__, 
 			"Could not parse error returned from server.");
 	      break;
 	  }
-	  throw _error;
+	  throw e;
 	  break;
       }
 
@@ -454,7 +477,7 @@ configured, or that the URL has changed.");
 }
 
 /** Reads the DAS corresponding to the dataset in the Connect
-    object's URL. Although DODS does not support usig CEs with DAS
+    object's URL. Although DAP does not support usig CEs with DAS
     requests, if present in the Connect object's instance, they will be
     escaped and passed as the query string of the request.
 
@@ -481,12 +504,13 @@ Connect::request_das_url(DAS &das) throw(Error, InternalErr)
 
     switch (rs->get_type()) {
       case dods_error: {
-	  if (!_error.parse(rs->get_stream())) {
+        Error e;
+	  if (!e.parse(rs->get_stream())) {
 	      throw InternalErr(__FILE__, __LINE__, 
 			"Could not parse error returned from server.");
 	      break;
 	  }
-	  throw _error;
+	  throw e;
 	  break;
       }
 
@@ -555,12 +579,13 @@ Connect::request_dds(DDS &dds, string expr) throw(Error, InternalErr)
     
     switch (rs->get_type()) {
       case dods_error: {
-	  if (!_error.parse(rs->get_stream())) {
+        Error e;
+	  if (!e.parse(rs->get_stream())) {
 	      throw InternalErr(__FILE__, __LINE__, 
 			"Could not parse error returned from server.");
 	      break;
 	  }
-	  throw _error;
+	  throw e;
 	  break;
       }
 
@@ -610,8 +635,7 @@ configured, or that the URL has changed.");
     object is built.
 
     @brief Get the DDS from a server.
-    @param dds Result.
-    @param expr Send this constraint expression to the server. */
+    @param dds Result. */
 void
 Connect::request_dds_url(DDS &dds) throw(Error, InternalErr)
 {
@@ -630,12 +654,13 @@ Connect::request_dds_url(DDS &dds) throw(Error, InternalErr)
     
     switch (rs->get_type()) {
       case dods_error: {
-	  if (!_error.parse(rs->get_stream())) {
+        Error e;
+	  if (!e.parse(rs->get_stream())) {
 	      throw InternalErr(__FILE__, __LINE__, 
 			"Could not parse error returned from server.");
 	      break;
 	  }
-	  throw _error;
+	  throw e;
 	  break;
       }
 
@@ -723,8 +748,7 @@ Connect::request_data(DataDDS &data, string expr) throw(Error, InternalErr)
     object is built.
     
     @brief Get the DAS from a server.
-    @param data Result.
-    @param expr Send this constraint expression to the server. */
+    @param data Result. */
 void
 Connect::request_data_url(DataDDS &data) throw(Error, InternalErr)
 {
@@ -767,7 +791,7 @@ Connect::read_data(DataDDS &data, FILE *data_source) throw(Error, InternalErr)
 
     try {
 	rs = new Response(data_source);
-	// Read from data_source and parse the MIME headers specific to DODS.
+	// Read from data_source and parse the MIME headers specific to DAP2.
 	parse_mime(data_source, rs);
     
         d_version = rs->get_version();
@@ -810,7 +834,7 @@ Connect::URL(bool ce)
 {
     if (_local)
 	throw InternalErr(__FILE__, __LINE__, 
-		  "URL(): This call is only valid for a DODS data source.");
+		  "URL(): This call is only valid for a DAP2 data source.");
 
     if (ce)
 	return _URL + "?" + _proj + _sel;
@@ -831,7 +855,7 @@ Connect::CE()
 {
     if (_local)
 	throw InternalErr(__FILE__, __LINE__, 
-		  "CE(): This call is only valid for a DODS data source.");
+		  "CE(): This call is only valid for a DAP2 data source.");
 
     return _proj + _sel;
 }
@@ -882,12 +906,13 @@ Connect::is_cache_enabled()
     return status;
 }
 
+#if 0
 // #ifdef DEFAULT_BASETYPE_FACTORY
 /** @name Remove these...
     All of these are deprecated and will be removed in a future version of
     this code. */
 //@{
-/** All DODS datasets define a Data Attribute Structure (DAS), to
+/** All DAP2 datasets define a Data Attribute Structure (DAS), to
     hold a variety of information about the variables in a
     dataset. This function returns the DAS for the dataset indicated
     by this Connect object.
@@ -903,12 +928,12 @@ Connect::das()
 {
     if (_local)
 	throw InternalErr(__FILE__, __LINE__,
-			  "Cannot access DAS for a non-DODS data source.");
+			  "Cannot access DAS for a non-DAP2 data source.");
 
     return _das;
 }
 
-/** All DODS datasets define a Data Descriptor Structure (DDS), to
+/** All DAP2 datasets define a Data Descriptor Structure (DDS), to
     hold the data type of each of the variables in a dataset.  This
     function returns the DDS for the dataset indicated by this
     Connect object.
@@ -924,12 +949,12 @@ Connect::dds()
 {
     if (_local)
 	throw InternalErr(__FILE__, __LINE__,
-			  "Cannot access DDS for a non-DODS data source.");
+			  "Cannot access DDS for a non-DAP2 data source.");
 
     return _dds;
 }
 
-/** The DODS server uses Error objects to signal error conditions to
+/** DAP2 uses Error objects to signal error conditions to
     the client.  If an error condition has occurred while fetching a
     URL, the Connect object will contain an Error object with
     information about that error.  The Error object may also contain
@@ -952,6 +977,7 @@ Connect::error()
 }
 //@}
 // #endif
+#endif
 
 // $Log: Connect.cc,v $
 // Revision 1.134  2005/04/07 22:32:47  jimg

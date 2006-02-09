@@ -29,7 +29,7 @@
 // Authors:
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
-// Limits for DODS. Use these *instead* of <limits.h> since DODS needs to see
+// Limits for DAP2. Use these *instead* of <limits.h> since DAP2 needs to see
 // the same values on all machines.
 
 #ifndef _dods_limits_h

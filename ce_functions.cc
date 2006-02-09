@@ -72,7 +72,7 @@ extract_string_argument(BaseType *arg)
 {
     if (arg->type() != dods_str_c)
 	throw Error(malformed_expr, 
-		    "The function requires a DODS string-type argument.");
+		    "The function requires a DAP string-type argument.");
     
     string *sp = 0;
     arg->buf2val((void **)&sp);

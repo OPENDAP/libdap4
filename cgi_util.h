@@ -45,12 +45,12 @@
 #include "EncodingType.h"
 
 /** The CGI utilities include a variety of functions useful to
-    programmers developing DODS CGI filter programs. However, before jumping
+    programmers developing OPeNDAP CGI filter programs. However, before jumping
     in and using these, look at the class DODSFilter. Always choose to use
     that class over these functions if you can.
 
     @name CGI Utilities
-    @brief A collection of useful functions for writing DODS servers.
+    @brief A collection of useful functions for writing OPeNDAP servers.
     @see DODSFilter
     */
 

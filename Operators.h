@@ -137,11 +137,11 @@ template<class T1, class T2> class StrCmp {
 };
 
 /** This template function is used to compare two values of two instances of
-    the DODS simple types (Byte, ..., Str). The function does not take the
-    DODS objects as arguments; the caller must access the values of those
+    the DAP2 simple types (Byte, ..., Str). The function does not take the
+    DAP2 objects as arguments; the caller must access the values of those
     objects and pass them to this function. The reason for this is that all
     the possible functions that could be generated from this template would
-    have to be explicitly listed as friend functions in each of the DODS
+    have to be explicitly listed as friend functions in each of the DAP2
     simple type classes. In the current implementation, only the simple type
     classes must be friends - to see why, look at Byte::ops and note that it
     accesses the <tt>_buf</tt> member of Int16, ..., Float64 and thus must be a

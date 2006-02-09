@@ -43,7 +43,7 @@
 #endif
 
 #include <vector>
-#include "Pix.h"
+//#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -64,7 +64,7 @@
     types can be simple or compound types, and can include other
     Structures. 
 
-    The DODS structure is defined as a singly-linked list.  This means
+    The DAP2 structure is defined as a singly-linked list.  This means
     that Structure elements can be accessed either by name, with the
     <tt>var()</tt> function, or by their position in the list, either with
     the overloaded version of <tt>var()</tt>, or the combination of the
@@ -72,7 +72,7 @@
 
     The <tt>val2buf()</tt> and <tt>buf2val()</tt> functions only
     return the size of 
-    the structure.  To read parts of a DODS Structure into an
+    the structure.  To read parts of a DAP2 Structure into an
     application program, use the <tt>buf2val()</tt> function of the element
     of the Structure in question. 
 
@@ -97,8 +97,8 @@ private:
     std::vector<BaseType *> _vars;
 #endif
     
-    BaseType *leaf_match(const string &name, btp_stack *s = 0);
-    BaseType *exact_match(const string &name, btp_stack *s = 0);
+    BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
+    BaseType *m_exact_match(const string &name, btp_stack *s = 0);
 
 protected:
     void _duplicate(const Structure &s);
@@ -137,7 +137,7 @@ public:
     virtual unsigned int val2buf(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
-    virtual BaseType *var(const string &n, bool exact = true,
+    virtual BaseType *var(const string &name, bool exact_match = true,
 			  btp_stack *s = 0);
 
     virtual BaseType *var(const string &n, btp_stack &s);
@@ -377,7 +377,7 @@ public:
  * Merged 3.1.8
  *
  * Revision 1.32.6.1  2000/08/02 21:10:07  jimg
- * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * Removed the header config.h. If this file uses the dods typedefs for
  * cardinal datatypes, then it gets those definitions from the header
  * dods-datatypes.h.
  *
@@ -483,7 +483,7 @@ public:
  *
  * Revision 1.11  1995/05/10  13:45:32  jimg
  * Changed the name of the configuration header file from `config.h' to
- * `config_dap.h' so that other libraries could have header files which were
+ * `config.h' so that other libraries could have header files which were
  * installed in the DODS include directory without overwriting this one. Each
  * config header should follow the convention config_<name>.h.
  *

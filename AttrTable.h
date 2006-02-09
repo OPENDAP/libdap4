@@ -38,7 +38,7 @@
 #include <string>
 #include <vector>
 
-#include <Pix.h>
+//#include <Pix.h>
 
 #ifndef _error_h
 #include "Error.h"
@@ -46,7 +46,6 @@
 
 using std::vector;
 using std::string;
-// using std::ostream;
 using std::vector;
 
 /** <b>AttrType</b> identifies the data types which may appear in an
@@ -219,11 +218,13 @@ public:
 
 private:
     string d_name;
+    AttrTable *d_parent;
     std::vector<entry *> attr_map;
-
+    
+#if 0
     Pix simple_find(const string &target);
-
-    Attr_iter simple_find( const string &target, bool unused );
+#endif
+    Attr_iter simple_find(const string &target);
     AttrTable *simple_find_container(const string &target);
 
     void delete_attr_table();
@@ -252,6 +253,12 @@ public:
     unsigned int get_size() const;
     string get_name() const;
     void set_name(const string &n);
+    /** Return a pointer to the AttrTable which holds this table (aka, its
+        parent. If this AttrTable has no parent, this returns null.
+        @return A pointer to the parent AttrTable. */
+    AttrTable *get_parent() const {
+        return d_parent;
+    }
 
     unsigned int append_attr(const string &name, const string &type, 
 			     const string &value) throw (Error);
@@ -264,7 +271,8 @@ public:
 
     void find(const string &target, AttrTable **at, Attr_iter *iter);
     AttrTable *find_container(const string &target);
-
+    AttrTable *recurrsive_find(const string &target, Attr_iter *location);
+    
     AttrTable *get_attr_table(const string &name);
     AttrTable *get_attr_table(const char *name);
 
@@ -284,7 +292,7 @@ public:
     vector<string> *get_attr_vector(const char *name);
 
     void del_attr(const string &name, int i = -1);
-
+#if 0
     Pix first_attr();
     void next_attr(Pix p);
     AttrTable::entry *attr(Pix p);
@@ -297,6 +305,7 @@ public:
     string get_attr(Pix p, unsigned int i = 0);
     vector<string> *get_attr_vector(Pix p);
     Pix find(const string &target, AttrTable **at);
+#endif
 
     Attr_iter attr_begin();
     Attr_iter attr_end();
@@ -487,7 +496,7 @@ public:
  * Merged 3.1.8
  *
  * Revision 1.27.6.4  2000/08/02 21:10:07  jimg
- * Removed the header config_dap.h. If this file uses the dods typedefs for
+ * Removed the header config.h. If this file uses the dods typedefs for
  * cardinal datatypes, then it gets those definitions from the header
  * dods-datatypes.h.
  *
@@ -571,7 +580,7 @@ public:
  *
  * Revision 1.11  1995/05/10  13:45:05  jimg
  * Changed the name of the configuration header file from `config.h' to
- * `config_dap.h' so that other libraries could have header files which were
+ * `config.h' so that other libraries could have header files which were
  * installed in the DODS include directory without overwriting this one. Each
  * config header should follow the convention config_<name>.h.
  *

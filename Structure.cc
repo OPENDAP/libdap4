@@ -209,7 +209,7 @@ Structure::set_leaf_sequence(int level)
 
 /** Adds an element to a Structure. 
 
-    @param bt A pointer to the DODS type variable to add to this Structure.
+    @param bt A pointer to the DAP2 type variable to add to this Structure.
     @param part defaults to nil */
 void 
 Structure::add_var(BaseType *bt, Part)
@@ -302,14 +302,14 @@ Structure::buf2val(void **)
 // the variable to be found. If S is not null, push the path to NAME on the
 // statck.
 BaseType *
-Structure::var(const string &n, bool exact, btp_stack *s)
+Structure::var(const string &name, bool exact_match, btp_stack *s)
 {
-    string name = www2id(n);
+    string n = www2id(name);
 
-    if (exact)
-	return exact_match(name, s);
+    if (exact_match)
+	return m_exact_match(n, s);
     else
-	return leaf_match(name, s);
+	return m_leaf_match(n, s);
 }
 
 // Get rid of this method ASAP.
@@ -319,17 +319,17 @@ Structure::var(const string &n, btp_stack &s)
 {
     string name = www2id(n);
 
-    BaseType *btp = exact_match(name, &s);
+    BaseType *btp = m_exact_match(name, &s);
     if (btp)
 	return btp;
 
-    return leaf_match(name, &s);
+    return m_leaf_match(name, &s);
 }
 
 // If S is not null, push the path of the depth-first search for a
 // leaf-node called NAME onto S.
 BaseType *
-Structure::leaf_match(const string &name, btp_stack *s)
+Structure::m_leaf_match(const string &name, btp_stack *s)
 {
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
     {
@@ -357,7 +357,7 @@ Structure::leaf_match(const string &name, btp_stack *s)
 
 /** Breadth-first search for NAME. If NAME contains one or more dots (.) */
 BaseType *
-Structure::exact_match(const string &name, btp_stack *s)
+Structure::m_exact_match(const string &name, btp_stack *s)
 {
     for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
     {

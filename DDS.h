@@ -44,7 +44,7 @@
 #include <string>
 #include <vector>
 
-#include "Pix.h"
+//#include "Pix.h"
 
 #ifndef _basetype_h
 #include "BaseType.h"
@@ -79,11 +79,11 @@ using std::cout;
 int get_sinks(FILE *out, bool compress, FILE **comp_sink, XDR **xdr_sink);
 void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
 
-/** The DODS Data Descriptor Object (DDS) is a data structure used by
-    the DODS software to describe datasets and subsets of those
+/** The DAP2 Data Descriptor Object (DDS) is a data structure used by
+    the DAP2 software to describe datasets and subsets of those
     datasets.  The DDS may be thought of as the declarations for the
-    data structures that will hold data requested by some DODS client.
-    Part of the job of a DODS server is to build a suitable DDS for a
+    data structures that will hold data requested by some DAP2 client.
+    Part of the job of a DAP2 server is to build a suitable DDS for a
     specific dataset and to send it to the client.  Depending on the
     data access API in use, this may involve reading part of the
     dataset and inferring the DDS.  Other APIs may require the server
@@ -91,7 +91,7 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
 
     On the server side, in addition to the data declarations, the DDS
     holds the clauses of any constraint expression that may have
-    accompanied the data request from the DODS client.  The DDS object
+    accompanied the data request from the DAP2 client.  The DDS object
     includes methods for modifying the DDS according to the given
     constraint expression.  It also has methods for directly modifying
     a DDS, and for transmitting it from a server to a client.
@@ -107,10 +107,10 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
     DataDDS when data values are bound to the variables it defines.
 
     For a complete description of the DDS layout and protocol, please
-    refer to <i>The DODS User Guide</i>. 
+    refer to <i>The OPeNDAP User Guide</i>. 
     
     The DDS has an ASCII representation, which is what is transmitted
-    from a DODS server to a client.  Here is the DDS representation of
+    from a DAP2 server to a client.  Here is the DDS representation of
     an entire dataset containing a time series of worldwide grids of
     sea surface temperatures:
 
@@ -156,8 +156,8 @@ void clean_sinks(int childpid, bool compress, XDR *xdr_sink, FILE *comp_sink);
     part of the <tt>sst</tt> Grid object.  They can be requested by
     themselves or as part of that larger object.
 
-    See the <i>The DODS User Guide</i>, or the documentation of the
-    BaseType class for descriptions of the DODS data types.
+    See the <i>The OPeNDAP User Guide</i>, or the documentation of the
+    BaseType class for descriptions of the DAP2 data types.
 
     @note Update: I removed the DEFAULT_BASETYPE_FACTORY switch because it
     caused more confusion than it avoided. See Trac #130. jhrg
@@ -196,8 +196,9 @@ private:
     };
 
     BaseTypeFactory *d_factory;
+#if 0
     bool d_local_basetype_factory; // should the dtor free d_factory?
-
+#endif
     string name;		// The dataset name
 
     string _filename;		// File name (or other OS identifier) for
@@ -249,7 +250,7 @@ public:
 
     DDS(BaseTypeFactory *factory, const string &n = "");
     // #ifdef DEFAULT_BASETYPE_FACTORY
-    DDS(const string &n = "");
+    //DDS(const string &n = "");
     // #endif
 
     DDS(const DDS &dds);
@@ -274,11 +275,17 @@ public:
         @param factory The factory this DDS should use. Caller must free
         factory when done with this DDS.
         @see BaseTypeFactory */
-    void set_factory(BaseTypeFactory *factory) {
+    BaseTypeFactory *set_factory(BaseTypeFactory *factory) {
+#if 0
         if (d_local_basetype_factory)
             delete d_factory;
+#endif
+        BaseTypeFactory *t = d_factory;
 	d_factory = factory;
+        return t;
+#if 0
 	d_local_basetype_factory = false; 
+#endif
     }
     
     virtual AttrTable &get_attr_table();
@@ -295,10 +302,12 @@ public:
     BaseType *var(const string &n, btp_stack *s = 0);
     BaseType *var(const char *n, btp_stack *s = 0);
 
+#if 0
     BaseType *var(Pix p);
  
     Pix first_var();
     void next_var(Pix p);
+#endif
     int num_var();
 
     /// Return an iteraor
@@ -331,10 +340,12 @@ public:
     bool find_function(const string &name, btp_func *f) const;
     bool find_function(const string &name, proj_func *f) const;
 
+#if 0
     Pix first_clause();
     void next_clause(Pix p);
     Clause *clause(Pix p);
     bool clause_value(Pix p, const string &dataset);
+#endif
 
     void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
     void append_clause(bool_func func, rvalue_list *args);
@@ -586,8 +597,8 @@ public:
 //
 // Revision 1.34.2.4  2000/08/02 20:56:36  jimg
 // Removed the symbol DVR from the send method's declaration. That removes the
-// only dependence in this file on config_dap.h. Clients of this class can now
-// included this header without also including config_dap.h.
+// only dependence in this file on config.h. Clients of this class can now
+// included this header without also including config.h.
 //
 // Revision 1.34.2.3  2000/07/19 19:01:56  jimg
 // I made the dotr virtual! This was causing problems when request_data

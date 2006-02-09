@@ -1,4 +1,6 @@
 
+Version 3.6
+
 These are the methods. For some, I've listed only the most general version
 since all the more speciifc versions were also removed. For example, 
 BaseType::print_val(...) was removed, therefore so was Int32::print_val, ...
@@ -64,3 +66,123 @@ void set_mime_error(ostream &os, int code = 404,
 		    const string &version = "");
 void set_mime_not_modified(ostream &os);
 
+*** End of the iostream methods/functions
+
+Methods removed from Connect 
+
+void *gui();
+bool request_dds(bool, const string &) throw(Error, InternalErr);
+DDS *request_data(string expr, bool, bool, const string &) 
+        throw(Error, InternalErr);
+bool request_das(bool,  const string &) throw(Error, InternalErr);
+DDS *read_data(FILE *data_source, bool, bool) throw(Error, InternalErr);
+DAS &das();
+DDS &dds();
+Error &error();
+
+Pix methods
+
+The file Pix.h has been removed, along with the *IterAdapter.cc/h class files
+
+void Array::add_constraint(Pix p, int start, int stride, int stop);
+Pix Array::first_dim();
+void Array::next_dim(Pix p);
+int Array::dimension_size(Pix p, bool constrained = false);
+int Array::dimension_start(Pix p, bool constrained = false);
+int Array::dimension_stop(Pix p, bool constrained = false);
+int Array::dimension_stride(Pix p, bool constrained = false);
+
+Pix AttrTable::simple_find(const string &target);
+Pix AttrTable::first_attr();
+void AttrTable::next_attr(Pix p);
+AttrTable::entry *AttrTable::attr(Pix p);
+string AttrTable::get_name(Pix p);
+bool AttrTable::is_container(Pix p);
+AttrTable *AttrTable::get_attr_table(Pix p);
+string AttrTable::get_type(Pix p);
+AttrType AttrTable::get_attr_type(Pix p);
+unsigned int AttrTable::get_attr_num(Pix p);
+string AttrTable::get_attr(Pix p, unsigned int i = 0);
+vector<string> *AttrTable::get_attr_vector(Pix p);
+Pix AttrTable::find(const string &target, AttrTable **at);
+
+virtual Pix Constructor::first_var();
+virtual void Constructor::next_var(Pix p);
+virtual BaseType *Constructor::var(Pix p);
+
+Pix DAS::first_var();
+void DAS::next_var(Pix p);
+string DAS::get_name(Pix p);
+AttrTable *DAS::get_table(Pix p);
+
+BaseType *DDS::var(Pix p);
+Pix DDS::first_var();
+void DDS::next_var(Pix p);
+Pix DDS::first_clause();
+void DDS::next_clause(Pix p);
+Clause *DDS::clause(Pix p);
+bool DDS::clause_value(Pix p, const string &dataset);
+
+Pix Grid::first_map_var();
+void Grid::next_map_var(Pix p);
+BaseType *Grid::map_var(Pix p);
+
+Pix Sequence::first_var();
+void Sequence::next_var(Pix p);
+BaseType *Sequence::var(Pix p);
+
+Pix Structure::first_var();
+void Structure::next_var(Pix p);
+BaseType *Structure::var(Pix p);
+
+Some examples of STL iterator versus Pix code:
+
+For FFGrid.cc:
+    // read maps elements
+    Grid::Map_iter i = map_begin();
+    while (i != map_end())
+        (*i++)->read(dataset);
+#if 0        
+    for (Pix p = first_map_var(); p; next_map_var(p)) {
+	map_var(p)->read(dataset);
+    }
+#endif
+
+From FFArray.cc:
+    int id = 0;
+    long nels = 1;
+    *has_stride = false;
+
+    Array:Dim_iter i = dim_begin();
+    while (i != dim_end()) {
+        start = (long) dimension_start(i, true); 
+        stride = (long) dimension_stride(i, true);
+        stop = (long) dimension_stop(i, true);
+        string dimname = dimension_name(i);
+#if 0
+    for (Pix p = first_dim(); p ; next_dim(p), id++) {
+	start = (long) dimension_start(p, true); 
+	stride = (long) dimension_stride(p, true);
+	stop = (long) dimension_stop(p, true);
+	string dimname = dimension_name(p);
+#endif
+	// Check for empty constraint
+	if(start+stop+stride == 0)
+	    return -1;
+	
+	dim_nms[id]= dimname;
+	//	(void) strcpy(dim_nms[id], dimname.c_str());
+	
+	cor[id]= start;
+	step[id]= stride;
+	edg[id]= ((stop - start)/stride) + 1; // count of elements
+	
+	nels *= edg[id];      // total number of values for variable
+	
+	if (stride != 1)
+	    *has_stride = true;
+
+        ++id;
+        ++i;
+    }
+    return nels;

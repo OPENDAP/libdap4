@@ -46,13 +46,13 @@
 #endif
 
 
-/** The InternalErr class is used to signal that somewhere inside DODS a
+/** The InternalErr class is used to signal that somewhere inside libdap a
     software fault was found. This class wraps the message text in some
-    boiler plate that asks the error be reported to us (DODS support).
+    boiler plate that asks the error be reported to us (tech support).
 
     NB: This class Adds some text to the message and might, in the future,
     hold information not also held in Error. However, all Error objects
-    thrown on the server-side of DODS that cannot be resolved (and that's all
+    thrown on the server-side of libdap that cannot be resolved (and that's all
     of them for now, 5/3/99 jhrg) will be sent to the client-side <i>using
     Error objects</i>. That is, the information recorded in an InternalErr
     object will be sent by calling the <tt>print(...)</tt> mfunc of Error.

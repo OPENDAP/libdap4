@@ -13,7 +13,7 @@
 // #define DODS_DEBUG
 
 #include "DDS.h"
-#include "Pix.h"
+//#include "Pix.h"
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestStr.h"
@@ -78,7 +78,7 @@ public:
 
     void ddsT_test()
     {
-	DDS dds( "TestDDS" ) ;
+	DDS dds( factory, "TestDDS" ) ;
 
 	string dsn = dds.get_dataset_name() ;
 	CPPUNIT_ASSERT( dsn == "TestDDS" ) ;
@@ -157,6 +157,7 @@ public:
 	vs.push_back( "var7" ) ;
 	vs.push_back( "var8" ) ;
 
+#if 0
 	Pix p = dds.first_var() ;
 	vs_citer vsc = vs.begin() ;
 	for( ; p && vsc != vs.end(); dds.next_var( p ), vsc++ )
@@ -173,9 +174,10 @@ public:
 	{
 	    CPPUNIT_FAIL( "Too few vars" ) ;
 	}
+#endif
 
 	DDS::Vars_iter dvsc = dds.var_begin() ;
-	vsc = vs.begin() ;
+	vs_citer vsc = vs.begin() ;
 	for( ; dvsc != dds.var_end() && vsc != vs.end(); dvsc++, vsc++ )
 	{
 	    CPPUNIT_ASSERT( (*dvsc)->name() == *vsc ) ;
@@ -199,6 +201,20 @@ public:
 		break ;
 	    }
 	}
+
+#if 1
+        dvsc = dds.var_begin() ;
+        vsc = vs.begin() ;
+        for( ; dvsc != dds.var_end() && vsc != vs.end(); dvsc++, vsc++ )
+        {
+            if( (*dvsc)->name() == "var2" )
+            {
+                DDS::Vars_iter &dvsi = (DDS::Vars_iter &)dvsc ;
+                dds.del_var( dvsi ) ;
+            }
+            CPPUNIT_ASSERT( (*dvsc)->name() == *vsc ) ;
+        }
+#else
 	p = dds.first_var() ;
 	vsc = vs.begin() ;
 	for( ; p && vsc != vs.end(); dds.next_var( p ), vsc++ )
@@ -209,7 +225,7 @@ public:
 	    }
 	    CPPUNIT_ASSERT( dds.var(p)->name() == *vsc ) ;
 	}
-
+#endif
 	nv = dds.num_var() ;
 	CPPUNIT_ASSERT( nv == 7 ) ;
 	if( nv != 7 )

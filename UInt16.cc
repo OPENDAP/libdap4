@@ -110,7 +110,7 @@ UInt16::serialize(const string &dataset, DDS &dds, XDR *sink,
     if (!XDR_UINT16(sink, &_buf))
 	throw Error(
 "Network I/O Error. Could not send uint 16 data. This may be due to a\n\
-bug in DODS or a problem with the network connection.");
+bug in libdap or a problem with the network connection.");
 
     return true;
 }
@@ -121,7 +121,7 @@ UInt16::deserialize(XDR *source, DDS *, bool)
     if (!XDR_UINT16(source, &_buf))
 	throw Error(
 "Network I/O Error. Could not read uint 16 data. This may be due to a\n\
-bug in DODS or a problem with the network connection.");
+bug in libdap or a problem with the network connection.");
 
     return false;
 }

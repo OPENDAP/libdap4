@@ -34,7 +34,7 @@
 // jhrg 1/12/95
 
 
-#include "config_dap.h"
+#include "config.h"
 
 #include <math.h>
 
@@ -183,7 +183,7 @@ TestFloat64::read(const string &)
 // Merged 3.1.8
 //
 // Revision 1.14.6.1  2000/08/02 20:58:26  jimg
-// Included the header config_dap.h in this file. config_dap.h has been
+// Included the header config.h in this file. config.h has been
 // removed from all of the DODS header files.
 //
 // Revision 1.14.14.1  2000/02/17 05:03:14  jimg

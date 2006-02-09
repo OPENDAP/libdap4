@@ -44,7 +44,7 @@ string octstring(unsigned char val);
 string unoctstring(string s);
 
 // The original set of allowed characeters was: [0-9a-zA-Z_%]
-// The characters accepted in DODS ids: [-+a-zA-Z0-9_/%.\\#*]; everything
+// The characters accepted in DAP2 ids: [-+a-zA-Z0-9_/%.\\#*]; everything
 // else must be escaped.  Note that for some inscrutable reason, we've been
 // escaping '*'.
 

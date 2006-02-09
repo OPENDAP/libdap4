@@ -41,19 +41,21 @@ using namespace std;
 class DDSTest : public TestFixture {
 private:
     DDS *dds1, *dds2;
-
+    BaseTypeFactory *factory;
 public: 
     DDSTest() {}
     ~DDSTest() {}
 
     void setUp() {
-	dds1 = new DDS("test1");
-	dds2 = new DDS("test2");
+        factory = new BaseTypeFactory;
+	dds1 = new DDS(factory, "test1");
+	dds2 = new DDS(factory, "test2");
     }
 
     void tearDown() {
 	delete dds1; dds1 = 0;
 	delete dds2; dds2 = 0;
+        delete factory; factory = 0;
     }
 
     bool re_match(Regex &r, const string &s) {
@@ -121,7 +123,8 @@ public:
         }
 
         try {
-                DDS dds;
+                BaseTypeFactory factory;
+                DDS dds(&factory);
                 dds.parse("dds-testsuite/S2000415.HDF.dds");
                 DAS das;
                 das.parse("dds-testsuite/S2000415.HDF.das");

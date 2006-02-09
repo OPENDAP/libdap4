@@ -33,7 +33,7 @@
 //
 // jhrg 9/12/95
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 

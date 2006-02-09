@@ -106,7 +106,7 @@ UInt32::serialize(const string &dataset, DDS &dds, XDR *sink,
     if (!XDR_UINT32(sink, &_buf))
 	throw Error(
 "Network I/O Error. Could not send uint 32 data. This may be due to a\n\
-bug in DODS or a problem with the network connection.");
+bug in libdap or a problem with the network connection.");
 
     return true;
 }
@@ -117,7 +117,7 @@ UInt32::deserialize(XDR *source, DDS *, bool)
     if (!XDR_UINT32(source, &_buf))
 	throw Error(
 "Network I/O Error. Could not read uint 32 data. This may be due to a\n\
-bug in DODS or a problem with the network connection.");
+bug in libdap or a problem with the network connection.");
 
     return false;
 }

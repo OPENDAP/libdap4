@@ -30,7 +30,7 @@
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
 // Implementation of the DODSFilter class. This class is used to build dods
-// filter programs which, along with a CGI program, comprise DODS servers.
+// filter programs which, along with a CGI program, comprise OPeNDAP servers.
 // jhrg 8/26/97
 
 
@@ -905,6 +905,8 @@ DODSFilter::dataset_constraint(DDS &dds, FILE *out, time_t /* lmt */)
     @param anc_location A directory to search for ancillary files (in
     addition to the CWD).  This is used in a call to 
     get_data_last_modified_time(). 
+    @param with_mime_headers If true, include the MIME headers in the response.
+    Defaults to true.
     @return void */
 void
 DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
@@ -962,7 +964,9 @@ DODSFilter::send_data(DDS &dds, FILE *data_stream, const string &anc_location,
     servers. 
 
     @param out Destination
-    @param dds The dataset's DDS \e with attributes in the variables. */
+    @param dds The dataset's DDS \e with attributes in the variables.
+    @param with_mime_headers If true, include the MIME headers in the response.
+    Defaults to true. */
 void
 DODSFilter::send_ddx(DDS &dds, FILE *out, bool with_mime_headers)
 {

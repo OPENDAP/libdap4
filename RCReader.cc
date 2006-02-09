@@ -88,7 +88,7 @@ RCReader::write_rc_file(const string &pathname)
     if (fpo) {
 	// This means we just created the file.  We will now save
 	// the defaults in it for future use.       
-	fpo << "# DODS client configuation file. See the DODS" << endl;
+	fpo << "# OPeNDAP client configuation file. See the OPeNDAP" << endl;
 	fpo << "# users guide for information." << endl;
 	fpo << "USE_CACHE=" << _dods_use_cache << endl;
 	fpo << "# Cache and object size are given in megabytes (20 ==> 20Mb)." 

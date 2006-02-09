@@ -44,7 +44,7 @@
 // build a server, it is still necessary to subclass and define a read()
 // method for each of the data type classes. 01/22/03 jhrg
 
-#include "config_dap.h"
+#include "config.h"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -194,7 +194,7 @@ TestByte::read(const string &)
 // Merged 3.1.8
 //
 // Revision 1.15.6.1  2000/08/02 20:58:26  jimg
-// Included the header config_dap.h in this file. config_dap.h has been
+// Included the header config.h in this file. config.h has been
 // removed from all of the DODS header files.
 //
 // Revision 1.15.14.1  2000/02/17 05:03:14  jimg

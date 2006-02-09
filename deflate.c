@@ -36,8 +36,8 @@ z_stream z;
 #define FALSE (0)
 #endif
 
-char *input_buffer 	= NULL;
-char *output_buffer 	= NULL;
+unsigned char *input_buffer 	= NULL;
+unsigned char *output_buffer 	= NULL;
 int  buffer_size 	= DEFAULT_BUFFER_SIZE;
 int  compression_rate	= DEFAULT_COMPRESSION;
 
@@ -101,8 +101,8 @@ int main (int argc, char ** argv)
 	}
     }
 
-    if ((input_buffer = (char *) calloc(1, buffer_size)) == NULL ||
-	(output_buffer = (char *) calloc(1, buffer_size)) == NULL) {
+    if ((input_buffer = (unsigned char *) calloc(1, buffer_size)) == NULL ||
+	(output_buffer = (unsigned char *) calloc(1, buffer_size)) == NULL) {
 	fprintf(stderr, "Not enough memory\n");
 	exit(-1);
     }

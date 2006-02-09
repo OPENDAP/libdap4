@@ -122,7 +122,7 @@ private:
     string *blob_url;		// put URL to blob here
 
     // These hold temporary values read during the parse.
-    string dods_attr_name;	// DODS attributes, not XML attributes
+    string dods_attr_name;	// DAP2 attributes, not XML attributes
     string dods_attr_type;	// ... not XML ...
     string char_data;		// char data in value elements; null after use
     map<string,string> attributes; // dump XML attributes here

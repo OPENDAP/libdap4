@@ -82,7 +82,7 @@ using namespace std;
 
 /** Removed spaces from the front of a URL and also from the front of the CE.
     This function assumes that there are no holes in both the URL and the CE.
-    It will remove \i leading space, but not other spaces.
+    It will remove \e leading space, but not other spaces.
 
     @todo Is this still needed? This function may predate the switch from
     libwww to libcurl and the latter may not need to have spaces removed.

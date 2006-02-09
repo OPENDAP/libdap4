@@ -97,7 +97,7 @@
 
 #define YYSTYPE char *
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -113,10 +113,6 @@ static char rcsid[] not_used = {"$Id$"};
 #include "debug.h"
 #include "parser.h"
 #include "das.tab.h"
-
-#ifdef TRACE_NEW
-#include "trace_new.h"
-#endif
 
 #define yylex daslex
 #define yyerror daserror 
@@ -2067,7 +2063,7 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
  *
  * Revision 1.14  1995/05/10  13:45:43  jimg
  * Changed the name of the configuration header file from `config.h' to
- * `config_dap.h' so that other libraries could have header files which were
+ * `config.h' so that other libraries could have header files which were
  * installed in the DODS include directory without overwriting this one. Each
  * config header should follow the convention config_<name>.h.
  *

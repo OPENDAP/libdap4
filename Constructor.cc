@@ -37,7 +37,7 @@
 #include <functional>
 
 #include "Constructor.h"
-#include "BTIterAdapter.h"
+//#include "BTIterAdapter.h"
 
 #include "debug.h"
 #include "escaping.h"
@@ -81,7 +81,7 @@ Constructor::operator=(const Constructor &rhs)
 
     return *this;
 }
-
+#if 0
 /** @name Pix interface; deprecated */
 //@{
 /** @brief Returns an index to the first variable in a Constructor instance.
@@ -121,7 +121,7 @@ Constructor::var(Pix p)
     return 0 ;
 }
 //@}
-
+#endif
 /** Returns an iterator referencing the first structure element. */
 Constructor::Vars_iter
 Constructor::var_begin()

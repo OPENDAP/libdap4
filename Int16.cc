@@ -105,7 +105,7 @@ Int16::serialize(const string &dataset, DDS &dds, XDR *sink,
     if (!XDR_INT16(sink, &_buf))
 	throw Error(
 "Network I/O Error. Could not send int 16 data.\n\
-This may be due to a bug in DODS, on the server or a\n\
+This may be due to a bug in libdap, on the server or a\n\
 problem with the network connection.");
   
     return true;
@@ -117,7 +117,7 @@ Int16::deserialize(XDR *source, DDS *, bool)
     if (!XDR_INT16(source, &_buf))
 	throw Error(
 "Network I/O Error. Could not read int 16 data. This may be due to a\n\
-bug in DODS or a problem with the network connection.");
+bug in libdap or a problem with the network connection.");
 
     return false;
 }

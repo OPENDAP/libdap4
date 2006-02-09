@@ -33,7 +33,7 @@
 //
 // jhrg 1/12/95
 
-#include "config_dap.h"
+#include "config.h"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -367,7 +367,7 @@ TestArray::set_series_values(bool sv)
 //
 // Revision 1.6  1995/05/10  13:45:34  jimg
 // Changed the name of the configuration header file from `config.h' to
-// `config_dap.h' so that other libraries could have header files which were
+// `config.h' so that other libraries could have header files which were
 // installed in the DODS include directory without overwriting this one. Each
 // config header should follow the convention config_<name>.h.
 //

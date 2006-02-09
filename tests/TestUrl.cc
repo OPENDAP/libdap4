@@ -34,7 +34,7 @@
 // jhrg 1/12/95
 
 
-#include "config_dap.h"
+#include "config.h"
 
 #include <string>
 
@@ -134,7 +134,7 @@ TestUrl::read(const string &)
 // Merge release-3-4 into trunk
 //
 // Revision 1.20.2.2  2003/08/17 20:41:05  rmorris
-// include config_dap.h, just like all the other tests.  Now
+// include config.h, just like all the other tests.  Now
 // strickly needed under win32 for pickup #define for sleep().
 //
 // Revision 1.20.2.1  2003/07/23 23:56:36  jimg

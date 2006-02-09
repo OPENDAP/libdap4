@@ -494,7 +494,7 @@ char *yytext;
 */
 #line 41 "Error.lex"
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 

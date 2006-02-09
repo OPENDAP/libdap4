@@ -36,7 +36,7 @@
 //
 // jhrg 7/25/94
 
-#include "config_dap.h"
+#include "config.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -254,7 +254,8 @@ load_attr_table(AttrTable at)
     at.append_attr("Date", "Int32", "12345");
     at.append_attr("day", "Int32", "01");
     at.append_attr("Time", "Float64", "3.1415");
-
+    
+#if 0
     fprintf( stdout, "Using the Pix:\n" ) ;
     for (Pix p1 = at.first_attr(); p1; at.next_attr(p1))
 	{
@@ -264,6 +265,7 @@ load_attr_table(AttrTable at)
 				fprintf( stdout, "%s ", at.get_attr(p1, i).c_str() ) ;
 		fprintf( stdout, "\n" ) ;
     }
+#endif
 
     fprintf( stdout, "Using the iterator:\n" ) ;
     for (AttrTable::Attr_iter p2 = at.attr_begin(); p2 != at.attr_end(); p2++)
@@ -326,6 +328,7 @@ load_attr_table_ptr(AttrTable *at)
     at->append_attr("day", "Int32", "01");
     at->append_attr("Time", "Float64", "3.1415");
 
+#if 0
     fprintf( stdout, "Using the Pix:\n" ) ;
     for (Pix p1 = at->first_attr(); p1; at->next_attr(p1))
 	{
@@ -335,6 +338,7 @@ load_attr_table_ptr(AttrTable *at)
 	     fprintf( stdout, "%s ", at->get_attr(p1, i).c_str() ) ;
 	fprintf( stdout, "\n" ) ;
     }
+#endif
 
     fprintf( stdout, "Using the iterator:\n" ) ;
     for (AttrTable::Attr_iter p2 = at->attr_begin(); p2 != at->attr_end(); p2++)
@@ -556,16 +560,16 @@ load_attr_table_ptr(AttrTable *at)
 // Removed unnecessary declaration of dasparse().
 //
 // Revision 1.10  1995/05/10  15:34:07  jimg
-// Failed to change `config.h' to `config_dap.h' in these files.
+// Failed to change `config.h' to `config.h' in these files.
 //
 // Revision 1.9  1995/05/10  13:45:42  jimg
 // Changed the name of the configuration header file from `config.h' to
-// `config_dap.h' so that other libraries could have header files which were
-// installed in the DODS include directory without overwriting this one. Each
+// `config.h' so that other libraries could have header files which were
+// installed in the libdap include directory without overwriting this one. Each
 // config header should follow the convention config_<name>.h.
 //
 // Revision 1.8  1995/03/16  17:36:15  jimg
-// Added include config_dap.h to top of includes.
+// Added include config.h to top of includes.
 // Added TRACE_NEW switch dbnew debugging.
 //
 // Revision 1.7  1995/02/10  03:28:55  jimg

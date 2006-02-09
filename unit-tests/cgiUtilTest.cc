@@ -45,25 +45,20 @@
 #include "cgi_util.h"
 #include "debug.h"
 
+#include "testFile.cc"
+
 using namespace CppUnit;
 using namespace std;
 
 class cgiUtilTest : public TestFixture {
 private:
-    ostringstream oss;
 
 protected:
-    void reset_oss() {
-	oss.str("");
-    }	
-
     bool re_match(Regex &r, const string &s) {
 	int match = r.match(s.c_str(), s.length());
 	DBG(cerr << "RE Match: " << match << endl);
 	return match == (int)s.length();
     }
-
-
 
 public:
     cgiUtilTest() {}
@@ -78,11 +73,7 @@ public:
     CPPUNIT_TEST(find_ancillary_file_test);
     CPPUNIT_TEST(find_group_ancillary_file_test);
     CPPUNIT_TEST(name_path_test);
-    // Removed set_mime_text_test when I removed the ostream methods 
-    // jhrg 1/18/06
-#if 0
     CPPUNIT_TEST(set_mime_text_test);
-#endif
     CPPUNIT_TEST(rfc822_date_test);
     CPPUNIT_TEST(last_modified_time_test);
 
@@ -122,48 +113,48 @@ public:
     }
 
     // See note above. jhrg 1/18/06
-#if 0
     void set_mime_text_test() {
 	Regex r1("HTTP/1.0 200 OK\r\n\
 XDODS-Server: dods-test/0.00\r\n\
-XDAP-Protocol: .*\r\n\
+XOPeNDAP-Server: dods-test/0.00\r\n\
+XDAP: .*\r\n\
 Date: (.*)\r\n\
 Last-Modified: \\1\r\n\
-Content-type: text/plain\r\n\
+Content-Type: text/plain\r\n\
 Content-Description: dods_das\r\n\
-\n");
-	set_mime_text(oss, dods_das, "dods-test/0.00");
-	CPPUNIT_ASSERT(re_match(r1, oss.str()));
-	reset_oss();
+\r\n.*");
+        string oss;
+        FILE2string(oss, tmp, set_mime_text(tmp, dods_das, "dods-test/0.00"));
+	CPPUNIT_ASSERT(re_match(r1, oss));
 
 	Regex r2("HTTP/1.0 200 OK\r\n\
 XDODS-Server: dods-test/0.00\r\n\
-XDAP-Protocol: .*\r\n\
+XOPeNDAP-Server: dods-test/0.00\r\n\
+XDAP: .*\r\n\
 Date: (.*)\r\n\
 Last-Modified: \\1\r\n\
-Content-type: text/plain\r\n\
+Content-Type: text/plain\r\n\
 Content-Description: dods_dds\r\n\
-\n");
-	set_mime_text(oss, dods_dds, "dods-test/0.00");
-	DBG(cerr << "DODS DDS" << endl << oss.str());
-	CPPUNIT_ASSERT(re_match(r2, oss.str()));
-	reset_oss();
+\r\n.*");
+	FILE2string(oss, tmp, set_mime_text(tmp, dods_dds, "dods-test/0.00"));
+	DBG(cerr << "DODS DDS" << endl << oss);
+	CPPUNIT_ASSERT(re_match(r2, oss));
 
 	struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0}; // 1 Jan 2000
 	time_t t = mktime(&tm);
 	Regex r3("HTTP/1.0 200 OK\r\n\
 XDODS-Server: dods-test/0.00\r\n\
-XDAP-Protocol: .*\r\n\
+XOPeNDAP-Server: dods-test/0.00\r\n\
+XDAP: .*\r\n\
 Date: .*\r\n\
 Last-Modified: Sat, 01 Jan 2000 ..:00:00 GMT\r\n\
-Content-type: text/plain\r\n\
+Content-Type: text/plain\r\n\
 Content-Description: dods_dds\r\n\
-\n");
-	set_mime_text(oss, dods_dds, "dods-test/0.00", x_plain, t);
-	CPPUNIT_ASSERT(re_match(r3, oss.str()));
-	reset_oss();
+\r\n.*");
+	FILE2string(oss, tmp,
+                    set_mime_text(tmp, dods_dds, "dods-test/0.00", x_plain, t));
+	CPPUNIT_ASSERT(re_match(r3, oss));
     }
-#endif
  
     void rfc822_date_test() {
 	time_t t = 0;

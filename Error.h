@@ -46,8 +46,8 @@ using std::cout;
 using std::string;
 //using std::ostream;
 
-/** The most common errors within DODS have special codes so that they
-    can be spotted easily by the DODS client software. Any error
+/** The most common errors within DAP2 have special codes so that they
+    can be spotted easily by the client software. Any error
     without a matching code gets the <tt>unknown_error</tt> code.
 
     @brief An enumerated type for common errors.  */
@@ -75,7 +75,7 @@ enum ProgramType {
 };
 
 /** The Error class is used to transport error information from the server to
-    the client within DODS. This class is also the base class for all the
+    the client within libdap. This class is also the base class for all the
     errors thrown by methods in the DAP, so catching Error will catch all DAP
     throws. Errors consist of an error code and a string. The code can be
     used to quickly distinguish between certain common errors while the

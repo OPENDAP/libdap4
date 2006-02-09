@@ -65,7 +65,7 @@ OPeNDAPFile::getFullPath()
 void
 OPeNDAPFile::breakApart( const string &fullPath )
 {
-    unsigned int pos = fullPath.rfind( "/" ) ;
+    string::size_type pos = fullPath.rfind( "/" ) ;
     if( pos != string::npos )
     {
 	_dirName = fullPath.substr( 0, pos ) ;
@@ -83,7 +83,7 @@ OPeNDAPFile::breakApart( const string &fullPath )
 void
 OPeNDAPFile::breakExtension()
 {
-    unsigned int pos = _fileName.rfind( "." ) ;
+    string::size_type pos = _fileName.rfind( "." ) ;
     if( pos != string::npos )
     {
 	_baseName = _fileName.substr( 0, pos ) ;
