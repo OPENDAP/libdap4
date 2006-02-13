@@ -240,6 +240,9 @@ public:
 void
 Constructor::print_xml(FILE *out, string space, bool constrained)
 {
+    if (constrained && !send_p())
+        return;
+
     bool has_attributes = false; // *** fix me
     bool has_variables = (var_begin() != var_end());
 

@@ -686,6 +686,9 @@ public:
 void
 Grid::print_xml(FILE *out, string space, bool constrained)
 {
+    if (constrained && !send_p())
+        return;
+
     fprintf(out, "%s<Grid", space.c_str());
     if (!name().empty())
 	fprintf(out, " name=\"%s\"", id2xml(name()).c_str());
@@ -776,9 +779,12 @@ Grid::check_semantics(string &msg, bool all)
 {
     if (!BaseType::check_semantics(msg))
 	return false;
-
+#if 0
+    // Actually, thespec doesn't say this. jhrg 2/13/06
     if (!unique_names(_map_vars, name(), type_name(), msg))
 	return false;
+#endif
+
     msg="";
 
     if (!_array_var) {
