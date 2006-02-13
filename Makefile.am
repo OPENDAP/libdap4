@@ -146,7 +146,7 @@ CLIENT_HDR = ResponseTooBigErr.h RCReader.h Connect.h HTTPConnect.h	    \
 	ObjectType.h EncodingType.h HTTPCache.h HTTPCacheDisconnectedMode.h \
 	Response.h HTTPResponse.h HTTPCacheResponse.h AISConnect.h	    \
 	AISMerge.h AISExceptions.h AISDatabaseParser.h AISResources.h	    \
-	Resource.h HTTPCacheInterruptHandler.h
+	Resource.h HTTPCacheInterruptHandler.h PipeResponse.h StdinResponse.h
 
 SERVER_HDR = cgi_util.h DODSFilter.h SignalHandler.h OPeNDAPFile.h	\
 	OPeNDAPDir.h SignalHandlerRegisteredErr.h AlarmHandler.h

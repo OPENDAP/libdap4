@@ -156,7 +156,7 @@ get_type(const string &value)
 // may no longer be the case. 5/31/99 jhrg
 
 /** Use when you cannot use libcurl.
- * 
+
     @note This method tests for MIME headers with lines terminated by CRLF
     (\r\n) and Newlines (\n). In either case, the line terminators are removed
     before each header is processed.
@@ -165,14 +165,15 @@ get_type(const string &value)
     @param rs Value/Result parameter. Dump version and type information here.
     */ 
 void 
-Connect::parse_mime(FILE *data_source, Response *rs)
+Connect::parse_mime(/*FILE *data_source, */Response *rs)
 {
     rs->set_version("dods/0.0"); // initial value; for backward compat.
     rs->set_protocol("2.0");
     
     // If the first line does not start with HTTP, XDODS or XDAP, assume 
     // there's no MIME header here and return without reading anymore
-
+    FILE *data_source = rs->get_stream();
+    
     char line[256];
     fgets(line, 255, data_source);
 
@@ -769,16 +770,12 @@ Connect::request_data_url(DataDDS &data) throw(Error, InternalErr)
     }
 }
 
-/** This is a place holder. A better implementation for reading objects from
-    the local file store is to write FileConnect and have it support the same
-    interface as HTTPConnect.
+#if 0
+/** A Convenience method for clients that work with files. If you need to 
+    read from a pipe (as opened using popen), then use the PipeResponse
+    class and Connect::read_data(DataDDS &, Response *) instead.
 
-    @note If you need the DataDDS to hold specializations of the type classes,
-    be sure to include the factory class which will instantiate those
-    specializations in the DataDDS. Either pass a pointer to the factory to
-    DataDDS constructor or use the DDS::set_factory() method after the 
-    object is built.
-
+    @see Connect::read_data(DataDDS &, Response *)
     @param data Result.
     @param data_source Read from this open file/stream. */
 void
@@ -792,19 +789,43 @@ Connect::read_data(DataDDS &data, FILE *data_source) throw(Error, InternalErr)
     try {
 	rs = new Response(data_source);
 	// Read from data_source and parse the MIME headers specific to DAP2.
-	parse_mime(data_source, rs);
-    
-        d_version = rs->get_version();
-        d_protocol = rs->get_protocol();
-
-	process_data(data, rs);
-
+        read_data(data, rs);
+        
 	delete rs; rs = 0;
     }
     catch (Error &e) {
 	delete rs; rs = 0;
 	throw e;
     }
+}
+#endif
+
+/** This is a place holder. A better implementation for reading objects from
+    the local file store is to write FileConnect and have it support the same
+    interface as HTTPConnect.
+
+    @note If you need the DataDDS to hold specializations of the type classes,
+    be sure to include the factory class which will instantiate those
+    specializations in the DataDDS. Either pass a pointer to the factory to
+    DataDDS constructor or use the DDS::set_factory() method after the 
+    object is built.
+
+    @param data Result.
+    @param rs Read from this Response object. */
+
+void
+Connect::read_data(DataDDS &data, Response *rs) throw(Error, InternalErr)
+{
+    if (!rs)
+        throw InternalErr(__FILE__, __LINE__, "Response object is null.");
+
+    // Read from data_source and parse the MIME headers specific to DAP2.
+    parse_mime(rs);
+
+    d_version = rs->get_version();
+    d_protocol = rs->get_protocol();
+
+    process_data(data, rs);
 }
 
 bool 

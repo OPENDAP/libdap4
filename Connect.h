@@ -154,7 +154,7 @@ private:
 	throw(Error, InternalErr);
     
     // Use when you cannot use libwww/libcurl. Reads HTTP response. 
-    void parse_mime(FILE *data_source, Response *rs);
+    void parse_mime(Response *rs);
 
 protected:
     /** @name Suppress the C++ defaults for these. */
@@ -224,8 +224,12 @@ public:
 	throw(Error, InternalErr);
 
     // *** The Response breaks this, replace with a FileConnect
+#if 0
     virtual void read_data(DataDDS &data, FILE *data_source) 
 	throw(Error, InternalErr);
+#endif
+    virtual void read_data(DataDDS &data, Response *rs)
+        throw(Error, InternalErr);
 
 #if 0
     /** @deprecated The GUI is no longer supported. This always returns null.

@@ -46,7 +46,10 @@ extern void close_temp(FILE *s, const string &name);
 
 /** Encapsulate an http response. Instead of directly returning the FILE
     pointer from which a response is read and vector of headers, return an
-    instance of this object. */
+    instance of this object. 
+    
+    @todo Maybe refactor so that the header parsing code is hear and not in
+    HTTPConnect? */
 class HTTPResponse : public Response {
 private:
     vector<string> *d_headers;	// Response headers

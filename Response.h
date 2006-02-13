@@ -40,7 +40,13 @@ using namespace std;
     associated resources, this is overkill. However, some streams may require
     complex operations to free their resources once the client is done with
     the stream. Those classes should return a subclass of Response
-    which has those operations built into the destructor. */
+    which has those operations built into the destructor. 
+    
+    @todo If the code that parses the MIME headers was moved from Connect and
+    HTTPConnect to this class and its children, it would be easier to build
+    a FileConnect class (or maybe the specifics of the connection type could
+    be held in the Response object and HTTPConnect and the to be written 
+    FileConnect would not be needed). */
 class Response {
 private:
     /// The data stream

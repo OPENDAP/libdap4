@@ -47,6 +47,8 @@ static char rcsid[] not_used = {"$Id$"};
 #include <string>
 
 #include "AISConnect.h"
+#include "Response.h"
+#include "StdinResponse.h"
 
 using std::cerr;
 using std::endl;
@@ -186,7 +188,7 @@ main(int argc, char * argv[])
 		fprintf( stderr, "Fetching: %s\n", argv[i] ) ;
 	
 	    string name = argv[i];
-	    Connect *url;
+	    Connect *url = 0;;
 	    if (use_ais) {
 		if (!ais_db.empty())
 		    url = new AISConnect(name, ais_db);
@@ -211,41 +213,36 @@ main(int argc, char * argv[])
 			    "that contains a DAP2 data object; decoding.\n" );
 		}
 
-		FILE *source;
+                Response *r = 0;
 		if (strcmp(argv[i], "-") == 0)
-		    source = stdin;
+		    r = new StdinResponse(stdin);
 		else
-		    source = fopen(argv[i], "r");
+		    r = new Response(fopen(argv[i], "r"));
 	    
-		if (!source) {
-		    fprintf( stderr,
-			     "The input source: %s could not be opened",
-			     argv[i] ) ;
-		    delete url; url = 0;
-		    break;
-		}
-
-		try {
+                try {
+                    if (!r->get_stream())
+                        throw Error(string("The input source: ")
+                                    + string(argv[i])
+                                    + string(" could not be opened"));
+                
                     BaseTypeFactory factory;
-		    DataDDS dds(&factory);
-		    url->read_data(dds, source);
-
-		    if (verbose)
-			fprintf( stderr, "Server version: %s\n",
-				 url->get_version().c_str() ) ;
-
-		    print_data(dds, print_rows);
-		}
-		catch (Error &e) {
-		    e.display_message();
-		    delete url; url = 0;
-		    break;
-		}
-#if 0
-                // The stream is now closed by Response
-		if (source != stdin)
-		    fclose(source);
-#endif
+                    DataDDS dds(&factory);
+                    url->read_data(dds, r);
+                
+                    if (verbose)
+                        fprintf(stderr, "Server version: %s\n",
+                                url->get_version().c_str());
+                
+                    print_data(dds, print_rows);
+                }
+                
+                catch(Error & e)
+                {
+                    e.display_message();
+                    delete r; r = 0;
+                    delete url; url = 0;
+                    break;
+                }
 	    }
 
 	    else if (get_version) {
