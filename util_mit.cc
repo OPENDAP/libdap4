@@ -130,7 +130,7 @@ parse_time(const char * str, bool expand)
 
     if (!str) return 0;
 
-    if ((s = strchr(str, ','))) {	 /* Thursday, 10-Jun-93 01:29:59 GMT */
+    if ((s = (char *)strchr(str, ','))) {	 /* Thursday, 10-Jun-93 01:29:59 GMT */
 	s++;				/* or: Thu, 10 Jan 1993 01:29:59 GMT */
 	while (*s && *s==' ') s++;
 	if (strchr(s,'-')) {				     /* First format */

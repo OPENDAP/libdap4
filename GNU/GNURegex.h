@@ -26,7 +26,9 @@
 #ifndef _Regex_h
 #define _Regex_h 1
 
+#ifndef WIN32
 #include <alloca.h>
+#endif
 #include <stdlib.h>
  
 #include <sys/types.h>

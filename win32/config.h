@@ -1,9 +1,3 @@
-/*  This file is typically generated during configuation      */
-/*  time, but that is not the case under win32.  This file    */
-/*  was generated under linux on an x86 and then stripped     */
-/*  down to the bare essentials and modified where necessary  */
-/*  to form something appropriate for win32.                  */
-
 #ifndef _DODS_CONFIG_H_
 #define _DODS_CONFIG_H_
 
@@ -30,9 +24,14 @@
 #define S_ISREG(m) (((m) & _S_IFMT) == _S_IFREG)
 #define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
 
-#ifndef DODS_ROOT
-#define DODS_ROOT "C:/DODS"
+#define PACKAGE_VERSION "$VERSION"
+#define PACKAGE_NAME "DODS"
+#define DAP_PROTOCOL_VERSION "3.0"
+#ifndef LIBDAP_ROOT
+#define LIBDAP_ROOT "$DODS_ROOT/libdap"
 #endif
+
+#undef LIBXML_ICONV_ENABLED
 
 /* For isatty() under MS VC++ */
 #include <io.h>

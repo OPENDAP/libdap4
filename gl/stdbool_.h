@@ -71,7 +71,7 @@
    (see ISO C 99 6.3.1.1.(2)).  So we add a negative value to the
    enum; this ensures that '_Bool' promotes to 'int'.  */
 #if !(defined __cplusplus || defined __BEOS__)
-# if !@HAVE__BOOL@
+# if !$(HAVE__BOOL)
 #  if defined __SUNPRO_C && (__SUNPRO_C < 0x550 || __STDC__ == 1)
     /* Avoid stupid "warning: _Bool is a keyword in ISO C99".  */
 #   define _Bool signed char
