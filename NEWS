@@ -3,6 +3,10 @@ $Id$
 
 News for version 3.6.0
 
+Fixed a problem where Grids with two or more dimensions with the same name 
+were flagged as broken (by Grid::check_semantics). Now they are allowed as per
+the specification.
+
 Added a new method get_parent() to AttrTable. This returns the parent 
 container for this AttrTable.
 
@@ -23,7 +27,7 @@ a year. See Removed_functions.txt
 
 I removed the old Pix methods. See removed_functions.txt.
 
-Added protocol versio number header to responses which use the set_mime...()
+Added protocol version number header to responses which use the set_mime...()
 functions. The new header is called "XDAP-Protocol" and its value is the 
 two digit DAP protocol version number. This is now used by the client-side
 deserialize() methods; I assume that a server that does not announce its

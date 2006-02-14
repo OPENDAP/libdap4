@@ -1,3 +1,85 @@
+2006-02-14  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Modified the print_xml method in Constructor and grid. It no longer prints anything
+	for variables that are not part of the current projection when printing the
+	constrained ddx. This works because the DDS::mark method marks the parents of
+	projected variables.
+
+2006-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Added PipeResponse.h and StdinResponse.h; changed getdap and Connect to use
+	them.
+
+2006-02-13  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Flush weekend win32 porting work back to trunk
+
+2006-02-10  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Removed xdr routines from win32 subdir under libdap.  Code now in base tools used to build under win32.
+
+2006-02-09  James Gallagher <jgallagher@opendap.org>
+
+	empty comment
+
+2006-02-09  James Gallagher <jgallagher@opendap.org>
+
+	Removed all deprecated methods as per ticket 248. This includes Pix methods,
+	ostream I/O methods used by servers and various junk in Connect.
+
+2006-01-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-01-24  James Gallagher <jgallagher@opendap.org>
+
+	Added Removed_functions.txt: This file contains the type signitures of
+	methods/functions recently (version 3.6 and later) removed.
+
+2006-01-24  James Gallagher <jgallagher@opendap.org>
+
+	The ostream I/O was removed and many files were modified. The code is still
+	present inside #if 0 ... #endif preprocessor lines.
+
+2006-01-23  James Gallagher <jgallagher@opendap.org>
+
+	All unit tests updated to work after removing the iostream functions/methods.
+
+2006-01-19  James Gallagher <jgallagher@opendap.org>
+
+	Added protocol version to the library. The version number is set in the configure.ac
+	file. I've modified the unit tests so that they work. I've also removed (#if 0 ... #endif)
+	all of the MIME header functions which used the C++ iostream stuff (which is part of the
+	task to remove deprecated code).
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	Updated ChangLog
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	DDS.cc: transfer_attributes used odd logic and an unneeded variable. Fixed.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	expr-test.cc: changed new exception code to use fprintf() (it was using cerr).
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	GSEClause: Removed the old, unimplemented, methods that were supposed to take
+	the grid() function subexpressions. Fixed up some comments in the class as well.
+
+2006-01-12  James Gallagher <jgallagher@opendap.org>
+
+	cgi_util.cc: In remove_mime_header() \n was used as the MIME header
+	separator when CRLF should have been used. Since the rest of the code
+	was fixed for 3.5.3, remove_mime_header() didn't find the separator.
+	This broke the HTML form response.
+
 2006-01-12  James Gallagher <jgallagher@opendap.org>
 
 	DDS.cc: transfer_attributes used odd logic and an unneeded variable. Fixed.
