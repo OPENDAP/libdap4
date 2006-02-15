@@ -367,23 +367,23 @@ AttrTable::find( const string &target, AttrTable **at, Attr_iter *iter )
     attribute within the returned AttrTable object
     @return Returns a pointer to the AttrTable which holds \e target, or null
     if \e target is not found. In the latter case, the value of \e location is
-    undefined. */
+    attr_end() for this AttrTable. */
 AttrTable *
 AttrTable::recurrsive_find(const string &target, Attr_iter *location)
 {
-    Attr_iter i = attr_begin();
-    while (i != attr_end()) {
-        if (target == (*i)->name) {
-            *location = i;
+    *location = attr_begin();
+    // Attr_iter i = attr_begin();
+    while (*location != attr_end()) {
+        if (target == (**location)->name) {
             return this;
         } 
-        else if ((*i)->type == Attr_container) {
-            AttrTable *at = (*i)->attributes->recurrsive_find(target, location);
+        else if ((**location)->type == Attr_container) {
+            AttrTable *at = (**location)->attributes->recurrsive_find(target, location);
             if (at)
                 return at;
         }
         
-        ++i;
+        ++(*location);
     }
     
     return 0;
@@ -1048,9 +1048,9 @@ AttrTable::add_value_alias(AttrTable *das, const string &name,
     // current table (i.e., alias z x where x is in the current container
     // won't be found by looking for `x' at the top level). See test case 26
     // in das-testsuite.
-    if (!at || (iter == attr_end()) || !*iter) {
+    if (!at || (iter == at->attr_end()) || !*iter) {
 	find(lsource, &at, &iter);
-	if (!at || (iter == attr_end()) || !*iter)
+	if (!at || (iter == at->attr_end()) || !*iter)
 	    throw Error(string("Could not find the attribute `")
 			+ source + string("' in the attribute object."));
     }
