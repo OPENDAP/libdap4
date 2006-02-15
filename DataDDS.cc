@@ -129,6 +129,7 @@ DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v,
     : DDS(factory, n), d_server_version(v), d_protocol_version(p)
 {
     m_version_string_to_numbers();
+    m_protocol_string_to_numbers();
 }
 #if 0
 // #ifdef DEFAULT_BASETYPE_FACTORY
