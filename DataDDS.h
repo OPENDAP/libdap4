@@ -83,7 +83,7 @@ public:
     DataDDS(BaseTypeFactory *factory, const string &n = "",
 	    const string &v = "", const string &p = "");
     // #ifdef DEFAULT_BASETYPE_FACTORY
-    DataDDS(const string &n = "", const string &v = "");
+    // DataDDS(const string &n = "", const string &v = "");
     // #endif
     virtual ~DataDDS() {}
 
