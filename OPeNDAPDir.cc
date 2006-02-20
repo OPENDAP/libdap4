@@ -3,6 +3,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#ifdef WIN32
+#include <config.h>  //  for S_ISDIR macro
+#endif
 #include <stdio.h>
 #include <iostream>
 
