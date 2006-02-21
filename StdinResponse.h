@@ -58,9 +58,9 @@ public:
         
         @param s Pointer to standard input.
         */
-    StdinResponse(FILE *s) : d_stdin(s), Response(0) {}
+    StdinResponse(FILE *s) : Response(0), d_stdin(s) {}
 
-    /** Close the stream. */
+    /** Destructor. Does not close standard input. */
     virtual ~StdinResponse() { 
     }
     

@@ -63,7 +63,7 @@ public:
         
         @param s Pointer to a pipe stream returned by popen().
         */
-    PipeResponse(FILE *s) : d_pstream(s), Response(0) {}
+    PipeResponse(FILE *s) : Response(0), d_pstream(s) {}
 
     /** Close the stream. */
     virtual ~PipeResponse() { 

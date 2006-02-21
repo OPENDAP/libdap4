@@ -9,7 +9,7 @@ using std::string ;
     for a DAP2 dataset (currently DAS and DDS).
     
     This class' sole purpose is to serve as a base class for DAS and DDS.
-    Code in the OPeNDAP/HOA Back End Server (BES) uses this to pass pointers
+    Code in the OPeNDAP/HAO Back End Server (BES) uses this to pass pointers
     to DAS and DDS objects from one place to another. 
     
     \note The DDX and 'DODS' objects don't exist. The DDX response is generated
