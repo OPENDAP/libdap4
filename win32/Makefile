@@ -34,7 +34,7 @@ CFLAGS		= /nologo /W0 /GR /EHsc /c
 
 # Setup linker flags for libdap
 MTLFLAGS	= -lib /nologo -libpath:$(INSTALLLIBDIR)
-MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdap.def /map /fixed:NO /base:0x06000000
+MDLFLAGS	= -libpath:$(INSTALLLIBDIR) /dll /def:libdap.def /map /fixed:NO /base:0x06000000 /NODEFAULTLIB:LIBCMT.lib
 
 # Setup link libraries for libdap
 MTLIBS		=
@@ -42,7 +42,7 @@ MDLIBS		= libdirent.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.li
 
 # Setup linker flags for executables
 EMTLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR) /NODEFAULTLIB:MSVCRT.lib
-EMDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR) /NODEFAULTLIB:MSVCRT.lib
+EMDLFLAGS	= /nologo /libpath:$(INSTALLLIBDIR)
 
 # Setup link libraries for executables
 EMTLLIBS	= libdapMT.lib libxml2.lib libcurl.lib zlib.lib libxdr.lib pthreadVC.lib
@@ -359,7 +359,6 @@ setup:
 
 install: installMT installMD
 	copy $(OBJDIR)\MT\getdap.exe $(INSTALLBINDIR)
-	copy $(OBJDIR)\MT\usage.exe $(INSTALLETCDIR)
 	copy $(OBJDIR)\MT\deflate.exe $(INSTALLETCDIR)
 	copy dods-datatypes.h $(INSTALLINCDIR)
 	copy $(SRCDIR)\*.h $(INSTALLINCDIR)
