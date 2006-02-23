@@ -48,14 +48,6 @@
 
 extern int test_variable_sleep_interval;
 
-#if 0
-Int16 *
-NewInt16(const string &n)
-{
-    return new TestInt16(n);
-}
-#endif
-
 void
 TestInt16::_duplicate(const TestInt16 &ts)
 {

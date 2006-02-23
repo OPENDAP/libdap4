@@ -86,41 +86,18 @@ time_t last_modified_time(string name);
     @see DODSFilter
 */
 //@{
-#if 0
-void set_mime_text(ostream &os, ObjectType type = unknown_type, 
-		   const string &version = "", EncodingType enc = x_plain,
-		   const time_t last_modified = 0);
-#endif
 void set_mime_text(FILE *out, ObjectType type = unknown_type, 
 		   const string &version = "", EncodingType enc = x_plain,
 		   const time_t last_modified = 0);
-#if 0
-void set_mime_html(ostream &os, ObjectType type = unknown_type, 
-		   const string &version = "", EncodingType enc = x_plain,
-		   const time_t last_modified = 0);
-#endif
 void set_mime_html(FILE *out, ObjectType type = unknown_type, 
 		   const string &version = "", EncodingType enc = x_plain,
 		   const time_t last_modified = 0);
-#if 0
-void set_mime_binary(ostream &os, ObjectType type = unknown_type, 
-		     const string &version = "", EncodingType enc = x_plain,
-		     const time_t last_modified = 0);
-#endif
 void set_mime_binary(FILE *out, ObjectType type = unknown_type, 
 		     const string &version = "", EncodingType enc = x_plain,
 		     const time_t last_modified = 0);
-#if 0
-void set_mime_error(ostream &os, int code = 404, 
-		    const string &reason = "Dataset not found",
-		    const string &version = "");
-#endif
 void set_mime_error(FILE *out, int code = 404, 
 		    const string &reason = "Dataset not found",
 		    const string &version = "");
-#if 0
-void set_mime_not_modified(ostream &os);
-#endif
 void set_mime_not_modified(FILE *out);
 
 //@}

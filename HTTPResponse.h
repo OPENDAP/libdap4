@@ -115,35 +115,4 @@ public:
     //@}
 };
 
-// $Log: HTTPResponse.h,v $
-// Revision 1.4  2005/01/28 17:25:12  jimg
-// Resolved conflicts from merge with release-3-4-9
-//
-// Revision 1.2.2.3  2004/08/24 20:03:15  jimg
-// Changed the way HTTPResponse deletes the temporary files created to hold
-// HTTP responses. Before this was done without using HTTPConnect's
-// close_temp() function. Instead, ~HTTPResponse() called unlink() on the
-// filename and then ~Response() called fclose on the FILE *. I think this
-// breaks on win32. THe simplest solution was to make ~HTTPResponse() use
-// the close_temp() function. I also had to edit the ~Response() method to
-// check that d_stream was not null before calling fclose() there.
-//
-// Revision 1.3  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.2.2.2  2003/10/10 23:06:35  jimg
-// Added some instrumentation which helped track down bug 672.
-//
-// Revision 1.2.2.1  2003/05/06 06:44:15  jimg
-// Modified HTTPConnect so that the response headers are no longer a class
-// member. This cleans up the class interface and paves the way for using
-// the multi interface of libcurl. That'll have to wait for another day...
-//
-// Revision 1.2  2003/03/04 21:39:52  jimg
-// Added dods_keep_temps global. This is handy for debugging.
-//
-// Revision 1.1  2003/03/04 05:57:40  jimg
-// Added.
-//
-
 #endif // http_response_h

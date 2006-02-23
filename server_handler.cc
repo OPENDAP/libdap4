@@ -40,9 +40,6 @@ static char not_used rcsid[]={"$Id$"};
 #include "DODSFilter.h"
 #include "DDS.h"
 #include "DAS.h"
-#if 0
-#include "DataDDS.h"
-#endif
 
 #include "ObjectType.h"
 #include "debug.h"

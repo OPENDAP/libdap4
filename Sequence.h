@@ -185,10 +185,6 @@ private:
     // In a hierarchy of sequences, is the the top most?
     bool d_top_most;
     
-    // Make sure the old deserialize is still around.
-#if 0
-    bool old_deserialize(XDR *source, DDS *dds, bool reuse = false);
-#endif
     void _duplicate(const Sequence &s);
     BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
     BaseType *m_exact_match(const string &name, btp_stack *s = 0);
@@ -199,22 +195,8 @@ private:
     void serialize_parent_part_two(const string &dataset, DDS &dds, XDR *sink);
     bool serialize_leaf(const string &dataset, DDS &dds, XDR *sink, 
 			bool ce_eval);
-// I removed these decls and changed the defs to static fucntions. jhrg 1/9/05
-#if 0
-protected:
-    void write_end_of_sequence(XDR *sink);
-    void write_start_of_instance(XDR *sink);
-    unsigned char read_marker(XDR *source);
-    bool is_start_of_instance(unsigned char marker);
-    bool is_end_of_sequence(unsigned char marker);
-#endif
 
 public:
-
-#if 0
-    typedef std::vector<BaseType *>::const_iterator Vars_citer ;
-    typedef std::vector<BaseType *>::iterator Vars_iter ;
-#endif
 
     Sequence(const string &n = "");
 
@@ -282,64 +264,13 @@ public:
     virtual BaseTypeRow *row_value(size_t row);
 
     virtual void add_var(BaseType *, Part part = nil);
-#if 0
-    /** Returns a reference to the first variable in a Sequence instance.
-	This corresponds to the item in the first column of the table
-	the Sequence represents.  It is not the first row of the table. 
-    */
-    Vars_iter var_begin() ;
-
-    /** Returns a reference to the end of the Sequence instance, not the 
-	last element
-    */
-    Vars_iter var_end() ;
-
-    Vars_iter get_vars_iter(int i);
-#endif
-
-#if 0
-    Pix first_var();
-
-    void next_var(Pix p);
-
-    BaseType *var(Pix p);
-#endif
-
-#if 0
-    virtual void print_decl(ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_decl(FILE *out, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-#endif
-#if 0
-    virtual void print_one_row(ostream &os, int row, string space,
-			       bool print_row_num = false);
-#endif
     virtual void print_one_row(FILE *out, int row, string space,
 			       bool print_row_num = false);
-#if 0
-    virtual void print_val_by_rows(ostream &os, string space = "",
-				   bool print_decl_p = true,
-				   bool print_row_numners = true);
-#endif
     virtual void print_val_by_rows(FILE *out, string space = "",
 				   bool print_decl_p = true,
 				   bool print_row_numbers = true);
-#if 0
-    virtual void print_val(ostream &os, string space = "",
-			   bool print_decl_p = true);
-#endif
     virtual void print_val(FILE *out, string space = "",
 			   bool print_decl_p = true);
-#if 0
-    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds, 
-				string space = "", bool print_decl_p = true);
-#endif
     virtual void print_all_vals(FILE *out, XDR *src, DDS *dds, 
 				string space = "", bool print_decl_p = true);
 

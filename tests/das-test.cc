@@ -255,18 +255,6 @@ load_attr_table(AttrTable at)
     at.append_attr("day", "Int32", "01");
     at.append_attr("Time", "Float64", "3.1415");
     
-#if 0
-    fprintf( stdout, "Using the Pix:\n" ) ;
-    for (Pix p1 = at.first_attr(); p1; at.next_attr(p1))
-	{
-		fprintf( stdout, "%s %s ", at.get_name(p1).c_str(),
-				   at.get_type(p1).c_str() ) ;
-		for (unsigned i = 0; i < at.get_attr_num(p1); ++i)
-				fprintf( stdout, "%s ", at.get_attr(p1, i).c_str() ) ;
-		fprintf( stdout, "\n" ) ;
-    }
-#endif
-
     fprintf( stdout, "Using the iterator:\n" ) ;
     for (AttrTable::Attr_iter p2 = at.attr_begin(); p2 != at.attr_end(); p2++)
     {
@@ -327,18 +315,6 @@ load_attr_table_ptr(AttrTable *at)
     at->append_attr("Date", "Int32", "12345");
     at->append_attr("day", "Int32", "01");
     at->append_attr("Time", "Float64", "3.1415");
-
-#if 0
-    fprintf( stdout, "Using the Pix:\n" ) ;
-    for (Pix p1 = at->first_attr(); p1; at->next_attr(p1))
-	{
-	fprintf( stdout, "%s %s ", at->get_name(p1).c_str(),
-				   at->get_type(p1).c_str() ) ;
-	for (unsigned i = 0; i < at->get_attr_num(p1); ++i)
-	     fprintf( stdout, "%s ", at->get_attr(p1, i).c_str() ) ;
-	fprintf( stdout, "\n" ) ;
-    }
-#endif
 
     fprintf( stdout, "Using the iterator:\n" ) ;
     for (AttrTable::Attr_iter p2 = at->attr_begin(); p2 != at->attr_end(); p2++)

@@ -54,10 +54,6 @@ public:
 	CPPUNIT_ASSERT( !container ) ;
 
 	AttrTable *dummy_at = 0 ;
-#if 0
-	Pix p = at.find( "dummy_attr", &dummy_at ) ;
-	CPPUNIT_ASSERT( !p ) ;
-#endif
 
 	AttrTable::Attr_iter iter ;
 	at.find( "dummy_attr", &dummy_at, &iter ) ;
@@ -84,13 +80,6 @@ public:
 	CPPUNIT_ASSERT( at_size == 4 ) ;
 
 	//at.print( stdout ) ;
-#if 0
-	p = at.find( "attr2", &dummy_at ) ;
-	CPPUNIT_ASSERT( p ) ;
-
-	p = at.find( "dummy_attr", &dummy_at ) ;
-	CPPUNIT_ASSERT( !p ) ;
-#endif
 	iter = at.attr_end() ;
 	at.find( "attr3", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter != at.attr_end() ) ;
@@ -154,24 +143,6 @@ public:
 	attrs.push_back( "attr3" ) ;
 	attrs.push_back( "attr4" ) ;
 
-#if 0
-	Pix q = at.first_attr() ;
-        str_citer ai = attrs.begin() ;
-	for(; q && ai != attrs.end(); at.next_attr( q ), ai++ )
-	{
-	    CPPUNIT_ASSERT( at.attr(q)->name == (*ai) ) ;
-	}
-	CPPUNIT_ASSERT( !q && ai == attrs.end() ) ;
-	if( q && ai == attrs.end() )
-	{
-	    CPPUNIT_FAIL( "too many attributes"  ) ;
-	}
-	else if( !q && ai != attrs.end() )
-	{
-	    CPPUNIT_FAIL( "not enough attributes"  ) ;
-	}
-#endif
-
         str_citer ai = attrs.begin() ;
         AttrTable::Attr_iter i = at.attr_begin() ;
 	// ai = attrs.begin() ;
@@ -189,92 +160,30 @@ public:
 	    CPPUNIT_FAIL( "not enough attributes"  ) ;
 	}
 
-#if 0
-	p = at.find( "attr3", &dummy_at ) ;
-	CPPUNIT_ASSERT( p ) ;
-#endif
-
 	iter = at.attr_end() ;
 	at.find( "attr3", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter != at.attr_end() ) ;
 
-#if 0
-	attr_name =  at.get_name( p ) ;
-	CPPUNIT_ASSERT( attr_name == "attr3" ) ;
-#endif
-
 	attr_name = at.get_name( iter ) ;
 	CPPUNIT_ASSERT( attr_name == "attr3" ) ;
-
-#if 0
-	bool isit = at.is_container( p ) ;
-	CPPUNIT_ASSERT( isit == false ) ;
-#endif
 
 	bool isit = at.is_container( iter ) ;
 	CPPUNIT_ASSERT( isit == false ) ;
 
-#if 0
-	dummy_at = at.get_attr_table( p ) ;
-	CPPUNIT_ASSERT( !dummy_at ) ;
-#endif
-
 	dummy_at = at.get_attr_table( iter ) ;
 	CPPUNIT_ASSERT( !dummy_at ) ;
-
-#if 0
-	attr_type = at.get_type( p ) ;
-	CPPUNIT_ASSERT( attr_type == "String" ) ;
-#endif
 
 	attr_type = at.get_type( iter ) ;
 	CPPUNIT_ASSERT( attr_type == "String" ) ;
 
-#if 0
-	attr_type_enum = at.get_attr_type( p ) ;
-	CPPUNIT_ASSERT( attr_type_enum == Attr_string ) ;
-#endif
-
 	attr_type_enum = at.get_attr_type( iter ) ;
 	CPPUNIT_ASSERT( attr_type_enum == Attr_string ) ;
 
-#if 0
-	attr_value = at.get_attr( p ) ;
-	CPPUNIT_ASSERT( attr_value == "attr3Value1" ) ;
-#endif
 	attr_value = at.get_attr( iter ) ;
 	CPPUNIT_ASSERT( attr_value == "attr3Value1" ) ;
 
-#if 0
-	attr_value = at.get_attr( p, 1 ) ;
-	CPPUNIT_ASSERT( attr_value == "attr3Value2" ) ;
-#endif
-
 	attr_value = at.get_attr( iter, 1 ) ;
 	CPPUNIT_ASSERT( attr_value == "attr3Value2" ) ;
-
-#if 0
-	values = at.get_attr_vector( p ) ;
-	CPPUNIT_ASSERT( values ) ;
-	if( values )
-	{
-	    str_citer vi = values->begin() ;
-	    str_citer sbi = sb.begin() ;
-	    for( ; vi != values->end() && sbi != sb.end(); vi++, sbi++ )
-	    {
-		CPPUNIT_ASSERT( (*vi) == (*sbi) ) ;
-	    }
-	    CPPUNIT_ASSERT( vi == values->end() && sbi == sb.end() ) ;
-	    if( vi == values->end() && sbi != sb.end() )
-	    {
-		CPPUNIT_FAIL( "not enough values"  ) ;
-	    }
-	    else if( vi != values->end() && sbi == sb.end() )
-	    {
-		CPPUNIT_FAIL( "too many values"  ) ;
-	    }
-	}
-#endif
 
 	values = at.get_attr_vector( iter ) ;
 	CPPUNIT_ASSERT( values ) ;
@@ -327,10 +236,6 @@ public:
 	}
 
 	at.del_attr( "attr3" ) ;
-#if 0
-	p = at.find( "attr3", &dummy_at ) ;
-	CPPUNIT_ASSERT( !p ) ;
-#endif
 	container = 0 ;
 	try
 	{
@@ -364,42 +269,17 @@ public:
 	    CPPUNIT_ASSERT( container_name == "attr5" ) ;
 	}
 
-#if 0
-	p = at.find( "attr5", &dummy_at ) ;
-	CPPUNIT_ASSERT( p ) ;
-#endif
-
 	iter = at.attr_end() ;
 	at.find( "attr5", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter != at.attr_end() ) ;
-#if 0
-	attr_name =  at.get_name( p ) ;
-	CPPUNIT_ASSERT( attr_name == "attr5" ) ;
-#endif
 	attr_name =  at.get_name( iter ) ;
 	CPPUNIT_ASSERT( attr_name == "attr5" ) ;
-#if 0
-	isit = at.is_container( p ) ;
-	CPPUNIT_ASSERT( isit == true ) ;
-#endif
 	isit = at.is_container( iter ) ;
 	CPPUNIT_ASSERT( isit == true ) ;
-#if 0
-	container = at.get_attr_table( p ) ;
-	CPPUNIT_ASSERT( container ) ;
-#endif
 	container = at.get_attr_table( iter ) ;
 	CPPUNIT_ASSERT( container ) ;
-#if 0
-	attr_type = at.get_type( p ) ;
-	CPPUNIT_ASSERT( attr_type == "Container" ) ;
-#endif
 	attr_type = at.get_type( iter ) ;
 	CPPUNIT_ASSERT( attr_type == "Container" ) ;
-#if 0
-	attr_type_enum = at.get_attr_type( p ) ;
-	CPPUNIT_ASSERT( attr_type_enum == Attr_container ) ;
-#endif
 	attr_type_enum = at.get_attr_type( iter ) ;
 	CPPUNIT_ASSERT( attr_type_enum == Attr_container ) ;
 
@@ -408,11 +288,6 @@ public:
 	container->append_attr( "attr5-2", "string", "attr5.2Value1" ) ;
 	container->append_attr( "attr5-3", "string", "attr5.3Value1" ) ;
 	container->append_attr( "attr5-4", "string", "attr5.4Value1" ) ;
-#if 0
-	p = at.find( "attr5.attr5-2", &dummy_at ) ;
-	CPPUNIT_ASSERT( p ) ;
-	CPPUNIT_ASSERT( container == dummy_at ) ;
-#endif
 	iter = at.attr_end() ;
 	at.find( "attr5.attr5-3", &dummy_at, &iter ) ;
 	CPPUNIT_ASSERT( iter != at.attr_end() ) ;

@@ -50,14 +50,6 @@
 
 extern int test_variable_sleep_interval;
 
-#if 0
-Url *
-NewUrl(const string &n)
-{
-    return new TestUrl(n);
-}
-#endif
-
 void
 TestUrl::_duplicate(const TestUrl &ts)
 {

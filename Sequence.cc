@@ -465,69 +465,6 @@ Sequence::var_value(size_t row, size_t i)
     return (*bt_row_ptr)[i];
 }
 
-#if 0
-/** @brief Returns an index to the first variable in a Sequence instance.
-    This corresponds to the item in the first column of the table
-    the Sequence represents.  It is not the first row of the table. 
-*/
-Pix
-Sequence::first_var()
-{
-    if (_vars.empty())
-	return 0;
-
-    BTIterAdapter *i = new BTIterAdapter( _vars ) ;
-    i->first() ;
-    return i ;
-}
-#endif
-
-#if 0
-Sequence::Vars_iter
-Sequence::var_begin()
-{
-    return _vars.begin() ;
-}
-
-Sequence::Vars_iter
-Sequence::var_end()
-{
-    return _vars.end() ;
-}
-
-/** Return the iterator for the \i ith variable.
-    @param i the index
-    @return The corresponding  Vars_iter */
-Sequence::Vars_iter
-Sequence::get_vars_iter(int i)
-{
-    return _vars.begin() + i;
-}
-#endif
-
-#if 0
-/** @brief Increments the Sequence instance.  
-    This returns a pointer to the
-    next ``column'' in the Sequence, not the next row. */
-void
-Sequence::next_var(Pix p)
-{
-    p.next() ;
-}
-
-/** @brief Returns a pointer to a Sequence member.  
-    This may be another Sequence. */
-BaseType *
-Sequence::var(Pix p)
-{
-    BTIterAdapter *i = (BTIterAdapter *)p.getIterator() ;
-    if( i ) {
-	return i->entry() ;
-    }
-    return 0 ;
-}
-#endif
-
 unsigned int
 Sequence::width()
 {
@@ -1055,29 +992,6 @@ Sequence::set_row_number_constraint(int start, int stop, int stride)
   d_ending_row_number = stop;
 }
 
-#if 0
-// private mfunc. Use this to read from older servers.
-
-bool
-Sequence::old_deserialize(XDR *source, DDS *dds, bool reuse)
-{
-    bool stat = true;
-
-    DBG2(cerr << "Entering old_deserialize()" << endl);
-
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
-    {
-	stat = (*i)->deserialize(source, dds, reuse);
-	if (!stat) 
-	    return false;
-    }
-
-    d_row_number++;
-
-    return stat;
-}
-#endif
-
 /** Never use this interface for Sequence! To add data to the members of a
     Sequence, use BaseTypeRow variables and operate on them individually. */
 unsigned int
@@ -1098,101 +1012,6 @@ Sequence::buf2val(void **)
     return sizeof(Sequence);
 }
 
-#if 0
-void
-Sequence::print_decl(ostream &os, string space, bool print_semi,
-		     bool constraint_info, bool constrained)
-{
-    if (constrained && !send_p())
-	return;
-
-    os << space << type_name() << " {" << endl;
-    for (Vars_iter i = _vars.begin(); i != _vars.end(); i++)
-    {
-	(*i)->print_decl(os, space + "    ", true,
-			 constraint_info, constrained);
-    }
-    os << space << "} " << id2www(name());
-
-    if (constraint_info) {	// Used by test drivers only.
-	if (send_p())
-	    cout << ": Send True";
-	else
-	    cout << ": Send False";
-    }
-
-    if (print_semi)
-	os << ";" << endl;
-}
-
-void
-Sequence::print_decl(FILE *out, string space, bool print_semi,
-		     bool constraint_info, bool constrained)
-{
-    if (constrained && !send_p())
-	return;
-
-    fprintf( out, "%s%s {\n", space.c_str(), type_name().c_str() ) ;
-    for (Vars_citer i = _vars.begin(); i != _vars.end(); i++)
-    {
-	(*i)->print_decl(out, space + "    ", true,
-			 constraint_info, constrained);
-    }
-    fprintf( out, "%s} %s", space.c_str(), id2www( name() ).c_str() ) ;
-
-    if (constraint_info) {	// Used by test drivers only.
-	if (send_p())
-	    cout << ": Send True";
-	else
-	    cout << ": Send False";
-    }
-
-    if (print_semi)
-	fprintf( out, ";\n" ) ;
-}
-#endif
-#if 0
-/** Print the $i^{th}$ row of the sequence. This hopes in writing
-    code that spits out sequences for testing. Sequences are now read all
-    at once, this method does not change that. */
-void 
-Sequence::print_one_row(ostream &os, int row, string space, 
-			bool print_row_num)
-{
-    if (print_row_num)
-	os << endl << row << ": ";
-
-    os << "{ ";
-
-    int elements = element_count() - 1;
-    int j;
-    BaseType *bt_ptr;
-    // Print first N-1 elements of the row.
-    for (j = 0; j < elements; ++j) {
-	bt_ptr = var_value(row, j);
-	if (bt_ptr) {		// data
-	    if (bt_ptr->type() == dods_sequence_c)
-		dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
-		    (os, space, false, print_row_num);
-	    else
-		bt_ptr->print_val(os, space, false);
-	    os << ", ";
-	}
-    }
-
-    // Print Nth element; end with a `}.'
-    bt_ptr = var_value(row, j);
-    if (bt_ptr) {		// data
-	if (bt_ptr->type() == dods_sequence_c)
-	    dynamic_cast<Sequence*>(bt_ptr)->print_val_by_rows
-		(os, space, false, print_row_num);
-	else
-	    bt_ptr->print_val(os, space, false);
-    }
-
-    os << " }";
-}
-#endif
 void 
 Sequence::print_one_row(FILE *out, int row, string space, 
 			bool print_row_num)
@@ -1231,45 +1050,6 @@ Sequence::print_one_row(FILE *out, int row, string space,
     fprintf( out, " }" ) ;
 }
 
-#if 0
-/** @brief Prints each row on its own line with a row number. 
-
-    This is a special output method for sequences. Uses
-    <tt>print_one_row</tt> with <tt>print_row_num</tt> True. 
-
-    @param os The output stream on which to print the Sequence.
-    @param space The leading spaces of the output.
-    @param print_decl_p If TRUE, prints the declaration of the
-    Sequence as well as its data.
-    @param print_row_numbers If TRUE, prints the row numbers next
-    to the Sequence instances (rows).
-*/ 
-void
-Sequence::print_val_by_rows(ostream &os, string space, bool print_decl_p,
-			    bool print_row_numbers)
-{
-    if (print_decl_p) {
-	print_decl(os, space, false);
-	os << " = ";
-    }
-
-    os << "{ ";
-
-    int rows = number_of_rows() - 1;
-    int i;
-    for (i = 0; i < rows; ++i) {
-	print_one_row(os, i, space, print_row_numbers);
-	    os << ", ";
-    }
-    print_one_row(os, i, space, print_row_numbers);
-
-    os << " }";
-
-    if (print_decl_p)
-        os << ";" << endl;
-}
-#endif
-
 void
 Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
 			    bool print_row_numbers)
@@ -1295,59 +1075,13 @@ Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p,
         fprintf( out, ";\n" ) ;
 }
 
-#if 0
-/** Print the values held by the sequence. This is used mostly for
-    debugging.
-    @param os Where should the text go?
-    @param space Leading spaces, used by formatting code.
-    @param print_decl_p If True, print the variable's declaration. */
-void 
-Sequence::print_val(ostream &os, string space, bool print_decl_p)
-{
-    print_val_by_rows(os, space, print_decl_p, false);
-}
-#endif
-
 void 
 Sequence::print_val(FILE *out, string space, bool print_decl_p)
 {
     print_val_by_rows(out, space, print_decl_p, false);
 }
 
-// print_all_vals is from Todd Karakasian. 
-// We need to integrate this into print_val somehow, maybe by adding an XDR *
-// to Sequence? This can wait since print_val is mostly used for debugging...
-//
-// Deprecated. 
 
-#if 0
-/** Prints a formatted version of an entire Sequence (all rows, all
-    columns), including nested Sequences.  This is meant to be used
-    on the client side of a DODS connection, and the source of the
-    Sequence data to be printed is specified with an XDR pointer. 
-
-    This function is no longer needed, since print_val_by_rows.
-
-    @deprecated Using the C++ iostream class is deprecated.
-    @brief Print the entire sequence.
-    @param os The output stream on which to print the Sequence.
-    @param src The external source from which the data is to come.
-    This is passed to <tt>deserialize()</tt>.
-    @param dds The Data Descriptor Structure object corresponding to
-    this dataset.  See <i>The DODS User Manual</i> for information
-    about this structure.  This would have been received from the
-    server in an earlier transmission.
-    @param space The leading spaces of the output.
-    @param print_decl_p If TRUE, prints the declaration of the
-    Sequence as well as its data.
-*/
-void
-Sequence::print_all_vals(ostream& os, XDR *, DDS *, string space,
-			 bool print_decl_p)
-{
-    print_val(os, space, print_decl_p);
-}
-#endif
 // print_all_vals is from Todd Karakasian. 
 // We need to integrate this into print_val somehow, maybe by adding an XDR *
 // to Sequence? This can wait since print_val is mostly used for debugging...

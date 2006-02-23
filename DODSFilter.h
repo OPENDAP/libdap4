@@ -110,15 +110,6 @@ protected:
     time_t d_anc_dds_lmt;	// Last modified time of the anc. DDS.
     time_t d_if_modified_since;	// Time from a conditional request.
 
-#if 0
-    // This is now public so that DODSFilter can be used in the BES code,
-    // which does not get command line switches like the 3.x server 'handler'
-    // programs. Instead, the BES will use the set_*() methods to transfer
-    // values from the DODSDataHandlerInterface object to an instance of this
-    // class.
-    DODSFilter() {}		// Private default ctor.
-#endif
-
     void initialize();
     void initialize(int argc, char *argv[]) throw(Error);
 
@@ -185,22 +176,12 @@ public:
 
     virtual void send_das(DAS &das, const string &anc_location = "",
                           bool with_mime_headers = true);
-#if 0
-    virtual void send_das(ostream &os, DAS &das,
-			  const string &anc_location="",
-                          bool with_mime_headers = true);
-#endif
     virtual void send_das(FILE *out, DAS &das, const string &anc_location="",
                           bool with_mime_headers = true);
 
     virtual void send_dds(DDS &dds, bool constrained = false,
 			  const string &anc_location = "",
                           bool with_mime_headers = true);
-#if 0
-    virtual void send_dds(ostream &os, DDS &dds, bool constrained = false,
-			  const string &anc_location = "",
-                          bool with_mime_headers = true);
-#endif
     virtual void send_dds(FILE *out, DDS &dds, bool constrained = false,
 			  const string &anc_location = "",
                           bool with_mime_headers = true);
@@ -218,200 +199,5 @@ public:
     
     virtual void send_blob(DDS &dds, FILE *out, bool with_mime_headers = true);
 };
-
-// $Log: DODSFilter.h,v $
-// Revision 1.33  2004/07/07 21:08:47  jimg
-// Merged with release-3-4-8FCS
-//
-// Revision 1.26.2.4  2004/07/02 20:41:51  jimg
-// Removed (commented) the pragma interface/implementation lines. See
-// the ChangeLog for more details. This fixes a build problem on HP/UX.
-//
-// Revision 1.32  2004/06/28 17:01:22  pwest
-// saving string representation of response type
-//
-// Revision 1.31  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.30  2003/09/25 22:37:34  jimg
-// Misc changes.
-//
-// Revision 1.26.2.3  2003/07/25 06:04:28  jimg
-// Refactored the code so that DDS:send() is now incorporated into
-// DODSFilter::send_data(). The old DDS::send() is still there but is
-// depracated.
-// Added 'smart timeouts' to all the variable classes. This means that
-// the new server timeouts are active only for the data read and CE
-// evaluation. This went inthe BaseType::serialize() methods because it
-// needed to time both the read() calls and the dds::eval() calls.
-//
-// Revision 1.26.2.2  2003/07/23 23:56:36  jimg
-// Now supports a simple timeout system.
-//
-// Revision 1.26.2.1  2003/06/23 11:49:18  rmorris
-// The // #pragma interface directive to GCC makes the dynamic typing
-// functionality go completely haywire under OS X on the PowerPC. We can't
-// use that directive on that platform and it was ifdef'd out for that case.
-//
-// Revision 1.29  2003/05/30 16:35:17  jimg
-// Added response enums for DDX and Response. Also added the send_ddx() method.
-//
-// Revision 1.28  2003/05/23 03:24:57  jimg
-// Changes that add support for the DDX response. I've based this on Nathan
-// Potter's work in the Java DAP software. At this point the code can
-// produce a DDX from a DDS and it can merge attributes from a DAS into a
-// DDS to produce a DDX fully loaded with attributes. Attribute aliases
-// are not supported yet. I've also removed all traces of strstream in
-// favor of stringstream. This code should no longer generate warnings
-// about the use of deprecated headers.
-//
-// Revision 1.27  2003/05/13 22:10:58  jimg
-// MOdified DODSFilter so that it takes a -o switch which names the type
-// of response to generate. This can be used to build a single hander
-// which can return all of the responses.
-//
-// Revision 1.26  2003/04/22 19:40:27  jimg
-// Merged with 3.3.1.
-//
-// Revision 1.25  2003/03/13 23:57:04  jimg
-// Added process_options() and initialize() methods. These facilitate
-// specializing this class.
-//
-// Revision 1.24  2003/02/21 00:14:24  jimg
-// Repaired copyright.
-//
-// Revision 1.23.2.1  2003/02/21 00:10:07  jimg
-// Repaired copyright.
-//
-// Revision 1.23  2003/01/23 00:22:24  jimg
-// Updated the copyright notice; this implementation of the DAP is
-// copyrighted by OPeNDAP, Inc.
-//
-// Revision 1.22  2003/01/10 19:46:40  jimg
-// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
-// cases files were added on that branch (so they appear on the trunk for
-// the first time).
-//
-// Revision 1.18.2.5  2002/12/17 22:35:03  pwest
-// Added and updated methods using stdio. Deprecated methods using iostream.
-//
-// Revision 1.21  2002/06/18 15:36:24  tom
-// Moved comments and edited to accommodate doxygen documentation-generator.
-//
-// Revision 1.20  2001/08/24 17:46:22  jimg
-// Resolved conflicts from the merge of release 3.2.6
-//
-// Revision 1.18.2.4  2001/08/21 14:54:43  dan
-// Added a set_dataset_name method to provide a mechanism to change the
-// dataset name in the DODSFilter class, which currently can only be set
-// by running the constructor.   This method was required for a modification
-// to the jg-dods server which now support relative pathnames as part of
-// the object name.
-//
-// Revision 1.19  2001/06/15 23:49:02  jimg
-// Merged with release-3-2-4.
-//
-// Revision 1.18.2.3  2001/06/14 21:32:04  jimg
-// Added a method to set the cgi_version property without relying on the ctor.
-//
-// Revision 1.18.2.2  2001/05/03 19:10:35  jimg
-// Added the d_conditional_request and d_if_modified_since fields. These are
-// used to indicate that the request from the client is a conditional GET
-// request. DODS currently only supports conditional requests based on the Last
-// Modified time included by a server in a response. The ctor takes a -l switch
-// which expects the time given with the If-Modified-Since header. This provides
-// an easy way for servers to handle the conditional request since they can
-// simply pass the switches and parameters they receive directly to DODSFilter
-// (as if they were opaque objects).
-//
-// Revision 1.18.2.1  2001/04/23 22:34:46  jimg
-// Added support for the Last-Modified MIME header in server responses.`
-//
-// Revision 1.18  2000/10/30 17:21:27  jimg
-// Added support for proxy servers (from cjm).
-//
-// Revision 1.17  2000/09/22 02:17:19  jimg
-// Rearranged source files so that the CVS logs appear at the end rather than
-// the start. Also made the ifdef guard symbols use the same naming scheme and
-// wrapped headers included in other headers in those guard symbols (to cut
-// down on extraneous file processing - See Lakos).
-//
-// Revision 1.16  2000/09/21 16:22:07  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.15  2000/07/09 21:57:09  rmorris
-// Mods's to increase portability, minimuze ifdef's in win32 and account
-// for differences between the Standard C++ Library - most notably, the
-// iostream's.
-//
-// Revision 1.14  2000/06/07 19:33:21  jimg
-// Merged with verson 3.1.6
-//
-// Revision 1.13  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.12.10.1  2000/06/02 18:16:48  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.11.2.3  2000/05/18 20:45:27  jimg
-// added set_ce(). Maybe add more set methods?
-//
-// Revision 1.12.4.1  2000/02/07 21:11:36  jgarcia
-// modified prototypes and implementations to use exceeption handling
-//
-// Revision 1.11.2.2  1999/09/08 22:36:03  jimg
-// Fixed the -V comment.
-//
-// Revision 1.12  1999/09/03 22:07:44  jimg
-// Merged changes from release-3-1-1
-//
-// Revision 1.11.2.1  1999/08/28 06:43:04  jimg
-// Fixed the implementation/interface pragmas and misc comments
-//
-// Revision 1.11  1999/05/25 21:57:12  dan
-// Added an optional second argument to read_ancillary_dds to support JGOFS
-// usage.
-//
-// Revision 1.10  1999/05/25 21:54:50  dan
-// Added an optional second argument to read_ancillary_das to support
-// JGOFS usage.
-//
-// Revision 1.9  1999/05/05 00:48:07  jimg
-// Added the get_cgi_version() member function.
-// Added documentation about get_cgi_version() and the -V option (new).
-//
-// Revision 1.8  1999/05/04 19:47:21  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.7  1999/04/29 02:29:28  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.6  1999/02/22 22:58:02  jimg
-// Added the get_accept_types() accessor. Also added to the ctor so that the -t
-// option will be parsed properly and used to set the value of accept_types.
-//
-// Revision 1.5  1999/01/21 20:42:01  tom
-// Fixed comment formatting problems for doc++
-//
-// Revision 1.4.2.1  1999/02/02 21:56:57  jimg
-// String to string version
-//
-// Revision 1.4  1998/08/06 16:11:47  jimg
-// Added cache_dir member (from jeh).
-//
-// Revision 1.3  1998/02/04 14:55:32  tom
-// Another draft of documentation.
-//
-// Revision 1.2  1997/09/22 23:04:59  jimg
-// Added doc++ style comments.
-//
-// Revision 1.1  1997/08/28 20:39:02  jimg
-// Created
-//
 
 #endif // _dodsfilter_h

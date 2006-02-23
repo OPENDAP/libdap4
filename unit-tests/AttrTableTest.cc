@@ -285,12 +285,6 @@ String longer%20name \"second test\";";
 	int n = at1->get_size();
 	CPPUNIT_ASSERT(n == 3);
 
-#if 0
-	for (AttrTable::Attr_iter j = at1->attr_begin(); 
-	     j != at1->attr_end(); ++j) 
-	    cerr << "Name: " << at1->get_name(j) << endl;
-#endif
-
 	AttrTable::Attr_iter i = at1->get_attr_iter(0);
 	CPPUNIT_ASSERT(at1->get_name(i) == "a");
 	i = at1->get_attr_iter(2);

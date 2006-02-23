@@ -74,25 +74,6 @@ public:
 	varnames.push_back( "array_int" ) ;
 	typedef vector<string>::const_iterator niter ;
 
-#if 0
-	Pix p = s.first_var() ;
-	niter n = varnames.begin() ;
-	for( ; p && n != varnames.end(); s.next_var( p ), n++ )
-	{
-	    // Why is this cast necesssary??? 11/16/04 jhrg.
-	    CPPUNIT_ASSERT( dynamic_cast<Constructor&>(s).var( p )->name() == *n ) ;
-	}
-	CPPUNIT_ASSERT( !p && n == varnames.end() ) ;
-	if( p && n == varnames.end() )
-	{
-	    CPPUNIT_FAIL( "Too many variables" ) ;
-	}
-	else if( !p && n != varnames.end() )
-	{
-	    CPPUNIT_FAIL( "Too few varialbes" ) ;
-	}
-#endif
-
 	Structure::Vars_iter viter = s.var_begin() ;
 	niter n = varnames.begin() ;
 	for( ; viter != s.var_end() && n != varnames.end(); viter++, n++ )

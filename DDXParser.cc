@@ -921,33 +921,3 @@ DDXParser::intern(const string &document, DDS *dest_dds, string *blob)
     xmlFreeParserCtxt(context);
 }
 
-// $Log: DDXParser.cc,v $
-// Revision 1.8  2005/04/07 22:32:47  jimg
-// Updated doxygen comments: fixed errors; updated comments about set_read_p.
-// Removed the VirtualCtor classes. Added a README about the factory
-// classes.
-//
-// Revision 1.7  2005/03/30 21:40:10  jimg
-// Now uses the BaseTypeFactory class.
-//
-// Revision 1.6  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.5  2003/06/03 01:43:01  jimg
-// Added support for retrieval of the dodsBLOB url. The intern() method
-// takes a point to a string; on return from the call the referenced string
-// holds the blob url.
-//
-// Revision 1.4  2003/05/30 23:55:41  jimg
-// Refactor, first pass, complete.
-//
-// Revision 1.3  2003/05/30 21:43:44  jimg
-// Parser now parses all data types correctly. Needs to be refactored so common
-// code can be combined.
-//
-// Revision 1.2  2003/05/30 02:00:55  jimg
-// Parses top level attributes and simple variables.
-//
-// Revision 1.1  2003/05/29 19:07:15  jimg
-// Added.
-//

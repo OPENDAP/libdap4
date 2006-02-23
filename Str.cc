@@ -162,12 +162,6 @@ Str::buf2val(void **val)
     if(!val)
 	throw InternalErr(__FILE__, __LINE__, 
 			  "No place to store a reference to the data.");
-#if 0
-    // This statement break the case where the caller allocates a string
-    // object and passes the address of a pointer to that object for val.
-    if (*val)
-	delete static_cast<string *>(*val);
-#endif
     // If *val is null, then the caller has not allocated storage for the 
     // value; we must. If there is storage there, assume it is a string and
     // assign _buf's value to that storage.
@@ -202,18 +196,7 @@ Str::val2buf(void *val, bool)
 
     return sizeof(string*);
 }
-#if 0
-void 
-Str::print_val(ostream &os, string space, bool print_decl_p)
-{
-    if (print_decl_p) {
-	print_decl(os, space, false);
-	os << " = \"" << escattr(_buf) << "\";" << endl;
-    }
-    else 
-        os << '"' << escattr(_buf) << '"';
-}
-#endif
+
 void 
 Str::print_val(FILE *out, string space, bool print_decl_p)
 {

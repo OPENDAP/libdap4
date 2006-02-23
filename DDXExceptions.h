@@ -38,12 +38,4 @@ public:
 	Error(string("The DDX response document parse failed: ") + msg) {}
 };
 
-// $Log: DDXExceptions.h,v $
-// Revision 1.2  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.1  2003/05/28 05:43:57  jimg
-// Added.
-//
-
 #endif // ddx_exceptions_h

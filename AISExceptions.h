@@ -53,15 +53,4 @@ public:
 	Error(string("The AIS database write failed: ") + msg) {}
 };
 
-// $Log: AISExceptions.h,v $
-// Revision 1.3  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.2  2003/05/28 07:05:32  jimg
-// Fixed spelling in one of the error messages (!)
-//
-// Revision 1.1  2003/02/20 22:09:22  jimg
-// Added.
-//
-
 #endif // ais_exceptions_h

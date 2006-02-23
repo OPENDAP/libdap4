@@ -143,10 +143,13 @@ parse_time(const char * str, bool expand)
 	    }
 	    tm.tm_mday = strtol(s, &s, 10);
 	    tm.tm_mon = make_month(s, &s);
-	    tm.tm_year = strtol(++s, &s, 10);
+            ++s;
+	    tm.tm_year = strtol(s, &s, 10);
 	    tm.tm_hour = strtol(s, &s, 10);
-	    tm.tm_min = strtol(++s, &s, 10);
-	    tm.tm_sec = strtol(++s, &s, 10);
+            ++s;
+	    tm.tm_min = strtol(s, &s, 10);
+            ++s;
+	    tm.tm_sec = strtol(s, &s, 10);
 
 	} else {					    /* Second format */
 	    DBG(cerr <<"Format...... Wkd, 00 Mon 0000 00:00:00 GMT" << endl);
@@ -159,8 +162,10 @@ parse_time(const char * str, bool expand)
 	    tm.tm_mon = make_month(s, &s);
 	    tm.tm_year = strtol(s, &s, 10) - 1900;
 	    tm.tm_hour = strtol(s, &s, 10);
-	    tm.tm_min = strtol(++s, &s, 10);
-	    tm.tm_sec = strtol(++s, &s, 10);
+            ++s;
+	    tm.tm_min = strtol(s, &s, 10);
+            ++s;
+	    tm.tm_sec = strtol(s, &s, 10);
 	}
     } 
     else if (isdigit((int) *str)) {
@@ -175,11 +180,16 @@ parse_time(const char * str, bool expand)
 		return 0;
 	    }
 	    tm.tm_year = strtol(s, &s, 10) - 1900;
-	    tm.tm_mon  = strtol(++s, &s, 10);
-	    tm.tm_mday = strtol(++s, &s, 10);
-	    tm.tm_hour = strtol(++s, &s, 10);
-	    tm.tm_min  = strtol(++s, &s, 10);
-	    tm.tm_sec  = strtol(++s, &s, 10);
+            ++s;
+	    tm.tm_mon  = strtol(s, &s, 10);
+            ++s;
+	    tm.tm_mday = strtol(s, &s, 10);
+            ++s;
+	    tm.tm_hour = strtol(s, &s, 10);
+            ++s;
+	    tm.tm_min  = strtol(s, &s, 10);
+            ++s;
+	    tm.tm_sec  = strtol(s, &s, 10);
 
 	} else {					    /* delta seconds */
 	    t = expand ? time(NULL) + atol(str) : atol(str);
@@ -200,8 +210,10 @@ parse_time(const char * str, bool expand)
 	tm.tm_mon = make_month(s, &s);
 	tm.tm_mday = strtol(s, &s, 10);
 	tm.tm_hour = strtol(s, &s, 10);
-	tm.tm_min = strtol(++s, &s, 10);
-	tm.tm_sec = strtol(++s, &s, 10);
+        ++s;
+	tm.tm_min = strtol(s, &s, 10);
+        ++s;
+	tm.tm_sec = strtol(s, &s, 10);
 	tm.tm_year = strtol(s, &s, 10) - 1900;
     }
     if (tm.tm_sec  < 0  ||  tm.tm_sec  > 59  ||

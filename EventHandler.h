@@ -67,21 +67,4 @@ public:
     }
 };
 
-// $Log: EventHandler.h,v $
-// Revision 1.3  2004/02/19 19:42:52  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
-//
-// Revision 1.1.2.3  2004/02/10 21:06:44  jimg
-// I removed AlarmHandler from this class and put it in its own header.
-//
-// Revision 1.2  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.1.2.2  2003/07/23 23:56:36  jimg
-// Now supports a simple timeout system.
-//
-// Revision 1.1.2.1  2003/07/19 01:48:37  jimg
-// Added.
-//
-
 #endif // event_handler_h

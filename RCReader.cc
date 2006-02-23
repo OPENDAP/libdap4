@@ -114,12 +114,6 @@ RCReader::write_rc_file(const string &pathname)
 		+ d_dods_proxy_server_host 
 		+ ":" + long_to_string(d_dods_proxy_server_port) << endl;
 	}
-#if 0
-	// Removed. See note in RCReader.h. 06/17/04 jhrg
-	fpo << "# PROXY_FOR=<regex>,<[user:password@]host[:port]>" << endl;
-	fpo << "# PROXY_FOR" << _dods_proxy_for_regexp << ","
-	    << _dods_proxy_for_proxy_host_url << endl;
-#endif
 
 	fpo << "# NO_PROXY_FOR=<protocol>,<host|domain>" << endl;
 	if (!d_dods_no_proxy_for_host.empty()) {
@@ -149,12 +143,6 @@ RCReader::read_rc_file(const string &pathname) throw(Error)
 	// overwritten. 
 	char *value;
 	char *tempstr = new char[1024];;
-#if 0
-	char *tempstr2;
-	char *tempstr3;
-	char *tempstr4;
-#endif
-
 	int tokenlength;
 	while (true) {
 	    fpi.getline(tempstr, 1023);
@@ -251,67 +239,7 @@ RCReader::read_rc_file(const string &pathname) throw(Error)
 		d_dods_no_proxy_for_protocol = no_proxy.substr(0, comma);
 		d_dods_no_proxy_for_host = no_proxy.substr(comma + 1);
 		d_dods_no_proxy_for = true;
-#if 0
-		// Dont use a proxy server for the host
-		// specified.  
-		tempstr2 = value;
-		if (tempstr2 != NULL) {
-		    tempstr3 = strchr(tempstr2, ',');
-		    if (tempstr3 != NULL) {
-			tempstr3[0] = (char) 0;	//terminate
-			//tempstr2
-			tempstr3++;	// point to access method.
-			tempstr4 = strchr(tempstr3, ',');
-			if (tempstr4 != NULL) {
-			    tempstr4[0] = (char) 0;	//terminate
-				//tempstr3
-			    tempstr4++;
-			    _dods_no_proxy_for_port = atoi(tempstr4);
-			}
-	    
-			// add proxy server for host 
-			// 'tempstr2' w/ access method 
-			// 'tempstr3' and port 'noproxy_host_port'.
-			// NB: Params reversed from above. 10/23/2000 jhrg
-			_dods_no_proxy_for_protocol=string(tempstr2);
-			_dods_no_proxy_for_proxy_host=string(tempstr3);
-			_dods_no_proxy_for = true;
-		    }
-		}
-#endif
 	    }
-#if 0
-	    // Ignore this option. See comment in RCReader.h 06/17/04 jhrg
-	    else if ((strncmp(tempstr, "PROXY_FOR", 9) == 0)
-		     && tokenlength == 9) {
-		// Setup a proxy server for any requests
-		// matching the given regular expression.
-		tempstr2 = value;
-		if (tempstr2 != NULL) {
-		    tempstr3 = strchr(tempstr2, ',');
-		    if (tempstr3 != NULL) {
-			tempstr3[0] = (char) 0;	//terminate
-			//tempstr2
-			tempstr3++;	// point to proxy server;
-			tempstr4 = strchr(tempstr3, ',');
-			// tempstr4 will be !NULL only if the regex flags
-			// are given. But we're not going to support
-			// those unless requested. So handle the case
-			// where they are not given, too. 10/25/2000 jhrg
-			if (tempstr4 != NULL) {
-			    tempstr4[0] = (char) 0;	//terminate
-				//tempstr3
-			    tempstr4++;
-			    _dods_proxy_for_regexp_flags = atoi(tempstr4);
-	      
-			}
-			_dods_proxy_for_regexp=string(tempstr2);
-			_dods_proxy_for_proxy_host_url=string(tempstr3);
-			_dods_proxy_for = true;
-		    }
-		}
-	    }
-#endif
 	}
     
 	delete [] tempstr; tempstr = 0;
@@ -440,26 +368,10 @@ RCReader::RCReader() throw(Error)
 
     if (!d_rc_file_path.empty())
 	read_rc_file(d_rc_file_path);
-
-#if 0
-    // Hmmm. This seems odd. Let HTTPCache manage the cache. 02/11/04 jhrg
-    if (_dods_use_cache) {
-	string lockstr = d_cache_root + string(".lock");
-	remove(lockstr.c_str());
-    }
-#endif
 }
 
 RCReader::~RCReader()
 {
-#if 0
-    // Don't always write the cache file. This was erasing values that
-    // were set (and besides, it's confusing to see that the file's creation
-    // date is always changing. Since this shouldn't be adding anything new,
-    // DON'T write it out here. 6/27/2002 jhrg
-    if(_instance)
-	_instance->write_rc_file();
-#endif
 }
 
 /** Static void private method. */

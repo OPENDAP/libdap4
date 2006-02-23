@@ -50,14 +50,6 @@
 
 extern int test_variable_sleep_interval;
 
-#if 0
-Float32 *
-NewFloat32(const string &n)
-{
-    return new TestFloat32(n);
-}
-#endif
-
 void
 TestFloat32::_duplicate(const TestFloat32 &ts)
 {

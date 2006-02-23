@@ -48,14 +48,6 @@
 
 extern int test_variable_sleep_interval;
 
-#if 0
-UInt32 *
-NewUInt32(const string &n)
-{
-    return new TestUInt32(n);
-}
-#endif
-
 void
 TestUInt32::_duplicate(const TestUInt32 &ts)
 {

@@ -52,14 +52,6 @@ using std::endl;
 
 extern int test_variable_sleep_interval;
 
-#if 0
-Array *
-NewArray(const string &n, BaseType *v)
-{
-    return new TestArray(n, v);
-}
-#endif
-
 void
 TestArray::_duplicate(const TestArray &ts)
 {

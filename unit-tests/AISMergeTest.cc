@@ -85,13 +85,6 @@ public:
 	    CPPUNIT_ASSERT(stuff.find(fnoc1_ais_string) 
 			   != string::npos);
 
-#if 0
-	    rv = ais_merge->d_ais_db.get_resource(bears);
-	    res = ais_merge->get_ais_resource(rv[0].get_url());
-	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(bears_1_ais_string) 
-			   != string::npos);
-#endif
-
 	    rv = ais_merge->d_ais_db.get_resource(coads);
 	    res = ais_merge->get_ais_resource(rv[0].get_url());
 	    CPPUNIT_ASSERT(dump2string(res->get_stream()).find(coads_ais_string) 

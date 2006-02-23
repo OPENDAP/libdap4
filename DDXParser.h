@@ -178,34 +178,4 @@ public:
     static void ddx_fatal_error(DDXParser *parser, const char *msg, ...);
 };
 
-// $Log: DDXParser.h,v $
-// Revision 1.8  2005/04/07 22:32:47  jimg
-// Updated doxygen comments: fixed errors; updated comments about set_read_p.
-// Removed the VirtualCtor classes. Added a README about the factory
-// classes.
-//
-// Revision 1.7  2005/03/30 21:29:05  jimg
-// Now uses the BaseTypeFactory class.
-//
-// Revision 1.6  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.5  2003/06/03 01:43:01  jimg
-// Added support for retrieval of the dodsBLOB url. The intern() method
-// takes a point to a string; on return from the call the referenced string
-// holds the blob url.
-//
-// Revision 1.4  2003/05/30 23:55:59  jimg
-// Refactor, first pass, complete.
-//
-// Revision 1.3  2003/05/30 21:44:03  jimg
-// Parser now parses all data types correctly.
-//
-// Revision 1.2  2003/05/30 02:01:03  jimg
-// Parses top level attributes and simple variables.
-//
-// Revision 1.1  2003/05/29 19:07:15  jimg
-// Added.
-//
-
 #endif // ddx_parser_h

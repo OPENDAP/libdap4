@@ -709,17 +709,6 @@ Vector::val2buf(void *val, bool reuse)
           d_str.resize(_length);
           for (int i = 0; i < _length; ++i)
               d_str[i] = *(static_cast<string*>(val)+i);
-#if 0              
-	  unsigned elem_wid = _var->width();
-	  unsigned len = length();
-
-	  vec_resize(len);
-
-	  for (unsigned i = 0; i < len; ++i) {
-	      _vec[i] = _var->ptr_duplicate(); //changed, reza
-	      _vec[i]->val2buf((char *)val + i * elem_wid, reuse);
-	  }
-#endif
 
 	  break;
       }
@@ -781,25 +770,7 @@ Vector::buf2val(void **val)
             
         for (int i = 0; i < _length; ++i)
             *(static_cast<string*>(*val) + i) = d_str[i];
-#if 0            
-	unsigned int elem_wid = _var->width();
-	unsigned int len = length();
 
- 	if (!*val) {
-	    *val = new string *[len];
-	    memcpy(*val, 0, len*elem_wid);
-	}
-
-#if 0
- 	if (!*val)
-	    *val = new string [len]; 
-#endif
-
-	for (unsigned i = 0; i < len; ++i) {
-	    void *val_elem = (char *)*val + i * elem_wid;
-	    _vec[i]->buf2val(&val_elem);
-	}
-#endif
 	break;
       }
 
@@ -838,11 +809,6 @@ Vector::set_vec(unsigned int i, BaseType *val)
     // This is a public method which allows users to set the elements
     // of *this* vector. Passing an invalid index, a NULL pointer or 
     // missmatching the vector type are internal errors.
-#if 0
-    // 'i' is unsigned. jhrg 8/9/05
-    if (i<0)
-	throw InternalErr(__FILE__, __LINE__, "Invalid data: negative index.");
-#endif
     if (i>=static_cast<unsigned int>(_length))
         throw InternalErr(__FILE__, __LINE__, "Invalid data: index too large.");
     if (!val)

@@ -113,14 +113,7 @@ DAS::DAS(AttrTable *attr, string name)
 DAS::~DAS()
 {
 }
-#if 0
-/** @brief Returns a pointer to the first attribute table. */
-Pix
-DAS::first_var()
-{
-    return AttrTable::first_attr();
-}
-#endif
+
 AttrTable::Attr_iter
 DAS::var_begin()
 {
@@ -132,40 +125,14 @@ DAS::var_end()
 {
     return AttrTable::attr_end() ;
 }
-#if 0
-/** @brief Increments an attribute table pointer to indicate the next table
-    in the series. */
-void
-DAS::next_var(Pix p)
-{
-    AttrTable::next_attr(p);
-}
 
-/** @brief Returns the name of the indicated attribute table. */
-string
-DAS::get_name(Pix p)
-{
-    return AttrTable::get_name(p);
-}
-#endif
+
 string
 DAS::get_name(Attr_iter &i)
 {
     return AttrTable::get_name(i);
 }
 
-/** @brief Returns the attribute table with the given name. 
-    @name get_table()
-*/
-#if 0
-//@{
-/** @brief Returns the indicated attribute table. */
-AttrTable *
-DAS::get_table(Pix p)
-{
-    return AttrTable::get_attr_table(p);
-}
-#endif
 /** @brief Returns the attribute table with the given name string. */
 AttrTable *
 DAS::get_table(Attr_iter &i)
@@ -292,9 +259,6 @@ DAS::parse(FILE *in)
 	throw InternalErr(__FILE__, __LINE__, "Null input stream.");
     }
 
-#if 0
-    dasrestart(in);
-#endif
     void *buffer = das_buffer(in);
     das_switch_to_buffer(buffer);
 
@@ -314,32 +278,6 @@ DAS::parse(FILE *in)
 
 //@}
 
-/** @brief Creates an ASCII representation of a DAS on the given output
-    stream. 
-
-    Write attributes from tables to `out' (which defaults to
-    stdout). Return true. 
-
-    When an identifier contains a character that contains
-    characters that cannot be present in a URL (e.g., a space)
-    AttrTable::print replaces those characters with WWW
-    escape codes. 7/13/2001 jhrg 
-
-    @deprecated Using the C++ iostream class is deprecated.
-*/
-
-#if 0
-void
-DAS::print(ostream &os, bool dereference)
-{
-    os << "Attributes {" << endl;
-
-    AttrTable::print(os, "    ", dereference);
-
-    os << "}" << endl;
-
-}
-#endif
 /** Creates an ASCII representation of a DAS on the given output
     stream.
 
@@ -361,292 +299,3 @@ DAS::print(FILE *out, bool dereference)
 
     fprintf( out, "}\n" ) ;
 }
-
-// $Log: DAS.cc,v $
-// Revision 1.43  2004/07/07 21:08:47  jimg
-// Merged with release-3-4-8FCS
-//
-// Revision 1.40.2.4  2004/07/02 20:41:51  jimg
-// Removed (commented) the pragma interface/implementation lines. See
-// the ChangeLog for more details. This fixes a build problem on HP/UX.
-//
-// Revision 1.42  2004/02/19 19:42:52  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
-//
-// Revision 1.40.2.3  2004/02/04 00:05:10  jimg
-// Memory errors: I've fixed a number of memory errors (leaks, references)
-// found using valgrind. Many remain. I need to come up with a systematic
-// way of running the tests under valgrind.
-//
-// Revision 1.41  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.40.2.2  2003/09/06 22:37:50  jimg
-// Updated the documentation.
-//
-// Revision 1.40.2.1  2003/06/06 08:28:28  reza
-// Error code changes in the error object.
-//
-// Revision 1.40  2003/04/22 19:40:27  jimg
-// Merged with 3.3.1.
-//
-// Revision 1.39  2003/02/21 00:14:24  jimg
-// Repaired copyright.
-//
-// Revision 1.38.2.1  2003/02/21 00:10:07  jimg
-// Repaired copyright.
-//
-// Revision 1.38  2003/01/23 00:22:24  jimg
-// Updated the copyright notice; this implementation of the DAP is
-// copyrighted by OPeNDAP, Inc.
-//
-// Revision 1.37  2003/01/10 19:46:40  jimg
-// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
-// cases files were added on that branch (so they appear on the trunk for
-// the first time).
-//
-// Revision 1.32.4.10  2002/12/17 22:35:02  pwest
-// Added and updated methods using stdio. Deprecated methods using iostream.
-//
-// Revision 1.32.4.9  2002/11/21 21:24:17  pwest
-// memory leak cleanup and file descriptor cleanup
-//
-// Revision 1.32.4.8  2002/10/28 21:17:44  pwest
-// Converted all return values and method parameters to use non-const iterator.
-// Added operator== and operator!= methods to IteratorAdapter to handle Pix
-// problems.
-//
-// Revision 1.32.4.7  2002/09/12 22:49:57  pwest
-// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
-// than taking a reference to a Pix, taking a Pix value.
-//
-// Revision 1.32.4.6  2002/09/05 22:52:54  pwest
-// Replaced the GNU data structures SLList and DLList with the STL container
-// class vector<>. To maintain use of Pix, changed the Pix.h header file to
-// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
-// outside of the DAP should compile and link with no problems. Added methods
-// to the different classes where Pix is used to include methods to use STL
-// iterators. Replaced the use of Pix within the DAP to use iterators instead.
-// Updated comments for documentation, updated the test suites, and added some
-// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
-//
-// Revision 1.32.4.5  2002/08/08 06:54:56  jimg
-// Changes for thread-safety. In many cases I found ugly places at the
-// tops of files while looking for globals, et c., and I fixed them up
-// (hopefully making them easier to read, ...). Only the files RCReader.cc
-// and usage.cc actually use pthreads synchronization functions. In other
-// cases I removed static objects where they were used for supposed
-// improvements in efficiency which had never actually been verifiied (and
-// which looked dubious).
-//
-// Revision 1.36  2002/06/18 15:36:24  tom
-// Moved comments and edited to accommodate doxygen documentation-generator.
-//
-// Revision 1.35  2001/08/27 16:39:42  jimg
-// Fixed up cruft from merge.
-//
-// Revision 1.34  2001/08/24 17:46:22  jimg
-// Resolved conflicts from the merge of release 3.2.6
-//
-// Revision 1.32.4.4  2001/07/28 01:10:42  jimg
-// Some of the numeric type classes did not have copy ctors or operator=.
-// I added those where they were needed.
-// In every place where delete (or delete []) was called, I set the pointer
-// just deleted to zero. Thus if for some reason delete is called again
-// before new memory is allocated there won't be a mysterious crash. This is
-// just good form when using delete.
-// I added calls to www2id and id2www where appropriate. The DAP now handles
-// making sure that names are escaped and unescaped as needed. Connect is
-// set to handle CEs that contain names as they are in the dataset (see the
-// comments/Log there). Servers should not handle escaping or unescaping
-// characters on their own.
-//
-// Revision 1.33  2001/01/26 19:48:09  jimg
-// Merged with release-3-2-3.
-//
-// Revision 1.32.4.3  2000/11/30 05:24:46  jimg
-// Significant changes and improvements to the AttrTable and DAS classes. DAS
-// now is a child of AttrTable, which makes attributes behave uniformly at
-// all levels of the DAS object. Alias now work. I've added unit tests for
-// several methods in AttrTable and some of the functions in parser-util.cc.
-// In addition, all of the DAS tests now work.
-//
-// Revision 1.32.4.2  2000/11/22 21:47:42  jimg
-// Changed the implementation of DAS; it now inherits from AttrTable
-//
-// Revision 1.32.4.1  2000/11/22 01:31:30  jimg
-// Made this class a child of AttrTable. Most methods are now simply calls to
-// methods of AttrTable.
-//
-// Revision 1.32  2000/09/22 02:17:19  jimg
-// Rearranged source files so that the CVS logs appear at the end rather than
-// the start. Also made the ifdef guard symbols use the same naming scheme and
-// wrapped headers included in other headers in those guard symbols (to cut
-// down on extraneous file processing - See Lakos).
-//
-// Revision 1.31  2000/09/21 16:22:07  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.30  2000/07/09 22:05:35  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.29  2000/06/07 19:33:21  jimg
-// Merged with verson 3.1.6
-//
-// Revision 1.28  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.27.6.1  2000/06/02 18:16:47  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.26.6.2  2000/05/12 18:46:17  jimg
-// Minor changes in the dtor.
-//
-// Revision 1.26.14.2  2000/02/17 05:03:12  jimg
-// Added file and line number information to calls to InternalErr.
-// Resolved compile-time problems with read due to a change in its
-// parameter list given that errors are now reported using exceptions.
-//
-// Revision 1.26.14.1  2000/02/07 21:11:35  jgarcia
-// modified prototypes and implementations to use exceeption handling
-//
-// Revision 1.27  2000/01/27 06:29:56  jimg
-// Resolved conflicts from merge with release-3-1-4
-//
-// Revision 1.26.6.1  2000/01/26 23:56:22  jimg
-// Fixed the return type of string::find.
-//
-// Revision 1.26  1999/04/29 02:29:28  jimg
-// Merge of no-gnu branch
-//
-
-// Revision 1.25  1999/03/24 23:37:14  jimg
-// Added support for the Int16, UInt16 and Float32 types
-//
-// Revision 1.24  1998/11/24 06:52:42  jimg
-// Fixed copyright.
-//
-// Revision 1.23  1998/11/24 06:46:08  jimg
-// Ripped out the DASVHMap class and replaced it with an SLList of structs.
-// See DAS.h for the (private) struct definition. There are no changes to the
-// class interface. I did add a default ctor (DAS()), but that conflicted
-// with another (old) ctor that had defaults for its two parameters, so I
-// bagged that for now.
-//
-// Revision 1.22  1998/08/13 22:11:24  jimg
-// Added include of unistd.h for dup(2).
-//
-// Revision 1.21.14.2  1999/02/05 09:32:34  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.21.14.1  1999/02/02 21:56:57  jimg
-// String to string version
-//
-// Revision 1.21  1997/06/06 00:44:02  jimg
-// Removed add_table(char *, ...).
-//
-// Revision 1.20  1997/05/13 23:32:14  jimg
-// Added changes to handle the new Alias and lexical scoping rules.
-//
-// Revision 1.19  1996/08/13 18:00:32  jimg
-// Switched to use of parse_arg object for passing values to and from the
-// bison generated parser.
-// Added test for error objects on return from the parser and call the
-// display_message member function when one is detected.
-//
-// Revision 1.18  1996/05/31 23:29:34  jimg
-// Updated copyright notice.
-//
-// Revision 1.17  1996/04/05 00:21:25  jimg
-// Compiled with g++ -Wall and fixed various warnings.
-//
-// Revision 1.16  1995/08/23  00:05:40  jimg
-// Added copyright notice.
-//
-// Revision 1.15  1995/07/09  21:28:54  jimg
-// Added copyright notice.
-//
-// Revision 1.14  1995/07/08  18:31:11  jimg
-// Added extern keyword for the external declarations of dasparse and
-// dasrestart.
-//
-// Revision 1.13  1995/05/10  13:45:11  jimg
-// Changed the name of the configuration header file from `config.h' to
-// `config.h' so that other libraries could have header files which were
-// installed in the DODS include directory without overwriting this one. Each
-// config header should follow the convention config_<name>.h.
-//
-// Revision 1.12  1995/02/10  02:29:37  jimg
-// Added second parameter to dasparse. It is a switch that indicates that
-// the parse went OK. Now the parser will return true even if erros were
-// detected so long as they were recoverable errors.
-//
-// Revision 1.11  1995/01/19  21:58:49  jimg
-// Added read_val from dummy_read.cc to the sample set of sub-class
-// implementations.
-// Changed the declaration of readVal in BaseType so that it names the
-// mfunc read_val (to be consistant with the other mfunc names).
-// Removed the unnecessary duplicate declaration of the abstract virtual
-// mfuncs read and (now) read_val from the classes Byte, ... Grid. The
-// declaration in BaseType is sufficient along with the decl and definition
-// in the *.cc,h files which contain the subclasses for Byte, ..., Grid.
-//
-// Revision 1.10  1994/11/22  14:05:36  jimg
-// Added code for data transmission to parts of the type hierarchy. Not
-// complete yet.
-// Fixed erros in type hierarchy headers (typos, incorrect comments, ...).
-//
-// Revision 1.9  1994/10/17  23:39:49  jimg
-// Removed unnecessary print functions.
-//
-// Revision 1.8  1994/10/13  16:42:59  jimg
-// dasrestart was incorrectly declared as void dasrestart(...) in DAS.cc.
-// This caused the alpha to say `Could not read from file' whenever
-// dasrestart was called (which happens whenever a new file is read). Fixed
-// the declaration and removed the test on the (phantom) return value.
-//
-// Revision 1.7  1994/10/13  15:46:57  jimg
-// Added compile-time switched instrumentation.
-// Removed the three definitions of DAS::print().
-// Added DAS::print(ostream &os = cout) -- this is the only function for
-// printing the in-memory DAS.
-//
-// Revision 1.6  1994/10/05  16:34:12  jimg
-// Fixed bug in the parse function(s): the bison generated parser returns
-// 1 on error, 0 on success, but parse() was not checking for this.
-// Instead it returned the value of bison's parser function.
-// Changed types of `status' in print and parser functions from int to bool.
-//
-// Revision 1.5  1994/09/27  22:46:29  jimg
-// Changed the implementation of the class DAS from one which inherited
-// from DASVHMap to one which contains an instance of DASVHMap.
-// Added mfuncs to set/access the new instance variable.
-//
-// Revision 1.4  1994/09/09  15:33:38  jimg
-// Changed the base name of this class's parents from `Var' to DAS.
-// Added print() and removed operator<< (see the comments in AttrTable).
-// Added overloaded versions of print() and parse(). They can be called
-// using nothing (which defaults to std{in,out}), with a file descriptor,
-// with a FILE *, or with a String givin a file name.
-//
-// Revision 1.3  1994/08/02  20:11:25  jimg
-// Changes operator<< so that it writes a parsable version of the
-// attribute table.
-//
-// Revision 1.2  1994/08/02  19:17:40  jimg
-// Fixed log comments and rcsid[] variables (syntax errors due to //
-// comments caused compilation failures).
-// das.tab.c and .h are commited now as well.
-//
-// Revision 1.1  1994/08/02  18:40:09  jimg
-// Implemetation of the DAS class. This class is a container that maps
-// String objects which name variables to AttrTablePtr objects.
-//
-

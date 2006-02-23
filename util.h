@@ -126,30 +126,7 @@ const char *dods_progress();
 void flush_stream(iostream ios, FILE *out);
 #endif
 
-#if 0
-bool func_member(int argc, BaseType *argv[], DDS &dds);
-bool func_null(int argc, BaseType *argv[], DDS &dds);
-BaseType *func_nth(int argc, BaseType *argv[], DDS &dds);
-BaseType *func_length(int argc, BaseType *argv[], DDS &dds);
-#endif
-
 extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
-
-#if 0
-Byte *NewByte(const string &n = "");
-Int16 *NewInt16(const string &n = "");
-UInt16 *NewUInt16(const string &n = "");
-Int32 *NewInt32(const string &n = "");
-UInt32 *NewUInt32(const string &n = "");
-Float32 *NewFloat32(const string &n = "");
-Float64 *NewFloat64(const string &n = "");
-Str *NewStr(const string &n = "");
-Url *NewUrl(const string &n = "");
-Array *NewArray(const string &n = "", BaseType *v = 0);
-Structure *NewStructure(const string &n = "");
-Sequence *NewSequence(const string &n = "");
-Grid *NewGrid(const string &n = "");
-#endif
 
 void downcase(string &s);
 // Jose Garcia

@@ -50,14 +50,6 @@ TestSequence::_duplicate(const TestSequence &ts)
     d_series_values = ts.d_series_values;
 }
 
-#if 0
-Sequence *
-NewSequence(const string &n)
-{
-    return new TestSequence(n);
-}
-#endif
-
 BaseType *
 TestSequence::ptr_duplicate()
 {

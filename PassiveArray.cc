@@ -333,13 +333,3 @@ PassiveArray::set_value( string *val, int sz )
 	return false;
     }
 }
-
-// $Log: PassiveArray.cc,v $
-// Revision 1.2  2005/04/07 22:32:47  jimg
-// Updated doxygen comments: fixed errors; updated comments about set_read_p.
-// Removed the VirtualCtor classes. Added a README about the factory
-// classes.
-//
-// Revision 1.1  2004/07/09 16:34:38  pwest
-// Adding Passive Data Model objects
-//

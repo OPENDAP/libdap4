@@ -83,15 +83,4 @@ public:
     }
 };
 
-// $Log: HTTPCacheInterruptHandler.h,v $
-// Revision 1.2  2004/02/19 19:42:52  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
-//
-// Revision 1.1.2.2  2004/02/15 22:43:41  rmorris
-// Win32 needs signal.h when a signal is used.
-//
-// Revision 1.1.2.1  2004/02/10 20:51:13  jimg
-// Added. Handles interrupts for the HTTPCache class.
-//
-
 #endif // http_cache_interrupt_handler_h

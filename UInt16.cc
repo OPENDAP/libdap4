@@ -158,19 +158,6 @@ UInt16::buf2val(void **val)
     return width();
 }
 
-// Print BUF to stdout with its declaration. Intended mostly for debugging.
-#if 0
-void 
-UInt16::print_val(ostream &os, string space, bool print_decl_p)
-{
-    if (print_decl_p) {
-	print_decl(os, space, false);
-	os << " = " << _buf << ";" << endl;
-    }
-    else 
-	os << _buf;
-}
-#endif
 void 
 UInt16::print_val(FILE *out, string space, bool print_decl_p)
 {

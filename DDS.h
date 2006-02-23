@@ -196,9 +196,7 @@ private:
     };
 
     BaseTypeFactory *d_factory;
-#if 0
-    bool d_local_basetype_factory; // should the dtor free d_factory?
-#endif
+
     string name;		// The dataset name
 
     string _filename;		// File name (or other OS identifier) for
@@ -276,16 +274,9 @@ public:
         factory when done with this DDS.
         @see BaseTypeFactory */
     BaseTypeFactory *set_factory(BaseTypeFactory *factory) {
-#if 0
-        if (d_local_basetype_factory)
-            delete d_factory;
-#endif
         BaseTypeFactory *t = d_factory;
 	d_factory = factory;
         return t;
-#if 0
-	d_local_basetype_factory = false; 
-#endif
     }
     
     virtual AttrTable &get_attr_table();
@@ -300,15 +291,6 @@ public:
 
     BaseType *var(const string &n, btp_stack &s);
     BaseType *var(const string &n, btp_stack *s = 0);
-#if character
-    BaseType *var(const char *n, btp_stack *s = 0);
-#endif
-#if 0
-    BaseType *var(Pix p);
- 
-    Pix first_var();
-    void next_var(Pix p);
-#endif
     int num_var();
 
     /// Return an iteraor
@@ -341,13 +323,6 @@ public:
     bool find_function(const string &name, btp_func *f) const;
     bool find_function(const string &name, proj_func *f) const;
 
-#if 0
-    Pix first_clause();
-    void next_clause(Pix p);
-    Clause *clause(Pix p);
-    bool clause_value(Pix p, const string &dataset);
-#endif
-
     void append_clause(int op, rvalue *arg1, rvalue_list *arg2);
     void append_clause(bool_func func, rvalue_list *args);
     void append_clause(btp_func func, rvalue_list *args);
@@ -368,28 +343,13 @@ public:
     bool clause_value(Clause_iter &i, const string &dataset);
 
     void parse_constraint(const string &constraint);
-#if 0
-    // Both of the following are deprecated methods.
-    void parse_constraint(const string &constraint, ostream &os,
-			  bool server = true);
-#endif
-#if 0
-    void parse_constraint(const string &constraint, FILE *out,
-			  bool server = true);
-#endif
     void append_constant(BaseType *btp);
 
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in=stdin);
 
-#if 0
-    void print(ostream &os = cout);
-#endif
     void print(FILE *out);
-#if 0
-    void print_constrained(ostream &os = cout);
-#endif
     void print_constrained(FILE *out);
 
     void print_xml(FILE *out, bool constrained, const string &blob);
@@ -404,397 +364,5 @@ public:
 
     void tag_nested_sequences();
 };
-
-// $Log: DDS.h,v $
-// Revision 1.62  2005/03/30 21:27:35  jimg
-// Added DEFAULT_BASETYPE_FACTORY define; use this to control whether
-// the DDS objects suppy the BaseTypeFactory by default.
-//
-// Revision 1.61  2005/03/19 00:39:04  jimg
-// Mods for unit tests; tracking down memory leaks.
-//
-// Revision 1.60  2005/01/28 17:25:12  jimg
-// Resolved conflicts from merge with release-3-4-9
-//
-// Revision 1.50.2.5  2005/01/18 23:03:07  jimg
-// FIxed documentation.
-//
-// Revision 1.50.2.4  2004/12/23 20:53:10  dan
-// Added method tag_nested_sequences() that traverses Sequence
-// members to set the leaf_node for the innermost Sequence.
-//
-// Revision 1.59  2004/11/16 18:37:05  jimg
-// Added reverese iterators.
-//
-// Revision 1.58  2004/08/03 23:11:38  jimg
-// I changed the three static functions that are helpers for
-// transfer_attributes() to methods. This makes them easier to test, although I
-// never wrote any unit tests for them...
-//
-// Revision 1.57  2004/07/07 21:08:47  jimg
-// Merged with release-3-4-8FCS
-//
-// Revision 1.50.2.3  2004/07/02 20:41:51  jimg
-// Removed (commented) the pragma interface/implementation lines. See
-// the ChangeLog for more details. This fixes a build problem on HP/UX.
-//
-// Revision 1.56  2004/06/28 16:59:43  pwest
-// Inherit DDS and DAS from DODSResponseObject
-//
-// Revision 1.55  2004/03/01 22:32:10  jimg
-// Bring the trunk up to date with the code in my working directory...
-//
-// Revision 1.54  2003/12/10 21:11:57  jimg
-// Merge with 3.4. Some of the files contains erros (some tests fail). See
-// the ChangeLog for information about fixes.
-//
-// Revision 1.53  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.52  2003/09/25 22:37:34  jimg
-// Misc changes.
-//
-// Revision 1.50.2.2  2003/07/25 06:04:28  jimg
-// Refactored the code so that DDS:send() is now incorporated into
-// DODSFilter::send_data(). The old DDS::send() is still there but is
-// depracated.
-// Added 'smart timeouts' to all the variable classes. This means that
-// the new server timeouts are active only for the data read and CE
-// evaluation. This went inthe BaseType::serialize() methods because it
-// needed to time both the read() calls and the dds::eval() calls.
-//
-// Revision 1.50.2.1  2003/06/23 11:49:18  rmorris
-// The // #pragma interface directive to GCC makes the dynamic typing functionality
-// go completely haywire under OS X on the PowerPC.  We can't use that directive
-// on that platform and it was ifdef'd out for that case.
-//
-// Revision 1.51  2003/05/23 03:24:57  jimg
-// Changes that add support for the DDX response. I've based this on Nathan
-// Potter's work in the Java DAP software. At this point the code can
-// produce a DDX from a DDS and it can merge attributes from a DAS into a
-// DDS to produce a DDX fully loaded with attributes. Attribute aliases
-// are not supported yet. I've also removed all traces of strstream in
-// favor of stringstream. This code should no longer generate warnings
-// about the use of deprecated headers.
-//
-// Revision 1.50  2003/04/22 19:40:27  jimg
-// Merged with 3.3.1.
-//
-// Revision 1.48.2.2  2003/04/15 01:17:12  jimg
-// Added a method to get the iterator for a variable (or map) given its
-// index. To get the iterator for the ith variable/map, call
-// get_vars_iter(i).
-//
-// Revision 1.49  2003/02/21 00:14:24  jimg
-// Repaired copyright.
-//
-// Revision 1.48.2.1  2003/02/21 00:10:07  jimg
-// Repaired copyright.
-//
-// Revision 1.48  2003/01/23 00:22:24  jimg
-// Updated the copyright notice; this implementation of the DAP is
-// copyrighted by OPeNDAP, Inc.
-//
-// Revision 1.47  2003/01/10 19:46:40  jimg
-// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
-// cases files were added on that branch (so they appear on the trunk for
-// the first time).
-//
-// Revision 1.41.4.11  2002/12/17 22:35:02  pwest
-// Added and updated methods using stdio. Deprecated methods using iostream.
-//
-// Revision 1.41.4.10  2002/11/18 18:51:59  jimg
-// Changed the include of Pix.h from #include <Pix.h> to "Pix.h" to fix
-// a problem with the dependencies (see today's check in of Makefile.in).
-//
-// Revision 1.41.4.9  2002/10/28 21:17:44  pwest
-// Converted all return values and method parameters to use non-const iterator.
-// Added operator== and operator!= methods to IteratorAdapter to handle Pix
-// problems.
-//
-// Revision 1.41.4.8  2002/10/02 17:50:36  pwest
-// Added two new del_vars methods. The first takes an iterator and deltes the
-// variable referenced by that iterator. The iterator now points to the element
-// after the deleted element. The second method takes two iterators and will
-// delete the variables starting from the first iterator and up to, not
-// including the second iterator.
-//
-// Revision 1.41.4.7  2002/09/22 14:15:43  rmorris
-// Changed the use of vector to std::vector.  The 'using' directive for VC++
-// no longer cut it in this case.
-//
-// Revision 1.41.4.6  2002/09/12 22:49:57  pwest
-// Corrected signature changes made with Pix to IteratorAdapter changes. Rather
-// than taking a reference to a Pix, taking a Pix value.
-//
-// Revision 1.41.4.5  2002/09/05 22:52:54  pwest
-// Replaced the GNU data structures SLList and DLList with the STL container
-// class vector<>. To maintain use of Pix, changed the Pix.h header file to
-// redefine Pix to be an IteratorAdapter. Usage remains the same and all code
-// outside of the DAP should compile and link with no problems. Added methods
-// to the different classes where Pix is used to include methods to use STL
-// iterators. Replaced the use of Pix within the DAP to use iterators instead.
-// Updated comments for documentation, updated the test suites, and added some
-// unit tests. Updated the Makefile to remove GNU/SLList and GNU/DLList.
-//
-// Revision 1.46  2002/06/18 15:36:24  tom
-// Moved comments and edited to accommodate doxygen documentation-generator.
-//
-// Revision 1.45  2002/06/03 22:21:15  jimg
-// Merged with release-3-2-9
-//
-// Revision 1.41.4.4  2002/03/01 21:03:08  jimg
-// Significant changes to the var(...) methods. These now take a btp_stack
-// pointer and are used by DDS::mark(...). The exact_match methods have also
-// been updated so that leaf variables which contain dots in their names
-// will be found. Note that constructor variables with dots in their names
-// will break the lookup routines unless the ctor is the last field in the
-// constraint expression. These changes were made to fix bug 330.
-//
-// Revision 1.44  2001/09/28 17:50:07  jimg
-// Merged with 3.2.7.
-//
-// Revision 1.41.4.3  2001/09/25 20:33:26  jimg
-// Removed debug.h
-//
-// Revision 1.43  2001/08/24 17:46:22  jimg
-// Resolved conflicts from the merge of release 3.2.6
-//
-// Revision 1.41.4.2  2001/07/28 01:10:42  jimg
-// Some of the numeric type classes did not have copy ctors or operator=.
-// I added those where they were needed.
-// In every place where delete (or delete []) was called, I set the pointer
-// just deleted to zero. Thus if for some reason delete is called again
-// before new memory is allocated there won't be a mysterious crash. This is
-// just good form when using delete.
-// I added calls to www2id and id2www where appropriate. The DAP now handles
-// making sure that names are escaped and unescaped as needed. Connect is
-// set to handle CEs that contain names as they are in the dataset (see the
-// comments/Log there). Servers should not handle escaping or unescaping
-// characters on their own.
-//
-// Revision 1.42  2001/06/15 23:49:01  jimg
-// Merged with release-3-2-4.
-//
-// Revision 1.41.4.1  2001/04/23 22:34:46  jimg
-// Added support for the Last-Modified MIME header in server responses.`
-//
-// Revision 1.41  2000/09/22 02:17:19  jimg
-// Rearranged source files so that the CVS logs appear at the end rather than
-// the start. Also made the ifdef guard symbols use the same naming scheme and
-// wrapped headers included in other headers in those guard symbols (to cut
-// down on extraneous file processing - See Lakos).
-//
-// Revision 1.40  2000/09/21 16:22:07  jimg
-// Merged changes from Jose Garcia that add exceptions to the software.
-// Many methods that returned error codes now throw exectptions. There are
-// two classes which are thrown by the software, Error and InternalErr.
-// InternalErr is used to report errors within the library or errors using
-// the library. Error is used to reprot all other errors. Since InternalErr
-// is a subclass of Error, programs need only to catch Error.
-//
-// Revision 1.39  2000/08/02 22:46:49  jimg
-// Merged 3.1.8
-//
-// Revision 1.34.2.4  2000/08/02 20:56:36  jimg
-// Removed the symbol DVR from the send method's declaration. That removes the
-// only dependence in this file on config.h. Clients of this class can now
-// included this header without also including config.h.
-//
-// Revision 1.34.2.3  2000/07/19 19:01:56  jimg
-// I made the dotr virtual! This was causing problems when request_data
-// returned a DataDDS * but the object was assigned to a DDS * and later
-// deleted. Since DDS:~DDS() was not virtual, the DataDDS dtor was not being
-// run. 
-//
-// Revision 1.38  2000/07/09 21:57:09  rmorris
-// Mods's to increase portability, minimuze ifdef's in win32 and account
-// for differences between the Standard C++ Library - most notably, the
-// iostream's.
-//
-// Revision 1.37  2000/06/16 18:14:59  jimg
-// Merged with 3.1.7
-//
-// Revision 1.34.2.2  2000/06/14 17:00:53  jimg
-// Changed vars from a SLList of BaseType *s to a DLList.
-//
-// Revision 1.36  2000/06/07 19:33:21  jimg
-// Merged with verson 3.1.6
-//
-// Revision 1.35  2000/06/07 18:06:58  jimg
-// Merged the pc port branch
-//
-// Revision 1.34.14.1  2000/06/02 18:16:48  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.34.2.1  2000/05/12 18:44:38  jimg
-// Made the duplicate and *_match functions protected to simplfy future
-// subclassing.
-//
-// Revision 1.34.8.1  2000/02/07 21:11:35  jgarcia
-// modified prototypes and implementations to use exceeption handling
-//
-// Revision 1.34  1999/07/22 18:47:44  tom
-// fixed doc typo
-//
-// Revision 1.33  1999/07/22 17:11:50  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.32.8.1  1999/06/08 17:36:15  dan
-// Replaced template declaration of add_function with 3 separate definitions
-// for the possible instances of this method, bool*, BaseType*, void*.
-//
-// Revision 1.32  1999/05/05 00:51:02  jimg
-// Added cgi_ver parameter to send() member function.
-//
-// Revision 1.31  1999/04/29 02:29:28  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.30  1999/01/21 20:42:01  tom
-// Fixed comment formatting problems for doc++
-//
-// Revision 1.29  1998/12/22 04:42:19  jimg
-// Corrected some of the doc comments; fixed spelling and added error return
-// values.
-//
-// Revision 1.28  1998/11/10 01:05:38  jimg
-// This class now holds a list of Clause pointers, not objects.
-//
-// Revision 1.27  1998/10/21 16:40:13  jimg
-// Added a proj_func member (for support of Projection Functions).
-// Fixed up the doc++ comments.
-//
-// Revision 1.26  1998/09/17 17:20:44  jimg
-// Added leaf_match and exact_match.
-// Added two new versions of the var member function.
-// Fixed documentation.
-//
-// Revision 1.25.4.1  1999/02/02 21:56:57  jimg
-// String to string version
-//
-// Revision 1.25  1998/07/13 20:20:43  jimg
-// Fixes from the final test of the new build process
-//
-// Revision 1.24  1998/03/20 00:12:41  jimg
-// Added documentation for the new parse_constraint() member function.
-//
-// Revision 1.23  1998/02/04 14:55:31  tom
-// Another draft of documentation.
-//
-// Revision 1.22  1998/01/12 14:27:56  tom
-// Second pass at class documentation.
-//
-// Revision 1.21  1997/08/11 18:19:14  jimg
-// Fixed comment leaders for new CVS version
-//
-// Revision 1.20  1997/03/05 08:35:03  jimg
-// Added bool parameter `compressed' (defaults to true) to the send member
-// function. See DDS.cc.
-//
-// Revision 1.19  1997/03/03 08:17:17  reza
-// Changed default error object's output stream to cout. This will send it
-// to the client side (versus the local server's log file, cerr).
-//
-// Revision 1.18  1996/12/03 00:14:58  jimg
-// Added ostream and bool params to parse_constraint(). The bool parameter is
-// used to tell the member function that it is running in the server of the
-// client. The ostream is the sink for error objects (server side) or messages
-// (client side).
-//
-// Revision 1.17  1996/12/02 23:14:54  jimg
-// Added `filename' field and access functions. This field is for recording
-// the filename associated with the dataset from which the DDS is generated.
-// It does not actually have to be a filename; rather it is intended to be
-// used by BaseType's read() member function when that code must access some
-// OS controlled resource to get data for a particular variable. For most
-// systems it will be a file, while for some systems it may be a RDB or
-// blank.
-//
-// Revision 1.16  1996/06/04 21:33:20  jimg
-// Multiple connections are now possible. It is now possible to open several
-// URLs at the same time and read from them in a round-robin fashion. To do
-// this I added data source and sink parameters to the serialize and
-// deserialize mfuncs. Connect was also modified so that it manages the data
-// source `object' (which is just an XDR pointer).
-//
-// Revision 1.15  1996/05/31 23:29:38  jimg
-// Updated copyright notice.
-//
-// Revision 1.14  1996/05/29 22:08:37  jimg
-// Made changes necessary to support CEs that return the value of a function
-// instead of the value of a variable. This was done so that it would be
-// possible to translate Sequences into Arrays without first reading the
-// entire sequence over the network.
-//
-// Revision 1.13  1996/05/22 18:05:09  jimg
-// Merged files from the old netio directory into the dap directory.
-// Removed the errmsg library from the software.
-//
-// Revision 1.12  1996/04/05 00:21:28  jimg
-// Compiled with g++ -Wall and fixed various warnings.
-//
-// Revision 1.11  1996/04/04 18:41:07  jimg
-// Merged changes from version 1.1.1.
-//
-// Revision 1.10  1996/03/05 18:32:26  jimg
-// Added the clause and function subclasses. Clause is used to hold a single
-// clause of the current CE. Clause has ctors, a dtor (which is currently
-// broken) and member function used to get the boolean value of the clause.
-// Function is used to hold a single pointer to either a function returning a
-// boolean or a BaseType *. The DDS class contains a list of clauses and a list
-// of functions.
-//
-// Revision 1.9  1996/02/01 17:43:10  jimg
-// Added support for lists as operands in constraint expressions.
-//
-// Revision 1.8  1995/12/09  01:06:39  jimg
-// Added changes so that relational operators will work properly for all the
-// datatypes (including Sequences). The relational ops are evaluated in
-// DDS::eval_constraint() after being parsed by DDS::parse_constraint().
-//
-// Revision 1.7  1995/12/06  21:05:08  jimg
-// Added print_constrained(): prints only those parts of the DDS that satisfy
-// the constraint expression (projection + array selection).
-// Added eval_constraint(): given the text of a constraint expression, evaluate
-// it in the environment of the current DDS.
-// Added mark*(): add the named variables to the current projection.
-// Added send(): combines many functions like reading and serializing variables
-// with constraint evaluation.
-//
-// Revision 1.6.2.2  1996/03/01 00:06:11  jimg
-// Removed bad attempt at multiple connect implementation.
-//
-// Revision 1.6.2.1  1996/02/23 21:37:26  jimg
-// Updated for new configure.in.
-// Fixed problems on Solaris 2.4.
-//
-// Revision 1.6  1995/02/10  02:30:49  jimg
-// Misc comment edits.
-//
-// Revision 1.5  1994/11/03  04:58:03  reza
-// Added two overloading for function parse to make it consistent with DAS
-// class. 
-//
-// Revision 1.4  1994/10/18  00:20:47  jimg
-// Added copy ctor, dtor, duplicate, operator=.
-// Added var() for const char * (to avoid confusion between char * and
-// Pix (which is void *)).
-// Switched to errmsg library.
-// Added formatting to print().
-//
-// Revision 1.3  1994/09/23  14:42:23  jimg
-// Added mfunc check_semantics().
-// Replaced print mfunc stub with real code.
-// Fixed some errors in comments.
-//
-// Revision 1.2  1994/09/15  21:09:00  jimg
-// Added many classes to the BaseType hierarchy - the complete set of types
-// described in the DODS API design documet is now represented.
-// The parser can parse DDS files.
-// Fixed many small problems with BaseType.
-// Added CtorType.
-//
-// Revision 1.1  1994/09/08  21:09:42  jimg
-// First version of the Dataset descriptor class. 
 
 #endif // _dds_h

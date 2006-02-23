@@ -50,14 +50,6 @@
 
 extern int test_variable_sleep_interval;
 
-#if 0
-Float64 *
-NewFloat64(const string &n)
-{
-    return new TestFloat64(n);
-}
-#endif
-
 void
 TestFloat64::_duplicate(const TestFloat64 &ts)
 {
@@ -105,10 +97,6 @@ TestFloat64::read(const string &)
     if (get_series_values()) {
         _buf += 10.0;
         _buf = (float)(trunc(10000 * cos(trunc(_buf))) / 100);
-#if 0
-        _buf = (double) 1000*cos(_buf);;
-        _buf += 0.01;
-#endif
     }
     else {
         _buf = 99.999;

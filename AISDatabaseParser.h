@@ -123,34 +123,4 @@ public:
     static void aisFatalError(AISParserState *state, const char *msg, ...);
 };
 
-// $Log: AISDatabaseParser.h,v $
-// Revision 1.4  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.3.2.4  2003/07/07 06:47:58  rmorris
-// Reversed addition of win32-specific include made unnecessary now
-// that we build out of 'packages' for win32 also.
-//
-// Revision 1.3.2.3  2003/06/15 06:54:31  rmorris
-// Initial port regarding AIS* to win32.
-//
-// Revision 1.3.2.2  2003/06/13 20:09:49  edavis
-// Oops. Change libxml2 includes back.
-//
-// Revision 1.3.2.1  2003/06/12 19:04:17  edavis
-// Change libxml2 include statement to no longer be a system include.
-//
-// Revision 1.3  2003/03/12 01:07:34  jimg
-// Added regular expressions to the AIS subsystem. In an AIS database (XML)
-// it is now possible to list a regular expression in place of an explicit
-// URL. The AIS will try to match this Regexp against candidate URLs and
-// return the ancillary resources for all those that succeed.
-//
-// Revision 1.2  2003/02/26 01:27:49  jimg
-// Changed the name of the parse() method to intern().
-//
-// Revision 1.1  2003/02/20 22:06:50  jimg
-// Added.
-//
-
 #endif // ais_database_parser_h

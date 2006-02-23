@@ -60,18 +60,4 @@ public:
     virtual void request_das(DAS &das) throw(Error, InternalErr);
 };
 
-// $Log: AISConnect.h,v $
-// Revision 1.3  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.2  2003/03/12 01:07:34  jimg
-// Added regular expressions to the AIS subsystem. In an AIS database (XML)
-// it is now possible to list a regular expression in place of an explicit
-// URL. The AIS will try to match this Regexp against candidate URLs and
-// return the ancillary resources for all those that succeed.
-//
-// Revision 1.1  2003/02/28 06:54:17  jimg
-// Added
-//
-
 #endif // ais_connect_h 

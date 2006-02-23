@@ -122,29 +122,6 @@ public:
 
 	citer i = dims.begin() ;
 	dsiter d = dimsize.begin() ;
-#if 0
-	Pix p ;
-	p = ar.first_dim() ;
-	for( ; p && i != dims.end(); ar.next_dim( p ), i++, d++ )
-	{
-	    CPPUNIT_ASSERT( ar.dimension_name( p ) == (*i) ) ;
-	    if( ar.dimension_name( p ) == (*i) )
-	    {
-		CPPUNIT_ASSERT( ar.dimension_size( p ) == (*d) ) ;
-		CPPUNIT_ASSERT( ar.dimension_start( p ) == 0 ) ;
-		CPPUNIT_ASSERT( ar.dimension_stop( p ) == (*d)-1 ) ;
-		CPPUNIT_ASSERT( ar.dimension_stride( p ) == 1 ) ;
-	    }
-	}
-	if( p && i == dims.end() )
-	{
-	    CPPUNIT_FAIL( "too many dimensions" ) ;
-	}
-	else if( !p && i != dims.end() )
-	{
-	    CPPUNIT_FAIL( "not enough dimensions" ) ;
-	}
-#endif
 	Array::Dim_iter diter = ar.dim_begin() ;
 	i = dims.begin() ;
 	d = dimsize.begin() ;

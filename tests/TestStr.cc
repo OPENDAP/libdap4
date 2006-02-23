@@ -51,14 +51,6 @@
 
 extern int test_variable_sleep_interval;
 
-#if 0
-Str *
-NewStr(const string &n)
-{
-    return new TestStr(n);
-}
-#endif
-
 void
 TestStr::_duplicate(const TestStr &ts)
 {

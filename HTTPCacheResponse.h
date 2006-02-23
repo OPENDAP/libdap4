@@ -70,17 +70,4 @@ public:
     }
 };
 
-// $Log: HTTPCacheResponse.h,v $
-// Revision 1.2  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.1.2.1  2003/05/06 06:44:15  jimg
-// Modified HTTPConnect so that the response headers are no longer a class
-// member. This cleans up the class interface and paves the way for using
-// the multi interface of libcurl. That'll have to wait for another day...
-//
-// Revision 1.1  2003/03/04 05:57:40  jimg
-// Added.
-//
-
 #endif // cache_http_response_h

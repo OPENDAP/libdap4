@@ -34,8 +34,6 @@
 #include <iterator>
 #include <set>
 
-// #define DODS_DEBUG 1
-
 #include "Error.h"
 #include "InternalErr.h"
 #include "ResponseTooBigErr.h"
@@ -54,7 +52,10 @@ using namespace std;
 
 // instance_mutex is used to ensure that only one instance is created. The
 // other mutexes used by this class are fields. 10/09/02 jhrg
+// Gcc (4.0.0) now complains about this saying that there are missing member
+// initializers for __kind, et cetera. jhrg 2/23/06
 static pthread_mutex_t instance_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 #define LOCK(m) pthread_mutex_lock((m))
 #define TRYLOCK(m) pthread_mutex_trylock((m))
 #define UNLOCK(m) pthread_mutex_unlock((m))
@@ -1167,10 +1168,6 @@ HTTPCache::set_max_size(unsigned long size)
 	unsigned long new_size = size < MIN_CACHE_TOTAL_SIZE ?
 	    MIN_CACHE_TOTAL_SIZE*MEGA : 
             (size > ULONG_MAX ? ULONG_MAX : size * MEGA);
-#if 0
-            // original code. UINT --> ULONG; Removed size < 0
-            (size > UINT_MAX || size < 0 ? UINT_MAX : size * MEGA);
-#endif
 	unsigned long old_size = d_total_size;
 	d_total_size = new_size;
 	d_folder_size = d_total_size/CACHE_FOLDER_PCT;
@@ -2364,212 +2361,3 @@ HTTPCache::purge_cache() throw(Error)
     UNLOCK(&d_cache_mutex);
     DBGN(cerr << "Unlocking interface." << endl);
 }
-
-// $Log: HTTPCache.cc,v $
-// Revision 1.16  2005/04/21 17:48:59  jimg
-// Removed PTHREADS compile-time switch. Also, checkpoint for the build
-// work.
-//
-// Revision 1.15  2005/01/28 17:25:12  jimg
-// Resolved conflicts from merge with release-3-4-9
-//
-// Revision 1.11.2.17  2005/01/25 00:40:12  jimg
-// Fixed a bug where caching small entries broke the GC algorithm.
-// The code used the size of the entry as a measure of the actual disk
-// space used by the entry. For small entries this was a significant
-// error (off by a factor of > 32 for the test.nc dataset). I changed
-// the code to use the block size and assume that each entry occupies
-// n*blocksize bytes where n >= 1. I added a test to check that the
-// purge code works correctly.
-//
-// Revision 1.14  2004/07/07 21:08:47  jimg
-// Merged with release-3-4-8FCS
-//
-// Revision 1.11.2.16  2004/07/02 20:41:52  jimg
-// Removed (commented) the pragma interface/implementation lines. See
-// the ChangeLog for more details. This fixes a build problem on HP/UX.
-//
-// Revision 1.11.2.15  2004/06/15 18:18:53  jimg
-// Removed calls to fclose() when the FILE pointer returned from fopen() was
-// null. Yikes! I checked all the lines that had 'open(' for this same bug, but
-// it appears only in this file. See bug 736.
-//
-// Revision 1.11.2.14  2004/03/11 18:24:07  jimg
-// Added SignalHandlerRegisteredError exception to instance(). This lets clients
-// see that there was already a handler registered and look at sorting the mess
-// out.
-//
-// Revision 1.13  2004/02/19 19:42:52  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
-//
-// Revision 1.11.2.13  2004/02/15 22:47:36  rmorris
-// Omited the new signal handling code under win32.  Signals are not portable.
-// There is equivalent mechanisms under win32, but those require use of MicroSoft-specific
-// API's and we decided to avoid that a long time ago.
-//
-// Revision 1.11.2.11  2004/02/13 18:23:41  jimg
-// Added a note about SignalHandler, singletons and memory leaks.
-//
-// Revision 1.11.2.10  2004/02/11 22:26:46  jimg
-// Changed all calls to delete so that whenever we use 'delete x' or
-// 'delete[] x' the code also sets 'x' to null. This ensures that if a
-// pointer is deleted more than once (e.g., when an exception is thrown,
-// the method that throws may clean up and then the catching method may
-// also clean up) the second, ..., call to delete gets a null pointer
-// instead of one that points to already deleted memory.
-//
-// Revision 1.11.2.9  2004/02/11 17:26:11  jimg
-// Added an interrupt handler (registered with the INT, TERM and PIPE signals)
-// that removes partially written cache files and ensures that the index file
-// matches the data in the cache. This code also removes the lock file.
-//
-// Revision 1.11.2.8  2004/02/04 00:05:11  jimg
-// Memory errors: I've fixed a number of memory errors (leaks, references)
-// found using valgrind. Many remain. I need to come up with a systematic
-// way of running the tests under valgrind.
-//
-// Revision 1.11.2.7  2004/01/26 16:45:26  jimg
-// Removed DODS_DEBUG and DODS_DEBUG2 defines and fixed an odd comment. When
-// using tkcvs, be very careful to insert newlines in the log text!
-//
-// Revision 1.11.2.6  2004/01/23 22:06:32  jimg
-// Fixed some comments after testing. I also changed they way
-// cache_write_index() is called when perform_garbage_collection() is called
-// inside set_cache_size() and set_max_entry_size(). Before the index was
-// always written. Now it's only written if GC is done.
-//
-// Revision 1.11.2.5  2004/01/22 20:47:23  jimg
-// Fix for bug 689. I added tests to make sure the cache size doesn't wind
-// up being set to a negative number. I also changed the types of the cache
-// size and entry size from int to unsigned long. Added information to
-// the default .dodsrc file explaining the units of the CACHE_SIZE and
-// MAX_ENTRY_SIZE parameters.
-//
-// Revision 1.12  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.11.2.4  2003/10/10 23:07:15  jimg
-// Added some instrumentation which helped track down bug 672.
-//
-// Revision 1.11.2.3  2003/09/18 19:27:29  jimg
-// Fixed part of bug #665. When .dods_cache did not exist the code was not able
-// to get the single user lock for the cache. Since the call to _create_ the
-// cache (.dods_cache) was called only if we had the single user lock, ... I
-// fixed this by moving the call to create the cache root directory into the
-// call to get the single user lock. Also, I made the bool d_cache_enabled false
-// by default and true only when the single user lock and cache index have been
-// read.
-//
-// Revision 1.11.2.2  2003/09/08 18:48:29  jimg
-// I fixed bug #661. The cache was trying to grab the single user lock before
-// setting the cache root. This worked OK when the process could write to the
-// CWD (because get_single_user_lock defaults the cache_root to the CWD when
-// the cache_root is not set). However, when the process cannot write to the CWD
-// the cache cannot get the lock. This meant that we were left with a non-null
-// HTTPCache instance which had a bogus cache root.
-//
-// Revision 1.11.2.1  2003/09/06 22:35:38  jimg
-// Updated the documentation. HTTPCache::~HTTPCache() no longer grabs the class'
-// interface lock. That is unnecessary since the dtor is only called by atexit().
-//
-// Revision 1.11  2003/05/02 00:02:38  jimg
-// Modified the code so that perform_garbage_collection() is called only when
-// startGC() is true. This should minimize the time spent scanning the entry
-// entry table.
-//
-// Revision 1.10  2003/05/01 23:06:29  jimg
-// Fixed another class interface lock bug. It would be better to lock class
-// resources (fields) and name them so that it was obvious which were locked and
-// by what mutex. Also, made sure garbage collection happens every time the
-// index file is written out.
-//
-// Revision 1.9  2003/04/23 21:33:53  jimg
-// Changes for the unit tests. This involved merging Rob's VC++ changes
-// and fixing a bug in escaping.cc (a call to string::insert invalidated
-// an iterator in a loop).
-//
-// Revision 1.8  2003/04/22 19:40:27  jimg
-// Merged with 3.3.1.
-//
-// Revision 1.7  2003/03/13 23:55:57  jimg
-// Significant changes regarding the mutex code. I found out that since
-// config.h was not being included, the mutex code was never built! Once
-// built, I found a bunch of deadlocks. Many of the methods had to be modified
-// to fix this/these problem(s).
-//
-// Revision 1.6  2003/03/04 21:43:11  jimg
-// Minor change; changed the order of inline and static for the get_hash()
-// function.
-//
-// Revision 1.5  2003/03/04 17:31:17  jimg
-// Modified cache_response() so that only http and https URLs are cached.
-//
-// Revision 1.4  2003/02/21 00:14:24  jimg
-// Repaired copyright.
-//
-// Revision 1.3.2.1  2003/02/21 00:10:07  jimg
-// Repaired copyright.
-//
-// Revision 1.3  2003/01/23 00:22:24  jimg
-// Updated the copyright notice; this implementation of the DAP is
-// copyrighted by OPeNDAP, Inc.
-//
-// Revision 1.2  2003/01/10 19:46:40  jimg
-// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
-// cases files were added on that branch (so they appear on the trunk for
-// the first time).
-//
-// Revision 1.1.2.13  2002/12/29 23:03:48  jimg
-// Updated the copyrights for these source files.
-//
-// Revision 1.1.2.12  2002/12/27 00:58:48  jimg
-// Removed some dubious code Rob found. Fixed some comments.
-//
-// Revision 1.1.2.11  2002/12/01 12:49:07  rmorris
-// Bug fixes related to win32 port - numerous related to caching.
-//
-// Revision 1.1.2.10  2002/11/21 21:24:17  pwest
-// memory leak cleanup and file descriptor cleanup
-//
-// Revision 1.1.2.9  2002/11/04 07:26:13  rmorris
-// Finish Porting this new code to win32.
-//
-// Revision 1.1.2.8  2002/10/18 22:43:33  jimg
-// Added methods for the always_validate property. This can be set in the
-// .dodsrc file (see RCReader) so we should support it here. The class respects
-// the value of this property (it's different than CacheEntry::always_validate;
-// that says *that* particular entry should always be validated and its value
-// comes from a Cache_control header in the response). The
-// HTTPCache::always_validate property says *every* entry should always be
-// validated.
-//
-// Revision 1.1.2.7  2002/10/18 00:10:38  jimg
-// MT-safety for entries; I used a mutex to lock an entry so that it won't be
-// modified by one thread while another is using it. Fixed up the documentation.
-//
-// Revision 1.1.2.6  2002/10/11 20:57:36  jimg
-// Fixed up the documentation.
-// Added a test to ensure that hop-by-hop headers are not stored in the cache.
-//
-// Revision 1.1.2.5  2002/10/11 00:20:19  jimg
-// Added methods for conditional responses.
-//
-// Revision 1.1.2.4  2002/10/10 06:46:30  jimg
-// The class is now MT-safe.
-//
-// Revision 1.1.2.3  2002/10/08 05:23:16  jimg
-// The Cache now works. Still to do: Make the cache MT-safe (which will
-// probably require that it become a singleton, but maybe not), protect
-// all non-const methods with a mutex and devise a locking strategy so that
-// entries are not read while being written. Once the cache is MT-safe, it
-// must be made to handle updates.
-//
-// Revision 1.1.2.2  2002/09/17 00:18:49  jimg
-// Added methods to manage the single user lock and to get/set the cache root
-// directory. Also fixed a build problem; I appear to have the sstream headers
-// and classes on my machine but other (most?) gcc 2.95.x installations lack
-// them. I switched from sstream to strstream.
-//
-// Revision 1.1.2.1  2002/09/12 22:39:35  jimg
-// Initial version.
-//

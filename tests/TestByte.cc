@@ -73,14 +73,6 @@
 
 extern int test_variable_sleep_interval;
 
-#if 0
-Byte *
-NewByte(const string &n)
-{
-    return new TestByte(n);
-}
-#endif
-
 void
 TestByte::_duplicate(const TestByte &ts)
 {

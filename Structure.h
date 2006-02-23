@@ -92,11 +92,7 @@
 */
 
 class Structure: public Constructor {
-private:
-#if 0
-    std::vector<BaseType *> _vars;
-#endif
-    
+private:    
     BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
     BaseType *m_exact_match(const string &name, btp_stack *s = 0);
 
@@ -105,11 +101,6 @@ protected:
 
 public:
     Structure(const string &n = "");
-
-#if 0
-    typedef std::vector<BaseType *>::const_iterator Vars_citer ;
-    typedef std::vector<BaseType *>::iterator Vars_iter ;
-#endif
 
     Structure(const Structure &rhs);
     virtual ~Structure();
@@ -144,51 +135,9 @@ public:
 
     virtual void add_var(BaseType *bt, Part part = nil);
 
-#if 0
-    Pix first_var();
-
-    void next_var(Pix p);
-
-    BaseType *var(Pix p);
-#endif
-
-#if 0
-    /** Returns an iterator referencing the first structure element. */
-    Vars_iter var_begin() ;
-
-    /** Returns an iterator referencing the end of the list of structure
-	elements. Does not reference the last structure element. */
-    Vars_iter var_end() ;
-
-    Vars_iter get_vars_iter(int i);
-#endif
-
-#if 0
-    virtual void print_decl(ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-
-    virtual void print_decl(FILE *out, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-#endif
-#if 0
-    virtual void print_val(ostream &os, string space = "",
-			   bool print_decl_p = true);
-#endif
     virtual void print_val(FILE *out, string space = "",
 			   bool print_decl_p = true);
-#if 0
-    /** Prints the Structure and all elements of any Sequences contained
-	within. 
-	@deprecated Using the C++ iostream class is deprecated.
-	@see print_all_vals(FILE *out, XDR *src, DDS *dds, string space, bool print_decl_p);
-    */
-    virtual void print_all_vals(ostream& os, XDR *src, DDS *dds,
-				string space = "", bool print_decl_p = true);
-#endif
+
     /** Prints the Structure and all elements of any Sequences contained
 	within. 
 

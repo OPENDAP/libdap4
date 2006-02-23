@@ -36,14 +36,6 @@
 #include "config.h"
 #include "TestStructure.h"
 
-#if 0
-Structure *
-NewStructure(const string &n)
-{
-    return new TestStructure(n);
-}
-#endif
-
 void
 TestStructure::_duplicate(const TestStructure &ts)
 {

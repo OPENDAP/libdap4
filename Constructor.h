@@ -55,12 +55,6 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
-#if 0
-    // Deprecated Pix interface
-    virtual Pix first_var();
-    virtual void next_var(Pix p);
-    virtual BaseType *var(Pix p);
-#endif
     Vars_iter var_begin();
     Vars_iter var_end();
     Vars_riter var_rbegin();
@@ -70,12 +64,6 @@ public:
 
     virtual bool is_linear();
 
-#if 0
-    virtual void print_decl(ostream &os, string space = "    ",
-			    bool print_semi = true,
-			    bool constraint_info = false,
-			    bool constrained = false);
-#endif
     virtual void print_decl(FILE *out, string space = "    ",
 			    bool print_semi = true,
 			    bool constraint_info = false,

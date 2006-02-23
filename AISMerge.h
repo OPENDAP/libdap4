@@ -84,18 +84,4 @@ public:
 	throw(Error, InternalErr);
 };
 
-// $Log: AISMerge.h,v $
-// Revision 1.4  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.3  2003/03/14 00:01:25  jimg
-// merge() now throws Error, too.
-//
-// Revision 1.2  2003/03/04 17:57:10  jimg
-// Now uses Response objects.
-//
-// Revision 1.1  2003/02/25 23:26:13  jimg
-// Added.
-//
-
 #endif // ais_merge_h

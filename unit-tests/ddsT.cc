@@ -157,25 +157,6 @@ public:
 	vs.push_back( "var7" ) ;
 	vs.push_back( "var8" ) ;
 
-#if 0
-	Pix p = dds.first_var() ;
-	vs_citer vsc = vs.begin() ;
-	for( ; p && vsc != vs.end(); dds.next_var( p ), vsc++ )
-	{
-	    DBG(cerr << dds.var(p)->name() << ": " << *vsc << endl);
-	    CPPUNIT_ASSERT( dds.var(p)->name() == *vsc ) ;
-	}
-	CPPUNIT_ASSERT( !p && vsc == vs.end() ) ;
-	if( p && vsc == vs.end() )
-	{
-	    CPPUNIT_FAIL( "Too many vars" ) ;
-	}
-	else if( !p && vsc != vs.end() )
-	{
-	    CPPUNIT_FAIL( "Too few vars" ) ;
-	}
-#endif
-
 	DDS::Vars_iter dvsc = dds.var_begin() ;
 	vs_citer vsc = vs.begin() ;
 	for( ; dvsc != dds.var_end() && vsc != vs.end(); dvsc++, vsc++ )
@@ -371,59 +352,17 @@ public:
 	    }
 	}
 
-#if 0
-	dds.add_function( "test_null", func_null ) ;
-	bool_func boolf ;
-	bool found_func = dds.find_function( "test_null", &boolf ) ;
-	CPPUNIT_ASSERT( found_func == true ) ;
-	CPPUNIT_ASSERT( boolf ) ;
-
-	dds.add_function( "test_nth", func_nth ) ;
-	btp_func btpf ;
-	found_func = dds.find_function( "test_nth", &btpf ) ;
-	CPPUNIT_ASSERT( found_func == true ) ;
-	CPPUNIT_ASSERT( btpf ) ;
-#endif
-
 	dds.add_function( "test_grid_select", func_grid_select ) ;
 	proj_func projf ;
 	bool found_func = dds.find_function( "test_grid_select", &projf ) ;
 	CPPUNIT_ASSERT( found_func == true ) ;
 	CPPUNIT_ASSERT( projf ) ;
 
-#if 0
-	{
-	    ostringstream strm;
-	    dds.print( strm ) ;
-	    string outstr = strm.str() ;
-	    if( cprint != outstr )
-	    {
-		DBG( cerr << "expected output = " << cprint << endl ) ;
-		DBG( cerr << "output received = " << outstr << endl ) ;
-	    }
-	    CPPUNIT_ASSERT( cprint == outstr ) ;
-	}
-#endif
-
 	{
             string sof;
             FILE2string(sof, of, dds.print( of ));
             CPPUNIT_ASSERT(sof.find(cprint) != string::npos);
 	}
-
-#if 0
-	{
-	    ostringstream strm;
-	    dds.print_constrained( strm ) ;
-	    string outstr = strm.str() ;
-	    if( nprint != outstr ) ;
-	    {
-		DBG( cerr << "expected output = " << nprint << endl ) ;
-		DBG( cerr << "output received = " << outstr << endl ) ;
-	    }
-	    CPPUNIT_ASSERT( nprint == outstr ) ;
-	}
-#endif
 
 	{
             string sof;
@@ -432,19 +371,7 @@ public:
 	}
 
 	dds.mark_all( true ) ;
-#if 0
-	{
-	    ostringstream strm;
-	    dds.print_constrained( strm ) ;
-	    string outstr = strm.str() ;
-	    if( cprint != outstr )
-	    {
-		DBG( cerr << "expected output = " << cprint << endl ) ;
-		DBG( cerr << "output received = " << outstr << endl ) ;
-	    }
-	    CPPUNIT_ASSERT( cprint == outstr ) ;
-	}
-#endif
+
 	{
             string sof;
             FILE2string(sof, of, dds.print_constrained( of ));
@@ -453,19 +380,7 @@ public:
 
 	bool mark_ret = dds.mark( "var8", false ) ;
 	CPPUNIT_ASSERT( mark_ret == true ) ;
-#if 0
-	{
-	    ostringstream strm;
-	    dds.print_constrained( strm ) ;
-	    string outstr = strm.str() ;
-	    if( pprint != outstr )
-	    {
-		DBG( cerr << "expected output = " << pprint << endl ) ;
-		DBG( cerr << "output received = " << outstr << endl ) ;
-	    }
-	    CPPUNIT_ASSERT( pprint == outstr ) ;
-	}
-#endif
+
 	{
             string sof;
             FILE2string(sof, of, dds.print_constrained( of ));

@@ -126,15 +126,6 @@ AISDatabaseParser::aisStartElement(AISParserState *state, const char *name,
 	    state->prev_state = state->state;
 	    state->state = PRIMARY;
 
-#if 0
-	    if (attrs && (strcmp(attrs[0], "url") == 0))
-		state->primary = attrs[1];
-	    else {
-		AISDatabaseParser::aisFatalError(state, "Required attribute 'url' missing from element 'primary'.");
-		break;
-	    }
-#endif
-
 	    if (attrs) {
 		if (strcmp(attrs[0], "url") == 0) {
 		    state->regexp = false;
@@ -420,40 +411,3 @@ AISDatabaseParser::intern(const string &database, AISResources *ais)
     xmlFreeParserCtxt(ctxt);
 }
 
-// $Log: AISDatabaseParser.cc,v $
-// Revision 1.8  2004/02/19 19:42:51  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
-//
-// Revision 1.6.2.3  2004/01/22 17:09:52  jimg
-// Added std namespace declarations since the DBG() macro uses cerr.
-//
-// Revision 1.7  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.6.2.2  2003/09/06 22:16:58  jimg
-// Updated the documentation.
-//
-// Revision 1.6.2.1  2003/06/15 06:54:31  rmorris
-// Initial port regarding AIS* to win32.
-//
-// Revision 1.6  2003/04/22 19:40:27  jimg
-// Merged with 3.3.1.
-//
-// Revision 1.5  2003/03/12 01:07:34  jimg
-// Added regular expressions to the AIS subsystem. In an AIS database (XML)
-// it is now possible to list a regular expression in place of an explicit
-// URL. The AIS will try to match this Regexp against candidate URLs and
-// return the ancillary resources for all those that succeed.
-//
-// Revision 1.4  2003/02/26 01:27:49  jimg
-// Changed the name of the parse() method to intern().
-//
-// Revision 1.3  2003/02/25 04:18:53  jimg
-// Added line numbers to error messages. Improved message formatting a little.
-//
-// Revision 1.2  2003/02/21 00:14:24  jimg
-// Repaired copyright.
-//
-// Revision 1.1  2003/02/20 22:16:04  jimg
-// Added.
-//

@@ -100,24 +100,7 @@ public:
 	elems.push_back( "Age" ) ;
 	elems.push_back( "Friends" ) ;
 	typedef vector<string>::const_iterator elems_iter ;
-#if 0
-	Pix p = s.first_var() ;
-	elems_iter e = elems.begin() ;
-	for( ; p && e != elems.end(); s.next_var( p ), e++ )
-	{
-	    // Why cast??? See structT.cc 11/16/04 jhrg
-	    CPPUNIT_ASSERT( dynamic_cast<Constructor&>(s).var( p )->name() == (*e) ) ;
-	}
-	CPPUNIT_ASSERT( !p && e == elems.end() ) ;
-	if( p && e == elems.end() )
-	{
-	    CPPUNIT_FAIL( "Too many elements" ) ;
-	}
-	else if( !p && e != elems.end() )
-	{
-	    CPPUNIT_FAIL( "Too few elements" ) ;
-	}
-#endif
+
 	Sequence::Vars_iter v = s.var_begin() ;
 	elems_iter e = elems.begin() ;
 	for( ; v != s.var_end() && e != elems.end(); v++, e++ )

@@ -38,14 +38,6 @@
 
 extern int test_variable_sleep_interval;
 
-#if 0
-Grid *
-NewGrid(const string &n)
-{
-    return new TestGrid(n);
-}
-#endif
-
 void
 TestGrid::_duplicate(const TestGrid &ts)
 {

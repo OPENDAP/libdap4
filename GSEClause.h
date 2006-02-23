@@ -100,11 +100,6 @@ public:
 
   GSEClause(Grid *grid, const string &map, const double value1,
 	    const relop op1, const double value2, const relop op2);
-#if 0
-  GSEClause(Grid *grid, const string &expr);
-
-  GSEClause(Grid *grid, char *expr);
-#endif
   //@}
     
   bool OK() const;
@@ -133,73 +128,6 @@ public:
   void set_stop(int stop);
   //@}
 };
-
-// $Log: GSEClause.h,v $
-// Revision 1.13  2004/07/07 21:08:47  jimg
-// Merged with release-3-4-8FCS
-//
-// Revision 1.11.2.3  2004/07/02 20:41:52  jimg
-// Removed (commented) the pragma interface/implementation lines. See
-// the ChangeLog for more details. This fixes a build problem on HP/UX.
-//
-// Revision 1.12  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.11.2.2  2003/09/06 22:32:35  jimg
-// Now uses stringstream instead of strstream.
-//
-// Revision 1.11.2.1  2003/06/14 00:54:30  rmorris
-// Added a header VC++ was looking for - <strstream>.
-//
-// Revision 1.11  2003/04/22 19:40:27  jimg
-// Merged with 3.3.1.
-//
-// Revision 1.10  2003/02/21 00:14:24  jimg
-// Repaired copyright.
-//
-// Revision 1.9.2.1  2003/02/21 00:10:07  jimg
-// Repaired copyright.
-//
-// Revision 1.9  2003/01/23 00:22:24  jimg
-// Updated the copyright notice; this implementation of the DAP is
-// copyrighted by OPeNDAP, Inc.
-//
-// Revision 1.8  2002/06/18 15:36:24  tom
-// Moved comments and edited to accommodate doxygen documentation-generator.
-//
-// Revision 1.7  2002/06/03 22:21:15  jimg
-// Merged with release-3-2-9
-//
-// Revision 1.5.4.2  2001/10/30 06:55:45  rmorris
-// Win32 porting changes.  Brings core win32 port up-to-date.
-//
-// Revision 1.6  2001/09/28 17:50:07  jimg
-// Merged with 3.2.7.
-//
-// Revision 1.5.4.1  2001/09/25 20:32:16  jimg
-// Changes/Fixes associated with fixing grid() (see ce_functions.cc).
-//
-// Revision 1.5  2000/09/22 02:17:20  jimg
-// Rearranged source files so that the CVS logs appear at the end rather than
-// the start. Also made the ifdef guard symbols use the same naming scheme and
-// wrapped headers included in other headers in those guard symbols (to cut
-// down on extraneous file processing - See Lakos).
-//
-// Revision 1.4  2000/06/07 18:06:59  jimg
-// Merged the pc port branch
-//
-// Revision 1.3.20.1  2000/06/02 18:21:27  rmorris
-// Mod's for port to Win32.
-//
-// Revision 1.3  1999/04/29 02:29:30  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.2  1999/03/24 23:37:15  jimg
-// Added support for the Int16, UInt16 and Float32 types
-//
-// Revision 1.1  1999/01/21 02:07:44  jimg
-// Created
-//
 
 #endif // _gseclause_h
 

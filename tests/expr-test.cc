@@ -278,14 +278,6 @@ test_scanner(bool show_prompt)
 	  case SCAN_STR:
 	    fprintf( stdout, "STR: %s\n", exprlval.val.v.s->c_str() ) ;
 	    break;
-#if 0
-	  case SCAN_INT:
-	    fprintf( stdout, "INT: %d\n", exprlval.val.v.i ) ;
-	    break;
-	  case SCAN_FLOAT:
-	    fprintf( stdout, "FLOAT: %f\n", exprlval.val.v.f ) ;
-	    break;
-#endif
 	  case SCAN_EQUAL:
 	    fprintf( stdout, "EQUAL: %d\n", exprlval.op ) ;
 	    break;

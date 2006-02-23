@@ -122,34 +122,4 @@ public:
 	throw(AISDatabaseWriteFailed);
 };
 
-// $Log: AISResources.h,v $
-// Revision 1.8  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.7  2003/04/22 19:40:27  jimg
-// Merged with 3.3.1.
-//
-// Revision 1.6  2003/03/12 01:07:34  jimg
-// Added regular expressions to the AIS subsystem. In an AIS database (XML)
-// it is now possible to list a regular expression in place of an explicit
-// URL. The AIS will try to match this Regexp against candidate URLs and
-// return the ancillary resources for all those that succeed.
-//
-// Revision 1.5  2003/02/27 22:21:01  pwest
-// Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
-// rule
-//
-// Revision 1.4  2003/02/26 06:56:11  jimg
-// Made has_resource const.
-//
-// Revision 1.3  2003/02/26 00:40:38  jimg
-// Changed name of is_resource to has_resource.
-//
-// Revision 1.2  2003/02/20 22:19:02  jimg
-// Added throw() specification to second constructor.
-//
-// Revision 1.1  2003/02/20 22:10:21  jimg
-// Added.
-//
-
 #endif // ais_resources_h

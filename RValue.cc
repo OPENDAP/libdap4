@@ -78,49 +78,6 @@ rvalue::value_name()
     return value->name();
 }
 
-#if 0
-
-// This code was added during the fix for nested Sequence serialization. Not
-// sure if it works (not tested) since we don't need it right now. However,
-// it might still be necessary, so I'm leaving it in place. 12/23/04 jhrg
-
-/** @return true if \i target really is a descendant of \i ancestor. */
-static bool
-is_ancestor(BaseType *target, BaseType *ancestor)
-{
-    BaseType *target_parent = target->get_parent();
-    if (target_parent == 0)
-	return false;
-    else if (target_parent == ancestor)
-	return true;
-    else
-	return is_descendant(target_parent, ancestor);
-}
-
-/** @brief Is this value a member of the Sequence?
-    Test the value to determine if it can be accessed using only the Sequence
-    \i seq. This means that either:
-    <ul>
-    <li>The value is a BaseType pointer and the BsaeType is one of the
-    variables in the Sequence or in a parent Sequence.</li>
-    <li> What about functions...?</li>
-    </ul>
-
-    @return True if the value is a member of the Sequence, False otherwise.
-    @param seq The Sequence.*/
-bool
-rvalue::sequence_member(Sequence *seq)
-{
-    if (value)
-	return is_ancestor(value, seq);
-}
-
-#endif
-
-// Return the BaseType * to a value for an rvalue.
-// NB: this must be defined after the struct func_rvalue (since it uses
-// func_rvalue's bvalue() mfunc. 
-
 /** Return the BaseType * that contains a value for a given rvalue. If the
     rvalue is a BaseType *, ensures that the read mfunc has been called. If
     the rvalue is a func_rvalue, evaluates the func_rvalue and returns the

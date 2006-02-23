@@ -201,34 +201,7 @@ Error::parse(FILE *fp)
 	return OK();		// Check object consistency
 }
 
-#if 0 
-/** @deprecated Use the FILE * version instead. */
-void
-Error::print(ostream &os) const
-{
-    assert(OK());
 
-    os << "Error {" << endl;
-
-    os << "    " << "code = " << static_cast<int>(_error_code) << ";" << endl;
-    
-    // If the error message is wrapped in double quotes, print it, else, add
-    // wrapping double quotes.
-    if (*_error_message.begin() == '"' && *(_error_message.end()-1) == '"')
-	os << "    " << "message = " << _error_message << ";" << endl;
-    else
-	os << "    " << "message = " << "\"" << _error_message << "\"" << ";" 
-	   << endl;
-
-    if (_program_type != undefined_prog_type) {
-	os << "    " << "program_type = " << static_cast<int>(_program_type)
-	   << ";" << endl;
-	os << "    " << "program = " << _program << ";" << endl;
-    }
-
-    os << "};" << endl;
-}
-#endif
 /** Creates a printable representation of the Error object. It is suitable
     for framing, and also for printing and sending over a network.
 
@@ -279,9 +252,6 @@ Error::error_code(ErrorCode ec)
 	    && ec > undefined_error && ec <= cannot_read_file)
 	    _error_message = err_messages[ec - undefined_error - 1];
 
-#if 0
-	assert(OK());
-#endif
 	return _error_code;
     }
 }
@@ -309,25 +279,16 @@ Error::set_error_code(ErrorCode ec)
     if (_error_message.empty()
 	&& ec > undefined_error && ec <= cannot_read_file)
 	_error_message = err_messages[ec - undefined_error - 1];
-#if 0
-    assert(OK());
-#endif
 }
 
 /** @deprecated Use the set/get methods instead. */
 string
 Error::error_message(string msg)
 {
-#if 0
-    assert(OK());
-#endif
     if (msg == "")
 	return string(_error_message);
     else {
 	_error_message = msg;
-#if 0
-	assert(OK());
-#endif
 	return string (_error_message);
     }
 }
@@ -346,9 +307,6 @@ void
 Error::set_error_message(string msg)
 {
     _error_message = msg;
-#if 0
-    assert(OK());
-#endif
 }
 
 /** @deprecated Use get_error_message() instead. */
@@ -427,234 +385,4 @@ Error::correct_error(void *) const
     display_message(NULL);
     return string("");
 }
-
-// $Log: Error.cc,v $
-// Revision 1.37  2005/04/18 17:05:44  pwest
-// Remove dependence on _program_type and _program in OK method
-//
-// Revision 1.36  2004/07/07 21:08:47  jimg
-// Merged with release-3-4-8FCS
-//
-// Revision 1.32.2.4  2004/07/02 20:41:51  jimg
-// Removed (commented) the pragma interface/implementation lines. See
-// the ChangeLog for more details. This fixes a build problem on HP/UX.
-//
-// Revision 1.35  2004/02/19 19:42:52  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
-//
-// Revision 1.32.2.3  2004/02/04 00:05:11  jimg
-// Memory errors: I've fixed a number of memory errors (leaks, references)
-// found using valgrind. Many remain. I need to come up with a systematic
-// way of running the tests under valgrind.
-//
-// Revision 1.32.2.2  2004/02/03 00:18:08  jimg
-// Fixed bug 691. The array messages was improperly accessed. I also revamped
-// the doxygen comments and re-indented the code.
-//
-// Revision 1.34  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.32.2.1  2003/09/06 22:37:50  jimg
-// Updated the documentation.
-//
-// Revision 1.33  2003/05/23 03:24:57  jimg
-// Changes that add support for the DDX response. I've based this on Nathan
-// Potter's work in the Java DAP software. At this point the code can
-// produce a DDX from a DDS and it can merge attributes from a DAS into a
-// DDS to produce a DDX fully loaded with attributes. Attribute aliases
-// are not supported yet. I've also removed all traces of strstream in
-// favor of stringstream. This code should no longer generate warnings
-// about the use of deprecated headers.
-//
-// Revision 1.32  2003/04/22 19:40:27  jimg
-// Merged with 3.3.1.
-//
-// Revision 1.31  2003/02/21 00:14:24  jimg
-// Repaired copyright.
-//
-// Revision 1.30.2.1  2003/02/21 00:10:07  jimg
-// Repaired copyright.
-//
-// Revision 1.30  2003/01/23 00:22:24  jimg
-// Updated the copyright notice; this implementation of the DAP is
-// copyrighted by OPeNDAP, Inc.
-//
-// Revision 1.29  2003/01/10 19:46:40  jimg
-// Merged with code tagged release-3-2-10 on the release-3-2 branch. In many
-// cases files were added on that branch (so they appear on the trunk for
-// the first time).
-//
-// Revision 1.24.2.8  2002/12/17 22:35:03  pwest
-// Added and updated methods using stdio. Deprecated methods using iostream.
-//
-// Revision 1.24.2.7  2002/08/08 06:54:57  jimg
-// Changes for thread-safety. In many cases I found ugly places at the
-// tops of files while looking for globals, et c., and I fixed them up
-// (hopefully making them easier to read, ...). Only the files RCReader.cc
-// and usage.cc actually use pthreads synchronization functions. In other
-// cases I removed static objects where they were used for supposed
-// improvements in efficiency which had never actually been verified (and
-// which looked dubious).
-//
-// Revision 1.28  2002/06/18 15:36:24  tom
-// Moved comments and edited to accommodate doxygen documentation-generator.
-//
-// Revision 1.24.2.6  2002/05/26 23:36:09  jimg
-// Removed code specific to the GUI-based progress indicator.
-//
-// Revision 1.27  2001/10/14 01:28:38  jimg
-// Merged with release-3-2-8.
-//
-// Revision 1.24.2.5  2001/10/08 17:14:22  jimg
-// Fixed a bug where an empty _program field was copied in operator=. This
-// caused seg faults because the copy used strlen on _program; when it was null
-// that meant dereferencing the null pointer.
-//
-// Revision 1.26  2001/08/24 17:46:22  jimg
-// Resolved conflicts from the merge of release 3.2.6
-//
-// Revision 1.24.2.4  2001/08/18 00:18:07  jimg
-// Removed WIN32 compile guards from using statements.
-//
-// Revision 1.24.2.3  2001/07/28 01:10:42  jimg
-// Some of the numeric type classes did not have copy ctors or operator=.
-// I added those where they were needed.
-// In every place where delete (or delete []) was called, I set the pointer
-// just deleted to zero. Thus if for some reason delete is called again
-// before new memory is allocated there won't be a mysterious crash. This is
-// just good form when using delete.
-// I added calls to www2id and id2www where appropriate. The DAP now handles
-// making sure that names are escaped and unescaped as needed. Connect is
-// set to handle CEs that contain names as they are in the dataset (see the
-// comments/Log there). Servers should not handle escaping or unescaping
-// characters on their own.
-//
-// Revision 1.25  2001/06/15 23:49:02  jimg
-// Merged with release-3-2-4.
-//
-// Revision 1.24.2.2  2001/05/03 21:42:59  jimg
-// Fixed a bug in parse(...) where the FILE * passed to the method was closed.
-// This FILE * should be closed by the caller. When used with a Connect object,
-// Connect's dtor tries to close the FILE *. If parse(...) has already closed
-// it...boom.
-//
-// Revision 1.24.2.1  2001/04/23 22:18:15  jimg
-// Added two static casts to Error::print(). This fixes a warning from g++.
-//
-// Revision 1.24  2000/10/30 17:21:27  jimg
-// Added support for proxy servers (from cjm).
-//
-// Revision 1.23  2000/10/02 18:49:26  jimg
-// The Error class now has const accessors
-//
-// Revision 1.22  2000/09/22 02:17:19  jimg
-// Rearranged source files so that the CVS logs appear at the end rather than
-// the start. Also made the ifdef guard symbols use the same naming scheme and
-// wrapped headers included in other headers in those guard symbols (to cut
-// down on extraneous file processing - See Lakos).
-//
-// Revision 1.21  2000/07/09 22:05:35  rmorris
-// Changes to increase portability, minimize ifdef's for win32 and account
-// for differences in the iostreams implementations.
-//
-// Revision 1.20  2000/03/28 16:32:02  jimg
-// Modified these files so that they can be built either with and without GUI
-// defined. The type signatures are now the same either way. Thus we can build
-// libdap++-gui and libdap++ (without GUI support). When using the later
-// there's no need to link with tcl, tk or X11. This makes the executables
-// smaller. It also keeps the servers from potentially needing sharable
-// libraries (since X11 is often sharable) which can be hard to find unless
-// they are in the standard places. I made the same changes in Connect and Gui.
-//
-// Revision 1.19  1999/08/23 18:57:44  jimg
-// Merged changes from release 3.1.0
-//
-// Revision 1.18.2.1  1999/08/09 22:57:50  jimg
-// Removed GUI code; reactivate by defining GUI
-//
-// Revision 1.18  1999/08/09 18:27:34  jimg
-// Merged changes from Brent for the Gui code (progress indicator)
-//
-// Revision 1.17.4.1  1999/07/29 05:46:17  brent
-// call Tcl / GUI directly from Gui.cc, abandon expect, and consolidate Tcl files
-//
-// Revision 1.17  1999/05/26 17:32:01  jimg
-// Added a message for the `unknown_error' constant.
-// Added a test in correct_error for a NULL Gui object. If the Gui object is
-// null, display the message text on stderr and ignore the Gui object.
-//
-// Revision 1.16  1999/05/04 19:47:21  jimg
-// Fixed copyright statements. Removed more of the GNU classes.
-//
-// Revision 1.15  1999/04/29 02:29:29  jimg
-// Merge of no-gnu branch
-//
-// Revision 1.14.6.2  1999/02/05 09:32:34  jimg
-// Fixed __unused__ so that it not longer clashes with Red Hat 5.2 inlined
-// math code. 
-//
-// Revision 1.14.6.1  1999/02/02 21:56:58  jimg
-// String to string version
-//
-// Revision 1.14  1998/03/20 00:18:55  jimg
-// Fixed a bug where _program was feed into strlen even when it is NULL.
-//
-// Revision 1.13  1998/02/05 20:13:53  jimg
-// DODS now compiles with gcc 2.8.x
-//
-// Revision 1.12  1997/08/23 00:22:23  jimg
-// Changed the way that the _error_message member is processed. Now if the
-// message does not have explicit double quotes, print() will add them. The
-// mfunc is smart enough to add the quotes only if needed so old code (which
-// provides the quotes) will still work and new code without the quotes works
-// too. This makes for a more convenient use of the Error object.
-//
-// Revision 1.11  1997/03/05 08:15:51  jimg
-// Added Cannot read file message to list of builtin messages.
-//
-// Revision 1.10  1997/03/05 06:53:46  jimg
-// Changed display_message member function so that it uses Gui::response()
-// instead of Gui::command(). The later only works for things like the progress
-// popup for which expect does not need to wait. However, for things like
-// dialogs, expect must wait for the user to `hit OK', hence the use of the
-// response() member function.
-//
-// Revision 1.9  1997/02/27 01:06:47  jimg
-// Fixed problem with consistency check in Error::error_code().
-//
-// Revision 1.8  1997/02/18 21:22:18  jimg
-// Allow empty Error objects.
-//
-// Revision 1.7  1997/02/15 07:10:57  jimg
-// Changed OK() so that empty errors return false.
-// Added assert calls.
-//
-// Revision 1.6  1996/08/13 18:14:28  jimg
-// Switched to the parser_arg object for passing parameters to/from the Error.y
-// parser. NB: if an error object is bad a message is sent to stderr to avoid
-// going round and round with bad error objects!
-// Changed the interface to display_message; Gui is by default NULL so that
-// calling it with an empty parameter list causes the message string to be sent
-// to stderr.
-// Changed the interface to correct_error(); it now returns a string which is
-// the corrected error or "".
-//
-// Revision 1.5  1996/06/22 00:02:46  jimg
-// Added Gui pointer to the Error oject's correct_error() and
-// display_message() mfuncs. These mfuncs now used the GUI to display
-// messages.
-//
-// Revision 1.4  1996/06/04 21:33:22  jimg
-// Multiple connections are now possible. It is now possible to open several
-// URLs at the same time and read from them in a round-robin fashion. To do
-// this I added data source and sink parameters to the serialize and
-// deserialize mfuncs. Connect was also modified so that it manages the data
-// source `object' (which is just an XDR pointer).
-//
-// Revision 1.3  1996/06/03 06:26:51  jimg
-// Added declarations for Errorparse() and Errorrestart().
-//
-// Revision 1.2  1996/06/01 00:03:38  jimg
-// Added.
-//
 

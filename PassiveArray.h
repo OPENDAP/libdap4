@@ -79,12 +79,5 @@ public:
     virtual bool set_value( string *val, int sz ) ;
 };
 
-/* 
- * $Log: PassiveArray.h,v $
- * Revision 1.1  2004/07/09 16:34:38  pwest
- * Adding Passive Data Model objects
- *
- */
-
 #endif // _passivearray_h
 
