@@ -244,13 +244,14 @@ AttrTable::append_attr(const string &name, const string &type,
     }
 }
 
+#if character
 unsigned int
 AttrTable::append_attr(const char *name, const char *type, const char *attr)
     throw (Error)
 {
     return append_attr((string)name, (string)type, (string)attr);
 }
-
+#endif
 /** Create and append an attribute container to this AttrTable. If this
     attribute table already contains an attribute container called
     <tt>name</tt> an exception is thrown.
@@ -371,21 +372,23 @@ AttrTable::find( const string &target, AttrTable **at, Attr_iter *iter )
 AttrTable *
 AttrTable::recurrsive_find(const string &target, Attr_iter *location)
 {
-    *location = attr_begin();
-    // Attr_iter i = attr_begin();
-    while (*location != attr_end()) {
-        if (target == (**location)->name) {
+    //*location = attr_begin();
+    Attr_iter i = attr_begin();
+    while (i != attr_end()) {
+        if (target == (*i)->name) {
+            *location = i;
             return this;
         } 
-        else if ((**location)->type == Attr_container) {
-            AttrTable *at = (**location)->attributes->recurrsive_find(target, location);
+        else if ((*i)->type == Attr_container) {
+            AttrTable *at = (*i)->attributes->recurrsive_find(target, location);
             if (at)
                 return at;
         }
         
-        ++(*location);
+        ++i;
     }
-    
+
+    *location = i;    
     return 0;
 }
 
@@ -472,11 +475,13 @@ AttrTable::get_attr_table(const string &name)
     return find_container(name);
 }
 
+#if character
 AttrTable *
 AttrTable::get_attr_table(const char *name)
 {
     return get_attr_table((string)name);
 }
+#endif
 
 /** @brief Get the type name of an attribute within this attribute table. */
 string
@@ -486,11 +491,13 @@ AttrTable::get_type(const string &name)
     return (p != attr_map.end()) ? get_type(p) : (string)"";
 }
 
+#if character
 string
 AttrTable::get_type(const char *name)
 {
     return get_type((string)name);
 }
+#endif
 
 /** @brief Get the type of an attribute.
     @return The <tt>AttrType</tt> value describing the attribute. */
@@ -501,11 +508,13 @@ AttrTable::get_attr_type(const string &name)
     return (p != attr_map.end()) ? get_attr_type(p) : Attr_unknown;
 }
 
+#if character
 AttrType
 AttrTable::get_attr_type(const char *name)
 {
     return get_attr_type((string)name);
 }
+#endif
 
 /** If the indicated attribute is a container attribute, this function
     returns the number of attributes in <i>its</i> attribute table. If the
@@ -521,12 +530,13 @@ AttrTable::get_attr_num(const string &name)
     return (iter != attr_map.end()) ?  get_attr_num(iter) : 0;
 }
 
+#if character
 unsigned int 
 AttrTable::get_attr_num(const char *name)
 {
     return get_attr_num((string)name);
 }
-
+#endif
 
 /** Get a pointer to the vector of values associated with the attribute
     referenced by Pix <tt>p</tt> or named <tt>name</tt>.
@@ -547,11 +557,13 @@ AttrTable::get_attr_vector(const string &name)
     return (p != attr_map.end()) ? get_attr_vector(p) : 0;
 }
 
+#if character
 vector<string> *
 AttrTable::get_attr_vector(const char *name)
 {
     return get_attr_vector((string)name);
 }
+#endif
 
 /** Delete the attribute named <tt>name</tt>. If <tt>i</tt> is given, and
     the attribute has a vector value, delete the <tt>i</tt>$^th$
@@ -958,11 +970,13 @@ AttrTable::get_attr(Attr_iter iter, unsigned int i)
     return (*iter)->type == Attr_container ? (string)"None" : (*(*iter)->attr)[i];
 }
 
+#if character
 string
 AttrTable::get_attr(const char *name, unsigned int i)
 {
     return get_attr((string)name, i);
 }
+#endif
 
 string
 AttrTable::get_attr(const string &name, unsigned int i)

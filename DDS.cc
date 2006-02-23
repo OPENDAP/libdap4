@@ -570,7 +570,7 @@ DDS::var(const string &n, btp_stack &s)
 {
     return var(n, &s);
 }    
-
+#if character
 /** @brief Returns a pointer to the named variable.
 
     The following comment is no longer true; the implementation of Pix has
@@ -587,6 +587,7 @@ DDS::var(const char *n, btp_stack *s)
 {
     return var((string)n, s);
 }
+#endif
 
 /** @brief Find the variable with the given name.
 

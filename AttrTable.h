@@ -262,9 +262,10 @@ public:
 
     unsigned int append_attr(const string &name, const string &type, 
 			     const string &value) throw (Error);
+#if character
     unsigned int append_attr(const char *name, const char *type, 
 			     const char *value) throw (Error);
-
+#endif
     AttrTable *append_container(const string &name) throw (Error);
     AttrTable *append_container(AttrTable *at, const string &name) 
 	throw (Error);
@@ -274,23 +275,29 @@ public:
     AttrTable *recurrsive_find(const string &target, Attr_iter *location);
     
     AttrTable *get_attr_table(const string &name);
+#if character
     AttrTable *get_attr_table(const char *name);
-
+#endif
     string get_type(const string &name);
+#if character
     string get_type(const char *name);
-
+#endif
     AttrType get_attr_type(const string &name);
+#if character
     AttrType get_attr_type(const char *name);
-
+#endif
     unsigned int get_attr_num(const string &name);
+#if character
     unsigned int get_attr_num(const char *name);
-
+#endif
     string get_attr(const string &name, unsigned int i = 0);
+#if character
     string get_attr(const char *name, unsigned int i = 0);
-
+#endif
     vector<string> *get_attr_vector(const string &name);
+#if character
     vector<string> *get_attr_vector(const char *name);
-
+#endif
     void del_attr(const string &name, int i = -1);
 #if 0
     Pix first_attr();

@@ -39,7 +39,6 @@ UNIT_TESTS = arrayT attrTableT structT sequenceT ddsT RegexTest	\
 	HTTPConnectTest parserUtilTest RCReaderTest SequenceTest	\
 	SignalHandlerTest
 
-# iterT 
 
 RegexTest_SOURCES = RegexTest.cc
 RegexTest_LDADD = -lcppunit ../libdap.la
@@ -112,6 +111,3 @@ sequenceT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
 
 ddsT_SOURCES = ddsT.cc
 ddsT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a
-
-# iterT_SOURCES = iterT.cc LongIterAdapter.cc
-# iterT_LDADD = -lcppunit ../libdap.la ../tests/libtest-types.a

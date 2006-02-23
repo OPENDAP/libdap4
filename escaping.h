@@ -56,7 +56,7 @@ string id2www(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabc
 // This is what DAP2 allows in a ce: [-+a-zA-Z0-9_/%.\\#] 
 string id2www_ce(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/%.\\");
 
-string www2id(string s, const string &escape = "%",
+string www2id(const string &in, const string &escape = "%",
 	      const string &except = "");
 
 // Include these for compatibility with the old names. 7/19/2001 jhrg

@@ -128,8 +128,10 @@ struct gse_arg {
 //@{
 void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
 		 const char *context = 0);
+#if character
 void parse_error(const char *s, const int line_num = 0, 
 		 const char *context = 0) throw (Error);
+#endif
 void parse_error(const string &msg, const int line_num, 
 		 const char *context = 0) throw (Error);
 //@}

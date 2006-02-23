@@ -300,8 +300,9 @@ public:
 
     BaseType *var(const string &n, btp_stack &s);
     BaseType *var(const string &n, btp_stack *s = 0);
+#if character
     BaseType *var(const char *n, btp_stack *s = 0);
-
+#endif
 #if 0
     BaseType *var(Pix p);
  

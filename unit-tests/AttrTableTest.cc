@@ -108,7 +108,6 @@ public:
     }
 
     CPPUNIT_TEST_SUITE( AttrTableTest );
-
     CPPUNIT_TEST(find_container_test);
     CPPUNIT_TEST(get_parent_test);
     CPPUNIT_TEST(recurrsive_find_test);
@@ -129,15 +128,15 @@ public:
 
     // Tests for methods
     void recurrsive_find_test() {
-        AttrTable::Attr_iter *location;
-        AttrTable *a = at1->recurrsive_find("color", location);
-        CPPUNIT_ASSERT(a && a == cont_caa && a->get_name(*location) == "color");
+        AttrTable::Attr_iter location;
+        AttrTable *a = at1->recurrsive_find("color", &location);
+        CPPUNIT_ASSERT(a && a == cont_caa && a->get_name(location) == "color");
         
-        a = cont_caa->recurrsive_find("color", location);
-        CPPUNIT_ASSERT(a && a == cont_caa && a->get_name(*location) == "color");
+        a = cont_caa->recurrsive_find("color", &location);
+        CPPUNIT_ASSERT(a && a == cont_caa && a->get_name(location) == "color");
         
-        a = at1->recurrsive_find("ba", location);
-        CPPUNIT_ASSERT(a && a == cont_b && a->get_name(*location) == "ba");
+        a = at1->recurrsive_find("ba", &location);
+        CPPUNIT_ASSERT(a && a == cont_b && a->get_name(location) == "ba");
     }
     
     void get_parent_test() {

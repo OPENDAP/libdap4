@@ -169,19 +169,19 @@ id2www_ce(string in, const string &allowable)
     escapes \e except that one. default: ""
     @return The modified string. */
 string 
-www2id(string in, const string &escape, const string &except)
+www2id(const string &in, const string &escape, const string &except)
 {
     string::size_type i = 0;
-
-    while ((i = in.find_first_of(escape, i)) != string::npos) {
-	if (in.substr(i, 3) == except) {
+    string res = in;
+    while ((i = res.find_first_of(escape, i)) != string::npos) {
+	if (res.substr(i, 3) == except) {
 	    i += 3;
 	    continue;
 	}
-	in.replace(i, 3, unhexstring(in.substr(i + 1, 2)));
+	res.replace(i, 3, unhexstring(res.substr(i + 1, 2)));
     }
 
-    return in;
+    return res;
 }
 
 static string

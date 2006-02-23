@@ -173,12 +173,6 @@ DAS::get_table(Attr_iter &i)
     return AttrTable::get_attr_table(i);
 }
 
-AttrTable *
-DAS::get_table(const string &name)
-{
-    return AttrTable::get_attr_table(name);
-}
-
 /** @brief Returns the attribute table with the given name. 
 
     This function is necessary because (char *) arguments will be
@@ -187,10 +181,18 @@ DAS::get_table(const string &name)
     believe folks will always remember that.   
 */
 AttrTable *
+DAS::get_table(const string &name)
+{
+    return AttrTable::get_attr_table(name);
+}
+
+#if character
+AttrTable *
 DAS::get_table(const char *name)
 {
     return get_table((string)name);
 }
+#endif
 //@}
 
 /** @brief Adds an attribute table to the DAS.
@@ -206,13 +208,14 @@ DAS::add_table(const string &name, AttrTable *at)
     return AttrTable::append_container(at, name);
 }
 
+#if character
 /** @brief Adds an attribute table to the DAS. */
 AttrTable *
 DAS::add_table(const char *name, AttrTable *at)
 {
     return add_table((string)name, at);
 }
-
+#endif
 //@}
 
 /** @brief Reads a DAS in from an external source. 

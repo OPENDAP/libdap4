@@ -151,11 +151,13 @@ public:
 
 
     AttrTable *get_table(const string &name);
+#if character
     AttrTable *get_table(const char *name); // avoid converting char * to Pix
-
+#endif
     AttrTable *add_table(const string &name, AttrTable *at);
+#if character
     AttrTable *add_table(const char *name, AttrTable *at);
-
+#endif
     void parse(string fname);
     void parse(int fd);
     void parse(FILE *in=stdin);
