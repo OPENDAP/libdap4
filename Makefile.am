@@ -63,7 +63,7 @@ CLEANFILES = *.log das.output dds.output expr.output Error.output gse.output
 .PHONY: docs
 docs:
 	doxygen doxy.conf
-	(cd docs && tar -czf html.tar.z html)
+	(cd docs && tar -czf html.tar.gz html)
 
 grammarclean: clean
 	-rm *.tab.cc *.tab.h lex.*.cc
