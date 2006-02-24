@@ -91,7 +91,7 @@
 #line 35 "gse.y"
 
 
-#include "config.h"
+#include "config_dap.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -1419,4 +1419,5 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 
     return new GSEClause(arg->get_grid(), (string)id, val1, rop1, val2, rop2);
 }
+
 

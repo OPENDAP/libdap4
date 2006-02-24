@@ -97,15 +97,7 @@ pkg:
 
 GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc GNU/GNUerror.cc
 
-#	IteratorAdapter.cc ArrayIterAdapter.cc AttrIterAdapter.cc	\
-#	BTIterAdapter.cc ClauseIterAdapter.cc 
-
 GNU_HDR = GNU/builtin.h GNU/GetOpt.h GNU/GNURegex.h
-
-#	IteratorAdapter.h ArrayIterAdapter.h AttrIterAdapter.h	\
-#	BTIterAdapter.h ClauseIterAdapter.h
-
-# GNU/Pix.h - Removed 1/25/06 jhrg
 
 # Roughly divide the source into DAP, Client and Server groups. In the
 # future, make three different libraries. jhrg 

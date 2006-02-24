@@ -54,12 +54,5 @@ public:
     virtual BaseType *ptr_duplicate();
 };
 
-/* 
- * $Log: PassiveUrl.h,v $
- * Revision 1.1  2004/07/09 16:34:38  pwest
- * Adding Passive Data Model objects
- *
- */
-
 #endif // _passiveurl_h
 

@@ -105,8 +105,3 @@ PassiveUInt16::set_value( dods_uint16 val )
     _buf = val ;
     return read( "" ) ;
 }
-
-// $Log: PassiveUInt16.cc,v $
-// Revision 1.1  2004/07/09 16:34:38  pwest
-// Adding Passive Data Model objects
-//

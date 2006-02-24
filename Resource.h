@@ -144,33 +144,4 @@ private:
     Resource::rule d_rule;
 };
 
-// $Log: Resource.h,v $
-// Revision 1.6  2005/01/28 17:25:12  jimg
-// Resolved conflicts from merge with release-3-4-9
-//
-// Revision 1.4.2.2  2005/01/18 23:05:53  jimg
-// FIxed documentation.
-//
-// Revision 1.5  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.4.2.1  2003/06/14 22:23:55  rmorris
-// Minor patch for VC++ regarding using a 'const' reference to something
-// in the 'Resource' class in a constructor for that class.  VC++ doesn't
-// like because it isn't really completely defined as of that point.
-//
-// Revision 1.4  2003/02/27 22:21:01  pwest
-// Removed ResourceRule, moving enum ResourceRule to Resource.h, renaming it to
-// rule
-//
-// Revision 1.3  2003/02/26 06:38:28  jimg
-// Made methods virtual.
-//
-// Revision 1.2  2003/02/20 23:10:19  jimg
-// Fixed copyright date.
-//
-// Revision 1.1  2003/02/20 21:53:19  jimg
-// Added.
-//
-
 #endif // resource_h

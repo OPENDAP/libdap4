@@ -89,7 +89,7 @@
 #line 41 "expr.y"
 
 
-#include "config.h"
+#include "config_dap.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -118,6 +118,10 @@ static char rcsid[] not_used = {"$Id$"};
 #include "parser.h"
 #include "expr.h"
 #include "RValue.h"
+
+#ifdef TRACE_NEW
+#include "trace_new.h"
+#endif
 
 using std::cerr;
 using std::endl;
@@ -2345,18 +2349,27 @@ make_variable(DDS &table, const value &val)
     BaseType *var;
     switch (val.type) {
       case dods_int32_c: {
+#if 0
+	var = (BaseType *)NewInt32("dummy");
+#endif
 	var = table.get_factory()->NewInt32("dummy");
 	var->val2buf((void *)&val.v.i);
 	break;
       }
 
       case dods_float64_c: {
+#if 0
+	var = (BaseType *)NewFloat64("dummy");
+#endif
 	var = table.get_factory()->NewFloat64("dummy");
 	var->val2buf((void *)&val.v.f);
 	break;
       }
 
       case dods_str_c: {
+#if 0
+	var = (BaseType *)NewStr("dummy");
+#endif
 	var = table.get_factory()->NewStr("dummy");
 	var->val2buf((void *)val.v.s);
 	break;
@@ -2411,4 +2424,5 @@ get_proj_function(const DDS &table, const char *name)
     else
 	return 0;
 }
+
 

@@ -107,26 +107,4 @@ public:
     EventHandler *remove_handler(int signum);
 };
 
-// $Log: SignalHandler.h,v $
-// Revision 1.3  2004/02/19 19:42:52  jimg
-// Merged with release-3-4-2FCS and resolved conflicts.
-//
-// Revision 1.1.2.4  2004/02/11 17:13:33  jimg
-// Changed how this class creates its instance. It is now very similar to
-// RCReader and much more in line with HTTPCache. Also, made this a friend of
-// HTTPCacheTest to smooth over some testing woes.
-//
-// Revision 1.1.2.3  2004/02/10 20:44:33  jimg
-// Added support for remembering and running old handlers/actions.
-//
-// Revision 1.2  2003/12/08 18:02:29  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.1.2.2  2003/07/19 01:46:34  jimg
-// Fixed up some comments.
-//
-// Revision 1.1.2.1  2003/07/19 01:45:26  jimg
-// Added.
-//
-
 #endif // signal_handler_h

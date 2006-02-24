@@ -98,11 +98,3 @@ PassiveStructure::read( const string &dataset )
 
     return true ;
 }
-
-// $Log: PassiveStructure.cc,v $
-// Revision 1.2  2005/02/16 22:22:36  pwest
-// implemented read
-//
-// Revision 1.1  2004/07/09 16:34:38  pwest
-// Adding Passive Data Model objects
-//

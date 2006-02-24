@@ -1,9 +1,27 @@
 
-Version 3.6
+CONTENTS
 
-These are the methods. For some, I've listed only the most general version
-since all the more speciifc versions were also removed. For example, 
-BaseType::print_val(...) was removed, therefore so was Int32::print_val, ...
+	INTRODUCTION
+	OSTREAM METHODS
+	CHAR POINTER METHODS
+	PIX METHODS
+	PIX TO ITERATOR EXAMPLES
+	OTHER DEPRECATED METHODS
+	
+---------------------------------------------------------------------------
+
+INTRODUCTION
+
+This file lists methods that were marked as deprecated in previous versions
+of the library and have now been removed. In all cases there are relacement
+methods. The changes documented here correspond to going from the 3.5 to 3.6
+versions of libdap.
+
+For some of the methods, I've listed only the most general version
+since all the more speciifc versions were also removed. For example, if
+BaseType::print_val(...) was removed, so was Int32::print_val, ...
+
+OSTREAM METHODS
 
 virtual void BaseType::print_val(ostream &os, string space = "", 
 			   bool print_decl_p = true);
@@ -66,21 +84,32 @@ void set_mime_error(ostream &os, int code = 404,
 		    const string &version = "");
 void set_mime_not_modified(ostream &os);
 
-*** End of the iostream methods/functions
+CHAR POINTER METHODS
 
-Methods removed from Connect 
+Methods which provide 'const char *' parameters
 
-void *gui();
-bool request_dds(bool, const string &) throw(Error, InternalErr);
-DDS *request_data(string expr, bool, bool, const string &) 
-        throw(Error, InternalErr);
-bool request_das(bool,  const string &) throw(Error, InternalErr);
-DDS *read_data(FILE *data_source, bool, bool) throw(Error, InternalErr);
-DAS &das();
-DDS &dds();
-Error &error();
+There were several methods that provided both const string & and const char * 
+versions. I've removed the 'const char *' versions since string literals are
+automatically converted to string by C++. These methods were added back when
+libdap used GNU's String and Pix classes. In that context a C++ compiler 
+could not tell what to do when a method was called with a string literal and
+had two versions, one which took a String and one which took a Pix. Since the
+library no longer uses either of those classes, it seems foolish to keep those
+methods around. Here's a list of the removed methods:
 
-Pix methods
+AttrTable.h:    unsigned int append_attr(const char *name, const char *type,
+AttrTable.h:                         const char *value) throw (Error);
+AttrTable.h:    AttrTable *get_attr_table(const char *name);
+AttrTable.h:    string get_type(const char *name);
+AttrTable.h:    AttrType get_attr_type(const char *name);
+AttrTable.h:    unsigned int get_attr_num(const char *name);
+AttrTable.h:    string get_attr(const char *name, unsigned int i = 0);
+AttrTable.h:    vector<string> *get_attr_vector(const char *name);
+
+DAS.h:    AttrTable *add_table(const char *name, AttrTable *at);
+DDS.h:    BaseType *var(const char *n, btp_stack *s = 0);
+
+PIX METHODS
 
 The file Pix.h has been removed, along with the *IterAdapter.cc/h class files
 
@@ -135,9 +164,11 @@ Pix Structure::first_var();
 void Structure::next_var(Pix p);
 BaseType *Structure::var(Pix p);
 
+PIX TO ITERATOR EXAMPLES
+
 Some examples of STL iterator versus Pix code:
 
-For FFGrid.cc:
+From FFGrid.cc:
     // read maps elements
     Grid::Map_iter i = map_begin();
     while (i != map_end())
@@ -186,3 +217,41 @@ From FFArray.cc:
         ++i;
     }
     return nels;
+
+OTHER DEPRECATED METHODS
+
+Other deprecated methods that have been removed:
+
+Removed from Error
+
+    Error(ErrorCode ec, string msg, ProgramType pt, char *pgm);
+    ProgramType get_program_type() const;
+    const char *get_program() const;
+    void set_program_type(ProgramType pt = undefined_prog_type);
+    void set_program(char *program);
+    void display_message(void *gui = 0) const;
+    string correct_error(void *gui) const;
+    string error_message(string msg = "");
+    ProgramType program_type(ProgramType pt = undefined_prog_type);
+    char *program(char *program = 0);
+    ErrorCode error_code(ErrorCode ec = undefined_error);
+
+Note: Replace display_error() with 'cerr << get_error_message() << endl'.
+Replace error_message() with get_error_message().
+
+Removed from InternalErr
+
+    InternalErr(string msg, ProgramType pt, char *pgm);
+    
+Removed from Connect 
+
+void *Connect::gui();
+bool Connect::request_dds(bool, const string &) throw(Error, InternalErr);
+DDS *Connect::request_data(string expr, bool, bool, const string &) 
+        throw(Error, InternalErr);
+bool Connect::request_das(bool,  const string &) throw(Error, InternalErr);
+DDS *Connect::read_data(FILE *data_source, bool, bool) throw(Error, InternalErr);
+DAS &Connect::das();
+DDS &Connect::dds();
+Error &Connect::error();
+

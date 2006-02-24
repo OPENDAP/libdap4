@@ -62,12 +62,5 @@ public:
     virtual bool set_value( dods_float64 val ) ;
 };
 
-/* 
- * $Log: PassiveFloat64.h,v $
- * Revision 1.1  2004/07/09 16:34:38  pwest
- * Adding Passive Data Model objects
- *
- */
-
 #endif // _passivefloat64_h
 

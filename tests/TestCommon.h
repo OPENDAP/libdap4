@@ -43,18 +43,5 @@ public:
     virtual bool get_series_values();
 };
 
-/* 
- * $Log: TestCommon.h,v $
- * Revision 1.2  2005/01/28 17:25:12  jimg
- * Resolved conflicts from merge with release-3-4-9
- *
- * Revision 1.1.2.2  2005/01/18 23:08:48  jimg
- * All Test* classes now handle copy and assignment correctly.
- *
- * Revision 1.1.2.1  2005/01/14 19:37:38  jimg
- * Added support for returning cyclic values.
- *
- */
-
 #endif // _test_common_h
 

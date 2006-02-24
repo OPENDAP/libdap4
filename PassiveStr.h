@@ -63,12 +63,5 @@ public:
     virtual bool set_value( const string &val ) ;
 };
 
-/* 
- * $Log: PassiveStr.h,v $
- * Revision 1.1  2004/07/09 16:34:38  pwest
- * Adding Passive Data Model objects
- *
- */
-
 #endif // _passivestr_h
 

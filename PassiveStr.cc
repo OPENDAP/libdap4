@@ -104,8 +104,3 @@ PassiveStr::set_value( const string &val )
     _buf = val ;
     return read( "" ) ;
 }
-
-// $Log: PassiveStr.cc,v $
-// Revision 1.1  2004/07/09 16:34:38  pwest
-// Adding Passive Data Model objects
-//

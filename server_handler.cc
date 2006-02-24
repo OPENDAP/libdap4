@@ -105,24 +105,3 @@ main(int argc, char *argv[])
 
     return 0;
 }
-
-// $Log: server_handler.cc,v $
-// Revision 1.2  2003/12/08 18:02:31  edavis
-// Merge release-3-4 into trunk
-//
-// Revision 1.1.2.2  2003/07/25 06:04:28  jimg
-// Refactored the code so that DDS:send() is now incorporated into
-// DODSFilter::send_data(). The old DDS::send() is still there but is
-// depracated.
-// Added 'smart timeouts' to all the variable classes. This means that
-// the new server timeouts are active only for the data read and CE
-// evaluation. This went inthe BaseType::serialize() methods because it
-// needed to time both the read() calls and the dds::eval() calls.
-//
-// Revision 1.1.2.1  2003/07/24 00:42:34  jimg
-// Added
-//
-// Revision 1.1  2003/05/13 22:03:34  jimg
-// Created. This works with newly modified DODS_Dispatch.pm script and
-// DODSFilter class.
-//

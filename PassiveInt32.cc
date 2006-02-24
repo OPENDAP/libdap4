@@ -105,8 +105,3 @@ PassiveInt32::set_value( dods_int32 val )
     _buf = val ;
     return read( "" ) ;
 }
-
-// $Log: PassiveInt32.cc,v $
-// Revision 1.1  2004/07/09 16:34:38  pwest
-// Adding Passive Data Model objects
-//

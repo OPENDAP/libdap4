@@ -33,18 +33,14 @@
      SCAN_STR = 259,
      SCAN_ERROR = 260,
      SCAN_CODE = 261,
-     SCAN_PTYPE = 262,
-     SCAN_MSG = 263,
-     SCAN_PROGRAM = 264
+     SCAN_MSG = 262
    };
 #endif
 #define SCAN_INT 258
 #define SCAN_STR 259
 #define SCAN_ERROR 260
 #define SCAN_CODE 261
-#define SCAN_PTYPE 262
-#define SCAN_MSG 263
-#define SCAN_PROGRAM 264
+#define SCAN_MSG 262
 
 
 
@@ -61,7 +57,7 @@ typedef union YYSTYPE {
     char *string;
 } YYSTYPE;
 /* Line 1318 of yacc.c.  */
-#line 65 "Error.tab.h"
+#line 61 "Error.tab.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

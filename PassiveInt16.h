@@ -62,12 +62,5 @@ public:
     virtual bool set_value( dods_int16 val ) ;
 };
 
-/* 
- * $Log: PassiveInt16.h,v $
- * Revision 1.1  2004/07/09 16:34:38  pwest
- * Adding Passive Data Model objects
- *
- */
-
 #endif // _passiveint16_h
 

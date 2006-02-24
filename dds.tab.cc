@@ -103,7 +103,7 @@
 #line 47 "dds.y"
 
 
-#include "config.h"
+#include "config_dap.h"
 
 static char rcsid[] not_used = {"$Id$"};
 
@@ -1856,4 +1856,5 @@ add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
 	delete *current; 
     *current = 0;
 }
+
 

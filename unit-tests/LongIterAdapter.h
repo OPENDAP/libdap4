@@ -48,17 +48,4 @@ class LongIterAdapter : public IteratorAdapter
 	iter _i ;
 } ;
 
-// $Log: LongIterAdapter.h,v $
-// Revision 1.2  2003/12/11 01:08:38  jimg
-// More fixes after resolving conflicts. This code still fails some tests.
-//
-// Revision 1.1.4.1  2003/06/24 11:07:20  rmorris
-// #ifdef'd out #pragma interface directive under __POWERPC__.  It causes
-// dynamic typing problems.
-//
-// Revision 1.1  2003/01/15 19:32:11  pwest
-// Adding files to tests director. Still need to use cppUnit and autoconf to
-// create configuration and Makefile
-//
-
 #endif // array_iter_adapter_h

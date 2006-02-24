@@ -44,7 +44,6 @@
 
 using std::cout;
 using std::string;
-//using std::ostream;
 
 /** The most common errors within DAP2 have special codes so that they
     can be spotted easily by the client software. Any error
@@ -105,8 +104,10 @@ public:
     Error(ErrorCode ec, string msg);
     /// Create an instance with the unknown_error code.
     Error(string msg);
+#if 0
     /// Deprecated.
     Error(ErrorCode ec, string msg, ProgramType pt, char *pgm);
+#endif
     /// Create a default Error object.
     Error();
 
@@ -127,14 +128,15 @@ public:
     ErrorCode get_error_code() const;
     /// Get the error message.
     string get_error_message() const;
-    /// Deprecated
-    ProgramType get_program_type() const;
-    /// Deprecated
-    const char *get_program() const;
     /// Set the error code.
     void set_error_code(ErrorCode ec = undefined_error);
     /// Set the error message.
     void set_error_message(string msg = "");
+#if 0   
+    /// Deprecated
+    ProgramType get_program_type() const;
+    /// Deprecated
+    const char *get_program() const;
     /// Deprecated
     void set_program_type(ProgramType pt = undefined_prog_type);
     /// Deprecated
@@ -151,6 +153,7 @@ public:
     char *program(char *program = 0);
     /// Deprecated
     ErrorCode error_code(ErrorCode ec = undefined_error);
+#endif
 };
 
 #endif // _error_h

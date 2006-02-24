@@ -51,12 +51,4 @@ public:
     SignalHandlerRegisteredErr() : Error() { _error_code = unknown_error; }
 };
 
-// $Log: SignalHandlerRegisteredErr.h,v $
-// Revision 1.2  2004/07/07 21:08:48  jimg
-// Merged with release-3-4-8FCS
-//
-// Revision 1.1.2.1  2004/03/04 21:39:39  jimg
-// Added
-//
-
 #endif // _signal_handler_registered_err_h

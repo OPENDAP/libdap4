@@ -91,7 +91,7 @@ Error::Error(string msg)
       _program_type(undefined_prog_type), _program(0)
 {
 }
-
+#if 0
 /** @deprecated The error-correction program feature is deprecated. */
 Error::Error(ErrorCode ec, string msg, ProgramType pt, char *pgm)
     : _error_code(ec), _error_message(msg), 
@@ -100,7 +100,7 @@ Error::Error(ErrorCode ec, string msg, ProgramType pt, char *pgm)
     _program = new char[strlen(pgm) + 1];
     strcpy(_program, pgm);
 }
-
+#endif
 Error::Error(const Error &copy_from)
     : _error_code(copy_from._error_code),
       _error_message(copy_from._error_message),
@@ -187,7 +187,7 @@ Error::parse(FILE *fp)
 	Error_delete_buffer(buffer);
     }
     catch (Error &e) {
-	throw InternalErr(__FILE__, __LINE__, e.error_message());
+	throw InternalErr(__FILE__, __LINE__, e.get_error_message());
 	Error_delete_buffer(buffer);
     }
 
@@ -236,7 +236,7 @@ Error::print(FILE *out) const
 
     fprintf( out, "};\n" ) ;
 }
-
+#if 0
 /** @deprecated Use the set/get methods instead. */
 ErrorCode
 Error::error_code(ErrorCode ec)
@@ -255,7 +255,7 @@ Error::error_code(ErrorCode ec)
 	return _error_code;
     }
 }
-
+#endif
 /** Get the ErrorCode for this instance. */
 ErrorCode
 Error::get_error_code() const
@@ -280,7 +280,7 @@ Error::set_error_code(ErrorCode ec)
 	&& ec > undefined_error && ec <= cannot_read_file)
 	_error_message = err_messages[ec - undefined_error - 1];
 }
-
+#if 0
 /** @deprecated Use the set/get methods instead. */
 string
 Error::error_message(string msg)
@@ -292,7 +292,7 @@ Error::error_message(string msg)
 	return string (_error_message);
     }
 }
-
+#endif
 /** Return the current error message. */
 string
 Error::get_error_message() const
@@ -308,7 +308,7 @@ Error::set_error_message(string msg)
 {
     _error_message = msg;
 }
-
+#if 0
 /** @deprecated Use get_error_message() instead. */
 void
 Error::display_message(void *) const
@@ -385,4 +385,4 @@ Error::correct_error(void *) const
     display_message(NULL);
     return string("");
 }
-
+#endif

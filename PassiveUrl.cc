@@ -63,8 +63,3 @@ PassiveUrl::~PassiveUrl()
 {
     DBG(cerr << "~PassiveUrl" << endl);
 }
-
-// $Log: PassiveUrl.cc,v $
-// Revision 1.1  2004/07/09 16:34:38  pwest
-// Adding Passive Data Model objects
-//

@@ -1344,7 +1344,7 @@ yyreduce:
 			}
 			catch (Error &e) {
 			    // rethrow with line number info
-			    parse_error(e.error_message().c_str(), 
+			    parse_error(e.get_error_message().c_str(), 
 					das_line_num);
 			}
 		    }
@@ -1795,7 +1795,7 @@ add_attribute(const string &type, const string &name, const string &value,
     }
     catch (Error &e) {
 	// rethrow with line number
-	parse_error(e.error_message().c_str(), das_line_num);
+	parse_error(e.get_error_message().c_str(), das_line_num);
     }
 }
 
@@ -1811,7 +1811,7 @@ add_alias(AttrTable *das, AttrTable *current, const string &name,
 	    current->add_container_alias(name, table);
 	}
 	catch (Error &e) {
-	    parse_error(e.error_message().c_str(), das_line_num);
+	    parse_error(e.get_error_message().c_str(), das_line_num);
 	}
     }
     else {
@@ -1819,7 +1819,7 @@ add_alias(AttrTable *das, AttrTable *current, const string &name,
 	    current->add_value_alias(das, name, src);
 	}
 	catch (Error &e) {
-	    parse_error(e.error_message().c_str(), das_line_num);
+	    parse_error(e.get_error_message().c_str(), das_line_num);
 	}
     }
 }

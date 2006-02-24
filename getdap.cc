@@ -238,7 +238,7 @@ main(int argc, char * argv[])
                 
                 catch(Error & e)
                 {
-                    e.display_message();
+                    cerr<< e.get_error_message() << endl;
                     delete r; r = 0;
                     delete url; url = 0;
                     break;
@@ -257,7 +257,7 @@ main(int argc, char * argv[])
 			url->request_das(das);
 		    }
 		    catch (Error &e) {
-			e.display_message();
+                        cerr<< e.get_error_message() << endl;
 			delete url; url = 0;
 			continue;
 		    }
@@ -280,7 +280,7 @@ main(int argc, char * argv[])
 			url->request_dds(dds);
 		    }
 		    catch (Error &e) {
-			e.display_message();
+                        cerr<< e.get_error_message() << endl;
 			delete url; url = 0;
 			continue;	// Goto the next URL or exit the loop.
 		    }
@@ -303,7 +303,7 @@ main(int argc, char * argv[])
 			url->request_dds(dds);
 		    }
 		    catch (Error &e) {
-			e.display_message();
+                        cerr<< e.get_error_message() << endl;
 			continue;	// Goto the next URL or exit the loop.
 		    }
 
@@ -336,7 +336,7 @@ main(int argc, char * argv[])
 			print_data(dds, print_rows);
 		    }
 		    catch (Error &e) {
-			e.display_message();
+                        cerr<< e.get_error_message() << endl;
 			delete url; url = 0;
 			continue;
 		    }
@@ -364,7 +364,7 @@ main(int argc, char * argv[])
 			delete r; r = 0;
 		    }
 		    catch (Error &e) {
-			e.display_message();
+                        cerr<< e.get_error_message() << endl;
 			continue;
 		    }
 		}
@@ -374,7 +374,7 @@ main(int argc, char * argv[])
 	}
     }
     catch (Error &e) {
-	e.display_message();
+        cerr<< e.get_error_message() << endl;
     }
 
     return 0;

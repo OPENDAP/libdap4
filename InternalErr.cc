@@ -76,7 +76,7 @@ InternalErr::InternalErr(const string &file, const int &line, const string &msg)
     _error_message+=msg+"\n";
     _error_message+="Please report this to support@unidata.ucar.edu\n";
 }
-
+#if 0
 InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
     : Error(unknown_error, msg, pt, pgm) 
 {
@@ -86,7 +86,7 @@ InternalErr::InternalErr(string msg, ProgramType pt, char *pgm)
 	<< "Please report this to support@unidata.ucar.edu";
     _error_message  = oss.str();
 }
-
+#endif
 InternalErr::InternalErr(const InternalErr &copy_from)
     : Error(copy_from)
 {
