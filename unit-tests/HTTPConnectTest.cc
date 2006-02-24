@@ -205,7 +205,7 @@ public:
 	    Regex header("XDODS-Server: DAP/.*");
 	    CPPUNIT_ASSERT(re_match(header, (*h)[0].c_str()));
             Regex protocol_header("XDAP: .*");
-            int num_headers;
+            unsigned int num_headers;
             if (re_match(protocol_header, (*h)[1].c_str()))
                 num_headers = 7;
             else

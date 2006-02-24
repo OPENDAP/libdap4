@@ -122,7 +122,7 @@ main(int argc, char *argv[])
       }
     }
     catch (Error &e) {
-      e.display_message();
+      cerr << e.get_error_message() << endl;
     }
 }
 

@@ -65,7 +65,7 @@ public:
 	    DBG2(das->print(stderr));
 	}
 	catch (Error &e) {
-	    e.display_message();
+            cerr << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT(!"Caught an unexpected Error object.");
 	}
     }

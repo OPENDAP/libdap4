@@ -363,7 +363,7 @@ test_parser(DDS &table, const string &dds_name, const string &constraint)
 	fprintf( stdout, "Input parsed\n" ) ;	// Parser throws on failure.
     }
     catch (Error &e) {
-	e.display_message();
+        cerr << e.get_error_message() << endl;
     }
 }
 
@@ -600,7 +600,7 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	}
     }
     catch(Error &e) {
-	e.display_message();
+        cerr << e.get_error_message() << endl;
 	fclose(pout);
 	delete ttf; ttf = 0;
 	return false;
@@ -642,7 +642,7 @@ constrained_trans(const string &dds_name, const bool constraint_expr,
 	delete factory; factory = 0;
 	delete ttf; ttf = 0;
 
-	e.display_message();
+        cerr << e.get_error_message() << endl;
 	return false;
     }
 	

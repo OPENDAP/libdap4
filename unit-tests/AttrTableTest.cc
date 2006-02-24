@@ -262,7 +262,7 @@ String longer%20name \"second test\";";
 	    cont->add_value_alias(top, "an alias", "long name");
 	}
 	catch (Error &e) {
-	    e.display_message();
+	    cerr << e.get_error_message() << endl;
 	    CPPUNIT_ASSERT("Caught Error exception!" && false);
 	}
         try {
@@ -276,7 +276,7 @@ String longer%20name \"second test\";";
 	    delete top; top = 0;
         }
         catch (Error &e) {
-            e.display_message();
+            cerr << e.get_error_message() << endl;
             CPPUNIT_ASSERT("Caught Error exception!" && false);
         }
     }
