@@ -3,6 +3,8 @@ $Id$
 
 News for version 3.6.0
 
+Added patches for RPM spec files from Patrice Dumas.
+
 Fixed a problem where Grids with two or more dimensions with the same name 
 were flagged as broken (by Grid::check_semantics). Now they are allowed as per
 the specification.
