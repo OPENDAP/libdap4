@@ -1,9 +1,25 @@
 
 $Id$
 
-Updated for 3.5.3
+Updated for 3.6.0
 
-NOTE: This version of libdap++ cannot be used to build the 3.4.x and previous
+NOTES for version 3.6.0
+
+This version of the library may not work older source code. Many of the 
+depracated methods have been removed. 
+
+Added are headers which send information about the version of the DAP protocol
+that the library implements (in contrast to the implementation of the libray
+itself). A new header named XOPeNDAP-Server is used to send information about
+the implementation of servers.
+
+The libtool interface version has been incremented from 3 to 4 (these versions
+do no track the software's release version since several releases might 
+present compatible binary interfaces). 
+
+NOTES for version 3.5.3
+
+This version of libdap++ cannot be used to build the 3.4.x and previous
 clients and/or servers. However, client and servers built using this code
 _will_ work with the older clients and servers.
 

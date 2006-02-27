@@ -27,6 +27,9 @@ a year. See Removed_functions.txt
 
 I removed the old Pix methods. See removed_functions.txt.
 
+I removed the const char * overloads added to prevent collissions between
+the Pix and String (not string, but GNU's old libg String class) methods.
+
 Added protocol version number header to responses which use the set_mime...()
 functions. The new header is called "XDAP-Protocol" and its value is the 
 two digit DAP protocol version number. This is now used by the client-side
