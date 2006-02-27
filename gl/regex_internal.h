@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -22,12 +22,7 @@
 
 #include <assert.h>
 #include <ctype.h>
-#ifdef WIN32
-#define inline  /*  VC++ doesn't swollow the <inline> syntax used here  */
-#include "stdbool_.h"
-#else
 #include <stdbool.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -187,6 +182,10 @@ typedef unsigned long int bitset_word;
 # if BITSET_WORD_BITS <= SBC_MAX
 #  error "Invalid SBC_MAX"
 # endif
+ #elif BITSET_WORD_MAX == (0xffffffff + 2) * 0xffffffff
+/* Work around a bug in 64-bit PGC (before version 6.1-2), where the
+   preprocessor mishandles large unsigned values as if they were signed.  */
+# define BITSET_WORD_BITS 64
 #else
 # error "Add case for new bitset_word size"
 #endif
@@ -460,11 +459,7 @@ static unsigned int re_string_context_at (const re_string_t *input,
 #define re_string_skip_bytes(pstr,idx) ((pstr)->cur_idx += (idx))
 #define re_string_set_index(pstr,idx) ((pstr)->cur_idx = (idx))
 
-#ifdef WIN32
-#include <alloca_.h>
-#else
 #include <alloca.h>
-#endif
 
 #ifndef _LIBC
 # if HAVE_ALLOCA
@@ -493,7 +488,7 @@ static unsigned int re_string_context_at (const re_string_t *input,
 
 /* Return true if an array of N objects, each of size S, cannot exist
    due to size arithmetic overflow.  S must be nonzero.  */
-inline bool
+static inline bool
 re_alloc_oversized (size_t n, size_t s)
 {
   return BE (SIZE_MAX / s < n, 0);

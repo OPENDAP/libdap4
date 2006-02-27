@@ -16,6 +16,7 @@ noinst_LTLIBRARIES = libgnu.la
 
 libgnu_la_SOURCES =
 libgnu_la_LIBADD = @LTLIBOBJS@
+noinst_HEADERS =
 EXTRA_DIST =
 BUILT_SOURCES =
 SUFFIXES =
