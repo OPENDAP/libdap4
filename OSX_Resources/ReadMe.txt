@@ -1,12 +1,16 @@
 
 $Id$
 
-Updated for 3.5.2
+Updated for 3.6.0
 
 NOTE: This version of libdap++ cannot be used to build
 the 3.4.x and previous clients and/or servers. However,
 client and servers built using this code _will_ work
-with the older clients and servers.
+with the older clients and servers. It may be possible
+to use this with software that previously built using 
+3.5.x; the determining factor is whether the software
+used features that were marked as deprecated in the older
+libdap since those have been removed in 3.6.0.
 
 WHAT'S IN THIS PACKAGE?
 
