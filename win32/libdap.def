@@ -1,4 +1,4 @@
-; C:\_wfscDevel\MinGW-4.1.1\bin\dlltool.exe -z libdap.def --export-all-symbols AISConnect.obj AISDatabaseParser.obj AISMerge.obj AISResources.obj Array.obj AttrTable.obj BaseType.obj BaseTypeFactory.obj Byte.obj Clause.obj Connect.obj Constructor.obj DAS.obj DDS.obj DDXParser.obj DODSFilter.obj DataDDS.obj Error.obj Error.tab.obj Float32.obj Float64.obj GNURegex.obj GNUerror.obj GSEClause.obj GetOpt.obj Grid.obj HTTPCache.obj HTTPConnect.obj Int16.obj Int32.obj InternalErr.obj OPeNDAPDir.obj OPeNDAPFile.obj PassiveArray.obj PassiveByte.obj PassiveFloat32.obj PassiveFloat64.obj PassiveInt16.obj PassiveInt32.obj PassiveStr.obj PassiveStructure.obj PassiveUInt16.obj PassiveUInt32.obj PassiveUrl.obj RCReader.obj RValue.obj ResponseTooBigErr.obj Sequence.obj SignalHandler.obj Str.obj Structure.obj UInt16.obj UInt32.obj Url.obj Vector.obj ce_functions.obj cgi_util.obj das.tab.obj dds.tab.obj escaping.obj expr.tab.obj gse.tab.obj lex.Error.obj lex.das.obj lex.dds.obj lex.expr.obj lex.gse_.obj parser-util.obj regex.obj strcasecmp.obj strncasecmp.obj strnlen1.obj util.obj util_mit.obj xdrutil_ppc.obj
+; dlltool.exe -z libdap.def --export-all-symbols AISConnect.obj AISDatabaseParser.obj AISMerge.obj AISResources.obj Array.obj AttrTable.obj BaseType.obj BaseTypeFactory.obj Byte.obj Clause.obj Connect.obj Constructor.obj DAS.obj DDS.obj DDXParser.obj DODSFilter.obj DataDDS.obj Error.obj Error.tab.obj Float32.obj Float64.obj GNURegex.obj GNUerror.obj GSEClause.obj GetOpt.obj Grid.obj HTTPCache.obj HTTPConnect.obj Int16.obj Int32.obj InternalErr.obj OPeNDAPDir.obj OPeNDAPFile.obj PassiveArray.obj PassiveByte.obj PassiveFloat32.obj PassiveFloat64.obj PassiveInt16.obj PassiveInt32.obj PassiveStr.obj PassiveStructure.obj PassiveUInt16.obj PassiveUInt32.obj PassiveUrl.obj RCReader.obj RValue.obj ResponseTooBigErr.obj Sequence.obj SignalHandler.obj Str.obj Structure.obj UInt16.obj UInt32.obj Url.obj Vector.obj ce_functions.obj cgi_util.obj das.tab.obj dds.tab.obj escaping.obj expr.tab.obj gse.tab.obj lex.Error.obj lex.das.obj lex.dds.obj lex.expr.obj lex.gse_.obj parser-util.obj regex.obj strcasecmp.obj strncasecmp.obj strnlen1.obj util.obj util_mit.obj xdrutil_ppc.obj
 EXPORTS
 	??$?0PAVBaseType@@@?$allocator@PAPAVBaseType@@@std@@QAE@ABV?$allocator@PAVBaseType@@@1@@Z
 	??$?0U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$vector@VResource@@V?$allocator@VResource@@@std@@@2@@std@@@?$allocator@PAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$vector@VResource@@V?$allocator@VResource@@@std@@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$vector@VResource@@V?$allocator@VResource@@@std@@@2@@std@@@2@$0A@@std@@@std@@@std@@QAE@ABV?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$vector@VResource@@V?$allocator@VResource@@@std@@@2@@std@@@1@@Z
@@ -920,7 +920,6 @@ EXPORTS
 	??0DeleteUnlockedCacheEntry@@QAE@PAVHTTPCache@@@Z
 	??0Error@@QAE@ABV0@@Z
 	??0Error@@QAE@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	??0Error@@QAE@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4ProgramType@@PAD@Z
 	??0Error@@QAE@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	??0Error@@QAE@XZ
 	??0FindRegexp@AISResources@@QAE@ABU01@@Z
@@ -947,7 +946,6 @@ EXPORTS
 	??0InternalErr@@QAE@ABV0@@Z
 	??0InternalErr@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	??0InternalErr@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABH0@Z
-	??0InternalErr@@QAE@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4ProgramType@@PAD@Z
 	??0InternalErr@@QAE@XZ
 	??0MatchRegexp@AISResources@@QAE@ABU01@@Z
 	??0MatchRegexp@AISResources@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
@@ -2330,7 +2328,6 @@ EXPORTS
 	?add_regexp_resource@AISResources@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV?$vector@VResource@@V?$allocator@VResource@@@std@@@3@@Z
 	?add_regexp_resource@AISResources@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABVResource@@@Z
 	?add_table@DAS@@QAEPAVAttrTable@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAV2@@Z
-	?add_table@DAS@@QAEPAVAttrTable@@PBDPAV2@@Z
 	?add_url_resource@AISResources@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV?$vector@VResource@@V?$allocator@VResource@@@std@@@3@@Z
 	?add_url_resource@AISResources@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABVResource@@@Z
 	?add_value_alias@AttrTable@@QAEXPAV1@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@1@Z
@@ -2379,7 +2376,6 @@ EXPORTS
 	?app@?$_Iosb@H@std@@2W4_Openmode@12@B
 	?append_array_index@@YAPAV?$vector@PAV?$vector@HV?$allocator@H@std@@@std@@V?$allocator@PAV?$vector@HV?$allocator@H@std@@@std@@@2@@std@@PAV12@PAV?$vector@HV?$allocator@H@std@@@2@@Z
 	?append_attr@AttrTable@@QAEIABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@00@Z
-	?append_attr@AttrTable@@QAEIPBD00@Z
 	?append_clause@DDS@@QAEXHPAVrvalue@@PAV?$vector@PAVrvalue@@V?$allocator@PAVrvalue@@@std@@@std@@@Z
 	?append_clause@DDS@@QAEXP6APAVBaseType@@HQAPAV2@AAV1@@ZPAV?$vector@PAVrvalue@@V?$allocator@PAVrvalue@@@std@@@std@@@Z
 	?append_clause@DDS@@QAEXP6A_NHQAPAVBaseType@@AAV1@@ZPAV?$vector@PAVrvalue@@V?$allocator@PAVrvalue@@@std@@@std@@@Z
@@ -2537,7 +2533,6 @@ EXPORTS
 	?construct@?$allocator@VOPeNDAPFile@@@std@@QAEXPAVOPeNDAPFile@@ABV3@@Z
 	?construct@?$allocator@VResource@@@std@@QAEXPAVResource@@ABV3@@Z
 	?construct@?$allocator@W4ParseState@DDXParser@@@std@@QAEXPAW4ParseState@DDXParser@@ABW434@@Z
-	?correct_error@Error@@QBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAX@Z
 	?create_cache_root@HTTPCache@@AAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?create_hash_directory@HTTPCache@@AAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@Z
 	?create_location@HTTPCache@@AAEXPAUCacheEntry@1@@Z
@@ -2689,7 +2684,6 @@ EXPORTS
 	?dimension_stride@Array@@QAEHV?$_Vector_iterator@Udimension@Array@@V?$allocator@Udimension@Array@@@std@@@std@@_N@Z
 	?dimensions@Array@@QAEI_N@Z
 	?dispatcher@SignalHandler@@CAXH@Z
-	?display_message@Error@@QBEXPAX@Z
 	?do_version@@YA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z
 	?dods_keep_temps@@3HA
 	?double_to_string@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABN@Z
@@ -2815,10 +2809,8 @@ EXPORTS
 	?erase@?$vector@VResource@@V?$allocator@VResource@@@std@@@std@@QAE?AV?$_Vector_iterator@VResource@@V?$allocator@VResource@@@std@@@2@V32@0@Z
 	?erase@AttrTable@@QAEXXZ
 	?error@parser_arg@@QAEPAVError@@XZ
-	?error_code@Error@@QAEHH@Z
 	?error_exit_cleanup@@YAXXZ
 	?error_line_num@@3HA
-	?error_message@Error@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@Z
 	?esc2underscore@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@Z
 	?escattr@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@Z
 	?establish_timeout@DODSFilter@@UAEXPAU_iobuf@@@Z
@@ -2943,22 +2935,17 @@ EXPORTS
 	?get_always_validate@HTTPCache@@QBE_NXZ
 	?get_always_validate@RCReader@@QAE?BHXZ
 	?get_attr@AttrTable@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV23@I@Z
-	?get_attr@AttrTable@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBDI@Z
 	?get_attr@AttrTable@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@3@I@Z
 	?get_attr_iter@AttrTable@@QAE?AV?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@std@@H@Z
 	?get_attr_num@AttrTable@@QAEIABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?get_attr_num@AttrTable@@QAEIPBD@Z
 	?get_attr_num@AttrTable@@QAEIV?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@std@@@Z
 	?get_attr_table@AttrTable@@QAEPAV1@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?get_attr_table@AttrTable@@QAEPAV1@PBD@Z
 	?get_attr_table@AttrTable@@QAEPAV1@V?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@std@@@Z
 	?get_attr_table@BaseType@@UAEAAVAttrTable@@XZ
 	?get_attr_table@DDS@@UAEAAVAttrTable@@XZ
 	?get_attr_type@AttrTable@@QAE?AW4AttrType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?get_attr_type@AttrTable@@QAE?AW4AttrType@@PBD@Z
 	?get_attr_type@AttrTable@@QAE?AW4AttrType@@V?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@std@@@Z
 	?get_attr_vector@AttrTable@@QAEPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@3@@Z
-	?get_attr_vector@AttrTable@@QAEPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PBD@Z
 	?get_attr_vector@AttrTable@@QAEPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@3@@Z
 	?get_btp_function@@YAP6APAVBaseType@@HQAPAV1@AAVDDS@@@ZABV2@PBD@Z
 	?get_cache_control@HTTPCache@@QAE?AV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@XZ
@@ -3008,8 +2995,6 @@ EXPORTS
 	?get_no_proxy_for_host@RCReader@@QAE?BV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 	?get_object_type@ParseHeader@@QAE?AW4ObjectType@@XZ
 	?get_parent@BaseType@@UAEPAV1@XZ
-	?get_program@Error@@QBEPBDXZ
-	?get_program_type@Error@@QBE?AW4ProgramType@@XZ
 	?get_proj_function@@YAP6AXHQAPAVBaseType@@AAVDDS@@@ZABV2@PBD@Z
 	?get_protocol@DataDDS@@QBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
 	?get_protocol@ParseHeader@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
@@ -3036,14 +3021,12 @@ EXPORTS
 	?get_stream@Response@@UBEPAU_iobuf@@XZ
 	?get_table@DAS@@QAEPAVAttrTable@@AAV?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@std@@@Z
 	?get_table@DAS@@QAEPAVAttrTable@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?get_table@DAS@@QAEPAVAttrTable@@PBD@Z
 	?get_temp_file@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAPAU_iobuf@@@Z
 	?get_tempfile_template@@YAPADPAD@Z
 	?get_timeout@DDS@@QAEHXZ
 	?get_timeout@DODSFilter@@QBEHXZ
 	?get_type@@YA?AW4ObjectType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?get_type@AttrTable@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV23@@Z
-	?get_type@AttrTable@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBD@Z
 	?get_type@AttrTable@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$_Vector_iterator@PAUentry@AttrTable@@V?$allocator@PAUentry@AttrTable@@@std@@@3@@Z
 	?get_type@Response@@UBE?AW4ObjectType@@XZ
 	?get_url@Resource@@UBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ
@@ -3530,8 +3513,6 @@ EXPORTS
 	?process_options@DODSFilter@@MAEHHQAPAD@Z
 	?process_sequence_indices@@YA_NPAVBaseType@@PAV?$vector@PAV?$vector@HV?$allocator@H@std@@@std@@V?$allocator@PAV?$vector@HV?$allocator@H@std@@@std@@@2@@std@@@Z
 	?process_variable@DDXParser@@AAEXW4Type@@W4ParseState@1@PAPBD@Z
-	?program@Error@@QAEPADPAD@Z
-	?program_type@Error@@QAE?AW4ProgramType@@W42@@Z
 	?projection_yields_grid@Grid@@UAE_NXZ
 	?prune_spaces@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV12@@Z
 	?ptr_duplicate@Array@@UAEPAVBaseType@@XZ
@@ -3756,8 +3737,6 @@ EXPORTS
 	?set_name@AttrTable@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?set_name@BaseType@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?set_parent@BaseType@@UAEXPAV1@@Z
-	?set_program@Error@@QAEXPAD@Z
-	?set_program_type@Error@@QAEXW4ProgramType@@@Z
 	?set_protocol@DataDDS@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?set_protocol@Response@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?set_read_p@BaseType@@UAEX_N@Z
@@ -3888,7 +3867,6 @@ EXPORTS
 	?var@BaseType@@UAEPAV1@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_NPAV?$stack@PAVBaseType@@V?$deque@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@3@@Z
 	?var@DDS@@QAEPAVBaseType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV?$stack@PAVBaseType@@V?$deque@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@4@@Z
 	?var@DDS@@QAEPAVBaseType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAV?$stack@PAVBaseType@@V?$deque@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@4@@Z
-	?var@DDS@@QAEPAVBaseType@@PBDPAV?$stack@PAVBaseType@@V?$deque@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@std@@@Z
 	?var@Grid@@UAEPAVBaseType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV?$stack@PAVBaseType@@V?$deque@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@4@@Z
 	?var@Grid@@UAEPAVBaseType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_NPAV?$stack@PAVBaseType@@V?$deque@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@4@@Z
 	?var@Sequence@@UAEPAVBaseType@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV?$stack@PAVBaseType@@V?$deque@PAVBaseType@@V?$allocator@PAVBaseType@@@std@@@std@@@4@@Z
@@ -3929,7 +3907,7 @@ EXPORTS
 	?write_database@AISResources@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
 	?write_metadata@HTTPCache@@AAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@3@@Z
 	?write_rc_file@RCReader@@AAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z
-	?www2id@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@ABV12@1@Z
+	?www2id@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV12@00@Z
 	?www_lib_init@HTTPConnect@@AAEXXZ
 	?www_trace@@3HA
 	?xdr_coder@BaseType@@QAEP6AHPAU__xdr_s@@PAPAD@ZXZ
@@ -3938,7 +3916,6 @@ EXPORTS
 	__re_error_msgid_idx
 	libdap_name
 	libdap_version
-	re_alloc_oversized
 	re_compile_fastmap
 	re_compile_pattern
 	re_match
