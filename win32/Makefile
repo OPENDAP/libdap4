@@ -24,8 +24,8 @@ YACC	= bison
 # when a "\" followed by some char is interpreted as an escape sequence.
 YACCFLAGS	= --no-lines -d -v
 
-# MT = Multi-Threaded Model
-# MD = Multi-Threaded DLL Model
+# MT = Static Link Multi-Threaded Model
+# MD = Dynamic Link Multi-Threaded DLL Model
 
 # Setup compiler flags
 MTCFLAGS	= /MT /D HAVE_PTHREAD_H
