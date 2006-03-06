@@ -1,3 +1,45 @@
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Increased the release number to two.
+
+2006-03-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Trivial change in comment in win32 libdap makefile
+
+2006-03-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Redo recently clobbered changes from gl/ refresh
+
+2006-03-01  James Gallagher <jgallagher@opendap.org>
+
+	Updated the OSX_Resources/Readme.txt file for 3.6.0.
+
+2006-02-28  James Gallagher <jgallagher@opendap.org>
+
+	Updated grammar files and added rpm and OS/X package targets to Makefile.am
+
+2006-02-28  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated NEWS.
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated the Mac/OSX project file for 3.6.0
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Added unit-tests/testFile.cc: This provides a way to link the FILE*
+	output code with C++ strings so that unit tests can work their magic.
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated documentation files (README, NEWS, ChangeLog), version information
+	(configure.ac, libdap.spec) and removed two unused unit test files.
+
 2006-02-27  James Gallagher <jgallagher@opendap.org>
 
 	Imported the latest gnulib code (see the Makefile.am in gl for the
