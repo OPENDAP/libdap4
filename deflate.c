@@ -1,15 +1,16 @@
 
-// -*- mode: c++; c-basic-offset:4 -*-
+/* -*- mode: c; c-basic-offset:4 -*- */
 
-// Copyright (C) 1998 World Wide Web Consortium, (Massachusetts Institute
-// of Technology, Institut National de Recherche en Informatique et en
-// Automatique, Keio University). All Rights Reserved.
-// http://www.w3.org/Consortium/Legal/
-//    
+/* 
+   Copyright (C) 1998 World Wide Web Consortium, (Massachusetts Institute
+   of Technology, Institut National de Recherche en Informatique et en
+   Automatique, Keio University). All Rights Reserved.
+   http://www.w3.org/Consortium/Legal/
  
-// This file was derived from the libwww source code of 1998/08/20. The
-// copyright for the source of this derivative work can be found in the file
-// COPYRIGHT_W3C.
+   This file was derived from the libwww source code of 1998/08/20. The
+   copyright for the source of this derivative work can be found in the file
+   COPYRIGHT_W3C.
+*/
 
 /*
   Picked up from the w3c. 2/10/1998 jhrg
