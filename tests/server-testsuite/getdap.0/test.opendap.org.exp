@@ -27,17 +27,17 @@ compare_stdout "server-testsuite/bears.data" "${test_name}: NetCDF/bears"
 getdap_start "-D" "${fnoc1}?${fnoc1_ce}"
 compare_stdout "server-testsuite/fnoc1.data" "$test_name: NetCDF/fnoc1"
 
-getdap_start "-D" "${dsp_1}?${dsp_1_ce}"
-compare_stdout "server-testsuite/dsp_1.data" "$test_name: DSP"
+# getdap_start "-D" "${dsp_1}?${dsp_1_ce}"
+# compare_stdout "server-testsuite/dsp_1.data" "$test_name: DSP"
 
-getdap_start "-D" "${nscat_s2}?${nscat_s2_ce}"
-compare_stdout "server-testsuite/nscat_s2.data" "$test_name: Matlab"
+# getdap_start "-D" "${nscat_s2}?${nscat_s2_ce}"
+# compare_stdout "server-testsuite/nscat_s2.data" "$test_name: Matlab"
 
 getdap_start "-D" "${nscat_hdf}?${nscat_hdf_ce}"
 compare_stdout "server-testsuite/nscat_hdf.data" "$test_name: HDF"
 
-getdap_start "-D" "${jg_test}?${jg_test_ce}"
-compare_stdout "server-testsuite/jg_test.data" "$test_name: JGOFS"
+# getdap_start "-D" "${jg_test}?${jg_test_ce}"
+# compare_stdout "server-testsuite/jg_test.data" "$test_name: JGOFS"
 
 getdap_start "-d" "${ff_test1}"
 compare_stdout $ff_test1_dds "$test_name: FF DDS check"

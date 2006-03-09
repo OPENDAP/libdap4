@@ -2,7 +2,7 @@
 # expect/tcl code to test the expression parser and scanner
 # jhrg
 #
-# $Log: test.c.exp,v $
+# $Log: test.d.exp,v $
 # Revision 1.5  2000/10/03 22:18:04  jimg
 # Fixes to the tests to accomodate debugging fixes in DDS.cc
 #
@@ -30,7 +30,7 @@ global srcdir
 
 # The variable `test_file' is the name of the das input file for this test.
 
-set test_name test.c
+set test_name test.d
 set test_file test.2
 
 # The variable test_equation is the equation to test.
