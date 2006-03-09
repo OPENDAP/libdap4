@@ -84,6 +84,7 @@ options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
          -r <dir>: Use <dir> as a cache directory\n\
          -l <time>: Conditional request; if data source is unchanged since\n\
                     <time>, return an HTTP 304 response.\n\
+         -t <seconds>: Timeout the handler after <seconds>.\n\
 ";
 
 #ifdef WIN32
@@ -255,7 +256,7 @@ DODSFilter::process_options(int argc, char *argv[]) throw(Error)
     DBG(cerr << "Entering process_options... ");
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce:v:d:f:r:l:o:u:");
+    GetOpt getopt (argc, argv, "ce:v:d:f:r:l:o:u:t:");
 
     while ((option_char = getopt()) != EOF) {
 	switch (option_char) {
