@@ -1,6 +1,15 @@
 
 $Id$
 
+News for version 3.6.1
+
+Fixed a bug in deflate.c: Some comments used the C++ style comments and gcc
+rejected that.
+
+Data server filters built with the 3.6.0 library were not compatible with the
+dap-server 3.6.0 software because the DODSFilter class did not recofnize the
+-t option (which is used to pass the handler a timeout value).
+
 News for version 3.6.0
 
 Added patches for RPM spec files from Patrice Dumas.
