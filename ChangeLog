@@ -1,3 +1,41 @@
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Bumped up the version to 3.6.1. Files affected: configure.ac libdap.spec,
+	INSTALL, README, NEWS.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Updated tests/expr-testsuite/expr-test.0/test.c by changing its name to
+	test.d so that Eclipse's indexer won't gag on it.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	removed unused test directories expr-testsuite and grid-func-testsuite
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Added -t option to DODSFilter.cc. This was left out by mistake.
+
+2006-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Changed tests from dodsdev to test.opendap.org
+
+2006-03-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the C++-style comment in deflate.c from a bug reprot
+	from Jim Davis at Nasa.
+
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 3.6.0-2
+
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Increased the release number to two.
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2006-03-06  James Gallagher <jgallagher@opendap.org>
 
 	Increased the release number to two.
