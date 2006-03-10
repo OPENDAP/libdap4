@@ -20,9 +20,8 @@ check_PROGRAMS = $(UNIT_TESTS)
 # runs all the dejagnu test drivers by calling runtest 'by hand.'
 TESTS = $(UNIT_TESTS)
 
-DIRS_EXTRA = das-testsuite dds-testsuite expr-testsuite ddx-testsuite \
-	grid-func-testsuite ais_testsuite rcreader-testsuite \
-	server-testsuite cgi-util-tests
+DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite ais_testsuite \
+	rcreader-testsuite server-testsuite cgi-util-tests
 
 EXTRA_DIST = $(DIRS_EXTRA) 
 

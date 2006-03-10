@@ -36,6 +36,8 @@
 
 #include "config.h"
 
+//#define DODS_DEBUG
+
 static char rcsid[] not_used =
     { "$Id$" };
 
@@ -65,6 +67,8 @@ void
 Connect::process_data(DataDDS &data, Response *rs) 
     throw(Error, InternalErr)
 {
+    DBG(cerr << "Entering Connect::process_data" <<endl);
+    
     // Use the implementation and protocol versions from teh Response object
     // since the copies in Connect might go away. Regardless, we must keep the
     // Response object alive until we no longer need the stream, since
@@ -704,7 +708,9 @@ Connect::request_data_url(DataDDS &data) throw(Error, InternalErr)
 }
 
 
-/** This is a place holder. A better implementation for reading objects from
+/** @brief Read data which is preceded by MIME headers.
+ * 
+    This is a place holder. A better implementation for reading objects from
     the local file store is to write FileConnect and have it support the same
     interface as HTTPConnect.
 
@@ -714,6 +720,7 @@ Connect::request_data_url(DataDDS &data) throw(Error, InternalErr)
     DataDDS constructor or use the DDS::set_factory() method after the 
     object is built.
 
+    @see read_data_no_mime()
     @param data Result.
     @param rs Read from this Response object. */
 
@@ -726,6 +733,21 @@ Connect::read_data(DataDDS &data, Response *rs) throw(Error, InternalErr)
     // Read from data_source and parse the MIME headers specific to DAP2.
     parse_mime(rs);
 
+    read_data_no_mime(data, rs);
+}
+
+/** @brief Read data from a file which does not have response MIME headers.
+    This method is a companion to read_data(). While read_data() assumes that
+    the response has MIME headers, this method does not. If you call this
+    with a Response that does contain headers, it will throw an Error (and
+    the message is likely to be inscrutable).
+
+    @param data Result.
+    @param rs Read from this Response object. */
+void
+Connect::read_data_no_mime(DataDDS &data, Response *rs) 
+        throw(Error, InternalErr)
+{
     d_version = rs->get_version();
     d_protocol = rs->get_protocol();
 

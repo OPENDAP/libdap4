@@ -210,6 +210,9 @@ public:
 
     virtual void read_data(DataDDS &data, Response *rs)
         throw(Error, InternalErr);
+    virtual void read_data_no_mime(DataDDS &data, Response *rs) 
+        throw(Error, InternalErr);
+        
 };
 
 #endif // _connect_h
